@@ -4,7 +4,7 @@
 
 Moira is a pure Python astronomical ephemeris and astrology engine. It is built on JPL DE441, the IAU 2000A/2006 standards, and a Python 3.14-first codebase. It is not a wrapper around Swiss Ephemeris. It does not depend on any C extension. It is a standalone engine with its own models, its own validation surfaces, and access to data and capabilities that did not exist when the dominant tools in this space were written.
 
-Swiss Ephemeris was built in 1997. The world has changed considerably since then.
+Moira is, to our knowledge, the first open-source Python astrology engine to publish direct validation of its core astronomical computations against ERFA/SOFA reference routines at sub-milliarcsecond accuracy.
 
 ---
 
