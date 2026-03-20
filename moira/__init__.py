@@ -1212,18 +1212,26 @@ class Moira:
     # Fixed stars
     # ------------------------------------------------------------------
 
-    def fixed_star(self, name: str, dt: datetime) -> StarPosition:
+    def fixed_star(self, name: str, dt: datetime) -> FixedStar:
         """
-        Return the tropical ecliptic position of a fixed star.
+        Return the tropical ecliptic position of a fixed star, enriched with
+        Gaia DR3 photometric data when available.
 
         Parameters
         ----------
         name : traditional or Bayer/Flamsteed name (case-insensitive)
         dt   : datetime
+
+        Returns
+        -------
+        FixedStar with longitude, latitude, magnitude, and — when the Gaia
+        catalog is loaded — bp_rp, teff_k, parallax_mas, distance_ly, and
+        quality (StellarQuality).  Fields unavailable from Gaia are NaN / None.
         """
         from .julian import ut_to_tt as _utt
+        from .stars import star_at as _star_at
         jd = jd_from_datetime(dt)
-        return fixed_star_at(name, _utt(jd))
+        return _star_at(name, _utt(jd))
 
     def heliacal_rising(
         self,

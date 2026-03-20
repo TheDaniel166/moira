@@ -109,7 +109,7 @@ EGYPTIAN_BOUNDS: dict[str, list[tuple[str, float, float]]] = {
 # ---------------------------------------------------------------------------
 
 FACE_RULERS: list[str] = (
-    ["Mars", "Sun", "Venus", "Mercury", "Moon", "Saturn", "Jupiter"] * 6
+    [["Mars", "Sun", "Venus", "Mercury", "Moon", "Saturn", "Jupiter"][i % 7] for i in range(36)]
 )
 
 

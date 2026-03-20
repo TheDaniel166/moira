@@ -121,6 +121,11 @@ class GauquelinPosition:
     [/MACHINE_CONTRACT]
     """
 
+    body:             str
+    sector:           int
+    zone:             str
+    diurnal_position: float
+
     def __repr__(self) -> str:
         return (
             f"GauquelinPosition({self.body!r}, sector={self.sector}, "

@@ -48,8 +48,8 @@ from .constants import DEG2RAD, RAD2DEG
 # Low-level 3-vector helpers (no numpy dependency)
 # ---------------------------------------------------------------------------
 
-type Vec3 = tuple[float, float, float]
-type Mat3 = tuple[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]]
+Vec3 = tuple
+Mat3 = tuple
 
 
 def vec_add(a: Vec3, b: Vec3) -> Vec3:

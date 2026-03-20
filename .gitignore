@@ -37,6 +37,9 @@ ENV/
 Thumbs.db
 Desktop.ini
 
+# UI prototypes (local only, not part of the library)
+ui/
+
 # Large runtime ephemeris assets
 kernels/
 *.bsp

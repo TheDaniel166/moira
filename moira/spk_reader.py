@@ -33,7 +33,7 @@ except ImportError as exc:  # pragma: no cover
     ) from exc
 
 # Type alias (defined here to avoid importing coordinates in constants)
-type Vec3 = tuple[float, float, float]
+Vec3 = tuple
 
 _DEFAULT_KERNEL_PATH = Path(__file__).parent.parent / "kernels" / "de441.bsp"
 

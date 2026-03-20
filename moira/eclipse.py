@@ -369,7 +369,7 @@ class EclipseEvent:
         return datetime_from_jd(self.jd_ut)
 
 
-type LunarEclipseAnalysisMode = "native" | "nasa_compat"
+LunarEclipseAnalysisMode = str
 
 
 @dataclass(frozen=True, slots=True)

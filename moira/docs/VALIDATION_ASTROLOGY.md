@@ -34,17 +34,17 @@ The validation standard here differs from the astronomy layer:
 | Sidereal systems / ayanamshas (30 systems) | Astro.com `swetest` offline fixture | `pytest` | ✅ Validated |
 | House systems (15 systems, 3168 iterations) | Swiss `setest/t.exp` offline fixture | `pytest` + validator script | ✅ Validated |
 | Aspects (major, tight-orb) | Moira planet_at() pipeline (Horizons-validated) + angular_distance geometry | `pytest` | ✅ Validated |
-| Antiscia / contra-antiscia | — | None yet | ❌ Needs oracle |
-| Midpoints | — | None yet | ❌ Needs oracle |
-| Lots / Arabic Parts | — | None yet | ❌ Needs oracle |
-| Dignities | — | None yet | ❌ Needs oracle |
-| Harmonics | — | None yet | ❌ Needs oracle |
+| Antiscia / contra-antiscia | Formula derivation + invariants (Valens, Lilly) | `pytest` | ✅ Validated |
+| Midpoints | Formula derivation + invariants (Ebertin, Witte) | `pytest` | ✅ Validated |
+| Lots / Arabic Parts | Formula derivation, day/night reversal (Paulus, Valens) | `pytest` | ✅ Validated |
+| Dignities | Essential table lookups, accidental scoring (Lilly, Ptolemy) | `pytest` | ✅ Validated |
+| Harmonics | Formula derivation + round-trip invariant (Addey) | `pytest` | ✅ Validated |
+| Profections | Annual/monthly arithmetic, 12-year cycle (Brennan, Valens) | `pytest` | ✅ Validated |
+| Planetary hours | Chaldean sequence + day-ruler derivation (Porphyry, Hephaestio) | `pytest` | ✅ Validated |
 | Primary directions | — | None yet | ❌ Needs oracle |
 | Secondary progressions | — | None yet | ❌ Needs oracle |
 | Solar arc directions | — | None yet | ❌ Needs oracle |
-| Profections | — | None yet | ❌ Needs oracle |
 | Dashas | — | None yet | ❌ Needs oracle |
-| Planetary hours | — | None yet | ❌ Needs oracle |
 | Parans | Self-consistency only | `pytest` | ⚠️ Needs external oracle |
 | Gauquelin sectors | Mentioned as validated, no detail | `pytest` | ⚠️ Needs documentation |
 | Manazil / lunar mansions | — | None yet | ❌ Needs oracle |
@@ -126,9 +126,76 @@ suite (`tests/unit/test_aspects.py`).
 
 ---
 
-## 6. Outstanding Astrology Validation Roadmap
+## 6. Rule Engine Validation
 
-### 5.1 Aspects
+**Test file:** `tests/unit/test_rule_engine_validation.py` — **57 passed**
+
+The following seven modules are pure arithmetic / rule-table engines with no
+ephemeris dependency. Their validation is therefore formula-derivation and
+invariant-based rather than oracle-comparison. All expected values were derived
+by hand from the cited primary sources.
+
+### 6.1 Antiscia and Contra-antiscia
+
+**Canon:** Vettius Valens, Anthology II.37; William Lilly, Christian Astrology (1647) p. 90  
+**Formula:** antiscion = (180° − lon) mod 360°; contra = (360° − lon) mod 360°  
+**Validation:** hand-derived table for 7 longitude values; round-trip invariant;
+contact detection with orb inclusion/exclusion; zero-crossing edge cases
+
+### 6.2 Midpoints
+
+**Canon:** Reinhold Ebertin, The Combination of Stellar Influences (1940);
+Alfred Witte, Rules for Planetary Pictures (Hamburg School)  
+**Formula:** shorter-arc midpoint; 90° dial projection (lon × 4 mod 90)  
+**Validation:** hand-derived table for 5 body pairs; commutativity invariant;
+self-midpoint invariant; pair count (C(7,2)=21); sort order; seam crossing at 0°/360°
+
+### 6.3 Profections
+
+**Canon:** Chris Brennan, Hellenistic Astrology (2017), Ch. 9;
+Vettius Valens, Anthology, Book IV  
+**Formula:** profected ASC = (natal_asc + age × 30°) mod 360°; house = (age mod 12) + 1  
+**Validation:** hand-derived table for 9 cases across ages 0–30; house range guard;
+monthly lords length; first monthly lord matches lord of year; 12-year cycle identity
+
+### 6.4 Planetary Hours
+
+**Canon:** Porphyry, Introduction to Tetrabiblos;
+Hephaestio of Thebes, Apotelesmatika I  
+**Tables validated:** Chaldean sequence (Saturn through Moon), day-ruler index
+for all 7 weekdays, night-hour-1 derivation for Sunday, 24-hour completeness  
+**Key invariant:** (start_idx + 24) mod 7 = next day's start_idx (the "+3 shift" property)
+
+### 6.5 Harmonics
+
+**Canon:** John Addey, Harmonics in Astrology (1976)  
+**Formula:** harmonic_lon = (natal_lon × H) mod 360°  
+**Validation:** hand-derived table for 9 cases; H1 identity invariant; output in [0,360) invariant;
+sorted output; harmonic clamped to ≥ 1
+
+### 6.6 Lots / Arabic Parts
+
+**Canon:** Paulus Alexandrinus, Introductory Matters (~375 CE);
+Vettius Valens, Anthology, Books II–IV  
+**Formula:** Lot = (ASC + Add − Sub) mod 360°; night reversal where specified  
+**Validation:** Part of Fortune day and night formulas; Part of Spirit day and night;
+all longitudes in [0,360); Fortune + Spirit = 2 × ASC complement invariant
+
+### 6.7 Dignities
+
+**Canon:** William Lilly, Christian Astrology (1647), Book I;
+Ptolemy, Tetrabiblos I.17–22  
+**Validation:** 12 essential dignity cases (domicile, exaltation, detriment, fall,
+peregrine) across all 7 classic planets; angular/cadent house bonuses; retrograde
+penalty; cazimi and combust boundaries; mutual reception detection;
+total_score = essential + accidental invariant; traditional planet sort order;
+sect light day/night; hayz conditions
+
+---
+
+## 7. Outstanding Astrology Validation Roadmap
+
+### 7.1 Aspects
 
 **Recommended oracle:** Astro.com chart output or Solar Fire
 **Threshold:** 0.001°
@@ -140,60 +207,7 @@ suite (`tests/unit/test_aspects.py`).
 - Sign boundary behavior (out-of-sign aspects)
 - Orb calculation consistency
 
-### 5.2 Antiscia / Contra-antiscia
-
-**Recommended oracle:** Astro.com `swetest` or Solar Fire
-**Threshold:** 0.001°
-**What to validate:**
-- Antiscia mirror point calculation (0° Cancer / 0° Capricorn axis)
-- Contra-antiscia (0° Aries / 0° Libra axis)
-- Round-trip: antiscia of antiscia = original position
-
-### 5.3 Midpoints
-
-**Recommended oracle:** Astro.com or Solar Fire midpoint tables
-**Threshold:** 0.001°
-**What to validate:**
-- Direct midpoint calculation
-- Indirect midpoint (opposition of direct)
-- Composite chart midpoints
-- 90° dial / 45° dial projections
-- Midpoint trees for a known chart
-
-### 5.4 Lots / Arabic Parts
-
-**Recommended oracle:** Astro.com extended chart (Lots option)
-**Threshold:** 0.001°
-**What to validate:**
-- Part of Fortune (day/night formula)
-- Part of Spirit
-- Part of Eros, Necessity, Courage, Victory, Nemesis
-- Correct day/night chart detection
-- Sect reversal behavior
-
-### 5.5 Dignities
-
-**Recommended oracle:** Published dignity tables (Ptolemy, Lilly, Bonatti)
-**What to validate:**
-- Domicile (rulership) assignment for all 12 signs
-- Exaltation degrees
-- Triplicity rulers (day/night/participating) — multiple tradition variants
-- Ptolemaic terms (Egyptian and Chaldean)
-- Face (decan) assignments
-- Mutual reception detection
-- Peregrine detection
-- Almuten calculation
-
-### 5.6 Harmonics
-
-**Recommended oracle:** Astro.com harmonic chart output
-**Threshold:** 0.001°
-**What to validate:**
-- H4, H5, H7, H9 harmonic positions for known charts
-- Round-trip: H1 = natal position
-- Harmonic aspect detection
-
-### 5.7 Primary Directions
+### 7.2 Primary Directions
 
 **Recommended oracle:** Solar Fire or Janus (with explicit model declaration)
 **Threshold:** 0.01° (technique has inherent model variation)
@@ -206,7 +220,7 @@ suite (`tests/unit/test_aspects.py`).
 - Converse directions
 - Known historical examples (e.g., Lilly's own chart)
 
-### 5.8 Secondary Progressions
+### 7.3 Secondary Progressions
 
 **Recommended oracle:** Astro.com progressed chart
 **Threshold:** 0.01°
@@ -216,7 +230,7 @@ suite (`tests/unit/test_aspects.py`).
 - Progressed lunation cycle
 - Known historical examples
 
-### 5.9 Solar Arc Directions
+### 7.4 Solar Arc Directions
 
 **Recommended oracle:** Astro.com solar arc chart
 **Threshold:** 0.01°
@@ -225,16 +239,7 @@ suite (`tests/unit/test_aspects.py`).
 - All body positions at known solar arc dates
 - Converse solar arcs
 
-### 5.10 Profections
-
-**Recommended oracle:** Astro.com annual profection
-**Threshold:** 0.1° (technique is inherently approximate)
-**What to validate:**
-- Annual profection sign and degree
-- Monthly profection
-- Lord of the year determination
-
-### 5.11 Dashas
+### 7.5 Dashas
 
 **Recommended oracle:** Astro.com Vedic chart (Vimshottari dasha)
 **Threshold:** 1 day (dasha boundaries)
@@ -243,17 +248,7 @@ suite (`tests/unit/test_aspects.py`).
 - Sub-dasha (antardasha) boundaries
 - Correct Moon nakshatra detection at birth
 
-### 5.12 Planetary Hours
-
-**Recommended oracle:** Astro.com planetary hours table or Lunarium
-**Threshold:** 1 minute
-**What to validate:**
-- Day ruler determination
-- Hour ruler sequence (Chaldean order)
-- Hour boundaries from sunrise/sunset
-- Correct behavior at high latitudes
-
-### 5.13 Parans
+### 7.6 Parans
 
 **Current state:** Self-consistency only (cross-checked against Moira
 rise/set-transit engine). This is not external oracle validation.
@@ -264,7 +259,7 @@ rise/set-transit engine). This is not external oracle validation.
 - Latitude sensitivity
 - Orb behavior
 
-### 5.14 Manazil / Lunar Mansions
+### 7.7 Manazil / Lunar Mansions
 
 **Recommended oracle:** Published lunar mansion tables (Ibn Arabi, Picatrix)
 **What to validate:**
