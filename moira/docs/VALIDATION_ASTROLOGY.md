@@ -79,17 +79,22 @@ comparisons, plus invariant and coverage guards.
 **Threshold:** 0.001° (3.6 arcseconds)
 **Test files:**
 - `tests/integration/test_houses_external_reference.py` — **1 passed** (integration guard)
+- `tests/unit/test_polar_houses.py` — **3 passed** (Arctic/Antarctic fallback guard)
 - `scripts/compare_swetest.py --offline` — **3168 iterations, 0 failures**
 
 15 house systems validated: Placidus, Koch, Campanus, Regiomontanus, Porphyry,
 Equal, Whole Sign, Alcabitius, Morinus, Topocentric, Vehlow, Meridian,
 Azimuthal, Krusinski-Pisa, APC.
 
-Stress cases covered: lat=0.0, lat=-89.90, multiple longitudes including
-equatorial and polar edge cases.
+**Stress cases covered:**
+- **Equatorial**: lat=0.0
+- **Polar Edge**: lat=±90.0 and fallback threshold |lat| >= 75.0 (verified fallback to Porphyry)
+- **Deep South**: lat=-89.90
+- **Longitudinal**: Multiple east/west longitudes.
 
 Two systems (Azimuthal, APC) were found genuinely wrong during validation and
-fixed. All 3168 iterations now pass.
+fixed. All 3168 iterations now pass. The 'Test of the Arctic Circle' has confirmed
+that the engine's mathematical safety valves are active and correct.
 
 ---
 

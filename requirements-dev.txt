@@ -4,6 +4,8 @@
 
 # Testing
 pytest>=9.0
+pytest-cov>=6.0
+pytest-xdist>=3.5
 pyyaml>=6.0
 
 # Accuracy validation (Horizons integration tests)

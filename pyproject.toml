@@ -14,7 +14,10 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=9.0",
+    "pytest-cov>=6.0",
+    "pytest-xdist>=3.5",
     "pyyaml>=6.0",
+    "hypothesis>=6.100",
 ]
 
 [tool.pytest.ini_options]

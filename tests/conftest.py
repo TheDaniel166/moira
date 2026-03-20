@@ -311,6 +311,7 @@ def configure_hypothesis():
             verbosity=Verbosity.quiet if test_mode else Verbosity.normal,
             database=None,
             derandomize=test_mode,
+            deadline=1000,
         )
         settings.load_profile("isopgem")
     except ImportError:

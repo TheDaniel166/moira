@@ -119,6 +119,8 @@ class AspectData:
     }
     [/MACHINE_CONTRACT]
     """
+    body1:      str           # name of first body
+    body2:      str           # name of second body
     aspect:     str           # aspect name e.g. "Trine"
     symbol:     str           # Unicode glyph e.g. "△"
     angle:      float         # exact aspect angle (e.g. 120.0)

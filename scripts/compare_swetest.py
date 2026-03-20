@@ -41,7 +41,7 @@ CACHE_PATH = os.path.join(os.path.dirname(__file__), "..", "tests", "fixtures", 
 PASS_THRESHOLD = 1e-3  # degrees (matches Swiss Ephemeris precision field)
 
 # House system letters we support and want to test
-SUPPORTED = set("PKCROEWBMTVXHUY")
+SUPPORTED = set("PKCROEWBMTVXHUYNFLQ")
 
 # ---------------------------------------------------------------------------
 # Download / cache
@@ -219,7 +219,8 @@ def validate(iterations: list[dict]) -> bool:
         sys_names = {"P":"Placidus","K":"Koch","C":"Campanus","R":"Regiomontanus",
                      "O":"Porphyry","E":"Equal","W":"Whole Sign","B":"Alcabitius",
                      "M":"Morinus","T":"Topocentric","V":"Vehlow","X":"Meridian",
-                     "H":"Azimuthal","U":"Krusinski-Pisa","Y":"APC"}
+                     "H":"Azimuthal","U":"Krusinski-Pisa","Y":"APC",
+                     "N":"Sunshine", "F":"Carter", "L":"Pullen SD", "Q":"Pullen SR"}
         name = sys_names.get(sys_letter, sys_letter)
         flag = "YES ✓" if ok else "NO  ✗"
         print(f"  {name:<16} {len(errs):>6} {mx:>10.6f} {mn:>10.6f}  {flag:>5}")
