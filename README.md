@@ -1,68 +1,104 @@
 # Moira
 
-Moira is a pure Python astronomical ephemeris and astrology engine built around JPL DE441 data, modern IAU standards, and a Python 3.14-first codebase.
+> *Moira* — in Greek myth, the goddess who assigns each soul its fate. The one who measures the thread.
 
-It is intended to be a serious standalone repository, not a Swiss Ephemeris wrapper and not a slice of a larger mixed project.
+Moira is a pure Python astronomical ephemeris and astrology engine. It is built on JPL DE441, the IAU 2000A/2006 standards, and a Python 3.14-first codebase. It is not a wrapper around Swiss Ephemeris. It does not depend on any C extension. It is a standalone engine with its own models, its own validation surfaces, and access to data and capabilities that did not exist when the dominant tools in this space were written.
 
-## What Moira Covers
+Swiss Ephemeris was built in 1997. The world has changed considerably since then.
 
-- Planetary, lunar, and asteroid positions
-- Tropical and sidereal astrology workflows
-- Houses, aspects, lots, dignities, progressions, transits, and synastry
-- Eclipse search, classification, and local circumstances
-- Fixed stars, parans, occultations, and related research tooling
-- Validation utilities, fixtures, and reference-driven test suites
+---
 
-## Project Principles
+## The Case for a New Engine
 
-- Pure Python, with readable mathematical code and explicit validation surfaces
-- Python 3.14 syntax and standards are the baseline
-- `native` Moira models are authoritative inside the engine
-- Compatibility modes exist for translation and benchmarking, not as governing truth
-- Large runtime kernels are required for full capability, but are intentionally not committed
+In 1997, the Hipparcos catalog contained 118,218 stars. Gaia DR3 (2022) contains **1.812 billion** — with parallax, proper motion, and spectral data for most of them. In 1997, roughly 10,000 asteroids were numbered. Today the Minor Planet Center has **887,103**. Eris, Sedna, Haumea, Makemake, Gonggong — the entire trans-Neptunian landscape — were unknown. The interstellar objects ʻOumuamua (2017), Borisov (2019), and 3I/ATLAS (2025) — visitors from other star systems, passing through our solar system with computable ecliptic positions — did not exist in any catalog.
 
-## Repository Layout
+Swiss Ephemeris is a fixed data file. It cannot compute a body it was not pre-built for. It cannot access IERS real-time Earth orientation data. It has no pathway to Gaia parallax, to on-demand orbit integration, to the asteroid mythology database that now spans every culture on Earth.
 
-```text
-moira/                  Core engine and public API
-moira/docs/             Architecture, validation, and model doctrine
-moira/data/             Small reference/model data files
-scripts/                Diagnostics, validation, and fixture builders
-tests/                  Unit, integration, fixtures, snapshots, and tools
-sefstars.txt            Fixed-star catalog used by star-related features
-```
+Moira can do all of these things. Not as future work — as the design premise.
+
+See [`moira/docs/BEYOND_SWISS_EPHEMERIS.md`](moira/docs/BEYOND_SWISS_EPHEMERIS.md) for the full account of what is now possible that was not in 1997.
+
+---
+
+## What Moira Computes
+
+**Positions and bodies**
+- Planets, Moon, Sun — geocentric and topocentric, with light-time, aberration, and relativistic deflection
+- 887,000+ asteroids via JPL Horizons and SPK kernels
+- Centaurs (Chiron, Pholus, Chariklo, Asbolus, Hylonome) from dedicated SPK kernels
+- Trans-Neptunian objects: Eris, Sedna, Quaoar, Makemake, Haumea, Gonggong, Varuna, Ixion, Orcus
+- Fixed stars with proper motion, Gaia parallax, and spectral color mapped to classical elemental quality
+- Interstellar objects — bodies with no return, computed for any moment of their passage
+
+**Chart calculations**
+- Houses: Placidus, Koch, Regiomontanus, Campanus, Equal, Whole Sign, and more
+- Vertex and Anti-Vertex; Arabic Parts (499 traditional formulas); antiscia and contra-antiscia
+- Aspects with applying/separating state, declination parallels and contra-parallels
+- Dignities: domicile, exaltation, triplicity, term, face, mutual reception, hayz
+- Hermetic and Ptolemaic decans with ruling stars; planetary hours
+
+**Predictive techniques**
+- Secondary, tertiary, and solar arc progressions
+- Solar, lunar, and generic planet returns
+- Transits and synastry; primary directions (Placidus semi-arc, mundane)
+- Annual profections, Firdaria, Vimshottari Dasha with nakshatra positions
+- Zodiacal releasing; Hyleg and Alcocoden
+
+**Astronomy**
+- Eclipse search, classification, and local circumstances — solar and lunar
+- Eclipse Saros series with heptagonal vertex labelling
+- Heliacal rising and setting of fixed stars
+- Parans (paranatellonta) for stars and planets
+- Astrocartography lines for any body — including Sedna, Eris, or a newly named asteroid
+- Galactic coordinate frame for all bodies; galactic center, anti-center, Super-Galactic Center
+- Near-Earth Object proximity events with geocentric distance and angular velocity
+
+**Precision infrastructure**
+- IAU 2000A nutation — full 1365-term series (Swiss Ephemeris uses a truncated version by default)
+- IAU 2006 P03 precession
+- Hybrid ΔT model: IERS Bulletin data for recent epochs, Espenak–Meeus polynomials for history
+- WGS-84 topocentric corrections
+- Tropical and sidereal workflows — Lahiri, Fagan–Bradley, True Chitrapaksha, and others
+
+---
 
 ## Requirements
 
 - Python `3.14`
-- `jplephem`
-- Local JPL kernel files for full ephemeris-backed functionality
+- `jplephem >= 2.24`
+- Local JPL kernel files (see below)
 
-The repo includes a local virtual environment workflow:
+---
+
+## Setup
 
 ```powershell
 py -3.14 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 ```
 
+---
+
 ## Kernel Files
 
-Large ephemeris files are ignored by Git and must be supplied locally.
+Large ephemeris files are not committed to the repository. Place them in `kernels/`:
 
-Expected examples:
+| File | Contents |
+|---|---|
+| `kernels/de441.bsp` | JPL planetary ephemeris |
+| `kernels/asteroids.bsp` | Numbered asteroid ephemerides |
+| `kernels/centaurs.bsp` | Centaur body SPK kernels |
+| `kernels/sb441-n373s.bsp` | Small body supplement |
+| `kernels/minor_bodies.bsp` | Additional minor bodies |
 
-- `kernels/de441.bsp`
-- `kernels/asteroids.bsp`
-- `kernels/centaurs.bsp`
-- `kernels/sb441-n373s.bsp`
+Available from JPL Horizons and the JPL FTP server. Excluded from version control due to size.
 
-These files are intentionally excluded from version control because they are too large for a normal repository workflow.
+---
 
 ## Quick Start
 
 ```python
 from datetime import datetime, timezone
-
 from moira import Moira
 
 m = Moira()
@@ -72,54 +108,58 @@ print(chart.planets["Sun"].longitude)
 print(chart.planets["Moon"].longitude)
 ```
 
+---
+
 ## Testing
 
-Moira ships with a real standalone test environment.
-
-Useful commands:
-
 ```powershell
-.\.venv\Scripts\python.exe -m pytest tests\unit --collect-only -q
+# All unit tests
+.\.venv\Scripts\python.exe -m pytest tests\unit -q
+
+# Specific module
 .\.venv\Scripts\python.exe -m pytest tests\unit\test_sidereal.py -q
+
+# Verbose
 .\.venv\Scripts\python.exe -m pytest tests\unit\test_eclipse_helpers.py -vv
-.\.venv\Scripts\python.exe -m pytest tests\unit\test_moira_port_compliance.py -q
 ```
 
-Notes:
+Some tests require local kernel files. Eclipse-heavy tests are intentionally slow. Integration and network-marked tests require optional packages or outbound access.
 
-- Some tests require local ephemeris files
-- Some integration tests require optional external packages or network-marked execution
-- Eclipse-heavy tests can be slow by design
+---
 
-## Documentation
+## Repository Layout
 
-Important internal docs live under [moira/docs](moira/docs):
+```
+moira/                  Core engine and public API
+moira/docs/             Architecture, validation, and model doctrine
+moira/data/             Small reference and model data files
+moira/constellations/   34 constellation star groups
+moira/compat/           Translation and benchmarking compatibility modes
+kernels/                Local JPL kernel files (not committed)
+scripts/                Diagnostics, validation runners, and fixture builders
+tests/                  Unit, integration, property-based, and snapshot tests
+```
 
-- `ECLIPSE_MODEL_STANDARD.md`
-- `VALIDATION.md`
-- `VALIDATION_ASTRONOMY.md`
-- `DELTA_T_HYBRID_MODEL.md`
-- `BEYOND_SWISS_EPHEMERIS.md`
+---
 
-## Git Policy
+## Internal Documentation
 
-The repo intentionally ignores:
+| Document | Contents |
+|---|---|
+| [`BEYOND_SWISS_EPHEMERIS.md`](moira/docs/BEYOND_SWISS_EPHEMERIS.md) | Capabilities impossible before Gaia, Horizons, and modern Python |
+| [`MOIRA_ROADMAP.md`](moira/docs/MOIRA_ROADMAP.md) | Feature backlog and mathematical accuracy register |
+| [`ECLIPSE_MODEL_STANDARD.md`](moira/docs/ECLIPSE_MODEL_STANDARD.md) | Eclipse classification and local circumstances model |
+| [`DELTA_T_HYBRID_MODEL.md`](moira/docs/DELTA_T_HYBRID_MODEL.md) | ΔT model: IERS data, polynomials, and hybrid strategy |
+| [`VALIDATION.md`](moira/docs/VALIDATION.md) | Validation methodology and reference sources |
+| [`VALIDATION_ASTRONOMY.md`](moira/docs/VALIDATION_ASTRONOMY.md) | Astronomical validation against JPL Horizons |
 
-- dot-directories such as local virtualenvs and tool caches
-- `.cover` files and other local test artifacts
-- Python cache/build output
-- large binary kernel files
-
-That keeps the repository focused on source, docs, fixtures, and reproducible tests.
+---
 
 ## Status
 
-This repository is now separated as a standalone Moira project with:
+Standalone repository. Sub-arcsecond planetary accuracy certified against JPL Horizons. Active development — see the roadmap.
 
-- its own Git history
-- its own Python 3.14 environment
-- Moira-only docs, scripts, and tests
-- no committed kernel blobs
+---
 
 ## License
 
