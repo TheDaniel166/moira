@@ -1,0 +1,72 @@
+"""
+Ophiuchus Constellation Oracle — moira/constellations/stars_ophiuchus.py
+
+Archetype: Oracle
+Purpose: Provides named constants and per-star position functions for stars
+         in Ophiuchus (IAU: Oph).
+
+Boundary declaration
+--------------------
+Owns:
+    - Named string constants for each catalogued star in Ophiuchus.
+    - OPHIUCHUS_STAR_NAMES mapping (constant → canonical name).
+    - ophiuchus_star_at() dispatcher.
+    - Per-star convenience functions (rasalhague_at, celbalrai_at, …).
+    - list_ophiuchus_stars() / available_ophiuchus_stars() introspection.
+Delegates:
+    - All position computation to moira.fixed_stars.fixed_star_at.
+    - Catalog availability checks to moira.fixed_stars.list_stars.
+
+Import-time side effects: None.
+
+External dependency assumptions:
+    - sefstars.txt must be present before any position query is made.
+    - No Qt, no database, no OS threads.
+
+Public surface / exports:
+    RASALHAGUE, CELBALRAI, AL_DURAJAH, YED_PRIOR
+    OPHIUCHUS_STAR_NAMES
+    ophiuchus_star_at() and all per-star _at() functions
+    list_ophiuchus_stars(), available_ophiuchus_stars()
+
+Stars sourced from sefstars.txt via moira.fixed_stars.
+"""
+from ..fixed_stars import fixed_star_at, StarPosition, list_stars
+
+RASALHAGUE  = "Rasalhague"
+CELBALRAI   = "Celbalrai"
+AL_DURAJAH  = "Al Durajah"
+YED_PRIOR   = "Yed Prior"
+
+OPHIUCHUS_STAR_NAMES = {
+    RASALHAGUE: "Rasalhague",
+    CELBALRAI:  "Celbalrai",
+    AL_DURAJAH: "Al Durajah",
+    YED_PRIOR:  "Yed Prior",
+}
+
+
+def ophiuchus_star_at(name: str, jd_tt: float) -> StarPosition:
+    return fixed_star_at(name, jd_tt)
+
+
+def rasalhague_at(jd_tt: float) -> StarPosition:
+    return ophiuchus_star_at(RASALHAGUE, jd_tt)
+
+def celbalrai_at(jd_tt: float) -> StarPosition:
+    return ophiuchus_star_at(CELBALRAI, jd_tt)
+
+def al_durajah_at(jd_tt: float) -> StarPosition:
+    return ophiuchus_star_at(AL_DURAJAH, jd_tt)
+
+def yed_prior_at(jd_tt: float) -> StarPosition:
+    return ophiuchus_star_at(YED_PRIOR, jd_tt)
+
+
+def list_ophiuchus_stars() -> list[str]:
+    return list(OPHIUCHUS_STAR_NAMES.values())
+
+
+def available_ophiuchus_stars() -> list[str]:
+    catalog = set(list_stars())
+    return [name for name in OPHIUCHUS_STAR_NAMES.values() if name in catalog]

@@ -1,0 +1,338 @@
+"""
+Moira — spk_reader.py
+The Gate to the DE441 Kernel: governs all binary SPK file access for the
+Moira ephemeris engine.
+
+Boundary: owns the sole point of contact between Moira and the jplephem
+library. All kernel I/O is funnelled through this module. No other module
+may hold a reference to the jplephem SPK object or open the kernel file
+directly.
+
+Public surface:
+    SpkReader, get_reader(), set_kernel_path()
+
+Import-time side effects: None (kernel is opened lazily on first
+    SpkReader instantiation, not at import time).
+
+External dependency assumptions:
+    - jplephem must be importable (pip install jplephem).
+    - kernels/de441.bsp must exist on disk before SpkReader is instantiated.
+"""
+
+import os
+from pathlib import Path
+from functools import lru_cache
+
+# jplephem is used solely as a binary SPK file reader
+try:
+    from jplephem.spk import SPK as _SPK
+except ImportError as exc:  # pragma: no cover
+    raise ImportError(
+        "Moira requires jplephem to read DE441.bsp. "
+        "Install it with: pip install jplephem"
+    ) from exc
+
+# Type alias (defined here to avoid importing coordinates in constants)
+type Vec3 = tuple[float, float, float]
+
+_DEFAULT_KERNEL_PATH = Path(__file__).parent.parent / "kernels" / "de441.bsp"
+
+
+class SpkReader:
+    """
+    RITE: The Gate to the DE441 Kernel
+
+    THEOREM: SpkReader governs exclusive read access to the JPL DE441 binary
+        SPK kernel, serving raw barycentric state vectors to all computation
+        pillars.
+
+    RITE OF PURPOSE:
+        SpkReader is the single authorised gateway between Moira's pure-Python
+        astronomy layer and the binary DE441 ephemeris file. Without it, no
+        planetary position can be computed. It exists to enforce the invariant
+        that exactly one file handle to the kernel is open at any time, and
+        that all segment-selection logic (including the two-epoch DE441
+        structure) is encapsulated in one place rather than scattered across
+        callers.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Open and hold the DE441 SPK kernel file handle for the lifetime
+              of the instance.
+            - Select the correct kernel segment for a given (center, target, jd)
+              triple, correctly handling DE441's split two-epoch layout.
+            - Serve barycentric rectangular position vectors (km, ICRF) to
+              planets.py and nodes.py.
+            - Serve position-and-velocity pairs (km, km/day) when requested.
+            - Support context-manager usage for deterministic resource cleanup.
+        Non-responsibilities:
+            - Does not perform coordinate transforms (ecliptic, equatorial,
+              topocentric). That is the responsibility of coordinates.py.
+            - Does not convert time systems (TT → UTC, JD → calendar). That
+              is the responsibility of julian.py.
+            - Does not cache computed positions. Callers own their own caches.
+            - Does not validate that NAIF body IDs are astronomically
+              meaningful.
+        Dependencies:
+            - jplephem must be importable at module load time.
+            - The kernel file at the given path must exist before __init__
+              is called.
+        Structural invariants:
+            - self._kernel is always a valid open jplephem SPK object while
+              the instance is alive and close() has not been called.
+            - self._path always reflects the path from which the kernel was
+              opened.
+        Behavioral invariants:
+            - position() and position_and_velocity() are pure reads; they
+              never modify kernel state.
+        Side effects:
+            - Opens a file handle to de441.bsp on construction.
+            - Closes that file handle on close() or __exit__.
+        Failure behavior:
+            - Raises FileNotFoundError if the kernel path does not exist at
+              construction time.
+            - Raises KeyError if no segment exists for the requested
+              (center, target) pair.
+            - close() silently swallows all exceptions to allow safe use in
+              finally blocks.
+        Performance envelope:
+            - Each position() call performs one binary segment lookup and one
+              Chebyshev polynomial evaluation. Typical latency is < 1 ms.
+            - DE441 covers JD 2816787.5 (−13200) through 8199721.5 (+17191).
+
+    LAW OF THE DATA PATH:
+        State ownership: Owns the open SPK kernel file handle and the jplephem
+            SPK object. No other module may hold a reference to the kernel object.
+        Mutation rules: The kernel is opened lazily on first call to get_state().
+            Once open, the file handle is never closed during normal operation.
+        Persistence: Kernel state persists for the lifetime of the SpkReader
+            instance. There is no cache invalidation mechanism.
+        Cross-pillar boundaries: Serves raw barycentric state vectors to
+            planets.py and nodes.py. No other pillar accesses the kernel directly.
+
+    Canon: None (No applicable canon)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.spk_reader.SpkReader",
+      "risk": "high",
+      "api": {
+        "frozen": ["position", "position_and_velocity", "has_segment", "close",
+                   "path", "__enter__", "__exit__"],
+        "internal": ["_segment_for", "_kernel", "_path"]
+      },
+      "state": {"mutable": true, "owners": ["SpkReader"]},
+      "effects": {
+        "signals_emitted": [],
+        "io": ["de441.bsp (read)"]
+      },
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
+    """
+
+    def __init__(self, kernel_path: str | Path | None = None) -> None:
+        path = Path(kernel_path) if kernel_path else _DEFAULT_KERNEL_PATH
+        if not path.exists():
+            raise FileNotFoundError(
+                f"DE441 kernel not found at {path}. "
+                "Ensure de441.bsp is in the kernels/ directory."
+            )
+        self._path = path
+        self._kernel = _SPK.open(str(path))
+
+    # ------------------------------------------------------------------
+    # Context manager support
+    # ------------------------------------------------------------------
+
+    def __enter__(self) -> "SpkReader":
+        """Return self to support use as a context manager."""
+        return self
+
+    def __exit__(self, *_) -> None:
+        """Close the kernel file handle on context exit."""
+        self.close()
+
+    def close(self) -> None:
+        """Release the kernel file handle."""
+        try:
+            self._kernel.close()
+        except Exception:
+            pass
+
+    # ------------------------------------------------------------------
+    # Core read method
+    # ------------------------------------------------------------------
+
+    def _segment_for(self, center: int, target: int, jd: float):
+        """
+        Return the kernel segment covering *jd* for the given (center, target) pair.
+
+        DE441 stores each body across two epochs (−13200→1969 and 1969→17191).
+        jplephem's kernel[c, t] returns the last matching segment, which is
+        always the modern epoch — incorrect for historical dates. This method
+        iterates all segments and returns the one whose date range covers *jd*.
+
+        Args:
+            center: NAIF body ID of the reference body.
+            target: NAIF body ID of the body whose segment is needed.
+            jd: Julian Day in Terrestrial Time (TT).
+
+        Returns:
+            The jplephem segment object whose start_jd ≤ jd ≤ end_jd.
+
+        Raises:
+            KeyError: If no segment exists for the (center, target) pair.
+
+        Side effects:
+            None.
+        """
+        matches = [
+            seg for seg in self._kernel.segments
+            if seg.center == center and seg.target == target
+        ]
+        if not matches:
+            raise KeyError(f"No segment found for center={center}, target={target}")
+
+        # Prefer the segment whose range contains jd
+        for seg in matches:
+            if seg.start_jd <= jd <= seg.end_jd:
+                return seg
+
+        # Fall back to the segment with the nearest range (handles edge cases)
+        return min(matches, key=lambda s: min(abs(s.start_jd - jd), abs(s.end_jd - jd)))
+
+    def position(self, center: int, target: int, jd: float) -> Vec3:
+        """
+        Return the position of *target* relative to *center* at *jd* (TT).
+
+        Parameters
+        ----------
+        center : NAIF body ID of the reference body
+        target : NAIF body ID of the body whose position is desired
+        jd     : Julian Day in Terrestrial Time (TT)
+
+        Returns
+        -------
+        (x, y, z) in kilometres, ICRF frame
+
+        Raises:
+            KeyError: If no kernel segment covers the requested body pair.
+
+        Side effects:
+            None.
+        """
+        segment = self._segment_for(center, target, jd)
+        pos = segment.compute(jd)
+        return (float(pos[0]), float(pos[1]), float(pos[2]))
+
+    def position_and_velocity(
+        self, center: int, target: int, jd: float
+    ) -> tuple[Vec3, Vec3]:
+        """
+        Return position and velocity of *target* relative to *center* at *jd* (TT).
+
+        Args:
+            center: NAIF body ID of the reference body.
+            target: NAIF body ID of the body whose state is desired.
+            jd: Julian Day in Terrestrial Time (TT).
+
+        Returns:
+            A two-tuple ``((x, y, z), (vx, vy, vz))`` where positions are in
+            kilometres (ICRF) and velocities are in kilometres per day.
+
+        Raises:
+            KeyError: If no kernel segment covers the requested body pair.
+
+        Side effects:
+            None.
+        """
+        segment = self._segment_for(center, target, jd)
+        pos, vel = segment.compute_and_differentiate(jd)
+        return (
+            (float(pos[0]), float(pos[1]), float(pos[2])),
+            (float(vel[0]), float(vel[1]), float(vel[2])),
+        )
+
+    def has_segment(self, center: int, target: int) -> bool:
+        """Return True if the kernel contains a (center, target) segment."""
+        try:
+            _ = self._kernel[center, target]
+            return True
+        except KeyError:
+            return False
+
+    @property
+    def path(self) -> Path:
+        """Path to the open SPK kernel file."""
+        return self._path
+
+    def __repr__(self) -> str:
+        """Return a concise string representation showing the kernel filename."""
+        return f"SpkReader('{self._path.name}')"
+
+
+# ---------------------------------------------------------------------------
+# Module-level singleton (lazy-initialised)
+# ---------------------------------------------------------------------------
+
+_reader: SpkReader | None = None
+_reader_path: Path | None = None
+
+
+def get_reader(kernel_path: str | Path | None = None) -> SpkReader:
+    """
+    Return the module-level SpkReader singleton, initialising it on first call.
+
+    Subsequent calls return the cached instance unless a different kernel path
+    is requested, in which case the existing reader is closed and a new one is
+    opened.
+
+    Args:
+        kernel_path: Path to the SPK kernel file. Defaults to
+            ``kernels/de441.bsp`` relative to the workspace root.
+
+    Returns:
+        The active SpkReader singleton.
+
+    Raises:
+        FileNotFoundError: If the kernel file does not exist at the given path.
+
+    Side effects:
+        - May open a new file handle to de441.bsp on first call or when the
+          path changes.
+        - May close the previous file handle when the path changes.
+    """
+    global _reader, _reader_path
+    path = Path(kernel_path) if kernel_path else _DEFAULT_KERNEL_PATH
+    if _reader is None or _reader_path != path:
+        if _reader is not None:
+            _reader.close()
+        _reader = SpkReader(path)
+        _reader_path = path
+    return _reader
+
+
+def set_kernel_path(path: str | Path) -> None:
+    """
+    Point Moira at a different SPK kernel file.
+
+    Closes any existing reader and clears the singleton so that the next call
+    to get_reader() opens a fresh SpkReader against the new path.
+
+    Args:
+        path: Filesystem path to the replacement SPK kernel file.
+
+    Side effects:
+        - Closes the current SpkReader file handle if one is open.
+        - Resets the module-level singleton to None.
+    """
+    global _reader, _reader_path
+    if _reader is not None:
+        _reader.close()
+        _reader = None
+    _reader_path = Path(path)

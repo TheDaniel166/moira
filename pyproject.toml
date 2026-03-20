@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=80", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "moira"
+version = "0.1.0"
+description = "Pure Python ephemeris and astrology engine built on JPL DE441 and SPK kernels."
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "jplephem>=2.24",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0",
+    "pyyaml>=6.0",
+]
+
+[tool.pytest.ini_options]
+testpaths    = ["tests"]
+pythonpath   = ["."]          # makes `import moira` work from repo root
+addopts      = "-ra -q"
+markers = [
+    "unit:            fast, isolated unit tests",
+    "integration:     tests that exercise multiple modules or use de441.bsp",
+    "network:         tests that need outbound network access",
+    "slow:            tests that take more than ~5 seconds",
+    "requires_ephemeris: tests that need de441.bsp to be present",
+    "property:        property-based tests (Hypothesis)",
+    "template:        template/boilerplate tests (opt-in via ISOPGEM_RUN_TEMPLATES=1)",
+    "experimental:    experimental tests (opt-in via ISOPGEM_RUN_EXPERIMENTAL=1)",
+    "parallel:        safe to run in parallel with pytest-xdist",
+    "serial:          must run serially (global state / file locks)",
+]

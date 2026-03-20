@@ -1,0 +1,526 @@
+"""
+Moira — Sidereal Engine
+========================
+
+Archetype: Engine
+
+Purpose
+-------
+Governs ayanamsa computation for sidereal (Vedic) astrology, providing
+tropical-to-sidereal and sidereal-to-tropical longitude conversion across
+30 named ayanamsa systems, and nakshatra position computation for the
+27 Vedic lunar mansions.
+
+Boundary declaration
+--------------------
+Owns: ayanamsa system name constants, J2000 reference values, drift terms,
+      star-anchored ayanamsa resolution, tropical/sidereal conversion,
+      nakshatra span arithmetic, and the ``Ayanamsa`` and
+      ``NakshatraPosition`` vessels.
+Delegates: general precession to ``moira.precession``,
+           nutation to ``moira.obliquity``,
+           fixed star positions to ``moira.fixed_stars``,
+           Julian century arithmetic to ``moira.julian``.
+
+Import-time side effects: None
+
+External dependency assumptions
+--------------------------------
+No Qt main thread required. No database access. Star-anchored ayanamsas
+require the fixed star catalog (``sefstars.txt``) to be accessible; falls
+back to polynomial approximation if the catalog is absent.
+
+Public surface
+--------------
+``Ayanamsa``               — Warden of ayanamsa system name constants.
+``NakshatraPosition``      — vessel for a body's nakshatra position.
+``ayanamsa``               — compute ayanamsa value for a JD and system.
+``tropical_to_sidereal``   — convert tropical longitude to sidereal.
+``sidereal_to_tropical``   — convert sidereal longitude to tropical.
+``list_ayanamsa_systems``  — return all systems with their J2000 values.
+``nakshatra_of``           — compute nakshatra position for a longitude.
+``all_nakshatras_at``      — compute nakshatras for a full position dict.
+"""
+
+import math
+from dataclasses import dataclass
+from .constants import J2000, JULIAN_CENTURY
+from .julian import centuries_from_j2000
+from .precession import general_precession_in_longitude
+from .obliquity import nutation
+
+
+# ---------------------------------------------------------------------------
+# Ayanamsa system identifiers
+# ---------------------------------------------------------------------------
+
+class Ayanamsa:
+    """
+    RITE: The Warden of Zodiacs — the canonical namespace for ayanamsa systems.
+
+    THEOREM: Provides string constants for all 30 supported ayanamsa system
+    names and an ``ALL`` list for iteration.
+
+    RITE OF PURPOSE:
+        Serves the Sidereal Engine as the authoritative name registry for
+        ayanamsa systems. Without this Warden, callers would use ad-hoc
+        string literals that diverge across the codebase, breaking lookup
+        against ``_AYANAMSA_AT_J2000`` and causing silent wrong-system errors.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Declare one class-level string constant per ayanamsa system.
+            - Expose ``ALL`` as an ordered list of all 30 system name strings.
+        Non-responsibilities:
+            - Does not compute ayanamsa values.
+            - Does not validate that a name is present in the reference table.
+        Dependencies:
+            - None. Pure namespace class with no runtime dependencies.
+        Structural invariants:
+            - ``ALL`` contains exactly 30 entries in canonical order.
+        Succession stance: terminal — not designed for subclassing.
+
+    Canon: Lahiri Commission (1955); Swiss Ephemeris documentation;
+           Fagan & Bradley, "Primer of Sidereal Astrology" (1967).
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.sidereal.Ayanamsa",
+        "risk": "low",
+        "api": {
+            "public_methods": [],
+            "public_attributes": ["LAHIRI", "FAGAN_BRADLEY", "KRISHNAMURTI", "ALL"]
+        },
+        "state": {
+            "mutable": false,
+            "fields": []
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_computation",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": [],
+            "policy": "no runtime failures — pure constants"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "kiro"
+    }
+    [/MACHINE_CONTRACT]
+    """
+    LAHIRI          = "Lahiri"           # Indian national standard
+    FAGAN_BRADLEY   = "Fagan-Bradley"    # Western sidereal standard
+    KRISHNAMURTI    = "Krishnamurti"     # KP system
+    RAMAN           = "Raman"
+    YUKTESHWAR      = "Yukteshwar"
+    DJWHAL_KHUL     = "Djwhal Khul"      # Theosophical
+    TRUE_CHITRAPAKSHA = "True Chitrapaksha"  # Chitra star-based
+    DE_LUCE         = "De Luce"
+    USHA_SHASHI     = "Usha-Shashi"
+    SASSANIAN       = "Sassanian"
+    BHASIN          = "Bhasin"
+    KUGLER_1        = "Babylonian (Kugler 1)"
+    KUGLER_2        = "Babylonian (Kugler 2)"
+    KUGLER_3        = "Babylonian (Kugler 3)"
+    HUBER           = "Babylonian (Huber)"
+    ETA_PISCIUM     = "Babylonian (Eta Piscium)"
+    ALDEBARAN_15_TAU = "Aldebaran (15 Tau)"
+    GALACTIC_0_SAG  = "Galactic Center (0 Sag)"
+    GALACTIC_5_SAG  = "Galactic Center (5 Sag)"
+    HIPPARCHOS      = "Hipparchos"
+    SURYASIDDHANTA  = "Suryasiddhanta"
+    SURYASIDDHANTA_MSUN = "Suryasiddhanta (Mean Sun)"
+    ARYABHATA       = "Aryabhata"
+    ARYABHATA_MSUN  = "Aryabhata (Mean Sun)"
+    SS_REVATI       = "SS Revati"
+    SS_CITRA        = "SS Citra"
+    TRUE_REVATI     = "True Revati"
+    TRUE_PUSHYA     = "True Pushya"
+    GALCENT_RG_BRAND = "Galactic Center (RGB)"
+    GALCENT_COCHRANE = "Galactic Center (Cochrane)"
+
+    ALL = [
+        LAHIRI, FAGAN_BRADLEY, KRISHNAMURTI, RAMAN,
+        YUKTESHWAR, DJWHAL_KHUL, TRUE_CHITRAPAKSHA,
+        DE_LUCE, USHA_SHASHI, SASSANIAN, BHASIN,
+        KUGLER_1, KUGLER_2, KUGLER_3, HUBER,
+        ETA_PISCIUM, ALDEBARAN_15_TAU,
+        GALACTIC_0_SAG, GALACTIC_5_SAG,
+        HIPPARCHOS, SURYASIDDHANTA, SURYASIDDHANTA_MSUN,
+        ARYABHATA, ARYABHATA_MSUN, SS_REVATI, SS_CITRA,
+        TRUE_REVATI, TRUE_PUSHYA, GALCENT_RG_BRAND,
+        GALCENT_COCHRANE,
+    ]
+
+
+# ---------------------------------------------------------------------------
+# Ayanamsa values at J2000.0 (degrees) — standard reference values
+# Annual precession ≈ 50.2388″/year = 0.013955°/year
+# Each system defines its own epoch offset.
+# ---------------------------------------------------------------------------
+
+# Reference: Astro-Databank, Swiss Ephemeris documentation, Lahiri Commission
+_AYANAMSA_AT_J2000: dict[str, float] = {
+    # Swiss-compatible J2000 anchors back-solved from Astro.com swetest output
+    # at 2000-01-01 00:00 UT with -nonut, while retaining Moira's precession model.
+    Ayanamsa.LAHIRI:            23.857092317461543,
+    Ayanamsa.FAGAN_BRADLEY:     24.740299956350434,
+    Ayanamsa.KRISHNAMURTI:      23.76024001190599,
+    Ayanamsa.RAMAN:             22.410791011905985,
+    Ayanamsa.YUKTESHWAR:        22.478803011905985,
+    Ayanamsa.DJWHAL_KHUL:       28.359678595239323,
+    Ayanamsa.TRUE_CHITRAPAKSHA: 23.83996870635043,
+    Ayanamsa.DE_LUCE:           27.815752761905987,
+    Ayanamsa.USHA_SHASHI:       20.057541011905986,
+    Ayanamsa.SASSANIAN:         19.9929593730171,
+    Ayanamsa.BHASIN:            22.76213701190599,
+    Ayanamsa.KUGLER_1:          23.5336398730171,
+    Ayanamsa.KUGLER_2:          24.9336398730171,
+    Ayanamsa.KUGLER_3:          25.7836398730171,
+    Ayanamsa.HUBER:             24.7336398730171,
+    Ayanamsa.ETA_PISCIUM:       24.522527928572654,
+    Ayanamsa.ALDEBARAN_15_TAU:  24.7589238730171,
+    Ayanamsa.GALACTIC_0_SAG:    26.846036011905987,
+    Ayanamsa.GALACTIC_5_SAG:    31.846036011905987,
+    Ayanamsa.HIPPARCHOS:        20.247788095239322,
+    Ayanamsa.SURYASIDDHANTA:    20.89505884523932,
+    Ayanamsa.SURYASIDDHANTA_MSUN: 20.680424900794875,
+    Ayanamsa.ARYABHATA:         20.89505973412821,
+    Ayanamsa.ARYABHATA_MSUN:    20.65742734523932,
+    Ayanamsa.SS_REVATI:         20.1033883730171,
+    Ayanamsa.SS_CITRA:          23.005763289683763,
+    Ayanamsa.TRUE_REVATI:       20.0452116230171,
+    Ayanamsa.TRUE_PUSHYA:       22.727067234128207,
+    Ayanamsa.GALCENT_RG_BRAND:  22.46909498412821,
+    Ayanamsa.GALCENT_COCHRANE:  356.846036011906,
+}
+
+# Small Swiss-compatibility drift terms for systems whose historical motion
+# is not reproduced closely enough by the generic longitude precession alone.
+# Units: degrees per Julian century from J2000.0.
+_AYANAMSA_DRIFT_PER_CENTURY: dict[str, float] = {
+    Ayanamsa.GALACTIC_0_SAG:    -0.0017343906255857713,
+    Ayanamsa.GALACTIC_5_SAG:    -0.0017343906255857713,
+    Ayanamsa.GALCENT_COCHRANE:  -0.001734390625587667,
+    Ayanamsa.GALCENT_RG_BRAND:  -0.0017343906255857713,
+    Ayanamsa.TRUE_CHITRAPAKSHA: -0.0030344397134131097,
+    Ayanamsa.TRUE_PUSHYA:        0.0015419877388162119,
+    Ayanamsa.TRUE_REVATI:        0.0048149641721038725,
+}
+
+# ---------------------------------------------------------------------------
+# Star-anchored ayanamsas
+# Each entry: ayanamsa_name → (star_catalog_name, target_sidereal_longitude)
+# The ayanamsa is computed as:  star_tropical_lon - target_sidereal_lon
+# ---------------------------------------------------------------------------
+
+_STAR_ANCHORED: dict[str, tuple[str, float]] = {
+    # Chitrapaksha / True Lahiri: Spica (α Virginis / Chitra) at 180° sidereal
+    Ayanamsa.TRUE_CHITRAPAKSHA: ("Spica",     180.0),
+    # Revati: ζ Piscium at 0° Aries sidereal (= 359° → mod 360 = 359° or 0°)
+    Ayanamsa.TRUE_REVATI:       ("Revati",      0.0),
+    # Aldebaran at 15° Taurus sidereal (45°)
+    Ayanamsa.ALDEBARAN_15_TAU:  ("Aldebaran",  45.0),
+    # Pushya-paksha: δ Cancri (Asellus Australis) at 16°40' Cancer sidereal (106.667°)
+    Ayanamsa.TRUE_PUSHYA:       ("Asellus Australis", 106.667),
+}
+
+
+def _star_anchored_ayanamsa(system: str, jd: float) -> float:
+    """
+    Compute a star-anchored ayanamsa from the actual apparent tropical
+    longitude of the anchor star.
+
+    ayanamsa = star_tropical_longitude − target_sidereal_longitude
+
+    Falls back to the polynomial approximation if the star is not found
+    in the fixed-star catalog (e.g. sefstars.txt not present).
+    """
+    from .fixed_stars import fixed_star_at
+    from .julian import ut_to_tt, decimal_year
+    from .planets import _approx_year
+
+    star_name, target_sid = _STAR_ANCHORED[system]
+
+    try:
+        # fixed_star_at expects JD in TT; difference from UT is ~1 min, negligible
+        # for proper motion but we compute it correctly anyway
+        year, month, *_ = _approx_year(jd)
+        jd_tt = ut_to_tt(jd, decimal_year(year, month))
+        star = fixed_star_at(star_name, jd_tt)
+        return (star.longitude - target_sid) % 360.0
+    except Exception:
+        # Star not in catalog — fall back to polynomial
+        base = _AYANAMSA_AT_J2000[system]
+        dpsi_deg, _ = nutation(jd)
+        return base + general_precession_in_longitude(jd) + dpsi_deg
+
+
+def ayanamsa(jd: float, system: str = Ayanamsa.LAHIRI, mode: str = "true") -> float:
+    """
+    Compute the ayanamsa for a given Julian Day (TT or UT — difference is negligible).
+
+    Parameters
+    ----------
+    jd     : Julian Day Number
+    system : one of the Ayanamsa.* constants
+    mode   : "mean" (precession only) or
+             "true" (star-anchored for TRUE_* systems; precession + nutation Δψ
+             for polynomial systems)
+
+    Returns
+    -------
+    Ayanamsa value in degrees
+
+    Notes
+    -----
+    The public ayanamsa modes follow the Swiss-compatible reference anchors
+    in `_AYANAMSA_AT_J2000`, propagated with Moira's precession model and
+    optional nutation. The private `_star_anchored_ayanamsa()` helper is kept
+    for future research, but is not currently the authoritative public path.
+    """
+    if mode not in ("mean", "true"):
+        raise ValueError(f"mode must be 'mean' or 'true', got {mode!r}")
+
+    if system not in _AYANAMSA_AT_J2000:
+        raise ValueError(
+            f"Unknown ayanamsa system '{system}'. "
+            f"Choose from: {list(_AYANAMSA_AT_J2000)}"
+        )
+
+    base = _AYANAMSA_AT_J2000[system]
+    precession = general_precession_in_longitude(jd)
+    extra_drift = _AYANAMSA_DRIFT_PER_CENTURY.get(system, 0.0) * centuries_from_j2000(jd)
+
+    if mode == "mean":
+        return base + precession + extra_drift
+    else:  # "true"
+        dpsi_deg, _ = nutation(jd)
+        return base + precession + extra_drift + dpsi_deg
+
+
+def tropical_to_sidereal(
+    tropical_longitude: float,
+    jd: float,
+    system: str = Ayanamsa.LAHIRI,
+    mode: str = "true",
+) -> float:
+    """
+    Convert a tropical ecliptic longitude to sidereal.
+
+    Returns
+    -------
+    Sidereal longitude in degrees [0, 360)
+    """
+    ayan = ayanamsa(jd, system, mode)
+    return (tropical_longitude - ayan) % 360.0
+
+
+def sidereal_to_tropical(
+    sidereal_longitude: float,
+    jd: float,
+    system: str = Ayanamsa.LAHIRI,
+    mode: str = "true",
+) -> float:
+    """
+    Convert a sidereal ecliptic longitude to tropical.
+
+    Returns
+    -------
+    Tropical longitude in degrees [0, 360)
+    """
+    ayan = ayanamsa(jd, system, mode)
+    return (sidereal_longitude + ayan) % 360.0
+
+
+def list_ayanamsa_systems() -> dict[str, float]:
+    """
+    Return all available ayanamsa systems with their J2000 values.
+
+    Returns
+    -------
+    Dict mapping system name → ayanamsa at J2000.0 (degrees)
+    """
+    return dict(_AYANAMSA_AT_J2000)
+
+
+# ---------------------------------------------------------------------------
+# Nakshatras — 27 Lunar Mansions
+# ---------------------------------------------------------------------------
+
+NAKSHATRA_SPAN = 360.0 / 27  # 13.3333...°
+
+NAKSHATRA_NAMES: list[str] = [
+    "Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra",
+    "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni",
+    "Uttara Phalguni", "Hasta", "Chitra", "Swati", "Vishakha",
+    "Anuradha", "Jyeshtha", "Mula", "Purva Ashadha", "Uttara Ashadha",
+    "Shravana", "Dhanishtha", "Shatabhisha", "Purva Bhadrapada",
+    "Uttara Bhadrapada", "Revati",
+]
+
+# Lord of each nakshatra (in order) — used for Vimshottari dasha start
+NAKSHATRA_LORDS: list[str] = [
+    "Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu",
+    "Jupiter", "Saturn", "Mercury",  # 1–9 (then repeats)
+    "Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu",
+    "Jupiter", "Saturn", "Mercury",
+    "Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu",
+    "Jupiter", "Saturn", "Mercury",
+]
+
+# 4 padas (quarters) per nakshatra, each = 3°20' = 3.3333°
+PADA_SPAN = NAKSHATRA_SPAN / 4
+
+
+@dataclass(slots=True)
+class NakshatraPosition:
+    """
+    RITE: The Nakshatra Vessel — a body's place in the lunar mansion of the sky.
+
+    THEOREM: Holds the nakshatra name, index, planetary lord, pada, degrees
+    elapsed within the nakshatra, and full sidereal longitude for a single
+    body's nakshatra position result.
+
+    RITE OF PURPOSE:
+        Serves the Sidereal Engine as the canonical result vessel for nakshatra
+        computations. Without this vessel, callers would receive raw nakshatra
+        indices with no lord, pada, or degree-within-nakshatra context, making
+        Vimshottari dasha calculation and Jyotish chart display impossible.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Store nakshatra name, 0-based index, planetary lord, pada (1-4),
+              degrees elapsed within the nakshatra, and full sidereal longitude.
+        Non-responsibilities:
+            - Does not compute the nakshatra (delegated to ``nakshatra_of``).
+            - Does not compute the ayanamsa (delegated to ``ayanamsa``).
+        Dependencies:
+            - Populated by ``nakshatra_of()`` or ``all_nakshatras_at()``.
+        Structural invariants:
+            - ``nakshatra_index`` is always in [0, 26].
+            - ``pada`` is always in [1, 4].
+            - ``degrees_in`` is always in [0, NAKSHATRA_SPAN).
+        Succession stance: terminal — not designed for subclassing.
+
+    Canon: Parashara, "Brihat Parashara Hora Shastra" (classical Jyotish
+           foundational text).
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.sidereal.NakshatraPosition",
+        "risk": "medium",
+        "api": {
+            "public_methods": ["__repr__"],
+            "public_attributes": [
+                "nakshatra", "nakshatra_index", "nakshatra_lord",
+                "pada", "degrees_in", "sidereal_lon"
+            ]
+        },
+        "state": {
+            "mutable": false,
+            "fields": [
+                "nakshatra", "nakshatra_index", "nakshatra_lord",
+                "pada", "degrees_in", "sidereal_lon"
+            ]
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_computation",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": [],
+            "policy": "caller ensures finite tropical longitude before construction"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "kiro"
+    }
+    [/MACHINE_CONTRACT]
+    """
+    nakshatra:       str    # e.g. "Ashwini"
+    nakshatra_index: int    # 0–26
+    nakshatra_lord:  str    # planetary lord (e.g. "Ketu")
+    pada:            int    # 1–4
+    degrees_in:      float  # degrees elapsed within the nakshatra (0–13.333)
+    sidereal_lon:    float  # full sidereal longitude (degrees)
+
+    def __repr__(self) -> str:
+        return (f"{self.nakshatra} (lord: {self.nakshatra_lord}) "
+                f"pada {self.pada}  {self.degrees_in:.4f}° in  "
+                f"[sidereal {self.sidereal_lon:.4f}°]")
+
+
+def nakshatra_of(
+    tropical_longitude: float,
+    jd: float,
+    ayanamsa_system: str = Ayanamsa.LAHIRI,
+) -> NakshatraPosition:
+    """
+    Return the nakshatra position for a tropical ecliptic longitude.
+
+    Parameters
+    ----------
+    tropical_longitude : tropical ecliptic longitude in degrees
+    jd                 : Julian Day (for ayanamsa computation)
+    ayanamsa_system    : ayanamsa system (default: Lahiri)
+
+    Returns
+    -------
+    NakshatraPosition dataclass
+    """
+    sid_lon = tropical_to_sidereal(tropical_longitude, jd, system=ayanamsa_system)
+    idx = int(sid_lon / NAKSHATRA_SPAN) % 27
+    degrees_in = sid_lon - idx * NAKSHATRA_SPAN
+    pada = int(degrees_in / PADA_SPAN) + 1
+    # Clamp pada to [1, 4] — floating-point safety at the very boundary
+    pada = min(pada, 4)
+    return NakshatraPosition(
+        nakshatra=NAKSHATRA_NAMES[idx],
+        nakshatra_index=idx,
+        nakshatra_lord=NAKSHATRA_LORDS[idx],
+        pada=pada,
+        degrees_in=degrees_in,
+        sidereal_lon=sid_lon,
+    )
+
+
+def all_nakshatras_at(
+    positions: dict[str, float],
+    jd: float,
+    ayanamsa_system: str = Ayanamsa.LAHIRI,
+) -> dict[str, NakshatraPosition]:
+    """
+    Compute nakshatra positions for all bodies in a positions dict.
+
+    Parameters
+    ----------
+    positions       : dict of body name → tropical longitude
+    jd              : Julian Day
+    ayanamsa_system : ayanamsa system
+
+    Returns
+    -------
+    Dict of body name → NakshatraPosition
+    """
+    return {
+        name: nakshatra_of(lon, jd, ayanamsa_system)
+        for name, lon in positions.items()
+    }

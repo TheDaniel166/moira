@@ -1,0 +1,2948 @@
+{
+  "value": {
+    "": {
+      "lat": 24.3505,
+      "lon": 21.8098
+    },
+    "A3558": {
+      "lat": -20.6301,
+      "lon": 212.3326
+    },
+    "AA11_page_B73": {
+      "lat": -42.5969,
+      "lon": 239.4639
+    },
+    "Abhijit": {
+      "lat": 61.7334,
+      "lon": 285.3137
+    },
+    "Aboras": {
+      "lat": -23.6403,
+      "lon": 332.1912
+    },
+    "Abyssus Aqueus": {
+      "lat": -31.0343,
+      "lon": 19.4244
+    },
+    "Acamar": {
+      "lat": -53.7402,
+      "lon": 23.2685
+    },
+    "Achernar": {
+      "lat": -59.3784,
+      "lon": 345.3076
+    },
+    "Achird": {
+      "lat": 47.0052,
+      "lon": 40.2449
+    },
+    "Acrab": {
+      "lat": 1.0077,
+      "lon": 243.1862
+    },
+    "Acrux": {
+      "lat": -52.8789,
+      "lon": 221.866
+    },
+    "Acubens": {
+      "lat": -5.0805,
+      "lon": 133.6379
+    },
+    "Aculeus": {
+      "lat": -8.8858,
+      "lon": 265.789
+    },
+    "Acumen": {
+      "lat": -11.3609,
+      "lon": 268.7083
+    },
+    "Adara": {
+      "lat": -51.3602,
+      "lon": 110.759
+    },
+    "Adhab": {
+      "lat": 28.9797,
+      "lon": 38.5454
+    },
+    "Adhafera": {
+      "lat": 11.8651,
+      "lon": 147.5617
+    },
+    "Adhara": {
+      "lat": -51.3602,
+      "lon": 110.759
+    },
+    "Adhil": {
+      "lat": 33.8306,
+      "lon": 37.858
+    },
+    "Agastya": {
+      "lat": -75.8238,
+      "lon": 104.9568
+    },
+    "Agena": {
+      "lat": -44.1377,
+      "lon": 233.7883
+    },
+    "Ahadi": {
+      "lat": -58.5249,
+      "lon": 120.2968
+    },
+    "Ain": {
+      "lat": -2.5673,
+      "lon": 68.4614
+    },
+    "Ain al Rami": {
+      "lat": 0.11,
+      "lon": 282.4677
+    },
+    "Ainalhai": {
+      "lat": 35.1929,
+      "lon": 232.7793
+    },
+    "Ainalrami": {
+      "lat": 0.11,
+      "lon": 282.4677
+    },
+    "Akrab": {
+      "lat": 1.0077,
+      "lon": 243.1862
+    },
+    "Al Anz": {
+      "lat": 20.9444,
+      "lon": 78.8375
+    },
+    "Al Athfar": {
+      "lat": 62.7314,
+      "lon": 280.2321
+    },
+    "Al Dhanab": {
+      "lat": -23.0504,
+      "lon": 317.4157
+    },
+    "Al Durajah": {
+      "lat": 26.111,
+      "lon": 266.6286
+    },
+    "Al Fahd": {
+      "lat": 17.9639,
+      "lon": 131.8381
+    },
+    "Al Fawaris": {
+      "lat": 64.4141,
+      "lon": 316.2459
+    },
+    "Al Hamalain": {
+      "lat": 42.4519,
+      "lon": 202.7816
+    },
+    "Al Haud": {
+      "lat": 34.8939,
+      "lon": 127.2583
+    },
+    "Al Hecka": {
+      "lat": -2.1957,
+      "lon": 84.7808
+    },
+    "Al Jabhah": {
+      "lat": 4.8657,
+      "lon": 147.9012
+    },
+    "Al Jathiyah": {
+      "lat": 69.2655,
+      "lon": 259.8853
+    },
+    "Al Kalb al Rai": {
+      "lat": 68.3763,
+      "lon": 60.9301
+    },
+    "Al Khabdhilinan": {
+      "lat": 10.4545,
+      "lon": 76.6356
+    },
+    "Al Krikab": {
+      "lat": 3.0784,
+      "lon": 113.6619
+    },
+    "Al Kurud": {
+      "lat": -58.4865,
+      "lon": 96.4782
+    },
+    "Al Minliar al Asad": {
+      "lat": 10.4261,
+      "lon": 135.2922
+    },
+    "Al Minliar al Shuja": {
+      "lat": -14.6019,
+      "lon": 131.2059
+    },
+    "Al Mizan": {
+      "lat": 24.8171,
+      "lon": 293.6346
+    },
+    "Al Nitham": {
+      "lat": -14.1137,
+      "lon": 5.8888
+    },
+    "Al Pherg": {
+      "lat": 5.3776,
+      "lon": 26.8121
+    },
+    "Al Rescha": {
+      "lat": -9.0609,
+      "lon": 29.3749
+    },
+    "Al Rihla": {
+      "lat": -72.8533,
+      "lon": 117.7231
+    },
+    "Al Sadr al Ketus": {
+      "lat": -28.2479,
+      "lon": 33.7519
+    },
+    "Al Tarf": {
+      "lat": -10.2877,
+      "lon": 124.2534
+    },
+    "Al Thalimaim Anterior": {
+      "lat": 17.5655,
+      "lon": 287.3284
+    },
+    "Al Thalimaim Posterior": {
+      "lat": 20.01,
+      "lon": 295.8333
+    },
+    "Aladfar": {
+      "lat": 60.6753,
+      "lon": 300.0538
+    },
+    "Alagemin": {
+      "lat": 71.7807,
+      "lon": 4.6791
+    },
+    "Alaraph": {
+      "lat": 0.6944,
+      "lon": 177.1622
+    },
+    "Alathfar": {
+      "lat": 62.7314,
+      "lon": 280.2321
+    },
+    "Albaldah": {
+      "lat": 1.437,
+      "lon": 286.2479
+    },
+    "Albali": {
+      "lat": 8.0804,
+      "lon": 311.7194
+    },
+    "Albireo": {
+      "lat": 48.9677,
+      "lon": 301.2477
+    },
+    "Albulaan": {
+      "lat": 4.7646,
+      "lon": 316.393
+    },
+    "Alc0": {
+      "lat": 56.5508,
+      "lon": 165.8709
+    },
+    "Alchiba": {
+      "lat": -21.7492,
+      "lon": 192.2409
+    },
+    "Alchita": {
+      "lat": -21.7492,
+      "lon": 192.2409
+    },
+    "Alcor": {
+      "lat": 56.5508,
+      "lon": 165.8709
+    },
+    "Alcyone": {
+      "lat": 4.0508,
+      "lon": 59.9885
+    },
+    "Aldafirah": {
+      "lat": 32.5131,
+      "lon": 184.3585
+    },
+    "Aldebaran": {
+      "lat": -5.4678,
+      "lon": 69.7854
+    },
+    "Alderamin": {
+      "lat": 68.9134,
+      "lon": 12.775
+    },
+    "Aldhanab": {
+      "lat": -23.0504,
+      "lon": 317.4157
+    },
+    "Aldhibah": {
+      "lat": 84.7615,
+      "lon": 183.3759
+    },
+    "Aldhibain": {
+      "lat": 78.4411,
+      "lon": 194.4826
+    },
+    "Aldulfin": {
+      "lat": 29.0731,
+      "lon": 314.0572
+    },
+    "Alfecca Meridiana": {
+      "lat": -15.3138,
+      "lon": 284.1312
+    },
+    "Alfirk": {
+      "lat": 71.1527,
+      "lon": 35.5425
+    },
+    "Algedi": {
+      "lat": 6.9883,
+      "lon": 303.7658
+    },
+    "Algenib": {
+      "lat": 12.5999,
+      "lon": 9.1522
+    },
+    "Algieba": {
+      "lat": 8.8147,
+      "lon": 149.6123
+    },
+    "Algol": {
+      "lat": 22.4285,
+      "lon": 56.1637
+    },
+    "Algorab": {
+      "lat": -12.1968,
+      "lon": 193.4475
+    },
+    "Alhakim": {
+      "lat": -26.0168,
+      "lon": 213.1242
+    },
+    "Alhena": {
+      "lat": -6.7427,
+      "lon": 99.1008
+    },
+    "Alherem": {
+      "lat": -51.0878,
+      "lon": 190.5123
+    },
+    "Alifa Al Farkadain": {
+      "lat": 75.1221,
+      "lon": 117.4005
+    },
+    "Alioth": {
+      "lat": 54.319,
+      "lon": 158.93
+    },
+    "Aljanah": {
+      "lat": 49.4226,
+      "lon": 327.7434
+    },
+    "Alkaid": {
+      "lat": 54.3878,
+      "lon": 176.929
+    },
+    "Alkalurops": {
+      "lat": 53.4218,
+      "lon": 213.1733
+    },
+    "Alkaphrah": {
+      "lat": 28.9794,
+      "lon": 123.9328
+    },
+    "Alkarab": {
+      "lat": 24.7948,
+      "lon": 1.9721
+    },
+    "Alkes": {
+      "lat": -22.7165,
+      "lon": 173.6843
+    },
+    "Alkibash": {
+      "lat": -5.6353,
+      "lon": 108.7749
+    },
+    "Alkidr": {
+      "lat": 73.9328,
+      "lon": 4.8504
+    },
+    "Alkurhah": {
+      "lat": 65.7487,
+      "lon": 24.2172
+    },
+    "Almaak": {
+      "lat": 27.8061,
+      "lon": 44.2216
+    },
+    "Almaaz": {
+      "lat": 20.9444,
+      "lon": 78.8375
+    },
+    "Almac": {
+      "lat": 27.8061,
+      "lon": 44.2216
+    },
+    "Almach": {
+      "lat": 27.8061,
+      "lon": 44.2216
+    },
+    "Almak": {
+      "lat": 27.8061,
+      "lon": 44.2216
+    },
+    "Almeisan": {
+      "lat": -6.7427,
+      "lon": 99.1008
+    },
+    "Alminhar": {
+      "lat": 10.4261,
+      "lon": 135.2922
+    },
+    "Alnair": {
+      "lat": -32.9137,
+      "lon": 315.9033
+    },
+    "Alnasl": {
+      "lat": -6.9916,
+      "lon": 271.2574
+    },
+    "Alnath": {
+      "lat": 5.3847,
+      "lon": 82.5711
+    },
+    "Alnilam": {
+      "lat": -24.5064,
+      "lon": 83.4598
+    },
+    "Alnitak": {
+      "lat": -25.2931,
+      "lon": 84.6775
+    },
+    "Alniyat": {
+      "lat": -4.0374,
+      "lon": 247.7957
+    },
+    "Alphard": {
+      "lat": -22.3823,
+      "lon": 147.2753
+    },
+    "Alphecca": {
+      "lat": 44.3234,
+      "lon": 222.2924
+    },
+    "Alphekka": {
+      "lat": 44.3234,
+      "lon": 222.2924
+    },
+    "Alpheratz": {
+      "lat": 25.6799,
+      "lon": 14.3047
+    },
+    "Alphirk": {
+      "lat": 71.1527,
+      "lon": 35.5425
+    },
+    "Alradif": {
+      "lat": 59.5414,
+      "lon": 17.6053
+    },
+    "Alrai": {
+      "lat": 64.6701,
+      "lon": 60.0895
+    },
+    "Alrakis": {
+      "lat": 76.2334,
+      "lon": 234.7579
+    },
+    "Alredif": {
+      "lat": 59.5414,
+      "lon": 17.6053
+    },
+    "Alrescha": {
+      "lat": -9.0609,
+      "lon": 29.3749
+    },
+    "Alrischa": {
+      "lat": -9.0609,
+      "lon": 29.3749
+    },
+    "Alsafi": {
+      "lat": 80.9162,
+      "lon": 30.2618
+    },
+    "Alsciaukat": {
+      "lat": 23.1052,
+      "lon": 117.5557
+    },
+    "Alsephina": {
+      "lat": -67.1979,
+      "lon": 168.9446
+    },
+    "Alshain": {
+      "lat": 26.658,
+      "lon": 302.4196
+    },
+    "Alsharasif": {
+      "lat": -25.638,
+      "lon": 178.5509
+    },
+    "Alshat": {
+      "lat": 6.5759,
+      "lon": 304.4293
+    },
+    "Alsuhail": {
+      "lat": -55.8708,
+      "lon": 161.1836
+    },
+    "Altager": {
+      "lat": 8.0804,
+      "lon": 311.7194
+    },
+    "Altair": {
+      "lat": 29.3041,
+      "lon": 301.7742
+    },
+    "Altais": {
+      "lat": 82.886,
+      "lon": 17.1595
+    },
+    "Altawk": {
+      "lat": -15.7677,
+      "lon": 16.2219
+    },
+    "Alterf": {
+      "lat": 7.8886,
+      "lon": 137.8695
+    },
+    "Althaur": {
+      "lat": -7.9598,
+      "lon": 60.6306
+    },
+    "Aludra": {
+      "lat": -50.6087,
+      "lon": 119.5326
+    },
+    "Alula Australis": {
+      "lat": 24.723,
+      "lon": 157.3377
+    },
+    "Alula Borealis": {
+      "lat": 26.1625,
+      "lon": 156.6497
+    },
+    "Alvahet": {
+      "lat": 62.616,
+      "lon": 33.236
+    },
+    "Alvashak": {
+      "lat": 17.9639,
+      "lon": 131.8381
+    },
+    "Alwaid": {
+      "lat": 75.2778,
+      "lon": 251.9624
+    },
+    "Alya": {
+      "lat": 26.8774,
+      "lon": 285.7516
+    },
+    "Alzirr": {
+      "lat": -10.1047,
+      "lon": 101.2051
+    },
+    "Anazitisi": {
+      "lat": -72.8533,
+      "lon": 117.7231
+    },
+    "Ancha": {
+      "lat": 2.7067,
+      "lon": 333.2599
+    },
+    "Andromeda Galaxy": {
+      "lat": 33.3486,
+      "lon": 27.8452
+    },
+    "Angetenar": {
+      "lat": -35.519,
+      "lon": 32.631
+    },
+    "Angiras": {
+      "lat": 54.319,
+      "lon": 158.93
+    },
+    "Ankaa": {
+      "lat": -40.6341,
+      "lon": 345.49
+    },
+    "Anser": {
+      "lat": 45.8581,
+      "lon": 299.5032
+    },
+    "Antares": {
+      "lat": -4.57,
+      "lon": 249.7584
+    },
+    "Anunitum": {
+      "lat": 20.7389,
+      "lon": 28.3138
+    },
+    "Anuradha": {
+      "lat": -1.9861,
+      "lon": 242.5674
+    },
+    "Anwar al Farkadain": {
+      "lat": 77.8292,
+      "lon": 120.3097
+    },
+    "Apex": {
+      "lat": 53.4393,
+      "lon": 271.3945
+    },
+    "Ara": {
+      "lat": -26.5607,
+      "lon": 264.9303
+    },
+    "Arcturus": {
+      "lat": 30.7307,
+      "lon": 204.2291
+    },
+    "Ardra": {
+      "lat": -16.027,
+      "lon": 88.7508
+    },
+    "Arkab Posterior": {
+      "lat": -22.4974,
+      "lon": 285.8267
+    },
+    "Arkab Prior": {
+      "lat": -22.1447,
+      "lon": 285.7722
+    },
+    "Armus": {
+      "lat": -2.9921,
+      "lon": 312.7349
+    },
+    "Arneb": {
+      "lat": -41.0578,
+      "lon": 81.3767
+    },
+    "Arrakis": {
+      "lat": 76.2334,
+      "lon": 234.7579
+    },
+    "Arundhati": {
+      "lat": 56.5508,
+      "lon": 165.8709
+    },
+    "Ascella": {
+      "lat": -7.1788,
+      "lon": 283.6346
+    },
+    "Asellus Australis": {
+      "lat": 0.0766,
+      "lon": 128.7182
+    },
+    "Asellus Borealis": {
+      "lat": 3.1903,
+      "lon": 127.5344
+    },
+    "Asellus Primus": {
+      "lat": 60.1077,
+      "lon": 182.6069
+    },
+    "Asellus Secundus": {
+      "lat": 58.8397,
+      "lon": 181.0943
+    },
+    "Asellus Tertius": {
+      "lat": 58.898,
+      "lon": 179.9528
+    },
+    "Ashlesha": {
+      "lat": -11.1044,
+      "lon": 132.3404
+    },
+    "Ashlesha (Colebrook)": {
+      "lat": -5.0805,
+      "lon": 133.6379
+    },
+    "Ashvini": {
+      "lat": 8.4869,
+      "lon": 33.9663
+    },
+    "Aspidiske": {
+      "lat": -67.1164,
+      "lon": 185.3223
+    },
+    "Asterion": {
+      "lat": 40.5437,
+      "lon": 167.6996
+    },
+    "Asterope": {
+      "lat": 4.568,
+      "lon": 59.7359
+    },
+    "Athafi": {
+      "lat": 80.9162,
+      "lon": 30.2618
+    },
+    "Athebyne": {
+      "lat": 78.4411,
+      "lon": 194.4826
+    },
+    "Atik": {
+      "lat": 12.1844,
+      "lon": 61.1394
+    },
+    "Atiks": {
+      "lat": 12.1844,
+      "lon": 61.1394
+    },
+    "Atirsagne": {
+      "lat": -9.3344,
+      "lon": 51.1595
+    },
+    "Atlas": {
+      "lat": 3.9174,
+      "lon": 60.3521
+    },
+    "Atri": {
+      "lat": 51.6569,
+      "lon": 151.0613
+    },
+    "Atria": {
+      "lat": -46.1514,
+      "lon": 260.8921
+    },
+    "Auva": {
+      "lat": 8.6129,
+      "lon": 191.456
+    },
+    "Avior": {
+      "lat": -72.6799,
+      "lon": 173.125
+    },
+    "Avis Satyra": {
+      "lat": -11.6913,
+      "lon": 193.8105
+    },
+    "Azelfafage": {
+      "lat": 58.8756,
+      "lon": 358.2727
+    },
+    "Azha": {
+      "lat": -24.5473,
+      "lon": 38.7461
+    },
+    "Azmidiske": {
+      "lat": -44.9395,
+      "lon": 126.0378
+    },
+    "Baham": {
+      "lat": 16.3404,
+      "lon": 336.8299
+    },
+    "Barnard's star": {
+      "lat": 28.1565,
+      "lon": 269.3746
+    },
+    "Baten Algiedi": {
+      "lat": -8.9627,
+      "lon": 307.9556
+    },
+    "Baten Kaitos": {
+      "lat": -20.3347,
+      "lon": 21.9463
+    },
+    "Batentaban Australis": {
+      "lat": 84.8764,
+      "lon": 71.0864
+    },
+    "Batentaban Borealis": {
+      "lat": 83.5684,
+      "lon": 75.9132
+    },
+    "Bazak": {
+      "lat": 21.5232,
+      "lon": 300.4299
+    },
+    "Beemim": {
+      "lat": -54.5376,
+      "lon": 54.4837
+    },
+    "Beid": {
+      "lat": -27.4532,
+      "lon": 59.4289
+    },
+    "Bellatrix": {
+      "lat": -16.8161,
+      "lon": 80.9426
+    },
+    "Benetnash": {
+      "lat": 54.3878,
+      "lon": 176.929
+    },
+    "Bered": {
+      "lat": 16.8452,
+      "lon": 286.0429
+    },
+    "Beteigeuse": {
+      "lat": -16.027,
+      "lon": 88.7508
+    },
+    "Betelgeuse": {
+      "lat": -16.027,
+      "lon": 88.7508
+    },
+    "Bharani": {
+      "lat": 10.4494,
+      "lon": 48.1997
+    },
+    "Biham": {
+      "lat": 16.3404,
+      "lon": 336.8299
+    },
+    "Birdun": {
+      "lat": -39.586,
+      "lon": 225.5509
+    },
+    "Bogardus": {
+      "lat": 13.7731,
+      "lon": 89.9391
+    },
+    "Bos": {
+      "lat": 1.1982,
+      "lon": 305.1614
+    },
+    "Botein": {
+      "lat": 1.8238,
+      "lon": 50.8495
+    },
+    "Brachium": {
+      "lat": -7.6446,
+      "lon": 230.6832
+    },
+    "Brahmahridaya": {
+      "lat": 22.8632,
+      "lon": 81.8541
+    },
+    "Bunda": {
+      "lat": 5.9575,
+      "lon": 324.1149
+    },
+    "Bungula": {
+      "lat": -42.5981,
+      "lon": 239.464
+    },
+    "Canopus": {
+      "lat": -75.8238,
+      "lon": 104.9568
+    },
+    "Capella": {
+      "lat": 22.8632,
+      "lon": 81.8541
+    },
+    "Caph": {
+      "lat": 51.2138,
+      "lon": 35.1139
+    },
+    "Capulus": {
+      "lat": 40.355,
+      "lon": 54.1784
+    },
+    "Castor": {
+      "lat": 10.0953,
+      "lon": 110.2359
+    },
+    "Castra": {
+      "lat": -4.976,
+      "lon": 320.1952
+    },
+    "Castula": {
+      "lat": 47.5656,
+      "lon": 42.5872
+    },
+    "Cauda Hydrae": {
+      "lat": -13.7426,
+      "lon": 207.0146
+    },
+    "Cebalrai": {
+      "lat": 27.9401,
+      "lon": 265.3327
+    },
+    "Ceginus": {
+      "lat": 57.2166,
+      "lon": 215.0961
+    },
+    "Celaeno": {
+      "lat": 4.3651,
+      "lon": 59.4312
+    },
+    "Celbalrai": {
+      "lat": 27.9401,
+      "lon": 265.3327
+    },
+    "Celeano": {
+      "lat": 4.3651,
+      "lon": 59.4312
+    },
+    "Cervantes": {
+      "lat": -28.4335,
+      "lon": 267.2119
+    },
+    "Cestan": {
+      "lat": 9.6741,
+      "lon": 163.4191
+    },
+    "Chalawan": {
+      "lat": 31.0614,
+      "lon": 149.0651
+    },
+    "Chamukuy": {
+      "lat": -5.8386,
+      "lon": 67.9583
+    },
+    "Chara": {
+      "lat": 40.5437,
+      "lon": 167.6996
+    },
+    "Chertan": {
+      "lat": 9.6741,
+      "lon": 163.4191
+    },
+    "Chin": {
+      "lat": 28.8804,
+      "lon": 228.3377
+    },
+    "Chort": {
+      "lat": 9.6741,
+      "lon": 163.4191
+    },
+    "Chow": {
+      "lat": 34.3266,
+      "lon": 229.9448
+    },
+    "Cih": {
+      "lat": 48.8149,
+      "lon": 43.9273
+    },
+    "Citra": {
+      "lat": -2.0546,
+      "lon": 203.8374
+    },
+    "Copernicus": {
+      "lat": 10.3662,
+      "lon": 127.7276
+    },
+    "Cor Caroli": {
+      "lat": 40.1209,
+      "lon": 174.5621
+    },
+    "Cor Hydrae": {
+      "lat": -22.3823,
+      "lon": 147.2753
+    },
+    "Cor Serpentis": {
+      "lat": 25.5082,
+      "lon": 232.0716
+    },
+    "Coxa": {
+      "lat": 9.6741,
+      "lon": 163.4191
+    },
+    "Cujam": {
+      "lat": 35.1682,
+      "lon": 241.5716
+    },
+    "Cursa": {
+      "lat": -27.8619,
+      "lon": 75.2718
+    },
+    "Dabih": {
+      "lat": 4.5886,
+      "lon": 304.0436
+    },
+    "Dalim": {
+      "lat": -44.6898,
+      "lon": 34.6104
+    },
+    "Decapoda": {
+      "lat": 10.4264,
+      "lon": 126.3422
+    },
+    "Decrux": {
+      "lat": -50.4196,
+      "lon": 215.6608
+    },
+    "Deli": {
+      "lat": 8.1467,
+      "lon": 340.3994
+    },
+    "Delta Aquilae": {
+      "lat": 24.8171,
+      "lon": 293.6346
+    },
+    "Deneb": {
+      "lat": 59.9061,
+      "lon": 335.3254
+    },
+    "Deneb Adige": {
+      "lat": 59.9061,
+      "lon": 335.3254
+    },
+    "Deneb Algedi": {
+      "lat": -2.6026,
+      "lon": 323.539
+    },
+    "Deneb Algenubi": {
+      "lat": -16.1189,
+      "lon": 11.764
+    },
+    "Deneb Dulphim": {
+      "lat": 29.0731,
+      "lon": 314.0572
+    },
+    "Deneb Kaitos": {
+      "lat": -10.0218,
+      "lon": 0.9122
+    },
+    "Deneb el Okab Australis": {
+      "lat": 36.1855,
+      "lon": 289.7921
+    },
+    "Deneb el Okab Borealis": {
+      "lat": 37.5672,
+      "lon": 288.258
+    },
+    "Denebola": {
+      "lat": 12.2661,
+      "lon": 171.6127
+    },
+    "Dhanab al Shuja": {
+      "lat": -13.7426,
+      "lon": 207.0146
+    },
+    "Dhanishtha": {
+      "lat": 31.9177,
+      "lon": 316.3378
+    },
+    "Dheneb": {
+      "lat": 36.1855,
+      "lon": 289.7921
+    },
+    "Dhruva": {
+      "lat": 66.362,
+      "lon": 157.4521
+    },
+    "Dhur": {
+      "lat": 14.3334,
+      "lon": 161.3132
+    },
+    "Diadem": {
+      "lat": 22.9782,
+      "lon": 188.9449
+    },
+    "Difda": {
+      "lat": -20.7837,
+      "lon": 2.5802
+    },
+    "Diphda": {
+      "lat": -20.7837,
+      "lon": 2.5802
+    },
+    "Dorsum": {
+      "lat": -0.5861,
+      "lon": 313.8402
+    },
+    "Drus": {
+      "lat": -70.3267,
+      "lon": 150.725
+    },
+    "Drys": {
+      "lat": -70.3267,
+      "lon": 150.725
+    },
+    "Dschubba": {
+      "lat": -1.9861,
+      "lon": 242.5674
+    },
+    "Dubhe": {
+      "lat": 49.6801,
+      "lon": 135.1932
+    },
+    "Durga": {
+      "lat": -16.8161,
+      "lon": 80.9426
+    },
+    "Dziban": {
+      "lat": 84.1941,
+      "lon": 103.7974
+    },
+    "Ed Asich": {
+      "lat": 71.0936,
+      "lon": 184.9458
+    },
+    "Edasich": {
+      "lat": 71.0936,
+      "lon": 184.9458
+    },
+    "Ekkhysis": {
+      "lat": -0.3866,
+      "lon": 341.5723
+    },
+    "El Kophrah": {
+      "lat": 41.5438,
+      "lon": 153.6558
+    },
+    "El Nath": {
+      "lat": 5.3847,
+      "lon": 82.5711
+    },
+    "Electra": {
+      "lat": 4.1897,
+      "lon": 59.4081
+    },
+    "Elnath": {
+      "lat": 5.3847,
+      "lon": 82.5711
+    },
+    "Eltanin": {
+      "lat": 74.9221,
+      "lon": 267.9648
+    },
+    "Enif": {
+      "lat": 22.0999,
+      "lon": 331.8811
+    },
+    "Ensis": {
+      "lat": -25.7625,
+      "lon": 85.135
+    },
+    "Erakis": {
+      "lat": 64.1943,
+      "lon": 9.7032
+    },
+    "Errai": {
+      "lat": 64.6701,
+      "lon": 60.0895
+    },
+    "Etamin": {
+      "lat": 74.9221,
+      "lon": 267.9648
+    },
+    "Facies": {
+      "lat": -0.7277,
+      "lon": 278.3102
+    },
+    "Fafnir": {
+      "lat": 80.2827,
+      "lon": 264.7528
+    },
+    "Fang": {
+      "lat": -5.4754,
+      "lon": 242.936
+    },
+    "Farkadain": {
+      "lat": 75.1221,
+      "lon": 117.4005
+    },
+    "Fomalhaut": {
+      "lat": -21.1363,
+      "lon": 333.857
+    },
+    "Foramen": {
+      "lat": -58.9275,
+      "lon": 202.1509
+    },
+    "Fornacis": {
+      "lat": -44.6898,
+      "lon": 34.6104
+    },
+    "Fudail": {
+      "lat": 59.5508,
+      "lon": 252.0635
+    },
+    "Fulu": {
+      "lat": 44.7197,
+      "lon": 35.0614
+    },
+    "Fum Alsamakah": {
+      "lat": 9.053,
+      "lon": 348.5815
+    },
+    "Furibundus": {
+      "lat": -14.4517,
+      "lon": 59.9153
+    },
+    "Furud": {
+      "lat": -53.3727,
+      "lon": 97.3738
+    },
+    "Fuyue": {
+      "lat": -13.6223,
+      "lon": 267.9141
+    },
+    "GCLiu": {
+      "lat": -5.6077,
+      "lon": 266.8479
+    },
+    "GCRS00": {
+      "lat": -0.0,
+      "lon": 359.9961
+    },
+    "Gacrux": {
+      "lat": -47.8317,
+      "lon": 216.7364
+    },
+    "Gal. Center": {
+      "lat": -5.6077,
+      "lon": 266.8478
+    },
+    "Gal.Plane Pole": {
+      "lat": 29.8216,
+      "lon": 179.9154
+    },
+    "Gal.Pole": {
+      "lat": 29.8063,
+      "lon": 180.0722
+    },
+    "Gal.Pole IAU1958": {
+      "lat": 29.8114,
+      "lon": 180.0194
+    },
+    "Galactic Center": {
+      "lat": -5.6077,
+      "lon": 266.8478
+    },
+    "Ganesha": {
+      "lat": -24.5064,
+      "lon": 83.4598
+    },
+    "Gemma": {
+      "lat": 44.3234,
+      "lon": 222.2924
+    },
+    "Ghusn al Zaitun": {
+      "lat": -56.7143,
+      "lon": 98.4196
+    },
+    "Gianfar": {
+      "lat": 57.2411,
+      "lon": 130.3298
+    },
+    "Giansar": {
+      "lat": 57.2411,
+      "lon": 130.3298
+    },
+    "Giausar": {
+      "lat": 57.2411,
+      "lon": 130.3298
+    },
+    "Giedi Prima": {
+      "lat": 6.9883,
+      "lon": 303.7658
+    },
+    "Giedi Secunda": {
+      "lat": 6.9301,
+      "lon": 303.8549
+    },
+    "Gienah": {
+      "lat": -14.501,
+      "lon": 190.7214
+    },
+    "Gienah Corvi": {
+      "lat": -14.501,
+      "lon": 190.7214
+    },
+    "Gienah Cygni": {
+      "lat": 49.4226,
+      "lon": 327.7434
+    },
+    "Gienah Ghurab": {
+      "lat": 49.4226,
+      "lon": 327.7434
+    },
+    "Ginan": {
+      "lat": -51.2122,
+      "lon": 218.2709
+    },
+    "Girtab": {
+      "lat": -15.6444,
+      "lon": 266.4656
+    },
+    "Gliese 710": {
+      "lat": 21.4089,
+      "lon": 275.3237
+    },
+    "Gomeisa": {
+      "lat": -13.4873,
+      "lon": 112.1877
+    },
+    "Gorgona Quatra": {
+      "lat": 20.9697,
+      "lon": 56.3578
+    },
+    "Gorgona Secunda": {
+      "lat": 21.7307,
+      "lon": 53.8999
+    },
+    "Gorgona Tertia": {
+      "lat": 20.5743,
+      "lon": 54.9072
+    },
+    "Graffias": {
+      "lat": 1.0077,
+      "lon": 243.1862
+    },
+    "Grafias": {
+      "lat": 9.2332,
+      "lon": 241.3023
+    },
+    "Great Attractor": {
+      "lat": -38.9036,
+      "lon": 253.9518
+    },
+    "Gruid": {
+      "lat": -35.4322,
+      "lon": 322.3238
+    },
+    "Grumium": {
+      "lat": 80.2827,
+      "lon": 264.7528
+    },
+    "Hadar": {
+      "lat": -44.1377,
+      "lon": 233.7883
+    },
+    "Haedi": {
+      "lat": 18.2023,
+      "lon": 78.6295
+    },
+    "Haedus": {
+      "lat": 18.2837,
+      "lon": 79.4424
+    },
+    "Hamal": {
+      "lat": 9.9646,
+      "lon": 37.6589
+    },
+    "Han": {
+      "lat": 11.3914,
+      "lon": 249.2254
+    },
+    "Haris": {
+      "lat": 49.5518,
+      "lon": 197.6589
+    },
+    "Hassaleh": {
+      "lat": 10.4545,
+      "lon": 76.6356
+    },
+    "Hasseleh": {
+      "lat": 10.4545,
+      "lon": 76.6356
+    },
+    "Hasta": {
+      "lat": -12.1968,
+      "lon": 193.4475
+    },
+    "Hatsya": {
+      "lat": -29.2,
+      "lon": 82.9937
+    },
+    "Hecatebolus": {
+      "lat": -5.0895,
+      "lon": 284.8302
+    },
+    "Heka": {
+      "lat": -13.3695,
+      "lon": 83.703
+    },
+    "Helkath": {
+      "lat": 31.8361,
+      "lon": 251.8168
+    },
+    "Helvetios": {
+      "lat": 25.1864,
+      "lon": 354.2808
+    },
+    "Hemelein Prima": {
+      "lat": 42.4519,
+      "lon": 202.7816
+    },
+    "Hemelein Secunda": {
+      "lat": 42.1447,
+      "lon": 203.8958
+    },
+    "Heze": {
+      "lat": 8.6366,
+      "lon": 202.1303
+    },
+    "Hilasmus": {
+      "lat": -21.426,
+      "lon": 238.6529
+    },
+    "Hoedus I": {
+      "lat": 18.2023,
+      "lon": 78.6295
+    },
+    "Hoedus II": {
+      "lat": 18.2837,
+      "lon": 79.4424
+    },
+    "Homam": {
+      "lat": 17.6793,
+      "lon": 346.1479
+    },
+    "Hyadum I": {
+      "lat": -5.7324,
+      "lon": 65.8022
+    },
+    "Hyadum II": {
+      "lat": -3.9696,
+      "lon": 66.8671
+    },
+    "Hydor": {
+      "lat": -0.3866,
+      "lon": 341.5723
+    },
+    "Hydria": {
+      "lat": 8.1467,
+      "lon": 340.3994
+    },
+    "Hydrobius": {
+      "lat": -10.9696,
+      "lon": 134.5716
+    },
+    "Iklil": {
+      "lat": -8.5991,
+      "lon": 243.1425
+    },
+    "Imad": {
+      "lat": -1.8436,
+      "lon": 261.391
+    },
+    "Infrared Dragon": {
+      "lat": 1.9965,
+      "lon": 208.2848
+    },
+    "Intercrus": {
+      "lat": 29.0011,
+      "lon": 129.1793
+    },
+    "Ira Furoris": {
+      "lat": -13.3783,
+      "lon": 273.6235
+    },
+    "Isis": {
+      "lat": -37.9938,
+      "lon": 109.604
+    },
+    "Iyappa": {
+      "lat": -25.2931,
+      "lon": 84.6775
+    },
+    "Izar": {
+      "lat": 40.6249,
+      "lon": 208.1023
+    },
+    "Jabbah": {
+      "lat": 1.6332,
+      "lon": 244.6399
+    },
+    "Jabhat al Akrab": {
+      "lat": 0.2206,
+      "lon": 243.6655
+    },
+    "Jih": {
+      "lat": 36.6386,
+      "lon": 338.9304
+    },
+    "Jishui": {
+      "lat": 12.9129,
+      "lon": 110.7391
+    },
+    "Juxta Crucem": {
+      "lat": -51.2122,
+      "lon": 218.2709
+    },
+    "Jyeshtha": {
+      "lat": -4.57,
+      "lon": 249.7584
+    },
+    "Kabkent Secunda": {
+      "lat": -28.2681,
+      "lon": 221.1503
+    },
+    "Kabkent Tertia": {
+      "lat": -28.0004,
+      "lon": 223.0344
+    },
+    "Kaffaljidhma": {
+      "lat": -11.9964,
+      "lon": 39.4286
+    },
+    "Kaht": {
+      "lat": 1.0939,
+      "lon": 17.5213
+    },
+    "Kaimana": {
+      "lat": -66.0742,
+      "lon": 107.1441
+    },
+    "Kajam epsHer": {
+      "lat": 53.2484,
+      "lon": 248.3229
+    },
+    "Kajam omeHer": {
+      "lat": 35.1682,
+      "lon": 241.5716
+    },
+    "Kakkab": {
+      "lat": -30.0259,
+      "lon": 233.4999
+    },
+    "Kang": {
+      "lat": 2.9133,
+      "lon": 214.4898
+    },
+    "Kattupothu": {
+      "lat": -12.1839,
+      "lon": 63.5775
+    },
+    "Kaus Australis": {
+      "lat": -11.0521,
+      "lon": 275.0746
+    },
+    "Kaus Borealis": {
+      "lat": -2.1361,
+      "lon": 276.3131
+    },
+    "Kaus Media": {
+      "lat": -6.4723,
+      "lon": 274.5771
+    },
+    "Kaus Meridionalis": {
+      "lat": -6.4723,
+      "lon": 274.5771
+    },
+    "Ke Kwan": {
+      "lat": -24.0314,
+      "lon": 234.7908
+    },
+    "Kebash": {
+      "lat": -5.6353,
+      "lon": 108.7749
+    },
+    "Keid": {
+      "lat": -28.4294,
+      "lon": 60.1714
+    },
+    "Kekouan": {
+      "lat": -25.0463,
+      "lon": 235.0216
+    },
+    "Kelb Alrai": {
+      "lat": 27.9401,
+      "lon": 265.3327
+    },
+    "Kerb": {
+      "lat": 25.5692,
+      "lon": 1.0509
+    },
+    "Ketu": {
+      "lat": 61.7621,
+      "lon": 136.2524
+    },
+    "Khambalia": {
+      "lat": 0.4907,
+      "lon": 216.9482
+    },
+    "Kissin": {
+      "lat": 28.3985,
+      "lon": 173.8861
+    },
+    "Kitalpha": {
+      "lat": 20.1216,
+      "lon": 323.1134
+    },
+    "Kochab": {
+      "lat": 72.9875,
+      "lon": 133.3155
+    },
+    "Koo She": {
+      "lat": -67.1979,
+      "lon": 168.9446
+    },
+    "Kornephoros": {
+      "lat": 42.7023,
+      "lon": 241.0871
+    },
+    "Kratu": {
+      "lat": 49.6801,
+      "lon": 135.1932
+    },
+    "Kraz": {
+      "lat": -18.0447,
+      "lon": 197.3641
+    },
+    "Krttika": {
+      "lat": 4.0508,
+      "lon": 59.9885
+    },
+    "Kuma": {
+      "lat": 78.148,
+      "lon": 250.3246
+    },
+    "Kumara": {
+      "lat": -23.553,
+      "lon": 82.3583
+    },
+    "Kurdah": {
+      "lat": 65.7487,
+      "lon": 24.2172
+    },
+    "Kurhah": {
+      "lat": 61.1472,
+      "lon": 13.959
+    },
+    "Labrum": {
+      "lat": -17.5721,
+      "lon": 176.6826
+    },
+    "Larawag": {
+      "lat": -11.7393,
+      "lon": 255.3298
+    },
+    "Leiolepidotus": {
+      "lat": 16.2381,
+      "lon": 235.935
+    },
+    "Leiolepis": {
+      "lat": 16.2381,
+      "lon": 235.935
+    },
+    "Lesath": {
+      "lat": -14.0084,
+      "lon": 264.0088
+    },
+    "Libertas": {
+      "lat": 28.7222,
+      "lon": 302.6294
+    },
+    "Lich": {
+      "lat": 17.5746,
+      "lon": 188.7167
+    },
+    "Lilii Borea": {
+      "lat": 12.4814,
+      "lon": 48.3645
+    },
+    "Linteum": {
+      "lat": 2.1764,
+      "lon": 14.1436
+    },
+    "Lubdhaka": {
+      "lat": -39.6084,
+      "lon": 104.0765
+    },
+    "Ma Ti": {
+      "lat": -56.7893,
+      "lon": 214.5402
+    },
+    "Maasym": {
+      "lat": 49.2939,
+      "lon": 259.8993
+    },
+    "Maaz": {
+      "lat": 20.9444,
+      "lon": 78.8375
+    },
+    "Mabsuthat": {
+      "lat": 23.1052,
+      "lon": 117.5557
+    },
+    "Maculata": {
+      "lat": 20.1003,
+      "lon": 130.5669
+    },
+    "Maculosa": {
+      "lat": 20.1003,
+      "lon": 130.5669
+    },
+    "Magha": {
+      "lat": 0.4646,
+      "lon": 149.8247
+    },
+    "Mahasim": {
+      "lat": 13.7731,
+      "lon": 89.9391
+    },
+    "Maia": {
+      "lat": 4.3899,
+      "lon": 59.6765
+    },
+    "Manubrium": {
+      "lat": 0.8598,
+      "lon": 284.9904
+    },
+    "Manus": {
+      "lat": 13.7731,
+      "lon": 89.9391
+    },
+    "Marakk": {
+      "lat": -6.9909,
+      "lon": 316.933
+    },
+    "Marfak": {
+      "lat": 43.1278,
+      "lon": 41.1631
+    },
+    "Marfik": {
+      "lat": 23.5557,
+      "lon": 245.59
+    },
+    "Marichi": {
+      "lat": 54.3878,
+      "lon": 176.929
+    },
+    "Markab": {
+      "lat": 19.4059,
+      "lon": 353.4818
+    },
+    "Markeb": {
+      "lat": -63.7217,
+      "lon": 178.8881
+    },
+    "Marsic": {
+      "lat": 37.2151,
+      "lon": 235.7142
+    },
+    "Marsik": {
+      "lat": 37.2151,
+      "lon": 235.7142
+    },
+    "Masym": {
+      "lat": 49.2939,
+      "lon": 259.8993
+    },
+    "Matar": {
+      "lat": 35.1081,
+      "lon": 355.7094
+    },
+    "Mati": {
+      "lat": -56.7893,
+      "lon": 214.5402
+    },
+    "Mautinah": {
+      "lat": -12.3926,
+      "lon": 130.3003
+    },
+    "Mebsuta": {
+      "lat": 2.0699,
+      "lon": 99.9349
+    },
+    "Megrez": {
+      "lat": 51.6569,
+      "lon": 151.0613
+    },
+    "Meissa": {
+      "lat": -13.3695,
+      "lon": 83.703
+    },
+    "Mekbuda": {
+      "lat": -2.0388,
+      "lon": 104.9863
+    },
+    "Meleph": {
+      "lat": 1.1605,
+      "lon": 127.39
+    },
+    "Melkarth": {
+      "lat": 51.102,
+      "lon": 265.2198
+    },
+    "Men": {
+      "lat": -30.0259,
+      "lon": 233.4999
+    },
+    "Menkalinan": {
+      "lat": 21.5082,
+      "lon": 89.9064
+    },
+    "Menkar": {
+      "lat": -12.5857,
+      "lon": 44.3162
+    },
+    "Menkent": {
+      "lat": -22.0815,
+      "lon": 222.3039
+    },
+    "Menkib": {
+      "lat": 14.9438,
+      "lon": 64.9686
+    },
+    "Merak": {
+      "lat": 45.1332,
+      "lon": 139.431
+    },
+    "Merga": {
+      "lat": 57.881,
+      "lon": 195.4382
+    },
+    "Meridiana": {
+      "lat": -15.3138,
+      "lon": 284.1312
+    },
+    "Merope": {
+      "lat": 3.9557,
+      "lon": 59.6954
+    },
+    "Mesarthim": {
+      "lat": 7.1621,
+      "lon": 33.1808
+    },
+    "Messier 42": {
+      "lat": -28.6801,
+      "lon": 82.9815
+    },
+    "Messier 49": {
+      "lat": 10.2961,
+      "lon": 183.6301
+    },
+    "Messier 87": {
+      "lat": 14.4167,
+      "lon": 182.0554
+    },
+    "Metallah": {
+      "lat": 16.8,
+      "lon": 36.8568
+    },
+    "Miaplacidus": {
+      "lat": -72.2363,
+      "lon": 211.9639
+    },
+    "Mimosa": {
+      "lat": -48.6389,
+      "lon": 221.6421
+    },
+    "Minchir": {
+      "lat": -14.6019,
+      "lon": 131.2059
+    },
+    "Mineluva": {
+      "lat": 8.6129,
+      "lon": 191.456
+    },
+    "Minkar": {
+      "lat": -19.6736,
+      "lon": 191.6613
+    },
+    "Mintaka": {
+      "lat": -23.553,
+      "lon": 82.3583
+    },
+    "Mira": {
+      "lat": -15.9374,
+      "lon": 31.5179
+    },
+    "Mirach": {
+      "lat": 25.9429,
+      "lon": 30.4017
+    },
+    "Mirak": {
+      "lat": 40.6249,
+      "lon": 208.1023
+    },
+    "Miram": {
+      "lat": 37.4818,
+      "lon": 58.698
+    },
+    "Mirfak": {
+      "lat": 30.1254,
+      "lon": 62.0771
+    },
+    "Mirphak": {
+      "lat": 30.1254,
+      "lon": 62.0771
+    },
+    "Mirzam": {
+      "lat": -41.2537,
+      "lon": 97.1841
+    },
+    "Misam": {
+      "lat": 26.0825,
+      "lon": 57.6877
+    },
+    "Miz0": {
+      "lat": 56.3791,
+      "lon": 165.6968
+    },
+    "Mizar": {
+      "lat": 56.3791,
+      "lon": 165.6968
+    },
+    "Mothallah": {
+      "lat": 16.8,
+      "lon": 36.8568
+    },
+    "Mrgashirsha": {
+      "lat": -13.3695,
+      "lon": 83.703
+    },
+    "Mrigashirsha": {
+      "lat": -13.3695,
+      "lon": 83.703
+    },
+    "Mufrid": {
+      "lat": 28.0763,
+      "lon": 199.333
+    },
+    "Muhlifain": {
+      "lat": -40.1626,
+      "lon": 212.3128
+    },
+    "Mula": {
+      "lat": -13.7885,
+      "lon": 264.5818
+    },
+    "Muliphein": {
+      "lat": -37.9938,
+      "lon": 109.604
+    },
+    "Muphrid": {
+      "lat": 28.0763,
+      "lon": 199.333
+    },
+    "Murzim": {
+      "lat": -41.2537,
+      "lon": 97.1841
+    },
+    "Murzims": {
+      "lat": -41.2537,
+      "lon": 97.1841
+    },
+    "Muscida": {
+      "lat": 40.2431,
+      "lon": 112.9917
+    },
+    "Musica": {
+      "lat": 26.7868,
+      "lon": 320.5872
+    },
+    "NGC 4194": {
+      "lat": 49.5911,
+      "lon": 153.3156
+    },
+    "Nageba": {
+      "lat": 11.0301,
+      "lon": 101.1195
+    },
+    "Nair al Saif": {
+      "lat": -29.2,
+      "lon": 82.9937
+    },
+    "Nanto": {
+      "lat": -3.954,
+      "lon": 280.1776
+    },
+    "Naos": {
+      "lat": -58.3477,
+      "lon": 138.5467
+    },
+    "Nash": {
+      "lat": -6.9916,
+      "lon": 271.2574
+    },
+    "Nashira": {
+      "lat": -2.5575,
+      "lon": 321.7873
+    },
+    "Nehushtan": {
+      "lat": 7.9346,
+      "lon": 264.5421
+    },
+    "Nekkar": {
+      "lat": 54.1509,
+      "lon": 204.2467
+    },
+    "Nembus": {
+      "lat": 35.4146,
+      "lon": 42.4361
+    },
+    "Nihal": {
+      "lat": -43.9147,
+      "lon": 79.6685
+    },
+    "Nodus I": {
+      "lat": 84.7615,
+      "lon": 183.3759
+    },
+    "Nodus II": {
+      "lat": 82.886,
+      "lon": 17.1595
+    },
+    "Nulla Pambu": {
+      "lat": 24.0069,
+      "lon": 234.3274
+    },
+    "Nunki": {
+      "lat": -3.4497,
+      "lon": 282.3815
+    },
+    "Nusakan": {
+      "lat": 46.0541,
+      "lon": 219.1122
+    },
+    "Oculus": {
+      "lat": 0.8995,
+      "lon": 304.7106
+    },
+    "Ogma": {
+      "lat": 59.0597,
+      "lon": 234.4961
+    },
+    "Orion Nebula": {
+      "lat": -28.6801,
+      "lon": 82.9815
+    },
+    "Pazan": {
+      "lat": -7.0289,
+      "lon": 307.1549
+    },
+    "Pazhan": {
+      "lat": -7.0289,
+      "lon": 307.1549
+    },
+    "Peacock": {
+      "lat": -36.2678,
+      "lon": 293.8135
+    },
+    "Peregrini": {
+      "lat": -51.0878,
+      "lon": 190.5123
+    },
+    "Phact": {
+      "lat": -57.3752,
+      "lon": 82.1654
+    },
+    "Phaeo": {
+      "lat": -5.7451,
+      "lon": 67.9517
+    },
+    "Phaesula": {
+      "lat": -5.8386,
+      "lon": 67.9583
+    },
+    "Pharkadain": {
+      "lat": 75.1221,
+      "lon": 117.4005
+    },
+    "Phecda": {
+      "lat": 47.1417,
+      "lon": 150.4734
+    },
+    "Pherkad": {
+      "lat": 75.2411,
+      "lon": 141.5941
+    },
+    "Pherkad Minor": {
+      "lat": 74.9582,
+      "lon": 141.6432
+    },
+    "Phicares": {
+      "lat": 59.9415,
+      "lon": 13.0469
+    },
+    "Phicareus": {
+      "lat": 59.9415,
+      "lon": 13.0469
+    },
+    "Phycochroma": {
+      "lat": -14.4617,
+      "lon": 37.5675
+    },
+    "Pipirima": {
+      "lat": -15.3825,
+      "lon": 256.2423
+    },
+    "Pleione": {
+      "lat": 3.9975,
+      "lon": 60.3755
+    },
+    "Pleura": {
+      "lat": -21.7975,
+      "lon": 170.3622
+    },
+    "Polaris": {
+      "lat": 66.1014,
+      "lon": 88.5638
+    },
+    "Polaris Australis": {
+      "lat": -65.8402,
+      "lon": 271.867
+    },
+    "Polis": {
+      "lat": 2.3421,
+      "lon": 273.2096
+    },
+    "Pollux": {
+      "lat": 6.6838,
+      "lon": 113.2103
+    },
+    "Porrima": {
+      "lat": 2.7899,
+      "lon": 190.1362
+    },
+    "Praecipua": {
+      "lat": 24.9306,
+      "lon": 150.8737
+    },
+    "Praesepe Cluster": {
+      "lat": 1.5634,
+      "lon": 127.1981
+    },
+    "Prijipati": {
+      "lat": 30.8451,
+      "lon": 89.916
+    },
+    "Prima Hyadum": {
+      "lat": -5.7324,
+      "lon": 65.8022
+    },
+    "Princeps": {
+      "lat": 48.9654,
+      "lon": 213.1541
+    },
+    "Procyon": {
+      "lat": -16.0224,
+      "lon": 115.7804
+    },
+    "Propus": {
+      "lat": -0.8882,
+      "lon": 93.4322
+    },
+    "Propus etaGem": {
+      "lat": -0.8882,
+      "lon": 93.4322
+    },
+    "Propus iotGem": {
+      "lat": 5.7581,
+      "lon": 108.9531
+    },
+    "Proxima Centauri": {
+      "lat": -42.5981,
+      "lon": 239.464
+    },
+    "Pulaha": {
+      "lat": 45.1332,
+      "lon": 139.431
+    },
+    "Pulastya": {
+      "lat": 47.1417,
+      "lon": 150.4734
+    },
+    "Pulcherrima": {
+      "lat": 40.6249,
+      "lon": 208.1023
+    },
+    "Punarvasu": {
+      "lat": 6.6838,
+      "lon": 113.2103
+    },
+    "Purvabhadra": {
+      "lat": 19.4059,
+      "lon": 353.4818
+    },
+    "Purvaphalguni": {
+      "lat": 14.3334,
+      "lon": 161.3132
+    },
+    "Purvashadha": {
+      "lat": -6.4723,
+      "lon": 274.5771
+    },
+    "Pushya": {
+      "lat": 0.0766,
+      "lon": 128.7182
+    },
+    "Qin": {
+      "lat": 28.8804,
+      "lon": 228.3377
+    },
+    "Ran": {
+      "lat": -27.7151,
+      "lon": 48.1613
+    },
+    "Rana": {
+      "lat": -28.6746,
+      "lon": 50.8584
+    },
+    "Ras Algethi": {
+      "lat": 37.2862,
+      "lon": 256.1481
+    },
+    "Ras Alkurki": {
+      "lat": -23.0504,
+      "lon": 317.4157
+    },
+    "Ras Elased Australis": {
+      "lat": 9.7153,
+      "lon": 140.7009
+    },
+    "Ras Elased Borealis": {
+      "lat": 12.3486,
+      "lon": 141.4257
+    },
+    "Ras Mutallah": {
+      "lat": 16.8,
+      "lon": 36.8568
+    },
+    "Rasalas": {
+      "lat": 12.3486,
+      "lon": 141.4257
+    },
+    "Rasalgethi": {
+      "lat": 37.2862,
+      "lon": 256.1481
+    },
+    "Rasalhague": {
+      "lat": 35.8347,
+      "lon": 262.4451
+    },
+    "Rastaban": {
+      "lat": 75.2778,
+      "lon": 251.9624
+    },
+    "Regor": {
+      "lat": -64.4641,
+      "lon": 147.3457
+    },
+    "Regulus": {
+      "lat": 0.4646,
+      "lon": 149.8247
+    },
+    "Rehla": {
+      "lat": -72.8533,
+      "lon": 117.7231
+    },
+    "Revati": {
+      "lat": -0.2137,
+      "lon": 19.8739
+    },
+    "Rigel": {
+      "lat": -31.1228,
+      "lon": 76.8257
+    },
+    "Rigel Kentaurus": {
+      "lat": -42.5981,
+      "lon": 239.464
+    },
+    "Rigil Kentaurus": {
+      "lat": -42.5981,
+      "lon": 239.464
+    },
+    "Rijl al Awwa": {
+      "lat": 9.6714,
+      "lon": 220.1278
+    },
+    "Ril Alauva": {
+      "lat": 9.6714,
+      "lon": 220.1278
+    },
+    "Rohini": {
+      "lat": -5.4678,
+      "lon": 69.7854
+    },
+    "Rotanev": {
+      "lat": 31.9177,
+      "lon": 316.3378
+    },
+    "Ruc": {
+      "lat": 64.4141,
+      "lon": 316.2459
+    },
+    "Rucha": {
+      "lat": 46.403,
+      "lon": 47.9269
+    },
+    "Ruchbah": {
+      "lat": 46.403,
+      "lon": 47.9269
+    },
+    "Ruchbah I": {
+      "lat": 64.0428,
+      "lon": 336.0115
+    },
+    "Ruchbah II": {
+      "lat": 64.1517,
+      "lon": 336.7444
+    },
+    "Rukbalgethi Genubi": {
+      "lat": 60.6849,
+      "lon": 268.4731
+    },
+    "Rukbalgethi Shemali": {
+      "lat": 65.83,
+      "lon": 224.3804
+    },
+    "Rukbat": {
+      "lat": -18.3805,
+      "lon": 286.6319
+    },
+    "Rukh": {
+      "lat": 64.4141,
+      "lon": 316.2459
+    },
+    "Rutilicus": {
+      "lat": 53.1102,
+      "lon": 241.4536
+    },
+    "Sabik": {
+      "lat": 7.198,
+      "lon": 257.9658
+    },
+    "Saclateni": {
+      "lat": 18.2023,
+      "lon": 78.6295
+    },
+    "Sadachbia": {
+      "lat": 8.2351,
+      "lon": 336.7105
+    },
+    "Sadalachbia": {
+      "lat": 8.2351,
+      "lon": 336.7105
+    },
+    "Sadalbari": {
+      "lat": 28.7962,
+      "lon": 353.0514
+    },
+    "Sadalmelek": {
+      "lat": 10.6615,
+      "lon": 333.3486
+    },
+    "Sadalmelik": {
+      "lat": 10.6615,
+      "lon": 333.3486
+    },
+    "Sadalsuud": {
+      "lat": 8.615,
+      "lon": 323.3912
+    },
+    "Sadaltager": {
+      "lat": 8.8453,
+      "lon": 338.9054
+    },
+    "Sadatoni": {
+      "lat": 18.2023,
+      "lon": 78.6295
+    },
+    "Sadir": {
+      "lat": 57.1244,
+      "lon": 324.8376
+    },
+    "Sador": {
+      "lat": 57.1244,
+      "lon": 324.8376
+    },
+    "Sadr": {
+      "lat": 57.1244,
+      "lon": 324.8376
+    },
+    "Saidak": {
+      "lat": 56.5508,
+      "lon": 165.8709
+    },
+    "Saiph": {
+      "lat": -33.0706,
+      "lon": 86.3948
+    },
+    "Salm": {
+      "lat": 25.5692,
+      "lon": 1.0509
+    },
+    "Samakah": {
+      "lat": 9.053,
+      "lon": 348.5815
+    },
+    "Sanduleak": {
+      "lat": -86.4457,
+      "lon": 307.5879
+    },
+    "Sargas": {
+      "lat": -19.6451,
+      "lon": 265.5956
+    },
+    "Sarin": {
+      "lat": 47.6852,
+      "lon": 254.7597
+    },
+    "Sasin": {
+      "lat": -44.9648,
+      "lon": 72.0518
+    },
+    "Sataghni": {
+      "lat": -13.0498,
+      "lon": 218.6203
+    },
+    "Sceptrum": {
+      "lat": -36.003,
+      "lon": 65.2502
+    },
+    "Scheat": {
+      "lat": 31.1406,
+      "lon": 359.371
+    },
+    "Schedar": {
+      "lat": 46.622,
+      "lon": 37.7799
+    },
+    "Schedir": {
+      "lat": 46.622,
+      "lon": 37.7799
+    },
+    "Scutulum": {
+      "lat": -67.1164,
+      "lon": 185.3223
+    },
+    "Seat": {
+      "lat": 10.4729,
+      "lon": 338.5942
+    },
+    "Secunda Hyadum": {
+      "lat": -3.9696,
+      "lon": 66.8671
+    },
+    "Segin": {
+      "lat": 47.5481,
+      "lon": 54.7599
+    },
+    "Seginus": {
+      "lat": 49.5518,
+      "lon": 197.6589
+    },
+    "Sephdar": {
+      "lat": -13.3783,
+      "lon": 273.6235
+    },
+    "Sham": {
+      "lat": 38.7922,
+      "lon": 301.0676
+    },
+    "Shapley Supercluster": {
+      "lat": -20.6301,
+      "lon": 212.3326
+    },
+    "Shatabhishaj": {
+      "lat": -0.3866,
+      "lon": 341.5723
+    },
+    "Shatabhishak": {
+      "lat": -0.3866,
+      "lon": 341.5723
+    },
+    "Shaula": {
+      "lat": -13.7885,
+      "lon": 264.5818
+    },
+    "Shedir": {
+      "lat": 46.622,
+      "lon": 37.7799
+    },
+    "Sheliak": {
+      "lat": 55.9841,
+      "lon": 288.8798
+    },
+    "Shemali": {
+      "lat": -10.0218,
+      "lon": 0.9122
+    },
+    "Sheratan": {
+      "lat": 8.4869,
+      "lon": 33.9663
+    },
+    "Shir": {
+      "lat": 0.1497,
+      "lon": 156.385
+    },
+    "Shishimai": {
+      "lat": 1.6968,
+      "lon": 168.7017
+    },
+    "Shravana": {
+      "lat": 29.3041,
+      "lon": 301.7742
+    },
+    "Shravishtha": {
+      "lat": 31.9177,
+      "lon": 316.3378
+    },
+    "Simiram": {
+      "lat": -67.3824,
+      "lon": 217.4356
+    },
+    "Simmah": {
+      "lat": 7.2564,
+      "lon": 351.4511
+    },
+    "Sinistra": {
+      "lat": 13.6652,
+      "lon": 269.7493
+    },
+    "Sirius": {
+      "lat": -39.6084,
+      "lon": 104.0765
+    },
+    "Sirrah": {
+      "lat": 25.6799,
+      "lon": 14.3047
+    },
+    "Situla": {
+      "lat": 4.1101,
+      "lon": 339.4121
+    },
+    "Skat": {
+      "lat": -8.1914,
+      "lon": 338.8695
+    },
+    "Sofian": {
+      "lat": 60.2896,
+      "lon": 238.7841
+    },
+    "Spica": {
+      "lat": -2.0546,
+      "lon": 203.8374
+    },
+    "Spiculum": {
+      "lat": -0.9231,
+      "lon": 271.0249
+    },
+    "Sterope I": {
+      "lat": 4.568,
+      "lon": 59.7359
+    },
+    "Sterope II": {
+      "lat": 4.535,
+      "lon": 59.7612
+    },
+    "Sualocin": {
+      "lat": 33.0223,
+      "lon": 317.3769
+    },
+    "Subra": {
+      "lat": -3.7574,
+      "lon": 144.2429
+    },
+    "Suhail": {
+      "lat": -55.8708,
+      "lon": 161.1836
+    },
+    "Suhail Hadar": {
+      "lat": -58.3477,
+      "lon": 138.5467
+    },
+    "Suhail al Muhlif": {
+      "lat": -64.4641,
+      "lon": 147.3457
+    },
+    "Sulafat": {
+      "lat": 55.013,
+      "lon": 291.9185
+    },
+    "Sulaphat": {
+      "lat": 55.013,
+      "lon": 291.9185
+    },
+    "Sun Pole": {
+      "lat": 82.7483,
+      "lon": 345.7619
+    },
+    "Svati": {
+      "lat": 30.7307,
+      "lon": 204.2291
+    },
+    "Syrma": {
+      "lat": 7.1985,
+      "lon": 213.7936
+    },
+    "Tabit": {
+      "lat": -15.3843,
+      "lon": 71.922
+    },
+    "Taiyangshou": {
+      "lat": 41.5438,
+      "lon": 153.6558
+    },
+    "Taiyi": {
+      "lat": 60.9383,
+      "lon": 146.1752
+    },
+    "Talitha": {
+      "lat": 29.5745,
+      "lon": 122.795
+    },
+    "Talitha Australis": {
+      "lat": 28.9794,
+      "lon": 123.9328
+    },
+    "Talitha Borealis": {
+      "lat": 29.5745,
+      "lon": 122.795
+    },
+    "Tang": {
+      "lat": 20.4338,
+      "lon": 275.6738
+    },
+    "Tania Australis": {
+      "lat": 28.9981,
+      "lon": 141.2308
+    },
+    "Tania Borealis": {
+      "lat": 29.885,
+      "lon": 139.5455
+    },
+    "Tarazed": {
+      "lat": 31.2436,
+      "lon": 300.9351
+    },
+    "Taygeta": {
+      "lat": 4.5181,
+      "lon": 59.5609
+    },
+    "Tegmen": {
+      "lat": -2.2675,
+      "lon": 121.3387
+    },
+    "Tegmine": {
+      "lat": -2.2675,
+      "lon": 121.3387
+    },
+    "Tejat": {
+      "lat": -0.8204,
+      "lon": 95.2982
+    },
+    "Terebellium": {
+      "lat": -5.4219,
+      "lon": 295.8474
+    },
+    "Test": {
+      "lat": 59.5635,
+      "lon": 347.228
+    },
+    "Thabit": {
+      "lat": -30.544,
+      "lon": 81.9077
+    },
+    "The Blaze Star": {
+      "lat": 55.9577,
+      "lon": 228.019
+    },
+    "The Garnet Star": {
+      "lat": 64.1943,
+      "lon": 9.7032
+    },
+    "Theemin": {
+      "lat": -51.8172,
+      "lon": 59.8812
+    },
+    "Thuban": {
+      "lat": 66.362,
+      "lon": 157.4521
+    },
+    "Thusia": {
+      "lat": -21.2441,
+      "lon": 241.4941
+    },
+    "Tiaki": {
+      "lat": -35.4322,
+      "lon": 322.3238
+    },
+    "Tianguan": {
+      "lat": -2.1957,
+      "lon": 84.7808
+    },
+    "Tianyi": {
+      "lat": 61.1085,
+      "lon": 142.9517
+    },
+    "Tien Kang": {
+      "lat": -21.366,
+      "lon": 327.1773
+    },
+    "Titawin": {
+      "lat": 28.9797,
+      "lon": 38.5454
+    },
+    "Toliman": {
+      "lat": -42.5981,
+      "lon": 239.464
+    },
+    "Tonatiuh": {
+      "lat": 63.5976,
+      "lon": 120.6172
+    },
+    "Torcular": {
+      "lat": -1.6202,
+      "lon": 27.7395
+    },
+    "Torcularis Septentrionalis": {
+      "lat": -1.6202,
+      "lon": 27.7395
+    },
+    "Trapezium": {
+      "lat": -28.6785,
+      "lon": 82.9776
+    },
+    "Trappist-1": {
+      "lat": 0.6313,
+      "lon": 345.7316
+    },
+    "Tse Tseng": {
+      "lat": 6.1053,
+      "lon": 167.5625
+    },
+    "Tseen Foo": {
+      "lat": 18.7277,
+      "lon": 304.9096
+    },
+    "Tseen Ke": {
+      "lat": -59.9505,
+      "lon": 185.9426
+    },
+    "Tsih": {
+      "lat": 48.8149,
+      "lon": 43.9273
+    },
+    "Tsze": {
+      "lat": -57.2248,
+      "lon": 87.3533
+    },
+    "Tsze Tseang": {
+      "lat": 6.1053,
+      "lon": 167.5625
+    },
+    "Turais": {
+      "lat": -43.2701,
+      "lon": 131.3847
+    },
+    "Tureis": {
+      "lat": -43.2701,
+      "lon": 131.3847
+    },
+    "Tyl": {
+      "lat": 79.4901,
+      "lon": 32.6907
+    },
+    "Ukdah": {
+      "lat": -16.6999,
+      "lon": 145.5805
+    },
+    "Ukdah prima": {
+      "lat": -16.6999,
+      "lon": 145.5805
+    },
+    "Ukdah secunda": {
+      "lat": -14.971,
+      "lon": 145.734
+    },
+    "Unukalhai": {
+      "lat": 25.5082,
+      "lon": 232.0716
+    },
+    "Unurgunite": {
+      "lat": -50.2258,
+      "lon": 111.5522
+    },
+    "Urakhga": {
+      "lat": 64.4141,
+      "lon": 316.2459
+    },
+    "Urodelus": {
+      "lat": 73.9229,
+      "lon": 99.1324
+    },
+    "Ushakaron": {
+      "lat": -8.7988,
+      "lon": 51.9082
+    },
+    "Uttarabhadra": {
+      "lat": 12.5999,
+      "lon": 9.1522
+    },
+    "Uttaraphalguni": {
+      "lat": 12.2661,
+      "lon": 171.6127
+    },
+    "Uttarashadha": {
+      "lat": -3.4497,
+      "lon": 282.3815
+    },
+    "Vasishtha": {
+      "lat": 56.3791,
+      "lon": 165.6968
+    },
+    "Vathorz Posterior": {
+      "lat": -62.139,
+      "lon": 209.1854
+    },
+    "Vathorz Prior": {
+      "lat": -67.4985,
+      "lon": 202.8827
+    },
+    "Vega": {
+      "lat": 61.7334,
+      "lon": 285.3137
+    },
+    "Veritate": {
+      "lat": 38.2294,
+      "lon": 11.9589
+    },
+    "Vernalis": {
+      "lat": 6.3626,
+      "lon": 2.5799
+    },
+    "Vindemiatrix": {
+      "lat": 16.2048,
+      "lon": 189.9357
+    },
+    "Virgo Cluster": {
+      "lat": 14.3637,
+      "lon": 182.07
+    },
+    "Vishakha": {
+      "lat": -1.8496,
+      "lon": 231.0008
+    },
+    "Wasat": {
+      "lat": -0.1784,
+      "lon": 108.5154
+    },
+    "Wazn": {
+      "lat": -59.1785,
+      "lon": 86.4159
+    },
+    "Wei": {
+      "lat": -11.7393,
+      "lon": 255.3298
+    },
+    "Wezen": {
+      "lat": -48.4532,
+      "lon": 113.3921
+    },
+    "Wurren": {
+      "lat": -55.1317,
+      "lon": 342.3754
+    },
+    "Xamidimura": {
+      "lat": -15.4232,
+      "lon": 256.1517
+    },
+    "Xestus": {
+      "lat": -66.2763,
+      "lon": 164.7299
+    },
+    "Xuange": {
+      "lat": 54.6482,
+      "lon": 186.9584
+    },
+    "Yed Posterior": {
+      "lat": 16.4398,
+      "lon": 243.5064
+    },
+    "Yed Prior": {
+      "lat": 17.2408,
+      "lon": 242.2982
+    },
+    "Yildun": {
+      "lat": 69.9451,
+      "lon": 91.1992
+    },
+    "Zaniah": {
+      "lat": 1.3652,
+      "lon": 184.8281
+    },
+    "Zaurak": {
+      "lat": -33.2024,
+      "lon": 53.8637
+    },
+    "Zavijava": {
+      "lat": 0.6944,
+      "lon": 177.1622
+    },
+    "ZerL2000": {
+      "lat": 0.0,
+      "lon": 179.9961
+    },
+    "Zero2000": {
+      "lat": -0.0,
+      "lon": 359.9961
+    },
+    "Zhang": {
+      "lat": -26.0773,
+      "lon": 155.6875
+    },
+    "Zhou": {
+      "lat": 34.3266,
+      "lon": 229.9448
+    },
+    "Zibal": {
+      "lat": -25.9216,
+      "lon": 43.824
+    },
+    "Zosma": {
+      "lat": 14.3334,
+      "lon": 161.3132
+    },
+    "Zuben Elakrab": {
+      "lat": 4.386,
+      "lon": 235.1343
+    },
+    "Zuben Elakribi": {
+      "lat": 8.2465,
+      "lon": 225.2789
+    },
+    "Zuben Elgenubi": {
+      "lat": 0.3328,
+      "lon": 225.0786
+    },
+    "Zuben Eschamali": {
+      "lat": 8.4958,
+      "lon": 229.3676
+    },
+    "Zuben Hakrabi": {
+      "lat": 1.1961,
+      "lon": 228.7672
+    },
+    "Zubenelakrab": {
+      "lat": 4.386,
+      "lon": 235.1343
+    },
+    "Zubenelakribi": {
+      "lat": 8.2465,
+      "lon": 225.2789
+    },
+    "Zubenelgenubi": {
+      "lat": 0.3328,
+      "lon": 225.0786
+    },
+    "Zubenelhakrabi": {
+      "lat": 4.386,
+      "lon": 235.1343
+    },
+    "Zubeneshamali": {
+      "lat": 8.4958,
+      "lon": 229.3676
+    },
+    "Zubenhakrabi": {
+      "lat": 1.1961,
+      "lon": 228.7672
+    }
+  }
+}

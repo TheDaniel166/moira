@@ -1,0 +1,16 @@
+# Moira — Development / test dependencies
+# Keep in sync with pyproject.toml [project.optional-dependencies.dev]
+-r requirements.txt
+
+# Testing
+pytest>=9.0
+pyyaml>=6.0
+
+# Accuracy validation (Horizons integration tests)
+# (no extra deps — uses stdlib urllib)
+
+# Property-based testing
+hypothesis>=6.0
+
+# Optional: parallel test execution
+# pytest-xdist>=3.0

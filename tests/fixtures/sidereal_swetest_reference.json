@@ -1,0 +1,773 @@
+{
+  "cases": [
+    {
+      "date": "1.1.2000",
+      "id": "j2000_ut0",
+      "systems": {
+        "Aldebaran (15 Tau)": {
+          "mean": {
+            "ayanamsa_deg": 24.75890477777778,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid14+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 14,
+          "true": {
+            "ayanamsa_deg": 24.755035055555556,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid14+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Aryabhata": {
+          "mean": {
+            "ayanamsa_deg": 20.89504063888889,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid23+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 23,
+          "true": {
+            "ayanamsa_deg": 20.891170888888887,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid23+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Aryabhata (Mean Sun)": {
+          "mean": {
+            "ayanamsa_deg": 20.65740825,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid24+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 24,
+          "true": {
+            "ayanamsa_deg": 20.6535385,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid24+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Babylonian (Eta Piscium)": {
+          "mean": {
+            "ayanamsa_deg": 24.522508833333333,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid13+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 13,
+          "true": {
+            "ayanamsa_deg": 24.51863911111111,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid13+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Babylonian (Huber)": {
+          "mean": {
+            "ayanamsa_deg": 24.73362077777778,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid12+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 12,
+          "true": {
+            "ayanamsa_deg": 24.729751027777777,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid12+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Babylonian (Kugler 1)": {
+          "mean": {
+            "ayanamsa_deg": 23.53362077777778,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid9+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 9,
+          "true": {
+            "ayanamsa_deg": 23.529751027777777,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid9+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Babylonian (Kugler 2)": {
+          "mean": {
+            "ayanamsa_deg": 24.93362077777778,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid10+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 10,
+          "true": {
+            "ayanamsa_deg": 24.92975102777778,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid10+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Babylonian (Kugler 3)": {
+          "mean": {
+            "ayanamsa_deg": 25.78362077777778,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid11+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 11,
+          "true": {
+            "ayanamsa_deg": 25.779751027777777,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid11+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Bhasin": {
+          "mean": {
+            "ayanamsa_deg": 22.762117916666668,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid8+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 8,
+          "true": {
+            "ayanamsa_deg": 22.758248166666668,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid8+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "De Luce": {
+          "mean": {
+            "ayanamsa_deg": 27.815733666666667,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid2+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 2,
+          "true": {
+            "ayanamsa_deg": 27.811863944444447,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid2+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Djwhal Khul": {
+          "mean": {
+            "ayanamsa_deg": 28.359659500000003,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid6+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 6,
+          "true": {
+            "ayanamsa_deg": 28.35578977777778,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid6+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Fagan-Bradley": {
+          "mean": {
+            "ayanamsa_deg": 24.740280861111113,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid0+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 0,
+          "true": {
+            "ayanamsa_deg": 24.73641113888889,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid0+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Galactic Center (0 Sag)": {
+          "mean": {
+            "ayanamsa_deg": 26.846016916666667,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid17+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 17,
+          "true": {
+            "ayanamsa_deg": 26.842147166666667,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid17+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Galactic Center (Cochrane)": {
+          "mean": {
+            "ayanamsa_deg": 356.84601691666666,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid40+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 40,
+          "true": {
+            "ayanamsa_deg": 356.8421471666666,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid40+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Galactic Center (RGB)": {
+          "mean": {
+            "ayanamsa_deg": 22.469075888888888,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid30+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 30,
+          "true": {
+            "ayanamsa_deg": 22.465206166666665,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid30+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Hipparchos": {
+          "mean": {
+            "ayanamsa_deg": 20.247769,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid15+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 15,
+          "true": {
+            "ayanamsa_deg": 20.243899250000002,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid15+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Krishnamurti": {
+          "mean": {
+            "ayanamsa_deg": 23.76022091666667,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid5+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 5,
+          "true": {
+            "ayanamsa_deg": 23.756351166666665,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid5+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Lahiri": {
+          "mean": {
+            "ayanamsa_deg": 23.857073222222223,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid1+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 1,
+          "true": {
+            "ayanamsa_deg": 23.853203500000003,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid1+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Raman": {
+          "mean": {
+            "ayanamsa_deg": 22.410771916666665,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid3+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 3,
+          "true": {
+            "ayanamsa_deg": 22.406902166666665,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid3+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "SS Citra": {
+          "mean": {
+            "ayanamsa_deg": 23.005744194444443,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid26+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 26,
+          "true": {
+            "ayanamsa_deg": 23.001874444444443,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid26+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "SS Revati": {
+          "mean": {
+            "ayanamsa_deg": 20.10336927777778,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid25+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 25,
+          "true": {
+            "ayanamsa_deg": 20.099499555555553,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid25+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Sassanian": {
+          "mean": {
+            "ayanamsa_deg": 19.99294027777778,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid16+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 16,
+          "true": {
+            "ayanamsa_deg": 19.989070555555557,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid16+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Suryasiddhanta": {
+          "mean": {
+            "ayanamsa_deg": 20.89503975,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid21+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 21,
+          "true": {
+            "ayanamsa_deg": 20.89117,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid21+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Suryasiddhanta (Mean Sun)": {
+          "mean": {
+            "ayanamsa_deg": 20.680405805555555,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid22+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 22,
+          "true": {
+            "ayanamsa_deg": 20.676536055555555,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid22+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "True Chitrapaksha": {
+          "mean": {
+            "ayanamsa_deg": 23.83994961111111,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid27+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 27,
+          "true": {
+            "ayanamsa_deg": 23.83607986111111,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid27+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "True Pushya": {
+          "mean": {
+            "ayanamsa_deg": 22.727048138888886,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid29+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 29,
+          "true": {
+            "ayanamsa_deg": 22.723178416666666,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid29+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "True Revati": {
+          "mean": {
+            "ayanamsa_deg": 20.04519252777778,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid28+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 28,
+          "true": {
+            "ayanamsa_deg": 20.04132277777778,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid28+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Usha-Shashi": {
+          "mean": {
+            "ayanamsa_deg": 20.057521916666666,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid4+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 4,
+          "true": {
+            "ayanamsa_deg": 20.053652166666666,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid4+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Yukteshwar": {
+          "mean": {
+            "ayanamsa_deg": 22.478783916666664,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid7+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 7,
+          "true": {
+            "ayanamsa_deg": 22.474914166666665,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid7+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        }
+      },
+      "ut": "00:00"
+    },
+    {
+      "date": "16.3.1625",
+      "id": "1625_03_16_ut12",
+      "systems": {
+        "Aldebaran (15 Tau)": {
+          "mean": {
+            "ayanamsa_deg": 19.52790302777778,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid14+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 14,
+          "true": {
+            "ayanamsa_deg": 19.52750233333333,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid14+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Aryabhata": {
+          "mean": {
+            "ayanamsa_deg": 15.66401975,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid23+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 23,
+          "true": {
+            "ayanamsa_deg": 15.663619083333334,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid23+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Aryabhata (Mean Sun)": {
+          "mean": {
+            "ayanamsa_deg": 15.42638738888889,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid24+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 24,
+          "true": {
+            "ayanamsa_deg": 15.425986694444443,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid24+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Babylonian (Eta Piscium)": {
+          "mean": {
+            "ayanamsa_deg": 19.291508250000003,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid13+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 13,
+          "true": {
+            "ayanamsa_deg": 19.291107583333336,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid13+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Babylonian (Huber)": {
+          "mean": {
+            "ayanamsa_deg": 19.502619,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid12+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 12,
+          "true": {
+            "ayanamsa_deg": 19.502218305555555,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid12+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Babylonian (Kugler 1)": {
+          "mean": {
+            "ayanamsa_deg": 18.302619,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid9+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 9,
+          "true": {
+            "ayanamsa_deg": 18.302218305555556,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid9+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Babylonian (Kugler 2)": {
+          "mean": {
+            "ayanamsa_deg": 19.702619,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid10+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 10,
+          "true": {
+            "ayanamsa_deg": 19.702218305555554,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid10+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Babylonian (Kugler 3)": {
+          "mean": {
+            "ayanamsa_deg": 20.552619,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid11+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 11,
+          "true": {
+            "ayanamsa_deg": 20.552218305555556,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid11+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Bhasin": {
+          "mean": {
+            "ayanamsa_deg": 17.531092166666667,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid8+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 8,
+          "true": {
+            "ayanamsa_deg": 17.53069147222222,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid8+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "De Luce": {
+          "mean": {
+            "ayanamsa_deg": 22.584728,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid2+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 2,
+          "true": {
+            "ayanamsa_deg": 22.584327305555554,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid2+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Djwhal Khul": {
+          "mean": {
+            "ayanamsa_deg": 23.12863375,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid6+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 6,
+          "true": {
+            "ayanamsa_deg": 23.128233083333335,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid6+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Fagan-Bradley": {
+          "mean": {
+            "ayanamsa_deg": 19.509255944444444,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid0+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 0,
+          "true": {
+            "ayanamsa_deg": 19.50885525,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid0+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Galactic Center (0 Sag)": {
+          "mean": {
+            "ayanamsa_deg": 21.621202944444445,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid17+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 17,
+          "true": {
+            "ayanamsa_deg": 21.62080225,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid17+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Galactic Center (Cochrane)": {
+          "mean": {
+            "ayanamsa_deg": 351.62120294444446,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid40+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 40,
+          "true": {
+            "ayanamsa_deg": 351.62080225,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid40+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Galactic Center (RGB)": {
+          "mean": {
+            "ayanamsa_deg": 17.244261916666666,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid30+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 30,
+          "true": {
+            "ayanamsa_deg": 17.243861250000002,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid30+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Hipparchos": {
+          "mean": {
+            "ayanamsa_deg": 15.016768361111112,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid15+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 15,
+          "true": {
+            "ayanamsa_deg": 15.016367666666667,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid15+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Krishnamurti": {
+          "mean": {
+            "ayanamsa_deg": 18.529195166666664,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid5+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 5,
+          "true": {
+            "ayanamsa_deg": 18.5287945,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid5+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Lahiri": {
+          "mean": {
+            "ayanamsa_deg": 18.62604838888889,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid1+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 1,
+          "true": {
+            "ayanamsa_deg": 18.625647722222222,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid1+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Raman": {
+          "mean": {
+            "ayanamsa_deg": 17.179746166666668,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid3+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 3,
+          "true": {
+            "ayanamsa_deg": 17.1793455,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid3+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "SS Citra": {
+          "mean": {
+            "ayanamsa_deg": 17.774723305555554,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid26+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 26,
+          "true": {
+            "ayanamsa_deg": 17.774322638888886,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid26+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "SS Revati": {
+          "mean": {
+            "ayanamsa_deg": 14.872348416666668,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid25+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 25,
+          "true": {
+            "ayanamsa_deg": 14.871947722222222,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid25+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Sassanian": {
+          "mean": {
+            "ayanamsa_deg": 14.761917972222221,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid16+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 16,
+          "true": {
+            "ayanamsa_deg": 14.761517305555556,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid16+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Suryasiddhanta": {
+          "mean": {
+            "ayanamsa_deg": 15.66401888888889,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid21+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 21,
+          "true": {
+            "ayanamsa_deg": 15.663618194444444,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid21+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Suryasiddhanta (Mean Sun)": {
+          "mean": {
+            "ayanamsa_deg": 15.449384916666666,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid22+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 22,
+          "true": {
+            "ayanamsa_deg": 15.44898425,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid22+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "True Chitrapaksha": {
+          "mean": {
+            "ayanamsa_deg": 18.620008055555555,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid27+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 27,
+          "true": {
+            "ayanamsa_deg": 18.61960738888889,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid27+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "True Pushya": {
+          "mean": {
+            "ayanamsa_deg": 17.489954722222222,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid29+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 29,
+          "true": {
+            "ayanamsa_deg": 17.48955402777778,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid29+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "True Revati": {
+          "mean": {
+            "ayanamsa_deg": 14.795832416666666,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid28+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 28,
+          "true": {
+            "ayanamsa_deg": 14.795431722222222,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid28+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Usha-Shashi": {
+          "mean": {
+            "ayanamsa_deg": 14.826496166666667,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid4+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 4,
+          "true": {
+            "ayanamsa_deg": 14.826095472222223,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid4+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Yukteshwar": {
+          "mean": {
+            "ayanamsa_deg": 17.247758166666667,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid7+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 7,
+          "true": {
+            "ayanamsa_deg": 17.247357472222223,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid7+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        }
+      },
+      "ut": "12:00"
+    }
+  ],
+  "source": "Astro.com official swetest CGI"
+}

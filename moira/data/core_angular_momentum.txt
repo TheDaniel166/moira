@@ -1,0 +1,82 @@
+# Core angular momentum proxy — annual-mean LOD anomaly
+# Source: IERS EOP C04 (1962–present), annual means
+# URL: https://datacenter.iers.org/products/eop/long-term/c04_operational/csv/eopc04.1962-now.csv
+#
+# Physical interpretation:
+#   Annual-mean LOD anomaly in milliseconds.  On decadal timescales
+#   this is dominated by core-mantle angular momentum exchange.
+#   AAM/OAM contamination (~0.3-0.5 ms) is absorbed by the residual
+#   spline in delta_t_physical.py (see DELTA_T_HYBRID_MODEL.md).
+#
+# For 1840-1962: Gillet et al. model reconstruction (not yet available).
+# When obtained, prepend those rows to this file.
+#
+# Columns: decimal_year  delta_lod_ms
+#   decimal_year = calendar year + 0.5 (mid-year)
+#   delta_lod_ms = annual mean LOD in milliseconds
+#
+1962.5  1.3057
+1963.5  1.5268
+1964.5  1.9456
+1965.5  2.1958
+1966.5  2.4322
+1967.5  2.3644
+1968.5  2.4871
+1969.5  2.6717
+1970.5  2.7108
+1971.5  2.9034
+1972.5  3.1268
+1973.5  3.0443
+1974.5  2.7169
+1975.5  2.6898
+1976.5  2.9021
+1977.5  2.7788
+1978.5  2.8802
+1979.5  2.6106
+1980.5  2.2991
+1981.5  2.1536
+1982.5  2.1651
+1983.5  2.2766
+1984.5  1.5207
+1985.5  1.4455
+1986.5  1.2377
+1987.5  1.3633
+1988.5  1.3124
+1989.5  1.5203
+1990.5  1.9455
+1991.5  2.0376
+1992.5  2.2203
+1993.5  2.3636
+1994.5  2.1953
+1995.5  2.3094
+1996.5  1.8204
+1997.5  1.8385
+1998.5  1.3734
+1999.5  0.9896
+2000.5  0.7168
+2001.5  0.5725
+2002.5  0.4761
+2003.5  0.2745
+2004.5  0.3111
+2005.5  0.4323
+2006.5  0.8241
+2007.5  0.8522
+2008.5  0.8727
+2009.5  0.8036
+2010.5  0.6968
+2011.5  0.7644
+2012.5  0.8296
+2013.5  1.0246
+2014.5  0.9944
+2015.5  1.2575
+2016.5  1.3392
+2017.5  1.0274
+2018.5  0.6923
+2019.5  0.3857
+2020.5  -0.0047
+2021.5  -0.1785
+2022.5  -0.2475
+2023.5  -0.0788
+2024.5  -0.1034
+2025.5  -0.0766
+2026.5  0.0890

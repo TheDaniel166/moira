@@ -1,0 +1,46 @@
+# Dot-directories anywhere in the repo
+**/.*/
+!/.gitignore
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Test and coverage artifacts
+*.cover
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+pytestdebug.log
+
+# Build and packaging outputs
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# IDE/editor junk
+.idea/
+*.swp
+*.swo
+
+# OS junk
+Thumbs.db
+Desktop.ini
+
+# Large runtime ephemeris assets
+kernels/
+*.bsp
+*.tpc
+*.tls
+*.bpc
+*.tf

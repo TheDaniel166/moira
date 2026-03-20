@@ -1,0 +1,3 @@
+# Moira — Runtime dependencies
+# Keep in sync with pyproject.toml [project.dependencies]
+jplephem>=2.24
