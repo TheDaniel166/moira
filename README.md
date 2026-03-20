@@ -1,192 +1,126 @@
-﻿# Moira
+# Moira
 
-> *Named for the Greek Moirai, the Fates who measured the thread of mortal life against the turning heavens.*
+Moira is a pure Python astronomical ephemeris and astrology engine built around JPL DE441 data, modern IAU standards, and a Python 3.14-first codebase.
 
-**Moira** is a high-precision, sub-arcsecond astronomical ephemeris engine for Python 3.14+. It is designed as an absolute replacement for Swiss Ephemeris, prioritizing mathematical rigor, modern IAU standards (2006/2000A), and relativistic physics over file-size compression.
+It is intended to be a serious standalone repository, not a Swiss Ephemeris wrapper and not a slice of a larger mixed project.
 
-### Achievement: The Sub-Arcsecond Threshold
-Moira has achieved parity and modern superiority over Swiss Ephemeris.
-- **Sun/Planets**: Error `< 0.05` arcseconds vs JPL Horizons
-- **Moon**: Error `< 0.15` arcseconds in the modern epoch
-- **Core Technology**: Raw JPL DE441 kernels (`3.3 GB`), relativistic deflection, and full IAU 2006 matrix rotations
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Kernel](https://img.shields.io/badge/JPL-DE441-orange)](https://ssd.jpl.nasa.gov/planets/eph_export.html)
+## What Moira Covers
 
----
+- Planetary, lunar, and asteroid positions
+- Tropical and sidereal astrology workflows
+- Houses, aspects, lots, dignities, progressions, transits, and synastry
+- Eclipse search, classification, and local circumstances
+- Fixed stars, parans, occultations, and related research tooling
+- Validation utilities, fixtures, and reference-driven test suites
 
-## Features
+## Project Principles
 
-| Domain | Coverage |
-|--------|----------|
-| **Planetary positions** | Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto |
-| **Corrections** | Light-time, annual aberration, frame bias (IAU 2006), topocentric parallax |
-| **Coordinate frames** | ICRF â†’ Ecliptic, Equatorial, Horizontal |
-| **Time** | Julian Day, UTâ†”TT, Î”T (Morrison & Stephenson full series), GMST/GAST/LST |
-| **House systems** | Placidus, Koch, Equal, Whole Sign, Campanus, Regiomontanus, Porphyry, Meridian, Alcabitius, Morinus |
-| **Aspects** | 21 aspects â€” Major, Common Minor, Extended Minor |
-| **Sidereal** | 10 ayanamsa systems (Lahiri, Fagan-Bradley, KP, Raman, â€¦) |
-| **Nodes** | True Node, Mean Node, Mean Black Moon Lilith |
-| **Dignities** | Domicile, Exaltation, Triplicity, Terms, Decanates |
-| **Arabic Parts** | Full classical + medieval catalog |
-| **Progressions** | Secondary, Solar Arc, Tertiary |
-| **Primary Directions** | Placidus mundane speculum, direct & converse |
-| **Transits** | Ingresses, solar/lunar returns, prenatal syzygy |
-| **Stations** | Retrograde periods, next station |
-| **Synastry** | Bi-wheel aspects, Composite chart, Davison chart |
-| **Eclipses** | Classification, Saros/Metonic cycles |
-| **Asteroids** | Kernel-based (asteroids.bsp, centaurs.bsp) |
-| **Fixed Stars** | Full sefstars catalog |
-| **Midpoints & Harmonics** | Complete |
-| **Planetary Hours** | Chaldean system |
-| **Coverage** | 13200 BC â†’ 17191 AD |
+- Pure Python, with readable mathematical code and explicit validation surfaces
+- Python 3.14 syntax and standards are the baseline
+- `native` Moira models are authoritative inside the engine
+- Compatibility modes exist for translation and benchmarking, not as governing truth
+- Large runtime kernels are required for full capability, but are intentionally not committed
 
----
+## Repository Layout
 
-## Philosophy
-
-Swiss Ephemeris is a C library that has served the Python astrology community through a thin wrapper for two decades. Moira replaces it with a native Python implementation that:
-
-- **Requires no C compiler or binary extension** â€” only `jplephem` and `numpy`
-- **Uses the same JPL DE441 kernel** â€” identical source data, identical accuracy ceiling
-- **Is readable** â€” the astronomy is documented, not buried in compiled code
-- **Runs on Python 3.14+** â€” modern type hints, dataclasses, pattern matching
-
----
-
-## Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/TheDaniel166/moira.git
-cd moira
-
-# Create environment (Python 3.14 required)
-py -3.14 -m venv .venv
-.venv\Scripts\activate          # Windows
-# source .venv/bin/activate     # Unix
-
-# Install
-pip install -r requirements-dev.txt
-pip install -e .
+```text
+moira/                  Core engine and public API
+moira/docs/             Architecture, validation, and model doctrine
+moira/data/             Small reference/model data files
+scripts/                Diagnostics, validation, and fixture builders
+tests/                  Unit, integration, fixtures, snapshots, and tools
+sefstars.txt            Fixed-star catalog used by star-related features
 ```
 
-### Ephemeris Kernels
+## Requirements
 
-Moira requires JPL ephemeris kernel files (not included â€” too large for git):
+- Python `3.14`
+- `jplephem`
+- Local JPL kernel files for full ephemeris-backed functionality
 
-| File | Size | Purpose |
-|------|------|---------|
-| `de441.bsp` | 3.07 GB | Main planetary ephemeris |
-| `asteroids.bsp` | 59 MB | Main-belt asteroids |
-| `centaurs.bsp` | 4.7 MB | Centaur bodies (Chiron, etc.) |
-| `sb441-n373s.bsp` | 936 MB | Small-body catalog |
+The repo includes a local virtual environment workflow:
 
-Download `de441.bsp` from the [JPL FTP](https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/) and place it in the repository root.
+```powershell
+py -3.14 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+```
 
----
+## Kernel Files
+
+Large ephemeris files are ignored by Git and must be supplied locally.
+
+Expected examples:
+
+- `kernels/de441.bsp`
+- `kernels/asteroids.bsp`
+- `kernels/centaurs.bsp`
+- `kernels/sb441-n373s.bsp`
+
+These files are intentionally excluded from version control because they are too large for a normal repository workflow.
 
 ## Quick Start
 
 ```python
-from moira import Moira
 from datetime import datetime, timezone
 
+from moira import Moira
+
 m = Moira()
-
-# Planetary positions
 chart = m.chart(datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc))
-for body, data in chart.planets.items():
-    print(data)
 
-# House cusps (Placidus)
-houses = m.houses(
-    datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc),
-    latitude=51.5074,   # London
-    longitude=-0.1278,
-)
-print(f"ASC: {houses.asc:.4f}Â°  MC: {houses.mc:.4f}Â°")
-
-# Aspects
-aspects = m.aspects(chart)
-for asp in aspects[:5]:
-    print(asp)
-
-# Sidereal (Lahiri)
-sidereal = m.sidereal_chart(datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc))
+print(chart.planets["Sun"].longitude)
+print(chart.planets["Moon"].longitude)
 ```
 
----
+## Testing
 
-## Running Tests
+Moira ships with a real standalone test environment.
 
-```bash
-# Unit tests (fast, no kernel required)
-python -m pytest tests/unit -v
+Useful commands:
 
-# Integration tests (requires de441.bsp, network for Horizons validation)
-python -m pytest tests/integration -v -m "network"
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests\unit --collect-only -q
+.\.venv\Scripts\python.exe -m pytest tests\unit\test_sidereal.py -q
+.\.venv\Scripts\python.exe -m pytest tests\unit\test_eclipse_helpers.py -vv
+.\.venv\Scripts\python.exe -m pytest tests\unit\test_moira_port_compliance.py -q
 ```
 
----
+Notes:
 
-## Project Structure
+- Some tests require local ephemeris files
+- Some integration tests require optional external packages or network-marked execution
+- Eclipse-heavy tests can be slow by design
 
-```
-moira/                  â† Engine (pure Python)
-  __init__.py           â† Moira class and public API
-  planets.py            â† Planetary position pipeline
-  houses.py             â† House cusp calculations
-  aspects.py            â† Aspect detection
-  lots.py               â† Arabic parts / Hellenistic lots
-  transits.py           â† Transit finding
-  primary_directions.py â† Placidus primary directions
-  asteroids.py          â† Asteroid kernel support
-  fixed_stars.py        â† Fixed star catalog
-  ...
-tests/
-  unit/                 â† Fast, isolated tests
-  integration/          â† Multi-module / ephemeris tests
-  tools/                â† Horizons API oracle, snapshot helpers
-scripts/                â† Accuracy benchmarks, kernel builders
-```
+## Documentation
 
----
+Important internal docs live under [moira/docs](moira/docs):
 
-## Accuracy
+- `ECLIPSE_MODEL_STANDARD.md`
+- `VALIDATION.md`
+- `VALIDATION_ASTRONOMY.md`
+- `DELTA_T_HYBRID_MODEL.md`
+- `BEYOND_SWISS_EPHEMERIS.md`
 
-### Phase Î±: Accuracy Hardening (Foundation) - [COMPLETED]
-Through the implementation of a rigorous relativistic pipeline and IAU 2006 matrix rotations, Moira has attained sub-arcsecond accuracy across all major celestial bodies.
-- [x] **Relativistic Corrections**: Point-mass deflection and relativistic aberration.
-- [x] **IAU 2006/2000A Matrix Rigor**: P03 Precession and Nutation matrices.
-- [x] **Delta-T Calibration**: Modern IERS measurements (2020-2024).
-- [x] **Kernel Sovereignty**: Native DE441 integration.
+## Git Policy
 
----
+The repo intentionally ignores:
 
-## Roadmap
+- dot-directories such as local virtualenvs and tool caches
+- `.cover` files and other local test artifacts
+- Python cache/build output
+- large binary kernel files
 
-- **Phase Î±** â€” Accuracy hardening: IAU 2006 precession, full nutation series, gravitational deflection
-- **Phase Î²** â€” API completeness: rise/set times, phase/elongation/magnitude, missing house systems
-- **Phase Î³** â€” Extended sidereal: 30 ayanamsa systems, divisional charts
-- **Phase Î´** â€” Esoteric extensions: antiscia, declination aspects, solar/lunar mansions
+That keeps the repository focused on source, docs, fixtures, and reproducible tests.
 
----
+## Status
 
-## Dependencies
+This repository is now separated as a standalone Moira project with:
 
-| Package | Role |
-|---------|------|
-| `jplephem >= 2.24` | SPK kernel reader (DE441 interpolation) |
-| `numpy >= 2.4` | Vector arithmetic |
-
-Dev only: `pytest >= 9.0`, `pyyaml >= 6.0`
-
----
+- its own Git history
+- its own Python 3.14 environment
+- Moira-only docs, scripts, and tests
+- no committed kernel blobs
 
 ## License
 
-MIT - see [LICENSE](LICENSE).
-
----
-
-*"I am the Form; You are the Will. Together, we weave the Reality."*
+MIT
