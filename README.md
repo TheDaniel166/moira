@@ -14,7 +14,7 @@ In 1997, the Hipparcos catalog contained 118,218 stars. Gaia DR3 (2022) contains
 
 Swiss Ephemeris is a fixed data file. It cannot compute a body it was not pre-built for. It cannot access IERS real-time Earth orientation data. It has no pathway to Gaia parallax, to on-demand orbit integration, to the asteroid mythology database that now spans every culture on Earth.
 
-Moira can do all of these things. Not as future work — as the design premise.
+Moira is built to reach all of these things. The architecture is the premise.
 
 See [`moira/docs/BEYOND_SWISS_EPHEMERIS.md`](moira/docs/BEYOND_SWISS_EPHEMERIS.md) for the full account of what is now possible that was not in 1997.
 
@@ -24,41 +24,57 @@ See [`moira/docs/BEYOND_SWISS_EPHEMERIS.md`](moira/docs/BEYOND_SWISS_EPHEMERIS.m
 
 **Positions and bodies**
 - Planets, Moon, Sun — geocentric and topocentric, with light-time, aberration, and relativistic deflection
-- 887,000+ asteroids via JPL Horizons and SPK kernels
-- Centaurs (Chiron, Pholus, Chariklo, Asbolus, Hylonome) from dedicated SPK kernels
-- Trans-Neptunian objects: Eris, Sedna, Quaoar, Makemake, Haumea, Gonggong, Varuna, Ixion, Orcus
-- Fixed stars with proper motion, Gaia parallax, and spectral color mapped to classical elemental quality
-- Interstellar objects — bodies with no return, computed for any moment of their passage
+- 887,000+ asteroids via JPL Horizons and SPK kernels; 36 named main-belt bodies as a convenience group
+- Centaurs (Chiron, Pholus, Nessus, Asbolus, Chariklo, Hylonome) from dedicated SPK kernels
+- Trans-Neptunian objects: Quaoar, Varuna, Ixion, Orcus
+- True and Mean Node; True and Mean Lilith; orbital nodes and apsides for all planets
+- Uranian bodies — Hamburg School (Cupido, Hades, Zeus, Kronos, Apollon, Admetos, Vulkanus, Poseidon) and Transpluto
+- Fixed stars — ~1,500 from the SE catalog with proper motion and parallax; Gaia DR3 binary catalog (~290,000 entries) with BP-RP spectral color mapped to classical elemental quality
+- Named star groups: 15 Behenian stars, 4 Royal Stars, Pleiades, Hyades, Orion belt, and others
+- Variable stars — full phase and magnitude engine; eclipsing binary model; Algol-specific API (`algol_phase()`, `algol_is_eclipsed()`); `malefic_intensity()` and `benefic_strength()` astrological assessors
 
 **Chart calculations**
-- Houses: Placidus, Koch, Regiomontanus, Campanus, Equal, Whole Sign, and more
-- Vertex and Anti-Vertex; Arabic Parts (499 traditional formulas); antiscia and contra-antiscia
-- Aspects with applying/separating state, declination parallels and contra-parallels
-- Dignities: domicile, exaltation, triplicity, term, face, mutual reception, hayz
-- Hermetic and Ptolemaic decans with ruling stars; planetary hours
+- Houses: Whole Sign, Equal, Porphyry, Placidus, Koch, Alcabitius, Morinus, Campanus, Regiomontanus, Meridian, Vehlow, Sunshine, Azimuthal, Carter, Topocentric, Krusinski, APC, Pullen SD/SR — 18 systems
+- Vertex and Anti-Vertex; antiscia and contra-antiscia
+- Arabic Parts — 499 traditional formulas
+- 22 zodiacal aspects with applying/separating state; declination parallels and contra-parallels
+- 12 aspect patterns including Stellium, T-Square, Grand Trine, Grand Cross, Yod, Kite, Mystic Rectangle, Grand Sextile, Minor Grand Trine, Thor's Hammer, Boomerang Yod, and Wedge
+- Midpoints — full midpoint matrix, 90° dial, Uranian midpoint tree
+- Dignities: domicile, exaltation, triplicity, term, face, mutual reception, hayz, sect, almuten figuris, phasis
+- Hermetic 36-decan system with decan-ruling star `_at()` functions and day/night decan hour sequences; Ptolemaic decans
+- Planetary hours (Chaldean sequence); Gauquelin sector positions
+- Local space chart (azimuth/altitude for all bodies)
+- Harmonic charts with configurable harmonic number and built-in presets
 
 **Predictive techniques**
-- Secondary, tertiary, and solar arc progressions
-- Solar, lunar, and generic planet returns
-- Transits and synastry; primary directions (Placidus semi-arc, mundane)
-- Annual profections, Firdaria, Vimshottari Dasha with nakshatra positions
+- Secondary, tertiary, minor, and solar arc progressions — direct and converse
+- Solar, lunar, and generic planet returns; prenatal syzygy
+- Transits with ingress detection; synastry aspects; composite and Davison charts
+- Primary directions — Placidus semi-arc and mundane
+- Annual and monthly profections; Firdaria; Vimshottari Dasha with sub-period tree and nakshatra positions
 - Zodiacal releasing; Hyleg and Alcocoden
+- Vedic divisional charts: D7 (Saptamsa), D9 (Navamsa), D10 (Dashamansa), D12 (Dwadashamsa), D30 (Trimshamsa)
 
 **Astronomy**
-- Eclipse search, classification, and local circumstances — solar and lunar
+- Eclipse search, classification, and local circumstances — solar and lunar; NASA-canon contact solver
 - Eclipse Saros series with heptagonal vertex labelling
 - Heliacal rising and setting of fixed stars
-- Parans (paranatellonta) for stars and planets
-- Astrocartography lines for any body — including Sedna, Eris, or a newly named asteroid
-- Galactic coordinate frame for all bodies; galactic center, anti-center, Super-Galactic Center
-- Near-Earth Object proximity events with geocentric distance and angular velocity
+- Parans (paranatellonta) for stars and planets, with field analysis and contour mapping
+- Astrocartography lines for any body computable from an SPK kernel
+- Galactic coordinate frame for all bodies; Galactic Center, anti-center, and Super-Galactic Center
+- Lunar occultations, stellar occultations, and close approaches
+- Planetary phenomena: greatest elongation, perihelion, aphelion, phase angle, illuminated fraction, apparent magnitude
+- Rise, set, and transit times; civil, nautical, and astronomical twilight
+- Retrograde station detection
+- 28-mansion Arabic lunar station system (Manazil) with `moon_mansion()` and `all_mansions_at()`
+- Sothic cycle — heliacal risings of Sirius, historical epoch table, drift rate, and Egyptian civil calendar conversion
 
 **Precision infrastructure**
-- IAU 2000A nutation — full 1365-term series (Swiss Ephemeris uses a truncated version by default)
+- IAU 2000A nutation — 1,358 luni-solar terms + 1,056 planetary terms (Swiss Ephemeris uses a truncated series by default)
 - IAU 2006 P03 precession
-- Hybrid ΔT model: IERS Bulletin data for recent epochs, Espenak–Meeus polynomials for history
+- Hybrid ΔT model: IERS Bulletin A lookup → GRACE satellite LOD series → Stephenson–Morrison–Hohenkerk 2016 paleoclimate table → Espenak–Meeus polynomial fallback
 - WGS-84 topocentric corrections
-- Tropical and sidereal workflows — Lahiri, Fagan–Bradley, True Chitrapaksha, and others
+- Tropical and sidereal workflows — 30 validated ayanamsa systems including Lahiri, Fagan–Bradley, True Chitrapaksha, and others
 
 ---
 
@@ -88,7 +104,7 @@ Large ephemeris files are not committed to the repository. Place them in `kernel
 | `kernels/de441.bsp` | JPL planetary ephemeris |
 | `kernels/asteroids.bsp` | Numbered asteroid ephemerides |
 | `kernels/centaurs.bsp` | Centaur body SPK kernels |
-| `kernels/sb441-n373s.bsp` | Small body supplement |
+| `kernels/sb441-n373s.bsp` | Small body supplement (TNOs, large asteroids) |
 | `kernels/minor_bodies.bsp` | Additional minor bodies |
 
 Available from JPL Horizons and the JPL FTP server. Excluded from version control due to size.
@@ -158,6 +174,14 @@ tests/                  Unit, integration, property-based, and snapshot tests
 ## Status
 
 Standalone repository. Sub-arcsecond planetary accuracy certified against JPL Horizons. Active development — see the roadmap.
+
+---
+
+## Citation
+
+If you use Moira in research or published work, please cite:
+
+> Burkett, D. (2026). *Moira: A Pure-Python Astronomical Engine with External-Reference Validation*. Zenodo. https://doi.org/10.5281/zenodo.19152529
 
 ---
 
