@@ -149,7 +149,40 @@ from .timelords import (
 from .dasha import DashaPeriod, vimshottari, current_dasha, dasha_balance
 from .astrocartography import ACGLine, acg_lines, acg_from_chart
 from .local_space import LocalSpacePosition, local_space_positions, local_space_from_chart
-from .parans import ParanCrossing, Paran, find_parans, natal_parans
+from .parans import (
+    CIRCLE_TYPES,
+    DEFAULT_PARAN_POLICY,
+    Paran,
+    ParanCrossing,
+    ParanSignature,
+    ParanPolicy,
+    ParanStrength,
+    ParanStability,
+    ParanStabilitySample,
+    evaluate_paran_stability,
+    ParanSiteResult,
+    ParanFieldSample,
+    evaluate_paran_site,
+    sample_paran_field,
+    ParanFieldAnalysis,
+    ParanFieldRegion,
+    ParanFieldPeak,
+    ParanThresholdCrossing,
+    analyze_paran_field,
+    ParanContourExtraction,
+    ParanContourSegment,
+    ParanContourPoint,
+    extract_paran_field_contours,
+    ParanContourPathSet,
+    ParanContourPath,
+    consolidate_paran_contours,
+    ParanFieldStructure,
+    ParanContourHierarchyEntry,
+    ParanContourAssociation,
+    analyze_paran_field_structure,
+    find_parans,
+    natal_parans,
+)
 from .longevity import HylegResult, find_hyleg, calculate_longevity
 from .planetary_nodes import OrbitalNode, planetary_node, all_planetary_nodes
 from .gauquelin import GauquelinPosition, gauquelin_sector, all_gauquelin_sectors
@@ -273,7 +306,18 @@ __all__ = [
     # Local Space
     "LocalSpacePosition", "local_space_positions", "local_space_from_chart",
     # Parans
-    "ParanCrossing", "Paran", "find_parans", "natal_parans",
+    "CIRCLE_TYPES", "DEFAULT_PARAN_POLICY",
+    "Paran", "ParanCrossing", "ParanSignature", "ParanPolicy", "ParanStrength",
+    "ParanStability", "ParanStabilitySample", "evaluate_paran_stability",
+    "ParanSiteResult", "ParanFieldSample", "evaluate_paran_site", "sample_paran_field",
+    "ParanFieldAnalysis", "ParanFieldRegion", "ParanFieldPeak", "ParanThresholdCrossing",
+    "analyze_paran_field",
+    "ParanContourExtraction", "ParanContourSegment", "ParanContourPoint",
+    "extract_paran_field_contours",
+    "ParanContourPathSet", "ParanContourPath", "consolidate_paran_contours",
+    "ParanFieldStructure", "ParanContourHierarchyEntry", "ParanContourAssociation",
+    "analyze_paran_field_structure",
+    "find_parans", "natal_parans",
     # Longevity (Hyleg/Alcocoden)
     "HylegResult", "find_hyleg", "calculate_longevity",
     # Planetary nodes/apsides
