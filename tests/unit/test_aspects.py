@@ -8,8 +8,10 @@ from moira.aspects import (
     AspectData,
     AspectDomain,
     AspectFamily,
+    AspectFamilyProfile,
     AspectGraph,
     AspectGraphNode,
+    AspectHarmonicProfile,
     AspectPattern,
     AspectPatternKind,
     AspectPolicy,
@@ -18,6 +20,7 @@ from moira.aspects import (
     DEFAULT_POLICY,
     DeclinationAspect,
     MotionState,
+    aspect_harmonic_profile,
     aspect_motion_state,
     aspect_strength,
     aspects_between,
@@ -2375,3 +2378,937 @@ def test_build_aspect_graph_does_not_affect_find_patterns() -> None:
     patterns_after = find_patterns(aspects)
     assert [(p.kind, p.bodies) for p in patterns_before] == \
            [(p.kind, p.bodies) for p in patterns_after]
+
+
+# ===========================================================================
+# Phase 11 — Harmonic / family intelligence layer
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# Empty input
+# ---------------------------------------------------------------------------
+
+def test_aspect_harmonic_profile_empty_returns_zero_profile() -> None:
+    p = aspect_harmonic_profile([])
+    assert p.chart.total == 0
+    assert p.chart.counts == {}
+    assert p.chart.proportions == {}
+    assert p.chart.dominant == ()
+    assert p.by_body == {}
+
+
+# ---------------------------------------------------------------------------
+# Vessel types and immutability
+# ---------------------------------------------------------------------------
+
+def test_aspect_harmonic_profile_returns_correct_types() -> None:
+    p = aspect_harmonic_profile([_trine("Sun", "Moon")])
+    assert isinstance(p, AspectHarmonicProfile)
+    assert isinstance(p.chart, AspectFamilyProfile)
+    for v in p.by_body.values():
+        assert isinstance(v, AspectFamilyProfile)
+
+
+def test_aspect_harmonic_profile_is_immutable() -> None:
+    p = aspect_harmonic_profile([_trine("Sun", "Moon")])
+    with pytest.raises((AttributeError, TypeError)):
+        p.chart = p.chart  # type: ignore[misc]
+
+
+def test_aspect_family_profile_is_immutable() -> None:
+    p = aspect_harmonic_profile([_trine("Sun", "Moon")])
+    with pytest.raises((AttributeError, TypeError)):
+        p.chart.total = 0  # type: ignore[misc]
+
+
+# ---------------------------------------------------------------------------
+# Chart-level counts
+# ---------------------------------------------------------------------------
+
+def test_aspect_harmonic_profile_single_trine_counts() -> None:
+    p = aspect_harmonic_profile([_trine("Sun", "Moon")])
+    assert p.chart.total == 1
+    assert p.chart.counts.get(AspectFamily.TRINE) == 1
+    assert len(p.chart.counts) == 1
+
+
+def test_aspect_harmonic_profile_mixed_families_counts() -> None:
+    """2 Trines + 1 Square → correct counts per family."""
+    aspects = [_trine("Sun", "Moon"), _trine("Moon", "Mars"), _sq("Sun", "Jupiter")]
+    p = aspect_harmonic_profile(aspects)
+    assert p.chart.total == 3
+    assert p.chart.counts[AspectFamily.TRINE] == 2
+    assert p.chart.counts[AspectFamily.SQUARE] == 1
+    assert len(p.chart.counts) == 2
+
+
+def test_aspect_harmonic_profile_biquintile_maps_to_quintile_family() -> None:
+    """Biquintile belongs to the QUINTILE family."""
+    a = _make_aspect("Sun", "Moon", "Biquintile", 144.0)
+    p = aspect_harmonic_profile([a])
+    assert p.chart.counts.get(AspectFamily.QUINTILE) == 1
+
+
+def test_aspect_harmonic_profile_counts_sum_equals_total() -> None:
+    aspects = [_trine("Sun", "Moon"), _sq("Sun", "Mars"), _opp("Moon", "Venus")]
+    p = aspect_harmonic_profile(aspects)
+    assert sum(p.chart.counts.values()) == p.chart.total
+
+
+def test_aspect_harmonic_profile_only_present_families_in_counts() -> None:
+    """counts must not include families with zero aspects."""
+    aspects = [_trine("Sun", "Moon")]
+    p = aspect_harmonic_profile(aspects)
+    assert all(v > 0 for v in p.chart.counts.values())
+
+
+def test_aspect_harmonic_profile_counts_keys_follow_family_enum_order() -> None:
+    """counts keys must be in AspectFamily declaration order (subset of it)."""
+    aspects = [_sq("Sun", "Moon"), _trine("Sun", "Mars"), _opp("Moon", "Jupiter")]
+    p = aspect_harmonic_profile(aspects)
+    all_families = list(AspectFamily)
+    present = [f for f in all_families if f in p.chart.counts]
+    assert list(p.chart.counts.keys()) == present
+
+
+# ---------------------------------------------------------------------------
+# Proportions
+# ---------------------------------------------------------------------------
+
+def test_aspect_harmonic_profile_proportions_sum_to_one() -> None:
+    aspects = [_trine("Sun", "Moon"), _sq("Sun", "Mars"), _opp("Moon", "Venus")]
+    p = aspect_harmonic_profile(aspects)
+    assert abs(sum(p.chart.proportions.values()) - 1.0) < 1e-9
+
+
+def test_aspect_harmonic_profile_proportion_correct_value() -> None:
+    """2 Trines out of 4 total → proportion 0.5."""
+    aspects = [
+        _trine("Sun", "Moon"), _trine("Moon", "Mars"),
+        _sq("Sun", "Jupiter"), _opp("Mars", "Venus"),
+    ]
+    p = aspect_harmonic_profile(aspects)
+    assert abs(p.chart.proportions[AspectFamily.TRINE] - 0.5) < 1e-9
+
+
+def test_aspect_harmonic_profile_proportions_keys_match_counts_keys() -> None:
+    aspects = [_trine("Sun", "Moon"), _sq("Sun", "Mars")]
+    p = aspect_harmonic_profile(aspects)
+    assert set(p.chart.proportions.keys()) == set(p.chart.counts.keys())
+
+
+def test_aspect_harmonic_profile_all_proportions_in_unit_interval() -> None:
+    aspects = [_trine("Sun", "Moon"), _sq("Sun", "Mars"), _opp("Moon", "Venus")]
+    p = aspect_harmonic_profile(aspects)
+    assert all(0.0 <= v <= 1.0 for v in p.chart.proportions.values())
+
+
+def test_aspect_harmonic_profile_empty_proportions_when_total_zero() -> None:
+    p = aspect_harmonic_profile([])
+    assert p.chart.proportions == {}
+
+
+# ---------------------------------------------------------------------------
+# Dominant family detection
+# ---------------------------------------------------------------------------
+
+def test_aspect_harmonic_profile_dominant_single_winner() -> None:
+    """3 Trines, 1 Square → Trine is dominant."""
+    aspects = [
+        _trine("Sun", "Moon"), _trine("Moon", "Mars"), _trine("Sun", "Mars"),
+        _sq("Jupiter", "Saturn"),
+    ]
+    p = aspect_harmonic_profile(aspects)
+    assert p.chart.dominant == (AspectFamily.TRINE,)
+
+
+def test_aspect_harmonic_profile_dominant_tie_returns_all_sorted() -> None:
+    """2 Trines, 2 Squares — tie → both in dominant, sorted by family value."""
+    aspects = [
+        _trine("Sun", "Moon"), _trine("Moon", "Mars"),
+        _sq("Sun", "Jupiter"), _sq("Mars", "Venus"),
+    ]
+    p = aspect_harmonic_profile(aspects)
+    assert len(p.chart.dominant) == 2
+    values = [f.value for f in p.chart.dominant]
+    assert values == sorted(values)
+    assert AspectFamily.SQUARE in p.chart.dominant
+    assert AspectFamily.TRINE in p.chart.dominant
+
+
+def test_aspect_harmonic_profile_dominant_empty_when_total_zero() -> None:
+    p = aspect_harmonic_profile([])
+    assert p.chart.dominant == ()
+
+
+def test_aspect_harmonic_profile_dominant_members_are_in_counts() -> None:
+    aspects = [_trine("Sun", "Moon"), _sq("Sun", "Mars"), _opp("Moon", "Venus")]
+    p = aspect_harmonic_profile(aspects)
+    for fam in p.chart.dominant:
+        assert fam in p.chart.counts
+
+
+def test_aspect_harmonic_profile_dominant_is_tuple() -> None:
+    p = aspect_harmonic_profile([_trine("Sun", "Moon")])
+    assert isinstance(p.chart.dominant, tuple)
+
+
+# ---------------------------------------------------------------------------
+# Per-body profiles (by_body)
+# ---------------------------------------------------------------------------
+
+def test_aspect_harmonic_profile_by_body_keys_present() -> None:
+    """Every body that appears in at least one aspect has an entry in by_body."""
+    aspects = [_trine("Sun", "Moon"), _sq("Mars", "Venus")]
+    p = aspect_harmonic_profile(aspects)
+    assert set(p.by_body.keys()) == {"Sun", "Moon", "Mars", "Venus"}
+
+
+def test_aspect_harmonic_profile_by_body_keys_sorted() -> None:
+    aspects = [_trine("Sun", "Moon"), _sq("Mars", "Venus"), _opp("Jupiter", "Saturn")]
+    p = aspect_harmonic_profile(aspects)
+    keys = list(p.by_body.keys())
+    assert keys == sorted(keys)
+
+
+def test_aspect_harmonic_profile_by_body_degree_matches_total() -> None:
+    """A body's by_body total equals the number of aspects it participates in."""
+    aspects = [_trine("Sun", "Moon"), _sq("Sun", "Mars"), _opp("Sun", "Venus")]
+    p = aspect_harmonic_profile(aspects)
+    assert p.by_body["Sun"].total == 3
+    assert p.by_body["Moon"].total == 1
+
+
+def test_aspect_harmonic_profile_by_body_counts_correct() -> None:
+    """Sun has 2 Trines and 1 Square in its incident aspects."""
+    aspects = [_trine("Sun", "Moon"), _trine("Sun", "Mars"), _sq("Sun", "Jupiter")]
+    p = aspect_harmonic_profile(aspects)
+    sun = p.by_body["Sun"]
+    assert sun.counts[AspectFamily.TRINE] == 2
+    assert sun.counts[AspectFamily.SQUARE] == 1
+    assert sun.total == 3
+
+
+def test_aspect_harmonic_profile_by_body_proportions_sum_to_one() -> None:
+    aspects = [_trine("Sun", "Moon"), _sq("Sun", "Mars"), _trine("Sun", "Venus")]
+    p = aspect_harmonic_profile(aspects)
+    sun = p.by_body["Sun"]
+    assert abs(sum(sun.proportions.values()) - 1.0) < 1e-9
+
+
+def test_aspect_harmonic_profile_by_body_dominant_correct() -> None:
+    """Body with 2 Trines and 1 Square → Trine dominates."""
+    aspects = [_trine("Sun", "Moon"), _trine("Sun", "Mars"), _sq("Sun", "Jupiter")]
+    p = aspect_harmonic_profile(aspects)
+    assert p.by_body["Sun"].dominant == (AspectFamily.TRINE,)
+
+
+def test_aspect_harmonic_profile_by_body_isolated_body_absent() -> None:
+    """A body with no aspects has no entry in by_body."""
+    aspects = [_trine("Sun", "Moon")]
+    p = aspect_harmonic_profile(aspects)
+    assert "Mars" not in p.by_body
+
+
+# ---------------------------------------------------------------------------
+# AspectFamilyProfile structural invariants
+# ---------------------------------------------------------------------------
+
+def test_aspect_family_profile_counts_sum_equals_total_invariant() -> None:
+    aspects = [_trine("Sun", "Moon"), _sq("Sun", "Mars"), _opp("Moon", "Venus"),
+               _trine("Mars", "Jupiter")]
+    p = aspect_harmonic_profile(aspects)
+    assert sum(p.chart.counts.values()) == p.chart.total
+
+
+def test_aspect_family_profile_proportions_len_equals_counts_len_invariant() -> None:
+    aspects = [_trine("Sun", "Moon"), _sq("Sun", "Mars")]
+    p = aspect_harmonic_profile(aspects)
+    assert len(p.chart.proportions) == len(p.chart.counts)
+
+
+# ---------------------------------------------------------------------------
+# Determinism
+# ---------------------------------------------------------------------------
+
+def test_aspect_harmonic_profile_deterministic_across_calls() -> None:
+    aspects = [_trine("Sun", "Moon"), _sq("Sun", "Mars"), _opp("Moon", "Venus")]
+    p1 = aspect_harmonic_profile(aspects)
+    p2 = aspect_harmonic_profile(aspects)
+    assert p1.chart.counts == p2.chart.counts
+    assert p1.chart.dominant == p2.chart.dominant
+    assert p1.by_body.keys() == p2.by_body.keys()
+
+
+def test_aspect_harmonic_profile_input_permutation_invariant() -> None:
+    """Any permutation of the input list produces identical output."""
+    import itertools as _it
+    aspects = [_trine("Sun", "Moon"), _sq("Sun", "Mars"), _opp("Moon", "Venus")]
+    ref = aspect_harmonic_profile(aspects)
+    for perm in _it.permutations(aspects):
+        p = aspect_harmonic_profile(list(perm))
+        assert p.chart.counts == ref.chart.counts
+        assert p.chart.proportions == ref.chart.proportions
+        assert p.chart.dominant == ref.chart.dominant
+        assert list(p.by_body.keys()) == list(ref.by_body.keys())
+
+
+def test_aspect_harmonic_profile_does_not_mutate_input_list() -> None:
+    aspects = [_trine("Sun", "Moon"), _sq("Sun", "Mars")]
+    original_ids = [id(a) for a in aspects]
+    original_len = len(aspects)
+    aspect_harmonic_profile(aspects)
+    assert len(aspects) == original_len
+    assert [id(a) for a in aspects] == original_ids
+
+
+def test_aspect_harmonic_profile_does_not_alter_pairwise_fields() -> None:
+    a1 = _trine("Sun", "Moon")
+    a2 = _sq("Sun", "Mars")
+    before = [(x.body1, x.body2, x.aspect, x.orb) for x in (a1, a2)]
+    aspect_harmonic_profile([a1, a2])
+    after = [(x.body1, x.body2, x.aspect, x.orb) for x in (a1, a2)]
+    assert before == after
+
+
+# ---------------------------------------------------------------------------
+# No semantic drift — existing layers unaffected
+# ---------------------------------------------------------------------------
+
+def test_aspect_harmonic_profile_does_not_affect_find_aspects() -> None:
+    results = find_aspects({"Sun": 0.0, "Moon": 120.0}, include_minor=False)
+    aspect_harmonic_profile(results)
+    results2 = find_aspects({"Sun": 0.0, "Moon": 120.0}, include_minor=False)
+    assert len(results) == len(results2)
+    assert results[0].aspect == results2[0].aspect
+
+
+def test_aspect_harmonic_profile_does_not_affect_find_patterns() -> None:
+    aspects = [_trine("Sun", "Moon"), _trine("Moon", "Mars"), _trine("Sun", "Mars")]
+    patterns_before = find_patterns(aspects)
+    aspect_harmonic_profile(aspects)
+    patterns_after = find_patterns(aspects)
+    assert [(p.kind, p.bodies) for p in patterns_before] == \
+           [(p.kind, p.bodies) for p in patterns_after]
+
+
+def test_aspect_harmonic_profile_does_not_affect_build_aspect_graph() -> None:
+    aspects = [_trine("Sun", "Moon"), _sq("Sun", "Mars")]
+    g_before = build_aspect_graph(aspects)
+    aspect_harmonic_profile(aspects)
+    g_after = build_aspect_graph(aspects)
+    assert g_before.nodes == g_after.nodes
+    assert g_before.edges == g_after.edges
+
+
+# ===========================================================================
+# Phase 12 — Full-subsystem hardening
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# aspect_strength: failure behavior
+# ---------------------------------------------------------------------------
+
+def test_aspect_strength_raises_on_zero_allowed_orb() -> None:
+    """allowed_orb=0.0 must raise ValueError, not ZeroDivisionError."""
+    bad = AspectData(
+        body1="Sun", body2="Moon", aspect="Conjunction", symbol="☌",
+        angle=0.0, separation=0.0, orb=0.0, allowed_orb=0.0,
+        applying=None, stationary=False,
+    )
+    with pytest.raises(ValueError, match="allowed_orb"):
+        aspect_strength(bad)
+
+
+def test_aspect_strength_raises_on_negative_allowed_orb() -> None:
+    """allowed_orb < 0 must raise ValueError."""
+    bad = AspectData(
+        body1="Sun", body2="Moon", aspect="Conjunction", symbol="☌",
+        angle=0.0, separation=0.0, orb=0.0, allowed_orb=-1.0,
+        applying=None, stationary=False,
+    )
+    with pytest.raises(ValueError, match="allowed_orb"):
+        aspect_strength(bad)
+
+
+def test_aspect_strength_raises_on_orb_exceeding_allowed_orb() -> None:
+    """orb > allowed_orb must raise ValueError (admission invariant violated)."""
+    bad = AspectData(
+        body1="Sun", body2="Moon", aspect="Trine", symbol="△",
+        angle=120.0, separation=125.0, orb=5.0, allowed_orb=2.0,
+        applying=None, stationary=False,
+    )
+    with pytest.raises(ValueError, match="orb"):
+        aspect_strength(bad)
+
+
+def test_aspect_strength_error_message_contains_values() -> None:
+    """ValueError messages must include the offending field values."""
+    bad = AspectData(
+        body1="Sun", body2="Moon", aspect="Conjunction", symbol="☌",
+        angle=0.0, separation=0.0, orb=0.0, allowed_orb=0.0,
+        applying=None, stationary=False,
+    )
+    with pytest.raises(ValueError) as exc_info:
+        aspect_strength(bad)
+    assert "0.0" in str(exc_info.value) or "allowed_orb" in str(exc_info.value)
+
+
+def test_aspect_strength_boundary_orb_equals_allowed_orb_does_not_raise() -> None:
+    """orb == allowed_orb is valid (admitted at boundary); no error."""
+    boundary = AspectData(
+        body1="Sun", body2="Moon", aspect="Trine", symbol="△",
+        angle=120.0, separation=124.0, orb=4.0, allowed_orb=4.0,
+        applying=None, stationary=False,
+    )
+    s = aspect_strength(boundary)
+    assert s.exactness == pytest.approx(0.0)
+
+
+# ---------------------------------------------------------------------------
+# AspectPolicy: failure behavior
+# ---------------------------------------------------------------------------
+
+def test_aspect_policy_raises_on_zero_orb_factor() -> None:
+    """orb_factor=0 must raise ValueError."""
+    with pytest.raises(ValueError, match="orb_factor"):
+        AspectPolicy(orb_factor=0.0)
+
+
+def test_aspect_policy_raises_on_negative_orb_factor() -> None:
+    """orb_factor < 0 must raise ValueError."""
+    with pytest.raises(ValueError, match="orb_factor"):
+        AspectPolicy(orb_factor=-0.5)
+
+
+def test_aspect_policy_raises_on_negative_declination_orb() -> None:
+    """declination_orb < 0 must raise ValueError."""
+    with pytest.raises(ValueError, match="declination_orb"):
+        AspectPolicy(declination_orb=-1.0)
+
+
+def test_aspect_policy_zero_declination_orb_is_valid() -> None:
+    """declination_orb=0.0 is valid (no declination aspects admitted)."""
+    p = AspectPolicy(declination_orb=0.0)
+    assert p.declination_orb == 0.0
+
+
+def test_default_policy_is_valid() -> None:
+    """DEFAULT_POLICY must not raise at construction."""
+    p = DEFAULT_POLICY
+    assert p.orb_factor == 1.0
+    assert p.declination_orb == 1.0
+
+
+# ---------------------------------------------------------------------------
+# Cross-layer: classification consistency
+# ---------------------------------------------------------------------------
+
+def test_find_aspects_all_results_have_zodiacal_domain() -> None:
+    """Every AspectData from find_aspects has classification.domain == ZODIACAL."""
+    results = find_aspects({"Sun": 0.0, "Moon": 60.0, "Mars": 120.0,
+                            "Venus": 90.0, "Jupiter": 180.0}, tier=2)
+    for a in results:
+        assert a.classification is not None
+        assert a.classification.domain is AspectDomain.ZODIACAL
+
+
+def test_find_aspects_all_results_classification_family_matches_name() -> None:
+    """classification.family must match the known family for the aspect name."""
+    from moira.aspects import _FAMILY_BY_NAME
+    results = find_aspects({"Sun": 0.0, "Moon": 60.0, "Mars": 120.0,
+                            "Venus": 90.0, "Jupiter": 180.0}, tier=2)
+    for a in results:
+        assert a.classification is not None
+        assert a.classification.family is _FAMILY_BY_NAME[a.aspect]
+
+
+def test_find_aspects_major_aspects_have_major_tier() -> None:
+    """Major aspect names must carry AspectTier.MAJOR."""
+    major_names = {"Conjunction", "Sextile", "Square", "Trine", "Opposition"}
+    positions = {"Sun": 0.0, "Moon": 60.0, "Mars": 90.0,
+                 "Venus": 120.0, "Jupiter": 180.0}
+    results = find_aspects(positions, include_minor=False)
+    for a in results:
+        if a.aspect in major_names:
+            assert a.classification is not None
+            assert a.classification.tier is AspectTier.MAJOR
+
+
+def test_find_declination_aspects_all_results_have_declination_domain() -> None:
+    """Every DeclinationAspect has classification.domain == DECLINATION."""
+    results = find_declination_aspects({"Sun": 10.0, "Moon": 10.0}, orb=1.0)
+    for a in results:
+        assert a.classification is not None
+        assert a.classification.domain is AspectDomain.DECLINATION
+
+
+def test_find_declination_aspects_family_is_declination() -> None:
+    """Every DeclinationAspect has classification.family == DECLINATION."""
+    results = find_declination_aspects({"Sun": 10.0, "Moon": 10.0}, orb=1.0)
+    for a in results:
+        assert a.classification is not None
+        assert a.classification.family is AspectFamily.DECLINATION
+
+
+# ---------------------------------------------------------------------------
+# Cross-layer: strength invariants on real detection output
+# ---------------------------------------------------------------------------
+
+def test_aspect_strength_invariants_on_all_detected_aspects() -> None:
+    """All four AspectStrength invariants hold for every admitted aspect."""
+    results = find_aspects({"Sun": 0.0, "Moon": 58.0, "Mars": 123.0,
+                            "Venus": 88.0, "Jupiter": 177.0}, tier=1)
+    for a in results:
+        s = aspect_strength(a)
+        assert s.orb >= 0.0
+        assert s.orb <= s.allowed_orb
+        assert abs(s.surplus - (s.allowed_orb - s.orb)) < 1e-9
+        assert 0.0 <= s.exactness <= 1.0
+        assert abs(s.exactness - (1.0 - s.orb / s.allowed_orb)) < 1e-9
+
+
+def test_aspect_strength_exactly_matches_vessel_fields() -> None:
+    """strength.orb and strength.allowed_orb are identical to vessel fields."""
+    results = find_aspects({"Sun": 0.0, "Moon": 120.0}, include_minor=False)
+    assert len(results) == 1
+    s = aspect_strength(results[0])
+    assert s.orb == results[0].orb
+    assert s.allowed_orb == results[0].allowed_orb
+
+
+# ---------------------------------------------------------------------------
+# Cross-layer: motion-state consistency
+# ---------------------------------------------------------------------------
+
+def test_motion_state_and_is_applying_are_consistent() -> None:
+    """When MotionState is APPLYING, is_applying must be True and is_separating False."""
+    applying = AspectData(
+        body1="Sun", body2="Moon", aspect="Trine", symbol="△",
+        angle=120.0, separation=120.0, orb=0.0, allowed_orb=8.0,
+        applying=True, stationary=False,
+    )
+    assert aspect_motion_state(applying) is MotionState.APPLYING
+    assert applying.is_applying is True
+    assert applying.is_separating is False
+
+
+def test_motion_state_and_is_separating_are_consistent() -> None:
+    """When MotionState is SEPARATING, is_separating must be True and is_applying False."""
+    separating = AspectData(
+        body1="Sun", body2="Moon", aspect="Trine", symbol="△",
+        angle=120.0, separation=120.0, orb=0.0, allowed_orb=8.0,
+        applying=False, stationary=False,
+    )
+    assert aspect_motion_state(separating) is MotionState.SEPARATING
+    assert separating.is_separating is True
+    assert separating.is_applying is False
+
+
+def test_motion_state_stationary_overrides_applying_flag() -> None:
+    """STATIONARY takes precedence regardless of the applying field."""
+    for applying_val in (True, False, None):
+        a = AspectData(
+            body1="Sun", body2="Moon", aspect="Trine", symbol="△",
+            angle=120.0, separation=120.0, orb=0.0, allowed_orb=8.0,
+            applying=applying_val, stationary=True,
+        )
+        assert aspect_motion_state(a) is MotionState.STATIONARY
+
+
+def test_motion_state_indeterminate_when_applying_is_none() -> None:
+    """None applying with stationary=False → INDETERMINATE."""
+    a = AspectData(
+        body1="Sun", body2="Moon", aspect="Trine", symbol="△",
+        angle=120.0, separation=120.0, orb=0.0, allowed_orb=8.0,
+        applying=None, stationary=False,
+    )
+    assert aspect_motion_state(a) is MotionState.INDETERMINATE
+    assert a.is_applying is False
+    assert a.is_separating is False
+
+
+def test_motion_state_none_for_declination_aspect() -> None:
+    """DeclinationAspect always yields MotionState.NONE."""
+    results = find_declination_aspects({"Sun": 10.0, "Moon": 10.0}, orb=1.0)
+    assert len(results) >= 1
+    for a in results:
+        assert aspect_motion_state(a) is MotionState.NONE
+
+
+# ---------------------------------------------------------------------------
+# Cross-layer: graph degree matches pairwise aspect count
+# ---------------------------------------------------------------------------
+
+def test_graph_node_degree_matches_pairwise_count() -> None:
+    """Each node's degree equals the number of pairwise aspects it appears in."""
+    aspects = find_aspects(
+        {"Sun": 0.0, "Moon": 60.0, "Mars": 120.0, "Venus": 180.0},
+        include_minor=False,
+    )
+    g = build_aspect_graph(aspects)
+    for node in g.nodes:
+        manual_count = sum(
+            1 for a in aspects if node.name in (a.body1, a.body2)
+        )
+        assert node.degree == manual_count
+
+
+def test_graph_family_counts_consistent_with_harmonic_profile_by_body() -> None:
+    """
+    For each body, the sum of graph node.family_counts (keyed by aspect name)
+    must equal that body's harmonic profile total.
+    """
+    aspects = [_trine("Sun", "Moon"), _trine("Sun", "Mars"),
+               _sq("Moon", "Jupiter"), _opp("Mars", "Venus")]
+    g = build_aspect_graph(aspects)
+    hp = aspect_harmonic_profile(aspects)
+    for node in g.nodes:
+        assert sum(node.family_counts.values()) == hp.by_body[node.name].total
+
+
+# ---------------------------------------------------------------------------
+# Cross-layer: harmonic profile total vs aspect list length
+# ---------------------------------------------------------------------------
+
+def test_harmonic_profile_chart_total_equals_len_aspects() -> None:
+    """chart.total must equal len(aspects) — every aspect is counted once."""
+    aspects = [_trine("Sun", "Moon"), _sq("Sun", "Mars"), _opp("Moon", "Venus")]
+    p = aspect_harmonic_profile(aspects)
+    assert p.chart.total == len(aspects)
+
+
+def test_harmonic_profile_by_body_total_each_body_correct() -> None:
+    """Each body's by_body total equals the number of aspects it appears in."""
+    aspects = find_aspects(
+        {"Sun": 0.0, "Moon": 60.0, "Mars": 120.0, "Venus": 180.0},
+        include_minor=False,
+    )
+    p = aspect_harmonic_profile(aspects)
+    for name, profile in p.by_body.items():
+        manual = sum(1 for a in aspects if name in (a.body1, a.body2))
+        assert profile.total == manual
+
+
+# ---------------------------------------------------------------------------
+# Cross-layer: canonical aspects cover exactly the detection engine's set
+# ---------------------------------------------------------------------------
+
+def test_canonical_aspects_zodiacal_names_all_detectable_at_exact_angle() -> None:
+    """Every zodiacal name in CANONICAL_ASPECTS can be detected at its exact angle."""
+    from moira.constants import Aspect as _Aspect
+    angle_by_name = {adef.name: adef.angle for adef in _Aspect.ALL}
+    for name in CANONICAL_ASPECTS:
+        if name in ("Parallel", "Contra-Parallel"):
+            continue
+        angle = angle_by_name[name]
+        results = find_aspects({"A": 0.0, "B": angle}, tier=2, include_minor=True)
+        names_found = {r.aspect for r in results}
+        assert name in names_found, f"{name} not detectable at {angle}°"
+
+
+def test_canonical_aspects_has_no_name_absent_from_family_lookup() -> None:
+    """Every zodiacal canonical name must be in _FAMILY_BY_NAME."""
+    from moira.aspects import _FAMILY_BY_NAME
+    for name in CANONICAL_ASPECTS:
+        if name in ("Parallel", "Contra-Parallel"):
+            continue
+        assert name in _FAMILY_BY_NAME, f"{name} missing from _FAMILY_BY_NAME"
+
+
+# ---------------------------------------------------------------------------
+# Cross-layer: orb_surplus consistency
+# ---------------------------------------------------------------------------
+
+def test_orb_surplus_equals_strength_surplus_for_detected_aspects() -> None:
+    """AspectData.orb_surplus and AspectStrength.surplus are identical."""
+    results = find_aspects({"Sun": 0.0, "Moon": 118.0}, include_minor=False)
+    for a in results:
+        s = aspect_strength(a)
+        assert a.orb_surplus == pytest.approx(s.surplus)
+
+
+def test_declination_orb_surplus_non_negative() -> None:
+    """DeclinationAspect.orb_surplus is always non-negative for admitted aspects."""
+    results = find_declination_aspects(
+        {"Sun": 10.0, "Moon": 9.5, "Mars": -9.8}, orb=1.0
+    )
+    for a in results:
+        assert a.orb_surplus >= 0.0
+
+
+# ---------------------------------------------------------------------------
+# Cross-layer: is_major / is_minor mutual exclusion
+# ---------------------------------------------------------------------------
+
+def test_is_major_and_is_minor_are_mutually_exclusive_on_detected_aspects() -> None:
+    """For classified aspects, exactly one of is_major / is_minor is True."""
+    results = find_aspects({"Sun": 0.0, "Moon": 60.0, "Mars": 90.0,
+                            "Venus": 120.0, "Jupiter": 150.0}, tier=1)
+    for a in results:
+        assert a.classification is not None
+        assert a.is_major != a.is_minor
+
+
+def test_is_applying_and_is_separating_never_both_true() -> None:
+    """is_applying and is_separating are mutually exclusive by construction."""
+    for applying_val in (True, False, None):
+        a = AspectData(
+            body1="Sun", body2="Moon", aspect="Trine", symbol="△",
+            angle=120.0, separation=120.0, orb=0.0, allowed_orb=8.0,
+            applying=applying_val, stationary=False,
+        )
+        assert not (a.is_applying and a.is_separating)
+
+
+# ===========================================================================
+# Phase 14 — Public API exposure and surface curation
+# ===========================================================================
+
+import moira.aspects as _aspects_module
+import moira as _moira_package
+
+
+_EXPECTED_PUBLIC = {
+    "CANONICAL_ASPECTS",
+    "DEFAULT_POLICY",
+    "AspectDomain",
+    "AspectFamily",
+    "AspectPatternKind",
+    "AspectTier",
+    "MotionState",
+    "AspectClassification",
+    "AspectData",
+    "AspectFamilyProfile",
+    "AspectGraph",
+    "AspectGraphNode",
+    "AspectHarmonicProfile",
+    "AspectPattern",
+    "AspectPolicy",
+    "AspectStrength",
+    "DeclinationAspect",
+    "aspect_harmonic_profile",
+    "aspect_motion_state",
+    "aspect_strength",
+    "aspects_between",
+    "aspects_to_point",
+    "build_aspect_graph",
+    "find_aspects",
+    "find_declination_aspects",
+    "find_patterns",
+}
+
+_EXPECTED_INTERNAL = {
+    "_resolve_aspects",
+    "_applying",
+    "_is_stationary",
+    "_aspect_index",
+    "_aspects_of_kind",
+    "_find_stellia",
+    "_find_t_squares",
+    "_find_grand_trines",
+    "_find_grand_crosses",
+    "_find_yods",
+    "_connected_components",
+    "_build_family_profile",
+    "_FAMILY_BY_NAME",
+    "_ASPECT_CLASSIFICATION",
+    "_PARALLEL_CLASSIFICATION",
+    "_CONTRA_PARALLEL_CLASSIFICATION",
+    "_EXTENDED_MINOR_NAMES",
+    "_COMMON_MINOR_NAMES",
+    "_tier_for",
+    "_STATIONARY_THRESHOLD",
+}
+
+
+def test_aspects_module_has_dunder_all() -> None:
+    assert hasattr(_aspects_module, "__all__"), "moira.aspects must define __all__"
+
+
+def test_aspects_dunder_all_contains_all_curated_names() -> None:
+    all_set = set(_aspects_module.__all__)
+    missing = _EXPECTED_PUBLIC - all_set
+    assert not missing, f"names missing from __all__: {sorted(missing)}"
+
+
+def test_aspects_dunder_all_contains_no_internal_names() -> None:
+    all_set = set(_aspects_module.__all__)
+    leaked = _EXPECTED_INTERNAL & all_set
+    assert not leaked, f"internal names leaked into __all__: {sorted(leaked)}"
+
+
+def test_aspects_dunder_all_no_underscore_names() -> None:
+    leaked = [n for n in _aspects_module.__all__ if n.startswith("_")]
+    assert not leaked, f"underscore names in __all__: {leaked}"
+
+
+def test_all_curated_names_importable_from_moira_aspects() -> None:
+    for name in _EXPECTED_PUBLIC:
+        assert hasattr(_aspects_module, name), f"moira.aspects missing: {name}"
+
+
+def test_all_curated_names_importable_from_moira_package() -> None:
+    for name in _EXPECTED_PUBLIC - {"AspectPattern"}:
+        assert hasattr(_moira_package, name), f"moira package missing: {name}"
+
+
+def test_moira_package_exports_canonical_aspects() -> None:
+    from moira import CANONICAL_ASPECTS
+    assert isinstance(CANONICAL_ASPECTS, tuple)
+    assert len(CANONICAL_ASPECTS) == 24
+
+
+def test_moira_package_exports_default_policy() -> None:
+    from moira import DEFAULT_POLICY, AspectPolicy
+    assert isinstance(DEFAULT_POLICY, AspectPolicy)
+
+
+def test_moira_package_exports_aspect_domain() -> None:
+    from moira import AspectDomain
+    assert hasattr(AspectDomain, "ZODIACAL")
+    assert hasattr(AspectDomain, "DECLINATION")
+
+
+def test_moira_package_exports_aspect_tier() -> None:
+    from moira import AspectTier
+    assert hasattr(AspectTier, "MAJOR")
+    assert hasattr(AspectTier, "COMMON_MINOR")
+    assert hasattr(AspectTier, "EXTENDED_MINOR")
+
+
+def test_moira_package_exports_aspect_family() -> None:
+    from moira import AspectFamily
+    assert hasattr(AspectFamily, "CONJUNCTION")
+    assert hasattr(AspectFamily, "TRINE")
+
+
+def test_moira_package_exports_motion_state() -> None:
+    from moira import MotionState
+    assert hasattr(MotionState, "APPLYING")
+    assert hasattr(MotionState, "SEPARATING")
+    assert hasattr(MotionState, "STATIONARY")
+    assert hasattr(MotionState, "INDETERMINATE")
+    assert hasattr(MotionState, "NONE")
+
+
+def test_moira_package_exports_aspect_pattern_kind() -> None:
+    from moira import AspectPatternKind
+    assert hasattr(AspectPatternKind, "STELLIUM")
+    assert hasattr(AspectPatternKind, "T_SQUARE")
+    assert hasattr(AspectPatternKind, "GRAND_TRINE")
+    assert hasattr(AspectPatternKind, "GRAND_CROSS")
+    assert hasattr(AspectPatternKind, "YOD")
+
+
+def test_moira_package_exports_find_aspects() -> None:
+    from moira import find_aspects
+    result = find_aspects({"Sun": 0.0, "Moon": 120.0}, include_minor=False)
+    assert any(a.aspect == "Trine" for a in result)
+
+
+def test_moira_package_exports_aspects_between() -> None:
+    from moira import aspects_between
+    result = aspects_between("Sun", 0.0, "Moon", 60.0)
+    assert any(a.aspect == "Sextile" for a in result)
+
+
+def test_moira_package_exports_aspects_to_point() -> None:
+    from moira import aspects_to_point
+    result = aspects_to_point(180.0, {"Sun": 0.0})
+    assert any(a.aspect == "Opposition" for a in result)
+
+
+def test_moira_package_exports_find_declination_aspects() -> None:
+    from moira import find_declination_aspects
+    result = find_declination_aspects({"Sun": 10.0, "Moon": 10.3})
+    assert isinstance(result, list)
+
+
+def test_moira_package_exports_aspect_strength() -> None:
+    from moira import aspect_strength, AspectStrength
+    a = AspectData(
+        body1="Sun", body2="Moon", aspect="Trine", symbol="△",
+        angle=120.0, separation=120.5, orb=0.5, allowed_orb=8.0,
+        applying=True, stationary=False,
+    )
+    s = aspect_strength(a)
+    assert isinstance(s, AspectStrength)
+    assert s.exactness == pytest.approx(1.0 - 0.5 / 8.0)
+
+
+def test_moira_package_exports_aspect_motion_state() -> None:
+    from moira import aspect_motion_state, MotionState
+    a = AspectData(
+        body1="Sun", body2="Moon", aspect="Trine", symbol="△",
+        angle=120.0, separation=120.5, orb=0.5, allowed_orb=8.0,
+        applying=True, stationary=False,
+    )
+    assert aspect_motion_state(a) == MotionState.APPLYING
+
+
+def test_moira_package_exports_find_patterns() -> None:
+    from moira import find_patterns
+    result = find_patterns([])
+    assert result == []
+
+
+def test_moira_package_exports_build_aspect_graph() -> None:
+    from moira import build_aspect_graph, AspectGraph
+    g = build_aspect_graph([])
+    assert isinstance(g, AspectGraph)
+
+
+def test_moira_package_exports_aspect_harmonic_profile() -> None:
+    from moira import aspect_harmonic_profile, AspectHarmonicProfile
+    p = aspect_harmonic_profile([])
+    assert isinstance(p, AspectHarmonicProfile)
+
+
+def test_moira_package_exports_aspect_classification() -> None:
+    from moira import AspectClassification, AspectDomain, AspectTier, AspectFamily
+    c = AspectClassification(
+        domain=AspectDomain.ZODIACAL,
+        tier=AspectTier.MAJOR,
+        family=AspectFamily.TRINE,
+    )
+    assert c.domain == AspectDomain.ZODIACAL
+
+
+def test_moira_package_exports_aspect_graph_node() -> None:
+    from moira import AspectGraphNode
+    n = AspectGraphNode(name="Sun", degree=0, edges=(), family_counts={})
+    assert n.name == "Sun"
+    assert n.degree == 0
+
+
+def test_moira_package_exports_aspect_family_profile() -> None:
+    from moira import AspectFamilyProfile, AspectFamily
+    p = AspectFamilyProfile(counts={}, total=0, proportions={}, dominant=())
+    assert p.total == 0
+
+
+def test_moira_package_exports_declination_aspect() -> None:
+    from moira import DeclinationAspect
+    d = DeclinationAspect(
+        body1="Sun", body2="Moon", aspect="Parallel",
+        dec1=10.0, dec2=10.1,
+        orb=0.1, allowed_orb=1.0,
+    )
+    assert d.is_parallel
+
+
+def test_aspects_dunder_all_length() -> None:
+    assert len(_aspects_module.__all__) == 26
+
+
+def test_aspects_dunder_all_no_duplicates() -> None:
+    names = _aspects_module.__all__
+    assert len(names) == len(set(names)), "duplicate entries in __all__"
+
+
+def test_internal_helpers_not_in_dunder_all() -> None:
+    all_set = set(_aspects_module.__all__)
+    for name in _EXPECTED_INTERNAL:
+        if hasattr(_aspects_module, name):
+            assert name not in all_set, f"{name!r} must not appear in __all__"

@@ -82,7 +82,34 @@ from .spk_reader import get_reader, set_kernel_path, SpkReader
 from .planets import PlanetData, SkyPosition, planet_at, sky_position_at, all_planets_at, sun_longitude
 from .nodes import mean_node, true_node, mean_lilith, NodeData
 from .houses import HouseCusps, calculate_houses
-from .aspects import AspectData, find_aspects, aspects_between, aspects_to_point
+from .aspects import (
+    CANONICAL_ASPECTS,
+    DEFAULT_POLICY,
+    AspectDomain,
+    AspectFamily,
+    AspectPatternKind,
+    AspectTier,
+    MotionState,
+    AspectClassification,
+    AspectData,
+    AspectFamilyProfile,
+    AspectGraph,
+    AspectGraphNode,
+    AspectHarmonicProfile,
+    AspectPattern,
+    AspectPolicy,
+    AspectStrength,
+    DeclinationAspect,
+    aspect_harmonic_profile,
+    aspect_motion_state,
+    aspect_strength,
+    aspects_between,
+    aspects_to_point,
+    build_aspect_graph,
+    find_aspects,
+    find_declination_aspects,
+    find_patterns,
+)
 from .sidereal import ayanamsa, tropical_to_sidereal, Ayanamsa, list_ayanamsa_systems
 from .eclipse import (
     EclipseData,
@@ -250,7 +277,15 @@ __all__ = [
     "jd_from_datetime", "datetime_from_jd", "format_jd_utc", "safe_datetime_from_jd",
     "ayanamsa", "tropical_to_sidereal", "list_ayanamsa_systems",
     "AspectDefinition", "ASPECT_TIERS",
-    "find_aspects", "aspects_between", "aspects_to_point",
+    # Aspect backend public surface
+    "CANONICAL_ASPECTS", "DEFAULT_POLICY",
+    "AspectDomain", "AspectFamily", "AspectPatternKind", "AspectTier", "MotionState",
+    "AspectClassification", "AspectData", "AspectFamilyProfile", "AspectGraph",
+    "AspectGraphNode", "AspectHarmonicProfile", "AspectPattern", "AspectPolicy",
+    "AspectStrength", "DeclinationAspect",
+    "aspect_harmonic_profile", "aspect_motion_state", "aspect_strength",
+    "aspects_between", "aspects_to_point", "build_aspect_graph",
+    "find_aspects", "find_declination_aspects", "find_patterns",
     # Lots
     "ArabicPart", "calculate_lots", "ArabicPartsService", "list_parts",
     # Dignities

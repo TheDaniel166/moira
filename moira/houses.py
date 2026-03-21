@@ -9,7 +9,36 @@ obliquity and nutation to obliquity, local sidereal time to julian, and
 coordinate normalisation to coordinates. Does not own planet positions, aspect
 detection, chart assembly, or any display formatting.
 
+Layers present in this file:
+    CORE COMPUTATION
+        calculate_houses() — the main engine.  Produces all cusp values.
+        _whole_sign, _equal_house, _porphyry, _placidus, _koch, … — one
+        private function per system; pure mathematics, no policy.
+
+    TRUTH PRESERVATION  (Phase 1)
+        HouseCusps.system           — requested system code, never modified.
+        HouseCusps.effective_system — system code actually used for cusps.
+        HouseCusps.fallback         — True iff effective != requested.
+        HouseCusps.fallback_reason  — human-readable fallback cause or None.
+
+    CLASSIFICATION  (Phase 2)
+        HouseSystemFamily    — doctrinal family enum (EQUAL, QUADRANT, …).
+        HouseSystemCuspBasis — cusp-projection basis enum (ECLIPTIC, SEMI_ARC, …).
+        HouseSystemClassification — frozen dataclass: family, cusp_basis,
+            latitude_sensitive, polar_capable.
+        classify_house_system() — maps a system code → classification.
+        HouseCusps.classification — classification of the effective system.
+
+    FUTURE LAYERS (not yet present)
+        - Angularity scoring and cusp-zone analysis
+        - House membership (planet-in-house)
+        - Boundary sensitivity / cusp proximity detection
+        - System comparison and doctrinal policy enforcement
+        - Harmonic overlays
+
 Public surface:
+    HouseSystemFamily, HouseSystemCuspBasis,
+    HouseSystemClassification, classify_house_system,
     HouseCusps, calculate_houses
 
 Import-time side effects: None
@@ -26,12 +55,223 @@ External dependency assumptions:
 
 import math
 from dataclasses import dataclass, field
+from enum import Enum
 
 from .constants import DEG2RAD, RAD2DEG, HouseSystem, sign_of
 from .coordinates import normalize_degrees
 from .julian import local_sidereal_time, ut_to_tt, greenwich_mean_sidereal_time
 from .obliquity import true_obliquity, nutation
 from .planets import _approx_year
+
+
+# ===========================================================================
+# CLASSIFICATION LAYER
+# ===========================================================================
+
+class HouseSystemFamily(str, Enum):
+    """
+    Doctrinal family of a house system.
+
+    EQUAL
+        All twelve houses span exactly 30° of the relevant reference frame
+        (ecliptic or equator). Cusps are spaced uniformly; no quadrant
+        trisection is involved.  Includes: EQUAL, WHOLE_SIGN, VEHLOW,
+        MORINUS, MERIDIAN.
+
+    QUADRANT
+        The four angular cusps (ASC, IC, DSC, MC) are derived from ARMC and
+        obliquity; the eight intermediate cusps are found by some form of
+        trisection or projection within each quadrant.  Includes: PLACIDUS,
+        KOCH, PORPHYRY, CAMPANUS, REGIOMONTANUS, ALCABITIUS, TOPOCENTRIC,
+        AZIMUTHAL, CARTER, PULLEN_SD, PULLEN_SR, KRUSINSKI, APC.
+
+    WHOLE_SIGN
+        The first house is the entire sign rising; all houses are complete
+        30° sign divisions regardless of ASC degree within the sign.
+
+    SOLAR
+        The Sun's ecliptic position replaces the ASC as the basis for house
+        division.  Includes: SUNSHINE.
+    """
+    EQUAL      = "equal"
+    QUADRANT   = "quadrant"
+    WHOLE_SIGN = "whole_sign"
+    SOLAR      = "solar"
+
+
+class HouseSystemCuspBasis(str, Enum):
+    """
+    The projection or division method used to derive intermediate cusp positions.
+
+    ECLIPTIC
+        Cusps are placed at equal intervals directly on the ecliptic (or at
+        sign boundaries).  No projection from another frame is needed.
+        Systems: WHOLE_SIGN, EQUAL, VEHLOW.
+
+    EQUATORIAL
+        Equal 30° divisions of the celestial equator are projected onto the
+        ecliptic.  Systems: MORINUS, MERIDIAN, CARTER.
+
+    SEMI_ARC
+        Intermediate cusps are found via the diurnal or nocturnal semi-arc
+        of the Ascendant or of each cusp degree itself (self-referential
+        iteration).  Systems: PLACIDUS, ALCABITIUS.
+
+    OBLIQUE_ASCENSION
+        Cusps are placed using the oblique ascension of the MC degree,
+        projected back to the ecliptic.  Systems: KOCH.
+
+    QUADRANT_TRISECTION
+        Each of the four unequal quadrants is trisected directly in ecliptic
+        longitude.  Systems: PORPHYRY.
+
+    PRIME_VERTICAL
+        Great circles through the prime vertical are projected onto the
+        ecliptic.  Systems: CAMPANUS.
+
+    HORIZON
+        Great circles through the Zenith (horizon-based) are projected onto
+        the ecliptic.  Systems: AZIMUTHAL.
+
+    POLAR_PROJECTION
+        Each cusp uses a graduated polar height derived from the observer
+        latitude, projected onto the equator then to the ecliptic.
+        Systems: REGIOMONTANUS, TOPOCENTRIC.
+
+    SINUSOIDAL
+        Intermediate cusps are placed at sinusoidal offsets from the cardinal
+        cusps, derived from the quadrant size.  Systems: PULLEN_SD, PULLEN_SR.
+
+    GREAT_CIRCLE
+        Great circles through the Ascendant and Zenith divide the sphere;
+        cusps are intersections with the ecliptic.  Systems: KRUSINSKI.
+
+    APC_FORMULA
+        Uses the APC formula (Boehrer / Polich) which positions cusps via a
+        composite ascension angle incorporating latitude and obliquity.
+        Systems: APC.
+
+    SOLAR_POSITION
+        The Sun's ecliptic longitude is the basis; cusps are equal 30°
+        intervals starting from the Sun.  Systems: SUNSHINE.
+    """
+    ECLIPTIC             = "ecliptic"
+    EQUATORIAL           = "equatorial"
+    SEMI_ARC             = "semi_arc"
+    OBLIQUE_ASCENSION    = "oblique_ascension"
+    QUADRANT_TRISECTION  = "quadrant_trisection"
+    PRIME_VERTICAL       = "prime_vertical"
+    HORIZON              = "horizon"
+    POLAR_PROJECTION     = "polar_projection"
+    SINUSOIDAL           = "sinusoidal"
+    GREAT_CIRCLE         = "great_circle"
+    APC_FORMULA          = "apc_formula"
+    SOLAR_POSITION       = "solar_position"
+
+
+@dataclass(frozen=True, slots=True)
+class HouseSystemClassification:
+    """
+    CLASSIFICATION: Doctrinal and computational character of a house system.
+
+    Describes the algorithm that produced a set of cusps — not the cusps
+    themselves.  All fields are derivable from the system code alone; none
+    depend on computed cusp values, observer latitude, or Julian date.
+
+    Fields:
+        family
+            The doctrinal family of the system.  See HouseSystemFamily.
+
+        cusp_basis
+            The projection or division method used for intermediate cusps.
+            See HouseSystemCuspBasis.
+
+        latitude_sensitive
+            True if the cusp positions change with the observer's geographic
+            latitude (i.e. the system has a meaningful geographic pole).
+            False for systems where all observers at the same moment share
+            the same cusps regardless of latitude:
+            WHOLE_SIGN, EQUAL, VEHLOW, MORINUS, MERIDIAN.
+
+        polar_capable
+            True if the system can produce numerically stable results at
+            |latitude| >= 75° without falling back to another system.
+            Systems that cannot (PLACIDUS, KOCH, PULLEN_SD, PULLEN_SR) have
+            polar_capable = False; all others are True.
+
+    This dataclass is frozen (immutable) and carries no computation logic.
+    It is a pure doctrinal label attached to an already-computed HouseCusps.
+
+    Future layers that are NOT the responsibility of this class:
+        - Cusp-zone or angularity scoring
+        - House membership analysis
+        - Boundary sensitivity
+        - System comparison or policy selection
+    """
+    family:              HouseSystemFamily
+    cusp_basis:          HouseSystemCuspBasis
+    latitude_sensitive:  bool
+    polar_capable:       bool
+
+
+# ---------------------------------------------------------------------------
+# Classification table: system code → HouseSystemClassification
+# ---------------------------------------------------------------------------
+
+_F  = HouseSystemFamily
+_CB = HouseSystemCuspBasis
+
+_CLASSIFICATIONS: dict[str, HouseSystemClassification] = {
+    HouseSystem.WHOLE_SIGN:    HouseSystemClassification(_F.WHOLE_SIGN, _CB.ECLIPTIC,            False, True),
+    HouseSystem.EQUAL:         HouseSystemClassification(_F.EQUAL,      _CB.ECLIPTIC,            False, True),
+    HouseSystem.VEHLOW:        HouseSystemClassification(_F.EQUAL,      _CB.ECLIPTIC,            False, True),
+    HouseSystem.MORINUS:       HouseSystemClassification(_F.EQUAL,      _CB.EQUATORIAL,          False, True),
+    HouseSystem.MERIDIAN:      HouseSystemClassification(_F.EQUAL,      _CB.EQUATORIAL,          False, True),
+    HouseSystem.CARTER:        HouseSystemClassification(_F.QUADRANT,   _CB.EQUATORIAL,          True,  True),
+    HouseSystem.PORPHYRY:      HouseSystemClassification(_F.QUADRANT,   _CB.QUADRANT_TRISECTION, True,  True),
+    HouseSystem.PLACIDUS:      HouseSystemClassification(_F.QUADRANT,   _CB.SEMI_ARC,            True,  False),
+    HouseSystem.ALCABITIUS:    HouseSystemClassification(_F.QUADRANT,   _CB.SEMI_ARC,            True,  True),
+    HouseSystem.KOCH:          HouseSystemClassification(_F.QUADRANT,   _CB.OBLIQUE_ASCENSION,   True,  False),
+    HouseSystem.CAMPANUS:      HouseSystemClassification(_F.QUADRANT,   _CB.PRIME_VERTICAL,      True,  True),
+    HouseSystem.AZIMUTHAL:     HouseSystemClassification(_F.QUADRANT,   _CB.HORIZON,             True,  True),
+    HouseSystem.REGIOMONTANUS: HouseSystemClassification(_F.QUADRANT,   _CB.POLAR_PROJECTION,    True,  True),
+    HouseSystem.TOPOCENTRIC:   HouseSystemClassification(_F.QUADRANT,   _CB.POLAR_PROJECTION,    True,  True),
+    HouseSystem.PULLEN_SD:     HouseSystemClassification(_F.QUADRANT,   _CB.SINUSOIDAL,          True,  False),
+    HouseSystem.PULLEN_SR:     HouseSystemClassification(_F.QUADRANT,   _CB.SINUSOIDAL,          True,  False),
+    HouseSystem.KRUSINSKI:     HouseSystemClassification(_F.QUADRANT,   _CB.GREAT_CIRCLE,        True,  True),
+    HouseSystem.APC:           HouseSystemClassification(_F.QUADRANT,   _CB.APC_FORMULA,         True,  True),
+    HouseSystem.SUNSHINE:      HouseSystemClassification(_F.SOLAR,      _CB.SOLAR_POSITION,      False, True),
+}
+
+# Sentinel returned when an unrecognised code is queried directly.
+_UNKNOWN_CLASSIFICATION = HouseSystemClassification(
+    family=_F.QUADRANT,
+    cusp_basis=_CB.SEMI_ARC,
+    latitude_sensitive=True,
+    polar_capable=False,
+)
+
+
+def classify_house_system(code: str) -> HouseSystemClassification:
+    """
+    Return the HouseSystemClassification for the given HouseSystem code.
+
+    The classification describes the algorithm associated with that code —
+    its doctrinal family, cusp-projection basis, latitude sensitivity, and
+    polar capability.  It is derived entirely from the code string; no
+    chart data or observer coordinates are needed.
+
+    When `code` is not a recognised HouseSystem constant, returns the
+    classification of HouseSystem.PLACIDUS (the fallback engine), because
+    an unknown code is computed via Placidus in calculate_houses().
+
+    Args:
+        code: A HouseSystem constant string (e.g. HouseSystem.PLACIDUS).
+
+    Returns:
+        A frozen HouseSystemClassification for that code.
+    """
+    return _CLASSIFICATIONS.get(code, _UNKNOWN_CLASSIFICATION)
 
 
 @dataclass(slots=True)
@@ -41,7 +281,8 @@ class HouseCusps:
 
     THEOREM: Governs the storage and retrieval of all twelve ecliptic house cusp
     longitudes together with the four angular points produced by a single house
-    calculation.
+    calculation, and preserves the full doctrinal/computational path through which
+    those cusps were produced.
 
     RITE OF PURPOSE:
         HouseCusps serves as the immutable result vessel returned by
@@ -51,22 +292,73 @@ class HouseCusps:
         no stable, typed surface through which to interrogate house positions.
         It enforces the invariant that cusps are indexed 0–11 (house 1 = index 0).
 
+    TRUTH PRESERVATION  (Phase 1):
+        Three fields preserve the computation path beyond the bare cusp values:
+            system:           the house system code *requested* by the caller.
+                              Never modified, even when fallback occurs. Callers
+                              and tests that assert on the requested system will
+                              see the value they passed in.
+            effective_system: the house system code that was *actually used* to
+                              compute the cusps. Equals system when no fallback
+                              occurred; differs from system when a doctrinal or
+                              numerical constraint redirected the computation
+                              (e.g. polar-latitude safety valve).
+            fallback:         True iff effective_system != system. A False value
+                              means the requested system was used without alteration.
+            fallback_reason:  Human-readable string describing why fallback
+                              occurred when fallback is True; None otherwise.
+                              Currently populated reasons:
+                                "polar latitude: |lat| >= 75.0; quadrant system
+                                 not computable; fell back to Porphyry"
+                                "unknown system code; fell back to Placidus"
+
+    CLASSIFICATION  (Phase 2):
+        classification: HouseSystemClassification derived from effective_system.
+            Describes the doctrinal and computational character of the system
+            that actually produced the cusps:
+                family              — doctrinal family (EQUAL, QUADRANT, …)
+                cusp_basis          — projection method (SEMI_ARC, ECLIPTIC, …)
+                latitude_sensitive  — whether cusps vary with observer latitude
+                polar_capable       — whether system operates at |lat| >= 75°
+            The classification always reflects the *effective* system, not the
+            requested system, so callers can read doctrine from the computation
+            path that actually ran.
+
+    FUTURE LAYER NOTES:
+        This vessel is intentionally bounded. The following capabilities are NOT
+        present here and are reserved for later dedicated layers:
+            - Angularity scoring and cusp-zone classification
+            - House membership analysis (which house a planet occupies)
+            - Boundary sensitivity and cusp proximity detection
+            - System comparison and doctrinal policy enforcement
+            - Harmonic house overlays or modulus transformations
+        Any such capability should read from this vessel, not extend it.
+
     LAW OF OPERATION:
         Responsibilities:
             - Store twelve ecliptic house cusp longitudes in degrees [0, 360)
             - Expose the four angular points: ASC, MC, DSC (derived), IC (derived)
             - Expose the Vertex and Anti-Vertex when computed
+            - Preserve the requested system, effective system, fallback flag,
+              and fallback reason produced by calculate_houses()
+            - Carry the HouseSystemClassification of the effective system
             - Serve sign-of-cusp queries via sign_of_cusp()
         Non-responsibilities:
             - Compute any house cusp values (delegates entirely to calculate_houses)
             - Perform coordinate transforms or time conversions
             - Validate or normalise input longitudes
+            - Make policy decisions about which system to use
+            - Classify cusps by angularity, strength, or zone
         Dependencies:
             - moira.constants.sign_of for sign_of_cusp()
+            - HouseSystemClassification for classification field
         Structural invariants:
             - len(cusps) == 12 at all times
             - cusps[0] == asc (the Ascendant is always the first house cusp)
             - All longitude values are in degrees [0, 360)
+            - fallback is True iff effective_system != system
+            - fallback_reason is None iff fallback is False
+            - classification reflects effective_system, not system
 
     Canon: None (No applicable canon)
 
@@ -77,7 +369,8 @@ class HouseCusps:
       "risk": "high",
       "api": {
         "frozen": ["cusps", "asc", "mc", "armc", "vertex", "anti_vertex",
-                   "dsc", "ic", "sign_of_cusp"],
+                   "system", "effective_system", "fallback", "fallback_reason",
+                   "classification", "dsc", "ic", "sign_of_cusp"],
         "internal": []
       },
       "state": {"mutable": false, "owners": ["HouseCusps"]},
@@ -89,13 +382,17 @@ class HouseCusps:
     }
     [/MACHINE_CONTRACT]
     """
-    system:      str
-    cusps:       list[float]          # 12 ecliptic longitudes, degrees [0,360)
-    asc:         float                # Ascendant
-    mc:          float                # Midheaven
-    armc:        float                # ARMC (Right Ascension of MC)
-    vertex:      float | None = None  # Vertex (western prime-vertical / ecliptic intersection)
-    anti_vertex: float | None = None  # Anti-Vertex (opposite Vertex)
+    system:           str
+    cusps:            list[float]          # 12 ecliptic longitudes, degrees [0,360)
+    asc:              float                # Ascendant
+    mc:               float                # Midheaven
+    armc:             float                # ARMC (Right Ascension of MC)
+    vertex:           float | None = None  # Vertex (western prime-vertical / ecliptic intersection)
+    anti_vertex:      float | None = None  # Anti-Vertex (opposite Vertex)
+    effective_system: str                          = ""      # House system code actually used for computation
+    fallback:         bool                         = False   # True iff effective_system != system
+    fallback_reason:  str | None                   = None    # Why fallback occurred; None when fallback is False
+    classification:   HouseSystemClassification | None = None  # Doctrinal classification of effective_system
 
     @property
     def dsc(self) -> float:
@@ -1231,11 +1528,42 @@ def calculate_houses(
     """
     Calculate house cusps for a given Universal Time and observer location.
 
-    Conducts the full house computation pipeline: derives ARMC and obliquity
-    from the Julian date, selects the appropriate house algorithm, computes
-    all twelve cusp longitudes, and returns a populated HouseCusps vessel.
-    At polar latitudes (|latitude| >= 75°) the Placidus, Koch, Pullen SD, and
-    Pullen SR systems fall back automatically to Porphyry.
+    CORE COMPUTATION:
+        Derives ARMC and obliquity from the Julian date, selects the appropriate
+        house algorithm, computes all twelve cusp longitudes, and returns a
+        populated HouseCusps vessel.
+
+    SYSTEM DOCTRINE:
+        The `system` argument is the *requested* system. It is always preserved
+        unchanged in HouseCusps.system. The *effective* system — the one whose
+        algorithm actually produced the cusps — is stored in
+        HouseCusps.effective_system.
+
+    FALLBACK BEHAVIOUR:
+        Two conditions redirect computation away from the requested system:
+
+        1. Polar latitude safety valve:
+           When |latitude| >= 75.0°, the systems PLACIDUS, KOCH, PULLEN_SD,
+           and PULLEN_SR cannot converge reliably (their semi-arc iterations
+           diverge near the arctic / antarctic circles). These systems fall back
+           automatically to PORPHYRY. HouseCusps.fallback is set True and
+           HouseCusps.fallback_reason records the polar-latitude cause.
+
+        2. Unknown system code:
+           If `system` is not a recognised HouseSystem constant, the final
+           else-branch falls back to PLACIDUS. HouseCusps.fallback is set True
+           and HouseCusps.fallback_reason records the unknown-code cause.
+
+        In all normal cases (known system, non-polar latitude) fallback is False
+        and fallback_reason is None.
+
+    FUTURE LAYERS:
+        This function intentionally does not:
+            - classify cusps by angularity or strength
+            - analyse planet-in-house membership
+            - compare systems or apply doctrinal policy
+            - perform any cusp-zone or boundary-sensitivity analysis
+        Those capabilities belong in dedicated layers above this function.
 
     Args:
         jd_ut: Julian date in Universal Time (UT1).
@@ -1248,8 +1576,9 @@ def calculate_houses(
 
     Returns:
         A HouseCusps vessel containing the twelve cusp longitudes (degrees
-        [0, 360)), ASC, MC, ARMC, Vertex, and Anti-Vertex for the requested
-        time and location.
+        [0, 360)), ASC, MC, ARMC, Vertex, Anti-Vertex, the requested system,
+        the effective system, the fallback flag, the fallback reason, and
+        the HouseSystemClassification of the effective system.
 
     Raises:
         ValueError: Propagated from subordinate engines if input values are
@@ -1273,15 +1602,51 @@ def calculate_houses(
     vertex      = _asc_from_armc((armc + 90.0) % 360.0, obliquity, -latitude)
     anti_vertex = (vertex + 180.0) % 360.0
 
-    # Polar latitudes fallback (Swiss Ephemeris computes Placidus/Koch up to ~75°)
-    polar = abs(latitude) >= 75.0
-    effective_system = system
-    if polar and system in (
+    # --- Fallback resolution: determine effective system and reason ----------
+    #
+    # Rule 1 — Polar latitude safety valve:
+    #   |latitude| >= 75.0° makes semi-arc iteration systems numerically unsafe.
+    #   PLACIDUS, KOCH, PULLEN_SD, PULLEN_SR fall back to PORPHYRY.
+    #
+    # Rule 2 — Unknown system code:
+    #   Any system code not matched by the elif chain falls to the final else,
+    #   which silently computes Placidus. That else is now explicit here so the
+    #   truth is carried in the result rather than hidden in a code branch.
+    #
+    _POLAR_SYSTEMS = frozenset({
         HouseSystem.PLACIDUS, HouseSystem.KOCH,
         HouseSystem.PULLEN_SD, HouseSystem.PULLEN_SR,
-    ):
-        effective_system = HouseSystem.PORPHYRY
+    })
+    _KNOWN_SYSTEMS = frozenset({
+        HouseSystem.WHOLE_SIGN, HouseSystem.EQUAL, HouseSystem.PORPHYRY,
+        HouseSystem.PLACIDUS, HouseSystem.KOCH, HouseSystem.CAMPANUS,
+        HouseSystem.REGIOMONTANUS, HouseSystem.ALCABITIUS, HouseSystem.MORINUS,
+        HouseSystem.TOPOCENTRIC, HouseSystem.MERIDIAN, HouseSystem.VEHLOW,
+        HouseSystem.SUNSHINE, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
+        HouseSystem.PULLEN_SD, HouseSystem.PULLEN_SR, HouseSystem.KRUSINSKI,
+        HouseSystem.APC,
+    })
 
+    polar = abs(latitude) >= 75.0
+    effective_system = system
+    fallback = False
+    fallback_reason: str | None = None
+
+    if polar and system in _POLAR_SYSTEMS:
+        effective_system = HouseSystem.PORPHYRY
+        fallback = True
+        fallback_reason = (
+            f"polar latitude: |lat| >= 75.0; {system!r} not computable "
+            f"at this latitude; fell back to Porphyry"
+        )
+    elif system not in _KNOWN_SYSTEMS:
+        effective_system = HouseSystem.PLACIDUS
+        fallback = True
+        fallback_reason = (
+            f"unknown system code {system!r}; fell back to Placidus"
+        )
+
+    # --- Cusp computation: dispatch to the effective system ------------------
     if effective_system == HouseSystem.WHOLE_SIGN:
         cusps = _whole_sign(asc)
     elif effective_system == HouseSystem.EQUAL:
@@ -1333,4 +1698,8 @@ def calculate_houses(
         armc=normalize_degrees(armc),
         vertex=normalize_degrees(vertex),
         anti_vertex=normalize_degrees(anti_vertex),
+        effective_system=effective_system,
+        fallback=fallback,
+        fallback_reason=fallback_reason,
+        classification=classify_house_system(effective_system),
     )

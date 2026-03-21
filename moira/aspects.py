@@ -12,7 +12,7 @@ qualification context and explicit aspect classification.
 
 Architecture layers
 -------------------
-This module has eleven distinct concerns, kept intentionally separate:
+This module has twelve distinct concerns, kept intentionally separate:
 
 1. **Core aspect detection** — ``find_aspects``, ``aspects_between``,
    ``aspects_to_point``, ``find_declination_aspects``.
@@ -104,9 +104,16 @@ This module has eleven distinct concerns, kept intentionally separate:
     introduce new doctrine inputs.  An optional ``bodies`` parameter allows
     degree-0 (isolated) nodes to be declared explicitly.
 
+12. **Harmonic / family intelligence layer** — ``AspectFamilyProfile``,
+    ``AspectHarmonicProfile``, ``aspect_harmonic_profile``.
+    Derives the harmonic-family distribution of admitted aspects at both the
+    chart level and per body.  Reports counts, proportions, and dominant
+    families.  The layer is a pure function over ``list[AspectData]`` — it
+    does not re-run detection, does not introduce doctrine inputs, and does
+    not mutate any vessel.
+
 Future layers (not current scope)
 ----------------------------------
-- Harmonic intelligence: harmonic series scoring, resonance detection
 - Kite, Mystic Rectangle, Grand Quintile, and other oriented or 5-body patterns
 - Dignity weighting, reception scoring, or body-specific strength modifiers
 - Configurable doctrine tables (e.g. body-specific orb weights)
@@ -148,6 +155,9 @@ Public surface
 ``AspectGraphNode``          — frozen dataclass: name, degree, edges, family_counts.
 ``AspectGraph``              — frozen dataclass: nodes, edges, components; hubs/isolated properties.
 ``build_aspect_graph``       — build a relational aspect graph from a list of admitted AspectData.
+``AspectFamilyProfile``      — frozen dataclass: counts, total, proportions, dominant.
+``AspectHarmonicProfile``    — frozen dataclass: chart-level profile + per-body profiles.
+``aspect_harmonic_profile``  — derive harmonic/family profile from a list of admitted AspectData.
 ``AspectData``               — vessel for a detected ecliptic aspect.
 ``DeclinationAspect``        — vessel for a parallel or contra-parallel aspect.
 ``find_aspects``             — find all aspects in a position dict.
@@ -178,6 +188,39 @@ from typing import Collection
 
 from .constants import Aspect, AspectDefinition, ASPECT_TIERS, DEFAULT_ORBS
 from .coordinates import angular_distance
+
+__all__ = [
+    # Constants
+    "CANONICAL_ASPECTS",
+    "DEFAULT_POLICY",
+    # Enums
+    "AspectDomain",
+    "AspectFamily",
+    "AspectPatternKind",
+    "AspectTier",
+    "MotionState",
+    # Dataclasses
+    "AspectClassification",
+    "AspectData",
+    "AspectFamilyProfile",
+    "AspectGraph",
+    "AspectGraphNode",
+    "AspectHarmonicProfile",
+    "AspectPattern",
+    "AspectPolicy",
+    "AspectStrength",
+    "DeclinationAspect",
+    # Entry points
+    "aspect_harmonic_profile",
+    "aspect_motion_state",
+    "aspect_strength",
+    "aspects_between",
+    "aspects_to_point",
+    "build_aspect_graph",
+    "find_aspects",
+    "find_declination_aspects",
+    "find_patterns",
+]
 
 
 # ---------------------------------------------------------------------------
@@ -373,12 +416,29 @@ class AspectPolicy:
 
     All fields are optional; the defaults reproduce the historical default
     behaviour of all four detection functions.
+
+    Raises
+    ------
+    ValueError
+        If ``orb_factor <= 0``.
+        If ``declination_orb < 0``.
     """
     tier:            int | None              = None
     include_minor:   bool                    = True
     orbs:            dict[float, float] | None = None
     orb_factor:      float                   = 1.0
     declination_orb: float                   = 1.0
+
+    def __post_init__(self) -> None:
+        if self.orb_factor <= 0:
+            raise ValueError(
+                f"AspectPolicy: orb_factor must be > 0, got {self.orb_factor!r}. "
+                "A zero or negative multiplier produces meaningless orb windows."
+            )
+        if self.declination_orb < 0:
+            raise ValueError(
+                f"AspectPolicy: declination_orb must be >= 0, got {self.declination_orb!r}."
+            )
 
 
 DEFAULT_POLICY: AspectPolicy = AspectPolicy()
@@ -453,9 +513,25 @@ def aspect_strength(aspect: AspectData | DeclinationAspect) -> AspectStrength:
 
         surplus   = allowed_orb - orb
         exactness = 1.0 - orb / allowed_orb
+
+    Raises
+    ------
+    ValueError
+        If ``allowed_orb <= 0`` (division by zero / meaningless window).
+        If ``orb > allowed_orb`` (vessel violates the admission invariant).
     """
     orb         = aspect.orb
     allowed_orb = aspect.allowed_orb
+    if allowed_orb <= 0:
+        raise ValueError(
+            f"aspect_strength: allowed_orb must be > 0, got {allowed_orb!r}. "
+            "An orb window of zero or negative width is not a valid admission context."
+        )
+    if orb > allowed_orb:
+        raise ValueError(
+            f"aspect_strength: orb ({orb!r}) exceeds allowed_orb ({allowed_orb!r}). "
+            "The vessel violates the admission invariant orb <= allowed_orb."
+        )
     return AspectStrength(
         orb=orb,
         allowed_orb=allowed_orb,
@@ -1149,6 +1225,172 @@ def _connected_components(
         groups.setdefault(root, set()).add(n)
 
     return [frozenset(g) for g in groups.values()]
+
+
+# ---------------------------------------------------------------------------
+# Harmonic / family intelligence layer
+# ---------------------------------------------------------------------------
+
+@dataclass(frozen=True, slots=True)
+class AspectFamilyProfile:
+    """
+    Family-level distribution for a set of admitted aspects.
+
+    A single instance covers either the full chart (all admitted aspects)
+    or one body's incident aspects within a chart.  The vessel is immutable
+    and fully derived from the input; it carries no doctrine inputs and
+    performs no interpretation.
+
+    Fields
+    ------
+    counts      : mapping of ``AspectFamily`` → count of admitted aspects in
+                  that family.  Only families with at least one aspect present
+                  are included.  Keys follow ``AspectFamily`` declaration order.
+    total       : total number of admitted aspects covered by this profile.
+                  Equal to ``sum(counts.values())``.
+    proportions : mapping of ``AspectFamily`` → ``count / total``.  Same key
+                  set as ``counts``.  Empty dict when ``total == 0``.
+    dominant    : tuple of ``AspectFamily`` values tied at the highest count,
+                  sorted by ``AspectFamily.value`` (alphabetical) for
+                  determinism.  Empty tuple when ``total == 0``.
+
+    Invariants
+    ----------
+    - ``sum(counts.values()) == total``
+    - ``len(proportions) == len(counts)``
+    - ``abs(sum(proportions.values()) - 1.0) < 1e-9`` when ``total > 0``
+    - Every member of ``dominant`` is a key in ``counts``
+    - All proportions are in ``[0.0, 1.0]``
+    """
+    counts:      dict[AspectFamily, int]
+    total:       int
+    proportions: dict[AspectFamily, float]
+    dominant:    tuple[AspectFamily, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class AspectHarmonicProfile:
+    """
+    Chart-level harmonic analysis derived from all admitted aspects.
+
+    Built by ``aspect_harmonic_profile``; consumes a ``list[AspectData]``
+    without re-running position arithmetic or altering any vessel.
+
+    Fields
+    ------
+    chart   : ``AspectFamilyProfile`` aggregating all admitted aspects.
+    by_body : mapping of body name → ``AspectFamilyProfile`` for that body's
+              incident aspects.  Every body that appears in at least one
+              admitted aspect has an entry.  Sorted by body name (dict
+              preserves insertion order in Python 3.7+).
+
+    Determinism contract
+    --------------------
+    The output is fully determined by the logical content of the input list.
+    Any permutation of the input produces identical ``chart`` and ``by_body``
+    values.  ``by_body`` keys are inserted in sorted body-name order.
+    """
+    chart:   AspectFamilyProfile
+    by_body: dict[str, AspectFamilyProfile]
+
+
+def _build_family_profile(aspects: list[AspectData]) -> AspectFamilyProfile:
+    """
+    Build an ``AspectFamilyProfile`` from a flat list of ``AspectData``.
+
+    Family resolution order
+    -----------------------
+    1. ``a.classification.family`` when ``classification`` is not ``None``
+       (the normal case for vessels produced by detection functions).
+    2. ``_FAMILY_BY_NAME[a.aspect]`` when ``classification`` is ``None``
+       and the aspect name is a known zodiacal name.
+    3. ``AspectFamily.DECLINATION`` as the fallback for any unrecognised
+       name (covers "Parallel", "Contra-Parallel", or custom names).
+    """
+    raw: dict[AspectFamily, int] = {}
+    for a in aspects:
+        if a.classification is not None:
+            fam = a.classification.family
+        else:
+            fam = _FAMILY_BY_NAME.get(a.aspect, AspectFamily.DECLINATION)
+        raw[fam] = raw.get(fam, 0) + 1
+
+    total = len(aspects)
+    counts: dict[AspectFamily, int] = {
+        fam: raw[fam]
+        for fam in AspectFamily
+        if fam in raw
+    }
+
+    if total == 0:
+        return AspectFamilyProfile(
+            counts={}, total=0, proportions={}, dominant=()
+        )
+
+    proportions: dict[AspectFamily, float] = {
+        fam: cnt / total
+        for fam, cnt in counts.items()
+    }
+
+    max_count = max(counts.values())
+    dominant = tuple(
+        sorted(
+            (fam for fam, cnt in counts.items() if cnt == max_count),
+            key=lambda f: f.value,
+        )
+    )
+
+    return AspectFamilyProfile(
+        counts=counts,
+        total=total,
+        proportions=proportions,
+        dominant=dominant,
+    )
+
+
+def aspect_harmonic_profile(aspects: list[AspectData]) -> AspectHarmonicProfile:
+    """
+    Derive a chart-level harmonic / family profile from admitted pairwise aspects.
+
+    The harmonic layer is a pure function over an already-admitted
+    ``list[AspectData]``.  It does not re-run position arithmetic, does not
+    introduce new doctrine inputs, and does not mutate any supplied vessel.
+
+    Parameters
+    ----------
+    aspects : list of ``AspectData`` as returned by ``find_aspects``,
+              ``aspects_between``, or any combination.
+
+    Returns
+    -------
+    ``AspectHarmonicProfile`` with:
+
+    - ``chart``   — aggregate ``AspectFamilyProfile`` over all aspects.
+    - ``by_body`` — per-body ``AspectFamilyProfile`` for each body that
+                    appears in at least one admitted aspect.
+
+    An empty input list returns a profile with zero counts and empty
+    ``dominant`` / ``by_body``.
+
+    Determinism contract
+    --------------------
+    The output is fully determined by the logical content of ``aspects``.
+    Any permutation of the input list produces identical output.
+    ``by_body`` keys are in sorted body-name order.
+    """
+    chart = _build_family_profile(aspects)
+
+    adjacency: dict[str, list[AspectData]] = {}
+    for a in aspects:
+        adjacency.setdefault(a.body1, []).append(a)
+        adjacency.setdefault(a.body2, []).append(a)
+
+    by_body: dict[str, AspectFamilyProfile] = {
+        name: _build_family_profile(adjacency[name])
+        for name in sorted(adjacency)
+    }
+
+    return AspectHarmonicProfile(chart=chart, by_body=by_body)
 
 
 # ---------------------------------------------------------------------------
