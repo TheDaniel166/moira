@@ -1,0 +1,14 @@
+﻿........................................................................ [ 12%]
+........................................................................ [ 25%]
+........................................................................ [ 38%]
+........................................................................ [ 50%]
+........................................................................ [ 63%]
+........................................................................ [ 76%]
+........................................................................ [ 88%]
+................................................................         [100%]
+============================ Moira: slowest tests =============================
+    0.020s  tests/unit/test_house_comparison.py::TestFamiliesDifferFlag::test_solar_vs_quadrant_differs
+    0.018s  tests/unit/test_house_comparison.py::TestComparePlacementsValues::test_three_systems_placements_length
+    0.014s  tests/unit/test_house_distribution.py::TestSystemFamiliesDistribution::test_one_per_house_for_all_systems[N]
+    0.014s  tests/unit/test_house_comparison.py::TestFallbackDiffersFlag::test_one_fallback_one_not_differs
+    0.014s  tests/unit/test_house_comparison.py::TestCuspDeltas::test_porphyry_vs_placidus_angular_cusps_close

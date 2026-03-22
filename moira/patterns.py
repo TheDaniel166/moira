@@ -8,7 +8,7 @@ Purpose
 -------
 Governs detection of classical and modern multi-body aspect configurations
 within a natal chart, including T-Squares, Grand Trines, Yods, Kites,
-Stelliums, and nine additional pattern types.
+Stelliums, and seventeen additional pattern types.
 
 Boundary declaration
 --------------------
@@ -24,25 +24,53 @@ External dependency assumptions
 No Qt main thread required. No database access. Pure computation over
 pre-computed aspect lists and position dicts.
 
+Orb doctrine
+------------
+All base orbs derive from ``moira.constants.DEFAULT_ORBS``, the same table
+used by the aspect engine.  Pattern-specific orbs are listed in each detector
+docstring and are scaled by the caller-supplied ``orb_factor``.
+
+    Conjunction / Opposition : 8.0°
+    Trine                    : 7.0°
+    Square                   : 7.0°
+    Sextile                  : 5.0°
+    Quincunx (150°)          : 3.0°
+    Semisquare (45°)         : 2.0°
+    Sesquiquadrate (135°)    : 2.0°
+    Quintile (72°)           : 2.0°
+    Biquintile (144°)        : 2.0°
+    Septile (51.43°)         : 1.5°
+    Biseptile (102.86°)      : 1.5°
+    Triseptile (154.29°)     : 1.5°
+
 Public surface
 --------------
-``AspectPattern``          — vessel for a detected multi-body configuration.
-``find_t_squares``         — detect T-Square configurations.
-``find_grand_trines``      — detect Grand Trine configurations.
-``find_grand_crosses``     — detect Grand Cross configurations.
-``find_yods``              — detect Yod (Finger of God) configurations.
-``find_mystic_rectangles`` — detect Mystic Rectangle configurations.
-``find_kites``             — detect Kite configurations.
-``find_stelliums``         — detect Stellium clusters.
-``find_minor_grand_trines``— detect Minor Grand Trine configurations.
-``find_grand_sextiles``    — detect Grand Sextile (Star of David) configurations.
-``find_thors_hammers``     — detect Thor's Hammer configurations.
-``find_boomerang_yods``    — detect Boomerang Yod configurations.
-``find_wedges``            — detect Wedge (Arrowhead) configurations.
-``find_all_patterns``      — detect all registered patterns in one call.
+``AspectPattern``           — vessel for a detected multi-body configuration.
+``find_t_squares``          — detect T-Square configurations.
+``find_grand_trines``       — detect Grand Trine configurations.
+``find_grand_crosses``      — detect Grand Cross configurations.
+``find_yods``               — detect Yod (Finger of God) configurations.
+``find_mystic_rectangles``  — detect Mystic Rectangle configurations.
+``find_kites``              — detect Kite configurations.
+``find_stelliums``          — detect Stellium clusters.
+``find_minor_grand_trines`` — detect Minor Grand Trine configurations.
+``find_grand_sextiles``     — detect Grand Sextile (Star of David) configurations.
+``find_thors_hammers``      — detect Thor's Hammer configurations.
+``find_boomerang_yods``     — detect Boomerang Yod configurations.
+``find_wedges``             — detect Wedge (Arrowhead) configurations.
+``find_cradles``            — detect Cradle configurations.
+``find_trapezes``           — detect Trapeze configurations.
+``find_eyes``               — detect Eye (Cosmic Eye) configurations.
+``find_irritation_triangles`` — detect Irritation Triangle configurations.
+``find_hard_wedges``        — detect Hard Wedge configurations.
+``find_dominant_triangles`` — detect Dominant Triangle configurations.
+``find_grand_quintiles``    — detect Grand Quintile configurations.
+``find_quintile_triangles`` — detect Quintile Triangle configurations.
+``find_septile_triangles``  — detect Septile Triangle configurations.
+``find_all_patterns``       — detect all registered patterns in one call.
 """
 
-
+import math
 from dataclasses import dataclass, field
 from itertools import combinations
 
@@ -50,86 +78,64 @@ from .aspects import AspectData, find_aspects
 from .coordinates import angular_distance
 
 
+__all__ = [
+    "AspectPattern",
+    "find_t_squares",
+    "find_grand_trines",
+    "find_grand_crosses",
+    "find_yods",
+    "find_mystic_rectangles",
+    "find_kites",
+    "find_stelliums",
+    "find_minor_grand_trines",
+    "find_grand_sextiles",
+    "find_thors_hammers",
+    "find_boomerang_yods",
+    "find_wedges",
+    "find_cradles",
+    "find_trapezes",
+    "find_eyes",
+    "find_irritation_triangles",
+    "find_hard_wedges",
+    "find_dominant_triangles",
+    "find_grand_quintiles",
+    "find_quintile_triangles",
+    "find_septile_triangles",
+    "find_all_patterns",
+]
+
+
 # ---------------------------------------------------------------------------
-# Data class
+# Result vessel
 # ---------------------------------------------------------------------------
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class AspectPattern:
     """
-    RITE: The Configuration Vessel — a named multi-body celestial geometry.
+    A detected multi-body aspect configuration.
 
-    THEOREM: Holds the name, participating bodies, underlying aspects, and
-    optional apex planet for a single detected multi-body aspect configuration.
+    Fields
+    ------
+    name    : pattern name (e.g. "T-Square", "Grand Trine").
+    bodies  : tuple of body names involved; apex planet is last for
+              apex-bearing patterns (T-Square, Yod, Kite, etc.).
+    aspects : tuple of the contributing AspectData instances.
+    apex    : focal/apex planet name, or None for symmetric patterns.
 
-    RITE OF PURPOSE:
-        Serves the Aspect Pattern Engine as the canonical result vessel for
-        all pattern detectors. Every pattern function returns a list of
-        ``AspectPattern`` instances. Without this vessel, pattern results
-        would have no uniform structure for downstream display, filtering,
-        or further analysis.
-
-    LAW OF OPERATION:
-        Responsibilities:
-            - Store the pattern name (e.g. "T-Square", "Grand Trine").
-            - Store the list of body names involved in the pattern.
-            - Store the list of ``AspectData`` instances forming the pattern.
-            - Store the optional apex/focal planet name.
-        Non-responsibilities:
-            - Does not detect patterns (delegated to the finder functions).
-            - Does not validate that the aspects are geometrically consistent.
-            - Does not compute orbs or angular distances.
-        Dependencies:
-            - ``aspects`` field contains ``AspectData`` instances from ``moira.aspects``.
-        Structural invariants:
-            - ``bodies`` is always a non-empty list.
-            - ``aspects`` may be empty for stelliums (position-based, not aspect-based).
-            - ``apex`` is ``None`` for symmetric patterns (Grand Trine, Grand Cross, etc.).
-        Succession stance: terminal — not designed for subclassing.
-
-    Canon: None (No applicable canon)
-
-    [MACHINE_CONTRACT v1]
-    {
-        "scope": "class",
-        "id": "moira.patterns.AspectPattern",
-        "risk": "medium",
-        "api": {
-            "public_methods": ["__repr__"],
-            "public_attributes": ["name", "bodies", "aspects", "apex"]
-        },
-        "state": {
-            "mutable": false,
-            "fields": ["name", "bodies", "aspects", "apex"]
-        },
-        "effects": {
-            "io": [],
-            "signals_emitted": [],
-            "db_writes": []
-        },
-        "concurrency": {
-            "thread": "pure_computation",
-            "cross_thread_calls": "safe_read_only"
-        },
-        "failures": {
-            "raises": [],
-            "policy": "caller ensures valid aspect data before construction"
-        },
-        "succession": {
-            "stance": "terminal",
-            "override_points": []
-        },
-        "agent": "kiro"
-    }
-    [/MACHINE_CONTRACT]
+    Structural invariants
+    ---------------------
+    - ``bodies`` is always non-empty.
+    - ``aspects`` may be empty for Stelliums (position-based, not aspect-based).
+    - ``apex`` is None for symmetric patterns (Grand Trine, Grand Cross, etc.).
+    - The vessel is immutable.
     """
-    name:    str               # e.g. "T-Square", "Grand Trine"
-    bodies:  list[str]         # planets involved (apex last for T-Square/Yod)
-    aspects: list[AspectData]  # the underlying aspects forming the pattern
-    apex:    str | None = None # focal/apex planet (T-Square, Yod, Kite)
+    name:    str
+    bodies:  tuple[str, ...]
+    aspects: tuple[AspectData, ...]
+    apex:    str | None = None
 
     def __repr__(self) -> str:
-        parts = " – ".join(self.bodies)
+        parts = " - ".join(self.bodies)
         apex_str = f" [apex: {self.apex}]" if self.apex else ""
         return f"{self.name}: {parts}{apex_str}"
 
@@ -141,7 +147,7 @@ class AspectPattern:
 def _build_aspect_map(
     aspects: list[AspectData],
 ) -> dict[tuple[str, str], AspectData]:
-    """Build a bidirectional lookup: (b1, b2) and (b2, b1) → AspectData."""
+    """Build a bidirectional lookup: (b1, b2) and (b2, b1) -> AspectData."""
     mapping: dict[tuple[str, str], AspectData] = {}
     for asp in aspects:
         mapping[(asp.body1, asp.body2)] = asp
@@ -156,27 +162,43 @@ def _get_aspect(
     target_angle: float,
     orb: float,
 ) -> AspectData | None:
-    """Return the aspect between b1 and b2 if it matches target_angle within orb, else None."""
+    """
+    Return the aspect between b1 and b2 if it was admitted within ``orb``
+    degrees of ``target_angle``, else None.
+
+    Admission test: asp.orb <= orb.
+    The asp.orb field already encodes the angular deviation from the target
+    angle as recorded at admission time by find_aspects; no secondary
+    angle check is applied here.
+    """
     asp = aspect_map.get((b1, b2))
-    if asp is not None and abs(asp.angle - target_angle) < 0.5 and asp.orb <= orb:
+    if asp is not None and asp.orb <= orb:
         return asp
     return None
 
 
 def _dedup_patterns(patterns: list[AspectPattern]) -> list[AspectPattern]:
-    """Remove duplicate patterns that involve the same set of bodies."""
-    seen: set[frozenset[str]] = set()
+    """
+    Remove duplicate patterns.  Two patterns are duplicates when they share
+    the same name and the same body set.  The first occurrence is kept.
+    """
+    seen: set[tuple[str, frozenset[str]]] = set()
     unique: list[AspectPattern] = []
     for p in patterns:
-        key = frozenset(p.bodies)
+        key = (p.name, frozenset(p.bodies))
         if key not in seen:
             seen.add(key)
             unique.append(p)
     return unique
 
 
+def _bodies_from(aspects: list[AspectData]) -> list[str]:
+    """Sorted unique body list from an aspect list."""
+    return sorted({asp.body1 for asp in aspects} | {asp.body2 for asp in aspects})
+
+
 # ---------------------------------------------------------------------------
-# Pattern detectors
+# Pattern detectors — classical
 # ---------------------------------------------------------------------------
 
 def find_t_squares(
@@ -184,31 +206,29 @@ def find_t_squares(
     orb_factor: float = 1.0,
 ) -> list[AspectPattern]:
     """
-    Detect T-Squares: body_A opposition body_B, both square body_C (apex).
-    Opposition orb: 10° * orb_factor.  Square orb: 8° * orb_factor.
+    T-Square: body_A opposition body_B, both square body_C (apex).
+
+    Orbs: opposition 8° * orb_factor, square 7° * orb_factor.
     """
-    opp_orb = 10.0 * orb_factor
-    sq_orb  =  8.0 * orb_factor
+    opp_orb = 8.0 * orb_factor
+    sq_orb  = 7.0 * orb_factor
     aspect_map = _build_aspect_map(aspects)
-
-    # Collect all bodies
-    bodies = sorted({asp.body1 for asp in aspects} | {asp.body2 for asp in aspects})
-
+    bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
+
     for a, b, c in combinations(bodies, 3):
         for apex, p1, p2 in [(c, a, b), (a, b, c), (b, a, c)]:
             opp_asp = _get_aspect(aspect_map, p1, p2, 180.0, opp_orb)
             sq1_asp = _get_aspect(aspect_map, p1, apex, 90.0, sq_orb)
             sq2_asp = _get_aspect(aspect_map, p2, apex, 90.0, sq_orb)
             if opp_asp and sq1_asp and sq2_asp:
-                involved = sorted([p1, p2]) + [apex]
                 results.append(AspectPattern(
                     name="T-Square",
-                    bodies=involved,
-                    aspects=[opp_asp, sq1_asp, sq2_asp],
+                    bodies=(*sorted([p1, p2]), apex),
+                    aspects=(opp_asp, sq1_asp, sq2_asp),
                     apex=apex,
                 ))
-                break  # found a valid arrangement for this triple
+                break
 
     return _dedup_patterns(results)
 
@@ -217,11 +237,14 @@ def find_grand_trines(
     aspects: list[AspectData],
     orb_factor: float = 1.0,
 ) -> list[AspectPattern]:
-    """Three bodies all in trine (120°) to each other.  Orb: 8° * orb_factor."""
-    trine_orb  = 8.0 * orb_factor
-    aspect_map = _build_aspect_map(aspects)
+    """
+    Grand Trine: three bodies all trine (120°) each other.
 
-    bodies = sorted({asp.body1 for asp in aspects} | {asp.body2 for asp in aspects})
+    Orb: 7° * orb_factor.
+    """
+    trine_orb = 7.0 * orb_factor
+    aspect_map = _build_aspect_map(aspects)
+    bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
 
     for a, b, c in combinations(bodies, 3):
@@ -231,8 +254,8 @@ def find_grand_trines(
         if t_ab and t_bc and t_ac:
             results.append(AspectPattern(
                 name="Grand Trine",
-                bodies=sorted([a, b, c]),
-                aspects=[t_ab, t_bc, t_ac],
+                bodies=tuple(sorted([a, b, c])),
+                aspects=(t_ab, t_bc, t_ac),
             ))
 
     return _dedup_patterns(results)
@@ -242,30 +265,24 @@ def find_grand_crosses(
     aspects: list[AspectData],
     orb_factor: float = 1.0,
 ) -> list[AspectPattern]:
-    """Two oppositions and four squares forming a Grand Cross.  Orb: 8° * orb_factor."""
-    opp_orb = 8.0 * orb_factor
-    sq_orb  = 8.0 * orb_factor
-    aspect_map = _build_aspect_map(aspects)
+    """
+    Grand Cross: two oppositions and four squares forming a closed cross.
 
-    bodies = sorted({asp.body1 for asp in aspects} | {asp.body2 for asp in aspects})
+    Orbs: opposition 8° * orb_factor, square 7° * orb_factor.
+    """
+    opp_orb = 8.0 * orb_factor
+    sq_orb  = 7.0 * orb_factor
+    aspect_map = _build_aspect_map(aspects)
+    bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
 
     for a, b, c, d in combinations(bodies, 4):
-        # A Grand Cross is: A opp C, B opp D, and A sq B, B sq C, C sq D, D sq A
-        # Try all pairings for the two oppositions within the four bodies.
-        # The three distinct ways to split four bodies into two pairs:
-        pairs = [
-            ((a, b), (c, d)),
-            ((a, c), (b, d)),
-            ((a, d), (b, c)),
-        ]
+        pairs = [((a, b), (c, d)), ((a, c), (b, d)), ((a, d), (b, c))]
         for (p, q), (r, s) in pairs:
-            # p opp q and r opp s
             opp1 = _get_aspect(aspect_map, p, q, 180.0, opp_orb)
             opp2 = _get_aspect(aspect_map, r, s, 180.0, opp_orb)
             if not (opp1 and opp2):
                 continue
-            # squares: p-r, r-q, q-s, s-p
             sq_pr = _get_aspect(aspect_map, p, r, 90.0, sq_orb)
             sq_rq = _get_aspect(aspect_map, r, q, 90.0, sq_orb)
             sq_qs = _get_aspect(aspect_map, q, s, 90.0, sq_orb)
@@ -273,8 +290,8 @@ def find_grand_crosses(
             if sq_pr and sq_rq and sq_qs and sq_sp:
                 results.append(AspectPattern(
                     name="Grand Cross",
-                    bodies=sorted([a, b, c, d]),
-                    aspects=[opp1, opp2, sq_pr, sq_rq, sq_qs, sq_sp],
+                    bodies=tuple(sorted([a, b, c, d])),
+                    aspects=(opp1, opp2, sq_pr, sq_rq, sq_qs, sq_sp),
                 ))
                 break
 
@@ -287,13 +304,13 @@ def find_yods(
 ) -> list[AspectPattern]:
     """
     Yod (Finger of God): A sextile B, both quincunx (150°) C (apex).
-    Sextile orb: 3° * orb_factor.  Quincunx orb: 3° * orb_factor.
+
+    Orbs: sextile 3° * orb_factor, quincunx 3° * orb_factor.
     """
     sext_orb = 3.0 * orb_factor
     qncx_orb = 3.0 * orb_factor
     aspect_map = _build_aspect_map(aspects)
-
-    bodies = sorted({asp.body1 for asp in aspects} | {asp.body2 for asp in aspects})
+    bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
 
     for a, b, c in combinations(bodies, 3):
@@ -302,11 +319,10 @@ def find_yods(
             q1   = _get_aspect(aspect_map, p1, apex, 150.0, qncx_orb)
             q2   = _get_aspect(aspect_map, p2, apex, 150.0, qncx_orb)
             if sext and q1 and q2:
-                involved = sorted([p1, p2]) + [apex]
                 results.append(AspectPattern(
                     name="Yod",
-                    bodies=involved,
-                    aspects=[sext, q1, q2],
+                    bodies=(*sorted([p1, p2]), apex),
+                    aspects=(sext, q1, q2),
                     apex=apex,
                 ))
                 break
@@ -320,26 +336,19 @@ def find_mystic_rectangles(
 ) -> list[AspectPattern]:
     """
     Mystic Rectangle: two trines + two sextiles + two oppositions.
-    The four planets form a rectangle where adjacent sides alternate trine/sextile
-    and the diagonals are oppositions.  Orb: 8° for trines, 5° for sextiles,
-    8° for oppositions — all multiplied by orb_factor.
+    Adjacent sides alternate trine/sextile; diagonals are oppositions.
+
+    Orbs: trine 7°, sextile 5°, opposition 8° — all * orb_factor.
     """
-    trine_orb = 8.0 * orb_factor
+    trine_orb = 7.0 * orb_factor
     sext_orb  = 5.0 * orb_factor
     opp_orb   = 8.0 * orb_factor
     aspect_map = _build_aspect_map(aspects)
-
-    bodies = sorted({asp.body1 for asp in aspects} | {asp.body2 for asp in aspects})
+    bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
 
     for a, b, c, d in combinations(bodies, 4):
-        # Layout: A-trine-B-sext-C-trine-D-sext-A, diagonals A opp C, B opp D
-        # Try all cyclic orderings of the four bodies.
-        for ordering in [
-            (a, b, c, d),
-            (a, b, d, c),
-            (a, c, b, d),
-        ]:
+        for ordering in [(a, b, c, d), (a, b, d, c), (a, c, b, d)]:
             p, q, r, s = ordering
             t_pq = _get_aspect(aspect_map, p, q, 120.0, trine_orb)
             t_rs = _get_aspect(aspect_map, r, s, 120.0, trine_orb)
@@ -350,8 +359,8 @@ def find_mystic_rectangles(
             if t_pq and t_rs and s_qr and s_sp and o_pr and o_qs:
                 results.append(AspectPattern(
                     name="Mystic Rectangle",
-                    bodies=sorted([a, b, c, d]),
-                    aspects=[t_pq, t_rs, s_qr, s_sp, o_pr, o_qs],
+                    bodies=tuple(sorted([a, b, c, d])),
+                    aspects=(t_pq, t_rs, s_qr, s_sp, o_pr, o_qs),
                 ))
                 break
 
@@ -363,45 +372,36 @@ def find_kites(
     orb_factor: float = 1.0,
 ) -> list[AspectPattern]:
     """
-    Kite: Grand Trine (A, B, C) with a fourth planet D opposing one vertex (say C)
-    and sextile the other two (A and B).  The opposing vertex C is the apex/focal point.
-    Orb: 8° for trines, 5° for sextiles, 8° for opposition — multiplied by orb_factor.
+    Kite: Grand Trine (A, B, C) with a fourth planet D opposing one vertex
+    (apex) and sextile the other two.
+
+    Orbs: trine 7°, sextile 5°, opposition 8° — all * orb_factor.
     """
-    trine_orb = 8.0 * orb_factor
+    trine_orb = 7.0 * orb_factor
     sext_orb  = 5.0 * orb_factor
     opp_orb   = 8.0 * orb_factor
     aspect_map = _build_aspect_map(aspects)
-
-    bodies = sorted({asp.body1 for asp in aspects} | {asp.body2 for asp in aspects})
+    bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
 
     for a, b, c, d in combinations(bodies, 4):
-        # Try each body as the "kite tail" (D) and each vertex as the apex
         for tail, x, y, apex in [
-            (d, a, b, c),
-            (d, a, c, b),
-            (d, b, c, a),
-            (c, a, b, d),
-            (c, a, d, b),
-            (c, b, d, a),
-            (b, a, c, d),
-            (b, a, d, c),
-            (b, c, d, a),
-            (a, b, c, d),
-            (a, b, d, c),
-            (a, c, d, b),
+            (d, a, b, c), (d, a, c, b), (d, b, c, a),
+            (c, a, b, d), (c, a, d, b), (c, b, d, a),
+            (b, a, c, d), (b, a, d, c), (b, c, d, a),
+            (a, b, c, d), (a, b, d, c), (a, c, d, b),
         ]:
-            t_xy    = _get_aspect(aspect_map, x, y,    120.0, trine_orb)
-            t_xa    = _get_aspect(aspect_map, x, apex,  120.0, trine_orb)
-            t_ya    = _get_aspect(aspect_map, y, apex,  120.0, trine_orb)
+            t_xy    = _get_aspect(aspect_map, x,    y,    120.0, trine_orb)
+            t_xa    = _get_aspect(aspect_map, x,    apex, 120.0, trine_orb)
+            t_ya    = _get_aspect(aspect_map, y,    apex, 120.0, trine_orb)
             opp     = _get_aspect(aspect_map, tail, apex, 180.0, opp_orb)
-            sext_tx = _get_aspect(aspect_map, tail, x,   60.0, sext_orb)
-            sext_ty = _get_aspect(aspect_map, tail, y,   60.0, sext_orb)
+            sext_tx = _get_aspect(aspect_map, tail, x,    60.0,  sext_orb)
+            sext_ty = _get_aspect(aspect_map, tail, y,    60.0,  sext_orb)
             if t_xy and t_xa and t_ya and opp and sext_tx and sext_ty:
                 results.append(AspectPattern(
                     name="Kite",
-                    bodies=sorted([a, b, c, d]),
-                    aspects=[t_xy, t_xa, t_ya, opp, sext_tx, sext_ty],
+                    bodies=tuple(sorted([a, b, c, d])),
+                    aspects=(t_xy, t_xa, t_ya, opp, sext_tx, sext_ty),
                     apex=apex,
                 ))
                 break
@@ -413,55 +413,43 @@ def find_stelliums(
     positions: dict[str, float],
     min_bodies: int = 3,
     orb: float = 8.0,
+    orb_factor: float = 1.0,
 ) -> list[AspectPattern]:
     """
-    Detect stelliums: 3+ bodies within `orb` degrees of each other.
-
-    Uses positions dict directly (not an aspects list).
-    A stellium is detected when at least *min_bodies* planets are all within
-    *orb* degrees of the group centroid.  All maximal groups satisfying this
-    constraint are returned.
+    Stellium: 3+ bodies within ``orb * orb_factor`` degrees of the group
+    circular centroid.  Only maximal groups are returned (no sub-group of
+    a reported Stellium is reported separately).
 
     Parameters
     ----------
-    positions  : dict of body name → tropical longitude
+    positions  : dict of body name -> tropical longitude
     min_bodies : minimum number of bodies required (default 3)
-    orb        : maximum spread in degrees for the group (default 8.0)
+    orb        : base spread in degrees (default 8.0)
+    orb_factor : multiplier applied to orb (default 1.0)
     """
+    effective_orb = orb * orb_factor
     body_list = sorted(positions.keys())
     results: list[AspectPattern] = []
 
-    # Check every combination of min_bodies or more
     for size in range(min_bodies, len(body_list) + 1):
         for group in combinations(body_list, size):
             lons = [positions[b] for b in group]
-
-            # Compute circular mean longitude for the group
-            import math
             sin_sum = sum(math.sin(math.radians(lon)) for lon in lons)
             cos_sum = sum(math.cos(math.radians(lon)) for lon in lons)
             centroid = math.degrees(math.atan2(sin_sum, cos_sum)) % 360.0
-
-            # Check all members are within orb of the centroid
-            if all(angular_distance(lon, centroid) <= orb for lon in lons):
-                # Avoid duplicates from sub-groups already captured by larger ones
-                bodies_sorted = sorted(group)
+            if all(angular_distance(lon, centroid) <= effective_orb for lon in lons):
                 results.append(AspectPattern(
                     name="Stellium",
-                    bodies=bodies_sorted,
-                    aspects=[],   # stelliums are not aspect-based
+                    bodies=tuple(sorted(group)),
+                    aspects=(),
                 ))
 
-    # Deduplicate and keep only maximal groups (no group is a subset of another)
     unique = _dedup_patterns(results)
     body_sets = [frozenset(p.bodies) for p in unique]
-    maximal: list[AspectPattern] = []
-    for i, p in enumerate(unique):
-        key = body_sets[i]
-        if not any(key < other for other in body_sets):
-            maximal.append(p)
-
-    return maximal
+    return [
+        p for i, p in enumerate(unique)
+        if not any(body_sets[i] < other for other in body_sets)
+    ]
 
 
 def find_minor_grand_trines(
@@ -470,34 +458,30 @@ def find_minor_grand_trines(
 ) -> list[AspectPattern]:
     """
     Minor Grand Trine: A trine B, both sextile C.
-    Trine orb: 8° * orb_factor.  Sextile orb: 3° * orb_factor.
+
+    Orbs: trine 7° * orb_factor, sextile 3° * orb_factor.
     """
-    trine_orb = 8.0 * orb_factor
+    trine_orb = 7.0 * orb_factor
     sext_orb  = 3.0 * orb_factor
     aspect_map = _build_aspect_map(aspects)
-
-    bodies = sorted({asp.body1 for asp in aspects} | {asp.body2 for asp in aspects})
+    bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
 
     for a, b, c in combinations(bodies, 3):
         for apex, p1, p2 in [(c, a, b), (a, b, c), (b, a, c)]:
-            trine  = _get_aspect(aspect_map, p1, p2, 120.0, trine_orb)
-            sext1  = _get_aspect(aspect_map, p1, apex,  60.0, sext_orb)
-            sext2  = _get_aspect(aspect_map, p2, apex,  60.0, sext_orb)
+            trine = _get_aspect(aspect_map, p1, p2,   120.0, trine_orb)
+            sext1 = _get_aspect(aspect_map, p1, apex,  60.0, sext_orb)
+            sext2 = _get_aspect(aspect_map, p2, apex,  60.0, sext_orb)
             if trine and sext1 and sext2:
                 results.append(AspectPattern(
                     name="Minor Grand Trine",
-                    bodies=sorted([p1, p2, apex]),
-                    aspects=[trine, sext1, sext2],
+                    bodies=tuple(sorted([p1, p2, apex])),
+                    aspects=(trine, sext1, sext2),
                 ))
                 break
 
     return _dedup_patterns(results)
 
-
-# ---------------------------------------------------------------------------
-# Grand Sextile (Star of David)
-# ---------------------------------------------------------------------------
 
 def find_grand_sextiles(
     aspects: list[AspectData],
@@ -505,12 +489,13 @@ def find_grand_sextiles(
 ) -> list[AspectPattern]:
     """
     Grand Sextile (Star of David): six planets all in mutual sextile (60°),
-    forming two interlocking Grand Trines.  Orb: 3° * orb_factor.
+    forming two interlocking Grand Trines.
+
+    Orb: 3° * orb_factor.
     """
     sext_orb = 3.0 * orb_factor
     aspect_map = _build_aspect_map(aspects)
-
-    bodies = sorted({asp.body1 for asp in aspects} | {asp.body2 for asp in aspects})
+    bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
 
     for group in combinations(bodies, 6):
@@ -525,16 +510,12 @@ def find_grand_sextiles(
         if valid:
             results.append(AspectPattern(
                 name="Grand Sextile",
-                bodies=sorted(group),
-                aspects=group_aspects,
+                bodies=tuple(sorted(group)),
+                aspects=tuple(group_aspects),
             ))
 
     return _dedup_patterns(results)
 
-
-# ---------------------------------------------------------------------------
-# Thor's Hammer (God's Fist)
-# ---------------------------------------------------------------------------
 
 def find_thors_hammers(
     aspects: list[AspectData],
@@ -543,106 +524,97 @@ def find_thors_hammers(
     """
     Thor's Hammer (God's Fist): two planets in square (90°), both
     sesquiquadrate (135°) an apex planet.
-    Square orb: 5° * orb_factor.  Sesquiquadrate orb: 3° * orb_factor.
+
+    Orbs: square 5° * orb_factor, sesquiquadrate 2° * orb_factor.
     """
     sq_orb   = 5.0 * orb_factor
-    sesq_orb = 3.0 * orb_factor
+    sesq_orb = 2.0 * orb_factor
     aspect_map = _build_aspect_map(aspects)
-
-    bodies = sorted({asp.body1 for asp in aspects} | {asp.body2 for asp in aspects})
+    bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
 
     for a, b, c in combinations(bodies, 3):
         for apex, p1, p2 in [(c, a, b), (a, b, c), (b, a, c)]:
-            sq   = _get_aspect(aspect_map, p1, p2,    90.0, sq_orb)
-            s1   = _get_aspect(aspect_map, p1, apex, 135.0, sesq_orb)
-            s2   = _get_aspect(aspect_map, p2, apex, 135.0, sesq_orb)
+            sq = _get_aspect(aspect_map, p1, p2,    90.0, sq_orb)
+            s1 = _get_aspect(aspect_map, p1, apex, 135.0, sesq_orb)
+            s2 = _get_aspect(aspect_map, p2, apex, 135.0, sesq_orb)
             if sq and s1 and s2:
                 results.append(AspectPattern(
                     name="Thor's Hammer",
-                    bodies=sorted([p1, p2]) + [apex],
-                    aspects=[sq, s1, s2],
+                    bodies=(*sorted([p1, p2]), apex),
+                    aspects=(sq, s1, s2),
                     apex=apex,
                 ))
                 break
 
     return _dedup_patterns(results)
 
-
-# ---------------------------------------------------------------------------
-# Boomerang Yod
-# ---------------------------------------------------------------------------
 
 def find_boomerang_yods(
     aspects: list[AspectData],
     orb_factor: float = 1.0,
 ) -> list[AspectPattern]:
     """
-    Boomerang Yod: a standard Yod (A sextile B, both quincunx C apex) with
-    a fourth planet D opposing the apex C and sextile/trine the base planets.
-    Sextile orb: 3°, quincunx orb: 3°, opposition orb: 5° — all * orb_factor.
+    Boomerang Yod: standard Yod (A sextile B, both quincunx C apex) plus a
+    fourth planet D opposing the apex C.
+
+    Orbs: sextile 3°, quincunx 3°, opposition 5° — all * orb_factor.
     """
     sext_orb = 3.0 * orb_factor
     qncx_orb = 3.0 * orb_factor
     opp_orb  = 5.0 * orb_factor
     aspect_map = _build_aspect_map(aspects)
-
-    bodies = sorted({asp.body1 for asp in aspects} | {asp.body2 for asp in aspects})
+    bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
 
     for a, b, c, d in combinations(bodies, 4):
-        # Try each triple as the Yod base+apex, the remaining body as the boomerang
         for apex, p1, p2, boom in [
             (c, a, b, d), (d, a, b, c),
             (b, a, c, d), (d, a, c, b),
             (a, b, c, d), (d, b, c, a),
         ]:
-            sext = _get_aspect(aspect_map, p1, p2,    60.0, sext_orb)
-            q1   = _get_aspect(aspect_map, p1, apex, 150.0, qncx_orb)
-            q2   = _get_aspect(aspect_map, p2, apex, 150.0, qncx_orb)
+            sext = _get_aspect(aspect_map, p1,   p2,    60.0, sext_orb)
+            q1   = _get_aspect(aspect_map, p1,   apex, 150.0, qncx_orb)
+            q2   = _get_aspect(aspect_map, p2,   apex, 150.0, qncx_orb)
             opp  = _get_aspect(aspect_map, boom, apex, 180.0, opp_orb)
             if sext and q1 and q2 and opp:
                 results.append(AspectPattern(
                     name="Boomerang Yod",
-                    bodies=sorted([p1, p2, apex, boom]),
-                    aspects=[sext, q1, q2, opp],
+                    bodies=tuple(sorted([p1, p2, apex, boom])),
+                    aspects=(sext, q1, q2, opp),
                     apex=apex,
                 ))
                 break
 
     return _dedup_patterns(results)
 
-
-# ---------------------------------------------------------------------------
-# Wedge (Arrowhead)
-# ---------------------------------------------------------------------------
 
 def find_wedges(
     aspects: list[AspectData],
     orb_factor: float = 1.0,
 ) -> list[AspectPattern]:
     """
-    Wedge (Arrowhead): planet A opposing planet B; a third planet C is trine
-    one and sextile the other (the reaction/release point).
-    Opposition orb: 8°, trine/sextile orb: 5° — all * orb_factor.
+    Wedge (Arrowhead): planet A opposing planet B; a third planet C trine
+    one and sextile the other.
+
+    Orbs: opposition 8°, trine/sextile 5° — all * orb_factor.
     """
     opp_orb  = 8.0 * orb_factor
     trsx_orb = 5.0 * orb_factor
     aspect_map = _build_aspect_map(aspects)
-
-    bodies = sorted({asp.body1 for asp in aspects} | {asp.body2 for asp in aspects})
+    bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
 
     for a, b, c in combinations(bodies, 3):
         for p1, p2, apex in [(a, b, c), (a, c, b), (b, c, a)]:
-            opp  = _get_aspect(aspect_map, p1, p2,    180.0, opp_orb)
-            tr   = _get_aspect(aspect_map, apex, p1,  120.0, trsx_orb)
-            sx   = _get_aspect(aspect_map, apex, p2,   60.0, trsx_orb)
+            opp = _get_aspect(aspect_map, p1,   p2,   180.0, opp_orb)
+            tr  = _get_aspect(aspect_map, apex, p1,   120.0, trsx_orb)
+            sx  = _get_aspect(aspect_map, apex, p2,    60.0, trsx_orb)
             if opp and tr and sx:
                 results.append(AspectPattern(
                     name="Wedge",
-                    bodies=sorted([p1, p2]) + [apex],
-                    aspects=[opp, tr, sx],
+                    bodies=(*sorted([p1, p2]), apex),
+                    aspects=(opp, tr, sx),
                     apex=apex,
                 ))
                 break
@@ -651,22 +623,357 @@ def find_wedges(
 
 
 # ---------------------------------------------------------------------------
-# Master function
+# Pattern detectors — extended classical / Huber-recognized
+# ---------------------------------------------------------------------------
+
+def find_cradles(
+    aspects: list[AspectData],
+    orb_factor: float = 1.0,
+) -> list[AspectPattern]:
+    """
+    Cradle: two Minor Grand Trines sharing a common opposition as their base.
+    Structure: A opp D, A trine B, B sext C, C trine D, A sext C, B sext D.
+    Equivalently: four planets in sequence A-B-C-D where A opp D, the two
+    outer planets each trine their adjacent inner planet, and the two inner
+    planets sextile the opposite outer planet.
+
+    Orbs: opposition 8°, trine 7°, sextile 5° — all * orb_factor.
+    """
+    opp_orb   = 8.0 * orb_factor
+    trine_orb = 7.0 * orb_factor
+    sext_orb  = 5.0 * orb_factor
+    aspect_map = _build_aspect_map(aspects)
+    bodies = _bodies_from(aspects)
+    results: list[AspectPattern] = []
+
+    for a, b, c, d in combinations(bodies, 4):
+        for p, q, r, s in [
+            (a, b, c, d), (a, b, d, c), (a, c, b, d),
+            (a, c, d, b), (a, d, b, c), (a, d, c, b),
+        ]:
+            opp   = _get_aspect(aspect_map, p, s,   180.0, opp_orb)
+            tr_pq = _get_aspect(aspect_map, p, q,   120.0, trine_orb)
+            tr_rs = _get_aspect(aspect_map, r, s,   120.0, trine_orb)
+            sx_qr = _get_aspect(aspect_map, q, r,    60.0, sext_orb)
+            sx_pr = _get_aspect(aspect_map, p, r,    60.0, sext_orb)
+            sx_qs = _get_aspect(aspect_map, q, s,    60.0, sext_orb)
+            if opp and tr_pq and tr_rs and sx_qr and sx_pr and sx_qs:
+                results.append(AspectPattern(
+                    name="Cradle",
+                    bodies=tuple(sorted([a, b, c, d])),
+                    aspects=(opp, tr_pq, tr_rs, sx_qr, sx_pr, sx_qs),
+                ))
+                break
+
+    return _dedup_patterns(results)
+
+
+def find_trapezes(
+    aspects: list[AspectData],
+    orb_factor: float = 1.0,
+) -> list[AspectPattern]:
+    """
+    Trapeze (Trapezoid): four planets in sequence where the two end planets
+    are in opposition and the four outer edges are sextiles, with one
+    diagonal also a sextile.
+    Structure: A sext B sext C sext D, A opp C or B opp D (one diagonal
+    opposition), and A sext D closing the shape.
+
+    Orbs: opposition 8°, sextile 5° — all * orb_factor.
+    """
+    opp_orb  = 8.0 * orb_factor
+    sext_orb = 5.0 * orb_factor
+    aspect_map = _build_aspect_map(aspects)
+    bodies = _bodies_from(aspects)
+    results: list[AspectPattern] = []
+
+    for a, b, c, d in combinations(bodies, 4):
+        for p, q, r, s in [
+            (a, b, c, d), (a, b, d, c), (a, c, b, d),
+            (a, c, d, b), (a, d, b, c), (a, d, c, b),
+        ]:
+            sx_pq = _get_aspect(aspect_map, p, q,  60.0, sext_orb)
+            sx_qr = _get_aspect(aspect_map, q, r,  60.0, sext_orb)
+            sx_rs = _get_aspect(aspect_map, r, s,  60.0, sext_orb)
+            opp   = _get_aspect(aspect_map, p, s, 180.0, opp_orb)
+            if sx_pq and sx_qr and sx_rs and opp:
+                results.append(AspectPattern(
+                    name="Trapeze",
+                    bodies=tuple(sorted([a, b, c, d])),
+                    aspects=(sx_pq, sx_qr, sx_rs, opp),
+                ))
+                break
+
+    return _dedup_patterns(results)
+
+
+def find_eyes(
+    aspects: list[AspectData],
+    orb_factor: float = 1.0,
+) -> list[AspectPattern]:
+    """
+    Eye (Cosmic Eye): two quincunxes (150°) meeting at an apex, with the
+    base planets in trine (120°).  The soft analog of the Yod.
+
+    Orbs: quincunx 3°, trine 7° — all * orb_factor.
+    """
+    qncx_orb  = 3.0 * orb_factor
+    trine_orb = 7.0 * orb_factor
+    aspect_map = _build_aspect_map(aspects)
+    bodies = _bodies_from(aspects)
+    results: list[AspectPattern] = []
+
+    for a, b, c in combinations(bodies, 3):
+        for apex, p1, p2 in [(c, a, b), (a, b, c), (b, a, c)]:
+            q1    = _get_aspect(aspect_map, p1, apex, 150.0, qncx_orb)
+            q2    = _get_aspect(aspect_map, p2, apex, 150.0, qncx_orb)
+            trine = _get_aspect(aspect_map, p1, p2,  120.0, trine_orb)
+            if q1 and q2 and trine:
+                results.append(AspectPattern(
+                    name="Eye",
+                    bodies=(*sorted([p1, p2]), apex),
+                    aspects=(q1, q2, trine),
+                    apex=apex,
+                ))
+                break
+
+    return _dedup_patterns(results)
+
+
+def find_irritation_triangles(
+    aspects: list[AspectData],
+    orb_factor: float = 1.0,
+) -> list[AspectPattern]:
+    """
+    Irritation Triangle (Ambivalence Triangle): one opposition with both
+    planets quincunx (150°) a third.  The all-tension analog of the Eye.
+
+    Orbs: opposition 8°, quincunx 3° — all * orb_factor.
+    """
+    opp_orb  = 8.0 * orb_factor
+    qncx_orb = 3.0 * orb_factor
+    aspect_map = _build_aspect_map(aspects)
+    bodies = _bodies_from(aspects)
+    results: list[AspectPattern] = []
+
+    for a, b, c in combinations(bodies, 3):
+        for apex, p1, p2 in [(c, a, b), (a, b, c), (b, a, c)]:
+            opp = _get_aspect(aspect_map, p1, p2,   180.0, opp_orb)
+            q1  = _get_aspect(aspect_map, p1, apex, 150.0, qncx_orb)
+            q2  = _get_aspect(aspect_map, p2, apex, 150.0, qncx_orb)
+            if opp and q1 and q2:
+                results.append(AspectPattern(
+                    name="Irritation Triangle",
+                    bodies=(*sorted([p1, p2]), apex),
+                    aspects=(opp, q1, q2),
+                    apex=apex,
+                ))
+                break
+
+    return _dedup_patterns(results)
+
+
+def find_hard_wedges(
+    aspects: list[AspectData],
+    orb_factor: float = 1.0,
+) -> list[AspectPattern]:
+    """
+    Hard Wedge: planet A opposing planet B; a third planet C is semisquare
+    (45°) one and sesquiquadrate (135°) the other.  The tense analog of the
+    Wedge using 8th-harmonic aspects.
+
+    Orbs: opposition 8°, semisquare 2°, sesquiquadrate 2° — all * orb_factor.
+    """
+    opp_orb  = 8.0 * orb_factor
+    semi_orb = 2.0 * orb_factor
+    sesq_orb = 2.0 * orb_factor
+    aspect_map = _build_aspect_map(aspects)
+    bodies = _bodies_from(aspects)
+    results: list[AspectPattern] = []
+
+    for a, b, c in combinations(bodies, 3):
+        for p1, p2, apex in [(a, b, c), (a, c, b), (b, c, a)]:
+            opp  = _get_aspect(aspect_map, p1,   p2,    180.0, opp_orb)
+            semi = _get_aspect(aspect_map, apex, p1,     45.0, semi_orb)
+            sesq = _get_aspect(aspect_map, apex, p2,    135.0, sesq_orb)
+            if opp and semi and sesq:
+                results.append(AspectPattern(
+                    name="Hard Wedge",
+                    bodies=(*sorted([p1, p2]), apex),
+                    aspects=(opp, semi, sesq),
+                    apex=apex,
+                ))
+                break
+
+    return _dedup_patterns(results)
+
+
+def find_dominant_triangles(
+    aspects: list[AspectData],
+    orb_factor: float = 1.0,
+) -> list[AspectPattern]:
+    """
+    Dominant Triangle (Huber): one opposition + one square + one quincunx
+    (150°), forming a mixed-tension three-planet figure.
+
+    Orbs: opposition 8°, square 7°, quincunx 3° — all * orb_factor.
+    """
+    opp_orb  = 8.0 * orb_factor
+    sq_orb   = 7.0 * orb_factor
+    qncx_orb = 3.0 * orb_factor
+    aspect_map = _build_aspect_map(aspects)
+    bodies = _bodies_from(aspects)
+    results: list[AspectPattern] = []
+
+    for a, b, c in combinations(bodies, 3):
+        for p1, p2, p3 in [(a, b, c), (a, c, b), (b, c, a)]:
+            opp  = _get_aspect(aspect_map, p1, p2,  180.0, opp_orb)
+            sq   = _get_aspect(aspect_map, p1, p3,   90.0, sq_orb)
+            qncx = _get_aspect(aspect_map, p2, p3,  150.0, qncx_orb)
+            if opp and sq and qncx:
+                results.append(AspectPattern(
+                    name="Dominant Triangle",
+                    bodies=tuple(sorted([a, b, c])),
+                    aspects=(opp, sq, qncx),
+                ))
+                break
+
+    return _dedup_patterns(results)
+
+
+# ---------------------------------------------------------------------------
+# Pattern detectors — harmonic (5th and 7th harmonic)
+# ---------------------------------------------------------------------------
+
+def find_grand_quintiles(
+    aspects: list[AspectData],
+    orb_factor: float = 1.0,
+) -> list[AspectPattern]:
+    """
+    Grand Quintile: five planets all in mutual quintile (72°), forming a
+    regular pentagon.  A pure 5th-harmonic figure.
+
+    Orb: 2° * orb_factor.
+    """
+    q_orb = 2.0 * orb_factor
+    aspect_map = _build_aspect_map(aspects)
+    bodies = _bodies_from(aspects)
+    results: list[AspectPattern] = []
+
+    for group in combinations(bodies, 5):
+        group_aspects: list[AspectData] = []
+        valid = True
+        for b1, b2 in combinations(group, 2):
+            asp = _get_aspect(aspect_map, b1, b2, 72.0, q_orb)
+            if asp is None:
+                valid = False
+                break
+            group_aspects.append(asp)
+        if valid:
+            results.append(AspectPattern(
+                name="Grand Quintile",
+                bodies=tuple(sorted(group)),
+                aspects=tuple(group_aspects),
+            ))
+
+    return _dedup_patterns(results)
+
+
+def find_quintile_triangles(
+    aspects: list[AspectData],
+    orb_factor: float = 1.0,
+) -> list[AspectPattern]:
+    """
+    Quintile Triangle: A quintile (72°) B, both biquintile (144°) C (apex).
+    The 5th-harmonic analog of the Yod.
+
+    Orbs: quintile 2°, biquintile 2° — all * orb_factor.
+    """
+    q_orb  = 2.0 * orb_factor
+    bq_orb = 2.0 * orb_factor
+    aspect_map = _build_aspect_map(aspects)
+    bodies = _bodies_from(aspects)
+    results: list[AspectPattern] = []
+
+    for a, b, c in combinations(bodies, 3):
+        for apex, p1, p2 in [(c, a, b), (a, b, c), (b, a, c)]:
+            q   = _get_aspect(aspect_map, p1, p2,    72.0, q_orb)
+            bq1 = _get_aspect(aspect_map, p1, apex, 144.0, bq_orb)
+            bq2 = _get_aspect(aspect_map, p2, apex, 144.0, bq_orb)
+            if q and bq1 and bq2:
+                results.append(AspectPattern(
+                    name="Quintile Triangle",
+                    bodies=(*sorted([p1, p2]), apex),
+                    aspects=(q, bq1, bq2),
+                    apex=apex,
+                ))
+                break
+
+    return _dedup_patterns(results)
+
+
+def find_septile_triangles(
+    aspects: list[AspectData],
+    orb_factor: float = 1.0,
+) -> list[AspectPattern]:
+    """
+    Septile Triangle: three planets connected by one each of septile (51.43°),
+    biseptile (102.86°), and triseptile (154.29°).  A closed 7th-harmonic
+    triangle.
+
+    Orb: 1.5° * orb_factor for all three aspects.
+    """
+    s_orb = 1.5 * orb_factor
+    aspect_map = _build_aspect_map(aspects)
+    bodies = _bodies_from(aspects)
+    results: list[AspectPattern] = []
+
+    sept  = 360.0 / 7          # 51.428...
+    bisept  = 2 * 360.0 / 7    # 102.857...
+    trisept = 3 * 360.0 / 7    # 154.285...
+
+    for a, b, c in combinations(bodies, 3):
+        for p1, p2, p3 in [(a, b, c), (a, c, b), (b, c, a)]:
+            s1 = _get_aspect(aspect_map, p1, p2, sept,   s_orb)
+            s2 = _get_aspect(aspect_map, p2, p3, bisept, s_orb)
+            s3 = _get_aspect(aspect_map, p1, p3, trisept, s_orb)
+            if s1 and s2 and s3:
+                results.append(AspectPattern(
+                    name="Septile Triangle",
+                    bodies=tuple(sorted([a, b, c])),
+                    aspects=(s1, s2, s3),
+                ))
+                break
+
+    return _dedup_patterns(results)
+
+
+# ---------------------------------------------------------------------------
+# Pattern registry and master function
 # ---------------------------------------------------------------------------
 
 _PATTERN_REGISTRY: dict[str, str] = {
-    "T-Square":          "find_t_squares",
-    "Grand Trine":       "find_grand_trines",
-    "Grand Cross":       "find_grand_crosses",
-    "Yod":               "find_yods",
-    "Mystic Rectangle":  "find_mystic_rectangles",
-    "Kite":              "find_kites",
-    "Stellium":          "find_stelliums",
-    "Minor Grand Trine": "find_minor_grand_trines",
-    "Grand Sextile":     "find_grand_sextiles",
-    "Thor's Hammer":     "find_thors_hammers",
-    "Boomerang Yod":     "find_boomerang_yods",
-    "Wedge":             "find_wedges",
+    "T-Square":             "find_t_squares",
+    "Grand Trine":          "find_grand_trines",
+    "Grand Cross":          "find_grand_crosses",
+    "Yod":                  "find_yods",
+    "Mystic Rectangle":     "find_mystic_rectangles",
+    "Kite":                 "find_kites",
+    "Stellium":             "find_stelliums",
+    "Minor Grand Trine":    "find_minor_grand_trines",
+    "Grand Sextile":        "find_grand_sextiles",
+    "Thor's Hammer":        "find_thors_hammers",
+    "Boomerang Yod":        "find_boomerang_yods",
+    "Wedge":                "find_wedges",
+    "Cradle":               "find_cradles",
+    "Trapeze":              "find_trapezes",
+    "Eye":                  "find_eyes",
+    "Irritation Triangle":  "find_irritation_triangles",
+    "Hard Wedge":           "find_hard_wedges",
+    "Dominant Triangle":    "find_dominant_triangles",
+    "Grand Quintile":       "find_grand_quintiles",
+    "Quintile Triangle":    "find_quintile_triangles",
+    "Septile Triangle":     "find_septile_triangles",
 }
 
 
@@ -681,14 +988,11 @@ def find_all_patterns(
 
     Parameters
     ----------
-    positions   : dict of body name → longitude
+    positions   : dict of body name -> longitude
     aspects     : pre-computed aspects (computed via find_aspects if None)
     orb_factor  : multiplier applied to all orbs
     include     : list of pattern names to detect (all patterns if None).
-                  Valid names: "T-Square", "Grand Trine", "Grand Cross",
-                  "Yod", "Mystic Rectangle", "Kite", "Stellium",
-                  "Minor Grand Trine", "Grand Sextile", "Thor's Hammer",
-                  "Boomerang Yod", "Wedge".
+                  Valid names: see _PATTERN_REGISTRY keys.
 
     Returns
     -------
@@ -714,7 +1018,7 @@ def find_all_patterns(
     if "Kite" in wanted:
         all_found.extend(find_kites(aspects, orb_factor=orb_factor))
     if "Stellium" in wanted:
-        all_found.extend(find_stelliums(positions))
+        all_found.extend(find_stelliums(positions, orb_factor=orb_factor))
     if "Minor Grand Trine" in wanted:
         all_found.extend(find_minor_grand_trines(aspects, orb_factor=orb_factor))
     if "Grand Sextile" in wanted:
@@ -725,6 +1029,24 @@ def find_all_patterns(
         all_found.extend(find_boomerang_yods(aspects, orb_factor=orb_factor))
     if "Wedge" in wanted:
         all_found.extend(find_wedges(aspects, orb_factor=orb_factor))
+    if "Cradle" in wanted:
+        all_found.extend(find_cradles(aspects, orb_factor=orb_factor))
+    if "Trapeze" in wanted:
+        all_found.extend(find_trapezes(aspects, orb_factor=orb_factor))
+    if "Eye" in wanted:
+        all_found.extend(find_eyes(aspects, orb_factor=orb_factor))
+    if "Irritation Triangle" in wanted:
+        all_found.extend(find_irritation_triangles(aspects, orb_factor=orb_factor))
+    if "Hard Wedge" in wanted:
+        all_found.extend(find_hard_wedges(aspects, orb_factor=orb_factor))
+    if "Dominant Triangle" in wanted:
+        all_found.extend(find_dominant_triangles(aspects, orb_factor=orb_factor))
+    if "Grand Quintile" in wanted:
+        all_found.extend(find_grand_quintiles(aspects, orb_factor=orb_factor))
+    if "Quintile Triangle" in wanted:
+        all_found.extend(find_quintile_triangles(aspects, orb_factor=orb_factor))
+    if "Septile Triangle" in wanted:
+        all_found.extend(find_septile_triangles(aspects, orb_factor=orb_factor))
 
     all_found.sort(key=lambda p: (p.name, p.bodies))
     return all_found

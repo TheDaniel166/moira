@@ -246,7 +246,6 @@ class TestPolarCapable:
         HouseSystem.PLACIDUS,
         HouseSystem.KOCH,
         HouseSystem.PULLEN_SD,
-        HouseSystem.PULLEN_SR,
     ])
     def test_polar_incapable_systems(self, system):
         assert classify_house_system(system).polar_capable is False
@@ -257,20 +256,18 @@ class TestPolarCapable:
         HouseSystem.MORINUS, HouseSystem.TOPOCENTRIC, HouseSystem.MERIDIAN,
         HouseSystem.VEHLOW, HouseSystem.SUNSHINE, HouseSystem.AZIMUTHAL,
         HouseSystem.CARTER, HouseSystem.KRUSINSKI, HouseSystem.APC,
+        HouseSystem.PULLEN_SR,
     ])
     def test_polar_capable_systems(self, system):
         assert classify_house_system(system).polar_capable is True
 
     def test_polar_capable_consistency_with_fallback_systems(self):
-        """Systems that fall back at polar latitudes must have polar_capable=False."""
-        fallback_systems = [
-            HouseSystem.PLACIDUS, HouseSystem.KOCH,
-            HouseSystem.PULLEN_SD, HouseSystem.PULLEN_SR,
-        ]
-        for system in fallback_systems:
+        """Systems in _POLAR_SYSTEMS must have polar_capable=False."""
+        from moira.houses import _POLAR_SYSTEMS
+        for system in _POLAR_SYSTEMS:
             c = classify_house_system(system)
             assert c.polar_capable is False, (
-                f"{system}: polar_capable=True but system falls back at polar latitudes"
+                f"{system}: polar_capable=True but system is in _POLAR_SYSTEMS"
             )
 
 
@@ -283,7 +280,6 @@ class TestClassificationReflectsEffectiveSystem:
         HouseSystem.PLACIDUS,
         HouseSystem.KOCH,
         HouseSystem.PULLEN_SD,
-        HouseSystem.PULLEN_SR,
     ])
     def test_polar_fallback_classification_is_porphyry(self, requested):
         r = _polar(requested)
@@ -294,7 +290,6 @@ class TestClassificationReflectsEffectiveSystem:
         HouseSystem.PLACIDUS,
         HouseSystem.KOCH,
         HouseSystem.PULLEN_SD,
-        HouseSystem.PULLEN_SR,
     ])
     def test_polar_fallback_classification_differs_from_requested_classification(self, requested):
         r = _polar(requested)

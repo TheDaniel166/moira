@@ -1,9 +1,13 @@
 """
-Test of the Arctic Circle: Rituals of Polar House Fallback.
+Test of the critical latitude: house fallback above 90° − obliquity.
 
-This suite verifies the mathematical 'Safety Valve' at extreme latitudes,
-ensuring that quadrant systems (Placidus, Koch, Pullen) gracefully transition
-to Porphyry before numerical instability occurs.
+This suite verifies that semi-arc systems (Placidus, Koch, Pullen SD) fall
+back to Porphyry above the critical latitude, which is 90° − obliquity
+(≈ 66.56° at J2000).  This threshold is not a fixed constant — it is derived
+from the chart's actual obliquity at call time.
+
+The old threshold of 75° was incorrect: it silently returned geometrically
+invalid cusp sets from ≈66.6° to 74.9°.
 """
 
 from datetime import datetime, timezone
@@ -16,72 +20,44 @@ def engine():
     return Moira()
 
 def test_north_pole_fallback_triggers_porphyry(engine):
-    """
-    RITE: The Arctic Transition.
-    
-    Verifies that at the North Pole (90°N), Placidus houses fallback to 
-    Porphyry. We confirm this by comparing the Placidus output at 90°N 
-    to the Porphyry output at the same location.
-    """
+    """At the North Pole (90°N), Placidus must fall back to Porphyry."""
     dt = datetime(2000, 3, 20, 7, 35, tzinfo=timezone.utc)
-    
-    # 1. Request Placidus at North Pole (should fallback)
-    polar_placidus = engine.houses(
-        dt,
-        latitude=90.0,
-        longitude=0.0,
-        system=HouseSystem.PLACIDUS
-    )
-    
-    # 2. Request Porphyry at North Pole
-    polar_porphyry = engine.houses(
-        dt,
-        latitude=90.0,
-        longitude=0.0,
-        system=HouseSystem.PORPHYRY
-    )
-    
-    # Verify the results are identical (to within ε)
-    # The vessel 'system' field should still report the REQUESTED system
+
+    polar_placidus = engine.houses(dt, latitude=90.0, longitude=0.0, system=HouseSystem.PLACIDUS)
+    polar_porphyry = engine.houses(dt, latitude=90.0, longitude=0.0, system=HouseSystem.PORPHYRY)
+
     assert polar_placidus.system == HouseSystem.PLACIDUS
-    
-    # But the cusps must match the Porphyry calculation
     for i in range(12):
         assert polar_placidus.cusps[i] == pytest.approx(polar_porphyry.cusps[i], abs=1e-8)
-    
     assert polar_placidus.asc == pytest.approx(polar_porphyry.asc, abs=1e-8)
-    assert polar_placidus.mc == pytest.approx(polar_porphyry.mc, abs=1e-8)
+    assert polar_placidus.mc  == pytest.approx(polar_porphyry.mc,  abs=1e-8)
 
 def test_arctic_threshold_boundary_behavior(engine):
     """
-    RITE: The Threshold Guard.
-    
-    The fallback threshold is defined as |lat| >= 75.0.
-    We test 74.9° (No fallback) and 75.1° (Fallback) to verify the limit.
+    The critical latitude is 90° − obliquity (≈ 66.56° at J2000).
+    60° is safely below it (no fallback); 70° is safely above it (fallback).
     """
     dt = datetime(2000, 3, 20, 7, 35, tzinfo=timezone.utc)
-    
-    # 74.9°N: Placidus should remain Placidus
-    sub_polar = engine.houses(dt, latitude=74.9, longitude=0.0, system=HouseSystem.PLACIDUS)
-    porphyry  = engine.houses(dt, latitude=74.9, longitude=0.0, system=HouseSystem.PORPHYRY)
-    
-    # Placidus and Porphyry are mathematically distinct systems; 
-    # at 74.9° they should NOT match (except by coincidence in very rare conditions).
-    assert sub_polar.cusps[1] != pytest.approx(porphyry.cusps[1], abs=0.1)
 
-    # 75.1°N: Placidus should fallback and match Porphyry
-    supra_polar = engine.houses(dt, latitude=75.1, longitude=0.0, system=HouseSystem.PLACIDUS)
-    supra_porph = engine.houses(dt, latitude=75.1, longitude=0.0, system=HouseSystem.PORPHYRY)
-    
+    # 60°N: well below critical latitude — Placidus must remain Placidus
+    sub = engine.houses(dt, latitude=60.0, longitude=0.0, system=HouseSystem.PLACIDUS)
+    assert sub.effective_system == HouseSystem.PLACIDUS
+    assert sub.fallback is False
+
+    # 70°N: well above critical latitude — Placidus must fall back to Porphyry
+    supra       = engine.houses(dt, latitude=70.0, longitude=0.0, system=HouseSystem.PLACIDUS)
+    supra_porph = engine.houses(dt, latitude=70.0, longitude=0.0, system=HouseSystem.PORPHYRY)
+    assert supra.effective_system == HouseSystem.PORPHYRY
+    assert supra.fallback is True
     for i in range(12):
-        assert supra_polar.cusps[i] == pytest.approx(supra_porph.cusps[i], abs=1e-8)
+        assert supra.cusps[i] == pytest.approx(supra_porph.cusps[i], abs=1e-8)
 
 def test_south_pole_fallback_triggers_porphyry(engine):
-    """Verifies symmetry: South Pole (-90°S) must also fallback."""
+    """South Pole (−90°S) must also fall back symmetrically."""
     dt = datetime(2000, 3, 20, 7, 35, tzinfo=timezone.utc)
-    
+
     polar_placidus = engine.houses(dt, latitude=-90.0, longitude=0.0, system=HouseSystem.PLACIDUS)
     polar_porphyry = engine.houses(dt, latitude=-90.0, longitude=0.0, system=HouseSystem.PORPHYRY)
-    
+
     for i in range(12):
         assert polar_placidus.cusps[i] == pytest.approx(polar_porphyry.cusps[i], abs=1e-8)

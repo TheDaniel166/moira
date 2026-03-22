@@ -29,17 +29,140 @@ Layers present in this file:
         classify_house_system() — maps a system code → classification.
         HouseCusps.classification — classification of the effective system.
 
-    FUTURE LAYERS (not yet present)
-        - Angularity scoring and cusp-zone analysis
-        - House membership (planet-in-house)
-        - Boundary sensitivity / cusp proximity detection
-        - System comparison and doctrinal policy enforcement
-        - Harmonic overlays
+    INSPECTABILITY  (Phase 3)
+        HouseCusps.__post_init__        — structural invariant guard raised at
+            construction time; catches inconsistent results before callers see them.
+        HouseCusps.is_quadrant_system   — True iff effective system is QUADRANT family.
+        HouseCusps.is_latitude_sensitive — True iff effective system's cusps vary
+            with observer latitude.
+        _POLAR_SYSTEMS / _KNOWN_SYSTEMS — module-level frozensets (moved from
+            calculate_houses() locals) for explicit, auditable scope.
 
+    DOCTRINE / POLICY  (Phase 4)
+        UnknownSystemPolicy — enum: FALLBACK_TO_PLACIDUS (default) or RAISE.
+        PolarFallbackPolicy — enum: FALLBACK_TO_PORPHYRY (default) or RAISE.
+        HousePolicy         — frozen dataclass: unknown_system + polar_fallback.
+            HousePolicy.default() returns the canonical default (current behavior).
+        calculate_houses(..., policy=HousePolicy.default()) — accepts an optional
+            policy argument; default is backward-compatible with all prior callers.
+        HouseCusps.policy   — the HousePolicy that governed this result.
+        Critical-latitude doctrine (explicit):
+            The fallback threshold is 90° − obliquity, computed from the chart's
+            actual obliquity at call time.  At J2000 this is ≈ 66.56°.  This is
+            the geometric Arctic Circle: above it, some ecliptic degrees become
+            circumpolar, making semi-arc iteration undefined.  The affected systems
+            (Placidus, Koch, Pullen SD) clamp the acos() domain error but return
+            astronomically invalid cusp orderings for a large fraction of ARMC
+            values above this threshold.  The old fixed 75.0° threshold was wrong:
+            it silently passed garbage results from ≈66.6° to 74.9°.
+            Pullen SR uses a different formula and remains geometrically valid to
+            90°; it is not in _POLAR_SYSTEMS.
+
+    POINT-TO-HOUSE MEMBERSHIP  (Phase 5)
+        HousePlacement — frozen result vessel: house number, placed longitude,
+            the HouseCusps that determined membership, exact-on-cusp flag, and
+            the opening cusp longitude.
+        assign_house() — maps an ecliptic longitude to a house (1–12) under
+            explicit boundary doctrine using an existing HouseCusps result.
+        Boundary doctrine (explicit):
+            - Interval rule: house n owns [cusps[n-1], cusps[n % 12]).
+              Inclusive on the opening cusp, exclusive on the next.
+            - Wraparound: spans are measured as forward arcs on the circle.
+              (end − start) % 360° — correct even when cusps cross 0°/360°.
+            - Exact-on-cusp: if longitude == cusps[n-1] within 1e-9°,
+              exact_on_cusp is True; point is still assigned to that house.
+            - Membership law is identical for all system families (EQUAL,
+              QUADRANT, WHOLE_SIGN, SOLAR); only the cusp positions differ.
+
+    CUSP PROXIMITY / BOUNDARY SENSITIVITY  (Phase 6)
+        HouseBoundaryProfile — frozen result vessel: opening/closing cusp
+            longitudes, forward distances to each, house span, nearest cusp,
+            nearest cusp distance, declared near-cusp threshold, is_near_cusp.
+        describe_boundary() — derives boundary context from an existing
+            HousePlacement without re-performing house assignment.
+        Distance doctrine (explicit):
+            - dist_to_opening: forward arc (longitude − opening_cusp) % 360°.
+              Always ≥ 0; equals 0 when exact_on_cusp is True.
+            - dist_to_closing: forward arc (closing_cusp − longitude) % 360°.
+              Always > 0 within the assigned house (closing cusp excluded by
+              Phase 5 interval rule, so it is never reached).
+            - house_span: dist_to_opening + dist_to_closing == full house arc.
+            - nearest_cusp_distance: min(dist_to_opening, dist_to_closing).
+              This is the within-house minimal distance; always ≤ span / 2.
+            - is_near_cusp: nearest_cusp_distance < near_cusp_threshold.
+              Threshold is caller-declared; default 3.0° is conventional and
+              explicit, not silently imposed doctrine.
+
+    ANGULARITY / HOUSE-POWER STRUCTURE  (Phase 7)
+        HouseAngularity  — enum: ANGULAR, SUCCEDENT, CADENT.
+        HouseAngularityProfile — frozen result vessel: placement, category,
+            house (convenience copy).
+        describe_angularity() — maps an existing HousePlacement to its
+            structural angularity category using a pure house-number lookup.
+        Doctrine (explicit):
+            ANGULAR   — houses 1, 4, 7, 10  (the four angular cusps).
+            SUCCEDENT — houses 2, 5, 8, 11  (follow the angles).
+            CADENT    — houses 3, 6, 9, 12  (precede the angles).
+            This is purely house-number-based at this phase; no cusp proximity,
+            no orb, and no system-family sensitivity are applied.
+
+    SYSTEM COMPARISON  (Phase 8)
+        HouseSystemComparison — frozen result vessel for cusp-level comparison
+            of two HouseCusps results: cusp_deltas (signed circular difference
+            per house), systems_agree, fallback_differs, families_differ.
+        HousePlacementComparison — frozen result vessel for point-placement
+            comparison across two or more systems: longitude, per-system
+            HousePlacement tuple, house-number tuple, all_agree, angularity_agrees.
+        compare_systems(left, right) — cusp-level diff of two HouseCusps.
+        compare_placements(longitude, *house_cusps_seq) — places one longitude
+            under each system and compares the resulting house assignments.
+        Comparison doctrine (explicit):
+            - Cusp delta: signed circular difference (right − left) in (−180, 180].
+              Positive means right cusp is ahead (counter-clockwise) of left.
+            - systems_agree: left.effective_system == right.effective_system.
+              Uses effective system (what actually ran), not requested system.
+            - fallback_differs: left.fallback != right.fallback.
+            - families_differ: classification families of the two effective systems differ.
+            - all_agree: all placements land in the same house number.
+            - angularity_agrees: all placements share the same HouseAngularity category.
+            - Requested-system truth is preserved on each HouseCusps.system field;
+              it is never collapsed into effective_system.
+
+    CHART-WIDE HOUSE DISTRIBUTION INTELLIGENCE  (Phase 9)
+        HouseOccupancy — frozen per-house record: house number, occupant count,
+            occupant longitudes tuple (input order), placements tuple, is_empty.
+        HouseDistributionProfile — frozen chart-wide result vessel: the source
+            HouseCusps, total point count, 12-entry occupancies tuple, convenience
+            counts tuple, empty_houses frozenset, dominant_houses tuple,
+            angular/succedent/cadent counts.
+        distribute_points(longitudes, house_cusps) — places every longitude in
+            the sequence via assign_house() and assembles the distribution profile.
+        Distribution doctrine (explicit):
+            - Each longitude normalised to [0, 360) before placement.
+            - Each longitude placed independently via assign_house(); no new
+              membership logic is introduced.
+            - occupancies is always 12 entries, indexed house 1–12 in order.
+            - dominant_houses: houses with count == max(counts) and max > 0;
+              sorted ascending; empty tuple if no points placed.
+            - empty_houses: frozenset of house numbers with count == 0.
+            - Angularity counts derive from _ANGULARITY_MAP (Phase 7 doctrine).
+            - Occupant order within each HouseOccupancy mirrors input order.
+
+    FUTURE LAYERS (not yet present)
+        - Hemisphere / quadrant totals (above/below horizon, eastern/western)
+        - Harmonic overlays
+        - Cross-system chart-distribution comparison
 Public surface:
     HouseSystemFamily, HouseSystemCuspBasis,
     HouseSystemClassification, classify_house_system,
-    HouseCusps, calculate_houses
+    UnknownSystemPolicy, PolarFallbackPolicy, HousePolicy,
+    HouseCusps, calculate_houses,
+    HousePlacement, assign_house,
+    HouseBoundaryProfile, describe_boundary,
+    HouseAngularity, HouseAngularityProfile, describe_angularity,
+    HouseSystemComparison, HousePlacementComparison,
+    compare_systems, compare_placements,
+    HouseOccupancy, HouseDistributionProfile, distribute_points
 
 Import-time side effects: None
 
@@ -62,6 +185,36 @@ from .coordinates import normalize_degrees
 from .julian import local_sidereal_time, ut_to_tt, greenwich_mean_sidereal_time
 from .obliquity import true_obliquity, nutation
 from .planets import _approx_year
+
+__all__ = [
+    # Enums / doctrine
+    "HouseSystemFamily",
+    "HouseSystemCuspBasis",
+    "UnknownSystemPolicy",
+    "PolarFallbackPolicy",
+    # Classification / policy
+    "HouseSystemClassification",
+    "classify_house_system",
+    "HousePolicy",
+    # Result vessels
+    "HouseCusps",
+    "HousePlacement",
+    "HouseBoundaryProfile",
+    "HouseAngularity",
+    "HouseAngularityProfile",
+    "HouseSystemComparison",
+    "HousePlacementComparison",
+    "HouseOccupancy",
+    "HouseDistributionProfile",
+    # Public entry points
+    "calculate_houses",
+    "assign_house",
+    "describe_boundary",
+    "describe_angularity",
+    "compare_systems",
+    "compare_placements",
+    "distribute_points",
+]
 
 
 # ===========================================================================
@@ -237,13 +390,15 @@ _CLASSIFICATIONS: dict[str, HouseSystemClassification] = {
     HouseSystem.REGIOMONTANUS: HouseSystemClassification(_F.QUADRANT,   _CB.POLAR_PROJECTION,    True,  True),
     HouseSystem.TOPOCENTRIC:   HouseSystemClassification(_F.QUADRANT,   _CB.POLAR_PROJECTION,    True,  True),
     HouseSystem.PULLEN_SD:     HouseSystemClassification(_F.QUADRANT,   _CB.SINUSOIDAL,          True,  False),
-    HouseSystem.PULLEN_SR:     HouseSystemClassification(_F.QUADRANT,   _CB.SINUSOIDAL,          True,  False),
+    HouseSystem.PULLEN_SR:     HouseSystemClassification(_F.QUADRANT,   _CB.SINUSOIDAL,          True,  True),
     HouseSystem.KRUSINSKI:     HouseSystemClassification(_F.QUADRANT,   _CB.GREAT_CIRCLE,        True,  True),
     HouseSystem.APC:           HouseSystemClassification(_F.QUADRANT,   _CB.APC_FORMULA,         True,  True),
     HouseSystem.SUNSHINE:      HouseSystemClassification(_F.SOLAR,      _CB.SOLAR_POSITION,      False, True),
 }
 
-# Sentinel returned when an unrecognised code is queried directly.
+# Returned by classify_house_system() for any unrecognised code.
+# Matches the Placidus classification because unknown codes are computed
+# via Placidus in calculate_houses().
 _UNKNOWN_CLASSIFICATION = HouseSystemClassification(
     family=_F.QUADRANT,
     cusp_basis=_CB.SEMI_ARC,
@@ -274,113 +429,173 @@ def classify_house_system(code: str) -> HouseSystemClassification:
     return _CLASSIFICATIONS.get(code, _UNKNOWN_CLASSIFICATION)
 
 
+# ---------------------------------------------------------------------------
+# Module-scope policy sets used by calculate_houses() and __post_init__
+# ---------------------------------------------------------------------------
+
+# Systems that produce geometrically disordered cusps above the critical latitude.
+# The real breakdown threshold is 90° − obliquity (≈ 66.56° at J2000), not 75°.
+# Placidus and Koch: cusp ordering fails above ~66.6° for some ARMC values.
+# Pullen SD:         cusp ordering fails above ~64.0° for some ARMC values.
+# Pullen SR:         remains geometrically ordered up to 90°; excluded.
+_POLAR_SYSTEMS: frozenset[str] = frozenset({
+    HouseSystem.PLACIDUS, HouseSystem.KOCH, HouseSystem.PULLEN_SD,
+})
+
+# The full set of recognised HouseSystem codes.
+_KNOWN_SYSTEMS: frozenset[str] = frozenset({
+    HouseSystem.WHOLE_SIGN, HouseSystem.EQUAL, HouseSystem.PORPHYRY,
+    HouseSystem.PLACIDUS, HouseSystem.KOCH, HouseSystem.CAMPANUS,
+    HouseSystem.REGIOMONTANUS, HouseSystem.ALCABITIUS, HouseSystem.MORINUS,
+    HouseSystem.TOPOCENTRIC, HouseSystem.MERIDIAN, HouseSystem.VEHLOW,
+    HouseSystem.SUNSHINE, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
+    HouseSystem.PULLEN_SD, HouseSystem.PULLEN_SR, HouseSystem.KRUSINSKI,
+    HouseSystem.APC,
+})
+
+
+# ===========================================================================
+# DOCTRINE / POLICY LAYER
+# ===========================================================================
+
+class UnknownSystemPolicy(str, Enum):
+    """
+    Doctrine governing what happens when calculate_houses() receives a system
+    code that is not present in _KNOWN_SYSTEMS.
+
+    FALLBACK_TO_PLACIDUS (default)
+        Silently substitute Placidus and record the substitution in
+        HouseCusps.fallback / HouseCusps.fallback_reason.  This is the
+        behavior present in all prior phases.
+
+    RAISE
+        Raise ValueError immediately instead of substituting.  Use this when
+        the caller considers an unknown code a programming error rather than
+        an acceptable fallback condition.
+    """
+    FALLBACK_TO_PLACIDUS = "fallback_to_placidus"
+    RAISE                = "raise"
+
+
+class PolarFallbackPolicy(str, Enum):
+    """
+    Doctrine governing what happens when calculate_houses() is called above the
+    critical latitude (90° − obliquity, ≈ 66.56° at J2000) with a system in
+    _POLAR_SYSTEMS.
+
+    FALLBACK_TO_PORPHYRY (default)
+        Silently substitute Porphyry and record the substitution in
+        HouseCusps.fallback / HouseCusps.fallback_reason.  This is the
+        behavior present in all prior phases.
+
+    RAISE
+        Raise ValueError immediately instead of substituting.  Use this when
+        the caller considers a request for an incapable system above the
+        critical latitude a programming error rather than an acceptable
+        fallback condition.
+    """
+    FALLBACK_TO_PORPHYRY = "fallback_to_porphyry"
+    RAISE                = "raise"
+
+
+@dataclass(frozen=True, slots=True)
+class HousePolicy:
+    """
+    DOCTRINE: Governing policy for a single house computation.
+
+    Encapsulates the two doctrinal decisions that calculate_houses() must
+    make when the requested system cannot be served exactly as requested:
+
+        unknown_system:   what to do when the system code is unrecognised.
+        polar_fallback:   what to do when the system is incapable at the
+                          requested polar latitude.
+
+    Both fields default to the permissive, silent-substitution behavior that
+    was present in all prior phases.  Callers that want strict, no-fallback
+    semantics can pass a stricter policy.
+
+    The policy is a pure doctrinal specification — it carries no computation
+    logic itself.  It is evaluated by calculate_houses() before any cusp
+    mathematics run.
+
+    HousePolicy.default() returns the canonical default policy, which exactly
+    replicates all prior behavior.
+
+    Future layers that are NOT the responsibility of this class:
+        - System selection or comparison logic
+        - Any cusp or angular computation
+        - Doctrinal ranking among systems
+    """
+    unknown_system: UnknownSystemPolicy = UnknownSystemPolicy.FALLBACK_TO_PLACIDUS
+    polar_fallback: PolarFallbackPolicy = PolarFallbackPolicy.FALLBACK_TO_PORPHYRY
+
+    @classmethod
+    def default(cls) -> "HousePolicy":
+        """Return the canonical default policy (silent fallback on both axes)."""
+        return cls(
+            unknown_system=UnknownSystemPolicy.FALLBACK_TO_PLACIDUS,
+            polar_fallback=PolarFallbackPolicy.FALLBACK_TO_PORPHYRY,
+        )
+
+    @classmethod
+    def strict(cls) -> "HousePolicy":
+        """Return a strict policy that raises ValueError on any fallback condition."""
+        return cls(
+            unknown_system=UnknownSystemPolicy.RAISE,
+            polar_fallback=PolarFallbackPolicy.RAISE,
+        )
+
+
 @dataclass(slots=True)
 class HouseCusps:
     """
-    RITE: The House Cusp Vessel
+    RESULT VESSEL: The complete output of one calculate_houses() call.
 
-    THEOREM: Governs the storage and retrieval of all twelve ecliptic house cusp
-    longitudes together with the four angular points produced by a single house
-    calculation, and preserves the full doctrinal/computational path through which
-    those cusps were produced.
+    Carries twelve ecliptic house cusp longitudes, the four angular points
+    (ASC, MC, DSC, IC), ARMC, Vertex, and Anti-Vertex for a single chart
+    moment and observer location, together with the full computation trail
+    that produced them.
 
-    RITE OF PURPOSE:
-        HouseCusps serves as the immutable result vessel returned by
-        calculate_houses(). It carries the twelve cusp longitudes, the
-        Ascendant, Midheaven, ARMC, Vertex, and Anti-Vertex for a single
-        chart moment and location. Without this vessel, callers would have
-        no stable, typed surface through which to interrogate house positions.
-        It enforces the invariant that cusps are indexed 0–11 (house 1 = index 0).
+    Cusps are indexed 0–11; house n has its opening cusp at cusps[n-1].
 
-    TRUTH PRESERVATION  (Phase 1):
-        Three fields preserve the computation path beyond the bare cusp values:
-            system:           the house system code *requested* by the caller.
-                              Never modified, even when fallback occurs. Callers
-                              and tests that assert on the requested system will
-                              see the value they passed in.
-            effective_system: the house system code that was *actually used* to
-                              compute the cusps. Equals system when no fallback
-                              occurred; differs from system when a doctrinal or
-                              numerical constraint redirected the computation
-                              (e.g. polar-latitude safety valve).
-            fallback:         True iff effective_system != system. A False value
-                              means the requested system was used without alteration.
-            fallback_reason:  Human-readable string describing why fallback
-                              occurred when fallback is True; None otherwise.
-                              Currently populated reasons:
-                                "polar latitude: |lat| >= 75.0; quadrant system
-                                 not computable; fell back to Porphyry"
-                                "unknown system code; fell back to Placidus"
+    TRUTH PRESERVATION (Phase 1):
+        system:           the house system code *requested* by the caller —
+                          never modified, even when fallback occurs.
+        effective_system: the system code that was *actually used* for cusps —
+                          equals system unless a fallback was triggered.
+        fallback:         True iff effective_system != system.
+        fallback_reason:  human-readable reason when fallback is True; None
+                          otherwise.
 
-    CLASSIFICATION  (Phase 2):
-        classification: HouseSystemClassification derived from effective_system.
-            Describes the doctrinal and computational character of the system
-            that actually produced the cusps:
-                family              — doctrinal family (EQUAL, QUADRANT, …)
-                cusp_basis          — projection method (SEMI_ARC, ECLIPTIC, …)
-                latitude_sensitive  — whether cusps vary with observer latitude
-                polar_capable       — whether system operates at |lat| >= 75°
-            The classification always reflects the *effective* system, not the
-            requested system, so callers can read doctrine from the computation
-            path that actually ran.
+    CLASSIFICATION (Phase 2):
+        classification: HouseSystemClassification for the effective system —
+                        family, cusp_basis, latitude_sensitive, polar_capable.
+                        Always reflects the system that ran, not the one requested.
 
-    FUTURE LAYER NOTES:
-        This vessel is intentionally bounded. The following capabilities are NOT
-        present here and are reserved for later dedicated layers:
-            - Angularity scoring and cusp-zone classification
-            - House membership analysis (which house a planet occupies)
-            - Boundary sensitivity and cusp proximity detection
-            - System comparison and doctrinal policy enforcement
-            - Harmonic house overlays or modulus transformations
-        Any such capability should read from this vessel, not extend it.
-
-    LAW OF OPERATION:
-        Responsibilities:
-            - Store twelve ecliptic house cusp longitudes in degrees [0, 360)
-            - Expose the four angular points: ASC, MC, DSC (derived), IC (derived)
-            - Expose the Vertex and Anti-Vertex when computed
-            - Preserve the requested system, effective system, fallback flag,
-              and fallback reason produced by calculate_houses()
-            - Carry the HouseSystemClassification of the effective system
-            - Serve sign-of-cusp queries via sign_of_cusp()
-        Non-responsibilities:
-            - Compute any house cusp values (delegates entirely to calculate_houses)
-            - Perform coordinate transforms or time conversions
-            - Validate or normalise input longitudes
-            - Make policy decisions about which system to use
-            - Classify cusps by angularity, strength, or zone
-        Dependencies:
-            - moira.constants.sign_of for sign_of_cusp()
-            - HouseSystemClassification for classification field
-        Structural invariants:
-            - len(cusps) == 12 at all times
-            - cusps[0] == asc (the Ascendant is always the first house cusp)
-            - All longitude values are in degrees [0, 360)
-            - fallback is True iff effective_system != system
+    INSPECTABILITY (Phase 3):
+        __post_init__ enforces at construction time:
+            - len(cusps) == 12
+            - For QUADRANT family (cusp_basis ≠ HORIZON): cusps[0] == asc
+              within 1e-9°.  HORIZON (Azimuthal) and all non-quadrant systems
+              legitimately place H1 ≠ geographic ASC.
+            - fallback == (system != effective_system)
             - fallback_reason is None iff fallback is False
-            - classification reflects effective_system, not system
+            - classification is not None when effective_system is set
+        is_quadrant_system: True iff effective system is QUADRANT family.
+        is_latitude_sensitive: True iff effective system's cusps vary with
+            observer geographic latitude.
 
-    Canon: None (No applicable canon)
+    DOCTRINE / POLICY (Phase 4):
+        policy: the HousePolicy that governed fallback resolution —
+                readable from the result for full auditability.
 
-    [MACHINE_CONTRACT v1]
-    {
-      "scope": "class",
-      "id": "moira.houses.HouseCusps",
-      "risk": "high",
-      "api": {
-        "frozen": ["cusps", "asc", "mc", "armc", "vertex", "anti_vertex",
-                   "system", "effective_system", "fallback", "fallback_reason",
-                   "classification", "dsc", "ic", "sign_of_cusp"],
-        "internal": []
-      },
-      "state": {"mutable": false, "owners": ["HouseCusps"]},
-      "effects": {"signals_emitted": [], "io": []},
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-      "failures": {"policy": "raise"},
-      "succession": {"stance": "terminal"},
-      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
-    }
-    [/MACHINE_CONTRACT]
+    Non-responsibilities (delegated to dedicated layers):
+        - Cusp computation (calculate_houses)
+        - House membership analysis (assign_house / HousePlacement)
+        - Angularity scoring and cusp-zone classification (Phase 7)
+        - Boundary sensitivity (Phase 6)
+        - System comparison (Phase 8)
+        - Policy enforcement (calculate_houses)
     """
     system:           str
     cusps:            list[float]          # 12 ecliptic longitudes, degrees [0,360)
@@ -393,6 +608,7 @@ class HouseCusps:
     fallback:         bool                         = False   # True iff effective_system != system
     fallback_reason:  str | None                   = None    # Why fallback occurred; None when fallback is False
     classification:   HouseSystemClassification | None = None  # Doctrinal classification of effective_system
+    policy:           HousePolicy | None                = None  # Policy that governed fallback resolution
 
     @property
     def dsc(self) -> float:
@@ -401,6 +617,76 @@ class HouseCusps:
     @property
     def ic(self) -> float:
         return (self.mc + 180.0) % 360.0
+
+    @property
+    def is_quadrant_system(self) -> bool:
+        """True iff the effective house system belongs to the QUADRANT family.
+
+        Derived from classification.family.  Equivalent to:
+            classification.family == HouseSystemFamily.QUADRANT
+        """
+        return (
+            self.classification is not None
+            and self.classification.family == HouseSystemFamily.QUADRANT
+        )
+
+    @property
+    def is_latitude_sensitive(self) -> bool:
+        """True iff the effective house system's cusps vary with observer latitude.
+
+        Derived from classification.latitude_sensitive.  False for systems
+        such as Whole Sign, Equal, Vehlow, Morinus, Meridian, and Sunshine,
+        where all observers at the same moment share the same cusp longitudes.
+        """
+        return self.classification is not None and self.classification.latitude_sensitive
+
+    def __post_init__(self) -> None:
+        """Structural invariant guard.
+
+        Raises AssertionError if the object is in an internally inconsistent
+        state.  This fires at construction time, before any caller can observe
+        a malformed result.
+
+        Invariants checked:
+            1. len(cusps) == 12
+            2. For quadrant-family systems (excluding HORIZON cusp_basis):
+               cusps[0] == asc within 1e-9°.
+               HORIZON systems (Azimuthal) compute a horizon-based H1 cusp
+               that legitimately differs from the geographic Ascendant.
+               Non-quadrant systems (Whole Sign, Vehlow, Morinus, Meridian,
+               Sunshine) also legitimately place H1 ≠ ASC.
+            3. fallback == (system != effective_system) when effective_system is set
+            4. fallback_reason is None iff fallback is False
+            5. classification is not None when effective_system is set and non-empty
+        """
+        assert len(self.cusps) == 12, (
+            f"HouseCusps invariant violated: len(cusps)={len(self.cusps)}, expected 12"
+        )
+        if (
+            self.cusps
+            and self.classification is not None
+            and self.classification.family == HouseSystemFamily.QUADRANT
+            and self.classification.cusp_basis != HouseSystemCuspBasis.HORIZON
+        ):
+            diff = abs(self.cusps[0] - self.asc) % 360.0
+            assert diff < 1e-9 or abs(diff - 360.0) < 1e-9, (
+                f"HouseCusps invariant violated: quadrant system "
+                f"cusps[0]={self.cusps[0]:.9f} != asc={self.asc:.9f}"
+            )
+        if self.effective_system:
+            assert self.fallback == (self.system != self.effective_system), (
+                f"HouseCusps invariant violated: fallback={self.fallback} but "
+                f"system={self.system!r}, effective_system={self.effective_system!r}"
+            )
+        assert (self.fallback_reason is None) == (not self.fallback), (
+            f"HouseCusps invariant violated: fallback={self.fallback} but "
+            f"fallback_reason={self.fallback_reason!r}"
+        )
+        if self.effective_system:
+            assert self.classification is not None, (
+                f"HouseCusps invariant violated: effective_system={self.effective_system!r} "
+                f"is set but classification is None"
+            )
 
     def sign_of_cusp(self, house: int) -> tuple[str, str, float]:
         """Return (sign, symbol, degree_within_sign) for house 1–12."""
@@ -1524,6 +1810,8 @@ def calculate_houses(
     latitude:  float,
     longitude: float,
     system:    str = HouseSystem.PLACIDUS,
+    *,
+    policy:    HousePolicy | None = None,
 ) -> HouseCusps:
     """
     Calculate house cusps for a given Universal Time and observer location.
@@ -1540,28 +1828,36 @@ def calculate_houses(
         HouseCusps.effective_system.
 
     FALLBACK BEHAVIOUR:
-        Two conditions redirect computation away from the requested system:
+        Two conditions can redirect computation away from the requested system.
+        What happens in each case is governed by the `policy` argument:
 
-        1. Polar latitude safety valve:
+        1. Polar latitude:
            When |latitude| >= 75.0°, the systems PLACIDUS, KOCH, PULLEN_SD,
-           and PULLEN_SR cannot converge reliably (their semi-arc iterations
-           diverge near the arctic / antarctic circles). These systems fall back
-           automatically to PORPHYRY. HouseCusps.fallback is set True and
-           HouseCusps.fallback_reason records the polar-latitude cause.
+           and PULLEN_SR cannot converge reliably.
+           - Default policy (PolarFallbackPolicy.FALLBACK_TO_PORPHYRY): silently
+             substitute Porphyry; record in HouseCusps.fallback / fallback_reason.
+           - Strict policy (PolarFallbackPolicy.RAISE): raise ValueError.
 
         2. Unknown system code:
-           If `system` is not a recognised HouseSystem constant, the final
-           else-branch falls back to PLACIDUS. HouseCusps.fallback is set True
-           and HouseCusps.fallback_reason records the unknown-code cause.
+           If `system` is not a recognised HouseSystem constant:
+           - Default policy (UnknownSystemPolicy.FALLBACK_TO_PLACIDUS): silently
+             substitute Placidus; record in HouseCusps.fallback / fallback_reason.
+           - Strict policy (UnknownSystemPolicy.RAISE): raise ValueError.
 
         In all normal cases (known system, non-polar latitude) fallback is False
         and fallback_reason is None.
+
+    POLICY:
+        `policy` defaults to HousePolicy.default(), which exactly replicates
+        all behavior from prior phases.  Pass HousePolicy.strict() or a custom
+        HousePolicy to change fallback doctrine.  The active policy is preserved
+        in HouseCusps.policy so it is always recoverable from the result.
 
     FUTURE LAYERS:
         This function intentionally does not:
             - classify cusps by angularity or strength
             - analyse planet-in-house membership
-            - compare systems or apply doctrinal policy
+            - compare systems or select among them by doctrine
             - perform any cusp-zone or boundary-sensitivity analysis
         Those capabilities belong in dedicated layers above this function.
 
@@ -1573,22 +1869,26 @@ def calculate_houses(
             positive east, range [-180, 180].
         system: House system identifier; one of the HouseSystem constants.
             Defaults to HouseSystem.PLACIDUS.
+        policy: HousePolicy governing fallback doctrine.  Keyword-only.
+            Defaults to HousePolicy.default() (silent fallback, current behavior).
 
     Returns:
         A HouseCusps vessel containing the twelve cusp longitudes (degrees
         [0, 360)), ASC, MC, ARMC, Vertex, Anti-Vertex, the requested system,
-        the effective system, the fallback flag, the fallback reason, and
-        the HouseSystemClassification of the effective system.
+        the effective system, the fallback flag, the fallback reason, the
+        HouseSystemClassification of the effective system, and the active policy.
 
     Raises:
-        ValueError: Propagated from subordinate engines if input values are
-            outside computable ranges (e.g. extreme obliquity or degenerate
-            latitude).
+        ValueError: When policy requires strict behavior and a fallback condition
+            is encountered (unknown system code or polar latitude for an incapable
+            system).  Also propagated from subordinate engines if input values are
+            outside computable ranges.
 
     Side effects:
         - Lazily imports moira.planets.sun_longitude when system is
           HouseSystem.SUNSHINE; no other import-time side effects.
     """
+    active_policy = policy if policy is not None else HousePolicy.default()
     jd_tt    = ut_to_tt(jd_ut)
     obliquity = true_obliquity(jd_tt)
     dpsi, _ = nutation(jd_tt)
@@ -1604,42 +1904,48 @@ def calculate_houses(
 
     # --- Fallback resolution: determine effective system and reason ----------
     #
-    # Rule 1 — Polar latitude safety valve:
-    #   |latitude| >= 75.0° makes semi-arc iteration systems numerically unsafe.
-    #   PLACIDUS, KOCH, PULLEN_SD, PULLEN_SR fall back to PORPHYRY.
+    # Rule 1 — Critical latitude safety valve:
+    #   The semi-arc and oblique-ascension systems (Placidus, Koch, Pullen SD)
+    #   produce geometrically disordered cusps above the critical latitude
+    #   90° − obliquity (≈ 66.56° at J2000).  At that latitude, the solar
+    #   solstice declination equals the co-latitude, so some ecliptic degrees
+    #   become circumpolar.  The underlying acos() domain error is silently
+    #   clamped, but the resulting cusp sequence is astronomically invalid
+    #   (houses swap, spans exceed 180°) for a significant fraction of ARMC
+    #   values above that threshold.  We fall back to Porphyry, which uses
+    #   only ecliptic trisection and remains valid at all latitudes.
+    #   Behavior is governed by active_policy.polar_fallback.
     #
     # Rule 2 — Unknown system code:
-    #   Any system code not matched by the elif chain falls to the final else,
-    #   which silently computes Placidus. That else is now explicit here so the
-    #   truth is carried in the result rather than hidden in a code branch.
+    #   Any system code not in _KNOWN_SYSTEMS cannot be dispatched.
+    #   Behavior is governed by active_policy.unknown_system.
     #
-    _POLAR_SYSTEMS = frozenset({
-        HouseSystem.PLACIDUS, HouseSystem.KOCH,
-        HouseSystem.PULLEN_SD, HouseSystem.PULLEN_SR,
-    })
-    _KNOWN_SYSTEMS = frozenset({
-        HouseSystem.WHOLE_SIGN, HouseSystem.EQUAL, HouseSystem.PORPHYRY,
-        HouseSystem.PLACIDUS, HouseSystem.KOCH, HouseSystem.CAMPANUS,
-        HouseSystem.REGIOMONTANUS, HouseSystem.ALCABITIUS, HouseSystem.MORINUS,
-        HouseSystem.TOPOCENTRIC, HouseSystem.MERIDIAN, HouseSystem.VEHLOW,
-        HouseSystem.SUNSHINE, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
-        HouseSystem.PULLEN_SD, HouseSystem.PULLEN_SR, HouseSystem.KRUSINSKI,
-        HouseSystem.APC,
-    })
-
-    polar = abs(latitude) >= 75.0
+    critical_lat = 90.0 - obliquity
+    polar = abs(latitude) >= critical_lat and system in _POLAR_SYSTEMS
     effective_system = system
     fallback = False
     fallback_reason: str | None = None
 
-    if polar and system in _POLAR_SYSTEMS:
+    if polar:
+        if active_policy.polar_fallback == PolarFallbackPolicy.RAISE:
+            raise ValueError(
+                f"latitude |{latitude:.4f}°| >= critical latitude {critical_lat:.4f}° "
+                f"(= 90° − obliquity {obliquity:.4f}°); "
+                f"system {system!r} produces geometrically invalid cusps above this threshold "
+                f"and policy is RAISE"
+            )
         effective_system = HouseSystem.PORPHYRY
         fallback = True
         fallback_reason = (
-            f"polar latitude: |lat| >= 75.0; {system!r} not computable "
-            f"at this latitude; fell back to Porphyry"
+            f"|lat| {abs(latitude):.4f}° >= critical latitude {critical_lat:.4f}° "
+            f"(90° − obliquity); {system!r} produces invalid cusps above this threshold; "
+            f"fell back to Porphyry"
         )
     elif system not in _KNOWN_SYSTEMS:
+        if active_policy.unknown_system == UnknownSystemPolicy.RAISE:
+            raise ValueError(
+                f"unknown house system code {system!r} and policy is RAISE"
+            )
         effective_system = HouseSystem.PLACIDUS
         fallback = True
         fallback_reason = (
@@ -1702,4 +2008,1132 @@ def calculate_houses(
         fallback=fallback,
         fallback_reason=fallback_reason,
         classification=classify_house_system(effective_system),
+        policy=active_policy,
+    )
+
+
+# ===========================================================================
+# POINT-TO-HOUSE MEMBERSHIP LAYER  (Phase 5)
+# ===========================================================================
+
+_MEMBERSHIP_CUSP_TOLERANCE: float = 1e-9
+"""
+Tolerance (degrees) used by assign_house() to decide whether a point falls
+exactly on a cusp.  Two longitudes separated by less than this value are
+considered coincident for cusp-detection purposes.  This has no effect on
+which house the point is assigned to — it only sets exact_on_cusp.
+"""
+
+
+@dataclass(frozen=True, slots=True)
+class HousePlacement:
+    """
+    POINT-TO-HOUSE MEMBERSHIP: Result vessel for a single house assignment.
+
+    Records the outcome of assigning one ecliptic longitude to a house under
+    the boundary doctrine encoded in assign_house().  All fields needed to
+    audit or reproduce the result are present.
+
+    Fields:
+        house
+            The house number (1–12) to which `longitude` was assigned.
+            Derived from the cusp intervals in `house_cusps`.
+
+        longitude
+            The ecliptic longitude (degrees, [0, 360)) that was placed.
+            This is the value passed to assign_house(); it is stored verbatim
+            so the caller can always confirm what was placed.
+
+        house_cusps
+            The HouseCusps vessel that determined the placement.  Carries the
+            full truth trail: requested/effective system, fallback, fallback
+            reason, classification, and policy.
+
+        exact_on_cusp
+            True iff `longitude` coincides with the opening cusp of `house`
+            within _MEMBERSHIP_CUSP_TOLERANCE degrees.  The point is still
+            assigned to that house (the opening cusp belongs to the house it
+            opens).  False in all other cases.
+
+        cusp_longitude
+            The ecliptic longitude of the cusp that opens `house`.
+            Convenience copy of house_cusps.cusps[house - 1].
+
+    Boundary doctrine (mirrored from assign_house()):
+        - House n occupies the half-open interval [cusps[n-1], cusps[n % 12]).
+        - Spans are forward arcs on the circle: (end − start) % 360°.
+        - The opening cusp is included; the next cusp is excluded.
+        - Exact-on-cusp detection uses _MEMBERSHIP_CUSP_TOLERANCE.
+        - The membership rule is identical for all system families.
+
+    This dataclass is frozen (immutable) and carries no computation logic.
+
+    Future layers that are NOT the responsibility of this class:
+        - Angularity scoring or cusp-zone analysis
+        - System comparison or ranked placement
+        Cusp proximity and boundary sensitivity live in Phase 6
+        (HouseBoundaryProfile / describe_boundary()), which consumes this vessel.
+    """
+    house:         int
+    longitude:     float
+    house_cusps:   HouseCusps
+    exact_on_cusp: bool
+    cusp_longitude: float
+
+    def __post_init__(self) -> None:
+        assert 1 <= self.house <= 12, (
+            f"HousePlacement invariant violated: house={self.house!r} not in [1, 12]"
+        )
+        assert 0.0 <= self.longitude < 360.0, (
+            f"HousePlacement invariant violated: longitude={self.longitude!r} not in [0, 360)"
+        )
+        assert 0.0 <= self.cusp_longitude < 360.0, (
+            f"HousePlacement invariant violated: cusp_longitude={self.cusp_longitude!r} not in [0, 360)"
+        )
+        expected_cusp = self.house_cusps.cusps[self.house - 1]
+        assert abs(self.cusp_longitude - expected_cusp) < 1e-9, (
+            f"HousePlacement invariant violated: cusp_longitude={self.cusp_longitude!r} "
+            f"does not match house_cusps.cusps[{self.house - 1}]={expected_cusp!r}"
+        )
+
+
+def assign_house(longitude: float, house_cusps: HouseCusps) -> HousePlacement:
+    """
+    Assign an ecliptic longitude to a house (1–12) using an existing HouseCusps.
+
+    POINT-TO-HOUSE MEMBERSHIP:
+        Implements the canonical interval rule under explicit boundary doctrine.
+        The result is a HousePlacement vessel that records the house number,
+        the placed longitude, the cusp vessel used, the exact-on-cusp flag,
+        and the opening cusp longitude.
+
+    BOUNDARY DOCTRINE:
+        Interval rule:
+            House n occupies the half-open interval [cusps[n-1], cusps[n % 12]).
+            The opening cusp is included in the house it opens.
+            The closing cusp (= opening cusp of the next house) is excluded.
+
+        Wraparound:
+            Cusp positions are ecliptic longitudes in [0, 360).  They need not
+            increase monotonically; the span of a house is always the *forward*
+            arc on the circle:
+                span = (next_cusp − this_cusp) % 360°
+            A point at `longitude` falls in house n when:
+                (longitude − cusps[n-1]) % 360° < span_n
+            (Strictly less than, so the next cusp is excluded.)
+
+        Exact-on-cusp:
+            When (longitude − cusps[n-1]) % 360° < _MEMBERSHIP_CUSP_TOLERANCE,
+            exact_on_cusp is True.  The point is still unambiguously assigned
+            to house n (not split between houses).
+
+        System-family independence:
+            The membership rule is identical for EQUAL, QUADRANT, WHOLE_SIGN,
+            and SOLAR families.  The cusp positions differ by system; the rule
+            does not.
+
+    GUARANTEES:
+        - Always returns a house in [1, 12].
+        - Exactly one house claims any given longitude (no gaps, no overlaps).
+        - The opening cusp of a house belongs to that house.
+        - A longitude numerically equal to two consecutive cusps (degenerate
+          zero-width house) is assigned to the house that opens at that cusp.
+
+    Args:
+        longitude: Ecliptic longitude of the point, in degrees.
+            Will be normalised to [0, 360) before placement.
+        house_cusps: A HouseCusps result from calculate_houses().
+
+    Returns:
+        A frozen HousePlacement describing which house the point occupies.
+
+    Raises:
+        ValueError: If house_cusps.cusps does not contain exactly 12 values.
+    """
+    if len(house_cusps.cusps) != 12:
+        raise ValueError(
+            f"assign_house requires exactly 12 cusps; got {len(house_cusps.cusps)}"
+        )
+
+    lon = longitude % 360.0
+
+    for i in range(12):
+        cusp_open  = house_cusps.cusps[i]
+        cusp_close = house_cusps.cusps[(i + 1) % 12]
+        span       = (cusp_close - cusp_open) % 360.0
+        dist       = (lon - cusp_open) % 360.0
+
+        if dist < span:
+            house         = i + 1
+            exact_on_cusp = dist < _MEMBERSHIP_CUSP_TOLERANCE
+            return HousePlacement(
+                house=house,
+                longitude=lon,
+                house_cusps=house_cusps,
+                exact_on_cusp=exact_on_cusp,
+                cusp_longitude=cusp_open,
+            )
+
+    # Fallback: assign to the house whose cusp is angularly closest.
+    # This can only be reached in pathological cusp sets (e.g. duplicate cusps
+    # leaving a zero-width gap not covered above), and is deterministic.
+    min_dist = 361.0
+    best     = 0
+    for i in range(12):
+        d = (lon - house_cusps.cusps[i]) % 360.0
+        if d < min_dist:
+            min_dist = d
+            best     = i
+    house         = best + 1
+    exact_on_cusp = min_dist < _MEMBERSHIP_CUSP_TOLERANCE
+    return HousePlacement(
+        house=house,
+        longitude=lon,
+        house_cusps=house_cusps,
+        exact_on_cusp=exact_on_cusp,
+        cusp_longitude=house_cusps.cusps[best],
+    )
+
+
+# ===========================================================================
+# CUSP PROXIMITY / BOUNDARY SENSITIVITY LAYER  (Phase 6)
+# ===========================================================================
+
+_NEAR_CUSP_DEFAULT_THRESHOLD: float = 3.0
+"""
+Default near-cusp threshold in degrees used by describe_boundary().
+
+3.0° is a conventional orb widely used in traditional and modern astrology
+for cusp sensitivity.  It is the default, not an imposed doctrine; callers
+must pass a different value to declare a different threshold explicitly.
+"""
+
+
+@dataclass(frozen=True, slots=True)
+class HouseBoundaryProfile:
+    """
+    CUSP PROXIMITY / BOUNDARY SENSITIVITY: Boundary context for a placement.
+
+    Enriches an existing HousePlacement with the distances from the placed
+    longitude to the cusps that bracket its house, and a near-cusp flag
+    evaluated against an explicit threshold.
+
+    This vessel does NOT re-perform house assignment.  All placement truth
+    (house number, longitude, house_cusps, exact_on_cusp) is inherited from
+    the source HousePlacement via the `placement` field.
+
+    Fields:
+        placement
+            The HousePlacement that was profiled.  Authoritative source of
+            house number, longitude, and the HouseCusps that computed the
+            cusps.  Boundary profiling reads from this; it never modifies or
+            overrides it.
+
+        opening_cusp
+            Ecliptic longitude of the cusp that opens the assigned house.
+            Equal to placement.house_cusps.cusps[placement.house - 1].
+            Identical to placement.cusp_longitude.
+
+        closing_cusp
+            Ecliptic longitude of the cusp that closes the assigned house
+            (= opening cusp of the next house).
+            Equal to placement.house_cusps.cusps[placement.house % 12].
+
+        dist_to_opening
+            Forward arc (degrees) from the opening cusp to the placed
+            longitude: (longitude − opening_cusp) % 360°.
+            Always ≥ 0.  Equals 0.0 when placement.exact_on_cusp is True.
+            Equals dist from H-cusp to the point, measured inside the house.
+
+        dist_to_closing
+            Forward arc (degrees) from the placed longitude to the closing
+            cusp: (closing_cusp − longitude) % 360°.
+            Always > 0 for any placement inside the house (the closing cusp
+            is excluded by the Phase 5 interval rule, so the point never
+            coincides with it).  Equals house_span when exact_on_cusp is True.
+
+        house_span
+            Total arc of the assigned house in degrees.
+            Invariant: dist_to_opening + dist_to_closing == house_span.
+
+        nearest_cusp
+            Longitude of whichever cusp (opening or closing) is angularly
+            closer to the placed longitude under the within-house minimal
+            distance.  When both distances are equal (midpoint of the house),
+            the opening cusp is preferred.
+
+        nearest_cusp_distance
+            min(dist_to_opening, dist_to_closing).
+            Always ≤ house_span / 2.
+            Equals 0.0 when exact_on_cusp is True (opening cusp is nearest,
+            dist_to_opening is 0).
+
+        near_cusp_threshold
+            The threshold (degrees) declared by the caller and used to compute
+            is_near_cusp.  Stored so the result is fully self-describing.
+
+        is_near_cusp
+            True iff nearest_cusp_distance < near_cusp_threshold.
+            When exact_on_cusp is True, nearest_cusp_distance is 0; is_near_cusp
+            is True for any positive threshold.
+
+    Distance doctrine:
+        All distances are **forward arcs** on the ecliptic circle:
+            dist_to_opening  = (longitude − opening_cusp) % 360°
+            dist_to_closing  = (closing_cusp − longitude) % 360°
+        This preserves the Phase 5 interval direction.  Both are non-negative
+        and their sum is always house_span (up to floating-point precision).
+        nearest_cusp_distance is the minimum of the two — a within-house
+        measure, not the global minimal arc to any cusp on the zodiac.
+
+    Relationship with exact_on_cusp (Phase 5):
+        When placement.exact_on_cusp is True:
+            dist_to_opening  == 0.0  (within 1e-9°)
+            nearest_cusp     == opening_cusp
+            nearest_cusp_distance == 0.0 (or < 1e-9°)
+            is_near_cusp     == True  (for any positive threshold)
+        No special-casing is applied; the arithmetic is naturally consistent.
+
+    This dataclass is frozen (immutable) and carries no computation logic.
+
+    Future layers that are NOT the responsibility of this class:
+        - Angularity classification (Phase 7: HouseAngularityProfile)
+        - System comparison
+    """
+    placement:             HousePlacement
+    opening_cusp:          float
+    closing_cusp:          float
+    dist_to_opening:       float
+    dist_to_closing:       float
+    house_span:            float
+    nearest_cusp:          float
+    nearest_cusp_distance: float
+    near_cusp_threshold:   float
+    is_near_cusp:          bool
+
+    def __post_init__(self) -> None:
+        assert 0.0 <= self.opening_cusp < 360.0, (
+            f"HouseBoundaryProfile: opening_cusp={self.opening_cusp!r} not in [0, 360)"
+        )
+        assert 0.0 <= self.closing_cusp < 360.0, (
+            f"HouseBoundaryProfile: closing_cusp={self.closing_cusp!r} not in [0, 360)"
+        )
+        assert self.dist_to_opening >= 0.0, (
+            f"HouseBoundaryProfile: dist_to_opening={self.dist_to_opening!r} < 0"
+        )
+        assert self.dist_to_closing > 0.0, (
+            f"HouseBoundaryProfile: dist_to_closing={self.dist_to_closing!r} <= 0"
+        )
+        assert abs(self.dist_to_opening + self.dist_to_closing - self.house_span) < 1e-9, (
+            f"HouseBoundaryProfile: dist_to_opening + dist_to_closing "
+            f"({self.dist_to_opening + self.dist_to_closing}) != house_span ({self.house_span})"
+        )
+        assert self.house_span > 0.0, (
+            f"HouseBoundaryProfile: house_span={self.house_span!r} <= 0"
+        )
+        assert self.near_cusp_threshold > 0.0, (
+            f"HouseBoundaryProfile: near_cusp_threshold={self.near_cusp_threshold!r} <= 0"
+        )
+        assert self.nearest_cusp_distance >= 0.0, (
+            f"HouseBoundaryProfile: nearest_cusp_distance={self.nearest_cusp_distance!r} < 0"
+        )
+        assert self.is_near_cusp == (self.nearest_cusp_distance < self.near_cusp_threshold), (
+            f"HouseBoundaryProfile: is_near_cusp inconsistent with "
+            f"nearest_cusp_distance={self.nearest_cusp_distance!r} and "
+            f"near_cusp_threshold={self.near_cusp_threshold!r}"
+        )
+
+
+def describe_boundary(
+    placement: HousePlacement,
+    *,
+    near_cusp_threshold: float = _NEAR_CUSP_DEFAULT_THRESHOLD,
+) -> HouseBoundaryProfile:
+    """
+    Derive boundary context for an existing HousePlacement.
+
+    CUSP PROXIMITY / BOUNDARY SENSITIVITY:
+        Computes how far the placed longitude sits from the cusps that bracket
+        its assigned house, and whether it is considered near-cusp under the
+        declared threshold.  House assignment is NOT re-performed; the
+        placement's house number and longitude are authoritative.
+
+    DISTANCE DOCTRINE:
+        dist_to_opening:
+            Forward arc from the opening cusp to the placed longitude.
+            (longitude − opening_cusp) % 360°.
+            Equals 0 when placement.exact_on_cusp is True.
+
+        dist_to_closing:
+            Forward arc from the placed longitude to the closing cusp.
+            (closing_cusp − longitude) % 360°.
+            Always positive: Phase 5 assigns the closing cusp to the next
+            house, so a point can never land exactly on the closing cusp.
+
+        house_span:
+            Total forward arc of the house.
+            Invariant: dist_to_opening + dist_to_closing == house_span.
+
+        nearest_cusp / nearest_cusp_distance:
+            The cusp that is closer (min of the two forward distances).
+            Tie-break: opening cusp preferred.
+            nearest_cusp_distance is always ≤ house_span / 2.
+
+        is_near_cusp:
+            True iff nearest_cusp_distance < near_cusp_threshold.
+
+    NEAR-CUSP THRESHOLD:
+        The `near_cusp_threshold` argument is keyword-only and defaults to
+        _NEAR_CUSP_DEFAULT_THRESHOLD (3.0°).  It is a caller-declared doctrine
+        value, not an internal constant; any positive float is accepted.  The
+        chosen threshold is stored verbatim in the result for auditability.
+
+    Args:
+        placement: A HousePlacement returned by assign_house().
+        near_cusp_threshold: Forward-arc threshold in degrees below which a
+            placement is considered near-cusp.  Keyword-only.
+            Must be > 0.  Defaults to 3.0°.
+
+    Returns:
+        A frozen HouseBoundaryProfile enriching the placement with boundary
+        context.
+
+    Raises:
+        ValueError: If near_cusp_threshold is not positive.
+    """
+    if near_cusp_threshold <= 0.0:
+        raise ValueError(
+            f"near_cusp_threshold must be positive; got {near_cusp_threshold!r}"
+        )
+
+    cusps        = placement.house_cusps.cusps
+    house_idx    = placement.house - 1
+    opening_cusp = cusps[house_idx]
+    closing_cusp = cusps[placement.house % 12]
+    lon          = placement.longitude
+
+    house_span       = (closing_cusp - opening_cusp) % 360.0
+    dist_to_opening  = (lon - opening_cusp) % 360.0
+    dist_to_closing  = (closing_cusp - lon) % 360.0
+
+    if dist_to_opening <= dist_to_closing:
+        nearest_cusp          = opening_cusp
+        nearest_cusp_distance = dist_to_opening
+    else:
+        nearest_cusp          = closing_cusp
+        nearest_cusp_distance = dist_to_closing
+
+    is_near_cusp = nearest_cusp_distance < near_cusp_threshold
+
+    return HouseBoundaryProfile(
+        placement=placement,
+        opening_cusp=opening_cusp,
+        closing_cusp=closing_cusp,
+        dist_to_opening=dist_to_opening,
+        dist_to_closing=dist_to_closing,
+        house_span=house_span,
+        nearest_cusp=nearest_cusp,
+        nearest_cusp_distance=nearest_cusp_distance,
+        near_cusp_threshold=near_cusp_threshold,
+        is_near_cusp=is_near_cusp,
+    )
+
+
+# ===========================================================================
+# ANGULARITY / HOUSE-POWER STRUCTURE LAYER  (Phase 7)
+# ===========================================================================
+
+class HouseAngularity(str, Enum):
+    """
+    Structural angularity category of a house.
+
+    The traditional three-tier house-power doctrine assigns every house to
+    one of three categories based on its position relative to the four
+    angular cusps (ASC, IC, DSC, MC):
+
+    ANGULAR
+        Houses 1, 4, 7, 10.
+        These houses open at the four primary angles of the chart.  A planet
+        in an angular house is considered to act with the greatest immediacy
+        and directness in traditional doctrine.
+
+    SUCCEDENT
+        Houses 2, 5, 8, 11.
+        These houses follow immediately after the angular houses.  A planet
+        here is considered to act with moderate directness; its energy is
+        building toward the angle rather than already at it.
+
+    CADENT
+        Houses 3, 6, 9, 12.
+        These houses precede the angular houses (they "fall away" toward the
+        next angle).  A planet here is considered less directly operative in
+        traditional doctrine.
+
+    Doctrine scope at this phase:
+        This classification is purely house-number-based.  No cusp proximity,
+        no orb, no near-cusp sensitivity, and no system-family adjustments are
+        applied.  The mapping is universal across all 19 supported house systems
+        because it is derived from the assigned house number alone.
+
+    Future phases that are NOT the responsibility of this enum:
+        - Weighting or scoring the three categories
+        - Combining angularity with cusp proximity for a compound strength value
+        - System-comparison ranking
+    """
+    ANGULAR   = "angular"
+    SUCCEDENT = "succedent"
+    CADENT    = "cadent"
+
+
+_ANGULARITY_MAP: dict[int, HouseAngularity] = {
+    1:  HouseAngularity.ANGULAR,
+    2:  HouseAngularity.SUCCEDENT,
+    3:  HouseAngularity.CADENT,
+    4:  HouseAngularity.ANGULAR,
+    5:  HouseAngularity.SUCCEDENT,
+    6:  HouseAngularity.CADENT,
+    7:  HouseAngularity.ANGULAR,
+    8:  HouseAngularity.SUCCEDENT,
+    9:  HouseAngularity.CADENT,
+    10: HouseAngularity.ANGULAR,
+    11: HouseAngularity.SUCCEDENT,
+    12: HouseAngularity.CADENT,
+}
+
+
+@dataclass(frozen=True, slots=True)
+class HouseAngularityProfile:
+    """
+    ANGULARITY / HOUSE-POWER STRUCTURE: Structural positional status of a placement.
+
+    Enriches an existing HousePlacement with its traditional angularity
+    category (ANGULAR, SUCCEDENT, or CADENT), derived from the assigned
+    house number alone.
+
+    This vessel does NOT re-perform house assignment.  The placement's house
+    number is authoritative; angularity is read from it via the static
+    _ANGULARITY_MAP lookup.
+
+    Fields:
+        placement
+            The HousePlacement that was profiled.  Authoritative source of
+            the house number and all prior truth (longitude, house_cusps,
+            exact_on_cusp, cusp_longitude).  This layer reads from placement;
+            it never modifies or overrides it.
+
+        category
+            The HouseAngularity value for the assigned house.
+            Derived from placement.house via _ANGULARITY_MAP.
+            Always one of ANGULAR, SUCCEDENT, CADENT.
+
+        house
+            Convenience copy of placement.house (1–12).
+            Redundant with placement.house; present so callers can read
+            both category and house number from a single vessel without
+            traversing the placement chain.
+
+    Angularity doctrine:
+        ANGULAR   — house in {1, 4, 7, 10}
+        SUCCEDENT — house in {2, 5, 8, 11}
+        CADENT    — house in {3, 6, 9, 12}
+        The mapping is identical for all house systems and all latitudes.
+        No cusp proximity, orb, or boundary context influences the category
+        at this phase.
+
+    Relationship with Phase 6 (HouseBoundaryProfile):
+        describe_boundary() and describe_angularity() are independent
+        enrichment functions that both consume a HousePlacement.  They can
+        be called in any order or independently; neither depends on the other.
+
+    This dataclass is frozen (immutable) and carries no computation logic.
+
+    Future layers that are NOT the responsibility of this class:
+        - Compound strength scores combining angularity and cusp proximity
+        - System comparison or chart-wide power distribution
+        - Harmonic overlays
+    """
+    placement: HousePlacement
+    category:  HouseAngularity
+    house:     int
+
+    def __post_init__(self) -> None:
+        assert 1 <= self.house <= 12, (
+            f"HouseAngularityProfile invariant violated: house={self.house!r} not in [1, 12]"
+        )
+        assert self.house == self.placement.house, (
+            f"HouseAngularityProfile invariant violated: house={self.house!r} "
+            f"does not match placement.house={self.placement.house!r}"
+        )
+        assert self.category == _ANGULARITY_MAP[self.house], (
+            f"HouseAngularityProfile invariant violated: category={self.category!r} "
+            f"does not match _ANGULARITY_MAP[{self.house}]={_ANGULARITY_MAP[self.house]!r}"
+        )
+
+
+def describe_angularity(placement: HousePlacement) -> HouseAngularityProfile:
+    """
+    Derive the angularity / house-power profile for an existing HousePlacement.
+
+    ANGULARITY / HOUSE-POWER STRUCTURE:
+        Maps the assigned house number to its traditional structural category
+        (ANGULAR, SUCCEDENT, or CADENT) using a static lookup table.
+        House assignment is NOT re-performed; placement.house is authoritative.
+
+    DOCTRINE:
+        ANGULAR   — houses 1, 4, 7, 10  (the four cardinal angles).
+        SUCCEDENT — houses 2, 5, 8, 11  (follow the angles).
+        CADENT    — houses 3, 6, 9, 12  (precede the angles).
+
+        The mapping is purely house-number-based.  No cusp proximity, no orb,
+        no latitude sensitivity, and no system-family differences are applied
+        at this phase.  The doctrine is identical for all 19 supported house
+        systems because it derives from the assigned house number alone.
+
+    RELATIONSHIP WITH OTHER LAYERS:
+        describe_angularity() and describe_boundary() are independent; neither
+        depends on the other.  Both consume a HousePlacement and can be called
+        in any order.
+
+    Args:
+        placement: A HousePlacement returned by assign_house().
+
+    Returns:
+        A frozen HouseAngularityProfile with category and house number.
+    """
+    house    = placement.house
+    category = _ANGULARITY_MAP[house]
+    return HouseAngularityProfile(
+        placement=placement,
+        category=category,
+        house=house,
+    )
+
+
+# ===========================================================================
+# SYSTEM COMPARISON LAYER  (Phase 8)
+# ===========================================================================
+
+def _circular_diff(a: float, b: float) -> float:
+    """Signed circular difference (b − a) in the range (−180, 180]."""
+    d = (b - a) % 360.0
+    return d - 360.0 if d > 180.0 else d
+
+
+@dataclass(frozen=True, slots=True)
+class HouseSystemComparison:
+    """
+    SYSTEM COMPARISON: Cusp-level diff of two HouseCusps results.
+
+    Compares two independently-computed HouseCusps objects that were produced
+    for the same moment and location under (potentially) different house
+    systems.  The comparison is structural and factual; it carries no
+    interpretation of which system is "better".
+
+    This vessel does NOT recompute any cusps.  All cusp values are taken
+    verbatim from the source HouseCusps objects.
+
+    Fields:
+        left
+            The first HouseCusps (the reference).
+
+        right
+            The second HouseCusps (compared against left).
+
+        cusp_deltas
+            Tuple of 12 signed circular differences, one per house:
+                cusp_deltas[i] = circular_diff(left.cusps[i], right.cusps[i])
+            Each value is in the range (−180°, 180°].
+            Positive means right cusp is ahead (counter-clockwise) of left.
+            Negative means right cusp is behind left.
+            Zero means the cusps coincide within floating-point precision.
+
+        systems_agree
+            True iff left.effective_system == right.effective_system.
+            Uses the *effective* system (the code that actually produced the
+            cusps), not the requested system.  Two calls that requested
+            different systems but both fell back to Porphyry will agree.
+
+        fallback_differs
+            True iff left.fallback != right.fallback.
+            Surfaces the case where one call fell back and the other did not,
+            which may indicate an asymmetric policy or latitude condition.
+
+        families_differ
+            True iff the doctrinal families of the two effective systems differ.
+            Derived from left.classification.family and right.classification.family.
+            None-safe: if either classification is None, families_differ is True.
+
+    Comparison doctrine:
+        - Cusp delta uses the signed circular difference (right − left),
+          preserving ecliptic direction.  The result is always in (−180, 180].
+        - systems_agree, fallback_differs, and families_differ all compare
+          effective-system properties, not requested-system properties.
+        - Requested-system truth is never discarded; it is readable via
+          left.system and right.system from the stored HouseCusps objects.
+
+    This dataclass is frozen (immutable) and carries no computation logic.
+    """
+    left:             HouseCusps
+    right:            HouseCusps
+    cusp_deltas:      tuple[float, ...]
+    systems_agree:    bool
+    fallback_differs: bool
+    families_differ:  bool
+
+    def __post_init__(self) -> None:
+        assert len(self.cusp_deltas) == 12, (
+            f"HouseSystemComparison: cusp_deltas must have 12 entries; "
+            f"got {len(self.cusp_deltas)}"
+        )
+        assert all(-180.0 < d <= 180.0 for d in self.cusp_deltas), (
+            f"HouseSystemComparison: cusp_deltas contains value outside (-180, 180]: "
+            f"{self.cusp_deltas!r}"
+        )
+        assert self.systems_agree == (
+            self.left.effective_system == self.right.effective_system
+        ), (
+            "HouseSystemComparison: systems_agree inconsistent with effective_system fields"
+        )
+        assert self.fallback_differs == (self.left.fallback != self.right.fallback), (
+            "HouseSystemComparison: fallback_differs inconsistent with fallback fields"
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class HousePlacementComparison:
+    """
+    SYSTEM COMPARISON: Point-placement comparison across two or more systems.
+
+    Records where a single ecliptic longitude lands under each of two or more
+    independently-computed HouseCusps, and whether all systems agree on the
+    house assignment.
+
+    This vessel does NOT recompute any house assignments.  The placements
+    tuple contains one HousePlacement per system, produced by assign_house()
+    for the same longitude under each system.
+
+    Fields:
+        longitude
+            The ecliptic longitude that was placed (degrees, normalised to
+            [0, 360)).  Same value used for every placement in this comparison.
+
+        placements
+            Tuple of HousePlacement objects, one per input HouseCusps, in the
+            same order as the systems were supplied to compare_placements().
+            Each carries the full truth trail: requested/effective system,
+            fallback, classification, policy.
+
+        houses
+            Tuple of house numbers (1–12), one per placement, in the same
+            order as placements.  Convenience copy; equivalent to reading
+            placement.house from each element of placements.
+
+        all_agree
+            True iff all house numbers in `houses` are identical.
+            A True value means every compared system places the longitude in
+            the same house.
+
+        angularity_agrees
+            True iff all placements share the same HouseAngularity category.
+            Derived via describe_angularity() at construction time.
+            Two systems may disagree on house number but agree on angularity
+            (e.g. both assign an angular house, just different ones).
+
+    Comparison doctrine:
+        - longitude is normalised to [0, 360) before placement.
+        - all_agree compares house numbers exactly; no tolerance is applied.
+        - angularity_agrees compares HouseAngularity category values.
+        - Requested-system truth is preserved on each placement's house_cusps.
+        - Requires at least 2 placements; compare_placements() enforces this.
+
+    This dataclass is frozen (immutable) and carries no computation logic.
+    """
+    longitude:         float
+    placements:        tuple[HousePlacement, ...]
+    houses:            tuple[int, ...]
+    all_agree:         bool
+    angularity_agrees: bool
+
+    def __post_init__(self) -> None:
+        assert 0.0 <= self.longitude < 360.0, (
+            f"HousePlacementComparison: longitude={self.longitude!r} not in [0, 360)"
+        )
+        assert len(self.placements) >= 2, (
+            f"HousePlacementComparison: requires at least 2 placements; "
+            f"got {len(self.placements)}"
+        )
+        assert len(self.houses) == len(self.placements), (
+            f"HousePlacementComparison: houses length {len(self.houses)} != "
+            f"placements length {len(self.placements)}"
+        )
+        assert all(h == pl.house for h, pl in zip(self.houses, self.placements)), (
+            "HousePlacementComparison: houses tuple does not match placement.house values"
+        )
+        assert self.all_agree == (len(set(self.houses)) == 1), (
+            "HousePlacementComparison: all_agree inconsistent with houses tuple"
+        )
+        for pl in self.placements:
+            assert pl.longitude == self.longitude, (
+                f"HousePlacementComparison: placement.longitude={pl.longitude!r} "
+                f"!= longitude={self.longitude!r}"
+            )
+
+
+def compare_systems(left: HouseCusps, right: HouseCusps) -> HouseSystemComparison:
+    """
+    Produce a cusp-level comparison of two HouseCusps results.
+
+    SYSTEM COMPARISON:
+        Computes per-house signed circular cusp deltas and derives agreement
+        flags from the two HouseCusps objects.  No cusps are recomputed.
+
+    CUSP DELTA DOCTRINE:
+        For each house i (0–11):
+            cusp_deltas[i] = (right.cusps[i] − left.cusps[i]) mod ±180°
+        The signed circular difference preserves ecliptic direction:
+            Positive  → right cusp is counter-clockwise ahead of left.
+            Negative  → right cusp is behind left.
+            Near-zero → cusps coincide.
+        Range: (−180°, 180°].
+
+    AGREEMENT FLAGS:
+        systems_agree:    left.effective_system == right.effective_system.
+        fallback_differs: left.fallback != right.fallback.
+        families_differ:  classification families of the effective systems differ.
+
+    Args:
+        left:  First (reference) HouseCusps.
+        right: Second HouseCusps to compare against left.
+
+    Returns:
+        A frozen HouseSystemComparison.
+    """
+    deltas = tuple(
+        _circular_diff(left.cusps[i], right.cusps[i]) for i in range(12)
+    )
+
+    left_family  = left.classification.family  if left.classification  is not None else None
+    right_family = right.classification.family if right.classification is not None else None
+    families_differ = (left_family is None or right_family is None or left_family != right_family)
+
+    return HouseSystemComparison(
+        left=left,
+        right=right,
+        cusp_deltas=deltas,
+        systems_agree=(left.effective_system == right.effective_system),
+        fallback_differs=(left.fallback != right.fallback),
+        families_differ=families_differ,
+    )
+
+
+def compare_placements(
+    longitude: float,
+    *house_cusps_seq: HouseCusps,
+) -> HousePlacementComparison:
+    """
+    Place one longitude under each of two or more systems and compare results.
+
+    SYSTEM COMPARISON:
+        Calls assign_house(longitude, hc) for each HouseCusps in house_cusps_seq,
+        then collects the resulting HousePlacement objects and derives agreement
+        flags.  No house assignments are re-performed beyond what assign_house()
+        computes independently for each system.
+
+    DOCTRINE:
+        - longitude is normalised to [0, 360) before any placement.
+        - all_agree is True iff all systems assign the same house number.
+        - angularity_agrees is True iff all placements share the same
+          HouseAngularity category (derived via describe_angularity()).
+        - Requested-system truth is preserved on each placement's house_cusps.
+
+    Args:
+        longitude: Ecliptic longitude to place, in degrees.
+            Normalised to [0, 360) before placement.
+        *house_cusps_seq: Two or more HouseCusps objects to compare.
+            Must supply at least two.
+
+    Returns:
+        A frozen HousePlacementComparison.
+
+    Raises:
+        ValueError: If fewer than two HouseCusps are supplied.
+    """
+    if len(house_cusps_seq) < 2:
+        raise ValueError(
+            f"compare_placements requires at least 2 HouseCusps; "
+            f"got {len(house_cusps_seq)}"
+        )
+
+    lon        = longitude % 360.0
+    placements = tuple(assign_house(lon, hc) for hc in house_cusps_seq)
+    houses     = tuple(pl.house for pl in placements)
+    all_agree  = len(set(houses)) == 1
+
+    categories        = tuple(describe_angularity(pl).category for pl in placements)
+    angularity_agrees = len(set(categories)) == 1
+
+    return HousePlacementComparison(
+        longitude=lon,
+        placements=placements,
+        houses=houses,
+        all_agree=all_agree,
+        angularity_agrees=angularity_agrees,
+    )
+
+
+# ===========================================================================
+# CHART-WIDE HOUSE DISTRIBUTION INTELLIGENCE  (Phase 9)
+# ===========================================================================
+
+@dataclass(frozen=True, slots=True)
+class HouseOccupancy:
+    """
+    CHART-WIDE DISTRIBUTION: Per-house occupancy record.
+
+    One HouseOccupancy exists for every house (1–12) inside a
+    HouseDistributionProfile.  It records which points from the input
+    sequence were assigned to this house.
+
+    This vessel does NOT perform house assignment.  All placements are
+    produced upstream by distribute_points() via assign_house() and
+    stored here verbatim.
+
+    Fields:
+        house
+            House number (1–12) this record describes.
+
+        count
+            Number of points assigned to this house.  Equals len(longitudes).
+
+        longitudes
+            Tuple of normalised ecliptic longitudes (degrees, [0, 360)) of
+            the points assigned to this house, in the same order they
+            appeared in the input sequence supplied to distribute_points().
+
+        placements
+            Tuple of HousePlacement objects for each occupant, in the same
+            input order as longitudes.  Each carries the full truth trail
+            (house_cusps, effective_system, fallback, classification, policy).
+
+        is_empty
+            True iff count == 0.  Convenience flag; equivalent to count == 0.
+
+    Invariants:
+        count == len(longitudes) == len(placements)
+        is_empty == (count == 0)
+        All placements have placement.house == house.
+    """
+    house:      int
+    count:      int
+    longitudes: tuple[float, ...]
+    placements: tuple[HousePlacement, ...]
+    is_empty:   bool
+
+    def __post_init__(self) -> None:
+        assert 1 <= self.house <= 12, (
+            f"HouseOccupancy: house={self.house!r} not in [1, 12]"
+        )
+        assert self.count == len(self.longitudes), (
+            f"HouseOccupancy: count={self.count} != len(longitudes)={len(self.longitudes)}"
+        )
+        assert self.count == len(self.placements), (
+            f"HouseOccupancy: count={self.count} != len(placements)={len(self.placements)}"
+        )
+        assert self.is_empty == (self.count == 0), (
+            f"HouseOccupancy: is_empty={self.is_empty} inconsistent with count={self.count}"
+        )
+        for pl in self.placements:
+            assert pl.house == self.house, (
+                f"HouseOccupancy: placement.house={pl.house} != house={self.house}"
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class HouseDistributionProfile:
+    """
+    CHART-WIDE DISTRIBUTION: Chart-wide house distribution analysis.
+
+    Summarises how a set of point longitudes distributes across the twelve
+    houses of one house system, including per-house occupancy, empty-house
+    detection, dominant-house identification, and angularity-category totals.
+
+    This vessel does NOT perform house assignment.  All placements are
+    produced by distribute_points() via assign_house() and stored in the
+    occupancies.
+
+    Fields:
+        house_cusps
+            The HouseCusps used for all placements in this profile.  Carries
+            full truth: requested/effective system, fallback, classification,
+            policy.
+
+        point_count
+            Total number of point longitudes that were placed.
+            Equals sum(occ.count for occ in occupancies).
+
+        occupancies
+            Tuple of 12 HouseOccupancy objects, one per house, ordered
+            house 1 → 12.  Always exactly 12 entries, even for empty houses.
+
+        counts
+            Tuple of 12 integers (convenience copy):
+                counts[i] == occupancies[i].count, for i in 0..11
+            counts[i] is the occupant count for house i+1.
+
+        empty_houses
+            Frozenset of house numbers (1–12) with zero occupants.
+
+        dominant_houses
+            Tuple of house numbers (1–12) whose occupant count equals
+            max(counts), sorted ascending.  Empty tuple if point_count == 0
+            (all counts are zero; no house is dominant).
+
+        angular_count
+            Total points assigned to houses 1, 4, 7, 10 (ANGULAR).
+
+        succedent_count
+            Total points assigned to houses 2, 5, 8, 11 (SUCCEDENT).
+
+        cadent_count
+            Total points assigned to houses 3, 6, 9, 12 (CADENT).
+
+    Distribution doctrine:
+        - Each input longitude is normalised to [0, 360) before placement.
+        - Each longitude is placed independently via assign_house().
+        - occupancies is always exactly 12 entries, houses 1–12 in order.
+        - dominant_houses lists all houses tied for the maximum count.
+          If point_count == 0, dominant_houses is an empty tuple.
+        - Angularity counts use _ANGULARITY_MAP from Phase 7; no new doctrine.
+        - Occupant order within each HouseOccupancy follows input order.
+
+    Invariants:
+        len(occupancies) == 12
+        len(counts) == 12
+        point_count == sum(counts)
+        angular_count + succedent_count + cadent_count == point_count
+        len(dominant_houses) >= 1 when point_count > 0
+        all h in dominant_houses: counts[h-1] == max(counts)
+
+    This dataclass is frozen (immutable) and carries no computation logic.
+    """
+    house_cusps:      HouseCusps
+    point_count:      int
+    occupancies:      tuple[HouseOccupancy, ...]
+    counts:           tuple[int, ...]
+    empty_houses:     frozenset[int]
+    dominant_houses:  tuple[int, ...]
+    angular_count:    int
+    succedent_count:  int
+    cadent_count:     int
+
+    def __post_init__(self) -> None:
+        assert len(self.occupancies) == 12, (
+            f"HouseDistributionProfile: len(occupancies)={len(self.occupancies)}, expected 12"
+        )
+        assert len(self.counts) == 12, (
+            f"HouseDistributionProfile: len(counts)={len(self.counts)}, expected 12"
+        )
+        assert self.point_count == sum(self.counts), (
+            f"HouseDistributionProfile: point_count={self.point_count} != sum(counts)={sum(self.counts)}"
+        )
+        assert self.angular_count + self.succedent_count + self.cadent_count == self.point_count, (
+            f"HouseDistributionProfile: angularity counts sum "
+            f"({self.angular_count}+{self.succedent_count}+{self.cadent_count}) "
+            f"!= point_count={self.point_count}"
+        )
+        for i, occ in enumerate(self.occupancies):
+            assert occ.house == i + 1, (
+                f"HouseDistributionProfile: occupancies[{i}].house={occ.house}, expected {i+1}"
+            )
+            assert self.counts[i] == occ.count, (
+                f"HouseDistributionProfile: counts[{i}]={self.counts[i]} != occupancy.count={occ.count}"
+            )
+        if self.point_count == 0:
+            assert self.dominant_houses == (), (
+                f"HouseDistributionProfile: dominant_houses must be () when point_count==0"
+            )
+        else:
+            max_count = max(self.counts)
+            for h in self.dominant_houses:
+                assert self.counts[h - 1] == max_count, (
+                    f"HouseDistributionProfile: dominant house {h} count "
+                    f"{self.counts[h-1]} != max {max_count}"
+                )
+
+
+def distribute_points(
+    longitudes: "list[float] | tuple[float, ...]",
+    house_cusps: HouseCusps,
+) -> HouseDistributionProfile:
+    """
+    Place a sequence of longitudes against one HouseCusps and return a
+    chart-wide distribution profile.
+
+    CHART-WIDE DISTRIBUTION:
+        Places each longitude via assign_house() and accumulates per-house
+        occupancy records.  Derives empty-house set, dominant-house list, and
+        angularity-category totals from the resulting placements.  No new
+        house-membership logic is introduced; assign_house() is authoritative.
+
+    DISTRIBUTION DOCTRINE:
+        - Each longitude is normalised to [0, 360) before placement.
+        - Placements are accumulated per house in input order.
+        - occupancies contains exactly 12 HouseOccupancy entries, house 1–12.
+        - dominant_houses: all houses tied for max(counts); sorted ascending.
+          Empty tuple when no points are provided.
+        - empty_houses: frozenset of house numbers with count == 0.
+        - Angularity counts use _ANGULARITY_MAP (Phase 7 doctrine).
+
+    Args:
+        longitudes: Sequence of ecliptic longitudes to place (degrees).
+            May be empty; an empty sequence produces a zero-count profile.
+        house_cusps: The HouseCusps to place all points against.
+
+    Returns:
+        A frozen HouseDistributionProfile.
+    """
+    buckets: dict[int, list[tuple[float, HousePlacement]]] = {
+        h: [] for h in range(1, 13)
+    }
+
+    for raw_lon in longitudes:
+        pl = assign_house(raw_lon, house_cusps)
+        buckets[pl.house].append((pl.longitude, pl))
+
+    occupancies = tuple(
+        HouseOccupancy(
+            house=h,
+            count=len(buckets[h]),
+            longitudes=tuple(lon for lon, _ in buckets[h]),
+            placements=tuple(pl for _, pl in buckets[h]),
+            is_empty=(len(buckets[h]) == 0),
+        )
+        for h in range(1, 13)
+    )
+
+    counts      = tuple(occ.count for occ in occupancies)
+    point_count = sum(counts)
+
+    empty_houses = frozenset(h for h in range(1, 13) if counts[h - 1] == 0)
+
+    if point_count == 0:
+        dominant_houses: tuple[int, ...] = ()
+    else:
+        max_count = max(counts)
+        dominant_houses = tuple(h for h in range(1, 13) if counts[h - 1] == max_count)
+
+    angular_count   = sum(counts[h - 1] for h in (1, 4, 7, 10))
+    succedent_count = sum(counts[h - 1] for h in (2, 5, 8, 11))
+    cadent_count    = sum(counts[h - 1] for h in (3, 6, 9, 12))
+
+    return HouseDistributionProfile(
+        house_cusps=house_cusps,
+        point_count=point_count,
+        occupancies=occupancies,
+        counts=counts,
+        empty_houses=empty_houses,
+        dominant_houses=dominant_houses,
+        angular_count=angular_count,
+        succedent_count=succedent_count,
+        cadent_count=cadent_count,
     )

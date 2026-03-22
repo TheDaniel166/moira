@@ -108,7 +108,9 @@ class TestNoFallback:
 
 
 # ---------------------------------------------------------------------------
-# Polar fallback: PLACIDUS / KOCH / PULLEN_SD / PULLEN_SR -> PORPHYRY
+# Polar fallback: PLACIDUS / KOCH / PULLEN_SD -> PORPHYRY
+# (PULLEN_SR uses a different formula and does not fall back)
+# The threshold is 90° − obliquity (≈ 66.56° at J2000), not a fixed constant.
 # ---------------------------------------------------------------------------
 
 class TestPolarFallback:
@@ -116,7 +118,6 @@ class TestPolarFallback:
         HouseSystem.PLACIDUS,
         HouseSystem.KOCH,
         HouseSystem.PULLEN_SD,
-        HouseSystem.PULLEN_SR,
     ])
     def test_polar_fallback_sets_effective_to_porphyry(self, requested):
         r = _polar(requested)
@@ -126,7 +127,6 @@ class TestPolarFallback:
         HouseSystem.PLACIDUS,
         HouseSystem.KOCH,
         HouseSystem.PULLEN_SD,
-        HouseSystem.PULLEN_SR,
     ])
     def test_polar_fallback_preserves_requested_system(self, requested):
         r = _polar(requested)
@@ -136,7 +136,6 @@ class TestPolarFallback:
         HouseSystem.PLACIDUS,
         HouseSystem.KOCH,
         HouseSystem.PULLEN_SD,
-        HouseSystem.PULLEN_SR,
     ])
     def test_polar_fallback_flag_is_true(self, requested):
         r = _polar(requested)
@@ -146,7 +145,6 @@ class TestPolarFallback:
         HouseSystem.PLACIDUS,
         HouseSystem.KOCH,
         HouseSystem.PULLEN_SD,
-        HouseSystem.PULLEN_SR,
     ])
     def test_polar_fallback_reason_is_non_empty_string(self, requested):
         r = _polar(requested)
@@ -157,7 +155,6 @@ class TestPolarFallback:
         HouseSystem.PLACIDUS,
         HouseSystem.KOCH,
         HouseSystem.PULLEN_SD,
-        HouseSystem.PULLEN_SR,
     ])
     def test_polar_fallback_cusps_match_porphyry(self, requested):
         r = _polar(requested)
@@ -171,24 +168,31 @@ class TestPolarFallback:
         assert r.fallback is True
         assert r.system == HouseSystem.PLACIDUS
 
-    def test_polar_fallback_exact_threshold_75(self):
-        r = calculate_houses(_JD_J2000, 75.0, _LON, HouseSystem.PLACIDUS)
+    def test_polar_fallback_above_critical_latitude(self):
+        # 90 - obliquity ≈ 66.56°; 70° is safely above the threshold
+        r = calculate_houses(_JD_J2000, 70.0, _LON, HouseSystem.PLACIDUS)
         assert r.effective_system == HouseSystem.PORPHYRY
         assert r.fallback is True
 
-    def test_no_fallback_just_below_threshold(self):
-        r = calculate_houses(_JD_J2000, 74.9, _LON, HouseSystem.PLACIDUS)
+    def test_no_fallback_just_below_critical_latitude(self):
+        # 60° is safely below 90° − obliquity for any realistic obliquity
+        r = calculate_houses(_JD_J2000, 60.0, _LON, HouseSystem.PLACIDUS)
         assert r.effective_system == HouseSystem.PLACIDUS
         assert r.fallback is False
         assert r.fallback_reason is None
+
+    def test_pullen_sr_does_not_fall_back_at_polar(self):
+        r = _polar(HouseSystem.PULLEN_SR)
+        assert r.effective_system == HouseSystem.PULLEN_SR
+        assert r.fallback is False
 
     def test_polar_fallback_reason_mentions_porphyry(self):
         r = _polar(HouseSystem.PLACIDUS)
         assert "Porphyry" in r.fallback_reason
 
-    def test_polar_fallback_reason_mentions_latitude(self):
+    def test_polar_fallback_reason_mentions_critical_latitude(self):
         r = _polar(HouseSystem.PLACIDUS)
-        assert "lat" in r.fallback_reason.lower() or "75" in r.fallback_reason
+        assert "critical latitude" in r.fallback_reason
 
 
 # ---------------------------------------------------------------------------
