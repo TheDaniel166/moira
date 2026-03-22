@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Lots Engine — moira/lots.py
 
@@ -31,6 +33,8 @@ Public surface / exports:
 """
 
 from dataclasses import dataclass, field
+from enum import StrEnum
+from math import isfinite
 
 from .constants import sign_of, SIGNS
 from .chart import ChartContext
@@ -703,6 +707,535 @@ _CATEGORY_ORDER = {
 # Result dataclass
 # ---------------------------------------------------------------------------
 
+class LotReferenceKind(StrEnum):
+    """Typed classification of how a lot ingredient reference was resolved."""
+
+    PLANET = "planet"
+    PLANET_ALIAS = "planet_alias"
+    ANGLE = "angle"
+    HOUSE_CUSP = "house_cusp"
+    FIXED_DEGREE = "fixed_degree"
+    EXTERNAL = "external"
+    DERIVED_LOT = "derived_lot"
+    HOUSE_RULER = "house_ruler"
+    ANGLE_RULER_ALIAS = "angle_ruler_alias"
+    PLANET_RULER = "planet_ruler"
+    SYZYGY_RULER = "syzygy_ruler"
+
+
+class LotReversalKind(StrEnum):
+    """Typed classification of day/night reversal state for a computed lot."""
+
+    DIRECT = "direct"
+    NIGHT_REVERSIBLE = "night_reversible"
+    NIGHT_REVERSED = "night_reversed"
+
+
+class LotsReferenceFailureMode(StrEnum):
+    """Policy for unresolved lot ingredient references."""
+
+    SKIP = "skip"
+    RAISE = "raise"
+
+
+class LotDependencyRole(StrEnum):
+    """Typed role of a dependency within a lot formula."""
+
+    ADD_OPERAND = "add_operand"
+    SUB_OPERAND = "sub_operand"
+
+
+class LotConditionState(StrEnum):
+    """Structural condition state for one computed lot."""
+
+    DIRECT = "direct"
+    MIXED = "mixed"
+    INDIRECT = "indirect"
+
+
+class LotConditionNetworkEdgeMode(StrEnum):
+    """Visibility mode for one directed inter-lot dependency edge."""
+
+    UNILATERAL = "unilateral"
+    RECIPROCAL = "reciprocal"
+
+
+@dataclass(slots=True)
+class LotChartConditionProfile:
+    """
+    Chart-wide condition profile derived from per-part lot condition profiles.
+
+    This is a backend aggregation layer only. It consumes existing
+    LotConditionProfile results and does not recompute lot doctrine.
+    """
+
+    profiles: list[LotConditionProfile] = field(default_factory=list)
+    direct_count: int = 0
+    mixed_count: int = 0
+    indirect_count: int = 0
+    direct_dependency_total: int = 0
+    indirect_dependency_total: int = 0
+    inter_lot_dependency_total: int = 0
+    external_dependency_total: int = 0
+    strongest_parts: list[str] = field(default_factory=list)
+    weakest_parts: list[str] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        direct = sum(1 for profile in self.profiles if profile.state is LotConditionState.DIRECT)
+        mixed = sum(1 for profile in self.profiles if profile.state is LotConditionState.MIXED)
+        indirect = sum(1 for profile in self.profiles if profile.state is LotConditionState.INDIRECT)
+        if (self.direct_count, self.mixed_count, self.indirect_count) != (direct, mixed, indirect):
+            raise ValueError("LotChartConditionProfile invariant failed: state counts must match profile states")
+
+        direct_total = sum(profile.direct_dependency_count for profile in self.profiles)
+        indirect_total = sum(profile.indirect_dependency_count for profile in self.profiles)
+        inter_lot_total = sum(profile.inter_lot_dependency_count for profile in self.profiles)
+        external_total = sum(profile.external_dependency_count for profile in self.profiles)
+        if (self.direct_dependency_total, self.indirect_dependency_total) != (direct_total, indirect_total):
+            raise ValueError("LotChartConditionProfile invariant failed: direct/indirect totals must match profile totals")
+        if self.inter_lot_dependency_total != inter_lot_total:
+            raise ValueError("LotChartConditionProfile invariant failed: inter_lot total must match profile totals")
+        if self.external_dependency_total != external_total:
+            raise ValueError("LotChartConditionProfile invariant failed: external total must match profile totals")
+
+        ordered_names = [profile.part_name for profile in sorted(self.profiles, key=lambda profile: (profile.primary_category, profile.part_name))]
+        if [profile.part_name for profile in self.profiles] != ordered_names:
+            raise ValueError("LotChartConditionProfile invariant failed: profiles must be in deterministic order")
+        def strongest_key(profile: LotConditionProfile) -> tuple[int, int, int, str]:
+            return (
+                {
+                    LotConditionState.DIRECT: 0,
+                    LotConditionState.MIXED: 1,
+                    LotConditionState.INDIRECT: 2,
+                }[profile.state],
+                -profile.direct_dependency_count,
+                profile.indirect_dependency_count,
+                profile.part_name,
+            )
+
+        def weakest_key(profile: LotConditionProfile) -> tuple[int, int, int, str]:
+            return (
+                {
+                    LotConditionState.INDIRECT: 0,
+                    LotConditionState.MIXED: 1,
+                    LotConditionState.DIRECT: 2,
+                }[profile.state],
+                -profile.indirect_dependency_count,
+                profile.direct_dependency_count,
+                profile.part_name,
+            )
+
+        if self.profiles:
+            strongest_rank = min(strongest_key(profile) for profile in self.profiles)
+            expected_strongest = sorted(
+                profile.part_name for profile in self.profiles if strongest_key(profile) == strongest_rank
+            )
+            weakest_profile = min(self.profiles, key=weakest_key)
+            expected_weakest = sorted(
+                profile.part_name
+                for profile in self.profiles
+                if (
+                    profile.state is weakest_profile.state
+                    and profile.indirect_dependency_count == weakest_profile.indirect_dependency_count
+                    and profile.direct_dependency_count == weakest_profile.direct_dependency_count
+                )
+            )
+        else:
+            expected_strongest = []
+            expected_weakest = []
+        if self.strongest_parts != expected_strongest:
+            raise ValueError("LotChartConditionProfile invariant failed: strongest_parts must match derived ranking")
+        if self.weakest_parts != expected_weakest:
+            raise ValueError("LotChartConditionProfile invariant failed: weakest_parts must match derived ranking")
+
+    @property
+    def profile_count(self) -> int:
+        """Return the number of condition profiles aggregated."""
+
+        return len(self.profiles)
+
+    @property
+    def strongest_count(self) -> int:
+        """Return the number of structurally strongest lots in the profile."""
+
+        return len(self.strongest_parts)
+
+    @property
+    def weakest_count(self) -> int:
+        """Return the number of structurally weakest lots in the profile."""
+
+        return len(self.weakest_parts)
+
+
+@dataclass(slots=True)
+class LotConditionNetworkNode:
+    """
+    Node in the derived lot dependency/condition network.
+
+    This is a backend inspectability layer only. It consumes existing
+    LotConditionProfile truth and admitted inter-lot dependencies.
+    """
+
+    part_name: str
+    condition_state: LotConditionState
+    outgoing_count: int = 0
+    incoming_count: int = 0
+    reciprocal_count: int = 0
+
+    def __post_init__(self) -> None:
+        if self.reciprocal_count > min(self.outgoing_count, self.incoming_count):
+            raise ValueError("LotConditionNetworkNode invariant failed: reciprocal_count cannot exceed incoming/outgoing counts")
+
+    @property
+    def degree_count(self) -> int:
+        """Return the direct degree count for this node."""
+
+        return self.outgoing_count + self.incoming_count
+
+    @property
+    def is_isolated(self) -> bool:
+        """Return True when the node has no admitted inter-lot links."""
+
+        return self.degree_count == 0
+
+
+@dataclass(slots=True)
+class LotConditionNetworkEdge:
+    """
+    Directed edge in the derived lot dependency/condition network.
+
+    Each edge corresponds to one admitted inter-lot dependency relation and
+    does not recompute lot doctrine independently.
+    """
+
+    source_part: str
+    target_part: str
+    role: LotDependencyRole
+    mode: LotConditionNetworkEdgeMode
+
+    def __post_init__(self) -> None:
+        if self.source_part == self.target_part:
+            raise ValueError("LotConditionNetworkEdge invariant failed: source_part and target_part must differ")
+
+
+@dataclass(slots=True)
+class LotConditionNetworkProfile:
+    """
+    Network profile derived from per-part condition profiles and lot links.
+
+    This is a backend aggregation layer only. It consumes existing condition
+    profiles and their admitted inter-lot dependencies.
+    """
+
+    nodes: list[LotConditionNetworkNode] = field(default_factory=list)
+    edges: list[LotConditionNetworkEdge] = field(default_factory=list)
+    isolated_parts: list[str] = field(default_factory=list)
+    most_connected_parts: list[str] = field(default_factory=list)
+    reciprocal_edge_count: int = 0
+    unilateral_edge_count: int = 0
+
+    def __post_init__(self) -> None:
+        ordered_names = sorted(node.part_name for node in self.nodes)
+        if [node.part_name for node in self.nodes] != ordered_names:
+            raise ValueError("LotConditionNetworkProfile invariant failed: nodes must be in deterministic order")
+
+        ordered_edges = sorted(self.edges, key=lambda edge: (edge.source_part, edge.target_part, edge.role.value))
+        if self.edges != ordered_edges:
+            raise ValueError("LotConditionNetworkProfile invariant failed: edges must be in deterministic order")
+
+        reciprocal = sum(1 for edge in self.edges if edge.mode is LotConditionNetworkEdgeMode.RECIPROCAL)
+        unilateral = sum(1 for edge in self.edges if edge.mode is LotConditionNetworkEdgeMode.UNILATERAL)
+        if self.reciprocal_edge_count != reciprocal:
+            raise ValueError("LotConditionNetworkProfile invariant failed: reciprocal_edge_count must match edges")
+        if self.unilateral_edge_count != unilateral:
+            raise ValueError("LotConditionNetworkProfile invariant failed: unilateral_edge_count must match edges")
+        edge_pairs = {(edge.source_part, edge.target_part) for edge in self.edges}
+        for edge in self.edges:
+            reverse_present = (edge.target_part, edge.source_part) in edge_pairs
+            if edge.mode is LotConditionNetworkEdgeMode.RECIPROCAL and not reverse_present:
+                raise ValueError("LotConditionNetworkProfile invariant failed: reciprocal edges must have a reverse edge")
+            if edge.mode is LotConditionNetworkEdgeMode.UNILATERAL and reverse_present:
+                raise ValueError("LotConditionNetworkProfile invariant failed: unilateral edges must not have a reverse edge")
+
+        node_map = {node.part_name: node for node in self.nodes}
+        outgoing = {name: 0 for name in node_map}
+        incoming = {name: 0 for name in node_map}
+        reciprocal_counts = {name: 0 for name in node_map}
+        for edge in self.edges:
+            if edge.source_part not in node_map or edge.target_part not in node_map:
+                raise ValueError("LotConditionNetworkProfile invariant failed: edges must reference known nodes")
+            outgoing[edge.source_part] += 1
+            incoming[edge.target_part] += 1
+            if edge.mode is LotConditionNetworkEdgeMode.RECIPROCAL:
+                reciprocal_counts[edge.source_part] += 1
+        for node in self.nodes:
+            if node.outgoing_count != outgoing[node.part_name] or node.incoming_count != incoming[node.part_name]:
+                raise ValueError("LotConditionNetworkProfile invariant failed: node incoming/outgoing counts must match edges")
+            if node.reciprocal_count != reciprocal_counts[node.part_name]:
+                raise ValueError("LotConditionNetworkProfile invariant failed: node reciprocal_count must match reciprocal edges")
+
+        expected_isolated = sorted(node.part_name for node in self.nodes if node.is_isolated)
+        if self.isolated_parts != expected_isolated:
+            raise ValueError("LotConditionNetworkProfile invariant failed: isolated_parts must match nodes")
+
+        if self.nodes:
+            max_degree = max(node.degree_count for node in self.nodes)
+            expected_most_connected = sorted(
+                node.part_name for node in self.nodes if node.degree_count == max_degree and max_degree > 0
+            )
+        else:
+            expected_most_connected = []
+        if self.most_connected_parts != expected_most_connected:
+            raise ValueError("LotConditionNetworkProfile invariant failed: most_connected_parts must match node degrees")
+
+    @property
+    def node_count(self) -> int:
+        """Return the number of network nodes."""
+
+        return len(self.nodes)
+
+    @property
+    def edge_count(self) -> int:
+        """Return the number of directed network edges."""
+
+        return len(self.edges)
+
+
+@dataclass(frozen=True, slots=True)
+class LotsDerivedReferencePolicy:
+    """Policy governing inclusion of the currently supported derived references."""
+
+    include_fortune: bool = True
+    include_spirit: bool = True
+    include_eros_valens: bool = True
+
+
+@dataclass(frozen=True, slots=True)
+class LotsExternalReferencePolicy:
+    """Policy governing admissibility of optional external reference keys."""
+
+    include_syzygy: bool = True
+    include_prenatal_new_moon: bool = True
+    include_prenatal_full_moon: bool = True
+    include_lord_of_hour: bool = True
+
+
+@dataclass(frozen=True, slots=True)
+class LotsComputationPolicy:
+    """
+    Lean backend policy surface for the lots engine.
+
+    The default policy is intentionally identical to the current engine
+    behavior.
+    """
+
+    unresolved_reference_mode: LotsReferenceFailureMode = LotsReferenceFailureMode.SKIP
+    derived: LotsDerivedReferencePolicy = field(default_factory=LotsDerivedReferencePolicy)
+    external: LotsExternalReferencePolicy = field(default_factory=LotsExternalReferencePolicy)
+
+    @property
+    def is_default(self) -> bool:
+        """Return True when this policy matches current default behavior."""
+
+        return self == LotsComputationPolicy()
+
+
+@dataclass(slots=True)
+class LotReferenceClassification:
+    """Typed classification for one preserved lot ingredient reference."""
+
+    kind: LotReferenceKind
+    key: str
+    detail: str = ""
+
+    @property
+    def is_derived(self) -> bool:
+        """Return True when the reference was derived rather than directly supplied."""
+
+        return self.kind in {
+            LotReferenceKind.DERIVED_LOT,
+            LotReferenceKind.HOUSE_RULER,
+            LotReferenceKind.ANGLE_RULER_ALIAS,
+            LotReferenceKind.PLANET_RULER,
+            LotReferenceKind.SYZYGY_RULER,
+        }
+
+
+@dataclass(slots=True)
+class ArabicPartClassification:
+    """
+    Lean typed classification of an already-computed lot.
+
+    This classifies preserved computation truth. It does not alter lot
+    longitude, formula semantics, or catalogue doctrine.
+    """
+
+    primary_category: str
+    category_tags: tuple[str, ...]
+    reversal: LotReversalKind
+    add_reference: LotReferenceClassification
+    sub_reference: LotReferenceClassification
+
+    def __post_init__(self) -> None:
+        if not self.category_tags:
+            raise ValueError("ArabicPartClassification invariant failed: category_tags must not be empty")
+        if self.primary_category not in self.category_tags:
+            raise ValueError("ArabicPartClassification invariant failed: primary_category must be included in category_tags")
+
+    @property
+    def is_reversed(self) -> bool:
+        """Return True when the lot actually reversed for the chart."""
+
+        return self.reversal is LotReversalKind.NIGHT_REVERSED
+
+
+@dataclass(slots=True)
+class LotDependency:
+    """
+    Formal dependency relation for one lot operand.
+
+    This is a backend-only relational layer. It is derived from preserved lot
+    computation truth and does not independently recompute lot doctrine.
+    """
+
+    part_name: str
+    role: LotDependencyRole
+    requested_key: str
+    effective_key: str
+    reference_kind: LotReferenceKind
+    reference_longitude: float
+    detail: str = ""
+
+    def __post_init__(self) -> None:
+        if self.role is LotDependencyRole.ADD_OPERAND and not self.effective_key:
+            raise ValueError("LotDependency invariant failed: add dependency must have an effective_key")
+        if self.role is LotDependencyRole.SUB_OPERAND and not self.effective_key:
+            raise ValueError("LotDependency invariant failed: sub dependency must have an effective_key")
+
+    @property
+    def is_inter_lot(self) -> bool:
+        """Return True when the dependency points to another derived lot."""
+
+        return self.reference_kind is LotReferenceKind.DERIVED_LOT
+
+    @property
+    def is_external(self) -> bool:
+        """Return True when the dependency points to an optional external reference."""
+
+        return self.reference_kind is LotReferenceKind.EXTERNAL
+
+    @property
+    def is_indirect(self) -> bool:
+        """Return True when the dependency is not a direct supplied reference."""
+
+        return self.is_inter_lot or self.is_external
+
+
+@dataclass(slots=True)
+class LotConditionProfile:
+    """
+    Integrated per-part condition profile derived from existing lot truth.
+
+    This is a backend synthesis layer only. It consumes preserved lot truth,
+    classification, and dependency relations and does not independently
+    recompute lot doctrine.
+    """
+
+    part_name: str
+    category_tags: tuple[str, ...]
+    primary_category: str
+    reversal: LotReversalKind
+    all_dependencies: list[LotDependency] = field(default_factory=list)
+    dependencies: list[LotDependency] = field(default_factory=list)
+    direct_dependency_count: int = 0
+    indirect_dependency_count: int = 0
+    inter_lot_dependency_count: int = 0
+    external_dependency_count: int = 0
+    state: LotConditionState = LotConditionState.DIRECT
+
+    def __post_init__(self) -> None:
+        if self.primary_category not in self.category_tags:
+            raise ValueError("LotConditionProfile invariant failed: primary_category must be included in category_tags")
+        if any(dependency not in self.all_dependencies for dependency in self.dependencies):
+            raise ValueError("LotConditionProfile invariant failed: dependencies must be a subset of all_dependencies")
+        direct = sum(1 for dependency in self.dependencies if not dependency.is_indirect)
+        indirect = sum(1 for dependency in self.dependencies if dependency.is_indirect)
+        inter_lot = sum(1 for dependency in self.dependencies if dependency.is_inter_lot)
+        external = sum(1 for dependency in self.dependencies if dependency.is_external)
+        if (self.direct_dependency_count, self.indirect_dependency_count) != (direct, indirect):
+            raise ValueError("LotConditionProfile invariant failed: direct/indirect counts must match dependencies")
+        if self.inter_lot_dependency_count != inter_lot:
+            raise ValueError("LotConditionProfile invariant failed: inter_lot_dependency_count must match dependencies")
+        if self.external_dependency_count != external:
+            raise ValueError("LotConditionProfile invariant failed: external_dependency_count must match dependencies")
+        expected_state = ArabicPartsService._derive_condition_state(direct, indirect)
+        if self.state is not expected_state:
+            raise ValueError("LotConditionProfile invariant failed: state must match derived dependency polarity")
+
+    @property
+    def has_inter_lot_dependency(self) -> bool:
+        """Return True when the lot depends on another derived lot."""
+
+        return self.inter_lot_dependency_count > 0
+
+    @property
+    def has_external_dependency(self) -> bool:
+        """Return True when the lot depends on an external optional reference."""
+
+        return self.external_dependency_count > 0
+
+@dataclass(slots=True)
+class LotReferenceTruth:
+    """
+    Structured truth for one resolved lot ingredient reference.
+
+    This preserves how an ingredient key such as `Sun`, `H8`, `Ruler H10`, or
+    `Fortune` was resolved for computation without changing calculation
+    semantics.
+    """
+
+    key:         str
+    longitude:   float
+    source_kind: str
+    detail:      str = ""
+
+    def __post_init__(self) -> None:
+        LotReferenceKind(self.source_kind)
+
+
+@dataclass(slots=True)
+class ArabicPartComputationTruth:
+    """
+    Structured doctrinal/computational path for one computed lot.
+
+    This is Phase 1 truth preservation only. It records the operands actually
+    used to compute the returned longitude so later classification and policy
+    layers do not need to reconstruct hidden logic from the flattened `formula`
+    string.
+    """
+
+    asc_longitude:      float
+    requested_add_key:  str
+    requested_sub_key:  str
+    effective_add_key:  str
+    effective_sub_key:  str
+    reversed_at_night:  bool
+    reversed_for_chart: bool
+    add_reference:      LotReferenceTruth
+    sub_reference:      LotReferenceTruth
+    formula:            str
+
+    def __post_init__(self) -> None:
+        if self.formula != f"Asc + {self.effective_add_key} - {self.effective_sub_key}":
+            raise ValueError("ArabicPartComputationTruth invariant failed: formula must match effective operand keys")
+        if self.reversed_for_chart and not self.reversed_at_night:
+            raise ValueError("ArabicPartComputationTruth invariant failed: reversed_for_chart requires reversed_at_night")
+        if self.add_reference.key != self.effective_add_key:
+            raise ValueError("ArabicPartComputationTruth invariant failed: add_reference.key must match effective_add_key")
+        if self.sub_reference.key != self.effective_sub_key:
+            raise ValueError("ArabicPartComputationTruth invariant failed: sub_reference.key must match effective_sub_key")
+
+
 @dataclass(slots=True)
 class ArabicPart:
     """
@@ -724,6 +1257,8 @@ class ArabicPart:
     LAW OF OPERATION:
         Responsibilities:
             - Store name, longitude, formula, category, and description.
+            - Preserve the resolved computational path in computation_truth.
+            - Preserve a typed classification view in classification.
             - Derive sign, sign_symbol, and sign_degree via __post_init__.
             - Provide longitude_dms property for degree/minute/second breakdown.
             - Render a compact human-readable repr.
@@ -760,12 +1295,83 @@ class ArabicPart:
     formula:     str
     category:    str
     description: str     = ""
+    computation_truth: ArabicPartComputationTruth | None = None
+    classification: ArabicPartClassification | None = None
+    all_dependencies: list[LotDependency] = field(default_factory=list)
+    dependencies: list[LotDependency] = field(default_factory=list)
+    condition_profile: LotConditionProfile | None = None
     sign:        str     = field(init=False)
     sign_symbol: str     = field(init=False)
     sign_degree: float   = field(init=False)
 
     def __post_init__(self) -> None:
         self.sign, self.sign_symbol, self.sign_degree = sign_of(self.longitude)
+        if not (0.0 <= self.longitude < 360.0):
+            raise ValueError("ArabicPart invariant failed: longitude must be in [0, 360)")
+        if self.computation_truth is not None:
+            if self.formula != self.computation_truth.formula:
+                raise ValueError("ArabicPart invariant failed: formula must match computation_truth.formula")
+            if self.all_dependencies and len(self.all_dependencies) != 2:
+                raise ValueError("ArabicPart invariant failed: all_dependencies must contain exactly two operand relations when present")
+            if len(self.dependencies) not in (0, 2):
+                raise ValueError("ArabicPart invariant failed: dependencies must be empty or contain exactly two operand relations")
+        if self.classification is not None:
+            expected_tags = ArabicPartsService._parse_category_tags(self.category)
+            if self.classification.category_tags != expected_tags:
+                raise ValueError("ArabicPart invariant failed: classification category_tags must match category")
+            expected_primary = min(
+                expected_tags,
+                key=lambda tag: (_CATEGORY_ORDER.get(tag, 99), tag),
+                default="general",
+            )
+            if self.classification.primary_category != expected_primary:
+                raise ValueError("ArabicPart invariant failed: classification primary_category must match category ordering")
+        if self.computation_truth is not None and self.classification is not None:
+            expected_reversal = (
+                LotReversalKind.NIGHT_REVERSED
+                if self.computation_truth.reversed_for_chart
+                else LotReversalKind.NIGHT_REVERSIBLE
+                if self.computation_truth.reversed_at_night
+                else LotReversalKind.DIRECT
+            )
+            if self.classification.reversal is not expected_reversal:
+                raise ValueError("ArabicPart invariant failed: classification reversal must match computation truth")
+            if self.classification.add_reference.kind.value != self.computation_truth.add_reference.source_kind:
+                raise ValueError("ArabicPart invariant failed: add-reference classification must match computation truth")
+            if self.classification.sub_reference.kind.value != self.computation_truth.sub_reference.source_kind:
+                raise ValueError("ArabicPart invariant failed: sub-reference classification must match computation truth")
+        if self.computation_truth is not None and self.dependencies:
+            add_dependencies = [dep for dep in self.dependencies if dep.role is LotDependencyRole.ADD_OPERAND]
+            sub_dependencies = [dep for dep in self.dependencies if dep.role is LotDependencyRole.SUB_OPERAND]
+            if len(add_dependencies) != 1 or len(sub_dependencies) != 1:
+                raise ValueError("ArabicPart invariant failed: dependencies must contain one add and one sub relation")
+            add_dependency = add_dependencies[0]
+            sub_dependency = sub_dependencies[0]
+            if add_dependency.effective_key != self.computation_truth.effective_add_key:
+                raise ValueError("ArabicPart invariant failed: add dependency must match computation truth")
+            if sub_dependency.effective_key != self.computation_truth.effective_sub_key:
+                raise ValueError("ArabicPart invariant failed: sub dependency must match computation truth")
+            if add_dependency.reference_kind.value != self.computation_truth.add_reference.source_kind:
+                raise ValueError("ArabicPart invariant failed: add dependency kind must match computation truth")
+            if sub_dependency.reference_kind.value != self.computation_truth.sub_reference.source_kind:
+                raise ValueError("ArabicPart invariant failed: sub dependency kind must match computation truth")
+        if self.all_dependencies:
+            for dependency in self.dependencies:
+                if dependency not in self.all_dependencies:
+                    raise ValueError("ArabicPart invariant failed: dependencies must be a subset of all_dependencies")
+        if self.condition_profile is not None:
+            if self.condition_profile.part_name != self.name:
+                raise ValueError("ArabicPart invariant failed: condition_profile.part_name must match lot name")
+            if tuple(self.condition_profile.category_tags) != self.category_tags:
+                raise ValueError("ArabicPart invariant failed: condition_profile category_tags must match lot classification")
+            if self.condition_profile.primary_category != self.primary_category:
+                raise ValueError("ArabicPart invariant failed: condition_profile primary_category must match lot classification")
+            if self.condition_profile.reversal is not self.reversal_kind:
+                raise ValueError("ArabicPart invariant failed: condition_profile reversal must match lot classification")
+            if self.condition_profile.dependencies != self.dependencies:
+                raise ValueError("ArabicPart invariant failed: condition_profile dependencies must match lot dependencies")
+            if self.condition_profile.all_dependencies != self.all_dependencies:
+                raise ValueError("ArabicPart invariant failed: condition_profile all_dependencies must match lot all_dependencies")
 
     @property
     def longitude_dms(self) -> tuple[int, int, float]:
@@ -774,6 +1380,101 @@ class ArabicPart:
         m   = int((d - deg) * 60)
         s   = ((d - deg) * 60 - m) * 60
         return deg, m, s
+
+    @property
+    def category_tags(self) -> tuple[str, ...]:
+        """Return the deterministic parsed category tags for this lot."""
+
+        if self.classification is not None:
+            return self.classification.category_tags
+        return ArabicPartsService._parse_category_tags(self.category)
+
+    @property
+    def primary_category(self) -> str:
+        """Return the deterministic primary category for this lot."""
+
+        if self.classification is not None:
+            return self.classification.primary_category
+        return min(
+            self.category_tags,
+            key=lambda tag: (_CATEGORY_ORDER.get(tag, 99), tag),
+            default="general",
+        )
+
+    @property
+    def reversal_kind(self) -> LotReversalKind:
+        """Return the classified reversal state for this lot."""
+
+        if self.classification is not None:
+            return self.classification.reversal
+        if self.computation_truth is None:
+            return LotReversalKind.DIRECT
+        if self.computation_truth.reversed_for_chart:
+            return LotReversalKind.NIGHT_REVERSED
+        if self.computation_truth.reversed_at_night:
+            return LotReversalKind.NIGHT_REVERSIBLE
+        return LotReversalKind.DIRECT
+
+    @property
+    def is_reversed(self) -> bool:
+        """Return True when the lot reversed for the current chart."""
+
+        return self.reversal_kind is LotReversalKind.NIGHT_REVERSED
+
+    @property
+    def add_reference_kind(self) -> LotReferenceKind | None:
+        """Return the classified add-reference kind when available."""
+
+        if self.classification is not None:
+            return self.classification.add_reference.kind
+        if self.computation_truth is not None:
+            return LotReferenceKind(self.computation_truth.add_reference.source_kind)
+        return None
+
+    @property
+    def sub_reference_kind(self) -> LotReferenceKind | None:
+        """Return the classified sub-reference kind when available."""
+
+        if self.classification is not None:
+            return self.classification.sub_reference.kind
+        if self.computation_truth is not None:
+            return LotReferenceKind(self.computation_truth.sub_reference.source_kind)
+        return None
+
+    @property
+    def dependency_count(self) -> int:
+        """Return the number of policy-admitted dependencies on this part."""
+
+        return len(self.dependencies)
+
+    @property
+    def all_dependency_count(self) -> int:
+        """Return the number of total doctrinal dependencies on this part."""
+
+        return len(self.all_dependencies)
+
+    @property
+    def inter_lot_dependencies(self) -> list[LotDependency]:
+        """Return admitted dependencies that point to other derived lots."""
+
+        return [dependency for dependency in self.dependencies if dependency.is_inter_lot]
+
+    @property
+    def external_dependencies(self) -> list[LotDependency]:
+        """Return admitted dependencies that point to external optional references."""
+
+        return [dependency for dependency in self.dependencies if dependency.is_external]
+
+    @property
+    def condition_state(self) -> LotConditionState:
+        """Return the integrated structural condition state for this lot."""
+
+        if self.condition_profile is not None:
+            return self.condition_profile.state
+        return ArabicPartsService._derive_condition_state(
+            sum(1 for dependency in self.dependencies if not dependency.is_indirect),
+            sum(1 for dependency in self.dependencies if dependency.is_indirect),
+        )
 
     def __repr__(self) -> str:
         deg, m, s = self.longitude_dms
@@ -822,6 +1523,30 @@ class ArabicPartsService:
         Failure behavior:
             - Unresolvable ingredient keys return 0.0 silently; the lot is
               still computed and included in the result list.
+        Truth preservation:
+            - Returned ArabicPart results preserve the resolved doctrinal path
+              through computation_truth, including operand reversal and
+              ingredient source kinds.
+        Future layers:
+            - Classification, inspectability, policy, and constitutional
+              hardening should consume preserved truth rather than parse
+              formula strings or rebuild ingredient logic ad hoc.
+        Classification:
+            - ArabicPart results carry a lean typed classification describing
+              category tags, reversal state, and operand reference kinds.
+        Policy:
+            - LotsComputationPolicy makes current doctrine explicit without
+              changing default computation behavior.
+        Relational formalization:
+            - ArabicPart results preserve operand dependencies as first-class
+              LotDependency relations, and the service can flatten them into a
+              dependency surface without recomputing lot logic.
+        Dependency hardening:
+            - ArabicPart distinguishes doctrinal all_dependencies from the
+              currently admitted dependency subset exposed in dependencies.
+        Condition integration:
+            - ArabicPart results carry a derived LotConditionProfile that
+              summarizes dependency structure without changing lot semantics.
 
     Canon: Abu Ma'shar, The Abbreviation of the Introduction to Astrology;
            al-Biruni, The Book of Instruction in the Elements of the Art of Astrology
@@ -855,7 +1580,7 @@ class ArabicPartsService:
         return self.calculate_parts(
             planet_longitudes=planet_lons,
             house_cusps=chart.houses.cusps if chart.houses else [],
-            is_day_chart=chart.is_day
+            is_day_chart=chart.is_day,
         )
             
     def calculate_parts(
@@ -863,6 +1588,7 @@ class ArabicPartsService:
         planet_longitudes: dict[str, float],
         house_cusps: dict[int, float] | list[float],
         is_day_chart: bool,
+        policy: LotsComputationPolicy | None = None,
         *,
         syzygy: float | None = None,
         prenatal_new_moon: float | None = None,
@@ -872,25 +1598,51 @@ class ArabicPartsService:
         """
         Calculate all Arabic Parts for raw longitude data.
         """
-        refs = self._build_refs(
+        policy = self._validate_policy(policy)
+        planet_longitudes = self._validate_planet_longitudes(planet_longitudes)
+        house_cusps = self._validate_house_cusps(house_cusps)
+        refs, ref_truths = self._build_refs(
             planet_longitudes, house_cusps, is_day_chart,
             syzygy, prenatal_new_moon, prenatal_full_moon, lord_of_hour,
+            policy=policy,
         )
 
         results: list[ArabicPart] = []
         for pdef in PARTS_DEFINITIONS:
-            add_key = pdef.day_add
-            sub_key = pdef.day_sub
-            if pdef.reverse_at_night and not is_day_chart:
+            requested_add_key = pdef.day_add
+            requested_sub_key = pdef.day_sub
+            add_key = requested_add_key
+            sub_key = requested_sub_key
+            reversed_for_chart = pdef.reverse_at_night and not is_day_chart
+            if reversed_for_chart:
                 add_key, sub_key = sub_key, add_key
 
             add_val = refs.get(add_key)
             sub_val = refs.get(sub_key)
             if add_val is None or sub_val is None:
+                if policy.unresolved_reference_mode is LotsReferenceFailureMode.RAISE:
+                    missing = add_key if add_val is None else sub_key
+                    raise ValueError(f"Unresolved lot ingredient reference: {missing}")
                 continue   # ingredient unavailable — skip silently
 
             lon     = (refs["Asc"] + add_val - sub_val) % 360.0
             formula = f"Asc + {add_key} - {sub_key}"
+            computation_truth = ArabicPartComputationTruth(
+                asc_longitude=refs["Asc"],
+                requested_add_key=requested_add_key,
+                requested_sub_key=requested_sub_key,
+                effective_add_key=add_key,
+                effective_sub_key=sub_key,
+                reversed_at_night=pdef.reverse_at_night,
+                reversed_for_chart=reversed_for_chart,
+                add_reference=ref_truths[add_key],
+                sub_reference=ref_truths[sub_key],
+                formula=formula,
+            )
+            all_dependencies = self._build_part_dependencies(
+                part_name=pdef.name,
+                computation_truth=computation_truth,
+            )
 
             results.append(ArabicPart(
                 name=pdef.name,
@@ -898,6 +1650,28 @@ class ArabicPartsService:
                 formula=formula,
                 category=pdef.category,
                 description=pdef.description,
+                computation_truth=computation_truth,
+                classification=self._classify_part(
+                    category=pdef.category,
+                    reversed_at_night=pdef.reverse_at_night,
+                    reversed_for_chart=reversed_for_chart,
+                    add_reference=ref_truths[add_key],
+                    sub_reference=ref_truths[sub_key],
+                ),
+                all_dependencies=all_dependencies,
+                dependencies=list(all_dependencies),
+                condition_profile=self._build_condition_profile(
+                    part_name=pdef.name,
+                    classification=self._classify_part(
+                        category=pdef.category,
+                        reversed_at_night=pdef.reverse_at_night,
+                        reversed_for_chart=reversed_for_chart,
+                        add_reference=ref_truths[add_key],
+                        sub_reference=ref_truths[sub_key],
+                    ),
+                    all_dependencies=all_dependencies,
+                    dependencies=list(all_dependencies),
+                ),
             ))
 
         first_cat = lambda c: min(
@@ -905,6 +1679,250 @@ class ArabicPartsService:
         )
         results.sort(key=lambda p: (first_cat(p.category), p.name))
         return results
+
+    def calculate_dependencies(
+        self,
+        planet_longitudes: dict[str, float],
+        house_cusps: dict[int, float] | list[float],
+        is_day_chart: bool,
+        policy: LotsComputationPolicy | None = None,
+        *,
+        syzygy: float | None = None,
+        prenatal_new_moon: float | None = None,
+        prenatal_full_moon: float | None = None,
+        lord_of_hour: float | None = None,
+    ) -> list[LotDependency]:
+        """Return all formal lot dependencies for the currently computable lots."""
+
+        parts = self.calculate_parts(
+            planet_longitudes,
+            house_cusps,
+            is_day_chart,
+            policy=policy,
+            syzygy=syzygy,
+            prenatal_new_moon=prenatal_new_moon,
+            prenatal_full_moon=prenatal_full_moon,
+            lord_of_hour=lord_of_hour,
+        )
+        dependencies = [dependency for part in parts for dependency in part.dependencies]
+        dependencies.sort(key=lambda dep: (dep.part_name, dep.role.value, dep.effective_key))
+        return dependencies
+
+    def calculate_all_dependencies(
+        self,
+        planet_longitudes: dict[str, float],
+        house_cusps: dict[int, float] | list[float],
+        is_day_chart: bool,
+        *,
+        syzygy: float | None = None,
+        prenatal_new_moon: float | None = None,
+        prenatal_full_moon: float | None = None,
+        lord_of_hour: float | None = None,
+    ) -> list[LotDependency]:
+        """Return all doctrinally computable dependencies under default admission."""
+
+        parts = self.calculate_parts(
+            planet_longitudes,
+            house_cusps,
+            is_day_chart,
+            policy=LotsComputationPolicy(),
+            syzygy=syzygy,
+            prenatal_new_moon=prenatal_new_moon,
+            prenatal_full_moon=prenatal_full_moon,
+            lord_of_hour=lord_of_hour,
+        )
+        dependencies = [dependency for part in parts for dependency in part.all_dependencies]
+        dependencies.sort(key=lambda dep: (dep.part_name, dep.role.value, dep.effective_key))
+        return dependencies
+
+    def calculate_condition_profiles(
+        self,
+        planet_longitudes: dict[str, float],
+        house_cusps: dict[int, float] | list[float],
+        is_day_chart: bool,
+        policy: LotsComputationPolicy | None = None,
+        *,
+        syzygy: float | None = None,
+        prenatal_new_moon: float | None = None,
+        prenatal_full_moon: float | None = None,
+        lord_of_hour: float | None = None,
+    ) -> list[LotConditionProfile]:
+        """Return integrated condition profiles for the currently computable lots."""
+
+        parts = self.calculate_parts(
+            planet_longitudes,
+            house_cusps,
+            is_day_chart,
+            policy=policy,
+            syzygy=syzygy,
+            prenatal_new_moon=prenatal_new_moon,
+            prenatal_full_moon=prenatal_full_moon,
+            lord_of_hour=lord_of_hour,
+        )
+        profiles = [part.condition_profile for part in parts if part.condition_profile is not None]
+        profiles.sort(key=lambda profile: (profile.primary_category, profile.part_name))
+        return profiles
+
+    def calculate_chart_condition_profile(
+        self,
+        planet_longitudes: dict[str, float],
+        house_cusps: dict[int, float] | list[float],
+        is_day_chart: bool,
+        policy: LotsComputationPolicy | None = None,
+        *,
+        syzygy: float | None = None,
+        prenatal_new_moon: float | None = None,
+        prenatal_full_moon: float | None = None,
+        lord_of_hour: float | None = None,
+    ) -> LotChartConditionProfile:
+        """Return the chart-wide lot condition profile."""
+
+        profiles = self.calculate_condition_profiles(
+            planet_longitudes,
+            house_cusps,
+            is_day_chart,
+            policy=policy,
+            syzygy=syzygy,
+            prenatal_new_moon=prenatal_new_moon,
+            prenatal_full_moon=prenatal_full_moon,
+            lord_of_hour=lord_of_hour,
+        )
+
+        def ranking_key(profile: LotConditionProfile) -> tuple[int, int, int, str]:
+            state_rank = {
+                LotConditionState.DIRECT: 0,
+                LotConditionState.MIXED: 1,
+                LotConditionState.INDIRECT: 2,
+            }[profile.state]
+            return (
+                state_rank,
+                -profile.direct_dependency_count,
+                profile.indirect_dependency_count,
+                profile.part_name,
+            )
+
+        strongest_sorted = sorted(profiles, key=ranking_key)
+        weakest_sorted = sorted(
+            profiles,
+            key=lambda profile: (
+                {
+                    LotConditionState.INDIRECT: 0,
+                    LotConditionState.MIXED: 1,
+                    LotConditionState.DIRECT: 2,
+                }[profile.state],
+                -profile.indirect_dependency_count,
+                profile.direct_dependency_count,
+                profile.part_name,
+            ),
+        )
+        strongest_score = ranking_key(strongest_sorted[0]) if strongest_sorted else None
+        weakest_score = weakest_sorted[0] if weakest_sorted else None
+        strongest_parts = [
+            profile.part_name for profile in strongest_sorted
+            if ranking_key(profile) == strongest_score
+        ] if strongest_sorted else []
+        weakest_parts = [
+            profile.part_name for profile in weakest_sorted
+            if (
+                profile.state is weakest_score.state
+                and profile.indirect_dependency_count == weakest_score.indirect_dependency_count
+                and profile.direct_dependency_count == weakest_score.direct_dependency_count
+            )
+        ] if weakest_sorted else []
+
+        return LotChartConditionProfile(
+            profiles=profiles,
+            direct_count=sum(1 for profile in profiles if profile.state is LotConditionState.DIRECT),
+            mixed_count=sum(1 for profile in profiles if profile.state is LotConditionState.MIXED),
+            indirect_count=sum(1 for profile in profiles if profile.state is LotConditionState.INDIRECT),
+            direct_dependency_total=sum(profile.direct_dependency_count for profile in profiles),
+            indirect_dependency_total=sum(profile.indirect_dependency_count for profile in profiles),
+            inter_lot_dependency_total=sum(profile.inter_lot_dependency_count for profile in profiles),
+            external_dependency_total=sum(profile.external_dependency_count for profile in profiles),
+            strongest_parts=strongest_parts,
+            weakest_parts=weakest_parts,
+        )
+
+    def calculate_condition_network_profile(
+        self,
+        planet_longitudes: dict[str, float],
+        house_cusps: dict[int, float] | list[float],
+        is_day_chart: bool,
+        policy: LotsComputationPolicy | None = None,
+        *,
+        syzygy: float | None = None,
+        prenatal_new_moon: float | None = None,
+        prenatal_full_moon: float | None = None,
+        lord_of_hour: float | None = None,
+    ) -> LotConditionNetworkProfile:
+        """Return the derived inter-lot dependency/condition network profile."""
+
+        profiles = self.calculate_condition_profiles(
+            planet_longitudes,
+            house_cusps,
+            is_day_chart,
+            policy=policy,
+            syzygy=syzygy,
+            prenatal_new_moon=prenatal_new_moon,
+            prenatal_full_moon=prenatal_full_moon,
+            lord_of_hour=lord_of_hour,
+        )
+        profile_map = {profile.part_name: profile for profile in profiles}
+
+        edge_pairs: set[tuple[str, str]] = set()
+        edge_triples: list[tuple[str, str, LotDependencyRole]] = []
+        for profile in profiles:
+            for dependency in profile.dependencies:
+                if not dependency.is_inter_lot or dependency.effective_key not in profile_map:
+                    continue
+                edge_pairs.add((profile.part_name, dependency.effective_key))
+                edge_triples.append((profile.part_name, dependency.effective_key, dependency.role))
+
+        edges = [
+            LotConditionNetworkEdge(
+                source_part=source_part,
+                target_part=target_part,
+                role=role,
+                mode=(
+                    LotConditionNetworkEdgeMode.RECIPROCAL
+                    if (target_part, source_part) in edge_pairs
+                    else LotConditionNetworkEdgeMode.UNILATERAL
+                ),
+            )
+            for source_part, target_part, role in sorted(edge_triples, key=lambda item: (item[0], item[1], item[2].value))
+        ]
+
+        outgoing_counts = {name: 0 for name in profile_map}
+        incoming_counts = {name: 0 for name in profile_map}
+        reciprocal_counts = {name: 0 for name in profile_map}
+        for edge in edges:
+            outgoing_counts[edge.source_part] += 1
+            incoming_counts[edge.target_part] += 1
+            if edge.mode is LotConditionNetworkEdgeMode.RECIPROCAL:
+                reciprocal_counts[edge.source_part] += 1
+
+        nodes = [
+            LotConditionNetworkNode(
+                part_name=profile.part_name,
+                condition_state=profile.state,
+                outgoing_count=outgoing_counts[profile.part_name],
+                incoming_count=incoming_counts[profile.part_name],
+                reciprocal_count=reciprocal_counts[profile.part_name],
+            )
+            for profile in sorted(profiles, key=lambda profile: profile.part_name)
+        ]
+
+        max_degree = max((node.degree_count for node in nodes), default=0)
+        return LotConditionNetworkProfile(
+            nodes=nodes,
+            edges=edges,
+            isolated_parts=sorted(node.part_name for node in nodes if node.is_isolated),
+            most_connected_parts=sorted(
+                node.part_name for node in nodes if node.degree_count == max_degree and max_degree > 0
+            ),
+            reciprocal_edge_count=sum(1 for edge in edges if edge.mode is LotConditionNetworkEdgeMode.RECIPROCAL),
+            unilateral_edge_count=sum(1 for edge in edges if edge.mode is LotConditionNetworkEdgeMode.UNILATERAL),
+        )
 
     # ------------------------------------------------------------------
 
@@ -917,14 +1935,28 @@ class ArabicPartsService:
         prenatal_nm: float | None,
         prenatal_fm: float | None,
         lord_of_hour: float | None,
-    ) -> dict[str, float]:
+        *,
+        policy: LotsComputationPolicy,
+    ) -> tuple[dict[str, float], dict[str, LotReferenceTruth]]:
         # Normalise planet names to title case
         norm: dict[str, float] = {}
+        ref_truths: dict[str, LotReferenceTruth] = {}
+
+        def store_ref(key: str, longitude: float, source_kind: str, detail: str = "") -> None:
+            ref_truths[key] = LotReferenceTruth(
+                key=key,
+                longitude=longitude,
+                source_kind=source_kind,
+                detail=detail,
+            )
+
         for name, lon in planet_lons.items():
             n = name.strip().title()
             norm[n] = lon
+            store_ref(n, lon, "planet", name.strip())
             if n.lower() in ("true node", "north node", "mean node"):
                 norm["North Node"] = lon
+                store_ref("North Node", lon, "planet_alias", n)
 
         # Accept both list (0-indexed, from HouseCusps.cusps) and dict (1-indexed)
         if isinstance(house_cusps, list):
@@ -939,24 +1971,36 @@ class ArabicPartsService:
             **norm,
             "Asc": asc, "Dsc": dsc, "MC": mc, "IC": ic,
         }
+        store_ref("Asc", asc, "angle", "house_cusp_1")
+        store_ref("Dsc", dsc, "angle", "derived_from_asc")
+        store_ref("MC", mc, "angle", "house_cusp_10")
+        store_ref("IC", ic, "angle", "derived_from_mc")
 
         # House cusps H1–H12
         for i in range(1, 13):
             refs[f"H{i}"] = house_cusps.get(i, 0.0)
+            store_ref(f"H{i}", refs[f"H{i}"], "house_cusp", f"house_{i}")
 
         # Fixed-degree constants
         refs.update(_FIXED_DEG)
+        for key, lon in _FIXED_DEG.items():
+            store_ref(key, lon, "fixed_degree")
 
         # Optional externals
-        if syzygy is not None:
+        if syzygy is not None and policy.external.include_syzygy:
             refs["Syzygy"] = syzygy
-        if prenatal_nm is not None:
+            store_ref("Syzygy", syzygy, "external", "syzygy")
+        if prenatal_nm is not None and policy.external.include_prenatal_new_moon:
             refs["New Moon"]           = prenatal_nm
             refs["Prenatal New Moon"]  = prenatal_nm
-        if prenatal_fm is not None:
+            store_ref("New Moon", prenatal_nm, "external", "prenatal_new_moon")
+            store_ref("Prenatal New Moon", prenatal_nm, "external", "prenatal_new_moon")
+        if prenatal_fm is not None and policy.external.include_prenatal_full_moon:
             refs["Prenatal Full Moon"] = prenatal_fm
-        if lord_of_hour is not None:
+            store_ref("Prenatal Full Moon", prenatal_fm, "external", "prenatal_full_moon")
+        if lord_of_hour is not None and policy.external.include_lord_of_hour:
             refs["Lord of Hour"] = lord_of_hour
+            store_ref("Lord of Hour", lord_of_hour, "external", "lord_of_hour")
 
         # Pre-compute Fortune and Spirit
         if is_day:
@@ -965,14 +2009,24 @@ class ArabicPartsService:
         else:
             fortune_lon = (asc + norm.get("Sun",  0) - norm.get("Moon", 0)) % 360.0
             spirit_lon  = (asc + norm.get("Moon", 0) - norm.get("Sun",  0)) % 360.0
-        refs["Fortune"] = fortune_lon
-        refs["Spirit"]  = spirit_lon
+        if policy.derived.include_fortune:
+            refs["Fortune"] = fortune_lon
+            store_ref("Fortune", fortune_lon, "derived_lot", "part_of_fortune")
+        if policy.derived.include_spirit:
+            refs["Spirit"] = spirit_lon
+            store_ref("Spirit", spirit_lon, "derived_lot", "part_of_spirit")
 
         # Eros (Valens) = Asc + Spirit - Fortune  (reversible)
-        if is_day:
-            refs["Eros (Valens)"] = (asc + spirit_lon  - fortune_lon) % 360.0
-        else:
-            refs["Eros (Valens)"] = (asc + fortune_lon - spirit_lon)  % 360.0
+        if (
+            policy.derived.include_eros_valens
+            and policy.derived.include_fortune
+            and policy.derived.include_spirit
+        ):
+            if is_day:
+                refs["Eros (Valens)"] = (asc + spirit_lon  - fortune_lon) % 360.0
+            else:
+                refs["Eros (Valens)"] = (asc + fortune_lon - spirit_lon)  % 360.0
+            store_ref("Eros (Valens)", refs["Eros (Valens)"], "derived_lot", "eros_valens")
 
         # House rulers H1–H12
         for i in range(1, 13):
@@ -982,12 +2036,14 @@ class ArabicPartsService:
             ruler_lon = norm.get(ruler_key)
             if ruler_lon is not None:
                 refs[f"Ruler H{i}"] = ruler_lon
+                store_ref(f"Ruler H{i}", ruler_lon, "house_ruler", f"H{i}->{ruler_key}")
 
         # Named-house ruler aliases: "Ruler Asc" = "Ruler H1", etc.
         for src, dst in [("Ruler Asc","Ruler H1"), ("Ruler Dsc","Ruler H7"),
                          ("Ruler MC", "Ruler H10"), ("Ruler IC","Ruler H4")]:
             if dst in refs:
                 refs[src] = refs[dst]
+                store_ref(src, refs[src], "angle_ruler_alias", dst)
 
         # Ruler of a planet's own sign ("Ruler Sun", "Ruler Moon", …)
         for body in ("Sun","Moon","Mercury","Venus","Mars",
@@ -997,6 +2053,7 @@ class ArabicPartsService:
                 ruler_key = _SIGN_RULER[sign_name]
                 if ruler_key in norm:
                     refs[f"Ruler {body}"] = norm[ruler_key]
+                    store_ref(f"Ruler {body}", norm[ruler_key], "planet_ruler", f"{body}->{ruler_key}")
 
         # Ruler of the Syzygy sign
         if "Syzygy" in refs:
@@ -1004,8 +2061,9 @@ class ArabicPartsService:
             ruler_key = _SIGN_RULER[sign_name]
             if ruler_key in norm:
                 refs["Ruler Syzygy"] = norm[ruler_key]
+                store_ref("Ruler Syzygy", norm[ruler_key], "syzygy_ruler", ruler_key)
 
-        return refs
+        return refs, ref_truths
 
     # ------------------------------------------------------------------
 
@@ -1014,6 +2072,183 @@ class ArabicPartsService:
         """True when Sun is above horizon (houses 7–12)."""
         diff = (sun_longitude - asc_longitude) % 360.0
         return diff >= 180.0 or diff == 0.0
+
+    @staticmethod
+    def _classify_reference_truth(reference: LotReferenceTruth) -> LotReferenceClassification:
+        """Classify one preserved reference truth without changing its meaning."""
+
+        return LotReferenceClassification(
+            kind=LotReferenceKind(reference.source_kind),
+            key=reference.key,
+            detail=reference.detail,
+        )
+
+    @staticmethod
+    def _parse_category_tags(category: str) -> tuple[str, ...]:
+        """Return deterministic category tags from the stored category string."""
+
+        return tuple(tag.strip() for tag in category.split(",") if tag.strip())
+
+    @staticmethod
+    def _classify_part(
+        *,
+        category: str,
+        reversed_at_night: bool,
+        reversed_for_chart: bool,
+        add_reference: LotReferenceTruth,
+        sub_reference: LotReferenceTruth,
+    ) -> ArabicPartClassification:
+        """Build a lean classification from already-preserved computation truth."""
+
+        category_tags = ArabicPartsService._parse_category_tags(category)
+        primary_category = min(
+            category_tags,
+            key=lambda tag: (_CATEGORY_ORDER.get(tag, 99), tag),
+            default="general",
+        )
+        if reversed_for_chart:
+            reversal = LotReversalKind.NIGHT_REVERSED
+        elif reversed_at_night:
+            reversal = LotReversalKind.NIGHT_REVERSIBLE
+        else:
+            reversal = LotReversalKind.DIRECT
+        return ArabicPartClassification(
+            primary_category=primary_category,
+            category_tags=category_tags,
+            reversal=reversal,
+            add_reference=ArabicPartsService._classify_reference_truth(add_reference),
+            sub_reference=ArabicPartsService._classify_reference_truth(sub_reference),
+        )
+
+    @staticmethod
+    def _build_part_dependencies(
+        *,
+        part_name: str,
+        computation_truth: ArabicPartComputationTruth,
+    ) -> list[LotDependency]:
+        """Build the two formal operand dependencies for one computed lot."""
+
+        return [
+            LotDependency(
+                part_name=part_name,
+                role=LotDependencyRole.ADD_OPERAND,
+                requested_key=computation_truth.requested_add_key,
+                effective_key=computation_truth.effective_add_key,
+                reference_kind=LotReferenceKind(computation_truth.add_reference.source_kind),
+                reference_longitude=computation_truth.add_reference.longitude,
+                detail=computation_truth.add_reference.detail,
+            ),
+            LotDependency(
+                part_name=part_name,
+                role=LotDependencyRole.SUB_OPERAND,
+                requested_key=computation_truth.requested_sub_key,
+                effective_key=computation_truth.effective_sub_key,
+                reference_kind=LotReferenceKind(computation_truth.sub_reference.source_kind),
+                reference_longitude=computation_truth.sub_reference.longitude,
+                detail=computation_truth.sub_reference.detail,
+            ),
+        ]
+
+    @staticmethod
+    def _derive_condition_state(direct_dependency_count: int, indirect_dependency_count: int) -> LotConditionState:
+        """Derive the structural condition state from dependency composition."""
+
+        if indirect_dependency_count == 0:
+            return LotConditionState.DIRECT
+        if direct_dependency_count == 0:
+            return LotConditionState.INDIRECT
+        return LotConditionState.MIXED
+
+    @staticmethod
+    def _build_condition_profile(
+        *,
+        part_name: str,
+        classification: ArabicPartClassification,
+        all_dependencies: list[LotDependency],
+        dependencies: list[LotDependency],
+    ) -> LotConditionProfile:
+        """Build the integrated per-part condition profile."""
+
+        direct = sum(1 for dependency in dependencies if not dependency.is_indirect)
+        indirect = sum(1 for dependency in dependencies if dependency.is_indirect)
+        inter_lot = sum(1 for dependency in dependencies if dependency.is_inter_lot)
+        external = sum(1 for dependency in dependencies if dependency.is_external)
+        return LotConditionProfile(
+            part_name=part_name,
+            category_tags=classification.category_tags,
+            primary_category=classification.primary_category,
+            reversal=classification.reversal,
+            all_dependencies=list(all_dependencies),
+            dependencies=list(dependencies),
+            direct_dependency_count=direct,
+            indirect_dependency_count=indirect,
+            inter_lot_dependency_count=inter_lot,
+            external_dependency_count=external,
+            state=ArabicPartsService._derive_condition_state(direct, indirect),
+        )
+
+    @staticmethod
+    def _validate_policy(policy: LotsComputationPolicy | None) -> LotsComputationPolicy:
+        """Return a valid lots policy or raise clearly on unsupported values."""
+
+        if policy is None:
+            policy = LotsComputationPolicy()
+        if not isinstance(policy.unresolved_reference_mode, LotsReferenceFailureMode):
+            raise ValueError("Unsupported lots unresolved-reference mode")
+        if not isinstance(policy.derived, LotsDerivedReferencePolicy):
+            raise ValueError("Unsupported lots derived-reference policy")
+        if not isinstance(policy.external, LotsExternalReferencePolicy):
+            raise ValueError("Unsupported lots external-reference policy")
+        for attr in ("include_fortune", "include_spirit", "include_eros_valens"):
+            if not isinstance(getattr(policy.derived, attr), bool):
+                raise ValueError(f"Lots derived-reference policy field {attr} must be a bool")
+        for attr in ("include_syzygy", "include_prenatal_new_moon", "include_prenatal_full_moon", "include_lord_of_hour"):
+            if not isinstance(getattr(policy.external, attr), bool):
+                raise ValueError(f"Lots external-reference policy field {attr} must be a bool")
+        return policy
+
+    @staticmethod
+    def _validate_planet_longitudes(planet_longitudes: dict[str, float]) -> dict[str, float]:
+        """Validate and normalize raw lot longitudes."""
+
+        normalized: dict[str, float] = {}
+        for name, longitude in planet_longitudes.items():
+            normalized_name = name.strip().title()
+            if not normalized_name:
+                raise ValueError("Lot planet name must not be empty")
+            if normalized_name in normalized:
+                raise ValueError(f"Duplicate lot planet entry after normalization: {normalized_name}")
+            if not isfinite(longitude):
+                raise ValueError(f"Lot longitude for {normalized_name} must be finite")
+            normalized[normalized_name] = longitude % 360.0
+        return normalized
+
+    @staticmethod
+    def _validate_house_cusps(house_cusps: dict[int, float] | list[float]) -> dict[int, float]:
+        """Validate and normalize house cusps for lot computation."""
+
+        if isinstance(house_cusps, list):
+            if len(house_cusps) != 12:
+                raise ValueError("Lot house_cusps list must contain exactly 12 entries")
+            normalized = {i + 1: cusp for i, cusp in enumerate(house_cusps)}
+        else:
+            normalized: dict[int, float] = {}
+            for number, cusp in house_cusps.items():
+                if not isinstance(number, int):
+                    raise ValueError("Lot house cusp numbers must be integers")
+                if number < 1 or number > 12:
+                    raise ValueError(f"Lot house cusp number must be in the range 1..12: {number}")
+                if number in normalized:
+                    raise ValueError(f"Duplicate lot house cusp number: {number}")
+                normalized[number] = cusp
+        missing = [number for number in range(1, 13) if number not in normalized]
+        if missing:
+            raise ValueError(f"Lot house cusps missing {missing}")
+        for number, cusp in normalized.items():
+            if not isfinite(cusp):
+                raise ValueError(f"Lot house cusp {number} must be finite")
+            normalized[number] = cusp % 360.0
+        return normalized
 
 
 # ---------------------------------------------------------------------------
@@ -1027,15 +2262,139 @@ def calculate_lots(
     positions: dict[str, float],
     house_cusps: dict[int, float],
     is_day_chart: bool,
+    policy: LotsComputationPolicy | None = None,
     *,
     syzygy: float | None = None,
     prenatal_new_moon: float | None = None,
     prenatal_full_moon: float | None = None,
     lord_of_hour: float | None = None,
-) -> list[ArabicPart]:
+    ) -> list[ArabicPart]:
     """Compute all Arabic Parts."""
     return _service.calculate_parts(
-        positions, house_cusps, is_day_chart,
+        positions, house_cusps, is_day_chart, policy=policy,
+        syzygy=syzygy,
+        prenatal_new_moon=prenatal_new_moon,
+        prenatal_full_moon=prenatal_full_moon,
+        lord_of_hour=lord_of_hour,
+    )
+
+
+def calculate_lot_dependencies(
+    positions: dict[str, float],
+    house_cusps: dict[int, float],
+    is_day_chart: bool,
+    policy: LotsComputationPolicy | None = None,
+    *,
+    syzygy: float | None = None,
+    prenatal_new_moon: float | None = None,
+    prenatal_full_moon: float | None = None,
+    lord_of_hour: float | None = None,
+) -> list[LotDependency]:
+    """Compute all formal lot dependencies for the currently computable lots."""
+
+    return _service.calculate_dependencies(
+        positions,
+        house_cusps,
+        is_day_chart,
+        policy=policy,
+        syzygy=syzygy,
+        prenatal_new_moon=prenatal_new_moon,
+        prenatal_full_moon=prenatal_full_moon,
+        lord_of_hour=lord_of_hour,
+    )
+
+
+def calculate_all_lot_dependencies(
+    positions: dict[str, float],
+    house_cusps: dict[int, float],
+    is_day_chart: bool,
+    *,
+    syzygy: float | None = None,
+    prenatal_new_moon: float | None = None,
+    prenatal_full_moon: float | None = None,
+    lord_of_hour: float | None = None,
+) -> list[LotDependency]:
+    """Compute the doctrinal dependency set under default admission behavior."""
+
+    return _service.calculate_all_dependencies(
+        positions,
+        house_cusps,
+        is_day_chart,
+        syzygy=syzygy,
+        prenatal_new_moon=prenatal_new_moon,
+        prenatal_full_moon=prenatal_full_moon,
+        lord_of_hour=lord_of_hour,
+    )
+
+
+def calculate_lot_condition_profiles(
+    positions: dict[str, float],
+    house_cusps: dict[int, float],
+    is_day_chart: bool,
+    policy: LotsComputationPolicy | None = None,
+    *,
+    syzygy: float | None = None,
+    prenatal_new_moon: float | None = None,
+    prenatal_full_moon: float | None = None,
+    lord_of_hour: float | None = None,
+) -> list[LotConditionProfile]:
+    """Compute integrated condition profiles for the currently computable lots."""
+
+    return _service.calculate_condition_profiles(
+        positions,
+        house_cusps,
+        is_day_chart,
+        policy=policy,
+        syzygy=syzygy,
+        prenatal_new_moon=prenatal_new_moon,
+        prenatal_full_moon=prenatal_full_moon,
+        lord_of_hour=lord_of_hour,
+    )
+
+
+def calculate_lot_chart_condition_profile(
+    positions: dict[str, float],
+    house_cusps: dict[int, float],
+    is_day_chart: bool,
+    policy: LotsComputationPolicy | None = None,
+    *,
+    syzygy: float | None = None,
+    prenatal_new_moon: float | None = None,
+    prenatal_full_moon: float | None = None,
+    lord_of_hour: float | None = None,
+) -> LotChartConditionProfile:
+    """Compute the chart-wide lot condition profile."""
+
+    return _service.calculate_chart_condition_profile(
+        positions,
+        house_cusps,
+        is_day_chart,
+        policy=policy,
+        syzygy=syzygy,
+        prenatal_new_moon=prenatal_new_moon,
+        prenatal_full_moon=prenatal_full_moon,
+        lord_of_hour=lord_of_hour,
+    )
+
+
+def calculate_lot_condition_network_profile(
+    positions: dict[str, float],
+    house_cusps: dict[int, float],
+    is_day_chart: bool,
+    policy: LotsComputationPolicy | None = None,
+    *,
+    syzygy: float | None = None,
+    prenatal_new_moon: float | None = None,
+    prenatal_full_moon: float | None = None,
+    lord_of_hour: float | None = None,
+) -> LotConditionNetworkProfile:
+    """Compute the derived inter-lot dependency/condition network profile."""
+
+    return _service.calculate_condition_network_profile(
+        positions,
+        house_cusps,
+        is_day_chart,
+        policy=policy,
         syzygy=syzygy,
         prenatal_new_moon=prenatal_new_moon,
         prenatal_full_moon=prenatal_full_moon,

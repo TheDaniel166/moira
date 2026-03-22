@@ -32,7 +32,36 @@ from moira.dignities import (
     mutual_receptions,
     sect_light,
 )
-from moira.lots import ArabicPartsService, calculate_lots, list_parts
+from moira.lots import (
+    ArabicPart,
+    ArabicPartClassification,
+    ArabicPartComputationTruth,
+    ArabicPartsService,
+    LotChartConditionProfile,
+    LotConditionProfile,
+    LotConditionNetworkEdge,
+    LotConditionNetworkEdgeMode,
+    LotConditionNetworkProfile,
+    LotConditionNetworkNode,
+    LotDependency,
+    LotConditionState,
+    LotDependencyRole,
+    LotsComputationPolicy,
+    LotsDerivedReferencePolicy,
+    LotsExternalReferencePolicy,
+    LotsReferenceFailureMode,
+    LotReferenceClassification,
+    LotReferenceTruth,
+    LotReferenceKind,
+    LotReversalKind,
+    calculate_all_lot_dependencies,
+    calculate_lot_chart_condition_profile,
+    calculate_lot_condition_network_profile,
+    calculate_lot_condition_profiles,
+    calculate_lot_dependencies,
+    calculate_lots,
+    list_parts,
+)
 
 
 def _equal_houses(start: float = 0.0) -> list[dict]:
@@ -945,9 +974,1061 @@ def test_lots_day_and_night_formulas_resolve_core_references_correctly() -> None
     assert night_eros.longitude == pytest.approx((0.0 + night_fortune.longitude - night_spirit.longitude) % 360.0, abs=1e-12)
 
 
+def test_lots_preserve_computation_truth_without_changing_formula_semantics() -> None:
+    positions = {
+        "Sun": 100.0,
+        "Moon": 220.0,
+        "Mercury": 80.0,
+        "Venus": 10.0,
+        "Mars": 35.0,
+        "Jupiter": 250.0,
+        "Saturn": 310.0,
+    }
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    day_fortune = _part_by_name(calculate_lots(positions, house_cusps, True), "Fortune")
+    night_fortune = _part_by_name(calculate_lots(positions, house_cusps, False), "Fortune")
+    travel = _part_by_name(calculate_lots(positions, house_cusps, True), "Travel")
+
+    assert day_fortune.formula == "Asc + Moon - Sun"
+    assert day_fortune.computation_truth is not None
+    assert day_fortune.computation_truth.requested_add_key == "Moon"
+    assert day_fortune.computation_truth.requested_sub_key == "Sun"
+    assert day_fortune.computation_truth.effective_add_key == "Moon"
+    assert day_fortune.computation_truth.effective_sub_key == "Sun"
+    assert day_fortune.computation_truth.reversed_at_night is True
+    assert day_fortune.computation_truth.reversed_for_chart is False
+    assert day_fortune.computation_truth.add_reference.source_kind == "planet"
+    assert day_fortune.computation_truth.sub_reference.source_kind == "planet"
+    assert day_fortune.computation_truth.formula == day_fortune.formula
+
+    assert night_fortune.formula == "Asc + Sun - Moon"
+    assert night_fortune.computation_truth is not None
+    assert night_fortune.computation_truth.requested_add_key == "Moon"
+    assert night_fortune.computation_truth.requested_sub_key == "Sun"
+    assert night_fortune.computation_truth.effective_add_key == "Sun"
+    assert night_fortune.computation_truth.effective_sub_key == "Moon"
+    assert night_fortune.computation_truth.reversed_for_chart is True
+    assert night_fortune.computation_truth.add_reference.key == "Sun"
+    assert night_fortune.computation_truth.sub_reference.key == "Moon"
+
+    assert travel.formula == "Asc + H9 - Ruler H9"
+    assert travel.computation_truth is not None
+    assert travel.computation_truth.add_reference.source_kind == "house_cusp"
+    assert travel.computation_truth.add_reference.detail == "house_9"
+    assert travel.computation_truth.sub_reference.source_kind == "house_ruler"
+    assert travel.computation_truth.sub_reference.detail == "H9->Jupiter"
+    assert travel.classification is not None
+    assert travel.classification.primary_category == "hellenistic"
+    assert travel.classification.category_tags == ("hellenistic", "medieval")
+    assert travel.classification.reversal is LotReversalKind.DIRECT
+    assert travel.classification.add_reference.kind is LotReferenceKind.HOUSE_CUSP
+    assert travel.classification.sub_reference.kind is LotReferenceKind.HOUSE_RULER
+
+
+def test_lots_classification_is_deterministic_and_aligned_with_preserved_truth() -> None:
+    positions = {
+        "Sun": 100.0,
+        "Moon": 220.0,
+        "Mercury": 80.0,
+        "Venus": 10.0,
+        "Mars": 35.0,
+        "Jupiter": 250.0,
+        "Saturn": 310.0,
+    }
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    first = {
+        part.name: part
+        for part in calculate_lots(
+            positions,
+            house_cusps,
+            False,
+            prenatal_new_moon=25.0,
+        )
+    }
+    second = {
+        part.name: part
+        for part in calculate_lots(
+            positions,
+            house_cusps,
+            False,
+            prenatal_new_moon=25.0,
+        )
+    }
+
+    for name in ("Fortune", "Travel", "Rain (Ibn Ezra)", "Royal Lot (al-Tabari)"):
+        left = first[name]
+        right = second[name]
+
+        assert left.longitude == pytest.approx(right.longitude, abs=1e-12)
+        assert left.formula == right.formula
+        assert left.classification == right.classification
+        assert left.computation_truth is not None
+        assert left.classification is not None
+        assert left.classification.category_tags == tuple(
+            tag.strip() for tag in left.category.split(",") if tag.strip()
+        )
+        assert left.classification.add_reference.kind.value == left.computation_truth.add_reference.source_kind
+        assert left.classification.sub_reference.kind.value == left.computation_truth.sub_reference.source_kind
+
+    fortune = first["Fortune"]
+    assert fortune.classification is not None
+    assert fortune.classification.reversal is LotReversalKind.NIGHT_REVERSED
+    assert fortune.classification.add_reference.kind is LotReferenceKind.PLANET
+    assert fortune.classification.sub_reference.kind is LotReferenceKind.PLANET
+
+    rain = first["Rain (Ibn Ezra)"]
+    assert rain.classification is not None
+    assert rain.classification.category_tags == ("medieval", "weather")
+    assert rain.classification.primary_category == "medieval"
+    assert rain.classification.add_reference.kind is LotReferenceKind.EXTERNAL
+    assert rain.classification.sub_reference.kind is LotReferenceKind.PLANET
+
+
+def test_lots_expose_read_only_inspectability_properties() -> None:
+    positions = {
+        "Sun": 100.0,
+        "Moon": 220.0,
+        "Mercury": 80.0,
+        "Venus": 10.0,
+        "Mars": 35.0,
+        "Jupiter": 250.0,
+        "Saturn": 310.0,
+    }
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    fortune = _part_by_name(calculate_lots(positions, house_cusps, False), "Fortune")
+    travel = _part_by_name(calculate_lots(positions, house_cusps, True), "Travel")
+
+    assert fortune.category_tags == ("hellenistic", "medieval")
+    assert fortune.primary_category == "hellenistic"
+    assert fortune.reversal_kind is LotReversalKind.NIGHT_REVERSED
+    assert fortune.is_reversed is True
+    assert fortune.add_reference_kind is LotReferenceKind.PLANET
+    assert fortune.sub_reference_kind is LotReferenceKind.PLANET
+
+    assert travel.reversal_kind is LotReversalKind.DIRECT
+    assert travel.is_reversed is False
+    assert travel.add_reference_kind is LotReferenceKind.HOUSE_CUSP
+    assert travel.sub_reference_kind is LotReferenceKind.HOUSE_RULER
+    assert travel.classification is not None
+    assert travel.category_tags == travel.classification.category_tags
+    assert travel.primary_category == travel.classification.primary_category
+
+    with pytest.raises(AttributeError):
+        fortune.category_tags = ("modern",)  # type: ignore[misc]
+
+
+def test_lots_default_policy_preserves_current_behavior() -> None:
+    positions = {
+        "Sun": 100.0,
+        "Moon": 220.0,
+        "Mercury": 80.0,
+        "Venus": 10.0,
+        "Mars": 35.0,
+        "Jupiter": 250.0,
+        "Saturn": 310.0,
+    }
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    left = calculate_lots(positions, house_cusps, False, prenatal_new_moon=25.0)
+    right = calculate_lots(
+        positions,
+        house_cusps,
+        False,
+        policy=LotsComputationPolicy(),
+        prenatal_new_moon=25.0,
+    )
+
+    assert [(part.name, part.longitude, part.formula) for part in left[:40]] == [
+        (part.name, part.longitude, part.formula) for part in right[:40]
+    ]
+    assert all(part.classification is not None for part in right[:20])
+    assert LotsComputationPolicy().is_default is True
+
+
+def test_lots_narrow_policy_explicitly_disables_selected_reference_doctrine() -> None:
+    positions = {
+        "Sun": 100.0,
+        "Moon": 220.0,
+        "Mercury": 80.0,
+        "Venus": 10.0,
+        "Mars": 35.0,
+        "Jupiter": 250.0,
+        "Saturn": 310.0,
+    }
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    derived_policy = LotsComputationPolicy(
+        derived=LotsDerivedReferencePolicy(include_eros_valens=False),
+    )
+    external_policy = LotsComputationPolicy(
+        external=LotsExternalReferencePolicy(include_prenatal_new_moon=False),
+    )
+
+    derived_parts = calculate_lots(positions, house_cusps, True, policy=derived_policy)
+    external_parts = calculate_lots(
+        positions,
+        house_cusps,
+        False,
+        policy=external_policy,
+        prenatal_new_moon=25.0,
+    )
+
+    assert "Necessity (Persian)" not in {part.name for part in derived_parts}
+    assert "Rain (Ibn Ezra)" not in {part.name for part in external_parts}
+    assert _part_by_name(derived_parts, "Fortune").longitude == pytest.approx(
+        (0.0 + 220.0 - 100.0) % 360.0,
+        abs=1e-12,
+    )
+
+
+def test_lots_policy_surface_is_deterministic_and_validated() -> None:
+    default = LotsComputationPolicy()
+    custom = LotsComputationPolicy(
+        unresolved_reference_mode=LotsReferenceFailureMode.RAISE,
+        derived=LotsDerivedReferencePolicy(include_eros_valens=False),
+        external=LotsExternalReferencePolicy(include_prenatal_new_moon=False),
+    )
+
+    assert default == LotsComputationPolicy()
+    assert default != custom
+    assert custom.is_default is False
+
+    with pytest.raises(ValueError, match="Unsupported lots unresolved-reference mode"):
+        calculate_lots(
+            {"Sun": 100.0, "Moon": 220.0},
+            {i + 1: i * 30.0 for i in range(12)},
+            True,
+            policy=LotsComputationPolicy(
+                unresolved_reference_mode="invalid",  # type: ignore[arg-type]
+            ),
+        )
+
+    with pytest.raises(ValueError, match="Unresolved lot ingredient reference:"):
+        calculate_lots(
+            {
+                "Sun": 100.0,
+                "Moon": 220.0,
+                "Mercury": 80.0,
+                "Venus": 10.0,
+                "Mars": 35.0,
+                "Jupiter": 250.0,
+                "Saturn": 310.0,
+            },
+            {i + 1: i * 30.0 for i in range(12)},
+            False,
+            policy=LotsComputationPolicy(
+                unresolved_reference_mode=LotsReferenceFailureMode.RAISE,
+            ),
+        )
+
+
+def test_lot_dependency_layer_is_deterministic_and_aligned_with_part_truth() -> None:
+    positions = {
+        "Sun": 100.0,
+        "Moon": 220.0,
+        "Mercury": 80.0,
+        "Venus": 10.0,
+        "Mars": 35.0,
+        "Jupiter": 250.0,
+        "Saturn": 310.0,
+    }
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    parts = {part.name: part for part in calculate_lots(positions, house_cusps, False, prenatal_new_moon=25.0)}
+    first = calculate_lot_dependencies(positions, house_cusps, False, prenatal_new_moon=25.0)
+    second = calculate_lot_dependencies(positions, house_cusps, False, prenatal_new_moon=25.0)
+
+    assert first == second
+    assert [(dep.part_name, dep.role.value, dep.effective_key) for dep in first[:20]] == sorted(
+        (dep.part_name, dep.role.value, dep.effective_key) for dep in first[:20]
+    )
+
+    fortune = parts["Fortune"]
+    assert len(fortune.dependencies) == 2
+    assert [dep.role for dep in fortune.dependencies] == [
+        LotDependencyRole.ADD_OPERAND,
+        LotDependencyRole.SUB_OPERAND,
+    ]
+    assert fortune.dependencies[0].effective_key == fortune.computation_truth.effective_add_key
+    assert fortune.dependencies[1].effective_key == fortune.computation_truth.effective_sub_key
+
+    rain = parts["Rain (Ibn Ezra)"]
+    assert rain.dependencies[0].reference_kind is LotReferenceKind.EXTERNAL
+    assert rain.dependencies[1].reference_kind is LotReferenceKind.PLANET
+
+
+def test_lot_dependencies_make_inter_lot_relations_explicit() -> None:
+    positions = {
+        "Sun": 100.0,
+        "Moon": 220.0,
+        "Mercury": 80.0,
+        "Venus": 10.0,
+        "Mars": 35.0,
+        "Jupiter": 250.0,
+        "Saturn": 310.0,
+    }
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    dependencies = calculate_lot_dependencies(positions, house_cusps, False, prenatal_new_moon=25.0)
+    by_part = {}
+    for dep in dependencies:
+        by_part.setdefault(dep.part_name, []).append(dep)
+
+    basis = by_part["Basis (Firmicus)"]
+    assert {(dep.role, dep.effective_key, dep.reference_kind) for dep in basis} == {
+        (LotDependencyRole.ADD_OPERAND, "Spirit", LotReferenceKind.DERIVED_LOT),
+        (LotDependencyRole.SUB_OPERAND, "Fortune", LotReferenceKind.DERIVED_LOT),
+    }
+    assert all(dep.is_inter_lot for dep in basis)
+
+    necessity = by_part["Necessity (Persian)"]
+    assert any(
+        dep.effective_key == "Eros (Valens)"
+        and dep.reference_kind is LotReferenceKind.DERIVED_LOT
+        and dep.is_inter_lot
+        for dep in necessity
+    )
+
+
+def test_lot_dependency_policy_governs_admissibility_without_changing_default_semantics() -> None:
+    positions = {
+        "Sun": 100.0,
+        "Moon": 220.0,
+        "Mercury": 80.0,
+        "Venus": 10.0,
+        "Mars": 35.0,
+        "Jupiter": 250.0,
+        "Saturn": 310.0,
+    }
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    default_dependencies = calculate_lot_dependencies(positions, house_cusps, False, prenatal_new_moon=25.0)
+    narrow_dependencies = calculate_lot_dependencies(
+        positions,
+        house_cusps,
+        False,
+        policy=LotsComputationPolicy(
+            derived=LotsDerivedReferencePolicy(include_eros_valens=False),
+        ),
+        prenatal_new_moon=25.0,
+    )
+
+    assert len(default_dependencies) >= len(narrow_dependencies)
+    assert any(dep.effective_key == "Eros (Valens)" for dep in default_dependencies)
+    assert not any(dep.effective_key == "Eros (Valens)" for dep in narrow_dependencies)
+
+
+def test_lot_dependency_layer_exposes_all_vs_admitted_dependencies_and_helpers() -> None:
+    positions = {
+        "Sun": 100.0,
+        "Moon": 220.0,
+        "Mercury": 80.0,
+        "Venus": 10.0,
+        "Mars": 35.0,
+        "Jupiter": 250.0,
+        "Saturn": 310.0,
+    }
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    default_parts = {
+        part.name: part
+        for part in calculate_lots(
+            positions,
+            house_cusps,
+            False,
+            prenatal_new_moon=25.0,
+        )
+    }
+    narrow_parts = {
+        part.name: part
+        for part in calculate_lots(
+            positions,
+            house_cusps,
+            False,
+            policy=LotsComputationPolicy(
+                derived=LotsDerivedReferencePolicy(include_eros_valens=False),
+            ),
+            prenatal_new_moon=25.0,
+        )
+    }
+
+    fortune = default_parts["Fortune"]
+    assert fortune.all_dependency_count == 2
+    assert fortune.dependency_count == 2
+    assert fortune.inter_lot_dependencies == []
+    assert fortune.external_dependencies == []
+
+    basis = default_parts["Basis (Firmicus)"]
+    assert basis.dependency_count == 2
+    assert basis.all_dependency_count == 2
+    assert len(basis.inter_lot_dependencies) == 2
+    assert all(dep.is_inter_lot for dep in basis.inter_lot_dependencies)
+
+    rain = default_parts["Rain (Ibn Ezra)"]
+    assert len(rain.external_dependencies) == 1
+    assert rain.external_dependencies[0].effective_key == "New Moon"
+
+    assert all(dep in part.all_dependencies for part in default_parts.values() for dep in part.dependencies)
+
+    assert "Necessity (Persian)" not in narrow_parts
+    all_default_dependencies = calculate_all_lot_dependencies(
+        positions,
+        house_cusps,
+        False,
+        prenatal_new_moon=25.0,
+    )
+    admitted_default_dependencies = calculate_lot_dependencies(
+        positions,
+        house_cusps,
+        False,
+        prenatal_new_moon=25.0,
+    )
+    assert all_default_dependencies == admitted_default_dependencies
+
+
+def test_lot_condition_profiles_are_deterministic_and_align_with_part_truth() -> None:
+    positions = {
+        "Sun": 100.0,
+        "Moon": 220.0,
+        "Mercury": 80.0,
+        "Venus": 10.0,
+        "Mars": 35.0,
+        "Jupiter": 250.0,
+        "Saturn": 310.0,
+    }
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    parts = {
+        part.name: part
+        for part in calculate_lots(
+            positions,
+            house_cusps,
+            False,
+            prenatal_new_moon=25.0,
+        )
+    }
+    first = {
+        profile.part_name: profile
+        for profile in calculate_lot_condition_profiles(
+            positions,
+            house_cusps,
+            False,
+            prenatal_new_moon=25.0,
+        )
+    }
+    second = {
+        profile.part_name: profile
+        for profile in calculate_lot_condition_profiles(
+            positions,
+            house_cusps,
+            False,
+            prenatal_new_moon=25.0,
+        )
+    }
+
+    assert first == second
+
+    fortune = parts["Fortune"]
+    fortune_profile = first["Fortune"]
+    assert fortune.condition_profile == fortune_profile
+    assert fortune_profile.part_name == fortune.name
+    assert fortune_profile.category_tags == fortune.category_tags
+    assert fortune_profile.primary_category == fortune.primary_category
+    assert fortune_profile.reversal is fortune.reversal_kind
+    assert fortune_profile.dependencies == fortune.dependencies
+    assert fortune_profile.all_dependencies == fortune.all_dependencies
+    assert fortune_profile.direct_dependency_count == 2
+    assert fortune_profile.indirect_dependency_count == 0
+    assert fortune_profile.state is LotConditionState.DIRECT
+    assert fortune.condition_state is LotConditionState.DIRECT
+
+    basis_profile = first["Basis (Firmicus)"]
+    assert basis_profile.direct_dependency_count == 0
+    assert basis_profile.indirect_dependency_count == 2
+    assert basis_profile.inter_lot_dependency_count == 2
+    assert basis_profile.state is LotConditionState.INDIRECT
+
+    rain_profile = first["Rain (Ibn Ezra)"]
+    assert rain_profile.direct_dependency_count == 1
+    assert rain_profile.indirect_dependency_count == 1
+    assert rain_profile.external_dependency_count == 1
+    assert rain_profile.state is LotConditionState.MIXED
+
+
+def test_lot_chart_condition_profile_is_deterministic_and_aligns_with_part_profiles() -> None:
+    positions = {
+        "Sun": 100.0,
+        "Moon": 220.0,
+        "Mercury": 80.0,
+        "Venus": 10.0,
+        "Mars": 35.0,
+        "Jupiter": 250.0,
+        "Saturn": 310.0,
+    }
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    first = calculate_lot_chart_condition_profile(
+        positions,
+        house_cusps,
+        False,
+        prenatal_new_moon=25.0,
+    )
+    second = calculate_lot_chart_condition_profile(
+        positions,
+        house_cusps,
+        False,
+        prenatal_new_moon=25.0,
+    )
+    profiles = calculate_lot_condition_profiles(
+        positions,
+        house_cusps,
+        False,
+        prenatal_new_moon=25.0,
+    )
+
+    assert first == second
+    assert [profile.part_name for profile in first.profiles] == [profile.part_name for profile in profiles]
+    assert first.profile_count == len(profiles)
+    assert first.direct_count == sum(1 for profile in profiles if profile.state is LotConditionState.DIRECT)
+    assert first.mixed_count == sum(1 for profile in profiles if profile.state is LotConditionState.MIXED)
+    assert first.indirect_count == sum(1 for profile in profiles if profile.state is LotConditionState.INDIRECT)
+    assert first.direct_dependency_total == sum(profile.direct_dependency_count for profile in profiles)
+    assert first.indirect_dependency_total == sum(profile.indirect_dependency_count for profile in profiles)
+    assert first.inter_lot_dependency_total == sum(profile.inter_lot_dependency_count for profile in profiles)
+    assert first.external_dependency_total == sum(profile.external_dependency_count for profile in profiles)
+    assert first.strongest_count == len(first.strongest_parts)
+    assert first.weakest_count == len(first.weakest_parts)
+
+
+def test_lot_chart_condition_profile_strongest_and_weakest_are_derived_only() -> None:
+    positions = {
+        "Sun": 100.0,
+        "Moon": 220.0,
+        "Mercury": 80.0,
+        "Venus": 10.0,
+        "Mars": 35.0,
+        "Jupiter": 250.0,
+        "Saturn": 310.0,
+    }
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    chart_profile = calculate_lot_chart_condition_profile(
+        positions,
+        house_cusps,
+        False,
+        prenatal_new_moon=25.0,
+    )
+    profiles = {profile.part_name: profile for profile in chart_profile.profiles}
+
+    def strongest_key(profile: LotConditionProfile) -> tuple[int, int, int, str]:
+        return (
+            {
+                LotConditionState.DIRECT: 0,
+                LotConditionState.MIXED: 1,
+                LotConditionState.INDIRECT: 2,
+            }[profile.state],
+            -profile.direct_dependency_count,
+            profile.indirect_dependency_count,
+            profile.part_name,
+        )
+
+    def weakest_key(profile: LotConditionProfile) -> tuple[int, int, int, str]:
+        return (
+            {
+                LotConditionState.INDIRECT: 0,
+                LotConditionState.MIXED: 1,
+                LotConditionState.DIRECT: 2,
+            }[profile.state],
+            -profile.indirect_dependency_count,
+            profile.direct_dependency_count,
+            profile.part_name,
+        )
+
+    strongest_rank = min(strongest_key(profile) for profile in chart_profile.profiles)
+    weakest_rank = min(weakest_key(profile) for profile in chart_profile.profiles)
+    weakest_profile = min(chart_profile.profiles, key=weakest_key)
+
+    assert chart_profile.strongest_parts == sorted(
+        [profile.part_name for profile in chart_profile.profiles if strongest_key(profile) == strongest_rank]
+    )
+    assert chart_profile.weakest_parts == sorted(
+        [
+            profile.part_name
+            for profile in chart_profile.profiles
+            if (
+                profile.state is weakest_profile.state
+                and profile.indirect_dependency_count == weakest_profile.indirect_dependency_count
+                and profile.direct_dependency_count == weakest_profile.direct_dependency_count
+            )
+        ]
+    )
+    assert all(profiles[name].state is LotConditionState.DIRECT for name in chart_profile.strongest_parts)
+    assert all(profiles[name].state is LotConditionState.INDIRECT for name in chart_profile.weakest_parts)
+
+    with pytest.raises(ValueError, match="state counts must match profile states"):
+        replace(chart_profile, direct_count=chart_profile.direct_count + 1)
+
+    with pytest.raises(ValueError, match="profiles must be in deterministic order"):
+        replace(chart_profile, profiles=list(reversed(chart_profile.profiles)))
+
+    with pytest.raises(ValueError, match="strongest_parts must match derived ranking"):
+        replace(chart_profile, strongest_parts=["Fortune"])
+
+
+def test_lot_condition_network_profile_is_deterministic_and_aligns_with_part_truth() -> None:
+    positions = {
+        "Sun": 100.0,
+        "Moon": 220.0,
+        "Mercury": 80.0,
+        "Venus": 10.0,
+        "Mars": 35.0,
+        "Jupiter": 250.0,
+        "Saturn": 310.0,
+    }
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    first = calculate_lot_condition_network_profile(
+        positions,
+        house_cusps,
+        False,
+        prenatal_new_moon=25.0,
+    )
+    second = calculate_lot_condition_network_profile(
+        positions,
+        house_cusps,
+        False,
+        prenatal_new_moon=25.0,
+    )
+    profiles = calculate_lot_condition_profiles(
+        positions,
+        house_cusps,
+        False,
+        prenatal_new_moon=25.0,
+    )
+
+    expected_edge_count = sum(
+        1 for profile in profiles for dependency in profile.dependencies if dependency.is_inter_lot
+    )
+
+    assert first == second
+    assert first.node_count == len(profiles)
+    assert first.edge_count == expected_edge_count
+    assert [node.part_name for node in first.nodes] == sorted(profile.part_name for profile in profiles)
+    assert [node.condition_state for node in first.nodes] == [
+        {profile.part_name: profile.state for profile in profiles}[node.part_name]
+        for node in first.nodes
+    ]
+
+
+def test_lot_condition_network_represents_unilateral_links_and_absence_of_reciprocals_correctly() -> None:
+    positions = {
+        "Sun": 100.0,
+        "Moon": 220.0,
+        "Mercury": 80.0,
+        "Venus": 10.0,
+        "Mars": 35.0,
+        "Jupiter": 250.0,
+        "Saturn": 310.0,
+    }
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    network = calculate_lot_condition_network_profile(
+        positions,
+        house_cusps,
+        False,
+        prenatal_new_moon=25.0,
+    )
+    edge_tuples = {
+        (edge.source_part, edge.target_part, edge.role, edge.mode)
+        for edge in network.edges
+    }
+
+    assert (
+        "Basis (Firmicus)",
+        "Spirit",
+        LotDependencyRole.ADD_OPERAND,
+        LotConditionNetworkEdgeMode.UNILATERAL,
+    ) in edge_tuples
+    assert (
+        "Basis (Valens)",
+        "Spirit",
+        LotDependencyRole.SUB_OPERAND,
+        LotConditionNetworkEdgeMode.UNILATERAL,
+    ) in edge_tuples
+    assert (
+        "Necessity (Persian)",
+        "Eros (Valens)",
+        LotDependencyRole.ADD_OPERAND,
+        LotConditionNetworkEdgeMode.UNILATERAL,
+    ) in edge_tuples
+    assert all(
+        edge.mode is LotConditionNetworkEdgeMode.UNILATERAL
+        for edge in network.edges
+    )
+    assert not any(
+        edge.mode is LotConditionNetworkEdgeMode.RECIPROCAL
+        for edge in network.edges
+    )
+    assert network.reciprocal_edge_count == 0
+    assert network.unilateral_edge_count == len(network.edges)
+
+
+def test_lot_condition_network_identifies_isolated_and_connected_parts() -> None:
+    positions = {
+        "Sun": 100.0,
+        "Moon": 220.0,
+        "Mercury": 80.0,
+        "Venus": 10.0,
+        "Mars": 35.0,
+        "Jupiter": 250.0,
+        "Saturn": 310.0,
+    }
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    network = calculate_lot_condition_network_profile(
+        positions,
+        house_cusps,
+        False,
+        prenatal_new_moon=25.0,
+    )
+    nodes = {node.part_name: node for node in network.nodes}
+
+    assert nodes["Fortune"].is_isolated is False
+    assert nodes["Spirit"].is_isolated is False
+    assert nodes["Basis (Firmicus)"].outgoing_count == 2
+    assert nodes["Basis (Firmicus)"].incoming_count == 0
+    assert nodes["Basis (Firmicus)"].reciprocal_count == 0
+    assert nodes["Basis (Valens)"].reciprocal_count == 0
+    assert nodes["Fortune"].incoming_count > nodes["Spirit"].incoming_count
+    assert "Fortune" not in network.isolated_parts
+    assert "Basis (Firmicus)" not in network.isolated_parts
+    assert "Accomplishment" in network.isolated_parts
+    assert network.most_connected_parts == ["Fortune"]
+
+    with pytest.raises(ValueError, match="nodes must be in deterministic order"):
+        replace(network, nodes=list(reversed(network.nodes)))
+
+    with pytest.raises(ValueError, match="edges must be in deterministic order"):
+        replace(network, edges=list(reversed(network.edges)))
+
+    if network.edges:
+        edge = network.edges[0]
+        reverse_edge = LotConditionNetworkEdge(
+            source_part=edge.target_part,
+            target_part=edge.source_part,
+            role=edge.role,
+            mode=LotConditionNetworkEdgeMode.UNILATERAL,
+        )
+        with pytest.raises(ValueError, match="unilateral edges must not have a reverse edge"):
+            replace(
+                network,
+                edges=sorted(
+                    network.edges + [reverse_edge],
+                    key=lambda item: (item.source_part, item.target_part, item.role.value),
+                ),
+                unilateral_edge_count=network.unilateral_edge_count + 1,
+            )
+
+
+def test_lots_fail_clearly_on_duplicate_or_non_finite_inputs() -> None:
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    with pytest.raises(ValueError, match="Duplicate lot planet entry after normalization: Sun"):
+        calculate_lots(
+            {"sun": 100.0, "Sun": 101.0},
+            house_cusps,
+            True,
+        )
+
+    with pytest.raises(ValueError, match="Lot longitude for Sun must be finite"):
+        calculate_lots(
+            {"Sun": float("nan"), "Moon": 220.0},
+            house_cusps,
+            True,
+        )
+
+    with pytest.raises(ValueError, match="Lot planet name must not be empty"):
+        calculate_lots(
+            {"   ": 100.0},
+            house_cusps,
+            True,
+        )
+
+
+def test_lots_fail_clearly_on_invalid_house_inputs() -> None:
+    positions = {
+        "Sun": 100.0,
+        "Moon": 220.0,
+        "Mercury": 80.0,
+    }
+
+    with pytest.raises(ValueError, match="Lot house_cusps list must contain exactly 12 entries"):
+        calculate_lots(positions, [float(i) for i in range(11)], True)
+
+    with pytest.raises(ValueError, match=r"Lot house cusps missing \[12\]"):
+        calculate_lots(positions, {i + 1: i * 30.0 for i in range(11)}, True)
+
+    with pytest.raises(ValueError, match="Lot house cusp number must be in the range 1..12: 13"):
+        calculate_lots(
+            positions,
+            {**{i + 1: i * 30.0 for i in range(11)}, 13: 330.0},
+            True,
+        )
+
+    with pytest.raises(ValueError, match="Lot house cusp 1 must be finite"):
+        calculate_lots(
+            positions,
+            {1: float("inf"), **{i + 1: i * 30.0 for i in range(1, 12)}},
+            True,
+        )
+
+
+def test_lots_policy_validation_fails_deterministically_on_unsupported_values() -> None:
+    positions = {"Sun": 100.0, "Moon": 220.0}
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    bad_mode_policy = replace(
+        LotsComputationPolicy(),
+        unresolved_reference_mode="invalid",  # type: ignore[arg-type]
+    )
+    with pytest.raises(ValueError, match="Unsupported lots unresolved-reference mode"):
+        calculate_lots(positions, house_cusps, True, policy=bad_mode_policy)
+
+    bad_derived_policy = replace(
+        LotsComputationPolicy(),
+        derived="invalid",  # type: ignore[arg-type]
+    )
+    with pytest.raises(ValueError, match="Unsupported lots derived-reference policy"):
+        calculate_lots(positions, house_cusps, True, policy=bad_derived_policy)
+
+    bad_external_policy = replace(
+        LotsComputationPolicy(),
+        external="invalid",  # type: ignore[arg-type]
+    )
+    with pytest.raises(ValueError, match="Unsupported lots external-reference policy"):
+        calculate_lots(positions, house_cusps, True, policy=bad_external_policy)
+
+    bad_flag_policy = replace(
+        LotsComputationPolicy(),
+        derived=replace(LotsDerivedReferencePolicy(), include_fortune="yes"),  # type: ignore[arg-type]
+    )
+    with pytest.raises(ValueError, match="Lots derived-reference policy field include_fortune must be a bool"):
+        calculate_lots(positions, house_cusps, True, policy=bad_flag_policy)
+
+
+def test_lot_vessel_invariants_fail_loudly_on_internal_drift() -> None:
+    add_truth = LotReferenceTruth("Moon", 220.0, "planet", "Moon")
+    sub_truth = LotReferenceTruth("Sun", 100.0, "planet", "Sun")
+    computation_truth = ArabicPartComputationTruth(
+        asc_longitude=0.0,
+        requested_add_key="Moon",
+        requested_sub_key="Sun",
+        effective_add_key="Moon",
+        effective_sub_key="Sun",
+        reversed_at_night=True,
+        reversed_for_chart=False,
+        add_reference=add_truth,
+        sub_reference=sub_truth,
+        formula="Asc + Moon - Sun",
+    )
+    classification = ArabicPartClassification(
+        primary_category="hellenistic",
+        category_tags=("hellenistic", "medieval"),
+        reversal=LotReversalKind.NIGHT_REVERSIBLE,
+        add_reference=LotReferenceClassification(LotReferenceKind.PLANET, "Moon", "Moon"),
+        sub_reference=LotReferenceClassification(LotReferenceKind.PLANET, "Sun", "Sun"),
+    )
+
+    with pytest.raises(ValueError, match="longitude must be in \\[0, 360\\)"):
+        ArabicPart(
+            name="Fortune",
+            longitude=360.0,
+            formula="Asc + Moon - Sun",
+            category="hellenistic,medieval",
+        )
+
+    with pytest.raises(ValueError, match="formula must match effective operand keys"):
+        ArabicPartComputationTruth(
+            asc_longitude=0.0,
+            requested_add_key="Moon",
+            requested_sub_key="Sun",
+            effective_add_key="Moon",
+            effective_sub_key="Sun",
+            reversed_at_night=False,
+            reversed_for_chart=False,
+            add_reference=add_truth,
+            sub_reference=sub_truth,
+            formula="Asc + Sun - Moon",
+        )
+
+    with pytest.raises(ValueError, match="primary_category must be included in category_tags"):
+        ArabicPartClassification(
+            primary_category="modern",
+            category_tags=("hellenistic", "medieval"),
+            reversal=LotReversalKind.DIRECT,
+            add_reference=LotReferenceClassification(LotReferenceKind.PLANET, "Moon"),
+            sub_reference=LotReferenceClassification(LotReferenceKind.PLANET, "Sun"),
+        )
+
+    with pytest.raises(ValueError, match="classification reversal must match computation truth"):
+        ArabicPart(
+            name="Fortune",
+            longitude=120.0,
+            formula="Asc + Moon - Sun",
+            category="hellenistic,medieval",
+            computation_truth=computation_truth,
+            classification=replace(classification, reversal=LotReversalKind.DIRECT),
+        )
+
+    with pytest.raises(ValueError, match="add-reference classification must match computation truth"):
+        ArabicPart(
+            name="Fortune",
+            longitude=120.0,
+            formula="Asc + Moon - Sun",
+            category="hellenistic,medieval",
+            computation_truth=computation_truth,
+            classification=replace(
+                classification,
+                add_reference=LotReferenceClassification(LotReferenceKind.EXTERNAL, "Moon"),
+            ),
+        )
+
+    with pytest.raises(ValueError, match="dependencies must be empty or contain exactly two operand relations"):
+        ArabicPart(
+            name="Fortune",
+            longitude=120.0,
+            formula="Asc + Moon - Sun",
+            category="hellenistic,medieval",
+            computation_truth=computation_truth,
+            classification=classification,
+            dependencies=[
+                LotDependency(
+                    part_name="Fortune",
+                    role=LotDependencyRole.ADD_OPERAND,
+                    requested_key="Moon",
+                    effective_key="Moon",
+                    reference_kind=LotReferenceKind.PLANET,
+                    reference_longitude=220.0,
+                ),
+            ],
+        )
+
+    with pytest.raises(ValueError, match="dependencies must be a subset of all_dependencies"):
+        ArabicPart(
+            name="Fortune",
+            longitude=120.0,
+            formula="Asc + Moon - Sun",
+            category="hellenistic,medieval",
+            computation_truth=computation_truth,
+            classification=classification,
+            all_dependencies=[
+                LotDependency(
+                    part_name="Fortune",
+                    role=LotDependencyRole.ADD_OPERAND,
+                    requested_key="Moon",
+                    effective_key="Moon",
+                    reference_kind=LotReferenceKind.PLANET,
+                    reference_longitude=220.0,
+                ),
+                LotDependency(
+                    part_name="Fortune",
+                    role=LotDependencyRole.SUB_OPERAND,
+                    requested_key="Sun",
+                    effective_key="Sun",
+                    reference_kind=LotReferenceKind.EXTERNAL,
+                    reference_longitude=100.0,
+                ),
+            ],
+            dependencies=[
+                LotDependency(
+                    part_name="Fortune",
+                    role=LotDependencyRole.ADD_OPERAND,
+                    requested_key="Moon",
+                    effective_key="Moon",
+                    reference_kind=LotReferenceKind.PLANET,
+                    reference_longitude=220.0,
+                ),
+                LotDependency(
+                    part_name="Fortune",
+                    role=LotDependencyRole.SUB_OPERAND,
+                    requested_key="Sun",
+                    effective_key="Sun",
+                    reference_kind=LotReferenceKind.PLANET,
+                    reference_longitude=100.0,
+                ),
+            ],
+        )
+
+    with pytest.raises(ValueError, match="condition_profile state must match|state must match derived dependency polarity"):
+        bad_profile = replace(
+            LotConditionProfile(
+                part_name="Fortune",
+                category_tags=("hellenistic", "medieval"),
+                primary_category="hellenistic",
+                reversal=LotReversalKind.NIGHT_REVERSIBLE,
+                all_dependencies=[
+                    LotDependency(
+                        part_name="Fortune",
+                        role=LotDependencyRole.ADD_OPERAND,
+                        requested_key="Moon",
+                        effective_key="Moon",
+                        reference_kind=LotReferenceKind.PLANET,
+                        reference_longitude=220.0,
+                    ),
+                    LotDependency(
+                        part_name="Fortune",
+                        role=LotDependencyRole.SUB_OPERAND,
+                        requested_key="Sun",
+                        effective_key="Sun",
+                        reference_kind=LotReferenceKind.PLANET,
+                        reference_longitude=100.0,
+                    ),
+                ],
+                dependencies=[
+                    LotDependency(
+                        part_name="Fortune",
+                        role=LotDependencyRole.ADD_OPERAND,
+                        requested_key="Moon",
+                        effective_key="Moon",
+                        reference_kind=LotReferenceKind.PLANET,
+                        reference_longitude=220.0,
+                    ),
+                    LotDependency(
+                        part_name="Fortune",
+                        role=LotDependencyRole.SUB_OPERAND,
+                        requested_key="Sun",
+                        effective_key="Sun",
+                        reference_kind=LotReferenceKind.PLANET,
+                        reference_longitude=100.0,
+                    ),
+                ],
+                direct_dependency_count=2,
+                indirect_dependency_count=0,
+                inter_lot_dependency_count=0,
+                external_dependency_count=0,
+                state=LotConditionState.DIRECT,
+            ),
+            state=LotConditionState.MIXED,
+        )
+        ArabicPart(
+            name="Fortune",
+            longitude=120.0,
+            formula="Asc + Moon - Sun",
+            category="hellenistic,medieval",
+            computation_truth=computation_truth,
+            classification=classification,
+            all_dependencies=bad_profile.all_dependencies,
+            dependencies=bad_profile.dependencies,
+            condition_profile=bad_profile,
+        )
+
+
 def test_lots_reference_builder_resolves_rulers_fixed_degrees_and_optional_inputs() -> None:
     service = ArabicPartsService()
-    refs = service._build_refs(
+    refs, ref_truths = service._build_refs(
         {
             "Sun": 100.0,
             "Moon": 220.0,
@@ -963,6 +2044,7 @@ def test_lots_reference_builder_resolves_rulers_fixed_degrees_and_optional_input
         prenatal_nm=25.0,
         prenatal_fm=205.0,
         lord_of_hour=77.0,
+        policy=LotsComputationPolicy(),
     )
 
     assert refs["Asc"] == pytest.approx(0.0, abs=1e-12)
@@ -978,6 +2060,16 @@ def test_lots_reference_builder_resolves_rulers_fixed_degrees_and_optional_input
     assert refs["New Moon"] == pytest.approx(25.0, abs=1e-12)
     assert refs["Prenatal Full Moon"] == pytest.approx(205.0, abs=1e-12)
     assert refs["Lord of Hour"] == pytest.approx(77.0, abs=1e-12)
+    assert ref_truths["Asc"].source_kind == "angle"
+    assert ref_truths["H1"].source_kind == "house_cusp"
+    assert ref_truths["18 Aries"].source_kind == "fixed_degree"
+    assert ref_truths["Ruler H1"].source_kind == "house_ruler"
+    assert ref_truths["Ruler H1"].detail == "H1->Mars"
+    assert ref_truths["Ruler MC"].source_kind == "angle_ruler_alias"
+    assert ref_truths["Ruler Sun"].source_kind == "planet_ruler"
+    assert ref_truths["Ruler Syzygy"].source_kind == "syzygy_ruler"
+    assert ref_truths["Fortune"].source_kind == "derived_lot"
+    assert ref_truths["New Moon"].source_kind == "external"
 
 
 @pytest.mark.requires_ephemeris
