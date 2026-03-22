@@ -38,11 +38,12 @@ from .eclipse_geometry import (
 from .eclipse_search import refine_minimum
 from .planets import _barycentric, _earth_barycentric, _geocentric
 from .julian import tt_to_ut_nasa_canon, ut_to_tt_nasa_canon
+from typing import Literal
 
-type LunarCanonMethodId = (
-    "nasa_shadow_axis_geometric_moon"
-    | "nasa_shadow_axis_retarded_moon"
-)
+LunarCanonMethodId = Literal[
+    "nasa_shadow_axis_geometric_moon",
+    "nasa_shadow_axis_retarded_moon",
+]
 
 DEFAULT_LUNAR_CANON_METHOD: LunarCanonMethodId = "nasa_shadow_axis_geometric_moon"
 

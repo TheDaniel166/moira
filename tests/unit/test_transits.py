@@ -30,9 +30,17 @@ from moira.transits import (
     TransitRelation,
     TransitRelationBasis,
     TransitRelationKind,
+    TransitConditionProfile,
+    TransitConditionState,
+    TransitChartConditionProfile,
+    TransitConditionNetworkNode,
+    TransitConditionNetworkNodeKind,
+    TransitConditionNetworkEdge,
+    TransitConditionNetworkProfile,
     TransitEvent,
     find_ingresses,
     find_transits,
+    ingress_condition_profiles,
     ingress_relations,
     last_full_moon,
     last_new_moon,
@@ -41,6 +49,9 @@ from moira.transits import (
     planet_return,
     prenatal_syzygy,
     solar_return,
+    transit_chart_condition_profile,
+    transit_condition_network_profile,
+    transit_condition_profiles,
     transit_relations,
 )
 
@@ -78,6 +89,14 @@ def test_next_transit_finds_exact_direct_crossing_for_sun() -> None:
     assert event.relation.relation_kind is TransitRelationKind.TARGET_CROSSING
     assert event.relation.basis is TransitRelationBasis.NUMERIC_LONGITUDE
     assert event.relation.target_longitude == pytest.approx(event.longitude, abs=1e-12)
+    assert event.relation_kind is TransitRelationKind.TARGET_CROSSING
+    assert event.relation_basis is TransitRelationBasis.NUMERIC_LONGITUDE
+    assert event.relation_target_name == "0.000000000000"
+    assert event.has_relation is True
+    assert event.relation.is_target_crossing is True
+    assert event.relation.is_sign_ingress is False
+    assert event.condition_profile is not None
+    assert event.condition_state is TransitConditionState.STATIC_TARGET
     assert event.target_kind is TransitTargetKind.NUMERIC_LONGITUDE
     assert event.search_kind is TransitSearchKind.LONGITUDE_CROSSING
     assert event.wrapper_kind is TransitWrapperKind.DIRECT_TRANSIT
@@ -151,6 +170,13 @@ def test_find_ingresses_detects_both_directions_for_mercury_window() -> None:
         assert event.relation.basis is TransitRelationBasis.SIGN_BOUNDARY
         assert event.relation.target_name == event.sign
         assert event.relation.target_longitude == pytest.approx(event.sign_longitude, abs=1e-12)
+        assert event.relation_kind is TransitRelationKind.SIGN_INGRESS
+        assert event.relation_basis is TransitRelationBasis.SIGN_BOUNDARY
+        assert event.has_relation is True
+        assert event.relation.is_sign_ingress is True
+        assert event.relation.is_target_crossing is False
+        assert event.condition_profile is not None
+        assert event.condition_state is TransitConditionState.BOUNDARY_EVENT
         assert event.search_kind is TransitSearchKind.SIGN_INGRESS
         assert event.wrapper_kind is TransitWrapperKind.INGRESS
 
@@ -171,6 +197,8 @@ def test_next_transit_supports_fixed_star_targets() -> None:
     assert event.relation is not None
     assert event.relation.basis is TransitRelationBasis.FIXED_STAR
     assert event.relation.target_name == "Sirius"
+    assert event.condition_profile is not None
+    assert event.condition_state is TransitConditionState.DYNAMIC_TARGET
     assert event.uses_dynamic_target is True
 
 
@@ -189,6 +217,8 @@ def test_next_transit_supports_node_targets() -> None:
     assert event.classification.target.target_kind is TransitTargetKind.NODE
     assert event.relation is not None
     assert event.relation.basis is TransitRelationBasis.NODE
+    assert event.condition_profile is not None
+    assert event.condition_state is TransitConditionState.DYNAMIC_TARGET
     assert event.uses_dynamic_target is True
 
 
@@ -264,6 +294,16 @@ def test_transit_truth_and_classification_vessels_preserve_computational_path_in
             target_longitude=0.0,
             is_dynamic_target=False,
         ),
+        condition_profile=TransitConditionProfile(
+            source_body=Body.SUN,
+            wrapper_kind=TransitWrapperKind.DIRECT_TRANSIT,
+            search_kind=TransitSearchKind.LONGITUDE_CROSSING,
+            relation_kind=TransitRelationKind.TARGET_CROSSING,
+            relation_basis=TransitRelationBasis.NUMERIC_LONGITUDE,
+            target_kind=TransitTargetKind.NUMERIC_LONGITUDE,
+            uses_dynamic_target=False,
+            condition_state=TransitConditionState.STATIC_TARGET,
+        ),
     )
     ingress = IngressEvent(
         body=Body.SUN,
@@ -280,6 +320,16 @@ def test_transit_truth_and_classification_vessels_preserve_computational_path_in
             target_longitude=0.0,
             is_dynamic_target=False,
         ),
+        condition_profile=TransitConditionProfile(
+            source_body=Body.SUN,
+            wrapper_kind=TransitWrapperKind.INGRESS,
+            search_kind=TransitSearchKind.SIGN_INGRESS,
+            relation_kind=TransitRelationKind.SIGN_INGRESS,
+            relation_basis=TransitRelationBasis.SIGN_BOUNDARY,
+            target_kind=None,
+            uses_dynamic_target=False,
+            condition_state=TransitConditionState.BOUNDARY_EVENT,
+        ),
     )
 
     assert event.computation_truth.target_truth.longitude == 0.0
@@ -288,12 +338,16 @@ def test_transit_truth_and_classification_vessels_preserve_computational_path_in
     assert event.target_kind is TransitTargetKind.NUMERIC_LONGITUDE
     assert event.relation is not None
     assert event.relation.basis is TransitRelationBasis.NUMERIC_LONGITUDE
+    assert event.relation_kind is TransitRelationKind.TARGET_CROSSING
+    assert event.condition_state is TransitConditionState.STATIC_TARGET
     assert ingress.computation_truth.boundary_longitude == 0.0
     assert ingress.computation_truth.search_truth.crossing_jd_ut == ingress.jd_ut
     assert ingress.classification.search.search_kind is TransitSearchKind.SIGN_INGRESS
     assert ingress.search_kind is TransitSearchKind.SIGN_INGRESS
     assert ingress.relation is not None
     assert ingress.relation.basis is TransitRelationBasis.SIGN_BOUNDARY
+    assert ingress.relation_kind is TransitRelationKind.SIGN_INGRESS
+    assert ingress.condition_state is TransitConditionState.BOUNDARY_EVENT
 
 
 def test_transit_events_expose_read_only_inspectability_and_fail_loudly_on_drift() -> None:
@@ -311,6 +365,9 @@ def test_transit_events_expose_read_only_inspectability_and_fail_loudly_on_drift
     with pytest.raises((AttributeError, TypeError)):
         setattr(event, "target_kind", TransitTargetKind.FIXED_STAR)
 
+    with pytest.raises((AttributeError, TypeError)):
+        setattr(event, "relation_kind", TransitRelationKind.SIGN_INGRESS)
+
     with pytest.raises(ValueError, match="classification target kind must match computation truth"):
         replace(
             event,
@@ -320,6 +377,24 @@ def test_transit_events_expose_read_only_inspectability_and_fail_loudly_on_drift
                     event.classification.target,
                     target_kind=TransitTargetKind.FIXED_STAR,
                 ),
+            ),
+        )
+
+    with pytest.raises(ValueError, match="relation basis must match computation truth"):
+        replace(
+            event,
+            relation=replace(
+                event.relation,
+                basis=TransitRelationBasis.FIXED_STAR,
+            ),
+        )
+
+    with pytest.raises(ValueError, match="condition_profile target_kind must match classification"):
+        replace(
+            event,
+            condition_profile=replace(
+                event.condition_profile,
+                target_kind=TransitTargetKind.FIXED_STAR,
             ),
         )
 
@@ -407,6 +482,36 @@ def test_transit_truth_vessels_fail_loudly_on_invalid_internal_state() -> None:
             ),
         )
 
+    with pytest.raises(ValueError, match="Transit input body must be a non-empty string"):
+        next_transit("", 0.0, 2451545.0)
+
+    with pytest.raises(ValueError, match="Transit input direction must be 'direct', 'retrograde', or 'either'"):
+        next_transit(Body.SUN, 0.0, 2451545.0, direction="forward")
+
+    with pytest.raises(ValueError, match="Transit input target longitude must be finite"):
+        next_transit(Body.SUN, float("nan"), 2451545.0)
+
+    with pytest.raises(ValueError, match="Transit input range must be strictly increasing"):
+        find_transits(Body.SUN, 0.0, 2451545.0, 2451545.0)
+
+    with pytest.raises(ValueError, match="Transit input range must be strictly increasing"):
+        find_ingresses(Body.SUN, 2451546.0, 2451545.0)
+
+    with pytest.raises(ValueError, match="Transit input natal_lon must be finite"):
+        planet_return(Body.SUN, float("nan"), 2451545.0)
+
+    with pytest.raises(ValueError, match="Transit input natal_sun_lon must be finite"):
+        solar_return(float("nan"), 2024)
+
+    with pytest.raises(ValueError, match="Transit input natal_moon_lon must be finite"):
+        lunar_return(float("nan"), 2451545.0)
+
+    with pytest.raises(ValueError, match="Transit input jd must be finite"):
+        last_new_moon(float("nan"))
+
+    with pytest.raises(ValueError, match="Transit target specification could not be resolved"):
+        next_transit(Body.SUN, "Definitely Not A Real Target", 2451545.0, max_days=1.0)
+
 
 @pytest.mark.requires_ephemeris
 def test_default_transit_policy_preserves_current_behavior() -> None:
@@ -453,6 +558,262 @@ def test_transit_relations_are_deterministic_and_align_with_source_truth() -> No
         assert event.relation == relation
         assert relation.target_name == event.sign
         assert relation.target_longitude == pytest.approx(event.sign_longitude, abs=1e-12)
+
+
+@pytest.mark.requires_ephemeris
+def test_condition_profiles_are_deterministic_and_align_with_event_truth() -> None:
+    start = jd_from_datetime(datetime(2024, 1, 1, tzinfo=timezone.utc))
+    transit_events = find_transits(Body.MERCURY, 270.0, start, start + 50.0)
+    ingress_events = find_ingresses(Body.MERCURY, start, start + 50.0)
+
+    transit_profiles = transit_condition_profiles(transit_events)
+    ingress_profiles = ingress_condition_profiles(ingress_events)
+
+    assert len(transit_profiles) == len(transit_events)
+    assert len(ingress_profiles) == len(ingress_events)
+    assert all(profile.condition_state is TransitConditionState.STATIC_TARGET for profile in transit_profiles)
+    assert all(profile.condition_state is TransitConditionState.BOUNDARY_EVENT for profile in ingress_profiles)
+
+    for event, profile in zip(transit_events, transit_profiles):
+        assert event.condition_profile == profile
+        assert profile.relation_basis is event.relation_basis
+        assert profile.target_kind is event.target_kind
+
+    for event, profile in zip(ingress_events, ingress_profiles):
+        assert event.condition_profile == profile
+        assert profile.relation_kind is event.relation_kind
+        assert profile.target_kind is None
+
+
+@pytest.mark.requires_ephemeris
+def test_chart_condition_profile_is_deterministic_and_aligns_with_source_profiles() -> None:
+    start = jd_from_datetime(datetime(2024, 1, 1, tzinfo=timezone.utc))
+    transit_events = find_transits(Body.MERCURY, 270.0, start, start + 50.0)
+    ingress_events = find_ingresses(Body.MERCURY, start, start + 50.0)
+
+    chart = transit_chart_condition_profile(transit_events, ingress_events)
+
+    assert isinstance(chart, TransitChartConditionProfile)
+    assert chart.profile_count == len(transit_events) + len(ingress_events)
+    assert chart.dynamic_target_count == 0
+    assert chart.static_target_count == len(transit_events)
+    assert chart.boundary_event_count == len(ingress_events)
+    assert chart.target_crossing_count == len(transit_events)
+    assert chart.sign_ingress_count == len(ingress_events)
+    assert chart.dynamic_relation_count == 0
+    assert chart.strongest_bodies == (Body.MERCURY,)
+    assert chart.weakest_bodies == (Body.MERCURY,)
+    assert chart.strongest_count == 1
+    assert chart.weakest_count == 1
+    assert chart.profiles == tuple(sorted(chart.profiles, key=lambda profile: (
+        profile.source_body,
+        profile.wrapper_kind.value,
+        profile.search_kind.value,
+        profile.relation_kind.value,
+        profile.relation_basis.value,
+    )))
+
+
+@pytest.mark.requires_ephemeris
+def test_transit_condition_network_profile_is_deterministic_and_aligns_with_source_truth() -> None:
+    start = jd_from_datetime(datetime(2024, 1, 1, tzinfo=timezone.utc))
+    transit_events = find_transits(Body.MERCURY, 270.0, start, start + 50.0)
+    ingress_events = find_ingresses(Body.MERCURY, start, start + 50.0)
+
+    network = transit_condition_network_profile(transit_events, ingress_events)
+
+    assert isinstance(network, TransitConditionNetworkProfile)
+    assert network.body_node_count == 1
+    assert network.target_crossing_edge_count == len(transit_events)
+    assert network.sign_ingress_edge_count == len(ingress_events)
+    assert network.edge_count == len(transit_events) + len(ingress_events)
+    assert network.dynamic_edge_count == 0
+    assert "body:Mercury" in network.most_connected_nodes
+    assert all(edge.source_node_id == "body:Mercury" for edge in network.edges)
+    assert any(edge.relation_kind is TransitRelationKind.SIGN_INGRESS for edge in network.edges)
+    assert any(edge.relation_kind is TransitRelationKind.TARGET_CROSSING for edge in network.edges)
+    assert network.nodes == tuple(sorted(network.nodes, key=lambda node: node.node_id))
+    assert network.edges == tuple(sorted(network.edges, key=lambda edge: (
+        edge.source_node_id,
+        edge.target_node_id,
+        edge.relation_kind.value,
+        edge.relation_basis.value,
+        edge.condition_state.value,
+    )))
+
+
+@pytest.mark.requires_ephemeris
+def test_dynamic_target_edges_are_visible_in_transit_network() -> None:
+    event = next_transit(
+        Body.MARS,
+        Body.TRUE_NODE,
+        jd_from_datetime(datetime(2024, 1, 1, tzinfo=timezone.utc)),
+        max_days=800.0,
+    )
+
+    assert event is not None
+    network = transit_condition_network_profile([event])
+    assert network.dynamic_edge_count == 1
+    assert network.target_crossing_edge_count == 1
+    assert network.sign_ingress_edge_count == 0
+    assert network.edges[0].uses_dynamic_target is True
+    assert network.edges[0].relation_basis is TransitRelationBasis.NODE
+
+
+def test_relation_vessels_and_helpers_fail_loudly_on_invalid_internal_state() -> None:
+    with pytest.raises(ValueError, match="sign ingress must use sign_boundary basis"):
+        TransitRelation(
+            source_body=Body.SUN,
+            relation_kind=TransitRelationKind.SIGN_INGRESS,
+            basis=TransitRelationBasis.NUMERIC_LONGITUDE,
+            target_name="Aries",
+            target_longitude=0.0,
+            is_dynamic_target=False,
+        )
+
+    with pytest.raises(ValueError, match="sign ingress must not be dynamic"):
+        TransitRelation(
+            source_body=Body.SUN,
+            relation_kind=TransitRelationKind.SIGN_INGRESS,
+            basis=TransitRelationBasis.SIGN_BOUNDARY,
+            target_name="Aries",
+            target_longitude=0.0,
+            is_dynamic_target=True,
+        )
+
+    with pytest.raises(ValueError, match="sign_boundary basis is reserved for sign ingress"):
+        TransitRelation(
+            source_body=Body.SUN,
+            relation_kind=TransitRelationKind.TARGET_CROSSING,
+            basis=TransitRelationBasis.SIGN_BOUNDARY,
+            target_name="0.000000000000",
+            target_longitude=0.0,
+            is_dynamic_target=False,
+        )
+
+    with pytest.raises(ValueError, match="target crossing state must match dynamic target truth"):
+        TransitConditionProfile(
+            source_body=Body.SUN,
+            wrapper_kind=TransitWrapperKind.DIRECT_TRANSIT,
+            search_kind=TransitSearchKind.LONGITUDE_CROSSING,
+            relation_kind=TransitRelationKind.TARGET_CROSSING,
+            relation_basis=TransitRelationBasis.NUMERIC_LONGITUDE,
+            target_kind=TransitTargetKind.NUMERIC_LONGITUDE,
+            uses_dynamic_target=False,
+            condition_state=TransitConditionState.DYNAMIC_TARGET,
+        )
+
+    with pytest.raises(ValueError, match="ingress profile target_kind must be None"):
+        TransitConditionProfile(
+            source_body=Body.SUN,
+            wrapper_kind=TransitWrapperKind.INGRESS,
+            search_kind=TransitSearchKind.SIGN_INGRESS,
+            relation_kind=TransitRelationKind.SIGN_INGRESS,
+            relation_basis=TransitRelationBasis.SIGN_BOUNDARY,
+            target_kind=TransitTargetKind.NUMERIC_LONGITUDE,
+            uses_dynamic_target=False,
+            condition_state=TransitConditionState.BOUNDARY_EVENT,
+        )
+
+    with pytest.raises(ValueError, match="static_target_count must match profiles"):
+        TransitChartConditionProfile(
+            profiles=(
+                TransitConditionProfile(
+                    source_body=Body.SUN,
+                    wrapper_kind=TransitWrapperKind.DIRECT_TRANSIT,
+                    search_kind=TransitSearchKind.LONGITUDE_CROSSING,
+                    relation_kind=TransitRelationKind.TARGET_CROSSING,
+                    relation_basis=TransitRelationBasis.NUMERIC_LONGITUDE,
+                    target_kind=TransitTargetKind.NUMERIC_LONGITUDE,
+                    uses_dynamic_target=False,
+                    condition_state=TransitConditionState.STATIC_TARGET,
+                ),
+            ),
+            static_target_count=0,
+            dynamic_target_count=0,
+            boundary_event_count=0,
+            target_crossing_count=1,
+            sign_ingress_count=0,
+            dynamic_relation_count=0,
+            strongest_bodies=(Body.SUN,),
+            weakest_bodies=(Body.SUN,),
+        )
+
+    with pytest.raises(ValueError, match="total_degree must equal incoming plus outgoing"):
+        TransitConditionNetworkNode(
+            node_id="body:Sun",
+            node_kind=TransitConditionNetworkNodeKind.BODY,
+            name=Body.SUN,
+            incoming_count=0,
+            outgoing_count=1,
+            total_degree=0,
+        )
+
+    with pytest.raises(ValueError, match="sign ingress must use sign_boundary basis"):
+        TransitConditionNetworkEdge(
+            source_node_id="body:Sun",
+            target_node_id="target:sign:Aries",
+            relation_kind=TransitRelationKind.SIGN_INGRESS,
+            relation_basis=TransitRelationBasis.NUMERIC_LONGITUDE,
+            condition_state=TransitConditionState.BOUNDARY_EVENT,
+            uses_dynamic_target=False,
+        )
+
+    with pytest.raises(ValueError, match="body_node_count must match nodes"):
+        TransitConditionNetworkProfile(
+            nodes=(
+                TransitConditionNetworkNode(
+                    node_id="body:Sun",
+                    node_kind=TransitConditionNetworkNodeKind.BODY,
+                    name=Body.SUN,
+                    incoming_count=0,
+                    outgoing_count=0,
+                    total_degree=0,
+                ),
+            ),
+            edges=(),
+            body_node_count=0,
+            target_node_count=0,
+            target_crossing_edge_count=0,
+            sign_ingress_edge_count=0,
+            dynamic_edge_count=0,
+            isolated_nodes=("body:Sun",),
+            most_connected_nodes=("body:Sun",),
+        )
+
+    with pytest.raises(ValueError, match="profiles must be deterministically ordered"):
+        TransitChartConditionProfile(
+            profiles=(
+                TransitConditionProfile(
+                    source_body=Body.SUN,
+                    wrapper_kind=TransitWrapperKind.INGRESS,
+                    search_kind=TransitSearchKind.SIGN_INGRESS,
+                    relation_kind=TransitRelationKind.SIGN_INGRESS,
+                    relation_basis=TransitRelationBasis.SIGN_BOUNDARY,
+                    target_kind=None,
+                    uses_dynamic_target=False,
+                    condition_state=TransitConditionState.BOUNDARY_EVENT,
+                ),
+                TransitConditionProfile(
+                    source_body=Body.SUN,
+                    wrapper_kind=TransitWrapperKind.DIRECT_TRANSIT,
+                    search_kind=TransitSearchKind.LONGITUDE_CROSSING,
+                    relation_kind=TransitRelationKind.TARGET_CROSSING,
+                    relation_basis=TransitRelationBasis.NUMERIC_LONGITUDE,
+                    target_kind=TransitTargetKind.NUMERIC_LONGITUDE,
+                    uses_dynamic_target=False,
+                    condition_state=TransitConditionState.STATIC_TARGET,
+                ),
+            ),
+            static_target_count=1,
+            dynamic_target_count=0,
+            boundary_event_count=1,
+            target_crossing_count=1,
+            sign_ingress_count=1,
+            dynamic_relation_count=0,
+            strongest_bodies=(Body.SUN,),
+            weakest_bodies=(Body.SUN,),
+        )
 
 
 @pytest.mark.requires_ephemeris

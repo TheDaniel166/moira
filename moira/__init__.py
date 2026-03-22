@@ -228,9 +228,36 @@ from .dignities import (
 )
 from .midpoints import Midpoint, calculate_midpoints, midpoints_to_point
 from .harmonics import HarmonicPosition, calculate_harmonic, HARMONIC_PRESETS
-from .progressions import (ProgressedChart, ProgressedPosition,
-    secondary_progression, solar_arc, tertiary_progression,
-    converse_secondary_progression, converse_solar_arc, minor_progression,
+from .progressions import (
+    ProgressionDoctrineTruth,
+    ProgressionComputationTruth,
+    ProgressionDoctrineClassification,
+    ProgressionComputationClassification,
+    ProgressionRelation,
+    ProgressionConditionProfile,
+    ProgressionChartConditionProfile,
+    ProgressionConditionNetworkNode,
+    ProgressionConditionNetworkEdge,
+    ProgressionConditionNetworkProfile,
+    ProgressionTimeKeyPolicy,
+    ProgressionDirectionPolicy,
+    ProgressionHouseFramePolicy,
+    ProgressionComputationPolicy,
+    ProgressedPosition,
+    ProgressedChart,
+    ProgressedHouseFrame,
+    secondary_progression, solar_arc, solar_arc_right_ascension,
+    naibod_longitude, naibod_right_ascension,
+    tertiary_progression, tertiary_ii_progression,
+    converse_secondary_progression, converse_solar_arc,
+    converse_solar_arc_right_ascension,
+    converse_naibod_longitude, converse_naibod_right_ascension,
+    converse_tertiary_progression, converse_tertiary_ii_progression,
+    ascendant_arc, minor_progression, converse_minor_progression,
+    daily_house_frame, daily_houses,
+    progression_relation, house_frame_relation,
+    progression_condition_profile, house_frame_condition_profile,
+    progression_chart_condition_profile, progression_condition_network_profile,
 )
 from .primary_directions import (
     SpeculumEntry, PrimaryArc,
@@ -238,17 +265,63 @@ from .primary_directions import (
     DIRECT, CONVERSE,
 )
 from .synastry import (
+    SynastryHouseOverlay, MutualHouseOverlay,
     CompositeChart, DavisonChart, DavisonInfo,
-    synastry_aspects, composite_chart, davison_chart,
+    synastry_aspects, house_overlay, mutual_house_overlays,
+    composite_chart, composite_chart_reference_place,
+    davison_chart, davison_chart_uncorrected, davison_chart_reference_place,
+    davison_chart_spherical_midpoint, davison_chart_corrected,
 )
-from .transits import (TransitEvent, IngressEvent, next_transit, find_transits, find_ingresses,
-                       solar_return, lunar_return,
-                       last_new_moon, last_full_moon, prenatal_syzygy)
+from .transits import (
+    TransitTargetKind,
+    TransitSearchKind,
+    TransitWrapperKind,
+    TransitRelationKind,
+    TransitRelationBasis,
+    TransitConditionState,
+    TransitSearchPolicy,
+    ReturnSearchPolicy,
+    SyzygySearchPolicy,
+    TransitComputationPolicy,
+    LongitudeResolutionTruth,
+    CrossingSearchTruth,
+    TransitComputationTruth,
+    IngressComputationTruth,
+    LongitudeResolutionClassification,
+    CrossingSearchClassification,
+    TransitComputationClassification,
+    IngressComputationClassification,
+    TransitRelation,
+    TransitConditionProfile,
+    TransitChartConditionProfile,
+    TransitConditionNetworkNodeKind,
+    TransitConditionNetworkNode,
+    TransitConditionNetworkEdge,
+    TransitConditionNetworkProfile,
+    TransitEvent,
+    IngressEvent,
+    next_transit,
+    find_transits,
+    find_ingresses,
+    solar_return,
+    lunar_return,
+    last_new_moon,
+    last_full_moon,
+    prenatal_syzygy,
+    planet_return,
+    transit_relations,
+    ingress_relations,
+    transit_condition_profiles,
+    ingress_condition_profiles,
+    transit_chart_condition_profile,
+    transit_condition_network_profile,
+)
 from .stations import StationEvent, find_stations, next_station, is_retrograde, retrograde_periods
 from .planetary_hours import PlanetaryHour, PlanetaryHoursDay, planetary_hours
 from .fixed_stars import (
     StarPosition, fixed_star_at, all_stars_at,
     list_stars, find_stars, star_magnitude, load_catalog,
+    heliacal_rising, heliacal_setting,
 )
 from .asteroids import (
     AsteroidData, asteroid_at, all_asteroids_at,
@@ -259,9 +332,11 @@ from .asteroids import (
 from .planets import HeliocentricData, heliocentric_planet_at, all_heliocentric_at
 from .rise_set import TwilightTimes, twilight_times
 from .phase import angular_diameter
-from .dignities import sect_light, is_day_chart, almuten_figuris, find_phasis
+from .dignities import (
+    sect_light, is_day_chart, almuten_figuris, find_phasis,
+    is_in_hayz, is_in_sect, SectStateKind, SectTruth, SectClassification,
+)
 from .sidereal import NakshatraPosition, nakshatra_of, all_nakshatras_at
-from .transits import planet_return
 from .antiscia import AntisciaAspect, find_antiscia, antiscia_to_point
 from .profections import ProfectionResult, annual_profection, monthly_profection, profection_schedule
 from .timelords import (
@@ -269,6 +344,10 @@ from .timelords import (
     ReleasingPeriod, zodiacal_releasing, current_releasing,
 )
 from .dasha import DashaPeriod, vimshottari, current_dasha, dasha_balance
+from .varga import (
+    VargaPoint, calculate_varga,
+    navamsa, saptamsa, dashamansa, dwadashamsa, trimshamsa,
+)
 from .astrocartography import ACGLine, acg_lines, acg_from_chart
 from .local_space import LocalSpacePosition, local_space_positions, local_space_from_chart
 from .parans import (
@@ -387,6 +466,14 @@ from .variable_stars import (
     malefic_intensity, benefic_strength, is_in_eclipse,
     algol_phase, algol_magnitude, algol_next_minimum, algol_is_eclipsed,
 )
+from .multiple_stars import (
+    MultiType, StarComponent, OrbitalElements, MultipleStarSystem,
+    angular_separation_at, position_angle_at,
+    is_resolvable, dominant_component, combined_magnitude, components_at,
+    multiple_star, list_multiple_stars, multiple_stars_by_type,
+    sirius_ab_separation_at, sirius_b_resolvable,
+    castor_separation_at, alpha_cen_separation_at,
+)
 
 __all__ = [
     "Moira", "Chart",
@@ -498,20 +585,58 @@ __all__ = [
     # Harmonics
     "HarmonicPosition", "calculate_harmonic", "HARMONIC_PRESETS",
     # Progressions
-    "ProgressedChart", "ProgressedPosition",
-    "secondary_progression", "solar_arc", "tertiary_progression",
+    "ProgressionDoctrineTruth", "ProgressionComputationTruth",
+    "ProgressionDoctrineClassification", "ProgressionComputationClassification",
+    "ProgressionRelation",
+    "ProgressionConditionProfile", "ProgressionChartConditionProfile",
+    "ProgressionConditionNetworkNode", "ProgressionConditionNetworkEdge",
+    "ProgressionConditionNetworkProfile",
+    "ProgressionTimeKeyPolicy", "ProgressionDirectionPolicy",
+    "ProgressionHouseFramePolicy", "ProgressionComputationPolicy",
+    "ProgressedPosition", "ProgressedChart", "ProgressedHouseFrame",
+    "secondary_progression", "solar_arc", "solar_arc_right_ascension",
+    "naibod_longitude", "naibod_right_ascension",
+    "tertiary_progression", "tertiary_ii_progression",
+    "converse_secondary_progression", "converse_solar_arc",
+    "converse_solar_arc_right_ascension",
+    "converse_naibod_longitude", "converse_naibod_right_ascension",
+    "converse_tertiary_progression", "converse_tertiary_ii_progression",
+    "ascendant_arc", "minor_progression", "converse_minor_progression",
+    "daily_house_frame", "daily_houses",
+    "progression_relation", "house_frame_relation",
+    "progression_condition_profile", "house_frame_condition_profile",
+    "progression_chart_condition_profile", "progression_condition_network_profile",
     # Primary directions
     "SpeculumEntry", "PrimaryArc",
     "speculum", "find_primary_arcs",
     "DIRECT", "CONVERSE",
     # Synastry / relationship charts
+    "SynastryHouseOverlay", "MutualHouseOverlay",
     "CompositeChart", "DavisonChart", "DavisonInfo",
-    "synastry_aspects", "composite_chart", "davison_chart",
+    "synastry_aspects", "house_overlay", "mutual_house_overlays",
+    "composite_chart", "composite_chart_reference_place",
+    "davison_chart", "davison_chart_uncorrected",
+    "davison_chart_reference_place", "davison_chart_spherical_midpoint",
+    "davison_chart_corrected",
     # Transits
+    "TransitTargetKind", "TransitSearchKind", "TransitWrapperKind",
+    "TransitRelationKind", "TransitRelationBasis", "TransitConditionState",
+    "TransitSearchPolicy", "ReturnSearchPolicy", "SyzygySearchPolicy", "TransitComputationPolicy",
+    "LongitudeResolutionTruth", "CrossingSearchTruth",
+    "TransitComputationTruth", "IngressComputationTruth",
+    "LongitudeResolutionClassification", "CrossingSearchClassification",
+    "TransitComputationClassification", "IngressComputationClassification",
+    "TransitRelation", "TransitConditionProfile", "TransitChartConditionProfile",
+    "TransitConditionNetworkNodeKind", "TransitConditionNetworkNode",
+    "TransitConditionNetworkEdge", "TransitConditionNetworkProfile",
     "TransitEvent", "IngressEvent",
     "next_transit", "find_transits", "find_ingresses",
     "solar_return", "lunar_return",
     "last_new_moon", "last_full_moon", "prenatal_syzygy",
+    "planet_return",
+    "transit_relations", "ingress_relations",
+    "transit_condition_profiles", "ingress_condition_profiles",
+    "transit_chart_condition_profile", "transit_condition_network_profile",
     # Stations
     "StationEvent", "find_stations", "next_station", "is_retrograde", "retrograde_periods",
     # Planetary Hours
@@ -524,10 +649,9 @@ __all__ = [
     "angular_diameter",
     # Dignities extensions
     "sect_light", "is_day_chart", "almuten_figuris", "find_phasis",
+    "is_in_hayz", "is_in_sect", "SectStateKind", "SectTruth", "SectClassification",
     # Nakshatras
     "NakshatraPosition", "nakshatra_of", "all_nakshatras_at",
-    # Transits extension
-    "planet_return",
     # Antiscia
     "AntisciaAspect", "find_antiscia", "antiscia_to_point",
     # Profections
@@ -537,8 +661,9 @@ __all__ = [
     "ReleasingPeriod", "zodiacal_releasing", "current_releasing",
     # Vimshottari Dasha
     "DashaPeriod", "vimshottari", "current_dasha", "dasha_balance",
-    # Converse/minor progressions
-    "converse_secondary_progression", "converse_solar_arc", "minor_progression",
+    # Varga (Vedic divisional charts)
+    "VargaPoint", "calculate_varga",
+    "navamsa", "saptamsa", "dashamansa", "dwadashamsa", "trimshamsa",
     # Astrocartography
     "ACGLine", "acg_lines", "acg_from_chart",
     # Local Space
@@ -627,6 +752,11 @@ __all__ = [
     "minima_in_range", "maxima_in_range",
     "malefic_intensity", "benefic_strength", "is_in_eclipse",
     "algol_phase", "algol_magnitude", "algol_next_minimum", "algol_is_eclipsed",
+    # Fixed stars (sefstars catalog)
+    "StarPosition",
+    "load_catalog", "fixed_star_at", "all_stars_at",
+    "list_stars", "find_stars", "star_magnitude",
+    "heliacal_rising", "heliacal_setting",
     # Gaia DR3 catalog
     "GaiaStarPosition", "StellarQuality",
     "bp_rp_to_quality",
@@ -636,6 +766,13 @@ __all__ = [
     "FixedStar",
     "star_at", "stars_near", "stars_by_magnitude",
     "list_named_stars", "find_named_stars",
+    # Multiple star systems
+    "MultiType", "StarComponent", "OrbitalElements", "MultipleStarSystem",
+    "angular_separation_at", "position_angle_at",
+    "is_resolvable", "dominant_component", "combined_magnitude", "components_at",
+    "multiple_star", "list_multiple_stars", "multiple_stars_by_type",
+    "sirius_ab_separation_at", "sirius_b_resolvable",
+    "castor_separation_at", "alpha_cen_separation_at",
 ]
 
 
@@ -1048,6 +1185,42 @@ class Moira:
             include_nodes=include_nodes,
         )
 
+    def house_overlay(
+        self,
+        chart_source: Chart,
+        target_houses: HouseCusps,
+        include_nodes: bool = True,
+        source_label: str = "A",
+        target_label: str = "B",
+    ) -> SynastryHouseOverlay:
+        """Place one chart's points into another chart's houses."""
+
+        return house_overlay(
+            chart_source,
+            target_houses,
+            include_nodes=include_nodes,
+            source_label=source_label,
+            target_label=target_label,
+        )
+
+    def mutual_house_overlays(
+        self,
+        chart_a: Chart,
+        houses_a: HouseCusps,
+        chart_b: Chart,
+        houses_b: HouseCusps,
+        include_nodes: bool = True,
+    ) -> MutualHouseOverlay:
+        """Compute house overlays in both synastry directions."""
+
+        return mutual_house_overlays(
+            chart_a,
+            houses_a,
+            chart_b,
+            houses_b,
+            include_nodes=include_nodes,
+        )
+
     def composite_chart(
         self,
         chart_a: Chart,
@@ -1064,6 +1237,26 @@ class Moira:
         houses_a / houses_b : optional HouseCusps for composite house cusps
         """
         return composite_chart(chart_a, chart_b, houses_a, houses_b)
+
+    def composite_chart_reference_place(
+        self,
+        chart_a: Chart,
+        chart_b: Chart,
+        houses_a: HouseCusps,
+        houses_b: HouseCusps,
+        reference_latitude: float,
+        house_system: str = HouseSystem.PLACIDUS,
+    ) -> CompositeChart:
+        """Build a composite chart using the reference-place house method."""
+
+        return composite_chart_reference_place(
+            chart_a,
+            chart_b,
+            houses_a,
+            houses_b,
+            reference_latitude,
+            house_system=house_system,
+        )
 
     def davison_chart(
         self,
@@ -1089,6 +1282,82 @@ class Moira:
         house_system      : house system to use
         """
         return davison_chart(
+            dt_a, lat_a, lon_a,
+            dt_b, lat_b, lon_b,
+            house_system=house_system,
+            reader=self._reader,
+        )
+
+    def davison_chart_uncorrected(
+        self,
+        dt_a: datetime,
+        lat_a: float,
+        lon_a: float,
+        dt_b: datetime,
+        lat_b: float,
+        lon_b: float,
+        house_system: str = HouseSystem.PLACIDUS,
+    ) -> DavisonChart:
+        """Davison chart using arithmetic midpoint time and arithmetic location."""
+
+        return davison_chart_uncorrected(
+            dt_a, lat_a, lon_a,
+            dt_b, lat_b, lon_b,
+            house_system=house_system,
+            reader=self._reader,
+        )
+
+    def davison_chart_reference_place(
+        self,
+        dt_a: datetime,
+        dt_b: datetime,
+        reference_latitude: float,
+        reference_longitude: float,
+        house_system: str = HouseSystem.PLACIDUS,
+    ) -> DavisonChart:
+        """Davison chart using midpoint time and an explicit reference place."""
+
+        return davison_chart_reference_place(
+            dt_a,
+            dt_b,
+            reference_latitude,
+            reference_longitude,
+            house_system=house_system,
+            reader=self._reader,
+        )
+
+    def davison_chart_spherical_midpoint(
+        self,
+        dt_a: datetime,
+        lat_a: float,
+        lon_a: float,
+        dt_b: datetime,
+        lat_b: float,
+        lon_b: float,
+        house_system: str = HouseSystem.PLACIDUS,
+    ) -> DavisonChart:
+        """Davison chart using midpoint time and spherical geographic midpoint."""
+
+        return davison_chart_spherical_midpoint(
+            dt_a, lat_a, lon_a,
+            dt_b, lat_b, lon_b,
+            house_system=house_system,
+            reader=self._reader,
+        )
+
+    def davison_chart_corrected(
+        self,
+        dt_a: datetime,
+        lat_a: float,
+        lon_a: float,
+        dt_b: datetime,
+        lat_b: float,
+        lon_b: float,
+        house_system: str = HouseSystem.PLACIDUS,
+    ) -> DavisonChart:
+        """Davison chart with midpoint location and corrected midpoint time."""
+
+        return davison_chart_corrected(
             dt_a, lat_a, lon_a,
             dt_b, lat_b, lon_b,
             house_system=house_system,
@@ -1286,6 +1555,48 @@ class Moira:
         return solar_arc(jd_from_datetime(natal_dt), target_dt,
                          bodies=bodies, reader=self._reader)
 
+    def solar_arc_directions_ra(
+        self,
+        natal_dt: datetime,
+        target_dt: datetime,
+        bodies: list[str] | None = None,
+    ) -> ProgressedChart:
+        """Solar Arc directed chart measured in right ascension."""
+        return solar_arc_right_ascension(
+            jd_from_datetime(natal_dt),
+            target_dt,
+            bodies=bodies,
+            reader=self._reader,
+        )
+
+    def naibod_in_longitude(
+        self,
+        natal_dt: datetime,
+        target_dt: datetime,
+        bodies: list[str] | None = None,
+    ) -> ProgressedChart:
+        """Naibod directions in ecliptic longitude."""
+        return naibod_longitude(
+            jd_from_datetime(natal_dt),
+            target_dt,
+            bodies=bodies,
+            reader=self._reader,
+        )
+
+    def naibod_in_right_ascension(
+        self,
+        natal_dt: datetime,
+        target_dt: datetime,
+        bodies: list[str] | None = None,
+    ) -> ProgressedChart:
+        """Naibod directions in right ascension."""
+        return naibod_right_ascension(
+            jd_from_datetime(natal_dt),
+            target_dt,
+            bodies=bodies,
+            reader=self._reader,
+        )
+
     def tertiary_progression(
         self,
         natal_dt: datetime,
@@ -1295,6 +1606,20 @@ class Moira:
         """Tertiary Progressed chart (1 day = 1 lunar month)."""
         return tertiary_progression(jd_from_datetime(natal_dt), target_dt,
                                     bodies=bodies, reader=self._reader)
+
+    def tertiary_ii_progression(
+        self,
+        natal_dt: datetime,
+        target_dt: datetime,
+        bodies: list[str] | None = None,
+    ) -> ProgressedChart:
+        """Tertiary II / Klaus Wessel progression."""
+        return tertiary_ii_progression(
+            jd_from_datetime(natal_dt),
+            target_dt,
+            bodies=bodies,
+            reader=self._reader,
+        )
 
     def converse_progression(
         self,
@@ -1316,6 +1641,48 @@ class Moira:
         return converse_solar_arc(jd_from_datetime(natal_dt), target_dt,
                                   bodies=bodies, reader=self._reader)
 
+    def converse_solar_arc_ra(
+        self,
+        natal_dt: datetime,
+        target_dt: datetime,
+        bodies: list[str] | None = None,
+    ) -> ProgressedChart:
+        """Converse Solar Arc directed chart measured in right ascension."""
+        return converse_solar_arc_right_ascension(
+            jd_from_datetime(natal_dt),
+            target_dt,
+            bodies=bodies,
+            reader=self._reader,
+        )
+
+    def converse_tertiary_progression(
+        self,
+        natal_dt: datetime,
+        target_dt: datetime,
+        bodies: list[str] | None = None,
+    ) -> ProgressedChart:
+        """Converse Tertiary Progressed chart."""
+        return converse_tertiary_progression(
+            jd_from_datetime(natal_dt),
+            target_dt,
+            bodies=bodies,
+            reader=self._reader,
+        )
+
+    def converse_tertiary_ii_progression(
+        self,
+        natal_dt: datetime,
+        target_dt: datetime,
+        bodies: list[str] | None = None,
+    ) -> ProgressedChart:
+        """Converse Tertiary II / Klaus Wessel progression."""
+        return converse_tertiary_ii_progression(
+            jd_from_datetime(natal_dt),
+            target_dt,
+            bodies=bodies,
+            reader=self._reader,
+        )
+
     def minor_progression(
         self,
         natal_dt: datetime,
@@ -1325,6 +1692,83 @@ class Moira:
         """Minor Progressed chart (1 lunar month = 1 year)."""
         return minor_progression(jd_from_datetime(natal_dt), target_dt,
                                  bodies=bodies, reader=self._reader)
+
+    def converse_naibod_in_longitude(
+        self,
+        natal_dt: datetime,
+        target_dt: datetime,
+        bodies: list[str] | None = None,
+    ) -> ProgressedChart:
+        """Converse Naibod directions in ecliptic longitude."""
+        return converse_naibod_longitude(
+            jd_from_datetime(natal_dt),
+            target_dt,
+            bodies=bodies,
+            reader=self._reader,
+        )
+
+    def converse_naibod_in_right_ascension(
+        self,
+        natal_dt: datetime,
+        target_dt: datetime,
+        bodies: list[str] | None = None,
+    ) -> ProgressedChart:
+        """Converse Naibod directions in right ascension."""
+        return converse_naibod_right_ascension(
+            jd_from_datetime(natal_dt),
+            target_dt,
+            bodies=bodies,
+            reader=self._reader,
+        )
+
+    def converse_minor_progression(
+        self,
+        natal_dt: datetime,
+        target_dt: datetime,
+        bodies: list[str] | None = None,
+    ) -> ProgressedChart:
+        """Converse Minor Progressed chart (reverse current minor mapping rule)."""
+        return converse_minor_progression(
+            jd_from_datetime(natal_dt),
+            target_dt,
+            bodies=bodies,
+            reader=self._reader,
+        )
+
+    def ascendant_arc_directions(
+        self,
+        natal_dt: datetime,
+        target_dt: datetime,
+        latitude: float,
+        longitude: float,
+        bodies: list[str] | None = None,
+    ) -> ProgressedChart:
+        """Ascendant Arc directed chart."""
+        return ascendant_arc(
+            jd_from_datetime(natal_dt),
+            target_dt,
+            latitude,
+            longitude,
+            bodies=bodies,
+            reader=self._reader,
+        )
+
+    def daily_house_frame(
+        self,
+        natal_dt: datetime,
+        target_dt: datetime,
+        latitude: float,
+        longitude: float,
+        system: str = HouseSystem.PLACIDUS,
+    ) -> HouseCusps:
+        """Daily Houses progressed house frame."""
+        return daily_houses(
+            jd_from_datetime(natal_dt),
+            target_dt,
+            latitude,
+            longitude,
+            system=system,
+        )
 
     # ------------------------------------------------------------------
     # Transits
@@ -2244,6 +2688,59 @@ class Moira:
             "benefic_strength":  benefic_strength(star, jd),
             "is_eclipsed":       is_in_eclipse(star, jd),
         }
+
+    # ------------------------------------------------------------------
+    # Multiple star systems
+    # ------------------------------------------------------------------
+
+    def multiple_star_separation(
+        self, name: str, dt: datetime, aperture_mm: float = 100.0
+    ) -> dict:
+        """
+        Return the orbital state of a multiple star system at a given time.
+
+        Parameters
+        ----------
+        name        : system name or designation (e.g. "Sirius", "alp CMa")
+        dt          : datetime (UTC)
+        aperture_mm : telescope aperture for resolvability check (default 100 mm)
+
+        Returns
+        -------
+        dict with keys:
+          separation_arcsec    — float: current A–B angular separation
+          position_angle_deg   — float: position angle (N through E)
+          is_resolvable        — bool:  splittable with aperture_mm telescope
+          dominant_component   — str:   label of brightest component
+          combined_magnitude   — float: total V magnitude of the system
+          system_type          — str:   MultiType constant
+        """
+        system = multiple_star(name)
+        jd     = jd_from_datetime(dt)
+        return {
+            "separation_arcsec":  angular_separation_at(system, jd),
+            "position_angle_deg": position_angle_at(system, jd),
+            "is_resolvable":      is_resolvable(system, jd, aperture_mm),
+            "dominant_component": dominant_component(system).label,
+            "combined_magnitude": combined_magnitude(system),
+            "system_type":        system.system_type,
+        }
+
+    def multiple_star_components(self, name: str, dt: datetime) -> dict:
+        """
+        Return the full component snapshot of a multiple star system at dt.
+
+        Parameters
+        ----------
+        name : system name or designation
+        dt   : datetime (UTC)
+
+        Returns
+        -------
+        dict from components_at() — separation, PA, resolvability flags,
+        dominant component label, and per-component magnitude/spectral data.
+        """
+        return components_at(multiple_star(name), jd_from_datetime(dt))
 
     # ------------------------------------------------------------------
     # Dunder

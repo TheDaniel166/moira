@@ -39,11 +39,73 @@ Public surface / exports:
     find_phasis()         — phasis (solar beam crossing) events for a planet
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from enum import StrEnum
 import math
 
 from .constants import SIGNS
+
+__all__ = [
+    # Tables
+    "DOMICILE", "EXALTATION", "DETRIMENT", "FALL",
+    "SECT", "PREFERRED_HEMISPHERE", "PREFERRED_GENDER",
+    # Enums
+    "ConditionPolarity",
+    "EssentialDignityKind",
+    "AccidentalConditionKind",
+    "SectStateKind",
+    "SolarConditionKind",
+    "ReceptionKind",
+    "ReceptionBasis",
+    "ReceptionMode",
+    "PlanetaryConditionState",
+    "EssentialDignityDoctrine",
+    "MercurySectModel",
+    # Policy dataclasses
+    "EssentialDignityPolicy",
+    "SolarConditionPolicy",
+    "MutualReceptionPolicy",
+    "SectHayzPolicy",
+    "AccidentalDignityPolicy",
+    "DignityComputationPolicy",
+    # Result/truth dataclasses
+    "PlanetaryReception",
+    "PlanetaryConditionProfile",
+    "ChartConditionProfile",
+    "ConditionNetworkNode",
+    "ConditionNetworkEdge",
+    "ConditionNetworkProfile",
+    "EssentialDignityClassification",
+    "AccidentalConditionClassification",
+    "AccidentalDignityClassification",
+    "SectClassification",
+    "SolarConditionClassification",
+    "ReceptionClassification",
+    "EssentialDignityTruth",
+    "AccidentalDignityCondition",
+    "SolarConditionTruth",
+    "MutualReceptionTruth",
+    "SectTruth",
+    "AccidentalDignityTruth",
+    "PlanetaryDignity",
+    # Service
+    "DignitiesService",
+    # Module-level functions
+    "is_in_sect",
+    "is_in_hayz",
+    "calculate_dignities",
+    "calculate_receptions",
+    "calculate_condition_profiles",
+    "calculate_chart_condition_profile",
+    "calculate_condition_network_profile",
+    "sect_light",
+    "is_day_chart",
+    "almuten_figuris",
+    "mutual_receptions",
+    "find_phasis",
+]
 
 
 # ---------------------------------------------------------------------------

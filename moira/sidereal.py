@@ -273,9 +273,9 @@ def ayanamsa(jd: float, system: str = Ayanamsa.LAHIRI, mode: str = "true") -> fl
     ----------
     jd     : Julian Day Number
     system : one of the Ayanamsa.* constants
-    mode   : "mean" (precession only) or
-             "true" (star-anchored for TRUE_* systems; precession + nutation Δψ
-             for polynomial systems)
+    mode   : "mean" (precession only; polynomial for all systems) or
+             "true" (live star-anchored for systems in ``_STAR_ANCHORED``;
+             precession + nutation Δψ for all other polynomial systems)
 
     Returns
     -------
@@ -283,10 +283,15 @@ def ayanamsa(jd: float, system: str = Ayanamsa.LAHIRI, mode: str = "true") -> fl
 
     Notes
     -----
-    The public ayanamsa modes follow the Swiss-compatible reference anchors
-    in `_AYANAMSA_AT_J2000`, propagated with Moira's precession model and
-    optional nutation. The private `_star_anchored_ayanamsa()` helper is kept
-    for future research, but is not currently the authoritative public path.
+    Systems listed in ``_STAR_ANCHORED`` (TRUE_CHITRAPAKSHA, TRUE_REVATI,
+    ALDEBARAN_15_TAU, TRUE_PUSHYA) use the actual apparent tropical longitude
+    of their anchor star at ``jd`` to derive the ayanamsa, matching the
+    behaviour of Swiss Ephemeris SE_SIDM_TRUE_CITRA etc.  The polynomial
+    path (``_AYANAMSA_AT_J2000`` + precession + optional nutation) is used
+    for all other systems and as a fallback when the star catalog is absent.
+
+    Ayanamsa.LAHIRI is epoch-anchored (23°15′00.658″ at 21 Mar 1956), not
+    star-anchored, matching SE_SIDM_LAHIRI in SwissEph.
     """
     if mode not in ("mean", "true"):
         raise ValueError(f"mode must be 'mean' or 'true', got {mode!r}")
@@ -297,13 +302,16 @@ def ayanamsa(jd: float, system: str = Ayanamsa.LAHIRI, mode: str = "true") -> fl
             f"Choose from: {list(_AYANAMSA_AT_J2000)}"
         )
 
+    if mode == "true" and system in _STAR_ANCHORED:
+        return _star_anchored_ayanamsa(system, jd)
+
     base = _AYANAMSA_AT_J2000[system]
     precession = general_precession_in_longitude(jd)
     extra_drift = _AYANAMSA_DRIFT_PER_CENTURY.get(system, 0.0) * centuries_from_j2000(jd)
 
     if mode == "mean":
         return base + precession + extra_drift
-    else:  # "true"
+    else:  # "true", polynomial systems
         dpsi_deg, _ = nutation(jd)
         return base + precession + extra_drift + dpsi_deg
 

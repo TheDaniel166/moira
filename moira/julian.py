@@ -84,22 +84,24 @@ _DELTA_T_PRE1955_5Y: tuple[tuple[float, float], ...] = (
     (1955.0, 31.0468),
 )
 
-# Annual observed ΔT (TT − UT1, seconds) from IERS Bulletin B, 2015–2026.
-# Finer resolution replaces the coarse 5-year table for the modern era.
-# 2025–2026 are IERS Bulletin A predictions (updated as bulletins are released).
+# Annual mean ΔT (TT − UT1, seconds) from USNO deltat.data (maia.usno.navy.mil/ser7/deltat.data).
+# Values are 12-month arithmetic means of monthly observations. Finer resolution replaces the
+# coarse 5-year table for the modern era.
+# 2015–2025: fully observed (all 12 months averaged).
+# 2026: IERS Bulletin A prediction (only Jan 2026 available as of 2026-03-22; ~69.1 s).
 _DELTA_T_ANNUAL: tuple[tuple[float, float], ...] = (
-    (2015.0, 68.1),
-    (2016.0, 68.3),
-    (2017.0, 68.6),
-    (2018.0, 69.0),
-    (2019.0, 69.2),
-    (2020.0, 69.4),
-    (2021.0, 69.5),
-    (2022.0, 69.6),
-    (2023.0, 69.5),
-    (2024.0, 69.4),
-    (2025.0, 69.3),
-    (2026.0, 69.3),
+    (2015.0, 67.84),
+    (2016.0, 68.35),
+    (2017.0, 68.78),
+    (2018.0, 69.09),
+    (2019.0, 69.32),
+    (2020.0, 69.39),
+    (2021.0, 69.33),
+    (2022.0, 69.25),
+    (2023.0, 69.20),
+    (2024.0, 69.17),
+    (2025.0, 69.13),
+    (2026.0, 69.1),
 )
 
 
@@ -573,7 +575,7 @@ def delta_t(year: float) -> float:
     # 5-year table for 1955–2015
     if 1955.0 <= y < _annual_start:
         # Blend last 5-year entry into first annual entry at 2015
-        table = _DELTA_T_OBSERVED_5Y + ((2015.0, 68.1),)
+        table = _DELTA_T_OBSERVED_5Y + (_DELTA_T_ANNUAL[0],)
         for (y0, dt0), (y1, dt1) in zip(table, table[1:]):
             if y0 <= y <= y1:
                 frac = (y - y0) / (y1 - y0)

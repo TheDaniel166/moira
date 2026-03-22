@@ -17,6 +17,8 @@ It is a scan for:
 - enough subsystem coherence that SCP can apply cleanly
 - enough maturity that the next phase can be justified without phase-skipping
 
+**Last updated**: 2026-03-22
+
 ---
 
 ## 1. Scan Doctrine
@@ -61,143 +63,90 @@ close to that standard.
   Documented by [`LOTS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/LOTS_BACKEND_STANDARD.md)
 - [`patterns.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/patterns.py)
   Documented by [`PATTERNS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/PATTERNS_BACKEND_STANDARD.md)
+- [`transits.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/transits.py)
+  Documented by [`TRANSITS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/TRANSITS_BACKEND_STANDARD.md)
+- [`progressions.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/progressions.py)
+  Documented by [`PROGRESSIONS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/PROGRESSIONS_BACKEND_STANDARD.md)
+- [`eclipse.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/eclipse.py)
+  Documented by [`ECLIPSE_MODEL_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/ECLIPSE_MODEL_STANDARD.md)
 
-### Near-constitutional / partially constitutionalized
+### Self-constitutionalized (architecture freeze + validation codex in module)
 
 - [`chart_shape.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/chart_shape.py)
-  Already contains architecture-freeze and validation-codex language in the
-  module itself, has a curated `__all__`, and has a public-API test. It would
-  benefit from being externalized into a formal backend standard, but it is not
-  the highest-value next target because much of the constitutional work is
-  already present.
+  Contains a full architecture-freeze declaration, frozen threshold constants,
+  detection-order rationale, handle-in-gap doctrine, and a validation codex in
+  the module docstring. Has curated `__all__` and a public API test.
 
 ---
 
 ## 3. Highest-Value Next SCP Targets
 
-These are the strongest next candidates because they have real subsystem shape
-but are not yet constitutionally governed at the same level as houses, aspects,
-parans, dignities, lots, and patterns.
-
 ### Tier 1 - Best next candidates
 
-#### 3.1 Transits
-
-- [`transits.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/transits.py)
-
-Why it is strong:
-
-- clear computational core around search and returns
-- multiple meaningful result vessels
-- already exposes a practical public surface
-- likely contains doctrine that should be separated from raw search behavior
-
-Why it belongs in Tier 1:
-
-- the transit engine is reused across multiple higher-level techniques
-- it likely benefits from explicit invariants and failure/determinism doctrine
-
-### Tier 2 - High-value but heavier targets
-
-#### 3.2 Eclipse
-
-- [`eclipse.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/eclipse.py)
-
-Why it would benefit enormously:
-
-- major engine with many result vessels
-- deep delegated architecture
-- real classification and local-circumstance layers
-- already important enough to deserve constitutional clarity
-
-Why it is not the first recommendation:
-
-- larger and riskier
-- depends on several adjacent eclipse helper modules
-- constitutionalization should likely cover the eclipse cluster, not just one
-  file in isolation
-
-This is the biggest payoff target, but not the easiest next target.
-
-#### 3.3 Fixed Stars / Unified Star Surface
+#### 3.1 Fixed Stars / Unified Star Surface
 
 - [`fixed_stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/fixed_stars.py)
 - [`stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/stars.py)
 - possibly [`gaia.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/gaia.py)
 
-Why this cluster matters:
+Why it is now the best next candidate:
 
-- there is already a real star domain in the repo
-- public surface is split across multiple files
-- doctrine and boundary ownership are likely not yet fully explicit
+- the star surface already spans multiple files and needs explicit ownership
+  boundaries
+- `fixed_stars.py` contains doctrine beyond catalog lookup, especially heliacal
+  phenomena
+- constitutionalizing this cluster would close the heliacal wiring gap and
+  stabilize the unified star API
 
-Why it should wait:
+### Tier 2 - High-value but heavier targets
 
-- subsystem boundary should be defined first
-- the constitutional target is probably a star subsystem cluster, not a single
-  file
+#### 3.2 Synastry
+
+- [`synastry.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/synastry.py)
+
+Why it matters:
+
+- synastry is now an integration point over several constitutionalized engines
+  such as aspects, houses, lots, transits, and progressions
+- a constitution here would be a meta-constitution over already-governed
+  sources
+
+Why it still waits:
+
+- the test surface is still very thin
+- it needs broader coverage before a meta-constitutional pass is safe
 
 ---
 
 ## 4. Medium-Value SCP Targets
 
-These are legitimate candidates, but either narrower, less central, or less
-ready than the top group.
+### 4.1 Timelords (Firdaria + Zodiacal Releasing)
 
-### 4.1 Progressions
+- [`timelords.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/timelords.py)
 
-- [`progressions.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/progressions.py)
+Has non-trivial time-lord doctrine but still lacks a dedicated test file strong
+enough to anchor a constitutional pass.
 
-Likely benefits:
+### 4.2 Dasha
 
-- explicit progression doctrine
-- result-vessel hardening
-- deterministic ordering and failure semantics
+- [`dasha.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/dasha.py)
 
-Why not yet:
-
-- smaller test surface than top candidates
-- less obviously layered today
-
-### 4.2 Synastry
-
-- [`synastry.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/synastry.py)
-
-Likely benefits:
-
-- could become a real integration subsystem over multiple constitutionalized
-  engines
-
-Why not yet:
-
-- should probably wait until more source subsystems are constitutionalized
+Vimshottari period doctrine is real and significant, but the subsystem still
+needs a dedicated test anchor.
 
 ### 4.3 Sothic
 
 - [`sothic.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/sothic.py)
 
-Interesting because:
-
-- coherent domain
-- multiple result vessels
-
-Why later:
-
-- more specialized
-- lower centrality than patterns/transits/eclipse
+Coherent and doctrinally meaningful, but less central than the remaining
+star/timing candidates.
 
 ### 4.4 Variable Stars
 
 - [`variable_stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/variable_stars.py)
 
-Likely benefits:
-
-- doctrine clarification
-- explicit profiles and failure behavior
-
-Why later:
-
-- more niche than the major astrology engines
+Good test surface and real doctrine, but lower priority than the unified star
+cluster that should likely define the parent boundary first.
 
 ---
 
@@ -215,13 +164,7 @@ constitution rather than as standalone constitutional programs.
 - [`nutation_2000a.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/nutation_2000a.py)
 - [`corrections.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/corrections.py)
 
-Why:
-
-- they are foundational primitives
-- they may warrant standards of their own eventually
-- but they do not fit the same layered astrology-subsystem SCP shape as cleanly
-
-### Helper modules that likely belong to a parent subsystem constitution
+### Helper modules that belong to a parent subsystem constitution
 
 - [`eclipse_geometry.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/eclipse_geometry.py)
 - [`eclipse_search.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/eclipse_search.py)
@@ -229,10 +172,7 @@ Why:
 - [`eclipse_canon.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/eclipse_canon.py)
 - [`phase.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/phase.py)
 - [`spk_reader.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/spk_reader.py)
-
-Why:
-
-- they are important, but architecturally subordinate to larger engines
+- [`fixed_star_groups.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/fixed_star_groups.py)
 
 ### Catalog / data surfaces
 
@@ -243,11 +183,7 @@ Why:
 - [`tno.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/tno.py)
 - [`behenian_stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/behenian_stars.py)
 - [`royal_stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/royal_stars.py)
-
-Why:
-
-- many are thin data/catalog layers
-- SCP likely applies better to the parent subsystem they feed
+- [`varga.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/varga.py) *(until wired + tested)*
 
 ---
 
@@ -256,20 +192,19 @@ Why:
 If the goal is to continue constitutionalizing Moira in dependency-respecting
 order, the best next sequence is:
 
-1. [`transits.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/transits.py)
-2. eclipse subsystem cluster centered on [`eclipse.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/eclipse.py)
-3. fixed-stars / unified-star subsystem cluster centered on [`fixed_stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/fixed_stars.py) and [`stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/stars.py)
-4. [`progressions.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/progressions.py)
-5. [`synastry.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/synastry.py)
+1. fixed-stars / unified-star subsystem cluster centered on [`fixed_stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/fixed_stars.py) and [`stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/stars.py)
+2. [`synastry.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/synastry.py)
+3. [`timelords.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/timelords.py) / [`dasha.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/dasha.py)
+4. [`sothic.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/sothic.py)
+5. [`variable_stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/variable_stars.py)
 
-Rationale:
+Rationale for changes from the previous scan:
 
-- `lots` has now completed the full 12-phase SCP cycle and should be treated as a constitutionalized subsystem, not a pending candidate
-- `patterns` has now completed the full 12-phase SCP cycle and should be treated as a constitutionalized subsystem, not a pending candidate
-- `transits` is central and reusable, but somewhat more search-heavy and technique-branching
-- `eclipse` is extremely valuable but should be approached as a cluster
-- `stars` likely requires subsystem-boundary clarification before the phase work
-- `progressions` is a credible next-wave candidate once the higher-centrality targets above it are resolved
+- `progressions.py` is now fully constitutionalized and documented by
+  [`PROGRESSIONS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/PROGRESSIONS_BACKEND_STANDARD.md)
+- `eclipse.py` is now constitutionalized and removed from the pending list
+- the star cluster is now the highest-value unresolved subsystem boundary
+- synastry rises in importance as more source engines become constitutionalized
 
 ---
 

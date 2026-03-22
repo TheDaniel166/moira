@@ -131,6 +131,8 @@ Architecture standard and validation codex:
 """
 
 
+from __future__ import annotations
+
 import math
 import itertools
 from dataclasses import dataclass

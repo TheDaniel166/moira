@@ -70,6 +70,18 @@ from dataclasses import dataclass
 from pathlib import Path
 from collections.abc import Iterator
 
+__all__ = [
+    "StarPosition",
+    "load_catalog",
+    "fixed_star_at",
+    "all_stars_at",
+    "list_stars",
+    "find_stars",
+    "star_magnitude",
+    "heliacal_rising",
+    "heliacal_setting",
+]
+
 from .constants import DEG2RAD, RAD2DEG
 from .coordinates import equatorial_to_ecliptic, icrf_to_true_ecliptic
 from .obliquity import mean_obliquity

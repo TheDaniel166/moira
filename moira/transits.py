@@ -100,6 +100,14 @@ class TransitRelationBasis(StrEnum):
     SIGN_BOUNDARY = "sign_boundary"
 
 
+class TransitConditionState(StrEnum):
+    """Derived structural state for one integrated transit condition profile."""
+
+    STATIC_TARGET = "static_target"
+    DYNAMIC_TARGET = "dynamic_target"
+    BOUNDARY_EVENT = "boundary_event"
+
+
 @dataclass(slots=True)
 class TransitRelation:
     """
@@ -131,6 +139,277 @@ class TransitRelation:
                 raise ValueError("TransitRelation invariant failed: sign ingress must not be dynamic")
         elif self.basis is TransitRelationBasis.SIGN_BOUNDARY:
             raise ValueError("TransitRelation invariant failed: sign_boundary basis is reserved for sign ingress")
+
+    @property
+    def is_sign_ingress(self) -> bool:
+        """Return whether this relation is a sign-ingress relation."""
+
+        return self.relation_kind is TransitRelationKind.SIGN_INGRESS
+
+    @property
+    def is_target_crossing(self) -> bool:
+        """Return whether this relation is a target-crossing relation."""
+
+        return self.relation_kind is TransitRelationKind.TARGET_CROSSING
+
+
+@dataclass(slots=True)
+class TransitConditionProfile:
+    """
+    Integrated per-event condition profile for the transit subsystem.
+
+    This consumes existing event truth, classification, and relation state
+    without recomputing astronomy independently of the transit engine.
+    """
+
+    source_body: str
+    wrapper_kind: TransitWrapperKind
+    search_kind: TransitSearchKind
+    relation_kind: TransitRelationKind
+    relation_basis: TransitRelationBasis
+    target_kind: TransitTargetKind | None
+    uses_dynamic_target: bool
+    condition_state: TransitConditionState
+
+    def __post_init__(self) -> None:
+        if not self.source_body:
+            raise ValueError("TransitConditionProfile invariant failed: source_body must not be empty")
+        if self.relation_kind is TransitRelationKind.SIGN_INGRESS:
+            if self.relation_basis is not TransitRelationBasis.SIGN_BOUNDARY:
+                raise ValueError("TransitConditionProfile invariant failed: sign ingress must use sign_boundary basis")
+            if self.target_kind is not None:
+                raise ValueError("TransitConditionProfile invariant failed: ingress profile target_kind must be None")
+            if self.search_kind is not TransitSearchKind.SIGN_INGRESS:
+                raise ValueError("TransitConditionProfile invariant failed: ingress profile search_kind must be sign_ingress")
+            if self.condition_state is not TransitConditionState.BOUNDARY_EVENT:
+                raise ValueError("TransitConditionProfile invariant failed: ingress profile state must be boundary_event")
+            if self.uses_dynamic_target:
+                raise ValueError("TransitConditionProfile invariant failed: ingress profile must not be dynamic")
+        elif self.relation_kind is TransitRelationKind.TARGET_CROSSING:
+            if self.relation_basis is TransitRelationBasis.SIGN_BOUNDARY:
+                raise ValueError("TransitConditionProfile invariant failed: target crossing must not use sign_boundary basis")
+            if self.target_kind is None:
+                raise ValueError("TransitConditionProfile invariant failed: target crossing must have target_kind")
+            expected_state = (
+                TransitConditionState.DYNAMIC_TARGET
+                if self.uses_dynamic_target
+                else TransitConditionState.STATIC_TARGET
+            )
+            if self.condition_state is not expected_state:
+                raise ValueError("TransitConditionProfile invariant failed: target crossing state must match dynamic target truth")
+
+
+@dataclass(slots=True)
+class TransitChartConditionProfile:
+    """
+    Chart-wide aggregate over integrated transit condition profiles.
+
+    This is a pure aggregation layer over existing per-event condition truth.
+    It does not recompute event detection, target resolution, or search doctrine.
+    """
+
+    profiles: tuple[TransitConditionProfile, ...]
+    static_target_count: int
+    dynamic_target_count: int
+    boundary_event_count: int
+    target_crossing_count: int
+    sign_ingress_count: int
+    dynamic_relation_count: int
+    strongest_bodies: tuple[str, ...]
+    weakest_bodies: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if self.profiles != tuple(sorted(self.profiles, key=_condition_profile_sort_key)):
+            raise ValueError("TransitChartConditionProfile invariant failed: profiles must be deterministically ordered")
+        state_counts = {
+            TransitConditionState.STATIC_TARGET: 0,
+            TransitConditionState.DYNAMIC_TARGET: 0,
+            TransitConditionState.BOUNDARY_EVENT: 0,
+        }
+        relation_counts = {
+            TransitRelationKind.TARGET_CROSSING: 0,
+            TransitRelationKind.SIGN_INGRESS: 0,
+        }
+        dynamic_relation_count = 0
+        body_counts: dict[str, int] = {}
+        for profile in self.profiles:
+            state_counts[profile.condition_state] += 1
+            relation_counts[profile.relation_kind] += 1
+            if profile.uses_dynamic_target:
+                dynamic_relation_count += 1
+            body_counts[profile.source_body] = body_counts.get(profile.source_body, 0) + 1
+
+        if self.static_target_count != state_counts[TransitConditionState.STATIC_TARGET]:
+            raise ValueError("TransitChartConditionProfile invariant failed: static_target_count must match profiles")
+        if self.dynamic_target_count != state_counts[TransitConditionState.DYNAMIC_TARGET]:
+            raise ValueError("TransitChartConditionProfile invariant failed: dynamic_target_count must match profiles")
+        if self.boundary_event_count != state_counts[TransitConditionState.BOUNDARY_EVENT]:
+            raise ValueError("TransitChartConditionProfile invariant failed: boundary_event_count must match profiles")
+        if self.target_crossing_count != relation_counts[TransitRelationKind.TARGET_CROSSING]:
+            raise ValueError("TransitChartConditionProfile invariant failed: target_crossing_count must match profiles")
+        if self.sign_ingress_count != relation_counts[TransitRelationKind.SIGN_INGRESS]:
+            raise ValueError("TransitChartConditionProfile invariant failed: sign_ingress_count must match profiles")
+        if self.dynamic_relation_count != dynamic_relation_count:
+            raise ValueError("TransitChartConditionProfile invariant failed: dynamic_relation_count must match profiles")
+
+        ranked = tuple(
+            body for body, _count in sorted(body_counts.items(), key=lambda item: (-item[1], item[0]))
+        )
+        weakest_ranked = tuple(
+            body for body, _count in sorted(body_counts.items(), key=lambda item: (item[1], item[0]))
+        )
+        if self.strongest_bodies != ranked[: len(self.strongest_bodies)]:
+            raise ValueError("TransitChartConditionProfile invariant failed: strongest_bodies must match derived ranking")
+        if self.weakest_bodies != weakest_ranked[: len(self.weakest_bodies)]:
+            raise ValueError("TransitChartConditionProfile invariant failed: weakest_bodies must match derived ranking")
+
+    @property
+    def profile_count(self) -> int:
+        """Return the number of aggregated condition profiles."""
+
+        return len(self.profiles)
+
+    @property
+    def strongest_count(self) -> int:
+        """Return the number of strongest bodies reported."""
+
+        return len(self.strongest_bodies)
+
+    @property
+    def weakest_count(self) -> int:
+        """Return the number of weakest bodies reported."""
+
+        return len(self.weakest_bodies)
+
+
+class TransitConditionNetworkNodeKind(StrEnum):
+    """Node kinds for the derived transit relation network."""
+
+    BODY = "body"
+    TARGET = "target"
+
+
+@dataclass(slots=True)
+class TransitConditionNetworkNode:
+    """One node in the derived transit relation / condition network."""
+
+    node_id: str
+    node_kind: TransitConditionNetworkNodeKind
+    name: str
+    incoming_count: int
+    outgoing_count: int
+    total_degree: int
+
+    def __post_init__(self) -> None:
+        if not self.node_id:
+            raise ValueError("TransitConditionNetworkNode invariant failed: node_id must not be empty")
+        if not self.name:
+            raise ValueError("TransitConditionNetworkNode invariant failed: name must not be empty")
+        if self.incoming_count < 0 or self.outgoing_count < 0:
+            raise ValueError("TransitConditionNetworkNode invariant failed: degree counts must be non-negative")
+        if self.total_degree != self.incoming_count + self.outgoing_count:
+            raise ValueError("TransitConditionNetworkNode invariant failed: total_degree must equal incoming plus outgoing")
+
+
+@dataclass(slots=True)
+class TransitConditionNetworkEdge:
+    """One directed edge in the derived transit relation / condition network."""
+
+    source_node_id: str
+    target_node_id: str
+    relation_kind: TransitRelationKind
+    relation_basis: TransitRelationBasis
+    condition_state: TransitConditionState
+    uses_dynamic_target: bool
+
+    def __post_init__(self) -> None:
+        if not self.source_node_id or not self.target_node_id:
+            raise ValueError("TransitConditionNetworkEdge invariant failed: endpoint ids must not be empty")
+        if self.source_node_id == self.target_node_id:
+            raise ValueError("TransitConditionNetworkEdge invariant failed: self-edges are not allowed")
+        if self.relation_kind is TransitRelationKind.SIGN_INGRESS:
+            if self.relation_basis is not TransitRelationBasis.SIGN_BOUNDARY:
+                raise ValueError("TransitConditionNetworkEdge invariant failed: sign ingress must use sign_boundary basis")
+            if self.condition_state is not TransitConditionState.BOUNDARY_EVENT:
+                raise ValueError("TransitConditionNetworkEdge invariant failed: sign ingress must use boundary_event state")
+            if self.uses_dynamic_target:
+                raise ValueError("TransitConditionNetworkEdge invariant failed: sign ingress must not be dynamic")
+
+
+@dataclass(slots=True)
+class TransitConditionNetworkProfile:
+    """Derived network over transit bodies and their reached targets/signs."""
+
+    nodes: tuple[TransitConditionNetworkNode, ...]
+    edges: tuple[TransitConditionNetworkEdge, ...]
+    body_node_count: int
+    target_node_count: int
+    target_crossing_edge_count: int
+    sign_ingress_edge_count: int
+    dynamic_edge_count: int
+    isolated_nodes: tuple[str, ...]
+    most_connected_nodes: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if self.nodes != tuple(sorted(self.nodes, key=lambda node: node.node_id)):
+            raise ValueError("TransitConditionNetworkProfile invariant failed: nodes must be deterministically ordered")
+        if self.edges != tuple(sorted(self.edges, key=_transit_network_edge_sort_key)):
+            raise ValueError("TransitConditionNetworkProfile invariant failed: edges must be deterministically ordered")
+
+        node_ids = {node.node_id for node in self.nodes}
+        if len(node_ids) != len(self.nodes):
+            raise ValueError("TransitConditionNetworkProfile invariant failed: node ids must be unique")
+        for edge in self.edges:
+            if edge.source_node_id not in node_ids or edge.target_node_id not in node_ids:
+                raise ValueError("TransitConditionNetworkProfile invariant failed: edges must reference existing nodes")
+
+        body_count = sum(1 for node in self.nodes if node.node_kind is TransitConditionNetworkNodeKind.BODY)
+        target_count = sum(1 for node in self.nodes if node.node_kind is TransitConditionNetworkNodeKind.TARGET)
+        if self.body_node_count != body_count:
+            raise ValueError("TransitConditionNetworkProfile invariant failed: body_node_count must match nodes")
+        if self.target_node_count != target_count:
+            raise ValueError("TransitConditionNetworkProfile invariant failed: target_node_count must match nodes")
+
+        edge_counts = {
+            TransitRelationKind.TARGET_CROSSING: 0,
+            TransitRelationKind.SIGN_INGRESS: 0,
+        }
+        dynamic_count = 0
+        incoming: dict[str, int] = {node.node_id: 0 for node in self.nodes}
+        outgoing: dict[str, int] = {node.node_id: 0 for node in self.nodes}
+        for edge in self.edges:
+            edge_counts[edge.relation_kind] += 1
+            if edge.uses_dynamic_target:
+                dynamic_count += 1
+            outgoing[edge.source_node_id] += 1
+            incoming[edge.target_node_id] += 1
+        if self.target_crossing_edge_count != edge_counts[TransitRelationKind.TARGET_CROSSING]:
+            raise ValueError("TransitConditionNetworkProfile invariant failed: target_crossing_edge_count must match edges")
+        if self.sign_ingress_edge_count != edge_counts[TransitRelationKind.SIGN_INGRESS]:
+            raise ValueError("TransitConditionNetworkProfile invariant failed: sign_ingress_edge_count must match edges")
+        if self.dynamic_edge_count != dynamic_count:
+            raise ValueError("TransitConditionNetworkProfile invariant failed: dynamic_edge_count must match edges")
+
+        for node in self.nodes:
+            if node.incoming_count != incoming[node.node_id] or node.outgoing_count != outgoing[node.node_id]:
+                raise ValueError("TransitConditionNetworkProfile invariant failed: node degree counts must match edges")
+
+        isolated = tuple(node.node_id for node in self.nodes if node.total_degree == 0)
+        if self.isolated_nodes != isolated:
+            raise ValueError("TransitConditionNetworkProfile invariant failed: isolated_nodes must match nodes")
+        ranked = tuple(
+            node.node_id for node in sorted(self.nodes, key=lambda node: (-node.total_degree, node.node_id))
+        )
+        if self.most_connected_nodes != ranked[: len(self.most_connected_nodes)]:
+            raise ValueError("TransitConditionNetworkProfile invariant failed: most_connected_nodes must match ranking")
+
+    @property
+    def node_count(self) -> int:
+        return len(self.nodes)
+
+    @property
+    def edge_count(self) -> int:
+        return len(self.edges)
 
 
 @dataclass(slots=True, frozen=True)
@@ -427,6 +706,80 @@ def _build_ingress_relation(truth: IngressComputationTruth) -> TransitRelation:
         is_dynamic_target=False,
     )
 
+
+def _build_transit_condition_profile(
+    classification: TransitComputationClassification,
+    relation: TransitRelation,
+) -> TransitConditionProfile:
+    """Integrate preserved transit truth into one structural event profile."""
+
+    return TransitConditionProfile(
+        source_body=classification.body,
+        wrapper_kind=classification.search.wrapper_kind,
+        search_kind=classification.search.search_kind,
+        relation_kind=relation.relation_kind,
+        relation_basis=relation.basis,
+        target_kind=classification.target.target_kind,
+        uses_dynamic_target=classification.search.uses_dynamic_target,
+        condition_state=(
+            TransitConditionState.DYNAMIC_TARGET
+            if classification.search.uses_dynamic_target
+            else TransitConditionState.STATIC_TARGET
+        ),
+    )
+
+
+def _build_ingress_condition_profile(
+    classification: IngressComputationClassification,
+    relation: TransitRelation,
+) -> TransitConditionProfile:
+    """Integrate preserved ingress truth into one structural event profile."""
+
+    return TransitConditionProfile(
+        source_body=classification.body,
+        wrapper_kind=classification.search.wrapper_kind,
+        search_kind=classification.search.search_kind,
+        relation_kind=relation.relation_kind,
+        relation_basis=relation.basis,
+        target_kind=None,
+        uses_dynamic_target=classification.search.uses_dynamic_target,
+        condition_state=TransitConditionState.BOUNDARY_EVENT,
+    )
+
+
+def _condition_profile_sort_key(profile: TransitConditionProfile) -> tuple[str, str, str, str, str]:
+    """Deterministic ordering key for transit condition profiles."""
+
+    return (
+        profile.source_body,
+        profile.wrapper_kind.value,
+        profile.search_kind.value,
+        profile.relation_kind.value,
+        profile.relation_basis.value,
+    )
+
+
+def _transit_network_target_node_id(relation: TransitRelation) -> str:
+    """Build a deterministic target-node id from preserved relation truth."""
+
+    if relation.relation_kind is TransitRelationKind.SIGN_INGRESS:
+        return f"target:sign:{relation.target_name}"
+    return f"target:{relation.basis.value}:{relation.target_name}"
+
+
+def _transit_network_edge_sort_key(
+    edge: TransitConditionNetworkEdge,
+) -> tuple[str, str, str, str, str]:
+    """Deterministic ordering key for transit network edges."""
+
+    return (
+        edge.source_node_id,
+        edge.target_node_id,
+        edge.relation_kind.value,
+        edge.relation_basis.value,
+        edge.condition_state.value,
+    )
+
 @dataclass(slots=True)
 class TransitEvent:
     """
@@ -492,6 +845,7 @@ class TransitEvent:
     computation_truth: TransitComputationTruth | None = None
     classification: TransitComputationClassification | None = None
     relation: TransitRelation | None = None
+    condition_profile: TransitConditionProfile | None = None
 
     def __post_init__(self) -> None:
         if not self.body:
@@ -530,6 +884,19 @@ class TransitEvent:
         if self.classification is not None and self.relation is not None:
             if self.relation.basis.value != self.classification.target.target_kind.value:
                 raise ValueError("TransitEvent invariant failed: relation basis must match classification target kind")
+        if self.condition_profile is not None:
+            if self.condition_profile.source_body != self.body:
+                raise ValueError("TransitEvent invariant failed: condition_profile source_body must match body")
+        if self.classification is not None and self.condition_profile is not None:
+            if self.condition_profile.wrapper_kind is not self.classification.search.wrapper_kind:
+                raise ValueError("TransitEvent invariant failed: condition_profile wrapper_kind must match classification")
+            if self.condition_profile.target_kind is not self.classification.target.target_kind:
+                raise ValueError("TransitEvent invariant failed: condition_profile target_kind must match classification")
+        if self.relation is not None and self.condition_profile is not None:
+            if self.condition_profile.relation_kind is not self.relation.relation_kind:
+                raise ValueError("TransitEvent invariant failed: condition_profile relation_kind must match relation")
+            if self.condition_profile.relation_basis is not self.relation.basis:
+                raise ValueError("TransitEvent invariant failed: condition_profile relation_basis must match relation")
 
     @property
     def datetime_utc(self) -> datetime:
@@ -576,6 +943,44 @@ class TransitEvent:
 
         if self.classification is not None:
             return self.classification.search.uses_dynamic_target
+        return None
+
+    @property
+    def relation_kind(self) -> TransitRelationKind | None:
+        """Return the explicit relation kind when relation truth is available."""
+
+        if self.relation is not None:
+            return self.relation.relation_kind
+        return None
+
+    @property
+    def relation_basis(self) -> TransitRelationBasis | None:
+        """Return the explicit relation basis when relation truth is available."""
+
+        if self.relation is not None:
+            return self.relation.basis
+        return None
+
+    @property
+    def relation_target_name(self) -> str | None:
+        """Return the resolved relation target name when relation truth is available."""
+
+        if self.relation is not None:
+            return self.relation.target_name
+        return None
+
+    @property
+    def has_relation(self) -> bool:
+        """Return whether explicit relation truth is present."""
+
+        return self.relation is not None
+
+    @property
+    def condition_state(self) -> TransitConditionState | None:
+        """Return the integrated structural condition state when available."""
+
+        if self.condition_profile is not None:
+            return self.condition_profile.condition_state
         return None
 
 
@@ -644,6 +1049,7 @@ class IngressEvent:
     computation_truth: IngressComputationTruth | None = None
     classification: IngressComputationClassification | None = None
     relation: TransitRelation | None = None
+    condition_profile: TransitConditionProfile | None = None
 
     def __post_init__(self) -> None:
         if not self.body:
@@ -684,6 +1090,17 @@ class IngressEvent:
         if self.classification is not None and self.relation is not None:
             if self.relation.basis is not TransitRelationBasis.SIGN_BOUNDARY:
                 raise ValueError("IngressEvent invariant failed: relation basis must be sign_boundary")
+        if self.condition_profile is not None:
+            if self.condition_profile.source_body != self.body:
+                raise ValueError("IngressEvent invariant failed: condition_profile source_body must match body")
+        if self.classification is not None and self.condition_profile is not None:
+            if self.condition_profile.wrapper_kind is not self.classification.search.wrapper_kind:
+                raise ValueError("IngressEvent invariant failed: condition_profile wrapper_kind must match classification")
+        if self.relation is not None and self.condition_profile is not None:
+            if self.condition_profile.relation_kind is not self.relation.relation_kind:
+                raise ValueError("IngressEvent invariant failed: condition_profile relation_kind must match relation")
+            if self.condition_profile.relation_basis is not self.relation.basis:
+                raise ValueError("IngressEvent invariant failed: condition_profile relation_basis must match relation")
 
     @property
     def sign_longitude(self) -> float:
@@ -719,6 +1136,36 @@ class IngressEvent:
             return self.classification.search.wrapper_kind
         return None
 
+    @property
+    def relation_kind(self) -> TransitRelationKind | None:
+        """Return the explicit relation kind when relation truth is available."""
+
+        if self.relation is not None:
+            return self.relation.relation_kind
+        return None
+
+    @property
+    def relation_basis(self) -> TransitRelationBasis | None:
+        """Return the explicit relation basis when relation truth is available."""
+
+        if self.relation is not None:
+            return self.relation.basis
+        return None
+
+    @property
+    def has_relation(self) -> bool:
+        """Return whether explicit relation truth is present."""
+
+        return self.relation is not None
+
+    @property
+    def condition_state(self) -> TransitConditionState | None:
+        """Return the integrated structural condition state when available."""
+
+        if self.condition_profile is not None:
+            return self.condition_profile.condition_state
+        return None
+
 
 # ---------------------------------------------------------------------------
 # Low-level longitude sampler
@@ -745,7 +1192,11 @@ def _resolve_longitude_truth(
 ) -> LongitudeResolutionTruth:
     """Resolve a target specification and preserve how it was obtained."""
 
+    _require_finite_jd(jd, "jd")
+
     if isinstance(spec, (int, float)):
+        if not math.isfinite(float(spec)):
+            raise ValueError("Transit input target longitude must be finite")
         return LongitudeResolutionTruth(
             requested_spec=spec,
             resolved_kind="numeric_longitude",
@@ -755,6 +1206,8 @@ def _resolve_longitude_truth(
         )
 
     name = str(spec).strip()
+    if not name:
+        raise ValueError("Transit input target specification must not be empty")
 
     try:
         return LongitudeResolutionTruth(
@@ -785,13 +1238,16 @@ def _resolve_longitude_truth(
             longitude=asteroid_at(name, jd, de441_reader=reader).longitude,
         )
 
-    return LongitudeResolutionTruth(
-        requested_spec=spec,
-        resolved_kind="fixed_star",
-        resolved_name=name,
-        jd_ut=jd,
-        longitude=fixed_star_at(name, ut_to_tt(jd)).longitude,
-    )
+    try:
+        return LongitudeResolutionTruth(
+            requested_spec=spec,
+            resolved_kind="fixed_star",
+            resolved_name=name,
+            jd_ut=jd,
+            longitude=fixed_star_at(name, ut_to_tt(jd)).longitude,
+        )
+    except Exception as exc:
+        raise ValueError(f"Transit target specification could not be resolved: {name}") from exc
 
 
 def _lon(body: str | float, jd: float, reader: SpkReader) -> float:
@@ -854,6 +1310,46 @@ def _return_window_days(body: str, policy: TransitComputationPolicy) -> float:
     if policy.returns.default_max_days is not None:
         return policy.returns.default_max_days
     return _RETURN_SEARCH_DAYS.get(body, 400.0)
+
+
+def _require_non_empty_body(body: str, label: str = "body") -> None:
+    """Fail clearly when a required body identifier is empty."""
+
+    if not isinstance(body, str) or not body.strip():
+        raise ValueError(f"Transit input {label} must be a non-empty string")
+
+
+def _require_finite_jd(value: float, label: str) -> None:
+    """Fail clearly when a required Julian Day is not finite."""
+
+    if not math.isfinite(value):
+        raise ValueError(f"Transit input {label} must be finite")
+
+
+def _require_positive(value: float, label: str) -> None:
+    """Fail clearly when a required positive scalar is invalid."""
+
+    if not math.isfinite(value) or value <= 0:
+        raise ValueError(f"Transit input {label} must be positive and finite")
+
+
+def _validate_direction(direction: str) -> None:
+    """Validate public direction filters consistently."""
+
+    if direction not in {"direct", "retrograde", "either"}:
+        raise ValueError("Transit input direction must be 'direct', 'retrograde', or 'either'")
+
+
+def _validate_transit_range(jd_start: float, jd_end: float, *, allow_equal: bool = False) -> None:
+    """Validate ordered transit search ranges."""
+
+    _require_finite_jd(jd_start, "jd_start")
+    _require_finite_jd(jd_end, "jd_end")
+    if allow_equal:
+        if jd_end < jd_start:
+            raise ValueError("Transit input range must be ordered")
+    elif jd_end <= jd_start:
+        raise ValueError("Transit input range must be strictly increasing")
 
 
 # ---------------------------------------------------------------------------
@@ -929,6 +1425,12 @@ def next_transit(
     -------
     TransitEvent, or None if not found within max_days
     """
+    _require_non_empty_body(body)
+    _require_finite_jd(jd_start, "jd_start")
+    _validate_direction(direction)
+    _require_positive(max_days, "max_days")
+    if step_days is not None:
+        _require_positive(step_days, "step_days")
     if reader is None:
         reader = get_reader()
     policy = _validate_policy(policy)
@@ -983,17 +1485,20 @@ def next_transit(
                         solver_tolerance_days=search_truth.solver_tolerance_days,
                     ),
                 )
+                classification = _classify_transit_computation_truth(
+                    computation_truth,
+                    wrapper_kind=TransitWrapperKind.DIRECT_TRANSIT,
+                )
+                relation = _build_transit_relation(computation_truth)
                 return TransitEvent(
                     body=body,
                     longitude=target_truth.longitude,
                     jd_ut=jd_cross,
                     direction=mov,
                     computation_truth=computation_truth,
-                    classification=_classify_transit_computation_truth(
-                        computation_truth,
-                        wrapper_kind=TransitWrapperKind.DIRECT_TRANSIT,
-                    ),
-                    relation=_build_transit_relation(computation_truth),
+                    classification=classification,
+                    relation=relation,
+                    condition_profile=_build_transit_condition_profile(classification, relation),
                 )
 
         jd = jd_next
@@ -1027,6 +1532,10 @@ def find_transits(
     -------
     List of TransitEvent (chronological)
     """
+    _require_non_empty_body(body)
+    _validate_transit_range(jd_start, jd_end)
+    if step_days is not None:
+        _require_positive(step_days, "step_days")
     if reader is None:
         reader = get_reader()
     policy = _validate_policy(policy)
@@ -1076,17 +1585,20 @@ def find_transits(
                     solver_tolerance_days=search_truth.solver_tolerance_days,
                 ),
             )
+            classification = _classify_transit_computation_truth(
+                computation_truth,
+                wrapper_kind=TransitWrapperKind.TRANSIT_RANGE,
+            )
+            relation = _build_transit_relation(computation_truth)
             events.append(TransitEvent(
                 body=body,
                 longitude=target_truth.longitude,
                 jd_ut=jd_cross,
                 direction=mov,
                 computation_truth=computation_truth,
-                classification=_classify_transit_computation_truth(
-                    computation_truth,
-                    wrapper_kind=TransitWrapperKind.TRANSIT_RANGE,
-                ),
-                relation=_build_transit_relation(computation_truth),
+                classification=classification,
+                relation=relation,
+                condition_profile=_build_transit_condition_profile(classification, relation),
             ))
 
         jd = jd_next
@@ -1114,6 +1626,10 @@ def find_ingresses(
     -------
     List of IngressEvent (chronological)
     """
+    _require_non_empty_body(body)
+    _validate_transit_range(jd_start, jd_end)
+    if step_days is not None:
+        _require_positive(step_days, "step_days")
     if reader is None:
         reader = get_reader()
     policy = _validate_policy(policy)
@@ -1164,14 +1680,17 @@ def find_ingresses(
                         solver_tolerance_days=search_truth.solver_tolerance_days,
                     ),
                 )
+                classification = _classify_ingress_computation_truth(computation_truth)
+                relation = _build_ingress_relation(computation_truth)
                 events.append(IngressEvent(
                     body=body,
                     sign=SIGNS[sign_idx],
                     jd_ut=jd_cross,
                     direction=mov,
                     computation_truth=computation_truth,
-                    classification=_classify_ingress_computation_truth(computation_truth),
-                    relation=_build_ingress_relation(computation_truth),
+                    classification=classification,
+                    relation=relation,
+                    condition_profile=_build_ingress_condition_profile(classification, relation),
                 ))
 
         jd = jd_next
@@ -1236,6 +1755,11 @@ def planet_return(
     ------
     RuntimeError if no return is found within 1.5 × the orbital period
     """
+    _require_non_empty_body(body)
+    if not math.isfinite(natal_lon):
+        raise ValueError("Transit input natal_lon must be finite")
+    _require_finite_jd(jd_start, "jd_start")
+    _validate_direction(direction)
     if reader is None:
         reader = get_reader()
     policy = _validate_policy(policy)
@@ -1278,6 +1802,8 @@ def solar_return(
     -------
     Julian Day (UT) of the exact solar return
     """
+    if not math.isfinite(natal_sun_lon):
+        raise ValueError("Transit input natal_sun_lon must be finite")
     if reader is None:
         reader = get_reader()
 
@@ -1315,6 +1841,9 @@ def lunar_return(
     -------
     Julian Day (UT) of the next exact lunar return
     """
+    if not math.isfinite(natal_moon_lon):
+        raise ValueError("Transit input natal_moon_lon must be finite")
+    _require_finite_jd(jd_start, "jd_start")
     if reader is None:
         reader = get_reader()
 
@@ -1399,6 +1928,7 @@ def last_new_moon(
     -------
     Julian Day (UT) of the New Moon.
     """
+    _require_finite_jd(jd, "jd")
     if reader is None:
         reader = get_reader()
     policy = _validate_policy(policy)
@@ -1447,6 +1977,7 @@ def last_full_moon(
     -------
     Julian Day (UT) of the Full Moon.
     """
+    _require_finite_jd(jd, "jd")
     if reader is None:
         reader = get_reader()
     policy = _validate_policy(policy)
@@ -1495,6 +2026,7 @@ def prenatal_syzygy(
     -------
     (jd_syzygy, phase) where phase is 'New Moon' or 'Full Moon'.
     """
+    _require_finite_jd(jd, "jd")
     if reader is None:
         reader = get_reader()
     policy = _validate_policy(policy)
@@ -1516,3 +2048,132 @@ def ingress_relations(events: list[IngressEvent]) -> list[TransitRelation]:
     """Flatten explicit ingress relations from detected ingress events."""
 
     return [event.relation for event in events if event.relation is not None]
+
+
+def transit_condition_profiles(events: list[TransitEvent]) -> list[TransitConditionProfile]:
+    """Flatten integrated condition profiles from detected transit events."""
+
+    return [event.condition_profile for event in events if event.condition_profile is not None]
+
+
+def ingress_condition_profiles(events: list[IngressEvent]) -> list[TransitConditionProfile]:
+    """Flatten integrated condition profiles from detected ingress events."""
+
+    return [event.condition_profile for event in events if event.condition_profile is not None]
+
+
+def transit_chart_condition_profile(
+    transit_events: list[TransitEvent],
+    ingress_events: list[IngressEvent] | None = None,
+) -> TransitChartConditionProfile:
+    """Aggregate transit and ingress condition profiles into one chart-wide vessel."""
+
+    profiles = transit_condition_profiles(transit_events)
+    if ingress_events is not None:
+        profiles.extend(ingress_condition_profiles(ingress_events))
+    ordered_profiles = tuple(sorted(profiles, key=_condition_profile_sort_key))
+
+    body_counts: dict[str, int] = {}
+    for profile in ordered_profiles:
+        body_counts[profile.source_body] = body_counts.get(profile.source_body, 0) + 1
+
+    strongest = tuple(body for body, _count in sorted(body_counts.items(), key=lambda item: (-item[1], item[0])))
+    weakest = tuple(body for body, _count in sorted(body_counts.items(), key=lambda item: (item[1], item[0])))
+
+    return TransitChartConditionProfile(
+        profiles=ordered_profiles,
+        static_target_count=sum(
+            1 for profile in ordered_profiles if profile.condition_state is TransitConditionState.STATIC_TARGET
+        ),
+        dynamic_target_count=sum(
+            1 for profile in ordered_profiles if profile.condition_state is TransitConditionState.DYNAMIC_TARGET
+        ),
+        boundary_event_count=sum(
+            1 for profile in ordered_profiles if profile.condition_state is TransitConditionState.BOUNDARY_EVENT
+        ),
+        target_crossing_count=sum(
+            1 for profile in ordered_profiles if profile.relation_kind is TransitRelationKind.TARGET_CROSSING
+        ),
+        sign_ingress_count=sum(
+            1 for profile in ordered_profiles if profile.relation_kind is TransitRelationKind.SIGN_INGRESS
+        ),
+        dynamic_relation_count=sum(1 for profile in ordered_profiles if profile.uses_dynamic_target),
+        strongest_bodies=strongest,
+        weakest_bodies=weakest,
+    )
+
+
+def transit_condition_network_profile(
+    transit_events: list[TransitEvent],
+    ingress_events: list[IngressEvent] | None = None,
+) -> TransitConditionNetworkProfile:
+    """Project transit and ingress condition truth into a directed network."""
+
+    all_events: list[TransitEvent | IngressEvent] = list(transit_events)
+    if ingress_events is not None:
+        all_events.extend(ingress_events)
+
+    node_meta: dict[str, tuple[TransitConditionNetworkNodeKind, str]] = {}
+    edges: list[TransitConditionNetworkEdge] = []
+
+    for event in all_events:
+        if event.relation is None or event.condition_profile is None:
+            continue
+        body_node_id = f"body:{event.body}"
+        target_node_id = _transit_network_target_node_id(event.relation)
+        node_meta[body_node_id] = (TransitConditionNetworkNodeKind.BODY, event.body)
+        node_meta[target_node_id] = (TransitConditionNetworkNodeKind.TARGET, event.relation.target_name)
+        edges.append(
+            TransitConditionNetworkEdge(
+                source_node_id=body_node_id,
+                target_node_id=target_node_id,
+                relation_kind=event.relation.relation_kind,
+                relation_basis=event.relation.basis,
+                condition_state=event.condition_profile.condition_state,
+                uses_dynamic_target=event.condition_profile.uses_dynamic_target,
+            )
+        )
+
+    ordered_edges = tuple(sorted(edges, key=_transit_network_edge_sort_key))
+    incoming: dict[str, int] = {node_id: 0 for node_id in node_meta}
+    outgoing: dict[str, int] = {node_id: 0 for node_id in node_meta}
+    for edge in ordered_edges:
+        outgoing[edge.source_node_id] += 1
+        incoming[edge.target_node_id] += 1
+
+    ordered_nodes = tuple(
+        sorted(
+            (
+                TransitConditionNetworkNode(
+                    node_id=node_id,
+                    node_kind=node_kind,
+                    name=name,
+                    incoming_count=incoming[node_id],
+                    outgoing_count=outgoing[node_id],
+                    total_degree=incoming[node_id] + outgoing[node_id],
+                )
+                for node_id, (node_kind, name) in node_meta.items()
+            ),
+            key=lambda node: node.node_id,
+        )
+    )
+    isolated = tuple(node.node_id for node in ordered_nodes if node.total_degree == 0)
+    most_connected = tuple(
+        node.node_id for node in sorted(ordered_nodes, key=lambda node: (-node.total_degree, node.node_id))
+    )
+
+    return TransitConditionNetworkProfile(
+        nodes=ordered_nodes,
+        edges=ordered_edges,
+        body_node_count=sum(1 for node in ordered_nodes if node.node_kind is TransitConditionNetworkNodeKind.BODY),
+        target_node_count=sum(1 for node in ordered_nodes if node.node_kind is TransitConditionNetworkNodeKind.TARGET),
+        target_crossing_edge_count=sum(
+            1 for edge in ordered_edges if edge.relation_kind is TransitRelationKind.TARGET_CROSSING
+        ),
+        sign_ingress_edge_count=sum(
+            1 for edge in ordered_edges if edge.relation_kind is TransitRelationKind.SIGN_INGRESS
+        ),
+        dynamic_edge_count=sum(1 for edge in ordered_edges if edge.uses_dynamic_target),
+        isolated_nodes=isolated,
+        most_connected_nodes=most_connected,
+    )
