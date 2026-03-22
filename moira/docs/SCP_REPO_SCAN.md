@@ -67,8 +67,17 @@ close to that standard.
   Documented by [`TRANSITS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/TRANSITS_BACKEND_STANDARD.md)
 - [`progressions.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/progressions.py)
   Documented by [`PROGRESSIONS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/PROGRESSIONS_BACKEND_STANDARD.md)
+- [`synastry.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/synastry.py)
+  Documented by [`SYNASTRY_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/SYNASTRY_BACKEND_STANDARD.md)
+- unified-star subsystem centered on [`fixed_stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/fixed_stars.py) and [`stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/stars.py)
+  Documented by [`STARS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/STARS_BACKEND_STANDARD.md)
+- [`sothic.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/sothic.py)
+  Documented by [`SOTHIC_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/SOTHIC_BACKEND_STANDARD.md)
 - [`eclipse.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/eclipse.py)
   Documented by [`ECLIPSE_MODEL_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/ECLIPSE_MODEL_STANDARD.md)
+- timing doctrine cluster: [`timelords.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/timelords.py) and [`dasha.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/dasha.py)
+  Documented by [`TIMELORDS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/TIMELORDS_BACKEND_STANDARD.md)
+  and [`DASHA_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/DASHA_BACKEND_STANDARD.md)
 
 ### Self-constitutionalized (architecture freeze + validation codex in module)
 
@@ -77,76 +86,48 @@ close to that standard.
   detection-order rationale, handle-in-gap doctrine, and a validation codex in
   the module docstring. Has curated `__all__` and a public API test.
 
+- [`void_of_course.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/void_of_course.py)
+  Contains a full architecture-freeze declaration covering frozen scan/bisection
+  constants, traditional and modern body set doctrine, eight-target aspect
+  doctrine, crossing-detection formula with guard rationale, and VOC start
+  determination doctrine. Includes a twelve-rule validation codex and curated
+  `__all__`.
+
+- [`multiple_stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/multiple_stars.py)
+  Contains a full architecture-freeze declaration covering system-type dispatch
+  doctrine (VISUAL/WIDE/SPECTROSCOPIC/OPTICAL), Kepler solver constants,
+  Thiele-Innes projection doctrine, Dawes resolvability formula, and combined
+  magnitude formula. Includes an eleven-rule validation codex and curated
+  `__all__`.
+
 ---
 
 ## 3. Highest-Value Next SCP Targets
 
 ### Tier 1 - Best next candidates
 
-#### 3.1 Fixed Stars / Unified Star Surface
-
-- [`fixed_stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/fixed_stars.py)
-- [`stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/stars.py)
-- possibly [`gaia.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/gaia.py)
-
-Why it is now the best next candidate:
-
-- the star surface already spans multiple files and needs explicit ownership
-  boundaries
-- `fixed_stars.py` contains doctrine beyond catalog lookup, especially heliacal
-  phenomena
-- constitutionalizing this cluster would close the heliacal wiring gap and
-  stabilize the unified star API
-
-### Tier 2 - High-value but heavier targets
-
-#### 3.2 Synastry
-
-- [`synastry.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/synastry.py)
-
-Why it matters:
-
-- synastry is now an integration point over several constitutionalized engines
-  such as aspects, houses, lots, transits, and progressions
-- a constitution here would be a meta-constitution over already-governed
-  sources
-
-Why it still waits:
-
-- the test surface is still very thin
-- it needs broader coverage before a meta-constitutional pass is safe
+The timing doctrine cluster (`timelords.py` and `dasha.py`) has been fully
+constitutionalized through all twelve SCP phases. See §2 (Fully constitutionalized)
+and the recommendation order update in §6.
 
 ---
 
 ## 4. Medium-Value SCP Targets
 
-### 4.1 Timelords (Firdaria + Zodiacal Releasing)
-
-- [`timelords.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/timelords.py)
-
-Has non-trivial time-lord doctrine but still lacks a dedicated test file strong
-enough to anchor a constitutional pass.
-
-### 4.2 Dasha
-
-- [`dasha.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/dasha.py)
-
-Vimshottari period doctrine is real and significant, but the subsystem still
-needs a dedicated test anchor.
-
-### 4.3 Sothic
-
-- [`sothic.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/sothic.py)
-
-Coherent and doctrinally meaningful, but less central than the remaining
-star/timing candidates.
-
-### 4.4 Variable Stars
+### 4.1 Variable Stars
 
 - [`variable_stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/variable_stars.py)
 
-Good test surface and real doctrine, but lower priority than the unified star
-cluster that should likely define the parent boundary first.
+Good test surface and real doctrine, but lower priority than the major timing
+cluster now that the parent unified-star boundary is constitutionalized.
+
+### 4.2 Gaia
+
+- [`gaia.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/gaia.py)
+
+Now better treated as a possible follow-on constitutional target only where the
+parent unified-star subsystem boundary justifies pulling Gaia deeper into the
+frozen surface.
 
 ---
 
@@ -192,19 +173,27 @@ constitution rather than as standalone constitutional programs.
 If the goal is to continue constitutionalizing Moira in dependency-respecting
 order, the best next sequence is:
 
-1. fixed-stars / unified-star subsystem cluster centered on [`fixed_stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/fixed_stars.py) and [`stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/stars.py)
-2. [`synastry.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/synastry.py)
-3. [`timelords.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/timelords.py) / [`dasha.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/dasha.py)
-4. [`sothic.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/sothic.py)
-5. [`variable_stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/variable_stars.py)
+1. [`variable_stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/variable_stars.py)
+2. supporting expansion around the star cluster, including [`gaia.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/gaia.py) where justified by the parent subsystem boundary
 
 Rationale for changes from the previous scan:
 
 - `progressions.py` is now fully constitutionalized and documented by
   [`PROGRESSIONS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/PROGRESSIONS_BACKEND_STANDARD.md)
+- `synastry.py` is now fully constitutionalized and documented by
+  [`SYNASTRY_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/SYNASTRY_BACKEND_STANDARD.md)
+- the unified-star subsystem centered on `fixed_stars.py` and `stars.py` is now
+  fully constitutionalized and documented by
+  [`STARS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/STARS_BACKEND_STANDARD.md)
+- `sothic.py` is now fully constitutionalized and documented by
+  [`SOTHIC_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/SOTHIC_BACKEND_STANDARD.md)
 - `eclipse.py` is now constitutionalized and removed from the pending list
-- the star cluster is now the highest-value unresolved subsystem boundary
-- synastry rises in importance as more source engines become constitutionalized
+- the timing doctrine cluster (`timelords.py` and `dasha.py`) is now fully
+  constitutionalized through all twelve SCP phases, documented by
+  [`TIMELORDS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/TIMELORDS_BACKEND_STANDARD.md)
+  and [`DASHA_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/DASHA_BACKEND_STANDARD.md)
+- the highest-value unresolved candidates are now variable-star work and
+  possible Gaia follow-on hardening
 
 ---
 

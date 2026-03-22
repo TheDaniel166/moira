@@ -4,16 +4,30 @@ The Timelord Engine: governs Firdaria and Zodiacal Releasing time-lord
 period computation.
 
 Boundary: owns Firdaria sequence arithmetic, Chaldean sub-period generation,
-Zodiacal Releasing period recursion, and active-period lookup. Delegates
-domicile ruler lookup to profections. Delegates Julian Day arithmetic to julian.
-Does NOT own natal chart construction or ephemeris state.
+Zodiacal Releasing period recursion, Loosing of the Bond handling, and active-
+period lookup. Delegates domicile ruler lookup to profections. Delegates
+Julian Day arithmetic to julian. Does NOT own natal chart construction or
+ephemeris state.
 
 Public surface:
-    FIRDARIA_DIURNAL, FIRDARIA_NOCTURNAL, CHALDEAN_ORDER,
+    FIRDARIA_DIURNAL, FIRDARIA_NOCTURNAL, FIRDARIA_NOCTURNAL_BONATTI,
+    CHALDEAN_ORDER,
     MINOR_YEARS,
+    FirdarSequenceKind, ZRAngularityClass,
+    FirdarYearPolicy, ZRYearPolicy, TimelordComputationPolicy,
+    DEFAULT_TIMELORD_POLICY,
     FirdarPeriod, ReleasingPeriod,
+    FirdarMajorGroup, ZRPeriodGroup,
+    FirdarConditionProfile, ZRConditionProfile,
+    FirdarSequenceProfile, ZRSequenceProfile,
+    FirdarActivePair, ZRLevelPair,
     firdaria, current_firdaria,
-    zodiacal_releasing, current_releasing
+    zodiacal_releasing, current_releasing,
+    group_firdaria, group_releasing,
+    firdar_condition_profile, zr_condition_profile,
+    firdar_sequence_profile, zr_sequence_profile,
+    firdar_active_pair, zr_level_pair,
+    validate_firdaria_output, validate_releasing_output
 
 Import-time side effects: None
 
@@ -21,12 +35,126 @@ External dependency assumptions:
     - No third-party packages; stdlib only plus internal moira modules.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
+import math
 
 from .constants import SIGNS, sign_of
 from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd
 from .profections import DOMICILE_RULERS
+
+
+# ---------------------------------------------------------------------------
+# Phase 12 — Public API Curation
+# ---------------------------------------------------------------------------
+
+__all__ = [
+    # Sequence constants
+    "FIRDARIA_DIURNAL",
+    "FIRDARIA_NOCTURNAL",
+    "FIRDARIA_NOCTURNAL_BONATTI",
+    "CHALDEAN_ORDER",
+    "MINOR_YEARS",
+    # Classification namespaces
+    "FirdarSequenceKind",
+    "ZRAngularityClass",
+    # Policy surfaces
+    "FirdarYearPolicy",
+    "ZRYearPolicy",
+    "TimelordComputationPolicy",
+    "DEFAULT_TIMELORD_POLICY",
+    # Truth-preservation vessels
+    "FirdarPeriod",
+    "ReleasingPeriod",
+    # Relational vessels
+    "FirdarMajorGroup",
+    "ZRPeriodGroup",
+    # Condition vessels
+    "FirdarConditionProfile",
+    "ZRConditionProfile",
+    # Aggregate vessels
+    "FirdarSequenceProfile",
+    "ZRSequenceProfile",
+    # Network vessels
+    "FirdarActivePair",
+    "ZRLevelPair",
+    # Computational functions
+    "firdaria",
+    "current_firdaria",
+    "zodiacal_releasing",
+    "current_releasing",
+    "group_firdaria",
+    "group_releasing",
+    "firdar_condition_profile",
+    "zr_condition_profile",
+    "firdar_sequence_profile",
+    "zr_sequence_profile",
+    "firdar_active_pair",
+    "zr_level_pair",
+    "validate_firdaria_output",
+    "validate_releasing_output",
+]
+
+
+# ---------------------------------------------------------------------------
+# Phase 2 — Classification namespaces
+# ---------------------------------------------------------------------------
+
+class FirdarSequenceKind:
+    """
+    Typed classification of which Firdaria sequence generated a period.
+
+    Collapses the Phase-1 (is_day_chart, variant) pair into a single named
+    constant so that later layers do not need to branch on two booleans.
+
+    DIURNAL            — day-chart sequence (Sun leads)
+    NOCTURNAL_STANDARD — night-chart standard sequence (Moon leads)
+    NOCTURNAL_BONATTI  — night-chart Bonatti variant (nodes interleaved early)
+    """
+    DIURNAL            = "diurnal"
+    NOCTURNAL_STANDARD = "nocturnal_standard"
+    NOCTURNAL_BONATTI  = "nocturnal_bonatti"
+
+
+class ZRAngularityClass:
+    """
+    Typed classification of a Zodiacal Releasing period's angular house
+    position relative to the Lot of Fortune.
+
+    Classifies the raw house number stored in angularity_from_fortune
+    (int | None) into the traditional three-fold Hellenistic distinction:
+
+    ANGULAR   — houses 1, 4, 7, 10 from Fortune (most active)
+    SUCCEDENT — houses 2, 5, 8, 11 from Fortune (moderate)
+    CADENT    — houses 3, 6, 9, 12 from Fortune (weakest)
+    """
+    ANGULAR   = "angular"
+    SUCCEDENT = "succedent"
+    CADENT    = "cadent"
+
+
+_ANGULAR_HOUSES:   frozenset[int] = frozenset({1, 4, 7, 10})
+_SUCCEDENT_HOUSES: frozenset[int] = frozenset({2, 5, 8, 11})
+
+
+def _zr_angularity_class(angularity: int | None) -> str | None:
+    """Return the ZRAngularityClass string for a given house number, or None."""
+    if angularity is None:
+        return None
+    if angularity in _ANGULAR_HOUSES:
+        return ZRAngularityClass.ANGULAR
+    if angularity in _SUCCEDENT_HOUSES:
+        return ZRAngularityClass.SUCCEDENT
+    return ZRAngularityClass.CADENT
+
+
+def _firdar_sequence_kind(is_day_chart: bool, variant: str) -> str:
+    """Return the FirdarSequenceKind string for a (sect, variant) pair."""
+    if is_day_chart:
+        return FirdarSequenceKind.DIURNAL
+    if variant == "bonatti":
+        return FirdarSequenceKind.NOCTURNAL_BONATTI
+    return FirdarSequenceKind.NOCTURNAL_STANDARD
 
 
 # ---------------------------------------------------------------------------
@@ -57,6 +185,19 @@ FIRDARIA_NOCTURNAL: list[tuple[str, int]] = [
     ("Mercury",    13),
     ("North Node",  3),
     ("South Node",  2),
+]
+
+#: Alternate nocturnal sequence frequently attributed to Bonatti-style usage.
+FIRDARIA_NOCTURNAL_BONATTI: list[tuple[str, int]] = [
+    ("Moon",        9),
+    ("Saturn",     11),
+    ("Jupiter",    12),
+    ("Mars",        7),
+    ("North Node",  3),
+    ("South Node",  2),
+    ("Sun",        10),
+    ("Venus",       8),
+    ("Mercury",    13),
 ]
 
 #: Chaldean order used for sub-period rulers
@@ -129,20 +270,61 @@ class FirdarPeriod:
     }
     [/MACHINE_CONTRACT]
     """
-    level:    int    # 1 = major period, 2 = sub-period
-    planet:   str
-    start_jd: float
-    end_jd:   float
-    years:    float
+    level:        int           # 1 = major period, 2 = sub-period
+    planet:       str
+    start_jd:     float
+    end_jd:       float
+    years:        float
+    # Phase 1: preserved generative context
+    major_planet: str | None = None   # for level=2: the level-1 lord this sub-period belongs to
+    is_day_chart: bool | None = None  # diurnal (True) or nocturnal (False) chart sect
+    variant:      str | None = None   # "standard" or "bonatti" sequence variant
+    # Phase 2: typed classification
+    sequence_kind:  str | None = None  # FirdarSequenceKind constant
+    is_node_period: bool = False        # True when planet is North Node or South Node
+
+    def __post_init__(self) -> None:
+        if self.level not in (1, 2):
+            raise ValueError(f"FirdarPeriod.level must be 1 or 2, got {self.level}")
+        if not math.isfinite(self.start_jd) or not math.isfinite(self.end_jd):
+            raise ValueError("FirdarPeriod start_jd and end_jd must be finite")
+        if self.end_jd <= self.start_jd:
+            raise ValueError("FirdarPeriod end_jd must be greater than start_jd")
+        if self.years <= 0:
+            raise ValueError("FirdarPeriod years must be positive")
+
+    # --- Phase 3: inspectability ---
+
+    @property
+    def is_major(self) -> bool:
+        """True when this is a level-1 (major) Firdaria period."""
+        return self.level == 1
+
+    @property
+    def is_sub(self) -> bool:
+        """True when this is a level-2 (sub-period) Firdaria period."""
+        return self.level == 2
+
+    @property
+    def level_name(self) -> str:
+        """Human-readable level label: 'Major' or 'Sub-period'."""
+        return "Major" if self.level == 1 else "Sub-period"
+
+    def is_active_at(self, jd: float) -> bool:
+        """
+        Return True if *jd* falls within this period.
+
+        The interval is half-open: [start_jd, end_jd).
+        This is the canonical boundary convention used throughout the engine.
+        """
+        return self.start_jd <= jd < self.end_jd
+
+    # --- Datetime views ---
 
     @property
     def start_dt(self) -> datetime:
         """UTC datetime of the period start."""
         return datetime_from_jd(self.start_jd)
-
-    @property
-    def start_calendar(self) -> CalendarDateTime:
-        return calendar_datetime_from_jd(self.start_jd)
 
     @property
     def start_calendar(self) -> CalendarDateTime:
@@ -158,8 +340,9 @@ class FirdarPeriod:
         return calendar_datetime_from_jd(self.end_jd)
 
     @property
-    def end_calendar(self) -> CalendarDateTime:
-        return calendar_datetime_from_jd(self.end_jd)
+    def days(self) -> float:
+        """Duration of this period in Julian days."""
+        return self.end_jd - self.start_jd
 
     def __repr__(self) -> str:
         lvl = "Major" if self.level == 1 else "Sub  "
@@ -172,10 +355,163 @@ class FirdarPeriod:
 
 
 # ---------------------------------------------------------------------------
+# Phase 5 — Relational Formalization: Firdaria
+# Phase 6 — Relational Hardening / Inspectability: Firdaria
+# ---------------------------------------------------------------------------
+
+# Planet-classification sets for Firdaria sub-period subset properties.
+_FIRDARIA_LUMINARIES: frozenset[str] = frozenset({"Sun", "Moon"})
+_FIRDARIA_NODES:      frozenset[str] = frozenset({"North Node", "South Node"})
+
+
+@dataclass(slots=True)
+class FirdarMajorGroup:
+    """
+    RITE: The Firdar Major Group Vessel
+
+    Formalizes the containment relation between a Firdaria major period and
+    the sub-periods it governs.
+
+    Previously this relation was implicit — callers had to filter the flat
+    firdaria() list by level and match sub-periods by major_planet field and
+    JD overlap. FirdarMajorGroup makes the grouping explicit and named.
+
+    Fields
+    ------
+    major   — the level-1 major period
+    subs    — level-2 sub-periods belonging to this major, in chronological
+              order (empty list for node periods when not subdivided)
+    """
+    major: FirdarPeriod
+    subs:  list[FirdarPeriod]
+
+    def __post_init__(self) -> None:
+        if self.major.level != 1:
+            raise ValueError(
+                f"FirdarMajorGroup.major must be a level-1 period, got level {self.major.level}"
+            )
+        for sub in self.subs:
+            if sub.level != 2:
+                raise ValueError(
+                    f"FirdarMajorGroup.subs must contain only level-2 periods, got level {sub.level}"
+                )
+        # Phase 6 hardening — chronological ordering
+        for i in range(len(self.subs) - 1):
+            if self.subs[i].start_jd >= self.subs[i + 1].start_jd:
+                raise ValueError(
+                    "FirdarMajorGroup.subs must be in chronological order"
+                )
+
+    @property
+    def sub_count(self) -> int:
+        """Number of sub-periods in this major group."""
+        return len(self.subs)
+
+    @property
+    def has_subs(self) -> bool:
+        """True when this major period has sub-periods."""
+        return bool(self.subs)
+
+    # --- Phase 6: subset distinction ---
+
+    @property
+    def luminary_subs(self) -> list[FirdarPeriod]:
+        """Sub-periods whose lord is a luminary (Sun or Moon)."""
+        return [s for s in self.subs if s.planet in _FIRDARIA_LUMINARIES]
+
+    @property
+    def node_subs(self) -> list[FirdarPeriod]:
+        """Sub-periods whose lord is a node (North Node or South Node)."""
+        return [s for s in self.subs if s.is_node_period]
+
+    @property
+    def planet_subs(self) -> list[FirdarPeriod]:
+        """Sub-periods whose lord is one of the five traditional planets
+        (Mercury, Venus, Mars, Jupiter, Saturn) — neither luminary nor node."""
+        return [
+            s for s in self.subs
+            if s.planet not in _FIRDARIA_LUMINARIES and not s.is_node_period
+        ]
+
+    @property
+    def is_complete(self) -> bool:
+        """True when this group carries the expected number of sub-periods.
+
+        Non-node majors expect exactly 7 sub-periods.
+        Node majors may have 0 (not subdivided) or 7 (subdivided) — both admitted.
+        """
+        if self.major.is_node_period:
+            return self.sub_count in (0, 7)
+        return self.sub_count == 7
+
+    def active_sub_at(self, jd: float) -> FirdarPeriod | None:
+        """Return the sub-period active at *jd*, or None if none applies."""
+        for sub in self.subs:
+            if sub.is_active_at(jd):
+                return sub
+        return None
+
+
+def group_firdaria(periods: list[FirdarPeriod]) -> list[FirdarMajorGroup]:
+    """
+    Group a flat Firdaria period list into FirdarMajorGroup vessels.
+
+    The input must be the output of firdaria(). Each major period is
+    paired with the sub-periods that belong to it (matched by major_planet
+    and JD containment). Node periods with no sub-periods produce a group
+    with an empty subs list.
+
+    Returns
+    -------
+    list[FirdarMajorGroup]
+        One group per major period, in sequence order.
+    """
+    major_periods = [p for p in periods if p.level == 1]
+    sub_periods   = [p for p in periods if p.level == 2]
+
+    groups: list[FirdarMajorGroup] = []
+    for major in major_periods:
+        # Match by major_planet alone: each planet appears exactly once as a
+        # major lord in a Firdaria sequence, so major_planet is a unique key.
+        # JD-range filtering is intentionally omitted — floating-point
+        # accumulation can push the last sub-period's end_jd fractionally
+        # past the major's end_jd, causing a false exclusion.
+        subs = [s for s in sub_periods if s.major_planet == major.planet]
+        groups.append(FirdarMajorGroup(major=major, subs=subs))
+    return groups
+
+
+# ---------------------------------------------------------------------------
 # Firdaria calculation
 # ---------------------------------------------------------------------------
 
-def firdaria(natal_jd: float, is_day_chart: bool) -> list[FirdarPeriod]:
+def _resolve_firdaria_sequence(
+    is_day_chart: bool,
+    variant: str,
+) -> list[tuple[str, int]]:
+    if variant not in {"standard", "bonatti"}:
+        raise ValueError("firdaria variant must be 'standard' or 'bonatti'")
+    if is_day_chart:
+        return FIRDARIA_DIURNAL
+    if variant == "bonatti":
+        return FIRDARIA_NOCTURNAL_BONATTI
+    return FIRDARIA_NOCTURNAL
+
+
+def _should_subdivide_firdaria_major(planet: str, include_node_subperiods: bool) -> bool:
+    if planet in {"North Node", "South Node"}:
+        return include_node_subperiods
+    return True
+
+
+def firdaria(
+    natal_jd: float,
+    is_day_chart: bool,
+    *,
+    variant: str = "standard",
+    include_node_subperiods: bool = False,
+    policy: TimelordComputationPolicy | None = None,
+) -> list[FirdarPeriod]:
     """
     Generate all Firdaria major and sub-periods for a complete life cycle.
 
@@ -196,13 +532,18 @@ def firdaria(natal_jd: float, is_day_chart: bool) -> list[FirdarPeriod]:
         All major periods, each immediately followed by their 7 sub-periods,
         in chronological order.
     """
-    sequence = FIRDARIA_DIURNAL if is_day_chart else FIRDARIA_NOCTURNAL
+    pol = _resolve_timelord_policy(policy)
+    sequence = _resolve_firdaria_sequence(is_day_chart, variant)
     periods:  list[FirdarPeriod] = []
     cursor_jd = natal_jd
+    _year_days = pol.firdaria_year.year_days
 
     for major_planet, major_years in sequence:
         major_start = cursor_jd
-        major_end   = cursor_jd + major_years * _JULIAN_YEAR
+        major_end   = cursor_jd + major_years * _year_days
+
+        _seq_kind = _firdar_sequence_kind(is_day_chart, variant)
+        _is_node  = major_planet in {"North Node", "South Node"}
 
         periods.append(FirdarPeriod(
             level=1,
@@ -210,30 +551,40 @@ def firdaria(natal_jd: float, is_day_chart: bool) -> list[FirdarPeriod]:
             start_jd=major_start,
             end_jd=major_end,
             years=float(major_years),
+            is_day_chart=is_day_chart,
+            variant=variant,
+            sequence_kind=_seq_kind,
+            is_node_period=_is_node,
         ))
 
-        # Sub-periods: 7 planets in Chaldean order, each lasting major_years/7.
-        # The sub-period sequence starts at the major planet's Chaldean position.
-        if major_planet in CHALDEAN_ORDER:
-            start_idx = CHALDEAN_ORDER.index(major_planet)
-        else:
-            # Nodes use the same starting index as Mars (traditional default)
-            start_idx = CHALDEAN_ORDER.index("Mars")
+        if _should_subdivide_firdaria_major(major_planet, include_node_subperiods):
+            # Sub-periods: 7 planets in Chaldean order, each lasting major_years/7.
+            # The sub-period sequence starts at the major planet's Chaldean position.
+            if major_planet in CHALDEAN_ORDER:
+                start_idx = CHALDEAN_ORDER.index(major_planet)
+            else:
+                # Nodes use the same starting index as Mars when explicitly subdivided.
+                start_idx = CHALDEAN_ORDER.index("Mars")
 
-        sub_years = major_years / 7.0
-        sub_cursor = major_start
+            sub_years = major_years / 7.0
+            sub_cursor = major_start
 
-        for i in range(7):
-            sub_planet = CHALDEAN_ORDER[(start_idx + i) % 7]
-            sub_end    = sub_cursor + sub_years * _JULIAN_YEAR
-            periods.append(FirdarPeriod(
-                level=2,
-                planet=sub_planet,
-                start_jd=sub_cursor,
-                end_jd=sub_end,
-                years=sub_years,
-            ))
-            sub_cursor = sub_end
+            for i in range(7):
+                sub_planet = CHALDEAN_ORDER[(start_idx + i) % 7]
+                sub_end    = sub_cursor + sub_years * _year_days
+                periods.append(FirdarPeriod(
+                    level=2,
+                    planet=sub_planet,
+                    start_jd=sub_cursor,
+                    end_jd=sub_end,
+                    years=sub_years,
+                    major_planet=major_planet,
+                    is_day_chart=is_day_chart,
+                    variant=variant,
+                    sequence_kind=_seq_kind,
+                    is_node_period=sub_planet in {"North Node", "South Node"},
+                ))
+                sub_cursor = sub_end
 
         cursor_jd = major_end
 
@@ -244,6 +595,10 @@ def current_firdaria(
     natal_jd: float,
     current_jd: float,
     is_day_chart: bool,
+    *,
+    variant: str = "standard",
+    include_node_subperiods: bool = False,
+    policy: TimelordComputationPolicy | None = None,
 ) -> tuple[FirdarPeriod, FirdarPeriod]:
     """
     Find the Firdaria major and sub-period active at a given date.
@@ -267,7 +622,13 @@ def current_firdaria(
     ValueError
         If current_jd falls outside the 75-year Firdaria cycle.
     """
-    all_periods = firdaria(natal_jd, is_day_chart)
+    all_periods = firdaria(
+        natal_jd,
+        is_day_chart,
+        variant=variant,
+        include_node_subperiods=include_node_subperiods,
+        policy=policy,
+    )
     major_periods = [p for p in all_periods if p.level == 1]
     sub_periods   = [p for p in all_periods if p.level == 2]
 
@@ -290,7 +651,8 @@ def current_firdaria(
             break
 
     if active_sub is None:
-        # Edge case: exactly at major-period boundary — use first sub-period
+        if not _should_subdivide_firdaria_major(active_major.planet, include_node_subperiods):
+            return active_major, active_major
         for p in sub_periods:
             if p.start_jd == active_major.start_jd:
                 active_sub = p
@@ -322,8 +684,92 @@ MINOR_YEARS: dict[str, int] = {
     "Pisces":      12,
 }
 
-#: Total of all Minor Years — one full zodiacal cycle = 129 years
-_TOTAL_MINOR_YEARS: int = sum(MINOR_YEARS.values())  # 129
+#: Total of all Minor Years — one full zodiacal releasing circuit = 211 years
+_TOTAL_MINOR_YEARS: int = sum(MINOR_YEARS.values())
+
+_ZR_YEAR_DAYS = 360.0
+_ZR_MONTH_DAYS = 30.0
+_ZR_LEVEL_DAYS: dict[int, float] = {
+    1: _ZR_YEAR_DAYS,
+    2: _ZR_MONTH_DAYS,
+    3: _ZR_MONTH_DAYS / 12.0,
+    4: (_ZR_MONTH_DAYS / 12.0) / 12.0,
+}
+_ZR_MAX_LEVEL = 4
+_ZR_CAP_DAYS = _TOTAL_MINOR_YEARS * _ZR_YEAR_DAYS
+_ZR_LONG_SIGNS = {sign for sign, years in MINOR_YEARS.items() if years > 17}
+
+
+# ---------------------------------------------------------------------------
+# Phase 4 — Doctrine / Policy Surface
+# ---------------------------------------------------------------------------
+
+@dataclass(frozen=True, slots=True)
+class FirdarYearPolicy:
+    """
+    Doctrine surface for the Firdaria year-length constant.
+
+    year_days governs the conversion of Firdaria major-period lengths (in
+    years) to Julian Day boundaries. Default: 365.25 (Julian year).
+    Changing this value scales all Firdaria period boundaries uniformly
+    without altering the sequence order or sub-period proportions.
+    """
+    year_days: float = _JULIAN_YEAR
+
+
+@dataclass(frozen=True, slots=True)
+class ZRYearPolicy:
+    """
+    Doctrine surface for the Zodiacal Releasing symbolic-year constant.
+
+    year_days is the number of Julian days per symbolic year at Level 1.
+    Level 2–4 unit scaling is derived as year_days÷12, year_days÷144,
+    year_days÷1728. Default: 360.0 (Hellenistic symbolic year).
+    Changing this value scales all ZR period boundaries uniformly without
+    altering sign sequence, LB doctrine, or peak detection.
+    """
+    year_days: float = _ZR_YEAR_DAYS
+
+
+@dataclass(frozen=True, slots=True)
+class TimelordComputationPolicy:
+    """
+    Lean doctrine surface for the Timelord subsystem.
+
+    The default policy preserves current behavior exactly. Override
+    sub-policies to govern year-length constants without altering
+    per-chart inputs (is_day_chart, variant, lot_longitude, etc.).
+
+    firdaria_year  — governs the Julian-year constant for Firdaria
+    zr_year        — governs the symbolic-year constant for Zodiacal Releasing
+    """
+    firdaria_year: FirdarYearPolicy = field(default_factory=FirdarYearPolicy)
+    zr_year:       ZRYearPolicy     = field(default_factory=ZRYearPolicy)
+
+
+DEFAULT_TIMELORD_POLICY = TimelordComputationPolicy()
+
+
+def _validate_timelord_policy(
+    policy: TimelordComputationPolicy,
+) -> TimelordComputationPolicy:
+    if not isinstance(policy.firdaria_year, FirdarYearPolicy):
+        raise TypeError("policy.firdaria_year must be a FirdarYearPolicy")
+    if not isinstance(policy.zr_year, ZRYearPolicy):
+        raise TypeError("policy.zr_year must be a ZRYearPolicy")
+    if policy.firdaria_year.year_days <= 0:
+        raise ValueError("policy.firdaria_year.year_days must be positive")
+    if policy.zr_year.year_days <= 0:
+        raise ValueError("policy.zr_year.year_days must be positive")
+    return policy
+
+
+def _resolve_timelord_policy(
+    policy: TimelordComputationPolicy | None,
+) -> TimelordComputationPolicy:
+    return _validate_timelord_policy(
+        DEFAULT_TIMELORD_POLICY if policy is None else policy
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -395,6 +841,47 @@ class ReleasingPeriod:
     start_jd: float
     end_jd:   float
     years:    float
+    lot_name: str = "Spirit"
+    is_loosing_of_bond: bool = False
+    is_peak_period: bool = False
+    angularity_from_fortune: int | None = None
+    # Phase 1: preserved generative context
+    use_loosing_of_bond: bool = True  # whether LB doctrine was active during generation
+    # Phase 2: typed classification
+    angularity_class: str | None = None  # ZRAngularityClass constant, or None if non-peak
+
+    def __post_init__(self) -> None:
+        if self.level not in (1, 2, 3, 4):
+            raise ValueError(f"ReleasingPeriod.level must be 1–4, got {self.level}")
+        if self.sign not in SIGNS:
+            raise ValueError(f"ReleasingPeriod.sign must be a valid zodiac sign, got '{self.sign}'")
+        if not math.isfinite(self.start_jd) or not math.isfinite(self.end_jd):
+            raise ValueError("ReleasingPeriod start_jd and end_jd must be finite")
+        if self.end_jd <= self.start_jd:
+            raise ValueError("ReleasingPeriod end_jd must be greater than start_jd")
+
+    # --- Phase 3: inspectability ---
+
+    @property
+    def level_name(self) -> str:
+        """Human-readable level label: 'Level 1' through 'Level 4'."""
+        return f"Level {self.level}"
+
+    @property
+    def days(self) -> float:
+        """Duration of this period in Julian days."""
+        return self.end_jd - self.start_jd
+
+    def is_active_at(self, jd: float) -> bool:
+        """
+        Return True if *jd* falls within this period.
+
+        The interval is half-open: [start_jd, end_jd).
+        This is the canonical boundary convention used throughout the engine.
+        """
+        return self.start_jd <= jd < self.end_jd
+
+    # --- Datetime views ---
 
     @property
     def start_dt(self) -> datetime:
@@ -415,12 +902,801 @@ class ReleasingPeriod:
         return calendar_datetime_from_jd(self.end_jd)
 
     def __repr__(self) -> str:
+        flags: list[str] = []
+        if self.is_loosing_of_bond:
+            flags.append("LB")
+        if self.is_peak_period:
+            flags.append("Peak")
+        flag_text = f" [{' / '.join(flags)}]" if flags else ""
         return (
             f"ReleasingPeriod(L{self.level} {self.sign:<13} "
             f"({self.ruler:<8}) {self.years:.3f} yrs | "
             f"{self.start_calendar.date_string()} → "
-            f"{self.end_calendar.date_string()})"
+            f"{self.end_calendar.date_string()}){flag_text}"
         )
+
+
+# ---------------------------------------------------------------------------
+# Phase 5 — Relational Formalization: Zodiacal Releasing
+# ---------------------------------------------------------------------------
+
+@dataclass(slots=True)
+class ZRPeriodGroup:
+    """
+    RITE: The Zodiacal Releasing Period Group Vessel
+
+    Formalizes the containment relation between a Zodiacal Releasing period
+    and the deeper-level periods it contains.
+
+    Previously this relation was implicit — callers received a flat list from
+    zodiacal_releasing() and had to infer containment by JD overlap.
+    ZRPeriodGroup makes the level-by-level nesting explicit and navigable.
+
+    Fields
+    ------
+    period      — the period at this level (any level 1–4)
+    sub_groups  — ZRPeriodGroup vessels for the next level within this period,
+                  in chronological order (empty at the deepest generated level)
+    """
+    period:     ReleasingPeriod
+    sub_groups: list["ZRPeriodGroup"]
+
+    def __post_init__(self) -> None:
+        # Phase 6 hardening — temporal containment of each immediate sub-group
+        for sg in self.sub_groups:
+            if sg.period.start_jd < self.period.start_jd - 1e-6:
+                raise ValueError(
+                    f"ZRPeriodGroup sub-group '{sg.period.sign}' (L{sg.period.level}) "
+                    f"starts before its parent period"
+                )
+            if sg.period.end_jd > self.period.end_jd + 1e-6:
+                raise ValueError(
+                    f"ZRPeriodGroup sub-group '{sg.period.sign}' (L{sg.period.level}) "
+                    f"ends after its parent period"
+                )
+
+    @property
+    def level(self) -> int:
+        """Level of the contained period (1–4)."""
+        return self.period.level
+
+    @property
+    def has_sub_groups(self) -> bool:
+        """True when deeper-level groups exist within this period."""
+        return bool(self.sub_groups)
+
+    # --- Phase 6: inspectability ---
+
+    @property
+    def is_leaf(self) -> bool:
+        """True when this group has no deeper sub-groups (deepest generated level)."""
+        return not self.sub_groups
+
+    @property
+    def angularity_class(self) -> str | None:
+        """ZRAngularityClass string for this period, or None if not a peak period."""
+        return self.period.angularity_class
+
+    def all_periods_flat(self) -> list[ReleasingPeriod]:
+        """Return all periods in this group and its sub-groups in depth-first order."""
+        result: list[ReleasingPeriod] = [self.period]
+        for sg in self.sub_groups:
+            result.extend(sg.all_periods_flat())
+        return result
+
+    def active_sub_at(self, jd: float) -> "ZRPeriodGroup | None":
+        """Return the sub-group active at *jd*, or None if none applies."""
+        for sg in self.sub_groups:
+            if sg.period.is_active_at(jd):
+                return sg
+        return None
+
+
+def _group_releasing_level(
+    all_periods: list[ReleasingPeriod],
+    level: int,
+    start_jd: float,
+    end_jd: float,
+) -> list[ZRPeriodGroup]:
+    this_level = [
+        p for p in all_periods
+        if p.level == level
+        and p.start_jd >= start_jd - 1e-9
+        and p.end_jd   <= end_jd   + 1e-9
+    ]
+    return [
+        ZRPeriodGroup(
+            period=p,
+            sub_groups=_group_releasing_level(all_periods, level + 1, p.start_jd, p.end_jd),
+        )
+        for p in this_level
+    ]
+
+
+def group_releasing(periods: list[ReleasingPeriod]) -> list[ZRPeriodGroup]:
+    """
+    Group a flat Zodiacal Releasing period list into ZRPeriodGroup vessels.
+
+    The input must be the output of zodiacal_releasing(). Level 1 periods
+    form the outermost groups; each is recursively populated with the Level 2
+    periods it contains, which are in turn populated with their Level 3
+    children, and so on.
+
+    Returns
+    -------
+    list[ZRPeriodGroup]
+        One top-level group per Level 1 period, in chronological order.
+    """
+    if not periods:
+        return []
+    return _group_releasing_level(periods, level=1, start_jd=-math.inf, end_jd=math.inf)
+
+
+# ---------------------------------------------------------------------------
+# Phase 7 — Integrated Local Condition
+# ---------------------------------------------------------------------------
+
+def _firdaria_lord_type(planet: str, is_node_period: bool) -> str:
+    """Return the lord-type label for a Firdaria planet.
+
+    Returns one of: ``"luminary"``, ``"planet"``, ``"node"``.
+    """
+    if is_node_period:
+        return "node"
+    if planet in _FIRDARIA_LUMINARIES:
+        return "luminary"
+    return "planet"
+
+
+@dataclass(slots=True)
+class FirdarConditionProfile:
+    """
+    Integrated local condition profile for a single Firdaria period.
+
+    Assembles all preserved, classified, and inspectable truth from
+    Phases 1–6 into one coherent per-period vessel. This is the
+    authoritative structural summary of a FirdarPeriod — callers do not
+    need to inspect multiple fields across the period and relation layers
+    to understand what kind of period they are looking at.
+
+    Fields
+    ------
+    planet          — the ruling planet of this period
+    level           — 1 (major) or 2 (sub-period)
+    level_name      — human-readable level: "Major" or "Sub-period"
+    is_major        — True when level == 1
+    is_node_period  — True when the ruling planet is North Node or South Node
+    lord_type       — "luminary" | "planet" | "node"
+    sequence_kind   — FirdarSequenceKind constant, or None if not set
+    major_planet    — the level-1 lord this sub-period belongs to (None for majors)
+    is_day_chart    — True for diurnal chart; False for nocturnal; None if not set
+    years           — nominal duration in Firdaria years
+    days            — duration in Julian days
+    """
+    planet:         str
+    level:          int
+    level_name:     str
+    is_major:       bool
+    is_node_period: bool
+    lord_type:      str
+    sequence_kind:  str | None
+    major_planet:   str | None
+    is_day_chart:   bool | None
+    years:          float
+    days:           float
+
+
+def firdar_condition_profile(period: FirdarPeriod) -> FirdarConditionProfile:
+    """
+    Build a FirdarConditionProfile from a FirdarPeriod.
+
+    Assembles all Phase 1–6 truth about the period into a single profile.
+    This function is deterministic and has no side effects.
+
+    Parameters
+    ----------
+    period : FirdarPeriod
+        Any FirdarPeriod produced by firdaria() or current_firdaria().
+
+    Returns
+    -------
+    FirdarConditionProfile
+    """
+    return FirdarConditionProfile(
+        planet         = period.planet,
+        level          = period.level,
+        level_name     = period.level_name,
+        is_major       = period.is_major,
+        is_node_period = period.is_node_period,
+        lord_type      = _firdaria_lord_type(period.planet, period.is_node_period),
+        sequence_kind  = period.sequence_kind,
+        major_planet   = period.major_planet,
+        is_day_chart   = period.is_day_chart,
+        years          = period.years,
+        days           = period.days,
+    )
+
+
+@dataclass(slots=True)
+class ZRConditionProfile:
+    """
+    Integrated local condition profile for a single Zodiacal Releasing period.
+
+    Assembles all preserved, classified, and inspectable truth from
+    Phases 1–6 into one coherent per-period vessel. Callers do not need to
+    join fields from ReleasingPeriod, ZRAngularityClass, and the generation
+    context to understand what kind of releasing period they are examining.
+
+    Fields
+    ------
+    sign                    — the releasing sign for this period
+    ruler                   — the classical domicile ruler of the sign
+    level                   — 1–4
+    level_name              — human-readable label: "Level 1" through "Level 4"
+    lot_name                — the lot from which this releasing originates
+    years                   — nominal duration in Zodiacal Releasing years
+    days                    — duration in Julian days
+    is_loosing_of_bond      — True when this period triggers the Loosing of the Bond
+    is_peak_period          — True when this sign is angular from the Lot of Fortune
+    angularity_from_fortune — house distance from Fortune (1–12), or None
+    angularity_class        — ZRAngularityClass string, or None if not a peak period
+    use_loosing_of_bond     — whether Loosing of the Bond doctrine was active during generation
+    """
+    sign:                    str
+    ruler:                   str
+    level:                   int
+    level_name:              str
+    lot_name:                str
+    years:                   float
+    days:                    float
+    is_loosing_of_bond:      bool
+    is_peak_period:          bool
+    angularity_from_fortune: int | None
+    angularity_class:        str | None
+    use_loosing_of_bond:     bool
+
+
+def zr_condition_profile(period: ReleasingPeriod) -> ZRConditionProfile:
+    """
+    Build a ZRConditionProfile from a ReleasingPeriod.
+
+    Assembles all Phase 1–6 truth about the period into a single profile.
+    This function is deterministic and has no side effects.
+
+    Parameters
+    ----------
+    period : ReleasingPeriod
+        Any ReleasingPeriod produced by zodiacal_releasing() or current_releasing().
+
+    Returns
+    -------
+    ZRConditionProfile
+    """
+    return ZRConditionProfile(
+        sign                    = period.sign,
+        ruler                   = period.ruler,
+        level                   = period.level,
+        level_name              = period.level_name,
+        lot_name                = period.lot_name,
+        years                   = period.years,
+        days                    = period.days,
+        is_loosing_of_bond      = period.is_loosing_of_bond,
+        is_peak_period          = period.is_peak_period,
+        angularity_from_fortune = period.angularity_from_fortune,
+        angularity_class        = period.angularity_class,
+        use_loosing_of_bond     = period.use_loosing_of_bond,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Phase 8 — Aggregate Intelligence
+# ---------------------------------------------------------------------------
+
+@dataclass(slots=True)
+class FirdarSequenceProfile:
+    """
+    Chart-wide aggregate over a complete Firdaria major-period sequence.
+
+    Derived from FirdarConditionProfile vessels (Phase 7). Summarises the
+    structural composition of an entire 75-year Firdaria cycle — how many
+    periods of each lord-type, the total nominal years, and the sequence kind.
+
+    The profiles tuple contains only level-1 (major) profiles in the order
+    they appear in the source firdaria() list.
+
+    Fields
+    ------
+    profiles              — major-period condition profiles in sequence order
+    major_count           — total number of major periods
+    luminary_major_count  — majors whose lord is a luminary (Sun or Moon)
+    planet_major_count    — majors whose lord is one of the five traditional planets
+    node_major_count      — majors whose lord is a node (North Node or South Node)
+    total_major_years     — sum of nominal years across all major periods
+    sequence_kind         — FirdarSequenceKind constant shared by all profiles, or None
+    """
+    profiles:             tuple["FirdarConditionProfile", ...]
+    major_count:          int
+    luminary_major_count: int
+    planet_major_count:   int
+    node_major_count:     int
+    total_major_years:    float
+    sequence_kind:        str | None
+
+    def __post_init__(self) -> None:
+        if self.major_count != len(self.profiles):
+            raise ValueError("FirdarSequenceProfile.major_count must equal len(profiles)")
+        if self.luminary_major_count != sum(
+            1 for p in self.profiles if p.lord_type == "luminary"
+        ):
+            raise ValueError("FirdarSequenceProfile.luminary_major_count does not match profiles")
+        if self.planet_major_count != sum(
+            1 for p in self.profiles if p.lord_type == "planet"
+        ):
+            raise ValueError("FirdarSequenceProfile.planet_major_count does not match profiles")
+        if self.node_major_count != sum(
+            1 for p in self.profiles if p.lord_type == "node"
+        ):
+            raise ValueError("FirdarSequenceProfile.node_major_count does not match profiles")
+        if self.luminary_major_count + self.planet_major_count + self.node_major_count \
+                != self.major_count:
+            raise ValueError(
+                "FirdarSequenceProfile lord-type counts must sum to major_count"
+            )
+
+    @property
+    def profile_count(self) -> int:
+        """Total number of major-period profiles in this aggregate."""
+        return len(self.profiles)
+
+    @property
+    def has_node_majors(self) -> bool:
+        """True when the sequence contains at least one node major period."""
+        return self.node_major_count > 0
+
+
+def firdar_sequence_profile(periods: list[FirdarPeriod]) -> FirdarSequenceProfile:
+    """
+    Build a FirdarSequenceProfile from a flat Firdaria period list.
+
+    Aggregates over the major (level-1) periods only. Sub-periods are not
+    included in the profile tuple but contribute to the count totals
+    indirectly through the major periods they belong to.
+
+    Parameters
+    ----------
+    periods : list[FirdarPeriod]
+        The output of firdaria() — major and sub-periods mixed.
+
+    Returns
+    -------
+    FirdarSequenceProfile
+    """
+    major_profiles = tuple(
+        firdar_condition_profile(p) for p in periods if p.level == 1
+    )
+    luminary_count = sum(1 for p in major_profiles if p.lord_type == "luminary")
+    planet_count   = sum(1 for p in major_profiles if p.lord_type == "planet")
+    node_count     = sum(1 for p in major_profiles if p.lord_type == "node")
+    total_years    = sum(p.years for p in major_profiles)
+    kind: str | None = major_profiles[0].sequence_kind if major_profiles else None
+
+    return FirdarSequenceProfile(
+        profiles             = major_profiles,
+        major_count          = len(major_profiles),
+        luminary_major_count = luminary_count,
+        planet_major_count   = planet_count,
+        node_major_count     = node_count,
+        total_major_years    = total_years,
+        sequence_kind        = kind,
+    )
+
+
+@dataclass(slots=True)
+class ZRSequenceProfile:
+    """
+    Chart-wide aggregate over a Zodiacal Releasing period sequence at a given level.
+
+    Derived from ZRConditionProfile vessels (Phase 7). Summarises the structural
+    composition of a releasing sequence — how many peak periods, how many loosing-
+    of-bond events, and how the periods distribute across the three angular classes.
+
+    The profiles tuple contains profiles for the requested level in the order
+    they appear in the source zodiacal_releasing() list.
+
+    Fields
+    ------
+    profiles               — condition profiles at the aggregated level, in sequence order
+    period_count           — total number of profiles
+    peak_period_count      — profiles where is_peak_period == True
+    loosing_of_bond_count  — profiles where is_loosing_of_bond == True
+    angular_count          — peak periods with angularity_class == ANGULAR
+    succedent_count        — peak periods with angularity_class == SUCCEDENT
+    cadent_count           — peak periods with angularity_class == CADENT
+    total_years            — sum of nominal years across all profiles
+    """
+    profiles:              tuple["ZRConditionProfile", ...]
+    period_count:          int
+    peak_period_count:     int
+    loosing_of_bond_count: int
+    angular_count:         int
+    succedent_count:       int
+    cadent_count:          int
+    total_years:           float
+
+    def __post_init__(self) -> None:
+        if self.period_count != len(self.profiles):
+            raise ValueError("ZRSequenceProfile.period_count must equal len(profiles)")
+        if self.peak_period_count != sum(
+            1 for p in self.profiles if p.is_peak_period
+        ):
+            raise ValueError("ZRSequenceProfile.peak_period_count does not match profiles")
+        if self.loosing_of_bond_count != sum(
+            1 for p in self.profiles if p.is_loosing_of_bond
+        ):
+            raise ValueError("ZRSequenceProfile.loosing_of_bond_count does not match profiles")
+        if self.angular_count != sum(
+            1 for p in self.profiles if p.angularity_class == ZRAngularityClass.ANGULAR
+        ):
+            raise ValueError("ZRSequenceProfile.angular_count does not match profiles")
+        if self.succedent_count != sum(
+            1 for p in self.profiles if p.angularity_class == ZRAngularityClass.SUCCEDENT
+        ):
+            raise ValueError("ZRSequenceProfile.succedent_count does not match profiles")
+        if self.cadent_count != sum(
+            1 for p in self.profiles if p.angularity_class == ZRAngularityClass.CADENT
+        ):
+            raise ValueError("ZRSequenceProfile.cadent_count does not match profiles")
+        if self.angular_count + self.succedent_count + self.cadent_count \
+                != self.peak_period_count:
+            raise ValueError(
+                "ZRSequenceProfile angular + succedent + cadent must equal peak_period_count"
+            )
+
+    @property
+    def profile_count(self) -> int:
+        """Total number of profiles in this aggregate."""
+        return len(self.profiles)
+
+    @property
+    def non_peak_count(self) -> int:
+        """Number of periods that are not peak periods."""
+        return self.period_count - self.peak_period_count
+
+
+def zr_sequence_profile(
+    periods: list[ReleasingPeriod],
+    level: int = 1,
+) -> ZRSequenceProfile:
+    """
+    Build a ZRSequenceProfile from a flat Zodiacal Releasing period list.
+
+    Aggregates over periods at the given level (default Level 1). Periods
+    at other levels are ignored.
+
+    Parameters
+    ----------
+    periods : list[ReleasingPeriod]
+        The output of zodiacal_releasing() — all levels mixed.
+    level : int
+        The level to aggregate over (1–4). Default 1.
+
+    Returns
+    -------
+    ZRSequenceProfile
+    """
+    level_profiles = tuple(
+        zr_condition_profile(p) for p in periods if p.level == level
+    )
+    peak_count  = sum(1 for p in level_profiles if p.is_peak_period)
+    lb_count    = sum(1 for p in level_profiles if p.is_loosing_of_bond)
+    ang_count   = sum(1 for p in level_profiles if p.angularity_class == ZRAngularityClass.ANGULAR)
+    succ_count  = sum(1 for p in level_profiles if p.angularity_class == ZRAngularityClass.SUCCEDENT)
+    cad_count   = sum(1 for p in level_profiles if p.angularity_class == ZRAngularityClass.CADENT)
+    total_years = sum(p.years for p in level_profiles)
+
+    return ZRSequenceProfile(
+        profiles              = level_profiles,
+        period_count          = len(level_profiles),
+        peak_period_count     = peak_count,
+        loosing_of_bond_count = lb_count,
+        angular_count         = ang_count,
+        succedent_count       = succ_count,
+        cadent_count          = cad_count,
+        total_years           = total_years,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Phase 9 — Network Intelligence
+# ---------------------------------------------------------------------------
+
+@dataclass(slots=True)
+class FirdarActivePair:
+    """
+    Network node: the simultaneously active major and sub Firdaria lords.
+
+    Projects the Phase 5 relation layer (FirdarMajorGroup) and Phase 7
+    condition profiles into an explicit structural edge between two lords that
+    are active at the same moment. This makes the "two lords simultaneously"
+    relationship available as a named, inspectable network unit rather than
+    two separate lookups.
+
+    sub_profile is None when the active major period has no sub-periods
+    (e.g. a node major without subdivision).
+
+    Fields
+    ------
+    major_profile  — condition profile of the active level-1 (major) period
+    sub_profile    — condition profile of the active level-2 (sub) period, or None
+    """
+    major_profile: FirdarConditionProfile
+    sub_profile:   FirdarConditionProfile | None
+
+    def __post_init__(self) -> None:
+        if not self.major_profile.is_major:
+            raise ValueError(
+                "FirdarActivePair.major_profile must be a major (level-1) profile"
+            )
+        if self.sub_profile is not None and self.sub_profile.is_major:
+            raise ValueError(
+                "FirdarActivePair.sub_profile must be a sub-period (level-2) profile"
+            )
+
+    @property
+    def has_sub(self) -> bool:
+        """True when a sub-period is active alongside the major."""
+        return self.sub_profile is not None
+
+    @property
+    def is_same_lord(self) -> bool:
+        """True when the major and sub lords are the same planet."""
+        return (
+            self.sub_profile is not None
+            and self.major_profile.planet == self.sub_profile.planet
+        )
+
+    @property
+    def is_same_lord_type(self) -> bool:
+        """True when the major and sub lords share the same lord-type classification."""
+        return (
+            self.sub_profile is not None
+            and self.major_profile.lord_type == self.sub_profile.lord_type
+        )
+
+    @property
+    def involves_node(self) -> bool:
+        """True when either the major or sub lord is a node."""
+        if self.major_profile.lord_type == "node":
+            return True
+        return self.sub_profile is not None and self.sub_profile.lord_type == "node"
+
+
+def firdar_active_pair(
+    periods: list[FirdarPeriod],
+    jd: float,
+) -> FirdarActivePair | None:
+    """
+    Return the FirdarActivePair active at *jd*, or None if no major is active.
+
+    Scans the flat firdaria() period list for the active major and (if present)
+    the active sub-period at the given Julian Day, then wraps them in a
+    FirdarActivePair network node.
+
+    Parameters
+    ----------
+    periods : list[FirdarPeriod]
+        The output of firdaria().
+    jd : float
+        The Julian Day to query.
+
+    Returns
+    -------
+    FirdarActivePair | None
+        None when *jd* falls outside the entire Firdaria sequence.
+    """
+    if not math.isfinite(jd):
+        raise ValueError(f"firdar_active_pair: jd must be finite, got {jd!r}")
+    active_major = next(
+        (p for p in periods if p.level == 1 and p.is_active_at(jd)), None
+    )
+    if active_major is None:
+        return None
+    active_sub = next(
+        (p for p in periods if p.level == 2 and p.is_active_at(jd)), None
+    )
+    return FirdarActivePair(
+        major_profile = firdar_condition_profile(active_major),
+        sub_profile   = firdar_condition_profile(active_sub) if active_sub else None,
+    )
+
+
+@dataclass(slots=True)
+class ZRLevelPair:
+    """
+    Network node: the structural relationship between two simultaneously
+    active Zodiacal Releasing periods at different hierarchical levels.
+
+    Projects the Phase 5 relation layer (ZRPeriodGroup) and Phase 7
+    condition profiles into an explicit structural edge between two levels
+    active at the same moment. The house_distance field expresses the
+    ZR sign-distance from the upper (outer) level's sign to the lower
+    (inner) level's sign, following the standard ZR house-counting convention
+    (1 = same sign, 2 = next sign, … 12 = previous sign).
+
+    Fields
+    ------
+    upper_profile       — condition profile of the outer (higher-level-number) period
+    lower_profile       — condition profile of the inner (lower-level-number) period
+    house_distance      — ZR house distance from upper sign to lower sign (1–12)
+    signs_are_identical — True when both levels release from the same sign
+    """
+    upper_profile:       ZRConditionProfile
+    lower_profile:       ZRConditionProfile
+    house_distance:      int
+    signs_are_identical: bool
+
+    def __post_init__(self) -> None:
+        if self.upper_profile.level >= self.lower_profile.level:
+            raise ValueError(
+                "ZRLevelPair.upper_profile must be at a lower level number "
+                "than lower_profile (e.g. Level 1 upper, Level 2 lower)"
+            )
+        if not (1 <= self.house_distance <= 12):
+            raise ValueError(
+                f"ZRLevelPair.house_distance must be 1–12, got {self.house_distance}"
+            )
+        expected_identical = (self.upper_profile.sign == self.lower_profile.sign)
+        if self.signs_are_identical != expected_identical:
+            raise ValueError(
+                "ZRLevelPair.signs_are_identical does not match the sign fields"
+            )
+
+    @property
+    def is_adjacent_levels(self) -> bool:
+        """True when the two profiles are at directly adjacent levels (e.g. 1 and 2)."""
+        return self.lower_profile.level == self.upper_profile.level + 1
+
+    @property
+    def is_angular_distance(self) -> bool:
+        """True when house_distance is one of the four angular houses (1, 4, 7, 10)."""
+        return self.house_distance in _ANGULAR_HOUSES
+
+    @property
+    def is_peak_pair(self) -> bool:
+        """True when both levels are peak periods (both angular from Fortune)."""
+        return self.upper_profile.is_peak_period and self.lower_profile.is_peak_period
+
+
+def zr_level_pair(
+    upper: ReleasingPeriod,
+    lower: ReleasingPeriod,
+) -> ZRLevelPair:
+    """
+    Build a ZRLevelPair from two ReleasingPeriods at different levels.
+
+    The *upper* period must be at a lower level number (outer level) and
+    the *lower* period at a higher level number (inner level). For example,
+    upper=Level 1, lower=Level 2.
+
+    Parameters
+    ----------
+    upper : ReleasingPeriod
+        The outer (higher level-number) releasing period.
+    lower : ReleasingPeriod
+        The inner (lower level-number) releasing period.
+
+    Returns
+    -------
+    ZRLevelPair
+    """
+    upper_idx = SIGNS.index(upper.sign)
+    lower_idx = SIGNS.index(lower.sign)
+    distance  = (lower_idx - upper_idx) % 12 + 1  # 1 = same sign, 12 = prior sign
+
+    return ZRLevelPair(
+        upper_profile       = zr_condition_profile(upper),
+        lower_profile       = zr_condition_profile(lower),
+        house_distance      = distance,
+        signs_are_identical = upper.sign == lower.sign,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Phase 10 — Full-Subsystem Hardening
+# ---------------------------------------------------------------------------
+
+def validate_firdaria_output(periods: list[FirdarPeriod]) -> None:
+    """
+    Verify that a firdaria() output satisfies all cross-layer invariants.
+
+    Checks the following invariants:
+    - Level-1 periods are in chronological order with no JD overlaps.
+    - Every level-2 period's major_planet references a known level-1 planet.
+    - Level-2 periods within each major are in chronological order with no overlaps.
+
+    Raises
+    ------
+    ValueError
+        On the first invariant violation found. Passes silently when all
+        invariants hold.
+    """
+    level1 = [p for p in periods if p.level == 1]
+    level2 = [p for p in periods if p.level == 2]
+
+    # Cross-layer invariant 1: level-1 periods in chronological order, no overlap
+    for i in range(len(level1) - 1):
+        if level1[i].end_jd > level1[i + 1].start_jd + 1e-9:
+            raise ValueError(
+                f"validate_firdaria_output: level-1 periods overlap or are out of order "
+                f"('{level1[i].planet}' end_jd={level1[i].end_jd:.6f} > "
+                f"'{level1[i + 1].planet}' start_jd={level1[i + 1].start_jd:.6f})"
+            )
+
+    # Cross-layer invariant 2: every sub-period's major_planet is a known level-1 planet
+    level1_planets = {p.planet for p in level1}
+    for sub in level2:
+        if sub.major_planet not in level1_planets:
+            raise ValueError(
+                f"validate_firdaria_output: sub-period '{sub.planet}' references "
+                f"unknown major_planet '{sub.major_planet}'"
+            )
+
+    # Cross-layer invariant 3: level-2 periods within each major are ordered, no overlap
+    for major in level1:
+        subs = sorted(
+            (s for s in level2 if s.major_planet == major.planet),
+            key=lambda s: s.start_jd,
+        )
+        for i in range(len(subs) - 1):
+            if subs[i].end_jd > subs[i + 1].start_jd + 1e-9:
+                raise ValueError(
+                    f"validate_firdaria_output: sub-periods of '{major.planet}' overlap "
+                    f"or are out of order ('{subs[i].planet}' end_jd={subs[i].end_jd:.6f} > "
+                    f"'{subs[i + 1].planet}' start_jd={subs[i + 1].start_jd:.6f})"
+                )
+
+
+def validate_releasing_output(periods: list[ReleasingPeriod]) -> None:
+    """
+    Verify that a zodiacal_releasing() output satisfies all cross-layer invariants.
+
+    Checks the following invariants:
+    - Periods at each level are in chronological order with no JD overlaps.
+    - Level 2+ periods are temporally contained within a level above them.
+
+    Raises
+    ------
+    ValueError
+        On the first invariant violation found. Passes silently when all
+        invariants hold.
+    """
+    # Cross-layer invariant 1: chronological ordering and no overlap at each level
+    for level in range(1, 5):
+        this_level = [p for p in periods if p.level == level]
+        for i in range(len(this_level) - 1):
+            if this_level[i].end_jd > this_level[i + 1].start_jd + 1e-9:
+                raise ValueError(
+                    f"validate_releasing_output: Level {level} periods overlap or are "
+                    f"out of order ('{this_level[i].sign}' end_jd={this_level[i].end_jd:.6f} > "
+                    f"'{this_level[i + 1].sign}' start_jd={this_level[i + 1].start_jd:.6f})"
+                )
+
+    # Cross-layer invariant 2: each level N+1 period is contained within a level N period
+    for child_level in range(2, 5):
+        children  = [p for p in periods if p.level == child_level]
+        parents   = [p for p in periods if p.level == child_level - 1]
+        for child in children:
+            contained = any(
+                par.start_jd <= child.start_jd + 1e-9
+                and par.end_jd >= child.end_jd - 1e-9
+                for par in parents
+            )
+            if not contained:
+                raise ValueError(
+                    f"validate_releasing_output: Level-{child_level} period "
+                    f"'{child.sign}' (start={child.start_jd:.6f}) is not temporally "
+                    f"contained within any Level-{child_level - 1} period"
+                )
 
 
 # ---------------------------------------------------------------------------
@@ -437,12 +1713,50 @@ def _sign_at_index(idx: int) -> str:
     return SIGNS[idx % 12]
 
 
+def _opposite_sign(sign: str) -> str:
+    return _sign_at_index(_sign_index(sign) + 6)
+
+
+def _zr_duration_days(sign: str, level: int, level_days: dict[int, float]) -> float:
+    return float(MINOR_YEARS[sign]) * level_days[level]
+
+
+def _fortune_angularity(sign: str, fortune_sign: str | None) -> int | None:
+    if fortune_sign is None:
+        return None
+    offset = (_sign_index(sign) - _sign_index(fortune_sign)) % 12
+    return {
+        0: 1,
+        3: 4,
+        6: 7,
+        9: 10,
+    }.get(offset)
+
+
+def _resolve_releasing_start_sign(
+    lot_longitude: float,
+    lot_name: str,
+    fortune_longitude: float | None,
+) -> str:
+    sign_name, _, _ = sign_of(lot_longitude)
+    if lot_name == "Spirit" and fortune_longitude is not None:
+        fortune_sign, _, _ = sign_of(fortune_longitude)
+        if fortune_sign == sign_name:
+            return _sign_at_index(_sign_index(sign_name) + 1)
+    return sign_name
+
+
 def _generate_releasing(
     start_sign: str,
     start_jd: float,
     level: int,
     max_level: int,
     max_jd: float,
+    lot_name: str,
+    fortune_sign: str | None,
+    use_loosing_of_bond: bool,
+    level_days: dict[int, float],
+    year_days: float,
 ) -> list[ReleasingPeriod]:
     """
     Recursively generate Zodiacal Releasing periods.
@@ -470,22 +1784,21 @@ def _generate_releasing(
         All periods at this level (and deeper levels interleaved) within bounds.
     """
     results: list[ReleasingPeriod] = []
-    start_idx = _sign_index(start_sign)
+    current_sign = start_sign
     cursor_jd = start_jd
-    sign_offset = 0
+    cycle_start_sign = start_sign
+    next_is_loosing_of_bond = False
 
-    # Cycle until we exceed the time cap
     while cursor_jd < max_jd:
-        current_sign  = _sign_at_index(start_idx + sign_offset)
-        period_years  = float(MINOR_YEARS[current_sign])
-        period_jd_len = period_years * _JULIAN_YEAR
-        period_end    = cursor_jd + period_jd_len
+        period_jd_len = _zr_duration_days(current_sign, level, level_days)
+        period_end = cursor_jd + period_jd_len
 
         # Clamp to the hard boundary
         effective_end = min(period_end, max_jd)
 
         # Compute the actual duration for this (possibly clamped) period
-        effective_years = (effective_end - cursor_jd) / _JULIAN_YEAR
+        effective_years = (effective_end - cursor_jd) / year_days
+        angularity_from_fortune = _fortune_angularity(current_sign, fortune_sign)
 
         rp = ReleasingPeriod(
             level=level,
@@ -494,8 +1807,15 @@ def _generate_releasing(
             start_jd=cursor_jd,
             end_jd=effective_end,
             years=effective_years,
+            lot_name=lot_name,
+            is_loosing_of_bond=next_is_loosing_of_bond,
+            is_peak_period=angularity_from_fortune is not None,
+            angularity_from_fortune=angularity_from_fortune,
+            use_loosing_of_bond=use_loosing_of_bond,
+            angularity_class=_zr_angularity_class(angularity_from_fortune),
         )
         results.append(rp)
+        next_is_loosing_of_bond = False
 
         # Recurse into deeper levels if requested
         if level < max_level and cursor_jd < max_jd:
@@ -505,11 +1825,26 @@ def _generate_releasing(
                 level=level + 1,
                 max_level=max_level,
                 max_jd=effective_end,
+                lot_name=lot_name,
+                fortune_sign=fortune_sign,
+                use_loosing_of_bond=use_loosing_of_bond,
+                level_days=level_days,
+                year_days=year_days,
             )
             results.extend(sub)
 
-        cursor_jd = period_end  # advance by full (unclamped) length to stay on schedule
-        sign_offset += 1
+        cursor_jd = period_end
+        next_sign = _sign_at_index(_sign_index(current_sign) + 1)
+        if (
+            use_loosing_of_bond
+            and next_sign == cycle_start_sign
+            and cycle_start_sign in _ZR_LONG_SIGNS
+        ):
+            current_sign = _opposite_sign(cycle_start_sign)
+            cycle_start_sign = current_sign
+            next_is_loosing_of_bond = True
+        else:
+            current_sign = next_sign
 
     return results
 
@@ -522,6 +1857,11 @@ def zodiacal_releasing(
     lot_longitude: float,
     natal_jd: float,
     levels: int = 4,
+    *,
+    lot_name: str = "Spirit",
+    fortune_longitude: float | None = None,
+    use_loosing_of_bond: bool = True,
+    policy: TimelordComputationPolicy | None = None,
 ) -> list[ReleasingPeriod]:
     """
     Generate Zodiacal Releasing periods from a Lot (Fortune, Spirit, etc.).
@@ -530,7 +1870,7 @@ def zodiacal_releasing(
     Deeper levels are sub-periods within each Level 1 (and subsequent) period,
     starting from the same sign as their containing period.
 
-    The output is capped at 120 years of elapsed time from birth.
+    The output spans one full primary releasing circuit from the starting sign.
 
     Parameters
     ----------
@@ -547,15 +1887,44 @@ def zodiacal_releasing(
         All releasing periods across the requested levels, in chronological
         order (Level 1, then interleaved deeper levels inside each L1 period).
     """
-    start_sign, _, _ = sign_of(lot_longitude)
-    max_jd = natal_jd + 120.0 * _JULIAN_YEAR
+    if not math.isfinite(lot_longitude):
+        raise ValueError("lot_longitude must be finite")
+    if not math.isfinite(natal_jd):
+        raise ValueError("natal_jd must be finite")
+    if lot_name not in {"Spirit", "Fortune", "Eros", "Necessity"}:
+        raise ValueError("lot_name must be Spirit, Fortune, Eros, or Necessity")
+    if fortune_longitude is not None and not math.isfinite(fortune_longitude):
+        raise ValueError("fortune_longitude must be finite when provided")
+
+    pol = _resolve_timelord_policy(policy)
+    _eff_year_days  = pol.zr_year.year_days
+    _eff_month_days = _eff_year_days / 12.0
+    _eff_level_days: dict[int, float] = {
+        1: _eff_year_days,
+        2: _eff_month_days,
+        3: _eff_month_days / 12.0,
+        4: (_eff_month_days / 12.0) / 12.0,
+    }
+
+    start_sign = _resolve_releasing_start_sign(
+        lot_longitude,
+        lot_name,
+        fortune_longitude,
+    )
+    fortune_sign = None if fortune_longitude is None else sign_of(fortune_longitude)[0]
+    max_jd = natal_jd + _TOTAL_MINOR_YEARS * _eff_year_days
 
     return _generate_releasing(
         start_sign=start_sign,
         start_jd=natal_jd,
         level=1,
-        max_level=max(1, min(levels, 4)),
+        max_level=max(1, min(levels, _ZR_MAX_LEVEL)),
         max_jd=max_jd,
+        lot_name=lot_name,
+        fortune_sign=fortune_sign,
+        use_loosing_of_bond=use_loosing_of_bond,
+        level_days=_eff_level_days,
+        year_days=_eff_year_days,
     )
 
 
@@ -563,6 +1932,11 @@ def current_releasing(
     lot_longitude: float,
     natal_jd: float,
     current_jd: float,
+    *,
+    lot_name: str = "Spirit",
+    fortune_longitude: float | None = None,
+    use_loosing_of_bond: bool = True,
+    policy: TimelordComputationPolicy | None = None,
 ) -> list[ReleasingPeriod]:
     """
     Find the four Zodiacal Releasing periods (one per level) active at a date.
@@ -586,15 +1960,28 @@ def current_releasing(
     Raises
     ------
     ValueError
-        If current_jd is before natal_jd or beyond the 120-year cap.
+        If current_jd is before natal_jd or beyond one full primary releasing circuit.
     """
+    pol = _resolve_timelord_policy(policy)
+    _eff_cap_days = _TOTAL_MINOR_YEARS * pol.zr_year.year_days
+
+    if not math.isfinite(current_jd):
+        raise ValueError("current_jd must be finite")
     if current_jd < natal_jd:
         raise ValueError("current_jd must not be earlier than natal_jd.")
 
-    if current_jd > natal_jd + 120.0 * _JULIAN_YEAR:
-        raise ValueError("current_jd is beyond the 120-year Zodiacal Releasing cap.")
+    if current_jd > natal_jd + _eff_cap_days:
+        raise ValueError("current_jd is beyond the full Zodiacal Releasing circuit cap.")
 
-    all_periods = zodiacal_releasing(lot_longitude, natal_jd, levels=4)
+    all_periods = zodiacal_releasing(
+        lot_longitude,
+        natal_jd,
+        levels=4,
+        lot_name=lot_name,
+        fortune_longitude=fortune_longitude,
+        use_loosing_of_bond=use_loosing_of_bond,
+        policy=policy,
+    )
 
     active: list[ReleasingPeriod] = []
     for target_level in (1, 2, 3, 4):

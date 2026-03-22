@@ -98,10 +98,133 @@ Catalog sources
   Bond et al. 2017, ApJ 840, 70         — Sirius AB
   Torres et al. 2009, A&A 502, 253      — Capella
   Herbison-Evans et al. 1971, MNRAS 151 — Spica
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ARCHITECTURE FREEZE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The design below is frozen.  No system type, solver constant, resolvability
+formula, magnitude formula, or catalog entry schema may change without
+explicit revision of this docstring, the VALIDATION CODEX below, and the
+corresponding tests.
+
+System type doctrine (frozen)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    VISUAL        — Kepler + Thiele-Innes projection; full ρ/θ computation.
+    WIDE          — Reference separation and PA returned as fixed values.
+    SPECTROSCOPIC — angular_separation_at() returns 0.0; is_resolvable()
+                    always returns False regardless of aperture.
+    OPTICAL       — Treated like WIDE (fixed reference values); flagged as
+                    gravitationally unbound (Gaia parallax evidence).
+
+Kepler solver doctrine (frozen)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Newton-Raphson iteration on M = E − e·sin(E).
+    Convergence tolerance: |ΔE| < 1e-12  (machine precision for all
+    eccentricities in catalog, e < 0.62).
+    Maximum iterations: 50.
+    Initial guess: E = M for e < 0.8, else E = π.
+
+Thiele-Innes projection doctrine (frozen)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Campbell elements (a, i, Ω, ω) → Thiele-Innes constants (A, B, F, G).
+    Sky coordinates: x_E = B·X + G·Y  (East),  y_N = A·X + F·Y  (North).
+    Separation ρ = √(x_E² + y_N²).
+    Position angle θ = atan2(x_E, y_N) mod 360°, measured N through E.
+
+Resolvability doctrine (frozen)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Dawes' empirical limit: R″ = 116 / D_mm.
+    SPECTROSCOPIC systems are never resolvable regardless of aperture.
+    For all other types, is_resolvable returns True iff
+    angular_separation_at(system, jd) ≥ 116 / aperture_mm.
+
+Combined magnitude doctrine (frozen)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    combined_magnitude = −2.5 · log10(Σ 10^(−m_i / 2.5))
+    where the sum runs over all components with finite magnitude.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VALIDATION CODEX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every rule below must be provable by an existing test.  Adding a rule
+requires adding a test.  Removing a test requires removing or revising
+the corresponding rule.
+
+RULE-01  Catalog lookup raises on unknown names
+    multiple_star() raises KeyError for any name not in _CATALOG.
+
+RULE-02  SPECTROSCOPIC separation is always 0.0
+    angular_separation_at(system, jd) == 0.0 for any system with
+    system_type == MultiType.SPECTROSCOPIC, for any jd.
+
+RULE-03  SPECTROSCOPIC is never resolvable
+    is_resolvable(system, jd, aperture_mm) is False for any SPECTROSCOPIC
+    system, for any jd and any aperture_mm.
+
+RULE-04  VISUAL separation is positive and varies with JD
+    For a VISUAL system (Sirius, α Cen), angular_separation_at returns a
+    positive float that differs between two JDs separated by several years.
+
+RULE-05  WIDE/OPTICAL return fixed reference values
+    For WIDE and OPTICAL systems, angular_separation_at returns the same
+    value for any two distinct JDs (the reference separation is constant).
+
+RULE-06  Dawes limit formula
+    is_resolvable returns True iff separation ≥ 116.0 / aperture_mm.
+    At exactly the limit, the result is True (≥, not >).
+
+RULE-07  dominant_component returns minimum-magnitude component
+    dominant_component(system) returns the StarComponent with the
+    smallest .magnitude value among all components.
+
+RULE-08  combined_magnitude formula
+    combined_magnitude(system) == −2.5·log10(Σ 10^(−m_i/2.5)) within
+    1e-9 for all catalog systems.
+
+RULE-09  list_multiple_stars is sorted
+    list_multiple_stars() returns names in ascending lexicographic order.
+
+RULE-10  multiple_stars_by_type filters correctly
+    multiple_stars_by_type(MultiType.VISUAL) returns only systems whose
+    system_type == MultiType.VISUAL; same for all other type strings.
+
+RULE-11  Public surface sealed
+    moira.__all__ and moira.multiple_stars.__all__ expose exactly
+    {MultiType, StarComponent, OrbitalElements, MultipleStarSystem,
+     angular_separation_at, position_angle_at, is_resolvable,
+     dominant_component, combined_magnitude, components_at,
+     multiple_star, list_multiple_stars, multiple_stars_by_type,
+     sirius_ab_separation_at, sirius_b_resolvable,
+     castor_separation_at, alpha_cen_separation_at}.
+    No internal name (_CATALOG, _reg, _solve_kepler, etc.) appears in
+    either __all__.
 """
 
 import math
 from dataclasses import dataclass
+
+__all__ = [
+    "MultiType",
+    "StarComponent",
+    "OrbitalElements",
+    "MultipleStarSystem",
+    "angular_separation_at",
+    "position_angle_at",
+    "is_resolvable",
+    "dominant_component",
+    "combined_magnitude",
+    "components_at",
+    "multiple_star",
+    "list_multiple_stars",
+    "multiple_stars_by_type",
+    "sirius_ab_separation_at",
+    "sirius_b_resolvable",
+    "castor_separation_at",
+    "alpha_cen_separation_at",
+]
+
 
 # ---------------------------------------------------------------------------
 # Classification constants

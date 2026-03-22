@@ -66,12 +66,28 @@ Download from: https://raw.githubusercontent.com/astrorigin/swisseph/master/sefs
 """
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from collections.abc import Iterator
 
 __all__ = [
+    "StarPositionTruth",
+    "StarPositionClassification",
+    "StarRelation",
+    "StarConditionState",
+    "StarConditionProfile",
+    "StarChartConditionProfile",
+    "StarConditionNetworkNode",
+    "StarConditionNetworkEdge",
+    "StarConditionNetworkProfile",
     "StarPosition",
+    "HeliacalEventTruth",
+    "HeliacalEventClassification",
+    "HeliacalEvent",
+    "FixedStarLookupPolicy",
+    "HeliacalSearchPolicy",
+    "FixedStarComputationPolicy",
+    "DEFAULT_FIXED_STAR_POLICY",
     "load_catalog",
     "fixed_star_at",
     "all_stars_at",
@@ -80,6 +96,10 @@ __all__ = [
     "star_magnitude",
     "heliacal_rising",
     "heliacal_setting",
+    "heliacal_rising_event",
+    "heliacal_setting_event",
+    "star_chart_condition_profile",
+    "star_condition_network_profile",
 ]
 
 from .constants import DEG2RAD, RAD2DEG
@@ -96,6 +116,75 @@ _B1950   = 2433282.4235       # JD of B1950.0
 
 # Arcseconds → degrees
 _AS2DEG = 1.0 / 3600.0
+
+
+# ---------------------------------------------------------------------------
+# Explicit doctrine / policy
+# ---------------------------------------------------------------------------
+
+@dataclass(frozen=True, slots=True)
+class FixedStarLookupPolicy:
+    """Policy surface for fixed-star name resolution doctrine."""
+
+    allow_prefix_lookup: bool = True
+
+
+@dataclass(frozen=True, slots=True)
+class HeliacalSearchPolicy:
+    """Policy surface for heliacal visibility doctrine already embodied here."""
+
+    elongation_threshold: float = 12.0
+    visibility_tolerance: float = 1.0
+    setting_visibility_factor: float = 0.5
+
+
+@dataclass(frozen=True, slots=True)
+class FixedStarComputationPolicy:
+    """Lean policy vessel for fixed-star lookup and heliacal doctrine."""
+
+    lookup: FixedStarLookupPolicy = field(default_factory=FixedStarLookupPolicy)
+    heliacal: HeliacalSearchPolicy = field(default_factory=HeliacalSearchPolicy)
+
+
+DEFAULT_FIXED_STAR_POLICY = FixedStarComputationPolicy()
+
+
+def _resolve_fixed_star_policy(policy: FixedStarComputationPolicy | None) -> FixedStarComputationPolicy:
+    return DEFAULT_FIXED_STAR_POLICY if policy is None else policy
+
+
+def _require_finite(value: float, name: str) -> None:
+    if not math.isfinite(value):
+        raise ValueError(f"{name} must be finite")
+
+
+def _validate_lat_lon(lat: float, lon: float) -> None:
+    _require_finite(lat, "lat")
+    _require_finite(lon, "lon")
+    if not -90.0 <= lat <= 90.0:
+        raise ValueError("lat must be between -90 and 90 degrees")
+    if not -180.0 <= lon <= 180.0:
+        raise ValueError("lon must be between -180 and 180 degrees")
+
+
+def _validate_fixed_star_policy(policy: FixedStarComputationPolicy) -> None:
+    if not isinstance(policy, FixedStarComputationPolicy):
+        raise ValueError("fixed-star policy must be a FixedStarComputationPolicy")
+    if not isinstance(policy.lookup, FixedStarLookupPolicy):
+        raise ValueError("fixed-star policy lookup must be a FixedStarLookupPolicy")
+    if not isinstance(policy.heliacal, HeliacalSearchPolicy):
+        raise ValueError("fixed-star policy heliacal must be a HeliacalSearchPolicy")
+    if not isinstance(policy.lookup.allow_prefix_lookup, bool):
+        raise ValueError("fixed-star lookup policy allow_prefix_lookup must be boolean")
+    if policy.heliacal.elongation_threshold <= 0:
+        raise ValueError("heliacal policy elongation_threshold must be positive")
+    if policy.heliacal.visibility_tolerance < 0:
+        raise ValueError("heliacal policy visibility_tolerance must be non-negative")
+    if policy.heliacal.setting_visibility_factor <= 0:
+        raise ValueError("heliacal policy setting_visibility_factor must be positive")
+    _require_finite(policy.heliacal.elongation_threshold, "heliacal policy elongation_threshold")
+    _require_finite(policy.heliacal.visibility_tolerance, "heliacal policy visibility_tolerance")
+    _require_finite(policy.heliacal.setting_visibility_factor, "heliacal policy setting_visibility_factor")
 
 
 # ---------------------------------------------------------------------------
@@ -181,6 +270,345 @@ class _StarRecord:
 # ---------------------------------------------------------------------------
 
 @dataclass(slots=True)
+class StarPositionTruth:
+    """Preserve the lookup and frame path used to compute one star position."""
+
+    queried_name: str
+    lookup_mode: str
+    matched_name: str
+    matched_nomenclature: str
+    source_frame: str
+    frame_path: str
+    catalog_epoch_jd: float
+    parallax_applied: bool
+
+    def __post_init__(self) -> None:
+        if not self.queried_name.strip():
+            raise ValueError("star position truth queried_name must be non-empty")
+        if not self.matched_name.strip():
+            raise ValueError("star position truth matched_name must be non-empty")
+        if not self.matched_nomenclature.strip():
+            raise ValueError("star position truth matched_nomenclature must be non-empty")
+        if not self.source_frame.strip():
+            raise ValueError("star position truth source_frame must be non-empty")
+        if self.lookup_mode not in {"traditional_name", "nomenclature", "prefix_unique", "prefix_shortest"}:
+            raise ValueError("star position truth lookup_mode must be supported")
+        if self.frame_path not in {"icrf_to_true_ecliptic", "equatorial_to_ecliptic_mean_obliquity"}:
+            raise ValueError("star position truth frame_path must be supported")
+        _require_finite(self.catalog_epoch_jd, "star position truth catalog_epoch_jd")
+
+
+@dataclass(slots=True)
+class StarPositionClassification:
+    """Typed descriptive classification derived from star position truth."""
+
+    lookup_kind: str
+    frame_kind: str
+    parallax_state: str
+
+    def __post_init__(self) -> None:
+        if self.lookup_kind not in {"traditional_name", "nomenclature", "prefix_unique", "prefix_shortest"}:
+            raise ValueError("star position classification lookup_kind must be supported")
+        if self.frame_kind not in {"icrf", "legacy_equatorial"}:
+            raise ValueError("star position classification frame_kind must be supported")
+        if self.parallax_state not in {"applied", "not_applied"}:
+            raise ValueError("star position classification parallax_state must be applied or not_applied")
+
+
+def _classify_star_position_truth(truth: StarPositionTruth) -> StarPositionClassification:
+    return StarPositionClassification(
+        lookup_kind=truth.lookup_mode,
+        frame_kind="icrf" if truth.frame_path == "icrf_to_true_ecliptic" else "legacy_equatorial",
+        parallax_state="applied" if truth.parallax_applied else "not_applied",
+    )
+
+
+@dataclass(slots=True)
+class StarRelation:
+    """Explicit relation truth derived from the current star backend."""
+
+    kind: str
+    basis: str
+    star_name: str
+    reference: str | None = None
+    event_kind: str | None = None
+
+    def __post_init__(self) -> None:
+        if not self.star_name.strip():
+            raise ValueError("star relation star_name must be non-empty")
+        if self.kind not in {"catalog_lookup", "heliacal_event"}:
+            raise ValueError("star relation kind must be supported")
+        if self.kind == "catalog_lookup" and self.basis not in {"named_star_lookup"}:
+            raise ValueError("catalog lookup relation basis must be named_star_lookup")
+        if self.kind == "catalog_lookup" and self.event_kind is not None:
+            raise ValueError("catalog lookup relation must not carry event_kind")
+        if self.kind == "catalog_lookup" and self.reference is None:
+            raise ValueError("catalog lookup relation must preserve nomenclature reference")
+        if self.kind == "catalog_lookup" and self.reference is not None and not self.reference.strip():
+            raise ValueError("catalog lookup relation reference must be non-empty")
+        if self.kind == "heliacal_event" and self.basis not in {"heliacal_visibility"}:
+            raise ValueError("heliacal event relation basis must be heliacal_visibility")
+        if self.kind == "heliacal_event" and self.event_kind not in {"rising", "setting"}:
+            raise ValueError("heliacal event relation must preserve supported event_kind")
+        if self.kind == "heliacal_event" and self.reference is not None:
+            raise ValueError("heliacal event relation must not carry lookup reference")
+
+    @property
+    def is_catalog_lookup(self) -> bool:
+        return self.kind == "catalog_lookup"
+
+    @property
+    def is_heliacal_event(self) -> bool:
+        return self.kind == "heliacal_event"
+
+
+@dataclass(slots=True)
+class StarConditionState:
+    """Structural condition state for one star result vessel."""
+
+    name: str
+
+    def __post_init__(self) -> None:
+        if self.name not in {"catalog_position", "heliacal_event", "unified_merge"}:
+            raise ValueError("star condition state must be supported")
+
+
+@dataclass(slots=True)
+class StarConditionProfile:
+    """Integrated per-result star condition profile derived from existing truth."""
+
+    result_kind: str
+    condition_state: StarConditionState
+    relation_kind: str
+    relation_basis: str
+    lookup_kind: str | None = None
+    source_kind: str | None = None
+    event_kind: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.result_kind not in {"fixed_star_position", "heliacal_event", "unified_star"}:
+            raise ValueError("star condition profile result_kind must be supported")
+        if self.condition_state.name == "catalog_position" and self.relation_kind != "catalog_lookup":
+            raise ValueError("catalog-position profile must use catalog_lookup relation")
+        if self.condition_state.name == "heliacal_event" and self.relation_kind != "heliacal_event":
+            raise ValueError("heliacal-event profile must use heliacal_event relation")
+        if self.condition_state.name == "unified_merge" and self.relation_kind != "catalog_merge":
+            raise ValueError("unified-merge profile must use catalog_merge relation")
+        if self.result_kind == "fixed_star_position" and not self.lookup_kind:
+            raise ValueError("fixed-star-position profile must preserve lookup_kind")
+        if self.result_kind == "heliacal_event" and self.event_kind not in {"rising", "setting"}:
+            raise ValueError("heliacal-event profile must preserve supported event_kind")
+        if self.result_kind == "unified_star" and self.source_kind not in {"hipparcos", "gaia", "both"}:
+            raise ValueError("unified-star profile must preserve supported source_kind")
+
+
+def _build_star_position_condition_profile(position: "StarPosition") -> StarConditionProfile:
+    return StarConditionProfile(
+        result_kind="fixed_star_position",
+        condition_state=StarConditionState("catalog_position"),
+        relation_kind="catalog_lookup",
+        relation_basis="named_star_lookup",
+        lookup_kind=position.lookup_kind,
+    )
+
+
+def _build_heliacal_event_condition_profile(event: "HeliacalEvent") -> StarConditionProfile:
+    return StarConditionProfile(
+        result_kind="heliacal_event",
+        condition_state=StarConditionState("heliacal_event"),
+        relation_kind="heliacal_event",
+        relation_basis="heliacal_visibility",
+        event_kind=event.event_kind,
+    )
+
+
+def _star_condition_strength(profile: StarConditionProfile) -> int:
+    ranks = {
+        "catalog_position": 0,
+        "heliacal_event": 1,
+        "unified_merge": 2,
+    }
+    return ranks[profile.condition_state.name]
+
+
+def _star_condition_sort_key(profile: StarConditionProfile) -> tuple[object, ...]:
+    return (
+        profile.condition_state.name,
+        profile.result_kind,
+        profile.relation_kind,
+        profile.relation_basis,
+        profile.lookup_kind or "",
+        profile.source_kind or "",
+        profile.event_kind or "",
+    )
+
+
+@dataclass(slots=True)
+class StarChartConditionProfile:
+    """Chart-wide star condition aggregate built from per-result profiles."""
+
+    profiles: tuple[StarConditionProfile, ...]
+    catalog_position_count: int
+    heliacal_event_count: int
+    unified_merge_count: int
+    strongest_profiles: tuple[StarConditionProfile, ...]
+    weakest_profiles: tuple[StarConditionProfile, ...]
+
+    def __post_init__(self) -> None:
+        if len(self.profiles) != self.catalog_position_count + self.heliacal_event_count + self.unified_merge_count:
+            raise ValueError("star chart profile counts must sum to profile total")
+        expected_profiles = tuple(sorted(self.profiles, key=_star_condition_sort_key))
+        if self.profiles != expected_profiles:
+            raise ValueError("star chart condition profiles must be deterministically ordered")
+        if self.catalog_position_count != sum(1 for profile in self.profiles if profile.condition_state.name == "catalog_position"):
+            raise ValueError("star chart catalog_position_count must match profiles")
+        if self.heliacal_event_count != sum(1 for profile in self.profiles if profile.condition_state.name == "heliacal_event"):
+            raise ValueError("star chart heliacal_event_count must match profiles")
+        if self.unified_merge_count != sum(1 for profile in self.profiles if profile.condition_state.name == "unified_merge"):
+            raise ValueError("star chart unified_merge_count must match profiles")
+        if self.profiles:
+            strongest_rank = max(_star_condition_strength(profile) for profile in self.profiles)
+            weakest_rank = min(_star_condition_strength(profile) for profile in self.profiles)
+            expected_strongest = tuple(profile for profile in self.profiles if _star_condition_strength(profile) == strongest_rank)
+            expected_weakest = tuple(profile for profile in self.profiles if _star_condition_strength(profile) == weakest_rank)
+        else:
+            expected_strongest = ()
+            expected_weakest = ()
+        if self.strongest_profiles != expected_strongest:
+            raise ValueError("star chart strongest_profiles must match derived ranking")
+        if self.weakest_profiles != expected_weakest:
+            raise ValueError("star chart weakest_profiles must match derived ranking")
+
+    @property
+    def profile_count(self) -> int:
+        return len(self.profiles)
+
+
+@dataclass(slots=True)
+class StarConditionNetworkNode:
+    """One node in the star relation/condition network."""
+
+    node_id: str
+    kind: str
+    incoming_count: int
+    outgoing_count: int
+
+    def __post_init__(self) -> None:
+        if not self.node_id.strip():
+            raise ValueError("star network node_id must be non-empty")
+        if self.kind not in {"star", "event", "source"}:
+            raise ValueError("star network node kind must be supported")
+        if self.incoming_count < 0 or self.outgoing_count < 0:
+            raise ValueError("star network node counts must be non-negative")
+        expected_prefix = f"{self.kind}:"
+        if not self.node_id.startswith(expected_prefix):
+            raise ValueError("star network node_id must match node kind prefix")
+
+    @property
+    def total_degree(self) -> int:
+        return self.incoming_count + self.outgoing_count
+
+
+@dataclass(slots=True)
+class StarConditionNetworkEdge:
+    """One directed edge in the star relation/condition network."""
+
+    source_id: str
+    target_id: str
+    relation_kind: str
+    relation_basis: str
+    condition_state: str
+
+    def __post_init__(self) -> None:
+        if not self.source_id.strip() or not self.target_id.strip():
+            raise ValueError("star network edge endpoints must be non-empty")
+        if self.relation_kind not in {"catalog_lookup", "heliacal_event", "catalog_merge"}:
+            raise ValueError("star network edge relation_kind must be supported")
+        if self.condition_state not in {"catalog_position", "heliacal_event", "unified_merge"}:
+            raise ValueError("star network edge condition_state must be supported")
+        if self.source_id == self.target_id:
+            raise ValueError("star network edges must not be self-loops")
+
+
+@dataclass(slots=True)
+class StarConditionNetworkProfile:
+    """Network projection built from existing star relations and condition profiles."""
+
+    nodes: tuple[StarConditionNetworkNode, ...]
+    edges: tuple[StarConditionNetworkEdge, ...]
+    isolated_nodes: tuple[StarConditionNetworkNode, ...]
+    most_connected_nodes: tuple[StarConditionNetworkNode, ...]
+
+    def __post_init__(self) -> None:
+        expected_nodes = tuple(sorted(self.nodes, key=lambda node: (node.kind, node.node_id)))
+        expected_edges = tuple(sorted(
+            self.edges,
+            key=lambda edge: (edge.source_id, edge.target_id, edge.relation_kind, edge.relation_basis, edge.condition_state),
+        ))
+        if self.nodes != expected_nodes:
+            raise ValueError("star network nodes must be deterministically ordered")
+        if self.edges != expected_edges:
+            raise ValueError("star network edges must be deterministically ordered")
+        if len(set(
+            (edge.source_id, edge.target_id, edge.relation_kind, edge.relation_basis, edge.condition_state)
+            for edge in self.edges
+        )) != len(self.edges):
+            raise ValueError("star network edges must be unique")
+        node_ids = {node.node_id for node in self.nodes}
+        if len(node_ids) != len(self.nodes):
+            raise ValueError("star network node ids must be unique")
+        incoming = {node.node_id: 0 for node in self.nodes}
+        outgoing = {node.node_id: 0 for node in self.nodes}
+        for edge in self.edges:
+            if edge.source_id not in node_ids or edge.target_id not in node_ids:
+                raise ValueError("star network edges must reference known nodes")
+            if edge.relation_kind == "catalog_lookup" and not edge.source_id.startswith("source:"):
+                raise ValueError("catalog lookup edges must originate from source nodes")
+            if edge.relation_kind == "catalog_lookup" and not edge.target_id.startswith("star:"):
+                raise ValueError("catalog lookup edges must target star nodes")
+            if edge.relation_kind == "catalog_lookup" and edge.condition_state != "catalog_position":
+                raise ValueError("catalog lookup edges must use catalog_position condition_state")
+            if edge.relation_kind == "heliacal_event" and not edge.source_id.startswith("event:"):
+                raise ValueError("heliacal event edges must originate from event nodes")
+            if edge.relation_kind == "heliacal_event" and not edge.target_id.startswith("star:"):
+                raise ValueError("heliacal event edges must target star nodes")
+            if edge.relation_kind == "heliacal_event" and edge.condition_state != "heliacal_event":
+                raise ValueError("heliacal event edges must use heliacal_event condition_state")
+            if edge.relation_kind == "catalog_merge" and not edge.source_id.startswith("source:"):
+                raise ValueError("catalog merge edges must originate from source nodes")
+            if edge.relation_kind == "catalog_merge" and not edge.target_id.startswith("star:"):
+                raise ValueError("catalog merge edges must target star nodes")
+            if edge.relation_kind == "catalog_merge" and edge.condition_state != "unified_merge":
+                raise ValueError("catalog merge edges must use unified_merge condition_state")
+            outgoing[edge.source_id] += 1
+            incoming[edge.target_id] += 1
+        for node in self.nodes:
+            if node.incoming_count != incoming[node.node_id]:
+                raise ValueError("star network incoming_count must match edges")
+            if node.outgoing_count != outgoing[node.node_id]:
+                raise ValueError("star network outgoing_count must match edges")
+        expected_isolated = tuple(node for node in self.nodes if node.total_degree == 0)
+        if self.isolated_nodes != expected_isolated:
+            raise ValueError("star network isolated_nodes must match zero-degree nodes")
+        if self.nodes:
+            max_degree = max(node.total_degree for node in self.nodes)
+            expected_most_connected = tuple(node for node in self.nodes if node.total_degree == max_degree)
+        else:
+            expected_most_connected = ()
+        if self.most_connected_nodes != expected_most_connected:
+            raise ValueError("star network most_connected_nodes must match node degrees")
+
+
+def _build_star_position_relation(position: "StarPosition") -> StarRelation:
+    return StarRelation(
+        kind="catalog_lookup",
+        basis="named_star_lookup",
+        star_name=position.name,
+        reference=position.nomenclature,
+    )
+
+
+@dataclass(slots=True)
 class StarPosition:
     """
     RITE: The Star's Witness — the ecliptic position of a fixed star at a moment in time.
@@ -247,6 +675,39 @@ class StarPosition:
     longitude:  float   # tropical ecliptic longitude, degrees [0, 360)
     latitude:   float   # ecliptic latitude, degrees
     magnitude:  float   # V magnitude
+    computation_truth: StarPositionTruth | None = None
+    classification: StarPositionClassification | None = None
+    relation: StarRelation | None = None
+    condition_profile: StarConditionProfile | None = None
+
+    def __post_init__(self) -> None:
+        if not self.name.strip():
+            raise ValueError("star position name must be non-empty")
+        if not self.nomenclature.strip():
+            raise ValueError("star position nomenclature must be non-empty")
+        _require_finite(self.longitude, "star position longitude")
+        _require_finite(self.latitude, "star position latitude")
+        _require_finite(self.magnitude, "star position magnitude")
+        self.longitude = self.longitude % 360.0
+        if self.computation_truth is not None:
+            if self.computation_truth.matched_name != self.name:
+                raise ValueError("star position truth matched_name must match position name")
+            if self.computation_truth.matched_nomenclature != self.nomenclature:
+                raise ValueError("star position truth matched_nomenclature must match position nomenclature")
+        if self.classification is not None:
+            if self.computation_truth is None:
+                raise ValueError("star position classification requires computation_truth")
+            expected = _classify_star_position_truth(self.computation_truth)
+            if self.classification != expected:
+                raise ValueError("star position classification must match computation_truth")
+        if self.relation is not None:
+            expected = _build_star_position_relation(self)
+            if self.relation != expected:
+                raise ValueError("star position relation must match star vessel truth")
+        if self.condition_profile is not None:
+            expected = _build_star_position_condition_profile(self)
+            if self.condition_profile != expected:
+                raise ValueError("star position condition profile must match vessel truth")
 
     @property
     def sign(self) -> str:
@@ -257,10 +718,180 @@ class StarPosition:
     def sign_degree(self) -> float:
         return self.longitude % 30.0
 
+    @property
+    def lookup_kind(self) -> str | None:
+        return None if self.classification is None else self.classification.lookup_kind
+
+    @property
+    def frame_kind(self) -> str | None:
+        return None if self.classification is None else self.classification.frame_kind
+
+    @property
+    def parallax_state(self) -> str | None:
+        return None if self.classification is None else self.classification.parallax_state
+
+    @property
+    def source_frame(self) -> str | None:
+        return None if self.computation_truth is None else self.computation_truth.source_frame
+
+    @property
+    def relation_kind(self) -> str | None:
+        return None if self.relation is None else self.relation.kind
+
+    @property
+    def relation_basis(self) -> str | None:
+        return None if self.relation is None else self.relation.basis
+
+    @property
+    def has_relation(self) -> bool:
+        return self.relation is not None
+
+    @property
+    def condition_state(self) -> str | None:
+        return None if self.condition_profile is None else self.condition_profile.condition_state.name
+
     def __repr__(self) -> str:
         return (f"StarPosition({self.name!r}, "
                 f"{self.longitude:.4f}° [{self.sign} {self.sign_degree:.2f}°], "
                 f"lat={self.latitude:.4f}°, mag={self.magnitude})")
+
+
+# ---------------------------------------------------------------------------
+# Heliacal event result vessels
+# ---------------------------------------------------------------------------
+
+@dataclass(slots=True)
+class HeliacalEventTruth:
+    """Preserve the doctrinal search path for one heliacal event computation."""
+
+    event_kind: str
+    star_name: str
+    jd_start: float
+    search_days: int
+    arcus_visionis: float
+    elongation_threshold: float
+    conjunction_offset: int | None
+    qualifying_day_offset: int | None
+    qualifying_elongation: float | None
+    qualifying_sun_altitude: float | None
+    event_jd_ut: float | None
+
+    def __post_init__(self) -> None:
+        if self.event_kind not in {"rising", "setting"}:
+            raise ValueError("heliacal event truth event_kind must be rising or setting")
+        if not self.star_name.strip():
+            raise ValueError("heliacal event truth star_name must be non-empty")
+        if self.search_days <= 0:
+            raise ValueError("heliacal event truth search_days must be positive")
+        if self.elongation_threshold <= 0:
+            raise ValueError("heliacal event truth elongation_threshold must be positive")
+        _require_finite(self.jd_start, "heliacal event truth jd_start")
+        _require_finite(self.arcus_visionis, "heliacal event truth arcus_visionis")
+        _require_finite(self.elongation_threshold, "heliacal event truth elongation_threshold")
+        if self.qualifying_day_offset is not None and not 0 <= self.qualifying_day_offset < self.search_days:
+            raise ValueError("heliacal event truth qualifying_day_offset must fall within search_days")
+        if self.conjunction_offset is not None and not 0 <= self.conjunction_offset < self.search_days:
+            raise ValueError("heliacal event truth conjunction_offset must fall within search_days")
+        if self.event_jd_ut is None:
+            if self.qualifying_day_offset is not None:
+                raise ValueError("heliacal event truth without event_jd_ut must not preserve qualifying_day_offset")
+        else:
+            _require_finite(self.event_jd_ut, "heliacal event truth event_jd_ut")
+
+
+@dataclass(slots=True)
+class HeliacalEventClassification:
+    """Typed descriptive classification derived from heliacal event truth."""
+
+    event_kind: str
+    visibility_basis: str
+    threshold_mode: str
+
+    def __post_init__(self) -> None:
+        if self.event_kind not in {"rising", "setting"}:
+            raise ValueError("heliacal event classification event_kind must be supported")
+        if self.visibility_basis != "heliacal_visibility":
+            raise ValueError("heliacal event classification visibility_basis must be heliacal_visibility")
+        if self.threshold_mode not in {"first_visible", "last_visible"}:
+            raise ValueError("heliacal event classification threshold_mode must be supported")
+
+
+def _classify_heliacal_event_truth(truth: HeliacalEventTruth) -> HeliacalEventClassification:
+    return HeliacalEventClassification(
+        event_kind=truth.event_kind,
+        visibility_basis="heliacal_visibility",
+        threshold_mode="first_visible" if truth.event_kind == "rising" else "last_visible",
+    )
+
+
+def _build_heliacal_event_relation(event: "HeliacalEvent") -> StarRelation:
+    return StarRelation(
+        kind="heliacal_event",
+        basis="heliacal_visibility",
+        star_name=event.truth.star_name,
+        event_kind=event.truth.event_kind,
+    )
+
+
+@dataclass(slots=True)
+class HeliacalEvent:
+    """Explicit heliacal event vessel preserving returned JD plus search truth."""
+
+    jd_ut: float | None
+    truth: HeliacalEventTruth
+    classification: HeliacalEventClassification | None = None
+    relation: StarRelation | None = None
+    condition_profile: StarConditionProfile | None = None
+
+    def __post_init__(self) -> None:
+        if self.jd_ut is not None:
+            _require_finite(self.jd_ut, "heliacal event jd_ut")
+        if self.jd_ut != self.truth.event_jd_ut:
+            raise ValueError("heliacal event jd_ut must match truth event_jd_ut")
+        if self.classification is not None:
+            expected = _classify_heliacal_event_truth(self.truth)
+            if self.classification != expected:
+                raise ValueError("heliacal event classification must match truth")
+        if self.relation is not None:
+            expected = _build_heliacal_event_relation(self)
+            if self.relation != expected:
+                raise ValueError("heliacal event relation must match event truth")
+        if self.condition_profile is not None:
+            expected = _build_heliacal_event_condition_profile(self)
+            if self.condition_profile != expected:
+                raise ValueError("heliacal event condition profile must match event truth")
+
+    @property
+    def event_kind(self) -> str:
+        return self.truth.event_kind if self.classification is None else self.classification.event_kind
+
+    @property
+    def visibility_basis(self) -> str | None:
+        return None if self.classification is None else self.classification.visibility_basis
+
+    @property
+    def threshold_mode(self) -> str | None:
+        return None if self.classification is None else self.classification.threshold_mode
+
+    @property
+    def found_event(self) -> bool:
+        return self.jd_ut is not None
+
+    @property
+    def relation_kind(self) -> str | None:
+        return None if self.relation is None else self.relation.kind
+
+    @property
+    def relation_basis(self) -> str | None:
+        return None if self.relation is None else self.relation.basis
+
+    @property
+    def has_relation(self) -> bool:
+        return self.relation is not None
+
+    @property
+    def condition_state(self) -> str | None:
+        return None if self.condition_profile is None else self.condition_profile.condition_state.name
 
 
 # ---------------------------------------------------------------------------
@@ -419,7 +1050,11 @@ def _apply_proper_motion(ra: float, dec: float, pm_ra: float, pm_dec: float,
     return new_ra % 360.0, new_dec
 
 
-def fixed_star_at(name: str, jd_tt: float) -> StarPosition:
+def fixed_star_at(
+    name: str,
+    jd_tt: float,
+    policy: FixedStarComputationPolicy | None = None,
+) -> StarPosition:
     """
     Return the tropical ecliptic position of a fixed star at *jd_tt*.
 
@@ -440,25 +1075,36 @@ def fixed_star_at(name: str, jd_tt: float) -> StarPosition:
     FileNotFoundError if sefstars.txt has not been placed in the project root.
     KeyError          if the star is not found in the catalog.
     """
+    if not isinstance(name, str) or not name.strip():
+        raise ValueError("fixed star name must be a non-empty string")
+    _require_finite(jd_tt, "jd_tt")
+    policy = _resolve_fixed_star_policy(policy)
+    _validate_fixed_star_policy(policy)
+
     _ensure_loaded()
     assert _catalog is not None
 
     key = name.lower().strip()
+    lookup_mode = "traditional_name"
     record = _catalog.get(key)
     if record is None:
         # Try nomenclature lookup
         trad_key = _alt_index.get(key)
         if trad_key:
             record = _catalog[trad_key]
+            lookup_mode = "nomenclature"
     if record is None:
         # Fuzzy: match by prefix
-        matches = [v for k, v in _catalog.items() if k.startswith(key)]
-        if len(matches) == 1:
-            record = matches[0]
-        elif len(matches) > 1:
-            # Return closest (shortest name)
-            record = min(matches, key=lambda r: len(r.traditional_name))
-        else:
+        if policy.lookup.allow_prefix_lookup:
+            matches = [v for k, v in _catalog.items() if k.startswith(key)]
+            if len(matches) == 1:
+                record = matches[0]
+                lookup_mode = "prefix_unique"
+            elif len(matches) > 1:
+                # Return closest (shortest name)
+                record = min(matches, key=lambda r: len(r.traditional_name))
+                lookup_mode = "prefix_shortest"
+        if record is None:
             raise KeyError(
                 f"Fixed star {name!r} not found in catalog. "
                 f"Use list_stars() to see available names."
@@ -484,6 +1130,7 @@ def fixed_star_at(name: str, jd_tt: float) -> StarPosition:
     #    The single B1950 catalog entry keeps the legacy scalar path because
     #    Moira does not yet carry a dedicated FK4→J2000 frame conversion here.
     if record.frame in {"ICRS", "2000"}:
+        frame_path = "icrf_to_true_ecliptic"
         ra_r = ra * DEG2RAD
         dec_r = dec * DEG2RAD
         xyz = (
@@ -493,6 +1140,7 @@ def fixed_star_at(name: str, jd_tt: float) -> StarPosition:
         )
         lon, lat, _ = icrf_to_true_ecliptic(jd_tt, xyz)
     else:
+        frame_path = "equatorial_to_ecliptic_mean_obliquity"
         obliquity_mean = mean_obliquity(jd_tt)
         lon, lat = equatorial_to_ecliptic(ra, dec, obliquity_mean)
 
@@ -503,6 +1151,7 @@ def fixed_star_at(name: str, jd_tt: float) -> StarPosition:
     #       Δλ = +p * sin(λ_sun − λ) / cos β
     #       Δβ = −p * cos(λ_sun − λ) * sin β
     #    where p is the annual parallax in the same angular units.
+    parallax_applied = False
     if record.parallax_mas > 0.0:
         from .planets import planet_at as _planet_at
         sun = _planet_at("Sun", jd_tt)
@@ -514,6 +1163,7 @@ def fixed_star_at(name: str, jd_tt: float) -> StarPosition:
         if abs(cos_b) > 1e-10:
             lon = (lon + p_deg * dlam / cos_b) % 360.0
         lat = lat - p_deg * dcos * math.sin(lat_r)
+        parallax_applied = True
 
     return StarPosition(
         name=record.traditional_name,
@@ -521,6 +1171,41 @@ def fixed_star_at(name: str, jd_tt: float) -> StarPosition:
         longitude=lon,
         latitude=lat,
         magnitude=record.magnitude,
+        computation_truth=StarPositionTruth(
+            queried_name=name,
+            lookup_mode=lookup_mode,
+            matched_name=record.traditional_name,
+            matched_nomenclature=record.nomenclature,
+            source_frame=record.frame,
+            frame_path=frame_path,
+            catalog_epoch_jd=record.equinox_jd,
+            parallax_applied=parallax_applied,
+        ),
+        classification=_classify_star_position_truth(
+            StarPositionTruth(
+                queried_name=name,
+                lookup_mode=lookup_mode,
+                matched_name=record.traditional_name,
+                matched_nomenclature=record.nomenclature,
+                source_frame=record.frame,
+                frame_path=frame_path,
+                catalog_epoch_jd=record.equinox_jd,
+                parallax_applied=parallax_applied,
+            )
+        ),
+        relation=StarRelation(
+            kind="catalog_lookup",
+            basis="named_star_lookup",
+            star_name=record.traditional_name,
+            reference=record.nomenclature,
+        ),
+        condition_profile=StarConditionProfile(
+            result_kind="fixed_star_position",
+            condition_state=StarConditionState("catalog_position"),
+            relation_kind="catalog_lookup",
+            relation_basis="named_star_lookup",
+            lookup_kind=lookup_mode,
+        ),
     )
 
 
@@ -790,14 +1475,15 @@ def _find_star_set(
     return None
 
 
-def heliacal_rising(
+def heliacal_rising_event(
     star_name: str,
     jd_start: float,
     lat: float,
     lon: float,
     arcus_visionis: float | None = None,
     search_days: int = 400,
-) -> float | None:
+    policy: FixedStarComputationPolicy | None = None,
+) -> HeliacalEvent | None:
     """
     Find the Julian Day of the heliacal rising of a fixed star.
 
@@ -832,6 +1518,19 @@ def heliacal_rising(
     from .julian import ut_to_tt
     from .planets import planet_at
 
+    if not isinstance(star_name, str) or not star_name.strip():
+        raise ValueError("star_name must be a non-empty string")
+    _require_finite(jd_start, "jd_start")
+    _validate_lat_lon(lat, lon)
+    if not isinstance(search_days, int) or search_days <= 0:
+        raise ValueError("search_days must be a positive integer")
+    if arcus_visionis is not None:
+        _require_finite(arcus_visionis, "arcus_visionis")
+        if arcus_visionis <= 0:
+            raise ValueError("arcus_visionis must be positive")
+    policy = _resolve_fixed_star_policy(policy)
+    _validate_fixed_star_policy(policy)
+
     # Determine arcus visionis from catalog magnitude if not provided
     try:
         mag = star_magnitude(star_name)
@@ -843,7 +1542,7 @@ def heliacal_rising(
     for day_offset in range(search_days):
         jd = jd_start + day_offset
         jd_tt = ut_to_tt(jd)
-        star_pos = fixed_star_at(star_name, jd_tt)
+        star_pos = fixed_star_at(star_name, jd_tt, policy=policy)
         sun_pos = planet_at("Sun", jd)
         elongation = abs((star_pos.longitude - sun_pos.longitude + 180.0) % 360.0 - 180.0)
         elongations.append(elongation)
@@ -855,7 +1554,7 @@ def heliacal_rising(
     for day_offset in range(conjunction_offset, search_days):
         jd = jd_start + day_offset
         elongation = elongations[day_offset]
-        if elongation < 12.0:
+        if elongation < policy.heliacal.elongation_threshold:
             continue  # star still hidden in Sun's rays
 
         # Find rising time on this day
@@ -867,20 +1566,51 @@ def heliacal_rising(
         sun_alt = _sun_altitude(star_rise_jd, lat, lon)
 
         # Heliacal rising condition: Sun is just below horizon at −av
-        if -av - 1.0 <= sun_alt <= -av + 1.0:
-            return star_rise_jd
+        if -av - policy.heliacal.visibility_tolerance <= sun_alt <= -av + policy.heliacal.visibility_tolerance:
+            truth = HeliacalEventTruth(
+                event_kind="rising",
+                star_name=star_name,
+                jd_start=jd_start,
+                search_days=search_days,
+                arcus_visionis=av,
+                elongation_threshold=policy.heliacal.elongation_threshold,
+                conjunction_offset=conjunction_offset,
+                qualifying_day_offset=day_offset,
+                qualifying_elongation=elongation,
+                qualifying_sun_altitude=sun_alt,
+                event_jd_ut=star_rise_jd,
+            )
+            return HeliacalEvent(
+                jd_ut=star_rise_jd,
+                truth=truth,
+                classification=_classify_heliacal_event_truth(truth),
+                relation=StarRelation(
+                    kind="heliacal_event",
+                    basis="heliacal_visibility",
+                    star_name=star_name,
+                    event_kind="rising",
+                ),
+                condition_profile=StarConditionProfile(
+                    result_kind="heliacal_event",
+                    condition_state=StarConditionState("heliacal_event"),
+                    relation_kind="heliacal_event",
+                    relation_basis="heliacal_visibility",
+                    event_kind="rising",
+                ),
+            )
 
     return None
 
 
-def heliacal_setting(
+def heliacal_setting_event(
     star_name: str,
     jd_start: float,
     lat: float,
     lon: float,
     arcus_visionis: float | None = None,
     search_days: int = 400,
-) -> float | None:
+    policy: FixedStarComputationPolicy | None = None,
+) -> HeliacalEvent | None:
     """
     Find the Julian Day of the heliacal setting (last evening visibility) of a star.
 
@@ -914,6 +1644,19 @@ def heliacal_setting(
     from .julian import ut_to_tt
     from .planets import planet_at
 
+    if not isinstance(star_name, str) or not star_name.strip():
+        raise ValueError("star_name must be a non-empty string")
+    _require_finite(jd_start, "jd_start")
+    _validate_lat_lon(lat, lon)
+    if not isinstance(search_days, int) or search_days <= 0:
+        raise ValueError("search_days must be a positive integer")
+    if arcus_visionis is not None:
+        _require_finite(arcus_visionis, "arcus_visionis")
+        if arcus_visionis <= 0:
+            raise ValueError("arcus_visionis must be positive")
+    policy = _resolve_fixed_star_policy(policy)
+    _validate_fixed_star_policy(policy)
+
     # Determine arcus visionis
     try:
         mag = star_magnitude(star_name)
@@ -927,20 +1670,296 @@ def heliacal_setting(
         jd = jd_start + day_offset
         jd_tt = ut_to_tt(jd)
 
-        star_pos = fixed_star_at(star_name, jd_tt)
+        star_pos = fixed_star_at(star_name, jd_tt, policy=policy)
         sun_pos  = planet_at("Sun", jd)
 
         elongation = abs((star_pos.longitude - sun_pos.longitude + 180.0) % 360.0 - 180.0)
-        if elongation < 12.0:
+        if elongation < policy.heliacal.elongation_threshold:
             # Star has disappeared into the Sun — return last visible JD
-            return last_visible_jd
+            if last_visible_jd is None:
+                return None
+            truth = HeliacalEventTruth(
+                event_kind="setting",
+                star_name=star_name,
+                jd_start=jd_start,
+                search_days=search_days,
+                arcus_visionis=av,
+                elongation_threshold=policy.heliacal.elongation_threshold,
+                conjunction_offset=None,
+                qualifying_day_offset=day_offset - 1,
+                qualifying_elongation=elongation,
+                qualifying_sun_altitude=None,
+                event_jd_ut=last_visible_jd,
+            )
+            return HeliacalEvent(
+                jd_ut=last_visible_jd,
+                truth=truth,
+                classification=_classify_heliacal_event_truth(truth),
+                relation=StarRelation(
+                    kind="heliacal_event",
+                    basis="heliacal_visibility",
+                    star_name=star_name,
+                    event_kind="setting",
+                ),
+                condition_profile=StarConditionProfile(
+                    result_kind="heliacal_event",
+                    condition_state=StarConditionState("heliacal_event"),
+                    relation_kind="heliacal_event",
+                    relation_basis="heliacal_visibility",
+                    event_kind="setting",
+                ),
+            )
 
         star_set_jd = _find_star_set(star_name, jd, lat, lon)
         if star_set_jd is None:
             continue
 
         sun_alt = _sun_altitude(star_set_jd, lat, lon)
-        if sun_alt <= -av / 2.0:
+        if sun_alt <= -(av * policy.heliacal.setting_visibility_factor):
             last_visible_jd = star_set_jd
 
-    return last_visible_jd
+    if last_visible_jd is None:
+        return None
+    truth = HeliacalEventTruth(
+        event_kind="setting",
+        star_name=star_name,
+        jd_start=jd_start,
+        search_days=search_days,
+        arcus_visionis=av,
+        elongation_threshold=policy.heliacal.elongation_threshold,
+        conjunction_offset=None,
+        qualifying_day_offset=search_days - 1,
+        qualifying_elongation=None,
+        qualifying_sun_altitude=None,
+        event_jd_ut=last_visible_jd,
+    )
+    return HeliacalEvent(
+        jd_ut=last_visible_jd,
+        truth=truth,
+        classification=_classify_heliacal_event_truth(truth),
+        relation=StarRelation(
+            kind="heliacal_event",
+            basis="heliacal_visibility",
+            star_name=star_name,
+            event_kind="setting",
+        ),
+        condition_profile=StarConditionProfile(
+            result_kind="heliacal_event",
+            condition_state=StarConditionState("heliacal_event"),
+            relation_kind="heliacal_event",
+            relation_basis="heliacal_visibility",
+            event_kind="setting",
+        ),
+    )
+
+
+def heliacal_rising(
+    star_name: str,
+    jd_start: float,
+    lat: float,
+    lon: float,
+    arcus_visionis: float | None = None,
+    search_days: int = 400,
+    policy: FixedStarComputationPolicy | None = None,
+) -> float | None:
+    """Backward-compatible heliacal rising JD wrapper."""
+
+    event = heliacal_rising_event(
+        star_name,
+        jd_start,
+        lat,
+        lon,
+        arcus_visionis=arcus_visionis,
+        search_days=search_days,
+        policy=policy,
+    )
+    return None if event is None else event.jd_ut
+
+
+def heliacal_setting(
+    star_name: str,
+    jd_start: float,
+    lat: float,
+    lon: float,
+    arcus_visionis: float | None = None,
+    search_days: int = 400,
+    policy: FixedStarComputationPolicy | None = None,
+) -> float | None:
+    """Backward-compatible heliacal setting JD wrapper."""
+
+    event = heliacal_setting_event(
+        star_name,
+        jd_start,
+        lat,
+        lon,
+        arcus_visionis=arcus_visionis,
+        search_days=search_days,
+        policy=policy,
+    )
+    return None if event is None else event.jd_ut
+
+
+def star_chart_condition_profile(
+    *,
+    positions: list[StarPosition] | None = None,
+    heliacal_events: list[HeliacalEvent] | None = None,
+    unified_stars: list["FixedStar"] | None = None,
+) -> StarChartConditionProfile:
+    """Aggregate current star condition profiles into one chart-wide vessel."""
+
+    profiles: list[StarConditionProfile] = []
+    if positions is not None:
+        profiles.extend(
+            position.condition_profile
+            for position in positions
+            if position.condition_profile is not None
+        )
+    if heliacal_events is not None:
+        profiles.extend(
+            event.condition_profile
+            for event in heliacal_events
+            if event.condition_profile is not None
+        )
+    if unified_stars is not None:
+        profiles.extend(
+            star.condition_profile
+            for star in unified_stars
+            if star.condition_profile is not None
+        )
+
+    ordered_profiles = tuple(sorted(profiles, key=_star_condition_sort_key))
+    if ordered_profiles:
+        strongest_rank = max(_star_condition_strength(profile) for profile in ordered_profiles)
+        weakest_rank = min(_star_condition_strength(profile) for profile in ordered_profiles)
+        strongest_profiles = tuple(
+            profile for profile in ordered_profiles
+            if _star_condition_strength(profile) == strongest_rank
+        )
+        weakest_profiles = tuple(
+            profile for profile in ordered_profiles
+            if _star_condition_strength(profile) == weakest_rank
+        )
+    else:
+        strongest_profiles = ()
+        weakest_profiles = ()
+
+    return StarChartConditionProfile(
+        profiles=ordered_profiles,
+        catalog_position_count=sum(1 for profile in ordered_profiles if profile.condition_state.name == "catalog_position"),
+        heliacal_event_count=sum(1 for profile in ordered_profiles if profile.condition_state.name == "heliacal_event"),
+        unified_merge_count=sum(1 for profile in ordered_profiles if profile.condition_state.name == "unified_merge"),
+        strongest_profiles=strongest_profiles,
+        weakest_profiles=weakest_profiles,
+    )
+
+
+def star_condition_network_profile(
+    *,
+    positions: list[StarPosition] | None = None,
+    heliacal_events: list[HeliacalEvent] | None = None,
+    unified_stars: list["FixedStar"] | None = None,
+) -> StarConditionNetworkProfile:
+    """Project current star relations into a small directed condition network."""
+
+    star_ids: set[str] = set()
+    source_ids: set[str] = set()
+    event_ids: set[str] = set()
+    edges: list[StarConditionNetworkEdge] = []
+
+    if positions is not None:
+        for position in positions:
+            if position.relation is None or position.condition_profile is None:
+                continue
+            star_id = f"star:{position.name}"
+            source_id = f"source:catalog_lookup"
+            star_ids.add(star_id)
+            source_ids.add(source_id)
+            edges.append(StarConditionNetworkEdge(
+                source_id=source_id,
+                target_id=star_id,
+                relation_kind=position.relation.kind,
+                relation_basis=position.relation.basis,
+                condition_state=position.condition_profile.condition_state.name,
+            ))
+
+    if heliacal_events is not None:
+        for event in heliacal_events:
+            if event.relation is None or event.condition_profile is None:
+                continue
+            star_id = f"star:{event.truth.star_name}"
+            event_id = f"event:{event.event_kind}"
+            star_ids.add(star_id)
+            event_ids.add(event_id)
+            edges.append(StarConditionNetworkEdge(
+                source_id=event_id,
+                target_id=star_id,
+                relation_kind=event.relation.kind,
+                relation_basis=event.relation.basis,
+                condition_state=event.condition_profile.condition_state.name,
+            ))
+
+    if unified_stars is not None:
+        for star in unified_stars:
+            if star.relation is None or star.condition_profile is None:
+                continue
+            star_id = f"star:{star.name or 'unnamed'}"
+            source_kind = star.relation.source_kind if star.relation is not None else (star.source_kind or "hipparcos")
+            source_id = f"source:{source_kind}"
+            star_ids.add(star_id)
+            source_ids.add(source_id)
+            edges.append(StarConditionNetworkEdge(
+                source_id=source_id,
+                target_id=star_id,
+                relation_kind=star.relation.kind,
+                relation_basis=star.relation.basis,
+                condition_state=star.condition_profile.condition_state.name,
+            ))
+
+    node_ids = sorted(star_ids) + sorted(event_ids) + sorted(source_ids)
+    incoming = {node_id: 0 for node_id in node_ids}
+    outgoing = {node_id: 0 for node_id in node_ids}
+    for edge in edges:
+        outgoing[edge.source_id] += 1
+        incoming[edge.target_id] += 1
+
+    nodes: list[StarConditionNetworkNode] = []
+    for node_id in star_ids:
+        nodes.append(StarConditionNetworkNode(
+            node_id=node_id,
+            kind="star",
+            incoming_count=incoming[node_id],
+            outgoing_count=outgoing[node_id],
+        ))
+    for node_id in event_ids:
+        nodes.append(StarConditionNetworkNode(
+            node_id=node_id,
+            kind="event",
+            incoming_count=incoming[node_id],
+            outgoing_count=outgoing[node_id],
+        ))
+    for node_id in source_ids:
+        nodes.append(StarConditionNetworkNode(
+            node_id=node_id,
+            kind="source",
+            incoming_count=incoming[node_id],
+            outgoing_count=outgoing[node_id],
+        ))
+
+    ordered_nodes = tuple(sorted(nodes, key=lambda node: (node.kind, node.node_id)))
+    ordered_edges = tuple(sorted(
+        edges,
+        key=lambda edge: (edge.source_id, edge.target_id, edge.relation_kind, edge.relation_basis, edge.condition_state),
+    ))
+    isolated_nodes = tuple(node for node in ordered_nodes if node.total_degree == 0)
+    if ordered_nodes:
+        max_degree = max(node.total_degree for node in ordered_nodes)
+        most_connected_nodes = tuple(node for node in ordered_nodes if node.total_degree == max_degree)
+    else:
+        most_connected_nodes = ()
+
+    return StarConditionNetworkProfile(
+        nodes=ordered_nodes,
+        edges=ordered_edges,
+        isolated_nodes=isolated_nodes,
+        most_connected_nodes=most_connected_nodes,
+    )

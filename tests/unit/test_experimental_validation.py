@@ -60,7 +60,8 @@ from moira.longevity import (
 )
 from moira.dignities import ANGULAR_HOUSES, SUCCEDENT_HOUSES, CADENT_HOUSES
 from moira.timelords import (
-    FIRDARIA_DIURNAL, FIRDARIA_NOCTURNAL, MINOR_YEARS, _JULIAN_YEAR,
+    FIRDARIA_DIURNAL, FIRDARIA_NOCTURNAL, MINOR_YEARS, _JULIAN_YEAR, _ZR_YEAR_DAYS,
+    _TOTAL_MINOR_YEARS,
     firdaria, zodiacal_releasing,
 )
 
@@ -632,7 +633,8 @@ class TestFirdariaComputed:
                 and p.start_jd >= mp.start_jd - 1e-9
                 and p.end_jd <= mp.end_jd + 1e-6
             ]
-            assert len(subs) == 7, f"Major {mp.planet} has {len(subs)} sub-periods"
+            expected = 0 if mp.planet in {"North Node", "South Node"} else 7
+            assert len(subs) == expected, f"Major {mp.planet} has {len(subs)} sub-periods"
 
     def test_major_periods_contiguous(self):
         major = sorted(
@@ -720,13 +722,13 @@ class TestZodiacalReleasing:
         assert l1[0].sign == sign_name
 
     def test_all_level_1_durations_match_minor_years(self):
-        cap = J2000 + 120.0 * _JULIAN_YEAR
+        cap = J2000 + _TOTAL_MINOR_YEARS * _ZR_YEAR_DAYS
         l1 = [
             p for p in zodiacal_releasing(0.0, J2000, levels=1)
             if p.level == 1
         ]
         for p in l1:
-            expected_days = MINOR_YEARS[p.sign] * _JULIAN_YEAR
+            expected_days = MINOR_YEARS[p.sign] * _ZR_YEAR_DAYS
             actual_days   = p.end_jd - p.start_jd
             if abs(p.end_jd - cap) < 1e-3:
                 continue
@@ -735,7 +737,7 @@ class TestZodiacalReleasing:
                 f"got {actual_days:.2f}"
             )
 
-    def test_capped_at_120_years(self):
+    def test_capped_at_full_primary_circuit(self):
         l1 = [p for p in zodiacal_releasing(0.0, J2000, levels=1) if p.level == 1]
-        cap = J2000 + 120.0 * _JULIAN_YEAR
+        cap = J2000 + _TOTAL_MINOR_YEARS * _ZR_YEAR_DAYS
         assert max(p.end_jd for p in l1) <= cap + 1e-6

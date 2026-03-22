@@ -49,6 +49,127 @@ Public surface / exports:
     is_void_of_course()       — True/False at a given JD
     next_void_of_course()     — next VOC window starting after a given JD
     void_periods_in_range()   — all VOC windows in a date range
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ARCHITECTURE FREEZE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The design below is frozen.  No threshold, body list, aspect set, or
+algorithm change may be made without explicit revision of this docstring,
+the VALIDATION CODEX below, and the corresponding tests.
+
+Frozen constants (do not adjust without source justification)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    _MAX_SIGN_TRANSIT_DAYS = 2.75   Moon's maximum time in one sign; scan
+                                    window for ingress search.
+    _SCAN_STEP             = 0.25   Coarse scan step in days.  Moon moves
+                                    ~3.3° per step; no aspect crossing
+                                    (min gap 30°) can be skipped.
+    _BISECT_ITER           = 30     Bisection iterations.  Required:
+                                    ceil(log2(0.25 / 1e-5)) = 15.  30
+                                    provides a 2× safety margin.
+    _BISECT_TOL            = 1e-5   Bisection tolerance in days (~0.86 s).
+
+Body set doctrine (frozen)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Traditional (default, modern=False):
+        Sun, Mercury, Venus, Mars, Jupiter, Saturn  (6 bodies)
+    Modern (modern=True):
+        above + Uranus, Neptune, Pluto              (9 bodies)
+
+    The body lists are frozen tuples.  Callers select mode via the
+    `modern` parameter; the engine does not infer it.
+
+Aspect target doctrine (frozen)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Eight directional targets: 0°, 60°, 90°, 120°, 180°, 240°, 270°, 300°.
+    These cover all five Ptolemaic aspects in both forward and backward
+    directions.  0° = Conjunction, 60°/300° = Sextile, 90°/270° = Square,
+    120°/240° = Trine, 180° = Opposition.
+
+Crossing detection formula (frozen)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    signal = (sep − target + 180) % 360 − 180
+    where sep = (moon_lon − planet_lon) % 360.
+
+    A sign change in signal between consecutive scan steps indicates a
+    perfection.  The guard abs(signal_prev) < 90 and abs(signal_next) < 90
+    suppresses the false positive at Conjunction where signal jumps from
+    ~+180 to ~-180 without a real crossing.
+
+VOC start determination doctrine (frozen)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    1. Find jd_sign_entry (Moon's last sign ingress ≤ jd_ref).
+    2. Find jd_sign_exit  (Moon's next sign ingress > jd_ref).
+    3. Scan [jd_sign_entry, jd_sign_exit] for all aspect perfections.
+    4. last_aspect = chronologically last perfection in that window.
+    5. jd_voc_start = last_aspect.jd_exact if any, else jd_sign_entry.
+       (Moon entered sign already VOC when no perfections exist.)
+
+VoidOfCourseWindow invariants (frozen)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - jd_voc_start ≤ jd_voc_end (start cannot follow end)
+    - duration_hours = (jd_voc_end − jd_voc_start) × 24 (exact)
+    - is_long is True iff duration_hours > 12.0
+    - moon_sign and moon_sign_next are valid SIGNS entries
+    - last_aspect is None iff Moon entered current sign already VOC
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VALIDATION CODEX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every rule below must be provable by an existing test.  Adding a rule
+requires adding a test.  Removing a test requires removing or revising
+the corresponding rule.
+
+RULE-01  void_of_course_window always returns a VoidOfCourseWindow
+    void_of_course_window() never returns None and never raises for a
+    valid finite JD.
+
+RULE-02  is_void_of_course agrees with window bounds
+    is_void_of_course(jd) returns True iff
+    window.jd_voc_start ≤ jd ≤ window.jd_voc_end for the window
+    returned by void_of_course_window(jd).
+
+RULE-03  Window time ordering
+    For every VoidOfCourseWindow, jd_voc_start ≤ jd_voc_end.
+
+RULE-04  duration_hours is derived, not invented
+    duration_hours == (jd_voc_end − jd_voc_start) × 24 within 1e-9.
+
+RULE-05  is_long threshold
+    is_long is True iff duration_hours > 12.0; False iff ≤ 12.0.
+
+RULE-06  No-aspect VOC: last_aspect is None, start = sign entry
+    When no aspect perfections are found in the Moon's sign transit,
+    last_aspect is None and jd_voc_start equals jd_sign_entry
+    (the Moon entered its current sign already void).
+
+RULE-07  Traditional body set is exactly 6 bodies
+    _TRADITIONAL_BODIES = (Sun, Mercury, Venus, Mars, Jupiter, Saturn).
+    No other body is included in the default mode.
+
+RULE-08  Eight aspect targets
+    _ASPECT_TARGETS contains exactly 8 values:
+    0, 60, 90, 120, 180, 240, 270, 300.
+    No other angle is detected.
+
+RULE-09  Sign name validity
+    moon_sign and moon_sign_next are always members of moira.constants.SIGNS.
+
+RULE-10  next_void_of_course returns a future window
+    next_void_of_course(jd).jd_voc_start > jd for any valid jd.
+
+RULE-11  void_periods_in_range returns chronological list
+    All windows returned by void_periods_in_range are sorted by
+    jd_voc_start and their jd_voc_end falls within the search range.
+
+RULE-12  Public surface sealed
+    moira.__all__ and moira.void_of_course.__all__ expose exactly
+    {LastAspect, VoidOfCourseWindow, void_of_course_window,
+     is_void_of_course, next_void_of_course, void_periods_in_range}.
+    No internal name (_TRADITIONAL_BODIES, _SCAN_STEP, _bisect_aspect,
+    etc.) appears in either __all__.
 """
 
 import math
@@ -57,6 +178,15 @@ from dataclasses import dataclass
 from .constants import Body, SIGNS, sign_of
 from .planets import planet_at
 from .spk_reader import get_reader, SpkReader
+
+__all__ = [
+    "LastAspect",
+    "VoidOfCourseWindow",
+    "void_of_course_window",
+    "is_void_of_course",
+    "next_void_of_course",
+    "void_periods_in_range",
+]
 
 
 # ---------------------------------------------------------------------------

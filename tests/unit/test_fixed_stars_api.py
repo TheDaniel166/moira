@@ -26,6 +26,1145 @@ def _dummy_star(name: str = "Aldebaran"):
     )
 
 
+def _dummy_gaia_position(source_index: int = 7):
+    from moira.gaia import GaiaStarPosition, StellarQuality
+    return GaiaStarPosition(
+        source_index=source_index,
+        longitude=69.5,
+        latitude=-5.5,
+        magnitude=0.9,
+        bp_rp=1.1,
+        teff_k=5000.0,
+        parallax_mas=10.0,
+        distance_ly=326.156,
+        quality=StellarQuality("Fire", "Sun", True, True),
+        is_topocentric=False,
+        is_true_pos=False,
+    )
+
+
+class TestPhase1TruthPreservation:
+    def test_fixed_star_at_preserves_lookup_and_frame_truth(self):
+        import moira.fixed_stars as fs
+
+        record = fs._StarRecord(
+            traditional_name="Algol",
+            nomenclature="bePer",
+            frame="2000",
+            equinox_jd=2451545.0,
+            ra_deg=10.0,
+            dec_deg=20.0,
+            pm_ra=0.0,
+            pm_dec=0.0,
+            parallax_mas=0.0,
+            magnitude=2.1,
+        )
+
+        with patch.object(fs, "_ensure_loaded"), \
+             patch.object(fs, "_catalog", {"algol": record}), \
+             patch.object(fs, "_alt_index", {"beper": "algol"}), \
+             patch.object(fs, "icrf_to_true_ecliptic", return_value=(123.0, 4.5, 1.0)):
+            pos = fs.fixed_star_at("bePer", 2451545.0)
+
+        assert pos.longitude == 123.0
+        assert pos.latitude == 4.5
+        assert pos.computation_truth is not None
+        assert pos.computation_truth.lookup_mode == "nomenclature"
+        assert pos.computation_truth.frame_path == "icrf_to_true_ecliptic"
+        assert pos.computation_truth.parallax_applied is False
+        assert pos.computation_truth.matched_name == "Algol"
+        assert pos.classification is not None
+        assert pos.classification.lookup_kind == "nomenclature"
+        assert pos.classification.frame_kind == "icrf"
+        assert pos.classification.parallax_state == "not_applied"
+
+    def test_star_at_preserves_merge_truth(self):
+        import moira.stars as stars
+
+        with patch.object(stars._hip_mod, "_ensure_loaded"), \
+             patch.object(
+                 stars,
+                 "fixed_star_at",
+                 return_value=stars.StarPosition(
+                     name="Aldebaran",
+                     nomenclature="alTau",
+                     longitude=69.5,
+                     latitude=-5.5,
+                     magnitude=0.87,
+                 ),
+             ), \
+             patch.object(stars, "_find_gaia_match", return_value=_dummy_gaia_position()):
+            result = stars.star_at("Aldebaran", 2451545.0)
+
+        assert result.source == "both"
+        assert result.computation_truth is not None
+        assert result.computation_truth.lookup_kind == "named_lookup"
+        assert result.computation_truth.gaia_match_status == "matched"
+        assert result.computation_truth.gaia_source_index == 7
+        assert result.classification is not None
+        assert result.classification.lookup_kind == "named_lookup"
+        assert result.classification.source_kind == "both"
+        assert result.classification.merge_state == "matched"
+
+    def test_heliacal_rising_event_preserves_search_truth_and_wrapper_semantics(self):
+        import moira.fixed_stars as fs
+
+        dummy_pos = fs.StarPosition(
+            name="Sirius",
+            nomenclature="alCMa",
+            longitude=30.0,
+            latitude=0.0,
+            magnitude=1.0,
+        )
+        dummy_sun = MagicMock(longitude=0.0)
+
+        with patch.object(fs, "star_magnitude", return_value=1.0), \
+             patch.object(fs, "fixed_star_at", return_value=dummy_pos), \
+             patch("moira.planets.planet_at", return_value=dummy_sun), \
+             patch.object(fs, "_find_star_rise", return_value=100.25), \
+             patch.object(fs, "_sun_altitude", return_value=-10.0):
+            event = fs.heliacal_rising_event("Sirius", 100.0, 51.5, -0.1, search_days=3)
+            jd = fs.heliacal_rising("Sirius", 100.0, 51.5, -0.1, search_days=3)
+
+        assert event is not None
+        assert jd == 100.25
+        assert event.jd_ut == jd
+        assert event.truth.event_kind == "rising"
+        assert event.truth.star_name == "Sirius"
+        assert event.truth.arcus_visionis == 10.0
+        assert event.truth.qualifying_day_offset == 0
+        assert event.classification is not None
+        assert event.classification.event_kind == "rising"
+        assert event.classification.visibility_basis == "heliacal_visibility"
+        assert event.classification.threshold_mode == "first_visible"
+
+
+class TestPhase3InspectabilityAndHardening:
+    def test_convenience_properties_are_derived_from_star_truth(self):
+        import moira.fixed_stars as fs
+        import moira.stars as stars
+
+        pos = fs.StarPosition(
+            name="Algol",
+            nomenclature="bePer",
+            longitude=10.0,
+            latitude=5.0,
+            magnitude=2.1,
+            computation_truth=fs.StarPositionTruth(
+                queried_name="bePer",
+                lookup_mode="nomenclature",
+                matched_name="Algol",
+                matched_nomenclature="bePer",
+                source_frame="2000",
+                frame_path="icrf_to_true_ecliptic",
+                catalog_epoch_jd=2451545.0,
+                parallax_applied=False,
+            ),
+            classification=fs.StarPositionClassification(
+                lookup_kind="nomenclature",
+                frame_kind="icrf",
+                parallax_state="not_applied",
+            ),
+        )
+        event = fs.HeliacalEvent(
+            jd_ut=100.25,
+            truth=fs.HeliacalEventTruth(
+                event_kind="rising",
+                star_name="Sirius",
+                jd_start=100.0,
+                search_days=3,
+                arcus_visionis=10.0,
+                elongation_threshold=12.0,
+                conjunction_offset=0,
+                qualifying_day_offset=0,
+                qualifying_elongation=30.0,
+                qualifying_sun_altitude=-10.0,
+                event_jd_ut=100.25,
+            ),
+            classification=fs.HeliacalEventClassification(
+                event_kind="rising",
+                visibility_basis="heliacal_visibility",
+                threshold_mode="first_visible",
+            ),
+        )
+        star = stars.FixedStar(
+            name="Aldebaran",
+            nomenclature="alTau",
+            longitude=69.5,
+            latitude=-5.5,
+            magnitude=0.87,
+            source="both",
+            is_topocentric=False,
+            computation_truth=stars.FixedStarTruth(
+                lookup_kind="named_lookup",
+                hipparcos_name="Aldebaran",
+                source_mode="both",
+                gaia_match_status="matched",
+                gaia_source_index=7,
+                is_topocentric=False,
+                true_position=False,
+                dedup_applied=False,
+            ),
+            classification=stars.FixedStarClassification(
+                lookup_kind="named_lookup",
+                source_kind="both",
+                merge_state="matched",
+                observer_mode="geocentric",
+            ),
+        )
+
+        assert pos.lookup_kind == "nomenclature"
+        assert pos.frame_kind == "icrf"
+        assert pos.parallax_state == "not_applied"
+        assert pos.source_frame == "2000"
+        assert event.event_kind == "rising"
+        assert event.visibility_basis == "heliacal_visibility"
+        assert event.threshold_mode == "first_visible"
+        assert event.found_event is True
+        assert star.lookup_kind == "named_lookup"
+        assert star.source_kind == "both"
+        assert star.merge_state == "matched"
+        assert star.observer_mode == "geocentric"
+        assert star.gaia_match_status == "matched"
+        assert star.dedup_applied is False
+
+    def test_invalid_truth_or_classification_drift_fails_loudly(self):
+        import moira.fixed_stars as fs
+        import moira.stars as stars
+
+        with pytest.raises(ValueError, match="lookup_mode"):
+            fs.StarPositionTruth(
+                queried_name="Algol",
+                lookup_mode="unsupported",
+                matched_name="Algol",
+                matched_nomenclature="bePer",
+                source_frame="2000",
+                frame_path="icrf_to_true_ecliptic",
+                catalog_epoch_jd=2451545.0,
+                parallax_applied=False,
+            )
+
+        with pytest.raises(ValueError, match="classification must match truth"):
+            fs.HeliacalEvent(
+                jd_ut=100.25,
+                truth=fs.HeliacalEventTruth(
+                    event_kind="rising",
+                    star_name="Sirius",
+                    jd_start=100.0,
+                    search_days=3,
+                    arcus_visionis=10.0,
+                    elongation_threshold=12.0,
+                    conjunction_offset=0,
+                    qualifying_day_offset=0,
+                    qualifying_elongation=30.0,
+                    qualifying_sun_altitude=-10.0,
+                    event_jd_ut=100.25,
+                ),
+                classification=fs.HeliacalEventClassification(
+                    event_kind="setting",
+                    visibility_basis="heliacal_visibility",
+                    threshold_mode="last_visible",
+                ),
+            )
+
+        with pytest.raises(ValueError, match="gaia_match_status"):
+            stars.FixedStarTruth(
+                lookup_kind="named_lookup",
+                hipparcos_name="Aldebaran",
+                source_mode="both",
+                gaia_match_status="unsupported",
+                is_topocentric=False,
+            )
+
+
+class TestPhase4PolicySurface:
+    def test_narrower_lookup_policy_can_disable_prefix_resolution(self):
+        import moira.fixed_stars as fs
+
+        record = fs._StarRecord(
+            traditional_name="Algol",
+            nomenclature="bePer",
+            frame="2000",
+            equinox_jd=2451545.0,
+            ra_deg=10.0,
+            dec_deg=20.0,
+            pm_ra=0.0,
+            pm_dec=0.0,
+            parallax_mas=0.0,
+            magnitude=2.1,
+        )
+
+        with patch.object(fs, "_ensure_loaded"), \
+             patch.object(fs, "_catalog", {"algol": record}), \
+             patch.object(fs, "_alt_index", {}), \
+             patch.object(fs, "icrf_to_true_ecliptic", return_value=(123.0, 4.5, 1.0)):
+            default_result = fs.fixed_star_at("Alg", 2451545.0)
+            with pytest.raises(KeyError):
+                fs.fixed_star_at(
+                    "Alg",
+                    2451545.0,
+                    policy=fs.FixedStarComputationPolicy(
+                        lookup=fs.FixedStarLookupPolicy(allow_prefix_lookup=False),
+                    ),
+                )
+
+        assert default_result.name == "Algol"
+
+    def test_narrower_unified_policy_can_disable_gaia_enrichment(self):
+        import moira.stars as stars
+
+        with patch.object(stars._hip_mod, "_ensure_loaded"), \
+             patch.object(
+                 stars,
+                 "fixed_star_at",
+                 return_value=stars.StarPosition(
+                     name="Aldebaran",
+                     nomenclature="alTau",
+                     longitude=69.5,
+                     latitude=-5.5,
+                     magnitude=0.87,
+                 ),
+             ), \
+             patch.object(stars, "_find_gaia_match", return_value=_dummy_gaia_position()):
+            default_result = stars.star_at("Aldebaran", 2451545.0)
+            policy_result = stars.star_at(
+                "Aldebaran",
+                2451545.0,
+                policy=stars.UnifiedStarComputationPolicy(
+                    merge=stars.UnifiedStarMergePolicy(enable_gaia_enrichment=False),
+                ),
+            )
+
+        assert default_result.source == "both"
+        assert policy_result.source == "hipparcos"
+
+    def test_invalid_star_policies_fail_clearly(self):
+        import moira.fixed_stars as fs
+        import moira.stars as stars
+
+        with pytest.raises(ValueError, match="allow_prefix_lookup"):
+            fs.fixed_star_at(
+                "Algol",
+                2451545.0,
+                policy=fs.FixedStarComputationPolicy(
+                    lookup=fs.FixedStarLookupPolicy(allow_prefix_lookup="yes"),  # type: ignore[arg-type]
+                ),
+            )
+
+        with pytest.raises(ValueError, match="max_gaia_magnitude"):
+            stars.star_at(
+                "Aldebaran",
+                2451545.0,
+                policy=stars.UnifiedStarComputationPolicy(
+                    merge=stars.UnifiedStarMergePolicy(
+                        min_gaia_magnitude=5.0,
+                        max_gaia_magnitude=4.0,
+                    ),
+                ),
+            )
+
+
+class TestPhase5Relations:
+    def test_star_position_and_heliacal_event_relations_are_explicit(self):
+        import moira.fixed_stars as fs
+
+        record = fs._StarRecord(
+            traditional_name="Algol",
+            nomenclature="bePer",
+            frame="2000",
+            equinox_jd=2451545.0,
+            ra_deg=10.0,
+            dec_deg=20.0,
+            pm_ra=0.0,
+            pm_dec=0.0,
+            parallax_mas=0.0,
+            magnitude=2.1,
+        )
+
+        with patch.object(fs, "_ensure_loaded"), \
+             patch.object(fs, "_catalog", {"algol": record}), \
+             patch.object(fs, "_alt_index", {"beper": "algol"}), \
+             patch.object(fs, "icrf_to_true_ecliptic", return_value=(123.0, 4.5, 1.0)):
+            pos = fs.fixed_star_at("bePer", 2451545.0)
+
+        assert pos.relation is not None
+        assert pos.relation.kind == "catalog_lookup"
+        assert pos.relation.basis == "named_star_lookup"
+        assert pos.relation.star_name == "Algol"
+
+        dummy_pos = fs.StarPosition(
+            name="Sirius",
+            nomenclature="alCMa",
+            longitude=30.0,
+            latitude=0.0,
+            magnitude=1.0,
+        )
+        dummy_sun = MagicMock(longitude=0.0)
+        with patch.object(fs, "star_magnitude", return_value=1.0), \
+             patch.object(fs, "fixed_star_at", return_value=dummy_pos), \
+             patch("moira.planets.planet_at", return_value=dummy_sun), \
+             patch.object(fs, "_find_star_rise", return_value=100.25), \
+             patch.object(fs, "_sun_altitude", return_value=-10.0):
+            event = fs.heliacal_rising_event("Sirius", 100.0, 51.5, -0.1, search_days=3)
+
+        assert event is not None
+        assert event.relation is not None
+        assert event.relation.kind == "heliacal_event"
+        assert event.relation.basis == "heliacal_visibility"
+        assert event.relation.event_kind == "rising"
+
+    def test_unified_star_relation_is_explicit(self):
+        import moira.stars as stars
+
+        with patch.object(stars._hip_mod, "_ensure_loaded"), \
+             patch.object(
+                 stars,
+                 "fixed_star_at",
+                 return_value=stars.StarPosition(
+                     name="Aldebaran",
+                     nomenclature="alTau",
+                     longitude=69.5,
+                     latitude=-5.5,
+                     magnitude=0.87,
+                 ),
+             ), \
+             patch.object(stars, "_find_gaia_match", return_value=_dummy_gaia_position()):
+            result = stars.star_at("Aldebaran", 2451545.0)
+
+        assert result.relation is not None
+        assert result.relation.kind == "catalog_merge"
+        assert result.relation.basis == "named_lookup"
+        assert result.relation.source_kind == "both"
+        assert result.relation.gaia_source_index == 7
+
+    def test_relation_drift_fails_loudly(self):
+        import moira.fixed_stars as fs
+        import moira.stars as stars
+
+        with pytest.raises(ValueError, match="star position relation must match"):
+            fs.StarPosition(
+                name="Algol",
+                nomenclature="bePer",
+                longitude=10.0,
+                latitude=5.0,
+                magnitude=2.1,
+                relation=fs.StarRelation(
+                    kind="catalog_lookup",
+                    basis="named_star_lookup",
+                    star_name="Wrong",
+                    reference="bePer",
+                ),
+            )
+
+        with pytest.raises(ValueError, match="fixed star relation must match"):
+            stars.FixedStar(
+                name="Aldebaran",
+                nomenclature="alTau",
+                longitude=69.5,
+                latitude=-5.5,
+                magnitude=0.87,
+                source="hipparcos",
+                is_topocentric=False,
+                computation_truth=stars.FixedStarTruth(
+                    lookup_kind="named_lookup",
+                    hipparcos_name="Aldebaran",
+                    source_mode="hipparcos",
+                    gaia_match_status="not_found",
+                    is_topocentric=False,
+                ),
+                classification=stars.FixedStarClassification(
+                    lookup_kind="named_lookup",
+                    source_kind="hipparcos",
+                    merge_state="unmatched",
+                    observer_mode="geocentric",
+                ),
+                relation=stars.UnifiedStarRelation(
+                    kind="catalog_merge",
+                    basis="magnitude_search",
+                    star_name="Aldebaran",
+                    source_kind="hipparcos",
+                ),
+            )
+
+
+class TestPhase6RelationInspectabilityAndHardening:
+    def test_relation_helpers_are_derived_only(self):
+        import moira.fixed_stars as fs
+        import moira.stars as stars
+
+        position_relation = fs.StarRelation(
+            kind="catalog_lookup",
+            basis="named_star_lookup",
+            star_name="Algol",
+            reference="bePer",
+        )
+        event_relation = fs.StarRelation(
+            kind="heliacal_event",
+            basis="heliacal_visibility",
+            star_name="Sirius",
+            event_kind="rising",
+        )
+        unified_relation = stars.UnifiedStarRelation(
+            kind="catalog_merge",
+            basis="named_lookup",
+            star_name="Aldebaran",
+            source_kind="both",
+            gaia_source_index=7,
+        )
+
+        assert position_relation.is_catalog_lookup is True
+        assert position_relation.is_heliacal_event is False
+        assert event_relation.is_heliacal_event is True
+        assert event_relation.is_catalog_lookup is False
+        assert unified_relation.is_named_lookup is True
+        assert unified_relation.is_search_relation is False
+        assert unified_relation.is_merged_source is True
+
+        position = fs.StarPosition(
+            name="Algol",
+            nomenclature="bePer",
+            longitude=10.0,
+            latitude=5.0,
+            magnitude=2.1,
+            relation=position_relation,
+        )
+        event = fs.HeliacalEvent(
+            jd_ut=100.25,
+            truth=fs.HeliacalEventTruth(
+                event_kind="rising",
+                star_name="Sirius",
+                jd_start=100.0,
+                search_days=3,
+                arcus_visionis=10.0,
+                elongation_threshold=12.0,
+                conjunction_offset=0,
+                qualifying_day_offset=0,
+                qualifying_elongation=30.0,
+                qualifying_sun_altitude=-10.0,
+                event_jd_ut=100.25,
+            ),
+            relation=event_relation,
+        )
+        unified_star = stars.FixedStar(
+            name="Aldebaran",
+            nomenclature="alTau",
+            longitude=69.5,
+            latitude=-5.5,
+            magnitude=0.87,
+            source="both",
+            is_topocentric=False,
+            computation_truth=stars.FixedStarTruth(
+                lookup_kind="named_lookup",
+                hipparcos_name="Aldebaran",
+                source_mode="both",
+                gaia_match_status="matched",
+                gaia_source_index=7,
+                is_topocentric=False,
+            ),
+            classification=stars.FixedStarClassification(
+                lookup_kind="named_lookup",
+                source_kind="both",
+                merge_state="matched",
+                observer_mode="geocentric",
+            ),
+            relation=unified_relation,
+        )
+
+        assert position.relation_kind == "catalog_lookup"
+        assert position.relation_basis == "named_star_lookup"
+        assert position.has_relation is True
+        assert event.relation_kind == "heliacal_event"
+        assert event.relation_basis == "heliacal_visibility"
+        assert event.has_relation is True
+        assert unified_star.relation_kind == "catalog_merge"
+        assert unified_star.relation_basis == "named_lookup"
+        assert unified_star.has_relation is True
+
+    def test_invalid_relation_shapes_fail_loudly(self):
+        import moira.fixed_stars as fs
+        import moira.stars as stars
+
+        with pytest.raises(ValueError, match="must not carry event_kind"):
+            fs.StarRelation(
+                kind="catalog_lookup",
+                basis="named_star_lookup",
+                star_name="Algol",
+                reference="bePer",
+                event_kind="rising",
+            )
+
+        with pytest.raises(ValueError, match="must not carry lookup reference"):
+            fs.StarRelation(
+                kind="heliacal_event",
+                basis="heliacal_visibility",
+                star_name="Sirius",
+                reference="alCMa",
+                event_kind="rising",
+            )
+
+        with pytest.raises(ValueError, match="gaia-only unified star relation must preserve gaia_source_index"):
+            stars.UnifiedStarRelation(
+                kind="catalog_merge",
+                basis="proximity_search",
+                star_name="",
+                source_kind="gaia",
+            )
+
+
+class TestPhase7ConditionProfiles:
+    def test_condition_profiles_are_aligned_and_derived_only(self):
+        import moira.fixed_stars as fs
+        import moira.stars as stars
+
+        position = fs.StarPosition(
+            name="Algol",
+            nomenclature="bePer",
+            longitude=10.0,
+            latitude=5.0,
+            magnitude=2.1,
+            computation_truth=fs.StarPositionTruth(
+                queried_name="bePer",
+                lookup_mode="nomenclature",
+                matched_name="Algol",
+                matched_nomenclature="bePer",
+                source_frame="2000",
+                frame_path="icrf_to_true_ecliptic",
+                catalog_epoch_jd=2451545.0,
+                parallax_applied=False,
+            ),
+            classification=fs.StarPositionClassification(
+                lookup_kind="nomenclature",
+                frame_kind="icrf",
+                parallax_state="not_applied",
+            ),
+            relation=fs.StarRelation(
+                kind="catalog_lookup",
+                basis="named_star_lookup",
+                star_name="Algol",
+                reference="bePer",
+            ),
+            condition_profile=fs.StarConditionProfile(
+                result_kind="fixed_star_position",
+                condition_state=fs.StarConditionState("catalog_position"),
+                relation_kind="catalog_lookup",
+                relation_basis="named_star_lookup",
+                lookup_kind="nomenclature",
+            ),
+        )
+        event = fs.HeliacalEvent(
+            jd_ut=100.25,
+            truth=fs.HeliacalEventTruth(
+                event_kind="rising",
+                star_name="Sirius",
+                jd_start=100.0,
+                search_days=3,
+                arcus_visionis=10.0,
+                elongation_threshold=12.0,
+                conjunction_offset=0,
+                qualifying_day_offset=0,
+                qualifying_elongation=30.0,
+                qualifying_sun_altitude=-10.0,
+                event_jd_ut=100.25,
+            ),
+            classification=fs.HeliacalEventClassification(
+                event_kind="rising",
+                visibility_basis="heliacal_visibility",
+                threshold_mode="first_visible",
+            ),
+            relation=fs.StarRelation(
+                kind="heliacal_event",
+                basis="heliacal_visibility",
+                star_name="Sirius",
+                event_kind="rising",
+            ),
+            condition_profile=fs.StarConditionProfile(
+                result_kind="heliacal_event",
+                condition_state=fs.StarConditionState("heliacal_event"),
+                relation_kind="heliacal_event",
+                relation_basis="heliacal_visibility",
+                event_kind="rising",
+            ),
+        )
+        unified_star = stars.FixedStar(
+            name="Aldebaran",
+            nomenclature="alTau",
+            longitude=69.5,
+            latitude=-5.5,
+            magnitude=0.87,
+            source="both",
+            is_topocentric=False,
+            computation_truth=stars.FixedStarTruth(
+                lookup_kind="named_lookup",
+                hipparcos_name="Aldebaran",
+                source_mode="both",
+                gaia_match_status="matched",
+                gaia_source_index=7,
+                is_topocentric=False,
+            ),
+            classification=stars.FixedStarClassification(
+                lookup_kind="named_lookup",
+                source_kind="both",
+                merge_state="matched",
+                observer_mode="geocentric",
+            ),
+            relation=stars.UnifiedStarRelation(
+                kind="catalog_merge",
+                basis="named_lookup",
+                star_name="Aldebaran",
+                source_kind="both",
+                gaia_source_index=7,
+            ),
+            condition_profile=fs.StarConditionProfile(
+                result_kind="unified_star",
+                condition_state=fs.StarConditionState("unified_merge"),
+                relation_kind="catalog_merge",
+                relation_basis="named_lookup",
+                lookup_kind="named_lookup",
+                source_kind="both",
+            ),
+        )
+
+        assert position.condition_state == "catalog_position"
+        assert event.condition_state == "heliacal_event"
+        assert unified_star.condition_state == "unified_merge"
+        assert position.condition_profile is not None
+        assert position.condition_profile.lookup_kind == "nomenclature"
+        assert event.condition_profile is not None
+        assert event.condition_profile.event_kind == "rising"
+        assert unified_star.condition_profile is not None
+        assert unified_star.condition_profile.source_kind == "both"
+
+    def test_condition_profile_drift_fails_loudly(self):
+        import moira.fixed_stars as fs
+
+        with pytest.raises(ValueError, match="event_kind|condition profile must match"):
+            fs.HeliacalEvent(
+                jd_ut=100.25,
+                truth=fs.HeliacalEventTruth(
+                    event_kind="rising",
+                    star_name="Sirius",
+                    jd_start=100.0,
+                    search_days=3,
+                    arcus_visionis=10.0,
+                    elongation_threshold=12.0,
+                    conjunction_offset=0,
+                    qualifying_day_offset=0,
+                    qualifying_elongation=30.0,
+                    qualifying_sun_altitude=-10.0,
+                    event_jd_ut=100.25,
+                ),
+                condition_profile=fs.StarConditionProfile(
+                    result_kind="heliacal_event",
+                    condition_state=fs.StarConditionState("catalog_position"),
+                    relation_kind="catalog_lookup",
+                    relation_basis="named_star_lookup",
+                ),
+            )
+
+
+class TestPhase8ChartConditionProfile:
+    def test_chart_condition_profile_is_deterministic_and_aligned(self):
+        import moira.fixed_stars as fs
+        import moira.stars as stars
+
+        position = fs.StarPosition(
+            name="Algol",
+            nomenclature="bePer",
+            longitude=10.0,
+            latitude=5.0,
+            magnitude=2.1,
+            computation_truth=fs.StarPositionTruth(
+                queried_name="bePer",
+                lookup_mode="nomenclature",
+                matched_name="Algol",
+                matched_nomenclature="bePer",
+                source_frame="2000",
+                frame_path="icrf_to_true_ecliptic",
+                catalog_epoch_jd=2451545.0,
+                parallax_applied=False,
+            ),
+            classification=fs.StarPositionClassification(
+                lookup_kind="nomenclature",
+                frame_kind="icrf",
+                parallax_state="not_applied",
+            ),
+            relation=fs.StarRelation(
+                kind="catalog_lookup",
+                basis="named_star_lookup",
+                star_name="Algol",
+                reference="bePer",
+            ),
+            condition_profile=fs.StarConditionProfile(
+                result_kind="fixed_star_position",
+                condition_state=fs.StarConditionState("catalog_position"),
+                relation_kind="catalog_lookup",
+                relation_basis="named_star_lookup",
+                lookup_kind="nomenclature",
+            ),
+        )
+        event = fs.HeliacalEvent(
+            jd_ut=100.25,
+            truth=fs.HeliacalEventTruth(
+                event_kind="rising",
+                star_name="Sirius",
+                jd_start=100.0,
+                search_days=3,
+                arcus_visionis=10.0,
+                elongation_threshold=12.0,
+                conjunction_offset=0,
+                qualifying_day_offset=0,
+                qualifying_elongation=30.0,
+                qualifying_sun_altitude=-10.0,
+                event_jd_ut=100.25,
+            ),
+            relation=fs.StarRelation(
+                kind="heliacal_event",
+                basis="heliacal_visibility",
+                star_name="Sirius",
+                event_kind="rising",
+            ),
+            condition_profile=fs.StarConditionProfile(
+                result_kind="heliacal_event",
+                condition_state=fs.StarConditionState("heliacal_event"),
+                relation_kind="heliacal_event",
+                relation_basis="heliacal_visibility",
+                event_kind="rising",
+            ),
+        )
+        unified_star = stars.FixedStar(
+            name="Aldebaran",
+            nomenclature="alTau",
+            longitude=69.5,
+            latitude=-5.5,
+            magnitude=0.87,
+            source="both",
+            computation_truth=stars.FixedStarTruth(
+                lookup_kind="named_lookup",
+                hipparcos_name="Aldebaran",
+                source_mode="both",
+                gaia_match_status="matched",
+                gaia_source_index=7,
+                is_topocentric=False,
+            ),
+            classification=stars.FixedStarClassification(
+                lookup_kind="named_lookup",
+                source_kind="both",
+                merge_state="matched",
+                observer_mode="geocentric",
+            ),
+            relation=stars.UnifiedStarRelation(
+                kind="catalog_merge",
+                basis="named_lookup",
+                star_name="Aldebaran",
+                source_kind="both",
+                gaia_source_index=7,
+            ),
+            condition_profile=fs.StarConditionProfile(
+                result_kind="unified_star",
+                condition_state=fs.StarConditionState("unified_merge"),
+                relation_kind="catalog_merge",
+                relation_basis="named_lookup",
+                lookup_kind="named_lookup",
+                source_kind="both",
+            ),
+        )
+
+        chart = fs.star_chart_condition_profile(
+            positions=[position],
+            heliacal_events=[event],
+            unified_stars=[unified_star],
+        )
+
+        assert chart.profile_count == 3
+        assert chart.catalog_position_count == 1
+        assert chart.heliacal_event_count == 1
+        assert chart.unified_merge_count == 1
+        assert len(chart.strongest_profiles) == 1
+        assert chart.strongest_profiles[0].condition_state.name == "unified_merge"
+        assert len(chart.weakest_profiles) == 1
+        assert chart.weakest_profiles[0].condition_state.name == "catalog_position"
+
+    def test_chart_condition_profile_drift_fails_loudly(self):
+        import moira.fixed_stars as fs
+
+        profile = fs.StarConditionProfile(
+            result_kind="heliacal_event",
+            condition_state=fs.StarConditionState("heliacal_event"),
+            relation_kind="heliacal_event",
+            relation_basis="heliacal_visibility",
+            event_kind="rising",
+        )
+
+        with pytest.raises(ValueError, match="must match profiles"):
+            fs.StarChartConditionProfile(
+                profiles=(profile,),
+                catalog_position_count=1,
+                heliacal_event_count=0,
+                unified_merge_count=0,
+                strongest_profiles=(profile,),
+                weakest_profiles=(profile,),
+            )
+
+
+class TestPhase9ConditionNetworkProfile:
+    def test_condition_network_profile_is_deterministic_and_aligned(self):
+        import moira.fixed_stars as fs
+        import moira.stars as stars
+
+        position = fs.StarPosition(
+            name="Algol",
+            nomenclature="bePer",
+            longitude=10.0,
+            latitude=5.0,
+            magnitude=2.1,
+            computation_truth=fs.StarPositionTruth(
+                queried_name="bePer",
+                lookup_mode="nomenclature",
+                matched_name="Algol",
+                matched_nomenclature="bePer",
+                source_frame="2000",
+                frame_path="icrf_to_true_ecliptic",
+                catalog_epoch_jd=2451545.0,
+                parallax_applied=False,
+            ),
+            classification=fs.StarPositionClassification(
+                lookup_kind="nomenclature",
+                frame_kind="icrf",
+                parallax_state="not_applied",
+            ),
+            relation=fs.StarRelation(
+                kind="catalog_lookup",
+                basis="named_star_lookup",
+                star_name="Algol",
+                reference="bePer",
+            ),
+            condition_profile=fs.StarConditionProfile(
+                result_kind="fixed_star_position",
+                condition_state=fs.StarConditionState("catalog_position"),
+                relation_kind="catalog_lookup",
+                relation_basis="named_star_lookup",
+                lookup_kind="nomenclature",
+            ),
+        )
+        event = fs.HeliacalEvent(
+            jd_ut=100.25,
+            truth=fs.HeliacalEventTruth(
+                event_kind="rising",
+                star_name="Sirius",
+                jd_start=100.0,
+                search_days=3,
+                arcus_visionis=10.0,
+                elongation_threshold=12.0,
+                conjunction_offset=0,
+                qualifying_day_offset=0,
+                qualifying_elongation=30.0,
+                qualifying_sun_altitude=-10.0,
+                event_jd_ut=100.25,
+            ),
+            relation=fs.StarRelation(
+                kind="heliacal_event",
+                basis="heliacal_visibility",
+                star_name="Sirius",
+                event_kind="rising",
+            ),
+            condition_profile=fs.StarConditionProfile(
+                result_kind="heliacal_event",
+                condition_state=fs.StarConditionState("heliacal_event"),
+                relation_kind="heliacal_event",
+                relation_basis="heliacal_visibility",
+                event_kind="rising",
+            ),
+        )
+        unified_star = stars.FixedStar(
+            name="Aldebaran",
+            nomenclature="alTau",
+            longitude=69.5,
+            latitude=-5.5,
+            magnitude=0.87,
+            source="both",
+            computation_truth=stars.FixedStarTruth(
+                lookup_kind="named_lookup",
+                hipparcos_name="Aldebaran",
+                source_mode="both",
+                gaia_match_status="matched",
+                gaia_source_index=7,
+                is_topocentric=False,
+            ),
+            classification=stars.FixedStarClassification(
+                lookup_kind="named_lookup",
+                source_kind="both",
+                merge_state="matched",
+                observer_mode="geocentric",
+            ),
+            relation=stars.UnifiedStarRelation(
+                kind="catalog_merge",
+                basis="named_lookup",
+                star_name="Aldebaran",
+                source_kind="both",
+                gaia_source_index=7,
+            ),
+            condition_profile=fs.StarConditionProfile(
+                result_kind="unified_star",
+                condition_state=fs.StarConditionState("unified_merge"),
+                relation_kind="catalog_merge",
+                relation_basis="named_lookup",
+                lookup_kind="named_lookup",
+                source_kind="both",
+            ),
+        )
+
+        network = fs.star_condition_network_profile(
+            positions=[position],
+            heliacal_events=[event],
+            unified_stars=[unified_star],
+        )
+
+        assert len(network.nodes) == 6
+        assert len(network.edges) == 3
+        assert {edge.relation_kind for edge in network.edges} == {
+            "catalog_lookup",
+            "heliacal_event",
+            "catalog_merge",
+        }
+        assert any(node.node_id == "star:Algol" for node in network.nodes)
+        assert any(node.node_id == "star:Sirius" for node in network.nodes)
+        assert any(node.node_id == "star:Aldebaran" for node in network.nodes)
+        assert any(node.node_id == "source:catalog_lookup" for node in network.nodes)
+        assert any(node.node_id == "source:both" for node in network.nodes)
+        assert any(node.node_id == "event:rising" for node in network.nodes)
+
+    def test_condition_network_profile_drift_fails_loudly(self):
+        import moira.fixed_stars as fs
+
+        node = fs.StarConditionNetworkNode(
+            node_id="star:Algol",
+            kind="star",
+            incoming_count=0,
+            outgoing_count=0,
+        )
+        edge = fs.StarConditionNetworkEdge(
+            source_id="star:Algol",
+            target_id="source:catalog_lookup",
+            relation_kind="catalog_lookup",
+            relation_basis="named_star_lookup",
+            condition_state="catalog_position",
+        )
+
+        with pytest.raises(ValueError, match="must reference known nodes"):
+            fs.StarConditionNetworkProfile(
+                nodes=(node,),
+                edges=(edge,),
+                isolated_nodes=(),
+                most_connected_nodes=(node,),
+            )
+
+
+class TestPhase10SubsystemHardening:
+    def test_malformed_public_inputs_fail_deterministically(self):
+        import moira.fixed_stars as fs
+        import moira.stars as stars
+
+        with pytest.raises(ValueError, match="non-empty string"):
+            fs.fixed_star_at("", 2451545.0)
+
+        with pytest.raises(ValueError, match="jd_tt must be finite"):
+            fs.fixed_star_at("Algol", float("nan"))
+
+        with pytest.raises(ValueError, match="search_days must be a positive integer"):
+            fs.heliacal_rising_event("Sirius", 100.0, 51.5, -0.1, search_days=0)
+
+        with pytest.raises(ValueError, match="lat must be between -90 and 90"):
+            fs.heliacal_setting_event("Sirius", 100.0, 95.0, -0.1)
+
+        with pytest.raises(ValueError, match="observer_lat and observer_lon must be provided together"):
+            stars.star_at("Aldebaran", 2451545.0, observer_lat=51.5)
+
+        with pytest.raises(ValueError, match="orb must be positive"):
+            stars.stars_near(15.0, 2451545.0, orb=0.0)
+
+        with pytest.raises(ValueError, match="max_magnitude must be finite"):
+            stars.stars_by_magnitude(2451545.0, max_magnitude=float("inf"))
+
+    def test_policy_type_and_truth_misuse_fail_clearly(self):
+        import moira.fixed_stars as fs
+        import moira.stars as stars
+
+        with pytest.raises(ValueError, match="FixedStarComputationPolicy"):
+            fs.fixed_star_at("Algol", 2451545.0, policy="bad")  # type: ignore[arg-type]
+
+        with pytest.raises(ValueError, match="UnifiedStarComputationPolicy"):
+            stars.star_at("Aldebaran", 2451545.0, policy="bad")  # type: ignore[arg-type]
+
+        with pytest.raises(ValueError, match="must preserve gaia_source_index"):
+            stars.FixedStarTruth(
+                lookup_kind="named_lookup",
+                hipparcos_name="Aldebaran",
+                source_mode="both",
+                gaia_match_status="matched",
+                is_topocentric=False,
+            )
+
+        with pytest.raises(ValueError, match="must not preserve hipparcos_name"):
+            stars.FixedStarTruth(
+                lookup_kind="proximity_search",
+                hipparcos_name="Aldebaran",
+                source_mode="gaia",
+                gaia_match_status="gaia_direct",
+                gaia_source_index=7,
+                is_topocentric=False,
+            )
+
+    def test_chart_and_network_directionality_invariants_fail_loudly(self):
+        import moira.fixed_stars as fs
+
+        profile = fs.StarConditionProfile(
+            result_kind="unified_star",
+            condition_state=fs.StarConditionState("unified_merge"),
+            relation_kind="catalog_merge",
+            relation_basis="named_lookup",
+            lookup_kind="named_lookup",
+            source_kind="both",
+        )
+
+        with pytest.raises(ValueError, match="counts must sum"):
+            fs.StarChartConditionProfile(
+                profiles=(profile,),
+                catalog_position_count=0,
+                heliacal_event_count=0,
+                unified_merge_count=0,
+                strongest_profiles=(profile,),
+                weakest_profiles=(profile,),
+            )
+
+        source_node = fs.StarConditionNetworkNode(
+            node_id="source:catalog_lookup",
+            kind="source",
+            incoming_count=0,
+            outgoing_count=1,
+        )
+        star_node = fs.StarConditionNetworkNode(
+            node_id="star:Algol",
+            kind="star",
+            incoming_count=1,
+            outgoing_count=0,
+        )
+        bad_edge = fs.StarConditionNetworkEdge(
+            source_id="star:Algol",
+            target_id="source:catalog_lookup",
+            relation_kind="catalog_lookup",
+            relation_basis="named_star_lookup",
+            condition_state="catalog_position",
+        )
+
+        with pytest.raises(ValueError, match="must originate from source nodes"):
+            fs.StarConditionNetworkProfile(
+                nodes=(source_node, star_node),
+                edges=(bad_edge,),
+                isolated_nodes=(),
+                most_connected_nodes=(source_node, star_node),
+            )
+
+
 # ===========================================================================
 # 6.1 — String constant values: tradition-based modules
 # ===========================================================================
