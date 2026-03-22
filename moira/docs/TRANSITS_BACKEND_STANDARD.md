@@ -69,6 +69,12 @@ An **ingress event** in Moira is:
 `IngressEvent` is the authoritative ingress vessel. It preserves the entered
 sign, sign-boundary longitude, direction, and search truth.
 
+`next_ingress` and `next_ingress_into` are **ingress convenience selectors**.
+They are not independent engines. They delegate entirely to `find_ingresses`
+and return the first `IngressEvent` from its output that satisfies the
+caller's criterion (any sign, or a specific sign). They do not produce new
+ingress truth; they select from already-constitutionalized truth.
+
 #### 1.4 Transit relation
 
 A **transit relation** in Moira is:
@@ -156,7 +162,8 @@ layer reaches upward.
 
 ```
 Core      - Authoritative transit computation (`next_transit`, `find_transits`,
-            `find_ingresses`, return search, syzygy search)
+            `find_ingresses`, `next_ingress`, `next_ingress_into`,
+            return search, syzygy search)
 Phase  1  - Truth preservation
 Phase  2  - Classification
 Phase  3  - Inspectability and vessel hardening
@@ -248,7 +255,27 @@ Syzygy doctrine is embodied through:
 `last_new_moon`, `last_full_moon`, and `prenatal_syzygy` remain wrappers around
 the current elongation-crossing search doctrine.
 
-#### 4.5 Relation doctrine
+#### 4.5 Ingress convenience doctrine
+
+`next_ingress` and `next_ingress_into` are governed by the same ingress search
+doctrine as `find_ingresses`. They share:
+
+- the same `_auto_step` cadence selection
+- the same `_RETURN_SEARCH_DAYS` default window table
+- the same `TransitComputationPolicy` ingress policy path
+- the same `IngressEvent` vessel with full constitutionalized truth
+
+Both functions validate public inputs under the full failure doctrine (§9.1):
+`body` must be non-empty, `jd_start` must be finite, `max_days` when provided
+must be positive, and `sign` (for `next_ingress_into`) must be a valid zodiac
+sign name. Invalid inputs raise `ValueError`.
+
+`next_ingress_into` walks the target range in chunks equal to the body's
+`_RETURN_SEARCH_DAYS` window. This is constitutional behavior: it avoids
+allocating decade-length scan arrays for slow bodies while remaining correct
+for any search horizon.
+
+#### 4.6 Relation doctrine
 
 No additional relational doctrine is implied beyond the current formalized
 event relation layer. The subsystem does not currently define inter-planet
@@ -390,6 +417,8 @@ Malformed public inputs must fail clearly with `ValueError`, including at least:
 Valid searches that do not find an event remain governed by current semantics:
 
 - `next_transit` returns `None`
+- `next_ingress` returns `None`
+- `next_ingress_into` returns `None`
 - return wrappers raise `RuntimeError`
 - syzygy wrappers raise `RuntimeError`
 

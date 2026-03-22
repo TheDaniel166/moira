@@ -265,12 +265,29 @@ from .primary_directions import (
     DIRECT, CONVERSE,
 )
 from .synastry import (
+    SynastryAspectTruth, SynastryAspectContact,
+    SynastryOverlayTruth,
+    CompositeComputationTruth, DavisonComputationTruth,
+    SynastryAspectClassification, SynastryOverlayClassification,
+    CompositeClassification, DavisonClassification,
+    SynastryRelation,
+    SynastryConditionState, SynastryConditionProfile,
+    SynastryChartConditionProfile,
+    SynastryConditionNetworkNode, SynastryConditionNetworkEdge,
+    SynastryConditionNetworkProfile,
+    SynastryAspectPolicy, SynastryOverlayPolicy,
+    SynastryCompositePolicy, SynastryDavisonPolicy,
+    SynastryComputationPolicy,
     SynastryHouseOverlay, MutualHouseOverlay,
     CompositeChart, DavisonChart, DavisonInfo,
-    synastry_aspects, house_overlay, mutual_house_overlays,
+    synastry_aspects, synastry_contacts,
+    house_overlay, mutual_house_overlays,
     composite_chart, composite_chart_reference_place,
     davison_chart, davison_chart_uncorrected, davison_chart_reference_place,
     davison_chart_spherical_midpoint, davison_chart_corrected,
+    synastry_contact_relations, mutual_overlay_relations,
+    synastry_condition_profiles, synastry_chart_condition_profile,
+    synastry_condition_network_profile,
 )
 from .transits import (
     TransitTargetKind,
@@ -303,6 +320,8 @@ from .transits import (
     next_transit,
     find_transits,
     find_ingresses,
+    next_ingress,
+    next_ingress_into,
     solar_return,
     lunar_return,
     last_new_moon,
@@ -474,6 +493,11 @@ from .multiple_stars import (
     sirius_ab_separation_at, sirius_b_resolvable,
     castor_separation_at, alpha_cen_separation_at,
 )
+from .void_of_course import (
+    LastAspect, VoidOfCourseWindow,
+    void_of_course_window, is_void_of_course,
+    next_void_of_course, void_periods_in_range,
+)
 
 __all__ = [
     "Moira", "Chart",
@@ -611,13 +635,30 @@ __all__ = [
     "speculum", "find_primary_arcs",
     "DIRECT", "CONVERSE",
     # Synastry / relationship charts
+    "SynastryAspectTruth", "SynastryAspectContact",
+    "SynastryOverlayTruth",
+    "CompositeComputationTruth", "DavisonComputationTruth",
+    "SynastryAspectClassification", "SynastryOverlayClassification",
+    "CompositeClassification", "DavisonClassification",
+    "SynastryRelation",
+    "SynastryConditionState", "SynastryConditionProfile",
+    "SynastryChartConditionProfile",
+    "SynastryConditionNetworkNode", "SynastryConditionNetworkEdge",
+    "SynastryConditionNetworkProfile",
+    "SynastryAspectPolicy", "SynastryOverlayPolicy",
+    "SynastryCompositePolicy", "SynastryDavisonPolicy",
+    "SynastryComputationPolicy",
     "SynastryHouseOverlay", "MutualHouseOverlay",
     "CompositeChart", "DavisonChart", "DavisonInfo",
-    "synastry_aspects", "house_overlay", "mutual_house_overlays",
+    "synastry_aspects", "synastry_contacts",
+    "house_overlay", "mutual_house_overlays",
     "composite_chart", "composite_chart_reference_place",
     "davison_chart", "davison_chart_uncorrected",
     "davison_chart_reference_place", "davison_chart_spherical_midpoint",
     "davison_chart_corrected",
+    "synastry_contact_relations", "mutual_overlay_relations",
+    "synastry_condition_profiles", "synastry_chart_condition_profile",
+    "synastry_condition_network_profile",
     # Transits
     "TransitTargetKind", "TransitSearchKind", "TransitWrapperKind",
     "TransitRelationKind", "TransitRelationBasis", "TransitConditionState",
@@ -631,6 +672,7 @@ __all__ = [
     "TransitConditionNetworkEdge", "TransitConditionNetworkProfile",
     "TransitEvent", "IngressEvent",
     "next_transit", "find_transits", "find_ingresses",
+    "next_ingress", "next_ingress_into",
     "solar_return", "lunar_return",
     "last_new_moon", "last_full_moon", "prenatal_syzygy",
     "planet_return",
@@ -773,6 +815,10 @@ __all__ = [
     "multiple_star", "list_multiple_stars", "multiple_stars_by_type",
     "sirius_ab_separation_at", "sirius_b_resolvable",
     "castor_separation_at", "alpha_cen_separation_at",
+    # Void of Course Moon
+    "LastAspect", "VoidOfCourseWindow",
+    "void_of_course_window", "is_void_of_course",
+    "next_void_of_course", "void_periods_in_range",
 ]
 
 
@@ -1810,6 +1856,47 @@ class Moira:
         """
         return find_ingresses(body, jd_start, jd_end, reader=self._reader)
 
+    def next_ingress(
+        self, body: str, jd_start: float, max_days: float | None = None
+    ) -> IngressEvent | None:
+        """
+        Find the next sign ingress of *body* after jd_start (any sign).
+
+        Parameters
+        ----------
+        body      : Body.* constant
+        jd_start  : search start JD (UT)
+        max_days  : search horizon (default: auto per body)
+
+        Returns
+        -------
+        IngressEvent, or None if not found within max_days.
+        """
+        return next_ingress(body, jd_start, reader=self._reader, max_days=max_days)
+
+    def next_ingress_into(
+        self, body: str, sign: str, jd_start: float, max_days: float | None = None
+    ) -> IngressEvent | None:
+        """
+        Find the next time *body* enters a specific zodiac *sign* after jd_start.
+
+        Parameters
+        ----------
+        body      : Body.* constant (e.g. Body.JUPITER)
+        sign      : zodiac sign name (e.g. "Aries", "Capricorn")
+        jd_start  : search start JD (UT)
+        max_days  : search horizon (default: auto per body)
+
+        Returns
+        -------
+        IngressEvent, or None if not found within max_days.
+
+        Raises
+        ------
+        ValueError if sign is not a valid zodiac sign name.
+        """
+        return next_ingress_into(body, sign, jd_start, reader=self._reader, max_days=max_days)
+
     def solar_return(self, natal_sun_lon: float, year: int) -> float:
         """
         Find the exact Julian Day of the Solar Return for a given year.
@@ -2741,6 +2828,41 @@ class Moira:
         dominant component label, and per-component magnitude/spectral data.
         """
         return components_at(multiple_star(name), jd_from_datetime(dt))
+
+    # ------------------------------------------------------------------
+    # Void of Course Moon
+    # ------------------------------------------------------------------
+
+    def moon_void_of_course(
+        self, dt: datetime, modern: bool = False
+    ) -> VoidOfCourseWindow:
+        """
+        Return the Void of Course window for the Moon's current sign at dt.
+
+        Parameters
+        ----------
+        dt     : datetime (UTC)
+        modern : if True, include Uranus, Neptune, Pluto as aspecting bodies
+
+        Returns
+        -------
+        VoidOfCourseWindow describing when the VOC starts/ends within the
+        Moon's current sign, the last applying aspect, and duration in hours.
+        """
+        return void_of_course_window(jd_from_datetime(dt), reader=self._reader, modern=modern)
+
+    def is_moon_void_of_course(
+        self, dt: datetime, modern: bool = False
+    ) -> bool:
+        """
+        Return True if the Moon is Void of Course at the given datetime.
+
+        Parameters
+        ----------
+        dt     : datetime (UTC)
+        modern : if True, include Uranus, Neptune, Pluto as aspecting bodies
+        """
+        return is_void_of_course(jd_from_datetime(dt), reader=self._reader, modern=modern)
 
     # ------------------------------------------------------------------
     # Dunder

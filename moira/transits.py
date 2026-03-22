@@ -1700,6 +1700,125 @@ def find_ingresses(
     return events
 
 
+def next_ingress(
+    body: str,
+    jd_start: float,
+    reader: SpkReader | None = None,
+    policy: TransitComputationPolicy | None = None,
+    max_days: float | None = None,
+) -> IngressEvent | None:
+    """
+    Find the next sign ingress of *body* after jd_start (any sign).
+
+    Convenience wrapper around find_ingresses for the single-event case.
+    The search window is chosen automatically from the body's orbital speed
+    and extended until an event is found, up to max_days.
+
+    Parameters
+    ----------
+    body      : Body.* constant (e.g. Body.MARS)
+    jd_start  : search start JD (UT)
+    reader    : optional SpkReader
+    policy    : optional TransitComputationPolicy
+    max_days  : search horizon in days (default: 1.5× the body's sign-transit
+                duration — sufficient for any direct or retrograde case)
+
+    Returns
+    -------
+    The first IngressEvent after jd_start, or None if not found within max_days.
+    """
+    _require_non_empty_body(body)
+    _require_finite_jd(jd_start, "jd_start")
+    if max_days is not None:
+        _require_positive(max_days, "max_days")
+    if reader is None:
+        reader = get_reader()
+    policy = _validate_policy(policy)
+
+    # Default search window: a body needs at most ~2 sign-transit durations to
+    # cross into a new sign even during a retrograde station near a boundary.
+    # We use the _RETURN_SEARCH_DAYS table as a generous upper bound.
+    if max_days is None:
+        max_days = _RETURN_SEARCH_DAYS.get(body, 500.0)
+
+    events = find_ingresses(body, jd_start, jd_start + max_days,
+                            reader=reader, policy=policy)
+    return events[0] if events else None
+
+
+def next_ingress_into(
+    body: str,
+    sign: str,
+    jd_start: float,
+    reader: SpkReader | None = None,
+    policy: TransitComputationPolicy | None = None,
+    max_days: float | None = None,
+) -> IngressEvent | None:
+    """
+    Find the next time *body* enters a specific zodiac *sign* after jd_start.
+
+    Useful for questions like "when does Jupiter next enter Aries?" or
+    "when does the Sun next enter Capricorn (Winter Solstice)?".
+    Handles retrograde ingresses correctly — if a planet crosses the sign
+    boundary moving retrograde, that crossing is included.
+
+    Parameters
+    ----------
+    body      : Body.* constant (e.g. Body.JUPITER)
+    sign      : zodiac sign name (e.g. "Aries", "Capricorn")
+    jd_start  : search start JD (UT)
+    reader    : optional SpkReader
+    policy    : optional TransitComputationPolicy
+    max_days  : search horizon in days (default: generous per-body window)
+
+    Returns
+    -------
+    The first IngressEvent where .sign == sign after jd_start,
+    or None if not found within max_days.
+
+    Raises
+    ------
+    ValueError if sign is not a valid zodiac sign name.
+    """
+    _require_non_empty_body(body)
+    _require_finite_jd(jd_start, "jd_start")
+    if max_days is not None:
+        _require_positive(max_days, "max_days")
+    if sign not in SIGNS:
+        raise ValueError(
+            f"next_ingress_into: '{sign}' is not a valid zodiac sign. "
+            f"Expected one of: {', '.join(SIGNS)}"
+        )
+    if reader is None:
+        reader = get_reader()
+    policy = _validate_policy(policy)
+
+    if max_days is None:
+        max_days = _RETURN_SEARCH_DAYS.get(body, 500.0)
+
+    # A slow body (Saturn, Pluto) may take many years to reach a specific sign.
+    # Expand the window in chunks to avoid allocating a decade-long scan at once.
+    chunk = min(max_days, _RETURN_SEARCH_DAYS.get(body, 500.0))
+    jd_cursor = jd_start
+    jd_limit  = jd_start + max_days
+
+    while jd_cursor < jd_limit:
+        jd_chunk_end = min(jd_cursor + chunk, jd_limit)
+        events = find_ingresses(body, jd_cursor, jd_chunk_end,
+                                reader=reader, policy=policy)
+        for evt in events:
+            if evt.sign == sign:
+                return evt
+        if not events:
+            # No ingresses at all in this chunk — jump forward by chunk size
+            jd_cursor = jd_chunk_end
+        else:
+            # Advance past the last found ingress
+            jd_cursor = events[-1].jd_ut + _auto_step(body)
+
+    return None
+
+
 # ---------------------------------------------------------------------------
 # Public: solar / lunar / generic planet returns
 # ---------------------------------------------------------------------------

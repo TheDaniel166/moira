@@ -29,7 +29,7 @@ Public surface / exports:
     perihelion()              — next perihelion of a planet
     aphelion()                — next aphelion of a planet
     next_moon_phase()         — next occurrence of a named Moon phase
-    moon_phases_in_range()    — all four Moon phases in a date range
+    moon_phases_in_range()    — all eight Moon phases in a date range
 """
 
 import math
@@ -421,15 +421,23 @@ def _bisect_phase(
     """
     Bisect to find when the Moon-Sun phase angle equals target (0–360).
     Handles the 0/360 wraparound for New Moon.
+
+    Iteration budget: 30 iterations with tol=1e-6 days suffices.
+    The initial bracket is at most 0.5 days (one scan step).
+    Required iterations = ceil(log2(0.5 / 1e-6)) = ceil(18.9) = 19.
+    30 iterations provides a comfortable safety margin at negligible cost.
     """
     def diff(jd: float) -> float:
         ang = _sun_moon_phase_angle(jd, reader)
-        # Signed angular difference from target, staying on the correct side
+        # Signed angular difference from target, staying on the correct side.
+        # (ang - target + 180) % 360 - 180 maps the circular residual onto
+        # (-180, +180] so that sign-change detection works at all targets,
+        # including the New Moon 0°/360° boundary.
         d = (ang - target + 180.0) % 360.0 - 180.0
         return d
 
     d_lo = diff(jd_lo)
-    for _ in range(60):
+    for _ in range(30):
         if jd_hi - jd_lo < tol_days:
             break
         jd_mid = (jd_lo + jd_hi) / 2.0
@@ -485,6 +493,10 @@ def next_moon_phase(
         diff_prev = (ang_prev - target + 180.0) % 360.0 - 180.0
         diff_next = (ang_next - target + 180.0) % 360.0 - 180.0
 
+        # The abs < 90 guard prevents false positives at the Conjunction (0°/360°
+        # boundary) where the signal legitimately jumps from ~+180 to ~-180 as
+        # the Moon laps the Sun — a discontinuity that looks like a sign change
+        # but is not a real crossing.
         if diff_prev * diff_next < 0 and abs(diff_prev) < 90.0 and abs(diff_next) < 90.0:
             jd_exact = _bisect_phase(target, jd, jd_next, reader)
             exact_ang = _sun_moon_phase_angle(jd_exact, reader)
@@ -509,8 +521,12 @@ def moon_phases_in_range(
     reader: SpkReader | None = None,
 ) -> list[PhenomenonEvent]:
     """
-    Find all four Moon phases (New, First Quarter, Full, Last Quarter)
-    between jd_start and jd_end, sorted chronologically.
+    Find all eight Moon phases between jd_start and jd_end, sorted chronologically.
+
+    All eight phases defined in MOON_PHASE_ANGLES are detected:
+    New Moon (0°), Waxing Crescent (45°), First Quarter (90°),
+    Waxing Gibbous (135°), Full Moon (180°), Waning Gibbous (225°),
+    Last Quarter (270°), Waning Crescent (315°).
     """
     if reader is None:
         reader = get_reader()
@@ -531,7 +547,11 @@ def moon_phases_in_range(
             diff_prev = (ang_prev - target + 180.0) % 360.0 - 180.0
             diff_next = (ang_next - target + 180.0) % 360.0 - 180.0
 
-            if diff_prev * diff_next < 0 and abs(diff_prev) < 90.0 and abs(diff_next) < 90.0:
+            # The abs < 90 guard prevents false positives at the Conjunction (0°/360°
+        # boundary) where the signal legitimately jumps from ~+180 to ~-180 as
+        # the Moon laps the Sun — a discontinuity that looks like a sign change
+        # but is not a real crossing.
+        if diff_prev * diff_next < 0 and abs(diff_prev) < 90.0 and abs(diff_next) < 90.0:
                 jd_exact = _bisect_phase(target, jd, jd_next, reader)
                 exact_ang = _sun_moon_phase_angle(jd_exact, reader)
                 events.append(PhenomenonEvent(
