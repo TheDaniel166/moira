@@ -59,6 +59,8 @@ close to that standard.
   Documented by [`DIGNITIES_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/DIGNITIES_BACKEND_STANDARD.md)
 - [`lots.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/lots.py)
   Documented by [`LOTS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/LOTS_BACKEND_STANDARD.md)
+- [`patterns.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/patterns.py)
+  Documented by [`PATTERNS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/PATTERNS_BACKEND_STANDARD.md)
 
 ### Near-constitutional / partially constitutionalized
 
@@ -75,30 +77,11 @@ close to that standard.
 
 These are the strongest next candidates because they have real subsystem shape
 but are not yet constitutionally governed at the same level as houses, aspects,
-parans, dignities, and lots.
+parans, dignities, lots, and patterns.
 
 ### Tier 1 - Best next candidates
 
-#### 3.1 Patterns
-
-- [`patterns.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/patterns.py)
-
-Why it is strong:
-
-- coherent engine with one clear result vessel
-- already depends on an SCP-mature substrate: aspects
-- explicit detector set and curated public surface already exist
-- likely benefits from formal truth preservation, classification, and hardening
-  around pattern doctrine, deduplication, ordering, and detector boundaries
-
-Why it is now the best next move:
-
-- smaller conceptual scope than `transits` or `eclipse`
-- simpler dependency tree
-- already depends on a now-constitutionalized aspect substrate
-- likely ready for Phase 1 truth preservation immediately
-
-#### 3.2 Transits
+#### 3.1 Transits
 
 - [`transits.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/transits.py)
 
@@ -116,7 +99,7 @@ Why it belongs in Tier 1:
 
 ### Tier 2 - High-value but heavier targets
 
-#### 3.3 Eclipse
+#### 3.2 Eclipse
 
 - [`eclipse.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/eclipse.py)
 
@@ -136,7 +119,7 @@ Why it is not the first recommendation:
 
 This is the biggest payoff target, but not the easiest next target.
 
-#### 3.4 Fixed Stars / Unified Star Surface
+#### 3.3 Fixed Stars / Unified Star Surface
 
 - [`fixed_stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/fixed_stars.py)
 - [`stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/stars.py)
@@ -273,17 +256,16 @@ Why:
 If the goal is to continue constitutionalizing Moira in dependency-respecting
 order, the best next sequence is:
 
-1. [`patterns.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/patterns.py)
-2. [`transits.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/transits.py)
-3. eclipse subsystem cluster centered on [`eclipse.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/eclipse.py)
-4. fixed-stars / unified-star subsystem cluster centered on [`fixed_stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/fixed_stars.py) and [`stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/stars.py)
-5. [`progressions.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/progressions.py)
+1. [`transits.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/transits.py)
+2. eclipse subsystem cluster centered on [`eclipse.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/eclipse.py)
+3. fixed-stars / unified-star subsystem cluster centered on [`fixed_stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/fixed_stars.py) and [`stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/stars.py)
+4. [`progressions.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/progressions.py)
+5. [`synastry.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/synastry.py)
 
 Rationale:
 
 - `lots` has now completed the full 12-phase SCP cycle and should be treated as a constitutionalized subsystem, not a pending candidate
-- `patterns` is the cleanest next constitutionalization because it sits atop an
-  already-mature aspect substrate and has manageable scope
+- `patterns` has now completed the full 12-phase SCP cycle and should be treated as a constitutionalized subsystem, not a pending candidate
 - `transits` is central and reusable, but somewhat more search-heavy and technique-branching
 - `eclipse` is extremely valuable but should be approached as a cluster
 - `stars` likely requires subsystem-boundary clarification before the phase work

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from dataclasses import replace
 
 import pytest
 
@@ -10,9 +11,29 @@ from moira.julian import jd_from_datetime, ut_to_tt
 from moira.nodes import true_node
 from moira.planets import planet_at
 from moira.transits import (
+    IngressComputationTruth,
+    IngressComputationClassification,
+    IngressEvent,
+    LongitudeResolutionTruth,
+    LongitudeResolutionClassification,
+    CrossingSearchTruth,
+    CrossingSearchClassification,
+    TransitComputationTruth,
+    TransitComputationClassification,
+    TransitSearchKind,
+    TransitTargetKind,
+    TransitWrapperKind,
+    TransitSearchPolicy,
+    ReturnSearchPolicy,
+    SyzygySearchPolicy,
+    TransitComputationPolicy,
+    TransitRelation,
+    TransitRelationBasis,
+    TransitRelationKind,
     TransitEvent,
     find_ingresses,
     find_transits,
+    ingress_relations,
     last_full_moon,
     last_new_moon,
     lunar_return,
@@ -20,6 +41,7 @@ from moira.transits import (
     planet_return,
     prenatal_syzygy,
     solar_return,
+    transit_relations,
 )
 
 
@@ -39,6 +61,27 @@ def test_next_transit_finds_exact_direct_crossing_for_sun() -> None:
     assert event.body == Body.SUN
     assert event.direction == "direct"
     assert _angle_diff(planet_at(Body.SUN, event.jd_ut).longitude, target) < 1e-3
+
+    assert event.computation_truth is not None
+    assert event.computation_truth.body == Body.SUN
+    assert event.computation_truth.requested_target == target
+    assert event.computation_truth.direction_filter == "direct"
+    assert event.computation_truth.target_truth.resolved_kind == "numeric_longitude"
+    assert event.computation_truth.target_truth.longitude == pytest.approx(event.longitude, abs=1e-9)
+    assert event.computation_truth.search_truth.crossing_jd_ut == pytest.approx(event.jd_ut, abs=1e-12)
+    assert event.computation_truth.search_truth.bracket_start_jd_ut <= event.jd_ut <= event.computation_truth.search_truth.bracket_end_jd_ut
+    assert event.classification is not None
+    assert event.classification.target.target_kind is TransitTargetKind.NUMERIC_LONGITUDE
+    assert event.classification.search.search_kind is TransitSearchKind.LONGITUDE_CROSSING
+    assert event.classification.search.wrapper_kind is TransitWrapperKind.DIRECT_TRANSIT
+    assert event.relation is not None
+    assert event.relation.relation_kind is TransitRelationKind.TARGET_CROSSING
+    assert event.relation.basis is TransitRelationBasis.NUMERIC_LONGITUDE
+    assert event.relation.target_longitude == pytest.approx(event.longitude, abs=1e-12)
+    assert event.target_kind is TransitTargetKind.NUMERIC_LONGITUDE
+    assert event.search_kind is TransitSearchKind.LONGITUDE_CROSSING
+    assert event.wrapper_kind is TransitWrapperKind.DIRECT_TRANSIT
+    assert event.uses_dynamic_target is False
 
 
 @pytest.mark.requires_ephemeris
@@ -96,6 +139,20 @@ def test_find_ingresses_detects_both_directions_for_mercury_window() -> None:
     for event in events:
         target = event.sign_longitude
         assert _angle_diff(planet_at(Body.MERCURY, event.jd_ut).longitude, target) < 1e-3
+        assert event.computation_truth is not None
+        assert event.computation_truth.sign == event.sign
+        assert event.computation_truth.boundary_longitude == pytest.approx(event.sign_longitude)
+        assert event.computation_truth.search_truth.crossing_jd_ut == pytest.approx(event.jd_ut, abs=1e-12)
+        assert event.classification is not None
+        assert event.classification.search.search_kind is TransitSearchKind.SIGN_INGRESS
+        assert event.classification.search.wrapper_kind is TransitWrapperKind.INGRESS
+        assert event.relation is not None
+        assert event.relation.relation_kind is TransitRelationKind.SIGN_INGRESS
+        assert event.relation.basis is TransitRelationBasis.SIGN_BOUNDARY
+        assert event.relation.target_name == event.sign
+        assert event.relation.target_longitude == pytest.approx(event.sign_longitude, abs=1e-12)
+        assert event.search_kind is TransitSearchKind.SIGN_INGRESS
+        assert event.wrapper_kind is TransitWrapperKind.INGRESS
 
 
 @pytest.mark.requires_ephemeris
@@ -106,6 +163,15 @@ def test_next_transit_supports_fixed_star_targets() -> None:
     assert event.body == Body.VENUS
     target_lon = fixed_star_at("Sirius", ut_to_tt(event.jd_ut)).longitude
     assert _angle_diff(planet_at(Body.VENUS, event.jd_ut).longitude, target_lon) < 1e-3
+    assert event.computation_truth is not None
+    assert event.computation_truth.target_truth.resolved_kind == "fixed_star"
+    assert event.computation_truth.target_truth.resolved_name == "Sirius"
+    assert event.classification is not None
+    assert event.classification.target.target_kind is TransitTargetKind.FIXED_STAR
+    assert event.relation is not None
+    assert event.relation.basis is TransitRelationBasis.FIXED_STAR
+    assert event.relation.target_name == "Sirius"
+    assert event.uses_dynamic_target is True
 
 
 @pytest.mark.requires_ephemeris
@@ -116,6 +182,335 @@ def test_next_transit_supports_node_targets() -> None:
     assert event.body == Body.MARS
     target_lon = true_node(event.jd_ut).longitude
     assert _angle_diff(planet_at(Body.MARS, event.jd_ut).longitude, target_lon) < 1e-3
+    assert event.computation_truth is not None
+    assert event.computation_truth.target_truth.resolved_kind == "node"
+    assert event.computation_truth.target_truth.resolved_name == Body.TRUE_NODE
+    assert event.classification is not None
+    assert event.classification.target.target_kind is TransitTargetKind.NODE
+    assert event.relation is not None
+    assert event.relation.basis is TransitRelationBasis.NODE
+    assert event.uses_dynamic_target is True
+
+
+def test_transit_truth_and_classification_vessels_preserve_computational_path_internally() -> None:
+    target_truth = LongitudeResolutionTruth(
+        requested_spec=0.0,
+        resolved_kind="numeric_longitude",
+        resolved_name="0.000000000000",
+        jd_ut=2451545.0,
+        longitude=0.0,
+    )
+    search_truth = CrossingSearchTruth(
+        search_start_jd_ut=2451544.0,
+        search_end_jd_ut=2451546.0,
+        step_days=0.5,
+        bracket_start_jd_ut=2451544.9,
+        bracket_end_jd_ut=2451545.1,
+        crossing_jd_ut=2451545.0,
+        solver_tolerance_days=1e-6,
+    )
+    computation_truth = TransitComputationTruth(
+        body=Body.SUN,
+        requested_target=0.0,
+        direction_filter="either",
+        target_truth=target_truth,
+        search_truth=search_truth,
+    )
+    ingress_truth = IngressComputationTruth(
+        body=Body.SUN,
+        sign="Aries",
+        boundary_longitude=0.0,
+        search_truth=search_truth,
+    )
+    target_classification = LongitudeResolutionClassification(
+        target_kind=TransitTargetKind.NUMERIC_LONGITUDE,
+        resolved_name="0.000000000000",
+    )
+    search_classification = CrossingSearchClassification(
+        search_kind=TransitSearchKind.LONGITUDE_CROSSING,
+        wrapper_kind=TransitWrapperKind.DIRECT_TRANSIT,
+        uses_bisection=True,
+        uses_dynamic_target=False,
+    )
+    ingress_search_classification = CrossingSearchClassification(
+        search_kind=TransitSearchKind.SIGN_INGRESS,
+        wrapper_kind=TransitWrapperKind.INGRESS,
+        uses_bisection=True,
+        uses_dynamic_target=False,
+    )
+    classification = TransitComputationClassification(
+        body=Body.SUN,
+        target=target_classification,
+        search=search_classification,
+    )
+    ingress_classification = IngressComputationClassification(
+        body=Body.SUN,
+        sign="Aries",
+        search=ingress_search_classification,
+    )
+
+    event = TransitEvent(
+        body=Body.SUN,
+        longitude=0.0,
+        jd_ut=2451545.0,
+        direction="direct",
+        computation_truth=computation_truth,
+        classification=classification,
+        relation=TransitRelation(
+            source_body=Body.SUN,
+            relation_kind=TransitRelationKind.TARGET_CROSSING,
+            basis=TransitRelationBasis.NUMERIC_LONGITUDE,
+            target_name="0.000000000000",
+            target_longitude=0.0,
+            is_dynamic_target=False,
+        ),
+    )
+    ingress = IngressEvent(
+        body=Body.SUN,
+        sign="Aries",
+        jd_ut=2451545.0,
+        direction="direct",
+        computation_truth=ingress_truth,
+        classification=ingress_classification,
+        relation=TransitRelation(
+            source_body=Body.SUN,
+            relation_kind=TransitRelationKind.SIGN_INGRESS,
+            basis=TransitRelationBasis.SIGN_BOUNDARY,
+            target_name="Aries",
+            target_longitude=0.0,
+            is_dynamic_target=False,
+        ),
+    )
+
+    assert event.computation_truth.target_truth.longitude == 0.0
+    assert event.computation_truth.search_truth.bracket_start_jd_ut < event.jd_ut
+    assert event.classification.target.target_kind is TransitTargetKind.NUMERIC_LONGITUDE
+    assert event.target_kind is TransitTargetKind.NUMERIC_LONGITUDE
+    assert event.relation is not None
+    assert event.relation.basis is TransitRelationBasis.NUMERIC_LONGITUDE
+    assert ingress.computation_truth.boundary_longitude == 0.0
+    assert ingress.computation_truth.search_truth.crossing_jd_ut == ingress.jd_ut
+    assert ingress.classification.search.search_kind is TransitSearchKind.SIGN_INGRESS
+    assert ingress.search_kind is TransitSearchKind.SIGN_INGRESS
+    assert ingress.relation is not None
+    assert ingress.relation.basis is TransitRelationBasis.SIGN_BOUNDARY
+
+
+def test_transit_events_expose_read_only_inspectability_and_fail_loudly_on_drift() -> None:
+    event = next_transit(
+        Body.SUN,
+        0.0,
+        jd_from_datetime(datetime(2024, 3, 18, 0, 0, tzinfo=timezone.utc)),
+        direction="direct",
+        max_days=10.0,
+    )
+    assert event is not None
+    assert event.computation_truth is not None
+    assert event.classification is not None
+
+    with pytest.raises((AttributeError, TypeError)):
+        setattr(event, "target_kind", TransitTargetKind.FIXED_STAR)
+
+    with pytest.raises(ValueError, match="classification target kind must match computation truth"):
+        replace(
+            event,
+            classification=replace(
+                event.classification,
+                target=replace(
+                    event.classification.target,
+                    target_kind=TransitTargetKind.FIXED_STAR,
+                ),
+            ),
+        )
+
+    ingress = IngressEvent(
+        body=Body.SUN,
+        sign="Aries",
+        jd_ut=2451545.0,
+        direction="direct",
+        computation_truth=IngressComputationTruth(
+            body=Body.SUN,
+            sign="Aries",
+            boundary_longitude=0.0,
+            search_truth=CrossingSearchTruth(
+                search_start_jd_ut=2451544.0,
+                search_end_jd_ut=2451546.0,
+                step_days=0.5,
+                bracket_start_jd_ut=2451544.9,
+                bracket_end_jd_ut=2451545.1,
+                crossing_jd_ut=2451545.0,
+                solver_tolerance_days=1e-6,
+            ),
+        ),
+        classification=IngressComputationClassification(
+            body=Body.SUN,
+            sign="Aries",
+            search=CrossingSearchClassification(
+                search_kind=TransitSearchKind.SIGN_INGRESS,
+                wrapper_kind=TransitWrapperKind.INGRESS,
+                uses_bisection=True,
+                uses_dynamic_target=False,
+            ),
+        ),
+        relation=TransitRelation(
+            source_body=Body.SUN,
+            relation_kind=TransitRelationKind.SIGN_INGRESS,
+            basis=TransitRelationBasis.SIGN_BOUNDARY,
+            target_name="Aries",
+            target_longitude=0.0,
+            is_dynamic_target=False,
+        ),
+    )
+    assert ingress.search_kind is TransitSearchKind.SIGN_INGRESS
+
+
+def test_transit_truth_vessels_fail_loudly_on_invalid_internal_state() -> None:
+    with pytest.raises(ValueError, match="resolved_kind must be supported"):
+        LongitudeResolutionTruth(
+            requested_spec="X",
+            resolved_kind="invalid",
+            resolved_name="X",
+            jd_ut=2451545.0,
+            longitude=0.0,
+        )
+
+    with pytest.raises(ValueError, match="crossing_jd_ut must lie inside bracket"):
+        CrossingSearchTruth(
+            search_start_jd_ut=2451544.0,
+            search_end_jd_ut=2451546.0,
+            step_days=0.5,
+            bracket_start_jd_ut=2451544.9,
+            bracket_end_jd_ut=2451545.1,
+            crossing_jd_ut=2451545.2,
+            solver_tolerance_days=1e-6,
+        )
+
+    with pytest.raises(ValueError, match="search_kind must be sign_ingress"):
+        IngressComputationClassification(
+            body=Body.SUN,
+            sign="Aries",
+            search=CrossingSearchClassification(
+                search_kind=TransitSearchKind.LONGITUDE_CROSSING,
+                wrapper_kind=TransitWrapperKind.INGRESS,
+                uses_bisection=True,
+                uses_dynamic_target=False,
+            ),
+        )
+
+    with pytest.raises(ValueError, match="Transit search policy step_days_override must be positive"):
+        next_transit(
+            Body.SUN,
+            0.0,
+            2451545.0,
+            policy=TransitComputationPolicy(
+                transit=TransitSearchPolicy(step_days_override=0.0),
+            ),
+        )
+
+
+@pytest.mark.requires_ephemeris
+def test_default_transit_policy_preserves_current_behavior() -> None:
+    start = jd_from_datetime(datetime(2024, 3, 20, 0, 0, tzinfo=timezone.utc))
+
+    baseline = next_transit(Body.SUN, 0.0, start - 2.0, direction="direct", max_days=10.0)
+    with_default_policy = next_transit(
+        Body.SUN,
+        0.0,
+        start - 2.0,
+        direction="direct",
+        max_days=10.0,
+        policy=TransitComputationPolicy(),
+    )
+
+    assert baseline is not None
+    assert with_default_policy is not None
+    assert with_default_policy.jd_ut == pytest.approx(baseline.jd_ut, abs=1e-12)
+    assert with_default_policy.longitude == pytest.approx(baseline.longitude, abs=1e-12)
+    assert with_default_policy.direction == baseline.direction
+
+
+@pytest.mark.requires_ephemeris
+def test_transit_relations_are_deterministic_and_align_with_source_truth() -> None:
+    start = jd_from_datetime(datetime(2024, 1, 1, tzinfo=timezone.utc))
+    transit_events = find_transits(Body.MERCURY, 270.0, start, start + 50.0)
+    ingress_events = find_ingresses(Body.MERCURY, start, start + 50.0)
+
+    transit_relation_list = transit_relations(transit_events)
+    ingress_relation_list = ingress_relations(ingress_events)
+
+    assert len(transit_relation_list) == len(transit_events)
+    assert len(ingress_relation_list) == len(ingress_events)
+    assert all(relation.relation_kind is TransitRelationKind.TARGET_CROSSING for relation in transit_relation_list)
+    assert all(relation.basis is TransitRelationBasis.NUMERIC_LONGITUDE for relation in transit_relation_list)
+    assert all(relation.relation_kind is TransitRelationKind.SIGN_INGRESS for relation in ingress_relation_list)
+    assert all(relation.basis is TransitRelationBasis.SIGN_BOUNDARY for relation in ingress_relation_list)
+
+    for event, relation in zip(transit_events, transit_relation_list):
+        assert event.relation == relation
+        assert relation.target_longitude == pytest.approx(event.longitude, abs=1e-12)
+
+    for event, relation in zip(ingress_events, ingress_relation_list):
+        assert event.relation == relation
+        assert relation.target_name == event.sign
+        assert relation.target_longitude == pytest.approx(event.sign_longitude, abs=1e-12)
+
+
+@pytest.mark.requires_ephemeris
+def test_explicit_return_and_syzygy_policy_is_deterministic_and_inspectable() -> None:
+    natal_dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    natal_moon_lon = planet_at(Body.MOON, jd_from_datetime(natal_dt)).longitude
+    start = jd_from_datetime(datetime(2000, 1, 10, 0, 0, tzinfo=timezone.utc))
+    policy = TransitComputationPolicy(
+        returns=ReturnSearchPolicy(
+            step_days_override=0.25,
+            per_body_max_days=((Body.MOON, 35.0),),
+        ),
+        syzygy=SyzygySearchPolicy(
+            scan_step_days=0.5,
+            solver_tolerance_days=1e-6,
+            max_synodic_multiple=1.1,
+        ),
+    )
+
+    jd_lunar = lunar_return(natal_moon_lon, start, policy=policy)
+    jd_generic = planet_return(Body.MOON, natal_moon_lon, start, policy=policy)
+
+    assert jd_lunar == pytest.approx(jd_generic, abs=1e-6)
+    assert _angle_diff(planet_at(Body.MOON, jd_lunar).longitude, natal_moon_lon) < 1e-3
+
+    ref = jd_from_datetime(datetime(2024, 4, 20, 0, 0, tzinfo=timezone.utc))
+    jd_nm = last_new_moon(ref, policy=policy)
+    jd_fm = last_full_moon(ref, policy=policy)
+    jd_syzygy, phase = prenatal_syzygy(ref, policy=policy)
+
+    assert jd_nm < ref
+    assert jd_fm < ref
+    assert jd_syzygy == max(jd_nm, jd_fm)
+    assert phase == ("New Moon" if jd_nm >= jd_fm else "Full Moon")
+
+
+@pytest.mark.requires_ephemeris
+def test_narrow_return_policy_can_fail_explicitly_without_changing_default_behavior() -> None:
+    natal_dt = datetime(1995, 3, 15, 6, 0, tzinfo=timezone.utc)
+    start = jd_from_datetime(datetime(1995, 3, 16, 0, 0, tzinfo=timezone.utc))
+    natal_lon = planet_at(Body.MERCURY, jd_from_datetime(natal_dt)).longitude
+
+    with pytest.raises(RuntimeError, match="not found within 10 days"):
+        planet_return(
+            Body.MERCURY,
+            natal_lon,
+            start,
+            direction="either",
+            policy=TransitComputationPolicy(
+                returns=ReturnSearchPolicy(
+                    per_body_max_days=((Body.MERCURY, 10.0),),
+                ),
+            ),
+        )
+
+    jd_return = planet_return(Body.MERCURY, natal_lon, start, direction="either")
+    assert jd_return > start
+    assert _angle_diff(planet_at(Body.MERCURY, jd_return).longitude, natal_lon) < 1e-3
 
 
 @pytest.mark.requires_ephemeris
