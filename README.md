@@ -6,6 +6,21 @@ Moira is a pure Python astronomical ephemeris and astrology engine. It is built 
 
 Moira is, to our knowledge, the first open-source Python astrology engine to publish direct validation of its core astronomical computations against ERFA/SOFA reference routines at sub-milliarcsecond accuracy.
 
+## Before You Install
+
+- Python `3.14` is required. This is intentional.
+- The published package does not include large JPL kernel files.
+- Import works without kernels, but many core calculations require local kernel files and will fail at runtime if those files are missing.
+- The repository contains an exploratory desktop UI under `ui/`, but that UI is not part of the published package.
+
+## Release Notes
+
+Moira is alpha-stage software.
+
+- The engine already covers a wide range of astronomical and astrological calculations.
+- The public API is still being hardened through active use and testing.
+- Expect iteration in the `0.1.x` line.
+
 ---
 
 ## The Case for a New Engine
@@ -86,7 +101,15 @@ See [`moira/docs/BEYOND_SWISS_EPHEMERIS.md`](moira/docs/BEYOND_SWISS_EPHEMERIS.m
 
 ---
 
-## Setup
+## Installation
+
+### From PyPI
+
+```powershell
+python -m pip install moira
+```
+
+### From Source
 
 ```powershell
 py -3.14 -m venv .venv
@@ -97,7 +120,7 @@ py -3.14 -m venv .venv
 
 ## Kernel Files
 
-Large ephemeris files are not committed to the repository. Place them in `kernels/`:
+Large ephemeris files are not committed to the repository and are not shipped in the PyPI distribution. Place them in `kernels/`:
 
 | File | Contents |
 |---|---|
@@ -108,6 +131,8 @@ Large ephemeris files are not committed to the repository. Place them in `kernel
 | `kernels/minor_bodies.bsp` | Additional minor bodies |
 
 Available from JPL Horizons and the JPL FTP server. Excluded from version control due to size.
+
+Without these files, SPK-backed calculations will fail at runtime.
 
 ---
 
@@ -123,6 +148,8 @@ chart = m.chart(datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc))
 print(chart.planets["Sun"].longitude)
 print(chart.planets["Moon"].longitude)
 ```
+
+If `Moira()` cannot locate the required kernel files, position-dependent calculations will raise at runtime.
 
 ---
 
@@ -173,7 +200,7 @@ tests/                  Unit, integration, property-based, and snapshot tests
 
 ## Status
 
-Standalone repository. Sub-arcsecond planetary accuracy certified against JPL Horizons. Active development — see the roadmap.
+Sub-arcsecond planetary accuracy is certified against JPL Horizons. Development remains active, and the roadmap is still the authoritative place to track scope and hardening work.
 
 ---
 

@@ -537,11 +537,17 @@ from .stars import (
 )
 from .variable_stars import (
     VarType, VariableStar,
+    VarStarPolicy, DEFAULT_VAR_STAR_POLICY,
+    StarPhaseState, star_phase_state,
+    StarConditionProfile, star_condition_profile,
+    CatalogProfile, catalog_profile,
+    StarStatePair, star_state_pair,
     variable_star, list_variable_stars, variable_stars_by_type,
     phase_at, magnitude_at, next_minimum, next_maximum,
     minima_in_range, maxima_in_range,
     malefic_intensity, benefic_strength, is_in_eclipse,
     algol_phase, algol_magnitude, algol_next_minimum, algol_is_eclipsed,
+    validate_variable_star_catalog,
 )
 from .multiple_stars import (
     MultiType, StarComponent, OrbitalElements, MultipleStarSystem,
@@ -880,11 +886,17 @@ __all__ = [
     "sothic_chart_condition_profile", "sothic_condition_network_profile",
     # Variable stars
     "VarType", "VariableStar",
+    "VarStarPolicy", "DEFAULT_VAR_STAR_POLICY",
+    "StarPhaseState", "star_phase_state",
+    "StarConditionProfile", "star_condition_profile",
+    "CatalogProfile", "catalog_profile",
+    "StarStatePair", "star_state_pair",
     "variable_star", "list_variable_stars", "variable_stars_by_type",
     "phase_at", "magnitude_at", "next_minimum", "next_maximum",
     "minima_in_range", "maxima_in_range",
     "malefic_intensity", "benefic_strength", "is_in_eclipse",
     "algol_phase", "algol_magnitude", "algol_next_minimum", "algol_is_eclipsed",
+    "validate_variable_star_catalog",
     # Fixed stars (sefstars catalog)
     "StarPositionTruth",
     "StarPositionClassification",
@@ -2138,8 +2150,7 @@ class Moira:
         latitude  : geographic latitude (degrees)
         longitude : geographic east longitude (degrees)
         """
-        return twilight_times(jd_from_datetime(dt), latitude, longitude,
-                              reader=self._reader)
+        return twilight_times(jd_from_datetime(dt), latitude, longitude)
 
     # ------------------------------------------------------------------
     # Phase / angular diameter / apparent magnitude
@@ -2624,8 +2635,9 @@ class Moira:
         -------
         List of all found patterns (T-Squares, Grand Trines, Yods, etc.)
         """
-        asps = find_aspects(chart.longitudes(), speeds=chart.speeds())
-        return find_all_patterns(asps, orb_factor=orb_factor)
+        positions = chart.longitudes()
+        asps = find_aspects(positions, speeds=chart.speeds())
+        return find_all_patterns(positions, aspects=asps, orb_factor=orb_factor)
 
     # ------------------------------------------------------------------
     # Planetary Phenomena
@@ -2649,9 +2661,16 @@ class Moira:
         from .constants import Body as _B
         events: list[PhenomenonEvent] = []
         if body in (_B.MERCURY, _B.VENUS):
-            events += greatest_elongation(body, jd_start, jd_end, reader=self._reader)
-        events += perihelion(body, jd_start, jd_end, reader=self._reader)
-        events += aphelion(body, jd_start, jd_end, reader=self._reader)
+            east = greatest_elongation(body, jd_start, direction="east", reader=self._reader, max_days=jd_end - jd_start)
+            west = greatest_elongation(body, jd_start, direction="west", reader=self._reader, max_days=jd_end - jd_start)
+            for event in (east, west):
+                if event is not None and jd_start <= event.jd_ut <= jd_end:
+                    events.append(event)
+        peri = perihelion(body, jd_start, reader=self._reader, max_days=jd_end - jd_start)
+        aphe = aphelion(body, jd_start, reader=self._reader, max_days=jd_end - jd_start)
+        for event in (peri, aphe):
+            if event is not None and jd_start <= event.jd_ut <= jd_end:
+                events.append(event)
         events.sort(key=lambda e: e.jd_ut)
         return events
 

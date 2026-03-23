@@ -17,7 +17,7 @@ It is a scan for:
 - enough subsystem coherence that SCP can apply cleanly
 - enough maturity that the next phase can be justified without phase-skipping
 
-**Last updated**: 2026-03-22
+**Last updated**: 2026-03-23 (variable_stars.py constitutionalized)
 
 ---
 
@@ -75,9 +75,18 @@ close to that standard.
   Documented by [`SOTHIC_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/SOTHIC_BACKEND_STANDARD.md)
 - [`eclipse.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/eclipse.py)
   Documented by [`ECLIPSE_MODEL_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/ECLIPSE_MODEL_STANDARD.md)
+- [`variable_stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/variable_stars.py)
+  Documented by [`VARIABLE_STARS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/VARIABLE_STARS_BACKEND_STANDARD.md).
+  All twelve SCP phases complete. Added: `VarStarPolicy`, `StarPhaseState`,
+  `StarConditionProfile`, `CatalogProfile`, `StarStatePair`, and
+  `validate_variable_star_catalog()`. 97 tests passing.
 - timing doctrine cluster: [`timelords.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/timelords.py) and [`dasha.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/dasha.py)
   Documented by [`TIMELORDS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/TIMELORDS_BACKEND_STANDARD.md)
-  and [`DASHA_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/DASHA_BACKEND_STANDARD.md)
+  and [`DASHA_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/DASHA_BACKEND_STANDARD.md).
+  All twelve SCP phases complete. Phase 12 (Public API Curation) added curated
+  `__all__` lists to both modules (35 names in `timelords.py`, 23 in `dasha.py`)
+  and expanded the `moira` package surface to expose the full constitutional
+  surface of the timing cluster (58 names total).
 
 ### Self-constitutionalized (architecture freeze + validation codex in module)
 
@@ -104,24 +113,18 @@ close to that standard.
 
 ## 3. Highest-Value Next SCP Targets
 
-### Tier 1 - Best next candidates
+The timing doctrine cluster (`timelords.py`, `dasha.py`) and `variable_stars.py`
+have all been fully constitutionalized. See §2 (Fully constitutionalized) and the
+recommendation order update in §6.
 
-The timing doctrine cluster (`timelords.py` and `dasha.py`) has been fully
-constitutionalized through all twelve SCP phases. See §2 (Fully constitutionalized)
-and the recommendation order update in §6.
+The remaining medium-value candidates are `gaia.py`, which may be best pulled into
+the existing star cluster standard rather than constitutionalized independently.
 
 ---
 
 ## 4. Medium-Value SCP Targets
 
-### 4.1 Variable Stars
-
-- [`variable_stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/variable_stars.py)
-
-Good test surface and real doctrine, but lower priority than the major timing
-cluster now that the parent unified-star boundary is constitutionalized.
-
-### 4.2 Gaia
+### 4.1 Gaia
 
 - [`gaia.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/gaia.py)
 
@@ -173,8 +176,7 @@ constitution rather than as standalone constitutional programs.
 If the goal is to continue constitutionalizing Moira in dependency-respecting
 order, the best next sequence is:
 
-1. [`variable_stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/variable_stars.py)
-2. supporting expansion around the star cluster, including [`gaia.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/gaia.py) where justified by the parent subsystem boundary
+1. [`gaia.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/gaia.py) — only where the parent unified-star boundary justifies pulling it into a standalone constitutional target; otherwise handled as a supporting expansion to the existing `STARS_BACKEND_STANDARD.md`
 
 Rationale for changes from the previous scan:
 
@@ -191,9 +193,13 @@ Rationale for changes from the previous scan:
 - the timing doctrine cluster (`timelords.py` and `dasha.py`) is now fully
   constitutionalized through all twelve SCP phases, documented by
   [`TIMELORDS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/TIMELORDS_BACKEND_STANDARD.md)
-  and [`DASHA_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/DASHA_BACKEND_STANDARD.md)
-- the highest-value unresolved candidates are now variable-star work and
-  possible Gaia follow-on hardening
+  and [`DASHA_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/DASHA_BACKEND_STANDARD.md);
+  Phase 12 added curated `__all__` lists and expanded the `moira` package
+  surface to expose 58 constitutional names from the timing cluster
+- `variable_stars.py` is now fully constitutionalized through all twelve SCP
+  phases, documented by
+  [`VARIABLE_STARS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/VARIABLE_STARS_BACKEND_STANDARD.md)
+- the only remaining medium-value candidate is `gaia.py`
 
 ---
 

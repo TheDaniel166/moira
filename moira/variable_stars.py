@@ -36,13 +36,21 @@ External dependency assumptions:
     - No external catalog files required.
 
 Public surface / exports:
-    VarType, VariableStar
-    phase_at(), magnitude_at()
-    next_minimum(), next_maximum()
-    minima_in_range(), maxima_in_range()
-    malefic_intensity(), benefic_strength(), is_in_eclipse()
-    variable_star(), list_variable_stars(), variable_stars_by_type()
-    algol_phase(), algol_magnitude(), algol_next_minimum(), algol_is_eclipsed()
+    VarType, VariableStar,
+    VarStarPolicy, DEFAULT_VAR_STAR_POLICY,
+    StarPhaseState, star_phase_state,
+    StarConditionProfile, star_condition_profile,
+    CatalogProfile, catalog_profile,
+    StarStatePair, star_state_pair,
+    phase_at, magnitude_at,
+    next_minimum, next_maximum,
+    minima_in_range, maxima_in_range,
+    malefic_intensity, benefic_strength, is_in_eclipse,
+    variable_star, list_variable_stars, variable_stars_by_type,
+    algol_phase, algol_magnitude, algol_next_minimum, algol_is_eclipsed,
+    validate_variable_star_catalog
+
+SCP status: Fully constitutionalized through Phase 12.
 
 Classes of variable star handled
 ---------------------------------
@@ -85,6 +93,58 @@ from dataclasses import dataclass, field
 from collections.abc import Iterator
 
 from .constants import DEG2RAD, RAD2DEG
+
+
+# ---------------------------------------------------------------------------
+# Phase 12 — Public API Curation
+# ---------------------------------------------------------------------------
+
+__all__ = [
+    # Classification namespace
+    "VarType",
+    # Truth-preservation vessel
+    "VariableStar",
+    # Policy surface
+    "VarStarPolicy",
+    "DEFAULT_VAR_STAR_POLICY",
+    # Relational vessel
+    "StarPhaseState",
+    # Condition vessel
+    "StarConditionProfile",
+    # Aggregate vessel
+    "CatalogProfile",
+    # Network vessel
+    "StarStatePair",
+    # Core computation
+    "phase_at",
+    "magnitude_at",
+    "next_minimum",
+    "next_maximum",
+    "minima_in_range",
+    "maxima_in_range",
+    "malefic_intensity",
+    "benefic_strength",
+    "is_in_eclipse",
+    # Catalog access
+    "variable_star",
+    "list_variable_stars",
+    "variable_stars_by_type",
+    # Algol convenience
+    "algol_phase",
+    "algol_magnitude",
+    "algol_next_minimum",
+    "algol_is_eclipsed",
+    # Relational function
+    "star_phase_state",
+    # Condition function
+    "star_condition_profile",
+    # Aggregate function
+    "catalog_profile",
+    # Network function
+    "star_state_pair",
+    # Hardening
+    "validate_variable_star_catalog",
+]
 
 # ---------------------------------------------------------------------------
 # Variable type identifiers
@@ -247,6 +307,76 @@ class VariableStar:
     eclipse_width:     float  # primary eclipse half-width in phase units (EA only)
     classical_quality: str    # "malefic", "benefic", "neutral", "mixed"
     note:              str    # astrological and astronomical notes
+
+    # ---- Phase 3: Inspectability ----
+
+    @property
+    def amplitude(self) -> float:
+        """Brightness range in magnitudes (mag_min − mag_max). Larger = more variable."""
+        return self.mag_min - self.mag_max
+
+    @property
+    def is_eclipsing(self) -> bool:
+        """True for EA, EB, and EW eclipsing binary types."""
+        return self.var_type in (
+            VarType.ECLIPSING_ALGOL, VarType.ECLIPSING_BETA, VarType.ECLIPSING_W_UMA,
+        )
+
+    @property
+    def is_pulsating(self) -> bool:
+        """True for DCEP (Cepheid) and RRAB (RR Lyrae) pulsating types."""
+        return self.var_type in (VarType.CEPHEID, VarType.RR_LYRAE)
+
+    @property
+    def is_long_period(self) -> bool:
+        """True for Mira (M) and semi-regular (SRc, SRb) long-period types."""
+        return self.var_type in (VarType.MIRA, VarType.SEMI_REG_SG, VarType.SEMI_REG)
+
+    @property
+    def is_irregular(self) -> bool:
+        """True when period_days <= 0, indicating an irregular or unknown period."""
+        return self.period_days <= 0.0
+
+    @property
+    def is_malefic(self) -> bool:
+        """True when classical_quality is 'malefic'."""
+        return self.classical_quality == "malefic"
+
+    @property
+    def is_benefic(self) -> bool:
+        """True when classical_quality is 'benefic'."""
+        return self.classical_quality == "benefic"
+
+    @property
+    def type_class(self) -> str:
+        """High-level variability class: 'eclipsing', 'pulsating', or 'long_period'."""
+        if self.is_eclipsing:
+            return "eclipsing"
+        if self.is_pulsating:
+            return "pulsating"
+        return "long_period"
+
+
+# ---------------------------------------------------------------------------
+# Phase 4 — Policy Surface
+# ---------------------------------------------------------------------------
+
+_DEFAULT_ECLIPSE_THRESHOLD: float = 0.05  # magnitudes above mag_max to count as in-eclipse
+
+
+@dataclass(frozen=True, slots=True)
+class VarStarPolicy:
+    """
+    Doctrinal policy surface for the Variable Star Oracle.
+
+    eclipse_threshold — magnitudes above mag_max required to classify a star
+                        as currently in eclipse (default: 0.05 mag).
+                        Governs is_in_eclipse() and star_phase_state().
+    """
+    eclipse_threshold: float = _DEFAULT_ECLIPSE_THRESHOLD
+
+
+DEFAULT_VAR_STAR_POLICY = VarStarPolicy()
 
 
 # ---------------------------------------------------------------------------
@@ -1000,3 +1130,453 @@ def algol_next_minimum(jd_start: float) -> float:
 def algol_is_eclipsed(jd: float, threshold: float = 0.05) -> bool:
     """Return True if Algol is currently within its primary eclipse."""
     return is_in_eclipse(_CATALOG["algol"], jd, threshold)
+
+
+# ---------------------------------------------------------------------------
+# Phase 5 — Relational Formalization / Phase 6 — Relational Hardening
+# ---------------------------------------------------------------------------
+
+@dataclass(slots=True)
+class StarPhaseState:
+    """
+    Relational vessel: the full computed state of a variable star at a given JD.
+
+    Previously callers had to call phase_at(), magnitude_at(),
+    malefic_intensity(), benefic_strength(), and is_in_eclipse() separately.
+    StarPhaseState makes the complete instantaneous state available as a
+    single named, inspectable, hardened unit.
+
+    Fields
+    ------
+    star          — the catalog record (VariableStar)
+    jd            — Julian Day of evaluation
+    phase         — phase in [0.0, 1.0)
+    magnitude     — estimated V magnitude at jd
+    malefic_score — malefic intensity in [0.0, 1.0]
+    benefic_score — benefic strength in [0.0, 1.0]
+    in_eclipse    — True if this is an eclipsing star currently in eclipse
+    """
+    star:          VariableStar
+    jd:            float
+    phase:         float
+    magnitude:     float
+    malefic_score: float
+    benefic_score: float
+    in_eclipse:    bool
+
+    def __post_init__(self) -> None:
+        if not math.isfinite(self.jd):
+            raise ValueError("StarPhaseState.jd must be finite")
+        if not (0.0 <= self.phase < 1.0):
+            raise ValueError(
+                f"StarPhaseState.phase must be in [0.0, 1.0), got {self.phase}"
+            )
+        if not (0.0 <= self.malefic_score <= 1.0):
+            raise ValueError(
+                f"StarPhaseState.malefic_score must be in [0.0, 1.0], "
+                f"got {self.malefic_score}"
+            )
+        if not (0.0 <= self.benefic_score <= 1.0):
+            raise ValueError(
+                f"StarPhaseState.benefic_score must be in [0.0, 1.0], "
+                f"got {self.benefic_score}"
+            )
+
+    @property
+    def is_near_maximum(self) -> bool:
+        """True when phase < 0.05 (within 5% of maximum for pulsating/long-period types)."""
+        return self.phase < 0.05
+
+    @property
+    def is_near_minimum(self) -> bool:
+        """True when phase is within 0.05 of 0.5 (near mid-cycle minimum)."""
+        return 0.45 <= self.phase <= 0.55
+
+
+def star_phase_state(
+    star: VariableStar,
+    jd: float,
+    *,
+    policy: VarStarPolicy | None = None,
+) -> StarPhaseState:
+    """
+    Compute the full phase state of a variable star at a Julian Day.
+
+    Parameters
+    ----------
+    star   : a VariableStar catalog record
+    jd     : Julian Day of evaluation (must be finite)
+    policy : VarStarPolicy governing the eclipse threshold;
+             None uses DEFAULT_VAR_STAR_POLICY
+
+    Returns
+    -------
+    StarPhaseState with all computed values for star at jd
+
+    Raises
+    ------
+    ValueError
+        If jd is not finite.
+    """
+    pol = policy if policy is not None else DEFAULT_VAR_STAR_POLICY
+    if not math.isfinite(jd):
+        raise ValueError("star_phase_state: jd must be finite")
+    return StarPhaseState(
+        star          = star,
+        jd            = jd,
+        phase         = phase_at(star, jd),
+        magnitude     = magnitude_at(star, jd),
+        malefic_score = malefic_intensity(star, jd),
+        benefic_score = benefic_strength(star, jd),
+        in_eclipse    = is_in_eclipse(star, jd, pol.eclipse_threshold),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Phase 7 — Integrated Local Condition
+# ---------------------------------------------------------------------------
+
+@dataclass(slots=True)
+class StarConditionProfile:
+    """
+    Integrated condition profile for a variable star at a given JD.
+
+    Assembles all preserved, classified, inspectable, and relational truth
+    from Phases 1–6 into one coherent per-star-per-moment vessel. Callers
+    do not need to reach across VariableStar fields, VarType constants, and
+    computed state separately to understand the full condition of a star.
+
+    Fields
+    ------
+    name              — traditional star name
+    designation       — GCVS / Bayer designation
+    var_type          — VarType constant
+    type_class        — 'eclipsing', 'pulsating', or 'long_period'
+    classical_quality — 'malefic', 'benefic', 'neutral', or 'mixed'
+    is_malefic        — True when classical_quality == 'malefic'
+    is_benefic        — True when classical_quality == 'benefic'
+    amplitude         — brightness range in magnitudes (mag_min − mag_max)
+    period_days       — mean period in days
+    is_irregular      — True when period_days <= 0
+    phase             — current phase in [0.0, 1.0)
+    magnitude         — current estimated V magnitude
+    malefic_score     — current malefic intensity in [0.0, 1.0]
+    benefic_score     — current benefic strength in [0.0, 1.0]
+    in_eclipse        — True if eclipsing star currently in eclipse
+    """
+    name:              str
+    designation:       str
+    var_type:          str
+    type_class:        str
+    classical_quality: str
+    is_malefic:        bool
+    is_benefic:        bool
+    amplitude:         float
+    period_days:       float
+    is_irregular:      bool
+    phase:             float
+    magnitude:         float
+    malefic_score:     float
+    benefic_score:     float
+    in_eclipse:        bool
+
+
+def star_condition_profile(
+    star: VariableStar,
+    jd: float,
+    *,
+    policy: VarStarPolicy | None = None,
+) -> StarConditionProfile:
+    """
+    Build a StarConditionProfile from a VariableStar at a given JD.
+
+    Integrates all Phase 1–6 truth about the star at the given moment.
+    Deterministic; no side effects.
+
+    Parameters
+    ----------
+    star   : a VariableStar catalog record
+    jd     : Julian Day of evaluation
+    policy : VarStarPolicy; None uses DEFAULT_VAR_STAR_POLICY
+
+    Returns
+    -------
+    StarConditionProfile
+    """
+    state = star_phase_state(star, jd, policy=policy)
+    return StarConditionProfile(
+        name              = star.name,
+        designation       = star.designation,
+        var_type          = star.var_type,
+        type_class        = star.type_class,
+        classical_quality = star.classical_quality,
+        is_malefic        = star.is_malefic,
+        is_benefic        = star.is_benefic,
+        amplitude         = star.amplitude,
+        period_days       = star.period_days,
+        is_irregular      = star.is_irregular,
+        phase             = state.phase,
+        magnitude         = state.magnitude,
+        malefic_score     = state.malefic_score,
+        benefic_score     = state.benefic_score,
+        in_eclipse        = state.in_eclipse,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Phase 8 — Aggregate Intelligence
+# ---------------------------------------------------------------------------
+
+@dataclass(slots=True)
+class CatalogProfile:
+    """
+    Aggregate profile of the full variable star catalog at a given JD.
+
+    Derived from StarConditionProfile vessels (Phase 7). Summarises the
+    structural composition of the catalog and the instantaneous state of
+    all registered stars at a given moment.
+
+    The profiles tuple contains one StarConditionProfile per catalog star
+    in the order returned by list_variable_stars().
+
+    Fields
+    ------
+    profiles             — condition profiles for all catalog stars
+    star_count           — total number of registered stars
+    eclipsing_count      — EA + EB + EW stars
+    pulsating_count      — DCEP + RRAB stars
+    long_period_count    — M + SRc + SRb stars
+    malefic_count        — stars with classical_quality == 'malefic'
+    benefic_count        — stars with classical_quality == 'benefic'
+    neutral_count        — stars with classical_quality == 'neutral'
+    mixed_count          — stars with classical_quality == 'mixed'
+    eclipse_active_count — eclipsing stars currently in eclipse at the evaluated JD
+    """
+    profiles:             tuple[StarConditionProfile, ...]
+    star_count:           int
+    eclipsing_count:      int
+    pulsating_count:      int
+    long_period_count:    int
+    malefic_count:        int
+    benefic_count:        int
+    neutral_count:        int
+    mixed_count:          int
+    eclipse_active_count: int
+
+    def __post_init__(self) -> None:
+        if self.star_count != len(self.profiles):
+            raise ValueError(
+                "CatalogProfile.star_count must equal len(profiles)"
+            )
+        if (self.eclipsing_count + self.pulsating_count + self.long_period_count
+                != self.star_count):
+            raise ValueError(
+                "CatalogProfile type counts (eclipsing+pulsating+long_period) "
+                "must sum to star_count"
+            )
+        if (self.malefic_count + self.benefic_count + self.neutral_count
+                + self.mixed_count != self.star_count):
+            raise ValueError(
+                "CatalogProfile quality counts must sum to star_count"
+            )
+
+    @property
+    def profile_count(self) -> int:
+        """Total number of profiles in this aggregate."""
+        return len(self.profiles)
+
+    @property
+    def has_active_eclipses(self) -> bool:
+        """True when at least one eclipsing star is currently in eclipse."""
+        return self.eclipse_active_count > 0
+
+
+def catalog_profile(
+    jd: float,
+    *,
+    policy: VarStarPolicy | None = None,
+) -> CatalogProfile:
+    """
+    Build a CatalogProfile for all registered variable stars at a given JD.
+
+    Parameters
+    ----------
+    jd     : Julian Day of evaluation
+    policy : VarStarPolicy; None uses DEFAULT_VAR_STAR_POLICY
+
+    Returns
+    -------
+    CatalogProfile summarising all catalog stars at jd
+    """
+    names = list_variable_stars()
+    profiles = tuple(
+        star_condition_profile(variable_star(n), jd, policy=policy)
+        for n in names
+    )
+    return CatalogProfile(
+        profiles             = profiles,
+        star_count           = len(profiles),
+        eclipsing_count      = sum(1 for p in profiles if p.type_class == "eclipsing"),
+        pulsating_count      = sum(1 for p in profiles if p.type_class == "pulsating"),
+        long_period_count    = sum(1 for p in profiles if p.type_class == "long_period"),
+        malefic_count        = sum(1 for p in profiles if p.is_malefic),
+        benefic_count        = sum(1 for p in profiles if p.is_benefic),
+        neutral_count        = sum(1 for p in profiles if p.classical_quality == "neutral"),
+        mixed_count          = sum(1 for p in profiles if p.classical_quality == "mixed"),
+        eclipse_active_count = sum(1 for p in profiles if p.in_eclipse),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Phase 9 — Network Intelligence
+# ---------------------------------------------------------------------------
+
+@dataclass(slots=True)
+class StarStatePair:
+    """
+    Network node: the structural relationship between two variable star
+    condition profiles at the same Julian Day.
+
+    Projects two Phase 7 condition profiles into an explicit structural
+    edge. Makes the "two stars simultaneously" relationship available as a
+    named, inspectable unit — are they reinforcing or conflicting, both
+    malefic, both in eclipse?
+
+    Fields
+    ------
+    primary   — condition profile of the first star
+    secondary — condition profile of the second star
+    """
+    primary:   StarConditionProfile
+    secondary: StarConditionProfile
+
+    @property
+    def is_same_type_class(self) -> bool:
+        """True when both stars share the same type class."""
+        return self.primary.type_class == self.secondary.type_class
+
+    @property
+    def is_same_quality(self) -> bool:
+        """True when both stars share the same classical_quality designation."""
+        return self.primary.classical_quality == self.secondary.classical_quality
+
+    @property
+    def both_malefic(self) -> bool:
+        """True when both stars have classical_quality == 'malefic'."""
+        return self.primary.is_malefic and self.secondary.is_malefic
+
+    @property
+    def both_in_eclipse(self) -> bool:
+        """True when both stars are eclipsing stars currently in eclipse."""
+        return self.primary.in_eclipse and self.secondary.in_eclipse
+
+    @property
+    def quality_conflict(self) -> bool:
+        """True when one star is malefic and the other is benefic."""
+        return (
+            (self.primary.is_malefic and self.secondary.is_benefic)
+            or (self.primary.is_benefic and self.secondary.is_malefic)
+        )
+
+
+def star_state_pair(
+    star_a: VariableStar,
+    star_b: VariableStar,
+    jd: float,
+    *,
+    policy: VarStarPolicy | None = None,
+) -> StarStatePair:
+    """
+    Build a StarStatePair from two VariableStar records at a given JD.
+
+    Parameters
+    ----------
+    star_a : first variable star
+    star_b : second variable star
+    jd     : Julian Day of evaluation
+    policy : VarStarPolicy; None uses DEFAULT_VAR_STAR_POLICY
+
+    Returns
+    -------
+    StarStatePair representing the structural relationship between the two states
+    """
+    return StarStatePair(
+        primary   = star_condition_profile(star_a, jd, policy=policy),
+        secondary = star_condition_profile(star_b, jd, policy=policy),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Phase 10 — Full-Subsystem Hardening
+# ---------------------------------------------------------------------------
+
+def validate_variable_star_catalog() -> None:
+    """
+    Verify that all registered catalog entries satisfy self-consistency invariants.
+
+    Checks for every VariableStar in the catalog:
+    - mag_max < mag_min (maximum brightness number must be smaller)
+    - amplitude > 0 (all catalog stars are genuinely variable)
+    - period_days > 0 (all catalog stars have a known period)
+    - epoch_jd > 0 (valid Julian Day reference)
+    - eclipse_width > 0 for EA (ECLIPSING_ALGOL) stars
+    - eclipse_width == 0.0 for non-eclipsing stars
+    - classical_quality is one of: 'malefic', 'benefic', 'neutral', 'mixed'
+    - var_type is a recognized VarType constant
+
+    Raises
+    ------
+    ValueError
+        On the first invariant violation found. Passes silently when all
+        invariants hold.
+    """
+    _VALID_QUALITIES = frozenset({"malefic", "benefic", "neutral", "mixed"})
+    _VALID_TYPES = frozenset({
+        VarType.ECLIPSING_ALGOL, VarType.ECLIPSING_BETA, VarType.ECLIPSING_W_UMA,
+        VarType.CEPHEID, VarType.RR_LYRAE, VarType.MIRA,
+        VarType.SEMI_REG_SG, VarType.SEMI_REG,
+    })
+    seen: set[str] = set()
+    for star in _CATALOG.values():
+        if star.name in seen:
+            continue
+        seen.add(star.name)
+        if star.mag_max >= star.mag_min:
+            raise ValueError(
+                f"validate_variable_star_catalog: '{star.name}' mag_max "
+                f"({star.mag_max}) >= mag_min ({star.mag_min})"
+            )
+        if star.amplitude <= 0.0:
+            raise ValueError(
+                f"validate_variable_star_catalog: '{star.name}' amplitude <= 0"
+            )
+        if star.period_days <= 0.0:
+            raise ValueError(
+                f"validate_variable_star_catalog: '{star.name}' period_days <= 0"
+            )
+        if star.epoch_jd <= 0.0:
+            raise ValueError(
+                f"validate_variable_star_catalog: '{star.name}' epoch_jd <= 0"
+            )
+        if star.var_type == VarType.ECLIPSING_ALGOL and star.eclipse_width <= 0.0:
+            raise ValueError(
+                f"validate_variable_star_catalog: EA star '{star.name}' "
+                f"has eclipse_width <= 0"
+            )
+        if (star.var_type not in (
+            VarType.ECLIPSING_ALGOL, VarType.ECLIPSING_BETA, VarType.ECLIPSING_W_UMA
+        ) and star.eclipse_width != 0.0):
+            raise ValueError(
+                f"validate_variable_star_catalog: non-eclipsing star '{star.name}' "
+                f"has non-zero eclipse_width ({star.eclipse_width})"
+            )
+        if star.classical_quality not in _VALID_QUALITIES:
+            raise ValueError(
+                f"validate_variable_star_catalog: '{star.name}' has unknown "
+                f"classical_quality {star.classical_quality!r}"
+            )
+        if star.var_type not in _VALID_TYPES:
+            raise ValueError(
+                f"validate_variable_star_catalog: '{star.name}' has unknown "
+                f"var_type {star.var_type!r}"
+            )

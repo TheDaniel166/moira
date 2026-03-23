@@ -6,10 +6,40 @@ build-backend = "setuptools.build_meta"
 name = "moira"
 version = "0.1.0"
 description = "Pure Python ephemeris and astrology engine built on JPL DE441 and SPK kernels."
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "Moira contributors" },
+]
+keywords = [
+    "astronomy",
+    "astrology",
+    "ephemeris",
+    "jpl",
+    "spk",
+    "sidereal",
+    "houses",
+    "transits",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Astronomy",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 requires-python = ">=3.14,<3.15"
 dependencies = [
     "jplephem>=2.24",
 ]
+
+[project.urls]
+Homepage = "https://github.com/TheDaniel166/moira"
+Repository = "https://github.com/TheDaniel166/moira"
+Issues = "https://github.com/TheDaniel166/moira/issues"
 
 [project.optional-dependencies]
 dev = [
@@ -19,6 +49,16 @@ dev = [
     "pyyaml>=6.0",
     "hypothesis>=6.100",
 ]
+
+[tool.setuptools]
+packages = ["moira", "moira.compat", "moira.compat.nasa", "moira.constellations"]
+
+[tool.setuptools.package-data]
+moira = [
+    "data/*.txt",
+]
+
+license-files = ["LICENSE"]
 
 [tool.pytest.ini_options]
 testpaths    = ["tests"]
