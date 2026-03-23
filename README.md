@@ -9,7 +9,8 @@ Moira is, to our knowledge, the first open-source Python astrology engine to pub
 ## Before You Install
 
 - Python `3.14` is required. This is intentional.
-- The published package does not include large JPL kernel files.
+- The published package includes small bundled kernels for `centaurs.bsp` and `minor_bodies.bsp`.
+- Large kernels such as `de441.bsp` are not bundled.
 - Import works without kernels, but many core calculations require local kernel files and will fail at runtime if those files are missing.
 - The repository contains an exploratory desktop UI under `ui/`, but that UI is not part of the published package.
 
@@ -120,17 +121,24 @@ py -3.14 -m venv .venv
 
 ## Kernel Files
 
-Large ephemeris files are not committed to the repository and are not shipped in the PyPI distribution. Place them in `kernels/`:
+Moira can use a mix of bundled and external kernel files.
+
+Bundled with the package:
+
+| File | Contents |
+|---|---|
+| `centaurs.bsp` | Centaur body SPK kernel |
+| `minor_bodies.bsp` | Small packaged minor-body kernel |
+
+Still expected externally in `kernels/`:
 
 | File | Contents |
 |---|---|
 | `kernels/de441.bsp` | JPL planetary ephemeris |
 | `kernels/asteroids.bsp` | Numbered asteroid ephemerides |
-| `kernels/centaurs.bsp` | Centaur body SPK kernels |
 | `kernels/sb441-n373s.bsp` | Small body supplement (TNOs, large asteroids) |
-| `kernels/minor_bodies.bsp` | Additional minor bodies |
 
-Available from JPL Horizons and the JPL FTP server. Excluded from version control due to size.
+The external kernels are available from JPL Horizons and the JPL FTP server. They are excluded from version control due to size.
 
 Without these files, SPK-backed calculations will fail at runtime.
 

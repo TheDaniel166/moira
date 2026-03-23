@@ -327,10 +327,27 @@ _segment_classes[13] = _Type13Segment
 # Default kernel paths
 # ---------------------------------------------------------------------------
 
-_PRIMARY_KERNEL_PATH   = Path(__file__).parent.parent / "kernels" / "asteroids.bsp"
-_SECONDARY_KERNEL_PATH = Path(__file__).parent.parent / "kernels" / "sb441-n373s.bsp"
-_TERTIARY_KERNEL_PATH  = Path(__file__).parent.parent / "kernels" / "centaurs.bsp"
-_QUATERNARY_KERNEL_PATH = Path(__file__).parent.parent / "kernels" / "minor_bodies.bsp"
+_REPO_KERNELS_DIR = Path(__file__).parent.parent / "kernels"
+_PACKAGE_KERNELS_DIR = Path(__file__).parent / "kernels"
+
+
+def _first_existing_path(*paths: Path) -> Path:
+    for path in paths:
+        if path.exists():
+            return path
+    return paths[0]
+
+
+_PRIMARY_KERNEL_PATH = _REPO_KERNELS_DIR / "asteroids.bsp"
+_SECONDARY_KERNEL_PATH = _REPO_KERNELS_DIR / "sb441-n373s.bsp"
+_TERTIARY_KERNEL_PATH = _first_existing_path(
+    _PACKAGE_KERNELS_DIR / "centaurs.bsp",
+    _REPO_KERNELS_DIR / "centaurs.bsp",
+)
+_QUATERNARY_KERNEL_PATH = _first_existing_path(
+    _PACKAGE_KERNELS_DIR / "minor_bodies.bsp",
+    _REPO_KERNELS_DIR / "minor_bodies.bsp",
+)
 
 # Speed of light in km/day
 _C = 299792.458 * 86400.0

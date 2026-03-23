@@ -52,13 +52,13 @@ dev = [
 
 [tool.setuptools]
 packages = ["moira", "moira.compat", "moira.compat.nasa", "moira.constellations"]
+license-files = ["LICENSE"]
 
 [tool.setuptools.package-data]
 moira = [
     "data/*.txt",
+    "kernels/*.bsp",
 ]
-
-license-files = ["LICENSE"]
 
 [tool.pytest.ini_options]
 testpaths    = ["tests"]
