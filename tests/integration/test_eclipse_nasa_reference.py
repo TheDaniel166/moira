@@ -112,3 +112,38 @@ def test_nasa_eclipse_search_recovers_representative_ancient_and_future_cases() 
             )
 
     assert not failures, "NASA search mismatches:\n" + "\n".join(failures[:20])
+
+
+def test_ancient_lunar_total_native_search_stays_within_documented_residual_and_beats_canon() -> None:
+    """
+    Diagnose and lock the current ancient worst-case lunar search behavior.
+
+    For the BCE total-lunar search case in the NASA fixture:
+    - the native DE441-centric search must remain within the documented
+      sub-minute residual envelope
+    - the native path must outperform the catalog-facing canon timing path
+
+    This keeps the remaining open item transparent: the residual is real, but
+    the current native model is already the better of the two available paths
+    for this ancient case.
+    """
+    calc = EclipseCalculator()
+    fixture = _load_fixture()
+    row = next(case for case in fixture["search_cases"]["lunar"] if case["label"] == "ancient_total")
+    expected = float(row["expected_ut_jd"])
+    kind = str(row["kind"])
+    seed = float(row["seed_jd"])
+
+    native = calc.next_lunar_eclipse(seed, kind=kind)
+    canon = calc.next_lunar_eclipse_canon(seed, kind=kind)
+
+    native_error_seconds = abs(native.jd_ut - expected) * 86400.0
+    canon_error_seconds = abs(canon.jd_ut - expected) * 86400.0
+
+    assert native_error_seconds <= 60.0, (
+        f"ancient_total native residual {native_error_seconds:.3f}s exceeds 60s envelope"
+    )
+    assert native_error_seconds < canon_error_seconds, (
+        f"ancient_total native residual {native_error_seconds:.3f}s should remain "
+        f"better than canon residual {canon_error_seconds:.3f}s"
+    )

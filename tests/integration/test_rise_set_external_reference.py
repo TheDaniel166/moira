@@ -79,12 +79,16 @@ def _load_swiss_rise_set_cases() -> list[dict[str, object]]:
 @pytest.mark.parametrize("case", _load_swiss_rise_set_cases())
 def test_rise_set_and_transit_match_swiss_reference(case: dict[str, object]) -> None:
     """
-    Validate rise/set/transit timing against the offline Swiss fixture corpus.
+    Legacy regression cross-check against the offline Swiss fixture corpus.
 
     The cached section covers:
     - Regulus (fixed star)
     - Venus
     - rise, set, upper transit, lower transit
+
+    This test is retained as a regression/sanity suite. The primary truth
+    oracle for rise/set/transit timing is the Horizons-based fixture suite,
+    with published tables used as supplemental spot checks where available.
     """
     results = find_phenomena(
         str(case["body"]),

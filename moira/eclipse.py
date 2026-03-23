@@ -764,6 +764,20 @@ class EclipseCalculator:
         self._lunar_search_cache: dict[tuple[float, bool, int], dict[str, EclipseEvent]] = {}
         self._solar_search_cache: dict[tuple[float, bool, int], dict[str, EclipseEvent]] = {}
 
+    def _jd_tt_from_ut(
+        self,
+        jd_ut: float,
+        *,
+        delta_t_mode: str = "native",
+    ) -> float:
+        year, month, *_ = _approx_year(jd_ut)
+        year_hint = decimal_year(year, month)
+        if delta_t_mode == "native":
+            return ut_to_tt(jd_ut, year_hint)
+        if delta_t_mode == "nasa_canon":
+            return ut_to_tt_nasa_canon(jd_ut, year_hint)
+        raise ValueError(f"Unsupported delta_t_mode: {delta_t_mode!r}")
+
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
@@ -790,10 +804,10 @@ class EclipseCalculator:
         jd: float,
         *,
         retarded_moon: bool = False,
+        delta_t_mode: str = "native",
     ) -> EclipseData:
         """Internal eclipse calculation with selectable lunar event geometry."""
-        year, month, *_ = _approx_year(jd)
-        jd_tt = ut_to_tt(jd, decimal_year(year, month))
+        jd_tt = self._jd_tt_from_ut(jd, delta_t_mode=delta_t_mode)
 
         sun_xyz = _geocentric(Body.SUN, jd_tt, self._reader)
         if retarded_moon:
@@ -893,6 +907,7 @@ class EclipseCalculator:
         jd_ut: float,
         *,
         retarded_moon: bool = True,
+        delta_t_mode: str = "native",
     ) -> float:
         """
         Geometric distance from the Moon's center to the Earth's shadow axis.
@@ -903,8 +918,7 @@ class EclipseCalculator:
         This native objective is intentionally not redefined to match a catalog
         compatibility surface.
         """
-        year, month, *_ = _approx_year(jd_ut)
-        jd_tt = ut_to_tt(jd_ut, decimal_year(year, month))
+        jd_tt = self._jd_tt_from_ut(jd_ut, delta_t_mode=delta_t_mode)
         earth_ssb = _earth_barycentric(jd_tt, self._reader)
         # The shadow axis is set by the retarded direction to the Sun, not by
         # observer-facing apparent corrections and not by the instantaneous
@@ -922,13 +936,20 @@ class EclipseCalculator:
         perp = [moon_xyz[i] - axis_proj * axis_unit[i] for i in range(3)]
         return math.sqrt(sum(v * v for v in perp))
 
-    def _refine_lunar_maximum_for_kind(self, center_jd: float, kind: str) -> float:
+    def _refine_lunar_maximum_for_kind(
+        self,
+        center_jd: float,
+        kind: str,
+        *,
+        delta_t_mode: str = "native",
+    ) -> float:
         """Refine the lunar greatest-eclipse JD for the given eclipse kind."""
         use_retarded_moon = kind != "penumbral"
         return _refine_minimum(
             lambda jd: self._lunar_shadow_axis_distance_km(
                 jd,
                 retarded_moon=use_retarded_moon,
+                delta_t_mode=delta_t_mode,
             ),
             center_jd,
             window_days=0.125,
@@ -1024,6 +1045,7 @@ class EclipseCalculator:
         jd_ut: float,
         *,
         retarded_moon: bool,
+        delta_t_mode: str = "native",
     ) -> tuple[float, float, float, float, float]:
         """
         Return native lunar-event geometry in physical units at UT.
@@ -1032,8 +1054,7 @@ class EclipseCalculator:
         so native contact solving does not mix retarded and geometric lunar
         quantities in one event model.
         """
-        year, month, *_ = _approx_year(jd_ut)
-        jd_tt = ut_to_tt(jd_ut, decimal_year(year, month))
+        jd_tt = self._jd_tt_from_ut(jd_ut, delta_t_mode=delta_t_mode)
         (
             axis_km,
             moon_radius_km,

@@ -76,9 +76,20 @@ def _signed_angle_diff(value: float, target: float) -> float:
     return ((value - target + 180.0) % 360.0) - 180.0
 
 
-def _hour_angle_error(jd_ut: float, body_name: str, lon: float, target_ha: float = 0.0) -> float:
+def _hour_angle_error(
+    jd_ut: float,
+    body_name: str,
+    lat: float,
+    lon: float,
+    target_ha: float = 0.0,
+) -> float:
     """Signed hour-angle error in degrees relative to the requested meridian target."""
-    ra, _ = _body_ra_dec(jd_ut, body_name)
+    try:
+        from .planets import sky_position_at
+
+        ra = sky_position_at(body_name, jd_ut, lat, lon).right_ascension
+    except Exception:
+        ra, _ = _body_ra_dec(jd_ut, body_name)
     lst = _lst(jd_ut, lon)
     ha = (lst - ra) % 360.0
     return _signed_angle_diff(ha, target_ha)
@@ -102,19 +113,24 @@ def _refine_bisection(func, t0: float, t1: float, iterations: int = 24) -> float
 
 def _altitude(jd_ut: float, lat: float, lon: float, body_name: str) -> float:
     """Apparent altitude of a body at a given time and location (degrees)."""
-    ra, dec = _body_ra_dec(jd_ut, body_name)
-    lst = _lst(jd_ut, lon)
-    ha = _signed_angle_diff(lst - ra, 0.0)
+    try:
+        from .planets import sky_position_at
 
-    lat_r = math.radians(lat)
-    dec_r = math.radians(dec)
-    ha_r = math.radians(ha)
+        return sky_position_at(body_name, jd_ut, lat, lon).altitude
+    except Exception:
+        ra, dec = _body_ra_dec(jd_ut, body_name)
+        lst = _lst(jd_ut, lon)
+        ha = _signed_angle_diff(lst - ra, 0.0)
 
-    sin_alt = (
-        math.sin(lat_r) * math.sin(dec_r)
-        + math.cos(lat_r) * math.cos(dec_r) * math.cos(ha_r)
-    )
-    return math.degrees(math.asin(max(-1.0, min(1.0, sin_alt))))
+        lat_r = math.radians(lat)
+        dec_r = math.radians(dec)
+        ha_r = math.radians(ha)
+
+        sin_alt = (
+            math.sin(lat_r) * math.sin(dec_r)
+            + math.cos(lat_r) * math.cos(dec_r) * math.cos(ha_r)
+        )
+        return math.degrees(math.asin(max(-1.0, min(1.0, sin_alt))))
 
 
 def find_phenomena(
@@ -171,20 +187,36 @@ def find_phenomena(
 def get_transit(body_name: str, jd_day: float, lat: float, lon: float, *, upper: bool = True) -> float:
     """Find the precise JD of the upper or lower meridian transit in the next 24h."""
     target_ha = 0.0 if upper else 180.0
+    error = lambda value: _hour_angle_error(value, body_name, lat, lon, target_ha)
+
+    # Sample the next 24h and refine the first real sign change near the
+    # requested meridian. This avoids false brackets at the +/-180 wrap
+    # discontinuity and is materially more reliable for the Moon.
+    steps = 288  # 5-minute cadence
+    prev_jd = jd_day
+    prev_err = error(prev_jd)
+
+    for i in range(1, steps + 1):
+        jd = jd_day + (i / steps)
+        curr_err = error(jd)
+        if (
+            prev_err * curr_err <= 0.0
+            and max(abs(prev_err), abs(curr_err)) < 90.0
+        ):
+            return _refine_bisection(error, prev_jd, jd)
+        prev_jd = jd
+        prev_err = curr_err
+
     jd = jd_day if upper else jd_day + 0.5
     sidereal_day = 0.9972695663
-
-    # Earth rotation dominates the derivative (~360.9856 deg/day), so a few
-    # Newton-like corrections on the hour-angle error converge rapidly.
     for _ in range(8):
-        err = _hour_angle_error(jd, body_name, lon, target_ha)
+        err = error(jd)
         jd -= err / 360.98564736629
 
     while jd < jd_day:
         jd += sidereal_day
     while jd >= jd_day + 1.0:
         jd -= sidereal_day
-
     return jd
 
 
