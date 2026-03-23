@@ -536,9 +536,13 @@ def combined_magnitude(system: MultipleStarSystem) -> float:
     """
     Return the combined apparent V magnitude of the whole system.
 
-    This is the pre-computed value stored in the catalog record; it equals
-    the flux sum of all components and matches the catalog magnitude of the
-    star as seen by the naked eye.
+    The value is derived from the listed component magnitudes by summing flux:
+
+      combined_magnitude = -2.5 * log10(sum(10 ** (-m_i / 2.5)))
+
+    Components with non-finite magnitudes are ignored. This keeps the function
+    aligned with the subsystem's frozen validation doctrine instead of merely
+    echoing a stored catalog approximation.
 
     Parameters
     ----------
@@ -548,7 +552,12 @@ def combined_magnitude(system: MultipleStarSystem) -> float:
     -------
     Combined V magnitude.
     """
-    return system.combined_mag
+    flux = sum(
+        10.0 ** (-component.magnitude / 2.5)
+        for component in system.components
+        if math.isfinite(component.magnitude)
+    )
+    return -2.5 * math.log10(flux) if flux > 0.0 else math.nan
 
 
 def components_at(system: MultipleStarSystem, jd: float) -> dict:

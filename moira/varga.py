@@ -147,6 +147,8 @@ def calculate_varga(longitude: float, n: int, name: str = "") -> VargaPoint:
     Note: Standard Parasari vargas often have specific starting offsets 
     per sign (Fire/Earth/Air/Water). 
     """
+    longitude = longitude % 360.0
+
     # Total segments of size (30/n) from 0° Aries
     segment_idx = int(longitude // (30.0 / n))
     

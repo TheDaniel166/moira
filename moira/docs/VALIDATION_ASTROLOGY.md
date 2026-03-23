@@ -357,7 +357,7 @@ comparison may still be useful as supplemental cross-checking.
 
 ---
 
-## 8. Remaining External-Oracle Roadmap
+## 8. Supplemental Validation Expansion Roadmap
 
 ### 8.1 Aspects
 
