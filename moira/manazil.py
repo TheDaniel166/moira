@@ -36,6 +36,15 @@ Public surface
 
 from dataclasses import dataclass
 
+__all__ = [
+    "MansionInfo",
+    "MansionPosition",
+    "MANSIONS",
+    "MANSION_SPAN",
+    "mansion_of",
+    "all_mansions_at",
+    "moon_mansion",
+]
 
 # ---------------------------------------------------------------------------
 # Constants

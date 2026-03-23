@@ -47,6 +47,17 @@ from .dignities import (
     CLASSIC_7,
 )
 
+__all__ = [
+    "HylegResult",
+    "PTOLEMAIC_YEARS",
+    "TRIPLICITY_RULERS",
+    "EGYPTIAN_BOUNDS",
+    "FACE_RULERS",
+    "dignity_score_at",
+    "find_hyleg",
+    "calculate_longevity",
+]
+
 # ---------------------------------------------------------------------------
 # Ptolemaic Planetary Years
 # ---------------------------------------------------------------------------

@@ -55,6 +55,30 @@ from .julian import (
 from .fixed_stars import heliacal_rising as _heliacal_rising
 
 
+__all__ = [
+    # Policy
+    "SothicCalendarPolicy", "SothicHeliacalPolicy", "SothicEpochPolicy",
+    "SothicPredictionPolicy", "SothicComputationPolicy",
+    # Truth / Classification
+    "EgyptianCalendarTruth", "SothicComputationTruth",
+    "EgyptianCalendarClassification", "SothicComputationClassification",
+    # Condition vessels
+    "SothicRelation", "SothicConditionState", "SothicConditionProfile",
+    "SothicChartConditionProfile",
+    "SothicConditionNetworkNode", "SothicConditionNetworkEdge",
+    "SothicConditionNetworkProfile",
+    # Data types
+    "EgyptianDate", "SothicEntry", "SothicEpoch",
+    # Constants
+    "EGYPTIAN_MONTHS", "EGYPTIAN_SEASONS", "EPAGOMENAL_BIRTHS",
+    "HISTORICAL_SOTHIC_EPOCHS",
+    # Functions
+    "sothic_rising", "sothic_epochs", "sothic_drift_rate",
+    "egyptian_civil_date", "days_from_1_thoth", "predicted_sothic_epoch_year",
+    "sothic_chart_condition_profile", "sothic_condition_network_profile",
+]
+
+
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------

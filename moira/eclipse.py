@@ -85,6 +85,13 @@ from .eclipse_canon import (
 from .eclipse_contacts import LunarEclipseContacts, find_lunar_contacts
 from .corrections import apply_light_time
 
+__all__ = [
+    "EclipseData", "EclipseEvent", "EclipseType", "EclipseCalculator",
+    "SolarBodyCircumstances", "SolarEclipseLocalCircumstances",
+    "LocalContactCircumstances", "LunarEclipseAnalysis",
+    "LunarEclipseLocalCircumstances",
+]
+
 # ---------------------------------------------------------------------------
 # Astronomical constants
 # ---------------------------------------------------------------------------

@@ -39,6 +39,11 @@ from dataclasses import dataclass, field
 
 from .constants import DEG2RAD, RAD2DEG
 
+__all__ = [
+    "ACGLine",
+    "acg_lines",
+    "acg_from_chart",
+]
 
 # ---------------------------------------------------------------------------
 # Data structure

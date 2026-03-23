@@ -133,7 +133,7 @@ from .aspects import (
     find_declination_aspects,
     find_patterns,
 )
-from .sidereal import ayanamsa, tropical_to_sidereal, Ayanamsa, list_ayanamsa_systems
+from .sidereal import ayanamsa, tropical_to_sidereal, sidereal_to_tropical, Ayanamsa, list_ayanamsa_systems
 from .eclipse import (
     EclipseData,
     EclipseEvent,
@@ -226,8 +226,8 @@ from .dignities import (
     calculate_condition_network_profile,
     DignitiesService,
 )
-from .midpoints import Midpoint, calculate_midpoints, midpoints_to_point
-from .harmonics import HarmonicPosition, calculate_harmonic, HARMONIC_PRESETS
+from .midpoints import Midpoint, MidpointsService, calculate_midpoints, midpoints_to_point
+from .harmonics import HarmonicPosition, HarmonicsService, calculate_harmonic, HARMONIC_PRESETS
 from .progressions import (
     ProgressionDoctrineTruth,
     ProgressionComputationTruth,
@@ -583,9 +583,15 @@ __all__ = [
     "NasaLunarEclipseContacts", "NasaLunarEclipseEvent",
     "next_nasa_lunar_eclipse", "previous_nasa_lunar_eclipse",
     "translate_lunar_eclipse_event",
-    "CalendarDateTime", "julian_day", "calendar_datetime_from_jd",
+    "CalendarDateTime", "julian_day", "calendar_from_jd", "calendar_datetime_from_jd",
     "jd_from_datetime", "datetime_from_jd", "format_jd_utc", "safe_datetime_from_jd",
-    "ayanamsa", "tropical_to_sidereal", "list_ayanamsa_systems",
+    "greenwich_mean_sidereal_time", "local_sidereal_time", "delta_t",
+    # Obliquity & nutation
+    "mean_obliquity", "true_obliquity", "nutation",
+    # Coordinate utilities
+    "icrf_to_ecliptic", "icrf_to_equatorial", "ecliptic_to_equatorial",
+    "equatorial_to_horizontal", "angular_distance", "normalize_degrees",
+    "ayanamsa", "tropical_to_sidereal", "sidereal_to_tropical", "list_ayanamsa_systems",
     "AspectDefinition", "ASPECT_TIERS",
     # Aspect backend public surface
     "CANONICAL_ASPECTS", "DEFAULT_POLICY",
@@ -669,9 +675,9 @@ __all__ = [
     "calculate_condition_network_profile",
     "DignitiesService",
     # Midpoints
-    "Midpoint", "calculate_midpoints", "midpoints_to_point",
+    "Midpoint", "MidpointsService", "calculate_midpoints", "midpoints_to_point",
     # Harmonics
-    "HarmonicPosition", "calculate_harmonic", "HARMONIC_PRESETS",
+    "HarmonicPosition", "HarmonicsService", "calculate_harmonic", "HARMONIC_PRESETS",
     # Progressions
     "ProgressionDoctrineTruth", "ProgressionComputationTruth",
     "ProgressionDoctrineClassification", "ProgressionComputationClassification",

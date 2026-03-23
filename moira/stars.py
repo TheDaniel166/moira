@@ -87,6 +87,15 @@ from .gaia import (
 from .julian import local_sidereal_time
 from .constants import DEG2RAD
 
+__all__ = [
+    "UnifiedStarMergePolicy", "UnifiedStarComputationPolicy",
+    "FixedStarTruth", "FixedStarClassification",
+    "UnifiedStarRelation",
+    "FixedStar",
+    "star_at", "stars_near", "stars_by_magnitude",
+    "list_named_stars", "find_named_stars",
+]
+
 _GAIA_MIN_MAG   = 3.0    # below this Gaia photometry is unreliable
 _DEDUP_RADIUS   = 0.05   # degrees on ecliptic longitude for deduplication
 _MATCH_RADIUS_SKY = 0.05 # degrees on sky for sefstars ↔ Gaia cross-match

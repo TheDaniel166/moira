@@ -81,6 +81,18 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence
 
+__all__ = [
+    "StellarQuality",
+    "GaiaStarPosition",
+    "bp_rp_to_quality",
+    "load_gaia_catalog",
+    "catalog_size",
+    "gaia_catalog_info",
+    "gaia_star_at",
+    "gaia_stars_near",
+    "gaia_stars_by_magnitude",
+]
+
 from .constants import DEG2RAD, RAD2DEG
 from .coordinates import equatorial_to_ecliptic
 from .obliquity import mean_obliquity, nutation

@@ -41,6 +41,15 @@ from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_j
 from .planets import planet_at
 from .spk_reader import get_reader, SpkReader
 
+__all__ = [
+    "PhenomenonEvent",
+    "MOON_PHASE_ANGLES",
+    "greatest_elongation",
+    "perihelion",
+    "aphelion",
+    "next_moon_phase",
+    "moon_phases_in_range",
+]
 
 # ---------------------------------------------------------------------------
 # Result dataclass

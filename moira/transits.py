@@ -43,6 +43,38 @@ from .fixed_stars import fixed_star_at
 from .nodes import mean_lilith, mean_node, true_lilith, true_node
 
 
+__all__ = [
+    # Enumerations
+    "TransitTargetKind", "TransitSearchKind", "TransitWrapperKind",
+    "TransitRelationKind", "TransitRelationBasis", "TransitConditionState",
+    "TransitConditionNetworkNodeKind",
+    # Policy
+    "TransitSearchPolicy", "ReturnSearchPolicy", "SyzygySearchPolicy",
+    "TransitComputationPolicy",
+    # Truth
+    "LongitudeResolutionTruth", "CrossingSearchTruth",
+    "TransitComputationTruth", "IngressComputationTruth",
+    # Classification
+    "LongitudeResolutionClassification", "CrossingSearchClassification",
+    "TransitComputationClassification", "IngressComputationClassification",
+    # Condition vessels
+    "TransitRelation", "TransitConditionProfile", "TransitChartConditionProfile",
+    "TransitConditionNetworkNode", "TransitConditionNetworkEdge",
+    "TransitConditionNetworkProfile",
+    # Event vessels
+    "TransitEvent", "IngressEvent",
+    # Core search functions
+    "next_transit", "find_transits",
+    "find_ingresses", "next_ingress", "next_ingress_into",
+    "solar_return", "lunar_return", "planet_return",
+    "last_new_moon", "last_full_moon", "prenatal_syzygy",
+    # Condition profile functions
+    "transit_relations", "ingress_relations",
+    "transit_condition_profiles", "ingress_condition_profiles",
+    "transit_chart_condition_profile", "transit_condition_network_profile",
+]
+
+
 # ---------------------------------------------------------------------------
 # Result dataclasses
 # ---------------------------------------------------------------------------

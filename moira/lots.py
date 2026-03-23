@@ -40,6 +40,30 @@ from .constants import sign_of, SIGNS
 from .chart import ChartContext
 
 
+__all__ = [
+    # Enumerations
+    "LotReferenceKind", "LotReversalKind", "LotDependencyRole",
+    "LotConditionState", "LotConditionNetworkEdgeMode", "LotsReferenceFailureMode",
+    # Policy
+    "LotsDerivedReferencePolicy", "LotsExternalReferencePolicy", "LotsComputationPolicy",
+    # Truth / Classification
+    "LotReferenceTruth", "ArabicPartComputationTruth",
+    "LotReferenceClassification", "ArabicPartClassification",
+    # Condition vessels
+    "LotDependency",
+    "LotConditionProfile", "LotChartConditionProfile",
+    "LotConditionNetworkNode", "LotConditionNetworkEdge", "LotConditionNetworkProfile",
+    # Core vessels
+    "ArabicPart",
+    # Functions
+    "calculate_lots",
+    "calculate_lot_dependencies", "calculate_all_lot_dependencies",
+    "calculate_lot_condition_profiles", "calculate_lot_chart_condition_profile",
+    "calculate_lot_condition_network_profile",
+    "ArabicPartsService", "list_parts",
+]
+
+
 # ---------------------------------------------------------------------------
 # Traditional sign rulers (used for house-ruler lookups)
 # ---------------------------------------------------------------------------

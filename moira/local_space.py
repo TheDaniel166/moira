@@ -40,6 +40,11 @@ from dataclasses import dataclass
 
 from .constants import DEG2RAD, RAD2DEG
 
+__all__ = [
+    "LocalSpacePosition",
+    "local_space_positions",
+    "local_space_from_chart",
+]
 
 # ---------------------------------------------------------------------------
 # Data structure

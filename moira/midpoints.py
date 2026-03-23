@@ -33,6 +33,19 @@ from itertools import combinations
 
 from .constants import sign_of
 
+__all__ = [
+    "Midpoint",
+    "MidpointsService",
+    "CLASSIC_7",
+    "MODERN_3",
+    "MODERN_10",
+    "EXTENDED",
+    "calculate_midpoints",
+    "midpoints_to_point",
+    "to_dial_90",
+    "dial_90_midpoints",
+    "midpoint_tree",
+]
 
 # ---------------------------------------------------------------------------
 # Planet sets

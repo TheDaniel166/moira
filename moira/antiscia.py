@@ -29,6 +29,13 @@ from dataclasses import dataclass
 
 from .constants import sign_of
 
+__all__ = [
+    "AntisciaAspect",
+    "antiscion",
+    "contra_antiscion",
+    "find_antiscia",
+    "antiscia_to_point",
+]
 
 # ---------------------------------------------------------------------------
 # Core formulae

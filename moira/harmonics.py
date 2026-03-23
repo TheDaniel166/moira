@@ -27,6 +27,12 @@ from dataclasses import dataclass, field
 
 from .constants import sign_of
 
+__all__ = [
+    "HarmonicPosition",
+    "HarmonicsService",
+    "HARMONIC_PRESETS",
+    "calculate_harmonic",
+]
 
 # ---------------------------------------------------------------------------
 # Preset harmonics with astrological meanings

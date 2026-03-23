@@ -34,6 +34,13 @@ from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_j
 from .planets import planet_at
 from .spk_reader import get_reader, SpkReader
 
+__all__ = [
+    "StationEvent",
+    "find_stations",
+    "next_station",
+    "is_retrograde",
+    "retrograde_periods",
+]
 
 # ---------------------------------------------------------------------------
 # Result dataclass

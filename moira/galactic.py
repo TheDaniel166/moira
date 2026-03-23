@@ -43,6 +43,16 @@ from dataclasses import dataclass
 from .constants import DEG2RAD, RAD2DEG
 from .coordinates import ecliptic_to_equatorial, equatorial_to_ecliptic
 
+__all__ = [
+    "GalacticPosition",
+    "equatorial_to_galactic",
+    "galactic_to_equatorial",
+    "ecliptic_to_galactic",
+    "galactic_to_ecliptic",
+    "galactic_position_of",
+    "all_galactic_positions",
+    "galactic_reference_points",
+]
 
 # ---------------------------------------------------------------------------
 # IAU / J2000 rotation matrix: ICRS equatorial → galactic

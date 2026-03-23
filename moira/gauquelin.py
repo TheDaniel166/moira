@@ -38,6 +38,11 @@ from dataclasses import dataclass
 
 from .constants import DEG2RAD, RAD2DEG
 
+__all__ = [
+    "GauquelinPosition",
+    "gauquelin_sector",
+    "all_gauquelin_sectors",
+]
 
 # ---------------------------------------------------------------------------
 # Sector classification

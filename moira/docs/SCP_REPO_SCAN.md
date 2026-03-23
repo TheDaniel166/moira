@@ -17,7 +17,7 @@ It is a scan for:
 - enough subsystem coherence that SCP can apply cleanly
 - enough maturity that the next phase can be justified without phase-skipping
 
-**Last updated**: 2026-03-23 (variable_stars.py constitutionalized)
+**Last updated**: 2026-03-23 (variable_stars.py constitutionalized; gaia.py Phase 12 closed)
 
 ---
 
@@ -117,20 +117,25 @@ The timing doctrine cluster (`timelords.py`, `dasha.py`) and `variable_stars.py`
 have all been fully constitutionalized. See §2 (Fully constitutionalized) and the
 recommendation order update in §6.
 
-The remaining medium-value candidates are `gaia.py`, which may be best pulled into
-the existing star cluster standard rather than constitutionalized independently.
+There are no remaining medium-value SCP candidates. `gaia.py` was assessed and
+closed at Phase 12 — it is a pure data-access Oracle with Phases 1–3 already
+present (thorough module docstring, RITE/MACHINE_CONTRACT on both dataclasses,
+derived properties). Full SCP treatment (Phases 4–11) was determined to be
+unwarranted: no behavioral policy, no classical condition scoring, no relational
+or network interpretation layer. Phase 12 (`__all__`) was the sole gap and has
+been added.
 
 ---
 
 ## 4. Medium-Value SCP Targets
 
-### 4.1 Gaia
+### 4.1 Gaia — Closed
 
 - [`gaia.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/gaia.py)
 
-Now better treated as a possible follow-on constitutional target only where the
-parent unified-star subsystem boundary justifies pulling Gaia deeper into the
-frozen surface.
+Assessed 2026-03-23. Phases 1–3 already present. Full SCP not warranted (pure
+data-access Oracle, no condition scoring or network interpretation layer).
+Phase 12 (`__all__`) added — subsystem is now complete.
 
 ---
 
@@ -176,7 +181,8 @@ constitution rather than as standalone constitutional programs.
 If the goal is to continue constitutionalizing Moira in dependency-respecting
 order, the best next sequence is:
 
-1. [`gaia.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/gaia.py) — only where the parent unified-star boundary justifies pulling it into a standalone constitutional target; otherwise handled as a supporting expansion to the existing `STARS_BACKEND_STANDARD.md`
+There are no remaining SCP targets at this time. All identified subsystems have
+been constitutionalized or assessed and closed.
 
 Rationale for changes from the previous scan:
 
@@ -196,6 +202,8 @@ Rationale for changes from the previous scan:
   and [`DASHA_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/DASHA_BACKEND_STANDARD.md);
   Phase 12 added curated `__all__` lists and expanded the `moira` package
   surface to expose 58 constitutional names from the timing cluster
+- `gaia.py` was assessed 2026-03-23: Phases 1–3 already present; full SCP not
+  warranted; Phase 12 (`__all__`) was the only gap and has been added — closed
 - `variable_stars.py` is now fully constitutionalized through all twelve SCP
   phases, documented by
   [`VARIABLE_STARS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/VARIABLE_STARS_BACKEND_STANDARD.md)

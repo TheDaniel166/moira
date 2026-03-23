@@ -46,6 +46,14 @@ from .spk_reader import get_reader, SpkReader
 from .coordinates import ecliptic_to_equatorial
 from .obliquity import true_obliquity
 
+__all__ = [
+    "CloseApproach",
+    "LunarOccultation",
+    "close_approaches",
+    "lunar_occultation",
+    "lunar_star_occultation",
+    "all_lunar_occultations",
+]
 
 # ---------------------------------------------------------------------------
 # Physical angular radii (degrees) — used for occultation detection
