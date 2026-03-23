@@ -1,0 +1,116 @@
+{
+  "_comment": "Offline Horizons-derived paran reference cases. Expected paran matches are derived from external Horizons event times, not Moira's own paran matcher.",
+  "_source": "Primary oracle: JPL Horizons observer tables via tests/tools/horizons.py. No network is required at test time.",
+  "_default_threshold_seconds": 5.0,
+  "cases": [
+    {
+      "id": "sun-moon-new-york-tight",
+      "location": {
+        "label": "New York City, USA",
+        "latitude_deg": 40.7128,
+        "longitude_deg": -74.006,
+        "elevation_km": 0.0
+      },
+      "window": {
+        "jd_start": 2460394.5,
+        "duration_hours": 24.0,
+        "semantics": "next 24h from jd_start"
+      },
+      "altitude_deg": -0.5667,
+      "orb_minutes": 4.0,
+      "threshold_seconds": 5.0,
+      "bodies": [
+        {
+          "body": "Sun",
+          "command": "10"
+        },
+        {
+          "body": "Moon",
+          "command": "301"
+        }
+      ],
+      "expected_parans": [
+        {
+          "body1": "Sun",
+          "body2": "Moon",
+          "circle1": "AntiCulminating",
+          "circle2": "Culminating",
+          "jd1_ut": 2460394.7096634735,
+          "jd2_ut": 2460394.708513031,
+          "jd_mid_ut": 2460394.709088252,
+          "orb_minutes": 1.6566375643014908
+        }
+      ],
+      "notes": "Tight anti-culmination / transit paran derived from Horizons event times."
+    },
+    {
+      "id": "moon-venus-new-york-mixed",
+      "location": {
+        "label": "New York City, USA",
+        "latitude_deg": 40.7128,
+        "longitude_deg": -74.006,
+        "elevation_km": 0.0
+      },
+      "window": {
+        "jd_start": 2460392.5,
+        "duration_hours": 24.0,
+        "semantics": "next 24h from jd_start"
+      },
+      "altitude_deg": -0.5667,
+      "orb_minutes": 6.0,
+      "threshold_seconds": 5.0,
+      "bodies": [
+        {
+          "body": "Moon",
+          "command": "301"
+        },
+        {
+          "body": "Venus",
+          "command": "299"
+        }
+      ],
+      "expected_parans": [
+        {
+          "body1": "Moon",
+          "body2": "Venus",
+          "circle1": "Setting",
+          "circle2": "Rising",
+          "jd1_ut": 2460392.9327071514,
+          "jd2_ut": 2460392.928699831,
+          "jd_mid_ut": 2460392.930703491,
+          "orb_minutes": 5.770541355013847
+        }
+      ],
+      "notes": "Mixed horizon paran with a modest orb."
+    },
+    {
+      "id": "sun-venus-tromso-none",
+      "location": {
+        "label": "Tromso, Norway",
+        "latitude_deg": 69.6492,
+        "longitude_deg": 18.9553,
+        "elevation_km": 0.0
+      },
+      "window": {
+        "jd_start": 2460482.5,
+        "duration_hours": 24.0,
+        "semantics": "next 24h from jd_start"
+      },
+      "altitude_deg": -0.5667,
+      "orb_minutes": 4.0,
+      "threshold_seconds": 5.0,
+      "bodies": [
+        {
+          "body": "Sun",
+          "command": "10"
+        },
+        {
+          "body": "Venus",
+          "command": "299"
+        }
+      ],
+      "expected_parans": [],
+      "notes": "High-latitude no-paran case within the configured orb."
+    }
+  ]
+}

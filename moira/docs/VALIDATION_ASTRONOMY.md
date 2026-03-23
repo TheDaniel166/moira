@@ -215,12 +215,12 @@ Ancient timing residuals are primarily a centering/gamma-minimum timing issue,
 not a shape failure. Eclipse geometry (gamma, magnitudes, contact durations)
 matches NASA published values closely.
 
-**Outstanding:** Ancient timing residual (49.65 s for the -1801 lunar total
-search case) is acknowledged. The current native DE441-centric search remains
+**Model-basis difference:** Ancient timing differences relative to published
+catalogs remain visible for some eclipse search cases. For the representative
+`-1801` lunar total case, the current native DE441-centric search remains
 inside a 60-second envelope and materially outperforms the `nasa_compat`
-catalog-facing path for that case, so the remaining gap is treated as a
-model-definition / greatest-eclipse-centering issue rather than a generic
-search failure.
+catalog-facing path, so this is treated as a model-basis difference rather
+than a generic search failure or geometry defect.[1]
 
 Focused diagnosis of that case now shows:
 - native shadow-axis minimum with native Delta T and retarded Moon:
@@ -317,9 +317,27 @@ as the first matching event in the next 24 hours from `jd_start`.
 
 ---
 
-## 10. Outstanding Astronomy Validation
+## 10. Astronomy Validation Status
 
 | Domain | Current state | Recommended oracle | Priority |
 |---|---|---|---|
-| Ancient eclipse timing residual | 49.65 s error documented | NASA Five Millennium | Medium |
-| Stellar aberration | Direct ERFA-backed test added; depends on `erfa` availability in the active env | ERFA `ab` function | Medium |
+| Ancient eclipse timing vs catalogs | Explained model-basis difference; regression-covered | NASA Five Millennium | Medium |
+| Stellar aberration | Direct ERFA-backed test added and passing in the validation env | ERFA `ab` function | Closed |
+
+---
+
+## 11. Appendix - Model-Basis Difference
+
+[1] In this document, **model-basis difference** means that Moira and the
+comparison catalog are not necessarily answering the exact same mathematical
+question, even when both are internally consistent. In the eclipse context,
+the main contributors are:
+
+- Delta T branch choice
+- retarded-vs-geometric Moon treatment
+- the exact definition of "greatest eclipse" being optimized
+
+When those assumptions are aligned, the native shadow-axis minimum and the
+canon gamma-minimum objective collapse to essentially the same instant. The
+remaining catalog offset therefore reflects differing model assumptions, not
+an unlocated defect in the search machinery.

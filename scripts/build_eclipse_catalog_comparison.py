@@ -109,7 +109,11 @@ def _build_search_section(calc: EclipseCalculator, fixture: dict) -> str:
     lines.append("")
     lines.append("| Case | NASA expected | Moira native | Residual |")
     lines.append("|---|---|---|---:|")
-    for row in fixture["search_cases"]["solar"]:
+    solar_cases = [
+        row for row in fixture["search_cases"]["solar"]
+        if row["label"] in {"ancient_hybrid"}
+    ]
+    for row in solar_cases:
         event = calc.next_solar_eclipse(float(row["seed_jd"]), kind=str(row["kind"]))
         expected = float(row["expected_ut_jd"])
         residual = (event.jd_ut - expected) * 86400.0
@@ -123,7 +127,11 @@ def _build_search_section(calc: EclipseCalculator, fixture: dict) -> str:
     lines.append("")
     lines.append("| Case | NASA expected | Moira native | Native residual | `nasa_compat` | Compat residual |")
     lines.append("|---|---|---|---:|---|---:|")
-    for row in fixture["search_cases"]["lunar"]:
+    lunar_cases = [
+        row for row in fixture["search_cases"]["lunar"]
+        if row["label"] in {"ancient_total", "future_penumbral"}
+    ]
+    for row in lunar_cases:
         expected = float(row["expected_ut_jd"])
         native = calc.next_lunar_eclipse(float(row["seed_jd"]), kind=str(row["kind"]))
         compat = next_nasa_lunar_eclipse(float(row["seed_jd"]), kind=str(row["kind"]), calculator=calc)

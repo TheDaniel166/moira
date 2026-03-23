@@ -1,0 +1,23 @@
+{
+  "_comment": [
+    "Fill this file from a trusted external oracle such as Jagannatha Hora or Parashara's Light.",
+    "Use explicit settings and record them per case:",
+    "- ayanamsa: e.g. Lahiri",
+    "- year_basis: e.g. julian_365.25 or savana_360",
+    "- timestamps must include timezone offsets",
+    "- mahadasha entries should be level-1 periods in chronological order",
+    "- antardasha entries should include a parent field naming the enclosing mahadasha lord"
+  ],
+  "cases": [
+    {
+      "id": "example_replace_me",
+      "source": "Jagannatha Hora 8",
+      "natal_dt_utc": "2000-01-01T12:00:00+00:00",
+      "ayanamsa": "Lahiri",
+      "year_basis": "julian_365.25",
+      "reference_note": "Replace with a real transcribed oracle case.",
+      "mahadasha": [],
+      "antardasha": []
+    }
+  ]
+}

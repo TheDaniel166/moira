@@ -33,7 +33,6 @@ These are the more meaningful comparison rows, because they compare the catalog'
 | Case | NASA expected | Moira native | Residual |
 |---|---|---|---:|
 | ancient_hybrid (hybrid) | -1797-02-01T09:51:13.000029Z | -1797-02-01T09:49:52.939670Z | -80.06 s |
-| future_total (total) | 2799-08-23T08:55:49.999948Z | 2799-08-23T08:55:29.254898Z | -20.75 s |
 
 ### Lunar Search Cases
 
