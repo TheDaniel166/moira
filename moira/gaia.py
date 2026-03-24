@@ -367,9 +367,10 @@ class GaiaStarPosition:
 # Catalog singleton
 # ---------------------------------------------------------------------------
 
-_records:      list[tuple[float, ...]] | None = None
-_catalog_path: Path | None                    = None
-_lon_index:    list[tuple[float, int]] | None = None   # sorted (approx_lon_j2000, idx)
+_records:       list[tuple[float, ...]] | None = None
+_catalog_path:  Path | None                    = None
+_lon_index:     list[tuple[float, int]] | None = None   # sorted (approx_lon_j2000, idx)
+_bright_indices: list[int] | None              = None   # indices of stars with gmag < 3.0 (excluded from _lon_index)
 
 _OBL_J2000 = 23.43927944   # mean obliquity at J2000 (degrees), used for index only
 _COS_OBL   = math.cos(_OBL_J2000 * DEG2RAD)
@@ -427,16 +428,21 @@ def load_gaia_catalog(path: Path | str | None = None) -> None:
     _records      = recs
     _catalog_path = p
 
-    global _lon_index
+    global _lon_index, _bright_indices
     idx: list[tuple[float, int]] = []
+    bright: list[int] = []
     for i, rec in enumerate(recs):
         gmag = float(rec[_F_GMAG])
-        if gmag < 3.0 or gmag > 25.0:
+        if gmag < 3.0:
+            bright.append(i)
+            continue
+        if gmag > 25.0:
             continue
         lon = _approx_ecl_lon(float(rec[_F_RA]), float(rec[_F_DEC]))
         idx.append((lon, i))
     idx.sort()
-    _lon_index = idx
+    _lon_index      = idx
+    _bright_indices = bright
 
 
 def _ensure_loaded() -> None:
@@ -855,7 +861,12 @@ def gaia_stars_near(
 
     # Use the pre-built longitude index to restrict candidates to the orb
     # window, then run the full pipeline only on those.
-    candidate_indices = _lon_range_indices(longitude, orb)
+    # _lon_index excludes G < 3.0 stars (they saturate Gaia), so union in
+    # _bright_indices so those are never silently dropped.
+    candidate_indices: list[int] = _lon_range_indices(longitude, orb)
+    if _bright_indices:
+        seen = set(candidate_indices)
+        candidate_indices = candidate_indices + [i for i in _bright_indices if i not in seen]
 
     results: list[tuple[float, GaiaStarPosition]] = []
 

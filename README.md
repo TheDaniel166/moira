@@ -17,7 +17,7 @@ Moira is a **Pure-Python** astronomical engine designed for the absolute inversi
 
 ## The Light Box Manifesto
 
-The era of opaque pre-computation is over. Moira performs **Luminous Derivation**—deriving every coordinate through a visible, auditable logic at runtime.
+The era of opaque pre-computation is over. Moira performs **Luminous Derivation**—deriving every astronomical coordinate through visible, auditable logic at runtime.
 
 ### The Inversion of the Standard
 
@@ -74,47 +74,40 @@ graph TD
 
 ---
 
-## Features & Capabilities
+## What Moira Computes
 
-<details>
-<summary><b>Planetary & Minor Body Precision</b></summary>
-- Geocentric/Topocentric reduction for all major planets & asteroids.
-- 1.4M asteroid support via JPL Horizons API and local SPK kernels.
-- Centaur & TNO specialist kernels (Chiron, Eris, Sedna).
-- Deep integration of orbital nodes and apsides for all bodies.
-</details>
+### Positions and Bodies
+- **Planets, Moon, Sun**: Geocentric and topocentric reduction with light-time, aberration, and relativistic deflection.
+- **Deep Asteroid Support**: Direct access to 887,000+ asteroids via JPL Horizons and SPK kernels.
+- **Small Bodies**: Dedicated specialists for Centaurs (Chiron, Pholus), TNOs (Eris, Sedna), and uranian Hamburg School bodies.
+- **Nodes & Apsides**: True/Mean nodes, Lilith, and orbital apsides for all planetary bodies.
+- **Fixed Stars**: ~1.5K from SE catalog + Gaia DR3 binary catalog (~290K entries) with BP-RP spectral color mapping.
+- **Star Groups**: 15 Behenian stars, Royal Stars, Pleiades, and Orion belt clusters.
+- **Variable Stars**: Phase and magnitude engine; eclipsing binary models (Algol-specific API).
 
-<details>
-<summary><b>Chart & Astrological Models</b></summary>
-- 18 House Systems including Placidus, Koch, Regiomontanus, and APC.
-- Comprehensive 22-aspect suite with applying/separating detection.
-- Traditional Dignity matrix & 28-mansion Arabic Manazil system.
-- 499 Arabic Parts and 12 major Aspect Patterns.
-- Complete Uranian (Hamburg School) body suite.
-</details>
+### Chart Calculations
+- **House Systems**: 18 systems including Placidus, Koch, Regiomontanus, APC, and Sunshine.
+- **Relational Logic**: 22 zodiacal aspects with applying/separating detection; midpoints and midpoint trees.
+- **Traditional Dignities**: Domicile, Exaltation, Triplicity, Term, Face, Mutual Reception, Sect, and Almuten Figuris.
+- **Esoterica**: 499 Arabic Parts; Hermetic 36-decan system; 12 major Aspect Patterns (Yod, Kite, Mystic Rectangle).
 
-<details>
-<summary><b>Predictive & Dynamic Techniques</b></summary>
-- Secondary, Tertiary, and Minor Progressions + Solar Arc.
-- Vedic Vimshottari Dasha with sub-period tree mapping.
-- Zodiacal Releasing, Hyleg/Alcocoden, and Primary Directions.
-- Solar/Lunar Returns & Transit Ingress detection.
-</details>
+### Predictive Techniques
+- **Progressions**: Secondary, Tertiary, and Minor progressions (direct and converse).
+- **Directions**: Primary Directions (Placidus semi-arc and mundane) and Solar Arc progressions.
+- **Cycles**: Solar/Lunar returns, Vimshottari Dasha periods, and Zodiacal Releasing.
+- **Time Lords**: Profections (Annual/Monthly), Firdaria, and Hyleg/Alcocoden detection.
 
-<details>
-<summary><b>Fixed Star & Variable Data</b></summary>
-- Gaia DR3 integration with spectral-to-elemental mapping.
-- Behenian fixed stars, Royal stars, and Star Groups.
-- Variable star phase/magnitude engine (Algol-specific API).
-- Heliacal rising/setting & Paranatellonta mapping.
-</details>
+### Advanced Astronomy
+- **Eclipse Search**: NASA-canon contact solver for solar/lunar eclipses; Saros series with heptagonal vertex labeling.
+- **Heliacal Dynamics**: Heliacal rising/setting of stars; Parans (paranatellonta) field analysis.
+- **Mapping & Occultations**: Astrocartography (ACG) contour mapping; Lunar/Stellar occultations and planetary phenomena.
+- **Temporal Systems**: 28-mansion Arabic Manazil system; Sothic cycle drift and historical Egyptian civil calendar conversion.
 
-<details>
-<summary><b>Precision Infrastructure</b></summary>
-- **IAU 2000A Nutation**: 1,358 luni-solar terms + 1,056 planetary terms.
-- **IAU 2006 P03 Precession**: The highest precision standard for coordinate frames.
-- **Hybrid ΔT Model**: IERS data → GRACE satellite LOD series → Historical Paleoclimate tables.
-</details>
+### Precision Infrastructure
+- **Nutation**: IAU 2000A (1,358 luni-solar terms + 1,056 planetary terms).
+- **Precession**: IAU 2006 P03 (The current high-precision standard).
+- **Time Model**: Hybrid ΔT model integrating IERS data, GRACE satellite LOD series, and historical paleoclimate tables.
+- **Sidereal**: 30 validated ayanamsa systems (Lahiri, Fagan-Bradley, Raman).
 
 ---
 
