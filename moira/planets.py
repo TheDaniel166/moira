@@ -632,7 +632,10 @@ def planet_at(
     if jd_tt is None:
         jd_tt = ut_to_tt(jd_ut, decimal_year(year, month), delta_t_policy=delta_t_policy)
 
-    dpsi_deg, deps_deg = _nutation(jd_tt)
+    dpsi_deg = deps_deg = 0.0
+    if apparent and nutation:
+        dpsi_deg, deps_deg = _nutation(jd_tt)
+
     if obliquity is None:
         obliquity = mean_obliquity(jd_tt) + (deps_deg if (apparent and nutation) else 0.0)
 

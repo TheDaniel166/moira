@@ -205,6 +205,20 @@ class Body:
         TRUE_NODE, MEAN_NODE, LILITH, TRUE_LILITH,
     ]
 
+    # Mean Sidereal Orbital Periods (Earth Days)
+    # Source: NASA Planetary Fact Sheets / J2000.0
+    SIDEREAL_PERIODS = {
+        MERCURY:  87.969257,
+        VENUS:   224.700798,
+        EARTH:   365.256363,
+        MARS:    686.979586,
+        JUPITER: 4332.589,
+        SATURN: 10759.22,
+        URANUS: 30685.4,
+        NEPTUNE: 60189.0,
+        PLUTO:   90560.0,
+    }
+
 # ---------------------------------------------------------------------------
 # NAIF route: how to compute geocentric position of each body
 # Each entry is a list of (center, target) segments to chain.

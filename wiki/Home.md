@@ -19,7 +19,9 @@ The engine is composed of sovereign, constitutionalized subsystems:
 - **[Houses & Cusps](02_standards/HOUSES_BACKEND_STANDARD.md)**
 - **[Dignities & Sect](02_standards/DIGNITIES_BACKEND_STANDARD.md)**
 - **[Timing & Taelords](02_standards/TIMELORDS_BACKEND_STANDARD.md)**
-- **[Vimshottari Dasha](02_standards/DASHA_BACKEND_STANDARD.md)**
+- **[Moira Phenomena Engine](01_phenomena_engine.md)**
+- **[Validation Case: The Rose of Venus (2026–2032)](03_standards/VALIDATION_CASE_VENUS_STAR.md)**
+- **[The Akaschic Record Standards](00_AKASCHIC_RECORD_STANDARDS.md)**
 - **[Fixed Star Logic](02_standards/STARS_BACKEND_STANDARD.md)**
 
 ---

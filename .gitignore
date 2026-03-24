@@ -1,6 +1,7 @@
 # Dot-directories anywhere in the repo
 **/.*/
 !/.gitignore
+!/.github/  # REQUIRED for GitHub Actions
 
 # Python bytecode and caches
 __pycache__/
@@ -58,3 +59,4 @@ wiki/00_foundations/THE_COVENANT.md
 .claude/
 .kiro/
 .sophia/
+wiki/00_foundations/MEMORY_CORE.md

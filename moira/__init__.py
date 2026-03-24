@@ -515,8 +515,9 @@ from .patterns import (
 )
 from .chart_shape import ChartShapeType, ChartShape, classify_chart_shape
 from .phenomena import (
-    PhenomenonEvent, greatest_elongation, perihelion, aphelion,
+    PhenomenonEvent, OrbitalResonance, greatest_elongation, perihelion, aphelion,
     next_moon_phase, moon_phases_in_range,
+    next_conjunction, conjunctions_in_range, resonance,
 )
 from .manazil import MansionInfo, MansionPosition, MANSIONS, mansion_of, all_mansions_at, moon_mansion
 from .dignities import mutual_receptions
@@ -907,8 +908,9 @@ __all__ = [
     # Chart shape (Jones temperament types)
     "ChartShapeType", "ChartShape", "classify_chart_shape",
     # Planetary phenomena
-    "PhenomenonEvent", "greatest_elongation", "perihelion", "aphelion",
+    "PhenomenonEvent", "OrbitalResonance", "greatest_elongation", "perihelion", "aphelion",
     "next_moon_phase", "moon_phases_in_range",
+    "next_conjunction", "conjunctions_in_range", "resonance",
     # Arabic Lunar Mansions
     "MansionInfo", "MansionPosition", "MANSIONS", "mansion_of", "all_mansions_at", "moon_mansion",
     # Mutual receptions
@@ -2723,6 +2725,22 @@ class Moira:
     def moon_phases(self, jd_start: float, jd_end: float) -> list[PhenomenonEvent]:
         """Return all 8 Moon phases in a date range."""
         return moon_phases_in_range(jd_start, jd_end, reader=self._reader)
+
+    def next_conjunction(
+        self, body1: str, body2: str, jd_start: float, max_days: float = 1200.0
+    ) -> PhenomenonEvent | None:
+        """Find the next conjunction between any two bodies."""
+        return next_conjunction(body1, body2, jd_start, reader=self._reader, max_days=max_days)
+
+    def conjunctions(
+        self, body1: str, body2: str, jd_start: float, jd_end: float
+    ) -> list[PhenomenonEvent]:
+        """Find all conjunctions between two bodies in a date range."""
+        return conjunctions_in_range(body1, body2, jd_start, jd_end, reader=self._reader)
+
+    def resonance(self, body1: str, body2: str) -> OrbitalResonance:
+        """Compute the orbital resonance and synodic cycle of two bodies."""
+        return resonance(body1, body2)
 
     # ------------------------------------------------------------------
     # Arabic Lunar Mansions (Manazil al-Qamar)

@@ -24,12 +24,16 @@ External dependency assumptions:
 
 Public surface / exports:
     PhenomenonEvent           — result dataclass for a single phenomenon
+    OrbitalResonance          — result dataclass for periodic ratios
+    resonance()               — compute harmonic ratio between bodies
     MOON_PHASE_ANGLES         — mapping of phase name → target elongation (°)
     greatest_elongation()     — next greatest elongation of Mercury or Venus
     perihelion()              — next perihelion of a planet
     aphelion()                — next aphelion of a planet
     next_moon_phase()         — next occurrence of a named Moon phase
     moon_phases_in_range()    — all eight Moon phases in a date range
+    next_conjunction()        — next conjunction between two bodies
+    conjunctions_in_range()   — all conjunctions between two bodies in a range
 """
 
 import math
@@ -43,16 +47,20 @@ from .spk_reader import get_reader, SpkReader
 
 __all__ = [
     "PhenomenonEvent",
+    "OrbitalResonance",
+    "resonance",
     "MOON_PHASE_ANGLES",
     "greatest_elongation",
     "perihelion",
     "aphelion",
     "next_moon_phase",
     "moon_phases_in_range",
+    "next_conjunction",
+    "conjunctions_in_range",
 ]
 
 # ---------------------------------------------------------------------------
-# Result dataclass
+# Result vessels
 # ---------------------------------------------------------------------------
 
 @dataclass(slots=True)
@@ -132,6 +140,26 @@ class PhenomenonEvent:
         return (f"{self.body} {self.phenomenon}: "
                 f"{self.value:.4f}  "
                 f"{format_jd_utc(self.jd_ut)}")
+
+
+@dataclass(slots=True)
+class OrbitalResonance:
+    """
+    RITE: The Vessel of Periodic Resonance.
+
+    THEOREM: A celestial resonance ratio (n:m) defines the mathematical
+             harmony between two orbital periods ($P_1/P_2$).
+
+    RITE OF PURPOSE:
+        Captures the synodic heartbeat and harmonic ratio of any two celestial
+        bodies, allowing researchers to identify the integer-ratio dynamics
+        (e.g., the 8:13 Rose of Venus) that emerge from the substrate.
+    """
+    ratio: float             # Exact P1 / P2
+    synodic_period: float    # 1 / abs(1/P1 - 1/P2)
+    harmonic_ratio: str      # Best integer ratio (e.g. "8:13")
+    near_integer: tuple[int, int]  # (numerator, denominator)
+    error: float             # Deviation from perfect integer resonance
 
 
 # ---------------------------------------------------------------------------
@@ -561,21 +589,184 @@ def moon_phases_in_range(
             diff_next = (ang_next - target + 180.0) % 360.0 - 180.0
 
             # The abs < 90 guard prevents false positives at the Conjunction (0°/360°
-        # boundary) where the signal legitimately jumps from ~+180 to ~-180 as
-        # the Moon laps the Sun — a discontinuity that looks like a sign change
-        # but is not a real crossing.
-        if diff_prev * diff_next < 0 and abs(diff_prev) < 90.0 and abs(diff_next) < 90.0:
-                jd_exact = _bisect_phase(target, jd, jd_next, reader)
-                exact_ang = _sun_moon_phase_angle(jd_exact, reader)
-                events.append(PhenomenonEvent(
-                    body=Body.MOON,
-                    phenomenon=phase_name,
-                    jd_ut=jd_exact,
-                    value=exact_ang,
-                ))
+            # boundary) where the signal legitimately jumps from ~+180 to ~-180 as
+            # the Moon laps the Sun — a discontinuity that looks like a sign change
+            # but is not a real crossing.
+            if diff_prev * diff_next < 0 and abs(diff_prev) < 90.0 and abs(diff_next) < 90.0:
+                    jd_exact = _bisect_phase(target, jd, jd_next, reader)
+                    exact_ang = _sun_moon_phase_angle(jd_exact, reader)
+                    events.append(PhenomenonEvent(
+                        body=Body.MOON,
+                        phenomenon=phase_name,
+                        jd_ut=jd_exact,
+                        value=exact_ang,
+                    ))
 
         jd = jd_next
         ang_prev = ang_next
 
     events.sort(key=lambda e: e.jd_ut)
     return events
+
+
+# ---------------------------------------------------------------------------
+# Resonances and Haromics
+# ---------------------------------------------------------------------------
+
+def find_closest_resonance(ratio: float, max_denominator: int = 50) -> tuple[int, int]:
+    """
+    Finds the best integer ratio approximation using continued fractions.
+    
+    Example: ratio=1.6255 -> (13, 8) for Earth/Venus
+    """
+    x = ratio
+    a = int(x)
+    h_m2, h_m1 = 0, 1
+    k_m2, k_m1 = 1, 0
+    
+    while True:
+        h = a * h_m1 + h_m2
+        k = a * k_m1 + k_m2
+        
+        if k > max_denominator:
+            return h_m1, k_m1
+            
+        if x == a:
+            return h, k
+            
+        if x - a < 1e-12: # Avoid tiny divisions
+            return h, k
+            
+        x = 1.0 / (x - a)
+        a = int(x)
+        h_m2, h_m1 = h_m1, h
+        k_m2, k_m1 = k_m1, k
+
+
+def resonance(body1: str, body2: str) -> OrbitalResonance:
+    """
+    Computes the orbital resonance and synodic cycle of two bodies.
+    """
+    p1 = Body.SIDEREAL_PERIODS.get(body1)
+    p2 = Body.SIDEREAL_PERIODS.get(body2)
+    
+    if p1 is None or p2 is None:
+        raise ValueError(f"Resonance requires mean orbital periods for {body1} and {body2}")
+        
+    ratio = p1 / p2
+    synodic = 1.0 / abs((1.0 / p1) - (1.0 / p2))
+    num, den = find_closest_resonance(ratio)
+    harmonic = f"{num}:{den}"
+    
+    return OrbitalResonance(
+        ratio=ratio,
+        synodic_period=synodic,
+        harmonic_ratio=harmonic,
+        near_integer=(num, den),
+        error=abs(ratio - (num/den))
+    )
+
+
+# ---------------------------------------------------------------------------
+# Universal Conjunction Solver
+# ---------------------------------------------------------------------------
+
+def _conjunction_separation(
+    body1: str, body2: str, jd: float, reader: SpkReader, apparent: bool = False
+) -> float:
+    """Signed separation in longitude (-180, +180]."""
+    p1 = planet_at(body1, jd, reader=reader, apparent=apparent)
+    p2 = planet_at(body2, jd, reader=reader, apparent=apparent)
+    return (p1.longitude - p2.longitude + 180.0) % 360.0 - 180.0
+
+
+def _bisect_conjunction(
+    body1: str, 
+    body2: str, 
+    jd_lo: float, 
+    jd_hi: float, 
+    reader: SpkReader, 
+    apparent: bool = True,
+    tol_days: float = 1e-8
+) -> float:
+    """Two-pass bisection for sub-second precision."""
+    def diff(t: float) -> float:
+        return _conjunction_separation(body1, body2, t, reader, apparent=apparent)
+
+    d_lo = diff(jd_lo)
+    for _ in range(40):
+        if jd_hi - jd_lo < tol_days:
+            break
+        jd_mid = (jd_lo + jd_hi) / 2.0
+        d_mid = diff(jd_mid)
+        if d_lo * d_mid <= 0:
+            jd_hi = jd_mid
+        else:
+            jd_lo = jd_mid
+            d_lo = d_mid
+            
+    return (jd_lo + jd_hi) / 2.0
+
+
+def next_conjunction(
+    body1: str,
+    body2: str,
+    jd_start: float,
+    reader: SpkReader | None = None,
+    max_days: float = 800.0,
+) -> PhenomenonEvent | None:
+    """Find the next conjunction between two bodies."""
+    if reader is None:
+        reader = get_reader()
+
+    # Step size: 1/10th of Earth's year or 3 days, whichever is smaller
+    step = min(3.0, 36.0) 
+
+    jd = jd_start
+    prev_sep = _conjunction_separation(body1, body2, jd, reader, apparent=False)
+
+    while jd < jd_start + max_days:
+        jd_next = jd + step
+        next_sep = _conjunction_separation(body1, body2, jd_next, reader, apparent=False)
+
+        # Detect 0° crossing
+        if prev_sep * next_sep < 0 and abs(prev_sep) < 90.0:
+            # Phase I: Rapid Geometric Bisection
+            jd_geo = _bisect_conjunction(body1, body2, jd, jd_next, reader, apparent=False)
+            
+            # Phase II: High-Precision Apparent Refinement
+            # Bracket by 0.1 days around geometric hit
+            jd_exact = _bisect_conjunction(body1, body2, jd_geo - 0.1, jd_geo + 0.1, reader, apparent=True)
+            
+            p1 = planet_at(body1, jd_exact, reader=reader, apparent=True)
+            return PhenomenonEvent(
+                body=f"{body1}-{body2}",
+                phenomenon="Conjunction",
+                jd_ut=jd_exact,
+                value=p1.longitude,
+            )
+
+        jd = jd_next
+        prev_sep = next_sep
+
+    return None
+
+
+def conjunctions_in_range(
+    body1: str,
+    body2: str,
+    jd_start: float,
+    jd_end: float,
+    reader: SpkReader | None = None,
+) -> list[PhenomenonEvent]:
+    """Find all conjunctions between two bodies in a range."""
+    conjs = []
+    jd = jd_start
+    while jd < jd_end:
+        ev = next_conjunction(body1, body2, jd, reader=reader, max_days=(jd_end - jd + 1))
+        if ev:
+            conjs.append(ev)
+            jd = ev.jd_ut + 2.0 # skip past
+        else:
+            break
+    return conjs
