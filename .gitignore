@@ -1,7 +1,5 @@
 # Dot-directories anywhere in the repo
 **/.*/
-!/.gitignore
-!/.github/  # REQUIRED for GitHub Actions
 
 # Python bytecode and caches
 __pycache__/
@@ -41,7 +39,7 @@ Desktop.ini
 # UI prototypes (local only, not part of the library)
 ui/
 
-# Large runtime ephemeris assets
+# large runtime ephemeris assets
 kernels/
 *.bsp
 *.tpc
@@ -60,3 +58,8 @@ wiki/00_foundations/THE_COVENANT.md
 .kiro/
 .sophia/
 wiki/00_foundations/MEMORY_CORE.md
+
+# Dot-directory Whitelist (Last wins)
+!/.gitignore
+!/.github/
+!/.github/**
