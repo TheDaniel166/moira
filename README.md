@@ -2,7 +2,7 @@
 
 ### The Pure-Python Ephemeris for the 21st Century
 
-[![Python 3.14+](https://img.shields.io/badge/python-3.14%2B-blue.svg)](https://www.python.org/downloads/release/python-3140/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Precision: Sub-Milliarcsecond](https://img.shields.io/badge/Precision-Sub--Milliarcsecond-success.svg)](#validation)
 [![Standard: JPL DE441](https://img.shields.io/badge/Standard-JPL%20DE441-blueviolet.svg)](https://naif.jpl.nasa.gov/naif/index.html)
@@ -23,7 +23,7 @@ The era of opaque pre-computation is over. Moira performs **Luminous Derivation*
 
 | Attribute | The Black Box (Legacy) | The Light Box (Moira) |
 | :--- | :--- | :--- |
-| **Logic Substrate** | Compiled C / Opaque Loops | Pure, Auditable Python 3.14+ |
+| **Logic Substrate** | Compiled C / Opaque Loops | Pure, Auditable Python 3.10+ |
 | **Data Standard** | Proprietary `.se1` Binary Files | Raw **JPL DE441** SPK Kernels |
 | **Star Database** | 118K Stars (Hipparcos 1997) | **1.8 Billion** Stars (Gaia DR3 2022) |
 | **Precision Anchor** | Software-to-Software Mimicry | **External Physics Oracles (SOFA/ERFA)** |
@@ -133,7 +133,7 @@ print(f"Moon Longitude: {chart.planets['Moon'].longitude:.6f}")
 
 ## Requirements & Installation
 
-- **Python 3.14+** (Required for optimized performance and modern syntax)
+- **Python 3.10+** (`dataclasses(slots=True)` and union type syntax are the minimum requirements)
 - **jplephem >= 2.24**
 - **Local JPL Kernels** (`de441.bsp`, `asteroids.bsp` - see documentation)
 
