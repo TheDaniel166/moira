@@ -3,8 +3,8 @@ requires = ["setuptools>=80", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "moira_astro"
-version = "0.1.0"
+name = "moira-astro"
+version = "0.1.1"
 description = "Pure Python ephemeris and astrology engine built on JPL DE441 and SPK kernels."
 readme = "README.md"
 license = "MIT"

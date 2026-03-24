@@ -139,7 +139,7 @@ print(f"Moon Longitude: {chart.planets['Moon'].longitude:.6f}")
 
 ```powershell
 # Installation via PyPI
-python -m pip install moira
+python -m pip install moira-astro
 
 # Source Installation
 git clone https://github.com/TheDaniel166/moira.git
