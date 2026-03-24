@@ -23,6 +23,7 @@ The engine is composed of sovereign, constitutionalized subsystems:
 - **[Validation Case: The Rose of Venus (2026–2032)](03_standards/VALIDATION_CASE_VENUS_STAR.md)**
 - **[The Akaschic Record Standards](00_AKASCHIC_RECORD_STANDARDS.md)**
 - **[Fixed Star Logic](02_standards/STARS_BACKEND_STANDARD.md)**
+- **[Service Layer Guide](02_services/SERVICE_LAYER_GUIDE.md)**
 
 ---
 
