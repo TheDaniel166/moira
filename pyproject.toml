@@ -46,6 +46,9 @@ Repository = "https://github.com/TheDaniel166/moira"
 Issues = "https://github.com/TheDaniel166/moira/issues"
 
 [project.optional-dependencies]
+fast = [
+    "numpy>=1.24",
+]
 dev = [
     "build>=1.2",
     "twine>=6.0",

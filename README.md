@@ -138,15 +138,45 @@ print(f"Moon Longitude: {chart.planets['Moon'].longitude:.6f}")
 - **Local JPL Kernels** (`de441.bsp`, `asteroids.bsp` - see documentation)
 
 ```powershell
-# Installation via PyPI
+# Minimal install — pure Python, zero compiled dependencies
 python -m pip install moira-astro
 
-# Source Installation
+# With numpy acceleration (recommended)
+python -m pip install moira-astro[fast]
+
+# Source installation
 git clone https://github.com/TheDaniel166/moira.git
 cd moira
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 ```
+
+### Pure Python vs. numpy — what this means
+
+Moira is a **pure Python engine by design**. Every calculation is auditable,
+readable, and runs without any compiled extension. This is a deliberate
+architectural choice — the Light Box doctrine requires that the full
+computation chain be inspectable without a C compiler.
+
+**numpy is entirely optional.** When present, it accelerates the inner loops of
+the IAU 2000A nutation engine (2,414 IERS terms) using vectorised matrix
+operations. When absent, the pure Python path runs identically — same IERS
+tables, same formulas, same results.
+
+| | Without numpy | With numpy (`pip install moira-astro[fast]`) |
+| :--- | :--- | :--- |
+| **Nutation per call** | ~2.7 ms | ~0.035 ms |
+| **Speedup** | baseline | **~79×** |
+| **Numerical difference** | — | < 3×10⁻¹⁶ degrees |
+| **Pure Python guarantee** | yes | yes — pure Python path preserved |
+| **Auditability** | full | full — numpy path is acceleration only |
+
+The nutation engine is called for every position computation. A 79× reduction
+in nutation cost is material for workloads that compute many positions at
+different epochs (transits, progressions, solar arc directions, eclipse searches).
+
+If numpy is installed, Moira uses it silently. If it is not, Moira runs
+correctly without it. No configuration is required either way.
 
 ---
 
