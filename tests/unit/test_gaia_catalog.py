@@ -241,6 +241,41 @@ def test_gaia_stars_near_empty_patch_returns_list():
 
 
 # ---------------------------------------------------------------------------
+# JD validity guard
+# ---------------------------------------------------------------------------
+
+@pytest.mark.requires_ephemeris
+def test_gaia_star_at_rejects_ancient_jd():
+    with pytest.raises(ValueError, match="Gaia position validity window"):
+        gaia_star_at(0, 1000000.0)   # ~2700 BC
+
+
+@pytest.mark.requires_ephemeris
+def test_gaia_star_at_rejects_far_future_jd():
+    with pytest.raises(ValueError, match="Gaia position validity window"):
+        gaia_star_at(0, 3000000.0)   # ~4700 AD
+
+
+@pytest.mark.requires_ephemeris
+def test_gaia_stars_near_rejects_out_of_range_jd():
+    with pytest.raises(ValueError, match="Gaia position validity window"):
+        gaia_stars_near(0.0, 1000000.0, orb=1.0)
+
+
+@pytest.mark.requires_ephemeris
+def test_gaia_stars_by_magnitude_rejects_out_of_range_jd():
+    with pytest.raises(ValueError, match="Gaia position validity window"):
+        gaia_stars_by_magnitude(1000000.0)
+
+
+@pytest.mark.requires_ephemeris
+def test_gaia_star_at_accepts_boundary_jds():
+    from moira.gaia import _GAIA_JD_MIN, _GAIA_JD_MAX
+    gaia_star_at(0, _GAIA_JD_MIN)
+    gaia_star_at(0, _GAIA_JD_MAX)
+
+
+# ---------------------------------------------------------------------------
 # Top-level moira import
 # ---------------------------------------------------------------------------
 

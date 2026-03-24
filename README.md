@@ -51,6 +51,8 @@ Since the release of the Swiss Ephemeris in 1997, the astronomical world has shi
 
 Legacy data files cannot compute a body they were not pre-built for. They cannot access IERS real-time Earth orientation data. They have no pathway to Gaia parallax. **Moira is built to reach all of these things.**
 
+See [`BEYOND_SWISS_EPHEMERIS.md`](wiki/01_doctrines/BEYOND_SWISS_EPHEMERIS.md) and [`01_LIGHT_BOX_DOCTRINE.md`](wiki/01_doctrines/01_LIGHT_BOX_DOCTRINE.md) for more detail.
+
 ---
 
 ## Architectural Visualization
@@ -80,7 +82,7 @@ graph TD
 - **Planets, Moon, Sun**: Geocentric and topocentric reduction with light-time, aberration, and relativistic deflection.
 - **Deep Asteroid Support**: Direct access to 887,000+ asteroids via JPL Horizons and SPK kernels.
 - **Small Bodies**: Dedicated specialists for Centaurs (Chiron, Pholus), TNOs (Eris, Sedna), and uranian Hamburg School bodies.
-- **Nodes & Apsides**: True/Mean nodes, Lilith, and orbital apsides for all planetary bodies.
+- **Nodes & Apsides**: True/Mean nodes, Lilith, and orbital nodes/apsides for all planetary bodies.
 - **Fixed Stars**: ~1.5K from SE catalog + Gaia DR3 binary catalog (~290K entries) with BP-RP spectral color mapping.
 - **Star Groups**: 15 Behenian stars, Royal Stars, Pleiades, and Orion belt clusters.
 - **Variable Stars**: Phase and magnitude engine; eclipsing binary models (Algol-specific API).
@@ -101,7 +103,7 @@ graph TD
 - **Eclipse Search**: NASA-canon contact solver for solar/lunar eclipses; Saros series with heptagonal vertex labeling.
 - **Heliacal Dynamics**: Heliacal rising/setting of stars; Parans (paranatellonta) field analysis.
 - **Mapping & Occultations**: Astrocartography (ACG) contour mapping; Lunar/Stellar occultations and planetary phenomena.
-- **Temporal Systems**: 28-mansion Arabic Manazil system; Sothic cycle drift and historical Egyptian civil calendar conversion.
+- **Temporal Systems**: 28-mansion Arabic lunar station system (Manazil); Sothic cycle drift and Egyptian civil calendar conversion.
 
 ### Precision Infrastructure
 - **Nutation**: IAU 2000A (1,358 luni-solar terms + 1,056 planetary terms).
@@ -152,9 +154,12 @@ python -m venv .venv
 
 | Document | Contents |
 | :--- | :--- |
-| [`01_LIGHT_BOX_DOCTRINE.md`](moira/docs/01_LIGHT_BOX_DOCTRINE.md) | The philosophical and technical inversion of the ephemeris standard. |
-| [`BEYOND_SWISS_EPHEMERIS.md`](moira/docs/BEYOND_SWISS_EPHEMERIS.md) | Capabilities impossible before Gaia, Horizons, and modern Python. |
-| [`VALIDATION_ASTRONOMY.md`](moira/docs/VALIDATION_ASTRONOMY.md) | Sub-milliarcsecond validation reports against JPL Horizons. |
+| [`THE_COVENANT.md`](wiki/00_foundations/THE_COVENANT.md) | The constitutional laws governing the project and its development. |
+| [`SCP.md`](wiki/00_foundations/SCP.md) | The Subsystem Constitutionalization Process (SCP) methodology. |
+| [`01_LIGHT_BOX_DOCTRINE.md`](wiki/01_doctrines/01_LIGHT_BOX_DOCTRINE.md) | The philosophical and technical inversion of the ephemeris standard. |
+| [`BEYOND_SWISS_EPHEMERIS.md`](wiki/01_doctrines/BEYOND_SWISS_EPHEMERIS.md) | Capabilities impossible before Gaia, Horizons, and modern Python. |
+| [`MOIRA_ROADMAP.md`](wiki/06_roadmap/MOIRA_ROADMAP.md) | The strategic path toward substrate parity and transcendence. |
+| [`VALIDATION_ASTRONOMY.md`](wiki/03_validation/VALIDATION_ASTRONOMY.md) | Sub-milliarcsecond validation reports against JPL Horizons. |
 
 ---
 

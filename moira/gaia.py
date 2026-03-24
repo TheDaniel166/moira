@@ -104,6 +104,16 @@ from .precession import general_precession_in_longitude
 
 _J2000        = 2451545.0
 _J2016        = 2457389.0       # Gaia DR3 reference epoch J2016.0
+
+# Gaia stellar positions are valid for ±500 years from J2016.  Beyond this
+# window, linear proper-motion propagation accumulates errors that exceed the
+# catalog's own astrometric precision for fast-moving nearby stars (e.g. a
+# star with µ = 1000 mas/yr drifts ~0.14° over 500 years, and the linear
+# model itself breaks down due to perspective acceleration).  Precession and
+# nutation models remain accurate well beyond this range; the proper-motion
+# limit is the binding constraint.
+_GAIA_JD_MIN  = _J2016 - 500 * 365.25   # ≈ JD 2274764  (year ~1516)
+_GAIA_JD_MAX  = _J2016 + 500 * 365.25   # ≈ JD 2640014  (year ~2516)
 _AS2DEG       = 1.0 / 3600.0
 _MAS_PER_YR_TO_DEG_PER_YR = 0.001 * _AS2DEG
 _PC_TO_KM     = 3.085677581e13  # 1 parsec in km
@@ -450,16 +460,29 @@ def _ensure_loaded() -> None:
         load_gaia_catalog()
 
 
-def _lon_range_indices(center: float, half_width: float) -> list[int]:
+_J2000_JD = 2451545.0
+_PRECESSION_DEG_PER_YR = 50.3 / 3600.0   # ~50.3 arcsec/yr general precession in longitude
+
+
+def _lon_range_indices(center: float, half_width: float, jd_tt: float = _J2000_JD) -> list[int]:
     """
     Return record indices whose approximate ecliptic longitude is within
     *half_width* degrees of *center*, using binary search on _lon_index.
 
-    Adds a 0.5° guard band beyond half_width to account for the J2000
-    approximation vs. the full pipeline.
+    The index stores J2000.0 approximate longitudes.  A time-dependent guard
+    band is added to account for the difference between the J2000 index
+    position and the true computed position at *jd_tt*:
+
+      guard = half_width
+            + 0.3°           (nutation, proper motion, parallax, rounding)
+            + |Δt_yr| × 50.3"/yr converted to degrees   (general precession)
+
+    This ensures no star within *half_width* of *center* is missed due to the
+    J2000 approximation, across the full supported JD range (~1900–2100).
     """
     assert _lon_index is not None
-    guard  = half_width + 0.5
+    dt_yr  = abs(jd_tt - _J2000_JD) / 365.25
+    guard  = half_width + 0.3 + dt_yr * _PRECESSION_DEG_PER_YR
     lo     = (center - guard) % 360.0
     hi     = (center + guard) % 360.0
 
@@ -764,6 +787,16 @@ def _record_to_position(
 # Public API
 # ---------------------------------------------------------------------------
 
+def _validate_gaia_jd(jd_tt: float) -> None:
+    if not (_GAIA_JD_MIN <= jd_tt <= _GAIA_JD_MAX):
+        raise ValueError(
+            f"jd_tt={jd_tt:.1f} is outside the Gaia position validity window "
+            f"[{_GAIA_JD_MIN:.1f}, {_GAIA_JD_MAX:.1f}] "
+            f"(approx. years 1516–2516).  "
+            f"Linear proper-motion propagation is unreliable beyond ±500 years "
+            f"of the Gaia DR3 reference epoch (J2016.0)."
+        )
+
 def gaia_star_at(
     source_index:    int,
     jd_tt:           float,
@@ -796,6 +829,7 @@ def gaia_star_at(
     of proper motion, amounting to a few hundredths of an arcsecond.
     """
     _ensure_loaded()
+    _validate_gaia_jd(jd_tt)
     assert _records is not None
 
     if source_index < 0 or source_index >= len(_records):
@@ -845,6 +879,7 @@ def gaia_stars_near(
     List of GaiaStarPosition sorted by angular distance from *longitude*.
     """
     _ensure_loaded()
+    _validate_gaia_jd(jd_tt)
     assert _records is not None
 
     # Pre-compute shared quantities once for all records at this jd_tt.
@@ -863,7 +898,7 @@ def gaia_stars_near(
     # window, then run the full pipeline only on those.
     # _lon_index excludes G < 3.0 stars (they saturate Gaia), so union in
     # _bright_indices so those are never silently dropped.
-    candidate_indices: list[int] = _lon_range_indices(longitude, orb)
+    candidate_indices: list[int] = _lon_range_indices(longitude, orb, jd_tt)
     if _bright_indices:
         seen = set(candidate_indices)
         candidate_indices = candidate_indices + [i for i in _bright_indices if i not in seen]
@@ -917,6 +952,7 @@ def gaia_stars_by_magnitude(
     List of GaiaStarPosition sorted brightest first.
     """
     _ensure_loaded()
+    _validate_gaia_jd(jd_tt)
     assert _records is not None
 
     # Pre-compute shared quantities once for all records at this jd_tt.

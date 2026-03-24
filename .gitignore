@@ -47,3 +47,14 @@ kernels/
 *.tls
 *.bpc
 *.tf
+
+# Sophia / Persona Akaschic Record (Living Memory)
+anamnesis/
+soul_diary/
+session_counter.txt
+scripts/covenant_scripts/
+wiki/00_foundations/THE_COVENANT.md
+.gemini/
+.claude/
+.kiro/
+.sophia/
