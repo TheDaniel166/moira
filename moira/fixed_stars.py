@@ -22,7 +22,7 @@ Delegates:
 Import-time side effects: None. Catalog is loaded lazily on first query.
 
 External dependency assumptions:
-    - sefstars.txt must be present at <project_root>/sefstars.txt before
+    - sefstars.txt must be present at <project_root>/kernels/sefstars.txt before
       any position query is made; FileNotFoundError is raised otherwise.
     - No Qt, no database, no OS threads.
 
@@ -61,7 +61,7 @@ Usage
     for name in list_stars():
         print(name)
 
-Place sefstars.txt in the same directory as de441.bsp (the project root).
+Place sefstars.txt in the kernels/ directory alongside de441.bsp.
 Download from: https://raw.githubusercontent.com/astrorigin/swisseph/master/sefstars.txt
 """
 
@@ -989,8 +989,8 @@ _catalog_path: Path | None                = None
 
 
 def _default_catalog_path() -> Path:
-    """Return the expected location of sefstars.txt (same dir as de441.bsp)."""
-    return Path(__file__).resolve().parents[1] / "sefstars.txt"
+    """Return the expected location of sefstars.txt (kernels/ alongside de441.bsp)."""
+    return Path(__file__).resolve().parents[1] / "kernels" / "sefstars.txt"
 
 
 def load_catalog(path: Path | str | None = None) -> None:
@@ -998,7 +998,7 @@ def load_catalog(path: Path | str | None = None) -> None:
     Load (or reload) the fixed star catalog from *path*.
 
     If *path* is None the default location is used:
-        <project_root>/sefstars.txt
+        <project_root>/kernels/sefstars.txt
 
     Raises FileNotFoundError if the file does not exist.
     """
@@ -1009,7 +1009,7 @@ def load_catalog(path: Path | str | None = None) -> None:
         raise FileNotFoundError(
             f"sefstars.txt not found at {p}\n"
             "Download from: https://raw.githubusercontent.com/astrorigin/swisseph/master/sefstars.txt\n"
-            "and place it in the project root alongside de441.bsp."
+            "and place it in the kernels/ directory alongside de441.bsp."
         )
 
     _catalog = _parse_catalog(p)

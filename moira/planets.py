@@ -634,7 +634,7 @@ def planet_at(
 
     dpsi_deg, deps_deg = _nutation(jd_tt)
     if obliquity is None:
-        obliquity = mean_obliquity(jd_tt) + (deps_deg if nutation else 0.0)
+        obliquity = mean_obliquity(jd_tt) + (deps_deg if (apparent and nutation) else 0.0)
 
     if apparent:
         earth_ssb = _earth_barycentric(jd_tt, reader)

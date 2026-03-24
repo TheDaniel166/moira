@@ -147,8 +147,13 @@ from .aspects import (
     find_patterns,
 )
 from .sidereal import ayanamsa, tropical_to_sidereal, sidereal_to_tropical, Ayanamsa, UserDefinedAyanamsa, list_ayanamsa_systems
-from .heliacal import HeliacalEventKind, VisibilityModel, HeliacalPolicy
-from .orbits import KeplerianElements, DistanceExtremes
+from .heliacal import (
+    HeliacalEventKind, VisibilityModel, HeliacalPolicy,
+    PlanetHeliacalEvent,
+    planet_heliacal_rising, planet_heliacal_setting,
+    planet_acronychal_rising, planet_acronychal_setting,
+)
+from .orbits import KeplerianElements, DistanceExtremes, orbital_elements_at, distance_extremes_at
 from .eclipse import (
     EclipseData,
     EclipseEvent,
@@ -783,9 +788,12 @@ __all__ = [
     # Phase 3 design vessels
     "UserDefinedAyanamsa",
     "HeliacalEventKind", "VisibilityModel", "HeliacalPolicy",
+    "PlanetHeliacalEvent",
+    "planet_heliacal_rising", "planet_heliacal_setting",
+    "planet_acronychal_rising", "planet_acronychal_setting",
     "SolarEclipsePath",
     "OccultationPathGeometry",
-    "KeplerianElements", "DistanceExtremes",
+    "KeplerianElements", "DistanceExtremes", "orbital_elements_at", "distance_extremes_at",
     "CuspSpeed", "HouseDynamics", "cusp_speeds_at",
     # Twilight
     "RiseSetPolicy", "TwilightTimes", "twilight_times",

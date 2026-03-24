@@ -57,7 +57,7 @@ def _parse_dec(degrees: str, minutes: str, seconds: str) -> float:
 
 def _load_target_rows() -> dict[str, list[str]]:
     rows: dict[str, list[str]] = {}
-    path = Path(__file__).resolve().parents[2] / "sefstars.txt"
+    path = Path(__file__).resolve().parents[2] / "kernels" / "sefstars.txt"
 
     with path.open(encoding="utf-8", errors="replace") as fh:
         for raw_line in fh:

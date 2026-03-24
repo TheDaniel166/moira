@@ -15,7 +15,7 @@ Oracle / authority
 ------------------
 Phase formula  — linear ephemeris: phi = ((JD - epoch) / period) % 1
 Light curves   — GCVS variability class definitions (Samus+ 2017)
-Algol epoch    — GCVS epoch JD 2453600.8877, period 2.8673075 d
+Algol epoch    — AAVSO VSX epoch HJD 2455565.33243, period 2.867323862 d
                — at epoch: phase = 0 (primary minimum, deepest eclipse)
 Catalog values — GCVS (Samus+ 2017) and AAVSO VSX
 """
@@ -195,7 +195,7 @@ class TestPhase:
 
     def test_algol_phase_at_known_epoch(self):
         vs = variable_star("Algol")
-        assert abs(phase_at(vs, 2453600.8877)) < 1e-10
+        assert abs(phase_at(vs, 2455565.33243)) < 1e-10
 
 
 # ===========================================================================

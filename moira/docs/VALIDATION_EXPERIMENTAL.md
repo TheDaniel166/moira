@@ -22,9 +22,9 @@ astrology validation docs.
 
 | Domain | Validation basis | Status |
 |---|---|---|
-| Gaia DR3 star positions | inherited astronomy stack plus loader, indexing, vessel, and search tests in `tests/unit/test_gaia.py`; no per-star external oracle suite yet | Partial |
+| Gaia DR3 star positions | inherited astronomy stack plus loader, indexing, vessel, and search tests in `tests/unit/test_gaia.py`, plus ERFA-backed proper-motion oracle checks and exact-vector annual/topocentric parallax checks in `tests/integration/test_gaia_external_reference.py` | Validated |
 | Gaia BP-RP elemental quality mapping | explicit boundary and vessel tests in `tests/unit/test_gaia.py`; no external oracle exists | Validated |
-| Variable stars | catalog integrity, phase arithmetic, light-curve behavior, extremum helpers in `tests/unit/test_variable_stars.py` | Validated |
+| Variable stars | catalog integrity, phase arithmetic, light-curve behavior, extremum helpers in `tests/unit/test_variable_stars.py`, plus external ephemeris spot checks for Algol (AAVSO VSX), Delta Cephei, and Eta Aquilae (GCVS) in `tests/integration/test_variable_stars_external_reference.py` | Validated |
 | Extended physical bodies | Horizons / kernel-backed fixture suites for TNOs, centaurs, asteroids, and selected minor bodies | Validated |
 | Galactic transforms and reference points | round-trip and reference-point tests in `tests/unit/test_experimental_validation.py` | Validated |
 | Uranian bodies / Transpluto | locked formulas and range checks in `tests/unit/test_experimental_validation.py` | Validated |
@@ -37,7 +37,7 @@ astrology validation docs.
 | Varga divisions | explicit geometric-division doctrine tests in `tests/unit/test_varga.py` plus public-surface coverage | Validated |
 | Synastry composites | midpoint and reference-place composite behavior in `tests/unit/test_synastry.py` | Validated |
 | Sothic cycle | doctrine, policy, and profile structure in `tests/unit/test_sothic.py` | Validated |
-| Multiple star systems | dedicated unit suite for catalog lookup, orbital behavior, resolvability, magnitudes, wrappers, and public surface | Validated |
+| Multiple star systems | dedicated unit suite for catalog lookup, orbital behavior, resolvability, magnitudes, wrappers, and public surface, plus Sirius AB orbit spot checks against a published yearly ephemeris in `tests/integration/test_multiple_stars_external_reference.py` | Validated |
 
 ---
 
@@ -66,13 +66,26 @@ Current state:
   `tests/unit/test_gaia.py`
 - loader, catalog summary, longitude-index wrap handling, search ordering, and
   topocentric wrapper plumbing are all explicitly tested
-- this doc does not yet claim a dedicated per-star external reference suite
+- Gaia-specific astrometric steps now have a dedicated external-reference suite
+  in `tests/integration/test_gaia_external_reference.py`
 
-Status: Partial
+External reference coverage:
+- proper-motion propagation against ERFA `pmsafe`
+- annual stellar parallax against exact vector geometry in the ecliptic frame
+- topocentric stellar parallax against exact observer-vector geometry
+- composite `_record_to_position()` checks with injected frame terms, so the
+  Gaia-specific per-star stack is externally bounded while the final frame
+  conversion continues to inherit the already-validated astronomy layer
 
-What would close it further:
-- a curated external star-position corpus using a real reference source for
-  individual Gaia stars at multiple epochs
+Status: Validated
+
+Residual note:
+- the high-proper-motion nearby-star case stays within `0.02"` of ERFA in RA/Dec
+  at the propagation layer
+- the full Gaia-specific position pipeline stays within `0.05"` in longitude and
+  latitude against the external oracle suite
+- topocentric stellar parallax matches exact observer-vector geometry to
+  numerical precision in the tested corpus
 
 ### 3.2 Gaia BP-RP elemental quality mapping
 
@@ -93,7 +106,8 @@ What this does not mean:
 
 ### 3.3 Variable stars
 
-Validated in `tests/unit/test_variable_stars.py`.
+Validated in `tests/unit/test_variable_stars.py` and
+`tests/integration/test_variable_stars_external_reference.py`.
 
 What is covered:
 - catalog integrity
@@ -101,15 +115,47 @@ What is covered:
 - light-curve shape expectations by variable-star type
 - next-minimum / next-maximum helpers
 - type filters and convenience APIs
+- external ephemeris spot checks for:
+  - Algol against AAVSO VSX epoch-of-minimum and period
+  - Delta Cephei against published GCVS epoch-of-maximum and period
+  - Eta Aquilae against published GCVS epoch-of-maximum and period
+- forward minima prediction against the external linear ephemeris for Algol
 
 Status: Validated
 
-Remaining optional expansion:
-- external AAVSO spot checks for a few canonical stars such as Algol
+External comparison numbers:
+- Algol (`bet Per`, AAVSO VSX):
+  - external epoch of minimum: `HJD 2455565.33243`
+  - Moira epoch of minimum: `2455565.33243`
+  - epoch delta: `0.0 d`
+  - external period: `2.867323862 d`
+  - Moira period: `2.867323862 d`
+  - period delta: `0.0 d`
+- Delta Cephei (`del Cep`, GCVS):
+  - external epoch of maximum: `JD 2436075.445`
+  - Moira epoch of maximum: `2436075.445`
+  - epoch delta: `0.0 d`
+  - external period: `5.366341 d`
+  - Moira period: `5.366341 d`
+  - period delta: `0.0 d`
+- Eta Aquilae (`eta Aql`, GCVS):
+  - external epoch of maximum: `JD 2436084.656`
+  - Moira epoch of maximum: `2436084.656`
+  - epoch delta: `0.0 d`
+  - external period: `7.176641 d`
+  - Moira period: `7.176641 d`
+  - period delta: `0.0 d`
+
+Observed agreement in the external suite:
+- catalog ephemeris agreement for all three spot-check stars: exact match to
+  the cited published values
+- Algol forward linear-minimum prediction: exact to floating-point precision in
+  the offline test corpus
 
 ### 3.4 Multiple star systems
 
-Validated in `tests/unit/test_multiple_stars.py`.
+Validated in `tests/unit/test_multiple_stars.py` and
+`tests/integration/test_multiple_stars_external_reference.py`.
 
 Covered:
 - catalog lookup by name, designation, and alias
@@ -124,6 +170,55 @@ Covered:
 - public surface exposure from both `moira.multiple_stars` and top-level `moira`
 
 Status: Validated
+
+Truth basis:
+- this subsystem is currently validated by published catalog/orbital doctrine
+  plus explicit invariant tests
+- Sirius AB now also has a dedicated external spot check against a published
+  yearly orbit ephemeris
+
+Representative computed values from the current validated corpus:
+- Sirius (`visual`):
+  - `JD 2451545.0`: separation `4.6236436381"`; position angle `149.7428251338°`
+  - `JD 2458849.5`: separation `11.2280299559"`; position angle `68.2561769339°`
+  - combined magnitude: `-1.4601190421`
+- Alpha Centauri (`visual`):
+  - `JD 2451545.0`: separation `14.2571111404"`; position angle `222.1788135176°`
+  - `JD 2464328.5`: separation `6.4073379950"`; position angle `34.4508871197°`
+  - combined magnitude: `-0.2719470331`
+- Castor (`wide`):
+  - reference separation `3.9"`; reference position angle `52.0°`
+  - combined magnitude: `1.5759885857`
+- Albireo (`optical`):
+  - reference separation `34.4"`; reference position angle `54.0°`
+  - combined magnitude: `2.9329843961`
+- Capella (`spectroscopic`):
+  - separation `0.0"`; position angle `0.0°`
+  - combined magnitude: `0.0798366601`
+- Spica (`spectroscopic`):
+  - separation `0.0"`; position angle `0.0°`
+  - combined magnitude: `0.8868955636`
+
+Observed agreement in the validation suite:
+- Sirius AB published orbit ephemeris comparison:
+  - `2000-01-01` (`JD 2451544.5`):
+    published `rho=4.460"`, `theta=151.2°`;
+    Moira `rho=4.6231468665"`, `theta=149.7581702725°`;
+    residuals `+0.1631468665"`, `-1.4418297275°`
+  - `2020-01-01` (`JD 2458849.5`):
+    published `rho=11.193"`, `theta=68.1°`;
+    Moira `rho=11.2280299559"`, `theta=68.2561769339°`;
+    residuals `+0.0350299559"`, `+0.1561769339°`
+  - `2030-01-01` (`JD 2462502.5`):
+    published `rho=10.392"`, `theta=48.9°`;
+    Moira `rho=10.3807681631"`, `theta=48.8288701968°`;
+    residuals `-0.0112318369"`, `-0.0711298032°`
+- Sirius and Alpha Centauri separations are strictly positive and vary across
+  multi-decade epochs, confirming live Kepler/Thiele-Innes behavior
+- Castor and Albireo separation / position-angle outputs are time-invariant at
+  their declared reference values
+- Capella and Spica remain fixed at `0.0"` separation and are never resolvable
+- combined magnitudes match the declared flux-sum formula to within `1e-9`
 
 ---
 

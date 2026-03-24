@@ -319,6 +319,7 @@ def test_classical_asteroid_at_delegation_round_trip(jd):
 _MAIN_BELT_SAMPLE = ["Astraea", "Hebe", "Psyche", "Fortuna", "Lutetia"]
 
 @pytest.mark.requires_ephemeris
+@settings(deadline=None)
 @given(jd=st.floats(min_value=2415020.5, max_value=2488069.5, allow_nan=False, allow_infinity=False))
 def test_main_belt_at_delegation_round_trip(jd):
     """**Validates: Requirements 2.3, 2.7**"""
@@ -338,6 +339,7 @@ def test_main_belt_at_delegation_round_trip(jd):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.requires_ephemeris
+@settings(deadline=None)
 @given(jd=st.floats(min_value=2415020.5, max_value=2488069.5, allow_nan=False, allow_infinity=False))
 def test_tno_at_delegation_round_trip(jd):
     """**Validates: Requirements 3.3, 3.8**"""

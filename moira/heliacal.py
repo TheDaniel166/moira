@@ -66,14 +66,22 @@ Import-time side effects: None
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from enum import Enum
+
+from .constants import Body
 
 
 __all__ = [
     "HeliacalEventKind",
     "VisibilityModel",
     "HeliacalPolicy",
+    "PlanetHeliacalEvent",
+    "planet_heliacal_rising",
+    "planet_heliacal_setting",
+    "planet_acronychal_rising",
+    "planet_acronychal_setting",
 ]
 
 
@@ -252,3 +260,458 @@ class HeliacalPolicy:
     def default(cls) -> 'HeliacalPolicy':
         """Return the standard naked-eye dark-sky policy."""
         return cls()
+
+
+# ---------------------------------------------------------------------------
+# Internal constants
+# ---------------------------------------------------------------------------
+
+_HELIACAL_PLANETS: frozenset[str] = frozenset({
+    Body.MERCURY, Body.VENUS, Body.MARS,
+    Body.JUPITER, Body.SATURN, Body.URANUS, Body.NEPTUNE,
+})
+
+# Minimum elongation (°) from the Sun before bothering to test visibility.
+# Below this the planet is lost in the solar glare regardless of magnitude.
+_ELONG_MIN: float = 5.0
+
+
+# ---------------------------------------------------------------------------
+# Private helpers
+# ---------------------------------------------------------------------------
+
+def _signed_elongation(body: str, jd: float) -> float:
+    """
+    Signed ecliptic elongation of *body* from the Sun (degrees).
+
+    Positive = east of Sun (evening star).
+    Negative = west of Sun (morning star).
+    Range: (−180, +180].
+    """
+    from .planets import planet_at
+    p = planet_at(body, jd)
+    s = planet_at(Body.SUN, jd)
+    return (p.longitude - s.longitude + 180.0) % 360.0 - 180.0
+
+
+def _planet_alt(body: str, jd: float, lat: float, lon: float) -> float:
+    """Altitude of *body* above the observer's horizon (degrees)."""
+    from .rise_set import _altitude
+    return _altitude(jd, lat, lon, body)
+
+
+def _sun_alt(jd: float, lat: float, lon: float) -> float:
+    """Altitude of the Sun above the observer's horizon (degrees)."""
+    from .rise_set import _altitude
+    return _altitude(jd, lat, lon, Body.SUN)
+
+
+def _arcus_visionis(mag: float, model: VisibilityModel) -> float:
+    """
+    Solar depression (degrees) required for a body of apparent magnitude *mag*
+    to be visible under the given atmospheric conditions.
+
+    Based on the classical stepped table (Ptolemy / Schoch), scaled for
+    non-standard limiting magnitude and extinction coefficient.
+    """
+    if mag <= -4.0:
+        base = 5.0
+    elif mag <= -2.0:
+        base = 6.5
+    elif mag <= -1.0:
+        base = 7.5
+    elif mag <= 0.0:
+        base = 9.0
+    elif mag <= 1.0:
+        base = 10.0
+    elif mag <= 2.0:
+        base = 11.0
+    elif mag <= 3.0:
+        base = 12.0
+    elif mag <= 4.0:
+        base = 13.0
+    else:
+        base = 14.5
+    # Adjust for limiting magnitude (observer acuity) and extinction
+    base += (6.5 - model.limiting_magnitude) * 0.8
+    base += (model.extinction_coefficient - 0.25) * 4.0
+    return max(3.0, base)
+
+
+def _find_sun_at_alt(
+    jd_midnight: float,
+    lat: float,
+    lon: float,
+    target_alt: float,
+    morning: bool,
+) -> float | None:
+    """
+    Find the JD when the Sun's altitude equals *target_alt* within one
+    half-day window.
+
+    Parameters
+    ----------
+    jd_midnight : JD of the midnight that begins the civil day being searched.
+    morning     : True  → search the morning half [midnight, noon].
+                  False → search the evening half [noon, next-midnight].
+    target_alt  : Target solar altitude (negative for twilight, e.g. −12.0).
+
+    Returns None if no crossing exists (polar day/night, or wrong half-day).
+    """
+    t0 = jd_midnight if morning else jd_midnight + 0.5
+    t1 = t0 + 0.5
+    a0 = _sun_alt(t0, lat, lon)
+    a1 = _sun_alt(t1, lat, lon)
+
+    if morning:
+        # Sun should be rising through target: a0 ≤ target ≤ a1
+        if not (a0 <= target_alt <= a1):
+            return None
+    else:
+        # Sun should be descending through target: a1 ≤ target ≤ a0
+        if not (a1 <= target_alt <= a0):
+            return None
+
+    for _ in range(22):
+        tm = (t0 + t1) * 0.5
+        am = _sun_alt(tm, lat, lon)
+        if (a0 - target_alt) * (am - target_alt) <= 0.0:
+            t1, a1 = tm, am
+        else:
+            t0, a0 = tm, am
+    return (t0 + t1) * 0.5
+
+
+def _check_visibility(
+    body: str,
+    jd_midnight: float,
+    lat: float,
+    lon: float,
+    morning: bool,
+    model: VisibilityModel,
+) -> tuple[float, float, float, float] | None:
+    """
+    Check whether *body* is visible at the arcus-visionis twilight moment on
+    the given day.
+
+    Returns ``(twilight_jd, planet_alt_deg, sun_alt_deg, magnitude)`` if
+    visible, else ``None``.
+    """
+    from .phase import apparent_magnitude
+    try:
+        mag = apparent_magnitude(body, jd_midnight + 0.5)
+    except Exception:
+        return None
+    av = _arcus_visionis(mag, model)
+    twilight_jd = _find_sun_at_alt(jd_midnight, lat, lon, -av, morning)
+    if twilight_jd is None:
+        return None
+    planet_alt = _planet_alt(body, twilight_jd, lat, lon)
+    if planet_alt <= model.horizon_altitude_deg:
+        return None
+    return twilight_jd, planet_alt, -av, mag
+
+
+def _validate_args(
+    body: str,
+    jd_start: float,
+    lat: float,
+    lon: float,
+    search_days: int,
+) -> None:
+    if body not in _HELIACAL_PLANETS:
+        raise ValueError(
+            f"body must be a planet (not SUN, MOON, or EARTH); got {body!r}"
+        )
+    if not math.isfinite(jd_start):
+        raise ValueError(f"jd_start must be finite, got {jd_start}")
+    if not -90.0 <= lat <= 90.0:
+        raise ValueError(f"lat must be in [-90, 90], got {lat}")
+    if not -180.0 <= lon <= 180.0:
+        raise ValueError(f"lon must be in [-180, 180], got {lon}")
+    if not (isinstance(search_days, int) and search_days > 0):
+        raise ValueError(f"search_days must be a positive integer, got {search_days!r}")
+
+
+# ---------------------------------------------------------------------------
+# PlanetHeliacalEvent
+# ---------------------------------------------------------------------------
+
+@dataclass(frozen=True, slots=True)
+class PlanetHeliacalEvent:
+    """
+    Result vessel for a planet heliacal or acronychal visibility event.
+
+    Fields
+    ------
+    body : str
+        Planet name (one of the ``Body.*`` constants).
+    kind : HeliacalEventKind
+        The event type.
+    jd_ut : float
+        Julian Day (UT1) of the event — the moment when the Sun's altitude
+        equals ``−arcus_visionis`` (the visibility threshold crossing).
+    elongation_deg : float
+        Signed elongation from the Sun at the event day.
+        Negative = west of Sun (morning sky).
+        Positive = east of Sun (evening sky).
+    planet_altitude_deg : float
+        Planet's altitude above the observer's horizon at ``jd_ut``.
+    sun_altitude_deg : float
+        Sun's altitude at ``jd_ut`` (equals ``−arcus_visionis`` by construction).
+    apparent_magnitude : float
+        Planet's apparent V magnitude on the event date.
+    """
+    body:                  str
+    kind:                  HeliacalEventKind
+    jd_ut:                 float
+    elongation_deg:        float
+    planet_altitude_deg:   float
+    sun_altitude_deg:      float
+    apparent_magnitude:    float
+
+
+# ---------------------------------------------------------------------------
+# Public computation layer
+# ---------------------------------------------------------------------------
+
+def planet_heliacal_rising(
+    body: str,
+    jd_start: float,
+    lat: float,
+    lon: float,
+    policy: HeliacalPolicy | None = None,
+    search_days: int = 400,
+) -> PlanetHeliacalEvent | None:
+    """
+    Find the next heliacal rising of a planet from ``jd_start``.
+
+    The heliacal rising is the first morning when the planet is visible in
+    the eastern sky before sunrise, after a period of solar invisibility.
+    This is the classical *first appearance* — Venus rising as the morning
+    star (Lucifer / Phosphoros), or Mars/Jupiter/Saturn emerging from the
+    Sun's rays.
+
+    Parameters
+    ----------
+    body        : Planet body constant (``Body.VENUS``, ``Body.MARS``, etc.).
+                  ``Body.SUN``, ``Body.MOON``, and ``Body.EARTH`` raise
+                  ``ValueError``.
+    jd_start    : Julian Day (UT1) to begin the forward search.
+                  Start near or just before the expected solar conjunction
+                  for best results.
+    lat         : Observer latitude (degrees, north positive).
+    lon         : Observer longitude (degrees, east positive).
+    policy      : :class:`HeliacalPolicy` governing visibility conditions.
+                  Defaults to standard naked-eye dark-sky conditions.
+    search_days : Maximum number of days to scan forward.  Increase for
+                  slow outer planets.  Default 400.
+
+    Returns
+    -------
+    :class:`PlanetHeliacalEvent` or ``None`` if no event is found within
+    ``search_days``.
+
+    Algorithm
+    ---------
+    For each day in the search window:
+
+    1. Compute signed elongation.  Skip if ≥ 0° (planet not in morning sky)
+       or |elongation| < 5° (too close to Sun).
+    2. Compute the planet's apparent magnitude → arcus visionis.
+    3. Find the moment when the Sun's altitude = −arcus_visionis before
+       sunrise (bisection on solar altitude).
+    4. Compute planet altitude at that moment.  If planet is above the
+       visibility horizon → heliacal rising.
+    """
+    _validate_args(body, jd_start, lat, lon, search_days)
+    policy = policy if policy is not None else HeliacalPolicy.default()
+    model  = policy.visibility_model
+
+    # Normalize jd_start to the preceding midnight
+    jd_mid0 = math.floor(jd_start + 0.5) - 0.5
+
+    # Scan forward: first day where planet is in morning sky and visible at twilight.
+    for d in range(search_days):
+        jd_midnight = jd_mid0 + d
+        se = _signed_elongation(body, jd_midnight + 0.5)
+        if se >= 0.0 or abs(se) < _ELONG_MIN:
+            continue
+        vis = _check_visibility(body, jd_midnight, lat, lon, morning=True, model=model)
+        if vis is not None:
+            jd_ev, p_alt, s_alt, mag = vis
+            return PlanetHeliacalEvent(
+                body=body,
+                kind=HeliacalEventKind.HELIACAL_RISING,
+                jd_ut=jd_ev,
+                elongation_deg=se,
+                planet_altitude_deg=p_alt,
+                sun_altitude_deg=s_alt,
+                apparent_magnitude=mag,
+            )
+    return None
+
+
+def planet_heliacal_setting(
+    body: str,
+    jd_start: float,
+    lat: float,
+    lon: float,
+    policy: HeliacalPolicy | None = None,
+    search_days: int = 400,
+) -> PlanetHeliacalEvent | None:
+    """
+    Find the next heliacal setting of a planet from ``jd_start``.
+
+    The heliacal setting is the last morning when the planet is visible
+    before it disappears into the Sun's light ahead of solar conjunction.
+
+    The search scans forward, tracking the last visible morning.  When the
+    planet's elongation drops below the minimum threshold (planet re-enters
+    the Sun's glare), the last recorded visible morning is returned.
+
+    Parameters
+    ----------
+    body, jd_start, lat, lon, policy, search_days : see
+        :func:`planet_heliacal_rising`.
+
+    Notes
+    -----
+    Start ``jd_start`` when the planet is already in the morning sky for
+    best results.  If no visible morning is found before the search ends,
+    returns ``None``.
+    """
+    _validate_args(body, jd_start, lat, lon, search_days)
+    policy = policy if policy is not None else HeliacalPolicy.default()
+    model  = policy.visibility_model
+
+    jd_mid0 = math.floor(jd_start + 0.5) - 0.5
+
+    last: tuple[float, float, float, float, float] | None = None  # (jd, alt, sun_alt, mag, elong)
+
+    for d in range(search_days):
+        jd_midnight = jd_mid0 + d
+        se = _signed_elongation(body, jd_midnight + 0.5)
+        abs_se = abs(se)
+
+        if se < 0.0 and abs_se >= _ELONG_MIN:
+            vis = _check_visibility(body, jd_midnight, lat, lon, morning=True, model=model)
+            if vis is not None:
+                jd_ev, p_alt, s_alt, mag = vis
+                last = (jd_ev, p_alt, s_alt, mag, se)
+        elif last is not None and abs_se < _ELONG_MIN:
+            # Planet was visible but is now in the Sun's rays — heliacal setting
+            jd_ev, p_alt, s_alt, mag, elong = last
+            return PlanetHeliacalEvent(
+                body=body,
+                kind=HeliacalEventKind.HELIACAL_SETTING,
+                jd_ut=jd_ev,
+                elongation_deg=elong,
+                planet_altitude_deg=p_alt,
+                sun_altitude_deg=s_alt,
+                apparent_magnitude=mag,
+            )
+
+    return None
+
+
+def planet_acronychal_rising(
+    body: str,
+    jd_start: float,
+    lat: float,
+    lon: float,
+    policy: HeliacalPolicy | None = None,
+    search_days: int = 400,
+) -> PlanetHeliacalEvent | None:
+    """
+    Find the next acronychal rising of a planet from ``jd_start``.
+
+    The acronychal rising is the first evening when the planet is visible
+    in the western sky after sunset — the first appearance as an evening
+    star.  For Venus this is the Hesperus / evening-star phase; for outer
+    planets it corresponds to the first evening visibility after the planet
+    has passed through the morning sky and now re-enters evening apparition.
+
+    Parameters
+    ----------
+    body, jd_start, lat, lon, policy, search_days : see
+        :func:`planet_heliacal_rising`.
+    """
+    _validate_args(body, jd_start, lat, lon, search_days)
+    policy = policy if policy is not None else HeliacalPolicy.default()
+    model  = policy.visibility_model
+
+    jd_mid0 = math.floor(jd_start + 0.5) - 0.5
+
+    # Scan forward: first day where planet is in evening sky and visible at dusk.
+    for d in range(search_days):
+        jd_midnight = jd_mid0 + d
+        se = _signed_elongation(body, jd_midnight + 0.5)
+        if se <= 0.0 or abs(se) < _ELONG_MIN:
+            continue
+        vis = _check_visibility(body, jd_midnight, lat, lon, morning=False, model=model)
+        if vis is not None:
+            jd_ev, p_alt, s_alt, mag = vis
+            return PlanetHeliacalEvent(
+                body=body,
+                kind=HeliacalEventKind.ACRONYCHAL_RISING,
+                jd_ut=jd_ev,
+                elongation_deg=se,
+                planet_altitude_deg=p_alt,
+                sun_altitude_deg=s_alt,
+                apparent_magnitude=mag,
+            )
+    return None
+
+
+def planet_acronychal_setting(
+    body: str,
+    jd_start: float,
+    lat: float,
+    lon: float,
+    policy: HeliacalPolicy | None = None,
+    search_days: int = 400,
+) -> PlanetHeliacalEvent | None:
+    """
+    Find the next acronychal setting of a planet from ``jd_start``.
+
+    The acronychal setting is the last evening when the planet is visible
+    after sunset before it disappears into the Sun's light ahead of solar
+    conjunction.
+
+    Parameters
+    ----------
+    body, jd_start, lat, lon, policy, search_days : see
+        :func:`planet_heliacal_rising`.
+    """
+    _validate_args(body, jd_start, lat, lon, search_days)
+    policy = policy if policy is not None else HeliacalPolicy.default()
+    model  = policy.visibility_model
+
+    jd_mid0 = math.floor(jd_start + 0.5) - 0.5
+
+    last: tuple[float, float, float, float, float] | None = None
+
+    for d in range(search_days):
+        jd_midnight = jd_mid0 + d
+        se = _signed_elongation(body, jd_midnight + 0.5)
+        abs_se = abs(se)
+
+        if se > 0.0 and abs_se >= _ELONG_MIN:
+            vis = _check_visibility(body, jd_midnight, lat, lon, morning=False, model=model)
+            if vis is not None:
+                jd_ev, p_alt, s_alt, mag = vis
+                last = (jd_ev, p_alt, s_alt, mag, se)
+        elif last is not None and abs_se < _ELONG_MIN:
+            jd_ev, p_alt, s_alt, mag, elong = last
+            return PlanetHeliacalEvent(
+                body=body,
+                kind=HeliacalEventKind.ACRONYCHAL_SETTING,
+                jd_ut=jd_ev,
+                elongation_deg=elong,
+                planet_altitude_deg=p_alt,
+                sun_altitude_deg=s_alt,
+                apparent_magnitude=mag,
+            )
+
+    return None

@@ -151,7 +151,11 @@ def _elongation(body: str, jd: float, reader: SpkReader) -> float:
 def _helio_distance(body: str, jd: float, reader: SpkReader) -> float:
     """Heliocentric distance of a body in AU."""
     from .planets import _barycentric, _earth_barycentric
-    p_bary = _barycentric(body, jd, reader)
+    from .constants import Body as _Body
+    if body == _Body.EARTH:
+        p_bary = _earth_barycentric(jd, reader)
+    else:
+        p_bary = _barycentric(body, jd, reader)
     s_bary = reader.position(0, 10, jd)
     dx, dy, dz = p_bary[0] - s_bary[0], p_bary[1] - s_bary[1], p_bary[2] - s_bary[2]
     return math.sqrt(dx * dx + dy * dy + dz * dz) / 149597870.7

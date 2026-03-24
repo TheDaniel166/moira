@@ -396,8 +396,8 @@ def _reg(star: VariableStar) -> VariableStar:
 _reg(VariableStar(
     name="Algol", designation="bet Per",
     var_type=VarType.ECLIPSING_ALGOL,
-    epoch_jd=2453600.8877, epoch_is_minimum=True,
-    period_days=2.8673075,
+    epoch_jd=2455565.33243, epoch_is_minimum=True,  # AAVSO VSX HJD epoch of minimum
+    period_days=2.867323862,                        # AAVSO VSX revision 2024-06-19
     mag_max=2.12, mag_min=3.40, mag_min2=2.20,
     eclipse_width=0.056,          # primary eclipse ~9.6 h / 2.867 d ≈ 0.056 phase
     classical_quality="malefic",
@@ -481,7 +481,7 @@ _reg(VariableStar(
     name="Delta Cephei", designation="del Cep",
     var_type=VarType.CEPHEID,
     epoch_jd=2436075.445, epoch_is_minimum=False,  # epoch of maximum
-    period_days=5.366249,
+    period_days=5.366341,
     mag_max=3.48, mag_min=4.37, mag_min2=4.37,
     eclipse_width=0.0,
     classical_quality="benefic",
@@ -497,7 +497,7 @@ _reg(VariableStar(
 _reg(VariableStar(
     name="Eta Aquilae", designation="eta Aql",
     var_type=VarType.CEPHEID,
-    epoch_jd=2437050.682, epoch_is_minimum=False,
+    epoch_jd=2436084.656, epoch_is_minimum=False,
     period_days=7.176641,
     mag_max=3.48, mag_min=4.39, mag_min2=4.39,
     eclipse_width=0.0,

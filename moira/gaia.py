@@ -386,7 +386,7 @@ def _approx_ecl_lon(ra_deg: float, dec_deg: float) -> float:
 
 
 def _default_catalog_path() -> Path:
-    return Path(__file__).resolve().parents[1] / "data" / "gaia_g10.bin"
+    return Path(__file__).resolve().parents[1] / "kernels" / "gaia_g10.bin"
 
 
 def load_gaia_catalog(path: Path | str | None = None) -> None:
@@ -396,7 +396,7 @@ def load_gaia_catalog(path: Path | str | None = None) -> None:
     Parameters
     ----------
     path : path to the .bin file produced by scripts/download_gaia.py.
-           If None, uses data/gaia_g10.bin in the project root.
+           If None, uses kernels/gaia_g10.bin in the project root.
 
     Raises
     ------
@@ -409,7 +409,7 @@ def load_gaia_catalog(path: Path | str | None = None) -> None:
     if not p.exists():
         raise FileNotFoundError(
             f"Gaia catalog not found at {p}\n"
-            "Run:  py -3 scripts/download_gaia.py\n"
+            "Run:  py -3 scripts/download_gaia.py --out kernels/gaia_g10.bin\n"
             "to download and build the catalog."
         )
 
@@ -504,22 +504,45 @@ def _apply_proper_motion_gaia(
     if math.isnan(pmdec):
         pmdec = 0.0
 
-    dec_r   = dec * DEG2RAD
+    ra_r = ra * DEG2RAD
+    dec_r = dec * DEG2RAD
     cos_dec = math.cos(dec_r)
+    sin_dec = math.sin(dec_r)
+    cos_ra = math.cos(ra_r)
+    sin_ra = math.sin(ra_r)
 
-    delta_ra_deg  = (pmra  * _MAS_PER_YR_TO_DEG_PER_YR / max(abs(cos_dec), 1e-10)) * dt_yr
-    delta_dec_deg = (pmdec * _MAS_PER_YR_TO_DEG_PER_YR) * dt_yr
+    # Unit direction vector and tangent basis in ICRS.
+    ux = cos_dec * cos_ra
+    uy = cos_dec * sin_ra
+    uz = sin_dec
+
+    e_ra = (-sin_ra, cos_ra, 0.0)
+    e_dec = (-sin_dec * cos_ra, -sin_dec * sin_ra, cos_dec)
+
+    mu_alpha = pmra * _MAS_PER_YR_TO_DEG_PER_YR * DEG2RAD
+    mu_delta = pmdec * _MAS_PER_YR_TO_DEG_PER_YR * DEG2RAD
+
+    if parallax_mas > 0.0:
+        dist_au = 1.0e3 / parallax_mas * (1.0 / 4.84813681e-6)
+    else:
+        dist_au = 1.0e12
+
+    vx = dist_au * (mu_alpha * e_ra[0] + mu_delta * e_dec[0])
+    vy = dist_au * (mu_alpha * e_ra[1] + mu_delta * e_dec[1])
+    vz = dist_au * (mu_alpha * e_ra[2] + mu_delta * e_dec[2])
 
     if not math.isnan(rv) and parallax_mas > 0.0:
-        dist_pc  = 1000.0 / parallax_mas
-        mu_total_masyr = math.sqrt(pmra**2 + pmdec**2)
-        mu_total_radyr = mu_total_masyr * 1e-3 * _ARCSEC2RAD if mu_total_masyr else 0.0
-        perspective_factor = rv * 1e-3 / (_PC_TO_KM / 3.15576e7) / dist_pc
-        delta_ra_deg  += delta_ra_deg  * perspective_factor * dt_yr
-        delta_dec_deg += delta_dec_deg * perspective_factor * dt_yr
+        rv_au_per_yr = rv * 86400.0 * 365.25 / _AU_TO_KM
+        vx += rv_au_per_yr * ux
+        vy += rv_au_per_yr * uy
+        vz += rv_au_per_yr * uz
 
-    new_ra  = (ra  + delta_ra_deg)  % 360.0
-    new_dec = max(-90.0, min(90.0, dec + delta_dec_deg))
+    x = dist_au * ux + vx * dt_yr
+    y = dist_au * uy + vy * dt_yr
+    z = dist_au * uz + vz * dt_yr
+
+    new_ra = math.degrees(math.atan2(y, x)) % 360.0
+    new_dec = math.degrees(math.atan2(z, math.hypot(x, y)))
     return new_ra, new_dec
 
 
@@ -544,15 +567,28 @@ def _annual_parallax(
     if parallax_mas <= 0.0:
         return lon, lat
 
-    p_deg = parallax_mas * 0.001 * _AS2DEG
+    dist_au = 1.0e3 / parallax_mas * (1.0 / 4.84813681e-6)
+    lon_r = lon * DEG2RAD
     lat_r = lat * DEG2RAD
-    cos_b = math.cos(lat_r)
-    dang  = (sun_longitude - lon) * DEG2RAD
+    sun_r = sun_longitude * DEG2RAD
 
-    if abs(cos_b) > 1e-10:
-        lon = (lon + p_deg * math.sin(dang) / cos_b) % 360.0
-    lat = lat - p_deg * math.cos(dang) * math.sin(lat_r)
-    return lon, lat
+    sx = dist_au * math.cos(lat_r) * math.cos(lon_r)
+    sy = dist_au * math.cos(lat_r) * math.sin(lon_r)
+    sz = dist_au * math.sin(lat_r)
+
+    # Earth heliocentric vector in the ecliptic plane, approximated from the
+    # Sun's geocentric ecliptic longitude already supplied by the caller.
+    ex = math.cos(sun_r)
+    ey = math.sin(sun_r)
+    ez = 0.0
+
+    x = sx - ex
+    y = sy - ey
+    z = sz - ez
+
+    lon_out = math.degrees(math.atan2(y, x)) % 360.0
+    lat_out = math.degrees(math.atan2(z, math.hypot(x, y)))
+    return lon_out, lat_out
 
 
 # ---------------------------------------------------------------------------

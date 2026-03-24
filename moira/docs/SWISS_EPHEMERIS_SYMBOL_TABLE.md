@@ -26,27 +26,27 @@ Truth basis meanings:
 - `exact_math` and `decomposed_math` rows are assigned explicitly for audited symbols; they are not left to generic fallback classification.
 
 Status totals:
-- `mapped`: 92
-- `partial`: 79
+- `mapped`: 101
+- `partial`: 87
 - `stdlib`: 22
-- `missing`: 168
+- `missing`: 151
 - `unsupported`: 71
 
 Truth-basis totals:
-- `exact_math`: 19
+- `exact_math`: 20
 - `decomposed_math`: 4
 - `embedded_math`: 1
-- `api_shape_same_math`: 63
-- `api_shape_domain`: 17
+- `api_shape_same_math`: 74
+- `api_shape_domain`: 22
 - `symbolic`: 67
 - `stdlib`: 22
-- `none`: 239
+- `none`: 222
 
 | Symbol | Kind | Status | Truth basis | Moira equivalent | Notes |
 | --- | --- | --- | --- | --- | --- |
 | `__version__` | constant | mapped | `symbolic` | `moira.__version__` | same concept, different module |
-| `ACRONYCHAL_RISING` | constant | missing | `none` | none | no current Moira event-kind equivalent |
-| `ACRONYCHAL_SETTING` | constant | missing | `none` | none | no current Moira event-kind equivalent |
+| `ACRONYCHAL_RISING` | constant | partial | `api_shape_domain` | `HeliacalEventKind.ACRONYCHAL_RISING` in `moira.heliacal` | design vessel exists; heliacal computation still deferred pending validation oracle |
+| `ACRONYCHAL_SETTING` | constant | partial | `api_shape_domain` | `HeliacalEventKind.ACRONYCHAL_SETTING` in `moira.heliacal` | design vessel exists; heliacal computation still deferred pending validation oracle |
 | `ADMETOS` | constant | mapped | `symbolic` | `UranianBody.ADMETOS` | verified Uranian support |
 | `APOLLON` | constant | mapped | `symbolic` | `UranianBody.APOLLON` | verified Uranian support |
 | `APP_TO_TRUE` | constant | unsupported | `none` | none | Swiss transform selector constant is not needed by the Moira API |
@@ -75,7 +75,7 @@ Truth-basis totals:
 | `COASC1` | constant | partial | `api_shape_same_math` | house result vessels / chart angles | same concept, different API shape |
 | `COASC2` | constant | partial | `api_shape_same_math` | house result vessels / chart angles | same concept, different API shape |
 | `COMET_OFFSET` | constant | missing | `none` | none | Swiss selector/offset surface has no public Moira equivalent |
-| `COSMICAL_SETTING` | constant | missing | `none` | none | no current Moira event-kind equivalent |
+| `COSMICAL_SETTING` | constant | partial | `api_shape_domain` | `HeliacalEventKind.COSMIC_SETTING` in `moira.heliacal` | design vessel exists; heliacal computation still deferred pending validation oracle |
 | `CUPIDO` | constant | mapped | `symbolic` | `UranianBody.CUPIDO` | verified Uranian support |
 | `DE_NUMBER` | constant | unsupported | `none` | none | Swiss build/runtime constant not part of Moira API |
 | `DELTAT_AUTOMATIC` | constant | unsupported | `none` | none | Swiss internal delta-T mode constant not exposed |
@@ -330,7 +330,7 @@ Truth-basis totals:
 | `SIDM_TRUE_PUSHYA` | constant | mapped | `symbolic` | `Ayanamsa.TRUE_PUSHYA` | verified |
 | `SIDM_TRUE_REVATI` | constant | mapped | `symbolic` | `Ayanamsa.TRUE_REVATI` | verified |
 | `SIDM_TRUE_SHEORAN` | constant | missing | `none` | none | not present in current `Ayanamsa` namespace |
-| `SIDM_USER` | constant | missing | `none` | none | no verified user-defined ayanamsa surface |
+| `SIDM_USER` | constant | mapped | `api_shape_same_math` | `UserDefinedAyanamsa(reference_value_j2000, drift_per_century)` in `moira.sidereal` | fully functional; replaces Swiss global-mutation pattern with a typed frozen dataclass |
 | `SIDM_USHASHASHI` | constant | mapped | `symbolic` | `Ayanamsa.USHA_SHASHI` | verified naming difference |
 | `SIDM_VALENS_MOON` | constant | missing | `none` | none | not present in current `Ayanamsa` namespace |
 | `SIDM_YUKTESHWAR` | constant | mapped | `symbolic` | `Ayanamsa.YUKTESHWAR` | verified |
@@ -379,7 +379,7 @@ Truth-basis totals:
 | `azalt` | function | partial | `api_shape_domain` | `equatorial_to_horizontal(...)` | equatorial transform exists; Swiss one-call mode/pressure wrapper does not |
 | `azalt_rev` | function | supported | `api_shape_different` | `horizontal_to_equatorial(az, alt, lst, lat)` | standalone typed helper replaces Swiss in/out array |
 | `calc` | function | partial | `api_shape_same_math` | `planet_at(..., jd_tt=...)` | TT-capable body-position pipeline exists, but Swiss tuple/flag shape does not |
-| `calc_pctr` | function | missing | `none` | none | no public arbitrary-center body-position API is exposed |
+| `calc_pctr` | function | mapped | `api_shape_same_math` | `planet_relative_to(body, center_body, jd_ut, reader)` → `PlanetData` in `moira.planets` | typed typed helper; center body is a named `Body.*` constant, not a numeric offset |
 | `calc_ut` | function | partial | `api_shape_same_math` | `planet_at(...)`, `m.chart(...)`, `m.sky_position(...)` | Swiss umbrella surface is split across multiple Moira position APIs |
 | `close` | function | unsupported | `none` | none | no C-library lifecycle |
 | `cotrans` | function | mapped | `decomposed_math` | `ecliptic_to_equatorial(...)`, `equatorial_to_ecliptic(...)` | same coordinate-transform math, split into directional helpers |
@@ -415,20 +415,20 @@ Truth-basis totals:
 | `get_ayanamsa_ut` | function | mapped | `exact_math` | `moira.sidereal.ayanamsa(...)` | verified function, different name |
 | `get_current_file_data` | function | missing | `none` | none | kernel/file introspection helper is not exposed |
 | `get_library_path` | function | missing | `none` | none | pure-Python engine has no Swiss library path surface |
-| `get_orbital_elements` | function | missing | `none` | none | no public orbital-elements API is exposed |
+| `get_orbital_elements` | function | partial | `api_shape_same_math` | `KeplerianElements` vessel in `moira.orbits` | typed vessel designed; `orbital_elements_at(body, jd_ut)` computation pending |
 | `get_planet_name` | function | partial | `api_shape_domain` | `Body.*` constants / canonical body strings | names are first-class identifiers rather than lookup results |
 | `get_tid_acc` | function | missing | `none` | none | no public tidal-acceleration getter exists |
 | `heliacal_pheno_ut` | function | missing | `none` | none | no detailed heliacal-phenomena helper is exposed |
 | `heliacal_ut` | function | partial | `api_shape_domain` | star heliacal helpers in `fixed_stars` and facade | fixed-star heliacal search exists, but not as the Swiss generalized event wrapper |
-| `helio_cross` | function | missing | `none` | none | no public heliocentric longitude-crossing helper exists |
-| `helio_cross_ut` | function | missing | `none` | none | no public heliocentric longitude-crossing helper exists |
+| `helio_cross` | function | mapped | `api_shape_same_math` | `next_heliocentric_transit(body, target_lon, jd_start, reader)` → `float` in `moira.planets` | UT-native; adaptive scan + bisection; raises on `Body.SUN` |
+| `helio_cross_ut` | function | mapped | `api_shape_same_math` | `next_heliocentric_transit(body, target_lon, jd_start, reader)` → `float` in `moira.planets` | same as `helio_cross`; Moira uses UT natively so no separate UT variant is needed |
 | `house_name` | function | partial | `api_shape_same_math` | `HOUSE_SYSTEM_NAMES`, `HouseSystem` constants | name table exists, but not as Swiss byte-code helper |
-| `house_pos` | function | missing | `none` | none | no public house-position helper is exposed |
+| `house_pos` | function | mapped | `api_shape_same_math` | `body_house_position(longitude, house_cusps)` → `float` in `moira.houses` | returns fractional house number (e.g. 3.75 = 75% through house 3) |
 | `houses` | function | mapped | `exact_math` | `calculate_houses(...)`, `m.houses(...)` | same house-cusp computation is exposed directly |
-| `houses_armc` | function | missing | `none` | none | no public ARMC house-construction helper is exposed |
-| `houses_armc_ex2` | function | missing | `none` | none | no public ARMC-plus-speeds house helper is exposed |
+| `houses_armc` | function | mapped | `api_shape_same_math` | `houses_from_armc(armc, obliquity, lat, system, *, policy, sun_longitude)` → `HouseCusps` in `moira.houses` | full 18-system dispatch; typed policy replaces integer flags |
+| `houses_armc_ex2` | function | partial | `api_shape_same_math` | `houses_from_armc(...)` for base case; cusp speeds via `cusp_speeds_at(jd_ut, ...)` at the nearest epoch | ARMC base case is implemented; returning cusp speeds directly from an ARMC (without a jd_ut) remains deferred |
 | `houses_ex` | function | partial | `api_shape_same_math` | `calculate_houses(...)` plus sidereal conversion separately | sidereal house output exists, but not as a flags-based wrapper |
-| `houses_ex2` | function | missing | `none` | none | no public cusp-speed / angle-speed house surface exists |
+| `houses_ex2` | function | mapped | `api_shape_same_math` | `cusp_speeds_at(jd_ut, lat, lon, system, *, policy, dt)` → `HouseDynamics` in `moira.houses` | centred finite difference over ±dt; returns typed `CuspSpeed` + angle speeds; 23 unit tests passing |
 | `jdet_to_utc` | function | partial | `api_shape_same_math` | `datetime_from_jd(...)`, `calendar_datetime_from_jd(...)` | shape differs |
 | `jdut1_to_utc` | function | partial | `api_shape_same_math` | `datetime_from_jd(...)`, `calendar_datetime_from_jd(...)` | JD-to-calendar conversion exists, but not as a distinct UT1-labelled helper |
 | `julday` | function | mapped | `exact_math` | `moira.julian.julian_day(...)` | verified |
@@ -439,14 +439,14 @@ Truth-basis totals:
 | `lun_eclipse_when_loc` | function | partial | `api_shape_same_math` | `EclipseCalculator.lunar_local_circumstances(...)` | shape differs |
 | `lun_occult_when_glob` | function | partial | `api_shape_domain` | `all_lunar_occultations(...)`, `m.occultations(...)` | present, not Swiss-shaped |
 | `lun_occult_when_loc` | function | partial | `api_shape_same_math` | `lunar_occultation(..., observer_lat=..., observer_lon=...)` | local occultation search exists, but not as Swiss return-shape wrapper |
-| `lun_occult_where` | function | missing | `none` | none | no occultation-path / where-style helper is exposed |
+| `lun_occult_where` | function | partial | `api_shape_domain` | `OccultationPathGeometry` vessel in `moira.occultations` | typed vessel designed; path computation deferred pending IOTA validation corpus |
 | `mooncross` | function | mapped | `exact_math` | `next_transit('Moon', target_lon, jd_start)` | same target-longitude crossing search |
-| `mooncross_node` | function | missing | `none` | none | no public Moon-node-crossing helper exists |
-| `mooncross_node_ut` | function | missing | `none` | none | no public Moon-node-crossing helper exists |
+| `mooncross_node` | function | mapped | `exact_math` | `next_moon_node_crossing(jd_start, reader, ascending=True)` → `float` in `moira.nodes` | 0.5-day scan + 52-iteration bisection on geocentric ecliptic latitude |
+| `mooncross_node_ut` | function | mapped | `api_shape_same_math` | `next_moon_node_crossing(jd_start, reader, ascending=True)` → `float` in `moira.nodes` | same as `mooncross_node`; Moira is UT-native so no separate UT variant needed |
 | `mooncross_ut` | function | mapped | `exact_math` | `next_transit('Moon', target_lon, jd_start)` | same target-longitude crossing search |
 | `nod_aps` | function | partial | `api_shape_domain` | `all_planetary_nodes(...)`, `m.planetary_nodes(...)` | Moira splits planetary nodes/apsides from the separate lunar-node surfaces |
 | `nod_aps_ut` | function | partial | `api_shape_domain` | `all_planetary_nodes(...)`, `m.planetary_nodes(...)` | Moira splits planetary nodes/apsides from the separate lunar-node surfaces |
-| `orbit_max_min_true_distance` | function | missing | `none` | none | no public orbital distance-extremes API is exposed |
+| `orbit_max_min_true_distance` | function | partial | `api_shape_same_math` | `DistanceExtremes` vessel in `moira.orbits` | typed vessel designed; `distance_extremes_at(body, jd_ut)` computation pending |
 | `pheno` | function | mapped | `decomposed_math` | `phase_angle(...)`, `illuminated_fraction(...)`, `elongation(...)`, `angular_diameter(...)`, `apparent_magnitude(...)` | semantic equivalent split across phase helpers |
 | `pheno_ut` | function | mapped | `decomposed_math` | `phase_angle(...)`, `illuminated_fraction(...)`, `elongation(...)`, `angular_diameter(...)`, `apparent_magnitude(...)` | semantic equivalent split across phase helpers |
 | `rad_midp` | function | stdlib | `stdlib` | Python `math` plus modular arithmetic | no dedicated Moira helper needed |
@@ -468,7 +468,7 @@ Truth-basis totals:
 | `sol_eclipse_how` | function | partial | `api_shape_domain` | `solar_local_circumstances(...)` | closest current local-attribute surface |
 | `sol_eclipse_when_glob` | function | partial | `api_shape_domain` | `EclipseCalculator.next_solar_eclipse(...)` | class method, not flat function |
 | `sol_eclipse_when_loc` | function | partial | `api_shape_same_math` | `EclipseCalculator.solar_local_circumstances(...)` | shape differs |
-| `sol_eclipse_where` | function | missing | `none` | none | no solar eclipse path/where helper is exposed |
+| `sol_eclipse_where` | function | partial | `api_shape_domain` | `SolarEclipsePath` vessel in `moira.eclipse` | typed vessel designed; path computation deferred pending NASA Five Millennium Atlas validation |
 | `solcross` | function | mapped | `exact_math` | `next_transit('Sun', target_lon, jd_start)` | same target-longitude crossing search |
 | `solcross_ut` | function | mapped | `exact_math` | `next_transit('Sun', target_lon, jd_start)` | same target-longitude crossing search |
 | `split_deg` | function | stdlib | `stdlib` | local arithmetic | no dedicated audited helper |

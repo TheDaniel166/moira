@@ -293,7 +293,7 @@ Design the deferred-but-valid subsystem families.
 #### Orbital layer
 
 - [x] decide whether `moira.orbits` should exist as a public module → Yes (`moira/orbits.py`)
-- [x] define orbital-element vessel shape (`OrbitalElements` in `moira/orbits.py`)
+- [x] define orbital-element vessel shape (`KeplerianElements` in `moira/orbits.py`)
 - [x] define distance-extremes vessel shape (`DistanceExtremes` in `moira/orbits.py`)
 
 #### House dynamics
@@ -311,6 +311,60 @@ Design the deferred-but-valid subsystem families.
 - deferred families have constitutions or subsystem design documents first
 - validation strategy is written before “done” status
 - no direct Swiss bitfield cloning
+
+## Phase 4
+
+### Goal
+
+Implement the Phase 3 subsystem constitutions as working public surfaces.
+
+### Why now
+
+- Phase 3 locked doctrine, vessel shapes, and validation plans for heliacal and
+  orbital families — implementation is now safe
+- both families have strong validation anchors (known apparition dates, Kepler
+  III sanity checks, Earth reference perihelion/aphelion)
+- no Swiss flag clutter introduced; all surfaces are typed and doctrine-controlled
+
+### Atomic backlog
+
+#### Orbital layer — implementation
+
+- [x] implement `orbital_elements_at(body, jd_ut) → KeplerianElements` (`moira/orbits.py`)
+- [x] implement `distance_extremes_at(body, jd_ut) → DistanceExtremes` (`moira/orbits.py`)
+- [x] wire both into `moira/__init__.py` with `__all__` entries
+- [x] add full validation suite (`tests/unit/test_distance_extremes.py`, 51 tests, all passing)
+      - physical constraints for all 8 planets (perihelion < aphelion, distances positive, JDs finite)
+      - Earth reference: perihelion JD window [2451537.5, 2451559.5], distance ~0.9833 AU
+      - Kepler III semi-major axis sanity
+      - error handling for SUN and MOON
+
+#### Heliacal planet computation — implementation
+
+- [x] implement `planet_heliacal_rising(body, jd_start, lat, lon, *, policy, search_days) → PlanetHeliacalEvent | None`
+- [x] implement `planet_heliacal_setting(body, jd_start, lat, lon, *, policy, search_days) → PlanetHeliacalEvent | None`
+- [x] implement `planet_acronychal_rising(body, jd_start, lat, lon, *, policy, search_days) → PlanetHeliacalEvent | None`
+- [x] implement `planet_acronychal_setting(body, jd_start, lat, lon, *, policy, search_days) → PlanetHeliacalEvent | None`
+- [x] wire all four into `moira/__init__.py` with `__all__` entries
+- [x] add full validation suite (`tests/unit/test_planet_heliacal.py`, 54 tests, all passing)
+      - return type and structure (body, kind, jd_ut, elongation_deg, planet_altitude_deg,
+        sun_altitude_deg, apparent_magnitude)
+      - physical plausibility for all 5 fixtures (planet above horizon, sun below horizon,
+        sun in twilight range −20° to 0°, magnitude finite)
+      - elongation sign: HELIACAL_* < 0 (morning sky); ACRONYCHAL_* > 0 (evening sky)
+      - reference windows: Venus heliacal rising 2020 [JD 2459004–2459044],
+        Jupiter heliacal rising 2023 [JD 2460050–2460110],
+        Venus acronychal rising 2021 [JD 2459310–2459360],
+        Venus heliacal setting 2021 [JD 2459220–2459290]
+      - policy customisation (stricter conditions delay or prevent event)
+      - error handling (SUN, MOON, invalid lat, invalid search_days)
+      - top-level moira import
+
+### Exit criteria
+
+- [x] all Phase 4 APIs typed, doctrine-controlled, and tested
+- [x] no Swiss-style integer flags introduced
+- [x] each surface wired into top-level `moira` namespace
 
 ## Constitutionally Rejected Classes
 
