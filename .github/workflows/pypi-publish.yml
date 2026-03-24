@@ -16,9 +16,15 @@ jobs:
     permissions:
       id-token: write  # REQUIRED for trusted publishing
 
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # OPT-IN to modern runtime
+
     steps:
     - name: 🛰️ Checkout Repository
       uses: actions/checkout@v4
+      with:
+        submodules: true      # REQUIRED for moira.wiki submodules
+        fetch-depth: 0        # Fetch all history for tags/versioning
 
     - name: 🧬 Set up Python 3.14
       uses: actions/setup-python@v5
