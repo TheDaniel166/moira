@@ -125,7 +125,7 @@ def _write_binary(records: list[tuple[float, ...]], path: Path) -> None:
         for rec in records:
             fh.write(struct.pack(_RECORD_FMT, *rec))
     size_mb = path.stat().st_size / 1_048_576
-    print(f"Wrote {n:,} stars → {path}  ({size_mb:.1f} MB)")
+    print(f"Wrote {n:,} stars -> {path}  ({size_mb:.1f} MB)")
 
 
 def _write_csv(raw: bytes, path: Path) -> None:

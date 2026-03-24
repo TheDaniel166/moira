@@ -841,14 +841,26 @@ def gaia_stars_near(
     _ensure_loaded()
     assert _records is not None
 
+    # Pre-compute shared quantities once for all records at this jd_tt.
+    dpsi, _     = nutation(jd_tt)
+    obl_mean    = mean_obliquity(jd_tt)
+    prec        = general_precession_in_longitude(jd_tt)
+    from .planets import planet_at as _planet_at
+    sun_lon     = _planet_at("Sun", jd_tt).longitude
+
     lst_deg: float | None = None
     if observer_lat is not None and observer_lon is not None:
         from .julian import local_sidereal_time
         lst_deg = local_sidereal_time(jd_tt, observer_lon)
 
+    # Use the pre-built longitude index to restrict candidates to the orb
+    # window, then run the full pipeline only on those.
+    candidate_indices = _lon_range_indices(longitude, orb)
+
     results: list[tuple[float, GaiaStarPosition]] = []
 
-    for i, rec in enumerate(_records):
+    for i in candidate_indices:
+        rec  = _records[i]
         gmag = float(rec[_F_GMAG])
         if max_magnitude is not None and gmag > max_magnitude:
             continue
@@ -858,6 +870,7 @@ def gaia_stars_near(
             observer_lat=observer_lat, observer_lon=observer_lon,
             observer_elev_m=observer_elev_m, lst_deg=lst_deg,
             true_position=true_position,
+            _dpsi=dpsi, _obl_mean=obl_mean, _prec=prec, _sun_lon=sun_lon,
         )
 
         diff = abs((pos.longitude - longitude + 180.0) % 360.0 - 180.0)
@@ -895,6 +908,13 @@ def gaia_stars_by_magnitude(
     _ensure_loaded()
     assert _records is not None
 
+    # Pre-compute shared quantities once for all records at this jd_tt.
+    dpsi, _     = nutation(jd_tt)
+    obl_mean    = mean_obliquity(jd_tt)
+    prec        = general_precession_in_longitude(jd_tt)
+    from .planets import planet_at as _planet_at
+    sun_lon     = _planet_at("Sun", jd_tt).longitude
+
     lst_deg: float | None = None
     if observer_lat is not None and observer_lon is not None:
         from .julian import local_sidereal_time
@@ -909,6 +929,7 @@ def gaia_stars_by_magnitude(
                     observer_lat=observer_lat, observer_lon=observer_lon,
                     observer_elev_m=observer_elev_m, lst_deg=lst_deg,
                     true_position=true_position,
+                    _dpsi=dpsi, _obl_mean=obl_mean, _prec=prec, _sun_lon=sun_lon,
                 )
             )
 
