@@ -9,7 +9,8 @@ coordinate transforms to coordinates, and time conversion to julian. Does
 not own house calculations, aspect detection, or any display formatting.
 
 Public surface:
-    NodeData, mean_node(), true_node(), mean_lilith(), true_lilith()
+    NodeData, mean_node(), true_node(), mean_lilith(), true_lilith(),
+    next_moon_node_crossing()
 
 Import-time side effects: None
 
@@ -392,3 +393,103 @@ def true_lilith(
     speed = 4069.0137287 / 36525.0
 
     return NodeData(name="True Lilith", longitude=lon_tropical, speed=speed)
+
+
+# ---------------------------------------------------------------------------
+# Phase 2: next_moon_node_crossing — mooncross_node analogue
+# ---------------------------------------------------------------------------
+
+def next_moon_node_crossing(
+    jd_start: float,
+    reader: SpkReader | None = None,
+    ascending: bool = True,
+) -> float:
+    """
+    Find the next time the Moon crosses its orbital node.
+
+    Equivalent to Swiss Ephemeris ``swe_mooncross_node`` /
+    ``swe_mooncross_node_ut``.
+
+    Detection method: the Moon's geocentric ecliptic latitude passes through
+    zero at each node crossing.  At the ascending node the latitude changes
+    from south (negative) to north (positive); at the descending node it
+    changes from north to south.  The function scans forward in 0.5-day steps
+    (covering ~6.5° of latitude change per step) then refines with 52-iteration
+    bisection.
+
+    Args:
+        jd_start: Julian Day (UT1) to begin searching from.
+        reader: Open :class:`SpkReader` from :mod:`moira.spk_reader`.  Uses
+            the module-level singleton if ``None``.
+        ascending: If ``True`` (default), find the next ascending-node
+            crossing (latitude − → +).  If ``False``, find the next
+            descending-node crossing (latitude + → −).
+
+    Returns:
+        Julian Day (UT1) of the next node crossing.
+
+    Raises:
+        FileNotFoundError: If the DE441 kernel is not found.
+        ValueError: If no crossing is found within 30 days (should never
+            happen for a Moon search).
+    """
+    if reader is None:
+        reader = get_reader()
+
+    def _moon_lat(jd_ut: float) -> float:
+        """Geocentric ecliptic latitude of the Moon (degrees)."""
+        yr, mo, *_ = _approx_year(jd_ut)
+        jd_tt = ut_to_tt(jd_ut, decimal_year(yr, mo))
+        emb_moon  = reader.position(3, 301, jd_tt)
+        emb_earth = reader.position(3, 399, jd_tt)
+        moon_geo = vec_sub(emb_moon, emb_earth)
+        # Rotate ICRF → true equatorial of date (precession + nutation)
+        dpsi_deg, deps_deg = nutation(jd_tt)
+        P = precession_matrix_equatorial(jd_tt)
+        N = nutation_matrix_equatorial(jd_tt)
+        v1 = mat_vec_mul(P, moon_geo)
+        v_eq = mat_vec_mul(N, v1)
+        # Rotate true equatorial → ecliptic to extract latitude
+        obliquity = (mean_obliquity(jd_tt) + deps_deg) * DEG2RAD
+        cos_eps = math.cos(obliquity)
+        sin_eps = math.sin(obliquity)
+        z_ecl = -v_eq[1] * sin_eps + v_eq[2] * cos_eps
+        dist = math.sqrt(v_eq[0]**2 + v_eq[1]**2 + v_eq[2]**2)
+        if dist < 1e-30:
+            return 0.0
+        return math.asin(max(-1.0, min(1.0, z_ecl / dist))) * RAD2DEG
+
+    step = 0.5   # days
+    max_days = 30.0
+
+    f_prev = _moon_lat(jd_start)
+    t = jd_start
+
+    while t < jd_start + max_days:
+        t_next = t + step
+        f_next = _moon_lat(t_next)
+        if ascending and f_prev < 0.0 and f_next >= 0.0:
+            return _bisect_lat(_moon_lat, t, t_next)
+        if not ascending and f_prev >= 0.0 and f_next < 0.0:
+            return _bisect_lat(lambda jd: -_moon_lat(jd), t, t_next)
+        f_prev = f_next
+        t = t_next
+
+    raise ValueError(
+        f"next_moon_node_crossing: no {'ascending' if ascending else 'descending'} "
+        f"node crossing found within {max_days} days of JD {jd_start:.1f}."
+    )
+
+
+def _bisect_lat(func, t0: float, t1: float, iterations: int = 52) -> float:
+    """Bisect a bracketed sign-change of func over [t0, t1]."""
+    f0 = func(t0)
+    for _ in range(iterations):
+        tm = (t0 + t1) / 2.0
+        fm = func(tm)
+        if f0 * fm <= 0.0:
+            t1 = tm
+        else:
+            t0 = tm
+            f0 = fm
+    return (t0 + t1) / 2.0

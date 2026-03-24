@@ -19,9 +19,8 @@ External dependency assumptions:
     - kernels/de441.bsp must exist on disk before SpkReader is instantiated.
 """
 
-import os
+import threading
 from pathlib import Path
-from functools import lru_cache
 
 # jplephem is used solely as a binary SPK file reader
 try:
@@ -32,8 +31,7 @@ except ImportError as exc:  # pragma: no cover
         "Install it with: pip install jplephem"
     ) from exc
 
-# Type alias (defined here to avoid importing coordinates in constants)
-Vec3 = tuple
+Vec3 = tuple[float, float, float]
 
 _DEFAULT_KERNEL_PATH = Path(__file__).parent.parent / "kernels" / "de441.bsp"
 
@@ -118,8 +116,8 @@ class SpkReader:
       "id": "moira.spk_reader.SpkReader",
       "risk": "high",
       "api": {
-        "frozen": ["position", "position_and_velocity", "has_segment", "close",
-                   "path", "__enter__", "__exit__"],
+        "frozen": ["position", "position_and_velocity", "has_segment",
+                   "has_segment_at", "close", "path", "__enter__", "__exit__"],
         "internal": ["_segment_for", "_kernel", "_path"]
       },
       "state": {"mutable": true, "owners": ["SpkReader"]},
@@ -127,7 +125,16 @@ class SpkReader:
         "signals_emitted": [],
         "io": ["de441.bsp (read)"]
       },
-      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "concurrency": {
+        "thread": "pure_computation",
+        "cross_thread_calls": "safe_read_only",
+        "singleton_lifecycle": "serialized_by_module_rlock",
+        "notes": [
+          "get_reader() and set_kernel_path() are serialized by a module-level RLock",
+          "concurrent reads through an open SpkReader are safe",
+          "kernel-path reconfiguration is forbidden after singleton acquisition"
+        ]
+      },
       "failures": {"policy": "raise"},
       "succession": {"stance": "terminal"},
       "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
@@ -144,6 +151,14 @@ class SpkReader:
             )
         self._path = path
         self._kernel = _SPK.open(str(path))
+        self._closed = False
+        self._segments_by_pair: dict[tuple[int, int], tuple[object, ...]] = {}
+        for segment in self._kernel.segments:
+            key = (segment.center, segment.target)
+            self._segments_by_pair.setdefault(key, []).append(segment)
+        self._segments_by_pair = {
+            key: tuple(segments) for key, segments in self._segments_by_pair.items()
+        }
 
     # ------------------------------------------------------------------
     # Context manager support
@@ -159,14 +174,32 @@ class SpkReader:
 
     def close(self) -> None:
         """Release the kernel file handle."""
+        if self._closed:
+            return
         try:
             self._kernel.close()
         except Exception:
             pass
+        finally:
+            self._closed = True
+            self._kernel = None
+
+    def _ensure_open(self) -> None:
+        """Raise if the reader has been closed."""
+        if self._closed:
+            raise RuntimeError("SpkReader is closed")
 
     # ------------------------------------------------------------------
     # Core read method
     # ------------------------------------------------------------------
+
+    def _segments_for_pair(self, center: int, target: int) -> tuple[object, ...]:
+        """Return all kernel segments for ``(center, target)``."""
+        self._ensure_open()
+        matches = self._segments_by_pair.get((center, target), ())
+        if not matches:
+            raise KeyError(f"No segment found for center={center}, target={target}")
+        return matches
 
     def _segment_for(self, center: int, target: int, jd: float):
         """
@@ -186,25 +219,18 @@ class SpkReader:
             The jplephem segment object whose start_jd ≤ jd ≤ end_jd.
 
         Raises:
-            KeyError: If no segment exists for the (center, target) pair.
+            KeyError: If no segment exists for the (center, target) pair, or if
+                no segment for that pair covers ``jd``.
 
         Side effects:
             None.
         """
-        matches = [
-            seg for seg in self._kernel.segments
-            if seg.center == center and seg.target == target
-        ]
-        if not matches:
-            raise KeyError(f"No segment found for center={center}, target={target}")
-
-        # Prefer the segment whose range contains jd
-        for seg in matches:
+        for seg in self._segments_for_pair(center, target):
             if seg.start_jd <= jd <= seg.end_jd:
                 return seg
-
-        # Fall back to the segment with the nearest range (handles edge cases)
-        return min(matches, key=lambda s: min(abs(s.start_jd - jd), abs(s.end_jd - jd)))
+        raise KeyError(
+            f"No segment covers center={center}, target={target} at JD {jd}"
+        )
 
     def position(self, center: int, target: int, jd: float) -> Vec3:
         """
@@ -226,6 +252,7 @@ class SpkReader:
         Side effects:
             None.
         """
+        self._ensure_open()
         segment = self._segment_for(center, target, jd)
         pos = segment.compute(jd)
         return (float(pos[0]), float(pos[1]), float(pos[2]))
@@ -251,6 +278,7 @@ class SpkReader:
         Side effects:
             None.
         """
+        self._ensure_open()
         segment = self._segment_for(center, target, jd)
         pos, vel = segment.compute_and_differentiate(jd)
         return (
@@ -259,12 +287,31 @@ class SpkReader:
         )
 
     def has_segment(self, center: int, target: int) -> bool:
-        """Return True if the kernel contains a (center, target) segment."""
+        """
+        Return True if the kernel contains any segment for ``(center, target)``.
+
+        This is intentionally a pair-existence check, not an epoch-validity
+        check. Use :meth:`has_segment_at` when the caller needs to know whether
+        a segment exists that is applicable at a specific Julian day.
+        """
+        self._ensure_open()
+        return (center, target) in self._segments_by_pair
+
+    def has_segment_at(self, center: int, target: int, jd: float) -> bool:
+        """
+        Return True if a segment for ``(center, target)`` covers ``jd``.
+
+        Unlike :meth:`has_segment`, this is epoch-aware and therefore follows
+        the same two-epoch selection semantics as :meth:`position` and
+        :meth:`position_and_velocity`.
+        """
         try:
-            _ = self._kernel[center, target]
-            return True
+            for segment in self._segments_for_pair(center, target):
+                if segment.start_jd <= jd <= segment.end_jd:
+                    return True
         except KeyError:
             return False
+        return False
 
     @property
     def path(self) -> Path:
@@ -282,15 +329,17 @@ class SpkReader:
 
 _reader: SpkReader | None = None
 _reader_path: Path | None = None
+_reader_lock = threading.RLock()
 
 
 def get_reader(kernel_path: str | Path | None = None) -> SpkReader:
     """
     Return the module-level SpkReader singleton, initialising it on first call.
 
-    Subsequent calls return the cached instance unless a different kernel path
-    is requested, in which case the existing reader is closed and a new one is
-    opened.
+    Subsequent calls return the cached instance. Requesting a different kernel
+    path while a live singleton exists is forbidden, because closing and
+    replacing the active reader would invalidate any handles already shared
+    across callers or threads.
 
     Args:
         kernel_path: Path to the SPK kernel file. Defaults to
@@ -303,36 +352,47 @@ def get_reader(kernel_path: str | Path | None = None) -> SpkReader:
         FileNotFoundError: If the kernel file does not exist at the given path.
 
     Side effects:
-        - May open a new file handle to de441.bsp on first call or when the
-          path changes.
-        - May close the previous file handle when the path changes.
+        - May open a new file handle to de441.bsp on first call.
     """
     global _reader, _reader_path
     path = Path(kernel_path) if kernel_path else _DEFAULT_KERNEL_PATH
-    if _reader is None or _reader_path != path:
+    with _reader_lock:
         if _reader is not None:
-            _reader.close()
-        _reader = SpkReader(path)
-        _reader_path = path
-    return _reader
+            if _reader_path != path:
+                raise RuntimeError(
+                    "Cannot replace the active SpkReader singleton with a different "
+                    "kernel path. Call set_kernel_path() before first access."
+                )
+            return _reader
+        if _reader_path is not None and _reader_path != path:
+            raise RuntimeError(
+                "Kernel path has already been configured for the next reader. "
+                "Use the configured path or restart configuration before first access."
+            )
+        if _reader is None:
+            _reader = SpkReader(path)
+            _reader_path = path
+        return _reader
 
 
 def set_kernel_path(path: str | Path) -> None:
     """
     Point Moira at a different SPK kernel file.
 
-    Closes any existing reader and clears the singleton so that the next call
-    to get_reader() opens a fresh SpkReader against the new path.
+    This must be called before the singleton reader is first acquired. Changing
+    the path after a live reader exists would invalidate outstanding handles
+    and is therefore rejected.
 
     Args:
         path: Filesystem path to the replacement SPK kernel file.
 
     Side effects:
-        - Closes the current SpkReader file handle if one is open.
-        - Resets the module-level singleton to None.
+        - Updates the configured path used by the next singleton creation.
     """
     global _reader, _reader_path
-    if _reader is not None:
-        _reader.close()
-        _reader = None
-    _reader_path = Path(path)
+    with _reader_lock:
+        if _reader is not None:
+            raise RuntimeError(
+                "Cannot change kernel path after the singleton reader has been opened."
+            )
+        _reader_path = Path(path)

@@ -45,6 +45,7 @@ Word addresses (start_i, end_i, free) are 1-indexed double-precision words.
 """
 
 import struct
+import tempfile
 from pathlib import Path
 
 
@@ -62,6 +63,7 @@ _NI = 6   # integers : (center, target, frame, data_type, start_i, end_i)
 # Bytes per summary entry (nd doubles + ni 4-byte ints), aligned to 8 bytes
 _SUMMARY_BYTES = _ND * 8 + _NI * 4          # 16 + 24 = 40
 _SUMMARY_STEP  = ((_SUMMARY_BYTES + 7) // 8) * 8   # 40 (already aligned)
+_MAX_SUMMARIES = (_RECORD_SIZE - 24) // _SUMMARY_STEP
 
 # Epoch conversion
 _T0        = 2451545.0   # J2000.0 Julian Date (TDB)
@@ -122,6 +124,11 @@ def _build_summary_record(
     where start_s/end_s are seconds from J2000 TDB and start_i/end_i are
     1-indexed word addresses.
     """
+    if len(summaries) > _MAX_SUMMARIES:
+        raise ValueError(
+            f"Single summary record can hold at most {_MAX_SUMMARIES} segments, "
+            f"got {len(summaries)}"
+        )
     record = bytearray(_RECORD_SIZE)
     # Header: next_record, prev_record, n_summaries — stored as doubles
     struct.pack_into('<ddd', record, 0,
@@ -143,6 +150,10 @@ def _build_name_record(names: list[str]) -> bytes:
     Build a 1024-byte name record.  Each name is padded/truncated to
     _SUMMARY_STEP bytes with trailing spaces (NAIF convention).
     """
+    if len(names) > _MAX_SUMMARIES:
+        raise ValueError(
+            f"Single name record can hold at most {_MAX_SUMMARIES} names, got {len(names)}"
+        )
     record = bytearray(_RECORD_SIZE)
     offset = 0
     for name in names:
@@ -175,9 +186,21 @@ def _build_type13_payload(
     states_rows = [list(row) for row in states]
     epochs = [float(v) for v in epochs_jd]
     N = len(epochs)
+    if N == 0:
+        raise ValueError("epochs_jd must contain at least one epoch")
     if len(states_rows) != 6 or any(len(row) != N for row in states_rows):
         shape = (len(states_rows), len(states_rows[0]) if states_rows else 0)
-        raise AssertionError(f"states must be (6, {N}), got {shape}")
+        raise ValueError(f"states must be (6, {N}), got {shape}")
+    if window_size < 1:
+        raise ValueError("window_size must be at least 1")
+    if window_size % 2 == 0:
+        raise ValueError("window_size must be odd for centered Hermite interpolation")
+    if window_size > N:
+        raise ValueError(
+            f"window_size ({window_size}) cannot exceed number of epochs ({N})"
+        )
+    if any(epochs[idx] >= epochs[idx + 1] for idx in range(N - 1)):
+        raise ValueError("epochs_jd must be strictly increasing")
 
     # Epochs → seconds from J2000 TDB
     epochs_sec = [(jd - _T0) * _S_PER_DAY for jd in epochs]
@@ -225,6 +248,11 @@ def write_spk_type13(
     locifn : up to 60-char internal file identifier
     """
     path = Path(path)
+    if len(bodies) > _MAX_SUMMARIES:
+        raise ValueError(
+            f"write_spk_type13() currently supports at most {_MAX_SUMMARIES} bodies "
+            "because it emits a single summary record and a single name record"
+        )
 
     summaries: list[tuple] = []
     names:     list[str]   = []
@@ -268,8 +296,17 @@ def write_spk_type13(
     if remainder:
         segment_bytes += b'\x00' * (_RECORD_SIZE - remainder)
 
-    with path.open('wb') as fh:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(
+        mode='wb',
+        dir=path.parent,
+        prefix=f".{path.stem}.",
+        suffix=path.suffix,
+        delete=False,
+    ) as fh:
         fh.write(file_rec)
         fh.write(summary_rec)
         fh.write(name_rec)
         fh.write(segment_bytes)
+        temp_path = Path(fh.name)
+    temp_path.replace(path)

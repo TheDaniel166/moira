@@ -90,6 +90,8 @@ __all__ = [
     "SolarBodyCircumstances", "SolarEclipseLocalCircumstances",
     "LocalContactCircumstances", "LunarEclipseAnalysis",
     "LunarEclipseLocalCircumstances",
+    # Phase 3 — path/where geometry vessel (Defer.Design + Defer.Validation)
+    "SolarEclipsePath",
 ]
 
 # ---------------------------------------------------------------------------
@@ -123,6 +125,73 @@ AUBREY_HOLES                = 56            # Stonehenge Aubrey hole count
 HEPTAGON_SIDES              = 7
 POSITIONS_PER_SIDE          = 8             # 56 / 7
 DEGREES_PER_STONE           = 360.0 / AUBREY_HOLES
+
+
+# ---------------------------------------------------------------------------
+# Phase 3 — SolarEclipsePath  (Defer.Design + Defer.Validation)
+# ---------------------------------------------------------------------------
+
+@dataclass(frozen=True, slots=True)
+class SolarEclipsePath:
+    """
+    Typed vessel for the geographic path of a solar eclipse's central line.
+
+    Design vessel — Phase 3.  Computation is deferred until a typed
+    path/circumstance surface is designed with full validation coverage.
+
+    Doctrine
+    --------
+    A solar eclipse path ("where" surface) encodes the geographic track of
+    the Moon's umbral (or antumbral) shadow across the Earth's surface.
+    It is distinct from the local-circumstances surface
+    (:class:`SolarEclipseLocalCircumstances`) which answers "what happens at
+    a specific observer location."
+
+    Swiss Ephemeris ``swe_sol_eclipse_where`` and ``swe_sol_eclipse_how``
+    expose this as raw float arrays indexed by undocumented integer offsets.
+    This vessel replaces those arrays with named, typed fields.
+
+    Real blockers before implementation (Blocker B + Blocker C):
+        - No public path-computation function exists yet; the geometry
+          (umbra/penumbra conic intersection with Earth's ellipsoid) requires
+          careful design around the WGS-84 / spherical Earth choice.
+        - Validation requires comparison against NASA eclipse path shapefiles
+          or USNO data; the comparison infrastructure is not yet in place.
+
+    Validation plan (must exist before ``status=implemented``):
+        - ≥10 historical total/annular eclipses from the NASA Five Millennium
+          Atlas compared at ≥5 points along each central line.
+        - Tolerance: central-line crossing latitude within ±0.01°, duration
+          at maximum eclipse within ±2 s.
+
+    Fields
+    ------
+    central_line_lats : tuple of float
+        Geographic latitudes (degrees, north positive) along the central line,
+        sampled at equal time intervals from first to last contact.
+    central_line_lons : tuple of float
+        Geographic longitudes (degrees, east positive) at the same sample
+        points.  Same length as ``central_line_lats``.
+    umbral_width_km : float
+        Width of the umbral (or antumbral) shadow path in kilometres at
+        maximum eclipse.
+    duration_at_max_s : float
+        Duration of totality (or annularity) in seconds at the point of
+        maximum eclipse.
+    max_eclipse_lat : float
+        Geographic latitude of the point of greatest eclipse.
+    max_eclipse_lon : float
+        Geographic longitude of the point of greatest eclipse.
+    eclipse_data : EclipseData
+        The parent eclipse event from which this path was derived.
+    """
+    central_line_lats:  tuple
+    central_line_lons:  tuple
+    umbral_width_km:    float
+    duration_at_max_s:  float
+    max_eclipse_lat:    float
+    max_eclipse_lon:    float
+    eclipse_data:       'EclipseData'
 
 
 # ---------------------------------------------------------------------------

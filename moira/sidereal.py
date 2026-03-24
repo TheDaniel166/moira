@@ -51,6 +51,7 @@ from .obliquity import nutation
 
 __all__ = [
     "Ayanamsa",
+    "UserDefinedAyanamsa",
     "NakshatraPosition",
     "ayanamsa",
     "tropical_to_sidereal",
@@ -59,6 +60,58 @@ __all__ = [
     "nakshatra_of",
     "all_nakshatras_at",
 ]
+
+# ---------------------------------------------------------------------------
+# User-defined ayanamsa  (Phase 3 — Defer.Doctrine; ayanamsa expansion)
+# ---------------------------------------------------------------------------
+
+@dataclass(frozen=True, slots=True)
+class UserDefinedAyanamsa:
+    """
+    A caller-supplied ayanamsa specified by its J2000.0 reference value.
+
+    Replaces Swiss Ephemeris ``swe_set_sid_mode(SE_SIDM_USER, ...)`` global
+    state mutation with a typed, immutable, first-class value.  Pass an
+    instance anywhere a system-name string is accepted.
+
+    Doctrine:
+        The ayanamsa at any Julian Day is computed as::
+
+            ayan(jd) = reference_value_j2000
+                       + general_precession_in_longitude(jd)
+                       + drift_per_century * T
+                       [+ Δψ if mode='true']
+
+        where ``T`` is centuries from J2000.0.  This is identical to the
+        polynomial path used for all named systems; the only difference is
+        that the reference value is caller-supplied rather than drawn from
+        the built-in table.
+
+    Acceptance criteria for future built-in ayanamsa additions
+    (documented here as the doctrinal standard for all ``SIDM_*`` candidates):
+        1. Must have a published, peer-reviewed epoch reference value.
+        2. Must name the anchor star or epoch date explicitly.
+        3. Must differ from all existing systems by > 1 arcminute at J2000.
+        4. Must have a demonstrated user community (not hypothetical).
+        5. Star-anchored systems additionally require a named star present
+           in the Moira fixed-star catalog.
+        Candidates not meeting all five criteria remain as
+        ``UserDefinedAyanamsa`` use-cases, not new ``Ayanamsa.*`` constants.
+
+    Args:
+        reference_value_j2000: Ayanamsa value at J2000.0 (degrees).
+        drift_per_century: Additional linear drift term in degrees per
+            Julian century beyond the standard general precession.
+            Defaults to 0.0 (pure precession-only tracking).
+
+    Example::
+
+        kp_ayanamsa = UserDefinedAyanamsa(reference_value_j2000=23.8576389)
+        lon_sid = tropical_to_sidereal(mars.longitude, jd, system=kp_ayanamsa)
+    """
+    reference_value_j2000: float
+    drift_per_century:     float = 0.0
+
 
 # ---------------------------------------------------------------------------
 # Ayanamsa system identifiers
@@ -275,17 +328,24 @@ def _star_anchored_ayanamsa(system: str, jd: float) -> float:
         return base + general_precession_in_longitude(jd) + dpsi_deg
 
 
-def ayanamsa(jd: float, system: str = Ayanamsa.LAHIRI, mode: str = "true") -> float:
+def ayanamsa(
+    jd: float,
+    system: 'str | UserDefinedAyanamsa' = Ayanamsa.LAHIRI,
+    mode: str = "true",
+) -> float:
     """
     Compute the ayanamsa for a given Julian Day (TT or UT — difference is negligible).
 
     Parameters
     ----------
     jd     : Julian Day Number
-    system : one of the Ayanamsa.* constants
+    system : one of the Ayanamsa.* constants, or a :class:`UserDefinedAyanamsa`
+             instance for a caller-supplied reference value.
     mode   : "mean" (precession only; polynomial for all systems) or
              "true" (live star-anchored for systems in ``_STAR_ANCHORED``;
-             precession + nutation Δψ for all other polynomial systems)
+             precession + nutation Δψ for all other polynomial systems).
+             Ignored for ``UserDefinedAyanamsa`` in ``mode='true'`` (Δψ still
+             applied) — star-anchored resolution is never attempted.
 
     Returns
     -------
@@ -306,6 +366,17 @@ def ayanamsa(jd: float, system: str = Ayanamsa.LAHIRI, mode: str = "true") -> fl
     if mode not in ("mean", "true"):
         raise ValueError(f"mode must be 'mean' or 'true', got {mode!r}")
 
+    # --- UserDefinedAyanamsa branch -----------------------------------------
+    if isinstance(system, UserDefinedAyanamsa):
+        precession = general_precession_in_longitude(jd)
+        T = centuries_from_j2000(jd)
+        base = system.reference_value_j2000 + precession + system.drift_per_century * T
+        if mode == "true":
+            dpsi_deg, _ = nutation(jd)
+            return base + dpsi_deg
+        return base
+
+    # --- Named system branch ------------------------------------------------
     if system not in _AYANAMSA_AT_J2000:
         raise ValueError(
             f"Unknown ayanamsa system '{system}'. "

@@ -10,7 +10,7 @@ long-range ΔT table loading to the bundled data file
 coordinate transforms, house calculations, or any display formatting.
 
 Public surface:
-    CalendarDateTime,
+    CalendarDateTime, DeltaTPolicy,
     format_calendar_utc, format_jd_utc,
     julian_day, calendar_from_jd, jd_from_datetime,
     decimal_year, decimal_year_from_jd,
@@ -834,13 +834,81 @@ def delta_t_nasa_canon(year: float) -> float:
     return base + correction
 
 
-def ut_to_tt(jd_ut: float, year: float | None = None) -> float:
+@dataclass(frozen=True, slots=True)
+class DeltaTPolicy:
     """
-    Convert a Julian Day in UT to Terrestrial Time (TT) using ``delta_t()``.
+    Typed policy object controlling how ΔT (TT − UT1) is computed.
+
+    DeltaTPolicy replaces the Swiss Ephemeris ``set_delta_t_userdef`` global
+    mutation pattern with a typed, immutable, per-call policy. Pass a
+    DeltaTPolicy instance to ``ut_to_tt()``, ``tt_to_ut()``, or
+    ``planet_at()`` to override the default hybrid model for that call.
+
+    Attributes
+    ----------
+    model : str
+        Which ΔT algorithm to use.  Accepted values:
+
+        ``'hybrid'`` (default)
+            Moira's multi-source hybrid model (see ``delta_t()``).  This is
+            the default and matches Swiss Ephemeris behaviour in the modern era.
+
+        ``'nasa_canon'``
+            NASA eclipse-canon polynomial model (see ``delta_t_nasa_canon()``).
+            Useful for reproducing published NASA eclipse predictions.
+
+        ``'fixed'``
+            Use a single fixed ΔT value supplied in ``fixed_delta_t``.
+            Useful for controlled numerical tests or for epochs where no
+            reliable table data exists and a known value is preferred.
+
+    fixed_delta_t : float or None
+        The fixed ΔT value in seconds to use when ``model='fixed'``.
+        Must be provided when ``model='fixed'``; ignored otherwise.
+
+    Examples
+    --------
+    >>> from moira.julian import DeltaTPolicy, ut_to_tt
+    >>> policy = DeltaTPolicy(model='fixed', fixed_delta_t=69.0)
+    >>> jd_tt = ut_to_tt(2451545.0, delta_t_policy=policy)
+    """
+
+    model: str = 'hybrid'
+    fixed_delta_t: float | None = None
+
+    def __post_init__(self) -> None:
+        allowed = ('hybrid', 'nasa_canon', 'fixed')
+        if self.model not in allowed:
+            raise ValueError(
+                f"DeltaTPolicy.model must be one of {allowed!r}, got {self.model!r}"
+            )
+        if self.model == 'fixed' and self.fixed_delta_t is None:
+            raise ValueError(
+                "DeltaTPolicy.model='fixed' requires fixed_delta_t to be set"
+            )
+
+    def compute(self, year: float) -> float:
+        """Return ΔT in seconds for the given decimal year under this policy."""
+        if self.model == 'fixed':
+            return float(self.fixed_delta_t)  # type: ignore[arg-type]
+        if self.model == 'nasa_canon':
+            return delta_t_nasa_canon(year)
+        return delta_t(year)
+
+
+def ut_to_tt(
+    jd_ut: float,
+    year: float | None = None,
+    delta_t_policy: 'DeltaTPolicy | None' = None,
+) -> float:
+    """
+    Convert a Julian Day in UT to Terrestrial Time (TT).
 
     Args:
         jd_ut: Julian Day Number in Universal Time.
         year:  Decimal year hint; derived from ``jd_ut`` when ``None``.
+        delta_t_policy: Optional ``DeltaTPolicy`` controlling which ΔT model
+            is used.  When ``None``, the default hybrid model is used.
 
     Returns:
         Julian Day Number in TT (= jd_ut + ΔT / 86400).
@@ -850,7 +918,10 @@ def ut_to_tt(jd_ut: float, year: float | None = None) -> float:
     """
     if year is None:
         year = decimal_year_from_jd(jd_ut)
-    dt_sec = delta_t(float(year))
+    if delta_t_policy is not None:
+        dt_sec = delta_t_policy.compute(float(year))
+    else:
+        dt_sec = delta_t(float(year))
     return jd_ut + dt_sec / 86400.0
 
 
@@ -874,13 +945,19 @@ def ut_to_tt_nasa_canon(jd_ut: float, year: float | None = None) -> float:
     return jd_ut + dt_sec / 86400.0
 
 
-def tt_to_ut(jd_tt: float, year: float | None = None) -> float:
+def tt_to_ut(
+    jd_tt: float,
+    year: float | None = None,
+    delta_t_policy: 'DeltaTPolicy | None' = None,
+) -> float:
     """
     Convert a Julian Day in TT to Universal Time (UT) using ``delta_t()``.
 
     Args:
         jd_tt: Julian Day Number in Terrestrial Time.
         year:  Decimal year hint; derived from ``jd_tt`` when ``None``.
+        delta_t_policy: Optional ``DeltaTPolicy`` controlling which ΔT model
+            is used.  When ``None``, the default hybrid model is used.
 
     Returns:
         Julian Day Number in UT (= jd_tt − ΔT / 86400).
@@ -890,7 +967,10 @@ def tt_to_ut(jd_tt: float, year: float | None = None) -> float:
     """
     if year is None:
         year = decimal_year_from_jd(jd_tt)
-    dt_sec = delta_t(float(year))
+    if delta_t_policy is not None:
+        dt_sec = delta_t_policy.compute(float(year))
+    else:
+        dt_sec = delta_t(float(year))
     return jd_tt - dt_sec / 86400.0
 
 

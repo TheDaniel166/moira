@@ -53,7 +53,78 @@ __all__ = [
     "lunar_occultation",
     "lunar_star_occultation",
     "all_lunar_occultations",
+    # Phase 3 — path/where geometry vessel (Defer.Design + Defer.Validation)
+    "OccultationPathGeometry",
 ]
+
+# ---------------------------------------------------------------------------
+# Phase 3 — OccultationPathGeometry  (Defer.Design + Defer.Validation)
+# ---------------------------------------------------------------------------
+
+@dataclass(frozen=True, slots=True)
+class OccultationPathGeometry:
+    """
+    Typed vessel for the geographic path of a planetary or stellar occultation.
+
+    Design vessel — Phase 3.  Computation is deferred until the path/where
+    geometry subsystem is designed with full validation coverage.
+
+    Doctrine
+    --------
+    An occultation path encodes the geographic track of the occulting body's
+    shadow (or umbra for deep occultations) across the Earth's surface.
+    It is distinct from :class:`LunarOccultation` (which records the event at
+    a single observer) and from :class:`~moira.eclipse.SolarEclipsePath`
+    (which covers the Moon's umbral shadow during solar eclipses).
+
+    The surface answers: "where on Earth can this occultation be seen, and
+    what are the ingress/egress times at each latitude band?"
+
+    Swiss Ephemeris ``swe_sol_eclipse_where`` and ``swe_occult_where`` expose
+    this as raw float arrays.  This vessel expresses the same information as
+    named, typed fields.
+
+    Real blockers before implementation (Blocker B + Blocker C):
+        - No occultation path computation currently exists in Moira.
+        - Validation requires comparison against IOTA (International Occultation
+          Timing Association) predicted paths; the comparison infrastructure
+          is not yet in place.
+
+    Validation plan (must exist before ``status=implemented``):
+        - ≥5 historical lunar stellar occultations compared against IOTA
+          predicted paths at ≥3 latitudes each.
+        - Tolerance: occultation central-line crossing within ±0.01°, contact
+          time within ±2 s.
+
+    Fields
+    ------
+    occulting_body : str
+        Name of the body causing the occultation (e.g. ``Body.MOON``).
+    occulted_body : str
+        Name of the body being occulted (e.g. ``Body.MARS`` or a star name).
+    jd_greatest_ut : float
+        Julian Day (UT1) at greatest occultation (closest approach on the
+        central line).
+    central_line_lats : tuple of float
+        Geographic latitudes (degrees) along the path of greatest occultation,
+        sampled from first to last external contact.
+    central_line_lons : tuple of float
+        Geographic longitudes (degrees) at the same sample points.
+    path_width_km : float
+        Width of the occultation visibility zone in kilometres at greatest
+        occultation.  Derived from the occulting body's angular diameter and
+        the shadow geometry.
+    duration_at_greatest_s : float
+        Duration of occultation in seconds at the point of greatest occultation.
+    """
+    occulting_body:          str
+    occulted_body:           str
+    jd_greatest_ut:          float
+    central_line_lats:       tuple
+    central_line_lons:       tuple
+    path_width_km:           float
+    duration_at_greatest_s:  float
+
 
 # ---------------------------------------------------------------------------
 # Physical angular radii (degrees) — used for occultation detection

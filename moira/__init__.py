@@ -35,7 +35,7 @@ Public surface / exports:
 
 Export stability tiers:
     Frozen (stable):  Moira, Chart, Body, HouseSystem, Ayanamsa,
-                      PlanetData, SkyPosition, NodeData, HouseCusps,
+                      PlanetData, SkyPosition, CartesianPosition, NodeData, HouseCusps,
                       AspectData, EclipseData, EclipseEvent, EclipseType,
                       EclipseCalculator, and all symbols present in __all__.
     Provisional:      None currently designated.
@@ -69,18 +69,26 @@ from datetime import datetime, timezone
 
 from .constants import Body, HouseSystem, AspectDefinition, ASPECT_TIERS
 from .julian import (
-    CalendarDateTime, julian_day, calendar_from_jd, calendar_datetime_from_jd,
+    CalendarDateTime, DeltaTPolicy, julian_day, calendar_from_jd, calendar_datetime_from_jd,
     jd_from_datetime, datetime_from_jd, format_jd_utc, safe_datetime_from_jd,
     greenwich_mean_sidereal_time, local_sidereal_time, delta_t,
 )
 from .obliquity import mean_obliquity, true_obliquity, nutation
 from .coordinates import (
     icrf_to_ecliptic, icrf_to_equatorial, ecliptic_to_equatorial,
-    equatorial_to_horizontal, angular_distance, normalize_degrees,
+    equatorial_to_horizontal, horizontal_to_equatorial,
+    cotrans_sp,
+    atmospheric_refraction, atmospheric_refraction_extended,
+    equation_of_time,
+    angular_distance, normalize_degrees,
 )
 from .spk_reader import get_reader, set_kernel_path, SpkReader
-from .planets import PlanetData, SkyPosition, planet_at, sky_position_at, all_planets_at, sun_longitude
-from .nodes import mean_node, true_node, mean_lilith, NodeData
+from .planets import (
+    PlanetData, SkyPosition, CartesianPosition,
+    planet_at, sky_position_at, all_planets_at, sun_longitude,
+    planet_relative_to, next_heliocentric_transit,
+)
+from .nodes import mean_node, true_node, mean_lilith, NodeData, next_moon_node_crossing
 from .houses import (
     HouseSystemFamily,
     HouseSystemCuspBasis,
@@ -99,7 +107,12 @@ from .houses import (
     HouseOccupancy,
     HouseDistributionProfile,
     calculate_houses,
+    houses_from_armc,
     assign_house,
+    body_house_position,
+    CuspSpeed,
+    HouseDynamics,
+    cusp_speeds_at,
     describe_boundary,
     describe_angularity,
     compare_systems,
@@ -133,7 +146,9 @@ from .aspects import (
     find_declination_aspects,
     find_patterns,
 )
-from .sidereal import ayanamsa, tropical_to_sidereal, sidereal_to_tropical, Ayanamsa, list_ayanamsa_systems
+from .sidereal import ayanamsa, tropical_to_sidereal, sidereal_to_tropical, Ayanamsa, UserDefinedAyanamsa, list_ayanamsa_systems
+from .heliacal import HeliacalEventKind, VisibilityModel, HeliacalPolicy
+from .orbits import KeplerianElements, DistanceExtremes
 from .eclipse import (
     EclipseData,
     EclipseEvent,
@@ -144,6 +159,7 @@ from .eclipse import (
     LocalContactCircumstances,
     LunarEclipseAnalysis,
     LunarEclipseLocalCircumstances,
+    SolarEclipsePath,
 )
 from .compat.nasa.eclipse import (
     NasaLunarEclipseContacts,
@@ -367,7 +383,7 @@ from .asteroids import (
     ASTEROID_NAIF,
 )
 from .planets import HeliocentricData, heliocentric_planet_at, all_heliocentric_at
-from .rise_set import TwilightTimes, twilight_times
+from .rise_set import RiseSetPolicy, TwilightTimes, twilight_times
 from .phase import angular_diameter
 from .dignities import (
     sect_light, is_day_chart, almuten_figuris, find_phasis,
@@ -502,6 +518,7 @@ from .dignities import mutual_receptions
 from .occultations import (
     CloseApproach, LunarOccultation,
     close_approaches, lunar_occultation, lunar_star_occultation, all_lunar_occultations,
+    OccultationPathGeometry,
 )
 from .sothic import (
     SothicCalendarPolicy, SothicHeliacalPolicy, SothicEpochPolicy,
@@ -566,7 +583,7 @@ from .void_of_course import (
 __all__ = [
     "Moira", "Chart",
     "Body", "HouseSystem", "Ayanamsa",
-    "PlanetData", "SkyPosition", "NodeData", "AspectData",
+    "PlanetData", "SkyPosition", "CartesianPosition", "NodeData", "AspectData",
     # Houses backend public surface
     "HouseSystemFamily", "HouseSystemCuspBasis",
     "UnknownSystemPolicy", "PolarFallbackPolicy",
@@ -583,14 +600,18 @@ __all__ = [
     "NasaLunarEclipseContacts", "NasaLunarEclipseEvent",
     "next_nasa_lunar_eclipse", "previous_nasa_lunar_eclipse",
     "translate_lunar_eclipse_event",
-    "CalendarDateTime", "julian_day", "calendar_from_jd", "calendar_datetime_from_jd",
+    "CalendarDateTime", "DeltaTPolicy", "julian_day", "calendar_from_jd", "calendar_datetime_from_jd",
     "jd_from_datetime", "datetime_from_jd", "format_jd_utc", "safe_datetime_from_jd",
     "greenwich_mean_sidereal_time", "local_sidereal_time", "delta_t",
     # Obliquity & nutation
     "mean_obliquity", "true_obliquity", "nutation",
     # Coordinate utilities
     "icrf_to_ecliptic", "icrf_to_equatorial", "ecliptic_to_equatorial",
-    "equatorial_to_horizontal", "angular_distance", "normalize_degrees",
+    "equatorial_to_horizontal", "horizontal_to_equatorial",
+    "cotrans_sp",
+    "atmospheric_refraction", "atmospheric_refraction_extended",
+    "equation_of_time",
+    "angular_distance", "normalize_degrees",
     "ayanamsa", "tropical_to_sidereal", "sidereal_to_tropical", "list_ayanamsa_systems",
     "AspectDefinition", "ASPECT_TIERS",
     # Aspect backend public surface
@@ -755,8 +776,19 @@ __all__ = [
     "PlanetaryHour", "PlanetaryHoursDay", "planetary_hours",
     # Heliocentric positions
     "HeliocentricData", "heliocentric_planet_at", "all_heliocentric_at",
+    # Phase 2 specialist helpers
+    "planet_relative_to", "next_heliocentric_transit",
+    "next_moon_node_crossing",
+    "houses_from_armc", "body_house_position",
+    # Phase 3 design vessels
+    "UserDefinedAyanamsa",
+    "HeliacalEventKind", "VisibilityModel", "HeliacalPolicy",
+    "SolarEclipsePath",
+    "OccultationPathGeometry",
+    "KeplerianElements", "DistanceExtremes",
+    "CuspSpeed", "HouseDynamics", "cusp_speeds_at",
     # Twilight
-    "TwilightTimes", "twilight_times",
+    "RiseSetPolicy", "TwilightTimes", "twilight_times",
     # Angular diameter
     "angular_diameter",
     # Dignities extensions

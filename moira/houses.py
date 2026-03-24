@@ -208,12 +208,18 @@ __all__ = [
     "HouseDistributionProfile",
     # Public entry points
     "calculate_houses",
+    "houses_from_armc",
     "assign_house",
+    "body_house_position",
     "describe_boundary",
     "describe_angularity",
     "compare_systems",
     "compare_placements",
     "distribute_points",
+    # Phase 3 — house dynamics
+    "CuspSpeed",
+    "HouseDynamics",
+    "cusp_speeds_at",
 ]
 
 
@@ -3136,4 +3142,374 @@ def distribute_points(
         angular_count=angular_count,
         succedent_count=succedent_count,
         cadent_count=cadent_count,
+    )
+
+
+# ===========================================================================
+# ARMC-DIRECT HOUSE COMPUTATION  (Phase 2 — Swiss houses_armc analogue)
+# ===========================================================================
+
+def houses_from_armc(
+    armc: float,
+    obliquity: float,
+    lat: float,
+    system: str = HouseSystem.PLACIDUS,
+    *,
+    policy: HousePolicy | None = None,
+    sun_longitude: float | None = None,
+) -> HouseCusps:
+    """
+    Compute house cusps directly from a pre-computed ARMC and obliquity.
+
+    Equivalent to Swiss Ephemeris ``swe_houses_armc``.  Use this when the
+    ARMC is already known (e.g. from a relocated chart, a synastry engine, or
+    an external source) and you do not want Moira to re-derive it from a
+    Julian date and geographic longitude.
+
+    Args:
+        armc: Apparent Right Ascension of the Medium Coeli (degrees, [0, 360)).
+            This is the Local Sidereal Time expressed as an ecliptic degree.
+        obliquity: True obliquity of the ecliptic (degrees) at the chart epoch.
+        lat: Geographic latitude of the observer (degrees, north positive).
+        system: House system identifier; one of the ``HouseSystem`` constants.
+            Defaults to ``HouseSystem.PLACIDUS``.
+        policy: :class:`HousePolicy` governing fallback doctrine.  Keyword-only.
+            Defaults to ``HousePolicy.default()`` (silent fallback).
+        sun_longitude: Geocentric ecliptic longitude of the Sun (degrees).
+            Required only when ``system == HouseSystem.SUNSHINE``; ignored
+            for all other systems.
+
+    Returns:
+        A :class:`HouseCusps` vessel populated identically to
+        :func:`calculate_houses`, with the same fallback and classification
+        fields.
+
+    Raises:
+        ValueError: If ``system == HouseSystem.SUNSHINE`` and ``sun_longitude``
+            is ``None``.
+        ValueError: When policy requires strict behaviour and a fallback
+            condition is encountered.
+    """
+    active_policy = policy if policy is not None else HousePolicy.default()
+    critical_lat = 90.0 - obliquity
+    polar = abs(lat) >= critical_lat and system in _POLAR_SYSTEMS
+    effective_system = system
+    fallback = False
+    fallback_reason: str | None = None
+
+    if polar:
+        if active_policy.polar_fallback == PolarFallbackPolicy.RAISE:
+            raise ValueError(
+                f"latitude |{lat:.4f}°| >= critical latitude {critical_lat:.4f}° "
+                f"(= 90° − obliquity {obliquity:.4f}°); "
+                f"system {system!r} produces geometrically invalid cusps above this "
+                f"threshold and policy is RAISE"
+            )
+        effective_system = HouseSystem.PORPHYRY
+        fallback = True
+        fallback_reason = (
+            f"|lat| {abs(lat):.4f}° >= critical latitude {critical_lat:.4f}° "
+            f"(90° − obliquity); {system!r} produces invalid cusps above this "
+            f"threshold; fell back to Porphyry"
+        )
+    elif system not in _KNOWN_SYSTEMS:
+        if active_policy.unknown_system == UnknownSystemPolicy.RAISE:
+            raise ValueError(
+                f"unknown house system code {system!r} and policy is RAISE"
+            )
+        effective_system = HouseSystem.PLACIDUS
+        fallback = True
+        fallback_reason = f"unknown system code {system!r}; fell back to Placidus"
+
+    mc          = _mc_from_armc(armc, obliquity, lat)
+    asc         = _asc_from_armc(armc, obliquity, lat)
+    vertex      = _asc_from_armc((armc + 90.0) % 360.0, obliquity, -lat)
+    anti_vertex = (vertex + 180.0) % 360.0
+
+    if effective_system == HouseSystem.WHOLE_SIGN:
+        cusps = _whole_sign(asc)
+    elif effective_system == HouseSystem.EQUAL:
+        cusps = _equal_house(asc)
+    elif effective_system == HouseSystem.PORPHYRY:
+        cusps = _porphyry(asc, mc)
+    elif effective_system == HouseSystem.PLACIDUS:
+        cusps = _placidus(armc, obliquity, lat)
+    elif effective_system == HouseSystem.KOCH:
+        cusps = _koch(armc, obliquity, lat)
+    elif effective_system == HouseSystem.CAMPANUS:
+        cusps = _campanus(armc, obliquity, lat)
+    elif effective_system == HouseSystem.REGIOMONTANUS:
+        cusps = _regiomontanus(armc, obliquity, lat)
+    elif effective_system == HouseSystem.ALCABITIUS:
+        cusps = _alcabitius(armc, obliquity, lat)
+    elif effective_system == HouseSystem.MORINUS:
+        cusps = _morinus(armc, obliquity)
+    elif effective_system == HouseSystem.TOPOCENTRIC:
+        cusps = _topocentric(armc, obliquity, lat)
+    elif effective_system == HouseSystem.MERIDIAN:
+        cusps = _meridian(armc, obliquity)
+    elif effective_system == HouseSystem.VEHLOW:
+        cusps = _vehlow(asc)
+    elif effective_system == HouseSystem.SUNSHINE:
+        if sun_longitude is None:
+            raise ValueError(
+                "houses_from_armc: sun_longitude is required for HouseSystem.SUNSHINE"
+            )
+        cusps = _sunshine(sun_longitude, lat, obliquity)
+    elif effective_system == HouseSystem.AZIMUTHAL:
+        cusps = _azimuthal(armc, obliquity, lat)
+    elif effective_system == HouseSystem.CARTER:
+        cusps = _carter(armc, obliquity, lat)
+    elif effective_system == HouseSystem.PULLEN_SD:
+        cusps = _pullen_sd(armc, obliquity, lat)
+    elif effective_system == HouseSystem.PULLEN_SR:
+        cusps = _pullen_sr(armc, obliquity, lat)
+    elif effective_system == HouseSystem.KRUSINSKI:
+        cusps = _krusinski(armc, obliquity, lat)
+    elif effective_system == HouseSystem.APC:
+        cusps = _apc(armc, obliquity, lat)
+    else:
+        cusps = _placidus(armc, obliquity, lat)
+
+    return HouseCusps(
+        system=system,
+        cusps=[normalize_degrees(c) for c in cusps],
+        asc=normalize_degrees(asc),
+        mc=normalize_degrees(mc),
+        armc=normalize_degrees(armc),
+        vertex=normalize_degrees(vertex),
+        anti_vertex=normalize_degrees(anti_vertex),
+        effective_system=effective_system,
+        fallback=fallback,
+        fallback_reason=fallback_reason,
+        classification=classify_house_system(effective_system),
+        policy=active_policy,
+    )
+
+
+# ===========================================================================
+# INTRA-HOUSE FRACTIONAL POSITION  (Phase 2 — Swiss house_pos analogue)
+# ===========================================================================
+
+def body_house_position(longitude: float, house_cusps: HouseCusps) -> float:
+    """
+    Return the fractional house position of an ecliptic longitude.
+
+    Equivalent to Swiss Ephemeris ``swe_house_pos``.  The return value is a
+    float H where ``int(H)`` is the house number (1–12) and ``H - int(H)``
+    is how far through that house the longitude falls (0.0 at the opening
+    cusp, approaching 1.0 at the closing cusp).
+
+    Examples::
+
+        3.0   → exactly on the 3rd-house cusp
+        3.5   → midpoint of the 3rd house
+        12.99 → just before the 12th house closes (near the Ascendant)
+
+    Args:
+        longitude: Ecliptic longitude in degrees (need not be in [0, 360);
+            it is normalised internally).
+        house_cusps: A :class:`HouseCusps` result from
+            :func:`calculate_houses` or :func:`houses_from_armc`.
+
+    Returns:
+        A float in the range ``[1.0, 13.0)`` representing the fractional
+        house position.
+
+    Raises:
+        No exceptions under normal operation.  A degenerate house with zero
+        span returns ``float(house_number)``.
+    """
+    lon = longitude % 360.0
+    placement = assign_house(lon, house_cusps)
+    n = placement.house
+    opening = house_cusps.cusps[n - 1]
+    closing = house_cusps.cusps[n % 12]
+    span = (closing - opening) % 360.0
+    if span < 1e-12:
+        return float(n)
+    dist = (lon - opening) % 360.0
+    return n + dist / span
+
+
+# ===========================================================================
+# HOUSE DYNAMICS DESIGN VESSELS  (Phase 3 — Defer.Doctrine + Defer.Validation)
+# ===========================================================================
+
+@dataclass(frozen=True, slots=True)
+class CuspSpeed:
+    """
+    The instantaneous rate of change of a single house cusp.
+
+    Design vessel — Phase 3.  Computation is deferred until the doctrinal
+    and validation preconditions are met.
+
+    Doctrine for cusp speed in Moira
+    ---------------------------------
+    This doctrinal record is written before any implementation so that the
+    final surface is never shaped by implementation convenience:
+
+    **What cusp speed means:**
+        The rate of change of a cusp's tropical ecliptic longitude with
+        respect to Universal Time, in degrees per day.  For quadrant-based
+        systems, cusps move because the ARMC moves (sidereal day ≈ 23h56m)
+        and because the obliquity changes slowly.  For equal-house systems,
+        the ASC speed propagates uniformly.
+
+    **Why this is doctrinally tricky:**
+        - Cusp speed is observer-location-dependent: the same sidereal-day
+          rotation produces different cusp speeds at different latitudes.
+        - At polar latitudes, some systems produce ill-conditioned cusp speeds
+          (same instability that triggers the polar-fallback in
+          :func:`calculate_houses`).
+        - The MC moves at a rate close to 1°/day (the solar day), not 1°/sidereal-day,
+          because it is defined by the Sun's right ascension, not by Earth rotation.
+          Conflating ARMC-rate with MC-rate is a common error.
+
+    **Validation preconditions:**
+        A public cusp-speed surface must be validated against Swiss Ephemeris
+        ``swe_houses_ex2`` (which returns cusp speeds in its extended output)
+        for ≥5 house systems, ≥3 latitudes, ≥3 epochs.  Tolerance: 0.001°/day.
+
+    Fields
+    ------
+    house : int
+        House number (1–12).
+    cusp_longitude : float
+        Cusp ecliptic longitude at the instant of measurement (degrees).
+    speed_deg_per_day : float
+        Rate of change of cusp longitude (degrees/day).
+        Positive = cusp moving in the direction of increasing longitude.
+    """
+    house:              int
+    cusp_longitude:     float
+    speed_deg_per_day:  float
+
+
+@dataclass(frozen=True, slots=True)
+class HouseDynamics:
+    """
+    The full set of cusp speeds for a chart, plus angle speeds.
+
+    Design vessel — Phase 3.  Accompanies :class:`CuspSpeed`.
+
+    Doctrine: angle speeds and cusp speeds belong together
+    -------------------------------------------------------
+    Decision (recorded here before implementation):
+        :class:`HouseDynamics` carries both the 12 cusp speeds and the
+        four angle speeds (ASC, MC, Vertex, Anti-Vertex).  The rationale
+        is that callers who need cusp speeds almost always also need angle
+        speeds, and separating them would require two queries for one chart.
+
+        Cusp speeds for houses 1, 4, 7, 10 are redundant with angle speeds
+        (ASC = cusp 1, IC = cusp 4, DSC = cusp 7, MC = cusp 10) — they are
+        included for uniformity.
+
+    Fields
+    ------
+    house_cusps : HouseCusps
+        The parent house cusps at the instant of measurement.
+    cusp_speeds : tuple of CuspSpeed
+        Speeds for all 12 cusps, in house order (1–12).
+    asc_speed_deg_per_day : float
+        Ascendant speed (degrees/day).
+    mc_speed_deg_per_day : float
+        Midheaven speed (degrees/day).
+    vertex_speed_deg_per_day : float
+        Vertex speed (degrees/day).
+    anti_vertex_speed_deg_per_day : float
+        Anti-Vertex speed (degrees/day).
+    """
+    house_cusps:                    'HouseCusps'
+    cusp_speeds:                    tuple
+    asc_speed_deg_per_day:          float
+    mc_speed_deg_per_day:           float
+    vertex_speed_deg_per_day:       float
+    anti_vertex_speed_deg_per_day:  float
+
+
+# ===========================================================================
+# HOUSE DYNAMICS COMPUTATION
+# ===========================================================================
+
+def cusp_speeds_at(
+    jd_ut:    float,
+    latitude: float,
+    longitude: float,
+    system:   str = HouseSystem.PLACIDUS,
+    *,
+    policy: HousePolicy | None = None,
+    dt:     float = 1.0 / 1440.0,
+) -> HouseDynamics:
+    """
+    Compute instantaneous house cusp speeds and angle speeds.
+
+    Method: centred finite difference over ±dt on :func:`calculate_houses`.
+    The derivative is estimated as::
+
+        speed = (longitude(t+dt) − longitude(t−dt)) / (2·dt)
+
+    with a wraparound-safe subtraction (result in (−180, 180]).
+
+    This approach is consistent with how Swiss Ephemeris ``swe_houses_ex2``
+    derives cusp speeds internally (finite difference over a small time step).
+
+    Args:
+        jd_ut: Julian date in Universal Time (UT1).
+        latitude: Geographic latitude of the observer (decimal degrees,
+            positive north, range [−90, 90]).
+        longitude: Geographic longitude of the observer (decimal degrees,
+            positive east, range [−180, 180]).
+        system: House system identifier; one of the HouseSystem constants.
+            Defaults to HouseSystem.PLACIDUS.
+        policy: HousePolicy governing fallback doctrine.  Keyword-only.
+            Defaults to HousePolicy.default().
+        dt: Half-step in Julian Days for the finite difference.  Keyword-only.
+            Default is 1/1440 day (exactly 1 minute).  Values smaller than
+            1e-6 may introduce floating-point noise; values larger than 0.01
+            reduce accuracy for fast-moving angles.
+
+    Returns:
+        A :class:`HouseDynamics` instance containing the house cusps at
+        ``jd_ut``, the 12 :class:`CuspSpeed` records, and the four angle
+        speeds (ASC, MC, Vertex, Anti-Vertex), all in degrees/day.
+
+    Notes:
+        - At polar latitudes the same fallback doctrine as
+          :func:`calculate_houses` applies to all three evaluations
+          (t−dt, t, t+dt).  If policy raises on polar fallback, all three
+          evaluations will raise.
+        - SUNSHINE houses require no special handling here; :func:`calculate_houses`
+          imports and calls ``sun_longitude`` internally for all three evaluations.
+        - The cusp-speed for house 1 is numerically equal to
+          ``asc_speed_deg_per_day`` (both derive from the same longitude);
+          house 4 speed equals −mc_speed_deg_per_day for most quadrant systems.
+          These redundancies are intentional for uniformity.
+    """
+    def _speed(lon_m: float, lon_p: float) -> float:
+        raw = (lon_p - lon_m) % 360.0
+        if raw > 180.0:
+            raw -= 360.0
+        return raw / (2.0 * dt)
+
+    h_m = calculate_houses(jd_ut - dt, latitude, longitude, system, policy=policy)
+    h0  = calculate_houses(jd_ut,      latitude, longitude, system, policy=policy)
+    h_p = calculate_houses(jd_ut + dt, latitude, longitude, system, policy=policy)
+
+    cusp_speeds = tuple(
+        CuspSpeed(
+            house=n + 1,
+            cusp_longitude=h0.cusps[n],
+            speed_deg_per_day=_speed(h_m.cusps[n], h_p.cusps[n]),
+        )
+        for n in range(12)
+    )
+
+    return HouseDynamics(
+        house_cusps=h0,
+        cusp_speeds=cusp_speeds,
+        asc_speed_deg_per_day=_speed(h_m.asc, h_p.asc),
+        mc_speed_deg_per_day=_speed(h_m.mc, h_p.mc),
+        vertex_speed_deg_per_day=_speed(h_m.vertex, h_p.vertex),
+        anti_vertex_speed_deg_per_day=_speed(h_m.anti_vertex, h_p.anti_vertex),
     )

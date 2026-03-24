@@ -28,9 +28,12 @@ Public surface:
     icrf_to_ecliptic, icrf_to_true_ecliptic, icrf_to_equatorial,
     true_ecliptic_latitude,
     precession_matrix_equatorial, nutation_matrix_equatorial,
-    equatorial_to_horizontal,
+    equatorial_to_horizontal, horizontal_to_equatorial,
     ecliptic_to_equatorial, equatorial_to_ecliptic,
     aberration_correction,
+    cotrans_sp,
+    atmospheric_refraction, atmospheric_refraction_extended,
+    equation_of_time,
     normalize_degrees, angular_distance, signed_angular_distance
 
 Import-time side effects: None
@@ -402,3 +405,323 @@ def signed_angular_distance(from_deg: float, to_deg: float) -> float:
     if diff > 180.0:
         diff -= 360.0
     return diff
+
+
+# ---------------------------------------------------------------------------
+# Reverse horizontal transform  (azalt_rev analogue)
+# ---------------------------------------------------------------------------
+
+def horizontal_to_equatorial(
+    azimuth_deg: float,
+    altitude_deg: float,
+    lst_deg: float,
+    lat_deg: float,
+) -> tuple[float, float]:
+    """
+    Convert horizontal (Azimuth, Altitude) to equatorial (RA, Dec).
+
+    This is the inverse of :func:`equatorial_to_horizontal` and corresponds
+    to the Swiss Ephemeris ``swe_azalt_rev`` function.
+
+    Parameters
+    ----------
+    azimuth_deg  : Azimuth in degrees (0=N, 90=E, 180=S, 270=W).
+    altitude_deg : Altitude in degrees above the horizon.
+    lst_deg      : Local Sidereal Time in degrees.
+    lat_deg      : Geographic latitude in degrees (north positive).
+
+    Returns
+    -------
+    (right_ascension, declination) in degrees.
+    """
+    az_r  = azimuth_deg  * DEG2RAD
+    alt_r = altitude_deg * DEG2RAD
+    lat_r = lat_deg      * DEG2RAD
+
+    sin_dec = (
+        math.sin(alt_r) * math.sin(lat_r)
+        + math.cos(alt_r) * math.cos(lat_r) * math.cos(az_r)
+    )
+    # Clamp for numerical safety at the poles
+    sin_dec = max(-1.0, min(1.0, sin_dec))
+    dec_r = math.asin(sin_dec)
+    dec_deg = dec_r * RAD2DEG
+
+    # Hour angle
+    cos_ha_num = math.sin(alt_r) - math.sin(lat_r) * sin_dec
+    cos_ha_den = math.cos(lat_r) * math.cos(dec_r)
+    if abs(cos_ha_den) < 1e-14:
+        ha_deg = 0.0
+    else:
+        cos_ha = max(-1.0, min(1.0, cos_ha_num / cos_ha_den))
+        ha_deg = math.acos(cos_ha) * RAD2DEG
+        # Resolve ambiguity: HA is positive in the west (sin(az) > 0)
+        if math.sin(az_r) > 0:
+            ha_deg = 360.0 - ha_deg
+
+    ra_deg = (lst_deg - ha_deg) % 360.0
+    return ra_deg, dec_deg
+
+
+# ---------------------------------------------------------------------------
+# Speed-aware coordinate transform  (cotrans_sp analogue)
+# ---------------------------------------------------------------------------
+
+def cotrans_sp(
+    lon_deg: float,
+    lat_deg: float,
+    dist: float,
+    lon_speed: float,
+    lat_speed: float,
+    dist_speed: float,
+    obliquity_deg: float,
+) -> tuple[float, float, float, float, float, float]:
+    """
+    Convert ecliptic spherical coordinates and their time derivatives to
+    equatorial spherical coordinates and time derivatives.
+
+    This is the Swiss Ephemeris ``swe_cotrans_sp`` analogue: a coordinate
+    transform that also propagates speed (first-order time derivative) from
+    one spherical frame to another via the Jacobian of the conversion.
+
+    Parameters
+    ----------
+    lon_deg, lat_deg, dist : Ecliptic longitude (°), latitude (°), distance (km).
+    lon_speed, lat_speed, dist_speed : Time derivatives (°/day, °/day, km/day).
+    obliquity_deg : True obliquity of the ecliptic in degrees.
+
+    Returns
+    -------
+    (ra_deg, dec_deg, dist,
+     ra_speed, dec_speed, dist_speed)  — degrees/day for angular speeds.
+    """
+    eps = obliquity_deg * DEG2RAD
+    lon = lon_deg * DEG2RAD
+    lat = lat_deg * DEG2RAD
+    dlon = lon_speed * DEG2RAD   # rad/day
+    dlat = lat_speed * DEG2RAD   # rad/day
+
+    cos_lat = math.cos(lat)
+    sin_lat = math.sin(lat)
+    cos_lon = math.cos(lon)
+    sin_lon = math.sin(lon)
+    cos_eps = math.cos(eps)
+    sin_eps = math.sin(eps)
+
+    # Position
+    sin_dec = sin_lat * cos_eps + cos_lat * sin_eps * sin_lon
+    sin_dec = max(-1.0, min(1.0, sin_dec))
+    dec_r = math.asin(sin_dec)
+    dec_deg = dec_r * RAD2DEG
+
+    y = sin_lon * cos_eps - math.tan(lat) * sin_eps
+    x = cos_lon
+    ra_deg = math.atan2(y, x) * RAD2DEG % 360.0
+
+    # Jacobian — ∂(ra, dec)/∂(lon, lat)
+    cos_dec = math.cos(dec_r)
+
+    # ∂sin_dec/∂lon = cos_lat * sin_eps * cos_lon
+    # ∂sin_dec/∂lat = cos_eps * cos_lat - sin_eps * sin_lat * sin_lon
+    d_sindec_dlon = cos_lat * sin_eps * cos_lon
+    d_sindec_dlat = cos_eps * cos_lat - sin_eps * sin_lat * sin_lon
+
+    if cos_dec > 1e-14:
+        ddec_dlon = d_sindec_dlon / cos_dec
+        ddec_dlat = d_sindec_dlat / cos_dec
+    else:
+        ddec_dlon = 0.0
+        ddec_dlat = 0.0
+
+    # RA speed via ∂(atan2(y,x))/∂(lon,lat)
+    # x = cos(lon), y = sin(lon)cos(ε) − tan(lat)sin(ε)
+    # dx/dlon = -sin(lon), dy/dlon = cos(lon)cos(ε)
+    # dx/dlat = 0,          dy/dlat = -sin(ε)/cos²(lat)
+    r2 = x * x + y * y
+    if r2 > 1e-28:
+        dra_dlon = (x * cos_lon * cos_eps + y * sin_lon) / r2
+        dra_dlat = (-x * sin_eps / (cos_lat * cos_lat)) / r2
+    else:
+        dra_dlon = 0.0
+        dra_dlat = 0.0
+
+    ra_speed  = (dra_dlon * dlon + dra_dlat * dlat) * RAD2DEG
+    dec_speed = (ddec_dlon * dlon + ddec_dlat * dlat) * RAD2DEG
+
+    return ra_deg, dec_deg, dist, ra_speed, dec_speed, dist_speed
+
+
+# ---------------------------------------------------------------------------
+# Atmospheric refraction helpers  (refrac / refrac_extended analogues)
+# ---------------------------------------------------------------------------
+
+def atmospheric_refraction(
+    altitude_deg: float,
+    *,
+    pressure_mbar: float = 1013.25,
+    temperature_c: float = 10.0,
+) -> float:
+    """
+    Compute atmospheric refraction for an observed altitude.
+
+    Uses Bennett's (1982) formula, which is accurate to ~0.1 arcminute for
+    altitudes above −5°.  For altitudes below the horizon the formula gives
+    progressively less reliable results but remains well-behaved numerically.
+
+    This is the Swiss Ephemeris ``swe_refrac`` (TRUE_TO_APP direction)
+    analogue.
+
+    Parameters
+    ----------
+    altitude_deg : Observed (apparent) altitude in degrees.
+    pressure_mbar : Atmospheric pressure in millibars. Default 1013.25 mbar.
+    temperature_c : Air temperature in degrees Celsius. Default 10 °C.
+
+    Returns
+    -------
+    Refraction angle R in degrees (positive, to be added to true altitude
+    to get apparent altitude, or subtracted from apparent to get true).
+    """
+    # Bennett's formula (Meeus, Astronomical Algorithms, Ch. 16)
+    alt_r = max(altitude_deg, -5.0)
+    h = alt_r + 7.31 / (alt_r + 4.4)
+    R_arcmin = 1.0 / math.tan(h * DEG2RAD)
+    # Temperature/pressure correction
+    R_arcmin *= (pressure_mbar / 1010.0) * (283.0 / (273.0 + temperature_c))
+    return R_arcmin / 60.0
+
+
+def atmospheric_refraction_extended(
+    altitude_deg: float,
+    *,
+    pressure_mbar: float = 1013.25,
+    temperature_c: float = 10.0,
+    relative_humidity: float = 0.5,
+    observer_height_m: float = 0.0,
+    wavelength_micron: float = 0.55,
+) -> tuple[float, float]:
+    """
+    Extended atmospheric refraction model with meteorological parameters.
+
+    Incorporates humidity, observer elevation, and wavelength dependence.
+    Suitable for precise horizontal-coordinate work.  Corresponds to the
+    Swiss Ephemeris ``swe_refrac_extended`` function.
+
+    Parameters
+    ----------
+    altitude_deg : Observed (apparent) altitude in degrees.
+    pressure_mbar : Atmospheric pressure in millibars. Default 1013.25 mbar.
+    temperature_c : Temperature in degrees Celsius. Default 10 °C.
+    relative_humidity : Relative humidity 0–1. Default 0.5.
+    observer_height_m : Observer altitude above sea level in metres. Default 0.
+    wavelength_micron : Observing wavelength in micrometres. Default 0.55 µm
+        (visual band).
+
+    Returns
+    -------
+    (refraction_deg, dip_deg)
+        refraction_deg : Atmospheric refraction in degrees.
+        dip_deg        : Horizon dip due to observer elevation in degrees
+                         (positive = horizon below astronomical horizon).
+    """
+    # Base refraction using Bennett's formula with meteorological correction
+    refraction = atmospheric_refraction(
+        altitude_deg,
+        pressure_mbar=pressure_mbar,
+        temperature_c=temperature_c,
+    )
+
+    # Humidity correction — water vapour reduces effective refractive index
+    # Partial pressure of water vapour (simple Magnus approximation)
+    e_sat = 6.1078 * 10.0 ** (7.5 * temperature_c / (237.3 + temperature_c))
+    e = relative_humidity * e_sat
+    humidity_factor = 1.0 - 0.0013 * e / pressure_mbar
+    refraction *= humidity_factor
+
+    # Wavelength correction (Cauchy dispersion, visual-band reference at 0.55 µm)
+    wavelength_factor = 1.0 + 0.0000834 * (1.0 / wavelength_micron**2 - 1.0 / 0.55**2)
+    refraction *= wavelength_factor
+
+    # Horizon dip due to observer elevation  dip ≈ 0.0293° × √(height_m)
+    dip_deg = 0.0293 * math.sqrt(max(0.0, observer_height_m))
+
+    return refraction, dip_deg
+
+
+# ---------------------------------------------------------------------------
+# Equation of time  (time_equ analogue)
+# ---------------------------------------------------------------------------
+
+def equation_of_time(jd_tt: float) -> float:
+    """
+    Compute the equation of time for a given Julian Day (TT).
+
+    The equation of time is the difference between apparent solar time and
+    mean solar time:  EoT = mean_solar_time − apparent_solar_time.
+    A positive value means the apparent Sun transits before mean noon.
+
+    Uses the low-precision formula from Meeus (Astronomical Algorithms,
+    Chapter 27), accurate to ~0.5 arcminute (≈ 2 seconds of time).
+
+    This is the Swiss Ephemeris ``swe_time_equ`` analogue.
+
+    Parameters
+    ----------
+    jd_tt : Julian Day in Terrestrial Time.
+
+    Returns
+    -------
+    Equation of time in degrees.  Multiply by 4 to convert to minutes of time
+    (since the Sun moves ~1° per 4 minutes of time).
+
+    Examples
+    --------
+    >>> from moira.julian import julian_day
+    >>> from moira.coordinates import equation_of_time
+    >>> jd = julian_day(2000, 1, 1, 12.0)
+    >>> eot = equation_of_time(jd)           # degrees
+    >>> eot_minutes = eot * 4.0              # minutes of time
+    """
+    T = (jd_tt - 2451545.0) / 36525.0   # Julian centuries from J2000.0
+
+    # Geometric mean longitude of the Sun (degrees)
+    L0 = (280.46646 + 36000.76983 * T) % 360.0
+
+    # Mean anomaly of the Sun (degrees)
+    M = (357.52911 + 35999.05029 * T - 0.0001537 * T * T) % 360.0
+    M_r = M * DEG2RAD
+
+    # Equation of centre
+    C = (
+        (1.914602 - 0.004817 * T - 0.000014 * T * T) * math.sin(M_r)
+        + (0.019993 - 0.000101 * T) * math.sin(2.0 * M_r)
+        + 0.000289 * math.sin(3.0 * M_r)
+    )
+
+    # Sun's true longitude
+    sun_lon = L0 + C
+
+    # Sun's apparent longitude (correct for aberration and nutation in longitude)
+    omega = (125.04 - 1934.136 * T) % 360.0
+    lam = sun_lon - 0.00569 - 0.00478 * math.sin(omega * DEG2RAD)
+
+    # Mean obliquity of the ecliptic (low precision)
+    eps0 = 23.439291 - 0.013004 * T
+    eps = eps0 + 0.00256 * math.cos(omega * DEG2RAD)
+    eps_r = eps * DEG2RAD
+
+    # Right ascension of the Sun
+    y = math.tan(eps_r / 2.0) ** 2
+    sun_lon_r = sun_lon * DEG2RAD
+    lam_r = lam * DEG2RAD
+    M_r2 = M_r
+
+    # Equation of time (Meeus eq. 27.1, in radians then converted to degrees)
+    eot_rad = (
+        y * math.sin(2.0 * lam_r)
+        - 2.0 * 0.016708634 * math.sin(M_r2)  # eccentricity
+        + 4.0 * 0.016708634 * y * math.sin(M_r2) * math.cos(2.0 * lam_r)
+        - 0.5 * y * y * math.sin(4.0 * lam_r)
+        - 1.25 * 0.016708634 ** 2 * math.sin(2.0 * M_r2)
+    )
+    return eot_rad * RAD2DEG
