@@ -823,8 +823,8 @@ def test_oracle_activated_midpoints_agrees_with_midpoints_to_point(ritual):
         frozenset([h.planet_a, h.planet_b]) for h, _ in hits_to_point
     )
 
-    ritual.witness("activated_pairs", sorted(str(p) for p in pairs_activated))
-    ritual.witness("to_point_pairs",  sorted(str(p) for p in pairs_to_point))
+    ritual.witness("activated_pairs", sorted(tuple(sorted(p)) for p in pairs_activated))
+    ritual.witness("to_point_pairs",  sorted(tuple(sorted(p)) for p in pairs_to_point))
 
     assert pairs_activated == pairs_to_point, (
         f"activated_midpoints and midpoints_to_point disagree:\n"
@@ -846,15 +846,12 @@ def test_oracle_cluster_members_are_subset_of_all_midpoints():
             )
 
 
-def test_oracle_finer_dial_finds_more_or_equal_clusters():
-    """Finer dials collapse more aspects, so cluster counts can only increase.
+def test_oracle_larger_orb_finds_at_least_as_many_clusters():
+    """Increasing cluster_orb can only add to or maintain the cluster count.
 
-    On the 45° dial the same physical degrees are visited by more combinations
-    than on the 90° dial — any two midpoints within orb on the 90° dial are
-    also within orb on the 45° dial (the dial is smaller but the orb is the
-    same absolute degrees), so cluster counts should be >= the 90° result.
+    Any cluster found with orb=0.5 is also found with orb=2.0 (the tighter
+    set is a subset of the wider set), so n_wide >= n_tight is guaranteed.
     """
-    n_clusters_90 = len(midpoint_clusters(_LONS, cluster_orb=2.0, min_size=2, dial=90))
-    n_clusters_45 = len(midpoint_clusters(_LONS, cluster_orb=2.0, min_size=2, dial=45))
-    # Finer dial projects more midpoints closer together → at least as many clusters
-    assert n_clusters_45 >= n_clusters_90
+    n_tight = len(midpoint_clusters(_LONS, cluster_orb=0.5, min_size=2, dial=90))
+    n_wide  = len(midpoint_clusters(_LONS, cluster_orb=2.0, min_size=2, dial=90))
+    assert n_wide >= n_tight

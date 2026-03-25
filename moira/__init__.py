@@ -259,7 +259,15 @@ from .midpoints import (
     planetary_pictures, midpoint_weighting,
     activated_midpoints, midpoint_clusters,
 )
-from .harmonics import HarmonicPosition, HarmonicsService, calculate_harmonic, HARMONIC_PRESETS
+from .harmonics import (
+    HarmonicPosition, HarmonicConjunction, HarmonicPatternScore,
+    HarmonicSweepEntry, HarmonicAspect, VibrationFingerprint,
+    HarmonicsService,
+    HARMONIC_PRESETS,
+    calculate_harmonic, age_harmonic,
+    harmonic_conjunctions, harmonic_pattern_score, harmonic_sweep,
+    harmonic_aspects, composite_harmonic, vibrational_fingerprint,
+)
 from .progressions import (
     ProgressionDoctrineTruth,
     ProgressionComputationTruth,
