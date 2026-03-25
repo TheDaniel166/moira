@@ -14,7 +14,7 @@ When a service method (e.g., `m.conjunctions()`) is invoked, the facade executes
 2. **UT → TT Bridge**: The JD UT is translated to Terrestrial Time (JD TT) by adding ΔT/86400, where ΔT is interpolated from multi-era historical tables spanning 1600 CE to 2500 CE.
 3. **Subsystem Delegation**: The call is routed to its sovereign module (e.g., `phenomena.py`, `dasha.py`) while passing the `Moira` instance's own `_reader` to ensure I/O consistency.
 4. **Truth Extraction**: The subsystem derives truth from the raw SPK state vectors, applying the full apparent-position pipeline where required.
-5. **Vessel Manifestation**: The result is decanted into an immutable, `slots`-optimized `dataclass` and returned to the caller.
+5. **Vessel Manifestation**: The result is decanted into a typed `slots`-optimized vessel and returned to the caller. Most result records are immutable, but the root `moira.Chart` vessel remains mutable by design in the current package surface.
 
 ### 1.2 The Full Method Inventory
 
@@ -790,7 +790,7 @@ class HousePlacement:
 
 ## 8. The Vessels of Truth (Schema Rigidness)
 
-Every service output is governed by the **Law of the Record**. Results must be decanted into strictly-typed, immutable vessels.
+Every service output is governed by the **Law of the Record**. Results must be decanted into strictly-typed vessels. Most doctrinal and policy records are immutable; the root `moira.Chart` vessel is a mutable snapshot that callers are expected to treat as read-only after construction.
 
 ### 8.1 Core Positional Vessels
 
@@ -818,27 +818,23 @@ class SkyPosition:
     distance: float         # km
 
 @dataclass(slots=True)
-class ChartContext:
+class Chart:
     jd_ut: float
-    jd_tt: float
-    latitude: float
-    longitude: float
     planets: dict[str, PlanetData]
     nodes: dict[str, NodeData]
-    houses: HouseCusps | None
-    is_day: bool            # computed: Sun above horizon
+    obliquity: float
+    delta_t: float
 ```
 
 ### 8.2 Chart Construction Pipeline
 
-`create_chart(jd_ut, latitude, longitude, house_system, bodies)`:
+`Moira.chart(dt, bodies, include_nodes, observer_lat, observer_lon, observer_elev_m)`:
 
-1. Convert UT → TT via ΔT.
-2. For each body in `bodies`: call `planet_at()` with full apparent pipeline → `PlanetData`.
-3. Compute 4 nodal bodies: True Node, Mean Node, Lilith (Mean Apogee), True Lilith.
-4. Compute house cusps via `calculate_houses()`.
-5. Determine **sect**: Sun altitude > 0° → day chart; otherwise → night chart.
-6. Bundle everything into `ChartContext`.
+1. Convert the datetime to JD UT.
+2. For each body in `bodies`: call `all_planets_at()` with the bound reader.
+3. Optionally compute nodes: True Node, Mean Node, Lilith.
+4. Compute true obliquity and ΔT for the chart moment.
+5. Bundle everything into `Chart`.
 
 ### 8.3 Architectural Invariants
 
@@ -846,7 +842,7 @@ All data vessels obey these laws:
 
 | Invariant | Enforcement |
 |-----------|-------------|
-| **Immutability** | `frozen=True` and/or `slots=True` on all result dataclasses |
+| **Immutability** | Default for doctrinal/policy/result records where mutation would change meaning. The root `Chart` vessel is the main exception and is mutable by implementation. |
 | **Truth Preservation** | Vessels record the computational path (e.g., `year_basis`, `effective_system`) |
 | **No Interpretation** | Vessels carry raw truth; interpretation is the caller's responsibility |
 | **Self-Describing** | Classification enums and profiles are attached, never implied |
@@ -878,15 +874,15 @@ The Moira service layer utilizes **Memory-Mapped DAF/BSP file handling** via the
 
 All vector/matrix operations in `coordinates.py` are implemented in **pure Python tuples** — no NumPy, no SciPy. This eliminates import overhead, simplifies deployment, and ensures the engine runs on any Python 3.10+ environment. The only external dependency for ephemeris I/O is `jplephem`.
 
-### 9.4 Thread Safety and Statelessness
+### 9.4 Thread Safety and Shared Reader State
 
-The `Moira` facade and its services are designed for **Stateless Operation**. Every method call is a deterministic transformation of inputs into results. This allows the service layer to be invoked across multiple threads or processes without fear of internal state corruption, provided each thread maintains its own `Moira` instance or correctly manages the shared `_reader` through the thread-safe singleton.
+The computational methods are designed to be deterministic transformations of inputs into results, but the facade is not literally stateless. `Moira` binds a `SpkReader` on construction, and `spk_reader.py` also exposes a module-level singleton guarded by an `RLock`. In practice the package operates with shared reader state and pure read-only kernel access. This allows concurrent use so long as callers treat returned vessels as read-only and do not attempt to reconfigure the kernel path after the shared reader has been acquired.
 
 ### 9.5 Import-Time Side Effects
 
 All modules declare zero import-time side effects, with two controlled exceptions:
 - `julian.py` loads the ΔT interpolation tables once at import (a few KB of floats).
-- `nutation_2000a.py` parses the IAU 2000A coefficient tables (2,414 terms) at import and caches them in memory.
+- `nutation_2000a.py` loads the IAU 2000A coefficient tables lazily on first use and then caches them in memory.
 
 ---
 
@@ -942,7 +938,7 @@ Each module owns **one conceptual domain** and delegates everything else. The `d
 To manifest a new service within the Moira sanctuary, the practitioner must follow the **Canon of Extension**:
 
 ### Step 1: Define the Vessel
-Create an immutable `dataclass(frozen=True, slots=True)` in the new module to house results. Ensure the vessel preserves the computational path taken (e.g., which algorithm variant, which policy).
+Create a typed result vessel in the new module, preferably `dataclass(frozen=True, slots=True)` when the output is a doctrinal record. If mutability is intentional, document that explicitly and keep the mutation boundary narrow.
 
 ### Step 2: Define the Policy (if applicable)
 If the technique has doctrinal variants (different traditions, optional corrections), create a frozen policy dataclass with sensible defaults.

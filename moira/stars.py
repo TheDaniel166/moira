@@ -231,9 +231,7 @@ class FixedStarClassification:
 
 def _classify_fixed_star_truth(truth: FixedStarTruth) -> FixedStarClassification:
     merge_state = truth.gaia_match_status
-    if merge_state == "not_found":
-        merge_state = "unmatched"
-    elif merge_state == "not_attempted":
+    if merge_state in {"not_found", "not_attempted"}:
         merge_state = "unmatched"
     return FixedStarClassification(
         lookup_kind=truth.lookup_kind,
@@ -842,11 +840,17 @@ def star_at(
         lst_deg = local_sidereal_time(jd_tt, observer_lon)
 
     sp = fixed_star_at(name, jd_tt, policy=_fixed_star_policy_from_unified(policy))
+
+    # Set the correct initial Gaia status: "not_attempted" when enrichment is
+    # disabled (we never tried), "not_found" when we will try (and haven't yet).
+    initial_gaia_status = (
+        "not_attempted" if not policy.merge.enable_gaia_enrichment else "not_found"
+    )
     fs = _hip_to_unified(
         sp,
         is_topo=(observer_lat is not None),
         lookup_kind="named_lookup",
-        gaia_match_status="not_found",
+        gaia_match_status=initial_gaia_status,
         true_position=true_position,
     )
 
@@ -927,7 +931,8 @@ def stars_near(
 
     _hip_mod._ensure_loaded()
     catalog = _hip_mod._catalog
-    assert catalog is not None
+    if catalog is None:
+        raise RuntimeError("Hipparcos catalog failed to load after _ensure_loaded()")
     for rec in catalog.values():
         try:
             sp = fixed_star_at(rec.traditional_name, jd_tt, policy=_fixed_star_policy_from_unified(policy))
@@ -954,12 +959,12 @@ def stars_near(
         if policy.merge.include_gaia_search_results and recs is not None and _gaia_mod._lon_index is not None:
             from .obliquity import mean_obliquity, nutation
             from .precession import general_precession_in_longitude
-            from .planets import planet_at as _planet_at
+            from .planets import sun_longitude as _sun_longitude
 
             _dpsi, _ = nutation(jd_tt)
             _obl     = mean_obliquity(jd_tt)
             _prec    = general_precession_in_longitude(jd_tt)
-            _sun_lon = _planet_at("Sun", jd_tt).longitude
+            _sun_lon = _sun_longitude(jd_tt)
 
             candidates = _gaia_mod._lon_range_indices(longitude, orb)
 
@@ -1056,7 +1061,8 @@ def stars_by_magnitude(
 
     _hip_mod._ensure_loaded()
     catalog = _hip_mod._catalog
-    assert catalog is not None
+    if catalog is None:
+        raise RuntimeError("Hipparcos catalog failed to load after _ensure_loaded()")
     for rec in catalog.values():
         if rec.magnitude > max_magnitude:
             continue

@@ -25,7 +25,7 @@ Import-time side effects: None
 External dependency assumptions
 --------------------------------
 No Qt main thread required. No database access. Pure computation over
-``ChartContext`` instances and Julian Day values.
+``moira.Chart`` instances and Julian Day values.
 
 Public surface
 --------------
@@ -1768,7 +1768,7 @@ class DavisonChart:
             - Does not validate that the chart is astronomically consistent.
         Dependencies:
             - Populated exclusively by ``davison_chart()``.
-            - ``chart`` is a ``ChartContext`` instance from ``moira.chart``.
+            - ``chart`` is a ``moira.Chart`` instance from the package root.
         Succession stance: terminal — not designed for subclassing.
 
     Canon: None (No applicable canon)

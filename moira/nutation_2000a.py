@@ -12,26 +12,25 @@ Public surface:
     nutation_2000a(jd_tt) -> tuple[float, float]
 
 Import-time side effects:
-    Parses and caches two IERS nutation table files at module import time:
+    No file I/O. The IERS nutation tables are loaded lazily on the first call
+    to nutation_2000a():
       - moira/data/iau2000a_ls.txt  → cached into _LS_TERMS (1358 terms)
       - moira/data/iau2000a_pl.txt  → cached into _PL_TERMS (1056 terms)
-    Both files are read once; subsequent calls to nutation_2000a() use the
-    in-memory caches exclusively.
-    If numpy is available, coefficient matrices are also pre-built from the
-    cached tables at import time to enable the vectorized fast path.
+    Both files are read once; subsequent calls use the in-memory caches
+    exclusively. If numpy is available, coefficient matrices are also built on
+    that first load to enable the vectorized fast path.
 
 External dependency assumptions:
-    - moira/data/iau2000a_ls.txt must exist and be readable at import time.
-    - moira/data/iau2000a_pl.txt must exist and be readable at import time.
+    - moira/data/iau2000a_ls.txt must exist and be readable before first use.
+    - moira/data/iau2000a_pl.txt must exist and be readable before first use.
     - Both files must conform to the IERS Conventions 2010 Chapter 5 table
       format (whitespace-delimited rows, first column is a row index).
 """
 
 import math
-import os
+import threading
 from pathlib import Path
 
-from .constants import ARCSEC2RAD
 from .julian import centuries_from_j2000
 
 # ---------------------------------------------------------------------------
@@ -77,9 +76,10 @@ def _parse_table(path: Path) -> list[tuple]:
     return terms
 
 
-# Load tables once at import time (fast — just reading text files)
-_LS_TERMS: list[tuple] = _parse_table(_LS_FILE)   # Δψ: 1320 j=0 + 38 j=1
-_PL_TERMS: list[tuple] = _parse_table(_PL_FILE)   # Δε: 1037 j=0 + 19 j=1
+# Loaded lazily on first use to keep package import free of file I/O.
+_LS_TERMS: list[tuple] | None = None   # Δψ: 1320 j=0 + 38 j=1
+_PL_TERMS: list[tuple] | None = None   # Δε: 1037 j=0 + 19 j=1
+_TABLES_LOCK = threading.Lock()
 
 # j=1 (time-dependent) terms begin at index 1320 in ls and 1037 in pl
 _LS_J0_COUNT = 1320
@@ -116,11 +116,35 @@ def _make_np_arrays(terms: list) -> "tuple":
     return c1, c2, N
 
 
-if _HAS_NUMPY:
-    _ls0_c1, _ls0_c2, _ls0_N = _make_np_arrays(_LS_TERMS[:_LS_J0_COUNT])
-    _ls1_c1, _ls1_c2, _ls1_N = _make_np_arrays(_LS_TERMS[_LS_J0_COUNT:])
-    _pl0_c1, _pl0_c2, _pl0_N = _make_np_arrays(_PL_TERMS[:_PL_J0_COUNT])
-    _pl1_c1, _pl1_c2, _pl1_N = _make_np_arrays(_PL_TERMS[_PL_J0_COUNT:])
+# 1 arcsecond in radians — used by _fundamental_args
+_ARCSEC = math.pi / 648000.0
+
+_ls0_c1 = _ls0_c2 = _ls0_N = None
+_ls1_c1 = _ls1_c2 = _ls1_N = None
+_pl0_c1 = _pl0_c2 = _pl0_N = None
+_pl1_c1 = _pl1_c2 = _pl1_N = None
+
+
+def _ensure_tables_loaded() -> tuple[list[tuple], list[tuple]]:
+    """Load and cache the nutation coefficient tables on first use."""
+    global _LS_TERMS, _PL_TERMS
+    global _ls0_c1, _ls0_c2, _ls0_N, _ls1_c1, _ls1_c2, _ls1_N
+    global _pl0_c1, _pl0_c2, _pl0_N, _pl1_c1, _pl1_c2, _pl1_N
+
+    if _LS_TERMS is not None and _PL_TERMS is not None:
+        return _LS_TERMS, _PL_TERMS
+
+    with _TABLES_LOCK:
+        if _LS_TERMS is None:
+            _LS_TERMS = _parse_table(_LS_FILE)
+        if _PL_TERMS is None:
+            _PL_TERMS = _parse_table(_PL_FILE)
+        if _HAS_NUMPY and _ls0_c1 is None:
+            _ls0_c1, _ls0_c2, _ls0_N = _make_np_arrays(_LS_TERMS[:_LS_J0_COUNT])
+            _ls1_c1, _ls1_c2, _ls1_N = _make_np_arrays(_LS_TERMS[_LS_J0_COUNT:])
+            _pl0_c1, _pl0_c2, _pl0_N = _make_np_arrays(_PL_TERMS[:_PL_J0_COUNT])
+            _pl1_c1, _pl1_c2, _pl1_N = _make_np_arrays(_PL_TERMS[_PL_J0_COUNT:])
+    return _LS_TERMS, _PL_TERMS
 
 
 # ---------------------------------------------------------------------------
@@ -144,37 +168,35 @@ def _fundamental_args(T: float) -> tuple[float, ...]:
     # --- Luni-solar (Delaunay arguments) — IERS 2003, Eq. (B.10)-(B.14)
     # Coefficients in arcseconds; convert to radians at end
 
-    arcsec = math.pi / 648000.0   # 1 arcsecond in radians
-
     l  = (485868.249036
           + T * (1717915923.2178
           + T * (31.8792
           + T * (0.051635
-          + T * (-0.00024470))))) * arcsec
+          + T * (-0.00024470))))) * _ARCSEC
 
     lp = (1287104.793048
           + T * (129596581.0481
           + T * (-0.5532
           + T * (0.000136
-          + T * (-0.00001149))))) * arcsec
+          + T * (-0.00001149))))) * _ARCSEC
 
     F  = (335779.526232
           + T * (1739527262.8478
           + T * (-12.7512
           + T * (-0.001037
-          + T * (0.00000417))))) * arcsec
+          + T * (0.00000417))))) * _ARCSEC
 
     D  = (1072260.703692
           + T * (1602961601.2090
           + T * (-6.3706
           + T * (0.006593
-          + T * (-0.00003169))))) * arcsec
+          + T * (-0.00003169))))) * _ARCSEC
 
     Om = (450160.398036
           + T * (-6962890.5431
           + T * (7.4722
           + T * (0.007702
-          + T * (-0.00005939))))) * arcsec
+          + T * (-0.00005939))))) * _ARCSEC
 
     # --- Planetary (linear in T, radians) — IERS 2003, Eq. (B.21)-(B.29)
     tau = math.tau  # 2π
@@ -209,6 +231,7 @@ def _nutation_python(T: float, fa: tuple) -> tuple[float, float]:
     compiled dependencies.  It is the default path when numpy is absent and
     the reference against which the numpy fast path is validated.
     """
+    ls_terms, pl_terms = _ensure_tables_loaded()
     uas2deg = 1e-6 / 3600.0
 
     # --- Δψ from Table 5.3a ---
@@ -216,12 +239,12 @@ def _nutation_python(T: float, fa: tuple) -> tuple[float, float]:
     # j=1:  T · Σ [A'_i · sin(arg) + A"'_i · cos(arg)]
 
     dpsi = 0.0
-    for term in _LS_TERMS[:_LS_J0_COUNT]:
+    for term in ls_terms[:_LS_J0_COUNT]:
         A, Ap = term[0], term[1]        # A_i, A"_i
         arg   = _argument(term[2:], fa)
         dpsi += A * math.sin(arg) + Ap * math.cos(arg)
 
-    for term in _LS_TERMS[_LS_J0_COUNT:]:
+    for term in ls_terms[_LS_J0_COUNT:]:
         Ap, App = term[0], term[1]      # A'_i, A"'_i
         arg     = _argument(term[2:], fa)
         dpsi   += T * (Ap * math.sin(arg) + App * math.cos(arg))
@@ -233,12 +256,12 @@ def _nutation_python(T: float, fa: tuple) -> tuple[float, float]:
     # Formula: Δε = Σ C_i·cos(arg_i) + S_i·sin(arg_i)
     # Reference: IERS 2010 Table 5.3b, https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html
     deps = 0.0
-    for term in _PL_TERMS[:_PL_J0_COUNT]:
+    for term in pl_terms[:_PL_J0_COUNT]:
         Bpp, B = term[0], term[1]       # B"_i (sin), B_i (cos)
         arg    = _argument(term[2:], fa)
         deps  += B * math.cos(arg) + Bpp * math.sin(arg)
 
-    for term in _PL_TERMS[_PL_J0_COUNT:]:
+    for term in pl_terms[_PL_J0_COUNT:]:
         Bpp, B = term[0], term[1]
         arg    = _argument(term[2:], fa)
         deps  += T * (B * math.cos(arg) + Bpp * math.sin(arg))
@@ -262,6 +285,7 @@ def _nutation_numpy(T: float, fa: tuple) -> tuple[float, float]:
 
     Called only when numpy is available (_HAS_NUMPY is True).
     """
+    _ensure_tables_loaded()
     fa_arr  = _np.array(fa, dtype=_np.float64)
     uas2deg = 1e-6 / 3600.0
 

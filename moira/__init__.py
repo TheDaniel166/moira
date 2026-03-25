@@ -66,6 +66,7 @@ Usage
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from importlib.metadata import PackageNotFoundError, version as package_version
 
 from .constants import Body, HouseSystem, AspectDefinition, ASPECT_TIERS
 from .julian import (
@@ -1027,7 +1028,10 @@ __all__ = [
 ]
 
 
-__version__ = "0.1.0"
+try:
+    __version__ = package_version("moira-astro")
+except PackageNotFoundError:
+    __version__ = "0.1.2"
 __author__  = "Moira contributors"
 
 

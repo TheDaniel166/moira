@@ -44,9 +44,21 @@ All values are little-endian IEEE 754 floating-point (LTL-IEEE).
 Word addresses (start_i, end_i, free) are 1-indexed double-precision words.
 """
 
+import array as _array
 import struct
+import sys
 import tempfile
 from pathlib import Path
+
+try:
+    import numpy as _np
+    _HAS_NUMPY = True
+except ImportError:
+    _np = None
+    _HAS_NUMPY = False
+
+# Pre-compute at import time — used in the array.array fallback path.
+_BYTESWAP = sys.byteorder != 'little'
 
 
 # ---------------------------------------------------------------------------
@@ -183,14 +195,10 @@ def _build_type13_payload(
         [-2]                 window_size  (float)
         [-1]                 N            (float)
     """
-    states_rows = [list(row) for row in states]
     epochs = [float(v) for v in epochs_jd]
     N = len(epochs)
     if N == 0:
         raise ValueError("epochs_jd must contain at least one epoch")
-    if len(states_rows) != 6 or any(len(row) != N for row in states_rows):
-        shape = (len(states_rows), len(states_rows[0]) if states_rows else 0)
-        raise ValueError(f"states must be (6, {N}), got {shape}")
     if window_size < 1:
         raise ValueError("window_size must be at least 1")
     if window_size % 2 == 0:
@@ -202,21 +210,36 @@ def _build_type13_payload(
     if any(epochs[idx] >= epochs[idx + 1] for idx in range(N - 1)):
         raise ValueError("epochs_jd must be strictly increasing")
 
-    # Epochs → seconds from J2000 TDB
-    epochs_sec = [(jd - _T0) * _S_PER_DAY for jd in epochs]
-
-    # State vectors: N rows of 6 components (reader does reshape(N,6).T)
-    states_flat: list[float] = []
-    for row_idx in range(N):
-        for axis in range(6):
-            states_flat.append(float(states_rows[axis][row_idx]))
-
-    # Directory: every 100th epoch to speed up binary search
-    n_dir = (N - 1) // 100
-    if n_dir > 0:
-        directory = [epochs_sec[idx] for idx in range(99, 99 + 100 * n_dir, 100)]
+    # Build states_flat and epochs_sec — NumPy fast path when available.
+    # states_flat: rows of (x,y,z,vx,vy,vz) interleaved — i.e. the (6,N)
+    # matrix flattened in Fortran (column-major) order so the reader's
+    # reshape(N,6).T recovers the original (6,N) layout.
+    if _HAS_NUMPY:
+        try:
+            states_arr = _np.asarray(states, dtype=_np.float64)
+        except (ValueError, TypeError) as exc:
+            raise ValueError(
+                f"states must be a numeric (6, {N}) array-like: {exc}"
+            ) from exc
+        if states_arr.ndim != 2 or states_arr.shape != (6, N):
+            raise ValueError(f"states must be (6, {N}), got shape {states_arr.shape}")
+        states_flat: list[float] = states_arr.flatten(order='F').tolist()
+        epochs_arr = (_np.asarray(epochs, dtype=_np.float64) - _T0) * _S_PER_DAY
+        epochs_sec: list[float] = epochs_arr.tolist()
+        n_dir = (N - 1) // 100
+        directory: list[float] = epochs_arr[99::100][:n_dir].tolist() if n_dir > 0 else []
     else:
-        directory = []
+        states_rows = [list(row) for row in states]
+        if len(states_rows) != 6 or any(len(row) != N for row in states_rows):
+            shape = (len(states_rows), len(states_rows[0]) if states_rows else 0)
+            raise ValueError(f"states must be (6, {N}), got {shape}")
+        states_flat = []
+        for row_idx in range(N):
+            for axis in range(6):
+                states_flat.append(float(states_rows[axis][row_idx]))
+        epochs_sec = [(jd - _T0) * _S_PER_DAY for jd in epochs]
+        n_dir = (N - 1) // 100
+        directory = [epochs_sec[idx] for idx in range(99, 99 + 100 * n_dir, 100)] if n_dir > 0 else []
 
     tail = [float(window_size), float(N)]
 
@@ -254,6 +277,11 @@ def write_spk_type13(
             "because it emits a single summary record and a single name record"
         )
 
+    for i, body in enumerate(bodies):
+        for key in ('naif_id', 'states', 'epochs_jd'):
+            if key not in body:
+                raise ValueError(f"bodies[{i}] is missing required key {key!r}")
+
     summaries: list[tuple] = []
     names:     list[str]   = []
     payloads:  list[bytes] = []
@@ -279,7 +307,17 @@ def write_spk_type13(
 
         summaries.append((start_s, end_s, center, naif_id, frame, 13, start_i, end_i))
         names.append(name)
-        payloads.append(struct.pack(f'<{len(data)}d', *data))
+
+        # Serialise the float64 payload — numpy or array.array are both faster
+        # than struct.pack(f'<{n}d', *data) for large n (avoids arg-list overhead).
+        if _HAS_NUMPY:
+            payload_bytes = _np.array(data, dtype='<f8').tobytes()
+        else:
+            buf = _array.array('d', data)
+            if _BYTESWAP:
+                buf.byteswap()
+            payload_bytes = buf.tobytes()
+        payloads.append(payload_bytes)
 
         current_word += n_words
 

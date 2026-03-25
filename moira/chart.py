@@ -20,11 +20,10 @@ External dependency assumptions:
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
 
 from .constants import Body, HouseSystem
-from .julian import jd_from_datetime, ut_to_tt
-from .planets import planet_at, PlanetData
+from .julian import ut_to_tt
+from .planets import all_planets_at, PlanetData
 from .houses import calculate_houses, HouseCusps
 from .nodes import true_node, mean_node, mean_lilith, true_lilith, NodeData
 
@@ -135,15 +134,10 @@ class ChartContext:
               Falls back to True when planets or houses are absent.
         """
         # Determine day/night based on Sun's relation to horizon (geometric)
-        sun = self.planets.get(Body.SUN)
-        if sun and self.houses:
-            # Traditional check: Sun above ASC/DSC line
-            self.is_day = self.houses.asc > sun.longitude > self.houses.mc or \
-                          (self.houses.mc > self.houses.asc and (sun.longitude > self.houses.mc or sun.longitude < self.houses.asc))
-            # Refined check: Geometric altitude check would be better, but this matches traditional lots
+        if self.planets.get(Body.SUN) and self.houses:
             self.is_day = self._sun_is_above_horizon()
         else:
-            self.is_day = True # fallback
+            self.is_day = True  # fallback: no Sun or no houses
 
     def _sun_is_above_horizon(self) -> bool:
         """Geometric check for day/night."""
@@ -193,6 +187,8 @@ def create_chart(
         jd_ut, jd_tt, latitude, longitude, and is_day set.
 
     Raises:
+        ValueError: If ``latitude`` is outside [-90.0, 90.0] or ``longitude``
+            is outside [-180.0, 180.0].
         FileNotFoundError: If the DE441 SPK kernel cannot be located by get_reader().
         ValueError: If jplephem cannot compute a position for the requested body
             at the given Julian Day (out-of-range epoch).
@@ -202,9 +198,14 @@ def create_chart(
           get_reader()), which initialises the module-level SpkReader singleton.
           Subsequent calls reuse the cached reader without additional I/O.
     """
+    if not -90.0 <= latitude <= 90.0:
+        raise ValueError(f"latitude must be in [-90, 90], got {latitude}")
+    if not -180.0 <= longitude <= 180.0:
+        raise ValueError(f"longitude must be in [-180, 180], got {longitude}")
+
     from .spk_reader import get_reader
     reader = get_reader()
-    
+
     jd_tt = ut_to_tt(jd_ut)
     if bodies is None:
         bodies = [
@@ -213,7 +214,7 @@ def create_chart(
             Body.CHIRON
         ]
         
-    planets = {b: planet_at(b, jd_ut, reader=reader) for b in bodies}
+    planets = all_planets_at(jd_ut, bodies=bodies, reader=reader)
     
     nodes = {
         Body.TRUE_NODE: true_node(jd_ut, reader=reader),
