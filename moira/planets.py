@@ -42,6 +42,7 @@ from .julian import ut_to_tt, centuries_from_j2000, local_sidereal_time, decimal
 from .spk_reader import get_reader, SpkReader
 from .corrections import (
     apply_light_time, apply_aberration, apply_deflection, apply_frame_bias,
+    apply_refraction, SCHWARZSCHILD_RADII,
     topocentric_correction, C_KM_PER_DAY,
 )
 from .precession import general_precession_in_longitude
@@ -655,7 +656,7 @@ def planet_at(
             # 2. Gravitational deflection (near Sun) [ICRF]
             if grav_deflection and body not in (Body.SUN, Body.MOON):
                 sun_geocentric = _geocentric(Body.SUN, jd_tt, reader)
-                xyz0 = apply_deflection(xyz0, sun_geocentric, earth_ssb)
+                xyz0 = apply_deflection(xyz0, [(sun_geocentric, SCHWARZSCHILD_RADII["Sun"])])
 
             # 3. Annual aberration [ICRF]
             if aberration:
@@ -720,19 +721,23 @@ def sky_position_at(
     aberration: bool = True,
     grav_deflection: bool = True,
     nutation: bool = True,
+    refraction: bool = True,
+    pressure_mbar: float = 1013.25,
+    temperature_c: float = 10.0,
     delta_t_policy: 'DeltaTPolicy | None' = None,
 ) -> SkyPosition:
     """
     Compute the apparent topocentric equatorial and horizontal position of a body.
 
-    Executes the full 7-step apparent-position pipeline: light-time correction
+    Executes the full 8-step apparent-position pipeline: light-time correction
     → gravitational deflection → annual aberration → frame bias → precession
-    → nutation → topocentric correction, then projects to RA/Dec and Az/Alt.
+    → nutation → topocentric correction → atmospheric refraction, then
+    projects to RA/Dec and Az/Alt.
 
     Individual correction stages can be disabled via the ``aberration``,
-    ``grav_deflection``, and ``nutation`` switches. These correspond to the
-    Swiss Ephemeris ``FLG_NOABERR``, ``FLG_NOGDEFL``, and ``FLG_NONUT``
-    flags respectively.
+    ``grav_deflection``, ``nutation``, and ``refraction`` switches. The first
+    three correspond to the Swiss Ephemeris ``FLG_NOABERR``, ``FLG_NOGDEFL``,
+    and ``FLG_NONUT`` flags respectively.
 
     Args:
         body: One of the ``Body.*`` string constants identifying the target body.
@@ -776,7 +781,7 @@ def sky_position_at(
     # Step 2: Gravitational deflection (skip for Sun/Moon, or if disabled)
     if grav_deflection and body not in (Body.SUN, Body.MOON):
         sun_geo = _geocentric(Body.SUN, jd_tt, reader)
-        xyz = apply_deflection(xyz, sun_geo, earth_ssb)
+        xyz = apply_deflection(xyz, [(sun_geo, SCHWARZSCHILD_RADII["Sun"])])
 
     # Step 3: Annual aberration
     if aberration:
@@ -798,6 +803,15 @@ def sky_position_at(
 
     ra_deg, dec_deg, dist = icrf_to_equatorial(xyz)
     az_deg, alt_deg = equatorial_to_horizontal(ra_deg, dec_deg, lst_deg, observer_lat)
+
+    # Step 8: Atmospheric refraction (geometric → apparent altitude)
+    if refraction:
+        alt_deg = apply_refraction(
+            alt_deg,
+            pressure_mbar=pressure_mbar,
+            temperature_c=temperature_c,
+        )
+
     return SkyPosition(
         name=body,
         right_ascension=ra_deg,

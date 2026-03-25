@@ -96,7 +96,8 @@ from .precession import general_precession_in_longitude
 from .julian import ut_to_tt
 from .planets import _earth_barycentric, _barycentric as _planet_barycentric
 from .corrections import (
-    apply_light_time, apply_aberration, apply_deflection, apply_frame_bias
+    apply_light_time, apply_aberration, apply_deflection, apply_frame_bias,
+    SCHWARZSCHILD_RADII,
 )
 
 try:
@@ -898,7 +899,7 @@ def _asteroid_apparent(
 
     # 3. Gravitational deflection (near Sun)
     sun_geocentric = vec_sub(de441_reader.position(0, 10, jd_tt), earth_ssb)
-    xyz = apply_deflection(xyz, sun_geocentric, earth_ssb)
+    xyz = apply_deflection(xyz, [(sun_geocentric, SCHWARZSCHILD_RADII["Sun"])])
 
     # 4. Annual aberration
     from .planets import _earth_velocity

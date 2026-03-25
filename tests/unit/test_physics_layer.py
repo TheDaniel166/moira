@@ -10,7 +10,7 @@ import math
 
 import pytest
 
-from moira.corrections import apply_deflection
+from moira.corrections import apply_deflection, SCHWARZSCHILD_RADII
 from moira.nutation_2000a import nutation_2000a
 from moira.sidereal import (
     Ayanamsa,
@@ -63,9 +63,8 @@ def test_deflection_guard_antisolar_returns_unmodified():
     """
     xyz_body = (-1e8, 0.0, 0.0)
     xyz_sun  = ( 1e8, 0.0, 0.0)
-    earth_ssb = (0.0, 0.0, 0.0)
 
-    result = apply_deflection(xyz_body, xyz_sun, earth_ssb)
+    result = apply_deflection(xyz_body, [(xyz_sun, SCHWARZSCHILD_RADII["Sun"])])
 
     assert result == xyz_body, (
         f"Expected unmodified vector {xyz_body}, got {result}"
@@ -84,9 +83,8 @@ def test_deflection_solar_direction_applies_correction():
     """
     xyz_body  = (1e8, 0.0, 0.0)
     xyz_sun   = (1e8, 1.0, 0.0)   # almost same direction → cos_psi ≈ +1
-    earth_ssb = (0.0, 0.0, 0.0)
 
-    result = apply_deflection(xyz_body, xyz_sun, earth_ssb)
+    result = apply_deflection(xyz_body, [(xyz_sun, SCHWARZSCHILD_RADII["Sun"])])
 
     assert result != xyz_body, (
         "Expected a corrected vector (different from input) when cos_psi ≈ +1"
@@ -105,9 +103,8 @@ def test_deflection_90deg_correction_magnitude():
     """
     xyz_body  = (0.0, 1e8, 0.0)    # body perpendicular to Sun direction
     xyz_sun   = (1.5e8, 0.0, 0.0)  # Sun at ~1 AU along x-axis
-    earth_ssb = (0.0, 0.0, 0.0)
 
-    result = apply_deflection(xyz_body, xyz_sun, earth_ssb)
+    result = apply_deflection(xyz_body, [(xyz_sun, SCHWARZSCHILD_RADII["Sun"])])
 
     shift_arcsec = _angular_sep_arcsec(xyz_body, result)
 

@@ -10,8 +10,8 @@ Purpose:
 
 Boundary:
     Owns: light-time iteration, relativistic aberration, gravitational deflection
-          (point-mass Sun), IAU 2006 frame bias rotation, and WGS-84 topocentric
-          parallax shift.
+          (multi-body: Sun + Jupiter + Saturn + Earth via IAU SOFA LDBODY),
+          IAU 2006 frame bias rotation, and WGS-84 topocentric parallax shift.
     Delegates: SPK kernel reads (via caller-supplied barycentric_fn and SpkReader),
                coordinate type definitions (moira.coordinates), and physical
                constants (moira.constants).
@@ -29,15 +29,27 @@ Public surface / exports:
     apply_light_time(body, jd_tt, reader, earth_ssb, barycentric_fn)
         -> tuple[Vec3, float]
     apply_aberration(xyz, earth_velocity_xyz) -> Vec3
-    apply_deflection(xyz_body, xyz_sun, earth_barycentric) -> Vec3
+    SCHWARZSCHILD_RADII         — dict of body name → R_s = 2GM/c² (km)
+    apply_deflection(xyz_body, deflectors) -> Vec3
     apply_frame_bias(xyz) -> Vec3
     topocentric_correction(xyz_geocentric, latitude_deg, longitude_deg,
                            lst_deg, elevation_m) -> Vec3
+    apply_refraction(altitude_deg, *, pressure_mbar, temperature_c) -> float
 """
 
 import math
 from .constants import DEG2RAD, RAD2DEG, ARCSEC2RAD
-from .coordinates import Vec3, vec_sub, vec_norm, vec_scale, vec_add
+
+try:
+    import numpy as _np
+    _HAS_NUMPY = True
+except ImportError:
+    _np = None
+    _HAS_NUMPY = False
+from .coordinates import (
+    Vec3, vec_sub, vec_norm, vec_scale, vec_add,
+    atmospheric_refraction as _atmospheric_refraction,
+)
 
 # ---------------------------------------------------------------------------
 # Physical constants
@@ -45,6 +57,16 @@ from .coordinates import Vec3, vec_sub, vec_norm, vec_scale, vec_add
 
 C_KM_PER_DAY = 299_792.458 * 86_400.0   # speed of light in km/day
 EARTH_RADIUS_KM = 6_378.137              # equatorial Earth radius, km
+
+# Schwarzschild radii R_s = 2GM/c² (km) for gravitational deflection.
+# Sun: ~1.75" at the limb; Jupiter: ~16 µas peak; Saturn: ~6 µas; Earth: negligible.
+# Source: IERS TN 36 / IAU SOFA LDBODY constants.
+SCHWARZSCHILD_RADII: dict[str, float] = {
+    "Sun":     2.95325008,  # km
+    "Jupiter": 0.00282,     # km  (2 × 1.26687e8 km³/s² / c²)
+    "Saturn":  0.000838,    # km  (2 × 3.79312e7 km³/s² / c²)
+    "Earth":   8.87e-6,     # km  (2 × 3.98600e5 km³/s² / c²)
+}
 
 # ---------------------------------------------------------------------------
 # Frame bias constants (IAU 2006, Capitaine et al.)
@@ -62,6 +84,17 @@ _de0_mas =  -6.8192
 _dA_r  = (_dA_mas  / 1000.0) * ARCSEC2RAD
 _xi0_r = (_xi0_mas / 1000.0) * ARCSEC2RAD
 _de0_r = (_de0_mas / 1000.0) * ARCSEC2RAD
+
+# Pre-built rotation matrix for apply_frame_bias — constructed once at import.
+# Only materialised when NumPy is available; pure-Python path uses scalars above.
+if _HAS_NUMPY:
+    _FRAME_BIAS_MATRIX = _np.array([
+        [ 1.0,    -_de0_r,  _xi0_r],
+        [ _de0_r,  1.0,    -_dA_r ],
+        [-_xi0_r,  _dA_r,   1.0   ],
+    ], dtype=_np.float64)
+else:
+    _FRAME_BIAS_MATRIX = None
 
 
 # ---------------------------------------------------------------------------
@@ -93,16 +126,23 @@ def apply_light_time(
     -------
     (corrected_xyz, light_time_days)
     """
-    # First estimate: compute planet at current time t
+    # Initial estimate: light-time from body position at t
     pos_body = barycentric_fn(body, jd_tt, reader)
-    dist0 = vec_norm(vec_sub(pos_body, earth_ssb))
-    lt    = dist0 / C_KM_PER_DAY
+    lt = vec_norm(vec_sub(pos_body, earth_ssb)) / C_KM_PER_DAY
 
-    # Newton-Raphson step: planet at t - lt
-    pos_body_lt = barycentric_fn(body, jd_tt - lt, reader)
-    xyz_geocentric_lt = vec_sub(pos_body_lt, earth_ssb)
-    dist1 = vec_norm(xyz_geocentric_lt)
-    lt    = dist1 / C_KM_PER_DAY
+    # Iterate to convergence: planet position at t − lt feeds back into lt.
+    # Converges in ≤3 steps for all solar-system bodies; cap at 10 for safety.
+    # Tolerance is 1 ns in light-time (1e-14 days ≈ 0.3 mm positional error).
+    _LT_TOL = 1e-14  # days
+    xyz_geocentric_lt = vec_sub(pos_body, earth_ssb)
+    for _ in range(10):
+        pos_body_lt       = barycentric_fn(body, jd_tt - lt, reader)
+        xyz_geocentric_lt = vec_sub(pos_body_lt, earth_ssb)
+        lt_new            = vec_norm(xyz_geocentric_lt) / C_KM_PER_DAY
+        if abs(lt_new - lt) < _LT_TOL:
+            lt = lt_new
+            break
+        lt = lt_new
 
     return xyz_geocentric_lt, lt
 
@@ -133,6 +173,21 @@ def apply_aberration(
     if dist < 1e-10:
         return xyz
 
+    if _HAS_NUMPY:
+        u   = _np.asarray(xyz,               dtype=_np.float64)
+        vel = _np.asarray(earth_velocity_xyz, dtype=_np.float64)
+        u   = u / dist
+        b   = vel / C_KM_PER_DAY
+        beta2 = _np.dot(b, b)
+        gamma = 1.0 / math.sqrt(1.0 - float(beta2))
+        dot   = float(_np.dot(u, b))
+        f1 = 1.0 + dot / (1.0 + gamma)
+        f2 = gamma * (1.0 + dot)
+        a  = (u + f1 * b) / f2
+        scale = dist / float(_np.linalg.norm(a))
+        r = a * scale
+        return (float(r[0]), float(r[1]), float(r[2]))
+
     # Unit direction to body (u)
     ux, uy, uz = xyz[0] / dist, xyz[1] / dist, xyz[2] / dist
 
@@ -141,7 +196,7 @@ def apply_aberration(
     by = earth_velocity_xyz[1] / C_KM_PER_DAY
     bz = earth_velocity_xyz[2] / C_KM_PER_DAY
 
-    # Lorents factor: gamma = 1 / sqrt(1 - beta^2)
+    # Lorentz factor: gamma = 1 / sqrt(1 - beta^2)
     beta2 = bx*bx + by*by + bz*bz
     gamma = 1.0 / math.sqrt(1.0 - beta2)
 
@@ -168,82 +223,95 @@ def apply_aberration(
 
 def apply_deflection(
     xyz_body: Vec3,
-    xyz_sun: Vec3,           # Sun position relative to Earth (km, ICRF)
-    earth_barycentric: Vec3, # Earth position relative to SSB (km, ICRF)
+    deflectors: list,   # list[tuple[Vec3, float]] — (geocentric_pos_km, R_s_km)
 ) -> Vec3:
     """
-    Apply gravitational light deflection (near the Sun) to a geocentric vector.
+    Apply gravitational light deflection from multiple point masses.
 
-    Follows the IAU SOFA (LDSUN) point-mass deflection model.
-    The effect is ~1.75" at the Sun's limb and ~0.004" at 90 deg.
+    Follows the IAU SOFA LDBODY pattern: deflections from each body are
+    applied sequentially to the running unit direction vector, accumulating
+    the full relativistic bending from all contributing masses.
+
+    The standard set of deflectors for sub-microarcsecond work is:
+        Sun     (~1.75" at limb, ~0.004" at 90°)
+        Jupiter (~16 µas peak)
+        Saturn  (~6 µas peak)
+        Earth   (~6 µas, relevant only for nearby objects)
+
+    Use SCHWARZSCHILD_RADII to look up R_s = 2GM/c² for each body.
 
     Parameters
     ----------
-    xyz_body          : geocentric ICRF position of body (km)
-    xyz_sun           : geocentric ICRF position of Sun (km)
-    earth_barycentric : Solar System Barycentric position of Earth (km)
+    xyz_body   : geocentric ICRF position of the target body (km)
+    deflectors : list of (geocentric_position_km, schwarzschild_radius_km)
+                 tuples — one entry per deflecting mass, in order of
+                 decreasing importance (Sun first).
 
     Returns
     -------
-    Gravitationally deflected geocentric position vector (same unit as xyz_body)
+    Gravitationally deflected geocentric position vector (same unit as xyz_body).
+
+    Notes
+    -----
+    The singularity guard (cos_psi < -0.9999999) catches the anti-solar-point
+    geometry where the formula's denominator (1 + cos_psi) approaches zero.
+    At that geometry the physical deflection is zero, so skipping the
+    deflector is exact.
     """
     dist_body = vec_norm(xyz_body)
-    dist_sun  = vec_norm(xyz_sun)
-    dist_earth_sun = vec_norm(vec_sub(xyz_sun, (0,0,0))) # redundant, dist_sun
-
-    # u: unit vector from Earth to body
-    ux, uy, uz = xyz_body[0]/dist_body, xyz_body[1]/dist_body, xyz_body[2]/dist_body
-
-    # e: unit vector from Earth to Sun
-    ex, ey, ez = xyz_sun[0]/dist_sun, xyz_sun[1]/dist_sun, xyz_sun[2]/dist_sun
-
-    # cos_psi = u·e
-    cos_psi = ux*ex + uy*ey + uz*ez
-
-    # Scaling factor g1 = 2 * G * M_sun / (c^2 * r_e)
-    # For Sun: 2 * mu / c^2 is the Schwarzschild radius R_s ~ 2.953 km
-    # g1 ~ R_s / distance_to_sun
-    rs_sun = 2.95325008  # km
-    g1 = rs_sun / dist_sun
-
-    # Singularity guard: the deflection formula contains 1/(1 + cos_psi).
-    # This diverges when cos_psi → -1, i.e. when the body is at the anti-solar
-    # point (exactly opposite the Sun as seen from Earth). At that geometry the
-    # deflection is physically zero anyway, so we return the unmodified vector.
-    # cos_psi = +1 (body in the direction of the Sun) is NOT a singularity;
-    # the denominator 1 + cos_psi → 2 there.
-    if cos_psi < -0.9999999:
+    if dist_body < 1e-10:
         return xyz_body
 
-    # Vector form: du = g1 * ( (1+cos_psi)·e - (cos_psi)·u ) / (1+cos_psi)
-    #              du = g1 * ( e - (cos_psi/(1+cos_psi))·u )
-    # Note: SOFA uses ( (1+u·e)·e - (u·e)·u ) / (1+u·e)
-    # which simplifies to e·[denom/denom] - u·[cos/denom] = e - u*(cos/(1+cos))
+    # Work with the running unit direction vector u.
+    # Each deflector nudges u; we re-normalise after every step.
+    ux, uy, uz = xyz_body[0] / dist_body, xyz_body[1] / dist_body, xyz_body[2] / dist_body
 
-    f2 = cos_psi / (1.0 + cos_psi)
-    dx = g1 * (ex - f2 * ux)
-    dy = g1 * (ey - f2 * uy)
-    dz = g1 * (ez - f2 * uz)
+    for xyz_defl, rs in deflectors:
+        dist_defl = vec_norm(xyz_defl)
+        if dist_defl < 1e-10:
+            continue  # deflector at observer — skip
 
-    # u_final = u + du (then normalise)
-    nx, ny, nz = ux + dx, uy + dy, uz + dz
-    mag = math.sqrt(nx*nx + ny*ny + nz*nz)
+        ex = xyz_defl[0] / dist_defl
+        ey = xyz_defl[1] / dist_defl
+        ez = xyz_defl[2] / dist_defl
 
-    scale = dist_body / mag
-    return (nx * scale, ny * scale, nz * scale)
+        cos_psi = ux*ex + uy*ey + uz*ez
+
+        # Anti-deflector-point singularity guard (see docstring).
+        if cos_psi < -0.9999999:
+            continue
+
+        g1 = rs / dist_defl
+        f2 = cos_psi / (1.0 + cos_psi)
+
+        # du = g1 * (e − (cos_psi / (1 + cos_psi)) · u)
+        # Equivalent to IAU SOFA LDBODY vector form.
+        dx = g1 * (ex - f2 * ux)
+        dy = g1 * (ey - f2 * uy)
+        dz = g1 * (ez - f2 * uz)
+
+        nx, ny, nz = ux + dx, uy + dy, uz + dz
+        mag = math.sqrt(nx*nx + ny*ny + nz*nz)
+        ux, uy, uz = nx / mag, ny / mag, nz / mag
+
+    return (ux * dist_body, uy * dist_body, uz * dist_body)
 
 
 # ---------------------------------------------------------------------------
-# 3. Frame bias
+# 4. Frame bias
 # ---------------------------------------------------------------------------
 
 def apply_frame_bias(xyz: Vec3) -> Vec3:
     """
-    Rotate an ICRF position vector to the dynamical mean ecliptic J2000.0
-    frame using the IAU 2006 frame bias (Capitaine et al.).
+    Rotate an ICRF position vector to the dynamical mean equator and equinox
+    of J2000.0 using the IAU 2006 frame bias (Capitaine et al.).
 
-    The correction is ~17–18 arcseconds and is a fixed, time-independent
-    rotation of the coordinate frame.
+    Frame bias is a small, fixed, time-independent rotation between the
+    ICRF pole/origin and the dynamical mean equatorial pole/equinox of J2000.0.
+    It is distinct from nutation/precession and from the ecliptic frame —
+    no obliquity rotation is applied here.
+
+    The correction is ~17–18 arcseconds in total angular displacement.
 
     Parameters
     ----------
@@ -251,8 +319,12 @@ def apply_frame_bias(xyz: Vec3) -> Vec3:
 
     Returns
     -------
-    Position in dynamical mean ecliptic J2000.0 frame (same unit)
+    Position in dynamical mean equator/equinox J2000.0 frame (same unit)
     """
+    if _HAS_NUMPY:
+        r = _np.dot(_FRAME_BIAS_MATRIX, _np.asarray(xyz, dtype=_np.float64))
+        return (float(r[0]), float(r[1]), float(r[2]))
+
     x, y, z = xyz
 
     # Small-angle rotation matrix (IAU 2006 frame bias)
@@ -265,7 +337,7 @@ def apply_frame_bias(xyz: Vec3) -> Vec3:
 
 
 # ---------------------------------------------------------------------------
-# 4. Topocentric parallax
+# 5. Topocentric parallax
 # ---------------------------------------------------------------------------
 
 def topocentric_correction(
@@ -312,3 +384,43 @@ def topocentric_correction(
 
     # Topocentric = geocentric − observer position
     return vec_sub(xyz_geocentric, (obs_x, obs_y, obs_z))
+
+
+# ---------------------------------------------------------------------------
+# 6. Atmospheric refraction
+# ---------------------------------------------------------------------------
+
+def apply_refraction(
+    altitude_deg: float,
+    *,
+    pressure_mbar: float = 1013.25,
+    temperature_c: float = 10.0,
+) -> float:
+    """
+    Apply atmospheric refraction to a geometric altitude, returning the
+    apparent (observed) altitude.
+
+    Refraction lifts objects above the geometric horizon — the effect is
+    largest near the horizon (~0.57° at 0°) and negligible above ~45°.
+    This is the final stage of the apparent-position pipeline and must be
+    applied *after* the topocentric correction and the horizontal-coordinate
+    projection, not to any intermediate ICRF vector.
+
+    Uses Bennett's (1982) formula as implemented in atmospheric_refraction()
+    from moira.coordinates, with the standard temperature/pressure correction.
+
+    Parameters
+    ----------
+    altitude_deg  : geometric (true) altitude in degrees
+    pressure_mbar : atmospheric pressure in millibars (default 1013.25)
+    temperature_c : air temperature in degrees Celsius (default 10.0)
+
+    Returns
+    -------
+    Apparent altitude in degrees (geometric altitude + refraction angle).
+    """
+    return altitude_deg + _atmospheric_refraction(
+        altitude_deg,
+        pressure_mbar=pressure_mbar,
+        temperature_c=temperature_c,
+    )
