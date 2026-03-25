@@ -247,7 +247,18 @@ from .dignities import (
     calculate_condition_network_profile,
     DignitiesService,
 )
-from .midpoints import Midpoint, MidpointsService, calculate_midpoints, midpoints_to_point
+from .midpoints import (
+    Midpoint, MidpointsService,
+    PlanetaryPicture, MidpointWeight, MidpointCluster,
+    CLASSIC_7, MODERN_3, MODERN_10, EXTENDED,
+    calculate_midpoints, midpoints_to_point,
+    to_dial, to_dial_90, to_dial_45, to_dial_22_5,
+    dial_90_midpoints, dial_45_midpoints, dial_22_5_midpoints,
+    midpoint_tree,
+    antiscion, contra_antiscion,
+    planetary_pictures, midpoint_weighting,
+    activated_midpoints, midpoint_clusters,
+)
 from .harmonics import HarmonicPosition, HarmonicsService, calculate_harmonic, HARMONIC_PRESETS
 from .progressions import (
     ProgressionDoctrineTruth,
@@ -701,8 +712,21 @@ __all__ = [
     "calculate_chart_condition_profile",
     "calculate_condition_network_profile",
     "DignitiesService",
-    # Midpoints
-    "Midpoint", "MidpointsService", "calculate_midpoints", "midpoints_to_point",
+    # Midpoints — result types
+    "Midpoint", "PlanetaryPicture", "MidpointWeight", "MidpointCluster",
+    # Midpoints — service + planet sets
+    "MidpointsService", "CLASSIC_7", "MODERN_3", "MODERN_10", "EXTENDED",
+    # Midpoints — core computation
+    "calculate_midpoints", "midpoints_to_point",
+    # Midpoints — dial projections
+    "to_dial", "to_dial_90", "to_dial_45", "to_dial_22_5",
+    "dial_90_midpoints", "dial_45_midpoints", "dial_22_5_midpoints",
+    "midpoint_tree",
+    # Midpoints — antiscia
+    "antiscion", "contra_antiscion",
+    # Midpoints — advanced analysis
+    "planetary_pictures", "midpoint_weighting",
+    "activated_midpoints", "midpoint_clusters",
     # Harmonics
     "HarmonicPosition", "HarmonicsService", "calculate_harmonic", "HARMONIC_PRESETS",
     # Progressions
