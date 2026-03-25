@@ -27,6 +27,13 @@ External dependency assumptions:
 import math
 from dataclasses import dataclass, field
 
+try:
+    import numpy as _np
+    _HAS_NUMPY = True
+except ImportError:
+    _np = None
+    _HAS_NUMPY = False
+
 from .constants import (
     Body, NAIF, NAIF_ROUTES, EARTH_ROUTE,
     DEG2RAD, RAD2DEG, sign_of,
@@ -414,7 +421,12 @@ def _barycentric_state(
     route = NAIF_ROUTES[body]
 
     if body == Body.MOON:
-        return reader.position_and_velocity(3, 301, jd_tt)
+        ssb_emb_pos, ssb_emb_vel = reader.position_and_velocity(0, 3, jd_tt)
+        emb_moon_pos, emb_moon_vel = reader.position_and_velocity(3, 301, jd_tt)
+        return (
+            vec_add(ssb_emb_pos, emb_moon_pos),
+            vec_add(ssb_emb_vel, emb_moon_vel),
+        )
 
     x = y = z = 0.0
     vx = vy = vz = 0.0
@@ -528,6 +540,38 @@ def _longitude_rate(xyz: Vec3, vel_xyz: Vec3, obliquity_deg: float) -> float:
 
 
 # ---------------------------------------------------------------------------
+# Internal: pre-composed rotation matrix (NumPy fast path)
+# ---------------------------------------------------------------------------
+
+def _compose_rotation_matrix(jd_tt: float, *, with_nutation: bool = True):
+    """
+    Return the combined equatorial rotation matrix M = M_nut @ M_prec as a
+    (3, 3) numpy float64 array, or None when NumPy is unavailable.
+
+    Composing once per JD and reusing across bodies (e.g. in all_planets_at)
+    replaces two sequential mat_vec_mul calls with a single np.dot, saving
+    roughly half the rotation work per body.
+
+    Parameters
+    ----------
+    jd_tt        : Julian Day (TT)
+    with_nutation: If False, returns only M_prec (mean-of-date frame).
+
+    Returns
+    -------
+    numpy.ndarray of shape (3, 3), or None if NumPy is not installed.
+    """
+    if not _HAS_NUMPY:
+        return None
+    prec_mat = precession_matrix_equatorial(jd_tt)
+    M = _np.array(prec_mat, dtype=_np.float64)
+    if with_nutation:
+        nut_mat = nutation_matrix_equatorial(jd_tt)
+        M = _np.array(nut_mat, dtype=_np.float64) @ M
+    return M
+
+
+# ---------------------------------------------------------------------------
 # Public API: single body
 # ---------------------------------------------------------------------------
 
@@ -548,6 +592,9 @@ def planet_at(
     lst_deg: float | None = None,
     jd_tt: float | None = None,
     delta_t_policy: 'DeltaTPolicy | None' = None,
+    _dpsi_deg: float | None = None,    # pre-computed nutation params (internal)
+    _deps_deg: float | None = None,
+    _rot_mat=None,                     # pre-composed numpy rotation matrix (internal)
 ) -> 'PlanetData | CartesianPosition':
     """
     Compute the geocentric (or topocentric) ecliptic position of one body.
@@ -616,6 +663,8 @@ def planet_at(
             the default kernel path does not exist.
         KeyError: If the SPK kernel contains no segment for the requested body.
         ValueError: If ``center`` or ``frame`` is not a recognised string.
+        ValueError: If ``observer_lat`` or ``observer_lon`` is provided without
+            ``lst_deg`` — topocentric correction requires all three.
 
     Side effects:
         None. May initialise the module-level ``SpkReader`` singleton on first
@@ -625,6 +674,10 @@ def planet_at(
         raise ValueError(f"center must be 'geocentric' or 'barycentric', got {center!r}")
     if frame not in ('ecliptic', 'cartesian'):
         raise ValueError(f"frame must be 'ecliptic' or 'cartesian', got {frame!r}")
+    if (observer_lat is not None or observer_lon is not None) and lst_deg is None:
+        raise ValueError(
+            "planet_at: lst_deg is required when observer_lat/observer_lon are provided."
+        )
 
     if reader is None:
         reader = get_reader()
@@ -635,13 +688,19 @@ def planet_at(
 
     dpsi_deg = deps_deg = 0.0
     if apparent and nutation:
-        dpsi_deg, deps_deg = _nutation(jd_tt)
+        if _dpsi_deg is not None and _deps_deg is not None:
+            dpsi_deg, deps_deg = _dpsi_deg, _deps_deg
+        else:
+            dpsi_deg, deps_deg = _nutation(jd_tt)
 
     if obliquity is None:
         obliquity = mean_obliquity(jd_tt) + (deps_deg if (apparent and nutation) else 0.0)
 
     if apparent:
-        earth_ssb = _earth_barycentric(jd_tt, reader)
+        # Fetch Earth's barycentric state once — position is needed for light-time,
+        # velocity for aberration.  A single position_and_velocity call is cheaper
+        # than separate position + position_and_velocity calls.
+        earth_ssb, earth_vel = _earth_barycentric_state(jd_tt, reader)
 
         # 1. Light-time: Body(t-lt) − Earth(t) → geocentric vector [ICRF]
         xyz_geo, _lt = apply_light_time(body, jd_tt, reader, earth_ssb, _barycentric)
@@ -660,17 +719,21 @@ def planet_at(
 
             # 3. Annual aberration [ICRF]
             if aberration:
-                xyz0 = apply_aberration(xyz0, _earth_velocity(jd_tt, reader))
+                xyz0 = apply_aberration(xyz0, earth_vel)
 
         # 4. Frame bias [ICRF → Mean Equator/Equinox J2000]
         xyz0 = apply_frame_bias(xyz0)
 
-        # 5. Precession [J2000 Mean → Mean Equator of date]
-        xyz0 = mat_vec_mul(precession_matrix_equatorial(jd_tt), xyz0)
-
-        # 6. Nutation [Mean → True Equator of date]
-        if nutation:
-            xyz0 = mat_vec_mul(nutation_matrix_equatorial(jd_tt), xyz0)
+        # 5+6. Precession + optional Nutation
+        # Use pre-composed matrix (M_nut @ M_prec) when available; otherwise apply
+        # precession and nutation sequentially via pure-Python mat_vec_mul.
+        if _rot_mat is not None:
+            r = _rot_mat @ _np.array(xyz0, dtype=_np.float64)
+            xyz0 = (float(r[0]), float(r[1]), float(r[2]))
+        else:
+            xyz0 = mat_vec_mul(precession_matrix_equatorial(jd_tt), xyz0)
+            if nutation:
+                xyz0 = mat_vec_mul(nutation_matrix_equatorial(jd_tt), xyz0)
 
     else:
         if center == 'barycentric':
@@ -752,10 +815,18 @@ def sky_position_at(
         grav_deflection: If ``True`` (default), apply gravitational deflection.
         nutation: If ``True`` (default), apply the nutation matrix. When
             ``False``, mean obliquity is used for the equatorial projection.
+        refraction: If ``True`` (default), apply atmospheric refraction to
+            convert the geometric altitude to the apparent observed altitude.
+            Set to ``False`` for geometric/astrometric altitude output.
+        pressure_mbar: Atmospheric pressure in millibars. Used only when
+            ``refraction=True``. Defaults to 1013.25 mbar.
+        temperature_c: Air temperature in degrees Celsius. Used only when
+            ``refraction=True``. Defaults to 10.0 °C.
 
     Returns:
         A ``SkyPosition`` vessel containing right ascension, declination,
         azimuth, altitude (all in degrees), and distance in kilometres.
+        When ``refraction=True``, altitude is the apparent (observed) altitude.
 
     Raises:
         FileNotFoundError: If the DE441 kernel has not been initialised and
@@ -773,7 +844,13 @@ def sky_position_at(
     jd_tt = ut_to_tt(jd_ut, decimal_year(year, month), delta_t_policy=delta_t_policy)
     dpsi_deg, deps_deg = _nutation(jd_tt)
     obliquity = mean_obliquity(jd_tt) + (deps_deg if nutation else 0.0)
-    earth_ssb = _earth_barycentric(jd_tt, reader)
+
+    # Fetch Earth's barycentric state once — position needed for light-time,
+    # velocity for aberration.
+    earth_ssb, earth_vel = _earth_barycentric_state(jd_tt, reader)
+
+    # Pre-compose rotation matrix (M_nut @ M_prec) when NumPy is available.
+    rot_mat = _compose_rotation_matrix(jd_tt, with_nutation=nutation) if _HAS_NUMPY else None
 
     # Step 1: Light-time correction
     xyz, _lt = apply_light_time(body, jd_tt, reader, earth_ssb, _barycentric)
@@ -785,17 +862,19 @@ def sky_position_at(
 
     # Step 3: Annual aberration
     if aberration:
-        xyz = apply_aberration(xyz, _earth_velocity(jd_tt, reader))
+        xyz = apply_aberration(xyz, earth_vel)
 
     # Step 4: Frame bias
     xyz = apply_frame_bias(xyz)
 
-    # Step 5: Precession (J2000 mean → mean equator of date)
-    xyz = mat_vec_mul(precession_matrix_equatorial(jd_tt), xyz)
-
-    # Step 6: Nutation (mean equator of date → true equator of date)
-    if nutation:
-        xyz = mat_vec_mul(nutation_matrix_equatorial(jd_tt), xyz)
+    # Step 5+6: Precession + optional Nutation
+    if rot_mat is not None:
+        r = rot_mat @ _np.array(xyz, dtype=_np.float64)
+        xyz = (float(r[0]), float(r[1]), float(r[2]))
+    else:
+        xyz = mat_vec_mul(precession_matrix_equatorial(jd_tt), xyz)
+        if nutation:
+            xyz = mat_vec_mul(nutation_matrix_equatorial(jd_tt), xyz)
 
     # Step 7: Topocentric correction
     lst_deg = local_sidereal_time(jd_ut, observer_lon, dpsi_deg, obliquity)
@@ -892,8 +971,17 @@ def all_planets_at(
 
     year, month, *_ = _approx_year(jd_ut)
     jd_tt = ut_to_tt(jd_ut, decimal_year(year, month), delta_t_policy=delta_t_policy)
-    _, deps_deg = _nutation(jd_tt)
-    obliquity = mean_obliquity(jd_tt) + (deps_deg if nutation else 0.0)
+
+    # Pre-compute shared quantities once for all bodies.
+    dpsi_deg = deps_deg = 0.0
+    if apparent and nutation:
+        dpsi_deg, deps_deg = _nutation(jd_tt)
+    obliquity = mean_obliquity(jd_tt) + (deps_deg if (apparent and nutation) else 0.0)
+
+    # Pre-compose the equatorial rotation matrix (M_nut @ M_prec) when NumPy is
+    # available; avoids recomputing precession/nutation matrices per body.
+    rot_mat = _compose_rotation_matrix(jd_tt, with_nutation=(apparent and nutation)) \
+              if (apparent and _HAS_NUMPY) else None
 
     results: dict[str, PlanetData] = {}
     for body in bodies:
@@ -904,7 +992,8 @@ def all_planets_at(
             center=center, frame='ecliptic',
             observer_lat=observer_lat, observer_lon=observer_lon,
             observer_elev_m=observer_elev_m, lst_deg=lst_deg,
-            delta_t_policy=delta_t_policy,
+            jd_tt=jd_tt, delta_t_policy=delta_t_policy,
+            _dpsi_deg=dpsi_deg, _deps_deg=deps_deg, _rot_mat=rot_mat,
         )
     return results
 
@@ -948,8 +1037,11 @@ def heliocentric_planet_at(
         None. May initialise the module-level ``SpkReader`` singleton on first
         call if ``reader`` is ``None`` and no singleton exists yet.
     """
-    if body == Body.SUN:
-        raise ValueError("The Sun cannot have a heliocentric position.")
+    if body in (Body.SUN, Body.MOON):
+        raise ValueError(
+            f"heliocentric_planet_at: {body!r} does not have a meaningful "
+            "heliocentric ecliptic position in this frame."
+        )
     if reader is None:
         reader = get_reader()
 
@@ -977,15 +1069,14 @@ def heliocentric_planet_at(
     raw_speed = (lon_p - lon_m) % 360.0
     if raw_speed > 180.0:
         raw_speed -= 360.0
-    speed = raw_speed / 1.0
 
     return HeliocentricData(
         name=body,
         longitude=lon,
         latitude=lat,
         distance=dist,
-        speed=speed,
-        retrograde=(speed < 0.0),
+        speed=raw_speed,
+        retrograde=(raw_speed < 0.0),
     )
 
 
