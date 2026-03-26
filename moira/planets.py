@@ -712,10 +712,17 @@ def planet_at(
             xyz0 = vec_add(xyz_geo, earth_ssb)
         else:
             xyz0 = xyz_geo
-            # 2. Gravitational deflection (near Sun) [ICRF]
+            # 2. Gravitational deflection [ICRF]
+            # IAU SOFA LDBODY: Sun (~1.75" at limb) + Jupiter (~16 µas) + Saturn (~6 µas).
+            # A body is never deflected by its own gravity.
             if grav_deflection and body not in (Body.SUN, Body.MOON):
                 sun_geocentric = _geocentric(Body.SUN, jd_tt, reader)
-                xyz0 = apply_deflection(xyz0, [(sun_geocentric, SCHWARZSCHILD_RADII["Sun"])])
+                deflectors = [(sun_geocentric, SCHWARZSCHILD_RADII["Sun"])]
+                if body != Body.JUPITER:
+                    deflectors.append((_geocentric(Body.JUPITER, jd_tt, reader), SCHWARZSCHILD_RADII["Jupiter"]))
+                if body != Body.SATURN:
+                    deflectors.append((_geocentric(Body.SATURN, jd_tt, reader), SCHWARZSCHILD_RADII["Saturn"]))
+                xyz0 = apply_deflection(xyz0, deflectors)
 
             # 3. Annual aberration [ICRF]
             if aberration:
@@ -787,6 +794,7 @@ def sky_position_at(
     refraction: bool = True,
     pressure_mbar: float = 1013.25,
     temperature_c: float = 10.0,
+    relative_humidity: float = 0.0,
     delta_t_policy: 'DeltaTPolicy | None' = None,
 ) -> SkyPosition:
     """
@@ -822,6 +830,10 @@ def sky_position_at(
             ``refraction=True``. Defaults to 1013.25 mbar.
         temperature_c: Air temperature in degrees Celsius. Used only when
             ``refraction=True``. Defaults to 10.0 °C.
+        relative_humidity: Relative humidity 0–1. Used only when
+            ``refraction=True``. When non-zero, incorporates water-vapour
+            partial pressure into the refractivity correction (Magnus
+            approximation). Defaults to 0.0 (dry air).
 
     Returns:
         A ``SkyPosition`` vessel containing right ascension, declination,
@@ -856,9 +868,16 @@ def sky_position_at(
     xyz, _lt = apply_light_time(body, jd_tt, reader, earth_ssb, _barycentric)
 
     # Step 2: Gravitational deflection (skip for Sun/Moon, or if disabled)
+    # IAU SOFA LDBODY: Sun (~1.75" at limb) + Jupiter (~16 µas) + Saturn (~6 µas).
+    # A body is never deflected by its own gravity.
     if grav_deflection and body not in (Body.SUN, Body.MOON):
         sun_geo = _geocentric(Body.SUN, jd_tt, reader)
-        xyz = apply_deflection(xyz, [(sun_geo, SCHWARZSCHILD_RADII["Sun"])])
+        deflectors = [(sun_geo, SCHWARZSCHILD_RADII["Sun"])]
+        if body != Body.JUPITER:
+            deflectors.append((_geocentric(Body.JUPITER, jd_tt, reader), SCHWARZSCHILD_RADII["Jupiter"]))
+        if body != Body.SATURN:
+            deflectors.append((_geocentric(Body.SATURN, jd_tt, reader), SCHWARZSCHILD_RADII["Saturn"]))
+        xyz = apply_deflection(xyz, deflectors)
 
     # Step 3: Annual aberration
     if aberration:
@@ -889,6 +908,7 @@ def sky_position_at(
             alt_deg,
             pressure_mbar=pressure_mbar,
             temperature_c=temperature_c,
+            relative_humidity=relative_humidity,
         )
 
     return SkyPosition(
@@ -1012,8 +1032,8 @@ def heliocentric_planet_at(
 
     Returns the position in the true-of-date ecliptic frame (precession and
     nutation applied), consistent with the geocentric frame used by
-    ``planet_at()``. Speed is derived via a ±0.5-day finite difference with
-    360° wraparound handling.
+    ``planet_at()``. Speed is derived analytically from the JPL kernel
+    velocity vector, not from a finite difference.
 
     Args:
         body: One of the ``Body.*`` string constants. Must not be ``Body.SUN``,
@@ -1048,35 +1068,32 @@ def heliocentric_planet_at(
     year, month, *_ = _approx_year(jd_ut)
     jd_tt = ut_to_tt(jd_ut, decimal_year(year, month))
 
-    def _helio_vec(jd_tt_: float) -> Vec3:
-        """Heliocentric ICRF vector of body at jd_tt_ (km)."""
-        body_bary = _barycentric(body, jd_tt_, reader)
-        sun_bary  = reader.position(0, 10, jd_tt_)
-        return vec_sub(body_bary, sun_bary)
+    # Fetch heliocentric position AND velocity from kernel state vectors —
+    # no finite difference needed.
+    body_bary_pos, body_bary_vel = _barycentric_state(body, jd_tt, reader)
+    sun_bary_pos,  sun_bary_vel  = reader.position_and_velocity(0, 10, jd_tt)
+    xyz_h = vec_sub(body_bary_pos, sun_bary_pos)
+    vel_h = vec_sub(body_bary_vel, sun_bary_vel)
 
-    # Primary position
-    xyz = _helio_vec(jd_tt)
-    lon, lat, dist = icrf_to_true_ecliptic(jd_tt, xyz)
+    # Rotate both vectors to true equatorial of date (precession + nutation).
+    # Applying the same R to vel_h neglects dR/dt·xyz_h — the precession-rate
+    # contribution is ~50″/century, negligible against orbital velocity.
+    prec_mat = precession_matrix_equatorial(jd_tt)
+    nut_mat  = nutation_matrix_equatorial(jd_tt)
+    xyz_tod  = mat_vec_mul(nut_mat, mat_vec_mul(prec_mat, xyz_h))
+    vel_tod  = mat_vec_mul(nut_mat, mat_vec_mul(prec_mat, vel_h))
 
-    # Speed: finite difference over ±0.5 day
-    year_p, *_ = _approx_year(jd_ut + 0.5)
-    year_m, *_ = _approx_year(jd_ut - 0.5)
-    jd_tt_p = ut_to_tt(jd_ut + 0.5, year_p)
-    jd_tt_m = ut_to_tt(jd_ut - 0.5, year_m)
-    lon_p, _, _ = icrf_to_true_ecliptic(jd_tt_p, _helio_vec(jd_tt_p))
-    lon_m, _, _ = icrf_to_true_ecliptic(jd_tt_m, _helio_vec(jd_tt_m))
-    # Handle wraparound
-    raw_speed = (lon_p - lon_m) % 360.0
-    if raw_speed > 180.0:
-        raw_speed -= 360.0
+    obliquity = true_obliquity(jd_tt)
+    lon, lat, dist = icrf_to_ecliptic(xyz_tod, obliquity)
+    speed = _longitude_rate(xyz_tod, vel_tod, obliquity)
 
     return HeliocentricData(
         name=body,
         longitude=lon,
         latitude=lat,
         distance=dist,
-        speed=raw_speed,
-        retrograde=(raw_speed < 0.0),
+        speed=speed,
+        retrograde=(speed < 0.0),
     )
 
 

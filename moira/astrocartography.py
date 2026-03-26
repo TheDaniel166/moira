@@ -39,6 +39,12 @@ from dataclasses import dataclass, field
 
 from .constants import DEG2RAD, RAD2DEG
 
+# WGS-84 first eccentricity squared: e² = 1 − (b/a)² ≈ 0.006694379990
+# Used to convert geodetic latitude → geocentric latitude for the horizon
+# hour-angle formula.  The maximum difference is ~11.5′ near ±45°, which
+# can shift an ASC/DSC line by several kilometres on a rendered map.
+_WGS84_E2 = 0.00669437999014
+
 __all__ = [
     "ACGLine",
     "acg_lines",
@@ -185,9 +191,13 @@ def acg_lines(
     singular there).  For each latitude the hour angle at which the planet
     rises or sets is derived from:
 
-        cos HA = −tan φ · tan δ
+        cos HA = −tan φ' · tan δ
 
-    where φ is the geographic latitude and δ is the planet's declination.
+    where φ' is the *geocentric* latitude (converted from geodetic φ via
+    ``tan φ' = (1 − e²) · tan φ``, WGS-84) and δ is the planet's declination.
+    The geodetic→geocentric correction shifts lines by up to ~11.5′ of latitude
+    (≈ several kilometres) near ±45°; it is applied here for consistency with
+    the sub-milliarcsecond precision standard of the rest of the library.
     If |cos HA| > 1 the planet is either circumpolar or never rises at that
     latitude; those latitudes are silently omitted from the curve.
     """
@@ -225,8 +235,11 @@ def acg_lines(
         dsc_points: list[tuple[float, float]] = []
 
         for phi in lats:
-            phi_r   = phi * DEG2RAD
-            cos_ha  = -math.tan(phi_r) * tan_dec
+            phi_r    = phi * DEG2RAD
+            # Convert geodetic → geocentric latitude before the horizon formula.
+            # tan φ' = (1 − e²) · tan φ  (WGS-84 spheroid correction)
+            phi_gc_r = math.atan((1.0 - _WGS84_E2) * math.tan(phi_r))
+            cos_ha   = -math.tan(phi_gc_r) * tan_dec
 
             # Skip latitudes where the planet is circumpolar or never rises.
             if abs(cos_ha) > 1.0:

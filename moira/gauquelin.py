@@ -83,8 +83,10 @@ class GauquelinPosition:
         Dependencies:
             - Populated exclusively by ``gauquelin_sector()``.
         Structural invariants:
-            - ``sector`` is always in [1, 36].
-            - ``zone`` is always "Plus Zone" or "Neutral Zone".
+            - ``sector`` is always in [1, n] where n is the requested resolution.
+            - ``zone`` is "Plus Zone" or "Neutral Zone" when sectors=36 (the
+              canonical Gauquelin system); ``None`` for custom resolutions where
+              no empirical plus-zone definition exists.
             - ``diurnal_position`` is always in [0, 360).
         Succession stance: terminal — not designed for subclassing.
 
@@ -128,13 +130,14 @@ class GauquelinPosition:
 
     body:             str
     sector:           int
-    zone:             str
+    zone:             str | None   # None when sectors != 36 (no canonical plus-zone definition)
     diurnal_position: float
 
     def __repr__(self) -> str:
+        zone_str = self.zone if self.zone is not None else "N/A"
         return (
             f"GauquelinPosition({self.body!r}, sector={self.sector}, "
-            f"zone={self.zone!r}, diurnal={self.diurnal_position:.2f}°)"
+            f"zone={zone_str!r}, diurnal={self.diurnal_position:.2f}°)"
         )
 
 
@@ -148,6 +151,8 @@ def gauquelin_sector(
     lat: float,
     lst: float,
     body: str = "",
+    horizon_altitude: float = -0.5667,
+    sectors: int = 36,
 ) -> GauquelinPosition:
     """
     Compute the Gauquelin sector for a single body.
@@ -155,26 +160,57 @@ def gauquelin_sector(
     Algorithm
     ---------
     1. Compute hour angle: HA = LST − RA
-    2. Compute diurnal semi-arc: DSA = arccos(−tan φ · tan δ)
+    2. Compute diurnal semi-arc: DSA = arccos(t), where
+       t = (sin h₀ − sin φ · sin δ) / (cos φ · cos δ)
+       and h₀ is the effective horizon altitude (default −0.5667°,
+       matching the standard refraction + stellar semi-diameter correction
+       used throughout the library).
     3. Normalise the body's position within its diurnal arc to 0–360°
     4. Sector = ceil(diurnal_position / 10°), clamped to 1–36
 
     Parameters
     ----------
-    body_ra  : apparent right ascension of the body (degrees)
-    body_dec : apparent declination (degrees)
-    lat      : geographic latitude of observer (degrees)
-    lst      : Local Sidereal Time (degrees)
-    body     : optional name label for the returned GauquelinPosition
+    body_ra          : apparent right ascension of the body (degrees)
+    body_dec         : apparent declination (degrees)
+    lat              : geographic latitude of observer (degrees)
+    lst              : Local Sidereal Time (degrees)
+    body             : optional name label for the returned GauquelinPosition
+    horizon_altitude : effective horizon altitude in degrees (default −0.5667°).
+                       The geometric horizon is 0°; the standard apparent
+                       horizon used in rise/set timing accounts for mean
+                       refraction (~34′) and gives −0.5667° for stars and
+                       −0.8333° for the Sun/Moon.  Using the apparent horizon
+                       here ensures that a planet classified as "just risen"
+                       (sector 28) has actually cleared the visible horizon,
+                       consistent with Gauquelin's observed-rising methodology.
+    sectors          : number of equal divisions of the diurnal circle
+                       (default 36, the canonical Gauquelin system).  Must be
+                       a positive integer and a divisor of 360 for whole-degree
+                       bins, though non-divisors are accepted.  At sectors=36
+                       the ``zone`` field carries the canonical Plus Zone
+                       classification; at any other value ``zone`` is ``None``
+                       because no empirical plus-zone definition exists for
+                       custom resolutions.
     """
     # Step 1: Hour angle (positive westward, degrees)
     ha = (lst - body_ra) % 360.0
 
     # Step 2: Diurnal semi-arc (DSA)
-    # DSA = arccos(-tan φ · tan δ), clamped to circumpolar / sub-horizon cases.
-    phi = lat * DEG2RAD
+    # General formula for arbitrary horizon altitude h₀:
+    #   cos(DSA) = (sin h₀ − sin φ · sin δ) / (cos φ · cos δ)
+    # Reduces to the classic −tan φ · tan δ when h₀ = 0.
+    phi   = lat      * DEG2RAD
     delta = body_dec * DEG2RAD
-    t = -math.tan(phi) * math.tan(delta)
+    sin_h0    = math.sin(horizon_altitude * DEG2RAD)
+    cos_phi   = math.cos(phi)
+    sin_phi   = math.sin(phi)
+    cos_delta = math.cos(delta)
+    sin_delta = math.sin(delta)
+    denom = cos_phi * cos_delta
+    if abs(denom) < 1e-10:
+        t = -1.0 if sin_delta * sin_phi >= 0.0 else 1.0
+    else:
+        t = (sin_h0 - sin_phi * sin_delta) / denom
     if t <= -1.0:
         # Body is circumpolar — always above the horizon; use full 180° above
         dsa = 180.0
@@ -228,16 +264,19 @@ def gauquelin_sector(
         # Above horizon, rising toward MC
         diurnal = 270.0 + ((ha - q3) / (q4 - q3)) * 90.0
 
-    # Step 4: sector (1–36), where sector 1 starts just after the Ascendant
-    # Map diurnal_position 270° → sector 1 start, going toward 360°/0°
-    # Shift so that 270° becomes 0° for the sector numbering
-    shifted = (diurnal - 270.0) % 360.0
-    raw_sector = math.ceil(shifted / 10.0)
+    # Step 4: sector (1–N), where sector 1 starts just after the Ascendant.
+    # Shift diurnal_position so that 270° (ASC) becomes 0° for numbering.
+    deg_per_sector = 360.0 / sectors
+    shifted    = (diurnal - 270.0) % 360.0
+    raw_sector = math.ceil(shifted / deg_per_sector)
     if raw_sector == 0:
         raw_sector = 1
-    sector = max(1, min(36, raw_sector))
+    sector = max(1, min(sectors, raw_sector))
 
-    zone = "Plus Zone" if sector in _PLUS_ZONE_SECTORS else "Neutral Zone"
+    zone: str | None = (
+        ("Plus Zone" if sector in _PLUS_ZONE_SECTORS else "Neutral Zone")
+        if sectors == 36 else None
+    )
 
     return GauquelinPosition(
         body=body,
@@ -255,15 +294,23 @@ def all_gauquelin_sectors(
     planet_ra_dec: dict[str, tuple[float, float]],
     lat: float,
     lst: float,
+    horizon_altitude: float = -0.5667,
+    sectors: int = 36,
 ) -> list[GauquelinPosition]:
     """
     Compute Gauquelin sectors for all bodies in the dict.
 
     Parameters
     ----------
-    planet_ra_dec : mapping of body name → (right_ascension, declination) in degrees
-    lat           : geographic latitude of observer (degrees)
-    lst           : Local Sidereal Time (degrees)
+    planet_ra_dec    : mapping of body name → (right_ascension, declination) in degrees
+    lat              : geographic latitude of observer (degrees)
+    lst              : Local Sidereal Time (degrees)
+    horizon_altitude : effective horizon altitude in degrees (default −0.5667°).
+                       Forwarded to :func:`gauquelin_sector`; see its docstring
+                       for the physical rationale.
+    sectors          : number of diurnal divisions (default 36).  Forwarded to
+                       :func:`gauquelin_sector`; ``zone`` is ``None`` for any
+                       value other than 36.
 
     Returns
     -------
@@ -271,6 +318,8 @@ def all_gauquelin_sectors(
     """
     results: list[GauquelinPosition] = []
     for body_name, (ra, dec) in planet_ra_dec.items():
-        gp = gauquelin_sector(ra, dec, lat, lst, body=body_name)
+        gp = gauquelin_sector(ra, dec, lat, lst, body=body_name,
+                              horizon_altitude=horizon_altitude,
+                              sectors=sectors)
         results.append(gp)
     return results

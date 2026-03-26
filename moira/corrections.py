@@ -49,6 +49,7 @@ except ImportError:
 from .coordinates import (
     Vec3, vec_sub, vec_norm, vec_scale, vec_add,
     atmospheric_refraction as _atmospheric_refraction,
+    atmospheric_refraction_extended as _atmospheric_refraction_extended,
 )
 
 # ---------------------------------------------------------------------------
@@ -395,6 +396,7 @@ def apply_refraction(
     *,
     pressure_mbar: float = 1013.25,
     temperature_c: float = 10.0,
+    relative_humidity: float = 0.0,
 ) -> float:
     """
     Apply atmospheric refraction to a geometric altitude, returning the
@@ -406,19 +408,34 @@ def apply_refraction(
     applied *after* the topocentric correction and the horizontal-coordinate
     projection, not to any intermediate ICRF vector.
 
-    Uses Bennett's (1982) formula as implemented in atmospheric_refraction()
-    from moira.coordinates, with the standard temperature/pressure correction.
+    When ``relative_humidity`` is non-zero, uses the extended Bennett model
+    from ``atmospheric_refraction_extended()`` which incorporates the partial
+    pressure of water vapour (Magnus approximation) into the refractivity
+    correction.  At ``relative_humidity=0.0`` (the default) the result is
+    identical to the plain Bennett formula.
 
     Parameters
     ----------
-    altitude_deg  : geometric (true) altitude in degrees
-    pressure_mbar : atmospheric pressure in millibars (default 1013.25)
-    temperature_c : air temperature in degrees Celsius (default 10.0)
+    altitude_deg       : geometric (true) altitude in degrees
+    pressure_mbar      : atmospheric pressure in millibars (default 1013.25)
+    temperature_c      : air temperature in degrees Celsius (default 10.0)
+    relative_humidity  : relative humidity 0–1 (default 0.0 = dry air).
+                         When non-zero, water-vapour partial pressure is
+                         computed via the Magnus formula and applied as a
+                         multiplicative refractivity correction.
 
     Returns
     -------
     Apparent altitude in degrees (geometric altitude + refraction angle).
     """
+    if relative_humidity:
+        refraction, _ = _atmospheric_refraction_extended(
+            altitude_deg,
+            pressure_mbar=pressure_mbar,
+            temperature_c=temperature_c,
+            relative_humidity=relative_humidity,
+        )
+        return altitude_deg + refraction
     return altitude_deg + _atmospheric_refraction(
         altitude_deg,
         pressure_mbar=pressure_mbar,

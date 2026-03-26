@@ -234,12 +234,23 @@ def _refine_bisection(func, t0: float, t1: float, iterations: int = 24) -> float
     return (t0 + t1) / 2.0
 
 
-def _altitude(jd_ut: float, lat: float, lon: float, body_name: str) -> float:
+def _altitude(
+    jd_ut: float,
+    lat: float,
+    lon: float,
+    body_name: str,
+    pressure_mbar: float = 1013.25,
+    temperature_c: float = 10.0,
+) -> float:
     """Apparent altitude of a body at a given time and location (degrees)."""
     try:
         from .planets import sky_position_at
 
-        return sky_position_at(body_name, jd_ut, lat, lon).altitude
+        return sky_position_at(
+            body_name, jd_ut, lat, lon,
+            pressure_mbar=pressure_mbar,
+            temperature_c=temperature_c,
+        ).altitude
     except Exception:
         ra, dec = _body_ra_dec(jd_ut, body_name)
         lst = _lst(jd_ut, lon)
@@ -263,6 +274,8 @@ def find_phenomena(
     lon: float,
     altitude: float | None = None,
     policy: 'RiseSetPolicy | None' = None,
+    pressure_mbar: float = 1013.25,
+    temperature_c: float = 10.0,
 ) -> dict[str, float]:
     """
     Find rise, set, and meridian events for a body over the 24h following jd_start.
@@ -281,6 +294,10 @@ def find_phenomena(
             definition doctrine (disc reference, refraction, Hindu rising,
             etc.).  When ``None``, the standard astronomical convention is
             used.
+        pressure_mbar: Atmospheric pressure in millibars used for the
+            refraction-corrected altitude computation.  Default 1013.25 mbar.
+        temperature_c: Air temperature in degrees Celsius used for the
+            refraction-corrected altitude computation.  Default 10.0 °C.
 
     Returns:
         A dict with keys ``'Rise'``, ``'Set'``, ``'Transit'``, and/or
@@ -305,7 +322,7 @@ def find_phenomena(
     # 10-minute brackets are cheap and provide reliable sign changes for the
     # final bisection refinement.
     steps = 144
-    altitude_error = lambda jd: _altitude(jd, lat, lon, body_name) - effective_altitude
+    altitude_error = lambda jd: _altitude(jd, lat, lon, body_name, pressure_mbar, temperature_c) - effective_altitude
     prev_alt = altitude_error(jd_start)
 
     for i in range(1, steps + 1):

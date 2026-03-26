@@ -41,7 +41,10 @@ import math
 from dataclasses import dataclass
 
 from .constants import DEG2RAD, RAD2DEG
-from .coordinates import ecliptic_to_equatorial, equatorial_to_ecliptic
+from .coordinates import (
+    ecliptic_to_equatorial, equatorial_to_ecliptic,
+    precession_matrix_equatorial, nutation_matrix_equatorial,
+)
 
 __all__ = [
     "GalacticPosition",
@@ -74,6 +77,70 @@ _A_T = (
     (_A[0][1], _A[1][1], _A[2][1]),
     (_A[0][2], _A[1][2], _A[2][2]),
 )
+
+
+# ---------------------------------------------------------------------------
+# Precession/nutation frame bridges
+# ---------------------------------------------------------------------------
+
+def _od_equatorial_to_j2000(ra_deg: float, dec_deg: float, jd_tt: float) -> tuple[float, float]:
+    """
+    Convert true-of-date equatorial RA/Dec to J2000/ICRS via inverse
+    nutation then inverse precession (matrix transposes).
+
+    Required because the Liu-Zhu-Zhang galactic rotation matrix (_A) is
+    defined in the J2000/ICRS frame.  Passing of-date equatorial coordinates
+    directly introduces a precession error of ~50″/yr (~21′ for 2026).
+    """
+    ra_r  = ra_deg  * DEG2RAD
+    dec_r = dec_deg * DEG2RAD
+    x = math.cos(dec_r) * math.cos(ra_r)
+    y = math.cos(dec_r) * math.sin(ra_r)
+    z = math.sin(dec_r)
+
+    # Inverse nutation (N^T): true-of-date → mean-of-date
+    N = nutation_matrix_equatorial(jd_tt)
+    xm = N[0][0]*x + N[1][0]*y + N[2][0]*z
+    ym = N[0][1]*x + N[1][1]*y + N[2][1]*z
+    zm = N[0][2]*x + N[1][2]*y + N[2][2]*z
+
+    # Inverse precession (P^T): mean-of-date → J2000
+    P = precession_matrix_equatorial(jd_tt)
+    x0 = P[0][0]*xm + P[1][0]*ym + P[2][0]*zm
+    y0 = P[0][1]*xm + P[1][1]*ym + P[2][1]*zm
+    z0 = P[0][2]*xm + P[1][2]*ym + P[2][2]*zm
+
+    dec0 = math.asin(max(-1.0, min(1.0, z0))) * RAD2DEG
+    ra0  = math.atan2(y0, x0) * RAD2DEG % 360.0
+    return ra0, dec0
+
+
+def _j2000_to_od_equatorial(ra_deg: float, dec_deg: float, jd_tt: float) -> tuple[float, float]:
+    """
+    Convert J2000/ICRS RA/Dec to true-of-date equatorial via precession
+    then nutation.  Inverse of ``_od_equatorial_to_j2000``.
+    """
+    ra_r  = ra_deg  * DEG2RAD
+    dec_r = dec_deg * DEG2RAD
+    x = math.cos(dec_r) * math.cos(ra_r)
+    y = math.cos(dec_r) * math.sin(ra_r)
+    z = math.sin(dec_r)
+
+    # Precession (P): J2000 → mean-of-date
+    P  = precession_matrix_equatorial(jd_tt)
+    xp = P[0][0]*x + P[0][1]*y + P[0][2]*z
+    yp = P[1][0]*x + P[1][1]*y + P[1][2]*z
+    zp = P[2][0]*x + P[2][1]*y + P[2][2]*z
+
+    # Nutation (N): mean-of-date → true-of-date
+    N  = nutation_matrix_equatorial(jd_tt)
+    xt = N[0][0]*xp + N[0][1]*yp + N[0][2]*zp
+    yt = N[1][0]*xp + N[1][1]*yp + N[1][2]*zp
+    zt = N[2][0]*xp + N[2][1]*yp + N[2][2]*zp
+
+    dec_od = math.asin(max(-1.0, min(1.0, zt))) * RAD2DEG
+    ra_od  = math.atan2(yt, xt) * RAD2DEG % 360.0
+    return ra_od, dec_od
 
 
 # ---------------------------------------------------------------------------
@@ -160,28 +227,36 @@ def ecliptic_to_galactic(
     lon: float,
     lat: float,
     obliquity: float,
+    jd_tt: float,
 ) -> tuple[float, float]:
     """
     Convert ecliptic (longitude, latitude) to galactic (ℓ, b).
 
     Parameters
     ----------
-    lon       : ecliptic longitude in degrees
-    lat       : ecliptic latitude in degrees
+    lon       : ecliptic longitude in degrees (true-of-date)
+    lat       : ecliptic latitude in degrees (true-of-date)
     obliquity : true obliquity of the ecliptic in degrees (epoch of date)
+    jd_tt     : Julian Day (TT) — required to apply inverse precession and
+                nutation so that the intermediate equatorial vector is in the
+                J2000/ICRS frame expected by the Liu-Zhu-Zhang matrix.
 
     Returns
     -------
     (galactic_longitude, galactic_latitude) in degrees.
     """
-    ra, dec = ecliptic_to_equatorial(lon, lat, obliquity)
-    return equatorial_to_galactic(ra, dec)
+    # of-date ecliptic → of-date equatorial
+    ra_od, dec_od = ecliptic_to_equatorial(lon, lat, obliquity)
+    # of-date equatorial → J2000/ICRS (inverse nutation + inverse precession)
+    ra_j2000, dec_j2000 = _od_equatorial_to_j2000(ra_od, dec_od, jd_tt)
+    return equatorial_to_galactic(ra_j2000, dec_j2000)
 
 
 def galactic_to_ecliptic(
     l: float,
     b: float,
     obliquity: float,
+    jd_tt: float,
 ) -> tuple[float, float]:
     """
     Convert galactic (ℓ, b) to ecliptic (longitude, latitude).
@@ -191,13 +266,19 @@ def galactic_to_ecliptic(
     l         : galactic longitude in degrees
     b         : galactic latitude in degrees
     obliquity : true obliquity of the ecliptic in degrees (epoch of date)
+    jd_tt     : Julian Day (TT) — required to precess the J2000/ICRS
+                equatorial result to the true equatorial of date before
+                applying the obliquity rotation.
 
     Returns
     -------
     (ecliptic_longitude, ecliptic_latitude) in degrees.
     """
-    ra, dec = galactic_to_equatorial(l, b)
-    return equatorial_to_ecliptic(ra, dec, obliquity)
+    # galactic → J2000/ICRS equatorial
+    ra_j2000, dec_j2000 = galactic_to_equatorial(l, b)
+    # J2000/ICRS → of-date equatorial (precession + nutation)
+    ra_od, dec_od = _j2000_to_od_equatorial(ra_j2000, dec_j2000, jd_tt)
+    return equatorial_to_ecliptic(ra_od, dec_od, obliquity)
 
 
 # ---------------------------------------------------------------------------
@@ -336,7 +417,7 @@ def _great_circle(l1: float, b1: float, l2: float, b2: float) -> float:
 # Named galactic reference points
 # ---------------------------------------------------------------------------
 
-def galactic_reference_points(obliquity: float) -> dict[str, tuple[float, float]]:
+def galactic_reference_points(obliquity: float, jd_tt: float) -> dict[str, tuple[float, float]]:
     """
     Return the ecliptic longitudes and latitudes of the five principal
     galactic reference points, computed at the given obliquity.
@@ -344,6 +425,9 @@ def galactic_reference_points(obliquity: float) -> dict[str, tuple[float, float]
     Parameters
     ----------
     obliquity : true obliquity of the ecliptic in degrees (epoch of chart)
+    jd_tt     : Julian Day (TT) — used to precess the fixed J2000/ICRS
+                equatorial coordinates of each reference point to the
+                true equatorial of date before applying the obliquity.
 
     Returns
     -------
@@ -358,7 +442,10 @@ def galactic_reference_points(obliquity: float) -> dict[str, tuple[float, float]
     "Super-Galactic Center"— center of Local Supercluster (M87/Virgo cluster)
     """
     def _ecl(ra: float, dec: float) -> tuple[float, float]:
-        return equatorial_to_ecliptic(ra, dec, obliquity)
+        # Stored coordinates are J2000/ICRS; precess to of-date before
+        # applying the obliquity rotation.
+        ra_od, dec_od = _j2000_to_od_equatorial(ra, dec, jd_tt)
+        return equatorial_to_ecliptic(ra_od, dec_od, obliquity)
 
     return {
         "Galactic Center":       _ecl(_GC_RA,  _GC_DEC),
@@ -378,6 +465,7 @@ def galactic_position_of(
     ecliptic_lon: float,
     ecliptic_lat: float,
     obliquity: float,
+    jd_tt: float,
 ) -> GalacticPosition:
     """
     Compute the galactic position of a single body from its ecliptic coordinates.
@@ -385,15 +473,17 @@ def galactic_position_of(
     Parameters
     ----------
     body        : name label (e.g., "Mars")
-    ecliptic_lon: ecliptic longitude in degrees
-    ecliptic_lat: ecliptic latitude in degrees
+    ecliptic_lon: ecliptic longitude in degrees (true-of-date)
+    ecliptic_lat: ecliptic latitude in degrees (true-of-date)
     obliquity   : true obliquity of the ecliptic in degrees (epoch of date)
+    jd_tt       : Julian Day (TT) — forwarded to ``ecliptic_to_galactic``
+                  for the precession correction.
 
     Returns
     -------
     GalacticPosition
     """
-    l, b = ecliptic_to_galactic(ecliptic_lon, ecliptic_lat, obliquity)
+    l, b = ecliptic_to_galactic(ecliptic_lon, ecliptic_lat, obliquity, jd_tt)
     return GalacticPosition(
         body=body,
         lon=l,
@@ -410,6 +500,7 @@ def galactic_position_of(
 def all_galactic_positions(
     body_data: dict[str, tuple[float, float]],
     obliquity: float,
+    jd_tt: float,
 ) -> list[GalacticPosition]:
     """
     Compute galactic positions for all bodies in a chart.
@@ -417,15 +508,17 @@ def all_galactic_positions(
     Parameters
     ----------
     body_data : mapping of body name → (ecliptic_longitude, ecliptic_latitude)
-                in degrees.  PlanetData objects work if you pass
+                in degrees (true-of-date).  PlanetData objects work if you pass
                 {name: (p.longitude, p.latitude) for name, p in chart.planets.items()}.
     obliquity : true obliquity of the ecliptic in degrees (use chart.obliquity).
+    jd_tt     : Julian Day (TT) — forwarded to each ``galactic_position_of``
+                call for the precession correction.
 
     Returns
     -------
     List of GalacticPosition, one per body, in input order.
     """
     return [
-        galactic_position_of(name, lon, lat, obliquity)
+        galactic_position_of(name, lon, lat, obliquity, jd_tt)
         for name, (lon, lat) in body_data.items()
     ]

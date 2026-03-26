@@ -2178,6 +2178,8 @@ def _crossing_times(
     jd_day: float,
     lat: float,
     lon: float,
+    pressure_mbar: float = 1013.25,
+    temperature_c: float = 10.0,
 ) -> list[ParanCrossing]:
     """
     Find all four mundane circle crossings for *body* on the day starting
@@ -2216,7 +2218,12 @@ def _crossing_times(
     # Rise and Set are delegated unchanged from rise_set.find_phenomena().
     # The paran model therefore inherits the standard apparent-horizon
     # convention used there: altitude = -0.5667 degrees.
-    phenomena = find_phenomena(body, jd_day, lat, lon, altitude=-0.5667)
+    phenomena = find_phenomena(
+        body, jd_day, lat, lon,
+        altitude=-0.5667,
+        pressure_mbar=pressure_mbar,
+        temperature_c=temperature_c,
+    )
 
     if "Rise" in phenomena:
         crossings.append(
@@ -2286,6 +2293,8 @@ def find_parans(
     lon: float,
     orb_minutes: float = 4.0,
     policy: ParanPolicy | None = None,
+    pressure_mbar: float = 1013.25,
+    temperature_c: float = 10.0,
 ) -> list[Paran]:
     """
     Find all parans between the given bodies for a given day and location.
@@ -2323,10 +2332,15 @@ def find_parans(
                   over the full 24-hour window starting at this JD.
     lat         : observer geographic latitude (degrees, signed).
     lon         : observer geographic longitude (degrees, east positive).
-    orb_minutes : maximum time separation (in minutes) for two crossings to
-                  qualify as a paran.  Default 4 minutes (traditional orb).
-    policy      : optional backend inclusion policy. ``None`` preserves the
-                  current permissive semantics.
+    orb_minutes   : maximum time separation (in minutes) for two crossings to
+                    qualify as a paran.  Default 4 minutes (traditional orb).
+    policy        : optional backend inclusion policy. ``None`` preserves the
+                    current permissive semantics.
+    pressure_mbar : atmospheric pressure in millibars for the refraction-
+                    corrected horizon altitude computation.  Default 1013.25.
+    temperature_c : air temperature in degrees Celsius for the same.
+                    Default 10.0 °C.  Non-standard weather can shift rise/set
+                    times by tens of seconds relative to standard atmosphere.
 
     Returns
     -------
@@ -2356,7 +2370,7 @@ def find_parans(
     # Gather all crossings for every body.
     all_crossings: list[ParanCrossing] = []
     for body in bodies:
-        all_crossings.extend(_crossing_times(body, jd_day, lat, lon))
+        all_crossings.extend(_crossing_times(body, jd_day, lat, lon, pressure_mbar, temperature_c))
 
     parans: list[Paran] = []
 
