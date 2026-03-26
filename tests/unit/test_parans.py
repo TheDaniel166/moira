@@ -218,7 +218,7 @@ def test_find_parans_preserves_event_truth_and_classifies(monkeypatch: pytest.Mo
         _crossing(body="Regulus", circle="Culminating", jd=100.001),
     ]
 
-    def fake_crossing_times(body, jd_day, lat, lon):
+    def fake_crossing_times(body, jd_day, lat, lon, pressure_mbar=None, temperature_c=None):
         if body == Body.SUN:
             return sun_crossings
         if body == "Regulus":
@@ -291,7 +291,7 @@ def test_find_parans_classifies_additional_signature_families(
     expected_axis_family: str,
     expected_body_family: str,
 ) -> None:
-    def fake_crossing_times(body, jd_day, lat, lon):
+    def fake_crossing_times(body, jd_day, lat, lon, pressure_mbar=None, temperature_c=None):
         return crossings_by_body.get(body, [])
 
     monkeypatch.setattr("moira.parans._crossing_times", fake_crossing_times)
@@ -338,7 +338,7 @@ def test_default_policy_preserves_permissive_matching(monkeypatch: pytest.Monkey
         Body.MOON: [_crossing(body=Body.MOON, circle="Culminating", jd=500.001)],
     }
 
-    def fake_crossing_times(body, jd_day, lat, lon):
+    def fake_crossing_times(body, jd_day, lat, lon, pressure_mbar=None, temperature_c=None):
         return crossings_by_body.get(body, [])
 
     monkeypatch.setattr("moira.parans._crossing_times", fake_crossing_times)
@@ -370,7 +370,7 @@ def test_policy_can_exclude_same_event_family(monkeypatch: pytest.MonkeyPatch) -
         Body.MOON: [_crossing(body=Body.MOON, circle="Culminating", jd=600.001)],
     }
 
-    def fake_crossing_times(body, jd_day, lat, lon):
+    def fake_crossing_times(body, jd_day, lat, lon, pressure_mbar=None, temperature_c=None):
         return crossings_by_body.get(body, [])
 
     monkeypatch.setattr("moira.parans._crossing_times", fake_crossing_times)
@@ -393,7 +393,7 @@ def test_policy_can_exclude_same_axis_family(monkeypatch: pytest.MonkeyPatch) ->
         Body.MOON: [_crossing(body=Body.MOON, circle="AntiCulminating", jd=700.001)],
     }
 
-    def fake_crossing_times(body, jd_day, lat, lon):
+    def fake_crossing_times(body, jd_day, lat, lon, pressure_mbar=None, temperature_c=None):
         return crossings_by_body.get(body, [])
 
     monkeypatch.setattr("moira.parans._crossing_times", fake_crossing_times)
@@ -416,7 +416,7 @@ def test_policy_can_exclude_body_family_pairings(monkeypatch: pytest.MonkeyPatch
         "Regulus": [_crossing(body="Regulus", circle="Culminating", jd=800.001)],
     }
 
-    def fake_crossing_times(body, jd_day, lat, lon):
+    def fake_crossing_times(body, jd_day, lat, lon, pressure_mbar=None, temperature_c=None):
         return crossings_by_body.get(body, [])
 
     monkeypatch.setattr("moira.parans._crossing_times", fake_crossing_times)
@@ -449,7 +449,7 @@ def test_policy_can_exclude_star_involvement(monkeypatch: pytest.MonkeyPatch) ->
         "Regulus": [_crossing(body="Regulus", circle="Culminating", jd=900.001)],
     }
 
-    def fake_crossing_times(body, jd_day, lat, lon):
+    def fake_crossing_times(body, jd_day, lat, lon, pressure_mbar=None, temperature_c=None):
         return crossings_by_body.get(body, [])
 
     monkeypatch.setattr("moira.parans._crossing_times", fake_crossing_times)
@@ -472,7 +472,7 @@ def test_policy_can_filter_named_stars_explicitly(monkeypatch: pytest.MonkeyPatc
         "Regulus": [_crossing(body="Regulus", circle="Culminating", jd=950.001)],
     }
 
-    def fake_crossing_times(body, jd_day, lat, lon):
+    def fake_crossing_times(body, jd_day, lat, lon, pressure_mbar=None, temperature_c=None):
         return crossings_by_body.get(body, [])
 
     monkeypatch.setattr("moira.parans._crossing_times", fake_crossing_times)
@@ -508,7 +508,7 @@ def test_paran_strength_is_derived_only_from_existing_orb_data(
         Body.MOON: [_crossing(body=Body.MOON, circle="Culminating", jd=1000.001)],
     }
 
-    def fake_crossing_times(body, jd_day, lat, lon):
+    def fake_crossing_times(body, jd_day, lat, lon, pressure_mbar=None, temperature_c=None):
         return crossings_by_body.get(body, [])
 
     monkeypatch.setattr("moira.parans._crossing_times", fake_crossing_times)
@@ -535,7 +535,7 @@ def test_tighter_orb_yields_stronger_exactness_score(
         ],
     }
 
-    def fake_crossing_times(body, jd_day, lat, lon):
+    def fake_crossing_times(body, jd_day, lat, lon, pressure_mbar=None, temperature_c=None):
         return crossings_by_body.get(body, [])
 
     monkeypatch.setattr("moira.parans._crossing_times", fake_crossing_times)
@@ -561,7 +561,7 @@ def test_equal_orb_yields_equal_exactness_score(monkeypatch: pytest.MonkeyPatch)
         ],
     }
 
-    def fake_crossing_times(body, jd_day, lat, lon):
+    def fake_crossing_times(body, jd_day, lat, lon, pressure_mbar=None, temperature_c=None):
         return crossings_by_body.get(body, [])
 
     monkeypatch.setattr("moira.parans._crossing_times", fake_crossing_times)

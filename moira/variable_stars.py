@@ -39,7 +39,7 @@ Public surface / exports:
     VarType, VariableStar,
     VarStarPolicy, DEFAULT_VAR_STAR_POLICY,
     StarPhaseState, star_phase_state,
-    StarConditionProfile, star_condition_profile,
+    VarStarConditionProfile, star_condition_profile,
     CatalogProfile, catalog_profile,
     StarStatePair, star_state_pair,
     phase_at, magnitude_at,
@@ -110,7 +110,7 @@ __all__ = [
     # Relational vessel
     "StarPhaseState",
     # Condition vessel
-    "StarConditionProfile",
+    "VarStarConditionProfile",
     # Aggregate vessel
     "CatalogProfile",
     # Network vessel
@@ -1237,7 +1237,7 @@ def star_phase_state(
 # ---------------------------------------------------------------------------
 
 @dataclass(slots=True)
-class StarConditionProfile:
+class VarStarConditionProfile:
     """
     Integrated condition profile for a variable star at a given JD.
 
@@ -1286,9 +1286,9 @@ def star_condition_profile(
     jd: float,
     *,
     policy: VarStarPolicy | None = None,
-) -> StarConditionProfile:
+) -> VarStarConditionProfile:
     """
-    Build a StarConditionProfile from a VariableStar at a given JD.
+    Build a VarStarConditionProfile from a VariableStar at a given JD.
 
     Integrates all Phase 1–6 truth about the star at the given moment.
     Deterministic; no side effects.
@@ -1301,10 +1301,10 @@ def star_condition_profile(
 
     Returns
     -------
-    StarConditionProfile
+    VarStarConditionProfile
     """
     state = star_phase_state(star, jd, policy=policy)
-    return StarConditionProfile(
+    return VarStarConditionProfile(
         name              = star.name,
         designation       = star.designation,
         var_type          = star.var_type,
@@ -1332,11 +1332,11 @@ class CatalogProfile:
     """
     Aggregate profile of the full variable star catalog at a given JD.
 
-    Derived from StarConditionProfile vessels (Phase 7). Summarises the
+    Derived from VarStarConditionProfile vessels (Phase 7). Summarises the
     structural composition of the catalog and the instantaneous state of
     all registered stars at a given moment.
 
-    The profiles tuple contains one StarConditionProfile per catalog star
+    The profiles tuple contains one VarStarConditionProfile per catalog star
     in the order returned by list_variable_stars().
 
     Fields
@@ -1352,7 +1352,7 @@ class CatalogProfile:
     mixed_count          — stars with classical_quality == 'mixed'
     eclipse_active_count — eclipsing stars currently in eclipse at the evaluated JD
     """
-    profiles:             tuple[StarConditionProfile, ...]
+    profiles:             tuple[VarStarConditionProfile, ...]
     star_count:           int
     eclipsing_count:      int
     pulsating_count:      int
@@ -1447,8 +1447,8 @@ class StarStatePair:
     primary   — condition profile of the first star
     secondary — condition profile of the second star
     """
-    primary:   StarConditionProfile
-    secondary: StarConditionProfile
+    primary:   VarStarConditionProfile
+    secondary: VarStarConditionProfile
 
     @property
     def is_same_type_class(self) -> bool:

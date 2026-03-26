@@ -66,8 +66,6 @@ Public surface
 Import-time side effects: None
 """
 
-from __future__ import annotations
-
 import math
 from dataclasses import dataclass
 

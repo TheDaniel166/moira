@@ -1,0 +1,15 @@
+{
+  "value": {
+    "duration_hours": 2.0610250756144524,
+    "jd_voc_end": 2451546.397037506,
+    "jd_voc_start": 2451546.3111614613,
+    "last_aspect": {
+      "angle": 270.0,
+      "aspect_name": "Square",
+      "body": "Mars",
+      "jd_exact": 2451546.3111614613
+    },
+    "moon_sign": "Scorpio",
+    "moon_sign_next": "Sagittarius"
+  }
+}

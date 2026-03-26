@@ -27,7 +27,7 @@ from moira.variable_stars import (
     VarType, VariableStar,
     VarStarPolicy, DEFAULT_VAR_STAR_POLICY,
     StarPhaseState, star_phase_state,
-    StarConditionProfile, star_condition_profile,
+    VarStarConditionProfile, star_condition_profile,
     CatalogProfile, catalog_profile,
     StarStatePair, star_state_pair,
     phase_at, magnitude_at,
@@ -578,10 +578,10 @@ class TestStarPhaseState:
 
 
 # ===========================================================================
-# 11. StarConditionProfile (Phase 7)
+# 11. VarStarConditionProfile (Phase 7)
 # ===========================================================================
 
-class TestStarConditionProfile:
+class TestVarStarConditionProfile:
 
     def test_algol_field_fidelity(self):
         vs = variable_star("Algol")
@@ -722,8 +722,8 @@ class TestStarStatePair:
         vs_a = variable_star("Algol")
         vs_b = variable_star("Mira")
         pair = star_state_pair(vs_a, vs_b, J2000)
-        assert isinstance(pair.primary, StarConditionProfile)
-        assert isinstance(pair.secondary, StarConditionProfile)
+        assert isinstance(pair.primary, VarStarConditionProfile)
+        assert isinstance(pair.secondary, VarStarConditionProfile)
 
     def test_algol_in_eclipse_at_epoch(self):
         algol = variable_star("Algol")

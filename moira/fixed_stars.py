@@ -930,6 +930,14 @@ def _parse_catalog(path: Path) -> dict[str, _StarRecord]:
 
             trad = parts[0]
             nom  = parts[1]
+            # Some sefstars.txt entries carry only a Bayer designation (no
+            # traditional name).  Use the nomenclature name as the key so the
+            # star remains accessible; both the primary dict and the alt_index
+            # will point to it via the same key.
+            if not trad:
+                trad = nom
+            if not trad:
+                continue  # skip entries with no usable name at all
             equinox_str = parts[2].upper()
 
             if equinox_str == "ICRS":
