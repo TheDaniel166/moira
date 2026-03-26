@@ -21,6 +21,8 @@ from dataclasses import dataclass
 
 from .eclipse_search import refine_minimum
 
+__all__ = ["LunarEclipseContacts", "find_lunar_contacts"]
+
 
 @dataclass(frozen=True, slots=True)
 class LunarEclipseContacts:

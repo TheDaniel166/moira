@@ -16,6 +16,13 @@ External dependency assumptions:
     - No third-party packages; stdlib only.
 """
 
+__all__ = [
+    "refine_minimum",
+    "refine_lunar_greatest_eclipse",
+    "refine_solar_greatest_eclipse",
+]
+
+
 def refine_minimum(
     objective,
     center_jd: float,

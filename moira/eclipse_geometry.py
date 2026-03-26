@@ -24,10 +24,23 @@ External dependency assumptions:
 
 import math
 
+from .constants import EARTH_RADIUS_KM, SUN_RADIUS_KM, MOON_RADIUS_KM
 
-EARTH_RADIUS_KM = 6378.137
-SUN_RADIUS_KM = 696_340.0
-MOON_RADIUS_KM = 1_737.4
+__all__ = [
+    "angular_separation",
+    "lunar_parallax",
+    "apparent_radius",
+    "solar_parallax",
+    "topocentric_near_moon_radius",
+    "umbra_radius",
+    "penumbra_radius",
+    "shadow_axis_offset_deg",
+    "lunar_umbral_magnitude",
+    "lunar_penumbral_magnitude",
+    "EARTH_RADIUS_KM",
+    "SUN_RADIUS_KM",
+    "MOON_RADIUS_KM",
+]
 
 
 def angular_separation(lon1: float, lat1: float, lon2: float, lat2: float) -> float:
@@ -69,7 +82,7 @@ def lunar_parallax(moon_dist_km: float) -> float:
     Returns:
         Equatorial horizontal parallax of the Moon in degrees.
     """
-    return math.degrees(math.asin(EARTH_RADIUS_KM / moon_dist_km))
+    return math.degrees(math.asin(max(-1.0, min(1.0, EARTH_RADIUS_KM / moon_dist_km))))
 
 
 def apparent_radius(physical_radius_km: float, distance_km: float) -> float:
@@ -83,7 +96,7 @@ def apparent_radius(physical_radius_km: float, distance_km: float) -> float:
     Returns:
         Apparent angular radius in degrees.
     """
-    return math.degrees(math.asin(physical_radius_km / distance_km))
+    return math.degrees(math.asin(max(-1.0, min(1.0, physical_radius_km / distance_km))))
 
 
 def solar_parallax(sun_dist_km: float) -> float:
@@ -96,7 +109,7 @@ def solar_parallax(sun_dist_km: float) -> float:
     Returns:
         Equatorial horizontal parallax of the Sun in degrees.
     """
-    return math.degrees(math.asin(EARTH_RADIUS_KM / sun_dist_km))
+    return math.degrees(math.asin(max(-1.0, min(1.0, EARTH_RADIUS_KM / sun_dist_km))))
 
 
 def topocentric_near_moon_radius(moon_parallax: float) -> float:

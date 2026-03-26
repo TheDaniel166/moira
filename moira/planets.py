@@ -36,7 +36,7 @@ except ImportError:
 
 from .constants import (
     Body, NAIF, NAIF_ROUTES, EARTH_ROUTE,
-    DEG2RAD, RAD2DEG, sign_of,
+    DEG2RAD, RAD2DEG, sign_of, KM_PER_AU,
 )
 from .coordinates import (
     Vec3, vec_add, vec_sub, vec_norm, mat_vec_mul, mat_mul,
@@ -53,6 +53,21 @@ from .corrections import (
     topocentric_correction, C_KM_PER_DAY,
 )
 from .precession import general_precession_in_longitude
+
+__all__ = [
+    "PlanetData",
+    "SkyPosition",
+    "HeliocentricData",
+    "CartesianPosition",
+    "planet_at",
+    "sky_position_at",
+    "all_planets_at",
+    "heliocentric_planet_at",
+    "all_heliocentric_at",
+    "sun_longitude",
+    "planet_relative_to",
+    "next_heliocentric_transit",
+]
 
 # ---------------------------------------------------------------------------
 # Result dataclass
@@ -148,7 +163,7 @@ class PlanetData:
     @property
     def distance_au(self) -> float:
         """Distance from Earth in Astronomical Units (AU)."""
-        return self.distance / 149597870.7
+        return self.distance / KM_PER_AU
 
     def __repr__(self) -> str:
         r = "℞" if self.retrograde else ""
@@ -312,7 +327,7 @@ class HeliocentricData:
 
     @property
     def distance_au(self) -> float:
-        return self.distance / 149597870.7
+        return self.distance / KM_PER_AU
 
     def __repr__(self) -> str:
         r = "℞" if self.retrograde else ""

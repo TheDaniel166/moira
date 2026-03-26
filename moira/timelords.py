@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """
 Moira — timelords.py
 The Timelord Engine: governs Firdaria and Zodiacal Releasing time-lord

@@ -28,6 +28,15 @@ from typing import TYPE_CHECKING
 
 from .constants import Body, DEG2RAD, RAD2DEG
 
+__all__ = [
+    "DIRECT",
+    "CONVERSE",
+    "SpeculumEntry",
+    "PrimaryArc",
+    "speculum",
+    "find_primary_arcs",
+]
+
 if TYPE_CHECKING:
     from .__init__ import Chart
     from .houses import HouseCusps

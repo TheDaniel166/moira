@@ -33,8 +33,16 @@ Public surface / exports:
 """
 
 import math
-from .constants import Body, NAIF
+from .constants import Body, KM_PER_AU, SUN_RADIUS_KM, MOON_RADIUS_KM
 from .planets import planet_at
+
+__all__ = [
+    "phase_angle",
+    "illuminated_fraction",
+    "elongation",
+    "angular_diameter",
+    "apparent_magnitude",
+]
 
 def phase_angle(body_name: str, jd_ut: float) -> float:
     """
@@ -79,18 +87,19 @@ def elongation(body_name: str, jd_ut: float) -> float:
     phi1, lam1 = math.radians(p.latitude), math.radians(p.longitude)
     phi2, lam2 = math.radians(s.latitude), math.radians(s.longitude)
     
-    d = math.acos(math.sin(phi1)*math.sin(phi2) + 
-                  math.cos(phi1)*math.cos(phi2)*math.cos(lam1 - lam2))
-    return math.degrees(d)
+    cos_d = (math.sin(phi1)*math.sin(phi2) +
+             math.cos(phi1)*math.cos(phi2)*math.cos(lam1 - lam2))
+    return math.degrees(math.acos(max(-1.0, min(1.0, cos_d))))
 
 # ---------------------------------------------------------------------------
 # Angular diameter
 # ---------------------------------------------------------------------------
 
-# Physical radii (km) for angular diameter calculation
+# Physical radii (km) for angular diameter calculation.
+# Sun and Moon values sourced from moira.constants for consistency with eclipse geometry.
 _PHYSICAL_RADII_KM: dict[str, float] = {
-    "Sun":     695700.0,
-    "Moon":      1737.4,
+    "Sun":     SUN_RADIUS_KM,
+    "Moon":    MOON_RADIUS_KM,
     "Mercury":   2439.7,
     "Venus":     6051.8,
     "Mars":      3389.5,
@@ -157,8 +166,8 @@ def apparent_magnitude(body_name: str, jd_ut: float) -> float:
     s_bary = reader.position(0, 10, jd_ut)
     e_bary = _earth_barycentric(jd_ut, reader)
     
-    r = math.sqrt((p_bary[0]-s_bary[0])**2 + (p_bary[1]-s_bary[1])**2 + (p_bary[2]-s_bary[2])**2) / 149597870.7
-    delta = math.sqrt((p_bary[0]-e_bary[0])**2 + (p_bary[1]-e_bary[1])**2 + (p_bary[2]-e_bary[2])**2) / 149597870.7
+    r = math.sqrt((p_bary[0]-s_bary[0])**2 + (p_bary[1]-s_bary[1])**2 + (p_bary[2]-s_bary[2])**2) / KM_PER_AU
+    delta = math.sqrt((p_bary[0]-e_bary[0])**2 + (p_bary[1]-e_bary[1])**2 + (p_bary[2]-e_bary[2])**2) / KM_PER_AU
     beta = phase_angle(body_name, jd_ut)
     
     H, a1, a2, a3 = m_data[body_name]

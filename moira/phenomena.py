@@ -40,7 +40,7 @@ import math
 from dataclasses import dataclass
 from datetime import datetime
 
-from .constants import Body, JULIAN_YEAR
+from .constants import Body, JULIAN_YEAR, KM_PER_AU
 from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd, format_jd_utc
 from .planets import planet_at
 from .spk_reader import get_reader, SpkReader
@@ -186,7 +186,7 @@ def _helio_distance(body: str, jd: float, reader: SpkReader) -> float:
         p_bary = _barycentric(body, jd, reader)
     s_bary = reader.position(0, 10, jd)
     dx, dy, dz = p_bary[0] - s_bary[0], p_bary[1] - s_bary[1], p_bary[2] - s_bary[2]
-    return math.sqrt(dx * dx + dy * dy + dz * dz) / 149597870.7
+    return math.sqrt(dx * dx + dy * dy + dz * dz) / KM_PER_AU
 
 
 # ---------------------------------------------------------------------------

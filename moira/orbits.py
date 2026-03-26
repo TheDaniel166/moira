@@ -71,7 +71,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-from .constants import Body
+from .constants import Body, KM_PER_AU
 from .spk_reader import SpkReader
 
 
@@ -90,8 +90,7 @@ __all__ = [
 # GM_sun from JPL: 1.32712440018e20 m³/s², converted to km³/day²
 _GM_SUN_KM3_DAY2: float = 1.32712440018e11 * 86400.0 ** 2
 
-# IAU 2012 definition: 1 AU = 149597870.700 km exactly
-_KM_PER_AU: float = 149597870.700
+# KM_PER_AU imported from moira.constants — IAU 2012 exact definition.
 
 # IAU J2000.0 ecliptic obliquity (Seidelmann 1992 value used in DE441 frame)
 _J2000_OBLIQUITY_RAD: float = math.radians(23.439291111)
@@ -338,7 +337,7 @@ def _keplerian_from_state(
     return KeplerianElements(
         name=name,
         epoch_jd=epoch_jd,
-        semi_major_axis_au=sma_km / _KM_PER_AU,
+        semi_major_axis_au=sma_km / KM_PER_AU,
         eccentricity=ecc,
         inclination_deg=math.degrees(incl_rad) % 360.0,
         lon_ascending_node_deg=omega % 360.0,

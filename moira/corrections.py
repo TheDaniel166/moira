@@ -38,7 +38,7 @@ Public surface / exports:
 """
 
 import math
-from .constants import DEG2RAD, RAD2DEG, ARCSEC2RAD
+from .constants import DEG2RAD, RAD2DEG, ARCSEC2RAD, C_KM_PER_DAY, EARTH_RADIUS_KM
 
 try:
     import numpy as _np
@@ -56,8 +56,8 @@ from .coordinates import (
 # Physical constants
 # ---------------------------------------------------------------------------
 
-C_KM_PER_DAY = 299_792.458 * 86_400.0   # speed of light in km/day
-EARTH_RADIUS_KM = 6_378.137              # equatorial Earth radius, km
+# C_KM_PER_DAY and EARTH_RADIUS_KM are imported from moira.constants — the
+# single canonical source for physical constants across the library.
 
 # Schwarzschild radii R_s = 2GM/c² (km) for gravitational deflection.
 # Sun: ~1.75" at the limb; Jupiter: ~16 µas peak; Saturn: ~6 µas; Earth: negligible.

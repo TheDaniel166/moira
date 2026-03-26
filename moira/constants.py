@@ -42,6 +42,25 @@ JULIAN_CENTURY = 36525.0       # Days per Julian century
 JULIAN_YEAR    = 365.25        # Days per Julian year
 
 # ---------------------------------------------------------------------------
+# Physical constants — single canonical source for the whole library
+# ---------------------------------------------------------------------------
+# Speed of light: IAU exact definition (km/s × s/day)
+C_KM_PER_DAY: float = 299_792.458 * 86_400.0
+
+# IAU 2012 exact definition of the astronomical unit
+KM_PER_AU: float = 149_597_870.700
+
+# WGS-84 / IAU 2015 equatorial Earth radius
+EARTH_RADIUS_KM: float = 6_378.137
+
+# Solar geometric equatorial radius used for eclipse shadow geometry and
+# apparent angular diameter calculations (JPL standard / Haberreiter et al. 2008).
+SUN_RADIUS_KM: float = 696_340.0
+
+# Lunar mean radius (IAU Working Group on Cartographic Coordinates 2015)
+MOON_RADIUS_KM: float = 1_737.4
+
+# ---------------------------------------------------------------------------
 # NAIF / SPICE body IDs (as used in DE441)
 # ---------------------------------------------------------------------------
 class NAIF:

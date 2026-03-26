@@ -350,9 +350,6 @@ _QUATERNARY_KERNEL_PATH = _first_existing_path(
     _REPO_KERNELS_DIR / "minor_bodies.bsp",
 )
 
-# Speed of light in km/day
-_C = 299792.458 * 86400.0
-
 # Speed step for numerical differentiation of longitude (days)
 _SPEED_STEP = 0.5
 

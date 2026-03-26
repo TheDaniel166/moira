@@ -46,6 +46,22 @@ External dependency assumptions:
 import math
 from .constants import DEG2RAD, RAD2DEG
 
+__all__ = [
+    "Vec3", "Mat3",
+    "vec_add", "vec_sub", "vec_scale", "vec_norm", "vec_unit",
+    "mat_vec_mul", "mat_mul",
+    "rot_x_axis", "rot_y_axis", "rot_z_axis", "rot_x", "rot_y", "rot_z",
+    "icrf_to_ecliptic", "icrf_to_true_ecliptic", "icrf_to_equatorial",
+    "true_ecliptic_latitude",
+    "precession_matrix_equatorial", "nutation_matrix_equatorial",
+    "equatorial_to_horizontal", "horizontal_to_equatorial",
+    "ecliptic_to_equatorial", "equatorial_to_ecliptic",
+    "aberration_correction",
+    "cotrans_sp",
+    "atmospheric_refraction", "atmospheric_refraction_extended",
+    "equation_of_time",
+    "normalize_degrees", "angular_distance", "signed_angular_distance",
+]
 
 # ---------------------------------------------------------------------------
 # Low-level 3-vector helpers (no numpy dependency)
@@ -73,6 +89,8 @@ def vec_norm(a: Vec3) -> float:
 
 def vec_unit(a: Vec3) -> Vec3:
     n = vec_norm(a)
+    if n == 0.0:
+        raise ValueError("vec_unit: cannot normalise a zero vector")
     return (a[0]/n, a[1]/n, a[2]/n)
 
 
@@ -174,7 +192,7 @@ def icrf_to_ecliptic(xyz: Vec3, obliquity_deg: float) -> tuple[float, float, flo
 
     distance  = math.sqrt(xe**2 + ye**2 + ze**2)
     longitude = math.atan2(ye, xe) * RAD2DEG % 360.0
-    latitude  = math.asin(ze / distance) * RAD2DEG if distance > 0 else 0.0
+    latitude  = math.asin(max(-1.0, min(1.0, ze / distance))) * RAD2DEG if distance > 0 else 0.0
 
     return longitude, latitude, distance
 
@@ -245,7 +263,7 @@ def icrf_to_equatorial(xyz: Vec3) -> tuple[float, float, float]:
     x, y, z = xyz
     distance = math.sqrt(x**2 + y**2 + z**2)
     ra  = math.atan2(y, x) * RAD2DEG % 360.0
-    dec = math.asin(z / distance) * RAD2DEG if distance > 0 else 0.0
+    dec = math.asin(max(-1.0, min(1.0, z / distance))) * RAD2DEG if distance > 0 else 0.0
     return ra, dec, distance
 
 
@@ -281,7 +299,7 @@ def equatorial_to_horizontal(
 
     sin_alt = (math.sin(dec_r) * math.sin(lat_r)
                + math.cos(dec_r) * math.cos(lat_r) * math.cos(ha_r))
-    alt = math.asin(sin_alt) * RAD2DEG
+    alt = math.asin(max(-1.0, min(1.0, sin_alt))) * RAD2DEG
 
     cos_az = ((math.sin(dec_r) - math.sin(lat_r) * sin_alt)
               / (math.cos(lat_r) * math.cos(alt * DEG2RAD)))
@@ -317,7 +335,7 @@ def ecliptic_to_equatorial(
 
     sin_dec = (math.sin(lat) * math.cos(eps)
                + math.cos(lat) * math.sin(eps) * math.sin(lon))
-    dec = math.asin(sin_dec) * RAD2DEG
+    dec = math.asin(max(-1.0, min(1.0, sin_dec))) * RAD2DEG
 
     y = math.sin(lon) * math.cos(eps) - math.tan(lat) * math.sin(eps)
     x = math.cos(lon)
@@ -344,7 +362,7 @@ def equatorial_to_ecliptic(
 
     sin_lat = (math.sin(dec) * math.cos(eps)
                - math.cos(dec) * math.sin(eps) * math.sin(ra))
-    lat = math.asin(sin_lat) * RAD2DEG
+    lat = math.asin(max(-1.0, min(1.0, sin_lat))) * RAD2DEG
 
     y = math.sin(ra) * math.cos(eps) + math.tan(dec) * math.sin(eps)
     x = math.cos(ra)

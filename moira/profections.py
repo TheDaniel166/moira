@@ -22,6 +22,14 @@ from dataclasses import dataclass
 from .constants import sign_of
 from .julian import decimal_year_from_jd
 
+__all__ = [
+    "DOMICILE_RULERS",
+    "ProfectionResult",
+    "annual_profection",
+    "monthly_profection",
+    "profection_schedule",
+]
+
 
 # ---------------------------------------------------------------------------
 # Domicile rulers — classical 7 planets only
