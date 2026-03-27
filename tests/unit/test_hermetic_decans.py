@@ -17,7 +17,7 @@ import pytest
 
 def _dummy_star(name: str = "Sirius"):
     """Return a minimal StarPosition-like mock."""
-    from moira.fixed_stars import StarPosition
+    from moira.stars import StarPosition
     return StarPosition(
         name=name,
         nomenclature="alCMa",
@@ -229,9 +229,9 @@ class TestDecanRulingStar:
 
 
 class TestDecanStarAt:
-    def test_delegates_to_fixed_star_at(self):
+    def test_delegates_to_star_at(self):
         dummy = _dummy_star("Sirius")
-        with patch("moira.hermetic_decans.fixed_star_at", return_value=dummy) as mock_fsa:
+        with patch("moira.hermetic_decans.star_at", return_value=dummy) as mock_fsa:
             from moira.hermetic_decans import decan_star_at
             result = decan_star_at("Sothis", 2451545.0)
             mock_fsa.assert_called_once_with("Sirius", 2451545.0)
@@ -239,13 +239,13 @@ class TestDecanStarAt:
 
     def test_delegates_with_correct_star_name(self):
         dummy = _dummy_star("Hamal")
-        with patch("moira.hermetic_decans.fixed_star_at", return_value=dummy) as mock_fsa:
+        with patch("moira.hermetic_decans.star_at", return_value=dummy) as mock_fsa:
             from moira.hermetic_decans import decan_star_at
             decan_star_at("Horaios", 2451545.0)
             mock_fsa.assert_called_once_with("Hamal", 2451545.0)
 
     def test_propagates_key_error_for_missing_star(self):
-        with patch("moira.hermetic_decans.fixed_star_at", side_effect=KeyError("Sirius")):
+        with patch("moira.hermetic_decans.star_at", side_effect=KeyError("Sirius")):
             from moira.hermetic_decans import decan_star_at
             with pytest.raises(KeyError):
                 decan_star_at("Sothis", 2451545.0)

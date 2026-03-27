@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 """
-Moira — Paran Engine
+Moira ? Paran Engine
 ====================
 
 Archetype: Engine
@@ -75,56 +77,56 @@ body names resolvable by ``moira.rise_set`` and a valid geographic location.
 Public surface
 --------------
 Constants:
-  ``CIRCLE_TYPES``            — tuple of the four mundane circle names.
-  ``DEFAULT_PARAN_POLICY``    — fully permissive default backend policy.
+  ``CIRCLE_TYPES``            â€” tuple of the four mundane circle names.
+  ``DEFAULT_PARAN_POLICY``    â€” fully permissive default backend policy.
 
 Core vessels:
-  ``ParanCrossing``           — single mundane-circle crossing event.
-  ``Paran``                   — paran aspect between two bodies.
-  ``ParanSignature``          — lean geometric classification of a paran.
-  ``ParanStrength``           — exactness summary derived from orb only.
+  ``ParanCrossing``           â€” single mundane-circle crossing event.
+  ``Paran``                   â€” paran aspect between two bodies.
+  ``ParanSignature``          â€” lean geometric classification of a paran.
+  ``ParanStrength``           â€” exactness summary derived from orb only.
 
 Policy:
-  ``ParanPolicy``             — explicit backend inclusion policy.
+  ``ParanPolicy``             â€” explicit backend inclusion policy.
 
 Stability (Phase 6):
-  ``ParanStability``          — perturbation stability summary.
-  ``ParanStabilitySample``    — one perturbation sample.
-  ``evaluate_paran_stability`` — evaluate stability for a single paran.
+  ``ParanStability``          â€” perturbation stability summary.
+  ``ParanStabilitySample``    â€” one perturbation sample.
+  ``evaluate_paran_stability`` â€” evaluate stability for a single paran.
 
 Site / grid evaluation (Phase 7):
-  ``ParanSiteResult``         — result of evaluating one geographic site.
-  ``ParanFieldSample``        — one structured grid sample.
-  ``evaluate_paran_site``     — evaluate a target paran at one site.
-  ``sample_paran_field``      — sample a rectangular geographic grid.
+  ``ParanSiteResult``         â€” result of evaluating one geographic site.
+  ``ParanFieldSample``        â€” one structured grid sample.
+  ``evaluate_paran_site``     â€” evaluate a target paran at one site.
+  ``sample_paran_field``      â€” sample a rectangular geographic grid.
 
 Field analysis (Phase 8):
-  ``ParanFieldAnalysis``      — structural analysis of a sampled field.
-  ``ParanFieldRegion``        — one connected threshold-passing region.
-  ``ParanFieldPeak``          — one local maximum in a sampled field.
-  ``ParanThresholdCrossing``  — one orthogonal edge crossing the threshold.
-  ``analyze_paran_field``     — analyze a sampled field for one metric.
+  ``ParanFieldAnalysis``      â€” structural analysis of a sampled field.
+  ``ParanFieldRegion``        â€” one connected threshold-passing region.
+  ``ParanFieldPeak``          â€” one local maximum in a sampled field.
+  ``ParanThresholdCrossing``  â€” one orthogonal edge crossing the threshold.
+  ``analyze_paran_field``     â€” analyze a sampled field for one metric.
 
 Contour extraction (Phase 9):
-  ``ParanContourExtraction``  — contour fragments from a sampled field.
-  ``ParanContourSegment``     — one marching-squares contour fragment.
-  ``ParanContourPoint``       — one interpolated contour point.
-  ``extract_paran_field_contours`` — extract contour fragments.
+  ``ParanContourExtraction``  â€” contour fragments from a sampled field.
+  ``ParanContourSegment``     â€” one marching-squares contour fragment.
+  ``ParanContourPoint``       â€” one interpolated contour point.
+  ``extract_paran_field_contours`` â€” extract contour fragments.
 
 Contour consolidation (Phase 10):
-  ``ParanContourPathSet``     — consolidated stitched contour paths.
-  ``ParanContourPath``        — one ordered open or closed contour path.
-  ``consolidate_paran_contours`` — stitch fragments into ordered paths.
+  ``ParanContourPathSet``     â€” consolidated stitched contour paths.
+  ``ParanContourPath``        â€” one ordered open or closed contour path.
+  ``consolidate_paran_contours`` â€” stitch fragments into ordered paths.
 
 Higher-order field structure (Phase 11):
-  ``ParanFieldStructure``     — dominant path, hierarchy, associations.
-  ``ParanContourHierarchyEntry`` — containment-depth entry for one path.
-  ``ParanContourAssociation`` — region/peak association for one path.
-  ``analyze_paran_field_structure`` — derive structural relationships.
+  ``ParanFieldStructure``     â€” dominant path, hierarchy, associations.
+  ``ParanContourHierarchyEntry`` â€” containment-depth entry for one path.
+  ``ParanContourAssociation`` â€” region/peak association for one path.
+  ``analyze_paran_field_structure`` â€” derive structural relationships.
 
 Engine entry points:
-  ``find_parans``             — find all parans for a list of bodies on a day.
-  ``natal_parans``            — convenience wrapper for natal-day parans.
+  ``find_parans``             â€” find all parans for a list of bodies on a day.
+  ``natal_parans``            â€” convenience wrapper for natal-day parans.
 
 Architecture standard and validation codex:
   ``moira/docs/PARANS_BACKEND_STANDARD.md``
@@ -148,7 +150,7 @@ CIRCLE_TYPES = ("Rising", "Setting", "Culminating", "AntiCulminating")
 
 _SUPPORTED_METRICS = frozenset({"match_presence", "exactness_score", "survival_rate"})
 
-# Minutes → fractional JD conversion factor
+# Minutes â†’ fractional JD conversion factor
 _MINUTES_TO_JD = 1.0 / (24.0 * 60.0)
 
 
@@ -263,7 +265,7 @@ def _named_star_catalog() -> frozenset[str]:
         ``ParanSignature.body_family`` is intentionally based on Moira's local
         named-star catalog rather than a broader astronomical taxonomy. In the
         current model, a body is treated as ``"star"`` only if it resolves as a
-        named fixed star through ``moira.fixed_stars.list_stars()``. Failure to
+        named fixed star through ``moira.stars.list_stars()``. Failure to
         load that catalog does not change paran matching semantics; it only
         causes body-family classification to fall back more often to
         ``"other"``.
@@ -306,7 +308,7 @@ def _body_family_role(body: str) -> str:
 @dataclass(slots=True)
 class ParanCrossing:
     """
-    RITE: The Crossing Witness — a single moment of mundane circle passage.
+    RITE: The Crossing Witness â€” a single moment of mundane circle passage.
 
     THEOREM: Holds the body name, circle type, and Julian Day of a single
     instance where a celestial body crosses one of the four mundane circles
@@ -340,7 +342,7 @@ class ParanCrossing:
         Structural invariants:
             - ``circle`` is always one of "Rising", "Setting", "Culminating",
               "AntiCulminating".
-        Succession stance: terminal — not designed for subclassing.
+        Succession stance: terminal â€” not designed for subclassing.
 
     Canon: Brady, "Brady's Book of Fixed Stars" (1998); Ptolemy, Tetrabiblos I.
 
@@ -416,7 +418,7 @@ class ParanCrossing:
 @dataclass(slots=True)
 class ParanSignature:
     """
-    RITE: The Signature Witness — a lean geometric classification of a paran.
+    RITE: The Signature Witness â€” a lean geometric classification of a paran.
 
     THEOREM: Holds a small set of deterministic labels describing what sort of
     angular coincidence a candidate paran represents.
@@ -444,7 +446,7 @@ class ParanSignature:
 @dataclass(frozen=True, slots=True)
 class ParanPolicy:
     """
-    RITE: The Policy Witness — explicit backend doctrine for paran inclusion.
+    RITE: The Policy Witness â€” explicit backend doctrine for paran inclusion.
 
     THEOREM: Holds permissive or restrictive backend rules for admitting
     already-computed paran candidates. This layer does not redefine event
@@ -1386,7 +1388,7 @@ def analyze_paran_field(
         raise ValueError(
             f"Field samples must form a complete rectangular grid. "
             f"Expected {expected_count} unique (lat, lon) pairs "
-            f"({len(latitudes)} latitudes × {len(longitudes)} longitudes), "
+            f"({len(latitudes)} latitudes Ã— {len(longitudes)} longitudes), "
             f"got {len(sample_map)}."
         )
 
@@ -1528,7 +1530,7 @@ def extract_paran_field_contours(
         raise ValueError(
             f"Field samples must form a complete rectangular grid. "
             f"Expected {expected_count} unique (lat, lon) pairs "
-            f"({len(latitudes)} latitudes × {len(longitudes)} longitudes), "
+            f"({len(latitudes)} latitudes Ã— {len(longitudes)} longitudes), "
             f"got {len(sample_map)}."
         )
 
@@ -1692,7 +1694,7 @@ def consolidate_paran_contours(
 
 
 # ---------------------------------------------------------------------------
-# Phase 11 — higher-order field structure
+# Phase 11 â€” higher-order field structure
 # ---------------------------------------------------------------------------
 
 @dataclass(frozen=True, slots=True)
@@ -1870,7 +1872,7 @@ def analyze_paran_field_structure(
     )
 
     # ------------------------------------------------------------------ #
-    # Build a cell → region_id lookup from Phase 8
+    # Build a cell â†’ region_id lookup from Phase 8
     # ------------------------------------------------------------------ #
     cell_to_region: dict[tuple[float, float], int] = {}
     for region in field_analysis.regions:
@@ -1886,7 +1888,7 @@ def analyze_paran_field_structure(
     # checking every non-orphan segment.  The first segment whose start point
     # matches path.points[0] or path.points[1] supplies the cell origin.
     #
-    # Simpler reliable approach: build a map from (start_key, end_key) →
+    # Simpler reliable approach: build a map from (start_key, end_key) â†’
     # segment using all non-orphan segments from the original extraction.
     # However, ParanContourPathSet does not hold a back-reference to the
     # extraction.  We therefore use the orphan set complement: every segment
@@ -1901,13 +1903,13 @@ def analyze_paran_field_structure(
     # Reconstruct all contributing segments from orphan_segments complement.
     # Since we only have path points, derive cell origins by checking which
     # non-orphan segment has its start or end matching path.points[0].
-    # We need the full segment list — it is not stored on the path set.
+    # We need the full segment list â€” it is not stored on the path set.
     # Use a fallback: record cell origins from orphan_segments absence by
     # walking path points.  The cleanest approach given the current API is to
     # carry a helper that reconstructs segment origins from the path's
     # (start, end) point pairs and the full segment pool.
     #
-    # The full segment pool is NOT available here — only orphans are stored.
+    # The full segment pool is NOT available here â€” only orphans are stored.
     # We therefore derive region association from path centroid:
     # find the region whose cells are closest to the path centroid.
     # This is a documented approximation for paths that span multiple cells.
@@ -2007,7 +2009,7 @@ def analyze_paran_field_structure(
 @dataclass(slots=True)
 class Paran:
     """
-    RITE: The Paran Vessel — a simultaneous mundane circle crossing between two bodies.
+    RITE: The Paran Vessel â€” a simultaneous mundane circle crossing between two bodies.
 
     THEOREM: Holds the two body names, their respective circle types, both
     original crossing times, the time orb in minutes, and optional inspectable
@@ -2049,7 +2051,7 @@ class Paran:
               ``signature`` and do not create new semantics.
             - ``strength`` is a derived geometric summary and does not alter
               matching, filtering, or ranking semantics.
-        Succession stance: terminal — not designed for subclassing.
+        Succession stance: terminal â€” not designed for subclassing.
 
     Canon: Brady, "Brady's Book of Fixed Stars" (1998); Ptolemy, Tetrabiblos I.
 
@@ -2153,9 +2155,9 @@ class Paran:
 
     def __repr__(self) -> str:
         return (
-            f"Paran({self.body1!r} {self.circle1} ∥ "
+            f"Paran({self.body1!r} {self.circle1} âˆ¥ "
             f"{self.body2!r} {self.circle2}, "
-            f"orb={self.orb_min:.1f}′)"
+            f"orb={self.orb_min:.1f}â€²)"
         )
 
 
@@ -2205,7 +2207,7 @@ def _crossing_times(
 
     Returns
     -------
-    list[ParanCrossing] — up to four entries. Fewer are normal when the body
+    list[ParanCrossing] â€” up to four entries. Fewer are normal when the body
     lacks a rise, set, MC, or IC event in the delegated machinery for that
     day/location.
     """
@@ -2337,7 +2339,7 @@ def find_parans(
     pressure_mbar : atmospheric pressure in millibars for the refraction-
                     corrected horizon altitude computation.  Default 1013.25.
     temperature_c : air temperature in degrees Celsius for the same.
-                    Default 10.0 °C.  Non-standard weather can shift rise/set
+                    Default 10.0 Â°C.  Non-standard weather can shift rise/set
                     times by tens of seconds relative to standard atmosphere.
 
     Returns
@@ -2349,8 +2351,8 @@ def find_parans(
     The function does *not* compare a body against itself.
 
     Symmetric duplicates are naturally avoided because body pairs are generated
-    once via :func:`itertools.combinations`; therefore "Sun Rising ∥ Moon MC"
-    and "Moon MC ∥ Sun Rising" are treated as the same computational event.
+    once via :func:`itertools.combinations`; therefore "Sun Rising âˆ¥ Moon MC"
+    and "Moon MC âˆ¥ Sun Rising" are treated as the same computational event.
 
     Any missing crossing on either body side simply removes that candidate
     pairing from consideration; the engine does not synthesize substitute
@@ -2420,7 +2422,7 @@ def natal_parans(
     orb_minutes: float = 4.0,
 ) -> list[Paran]:
     """
-    Find natal parans — the parans active on the birth day.
+    Find natal parans â€” the parans active on the birth day.
 
     This is a thin wrapper around :func:`find_parans` that floors the natal
     Julian Day to the start of the birth day (00:00 UT) before searching,
@@ -2447,3 +2449,4 @@ def natal_parans(
     # floor, add 0.5 back so the window begins at 00:00 UT).
     jd_day = math.floor(natal_jd - 0.5) + 0.5
     return find_parans(bodies, jd_day, lat, lon, orb_minutes=orb_minutes)
+

@@ -1,5 +1,5 @@
-"""
-Carina Constellation Oracle — moira/constellations/stars_carina.py
+﻿"""
+Carina Constellation Oracle â€” moira/constellations/stars_carina.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,18 +9,18 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Carina.
-    - CARINA_STAR_NAMES mapping (constant → canonical name).
+    - CARINA_STAR_NAMES mapping (constant â†’ canonical name).
     - carina_star_at() dispatcher.
-    - Per-star convenience functions (canopus_at, miaplacidus_at, …).
+    - Per-star convenience functions (canopus_at, miaplacidus_at, â€¦).
     - list_carina_stars() / available_carina_stars() introspection.
 Delegates:
-    - All position computation to moira.fixed_stars.star_at.
-    - Catalog availability checks to moira.fixed_stars.list_stars.
+    - All position computation to moira.stars.star_at.
+    - Catalog availability checks to moira.stars.list_stars.
 
 Import-time side effects: None.
 
 External dependency assumptions:
-    - sefstars.txt must be present before any position query is made.
+    - moira/data/star_registry.csv and companion sovereign metadata must exist.
     - No Qt, no database, no OS threads.
 
 Public surface / exports:
@@ -29,9 +29,9 @@ Public surface / exports:
     carina_star_at() and all per-star _at() functions
     list_carina_stars(), available_carina_stars()
 
-Stars sourced from the Sovereign Star Registry via Gaia DR3.
+Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, GaiaStarPosition, list_stars
+from ..stars import star_at, StarPosition, list_stars
 
 CANOPUS           = "Canopus"
 MIAPLACIDUS       = "Miaplacidus"
@@ -80,3 +80,6 @@ def list_carina_stars() -> list[str]:
 def available_carina_stars() -> list[str]:
     catalog = set(list_stars())
     return [name for name in CARINA_STAR_NAMES.values() if name in catalog]
+
+
+

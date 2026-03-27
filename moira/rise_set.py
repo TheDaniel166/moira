@@ -1,5 +1,5 @@
-"""
-Rise and Set Engine — moira/rise_set.py
+﻿"""
+Rise and Set Engine â€” moira/rise_set.py
 
 Archetype: Engine
 Purpose: Computes rise, set, transit, anti-transit, and all twilight times
@@ -12,7 +12,7 @@ Boundary declaration:
           refinement, twilight altitude-crossing search, the TwilightTimes
           result type, and the RiseSetPolicy doctrine surface.
     Delegates: apparent planetary positions to moira.planets.planet_at;
-               fixed-star positions to moira.fixed_stars.star_at (lazy
+               fixed-star positions to moira.stars.star_at (lazy
                import at call time); nutation and obliquity to moira.obliquity;
                coordinate conversion to moira.coordinates; sidereal time to
                moira.julian.local_sidereal_time.
@@ -22,15 +22,15 @@ Import-time side effects: None
 External dependency assumptions:
     - moira.planets.planet_at accepts a body name and JD TT and returns a
       PlanetData with .longitude and .latitude fields.
-    - moira.julian.ut_to_tt is available for UT→TT conversion.
+    - moira.julian.ut_to_tt is available for UTâ†’TT conversion.
     - moira.julian.local_sidereal_time accepts (jd_ut, longitude, dpsi, eps).
 
 Public surface / exports:
-    RiseSetPolicy         — typed doctrine object controlling rise/set event definition
-    TwilightTimes         — result dataclass for all twilight events on a day
-    find_phenomena()      — rise, set, and transit dict for a body over 24 h
-    get_transit()         — precise JD of upper or lower meridian transit
-    twilight_times()      — full twilight table for a day and observer location
+    RiseSetPolicy         â€” typed doctrine object controlling rise/set event definition
+    TwilightTimes         â€” result dataclass for all twilight events on a day
+    find_phenomena()      â€” rise, set, and transit dict for a body over 24 h
+    get_transit()         â€” precise JD of upper or lower meridian transit
+    twilight_times()      â€” full twilight table for a day and observer location
 """
 
 import math
@@ -93,7 +93,7 @@ class RiseSetPolicy:
     refraction : bool
         If ``True`` (default), include atmospheric refraction in the horizon
         altitude.  Standard astronomical refraction adds approximately
-        0.5667° to the geometric horizon.  Set to ``False`` for geometric
+        0.5667Â° to the geometric horizon.  Set to ``False`` for geometric
         (refraction-free) rise/set times.  Corresponds to the absence of
         Swiss ``BIT_NO_REFRACTION``.
 
@@ -106,7 +106,7 @@ class RiseSetPolicy:
 
     Examples
     --------
-    >>> # Geometric rise/set — no refraction, disc centre
+    >>> # Geometric rise/set â€” no refraction, disc centre
     >>> policy = RiseSetPolicy(disc_reference='center', refraction=False)
     >>> from moira.rise_set import find_phenomena
     >>> events = find_phenomena('Sun', jd_start, lat, lon, policy=policy)
@@ -142,16 +142,16 @@ class RiseSetPolicy:
         if self.horizon_altitude is not None:
             return self.horizon_altitude
 
-        # Refraction contribution (standard atmospheric refraction ≈ 34 arcmin)
+        # Refraction contribution (standard atmospheric refraction â‰ˆ 34 arcmin)
         refraction_deg = 0.5667 if self.refraction else 0.0
 
         # Semi-diameter contribution
         # Sun and Moon have non-negligible angular size; stars/planets use 0.
         name_lower = body_name.lower()
         if name_lower == 'sun':
-            semi_diam_deg = 0.2667  # mean solar semi-diameter ≈ 16 arcmin
+            semi_diam_deg = 0.2667  # mean solar semi-diameter â‰ˆ 16 arcmin
         elif name_lower == 'moon':
-            semi_diam_deg = 0.2725  # mean lunar semi-diameter ≈ 16.35 arcmin
+            semi_diam_deg = 0.2725  # mean lunar semi-diameter â‰ˆ 16.35 arcmin
         else:
             semi_diam_deg = 0.0
 
@@ -289,7 +289,7 @@ def find_phenomena(
             value takes precedence over any ``policy`` setting.  When
             ``None`` (default), the altitude is derived from the ``policy``
             if given, otherwise the standard altitude for the body is used
-            (−0.8333° for Sun/Moon, −0.5667° for others).
+            (âˆ’0.8333Â° for Sun/Moon, âˆ’0.5667Â° for others).
         policy: Optional :class:`RiseSetPolicy` controlling the event
             definition doctrine (disc reference, refraction, Hindu rising,
             etc.).  When ``None``, the standard astronomical convention is
@@ -297,7 +297,7 @@ def find_phenomena(
         pressure_mbar: Atmospheric pressure in millibars used for the
             refraction-corrected altitude computation.  Default 1013.25 mbar.
         temperature_c: Air temperature in degrees Celsius used for the
-            refraction-corrected altitude computation.  Default 10.0 °C.
+            refraction-corrected altitude computation.  Default 10.0 Â°C.
 
     Returns:
         A dict with keys ``'Rise'``, ``'Set'``, ``'Transit'``, and/or
@@ -448,7 +448,7 @@ def _find_sun_altitude_crossing(
 @dataclass(slots=True)
 class TwilightTimes:
     """
-    RITE: The Keeper of Thresholds — the vessel that holds every boundary
+    RITE: The Keeper of Thresholds â€” the vessel that holds every boundary
           between darkness and light for a single day at a single place on Earth.
 
     THEOREM: Immutable record of all eight twilight and horizon events
@@ -478,7 +478,7 @@ class TwilightTimes:
             - moira.julian.datetime_from_jd for repr formatting.
         Structural invariants:
             - jd_day is the Julian Day at 00:00 UT of the day in question.
-            - All non-None JD fields are within approximately ±1 day of jd_day.
+            - All non-None JD fields are within approximately Â±1 day of jd_day.
 
     Canon: None (No applicable canon)
 
@@ -558,3 +558,4 @@ def twilight_times(
         nautical_dusk=_find_sun_altitude_crossing(jd_day, lat, lon, -12.0, "evening"),
         astronomical_dusk=_find_sun_altitude_crossing(jd_day, lat, lon, -18.0, "evening"),
     )
+

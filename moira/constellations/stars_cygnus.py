@@ -1,5 +1,5 @@
-"""
-Cygnus Constellation Oracle — moira/constellations/stars_cygnus.py
+﻿"""
+Cygnus Constellation Oracle â€” moira/constellations/stars_cygnus.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,18 +9,18 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Cygnus.
-    - CYGNUS_STAR_NAMES mapping (constant → canonical name).
+    - CYGNUS_STAR_NAMES mapping (constant â†’ canonical name).
     - cygnus_star_at() dispatcher.
     - Per-star convenience functions (deneb_at, albireo_at, sador_at).
     - list_cygnus_stars() / available_cygnus_stars() introspection.
 Delegates:
-    - All position computation to moira.fixed_stars.star_at.
-    - Catalog availability checks to moira.fixed_stars.list_stars.
+    - All position computation to moira.stars.star_at.
+    - Catalog availability checks to moira.stars.list_stars.
 
 Import-time side effects: None.
 
 External dependency assumptions:
-    - sefstars.txt must be present before any position query is made.
+    - moira/data/star_registry.csv and companion sovereign metadata must exist.
     - No Qt, no database, no OS threads.
 
 Public surface / exports:
@@ -29,9 +29,9 @@ Public surface / exports:
     cygnus_star_at() and all per-star _at() functions
     list_cygnus_stars(), available_cygnus_stars()
 
-Stars sourced from the Sovereign Star Registry via Gaia DR3.
+Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, GaiaStarPosition, list_stars
+from ..stars import star_at, StarPosition, list_stars
 
 DENEB   = "Deneb"
 ALBIREO = "Albireo"
@@ -65,3 +65,6 @@ def list_cygnus_stars() -> list[str]:
 def available_cygnus_stars() -> list[str]:
     catalog = set(list_stars())
     return [name for name in CYGNUS_STAR_NAMES.values() if name in catalog]
+
+
+

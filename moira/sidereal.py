@@ -1,5 +1,5 @@
-"""
-Moira — Sidereal Engine
+﻿"""
+Moira â€” Sidereal Engine
 ========================
 
 Archetype: Engine
@@ -19,7 +19,7 @@ Owns: ayanamsa system name constants, J2000 reference values, drift terms,
       ``NakshatraPosition`` vessels.
 Delegates: general precession to ``moira.precession``,
            nutation to ``moira.obliquity``,
-           fixed star positions to ``moira.fixed_stars``,
+           fixed star positions to ``moira.stars``,
            Julian century arithmetic to ``moira.julian``.
 
 Import-time side effects: None
@@ -27,19 +27,19 @@ Import-time side effects: None
 External dependency assumptions
 --------------------------------
 No Qt main thread required. No database access. Star-anchored ayanamsas
-require the fixed star catalog (``sefstars.txt``) to be accessible; falls
+require the fixed star catalog (``moira/data/star_registry.csv``) to be accessible; falls
 back to polynomial approximation if the catalog is absent.
 
 Public surface
 --------------
-``Ayanamsa``               — Warden of ayanamsa system name constants.
-``NakshatraPosition``      — vessel for a body's nakshatra position.
-``ayanamsa``               — compute ayanamsa value for a JD and system.
-``tropical_to_sidereal``   — convert tropical longitude to sidereal.
-``sidereal_to_tropical``   — convert sidereal longitude to tropical.
-``list_ayanamsa_systems``  — return all systems with their J2000 values.
-``nakshatra_of``           — compute nakshatra position for a longitude.
-``all_nakshatras_at``      — compute nakshatras for a full position dict.
+``Ayanamsa``               â€” Warden of ayanamsa system name constants.
+``NakshatraPosition``      â€” vessel for a body's nakshatra position.
+``ayanamsa``               â€” compute ayanamsa value for a JD and system.
+``tropical_to_sidereal``   â€” convert tropical longitude to sidereal.
+``sidereal_to_tropical``   â€” convert sidereal longitude to tropical.
+``list_ayanamsa_systems``  â€” return all systems with their J2000 values.
+``nakshatra_of``           â€” compute nakshatra position for a longitude.
+``all_nakshatras_at``      â€” compute nakshatras for a full position dict.
 """
 
 import math
@@ -62,7 +62,7 @@ __all__ = [
 ]
 
 # ---------------------------------------------------------------------------
-# User-defined ayanamsa  (Phase 3 — Defer.Doctrine; ayanamsa expansion)
+# User-defined ayanamsa  (Phase 3 â€” Defer.Doctrine; ayanamsa expansion)
 # ---------------------------------------------------------------------------
 
 @dataclass(frozen=True, slots=True)
@@ -80,7 +80,7 @@ class UserDefinedAyanamsa:
             ayan(jd) = reference_value_j2000
                        + general_precession_in_longitude(jd)
                        + drift_per_century * T
-                       [+ Δψ if mode='true']
+                       [+ Î”Ïˆ if mode='true']
 
         where ``T`` is centuries from J2000.0.  This is identical to the
         polynomial path used for all named systems; the only difference is
@@ -119,7 +119,7 @@ class UserDefinedAyanamsa:
 
 class Ayanamsa:
     """
-    RITE: The Warden of Zodiacs — the canonical namespace for ayanamsa systems.
+    RITE: The Warden of Zodiacs â€” the canonical namespace for ayanamsa systems.
 
     THEOREM: Provides string constants for all 30 supported ayanamsa system
     names and an ``ALL`` list for iteration.
@@ -141,7 +141,7 @@ class Ayanamsa:
             - None. Pure namespace class with no runtime dependencies.
         Structural invariants:
             - ``ALL`` contains exactly 30 entries in canonical order.
-        Succession stance: terminal — not designed for subclassing.
+        Succession stance: terminal â€” not designed for subclassing.
 
     Canon: Lahiri Commission (1955); Swiss Ephemeris documentation;
            Fagan & Bradley, "Primer of Sidereal Astrology" (1967).
@@ -170,7 +170,7 @@ class Ayanamsa:
         },
         "failures": {
             "raises": [],
-            "policy": "no runtime failures — pure constants"
+            "policy": "no runtime failures â€” pure constants"
         },
         "succession": {
             "stance": "terminal",
@@ -226,8 +226,8 @@ class Ayanamsa:
 
 
 # ---------------------------------------------------------------------------
-# Ayanamsa values at J2000.0 (degrees) — standard reference values
-# Annual precession ≈ 50.2388″/year = 0.013955°/year
+# Ayanamsa values at J2000.0 (degrees) â€” standard reference values
+# Annual precession â‰ˆ 50.2388â€³/year = 0.013955Â°/year
 # Each system defines its own epoch offset.
 # ---------------------------------------------------------------------------
 
@@ -282,18 +282,18 @@ _AYANAMSA_DRIFT_PER_CENTURY: dict[str, float] = {
 
 # ---------------------------------------------------------------------------
 # Star-anchored ayanamsas
-# Each entry: ayanamsa_name → (star_catalog_name, target_sidereal_longitude)
+# Each entry: ayanamsa_name â†’ (star_catalog_name, target_sidereal_longitude)
 # The ayanamsa is computed as:  star_tropical_lon - target_sidereal_lon
 # ---------------------------------------------------------------------------
 
 _STAR_ANCHORED: dict[str, tuple[str, float]] = {
-    # Chitrapaksha / True Lahiri: Spica (α Virginis / Chitra) at 180° sidereal
+    # Chitrapaksha / True Lahiri: Spica (Î± Virginis / Chitra) at 180Â° sidereal
     Ayanamsa.TRUE_CHITRAPAKSHA: ("Spica",     180.0),
-    # Revati: ζ Piscium at 0° Aries sidereal (= 359° → mod 360 = 359° or 0°)
+    # Revati: Î¶ Piscium at 0Â° Aries sidereal (= 359Â° â†’ mod 360 = 359Â° or 0Â°)
     Ayanamsa.TRUE_REVATI:       ("Revati",      0.0),
-    # Aldebaran at 15° Taurus sidereal (45°)
+    # Aldebaran at 15Â° Taurus sidereal (45Â°)
     Ayanamsa.ALDEBARAN_15_TAU:  ("Aldebaran",  45.0),
-    # Pushya-paksha: δ Cancri (Asellus Australis) at 16°40' Cancer sidereal (106.667°)
+    # Pushya-paksha: Î´ Cancri (Asellus Australis) at 16Â°40' Cancer sidereal (106.667Â°)
     Ayanamsa.TRUE_PUSHYA:       ("Asellus Australis", 106.667),
 }
 
@@ -303,10 +303,10 @@ def _star_anchored_ayanamsa(system: str, jd: float) -> float:
     Compute a star-anchored ayanamsa from the actual apparent tropical
     longitude of the anchor star.
 
-    ayanamsa = star_tropical_longitude − target_sidereal_longitude
+    ayanamsa = star_tropical_longitude âˆ’ target_sidereal_longitude
 
     Falls back to the polynomial approximation if the star is not found
-    in the fixed-star catalog (e.g. sefstars.txt not present).
+    in the fixed-star catalog (e.g. moira/data/star_registry.csv not present).
     """
     from .stars import star_at
     from .julian import ut_to_tt, decimal_year
@@ -322,7 +322,7 @@ def _star_anchored_ayanamsa(system: str, jd: float) -> float:
         star = star_at(star_name, jd_tt)
         return (star.longitude - target_sid) % 360.0
     except Exception:
-        # Star not in catalog — fall back to polynomial
+        # Star not in catalog â€” fall back to polynomial
         base = _AYANAMSA_AT_J2000[system]
         dpsi_deg, _ = nutation(jd)
         return base + general_precession_in_longitude(jd) + dpsi_deg
@@ -334,7 +334,7 @@ def ayanamsa(
     mode: str = "true",
 ) -> float:
     """
-    Compute the ayanamsa for a given Julian Day (TT or UT — difference is negligible).
+    Compute the ayanamsa for a given Julian Day (TT or UT â€” difference is negligible).
 
     Parameters
     ----------
@@ -343,9 +343,9 @@ def ayanamsa(
              instance for a caller-supplied reference value.
     mode   : "mean" (precession only; polynomial for all systems) or
              "true" (live star-anchored for systems in ``_STAR_ANCHORED``;
-             precession + nutation Δψ for all other polynomial systems).
-             Ignored for ``UserDefinedAyanamsa`` in ``mode='true'`` (Δψ still
-             applied) — star-anchored resolution is never attempted.
+             precession + nutation Î”Ïˆ for all other polynomial systems).
+             Ignored for ``UserDefinedAyanamsa`` in ``mode='true'`` (Î”Ïˆ still
+             applied) â€” star-anchored resolution is never attempted.
 
     Returns
     -------
@@ -360,7 +360,7 @@ def ayanamsa(
     path (``_AYANAMSA_AT_J2000`` + precession + optional nutation) is used
     for all other systems and as a fallback when the star catalog is absent.
 
-    Ayanamsa.LAHIRI is epoch-anchored (23°15′00.658″ at 21 Mar 1956), not
+    Ayanamsa.LAHIRI is epoch-anchored (23Â°15â€²00.658â€³ at 21 Mar 1956), not
     star-anchored, matching SE_SIDM_LAHIRI in SwissEph.
     """
     if mode not in ("mean", "true"):
@@ -437,16 +437,16 @@ def list_ayanamsa_systems() -> dict[str, float]:
 
     Returns
     -------
-    Dict mapping system name → ayanamsa at J2000.0 (degrees)
+    Dict mapping system name â†’ ayanamsa at J2000.0 (degrees)
     """
     return dict(_AYANAMSA_AT_J2000)
 
 
 # ---------------------------------------------------------------------------
-# Nakshatras — 27 Lunar Mansions
+# Nakshatras â€” 27 Lunar Mansions
 # ---------------------------------------------------------------------------
 
-NAKSHATRA_SPAN = 360.0 / 27  # 13.3333...°
+NAKSHATRA_SPAN = 360.0 / 27  # 13.3333...Â°
 
 NAKSHATRA_NAMES: list[str] = [
     "Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra",
@@ -457,24 +457,24 @@ NAKSHATRA_NAMES: list[str] = [
     "Uttara Bhadrapada", "Revati",
 ]
 
-# Lord of each nakshatra (in order) — used for Vimshottari dasha start
+# Lord of each nakshatra (in order) â€” used for Vimshottari dasha start
 NAKSHATRA_LORDS: list[str] = [
     "Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu",
-    "Jupiter", "Saturn", "Mercury",  # 1–9 (then repeats)
+    "Jupiter", "Saturn", "Mercury",  # 1â€“9 (then repeats)
     "Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu",
     "Jupiter", "Saturn", "Mercury",
     "Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu",
     "Jupiter", "Saturn", "Mercury",
 ]
 
-# 4 padas (quarters) per nakshatra, each = 3°20' = 3.3333°
+# 4 padas (quarters) per nakshatra, each = 3Â°20' = 3.3333Â°
 PADA_SPAN = NAKSHATRA_SPAN / 4
 
 
 @dataclass(slots=True)
 class NakshatraPosition:
     """
-    RITE: The Nakshatra Vessel — a body's place in the lunar mansion of the sky.
+    RITE: The Nakshatra Vessel â€” a body's place in the lunar mansion of the sky.
 
     THEOREM: Holds the nakshatra name, index, planetary lord, pada, degrees
     elapsed within the nakshatra, and full sidereal longitude for a single
@@ -499,7 +499,7 @@ class NakshatraPosition:
             - ``nakshatra_index`` is always in [0, 26].
             - ``pada`` is always in [1, 4].
             - ``degrees_in`` is always in [0, NAKSHATRA_SPAN).
-        Succession stance: terminal — not designed for subclassing.
+        Succession stance: terminal â€” not designed for subclassing.
 
     Canon: Parashara, "Brihat Parashara Hora Shastra" (classical Jyotish
            foundational text).
@@ -545,16 +545,16 @@ class NakshatraPosition:
     [/MACHINE_CONTRACT]
     """
     nakshatra:       str    # e.g. "Ashwini"
-    nakshatra_index: int    # 0–26
+    nakshatra_index: int    # 0â€“26
     nakshatra_lord:  str    # planetary lord (e.g. "Ketu")
-    pada:            int    # 1–4
-    degrees_in:      float  # degrees elapsed within the nakshatra (0–13.333)
+    pada:            int    # 1â€“4
+    degrees_in:      float  # degrees elapsed within the nakshatra (0â€“13.333)
     sidereal_lon:    float  # full sidereal longitude (degrees)
 
     def __repr__(self) -> str:
         return (f"{self.nakshatra} (lord: {self.nakshatra_lord}) "
-                f"pada {self.pada}  {self.degrees_in:.4f}° in  "
-                f"[sidereal {self.sidereal_lon:.4f}°]")
+                f"pada {self.pada}  {self.degrees_in:.4f}Â° in  "
+                f"[sidereal {self.sidereal_lon:.4f}Â°]")
 
 
 def nakshatra_of(
@@ -579,7 +579,7 @@ def nakshatra_of(
     idx = int(sid_lon / NAKSHATRA_SPAN) % 27
     degrees_in = sid_lon - idx * NAKSHATRA_SPAN
     pada = int(degrees_in / PADA_SPAN) + 1
-    # Clamp pada to [1, 4] — floating-point safety at the very boundary
+    # Clamp pada to [1, 4] â€” floating-point safety at the very boundary
     pada = min(pada, 4)
     return NakshatraPosition(
         nakshatra=NAKSHATRA_NAMES[idx],
@@ -601,15 +601,16 @@ def all_nakshatras_at(
 
     Parameters
     ----------
-    positions       : dict of body name → tropical longitude
+    positions       : dict of body name â†’ tropical longitude
     jd              : Julian Day
     ayanamsa_system : ayanamsa system
 
     Returns
     -------
-    Dict of body name → NakshatraPosition
+    Dict of body name â†’ NakshatraPosition
     """
     return {
         name: nakshatra_of(lon, jd, ayanamsa_system)
         for name, lon in positions.items()
     }
+

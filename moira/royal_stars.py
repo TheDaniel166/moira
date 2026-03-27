@@ -1,5 +1,5 @@
-"""
-Oracle of the Royal Stars — moira/royal_stars.py
+﻿"""
+Oracle of the Royal Stars â€” moira/royal_stars.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for the
@@ -9,18 +9,18 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each of the four Royal Stars.
-    - ROYAL_STAR_NAMES mapping (constant → canonical name).
-    - Per-star convenience functions (aldebaran_at, regulus_at, …).
+    - ROYAL_STAR_NAMES mapping (constant â†’ canonical name).
+    - Per-star convenience functions (aldebaran_at, regulus_at, â€¦).
     - royal_star_at() dispatcher.
     - list_royal_stars() / available_royal_stars() introspection.
 Delegates:
-    - All position computation to moira.fixed_stars.star_at.
-    - Catalog availability checks to moira.fixed_stars.list_stars.
+    - All position computation to moira.stars.star_at.
+    - Catalog availability checks to moira.stars.list_stars.
 
 Import-time side effects: None.
 
 External dependency assumptions:
-    - sefstars.txt must be present before any position query is made.
+    - moira/data/star_registry.csv must be present before any position query is made.
     - No Qt, no database, no OS threads.
 
 Public surface / exports:
@@ -31,7 +31,7 @@ Public surface / exports:
 
 The Royal Stars are the four brightest stars historically associated with
 the four cardinal directions and the four archangels in Persian astronomy.
-Stars sourced from sefstars.txt via moira.fixed_stars.
+Stars sourced from moira/data/star_registry.csv via moira.stars.
 """
 
 from .stars import star_at, StarPosition, list_stars
@@ -83,3 +83,4 @@ def available_royal_stars() -> list[str]:
     """Return names of Royal Stars available in the loaded catalog."""
     catalog = set(list_stars())
     return [name for name in ROYAL_STAR_NAMES.values() if name in catalog]
+

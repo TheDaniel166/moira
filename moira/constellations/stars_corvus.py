@@ -1,5 +1,5 @@
-"""
-Corvus Constellation Oracle — moira/constellations/stars_corvus.py
+﻿"""
+Corvus Constellation Oracle â€” moira/constellations/stars_corvus.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,18 +9,18 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Corvus.
-    - CORVUS_STAR_NAMES mapping (constant → canonical name).
+    - CORVUS_STAR_NAMES mapping (constant â†’ canonical name).
     - corvus_star_at() dispatcher.
-    - Per-star convenience functions (alchiba_at, kraz_at, …).
+    - Per-star convenience functions (alchiba_at, kraz_at, â€¦).
     - list_corvus_stars() / available_corvus_stars() introspection.
 Delegates:
-    - All position computation to moira.fixed_stars.star_at.
-    - Catalog availability checks to moira.fixed_stars.list_stars.
+    - All position computation to moira.stars.star_at.
+    - Catalog availability checks to moira.stars.list_stars.
 
 Import-time side effects: None.
 
 External dependency assumptions:
-    - sefstars.txt must be present before any position query is made.
+    - moira/data/star_registry.csv and companion sovereign metadata must exist.
     - No Qt, no database, no OS threads.
 
 Public surface / exports:
@@ -29,9 +29,9 @@ Public surface / exports:
     corvus_star_at() and all per-star _at() functions
     list_corvus_stars(), available_corvus_stars()
 
-Stars sourced from the Sovereign Star Registry via Gaia DR3.
+Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, GaiaStarPosition, list_stars
+from ..stars import star_at, StarPosition, list_stars
 
 ALCHIBA     = "Alchiba"
 KRAZ        = "Kraz"
@@ -50,7 +50,7 @@ CORVUS_STAR_NAMES = {
 }
 
 
-def corvus_star_at(name: str, jd_tt: float) -> GaiaStarPosition:
+def corvus_star_at(name: str, jd_tt: float) -> StarPosition:
     return star_at(name, jd_tt)
 
 
@@ -80,3 +80,6 @@ def list_corvus_stars() -> list[str]:
 def available_corvus_stars() -> list[str]:
     catalog = set(list_stars())
     return [name for name in CORVUS_STAR_NAMES.values() if name in catalog]
+
+
+

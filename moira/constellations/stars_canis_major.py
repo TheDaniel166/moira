@@ -1,5 +1,5 @@
-"""
-Canis Major Constellation Oracle — moira/constellations/stars_canis_major.py
+﻿"""
+Canis Major Constellation Oracle â€” moira/constellations/stars_canis_major.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,18 +9,18 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Canis Major.
-    - CANIS_MAJOR_STAR_NAMES mapping (constant → canonical name).
+    - CANIS_MAJOR_STAR_NAMES mapping (constant â†’ canonical name).
     - canis_major_star_at() dispatcher.
-    - Per-star convenience functions (sirius_at, mirzam_at, …).
+    - Per-star convenience functions (sirius_at, mirzam_at, â€¦).
     - list_canis_major_stars() / available_canis_major_stars() introspection.
 Delegates:
-    - All position computation to moira.fixed_stars.star_at.
-    - Catalog availability checks to moira.fixed_stars.list_stars.
+    - All position computation to moira.stars.star_at.
+    - Catalog availability checks to moira.stars.list_stars.
 
 Import-time side effects: None.
 
 External dependency assumptions:
-    - sefstars.txt must be present before any position query is made.
+    - moira/data/star_registry.csv and companion sovereign metadata must exist.
     - No Qt, no database, no OS threads.
 
 Public surface / exports:
@@ -29,9 +29,9 @@ Public surface / exports:
     canis_major_star_at() and all per-star _at() functions
     list_canis_major_stars(), available_canis_major_stars()
 
-Stars sourced from the Sovereign Star Registry via Gaia DR3.
+Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, GaiaStarPosition, list_stars
+from ..stars import star_at, StarPosition, list_stars
 
 SIRIUS      = "Sirius"
 MIRZAM      = "Mirzam"
@@ -90,3 +90,6 @@ def list_canis_major_stars() -> list[str]:
 def available_canis_major_stars() -> list[str]:
     catalog = set(list_stars())
     return [name for name in CANIS_MAJOR_STAR_NAMES.values() if name in catalog]
+
+
+

@@ -1,11 +1,11 @@
-"""
-Sothic Cycle Engine — moira/sothic.py
+﻿"""
+Sothic Cycle Engine â€” moira/sothic.py
 
 Archetype: Engine
 Purpose: Computes the heliacal rising of Sirius year by year, tracks its
          drift through the ancient Egyptian civil calendar, detects Sothic
          epochs (years of calendar realignment), and converts Julian Days
-         to Egyptian civil calendar dates — all anchored to the historically
+         to Egyptian civil calendar dates â€” all anchored to the historically
          confirmed 139 AD Sothic epoch of Censorinus.
 
 Boundary declaration:
@@ -13,33 +13,33 @@ Boundary declaration:
           epoch detection, drift-rate regression, and the EgyptianDate,
           SothicEntry, and SothicEpoch result types.
     Delegates: heliacal rising computation to
-               moira.fixed_stars.heliacal_rising; Julian Day arithmetic to
+               moira.stars.heliacal_rising; Julian Day arithmetic to
                moira.julian (julian_day, calendar_from_jd,
                calendar_datetime_from_jd, safe_datetime_from_jd).
 
 Import-time side effects: None
 
 External dependency assumptions:
-    - moira.fixed_stars.heliacal_rising("Sirius", jd_start, lat, lon,
+    - moira.stars.heliacal_rising("Sirius", jd_start, lat, lon,
       arcus_visionis, search_days) returns a float JD or None.
     - moira.julian.julian_day(year, month, day, hour) returns a JD float.
     - moira.julian.safe_datetime_from_jd returns None for out-of-range JDs
       rather than raising.
 
 Public surface / exports:
-    EgyptianDate              — civil calendar date in the Egyptian year
-    SothicEntry               — heliacal rising record for one year
-    SothicEpoch               — a year of Sothic calendar realignment
-    EGYPTIAN_MONTHS           — ordered list of 13 month names
-    EGYPTIAN_SEASONS          — season → month-name mapping
-    EPAGOMENAL_BIRTHS         — deities born on the 5 intercalary days
-    HISTORICAL_SOTHIC_EPOCHS  — known/inferred epoch records
-    egyptian_civil_date()     — convert JD to EgyptianDate
-    days_from_1_thoth()       — fractional days elapsed since 1 Thoth
-    sothic_rising()           — year-by-year heliacal rising table
-    sothic_epochs()           — years of Sothic calendar realignment
-    sothic_drift_rate()       — observed drift rate in days/year
-    predicted_sothic_epoch_year() — forward/backward epoch prediction
+    EgyptianDate              â€” civil calendar date in the Egyptian year
+    SothicEntry               â€” heliacal rising record for one year
+    SothicEpoch               â€” a year of Sothic calendar realignment
+    EGYPTIAN_MONTHS           â€” ordered list of 13 month names
+    EGYPTIAN_SEASONS          â€” season â†’ month-name mapping
+    EPAGOMENAL_BIRTHS         â€” deities born on the 5 intercalary days
+    HISTORICAL_SOTHIC_EPOCHS  â€” known/inferred epoch records
+    egyptian_civil_date()     â€” convert JD to EgyptianDate
+    days_from_1_thoth()       â€” fractional days elapsed since 1 Thoth
+    sothic_rising()           â€” year-by-year heliacal rising table
+    sothic_epochs()           â€” years of Sothic calendar realignment
+    sothic_drift_rate()       â€” observed drift rate in days/year
+    predicted_sothic_epoch_year() â€” forward/backward epoch prediction
 """
 
 import math
@@ -92,11 +92,11 @@ _SOTHIC_EPOCH_139_JD: float = 1772027.5
 _EGYPTIAN_YEAR_DAYS: int = 365
 
 # Sothic cycle: 1460 Julian years = 1461 Egyptian civil years = 533265 Julian days
-# Identity: 1460 × 365.25 = 533265 = 1461 × 365  (exact)
+# Identity: 1460 Ã— 365.25 = 533265 = 1461 Ã— 365  (exact)
 _SOTHIC_CYCLE_YEARS: float = 1460.0
 _SOTHIC_CYCLE_DAYS:  float = 533_265.0
 
-# Egyptian month names in order (12 × 30 days + 5 epagomenal)
+# Egyptian month names in order (12 Ã— 30 days + 5 epagomenal)
 EGYPTIAN_MONTHS: list[str] = [
     "Thoth", "Phaophi", "Athyr", "Choiak",      # Akhet (Inundation)
     "Tybi", "Mechir", "Phamenoth", "Pharmuthi",  # Peret (Emergence)
@@ -652,7 +652,7 @@ class SothicConditionNetworkProfile:
 @dataclass(slots=True)
 class EgyptianDate:
     """
-    RITE: The Wandering Day — a position in the ancient Egyptian civil
+    RITE: The Wandering Day â€” a position in the ancient Egyptian civil
           calendar that drifts freely through the seasons, untethered to
           any astronomical anchor except the Sothic epoch.
 
@@ -663,16 +663,16 @@ class EgyptianDate:
     RITE OF PURPOSE:
         EgyptianDate is the result vessel of egyptian_civil_date().  It
         translates a Julian Day into the symbolic language of the ancient
-        Egyptian year — month, season, and the mythic births of the
-        epagomenal days — so that callers can express astronomical events
+        Egyptian year â€” month, season, and the mythic births of the
+        epagomenal days â€” so that callers can express astronomical events
         in the sacred calendar without performing the modular arithmetic
         themselves.  Without this vessel, callers would receive raw
         day-of-year integers with no semantic context.
 
     LAW OF OPERATION:
         Responsibilities:
-            - Store month_name, month_number (1–13), day (1–30 or 1–5
-              for Epagomenal), season, day_of_year (1–365), and
+            - Store month_name, month_number (1â€“13), day (1â€“30 or 1â€“5
+              for Epagomenal), season, day_of_year (1â€“365), and
               epagomenal_birth (str or None).
             - Render a human-readable string (e.g. "14 Thoth (Akhet)"
               or "Epagomenal day 3 (Set)").
@@ -685,7 +685,7 @@ class EgyptianDate:
             - None beyond Python builtins.
         Structural invariants:
             - month_number is in [1, 13].
-            - day is in [1, 30] for months 1–12, [1, 5] for month 13.
+            - day is in [1, 30] for months 1â€“12, [1, 5] for month 13.
             - day_of_year is in [1, 365].
             - epagomenal_birth is non-None only when month_number == 13.
 
@@ -714,10 +714,10 @@ class EgyptianDate:
     [/MACHINE_CONTRACT]
     """
     month_name:    str    # e.g. "Thoth", "Mesore", "Epagomenal"
-    month_number:  int    # 1–13 (13 = Epagomenal)
-    day:           int    # 1–30 (1–5 for Epagomenal)
+    month_number:  int    # 1â€“13 (13 = Epagomenal)
+    day:           int    # 1â€“30 (1â€“5 for Epagomenal)
     season:        str    # "Akhet", "Peret", "Shemu", or "Epagomenal"
-    day_of_year:   int    # 1–365 in the Egyptian civil year
+    day_of_year:   int    # 1â€“365 in the Egyptian civil year
     epagomenal_birth: str | None  # birth deity if Epagomenal day, else None
     computation_truth: EgyptianCalendarTruth | None = None
     classification: EgyptianCalendarClassification | None = None
@@ -794,7 +794,7 @@ class EgyptianDate:
 @dataclass(slots=True)
 class SothicEntry:
     """
-    RITE: The Annual Witness — the record of Sirius's heliacal rising for
+    RITE: The Annual Witness â€” the record of Sirius's heliacal rising for
           a single year, marking where the sacred star stood in the
           Egyptian civil calendar and how far it had drifted from the
           New Year anchor.
@@ -807,7 +807,7 @@ class SothicEntry:
 
     RITE OF PURPOSE:
         SothicEntry is the per-year result vessel of sothic_rising().  It
-        gives callers a complete picture of each year's heliacal rising —
+        gives callers a complete picture of each year's heliacal rising â€”
         not just when it occurred, but where it fell in the sacred calendar
         and how far the cycle has progressed.  Without this vessel, the
         year-by-year table would be a list of unstructured tuples requiring
@@ -862,14 +862,14 @@ class SothicEntry:
     calendar_year:     int
     calendar_month:    int
     calendar_day:      int
-    day_of_year:       int      # Gregorian day-of-year (1–366) of the rising
+    day_of_year:       int      # Gregorian day-of-year (1â€“366) of the rising
 
     # How far the rising has drifted from the reference (1 Thoth at Memphis)
     # Positive = rising is later in the civil calendar than the anchor
     # Negative = rising is earlier
     drift_days:        float
 
-    # Position in the Sothic cycle (0–~1460), measured in days from the
+    # Position in the Sothic cycle (0â€“~1460), measured in days from the
     # most recent Sothic epoch at the reference location
     cycle_position:    float
 
@@ -967,13 +967,13 @@ class SothicEntry:
 @dataclass(slots=True)
 class SothicEpoch:
     """
-    RITE: The Great Return — the rare year when the wandering star and the
+    RITE: The Great Return â€” the rare year when the wandering star and the
           wandering calendar meet again at the threshold of the New Year,
           closing one Sothic cycle and opening the next.
 
-    THEOREM: Immutable record of a Sothic epoch year — a year in which the
+    THEOREM: Immutable record of a Sothic epoch year â€” a year in which the
              heliacal rising of Sirius falls within the configured tolerance
-             of 1 Thoth in the Egyptian civil calendar — carrying the year,
+             of 1 Thoth in the Egyptian civil calendar â€” carrying the year,
              JD of the rising, Gregorian date, and residual drift.
 
     RITE OF PURPOSE:
@@ -1165,11 +1165,11 @@ def egyptian_civil_date(
     classification = _classify_egyptian_calendar_truth(truth)
 
     # 1-indexed
-    doy = day_of_year + 1    # 1–365
+    doy = day_of_year + 1    # 1â€“365
 
     if doy <= 360:
-        month_idx = (doy - 1) // 30      # 0–11
-        day       = (doy - 1) % 30 + 1   # 1–30
+        month_idx = (doy - 1) // 30      # 0â€“11
+        day       = (doy - 1) % 30 + 1   # 1â€“30
         month_name = EGYPTIAN_MONTHS[month_idx]
         month_number = month_idx + 1
         # Season
@@ -1192,8 +1192,8 @@ def egyptian_civil_date(
             condition_profile=_build_egyptian_date_condition_profile(None),
         )
     else:
-        # Epagomenal days: doy 361–365
-        epag_day = doy - 360    # 1–5
+        # Epagomenal days: doy 361â€“365
+        epag_day = doy - 360    # 1â€“5
         birth = EPAGOMENAL_BIRTHS[epag_day - 1] if epag_day <= 5 else None
         return EgyptianDate(
             month_name="Epagomenal",
@@ -1236,7 +1236,7 @@ def sothic_rising(
     """
     Compute the heliacal rising of Sirius for each year in the given range.
 
-    This is the central function of the Sothic cycle — a year-by-year record
+    This is the central function of the Sothic cycle â€” a year-by-year record
     of when Sirius first appeared on the eastern horizon before sunrise,
     and where that moment fell in the Egyptian civil calendar.
 
@@ -1248,8 +1248,8 @@ def sothic_rising(
     year_end        : last astronomical year to compute (inclusive)
     epoch_jd        : reference Sothic epoch JD (default: 139 AD at Alexandria)
     arcus_visionis  : solar depression required for Sirius visibility (degrees).
-                      Default 10° is appropriate for Sirius (magnitude −1.46)
-                      in a clear ancient Mediterranean sky.  Increase to 11–12°
+                      Default 10Â° is appropriate for Sirius (magnitude âˆ’1.46)
+                      in a clear ancient Mediterranean sky.  Increase to 11â€“12Â°
                       for modern polluted skies.
 
     Returns
@@ -1259,7 +1259,7 @@ def sothic_rising(
 
     Notes
     -----
-    At latitudes above ~73°N, Sirius never rises; this function returns an
+    At latitudes above ~73Â°N, Sirius never rises; this function returns an
     empty list for such latitudes.
 
     The search for each year begins on January 1 (proleptic Gregorian) and
@@ -1305,7 +1305,7 @@ def sothic_rising(
         # Each ~4 years the rising drifts one day further through the calendar.
         drift = days_from_1_thoth(jd_rise, epoch_jd)
 
-        # Year within the 1460-year Sothic cycle (0.0 → 1460.0)
+        # Year within the 1460-year Sothic cycle (0.0 â†’ 1460.0)
         cycle_pos = ((jd_rise - epoch_jd) / 365.25) % _SOTHIC_CYCLE_YEARS
 
         # Egyptian date at the reference epoch's calendar
@@ -1369,7 +1369,7 @@ def sothic_epochs(
     Find years within the range where the heliacal rising of Sirius returns
     to within *tolerance_days* of the original civil New Year anchor.
 
-    These are the "Sothic epochs" — the sacred moments when the sacred star
+    These are the "Sothic epochs" â€” the sacred moments when the sacred star
     and the sacred calendar realign.
 
     Parameters
@@ -1377,8 +1377,8 @@ def sothic_epochs(
     latitude / longitude : observer location
     year_start / year_end : search range (astronomical years)
     epoch_jd       : reference anchor JD (default: 139 AD)
-    tolerance_days : how close to 1 Thoth counts as an epoch (default ±1 day)
-    arcus_visionis : solar depression required (default 10° for Sirius)
+    tolerance_days : how close to 1 Thoth counts as an epoch (default Â±1 day)
+    arcus_visionis : solar depression required (default 10Â° for Sirius)
 
     Returns
     -------
@@ -1387,7 +1387,7 @@ def sothic_epochs(
     Notes
     -----
     The Sothic cycle length (~1460 Julian years or ~1507 tropical years) means
-    a range of 2000 years will typically contain 1–2 epochs.  Use a range of
+    a range of 2000 years will typically contain 1â€“2 epochs.  Use a range of
     10,000+ years for the full historical picture.
     """
     policy = _resolve_sothic_policy(policy)
@@ -1472,7 +1472,7 @@ def sothic_drift_rate(entries: list[SothicEntry]) -> float:
 
     Parameters
     ----------
-    entries : list from sothic_rising() — must span at least 5 years
+    entries : list from sothic_rising() â€” must span at least 5 years
 
     Returns
     -------
@@ -1720,12 +1720,12 @@ def sothic_condition_network_profile(
 # Convenience: historical epochs
 # ---------------------------------------------------------------------------
 
-# Known / inferred Sothic epochs at Memphis (lat 29.8°N, lon 31.3°E)
+# Known / inferred Sothic epochs at Memphis (lat 29.8Â°N, lon 31.3Â°E)
 HISTORICAL_SOTHIC_EPOCHS: list[dict] = [
-    {"year": -2780, "note": "First Sothic Period — beginning of the Egyptian calendar (inferred)"},
-    {"year": -1320, "note": "Second Sothic Period — Ebers Papyrus (9th year of Amenhotep I, inferred)"},
-    {"year":   139, "note": "Third Sothic Period — Censorinus (confirmed, 139 AD)"},
-    {"year":  1599, "note": "Fourth Sothic Period — computed from the 139 AD epoch"},
+    {"year": -2780, "note": "First Sothic Period â€” beginning of the Egyptian calendar (inferred)"},
+    {"year": -1320, "note": "Second Sothic Period â€” Ebers Papyrus (9th year of Amenhotep I, inferred)"},
+    {"year":   139, "note": "Third Sothic Period â€” Censorinus (confirmed, 139 AD)"},
+    {"year":  1599, "note": "Fourth Sothic Period â€” computed from the 139 AD epoch"},
 ]
 
 
@@ -1734,7 +1734,7 @@ HISTORICAL_SOTHIC_EPOCHS: list[dict] = [
 # ---------------------------------------------------------------------------
 
 def _day_of_year(dt: datetime) -> int:
-    """Return the day-of-year (1–366) for a datetime."""
+    """Return the day-of-year (1â€“366) for a datetime."""
     return dt.timetuple().tm_yday
 
 
@@ -1774,3 +1774,4 @@ def _validate_sothic_arcus_visionis(arcus_visionis: float) -> None:
 def _validate_sothic_tolerance_days(tolerance_days: float) -> None:
     if not math.isfinite(tolerance_days) or tolerance_days < 0:
         raise ValueError("sothic tolerance_days must be non-negative")
+

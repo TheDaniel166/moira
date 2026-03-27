@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 
 from moira.constants import Body
-from moira.fixed_stars import fixed_star_at
+from moira.stars import star_at
 from moira.occultations import lunar_occultation, lunar_star_occultation
 
 
@@ -65,7 +65,7 @@ def test_lunar_occultations_match_offline_swiss_local_reference() -> None:
 
         if row["star"]:
             name = str(row["star"])
-            sp = fixed_star_at(name, expected_mid)
+            sp = star_at(name, expected_mid)
             events = lunar_star_occultation(
                 sp.longitude,
                 sp.latitude,

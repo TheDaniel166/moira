@@ -1,5 +1,5 @@
-"""
-Cassiopeia Constellation Oracle — moira/constellations/stars_cassiopeia.py
+﻿"""
+Cassiopeia Constellation Oracle â€” moira/constellations/stars_cassiopeia.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,18 +9,18 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Cassiopeia.
-    - CASSIOPEIA_STAR_NAMES mapping (constant → canonical name).
+    - CASSIOPEIA_STAR_NAMES mapping (constant â†’ canonical name).
     - cassiopeia_star_at() dispatcher.
-    - Per-star convenience functions (schedar_at, caph_at, …).
+    - Per-star convenience functions (schedar_at, caph_at, â€¦).
     - list_cassiopeia_stars() / available_cassiopeia_stars() introspection.
 Delegates:
-    - All position computation to moira.fixed_stars.star_at.
-    - Catalog availability checks to moira.fixed_stars.list_stars.
+    - All position computation to moira.stars.star_at.
+    - Catalog availability checks to moira.stars.list_stars.
 
 Import-time side effects: None.
 
 External dependency assumptions:
-    - sefstars.txt must be present before any position query is made.
+    - moira/data/star_registry.csv and companion sovereign metadata must exist.
     - No Qt, no database, no OS threads.
 
 Public surface / exports:
@@ -29,9 +29,9 @@ Public surface / exports:
     cassiopeia_star_at() and all per-star _at() functions
     list_cassiopeia_stars(), available_cassiopeia_stars()
 
-Stars sourced from the Sovereign Star Registry via Gaia DR3.
+Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, GaiaStarPosition, list_stars
+from ..stars import star_at, StarPosition, list_stars
 
 SCHEDAR  = "Schedar"
 CAPH     = "Caph"
@@ -95,3 +95,6 @@ def list_cassiopeia_stars() -> list[str]:
 def available_cassiopeia_stars() -> list[str]:
     catalog = set(list_stars())
     return [name for name in CASSIOPEIA_STAR_NAMES.values() if name in catalog]
+
+
+

@@ -1,5 +1,5 @@
-"""
-Oracle of the Behenian Stars — moira/behenian_stars.py
+﻿"""
+Oracle of the Behenian Stars â€” moira/behenian_stars.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for the
@@ -9,18 +9,18 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each of the 15 Behenian stars.
-    - BEHENIAN_STAR_NAMES mapping (constant → canonical name).
-    - Per-star convenience functions (algol_at, sirius_at, …).
+    - BEHENIAN_STAR_NAMES mapping (constant â†’ canonical name).
+    - Per-star convenience functions (algol_at, sirius_at, â€¦).
     - behenian_star_at() dispatcher.
     - list_behenian_stars() / available_behenian_stars() introspection.
 Delegates:
-    - All position computation to moira.fixed_stars.star_at.
-    - Catalog availability checks to moira.fixed_stars.list_stars.
+    - All position computation to moira.stars.star_at.
+    - Catalog availability checks to moira.stars.list_stars.
 
 Import-time side effects: None.
 
 External dependency assumptions:
-    - sefstars.txt must be present before any position query is made.
+    - moira/data/star_registry.csv must be present before any position query is made.
     - No Qt, no database, no OS threads.
 
 Public surface / exports:
@@ -36,7 +36,7 @@ Public surface / exports:
 The Behenian stars are a selection of fifteen stars considered especially
 useful for magical applications in medieval European and Arabic astrology
 (Cornelius Agrippa, Picatrix).
-Stars sourced from sefstars.txt via moira.fixed_stars.
+Stars sourced from moira/data/star_registry.csv via moira.stars.
 """
 
 from .stars import star_at, StarPosition, list_stars
@@ -165,3 +165,4 @@ def available_behenian_stars() -> list[str]:
     """Return names of Behenian stars available in the loaded catalog."""
     catalog = set(list_stars())
     return [name for name in BEHENIAN_STAR_NAMES.values() if name in catalog]
+

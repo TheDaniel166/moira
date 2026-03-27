@@ -1,5 +1,5 @@
-"""
-Moira — Hermetic Decan Engine
+﻿"""
+Moira â€” Hermetic Decan Engine
 ==============================
 
 Archetype: Engine
@@ -15,7 +15,7 @@ Boundary declaration
 Owns: the 36-decan name constants, ruling-star table, decan-order list,
       decan-for-longitude mapping, rising-decan computation, night-hour
       division, and the ``DecanHour`` / ``DecanHoursNight`` result vessels.
-Delegates: fixed star positions to ``moira.fixed_stars``,
+Delegates: fixed star positions to ``moira.stars``,
            mean obliquity to ``moira.obliquity``,
            SpkReader access to ``moira.spk_reader``.
 
@@ -28,15 +28,15 @@ computations require a valid ``SpkReader`` (or the module singleton).
 
 Public surface
 --------------
-``DecanHour``          — vessel for a single decan night hour.
-``DecanHoursNight``    — vessel for all 12 decan hours of a night.
-``DECAN_NAMES``        — dict of decan constant to name string (36 entries).
-``DECAN_RULING_STARS`` — dict of decan name to ruling star name (36 entries).
-``list_decans``        — return all 36 decan names in ecliptic order.
-``available_decans``   — return decans whose ruling star is in the catalog.
-``decan_for_longitude``— map a longitude to its decan name.
-``decan_at``           — return the decan rising at a given JD and location.
-``decan_hours``        — compute the 12 decan night hours for a given night.
+``DecanHour``          â€” vessel for a single decan night hour.
+``DecanHoursNight``    â€” vessel for all 12 decan hours of a night.
+``DECAN_NAMES``        â€” dict of decan constant to name string (36 entries).
+``DECAN_RULING_STARS`` â€” dict of decan name to ruling star name (36 entries).
+``list_decans``        â€” return all 36 decan names in ecliptic order.
+``available_decans``   â€” return decans whose ruling star is in the catalog.
+``decan_for_longitude``â€” map a longitude to its decan name.
+``decan_at``           â€” return the decan rising at a given JD and location.
+``decan_hours``        â€” compute the 12 decan night hours for a given night.
 """
 
 import math
@@ -88,7 +88,7 @@ TPAU_III       = "Tpau III"
 APHRUIMIS_III  = "Aphruimis III"
 
 # ---------------------------------------------------------------------------
-# DECAN_NAMES: constant → string value (36 entries)
+# DECAN_NAMES: constant â†’ string value (36 entries)
 # ---------------------------------------------------------------------------
 
 DECAN_NAMES: dict[str, str] = {
@@ -131,7 +131,7 @@ DECAN_NAMES: dict[str, str] = {
 }
 
 # ---------------------------------------------------------------------------
-# DECAN_RULING_STARS: decan name → ruling star name (36 entries)
+# DECAN_RULING_STARS: decan name â†’ ruling star name (36 entries)
 # ---------------------------------------------------------------------------
 
 DECAN_RULING_STARS: dict[str, str] = {
@@ -174,7 +174,7 @@ DECAN_RULING_STARS: dict[str, str] = {
 }
 
 # ---------------------------------------------------------------------------
-# _DECAN_ORDER: 36 decan names in tropical ecliptic order (index 0 = 0°)
+# _DECAN_ORDER: 36 decan names in tropical ecliptic order (index 0 = 0Â°)
 # ---------------------------------------------------------------------------
 
 _DECAN_ORDER: list[str] = [
@@ -192,7 +192,7 @@ _DECAN_ORDER: list[str] = [
 # ---------------------------------------------------------------------------
 
 def list_decans() -> list[str]:
-    """Return all 36 decan names in tropical ecliptic order (0°→360°)."""
+    """Return all 36 decan names in tropical ecliptic order (0Â°â†’360Â°)."""
     return list(_DECAN_ORDER)
 
 
@@ -338,7 +338,7 @@ def _refine_sunrise(
 
 
 # ---------------------------------------------------------------------------
-# Local Sidereal Time → RAMC
+# Local Sidereal Time â†’ RAMC
 # ---------------------------------------------------------------------------
 
 def _lst_to_ramc(jd: float, geo_lon: float) -> float:
@@ -420,7 +420,7 @@ def decan_at(
 @dataclass(slots=True)
 class DecanHour:
     """
-    RITE: The Hour Vessel — a single decan night hour and its ruling star.
+    RITE: The Hour Vessel â€” a single decan night hour and its ruling star.
 
     THEOREM: Holds the hour number, decan name, ruling star name, and start/end
     Julian Days for one of the 12 decan night hours.
@@ -443,7 +443,7 @@ class DecanHour:
         Structural invariants:
             - ``jd_start < jd_end`` always holds.
             - ``hour_number`` is always in [1, 12].
-        Succession stance: terminal — not designed for subclassing.
+        Succession stance: terminal â€” not designed for subclassing.
 
     Canon: Liber Hermetis (~200 AD); Firmicus Maternus, "Mathesis" (~334 AD).
 
@@ -483,7 +483,7 @@ class DecanHour:
     }
     [/MACHINE_CONTRACT]
     """
-    hour_number: int    # 1–12
+    hour_number: int    # 1â€“12
     decan:       str
     ruling_star: str
     jd_start:    float
@@ -493,7 +493,7 @@ class DecanHour:
 @dataclass(slots=True)
 class DecanHoursNight:
     """
-    RITE: The Night Vessel — all 12 decan hours of a single night.
+    RITE: The Night Vessel â€” all 12 decan hours of a single night.
 
     THEOREM: Holds the sunset and next-sunrise Julian Days, observer location,
     and the ordered list of 12 ``DecanHour`` instances dividing the night.
@@ -519,7 +519,7 @@ class DecanHoursNight:
         Structural invariants:
             - ``sunset_jd < next_sunrise_jd`` always holds.
             - ``hours`` always contains exactly 12 entries.
-        Succession stance: terminal — not designed for subclassing.
+        Succession stance: terminal â€” not designed for subclassing.
 
     Canon: Liber Hermetis (~200 AD); Firmicus Maternus, "Mathesis" (~334 AD).
 
@@ -593,7 +593,7 @@ def decan_hours(
 
     Parameters
     ----------
-    jd     : Julian Day (UT) — any time during the target day/night
+    jd     : Julian Day (UT) â€” any time during the target day/night
     lat    : geographic latitude in degrees (positive north)
     lon    : geographic longitude in degrees (positive east)
     reader : SpkReader instance (falls back to get_reader() if None)
@@ -617,7 +617,7 @@ def decan_hours(
     jd_nr_approx, _ = _sunrise_sunset(jd_next_noon, lat, lon, reader)
     jd_next_sunrise = _refine_sunrise(jd_nr_approx, lat, lon, reader, is_rise=True)
 
-    # Decan rising at sunset → starting index
+    # Decan rising at sunset â†’ starting index
     start_decan_name = decan_at(jd_sunset, lat, lon, reader)
     start_decan_idx = decan_index(start_decan_name)
 
@@ -796,3 +796,4 @@ def tpau_iii_star_at(jd: float) -> StarPosition:
 def aphruimis_iii_star_at(jd: float) -> StarPosition:
     """Return the StarPosition of Aphruimis III's ruling star at jd."""
     return decan_star_at(APHRUIMIS_III, jd)
+

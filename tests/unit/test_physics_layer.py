@@ -605,7 +605,7 @@ def test_pbt_true_node_matrix_vs_scalar(jd):
 # Tasks 11.1–11.3 — Fixed Star Golden Baselines and Snapshot
 # ===========================================================================
 
-from moira.fixed_stars import fixed_star_at, all_stars_at
+from moira.stars import star_at, all_stars_at
 
 
 # ---------------------------------------------------------------------------
@@ -618,7 +618,7 @@ def test_algol_golden(golden):
     Create/verify a golden baseline for Algol's tropical longitude at J2000.0.
     Run with ISOPGEM_GOLDEN_UPDATE=1 to create the baseline file.
     """
-    pos = fixed_star_at("Algol", 2451545.0)
+    pos = star_at("Algol", 2451545.0)
     golden("algol_j2000_longitude", round(pos.longitude, 6))
 
 
@@ -634,7 +634,7 @@ def test_bright_star_golden(golden, star_name):
     is within 1 arcsecond of the stored golden value.
     Run with ISOPGEM_GOLDEN_UPDATE=1 to create/update the baseline files.
     """
-    pos = fixed_star_at(star_name, 2451545.0)
+    pos = star_at(star_name, 2451545.0)
     stored = golden(f"star_{star_name.lower()}_j2000_longitude", round(pos.longitude, 6))
 
 

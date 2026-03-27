@@ -24,7 +24,7 @@ from moira.sidereal import (
     NAKSHATRA_NAMES, NAKSHATRA_LORDS, NAKSHATRA_SPAN, PADA_SPAN,
     _STAR_ANCHORED, _AYANAMSA_AT_J2000,
 )
-from moira.fixed_stars import fixed_star_at
+from moira.stars import star_at
 
 J2000 = 2451545.0  # JD of 2000 Jan 1.5 TT
 J1956 = 2435553.5  # JD of 1956 Mar 21 0:00 TT (Lahiri anchor date)
@@ -111,7 +111,7 @@ class TestStarAnchoredAyanamsa:
     def test_true_chitrapaksha_spica_at_exactly_180(self):
         for jd in [J1956, J2000, J2020]:
             ayan = ayanamsa(jd, Ayanamsa.TRUE_CHITRAPAKSHA, "true")
-            spica = fixed_star_at("Spica", jd)
+            spica = star_at("Spica", jd)
             sidereal_lon = (spica.longitude - ayan) % 360.0
             assert abs(sidereal_lon - 180.0) < 0.001, (
                 f"At JD {jd}: Spica sidereal = {sidereal_lon:.6f}, expected 180.000"
@@ -131,7 +131,7 @@ class TestStarAnchoredAyanamsa:
     def test_true_revati_star_anchored(self):
         ayan = ayanamsa(J2000, Ayanamsa.TRUE_REVATI, "true")
         star_name, target_sid = _STAR_ANCHORED[Ayanamsa.TRUE_REVATI]
-        star = fixed_star_at(star_name, J2000)
+        star = star_at(star_name, J2000)
         sidereal_lon = (star.longitude - ayan) % 360.0
         expected = target_sid % 360.0
         diff = min(abs(sidereal_lon - expected), 360.0 - abs(sidereal_lon - expected))
@@ -142,7 +142,7 @@ class TestStarAnchoredAyanamsa:
     def test_aldebaran_star_anchored(self):
         ayan = ayanamsa(J2000, Ayanamsa.ALDEBARAN_15_TAU, "true")
         star_name, target_sid = _STAR_ANCHORED[Ayanamsa.ALDEBARAN_15_TAU]
-        star = fixed_star_at(star_name, J2000)
+        star = star_at(star_name, J2000)
         sidereal_lon = (star.longitude - ayan) % 360.0
         assert abs(sidereal_lon - target_sid) < 0.001, (
             f"ALDEBARAN: sidereal = {sidereal_lon:.6f}, expected {target_sid}"
@@ -151,7 +151,7 @@ class TestStarAnchoredAyanamsa:
     def test_true_pushya_star_anchored(self):
         ayan = ayanamsa(J2000, Ayanamsa.TRUE_PUSHYA, "true")
         star_name, target_sid = _STAR_ANCHORED[Ayanamsa.TRUE_PUSHYA]
-        star = fixed_star_at(star_name, J2000)
+        star = star_at(star_name, J2000)
         sidereal_lon = (star.longitude - ayan) % 360.0
         assert abs(sidereal_lon - target_sid) < 0.001, (
             f"TRUE_PUSHYA: sidereal = {sidereal_lon:.6f}, expected {target_sid}"

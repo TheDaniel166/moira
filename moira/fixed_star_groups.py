@@ -1,5 +1,5 @@
-"""
-Oracle of Star Groups — moira/fixed_star_groups.py
+﻿"""
+Oracle of Star Groups â€” moira/fixed_star_groups.py
 
 Archetype: Oracle
 Purpose: Provides named constants, group tuples, and per-star position
@@ -11,19 +11,19 @@ Boundary declaration
 Owns:
     - Named string constants for ~50 individual fixed stars.
     - Group tuples: PLEIADES, HYADES, PTOLEMY_STARS.
-    - FIXED_STAR_NAMES master mapping (constant → canonical name).
-    - Per-star convenience functions (algol_at, sirius_at, vega_at, …).
+    - FIXED_STAR_NAMES master mapping (constant â†’ canonical name).
+    - Per-star convenience functions (algol_at, sirius_at, vega_at, â€¦).
     - fixed_star_group_at() dispatcher.
     - list_fixed_stars(), available_fixed_stars() and per-group introspection
       (list_pleiades, list_hyades, list_ptolemy_stars, available_* variants).
 Delegates:
-    - All position computation to moira.fixed_stars.star_at.
-    - Catalog availability checks to moira.fixed_stars.list_stars.
+    - All position computation to moira.stars.star_at.
+    - Catalog availability checks to moira.stars.list_stars.
 
 Import-time side effects: None.
 
 External dependency assumptions:
-    - sefstars.txt must be present before any position query is made.
+    - moira/data/star_registry.csv must be present before any position query is made.
     - No Qt, no database, no OS threads.
 
 Public surface / exports:
@@ -43,7 +43,7 @@ Public surface / exports:
     list_pleiades(), list_hyades(), list_ptolemy_stars()
     available_pleiades(), available_hyades(), available_ptolemy_stars()
 
-Stars sourced from sefstars.txt via moira.fixed_stars.
+Stars sourced from moira/data/star_registry.csv via moira.stars.
 """
 
 from .stars import star_at as star_at, list_named_stars as list_stars, FixedStar as StarPosition
@@ -476,3 +476,4 @@ def available_ptolemy_stars() -> list[str]:
     """Return Ptolemy star names available in the loaded catalog."""
     catalog = set(list_stars())
     return [name for name in PTOLEMY_STARS if name in catalog]
+

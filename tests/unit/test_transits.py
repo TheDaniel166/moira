@@ -6,7 +6,7 @@ from dataclasses import replace
 import pytest
 
 from moira.constants import Body
-from moira.fixed_stars import fixed_star_at
+from moira.stars import star_at
 from moira.julian import jd_from_datetime, ut_to_tt
 from moira.nodes import true_node
 from moira.planets import planet_at
@@ -187,7 +187,7 @@ def test_next_transit_supports_fixed_star_targets() -> None:
 
     assert event is not None
     assert event.body == Body.VENUS
-    target_lon = fixed_star_at("Sirius", ut_to_tt(event.jd_ut)).longitude
+    target_lon = star_at("Sirius", ut_to_tt(event.jd_ut)).longitude
     assert _angle_diff(planet_at(Body.VENUS, event.jd_ut).longitude, target_lon) < 1e-3
     assert event.computation_truth is not None
     assert event.computation_truth.target_truth.resolved_kind == "fixed_star"

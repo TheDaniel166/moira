@@ -1,5 +1,5 @@
-"""
-Orion Constellation Oracle — moira/constellations/stars_orion.py
+﻿"""
+Orion Constellation Oracle â€” moira/constellations/stars_orion.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,18 +9,18 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Orion.
-    - ORION_STAR_NAMES mapping (constant → canonical name).
+    - ORION_STAR_NAMES mapping (constant â†’ canonical name).
     - orion_star_at() dispatcher.
-    - Per-star convenience functions (betelgeuse_at, rigel_at, …).
+    - Per-star convenience functions (betelgeuse_at, rigel_at, â€¦).
     - list_orion_stars() / available_orion_stars() introspection.
 Delegates:
-    - All position computation to moira.fixed_stars.star_at.
-    - Catalog availability checks to moira.fixed_stars.list_stars.
+    - All position computation to moira.stars.star_at.
+    - Catalog availability checks to moira.stars.list_stars.
 
 Import-time side effects: None.
 
 External dependency assumptions:
-    - sefstars.txt must be present before any position query is made.
+    - moira/data/star_registry.csv and companion sovereign metadata must exist.
     - No Qt, no database, no OS threads.
 
 Public surface / exports:
@@ -30,9 +30,9 @@ Public surface / exports:
     orion_star_at() and all per-star _at() functions
     list_orion_stars(), available_orion_stars()
 
-Stars sourced from the Sovereign Star Registry via Gaia DR3.
+Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, GaiaStarPosition, list_stars
+from ..stars import star_at, StarPosition, list_stars
 
 BETELGEUSE = "Betelgeuse"
 RIGEL      = "Rigel"
@@ -111,3 +111,6 @@ def list_orion_stars() -> list[str]:
 def available_orion_stars() -> list[str]:
     catalog = set(list_stars())
     return [name for name in ORION_STAR_NAMES.values() if name in catalog]
+
+
+

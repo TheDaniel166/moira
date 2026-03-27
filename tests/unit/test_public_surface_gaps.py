@@ -15,7 +15,7 @@ Each group tests:
 """
 
 import moira
-import moira.fixed_stars as _fs
+import moira.stars as _fs
 import moira.dignities as _dig
 import moira.varga as _varga
 import pytest
