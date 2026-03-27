@@ -14,7 +14,7 @@ Owns:
     - Per-star convenience functions (deneb_at, albireo_at, sador_at).
     - list_cygnus_stars() / available_cygnus_stars() introspection.
 Delegates:
-    - All position computation to moira.fixed_stars.fixed_star_at.
+    - All position computation to moira.fixed_stars.star_at.
     - Catalog availability checks to moira.fixed_stars.list_stars.
 
 Import-time side effects: None.
@@ -29,9 +29,9 @@ Public surface / exports:
     cygnus_star_at() and all per-star _at() functions
     list_cygnus_stars(), available_cygnus_stars()
 
-Stars sourced from sefstars.txt via moira.fixed_stars.
+Stars sourced from the Sovereign Star Registry via Gaia DR3.
 """
-from ..fixed_stars import fixed_star_at, StarPosition, list_stars
+from ..stars import star_at, GaiaStarPosition, list_stars
 
 DENEB   = "Deneb"
 ALBIREO = "Albireo"
@@ -45,7 +45,7 @@ CYGNUS_STAR_NAMES = {
 
 
 def cygnus_star_at(name: str, jd_tt: float) -> StarPosition:
-    return fixed_star_at(name, jd_tt)
+    return star_at(name, jd_tt)
 
 
 def deneb_at(jd_tt: float) -> StarPosition:

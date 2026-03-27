@@ -14,7 +14,7 @@ Owns:
     - Per-star convenience functions (alphard_at, cauda_hydrae_at, …).
     - list_hydra_stars() / available_hydra_stars() introspection.
 Delegates:
-    - All position computation to moira.fixed_stars.fixed_star_at.
+    - All position computation to moira.fixed_stars.star_at.
     - Catalog availability checks to moira.fixed_stars.list_stars.
 
 Import-time side effects: None.
@@ -30,9 +30,9 @@ Public surface / exports:
     hydra_star_at() and all per-star _at() functions
     list_hydra_stars(), available_hydra_stars()
 
-Stars sourced from sefstars.txt via moira.fixed_stars.
+Stars sourced from the Sovereign Star Registry via Gaia DR3.
 """
-from ..fixed_stars import fixed_star_at, StarPosition, list_stars
+from ..stars import star_at, GaiaStarPosition, list_stars
 
 ALPHARD             = "Alphard"
 CAUDA_HYDRAE        = "Cauda Hydrae"
@@ -60,7 +60,7 @@ HYDRA_STAR_NAMES = {
 
 
 def hydra_star_at(name: str, jd_tt: float) -> StarPosition:
-    return fixed_star_at(name, jd_tt)
+    return star_at(name, jd_tt)
 
 
 def alphard_at(jd_tt: float) -> StarPosition:

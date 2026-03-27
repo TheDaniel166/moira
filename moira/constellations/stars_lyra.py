@@ -14,7 +14,7 @@ Owns:
     - Per-star convenience functions (vega_at, sheliak_at, …).
     - list_lyra_stars() / available_lyra_stars() introspection.
 Delegates:
-    - All position computation to moira.fixed_stars.fixed_star_at.
+    - All position computation to moira.fixed_stars.star_at.
     - Catalog availability checks to moira.fixed_stars.list_stars.
 
 Import-time side effects: None.
@@ -29,9 +29,9 @@ Public surface / exports:
     lyra_star_at() and all per-star _at() functions
     list_lyra_stars(), available_lyra_stars()
 
-Stars sourced from sefstars.txt via moira.fixed_stars.
+Stars sourced from the Sovereign Star Registry via Gaia DR3.
 """
-from ..fixed_stars import fixed_star_at, StarPosition, list_stars
+from ..stars import star_at, GaiaStarPosition, list_stars
 
 VEGA     = "Vega"
 SHELIAK  = "Sheliak"
@@ -49,7 +49,7 @@ LYRA_STAR_NAMES = {
 
 
 def lyra_star_at(name: str, jd_tt: float) -> StarPosition:
-    return fixed_star_at(name, jd_tt)
+    return star_at(name, jd_tt)
 
 
 def vega_at(jd_tt: float) -> StarPosition:

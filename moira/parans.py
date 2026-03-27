@@ -269,7 +269,7 @@ def _named_star_catalog() -> frozenset[str]:
         ``"other"``.
     """
     try:
-        from .fixed_stars import list_stars
+        from .stars import list_stars
         return frozenset(list_stars())
     except Exception:
         return frozenset()

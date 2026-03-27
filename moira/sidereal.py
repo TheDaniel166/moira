@@ -308,18 +308,18 @@ def _star_anchored_ayanamsa(system: str, jd: float) -> float:
     Falls back to the polynomial approximation if the star is not found
     in the fixed-star catalog (e.g. sefstars.txt not present).
     """
-    from .fixed_stars import fixed_star_at
+    from .stars import star_at
     from .julian import ut_to_tt, decimal_year
     from .planets import _approx_year
 
     star_name, target_sid = _STAR_ANCHORED[system]
 
     try:
-        # fixed_star_at expects JD in TT; difference from UT is ~1 min, negligible
+        # star_at expects JD in TT; difference from UT is ~1 min, negligible
         # for proper motion but we compute it correctly anyway
         year, month, *_ = _approx_year(jd)
         jd_tt = ut_to_tt(jd, decimal_year(year, month))
-        star = fixed_star_at(star_name, jd_tt)
+        star = star_at(star_name, jd_tt)
         return (star.longitude - target_sid) % 360.0
     except Exception:
         # Star not in catalog — fall back to polynomial

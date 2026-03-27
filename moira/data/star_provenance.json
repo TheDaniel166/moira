@@ -1,0 +1,3236 @@
+{
+  "Krios": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HD 240429)",
+    "resolution_notes": "Adopted 3/22/2026"
+  },
+  "Kronos": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HD 240430)",
+    "resolution_notes": "Adopted 3/22/2026"
+  },
+  "Pherkad Minor": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 74793)",
+    "resolution_notes": "Adopted 3/22/2026"
+  },
+  "Ping": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 23685)",
+    "resolution_notes": "Adopted 3/22/2026"
+  },
+  "Bade": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 24305)",
+    "resolution_notes": "Adopted 3/22/2026"
+  },
+  "Darlugal": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 27288)",
+    "resolution_notes": "Adopted 3/22/2026"
+  },
+  "Gaja": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 21881)",
+    "resolution_notes": "Adopted 2/22/2026"
+  },
+  "Naga": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 64962)",
+    "resolution_notes": "Adopted 2/22/2026"
+  },
+  "Yuyu": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 43103)",
+    "resolution_notes": "Adopted 2/22/2026"
+  },
+  "Lumbung": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 61966)",
+    "resolution_notes": "Adopted 2/22/2026"
+  },
+  "Tonglingxing": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 33694)",
+    "resolution_notes": "Adopted 2/22/2026"
+  },
+  "Shangwei": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 29997)",
+    "resolution_notes": "Adopted 12/25/2025"
+  },
+  "Shangcheng": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 14862)",
+    "resolution_notes": "Adopted 12/25/2025"
+  },
+  "Shaowei": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 17959)",
+    "resolution_notes": "Adopted 12/25/2025"
+  },
+  "Kamelos": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 31940)",
+    "resolution_notes": "Adopted 12/25/2025"
+  },
+  "Custos": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 17884)",
+    "resolution_notes": "Adopted 12/25/2025"
+  },
+  "Huagai": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 11569)",
+    "resolution_notes": "Adopted 12/25/2025"
+  },
+  "Gang": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 9598)",
+    "resolution_notes": "Adopted 12/25/2025"
+  },
+  "Rangifer": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 9763)",
+    "resolution_notes": "Adopted 12/25/2025"
+  },
+  "Tarandus": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 5372)",
+    "resolution_notes": "Adopted 12/25/2025"
+  },
+  "Sarvvis": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 17358)",
+    "resolution_notes": "Adopted 12/25/2025"
+  },
+  "Áldu": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 18532)",
+    "resolution_notes": "Adopted 12/25/2025"
+  },
+  "Cexing": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 2599)",
+    "resolution_notes": "Adopted 11/13/2025"
+  },
+  "Tiansi": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 4427)",
+    "resolution_notes": "Adopted 11/13/2025"
+  },
+  "Bagu": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 28358)",
+    "resolution_notes": "Adopted 11/13/2025"
+  },
+  "Apdu": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 10670)",
+    "resolution_notes": "Adopted 11/13/2025"
+  },
+  "Alaybasan": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 10064)",
+    "resolution_notes": "Adopted 11/7/2025"
+  },
+  "Shengong": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 83100)",
+    "resolution_notes": "Adopted 10/16/2025"
+  },
+  "Apamvatsa": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 66006)",
+    "resolution_notes": "Adopted 10/16/2025"
+  },
+  "Blaze Star": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 78322)",
+    "resolution_notes": "Adopted 9/22/2025"
+  },
+  "Shatabhisha": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 112961)",
+    "resolution_notes": "Adopted 9/22/2025"
+  },
+  "Junnanmen": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 5434)",
+    "resolution_notes": "Adopted 8/25/2025"
+  },
+  "Dajiangjunbei": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 8068)",
+    "resolution_notes": "Adopted 8/25/2025"
+  },
+  "Hydor": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 301)",
+    "resolution_notes": "Adopted 8/25/2025"
+  },
+  "Triminus": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 10280)",
+    "resolution_notes": "Adopted 8/25/2025"
+  },
+  "Deltoton": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 10644)",
+    "resolution_notes": "Adopted 6/17/2025"
+  },
+  "Ramus": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 88886)",
+    "resolution_notes": "Adopted 6/17/2025"
+  },
+  "Tusizuo": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 90139)",
+    "resolution_notes": "Adopted 6/17/2025"
+  },
+  "Paradys": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 72370)",
+    "resolution_notes": "Adopted 5/18/2025"
+  },
+  "Honores": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 114570)",
+    "resolution_notes": "Adopted 5/14/2025"
+  },
+  "Alfarasalkamil": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 113726)",
+    "resolution_notes": "Adopted 5/8/2025"
+  },
+  "Kaffalmusalsala": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 116805)",
+    "resolution_notes": "Adopted 5/8/2025"
+  },
+  "Rasalnaqa": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 116631)",
+    "resolution_notes": "Adopted 5/8/2025"
+  },
+  "Udkadua": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 116584)",
+    "resolution_notes": "Adopted 5/8/2025"
+  },
+  "Kui": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 4463)",
+    "resolution_notes": "Adopted 4/6/2025"
+  },
+  "Heng": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 67464)",
+    "resolution_notes": "Adopted 3/16/2025"
+  },
+  "Shimu": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 3693)",
+    "resolution_notes": "Adopted 3/16/2025"
+  },
+  "Kulou": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 65109)",
+    "resolution_notes": "Adopted 2/17/2025"
+  },
+  "Quadrans": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 73695)",
+    "resolution_notes": "Adopted 2/17/2025"
+  },
+  "Hoerikwaggo": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 29271)",
+    "resolution_notes": "Adopted 12/12/2024"
+  },
+  "Safina": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 114341)",
+    "resolution_notes": "Adopted 12/12/2024"
+  },
+  "Xami": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 71908)",
+    "resolution_notes": "Adopted 12/12/2024"
+  },
+  "Zhou": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 77233)",
+    "resolution_notes": "Adopted 12/5/2024"
+  },
+  "Solitaire": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 72571)",
+    "resolution_notes": "Adopted 10/31/2024"
+  },
+  "Garnet Star": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 107259)",
+    "resolution_notes": "Adopted 9/19/2024"
+  },
+  "Lang-Exster": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 110130)",
+    "resolution_notes": "Adopted 9/19/2024"
+  },
+  "Rhombus": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 19780)",
+    "resolution_notes": "Adopted 9/19/2024"
+  },
+  "Tengshe": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 113288)",
+    "resolution_notes": "Adopted 9/19/2024"
+  },
+  "Uridim": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 71860)",
+    "resolution_notes": "Adopted 9/12/2024"
+  },
+  "Stellio": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 111169)",
+    "resolution_notes": "Adopted 8/29/2024"
+  },
+  "Pipit": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 31685)",
+    "resolution_notes": "Adopted 8/25/2024"
+  },
+  "Bake-eo": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 87108)",
+    "resolution_notes": "Adopted 8/20/2024"
+  },
+  "Leepwal": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 68002)",
+    "resolution_notes": "Adopted 7/18/2024"
+  },
+  "Shaomin": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 51624)",
+    "resolution_notes": "Adopted 7/18/2024"
+  },
+  "Yunü": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 49637)",
+    "resolution_notes": "Adopted 7/18/2024"
+  },
+  "Antinous": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 99473)",
+    "resolution_notes": "Adopted 6/6/2024"
+  },
+  "Phyllon Kissinou": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 61394)",
+    "resolution_notes": "Adopted 5/16/2024"
+  },
+  "Tianfu": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 98823)",
+    "resolution_notes": "Adopted 5/16/2024"
+  },
+  "Aiolos": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 53524)",
+    "resolution_notes": "Adopted 8/1/2023"
+  },
+  "Añañuca": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 47780)",
+    "resolution_notes": "Adopted 8/1/2023"
+  },
+  "Bats??": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (LHS 3844)",
+    "resolution_notes": "Adopted 8/1/2023"
+  },
+  "Danfeng": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 115211)",
+    "resolution_notes": "Adopted 8/1/2023"
+  },
+  "Dilmun": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-121)",
+    "resolution_notes": "Adopted 8/1/2023"
+  },
+  "Filetdor": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-166)",
+    "resolution_notes": "Adopted 8/1/2023"
+  },
+  "Gar": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 62452)",
+    "resolution_notes": "Adopted 8/1/2023"
+  },
+  "Gnomon": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-43)",
+    "resolution_notes": "Adopted 8/1/2023"
+  },
+  "Guahayona": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HAT-P-26)",
+    "resolution_notes": "Adopted 8/1/2023"
+  },
+  "Kaewkosin": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (GJ 3470)",
+    "resolution_notes": "Adopted 8/1/2023"
+  },
+  "Komondor": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HAT-P-12)",
+    "resolution_notes": "Adopted 8/1/2023"
+  },
+  "Kosjenka": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-63)",
+    "resolution_notes": "Adopted 8/1/2023"
+  },
+  "Maru": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WD 0806-661)",
+    "resolution_notes": "Adopted 8/1/2023"
+  },
+  "Matza": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 65426)",
+    "resolution_notes": "Adopted 8/1/2023"
+  },
+  "Noquisi": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 57087)",
+    "resolution_notes": "Adopted 8/1/2023"
+  },
+  "Orkaria": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (GJ 1214)",
+    "resolution_notes": "Adopted 8/1/2023"
+  },
+  "Uúba": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 117883)",
+    "resolution_notes": "Adopted 8/1/2023"
+  },
+  "Wattle": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-19)",
+    "resolution_notes": "Adopted 8/1/2023"
+  },
+  "Wouri": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-69)",
+    "resolution_notes": "Adopted 8/1/2023"
+  },
+  "Zembra": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HATS-72)",
+    "resolution_notes": "Adopted 8/1/2023"
+  },
+  "Rana": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 17378)",
+    "resolution_notes": "Adopted 4/4/2022"
+  },
+  "Mazaalai": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HAT-P-21)",
+    "resolution_notes": "Adopted 2/24/2020"
+  },
+  "Absolutno": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (XO-5)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Alasia": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 90004)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Amadioha": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 29550)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Amansinaya": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-34)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Anadolu": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-52)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Aniara": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 57820)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Arcalís": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 72845)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Atakoraka": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-64)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Axólotl": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 118319)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Ayeyarwady": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 13993)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Baekdu": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 73136)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Belel": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 95124)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Bélénos": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 6643)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Berehynia": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HAT-P-15)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Bibh?": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 48711)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Bosona": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 107251)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Bubup": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 26380)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Buna": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 12191)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Ceibo": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 37284)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Chaophraya": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-50)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Chaso?": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HAT-P-5)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Chechia": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 99894)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Citadelle": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 1547)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Citalá": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 33719)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Cocibolca": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 3479)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Dingolay": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 54158)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Dìwö": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-17)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Diya": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-72)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Dofida": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 66047)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Dombay": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HAT-P-3)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Ebla": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 114322)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Emiw": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 5529)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Felixvarela": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 2247)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Flegetonte": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 57370)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Formosa": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 56508)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Franz": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HAT-P-14)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Funi": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 61177)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Gakyid": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 42446)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Gloas": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-13)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Gumala": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 94645)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Hoggar": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 21109)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Horna": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HAT-P-38)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Hunahpú": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 55174)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Hunor": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 80076)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Illyrian": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 47087)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Inquill": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 84787)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Intan": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 15578)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Irena": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-38)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Itonda": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 108375)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Jishui": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 37265)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Kalausi": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 47202)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Kamuy": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 79219)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Karaka": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 76351)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Kaveh": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 92895)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Koeia": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 12961)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Koit": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (XO-4)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Lerna": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HAT-P-42)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Liesma": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 66192)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Lionrock": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 110813)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Lucilinburhuc": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 30860)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Lusitânia": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 30905)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Macondo": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 52521)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Mago": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 24003)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Mahsati": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 82651)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Malmok": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-39)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Márohu": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-6)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Moldoveanu": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (XO-1)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Mönch": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 72339)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Montuno": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-79)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Morava": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-60)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Moriah": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HAT-P-23)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Mouhoun": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 22491)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Mpingo": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-71)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Muspelheim": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HAT-P-29)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Naledi": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-62)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Násti": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 40687)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Natasha": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 48235)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Nenque": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 5054)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Nervia": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 32916)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Nikawiy": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 74961)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Nosaxa": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 31895)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Nushagak": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 13192)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Nyamien": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-15)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Parumleo": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-32)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Petra": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-80)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Phoenicia": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 99711)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Pincoya": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 88414)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Pipoltr": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (TrES-3 Parent Star)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Poerava": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 116084)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Rapeto": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 83547)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Rosalíadecastro": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 81022)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Sagarmatha": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 56572)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "S?maya": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 106824)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Sansuna": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HAT-P-34)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Shama": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 55664)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Sharjah": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 79431)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Sika": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 95262)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Solaris": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 104780)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Sterrennacht": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HAT-P-6)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Stribor": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 43674)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Taika": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HAT-P-40)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Tangra": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-21)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Tapecue": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 38041)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Tevel": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HAT-P-9)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Timir": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 80687)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Tislit": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-161)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Tojil": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (WASP-22)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Tuiren": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HAT-P-36)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Tupã": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 60644)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Tupi": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 17096)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Uklun": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 57291)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Uruk": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 96078)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Xihe": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 91852)",
+    "resolution_notes": "Adopted 12/17/2019"
+  },
+  "Gudja": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 77450)",
+    "resolution_notes": "Adopted 8/10/2018"
+  },
+  "Guniibuu": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 84405)",
+    "resolution_notes": "Adopted 8/10/2018"
+  },
+  "Imai": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 59747)",
+    "resolution_notes": "Adopted 8/10/2018"
+  },
+  "La Superba": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 62223)",
+    "resolution_notes": "Adopted 8/10/2018"
+  },
+  "Paikauhale": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 81266)",
+    "resolution_notes": "Adopted 8/10/2018"
+  },
+  "Toliman": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 71681)",
+    "resolution_notes": "Adopted 8/10/2018"
+  },
+  "Alpherg": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 7097)",
+    "resolution_notes": "Adopted 6/1/2018"
+  },
+  "Alruba": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 86782)",
+    "resolution_notes": "Adopted 6/1/2018"
+  },
+  "Ashlesha": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 43109)",
+    "resolution_notes": "Adopted 6/1/2018"
+  },
+  "Azmidi": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 38170)",
+    "resolution_notes": "Adopted 6/1/2018"
+  },
+  "Bunda": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 106786)",
+    "resolution_notes": "Adopted 6/1/2018"
+  },
+  "Elgafar": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 70755)",
+    "resolution_notes": "Adopted 6/1/2018"
+  },
+  "Elkurud": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 29034)",
+    "resolution_notes": "Adopted 6/1/2018"
+  },
+  "Fawaris": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 97165)",
+    "resolution_notes": "Adopted 6/1/2018"
+  },
+  "Felis": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 48615)",
+    "resolution_notes": "Adopted 6/1/2018"
+  },
+  "Fumalsamakah": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 113889)",
+    "resolution_notes": "Adopted 6/1/2018"
+  },
+  "Heze": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 66249)",
+    "resolution_notes": "Adopted 6/1/2018"
+  },
+  "Kraz": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 61359)",
+    "resolution_notes": "Adopted 6/1/2018"
+  },
+  "Nahn": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 44946)",
+    "resolution_notes": "Adopted 6/1/2018"
+  },
+  "Okab": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 93747)",
+    "resolution_notes": "Adopted 6/1/2018"
+  },
+  "Piautos": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 40881)",
+    "resolution_notes": "Adopted 6/1/2018"
+  },
+  "Tarf": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 40526)",
+    "resolution_notes": "Adopted 6/1/2018"
+  },
+  "Ukdah": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 47431)",
+    "resolution_notes": "Adopted 6/1/2018"
+  },
+  "Ginan": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 60260)",
+    "resolution_notes": "Adopted 11/17/2017"
+  },
+  "Larawag": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 82396)",
+    "resolution_notes": "Adopted 11/17/2017"
+  },
+  "Wurren": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 5348)",
+    "resolution_notes": "Adopted 11/17/2017"
+  },
+  "Achird": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 3821)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Ainalrami": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 92761)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Aladfar": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 94481)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Albaldah": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 94141)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Aldhanab": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 108085)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Aldhibah": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 83895)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Aldulfin": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 101421)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Alkaphrah": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 44471)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Alkarab": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 115623)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Alsephina": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 42913)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Athebyne": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 80331)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Brachium": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 73714)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Castula": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 4422)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Chamukuy": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 20894)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Dalim": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 14879)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Dziban": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 86614)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Hatysa": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 26241)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Iklil": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 78104)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Khambalia": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 69974)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Lilii Borea": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 13061)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Markeb": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 45941)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Meleph": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 42556)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Meridiana": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 94114)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Minchir": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 42402)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Miram": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 13268)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Misam": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 14668)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Nembus": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 7607)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Nganurganity": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 33856)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Pipirima": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 82545)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Polaris Australis": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 104382)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Polis": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 89341)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Prima Hyadum": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 20205)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Salm": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 115250)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Secunda Hyadum": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 20455)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Segin": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 8886)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Tabit": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 22449)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Terebellum": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 98066)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Tiaki": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 112122)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Torcular": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 8198)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Xamidimura": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 82514)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Zubenelhakrabi": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 76333)",
+    "resolution_notes": "Adopted 9/5/2017"
+  },
+  "Alsafi": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 96100)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Alsciaukat": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 41075)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Alshat": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 100310)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Alzirr": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 32362)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Angetenar": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 13288)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Anser": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 95771)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Beemim": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 20535)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Bharani": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 13209)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Fang": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 78265)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Fulu": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 2920)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Fuyue": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 87261)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Haedus": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 23767)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Hassaleh": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 23015)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Jabbah": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 79374)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Kang": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 69427)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Mahasim": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 28380)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Markab": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 113963)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Minelauva": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 63090)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Praecipua": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 53229)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Revati": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 5737)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Saclateni": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 23453)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Sceptrum": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 21594)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Taiyangshou": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 57399)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Taiyi": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 63076)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Tianguan": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 26451)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Tianyi": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 62423)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Xuange": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 69732)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Zhang": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 48356)",
+    "resolution_notes": "Adopted 6/30/2017"
+  },
+  "Almaaz": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 23416)",
+    "resolution_notes": "Adopted 2/1/2017"
+  },
+  "Alniyat": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 80112)",
+    "resolution_notes": "Adopted 2/1/2017"
+  },
+  "Alrakis": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 83608)",
+    "resolution_notes": "Adopted 2/1/2017"
+  },
+  "Alterf": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 46750)",
+    "resolution_notes": "Adopted 2/1/2017"
+  },
+  "Barnard's Star": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 87937)",
+    "resolution_notes": "Adopted 2/1/2017"
+  },
+  "Cujam": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 80463)",
+    "resolution_notes": "Adopted 2/1/2017"
+  },
+  "Deneb Algedi": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 107556)",
+    "resolution_notes": "Adopted 2/1/2017"
+  },
+  "Diadem": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 64241)",
+    "resolution_notes": "Adopted 2/1/2017"
+  },
+  "Giausar": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 56211)",
+    "resolution_notes": "Adopted 2/1/2017"
+  },
+  "Kaffaljidhma": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 12706)",
+    "resolution_notes": "Adopted 2/1/2017"
+  },
+  "Marsic": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 79043)",
+    "resolution_notes": "Adopted 2/1/2017"
+  },
+  "Tejat": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 30343)",
+    "resolution_notes": "Adopted 2/1/2017"
+  },
+  "Theemin": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 21393)",
+    "resolution_notes": "Adopted 2/1/2017"
+  },
+  "Asellus Australis": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 42911)",
+    "resolution_notes": "Adopted 11/6/2016"
+  },
+  "Asellus Borealis": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 42806)",
+    "resolution_notes": "Adopted 11/6/2016"
+  },
+  "Gienah": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 59803)",
+    "resolution_notes": "Adopted 11/6/2016"
+  },
+  "Rigil Kentaurus": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 71683)",
+    "resolution_notes": "Adopted 11/6/2016"
+  },
+  "Yed Prior": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 79593)",
+    "resolution_notes": "Adopted 11/6/2016"
+  },
+  "Arkab Posterior": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 95294)",
+    "resolution_notes": "Adopted 10/5/2016"
+  },
+  "Arkab Prior": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 95241)",
+    "resolution_notes": "Adopted 10/5/2016"
+  },
+  "Yed Posterior": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 79882)",
+    "resolution_notes": "Adopted 10/5/2016"
+  },
+  "Albali": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 102618)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Alchiba": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 59199)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Alkes": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 53740)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Ancha": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 110003)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Ascella": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 93506)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Atik": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 17448)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Azelfafage": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 107136)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Azha": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 13701)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Baten Kaitos": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 8645)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Beid": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 19587)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Botein": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 14838)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Grumium": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 87585)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Keid": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 19849)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Kurhah": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 108917)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Maasym": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 85693)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Marfik": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 80883)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Mekbuda": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 34088)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Menkib": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 18614)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Merga": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 72487)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Muphrid": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 67927)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Nusakan": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 75695)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Rasalas": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 48455)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Rotanev": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 101769)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Sarin": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 84379)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Sham": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 96757)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Situla": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 111710)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Sualocin": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 101958)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Subra": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 47508)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Syrma": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 69701)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Tegmine": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 40167)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Tureis": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 39757)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Zaniah": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 60129)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Zibal": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 15197)",
+    "resolution_notes": "Adopted 9/12/2016"
+  },
+  "Acrab": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 78820)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Adhara": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 33579)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Adhil": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 6411)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Alfirk": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 106032)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Algedi": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 100064)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Alkalurops": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 75411)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Alnasl": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 88635)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Alrescha": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 9487)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Alshain": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 98036)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Altais": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 94376)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Alya": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 92946)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Asterope": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 17579)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Atlas": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 17847)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Biham": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 109427)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Cebalrai": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 86742)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Celaeno": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 17489)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Dabih": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 100345)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Diphda": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 3419)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Dschubba": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 78401)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Electra": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 17499)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Eltanin": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 87833)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Hadar": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 68702)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Homam": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 112029)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Izar": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 72105)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Kitalpha": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 104987)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Kornephoros": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 80816)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Lesath": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 85696)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Matar": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 112158)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Menkent": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 68933)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Mesarthim": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (* gam Ari)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Mothallah": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 8796)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Muliphein": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 34045)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Naos": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 39429)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Nashira": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 106985)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Nekkar": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 73555)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Nunki": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 92855)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Pherkad": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 75097)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Proxima Centauri": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 70890)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Rastaban": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 85670)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Ruchbah": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 6686)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Sabik": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 84012)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Sadachbia": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 110395)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Sadalbari": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 112748)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Sadalmelik": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 109074)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Sadalsuud": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 106278)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Sadr": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 100453)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Sargas": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 86228)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Schedar": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 3179)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Seginus": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 71075)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Sheliak": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 92420)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Skat": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 113136)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Suhail": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 44816)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Sulafat": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 93194)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Tarazed": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 97278)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Taygeta": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 17531)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Unukalhai": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 77070)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Wasat": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 35550)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Yildun": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 85822)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Zavijava": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 57757)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Zubenelgenubi": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 72622)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Zubeneschamali": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 74785)",
+    "resolution_notes": "Adopted 8/21/2016"
+  },
+  "Acamar": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 13847)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Acrux": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 60718)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Acubens": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 44066)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Adhafera": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 50335)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Albireo": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 95947)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Alderamin": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 105199)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Algieba": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 50583)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Algorab": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 60965)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Alhena": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 31681)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Almach": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 9640)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Alnair": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 109268)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Alnilam": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 26311)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Alnitak": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 26727)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Alphard": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 46390)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Alphecca": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 76267)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Aludra": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 35904)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Alula Australis": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 55203)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Alula Borealis": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 55219)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Ankaa": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 2081)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Arneb": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 25985)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Aspidiske": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 45556)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Atria": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 82273)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Avior": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 41037)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Chara": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 61317)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Chertan": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 54879)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Copernicus": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 43587)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Cor Caroli": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 63125)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Cursa": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 23875)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Elnath": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 25428)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Enif": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 107315)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Furud": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 30122)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Gacrux": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 61084)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Gomeisa": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 36188)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Hamal": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 9884)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Kaus Australis": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 90185)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Kaus Borealis": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 90496)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Kaus Media": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 89931)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Kochab": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 72607)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Maia": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 17573)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Mebsuta": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 32246)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Meissa": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 26207)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Menkalinan": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 28360)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Merope": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 17608)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Miaplacidus": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 45238)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Mimosa": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 62434)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Mintaka": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 25930)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Mirfak": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 15863)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Mirzam": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 30324)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Muscida": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 41704)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Nihal": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 25606)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Peacock": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 100751)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Phact": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 26634)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Phecda": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 58001)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Porrima": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 61941)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Propus": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 29655)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Rasalhague": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 86032)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Rukbat": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 95347)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Saiph": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 27366)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Shaula": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 85927)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Sheratan": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 8903)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Talitha": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 44127)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Tania Australis": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 50801)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Tania Borealis": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 50372)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Tonatiuh": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 58952)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Vindemiatrix": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 63608)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Wazn": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 27628)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Wezen": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 34444)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Zaurak": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 18543)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Zosma": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 54872)",
+    "resolution_notes": "Adopted 7/20/2016"
+  },
+  "Achernar": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 7588)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Alcor": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 65477)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Alcyone": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 17702)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Aldebaran": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 21421)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Algenib": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 1067)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Algol": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 14576)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Alioth": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 62956)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Aljanah": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 102488)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Alkaid": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 67301)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Alpheratz": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 677)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Altair": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 97649)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Antares": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 80763)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Arcturus": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 69673)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Bellatrix": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 25336)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Betelgeuse": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 27989)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Canopus": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 30438)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Capella": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 24608)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Caph": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 746)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Castor": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 36850)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Deneb": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 102098)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Denebola": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 57632)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Dubhe": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 54061)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Megrez": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 59774)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Menkar": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 14135)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Merak": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 53910)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Mira": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 10826)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Mirach": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 5447)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Pleione": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 17851)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Polaris": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 11767)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Procyon": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 37279)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Rasalgethi": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 84345)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Regulus": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 49669)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Rigel": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 24436)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Scheat": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 113881)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Sirius": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 32349)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Spica": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 65474)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Thuban": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 68756)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Vega": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 91262)",
+    "resolution_notes": "Adopted 6/30/2016"
+  },
+  "Ain": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 20889)",
+    "resolution_notes": "Adopted 12/15/2015"
+  },
+  "Cervantes": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 86796)",
+    "resolution_notes": "Adopted 12/15/2015"
+  },
+  "Chalawan": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 53721)",
+    "resolution_notes": "Adopted 12/15/2015"
+  },
+  "Edasich": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 75458)",
+    "resolution_notes": "Adopted 12/15/2015"
+  },
+  "Errai": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 116727)",
+    "resolution_notes": "Adopted 12/15/2015"
+  },
+  "Fafnir": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 90344)",
+    "resolution_notes": "Adopted 12/15/2015"
+  },
+  "Fomalhaut": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 113368)",
+    "resolution_notes": "Adopted 12/15/2015"
+  },
+  "Helvetios": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 113357)",
+    "resolution_notes": "Adopted 12/15/2015"
+  },
+  "Intercrus": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 46471)",
+    "resolution_notes": "Adopted 12/15/2015"
+  },
+  "Libertas": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 97938)",
+    "resolution_notes": "Adopted 12/15/2015"
+  },
+  "Musica": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 103527)",
+    "resolution_notes": "Adopted 12/15/2015"
+  },
+  "Ogma": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 80838)",
+    "resolution_notes": "Adopted 12/15/2015"
+  },
+  "Pollux": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 37826)",
+    "resolution_notes": "Adopted 12/15/2015"
+  },
+  "Ran": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 16537)",
+    "resolution_notes": "Adopted 12/15/2015"
+  },
+  "Titawin": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 7513)",
+    "resolution_notes": "Adopted 12/15/2015"
+  },
+  "Veritate": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Exact SIMBAD query (HIP 116076)",
+    "resolution_notes": "Adopted 12/15/2015"
+  },
+  "Pistol Star": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Rebel Patch SIMBAD query (Pistol Star)",
+    "resolution_notes": "Adopted 3/22/2026"
+  },
+  "Bodu": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Rebel Patch SIMBAD query (Bodu)",
+    "resolution_notes": "Adopted 6/17/2025"
+  },
+  "Unurgunite": {
+    "v_mag_source": "SIMBAD (arbitrated from multi-catalog)",
+    "name_status": "IAU-Sanctioned",
+    "matching_status": "Rebel Patch SIMBAD query (sig CMa)",
+    "resolution_notes": "Adopted "
+  }
+}

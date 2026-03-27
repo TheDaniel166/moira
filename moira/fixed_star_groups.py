@@ -17,7 +17,7 @@ Owns:
     - list_fixed_stars(), available_fixed_stars() and per-group introspection
       (list_pleiades, list_hyades, list_ptolemy_stars, available_* variants).
 Delegates:
-    - All position computation to moira.fixed_stars.fixed_star_at.
+    - All position computation to moira.fixed_stars.star_at.
     - Catalog availability checks to moira.fixed_stars.list_stars.
 
 Import-time side effects: None.
@@ -46,7 +46,7 @@ Public surface / exports:
 Stars sourced from sefstars.txt via moira.fixed_stars.
 """
 
-from .fixed_stars import fixed_star_at, StarPosition, list_stars
+from .stars import star_at as star_at, list_named_stars as list_stars, FixedStar as StarPosition
 
 # ---------------------------------------------------------------------------
 # Group tuples
@@ -252,7 +252,7 @@ FIXED_STAR_NAMES = {
 
 def fixed_star_group_at(name: str, jd_tt: float) -> StarPosition:
     """Return the position of a named fixed star at jd_tt."""
-    return fixed_star_at(name, jd_tt)
+    return star_at(name, jd_tt)
 
 
 def algol_at(jd_tt: float) -> StarPosition:

@@ -14,7 +14,7 @@ Owns:
     - Per-star convenience functions (sadalmelik_at, sadalsuud_at, …).
     - list_aquarius_stars() / available_aquarius_stars() introspection.
 Delegates:
-    - All position computation to moira.fixed_stars.fixed_star_at.
+    - All position computation to moira.fixed_stars.star_at.
     - Catalog availability checks to moira.fixed_stars.list_stars.
 
 Import-time side effects: None.
@@ -30,9 +30,9 @@ Public surface / exports:
     aquarius_star_at() and all per-star _at() functions
     list_aquarius_stars(), available_aquarius_stars()
 
-Stars sourced from sefstars.txt via moira.fixed_stars.
+Stars sourced from the Sovereign Star Registry via Gaia DR3.
 """
-from ..fixed_stars import fixed_star_at, StarPosition, list_stars
+from ..stars import star_at, GaiaStarPosition, list_stars
 
 SADALMELIK   = "Sadalmelik"
 SADALSUUD    = "Sadalsuud"
@@ -62,7 +62,7 @@ AQUARIUS_STAR_NAMES = {
 
 
 def aquarius_star_at(name: str, jd_tt: float) -> StarPosition:
-    return fixed_star_at(name, jd_tt)
+    return star_at(name, jd_tt)
 
 
 def sadalmelik_at(jd_tt: float) -> StarPosition:

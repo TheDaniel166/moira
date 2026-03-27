@@ -14,7 +14,7 @@ Owns:
     - Per-star convenience functions (regulus_at, denebola_at, …).
     - list_leo_stars() / available_leo_stars() introspection.
 Delegates:
-    - All position computation to moira.fixed_stars.fixed_star_at.
+    - All position computation to moira.fixed_stars.star_at.
     - Catalog availability checks to moira.fixed_stars.list_stars.
 
 Import-time side effects: None.
@@ -31,9 +31,9 @@ Public surface / exports:
     leo_star_at() and all per-star _at() functions
     list_leo_stars(), available_leo_stars()
 
-Stars sourced from sefstars.txt via moira.fixed_stars.
+Stars sourced from the Sovereign Star Registry via Gaia DR3.
 """
-from ..fixed_stars import fixed_star_at, StarPosition, list_stars
+from ..stars import star_at, GaiaStarPosition, list_stars
 
 REGULUS               = "Regulus"
 DENEBOLA              = "Denebola"
@@ -69,7 +69,7 @@ LEO_STAR_NAMES = {
 
 
 def leo_star_at(name: str, jd_tt: float) -> StarPosition:
-    return fixed_star_at(name, jd_tt)
+    return star_at(name, jd_tt)
 
 
 def regulus_at(jd_tt: float) -> StarPosition:

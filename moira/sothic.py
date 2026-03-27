@@ -52,7 +52,7 @@ from .julian import (
     calendar_datetime_from_jd,
     safe_datetime_from_jd,
 )
-from .fixed_stars import heliacal_rising as _heliacal_rising
+from .stars import heliacal_rising as _heliacal_rising
 
 
 __all__ = [

@@ -12,7 +12,7 @@ Boundary declaration:
           refinement, twilight altitude-crossing search, the TwilightTimes
           result type, and the RiseSetPolicy doctrine surface.
     Delegates: apparent planetary positions to moira.planets.planet_at;
-               fixed-star positions to moira.fixed_stars.fixed_star_at (lazy
+               fixed-star positions to moira.fixed_stars.star_at (lazy
                import at call time); nutation and obliquity to moira.obliquity;
                coordinate conversion to moira.coordinates; sidereal time to
                moira.julian.local_sidereal_time.
@@ -187,9 +187,9 @@ def _body_ra_dec(jd_ut: float, body_name: str) -> tuple[float, float]:
     try:
         pos = planet_at(body_name, jd_tt)
     except Exception:
-        from .fixed_stars import fixed_star_at
+        from .stars import star_at
 
-        pos = fixed_star_at(body_name, jd_tt)
+        pos = star_at(body_name, jd_tt)
 
     return ecliptic_to_equatorial(pos.longitude, pos.latitude, eps)
 

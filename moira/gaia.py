@@ -89,6 +89,7 @@ __all__ = [
     "catalog_size",
     "gaia_catalog_info",
     "gaia_star_at",
+    "gaia_star_by_id",
     "gaia_stars_near",
     "gaia_stars_by_magnitude",
 ]
@@ -118,28 +119,27 @@ _AS2DEG       = 1.0 / 3600.0
 _MAS_PER_YR_TO_DEG_PER_YR = 0.001 * _AS2DEG
 _PC_TO_KM     = 3.085677581e13  # 1 parsec in km
 _AU_TO_KM     = 1.495978707e8   # 1 AU in km
-_EARTH_AU     = 1.0             # mean Earth-Sun distance (AU)
 
 _MAGIC        = b"GAIA"
-_HEADER_FMT   = "<4sI"
+_HEADER_FMT   = "<4sII"         # magic, version, record_count
 _HEADER_SIZE  = struct.calcsize(_HEADER_FMT)
-_RECORD_FMT   = "<10f"
-_RECORD_SIZE  = struct.calcsize(_RECORD_FMT)
+_V1_RECORD_FMT = "<10f"
+_V1_RECORD_SIZE = struct.calcsize(_V1_RECORD_FMT)
+_V2_RECORD_FMT = "<Q10f"        # source_id, ra, dec, pmra, pmdec, plx, plxe, rv, gmag, bp_rp, teff
+_V2_RECORD_SIZE = struct.calcsize(_V2_RECORD_FMT)
 
-# Field indices within a record tuple
-# Order matches download_gaia.py _parse_csv `needed` list:
-# ra, dec, pmra, pmdec, parallax, parallax_error, radial_velocity,
-# phot_g_mean_mag, bp_rp, teff_gspphot
-_F_RA    = 0
-_F_DEC   = 1
-_F_PMRA  = 2   # mas/yr * cos(dec)
-_F_PMDEC = 3   # mas/yr
-_F_PLX   = 4   # parallax, mas
-_F_PLXE  = 5   # parallax error, mas
-_F_RV    = 6   # radial velocity, km/s
-_F_GMAG  = 7   # Gaia G magnitude
-_F_BPRP  = 8   # BP−RP colour index
-_F_TEFF  = 9   # effective temperature, K
+# Field indices within a record tuple (Version 2)
+_F_SID   = 0     # uint64 source_id
+_F_RA    = 1
+_F_DEC   = 2
+_F_PMRA  = 3     # mas/yr * cos(dec)
+_F_PMDEC = 4     # mas/yr
+_F_PLX   = 5     # parallax, mas
+_F_PLXE  = 6     # parallax error, mas
+_F_RV    = 7     # radial velocity, km/s
+_F_GMAG  = 8     # Gaia G magnitude
+_F_BPRP  = 9     # BP−RP colour index
+_F_TEFF  = 10    # effective temperature, K
 
 
 # ---------------------------------------------------------------------------
@@ -344,6 +344,7 @@ class GaiaStarPosition:
     """
 
     source_index:   int
+    source_id:      int
     longitude:      float   # tropical ecliptic longitude, degrees [0, 360)
     latitude:       float   # ecliptic latitude, degrees
     magnitude:      float   # Gaia G magnitude
@@ -377,10 +378,11 @@ class GaiaStarPosition:
 # Catalog singleton
 # ---------------------------------------------------------------------------
 
-_records:       list[tuple[float, ...]] | None = None
-_catalog_path:  Path | None                    = None
-_lon_index:     list[tuple[float, int]] | None = None   # sorted (approx_lon_j2000, idx)
-_bright_indices: list[int] | None              = None   # indices of stars with gmag < 3.0 (excluded from _lon_index)
+_records:       list[tuple[int | float, ...]] | None = None
+_catalog_path:  Path | None                          = None
+_lon_index:     list[tuple[float, int]] | None       = None   # sorted (approx_lon_j2000, idx)
+_bright_indices: list[int] | None                    = None   # indices of stars with gmag < 3.0
+_id_index:      dict[int, int] | None                = None   # source_id -> rec_index
 
 _OBL_J2000 = 23.43927944   # mean obliquity at J2000 (degrees), used for index only
 _COS_OBL   = math.cos(_OBL_J2000 * DEG2RAD)
@@ -425,34 +427,65 @@ def load_gaia_catalog(path: Path | str | None = None) -> None:
         )
 
     with p.open("rb") as fh:
-        magic, n = struct.unpack(_HEADER_FMT, fh.read(_HEADER_SIZE))
+        raw_header = fh.read(_HEADER_SIZE)
+        if not raw_header:
+            raise ValueError(f"Empty or corrupt Gaia catalog: {p}")
+        
+        # Determine format version
+        magic = raw_header[:4]
         if magic != _MAGIC:
             raise ValueError(f"Not a Gaia catalog file: {p} (bad magic {magic!r})")
-        raw = fh.read(n * _RECORD_SIZE)
+            
+        version, n = struct.unpack("<II", raw_header[4:12])
+        if version == 1:
+            # Upgrade path: V1 had (magic, count) in 8 bytes.
+            # If we just read (magic, version, count) in 12 bytes, 
+            # we likely over-read into the data.
+            # For simplicity in this refactor, we require V2.
+            raise ValueError(
+                f"Legacy Gaia catalog (V1) detected at {p}.\n"
+                "Please rebuild using: py -3 scripts/download_gaia.py"
+            )
+        elif version != 2:
+            raise ValueError(f"Unsupported Gaia catalog version: {version}")
 
-    recs: list[tuple[float, ...]] = []
+        # Version 2 load
+        raw = fh.read(n * _V2_RECORD_SIZE)
+        if len(raw) < n * _V2_RECORD_SIZE:
+             raise ValueError(f"Truncated Gaia catalog data: expected {n} records.")
+
+    recs: list[tuple[int | float, ...]] = []
     for i in range(n):
-        offset = i * _RECORD_SIZE
-        recs.append(struct.unpack_from(_RECORD_FMT, raw, offset))
+        offset = i * _V2_RECORD_SIZE
+        recs.append(struct.unpack_from(_V2_RECORD_FMT, raw, offset))
 
     _records      = recs
     _catalog_path = p
 
-    global _lon_index, _bright_indices
+    global _lon_index, _bright_indices, _id_index
     idx: list[tuple[float, int]] = []
-    bright: list[int] = []
+    id_map: dict[int, int]       = {}
+    bright: list[int]            = []
+    
     for i, rec in enumerate(recs):
+        sid  = int(rec[_F_SID])
         gmag = float(rec[_F_GMAG])
+        id_map[sid] = i
+        
         if gmag < 3.0:
             bright.append(i)
-            continue
+            # Bright stars are still indexed for lon range queries
+        
         if gmag > 25.0:
             continue
+            
         lon = _approx_ecl_lon(float(rec[_F_RA]), float(rec[_F_DEC]))
         idx.append((lon, i))
+        
     idx.sort()
     _lon_index      = idx
     _bright_indices = bright
+    _id_index       = id_map
 
 
 def _ensure_loaded() -> None:
@@ -721,6 +754,7 @@ def _record_to_position(
     processing many records at the same jd_tt to pre-compute these quantities
     once and pass them in, avoiding redundant recalculation.
     """
+    sid      = int(rec[_F_SID])
     ra       = float(rec[_F_RA])
     dec      = float(rec[_F_DEC])
     pmra     = float(rec[_F_PMRA])
@@ -770,6 +804,7 @@ def _record_to_position(
 
     return GaiaStarPosition(
         source_index   = idx,
+        source_id      = sid,
         longitude      = lon,
         latitude       = lat,
         magnitude      = gmag,
@@ -982,6 +1017,45 @@ def gaia_stars_by_magnitude(
 
     results.sort(key=lambda p: p.magnitude)
     return results
+
+
+def gaia_star_by_id(
+    source_id: int,
+    jd_tt: float,
+    observer_lat:    float | None = None,
+    observer_lon:    float | None = None,
+    observer_elev_m: float        = 0.0,
+    true_position:   bool         = False,
+) -> GaiaStarPosition:
+    """
+    Compute the ecliptic position of a Gaia star by its permanent SourceID.
+
+    O(1) lookup into the internal id_index. Raises KeyError if the source_id
+    is not present in the currently loaded catalog (e.g. if the magnitude
+    limit in download_gaia.py excluded it).
+    """
+    _ensure_loaded()
+    _validate_gaia_jd(jd_tt)
+    assert _records is not None
+    assert _id_index is not None
+
+    if source_id not in _id_index:
+        raise KeyError(f"Gaia SourceID {source_id} not found in current catalog.")
+
+    idx = _id_index[source_id]
+    rec = _records[idx]
+
+    lst_deg: float | None = None
+    if (observer_lat is not None and observer_lon is not None):
+        from .julian import local_sidereal_time
+        lst_deg = local_sidereal_time(jd_tt, observer_lon)
+
+    return _record_to_position(
+        idx, rec, jd_tt,
+        observer_lat=observer_lat, observer_lon=observer_lon,
+        observer_elev_m=observer_elev_m, lst_deg=lst_deg,
+        true_position=true_position,
+    )
 
 
 def gaia_catalog_info() -> dict[str, object]:

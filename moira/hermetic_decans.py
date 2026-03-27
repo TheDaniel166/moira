@@ -42,7 +42,7 @@ Public surface
 import math
 from dataclasses import dataclass
 
-from .fixed_stars import fixed_star_at, StarPosition, list_stars
+from .stars import star_at, StarPosition, list_stars
 from .obliquity import mean_obliquity
 from .spk_reader import get_reader, SpkReader
 
@@ -238,10 +238,10 @@ def decan_ruling_star(name: str) -> str:
 def decan_star_at(name: str, jd: float) -> StarPosition:
     """Return the StarPosition of a decan's ruling star at the given JD.
 
-    Delegates to fixed_star_at with the decan's ruling star name.
+    Delegates to star_at with the decan's ruling star name.
     Propagates KeyError if the ruling star is absent from the catalog.
     """
-    return fixed_star_at(DECAN_RULING_STARS[name], jd)
+    return star_at(DECAN_RULING_STARS[name], jd)
 
 
 # ---------------------------------------------------------------------------
@@ -402,7 +402,7 @@ def decan_at(
 
     for decan in _DECAN_ORDER:
         star_name = DECAN_RULING_STARS[decan]
-        star_pos = fixed_star_at(star_name, jd)
+        star_pos = star_at(star_name, jd)
         star_lon = star_pos.longitude
         dist = min((star_lon - asc_lon) % 360.0, (asc_lon - star_lon) % 360.0)
         if dist < best_dist:

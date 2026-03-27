@@ -39,7 +39,7 @@ from .julian import (
 from .planets import planet_at
 from .spk_reader import get_reader, SpkReader
 from .asteroids import asteroid_at, ASTEROID_NAIF
-from .fixed_stars import fixed_star_at
+from .stars import star_at
 from .nodes import mean_lilith, mean_node, true_lilith, true_node
 
 
@@ -1212,7 +1212,7 @@ def _resolve_longitude(spec: str | float, jd: float, reader: SpkReader) -> float
     - planetary body names
     - named asteroids in ASTEROID_NAIF
     - True Node / Mean Node / Lilith / True Lilith
-    - named fixed stars resolvable by fixed_star_at()
+    - named fixed stars resolvable by star_at()
     """
     return _resolve_longitude_truth(spec, jd, reader).longitude
 
@@ -1276,7 +1276,7 @@ def _resolve_longitude_truth(
             resolved_kind="fixed_star",
             resolved_name=name,
             jd_ut=jd,
-            longitude=fixed_star_at(name, ut_to_tt(jd)).longitude,
+            longitude=star_at(name, ut_to_tt(jd)).longitude,
         )
     except Exception as exc:
         raise ValueError(f"Transit target specification could not be resolved: {name}") from exc

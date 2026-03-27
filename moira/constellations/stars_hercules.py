@@ -14,7 +14,7 @@ Owns:
     - Per-star convenience functions (ras_algethi_at, kornephoros_at, …).
     - list_hercules_stars() / available_hercules_stars() introspection.
 Delegates:
-    - All position computation to moira.fixed_stars.fixed_star_at.
+    - All position computation to moira.fixed_stars.star_at.
     - Catalog availability checks to moira.fixed_stars.list_stars.
 
 Import-time side effects: None.
@@ -31,9 +31,9 @@ Public surface / exports:
     hercules_star_at() and all per-star _at() functions
     list_hercules_stars(), available_hercules_stars()
 
-Stars sourced from sefstars.txt via moira.fixed_stars.
+Stars sourced from the Sovereign Star Registry via Gaia DR3.
 """
-from ..fixed_stars import fixed_star_at, StarPosition, list_stars
+from ..stars import star_at, GaiaStarPosition, list_stars
 
 RAS_ALGETHI           = "Ras Algethi"
 KORNEPHOROS           = "Kornephoros"
@@ -67,7 +67,7 @@ HERCULES_STAR_NAMES = {
 
 
 def hercules_star_at(name: str, jd_tt: float) -> StarPosition:
-    return fixed_star_at(name, jd_tt)
+    return star_at(name, jd_tt)
 
 
 def ras_algethi_at(jd_tt: float) -> StarPosition:

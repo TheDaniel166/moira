@@ -18,10 +18,11 @@ Options
 Output binary format (little-endian, no padding)
 -------------------------------------------------
 Header  : 4 bytes magic b'GAIA'
+          4 bytes uint32 — version (currently 2)
           4 bytes uint32 — number of records N
-Record  : 10 x float32 per star (40 bytes), N records
-Fields  : ra, dec, pmra, pmdec, parallax, radial_velocity,
-          phot_g_mean_mag, bp_rp, teff_gspphot, parallax_error
+Record  : 1 x uint64 source_id + 10 x float32 fields (48 bytes), N records
+Fields  : source_id, ra, dec, pmra, pmdec, parallax, parallax_error,
+          radial_velocity, phot_g_mean_mag, bp_rp, teff_gspphot
 
 Missing / null float values are stored as NaN (IEEE 754).
 
@@ -42,17 +43,17 @@ from pathlib import Path
 
 _TAP_URL   = "https://gea.esac.esa.int/tap-server/tap/sync"
 _MAGIC     = b"GAIA"
-_RECORD_FMT = "<10f"
+_VERSION   = 2
+_RECORD_FMT = "<Q10f"
 _RECORD_SIZE = struct.calcsize(_RECORD_FMT)
 
 _ADQL = """\
-SELECT ra, dec, pmra, pmdec, parallax, parallax_error,
+SELECT source_id, ra, dec, pmra, pmdec, parallax, parallax_error,
        radial_velocity, phot_g_mean_mag, bp_rp, teff_gspphot
 FROM gaiadr3.gaia_source
 WHERE phot_g_mean_mag < {mag}
   AND ra IS NOT NULL
   AND dec IS NOT NULL
-  AND parallax IS NOT NULL
 """
 
 
@@ -87,7 +88,7 @@ def _query_tap(adql: str, fmt: str = "csv") -> bytes:
     return data
 
 
-def _parse_csv(raw: bytes) -> list[tuple[float, ...]]:
+def _parse_csv(raw: bytes) -> list[tuple[int | float, ...]]:
     text   = raw.decode("utf-8", errors="replace")
     lines  = text.splitlines()
     if not lines:
@@ -96,32 +97,35 @@ def _parse_csv(raw: bytes) -> list[tuple[float, ...]]:
     header = [h.strip() for h in lines[0].split(",")]
     col    = {name: idx for idx, name in enumerate(header)}
 
-    needed = ["ra", "dec", "pmra", "pmdec", "parallax", "parallax_error",
-              "radial_velocity", "phot_g_mean_mag", "bp_rp", "teff_gspphot"]
-    for n in needed:
+    needed_floats = ["ra", "dec", "pmra", "pmdec", "parallax", "parallax_error",
+                     "radial_velocity", "phot_g_mean_mag", "bp_rp", "teff_gspphot"]
+    for n in ["source_id"] + needed_floats:
         if n not in col:
             raise ValueError(f"Expected column {n!r} not in response header: {header}")
 
-    records: list[tuple[float, ...]] = []
+    records: list[tuple[int | float, ...]] = []
     for line in lines[1:]:
         if not line.strip():
             continue
         parts = line.split(",")
         try:
-            rec = tuple(_nan(parts[col[n]]) for n in needed)
+            # First field is the uint64 source_id
+            sid = int(parts[col["source_id"]])
+            # Remaining fields are floats
+            f_vals = tuple(_nan(parts[col[n]]) for n in needed_floats)
+            records.append((sid,) + f_vals)
         except (IndexError, ValueError):
             continue
-        records.append(rec)
-
+        
     return records
 
 
-def _write_binary(records: list[tuple[float, ...]], path: Path) -> None:
+def _write_binary(records: list[tuple[int | float, ...]], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     n = len(records)
     with path.open("wb") as fh:
         fh.write(_MAGIC)
-        fh.write(struct.pack("<I", n))
+        fh.write(struct.pack("<II", _VERSION, n))
         for rec in records:
             fh.write(struct.pack(_RECORD_FMT, *rec))
     size_mb = path.stat().st_size / 1_048_576

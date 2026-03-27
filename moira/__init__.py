@@ -378,7 +378,7 @@ from .transits import (
 )
 from .stations import StationEvent, find_stations, next_station, is_retrograde, retrograde_periods
 from .planetary_hours import PlanetaryHour, PlanetaryHoursDay, planetary_hours
-from .fixed_stars import (
+from .stars import (
     StarPositionTruth,
     StarPositionClassification,
     StarRelation,
@@ -396,7 +396,7 @@ from .fixed_stars import (
     FixedStarComputationPolicy,
     DEFAULT_FIXED_STAR_POLICY,
     StarPosition,
-    fixed_star_at, all_stars_at,
+    star_at, all_stars_at,
     list_stars, find_stars, star_magnitude, load_catalog,
     heliacal_rising, heliacal_setting,
     heliacal_rising_event, heliacal_setting_event,
@@ -997,7 +997,7 @@ __all__ = [
     "FixedStarComputationPolicy",
     "DEFAULT_FIXED_STAR_POLICY",
     "StarPosition",
-    "load_catalog", "fixed_star_at", "all_stars_at",
+    "load_catalog", "star_at", "all_stars_at",
     "list_stars", "find_stars", "star_magnitude",
     "heliacal_rising_event", "heliacal_setting_event",
     "heliacal_rising", "heliacal_setting",
@@ -2301,7 +2301,7 @@ class Moira:
         -------
         JD UT of the heliacal rising, or None if not found within 400 days
         """
-        from .fixed_stars import heliacal_rising as _hr
+        from .stars import heliacal_rising as _hr
         return _hr(star_name, jd_from_datetime(dt), latitude, longitude)
 
     def heliacal_setting(
@@ -2318,7 +2318,7 @@ class Moira:
         -------
         JD UT of the heliacal setting, or None if not found within 400 days
         """
-        from .fixed_stars import heliacal_setting as _hs
+        from .stars import heliacal_setting as _hs
         return _hs(star_name, jd_from_datetime(dt), latitude, longitude)
 
     # ------------------------------------------------------------------

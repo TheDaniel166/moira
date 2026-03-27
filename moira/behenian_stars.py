@@ -14,7 +14,7 @@ Owns:
     - behenian_star_at() dispatcher.
     - list_behenian_stars() / available_behenian_stars() introspection.
 Delegates:
-    - All position computation to moira.fixed_stars.fixed_star_at.
+    - All position computation to moira.fixed_stars.star_at.
     - Catalog availability checks to moira.fixed_stars.list_stars.
 
 Import-time side effects: None.
@@ -39,7 +39,7 @@ useful for magical applications in medieval European and Arabic astrology
 Stars sourced from sefstars.txt via moira.fixed_stars.
 """
 
-from .fixed_stars import fixed_star_at, StarPosition, list_stars
+from .stars import star_at, StarPosition, list_stars
 
 ALGOL     = "Algol"
 ALCYONE   = "Alcyone"
@@ -78,7 +78,7 @@ BEHENIAN_STAR_NAMES = {
 
 def behenian_star_at(name: str, jd_tt: float) -> StarPosition:
     """Return the position of a Behenian star at jd_tt."""
-    return fixed_star_at(name, jd_tt)
+    return star_at(name, jd_tt)
 
 
 def algol_at(jd_tt: float) -> StarPosition:

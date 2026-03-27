@@ -1,0 +1,20 @@
+{
+  "value": {
+    "bp_rp": NaN,
+    "classification": null,
+    "computation_truth": null,
+    "condition_profile": null,
+    "distance_ly": 3125.6320601438547,
+    "is_topocentric": false,
+    "latitude": 13.570997693438368,
+    "longitude": 56.16429468985984,
+    "magnitude": 8.779898643493652,
+    "name": "Algol",
+    "nomenclature": "",
+    "parallax_mas": 1.0434881448745728,
+    "quality": null,
+    "relation": null,
+    "source": "gaia",
+    "teff_k": NaN
+  }
+}

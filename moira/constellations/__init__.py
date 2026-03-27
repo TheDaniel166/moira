@@ -8,7 +8,7 @@ Package architectural role:
     Each sub-module provides named string constants, a constellation-scoped
     dispatcher, per-star convenience functions, and list/availability helpers
     for the stars of one constellation, all delegating position computation
-    to moira.fixed_stars.fixed_star_at.
+    to moira.fixed_stars.star_at.
 
 Export/re-export stability contract:
     All sub-module exports are stable.  No symbols are re-exported from this

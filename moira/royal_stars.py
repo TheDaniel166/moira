@@ -14,7 +14,7 @@ Owns:
     - royal_star_at() dispatcher.
     - list_royal_stars() / available_royal_stars() introspection.
 Delegates:
-    - All position computation to moira.fixed_stars.fixed_star_at.
+    - All position computation to moira.fixed_stars.star_at.
     - Catalog availability checks to moira.fixed_stars.list_stars.
 
 Import-time side effects: None.
@@ -34,7 +34,7 @@ the four cardinal directions and the four archangels in Persian astronomy.
 Stars sourced from sefstars.txt via moira.fixed_stars.
 """
 
-from .fixed_stars import fixed_star_at, StarPosition, list_stars
+from .stars import star_at, StarPosition, list_stars
 
 ALDEBARAN = "Aldebaran"
 REGULUS   = "Regulus"
@@ -51,7 +51,7 @@ ROYAL_STAR_NAMES = {
 
 def royal_star_at(name: str, jd_tt: float) -> StarPosition:
     """Return the position of a Royal Star at jd_tt."""
-    return fixed_star_at(name, jd_tt)
+    return star_at(name, jd_tt)
 
 
 def aldebaran_at(jd_tt: float) -> StarPosition:
