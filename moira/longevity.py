@@ -12,11 +12,12 @@ and computing the Ptolemaic years granted based on house placement.
 
 Boundary declaration
 --------------------
-Owns: Ptolemaic year tables, triplicity ruler table, Egyptian bound table,
-      face ruler sequence, dignity scoring, Hyleg determination, Alcocoden
-      identification, and the ``HylegResult`` result vessel.
+Owns: Ptolemaic year tables, triplicity ruler table, face ruler sequence,
+      dignity scoring, Hyleg determination, Alcocoden identification, and
+      the ``HylegResult`` result vessel.
 Delegates: sign/house constants to ``moira.constants``,
-           domicile/exaltation/house-type constants to ``moira.dignities``.
+           domicile/exaltation/house-type constants to ``moira.dignities``,
+           Egyptian bounds doctrine to ``moira.egyptian_bounds``.
 
 Import-time side effects: None
 
@@ -30,7 +31,7 @@ Public surface
 ``HylegResult``          — vessel for the full Hyleg/Alcocoden result.
 ``PTOLEMAIC_YEARS``      — dict of planet to (minor, mean, major) year tuples.
 ``TRIPLICITY_RULERS``    — dict of sign to (day, night, participating) rulers.
-``EGYPTIAN_BOUNDS``      — dict of sign to bound ruler ranges.
+``EGYPTIAN_BOUNDS``      — re-export of the Egyptian bound table.
 ``FACE_RULERS``          — list of 36 face rulers in Chaldean order.
 ``dignity_score_at``     — compute total dignity score of a planet at a degree.
 ``find_hyleg``           — determine the Hyleg using Bonatti's priority order.
@@ -41,6 +42,7 @@ Public surface
 from dataclasses import dataclass
 
 from .constants import SIGNS
+from .egyptian_bounds import EGYPTIAN_BOUNDS
 from .dignities import (
     DOMICILE, EXALTATION,
     ANGULAR_HOUSES, SUCCEDENT_HOUSES, CADENT_HOUSES,
@@ -94,26 +96,6 @@ TRIPLICITY_RULERS: dict[str, tuple[str, str, str]] = {
     "Pisces":      ("Mars",   "Venus",   "Moon"),
 }
 
-# ---------------------------------------------------------------------------
-# Egyptian Bounds (Ptolemaic) — (ruler, start_degree, end_degree) per sign
-# ---------------------------------------------------------------------------
-
-EGYPTIAN_BOUNDS: dict[str, list[tuple[str, float, float]]] = {
-    "Aries":       [("Jupiter", 0,  6), ("Venus",   6, 12), ("Mercury", 12, 20), ("Mars",    20, 25), ("Saturn", 25, 30)],
-    "Taurus":      [("Venus",   0,  8), ("Mercury", 8, 14), ("Jupiter", 14, 22), ("Saturn",  22, 27), ("Mars",   27, 30)],
-    "Gemini":      [("Mercury", 0,  6), ("Jupiter", 6, 12), ("Venus",   12, 17), ("Mars",    17, 24), ("Saturn", 24, 30)],
-    "Cancer":      [("Mars",    0,  7), ("Venus",   7, 13), ("Mercury", 13, 19), ("Jupiter", 19, 26), ("Saturn", 26, 30)],
-    "Leo":         [("Jupiter", 0,  6), ("Venus",   6, 11), ("Saturn",  11, 18), ("Mercury", 18, 24), ("Mars",   24, 30)],
-    "Virgo":       [("Mercury", 0,  7), ("Venus",   7, 17), ("Jupiter", 17, 21), ("Mars",    21, 28), ("Saturn", 28, 30)],
-    "Libra":       [("Saturn",  0,  6), ("Mercury", 6, 14), ("Jupiter", 14, 21), ("Venus",   21, 28), ("Mars",   28, 30)],
-    "Scorpio":     [("Mars",    0,  7), ("Venus",   7, 11), ("Mercury", 11, 19), ("Jupiter", 19, 24), ("Saturn", 24, 30)],
-    "Sagittarius": [("Jupiter", 0, 12), ("Venus",  12, 17), ("Mercury", 17, 21), ("Saturn",  21, 26), ("Mars",   26, 30)],
-    "Capricorn":   [("Mercury", 0,  7), ("Jupiter", 7, 14), ("Venus",   14, 22), ("Saturn",  22, 26), ("Mars",   26, 30)],
-    "Aquarius":    [("Mercury", 0,  7), ("Venus",   7, 13), ("Jupiter", 13, 20), ("Mars",    20, 25), ("Saturn", 25, 30)],
-    "Pisces":      [("Venus",   0, 12), ("Jupiter", 12, 16), ("Mercury", 16, 19), ("Mars",   19, 28), ("Saturn", 28, 30)],
-}
-
-# ---------------------------------------------------------------------------
 # Faces / Decans — Chaldean order starting from Aries 0°
 # Each decan is 10°; 36 decans total, repeating the Chaldean sequence:
 #   Mars, Sun, Venus, Mercury, Moon, Saturn, Jupiter
