@@ -1412,7 +1412,7 @@ from moira import (
 
 ## 10. Fixed Stars
 
-### Classical catalog (`sefstars.txt`)
+### Sovereign fixed-star registry (`star_registry.csv` + JSON sidecars)
 
 ```python
 from moira import (
@@ -1945,5 +1945,5 @@ isolation from the global state (e.g., in tests or multi-tenant contexts).
 | Nutation | IAU 2000A (1365 terms) |
 | Obliquity | Laskar 1986 / IAU 2006 combined |
 | Topocentric Moon | Parallax-corrected RA/Dec and altitude |
-| Fixed stars | Stellarium `sefstars.txt` + Gaia DR3 optional enrichment |
+| Fixed stars | Sovereign registry (`star_registry.csv` + JSON sidecars) |
 | Variable stars | 20-star classical catalog with period/epoch/magnitude data |
