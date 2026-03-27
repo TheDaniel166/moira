@@ -22,3 +22,9 @@ Significant dependency boundaries:
 Import-time initialization side effects: None.
 """
 
+from ..stars import star_name_resolves as _star_name_resolves
+
+
+def _star_name_is_resolvable(name: str) -> bool:
+    return _star_name_resolves(name)
+

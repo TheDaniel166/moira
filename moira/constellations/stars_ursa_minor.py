@@ -32,7 +32,8 @@ Public surface / exports:
 
 Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, StarPosition, list_stars
+from ..stars import star_at, StarPosition
+from . import _star_name_is_resolvable
 
 POLARIS              = "Polaris"
 KOCHAB               = "Kochab"
@@ -84,8 +85,9 @@ def list_ursa_minor_stars() -> list[str]:
 
 
 def available_ursa_minor_stars() -> list[str]:
-    catalog = set(list_stars())
-    return [name for name in URSA_MINOR_STAR_NAMES.values() if name in catalog]
+    return [name for name in URSA_MINOR_STAR_NAMES.values() if _star_name_is_resolvable(name)]
+
+
 
 
 

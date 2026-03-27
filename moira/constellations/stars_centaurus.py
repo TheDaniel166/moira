@@ -32,7 +32,8 @@ Public surface / exports:
 
 Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, StarPosition, list_stars
+from ..stars import star_at, StarPosition
+from . import _star_name_is_resolvable
 
 RIGIL_KENTAURUS  = "Rigil Kentaurus"
 HADAR            = "Hadar"
@@ -99,8 +100,9 @@ def list_centaurus_stars() -> list[str]:
 
 
 def available_centaurus_stars() -> list[str]:
-    catalog = set(list_stars())
-    return [name for name in CENTAURUS_STAR_NAMES.values() if name in catalog]
+    return [name for name in CENTAURUS_STAR_NAMES.values() if _star_name_is_resolvable(name)]
+
+
 
 
 

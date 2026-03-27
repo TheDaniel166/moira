@@ -31,16 +31,17 @@ Public surface / exports:
 
 Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, StarPosition, list_stars
+from ..stars import star_at, StarPosition
+from . import _star_name_is_resolvable
 
 DENEB   = "Deneb"
 ALBIREO = "Albireo"
-SADOR   = "Sador"
+SADOR   = "Sadr"
 
 CYGNUS_STAR_NAMES = {
     DENEB:   "Deneb",
     ALBIREO: "Albireo",
-    SADOR:   "Sador",
+    SADOR:   "Sadr",
 }
 
 
@@ -63,8 +64,9 @@ def list_cygnus_stars() -> list[str]:
 
 
 def available_cygnus_stars() -> list[str]:
-    catalog = set(list_stars())
-    return [name for name in CYGNUS_STAR_NAMES.values() if name in catalog]
+    return [name for name in CYGNUS_STAR_NAMES.values() if _star_name_is_resolvable(name)]
+
+
 
 
 

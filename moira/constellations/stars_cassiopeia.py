@@ -31,7 +31,8 @@ Public surface / exports:
 
 Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, StarPosition, list_stars
+from ..stars import star_at, StarPosition
+from . import _star_name_is_resolvable
 
 SCHEDAR  = "Schedar"
 CAPH     = "Caph"
@@ -93,8 +94,9 @@ def list_cassiopeia_stars() -> list[str]:
 
 
 def available_cassiopeia_stars() -> list[str]:
-    catalog = set(list_stars())
-    return [name for name in CASSIOPEIA_STAR_NAMES.values() if name in catalog]
+    return [name for name in CASSIOPEIA_STAR_NAMES.values() if _star_name_is_resolvable(name)]
+
+
 
 
 

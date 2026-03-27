@@ -34,14 +34,15 @@ Public surface / exports:
 
 Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, StarPosition, list_stars
+from ..stars import star_at, StarPosition
+from . import _star_name_is_resolvable
 
 ALDEBARAN       = "Aldebaran"
 ELNATH          = "Elnath"
 PRIMA_HYADUM    = "Prima Hyadum"
-HYADUM_I        = "Hyadum I"
+HYADUM_I        = "Prima Hyadum"
 SECUNDA_HYADUM  = "Secunda Hyadum"
-HYADUM_II       = "Hyadum II"
+HYADUM_II       = "Secunda Hyadum"
 AIN             = "Ain"
 AL_HECKA        = "Al Hecka"
 ALCYONE         = "Alcyone"
@@ -66,9 +67,9 @@ TAURUS_STAR_NAMES = {
     ALDEBARAN:      "Aldebaran",
     ELNATH:         "Elnath",
     PRIMA_HYADUM:   "Prima Hyadum",
-    HYADUM_I:       "Hyadum I",
+    HYADUM_I:       "Prima Hyadum",
     SECUNDA_HYADUM: "Secunda Hyadum",
-    HYADUM_II:      "Hyadum II",
+    HYADUM_II:      "Secunda Hyadum",
     AIN:            "Ain",
     AL_HECKA:       "Al Hecka",
     ALCYONE:        "Alcyone",
@@ -176,8 +177,9 @@ def list_taurus_stars() -> list[str]:
 
 
 def available_taurus_stars() -> list[str]:
-    catalog = set(list_stars())
-    return [name for name in TAURUS_STAR_NAMES.values() if name in catalog]
+    return [name for name in TAURUS_STAR_NAMES.values() if _star_name_is_resolvable(name)]
+
+
 
 
 

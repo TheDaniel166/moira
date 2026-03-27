@@ -89,17 +89,18 @@ Measured residuals:
   worst residual `0.003971602°` (`14.30"`) in longitude for `ome Dra`; latitude
   residuals are materially smaller
 - ERFA anchor oracle across `Sirius`, `Algol`, `Spica`, and `Aldebaran` from
-  `J1000` to `J3000`: worst residual `0.000357854°` (`1.29"`) in longitude for
-  `Sirius`; worst latitude residual `0.000038526°` (`0.14"`)
+  `J1000` to `J3000`: worst residual `0.000000133772°` (`0.00048"`) in
+  longitude for `Sirius`; worst latitude residual `0.000000006849°`
+  (`0.000025"`)
 - ERFA full-catalog J2000 sweep: no large outliers remain after the case-routing
   repair; the remaining differences are at numerical-noise scale
-- Swiss audit across the same anchor matrix: worst residual `0.007508866°`
-  (`27.03"`) in longitude for `Sirius` at `J1900`; this residual is not
+- Swiss audit across the same anchor matrix: worst residual `0.007512431°`
+  (`27.04"`) in longitude for `Sirius` at `J1900`; this residual is not
   materially driven by TT-vs-UT alignment
 
 What this means:
-- against ERFA, the sovereign star engine is operating at low-arcsecond to
-  sub-arcsecond scale on the audited anchor set
+- against ERFA, the sovereign star engine is now effectively at numerical-noise
+  scale on the audited anchor set
 - against Swiss, the remaining difference is on the order of a few hundredths
   of a degree at worst and reflects model/convention differences rather than a
   Delta T defect
@@ -457,8 +458,7 @@ The main experimental items that still need more validation are:
 1. Sovereign fixed-star positions
    The core oracle path now exists via SOFA/ERFA and offline Swiss fixtures.
    Remaining work is narrower: broaden the published-anchor corpus beyond the
-   current star set and decide whether perspective-motion parity with ERFA
-   should be elevated from audit coverage into engine behavior.
+   current star set if a richer external published reference set is desired.
 
 2. Optional external spot checks
    Astrocartography and local space are now geometry-validated internally, but

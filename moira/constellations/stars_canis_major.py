@@ -31,13 +31,14 @@ Public surface / exports:
 
 Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, StarPosition, list_stars
+from ..stars import star_at, StarPosition
+from . import _star_name_is_resolvable
 
 SIRIUS      = "Sirius"
 MIRZAM      = "Mirzam"
 MULIPHEIN   = "Muliphein"
 WEZEN       = "Wezen"
-ADARA       = "Adara"
+ADARA       = "Adhara"
 FURUD       = "Furud"
 ALUDRA      = "Aludra"
 UNURGUNITE  = "Unurgunite"
@@ -47,7 +48,7 @@ CANIS_MAJOR_STAR_NAMES = {
     MIRZAM:     "Mirzam",
     MULIPHEIN:  "Muliphein",
     WEZEN:      "Wezen",
-    ADARA:      "Adara",
+    ADARA:      "Adhara",
     FURUD:      "Furud",
     ALUDRA:     "Aludra",
     UNURGUNITE: "Unurgunite",
@@ -88,8 +89,9 @@ def list_canis_major_stars() -> list[str]:
 
 
 def available_canis_major_stars() -> list[str]:
-    catalog = set(list_stars())
-    return [name for name in CANIS_MAJOR_STAR_NAMES.values() if name in catalog]
+    return [name for name in CANIS_MAJOR_STAR_NAMES.values() if _star_name_is_resolvable(name)]
+
+
 
 
 

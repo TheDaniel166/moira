@@ -32,23 +32,24 @@ Public surface / exports:
 
 Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, StarPosition, list_stars
+from ..stars import star_at, StarPosition
+from . import _star_name_is_resolvable
 
 ZUBENELGENUBI  = "Zubenelgenubi"
-ZUBENESHAMALI  = "Zubeneshamali"
-ZUBENELAKRAB   = "Zubenelakrab"
-ZUBENELAKRIBI  = "Zubenelakribi"
+ZUBENESHAMALI  = "Zubeneschamali"
+ZUBENELAKRAB   = "Zubenelhakrabi"
+ZUBENELAKRIBI  = "Zubenelhakrabi"
 VISHAKHA       = "Vishakha"
-ZUBENHAKRABI   = "Zubenhakrabi"
+ZUBENHAKRABI   = "Zubenelhakrabi"
 BRACHIUM       = "Brachium"
 
 LIBRA_STAR_NAMES = {
     ZUBENELGENUBI: "Zubenelgenubi",
-    ZUBENESHAMALI: "Zubeneshamali",
-    ZUBENELAKRAB:  "Zubenelakrab",
-    ZUBENELAKRIBI: "Zubenelakribi",
+    ZUBENESHAMALI: "Zubeneschamali",
+    ZUBENELAKRAB:  "Zubenelhakrabi",
+    ZUBENELAKRIBI: "Zubenelhakrabi",
     VISHAKHA:      "Vishakha",
-    ZUBENHAKRABI:  "Zubenhakrabi",
+    ZUBENHAKRABI:  "Zubenelhakrabi",
     BRACHIUM:      "Brachium",
 }
 
@@ -84,8 +85,9 @@ def list_libra_stars() -> list[str]:
 
 
 def available_libra_stars() -> list[str]:
-    catalog = set(list_stars())
-    return [name for name in LIBRA_STAR_NAMES.values() if name in catalog]
+    return [name for name in LIBRA_STAR_NAMES.values() if _star_name_is_resolvable(name)]
+
+
 
 
 

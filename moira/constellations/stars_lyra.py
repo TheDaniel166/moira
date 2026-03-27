@@ -31,20 +31,21 @@ Public surface / exports:
 
 Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, StarPosition, list_stars
+from ..stars import star_at, StarPosition
+from . import _star_name_is_resolvable
 
 VEGA     = "Vega"
 SHELIAK  = "Sheliak"
-SULAPHAT = "Sulaphat"
+SULAPHAT = "Sulafat"
 ALADFAR  = "Aladfar"
-ALATHFAR = "Alathfar"
+ALATHFAR = "Aladfar"
 
 LYRA_STAR_NAMES = {
     VEGA:     "Vega",
     SHELIAK:  "Sheliak",
-    SULAPHAT: "Sulaphat",
+    SULAPHAT: "Sulafat",
     ALADFAR:  "Aladfar",
-    ALATHFAR: "Alathfar",
+    ALATHFAR: "Aladfar",
 }
 
 
@@ -73,8 +74,9 @@ def list_lyra_stars() -> list[str]:
 
 
 def available_lyra_stars() -> list[str]:
-    catalog = set(list_stars())
-    return [name for name in LYRA_STAR_NAMES.values() if name in catalog]
+    return [name for name in LYRA_STAR_NAMES.values() if _star_name_is_resolvable(name)]
+
+
 
 
 

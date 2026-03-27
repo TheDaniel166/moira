@@ -81,14 +81,118 @@ __all__ = [
     "stars_by_magnitude",
     "list_named_stars",
     "find_named_stars",
+    "star_name_resolves",
 ]
 
 _J2000 = 2451545.0
-_AS2DEG = 1.0 / 3600.0
+_MAS2RAD = math.radians(1.0 / (1000.0 * 3600.0))
 _DATA_DIR = Path(__file__).resolve().parent / "data"
 _REGISTRY_PATH = _DATA_DIR / "star_registry.csv"
 _LORE_PATH = _DATA_DIR / "star_lore.json"
 _PROVENANCE_PATH = _DATA_DIR / "star_provenance.json"
+_HISTORICAL_STAR_ALIASES = {
+    "Adhab": "Titawin",
+    "Hydria": "eta Aqr",
+    "Ekkhysis": "Shatabhisha",
+    "Albulaan": "nu. Aqr",
+    "Delta Aquilae": "del Aql",
+    "Deneb el Okab Borealis": "eps Aql",
+    "Deneb el Okab Australis": "Okab",
+    "Bazak": "eta Aql",
+    "Tseen Foo": "Antinous",
+    "Al Thalimaim Posterior": "iot Aql",
+    "Al Thalimaim Anterior": "lam Aql",
+    "Bered": "i Aql",
+    "Princeps": "del Boo",
+    "Asellus Primus": "tet Boo",
+    "Asellus Secundus": "iot Boo",
+    "Asellus Tertius": "kap02 Boo",
+    "Hemelein Prima": "rho Boo",
+    "Hemelein Secunda": "sig Boo",
+    "Decapoda": "Yuyu",
+    "Castra": "eps Cap",
+    "Marakk": "zet Cap",
+    "Baten Algiedi": "ome Cap",
+    "Vathorz Posterior": "tet Car",
+    "Vathorz Prior": "ups Car",
+    "Tsih": "Tiansi",
+    "Marfak": "tet Cas",
+    "Muhlifain": "gam Cen",
+    "Birdun": "eps Cen",
+    "Alhakim": "Kulou",
+    "Ke Kwan": "kap Cen",
+    "Ma Ti": "lam Cen",
+    "Kabkent Secunda": "Heng",
+    "Kabkent Tertia": "phi Cen",
+    "Minkar": "eps Crv",
+    "Avis Satyra": "eta Crv",
+    "Alsharasif": "bet Crt",
+    "Labrum": "del Crt",
+    "Decrux": "Imai",
+    "Juxta Crucem": "Ginan",
+    "Alwaid": "Rastaban",
+    "Nodus II": "Altais",
+    "Tyl": "eps Dra",
+    "Nodus I": "Aldhibah",
+    "Ketu": "kap Dra",
+    "Giansar": "Giausar",
+    "Arrakis": "Alrakis",
+    "Kuma": "nu.01 Dra",
+    "Batentaban Borealis": "chi Dra",
+    "Aldhibain": "Athebyne",
+    "Batentaban Australis": "phi Dra",
+    "Rutilicus": "zet Her",
+    "Sofian": "eta Her",
+    "Rukbalgethi Genubi": "tet Her",
+    "Al Jathiyah": "iot Her",
+    "Melkarth": "mu.01 Her",
+    "Fudail": "pi. Her",
+    "Rukbalgethi Shemali": "tau Her",
+    "Cauda Hydrae": "Naga",
+    "Mautinah": "del Hya",
+    "Hydrobius": "zet Hya",
+    "Pleura": "nu. Hya",
+    "Sataghni": "pi. Hya",
+    "Al Minliar al Shuja": "Minchir",
+    "Ras Elased Australis": "eps Leo",
+    "Al Jabhah": "eta Leo",
+    "Tse Tseng": "iot Leo",
+    "Alminhar": "kap Leo",
+    "Ras Elased Borealis": "Rasalas",
+    "Coxa": "Chertan",
+    "Shir": "Shaomin",
+    "Vishakha": "iot Lib",
+    "Al Durajah": "Bake-eo",
+    "Ensis": "eta Ori",
+    "Simmah": "gam Psc",
+    "Linteum": "del Psc",
+    "Kaht": "eps Psc",
+    "Torcularis Septentrionalis": "Torcular",
+    "Sephdar": "eta Sgr",
+    "Manubrium": "omi Sgr",
+    "Hecatebolus": "tau Sgr",
+    "Nanto": "phi Sgr",
+    "Graffias": "Acrab",
+    "Wei": "Larawag",
+    "Girtab": "kap Sco",
+    "Al Hecka": "Tianguan",
+    "Phaeo": "tet01 Tau",
+    "Phaesula": "Chamukuy",
+    "Althaur": "lam Tau",
+    "Furibundus": "nu. Tau",
+    "Ushakaron": "ksi Tau",
+    "Atirsagne": "omi Tau",
+    "Sterope I": "Asterope",
+    "Sterope II": "Asterope",
+    "Mizar": "zet01 UMa",
+    "Al Haud": "tet UMa",
+    "Talitha Australis": "Alkaphrah",
+    "El Kophrah": "Taiyangshou",
+    "Urodelus": "eps UMi",
+    "Alifa Al Farkadain": "zet UMi",
+    "Auva": "Minelauva",
+    "Rijl al Awwa": "mu. Vir",
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -244,15 +348,23 @@ def _build_indexes() -> tuple[
     )
 
 
-def _resolve_star_record(
-    name: str,
+@lru_cache(maxsize=1)
+def _build_alias_indexes() -> tuple[
+    dict[str, str],
+    dict[str, tuple[str, ...]],
+]:
+    by_alias_exact = dict(_HISTORICAL_STAR_ALIASES)
+    by_alias_folded: dict[str, list[str]] = {}
+    for alias in _HISTORICAL_STAR_ALIASES:
+        by_alias_folded.setdefault(alias.lower(), []).append(alias)
+    return by_alias_exact, {key: tuple(values) for key, values in by_alias_folded.items()}
+
+
+def _resolve_catalog_star_record(
+    query: str,
+    key: str,
     policy: FixedStarLookupPolicy,
 ) -> tuple[_SovereignStarRecord, str]:
-    if not isinstance(name, str) or not name.strip():
-        raise ValueError("star name must be a non-empty string")
-
-    query = name.strip()
-    key = query.lower()
     by_name_exact, by_name_folded, by_nomenclature_exact, by_nomenclature_folded = _build_indexes()
 
     record = by_name_exact.get(query)
@@ -270,7 +382,7 @@ def _resolve_star_record(
         return folded_name_matches[0], "traditional_name_casefold"
     if len(folded_name_matches) > 1:
         raise KeyError(
-            f"Star {name!r} is ambiguous under case-insensitive lookup. "
+            f"Star {query!r} is ambiguous under case-insensitive lookup. "
             f"Use the exact catalog casing or nomenclature."
         )
 
@@ -279,7 +391,7 @@ def _resolve_star_record(
         return folded_nomenclature_matches[0], "nomenclature_casefold"
     if len(folded_nomenclature_matches) > 1:
         raise KeyError(
-            f"Star {name!r} is ambiguous under case-insensitive nomenclature lookup. "
+            f"Star {query!r} is ambiguous under case-insensitive nomenclature lookup. "
             f"Use the exact catalog casing."
         )
 
@@ -290,21 +402,109 @@ def _resolve_star_record(
         if matches:
             return min(matches, key=lambda candidate: len(candidate.name)), "prefix_shortest"
 
-    raise KeyError(f"Star {name!r} not in sovereign registry. Use list_stars() to inspect available names.")
+    raise KeyError(f"Star {query!r} not in sovereign registry. Use list_stars() to inspect available names.")
 
 
-def _apply_proper_motion(record: _SovereignStarRecord, jd_tt: float) -> tuple[float, float]:
+def _resolve_star_record(
+    name: str,
+    policy: FixedStarLookupPolicy,
+) -> tuple[_SovereignStarRecord, str]:
+    if not isinstance(name, str) or not name.strip():
+        raise ValueError("star name must be a non-empty string")
+
+    query = name.strip()
+    key = query.lower()
+    try:
+        return _resolve_catalog_star_record(query, key, policy)
+    except KeyError as missing:
+        by_alias_exact, by_alias_folded = _build_alias_indexes()
+        alias_target = by_alias_exact.get(query)
+        if alias_target is not None:
+            record, _ = _resolve_catalog_star_record(alias_target, alias_target.lower(), policy)
+            return record, "historical_alias"
+
+        folded_alias_matches = by_alias_folded.get(key, ())
+        if len(folded_alias_matches) == 1:
+            alias_target = by_alias_exact[folded_alias_matches[0]]
+            record, _ = _resolve_catalog_star_record(alias_target, alias_target.lower(), policy)
+            return record, "historical_alias_casefold"
+        if len(folded_alias_matches) > 1:
+            raise KeyError(
+                f"Star {name!r} is ambiguous under case-insensitive historical alias lookup. "
+                f"Use the exact alias casing."
+            )
+        raise missing
+
+
+def _icrs_unit_vector(ra_deg: float, dec_deg: float) -> tuple[float, float, float]:
+    ra_rad = math.radians(ra_deg)
+    dec_rad = math.radians(dec_deg)
+    cos_dec = math.cos(dec_rad)
+    return (
+        cos_dec * math.cos(ra_rad),
+        cos_dec * math.sin(ra_rad),
+        math.sin(dec_rad),
+    )
+
+
+def _propagate_icrs_vector(record: _SovereignStarRecord, jd_tt: float) -> tuple[float, float, float]:
     dt_years = (jd_tt - _J2000) / 365.25
+    if dt_years == 0.0:
+        return _icrs_unit_vector(record.ra_deg, record.dec_deg)
+
+    ra_rad = math.radians(record.ra_deg)
     dec_rad = math.radians(record.dec_deg)
     cos_dec = math.cos(dec_rad)
+    sin_dec = math.sin(dec_rad)
+    cos_ra = math.cos(ra_rad)
+    sin_ra = math.sin(ra_rad)
 
-    ra_deg = record.ra_deg
-    if abs(cos_dec) > 1e-10:
-        ra_deg += ((record.pmra_mas_yr / 1000.0) * _AS2DEG / cos_dec) * dt_years
+    # Gaia/HIP-style pmRA is mu_alpha* = d(alpha)/dt * cos(delta).
+    dra_dt = 0.0
+    if abs(cos_dec) > 1e-12:
+        dra_dt = record.pmra_mas_yr * _MAS2RAD / cos_dec
+    ddec_dt = record.pmdec_mas_yr * _MAS2RAD
 
-    dec_deg = record.dec_deg + ((record.pmdec_mas_yr / 1000.0) * _AS2DEG) * dt_years
-    dec_deg = max(-90.0, min(90.0, dec_deg))
-    return ra_deg % 360.0, dec_deg
+    p_hat = (
+        cos_dec * cos_ra,
+        cos_dec * sin_ra,
+        sin_dec,
+    )
+    east_hat = (-sin_ra, cos_ra, 0.0)
+    north_hat = (-sin_dec * cos_ra, -sin_dec * sin_ra, cos_dec)
+
+    tangential_velocity = (
+        dra_dt * cos_dec * east_hat[0] + ddec_dt * north_hat[0],
+        dra_dt * cos_dec * east_hat[1] + ddec_dt * north_hat[1],
+        dra_dt * cos_dec * east_hat[2] + ddec_dt * north_hat[2],
+    )
+
+    if math.isfinite(record.parallax_mas) and record.parallax_mas > 0.0:
+        distance_pc = 1000.0 / record.parallax_mas
+        propagated = (
+            distance_pc * p_hat[0] + tangential_velocity[0] * distance_pc * dt_years,
+            distance_pc * p_hat[1] + tangential_velocity[1] * distance_pc * dt_years,
+            distance_pc * p_hat[2] + tangential_velocity[2] * distance_pc * dt_years,
+        )
+    else:
+        propagated = (
+            p_hat[0] + tangential_velocity[0] * dt_years,
+            p_hat[1] + tangential_velocity[1] * dt_years,
+            p_hat[2] + tangential_velocity[2] * dt_years,
+        )
+
+    norm = math.sqrt(
+        propagated[0] * propagated[0]
+        + propagated[1] * propagated[1]
+        + propagated[2] * propagated[2]
+    )
+    if norm == 0.0:
+        return p_hat
+    return (
+        propagated[0] / norm,
+        propagated[1] / norm,
+        propagated[2] / norm,
+    )
 
 
 def _distance_ly_from_parallax(parallax_mas: float) -> float:
@@ -314,14 +514,7 @@ def _distance_ly_from_parallax(parallax_mas: float) -> float:
 
 
 def _native_position(record: _SovereignStarRecord, jd_tt: float) -> tuple[float, float]:
-    ra_deg, dec_deg = _apply_proper_motion(record, jd_tt)
-    ra_rad = math.radians(ra_deg)
-    dec_rad = math.radians(dec_deg)
-    xyz = (
-        math.cos(dec_rad) * math.cos(ra_rad),
-        math.cos(dec_rad) * math.sin(ra_rad),
-        math.sin(dec_rad),
-    )
+    xyz = _propagate_icrs_vector(record, jd_tt)
     lon, lat, _ = icrf_to_true_ecliptic(jd_tt, xyz)
     return lon, lat
 
@@ -415,6 +608,14 @@ find_stars = find_named_stars
 def star_magnitude(name: str) -> float:
     record, _ = _resolve_star_record(name, DEFAULT_FIXED_STAR_POLICY.lookup)
     return record.magnitude_v
+
+
+def star_name_resolves(name: str) -> bool:
+    try:
+        _resolve_star_record(name, DEFAULT_FIXED_STAR_POLICY.lookup)
+    except (KeyError, ValueError):
+        return False
+    return True
 
 
 def _longitude_delta(a: float, b: float) -> float:

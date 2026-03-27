@@ -31,7 +31,8 @@ Public surface / exports:
 
 Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, StarPosition, list_stars
+from ..stars import star_at, StarPosition
+from . import _star_name_is_resolvable
 
 HAMAL       = "Hamal"
 SHERATAN    = "Sheratan"
@@ -78,8 +79,9 @@ def list_aries_stars() -> list[str]:
 
 
 def available_aries_stars() -> list[str]:
-    catalog = set(list_stars())
-    return [name for name in ARIES_STAR_NAMES.values() if name in catalog]
+    return [name for name in ARIES_STAR_NAMES.values() if _star_name_is_resolvable(name)]
+
+
 
 
 

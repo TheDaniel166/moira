@@ -32,7 +32,8 @@ Public surface / exports:
 
 Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, StarPosition, list_stars
+from ..stars import star_at, StarPosition
+from . import _star_name_is_resolvable
 
 SPICA        = "Spica"
 ZAVIJAVA     = "Zavijava"
@@ -104,8 +105,9 @@ def list_virgo_stars() -> list[str]:
 
 
 def available_virgo_stars() -> list[str]:
-    catalog = set(list_stars())
-    return [name for name in VIRGO_STAR_NAMES.values() if name in catalog]
+    return [name for name in VIRGO_STAR_NAMES.values() if _star_name_is_resolvable(name)]
+
+
 
 
 

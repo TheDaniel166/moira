@@ -31,7 +31,8 @@ Public surface / exports:
 
 Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, StarPosition, list_stars
+from ..stars import star_at, StarPosition
+from . import _star_name_is_resolvable
 
 MIRFAK = "Mirfak"
 ALGOL  = "Algol"
@@ -63,8 +64,9 @@ def list_perseus_stars() -> list[str]:
 
 
 def available_perseus_stars() -> list[str]:
-    catalog = set(list_stars())
-    return [name for name in PERSEUS_STAR_NAMES.values() if name in catalog]
+    return [name for name in PERSEUS_STAR_NAMES.values() if _star_name_is_resolvable(name)]
+
+
 
 
 

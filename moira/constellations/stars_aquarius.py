@@ -32,11 +32,12 @@ Public surface / exports:
 
 Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, StarPosition, list_stars
+from ..stars import star_at, StarPosition
+from . import _star_name_is_resolvable
 
 SADALMELIK   = "Sadalmelik"
 SADALSUUD    = "Sadalsuud"
-SADALACHBIA  = "Sadalachbia"
+SADALACHBIA  = "Sadachbia"
 SKAT         = "Skat"
 ALBALI       = "Albali"
 HYDRIA       = "Hydria"
@@ -49,7 +50,7 @@ BUNDA        = "Bunda"
 AQUARIUS_STAR_NAMES = {
     SADALMELIK:  "Sadalmelik",
     SADALSUUD:   "Sadalsuud",
-    SADALACHBIA: "Sadalachbia",
+    SADALACHBIA: "Sadachbia",
     SKAT:        "Skat",
     ALBALI:      "Albali",
     HYDRIA:      "Hydria",
@@ -104,8 +105,9 @@ def list_aquarius_stars() -> list[str]:
 
 
 def available_aquarius_stars() -> list[str]:
-    catalog = set(list_stars())
-    return [name for name in AQUARIUS_STAR_NAMES.values() if name in catalog]
+    return [name for name in AQUARIUS_STAR_NAMES.values() if _star_name_is_resolvable(name)]
+
+
 
 
 

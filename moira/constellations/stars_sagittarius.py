@@ -26,14 +26,15 @@ External dependency assumptions:
 Public surface / exports:
     RUKBAT, ARKAB_PRIOR, ARKAB_POSTERIOR, ALNASL, KAUS_MEDIA,
     KAUS_AUSTRALIS, ASCELLA, SEPHDAR, KAUS_BOREALIS, POLIS,
-    MANUBRIUM, ALBALDAH, NUNKI, HECATEBOLUS, NANTO, TEREBELLIUM, FACIES
+    MANUBRIUM, ALBALDAH, NUNKI, HECATEBOLUS, NANTO, TEREBELLIUM
     SAGITTARIUS_STAR_NAMES
     sagittarius_star_at() and all per-star _at() functions
     list_sagittarius_stars(), available_sagittarius_stars()
 
 Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, StarPosition, list_stars
+from ..stars import star_at, StarPosition
+from . import _star_name_is_resolvable
 
 RUKBAT           = "Rukbat"
 ARKAB_PRIOR      = "Arkab Prior"
@@ -50,8 +51,7 @@ ALBALDAH         = "Albaldah"
 NUNKI            = "Nunki"
 HECATEBOLUS      = "Hecatebolus"
 NANTO            = "Nanto"
-TEREBELLIUM      = "Terebellium"
-FACIES           = "Facies"
+TEREBELLIUM      = "Terebellum"
 
 SAGITTARIUS_STAR_NAMES = {
     RUKBAT:          "Rukbat",
@@ -69,8 +69,7 @@ SAGITTARIUS_STAR_NAMES = {
     NUNKI:           "Nunki",
     HECATEBOLUS:     "Hecatebolus",
     NANTO:           "Nanto",
-    TEREBELLIUM:     "Terebellium",
-    FACIES:          "Facies",
+    TEREBELLIUM:     "Terebellum",
 }
 
 
@@ -126,17 +125,14 @@ def nanto_at(jd_tt: float) -> StarPosition:
 def terebellium_at(jd_tt: float) -> StarPosition:
     return sagittarius_star_at(TEREBELLIUM, jd_tt)
 
-def facies_at(jd_tt: float) -> StarPosition:
-    return sagittarius_star_at(FACIES, jd_tt)
-
-
 def list_sagittarius_stars() -> list[str]:
     return list(SAGITTARIUS_STAR_NAMES.values())
 
 
 def available_sagittarius_stars() -> list[str]:
-    catalog = set(list_stars())
-    return [name for name in SAGITTARIUS_STAR_NAMES.values() if name in catalog]
+    return [name for name in SAGITTARIUS_STAR_NAMES.values() if _star_name_is_resolvable(name)]
+
+
 
 
 

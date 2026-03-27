@@ -32,7 +32,8 @@ Public surface / exports:
 
 Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, StarPosition, list_stars
+from ..stars import star_at, StarPosition
+from . import _star_name_is_resolvable
 
 BETELGEUSE = "Betelgeuse"
 RIGEL      = "Rigel"
@@ -41,11 +42,11 @@ MINTAKA    = "Mintaka"
 ALNILAM    = "Alnilam"
 ALNITAK    = "Alnitak"
 ENSIS      = "Ensis"
-HATSYA     = "Hatsya"
+HATSYA     = "Hatysa"
 SAIPH      = "Saiph"
 MEISSA     = "Meissa"
 TABIT      = "Tabit"
-THABIT     = "Thabit"
+THABIT     = "Tabit"
 
 ORION_STAR_NAMES = {
     BETELGEUSE: "Betelgeuse",
@@ -55,11 +56,11 @@ ORION_STAR_NAMES = {
     ALNILAM:    "Alnilam",
     ALNITAK:    "Alnitak",
     ENSIS:      "Ensis",
-    HATSYA:     "Hatsya",
+    HATSYA:     "Hatysa",
     SAIPH:      "Saiph",
     MEISSA:     "Meissa",
     TABIT:      "Tabit",
-    THABIT:     "Thabit",
+    THABIT:     "Tabit",
 }
 
 
@@ -109,8 +110,9 @@ def list_orion_stars() -> list[str]:
 
 
 def available_orion_stars() -> list[str]:
-    catalog = set(list_stars())
-    return [name for name in ORION_STAR_NAMES.values() if name in catalog]
+    return [name for name in ORION_STAR_NAMES.values() if _star_name_is_resolvable(name)]
+
+
 
 
 

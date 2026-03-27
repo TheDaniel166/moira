@@ -31,16 +31,17 @@ Public surface / exports:
 
 Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, StarPosition, list_stars
+from ..stars import star_at, StarPosition
+from . import _star_name_is_resolvable
 
 RASALHAGUE  = "Rasalhague"
-CELBALRAI   = "Celbalrai"
+CELBALRAI   = "Cebalrai"
 AL_DURAJAH  = "Al Durajah"
 YED_PRIOR   = "Yed Prior"
 
 OPHIUCHUS_STAR_NAMES = {
     RASALHAGUE: "Rasalhague",
-    CELBALRAI:  "Celbalrai",
+    CELBALRAI:  "Cebalrai",
     AL_DURAJAH: "Al Durajah",
     YED_PRIOR:  "Yed Prior",
 }
@@ -68,8 +69,9 @@ def list_ophiuchus_stars() -> list[str]:
 
 
 def available_ophiuchus_stars() -> list[str]:
-    catalog = set(list_stars())
-    return [name for name in OPHIUCHUS_STAR_NAMES.values() if name in catalog]
+    return [name for name in OPHIUCHUS_STAR_NAMES.values() if _star_name_is_resolvable(name)]
+
+
 
 
 

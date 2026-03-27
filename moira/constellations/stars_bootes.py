@@ -33,14 +33,15 @@ Public surface / exports:
 
 Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, StarPosition, list_stars
+from ..stars import star_at, StarPosition
+from . import _star_name_is_resolvable
 
 ARCTURUS          = "Arcturus"
 NEKKAR            = "Nekkar"
 SEGINUS           = "Seginus"
 PRINCEPS          = "Princeps"
 IZAR              = "Izar"
-MUFRID            = "Mufrid"
+MUFRID            = "Muphrid"
 ASELLUS_PRIMUS    = "Asellus Primus"
 ASELLUS_SECUNDUS  = "Asellus Secundus"
 ASELLUS_TERTIUS   = "Asellus Tertius"
@@ -48,7 +49,7 @@ XUANGE            = "Xuange"
 ALKALUROPS        = "Alkalurops"
 HEMELEIN_PRIMA    = "Hemelein Prima"
 HEMELEIN_SECUNDA  = "Hemelein Secunda"
-CEGINUS           = "Ceginus"
+CEGINUS           = "Seginus"
 MERGA             = "Merga"
 
 BOOTES_STAR_NAMES = {
@@ -57,7 +58,7 @@ BOOTES_STAR_NAMES = {
     SEGINUS:          "Seginus",
     PRINCEPS:         "Princeps",
     IZAR:             "Izar",
-    MUFRID:           "Mufrid",
+    MUFRID:           "Muphrid",
     ASELLUS_PRIMUS:   "Asellus Primus",
     ASELLUS_SECUNDUS: "Asellus Secundus",
     ASELLUS_TERTIUS:  "Asellus Tertius",
@@ -65,7 +66,7 @@ BOOTES_STAR_NAMES = {
     ALKALUROPS:       "Alkalurops",
     HEMELEIN_PRIMA:   "Hemelein Prima",
     HEMELEIN_SECUNDA: "Hemelein Secunda",
-    CEGINUS:          "Ceginus",
+    CEGINUS:          "Seginus",
     MERGA:            "Merga",
 }
 
@@ -125,8 +126,9 @@ def list_bootes_stars() -> list[str]:
 
 
 def available_bootes_stars() -> list[str]:
-    catalog = set(list_stars())
-    return [name for name in BOOTES_STAR_NAMES.values() if name in catalog]
+    return [name for name in BOOTES_STAR_NAMES.values() if _star_name_is_resolvable(name)]
+
+
 
 
 

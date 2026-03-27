@@ -33,32 +33,33 @@ Public surface / exports:
 
 Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, StarPosition, list_stars
+from ..stars import star_at, StarPosition
+from . import _star_name_is_resolvable
 
-RAS_ALGETHI           = "Ras Algethi"
+RAS_ALGETHI           = "Rasalgethi"
 KORNEPHOROS           = "Kornephoros"
 RUTILICUS             = "Rutilicus"
 SARIN                 = "Sarin"
 SOFIAN                = "Sofian"
 RUKBALGETHI_GENUBI    = "Rukbalgethi Genubi"
 AL_JATHIYAH           = "Al Jathiyah"
-MARSIK                = "Marsik"
-MASYM                 = "Masym"
+MARSIK                = "Marsic"
+MASYM                 = "Maasym"
 MELKARTH              = "Melkarth"
 FUDAIL                = "Fudail"
 RUKBALGETHI_SHEMALI   = "Rukbalgethi Shemali"
 CUJAM                 = "Cujam"
 
 HERCULES_STAR_NAMES = {
-    RAS_ALGETHI:          "Ras Algethi",
+    RAS_ALGETHI:          "Rasalgethi",
     KORNEPHOROS:          "Kornephoros",
     RUTILICUS:            "Rutilicus",
     SARIN:                "Sarin",
     SOFIAN:               "Sofian",
     RUKBALGETHI_GENUBI:   "Rukbalgethi Genubi",
     AL_JATHIYAH:          "Al Jathiyah",
-    MARSIK:               "Marsik",
-    MASYM:                "Masym",
+    MARSIK:               "Marsic",
+    MASYM:                "Maasym",
     MELKARTH:             "Melkarth",
     FUDAIL:               "Fudail",
     RUKBALGETHI_SHEMALI:  "Rukbalgethi Shemali",
@@ -115,8 +116,9 @@ def list_hercules_stars() -> list[str]:
 
 
 def available_hercules_stars() -> list[str]:
-    catalog = set(list_stars())
-    return [name for name in HERCULES_STAR_NAMES.values() if name in catalog]
+    return [name for name in HERCULES_STAR_NAMES.values() if _star_name_is_resolvable(name)]
+
+
 
 
 

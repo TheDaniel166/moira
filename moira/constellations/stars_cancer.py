@@ -31,21 +31,22 @@ Public surface / exports:
 
 Stars sourced from the Sovereign Star Registry.
 """
-from ..stars import star_at, StarPosition, list_stars
+from ..stars import star_at, StarPosition
+from . import _star_name_is_resolvable
 
 ACUBENS            = "Acubens"
-AL_TARF            = "Al Tarf"
+AL_TARF            = "Tarf"
 ASELLUS_BOREALIS   = "Asellus Borealis"
 ASELLUS_AUSTRALIS  = "Asellus Australis"
-TEGMEN             = "Tegmen"
+TEGMEN             = "Tegmine"
 DECAPODA           = "Decapoda"
 
 CANCER_STAR_NAMES = {
     ACUBENS:           "Acubens",
-    AL_TARF:           "Al Tarf",
+    AL_TARF:           "Tarf",
     ASELLUS_BOREALIS:  "Asellus Borealis",
     ASELLUS_AUSTRALIS: "Asellus Australis",
-    TEGMEN:            "Tegmen",
+    TEGMEN:            "Tegmine",
     DECAPODA:          "Decapoda",
 }
 
@@ -78,8 +79,9 @@ def list_cancer_stars() -> list[str]:
 
 
 def available_cancer_stars() -> list[str]:
-    catalog = set(list_stars())
-    return [name for name in CANCER_STAR_NAMES.values() if name in catalog]
+    return [name for name in CANCER_STAR_NAMES.values() if _star_name_is_resolvable(name)]
+
+
 
 
 
