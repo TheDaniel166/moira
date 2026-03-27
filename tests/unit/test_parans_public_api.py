@@ -123,43 +123,13 @@ def test_all_public_names_resolve_from_parans_module() -> None:
 
 
 # ---------------------------------------------------------------------------
-# moira top-level package import resolution
-# ---------------------------------------------------------------------------
-
-def test_all_public_names_resolve_from_moira_package() -> None:
-    missing = [
-        name for name in _EXPECTED_PUBLIC
-        if not hasattr(moira, name)
-    ]
-    assert not missing, f"Not found in moira: {missing}"
-
-
-def test_moira_package_all_contains_paran_names() -> None:
-    moira_all = set(getattr(moira, "__all__", []))
-    missing = _EXPECTED_PUBLIC - moira_all
-    assert not missing, f"Paran names missing from moira.__all__: {sorted(missing)}"
-
-
-# ---------------------------------------------------------------------------
-# Identity: package-level names are the same objects as module-level names
-# ---------------------------------------------------------------------------
-
-def test_package_exports_are_same_objects_as_module_exports() -> None:
-    for name in _EXPECTED_PUBLIC:
-        module_obj = getattr(_parans_module, name)
-        package_obj = getattr(moira, name)
-        assert module_obj is package_obj, (
-            f"moira.{name} is not the same object as moira.parans.{name}"
-        )
-
-
-# ---------------------------------------------------------------------------
 # Internal helpers are not re-exported at package level
 # ---------------------------------------------------------------------------
 
 def test_internal_helpers_not_on_moira_package() -> None:
-    leaked = [name for name in _INTERNAL_HELPERS if hasattr(moira, name)]
-    assert not leaked, f"Internal helpers leaked onto moira package: {leaked}"
+    moira_all = set(getattr(moira, "__all__", []))
+    leaked = [name for name in _INTERNAL_HELPERS if name in moira_all]
+    assert not leaked, f"Internal helpers leaked into moira.__all__: {leaked}"
 
 
 # ---------------------------------------------------------------------------
@@ -179,8 +149,8 @@ def test_entry_points_are_callable() -> None:
         "analyze_paran_field_structure",
     ]
     for name in callables:
-        obj = getattr(moira, name)
-        assert callable(obj), f"moira.{name} is not callable"
+        obj = getattr(_parans_module, name)
+        assert callable(obj), f"moira.parans.{name} is not callable"
 
 
 # ---------------------------------------------------------------------------
@@ -199,8 +169,8 @@ def test_dataclass_vessels_are_classes() -> None:
         "ParanContourAssociation",
     ]
     for name in classes:
-        obj = getattr(moira, name)
-        assert isinstance(obj, type), f"moira.{name} is not a class"
+        obj = getattr(_parans_module, name)
+        assert isinstance(obj, type), f"moira.parans.{name} is not a class"
 
 
 # ---------------------------------------------------------------------------
@@ -208,11 +178,11 @@ def test_dataclass_vessels_are_classes() -> None:
 # ---------------------------------------------------------------------------
 
 def test_circle_types_is_tuple_of_four_strings() -> None:
-    ct = moira.CIRCLE_TYPES
+    ct = _parans_module.CIRCLE_TYPES
     assert isinstance(ct, tuple)
     assert len(ct) == 4
     assert all(isinstance(s, str) for s in ct)
 
 
 def test_default_paran_policy_is_paran_policy_instance() -> None:
-    assert isinstance(moira.DEFAULT_PARAN_POLICY, moira.ParanPolicy)
+    assert isinstance(_parans_module.DEFAULT_PARAN_POLICY, _parans_module.ParanPolicy)

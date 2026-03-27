@@ -88,10 +88,10 @@ def test_all_count():
     assert len(_harm_mod.__all__) == 16
 
 
-def test_all_names_importable_from_moira():
-    """Every public name is re-exported through moira.__init__."""
+def test_harmonics_are_not_promoted_to_root_public_contract():
+    """The harmonics surface belongs to moira.harmonics, not moira.__all__."""
     for name in _harm_mod.__all__:
-        assert hasattr(moira, name), f"{name!r} not re-exported by moira"
+        assert name not in moira.__all__, f"{name!r} should not be in moira.__all__"
 
 
 def test_no_private_names_in_all():

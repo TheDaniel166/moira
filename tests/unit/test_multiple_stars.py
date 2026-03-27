@@ -174,7 +174,6 @@ def test_public_surface_is_exposed_from_module_and_top_level_package() -> None:
         "alpha_cen_separation_at",
     }
     assert set(ms.__all__) == expected
-    assert expected <= set(moira.__all__)
     assert "_CATALOG" not in ms.__all__
     assert "_solve_kepler" not in ms.__all__
 

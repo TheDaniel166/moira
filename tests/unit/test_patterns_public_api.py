@@ -1,13 +1,12 @@
 """
 tests/unit/test_patterns_public_api.py
 
-Validates that the curated patterns backend public API is exposed at the moira
-package root while helper machinery remains internal.
+Validates that the curated patterns backend public API is exposed from the
+owning module while helper machinery remains internal.
 
-Scope: moira.__init__ patterns exports only. No computation is performed.
+Scope: moira.patterns exports only. No computation is performed.
 """
 
-import moira
 import moira.patterns as _patterns_module
 
 
@@ -76,34 +75,18 @@ _INTERNAL_NAMES = [
 ]
 
 
-class TestPackageLevelResolution:
-    def test_all_curated_names_resolve_from_moira(self):
-        for name in _CURATED_PUBLIC_NAMES:
-            assert hasattr(moira, name), f"moira.{name} not found"
-
-    def test_all_curated_names_in_moira_all(self):
-        for name in _CURATED_PUBLIC_NAMES:
-            assert name in moira.__all__, f"{name!r} missing from moira.__all__"
-
-    def test_no_internal_names_in_moira_all(self):
-        for name in _INTERNAL_NAMES:
-            assert name not in moira.__all__, f"{name!r} leaked into moira.__all__"
-
-    def test_internal_names_not_in_package_namespace(self):
-        for name in _INTERNAL_NAMES:
-            assert not hasattr(moira, name), f"Internal {name!r} leaked into moira"
-
-
 class TestModuleAgreement:
     def test_all_curated_names_resolve_from_moira_patterns(self):
         for name in _CURATED_PUBLIC_NAMES:
             assert hasattr(_patterns_module, name), f"moira.patterns.{name} not found"
 
-    def test_curated_package_exports_are_module_objects(self):
+    def test_all_curated_names_in_module_all(self):
         for name in _CURATED_PUBLIC_NAMES:
-            assert getattr(moira, name) is getattr(_patterns_module, name), (
-                f"moira.{name} and moira.patterns.{name} are different objects"
-            )
+            assert name in _patterns_module.__all__, f"{name!r} missing from moira.patterns.__all__"
+
+    def test_no_internal_names_in_module_all(self):
+        for name in _INTERNAL_NAMES:
+            assert name not in _patterns_module.__all__, f"{name!r} leaked into moira.patterns.__all__"
 
     def test_internal_names_remain_accessible_on_module(self):
         for name in _INTERNAL_NAMES:

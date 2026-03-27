@@ -1,13 +1,12 @@
 """
 tests/unit/test_dignities_public_api.py
 
-Validates that the curated dignity backend public API is exposed at the moira
-package root while helper machinery remains internal.
+Validates that the curated dignity backend public API is exposed from the
+owning module while helper machinery remains internal.
 
-Scope: moira.__init__ dignity exports only. No computation is performed.
+Scope: moira.dignities exports only. No computation is performed.
 """
 
-import moira
 import moira.dignities as _dignities_module
 
 
@@ -78,34 +77,18 @@ _INTERNAL_NAMES = [
 ]
 
 
-class TestPackageLevelResolution:
-    def test_all_curated_names_resolve_from_moira(self):
-        for name in _CURATED_PUBLIC_NAMES:
-            assert hasattr(moira, name), f"moira.{name} not found"
-
-    def test_all_curated_names_in_moira_all(self):
-        for name in _CURATED_PUBLIC_NAMES:
-            assert name in moira.__all__, f"{name!r} missing from moira.__all__"
-
-    def test_no_internal_names_in_moira_all(self):
-        for name in _INTERNAL_NAMES:
-            assert name not in moira.__all__, f"{name!r} leaked into moira.__all__"
-
-    def test_internal_names_not_in_package_namespace(self):
-        for name in _INTERNAL_NAMES:
-            assert not hasattr(moira, name), f"Internal {name!r} leaked into moira"
-
-
 class TestModuleAgreement:
     def test_all_curated_names_resolve_from_moira_dignities(self):
         for name in _CURATED_PUBLIC_NAMES:
             assert hasattr(_dignities_module, name), f"moira.dignities.{name} not found"
 
-    def test_curated_package_exports_are_module_objects(self):
+    def test_all_curated_names_in_module_all(self):
         for name in _CURATED_PUBLIC_NAMES:
-            assert getattr(moira, name) is getattr(_dignities_module, name), (
-                f"moira.{name} and moira.dignities.{name} are different objects"
-            )
+            assert name in _dignities_module.__all__, f"{name!r} missing from moira.dignities.__all__"
+
+    def test_no_internal_names_in_module_all(self):
+        for name in _INTERNAL_NAMES:
+            assert name not in _dignities_module.__all__, f"{name!r} leaked into moira.dignities.__all__"
 
     def test_internal_names_remain_accessible_on_module(self):
         module_internal_names = ["_service"]

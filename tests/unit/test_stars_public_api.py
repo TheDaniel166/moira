@@ -32,9 +32,8 @@ def test_stars_exports_all_required_symbols():
     missing = [sym for sym in EXPECTED_SYMBOLS if not hasattr(stars, sym)]
     assert not missing, f"Missing symbols in moira.stars: {missing}"
 
-def test_moira_init_can_import_all_star_symbols():
-    """Verify that moira/__init__.py itself can be imported without ImportError."""
+def test_moira_root_import_remains_thin_and_importable():
+    """Verify that moira/__init__.py imports cleanly without re-exporting star internals."""
     import moira
-    assert hasattr(moira, "star_at")
-    assert hasattr(moira, "FixedStar")
-    assert hasattr(moira, "StarPosition")
+    assert hasattr(moira, "Moira")
+    assert "star_at" not in moira.__all__

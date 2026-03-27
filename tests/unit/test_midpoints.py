@@ -137,13 +137,6 @@ def test_internal_names_absent_from_all():
     assert not leaked, f"Internal names in __all__: {leaked}"
 
 
-def test_parent_package_exports_all_midpoint_names():
-    """moira.__all__ re-exports every name in midpoints.__all__."""
-    parent_all = frozenset(moira.__all__)
-    missing = _EXPECTED_PUBLIC - parent_all
-    assert not missing, f"moira.__all__ missing: {missing}"
-
-
 def test_planet_set_classic_has_7():
     assert len(CLASSIC_7) == 7
 

@@ -81,13 +81,6 @@ def test_internal_names_absent_from_all():
     assert not leaked, f"Internal names leaked into __all__: {leaked}"
 
 
-def test_parent_package_exports_voc_names():
-    """RULE-12: moira.__all__ re-exports every name in void_of_course.__all__."""
-    parent_all = frozenset(moira.__all__)
-    missing = _EXPECTED_PUBLIC - parent_all
-    assert not missing, f"moira.__all__ missing: {missing}"
-
-
 def test_traditional_body_count():
     """RULE-07: _TRADITIONAL_BODIES contains exactly 6 bodies."""
     assert len(_voc_mod._TRADITIONAL_BODIES) == 6

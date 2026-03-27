@@ -82,11 +82,7 @@ class TestPublicAPIResolution:
 
     def test_all_names_on_moira_package(self):
         for name in self._PUBLIC_NAMES:
-            assert hasattr(moira, name), f"moira.{name} not found"
-
-    def test_all_names_in_moira_all(self):
-        for name in self._PUBLIC_NAMES:
-            assert name in moira.__all__, f"{name!r} missing from moira.__all__"
+            assert name not in moira.__all__, f"moira.__all__ should stay thin; found {name!r}"
 
     def test_all_names_on_chart_shape_module(self):
         for name in self._PUBLIC_NAMES:
@@ -95,12 +91,6 @@ class TestPublicAPIResolution:
     def test_module_all_exists_and_matches(self):
         assert hasattr(_cs_module, "__all__")
         assert set(_cs_module.__all__) == set(self._PUBLIC_NAMES)
-
-    def test_package_and_module_are_same_objects(self):
-        for name in self._PUBLIC_NAMES:
-            assert getattr(moira, name) is getattr(_cs_module, name), (
-                f"moira.{name} and moira.chart_shape.{name} are different objects"
-            )
 
     def test_internals_absent_from_all(self):
         internals = [

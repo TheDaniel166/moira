@@ -1,14 +1,13 @@
 """
 tests/unit/test_house_public_api.py
 
-Validates that the curated houses public API is correctly wired into the
-moira package surface and that internal machinery remains unexposed.
+Validates that the curated houses public API is correctly exposed from the
+owning module and that internal machinery remains unexposed.
 
-Scope: moira.__init__ exports and moira.houses.__all__ contract.
+Scope: moira.houses.__all__ contract.
 No computation is performed; all assertions are import-resolution checks.
 """
 
-import moira
 import moira.houses as _houses_module
 
 _CURATED_PUBLIC_NAMES = [
@@ -39,6 +38,11 @@ _CURATED_PUBLIC_NAMES = [
     "compare_systems",
     "compare_placements",
     "distribute_points",
+    "CuspSpeed",
+    "HouseDynamics",
+    "cusp_speeds_at",
+    "houses_from_armc",
+    "body_house_position",
 ]
 
 _INTERNAL_NAMES = [
@@ -51,20 +55,6 @@ _INTERNAL_NAMES = [
     "_NEAR_CUSP_DEFAULT_THRESHOLD",
     "_circular_diff",
 ]
-
-
-class TestPackageLevelResolution:
-    def test_all_curated_names_resolve_from_moira(self):
-        for name in _CURATED_PUBLIC_NAMES:
-            assert hasattr(moira, name), f"moira.{name} not found"
-
-    def test_all_curated_names_in_moira_all(self):
-        for name in _CURATED_PUBLIC_NAMES:
-            assert name in moira.__all__, f"{name!r} missing from moira.__all__"
-
-    def test_no_internal_names_in_moira_all(self):
-        for name in _INTERNAL_NAMES:
-            assert name not in moira.__all__, f"{name!r} leaked into moira.__all__"
 
 
 class TestModuleLevelResolution:
@@ -89,20 +79,12 @@ class TestModuleLevelResolution:
             )
 
 
-class TestPackageAndModuleAgreement:
-    def test_curated_names_are_identical_objects(self):
-        for name in _CURATED_PUBLIC_NAMES:
-            pkg_obj = getattr(moira, name)
-            mod_obj = getattr(_houses_module, name)
-            assert pkg_obj is mod_obj, (
-                f"moira.{name} and moira.houses.{name} are different objects"
-            )
+class TestModuleCounts:
+    def test_curated_count_is_28(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 28
 
-    def test_curated_count_is_23(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 23
-
-    def test_houses_all_count_is_23(self):
-        assert len(_houses_module.__all__) == 23
+    def test_houses_all_count_is_28(self):
+        assert len(_houses_module.__all__) == 28
 
 
 class TestInternalsRemainInternal:
@@ -113,10 +95,4 @@ class TestInternalsRemainInternal:
             )
             assert name not in _houses_module.__all__, (
                 f"{name!r} leaked into moira.houses.__all__"
-            )
-
-    def test_internal_names_not_in_package_namespace(self):
-        for name in _INTERNAL_NAMES:
-            assert not hasattr(moira, name), (
-                f"Internal {name!r} leaked into moira package namespace"
             )
