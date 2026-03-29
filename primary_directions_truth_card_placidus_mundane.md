@@ -136,6 +136,9 @@ as the same thing.
 When Moira says `placidus_mundane`, it should mean:
 
 - a specific direction space: `in_mundo`
+- an active relation policy on the current admitted branch:
+  - `conjunction`
+  - `opposition`
 - a specific geometry family: `placidian mundane`
 - an explicit motion doctrine
 - an explicit key policy

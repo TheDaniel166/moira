@@ -351,9 +351,14 @@ class LordOfTurnCandidateAssessment:
     blocker_reasons
         Which blockers fired (empty if well-placed).
     witnesses_target
-        True when this planet is in a sign that casts a major aspect (whole-
-        sign Ptolemaic) to the profected sign. Used in tiebreaking and as the
-        primary criterion in the Egyptian/Al-Sijzi method.
+        True when this planet is in a sign that casts a major whole-sign
+        Ptolemaic aspect to the SR Ascendant OR to the SR sect light sign
+        (Sun for day charts, Moon for night charts).
+        This is the primary witnessing criterion in the Egyptian/Al-Sijzi
+        method (directly sourced: Al-Sijzi requires the lord to witness the
+        SR ASC or sect light). In Al-Qabisi mode the field is informational
+        only — the sequential succession hierarchy never applies a witnessing
+        tiebreaker.
     testimony_count
         Number of the five dignity types this planet holds at the profected
         longitude (domicile=1, exaltation=1, triplicity=1, bound=1, face=1).
@@ -594,26 +599,34 @@ def lord_of_turn_al_qabisi(
 ) -> LordOfTurnResult:
     """
     Al-Qabisi succession-hierarchy Lord of the Turn.
+    [DIRECTLY SOURCED: Al-Qabisi, Al-Madkhal; Burnett/Yamamoto/Yano 2004]
 
     Algorithm
     ---------
+    Degenerate mode (house_placements empty): skips all condition checks
+    and returns the domicile lord with reason DOMICILE_ONLY.
+    [MOIRA FORMALIZATION — no historical equivalent for this degenerate mode]
+
+    Full mode:
     1. Profect natal ASC: profected_lon = (age * 30 + natal_asc) % 360
     2. Identify Sign of the Year from profected_lon.
-    3. Primary candidate: domicile lord of the Sign of the Year.
-    4. Check SR condition: well-placed (houses 1,2,4,5,7,10,11),
-       not combust, not retrograde.
-    5. If primary passes → Lord of the Turn (DOMICILE_WELL_PLACED).
-    6. Fallback: exaltation lord of the Sign of the Year.
-    7. Fallback: sect-appropriate triplicity ruler of the Sign of the Year
-       if angular in SR (houses 1, 4, 7, 10).
-    8. Fallback: bound lord of the profected degree.
-    9. If all blocked: fall back to domicile lord regardless
-       (DOMICILE_ONLY — last resort, no SR condition data or all fail).
-    10. Tiebreaker (if two candidates both well-placed): the one that
-        witnesses (aspects) the SR sect light wins.
+    3. Domicile lord of the Sign of the Year: check SR condition
+       (in good house {1,2,4,5,7,10,11}, not combust, not retrograde).
+       If passes → DOMICILE_WELL_PLACED.
+    4. Exaltation lord (if different from domicile lord): same check.
+       If passes → EXALTATION_FALLBACK.
+    5. Sect-appropriate triplicity ruler (if not already assessed): must be
+       angular in SR (houses 1,4,7,10). If passes → TRIPLICITY_FALLBACK.
+       [HISTORICALLY GROUNDED RECONSTRUCTION: Al-Qabisi names triplicity
+       rulers but the stricter angular-only test is a Moira reconstruction]
+    6. Bound lord of the profected degree: returned as last resort
+       regardless of condition → BOUND_FALLBACK.
 
-    If house_placements is empty the engine skips house condition checks
-    and returns the domicile lord (DOMICILE_ONLY).
+    On tiebreaking: the succession model is sequential — each step returns
+    immediately on the first qualifying candidate, so no two candidates are
+    ever simultaneously "well-placed" in this engine. Tiebreaker language
+    appearing in some source readings likely reflects a different (almuten-
+    scoring) model of the same technique. [MOIRA FORMALIZATION]
     """
     _validate_inputs(natal_asc, age)
     profection = _compute_profection(natal_asc, age)
@@ -621,11 +634,16 @@ def lord_of_turn_al_qabisi(
     # No SR house data → minimal mode
     if not sr_chart.house_placements:
         domicile_lord = _domicile_lord_of_sign(profection.profected_sign)
-        tc = _testimony_count(domicile_lord, profection.profected_longitude, sr_chart.is_night)
-        wt = _witnesses(
-            _sign_idx(sr_chart.planets.get(domicile_lord, 0.0)),
-            profection.profected_sign_index,
-        )
+        tc = _testimony_count(domicile_lord, profection.profected_longitude, not sr_chart.is_night)
+        sr_asc_idx_do = _sign_idx(sr_chart.sr_asc)
+        dom_lon_do = sr_chart.planets.get(domicile_lord)
+        if dom_lon_do is not None:
+            dom_sidx = _sign_idx(dom_lon_do)
+            sect_lon_do = sr_chart.sect_light_longitude
+            sect_sidx_do = _sign_idx(sect_lon_do) if sect_lon_do is not None else sr_asc_idx_do
+            wt = _witnesses(dom_sidx, sr_asc_idx_do) or _witnesses(dom_sidx, sect_sidx_do)
+        else:
+            wt = False
         candidate = LordOfTurnCandidateAssessment(
             planet           = domicile_lord,
             role             = "domicile",
@@ -646,13 +664,14 @@ def lord_of_turn_al_qabisi(
         )
 
     all_candidates: list[LordOfTurnCandidateAssessment] = []
+    sr_asc_idx = _sign_idx(sr_chart.sr_asc)
 
     # Helper: build a candidate assessment
     def _assess(planet: str, role: str) -> LordOfTurnCandidateAssessment:
         return _build_candidate(
             planet, role, sr_chart, policy,
             profection.profected_longitude,
-            profection.profected_sign_index,
+            sr_asc_idx,
         )
 
     # Step 3-5: primary — domicile lord
@@ -721,19 +740,25 @@ def lord_of_turn_egyptian_al_sijzi(
 ) -> LordOfTurnResult:
     """
     Egyptian/Al-Sijzi testimony Lord of the Turn.
+    [DIRECTLY SOURCED: Egyptian bound-lord tradition as transmitted in Al-Sijzi]
 
     Algorithm
     ---------
     1. Profect natal ASC: profected_lon = (age * 30 + natal_asc) % 360
     2. Identify Sign of the Year and degree within sign.
     3. Primary (Egyptian): bound lord of the profected degree.
-    4. Check if the bound lord "witnesses" the SR ASC or SR sect light
-       (is in a sign casting a major whole-sign aspect to them).
+    4. Check if the bound lord witnesses the SR ASC or SR sect light
+       (is in a sign casting a major whole-sign Ptolemaic aspect to them).
+       [DIRECTLY SOURCED: Al-Sijzi's witnessing requirement]
     5. If bound lord witnesses → BOUND_PRIMARY_WITNESSING.
-    6. Otherwise: rank all seven classical planets by testimony count
-       (number of the five dignity types held at the profected longitude).
-    7. Among those with testimony > 0, find the one that witnesses
-       SR ASC or sect light. That planet wins → TESTIMONY_WINNER_WITNESSING.
+    6. Otherwise: rank all seven classical planets by testimony count at the
+       profected longitude (one point per dignity type: domicile, exaltation,
+       triplicity, bound, face; maximum 5). [HISTORICALLY GROUNDED
+       RECONSTRUCTION: binary counting is a Moira choice — some sources use
+       the 5/4/3/2/1 weighting]
+    7. Among those with testimony > 0, the one that witnesses SR ASC or sect
+       light wins → TESTIMONY_WINNER_WITNESSING. Alphabetical tiebreak for
+       determinism. [MOIRA FORMALIZATION for the tiebreak]
     8. If no testimony winner witnesses, return the bound lord anyway
        (BOUND_FALLBACK).
     """
@@ -741,12 +766,13 @@ def lord_of_turn_egyptian_al_sijzi(
     profection = _compute_profection(natal_asc, age)
 
     all_candidates: list[LordOfTurnCandidateAssessment] = []
+    sr_asc_idx = _sign_idx(sr_chart.sr_asc)
 
     def _assess(planet: str, role: str) -> LordOfTurnCandidateAssessment:
         return _build_candidate(
             planet, role, sr_chart, policy,
             profection.profected_longitude,
-            profection.profected_sign_index,
+            sr_asc_idx,
         )
 
     # Step 3: bound lord (Egyptian primary)
@@ -1011,7 +1037,7 @@ def _build_candidate(
     sr_chart: LordOfTurnSRChart,
     policy: LordOfTurnPolicy,
     profected_lon: float,
-    profected_sign_idx: int,
+    sr_asc_idx: int,
 ) -> LordOfTurnCandidateAssessment:
     """Build a full condition assessment for one candidate planet."""
     sr_house = sr_chart.house_placements.get(planet)
@@ -1038,16 +1064,18 @@ def _build_candidate(
     in_good_house = (sr_house in _GOOD_HOUSES) if sr_house is not None else True
     well_placed   = in_good_house and not combust and not retro
 
-    # Witnessing: planet's sign aspects the profected sign OR SR sect light sign
+    # Witnessing: planet's sign aspects the SR Ascendant OR the SR sect light.
+    # Target = SR ASC or sect light (directly sourced for Egyptian/Al-Sijzi;
+    # informational in Al-Qabisi mode where no tiebreaker is applied).
     planet_sign_idx = (
-        _sign_idx(planet_lon) if planet_lon is not None else profected_sign_idx
+        _sign_idx(planet_lon) if planet_lon is not None else sr_asc_idx
     )
     sect_lon = sr_chart.sect_light_longitude
-    sect_sign_idx = _sign_idx(sect_lon) if sect_lon is not None else profected_sign_idx
+    sect_sign_idx = _sign_idx(sect_lon) if sect_lon is not None else sr_asc_idx
 
-    witnesses_profected = _witnesses(planet_sign_idx, profected_sign_idx)
-    witnesses_sect      = _witnesses(planet_sign_idx, sect_sign_idx)
-    witnesses_target    = witnesses_profected or witnesses_sect
+    witnesses_sr_asc = _witnesses(planet_sign_idx, sr_asc_idx)
+    witnesses_sect   = _witnesses(planet_sign_idx, sect_sign_idx)
+    witnesses_target = witnesses_sr_asc or witnesses_sect
 
     tc = _testimony_count(planet, profected_lon, not sr_chart.is_night)
 

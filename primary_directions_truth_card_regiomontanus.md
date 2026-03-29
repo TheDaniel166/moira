@@ -3,7 +3,7 @@
 ## Status
 
 - doctrinal family: `historically attested`
-- Moira status: `not yet implemented`
+- Moira status: `admitted on a narrow explicit surface`
 - role in Moira: major second branch after the Placidian family
 
 ## Identity
@@ -110,6 +110,23 @@ Moira should admit Regiomontanus as:
 - a separate geometry family
 - a separate validation branch
 - not merely a flag on top of the Placidian engine
+
+Current Moira boundary:
+
+- Regiomontanus is admitted as an explicit under-the-pole branch
+- the current narrow runtime uses oblique-ascension difference under the
+  significator's pole
+- it is admitted on the currently explicit `in_mundo` and `in_zodiaco`
+  surfaces
+- active relation policy on the plain positional branches:
+  - `conjunction`
+  - `opposition`
+- active relation policy on explicit zodiacal aspect-point branches:
+  - `conjunction`
+  - `opposition`
+  - `zodiacal_aspect`
+- broader historical scope, wider target doctrine, and fuller latitude-bearing
+  zodiacal/field-plane expansions remain deferred
 
 ## Implementation Consequences
 

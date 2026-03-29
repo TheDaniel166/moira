@@ -34,6 +34,22 @@ Their common logic is:
 
 Everything beyond that common substrate is doctrinal variation.
 
+## Constitutional Rule
+
+For primary directions, accepted label does not override explicit doctrine.
+
+Moira may acknowledge historically accepted, textually attested, or
+software-accepted names. But it admits only the mathematically explicit subset
+it can define, test, and defend.
+
+Where a tradition is composite, Moira decomposes before it admits.
+
+This means:
+
+- familiar method names do not license hidden ambiguity
+- software parity does not justify synthetic black-box behavior
+- unresolved doctrine remains visible until its governing law is explicit
+
 
 ## Shared Mathematical Foundations
 
@@ -179,6 +195,48 @@ Interpretive implication:
 
 - what a system admits as a valid target is part of the doctrine, not a minor
   option
+- some apparent "target families" are actually mixed target-and-geometry
+  doctrines; parallels are the clearest current case and should not be admitted
+  globally until their governing law is explicit
+
+### 5a. Relation / Perfection Doctrine
+
+This answers:
+
+- what kind of meeting counts as perfection
+
+Known classes:
+
+- conjunction
+- opposition
+- zodiacal aspect
+- parallel
+- contra-parallel
+
+Interpretive implication:
+
+- some apparent targets are better understood as relation classes
+- a relation may later be realized computationally as a derived point in one
+  method family without becoming a universal target class
+
+### 5b. Branch Preset Doctrine
+
+This answers:
+
+- how a documented runtime branch should be named and selected in code
+
+Moira now exposes named branch presets for the currently admitted runtime
+surfaces. The purpose is not convenience alone. The purpose is to prevent
+callers from silently rebuilding doctrinally meaningful combinations from loose
+policy fragments.
+
+Interpretive implication:
+
+- a branch name is part of the doctrine
+- a preset should correspond to a validated runtime surface, not a vague menu
+  convenience
+- new mathematical branches should be added by naming and validating a new
+  preset, not by widening an old one implicitly
 
 ### 6. Latitude / Projection Doctrine
 
@@ -435,6 +493,9 @@ Moira stance:
 
 Moira should classify primary-direction doctrines into these buckets.
 
+These categories are epistemic, not cosmetic. A branch may be implemented and
+still remain non-verified if its doctrine or validation standing is incomplete.
+
 ### Historically Attested
 
 - clearly documented in traditional or early modern practice
@@ -453,6 +514,48 @@ Moira should classify primary-direction doctrines into these buckets.
 
 - mathematically coherent, but interpretively or historically unsettled
 
+### Verified
+
+- mathematically explicit
+- doctrine-explicit
+- validation-backed enough to stand as a normal admitted method inside Moira
+
+## Current Stabilized Runtime Core
+
+After the geometry sovereignty pass, Moira's current runtime-admitted and
+consumer-safe primary-direction geometry core is:
+
+- `Placidus mundane`
+- `Ptolemy / semi-arc`
+- `Placidian classic / semi-arc`
+- `Meridian`
+- `Regiomontanus`
+- `Campanus`
+- `Topocentric`
+
+Morinus is admitted with an explicit doctrinal limit:
+
+- aspect-plane branch: distinct and source-backed when service-layer context is
+  supplied
+- conjunction-style branch: shared with the equatorial family on current
+  evidence
+
+Porphyry is not part of the consumer runtime surface.
+
+This means the center of gravity for further work shifts away from geometry
+labels and toward:
+
+- time-key maturity
+- target-family maturity
+- validation fixtures against worked examples
+
+### Doctrine-Loss Reconstruction
+
+- a branch built because the historical or software label survives, but the
+  full governing law does not survive cleanly
+- Moira reconstructs only the explicit subset it can define
+- the loss is stated openly instead of hidden behind parity language
+
 ### Rejected
 
 - too ambiguous, internally incoherent, or insufficiently documented for
@@ -469,6 +572,9 @@ Before implementing additional primary-direction capabilities, Moira should:
 4. treat direction space as a decomposed truth domain, not a menu label
 5. keep time keys orthogonal to geometry method
 6. distinguish historical doctrine from experimental research
+7. refuse to guess at missing law merely because a label is accepted
+8. mark non-verified branches honestly as `experimental` or
+   `doctrine_loss_reconstruction` where appropriate
 
 
 ## Doctrine Packet Produced
@@ -484,6 +590,7 @@ documents:
 6. [primary_directions_direction_space_doctrine.md](c:/Users/nilad/OneDrive/Desktop/Moira/primary_directions_direction_space_doctrine.md)
 7. [primary_directions_time_key_doctrine.md](c:/Users/nilad/OneDrive/Desktop/Moira/primary_directions_time_key_doctrine.md)
 8. [primary_directions_ambiguity_ledger.md](c:/Users/nilad/OneDrive/Desktop/Moira/primary_directions_ambiguity_ledger.md)
+9. [primary_directions_parallel_family_matrix.md](c:/Users/nilad/OneDrive/Desktop/Moira/primary_directions_parallel_family_matrix.md)
 
 Only after this layer should SCP continue in earnest.
 

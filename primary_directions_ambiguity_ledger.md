@@ -46,6 +46,7 @@ standardized doctrine.
 #### Moira Policy
 
 - do not implement as a single opaque mode
+- do not treat accepted software naming as sufficient mathematical definition
 
 ### 2. Zodiacal Latitude Treatment
 
@@ -146,7 +147,41 @@ are not used consistently across software and literature.
 
 - define exact mathematical identity, not just inherited label
 
-### 7. Historical vs Modern Software Expansion
+### 7. Campanus vs Regiomontanus Distinctness
+
+- severity: `High`
+- type: method-family ambiguity
+
+#### Problem
+
+Campanus and Regiomontanus are clearly distinct as full doctrinal families, but
+their distinctness does not emerge uniformly on every primary-direction branch.
+
+#### What Seems Stable
+
+- the shared admitted under-the-pole speculum law is defensible on the current
+  narrow surface:
+  - `pole = arcsin(sin(phi) * sin(ZD))`
+  - `O = arcsin(tan(D) * tan(pole))`
+  - `W = RA +/- O` by quadrant
+- several technical sources indicate that the sharper divergence appears in
+  wider branches such as:
+  - house-cusp directions
+  - midpoint directions
+  - certain mundane aspectual directions
+
+#### What Is Unsettled
+
+- whether a distinct Campanian directional pole law should replace the current
+  shared law for any broader branch Moira has not yet admitted
+
+#### Moira Policy
+
+- treat the current Campanus branch as a verified narrow admission
+- do not force artificial distinctness where sources do not require it
+- only widen Campanian distinctness when a branch-specific governing law is
+  explicit
+### 8. Historical vs Modern Software Expansion
 
 - severity: `High`
 - type: historical ambiguity
@@ -169,7 +204,79 @@ under one interface.
   - software-conventional
   - experimental
 
-### 8. Apparent vs True Positions
+### 8a. Morinus Conjunction vs Morinus Aspect Distinctness
+
+- severity: `High`
+- type: method-family ambiguity
+
+#### Problem
+
+Morinus has a real and explicit formula trail for the circle of aspects, but
+that does not automatically imply a distinct conjunction-style directional law.
+
+#### What Seems Stable
+
+- the Morinian aspect plane is explicit and computable when the service layer
+  supplies:
+  - `delta_max`
+  - motion sense on the current node-to-node path segment
+  - handed aspect angle
+- this aspect-plane branch is the clearest source-safe Morinian distinctness
+
+#### What Is Unsettled
+
+- whether conjunction-style Morinus has a distinct governing law beyond the
+  equatorial branch
+- whether later sources merely reuse the equatorial relation for conjunctions
+  while reserving Morinian distinctness for aspects
+
+#### Moira Policy
+
+- admit explicit Morinian aspect geometry where its formulas are recoverable
+- do not invent a separate conjunction law without a source-safe derivation
+- treat the current conjunction branch as intentionally shared with the
+  equatorial family unless stronger evidence emerges
+
+### 8b. Parallels and Rapt Parallels as Primary-Direction Targets
+
+- severity: `High`
+- type: target-and-geometry ambiguity
+
+#### Problem
+
+Parallels and rapt parallels look like target families, but the available
+evidence suggests that they are not generic point-targets in the same sense as
+zodiacal aspect-points.
+
+#### What Seems Stable
+
+- ordinary declination parallels and contra-parallels are already explicit in
+  the standalone aspect engine
+- some primary-direction traditions, especially Ptolemaic zodiacal examples,
+  appear to handle parallels through method-specific ascensional equivalence
+  rather than through one reusable projected target point
+
+#### What Is Unsettled
+
+- whether a parallel in primary directions should be represented as:
+  - a projected point
+  - a direct declination relation
+  - an oblique-ascensional equivalent
+  - or a method-specific perfection rule that changes from family to family
+
+#### Moira Policy
+
+- do not admit a generic `parallel point` target class
+- keep parallels out of the consumer-facing primary-direction target vocabulary
+  until a method-specific governing law is explicit
+- prefer worked-example-backed narrow admissions over synthetic global target
+  classes
+- current narrow exception:
+  - Ptolemaic zodiacal declination-equivalence may be admitted through
+    explicit service-supplied relational targets without changing the global
+    target doctrine
+
+### 9. Apparent vs True Positions
 
 - severity: `Medium`
 - type: astronomical policy ambiguity
@@ -183,7 +290,7 @@ them.
 
 - any such choice must remain explicit and auditable
 
-### 9. Lunar Parallax
+### 10. Lunar Parallax
 
 - severity: `Medium`
 - type: astronomical policy ambiguity
@@ -197,7 +304,7 @@ Some systems expose lunar parallax correction within primary directions.
 - if admitted, parallax must be an explicit astronomical policy, not a hidden
   convenience option
 
-### 10. Uniform Motion vs Actual Planetary Motion
+### 11. Uniform Motion vs Actual Planetary Motion
 
 - severity: `High`
 - type: core-family ambiguity
@@ -219,12 +326,14 @@ Where ambiguity is high and the tradition is not settled, Moira should prefer:
 1. narrower admission
 2. explicit policy
 3. documented uncertainty
+4. decomposition before naming parity
 
 over:
 
 - broad feature parity
 - hidden defaults
 - synthetic black-box behavior
+- guessing at a governing law that has not yet been made explicit
 
 ## Research Sources
 
@@ -238,3 +347,7 @@ over:
   `https://mastroapp.com/files/documentation_en.pdf`
 - Rumen Kolev, *William Lilly and the Algorithm for His Primary Directions*:
   `https://www.babylonianastrology.com/downloads/Lilly2.pdf`
+- Bob Makransky, *Primary Directions 1*:
+  `https://www.scribd.com/document/48191844/Bob-Markansky-Primary-Directions-1`
+- PyMorinus program notes:
+  `https://sites.google.com/site/pymorinus/morinus-free-astrological-program-written-in-python-using-the-swiss-ephemeris`

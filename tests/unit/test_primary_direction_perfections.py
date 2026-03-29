@@ -33,6 +33,14 @@ def test_primary_direction_perfection_truth_exposes_current_admitted_kinds() -> 
     assert zodiacal_truth.uses_significator_mundane_fraction is False
     assert zodiacal_truth.world_frame_based is False
 
+    projected_truth = primary_direction_perfection_truth(
+        PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION
+    )
+    assert projected_truth.kind is PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION
+    assert projected_truth.mode is PrimaryDirectionPerfectionMode.POSITIONAL
+    assert projected_truth.uses_significator_mundane_fraction is False
+    assert projected_truth.world_frame_based is False
+
 
 def test_primary_direction_perfection_classification_relation_and_condition_are_stable() -> None:
     truth = primary_direction_perfection_truth()
@@ -58,6 +66,17 @@ def test_primary_direction_perfection_classification_relation_and_condition_are_
     )
     assert zodiacal_condition.state is PrimaryDirectionPerfectionConditionState.ZODIACAL_POSITIONAL
 
+    projected_truth = primary_direction_perfection_truth(
+        PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION
+    )
+    projected_relation = relate_primary_direction_perfection(projected_truth)
+    projected_condition = evaluate_primary_direction_perfection_condition(projected_truth)
+    assert (
+        projected_relation.relation_kind
+        is PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION
+    )
+    assert projected_condition.state is PrimaryDirectionPerfectionConditionState.ZODIACAL_PROJECTED
+
 
 def test_primary_direction_perfections_aggregate_and_network_are_deterministic() -> None:
     truths = (
@@ -65,20 +84,24 @@ def test_primary_direction_perfections_aggregate_and_network_are_deterministic()
         primary_direction_perfection_truth(
             PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION
         ),
+        primary_direction_perfection_truth(
+            PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION
+        ),
         primary_direction_perfection_truth(),
     )
     aggregate = evaluate_primary_direction_perfections_aggregate(truths)
     network = evaluate_primary_direction_perfections_network(truths)
 
-    assert aggregate.total_profiles == 3
-    assert aggregate.positional_count == 3
+    assert aggregate.total_profiles == 4
+    assert aggregate.positional_count == 4
     assert aggregate.world_frame_count == 2
-    assert len(network.nodes) == 2
+    assert len(network.nodes) == 3
     assert {node.kind for node in network.nodes} == {
         PrimaryDirectionPerfectionKind.MUNDANE_POSITION_PERFECTION,
         PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION,
+        PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION,
     }
-    assert len(network.edges) == 2
+    assert len(network.edges) == 3
     assert network.dominant_kind is PrimaryDirectionPerfectionKind.MUNDANE_POSITION_PERFECTION
     assert network.isolated_kinds == ()
 

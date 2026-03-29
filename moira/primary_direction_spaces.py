@@ -59,20 +59,33 @@ class PrimaryDirectionLatitudeMode(StrEnum):
 class PrimaryDirectionSpaceRelationKind(StrEnum):
     WORLD_FRAME_PERFECTION = "world_frame_perfection"
     ZODIACAL_LONGITUDE_PERFECTION = "zodiacal_longitude_perfection"
+    ZODIACAL_PROJECTED_PERFECTION = "zodiacal_projected_perfection"
 
 
 class PrimaryDirectionSpaceConditionState(StrEnum):
     WORLD_FRAMED = "world_framed"
     ZODIACALLY_FRAMED = "zodiacally_framed"
+    ZODIACALLY_PROJECTED = "zodiacally_projected"
 
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionSpacePolicy:
     space: PrimaryDirectionSpace = PrimaryDirectionSpace.IN_MUNDO
+    latitude_mode: PrimaryDirectionLatitudeMode | None = None
 
     def __post_init__(self) -> None:
         if self.space not in (PrimaryDirectionSpace.IN_MUNDO, PrimaryDirectionSpace.IN_ZODIACO):
             raise ValueError(f"Unsupported primary direction space: {self.space}")
+        if self.space is PrimaryDirectionSpace.IN_MUNDO:
+            if self.latitude_mode not in (None, PrimaryDirectionLatitudeMode.PRESERVED):
+                raise ValueError("in_mundo currently admits only preserved latitude mode")
+        else:
+            if self.latitude_mode not in (
+                None,
+                PrimaryDirectionLatitudeMode.SUPPRESSED,
+                PrimaryDirectionLatitudeMode.PRESERVED,
+            ):
+                raise ValueError("in_zodiaco currently admits suppressed or preserved latitude mode")
 
 
 @dataclass(frozen=True, slots=True)
@@ -85,24 +98,28 @@ class PrimaryDirectionSpaceTruth:
 
     def __post_init__(self) -> None:
         expected = {
-            PrimaryDirectionSpace.IN_MUNDO: (
+            (PrimaryDirectionSpace.IN_MUNDO, PrimaryDirectionLatitudeMode.PRESERVED): (
                 PrimaryDirectionSpaceKind.WORLD_FRAME,
-                PrimaryDirectionLatitudeMode.PRESERVED,
                 "world_frame",
                 False,
             ),
-            PrimaryDirectionSpace.IN_ZODIACO: (
+            (PrimaryDirectionSpace.IN_ZODIACO, PrimaryDirectionLatitudeMode.SUPPRESSED): (
                 PrimaryDirectionSpaceKind.ZODIACAL,
-                PrimaryDirectionLatitudeMode.SUPPRESSED,
                 "zodiacal_longitude",
                 False,
             ),
-        }.get(self.space)
+            (PrimaryDirectionSpace.IN_ZODIACO, PrimaryDirectionLatitudeMode.PRESERVED): (
+                PrimaryDirectionSpaceKind.ZODIACAL,
+                "zodiacal_projected",
+                False,
+            ),
+        }.get((self.space, self.latitude_mode))
         if expected is None:
-            raise ValueError(f"Unsupported primary direction space on truth: {self.space}")
+            raise ValueError(
+                f"Unsupported primary direction space on truth: {(self.space, self.latitude_mode)}"
+            )
         if (
             self.kind,
-            self.latitude_mode,
             self.relation_domain,
             self.aspectual_points_native,
         ) != expected:
@@ -141,7 +158,11 @@ class PrimaryDirectionSpaceRelation:
         expected_kind = (
             PrimaryDirectionSpaceRelationKind.WORLD_FRAME_PERFECTION
             if self.truth.space is PrimaryDirectionSpace.IN_MUNDO
-            else PrimaryDirectionSpaceRelationKind.ZODIACAL_LONGITUDE_PERFECTION
+            else (
+                PrimaryDirectionSpaceRelationKind.ZODIACAL_LONGITUDE_PERFECTION
+                if self.truth.latitude_mode is PrimaryDirectionLatitudeMode.SUPPRESSED
+                else PrimaryDirectionSpaceRelationKind.ZODIACAL_PROJECTED_PERFECTION
+            )
         )
         if self.relation_kind is not expected_kind:
             raise ValueError(f"Unsupported primary direction space relation kind: {self.relation_kind}")
@@ -193,7 +214,11 @@ class PrimaryDirectionSpaceConditionProfile:
         expected_state = (
             PrimaryDirectionSpaceConditionState.WORLD_FRAMED
             if self.truth.space is PrimaryDirectionSpace.IN_MUNDO
-            else PrimaryDirectionSpaceConditionState.ZODIACALLY_FRAMED
+            else (
+                PrimaryDirectionSpaceConditionState.ZODIACALLY_FRAMED
+                if self.truth.latitude_mode is PrimaryDirectionLatitudeMode.SUPPRESSED
+                else PrimaryDirectionSpaceConditionState.ZODIACALLY_PROJECTED
+            )
         )
         if self.state is not expected_state:
             raise ValueError("PrimaryDirectionSpaceConditionProfile invariant failed: state mismatch")
@@ -294,6 +319,15 @@ def primary_direction_space_truth(
     resolved_policy = policy if policy is not None else PrimaryDirectionSpacePolicy(space)
     if resolved_policy.space not in (PrimaryDirectionSpace.IN_MUNDO, PrimaryDirectionSpace.IN_ZODIACO):
         raise ValueError(f"Unsupported primary direction space: {resolved_policy.space}")
+    latitude_mode = (
+        resolved_policy.latitude_mode
+        if resolved_policy.latitude_mode is not None
+        else (
+            PrimaryDirectionLatitudeMode.PRESERVED
+            if resolved_policy.space is PrimaryDirectionSpace.IN_MUNDO
+            else PrimaryDirectionLatitudeMode.SUPPRESSED
+        )
+    )
     return PrimaryDirectionSpaceTruth(
         space=resolved_policy.space,
         kind=(
@@ -301,15 +335,15 @@ def primary_direction_space_truth(
             if resolved_policy.space is PrimaryDirectionSpace.IN_MUNDO
             else PrimaryDirectionSpaceKind.ZODIACAL
         ),
-        latitude_mode=(
-            PrimaryDirectionLatitudeMode.PRESERVED
-            if resolved_policy.space is PrimaryDirectionSpace.IN_MUNDO
-            else PrimaryDirectionLatitudeMode.SUPPRESSED
-        ),
+        latitude_mode=latitude_mode,
         relation_domain=(
             "world_frame"
             if resolved_policy.space is PrimaryDirectionSpace.IN_MUNDO
-            else "zodiacal_longitude"
+            else (
+                "zodiacal_longitude"
+                if latitude_mode is PrimaryDirectionLatitudeMode.SUPPRESSED
+                else "zodiacal_projected"
+            )
         ),
         aspectual_points_native=False,
     )
@@ -334,7 +368,11 @@ def relate_primary_direction_space(
         relation_kind=(
             PrimaryDirectionSpaceRelationKind.WORLD_FRAME_PERFECTION
             if truth.space is PrimaryDirectionSpace.IN_MUNDO
-            else PrimaryDirectionSpaceRelationKind.ZODIACAL_LONGITUDE_PERFECTION
+            else (
+                PrimaryDirectionSpaceRelationKind.ZODIACAL_LONGITUDE_PERFECTION
+                if truth.latitude_mode is PrimaryDirectionLatitudeMode.SUPPRESSED
+                else PrimaryDirectionSpaceRelationKind.ZODIACAL_PROJECTED_PERFECTION
+            )
         ),
         latitude_mode=truth.latitude_mode,
     )
@@ -363,7 +401,11 @@ def evaluate_primary_direction_space_condition(
         state=(
             PrimaryDirectionSpaceConditionState.WORLD_FRAMED
             if truth.space is PrimaryDirectionSpace.IN_MUNDO
-            else PrimaryDirectionSpaceConditionState.ZODIACALLY_FRAMED
+            else (
+                PrimaryDirectionSpaceConditionState.ZODIACALLY_FRAMED
+                if truth.latitude_mode is PrimaryDirectionLatitudeMode.SUPPRESSED
+                else PrimaryDirectionSpaceConditionState.ZODIACALLY_PROJECTED
+            )
         ),
     )
 

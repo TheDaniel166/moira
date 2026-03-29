@@ -61,6 +61,7 @@ __all__ = [
     "DEFAULT_FIXED_STAR_POLICY",
     "StarPosition",
     "star_at",
+    "star_light_time_split",
     "all_stars_at",
     "list_stars",
     "find_stars",
@@ -515,6 +516,24 @@ def _distance_ly_from_parallax(parallax_mas: float) -> float:
     return 3261.56 / parallax_mas
 
 
+_DAYS_PER_YEAR = 365.25
+
+
+def _emission_jd(record: _SovereignStarRecord, jd_tt: float) -> float:
+    """Return the JD at which the light we receive at jd_tt was emitted by this star.
+
+    For a star at distance d light-years, the light travel time is d years.
+    The emission epoch is therefore jd_tt - d * 365.25 days.
+
+    Returns jd_tt unchanged when parallax is absent or non-positive (star treated
+    as at infinite distance; the light-time distinction is undefined).
+    """
+    dist_ly = _distance_ly_from_parallax(record.parallax_mas)
+    if not math.isfinite(dist_ly):
+        return jd_tt
+    return jd_tt - dist_ly * _DAYS_PER_YEAR
+
+
 def _native_position(record: _SovereignStarRecord, jd_tt: float) -> tuple[float, float]:
     xyz = _propagate_icrs_vector(record, jd_tt)
     lon, lat, _ = icrf_to_true_ecliptic(jd_tt, xyz)
@@ -619,6 +638,94 @@ def star_at(
     lookup_policy = policy.lookup if policy is not None else DEFAULT_FIXED_STAR_POLICY.lookup
     record, lookup_kind = _resolve_star_record(name, lookup_policy)
     return _build_fixed_star(record, name, lookup_kind, jd_tt)
+
+
+def star_light_time_split(
+    name: str,
+    jd_tt: float,
+) -> tuple[FixedStar, FixedStar]:
+    """Return (observed_position, true_position) for a fixed star.
+
+    observed_position — where the star appears to be: its position at the epoch
+        when the light we are currently receiving was emitted, i.e. at
+        ``jd_tt - distance_ly * 365.25``.  This is what a telescope shows.
+
+    true_position — where the star physically is at ``jd_tt``, accounting for
+        proper motion from J2000 to now.  The light carrying this information
+        has not yet reached Earth.
+
+    The longitude difference between the two positions is the proper-motion
+    drift accumulated over the light travel time.  For Arcturus (37 ly) this
+    is approximately 37 years of proper motion; for Sirius (8.6 ly) about
+    8.6 years.
+
+    For stars without a valid parallax measurement the light-travel-time is
+    undefined (star treated as at infinite distance); both returned positions
+    are identical and carry ``true_position=True``.
+
+    Parameters
+    ----------
+    name   : star name as accepted by ``star_at``
+    jd_tt  : Julian Date in TT
+
+    Returns
+    -------
+    (observed, true) — a pair of FixedStar vessels.
+    ``observed.computation_truth.true_position`` is False.
+    ``true.computation_truth.true_position`` is True.
+    """
+    if not math.isfinite(jd_tt):
+        raise ValueError("jd_tt must be finite")
+
+    record, lookup_kind = _resolve_star_record(name, DEFAULT_FIXED_STAR_POLICY.lookup)
+    constellation = _constellation_for_star(record.name)
+    dist_ly = _distance_ly_from_parallax(record.parallax_mas)
+
+    # True position: propagate to jd_tt
+    true = _build_fixed_star(record, name, lookup_kind, jd_tt)
+
+    # Observed position: propagate to emission epoch
+    obs_jd = _emission_jd(record, jd_tt)
+    obs_lon, obs_lat = _native_position(record, obs_jd)
+    observed = FixedStar(
+        name=record.name,
+        nomenclature=record.nomenclature,
+        constellation=constellation,
+        longitude=obs_lon,
+        latitude=obs_lat,
+        magnitude=record.magnitude_v,
+        bp_rp=record.color_index,
+        parallax_mas=record.parallax_mas,
+        distance_ly=dist_ly,
+        source="sovereign",
+        is_topocentric=False,
+        computation_truth=FixedStarTruth(
+            lookup_kind=lookup_kind,
+            hipparcos_name=record.name,
+            constellation=constellation,
+            source_mode="sovereign_registry",
+            gaia_match_status="native_registry",
+            gaia_source_index=None,
+            is_topocentric=False,
+            true_position=False,
+            dedup_applied=False,
+        ),
+        classification=FixedStarClassification(
+            lookup_kind=lookup_kind,
+            source_kind="sovereign",
+            merge_state="native_registry",
+            observer_mode="geocentric",
+        ),
+        relation=UnifiedStarRelation(
+            kind="catalog_merge",
+            basis="sovereign_registry",
+            star_name=name,
+            source_kind="sovereign",
+            gaia_source_index=None,
+        ),
+    )
+
+    return observed, true
 
 
 def all_stars_at(jd_tt: float) -> dict[str, FixedStar]:

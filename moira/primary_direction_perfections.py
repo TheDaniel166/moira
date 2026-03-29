@@ -41,6 +41,7 @@ __all__ = [
 class PrimaryDirectionPerfectionKind(StrEnum):
     MUNDANE_POSITION_PERFECTION = "mundane_position_perfection"
     ZODIACAL_LONGITUDE_PERFECTION = "zodiacal_longitude_perfection"
+    ZODIACAL_PROJECTED_PERFECTION = "zodiacal_projected_perfection"
 
 
 class PrimaryDirectionPerfectionMode(StrEnum):
@@ -50,6 +51,7 @@ class PrimaryDirectionPerfectionMode(StrEnum):
 class PrimaryDirectionPerfectionConditionState(StrEnum):
     MUNDANE_POSITIONAL = "mundane_positional"
     ZODIACAL_POSITIONAL = "zodiacal_positional"
+    ZODIACAL_PROJECTED = "zodiacal_projected"
 
 
 @dataclass(frozen=True, slots=True)
@@ -60,6 +62,7 @@ class PrimaryDirectionPerfectionPolicy:
         if self.kind not in (
             PrimaryDirectionPerfectionKind.MUNDANE_POSITION_PERFECTION,
             PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION,
+            PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION,
         ):
             raise ValueError(f"Unsupported primary direction perfection kind: {self.kind}")
 
@@ -75,6 +78,7 @@ class PrimaryDirectionPerfectionTruth:
         expected = {
             PrimaryDirectionPerfectionKind.MUNDANE_POSITION_PERFECTION: (True, True),
             PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION: (False, False),
+            PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION: (False, False),
         }.get(self.kind)
         if expected is None:
             raise ValueError(f"Unsupported primary direction perfection kind on truth: {self.kind}")
@@ -153,7 +157,11 @@ class PrimaryDirectionPerfectionConditionProfile:
         expected_state = (
             PrimaryDirectionPerfectionConditionState.MUNDANE_POSITIONAL
             if self.truth.kind is PrimaryDirectionPerfectionKind.MUNDANE_POSITION_PERFECTION
-            else PrimaryDirectionPerfectionConditionState.ZODIACAL_POSITIONAL
+            else (
+                PrimaryDirectionPerfectionConditionState.ZODIACAL_POSITIONAL
+                if self.truth.kind is PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION
+                else PrimaryDirectionPerfectionConditionState.ZODIACAL_PROJECTED
+            )
         )
         if self.state is not expected_state:
             raise ValueError("PrimaryDirectionPerfectionConditionProfile invariant failed: state mismatch")
@@ -285,7 +293,11 @@ def evaluate_primary_direction_perfection_condition(
         state=(
             PrimaryDirectionPerfectionConditionState.MUNDANE_POSITIONAL
             if truth.kind is PrimaryDirectionPerfectionKind.MUNDANE_POSITION_PERFECTION
-            else PrimaryDirectionPerfectionConditionState.ZODIACAL_POSITIONAL
+            else (
+                PrimaryDirectionPerfectionConditionState.ZODIACAL_POSITIONAL
+                if truth.kind is PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION
+                else PrimaryDirectionPerfectionConditionState.ZODIACAL_PROJECTED
+            )
         ),
     )
 

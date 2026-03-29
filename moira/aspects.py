@@ -15,9 +15,11 @@ Architecture layers
 This module has twelve distinct concerns, kept intentionally separate:
 
 1. **Core aspect detection** — ``find_aspects``, ``aspects_between``,
-   ``aspects_to_point``, ``find_declination_aspects``.
+   ``aspects_to_point``, ``find_declination_aspects``,
+   ``find_out_of_bounds``.
    Pure geometric computations: given positions, return every angular
-   relationship that falls within a qualifying orb.  Detection semantics
+   relationship that falls within a qualifying orb, and detect bodies
+   whose declination exceeds the solar maximum.  Detection semantics
    are stable and must not be silently changed.
 
 2. **Relational truth preservation** — ``AspectData`` and
@@ -219,7 +221,9 @@ __all__ = [
     "build_aspect_graph",
     "find_aspects",
     "find_declination_aspects",
+    "find_out_of_bounds",
     "find_patterns",
+    "OutOfBoundsBody",
 ]
 
 
@@ -1680,6 +1684,109 @@ class DeclinationAspect:
         return f"{self.body1} ∥ {self.body2}  (orb {self.orb:+.2f}°) [{self.aspect}]"
 
 
+@dataclass(slots=True)
+class OutOfBoundsBody:
+    """
+    RITE: The Out-of-Bounds Vessel — a body whose declination exceeds the solar maximum.
+
+    THEOREM: Holds the body name, its signed declination, the true obliquity
+    threshold, and the excess beyond that threshold.
+
+    RITE OF PURPOSE:
+        Serves the Aspect Engine as the canonical result vessel for out-of-bounds
+        detections.  A body is out-of-bounds when ``|declination| > obliquity``
+        of the ecliptic — i.e., it has moved beyond the Sun's maximum possible
+        declination.  The vessel preserves full context so the caller can
+        reconstruct the admission test from the vessel alone:
+        ``excess == abs(declination) - obliquity > 0``.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Store the body name, signed declination, obliquity threshold, and
+              positive excess beyond that threshold.
+            - Expose read-only convenience properties that are pure
+              single-expression derivations of already-stored fields.
+        Non-responsibilities:
+            - Does not detect OOB bodies (delegated to ``find_out_of_bounds``).
+            - Does not compute declinations from ecliptic coordinates.
+            - Does not compute obliquity (caller supplies via
+              ``moira.obliquity.true_obliquity``).
+        Dependencies:
+            - Populated exclusively by ``find_out_of_bounds()``.
+        Structural invariants:
+            - ``excess`` is always strictly positive.
+            - ``excess == abs(declination) - obliquity``.
+            - ``declination`` is in [-90, +90].
+            - ``is_north`` and ``is_south`` are mutually exclusive; both False
+              only when ``declination == 0.0`` (degenerate, in practice impossible).
+        Succession stance: terminal — not designed for subclassing.
+
+    Canon: Kt Boehrer, "Declination: The Other Dimension" (1994);
+           modern practice (post-1990).
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.aspects.OutOfBoundsBody",
+        "risk": "low",
+        "api": {
+            "public_methods": ["__repr__"],
+            "public_attributes": ["body", "declination", "obliquity", "excess"],
+            "public_properties": ["is_north", "is_south"]
+        },
+        "state": {
+            "mutable": false,
+            "fields": ["body", "declination", "obliquity", "excess"]
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_computation",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": [],
+            "policy": "caller ensures excess > 0 before construction"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "kiro"
+    }
+    [/MACHINE_CONTRACT]
+    """
+    body:        str
+    declination: float  # signed declination in degrees (±90)
+    obliquity:   float  # true obliquity used as threshold (degrees)
+    excess:      float  # abs(declination) - obliquity (always > 0)
+
+    # ------------------------------------------------------------------
+    # Inspectability — read-only, derived-only convenience properties
+    # ------------------------------------------------------------------
+
+    @property
+    def is_north(self) -> bool:
+        """True when the body has positive (north) declination."""
+        return self.declination > 0.0
+
+    @property
+    def is_south(self) -> bool:
+        """True when the body has negative (south) declination."""
+        return self.declination < 0.0
+
+    def __repr__(self) -> str:
+        direction = "N" if self.is_north else "S"
+        return (
+            f"OutOfBoundsBody({self.body!r}, "
+            f"dec={abs(self.declination):.4f}°{direction}, "
+            f"excess={self.excess:.4f}°)"
+        )
+
+
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
@@ -2114,4 +2221,52 @@ def find_declination_aspects(
                 ))
 
     results.sort(key=lambda a: a.orb)
+    return results
+
+
+def find_out_of_bounds(
+    declinations: dict[str, float],
+    obliquity: float,
+) -> list[OutOfBoundsBody]:
+    """
+    Find bodies whose declination exceeds the obliquity of the ecliptic.
+
+    A body is out-of-bounds (OOB) when ``|declination| > obliquity``.
+    The Sun's maximum possible declination equals the true obliquity (~23°26').
+    Any body beyond this threshold has moved outside the Sun's reach — a
+    condition associated in modern practice with unconventional or
+    boundary-breaking expression.
+
+    Core detection
+    --------------
+    OOB admission test: ``abs(declination) > obliquity``
+    Excess:             ``abs(declination) - obliquity  (always > 0 for OOB bodies)``
+
+    Relational truth preserved
+    --------------------------
+    Each result stores ``obliquity`` and ``excess`` so the admission test is
+    verifiable from the vessel alone without re-running the computation.
+
+    Parameters
+    ----------
+    declinations : dict mapping body name → signed declination in degrees (±90)
+    obliquity    : true obliquity of the ecliptic in degrees.  Use
+                   ``moira.obliquity.true_obliquity(jd_tt)`` to obtain the
+                   epoch-correct value for the chart's Julian Date.
+
+    Returns
+    -------
+    List of OutOfBoundsBody sorted by excess descending (most OOB first).
+    """
+    results: list[OutOfBoundsBody] = []
+    for body, dec in declinations.items():
+        excess = abs(dec) - obliquity
+        if excess > 0.0:
+            results.append(OutOfBoundsBody(
+                body=body,
+                declination=dec,
+                obliquity=obliquity,
+                excess=excess,
+            ))
+    results.sort(key=lambda o: o.excess, reverse=True)
     return results

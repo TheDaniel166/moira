@@ -9,9 +9,22 @@
 Current admitted runtime surface:
 
 - direction space: `in_zodiaco`
-- perfection kind: `zodiacal_longitude_perfection`
-- current geometric admission: pure zodiacal longitude perfection
-- current latitude policy: suppressed
+- perfection kinds:
+  - `zodiacal_longitude_perfection`
+  - `zodiacal_projected_perfection`
+- current geometric admissions:
+  - pure zodiacal longitude perfection
+  - retained-latitude zodiacal projection via equatorial RA
+- current latitude policies:
+  - `zodiacal_suppressed`
+  - `zodiacal_promissor_retained`
+  - `zodiacal_significator_conditioned`
+- current latitude sources:
+  - `assigned_zero`
+  - `promissor_native`
+  - `aspect_inherited`
+  - `significator_native`
+- current admitted aspect-target surface: explicit major-aspect promissor points
 - broader zodiacal latitude and aspect doctrine: deferred
 
 ## Identity
@@ -95,8 +108,13 @@ They differ from symbolic directions because:
 This is the central ambiguity.
 
 Some systems or software suppress latitude and direct pure ecliptic points.
-Others preserve or assign latitude, which pushes the method toward field-plane
-families.
+Others preserve or assign latitude. Moira now admits both:
+
+- suppressed zodiacal aspect-points with `assigned_zero`
+- retained-latitude zodiacal aspect-points with `aspect_inherited`
+
+That closes more of the latitude-bearing zodiacal problem without yet collapsing
+the whole family into a separate `field_plane` label.
 
 ### 2. Aspect Layout
 
@@ -125,7 +143,17 @@ The first zodiacal implementation in Moira should be narrow and explicit:
 - one declared latitude policy
 - one declared aspect layout policy
 
-It should not begin as an everything-bagel of zodiacal variants.
+Moira now admits a still-narrow but no longer single-form zodiacal family:
+
+- `zodiacal_suppressed` + `assigned_zero` + `zodiacal_longitude_perfection`
+- `zodiacal_promissor_retained` + `promissor_native` +
+  `zodiacal_projected_perfection`
+- `zodiacal_promissor_retained` + `aspect_inherited` +
+  `zodiacal_projected_perfection` for explicit aspect-point promissors
+- `zodiacal_significator_conditioned` + `significator_native` +
+  `zodiacal_projected_perfection` for pair-specific projected branches
+
+It still should not become an everything-bagel of zodiacal variants.
 
 ## Research Sources
 

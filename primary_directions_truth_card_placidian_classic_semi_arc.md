@@ -131,6 +131,9 @@ Reason:
 
 For later widening, Moira should still specify:
 
+- active relation policy on the current admitted branch:
+  - `conjunction`
+  - `opposition`
 - exact semi-arc equations and invariants
 - which points are admissible as promissors and significators
 - whether aspectual points are allowed

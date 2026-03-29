@@ -344,6 +344,20 @@ different signs and houses, yet share a common origin — literally made of the 
 rock. The astrological meaning of this is uncharted territory, but the calculation
 is exact and the data exists.
 
+This is now implemented. ``asteroid_families.py`` bundles the Nesvorný et al. (2015)
+catalog: **143,711 numbered asteroids** assigned to **119 dynamical families**.
+
+    asteroid_family(158)              → "Koronis(2)"
+    family_members("Vesta")           → 15,252 asteroid numbers
+    families_in_chart([158, 832, 4])  → {"Karin": [832], "Koronis(2)": [158], "Vesta": [4]}
+
+Notable detail already visible in the data: **158 Koronis** (the family's namesake) is
+in ``Koronis(2)`` — later dynamical analysis split the family into two groups, and the
+namesake ended up in the secondary cluster. **832 Karin** is a sub-family of the Koronis
+region, born from a second collision ~5.8 million years ago. A family within a family.
+The largest family is **Nysa-Polana** at 19,073 members — two so entangled they cannot
+be cleanly separated.
+
 ---
 
 ### 14. Light-Time Astrology
@@ -367,9 +381,200 @@ The choice between **observed position** (what the light shows) and **true posit
 traditional astrology, because the data to ask the question did not exist. Moira can
 offer both.
 
+This is now implemented: `star_light_time_split(name, jd_tt)` in `stars.py` returns
+`(observed, true)` — a pair of `FixedStar` vessels. The observed position propagates
+proper motion to `jd_tt - distance_ly * 365.25` (the emission epoch); the true position
+propagates to `jd_tt`. For stars without a valid parallax the distinction is undefined
+and both positions are identical. `FixedStarTruth.true_position` records which was
+computed.
+
 ---
 
-## IV. Summary — The Impossible Made Possible
+### 15. The Exoplanet Catalog — Known Worlds Beyond the Solar System
+
+Swiss Ephemeris contains no exoplanets. None existed in confirmed, catalogued form when it was built. The first confirmed exoplanet around a Sun-like star was 51 Pegasi b, discovered in **October 1995** — two years before SwissEph's release — and the catalog was essentially empty.
+
+As of 2025, NASA's Exoplanet Archive lists **5,600+ confirmed exoplanets**. Each has a host star. Each host star has a known ecliptic position. This means every confirmed exoplanet has an astrological direction.
+
+The ones that matter most astrologically are the nearest and most Earth-like:
+
+| Body | Host Star | Distance | Notes |
+|---|---|---|---|
+| Proxima Centauri b | Proxima Centauri | 4.24 ly | Nearest known exoplanet; in habitable zone |
+| Alpha Centauri system | Alpha Centauri A/B | 4.37 ly | Possible candidate bodies |
+| TRAPPIST-1e, f, g | TRAPPIST-1 | 40 ly | Three habitable-zone worlds in same system |
+| Kepler-186f | Kepler-186 | 582 ly | First confirmed Earth-size planet in habitable zone |
+| LHS 1140 b | LHS 1140 | 48 ly | Dense super-Earth in habitable zone; water possible |
+
+Astrologically, these are not merely abstract points. They are the known locations of other worlds — potentially inhabited ones. The direction of Proxima Centauri b from Earth is a fixed ecliptic position. A chart can note whether a planet is conjunct the direction of the nearest known world outside our solar system.
+
+The philosophical implications for mundane and natal astrology are genuinely new territory. But the computation is exact, and the data exists in a form that did not exist when Swiss Ephemeris was written.
+
+---
+
+## II. The Computational Revolution (continued)
+
+### 16. Declination as a Full Chart Layer
+
+Most astrological software treats the chart as a one-dimensional object: ecliptic longitude. Declination — the angular distance north or south of the celestial equator — is either ignored or offered as a minor addon.
+
+This is a profound impoverishment. Ptolemy recognized **parallel aspects** (two bodies at the same declination) as equivalent in strength to conjunctions. Renaissance astrologers routinely worked with both longitude and declination. The reduction to longitude-only is a software limitation that became a conceptual habit.
+
+With full 3D Cartesian position vectors from SPICE/JPL, Moira computes declination as naturally as ecliptic longitude. This enables:
+
+- **Parallels of declination**: Two planets at the same declination, same hemisphere — Ptolemy's "parallel conjunction," often stronger than a longitudinal conjunction
+- **Contraparallels**: Same declination, opposite hemispheres — equivalent to a longitudinal opposition
+- **Out-of-bounds planets**: Any body exceeding the Sun's maximum declination of ±23°26' is beyond the Sun's apparent path — a condition associated with unconventional, boundary-breaking expression. Moira computes this precisely for every body including asteroids
+- **Declination-based primary directions**: An entirely separate stream of directions operating in declination space rather than right ascension
+
+Swiss Ephemeris returns longitude and latitude. The declination layer requires the full coordinate transformation pipeline that most software never bothers to expose. Moira does not make this choice — declination is a first-class coordinate in every calculation.
+
+In practice, this is largely already built:
+- `SkyPosition` (planets.py) carries `right_ascension` and `declination` as first-class fields, populated by the full 8-step apparent-position pipeline
+- `find_declination_aspects()` (aspects.py) detects parallels and contraparallels from any dict of declinations
+- `find_out_of_bounds()` (aspects.py) detects bodies exceeding the obliquity threshold, returning `OutOfBoundsBody` vessels with the signed declination, obliquity used, and excess beyond the boundary
+
+The only thing that was genuinely missing was the OOB check. It is now implemented.
+
+---
+
+### 17. Synodic Phase Cycles for All Body Pairs
+
+The Moon's synodic cycle — new moon, waxing crescent, first quarter, gibbous, full, waning — is the most familiar rhythmic structure in astrology. But every pair of bodies has a synodic cycle of the same structure.
+
+Jupiter and Saturn complete a synodic cycle every **19.9 years**. At their conjunction (the "new" phase), a new cycle begins. At their opposition (the "full" phase), the cycle reaches its culmination. The waxing and waning hemispheres carry qualitatively different meanings — just as they do for the Moon.
+
+Venus's synodic cycle — from inferior conjunction through greatest elongation as morning star, superior conjunction, greatest elongation as evening star, back to inferior conjunction — is one of the most storied cycles in ancient astrology. The Babylonians tracked every Venus elongation meticulously.
+
+What changes with Moira:
+
+- The **phase angle** between any two of the 1.479 million bodies can be computed precisely — not just the traditional planets
+- The **synodic cycle position** (0° = conjunction, 180° = opposition) is a continuous value, not just a categorical label
+- The exact moment of **maximum elongation**, **station within the synodic cycle**, and **phase transitions** can be computed via root-finding to second-level precision
+- **Mutual phase** between two bodies that are not Sun-centered (e.g., Jupiter-Neptune phase from Earth's perspective) is computationally identical
+
+Swiss Ephemeris exposes raw positions. Computing synodic phase requires the subtraction, normalization, and interpretation that Moira builds on top.
+
+---
+
+### 18. Exact Astronomical Event Computation
+
+In 1997, finding the exact moment of a planetary station required interpolation from pre-tabulated ephemeris data — typically to ±1 day precision. Finding the exact moment of a cazimi (planet within 17' of the Sun's center) required careful table work.
+
+Modern root-finding algorithms — bisection, Brent's method, Illinois algorithm — can locate the zero-crossing of any smooth astronomical function to **sub-second precision** in milliseconds. This transforms what was laborious approximation into trivial exact computation.
+
+Moira can compute the precise moment of:
+
+- **Planetary station** (apparent longitude velocity = 0): the exact second a planet turns retrograde or direct
+- **Cazimi**: the exact ingress and egress of a planet into the Sun's heart (within 17' of center)
+- **Combustion boundary**: the exact moment a planet enters or leaves the Sun's beams (15°)
+- **Heliacal first and last visibility**: the sunrise or sunset at which a star or planet first becomes or last remains visible to the naked eye — computed for any observer location and atmospheric conditions
+- **Exact aspect perfection**: the precise moment two planets form an exact angle, including in declination
+- **Planetary ingress**: the exact second a planet crosses a sign or house cusp
+- **Eclipse contacts**: first, second, maximum, third, fourth contacts for any solar or lunar eclipse, for any location
+
+None of these required new data. What changed is that the computation is no longer expensive. A Python loop calling an ephemeris function can converge on any of these events in under 50 iterations — effectively instantaneous.
+
+---
+
+### 19. Geodetic Astrology — The Zodiac Mapped to Earth
+
+Geodetic astrology assigns zodiacal positions to geographic locations: each longitude on Earth corresponds to a zodiacal degree. Several competing systems exist (Johndro, Sepharial, Grimm), but the core idea is that the zodiac encodes geography as well as time.
+
+In practice, this means:
+- Every city has a "natal" Ascendant and Midheaven based on its geographic coordinates
+- A planet transiting that degree "activates" the corresponding region of Earth
+- A natal chart can be relocated not just astrologically (Astrocartography) but geodetically — mapping which places resonate with which planets in the natal
+
+What has changed since 1997 is not the algorithm (which is simple coordinate arithmetic) but the **precision of geographic data** and the **breadth of bodies available**:
+
+- With 887K asteroids, the geodetic positions of bodies named after cities, rivers, countries, and peoples can be cross-referenced against the actual locations those names refer to
+- An asteroid named "Roma" can be compared to the geodetic position of Rome
+- Geodetic charts for any of the 1.479M bodies can be generated for any location on Earth
+
+The conceptual system is traditional. The scale at which it can now be investigated is not.
+
+---
+
+## IV. Classical Techniques Reclaimed
+
+There is a category of astrological technique that was not impossible in 1997 for lack of data or computational paradigm — but was so laborious, so rarely implemented fully, and so imprecise in software form, that it existed in theory more than practice. Modern computation does not merely make these faster. It restores them to the precision their inventors intended, removes the approximations that degraded them, and extends them to bodies their inventors could not have imagined.
+
+---
+
+### 20. Primary Directions — The Oldest Predictive Technique
+
+Primary directions are the oldest surviving method of astrological prediction. They appear in Claudius Ptolemy's *Tetrabiblos* (2nd century AD), were refined by medieval Arabic astrologers (al-Qabisi, Abu Ma'shar), brought to systematic form by Regiomontanus (1467), and extended by later European masters through the 18th century.
+
+The technique works by rotating the celestial sphere — simulating the diurnal motion of the sky after birth — and measuring how far a chart point must travel to reach a sensitive position. That arc, converted by a time key, yields a predicted year.
+
+The calculation is geometrically complex:
+- It requires precise **oblique ascension** for each chart point under the pole of the horizon
+- **Semi-arc** calculations for planets above and below the horizon
+- **Latitude treatment**: a planet not on the ecliptic requires projection to the ecliptic — a step that involves either dropping latitude (Ptolemy's method) or carrying it through the mundane sphere (the full method)
+- **House system dependency**: Regiomontanus directions use a different geometric base than Placidus directions. Campanus, Morinus, and topocentric systems each yield different arcs
+- **Time keys**: Naibod (0°59'08" per year), Ptolemy (1°00'00"), solar arc, and others yield different timing
+
+In 1997, software implementations of primary directions almost universally:
+- Ignored planetary latitude entirely, or simplified it
+- Supported only one or two house systems
+- Offered only Naibod and Ptolemy keys
+- Could not extend directions to bodies beyond the traditional planets
+
+Moira's implementation (currently under development) covers all house systems, full latitude treatment, all classical time keys, and can compute directions for any body in the catalog — including asteroids, TNOs, and fixed stars with Gaia-measured coordinates.
+
+The stars as promissors or significators in primary directions — computed with sub-arcsecond precision against Gaia positions rather than estimated catalog values — is a level of accuracy no historical astrologer achieved and no 1997 software attempted.
+
+---
+
+### 21. Heliacal Rising and Setting — The Babylonian Timing System
+
+Before horoscopic astrology existed, the Babylonians practiced **observational astrology** centered on heliacal phenomena: the first morning visibility of a star after a period of invisibility (heliacal rising), and the last evening visibility before it disappears into the Sun's glare (heliacal setting).
+
+The heliacal rising of Sirius — when it first appeared before dawn after 70 days of invisibility — marked the Egyptian new year and predicted the Nile flood. The Babylonian Mul.Apin tablets (700 BC, but encoding observations from ~1000 BC) are organized around heliacal risings and settings as the primary calendar system.
+
+Computing heliacal phenomena precisely requires:
+
+1. **Star brightness** — the star's apparent magnitude (Gaia provides this for 1.46B stars)
+2. **Solar elongation** — how far the star is from the Sun at the moment of interest
+3. **Observer latitude** — the angle at which objects rise affects visibility
+4. **Atmospheric extinction** — the atmosphere absorbs light near the horizon; the extinction coefficient depends on altitude, humidity, and aerosol conditions
+5. **Arcus visionis** — the minimum solar depression angle at which a star of given magnitude becomes visible; this varies by star brightness and atmospheric conditions
+
+The **arcus visionis** computation is a multi-factor equation that Ptolemy attempted in the *Tetrabiblos* and that modern researchers (Schaefer 1985, Helmantel 2000) have refined into tractable formulas. It requires the kind of floating-point computation that is trivially fast in Python but was genuinely expensive in 1997 C.
+
+Moira can compute, for any observer location on any date:
+- The **exact date of heliacal rising** for any of the 1.46 billion Gaia stars
+- The **exact date of heliacal setting**
+- The **phase of morning vs. evening visibility** for any planet (morning star, evening star, under the beams)
+- The **acronychal rising** (rising at sunset) and **cosmical setting** (setting at sunrise) — the other classical visibility phases
+
+This is the recovery of a timing system that predates the horoscope by at least a millennium, computed with a precision the Babylonians could not have imagined.
+
+---
+
+### 22. Planetary Nodes — The Orbital Intersections
+
+Every planet's orbit is tilted relative to the ecliptic. The two points where its orbital plane intersects the ecliptic are its **nodes**: ascending (North) and descending (South). These are the same concept as the Moon's nodes — applied to every planet.
+
+The planetary nodes are:
+- **Heliocentric** — the intersection of the planet's orbit with the ecliptic plane, measured from the Sun
+- **Slowly precessing** — they move, but over centuries, not years
+- **Geometrically meaningful** — a planet conjunct its own node is at a point where it crosses the ecliptic; a solar or lunar eclipse near a planetary node has additional resonance
+
+The nodes are used in cosmobiology (Ebertin's work), Uranian astrology, and some Hellenistic approaches. For the traditional planets, the nodes can be computed from orbital elements in JPL's DE series. For the newly discovered dwarf planets and TNOs, the nodes are derivable from their SPICE kernels.
+
+What is new:
+
+- The **nodes of Eris, Sedna, Makemake, and Haumea** — bodies whose orbits were unknown in 1997 — can now be precisely computed
+- The **node of Chiron** (known since 1977 but not well-implemented in software) passes through approximately 19° Libra — a point with documented mundane significance
+- Asteroid nodes: for any of the 887K numbered asteroids, the nodal positions can be extracted from orbital elements — a dataset of nearly a million additional sensitive points on the ecliptic
+
+The precision of modern orbital mechanics makes these computations exact. The scale at which they can be applied — across the full modern body catalog — is without historical precedent.
+
+---
+
+## V. Summary — The Impossible Made Possible
 
 | Capability | Impossible in 1997 because... | Now possible because... |
 |---|---|---|
@@ -391,6 +596,14 @@ offer both.
 | Asteroid family origin groupings | Not catalogued | Asteroid Families Portal (ESA) |
 | Light-time vs. true star position choice | No stellar distances | Gaia parallax |
 | 1.8 billion named/nameable stars | Only 118K with positions | Gaia DR3 complete |
+| Exoplanet directions (5,600+ known worlds) | None confirmed in catalog | NASA Exoplanet Archive + host star positions |
+| Declination as full chart layer (parallels, OOB) | Software convention, not impossibility | Full 3D vectors via SPICE; no additional cost |
+| Synodic phase angle for any body pair | Raw positions only; no phase layer | Moira computes continuous phase for all 1.479M bodies |
+| Exact event computation (stations, cazimi, ingress) | Expensive interpolation; table-limited | Root-finding (Brent's method) converges in <50 iterations |
+| Geodetic astrology at full asteroid scale | Too few bodies for meaningful mapping | 887K bodies including city/country/culture names |
+| Primary directions with full latitude + all house systems | Computationally laborious; latitude dropped | Full mundane sphere geometry; all house systems |
+| Heliacal rising/setting for 1.46B stars | No brightness catalog; arcus visionis expensive | Gaia magnitudes + Schaefer atmospheric model |
+| Planetary nodes of TNOs and dwarf planets | Bodies undiscovered | Modern orbital elements for all known bodies |
 
 Swiss Ephemeris is an achievement of the 20th century.
 Moira is built for the 21st.

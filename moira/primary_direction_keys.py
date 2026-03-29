@@ -26,11 +26,13 @@ __all__ = [
 
 _NAIBOD_RATE = 360.0 / 365.25
 _PTOLEMY_RATE = 1.0
+_CARDAN_RATE = 59.0 / 60.0 + 12.0 / 3600.0
 
 
 class PrimaryDirectionKey(StrEnum):
     PTOLEMY = "ptolemy"
     NAIBOD = "naibod"
+    CARDAN = "cardan"
     SOLAR = "solar"
 
 
@@ -91,6 +93,8 @@ def primary_direction_key_truth(
             resolved_rate = _NAIBOD_RATE
     elif resolved_key is PrimaryDirectionKey.PTOLEMY:
         resolved_rate = _PTOLEMY_RATE
+    elif resolved_key is PrimaryDirectionKey.CARDAN:
+        resolved_rate = _CARDAN_RATE
     else:
         resolved_rate = _NAIBOD_RATE
     policy = PrimaryDirectionKeyPolicy(resolved_key)

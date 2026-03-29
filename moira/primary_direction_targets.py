@@ -60,6 +60,8 @@ class PrimaryDirectionTargetClass(StrEnum):
     PLANET = "planet"
     NODE = "node"
     ANGLE = "angle"
+    HOUSE_CUSP = "house_cusp"
+    ASPECTUAL_POINT = "aspectual_point"
 
 
 class PrimaryDirectionTargetRelationKind(StrEnum):
@@ -84,6 +86,7 @@ class PrimaryDirectionTargetPolicy:
                 PrimaryDirectionTargetClass.PLANET,
                 PrimaryDirectionTargetClass.NODE,
                 PrimaryDirectionTargetClass.ANGLE,
+                PrimaryDirectionTargetClass.HOUSE_CUSP,
             }
         )
     )
@@ -93,6 +96,7 @@ class PrimaryDirectionTargetPolicy:
                 PrimaryDirectionTargetClass.PLANET,
                 PrimaryDirectionTargetClass.NODE,
                 PrimaryDirectionTargetClass.ANGLE,
+                PrimaryDirectionTargetClass.HOUSE_CUSP,
             }
         )
     )
@@ -113,12 +117,24 @@ class PrimaryDirectionTargetPolicy:
 class PrimaryDirectionTargetTruth:
     name: str
     target_class: PrimaryDirectionTargetClass
+    source_name: str | None = None
+    aspect_name: str | None = None
+    aspect_angle: float | None = None
 
     def __post_init__(self) -> None:
         if not self.name:
             raise ValueError("PrimaryDirectionTargetTruth requires a non-empty target name")
         if not isinstance(self.target_class, PrimaryDirectionTargetClass):
             raise ValueError(f"Unsupported primary-direction target class: {self.target_class}")
+        if self.target_class is PrimaryDirectionTargetClass.ASPECTUAL_POINT:
+            if not self.source_name or not self.aspect_name or self.aspect_angle is None:
+                raise ValueError(
+                    "PrimaryDirectionTargetTruth invariant failed: aspectual points require source_name, aspect_name, and aspect_angle"
+                )
+        elif any(value is not None for value in (self.source_name, self.aspect_name, self.aspect_angle)):
+            raise ValueError(
+                "PrimaryDirectionTargetTruth invariant failed: non-aspectual targets may not carry aspect metadata"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -188,6 +204,8 @@ class PrimaryDirectionTargetsAggregateProfile:
     planet_count: int
     node_count: int
     angle_count: int
+    house_cusp_count: int
+    aspect_count: int
     universally_admitted_count: int
 
     def __post_init__(self) -> None:
@@ -196,6 +214,40 @@ class PrimaryDirectionTargetsAggregateProfile:
         if self.total_profiles != len(self.profiles):
             raise ValueError(
                 "PrimaryDirectionTargetsAggregateProfile invariant failed: total_profiles mismatch"
+            )
+        if self.planet_count != sum(
+            1 for profile in self.profiles if profile.truth.target_class is PrimaryDirectionTargetClass.PLANET
+        ):
+            raise ValueError(
+                "PrimaryDirectionTargetsAggregateProfile invariant failed: planet_count mismatch"
+            )
+        if self.node_count != sum(
+            1 for profile in self.profiles if profile.truth.target_class is PrimaryDirectionTargetClass.NODE
+        ):
+            raise ValueError(
+                "PrimaryDirectionTargetsAggregateProfile invariant failed: node_count mismatch"
+            )
+        if self.angle_count != sum(
+            1 for profile in self.profiles if profile.truth.target_class is PrimaryDirectionTargetClass.ANGLE
+        ):
+            raise ValueError(
+                "PrimaryDirectionTargetsAggregateProfile invariant failed: angle_count mismatch"
+            )
+        if self.house_cusp_count != sum(
+            1
+            for profile in self.profiles
+            if profile.truth.target_class is PrimaryDirectionTargetClass.HOUSE_CUSP
+        ):
+            raise ValueError(
+                "PrimaryDirectionTargetsAggregateProfile invariant failed: house_cusp_count mismatch"
+            )
+        if self.aspect_count != sum(
+            1
+            for profile in self.profiles
+            if profile.truth.target_class is PrimaryDirectionTargetClass.ASPECTUAL_POINT
+        ):
+            raise ValueError(
+                "PrimaryDirectionTargetsAggregateProfile invariant failed: aspect_count mismatch"
             )
 
 
@@ -244,11 +296,42 @@ class PrimaryDirectionTargetsNetworkProfile:
 def _target_class_for_name(name: str) -> PrimaryDirectionTargetClass:
     if name in _ANGLE_NAMES:
         return PrimaryDirectionTargetClass.ANGLE
+    if len(name) == 2 and name.startswith("H") and name[1].isdigit() and 1 <= int(name[1]) <= 9:
+        return PrimaryDirectionTargetClass.HOUSE_CUSP
+    if len(name) == 3 and name.startswith("H") and name[1:].isdigit() and 10 <= int(name[1:]) <= 12:
+        return PrimaryDirectionTargetClass.HOUSE_CUSP
     if name in _PLANET_NAMES:
         return PrimaryDirectionTargetClass.PLANET
     if name in _NODE_NAMES or name.endswith("Node") or "Lilith" in name:
         return PrimaryDirectionTargetClass.NODE
     raise ValueError(f"Unsupported primary-direction target identity: {name}")
+
+
+_MAJOR_ASPECT_ANGLES: tuple[tuple[str, float], ...] = (
+    ("Opposition", 180.0),
+    ("Conjunction", 0.0),
+    ("Sinister Sextile", 60.0),
+    ("Dexter Sextile", -60.0),
+    ("Sextile", 60.0),
+    ("Sinister Square", 90.0),
+    ("Dexter Square", -90.0),
+    ("Square", 90.0),
+    ("Sinister Trine", 120.0),
+    ("Dexter Trine", -120.0),
+    ("Trine", 120.0),
+)
+
+
+def _aspect_target_components(name: str) -> tuple[str, str, float] | None:
+    for aspect_name, angle in _MAJOR_ASPECT_ANGLES:
+        suffix = f" {aspect_name}"
+        if name.endswith(suffix):
+            source_name = name[: -len(suffix)].strip()
+            if not source_name:
+                break
+            _target_class_for_name(source_name)
+            return source_name, aspect_name, angle
+    return None
 
 
 def _relation_kind(
@@ -274,6 +357,16 @@ def _condition_state(relation_kind: PrimaryDirectionTargetRelationKind) -> Prima
 
 
 def primary_direction_target_truth(name: str) -> PrimaryDirectionTargetTruth:
+    aspect_components = _aspect_target_components(name)
+    if aspect_components is not None:
+        source_name, aspect_name, angle = aspect_components
+        return PrimaryDirectionTargetTruth(
+            name=name,
+            target_class=PrimaryDirectionTargetClass.ASPECTUAL_POINT,
+            source_name=source_name,
+            aspect_name=aspect_name,
+            aspect_angle=angle,
+        )
     return PrimaryDirectionTargetTruth(name=name, target_class=_target_class_for_name(name))
 
 
@@ -350,6 +443,12 @@ def evaluate_primary_direction_targets_aggregate(
         planet_count=sum(1 for p in profiles if p.truth.target_class is PrimaryDirectionTargetClass.PLANET),
         node_count=sum(1 for p in profiles if p.truth.target_class is PrimaryDirectionTargetClass.NODE),
         angle_count=sum(1 for p in profiles if p.truth.target_class is PrimaryDirectionTargetClass.ANGLE),
+        house_cusp_count=sum(
+            1 for p in profiles if p.truth.target_class is PrimaryDirectionTargetClass.HOUSE_CUSP
+        ),
+        aspect_count=sum(
+            1 for p in profiles if p.truth.target_class is PrimaryDirectionTargetClass.ASPECTUAL_POINT
+        ),
         universally_admitted_count=sum(
             1 for p in profiles if p.state is PrimaryDirectionTargetConditionState.UNIVERSALLY_ADMITTED
         ),

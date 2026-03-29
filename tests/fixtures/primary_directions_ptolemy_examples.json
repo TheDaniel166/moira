@@ -1,0 +1,28 @@
+{
+  "parallel_direct_uranus": {
+    "source": "astroamerica_primary_pdf_example_6",
+    "description": "Bring Sun to par. Uranus in zodiac direct.",
+    "source_longitude": 100.0,
+    "source_declination": 23.4,
+    "obliquity": 23.4392911,
+    "relation": "parallel",
+    "expected_equivalent_longitude": 93.22323381173652,
+    "published_equivalent_longitude": 94.0,
+    "published_source_rise_st_hours": 16.733333333333334,
+    "published_target_rise_st_hours": 22.1,
+    "published_arc_degrees": 80.5
+  },
+  "declination_equivalent_saturn": {
+    "source": "astroamerica_primary_pdf_example_3",
+    "description": "Bring Saturn to the place of Sun in zodiac.",
+    "source_longitude": 340.0,
+    "source_declination": 6.9,
+    "obliquity": 23.4392911,
+    "relation": "contra_parallel",
+    "expected_equivalent_longitude": 342.4210029835662,
+    "published_equivalent_longitude": 342.6166666666667,
+    "published_source_rise_st_hours": 16.733333333333334,
+    "published_target_rise_st_hours": 17.5,
+    "published_arc_degrees": 11.5
+  }
+}

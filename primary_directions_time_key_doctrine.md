@@ -132,6 +132,9 @@ Examples from current software:
 - historically important in later traditional and software practice
 - should be admitted as a classical static-key peer, not as a miscellaneous
   modern option
+- current admitted Moira rate:
+  - `1 year = 59′12″ of arc`
+  - equivalently `0.986666... degrees per year`
 
 ## Why Keys Must Be Separate
 

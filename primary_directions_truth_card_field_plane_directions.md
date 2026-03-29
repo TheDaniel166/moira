@@ -5,6 +5,8 @@
 - doctrinal family: `partly attested, partly software-conventional`
 - Moira status: `not implemented`
 - role in Moira: research family requiring decomposition before admission
+- likely future classification, if partially admitted before full doctrine is
+  recovered: `doctrine_loss_reconstruction`
 
 ## Identity
 
@@ -122,6 +124,46 @@ been decomposed into explicit policy components:
 Only after that decomposition should Moira decide whether one or several
 field-plane doctrines are admissible.
 
+Constitutional rule:
+
+> accepted label does not override explicit doctrine.
+
+Moira may acknowledge historically accepted or software-accepted labels, but it
+admits only the mathematically explicit subset it can define, test, and defend.
+
+Companion rule:
+
+> where the tradition is composite, Moira decomposes before it admits.
+
+This is why `field_plane` is still treated as a doctrine family above the
+currently admitted branches rather than as a premature runtime switch.
+
+Current Moira boundary:
+
+- a retained-latitude zodiacal branch is now admitted explicitly
+- it uses `in_zodiaco` with `promissor_native` latitude retained
+- explicit zodiacal aspect-point promissors may now also use
+  `aspect_inherited` latitude
+- this branch is **not** being named `field_plane`
+- `field_plane` remains a distinct, unresolved doctrine family above that branch
+
+Current doctrinal judgment:
+
+- these admitted branches likely cover part of what some software groups under
+  `field_plane`
+- especially where the family means "zodiacal directions that keep latitude in
+  force"
+- but they still do not settle whether `field_plane` names one separate space
+  doctrine or a bundle of retained-latitude zodiacal variants
+
+If Moira ever admits a partial `field_plane` branch before the full governing
+law is recovered, it should be marked explicitly as one of:
+
+- `experimental`
+- `doctrine_loss_reconstruction`
+
+and not presented as if the whole family had been recovered intact.
+
 ## Implementation Consequences
 
 Field-plane should be treated as a research frontier and possible place for
@@ -131,6 +173,7 @@ But the only responsible way to exceed the field is:
 
 - by making the doctrine more explicit
 - not by hardcoding a mysterious modern label
+- not by guessing at the missing law because a familiar label exists
 
 ## Research Sources
 

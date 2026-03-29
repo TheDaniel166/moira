@@ -41,22 +41,46 @@ __all__ = [
 
 class PrimaryDirectionMethod(StrEnum):
     PLACIDUS_MUNDANE = "placidus_mundane"
+    PTOLEMY_SEMI_ARC = "ptolemy_semi_arc"
     PLACIDIAN_CLASSIC_SEMI_ARC = "placidian_classic_semi_arc"
+    MERIDIAN = "meridian"
+    MORINUS = "morinus"
+    REGIOMONTANUS = "regiomontanus"
+    CAMPANUS = "campanus"
+    TOPOCENTRIC = "topocentric"
 
 
 class PrimaryDirectionMethodKind(StrEnum):
     PLACIDUS_MUNDANE = "placidus_mundane"
+    PTOLEMY_SEMI_ARC = "ptolemy_semi_arc"
     PLACIDIAN_CLASSIC_SEMI_ARC = "placidian_classic_semi_arc"
+    MERIDIAN = "meridian"
+    MORINUS = "morinus"
+    REGIOMONTANUS = "regiomontanus"
+    CAMPANUS = "campanus"
+    TOPOCENTRIC = "topocentric"
 
 
 class PrimaryDirectionMethodRelationKind(StrEnum):
     PLACIDIAN_MUNDANE_PERFECTION = "placidian_mundane_perfection"
+    PTOLEMAIC_SEMI_ARC_PERFECTION = "ptolemaic_semi_arc_perfection"
     PLACIDIAN_CLASSIC_SEMI_ARC_PERFECTION = "placidian_classic_semi_arc_perfection"
+    MERIDIAN_EQUATORIAL_PERFECTION = "meridian_equatorial_perfection"
+    MORINIAN_EQUATORIAL_PERFECTION = "morinian_equatorial_perfection"
+    REGIOMONTANIAN_UNDER_POLE_PERFECTION = "regiomontanian_under_pole_perfection"
+    CAMPANIAN_UNDER_POLE_PERFECTION = "campanian_under_pole_perfection"
+    TOPOCENTRIC_UNDER_POLE_PERFECTION = "topocentric_under_pole_perfection"
 
 
 class PrimaryDirectionMethodConditionState(StrEnum):
     MUNDANE_SEMI_ARC_GROUNDED = "mundane_semi_arc_grounded"
+    PTOLEMAIC_SEMI_ARC_GROUNDED = "ptolemaic_semi_arc_grounded"
     CLASSIC_SEMI_ARC_GROUNDED = "classic_semi_arc_grounded"
+    EQUATORIAL_GROUNDED = "equatorial_grounded"
+    MORINIAN_GROUNDED = "morinian_grounded"
+    UNDER_POLE_GROUNDED = "under_pole_grounded"
+    PRIME_VERTICAL_UNDER_POLE_GROUNDED = "prime_vertical_under_pole_grounded"
+    TOPOCENTRIC_UNDER_POLE_GROUNDED = "topocentric_under_pole_grounded"
 
 
 @dataclass(frozen=True, slots=True)
@@ -64,9 +88,17 @@ class PrimaryDirectionMethodPolicy:
     method: PrimaryDirectionMethod = PrimaryDirectionMethod.PLACIDUS_MUNDANE
 
     def __post_init__(self) -> None:
+        if not isinstance(self.method, PrimaryDirectionMethod):
+            raise ValueError(f"Unsupported primary direction method: {self.method}")
         if self.method not in (
             PrimaryDirectionMethod.PLACIDUS_MUNDANE,
+            PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
             PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC,
+            PrimaryDirectionMethod.MERIDIAN,
+            PrimaryDirectionMethod.MORINUS,
+            PrimaryDirectionMethod.REGIOMONTANUS,
+            PrimaryDirectionMethod.CAMPANUS,
+            PrimaryDirectionMethod.TOPOCENTRIC,
         ):
             raise ValueError(f"Unsupported primary direction method: {self.method}")
 
@@ -78,17 +110,76 @@ class PrimaryDirectionMethodTruth:
     uses_semi_arcs: bool
     uses_world_frame_geometry: bool
     latitude_sensitive: bool
+    under_pole_based: bool
 
     def __post_init__(self) -> None:
-        expected_kind = {
-            PrimaryDirectionMethod.PLACIDUS_MUNDANE: PrimaryDirectionMethodKind.PLACIDUS_MUNDANE,
-            PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC: PrimaryDirectionMethodKind.PLACIDIAN_CLASSIC_SEMI_ARC,
+        expected = {
+            PrimaryDirectionMethod.PLACIDUS_MUNDANE: (
+                PrimaryDirectionMethodKind.PLACIDUS_MUNDANE,
+                True,
+                True,
+                True,
+                False,
+            ),
+            PrimaryDirectionMethod.PTOLEMY_SEMI_ARC: (
+                PrimaryDirectionMethodKind.PTOLEMY_SEMI_ARC,
+                True,
+                True,
+                True,
+                False,
+            ),
+            PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC: (
+                PrimaryDirectionMethodKind.PLACIDIAN_CLASSIC_SEMI_ARC,
+                True,
+                True,
+                True,
+                False,
+            ),
+            PrimaryDirectionMethod.MERIDIAN: (
+                PrimaryDirectionMethodKind.MERIDIAN,
+                False,
+                True,
+                True,
+                False,
+            ),
+            PrimaryDirectionMethod.MORINUS: (
+                PrimaryDirectionMethodKind.MORINUS,
+                False,
+                True,
+                True,
+                False,
+            ),
+            PrimaryDirectionMethod.REGIOMONTANUS: (
+                PrimaryDirectionMethodKind.REGIOMONTANUS,
+                False,
+                True,
+                True,
+                True,
+            ),
+            PrimaryDirectionMethod.CAMPANUS: (
+                PrimaryDirectionMethodKind.CAMPANUS,
+                False,
+                True,
+                True,
+                True,
+            ),
+            PrimaryDirectionMethod.TOPOCENTRIC: (
+                PrimaryDirectionMethodKind.TOPOCENTRIC,
+                False,
+                True,
+                True,
+                True,
+            ),
         }.get(self.method)
-        if expected_kind is None:
+        if expected is None:
             raise ValueError(f"Unsupported primary direction method on truth: {self.method}")
-        if self.kind is not expected_kind:
-            raise ValueError("PrimaryDirectionMethodTruth invariant failed: kind mismatch")
-        if not self.uses_semi_arcs or not self.uses_world_frame_geometry or not self.latitude_sensitive:
+        if (
+            self.kind,
+            self.uses_semi_arcs,
+            self.uses_world_frame_geometry,
+            self.latitude_sensitive,
+            self.under_pole_based,
+        ) != expected:
             raise ValueError(
                 "PrimaryDirectionMethodTruth invariant failed: current admitted method traits mismatch"
             )
@@ -100,9 +191,21 @@ class PrimaryDirectionMethodClassification:
     mundane: bool
     zodiacal: bool
     semi_arc_based: bool
+    under_pole_based: bool
 
     def __post_init__(self) -> None:
-        if not self.mundane or self.zodiacal or not self.semi_arc_based:
+        expected = {
+            PrimaryDirectionMethod.PLACIDUS_MUNDANE: (True, False, True, False),
+            PrimaryDirectionMethod.PTOLEMY_SEMI_ARC: (True, False, True, False),
+            PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC: (True, False, True, False),
+            PrimaryDirectionMethod.MERIDIAN: (True, True, False, False),
+            PrimaryDirectionMethod.MORINUS: (True, True, False, False),
+            PrimaryDirectionMethod.REGIOMONTANUS: (True, True, False, True),
+            PrimaryDirectionMethod.CAMPANUS: (True, True, False, True),
+            PrimaryDirectionMethod.TOPOCENTRIC: (True, True, False, True),
+        }[self.truth.method]
+        actual = (self.mundane, self.zodiacal, self.semi_arc_based, self.under_pole_based)
+        if actual != expected:
             raise ValueError(
                 "PrimaryDirectionMethodClassification invariant failed: current admitted method classification mismatch"
             )
@@ -116,7 +219,13 @@ class PrimaryDirectionMethodRelation:
     def __post_init__(self) -> None:
         expected_kind = {
             PrimaryDirectionMethod.PLACIDUS_MUNDANE: PrimaryDirectionMethodRelationKind.PLACIDIAN_MUNDANE_PERFECTION,
+            PrimaryDirectionMethod.PTOLEMY_SEMI_ARC: PrimaryDirectionMethodRelationKind.PTOLEMAIC_SEMI_ARC_PERFECTION,
             PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC: PrimaryDirectionMethodRelationKind.PLACIDIAN_CLASSIC_SEMI_ARC_PERFECTION,
+            PrimaryDirectionMethod.MERIDIAN: PrimaryDirectionMethodRelationKind.MERIDIAN_EQUATORIAL_PERFECTION,
+            PrimaryDirectionMethod.MORINUS: PrimaryDirectionMethodRelationKind.MORINIAN_EQUATORIAL_PERFECTION,
+            PrimaryDirectionMethod.REGIOMONTANUS: PrimaryDirectionMethodRelationKind.REGIOMONTANIAN_UNDER_POLE_PERFECTION,
+            PrimaryDirectionMethod.CAMPANUS: PrimaryDirectionMethodRelationKind.CAMPANIAN_UNDER_POLE_PERFECTION,
+            PrimaryDirectionMethod.TOPOCENTRIC: PrimaryDirectionMethodRelationKind.TOPOCENTRIC_UNDER_POLE_PERFECTION,
         }[self.truth.method]
         if self.relation_kind is not expected_kind:
             raise ValueError("PrimaryDirectionMethodRelation invariant failed: relation_kind mismatch")
@@ -163,7 +272,13 @@ class PrimaryDirectionMethodConditionProfile:
             )
         expected_state = {
             PrimaryDirectionMethod.PLACIDUS_MUNDANE: PrimaryDirectionMethodConditionState.MUNDANE_SEMI_ARC_GROUNDED,
+            PrimaryDirectionMethod.PTOLEMY_SEMI_ARC: PrimaryDirectionMethodConditionState.PTOLEMAIC_SEMI_ARC_GROUNDED,
             PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC: PrimaryDirectionMethodConditionState.CLASSIC_SEMI_ARC_GROUNDED,
+            PrimaryDirectionMethod.MERIDIAN: PrimaryDirectionMethodConditionState.EQUATORIAL_GROUNDED,
+            PrimaryDirectionMethod.MORINUS: PrimaryDirectionMethodConditionState.MORINIAN_GROUNDED,
+            PrimaryDirectionMethod.REGIOMONTANUS: PrimaryDirectionMethodConditionState.UNDER_POLE_GROUNDED,
+            PrimaryDirectionMethod.CAMPANUS: PrimaryDirectionMethodConditionState.PRIME_VERTICAL_UNDER_POLE_GROUNDED,
+            PrimaryDirectionMethod.TOPOCENTRIC: PrimaryDirectionMethodConditionState.TOPOCENTRIC_UNDER_POLE_GROUNDED,
         }[self.truth.method]
         if self.state is not expected_state:
             raise ValueError("PrimaryDirectionMethodConditionProfile invariant failed: state mismatch")
@@ -175,6 +290,7 @@ class PrimaryDirectionMethodsAggregateProfile:
     total_profiles: int
     mundane_count: int
     semi_arc_count: int
+    under_pole_count: int
 
     def __post_init__(self) -> None:
         if not self.profiles:
@@ -183,13 +299,17 @@ class PrimaryDirectionMethodsAggregateProfile:
             raise ValueError(
                 "PrimaryDirectionMethodsAggregateProfile invariant failed: total_profiles mismatch"
             )
-        if self.mundane_count != len(self.profiles):
+        if self.mundane_count != sum(1 for profile in self.profiles if profile.classification.mundane):
             raise ValueError(
                 "PrimaryDirectionMethodsAggregateProfile invariant failed: mundane_count mismatch"
             )
-        if self.semi_arc_count != len(self.profiles):
+        if self.semi_arc_count != sum(1 for profile in self.profiles if profile.truth.uses_semi_arcs):
             raise ValueError(
                 "PrimaryDirectionMethodsAggregateProfile invariant failed: semi_arc_count mismatch"
+            )
+        if self.under_pole_count != sum(1 for profile in self.profiles if profile.truth.under_pole_based):
+            raise ValueError(
+                "PrimaryDirectionMethodsAggregateProfile invariant failed: under_pole_count mismatch"
             )
 
 
@@ -245,11 +365,26 @@ def primary_direction_method_truth(
         method=resolved_policy.method,
         kind={
             PrimaryDirectionMethod.PLACIDUS_MUNDANE: PrimaryDirectionMethodKind.PLACIDUS_MUNDANE,
+            PrimaryDirectionMethod.PTOLEMY_SEMI_ARC: PrimaryDirectionMethodKind.PTOLEMY_SEMI_ARC,
             PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC: PrimaryDirectionMethodKind.PLACIDIAN_CLASSIC_SEMI_ARC,
+            PrimaryDirectionMethod.MERIDIAN: PrimaryDirectionMethodKind.MERIDIAN,
+            PrimaryDirectionMethod.MORINUS: PrimaryDirectionMethodKind.MORINUS,
+            PrimaryDirectionMethod.REGIOMONTANUS: PrimaryDirectionMethodKind.REGIOMONTANUS,
+            PrimaryDirectionMethod.CAMPANUS: PrimaryDirectionMethodKind.CAMPANUS,
+            PrimaryDirectionMethod.TOPOCENTRIC: PrimaryDirectionMethodKind.TOPOCENTRIC,
         }[resolved_policy.method],
-        uses_semi_arcs=True,
+        uses_semi_arcs=resolved_policy.method in (
+            PrimaryDirectionMethod.PLACIDUS_MUNDANE,
+            PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
+            PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC,
+        ),
         uses_world_frame_geometry=True,
         latitude_sensitive=True,
+        under_pole_based=resolved_policy.method in (
+            PrimaryDirectionMethod.REGIOMONTANUS,
+            PrimaryDirectionMethod.CAMPANUS,
+            PrimaryDirectionMethod.TOPOCENTRIC,
+        ),
     )
 
 
@@ -259,8 +394,15 @@ def classify_primary_direction_method(
     return PrimaryDirectionMethodClassification(
         truth=truth,
         mundane=True,
-        zodiacal=False,
-        semi_arc_based=True,
+        zodiacal=truth.method in (
+            PrimaryDirectionMethod.MERIDIAN,
+            PrimaryDirectionMethod.MORINUS,
+            PrimaryDirectionMethod.REGIOMONTANUS,
+            PrimaryDirectionMethod.CAMPANUS,
+            PrimaryDirectionMethod.TOPOCENTRIC,
+        ),
+        semi_arc_based=truth.uses_semi_arcs,
+        under_pole_based=truth.under_pole_based,
     )
 
 
@@ -271,7 +413,13 @@ def relate_primary_direction_method(
         truth=truth,
         relation_kind={
             PrimaryDirectionMethod.PLACIDUS_MUNDANE: PrimaryDirectionMethodRelationKind.PLACIDIAN_MUNDANE_PERFECTION,
+            PrimaryDirectionMethod.PTOLEMY_SEMI_ARC: PrimaryDirectionMethodRelationKind.PTOLEMAIC_SEMI_ARC_PERFECTION,
             PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC: PrimaryDirectionMethodRelationKind.PLACIDIAN_CLASSIC_SEMI_ARC_PERFECTION,
+            PrimaryDirectionMethod.MERIDIAN: PrimaryDirectionMethodRelationKind.MERIDIAN_EQUATORIAL_PERFECTION,
+            PrimaryDirectionMethod.MORINUS: PrimaryDirectionMethodRelationKind.MORINIAN_EQUATORIAL_PERFECTION,
+            PrimaryDirectionMethod.REGIOMONTANUS: PrimaryDirectionMethodRelationKind.REGIOMONTANIAN_UNDER_POLE_PERFECTION,
+            PrimaryDirectionMethod.CAMPANUS: PrimaryDirectionMethodRelationKind.CAMPANIAN_UNDER_POLE_PERFECTION,
+            PrimaryDirectionMethod.TOPOCENTRIC: PrimaryDirectionMethodRelationKind.TOPOCENTRIC_UNDER_POLE_PERFECTION,
         }[truth.method],
     )
 
@@ -298,7 +446,13 @@ def evaluate_primary_direction_method_condition(
         relation_profile=evaluate_primary_direction_method_relations(truth),
         state={
             PrimaryDirectionMethod.PLACIDUS_MUNDANE: PrimaryDirectionMethodConditionState.MUNDANE_SEMI_ARC_GROUNDED,
+            PrimaryDirectionMethod.PTOLEMY_SEMI_ARC: PrimaryDirectionMethodConditionState.PTOLEMAIC_SEMI_ARC_GROUNDED,
             PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC: PrimaryDirectionMethodConditionState.CLASSIC_SEMI_ARC_GROUNDED,
+            PrimaryDirectionMethod.MERIDIAN: PrimaryDirectionMethodConditionState.EQUATORIAL_GROUNDED,
+            PrimaryDirectionMethod.MORINUS: PrimaryDirectionMethodConditionState.MORINIAN_GROUNDED,
+            PrimaryDirectionMethod.REGIOMONTANUS: PrimaryDirectionMethodConditionState.UNDER_POLE_GROUNDED,
+            PrimaryDirectionMethod.CAMPANUS: PrimaryDirectionMethodConditionState.PRIME_VERTICAL_UNDER_POLE_GROUNDED,
+            PrimaryDirectionMethod.TOPOCENTRIC: PrimaryDirectionMethodConditionState.TOPOCENTRIC_UNDER_POLE_GROUNDED,
         }[truth.method],
     )
 
@@ -312,8 +466,9 @@ def evaluate_primary_direction_methods_aggregate(
     return PrimaryDirectionMethodsAggregateProfile(
         profiles=profiles,
         total_profiles=len(profiles),
-        mundane_count=len(profiles),
-        semi_arc_count=len(profiles),
+        mundane_count=sum(1 for profile in profiles if profile.classification.mundane),
+        semi_arc_count=sum(1 for profile in profiles if profile.truth.uses_semi_arcs),
+        under_pole_count=sum(1 for profile in profiles if profile.truth.under_pole_based),
     )
 
 
@@ -344,7 +499,11 @@ def evaluate_primary_direction_methods_network(
     edges = tuple(
         sorted(
             (
-                PrimaryDirectionMethodsNetworkEdge(from_method=from_method, to_method=to_method, count=count)
+                PrimaryDirectionMethodsNetworkEdge(
+                    from_method=from_method,
+                    to_method=to_method,
+                    count=count,
+                )
                 for (from_method, to_method), count in edge_counts.items()
             ),
             key=lambda edge: (edge.from_method.value, edge.to_method.value),
@@ -352,7 +511,9 @@ def evaluate_primary_direction_methods_network(
     )
     dominant = max(nodes, key=lambda node: (node.count, node.method.value)).method
     participating = {edge.from_method for edge in edges} | {edge.to_method for edge in edges}
-    isolated = tuple(sorted((node.method for node in nodes if node.method not in participating), key=lambda m: m.value))
+    isolated = tuple(
+        sorted((node.method for node in nodes if node.method not in participating), key=lambda m: m.value)
+    )
     return PrimaryDirectionMethodsNetworkProfile(
         nodes=nodes,
         edges=edges,
