@@ -107,6 +107,7 @@ class StarPosition:
 class FixedStarTruth:
     lookup_kind: str
     hipparcos_name: str | None
+    constellation: str | None
     source_mode: str
     gaia_match_status: str
     gaia_source_index: int | None = None

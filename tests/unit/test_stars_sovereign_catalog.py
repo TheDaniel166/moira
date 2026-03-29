@@ -259,6 +259,20 @@ def test_find_and_search_views_are_catalog_native() -> None:
 
 
 @pytest.mark.unit
+def test_fixed_star_exposes_constellation_membership() -> None:
+    sirius = star_at("Sirius", J2000)
+    betelgeuse = star_at("Betelgeuse", J2000)
+
+    assert sirius.constellation == "Canis Major"
+    assert sirius.computation_truth is not None
+    assert sirius.computation_truth.constellation == "Canis Major"
+
+    assert betelgeuse.constellation == "Orion"
+    assert betelgeuse.computation_truth is not None
+    assert betelgeuse.computation_truth.constellation == "Orion"
+
+
+@pytest.mark.unit
 def test_full_catalog_j2000_reference_sweep_has_no_large_outliers() -> None:
     outliers: list[tuple[str, float, float]] = []
     for name, row in _registry_by_name().items():

@@ -9,6 +9,7 @@ Purpose: Unified sovereign star surface backed by the local registry CSV and
 from __future__ import annotations
 
 import csv
+import importlib
 import json
 import math
 from dataclasses import dataclass
@@ -229,6 +230,7 @@ class FixedStar:
 
     name: str
     nomenclature: str
+    constellation: str | None
     longitude: float
     latitude: float
     magnitude: float
@@ -526,9 +528,11 @@ def _build_fixed_star(
     jd_tt: float,
 ) -> FixedStar:
     longitude, latitude = _native_position(record, jd_tt)
+    constellation = _constellation_for_star(record.name)
     return FixedStar(
         name=record.name,
         nomenclature=record.nomenclature,
+        constellation=constellation,
         longitude=longitude,
         latitude=latitude,
         magnitude=record.magnitude_v,
@@ -540,6 +544,7 @@ def _build_fixed_star(
         computation_truth=FixedStarTruth(
             lookup_kind=lookup_kind,
             hipparcos_name=record.name,
+            constellation=constellation,
             source_mode="sovereign_registry",
             gaia_match_status="native_registry",
             gaia_source_index=None,
@@ -561,6 +566,40 @@ def _build_fixed_star(
             gaia_source_index=None,
         ),
     )
+
+
+def _constellation_label_from_module_stem(stem: str) -> str:
+    return stem.removeprefix("stars_").replace("_", " ").title()
+
+
+@lru_cache(maxsize=1)
+def _constellation_index() -> dict[str, str]:
+    package_dir = Path(__file__).resolve().parent / "constellations"
+    memberships: dict[str, set[str]] = {}
+    for module_path in sorted(package_dir.glob("stars_*.py")):
+        module = importlib.import_module(f"{__package__}.constellations.{module_path.stem}")
+        constellation = _constellation_label_from_module_stem(module_path.stem)
+        for attr_name, star_map in module.__dict__.items():
+            if not attr_name.endswith("_STAR_NAMES") or not isinstance(star_map, dict):
+                continue
+            for advertised_name in star_map.values():
+                if not isinstance(advertised_name, str):
+                    continue
+                try:
+                    record, _ = _resolve_star_record(advertised_name, DEFAULT_FIXED_STAR_POLICY.lookup)
+                except (KeyError, ValueError):
+                    continue
+                memberships.setdefault(record.name, set()).add(constellation)
+
+    return {
+        star_name: sorted(constellations)[0]
+        for star_name, constellations in memberships.items()
+        if constellations
+    }
+
+
+def _constellation_for_star(name: str) -> str | None:
+    return _constellation_index().get(name)
 
 
 def load_catalog() -> None:

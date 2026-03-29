@@ -24,6 +24,7 @@ External dependency assumptions:
 
 import math
 from dataclasses import dataclass, field
+from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from .constants import Body, DEG2RAD, RAD2DEG
@@ -31,6 +32,11 @@ from .constants import Body, DEG2RAD, RAD2DEG
 __all__ = [
     "DIRECT",
     "CONVERSE",
+    "PrimaryDirectionMethod",
+    "PrimaryDirectionSpace",
+    "PrimaryDirectionMotion",
+    "PrimaryDirectionKey",
+    "PrimaryDirectionsPolicy",
     "SpeculumEntry",
     "PrimaryArc",
     "speculum",
@@ -51,6 +57,38 @@ _PTOLEMY_RATE = 1.0               # 1.000000 °/yr
 
 DIRECT   = "D"
 CONVERSE = "C"
+
+
+class PrimaryDirectionMethod(StrEnum):
+    PLACIDUS_MUNDANE = "placidus_mundane"
+
+
+class PrimaryDirectionSpace(StrEnum):
+    IN_MUNDO = "in_mundo"
+
+
+class PrimaryDirectionMotion(StrEnum):
+    DIRECT = "direct"
+    CONVERSE = "converse"
+
+
+class PrimaryDirectionKey(StrEnum):
+    PTOLEMY = "ptolemy"
+    NAIBOD = "naibod"
+    SOLAR = "solar"
+
+
+@dataclass(frozen=True, slots=True)
+class PrimaryDirectionsPolicy:
+    method: PrimaryDirectionMethod = PrimaryDirectionMethod.PLACIDUS_MUNDANE
+    space: PrimaryDirectionSpace = PrimaryDirectionSpace.IN_MUNDO
+    include_converse: bool = True
+
+    def __post_init__(self) -> None:
+        if self.method is not PrimaryDirectionMethod.PLACIDUS_MUNDANE:
+            raise ValueError(f"Unsupported primary direction method: {self.method}")
+        if self.space is not PrimaryDirectionSpace.IN_MUNDO:
+            raise ValueError(f"Unsupported primary direction space: {self.space}")
 
 
 # ---------------------------------------------------------------------------
@@ -250,9 +288,25 @@ class PrimaryArc:
     promissor:    str
     arc:          float
     direction:    str
+    method:       PrimaryDirectionMethod = field(default=PrimaryDirectionMethod.PLACIDUS_MUNDANE)
+    space:        PrimaryDirectionSpace = field(default=PrimaryDirectionSpace.IN_MUNDO)
+    motion:       PrimaryDirectionMotion = field(default=PrimaryDirectionMotion.DIRECT)
     solar_rate:   float = field(default=_NAIBOD_RATE)
 
-    def years(self, key: str = "naibod") -> float:
+    def __post_init__(self) -> None:
+        if self.arc <= 0.0:
+            raise ValueError("PrimaryArc invariant failed: arc must be positive")
+        expected_direction = (
+            DIRECT if self.motion is PrimaryDirectionMotion.DIRECT else CONVERSE
+        )
+        if self.direction != expected_direction:
+            raise ValueError("PrimaryArc invariant failed: direction must match motion")
+        if self.method is not PrimaryDirectionMethod.PLACIDUS_MUNDANE:
+            raise ValueError(f"Unsupported primary direction method: {self.method}")
+        if self.space is not PrimaryDirectionSpace.IN_MUNDO:
+            raise ValueError(f"Unsupported primary direction space: {self.space}")
+
+    def years(self, key: str | PrimaryDirectionKey = PrimaryDirectionKey.NAIBOD) -> float:
         """
         Convert arc to years of life via a symbolic time key.
 
@@ -261,12 +315,24 @@ class PrimaryArc:
         key : "ptolemy" (1°/yr), "naibod" (0.9856°/yr), or "solar"
               For "solar", uses natal Sun speed in °/day as the yearly rate.
         """
+        try:
+            key_value = key if isinstance(key, PrimaryDirectionKey) else PrimaryDirectionKey(str(key).lower())
+        except ValueError:
+            key_value = PrimaryDirectionKey.NAIBOD
         rate = {
-            "ptolemy": _PTOLEMY_RATE,
-            "naibod":  _NAIBOD_RATE,
-            "solar":   self.solar_rate,
-        }.get(key.lower(), _NAIBOD_RATE)
+            PrimaryDirectionKey.PTOLEMY: _PTOLEMY_RATE,
+            PrimaryDirectionKey.NAIBOD:  _NAIBOD_RATE,
+            PrimaryDirectionKey.SOLAR:   self.solar_rate,
+        }[key_value]
         return self.arc / rate if rate else float("inf")
+
+    @property
+    def is_direct(self) -> bool:
+        return self.motion is PrimaryDirectionMotion.DIRECT
+
+    @property
+    def is_converse(self) -> bool:
+        return self.motion is PrimaryDirectionMotion.CONVERSE
 
     def __repr__(self) -> str:
         return (
@@ -394,6 +460,7 @@ def find_primary_arcs(
     promissors:       list[str] | None = None,
     solar_speed:      float | None = None,
     obliquity:        float | None = None,
+    policy:           PrimaryDirectionsPolicy | None = None,
 ) -> list[PrimaryArc]:
     """
     Find all Placidus mundane primary direction arcs up to *max_arc* degrees.
@@ -415,6 +482,7 @@ def find_primary_arcs(
     -------
     List of PrimaryArc, sorted by arc (ascending).
     """
+    resolved_policy = policy if policy is not None else PrimaryDirectionsPolicy(include_converse=include_converse)
     obl  = obliquity if obliquity is not None else chart.obliquity
     armc = houses.armc  # noqa: F841 (used implicitly via speculum())
 
@@ -457,15 +525,21 @@ def find_primary_arcs(
                     promissor=prom_e.name,
                     arc=arc_dir,
                     direction=DIRECT,
+                    method=resolved_policy.method,
+                    space=resolved_policy.space,
+                    motion=PrimaryDirectionMotion.DIRECT,
                     solar_rate=s_rate,
                 ))
 
-            if include_converse and 0.0 < arc_conv <= max_arc:
+            if resolved_policy.include_converse and 0.0 < arc_conv <= max_arc:
                 results.append(PrimaryArc(
                     significator=sig_e.name,
                     promissor=prom_e.name,
                     arc=arc_conv,
                     direction=CONVERSE,
+                    method=resolved_policy.method,
+                    space=resolved_policy.space,
+                    motion=PrimaryDirectionMotion.CONVERSE,
                     solar_rate=s_rate,
                 ))
 

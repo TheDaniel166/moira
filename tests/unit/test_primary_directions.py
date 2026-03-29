@@ -5,7 +5,19 @@ from dataclasses import dataclass
 import pytest
 
 from moira.constants import Body
-from moira.primary_directions import CONVERSE, DIRECT, PrimaryArc, SpeculumEntry, find_primary_arcs, speculum
+from moira.primary_directions import (
+    CONVERSE,
+    DIRECT,
+    PrimaryArc,
+    PrimaryDirectionKey,
+    PrimaryDirectionMethod,
+    PrimaryDirectionMotion,
+    PrimaryDirectionSpace,
+    PrimaryDirectionsPolicy,
+    SpeculumEntry,
+    find_primary_arcs,
+    speculum,
+)
 
 
 @dataclass
@@ -96,6 +108,12 @@ def test_primary_arc_years_supports_all_keys() -> None:
     assert arc.years("naibod") == pytest.approx(10.0 / (360.0 / 365.25))
     assert arc.years("solar") == pytest.approx(20.0)
     assert arc.years("unknown") == pytest.approx(10.0 / (360.0 / 365.25))
+    assert arc.years(PrimaryDirectionKey.PTOLEMY) == pytest.approx(10.0)
+    assert arc.method is PrimaryDirectionMethod.PLACIDUS_MUNDANE
+    assert arc.space is PrimaryDirectionSpace.IN_MUNDO
+    assert arc.motion is PrimaryDirectionMotion.DIRECT
+    assert arc.is_direct is True
+    assert arc.is_converse is False
 
 
 def test_speculum_includes_planets_nodes_and_angles() -> None:
@@ -120,8 +138,10 @@ def test_find_primary_arcs_simple_equatorial_case() -> None:
     assert arcs[0].significator == Body.SUN
     assert arcs[0].promissor == Body.MOON
     assert arcs[0].direction == DIRECT
+    assert arcs[0].motion is PrimaryDirectionMotion.DIRECT
     assert arcs[0].arc == pytest.approx(90.0)
     assert arcs[1].direction == CONVERSE
+    assert arcs[1].motion is PrimaryDirectionMotion.CONVERSE
     assert arcs[1].arc == pytest.approx(270.0)
     assert arcs[0].arc + arcs[1].arc == pytest.approx(360.0)
 
@@ -157,6 +177,43 @@ def test_find_primary_arcs_uses_absolute_natal_sun_speed_for_solar_key() -> None
 
     assert arc.solar_rate == pytest.approx(0.9)
     assert arc.years("solar") == pytest.approx(100.0)
+
+
+def test_policy_is_typed_and_preserves_current_default_behavior() -> None:
+    chart, houses = _simple_chart()
+    default_arcs = find_primary_arcs(
+        chart,
+        houses,
+        geo_lat=0.0,
+        max_arc=360.0,
+        significators=[Body.SUN],
+        promissors=[Body.MOON],
+    )
+    explicit_arcs = find_primary_arcs(
+        chart,
+        houses,
+        geo_lat=0.0,
+        max_arc=360.0,
+        significators=[Body.SUN],
+        promissors=[Body.MOON],
+        policy=PrimaryDirectionsPolicy(),
+    )
+    assert [(arc.arc, arc.direction) for arc in explicit_arcs] == [
+        (arc.arc, arc.direction) for arc in default_arcs
+    ]
+
+
+def test_primary_arc_and_policy_reject_unsupported_doctrine() -> None:
+    with pytest.raises(ValueError):
+        PrimaryDirectionsPolicy(method="regiomontanus")  # type: ignore[arg-type]
+    with pytest.raises(ValueError):
+        PrimaryArc(
+            "Sun",
+            "Moon",
+            arc=10.0,
+            direction=DIRECT,
+            method="regiomontanus",  # type: ignore[arg-type]
+        )
 
 
 def test_find_primary_arcs_excludes_self_directions() -> None:
