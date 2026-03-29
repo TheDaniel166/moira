@@ -6,6 +6,7 @@ from moira.primary_directions import (
     PrimaryDirectionLatitudeDoctrine,
     PrimaryDirectionLatitudeSource,
     PrimaryDirectionMethod,
+    PrimaryDirectionMotion,
     PrimaryDirectionPerfectionKind,
     PrimaryDirectionsPreset,
     PtolemaicParallelRelation,
@@ -103,3 +104,17 @@ def test_primary_directions_policy_preset_builds_placidian_rapt_parallel_branch(
             PrimaryDirectionRelationalKind.RAPT_PARALLEL,
         }
     )
+
+
+def test_primary_directions_policy_preset_builds_placidian_converse_rapt_parallel_branch() -> None:
+    policy = primary_directions_policy_preset(
+        PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_RAPT_PARALLEL_CONVERSE,
+        include_converse=False,
+        placidian_rapt_parallel_targets=(PlacidianRaptParallelTarget("Moon"),),
+    )
+
+    assert policy.method is PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC
+    assert policy.include_converse is False
+    assert policy.converse_doctrine is PrimaryDirectionConverseDoctrine.DIRECT_ONLY
+    assert policy.placidian_rapt_parallel_targets == (PlacidianRaptParallelTarget("Moon"),)
+    assert policy.placidian_rapt_parallel_motion is PrimaryDirectionMotion.CONVERSE

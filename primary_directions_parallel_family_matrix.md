@@ -50,8 +50,8 @@ If one of these is missing, the branch is deferred.
 | `Ptolemaic zodiacal parallel` | `Ptolemy / semi-arc`, `in_zodiaco` | declination-equivalent derived zodiacal point | **Yes**. Solve the declination-equivalent ecliptic point from `sin(delta) = sin(eps) * sin(lambda)`, then measure by the active Ptolemaic sub-law (`RA`, `OA/OD`, or proportional semi-arc) | strong enough for narrow admission | `implemented` | keep as verified narrow branch |
 | `Ptolemaic zodiacal contra-parallel` | `Ptolemy / semi-arc`, `in_zodiaco` | declination-equivalent derived zodiacal point with reflected declination | **Yes**. Same as above, with declination reflected to the opposite sign of the relation before solving the ecliptic equivalent | strong enough for narrow admission | `implemented` | keep as verified narrow branch |
 | `Placidian mundane parallel` | `Placidian classic / semi-arc`, `in_mundo` | meridian-distance / semi-arc relational perfection | **Partially**. The historical material supports proportion by semi-arc and meridian distance, but the precise normalized law still needs one clean formula packet before runtime admission | moderate | `research_candidate` | extract a formula-grade law from one primary technical source before implementation |
-| `Placidian mundane rapt parallel` | `Placidian classic / semi-arc`, `in_mundo` | joint motion of both bodies under primary motion | **Yes, narrowly**. The recoverable calculation is proportion-based: combine the relevant semi-arcs, compare them to the right-ascension difference, derive a secondary distance, then take the difference from the primary meridian distance | moderate-to-strong for narrow reconstruction | `next_candidate` | implement one narrow direct branch, then validate against published worked examples |
-| `Placidian converse rapt parallel` | `Placidian classic / semi-arc`, `in_mundo`, converse | joint converse motion of both bodies | **Yes, narrowly**. Same family as above, but the converse branch uses converse semi-arcs and a converse right-ascension relation before deriving the secondary distance | moderate for narrow reconstruction | `candidate_after_direct_rapt` | implement only after the direct rapt branch is validated |
+| `Placidian mundane rapt parallel` | `Placidian classic / semi-arc`, `in_mundo` | joint motion of both bodies under primary motion | **Yes, narrowly**. The recoverable calculation is proportion-based: combine the relevant semi-arcs, compare them to the right-ascension difference, derive a secondary distance, then take the difference from the primary meridian distance | moderate-to-strong for narrow reconstruction | `implemented_validated_branch` | keep closed unless a stronger external worked example appears |
+| `Placidian converse rapt parallel` | `Placidian classic / semi-arc`, `in_mundo`, converse | joint converse motion of both bodies | **Yes, narrowly**. The converse branch uses the promissor's converse semi-arc, the significator's active semi-arc, the forward converse right-ascension relation, and the promissor's converse meridian distance | moderate for narrow reconstruction | `implemented_validated_branch` | keep closed unless a stronger external worked example appears |
 | `Regiomontanian parallels` | `Regiomontanus` | unclear: may be under-the-pole, mundane, or mixed by sub-branch | **No single source-safe law in hand** | weak | `deferred` | do not implement until one explicit branch law is recovered |
 | `Campanian parallels` | `Campanus` | unclear: likely tied to wider mundane branch, not generic target doctrine | **No single source-safe law in hand** | weak | `deferred` | do not implement until one explicit branch law is recovered |
 | `Topocentric parallels` | `Topocentric` | unclear: likely method-specific and pole-law dependent | **No single source-safe law in hand** | weak | `deferred` | do not implement until one explicit branch law is recovered |
@@ -76,16 +76,14 @@ They are admitted as:
 
 ### Declared Implementable Next
 
-The next parallel branch Moira should implement is:
-
-- `Placidian mundane rapt parallel`
+The Placidian rapt-parallel family is now closed at the current evidence level.
 
 Why:
 
-- it has the clearest remaining formula trail
-- it stays inside an already sovereign geometry family
-- it is a real parallel-family expansion rather than a new doctrinal frontier
-- it can be validated against published worked examples
+- both recoverable branches are admitted
+- both are now backed by published worked-example fixtures
+- further widening would require new source-safe evidence, not more internal
+  extrapolation
 
 ### Declared Deferred
 
@@ -119,11 +117,7 @@ The parallel family should proceed in this order:
 
 1. keep the current Ptolemaic zodiacal `parallel` / `contra-parallel` branch
    stable
-2. implement `Placidian mundane rapt parallel` direct
-3. validate it against published worked examples
-4. implement `Placidian converse rapt parallel` only if the direct branch
-   validates cleanly
-5. reassess whether any non-Placidian families have gained a source-safe branch
+2. reassess whether any non-Placidian families have gained a source-safe branch
    law
 
 The stop rule is explicit:
@@ -204,6 +198,7 @@ packet.
 Moira now has a concrete parallel-family policy:
 
 - the Ptolemaic zodiacal branch is admitted
-- the next implementation target is Placidian mundane rapt parallels
+- the next implementation target inside parallels, if any, must be a new
+  source-safe family rather than more internal widening of Placidian rapt work
 - wider method families remain deferred until their governing law is explicit
 - the global-target abstraction remains rejected

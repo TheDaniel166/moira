@@ -41,11 +41,15 @@
   - relation doctrine `rapt_parallel`
   - named preset surface:
     - `PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_RAPT_PARALLEL_DIRECT`
+    - `PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_RAPT_PARALLEL_CONVERSE`
   - service-supplied `PlacidianRaptParallelTarget`
   - current runtime admission is:
-    - direct only
+    - direct and converse, as separate explicit preset surfaces
     - promissor/significator pair-specific
     - proportional semi-arc / meridian-distance arithmetic
+    - published worked-example fixture coverage for:
+      - direct rapt parallel
+      - converse rapt parallel
 - the existing declination engine in `moira/aspects.py` remains valid for
   ordinary aspect detection, but it is **not** being re-labeled as a global
   primary-direction target law

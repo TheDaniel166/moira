@@ -653,9 +653,16 @@ Current next practical candidates:
   enough
 - first narrow parallel branch now admitted only on the Ptolemaic zodiacal
   surface through explicit declination-equivalence targets
-- wider parallels / rapt parallels still require method-specific governing laws
+- direct Placidian mundane rapt parallels are now admitted as an explicit
+  direct-only branch
+- converse Placidian mundane rapt parallels are now also admitted as an
+  explicit converse-only branch
+- wider non-Placidian parallel families still require additional
+  method-specific governing laws
 - the governing branch policy for the wider parallel family now lives in:
   - [primary_directions_parallel_family_matrix.md](c:/Users/nilad/OneDrive/Desktop/Moira/primary_directions_parallel_family_matrix.md)
+- the governing branch policy for fixed stars now lives in:
+  - [primary_directions_fixed_star_family_matrix.md](c:/Users/nilad/OneDrive/Desktop/Moira/primary_directions_fixed_star_family_matrix.md)
 
 Current branch-selection surface:
 

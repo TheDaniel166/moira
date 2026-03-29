@@ -42,6 +42,7 @@ from moira.primary_directions import (
 )
 from moira.primary_direction_morinus import project_morinus_aspect_point
 from moira.primary_direction_placidus import compute_placidian_rapt_parallel_arc
+from moira.primary_direction_placidus import compute_placidian_converse_rapt_parallel_arc
 from moira.primary_direction_ptolemy import (
     PtolemaicParallelRelation,
     PtolemaicParallelTarget,
@@ -472,6 +473,33 @@ def test_placidian_rapt_parallel_branch_is_direct_only() -> None:
             relation_policy=placidian_rapt_parallel_relation_policy(),
             placidian_rapt_parallel_targets=(PlacidianRaptParallelTarget(Body.MOON),),
         )
+
+
+def test_placidian_converse_rapt_parallel_target_uses_explicit_converse_law() -> None:
+    chart, houses = _oblique_chart()
+    policy = primary_directions_policy_preset(
+        PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_RAPT_PARALLEL_CONVERSE,
+        include_converse=False,
+        placidian_rapt_parallel_targets=(PlacidianRaptParallelTarget(Body.MOON),),
+    )
+
+    arcs = find_primary_arcs(
+        chart,
+        houses,
+        geo_lat=51.5,
+        max_arc=360.0,
+        significators=[Body.VENUS],
+        promissors=[f"{Body.MOON} Rapt Parallel"],
+        policy=policy,
+    )
+
+    assert len(arcs) == 1
+    assert arcs[0].direction == CONVERSE
+    assert arcs[0].promissor == f"{Body.MOON} Rapt Parallel"
+
+    entry_map = {entry.name: entry for entry in speculum(chart, houses, geo_lat=51.5, obliquity=chart.obliquity)}
+    expected_arc = compute_placidian_converse_rapt_parallel_arc(entry_map[Body.MOON], entry_map[Body.VENUS])
+    assert arcs[0].arc == pytest.approx(expected_arc)
 
 
 def test_zodiacal_aspect_promissor_requires_admitted_aspect_relation_kind() -> None:

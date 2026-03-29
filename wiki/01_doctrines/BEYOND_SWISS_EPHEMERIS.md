@@ -12,6 +12,23 @@ astronomical discoveries had not yet been made.
 
 ---
 
+## Implementation Reality Note (March 2026)
+
+This doctrine now mixes two layers:
+- **Implemented now** in the current Moira codebase
+- **Roadmap / near-term architecture** that is valid directionally but not yet runtime-complete
+
+Current implementation truth (March 2026):
+- Fixed stars are currently served by a sovereign local registry (~1,809 stars), not a live Gaia-DR3 runtime surface.
+- The asteroid surface exposes 368 named bodies through bundled kernels and the `ASTEROID_NAIF` registry.
+- Live on-demand Horizons API fetch for arbitrary newly discovered objects is not yet a public runtime path.
+- Planetary heliacal computations exist; stellar heliacal in `stars.py` remains deferred.
+- ΔT uses bundled/embedded IERS-derived tables and local interpolation; there is no runtime web fetch.
+- Primary directions are implemented as an active engine and are no longer merely "under development".
+- Interstellar-object, exoplanet-direction, and mass asteroid-node claims below should be read as roadmap vision unless explicitly tied to shipped APIs.
+
+---
+
 ## I. The Data Revolution
 
 ### 1. A Billion Stars with Real Depth — Gaia DR3
@@ -88,13 +105,31 @@ this year?"* or *"Is there an asteroid named after my patron saint, and where is
 An **asteroid mythology database** tied to a live ephemeris — searchable by name, myth,
 culture, and current sky position — was simply not possible in 1997.
 
+#### 368 Named Bodies Immediately Accessible
+
+Without generating any new kernel files, Moira's four bundled kernels (`asteroids.bsp`,
+`sb441-n373s.bsp`, `centaurs.bsp`, `minor_bodies.bsp`) collectively cover **385 unique
+bodies**. The `ASTEROID_NAIF` registry now maps **368 of these by name** — the full
+classical main-belt canon from **1 Ceres through 1467 Mashona**, all six centaurs, and
+the named trans-Neptunian objects (Eris, Sedna, Haumea, Makemake, Gonggong, Salacia,
+Varda, Chaos). Every one of these is callable with a single function:
+
+    asteroid_at("Eris", jd_tt)
+    asteroid_at("Herculina", jd_tt)
+    asteroid_at("Gonggong", jd_tt)
+
+Swiss Ephemeris ships with pre-built data for roughly 20 asteroids. Moira ships with
+368 named bodies accessible by name without configuration — and the architecture to
+add any of the remaining 1.479 million on demand.
+
 #### On-Demand Ephemeris from Orbital Elements
 
 Swiss Ephemeris works from pre-computed, compressed data files. It cannot calculate a body
-it was not pre-built for. Moira can query the **JPL Horizons API** (or integrate orbital
-elements directly) to compute an ephemeris for any of the 1.479 million objects on demand.
-If an asteroid is discovered tomorrow and named, we can compute its position for any date.
-Swiss Ephemeris cannot.
+it was not pre-built for. Moira's architecture is designed to support **on-demand** ephemeris
+expansion from orbital elements (and optional Horizons-fed kernel pipelines), but the current
+public runtime path is still the bundled-kernel + registry surface. If an asteroid is
+discovered tomorrow and named, support currently requires adding it to the registry/kernel
+pipeline first.
 
 ---
 
@@ -178,29 +213,7 @@ prohibitive for a 1997 C library targeting consumer hardware.
 
 ---
 
-### 6. Variable Stars and Binary Eclipse Timing
-
-Algol (β Persei) — "the Demon Star" — is one of the most feared stars in traditional
-astrology. Its astrological reputation is inseparable from its variability: it dims
-predictably every **2.8673 days** as its binary companion eclipses it.
-
-Ancient and medieval astrologers knew Algol was "blinking" but could not predict it
-precisely. Now we can. The ephemeris of Algol's brightness minimum is:
-
-```
-T_min(n) = JD 2453600.8877 + n × 2.8673075 days
-Magnitude at minimum: 3.40 (vs. 2.12 at maximum)
-```
-
-For the first time, an astrological chart can know not just **where** Algol is, but
-**whether Algol is at its most malefic intensity** (minimum brightness = demon fully
-awake) or at its benefic maximum (demon sleeping). This distinction was always felt
-by ancient astrologers but never quantified.
-
-Beyond Algol: there are thousands of catalogued variable stars — eclipsing binaries,
-pulsating variables, Cepheids — whose brightness cycles can be computed. Gaia measures
-the variability of ~2.5 million stars. This is a dimension of stellar quality that
-simply did not exist in astrological software.
+### 6. 
 
 ---
 
@@ -210,8 +223,8 @@ Swiss Ephemeris is a pure calculation library. It has never produced a single wo
 interpretation. The interpretive layer has always been separate, manual, and static
 (keyword databases written by humans in fixed text).
 
-Moira, operating within the Claude Agent SDK environment, can bridge calculation directly
-to language model interpretation. This enables:
+Moira can bridge calculation directly to language model interpretation in host environments
+that provide an LLM orchestration layer. This enables:
 
 - **Natural language queries**: *"What are the most significant transits in my chart this month,
   and how do they relate to the Saturn opposition in my natal?"*
@@ -220,7 +233,7 @@ to language model interpretation. This enables:
 - **Contextualised progressions**: *"My progressed Moon is conjunct natal Pluto — what stage of
   the 28-year cycle is this, and what archetypal themes are emphasized?"*
 
-The interpretation is dynamic, personalized, and draws on a far larger corpus of
+The interpretation is dynamic, personalized, and can draw on a far larger corpus of
 astrological literature than any static keyword database. This does not exist in Swiss Ephemeris
 by design — and could not have been built in 1997 by anyone.
 
@@ -357,6 +370,33 @@ namesake ended up in the secondary cluster. **832 Karin** is a sub-family of the
 region, born from a second collision ~5.8 million years ago. A family within a family.
 The largest family is **Nysa-Polana** at 19,073 members — two so entangled they cannot
 be cleanly separated.
+
+#### Family Resonance — A New Dimension of Aspect Qualification
+
+When two asteroids of the same dynamical family form an aspect, that aspect carries a
+qualifier beyond its geometric type: both bodies are fragments of the same ancient parent.
+They are physically made of the same rock. The aspect is not merely a 120° angle between
+two asteroids — it is a 120° angle between two fragments of the same shattered world.
+
+This is the **family resonance layer**, now fully implemented. It operates as a
+post-processing enrichment on top of any list of admitted aspects — the core aspect engine
+(orbs, geometry) is unchanged; resonance is purely additive:
+
+    find_resonant_aspects(aspects, body_catalog_numbers)
+        → list[ResonantAspect], sorted by orb
+
+    resonance_network(resonant_aspects)
+        → dict[family_name → list[ResonantAspect]], per-family sub-graphs
+
+Each ``ResonantAspect`` pairs an ``AspectData`` vessel with a ``FamilyResonance``
+qualifier recording the shared family name and both catalog numbers. The ``resonance_network``
+groups all resonant aspects by family, forming a sub-graph of the chart's aspect network
+for each active family.
+
+There is no precedent for this in any astrological software. The question of whether a
+Flora-family trine *feels louder* than a trine between two unrelated bodies is genuinely
+open astrological territory — but the calculation to ask that question is now exact, and
+the data covering 119 families and 143,711 bodies is bundled with the library.
 
 ---
 
@@ -521,7 +561,7 @@ In 1997, software implementations of primary directions almost universally:
 - Offered only Naibod and Ptolemy keys
 - Could not extend directions to bodies beyond the traditional planets
 
-Moira's implementation (currently under development) covers all house systems, full latitude treatment, all classical time keys, and can compute directions for any body in the catalog — including asteroids, TNOs, and fixed stars with Gaia-measured coordinates.
+Moira's primary-directions engine now includes broad house-system and latitude-doctrine support with explicit policy surfaces. The extension to every catalog body remains a roadmap boundary; current production usage is strongest on classical planetary and admitted point sets.
 
 The stars as promissors or significators in primary directions — computed with sub-arcsecond precision against Gaia positions rather than estimated catalog values — is a level of accuracy no historical astrologer achieved and no 1997 software attempted.
 
@@ -543,11 +583,12 @@ Computing heliacal phenomena precisely requires:
 
 The **arcus visionis** computation is a multi-factor equation that Ptolemy attempted in the *Tetrabiblos* and that modern researchers (Schaefer 1985, Helmantel 2000) have refined into tractable formulas. It requires the kind of floating-point computation that is trivially fast in Python but was genuinely expensive in 1997 C.
 
-Moira can compute, for any observer location on any date:
-- The **exact date of heliacal rising** for any of the 1.46 billion Gaia stars
-- The **exact date of heliacal setting**
-- The **phase of morning vs. evening visibility** for any planet (morning star, evening star, under the beams)
-- The **acronychal rising** (rising at sunset) and **cosmical setting** (setting at sunrise) — the other classical visibility phases
+Moira can currently compute, for any observer location on any date:
+- Planetary morning/evening visibility events through the heliacal planetary layer
+- The **phase of morning vs. evening visibility** for admitted planets (morning star, evening star, under the beams)
+- Acronychal planetary visibility events under the same policy surface
+
+Stellar heliacal events in `stars.py` remain an admitted deferred surface and should be treated as roadmap work.
 
 This is the recovery of a timing system that predates the horoscope by at least a millennium, computed with a precision the Babylonians could not have imagined.
 
@@ -570,7 +611,7 @@ What is new:
 - The **node of Chiron** (known since 1977 but not well-implemented in software) passes through approximately 19° Libra — a point with documented mundane significance
 - Asteroid nodes: for any of the 887K numbered asteroids, the nodal positions can be extracted from orbital elements — a dataset of nearly a million additional sensitive points on the ecliptic
 
-The precision of modern orbital mechanics makes these computations exact. The scale at which they can be applied — across the full modern body catalog — is without historical precedent.
+The precision of modern orbital mechanics makes these computations exact where fully modeled. In current Moira runtime, planetary-node support is strongest for the classical planetary set; full TNO/asteroid-node scale remains roadmap work.
 
 ---
 
@@ -586,14 +627,16 @@ The precision of modern orbital mechanics makes these computations exact. The sc
 | Algol binary eclipse timing | Data not compiled for software | GCVS + linear ephemeris |
 | Stellar color → classical quality | No large-scale photometric catalog | Gaia BP−RP photometry |
 | On-demand orbit integration | Computationally prohibitive | scipy, rebound, poliastro |
-| IERS real-time ΔT | No internet APIs | IERS Bulletin A/B web service |
-| AI-generated chart interpretation | No language models | LLM integration via Claude API |
+| IERS real-time ΔT | No internet APIs | IERS Bulletin A/B data, ingested into local model tables |
+| AI-generated chart interpretation | No language models | LLM integration in host environments |
 | Statistical analysis across 60K charts | No digital chart corpus | Astro-Databank + Moira batch API |
 | Asteroid name/mythology search | Too few asteroids | 887K bodies, mythological tagging |
 | NEO proximity events in charts | Most NEAs undiscovered | CNEOS API + JPL Horizons |
 | Galactic coordinate charts | Insufficient galactic data | ESA Gaia + modern galactic catalogs |
 | Planet Nine hypothetical position | Undiscovered, not theorized | Batygin & Brown 2016 orbital elements |
-| Asteroid family origin groupings | Not catalogued | Asteroid Families Portal (ESA) |
+| Asteroid family origin groupings | Not catalogued | Nesvorný (2015) catalog: 143,711 bodies, 119 families, bundled |
+| Aspect qualification by physical origin (family resonance) | Concept did not exist | `find_resonant_aspects` + `resonance_network`; purely additive layer |
+| 368 named asteroids by name, no setup required | ~20 in Swiss Ephemeris | Four bundled kernels + expanded `ASTEROID_NAIF` registry |
 | Light-time vs. true star position choice | No stellar distances | Gaia parallax |
 | 1.8 billion named/nameable stars | Only 118K with positions | Gaia DR3 complete |
 | Exoplanet directions (5,600+ known worlds) | None confirmed in catalog | NASA Exoplanet Archive + host star positions |
@@ -603,7 +646,13 @@ The precision of modern orbital mechanics makes these computations exact. The sc
 | Geodetic astrology at full asteroid scale | Too few bodies for meaningful mapping | 887K bodies including city/country/culture names |
 | Primary directions with full latitude + all house systems | Computationally laborious; latitude dropped | Full mundane sphere geometry; all house systems |
 | Heliacal rising/setting for 1.46B stars | No brightness catalog; arcus visionis expensive | Gaia magnitudes + Schaefer atmospheric model |
-| Planetary nodes of TNOs and dwarf planets | Bodies undiscovered | Modern orbital elements for all known bodies |
+| Planetary nodes of TNOs and dwarf planets | Bodies undiscovered | Modern orbital elements (partial runtime coverage; full-catalog is roadmap) |
+
+---
+
+## Drift Guardrail
+
+To keep this doctrine truthful, treat claims as **implemented** only when they map to an existing public API and at least one validation path in `tests/`.
 
 Swiss Ephemeris is an achievement of the 20th century.
 Moira is built for the 21st.

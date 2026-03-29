@@ -56,6 +56,7 @@ from .primary_direction_perfections import (
 )
 from .primary_direction_placidus import (
     PlacidianRaptParallelTarget,
+    compute_placidian_converse_rapt_parallel_arc,
     compute_placidian_rapt_parallel_arc,
 )
 from .primary_direction_ptolemy import (
@@ -147,6 +148,7 @@ class PrimaryDirectionsPreset(StrEnum):
     PLACIDUS_MUNDANE = "placidus_mundane"
     PLACIDIAN_CLASSIC_MUNDANE = "placidian_classic_mundane"
     PLACIDIAN_MUNDANE_RAPT_PARALLEL_DIRECT = "placidian_mundane_rapt_parallel_direct"
+    PLACIDIAN_MUNDANE_RAPT_PARALLEL_CONVERSE = "placidian_mundane_rapt_parallel_converse"
     PTOLEMY_MUNDANE = "ptolemy_mundane"
     PTOLEMY_ZODIACAL_ASPECT = "ptolemy_zodiacal_aspect"
     PTOLEMY_ZODIACAL_PARALLEL = "ptolemy_zodiacal_parallel"
@@ -193,6 +195,7 @@ class PrimaryDirectionsPolicy:
     morinus_aspect_contexts: tuple[MorinusAspectContext, ...] = ()
     ptolemaic_parallel_targets: tuple[PtolemaicParallelTarget, ...] = ()
     placidian_rapt_parallel_targets: tuple[PlacidianRaptParallelTarget, ...] = ()
+    placidian_rapt_parallel_motion: PrimaryDirectionMotion | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.method, PrimaryDirectionMethod):
@@ -326,6 +329,20 @@ class PrimaryDirectionsPolicy:
             raise ValueError(
                 "PrimaryDirectionsPolicy invariant failed: placidian_rapt_parallel_targets require admitted rapt_parallel relation kind"
             )
+        if self.placidian_rapt_parallel_targets and self.placidian_rapt_parallel_motion is None:
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: placidian_rapt_parallel_targets require an explicit admitted motion"
+            )
+        if (
+            self.placidian_rapt_parallel_motion is not None
+            and self.placidian_rapt_parallel_motion not in (
+                PrimaryDirectionMotion.DIRECT,
+                PrimaryDirectionMotion.CONVERSE,
+            )
+        ):
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: placidian_rapt_parallel_motion must be a primary-direction motion"
+            )
 
     @property
     def admitted_motions(self) -> tuple[PrimaryDirectionMotion, ...]:
@@ -391,6 +408,19 @@ def primary_directions_policy_preset(
             method=PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC,
             relation_policy=placidian_rapt_parallel_relation_policy(),
             placidian_rapt_parallel_targets=placidian_rapt_parallel_targets,
+            placidian_rapt_parallel_motion=PrimaryDirectionMotion.DIRECT,
+            **base_kwargs,
+        )
+    if preset is PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_RAPT_PARALLEL_CONVERSE:
+        if include_converse:
+            raise ValueError(
+                "PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_RAPT_PARALLEL_CONVERSE is converse-only and does not use the ambient converse toggle"
+            )
+        return PrimaryDirectionsPolicy(
+            method=PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC,
+            relation_policy=placidian_rapt_parallel_relation_policy(),
+            placidian_rapt_parallel_targets=placidian_rapt_parallel_targets,
+            placidian_rapt_parallel_motion=PrimaryDirectionMotion.CONVERSE,
             **base_kwargs,
         )
     if preset is PrimaryDirectionsPreset.PTOLEMY_MUNDANE:
@@ -1407,17 +1437,24 @@ def find_primary_arcs(
                 source_entry = sp_map.get(placidian_rapt_parallel_map[prom_name].source_name)
                 if source_entry is None or source_entry.name == sig_e.name:
                     continue
-                arc_dir = compute_placidian_rapt_parallel_arc(source_entry, sig_e) % 360.0
-                if 0.0 < arc_dir <= max_arc:
+                if resolved_policy.placidian_rapt_parallel_motion is PrimaryDirectionMotion.DIRECT:
+                    rapt_arc = compute_placidian_rapt_parallel_arc(source_entry, sig_e) % 360.0
+                    direction = DIRECT
+                    motion = PrimaryDirectionMotion.DIRECT
+                else:
+                    rapt_arc = compute_placidian_converse_rapt_parallel_arc(source_entry, sig_e) % 360.0
+                    direction = CONVERSE
+                    motion = PrimaryDirectionMotion.CONVERSE
+                if 0.0 < rapt_arc <= max_arc:
                     results.append(
                         PrimaryArc(
                             significator=sig_e.name,
                             promissor=prom_name,
-                            arc=arc_dir,
-                            direction=DIRECT,
+                            arc=rapt_arc,
+                            direction=direction,
                             method=resolved_policy.method,
                             space=resolved_policy.space,
-                            motion=PrimaryDirectionMotion.DIRECT,
+                            motion=motion,
                             solar_rate=s_rate,
                         )
                     )

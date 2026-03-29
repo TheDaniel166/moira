@@ -591,6 +591,7 @@ documents:
 7. [primary_directions_time_key_doctrine.md](c:/Users/nilad/OneDrive/Desktop/Moira/primary_directions_time_key_doctrine.md)
 8. [primary_directions_ambiguity_ledger.md](c:/Users/nilad/OneDrive/Desktop/Moira/primary_directions_ambiguity_ledger.md)
 9. [primary_directions_parallel_family_matrix.md](c:/Users/nilad/OneDrive/Desktop/Moira/primary_directions_parallel_family_matrix.md)
+10. [primary_directions_fixed_star_family_matrix.md](c:/Users/nilad/OneDrive/Desktop/Moira/primary_directions_fixed_star_family_matrix.md)
 
 Only after this layer should SCP continue in earnest.
 

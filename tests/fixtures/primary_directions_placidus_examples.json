@@ -1,0 +1,54 @@
+{
+  "direct_rapt_parallel_opposite_hemisphere": {
+    "source": "alan_leo_primary_directions_rapt_parallel_direct",
+    "description": "Direct rapt parallel with bodies in opposite hemispheres.",
+    "promissor": {
+      "name": "Saturn",
+      "ra": 339.9380555556,
+      "ha": 67.8833333333,
+      "dsa": 76.2955555556,
+      "nsa": 103.7044444444,
+      "upper": true
+    },
+    "significator": {
+      "name": "Moon",
+      "ra": 103.4305555556,
+      "ha": -120.0,
+      "dsa": 113.4677777778,
+      "nsa": 66.5322222222,
+      "upper": false
+    },
+    "published_ra_difference": 56.5,
+    "exact_ra_difference": 56.5075,
+    "published_secondary_distance": 30.1833333333,
+    "expected_secondary_distance": 30.18510245440629,
+    "published_arc_degrees": 37.7,
+    "expected_arc_degrees": 37.69823087889371
+  },
+  "converse_rapt_parallel": {
+    "source": "alan_leo_primary_directions_rapt_parallel_converse",
+    "description": "Converse rapt parallel with converse semi-arc treatment.",
+    "promissor": {
+      "name": "Saturn",
+      "ra": 339.95,
+      "ha": -67.8833333333,
+      "dsa": 76.2955555556,
+      "nsa": 103.7044444444,
+      "upper": true
+    },
+    "significator": {
+      "name": "Moon",
+      "ra": 103.45,
+      "ha": 120.0,
+      "dsa": 113.5,
+      "nsa": 66.5,
+      "upper": false
+    },
+    "published_ra_difference": 123.5,
+    "exact_ra_difference": 123.5,
+    "published_secondary_distance": 75.25,
+    "expected_secondary_distance": 75.24773475035298,
+    "published_arc_degrees": 36.8666666667,
+    "expected_arc_degrees": 36.86893191634702
+  }
+}
