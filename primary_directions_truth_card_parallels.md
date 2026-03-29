@@ -35,6 +35,17 @@
   - current runtime validation now covers both:
     - `parallel`
     - `contra-parallel`
+- one further narrow explicit branch is now admitted:
+  - `Placidian classic / semi-arc`
+  - `in_mundo`
+  - relation doctrine `rapt_parallel`
+  - named preset surface:
+    - `PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_RAPT_PARALLEL_DIRECT`
+  - service-supplied `PlacidianRaptParallelTarget`
+  - current runtime admission is:
+    - direct only
+    - promissor/significator pair-specific
+    - proportional semi-arc / meridian-distance arithmetic
 - the existing declination engine in `moira/aspects.py` remains valid for
   ordinary aspect detection, but it is **not** being re-labeled as a global
   primary-direction target law
