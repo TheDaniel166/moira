@@ -359,6 +359,26 @@ After method and space formalization:
 
 This is the recommended build order for actual implementation work.
 
+### Sequencing Rule
+
+Before the **top-level primary-directions suite** enters final `P11` and `P12`
+freeze, the major internal doctrine-owning subsystems should each reach `P10`.
+
+Current internal subsystem sequence:
+
+1. core primary-directions engine
+2. primary-direction keys
+3. primary-direction spaces
+4. primary-direction converse doctrine
+5. target-doctrine / promissor-significator admission layer
+
+This means:
+
+- working doctrine notes may exist early
+- subsystem-local implementation and hardening may proceed independently
+- the final top-level backend standard and final top-level public API curation
+  should wait until those major internal owners are constitutionally stable
+
 ### Stage 1. Finish SCP for Current Engine
 
 1. `P3` Inspectability
@@ -378,9 +398,16 @@ This is the recommended build order for actual implementation work.
 12. key conversion truth / classification / policy
 13. validation for each admitted key
 
-### Stage 3. Add the Second Method
+### Stage 3. Extract the Direction-Space Subsystem
 
-14. `Placidian classic / semi-arc`
+14. formal direction-space truth / classification / policy layer
+15. keep current admitted implementation narrow: `in_mundo`
+16. defer `in_zodiaco` and `field_plane` admission until space doctrine reaches
+    hardening maturity
+
+### Stage 4. Add the Second Method
+
+17. `Placidian classic / semi-arc`
 
 Why this first:
 
@@ -388,45 +415,45 @@ Why this first:
 - historically central
 - validates the geometry-method abstraction without immediately jumping families
 
-### Stage 4. Add the Second Space
+### Stage 5. Add the Second Space
 
-15. `In Zodiaco`
+18. `In Zodiaco`
 
 Why here:
 
 - direction space is a more fundamental axis than the long method list
 - adding only more `in mundo` methods leaves a major doctrinal gap unresolved
 
-### Stage 5. Add Regiomontanus
+### Stage 6. Add Regiomontanus
 
-16. `Regiomontanus`
+19. `Regiomontanus`
 
 This is the next major historical branch and a meaningful divergence from the
 Placidian family.
 
-### Stage 6. Add Converse Doctrine Proper
+### Stage 7. Add Converse Doctrine Proper
 
-17. `Traditional converse`
-18. `Neo-converse`
+20. `Traditional converse`
+21. `Neo-converse`
 
-### Stage 7. Widen the Method Catalog
+### Stage 8. Widen the Method Catalog
 
-19. `Campanus`
-20. `Topocentric`
-21. `Porphyry`
-22. `Alcabitius`
-23. `Morinus`
-24. `Equal Houses (ecliptic)`
-25. `Equal Houses (hour-circle)`
-26. `Along Ecliptic`
-27. `Edmund Jones`
+22. `Campanus`
+23. `Topocentric`
+24. `Porphyry`
+25. `Alcabitius`
+26. `Morinus`
+27. `Equal Houses (ecliptic)`
+28. `Equal Houses (hour-circle)`
+29. `Along Ecliptic`
+30. `Edmund Jones`
 
-### Stage 8. Promissor / Significator Expansion
+### Stage 9. Promissor / Significator Expansion
 
-28. aspects
-29. parallels / rapt parallels
-30. fixed stars
-31. additional sensitive points
+31. aspects
+32. parallels / rapt parallels
+33. fixed stars
+34. additional sensitive points
 
 
 ## Validation Strategy

@@ -3,8 +3,8 @@
 ## Status
 
 - doctrinal family: `historically attested`
-- Moira status: `not yet implemented`
-- role in Moira: recommended next method family after current constitutional work
+- Moira status: `admitted on the current narrow in-mundo surface`
+- role in Moira: first admitted branch beyond `placidus_mundane`
 
 ## Identity
 
@@ -113,17 +113,23 @@ Different authors and programs disagree on:
 
 ## Moira Admission Policy
 
-Moira should admit this family explicitly and separately from current
-`placidus_mundane`, even if the first implementation overlap is substantial.
+Moira now admits this family explicitly and separately from current
+`placidus_mundane`, with one important limitation:
+
+- it has its own current narrow `in_mundo` semi-arc implementation
+- but that implementation is still only the first admitted numeric slice of the
+  broader historical family
 
 Reason:
 
 - it is the most natural bridge from the current engine to a broader
   doctrinally stable subsystem
+- the doctrinal identity is now separated and the current admitted numeric slice
+  has begun to diverge
 
 ## Implementation Consequences
 
-Before implementation, Moira should specify:
+For later widening, Moira should still specify:
 
 - exact semi-arc equations and invariants
 - which points are admissible as promissors and significators

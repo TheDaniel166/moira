@@ -3,8 +3,16 @@
 ## Status
 
 - doctrinal family: `historically attested`
-- Moira status: `not yet implemented`
+- Moira status: `admitted on a narrow first surface`
 - role in Moira: major direction-space branch
+
+Current admitted runtime surface:
+
+- direction space: `in_zodiaco`
+- perfection kind: `zodiacal_longitude_perfection`
+- current geometric admission: pure zodiacal longitude perfection
+- current latitude policy: suppressed
+- broader zodiacal latitude and aspect doctrine: deferred
 
 ## Identity
 
