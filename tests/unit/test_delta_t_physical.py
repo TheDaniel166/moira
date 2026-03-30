@@ -304,8 +304,17 @@ def test_delta_t_hybrid_returns_float_for_all_eras() -> None:
 
 
 def test_delta_t_hybrid_boundary_at_1840_uses_smh2016_just_before() -> None:
+    # Pre-1840: SMH2016 table.
     assert delta_t_hybrid(1839.99) == _smh2016_lookup(1839.99)
-    assert delta_t_hybrid(1840.01) != _smh2016_lookup(1840.01)
+    # 1840–1962.4: IERS historical table (not the physics-based path).
+    # The value must be physically plausible (well under 50 s), not the
+    # broken secular-only extrapolation (~165 s at 1840).
+    assert delta_t_hybrid(1840.01) < 50.0
+    # The physics-based path activates at 1962.5; before that the result
+    # matches julian.delta_t directly.
+    from moira.julian import delta_t as _iers_dt
+    assert delta_t_hybrid(1900.0) == _iers_dt(1900.0)
+    assert delta_t_hybrid(1950.0) == _iers_dt(1950.0)
 
 
 def test_delta_t_hybrid_future_grows_with_time() -> None:

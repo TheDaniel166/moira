@@ -60,6 +60,7 @@ _CORE_DECORRELATION_YEARS: float = 10.0
 _RESIDUAL_FIT_START: float = 1962.5
 _RESIDUAL_TAPER_START: float = 2021.5
 _RESIDUAL_TAPER_END: float = 2024.5
+_SEAM_TAPER_YEARS: float = 2.0
 _FLUID_LAG_YEARS: float = 4.0
 _FLUID_ADMISSION_SCALE: float = 0.1
 _GIA_COEFF_SIGMA: float = 0.5
@@ -141,6 +142,32 @@ def _modern_bridge_coefficients() -> tuple[float, float]:
     return (c2, c3)
 
 
+@cache
+def _left_seam_correction() -> float:
+    """
+    Initialization offset at the start of the measured era (1962.5).
+
+    Returns the residual ``IERS(1962.5) − (secular + fluid + poly_bridge +
+    core + cryo)`` at _RESIDUAL_FIT_START. Applied as a cosine-fade correction
+    over _SEAM_TAPER_YEARS so the bridge exactly absorbs the first-epoch
+    offset while decaying smoothly to zero by 1964.5.
+    """
+    from .julian import delta_t as _iers_delta_t
+
+    y = _RESIDUAL_FIT_START
+    t = (y - REFERENCE_YEAR) / 100.0
+    c2, c3 = _modern_bridge_coefficients()
+    poly_bridge = c2 * t * t + c3 * t * t * t
+    model = (
+        secular_trend(y)
+        + fluid_lowfreq(y)
+        + poly_bridge
+        + core_delta_t(y)
+        + cryo_delta_t(y)
+    )
+    return _iers_delta_t(y) - model
+
+
 def _modern_bridge_delta_t(year: float) -> float:
     """
     Measured-era affine bridge term, zero outside the calibrated modern window.
@@ -149,12 +176,21 @@ def _modern_bridge_delta_t(year: float) -> float:
     dominant low-frequency drift between the physical curvature baseline and
     measured annual-mean Delta T. The bridge is constrained to be exactly zero
     at REFERENCE_YEAR and is not carried into the future regime.
+
+    A cosine-fade seam correction over _SEAM_TAPER_YEARS absorbs the
+    initialization offset at 1962.5 without disturbing the global polynomial
+    calibration or the C1-continuity constraint at REFERENCE_YEAR.
     """
     if year < _RESIDUAL_FIT_START or year > REFERENCE_YEAR:
         return 0.0
     t = (year - REFERENCE_YEAR) / 100.0
     c2, c3 = _modern_bridge_coefficients()
-    return c2 * t * t + c3 * t * t * t
+    poly_val = c2 * t * t + c3 * t * t * t
+    if year <= _RESIDUAL_FIT_START + _SEAM_TAPER_YEARS:
+        phase = (year - _RESIDUAL_FIT_START) / _SEAM_TAPER_YEARS
+        correction = _left_seam_correction() * math.cos(math.pi / 2.0 * phase) ** 2
+        return poly_val + correction
+    return poly_val
 
 
 def _load_aam_glaam_annual() -> tuple[tuple[float, float], ...]:
@@ -705,12 +741,17 @@ def _fitted_residual_spline() -> _ResidualSplineFit:
         spline_residuals.insert(0, left_anchor_val)
 
     n = len(spline_years)
-    s_factor = float(n)
+    n_raw = len(years_raw)
+    # Target s_factor: n_raw / 15 drives the spline toward ~5-8 interior knots
+    # so that decade-scale residual oscillations are captured without the
+    # over-smoothing that results from the legacy s = n initialisation (which
+    # stalls at 2 knots once SSE < n).
+    s_factor = float(n_raw) / 15.0
     spline = UnivariateSpline(spline_years, spline_residuals, k=3, s=s_factor, ext=1)
 
     knot_count = len(spline.get_knots())
     if knot_count > 20:
-        s_factor = float(n) * (knot_count / 20.0)
+        s_factor = float(n_raw) * (knot_count / 20.0) / 15.0
         spline = UnivariateSpline(spline_years, spline_residuals, k=3, s=s_factor, ext=1)
 
     loo_errors: list[float] = []
@@ -731,15 +772,15 @@ def _fitted_residual_spline() -> _ResidualSplineFit:
         cv_rms = math.sqrt(sum(loo_errors) / len(loo_errors))
         if cv_rms > 0.4:
             s_factor *= cv_rms / 0.4
-            spline = UnivariateSpline(years_raw, res_smooth, k=3, s=s_factor, ext=1)
+            spline = UnivariateSpline(spline_years, spline_residuals, k=3, s=s_factor, ext=1)
     else:
         cv_rms = _RESIDUAL_FUTURE_RMS_FALLBACK
 
     in_sample_errors = [
         (res_smooth[i] - float(spline(years_raw[i]))) ** 2
-        for i in range(n)
+        for i in range(n_raw)
     ]
-    in_sample_rms = math.sqrt(sum(in_sample_errors) / n) if in_sample_errors else _RESIDUAL_FUTURE_RMS_FALLBACK
+    in_sample_rms = math.sqrt(sum(in_sample_errors) / n_raw) if in_sample_errors else _RESIDUAL_FUTURE_RMS_FALLBACK
 
     return _ResidualSplineFit(
         spline=spline,
@@ -780,6 +821,13 @@ def delta_t_hybrid(year: float) -> float:
     y = float(year)
     if y < _CORE_COVERAGE_START:
         return _smh2016_lookup(y)
+
+    if y < _RESIDUAL_FIT_START:
+        # 1840–1962.4: no physics-based components are calibrated for this
+        # era; delegate to the IERS/historical table which joins seamlessly
+        # (~0.02 s) with the measured-era hybrid at 1962.5.
+        from .julian import delta_t as _iers_delta_t
+        return _iers_delta_t(y)
 
     base = secular_trend(y)
     fluid = fluid_lowfreq(y)
@@ -831,7 +879,11 @@ def delta_t_hybrid_uncertainty(year: float) -> float:
         sigma_core = core_std if core_std > 0.0 else _CORE_HISTORICAL_SIGMA
 
     fit = _fitted_residual_spline()
-    sigma_residual = fit.in_sample_rms * 0.1 if y <= REFERENCE_YEAR else fit.in_sample_rms
+    # Measured-era: 10 % of in-sample RMS (spline corrects the bulk).
+    # Future: cv_rms is the honest out-of-sample prediction error; it is
+    # always >= in_sample_rms and preserves monotone growth of sigma past
+    # the REFERENCE_YEAR hand-off.
+    sigma_residual = fit.in_sample_rms * 0.1 if y <= REFERENCE_YEAR else fit.cv_rms
 
     return math.sqrt(
         sigma_tidal ** 2
