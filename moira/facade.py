@@ -601,6 +601,10 @@ from .void_of_course import (
     void_of_course_window, is_void_of_course,
     next_void_of_course, void_periods_in_range,
 )
+from .electional import (
+    ElectionalPolicy, ElectionalWindow,
+    find_electional_windows, find_electional_moments,
+)
 
 __all__ = [
     "Moira", "Chart",
@@ -1018,6 +1022,9 @@ __all__ = [
     "LastAspect", "VoidOfCourseWindow",
     "void_of_course_window", "is_void_of_course",
     "next_void_of_course", "void_periods_in_range",
+    # Electional search
+    "ElectionalPolicy", "ElectionalWindow",
+    "find_electional_windows", "find_electional_moments",
 ]
 
 
@@ -1049,6 +1056,11 @@ __all__ = [
     "tropical_to_sidereal",
     "sidereal_to_tropical",
     "list_ayanamsa_systems",
+    # Electional search
+    "ElectionalPolicy",
+    "ElectionalWindow",
+    "find_electional_windows",
+    "find_electional_moments",
 ]
 
 
@@ -3145,6 +3157,84 @@ class Moira:
         modern : if True, include Uranus, Neptune, Pluto as aspecting bodies
         """
         return is_void_of_course(jd_from_datetime(dt), reader=self._reader, modern=modern)
+
+    # ------------------------------------------------------------------
+    # Electional search
+    # ------------------------------------------------------------------
+
+    def electional_windows(
+        self,
+        dt_start: datetime,
+        dt_end: datetime,
+        latitude: float,
+        longitude: float,
+        predicate: "Callable[[ChartContext], bool]",
+        policy: ElectionalPolicy | None = None,
+    ) -> list[ElectionalWindow]:
+        """
+        Find time windows where the caller-supplied predicate is satisfied.
+
+        Scans from dt_start to dt_end at the step defined in policy (default
+        one hour), constructs a ChartContext at each step, and evaluates the
+        predicate. Consecutive qualifying moments are merged into windows.
+
+        The predicate receives a fully populated ChartContext and must return
+        True when the chart satisfies the election criteria. It must be pure
+        (no side effects, deterministic).
+
+        Parameters
+        ----------
+        dt_start  : search range start (UTC datetime)
+        dt_end    : search range end   (UTC datetime)
+        latitude  : election location latitude, degrees [-90, 90]
+        longitude : election location longitude, degrees [-180, 180]
+        predicate : ChartContext → bool
+        policy    : ElectionalPolicy (defaults to 1-hour step, Placidus)
+
+        Returns
+        -------
+        list[ElectionalWindow] in chronological order.
+
+        Example
+        -------
+        Find hours when Jupiter is in the 1st house and Moon is not VOC::
+
+            from moira import Moira
+            from moira.electional import ElectionalPolicy
+            from moira.constants import Body
+            from moira.void_of_course import is_void_of_course
+            from datetime import datetime, timezone
+
+            m = Moira()
+
+            def good_election(chart):
+                jup = chart.planets.get(Body.JUPITER)
+                if jup is None or chart.houses is None:
+                    return False
+                from moira.houses import assign_house
+                placement = assign_house(jup.longitude, chart.houses)
+                if placement.house != 1:
+                    return False
+                return not is_void_of_course(chart.jd_ut)
+
+            windows = m.electional_windows(
+                datetime(2026, 6, 1, tzinfo=timezone.utc),
+                datetime(2026, 6, 30, tzinfo=timezone.utc),
+                latitude=51.5,
+                longitude=-0.1,
+                predicate=good_election,
+            )
+        """
+        from typing import Callable as _Callable
+        return find_electional_windows(
+            jd_start=jd_from_datetime(dt_start),
+            jd_end=jd_from_datetime(dt_end),
+            latitude=latitude,
+            longitude=longitude,
+            predicate=predicate,
+            policy=policy,
+            reader=self._reader,
+        )
 
     # ------------------------------------------------------------------
     # Dunder

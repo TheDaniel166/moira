@@ -32,12 +32,16 @@ _CURATED_PUBLIC_NAMES = [
     "ProgressedPosition",
     "ProgressedChart",
     "ProgressedHouseFrame",
+    "ProgressedDeclinationPosition",
+    "ProgressedDeclinationChart",
     # Core techniques
     "secondary_progression",
     "solar_arc",
     "solar_arc_right_ascension",
     "naibod_longitude",
     "naibod_right_ascension",
+    "mean_solar_arc_longitude",
+    "mean_solar_arc_right_ascension",
     "one_degree_longitude",
     "one_degree_right_ascension",
     "tertiary_progression",
@@ -47,14 +51,20 @@ _CURATED_PUBLIC_NAMES = [
     "converse_solar_arc_right_ascension",
     "converse_naibod_longitude",
     "converse_naibod_right_ascension",
+    "converse_mean_solar_arc_longitude",
+    "converse_mean_solar_arc_right_ascension",
     "converse_one_degree_longitude",
     "converse_one_degree_right_ascension",
     "converse_tertiary_progression",
     "converse_tertiary_ii_progression",
     "ascendant_arc",
     "converse_ascendant_arc",
+    "vertex_arc",
+    "converse_vertex_arc",
     "minor_progression",
     "converse_minor_progression",
+    "secondary_progression_declination",
+    "converse_secondary_progression_declination",
     "daily_house_frame",
     "daily_houses",
     # Layered entry points
@@ -99,5 +109,5 @@ class TestModuleAgreement:
                 f"moira.progressions.{name} disappeared; helper should remain module-internal"
             )
 
-    def test_curated_count_is_47(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 47
+    def test_curated_count_is_57(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 57

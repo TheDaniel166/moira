@@ -8,6 +8,7 @@ from moira.delta_t_physical import (
     delta_t_hybrid,
     delta_t_hybrid_uncertainty,
     secular_trend,
+    fluid_lowfreq,
     core_delta_t,
     cryo_delta_t,
     _load_grace_series,
@@ -218,6 +219,12 @@ def test_core_contribution_covers_modern_era() -> None:
         pytest.skip("core_angular_momentum.txt not present")
     val = core_delta_t(2000.0)
     assert math.isfinite(val)
+
+
+@pytest.mark.integration
+def test_fluid_lowfreq_is_finite_and_active_in_overlap() -> None:
+    assert math.isfinite(fluid_lowfreq(1975.5))
+    assert abs(fluid_lowfreq(1975.5)) > 1.0
 
 
 # ---------------------------------------------------------------------------

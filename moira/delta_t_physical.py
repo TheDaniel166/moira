@@ -10,7 +10,7 @@ moira.julian.delta_t (used only during residual spline construction). Does not
 own time-scale conversion, calendar arithmetic, or any display formatting.
 
 Public surface:
-    secular_trend, core_delta_t, cryo_delta_t, delta_t_hybrid,
+    secular_trend, fluid_lowfreq, core_delta_t, cryo_delta_t, delta_t_hybrid,
     delta_t_hybrid_uncertainty
 
 Import-time side effects: None
@@ -40,6 +40,7 @@ __all__ = [
     "REFERENCE_LOD",
     "REFERENCE_YEAR",
     "secular_trend",
+    "fluid_lowfreq",
     "core_delta_t",
     "cryo_delta_t",
     "delta_t_hybrid",
@@ -51,7 +52,7 @@ _DATA_DIR = Path(__file__).resolve().parent / "data"
 
 TIDAL_COEFF: float = 31.0
 GIA_COEFF: float = -3.0
-REFERENCE_LOD: float = 69.3
+REFERENCE_LOD: float = 69.11474233219883
 REFERENCE_YEAR: float = 2026.0
 
 _CORE_COVERAGE_START: float = 1840.0
@@ -59,6 +60,8 @@ _CORE_DECORRELATION_YEARS: float = 10.0
 _RESIDUAL_FIT_START: float = 1962.5
 _RESIDUAL_TAPER_START: float = 2021.5
 _RESIDUAL_TAPER_END: float = 2024.5
+_FLUID_LAG_YEARS: float = 4.0
+_FLUID_ADMISSION_SCALE: float = 0.1
 _GIA_COEFF_SIGMA: float = 0.5
 _CRYO_TREND_SIGMA: float = 0.002
 _CORE_HISTORICAL_SIGMA: float = 0.3
@@ -90,6 +93,226 @@ class _ResidualSplineFit:
     cv_rms: float
     in_sample_rms: float
     knot_count: int
+
+
+@cache
+def _modern_bridge_coefficients() -> tuple[float, float]:
+    """
+    Return the measured-era smooth bridge coefficients ``(c2, c3)``.
+
+    The long-horizon tidal+GIA parabola provides the physical curvature, but
+    by itself it leaves a large low-frequency drift across the 1962.5–2024.5
+    annual-mean era. This helper calibrates a smooth bridge polynomial
+    ``c2*t^2 + c3*t^3`` over that measured interval, constrained to vanish and
+    have zero first derivative at REFERENCE_YEAR so the post-REFERENCE future
+    secular path is unchanged and C1-continuous at the handoff.
+    """
+    from .julian import delta_t as _iers_delta_t
+
+    s22 = 0.0
+    s23 = 0.0
+    s33 = 0.0
+    b2 = 0.0
+    b3 = 0.0
+    y = _RESIDUAL_FIT_START
+    while y <= _RESIDUAL_TAPER_END + 0.01:
+        t = (y - REFERENCE_YEAR) / 100.0
+        corrected = (
+            _iers_delta_t(y)
+            - REFERENCE_LOD
+            - (TIDAL_COEFF + GIA_COEFF) * t * t
+            - fluid_lowfreq(y)
+            - core_delta_t(y)
+            - cryo_delta_t(y)
+        )
+        t2 = t * t
+        t3 = t2 * t
+        s22 += t2 * t2
+        s23 += t2 * t3
+        s33 += t3 * t3
+        b2 += t2 * corrected
+        b3 += t3 * corrected
+        y += 1.0
+    det = s22 * s33 - s23 * s23
+    if det == 0.0:
+        return (0.0, 0.0)
+    c2 = (b2 * s33 - b3 * s23) / det
+    c3 = (s22 * b3 - s23 * b2) / det
+    return (c2, c3)
+
+
+def _modern_bridge_delta_t(year: float) -> float:
+    """
+    Measured-era affine bridge term, zero outside the calibrated modern window.
+
+    This narrows the residual spline's role to local structure by removing the
+    dominant low-frequency drift between the physical curvature baseline and
+    measured annual-mean Delta T. The bridge is constrained to be exactly zero
+    at REFERENCE_YEAR and is not carried into the future regime.
+    """
+    if year < _RESIDUAL_FIT_START or year > REFERENCE_YEAR:
+        return 0.0
+    t = (year - REFERENCE_YEAR) / 100.0
+    c2, c3 = _modern_bridge_coefficients()
+    return c2 * t * t + c3 * t * t * t
+
+
+def _load_aam_glaam_annual() -> tuple[tuple[float, float], ...]:
+    path = _DATA_DIR / "aam_glaam_annual.txt"
+    if not path.exists():
+        return ()
+    rows: list[tuple[float, float]] = []
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        raw = raw.strip()
+        if not raw or raw.startswith("#"):
+            continue
+        parts = raw.split()
+        if len(parts) < 2:
+            continue
+        try:
+            rows.append((float(parts[0]), float(parts[1])))
+        except ValueError:
+            continue
+    rows.sort(key=lambda r: r[0])
+    return tuple(rows)
+
+
+def _load_oam_ecco_annual() -> tuple[tuple[float, float], ...]:
+    path = _DATA_DIR / "oam_ecco_annual.txt"
+    if not path.exists():
+        return ()
+    rows: list[tuple[float, float]] = []
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        raw = raw.strip()
+        if not raw or raw.startswith("#"):
+            continue
+        parts = raw.split()
+        if len(parts) < 2:
+            continue
+        try:
+            rows.append((float(parts[0]), float(parts[1])))
+        except ValueError:
+            continue
+    rows.sort(key=lambda r: r[0])
+    return tuple(rows)
+
+
+def _integrated_fluid_proxy(
+    series: tuple[tuple[float, float], ...]
+) -> tuple[tuple[float, float], ...]:
+    if not series:
+        return ()
+    years = [y for y, _ in series]
+    vals = [v for _, v in series]
+    _, vals_smoothed = _three_year_smooth(years, vals)
+    mean_val = sum(vals_smoothed) / len(vals_smoothed)
+    result: list[tuple[float, float]] = [(years[0], 0.0)]
+    cumulative = 0.0
+    for i in range(1, len(series)):
+        y0 = years[i - 1]
+        y1 = years[i]
+        v0 = vals_smoothed[i - 1] - mean_val
+        v1 = vals_smoothed[i] - mean_val
+        dt_days = _series_epoch_delta_days(y0, y1)
+        cumulative += ((v0 + v1) / 2.0) * dt_days / 86400.0
+        result.append((y1, cumulative))
+    return tuple(result)
+
+
+@cache
+def _fit_fluid_lowfreq_coefficients() -> tuple[float, float]:
+    """
+    Fit a conservative low-frequency fluid term from annual AAM + OAM proxies.
+
+    A single shared lag is imposed for both proxies. This avoids the
+    physically suspicious opposite-lag solutions that minimized RMS in the
+    diagnostic envelope search while still transferring a substantial portion
+    of the measured-era low-frequency bridge into an explicit physical term.
+    """
+    aam = dict(_integrated_fluid_proxy(_load_aam_glaam_annual()))
+    oam = dict(_integrated_fluid_proxy(_load_oam_ecco_annual()))
+    if not aam or not oam:
+        return (0.0, 0.0)
+    from .julian import delta_t as _iers_delta_t
+
+    rows: list[tuple[float, float, float]] = []
+    for year in sorted(y for y in aam if y in oam and _RESIDUAL_FIT_START <= y <= 2002.5):
+        shifted = year + _FLUID_LAG_YEARS
+        if shifted not in aam or shifted not in oam:
+            continue
+        t = (year - REFERENCE_YEAR) / 100.0
+        target = (
+            _iers_delta_t(year)
+            - REFERENCE_LOD
+            - (TIDAL_COEFF + GIA_COEFF) * t * t
+            - core_delta_t(year)
+            - cryo_delta_t(year)
+        )
+        rows.append((aam[shifted], oam[shifted], target))
+    if len(rows) < 10:
+        return (0.0, 0.0)
+
+    saa = sum(r[0] * r[0] for r in rows)
+    sao = sum(r[0] * r[1] for r in rows)
+    soo = sum(r[1] * r[1] for r in rows)
+    sab = sum(r[0] * r[2] for r in rows)
+    sob = sum(r[1] * r[2] for r in rows)
+    det = saa * soo - sao * sao
+    if det == 0.0:
+        return (0.0, 0.0)
+    alpha = (sab * soo - sob * sao) / det
+    beta = (saa * sob - sao * sab) / det
+    return (alpha, beta)
+
+
+@cache
+def _fluid_lowfreq_series() -> tuple[tuple[float, float], ...]:
+    aam = dict(_integrated_fluid_proxy(_load_aam_glaam_annual()))
+    oam = dict(_integrated_fluid_proxy(_load_oam_ecco_annual()))
+    alpha, beta = _fit_fluid_lowfreq_coefficients()
+    if alpha == 0.0 and beta == 0.0:
+        return ()
+
+    rows: list[tuple[float, float]] = []
+    for year in sorted(y for y in aam if y in oam and _RESIDUAL_FIT_START <= y <= 2002.5):
+        shifted = year + _FLUID_LAG_YEARS
+        if shifted not in aam or shifted not in oam:
+            continue
+        rows.append((
+            year,
+            _FLUID_ADMISSION_SCALE * (alpha * aam[shifted] + beta * oam[shifted]),
+        ))
+    return tuple(rows)
+
+
+def fluid_lowfreq(year: float) -> float:
+    """
+    Low-frequency fluid angular-momentum contribution to Delta T.
+
+    This is a conservative live admission of the physical low-frequency layer:
+    annual AAM + OAM proxies, a shared lag policy, and a smooth taper back to
+    zero before the future regime. It does not attempt to replace the bridge
+    entirely; it transfers the physically explainable portion into an explicit
+    term and leaves the residual remainder to the bridge and spline.
+    """
+    series = _fluid_lowfreq_series()
+    if not series:
+        return 0.0
+    if year < series[0][0] or year >= _RESIDUAL_TAPER_END:
+        return 0.0
+    if year >= series[-1][0]:
+        return series[-1][1] * _support_fade_taper(
+            year,
+            start=series[-1][0],
+            end=_RESIDUAL_TAPER_END,
+        )
+    for i in range(len(series) - 1):
+        y0, v0 = series[i]
+        y1, v1 = series[i + 1]
+        if y0 <= year <= y1:
+            frac = (year - y0) / (y1 - y0)
+            return (v0 + frac * (v1 - v0)) * _cosine_taper(year)
+    return 0.0
 
 
 @cache
@@ -409,6 +632,17 @@ def _cosine_taper(year: float) -> float:
     return 0.5 * (1.0 + math.cos(math.pi * phase))
 
 
+def _support_fade_taper(year: float, start: float, end: float) -> float:
+    """Cosine fade from 1.0 at ``start`` to 0.0 at ``end``."""
+    if year <= start:
+        return 1.0
+    if year >= end:
+        return 0.0
+    span = end - start
+    phase = (year - start) / span
+    return 0.5 * (1.0 + math.cos(math.pi * phase))
+
+
 @cache
 def _fitted_residual_spline() -> _ResidualSplineFit:
     """
@@ -436,7 +670,13 @@ def _fitted_residual_spline() -> _ResidualSplineFit:
     y = _RESIDUAL_FIT_START
     while y <= _RESIDUAL_TAPER_END + 0.01:
         iers_val = _iers_delta_t(y)
-        model_val = secular_trend(y) + core_delta_t(y) + cryo_delta_t(y)
+        model_val = (
+            secular_trend(y)
+            + _modern_bridge_delta_t(y)
+            + fluid_lowfreq(y)
+            + core_delta_t(y)
+            + cryo_delta_t(y)
+        )
         years_raw.append(y)
         residuals_raw.append(iers_val - model_val)
         y += 1.0
@@ -454,19 +694,31 @@ def _fitted_residual_spline() -> _ResidualSplineFit:
     for i in range(len(years_raw)):
         res_smooth[i] *= _cosine_taper(years_raw[i])
 
-    n = len(years_raw)
+    spline_years = years_raw[:]
+    spline_residuals = res_smooth[:]
+    if len(spline_years) >= 2:
+        # Give the left boundary a reflected support point so the first
+        # measured epoch is not treated as a free cubic seam.
+        left_anchor_year = spline_years[0] - 1.0
+        left_anchor_val = 2.0 * spline_residuals[0] - spline_residuals[1]
+        spline_years.insert(0, left_anchor_year)
+        spline_residuals.insert(0, left_anchor_val)
+
+    n = len(spline_years)
     s_factor = float(n)
-    spline = UnivariateSpline(years_raw, res_smooth, k=3, s=s_factor, ext=1)
+    spline = UnivariateSpline(spline_years, spline_residuals, k=3, s=s_factor, ext=1)
 
     knot_count = len(spline.get_knots())
     if knot_count > 20:
         s_factor = float(n) * (knot_count / 20.0)
-        spline = UnivariateSpline(years_raw, res_smooth, k=3, s=s_factor, ext=1)
+        spline = UnivariateSpline(spline_years, spline_residuals, k=3, s=s_factor, ext=1)
 
     loo_errors: list[float] = []
-    for i in range(1, n - 1):
-        ys_loo = years_raw[:i] + years_raw[i + 1 :]
-        rs_loo = res_smooth[:i] + res_smooth[i + 1 :]
+    for i in range(1, len(years_raw) - 1):
+        ys_loo = spline_years[:]
+        rs_loo = spline_residuals[:]
+        del ys_loo[i + 1]
+        del rs_loo[i + 1]
         if len(ys_loo) < 5:
             continue
         try:
@@ -530,11 +782,12 @@ def delta_t_hybrid(year: float) -> float:
         return _smh2016_lookup(y)
 
     base = secular_trend(y)
+    fluid = fluid_lowfreq(y)
     core = core_delta_t(y)
     cryo = cryo_delta_t(y)
 
     if y <= REFERENCE_YEAR:
-        return base + core + cryo + _residual_at(y)
+        return base + fluid + _modern_bridge_delta_t(y) + core + cryo + _residual_at(y)
 
     core_mean, _ = _core_recent_stats()
     return base + core_mean + cryo

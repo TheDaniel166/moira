@@ -12,6 +12,8 @@ from moira.julian import jd_from_datetime
 from moira.planets import all_planets_at, planet_at
 from moira.progressions import (
     ProgressedChart,
+    ProgressedDeclinationChart,
+    ProgressedDeclinationPosition,
     ProgressedHouseFrame,
     ProgressionComputationPolicy,
     ProgressionChartConditionProfile,
@@ -29,7 +31,10 @@ from moira.progressions import (
     ProgressionTimeKeyPolicy,
     ascendant_arc,
     converse_ascendant_arc,
+    converse_mean_solar_arc_longitude,
+    converse_mean_solar_arc_right_ascension,
     converse_secondary_progression,
+    converse_secondary_progression_declination,
     converse_naibod_longitude,
     converse_naibod_right_ascension,
     converse_one_degree_longitude,
@@ -39,8 +44,11 @@ from moira.progressions import (
     converse_tertiary_progression,
     converse_tertiary_ii_progression,
     converse_minor_progression,
+    converse_vertex_arc,
     daily_house_frame,
     daily_houses,
+    mean_solar_arc_longitude,
+    mean_solar_arc_right_ascension,
     minor_progression,
     naibod_longitude,
     naibod_right_ascension,
@@ -51,10 +59,12 @@ from moira.progressions import (
     progression_condition_network_profile,
     progression_relation,
     secondary_progression,
+    secondary_progression_declination,
     solar_arc,
     solar_arc_right_ascension,
     tertiary_progression,
     tertiary_ii_progression,
+    vertex_arc,
     house_frame_condition_profile,
     house_frame_relation,
 )
@@ -1097,3 +1107,167 @@ def test_progression_condition_network_profile_rejects_duplicate_technique_names
 
     with pytest.raises(ValueError, match="progression condition network requires unique technique names"):
         progression_condition_network_profile(charts=[first, second])
+
+
+# ---------------------------------------------------------------------------
+# Mean Solar Arc
+# ---------------------------------------------------------------------------
+
+@pytest.mark.requires_ephemeris
+def test_mean_solar_arc_longitude_applies_naibod_rate_uniformly() -> None:
+    natal_dt = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
+    target_dt = datetime(2024, 4, 8, 18, 0, tzinfo=timezone.utc)
+    natal_jd = jd_from_datetime(natal_dt)
+    age_years = (jd_from_datetime(target_dt) - natal_jd) / TROPICAL_YEAR
+    expected_arc = (age_years * NAIBOD_RATE) % 360.0
+    natal_raw = all_planets_at(natal_jd, bodies=list(Body.ALL_PLANETS))
+
+    directed = mean_solar_arc_longitude(natal_jd, target_dt)
+    converse = converse_mean_solar_arc_longitude(natal_jd, target_dt)
+
+    assert directed.chart_type == "Mean Solar Arc Direction"
+    assert directed.progressed_jd_ut == pytest.approx(natal_jd, abs=1e-12)
+    assert directed.solar_arc_deg == pytest.approx(expected_arc, abs=1e-12)
+    assert directed.computation_truth.doctrine.doctrine_family == "uniform_arc"
+    assert directed.computation_truth.doctrine.rate_mode == "fixed"
+    assert directed.computation_truth.doctrine.coordinate_system == "ecliptic_longitude"
+    assert directed.computation_truth.reference_body is None
+    assert directed.relation_basis == "naibod_rate"
+    assert directed.is_directing_arc_relation is True
+    assert directed.relation_reference_name is None
+    assert directed.condition_state == "uniform"
+    assert converse.chart_type == "Converse Mean Solar Arc Direction"
+    assert converse.computation_truth.doctrine.converse is True
+    assert converse.solar_arc_deg == pytest.approx((-expected_arc) % 360.0, abs=1e-12)
+    # Arc must match Naibod in Longitude exactly (arithmetically identical)
+    naibod = naibod_longitude(natal_jd, target_dt)
+    assert directed.solar_arc_deg == pytest.approx(naibod.solar_arc_deg, abs=1e-12)
+    for name, pos in directed.positions.items():
+        source = natal_raw[name]
+        assert pos.longitude == pytest.approx((source.longitude + expected_arc) % 360.0, abs=1e-12)
+    for name, pos in converse.positions.items():
+        source = natal_raw[name]
+        assert pos.longitude == pytest.approx((source.longitude - expected_arc) % 360.0, abs=1e-12)
+
+
+@pytest.mark.requires_ephemeris
+def test_mean_solar_arc_right_ascension_applies_naibod_rate_on_equator() -> None:
+    natal_dt = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
+    target_dt = datetime(2024, 4, 8, 18, 0, tzinfo=timezone.utc)
+    natal_jd = jd_from_datetime(natal_dt)
+    age_years = (jd_from_datetime(target_dt) - natal_jd) / TROPICAL_YEAR
+    expected_arc = (age_years * NAIBOD_RATE) % 360.0
+
+    directed = mean_solar_arc_right_ascension(natal_jd, target_dt)
+    converse = converse_mean_solar_arc_right_ascension(natal_jd, target_dt)
+
+    assert directed.chart_type == "Mean Solar Arc in Right Ascension"
+    assert directed.solar_arc_deg == pytest.approx(expected_arc, abs=1e-12)
+    assert directed.computation_truth.doctrine.coordinate_system == "right_ascension"
+    assert directed.computation_truth.doctrine.doctrine_family == "uniform_arc"
+    assert directed.relation_basis == "naibod_rate"
+    assert converse.chart_type == "Converse Mean Solar Arc in Right Ascension"
+    assert converse.computation_truth.doctrine.converse is True
+    assert converse.solar_arc_deg == pytest.approx((-expected_arc) % 360.0, abs=1e-12)
+    # Verify equatorial projection round-trip for one body (Mars)
+    eps_natal = true_obliquity(ut_to_tt(natal_jd))
+    natal_raw = all_planets_at(natal_jd, bodies=list(Body.ALL_PLANETS))
+    sample = natal_raw[Body.MARS]
+    ra_natal, dec_natal = ecliptic_to_equatorial(sample.longitude, sample.latitude, eps_natal)
+    ra_directed = (ra_natal + expected_arc) % 360.0
+    lon_back, _lat_back = equatorial_to_ecliptic(ra_directed, dec_natal, eps_natal)
+    assert directed.positions[Body.MARS].longitude == pytest.approx(lon_back, abs=1e-12)
+
+
+# ---------------------------------------------------------------------------
+# Vertex Arc
+# ---------------------------------------------------------------------------
+
+@pytest.mark.requires_ephemeris
+def test_vertex_arc_applies_vertex_motion_as_directing_arc() -> None:
+    natal_dt = datetime(1990, 1, 1, 6, 0, tzinfo=timezone.utc)
+    target_dt = datetime(2020, 1, 1, 6, 0, tzinfo=timezone.utc)
+    natal_jd = jd_from_datetime(natal_dt)
+    target_jd = jd_from_datetime(target_dt)
+    age_years = (target_jd - natal_jd) / TROPICAL_YEAR
+    prog_jd = natal_jd + age_years
+    lat = 51.5
+    lon = -0.1
+
+    natal_houses = calculate_houses(natal_jd, lat, lon)
+    progressed_houses = calculate_houses(prog_jd, lat, lon)
+    expected_arc = (progressed_houses.vertex - natal_houses.vertex) % 360.0
+    natal_raw = all_planets_at(natal_jd, bodies=list(Body.ALL_PLANETS))
+
+    directed = vertex_arc(natal_jd, target_dt, lat, lon)
+    converse = converse_vertex_arc(natal_jd, target_dt, lat, lon)
+
+    assert directed.chart_type == "Vertex Arc Direction"
+    assert directed.progressed_jd_ut == pytest.approx(prog_jd, abs=1e-12)
+    assert directed.solar_arc_deg == pytest.approx(expected_arc, abs=1e-12)
+    assert directed.computation_truth.doctrine.doctrine_family == "uniform_arc"
+    assert directed.computation_truth.doctrine.rate_mode == "variable"
+    assert directed.computation_truth.doctrine.coordinate_system == "ecliptic_longitude"
+    assert directed.computation_truth.reference_body == "Vertex"
+    assert directed.classification.uses_reference_body is True
+    assert directed.relation_basis == "vertex_arc_reference"
+    assert directed.is_directing_arc_relation is True
+    assert directed.relation_reference_name == "Vertex"
+    assert converse.chart_type == "Converse Vertex Arc Direction"
+    assert converse.computation_truth.doctrine.converse is True
+    assert converse.solar_arc_deg == pytest.approx((-expected_arc) % 360.0, abs=1e-12)
+    assert (directed.solar_arc_deg + converse.solar_arc_deg) % 360.0 == pytest.approx(0.0, abs=1e-12)
+    for name, pos in directed.positions.items():
+        source = natal_raw[name]
+        assert pos.longitude == pytest.approx((source.longitude + expected_arc) % 360.0, abs=1e-12)
+    for name, pos in converse.positions.items():
+        source = natal_raw[name]
+        assert pos.longitude == pytest.approx((source.longitude - expected_arc) % 360.0, abs=1e-12)
+
+
+# ---------------------------------------------------------------------------
+# Declination Progressions (Charles Jayne method)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.requires_ephemeris
+def test_secondary_progression_declination_returns_equatorial_declination() -> None:
+    natal_dt = datetime(1990, 1, 1, 6, 0, tzinfo=timezone.utc)
+    target_dt = datetime(2020, 1, 1, 6, 0, tzinfo=timezone.utc)
+    natal_jd = jd_from_datetime(natal_dt)
+    target_jd = jd_from_datetime(target_dt)
+    age_years = (target_jd - natal_jd) / TROPICAL_YEAR
+    prog_jd = natal_jd + age_years
+
+    chart = secondary_progression_declination(natal_jd, target_dt)
+    converse = converse_secondary_progression_declination(natal_jd, target_dt)
+
+    assert isinstance(chart, ProgressedDeclinationChart)
+    assert chart.chart_type == "Secondary Progression in Declination"
+    assert chart.natal_jd_ut == pytest.approx(natal_jd, abs=1e-12)
+    assert chart.progressed_jd_ut == pytest.approx(prog_jd, abs=1e-12)
+    assert chart.computation_truth.doctrine.doctrine_family == "time_key"
+    assert chart.computation_truth.doctrine.coordinate_system == "declination"
+    assert chart.computation_truth.doctrine.converse is False
+    assert chart.coordinate_system == "declination"
+    assert chart.is_converse is False
+
+    assert isinstance(converse, ProgressedDeclinationChart)
+    assert converse.chart_type == "Converse Secondary Progression in Declination"
+    assert converse.progressed_jd_ut == pytest.approx(natal_jd - age_years, abs=1e-12)
+    assert converse.computation_truth.doctrine.converse is True
+    assert converse.is_converse is True
+
+    # Verify that each position stores a finite declination within [-90, 90]
+    for name, pos in chart.positions.items():
+        assert isinstance(pos, ProgressedDeclinationPosition)
+        assert pos.name == name
+        assert -90.0 <= pos.declination <= 90.0
+
+    # Verify declination matches a manual ecliptic-to-equatorial conversion
+    from moira.planets import all_planets_at as _apat
+    prog_tt = ut_to_tt(prog_jd)
+    eps = true_obliquity(prog_tt)
+    raw = _apat(prog_jd, bodies=list(Body.ALL_PLANETS))
+    for name, pos in chart.positions.items():
+        _ra, expected_dec = ecliptic_to_equatorial(raw[name].longitude, raw[name].latitude, eps)
+        assert pos.declination == pytest.approx(expected_dec, abs=1e-12)

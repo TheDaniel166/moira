@@ -1,9 +1,10 @@
 """
 Moira — progressions.py
 The Progression Engine: governs secondary progressions, solar arc directions,
-Naibod directions, one-degree symbolic directions, tertiary progressions,
-minor progressions, ascendant arc directions, and progressed house-frame
-techniques — all in forward and converse forms.
+Naibod directions, mean solar arc directions, one-degree symbolic directions,
+tertiary progressions, minor progressions, ascendant arc directions, vertex arc
+directions, declination progressions, and progressed house-frame techniques —
+all in forward and converse forms.
 
 Boundary: owns all symbolic time-advancement techniques (one-day-one-year and
 variants). Delegates body position computation to planets. Delegates Julian Day
@@ -17,14 +18,20 @@ Time-key (differential — new ephemeris chart cast at progressed JD):
     tertiary_ii_progression, converse_tertiary_ii_progression
     minor_progression, converse_minor_progression
 
+Time-key in declination (Charles Jayne method — progressed declination axis):
+    secondary_progression_declination, converse_secondary_progression_declination
+
 Uniform arc (arc applied to all natal positions):
     solar_arc, converse_solar_arc
     solar_arc_right_ascension, converse_solar_arc_right_ascension
     naibod_longitude, converse_naibod_longitude
     naibod_right_ascension, converse_naibod_right_ascension
+    mean_solar_arc_longitude, converse_mean_solar_arc_longitude
+    mean_solar_arc_right_ascension, converse_mean_solar_arc_right_ascension
     one_degree_longitude, converse_one_degree_longitude
     one_degree_right_ascension, converse_one_degree_right_ascension
     ascendant_arc, converse_ascendant_arc
+    vertex_arc, converse_vertex_arc
 
 House frame:
     daily_house_frame, daily_houses
@@ -63,20 +70,27 @@ __all__ = [
     "ProgressionHouseFramePolicy", "ProgressionComputationPolicy",
     # Vessels
     "ProgressedPosition", "ProgressedChart", "ProgressedHouseFrame",
+    "ProgressedDeclinationPosition", "ProgressedDeclinationChart",
     # Direct progression functions
     "secondary_progression", "solar_arc", "solar_arc_right_ascension",
     "naibod_longitude", "naibod_right_ascension",
+    "mean_solar_arc_longitude", "mean_solar_arc_right_ascension",
     "one_degree_longitude", "one_degree_right_ascension",
     "tertiary_progression", "tertiary_ii_progression",
     "minor_progression", "ascendant_arc", "converse_ascendant_arc",
+    "vertex_arc",
+    "secondary_progression_declination",
     "daily_houses", "daily_house_frame",
     # Converse progression functions
     "converse_secondary_progression", "converse_solar_arc",
     "converse_solar_arc_right_ascension",
     "converse_naibod_longitude", "converse_naibod_right_ascension",
+    "converse_mean_solar_arc_longitude", "converse_mean_solar_arc_right_ascension",
     "converse_one_degree_longitude", "converse_one_degree_right_ascension",
     "converse_tertiary_progression", "converse_tertiary_ii_progression",
     "converse_minor_progression",
+    "converse_vertex_arc",
+    "converse_secondary_progression_declination",
     # Condition profile functions
     "progression_relation", "house_frame_relation",
     "progression_condition_profile", "house_frame_condition_profile",
@@ -431,6 +445,10 @@ def _build_progression_relation(
         basis = "solar_arc_reference"
     elif truth.reference_body == "Ascendant":
         basis = "ascendant_arc_reference"
+    elif truth.reference_body == "Vertex":
+        basis = "vertex_arc_reference"
+    elif "Mean Solar Arc" in truth.doctrine.technique_name:
+        basis = "naibod_rate"
     elif truth.doctrine.technique_name.startswith("Naibod") or "Naibod" in truth.doctrine.technique_name:
         basis = "naibod_rate"
     elif truth.doctrine.technique_name.startswith("One Degree") or "One Degree" in truth.doctrine.technique_name:
@@ -479,6 +497,10 @@ def _validate_progression_relation(
         if truth.reference_body == "Sun"
         else "ascendant_arc_reference"
         if truth.reference_body == "Ascendant"
+        else "vertex_arc_reference"
+        if truth.reference_body == "Vertex"
+        else "naibod_rate"
+        if "Mean Solar Arc" in truth.doctrine.technique_name
         else "naibod_rate"
         if truth.doctrine.technique_name.startswith("Naibod") or "Naibod" in truth.doctrine.technique_name
         else "one_degree_rate"
@@ -680,6 +702,78 @@ class ProgressedPosition:
         r = "R" if self.retrograde else " "
         return (f"{self.name:<10}{r} {self.longitude:>9.4f}  "
                 f"{self.sign} {self.sign_degree:.2f}")
+
+
+@dataclass(slots=True)
+class ProgressedDeclinationPosition:
+    """
+    RESULT VESSEL: One body's progressed declination.
+
+    Used exclusively by declination-based progressions (Charles Jayne method).
+    Stores the body name and its progressed equatorial declination in degrees
+    (positive north, negative south), converted from the progressed ecliptic
+    position at the obliquity of the progressed date.
+    """
+    name: str
+    declination: float  # degrees; north positive, south negative
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.name, str) or not self.name.strip():
+            raise ValueError("progressed declination position name must be a non-empty string")
+        if not math.isfinite(self.declination):
+            raise ValueError("progressed declination must be finite")
+
+
+@dataclass(slots=True)
+class ProgressedDeclinationChart:
+    """
+    RESULT VESSEL: A complete declination-based progressed chart.
+
+    Used exclusively by secondary_progression_declination and
+    converse_secondary_progression_declination (Charles Jayne method).
+    Carries the same metadata structure as ProgressedChart but stores
+    declination values rather than ecliptic longitudes.
+    """
+    chart_type:        str
+    natal_jd_ut:       float
+    progressed_jd_ut:  float
+    target_date:       datetime
+    positions:         dict[str, ProgressedDeclinationPosition]
+    computation_truth: ProgressionComputationTruth
+    classification:    ProgressionComputationClassification
+    relation:          ProgressionRelation
+    condition_profile: ProgressionConditionProfile
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.chart_type, str) or not self.chart_type.strip():
+            raise ValueError("chart_type must be a non-empty string")
+        _validate_natal_jd_ut(self.natal_jd_ut)
+        if not math.isfinite(self.progressed_jd_ut):
+            raise ValueError("progressed_jd_ut must be finite")
+        _validate_target_date(self.target_date)
+        for name, position in self.positions.items():
+            if name != position.name:
+                raise ValueError("positions keys must match progressed position names")
+
+    @property
+    def datetime_utc(self) -> datetime:
+        return datetime_from_jd(self.progressed_jd_ut)
+
+    @property
+    def calendar_utc(self) -> CalendarDateTime:
+        return calendar_datetime_from_jd(self.progressed_jd_ut)
+
+    @property
+    def doctrine_family(self) -> str:
+        return self.classification.doctrine.doctrine_family
+
+    @property
+    def coordinate_system(self) -> str:
+        return self.classification.doctrine.coordinate_system
+
+    @property
+    def is_converse(self) -> bool:
+        return self.classification.doctrine.converse
 
 
 @dataclass(slots=True)
@@ -1637,6 +1731,160 @@ def converse_naibod_right_ascension(
 
 
 # ---------------------------------------------------------------------------
+# Mean Solar Arc Directions (Naibod rate, doctrinal uniform-arc technique)
+# ---------------------------------------------------------------------------
+
+def mean_solar_arc_longitude(
+    natal_jd_ut: float,
+    target_date: datetime,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    policy: ProgressionComputationPolicy | None = None,
+) -> ProgressedChart:
+    """
+    Mean Solar Arc Direction in longitude: Naibod rate applied as a uniform arc.
+
+    Doctrinally distinct from Naibod Direction in that the arc is cast as the
+    mean motion of the Sun (0.98564733 deg/year * age) rather than as a
+    planetary Naibod rate. Arithmetically equivalent to Naibod in Longitude
+    within Moira's engine; exposed as a separate technique to match Solar Fire,
+    AstroApp, and Sirius catalogue conventions.
+
+    SYMBOLIC KEY:
+        - unit of life: tropical year
+        - rate type: fixed — 0.98564733 deg/year (mean solar motion)
+        - application: uniform to all bodies
+        - coordinate system: ecliptic longitude
+    """
+    if reader is None:
+        reader = get_reader()
+    resolved_policy = _resolve_policy(policy)
+
+    age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
+    arc = (age_years * resolved_policy.directions.naibod_rate_deg_per_year) % 360.0
+    return _uniform_longitude_direction(
+        chart_type="Mean Solar Arc Direction",
+        natal_jd_ut=natal_jd_ut,
+        target_date=target_date,
+        arc_deg=arc,
+        age_years=age_years,
+        bodies=bodies,
+        reader=reader,
+        progressed_jd_ut=natal_jd_ut,
+        rate_mode="fixed",
+        reference_body=None,
+    )
+
+
+def converse_mean_solar_arc_longitude(
+    natal_jd_ut: float,
+    target_date: datetime,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    policy: ProgressionComputationPolicy | None = None,
+) -> ProgressedChart:
+    """
+    Converse Mean Solar Arc Direction in longitude: Naibod rate applied in reverse.
+
+    SYMBOLIC KEY:
+        - unit of life: tropical year
+        - rate type: fixed — 0.98564733 deg/year (mean solar motion)
+        - application: uniform to all bodies (converse — arc subtracted)
+        - coordinate system: ecliptic longitude
+    """
+    if reader is None:
+        reader = get_reader()
+    resolved_policy = _resolve_policy(policy)
+
+    age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
+    arc = (-(age_years * resolved_policy.directions.naibod_rate_deg_per_year)) % 360.0
+    return _uniform_longitude_direction(
+        chart_type="Converse Mean Solar Arc Direction",
+        natal_jd_ut=natal_jd_ut,
+        target_date=target_date,
+        arc_deg=arc,
+        age_years=age_years,
+        bodies=bodies,
+        reader=reader,
+        progressed_jd_ut=natal_jd_ut,
+        rate_mode="fixed",
+        reference_body=None,
+    )
+
+
+def mean_solar_arc_right_ascension(
+    natal_jd_ut: float,
+    target_date: datetime,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    policy: ProgressionComputationPolicy | None = None,
+) -> ProgressedChart:
+    """
+    Mean Solar Arc Direction in right ascension: Naibod rate applied on the equator.
+
+    SYMBOLIC KEY:
+        - unit of life: tropical year
+        - rate type: fixed — 0.98564733 deg/year (mean solar motion)
+        - application: uniform to all bodies
+        - coordinate system: equatorial right ascension
+    """
+    if reader is None:
+        reader = get_reader()
+    resolved_policy = _resolve_policy(policy)
+
+    age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
+    arc = (age_years * resolved_policy.directions.naibod_rate_deg_per_year) % 360.0
+    return _uniform_ra_direction(
+        chart_type="Mean Solar Arc in Right Ascension",
+        natal_jd_ut=natal_jd_ut,
+        target_date=target_date,
+        arc_deg=arc,
+        age_years=age_years,
+        bodies=bodies,
+        reader=reader,
+        progressed_jd_ut=natal_jd_ut,
+        rate_mode="fixed",
+        reference_body=None,
+    )
+
+
+def converse_mean_solar_arc_right_ascension(
+    natal_jd_ut: float,
+    target_date: datetime,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    policy: ProgressionComputationPolicy | None = None,
+) -> ProgressedChart:
+    """
+    Converse Mean Solar Arc Direction in right ascension: Naibod rate reversed on the equator.
+
+    SYMBOLIC KEY:
+        - unit of life: tropical year
+        - rate type: fixed — 0.98564733 deg/year (mean solar motion)
+        - application: uniform to all bodies (converse — arc subtracted)
+        - coordinate system: equatorial right ascension
+    """
+    if reader is None:
+        reader = get_reader()
+    resolved_policy = _resolve_policy(policy)
+
+    age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
+    arc = (-(age_years * resolved_policy.directions.naibod_rate_deg_per_year)) % 360.0
+    return _uniform_ra_direction(
+        chart_type="Converse Mean Solar Arc in Right Ascension",
+        natal_jd_ut=natal_jd_ut,
+        target_date=target_date,
+        arc_deg=arc,
+        age_years=age_years,
+        bodies=bodies,
+        reader=reader,
+        progressed_jd_ut=natal_jd_ut,
+        rate_mode="fixed",
+        reference_body=None,
+    )
+
+
+# ---------------------------------------------------------------------------
 # One-Degree Symbolic Directions (1.0 deg/year, ecliptic and equatorial)
 # ---------------------------------------------------------------------------
 
@@ -2256,6 +2504,144 @@ def converse_ascendant_arc(
 
 
 # ---------------------------------------------------------------------------
+# Vertex Arc Directions
+# ---------------------------------------------------------------------------
+
+def vertex_arc(
+    natal_jd_ut: float,
+    target_date: datetime,
+    latitude: float,
+    longitude: float,
+    system: str | None = None,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    policy: ProgressionComputationPolicy | None = None,
+) -> ProgressedChart:
+    """
+    Vertex arc: variable directing rate measured from the progressed Vertex.
+
+    The arc is the motion of the Vertex between the natal and progressed dates
+    (progressed_jd = natal_jd + age_years). Applied uniformly to all natal
+    body longitudes.
+
+    SYMBOLIC KEY:
+        - unit of ephemeris time per unit of life: one tropical year = one day
+          after birth for the progressed Vertex reference date
+        - rate type: variable, measured from natal Vertex to progressed Vertex
+        - application: uniform to all bodies
+        - coordinate system: ecliptic longitude
+
+    Parameters
+    ----------
+    natal_jd_ut : Julian Day (UT) of birth
+    target_date : real-world date for which to calculate progressions
+    latitude    : geographic latitude of birth (degrees, north positive)
+    longitude   : geographic longitude of birth (degrees, east positive)
+    system      : house system code (defaults to policy default)
+    bodies      : list of Body.* constants (defaults to all planets)
+    reader      : SpkReader instance
+
+    Raises
+    ------
+    ValueError
+        If the Vertex is not available for the requested house system or location.
+    """
+    if reader is None:
+        reader = get_reader()
+    resolved_policy = _resolve_policy(policy)
+    _validate_house_frame_inputs(latitude, longitude, system)
+
+    age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
+    prog_jd = natal_jd_ut + age_years
+    resolved_system = resolved_policy.house_frame.default_house_system if system is None else system
+    natal_houses = calculate_houses(natal_jd_ut, latitude, longitude, system=resolved_system)
+    progressed_houses = calculate_houses(prog_jd, latitude, longitude, system=resolved_system)
+    if natal_houses.vertex is None or progressed_houses.vertex is None:
+        raise ValueError(
+            "Vertex arc requires a house system that computes the Vertex; "
+            f"system '{resolved_system}' returned None for the Vertex."
+        )
+    arc = (progressed_houses.vertex - natal_houses.vertex) % 360.0
+    return _uniform_longitude_direction(
+        chart_type="Vertex Arc Direction",
+        natal_jd_ut=natal_jd_ut,
+        target_date=target_date,
+        arc_deg=arc,
+        age_years=age_years,
+        bodies=bodies,
+        reader=reader,
+        progressed_jd_ut=prog_jd,
+        rate_mode="variable",
+        reference_body="Vertex",
+    )
+
+
+def converse_vertex_arc(
+    natal_jd_ut: float,
+    target_date: datetime,
+    latitude: float,
+    longitude: float,
+    system: str | None = None,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    policy: ProgressionComputationPolicy | None = None,
+) -> ProgressedChart:
+    """
+    Converse vertex arc: the forward Vertex arc applied in reverse.
+
+    SYMBOLIC KEY:
+        - unit of ephemeris time per unit of life: one tropical year = one day
+          after birth for the progressed Vertex reference date
+        - rate type: variable, measured from natal Vertex to progressed Vertex
+        - application: uniform to all bodies (converse — arc subtracted)
+        - coordinate system: ecliptic longitude
+
+    Parameters
+    ----------
+    natal_jd_ut : Julian Day (UT) of birth
+    target_date : real-world date for which to calculate progressions
+    latitude    : geographic latitude of birth (degrees, north positive)
+    longitude   : geographic longitude of birth (degrees, east positive)
+    system      : house system code (defaults to policy default)
+    bodies      : list of Body.* constants (defaults to all planets)
+    reader      : SpkReader instance
+
+    Raises
+    ------
+    ValueError
+        If the Vertex is not available for the requested house system or location.
+    """
+    if reader is None:
+        reader = get_reader()
+    resolved_policy = _resolve_policy(policy)
+    _validate_house_frame_inputs(latitude, longitude, system)
+
+    age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
+    prog_jd = natal_jd_ut + age_years
+    resolved_system = resolved_policy.house_frame.default_house_system if system is None else system
+    natal_houses = calculate_houses(natal_jd_ut, latitude, longitude, system=resolved_system)
+    progressed_houses = calculate_houses(prog_jd, latitude, longitude, system=resolved_system)
+    if natal_houses.vertex is None or progressed_houses.vertex is None:
+        raise ValueError(
+            "Vertex arc requires a house system that computes the Vertex; "
+            f"system '{resolved_system}' returned None for the Vertex."
+        )
+    forward_arc = (progressed_houses.vertex - natal_houses.vertex) % 360.0
+    return _uniform_longitude_direction(
+        chart_type="Converse Vertex Arc Direction",
+        natal_jd_ut=natal_jd_ut,
+        target_date=target_date,
+        arc_deg=(-forward_arc) % 360.0,
+        age_years=age_years,
+        bodies=bodies,
+        reader=reader,
+        progressed_jd_ut=prog_jd,
+        rate_mode="variable",
+        reference_body="Vertex",
+    )
+
+
+# ---------------------------------------------------------------------------
 # Minor Progressions
 # ---------------------------------------------------------------------------
 
@@ -2346,6 +2732,175 @@ def converse_minor_progression(
         ephemeris_unit="synodic_month_fraction",
         rate_mode="variable",
         converse=True,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Declination Progressions (Charles Jayne method)
+# ---------------------------------------------------------------------------
+
+def secondary_progression_declination(
+    natal_jd_ut: float,
+    target_date: datetime,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    policy: ProgressionComputationPolicy | None = None,
+) -> ProgressedDeclinationChart:
+    """
+    Secondary Progression in Declination (Charles Jayne method).
+
+    Applies the standard secondary progression time-key (one solar year of life
+    = one day after birth) and reports the equatorial declination of each body
+    at the progressed date rather than its ecliptic longitude.
+
+    The progressed declination is derived by:
+        1. Advancing the chart to progressed_jd = natal_jd + age_years.
+        2. Computing the true obliquity at the progressed JD.
+        3. Converting each body's ecliptic longitude and latitude to equatorial
+           right ascension and declination at that obliquity.
+        4. Returning the declination component.
+
+    SYMBOLIC KEY:
+        - unit of life: tropical year
+        - ephemeris unit: day after birth
+        - rate type: variable (differential, new ephemeris chart)
+        - application: differential
+        - coordinate system: declination
+
+    Parameters
+    ----------
+    natal_jd_ut : Julian Day (UT) of birth
+    target_date : real-world date for which to calculate progressions
+    bodies      : list of Body.* constants (defaults to all planets)
+    reader      : SpkReader instance
+
+    Returns
+    -------
+    ProgressedDeclinationChart
+    """
+    if reader is None:
+        reader = get_reader()
+    resolved_policy = _resolve_policy(policy)
+    _validate_natal_jd_ut(natal_jd_ut)
+    _validate_target_date(target_date)
+
+    age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
+    prog_jd = natal_jd_ut + age_years
+    resolved_bodies = _default_bodies(bodies)
+
+    prog_tt = ut_to_tt(prog_jd)
+    eps = true_obliquity(prog_tt)
+    raw = all_planets_at(prog_jd, bodies=resolved_bodies, reader=reader)
+    positions = {}
+    for name, p in raw.items():
+        _ra, dec = ecliptic_to_equatorial(p.longitude, p.latitude, eps)
+        positions[name] = ProgressedDeclinationPosition(name=name, declination=dec)
+
+    truth = ProgressionComputationTruth(
+        doctrine=_doctrine_truth(
+            technique_name="Secondary Progression in Declination",
+            doctrine_family="time_key",
+            life_unit="tropical_year",
+            ephemeris_unit="day_after_birth",
+            rate_mode="variable",
+            application_mode="differential",
+            coordinate_system="declination",
+        ),
+        target_jd_ut=jd_from_datetime(target_date),
+        age_years=age_years,
+        progressed_jd_ut=prog_jd,
+    )
+    classification = _classify_computation_truth(truth)
+    relation = _build_progression_relation(truth, classification)
+    return ProgressedDeclinationChart(
+        chart_type="Secondary Progression in Declination",
+        natal_jd_ut=natal_jd_ut,
+        progressed_jd_ut=prog_jd,
+        target_date=target_date,
+        positions=positions,
+        computation_truth=truth,
+        classification=classification,
+        relation=relation,
+        condition_profile=_build_progression_condition_profile(classification, relation),
+    )
+
+
+def converse_secondary_progression_declination(
+    natal_jd_ut: float,
+    target_date: datetime,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    policy: ProgressionComputationPolicy | None = None,
+) -> ProgressedDeclinationChart:
+    """
+    Converse Secondary Progression in Declination (Charles Jayne method).
+
+    Applies the converse secondary time-key (progressed_jd = natal_jd - age_years)
+    and reports equatorial declination at the converse progressed date.
+
+    SYMBOLIC KEY:
+        - unit of life: tropical year
+        - ephemeris unit: day after birth (converse — subtracted)
+        - rate type: variable (differential, new ephemeris chart)
+        - application: differential
+        - coordinate system: declination
+
+    Parameters
+    ----------
+    natal_jd_ut : Julian Day (UT) of birth
+    target_date : real-world date for which to calculate progressions
+    bodies      : list of Body.* constants (defaults to all planets)
+    reader      : SpkReader instance
+
+    Returns
+    -------
+    ProgressedDeclinationChart
+    """
+    if reader is None:
+        reader = get_reader()
+    resolved_policy = _resolve_policy(policy)
+    _validate_natal_jd_ut(natal_jd_ut)
+    _validate_target_date(target_date)
+
+    age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
+    prog_jd = natal_jd_ut - age_years
+    resolved_bodies = _default_bodies(bodies)
+
+    prog_tt = ut_to_tt(prog_jd)
+    eps = true_obliquity(prog_tt)
+    raw = all_planets_at(prog_jd, bodies=resolved_bodies, reader=reader)
+    positions = {}
+    for name, p in raw.items():
+        _ra, dec = ecliptic_to_equatorial(p.longitude, p.latitude, eps)
+        positions[name] = ProgressedDeclinationPosition(name=name, declination=dec)
+
+    truth = ProgressionComputationTruth(
+        doctrine=_doctrine_truth(
+            technique_name="Converse Secondary Progression in Declination",
+            doctrine_family="time_key",
+            life_unit="tropical_year",
+            ephemeris_unit="day_after_birth",
+            rate_mode="variable",
+            application_mode="differential",
+            coordinate_system="declination",
+            converse=True,
+        ),
+        target_jd_ut=jd_from_datetime(target_date),
+        age_years=age_years,
+        progressed_jd_ut=prog_jd,
+    )
+    classification = _classify_computation_truth(truth)
+    relation = _build_progression_relation(truth, classification)
+    return ProgressedDeclinationChart(
+        chart_type="Converse Secondary Progression in Declination",
+        natal_jd_ut=natal_jd_ut,
+        progressed_jd_ut=prog_jd,
+        target_date=target_date,
+        positions=positions,
+        computation_truth=truth,
+        classification=classification,
+        relation=relation,
+        condition_profile=_build_progression_condition_profile(classification, relation),
     )
 
 

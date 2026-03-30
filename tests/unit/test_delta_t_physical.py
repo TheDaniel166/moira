@@ -9,6 +9,7 @@ from moira.delta_t_physical import (
     REFERENCE_LOD,
     REFERENCE_YEAR,
     secular_trend,
+    fluid_lowfreq,
     core_delta_t,
     cryo_delta_t,
     delta_t_hybrid,
@@ -21,6 +22,9 @@ from moira.delta_t_physical import (
     _load_grace_series,
     _load_core_series,
     _core_recent_stats,
+    _modern_bridge_delta_t,
+    _modern_bridge_coefficients,
+    _fit_fluid_lowfreq_coefficients,
     _require_univariate_spline,
 )
 
@@ -32,7 +36,7 @@ from moira.delta_t_physical import (
 def test_constants_have_correct_values() -> None:
     assert TIDAL_COEFF == 31.0
     assert GIA_COEFF == -3.0
-    assert REFERENCE_LOD == 69.3
+    assert REFERENCE_LOD == pytest.approx(69.11474233219883, abs=1e-12)
     assert REFERENCE_YEAR == 2026.0
 
 
@@ -71,6 +75,52 @@ def test_secular_trend_at_1820_is_reasonable() -> None:
 
 def test_secular_trend_at_2100_is_above_reference_lod() -> None:
     assert secular_trend(2100.0) > REFERENCE_LOD
+
+
+# ---------------------------------------------------------------------------
+# measured-era bridge term
+# ---------------------------------------------------------------------------
+
+def test_modern_bridge_coefficients_are_finite() -> None:
+    c2, c3 = _modern_bridge_coefficients()
+    assert math.isfinite(c2)
+    assert math.isfinite(c3)
+
+
+def test_modern_bridge_is_zero_at_reference_year_and_in_future() -> None:
+    assert _modern_bridge_delta_t(REFERENCE_YEAR) == pytest.approx(0.0, abs=1e-12)
+    assert _modern_bridge_delta_t(2050.0) == pytest.approx(0.0, abs=1e-12)
+
+
+def test_modern_bridge_is_active_in_measured_era() -> None:
+    assert _modern_bridge_delta_t(1962.5) < 0.0
+    assert _modern_bridge_delta_t(2010.5) < 0.0
+
+
+def test_modern_bridge_has_zero_left_slope_at_reference_year() -> None:
+    eps = 1e-6
+    left = _modern_bridge_delta_t(REFERENCE_YEAR - eps)
+    assert abs(left / eps) < 1e-3
+
+
+# ---------------------------------------------------------------------------
+# fluid_lowfreq
+# ---------------------------------------------------------------------------
+
+def test_fluid_lowfreq_coefficients_are_finite() -> None:
+    alpha, beta = _fit_fluid_lowfreq_coefficients()
+    assert math.isfinite(alpha)
+    assert math.isfinite(beta)
+
+
+def test_fluid_lowfreq_is_zero_outside_support() -> None:
+    assert fluid_lowfreq(1900.0) == pytest.approx(0.0, abs=1e-12)
+    assert fluid_lowfreq(2025.0) == pytest.approx(0.0, abs=1e-12)
+    assert fluid_lowfreq(2050.0) == pytest.approx(0.0, abs=1e-12)
+
+
+def test_fluid_lowfreq_is_active_in_measured_era() -> None:
+    assert abs(fluid_lowfreq(1975.5)) > 1.0
 
 
 # ---------------------------------------------------------------------------
