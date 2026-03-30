@@ -1,0 +1,4 @@
+[submodule "moira.wiki"]
+	path = moira.wiki
+	url = https://github.com/TheDaniel166/moira.wiki.git
+
