@@ -3,10 +3,10 @@ Moira — planetary_hours.py
 The Planetary Hour Engine: governs traditional planetary hour computation
 for any geographic location and date.
 
-Boundary: owns Chaldean hour sequence arithmetic, sunrise/sunset computation,
-daytime/nighttime hour division, and planetary hour lookup. Delegates solar
-position to planets. Delegates Julian Day arithmetic to julian. Does NOT own
-ephemeris state or geographic coordinate conversion.
+Boundary: owns Chaldean hour sequence arithmetic, daytime/nighttime hour
+division, and planetary hour lookup. Delegates solar position and
+sunrise/sunset computation to _solar. Delegates Julian Day arithmetic to
+julian. Does NOT own ephemeris state or geographic coordinate conversion.
 
 Public surface:
     PlanetaryHour, PlanetaryHoursDay,
@@ -27,6 +27,7 @@ from .constants import Body
 from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd, format_jd_utc, jd_from_datetime
 from .planets import planet_at
 from .spk_reader import get_reader, SpkReader
+from ._solar import _solar_declination_ra, _sunrise_sunset, _refine_sunrise
 
 
 # ---------------------------------------------------------------------------
@@ -233,125 +234,6 @@ class PlanetaryHoursDay:
         """Return the ruling planet for the planetary hour containing jd."""
         h = self.hour_at(jd)
         return h.ruler if h else None
-
-
-# ---------------------------------------------------------------------------
-# Solar altitude: find sunrise/sunset
-# ---------------------------------------------------------------------------
-
-def _solar_declination_ra(jd: float, reader: SpkReader) -> tuple[float, float]:
-    """Return (declination_deg, right_ascension_deg) of the Sun at jd."""
-    from .coordinates import icrf_to_equatorial
-    from .obliquity import true_obliquity
-    from .spk_reader import get_reader as _gr
-
-    p = planet_at(Body.SUN, jd, reader=reader)
-    # Sun's equatorial coords derived from longitude/latitude
-    obl = true_obliquity(jd)
-    obl_r = math.radians(obl)
-    lon_r = math.radians(p.longitude)
-    lat_r = math.radians(p.latitude)
-
-    # Ecliptic → equatorial
-    x = math.cos(lat_r) * math.cos(lon_r)
-    y = math.cos(lat_r) * math.sin(lon_r) * math.cos(obl_r) - math.sin(lat_r) * math.sin(obl_r)
-    z = math.cos(lat_r) * math.sin(lon_r) * math.sin(obl_r) + math.sin(lat_r) * math.cos(obl_r)
-
-    dec = math.degrees(math.asin(z))
-    ra  = math.degrees(math.atan2(y, x)) % 360.0
-    return dec, ra
-
-
-def _sunrise_sunset(
-    jd_noon: float,
-    latitude: float,
-    longitude: float,
-    reader: SpkReader,
-    altitude_deg: float = -0.833,   # standard: centre of sun at −50'
-) -> tuple[float, float]:
-    """
-    Compute sunrise and sunset JD for the calendar day containing jd_noon.
-
-    Parameters
-    ----------
-    jd_noon    : approximate solar noon JD for the day
-    latitude   : geographic latitude (degrees, N positive)
-    longitude  : geographic longitude (degrees, E positive)
-    altitude_deg : solar altitude at rise/set (default −0.833° ≈ −50')
-
-    Returns
-    -------
-    (jd_sunrise, jd_sunset) in UT
-    """
-    dec, _ = _solar_declination_ra(jd_noon, reader)
-    lat_r = math.radians(latitude)
-    dec_r = math.radians(dec)
-    alt_r = math.radians(altitude_deg)
-
-    # Hour angle at sunrise/sunset
-    cos_H = ((math.sin(alt_r) - math.sin(lat_r) * math.sin(dec_r))
-             / (math.cos(lat_r) * math.cos(dec_r)))
-
-    if cos_H > 1.0:
-        # Sun never rises (polar night)
-        return jd_noon, jd_noon
-    if cos_H < -1.0:
-        # Sun never sets (midnight sun)
-        return jd_noon - 0.5, jd_noon + 0.5
-
-    H_deg = math.degrees(math.acos(cos_H))   # degrees
-
-    # Solar noon in UT = JD_noon_UT
-    # Equation of time correction (simplified: ~0 for our purposes)
-    # Solar noon ≈ 12h UT − longitude/15h + 0.5 day offset
-    jd_day_start = math.floor(jd_noon - 0.5) + 0.5  # JD at 00:00 UT
-
-    # Approximate solar noon UT
-    noon_frac = 0.5 - longitude / 360.0
-    jd_solar_noon = jd_day_start + noon_frac
-
-    sunrise_frac = H_deg / 360.0
-    jd_sunrise = jd_solar_noon - sunrise_frac
-    jd_sunset  = jd_solar_noon + sunrise_frac
-
-    return jd_sunrise, jd_sunset
-
-
-def _refine_sunrise(
-    jd_approx: float,
-    latitude: float,
-    longitude: float,
-    reader: SpkReader,
-    is_rise: bool,
-    tol_days: float = 1.0 / 86400,  # 1 second
-) -> float:
-    """
-    Iteratively refine sunrise or sunset time.
-    Recalculates solar declination at the refined time.
-    """
-    jd = jd_approx
-    for _ in range(5):
-        dec, _ = _solar_declination_ra(jd, reader)
-        lat_r = math.radians(latitude)
-        dec_r = math.radians(dec)
-        alt_r = math.radians(-0.833)
-
-        cos_H = ((math.sin(alt_r) - math.sin(lat_r) * math.sin(dec_r))
-                 / (math.cos(lat_r) * math.cos(dec_r)))
-        cos_H = max(-1.0, min(1.0, cos_H))
-        H_deg = math.degrees(math.acos(cos_H))
-
-        jd_day_start = math.floor(jd - 0.5) + 0.5
-        noon_frac = 0.5 - longitude / 360.0
-        jd_solar_noon = jd_day_start + noon_frac
-
-        sunrise_frac = H_deg / 360.0
-        jd_new = jd_solar_noon - sunrise_frac if is_rise else jd_solar_noon + sunrise_frac
-
-        if abs(jd_new - jd) < tol_days:
-            break
-        jd = jd_new
-    return jd
 
 
 # ---------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 ﻿"""
-Carina Constellation Oracle â€” moira/constellations/stars_carina.py
+Carina Constellation Oracle — moira/constellations/stars_carina.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Carina.
-    - CARINA_STAR_NAMES mapping (constant â†’ canonical name).
+    - CARINA_STAR_NAMES mapping (constant → canonical name).
     - carina_star_at() dispatcher.
     - Per-star convenience functions (canopus_at, miaplacidus_at, â€¦).
     - list_carina_stars() / available_carina_stars() introspection.

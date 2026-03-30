@@ -1,5 +1,5 @@
 ﻿"""
-Centaurus Constellation Oracle â€” moira/constellations/stars_centaurus.py
+Centaurus Constellation Oracle — moira/constellations/stars_centaurus.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Centaurus.
-    - CENTAURUS_STAR_NAMES mapping (constant â†’ canonical name).
+    - CENTAURUS_STAR_NAMES mapping (constant → canonical name).
     - centaurus_star_at() dispatcher.
     - Per-star convenience functions (rigil_kentaurus_at, hadar_at, â€¦).
     - list_centaurus_stars() / available_centaurus_stars() introspection.

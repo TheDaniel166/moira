@@ -1,5 +1,5 @@
 ﻿"""
-Ursa Major Constellation Oracle â€” moira/constellations/stars_ursa_major.py
+Ursa Major Constellation Oracle — moira/constellations/stars_ursa_major.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Ursa Major.
-    - URSA_MAJOR_STAR_NAMES mapping (constant â†’ canonical name).
+    - URSA_MAJOR_STAR_NAMES mapping (constant → canonical name).
     - ursa_major_star_at() dispatcher.
     - Per-star convenience functions (dubhe_at, merak_at, â€¦).
     - list_ursa_major_stars() / available_ursa_major_stars() introspection.

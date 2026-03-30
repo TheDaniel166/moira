@@ -1,5 +1,5 @@
 ﻿"""
-Libra Constellation Oracle â€” moira/constellations/stars_libra.py
+Libra Constellation Oracle — moira/constellations/stars_libra.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Libra.
-    - LIBRA_STAR_NAMES mapping (constant â†’ canonical name).
+    - LIBRA_STAR_NAMES mapping (constant → canonical name).
     - libra_star_at() dispatcher.
     - Per-star convenience functions (zubenelgenubi_at, zubeneshamali_at, â€¦).
     - list_libra_stars() / available_libra_stars() introspection.

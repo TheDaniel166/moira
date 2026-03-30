@@ -38,6 +38,8 @@ _CURATED_PUBLIC_NAMES = [
     "solar_arc_right_ascension",
     "naibod_longitude",
     "naibod_right_ascension",
+    "one_degree_longitude",
+    "one_degree_right_ascension",
     "tertiary_progression",
     "tertiary_ii_progression",
     "converse_secondary_progression",
@@ -45,9 +47,12 @@ _CURATED_PUBLIC_NAMES = [
     "converse_solar_arc_right_ascension",
     "converse_naibod_longitude",
     "converse_naibod_right_ascension",
+    "converse_one_degree_longitude",
+    "converse_one_degree_right_ascension",
     "converse_tertiary_progression",
     "converse_tertiary_ii_progression",
     "ascendant_arc",
+    "converse_ascendant_arc",
     "minor_progression",
     "converse_minor_progression",
     "daily_house_frame",
@@ -94,5 +99,5 @@ class TestModuleAgreement:
                 f"moira.progressions.{name} disappeared; helper should remain module-internal"
             )
 
-    def test_curated_count_is_42(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 42
+    def test_curated_count_is_47(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 47

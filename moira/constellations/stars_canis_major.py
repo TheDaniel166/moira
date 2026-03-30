@@ -1,5 +1,5 @@
 ﻿"""
-Canis Major Constellation Oracle â€” moira/constellations/stars_canis_major.py
+Canis Major Constellation Oracle — moira/constellations/stars_canis_major.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Canis Major.
-    - CANIS_MAJOR_STAR_NAMES mapping (constant â†’ canonical name).
+    - CANIS_MAJOR_STAR_NAMES mapping (constant → canonical name).
     - canis_major_star_at() dispatcher.
     - Per-star convenience functions (sirius_at, mirzam_at, â€¦).
     - list_canis_major_stars() / available_canis_major_stars() introspection.

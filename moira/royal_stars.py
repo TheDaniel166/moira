@@ -1,5 +1,5 @@
 ﻿"""
-Oracle of the Royal Stars â€” moira/royal_stars.py
+Oracle of the Royal Stars — moira/royal_stars.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for the
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each of the four Royal Stars.
-    - ROYAL_STAR_NAMES mapping (constant â†’ canonical name).
+    - ROYAL_STAR_NAMES mapping (constant → canonical name).
     - Per-star convenience functions (aldebaran_at, regulus_at, â€¦).
     - royal_star_at() dispatcher.
     - list_royal_stars() / available_royal_stars() introspection.

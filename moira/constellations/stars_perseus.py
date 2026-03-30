@@ -1,5 +1,5 @@
 ﻿"""
-Perseus Constellation Oracle â€” moira/constellations/stars_perseus.py
+Perseus Constellation Oracle — moira/constellations/stars_perseus.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Perseus.
-    - PERSEUS_STAR_NAMES mapping (constant â†’ canonical name).
+    - PERSEUS_STAR_NAMES mapping (constant → canonical name).
     - perseus_star_at() dispatcher.
     - Per-star convenience functions (mirfak_at, algol_at, miram_at).
     - list_perseus_stars() / available_perseus_stars() introspection.

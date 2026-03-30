@@ -38,6 +38,7 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "jplephem>=2.24",
+    "scipy>=1.14",
 ]
 
 [project.urls]
@@ -58,6 +59,7 @@ dev = [
     "pyyaml>=6.0",
     "hypothesis>=6.100",
     "pyerfa>=2.0",
+    "astropy>=6.0",
 ]
 
 [tool.setuptools]

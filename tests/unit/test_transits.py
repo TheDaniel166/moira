@@ -5,7 +5,8 @@ from dataclasses import replace
 
 import pytest
 
-from moira.constants import Body
+import moira.transits as transits_module
+from moira.constants import Body, TROPICAL_YEAR
 from moira.stars import star_at
 from moira.julian import jd_from_datetime, ut_to_tt
 from moira.nodes import true_node
@@ -58,6 +59,40 @@ from moira.transits import (
 
 def _angle_diff(a: float, b: float) -> float:
     return abs((a - b + 180.0) % 360.0 - 180.0)
+
+
+def test_solar_return_uses_tropical_year_for_search_seed(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured: dict[str, float | str | object | None] = {}
+
+    def _fake_planet_return(
+        body: str,
+        target_lon: float,
+        jd_start: float,
+        direction: str = "direct",
+        reader: object | None = None,
+        policy: object | None = None,
+    ) -> float:
+        captured["body"] = body
+        captured["target_lon"] = target_lon
+        captured["jd_start"] = jd_start
+        captured["direction"] = direction
+        captured["reader"] = reader
+        captured["policy"] = policy
+        return 2460000.5
+
+    monkeypatch.setattr(transits_module, "planet_return", _fake_planet_return)
+
+    natal_sun_lon = 90.0
+    result = solar_return(natal_sun_lon, 2024, reader=None, policy=None)
+
+    jd_approx = transits_module.julian_day(2024, 3, 10, 0.0)
+    expected_start = jd_approx + (natal_sun_lon / 360.0) * TROPICAL_YEAR - 10.0
+
+    assert result == 2460000.5
+    assert captured["body"] == Body.SUN
+    assert captured["target_lon"] == natal_sun_lon
+    assert captured["direction"] == "direct"
+    assert captured["jd_start"] == pytest.approx(expected_start, abs=1e-12)
 
 
 @pytest.mark.requires_ephemeris

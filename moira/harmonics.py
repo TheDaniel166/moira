@@ -52,7 +52,7 @@ Public surface / exports:
 
 from dataclasses import dataclass, field
 
-from .constants import sign_of
+from .constants import TROPICAL_YEAR, sign_of
 
 __all__ = [
     # Result types
@@ -82,7 +82,7 @@ __all__ = [
 # Internal constants
 # ---------------------------------------------------------------------------
 
-_TROPICAL_YEAR: float = 365.24219  # mean tropical year in days (IAU)
+_TROPICAL_YEAR: float = TROPICAL_YEAR
 
 
 # ---------------------------------------------------------------------------

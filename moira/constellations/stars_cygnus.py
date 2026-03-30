@@ -1,5 +1,5 @@
 ﻿"""
-Cygnus Constellation Oracle â€” moira/constellations/stars_cygnus.py
+Cygnus Constellation Oracle — moira/constellations/stars_cygnus.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Cygnus.
-    - CYGNUS_STAR_NAMES mapping (constant â†’ canonical name).
+    - CYGNUS_STAR_NAMES mapping (constant → canonical name).
     - cygnus_star_at() dispatcher.
     - Per-star convenience functions (deneb_at, albireo_at, sador_at).
     - list_cygnus_stars() / available_cygnus_stars() introspection.

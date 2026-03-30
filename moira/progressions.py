@@ -1,24 +1,33 @@
 """
 Moira — progressions.py
 The Progression Engine: governs secondary progressions, solar arc directions,
-Naibod directions, tertiary progressions, converse progressions, minor
-progressions, and progressed house-frame techniques.
+Naibod directions, one-degree symbolic directions, tertiary progressions,
+minor progressions, ascendant arc directions, and progressed house-frame
+techniques — all in forward and converse forms.
 
 Boundary: owns all symbolic time-advancement techniques (one-day-one-year and
 variants). Delegates body position computation to planets. Delegates Julian Day
 arithmetic to julian. Does NOT own ephemeris state or natal chart construction.
 
-Public surface:
-    ProgressedPosition, ProgressedChart,
-    secondary_progression, solar_arc, solar_arc_right_ascension,
-    naibod_longitude, naibod_right_ascension,
-    tertiary_progression, tertiary_ii_progression,
-    converse_secondary_progression, converse_solar_arc,
-    converse_solar_arc_right_ascension,
-    converse_naibod_longitude, converse_naibod_right_ascension,
-    converse_tertiary_progression, converse_tertiary_ii_progression,
-    ascendant_arc, minor_progression, converse_minor_progression,
-    daily_houses
+Technique families
+------------------
+Time-key (differential — new ephemeris chart cast at progressed JD):
+    secondary_progression, converse_secondary_progression
+    tertiary_progression, converse_tertiary_progression
+    tertiary_ii_progression, converse_tertiary_ii_progression
+    minor_progression, converse_minor_progression
+
+Uniform arc (arc applied to all natal positions):
+    solar_arc, converse_solar_arc
+    solar_arc_right_ascension, converse_solar_arc_right_ascension
+    naibod_longitude, converse_naibod_longitude
+    naibod_right_ascension, converse_naibod_right_ascension
+    one_degree_longitude, converse_one_degree_longitude
+    one_degree_right_ascension, converse_one_degree_right_ascension
+    ascendant_arc, converse_ascendant_arc
+
+House frame:
+    daily_house_frame, daily_houses
 
 Import-time side effects: None
 
@@ -31,7 +40,7 @@ import math
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
-from .constants import Body, HouseSystem, HOUSE_SYSTEM_NAMES, sign_of
+from .constants import Body, HouseSystem, HOUSE_SYSTEM_NAMES, TROPICAL_YEAR, sign_of
 from .coordinates import ecliptic_to_equatorial, equatorial_to_ecliptic
 from .houses import HouseCusps, calculate_houses
 from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd, jd_from_datetime, delta_t, ut_to_tt
@@ -57,13 +66,15 @@ __all__ = [
     # Direct progression functions
     "secondary_progression", "solar_arc", "solar_arc_right_ascension",
     "naibod_longitude", "naibod_right_ascension",
+    "one_degree_longitude", "one_degree_right_ascension",
     "tertiary_progression", "tertiary_ii_progression",
-    "minor_progression", "ascendant_arc",
+    "minor_progression", "ascendant_arc", "converse_ascendant_arc",
     "daily_houses", "daily_house_frame",
     # Converse progression functions
     "converse_secondary_progression", "converse_solar_arc",
     "converse_solar_arc_right_ascension",
     "converse_naibod_longitude", "converse_naibod_right_ascension",
+    "converse_one_degree_longitude", "converse_one_degree_right_ascension",
     "converse_tertiary_progression", "converse_tertiary_ii_progression",
     "converse_minor_progression",
     # Condition profile functions
@@ -293,6 +304,7 @@ class ProgressionConditionNetworkEdge:
             "solar_arc_reference",
             "ascendant_arc_reference",
             "naibod_rate",
+            "one_degree_rate",
             "progressed_house_frame",
         }:
             raise ValueError("network edge relation_basis must be supported")
@@ -419,10 +431,10 @@ def _build_progression_relation(
         basis = "solar_arc_reference"
     elif truth.reference_body == "Ascendant":
         basis = "ascendant_arc_reference"
-    elif truth.doctrine.technique_name.startswith("Naibod"):
+    elif truth.doctrine.technique_name.startswith("Naibod") or "Naibod" in truth.doctrine.technique_name:
         basis = "naibod_rate"
-    elif "Naibod" in truth.doctrine.technique_name:
-        basis = "naibod_rate"
+    elif truth.doctrine.technique_name.startswith("One Degree") or "One Degree" in truth.doctrine.technique_name:
+        basis = "one_degree_rate"
     elif truth.stepped_years is not None:
         basis = "stepped_time_key"
     elif classification.doctrine.doctrine_family == "house_frame":
@@ -469,6 +481,8 @@ def _validate_progression_relation(
         if truth.reference_body == "Ascendant"
         else "naibod_rate"
         if truth.doctrine.technique_name.startswith("Naibod") or "Naibod" in truth.doctrine.technique_name
+        else "one_degree_rate"
+        if truth.doctrine.technique_name.startswith("One Degree") or "One Degree" in truth.doctrine.technique_name
         else "stepped_time_key"
         if truth.stepped_years is not None
         else "progressed_house_frame"
@@ -481,8 +495,11 @@ def _validate_progression_relation(
         raise ValueError("time-key relations may not carry a reference_name")
     if relation.relation_kind == "house_frame_projection" and relation.reference_name is not None:
         raise ValueError("house-frame relations may not carry a reference_name")
-    if relation.relation_kind == "directing_arc" and truth.reference_body is None and relation.basis != "naibod_rate":
-        raise ValueError("non-Naibod directing arcs require a reference_name")
+    if relation.relation_kind == "directing_arc" and truth.reference_body is None and relation.basis not in {
+        "naibod_rate",
+        "one_degree_rate",
+    }:
+        raise ValueError("fixed-rate directing arcs must use naibod_rate or one_degree_rate; others require a reference body")
 
 
 def _build_progression_condition_profile(
@@ -924,9 +941,10 @@ class ProgressedHouseFrame:
         return self.condition_profile.structural_state
 
 
-_TROPICAL_YEAR = 365.24219
+_TROPICAL_YEAR = TROPICAL_YEAR
 _SYNODIC_MONTH = 29.53058868
 _NAIBOD_RATE_DEG_PER_YEAR = 0.98564733
+_ONE_DEGREE_RATE_DEG_PER_YEAR = 1.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -942,6 +960,7 @@ class ProgressionDirectionPolicy:
     """Doctrine surface for arc-based progression constants."""
 
     naibod_rate_deg_per_year: float = _NAIBOD_RATE_DEG_PER_YEAR
+    one_degree_rate_deg_per_year: float = _ONE_DEGREE_RATE_DEG_PER_YEAR
 
 
 @dataclass(frozen=True, slots=True)
@@ -981,6 +1000,8 @@ def _validate_policy(policy: ProgressionComputationPolicy) -> ProgressionComputa
         raise ValueError("policy.time_key.synodic_month_days must be positive")
     if policy.directions.naibod_rate_deg_per_year <= 0:
         raise ValueError("policy.directions.naibod_rate_deg_per_year must be positive")
+    if policy.directions.one_degree_rate_deg_per_year <= 0:
+        raise ValueError("policy.directions.one_degree_rate_deg_per_year must be positive")
     if not policy.house_frame.default_house_system:
         raise ValueError("policy.house_frame.default_house_system must be non-empty")
     if policy.house_frame.default_house_system not in HOUSE_SYSTEM_NAMES:
@@ -1095,13 +1116,15 @@ def _uniform_longitude_direction(
     bodies: list[str] | None,
     reader: SpkReader,
     progressed_jd_ut: float,
+    rate_mode: str,
+    reference_body: str | None,
 ) -> ProgressedChart:
     """
     Apply one uniform ecliptic-longitude arc to all natal bodies.
 
     SYMBOLIC KEY:
         - unit of life: tropical year
-        - rate type: fixed or variable, supplied by caller as ``arc_deg``
+        - rate type: fixed or variable, declared explicitly by the caller via ``rate_mode``
         - application: uniform to all bodies
         - coordinate system: ecliptic longitude
     """
@@ -1131,7 +1154,7 @@ def _uniform_longitude_direction(
             doctrine_family="uniform_arc",
             life_unit="tropical_year",
             ephemeris_unit="directing_arc_degree",
-            rate_mode="variable" if "Solar Arc" in chart_type or "Ascendant Arc" in chart_type else "fixed",
+            rate_mode=rate_mode,
             application_mode="uniform",
             coordinate_system="ecliptic_longitude",
             converse=chart_type.startswith("Converse "),
@@ -1140,7 +1163,7 @@ def _uniform_longitude_direction(
         age_years=age_years,
         progressed_jd_ut=progressed_jd_ut,
         directed_arc_deg=arc_deg,
-        reference_body="Sun" if "Solar Arc" in chart_type else ("Ascendant" if "Ascendant Arc" in chart_type else None),
+        reference_body=reference_body,
     )
     classification = _classify_computation_truth(truth)
     relation = _build_progression_relation(truth, classification)
@@ -1168,13 +1191,15 @@ def _uniform_ra_direction(
     bodies: list[str] | None,
     reader: SpkReader,
     progressed_jd_ut: float,
+    rate_mode: str,
+    reference_body: str | None,
 ) -> ProgressedChart:
     """
     Apply one uniform equatorial right-ascension arc to all natal bodies.
 
     SYMBOLIC KEY:
         - unit of life: tropical year
-        - rate type: fixed or variable, supplied by caller as ``arc_deg``
+        - rate type: fixed or variable, declared explicitly by the caller via ``rate_mode``
         - application: uniform to all bodies
         - coordinate system: equatorial right ascension
 
@@ -1211,7 +1236,7 @@ def _uniform_ra_direction(
             doctrine_family="uniform_arc",
             life_unit="tropical_year",
             ephemeris_unit="directing_arc_degree",
-            rate_mode="variable" if "Solar Arc" in chart_type else "fixed",
+            rate_mode=rate_mode,
             application_mode="uniform",
             coordinate_system="right_ascension",
             converse=chart_type.startswith("Converse "),
@@ -1220,7 +1245,7 @@ def _uniform_ra_direction(
         age_years=age_years,
         progressed_jd_ut=progressed_jd_ut,
         directed_arc_deg=arc_deg,
-        reference_body="Sun" if "Solar Arc" in chart_type else None,
+        reference_body=reference_body,
     )
     classification = _classify_computation_truth(truth)
     relation = _build_progression_relation(truth, classification)
@@ -1462,6 +1487,8 @@ def solar_arc(
         bodies=bodies,
         reader=reader,
         progressed_jd_ut=prog_jd,
+        rate_mode="variable",
+        reference_body="Sun",
     )
 
 
@@ -1496,6 +1523,8 @@ def naibod_longitude(
         bodies=bodies,
         reader=reader,
         progressed_jd_ut=natal_jd_ut,
+        rate_mode="fixed",
+        reference_body=None,
     )
 
 
@@ -1530,6 +1559,8 @@ def converse_naibod_longitude(
         bodies=bodies,
         reader=reader,
         progressed_jd_ut=natal_jd_ut,
+        rate_mode="fixed",
+        reference_body=None,
     )
 
 
@@ -1564,6 +1595,8 @@ def naibod_right_ascension(
         bodies=bodies,
         reader=reader,
         progressed_jd_ut=natal_jd_ut,
+        rate_mode="fixed",
+        reference_body=None,
     )
 
 
@@ -1598,6 +1631,159 @@ def converse_naibod_right_ascension(
         bodies=bodies,
         reader=reader,
         progressed_jd_ut=natal_jd_ut,
+        rate_mode="fixed",
+        reference_body=None,
+    )
+
+
+# ---------------------------------------------------------------------------
+# One-Degree Symbolic Directions (1.0 deg/year, ecliptic and equatorial)
+# ---------------------------------------------------------------------------
+
+def one_degree_longitude(
+    natal_jd_ut: float,
+    target_date: datetime,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    policy: ProgressionComputationPolicy | None = None,
+) -> ProgressedChart:
+    """
+    One-degree direction in ecliptic longitude: 1.0 deg per tropical year.
+
+    SYMBOLIC KEY:
+        - unit of life: tropical year
+        - rate type: fixed — exactly 1.0 deg/year (Ptolemy key)
+        - application: uniform to all bodies
+        - coordinate system: ecliptic longitude
+    """
+    if reader is None:
+        reader = get_reader()
+    resolved_policy = _resolve_policy(policy)
+
+    age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
+    arc = (age_years * resolved_policy.directions.one_degree_rate_deg_per_year) % 360.0
+    return _uniform_longitude_direction(
+        chart_type="One Degree in Longitude",
+        natal_jd_ut=natal_jd_ut,
+        target_date=target_date,
+        arc_deg=arc,
+        age_years=age_years,
+        bodies=bodies,
+        reader=reader,
+        progressed_jd_ut=natal_jd_ut,
+        rate_mode="fixed",
+        reference_body=None,
+    )
+
+
+def converse_one_degree_longitude(
+    natal_jd_ut: float,
+    target_date: datetime,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    policy: ProgressionComputationPolicy | None = None,
+) -> ProgressedChart:
+    """
+    Converse one-degree direction in ecliptic longitude: 1.0 deg per tropical
+    year applied in reverse (arc subtracted from natal positions).
+
+    SYMBOLIC KEY:
+        - unit of life: tropical year
+        - rate type: fixed — exactly 1.0 deg/year (Ptolemy key)
+        - application: uniform to all bodies (converse)
+        - coordinate system: ecliptic longitude
+    """
+    if reader is None:
+        reader = get_reader()
+    resolved_policy = _resolve_policy(policy)
+
+    age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
+    arc = (-(age_years * resolved_policy.directions.one_degree_rate_deg_per_year)) % 360.0
+    return _uniform_longitude_direction(
+        chart_type="Converse One Degree in Longitude",
+        natal_jd_ut=natal_jd_ut,
+        target_date=target_date,
+        arc_deg=arc,
+        age_years=age_years,
+        bodies=bodies,
+        reader=reader,
+        progressed_jd_ut=natal_jd_ut,
+        rate_mode="fixed",
+        reference_body=None,
+    )
+
+
+def one_degree_right_ascension(
+    natal_jd_ut: float,
+    target_date: datetime,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    policy: ProgressionComputationPolicy | None = None,
+) -> ProgressedChart:
+    """
+    One-degree direction in equatorial right ascension: 1.0 deg per tropical
+    year applied on the equator.
+
+    SYMBOLIC KEY:
+        - unit of life: tropical year
+        - rate type: fixed — exactly 1.0 deg/year (Ptolemy key)
+        - application: uniform to all bodies
+        - coordinate system: equatorial right ascension
+    """
+    if reader is None:
+        reader = get_reader()
+    resolved_policy = _resolve_policy(policy)
+
+    age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
+    arc = (age_years * resolved_policy.directions.one_degree_rate_deg_per_year) % 360.0
+    return _uniform_ra_direction(
+        chart_type="One Degree in Right Ascension",
+        natal_jd_ut=natal_jd_ut,
+        target_date=target_date,
+        arc_deg=arc,
+        age_years=age_years,
+        bodies=bodies,
+        reader=reader,
+        progressed_jd_ut=natal_jd_ut,
+        rate_mode="fixed",
+        reference_body=None,
+    )
+
+
+def converse_one_degree_right_ascension(
+    natal_jd_ut: float,
+    target_date: datetime,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    policy: ProgressionComputationPolicy | None = None,
+) -> ProgressedChart:
+    """
+    Converse one-degree direction in equatorial right ascension: 1.0 deg per
+    tropical year applied in reverse on the equator.
+
+    SYMBOLIC KEY:
+        - unit of life: tropical year
+        - rate type: fixed — exactly 1.0 deg/year (Ptolemy key)
+        - application: uniform to all bodies (converse)
+        - coordinate system: equatorial right ascension
+    """
+    if reader is None:
+        reader = get_reader()
+    resolved_policy = _resolve_policy(policy)
+
+    age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
+    arc = (-(age_years * resolved_policy.directions.one_degree_rate_deg_per_year)) % 360.0
+    return _uniform_ra_direction(
+        chart_type="Converse One Degree in Right Ascension",
+        natal_jd_ut=natal_jd_ut,
+        target_date=target_date,
+        arc_deg=arc,
+        age_years=age_years,
+        bodies=bodies,
+        reader=reader,
+        progressed_jd_ut=natal_jd_ut,
+        rate_mode="fixed",
+        reference_body=None,
     )
 
 
@@ -1640,6 +1826,8 @@ def solar_arc_right_ascension(
         bodies=bodies,
         reader=reader,
         progressed_jd_ut=prog_jd,
+        rate_mode="variable",
+        reference_body="Sun",
     )
 
 
@@ -1659,31 +1847,37 @@ def converse_solar_arc_right_ascension(
         - rate type: variable, measured from natal Sun RA to progressed Sun RA
         - application: uniform to all bodies
         - coordinate system: equatorial right ascension
+
+    The forward RA arc is derived here directly (Sun positions at natal and
+    progressed JD, obliquities, RA conversion) rather than by calling
+    solar_arc_right_ascension(), which would compute all natal body positions
+    only to discard them.
     """
     if reader is None:
         reader = get_reader()
     resolved_policy = _resolve_policy(policy)
 
-    forward = solar_arc_right_ascension(
-        natal_jd_ut,
-        target_date,
-        bodies=bodies,
-        reader=reader,
-        policy=resolved_policy,
-    )
+    age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
+    prog_jd = natal_jd_ut + age_years
+    eps_natal = true_obliquity(ut_to_tt(natal_jd_ut))
+    eps_prog = true_obliquity(ut_to_tt(prog_jd))
+    natal_sun = planet_at(Body.SUN, natal_jd_ut, reader=reader)
+    prog_sun = planet_at(Body.SUN, prog_jd, reader=reader)
+    natal_ra, _ = ecliptic_to_equatorial(natal_sun.longitude, natal_sun.latitude, eps_natal)
+    prog_ra, _ = ecliptic_to_equatorial(prog_sun.longitude, prog_sun.latitude, eps_prog)
+    forward_arc = (prog_ra - natal_ra) % 360.0
+
     return _uniform_ra_direction(
         chart_type="Converse Solar Arc in Right Ascension",
         natal_jd_ut=natal_jd_ut,
         target_date=target_date,
-        arc_deg=(-forward.solar_arc_deg) % 360.0,
-        age_years=forward.computation_truth.age_years if forward.computation_truth is not None else _age_years(
-            natal_jd_ut,
-            target_date,
-            resolved_policy.time_key.tropical_year_days,
-        ),
+        arc_deg=(-forward_arc) % 360.0,
+        age_years=age_years,
         bodies=bodies,
         reader=reader,
-        progressed_jd_ut=forward.progressed_jd_ut,
+        progressed_jd_ut=prog_jd,
+        rate_mode="variable",
+        reference_body="Sun",
     )
 
 
@@ -1966,6 +2160,8 @@ def converse_solar_arc(
         bodies=bodies,
         reader=reader,
         progressed_jd_ut=prog_jd,
+        rate_mode="variable",
+        reference_body="Sun",
     )
 
 
@@ -2009,6 +2205,53 @@ def ascendant_arc(
         bodies=bodies,
         reader=reader,
         progressed_jd_ut=prog_jd,
+        rate_mode="variable",
+        reference_body="Ascendant",
+    )
+
+
+def converse_ascendant_arc(
+    natal_jd_ut: float,
+    target_date: datetime,
+    latitude: float,
+    longitude: float,
+    system: str | None = None,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    policy: ProgressionComputationPolicy | None = None,
+) -> ProgressedChart:
+    """
+    Converse ascendant arc: the forward Ascendant arc applied in reverse.
+
+    SYMBOLIC KEY:
+        - unit of ephemeris time per unit of life: one tropical year = one day
+          after birth for the progressed Ascendant reference date
+        - rate type: variable, measured from natal Ascendant to progressed Ascendant
+        - application: uniform to all bodies (converse — arc subtracted)
+        - coordinate system: ecliptic longitude
+    """
+    if reader is None:
+        reader = get_reader()
+    resolved_policy = _resolve_policy(policy)
+    _validate_house_frame_inputs(latitude, longitude, system)
+
+    age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
+    prog_jd = natal_jd_ut + age_years
+    resolved_system = resolved_policy.house_frame.default_house_system if system is None else system
+    natal_houses = calculate_houses(natal_jd_ut, latitude, longitude, system=resolved_system)
+    progressed_houses = calculate_houses(prog_jd, latitude, longitude, system=resolved_system)
+    forward_arc = (progressed_houses.asc - natal_houses.asc) % 360.0
+    return _uniform_longitude_direction(
+        chart_type="Converse Ascendant Arc Direction",
+        natal_jd_ut=natal_jd_ut,
+        target_date=target_date,
+        arc_deg=(-forward_arc) % 360.0,
+        age_years=age_years,
+        bodies=bodies,
+        reader=reader,
+        progressed_jd_ut=prog_jd,
+        rate_mode="variable",
+        reference_body="Ascendant",
     )
 
 

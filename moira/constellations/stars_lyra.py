@@ -1,5 +1,5 @@
 ﻿"""
-Lyra Constellation Oracle â€” moira/constellations/stars_lyra.py
+Lyra Constellation Oracle — moira/constellations/stars_lyra.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Lyra.
-    - LYRA_STAR_NAMES mapping (constant â†’ canonical name).
+    - LYRA_STAR_NAMES mapping (constant → canonical name).
     - lyra_star_at() dispatcher.
     - Per-star convenience functions (vega_at, sheliak_at, â€¦).
     - list_lyra_stars() / available_lyra_stars() introspection.

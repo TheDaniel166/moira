@@ -1,5 +1,5 @@
 ﻿"""
-Draco Constellation Oracle â€” moira/constellations/stars_draco.py
+Draco Constellation Oracle — moira/constellations/stars_draco.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Draco.
-    - DRACO_STAR_NAMES mapping (constant â†’ canonical name).
+    - DRACO_STAR_NAMES mapping (constant → canonical name).
     - draco_star_at() dispatcher.
     - Per-star convenience functions (thuban_at, eltanin_at, â€¦).
     - list_draco_stars() / available_draco_stars() introspection.

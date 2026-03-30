@@ -108,6 +108,7 @@ find_named_stars = stars.find_named_stars
 list_named_stars = stars.list_named_stars
 load_catalog = stars.load_catalog
 star_at = stars.star_at
+star_light_time_split = stars.star_light_time_split
 stars_by_magnitude = stars.stars_by_magnitude
 stars_near = stars.stars_near
 
@@ -256,6 +257,43 @@ def test_find_and_search_views_are_catalog_native() -> None:
     assert bright
     assert bright == sorted(bright, key=lambda star: (star.magnitude, star.name))
     assert any(star.name == "Sirius" for star in bright)
+
+
+@pytest.mark.unit
+def test_fixed_star_results_preserve_unified_merge_condition_profile() -> None:
+    star = star_at("Sirius", J2000)
+
+    assert star.condition_profile is not None
+    assert star.condition_profile.result_kind == "fixed_star"
+    assert star.condition_profile.condition_state.name == "unified_merge"
+    assert star.condition_profile.relation_kind == "catalog_merge"
+    assert star.condition_profile.relation_basis == "sovereign_registry"
+    assert star.condition_profile.source_kind == "sovereign"
+
+
+@pytest.mark.unit
+def test_fixed_star_search_surfaces_preserve_condition_profile() -> None:
+    nearby = stars_near(104.08, J2000, orb=0.2)
+    bright = stars_by_magnitude(1.0, J2000)
+
+    assert nearby
+    assert bright
+    assert all(star.condition_profile is not None for star in nearby[:3])
+    assert all(star.condition_profile is not None for star in bright[:3])
+    assert all(star.condition_profile.condition_state.name == "unified_merge" for star in nearby[:3])
+    assert all(star.condition_profile.condition_state.name == "unified_merge" for star in bright[:3])
+
+
+@pytest.mark.unit
+def test_star_light_time_split_preserves_condition_profile_on_both_positions() -> None:
+    observed, true = star_light_time_split("Sirius", J2000)
+
+    assert observed.condition_profile is not None
+    assert true.condition_profile is not None
+    assert observed.condition_profile.condition_state.name == "unified_merge"
+    assert true.condition_profile.condition_state.name == "unified_merge"
+    assert observed.condition_profile.relation_kind == "catalog_merge"
+    assert true.condition_profile.relation_kind == "catalog_merge"
 
 
 @pytest.mark.unit

@@ -1,5 +1,5 @@
 ﻿"""
-Oracle of Star Groups â€” moira/fixed_star_groups.py
+Oracle of Star Groups — moira/fixed_star_groups.py
 
 Archetype: Oracle
 Purpose: Provides named constants, group tuples, and per-star position
@@ -11,7 +11,7 @@ Boundary declaration
 Owns:
     - Named string constants for ~50 individual fixed stars.
     - Group tuples: PLEIADES, HYADES, PTOLEMY_STARS.
-    - FIXED_STAR_NAMES master mapping (constant â†’ canonical name).
+    - FIXED_STAR_NAMES master mapping (constant → canonical name).
     - Per-star convenience functions (algol_at, sirius_at, vega_at, â€¦).
     - fixed_star_group_at() dispatcher.
     - list_fixed_stars(), available_fixed_stars() and per-group introspection

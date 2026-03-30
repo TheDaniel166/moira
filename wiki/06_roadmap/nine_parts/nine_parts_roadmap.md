@@ -11,8 +11,9 @@ It assumes the companion doctrine document exists:
 
 This is an **additive roadmap**, not a refactor-first roadmap. The lot engine
 in `moira/lots.py` already provides the full arc-formula infrastructure. The
-work is scoped to: cataloguing the nine Abu Ma'shar lots as a named set,
-adding the two missing entries, and providing a dedicated query surface.
+work is scoped to: cataloguing the seven externally evidenced Abu Ma'shar lots
+as the historical core, preserving the Sword and Node as admitted extensions,
+and providing a dedicated query surface.
 
 The Vedic Navamsha is treated as a separate implementation track within this
 same roadmap because it shares only the number nine with the Abu Ma'shar lots
@@ -72,6 +73,13 @@ The lot engine does not need to change. The Nine Parts work is:
 
 
 ## Truth Domain Axes
+
+Historical scope note:
+
+- The seven planetary lots are the evidenced Abu Ma'shar core supported by the
+  currently secured Dykes-facing source trail.
+- `The Sword` and `The Node` are retained as admitted extensions within the
+  same computational family, but not claimed at the same evidentiary level.
 
 ### 1. Technique Family
 

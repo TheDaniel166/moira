@@ -1,5 +1,5 @@
 ﻿"""
-Virgo Constellation Oracle â€” moira/constellations/stars_virgo.py
+Virgo Constellation Oracle — moira/constellations/stars_virgo.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Virgo.
-    - VIRGO_STAR_NAMES mapping (constant â†’ canonical name).
+    - VIRGO_STAR_NAMES mapping (constant → canonical name).
     - virgo_star_at() dispatcher.
     - Per-star convenience functions (spica_at, zavijava_at, â€¦).
     - list_virgo_stars() / available_virgo_stars() introspection.

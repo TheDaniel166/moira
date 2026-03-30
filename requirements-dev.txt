@@ -17,6 +17,8 @@ twine>=6.0
 
 # Astronomy oracle / standards cross-checks
 pyerfa>=2.0
+astropy>=6.0
+scipy>=1.14
 
 # Property-based testing
 hypothesis>=6.0

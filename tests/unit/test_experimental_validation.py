@@ -98,6 +98,8 @@ class TestGalactic:
     b=+90°.  These are foundational IAU 1958 definition points.
     """
 
+    JD_J2000 = 2451545.0
+
     def test_gc_maps_to_galactic_origin(self):
         l, b = equatorial_to_galactic(_GC_RA, _GC_DEC)
         assert_angle_close(l, 0.0, tol=0.01)
@@ -124,8 +126,8 @@ class TestGalactic:
     def test_ecliptic_round_trip(self):
         obliquity = 23.4393
         for lon, lat in [(0.0, 0.0), (90.0, 5.0), (180.0, -5.0), (270.0, 0.0)]:
-            l, b = ecliptic_to_galactic(lon, lat, obliquity)
-            lon2, lat2 = galactic_to_ecliptic(l, b, obliquity)
+            l, b = ecliptic_to_galactic(lon, lat, obliquity, jd_tt=self.JD_J2000)
+            lon2, lat2 = galactic_to_ecliptic(l, b, obliquity, jd_tt=self.JD_J2000)
             assert_angle_close(lon2, lon, tol=1e-6, msg=f"lon={lon}")
             assert abs(lat2 - lat) < 1e-6
 
@@ -137,7 +139,7 @@ class TestGalactic:
                 assert -90.0 <= b <= 90.0
 
     def test_reference_points_returns_five_keys(self):
-        pts = galactic_reference_points(23.4393)
+        pts = galactic_reference_points(23.4393, jd_tt=self.JD_J2000)
         assert set(pts.keys()) == {
             "Galactic Center", "Galactic Anti-Center",
             "North Galactic Pole", "South Galactic Pole",
@@ -145,7 +147,7 @@ class TestGalactic:
         }
 
     def test_reference_points_in_valid_range(self):
-        pts = galactic_reference_points(23.4393)
+        pts = galactic_reference_points(23.4393, jd_tt=self.JD_J2000)
         for _name, (lon, lat) in pts.items():
             assert isinstance(lon, float)
             assert isinstance(lat, float)
@@ -153,12 +155,12 @@ class TestGalactic:
             assert -90.0 <= lat <= 90.0
 
     def test_gc_ecliptic_near_sagittarius(self):
-        pts = galactic_reference_points(23.4393)
+        pts = galactic_reference_points(23.4393, jd_tt=self.JD_J2000)
         gc_lon, _ = pts["Galactic Center"]
         assert 260.0 < gc_lon < 270.0
 
     def test_anti_center_opposite_gc(self):
-        pts = galactic_reference_points(23.4393)
+        pts = galactic_reference_points(23.4393, jd_tt=self.JD_J2000)
         gc_lon, _ = pts["Galactic Center"]
         ac_lon, _ = pts["Galactic Anti-Center"]
         assert_angle_close(ac_lon, (gc_lon + 180.0) % 360.0, tol=0.5)

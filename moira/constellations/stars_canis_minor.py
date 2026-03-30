@@ -1,5 +1,5 @@
 ﻿"""
-Canis Minor Constellation Oracle â€” moira/constellations/stars_canis_minor.py
+Canis Minor Constellation Oracle — moira/constellations/stars_canis_minor.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Canis Minor.
-    - CANIS_MINOR_STAR_NAMES mapping (constant â†’ canonical name).
+    - CANIS_MINOR_STAR_NAMES mapping (constant → canonical name).
     - canis_minor_star_at() dispatcher.
     - Per-star convenience functions (procyon_at, gomeisa_at).
     - list_canis_minor_stars() / available_canis_minor_stars() introspection.

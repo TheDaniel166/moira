@@ -16,8 +16,9 @@ Public surface:
 Import-time side effects: None
 
 External dependency assumptions:
-    - scipy.interpolate.UnivariateSpline is optional; if unavailable the
-      residual spline component falls back to zero with a fixed uncertainty.
+    - scipy.interpolate.UnivariateSpline is required for the modern-era
+      residual spline. The hybrid ΔT model must not silently degrade when
+      this dependency is absent.
     - Data files under moira/data/ (delta_t_hpiers_2016.txt,
       grace_lod_contribution.txt, core_angular_momentum.txt) are loaded
       lazily on first call via @cache decorated loaders; missing files are
@@ -26,8 +27,12 @@ External dependency assumptions:
 
 import math
 import statistics
+from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
+
+from .constants import JULIAN_YEAR
+from .julian import julian_day
 
 __all__ = [
     "TIDAL_COEFF",
@@ -51,13 +56,40 @@ REFERENCE_YEAR: float = 2026.0
 
 _CORE_COVERAGE_START: float = 1840.0
 _CORE_DECORRELATION_YEARS: float = 10.0
-_RESIDUAL_FIT_START: float = 1962.0
-_RESIDUAL_TAPER_START: float = 2021.0
-_RESIDUAL_TAPER_END: float = 2024.0
+_RESIDUAL_FIT_START: float = 1962.5
+_RESIDUAL_TAPER_START: float = 2021.5
+_RESIDUAL_TAPER_END: float = 2024.5
 _GIA_COEFF_SIGMA: float = 0.5
 _CRYO_TREND_SIGMA: float = 0.002
 _CORE_HISTORICAL_SIGMA: float = 0.3
 _RESIDUAL_FUTURE_RMS_FALLBACK: float = 0.4
+
+
+def _require_univariate_spline() -> type:
+    """
+    Return scipy's UnivariateSpline or raise a hard runtime error.
+
+    The residual spline is not optional for Moira's asserted hybrid ΔT model.
+    If scipy is missing, callers must see a clear failure instead of a silent
+    fallback to an incomplete model.
+    """
+    try:
+        from scipy.interpolate import UnivariateSpline
+    except ImportError as exc:
+        raise RuntimeError(
+            "delta_t_hybrid requires scipy.interpolate.UnivariateSpline. "
+            "Install Moira runtime dependencies to enable the residual spline."
+        ) from exc
+    return UnivariateSpline
+
+
+@dataclass(frozen=True, slots=True)
+class _ResidualSplineFit:
+    """Internal vessel for the residual spline plus its diagnostics."""
+    spline: object | None
+    cv_rms: float
+    in_sample_rms: float
+    knot_count: int
 
 
 @cache
@@ -252,11 +284,44 @@ def _lod_series_to_delta_t(
     for i in range(1, len(series)):
         y0, lod0 = series[i - 1]
         y1, lod1 = series[i]
-        dt_days = (y1 - y0) * 365.25
+        dt_days = _series_epoch_delta_days(y0, y1)
         avg_lod_ms = ((lod0 - mean_lod) + (lod1 - mean_lod)) / 2.0
         cumulative += avg_lod_ms * dt_days / 86400.0
         result.append((y1, cumulative))
     return tuple(result)
+
+
+def _series_epoch_delta_days(year0: float, year1: float) -> float:
+    """
+    Return the exact day spacing between two series epochs when available.
+
+    The core LOD file declares annual means at ``calendar year + 0.5``
+    (mid-year). For those epochs we compute the true midpoint-to-midpoint span
+    from calendar-year boundaries, so leap years propagate into the integral.
+
+    For any other year coordinates we fall back to a uniform Julian-year scale.
+    """
+    jd0 = _annual_mean_midyear_jd(year0)
+    jd1 = _annual_mean_midyear_jd(year1)
+    if jd0 is not None and jd1 is not None:
+        return jd1 - jd0
+    return (year1 - year0) * JULIAN_YEAR
+
+
+def _annual_mean_midyear_jd(year: float) -> float | None:
+    """
+    Return the JD of a calendar-year midpoint for epochs encoded as ``Y + 0.5``.
+
+    This matches the convention documented in ``core_angular_momentum.txt``.
+    Returns ``None`` when the year value does not match that annual-mean format.
+    """
+    whole_year = math.floor(year)
+    frac = year - whole_year
+    if abs(frac - 0.5) > 1e-9:
+        return None
+    start = julian_day(int(whole_year), 1, 1, 0.0)
+    end = julian_day(int(whole_year) + 1, 1, 1, 0.0)
+    return (start + end) / 2.0
 
 
 @cache
@@ -345,25 +410,23 @@ def _cosine_taper(year: float) -> float:
 
 
 @cache
-def _fitted_residual_spline() -> tuple[object, float]:
+def _fitted_residual_spline() -> _ResidualSplineFit:
     """
     Fit a smoothing spline to IERS_measured − (secular + core + cryo) over
     the 1962–taper-end window.
 
-    Returns (spline, cv_rms). spline is None if scipy is unavailable or
-    there is insufficient data; cv_rms falls back to _RESIDUAL_FUTURE_RMS_FALLBACK.
+    Returns the spline plus named diagnostics. The spline dependency is
+    mandatory for the asserted hybrid ΔT model and will raise if scipy is
+    unavailable.
 
     Procedure (per DELTA_T_HYBRID_MODEL.md section 3, Phase 4):
     1. Compute raw residual at each annual IERS Bulletin B point.
     2. 3-year centred pre-smooth.
     3. Apply cosine taper over 2021–2024.
     4. Fit UnivariateSpline with k=3, s=N, ext=1.
-    5. LOO-CV diagnostic: target 0.1 < cv_rms < 0.4.
+    5. Interior LOO-CV diagnostic on non-boundary annual-mean epochs.
     """
-    try:
-        from scipy.interpolate import UnivariateSpline
-    except ImportError:
-        return None, _RESIDUAL_FUTURE_RMS_FALLBACK
+    UnivariateSpline = _require_univariate_spline()
 
     from moira.julian import delta_t as _iers_delta_t
 
@@ -379,7 +442,12 @@ def _fitted_residual_spline() -> tuple[object, float]:
         y += 1.0
 
     if len(years_raw) < 5:
-        return None, _RESIDUAL_FUTURE_RMS_FALLBACK
+        return _ResidualSplineFit(
+            spline=None,
+            cv_rms=_RESIDUAL_FUTURE_RMS_FALLBACK,
+            in_sample_rms=_RESIDUAL_FUTURE_RMS_FALLBACK,
+            knot_count=0,
+        )
 
     _, res_smooth = _three_year_smooth(years_raw, residuals_raw)
 
@@ -396,13 +464,13 @@ def _fitted_residual_spline() -> tuple[object, float]:
         spline = UnivariateSpline(years_raw, res_smooth, k=3, s=s_factor, ext=1)
 
     loo_errors: list[float] = []
-    for i in range(n):
+    for i in range(1, n - 1):
         ys_loo = years_raw[:i] + years_raw[i + 1 :]
         rs_loo = res_smooth[:i] + res_smooth[i + 1 :]
         if len(ys_loo) < 5:
             continue
         try:
-            sp_loo = UnivariateSpline(ys_loo, rs_loo, k=3, s=float(len(ys_loo)), ext=1)
+            sp_loo = UnivariateSpline(ys_loo, rs_loo, k=3, s=s_factor, ext=1)
             loo_errors.append((res_smooth[i] - float(sp_loo(years_raw[i]))) ** 2)
         except Exception:
             pass
@@ -421,15 +489,20 @@ def _fitted_residual_spline() -> tuple[object, float]:
     ]
     in_sample_rms = math.sqrt(sum(in_sample_errors) / n) if in_sample_errors else _RESIDUAL_FUTURE_RMS_FALLBACK
 
-    return spline, in_sample_rms
+    return _ResidualSplineFit(
+        spline=spline,
+        cv_rms=cv_rms,
+        in_sample_rms=in_sample_rms,
+        knot_count=len(spline.get_knots()),
+    )
 
 
 def _residual_at(year: float) -> float:
     """Evaluate the fitted residual spline at the given decimal year."""
-    spline, _ = _fitted_residual_spline()
-    if spline is None:
+    fit = _fitted_residual_spline()
+    if fit.spline is None:
         return 0.0
-    return float(spline(year))
+    return float(fit.spline(year))
 
 
 def delta_t_hybrid(year: float) -> float:
@@ -504,8 +577,8 @@ def delta_t_hybrid_uncertainty(year: float) -> float:
         _, core_std = _core_recent_stats()
         sigma_core = core_std if core_std > 0.0 else _CORE_HISTORICAL_SIGMA
 
-    _, fit_rms = _fitted_residual_spline()
-    sigma_residual = fit_rms * 0.1 if y <= REFERENCE_YEAR else fit_rms
+    fit = _fitted_residual_spline()
+    sigma_residual = fit.in_sample_rms * 0.1 if y <= REFERENCE_YEAR else fit.in_sample_rms
 
     return math.sqrt(
         sigma_tidal ** 2

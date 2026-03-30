@@ -1,5 +1,5 @@
 ﻿"""
-Scorpius Constellation Oracle â€” moira/constellations/stars_scorpius.py
+Scorpius Constellation Oracle — moira/constellations/stars_scorpius.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Scorpius.
-    - SCORPIUS_STAR_NAMES mapping (constant â†’ canonical name).
+    - SCORPIUS_STAR_NAMES mapping (constant → canonical name).
     - scorpius_star_at() dispatcher.
     - Per-star convenience functions (antares_at, graffias_at, â€¦).
     - list_scorpius_stars() / available_scorpius_stars() introspection.

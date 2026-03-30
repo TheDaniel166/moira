@@ -1,5 +1,5 @@
 ﻿"""
-Andromeda Constellation Oracle â€” moira/constellations/stars_andromeda.py
+Andromeda Constellation Oracle — moira/constellations/stars_andromeda.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Andromeda.
-    - ANDROMEDA_STAR_NAMES mapping (constant â†’ canonical name).
+    - ANDROMEDA_STAR_NAMES mapping (constant → canonical name).
     - andromeda_star_at() dispatcher.
     - Per-star convenience functions (alpheratz_at, mirach_at, â€¦).
     - list_andromeda_stars() / available_andromeda_stars() introspection.

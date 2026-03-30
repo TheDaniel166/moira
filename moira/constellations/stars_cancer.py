@@ -1,5 +1,5 @@
 ﻿"""
-Cancer Constellation Oracle â€” moira/constellations/stars_cancer.py
+Cancer Constellation Oracle — moira/constellations/stars_cancer.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Cancer.
-    - CANCER_STAR_NAMES mapping (constant â†’ canonical name).
+    - CANCER_STAR_NAMES mapping (constant → canonical name).
     - cancer_star_at() dispatcher.
     - Per-star convenience functions (acubens_at, al_tarf_at, â€¦).
     - list_cancer_stars() / available_cancer_stars() introspection.

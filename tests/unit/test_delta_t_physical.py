@@ -1,6 +1,8 @@
 import math
+import builtins
 import pytest
 
+from moira.constants import JULIAN_YEAR
 from moira.delta_t_physical import (
     TIDAL_COEFF,
     GIA_COEFF,
@@ -13,10 +15,13 @@ from moira.delta_t_physical import (
     delta_t_hybrid_uncertainty,
     _smh2016_lookup,
     _lod_series_to_delta_t,
+    _series_epoch_delta_days,
+    _annual_mean_midyear_jd,
     _cosine_taper,
     _load_grace_series,
     _load_core_series,
     _core_recent_stats,
+    _require_univariate_spline,
 )
 
 
@@ -98,6 +103,22 @@ def test_smh2016_lookup_interpolates_between_table_entries() -> None:
     assert min(lo, hi) <= mid <= max(lo, hi)
 
 
+def test_require_univariate_spline_raises_clearly_when_scipy_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    real_import = builtins.__import__
+
+    def _fake_import(name, globals=None, locals=None, fromlist=(), level=0):
+        if name == "scipy.interpolate":
+            raise ImportError("mock missing scipy")
+        return real_import(name, globals, locals, fromlist, level)
+
+    monkeypatch.setattr(builtins, "__import__", _fake_import)
+
+    with pytest.raises(RuntimeError, match="delta_t_hybrid requires scipy.interpolate.UnivariateSpline"):
+        _require_univariate_spline()
+
+
 # ---------------------------------------------------------------------------
 # _lod_series_to_delta_t
 # ---------------------------------------------------------------------------
@@ -130,10 +151,27 @@ def test_lod_to_delta_t_integration_formula() -> None:
     series = ((2000.0, 1.0), (2001.0, 3.0))
     result = _lod_series_to_delta_t(series)
     mean_lod = 2.0
-    dt_days = 1.0 * 365.25
+    dt_days = 1.0 * JULIAN_YEAR
     avg_anomaly = ((1.0 - mean_lod) + (3.0 - mean_lod)) / 2.0
     expected = avg_anomaly * dt_days / 86400.0
     assert abs(result[1][1] - expected) < 1e-10
+
+
+def test_annual_mean_midyear_jd_uses_true_calendar_midpoint() -> None:
+    jd_2000 = _annual_mean_midyear_jd(2000.5)
+    jd_2001 = _annual_mean_midyear_jd(2001.5)
+
+    assert jd_2000 is not None
+    assert jd_2001 is not None
+    assert jd_2001 - jd_2000 == pytest.approx(365.5, abs=1e-12)
+
+
+def test_series_epoch_delta_days_uses_midyear_spacing_when_available() -> None:
+    assert _series_epoch_delta_days(2000.5, 2001.5) == pytest.approx(365.5, abs=1e-12)
+
+
+def test_series_epoch_delta_days_falls_back_to_julian_year_for_non_midyear_series() -> None:
+    assert _series_epoch_delta_days(2000.0, 2001.0) == pytest.approx(JULIAN_YEAR, abs=1e-12)
 
 
 # ---------------------------------------------------------------------------
@@ -142,16 +180,16 @@ def test_lod_to_delta_t_integration_formula() -> None:
 
 def test_cosine_taper_is_one_before_window() -> None:
     assert _cosine_taper(2010.0) == 1.0
-    assert _cosine_taper(2021.0) == 1.0
+    assert _cosine_taper(2021.5) == 1.0
 
 
 def test_cosine_taper_is_zero_at_and_after_end() -> None:
-    assert _cosine_taper(2024.0) == 0.0
+    assert _cosine_taper(2024.5) == 0.0
     assert _cosine_taper(2030.0) == 0.0
 
 
 def test_cosine_taper_is_half_at_midpoint() -> None:
-    mid = (2021.0 + 2024.0) / 2.0
+    mid = (2021.5 + 2024.5) / 2.0
     assert abs(_cosine_taper(mid) - 0.5) < 1e-12
 
 

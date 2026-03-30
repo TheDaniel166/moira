@@ -1,5 +1,5 @@
 ﻿"""
-Crater Constellation Oracle â€” moira/constellations/stars_crater.py
+Crater Constellation Oracle — moira/constellations/stars_crater.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Crater.
-    - CRATER_STAR_NAMES mapping (constant â†’ canonical name).
+    - CRATER_STAR_NAMES mapping (constant → canonical name).
     - crater_star_at() dispatcher.
     - Per-star convenience functions (alkes_at, alsharasif_at, labrum_at).
     - list_crater_stars() / available_crater_stars() introspection.

@@ -1,5 +1,5 @@
 ﻿"""
-Pisces Constellation Oracle â€” moira/constellations/stars_pisces.py
+Pisces Constellation Oracle — moira/constellations/stars_pisces.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Pisces.
-    - PISCES_STAR_NAMES mapping (constant â†’ canonical name).
+    - PISCES_STAR_NAMES mapping (constant → canonical name).
     - pisces_star_at() dispatcher.
     - Per-star convenience functions (alrischa_at, fum_alsamakah_at, â€¦).
     - list_pisces_stars() / available_pisces_stars() introspection.

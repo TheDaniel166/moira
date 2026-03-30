@@ -1,5 +1,5 @@
 ﻿"""
-Oracle of the Behenian Stars â€” moira/behenian_stars.py
+Oracle of the Behenian Stars — moira/behenian_stars.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for the
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each of the 15 Behenian stars.
-    - BEHENIAN_STAR_NAMES mapping (constant â†’ canonical name).
+    - BEHENIAN_STAR_NAMES mapping (constant → canonical name).
     - Per-star convenience functions (algol_at, sirius_at, â€¦).
     - behenian_star_at() dispatcher.
     - list_behenian_stars() / available_behenian_stars() introspection.

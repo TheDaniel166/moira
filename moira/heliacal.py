@@ -1,8 +1,8 @@
 ﻿"""
-Moira â€” heliacal.py
+Moira — heliacal.py
 Heliacal and Visibility Doctrine Layer
 
-Archetype: Design vessel module (Phase 3 â€” Defer.Design + Defer.Validation)
+Archetype: Design vessel module (Phase 3 — Defer.Design + Defer.Validation)
 
 Purpose
 -------
@@ -10,7 +10,7 @@ Provides the typed doctrine surfaces for heliacal phenomena (first/last
 visibility, acronychal rising/setting, cosmic rising/setting) and the
 observer visibility model that governs them.
 
-This module is a design vessel â€” it defines the event kinds, policy surfaces,
+This module is a design vessel — it defines the event kinds, policy surfaces,
 and visibility model types that will govern a future heliacal computation
 subsystem.  No event computation is present yet.
 
@@ -49,17 +49,17 @@ Constitution entry
     - Results must be in Julian Day (UT1), never a formatted string.
 
     Validation plan:
-    - Build a corpus of â‰¥20 historical heliacal events from published
+    - Build a corpus of ≥20 historical heliacal events from published
       Babylonian and modern ephemeris sources before the surface goes public.
-    - Each event must be reproducible within Â±0.25 day.
+    - Each event must be reproducible within ±0.25 day.
     - Star-anchored events must use true stellar positions from the Moira
       fixed-star catalog, not Swiss catalog offsets.
 
 Public surface
 --------------
-    HeliacalEventKind   â€” enum of all supported heliacal event types
-    VisibilityModel     â€” typed observer + atmosphere vessel
-    HeliacalPolicy      â€” typed control policy for heliacal computation
+    HeliacalEventKind   — enum of all supported heliacal event types
+    VisibilityModel     — typed observer + atmosphere vessel
+    HeliacalPolicy      — typed control policy for heliacal computation
 
 Import-time side effects: None
 """
@@ -100,22 +100,22 @@ class HeliacalEventKind(str, Enum):
     around the Sun:
 
     Heliacal phenomena (eastern sky near sunrise):
-        HELIACAL_RISING      â€” body first visible in the east before sunrise
+        HELIACAL_RISING      — body first visible in the east before sunrise
                                 after a period of solar invisibility (the
                                 classical *first appearance*, *acronychal
                                 rising* in some traditions).
-        HELIACAL_SETTING     â€” body last visible in the east before sunrise
+        HELIACAL_SETTING     — body last visible in the east before sunrise
                                 before solar invisibility begins (*last
                                 appearance*, eastern sky).
 
     Acronychal phenomena (western sky near sunset):
-        ACRONYCHAL_RISING    â€” body first visible in the west after sunset.
-        ACRONYCHAL_SETTING   â€” body last visible in the west after sunset.
+        ACRONYCHAL_RISING    — body first visible in the west after sunset.
+        ACRONYCHAL_SETTING   — body last visible in the west after sunset.
 
     Cosmic phenomena (astronomical twilight boundary):
-        COSMIC_RISING        â€” body rises exactly at true astronomical
+        COSMIC_RISING        — body rises exactly at true astronomical
                                 dawn (no refraction or disc corrections).
-        COSMIC_SETTING       â€” body sets exactly at true astronomical
+        COSMIC_SETTING       — body sets exactly at true astronomical
                                 dusk.
 
     Implementation note: these map to the Swiss SE_HELIACAL_RISING etc.
@@ -146,15 +146,15 @@ class VisibilityModel:
     --------
     Visibility depends on three layers:
 
-    1. Observer physiology â€” naked-eye limiting magnitude (``limiting_mag``).
+    1. Observer physiology — naked-eye limiting magnitude (``limiting_mag``).
        The standard value 6.5 represents an ideal dark-sky observer.
        Light-polluted sites typically range from 4.0 to 5.5.
 
-    2. Atmospheric extinction â€” how much light is absorbed per unit airmass.
+    2. Atmospheric extinction — how much light is absorbed per unit airmass.
        Encoded as ``extinction_coefficient`` (k in magnitudes/airmass).
-       Clear mountain sky â‰ˆ 0.20; average site â‰ˆ 0.25; hazy â‰ˆ 0.35.
+       Clear mountain sky ≈ 0.20; average site ≈ 0.25; hazy ≈ 0.35.
 
-    3. Sky background â€” the brightness of the sky at the horizon that a
+    3. Sky background — the brightness of the sky at the horizon that a
        body must exceed to be seen.  The ``horizon_altitude_deg`` field
        defines how far above the geometric horizon the effective visibility
        horizon lies, accounting for local obstructions.
@@ -170,7 +170,7 @@ class VisibilityModel:
             (magnitudes/airmass).  Default 0.25 (average site).
         horizon_altitude_deg: Effective visibility horizon altitude above
             the geometric horizon (degrees).  Default 0.0.
-        temperature_c: Ambient temperature (Â°C) for refraction.  Default 10.
+        temperature_c: Ambient temperature (°C) for refraction.  Default 10.
         pressure_mbar: Atmospheric pressure (mbar) for refraction.
             Default 1013.25 (sea level ISA).
         relative_humidity: Relative humidity [0.0, 1.0] for extended
@@ -213,16 +213,16 @@ class HeliacalPolicy:
     --------
     The policy governs three independent doctrinal choices:
 
-    1. Optical aid â€” whether the observer uses naked eye, binoculars, or a
+    1. Optical aid — whether the observer uses naked eye, binoculars, or a
        telescope.  Optical aid changes the effective ``limiting_magnitude``
        of the observer and the angular disc threshold.
 
-    2. Atmospheric details â€” whether the full extended refraction model
+    2. Atmospheric details — whether the full extended refraction model
        (humidity, wavelength) is applied, or the standard two-parameter
        (pressure, temperature) model is used.  The extended model is more
        accurate but requires additional observer inputs.
 
-    3. Body type â€” whether the target is a star, planet, or the Moon.
+    3. Body type — whether the target is a star, planet, or the Moon.
        Some visibility criteria differ (e.g. phase angle for planets,
        disc threshold for the Moon).
 
@@ -236,9 +236,9 @@ class HeliacalPolicy:
             observer and atmospheric parameters.  Default is standard
             dark-sky conditions.
 
-    Design note: ``body_type`` is intentionally not a field here â€” it is
-    inferred from the body name at call time (star â†’ catalog lookup;
-    planet â†’ DE441; Moon â†’ lunar orbit).  Forcing callers to specify it
+    Design note: ``body_type`` is intentionally not a field here — it is
+    inferred from the body name at call time (star → catalog lookup;
+    planet → DE441; Moon → lunar orbit).  Forcing callers to specify it
     would be Swiss-style API clutter.
     """
     optical_aid:               str            = 'naked_eye'
@@ -271,7 +271,7 @@ _HELIACAL_PLANETS: frozenset[str] = frozenset({
     Body.JUPITER, Body.SATURN, Body.URANUS, Body.NEPTUNE,
 })
 
-# Minimum elongation (Â°) from the Sun before bothering to test visibility.
+# Minimum elongation (°) from the Sun before bothering to test visibility.
 # Below this the planet is lost in the solar glare regardless of magnitude.
 _ELONG_MIN: float = 5.0
 
@@ -286,7 +286,7 @@ def _signed_elongation(body: str, jd: float) -> float:
 
     Positive = east of Sun (evening star).
     Negative = west of Sun (morning star).
-    Range: (âˆ’180, +180].
+    Range: (−180, +180].
     """
     from .planets import planet_at
     p = planet_at(body, jd)
@@ -352,9 +352,9 @@ def _find_sun_at_alt(
     Parameters
     ----------
     jd_midnight : JD of the midnight that begins the civil day being searched.
-    morning     : True  â†’ search the morning half [midnight, noon].
-                  False â†’ search the evening half [noon, next-midnight].
-    target_alt  : Target solar altitude (negative for twilight, e.g. âˆ’12.0).
+    morning     : True  → search the morning half [midnight, noon].
+                  False → search the evening half [noon, next-midnight].
+    target_alt  : Target solar altitude (negative for twilight, e.g. −12.0).
 
     Returns None if no crossing exists (polar day/night, or wrong half-day).
     """
@@ -449,8 +449,8 @@ class PlanetHeliacalEvent:
     kind : HeliacalEventKind
         The event type.
     jd_ut : float
-        Julian Day (UT1) of the event â€” the moment when the Sun's altitude
-        equals ``âˆ’arcus_visionis`` (the visibility threshold crossing).
+        Julian Day (UT1) of the event — the moment when the Sun's altitude
+        equals ``−arcus_visionis`` (the visibility threshold crossing).
     elongation_deg : float
         Signed elongation from the Sun at the event day.
         Negative = west of Sun (morning sky).
@@ -458,7 +458,7 @@ class PlanetHeliacalEvent:
     planet_altitude_deg : float
         Planet's altitude above the observer's horizon at ``jd_ut``.
     sun_altitude_deg : float
-        Sun's altitude at ``jd_ut`` (equals ``âˆ’arcus_visionis`` by construction).
+        Sun's altitude at ``jd_ut`` (equals ``−arcus_visionis`` by construction).
     apparent_magnitude : float
         Planet's apparent V magnitude on the event date.
     """
@@ -488,7 +488,7 @@ def planet_heliacal_rising(
 
     The heliacal rising is the first morning when the planet is visible in
     the eastern sky before sunrise, after a period of solar invisibility.
-    This is the classical *first appearance* â€” Venus rising as the morning
+    This is the classical *first appearance* — Venus rising as the morning
     star (Lucifer / Phosphoros), or Mars/Jupiter/Saturn emerging from the
     Sun's rays.
 
@@ -516,13 +516,13 @@ def planet_heliacal_rising(
     ---------
     For each day in the search window:
 
-    1. Compute signed elongation.  Skip if â‰¥ 0Â° (planet not in morning sky)
-       or |elongation| < 5Â° (too close to Sun).
-    2. Compute the planet's apparent magnitude â†’ arcus visionis.
-    3. Find the moment when the Sun's altitude = âˆ’arcus_visionis before
+    1. Compute signed elongation.  Skip if ≥ 0° (planet not in morning sky)
+       or |elongation| < 5° (too close to Sun).
+    2. Compute the planet's apparent magnitude → arcus visionis.
+    3. Find the moment when the Sun's altitude = −arcus_visionis before
        sunrise (bisection on solar altitude).
     4. Compute planet altitude at that moment.  If planet is above the
-       visibility horizon â†’ heliacal rising.
+       visibility horizon → heliacal rising.
     """
     _validate_args(body, jd_start, lat, lon, search_days)
     policy = policy if policy is not None else HeliacalPolicy.default()
@@ -600,7 +600,7 @@ def planet_heliacal_setting(
                 jd_ev, p_alt, s_alt, mag = vis
                 last = (jd_ev, p_alt, s_alt, mag, se)
         elif last is not None and abs_se < _ELONG_MIN:
-            # Planet was visible but is now in the Sun's rays â€” heliacal setting
+            # Planet was visible but is now in the Sun's rays — heliacal setting
             jd_ev, p_alt, s_alt, mag, elong = last
             return PlanetHeliacalEvent(
                 body=body,
@@ -627,7 +627,7 @@ def planet_acronychal_rising(
     Find the next acronychal rising of a planet from ``jd_start``.
 
     The acronychal rising is the first evening when the planet is visible
-    in the western sky after sunset â€” the first appearance as an evening
+    in the western sky after sunset — the first appearance as an evening
     star.  For Venus this is the Hesperus / evening-star phase; for outer
     planets it corresponds to the first evening visibility after the planet
     has passed through the morning sky and now re-enters evening apparition.

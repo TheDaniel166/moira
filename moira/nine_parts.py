@@ -3,8 +3,9 @@ from __future__ import annotations
 """
 Moira — nine_parts.py
 The Nine Parts Engine: governs computation of Abu Ma'shar's Nine Hermetic Lots
-(the seven planetary parts plus the Part of the Sword and Part of the Node),
-collectively known as the Nine Parts.
+(the seven externally evidenced planetary parts plus the admitted extension of
+the Part of the Sword and the Part of the Node), collectively known in Moira as
+the Nine Parts.
 
 Boundary declaration
 --------------------
@@ -20,6 +21,14 @@ Doctrine basis
 Abu Ma'shar, Kitāb taḥāwil sinī al-mawālīd. Confirmed formulas and full-
 reversal rule from: Benjamin N. Dykes, Introductions to Traditional Astrology
 (Cazimi Press, 2010) and Persian Nativities Vol. II (Cazimi Press, 2010).
+
+Historical scope note
+---------------------
+The seven planetary parts (Fortune, Spirit, Love, Necessity, Courage, Victory,
+Nemesis) are treated as the externally evidenced Abu Ma'shar core. The Part of
+the Sword and the Part of the Node are retained as admitted Moira extensions
+within the same computational family, but not claimed at the same confidence
+level as the seven-part core.
 
 Night = Sun in houses 1–6 (below the horizon). Full reversal: all nine parts
 use the night formula when the chart is nocturnal. No per-lot exceptions in
@@ -42,7 +51,9 @@ Public surface
 NinePartName            — canonical Abu Ma'shar part names
 NinePartFormulaVariant  — DAY or NIGHT formula used
 NinePartDependencyKind  — DIRECT (raw planets) or DERIVED (other lots)
+NinePartHistoricalStatus — CORE_SEVEN or ADMITTED_EXTENSION
 NinePartsReversalRule   — FULL_REVERSAL (only admitted rule)
+NinePartsHistoricalScope — current doctrinal provenance scope
 NinePartsPolicy         — doctrinal configuration surface
 DEFAULT_NINE_PARTS_POLICY
 NinePartComputationTruth — preserved computational truth per part
@@ -55,7 +66,7 @@ nine_parts_abu_mashar() — main computation engine
 validate_nine_parts_output() — validation entry point
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import StrEnum
 from math import isfinite
 
@@ -71,8 +82,10 @@ __all__ = [
     "NinePartName",
     "NinePartFormulaVariant",
     "NinePartDependencyKind",
+    "NinePartHistoricalStatus",
     # Policy surface
     "NinePartsReversalRule",
+    "NinePartsHistoricalScope",
     "NinePartsPolicy",
     "DEFAULT_NINE_PARTS_POLICY",
     # Truth-preservation vessels
@@ -145,6 +158,8 @@ _LOT_DEPENDENCIES: dict[str, list[str]] = {
     "Victory":   ["Spirit"],
 }
 
+_ADMITTED_EXTENSION_PARTS: frozenset[str] = frozenset({"Sword", "Node"})
+
 
 # ---------------------------------------------------------------------------
 # Phase 2 — Classification namespaces
@@ -199,6 +214,21 @@ class NinePartDependencyKind(StrEnum):
     DERIVED = "derived"
 
 
+class NinePartHistoricalStatus(StrEnum):
+    """
+    Historical confidence status for one part within the current subsystem.
+
+    CORE_SEVEN
+        One of the seven externally evidenced planetary lots in the Abu Ma'shar
+        transmission path presently secured by Moira's doctrine.
+    ADMITTED_EXTENSION
+        A Moira-admitted extension preserved in the same computational family,
+        but not claimed at the same evidentiary level as the seven-part core.
+    """
+    CORE_SEVEN = "core_seven"
+    ADMITTED_EXTENSION = "admitted_extension"
+
+
 # ---------------------------------------------------------------------------
 # Phase 4 — Doctrine / Policy Surface
 # ---------------------------------------------------------------------------
@@ -218,6 +248,18 @@ class NinePartsReversalRule(StrEnum):
     FULL_REVERSAL = "full_reversal"
 
 
+class NinePartsHistoricalScope(StrEnum):
+    """
+    Governs the provenance stance of the subsystem's admitted lot set.
+
+    EVIDENCED_CORE_PLUS_ADMITTED_EXTENSION
+        Preserve the seven externally evidenced planetary lots plus the admitted
+        extension of Sword and Node, while exposing the difference in status
+        explicitly.
+    """
+    EVIDENCED_CORE_PLUS_ADMITTED_EXTENSION = "evidenced_core_plus_admitted_extension"
+
+
 @dataclass(frozen=True, slots=True)
 class NinePartsPolicy:
     """
@@ -229,8 +271,15 @@ class NinePartsPolicy:
     reversal_rule
         Which reversal rule to apply. Default: FULL_REVERSAL (the only
         historically supported option in the Abu Ma'shar tradition).
+    historical_scope
+        Provenance stance for the subsystem. Default preserves Moira's current
+        runtime surface: seven evidenced planetary lots plus two admitted
+        extension lots (Sword and Node).
     """
     reversal_rule: NinePartsReversalRule = NinePartsReversalRule.FULL_REVERSAL
+    historical_scope: NinePartsHistoricalScope = (
+        NinePartsHistoricalScope.EVIDENCED_CORE_PLUS_ADMITTED_EXTENSION
+    )
 
 
 DEFAULT_NINE_PARTS_POLICY: NinePartsPolicy = NinePartsPolicy()
@@ -397,6 +446,18 @@ class NinePart:
         return self.dependency_kind is NinePartDependencyKind.DERIVED
 
     @property
+    def historical_status(self) -> NinePartHistoricalStatus:
+        """Historical confidence status for this part."""
+        if self.name.value in _ADMITTED_EXTENSION_PARTS:
+            return NinePartHistoricalStatus.ADMITTED_EXTENSION
+        return NinePartHistoricalStatus.CORE_SEVEN
+
+    @property
+    def is_historically_evidenced_core(self) -> bool:
+        """True for the seven historically evidenced planetary lots."""
+        return self.historical_status is NinePartHistoricalStatus.CORE_SEVEN
+
+    @property
     def is_nocturnal_formula(self) -> bool:
         """True when the night formula was applied to compute this part."""
         return self.computation.formula_reversed
@@ -519,6 +580,18 @@ class NinePartsSet:
                 f"NinePartsSet invariant: must contain exactly 9 dependency "
                 f"relations, got {len(self.dependency_relations)}"
             )
+        expected_order = list(NinePartName)
+        actual_order = [part.name for part in self.parts]
+        if actual_order != expected_order:
+            raise ValueError(
+                "NinePartsSet invariant: parts must be in canonical Abu Ma'shar order"
+            )
+        expected_relation_order = list(NinePartName)
+        actual_relation_order = [relation.part for relation in self.dependency_relations]
+        if actual_relation_order != expected_relation_order:
+            raise ValueError(
+                "NinePartsSet invariant: dependency_relations must be in canonical Abu Ma'shar order"
+            )
         for part in self.parts:
             if part.computation.is_night_chart != self.is_night_chart:
                 raise ValueError(
@@ -569,6 +642,16 @@ class NinePartsSet:
         """The two parts without a planet association: Sword and Node."""
         return [p for p in self.parts if not p.has_planet_association]
 
+    @property
+    def historical_core_parts(self) -> list[NinePart]:
+        """The seven historically evidenced planetary lots."""
+        return [p for p in self.parts if p.is_historically_evidenced_core]
+
+    @property
+    def admitted_extension_parts(self) -> list[NinePart]:
+        """The admitted extension lots preserved beyond the evidenced core."""
+        return [p for p in self.parts if not p.is_historically_evidenced_core]
+
     def __repr__(self) -> str:
         mode = "nocturnal" if self.is_night_chart else "diurnal"
         return (
@@ -608,6 +691,10 @@ class NinePartConditionProfile:
     lord_is_part_planet: bool
 
     def __post_init__(self) -> None:
+        if self.dependency_relation.part is not self.part.name:
+            raise ValueError(
+                "NinePartConditionProfile invariant: dependency_relation.part must match part.name"
+            )
         expected_lord = _SIGN_RULER.get(self.part.sign)
         if expected_lord is None:
             raise ValueError(
@@ -673,6 +760,20 @@ class NinePartsAggregate:
                 f"NinePartsAggregate invariant: must have exactly 9 condition "
                 f"profiles, got {len(self.condition_profiles)}"
             )
+        expected_profile_order = list(NinePartName)
+        actual_profile_order = [profile.part.name for profile in self.condition_profiles]
+        if actual_profile_order != expected_profile_order:
+            raise ValueError(
+                "NinePartsAggregate invariant: condition_profiles must be in canonical Abu Ma'shar order"
+            )
+        if any(profile.part is not part for profile, part in zip(self.condition_profiles, self.parts_set.parts)):
+            raise ValueError(
+                "NinePartsAggregate invariant: condition_profiles must align one-to-one with parts_set.parts"
+            )
+        if self.policy is not self.parts_set.policy:
+            raise ValueError(
+                "NinePartsAggregate invariant: aggregate policy must match parts_set policy"
+            )
 
     @property
     def parts_in_own_sign(self) -> list[NinePart]:
@@ -737,7 +838,8 @@ def nine_parts_abu_mashar(
     planets : dict[str, float]
         Mapping of planet names to ecliptic longitudes. Must include at
         minimum: 'Sun', 'Moon', 'Mars', 'Jupiter', 'Saturn', 'North Node'.
-        All longitudes in degrees [0, 360).
+        All longitudes must be finite. Values are normalized modulo 360
+        before formula evaluation.
     is_night_chart : bool
         True when the chart is nocturnal (Sun in houses 1–6, i.e. below
         the horizon). The caller is responsible for this determination.
@@ -757,7 +859,8 @@ def nine_parts_abu_mashar(
     KeyError
         If a required planet key is missing from the planets dict.
     ValueError
-        If any longitude is not finite or not in [0, 360).
+        If any longitude is not finite, or if `is_night_chart` / `policy`
+        are malformed.
 
     Notes
     -----
@@ -769,6 +872,7 @@ def nine_parts_abu_mashar(
     in the Abu Ma'shar system.
     """
     _validate_inputs(asc, planets)
+    _validate_runtime_inputs(is_night_chart, policy)
 
     full_reversal = (
         is_night_chart
@@ -1002,6 +1106,17 @@ def _validate_inputs(asc: float, planets: dict[str, float]) -> None:
     for key, lon in planets.items():
         if not isfinite(lon):
             raise ValueError(f"planets[{key!r}] longitude must be finite, got {lon}")
+
+
+def _validate_runtime_inputs(
+    is_night_chart: bool,
+    policy: NinePartsPolicy,
+) -> None:
+    """Raise ValueError for malformed non-coordinate runtime inputs."""
+    if not isinstance(is_night_chart, bool):
+        raise ValueError("is_night_chart must be a bool")
+    if not isinstance(policy, NinePartsPolicy):
+        raise ValueError("policy must be a NinePartsPolicy")
 
 
 def _resolve_key(

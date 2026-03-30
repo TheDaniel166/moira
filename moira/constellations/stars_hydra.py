@@ -1,5 +1,5 @@
 ﻿"""
-Hydra Constellation Oracle â€” moira/constellations/stars_hydra.py
+Hydra Constellation Oracle — moira/constellations/stars_hydra.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Hydra.
-    - HYDRA_STAR_NAMES mapping (constant â†’ canonical name).
+    - HYDRA_STAR_NAMES mapping (constant → canonical name).
     - hydra_star_at() dispatcher.
     - Per-star convenience functions (alphard_at, cauda_hydrae_at, â€¦).
     - list_hydra_stars() / available_hydra_stars() introspection.

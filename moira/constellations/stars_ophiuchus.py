@@ -1,5 +1,5 @@
 ﻿"""
-Ophiuchus Constellation Oracle â€” moira/constellations/stars_ophiuchus.py
+Ophiuchus Constellation Oracle — moira/constellations/stars_ophiuchus.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Ophiuchus.
-    - OPHIUCHUS_STAR_NAMES mapping (constant â†’ canonical name).
+    - OPHIUCHUS_STAR_NAMES mapping (constant → canonical name).
     - ophiuchus_star_at() dispatcher.
     - Per-star convenience functions (rasalhague_at, celbalrai_at, â€¦).
     - list_ophiuchus_stars() / available_ophiuchus_stars() introspection.

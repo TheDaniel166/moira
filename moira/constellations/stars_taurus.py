@@ -1,5 +1,5 @@
 ﻿"""
-Taurus Constellation Oracle â€” moira/constellations/stars_taurus.py
+Taurus Constellation Oracle — moira/constellations/stars_taurus.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Taurus.
-    - TAURUS_STAR_NAMES mapping (constant â†’ canonical name).
+    - TAURUS_STAR_NAMES mapping (constant → canonical name).
     - taurus_star_at() dispatcher.
     - Per-star convenience functions (aldebaran_at, alcyone_at, â€¦).
     - list_taurus_stars() / available_taurus_stars() introspection.

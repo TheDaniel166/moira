@@ -1,5 +1,5 @@
 ﻿"""
-Sagittarius Constellation Oracle â€” moira/constellations/stars_sagittarius.py
+Sagittarius Constellation Oracle — moira/constellations/stars_sagittarius.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Sagittarius.
-    - SAGITTARIUS_STAR_NAMES mapping (constant â†’ canonical name).
+    - SAGITTARIUS_STAR_NAMES mapping (constant → canonical name).
     - sagittarius_star_at() dispatcher.
     - Per-star convenience functions (kaus_australis_at, nunki_at, â€¦).
     - list_sagittarius_stars() / available_sagittarius_stars() introspection.

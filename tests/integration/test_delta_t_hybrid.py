@@ -75,19 +75,33 @@ def test_core_series_covers_expected_epoch_range() -> None:
 # ---------------------------------------------------------------------------
 
 @pytest.mark.integration
-def test_residual_spline_cv_rms_within_target_band() -> None:
-    _, in_sample_rms = _fitted_residual_spline()
-    assert in_sample_rms < 2.0, (
-        f"Residual spline in-sample RMS {in_sample_rms:.3f} s exceeds 2.0 s. "
+def test_residual_spline_in_sample_rms_within_target_band() -> None:
+    fit = _fitted_residual_spline()
+    assert fit.in_sample_rms < 2.0, (
+        f"Residual spline in-sample RMS {fit.in_sample_rms:.3f} s exceeds 2.0 s. "
         "Spline may not be tracking the residual adequately."
     )
 
 
 @pytest.mark.integration
 def test_residual_spline_is_not_none() -> None:
-    spline, _ = _fitted_residual_spline()
-    pytest.importorskip("scipy")
-    assert spline is not None
+    fit = _fitted_residual_spline()
+    assert fit.spline is not None
+
+
+@pytest.mark.integration
+def test_residual_spline_cv_rms_is_finite() -> None:
+    fit = _fitted_residual_spline()
+    assert math.isfinite(fit.cv_rms)
+    assert fit.cv_rms > 0.0
+
+
+@pytest.mark.integration
+def test_residual_spline_cv_rms_is_within_operational_ceiling() -> None:
+    fit = _fitted_residual_spline()
+    assert fit.cv_rms < 0.5, (
+        f"Residual spline interior CV RMS {fit.cv_rms:.3f} s exceeds 0.5 s."
+    )
 
 
 # ---------------------------------------------------------------------------

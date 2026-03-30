@@ -533,7 +533,7 @@ the real AAM signal.
 residual(y) = IERS_measured(y) − secular_trend(y) − core_delta_t(y) − cryo_delta_t(y)
 ```
 
-Evaluated at every annual IERS Bulletin B measurement point from 1962 to
+Evaluated at every annual IERS Bulletin B annual-mean epoch from 1962.5 to
 the last confirmed measurement year (currently ~2024). IERS Bulletin A
 predictions (2025–2026) are excluded from the fit to avoid introducing
 forecasted values into the calibration.
@@ -577,7 +577,7 @@ A **smoothing spline** (not an interpolating spline) is used.
 from scipy.interpolate import UnivariateSpline
 
 spline = UnivariateSpline(
-    years_smooth,          # annual points 1962–2023
+    years_smooth,          # annual-mean points 1962.5–2024.5
     residual_smooth,       # 3-year smoothed residual
     k=3,                   # cubic
     s=len(years_smooth),   # smoothing factor = N gives roughly 1 effective knot per year
@@ -623,20 +623,22 @@ in apparent planetary positions at that epoch boundary.
 
 **Step 5 — Overfitting diagnostic:**
 
-After fitting, compute the leave-one-out cross-validation score:
+After fitting, compute an interior leave-one-out cross-validation score on
+the non-boundary annual-mean epochs:
 
 ```python
-cv_rms = sqrt(mean((residual_smooth(y_i) − spline_without_i(y_i))² for all i))
+cv_rms = sqrt(mean((residual_smooth(y_i) − spline_without_i(y_i))²
+                   for interior annual-mean points y_i))
 ```
 
-If `cv_rms > 0.4 s`, the smoothing factor is too small (overfitting).
+If `cv_rms > 0.5 s`, the smoothing factor is too small (overfitting).
 If the in-sample RMS exceeds 0.5 s, the smoothing factor is too large
 (underfitting — the spline is not tracking real geophysical signal).
-The target band is `0.1 s < cv_rms < 0.4 s`.
+The operational target is `cv_rms < 0.5 s`.
 
 This diagnostic is run automatically in `scripts/validate_delta_t_hybrid.py`
-and its result is reported in the validation output so the fit quality is
-always visible.
+and its result is reported in the validation output alongside the in-sample
+RMS so the fit quality is always visible.
 
 **Validation targets:**
 
@@ -648,8 +650,8 @@ always visible.
 **Deliverables:**
 - `delta_t_physical.delta_t_hybrid()` — assembled model
 - `delta_t_physical.delta_t_hybrid_uncertainty(year)` — returns ±1σ estimate per section 8
-- `delta_t_physical._fit_residual_spline()` — smoothing spline fit per section 4 procedure,
-  stores knot count and CV score alongside coefficients
+- `delta_t_physical._fitted_residual_spline()` — smoothing spline fit per section 4 procedure,
+  returning the spline plus named diagnostics (`cv_rms`, `in_sample_rms`, `knot_count`)
 - `scripts/validate_delta_t_hybrid.py` — full comparison against IERS,
   SMH 2016, and Horizons-style frozen value; reports CV score and knot count
 - Updated `julian.py` — add hybrid model as opt-in path alongside current

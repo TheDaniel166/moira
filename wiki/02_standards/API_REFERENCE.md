@@ -513,13 +513,13 @@ from moira import (
 
 | Function | Returns | Description |
 |---|---|---|
-| `galactic_position_of(body, jd_ut, reader=None)` | `GalacticPosition` | Galactic longitude and latitude (IAU 1958) |
-| `all_galactic_positions(body_data, obliquity)` | `list[GalacticPosition]` | Galactic positions for a dict of body -> (lon, lat) |
-| `galactic_reference_points(obliquity)` | `dict[str, tuple[float, float]]` | GC, anti-GC, NGP, SGP, and super-galactic center in ecliptic coordinates |
+| `galactic_position_of(body, ecliptic_lon, ecliptic_lat, obliquity, jd_tt)` | `GalacticPosition` | Galactic longitude and latitude (IAU 1958) for one body from true-of-date ecliptic coordinates |
+| `all_galactic_positions(body_data, obliquity, jd_tt)` | `list[GalacticPosition]` | Galactic positions for a dict of body -> (lon, lat) using the chart's TT epoch |
+| `galactic_reference_points(obliquity, jd_tt)` | `dict[str, tuple[float, float]]` | GC, anti-GC, NGP, SGP, and super-galactic center in true ecliptic-of-date coordinates |
 | `equatorial_to_galactic(ra, dec)` | `tuple[float, float]` | RA/Dec -> galactic (l, b) |
 | `galactic_to_equatorial(l, b)` | `tuple[float, float]` | Galactic -> RA/Dec |
-| `ecliptic_to_galactic(lon, lat, obliquity)` | `tuple[float, float]` | Ecliptic -> galactic |
-| `galactic_to_ecliptic(l, b, obliquity)` | `tuple[float, float]` | Galactic -> ecliptic |
+| `ecliptic_to_galactic(lon, lat, obliquity, jd_tt)` | `tuple[float, float]` | True ecliptic-of-date -> galactic, with TT epoch used for the J2000 frame bridge |
+| `galactic_to_ecliptic(l, b, obliquity, jd_tt)` | `tuple[float, float]` | Galactic -> true ecliptic-of-date, with TT epoch used for the of-date frame bridge |
 
 ### Gauquelin sectors
 

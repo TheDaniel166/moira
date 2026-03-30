@@ -1,5 +1,5 @@
 ﻿"""
-Moira â€” Hermetic Decan Engine
+Moira — Hermetic Decan Engine
 ==============================
 
 Archetype: Engine
@@ -10,13 +10,37 @@ Governs the 36 Hermetic decan faces of the Egyptian-Hellenistic tradition,
 mapping the tropical zodiac onto decan names and their ruling fixed stars,
 and computing the 12 decan night hours for a given location and date.
 
+Tradition and frame of reference
+---------------------------------
+This module implements the **tropical Hellenistic-Hermetic** tradition, not
+the original sidereal Egyptian one.
+
+The original Egyptian decan system (~2100 BCE) was purely sidereal: 36 star
+groups whose heliacal risings divided the year into 10-day periods.  When
+Hellenistic astrology synthesised that lore with the Babylonian zodiac
+(~300–100 BCE), the decans were re-mapped onto three equal 10° spans per
+tropical sign — a frame fixed to the equinoxes, not the stars.
+
+The decan names (Horaios, Tomalos, Athafra ...) and their ruling-star
+assignments are sourced from the **Liber Hermetis** (~200 AD), the primary
+surviving Hermetic decan text, as confirmed by Robert Hand's Project Hindsight
+translation and Wilhelm Gundel's *Dekane und Dekansternbilder* (1936).
+
+Ruling stars as magical rulerships
+------------------------------------
+The stars in ``DECAN_RULING_STARS`` are *astrological/magical rulerships*,
+not positional markers.  They are not expected to reside within the tropical
+10° span they rule.  Due to ~24° of precession since the Hellenistic era, the
+stars have drifted approximately 2–3 decan widths relative to the tropical
+zodiac — this is expected and does not represent an error.
+
 Boundary declaration
 --------------------
 Owns: the 36-decan name constants, ruling-star table, decan-order list,
       decan-for-longitude mapping, rising-decan computation, night-hour
       division, and the ``DecanHour`` / ``DecanHoursNight`` result vessels.
 Delegates: fixed star positions to ``moira.stars``,
-           mean obliquity to ``moira.obliquity``,
+           true obliquity to ``moira.obliquity``,
            SpkReader access to ``moira.spk_reader``.
 
 Import-time side effects: None
@@ -28,26 +52,34 @@ computations require a valid ``SpkReader`` (or the module singleton).
 
 Public surface
 --------------
-``DecanHour``          â€” vessel for a single decan night hour.
-``DecanHoursNight``    â€” vessel for all 12 decan hours of a night.
-``DECAN_NAMES``        â€” dict of decan constant to name string (36 entries).
-``DECAN_RULING_STARS`` â€” dict of decan name to ruling star name (36 entries).
-``list_decans``        â€” return all 36 decan names in ecliptic order.
-``available_decans``   â€” return decans whose ruling star is in the catalog.
-``decan_for_longitude``â€” map a longitude to its decan name.
-``decan_at``           â€” return the decan rising at a given JD and location.
-``decan_hours``        â€” compute the 12 decan night hours for a given night.
+``DecanHour``          — vessel for a single decan night hour.
+``DecanHoursNight``    — vessel for all 12 decan hours of a night.
+``DECAN_NAMES``        — dict of decan constant to name string (36 entries).
+``DECAN_RULING_STARS`` — dict of decan name to ruling star name (36 entries).
+``list_decans``        — return all 36 decan names in ecliptic order.
+``available_decans``   — return decans whose ruling star is in the catalog.
+``decan_for_longitude``— map a longitude to its decan name.
+``decan_at``           — return the decan containing the Ascendant at a given JD and location.
+``decan_hours``        — compute the 12 decan night hours for a given night.
 """
 
 import math
 from dataclasses import dataclass
 
 from .stars import star_at, StarPosition, list_stars
-from .obliquity import mean_obliquity
+from .obliquity import true_obliquity
 from .spk_reader import get_reader, SpkReader
+from ._solar import _solar_declination_ra, _sunrise_sunset, _refine_sunrise
 
 # ---------------------------------------------------------------------------
 # 36 decan name constants
+#
+# Source: Liber Hermetis (~200 AD), Hellenistic-Hermetic tradition.
+# The Liber Hermetis cycles through a set of 12 base names three times across
+# the zodiac (once per quadrant: Aries–Cancer, Leo–Scorpio, Sagittarius–Pisces).
+# The "II" and "III" suffixes are a modern disambiguation convention — the
+# ancient text simply repeats the same names.  E.g. "Sothis" appears in
+# Cancer, Libra, and Pisces; "II"/"III" are not in the source.
 # ---------------------------------------------------------------------------
 
 HORAIOS        = "Horaios"
@@ -88,7 +120,7 @@ TPAU_III       = "Tpau III"
 APHRUIMIS_III  = "Aphruimis III"
 
 # ---------------------------------------------------------------------------
-# DECAN_NAMES: constant â†’ string value (36 entries)
+# DECAN_NAMES: constant → string value (36 entries)
 # ---------------------------------------------------------------------------
 
 DECAN_NAMES: dict[str, str] = {
@@ -131,7 +163,13 @@ DECAN_NAMES: dict[str, str] = {
 }
 
 # ---------------------------------------------------------------------------
-# DECAN_RULING_STARS: decan name â†’ ruling star name (36 entries)
+# DECAN_RULING_STARS: decan name → ruling star name (36 entries)
+#
+# Source: Liber Hermetis (~200 AD), tropical Hellenistic-Hermetic tradition.
+# These are magical/astrological rulerships — the stars are NOT expected to
+# reside within their decan's tropical 10° span.  Precession (~24° since the
+# Hellenistic era) has shifted all stars relative to tropical positions; this
+# drift is inherent to the tradition and is not an error.
 # ---------------------------------------------------------------------------
 
 DECAN_RULING_STARS: dict[str, str] = {
@@ -174,7 +212,7 @@ DECAN_RULING_STARS: dict[str, str] = {
 }
 
 # ---------------------------------------------------------------------------
-# _DECAN_ORDER: 36 decan names in tropical ecliptic order (index 0 = 0Â°)
+# _DECAN_ORDER: 36 decan names in tropical ecliptic order (index 0 = 0°)
 # ---------------------------------------------------------------------------
 
 _DECAN_ORDER: list[str] = [
@@ -192,7 +230,7 @@ _DECAN_ORDER: list[str] = [
 # ---------------------------------------------------------------------------
 
 def list_decans() -> list[str]:
-    """Return all 36 decan names in tropical ecliptic order (0Â°â†’360Â°)."""
+    """Return all 36 decan names in tropical ecliptic order (0°→360°)."""
     return list(_DECAN_ORDER)
 
 
@@ -204,6 +242,10 @@ def available_decans() -> list[str]:
 
 def decan_for_longitude(lon: float) -> str:
     """Map a tropical ecliptic longitude to its Hermetic decan name.
+
+    Uses the tropical frame (equinox-fixed): 0° = vernal equinox, three
+    10° decans per sign.  This is the frame of the Liber Hermetis and the
+    broader Hellenistic-Hermetic tradition.
 
     Normalizes the longitude modulo 360 before computing the decan.
     Raises ValueError for NaN or infinite inputs.
@@ -245,100 +287,7 @@ def decan_star_at(name: str, jd: float) -> StarPosition:
 
 
 # ---------------------------------------------------------------------------
-# Solar helpers (copied from planetary_hours.py for self-containment)
-# ---------------------------------------------------------------------------
-
-def _solar_declination_ra(jd: float, reader: SpkReader) -> tuple[float, float]:
-    """Return (declination_deg, right_ascension_deg) of the Sun at jd."""
-    from .planets import planet_at
-    from .constants import Body
-    from .obliquity import true_obliquity
-
-    p = planet_at(Body.SUN, jd, reader=reader)
-    obl = true_obliquity(jd)
-    obl_r = math.radians(obl)
-    lon_r = math.radians(p.longitude)
-    lat_r = math.radians(p.latitude)
-
-    x = math.cos(lat_r) * math.cos(lon_r)
-    y = math.cos(lat_r) * math.sin(lon_r) * math.cos(obl_r) - math.sin(lat_r) * math.sin(obl_r)
-    z = math.cos(lat_r) * math.sin(lon_r) * math.sin(obl_r) + math.sin(lat_r) * math.cos(obl_r)
-
-    dec = math.degrees(math.asin(z))
-    ra  = math.degrees(math.atan2(y, x)) % 360.0
-    return dec, ra
-
-
-def _sunrise_sunset(
-    jd_noon: float,
-    latitude: float,
-    longitude: float,
-    reader: SpkReader,
-    altitude_deg: float = -0.833,
-) -> tuple[float, float]:
-    """Compute sunrise and sunset JD for the calendar day containing jd_noon."""
-    dec, _ = _solar_declination_ra(jd_noon, reader)
-    lat_r = math.radians(latitude)
-    dec_r = math.radians(dec)
-    alt_r = math.radians(altitude_deg)
-
-    cos_H = ((math.sin(alt_r) - math.sin(lat_r) * math.sin(dec_r))
-             / (math.cos(lat_r) * math.cos(dec_r)))
-
-    if cos_H > 1.0:
-        return jd_noon, jd_noon
-    if cos_H < -1.0:
-        return jd_noon - 0.5, jd_noon + 0.5
-
-    H_deg = math.degrees(math.acos(cos_H))
-
-    jd_day_start = math.floor(jd_noon - 0.5) + 0.5
-    noon_frac = 0.5 - longitude / 360.0
-    jd_solar_noon = jd_day_start + noon_frac
-
-    sunrise_frac = H_deg / 360.0
-    jd_sunrise = jd_solar_noon - sunrise_frac
-    jd_sunset  = jd_solar_noon + sunrise_frac
-
-    return jd_sunrise, jd_sunset
-
-
-def _refine_sunrise(
-    jd_approx: float,
-    latitude: float,
-    longitude: float,
-    reader: SpkReader,
-    is_rise: bool,
-    tol_days: float = 1.0 / 86400,
-) -> float:
-    """Iteratively refine sunrise or sunset time."""
-    jd = jd_approx
-    for _ in range(5):
-        dec, _ = _solar_declination_ra(jd, reader)
-        lat_r = math.radians(latitude)
-        dec_r = math.radians(dec)
-        alt_r = math.radians(-0.833)
-
-        cos_H = ((math.sin(alt_r) - math.sin(lat_r) * math.sin(dec_r))
-                 / (math.cos(lat_r) * math.cos(dec_r)))
-        cos_H = max(-1.0, min(1.0, cos_H))
-        H_deg = math.degrees(math.acos(cos_H))
-
-        jd_day_start = math.floor(jd - 0.5) + 0.5
-        noon_frac = 0.5 - longitude / 360.0
-        jd_solar_noon = jd_day_start + noon_frac
-
-        sunrise_frac = H_deg / 360.0
-        jd_new = jd_solar_noon - sunrise_frac if is_rise else jd_solar_noon + sunrise_frac
-
-        if abs(jd_new - jd) < tol_days:
-            break
-        jd = jd_new
-    return jd
-
-
-# ---------------------------------------------------------------------------
-# Local Sidereal Time â†’ RAMC
+# Local Sidereal Time → RAMC
 # ---------------------------------------------------------------------------
 
 def _lst_to_ramc(jd: float, geo_lon: float) -> float:
@@ -370,25 +319,26 @@ def decan_at(
     lon: float,
     reader: SpkReader | None = None,
 ) -> str:
-    """Return the decan whose ruling star is closest to the Ascendant at jd.
+    """Return the decan whose 10° zodiacal span contains the Ascendant at jd.
+
+    The Ascendant ecliptic longitude is computed from RAMC, true obliquity,
+    and geographic latitude using the standard Placidus formula.  The result
+    is then mapped to a decan via ``decan_for_longitude``.
 
     Parameters
     ----------
     jd     : Julian Day (UT)
     lat    : geographic latitude in degrees (positive north)
     lon    : geographic longitude in degrees (positive east)
-    reader : SpkReader instance (falls back to get_reader() if None)
+    reader : unused; retained for API compatibility
 
     Returns
     -------
     Decan name (member of list_decans())
     """
-    reader = reader or get_reader()
-
-    # Compute Ascendant ecliptic longitude
     ramc = _lst_to_ramc(jd, lon)
     ramc_r = math.radians(ramc)
-    obl_r  = math.radians(mean_obliquity(jd))
+    obl_r  = math.radians(true_obliquity(jd))
     lat_r  = math.radians(lat)
 
     asc_lon = math.degrees(math.atan2(
@@ -396,21 +346,7 @@ def decan_at(
         math.sin(ramc_r) * math.cos(obl_r) + math.tan(lat_r) * math.sin(obl_r),
     )) % 360.0
 
-    # Find decan whose ruling star is closest to asc_lon
-    best_decan: str | None = None
-    best_dist = float("inf")
-
-    for decan in _DECAN_ORDER:
-        star_name = DECAN_RULING_STARS[decan]
-        star_pos = star_at(star_name, jd)
-        star_lon = star_pos.longitude
-        dist = min((star_lon - asc_lon) % 360.0, (asc_lon - star_lon) % 360.0)
-        if dist < best_dist:
-            best_dist = dist
-            best_decan = decan
-
-    assert best_decan is not None  # _DECAN_ORDER is never empty
-    return best_decan
+    return decan_for_longitude(asc_lon)
 
 
 # ---------------------------------------------------------------------------
@@ -420,7 +356,7 @@ def decan_at(
 @dataclass(slots=True)
 class DecanHour:
     """
-    RITE: The Hour Vessel â€” a single decan night hour and its ruling star.
+    RITE: The Hour Vessel — a single decan night hour and its ruling star.
 
     THEOREM: Holds the hour number, decan name, ruling star name, and start/end
     Julian Days for one of the 12 decan night hours.
@@ -443,7 +379,7 @@ class DecanHour:
         Structural invariants:
             - ``jd_start < jd_end`` always holds.
             - ``hour_number`` is always in [1, 12].
-        Succession stance: terminal â€” not designed for subclassing.
+        Succession stance: terminal — not designed for subclassing.
 
     Canon: Liber Hermetis (~200 AD); Firmicus Maternus, "Mathesis" (~334 AD).
 
@@ -483,7 +419,7 @@ class DecanHour:
     }
     [/MACHINE_CONTRACT]
     """
-    hour_number: int    # 1â€“12
+    hour_number: int    # 1–12
     decan:       str
     ruling_star: str
     jd_start:    float
@@ -493,7 +429,7 @@ class DecanHour:
 @dataclass(slots=True)
 class DecanHoursNight:
     """
-    RITE: The Night Vessel â€” all 12 decan hours of a single night.
+    RITE: The Night Vessel — all 12 decan hours of a single night.
 
     THEOREM: Holds the sunset and next-sunrise Julian Days, observer location,
     and the ordered list of 12 ``DecanHour`` instances dividing the night.
@@ -519,7 +455,7 @@ class DecanHoursNight:
         Structural invariants:
             - ``sunset_jd < next_sunrise_jd`` always holds.
             - ``hours`` always contains exactly 12 entries.
-        Succession stance: terminal â€” not designed for subclassing.
+        Succession stance: terminal — not designed for subclassing.
 
     Canon: Liber Hermetis (~200 AD); Firmicus Maternus, "Mathesis" (~334 AD).
 
@@ -593,7 +529,7 @@ def decan_hours(
 
     Parameters
     ----------
-    jd     : Julian Day (UT) â€” any time during the target day/night
+    jd     : Julian Day (UT) — any time during the target day/night
     lat    : geographic latitude in degrees (positive north)
     lon    : geographic longitude in degrees (positive east)
     reader : SpkReader instance (falls back to get_reader() if None)
@@ -617,8 +553,16 @@ def decan_hours(
     jd_nr_approx, _ = _sunrise_sunset(jd_next_noon, lat, lon, reader)
     jd_next_sunrise = _refine_sunrise(jd_nr_approx, lat, lon, reader, is_rise=True)
 
-    # Decan rising at sunset â†’ starting index
-    start_decan_name = decan_at(jd_sunset, lat, lon, reader)
+    # Decan culminating on the MC at sunset → starting index
+    # (Liber Hermetis: the first hour of the night is ruled by the decan
+    # on the Midheaven at sunset, not the decan rising on the Ascendant.)
+    ramc_sunset = _lst_to_ramc(jd_sunset, lon)
+    obl_sunset  = true_obliquity(jd_sunset)
+    mc_lon = math.degrees(math.atan2(
+        math.sin(math.radians(ramc_sunset)),
+        math.cos(math.radians(ramc_sunset)) * math.cos(math.radians(obl_sunset)),
+    )) % 360.0
+    start_decan_name = decan_for_longitude(mc_lon)
     start_decan_idx = decan_index(start_decan_name)
 
     # Divide night into 12 equal hours
@@ -647,153 +591,4 @@ def decan_hours(
         next_sunrise_jd=jd_next_sunrise,
         hours=hours,
     )
-
-
-# ---------------------------------------------------------------------------
-# Per-decan convenience functions (36 total)
-# ---------------------------------------------------------------------------
-
-def horaios_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Horaios's ruling star at jd."""
-    return decan_star_at(HORAIOS, jd)
-
-def tomalos_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Tomalos's ruling star at jd."""
-    return decan_star_at(TOMALOS, jd)
-
-def athafra_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Athafra's ruling star at jd."""
-    return decan_star_at(ATHAFRA, jd)
-
-def senacher_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Senacher's ruling star at jd."""
-    return decan_star_at(SENACHER, jd)
-
-def thesogar_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Thesogar's ruling star at jd."""
-    return decan_star_at(THESOGAR, jd)
-
-def tepis_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Tepis's ruling star at jd."""
-    return decan_star_at(TEPIS, jd)
-
-def sothis_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Sothis's ruling star at jd."""
-    return decan_star_at(SOTHIS, jd)
-
-def tpau_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Tpau's ruling star at jd."""
-    return decan_star_at(TPAU, jd)
-
-def aphruimis_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Aphruimis's ruling star at jd."""
-    return decan_star_at(APHRUIMIS, jd)
-
-def tmoum_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Tmoum's ruling star at jd."""
-    return decan_star_at(TMOUM, jd)
-
-def tathemis_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Tathemis's ruling star at jd."""
-    return decan_star_at(TATHEMIS, jd)
-
-def serk_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Serk's ruling star at jd."""
-    return decan_star_at(SERK, jd)
-
-def chontare_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Chontare's ruling star at jd."""
-    return decan_star_at(CHONTARE, jd)
-
-def phakare_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Phakare's ruling star at jd."""
-    return decan_star_at(PHAKARE, jd)
-
-def tpa_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Tpa's ruling star at jd."""
-    return decan_star_at(TPA, jd)
-
-def thosolk_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Thosolk's ruling star at jd."""
-    return decan_star_at(THOSOLK, jd)
-
-def sothis_ii_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Sothis II's ruling star at jd."""
-    return decan_star_at(SOTHIS_II, jd)
-
-def tpau_ii_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Tpau II's ruling star at jd."""
-    return decan_star_at(TPAU_II, jd)
-
-def chontachre_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Chontachre's ruling star at jd."""
-    return decan_star_at(CHONTACHRE, jd)
-
-def aphruimis_ii_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Aphruimis II's ruling star at jd."""
-    return decan_star_at(APHRUIMIS_II, jd)
-
-def tmoum_ii_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Tmoum II's ruling star at jd."""
-    return decan_star_at(TMOUM_II, jd)
-
-def tathemis_ii_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Tathemis II's ruling star at jd."""
-    return decan_star_at(TATHEMIS_II, jd)
-
-def serk_ii_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Serk II's ruling star at jd."""
-    return decan_star_at(SERK_II, jd)
-
-def chontare_ii_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Chontare II's ruling star at jd."""
-    return decan_star_at(CHONTARE_II, jd)
-
-def phakare_ii_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Phakare II's ruling star at jd."""
-    return decan_star_at(PHAKARE_II, jd)
-
-def tpa_ii_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Tpa II's ruling star at jd."""
-    return decan_star_at(TPA_II, jd)
-
-def thosolk_ii_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Thosolk II's ruling star at jd."""
-    return decan_star_at(THOSOLK_II, jd)
-
-def horaios_ii_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Horaios II's ruling star at jd."""
-    return decan_star_at(HORAIOS_II, jd)
-
-def tomalos_ii_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Tomalos II's ruling star at jd."""
-    return decan_star_at(TOMALOS_II, jd)
-
-def athafra_ii_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Athafra II's ruling star at jd."""
-    return decan_star_at(ATHAFRA_II, jd)
-
-def senacher_ii_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Senacher II's ruling star at jd."""
-    return decan_star_at(SENACHER_II, jd)
-
-def thesogar_ii_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Thesogar II's ruling star at jd."""
-    return decan_star_at(THESOGAR_II, jd)
-
-def tepis_ii_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Tepis II's ruling star at jd."""
-    return decan_star_at(TEPIS_II, jd)
-
-def sothis_iii_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Sothis III's ruling star at jd."""
-    return decan_star_at(SOTHIS_III, jd)
-
-def tpau_iii_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Tpau III's ruling star at jd."""
-    return decan_star_at(TPAU_III, jd)
-
-def aphruimis_iii_star_at(jd: float) -> StarPosition:
-    """Return the StarPosition of Aphruimis III's ruling star at jd."""
-    return decan_star_at(APHRUIMIS_III, jd)
 

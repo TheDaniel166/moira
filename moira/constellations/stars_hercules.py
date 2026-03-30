@@ -1,5 +1,5 @@
 ﻿"""
-Hercules Constellation Oracle â€” moira/constellations/stars_hercules.py
+Hercules Constellation Oracle — moira/constellations/stars_hercules.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Hercules.
-    - HERCULES_STAR_NAMES mapping (constant â†’ canonical name).
+    - HERCULES_STAR_NAMES mapping (constant → canonical name).
     - hercules_star_at() dispatcher.
     - Per-star convenience functions (ras_algethi_at, kornephoros_at, â€¦).
     - list_hercules_stars() / available_hercules_stars() introspection.

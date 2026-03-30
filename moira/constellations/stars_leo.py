@@ -1,5 +1,5 @@
 ﻿"""
-Leo Constellation Oracle â€” moira/constellations/stars_leo.py
+Leo Constellation Oracle — moira/constellations/stars_leo.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Leo.
-    - LEO_STAR_NAMES mapping (constant â†’ canonical name).
+    - LEO_STAR_NAMES mapping (constant → canonical name).
     - leo_star_at() dispatcher.
     - Per-star convenience functions (regulus_at, denebola_at, â€¦).
     - list_leo_stars() / available_leo_stars() introspection.

@@ -40,7 +40,7 @@ import math
 from dataclasses import dataclass
 from datetime import datetime
 
-from .constants import Body, JULIAN_YEAR, KM_PER_AU
+from .constants import Body, KM_PER_AU, SIDEREAL_YEAR
 from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd, format_jd_utc
 from .planets import planet_at
 from .spk_reader import get_reader, SpkReader
@@ -336,7 +336,7 @@ def perihelion(
     if reader is None:
         reader = get_reader()
 
-    period = _ORBITAL_PERIOD.get(body, 365.25)
+    period = _ORBITAL_PERIOD.get(body, SIDEREAL_YEAR)
     if max_days is None:
         max_days = period * 1.5
 
@@ -384,7 +384,7 @@ def aphelion(
     if reader is None:
         reader = get_reader()
 
-    period = _ORBITAL_PERIOD.get(body, 365.25)
+    period = _ORBITAL_PERIOD.get(body, SIDEREAL_YEAR)
     if max_days is None:
         max_days = period * 1.5
 

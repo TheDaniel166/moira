@@ -1,5 +1,5 @@
 ﻿"""
-Gemini Constellation Oracle â€” moira/constellations/stars_gemini.py
+Gemini Constellation Oracle — moira/constellations/stars_gemini.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Gemini.
-    - GEMINI_STAR_NAMES mapping (constant â†’ canonical name).
+    - GEMINI_STAR_NAMES mapping (constant → canonical name).
     - gemini_star_at() dispatcher.
     - Per-star convenience functions (castor_at, pollux_at, â€¦).
     - list_gemini_stars() / available_gemini_stars() introspection.

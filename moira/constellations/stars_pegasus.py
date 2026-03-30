@@ -1,5 +1,5 @@
 ﻿"""
-Pegasus Constellation Oracle â€” moira/constellations/stars_pegasus.py
+Pegasus Constellation Oracle — moira/constellations/stars_pegasus.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Pegasus.
-    - PEGASUS_STAR_NAMES mapping (constant â†’ canonical name).
+    - PEGASUS_STAR_NAMES mapping (constant → canonical name).
     - pegasus_star_at() dispatcher.
     - Per-star convenience functions (markab_at, scheat_at, â€¦).
     - list_pegasus_stars() / available_pegasus_stars() introspection.

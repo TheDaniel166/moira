@@ -26,7 +26,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import StrEnum
 
-from .constants import Body, SIGNS
+from .constants import Body, SIGNS, TROPICAL_YEAR
 from .julian import (
     CalendarDateTime,
     calendar_datetime_from_jd,
@@ -1961,7 +1961,7 @@ def solar_return(
     # Start searching ~10 days before the expected date derived from the
     # vernal equinox offset, then delegate to planet_return().
     jd_approx  = julian_day(year, 3, 10, 0.0)
-    days_offset = (natal_sun_lon / 360.0) * 365.25
+    days_offset = (natal_sun_lon / 360.0) * TROPICAL_YEAR
     jd_start   = jd_approx + days_offset - 10.0
 
     return planet_return(

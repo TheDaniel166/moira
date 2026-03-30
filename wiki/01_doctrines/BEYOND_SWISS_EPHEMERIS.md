@@ -22,7 +22,7 @@ Current implementation truth (March 2026):
 - Fixed stars are currently served by a sovereign local registry (~1,809 stars), not a live Gaia-DR3 runtime surface.
 - The asteroid surface exposes 368 named bodies through bundled kernels and the `ASTEROID_NAIF` registry.
 - Live on-demand Horizons API fetch for arbitrary newly discovered objects is not yet a public runtime path.
-- Planetary heliacal computations exist; stellar heliacal in `stars.py` remains deferred.
+- Planetary and fixed-star heliacal computations are now exposed through the runtime; the current fixed-star surface is anchored to the sovereign registry rather than a live Gaia runtime.
 - ΔT uses bundled/embedded IERS-derived tables and local interpolation; there is no runtime web fetch.
 - Primary directions are implemented as an active engine and are no longer merely "under development".
 - Interstellar-object, exoplanet-direction, and mass asteroid-node claims below should be read as roadmap vision unless explicitly tied to shipped APIs.
@@ -601,8 +601,8 @@ Moira can currently compute, for any observer location on any date:
 - Planetary morning/evening visibility events through the heliacal planetary layer
 - The **phase of morning vs. evening visibility** for admitted planets (morning star, evening star, under the beams)
 - Acronychal planetary visibility events under the same policy surface
-
-Stellar heliacal events in `stars.py` remain an admitted deferred surface and should be treated as roadmap work.
+- Fixed-star heliacal rising and setting events through `stars.py`, including
+  typed event vessels that preserve the search and visibility classification
 
 This is the recovery of a timing system that predates the horoscope by at least a millennium, computed with a precision the Babylonians could not have imagined.
 

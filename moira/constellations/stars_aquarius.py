@@ -1,5 +1,5 @@
 ﻿"""
-Aquarius Constellation Oracle â€” moira/constellations/stars_aquarius.py
+Aquarius Constellation Oracle — moira/constellations/stars_aquarius.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Aquarius.
-    - AQUARIUS_STAR_NAMES mapping (constant â†’ canonical name).
+    - AQUARIUS_STAR_NAMES mapping (constant → canonical name).
     - aquarius_star_at() dispatcher.
     - Per-star convenience functions (sadalmelik_at, sadalsuud_at, â€¦).
     - list_aquarius_stars() / available_aquarius_stars() introspection.

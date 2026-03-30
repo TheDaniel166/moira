@@ -1,5 +1,5 @@
 ﻿"""
-Ursa Minor Constellation Oracle â€” moira/constellations/stars_ursa_minor.py
+Ursa Minor Constellation Oracle — moira/constellations/stars_ursa_minor.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Ursa Minor.
-    - URSA_MINOR_STAR_NAMES mapping (constant â†’ canonical name).
+    - URSA_MINOR_STAR_NAMES mapping (constant → canonical name).
     - ursa_minor_star_at() dispatcher.
     - Per-star convenience functions (polaris_at, kochab_at, â€¦).
     - list_ursa_minor_stars() / available_ursa_minor_stars() introspection.

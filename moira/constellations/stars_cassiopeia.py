@@ -1,5 +1,5 @@
 ﻿"""
-Cassiopeia Constellation Oracle â€” moira/constellations/stars_cassiopeia.py
+Cassiopeia Constellation Oracle — moira/constellations/stars_cassiopeia.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Cassiopeia.
-    - CASSIOPEIA_STAR_NAMES mapping (constant â†’ canonical name).
+    - CASSIOPEIA_STAR_NAMES mapping (constant → canonical name).
     - cassiopeia_star_at() dispatcher.
     - Per-star convenience functions (schedar_at, caph_at, â€¦).
     - list_cassiopeia_stars() / available_cassiopeia_stars() introspection.

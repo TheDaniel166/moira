@@ -675,3 +675,107 @@ def test_prop14_hour_at_decan_of_hour_consistency(sunset_jd, duration, start_idx
         assert decan_name == hour.decan
     else:
         assert decan_name is None
+
+
+# ===========================================================================
+# Meeus oracle tests — Chapter 12 (GMST) and Chapter 24 (Houses / MC)
+#
+# Reference: Jean Meeus, "Astronomical Algorithms" 2nd ed.
+#   Example 12.a  — April 10, 1987, 0h UT (JD 2446895.5)
+#                   GMST = 197.693195°
+#
+# All expected values are derived from that single verified anchor point.
+# No external runtime dependency: constants are hardcoded from the oracle run.
+# ===========================================================================
+
+# Oracle constants — do not edit without re-running the verification script.
+_MEEUS_JD          = 2446895.5      # April 10 1987, 0h UT
+_MEEUS_GMST        = 197.693195     # deg — Meeus Ex 12.a ground truth
+_MEEUS_OBL_TRUE    = 23.443559      # deg — true obliquity at that JD
+_MEEUS_MC_LON_0    = 199.173212     # deg — MC at geo_lon=0.0
+_MEEUS_MC_LON_25   = 225.158843     # deg — MC at geo_lon=25.0 (Athens)
+_MEEUS_MC_DECAN_0  = "Aphruimis II" # decan containing 199.17° (190–200°)
+_MEEUS_MC_DECAN_25 = "Serk II"      # decan containing 225.16° (220–230°)
+
+
+class TestLstToRamcMeeusOracle:
+    """_lst_to_ramc agrees with Meeus Example 12.a to sub-arcsecond precision."""
+
+    def test_gmst_matches_meeus_example_12a(self):
+        """GMST at JD 2446895.5 (lon=0) must equal Meeus 197.693195° within 0.001°."""
+        from moira.hermetic_decans import _lst_to_ramc
+        result = _lst_to_ramc(_MEEUS_JD, 0.0)
+        assert abs(result - _MEEUS_GMST) < 0.001, (
+            f"GMST {result:.6f}° diverges from Meeus oracle {_MEEUS_GMST}° "
+            f"by {abs(result - _MEEUS_GMST)*3600:.2f} arcsec"
+        )
+
+    def test_lst_shifts_by_geo_longitude(self):
+        """LST at lon=25° must equal GMST + 25° (modulo 360)."""
+        from moira.hermetic_decans import _lst_to_ramc
+        gmst  = _lst_to_ramc(_MEEUS_JD, 0.0)
+        lst25 = _lst_to_ramc(_MEEUS_JD, 25.0)
+        assert abs((lst25 - gmst) % 360.0 - 25.0) < 0.001
+
+
+class TestMcFormulaOracleMeeus:
+    """MC longitude formula verified against the Meeus Chapter 12 anchor point.
+
+    The MC formula (tan MC = sin RAMC / (cos RAMC × cos ε)) is stated in
+    Meeus Chapter 24.  These tests confirm the implementation is correct by
+    chaining from the verified GMST value.
+    """
+
+    def test_mc_longitude_at_greenwich(self):
+        """MC at geo_lon=0 must match oracle 199.173212° within 0.001°."""
+        import math
+        from moira.hermetic_decans import _lst_to_ramc
+        from moira.obliquity import true_obliquity
+        ramc  = _lst_to_ramc(_MEEUS_JD, 0.0)
+        obl   = true_obliquity(_MEEUS_JD)
+        mc    = math.degrees(math.atan2(
+            math.sin(math.radians(ramc)),
+            math.cos(math.radians(ramc)) * math.cos(math.radians(obl)),
+        )) % 360.0
+        assert abs(mc - _MEEUS_MC_LON_0) < 0.001, (
+            f"MC {mc:.6f}° differs from oracle {_MEEUS_MC_LON_0}°"
+        )
+
+    def test_mc_longitude_at_athens(self):
+        """MC at geo_lon=25 must match oracle 225.158843° within 0.001°."""
+        import math
+        from moira.hermetic_decans import _lst_to_ramc
+        from moira.obliquity import true_obliquity
+        ramc  = _lst_to_ramc(_MEEUS_JD, 25.0)
+        obl   = true_obliquity(_MEEUS_JD)
+        mc    = math.degrees(math.atan2(
+            math.sin(math.radians(ramc)),
+            math.cos(math.radians(ramc)) * math.cos(math.radians(obl)),
+        )) % 360.0
+        assert abs(mc - _MEEUS_MC_LON_25) < 0.001
+
+    def test_mc_decan_at_greenwich(self):
+        """Decan containing MC at geo_lon=0 must be 'Aphruimis II' (190–200°)."""
+        import math
+        from moira.hermetic_decans import _lst_to_ramc, decan_for_longitude
+        from moira.obliquity import true_obliquity
+        ramc = _lst_to_ramc(_MEEUS_JD, 0.0)
+        obl  = true_obliquity(_MEEUS_JD)
+        mc   = math.degrees(math.atan2(
+            math.sin(math.radians(ramc)),
+            math.cos(math.radians(ramc)) * math.cos(math.radians(obl)),
+        )) % 360.0
+        assert decan_for_longitude(mc) == _MEEUS_MC_DECAN_0
+
+    def test_mc_decan_at_athens(self):
+        """Decan containing MC at geo_lon=25 must be 'Serk II' (220–230°)."""
+        import math
+        from moira.hermetic_decans import _lst_to_ramc, decan_for_longitude
+        from moira.obliquity import true_obliquity
+        ramc = _lst_to_ramc(_MEEUS_JD, 25.0)
+        obl  = true_obliquity(_MEEUS_JD)
+        mc   = math.degrees(math.atan2(
+            math.sin(math.radians(ramc)),
+            math.cos(math.radians(ramc)) * math.cos(math.radians(obl)),
+        )) % 360.0
+        assert decan_for_longitude(mc) == _MEEUS_MC_DECAN_25

@@ -22,7 +22,9 @@ from moira.nine_parts import (
     NinePartName,
     NinePartFormulaVariant,
     NinePartDependencyKind,
+    NinePartHistoricalStatus,
     NinePartsReversalRule,
+    NinePartsHistoricalScope,
     NinePartsPolicy,
     DEFAULT_NINE_PARTS_POLICY,
     NinePartComputationTruth,
@@ -391,6 +393,30 @@ class TestInspectability:
 # §6. Condition profiles and aggregate intelligence
 # ---------------------------------------------------------------------------
 
+    def test_historical_status_marks_core_and_extension_parts(self):
+        statuses = {part.name: part.historical_status for part in self.result.parts_set.parts}
+        assert statuses[NinePartName.SWORD] is NinePartHistoricalStatus.ADMITTED_EXTENSION
+        assert statuses[NinePartName.NODE] is NinePartHistoricalStatus.ADMITTED_EXTENSION
+        for name in (
+            NinePartName.FORTUNE,
+            NinePartName.SPIRIT,
+            NinePartName.LOVE,
+            NinePartName.NECESSITY,
+            NinePartName.COURAGE,
+            NinePartName.VICTORY,
+            NinePartName.NEMESIS,
+        ):
+            assert statuses[name] is NinePartHistoricalStatus.CORE_SEVEN
+
+    def test_set_exposes_historical_core_and_extension_groups(self):
+        assert len(self.result.parts_set.historical_core_parts) == 7
+        assert len(self.result.parts_set.admitted_extension_parts) == 2
+        assert {part.name for part in self.result.parts_set.admitted_extension_parts} == {
+            NinePartName.SWORD,
+            NinePartName.NODE,
+        }
+
+
 class TestConditionAndAggregate:
 
     def setup_method(self):
@@ -434,14 +460,27 @@ class TestPolicy:
     def test_default_policy_is_full_reversal(self):
         assert DEFAULT_NINE_PARTS_POLICY.reversal_rule is NinePartsReversalRule.FULL_REVERSAL
 
+    def test_default_policy_exposes_current_historical_scope(self):
+        assert (
+            DEFAULT_NINE_PARTS_POLICY.historical_scope
+            is NinePartsHistoricalScope.EVIDENCED_CORE_PLUS_ADMITTED_EXTENSION
+        )
+
     def test_custom_policy_accepted(self):
-        policy = NinePartsPolicy(reversal_rule=NinePartsReversalRule.FULL_REVERSAL)
+        policy = NinePartsPolicy(
+            reversal_rule=NinePartsReversalRule.FULL_REVERSAL,
+            historical_scope=NinePartsHistoricalScope.EVIDENCED_CORE_PLUS_ADMITTED_EXTENSION,
+        )
         result = nine_parts_abu_mashar(DIURNAL_ASC, DIURNAL_PLANETS, False, policy=policy)
         assert result.policy is policy
 
     def test_policy_stored_in_aggregate(self):
         result = nine_parts_abu_mashar(DIURNAL_ASC, DIURNAL_PLANETS, False)
         assert isinstance(result.policy, NinePartsPolicy)
+
+    def test_non_policy_object_rejected(self):
+        with pytest.raises(ValueError, match="policy must be a NinePartsPolicy"):
+            nine_parts_abu_mashar(DIURNAL_ASC, DIURNAL_PLANETS, False, policy="full_reversal")  # type: ignore[arg-type]
 
 
 # ---------------------------------------------------------------------------
@@ -478,6 +517,10 @@ class TestInputValidation:
         with pytest.raises(ValueError):
             nine_parts_abu_mashar(DIURNAL_ASC, planets, False)
 
+    def test_non_bool_is_night_chart_raises(self):
+        with pytest.raises(ValueError, match="is_night_chart must be a bool"):
+            nine_parts_abu_mashar(DIURNAL_ASC, DIURNAL_PLANETS, 1)  # type: ignore[arg-type]
+
 
 # ---------------------------------------------------------------------------
 # §9. Validation function
@@ -492,6 +535,71 @@ class TestValidateOutput:
     def test_valid_nocturnal_returns_empty(self):
         result = nine_parts_abu_mashar(NOCTURNAL_ASC, NOCTURNAL_PLANETS, True)
         assert validate_nine_parts_output(result) == []
+
+
+class TestVesselHardening:
+
+    def test_parts_set_rejects_non_canonical_part_order(self):
+        result = nine_parts_abu_mashar(DIURNAL_ASC, DIURNAL_PLANETS, False)
+        scrambled_parts = list(result.parts_set.parts)
+        scrambled_parts[0], scrambled_parts[1] = scrambled_parts[1], scrambled_parts[0]
+
+        with pytest.raises(ValueError, match="parts must be in canonical Abu Ma'shar order"):
+            NinePartsSet(
+                parts=scrambled_parts,
+                is_night_chart=False,
+                policy=result.policy,
+                dependency_relations=list(result.parts_set.dependency_relations),
+            )
+
+    def test_parts_set_rejects_non_canonical_dependency_relation_order(self):
+        result = nine_parts_abu_mashar(DIURNAL_ASC, DIURNAL_PLANETS, False)
+        scrambled_relations = list(result.parts_set.dependency_relations)
+        scrambled_relations[0], scrambled_relations[1] = scrambled_relations[1], scrambled_relations[0]
+
+        with pytest.raises(ValueError, match="dependency_relations must be in canonical Abu Ma'shar order"):
+            NinePartsSet(
+                parts=list(result.parts_set.parts),
+                is_night_chart=False,
+                policy=result.policy,
+                dependency_relations=scrambled_relations,
+            )
+
+    def test_condition_profile_rejects_mismatched_dependency_relation(self):
+        result = nine_parts_abu_mashar(DIURNAL_ASC, DIURNAL_PLANETS, False)
+        fortune = _get_part(result, NinePartName.FORTUNE)
+        wrong_relation = result.parts_set.get_dependency_relation(NinePartName.SPIRIT)
+
+        with pytest.raises(ValueError, match="dependency_relation.part must match part.name"):
+            NinePartConditionProfile(
+                part=fortune,
+                dependency_relation=wrong_relation,
+                lord="Moon",
+                lord_is_part_planet=True,
+            )
+
+    def test_aggregate_rejects_non_canonical_condition_profile_order(self):
+        result = nine_parts_abu_mashar(DIURNAL_ASC, DIURNAL_PLANETS, False)
+        scrambled_profiles = list(result.condition_profiles)
+        scrambled_profiles[0], scrambled_profiles[1] = scrambled_profiles[1], scrambled_profiles[0]
+
+        with pytest.raises(ValueError, match="condition_profiles must be in canonical Abu Ma'shar order"):
+            NinePartsAggregate(
+                parts_set=result.parts_set,
+                condition_profiles=scrambled_profiles,
+                policy=result.policy,
+            )
+
+    def test_aggregate_rejects_policy_mismatch(self):
+        result = nine_parts_abu_mashar(DIURNAL_ASC, DIURNAL_PLANETS, False)
+        mismatched_policy = NinePartsPolicy()
+
+        with pytest.raises(ValueError, match="aggregate policy must match parts_set policy"):
+            NinePartsAggregate(
+                parts_set=result.parts_set,
+                condition_profiles=list(result.condition_profiles),
+                policy=mismatched_policy,
+            )
 
 
 # ---------------------------------------------------------------------------

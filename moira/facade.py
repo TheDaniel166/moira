@@ -1,20 +1,20 @@
 ﻿"""
-Moira Primary Public Surface â€” moira/__init__.py
+Moira Primary Public Surface — moira/__init__.py
 
 Archetype: Engine (primary interface)
 Purpose: Exposes the complete public API of the Moira ephemeris engine through
          a single import surface. Provides the Moira facade class, the Chart
          vessel, and re-exports every stable symbol from the core pillars.
 
-Coverage: 13200 BC â†’ 17191 AD (JPL DE441)
+Coverage: 13200 BC → 17191 AD (JPL DE441)
 
 Boundary declaration
 --------------------
 Owns:
-    - Chart dataclass â€” complete astrological chart snapshot vessel.
-    - Moira class â€” primary facade over all computation pillars.
-    - __all__ â€” the canonical frozen export list.
-    - __version__, __author__ â€” package metadata.
+    - Chart dataclass — complete astrological chart snapshot vessel.
+    - Moira class — primary facade over all computation pillars.
+    - __all__ — the canonical frozen export list.
+    - __version__, __author__ — package metadata.
 Delegates:
     - All computation to the respective pillar modules (planets, houses,
       aspects, eclipse, fixed_stars, etc.).
@@ -717,19 +717,19 @@ __all__ = [
     "calculate_chart_condition_profile",
     "calculate_condition_network_profile",
     "DignitiesService",
-    # Midpoints â€” result types
+    # Midpoints — result types
     "Midpoint", "PlanetaryPicture", "MidpointWeight", "MidpointCluster",
-    # Midpoints â€” service + planet sets
+    # Midpoints — service + planet sets
     "MidpointsService", "CLASSIC_7", "MODERN_3", "MODERN_10", "EXTENDED",
-    # Midpoints â€” core computation
+    # Midpoints — core computation
     "calculate_midpoints", "midpoints_to_point",
-    # Midpoints â€” dial projections
+    # Midpoints — dial projections
     "to_dial", "to_dial_90", "to_dial_45", "to_dial_22_5",
     "dial_90_midpoints", "dial_45_midpoints", "dial_22_5_midpoints",
     "midpoint_tree",
-    # Midpoints â€” antiscia
+    # Midpoints — antiscia
     "antiscion", "contra_antiscion",
-    # Midpoints â€” advanced analysis
+    # Midpoints — advanced analysis
     "planetary_pictures", "midpoint_weighting",
     "activated_midpoints", "midpoint_clusters",
     # Harmonics
@@ -838,7 +838,7 @@ __all__ = [
     "AntisciaAspect", "find_antiscia", "antiscia_to_point",
     # Profections
     "ProfectionResult", "annual_profection", "monthly_profection", "profection_schedule",
-    # Time lords â€” Firdaria
+    # Time lords — Firdaria
     "FIRDARIA_DIURNAL", "FIRDARIA_NOCTURNAL", "FIRDARIA_NOCTURNAL_BONATTI",
     "CHALDEAN_ORDER", "MINOR_YEARS",
     "FirdarSequenceKind", "ZRAngularityClass",
@@ -1070,7 +1070,7 @@ class Chart:
 
     THEOREM: Mutable dataclass holding a complete astrological chart snapshot
              for a single Julian Day, including planetary positions, lunar nodes,
-             obliquity, and Î”T.
+             obliquity, and ΔT.
 
     RITE OF PURPOSE:
         Chart is the primary cross-pillar data vessel produced by Moira.chart().
@@ -1150,7 +1150,7 @@ class Chart:
         return calendar_datetime_from_jd(self.jd_ut)
 
     def longitudes(self, include_nodes: bool = True) -> dict[str, float]:
-        """Return a flat dict of body name â†’ ecliptic longitude."""
+        """Return a flat dict of body name → ecliptic longitude."""
         lons: dict[str, float] = {b: p.longitude for b, p in self.planets.items()}
         if include_nodes:
             lons.update({n: d.longitude for n, d in self.nodes.items()})
@@ -1178,7 +1178,7 @@ class Moira:
         and routes every computation request to the appropriate pillar module,
         sparing callers from managing kernel state, JD conversion, or pillar
         imports directly. Without Moira, consumers would need to orchestrate
-        a dozen independent pillar calls with manual reader threading â€” the
+        a dozen independent pillar calls with manual reader threading — the
         facade makes the engine approachable and its surface stable.
 
     LAW OF OPERATION:
@@ -1213,7 +1213,7 @@ class Moira:
             "outputs": ["Chart", "HouseCusps", "list[AspectData]",
                         "EclipseData", "and all other pillar return types"]
         },
-        "state": "stateful â€” owns _reader: SpkReader",
+        "state": "stateful — owns _reader: SpkReader",
         "effects": {
             "io": ["de441.bsp (read, via SpkReader at construction)"],
             "signals_emitted": [],
@@ -1259,7 +1259,7 @@ class Moira:
 
         Parameters
         ----------
-        dt              : timezone-aware datetime (naÃ¯ve treated as UTC)
+        dt              : timezone-aware datetime (naïve treated as UTC)
         bodies          : list of Body.* constants (defaults to ALL_PLANETS)
         include_nodes   : include True Node, Mean Node, Lilith
         observer_lat    : geographic latitude for topocentric Moon (degrees)
@@ -1405,7 +1405,7 @@ class Moira:
 
         Returns
         -------
-        Dict mapping body name â†’ sidereal ecliptic longitude (degrees)
+        Dict mapping body name → sidereal ecliptic longitude (degrees)
         """
         jd = jd_from_datetime(dt)
         chart = self.chart(dt, bodies=bodies)
@@ -1425,11 +1425,11 @@ class Moira:
 
         Parameters
         ----------
-        dt : timezone-aware datetime (naÃ¯ve treated as UTC)
+        dt : timezone-aware datetime (naïve treated as UTC)
 
         Returns
         -------
-        EclipseData â€” positions, classification, Saros/Metonic cycles,
+        EclipseData — positions, classification, Saros/Metonic cycles,
                       Aubrey stone positions, and magnitude.
         """
         return EclipseCalculator(reader=self._reader).calculate(dt)
@@ -1556,8 +1556,8 @@ class Moira:
         Parameters
         ----------
         dt_a / dt_b       : birth datetimes (timezone-aware recommended)
-        lat_a / lat_b     : geographic latitudes (Â°, north positive)
-        lon_a / lon_b     : geographic longitudes (Â°, east positive)
+        lat_a / lat_b     : geographic latitudes (°, north positive)
+        lon_a / lon_b     : geographic longitudes (°, east positive)
         house_system      : house system to use
         """
         return davison_chart(
@@ -1686,7 +1686,7 @@ class Moira:
         chart             : natal Chart instance
         houses            : natal HouseCusps (Placidus recommended)
         geo_lat           : geographic latitude (degrees, north positive)
-        max_arc           : maximum arc in degrees (default 90 â‰ˆ 90 years)
+        max_arc           : maximum arc in degrees (default 90 ≈ 90 years)
         include_converse  : also include converse directions
         significators     : body names to use as significators (default = all)
         promissors        : body names to use as promissors (default = all)
@@ -1776,7 +1776,7 @@ class Moira:
 
         Parameters
         ----------
-        orb : orb in degrees for midpoint aspects (default 1.5Â°)
+        orb : orb in degrees for midpoint aspects (default 1.5°)
         """
         return calculate_midpoints(chart.longitudes(), orb=orb)
 
@@ -2254,7 +2254,7 @@ class Moira:
 
         Parameters
         ----------
-        dt        : date (naÃ¯ve treated as UTC)
+        dt        : date (naïve treated as UTC)
         latitude  : geographic latitude (degrees)
         longitude : geographic east longitude (degrees)
         """
@@ -2300,8 +2300,8 @@ class Moira:
 
         Returns
         -------
-        FixedStar with longitude, latitude, magnitude, and â€” when the Gaia
-        catalog is loaded â€” bp_rp, teff_k, parallax_mas, distance_ly, and
+        FixedStar with longitude, latitude, magnitude, and — when the Gaia
+        catalog is loaded — bp_rp, teff_k, parallax_mas, distance_ly, and
         quality (StellarQuality).  Fields unavailable from Gaia are NaN / None.
         """
         from .julian import ut_to_tt as _utt
@@ -2343,6 +2343,32 @@ class Moira:
         from .stars import heliacal_setting as _hs
         return _hs(star_name, jd_from_datetime(dt), latitude, longitude)
 
+    def heliacal_rising_event(
+        self,
+        star_name: str,
+        dt: datetime,
+        latitude: float,
+        longitude: float,
+    ) -> HeliacalEvent:
+        """
+        Find the next heliacal rising of a fixed star and preserve event metadata.
+        """
+        from .stars import heliacal_rising_event as _hre
+        return _hre(star_name, jd_from_datetime(dt), latitude, longitude)
+
+    def heliacal_setting_event(
+        self,
+        star_name: str,
+        dt: datetime,
+        latitude: float,
+        longitude: float,
+    ) -> HeliacalEvent:
+        """
+        Find the next heliacal setting of a fixed star and preserve event metadata.
+        """
+        from .stars import heliacal_setting_event as _hse
+        return _hse(star_name, jd_from_datetime(dt), latitude, longitude)
+
     # ------------------------------------------------------------------
     # Nakshatras
     # ------------------------------------------------------------------
@@ -2372,7 +2398,7 @@ class Moira:
 
         Parameters
         ----------
-        orb : orb in degrees (default 1.0Â°)
+        orb : orb in degrees (default 1.0°)
         """
         return find_antiscia(chart.longitudes(), orb=orb)
 
@@ -2441,7 +2467,7 @@ class Moira:
         ----------
         lot_longitude : natal longitude of the Lot (Fortune, Spirit, etc.)
         natal_dt      : birth datetime
-        levels        : number of levels to generate (1â€“4, default 4)
+        levels        : number of levels to generate (1–4, default 4)
         """
         return zodiacal_releasing(lot_longitude, jd_from_datetime(natal_dt),
                                   levels=levels)
@@ -2469,7 +2495,7 @@ class Moira:
         """
         moon = natal_chart.planets.get("Moon")
         if moon is None:
-            raise ValueError("Moon not found in natal chart â€” include it when calling chart()")
+            raise ValueError("Moon not found in natal chart — include it when calling chart()")
         return vimshottari(moon.longitude, jd_from_datetime(natal_dt),
                            levels=levels, ayanamsa_system=ayanamsa_system)
 
@@ -2494,7 +2520,7 @@ class Moira:
         observer_lat : birth location latitude (degrees)
         observer_lon : birth location east longitude (degrees)
         bodies       : bodies to include (default: all chart planets)
-        lat_step     : latitude grid step for line tracing (default 2Â°)
+        lat_step     : latitude grid step for line tracing (default 2°)
         """
         from .julian import apparent_sidereal_time as _gast, ut_to_tt as _utt
         from .obliquity import nutation as _nut, true_obliquity as _tob
@@ -2570,7 +2596,7 @@ class Moira:
         orb_minutes: float = 4.0,
     ) -> list[Paran]:
         """
-        Find natal parans â€” simultaneous horizon crossings on the birth day.
+        Find natal parans — simultaneous horizon crossings on the birth day.
 
         Parameters
         ----------
@@ -2613,7 +2639,7 @@ class Moira:
 
         Returns
         -------
-        Dict of body name â†’ OrbitalNode (ascending node, descending node,
+        Dict of body name → OrbitalNode (ascending node, descending node,
         perihelion, aphelion longitudes)
         """
         return all_planetary_nodes(jd_from_datetime(dt))
@@ -2669,7 +2695,7 @@ class Moira:
         bodies: list[str] | None = None,
     ) -> list[GalacticPosition]:
         """
-        Compute galactic (â„“, b) coordinates for all planets in a chart.
+        Compute galactic (ℓ, b) coordinates for all planets in a chart.
 
         Parameters
         ----------
@@ -2698,7 +2724,7 @@ class Moira:
                     planet_data[name] = (p.longitude, p.latitude)
                 elif name in chart.nodes:
                     planet_data[name] = (chart.nodes[name].longitude, 0.0)
-        return all_galactic_positions(planet_data, obliquity)
+        return all_galactic_positions(planet_data, obliquity, chart.jd_tt)
 
     def galactic_angles(self, chart: Chart) -> dict[str, tuple[float, float]]:
         """
@@ -2707,13 +2733,13 @@ class Moira:
 
         Returns
         -------
-        dict: point name â†’ (ecliptic_longitude, ecliptic_latitude) in degrees.
+        dict: point name → (ecliptic_longitude, ecliptic_latitude) in degrees.
 
         Keys: "Galactic Center", "Galactic Anti-Center",
               "North Galactic Pole", "South Galactic Pole",
               "Super-Galactic Center"
         """
-        return galactic_reference_points(chart.obliquity)
+        return galactic_reference_points(chart.obliquity, chart.jd_tt)
 
     # ------------------------------------------------------------------
     # Uranian Planets (Hamburg School)
@@ -2848,7 +2874,7 @@ class Moira:
         body1 / body2 : Body.* constants
         jd_start      : search start (JD UT)
         jd_end        : search end (JD UT)
-        max_sep_deg   : maximum separation to report (degrees, default 1.0Â°)
+        max_sep_deg   : maximum separation to report (degrees, default 1.0°)
         """
         return close_approaches(body1, body2, jd_start, jd_end,
                                 max_sep_deg=max_sep_deg, reader=self._reader)
@@ -2877,8 +2903,8 @@ class Moira:
         latitude / longitude : observer location (degrees)
         year_start / year_end : astronomical years (negative = BC)
         arcus_visionis : solar depression required for Sirius to be visible
-                         (degrees).  Default 10Â° is correct for Sirius
-                         magnitude âˆ’1.46 in a clear ancient sky.
+                         (degrees).  Default 10° is correct for Sirius
+                         magnitude −1.46 in a clear ancient sky.
 
         Returns
         -------
@@ -2905,14 +2931,14 @@ class Moira:
         tolerance_days: float = 1.0,
     ) -> list[SothicEpoch]:
         """
-        Find Sothic epochs in a year range â€” years where Sirius's heliacal
+        Find Sothic epochs in a year range — years where Sirius's heliacal
         rising returns to within *tolerance_days* of 1 Thoth.
 
         Parameters
         ----------
         latitude / longitude : observer location
         year_start / year_end : search range (astronomical years)
-        tolerance_days : closeness threshold (default Â±1 day)
+        tolerance_days : closeness threshold (default ±1 day)
 
         Returns
         -------
@@ -2929,7 +2955,7 @@ class Moira:
         """
         Convert a datetime to an Egyptian civil calendar date.
 
-        The Egyptian civil year has 365 days (12 months Ã— 30 days + 5
+        The Egyptian civil year has 365 days (12 months × 30 days + 5
         epagomenal days).  The calendar is anchored to the 139 AD Sothic epoch
         (Censorinus) by default.
 
@@ -2952,7 +2978,7 @@ class Moira:
 
     def variable_star_phase(self, name: str, dt: datetime) -> float:
         """
-        Return the phase (0â€“1) of a variable star at a given time.
+        Return the phase (0–1) of a variable star at a given time.
 
         Phase 0 = primary minimum for eclipsing binaries;
         phase 0 = maximum light for pulsating/Mira types.
@@ -3016,11 +3042,11 @@ class Moira:
         Returns
         -------
         dict with keys:
-          phase             â€” current phase (0â€“1)
-          magnitude         â€” estimated V magnitude
-          malefic_intensity â€” 0.0 (inert) â†’ 1.0 (peak malefic power)
-          benefic_strength  â€” 0.0 (depleted) â†’ 1.0 (peak benefic power)
-          is_eclipsed       â€” True if an eclipsing binary is currently in eclipse
+          phase             — current phase (0–1)
+          magnitude         — estimated V magnitude
+          malefic_intensity — 0.0 (inert) → 1.0 (peak malefic power)
+          benefic_strength  — 0.0 (depleted) → 1.0 (peak benefic power)
+          is_eclipsed       — True if an eclipsing binary is currently in eclipse
         """
         star = variable_star(name)
         jd   = jd_from_datetime(dt)
@@ -3051,12 +3077,12 @@ class Moira:
         Returns
         -------
         dict with keys:
-          separation_arcsec    â€” float: current Aâ€“B angular separation
-          position_angle_deg   â€” float: position angle (N through E)
-          is_resolvable        â€” bool:  splittable with aperture_mm telescope
-          dominant_component   â€” str:   label of brightest component
-          combined_magnitude   â€” float: total V magnitude of the system
-          system_type          â€” str:   MultiType constant
+          separation_arcsec    — float: current A–B angular separation
+          position_angle_deg   — float: position angle (N through E)
+          is_resolvable        — bool:  splittable with aperture_mm telescope
+          dominant_component   — str:   label of brightest component
+          combined_magnitude   — float: total V magnitude of the system
+          system_type          — str:   MultiType constant
         """
         system = multiple_star(name)
         jd     = jd_from_datetime(dt)
@@ -3080,7 +3106,7 @@ class Moira:
 
         Returns
         -------
-        dict from components_at() â€” separation, PA, resolvability flags,
+        dict from components_at() — separation, PA, resolvability flags,
         dominant component label, and per-component magnitude/spectral data.
         """
         return components_at(multiple_star(name), jd_from_datetime(dt))

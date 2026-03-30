@@ -1,5 +1,5 @@
 ﻿"""
-Aries Constellation Oracle â€” moira/constellations/stars_aries.py
+Aries Constellation Oracle — moira/constellations/stars_aries.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Aries.
-    - ARIES_STAR_NAMES mapping (constant â†’ canonical name).
+    - ARIES_STAR_NAMES mapping (constant → canonical name).
     - aries_star_at() dispatcher.
     - Per-star convenience functions (hamal_at, sheratan_at, â€¦).
     - list_aries_stars() / available_aries_stars() introspection.

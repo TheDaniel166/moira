@@ -1,5 +1,5 @@
 ﻿"""
-Aquila Constellation Oracle â€” moira/constellations/stars_aquila.py
+Aquila Constellation Oracle — moira/constellations/stars_aquila.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Aquila.
-    - AQUILA_STAR_NAMES mapping (constant â†’ canonical name).
+    - AQUILA_STAR_NAMES mapping (constant → canonical name).
     - aquila_star_at() dispatcher.
     - Per-star convenience functions (altair_at, alshain_at, â€¦).
     - list_aquila_stars() / available_aquila_stars() introspection.

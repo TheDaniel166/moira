@@ -1,7 +1,7 @@
 ﻿"""
-Constellation Oracle Package â€” moira/constellations/
+Constellation Oracle Package — moira/constellations/
 
-Archetype: Oracle (shared concern â€” star catalogue grouping by constellation)
+Archetype: Oracle (shared concern — star catalogue grouping by constellation)
 
 Package architectural role:
     This package groups the fixed-star Oracle API by IAU constellation.

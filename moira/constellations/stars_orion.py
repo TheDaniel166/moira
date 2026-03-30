@@ -1,5 +1,5 @@
 ﻿"""
-Orion Constellation Oracle â€” moira/constellations/stars_orion.py
+Orion Constellation Oracle — moira/constellations/stars_orion.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Orion.
-    - ORION_STAR_NAMES mapping (constant â†’ canonical name).
+    - ORION_STAR_NAMES mapping (constant → canonical name).
     - orion_star_at() dispatcher.
     - Per-star convenience functions (betelgeuse_at, rigel_at, â€¦).
     - list_orion_stars() / available_orion_stars() introspection.

@@ -1,5 +1,5 @@
 ﻿"""
-Capricorn Constellation Oracle â€” moira/constellations/stars_capricorn.py
+Capricorn Constellation Oracle — moira/constellations/stars_capricorn.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Capricorn.
-    - CAPRICORN_STAR_NAMES mapping (constant â†’ canonical name).
+    - CAPRICORN_STAR_NAMES mapping (constant → canonical name).
     - capricorn_star_at() dispatcher.
     - Per-star convenience functions (algedi_at, dabih_at, â€¦).
     - list_capricorn_stars() / available_capricorn_stars() introspection.

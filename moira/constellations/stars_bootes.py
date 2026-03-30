@@ -1,15 +1,15 @@
 ﻿"""
-BoÃ¶tes Constellation Oracle â€” moira/constellations/stars_bootes.py
+Boötes Constellation Oracle — moira/constellations/stars_bootes.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
-         in BoÃ¶tes (IAU: Boo).
+         in Boötes (IAU: Boo).
 
 Boundary declaration
 --------------------
 Owns:
-    - Named string constants for each catalogued star in BoÃ¶tes.
-    - BOOTES_STAR_NAMES mapping (constant â†’ canonical name).
+    - Named string constants for each catalogued star in Boötes.
+    - BOOTES_STAR_NAMES mapping (constant → canonical name).
     - bootes_star_at() dispatcher.
     - Per-star convenience functions (arcturus_at, nekkar_at, â€¦).
     - list_bootes_stars() / available_bootes_stars() introspection.

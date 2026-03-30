@@ -2,10 +2,12 @@
 validate_delta_t_hybrid.py — Comparison study: hybrid vs current delta_t vs quadratic.
 
 Three comparisons:
-  1. hybrid vs current delta_t()         — 1962–2026 measured era
+  1. hybrid vs current delta_t()         — 1962.5–2024.5 measured annual-mean era
   2. hybrid future vs current quadratic  — 2026–2100 extrapolation divergence
   3. hybrid apparent-position impact     — delta_t difference converted to arcseconds
      for Moon, Sun, and outer planets using angular velocity approximations
+  4. residual budget decomposition       — how much structure remains after each
+     physical layer across the measured annual-mean era
 
 Usage:
     python scripts/validate_delta_t_hybrid.py
@@ -21,10 +23,13 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_REPO_ROOT))
 
 from moira.delta_t_physical import (
+    core_delta_t,
+    cryo_delta_t,
     delta_t_hybrid,
     delta_t_hybrid_uncertainty,
     secular_trend,
     _fitted_residual_spline,
+    _residual_at,
 )
 from moira.julian import delta_t as current_delta_t
 
@@ -57,17 +62,18 @@ def _current_quadratic(year: float) -> float:
 
 
 # ---------------------------------------------------------------------------
-# Comparison 1: hybrid vs current delta_t — measured era 1962–2026
+# Comparison 1: hybrid vs current delta_t — measured annual-mean era 1962.5–2024.5
 # ---------------------------------------------------------------------------
 
 def comparison_1_measured_era() -> list[tuple[float, float, float, float]]:
     rows = []
-    for y in range(1962, 2027):
-        yf = float(y)
+    yf = 1962.5
+    while yf <= 2024.5 + 1e-9:
         cur = current_delta_t(yf)
         hyb = delta_t_hybrid(yf)
         diff = hyb - cur
         rows.append((yf, cur, hyb, diff))
+        yf += 1.0
     return rows
 
 
@@ -103,17 +109,45 @@ def comparison_3_arcsec(
 
 
 # ---------------------------------------------------------------------------
+# Comparison 4: residual budget decomposition — measured annual-mean era
+# ---------------------------------------------------------------------------
+
+def comparison_4_residual_budget() -> list[dict[str, float]]:
+    rows: list[dict[str, float]] = []
+    y = 1962.5
+    while y <= 2024.5 + 1e-9:
+        measured = current_delta_t(y)
+        secular = secular_trend(y)
+        core = core_delta_t(y)
+        cryo = cryo_delta_t(y)
+        residual = _residual_at(y)
+        rows.append({
+            "year": y,
+            "measured": measured,
+            "secular_only_residual": measured - secular,
+            "secular_core_residual": measured - (secular + core),
+            "secular_core_cryo_residual": measured - (secular + core + cryo),
+            "final_model_residual": measured - (secular + core + cryo + residual),
+            "core": core,
+            "cryo": cryo,
+            "residual_term": residual,
+        })
+        y += 1.0
+    return rows
+
+
+# ---------------------------------------------------------------------------
 # Print tables
 # ---------------------------------------------------------------------------
 
 def _print_table_1(rows: list[tuple[float, float, float, float]]) -> None:
     print("\n" + "=" * 70)
-    print("COMPARISON 1 - Hybrid vs current delta_t()  [measured era 1962-2026]")
+    print("COMPARISON 1 - Hybrid vs current delta_t()  [annual-mean era 1962.5-2024.5]")
     print("=" * 70)
     print(f"{'Year':>6}  {'current':>10}  {'hybrid':>10}  {'diff':>10}  {'|diff|':>8}")
     print("-" * 52)
     for y, cur, hyb, diff in rows[::5]:
-        print(f"{y:6.0f}  {cur:10.3f}  {hyb:10.3f}  {diff:+10.3f}  {abs(diff):8.3f}")
+        print(f"{y:6.1f}  {cur:10.3f}  {hyb:10.3f}  {diff:+10.3f}  {abs(diff):8.3f}")
     diffs = [abs(r[3]) for r in rows]
     rms = math.sqrt(sum(d * d for d in diffs) / len(diffs))
     print("-" * 52)
@@ -158,6 +192,69 @@ def _print_table_3(arcsec_data: dict[str, list[tuple[float, float]]]) -> None:
     print("  that amount - not an error relative to Horizons.")
 
 
+def _rms(values: list[float]) -> float:
+    return math.sqrt(sum(v * v for v in values) / len(values)) if values else 0.0
+
+
+def _mean(values: list[float]) -> float:
+    return sum(values) / len(values) if values else 0.0
+
+
+def _decadal_mean_abs(rows: list[dict[str, float]], key: str) -> list[tuple[int, float]]:
+    buckets: dict[int, list[float]] = {}
+    for row in rows:
+        decade = int(math.floor(row["year"] / 10.0) * 10)
+        buckets.setdefault(decade, []).append(abs(row[key]))
+    return [(decade, _mean(vals)) for decade, vals in sorted(buckets.items())]
+
+
+def _print_table_4(rows: list[dict[str, float]]) -> None:
+    print("\n" + "=" * 70)
+    print("COMPARISON 4 - Residual budget decomposition  [annual-mean era 1962.5-2024.5]")
+    print("=" * 70)
+    print(
+        f"{'Layer':<28} {'RMS':>10} {'Mean|res|':>12} {'Max|res|':>12}"
+    )
+    print("-" * 66)
+
+    layer_keys = [
+        ("Measured - secular", "secular_only_residual"),
+        ("Measured - (secular + core)", "secular_core_residual"),
+        ("Measured - (secular + core + cryo)", "secular_core_cryo_residual"),
+        ("Measured - final hybrid", "final_model_residual"),
+    ]
+    for label, key in layer_keys:
+        vals = [row[key] for row in rows]
+        abs_vals = [abs(v) for v in vals]
+        print(
+            f"{label:<28} {_rms(vals):10.3f} {_mean(abs_vals):12.3f} {max(abs_vals):12.3f}"
+        )
+
+    print("\nSample epochs:")
+    print(
+        f"{'Year':>6} {'core':>9} {'cryo':>9} {'resid term':>11} {'post sec':>11} {'post sec+core':>14} {'post sec+core+cryo':>19} {'final':>9}"
+    )
+    print("-" * 100)
+    for row in rows[::5]:
+        print(
+            f"{row['year']:6.1f} {row['core']:9.3f} {row['cryo']:9.3f} {row['residual_term']:11.3f} "
+            f"{row['secular_only_residual']:11.3f} {row['secular_core_residual']:14.3f} "
+            f"{row['secular_core_cryo_residual']:19.3f} {row['final_model_residual']:9.3f}"
+        )
+
+    print("\nDecadal mean |residual|:")
+    decade_series = [
+        ("post secular", "secular_only_residual"),
+        ("post secular+core", "secular_core_residual"),
+        ("post secular+core+cryo", "secular_core_cryo_residual"),
+        ("final hybrid", "final_model_residual"),
+    ]
+    for label, key in decade_series:
+        decade_vals = _decadal_mean_abs(rows, key)
+        formatted = ", ".join(f"{decade}s={val:.3f}" for decade, val in decade_vals)
+        print(f"  {label:<22} {formatted}")
+
+
 # ---------------------------------------------------------------------------
 # Plots
 # ---------------------------------------------------------------------------
@@ -166,6 +263,7 @@ def _plot(
     rows_1: list[tuple[float, float, float, float]],
     rows_2: list[tuple[float, float, float, float, float]],
     arcsec_data: dict[str, list[tuple[float, float]]],
+    rows_4: list[dict[str, float]],
 ) -> None:
     try:
         import matplotlib.pyplot as plt
@@ -173,7 +271,7 @@ def _plot(
         print("\n(matplotlib not available — skipping plots)")
         return
 
-    fig, axes = plt.subplots(3, 1, figsize=(13, 14))
+    fig, axes = plt.subplots(4, 1, figsize=(13, 18))
 
     # — Plot 1: measured era
     ax = axes[0]
@@ -188,7 +286,7 @@ def _plot(
     ax2.axhline(0, color="k", lw=0.6, linestyle=":")
     ax.set_ylabel("DeltaT (s)")
     ax2.set_ylabel("diff (s)", color="C2")
-    ax.set_title("Comparison 1 - Hybrid vs current delta_t()  [1962-2026]")
+    ax.set_title("Comparison 1 - Hybrid vs current delta_t()  [1962.5-2024.5 annual means]")
     ax.legend(loc="upper left")
     ax2.legend(loc="lower right")
     ax.grid(True, alpha=0.3)
@@ -227,6 +325,20 @@ def _plot(
     ax.legend()
     ax.grid(True, alpha=0.3)
 
+    # — Plot 4: residual budget
+    ax = axes[3]
+    years_4 = [row["year"] for row in rows_4]
+    ax.plot(years_4, [row["secular_only_residual"] for row in rows_4], label="measured - secular", lw=1.2)
+    ax.plot(years_4, [row["secular_core_residual"] for row in rows_4], label="measured - (secular + core)", lw=1.2)
+    ax.plot(years_4, [row["secular_core_cryo_residual"] for row in rows_4], label="measured - (secular + core + cryo)", lw=1.2)
+    ax.plot(years_4, [row["final_model_residual"] for row in rows_4], label="measured - final hybrid", lw=1.4, linestyle="--")
+    ax.axhline(0, color="k", lw=0.6, linestyle=":")
+    ax.set_ylabel("Residual (s)")
+    ax.set_xlabel("Year")
+    ax.set_title("Comparison 4 - Residual budget by layer")
+    ax.legend(ncol=2)
+    ax.grid(True, alpha=0.3)
+
     plt.tight_layout()
     out = _REPO_ROOT / "validate_delta_t_comparison.png"
     plt.savefig(out, dpi=130)
@@ -240,26 +352,30 @@ def _plot(
 def main() -> int:
     print("Running Delta T hybrid comparison study...")
 
-    spline, in_sample_rms = _fitted_residual_spline()
-    print(f"  Residual spline: {'fitted' if spline is not None else 'NOT fitted (scipy missing)'}")
-    print(f"  In-sample RMS:   {in_sample_rms:.4f} s")
+    fit = _fitted_residual_spline()
+    print(f"  Residual spline: {'fitted' if fit.spline is not None else 'NOT fitted'}")
+    print(f"  CV RMS:          {fit.cv_rms:.4f} s")
+    print(f"  In-sample RMS:   {fit.in_sample_rms:.4f} s")
+    print(f"  Knot count:      {fit.knot_count}")
 
     rows_1 = comparison_1_measured_era()
     rows_2 = comparison_2_future()
     arcsec_data = comparison_3_arcsec(rows_2)
+    rows_4 = comparison_4_residual_budget()
 
     _print_table_1(rows_1)
     _print_table_2(rows_2)
     _print_table_3(arcsec_data)
+    _print_table_4(rows_4)
 
-    _plot(rows_1, rows_2, arcsec_data)
+    _plot(rows_1, rows_2, arcsec_data, rows_4)
 
     print("\n" + "=" * 70)
     print("SUMMARY")
     print("=" * 70)
     diffs_1 = [abs(r[3]) for r in rows_1]
     rms_1 = math.sqrt(sum(d * d for d in diffs_1) / len(diffs_1))
-    print(f"  Measured era (1962-2026):")
+    print(f"  Measured annual-mean era (1962.5-2024.5):")
     print(f"    RMS  |hybrid - current| = {rms_1:.3f} s")
     print(f"    Max  |hybrid - current| = {max(diffs_1):.3f} s")
 
@@ -274,6 +390,18 @@ def main() -> int:
     print(f"    Moon:  {moon_2100:.2f} arcsec")
     print(f"    Sun:   {sun_2100:.2f} arcsec")
     print(f"    (relative to current quadratic, not Horizons)")
+
+    final_abs = [abs(row["final_model_residual"]) for row in rows_4]
+    post_core_abs = [abs(row["secular_core_residual"]) for row in rows_4]
+    post_cryo_abs = [abs(row["secular_core_cryo_residual"]) for row in rows_4]
+    print(f"\n  Residual budget:")
+    print(f"    RMS  after secular only        = {_rms([row['secular_only_residual'] for row in rows_4]):.3f} s")
+    print(f"    RMS  after secular + core      = {_rms([row['secular_core_residual'] for row in rows_4]):.3f} s")
+    print(f"    RMS  after secular + core+cryo = {_rms([row['secular_core_cryo_residual'] for row in rows_4]):.3f} s")
+    print(f"    RMS  after final hybrid        = {_rms([row['final_model_residual'] for row in rows_4]):.3f} s")
+    print(f"    Mean |res| post core           = {_mean(post_core_abs):.3f} s")
+    print(f"    Mean |res| post core+cryo      = {_mean(post_cryo_abs):.3f} s")
+    print(f"    Mean |res| final hybrid        = {_mean(final_abs):.3f} s")
 
     return 0
 

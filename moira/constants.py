@@ -10,7 +10,7 @@ these values. Does not own any calculation logic, file I/O, or mutable state.
 
 Public surface:
     TAU, PI, DEG2RAD, RAD2DEG, ARCSEC2RAD,
-    J2000, JD_DELTA, JULIAN_CENTURY, JULIAN_YEAR,
+    J2000, JD_DELTA, JULIAN_CENTURY, JULIAN_YEAR, TROPICAL_YEAR, SIDEREAL_YEAR,
     NAIF, Body, NAIF_ROUTES, EARTH_ROUTE,
     SIGNS, SIGN_SYMBOLS, sign_of,
     HouseSystem, HOUSE_SYSTEM_NAMES,
@@ -39,7 +39,9 @@ ARCSEC2RAD = DEG2RAD / 3600.0
 J2000      = 2451545.0         # Julian Date of J2000.0 epoch (2000-Jan-1.5 TT)
 JD_DELTA   = 0.5               # JD starts at noon; calendar day starts at midnight
 JULIAN_CENTURY = 36525.0       # Days per Julian century
-JULIAN_YEAR    = 365.25        # Days per Julian year
+JULIAN_YEAR    = 365.25        # Days per Julian year (exact by definition)
+TROPICAL_YEAR  = 365.24219     # Mean tropical year in days
+SIDEREAL_YEAR  = 365.256363    # Mean sidereal year in days
 
 # ---------------------------------------------------------------------------
 # Physical constants — single canonical source for the whole library
@@ -229,7 +231,7 @@ class Body:
     SIDEREAL_PERIODS = {
         MERCURY:  87.969257,
         VENUS:   224.700798,
-        EARTH:   365.256363,
+        EARTH:   SIDEREAL_YEAR,
         MARS:    686.979586,
         JUPITER: 4332.589,
         SATURN: 10759.22,

@@ -1,5 +1,5 @@
 ﻿"""
-Corvus Constellation Oracle â€” moira/constellations/stars_corvus.py
+Corvus Constellation Oracle — moira/constellations/stars_corvus.py
 
 Archetype: Oracle
 Purpose: Provides named constants and per-star position functions for stars
@@ -9,7 +9,7 @@ Boundary declaration
 --------------------
 Owns:
     - Named string constants for each catalogued star in Corvus.
-    - CORVUS_STAR_NAMES mapping (constant â†’ canonical name).
+    - CORVUS_STAR_NAMES mapping (constant → canonical name).
     - corvus_star_at() dispatcher.
     - Per-star convenience functions (alchiba_at, kraz_at, â€¦).
     - list_corvus_stars() / available_corvus_stars() introspection.
