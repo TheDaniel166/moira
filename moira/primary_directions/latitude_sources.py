@@ -1,6 +1,6 @@
 """
-Moira -- primary_direction_latitude_sources.py
-Standalone primary-direction latitude-source doctrine subsystem.
+Moira -- primary_directions/latitude_sources.py
+Standalone latitude-source doctrine owner for the primary-directions subsystem.
 
 Boundary
 --------

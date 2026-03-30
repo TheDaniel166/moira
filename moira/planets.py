@@ -78,7 +78,7 @@ class PlanetData:
     """
     RITE: The Planetary Data Vessel
 
-    THEOREM: PlanetData serves as the immutable result vessel for a single
+    THEOREM: PlanetData serves as the read-only result vessel for a single
         geocentric ecliptic position computation, carrying longitude, latitude,
         distance, speed, and derived sign data for one celestial body.
 
@@ -141,7 +141,7 @@ class PlanetData:
     longitude:      float          # ecliptic longitude, degrees [0, 360)
     latitude:       float          # ecliptic latitude, degrees
     distance:       float          # distance from Earth, km
-    speed:          float          # daily motion in longitude, degrees/day
+    speed:          float          # daily motion in longitude, degrees/day (always geocentric rate)
     retrograde:     bool           # True when speed < 0
     is_topocentric: bool = False   # True when topocentric parallax has been applied
     sign:           str  = field(init=False)
@@ -177,7 +177,7 @@ class SkyPosition:
     """
     RITE: The Sky Position Vessel
 
-    THEOREM: SkyPosition serves as the immutable result vessel for a
+    THEOREM: SkyPosition serves as the read-only result vessel for a
         topocentric apparent sky position, carrying right ascension,
         declination, azimuth, altitude, and distance for one body as seen
         from a specific terrestrial observer.
@@ -255,7 +255,7 @@ class HeliocentricData:
     """
     RITE: The Heliocentric Data Vessel
 
-    THEOREM: HeliocentricData serves as the immutable result vessel for a
+    THEOREM: HeliocentricData serves as the read-only result vessel for a
         single heliocentric ecliptic position computation, carrying longitude,
         latitude, distance, speed, and derived sign data for one body
         measured from the Sun.
@@ -341,7 +341,7 @@ class CartesianPosition:
     """
     RITE: The Cartesian Position Vessel
 
-    THEOREM: CartesianPosition is the immutable result vessel for a planetary
+    THEOREM: CartesianPosition is the read-only result vessel for a planetary
         position expressed as rectangular ICRF-of-date coordinates (km) rather
         than ecliptic longitude/latitude.
 
@@ -671,7 +671,8 @@ def planet_at(
 
     Returns:
         A ``PlanetData`` vessel (default) or a ``CartesianPosition`` vessel
-        when ``frame='cartesian'``.
+        when ``frame='cartesian'``. Note: ``PlanetData.speed`` is always the
+        astrometric geocentric longitude rate regardless of ``center``.
 
     Raises:
         FileNotFoundError: If the DE441 kernel has not been initialised and
@@ -1063,7 +1064,8 @@ def heliocentric_planet_at(
         derived sign data.
 
     Raises:
-        ValueError: If ``body`` is ``Body.SUN``.
+        ValueError: If ``body`` is ``Body.SUN`` or ``Body.MOON`` (neither has
+            a meaningful heliocentric ecliptic position in this frame).
         FileNotFoundError: If the DE441 kernel has not been initialised and
             the default kernel path does not exist.
         KeyError: If the SPK kernel contains no segment for the requested body.
@@ -1254,10 +1256,10 @@ def planet_relative_to(
     xyz = _rel_vec(jd_tt)
     lon, lat, dist = icrf_to_true_ecliptic(jd_tt, xyz)
 
-    year_p, *_ = _approx_year(jd_ut + 0.5)
-    year_m, *_ = _approx_year(jd_ut - 0.5)
-    jd_tt_p = ut_to_tt(jd_ut + 0.5, year_p)
-    jd_tt_m = ut_to_tt(jd_ut - 0.5, year_m)
+    year_p, month_p, *_ = _approx_year(jd_ut + 0.5)
+    year_m, month_m, *_ = _approx_year(jd_ut - 0.5)
+    jd_tt_p = ut_to_tt(jd_ut + 0.5, decimal_year(year_p, month_p))
+    jd_tt_m = ut_to_tt(jd_ut - 0.5, decimal_year(year_m, month_m))
     lon_p, _, _ = icrf_to_true_ecliptic(jd_tt_p, _rel_vec(jd_tt_p))
     lon_m, _, _ = icrf_to_true_ecliptic(jd_tt_m, _rel_vec(jd_tt_m))
     raw_speed = (lon_p - lon_m) % 360.0

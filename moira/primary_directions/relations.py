@@ -1,6 +1,6 @@
 """
-Moira -- primary_direction_relations.py
-Standalone primary-direction relation-doctrine subsystem.
+Moira -- primary_directions/relations.py
+Standalone relation-doctrine owner for the primary-directions subsystem.
 
 Boundary
 --------
@@ -30,6 +30,7 @@ __all__ = [
     "PrimaryDirectionRelationsNetworkProfile",
     "default_positional_relation_policy",
     "zodiacal_aspect_relation_policy",
+    "antiscia_relation_policy",
     "ptolemaic_parallel_relation_policy",
     "placidian_rapt_parallel_relation_policy",
     "primary_direction_relational_truth",
@@ -46,6 +47,8 @@ class PrimaryDirectionRelationalKind(StrEnum):
     CONJUNCTION = "conjunction"
     OPPOSITION = "opposition"
     ZODIACAL_ASPECT = "zodiacal_aspect"
+    ANTISCION = "antiscion"
+    CONTRA_ANTISCION = "contra_antiscion"
     PARALLEL = "parallel"
     CONTRA_PARALLEL = "contra_parallel"
     RAPT_PARALLEL = "rapt_parallel"
@@ -95,6 +98,14 @@ class PrimaryDirectionRelationalTruth:
                 False,
             ),
             PrimaryDirectionRelationalKind.ZODIACAL_ASPECT: (
+                PrimaryDirectionRelationalMode.POSITIONAL,
+                True,
+            ),
+            PrimaryDirectionRelationalKind.ANTISCION: (
+                PrimaryDirectionRelationalMode.POSITIONAL,
+                True,
+            ),
+            PrimaryDirectionRelationalKind.CONTRA_ANTISCION: (
                 PrimaryDirectionRelationalMode.POSITIONAL,
                 True,
             ),
@@ -276,6 +287,8 @@ def primary_direction_relational_truth(
             resolved_kind
             in (
                 PrimaryDirectionRelationalKind.ZODIACAL_ASPECT,
+                PrimaryDirectionRelationalKind.ANTISCION,
+                PrimaryDirectionRelationalKind.CONTRA_ANTISCION,
                 PrimaryDirectionRelationalKind.PARALLEL,
                 PrimaryDirectionRelationalKind.CONTRA_PARALLEL,
             )
@@ -301,6 +314,19 @@ def zodiacal_aspect_relation_policy() -> PrimaryDirectionRelationPolicy:
                 PrimaryDirectionRelationalKind.CONJUNCTION,
                 PrimaryDirectionRelationalKind.OPPOSITION,
                 PrimaryDirectionRelationalKind.ZODIACAL_ASPECT,
+            }
+        )
+    )
+
+
+def antiscia_relation_policy() -> PrimaryDirectionRelationPolicy:
+    return PrimaryDirectionRelationPolicy(
+        frozenset(
+            {
+                PrimaryDirectionRelationalKind.CONJUNCTION,
+                PrimaryDirectionRelationalKind.OPPOSITION,
+                PrimaryDirectionRelationalKind.ANTISCION,
+                PrimaryDirectionRelationalKind.CONTRA_ANTISCION,
             }
         )
     )

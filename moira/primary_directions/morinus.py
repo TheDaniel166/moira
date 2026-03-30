@@ -1,6 +1,6 @@
 """
-Moira -- primary_direction_morinus.py
-Explicit Morinus aspect-plane primitives.
+Moira -- primary_directions/morinus.py
+Explicit Morinus aspect-plane primitives for the primary-directions subsystem.
 
 Boundary
 --------

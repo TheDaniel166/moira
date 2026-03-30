@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from moira.primary_directions import (
+    PrimaryDirectionAntisciaKind,
+    PrimaryDirectionAntisciaTarget,
+    PrimaryDirectionFixedStarTarget,
     PlacidianRaptParallelTarget,
     PrimaryDirectionConverseDoctrine,
     PrimaryDirectionLatitudeDoctrine,
@@ -13,7 +16,7 @@ from moira.primary_directions import (
     PtolemaicParallelTarget,
     primary_directions_policy_preset,
 )
-from moira.primary_direction_relations import (
+from moira.primary_directions.relations import (
     PrimaryDirectionRelationalKind,
 )
 
@@ -65,6 +68,23 @@ def test_primary_directions_policy_preset_builds_ptolemaic_parallel_branch() -> 
     )
 
 
+def test_primary_directions_policy_preset_builds_ptolemaic_antiscia_branch() -> None:
+    policy = primary_directions_policy_preset(PrimaryDirectionsPreset.PTOLEMY_ZODIACAL_ANTISCIA)
+
+    assert policy.method is PrimaryDirectionMethod.PTOLEMY_SEMI_ARC
+    assert policy.latitude_policy.doctrine is PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED
+    assert policy.latitude_source_policy.source is PrimaryDirectionLatitudeSource.ASSIGNED_ZERO
+    assert policy.perfection_policy.kind is PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION
+    assert policy.relation_policy.admitted_kinds == frozenset(
+        {
+            PrimaryDirectionRelationalKind.CONJUNCTION,
+            PrimaryDirectionRelationalKind.OPPOSITION,
+            PrimaryDirectionRelationalKind.ANTISCION,
+            PrimaryDirectionRelationalKind.CONTRA_ANTISCION,
+        }
+    )
+
+
 def test_primary_directions_policy_preset_threads_parallel_targets() -> None:
     policy = primary_directions_policy_preset(
         PrimaryDirectionsPreset.PTOLEMY_ZODIACAL_PARALLEL,
@@ -75,6 +95,35 @@ def test_primary_directions_policy_preset_threads_parallel_targets() -> None:
 
     assert policy.ptolemaic_parallel_targets == (
         PtolemaicParallelTarget("Venus", PtolemaicParallelRelation.CONTRA_PARALLEL),
+    )
+
+
+def test_primary_directions_policy_preset_threads_fixed_star_targets() -> None:
+    policy = primary_directions_policy_preset(
+        PrimaryDirectionsPreset.MERIDIAN_MUNDANE,
+        include_converse=False,
+        fixed_star_targets=(PrimaryDirectionFixedStarTarget("Sirius"),),
+    )
+
+    assert policy.fixed_star_targets == (PrimaryDirectionFixedStarTarget("Sirius"),)
+
+
+def test_primary_directions_policy_preset_threads_antiscia_targets() -> None:
+    policy = primary_directions_policy_preset(
+        PrimaryDirectionsPreset.PTOLEMY_ZODIACAL_ANTISCIA,
+        antiscia_targets=(
+            PrimaryDirectionAntisciaTarget(
+                "Sun",
+                PrimaryDirectionAntisciaKind.CONTRA_ANTISCION,
+            ),
+        ),
+    )
+
+    assert policy.antiscia_targets == (
+        PrimaryDirectionAntisciaTarget(
+            "Sun",
+            PrimaryDirectionAntisciaKind.CONTRA_ANTISCION,
+        ),
     )
 
 

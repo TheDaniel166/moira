@@ -10,6 +10,9 @@ from moira.primary_directions import (
     CONVERSE,
     DIRECT,
     MorinusAspectContext,
+    PrimaryDirectionAntisciaKind,
+    PrimaryDirectionAntisciaTarget,
+    PrimaryDirectionFixedStarTarget,
     PlacidianRaptParallelTarget,
     PrimaryArc,
     PrimaryDirectionConverseDoctrine,
@@ -40,17 +43,20 @@ from moira.primary_directions import (
     relate_primary_arc,
     speculum,
 )
-from moira.primary_direction_morinus import project_morinus_aspect_point
-from moira.primary_direction_placidus import compute_placidian_rapt_parallel_arc
-from moira.primary_direction_placidus import compute_placidian_converse_rapt_parallel_arc
-from moira.primary_direction_ptolemy import (
+from moira.antiscia import antiscion, contra_antiscion
+from moira.primary_directions.fixed_stars import resolve_primary_direction_fixed_star_point
+from moira.primary_directions.morinus import project_morinus_aspect_point
+from moira.primary_directions.placidus import compute_placidian_rapt_parallel_arc
+from moira.primary_directions.placidus import compute_placidian_converse_rapt_parallel_arc
+from moira.primary_directions.ptolemy import (
     PtolemaicParallelRelation,
     PtolemaicParallelTarget,
     project_ptolemaic_declination_point,
 )
-from moira.primary_direction_relations import (
+from moira.primary_directions.relations import (
     PrimaryDirectionRelationPolicy,
     PrimaryDirectionRelationalKind,
+    antiscia_relation_policy,
     placidian_rapt_parallel_relation_policy,
     ptolemaic_parallel_relation_policy,
     zodiacal_aspect_relation_policy,
@@ -74,6 +80,7 @@ class _FakeChart:
     planets: dict[str, _FakePlanet]
     nodes: dict[str, _FakeNode]
     obliquity: float
+    jd_tt: float
 
 
 @dataclass
@@ -95,6 +102,7 @@ def _simple_chart(*, sun_speed: float = 0.9856) -> tuple[_FakeChart, _FakeHouses
         },
         nodes={"North Node": _FakeNode(120.0)},
         obliquity=0.0,
+        jd_tt=2451545.0,
     )
     houses = _FakeHouses(
         armc=0.0,
@@ -116,6 +124,7 @@ def _oblique_chart(*, sun_speed: float = 0.9856) -> tuple[_FakeChart, _FakeHouse
         },
         nodes={"North Node": _FakeNode(203.0)},
         obliquity=23.4392911,
+        jd_tt=2451545.0,
     )
     houses = _FakeHouses(
         armc=41.0,
@@ -319,7 +328,7 @@ def test_ptolemy_parallel_target_uses_declination_equivalent_projection() -> Non
         chart.obliquity,
         51.5,
     )
-    from moira.primary_direction_geometry import _ptolemaic_oblique_ascension
+    from moira.primary_directions.geometry import _ptolemaic_oblique_ascension
 
     expected_arc_value = (_ptolemaic_oblique_ascension(expected_entry, geo_lat=51.5) - ((houses.armc + 90.0) % 360.0)) % 360.0
 
@@ -365,7 +374,7 @@ def test_ptolemy_contra_parallel_target_uses_declination_equivalent_projection()
         chart.obliquity,
         51.5,
     )
-    from moira.primary_direction_geometry import _ptolemaic_oblique_ascension
+    from moira.primary_directions.geometry import _ptolemaic_oblique_ascension
 
     expected_arc_value = (
         _ptolemaic_oblique_ascension(expected_entry, geo_lat=51.5) - ((houses.armc + 90.0) % 360.0)
@@ -401,6 +410,236 @@ def test_ptolemy_parallel_target_requires_admitted_parallel_relation_kind() -> N
                 relation_policy=PrimaryDirectionRelationPolicy(),
                 ptolemaic_parallel_targets=(PtolemaicParallelTarget(Body.VENUS),),
             ),
+        )
+
+
+def test_ptolemy_antiscia_target_uses_reflected_longitude_projection() -> None:
+    chart, houses = _oblique_chart()
+    policy = primary_directions_policy_preset(
+        PrimaryDirectionsPreset.PTOLEMY_ZODIACAL_ANTISCIA,
+        include_converse=False,
+        antiscia_targets=(PrimaryDirectionAntisciaTarget(Body.VENUS),),
+    )
+
+    arcs = find_primary_arcs(
+        chart,
+        houses,
+        geo_lat=51.5,
+        max_arc=360.0,
+        significators=["ASC"],
+        promissors=[f"{Body.VENUS} Antiscion"],
+        policy=policy,
+    )
+
+    assert arcs
+    reflected_longitude = antiscion(chart.planets[Body.VENUS].longitude)
+    expected_entry = SpeculumEntry.build(
+        f"{Body.VENUS} Antiscion",
+        reflected_longitude,
+        0.0,
+        houses.armc,
+        chart.obliquity,
+        51.5,
+    )
+    from moira.primary_directions.geometry import _ptolemaic_oblique_ascension
+
+    expected_arc = (
+        _ptolemaic_oblique_ascension(expected_entry, geo_lat=51.5) - ((houses.armc + 90.0) % 360.0)
+    ) % 360.0
+    assert arcs[0].arc == pytest.approx(expected_arc)
+
+
+def test_ptolemy_contra_antiscia_target_uses_reflected_longitude_projection() -> None:
+    chart, houses = _oblique_chart()
+    policy = primary_directions_policy_preset(
+        PrimaryDirectionsPreset.PTOLEMY_ZODIACAL_ANTISCIA,
+        include_converse=False,
+        antiscia_targets=(
+            PrimaryDirectionAntisciaTarget(
+                Body.VENUS,
+                PrimaryDirectionAntisciaKind.CONTRA_ANTISCION,
+            ),
+        ),
+    )
+
+    arcs = find_primary_arcs(
+        chart,
+        houses,
+        geo_lat=51.5,
+        max_arc=360.0,
+        significators=["ASC"],
+        promissors=[f"{Body.VENUS} Contra-Antiscion"],
+        policy=policy,
+    )
+
+    assert arcs
+    reflected_longitude = contra_antiscion(chart.planets[Body.VENUS].longitude)
+    expected_entry = SpeculumEntry.build(
+        f"{Body.VENUS} Contra-Antiscion",
+        reflected_longitude,
+        0.0,
+        houses.armc,
+        chart.obliquity,
+        51.5,
+    )
+    from moira.primary_directions.geometry import _ptolemaic_oblique_ascension
+
+    expected_arc = (
+        _ptolemaic_oblique_ascension(expected_entry, geo_lat=51.5) - ((houses.armc + 90.0) % 360.0)
+    ) % 360.0
+    assert arcs[0].arc == pytest.approx(expected_arc)
+
+
+def test_ptolemy_antiscia_target_requires_admitted_relation_kind() -> None:
+    chart, houses = _oblique_chart()
+    with pytest.raises(ValueError):
+        find_primary_arcs(
+            chart,
+            houses,
+            geo_lat=51.5,
+            max_arc=360.0,
+            significators=["ASC"],
+            promissors=[f"{Body.VENUS} Antiscion"],
+            policy=PrimaryDirectionsPolicy(
+                method=PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
+                space=PrimaryDirectionSpace.IN_ZODIACO,
+                include_converse=False,
+                converse_doctrine=PrimaryDirectionConverseDoctrine.DIRECT_ONLY,
+                latitude_policy=PrimaryDirectionLatitudePolicy(
+                    PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED
+                ),
+                latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(
+                    PrimaryDirectionLatitudeSource.ASSIGNED_ZERO
+                ),
+                perfection_policy=PrimaryDirectionPerfectionPolicy(
+                    PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION
+                ),
+                relation_policy=PrimaryDirectionRelationPolicy(),
+                antiscia_targets=(PrimaryDirectionAntisciaTarget(Body.VENUS),),
+            ),
+        )
+
+
+def test_catalog_fixed_star_target_is_admitted_narrowly_to_angles() -> None:
+    chart, houses = _oblique_chart()
+    policy = PrimaryDirectionsPolicy(
+        method=PrimaryDirectionMethod.MERIDIAN,
+        include_converse=False,
+        converse_doctrine=PrimaryDirectionConverseDoctrine.DIRECT_ONLY,
+        target_policy=PrimaryDirectionTargetPolicy(
+            admitted_significator_classes=frozenset(
+                {
+                    PrimaryDirectionTargetClass.ANGLE,
+                    PrimaryDirectionTargetClass.PLANET,
+                }
+            ),
+            admitted_promissor_classes=frozenset({PrimaryDirectionTargetClass.PLANET}),
+        ),
+        fixed_star_targets=(PrimaryDirectionFixedStarTarget("Sirius"),),
+    )
+
+    arcs = find_primary_arcs(
+        chart,
+        houses,
+        geo_lat=51.5,
+        max_arc=360.0,
+        significators=["MC"],
+        promissors=["Sirius"],
+        policy=policy,
+    )
+
+    assert len(arcs) == 1
+    assert arcs[0].significator == "MC"
+    assert arcs[0].promissor == "Sirius"
+    assert arcs[0].direction == DIRECT
+
+    star_name, longitude, latitude = resolve_primary_direction_fixed_star_point(
+        PrimaryDirectionFixedStarTarget("Sirius"),
+        jd_tt=chart.jd_tt,
+    )
+    expected_entry = SpeculumEntry.build(
+        star_name,
+        longitude,
+        latitude,
+        houses.armc,
+        chart.obliquity,
+        51.5,
+    )
+    mc_entry = SpeculumEntry.build("MC", houses.mc, 0.0, houses.armc, chart.obliquity, 51.5)
+
+    assert arcs[0].arc == pytest.approx((mc_entry.ra - expected_entry.ra) % 360.0)
+
+
+def test_catalog_fixed_star_target_is_admitted_narrowly_to_planets() -> None:
+    chart, houses = _oblique_chart()
+    policy = PrimaryDirectionsPolicy(
+        method=PrimaryDirectionMethod.MERIDIAN,
+        include_converse=False,
+        converse_doctrine=PrimaryDirectionConverseDoctrine.DIRECT_ONLY,
+        target_policy=PrimaryDirectionTargetPolicy(
+            admitted_significator_classes=frozenset(
+                {
+                    PrimaryDirectionTargetClass.ANGLE,
+                    PrimaryDirectionTargetClass.PLANET,
+                }
+            ),
+            admitted_promissor_classes=frozenset({PrimaryDirectionTargetClass.PLANET}),
+        ),
+        fixed_star_targets=(PrimaryDirectionFixedStarTarget("Sirius"),),
+    )
+
+    arcs = find_primary_arcs(
+        chart,
+        houses,
+        geo_lat=51.5,
+        max_arc=360.0,
+        significators=[Body.VENUS],
+        promissors=["Sirius"],
+        policy=policy,
+    )
+
+    assert len(arcs) == 1
+    assert arcs[0].significator == Body.VENUS
+    assert arcs[0].promissor == "Sirius"
+    assert arcs[0].direction == DIRECT
+
+    star_name, longitude, latitude = resolve_primary_direction_fixed_star_point(
+        PrimaryDirectionFixedStarTarget("Sirius"),
+        jd_tt=chart.jd_tt,
+    )
+    expected_entry = SpeculumEntry.build(
+        star_name,
+        longitude,
+        latitude,
+        houses.armc,
+        chart.obliquity,
+        51.5,
+    )
+    venus_entry = SpeculumEntry.build(
+        Body.VENUS,
+        chart.planets[Body.VENUS].longitude,
+        chart.planets[Body.VENUS].latitude,
+        houses.armc,
+        chart.obliquity,
+        51.5,
+    )
+
+    assert arcs[0].arc == pytest.approx((venus_entry.ra - expected_entry.ra) % 360.0)
+
+
+def test_catalog_fixed_star_targets_require_angle_or_planet_significators() -> None:
+    with pytest.raises(ValueError):
+        PrimaryDirectionsPolicy(
+            target_policy=PrimaryDirectionTargetPolicy(
+                admitted_significator_classes=frozenset(
+                    {
+                        PrimaryDirectionTargetClass.ANGLE,
+                        PrimaryDirectionTargetClass.NODE,
+                    }
+                ),
+                admitted_promissor_classes=frozenset({PrimaryDirectionTargetClass.PLANET}),
+            ),
+            fixed_star_targets=(PrimaryDirectionFixedStarTarget("Sirius"),),
         )
 
 

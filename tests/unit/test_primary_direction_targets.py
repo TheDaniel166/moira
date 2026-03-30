@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import pytest
 
-import moira.primary_direction_targets as target_module
+import moira.primary_directions.targets as target_module
 from moira.constants import Body
-from moira.primary_direction_targets import (
+from moira.primary_directions.targets import (
     PrimaryDirectionTargetClass,
     PrimaryDirectionTargetConditionState,
     PrimaryDirectionTargetPolicy,

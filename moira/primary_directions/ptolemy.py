@@ -1,6 +1,6 @@
 """
-Moira -- primary_direction_ptolemy.py
-Explicit Ptolemaic declination-equivalence primitives.
+Moira -- primary_directions/ptolemy.py
+Explicit Ptolemaic declination-equivalence primitives for the primary-directions subsystem.
 
 Boundary
 --------

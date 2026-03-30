@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-import moira.primary_direction_methods as method_module
-from moira.primary_direction_methods import (
+import moira.primary_directions.methods as method_module
+from moira.primary_directions.methods import (
     PrimaryDirectionMethod,
     PrimaryDirectionMethodConditionState,
     PrimaryDirectionMethodKind,

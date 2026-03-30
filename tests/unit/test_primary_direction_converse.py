@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-import moira.primary_direction_converse as converse_module
-from moira.primary_direction_converse import (
+import moira.primary_directions.converse as converse_module
+from moira.primary_directions.converse import (
     PrimaryDirectionConverseConditionState,
     PrimaryDirectionConverseDoctrine,
     PrimaryDirectionConversePolicy,

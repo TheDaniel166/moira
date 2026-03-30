@@ -1,6 +1,6 @@
 """
-Moira -- primary_direction_spaces.py
-Standalone primary-direction direction-space doctrine subsystem.
+Moira -- primary_directions/spaces.py
+Standalone direction-space doctrine owner for the primary-directions subsystem.
 
 Boundary
 --------

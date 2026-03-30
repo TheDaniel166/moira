@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-import moira.primary_direction_keys as key_module
-from moira.primary_direction_keys import (
+import moira.primary_directions.keys as key_module
+from moira.primary_directions.keys import (
     PrimaryDirectionKey,
     PrimaryDirectionKeyFamily,
     PrimaryDirectionKeyPolicy,

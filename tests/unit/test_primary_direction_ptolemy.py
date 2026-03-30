@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-import moira.primary_direction_ptolemy as ptolemy_module
-from moira.primary_direction_ptolemy import (
+import moira.primary_directions.ptolemy as ptolemy_module
+from moira.primary_directions.ptolemy import (
     PtolemaicParallelRelation,
     PtolemaicParallelTarget,
     project_ptolemaic_declination_point,

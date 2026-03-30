@@ -1,6 +1,6 @@
 """
-Moira -- primary_direction_keys.py
-Standalone primary-direction time-key doctrine subsystem.
+Moira -- primary_directions/keys.py
+Standalone time-key doctrine owner for the primary-directions subsystem.
 
 Boundary
 --------

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-import moira.primary_direction_morinus as morinus_module
-from moira.primary_direction_morinus import (
+import moira.primary_directions.morinus as morinus_module
+from moira.primary_directions.morinus import (
     MorinusAspectContext,
     project_morinus_aspect_point,
 )

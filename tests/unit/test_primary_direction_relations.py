@@ -2,14 +2,15 @@ from __future__ import annotations
 
 import pytest
 
-import moira.primary_direction_relations as relation_module
-from moira.primary_direction_relations import (
+import moira.primary_directions.relations as relation_module
+from moira.primary_directions.relations import (
     PrimaryDirectionRelationPolicy,
     PrimaryDirectionRelationalConditionState,
     PrimaryDirectionRelationalKind,
     PrimaryDirectionRelationalMode,
     classify_primary_direction_relation,
     default_positional_relation_policy,
+    antiscia_relation_policy,
     evaluate_primary_direction_relation_condition,
     evaluate_primary_direction_relation_relations,
     evaluate_primary_direction_relations_aggregate,
@@ -31,6 +32,10 @@ def test_primary_direction_relational_truth_exposes_positional_and_declinational
     aspect = primary_direction_relational_truth(PrimaryDirectionRelationalKind.ZODIACAL_ASPECT)
     assert aspect.mode is PrimaryDirectionRelationalMode.POSITIONAL
     assert aspect.derived_point_realizable is True
+
+    antiscion = primary_direction_relational_truth(PrimaryDirectionRelationalKind.ANTISCION)
+    assert antiscion.mode is PrimaryDirectionRelationalMode.POSITIONAL
+    assert antiscion.derived_point_realizable is True
 
     parallel = primary_direction_relational_truth(PrimaryDirectionRelationalKind.PARALLEL)
     assert parallel.mode is PrimaryDirectionRelationalMode.DECLINATIONAL
@@ -93,6 +98,7 @@ def test_primary_direction_relations_module_exports_curated_surface() -> None:
         "PrimaryDirectionRelationalConditionState",
         "PrimaryDirectionRelationPolicy",
         "default_positional_relation_policy",
+        "antiscia_relation_policy",
         "zodiacal_aspect_relation_policy",
         "ptolemaic_parallel_relation_policy",
         "placidian_rapt_parallel_relation_policy",
@@ -128,6 +134,14 @@ def test_primary_direction_relation_policy_presets_are_explicit() -> None:
             PrimaryDirectionRelationalKind.CONJUNCTION,
             PrimaryDirectionRelationalKind.OPPOSITION,
             PrimaryDirectionRelationalKind.ZODIACAL_ASPECT,
+        }
+    )
+    assert antiscia_relation_policy().admitted_kinds == frozenset(
+        {
+            PrimaryDirectionRelationalKind.CONJUNCTION,
+            PrimaryDirectionRelationalKind.OPPOSITION,
+            PrimaryDirectionRelationalKind.ANTISCION,
+            PrimaryDirectionRelationalKind.CONTRA_ANTISCION,
         }
     )
     assert ptolemaic_parallel_relation_policy().admitted_kinds == frozenset(

@@ -1,7 +1,7 @@
 """
-Moira -- primary_directions.py
-The Primary Direction Engine: governs the currently admitted primary-direction
-families for natal charts.
+Moira -- primary_directions/__init__.py
+The primary-directions public engine package for the currently admitted
+recoverable surface.
 
 Boundary: owns speculum construction, mundane fraction arithmetic, direct and
 converse arc computation, and symbolic time-key conversion. Delegates ecliptic-
@@ -28,52 +28,62 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import TYPE_CHECKING, Iterable
 
-from .constants import Body, DEG2RAD
-from .primary_direction_converse import PrimaryDirectionConverseDoctrine
-from .primary_direction_geometry import compute_primary_direction_arcs
-from .primary_direction_keys import (
+from ..constants import Body, DEG2RAD
+from .converse import PrimaryDirectionConverseDoctrine
+from .antiscia import (
+    PrimaryDirectionAntisciaKind,
+    PrimaryDirectionAntisciaTarget,
+    project_primary_direction_antiscia_longitude,
+)
+from .fixed_stars import (
+    PrimaryDirectionFixedStarTarget,
+    resolve_primary_direction_fixed_star_point,
+)
+from .geometry import compute_primary_direction_arcs
+from .keys import (
     PrimaryDirectionKey,
     PrimaryDirectionKeyFamily,
     PrimaryDirectionKeyPolicy,
     convert_arc_to_time,
 )
-from .primary_direction_latitudes import (
+from .latitudes import (
     PrimaryDirectionLatitudeDoctrine,
     PrimaryDirectionLatitudePolicy,
 )
-from .primary_direction_latitude_sources import (
+from .latitude_sources import (
     PrimaryDirectionLatitudeSource,
     PrimaryDirectionLatitudeSourcePolicy,
 )
-from .primary_direction_methods import PrimaryDirectionMethod
-from .primary_direction_morinus import (
+from .methods import PrimaryDirectionMethod
+from .morinus import (
     MorinusAspectContext,
     project_morinus_aspect_point,
 )
-from .primary_direction_perfections import (
+from .perfections import (
     PrimaryDirectionPerfectionKind,
     PrimaryDirectionPerfectionPolicy,
 )
-from .primary_direction_placidus import (
+from .placidus import (
     PlacidianRaptParallelTarget,
     compute_placidian_converse_rapt_parallel_arc,
     compute_placidian_rapt_parallel_arc,
 )
-from .primary_direction_ptolemy import (
+from .ptolemy import (
     PtolemaicParallelRelation,
     PtolemaicParallelTarget,
     project_ptolemaic_declination_point,
 )
-from .primary_direction_relations import (
+from .relations import (
     PrimaryDirectionRelationPolicy,
     PrimaryDirectionRelationalKind,
     default_positional_relation_policy,
+    antiscia_relation_policy,
     placidian_rapt_parallel_relation_policy,
     ptolemaic_parallel_relation_policy,
     zodiacal_aspect_relation_policy,
 )
-from .primary_direction_spaces import PrimaryDirectionSpace
-from .primary_direction_targets import (
+from .spaces import PrimaryDirectionSpace
+from .targets import (
     PrimaryDirectionTargetClass,
     PrimaryDirectionTargetPolicy,
     primary_direction_target_truth,
@@ -98,12 +108,16 @@ __all__ = [
     "PrimaryDirectionLatitudeSourcePolicy",
     "PrimaryDirectionMethod",
     "MorinusAspectContext",
+    "PrimaryDirectionAntisciaKind",
+    "PrimaryDirectionAntisciaTarget",
+    "PrimaryDirectionFixedStarTarget",
     "PlacidianRaptParallelTarget",
     "PtolemaicParallelRelation",
     "PtolemaicParallelTarget",
     "PrimaryDirectionRelationalKind",
     "PrimaryDirectionRelationPolicy",
     "default_positional_relation_policy",
+    "antiscia_relation_policy",
     "zodiacal_aspect_relation_policy",
     "ptolemaic_parallel_relation_policy",
     "placidian_rapt_parallel_relation_policy",
@@ -130,8 +144,8 @@ __all__ = [
 ]
 
 if TYPE_CHECKING:
-    from .__init__ import Chart
-    from .houses import HouseCusps
+    from ..facade import Chart
+    from ..houses import HouseCusps
 
 
 _DEFAULT_SOLAR_RATE = 360.0 / 365.25
@@ -150,6 +164,7 @@ class PrimaryDirectionsPreset(StrEnum):
     PLACIDIAN_MUNDANE_RAPT_PARALLEL_DIRECT = "placidian_mundane_rapt_parallel_direct"
     PLACIDIAN_MUNDANE_RAPT_PARALLEL_CONVERSE = "placidian_mundane_rapt_parallel_converse"
     PTOLEMY_MUNDANE = "ptolemy_mundane"
+    PTOLEMY_ZODIACAL_ANTISCIA = "ptolemy_zodiacal_antiscia"
     PTOLEMY_ZODIACAL_ASPECT = "ptolemy_zodiacal_aspect"
     PTOLEMY_ZODIACAL_PARALLEL = "ptolemy_zodiacal_parallel"
     MERIDIAN_MUNDANE = "meridian_mundane"
@@ -193,8 +208,10 @@ class PrimaryDirectionsPolicy:
     target_policy: PrimaryDirectionTargetPolicy = field(default_factory=PrimaryDirectionTargetPolicy)
     perfection_policy: PrimaryDirectionPerfectionPolicy = field(default_factory=PrimaryDirectionPerfectionPolicy)
     morinus_aspect_contexts: tuple[MorinusAspectContext, ...] = ()
+    antiscia_targets: tuple[PrimaryDirectionAntisciaTarget, ...] = ()
     ptolemaic_parallel_targets: tuple[PtolemaicParallelTarget, ...] = ()
     placidian_rapt_parallel_targets: tuple[PlacidianRaptParallelTarget, ...] = ()
+    fixed_star_targets: tuple[PrimaryDirectionFixedStarTarget, ...] = ()
     placidian_rapt_parallel_motion: PrimaryDirectionMotion | None = None
 
     def __post_init__(self) -> None:
@@ -288,9 +305,60 @@ class PrimaryDirectionsPolicy:
             raise ValueError(
                 "PrimaryDirectionsPolicy invariant failed: placidian_rapt_parallel_targets must be unique by name"
             )
+        fixed_star_names = [target.name for target in self.fixed_star_targets]
+        if len(set(fixed_star_names)) != len(fixed_star_names):
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: fixed_star_targets must be unique by name"
+            )
+        antiscia_names = [target.name for target in self.antiscia_targets]
+        if len(set(antiscia_names)) != len(antiscia_names):
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: antiscia_targets must be unique by name"
+            )
+        if (
+            self.fixed_star_targets
+            and not self.target_policy.admitted_significator_classes
+            <= frozenset(
+                {
+                    PrimaryDirectionTargetClass.ANGLE,
+                    PrimaryDirectionTargetClass.PLANET,
+                }
+            )
+        ):
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: current fixed_star_targets admission is limited to angle and planet significators"
+            )
         if self.ptolemaic_parallel_targets and self.method is not PrimaryDirectionMethod.PTOLEMY_SEMI_ARC:
             raise ValueError(
                 "PrimaryDirectionsPolicy invariant failed: ptolemaic_parallel_targets currently require the Ptolemy method"
+            )
+        if self.antiscia_targets and self.method is not PrimaryDirectionMethod.PTOLEMY_SEMI_ARC:
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: antiscia_targets currently require the Ptolemy method"
+            )
+        if self.antiscia_targets and self.space is not PrimaryDirectionSpace.IN_ZODIACO:
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: antiscia_targets currently require in_zodiaco"
+            )
+        if self.antiscia_targets and (
+            self.latitude_policy.doctrine is not PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED
+            or self.latitude_source_policy.source is not PrimaryDirectionLatitudeSource.ASSIGNED_ZERO
+            or self.perfection_policy.kind is not PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION
+        ):
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: antiscia_targets currently require the zodiacal-suppressed longitude-perfection branch"
+            )
+        required_antiscia_kinds = {
+            (
+                PrimaryDirectionRelationalKind.ANTISCION
+                if target.kind is PrimaryDirectionAntisciaKind.ANTISCION
+                else PrimaryDirectionRelationalKind.CONTRA_ANTISCION
+            )
+            for target in self.antiscia_targets
+        }
+        if not required_antiscia_kinds <= self.relation_policy.admitted_kinds:
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: antiscia_targets require matching admitted relation kinds"
             )
         if self.ptolemaic_parallel_targets and self.space is not PrimaryDirectionSpace.IN_ZODIACO:
             raise ValueError(
@@ -378,20 +446,38 @@ def _aspect_target_policy() -> PrimaryDirectionTargetPolicy:
     )
 
 
+def _fixed_star_target_policy() -> PrimaryDirectionTargetPolicy:
+    return PrimaryDirectionTargetPolicy(
+        admitted_significator_classes=frozenset(
+            {
+                PrimaryDirectionTargetClass.ANGLE,
+                PrimaryDirectionTargetClass.PLANET,
+            }
+        ),
+        admitted_promissor_classes=PrimaryDirectionTargetPolicy().admitted_promissor_classes,
+    )
+
+
 def primary_directions_policy_preset(
     preset: PrimaryDirectionsPreset,
     *,
     include_converse: bool = True,
     key_policy: PrimaryDirectionKeyPolicy | None = None,
     morinus_aspect_contexts: tuple[MorinusAspectContext, ...] = (),
+    antiscia_targets: tuple[PrimaryDirectionAntisciaTarget, ...] = (),
     ptolemaic_parallel_targets: tuple[PtolemaicParallelTarget, ...] = (),
     placidian_rapt_parallel_targets: tuple[PlacidianRaptParallelTarget, ...] = (),
+    fixed_star_targets: tuple[PrimaryDirectionFixedStarTarget, ...] = (),
 ) -> PrimaryDirectionsPolicy:
     base_kwargs = {
         "include_converse": include_converse,
         "converse_doctrine": _preset_converse_doctrine(include_converse),
         "key_policy": key_policy if key_policy is not None else PrimaryDirectionKeyPolicy(),
+        "fixed_star_targets": fixed_star_targets,
+        "antiscia_targets": antiscia_targets,
     }
+    if fixed_star_targets:
+        base_kwargs["target_policy"] = _fixed_star_target_policy()
     if preset is PrimaryDirectionsPreset.PLACIDUS_MUNDANE:
         return PrimaryDirectionsPolicy(**base_kwargs)
     if preset is PrimaryDirectionsPreset.PLACIDIAN_CLASSIC_MUNDANE:
@@ -427,6 +513,27 @@ def primary_directions_policy_preset(
         return PrimaryDirectionsPolicy(
             method=PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
             **base_kwargs,
+        )
+    if preset is PrimaryDirectionsPreset.PTOLEMY_ZODIACAL_ANTISCIA:
+        return PrimaryDirectionsPolicy(
+            method=PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
+            space=PrimaryDirectionSpace.IN_ZODIACO,
+            include_converse=base_kwargs["include_converse"],
+            converse_doctrine=base_kwargs["converse_doctrine"],
+            key_policy=base_kwargs["key_policy"],
+            relation_policy=antiscia_relation_policy(),
+            target_policy=base_kwargs.get("target_policy", PrimaryDirectionTargetPolicy()),
+            fixed_star_targets=base_kwargs["fixed_star_targets"],
+            antiscia_targets=antiscia_targets,
+            latitude_policy=PrimaryDirectionLatitudePolicy(
+                PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED
+            ),
+            latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(
+                PrimaryDirectionLatitudeSource.ASSIGNED_ZERO
+            ),
+            perfection_policy=PrimaryDirectionPerfectionPolicy(
+                PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION
+            ),
         )
     if preset is PrimaryDirectionsPreset.PTOLEMY_ZODIACAL_ASPECT:
         return PrimaryDirectionsPolicy(
@@ -1031,6 +1138,12 @@ def _required_relation_kinds_for_requested_promissors(
         if name.endswith(" Rapt Parallel"):
             required.add(PrimaryDirectionRelationalKind.RAPT_PARALLEL)
             continue
+        if name.endswith(" Antiscion"):
+            required.add(PrimaryDirectionRelationalKind.ANTISCION)
+            continue
+        if name.endswith(" Contra-Antiscion"):
+            required.add(PrimaryDirectionRelationalKind.CONTRA_ANTISCION)
+            continue
         try:
             truth = primary_direction_target_truth(name)
         except ValueError:
@@ -1196,6 +1309,59 @@ def _ptolemaic_declination_promissor_entries(
     return derived
 
 
+def _antiscia_promissor_entries(
+    targets: Iterable[PrimaryDirectionAntisciaTarget],
+    base_entries: dict[str, SpeculumEntry],
+    *,
+    armc: float,
+    obliquity: float,
+    geo_lat: float,
+) -> dict[str, SpeculumEntry]:
+    derived: dict[str, SpeculumEntry] = {}
+    for target in targets:
+        source = base_entries.get(target.source_name)
+        if source is None:
+            continue
+        reflected_longitude = project_primary_direction_antiscia_longitude(
+            source.lon,
+            target.kind,
+        )
+        derived[target.name] = _project_zodiacal_point(
+            target.name,
+            reflected_longitude,
+            0.0,
+            armc=armc,
+            obliquity=obliquity,
+            geo_lat=geo_lat,
+        )
+    return derived
+
+
+def _fixed_star_promissor_entries(
+    targets: Iterable[PrimaryDirectionFixedStarTarget],
+    *,
+    jd_tt: float,
+    armc: float,
+    obliquity: float,
+    geo_lat: float,
+) -> dict[str, SpeculumEntry]:
+    derived: dict[str, SpeculumEntry] = {}
+    for target in targets:
+        star_name, longitude, latitude = resolve_primary_direction_fixed_star_point(
+            target,
+            jd_tt=jd_tt,
+        )
+        derived[target.name] = SpeculumEntry.build(
+            star_name,
+            longitude,
+            latitude,
+            armc,
+            obliquity,
+            geo_lat,
+        )
+    return derived
+
+
 def _state_for_arcs(arcs: tuple[PrimaryArc, ...]) -> PrimaryDirectionsConditionState:
     direct_count = sum(1 for arc in arcs if arc.is_direct)
     converse_count = len(arcs) - direct_count
@@ -1284,6 +1450,22 @@ def find_primary_arcs(
 
     all_names = list(sp_map.keys())
     sig_candidates = set(significators) if significators is not None else set(all_names)
+    fixed_star_targets = tuple(
+        target
+        for target in resolved_policy.fixed_star_targets
+        if promissors is None or target.name in promissors
+    )
+    fixed_star_names = {target.name for target in fixed_star_targets}
+    antiscia_targets = (
+        tuple(
+            target
+            for target in resolved_policy.antiscia_targets
+            if promissors is None or target.name in promissors
+        )
+        if resolved_policy.method is PrimaryDirectionMethod.PTOLEMY_SEMI_ARC
+        else ()
+    )
+    antiscia_names = {target.name for target in antiscia_targets}
     ptolemaic_parallel_targets = (
         tuple(
             target
@@ -1310,10 +1492,24 @@ def find_primary_arcs(
     prom_candidates = (
         set(promissors)
         if promissors is not None
-        else (set(all_names) | ptolemaic_parallel_names | placidian_rapt_parallel_names)
+        else (
+            set(all_names)
+            | fixed_star_names
+            | antiscia_names
+            | ptolemaic_parallel_names
+            | placidian_rapt_parallel_names
+        )
     )
     candidate_names = set(all_names) | sig_candidates | prom_candidates
     required_relation_kinds = _required_relation_kinds_for_requested_promissors(prom_candidates)
+    required_relation_kinds |= {
+        (
+            PrimaryDirectionRelationalKind.ANTISCION
+            if target.kind is PrimaryDirectionAntisciaKind.ANTISCION
+            else PrimaryDirectionRelationalKind.CONTRA_ANTISCION
+        )
+        for target in antiscia_targets
+    }
     required_relation_kinds |= {
         (
             PrimaryDirectionRelationalKind.PARALLEL
@@ -1344,6 +1540,16 @@ def find_primary_arcs(
     if derived_cusps:
         sp_map.update(derived_cusps)
         spec.extend(derived_cusps.values())
+    derived_fixed_stars = _fixed_star_promissor_entries(
+        fixed_star_targets,
+        jd_tt=chart.jd_tt,
+        armc=houses.armc,
+        obliquity=obl,
+        geo_lat=geo_lat,
+    )
+    if derived_fixed_stars:
+        sp_map.update(derived_fixed_stars)
+        spec.extend(derived_fixed_stars.values())
     prom_map: dict[str, SpeculumEntry]
     morinus_context_map = {context.source_name: context for context in resolved_policy.morinus_aspect_contexts}
     if resolved_policy.space is PrimaryDirectionSpace.IN_ZODIACO:
@@ -1362,6 +1568,16 @@ def find_primary_arcs(
                 latitude_source=resolved_policy.latitude_source_policy.source,
                 morinus_contexts=morinus_context_map,
             )
+            if antiscia_targets:
+                prom_map.update(
+                    _antiscia_promissor_entries(
+                        antiscia_targets,
+                        sp_map,
+                        armc=houses.armc,
+                        obliquity=obl,
+                        geo_lat=geo_lat,
+                    )
+                )
             if ptolemaic_parallel_targets:
                 prom_map.update(
                     _ptolemaic_declination_promissor_entries(
@@ -1388,6 +1604,8 @@ def find_primary_arcs(
         if name in target_truths
         and target_truths[name].target_class in resolved_policy.target_policy.admitted_promissor_classes
     }
+    prom_set |= antiscia_names
+    prom_set |= fixed_star_names
     prom_set |= ptolemaic_parallel_names
     prom_set |= placidian_rapt_parallel_names
     placidian_rapt_parallel_map = {

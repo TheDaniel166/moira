@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from moira.primary_direction_placidus import (
+from moira.primary_directions.placidus import (
     PlacidianRaptParallelTarget,
     compute_placidian_converse_rapt_parallel_arc,
     compute_placidian_rapt_parallel_arc,

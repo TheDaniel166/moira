@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-import moira.primary_direction_perfections as perfection_module
-from moira.primary_direction_perfections import (
+import moira.primary_directions.perfections as perfection_module
+from moira.primary_directions.perfections import (
     PrimaryDirectionPerfectionConditionState,
     PrimaryDirectionPerfectionKind,
     PrimaryDirectionPerfectionMode,

@@ -1,6 +1,6 @@
 """
-Moira -- primary_direction_placidus.py
-Explicit narrow Placidian parallel primitives.
+Moira -- primary_directions/placidus.py
+Explicit narrow Placidian parallel primitives for the primary-directions subsystem.
 
 Boundary
 --------
@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .primary_directions import SpeculumEntry
+    from . import SpeculumEntry
 
 __all__ = [
     "PlacidianRaptParallelTarget",

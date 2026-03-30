@@ -1,6 +1,6 @@
 """
-Moira -- primary_direction_geometry.py
-Standalone primary-direction geometry owner.
+Moira -- primary_directions/geometry.py
+Standalone geometry owner for the primary-directions subsystem.
 
 Boundary
 --------
@@ -16,13 +16,13 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import TYPE_CHECKING, Protocol
 
-from .constants import DEG2RAD
-from .primary_direction_latitudes import PrimaryDirectionLatitudeDoctrine
-from .primary_direction_methods import PrimaryDirectionMethod
-from .primary_direction_spaces import PrimaryDirectionSpace
+from ..constants import DEG2RAD
+from .latitudes import PrimaryDirectionLatitudeDoctrine
+from .methods import PrimaryDirectionMethod
+from .spaces import PrimaryDirectionSpace
 
 if TYPE_CHECKING:
-    from .primary_directions import SpeculumEntry
+    from . import SpeculumEntry
 
 __all__ = [
     "PrimaryDirectionGeometryLaw",

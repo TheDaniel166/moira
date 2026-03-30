@@ -1,6 +1,6 @@
 """
-Moira -- primary_direction_targets.py
-Standalone primary-direction target-doctrine subsystem.
+Moira -- primary_directions/targets.py
+Standalone target-doctrine owner for the primary-directions subsystem.
 
 Boundary
 --------
@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Iterable
 
-from .constants import Body
+from ..constants import Body
 
 __all__ = [
     "PrimaryDirectionTargetClass",

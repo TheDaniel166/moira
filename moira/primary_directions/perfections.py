@@ -1,6 +1,6 @@
 """
-Moira -- primary_direction_perfections.py
-Standalone primary-direction perfection-doctrine subsystem.
+Moira -- primary_directions/perfections.py
+Standalone perfection-doctrine owner for the primary-directions subsystem.
 
 Boundary
 --------

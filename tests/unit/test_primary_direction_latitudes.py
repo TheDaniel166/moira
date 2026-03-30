@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-import moira.primary_direction_latitudes as latitude_module
-from moira.primary_direction_latitudes import (
+import moira.primary_directions.latitudes as latitude_module
+from moira.primary_directions.latitudes import (
     PrimaryDirectionLatitudeConditionState,
     PrimaryDirectionLatitudeDoctrine,
     PrimaryDirectionLatitudePolicy,

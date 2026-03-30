@@ -5,15 +5,15 @@ import math
 import pytest
 
 from moira.constants import Body
-from moira.primary_direction_geometry import (
+from moira.primary_directions.geometry import (
     PrimaryDirectionGeometryLaw,
     PrimaryDirectionGeometrySovereignty,
     compute_primary_direction_arcs,
     primary_direction_geometry_truth,
 )
-from moira.primary_direction_latitudes import PrimaryDirectionLatitudeDoctrine
-from moira.primary_direction_methods import PrimaryDirectionMethod
-from moira.primary_direction_spaces import PrimaryDirectionSpace
+from moira.primary_directions.latitudes import PrimaryDirectionLatitudeDoctrine
+from moira.primary_directions.methods import PrimaryDirectionMethod
+from moira.primary_directions.spaces import PrimaryDirectionSpace
 from moira.primary_directions import SpeculumEntry
 
 

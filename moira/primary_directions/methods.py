@@ -1,6 +1,6 @@
 """
-Moira -- primary_direction_methods.py
-Standalone primary-direction method doctrine subsystem.
+Moira -- primary_directions/methods.py
+Standalone method-doctrine owner for the primary-directions subsystem.
 
 Boundary
 --------

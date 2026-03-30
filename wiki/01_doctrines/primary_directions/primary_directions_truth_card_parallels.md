@@ -72,7 +72,7 @@
 - `verified narrow admission`
 - broader parallel doctrine still deferred pending explicit method-specific laws
 - the family-level policy and branch classification now live in:
-  - [primary_directions_parallel_family_matrix.md](c:/Users/nilad/OneDrive/Desktop/Moira/primary_directions_parallel_family_matrix.md)
+  - [primary_directions_parallel_family_matrix.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\05_research\primary_directions\primary_directions_parallel_family_matrix.md)
 
 ## Why They Are Deferred
 

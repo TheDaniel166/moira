@@ -154,7 +154,7 @@ The entire trans-Neptunian landscape was invisible in 1997:
   the solar system. Hyperbolic trajectory. Origin: unknown. It passed through the inner
   solar system, approached closest to the Sun in September 2017, and is now departing.
 - **2I/Borisov** (August 2019) — the first confirmed interstellar comet.
-- **3I/ATLAS** (2025) — third known interstellar object, discovered just this year.
+- **3I/ATLAS** (June 2025) — third known interstellar object.
 
 An object from another star system, passing through our solar system, has an astrological
 position. This has never been possible to calculate before. These bodies did not exist in
@@ -177,69 +177,61 @@ The **IERS** (International Earth Rotation and Reference Systems Service) publis
 
 The Earth's rotation is not perfectly smooth. It jerks and wobbles due to atmospheric
 loading, ocean tides, seismic events, and inner-core dynamics. In 1997, you used a
-polynomial. In 2025, you can download the actual measured value.
+polynomial. In 2025, the actual measured values have been catalogued and modeled.
 
 **What this means**: A chart cast for, say, a moment of geopolitical significance using
-the actual IERS-measured ΔT at that moment is more accurate than any chart computed with
-a polynomial fit — by as much as 0.2–0.5 seconds of time, which translates to a
+a ΔT value anchored to real Earth-rotation physics is more accurate than one computed
+with a polynomial fit — by as much as 0.2–0.5 seconds of time, which translates to a
 ~0.1–0.3 arcminute shift in house cusps and a topocentric Moon correction.
 
-For **mundane astrology** (charts for world events), this matters. Swiss Ephemeris
-cannot access or use IERS real-time data. Moira can.
+For **mundane astrology** (charts for world events), this matters. Swiss Ephemeris uses
+a polynomial approximation. Moira uses a physics-based hybrid model (`delta_t_physical.py`)
+that decomposes ΔT into four explicit components: secular trend from tidal braking and
+glacial isostatic adjustment, core-mantle angular momentum from the Gillet et al. series,
+cryosphere/hydrosphere contribution from GRACE/GRACE-FO LOD integrals, and an IERS
+residual spline fitted to Bulletin B annual values. All source data is bundled locally —
+there is no runtime web fetch. Beyond the table epoch, the model extrapolates using only
+the physical components, and reports a calibrated ±1σ uncertainty via
+`delta_t_hybrid_uncertainty(year)`. See `DELTA_T_HYBRID_MODEL.md` for the full architecture.
 
 ---
 
 ## II. The Computational Revolution
 
-### 5. Numerical Integration of Any Orbit on Demand
+### 5. Orbital Elements and On-Demand Orbit Analysis
 
 Swiss Ephemeris's core planetary data comes from JPL's DE series — pre-integrated
 n-body solutions. For anything not in those tables, SwissEph is helpless.
 
-Modern tools (scipy, `rebound`, `poliastro`) can perform **numerical orbit integration**
-directly in Python given initial conditions (orbital elements or state vectors). This means:
+**What is currently implemented:** `orbits.py` provides `orbital_elements_at(body, jd_ut,
+reader)` and `distance_extremes_at(body, jd_ut, reader)`. These extract osculating
+Keplerian elements — semi-major axis, eccentricity, inclination, argument of perihelion,
+longitude of ascending node, mean anomaly, and true anomaly — from the SPK state vectors
+at any requested epoch. Any body with a kernel (planets, dwarf planets, centaurs, numbered
+asteroids) has its full orbital element set available on demand without pre-tabulation.
+Swiss Ephemeris has no equivalent for the extended body catalog.
 
-- **Hypothetical planets**: Compute the predicted position of Planet Nine (Batygin & Brown 2016,
-  refined 2024) based on the best-fit orbital elements from perturbed TNO clustering.
-- **Custom test particles**: "If a planet existed at this location with these orbital parameters,
-  where would it be in 2000 BC?"
-- **Comet integration**: For a newly discovered comet not yet in Horizons, integrate its orbit
-  from the discovered position and velocity.
-- **Retrograde orbit analysis**: Full numerical simulation of a body's past and future trajectory,
-  including close planetary encounters that cause orbital discontinuities.
+**Roadmap:** Arbitrary orbit integration from initial conditions — for hypothetical bodies,
+newly discovered objects without SPK kernels, or retrograde trajectory analysis through close
+encounters — is not yet part of the public runtime. Modern Python tools (scipy, `rebound`,
+`poliastro`) provide this capability and are architecturally compatible with Moira's
+coordinate pipeline. The specific use cases that would become possible include:
+
+- **Hypothetical planets**: Position of Planet Nine (Batygin & Brown 2016, refined 2024)
+  from best-fit orbital elements derived from perturbed TNO clustering.
+- **Custom test particles**: "If a body existed at these orbital parameters, where would it
+  be in 2000 BC?"
+- **Comet integration**: For a newly discovered comet not yet in Horizons, integrate from
+  discovered position and velocity.
+- **Encounter analysis**: Full numerical simulation of past and future trajectories including
+  orbital discontinuities from planetary close approaches.
 
 The ability to integrate any orbit from first principles, in-process, was computationally
 prohibitive for a 1997 C library targeting consumer hardware.
 
 ---
 
-### 6. 
-
----
-
-### 7. AI-Integrated Chart Interpretation
-
-Swiss Ephemeris is a pure calculation library. It has never produced a single word of
-interpretation. The interpretive layer has always been separate, manual, and static
-(keyword databases written by humans in fixed text).
-
-Moira can bridge calculation directly to language model interpretation in host environments
-that provide an LLM orchestration layer. This enables:
-
-- **Natural language queries**: *"What are the most significant transits in my chart this month,
-  and how do they relate to the Saturn opposition in my natal?"*
-- **Comparative synthesis**: *"Given these two charts, identify the strongest composite aspects
-  and their traditional and modern readings."*
-- **Contextualised progressions**: *"My progressed Moon is conjunct natal Pluto — what stage of
-  the 28-year cycle is this, and what archetypal themes are emphasized?"*
-
-The interpretation is dynamic, personalized, and can draw on a far larger corpus of
-astrological literature than any static keyword database. This does not exist in Swiss Ephemeris
-by design — and could not have been built in 1997 by anyone.
-
----
-
-### 8. Statistical Pattern Analysis Across Large Chart Corpora
+### 6. Statistical Pattern Analysis Across Large Chart Corpora
 
 The **Astro-Databank** (now maintained by Astro.com) contains over 60,000 birth charts of
 notable individuals, events, and entities with Rodden Ratings for data quality.
@@ -261,22 +253,29 @@ to this kind of analysis.
 
 ---
 
-### 9. Astrocartography for 1.479 Million Objects
+### 7. Astrocartography for Any Body in the Kernel Set
 
 Standard astrocartography software computes ACG lines for 10–15 traditional planets.
-With Moira's access to JPL Horizons and the full asteroid catalog:
+Moira's astrocartography engine (`astrocartography.py`) ships `acg_lines()` and
+`acg_from_chart()`, which compute MC, IC, ASC, and DSC horizon lines for any body whose
+ecliptic coordinates are available. The current bundled kernel set covers 368 named
+bodies by name. The computation is architecturally identical for any body:
 
-- Chiron lines, Ceres lines, Sedna lines — all computationally identical to Sun lines
-- An ACG map showing **only the asteroids named after your ancestor's home city**
-- Lines for interstellar visitors Oumuamua and Borisov at the moment of their closest approach
+- Chiron lines, Ceres lines, Sedna lines — all computed by the same `acg_lines()` call
+  as Sun lines
+- An ACG map covering the full TNO/dwarf-planet set from the bundled kernels
+- Lines for any body in the extended asteroid registry, including Eris, Gonggong,
+  Haumea, Makemake
 
 The mathematical algorithm is no different from Jupiter's MC line. What changes is the
 breadth of bodies available. In 1997, drawing an ACG map for Chiron was exotic. Drawing
-one for Gonggong, Eris, or a newly named asteroid was impossible.
+one for Gonggong, Eris, or a newly named asteroid was impossible. At full asteroid-catalog
+scale (1.479M bodies), astrocartography requires the kernel-generation pipeline rather
+than the bundled kernels alone.
 
 ---
 
-### 10. The Galactic Frame — Full Galactic Coordinates for All Bodies
+### 8. The Galactic Frame — Full Galactic Coordinates for All Bodies
 
 Swiss Ephemeris acknowledges the galactic center (approximately 26°54' Sagittarius) as a
 special point. But it does not natively work in galactic coordinates.
@@ -299,7 +298,7 @@ precise enough.
 
 ---
 
-### 11. Near-Earth Object Proximity Events
+### 9. Near-Earth Object Proximity Events
 
 The **Center for Near Earth Object Studies (CNEOS)** maintains continuously updated
 approach data for all known NEAs (Near-Earth Asteroids). Asteroid **99942 Apophis**
@@ -321,7 +320,7 @@ positional significance.
 
 ## III. The Conceptual Frontier
 
-### 12. The Sedna Problem — A Chart That Cannot Recurse
+### 10. The Sedna Problem — A Chart That Cannot Recurse
 
 Sedna has an orbital period of approximately **11,400 years** and a perihelion distance
 of 76 AU (Pluto's average is 39 AU). It will not return to the inner solar system for
@@ -344,7 +343,7 @@ because the body was not known to exist.
 
 ---
 
-### 13. Asteroid Families as Astrological Groupings
+### 11. Asteroid Families as Astrological Groupings
 
 The Hirayama asteroid families are clusters of asteroids with nearly identical orbital
 parameters — fragments of the same parent body destroyed by collision billions of years
@@ -400,7 +399,7 @@ the data covering 119 families and 143,711 bodies is bundled with the library.
 
 ---
 
-### 14. Light-Time Astrology
+### 12. Light-Time Astrology
 
 When you observe Jupiter at 15° Gemini, you are seeing Jupiter where it was
 **43 minutes ago** (light travel time at average distance). The Moon you see is
@@ -430,7 +429,7 @@ computed.
 
 ---
 
-### 15. The Exoplanet Catalog — Known Worlds Beyond the Solar System
+### 13. The Exoplanet Catalog — Known Worlds Beyond the Solar System
 
 Swiss Ephemeris contains no exoplanets. None existed in confirmed, catalogued form when it was built. The first confirmed exoplanet around a Sun-like star was 51 Pegasi b, discovered in **October 1995** — two years before SwissEph's release — and the catalog was essentially empty.
 
@@ -452,9 +451,9 @@ The philosophical implications for mundane and natal astrology are genuinely new
 
 ---
 
-## II. The Computational Revolution (continued)
+## IV. Analytical and Software Capabilities
 
-### 16. Declination as a Full Chart Layer
+### 14. Declination as a Full Chart Layer
 
 Most astrological software treats the chart as a one-dimensional object: ecliptic longitude. Declination — the angular distance north or south of the celestial equator — is either ignored or offered as a minor addon.
 
@@ -478,7 +477,7 @@ The only thing that was genuinely missing was the OOB check. It is now implement
 
 ---
 
-### 17. Synodic Phase Cycles for All Body Pairs
+### 15. Synodic Phase Cycles for All Body Pairs
 
 The Moon's synodic cycle — new moon, waxing crescent, first quarter, gibbous, full, waning — is the most familiar rhythmic structure in astrology. But every pair of bodies has a synodic cycle of the same structure.
 
@@ -497,27 +496,42 @@ Swiss Ephemeris exposes raw positions. Computing synodic phase requires the subt
 
 ---
 
-### 18. Exact Astronomical Event Computation
+### 16. Exact Astronomical Event Computation
 
 In 1997, finding the exact moment of a planetary station required interpolation from pre-tabulated ephemeris data — typically to ±1 day precision. Finding the exact moment of a cazimi (planet within 17' of the Sun's center) required careful table work.
 
-Modern root-finding algorithms — bisection, Brent's method, Illinois algorithm — can locate the zero-crossing of any smooth astronomical function to **sub-second precision** in milliseconds. This transforms what was laborious approximation into trivial exact computation.
+Bisection search on a smooth ephemeris function converges to sub-second precision in under 50 iterations — effectively instantaneous on modern hardware. This transforms what was laborious approximation into routine computation.
 
-Moira can compute the precise moment of:
+The following events are currently implemented with clean public APIs:
 
-- **Planetary station** (apparent longitude velocity = 0): the exact second a planet turns retrograde or direct
-- **Cazimi**: the exact ingress and egress of a planet into the Sun's heart (within 17' of center)
-- **Combustion boundary**: the exact moment a planet enters or leaves the Sun's beams (15°)
-- **Heliacal first and last visibility**: the sunrise or sunset at which a star or planet first becomes or last remains visible to the naked eye — computed for any observer location and atmospheric conditions
-- **Exact aspect perfection**: the precise moment two planets form an exact angle, including in declination
-- **Planetary ingress**: the exact second a planet crosses a sign or house cusp
-- **Eclipse contacts**: first, second, maximum, third, fourth contacts for any solar or lunar eclipse, for any location
+- **Planetary station** — `find_stations()`, `next_station()`, `retrograde_periods()` in `stations.py`:
+  bisection on apparent longitude speed to locate the exact second a planet turns retrograde or direct
+- **Solar conjunctions and phase events** — `next_conjunction()`, `conjunctions_in_range()`,
+  `next_moon_phase()`, `moon_phases_in_range()` in `phenomena.py`: bisection on angular separation
+  or Moon-Sun phase angle
+- **Perihelion and aphelion** — `perihelion()`, `aphelion()` in `phenomena.py`: golden-section
+  search on heliocentric distance
+- **Greatest elongation** — `greatest_elongation()` in `phenomena.py`
+- **Heliacal and acronychal planetary visibility** — `planet_heliacal_rising()`,
+  `planet_heliacal_setting()`, `planet_acronychal_rising()`, `planet_acronychal_setting()` in
+  `heliacal.py`: arcus-visionis model (Schaefer) for any observer location and atmospheric
+  conditions
+- **Eclipse contacts** — `eclipse_contacts.py`: first, second, maximum, third, fourth contacts
+  for any solar or lunar eclipse, for any location
 
-None of these required new data. What changed is that the computation is no longer expensive. A Python loop calling an ephemeris function can converge on any of these events in under 50 iterations — effectively instantaneous.
+The following operate through the dignity engine rather than as standalone event-timing functions:
+
+- **Solar condition boundaries (cazimi, combustion, under the beams)** — computed instantaneously
+  at any given moment by `calculate_dignities()` and `calculate_condition_profiles()` in
+  `dignities.py`; `find_phasis()` (also in `dignities.py`) scans a date range for the exact
+  moment a planet crosses a solar-beam threshold. The angular thresholds are explicit policy
+  parameters in `SolarConditionPolicy`.
+
+None of these required new data. What changed is that the computation is no longer expensive.
 
 ---
 
-### 19. Geodetic Astrology — The Zodiac Mapped to Earth
+### 17. Geodetic Astrology — The Zodiac Mapped to Earth
 
 Geodetic astrology assigns zodiacal positions to geographic locations: each longitude on Earth corresponds to a zodiacal degree. Several competing systems exist (Johndro, Sepharial, Grimm), but the core idea is that the zodiac encodes geography as well as time.
 
@@ -536,13 +550,13 @@ The conceptual system is traditional. The scale at which it can now be investiga
 
 ---
 
-## IV. Classical Techniques Reclaimed
+## V. Classical Techniques Reclaimed
 
 There is a category of astrological technique that was not impossible in 1997 for lack of data or computational paradigm — but was so laborious, so rarely implemented fully, and so imprecise in software form, that it existed in theory more than practice. Modern computation does not merely make these faster. It restores them to the precision their inventors intended, removes the approximations that degraded them, and extends them to bodies their inventors could not have imagined.
 
 ---
 
-### 20. Primary Directions — The Oldest Predictive Technique
+### 18. Primary Directions — The Oldest Predictive Technique
 
 Primary directions are the oldest surviving method of astrological prediction. They appear in Claudius Ptolemy's *Tetrabiblos* (2nd century AD), were refined by medieval Arabic astrologers (al-Qabisi, Abu Ma'shar), brought to systematic form by Regiomontanus (1467), and extended by later European masters through the 18th century.
 
@@ -567,7 +581,7 @@ The stars as promissors or significators in primary directions — computed with
 
 ---
 
-### 21. Heliacal Rising and Setting — The Babylonian Timing System
+### 19. Heliacal Rising and Setting — The Babylonian Timing System
 
 Before horoscopic astrology existed, the Babylonians practiced **observational astrology** centered on heliacal phenomena: the first morning visibility of a star after a period of invisibility (heliacal rising), and the last evening visibility before it disappears into the Sun's glare (heliacal setting).
 
@@ -594,7 +608,7 @@ This is the recovery of a timing system that predates the horoscope by at least 
 
 ---
 
-### 22. Planetary Nodes — The Orbital Intersections
+### 20. Planetary Nodes — The Orbital Intersections
 
 Every planet's orbit is tilted relative to the ecliptic. The two points where its orbital plane intersects the ecliptic are its **nodes**: ascending (North) and descending (South). These are the same concept as the Moon's nodes — applied to every planet.
 
@@ -615,7 +629,7 @@ The precision of modern orbital mechanics makes these computations exact where f
 
 ---
 
-## V. Summary — The Impossible Made Possible
+## VI. Summary — The Impossible Made Possible
 
 | Capability | Impossible in 1997 because... | Now possible because... |
 |---|---|---|
@@ -626,9 +640,8 @@ The precision of modern orbital mechanics makes these computations exact where f
 | Gonggong, Quaoar precision ephemeris | Unknown / unresolved | Discovered 2002–2007, SPK kernels available |
 | Algol binary eclipse timing | Data not compiled for software | GCVS + linear ephemeris |
 | Stellar color → classical quality | No large-scale photometric catalog | Gaia BP−RP photometry |
-| On-demand orbit integration | Computationally prohibitive | scipy, rebound, poliastro |
-| IERS real-time ΔT | No internet APIs | IERS Bulletin A/B data, ingested into local model tables |
-| AI-generated chart interpretation | No language models | LLM integration in host environments |
+| Keplerian orbital elements for any kernel body | Pre-tabulated data only; no element extraction | `orbital_elements_at()` in `orbits.py`; roadmap: arbitrary integration via scipy/rebound |
+| Physics-based hybrid ΔT model | Polynomial approximation only | Four-component model (secular + core-mantle + cryo + IERS residual) with ±1σ uncertainty |
 | Statistical analysis across 60K charts | No digital chart corpus | Astro-Databank + Moira batch API |
 | Asteroid name/mythology search | Too few asteroids | 887K bodies, mythological tagging |
 | NEO proximity events in charts | Most NEAs undiscovered | CNEOS API + JPL Horizons |
@@ -642,7 +655,7 @@ The precision of modern orbital mechanics makes these computations exact where f
 | Exoplanet directions (5,600+ known worlds) | None confirmed in catalog | NASA Exoplanet Archive + host star positions |
 | Declination as full chart layer (parallels, OOB) | Software convention, not impossibility | Full 3D vectors via SPICE; no additional cost |
 | Synodic phase angle for any body pair | Raw positions only; no phase layer | Moira computes continuous phase for all 1.479M bodies |
-| Exact event computation (stations, cazimi, ingress) | Expensive interpolation; table-limited | Root-finding (Brent's method) converges in <50 iterations |
+| Exact event computation (stations, conjunctions, heliacal, eclipse contacts) | Expensive interpolation; table-limited | Bisection on ephemeris function; converges in <50 iterations |
 | Geodetic astrology at full asteroid scale | Too few bodies for meaningful mapping | 887K bodies including city/country/culture names |
 | Primary directions with full latitude + all house systems | Computationally laborious; latitude dropped | Full mundane sphere geometry; all house systems |
 | Heliacal rising/setting for 1.46B stars | No brightness catalog; arcus visionis expensive | Gaia magnitudes + Schaefer atmospheric model |

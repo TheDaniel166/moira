@@ -1,6 +1,6 @@
 """
-Moira -- primary_direction_converse.py
-Standalone primary-direction converse doctrine subsystem.
+Moira -- primary_directions/converse.py
+Standalone converse-doctrine owner for the primary-directions subsystem.
 
 Boundary
 --------

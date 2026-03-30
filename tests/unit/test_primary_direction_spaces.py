@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-import moira.primary_direction_spaces as space_module
-from moira.primary_direction_spaces import (
+import moira.primary_directions.spaces as space_module
+from moira.primary_directions.spaces import (
     PrimaryDirectionLatitudeMode,
     PrimaryDirectionSpace,
     PrimaryDirectionSpaceConditionState,
