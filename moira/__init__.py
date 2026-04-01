@@ -27,7 +27,7 @@ if not _find_kernel("de441.bsp").exists():
 del _sys, _find_kernel
 
 from .constants import Body, HouseSystem
-from .facade import Chart, Moira, __author__, __version__
+from .facade import Chart, MissingEphemerisKernelError, Moira, __author__, __version__
 from .houses import HouseCusps
 from .julian import (
     CalendarDateTime,
@@ -51,6 +51,7 @@ from .aspects import AspectData
 __all__ = [
     "Moira",
     "Chart",
+    "MissingEphemerisKernelError",
     "Body",
     "HouseSystem",
     "Ayanamsa",

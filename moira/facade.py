@@ -67,8 +67,10 @@ Usage
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from importlib.metadata import PackageNotFoundError, version as package_version
+from pathlib import Path
 
 from .constants import Body, HouseSystem, AspectDefinition, ASPECT_TIERS
+from ._kernel_paths import find_kernel, user_kernels_dir
 from .julian import (
     CalendarDateTime, DeltaTPolicy, julian_day, calendar_from_jd, calendar_datetime_from_jd,
     jd_from_datetime, datetime_from_jd, format_jd_utc, safe_datetime_from_jd,
@@ -607,7 +609,7 @@ from .electional import (
 )
 
 __all__ = [
-    "Moira", "Chart",
+    "Moira", "Chart", "MissingEphemerisKernelError",
     "Body", "HouseSystem", "Ayanamsa",
     "PlanetData", "SkyPosition", "CartesianPosition", "NodeData", "AspectData",
     # Houses backend public surface
@@ -1031,6 +1033,7 @@ __all__ = [
 __all__ = [
     "Moira",
     "Chart",
+    "MissingEphemerisKernelError",
     "Body",
     "HouseSystem",
     "Ayanamsa",
@@ -1176,82 +1179,81 @@ class Chart:
 # Main engine
 # ---------------------------------------------------------------------------
 
+class MissingEphemerisKernelError(RuntimeError):
+    """Raised when a kernel-dependent operation is attempted without DE441."""
+
+
 class Moira:
-    """
-    RITE: Engine of the Fates
-
-    THEOREM: Facade class that provides a unified, stateful entry point to all
-             Moira ephemeris computation pillars through a single object bound
-             to a JPL DE441 kernel reader.
-
-    RITE OF PURPOSE:
-        Moira is the primary interface through which all consumers of the
-        ephemeris engine operate. It binds a SpkReader instance at construction
-        and routes every computation request to the appropriate pillar module,
-        sparing callers from managing kernel state, JD conversion, or pillar
-        imports directly. Without Moira, consumers would need to orchestrate
-        a dozen independent pillar calls with manual reader threading — the
-        facade makes the engine approachable and its surface stable.
-
-    LAW OF OPERATION:
-        Responsibilities:
-            - Accept an optional kernel_path at construction and initialise
-              the shared SpkReader.
-            - Expose chart(), houses(), aspects(), eclipse(), and all other
-              technique methods as a stable public API.
-            - Delegate all computation to the respective pillar modules.
-            - Convert datetime inputs to Julian Day before delegation.
-        Non-responsibilities:
-            - Does not implement any ephemeris computation itself.
-            - Does not own or cache Chart instances between calls.
-            - Does not manage concurrency or thread safety of the kernel reader.
-        Dependencies:
-            - moira.spk_reader.SpkReader (kernel I/O, initialised at __init__).
-            - All pillar modules imported at module level.
-        Failure behavior:
-            - Raises FileNotFoundError (via SpkReader) if de441.bsp is not
-              found at the resolved kernel path.
-            - Individual method failures propagate from the delegated pillar.
-
-    Canon: None (No applicable canon)
-
-    [MACHINE_CONTRACT v1]
-    {
-        "scope": "class",
-        "id": "moira.__init__.Moira",
-        "risk": "critical",
-        "api": {
-            "inputs": ["kernel_path: str | None"],
-            "outputs": ["Chart", "HouseCusps", "list[AspectData]",
-                        "EclipseData", "and all other pillar return types"]
-        },
-        "state": "stateful — owns _reader: SpkReader",
-        "effects": {
-            "io": ["de441.bsp (read, via SpkReader at construction)"],
-            "signals_emitted": [],
-            "mutations": []
-        },
-        "concurrency": {
-            "thread": "pure_computation",
-            "cross_thread_calls": "safe_read_only"
-        },
-        "failures": [
-            "FileNotFoundError if kernel not found at construction",
-            "ValueError from pillar modules on invalid inputs"
-        ],
-        "succession": {
-            "stance": "terminal",
-            "override_points": []
-        },
-        "agent": "kiro"
-    }
-    [/MACHINE_CONTRACT]
-    """
+    """Primary engine facade with deferred DE441 kernel readiness."""
 
     def __init__(self, kernel_path: str | None = None) -> None:
+        self._kernel_path: str | None = kernel_path
+        self._reader_obj: SpkReader | None = None
+        self._kernel_init_error: FileNotFoundError | None = None
+
         if kernel_path:
             set_kernel_path(kernel_path)
-        self._reader: SpkReader = get_reader(kernel_path)
+        self._try_initialize_reader()
+
+    def _try_initialize_reader(self) -> None:
+        try:
+            self._reader_obj = get_reader(self._kernel_path)
+            self._kernel_init_error = None
+        except FileNotFoundError as exc:
+            self._reader_obj = None
+            self._kernel_init_error = exc
+
+    @property
+    def _reader(self) -> SpkReader:
+        if self._reader_obj is None:
+            self._try_initialize_reader()
+        if self._reader_obj is None:
+            raise MissingEphemerisKernelError(self.get_kernel_status())
+        return self._reader_obj
+
+    def is_kernel_available(self) -> bool:
+        if self._reader_obj is not None:
+            return True
+        self._try_initialize_reader()
+        return self._reader_obj is not None
+
+    @property
+    def kernel_status(self) -> str:
+        return self.get_kernel_status()
+
+    def get_kernel_status(self) -> str:
+        if self._reader_obj is not None:
+            return f"Kernel ready: {self._reader_obj.path}"
+
+        expected = Path(self._kernel_path) if self._kernel_path else find_kernel("de441.bsp")
+        base = (
+            f"No ephemeris kernel is loaded. Expected DE441 at {expected}. "
+            f"User kernel directory: {user_kernels_dir()}."
+        )
+        if self._kernel_init_error is not None:
+            base = f"{base} Last load error: {self._kernel_init_error}"
+        return (
+            f"{base} Run `moira-download-kernels` or configure a kernel path with "
+            "`Moira.configure_kernel_path(path)`."
+        )
+
+    @property
+    def available_kernels(self) -> list[str]:
+        kernel_names = ["de441.bsp", "asteroids.bsp", "sb441-n373s.bsp", "centaurs.bsp", "minor_bodies.bsp"]
+        return [name for name in kernel_names if find_kernel(name).exists()]
+
+    def configure_kernel_path(self, path: str) -> None:
+        self._kernel_path = path
+        set_kernel_path(path)
+        self._try_initialize_reader()
+        if self._reader_obj is None:
+            raise MissingEphemerisKernelError(self.get_kernel_status())
+
+    def download_missing_kernels(self, interactive: bool = False) -> None:
+        from .download_kernels import download_missing
+
+        download_missing(interactive=interactive)
+        self._try_initialize_reader()
 
     # ------------------------------------------------------------------
     # Core chart
@@ -3241,5 +3243,9 @@ class Moira:
     # ------------------------------------------------------------------
 
     def __repr__(self) -> str:
-        return f"Moira(kernel='{self._reader.path.name}', v{__version__})"
+        if self._reader_obj is not None:
+            kernel_name = self._reader_obj.path.name
+        else:
+            kernel_name = "unavailable"
+        return f"Moira(kernel='{kernel_name}', v{__version__})"
 
