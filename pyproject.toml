@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "moira-astro"
-version = "0.1.6"
+version = "0.1.7"
 description = "Pure Python ephemeris and astrology engine built on JPL DE441 and SPK kernels."
 readme = "README.md"
 license = "MIT"
