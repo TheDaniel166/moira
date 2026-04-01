@@ -28,6 +28,8 @@ Public surface / exports:
     phase_angle()          — Sun-Planet-Earth angle in degrees (0 = full, 180 = new)
     illuminated_fraction() — fraction of disk illuminated (0.0–1.0)
     elongation()           — angular separation from the Sun (degrees)
+    synodic_phase_angle()  — ecliptic phase angle for any body pair (0..360)
+    synodic_phase_state()  — coarse synodic state label for a phase angle
     angular_diameter()     — apparent angular diameter (arcseconds)
     apparent_magnitude()   — apparent visual magnitude (V band, simplified model)
 """
@@ -40,6 +42,8 @@ __all__ = [
     "phase_angle",
     "illuminated_fraction",
     "elongation",
+    "synodic_phase_angle",
+    "synodic_phase_state",
     "angular_diameter",
     "apparent_magnitude",
 ]
@@ -90,6 +94,30 @@ def elongation(body_name: str, jd_ut: float) -> float:
     cos_d = (math.sin(phi1)*math.sin(phi2) +
              math.cos(phi1)*math.cos(phi2)*math.cos(lam1 - lam2))
     return math.degrees(math.acos(max(-1.0, min(1.0, cos_d))))
+
+
+def synodic_phase_angle(body1: str, body2: str, jd_ut: float) -> float:
+    """
+    Return the synodic phase angle from ``body1`` to ``body2`` in ecliptic longitude.
+
+    The result is normalized to [0, 360), where 0 means conjunction,
+    180 means opposition, and values in (0, 180) are waxing relative to body1.
+    """
+    p1 = planet_at(body1, jd_ut)
+    p2 = planet_at(body2, jd_ut)
+    return (p2.longitude - p1.longitude) % 360.0
+
+
+def synodic_phase_state(angle_deg: float) -> str:
+    """Classify a synodic phase angle into a coarse state label."""
+    a = angle_deg % 360.0
+    if a < 45.0 or a >= 315.0:
+        return "conjunction"
+    if a < 135.0:
+        return "waxing"
+    if a < 225.0:
+        return "opposition"
+    return "waning"
 
 # ---------------------------------------------------------------------------
 # Angular diameter

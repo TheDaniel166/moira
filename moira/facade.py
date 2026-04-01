@@ -2298,6 +2298,25 @@ class Moira:
             "apparent_magnitude":      _mag(body, jd),
         }
 
+    def synodic_phase(self, body1: str, body2: str, dt: datetime) -> dict[str, float | str]:
+        """
+        Return synodic phase metrics for an arbitrary body pair.
+
+        Returns
+        -------
+        dict with keys: phase_angle, phase_fraction, phase_state
+        """
+        _ = self._reader  # Ensure kernel readiness with Moira-specific error surface.
+        from .phase import synodic_phase_angle as _spa, synodic_phase_state as _sps
+
+        jd = jd_from_datetime(dt)
+        ang = _spa(body1, body2, jd)
+        return {
+            "phase_angle": ang,
+            "phase_fraction": ang / 360.0,
+            "phase_state": _sps(ang),
+        }
+
     # ------------------------------------------------------------------
     # Fixed stars
     # ------------------------------------------------------------------
