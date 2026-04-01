@@ -100,6 +100,8 @@ houses = m.houses(
 )
 print(f"ASC: {houses.asc:.4f} deg  |  MC: {houses.mc:.4f} deg")
 
+**1.0.1 correction note:** The DE441 download source was corrected to the JPL SSD endpoint below.
+
 # 3. Aspect patterns
 from moira.patterns import find_all_patterns
 patterns = find_all_patterns(chart.longitudes())
