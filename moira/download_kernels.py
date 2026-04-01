@@ -29,7 +29,7 @@ from ._kernel_paths import find_kernel, user_kernels_dir
 _REGISTRY: list[dict] = [
     {
         "filename": "de441.bsp",
-        "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de441.bsp",
+        "url": "https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de441.bsp",
         "size_hint": "~3.1 GB",
         "description": "JPL DE441 planetary ephemeris (required for all charts)",
     },

@@ -136,7 +136,7 @@ Engine readiness model:
 - `m.get_kernel_status()` explains expected path and remediation.
 - Kernel-dependent calls raise `MissingEphemerisKernelError` with instructions.
 
-**Download:** [https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de441.bsp](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de441.bsp)
+**Download:** [https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de441.bsp](https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de441.bsp)
 
 **Default location (running from the repository):** place the file at `kernels/de441.bsp` relative to the repository root. The engine resolves this path automatically.
 
