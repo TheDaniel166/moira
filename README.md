@@ -7,7 +7,7 @@
 [![PyPI](https://img.shields.io/badge/PyPI-moira--astro-orange.svg)](https://pypi.org/project/moira-astro/)
 [![Precision: ERFA-Audited](https://img.shields.io/badge/Precision-ERFA--Audited-success.svg)](#validation-evidence)
 [![Standard: JPL DE441](https://img.shields.io/badge/Standard-JPL%20DE441-blueviolet.svg)](https://naif.jpl.nasa.gov/naif/index.html)
-[![Status: Alpha](https://img.shields.io/badge/status-alpha-red.svg)](#requirements-and-installation)
+[![Status: Stable](https://img.shields.io/badge/status-stable-success.svg)](#requirements-and-installation)
 
 > *"Moira" — the one who measures the thread.*
 
@@ -77,7 +77,7 @@ It is not a wrapper around Swiss Ephemeris or any other compiled library. Every 
 
 ## Quick Start
 
-Moira requires the `de441.bsp` kernel before any planetary computation can run. See [Kernel Setup](#kernel-setup) below before executing the following examples.
+Moira initializes even when `de441.bsp` is missing. Kernel-dependent operations (for example `chart()`) raise a clear `MissingEphemerisKernelError` until the kernel is available. See [Kernel Setup](#kernel-setup) below before executing planetary examples.
 
 ```python
 from datetime import datetime, timezone
@@ -129,6 +129,13 @@ pip install moira-astro[fast]
 
 The JPL DE441 kernel (`de441.bsp`) is required for all planetary computation. It is not bundled with the package because the file is approximately 3.3 GB.
 
+Engine readiness model:
+
+- `Moira()` succeeds even if DE441 is not installed.
+- `m.is_kernel_available()` reports kernel readiness.
+- `m.get_kernel_status()` explains expected path and remediation.
+- Kernel-dependent calls raise `MissingEphemerisKernelError` with instructions.
+
 **Download:** [https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de441.bsp](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de441.bsp)
 
 **Default location (running from the repository):** place the file at `kernels/de441.bsp` relative to the repository root. The engine resolves this path automatically.
@@ -141,9 +148,13 @@ from moira import Moira
 
 set_kernel_path("/path/to/de441.bsp")
 m = Moira()
+
+# readiness helpers
+print(m.is_kernel_available())
+print(m.get_kernel_status())
 ```
 
-If the kernel file is not found, `Moira()` raises `FileNotFoundError` immediately at construction.
+If the kernel file is not found, construction still succeeds. The first kernel-dependent operation raises `MissingEphemerisKernelError` with guidance to run `moira-download-kernels` or configure a kernel path.
 
 ---
 
