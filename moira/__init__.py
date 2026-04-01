@@ -5,6 +5,27 @@ This module is intentionally thin. The heavyweight facade implementation lives
 in ``moira.facade``; subsystem APIs are imported from their owning modules.
 """
 
+import sys as _sys
+from ._kernel_paths import find_kernel as _find_kernel
+
+if not _find_kernel("de441.bsp").exists():
+    print(
+        "\n"
+        "  [moira] WARNING: de441.bsp is not installed.\n"
+        "  Most Moira features will fail until you download the JPL kernels.\n"
+        "  Run the following command to download them:\n"
+        "\n"
+        "      moira-download-kernels\n"
+        "\n"
+        "  Or, inside Python:\n"
+        "\n"
+        "      from moira.download_kernels import download_missing\n"
+        "      download_missing()\n",
+        file=_sys.stderr,
+    )
+
+del _sys, _find_kernel
+
 from .constants import Body, HouseSystem
 from .facade import Chart, Moira, __author__, __version__
 from .houses import HouseCusps

@@ -31,9 +31,11 @@ except ImportError as exc:  # pragma: no cover
         "Install it with: pip install jplephem"
     ) from exc
 
+from ._kernel_paths import find_kernel
+
 Vec3 = tuple[float, float, float]
 
-_DEFAULT_KERNEL_PATH = Path(__file__).parent.parent / "kernels" / "de441.bsp"
+_DEFAULT_KERNEL_PATH = find_kernel("de441.bsp")
 
 
 class SpkReader:

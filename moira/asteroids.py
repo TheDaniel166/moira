@@ -95,6 +95,7 @@ from .obliquity import mean_obliquity, true_obliquity, nutation
 from .precession import general_precession_in_longitude
 from .julian import ut_to_tt
 from .planets import _earth_barycentric, _barycentric as _planet_barycentric
+from ._kernel_paths import find_kernel
 from .corrections import (
     apply_light_time, apply_aberration, apply_deflection, apply_frame_bias,
     SCHWARZSCHILD_RADII,
@@ -328,27 +329,10 @@ _segment_classes[13] = _Type13Segment
 # Default kernel paths
 # ---------------------------------------------------------------------------
 
-_REPO_KERNELS_DIR = Path(__file__).parent.parent / "kernels"
-_PACKAGE_KERNELS_DIR = Path(__file__).parent / "kernels"
-
-
-def _first_existing_path(*paths: Path) -> Path:
-    for path in paths:
-        if path.exists():
-            return path
-    return paths[0]
-
-
-_PRIMARY_KERNEL_PATH = _REPO_KERNELS_DIR / "asteroids.bsp"
-_SECONDARY_KERNEL_PATH = _REPO_KERNELS_DIR / "sb441-n373s.bsp"
-_TERTIARY_KERNEL_PATH = _first_existing_path(
-    _PACKAGE_KERNELS_DIR / "centaurs.bsp",
-    _REPO_KERNELS_DIR / "centaurs.bsp",
-)
-_QUATERNARY_KERNEL_PATH = _first_existing_path(
-    _PACKAGE_KERNELS_DIR / "minor_bodies.bsp",
-    _REPO_KERNELS_DIR / "minor_bodies.bsp",
-)
+_PRIMARY_KERNEL_PATH   = find_kernel("asteroids.bsp")
+_SECONDARY_KERNEL_PATH = find_kernel("sb441-n373s.bsp")
+_TERTIARY_KERNEL_PATH  = find_kernel("centaurs.bsp")
+_QUATERNARY_KERNEL_PATH = find_kernel("minor_bodies.bsp")
 
 # Speed step for numerical differentiation of longitude (days)
 _SPEED_STEP = 0.5
