@@ -41,6 +41,7 @@ __all__ = [
     "REFERENCE_YEAR",
     "secular_trend",
     "fluid_lowfreq",
+    "historical_core_delta_t",
     "core_delta_t",
     "cryo_delta_t",
     "delta_t_hybrid",
@@ -62,7 +63,7 @@ _RESIDUAL_TAPER_START: float = 2021.5
 _RESIDUAL_TAPER_END: float = 2024.5
 _SEAM_TAPER_YEARS: float = 2.0
 _FLUID_LAG_YEARS: float = 4.0
-_FLUID_ADMISSION_SCALE: float = 0.1
+_FLUID_ADMISSION_SCALE: float = 1.0
 _GIA_COEFF_SIGMA: float = 0.5
 _CRYO_TREND_SIGMA: float = 0.002
 _CORE_HISTORICAL_SIGMA: float = 0.3
@@ -520,6 +521,96 @@ def _load_core_series() -> tuple[tuple[float, float], ...]:
     return tuple(rows)
 
 
+@cache
+def _load_historical_core_series() -> tuple[tuple[float, float], ...]:
+    """
+    Load the Gillet et al. historical core angular momentum series.
+
+    File: moira/data/historical_core_angular_momentum.txt
+    Format: decimal_year  delta_lod_ms
+    Source: Gillet et al. historical reconstruction (not yet released).
+    Returns empty tuple if the file does not yet exist.
+    """
+    path = _DATA_DIR / "historical_core_angular_momentum.txt"
+    if not path.exists():
+        return ()
+    rows: list[tuple[float, float]] = []
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        raw = raw.strip()
+        if not raw or raw.startswith("#"):
+            continue
+        parts = raw.split()
+        if len(parts) < 2:
+            continue
+        try:
+            yr = float(parts[0])
+            lod_ms = float(parts[1])
+        except ValueError:
+            continue
+        rows.append((yr, lod_ms))
+    rows.sort(key=lambda r: r[0])
+    return tuple(rows)
+
+
+@cache
+def _get_historical_core_dt_series() -> tuple[tuple[float, float], ...]:
+    """Return the cached historical core ΔT series derived from LOD anomalies."""
+    return _lod_series_to_delta_t(_load_historical_core_series())
+
+
+def historical_core_delta_t(year: float) -> float:
+    """
+    Historical core-mantle angular momentum contribution to Delta T (1840–1962).
+
+    Returns 0.0 until moira/data/historical_core_angular_momentum.txt is
+    populated with Gillet et al. historical LOD reconstruction data. Once
+    present, the series is integrated exactly as core_delta_t does for the
+    modern era. The historical bridge polynomial automatically recalibrates
+    to absorb only the residual that the core term does not explain.
+
+    Parameters
+    ----------
+    year : decimal year
+
+    Returns
+    -------
+    ΔT contribution in seconds
+    """
+    series = _get_historical_core_dt_series()
+    if not series:
+        return 0.0
+    if year <= series[0][0] or year >= series[-1][0]:
+        return 0.0
+    for i in range(len(series) - 1):
+        y0, v0 = series[i]
+        y1, v1 = series[i + 1]
+        if y0 <= year <= y1:
+            frac = (year - y0) / (y1 - y0)
+            return v0 + frac * (v1 - v0)
+    return 0.0
+
+
+def _historical_bridge_delta_t(year: float) -> float:
+    """
+    Historical era bridge term for 1840 ≤ year ≤ 1962.5.
+
+    Absorbs the gap between the secular trend and the SMH2016 observational
+    constraint: secular_trend alone overshoots by ~158 s at 1840. The bridge
+    is defined as ``smh2016(year) − secular_trend(year) − historical_core_delta_t(year)``
+    so that the sum ``secular + bridge + historical_core = smh2016`` exactly.
+
+    When Gillet historical LOD reconstruction data is loaded, historical_core_delta_t
+    becomes non-zero and the bridge automatically shrinks to cover only the
+    unexplained secular residual, decoupling the physical signal from the
+    empirical correction.
+
+    Returns 0.0 outside [_CORE_COVERAGE_START, _RESIDUAL_FIT_START].
+    """
+    if year < _CORE_COVERAGE_START or year > _RESIDUAL_FIT_START:
+        return 0.0
+    return _smh2016_lookup(year) - secular_trend(year) - historical_core_delta_t(year)
+
+
 def _lod_series_to_delta_t(
     series: tuple[tuple[float, float], ...]
 ) -> tuple[tuple[float, float], ...]:
@@ -740,7 +831,6 @@ def _fitted_residual_spline() -> _ResidualSplineFit:
         spline_years.insert(0, left_anchor_year)
         spline_residuals.insert(0, left_anchor_val)
 
-    n = len(spline_years)
     n_raw = len(years_raw)
     # Target s_factor: n_raw / 15 drives the spline toward ~5-8 interior knots
     # so that decade-scale residual oscillations are captured without the
@@ -823,11 +913,13 @@ def delta_t_hybrid(year: float) -> float:
         return _smh2016_lookup(y)
 
     if y < _RESIDUAL_FIT_START:
-        # 1840–1962.4: no physics-based components are calibrated for this
-        # era; delegate to the IERS/historical table which joins seamlessly
-        # (~0.02 s) with the measured-era hybrid at 1962.5.
-        from .julian import delta_t as _iers_delta_t
-        return _iers_delta_t(y)
+        # 1840–1962.4: physics-based historical era.
+        # secular_trend + historical bridge + historical core.
+        # Bridge = smh2016 − secular − historical_core, so the sum equals
+        # smh2016 exactly when historical_core = 0. Once Gillet historical
+        # LOD reconstruction data is loaded, historical_core absorbs the
+        # physical signal and the bridge shrinks to the unexplained residual.
+        return secular_trend(y) + _historical_bridge_delta_t(y) + historical_core_delta_t(y)
 
     base = secular_trend(y)
     fluid = fluid_lowfreq(y)

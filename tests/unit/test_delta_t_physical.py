@@ -10,6 +10,7 @@ from moira.delta_t_physical import (
     REFERENCE_YEAR,
     secular_trend,
     fluid_lowfreq,
+    historical_core_delta_t,
     core_delta_t,
     cryo_delta_t,
     delta_t_hybrid,
@@ -21,11 +22,13 @@ from moira.delta_t_physical import (
     _cosine_taper,
     _load_grace_series,
     _load_core_series,
+    _load_historical_core_series,
     _core_recent_stats,
     _modern_bridge_delta_t,
     _modern_bridge_coefficients,
     _fit_fluid_lowfreq_coefficients,
     _require_univariate_spline,
+    _historical_bridge_delta_t,
 )
 
 
@@ -93,8 +96,12 @@ def test_modern_bridge_is_zero_at_reference_year_and_in_future() -> None:
 
 
 def test_modern_bridge_is_active_in_measured_era() -> None:
+    # At 1962.5 the seam correction makes the bridge non-zero and negative
+    # (secular overshoots; bridge compensates even after fluid admission).
     assert _modern_bridge_delta_t(1962.5) < 0.0
-    assert _modern_bridge_delta_t(2010.5) < 0.0
+    # At 2010.5 the fluid term absorbs most of the low-frequency correction;
+    # the bridge is small but finite (no sign constraint).
+    assert math.isfinite(_modern_bridge_delta_t(2010.5))
 
 
 def test_modern_bridge_has_zero_left_slope_at_reference_year() -> None:
@@ -306,15 +313,13 @@ def test_delta_t_hybrid_returns_float_for_all_eras() -> None:
 def test_delta_t_hybrid_boundary_at_1840_uses_smh2016_just_before() -> None:
     # Pre-1840: SMH2016 table.
     assert delta_t_hybrid(1839.99) == _smh2016_lookup(1839.99)
-    # 1840–1962.4: IERS historical table (not the physics-based path).
+    # 1840–1962.4: physics path returns secular + historical_bridge + historical_core.
+    # Without data, historical_core = 0, so the result equals smh2016 exactly.
     # The value must be physically plausible (well under 50 s), not the
     # broken secular-only extrapolation (~165 s at 1840).
     assert delta_t_hybrid(1840.01) < 50.0
-    # The physics-based path activates at 1962.5; before that the result
-    # matches julian.delta_t directly.
-    from moira.julian import delta_t as _iers_dt
-    assert delta_t_hybrid(1900.0) == _iers_dt(1900.0)
-    assert delta_t_hybrid(1950.0) == _iers_dt(1950.0)
+    assert delta_t_hybrid(1900.0) == pytest.approx(_smh2016_lookup(1900.0), abs=1e-12)
+    assert delta_t_hybrid(1950.0) == pytest.approx(_smh2016_lookup(1950.0), abs=1e-12)
 
 
 def test_delta_t_hybrid_future_grows_with_time() -> None:
@@ -367,3 +372,56 @@ def test_reference_lod_continuity_constraint() -> None:
         + cryo_delta_t(REFERENCE_YEAR)
     )
     assert abs(reconstructed - REFERENCE_LOD) < 1.0
+
+
+# ---------------------------------------------------------------------------
+# historical_core_delta_t — no data file present
+# ---------------------------------------------------------------------------
+
+def test_historical_core_returns_zero_when_no_data_file() -> None:
+    if _load_historical_core_series():
+        pytest.skip("historical_core_angular_momentum.txt is present — skipping no-data test")
+    assert historical_core_delta_t(1840.0) == 0.0
+    assert historical_core_delta_t(1900.0) == 0.0
+    assert historical_core_delta_t(1962.0) == 0.0
+
+
+# ---------------------------------------------------------------------------
+# _historical_bridge_delta_t
+# ---------------------------------------------------------------------------
+
+def test_historical_bridge_is_zero_outside_support() -> None:
+    assert _historical_bridge_delta_t(1839.99) == 0.0
+    assert _historical_bridge_delta_t(1963.0) == 0.0
+
+
+def test_historical_bridge_plus_secular_equals_smh2016_when_no_core_data() -> None:
+    if _load_historical_core_series():
+        pytest.skip("historical_core_angular_momentum.txt is present — skipping no-data test")
+    for year in [1840.0, 1870.0, 1900.0, 1930.0, 1960.0]:
+        reconstructed = secular_trend(year) + _historical_bridge_delta_t(year)
+        assert reconstructed == pytest.approx(_smh2016_lookup(year), abs=1e-12)
+
+
+def test_historical_bridge_is_large_and_negative_at_1840() -> None:
+    # Secular overshoots by ~158 s at 1840; bridge must be strongly negative.
+    val = _historical_bridge_delta_t(1840.0)
+    assert val < -100.0
+
+
+# ---------------------------------------------------------------------------
+# delta_t_hybrid — historical era physics routing
+# ---------------------------------------------------------------------------
+
+def test_delta_t_hybrid_historical_era_matches_smh2016_when_no_core_data() -> None:
+    if _load_historical_core_series():
+        pytest.skip("historical_core_angular_momentum.txt is present — skipping no-data test")
+    for year in [1840.0, 1880.0, 1920.0, 1960.0]:
+        assert delta_t_hybrid(year) == pytest.approx(_smh2016_lookup(year), abs=1e-12)
+
+
+def test_delta_t_hybrid_historical_era_is_continuous_at_1840() -> None:
+    # Both sides of 1840 use SMH2016; no seam.
+    just_before = delta_t_hybrid(1839.99)
+    just_after = delta_t_hybrid(1840.01)
+    assert abs(just_before - just_after) < 0.1

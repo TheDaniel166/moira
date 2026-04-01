@@ -341,3 +341,4 @@ When those assumptions are aligned, the native shadow-axis minimum and the
 canon gamma-minimum objective collapse to essentially the same instant. The
 remaining catalog offset therefore reflects differing model assumptions, not
 an unlocated defect in the search machinery.
+
