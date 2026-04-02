@@ -3,8 +3,8 @@ from __future__ import annotations
 import pytest
 
 from moira.planets import sky_position_at
-from tests.tools.benchmark_matrix import STRICT_SKY_PLANET_CASES, SkyCase
-from tests.tools.horizons import observer_sky_position
+from tools.benchmark_matrix import STRICT_SKY_PLANET_CASES, SkyCase
+from tools.horizons import observer_sky_position
 
 
 def _signed_arcsec(a_deg: float, b_deg: float) -> float:

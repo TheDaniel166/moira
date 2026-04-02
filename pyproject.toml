@@ -79,8 +79,8 @@ moira = [
 
 [tool.pytest.ini_options]
 testpaths    = ["tests"]
-pythonpath   = ["."]          # makes `import moira` work from repo root
-addopts      = "-ra -q"
+pythonpath   = [".", "tests"] # repo-local code and test utilities only
+addopts      = "-ra -q --import-mode=importlib"
 markers = [
     "unit:            fast, isolated unit tests",
     "integration:     tests that exercise multiple modules or use de441.bsp",

@@ -21,6 +21,7 @@ import importlib
 import os
 import random
 import socket
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Generator
@@ -35,6 +36,44 @@ import pytest
 ROOT_DIR  = Path(__file__).resolve().parents[1]   # project root
 TEST_DIR  = ROOT_DIR / "tests"
 MOIRA_DIR = ROOT_DIR / "moira"
+
+
+def _repo_owns_module(module) -> bool:
+    module_file = getattr(module, "__file__", None)
+    if not module_file:
+        module_path = getattr(module, "__path__", None)
+        if not module_path:
+            return False
+        try:
+            return all(Path(p).resolve().is_relative_to(ROOT_DIR) for p in module_path)
+        except Exception:
+            return False
+    try:
+        return Path(module_file).resolve().is_relative_to(ROOT_DIR)
+    except Exception:
+        return False
+
+
+def _enforce_local_import_roots() -> None:
+    root_str = str(ROOT_DIR)
+    if sys.path[:1] != [root_str]:
+        try:
+            sys.path.remove(root_str)
+        except ValueError:
+            pass
+        sys.path.insert(0, root_str)
+
+    for name, module in list(sys.modules.items()):
+        if not (name == "tests" or name.startswith("tests.") or name == "moira" or name.startswith("moira.")):
+            continue
+        if _repo_owns_module(module):
+            continue
+        sys.modules.pop(name, None)
+
+
+_enforce_local_import_roots()
+
+
 
 
 # ---------------------------------------------------------------------------
@@ -419,7 +458,7 @@ def snapshot():
     Set ``MOIRA_SNAPSHOT_UPDATE=1`` to write/update baselines.
     Use for regression baselines of implementation-level output.
     """
-    from tests.tools.snapshots import assert_snapshot
+    from tools.snapshots import assert_snapshot
     return assert_snapshot
 
 
@@ -436,7 +475,7 @@ def golden():
     Set ``MOIRA_GOLDEN_UPDATE=1`` to write/update golden files.
     Use for externally validated reference values (Horizons, ERFA, SWE).
     """
-    from tests.tools.golden import assert_golden
+    from tools.golden import assert_golden
     return assert_golden
 
 
@@ -490,7 +529,7 @@ def ritual(snapshot, golden, request):
                 label="Sun moves less than 2 degrees per day",
             )
     """
-    from tests.tools.ritual import Ritual
+    from tools.ritual import Ritual
     return Ritual(snapshot, golden, request.node.nodeid)
 
 
@@ -761,7 +800,7 @@ def pytest_sessionfinish(session, exitstatus):
             worker_dirs = []
         if worker_dirs:
             try:
-                from tests.tools.merge_worker_artifacts import merge_durations, merge_failures
+                from tools.merge_worker_artifacts import merge_durations, merge_failures
                 md = merge_durations(artifact_dir.parent)
                 mf = merge_failures(artifact_dir.parent)
                 if md:
@@ -860,6 +899,7 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
 try:
     import xdist  # noqa: F401
 
+    @pytest.hookimpl(optionalhook=True)
     def pytest_configure_node(node):
         worker_seed = os.getenv("MOIRA_TEST_SEED", "1337")
         node.workerinput["moira_test_seed"] = worker_seed

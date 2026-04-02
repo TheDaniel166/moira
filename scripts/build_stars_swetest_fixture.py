@@ -18,7 +18,7 @@ import sys
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from tests.tools.swetest import fetch_swetest_fixed_star_snapshot
+from tools.swetest import fetch_swetest_fixed_star_snapshot
 
 
 FIXTURE_PATH = ROOT / "tests" / "fixtures" / "stars_swetest_reference.json"

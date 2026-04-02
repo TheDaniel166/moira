@@ -43,7 +43,7 @@ def test_jd_j2000_fixture(jd_j2000):
 def test_snapshot_roundtrip(snapshot, tmp_path, monkeypatch):
     """snapshot fixture writes and reads back correctly."""
     import os
-    from tests.tools import snapshots as snap_mod
+    from tools import snapshots as snap_mod
 
     # Point snapshot dir at a temp location
     monkeypatch.setattr(snap_mod, "SNAPSHOT_DIR", tmp_path)
@@ -57,7 +57,7 @@ def test_snapshot_roundtrip(snapshot, tmp_path, monkeypatch):
 
 def test_golden_roundtrip(tmp_path, monkeypatch):
     """golden fixture writes and reads back correctly."""
-    from tests.tools import golden as gold_mod
+    from tools import golden as gold_mod
 
     monkeypatch.setattr(gold_mod, "GOLDEN_DIR", tmp_path)
     monkeypatch.setenv("ISOPGEM_GOLDEN_UPDATE", "1")

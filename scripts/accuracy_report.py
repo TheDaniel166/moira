@@ -10,7 +10,7 @@ sys.path.insert(0, str(_ROOT))
 from moira.asteroids import asteroid_at
 from moira.constants import Body
 from moira.planets import planet_at
-from tests.tools.horizons import observer_ecliptic_position, signed_arcminutes
+from tools.horizons import observer_ecliptic_position, signed_arcminutes
 
 
 @dataclass(frozen=True)

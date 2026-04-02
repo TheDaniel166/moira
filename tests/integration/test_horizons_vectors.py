@@ -8,12 +8,12 @@ from moira.asteroids import ASTEROID_NAIF, _asteroid_geocentric, _kernel_for
 from moira.julian import ut_to_tt
 from moira.planets import _geocentric
 from moira.spk_reader import get_reader
-from tests.tools.benchmark_matrix import (
+from tools.benchmark_matrix import (
     VECTOR_ASTEROID_CASES,
     VECTOR_PLANET_CASES,
     VectorCase,
 )
-from tests.tools.horizons import VectorState, vector_state
+from tools.horizons import VectorState, vector_state
 
 
 def _angular_error_arcsec(moira_xyz: tuple[float, float, float], ref: VectorState) -> float:

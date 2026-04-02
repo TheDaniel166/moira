@@ -9,7 +9,7 @@ from moira.coordinates import ecliptic_to_equatorial
 from moira.julian import julian_day
 from moira.obliquity import true_obliquity
 from moira.planets import planet_at
-from tests.tools.horizons import observer_apparent_position
+from tools.horizons import observer_apparent_position
 
 
 AU_KM = 149_597_870.700

@@ -8,7 +8,7 @@ from moira.constants import Body
 from moira.julian import julian_day, ut_to_tt
 from moira.planets import _geocentric
 from moira.spk_reader import get_reader
-from tests.tools.horizons import VectorState, vector_state
+from tools.horizons import VectorState, vector_state
 
 
 ANGULAR_THRESHOLD_ARCSEC = 1.0

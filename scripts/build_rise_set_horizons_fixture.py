@@ -23,7 +23,7 @@ _ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_ROOT))
 
 from moira.julian import datetime_from_jd
-from tests.tools.horizons import observer_event_times
+from tools.horizons import observer_event_times
 
 _FIXTURE_PATH = _ROOT / "tests" / "fixtures" / "horizons_rise_set_reference.json"
 _REQUEST_SLEEP_SECONDS = 1.5

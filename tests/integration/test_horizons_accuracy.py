@@ -4,12 +4,12 @@ import pytest
 
 from moira.asteroids import asteroid_at
 from moira.planets import planet_at
-from tests.tools.benchmark_matrix import (
+from tools.benchmark_matrix import (
     STRICT_POSITION_ASTEROID_CASES,
     STRICT_POSITION_PLANET_CASES,
     PositionCase,
 )
-from tests.tools.horizons import observer_ecliptic_position, signed_arcminutes
+from tools.horizons import observer_ecliptic_position, signed_arcminutes
 
 
 @pytest.mark.integration

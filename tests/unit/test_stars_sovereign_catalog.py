@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import csv
-import importlib.util
+import importlib
 import json
 import math
-import sys
-import types
 from pathlib import Path
 
 import pytest
@@ -89,21 +87,7 @@ ORACLE_DATE_POINTS = {
     "j3000": J3000,
 }
 
-def _load_stars_module():
-    root = Path(__file__).resolve().parents[2]
-    package = types.ModuleType("moira")
-    package.__path__ = [str(root / "moira")]
-    sys.modules["moira"] = package
-
-    spec = importlib.util.spec_from_file_location("moira.stars", root / "moira" / "stars.py")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules["moira.stars"] = module
-    assert spec.loader is not None
-    spec.loader.exec_module(module)
-    return module
-
-
-stars = _load_stars_module()
+stars = importlib.import_module("moira.stars")
 find_named_stars = stars.find_named_stars
 list_named_stars = stars.list_named_stars
 load_catalog = stars.load_catalog

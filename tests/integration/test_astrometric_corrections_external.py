@@ -9,7 +9,7 @@ from moira.corrections import C_KM_PER_DAY, apply_aberration, apply_light_time
 from moira.julian import ut_to_tt
 from moira.planets import _barycentric, _earth_barycentric
 from moira.spk_reader import get_reader
-from tests.tools.horizons import vector_state_corrected
+from tools.horizons import vector_state_corrected
 
 
 ARCSEC = 3600.0

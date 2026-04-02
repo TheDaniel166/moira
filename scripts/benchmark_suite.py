@@ -13,7 +13,7 @@ from moira.asteroids import ASTEROID_NAIF, _asteroid_geocentric, _kernel_for, as
 from moira.julian import ut_to_tt
 from moira.planets import _geocentric, planet_at, sky_position_at
 from moira.spk_reader import get_reader
-from tests.tools.benchmark_matrix import (
+from tools.benchmark_matrix import (
     EXPLORATORY_POSITION_ASTEROID_CASES,
     EXPLORATORY_POSITION_PLANET_CASES,
     POSITION_ASTEROID_CASES,
@@ -24,7 +24,7 @@ from tests.tools.benchmark_matrix import (
     VECTOR_ASTEROID_CASES,
     VECTOR_PLANET_CASES,
 )
-from tests.tools.horizons import (
+from tools.horizons import (
     observer_ecliptic_position,
     observer_sky_position,
     signed_arcminutes,

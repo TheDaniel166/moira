@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from moira.julian import datetime_from_jd, jd_from_datetime
-from tests.tools.swetest import fetch_swetest_snapshot
+from tools.swetest import fetch_swetest_snapshot
 
 
 TROPICAL_YEAR = 365.24219
