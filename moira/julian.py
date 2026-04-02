@@ -18,6 +18,7 @@ Public surface:
     centuries_from_j2000,
     delta_t, delta_t_nasa_canon,
     ut_to_tt, ut_to_tt_nasa_canon, tt_to_ut, tt_to_ut_nasa_canon,
+    tt_to_tdb,
     greenwich_mean_sidereal_time, apparent_sidereal_time, local_sidereal_time
 
 Import-time side effects:
@@ -1004,6 +1005,31 @@ def tt_to_ut_nasa_canon(jd_tt: float, year: float | None = None) -> float:
         y = decimal_year_from_jd(jd_ut)
         jd_ut = jd_tt - delta_t_nasa_canon(y) / 86400.0
     return jd_ut
+
+
+def tt_to_tdb(jd_tt: float) -> float:
+    """
+    Convert a Terrestrial Time Julian Day to an approximate TDB Julian Day.
+
+    This uses the standard low-amplitude periodic approximation
+
+        TDB - TT ~= 0.001657 sin(g) + 0.00001385 sin(2g)  seconds
+
+    with
+
+        g = 357.53 + 0.9856003 * (jd_tt - J2000) degrees.
+
+    The approximation is sufficient for millisecond-level timing work such as
+    body-orientation phase arguments, while leaving the engine's main TT-based
+    precession/nutation pipeline unchanged.
+    """
+    mean_anomaly_deg = 357.53 + 0.9856003 * (jd_tt - J2000)
+    mean_anomaly_rad = math.radians(mean_anomaly_deg)
+    tdb_minus_tt_sec = (
+        0.001657 * math.sin(mean_anomaly_rad)
+        + 0.00001385 * math.sin(2.0 * mean_anomaly_rad)
+    )
+    return jd_tt + tdb_minus_tt_sec / 86400.0
 
 
 # ---------------------------------------------------------------------------
