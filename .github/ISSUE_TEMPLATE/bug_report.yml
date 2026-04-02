@@ -1,0 +1,97 @@
+name: Bug report
+description: Report a reproducible bug in Moira with enough detail to evaluate truth, scope, and impact.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for narrow, reproducible defects.
+
+        If the report concerns numerical output, doctrinal interpretation, or established public behavior, include comparison data or references where possible.
+  - type: input
+    id: moira_version
+    attributes:
+      label: Moira version
+      description: Package version, commit hash, or branch name.
+      placeholder: 1.0.1 or commit abc1234
+    validations:
+      required: true
+  - type: input
+    id: python_version
+    attributes:
+      label: Python version
+      placeholder: 3.12.2
+    validations:
+      required: true
+  - type: input
+    id: operating_system
+    attributes:
+      label: Operating system
+      placeholder: Windows 11, Ubuntu 24.04, macOS 15
+    validations:
+      required: true
+  - type: dropdown
+    id: issue_domain
+    attributes:
+      label: Issue domain
+      description: Where does the defect primarily live?
+      options:
+        - Astronomical computation
+        - Astrological doctrine
+        - Public API behavior
+        - Validation or tests
+        - Documentation
+        - Packaging or environment
+        - Infrastructure or tooling
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: Reproduction steps
+      description: Provide the smallest sequence that reproduces the issue.
+      placeholder: |
+        1. Import ...
+        2. Call ...
+        3. Observe ...
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    id: minimal_example
+    attributes:
+      label: Minimal example
+      description: Include a focused code sample or input payload if relevant.
+      render: python
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual_behavior
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: numerical_comparison
+    attributes:
+      label: Comparison data or numerical evidence
+      description: Required for numerical issues where available.
+      placeholder: Reference dataset, oracle output, residuals, screenshots, logs, or tables.
+      render: text
+  - type: textarea
+    id: doctrinal_basis
+    attributes:
+      label: Doctrinal source
+      description: If the issue concerns astrological interpretation, cite the doctrine, school, or law involved.
+      placeholder: Source text, tradition, or rationale.
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      description: Include stack traces, environment notes, or anything else needed to evaluate the report.

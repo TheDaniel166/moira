@@ -1,0 +1,87 @@
+name: Feature request
+description: Propose a feature that fits Moira's astronomy-first scope, architecture, and validation standards.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for substantial additions or changes in behavior.
+
+        Moira favors features that are scope-coherent, validation-backed, and architecturally clean. If the proposal is broad, open this issue before writing code.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or need
+      description: What concrete problem does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_change
+    attributes:
+      label: Proposed change
+      description: Describe the feature in concrete terms.
+    validations:
+      required: true
+  - type: dropdown
+    id: scope_fit
+    attributes:
+      label: Scope fit
+      description: How does this belong inside Moira?
+      options:
+        - Core astronomical computation
+        - Astrological doctrine already within project scope
+        - Validation or evidence surface
+        - Public API or developer ergonomics
+        - Tooling or infrastructure
+        - Not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: impact_area
+    attributes:
+      label: Primary impact area
+      options:
+        - Numerical output
+        - Doctrine or interpretation
+        - Public API
+        - Architecture or boundaries
+        - Validation or tests
+        - Documentation only
+    validations:
+      required: true
+  - type: checkboxes
+    id: explicit_changes
+    attributes:
+      label: Expected change surface
+      description: Select any that apply.
+      options:
+        - label: Changes public behavior
+        - label: Changes numerical output
+        - label: Introduces or revises doctrine
+        - label: Requires new validation strategy
+        - label: Requires new dependency or external data
+  - type: textarea
+    id: validation_plan
+    attributes:
+      label: Validation basis
+      description: What references, datasets, laws, or tests would justify the feature?
+      placeholder: Published standards, authoritative models, doctrine sources, oracle comparisons, proposed tests.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Include host-layer alternatives or reasons this should not live outside the engine.
+  - type: textarea
+    id: architecture_notes
+    attributes:
+      label: Architectural notes
+      description: Note any affected modules, boundaries, or structural risks.
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      description: Mock API, example workflow, references, or prior discussion.

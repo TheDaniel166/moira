@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Contribution guidance
+    url: https://github.com/TheDaniel166/moira/blob/main/CONTRIBUTING.md
+    about: Read the contribution standards before proposing broad changes.
