@@ -1947,3 +1947,4 @@ isolation from the global state (e.g., in tests or multi-tenant contexts).
 | Topocentric Moon | Parallax-corrected RA/Dec and altitude |
 | Fixed stars | Sovereign registry (`star_registry.csv` + JSON sidecars) |
 | Variable stars | 20-star classical catalog with period/epoch/magnitude data |
+

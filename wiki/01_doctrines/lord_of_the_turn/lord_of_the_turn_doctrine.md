@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document defines the pre-SCP doctrine layer for Moira's Lord of the Turn
+This document defines the pre-constitutional doctrine layer for Moira's Lord of the Turn
 subsystem.
 
 It exists because "Lord of the Turn" is a term that appears in medieval
@@ -146,7 +146,7 @@ Common Egyptian-tradition approaches in annual work emphasize:
 - distribution through bounds as a secondary timing layer within the year
 
 How Al-Sijzi specifically modifies or transmits the Egyptian approach for the
-Lord of the Turn is not yet confirmed in Moira's pre-SCP research.
+Lord of the Turn is not yet confirmed in Moira's pre-constitutional research.
 
 **Doctrinal status:** This is the most under-documented of the four medieval
 time-lord variants Moira needs to implement. The distinction between the
@@ -320,3 +320,4 @@ Before implementing the Lord of the Turn, Moira should:
   as transmitted into Arabic and Latin
 - AstroApp help documentation — names Al-Qabisi and Egyptian/Al-Sijzi as
   distinct variants; starting point for source disambiguation
+

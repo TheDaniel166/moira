@@ -2,7 +2,7 @@
 
 **Subsystem:** `moira/dasha.py`
 **Computational Domain:** Vimshottari Dasha
-**SCP Phase:** 11 — Architecture Freeze and Validation Codex
+**Constitutional Phase:** 11 — Architecture Freeze and Validation Codex
 **Status:** Constitutional
 
 ---
@@ -79,7 +79,7 @@ within Jyotish doctrine. It is not a dignity or condition assessment.
 ### §2. Layer Structure
 
 The dasha subsystem is organized into ten layers, each building on the prior
-according to the SCP dependency graph.
+according to the constitutional dependency graph.
 
 | Layer | Phase | Vessel / Function |
 |---|---|---|
@@ -475,5 +475,6 @@ The following are explicitly outside the scope of this subsystem as constitution
 - **Dasha rectification.** The subsystem does not provide tools for adjusting birth
   time based on Dasha periods. That is a separate diagnostic concern.
 
-Any future extension that crosses these boundaries requires a new SCP phase or a
+Any future extension that crosses these boundaries requires a new constitutional phase or a
 separate subsystem constitutionalization, not an in-place amendment to this standard.
+

@@ -438,3 +438,4 @@ What to validate:
 - mansion boundary calculation against published tables
 - Moon mansion assignment for known dates
 - name-map consistency across Arabic / Sanskrit naming layers if both are exposed
+

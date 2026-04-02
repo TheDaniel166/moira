@@ -25,7 +25,7 @@ documentation levels:
   confirmed at implementation level; requires source disambiguation before
   any design work
 
-Current SCP status: `P0` — pre-constitutionalization; source verification
+Current constitutional status: `P0` — pre-constitutionalization; source verification
 required before P1 can begin.
 
 
@@ -168,7 +168,7 @@ scheme for the Lord of the Turn?
 confirmed algorithm.
 
 **Module:** `moira/timelords.py` or a new `moira/annual_indicators.py`
-(decision deferred to SCP module boundary work)
+(decision deferred to constitutional process module boundary work)
 
 **Tasks:**
 
@@ -190,7 +190,7 @@ confirmed algorithm.
 - uses Egyptian bounds and confirmed triplicity rulers
 - does not modify `longevity.py`
 
-**SCP target:** P1 COMPLETE after this phase.
+**constitutional target:** P1 COMPLETE after this phase.
 
 ---
 
@@ -209,7 +209,7 @@ confirmed algorithm.
    unify under a single parameterized function; if they differ structurally,
    keep them as separate implementations
 
-**SCP target:** P2 COMPLETE after this phase.
+**constitutional target:** P2 COMPLETE after this phase.
 
 ---
 
@@ -265,3 +265,4 @@ elsewhere.
   Al-Sijzi context
 - `moira/longevity.py` — `dignity_score_at()`, `EGYPTIAN_BOUNDS`,
   `TRIPLICITY_RULERS` — existing scoring infrastructure
+

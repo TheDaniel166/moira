@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document defines the pre-SCP doctrine layer for Moira's Lord of the Orb
+This document defines the pre-constitutional doctrine layer for Moira's Lord of the Orb
 subsystem.
 
 It exists because the Lord of the Orb has two historically documented method
@@ -286,3 +286,4 @@ Before implementing the Lord of the Orb, Moira should:
 - Francesco Giuntini (Junctinus), *Speculum Astrologiae* (16th c.) — tables
   to age 60 corroborating continuous loop
 - AstroApp help documentation — names both variants explicitly
+

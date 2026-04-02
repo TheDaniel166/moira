@@ -1,6 +1,6 @@
 ## Moira Primary Directions Backend Standard
 
-**SCP Phase:** 11 — Architecture Freeze and Validation Codex
+**Constitutional Phase:** 11 — Architecture Freeze and Validation Codex
 **Status:** Constitutional on the current admitted recoverable surface
 
 ### Governing Principle
@@ -329,3 +329,4 @@ The following remain outside this backend standard:
 
 These belong to later doctrinal admission work, not to the current frozen
 recoverable surface.
+

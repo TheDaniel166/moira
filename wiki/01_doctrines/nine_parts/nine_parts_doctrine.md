@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document defines the pre-SCP doctrine layer for Moira's Nine Parts
+This document defines the pre-constitutional doctrine layer for Moira's Nine Parts
 subsystem.
 
 It exists because "Nine Parts" as used in the Abu Ma'shar tradition is not the
@@ -447,3 +447,4 @@ Before implementing the Nine Parts, Moira should:
 - Parashara, *Brihat Parashara Hora Shastra* — Vedic Navamsha doctrine
 - AstroApp help documentation — starting point for doctrinal disambiguation of
   the "Nine Parts (Abu Ma'shar/Vedic)" grouping
+

@@ -52,7 +52,7 @@ We are moving away from "Infinite Distance" abstractions toward **Local Realism*
 | **Delta T** | Opaque / Quadratic Fallback | Physically Grounded / Hybrid |
 | **Extensibility** | Fixed Body Set | 1.4M Asteroids (On-Demand) |
 | **Validation** | Cross-software mimicry | External physical oracles (JPL/ERFA) |
-| **Documentation** | Functional Manual | Constitutional Standard (SCP) |
+| **Documentation** | Functional Manual | Constitutional Standard |
 
 ---
 
@@ -73,3 +73,4 @@ In the Light Box Doctrine, **Inaccuracy is Entropy; Silence is Distortion.**
 When we calculate a chart, we are mapping the astronomical record to a specific local event. To do so with a Black Box is to delegate the discernment of that record to an unknown proxy. To do so with a Light Box is to stand in the full light of the evidence.
 
 **We do not merely output code. We provide the Open Record of the Sky.**
+

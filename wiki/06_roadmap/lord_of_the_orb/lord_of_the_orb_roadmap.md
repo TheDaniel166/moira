@@ -35,7 +35,7 @@ Infrastructure available:
 - Chaldean order already encoded in `planetary_hours.py`
 - Annual period vessel patterns established in `timelords.py`
 
-Current SCP status: `P0` — pre-constitutionalization.
+Current constitutional status: `P0` — pre-constitutionalization.
 
 
 ## Core Insight
@@ -129,7 +129,7 @@ Mercury(5), Moon(6).
   returns Jupiter)
 - full 84-year cycle produces no duplicates (continuous loop)
 
-**SCP target:** P1 COMPLETE after this phase.
+**constitutional target:** P1 COMPLETE after this phase.
 
 ---
 
@@ -151,7 +151,7 @@ annual solar return analysis.
 **Note:** the annual hierarchy is a documentary and output-structuring task,
 not a computation task. The computation is fully covered by Phase 1.
 
-**SCP target:** P2 COMPLETE after this phase.
+**constitutional target:** P2 COMPLETE after this phase.
 
 
 ## Relationship to Other Subsystems
@@ -170,7 +170,7 @@ depends only on the birth planetary hour and the native's age.
 ## Open Questions
 
 1. Should `lord_of_orb()` live in `timelords.py` or in a new
-   `annual_indicators.py` module? Decision deferred to SCP Phase 3 (module
+   `annual_indicators.py` module? Decision deferred to Constitutional Phase 3 (module
    boundary formalization).
 2. Should both cycle variants always be computed and returned, or should the
    caller specify one? Recommendation: caller specifies; default to
@@ -184,3 +184,4 @@ depends only on the birth planetary hour and the native's age.
 - Anthony Louis, "Lord of the Orb in Annual Revolutions" (blog, 2021) —
   Torres manuscript; Venus worked example confirming continuous loop
 - `moira/planetary_hours.py` — Chaldean order and birth-hour infrastructure
+

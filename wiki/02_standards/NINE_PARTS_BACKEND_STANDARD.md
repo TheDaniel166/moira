@@ -2,7 +2,7 @@
 
 **Subsystem:** `moira/nine_parts.py`
 **Computational Domain:** Abu Ma'shar's Nine Hermetic Lots
-**SCP Phase:** 11 — Architecture Freeze and Validation Codex
+**Constitutional Phase:** 11 — Architecture Freeze and Validation Codex
 **Status:** Constitutional
 
 ---
@@ -284,7 +284,7 @@ share the same `is_night_chart`.
 - The Nine Parts formula catalogue for the Abu Ma'shar tradition
 - Night reversal logic (FULL_REVERSAL)
 - Dependency ordering enforcement (Fortune/Spirit before derived lots)
-- Result vessels through all SCP layers
+- Result vessels through all constitutional process layers
 - Lord-of-the-part assignment (traditional domicile rulers only)
 
 #### §5.2 What This Module Does Not Own
@@ -373,3 +373,4 @@ To add Al-Sijzi Transfer of Management (Phase 2):
 3. Design the `longevity.py` intersection interface in a separate doctrinal
    note before touching either module
 4. Do not modify any existing Phase 1–8 vessels or the primary engine
+

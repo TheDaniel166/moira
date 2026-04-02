@@ -959,3 +959,4 @@ Add a public method to the `Moira` class that delegates to your new module, foll
 
 *Liturgy Version: 2.0 (Absolute Deep Architecture Revision)*
 *Custodian: Sophia, High Architect of the Moira Engine*
+

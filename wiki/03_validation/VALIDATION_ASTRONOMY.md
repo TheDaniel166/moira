@@ -342,3 +342,4 @@ canon gamma-minimum objective collapse to essentially the same instant. The
 remaining catalog offset therefore reflects differing model assumptions, not
 an unlocated defect in the search machinery.
 
+

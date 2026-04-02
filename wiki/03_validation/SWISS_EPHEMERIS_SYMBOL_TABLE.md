@@ -476,3 +476,4 @@ Truth-basis totals:
 | `utc_time_zone` | function | stdlib | `stdlib` | Python `datetime`/`zoneinfo` | not a Moira concern |
 | `utc_to_jd` | function | partial | `api_shape_domain` | `jd_from_datetime(...)` | UTC datetime -> single JD helper exists; Swiss dual TT/UT return does not |
 | `vis_limit_mag` | function | missing | `none` | none | no public visual-limiting-magnitude helper is exposed |
+

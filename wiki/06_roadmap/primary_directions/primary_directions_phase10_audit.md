@@ -1,9 +1,9 @@
-# Primary Directions SCP Phase 10 Audit
+# Primary Directions Phase 10 Audit
 
 ## Purpose
 
-This document audits the current SCP state of Moira's primary-directions
-subsystem against the governing SCP doctrine.
+This document audits the current constitutional state of Moira's primary-directions
+subsystem against the governing constitutional doctrine.
 
 It exists because the primary-directions packet now contains a real mismatch:
 
@@ -16,9 +16,9 @@ That mismatch had to be resolved before Moira could honestly treat the
 subsystem as walked through Phase 10 and beyond.
 
 
-## Governing SCP Standard
+## Governing Constitutional Standard
 
-From [wiki/00_foundations/SCP.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki/00_foundations/SCP.md):
+From [wiki/00_foundations/CONSTITUTIONAL_PROCESS.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki/00_foundations/CONSTITUTIONAL_PROCESS.md):
 
 - `Phase 10 - Full-Subsystem Hardening`
   - freeze cross-layer invariants
@@ -68,7 +68,7 @@ which still declares itself authoritative only for:
 
 The doctrine packet in
 [primary_directions_doctrine.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\01_doctrines\primary_directions\primary_directions_doctrine.md)
-formerly named itself as a `pre-SCP doctrine layer`; the current alignment pass
+formerly named itself as a `pre-constitutional doctrine layer`; the current alignment pass
 corrects that older packet language.
 
 
@@ -93,7 +93,7 @@ packet is inconsistent about what the subsystem actually is.
 Current contradictions:
 
 - the roadmap says top-level `P1` through `P12` are complete
-- the doctrine packet says SCP should only continue after the current packet
+- the doctrine packet says constitutional process should only continue after the current packet
 - the backend standard freezes only an older narrow branch
 - the feature list describes a much larger admitted subsystem
 
@@ -128,7 +128,7 @@ If the standard and doctrine remain narrower than the admitted runtime, then:
 - failure doctrine is only partially frozen
 - public API curation is only partially justified
 
-That is exactly the kind of epistemic mismatch SCP is designed to prevent.
+That is exactly the kind of epistemic mismatch constitutional process is designed to prevent.
 
 
 ## Work Required For Honest Phase 10+ Closure
@@ -149,7 +149,7 @@ Required steps:
 3. rewrite the validation codex so it names the actual targeted verification
    expected for the current subsystem
 4. re-check the public API curation against the broadened admitted surface
-5. update the doctrine packet so it no longer calls itself merely `pre-SCP`
+5. update the doctrine packet so it no longer calls itself merely `pre-constitutional`
    where that is no longer true
 
 
@@ -159,7 +159,7 @@ The correct current policy is:
 
 > The primary-directions subsystem is now baseline-complete on the currently
 > recoverable doctrinal surface, but it should not be treated as fully frozen
-> through SCP Phase 10 and beyond until the constitutional packet is updated to
+> through Constitutional Phase 10 and beyond until the constitutional packet is updated to
 > match the admitted runtime truth.
 
 
@@ -172,3 +172,4 @@ Any future widening should proceed only as:
 
 - frontier research
 - or explicit constitutional revision
+

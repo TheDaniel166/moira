@@ -202,3 +202,4 @@ Moira now has a concrete parallel-family policy:
   source-safe family rather than more internal widening of Placidian rapt work
 - wider method families remain deferred until their governing law is explicit
 - the global-target abstraction remains rejected
+

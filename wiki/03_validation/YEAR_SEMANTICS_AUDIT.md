@@ -174,3 +174,4 @@ Recommended Next Steps
    related ΔT files before changing `moira/delta_t_physical.py`.
 4. If desired, annotate key modules with “Julian year”, “tropical year”, or
    “sidereal year” comments at the constant declaration points to prevent future drift.
+

@@ -59,3 +59,4 @@
   Regiomontanian conjunction-style surface coincides numerically
 - the unresolved issue is not lack of formula on the current branch, but where
   wider Campanian doctrine diverges once more of the family is admitted
+

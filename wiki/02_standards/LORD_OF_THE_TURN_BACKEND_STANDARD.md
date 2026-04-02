@@ -2,7 +2,7 @@
 
 **Subsystem:** `moira/lord_of_the_turn.py`
 **Computational Domain:** Annual Time-Lord via Profected Ascendant (Al-Qabisi and Egyptian/Al-Sijzi)
-**SCP Phase:** 11 — Architecture Freeze and Validation Codex
+**Constitutional Phase:** 11 — Architecture Freeze and Validation Codex
 **Status:** Constitutional
 
 ---
@@ -453,3 +453,4 @@ therefore marked as reconstruction or formalization:
 
 5. **DOMICILE_ONLY mode** — Entirely a Moira invention with no historical
    precedent. The historical technique always presupposes a computed SR chart.
+

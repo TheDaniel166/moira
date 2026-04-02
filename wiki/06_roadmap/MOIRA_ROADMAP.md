@@ -307,3 +307,4 @@ For reference, capabilities where Moira exceeds the standard Swiss Ephemeris dis
 - **Sothic cycle** reconstruction (Egyptian calendar anchor)
 - **Arabic lunar mansions** (manazil, all 28)
 - **Hyleg / Alcocoden** longevity calculation
+

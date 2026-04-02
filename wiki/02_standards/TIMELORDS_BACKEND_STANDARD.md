@@ -2,7 +2,7 @@
 
 **Subsystem:** `moira/timelords.py`
 **Computational Domains:** Firdaria, Zodiacal Releasing
-**SCP Phase:** 11 — Architecture Freeze and Validation Codex
+**Constitutional Phase:** 11 — Architecture Freeze and Validation Codex
 **Status:** Constitutional
 
 ---
@@ -83,7 +83,7 @@ single flat list discriminated by the `level` field.
 ### §2. Layer Structure
 
 The timelords subsystem is organized into ten layers, each building on the prior
-according to the SCP dependency graph.
+according to the constitutional dependency graph.
 
 | Layer | Phase | Firdaria | Zodiacal Releasing |
 |---|---|---|---|
@@ -518,5 +518,6 @@ The following are explicitly outside the scope of this subsystem as constitution
   additional doctrinal overlays that could be computed from natal positions and period
   boundaries but are not part of the current Firdaria or Releasing subsystems.
 
-Any future extension that crosses these boundaries requires a new SCP phase or a
+Any future extension that crosses these boundaries requires a new constitutional phase or a
 separate subsystem constitutionalization, not an in-place amendment to this standard.
+

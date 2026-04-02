@@ -153,3 +153,4 @@ Use this sentence when the project needs a short statement of doctrine:
 
 > Moira computes eclipses from a single coherent DE441-based physical geometry
 > in TT; compatibility outputs are translations, not truth.
+

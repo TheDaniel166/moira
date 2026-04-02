@@ -438,3 +438,4 @@ require:
 3. Validation in `.venv` confirming zero failures.
 
 Cosmetic documentation improvements do not require a revision entry.
+

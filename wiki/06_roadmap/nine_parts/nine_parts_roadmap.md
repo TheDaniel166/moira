@@ -58,7 +58,7 @@ Gap summary:
 - No named group or tag identifies the Abu Ma'shar Nine Parts as a set
 - No dedicated `nine_parts_abu_mashar()` query function exists
 
-Current SCP status for Nine Parts: `P0` — pre-constitutionalization.
+Current constitutional status for Nine Parts: `P0` — pre-constitutionalization.
 
 
 ## Core Insight
@@ -150,7 +150,7 @@ name `"Love"` via an alias field or by mapping in the function output.
   guaranteed by existing pre-computation logic)
 - The Sword and The Node are present with correct formulas and reversal
 
-**SCP target:** P1 COMPLETE after this phase.
+**constitutional target:** P1 COMPLETE after this phase.
 
 **No changes to:** the arc engine, the reversal logic, or any other lot
 entries. Purely additive.
@@ -176,7 +176,7 @@ designed (see below).
    Hyleg refinement touches `find_hyleg()` in `longevity.py`; the interface
    should be additive, not a modification of the existing Hyleg logic
 
-**SCP target:** P2 COMPLETE after this phase.
+**constitutional target:** P2 COMPLETE after this phase.
 
 ---
 
@@ -198,7 +198,7 @@ designed (see below).
 4. Expose as a named technique distinct from `abu_mashar` in any shared
    API surface
 
-**SCP target:** P3 COMPLETE after this phase (if not already handled by
+**constitutional target:** P3 COMPLETE after this phase (if not already handled by
 varga.py).
 
 ---
@@ -246,3 +246,4 @@ longevity.py calls it as an optional input, not a required dependency.
   Al-Sijzi's Transfer of Management mechanics
 - `moira/lots.py` — existing infrastructure; ~430 entries; pre-computation
   of Fortune and Spirit confirmed at line 2029
+

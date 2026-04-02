@@ -299,3 +299,4 @@ Interpretation:
 | `sol_eclipse_where` | function | missing | Path/where geometry helper | `defer` | This is a real domain need, but the geometry/path surface should be designed as a first-class subsystem, not copied from Swiss call shapes. | `SolarEclipsePath` vessel designed in `moira.eclipse`; path computation deferred pending NASA Five Millennium Atlas validation. |
 | `time_equ` | function | implemented | Low-level astronomy helper | `support` | These are standard computational helpers with clear mathematical meaning and low API ambiguity. | `equation_of_time(jd_tt)` in `moira.coordinates`. |
 | `vis_limit_mag` | function | missing | Generalized heliacal / visibility surface | `defer` | This is a valid domain, but Moira should not accrete Swiss-style bitfields before the heliacal subsystem is unified and validated. | Introduce typed surfaces such as `HeliacalEventKind`, `HeliacalPolicy`, and `VisibilityModel`, then map selected behaviors onto those. |
+

@@ -2,7 +2,7 @@
 
 **Subsystem:** `moira/lord_of_the_orb.py`
 **Computational Domain:** Abu Ma'shar's Lord of the Orb Annual Time-Lord
-**SCP Phase:** 11 — Architecture Freeze and Validation Codex
+**Constitutional Phase:** 11 — Architecture Freeze and Validation Codex
 **Status:** Constitutional
 
 ---
@@ -333,3 +333,4 @@ To add annual hierarchy integration (Phase 2):
 2. Add a `hierarchy_context(aggregate, profection_lord, firdar_lord, ...)`
    function that returns a combined annual assessment
 3. Do not modify any existing Phase 1–8 vessels or the primary engine
+

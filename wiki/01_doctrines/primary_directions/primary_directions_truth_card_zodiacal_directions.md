@@ -165,3 +165,4 @@ It still should not become an everything-bagel of zodiacal variants.
   `https://mastroapp.com/files/documentation_en.pdf`
 - AstroApp primary directions help:
   `https://astroapp.com/help/1/returnsW_53.html`
+

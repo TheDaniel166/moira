@@ -51,3 +51,4 @@
 - Moira does **not** currently possess a source-safe Porphyrian governing law
 - because the label survives more clearly than the derivation, the honest
   status is doctrinal retention without active runtime admission
+

@@ -20,7 +20,7 @@ This roadmap assumes the companion constitutional doctrine packet exists:
 - [primary_directions_direction_space_doctrine.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\01_doctrines\primary_directions\primary_directions_direction_space_doctrine.md)
 - [primary_directions_time_key_doctrine.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\01_doctrines\primary_directions\primary_directions_time_key_doctrine.md)
 - [primary_directions_ambiguity_ledger.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\01_doctrines\primary_directions\primary_directions_ambiguity_ledger.md)
-- [primary_directions_scp_phase10_audit.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\06_roadmap\primary_directions\primary_directions_scp_phase10_audit.md)
+- [primary_directions_phase10_audit.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\06_roadmap\primary_directions\primary_directions_phase10_audit.md)
 - [primary_directions_constitutional_alignment.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\06_roadmap\primary_directions\primary_directions_constitutional_alignment.md)
 - [primary_directions_invariant_register.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\02_standards\primary_directions\primary_directions_invariant_register.md)
 - [primary_directions_validation_codex.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\02_standards\primary_directions\primary_directions_validation_codex.md)
@@ -74,7 +74,7 @@ Current admitted capability:
   - sovereign catalog-backed fixed-star promissors on the current
     fixture-backed angle-and-planet branch
 
-Current SCP status:
+Current constitutional status:
 
 - top-level primary-directions branch:
   - constitutionally closed through `P12` on the current admitted recoverable
@@ -376,7 +376,7 @@ Not:
 
 ### Phase A. Constitutional Refactor
 
-Complete SCP for the current subsystem before expanding breadth.
+Complete constitutional process for the current subsystem before expanding breadth.
 
 Immediate goals:
 
@@ -483,7 +483,7 @@ This means:
 - the final top-level backend standard and final top-level public API curation
   should wait until those major internal owners are constitutionally stable
 
-### Stage 1. Finish SCP for Current Engine
+### Stage 1. Finish constitutional process for Current Engine
 
 1. `P3` Inspectability
 2. `P4` Policy surface
@@ -705,3 +705,4 @@ Current branch-selection surface:
 - Astrodienst AstroWiki: `https://www.astro.com/astrowiki/en/Primary_Directions`
 - Halloran / Kolev software summary: `https://www.halloran.com/placidus.htm`
 - Halloran software index: `https://www.halloran.com/allsoft.htm`
+

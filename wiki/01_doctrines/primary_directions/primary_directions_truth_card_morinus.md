@@ -74,3 +74,4 @@
 - unless such a formula is recovered, the honest long-term stance is:
   - Morinus aspects: distinct
   - Morinus conjunctions: shared with the equatorial branch
+

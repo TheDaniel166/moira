@@ -7,7 +7,7 @@ Moira is a pure-Python astronomical engine designed for the inversion of the "Bl
 
 ### 🏛️ Foundations & Doctrine
 - **[The Light Box Doctrine](01_doctrines/01_LIGHT_BOX_DOCTRINE.md)**: The philosophical and technical commitment to transparency.
-- **[The SCP Process](00_foundations/SCP.md)**: The Subsystem Constitutionalization Process (SCP) methodology.
+- **[The Constitutional Process](00_foundations/CONSTITUTIONAL_PROCESS.md)**: The Subsystem Constitutional Process methodology.
 - **[Beyond Swiss Ephemeris](01_doctrines/BEYOND_SWISS_EPHEMERIS.md)**: The capabilities of the 21st-century astronomical substrate.
 
 ---
@@ -42,3 +42,4 @@ Every calculation is benchmarked against physical oracles:
 ---
 
 **"Transparency is the Primary Metric of Accuracy."**
+

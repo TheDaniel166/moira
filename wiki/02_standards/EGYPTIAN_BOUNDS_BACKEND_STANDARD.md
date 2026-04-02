@@ -288,3 +288,4 @@ researched from:
 
 These sources justify the admitted doctrine. The implementation details above
 state what Moira currently computes from that doctrine.
+

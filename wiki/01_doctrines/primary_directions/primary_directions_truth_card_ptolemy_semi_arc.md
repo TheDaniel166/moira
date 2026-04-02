@@ -56,3 +56,4 @@
 - `sovereign on the current admitted branch`
 - wider Ptolemaic distinctions remain possible later, but the present branch
   is no longer mathematically borrowed
+

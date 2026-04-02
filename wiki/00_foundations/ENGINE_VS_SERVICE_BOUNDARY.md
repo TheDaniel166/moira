@@ -287,3 +287,4 @@ Services decide how that truth is acquired, composed, persisted, and delivered.
 
 If a proposed addition does not improve Moira as a domain-truth engine, it
 should not enter the engine by default.
+

@@ -136,3 +136,4 @@ Moira should:
   `https://www.astro.com/astrowiki/en/Primary_Direction`
 - Rumen Kolev, *William Lilly and the Algorithm for His Primary Directions*:
   `https://www.babylonianastrology.com/downloads/Lilly2.pdf`
+

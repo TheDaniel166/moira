@@ -150,3 +150,4 @@ Moira now has a clear midpoint policy:
 - midpoint mathematics exists
 - midpoint primary-direction doctrine does not yet stand on source-safe law
 - therefore midpoint directions remain `research_only`
+

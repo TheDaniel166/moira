@@ -603,12 +603,12 @@ documents:
 8. [primary_directions_ambiguity_ledger.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\01_doctrines\primary_directions\primary_directions_ambiguity_ledger.md)
 9. [primary_directions_parallel_family_matrix.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\05_research\primary_directions\primary_directions_parallel_family_matrix.md)
 10. [primary_directions_fixed_star_family_matrix.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\05_research\primary_directions\primary_directions_fixed_star_family_matrix.md)
-11. [primary_directions_scp_phase10_audit.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\06_roadmap\primary_directions\primary_directions_scp_phase10_audit.md)
+11. [primary_directions_phase10_audit.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\06_roadmap\primary_directions\primary_directions_phase10_audit.md)
 12. [primary_directions_constitutional_alignment.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\06_roadmap\primary_directions\primary_directions_constitutional_alignment.md)
 13. [primary_directions_invariant_register.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\02_standards\primary_directions\primary_directions_invariant_register.md)
 14. [primary_directions_validation_codex.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\02_standards\primary_directions\primary_directions_validation_codex.md)
 
-SCP continuation now depends on packet-level alignment and backend-standard
+Further constitutional work now depends on packet-level alignment and backend-standard
 freeze, not on missing baseline breadth.
 
 
@@ -631,3 +631,4 @@ freeze, not on missing baseline breadth.
 - Halloran primary-directions material:
   `https://www.halloran.com/placidus.htm`
   `https://www.halloran.com/allsoft.htm`
+

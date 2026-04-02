@@ -1,12 +1,12 @@
-# Moira Subsystem Constitutionalization Process
+# Moira Subsystem Constitutional Process
 
 ## Governing Principle
 
-The Moira Subsystem Constitutionalization Process, or **SCP**, is the canonical
+The Moira Subsystem Constitutional Process is the canonical
 method by which a computational subsystem is transformed into a governed backend
 domain.
 
-SCP is not a stylistic checklist. It is a directed sequence of epistemological
+It is not a stylistic checklist. It is a directed sequence of epistemological
 dependencies. Each phase becomes possible only because earlier phases have made
 its claims knowable, testable, and stable.
 
@@ -28,7 +28,7 @@ A subsystem is **constitutionalized** when:
 - its architecture and validation doctrine are frozen in writing
 - its public API is deliberately curated
 
-The output of SCP is not merely "working code." The output is a backend
+The output of constitutional process is not merely "working code." The output is a backend
 subsystem with constitutional order.
 
 ---
@@ -44,7 +44,7 @@ maturity as the point at which:
 - invariants can be stated because the objects they govern are already real
 - validation becomes constitutional rather than ad hoc
 
-Without SCP, a subsystem can appear complete while remaining epistemically weak:
+Without constitutional process, a subsystem can appear complete while remaining epistemically weak:
 hard to inspect, easy to misuse, difficult to validate, and impossible to freeze
 without ambiguity.
 
@@ -52,7 +52,7 @@ without ambiguity.
 
 ## 3. Core Thesis
 
-The SCP phase order is not arbitrary.
+The constitutional phase order is not arbitrary.
 
 It is a **directed acyclic graph of epistemological dependencies expressed as a
 phase sequence**.
@@ -81,7 +81,7 @@ of dependency beneath it.
 
 ## 4. Constitutional Vocabulary
 
-The following terms are normative in SCP:
+The following terms are normative in constitutional process:
 
 | Term | Meaning |
 |---|---|
@@ -102,7 +102,7 @@ The following terms are normative in SCP:
 
 ## 5. The Phase Graph
 
-SCP currently consists of twelve phases.
+constitutional process currently consists of twelve phases.
 
 ### Phase 1 - Truth Preservation
 
@@ -256,7 +256,7 @@ been established.
 
 ## 6. Dependency Doctrine
 
-The SCP dependency rule is:
+The constitutional dependency rule is:
 
 > A phase may only formalize, aggregate, freeze, or expose truths that have
 > already become explicit in earlier phases.
@@ -312,9 +312,9 @@ near the beginning.
 
 ---
 
-## 9. SCP Deliverables
+## 9. Constitutional Deliverables
 
-When SCP is correctly completed for a subsystem, the repository should contain:
+When constitutional process is correctly completed for a subsystem, the repository should contain:
 
 - the hardened subsystem implementation
 - focused tests proving semantic preservation and invariant behavior
@@ -334,21 +334,21 @@ standards were produced.
 
 The order is intentional:
 
-1. SCP
+1. constitutional process
 2. subsystem constitutions such as houses, aspects, parans, dignities
 3. validation reports
 4. roadmap and domain-specific research/model notes
 
 Validation reports show that the code works.
 
-SCP explains how Moira decides what it means for a backend subsystem to become
+This process explains how Moira decides what it means for a backend subsystem to become
 constitutional in the first place.
 
 ---
 
 ## 11. Applicability
 
-SCP is the default doctrine for any Moira backend subsystem that:
+This process is the default doctrine for any Moira backend subsystem that:
 
 - has a real computational core
 - is expected to become stable and reusable
@@ -373,14 +373,15 @@ into:
 ## 12. Freeze Rule
 
 Any future backend subsystem standard should be interpretable as an instance of
-SCP unless explicitly declared otherwise.
+this process unless explicitly declared otherwise.
 
 Any future Moira subsystem that departs materially from this process should
 state:
 
-- why SCP does not apply
+- why this process does not apply
 - which dependency rule is being changed
-- what replaces the constitutional guarantees SCP would normally require
+- what replaces the constitutional guarantees this process would normally require
 
-Absent such a declaration, SCP is the default constitutional doctrine of backend
+Absent such a declaration, this process is the default constitutional doctrine of backend
 development in Moira.
+

@@ -6,7 +6,7 @@ execution roadmap.
 Inputs:
 - [`SWISS_EPHEMERIS_SYMBOL_TABLE.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/SWISS_EPHEMERIS_SYMBOL_TABLE.md)
 - [`SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md)
-- [`SCP_REPO_SCAN.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/SCP_REPO_SCAN.md)
+- [`REPOSITORY_ASSESSMENT.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/REPOSITORY_ASSESSMENT.md)
 - [`00_SUBSYSTEM_CONSTITUTIONALIZATION_PROCESS.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/00_SUBSYSTEM_CONSTITUTIONALIZATION_PROCESS.md)
 
 This is not a parity promise. It is a doctrine for deciding which Swiss
@@ -31,7 +31,7 @@ This work is worth doing now for four reasons:
   We can now say what is missing. The next useful step is to decide what should
   be added first and under what doctrine.
 
-- The repository already has SCP entry points for the deferred families.
+- The repository already has constitutional entry points for the deferred families.
   We no longer need to guess where these additions belong architecturally.
 
 ## Current Totals
@@ -70,7 +70,7 @@ From [`SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md`](c:/Users/nilad/OneDrive/Desktop/
 - Prefer typed policies over compatibility booleans.
 - Prefer one mathematically explicit helper over many selector constants.
 - Add migration notes, not Swiss-shaped API debt.
-- When a deferred family already has an SCP parent subsystem, route the work
+- When a deferred family already has an constitutional process parent subsystem, route the work
   through that subsystem instead of creating a detached helper API.
 
 ## Real Blockers
@@ -121,18 +121,18 @@ Consequence:
 - we would expose Swiss-like knobs without first deciding what Moira believes
   those knobs mean.
 
-## SCP Entry Points For Deferred Families
+## Constitutional Entry Points For Deferred Families
 
 These families should not be treated as isolated helper additions. They already
 have natural entry points in the repo.
 
-| Deferred family | Defer kind | SCP entry point | Reason |
+| Deferred family | Defer kind | constitutional entry point | Reason |
 | --- | --- | --- | --- |
 | generalized heliacal / visibility model | `Defer.Design` + `Defer.Validation` | [`fixed_stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/fixed_stars.py), [`STARS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/STARS_BACKEND_STANDARD.md) | heliacal behavior belongs under the unified star subsystem, not as standalone Swiss compatibility flags |
 | model-basis controls (`DeltaT`, precession, nutation, tidal acceleration) | `Defer.Doctrine` | [`julian.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/julian.py), [`corrections.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/corrections.py), [`DELTA_T_HYBRID_MODEL.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/DELTA_T_HYBRID_MODEL.md) | these are foundational astronomy policy choices, not Swiss option constants |
 | additional ayanamsa constants / user-defined ayanamsa | `Defer.Doctrine` | [`sidereal.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/sidereal.py) | ayanamsa expansion belongs in one coherent sidereal doctrine layer |
 | eclipse / occultation path helpers | `Defer.Design` + `Defer.Validation` | [`eclipse.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/eclipse.py), [`ECLIPSE_MODEL_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/ECLIPSE_MODEL_STANDARD.md), [`occultations.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/occultations.py) | path/where surfaces require a first-class geometry/circumstances design |
-| orbital-elements public layer | `Defer.Design` | supporting-modules track from [`SCP_REPO_SCAN.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/SCP_REPO_SCAN.md) | should be introduced as a dedicated typed subsystem, not scattered helpers |
+| orbital-elements public layer | `Defer.Design` | supporting-modules track from [`REPOSITORY_ASSESSMENT.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/REPOSITORY_ASSESSMENT.md) | should be introduced as a dedicated typed subsystem, not scattered helpers |
 | house dynamics / cusp-speed layer | `Defer.Doctrine` + `Defer.Validation` | [`houses.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/houses.py), [`HOUSES_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/HOUSES_BACKEND_STANDARD.md) | house speeds belong in the house doctrine itself, not a Swiss-style auxiliary tuple |
 
 ## Phase 1
@@ -392,7 +392,7 @@ Examples:
 - Symbol / family:
 - Current decision:
 - Defer kind:
-- SCP entry point:
+- constitutional entry point:
 - Proposed Moira surface:
 - Why now:
 - Real blocker:
@@ -408,4 +408,5 @@ When a symbol or family changes state:
 2. update [`SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md)
 3. update this roadmap
 4. add or update validation coverage
-5. if the work is a deferred family, update the relevant SCP entry-point docs
+5. if the work is a deferred family, update the relevant constitutional entry-point docs
+

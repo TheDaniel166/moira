@@ -3,7 +3,7 @@
 **Subsystem:** `moira/variable_stars.py`
 **Computational Domain:** Astrologically significant variable stars — brightness phase,
 light curve modeling, astrological quality, catalog access
-**SCP Phase:** 11 — Architecture Freeze and Validation Codex
+**Constitutional Phase:** 11 — Architecture Freeze and Validation Codex
 **Status:** Constitutional
 
 ---
@@ -426,5 +426,6 @@ The following are explicitly outside the scope of this subsystem.
   assess whether a given variable star state is significant for a natal chart or
   transit moment. Interpretation is a higher-level concern.
 
-Any future extension that crosses these boundaries requires a new SCP phase or a
+Any future extension that crosses these boundaries requires a new constitutional phase or a
 separate subsystem constitutionalization, not an in-place amendment to this standard.
+

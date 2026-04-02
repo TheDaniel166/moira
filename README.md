@@ -279,7 +279,7 @@ Each correction stage can be toggled independently via `planet_at()`. The table 
 | :--- | :--- |
 | [`01_LIGHT_BOX_DOCTRINE.md`](wiki/01_doctrines/01_LIGHT_BOX_DOCTRINE.md) | The Light Box principle: transparency and derivation as design constraints. |
 | [`BEYOND_SWISS_EPHEMERIS.md`](wiki/01_doctrines/BEYOND_SWISS_EPHEMERIS.md) | Capabilities enabled by sovereign catalogs, explicit policy, and modern Python. |
-| [`SCP.md`](wiki/00_foundations/SCP.md) | The Subsystem Constitutionalization Process — the development and governance protocol. |
+| [`CONSTITUTIONAL_PROCESS.md`](wiki/00_foundations/CONSTITUTIONAL_PROCESS.md) | The Subsystem Constitutional Process — the development and governance protocol. |
 | [`MOIRA_ROADMAP.md`](wiki/06_roadmap/MOIRA_ROADMAP.md) | Feature implementation status and mathematical accuracy register. |
 
 ---
@@ -287,3 +287,4 @@ Each correction stage can be toggled independently via `planet_at()`. The table 
 ## License
 
 MIT (c) 2026 Burkett
+

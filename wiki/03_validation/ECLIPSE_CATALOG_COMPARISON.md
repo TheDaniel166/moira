@@ -49,3 +49,4 @@ These are the more meaningful comparison rows, because they compare the catalog'
 - Moon treatment matters too. In that same case, switching from a retarded Moon to a geometric Moon inside the native branch moves the result by about 35 seconds.
 - Once Delta T branch and Moon treatment are aligned, Moira's native shadow-axis minimum and the canon gamma-minimum objective collapse to essentially the same instant. That means the remaining difference is primarily model basis, not an unstable search algorithm.
 - Practical reading: modern and near-modern comparisons are tight; deep ancient and far-future timing comparisons should be read through the lens of Delta T doctrine and event-definition choice, not just raw residual size.
+
