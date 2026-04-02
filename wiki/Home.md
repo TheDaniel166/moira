@@ -18,12 +18,11 @@ The engine is composed of sovereign, constitutionalized subsystems:
 - **[Aspects & Orbs](02_standards/ASPECT_BACKEND_STANDARD.md)**
 - **[Houses & Cusps](02_standards/HOUSES_BACKEND_STANDARD.md)**
 - **[Dignities & Sect](02_standards/DIGNITIES_BACKEND_STANDARD.md)**
-- **[Timing & Taelords](02_standards/TIMELORDS_BACKEND_STANDARD.md)**
-- **[Moira Phenomena Engine](01_phenomena_engine.md)**
-- **[Validation Case: The Rose of Venus (2026–2032)](03_standards/VALIDATION_CASE_VENUS_STAR.md)**
-- **[The Akaschic Record Standards](00_AKASCHIC_RECORD_STANDARDS.md)**
+- **[Timing & Timelords](02_standards/TIMELORDS_BACKEND_STANDARD.md)**
+- **[Vimshottari Dasha](02_standards/DASHA_BACKEND_STANDARD.md)**
 - **[Fixed Star Logic](02_standards/STARS_BACKEND_STANDARD.md)**
 - **[Service Layer Guide](02_services/SERVICE_LAYER_GUIDE.md)**
+- **[API Reference](02_standards/API_REFERENCE.md)**
 
 ---
 
@@ -31,6 +30,8 @@ The engine is composed of sovereign, constitutionalized subsystems:
 Every calculation is benchmarked against physical oracles:
 - **[Astronomical Validation](03_validation/VALIDATION_ASTRONOMY.md)**
 - **[Astrological Invariants](03_validation/VALIDATION_ASTROLOGY.md)**
+- **[Experimental Validation](03_validation/VALIDATION_EXPERIMENTAL.md)**
+- **[Validation Case: The Rose of Venus (2026–2032)](03_standards/VALIDATION_CASE_VENUS_STAR.md)**
 - **[Eclipse Canon Comparison](03_validation/ECLIPSE_CATALOG_COMPARISON.md)**
 - **[Legacy Divergence Report](03_validation/SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md)**
 

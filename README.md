@@ -275,6 +275,8 @@ Each correction stage can be toggled independently via `planet_at()`. The table 
 
 ## Project Documentation
 
+The canonical documentation tree lives in `wiki/`. The flat `moira.wiki/` Git wiki mirror is generated from it by `python scripts/sync_git_wiki.py` and should not be edited by hand.
+
 | Document | Contents |
 | :--- | :--- |
 | [`01_LIGHT_BOX_DOCTRINE.md`](wiki/01_doctrines/01_LIGHT_BOX_DOCTRINE.md) | The Light Box principle: transparency and derivation as design constraints. |
