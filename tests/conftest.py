@@ -21,7 +21,6 @@ import importlib
 import os
 import random
 import socket
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Generator
@@ -35,43 +34,6 @@ import pytest
 
 ROOT_DIR  = Path(__file__).resolve().parents[1]   # project root
 TEST_DIR  = ROOT_DIR / "tests"
-MOIRA_DIR = ROOT_DIR / "moira"
-
-
-def _repo_owns_module(module) -> bool:
-    module_file = getattr(module, "__file__", None)
-    if not module_file:
-        module_path = getattr(module, "__path__", None)
-        if not module_path:
-            return False
-        try:
-            return all(Path(p).resolve().is_relative_to(ROOT_DIR) for p in module_path)
-        except Exception:
-            return False
-    try:
-        return Path(module_file).resolve().is_relative_to(ROOT_DIR)
-    except Exception:
-        return False
-
-
-def _enforce_local_import_roots() -> None:
-    root_str = str(ROOT_DIR)
-    if sys.path[:1] != [root_str]:
-        try:
-            sys.path.remove(root_str)
-        except ValueError:
-            pass
-        sys.path.insert(0, root_str)
-
-    for name, module in list(sys.modules.items()):
-        if not (name == "tests" or name.startswith("tests.") or name == "moira" or name.startswith("moira.")):
-            continue
-        if _repo_owns_module(module):
-            continue
-        sys.modules.pop(name, None)
-
-
-_enforce_local_import_roots()
 
 
 

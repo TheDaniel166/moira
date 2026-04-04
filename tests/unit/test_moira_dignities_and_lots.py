@@ -1008,6 +1008,34 @@ def test_dispositorship_comparison_bundle_rejects_duplicate_names() -> None:
         )
 
 
+def test_dispositorship_profile_lookup_uses_canonical_subject_normalization() -> None:
+    planet_positions = [
+        {"name": "sun", "degree": 130.0, "is_retrograde": False},
+        {"name": "moon", "degree": 100.0, "is_retrograde": False},
+    ]
+
+    profile = calculate_dispositorship(planet_positions)
+
+    assert profile.get_chain(" moon ").initial_subject == "Moon"
+    with pytest.raises(KeyError, match="dispositorship chain not found"):
+        profile.get_chain("pluto")
+
+
+def test_dispositorship_comparison_bundle_lookup_sanitizes_missing_item_errors() -> None:
+    planet_positions = [
+        {"name": "Sun", "degree": 130.0, "is_retrograde": False},
+        {"name": "Moon", "degree": 100.0, "is_retrograde": False},
+    ]
+
+    bundle = compare_dispositorship(
+        planet_positions,
+        [("traditional", DispositorshipComputationPolicy())],
+    )
+
+    with pytest.raises(KeyError, match="dispositorship comparison item not found"):
+        bundle.get_item("internal-doctrine-name")
+
+
 def test_reception_invariants_fail_loudly_on_subset_drift() -> None:
     house_positions = _equal_houses(300.0)
     planet_positions = [

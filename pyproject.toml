@@ -83,6 +83,7 @@ moira = [
 testpaths    = ["tests"]
 pythonpath   = [".", "tests"] # repo-local code and test utilities only
 addopts      = "-ra -q --import-mode=importlib"
+norecursedirs = [".git", ".venv", ".hypothesis", ".pytest_cache", "__pycache__", "dist", "tmp"]
 markers = [
     "unit:            fast, isolated unit tests",
     "integration:     tests that exercise multiple modules or use de441.bsp",

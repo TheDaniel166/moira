@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import pytest
 
+import moira.eclipse as eclipse
+from moira.geoutils import wrap_longitude_deg
 from moira.eclipse import EclipseCalculator
 from moira.eclipse_canon import find_lunar_contacts_canon, lunar_canon_geometry
 from moira.eclipse_geometry import (
@@ -34,6 +36,78 @@ def test_lunar_magnitude_helpers_match_current_formulas() -> None:
 def test_angular_separation_handles_wraparound() -> None:
     sep = angular_separation(359.9, 0.0, 0.1, 0.0)
     assert sep < 0.21
+
+
+def test_longitude_wrapping_preserves_positive_180_boundary() -> None:
+    assert wrap_longitude_deg(180.0) == 180.0
+    assert wrap_longitude_deg(540.0) == 180.0
+
+
+def test_solar_greatest_location_exits_early_on_exact_conjunction(monkeypatch: pytest.MonkeyPatch) -> None:
+    call_count = 0
+
+    def fake_geometry(calc, jd_ut, latitude, longitude):
+        nonlocal call_count
+        call_count += 1
+        if latitude == -80.0 and longitude == -140.0:
+            return 0.0, 0.0, 0.0
+        return 10.0, 0.0, 0.0
+
+    monkeypatch.setattr(eclipse, "_topocentric_solar_geometry", fake_geometry)
+
+    latitude, longitude, separation = eclipse._solve_solar_greatest_location(object(), 2451401.96)
+
+    assert latitude == -80.0
+    assert longitude == -140.0
+    assert separation == 0.0
+    assert call_count < 10
+
+
+def test_solar_greatest_location_honors_objective_eval_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+    scores = {
+        (-80.0, -180.0): 5.0,
+        (-80.0, -160.0): 4.0,
+        (-80.0, -140.0): 3.0,
+        (-80.0, -120.0): 2.0,
+        (-80.0, -100.0): 1.0,
+    }
+    call_count = 0
+
+    def fake_geometry(calc, jd_ut, latitude, longitude):
+        nonlocal call_count
+        call_count += 1
+        return scores.get((latitude, longitude), 99.0), 0.0, 0.0
+
+    monkeypatch.setattr(eclipse, "_topocentric_solar_geometry", fake_geometry)
+    monkeypatch.setattr(eclipse, "_GEO_SEARCH_MAX_OBJECTIVE_EVALS", 5)
+
+    latitude, longitude, separation = eclipse._solve_solar_greatest_location(object(), 2451401.96)
+
+    assert latitude == -80.0
+    assert longitude == -100.0
+    assert separation == 1.0
+    assert call_count == 5
+
+
+def test_solar_central_interval_returns_zero_width_when_deadline_is_exhausted(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    call_count = 0
+
+    def fake_best_margin(calc, jd_ut):
+        nonlocal call_count
+        call_count += 1
+        return 0.0, 0.0, 0.5
+
+    monkeypatch.setattr(eclipse, "_best_solar_central_margin", fake_best_margin)
+    monkeypatch.setattr(eclipse, "_SOLAR_CENTRAL_INTERVAL_TIMEOUT_S", 0.0)
+    monkeypatch.setattr(eclipse.time, "perf_counter", lambda: 100.0)
+
+    left, right = eclipse._solve_solar_central_interval(object(), 2451401.96)
+
+    assert left == 2451401.96
+    assert right == 2451401.96
+    assert call_count == 0
 
 
 def test_refine_minimum_finds_parabola_vertex() -> None:

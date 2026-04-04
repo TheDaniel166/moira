@@ -210,6 +210,12 @@ CADENT_HOUSES    = {3, 6, 9, 12}
 # Traditional planet order for sorting
 _PLANET_ORDER = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"]
 
+
+def _normalize_dispositorship_subject_name(subject: str) -> str:
+    """Normalize dispositorship subject names to the canonical chart form."""
+
+    return subject.strip().title()
+
 # ---------------------------------------------------------------------------
 # Hayz / Sect tables
 # ---------------------------------------------------------------------------
@@ -771,11 +777,11 @@ class DispositorshipProfile:
     def get_chain(self, subject: str) -> DispositorshipChain:
         """Return the dispositorship chain for the named initial subject."""
 
-        normalized = subject.strip().title()
+        normalized = _normalize_dispositorship_subject_name(subject)
         for chain in self.chains:
             if chain.initial_subject == normalized:
                 return chain
-        raise KeyError(f"Dispositorship chain for {subject!r} not found")
+        raise KeyError("dispositorship chain not found")
 
 
 @dataclass(slots=True)
@@ -1106,7 +1112,12 @@ class DispositorshipSubsystemProfile:
 
         chain_map = {chain.initial_subject: chain for chain in self.profile.chains}
         for condition in self.condition_profiles:
-            chain = chain_map[condition.initial_subject]
+            chain = chain_map.get(condition.initial_subject)
+            if chain is None:
+                raise ValueError(
+                    "DispositorshipSubsystemProfile invariant failed: "
+                    "condition profile references an unknown chain"
+                )
             if condition.initial_sign != chain.initial_sign:
                 raise ValueError("DispositorshipSubsystemProfile invariant failed: condition profile sign must match chain")
             if condition.subject_in_scope != chain.subject_in_scope:
@@ -1208,7 +1219,7 @@ class DispositorshipComparisonBundle:
         for item in self.items:
             if item.name == name:
                 return item
-        raise KeyError(f"Dispositorship comparison item {name!r} not found")
+        raise KeyError("dispositorship comparison item not found")
 
     def _ordered_subjects(self, members: set[str]) -> tuple[str, ...]:
         ordered: list[str] = []
@@ -2946,7 +2957,7 @@ class DignitiesService:
             name = pos.get("name")
             if not isinstance(name, str) or not name.strip():
                 raise ValueError(f"planet_positions[{index}].name must be a non-empty string")
-            normalized_name = name.strip().title()
+            normalized_name = _normalize_dispositorship_subject_name(name)
 
             degree_value = pos.get("degree")
             try:

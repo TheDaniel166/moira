@@ -37,6 +37,9 @@ def _ensure_local_path(entry: Path, index: int) -> None:
 
 
 def _sanitize_import_state() -> None:
+    # Keep this repo's root and tests package ahead of any sibling checkout on
+    # sys.path. This prevents pytest from importing a same-named `tests` or
+    # `moira` module from another repo during collection.
     _ensure_local_path(ROOT_DIR, 0)
     _ensure_local_path(TESTS_DIR, 1)
 

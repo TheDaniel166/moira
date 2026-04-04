@@ -40,6 +40,7 @@ Public surface / exports:
 """
 
 import math
+import time
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Callable
@@ -72,6 +73,12 @@ from .corrections import (
     apply_frame_bias,
     apply_refraction,
     SCHWARZSCHILD_RADII,
+)
+from .geoutils import (
+    EARTH_KM_PER_DEG_LAT as _EARTH_KM_PER_DEG_LAT,
+    offset_geographic_km as _offset_geographic_km,
+    sample_interval as _sample_interval,
+    wrap_longitude_deg as _wrap_longitude_deg,
 )
 
 __all__ = [
@@ -563,37 +570,10 @@ def _bisect_minimum(
 _GEO_SEARCH_STEPS_DEG = (10.0, 5.0, 2.0, 1.0, 0.5, 0.25, 0.1, 0.05)
 _GEO_COARSE_LAT_STEP_DEG = 20.0
 _GEO_COARSE_LON_STEP_DEG = 20.0
-_EARTH_KM_PER_DEG_LAT = 111.195
-
-
-def _wrap_longitude_deg(longitude: float) -> float:
-    wrapped = ((longitude + 180.0) % 360.0) - 180.0
-    if wrapped == -180.0:
-        return 180.0
-    return wrapped
-
-
-def _offset_geographic_km(
-    latitude: float,
-    longitude: float,
-    north_km: float,
-    east_km: float,
-) -> tuple[float, float]:
-    lat = latitude + (north_km / _EARTH_KM_PER_DEG_LAT)
-    lat = max(-89.5, min(89.5, lat))
-    cos_lat = math.cos(math.radians(lat))
-    if abs(cos_lat) < 1e-9:
-        lon = longitude
-    else:
-        lon = longitude + (east_km / (_EARTH_KM_PER_DEG_LAT * cos_lat))
-    return lat, _wrap_longitude_deg(lon)
-
-
-def _sample_interval(jd_start: float, jd_end: float, sample_count: int) -> tuple[float, ...]:
-    if sample_count == 1 or abs(jd_end - jd_start) < 1e-12:
-        return ((jd_start + jd_end) / 2.0,)
-    step = (jd_end - jd_start) / float(sample_count - 1)
-    return tuple(jd_start + i * step for i in range(sample_count))
+_GEO_SEARCH_EARLY_EXIT_SEPARATION_DEG = 1.0e-4
+_GEO_SEARCH_MAX_OBJECTIVE_EVALS = 4096
+_GEO_SEARCH_MAX_PASSES_PER_STEP = 512
+_GEO_SEARCH_TIMEOUT_S = 2.0
 
 
 def _bisection_root(func, left: float, right: float, *, iterations: int = 48) -> float:
@@ -971,40 +951,69 @@ def _solve_star_graze_latitude(
 
 
 def _solve_occultation_greatest_location(
-    objective,
+    objective: Callable[[float, float], float],
 ) -> tuple[float, float, float]:
     cache: dict[tuple[float, float], float] = {}
+    deadline = time.perf_counter() + _GEO_SEARCH_TIMEOUT_S
+    objective_evals = 0
 
     def score(latitude: float, longitude: float) -> float:
+        nonlocal objective_evals
         key = (round(latitude, 6), round(_wrap_longitude_deg(longitude), 6))
         if key not in cache:
+            objective_evals += 1
             cache[key] = objective(latitude, longitude)
         return cache[key]
+
+    def limit_reached() -> bool:
+        return (
+            objective_evals >= _GEO_SEARCH_MAX_OBJECTIVE_EVALS
+            or time.perf_counter() >= deadline
+            or best_score <= _GEO_SEARCH_EARLY_EXIT_SEPARATION_DEG
+        )
 
     best_lat = 0.0
     best_lon = 0.0
     best_score = float("inf")
+    search_complete = False
 
     lat = -80.0
-    while lat <= 80.0 + 1e-9:
+    while lat <= 80.0 + 1e-9 and not search_complete:
         lon = -180.0
         while lon < 180.0 - 1e-9:
+            if limit_reached():
+                search_complete = True
+                break
             value = score(lat, lon)
             if value < best_score:
                 best_lat = lat
                 best_lon = lon
                 best_score = value
+                if best_score <= _GEO_SEARCH_EARLY_EXIT_SEPARATION_DEG:
+                    search_complete = True
+                    break
             lon += _GEO_COARSE_LON_STEP_DEG
         lat += _GEO_COARSE_LAT_STEP_DEG
 
+    if search_complete:
+        return best_lat, best_lon, best_score
+
     for step in _GEO_SEARCH_STEPS_DEG:
+        if limit_reached():
+            break
         improved = True
-        while improved:
+        passes = 0
+        while improved and passes < _GEO_SEARCH_MAX_PASSES_PER_STEP:
+            if limit_reached():
+                return best_lat, best_lon, best_score
+            passes += 1
             improved = False
             for dlat in (-step, 0.0, step):
                 for dlon in (-step, 0.0, step):
                     if dlat == 0.0 and dlon == 0.0:
                         continue
+                    if limit_reached():
+                        return best_lat, best_lon, best_score
                     cand_lat = max(-89.5, min(89.5, best_lat + dlat))
                     cand_lon = _wrap_longitude_deg(best_lon + dlon)
                     value = score(cand_lat, cand_lon)
@@ -1013,6 +1022,8 @@ def _solve_occultation_greatest_location(
                         best_lon = cand_lon
                         best_score = value
                         improved = True
+                        if best_score <= _GEO_SEARCH_EARLY_EXIT_SEPARATION_DEG:
+                            return best_lat, best_lon, best_score
     return best_lat, best_lon, best_score
 
 

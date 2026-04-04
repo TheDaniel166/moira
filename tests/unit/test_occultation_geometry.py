@@ -2,6 +2,10 @@ from __future__ import annotations
 
 import math
 
+import pytest
+
+import moira.occultations as occultations
+from moira.geoutils import wrap_longitude_deg
 from moira.occultations import (
     _star_topocentric_target_geometry,
     lunar_star_graze_product_at,
@@ -114,3 +118,35 @@ def test_lunar_star_graze_product_track_defaults_to_nominal_limit() -> None:
     assert track.profile_band_north_latitude_deg is None
     assert len(track.longitude_deg) == 2
     assert len(track.nominal_limit_latitude_deg) == 2
+
+
+def test_occultation_longitude_wrapping_preserves_positive_180_boundary() -> None:
+    assert wrap_longitude_deg(180.0) == 180.0
+    assert wrap_longitude_deg(540.0) == 180.0
+
+
+def test_occultation_greatest_location_honors_objective_eval_limit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    scores = {
+        (-80.0, -180.0): 5.0,
+        (-80.0, -160.0): 4.0,
+        (-80.0, -140.0): 3.0,
+        (-80.0, -120.0): 2.0,
+        (-80.0, -100.0): 1.0,
+    }
+    call_count = 0
+
+    def objective(latitude: float, longitude: float) -> float:
+        nonlocal call_count
+        call_count += 1
+        return scores.get((latitude, longitude), 99.0)
+
+    monkeypatch.setattr(occultations, "_GEO_SEARCH_MAX_OBJECTIVE_EVALS", 5)
+
+    latitude, longitude, separation = occultations._solve_occultation_greatest_location(objective)
+
+    assert latitude == -80.0
+    assert longitude == -100.0
+    assert separation == 1.0
+    assert call_count == 5

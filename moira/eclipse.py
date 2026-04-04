@@ -38,6 +38,7 @@ Public surface / exports:
 
 
 import math
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
@@ -84,6 +85,12 @@ from .eclipse_canon import (
 )
 from .eclipse_contacts import LunarEclipseContacts, find_lunar_contacts
 from .corrections import apply_light_time
+from .geoutils import (
+    EARTH_KM_PER_DEG_LAT as _KM_PER_DEG_LAT,
+    offset_geographic_km as _offset_geographic_km,
+    sample_interval as _sample_interval,
+    wrap_longitude_deg as _wrap_longitude_deg,
+)
 
 __all__ = [
     "EclipseData", "EclipseEvent", "EclipseType", "EclipseCalculator",
@@ -1741,38 +1748,18 @@ def _matches_solar_kind(data: EclipseData, kind: str) -> bool:
 _GEO_SEARCH_STEPS_DEG = (10.0, 5.0, 2.0, 1.0, 0.5, 0.25, 0.1, 0.05)
 _GEO_COARSE_LAT_STEP_DEG = 20.0
 _GEO_COARSE_LON_STEP_DEG = 20.0
-_KM_PER_DEG_LAT = 2.0 * math.pi * EARTH_RADIUS_KM / 360.0
+_GEO_SEARCH_EARLY_EXIT_SEPARATION_DEG = 1.0e-4
+_GEO_SEARCH_MAX_OBJECTIVE_EVALS = 4096
+_GEO_SEARCH_MAX_PASSES_PER_STEP = 512
+_GEO_SEARCH_TIMEOUT_S = 2.0
+_SOLAR_CENTRAL_INTERVAL_STEP_DAYS = 1.0 / 48.0
+_SOLAR_CENTRAL_INTERVAL_SCAN_STEPS = 48
+_SOLAR_CENTRAL_INTERVAL_MAX_MARGIN_EVALS = 192
+_SOLAR_CENTRAL_INTERVAL_TIMEOUT_S = 4.0
 
 
-def _wrap_longitude_deg(longitude: float) -> float:
-    wrapped = ((longitude + 180.0) % 360.0) - 180.0
-    if wrapped == -180.0:
-        return 180.0
-    return wrapped
-
-
-def _offset_geographic_km(
-    latitude: float,
-    longitude: float,
-    north_km: float,
-    east_km: float,
-) -> tuple[float, float]:
-    lat = latitude + (north_km / _KM_PER_DEG_LAT)
-    lat = max(-89.5, min(89.5, lat))
-    cos_lat = math.cos(math.radians(lat))
-    if abs(cos_lat) < 1e-9:
-        lon = longitude
-    else:
-        lon = longitude + (east_km / (_KM_PER_DEG_LAT * cos_lat))
-    return lat, _wrap_longitude_deg(lon)
-
-
-def _sample_interval(jd_start: float, jd_end: float, sample_count: int) -> tuple[float, ...]:
-    if sample_count == 1 or abs(jd_end - jd_start) < 1e-12:
-        return ((jd_start + jd_end) / 2.0,)
-    step = (jd_end - jd_start) / float(sample_count - 1)
-    return tuple(jd_start + i * step for i in range(sample_count))
-
+class _SearchLimitReached(RuntimeError):
+    pass
 
 def _bisection_root(func, left: float, right: float, *, iterations: int = 48) -> float:
     f_left = func(left)
@@ -1842,38 +1829,67 @@ def _solve_solar_greatest_location(
     jd_ut: float,
 ) -> tuple[float, float, float]:
     cache: dict[tuple[float, float], float] = {}
+    deadline = time.perf_counter() + _GEO_SEARCH_TIMEOUT_S
+    objective_evals = 0
 
     def objective(latitude: float, longitude: float) -> float:
+        nonlocal objective_evals
         key = (round(latitude, 6), round(_wrap_longitude_deg(longitude), 6))
         if key not in cache:
+            objective_evals += 1
             separation, _, _ = _topocentric_solar_geometry(calc, jd_ut, latitude, longitude)
             cache[key] = separation
         return cache[key]
 
+    def limit_reached() -> bool:
+        return (
+            objective_evals >= _GEO_SEARCH_MAX_OBJECTIVE_EVALS
+            or time.perf_counter() >= deadline
+            or best_score <= _GEO_SEARCH_EARLY_EXIT_SEPARATION_DEG
+        )
+
     best_lat = 0.0
     best_lon = 0.0
     best_score = float("inf")
+    search_complete = False
 
     lat = -80.0
-    while lat <= 80.0 + 1e-9:
+    while lat <= 80.0 + 1e-9 and not search_complete:
         lon = -180.0
         while lon < 180.0 - 1e-9:
+            if limit_reached():
+                search_complete = True
+                break
             score = objective(lat, lon)
             if score < best_score:
                 best_lat = lat
                 best_lon = lon
                 best_score = score
+                if best_score <= _GEO_SEARCH_EARLY_EXIT_SEPARATION_DEG:
+                    search_complete = True
+                    break
             lon += _GEO_COARSE_LON_STEP_DEG
         lat += _GEO_COARSE_LAT_STEP_DEG
 
+    if search_complete:
+        return best_lat, best_lon, best_score
+
     for step in _GEO_SEARCH_STEPS_DEG:
+        if limit_reached():
+            break
         improved = True
-        while improved:
+        passes = 0
+        while improved and passes < _GEO_SEARCH_MAX_PASSES_PER_STEP:
+            if limit_reached():
+                return best_lat, best_lon, best_score
+            passes += 1
             improved = False
             for dlat in (-step, 0.0, step):
                 for dlon in (-step, 0.0, step):
                     if dlat == 0.0 and dlon == 0.0:
                         continue
+                    if limit_reached():
+                        return best_lat, best_lon, best_score
                     cand_lat = max(-89.5, min(89.5, best_lat + dlat))
                     cand_lon = _wrap_longitude_deg(best_lon + dlon)
                     score = objective(cand_lat, cand_lon)
@@ -1882,6 +1898,8 @@ def _solve_solar_greatest_location(
                         best_lon = cand_lon
                         best_score = score
                         improved = True
+                        if best_score <= _GEO_SEARCH_EARLY_EXIT_SEPARATION_DEG:
+                            return best_lat, best_lon, best_score
     return best_lat, best_lon, best_score
 
 
@@ -1895,35 +1913,49 @@ def _best_solar_central_margin(
 
 
 def _solve_solar_central_interval(calc: EclipseCalculator, jd_ut: float) -> tuple[float, float]:
+    deadline = time.perf_counter() + _SOLAR_CENTRAL_INTERVAL_TIMEOUT_S
+    margin_evals = 0
+
     def central_margin_at_time(t: float) -> float:
+        nonlocal margin_evals
+        if (
+            margin_evals >= _SOLAR_CENTRAL_INTERVAL_MAX_MARGIN_EVALS
+            or time.perf_counter() >= deadline
+        ):
+            raise _SearchLimitReached()
+        margin_evals += 1
         _, _, margin = _best_solar_central_margin(calc, t)
         return margin
 
-    center_margin = central_margin_at_time(jd_ut)
+    try:
+        center_margin = central_margin_at_time(jd_ut)
+    except _SearchLimitReached:
+        return jd_ut, jd_ut
     if center_margin <= 0.0:
         return jd_ut, jd_ut
 
-    step = 1.0 / 48.0
-    left = jd_ut
-    right = jd_ut
+    step = _SOLAR_CENTRAL_INTERVAL_STEP_DAYS
 
-    for _ in range(48):
-        next_left = left - step
-        if central_margin_at_time(next_left) <= 0.0:
-            left = _bisection_root(central_margin_at_time, next_left, left)
-            break
-        left = next_left
-    else:
-        left = jd_ut
+    def solve_boundary(direction: float) -> float:
+        current = jd_ut
+        for _ in range(_SOLAR_CENTRAL_INTERVAL_SCAN_STEPS):
+            next_time = current + (direction * step)
+            try:
+                next_margin = central_margin_at_time(next_time)
+            except _SearchLimitReached:
+                return jd_ut if current == jd_ut else current
+            if next_margin <= 0.0:
+                try:
+                    if direction < 0.0:
+                        return _bisection_root(central_margin_at_time, next_time, current)
+                    return _bisection_root(central_margin_at_time, current, next_time)
+                except _SearchLimitReached:
+                    return current
+            current = next_time
+        return jd_ut
 
-    for _ in range(48):
-        next_right = right + step
-        if central_margin_at_time(next_right) <= 0.0:
-            right = _bisection_root(central_margin_at_time, right, next_right)
-            break
-        right = next_right
-    else:
-        right = jd_ut
+    left = solve_boundary(-1.0)
+    right = solve_boundary(1.0)
 
     return left, right
 
