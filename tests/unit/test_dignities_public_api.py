@@ -20,6 +20,11 @@ _CURATED_PUBLIC_NAMES = [
     "ReceptionKind",
     "ReceptionBasis",
     "ReceptionMode",
+    "DispositorshipSubjectSet",
+    "DispositorshipRulership",
+    "DispositorshipTerminationKind",
+    "UnsupportedSubjectHandling",
+    "DispositorshipConditionState",
     "PlanetaryConditionState",
     "EssentialDignityDoctrine",
     "MercurySectModel",
@@ -30,6 +35,12 @@ _CURATED_PUBLIC_NAMES = [
     "SectHayzPolicy",
     "AccidentalDignityPolicy",
     "DignityComputationPolicy",
+    "DispositorshipSubjectPolicy",
+    "DispositorshipRulershipPolicy",
+    "DispositorshipTerminationPolicy",
+    "DispositorshipUnsupportedSubjectPolicy",
+    "DispositorshipOrderingPolicy",
+    "DispositorshipComputationPolicy",
     # Truth / classification vessels
     "EssentialDignityClassification",
     "AccidentalConditionClassification",
@@ -45,6 +56,18 @@ _CURATED_PUBLIC_NAMES = [
     "AccidentalDignityTruth",
     # Result vessels
     "PlanetaryReception",
+    "DispositorLink",
+    "DispositorshipChain",
+    "DispositorshipProfile",
+    "DispositorshipConditionProfile",
+    "DispositorshipChartConditionProfile",
+    "DispositorshipNetworkEdgeMode",
+    "DispositorshipNetworkNode",
+    "DispositorshipNetworkEdge",
+    "DispositorshipNetworkProfile",
+    "DispositorshipSubsystemProfile",
+    "DispositorshipComparisonItem",
+    "DispositorshipComparisonBundle",
     "PlanetaryConditionProfile",
     "ChartConditionProfile",
     "ConditionNetworkNode",
@@ -54,6 +77,12 @@ _CURATED_PUBLIC_NAMES = [
     # Entry points / legacy helpers
     "calculate_dignities",
     "calculate_receptions",
+    "calculate_dispositorship",
+    "calculate_dispositorship_condition_profiles",
+    "calculate_dispositorship_chart_condition_profile",
+    "calculate_dispositorship_network_profile",
+    "calculate_dispositorship_subsystem_profile",
+    "compare_dispositorship",
     "calculate_condition_profiles",
     "calculate_chart_condition_profile",
     "calculate_condition_network_profile",
@@ -72,6 +101,7 @@ _INTERNAL_NAMES = [
     "_find_receptions",
     "_derive_condition_state",
     "_validate_policy",
+    "_validate_dispositorship_policy",
     "_classify_reception_truths",
     "_get_essential_dignity_truth",
 ]
@@ -98,6 +128,7 @@ class TestModuleAgreement:
             "_find_receptions",
             "_derive_condition_state",
             "_validate_policy",
+            "_validate_dispositorship_policy",
             "_classify_reception_truths",
             "_get_essential_dignity_truth",
         ]
@@ -110,5 +141,5 @@ class TestModuleAgreement:
                 f"DignitiesService.{name} disappeared; helper should remain internal"
             )
 
-    def test_curated_count_is_47(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 47
+    def test_curated_count_is_76(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 76

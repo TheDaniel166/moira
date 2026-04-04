@@ -17,7 +17,7 @@ It is a scan for:
 - enough subsystem coherence that the constitutional process can apply cleanly
 - enough maturity that the next phase can be justified without phase-skipping
 
-**Last updated**: 2026-03-23 (variable_stars.py constitutionalized; gaia.py Phase 12 closed)
+**Last updated**: 2026-04-03 (dispositorship Phase 12 closed inside dignities.py)
 
 ---
 
@@ -59,6 +59,10 @@ close to that standard.
   Documented by [`PARANS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/PARANS_BACKEND_STANDARD.md)
 - [`dignities.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/dignities.py)
   Documented by [`DIGNITIES_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/DIGNITIES_BACKEND_STANDARD.md)
+  and [`DISPOSITORSHIP_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/wiki/02_standards/DISPOSITORSHIP_BACKEND_STANDARD.md).
+  The dignity engine now also owns a fully constitutionalized dispositorship
+  subsystem through all twelve phases, with a curated public surface exposed
+  from `moira.dignities`.
 - [`lots.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/lots.py)
   Documented by [`LOTS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/LOTS_BACKEND_STANDARD.md)
 - [`patterns.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/patterns.py)
@@ -227,4 +231,3 @@ candidate.
 
 If 5 indicates a helper or primitive, it should usually be constitutionalized
 through its parent subsystem instead.
-

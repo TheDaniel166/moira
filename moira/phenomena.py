@@ -41,7 +41,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .constants import Body, KM_PER_AU, SIDEREAL_YEAR
-from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd, format_jd_utc
+from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd, format_jd_utc, ut_to_tt, decimal_year
 from .planets import planet_at
 from .spk_reader import get_reader, SpkReader
 
@@ -180,13 +180,78 @@ def _helio_distance(body: str, jd: float, reader: SpkReader) -> float:
     """Heliocentric distance of a body in AU."""
     from .planets import _barycentric, _earth_barycentric
     from .constants import Body as _Body
+
+    dt = datetime_from_jd(jd)
+    jd_tt = ut_to_tt(jd, decimal_year(dt.year, dt.month))
+
     if body == _Body.EARTH:
-        p_bary = _earth_barycentric(jd, reader)
+        p_bary = _earth_barycentric(jd_tt, reader)
     else:
-        p_bary = _barycentric(body, jd, reader)
-    s_bary = reader.position(0, 10, jd)
+        p_bary = _barycentric(body, jd_tt, reader)
+    s_bary = reader.position(0, 10, jd_tt)
     dx, dy, dz = p_bary[0] - s_bary[0], p_bary[1] - s_bary[1], p_bary[2] - s_bary[2]
     return math.sqrt(dx * dx + dy * dy + dz * dz) / KM_PER_AU
+
+
+def _helio_state(body: str, jd: float, reader: SpkReader) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
+    """Heliocentric state vector at ``jd`` expressed in km and km/day."""
+    from .planets import _barycentric_state, _earth_barycentric_state
+    from .constants import Body as _Body
+
+    dt = datetime_from_jd(jd)
+    jd_tt = ut_to_tt(jd, decimal_year(dt.year, dt.month))
+
+    if body == _Body.EARTH:
+        p_bary, v_bary = _earth_barycentric_state(jd_tt, reader)
+    else:
+        p_bary, v_bary = _barycentric_state(body, jd_tt, reader)
+    s_bary, s_vel = reader.position_and_velocity(0, 10, jd_tt)
+    return (
+        (p_bary[0] - s_bary[0], p_bary[1] - s_bary[1], p_bary[2] - s_bary[2]),
+        (v_bary[0] - s_vel[0], v_bary[1] - s_vel[1], v_bary[2] - s_vel[2]),
+    )
+
+
+def _helio_radial_velocity(body: str, jd: float, reader: SpkReader) -> float:
+    """Time derivative of heliocentric distance in km/day."""
+    r, v = _helio_state(body, jd, reader)
+    rmag = math.sqrt(r[0] * r[0] + r[1] * r[1] + r[2] * r[2])
+    if rmag == 0.0:
+        raise ValueError(f"Heliocentric distance vanished for {body!r} at JD {jd}")
+    return (r[0] * v[0] + r[1] * v[1] + r[2] * v[2]) / rmag
+
+
+def _bisection_root(
+    f,
+    a: float,
+    b: float,
+    tol: float = 1e-6,
+    max_iter: int = 64,
+) -> float:
+    """Bisection root finder on a bracket [a, b]."""
+    fa = f(a)
+    fb = f(b)
+    if fa == 0.0:
+        return a
+    if fb == 0.0:
+        return b
+    if fa * fb > 0.0:
+        raise ValueError("Root is not bracketed")
+
+    left = a
+    right = b
+    for _ in range(max_iter):
+        mid = 0.5 * (left + right)
+        fm = f(mid)
+        if abs(right - left) <= tol or fm == 0.0:
+            return mid
+        if fa * fm <= 0.0:
+            right = mid
+            fb = fm
+        else:
+            left = mid
+            fa = fm
+    return 0.5 * (left + right)
 
 
 # ---------------------------------------------------------------------------
@@ -340,23 +405,35 @@ def perihelion(
     if max_days is None:
         max_days = period * 1.5
 
-    # Auto step: ~1/100 of the orbital period, minimum 0.5 day
-    step = max(0.5, period / 100.0)
+    # Auto step: ~1/200 of the orbital period, minimum quarter-day.
+    step = max(0.25, period / 200.0)
 
     jd = jd_start
     dist_prev2 = _helio_distance(body, jd - step, reader)
-    dist_prev1 = _helio_distance(body, jd,        reader)
+    dist_prev1 = _helio_distance(body, jd, reader)
 
     while jd < jd_start + max_days:
         jd_next = jd + step
         dist_cur = _helio_distance(body, jd_next, reader)
 
-        # Local minimum: prev1 <= prev2 and prev1 <= cur
+        # Use the sampled distance curve to bracket the large-scale minimum,
+        # then refine the physical turning point with radial velocity.
         if dist_prev1 <= dist_prev2 and dist_prev1 <= dist_cur:
+            left = jd - step
+            right = jd_next
+            try:
+                x_root = _bisection_root(
+                    lambda t: _helio_radial_velocity(body, t, reader),
+                    left,
+                    right,
+                    tol=1e-6,
+                )
+            except ValueError:
+                x_root = jd
             x_opt, d_opt = _golden_section(
                 lambda t: _helio_distance(body, t, reader),
-                jd - step,
-                jd_next,
+                max(jd_start, x_root - step),
+                x_root + step,
                 tol=1e-6,
                 maximise=False,
             )
@@ -388,22 +465,34 @@ def aphelion(
     if max_days is None:
         max_days = period * 1.5
 
-    step = max(0.5, period / 100.0)
+    step = max(0.25, period / 200.0)
 
     jd = jd_start
     dist_prev2 = _helio_distance(body, jd - step, reader)
-    dist_prev1 = _helio_distance(body, jd,        reader)
+    dist_prev1 = _helio_distance(body, jd, reader)
 
     while jd < jd_start + max_days:
         jd_next = jd + step
         dist_cur = _helio_distance(body, jd_next, reader)
 
-        # Local maximum: prev1 >= prev2 and prev1 >= cur
+        # Use the sampled distance curve to bracket the large-scale maximum,
+        # then refine the physical turning point with radial velocity.
         if dist_prev1 >= dist_prev2 and dist_prev1 >= dist_cur:
+            left = jd - step
+            right = jd_next
+            try:
+                x_root = _bisection_root(
+                    lambda t: _helio_radial_velocity(body, t, reader),
+                    left,
+                    right,
+                    tol=1e-6,
+                )
+            except ValueError:
+                x_root = jd
             x_opt, d_opt = _golden_section(
                 lambda t: _helio_distance(body, t, reader),
-                jd - step,
-                jd_next,
+                max(jd_start, x_root - step),
+                x_root + step,
                 tol=1e-6,
                 maximise=True,
             )

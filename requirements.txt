@@ -2,3 +2,5 @@
 # Keep in sync with pyproject.toml [project.dependencies]
 jplephem>=2.24
 scipy>=1.14
+spiceypy>=8.0
+laspy[lazrs]>=2.7

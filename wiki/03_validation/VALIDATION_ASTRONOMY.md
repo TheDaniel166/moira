@@ -38,11 +38,42 @@ several respects:
 | Apparent geocentric planetary positions | JPL Horizons | `pytest` | Validated |
 | Wide-range DE441 vector geometry | JPL Horizons | `pytest` | Validated |
 | Topocentric sky positions | JPL Horizons | `pytest` | Validated |
+| Heliocentric orbital elements | JPL Horizons `ELEMENTS` | `pytest` | Validated |
+| Heliocentric distance extrema | JPL Horizons `VECTORS` | `pytest` | Validated |
 | Eclipse classification and search | Swiss `t.exp` + NASA Five Millennium | `pytest` | Validated |
+| Solar eclipse greatest geography (`where`) | Swiss `t.exp` | `pytest` | Validated (implemented slice) |
 | Local lunar occultations | Swiss `setest/t.exp` | `pytest` | Validated |
+| Occultation path geometry (`where`) | Swiss `t.exp` + live IOTA graze/limit text paths (El Nath, Spica N/S, epsilon Ari, Alcyone, Merope, Asellus Borealis, Regulus) | `pytest` | Validated (implemented slice) |
 | Sothic heliacal rising | Censorinus 139 AD historical record + latitude trend | `pytest` | Validated |
 | Rise / set / transit times | JPL Horizons offline fixture; USNO published tables (supplemental) | `pytest` | Validated |
 | Delta T model divergence envelope | IERS measured table | Documented | Documented |
+
+### Occultation Validation Tracks
+
+Moira now treats occultation validation as two distinct programs:
+
+- `modern_future_occultation_path_validation`
+  primary authority: IOTA graze/limit path publications
+  secondary authority: Swiss `where`
+  validation mode: path and graze-boundary geometry parity
+
+- `ancient_occultation_validation`
+  primary authority: scholarly historical-astronomy record corpora
+  secondary authority: later scholarly reductions and site chronologies
+  validation mode: reconstructed local-event plausibility under explicit uncertainty
+
+The active `pytest` occultation path suite belongs to the first track only.
+Ancient occultations are intentionally deferred to a separate historical
+reduction program and should not be represented as if they were validated by
+the modern/future path corpus.
+
+Current modern/future occultation path envelope:
+- live IOTA graze/limit slices now sit within about `0.002°` to `0.17°`
+  in graze-boundary latitude on the active corpus
+- the enforced IOTA graze-boundary tolerance is `<= 0.18°`
+- where a source file declares a nominal site altitude, that altitude is now
+  used in the graze solve; the present ceiling is still set by profile-aware
+  Spica north-limit geometry rather than by missing elevation
 
 ---
 
@@ -160,6 +191,44 @@ with these mechanisms and is not evidence of a geometry error.
 
 **Oracle:** JPL Horizons  
 **Test file:** `tests/integration/test_horizons_sky.py` - **18/18 passed**
+
+### 4.4 Heliocentric Orbital Elements
+
+**Oracle:** JPL Horizons `EPHEM_TYPE=ELEMENTS`  
+**Bodies:** Mercury through Pluto  
+**Epochs:** 3 validation epochs spanning J2000.0 through 2025-09-01  
+**Thresholds:** semi-major axis <= `1e-5 AU`, eccentricity <= `1e-5`,
+inclination/node <= `0.001 deg`, argument of perihelion and mean anomaly
+<= `0.05 deg`, perihelion/aphelion distances <= `1e-5 AU`  
+**Test file:** `tests/integration/test_horizons_orbits.py`
+
+All cases pass against live HORIZONS osculating elements. Outer-planet
+validation uses the corresponding HORIZONS barycenter commands (`5` through
+`9`) because the DE441 routing for those long-period systems is barycenter-based.
+
+### 4.5 Heliocentric Distance Extrema
+
+**Oracle:** JPL Horizons `EPHEM_TYPE=VECTORS`  
+**Thresholds:** event date <= `1.0 day`, event distance <= `3e-4 AU`  
+**Test file:** `tests/integration/test_horizons_orbits.py`
+
+All validated planets are now treated under one oracle standard:
+
+- HORIZONS vector tables are sampled around the next local heliocentric
+  distance minimum and maximum.
+- The external extrema are refined numerically from the sampled brackets.
+- Moira's `distance_extremes_at(...)` results are then compared directly
+  against those vector-derived perihelion/aphelion events.
+
+This is the summit-grade oracle for this subsystem because it compares Moira
+against the external heliocentric distance curve itself rather than against a
+single epoch's osculating event prediction.
+
+Current observed residual envelope from the focused orbit audit:
+- Worst perihelion date residual: **0.000387961511 d**
+- Worst aphelion date residual: **0.001369935926 d**
+- Worst perihelion distance residual: **0.000000000001 AU**
+- Worst aphelion distance residual: **0.000000000001 AU**
 
 ---
 

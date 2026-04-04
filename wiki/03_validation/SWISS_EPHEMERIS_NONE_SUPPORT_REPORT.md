@@ -39,19 +39,19 @@ Phase 2 implemented (8 symbols reclassified from `support` / `none` to `implemen
 Phase 3 implemented (1 symbol reclassified from `support` / `none` to `implemented`):
 - `SIDM_USER` → `UserDefinedAyanamsa(reference_value_j2000, drift_per_century)` in `moira.sidereal`
 
-Phase 3 design vessels (defer rows with typed vessels now defined; computation still pending):
-- `get_orbital_elements` → `KeplerianElements` vessel in `moira.orbits`; `orbital_elements_at(...)` computation pending
-- `orbit_max_min_true_distance` → `DistanceExtremes` vessel in `moira.orbits`; computation pending
+Phase 3 implemented orbital surfaces:
+- `get_orbital_elements` -> `orbital_elements_at(body, jd_ut)` -> `KeplerianElements` in `moira.orbits`
+- `orbit_max_min_true_distance` -> `distance_extremes_at(body, jd_ut)` -> `DistanceExtremes` in `moira.orbits`
+
+Remaining Phase 3 design vessels (fully deferred rows after the current first implementation slice):
 - `houses_armc_ex2` → base case covered by `houses_from_armc`; ARMC-direct speed surface still deferred
-- `sol_eclipse_where` → `SolarEclipsePath` vessel in `moira.eclipse`; path computation deferred
-- `lun_occult_where` → `OccultationPathGeometry` vessel in `moira.occultations`; path computation deferred
 
 Recommended support order (updated — all `support` items done):
 1. ~~Position-computation switches and output modes~~ — done (Phase 1)
 2. ~~Rise/set doctrine selectors~~ — done (Phase 1)
 3. ~~Low-level astronomy helpers~~ — done (Phase 1)
 4. ~~Specialist search/helpers~~ — done (Phase 2)
-5. Deferred design families: orbital elements computation (`orbital_elements_at`, `distance_extremes_at`), then generalized heliacal, then path/where geometry.
+5. Deferred design families: generalized heliacal, then path/where geometry.
 
 Interpretation:
 - `support` means the capability is worth adding, but usually not as a Swiss-shaped flag or tuple surface.
@@ -276,7 +276,7 @@ Interpretation:
 | `difcsn` | function | unsupported | Swiss internal/backend/file/control surface | `do_not_support` | These are Swiss implementation details or C-library affordances, not stable domain concepts Moira should mirror. | No Moira surface. Keep them out of the public API. |
 | `get_current_file_data` | function | missing | Legacy Swiss utility surface | `do_not_support` | These are low-value utilities that do not fit Moira's core astronomy engine priorities. | No Moira surface. Use Python/time utilities externally if needed. |
 | `get_library_path` | function | missing | Swiss internal/backend/file/control surface | `do_not_support` | These are Swiss implementation details or C-library affordances, not stable domain concepts Moira should mirror. | No Moira surface. Keep them out of the public API. |
-| `get_orbital_elements` | function | missing | Orbital-elements subsystem | `defer` | These are valuable but imply a separate public orbital-elements module with its own doctrine and tests. | `KeplerianElements` vessel designed in `moira.orbits`; `orbital_elements_at(body, jd_ut)` computation pending. |
+| `get_orbital_elements` | function | implemented | Orbital-elements subsystem | `support` | This is now a live public subsystem with typed results and external validation. | `orbital_elements_at(body, jd_ut)` -> `KeplerianElements` in `moira.orbits`; validated against JPL HORIZONS `ELEMENTS`. |
 | `get_tid_acc` | function | missing | Model-basis / tidal-acceleration control | `defer` | These are scientifically meaningful, but Swiss's sprawling constant matrix is not the right Moira surface. | If needed, add compact typed controls such as `DeltaTPolicy`, `PrecessionPolicy`, `NutationPolicy`, or `TidalAccelerationPolicy`. |
 | `heliacal_pheno_ut` | function | missing | Generalized heliacal / visibility surface | `defer` | This is a valid domain, but Moira should not accrete Swiss-style bitfields before the heliacal subsystem is unified and validated. | Introduce typed surfaces such as `HeliacalEventKind`, `HeliacalPolicy`, and `VisibilityModel`, then map selected behaviors onto those. |
 | `helio_cross` | function | implemented | Low-level specialist helper | `support` | These are real computational surfaces that fit Moira's engine style and improve migration quality for advanced users. | `next_heliocentric_transit(body, target_lon, jd_start, reader)` → `float` in `moira.planets`. |
@@ -287,16 +287,22 @@ Interpretation:
 | `houses_ex2` | function | implemented | House speed surface | `defer` | Useful for specialist work, but cusp/angle speed doctrine should be designed intentionally rather than copied from Swiss tuples. | `cusp_speeds_at(jd_ut, lat, lon, system, *, policy, dt)` → `HouseDynamics` in `moira.houses`; 23 unit tests passing. |
 | `lat_to_lmt` | function | missing | Legacy Swiss utility surface | `do_not_support` | These are low-value utilities that do not fit Moira's core astronomy engine priorities. | No Moira surface. Use Python/time utilities externally if needed. |
 | `lmt_to_lat` | function | missing | Legacy Swiss utility surface | `do_not_support` | These are low-value utilities that do not fit Moira's core astronomy engine priorities. | No Moira surface. Use Python/time utilities externally if needed. |
-| `lun_occult_where` | function | missing | Path/where geometry helper | `defer` | This is a real domain need, but the geometry/path surface should be designed as a first-class subsystem, not copied from Swiss call shapes. | `OccultationPathGeometry` vessel designed in `moira.occultations`; path computation deferred pending IOTA validation corpus. |
+| `lun_occult_where` | function | partial | Path/where geometry helper | `support` | Moira now has a real typed occultation path surface with exact-JD greatest-geography solving. The current external validation slice includes Swiss `where` parity at the maximum-geography level plus multiple external IOTA graze/limit text checks across independent bright-star events (El Nath, Spica N/S, epsilon Ari, Alcyone, Merope, Asellus Borealis, Regulus). Nominal site altitude is now carried through where declared by the source files, and a lunar-limb profile correction hook is in place for future topography-backed graze refinement; broader corpus work is still future work. | `lunar_occultation_path_at(...)` / `lunar_star_occultation_path_at(...)` return `OccultationPathGeometry` in `moira.occultations`. |
+
+Ancient-occultation note:
+- Ancient occultations are not part of the active `lun_occult_where` path corpus.
+- They are deferred to a separate historical-validation program where the
+  authority class is scholarly record reduction, not operational path
+  publication.
 | `mooncross_node` | function | implemented | Low-level specialist helper | `support` | These are real computational surfaces that fit Moira's engine style and improve migration quality for advanced users. | `next_moon_node_crossing(jd_start, reader, ascending=True)` → `float` in `moira.nodes`. |
 | `mooncross_node_ut` | function | implemented | Low-level specialist helper | `support` | These are real computational surfaces that fit Moira's engine style and improve migration quality for advanced users. | `next_moon_node_crossing(jd_start, reader, ascending=True)` → `float` in `moira.nodes` (UT-native). |
-| `orbit_max_min_true_distance` | function | missing | Orbital-elements subsystem | `defer` | These are valuable but imply a separate public orbital-elements module with its own doctrine and tests. | `DistanceExtremes` vessel designed in `moira.orbits`; `distance_extremes_at(body, jd_ut)` computation pending. |
+| `orbit_max_min_true_distance` | function | implemented | Orbital-elements subsystem | `support` | This is now a live public subsystem with typed results and a single summit-grade external validation standard. | `distance_extremes_at(body, jd_ut)` -> `DistanceExtremes` in `moira.orbits`; validated against JPL HORIZONS vector-derived heliocentric extrema across all validated planets. |
 | `refrac` | function | implemented | Low-level astronomy helper | `support` | These are standard computational helpers with clear mathematical meaning and low API ambiguity. | `atmospheric_refraction(altitude_deg, ...)` in `moira.coordinates`. |
 | `refrac_extended` | function | implemented | Low-level astronomy helper | `support` | These are standard computational helpers with clear mathematical meaning and low API ambiguity. | `atmospheric_refraction_extended(altitude_deg, ...)` in `moira.coordinates`. |
 | `set_delta_t_userdef` | function | implemented | Explicit Delta-T override | `support` | This is a legitimate specialist control for historical/experimental work and aligns with Moira's model-basis transparency. | `DeltaTPolicy(model='fixed', fixed_delta_t=...)` passed to `ut_to_tt()` / `planet_at()` in `moira.julian` / `moira.planets`. |
 | `set_lapse_rate` | function | missing | Unclassified specialist gap | `defer` | The symbol names a real Swiss surface, but it should not be adopted without an intentional Moira-shaped design. | Add only after a dedicated typed API and validation story are defined. |
 | `set_tid_acc` | function | missing | Model-basis / tidal-acceleration control | `defer` | These are scientifically meaningful, but Swiss's sprawling constant matrix is not the right Moira surface. | If needed, add compact typed controls such as `DeltaTPolicy`, `PrecessionPolicy`, `NutationPolicy`, or `TidalAccelerationPolicy`. |
-| `sol_eclipse_where` | function | missing | Path/where geometry helper | `defer` | This is a real domain need, but the geometry/path surface should be designed as a first-class subsystem, not copied from Swiss call shapes. | `SolarEclipsePath` vessel designed in `moira.eclipse`; path computation deferred pending NASA Five Millennium Atlas validation. |
+| `sol_eclipse_where` | function | partial | Path/where geometry helper | `support` | Moira now has a real typed solar path surface with numerical greatest-geography solving and sampled central-track output. The current external validation slice is Swiss `where` parity at the maximum-geography level; full atlas-grade path validation is still future work. | `EclipseCalculator.solar_eclipse_path(...)` returns `SolarEclipsePath` in `moira.eclipse`. |
 | `time_equ` | function | implemented | Low-level astronomy helper | `support` | These are standard computational helpers with clear mathematical meaning and low API ambiguity. | `equation_of_time(jd_tt)` in `moira.coordinates`. |
 | `vis_limit_mag` | function | missing | Generalized heliacal / visibility surface | `defer` | This is a valid domain, but Moira should not accrete Swiss-style bitfields before the heliacal subsystem is unified and validated. | Introduce typed surfaces such as `HeliacalEventKind`, `HeliacalPolicy`, and `VisibilityModel`, then map selected behaviors onto those. |
 

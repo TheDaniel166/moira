@@ -53,9 +53,10 @@ def nutation(jd: float) -> tuple[float, float]:
     """
     Governs computation of nutation in longitude (Δψ) and obliquity (Δε).
 
-    Delegates to the full IAU 2000A model (1320 + 38 luni-solar terms,
-    1037 + 19 obliquity terms) with IAU 2006 adjustments, implemented in
-    nutation_2000a.py.
+    Delegates to the full IAU 2000A series evaluator implemented in
+    nutation_2000a.py. Within Moira's validated standards stack this nutation
+    surface is paired with IAU 2006 precession and checked against ERFA/SOFA
+    ``nut06a``.
 
     Args:
         jd: Julian Day in Terrestrial Time (TT).

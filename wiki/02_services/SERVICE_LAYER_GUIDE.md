@@ -146,7 +146,8 @@ The Earth's spin axis slowly traces a cone with a ~25,772-year period. Precessio
 
 Short-period oscillations of the Earth's axis caused by the Moon's orbital plane and solar gravitational torques.
 
-- **Model**: IAU 2000A truncated series.
+- **Model**: full IAU 2000A series, used within Moira's validated IAU 2006 +
+  2000A (`06A`) precession-nutation stack.
 - **Term count**: **2,414 total** — 1,358 luni-solar terms + 1,056 planetary terms.
 - **Fundamental arguments**: 14 parameters:
   - 5 Delaunay luni-solar: mean anomaly of Moon (`l`), mean anomaly of Sun (`l'`), mean argument of latitude (`F`), mean elongation of Moon (`D`), longitude of ascending node (`Ω`).
@@ -154,7 +155,9 @@ Short-period oscillations of the Earth's axis caused by the Moon's orbital plane
   - 1 general precession in longitude (`pₐ`).
 - **Returns**: `(Δψ, Δε)` in degrees.
 - **Matrix**: `N = R₁(−ε) · R₃(−Δψ) · R₁(ε₀)` where ε₀ is mean obliquity.
-- **Accuracy**: ~0.1 μas for 1995–2050.
+- **Validated agreement**: the ERFA oracle suite verifies the surrounding
+  nutation / precession stack to within 0.001 arcsecond over the tested grid
+  from 500 BCE through 2100 CE.
 
 ### Step 7: Topocentric Parallax (Geocenter → Observer)
 **Module**: `corrections.topocentric_correction()`

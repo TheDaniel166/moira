@@ -415,7 +415,7 @@ Truth-basis totals:
 | `get_ayanamsa_ut` | function | mapped | `exact_math` | `moira.sidereal.ayanamsa(...)` | verified function, different name |
 | `get_current_file_data` | function | missing | `none` | none | kernel/file introspection helper is not exposed |
 | `get_library_path` | function | missing | `none` | none | pure-Python engine has no Swiss library path surface |
-| `get_orbital_elements` | function | partial | `api_shape_same_math` | `KeplerianElements` vessel in `moira.orbits` | typed vessel designed; `orbital_elements_at(body, jd_ut)` computation pending |
+| `get_orbital_elements` | function | partial | `api_shape_same_math` | `orbital_elements_at(body, jd_ut)` -> `KeplerianElements` in `moira.orbits` | implemented as a typed heliocentric osculating-element surface; validated against JPL HORIZONS |
 | `get_planet_name` | function | partial | `api_shape_domain` | `Body.*` constants / canonical body strings | names are first-class identifiers rather than lookup results |
 | `get_tid_acc` | function | missing | `none` | none | no public tidal-acceleration getter exists |
 | `heliacal_pheno_ut` | function | missing | `none` | none | no detailed heliacal-phenomena helper is exposed |
@@ -439,14 +439,14 @@ Truth-basis totals:
 | `lun_eclipse_when_loc` | function | partial | `api_shape_same_math` | `EclipseCalculator.lunar_local_circumstances(...)` | shape differs |
 | `lun_occult_when_glob` | function | partial | `api_shape_domain` | `all_lunar_occultations(...)`, `m.occultations(...)` | present, not Swiss-shaped |
 | `lun_occult_when_loc` | function | partial | `api_shape_same_math` | `lunar_occultation(..., observer_lat=..., observer_lon=...)` | local occultation search exists, but not as Swiss return-shape wrapper |
-| `lun_occult_where` | function | partial | `api_shape_domain` | `OccultationPathGeometry` vessel in `moira.occultations` | typed vessel designed; path computation deferred pending IOTA validation corpus |
+| `lun_occult_where` | function | partial | `api_shape_domain` | `lunar_occultation_path_at(...)`, `lunar_star_occultation_path_at(...)` -> `OccultationPathGeometry` in `moira.occultations` | exact-JD path geometry is implemented; current external validation includes Swiss `where` maximum geography plus multiple external IOTA graze/limit text slices (El Nath, Spica N/S, epsilon Ari, Alcyone, Merope, Asellus Borealis, Regulus). Nominal site altitude is honoured where the source declares it, and a lunar-limb profile correction hook now exists for future topography-backed graze refinement. |
 | `mooncross` | function | mapped | `exact_math` | `next_transit('Moon', target_lon, jd_start)` | same target-longitude crossing search |
 | `mooncross_node` | function | mapped | `exact_math` | `next_moon_node_crossing(jd_start, reader, ascending=True)` → `float` in `moira.nodes` | 0.5-day scan + 52-iteration bisection on geocentric ecliptic latitude |
 | `mooncross_node_ut` | function | mapped | `api_shape_same_math` | `next_moon_node_crossing(jd_start, reader, ascending=True)` → `float` in `moira.nodes` | same as `mooncross_node`; Moira is UT-native so no separate UT variant needed |
 | `mooncross_ut` | function | mapped | `exact_math` | `next_transit('Moon', target_lon, jd_start)` | same target-longitude crossing search |
 | `nod_aps` | function | partial | `api_shape_domain` | `all_planetary_nodes(...)`, `m.planetary_nodes(...)` | Moira splits planetary nodes/apsides from the separate lunar-node surfaces |
 | `nod_aps_ut` | function | partial | `api_shape_domain` | `all_planetary_nodes(...)`, `m.planetary_nodes(...)` | Moira splits planetary nodes/apsides from the separate lunar-node surfaces |
-| `orbit_max_min_true_distance` | function | partial | `api_shape_same_math` | `DistanceExtremes` vessel in `moira.orbits` | typed vessel designed; `distance_extremes_at(body, jd_ut)` computation pending |
+| `orbit_max_min_true_distance` | function | partial | `api_shape_same_math` | `distance_extremes_at(body, jd_ut)` -> `DistanceExtremes` in `moira.orbits` | implemented as a typed perihelion/aphelion search surface; validated against JPL HORIZONS vector-derived heliocentric extrema |
 | `pheno` | function | mapped | `decomposed_math` | `phase_angle(...)`, `illuminated_fraction(...)`, `elongation(...)`, `angular_diameter(...)`, `apparent_magnitude(...)` | semantic equivalent split across phase helpers |
 | `pheno_ut` | function | mapped | `decomposed_math` | `phase_angle(...)`, `illuminated_fraction(...)`, `elongation(...)`, `angular_diameter(...)`, `apparent_magnitude(...)` | semantic equivalent split across phase helpers |
 | `rad_midp` | function | stdlib | `stdlib` | Python `math` plus modular arithmetic | no dedicated Moira helper needed |
@@ -468,7 +468,7 @@ Truth-basis totals:
 | `sol_eclipse_how` | function | partial | `api_shape_domain` | `solar_local_circumstances(...)` | closest current local-attribute surface |
 | `sol_eclipse_when_glob` | function | partial | `api_shape_domain` | `EclipseCalculator.next_solar_eclipse(...)` | class method, not flat function |
 | `sol_eclipse_when_loc` | function | partial | `api_shape_same_math` | `EclipseCalculator.solar_local_circumstances(...)` | shape differs |
-| `sol_eclipse_where` | function | partial | `api_shape_domain` | `SolarEclipsePath` vessel in `moira.eclipse` | typed vessel designed; path computation deferred pending NASA Five Millennium Atlas validation |
+| `sol_eclipse_where` | function | partial | `api_shape_domain` | `EclipseCalculator.solar_eclipse_path(...)` -> `SolarEclipsePath` in `moira.eclipse` | numerical greatest-geography and sampled central-track surface implemented; current external validation is Swiss `where` maximum geography |
 | `solcross` | function | mapped | `exact_math` | `next_transit('Sun', target_lon, jd_start)` | same target-longitude crossing search |
 | `solcross_ut` | function | mapped | `exact_math` | `next_transit('Sun', target_lon, jd_start)` | same target-longitude crossing search |
 | `split_deg` | function | stdlib | `stdlib` | local arithmetic | no dedicated audited helper |

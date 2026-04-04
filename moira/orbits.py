@@ -1,67 +1,45 @@
 """
-Moira — orbits.py
+Moira - orbits.py
 Orbital Elements Public Layer
-
-Archetype: Design vessel module (Phase 3 — Defer.Design)
 
 Purpose
 -------
-Provides the typed vessel surfaces for Keplerian orbital elements and
-distance extremes (perihelion/aphelion).  This module is a design vessel —
-the types are defined and exported, but no computation is present yet.
+Provides typed public vessels and computation for heliocentric osculating
+orbital elements and nearest perihelion/aphelion events.
 
-Phase 3 mandate
----------------
-The orbital-elements domain is deferred because:
+Implemented doctrine
+--------------------
+1. Coordinate frame
+   Heliocentric, J2000.0 ecliptic and equinox.
 
-1. It requires a dedicated typed subsystem design.  Swiss ``swe_get_orbital_elements``
-   returns a raw 50-element float array indexed by undocumented integer offsets.
-   Moira must first decide the correct vessel shape, the coordinate frame
-   (osculating vs mean elements, heliocentric vs barycentric), and the epoch
-   convention before any public function is added.
+2. Element type
+   Osculating elements recovered from the instantaneous heliocentric state
+   vector at the requested epoch.
 
-2. The subsystem spans multiple physical domains:
-   - Keplerian elements (a, e, i, Ω, ω, M) — orbital shape and orientation
-   - Distance extremes (perihelion/aphelion distance and date)
-   - Orbital period
-   These should be one coherent subsystem, not scattered helpers.
+3. Public shape
+   Swiss-style raw float arrays are rejected. Public results are always
+   returned as ``KeplerianElements`` or ``DistanceExtremes``.
 
-3. Validation requires comparison against published ephemeris tables
-   (Meeus Appendix I, JPL HORIZONS) for at least the eight major planets.
+4. Event search basis
+   Distance extremes are searched on the live heliocentric distance curve
+   through ``moira.phenomena``, not inferred only from one epoch's osculating
+   period.
 
-Doctrinal decisions (recorded here before implementation)
----------------------------------------------------------
-Decision 1: Coordinate frame
-    Heliocentric osculating elements in the J2000.0 ecliptic frame.
-    Rationale: osculating elements are meaningful for astrological
-    distance-extremes computation; barycentric elements are more accurate
-    for long-term dynamics but less intuitive for astrological use.
-    The frame choice must be documented on the vessel and in every
-    function that produces one.
-
-Decision 2: Module location
-    ``moira.orbits`` exists as a public module.
-    Rationale: orbital elements are a distinct computational layer, not a
-    helper function on planets.py.  They deserve their own module with
-    its own validation story and own SCP entry point.
-
-Decision 3: No raw float arrays
-    All results are ``KeplerianElements`` or ``DistanceExtremes`` instances.
-    Swiss-style array-indexed returns are explicitly rejected.
-
-Validation plan (must exist before ``status=implemented``)
-----------------------------------------------------------
-- Compare ``OrbitalElements`` for all eight planets against Meeus Table 31.a
-  (J2000.0 values) — tolerance 0.01° for angles, 0.001 AU for semi-major axis.
-- Compare ``DistanceExtremes`` against JPL HORIZONS for at least three
-  consecutive perihelion/aphelion events per planet — tolerance ±1 day, ±0.001 AU.
+Validation basis
+----------------
+- ``orbital_elements_at(...)`` is validated against live JPL HORIZONS
+  osculating elements across Mercury through Pluto.
+- ``distance_extremes_at(...)`` is validated against JPL HORIZONS
+  vector-derived heliocentric distance extrema across all validated planets.
+- Focused synthetic tests cover singular cases such as circular/equatorial
+  states and degenerate input vectors.
 
 Public surface
 --------------
-    KeplerianElements    — typed vessel for Keplerian orbital elements
-    DistanceExtremes     — typed vessel for perihelion/aphelion distances and dates
-    orbital_elements_at  — compute heliocentric Keplerian elements for a body at a JD
-    distance_extremes_at — find nearest perihelion and aphelion from a given JD
+    KeplerianElements    - typed vessel for Keplerian orbital elements
+    DistanceExtremes     - typed vessel for perihelion/aphelion distances and dates
+    orbital_elements_at  - compute heliocentric Keplerian elements for a body at a JD
+    distance_extremes_at - find nearest perihelion and aphelion from a given JD
 
 Import-time side effects: None
 """
@@ -87,6 +65,14 @@ __all__ = [
 
 # GM_sun from JPL: 1.32712440018e20 m³/s², converted to km³/day²
 _GM_SUN_KM3_DAY2: float = 1.32712440018e11 * 86400.0 ** 2
+_BODY_SYSTEM_GM_KM3_S2: dict[str, float] = {
+    Body.MARS: 4.2828372299345596e4,
+    Body.JUPITER: 1.2669488293600228e8,
+    Body.SATURN: 3.7940577410058454e7,
+    Body.URANUS: 5.7943061113633998e6,
+    Body.NEPTUNE: 6.8322470499278503e6,
+    Body.PLUTO: 6.9049510564781247e2,
+}
 
 # KM_PER_AU imported from moira.constants — IAU 2012 exact definition.
 
@@ -235,6 +221,19 @@ def _mag3(a: tuple[float, float, float]) -> float:
     return math.sqrt(_dot3(a, a))
 
 
+def _wrap_degrees(angle_deg: float) -> float:
+    """Normalize an angle into the half-open interval [0, 360)."""
+    return angle_deg % 360.0
+
+
+def _orbital_mu_km3_day2(body: str) -> float:
+    """Return the effective two-body gravitational parameter for ``body``."""
+    gm_body_km3_s2 = _BODY_SYSTEM_GM_KM3_S2.get(body)
+    if gm_body_km3_s2 is None:
+        return _GM_SUN_KM3_DAY2
+    return _GM_SUN_KM3_DAY2 + gm_body_km3_s2 * 86400.0 ** 2
+
+
 def _keplerian_from_state(
     r: tuple[float, float, float],
     v: tuple[float, float, float],
@@ -256,6 +255,8 @@ def _keplerian_from_state(
     -------
     KeplerianElements with all angular fields in degrees [0, 360).
     """
+    tol = 1e-10
+
     rx, ry, rz = r
     r_mag = _mag3(r)
     v_mag = _mag3(v)
@@ -263,6 +264,11 @@ def _keplerian_from_state(
     # Angular momentum h = r × v
     h = _cross3(r, v)
     h_mag = _mag3(h)
+    if h_mag < tol:
+        raise ValueError(
+            f"Body {name!r} has a degenerate state vector; "
+            "orbital plane is undefined"
+        )
 
     # Inclination i = arccos(h_z / |h|)
     incl_rad = math.acos(max(-1.0, min(1.0, h[2] / h_mag)))
@@ -272,12 +278,10 @@ def _keplerian_from_state(
     n_mag = math.sqrt(nx * nx + ny * ny)
 
     # Longitude of ascending node Ω
-    if n_mag < 1e-10:
+    if n_mag < tol:
         omega = 0.0                            # equatorial orbit: node undefined
     else:
-        omega = math.degrees(math.acos(max(-1.0, min(1.0, nx / n_mag))))
-        if ny < 0.0:
-            omega = 360.0 - omega
+        omega = _wrap_degrees(math.degrees(math.atan2(ny, nx)))
 
     # Eccentricity vector e = (v × h) / GM − r̂
     vxh = _cross3(v, h)
@@ -285,24 +289,33 @@ def _keplerian_from_state(
     ey = vxh[1] / gm - ry / r_mag
     ez = vxh[2] / gm - rz / r_mag
     ecc = math.sqrt(ex * ex + ey * ey + ez * ez)
+    has_defined_periapsis = ecc >= tol
+    has_defined_node = n_mag >= tol
 
     # Argument of perihelion ω
-    if n_mag < 1e-10 or ecc < 1e-10:
+    if has_defined_node and has_defined_periapsis:
+        cos_arg_peri = max(-1.0, min(1.0, (ex * nx + ey * ny) / (ecc * n_mag)))
+        sin_arg_peri = _dot3(_cross3((nx, ny, 0.0), (ex, ey, ez)), h) / (n_mag * ecc * h_mag)
+        arg_peri = _wrap_degrees(math.degrees(math.atan2(sin_arg_peri, cos_arg_peri)))
+    elif has_defined_periapsis:
+        # Equatorial eccentric orbit: use longitude of perihelion with Ω := 0.
+        arg_peri = _wrap_degrees(math.degrees(math.atan2(ey, ex)))
+    else:
         arg_peri = 0.0
-    else:
-        e_dot_n = ex * nx + ey * ny          # e·N  (nz = ez_proj = 0 for N)
-        arg_peri = math.degrees(math.acos(max(-1.0, min(1.0, e_dot_n / (ecc * n_mag)))))
-        if ez < 0.0:
-            arg_peri = 360.0 - arg_peri
 
-    # True anomaly ν
-    if ecc < 1e-10:
-        true_anom = 0.0                        # circular: ν undefined, use 0
+    # True anomaly ν, or its circular-orbit replacements when perihelion is undefined.
+    if has_defined_periapsis:
+        cos_true_anom = max(-1.0, min(1.0, (ex * rx + ey * ry + ez * rz) / (ecc * r_mag)))
+        sin_true_anom = _dot3(_cross3((ex, ey, ez), r), h) / (ecc * r_mag * h_mag)
+        true_anom = _wrap_degrees(math.degrees(math.atan2(sin_true_anom, cos_true_anom)))
+    elif has_defined_node:
+        # Circular inclined orbit: use argument of latitude u.
+        cos_true_anom = max(-1.0, min(1.0, (nx * rx + ny * ry) / (n_mag * r_mag)))
+        sin_true_anom = _dot3(_cross3((nx, ny, 0.0), r), h) / (n_mag * r_mag * h_mag)
+        true_anom = _wrap_degrees(math.degrees(math.atan2(sin_true_anom, cos_true_anom)))
     else:
-        e_dot_r = ex * rx + ey * ry + ez * rz
-        true_anom = math.degrees(math.acos(max(-1.0, min(1.0, e_dot_r / (ecc * r_mag)))))
-        if _dot3(r, v) < 0.0:
-            true_anom = 360.0 - true_anom
+        # Circular equatorial orbit: use true longitude l.
+        true_anom = _wrap_degrees(math.degrees(math.atan2(ry, rx)))
 
     # Semi-major axis from vis-viva: a = −GM / (2 · ε_orb)
     energy = 0.5 * v_mag ** 2 - gm / r_mag
@@ -316,11 +329,15 @@ def _keplerian_from_state(
     # Mean anomaly M from eccentric anomaly E (elliptical only)
     if ecc < 1.0:
         half_nu = math.radians(true_anom) / 2.0
-        ea = 2.0 * math.atan2(
-            math.sqrt(max(0.0, 1.0 - ecc)) * math.sin(half_nu),
-            math.sqrt(max(0.0, 1.0 + ecc)) * math.cos(half_nu),
-        )
-        mean_anom = math.degrees(ea - ecc * math.sin(ea)) % 360.0
+        if has_defined_periapsis:
+            ea = 2.0 * math.atan2(
+                math.sqrt(max(0.0, 1.0 - ecc)) * math.sin(half_nu),
+                math.sqrt(max(0.0, 1.0 + ecc)) * math.cos(half_nu),
+            )
+            mean_anom = _wrap_degrees(math.degrees(ea - ecc * math.sin(ea)))
+        else:
+            # Circular ellipse: mean anomaly is equal to the available phase angle.
+            mean_anom = true_anom
     else:
         mean_anom = 0.0                        # hyperbolic: M not defined
 
@@ -337,10 +354,10 @@ def _keplerian_from_state(
         epoch_jd=epoch_jd,
         semi_major_axis_au=sma_km / KM_PER_AU,
         eccentricity=ecc,
-        inclination_deg=math.degrees(incl_rad) % 360.0,
-        lon_ascending_node_deg=omega % 360.0,
-        arg_perihelion_deg=arg_peri % 360.0,
-        mean_anomaly_deg=mean_anom % 360.0,
+        inclination_deg=math.degrees(incl_rad),
+        lon_ascending_node_deg=_wrap_degrees(omega),
+        arg_perihelion_deg=_wrap_degrees(arg_peri),
+        mean_anomaly_deg=_wrap_degrees(mean_anom),
         mean_motion_deg_per_day=mean_motion,
         orbital_period_days=period,
     )
@@ -441,7 +458,7 @@ def orbital_elements_at(
     r_ecl = _rot_eq_to_ecl(*r_icrf, eps)
     v_ecl = _rot_eq_to_ecl(*v_icrf, eps)
 
-    return _keplerian_from_state(r_ecl, v_ecl, _GM_SUN_KM3_DAY2, body, jd_ut)
+    return _keplerian_from_state(r_ecl, v_ecl, _orbital_mu_km3_day2(body), body, jd_ut)
 
 
 def distance_extremes_at(

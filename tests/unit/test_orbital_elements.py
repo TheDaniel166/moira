@@ -29,6 +29,7 @@ import math
 import pytest
 
 from moira.orbits import KeplerianElements, orbital_elements_at
+from moira import orbits as _orbits_module
 from moira.spk_reader import get_reader
 from moira.constants import Body
 
@@ -289,3 +290,49 @@ def test_importable_from_moira(reader):
     assert hasattr(_m, "KeplerianElements")
     result = _m.orbital_elements_at(Body.EARTH, _J2000, reader)
     assert isinstance(result, _m.KeplerianElements)
+
+
+# ---------------------------------------------------------------------------
+# Synthetic singular-case hardening tests (no ephemeris required)
+# ---------------------------------------------------------------------------
+
+def test_internal_circular_equatorial_state_uses_true_longitude() -> None:
+    elements = _orbits_module._keplerian_from_state(
+        r=(0.0, 2.0, 0.0),
+        v=(-1.0, 0.0, 0.0),
+        gm=2.0,
+        name="Synthetic",
+        epoch_jd=0.0,
+    )
+
+    assert elements.eccentricity == pytest.approx(0.0, abs=1e-12)
+    assert elements.inclination_deg == pytest.approx(0.0, abs=1e-12)
+    assert elements.lon_ascending_node_deg == pytest.approx(0.0, abs=1e-12)
+    assert elements.arg_perihelion_deg == pytest.approx(0.0, abs=1e-12)
+    assert elements.mean_anomaly_deg == pytest.approx(90.0, abs=1e-12)
+
+
+def test_internal_equatorial_eccentric_state_uses_longitude_of_perihelion() -> None:
+    elements = _orbits_module._keplerian_from_state(
+        r=(0.0, 1.0, 0.0),
+        v=(-1.0, 1.0, 0.0),
+        gm=2.0,
+        name="Synthetic",
+        epoch_jd=0.0,
+    )
+
+    assert elements.inclination_deg == pytest.approx(0.0, abs=1e-12)
+    assert elements.lon_ascending_node_deg == pytest.approx(0.0, abs=1e-12)
+    assert elements.arg_perihelion_deg == pytest.approx(315.0, abs=1e-9)
+    assert 0.0 <= elements.mean_anomaly_deg < 360.0
+
+
+def test_internal_degenerate_state_raises() -> None:
+    with pytest.raises(ValueError, match="degenerate state vector"):
+        _orbits_module._keplerian_from_state(
+            r=(1.0, 0.0, 0.0),
+            v=(2.0, 0.0, 0.0),
+            gm=1.0,
+            name="Synthetic",
+            epoch_jd=0.0,
+        )

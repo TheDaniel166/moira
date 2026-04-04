@@ -1,12 +1,12 @@
 """
 Moira — nutation_2000a.py
 The Nutation Engine: governs computation of nutation in longitude (Δψ) and
-obliquity (Δε) using the full IAU 2000A model with IAU 2006 adjustments.
+obliquity (Δε) by evaluating the full IAU 2000A series.
 
-Boundary: owns the complete nutation pipeline from IERS table parsing through
-fundamental argument evaluation to final Δψ/Δε output in degrees. Delegates
-time conversion (Julian centuries from J2000) to julian. Does not own
-precession, coordinate transforms, or any display formatting.
+Boundary: owns the complete nutation-series pipeline from IERS table parsing
+through fundamental argument evaluation to final Δψ/Δε output in degrees.
+Delegates time conversion (Julian centuries from J2000) to julian. Does not
+own precession, coordinate transforms, or any display formatting.
 
 Public surface:
     nutation_2000a(jd_tt) -> tuple[float, float]
@@ -314,7 +314,7 @@ def _nutation_numpy(T: float, fa: tuple) -> tuple[float, float]:
 def nutation_2000a(jd_tt: float) -> tuple[float, float]:
     """
     Compute nutation in longitude (Δψ) and obliquity (Δε) using the full
-    IAU 2000A model with IAU 2006 adjustments.
+    IAU 2000A series.
 
     Parameters
     ----------
@@ -326,7 +326,14 @@ def nutation_2000a(jd_tt: float) -> tuple[float, float]:
 
     Notes
     -----
-    Accuracy: ~0.1 µas for 1995–2050; degrades gracefully for historical dates.
+    Standards context: this function evaluates the IAU 2000A nutation series.
+    In Moira's validated stack it is paired with IAU 2006 precession and
+    checked against ERFA/SOFA ``nut06a`` through the surrounding integration
+    tests.
+
+    Validated agreement: the current ERFA oracle suite verifies the enclosing
+    nutation / precession stack to within 0.001 arcsecond over the tested grid
+    from 500 BCE through 2100 CE.
 
     When numpy is available, a vectorized fast path is used automatically
     (~25x faster, ~0.14 ms per call).  Results are numerically identical to

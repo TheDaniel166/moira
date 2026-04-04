@@ -12,6 +12,7 @@ from functools import lru_cache
 from moira.julian import datetime_from_jd
 from moira.julian import jd_from_datetime
 from moira.julian import ut_to_tt
+from moira.constants import KM_PER_AU
 
 _HORIZONS_URL = "https://ssd.jpl.nasa.gov/api/horizons.api"
 
@@ -34,6 +35,28 @@ class VectorState:
     vx: float
     vy: float
     vz: float
+
+
+@dataclass(frozen=True)
+class VectorSample:
+    jd_tdb: float
+    state: VectorState
+
+
+@dataclass(frozen=True)
+class OrbitalElements:
+    eccentricity: float
+    perihelion_distance_au: float
+    inclination_deg: float
+    lon_ascending_node_deg: float
+    arg_perihelion_deg: float
+    perihelion_jd_tdb: float
+    mean_motion_deg_per_day: float
+    mean_anomaly_deg: float
+    true_anomaly_deg: float
+    semi_major_axis_au: float
+    aphelion_distance_au: float
+    orbital_period_days: float
 
 
 @dataclass(frozen=True)
@@ -252,6 +275,147 @@ def vector_state(command: str, jd_ut: float, center: str = "500@399") -> VectorS
     if error := _extract_error(text):
         raise RuntimeError(f"Horizons error for {command!r}: {error}")
     raise RuntimeError(f"Could not parse Horizons vector state for {command!r}")
+
+
+@lru_cache(maxsize=256)
+def orbital_elements(
+    command: str,
+    jd_ut: float,
+    center: str = "500@10",
+) -> OrbitalElements:
+    """
+    Fetch geometric osculating orbital elements from Horizons.
+
+    The elements are requested in the ecliptic-of-J2000 frame with AU-day
+    output units. The supplied ``jd_ut`` is converted to TT before query, which
+    matches Moira's internal orbit-evaluation convention closely enough for the
+    current validation envelope.
+    """
+    jd_tt = ut_to_tt(jd_ut)
+    params = {
+        "format": "text",
+        "COMMAND": f"'{command}'",
+        "OBJ_DATA": "NO",
+        "MAKE_EPHEM": "YES",
+        "EPHEM_TYPE": "ELEMENTS",
+        "CENTER": f"'{center}'",
+        "TLIST": f"'{jd_tt}'",
+        "TLIST_TYPE": "JD",
+        "OUT_UNITS": "AU-D",
+        "REF_SYSTEM": "J2000",
+        "REF_PLANE": "ECLIPTIC",
+        "CSV_FORMAT": "YES",
+        "ELM_LABELS": "NO",
+    }
+    text = _request_text(params)
+
+    in_data = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped == "$$SOE":
+            in_data = True
+            continue
+        if stripped == "$$EOE":
+            break
+        if not in_data or not stripped:
+            continue
+
+        parts = [part.strip() for part in stripped.split(",")]
+        if len(parts) < 14:
+            continue
+        try:
+            return OrbitalElements(
+                eccentricity=float(parts[2]),
+                perihelion_distance_au=float(parts[3]),
+                inclination_deg=float(parts[4]),
+                lon_ascending_node_deg=float(parts[5]),
+                arg_perihelion_deg=float(parts[6]),
+                perihelion_jd_tdb=float(parts[7]),
+                mean_motion_deg_per_day=float(parts[8]),
+                mean_anomaly_deg=float(parts[9]),
+                true_anomaly_deg=float(parts[10]),
+                semi_major_axis_au=float(parts[11]),
+                aphelion_distance_au=float(parts[12]),
+                orbital_period_days=float(parts[13]),
+            )
+        except ValueError:
+            continue
+
+    if error := _extract_error(text):
+        raise RuntimeError(f"Horizons error for {command!r}: {error}")
+    raise RuntimeError(f"Could not parse Horizons orbital elements for {command!r}")
+
+
+@lru_cache(maxsize=128)
+def vector_series(
+    command: str,
+    start_jd_ut: float,
+    stop_jd_ut: float,
+    step_days: float,
+    center: str = "500@399",
+) -> tuple[VectorSample, ...]:
+    jd_tt_start = ut_to_tt(start_jd_ut)
+    jd_tt_stop = ut_to_tt(stop_jd_ut)
+    dt_start = datetime_from_jd(jd_tt_start)
+    dt_stop = datetime_from_jd(jd_tt_stop)
+    step_days_int = max(1, int(round(step_days)))
+    params = {
+        "format": "text",
+        "COMMAND": f"'{command}'",
+        "OBJ_DATA": "NO",
+        "MAKE_EPHEM": "YES",
+        "EPHEM_TYPE": "VECTORS",
+        "CENTER": f"'{center}'",
+        "START_TIME": f"'{_horizons_time_string(dt_start)}'",
+        "STOP_TIME": f"'{_horizons_time_string(dt_stop)}'",
+        "STEP_SIZE": f"'{step_days_int} d'",
+        "TIME_TYPE": "TDB",
+        "OUT_UNITS": "AU-D",
+        "VEC_TABLE": "2",
+        "VEC_LABELS": "NO",
+        "CSV_FORMAT": "YES",
+        "REF_SYSTEM": "ICRF",
+        "REF_PLANE": "FRAME",
+    }
+    text = _request_text(params)
+
+    samples: list[VectorSample] = []
+    in_data = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped == "$$SOE":
+            in_data = True
+            continue
+        if stripped == "$$EOE":
+            break
+        if not in_data or not stripped:
+            continue
+
+        parts = [part.strip() for part in stripped.split(",")]
+        if len(parts) < 8:
+            continue
+        try:
+            samples.append(
+                VectorSample(
+                        jd_tdb=float(parts[0]),
+                        state=VectorState(
+                            x=float(parts[2]) * KM_PER_AU,
+                            y=float(parts[3]) * KM_PER_AU,
+                            z=float(parts[4]) * KM_PER_AU,
+                            vx=float(parts[5]) * KM_PER_AU / 86400.0,
+                            vy=float(parts[6]) * KM_PER_AU / 86400.0,
+                            vz=float(parts[7]) * KM_PER_AU / 86400.0,
+                        ),
+                    )
+                )
+        except ValueError:
+            continue
+
+    if samples:
+        return tuple(samples)
+    if error := _extract_error(text):
+        raise RuntimeError(f"Horizons error for {command!r}: {error}")
+    raise RuntimeError(f"Could not parse Horizons vector series for {command!r}")
 
 
 @lru_cache(maxsize=256)

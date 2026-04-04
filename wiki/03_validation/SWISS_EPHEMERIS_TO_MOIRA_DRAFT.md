@@ -527,14 +527,14 @@ named in the generated draft, with the best current status from this audit.
 | --- | --- | --- | --- |
 | `sol_eclipse_when_glob` | partial | `EclipseCalculator.next_solar_eclipse(...)` | class method, not flat function |
 | `sol_eclipse_when_loc` | partial | `EclipseCalculator.solar_local_circumstances(...)` | not identical output shape |
-| `sol_eclipse_where` | missing | no audited direct path/where helper | original draft overclaimed |
+| `sol_eclipse_where` | partial | `EclipseCalculator.solar_eclipse_path(...)` -> `SolarEclipsePath` | original draft is no longer current; Moira now has a typed numerical first slice with Swiss `where` maximum-geography validation |
 | `sol_eclipse_how` | partial | `solar_local_circumstances(...)` | closest current local-attribute surface |
 | `lun_eclipse_when` | partial | `EclipseCalculator.next_lunar_eclipse(...)` | class method |
 | `lun_eclipse_when_loc` | partial | `EclipseCalculator.lunar_local_circumstances(...)` | shape differs |
 | `lun_eclipse_how` | partial | `lunar_local_circumstances(...)` / analysis bundle | shape differs |
 | `lun_occult_when_glob` | partial | `all_lunar_occultations(...)`, `m.occultations(...)` | present, not Swiss-shaped |
 | `lun_occult_when_loc` | partial | occultation search plus observer args in `occultations.py` | exact 1:1 helper not finalized |
-| `lun_occult_where` | partial | occultation machinery present | exact path-style API not yet audited |
+| `lun_occult_where` | partial | `lunar_occultation_path_at(...)`, `lunar_star_occultation_path_at(...)` -> `OccultationPathGeometry` | exact-JD path builders now exist and the current first slice is externally checked against the local Swiss `where` fixture |
 
 ### Rise, set, transit
 

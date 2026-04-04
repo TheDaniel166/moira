@@ -44,6 +44,7 @@ from .julian import (
     safe_datetime_from_jd,
 )
 from .nodes import NodeData
+from .orbits import DistanceExtremes, KeplerianElements, distance_extremes_at, orbital_elements_at
 from .planets import CartesianPosition, PlanetData, SkyPosition
 from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal
 from .aspects import AspectData
@@ -61,6 +62,8 @@ __all__ = [
     "NodeData",
     "HouseCusps",
     "AspectData",
+    "KeplerianElements",
+    "DistanceExtremes",
     "CalendarDateTime",
     "DeltaTPolicy",
     "julian_day",
@@ -73,6 +76,8 @@ __all__ = [
     "greenwich_mean_sidereal_time",
     "local_sidereal_time",
     "delta_t",
+    "orbital_elements_at",
+    "distance_extremes_at",
     "ayanamsa",
     "tropical_to_sidereal",
     "sidereal_to_tropical",

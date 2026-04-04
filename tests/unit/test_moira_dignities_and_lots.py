@@ -10,6 +10,12 @@ from moira.dignities import (
     AccidentalDignityPolicy,
     ConditionPolarity,
     DignityComputationPolicy,
+    DispositorshipComputationPolicy,
+    DispositorshipConditionState,
+    DispositorshipOrderingPolicy,
+    DispositorshipTerminationKind,
+    UnsupportedSubjectHandling,
+    DispositorshipUnsupportedSubjectPolicy,
     EssentialDignityKind,
     MercurySectModel,
     PlanetaryConditionState,
@@ -26,6 +32,12 @@ from moira.dignities import (
     calculate_chart_condition_profile,
     calculate_condition_profiles,
     calculate_dignities,
+    calculate_dispositorship,
+    calculate_dispositorship_condition_profiles,
+    calculate_dispositorship_chart_condition_profile,
+    calculate_dispositorship_network_profile,
+    calculate_dispositorship_subsystem_profile,
+    compare_dispositorship,
     calculate_receptions,
     is_in_hayz,
     is_in_sect,
@@ -619,6 +631,381 @@ def test_reception_inspectability_helpers_are_derived_only() -> None:
 
     with pytest.raises(AttributeError):
         setattr(venus, "scored_receptions", ())
+
+
+def test_dispositorship_phase1_distinguishes_final_dispositors_terminal_cycles_and_unsupported_subjects() -> None:
+    planet_positions = [
+        {"name": "Sun", "degree": 130.0, "is_retrograde": False},      # Leo -> Sun
+        {"name": "Moon", "degree": 100.0, "is_retrograde": False},     # Cancer -> Moon
+        {"name": "Mercury", "degree": 250.0, "is_retrograde": False},  # Sagittarius -> Jupiter -> Moon
+        {"name": "Venus", "degree": 10.0, "is_retrograde": False},     # Aries -> Mars
+        {"name": "Mars", "degree": 35.0, "is_retrograde": False},      # Taurus -> Venus
+        {"name": "Jupiter", "degree": 95.0, "is_retrograde": False},   # Cancer -> Moon
+        {"name": "Saturn", "degree": 200.0, "is_retrograde": False},   # Libra -> Venus -> Mars cycle
+        {"name": "Pluto", "degree": 305.0, "is_retrograde": False},    # unsupported in Phase 1
+    ]
+
+    profile = calculate_dispositorship(planet_positions)
+
+    assert [chain.initial_subject for chain in profile.chains[:7]] == [
+        "Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn",
+    ]
+    assert profile.final_dispositors == ("Sun", "Moon")
+    assert profile.terminal_cycles == (("Venus", "Mars"),)
+    assert profile.unsupported_subjects == ("Pluto",)
+
+    mercury = profile.get_chain("Mercury")
+    assert mercury.subject_in_scope is True
+    assert mercury.subject_has_dispositor is True
+    assert mercury.termination_kind is DispositorshipTerminationKind.FINAL_DISPOSITOR
+    assert mercury.terminal_subjects == ("Moon",)
+    assert mercury.cycle_members == ()
+    assert [(link.subject, link.subject_sign, link.dispositor) for link in mercury.links] == [
+        ("Mercury", "Sagittarius", "Jupiter"),
+        ("Jupiter", "Cancer", "Moon"),
+        ("Moon", "Cancer", "Moon"),
+    ]
+
+    venus = profile.get_chain("Venus")
+    assert venus.termination_kind is DispositorshipTerminationKind.TERMINAL_CYCLE
+    assert venus.terminal_subjects == ("Venus", "Mars")
+    assert venus.cycle_members == ("Venus", "Mars")
+    assert venus.is_terminal_cycle is True
+    assert venus.is_final_dispositor is False
+
+    pluto = profile.get_chain("Pluto")
+    assert pluto.subject_in_scope is False
+    assert pluto.subject_has_dispositor is False
+    assert pluto.termination_kind is DispositorshipTerminationKind.UNRESOLVED
+    assert pluto.links == []
+
+
+def test_dispositorship_reject_policy_fails_on_unsupported_subjects() -> None:
+    planet_positions = [
+        {"name": "Sun", "degree": 130.0, "is_retrograde": False},
+        {"name": "Moon", "degree": 100.0, "is_retrograde": False},
+        {"name": "Pluto", "degree": 305.0, "is_retrograde": False},
+    ]
+    policy = DispositorshipComputationPolicy(
+        unsupported_subjects=DispositorshipUnsupportedSubjectPolicy(
+            handling=UnsupportedSubjectHandling.REJECT,
+        )
+    )
+
+    with pytest.raises(ValueError, match="unsupported subjects"):
+        calculate_dispositorship(planet_positions, policy=policy)
+
+
+def test_dispositorship_segregate_policy_reports_unsupported_without_out_of_scope_chains() -> None:
+    planet_positions = [
+        {"name": "Sun", "degree": 130.0, "is_retrograde": False},
+        {"name": "Moon", "degree": 100.0, "is_retrograde": False},
+        {"name": "Pluto", "degree": 305.0, "is_retrograde": False},
+    ]
+    policy = DispositorshipComputationPolicy(
+        unsupported_subjects=DispositorshipUnsupportedSubjectPolicy(
+            handling=UnsupportedSubjectHandling.SEGREGATE,
+        )
+    )
+
+    profile = calculate_dispositorship(planet_positions, policy=policy)
+
+    assert [chain.initial_subject for chain in profile.chains] == ["Sun", "Moon"]
+    assert profile.unsupported_subjects == ("Pluto",)
+    with pytest.raises(KeyError):
+        profile.get_chain("Pluto")
+
+
+def test_dispositorship_reports_unresolved_when_the_next_dispositor_is_missing_from_chart() -> None:
+    planet_positions = [
+        {"name": "Mercury", "degree": 250.0, "is_retrograde": False},  # Sagittarius -> Jupiter (missing)
+        {"name": "Venus", "degree": 40.0, "is_retrograde": False},
+    ]
+
+    profile = calculate_dispositorship(planet_positions)
+    mercury = profile.get_chain("Mercury")
+
+    assert mercury.subject_in_scope is True
+    assert mercury.subject_has_dispositor is True
+    assert mercury.termination_kind is DispositorshipTerminationKind.UNRESOLVED
+    assert mercury.terminal_subjects == ()
+    assert mercury.cycle_members == ()
+    assert [(link.subject, link.subject_sign, link.dispositor) for link in mercury.links] == [
+        ("Mercury", "Sagittarius", "Jupiter"),
+    ]
+
+
+def test_dispositorship_non_dignity_order_is_honored_by_profile_and_finals() -> None:
+    planet_positions = [
+        {"name": "Moon", "degree": 100.0, "is_retrograde": False},     # Cancer -> Moon
+        {"name": "Sun", "degree": 130.0, "is_retrograde": False},      # Leo -> Sun
+        {"name": "Mercury", "degree": 250.0, "is_retrograde": False},  # Sagittarius -> Jupiter -> Moon
+        {"name": "Jupiter", "degree": 95.0, "is_retrograde": False},   # Cancer -> Moon
+    ]
+    policy = DispositorshipComputationPolicy(
+        ordering=DispositorshipOrderingPolicy(use_dignity_order=False),
+    )
+
+    profile = calculate_dispositorship(planet_positions, policy=policy)
+
+    assert [chain.initial_subject for chain in profile.chains] == ["Moon", "Sun", "Mercury", "Jupiter"]
+    assert profile.final_dispositors == ("Moon", "Sun")
+
+
+def test_dispositorship_condition_profiles_integrate_chain_truth_without_recomputing_doctrine() -> None:
+    planet_positions = [
+        {"name": "Sun", "degree": 130.0, "is_retrograde": False},      # Leo -> Sun
+        {"name": "Moon", "degree": 100.0, "is_retrograde": False},     # Cancer -> Moon
+        {"name": "Mercury", "degree": 250.0, "is_retrograde": False},  # Sagittarius -> Jupiter -> Moon
+        {"name": "Venus", "degree": 10.0, "is_retrograde": False},     # Aries -> Mars
+        {"name": "Mars", "degree": 35.0, "is_retrograde": False},      # Taurus -> Venus
+        {"name": "Jupiter", "degree": 95.0, "is_retrograde": False},   # Cancer -> Moon
+        {"name": "Pluto", "degree": 305.0, "is_retrograde": False},
+    ]
+
+    profiles = calculate_dispositorship_condition_profiles(planet_positions)
+    by_name = {profile.initial_subject: profile for profile in profiles}
+
+    assert by_name["Sun"].state is DispositorshipConditionState.SELF_DISPOSED
+    assert by_name["Sun"].resolves_to_final is True
+    assert by_name["Sun"].chain_length == 1
+
+    assert by_name["Mercury"].state is DispositorshipConditionState.RESOLVED_TO_FINAL
+    assert by_name["Mercury"].termination_kind is DispositorshipTerminationKind.FINAL_DISPOSITOR
+    assert by_name["Mercury"].terminal_subjects == ("Moon",)
+    assert by_name["Mercury"].chain_length == 3
+
+    assert by_name["Venus"].state is DispositorshipConditionState.TERMINAL_CYCLE
+    assert by_name["Venus"].cycle_members == ("Venus", "Mars")
+    assert by_name["Venus"].is_terminal_cycle is True
+
+    assert by_name["Pluto"].state is DispositorshipConditionState.OUT_OF_SCOPE
+    assert by_name["Pluto"].is_out_of_scope is True
+
+
+def test_dispositorship_condition_profiles_preserve_segregated_scope_behavior() -> None:
+    planet_positions = [
+        {"name": "Sun", "degree": 130.0, "is_retrograde": False},
+        {"name": "Moon", "degree": 100.0, "is_retrograde": False},
+        {"name": "Pluto", "degree": 305.0, "is_retrograde": False},
+    ]
+    policy = DispositorshipComputationPolicy(
+        unsupported_subjects=DispositorshipUnsupportedSubjectPolicy(
+            handling=UnsupportedSubjectHandling.SEGREGATE,
+        )
+    )
+
+    profiles = calculate_dispositorship_condition_profiles(planet_positions, policy=policy)
+
+    assert [profile.initial_subject for profile in profiles] == ["Sun", "Moon"]
+
+
+def test_dispositorship_chart_condition_profile_aggregates_local_states_without_recomputing() -> None:
+    planet_positions = [
+        {"name": "Sun", "degree": 130.0, "is_retrograde": False},      # self-disposed
+        {"name": "Moon", "degree": 100.0, "is_retrograde": False},     # self-disposed
+        {"name": "Mercury", "degree": 250.0, "is_retrograde": False},  # resolves to Moon
+        {"name": "Jupiter", "degree": 95.0, "is_retrograde": False},   # self/resolution anchor for Mercury
+        {"name": "Venus", "degree": 10.0, "is_retrograde": False},     # cycle
+        {"name": "Mars", "degree": 35.0, "is_retrograde": False},      # cycle
+        {"name": "Pluto", "degree": 305.0, "is_retrograde": False},    # out of scope
+    ]
+
+    chart_profile = calculate_dispositorship_chart_condition_profile(planet_positions)
+
+    assert chart_profile.profile_count == 7
+    assert chart_profile.self_disposed_count == 2
+    assert chart_profile.resolved_to_final_count == 2
+    assert chart_profile.terminal_cycle_count == 2
+    assert chart_profile.unresolved_count == 0
+    assert chart_profile.out_of_scope_count == 1
+    assert chart_profile.final_dispositor_count == 2
+    assert chart_profile.cycle_count == 1
+    assert chart_profile.has_mixed_terminals is True
+
+
+def test_dispositorship_chart_condition_profile_detects_unresolved_mixed_chart_state() -> None:
+    planet_positions = [
+        {"name": "Sun", "degree": 130.0, "is_retrograde": False},      # self-disposed
+        {"name": "Mercury", "degree": 250.0, "is_retrograde": False},  # unresolved -> Jupiter missing
+    ]
+
+    chart_profile = calculate_dispositorship_chart_condition_profile(planet_positions)
+
+    assert chart_profile.self_disposed_count == 1
+    assert chart_profile.unresolved_count == 1
+    assert chart_profile.final_dispositor_count == 1
+    assert chart_profile.cycle_count == 0
+    assert chart_profile.has_mixed_terminals is True
+
+
+def test_dispositorship_network_profile_projects_direct_relations_and_cycle_reciprocity() -> None:
+    planet_positions = [
+        {"name": "Sun", "degree": 130.0, "is_retrograde": False},      # self-disposed, isolated
+        {"name": "Moon", "degree": 100.0, "is_retrograde": False},     # final endpoint
+        {"name": "Mercury", "degree": 250.0, "is_retrograde": False},  # Mercury -> Jupiter
+        {"name": "Jupiter", "degree": 95.0, "is_retrograde": False},   # Jupiter -> Moon
+        {"name": "Venus", "degree": 10.0, "is_retrograde": False},     # Venus -> Mars
+        {"name": "Mars", "degree": 35.0, "is_retrograde": False},      # Mars -> Venus
+        {"name": "Pluto", "degree": 305.0, "is_retrograde": False},    # out of scope
+    ]
+
+    network = calculate_dispositorship_network_profile(planet_positions)
+
+    assert network.node_count == 6
+    assert network.edge_count == 4
+    assert network.reciprocal_edge_count == 2
+    assert network.unilateral_edge_count == 2
+    assert network.isolated_subjects == ["Sun"]
+    assert network.most_connected_subjects == ["Venus", "Mars", "Jupiter"]
+
+    edge_tuples = {(edge.source_subject, edge.target_subject, edge.mode.value) for edge in network.edges}
+    assert ("Mercury", "Jupiter", "unilateral") in edge_tuples
+    assert ("Jupiter", "Moon", "unilateral") in edge_tuples
+    assert ("Venus", "Mars", "reciprocal") in edge_tuples
+    assert ("Mars", "Venus", "reciprocal") in edge_tuples
+
+    node_map = {node.subject: node for node in network.nodes}
+    assert node_map["Sun"].is_isolated is True
+    assert node_map["Moon"].incoming_count == 1
+    assert node_map["Moon"].outgoing_count == 0
+    assert node_map["Venus"].reciprocal_count == 1
+    assert node_map["Mars"].reciprocal_count == 1
+
+
+def test_dispositorship_network_profile_respects_segregated_scope() -> None:
+    planet_positions = [
+        {"name": "Sun", "degree": 130.0, "is_retrograde": False},
+        {"name": "Moon", "degree": 100.0, "is_retrograde": False},
+        {"name": "Pluto", "degree": 305.0, "is_retrograde": False},
+    ]
+    policy = DispositorshipComputationPolicy(
+        unsupported_subjects=DispositorshipUnsupportedSubjectPolicy(
+            handling=UnsupportedSubjectHandling.SEGREGATE,
+        )
+    )
+
+    network = calculate_dispositorship_network_profile(planet_positions, policy=policy)
+
+    assert [node.subject for node in network.nodes] == ["Sun", "Moon"]
+    assert network.edge_count == 0
+    assert network.isolated_subjects == ["Sun", "Moon"]
+
+
+def test_dispositorship_subsystem_profile_hardens_cross_layer_alignment() -> None:
+    planet_positions = [
+        {"name": "Sun", "degree": 130.0, "is_retrograde": False},
+        {"name": "Moon", "degree": 100.0, "is_retrograde": False},
+        {"name": "Mercury", "degree": 250.0, "is_retrograde": False},
+        {"name": "Jupiter", "degree": 95.0, "is_retrograde": False},
+        {"name": "Venus", "degree": 10.0, "is_retrograde": False},
+        {"name": "Mars", "degree": 35.0, "is_retrograde": False},
+        {"name": "Pluto", "degree": 305.0, "is_retrograde": False},
+    ]
+
+    subsystem = calculate_dispositorship_subsystem_profile(planet_positions)
+
+    assert [chain.initial_subject for chain in subsystem.profile.chains] == [
+        profile.initial_subject for profile in subsystem.condition_profiles
+    ]
+    assert subsystem.chart_condition_profile.profiles == subsystem.condition_profiles
+    assert [node.subject for node in subsystem.network_profile.nodes] == ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter"]
+    assert subsystem.chart_condition_profile.final_dispositor_count == len(subsystem.profile.final_dispositors)
+    assert subsystem.network_profile.edge_count == 4
+
+
+def test_dispositorship_subsystem_profile_preserves_segregated_scope_cross_layer() -> None:
+    planet_positions = [
+        {"name": "Sun", "degree": 130.0, "is_retrograde": False},
+        {"name": "Moon", "degree": 100.0, "is_retrograde": False},
+        {"name": "Pluto", "degree": 305.0, "is_retrograde": False},
+    ]
+    policy = DispositorshipComputationPolicy(
+        unsupported_subjects=DispositorshipUnsupportedSubjectPolicy(
+            handling=UnsupportedSubjectHandling.SEGREGATE,
+        )
+    )
+
+    subsystem = calculate_dispositorship_subsystem_profile(planet_positions, policy=policy)
+
+    assert [chain.initial_subject for chain in subsystem.profile.chains] == ["Sun", "Moon"]
+    assert [profile.initial_subject for profile in subsystem.condition_profiles] == ["Sun", "Moon"]
+    assert subsystem.chart_condition_profile.out_of_scope_count == 0
+    assert [node.subject for node in subsystem.network_profile.nodes] == ["Sun", "Moon"]
+
+
+def test_dispositorship_comparison_bundle_preserves_named_profiles_and_derived_finals() -> None:
+    planet_positions = [
+        {"name": "Sun", "degree": 130.0, "is_retrograde": False},
+        {"name": "Moon", "degree": 100.0, "is_retrograde": False},
+        {"name": "Mercury", "degree": 250.0, "is_retrograde": False},
+        {"name": "Venus", "degree": 10.0, "is_retrograde": False},
+        {"name": "Mars", "degree": 35.0, "is_retrograde": False},
+        {"name": "Jupiter", "degree": 95.0, "is_retrograde": False},
+        {"name": "Saturn", "degree": 200.0, "is_retrograde": False},
+    ]
+
+    default_policy = DispositorshipComputationPolicy()
+    reject_policy = DispositorshipComputationPolicy(
+        unsupported_subjects=DispositorshipUnsupportedSubjectPolicy(
+            handling=UnsupportedSubjectHandling.REJECT,
+        )
+    )
+
+    bundle = compare_dispositorship(
+        planet_positions,
+        [
+            ("traditional_default", default_policy),
+            ("traditional_strict", reject_policy),
+        ],
+    )
+
+    assert bundle.doctrine_names == ("traditional_default", "traditional_strict")
+    assert bundle.shared_final_dispositors == ("Sun", "Moon")
+    assert bundle.all_final_dispositors == ("Sun", "Moon")
+    assert bundle.get_item("traditional_default").profile.final_dispositors == ("Sun", "Moon")
+    assert bundle.get_item("traditional_strict").profile.final_dispositors == ("Sun", "Moon")
+
+
+def test_dispositorship_comparison_bundle_honors_profile_ordering_in_bundle_summaries() -> None:
+    planet_positions = [
+        {"name": "Moon", "degree": 100.0, "is_retrograde": False},
+        {"name": "Sun", "degree": 130.0, "is_retrograde": False},
+        {"name": "Mercury", "degree": 250.0, "is_retrograde": False},
+        {"name": "Jupiter", "degree": 95.0, "is_retrograde": False},
+    ]
+    ordered_policy = DispositorshipComputationPolicy(
+        ordering=DispositorshipOrderingPolicy(use_dignity_order=False),
+    )
+
+    bundle = compare_dispositorship(
+        planet_positions,
+        [
+            ("input_order", ordered_policy),
+            ("default_order", DispositorshipComputationPolicy()),
+        ],
+    )
+
+    assert bundle.get_item("input_order").profile.final_dispositors == ("Moon", "Sun")
+    assert bundle.get_item("default_order").profile.final_dispositors == ("Sun", "Moon")
+    assert bundle.shared_final_dispositors == ("Moon", "Sun")
+    assert bundle.all_final_dispositors == ("Moon", "Sun")
+
+
+def test_dispositorship_comparison_bundle_rejects_duplicate_names() -> None:
+    planet_positions = [
+        {"name": "Sun", "degree": 130.0, "is_retrograde": False},
+        {"name": "Moon", "degree": 100.0, "is_retrograde": False},
+    ]
+
+    with pytest.raises(ValueError, match="duplicate doctrine profile name"):
+        compare_dispositorship(
+            planet_positions,
+            [
+                ("traditional", DispositorshipComputationPolicy()),
+                ("traditional", DispositorshipComputationPolicy()),
+            ],
+        )
 
 
 def test_reception_invariants_fail_loudly_on_subset_drift() -> None:

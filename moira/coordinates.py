@@ -209,7 +209,8 @@ def precession_matrix_equatorial(jd_tt: float) -> Mat3:
 def nutation_matrix_equatorial(jd_tt: float) -> Mat3:
     """
     Nutation matrix from mean equator/equinox of date to true equator/equinox of date.
-    Uses IAU 2000A model.
+    Uses Moira's validated 06A-compatible stack: IAU 2000A nutation together
+    with IAU 2006 mean obliquity / precession context.
     """
     from .obliquity import mean_obliquity, nutation
 

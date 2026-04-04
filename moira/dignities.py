@@ -60,6 +60,11 @@ __all__ = [
     "ReceptionKind",
     "ReceptionBasis",
     "ReceptionMode",
+    "DispositorshipSubjectSet",
+    "DispositorshipRulership",
+    "DispositorshipTerminationKind",
+    "UnsupportedSubjectHandling",
+    "DispositorshipConditionState",
     "PlanetaryConditionState",
     "EssentialDignityDoctrine",
     "MercurySectModel",
@@ -70,8 +75,26 @@ __all__ = [
     "SectHayzPolicy",
     "AccidentalDignityPolicy",
     "DignityComputationPolicy",
+    "DispositorshipSubjectPolicy",
+    "DispositorshipRulershipPolicy",
+    "DispositorshipTerminationPolicy",
+    "DispositorshipUnsupportedSubjectPolicy",
+    "DispositorshipOrderingPolicy",
+    "DispositorshipComputationPolicy",
     # Result/truth dataclasses
     "PlanetaryReception",
+    "DispositorLink",
+    "DispositorshipChain",
+    "DispositorshipProfile",
+    "DispositorshipConditionProfile",
+    "DispositorshipChartConditionProfile",
+    "DispositorshipNetworkEdgeMode",
+    "DispositorshipNetworkNode",
+    "DispositorshipNetworkEdge",
+    "DispositorshipNetworkProfile",
+    "DispositorshipSubsystemProfile",
+    "DispositorshipComparisonItem",
+    "DispositorshipComparisonBundle",
     "PlanetaryConditionProfile",
     "ChartConditionProfile",
     "ConditionNetworkNode",
@@ -97,6 +120,12 @@ __all__ = [
     "is_in_hayz",
     "calculate_dignities",
     "calculate_receptions",
+    "calculate_dispositorship",
+    "calculate_dispositorship_condition_profiles",
+    "calculate_dispositorship_chart_condition_profile",
+    "calculate_dispositorship_network_profile",
+    "calculate_dispositorship_subsystem_profile",
+    "compare_dispositorship",
     "calculate_condition_profiles",
     "calculate_chart_condition_profile",
     "calculate_condition_network_profile",
@@ -400,6 +429,51 @@ class ReceptionMode(StrEnum):
     MUTUAL = "mutual"
 
 
+class DispositorshipSubjectSet(StrEnum):
+    """Named subject-set doctrines supported by the dispositorship layer."""
+
+    CLASSIC_7 = "classic_7"
+
+
+class DispositorshipRulership(StrEnum):
+    """Named sign-rulership doctrines supported by the dispositorship layer."""
+
+    TRADITIONAL_DOMICILE = "traditional_domicile"
+
+
+class DispositorshipTerminationKind(StrEnum):
+    """Terminal outcome class for one dispositorship traversal."""
+
+    FINAL_DISPOSITOR = "final_dispositor"
+    TERMINAL_CYCLE = "terminal_cycle"
+    UNRESOLVED = "unresolved"
+
+
+class UnsupportedSubjectHandling(StrEnum):
+    """Policy for chart subjects that fall outside dispositorship scope."""
+
+    IGNORE = "ignore"
+    REJECT = "reject"
+    SEGREGATE = "segregate"
+
+
+class DispositorshipConditionState(StrEnum):
+    """Integrated local condition state for one dispositorship subject."""
+
+    SELF_DISPOSED = "self_disposed"
+    RESOLVED_TO_FINAL = "resolved_to_final"
+    TERMINAL_CYCLE = "terminal_cycle"
+    UNRESOLVED = "unresolved"
+    OUT_OF_SCOPE = "out_of_scope"
+
+
+class DispositorshipNetworkEdgeMode(StrEnum):
+    """Visibility mode for one directed dispositorship network edge."""
+
+    UNILATERAL = "unilateral"
+    RECIPROCAL = "reciprocal"
+
+
 class PlanetaryConditionState(StrEnum):
     """Derived structural state for a planet's integrated condition profile."""
 
@@ -497,6 +571,59 @@ class DignityComputationPolicy:
         return self == DignityComputationPolicy()
 
 
+@dataclass(frozen=True, slots=True)
+class DispositorshipSubjectPolicy:
+    """Policy surface for dispositorship subject-set scope."""
+
+    subject_set: DispositorshipSubjectSet = DispositorshipSubjectSet.CLASSIC_7
+
+
+@dataclass(frozen=True, slots=True)
+class DispositorshipRulershipPolicy:
+    """Policy surface for dispositorship sign-rulership doctrine."""
+
+    doctrine: DispositorshipRulership = DispositorshipRulership.TRADITIONAL_DOMICILE
+
+
+@dataclass(frozen=True, slots=True)
+class DispositorshipTerminationPolicy:
+    """Policy surface for dispositorship chain termination semantics."""
+
+    final_requires_self_domicile: bool = True
+    cycles_are_terminal: bool = True
+
+
+@dataclass(frozen=True, slots=True)
+class DispositorshipUnsupportedSubjectPolicy:
+    """Policy surface for subjects outside dispositorship scope."""
+
+    handling: UnsupportedSubjectHandling = UnsupportedSubjectHandling.IGNORE
+
+
+@dataclass(frozen=True, slots=True)
+class DispositorshipOrderingPolicy:
+    """Policy surface for dispositorship result ordering."""
+
+    use_dignity_order: bool = True
+
+
+@dataclass(frozen=True, slots=True)
+class DispositorshipComputationPolicy:
+    """Lean backend policy surface for dispositorship computation."""
+
+    subject: DispositorshipSubjectPolicy = field(default_factory=DispositorshipSubjectPolicy)
+    rulership: DispositorshipRulershipPolicy = field(default_factory=DispositorshipRulershipPolicy)
+    termination: DispositorshipTerminationPolicy = field(default_factory=DispositorshipTerminationPolicy)
+    unsupported_subjects: DispositorshipUnsupportedSubjectPolicy = field(default_factory=DispositorshipUnsupportedSubjectPolicy)
+    ordering: DispositorshipOrderingPolicy = field(default_factory=DispositorshipOrderingPolicy)
+
+    @property
+    def is_default(self) -> bool:
+        """Return True when this policy matches the current Phase 1 doctrine."""
+
+        return self == DispositorshipComputationPolicy()
+
+
 @dataclass(slots=True)
 class PlanetaryReception:
     """
@@ -525,6 +652,571 @@ class PlanetaryReception:
         """Return True when this reception is mutual rather than unilateral."""
 
         return self.mode is ReceptionMode.MUTUAL
+
+
+@dataclass(slots=True)
+class DispositorLink:
+    """One directed dispositorship step under the active rulership policy."""
+
+    subject: str
+    subject_sign: str
+    dispositor: str
+
+    def __post_init__(self) -> None:
+        if not self.subject:
+            raise ValueError("DispositorLink invariant failed: subject must be non-empty")
+        if self.subject_sign not in SIGNS:
+            raise ValueError("DispositorLink invariant failed: subject_sign must be a recognised sign")
+        if self.dispositor not in CLASSIC_7:
+            raise ValueError("DispositorLink invariant failed: dispositor must be one of the Classic 7")
+
+
+@dataclass(slots=True)
+class DispositorshipChain:
+    """Dispositorship traversal result for one initial chart subject."""
+
+    initial_subject: str
+    initial_sign: str | None
+    subject_in_scope: bool
+    subject_has_dispositor: bool
+    links: list[DispositorLink] = field(default_factory=list)
+    visited_subjects: tuple[str, ...] = ()
+    termination_kind: DispositorshipTerminationKind = DispositorshipTerminationKind.UNRESOLVED
+    terminal_subjects: tuple[str, ...] = ()
+    cycle_members: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if not self.initial_subject:
+            raise ValueError("DispositorshipChain invariant failed: initial_subject must be non-empty")
+        if self.initial_sign is not None and self.initial_sign not in SIGNS:
+            raise ValueError("DispositorshipChain invariant failed: initial_sign must be a recognised sign when present")
+        if not self.subject_in_scope:
+            if self.subject_has_dispositor:
+                raise ValueError("DispositorshipChain invariant failed: out-of-scope subjects cannot have dispositors")
+            if self.links:
+                raise ValueError("DispositorshipChain invariant failed: out-of-scope subjects cannot have dispositorship links")
+        if self.termination_kind is DispositorshipTerminationKind.FINAL_DISPOSITOR:
+            if len(self.terminal_subjects) != 1:
+                raise ValueError("DispositorshipChain invariant failed: final dispositor chains must report exactly one terminal subject")
+            if self.cycle_members:
+                raise ValueError("DispositorshipChain invariant failed: final dispositor chains cannot carry cycle members")
+        if self.termination_kind is DispositorshipTerminationKind.TERMINAL_CYCLE:
+            if len(self.cycle_members) < 2:
+                raise ValueError("DispositorshipChain invariant failed: terminal cycles must report at least two cycle members")
+            if self.terminal_subjects != self.cycle_members:
+                raise ValueError("DispositorshipChain invariant failed: terminal cycle subjects must match cycle_members exactly")
+        if self.termination_kind is DispositorshipTerminationKind.UNRESOLVED and self.cycle_members:
+            raise ValueError("DispositorshipChain invariant failed: unresolved chains cannot carry cycle members")
+
+    @property
+    def is_final_dispositor(self) -> bool:
+        """Return True when the chain terminates in a final dispositor."""
+
+        return self.termination_kind is DispositorshipTerminationKind.FINAL_DISPOSITOR
+
+    @property
+    def is_terminal_cycle(self) -> bool:
+        """Return True when the chain terminates in a cycle."""
+
+        return self.termination_kind is DispositorshipTerminationKind.TERMINAL_CYCLE
+
+
+@dataclass(slots=True)
+class DispositorshipProfile:
+    """Chart-wide dispositorship profile derived from explicit policy."""
+
+    chains: list[DispositorshipChain] = field(default_factory=list)
+    final_dispositors: tuple[str, ...] = ()
+    terminal_cycles: tuple[tuple[str, ...], ...] = ()
+    unsupported_subjects: tuple[str, ...] = ()
+    policy: DispositorshipComputationPolicy = field(default_factory=DispositorshipComputationPolicy)
+
+    def __post_init__(self) -> None:
+        in_scope_names = [
+            chain.initial_subject for chain in self.chains
+            if chain.subject_in_scope and chain.initial_subject in _PLANET_ORDER
+        ]
+        if self.policy.ordering.use_dignity_order:
+            expected_in_scope = [planet for planet in _PLANET_ORDER if planet in in_scope_names]
+        else:
+            expected_in_scope = list(in_scope_names)
+        if in_scope_names != expected_in_scope:
+            raise ValueError("DispositorshipProfile invariant failed: in-scope chains must follow the active ordering policy")
+
+        final_set = {
+            terminal
+            for chain in self.chains
+            if chain.termination_kind is DispositorshipTerminationKind.FINAL_DISPOSITOR
+            for terminal in chain.terminal_subjects
+        }
+        if self.policy.ordering.use_dignity_order:
+            expected_finals = tuple(planet for planet in _PLANET_ORDER if planet in final_set)
+        else:
+            expected_finals = tuple(planet for planet in in_scope_names if planet in final_set)
+        if self.final_dispositors != expected_finals:
+            raise ValueError("DispositorshipProfile invariant failed: final_dispositors must match chain terminations under the active ordering policy")
+
+        expected_cycles: list[tuple[str, ...]] = []
+        seen_cycles: set[tuple[str, ...]] = set()
+        for chain in self.chains:
+            if chain.termination_kind is not DispositorshipTerminationKind.TERMINAL_CYCLE:
+                continue
+            if chain.cycle_members in seen_cycles:
+                continue
+            seen_cycles.add(chain.cycle_members)
+            expected_cycles.append(chain.cycle_members)
+        if self.terminal_cycles != tuple(expected_cycles):
+            raise ValueError("DispositorshipProfile invariant failed: terminal_cycles must match unique chain cycle terminations")
+
+    def get_chain(self, subject: str) -> DispositorshipChain:
+        """Return the dispositorship chain for the named initial subject."""
+
+        normalized = subject.strip().title()
+        for chain in self.chains:
+            if chain.initial_subject == normalized:
+                return chain
+        raise KeyError(f"Dispositorship chain for {subject!r} not found")
+
+
+@dataclass(slots=True)
+class DispositorshipConditionProfile:
+    """
+    Integrated local condition profile derived from one dispositorship chain.
+
+    This is a backend synthesis layer only. It consumes existing
+    DispositorshipChain truth and does not recompute dispositorship doctrine.
+    """
+
+    initial_subject: str
+    initial_sign: str | None
+    subject_in_scope: bool
+    subject_has_dispositor: bool
+    termination_kind: DispositorshipTerminationKind
+    terminal_subjects: tuple[str, ...] = ()
+    cycle_members: tuple[str, ...] = ()
+    visited_subjects: tuple[str, ...] = ()
+    chain_length: int = 0
+    state: DispositorshipConditionState = DispositorshipConditionState.UNRESOLVED
+
+    def __post_init__(self) -> None:
+        derived_state = DignitiesService._derive_dispositorship_condition_state(
+            self.subject_in_scope,
+            self.termination_kind,
+            self.initial_subject,
+            self.terminal_subjects,
+        )
+        if self.state is not derived_state:
+            raise ValueError("DispositorshipConditionProfile invariant failed: state must match derived dispositorship condition state")
+        if self.chain_length != len(self.visited_subjects):
+            raise ValueError("DispositorshipConditionProfile invariant failed: chain_length must match visited_subjects length")
+        if self.termination_kind is DispositorshipTerminationKind.TERMINAL_CYCLE and self.terminal_subjects != self.cycle_members:
+            raise ValueError("DispositorshipConditionProfile invariant failed: cycle terminations must keep terminal_subjects aligned with cycle_members")
+
+    @property
+    def is_self_disposed(self) -> bool:
+        """Return True when the subject is itself the final dispositor."""
+
+        return self.state is DispositorshipConditionState.SELF_DISPOSED
+
+    @property
+    def resolves_to_final(self) -> bool:
+        """Return True when the subject resolves to a final dispositor."""
+
+        return self.state in (
+            DispositorshipConditionState.SELF_DISPOSED,
+            DispositorshipConditionState.RESOLVED_TO_FINAL,
+        )
+
+    @property
+    def is_terminal_cycle(self) -> bool:
+        """Return True when the subject terminates in a dispositorship cycle."""
+
+        return self.state is DispositorshipConditionState.TERMINAL_CYCLE
+
+    @property
+    def is_unresolved(self) -> bool:
+        """Return True when the subject remains unresolved under current policy."""
+
+        return self.state is DispositorshipConditionState.UNRESOLVED
+
+    @property
+    def is_out_of_scope(self) -> bool:
+        """Return True when the subject was outside dispositorship policy scope."""
+
+        return self.state is DispositorshipConditionState.OUT_OF_SCOPE
+
+
+@dataclass(slots=True)
+class DispositorshipChartConditionProfile:
+    """
+    Chart-wide dispositorship condition profile derived from per-subject
+    dispositorship condition profiles.
+
+    This is a backend aggregation layer only. It consumes existing
+    DispositorshipConditionProfile results and does not recompute
+    dispositorship doctrine.
+    """
+
+    profiles: list[DispositorshipConditionProfile] = field(default_factory=list)
+    self_disposed_count: int = 0
+    resolved_to_final_count: int = 0
+    terminal_cycle_count: int = 0
+    unresolved_count: int = 0
+    out_of_scope_count: int = 0
+    final_dispositor_count: int = 0
+    cycle_count: int = 0
+    has_mixed_terminals: bool = False
+
+    def __post_init__(self) -> None:
+        self_disposed = sum(
+            1 for profile in self.profiles if profile.state is DispositorshipConditionState.SELF_DISPOSED
+        )
+        resolved = sum(
+            1 for profile in self.profiles if profile.state is DispositorshipConditionState.RESOLVED_TO_FINAL
+        )
+        cycle = sum(
+            1 for profile in self.profiles if profile.state is DispositorshipConditionState.TERMINAL_CYCLE
+        )
+        unresolved = sum(
+            1 for profile in self.profiles if profile.state is DispositorshipConditionState.UNRESOLVED
+        )
+        out_of_scope = sum(
+            1 for profile in self.profiles if profile.state is DispositorshipConditionState.OUT_OF_SCOPE
+        )
+        if (
+            self.self_disposed_count,
+            self.resolved_to_final_count,
+            self.terminal_cycle_count,
+            self.unresolved_count,
+            self.out_of_scope_count,
+        ) != (
+            self_disposed,
+            resolved,
+            cycle,
+            unresolved,
+            out_of_scope,
+        ):
+            raise ValueError("DispositorshipChartConditionProfile invariant failed: state counts must match profile states")
+
+        final_dispositors = {
+            terminal
+            for profile in self.profiles
+            if profile.termination_kind is DispositorshipTerminationKind.FINAL_DISPOSITOR
+            for terminal in profile.terminal_subjects
+        }
+        cycles = {
+            profile.cycle_members
+            for profile in self.profiles
+            if profile.termination_kind is DispositorshipTerminationKind.TERMINAL_CYCLE
+        }
+        if self.final_dispositor_count != len(final_dispositors):
+            raise ValueError("DispositorshipChartConditionProfile invariant failed: final_dispositor_count must match profile terminals")
+        if self.cycle_count != len(cycles):
+            raise ValueError("DispositorshipChartConditionProfile invariant failed: cycle_count must match unique profile cycles")
+
+        expected_mixed = (
+            bool(final_dispositors) and bool(cycles)
+        ) or (bool(final_dispositors or cycles) and self.unresolved_count > 0)
+        if self.has_mixed_terminals is not expected_mixed:
+            raise ValueError("DispositorshipChartConditionProfile invariant failed: has_mixed_terminals must match derived chart state")
+
+        in_scope_names = [
+            profile.initial_subject
+            for profile in self.profiles
+            if profile.subject_in_scope and profile.initial_subject in _PLANET_ORDER
+        ]
+        expected_in_scope = [planet for planet in _PLANET_ORDER if planet in in_scope_names]
+        if in_scope_names != expected_in_scope:
+            raise ValueError("DispositorshipChartConditionProfile invariant failed: profiles must be in deterministic dignity order")
+
+    @property
+    def profile_count(self) -> int:
+        """Return the number of dispositorship condition profiles aggregated."""
+
+        return len(self.profiles)
+
+
+@dataclass(slots=True)
+class DispositorshipNetworkNode:
+    """
+    Node in the derived dispositorship condition network.
+
+    This is a backend inspectability layer only. It consumes existing
+    dispositorship condition profiles and direct dispositorship links.
+    """
+
+    subject: str
+    profile: DispositorshipConditionProfile
+    outgoing_count: int = 0
+    incoming_count: int = 0
+    reciprocal_count: int = 0
+
+    def __post_init__(self) -> None:
+        if self.subject != self.profile.initial_subject:
+            raise ValueError("DispositorshipNetworkNode invariant failed: subject must match profile.initial_subject")
+        if self.reciprocal_count > min(self.outgoing_count, self.incoming_count):
+            raise ValueError("DispositorshipNetworkNode invariant failed: reciprocal_count cannot exceed incoming/outgoing counts")
+
+    @property
+    def degree_count(self) -> int:
+        """Return the direct degree count for this node."""
+
+        return self.outgoing_count + self.incoming_count
+
+    @property
+    def is_isolated(self) -> bool:
+        """Return True when the node has no direct dispositorship links."""
+
+        return self.degree_count == 0
+
+
+@dataclass(slots=True)
+class DispositorshipNetworkEdge:
+    """
+    Directed edge in the derived dispositorship condition network.
+
+    Each edge corresponds to one direct dispositorship relation between
+    in-scope subjects and does not recompute dispositorship doctrine.
+    """
+
+    source_subject: str
+    target_subject: str
+    mode: DispositorshipNetworkEdgeMode
+
+    def __post_init__(self) -> None:
+        if self.source_subject == self.target_subject:
+            raise ValueError("DispositorshipNetworkEdge invariant failed: source_subject and target_subject must differ")
+
+
+@dataclass(slots=True)
+class DispositorshipNetworkProfile:
+    """
+    Network profile derived from dispositorship condition profiles and direct
+    dispositorship links.
+
+    This is a backend aggregation layer only. It consumes existing condition
+    profiles and their already-formalized direct dispositorship relations.
+    """
+
+    nodes: list[DispositorshipNetworkNode] = field(default_factory=list)
+    edges: list[DispositorshipNetworkEdge] = field(default_factory=list)
+    isolated_subjects: list[str] = field(default_factory=list)
+    most_connected_subjects: list[str] = field(default_factory=list)
+    reciprocal_edge_count: int = 0
+    unilateral_edge_count: int = 0
+
+    def __post_init__(self) -> None:
+        ordered_names = [
+            node.subject for node in sorted(
+                self.nodes,
+                key=lambda node: _PLANET_ORDER.index(node.subject) if node.subject in _PLANET_ORDER else 99,
+            )
+        ]
+        if [node.subject for node in self.nodes] != ordered_names:
+            raise ValueError("DispositorshipNetworkProfile invariant failed: nodes must be in deterministic dignity order")
+
+        ordered_edges = sorted(
+            self.edges,
+            key=lambda edge: (
+                _PLANET_ORDER.index(edge.source_subject) if edge.source_subject in _PLANET_ORDER else 99,
+                _PLANET_ORDER.index(edge.target_subject) if edge.target_subject in _PLANET_ORDER else 99,
+            ),
+        )
+        if self.edges != ordered_edges:
+            raise ValueError("DispositorshipNetworkProfile invariant failed: edges must be in deterministic dignity order")
+
+        reciprocal = sum(1 for edge in self.edges if edge.mode is DispositorshipNetworkEdgeMode.RECIPROCAL)
+        unilateral = sum(1 for edge in self.edges if edge.mode is DispositorshipNetworkEdgeMode.UNILATERAL)
+        if self.reciprocal_edge_count != reciprocal:
+            raise ValueError("DispositorshipNetworkProfile invariant failed: reciprocal_edge_count must match edges")
+        if self.unilateral_edge_count != unilateral:
+            raise ValueError("DispositorshipNetworkProfile invariant failed: unilateral_edge_count must match edges")
+
+        edge_pairs = {(edge.source_subject, edge.target_subject) for edge in self.edges}
+        for edge in self.edges:
+            reverse_present = (edge.target_subject, edge.source_subject) in edge_pairs
+            if edge.mode is DispositorshipNetworkEdgeMode.RECIPROCAL and not reverse_present:
+                raise ValueError("DispositorshipNetworkProfile invariant failed: reciprocal edges must have a reverse edge")
+            if edge.mode is DispositorshipNetworkEdgeMode.UNILATERAL and reverse_present:
+                raise ValueError("DispositorshipNetworkProfile invariant failed: unilateral edges must not have a reverse edge")
+
+        node_map = {node.subject: node for node in self.nodes}
+        outgoing = {name: 0 for name in node_map}
+        incoming = {name: 0 for name in node_map}
+        reciprocal_counts = {name: 0 for name in node_map}
+        for edge in self.edges:
+            if edge.source_subject not in node_map or edge.target_subject not in node_map:
+                raise ValueError("DispositorshipNetworkProfile invariant failed: edges must reference known nodes")
+            outgoing[edge.source_subject] += 1
+            incoming[edge.target_subject] += 1
+            if edge.mode is DispositorshipNetworkEdgeMode.RECIPROCAL:
+                reciprocal_counts[edge.source_subject] += 1
+        for node in self.nodes:
+            if node.outgoing_count != outgoing[node.subject] or node.incoming_count != incoming[node.subject]:
+                raise ValueError("DispositorshipNetworkProfile invariant failed: node incoming/outgoing counts must match edges")
+            if node.reciprocal_count != reciprocal_counts[node.subject]:
+                raise ValueError("DispositorshipNetworkProfile invariant failed: node reciprocal_count must match reciprocal edges")
+
+        expected_isolated = [node.subject for node in self.nodes if node.is_isolated]
+        if self.isolated_subjects != expected_isolated:
+            raise ValueError("DispositorshipNetworkProfile invariant failed: isolated_subjects must match nodes")
+
+        if self.nodes:
+            max_degree = max(node.degree_count for node in self.nodes)
+            expected_most_connected = [
+                node.subject for node in self.nodes if node.degree_count == max_degree and max_degree > 0
+            ]
+        else:
+            expected_most_connected = []
+        if self.most_connected_subjects != expected_most_connected:
+            raise ValueError("DispositorshipNetworkProfile invariant failed: most_connected_subjects must match node degrees")
+
+    @property
+    def node_count(self) -> int:
+        """Return the number of network nodes."""
+
+        return len(self.nodes)
+
+    @property
+    def edge_count(self) -> int:
+        """Return the number of directed network edges."""
+
+        return len(self.edges)
+
+
+@dataclass(slots=True)
+class DispositorshipSubsystemProfile:
+    """
+    Full dispositorship subsystem profile tying together the Phase 1-9 layers.
+
+    This is a backend hardening layer only. It consumes existing dispositorship
+    results and verifies cross-layer consistency without recomputing doctrine.
+    """
+
+    profile: DispositorshipProfile
+    condition_profiles: list[DispositorshipConditionProfile] = field(default_factory=list)
+    chart_condition_profile: DispositorshipChartConditionProfile | None = None
+    network_profile: DispositorshipNetworkProfile | None = None
+
+    def __post_init__(self) -> None:
+        condition_names = [profile.initial_subject for profile in self.condition_profiles]
+        profile_names = [chain.initial_subject for chain in self.profile.chains]
+        if condition_names != profile_names:
+            raise ValueError("DispositorshipSubsystemProfile invariant failed: condition_profiles must align one-to-one with profile.chains")
+
+        chain_map = {chain.initial_subject: chain for chain in self.profile.chains}
+        for condition in self.condition_profiles:
+            chain = chain_map[condition.initial_subject]
+            if condition.initial_sign != chain.initial_sign:
+                raise ValueError("DispositorshipSubsystemProfile invariant failed: condition profile sign must match chain")
+            if condition.subject_in_scope != chain.subject_in_scope:
+                raise ValueError("DispositorshipSubsystemProfile invariant failed: condition profile scope must match chain")
+            if condition.subject_has_dispositor != chain.subject_has_dispositor:
+                raise ValueError("DispositorshipSubsystemProfile invariant failed: condition profile dispositor flag must match chain")
+            if condition.termination_kind is not chain.termination_kind:
+                raise ValueError("DispositorshipSubsystemProfile invariant failed: condition profile termination kind must match chain")
+            if condition.terminal_subjects != chain.terminal_subjects:
+                raise ValueError("DispositorshipSubsystemProfile invariant failed: condition profile terminal subjects must match chain")
+            if condition.cycle_members != chain.cycle_members:
+                raise ValueError("DispositorshipSubsystemProfile invariant failed: condition profile cycle members must match chain")
+            if condition.visited_subjects != chain.visited_subjects:
+                raise ValueError("DispositorshipSubsystemProfile invariant failed: condition profile visited_subjects must match chain")
+
+        if self.chart_condition_profile is None:
+            raise ValueError("DispositorshipSubsystemProfile invariant failed: chart_condition_profile must be present")
+        if self.network_profile is None:
+            raise ValueError("DispositorshipSubsystemProfile invariant failed: network_profile must be present")
+        if self.chart_condition_profile.profiles != self.condition_profiles:
+            raise ValueError("DispositorshipSubsystemProfile invariant failed: chart_condition_profile.profiles must match condition_profiles")
+
+        in_scope_condition_names = [
+            profile.initial_subject for profile in self.condition_profiles
+            if profile.subject_in_scope and profile.initial_subject in _PLANET_ORDER
+        ]
+        network_node_names = [node.subject for node in self.network_profile.nodes]
+        if network_node_names != in_scope_condition_names:
+            raise ValueError("DispositorshipSubsystemProfile invariant failed: network nodes must align with in-scope condition profiles")
+
+        expected_final_count = len(self.profile.final_dispositors)
+        if self.chart_condition_profile.final_dispositor_count != expected_final_count:
+            raise ValueError("DispositorshipSubsystemProfile invariant failed: chart final_dispositor_count must match profile.final_dispositors")
+
+        expected_out_of_scope = sum(1 for profile in self.condition_profiles if profile.is_out_of_scope)
+        if self.chart_condition_profile.out_of_scope_count != expected_out_of_scope:
+            raise ValueError("DispositorshipSubsystemProfile invariant failed: chart out_of_scope_count must match condition profiles")
+
+        direct_relations: set[tuple[str, str]] = set()
+        for chain in self.profile.chains:
+            if not chain.subject_in_scope or not chain.links:
+                continue
+            first = chain.links[0]
+            if first.subject == first.dispositor:
+                continue
+            if first.dispositor not in network_node_names:
+                continue
+            direct_relations.add((first.subject, first.dispositor))
+        network_relations = {(edge.source_subject, edge.target_subject) for edge in self.network_profile.edges}
+        if network_relations != direct_relations:
+            raise ValueError("DispositorshipSubsystemProfile invariant failed: network edges must match direct in-scope dispositorship relations")
+
+
+@dataclass(slots=True)
+class DispositorshipComparisonItem:
+    """One named dispositorship result inside a comparative bundle."""
+
+    name: str
+    profile: DispositorshipProfile
+
+    def __post_init__(self) -> None:
+        if not self.name.strip():
+            raise ValueError("DispositorshipComparisonItem invariant failed: name must be non-empty")
+
+
+@dataclass(slots=True)
+class DispositorshipComparisonBundle:
+    """Comparative bundle of multiple named dispositorship profiles."""
+
+    items: list[DispositorshipComparisonItem] = field(default_factory=list)
+    shared_final_dispositors: tuple[str, ...] = ()
+    all_final_dispositors: tuple[str, ...] = ()
+    doctrine_names: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if not self.items:
+            raise ValueError("DispositorshipComparisonBundle invariant failed: items must be non-empty")
+        expected_names = tuple(item.name for item in self.items)
+        if self.doctrine_names != expected_names:
+            raise ValueError("DispositorshipComparisonBundle invariant failed: doctrine_names must match item names in order")
+
+        shared: set[str] | None = None
+        all_finals: set[str] = set()
+        for item in self.items:
+            finals = set(item.profile.final_dispositors)
+            all_finals.update(finals)
+            shared = finals if shared is None else shared & finals
+
+        expected_shared = self._ordered_subjects(shared or set())
+        expected_all = self._ordered_subjects(all_finals)
+        if self.shared_final_dispositors != expected_shared:
+            raise ValueError("DispositorshipComparisonBundle invariant failed: shared_final_dispositors must match the item intersection")
+        if self.all_final_dispositors != expected_all:
+            raise ValueError("DispositorshipComparisonBundle invariant failed: all_final_dispositors must match the item union")
+
+    def get_item(self, name: str) -> DispositorshipComparisonItem:
+        """Return the named comparison item."""
+
+        for item in self.items:
+            if item.name == name:
+                return item
+        raise KeyError(f"Dispositorship comparison item {name!r} not found")
+
+    def _ordered_subjects(self, members: set[str]) -> tuple[str, ...]:
+        ordered: list[str] = []
+        for item in self.items:
+            for subject in item.profile.final_dispositors:
+                if subject in members and subject not in ordered:
+                    ordered.append(subject)
+        return tuple(ordered)
 
 
 @dataclass(slots=True)
@@ -1430,6 +2122,188 @@ class DignitiesService:
             ordered.extend(receptions.get(planet, []))
         return ordered
 
+    def calculate_dispositorship(
+        self,
+        planet_positions: list[dict],
+        policy: DispositorshipComputationPolicy | None = None,
+    ) -> DispositorshipProfile:
+        """Calculate chart dispositorship under explicit Phase 1 policy."""
+
+        policy = DispositorshipComputationPolicy() if policy is None else policy
+        self._validate_dispositorship_policy(policy)
+
+        normalized_positions = self._normalize_planet_positions(planet_positions)
+        signs_by_name: dict[str, str] = {
+            str(pos["name"]): SIGNS[int(float(pos["degree"]) // 30) % 12]
+            for pos in normalized_positions
+        }
+        in_scope_names = self._dispositorship_subjects(signs_by_name, policy)
+        unsupported = tuple(
+            str(pos["name"]) for pos in normalized_positions if str(pos["name"]) not in in_scope_names
+        )
+
+        handling = policy.unsupported_subjects.handling
+        if handling is UnsupportedSubjectHandling.REJECT and unsupported:
+            raise ValueError(
+                "calculate_dispositorship received unsupported subjects under reject policy: "
+                + ", ".join(unsupported)
+            )
+
+        chains: list[DispositorshipChain] = []
+        for name in in_scope_names:
+            chains.append(self._build_dispositorship_chain(name, signs_by_name, policy))
+
+        if handling is UnsupportedSubjectHandling.IGNORE:
+            for pos in normalized_positions:
+                name = str(pos["name"])
+                if name in in_scope_names:
+                    continue
+                chains.append(
+                    DispositorshipChain(
+                        initial_subject=name,
+                        initial_sign=signs_by_name[name],
+                        subject_in_scope=False,
+                        subject_has_dispositor=False,
+                        visited_subjects=(name,),
+                        termination_kind=DispositorshipTerminationKind.UNRESOLVED,
+                    )
+                )
+        elif handling is UnsupportedSubjectHandling.SEGREGATE:
+            # Unsupported bodies are reported only through unsupported_subjects.
+            pass
+
+        final_set = {
+            terminal
+            for chain in chains
+            if chain.termination_kind is DispositorshipTerminationKind.FINAL_DISPOSITOR
+            for terminal in chain.terminal_subjects
+        }
+        if policy.ordering.use_dignity_order:
+            final_dispositors = tuple(
+                planet for planet in _PLANET_ORDER if planet in final_set
+            )
+        else:
+            final_dispositors = tuple(
+                name for name in in_scope_names if name in final_set
+            )
+        terminal_cycles = self._unique_terminal_cycles(chains)
+        return DispositorshipProfile(
+            chains=chains,
+            final_dispositors=final_dispositors,
+            terminal_cycles=terminal_cycles,
+            unsupported_subjects=unsupported,
+            policy=policy,
+        )
+
+    def compare_dispositorship(
+        self,
+        planet_positions: list[dict],
+        doctrine_profiles: list[tuple[str, DispositorshipComputationPolicy | None]],
+    ) -> DispositorshipComparisonBundle:
+        """Compare multiple named dispositorship profiles side by side."""
+
+        if not doctrine_profiles:
+            raise ValueError("compare_dispositorship requires at least one named doctrine profile")
+
+        items: list[DispositorshipComparisonItem] = []
+        seen_names: set[str] = set()
+        for raw_name, policy in doctrine_profiles:
+            if not isinstance(raw_name, str) or not raw_name.strip():
+                raise ValueError("compare_dispositorship requires each doctrine profile to have a non-empty name")
+            name = raw_name.strip()
+            if name in seen_names:
+                raise ValueError(f"compare_dispositorship received duplicate doctrine profile name {name!r}")
+            seen_names.add(name)
+            items.append(
+                DispositorshipComparisonItem(
+                    name=name,
+                    profile=self.calculate_dispositorship(planet_positions, policy=policy),
+                )
+            )
+
+        shared: set[str] | None = None
+        all_finals: set[str] = set()
+        for item in items:
+            finals = set(item.profile.final_dispositors)
+            all_finals.update(finals)
+            shared = finals if shared is None else shared & finals
+
+        def _ordered_subjects(members: set[str]) -> tuple[str, ...]:
+            ordered: list[str] = []
+            for item in items:
+                for subject in item.profile.final_dispositors:
+                    if subject in members and subject not in ordered:
+                        ordered.append(subject)
+            return tuple(ordered)
+
+        return DispositorshipComparisonBundle(
+            items=items,
+            shared_final_dispositors=_ordered_subjects(shared or set()),
+            all_final_dispositors=_ordered_subjects(all_finals),
+            doctrine_names=tuple(item.name for item in items),
+        )
+
+    def calculate_dispositorship_condition_profiles(
+        self,
+        planet_positions: list[dict],
+        policy: DispositorshipComputationPolicy | None = None,
+    ) -> list[DispositorshipConditionProfile]:
+        """Calculate integrated per-subject dispositorship condition profiles."""
+
+        profile = self.calculate_dispositorship(planet_positions, policy=policy)
+        return [
+            self._build_dispositorship_condition_profile(chain)
+            for chain in profile.chains
+        ]
+
+    def calculate_dispositorship_chart_condition_profile(
+        self,
+        planet_positions: list[dict],
+        policy: DispositorshipComputationPolicy | None = None,
+    ) -> DispositorshipChartConditionProfile:
+        """Calculate the chart-wide dispositorship condition profile."""
+
+        profiles = self.calculate_dispositorship_condition_profiles(
+            planet_positions,
+            policy=policy,
+        )
+        return self._build_dispositorship_chart_condition_profile(profiles)
+
+    def calculate_dispositorship_network_profile(
+        self,
+        planet_positions: list[dict],
+        policy: DispositorshipComputationPolicy | None = None,
+    ) -> DispositorshipNetworkProfile:
+        """Calculate the dispositorship network profile."""
+
+        profile = self.calculate_dispositorship(planet_positions, policy=policy)
+        condition_profiles = [
+            self._build_dispositorship_condition_profile(chain)
+            for chain in profile.chains
+        ]
+        return self._build_dispositorship_network_profile(condition_profiles, profile.chains)
+
+    def calculate_dispositorship_subsystem_profile(
+        self,
+        planet_positions: list[dict],
+        policy: DispositorshipComputationPolicy | None = None,
+    ) -> DispositorshipSubsystemProfile:
+        """Calculate the fully hardened dispositorship subsystem profile."""
+
+        profile = self.calculate_dispositorship(planet_positions, policy=policy)
+        condition_profiles = [
+            self._build_dispositorship_condition_profile(chain)
+            for chain in profile.chains
+        ]
+        chart_condition_profile = self._build_dispositorship_chart_condition_profile(condition_profiles)
+        network_profile = self._build_dispositorship_network_profile(condition_profiles, profile.chains)
+        return DispositorshipSubsystemProfile(
+            profile=profile,
+            condition_profiles=condition_profiles,
+            chart_condition_profile=chart_condition_profile,
+            network_profile=network_profile,
+        )
+
     def calculate_condition_profiles(
         self,
         planet_positions: list[dict],
@@ -2116,6 +2990,291 @@ class DignitiesService:
         return result
 
     @staticmethod
+    def _validate_dispositorship_policy(policy: DispositorshipComputationPolicy) -> None:
+        if policy.subject.subject_set is not DispositorshipSubjectSet.CLASSIC_7:
+            raise ValueError(f"Unsupported dispositorship subject set: {policy.subject.subject_set}")
+        if policy.rulership.doctrine is not DispositorshipRulership.TRADITIONAL_DOMICILE:
+            raise ValueError(f"Unsupported dispositorship rulership doctrine: {policy.rulership.doctrine}")
+        if not policy.termination.final_requires_self_domicile:
+            raise ValueError("Unsupported dispositorship termination policy: final dispositors must require self-domicile")
+        if not policy.termination.cycles_are_terminal:
+            raise ValueError("Unsupported dispositorship termination policy: cycles must remain terminal")
+
+    @staticmethod
+    def _dispositorship_subjects(
+        signs_by_name: dict[str, str],
+        policy: DispositorshipComputationPolicy,
+    ) -> list[str]:
+        if policy.ordering.use_dignity_order:
+            return [planet for planet in _PLANET_ORDER if planet in signs_by_name]
+        return [name for name in signs_by_name if name in CLASSIC_7]
+
+    @staticmethod
+    def _dispositor_of_sign(
+        sign: str,
+        policy: DispositorshipComputationPolicy,
+    ) -> str:
+        if policy.rulership.doctrine is not DispositorshipRulership.TRADITIONAL_DOMICILE:
+            raise ValueError(f"Unsupported dispositorship rulership doctrine: {policy.rulership.doctrine}")
+        for planet, signs in DOMICILE.items():
+            if sign in signs:
+                return planet
+        raise ValueError(f"No dispositorship ruler found for sign {sign!r}")
+
+    @staticmethod
+    def _canonical_cycle(cycle_members: tuple[str, ...]) -> tuple[str, ...]:
+        if not cycle_members:
+            return ()
+        best: tuple[str, ...] | None = None
+        members = list(cycle_members)
+        count = len(members)
+        for index in range(count):
+            rotated = tuple(members[index:] + members[:index])
+            key = tuple(_PLANET_ORDER.index(name) if name in _PLANET_ORDER else 99 for name in rotated)
+            if best is None:
+                best = rotated
+                best_key = key
+                continue
+            if key < best_key:
+                best = rotated
+                best_key = key
+        return best if best is not None else ()
+
+    @staticmethod
+    def _unique_terminal_cycles(chains: list[DispositorshipChain]) -> tuple[tuple[str, ...], ...]:
+        unique: list[tuple[str, ...]] = []
+        seen: set[tuple[str, ...]] = set()
+        for chain in chains:
+            if chain.termination_kind is not DispositorshipTerminationKind.TERMINAL_CYCLE:
+                continue
+            if chain.cycle_members in seen:
+                continue
+            seen.add(chain.cycle_members)
+            unique.append(chain.cycle_members)
+        return tuple(unique)
+
+    @staticmethod
+    def _derive_dispositorship_condition_state(
+        subject_in_scope: bool,
+        termination_kind: DispositorshipTerminationKind,
+        initial_subject: str,
+        terminal_subjects: tuple[str, ...],
+    ) -> DispositorshipConditionState:
+        if not subject_in_scope:
+            return DispositorshipConditionState.OUT_OF_SCOPE
+        if termination_kind is DispositorshipTerminationKind.TERMINAL_CYCLE:
+            return DispositorshipConditionState.TERMINAL_CYCLE
+        if termination_kind is DispositorshipTerminationKind.UNRESOLVED:
+            return DispositorshipConditionState.UNRESOLVED
+        if terminal_subjects == (initial_subject,):
+            return DispositorshipConditionState.SELF_DISPOSED
+        return DispositorshipConditionState.RESOLVED_TO_FINAL
+
+    @staticmethod
+    def _build_dispositorship_condition_profile(
+        chain: DispositorshipChain,
+    ) -> DispositorshipConditionProfile:
+        return DispositorshipConditionProfile(
+            initial_subject=chain.initial_subject,
+            initial_sign=chain.initial_sign,
+            subject_in_scope=chain.subject_in_scope,
+            subject_has_dispositor=chain.subject_has_dispositor,
+            termination_kind=chain.termination_kind,
+            terminal_subjects=chain.terminal_subjects,
+            cycle_members=chain.cycle_members,
+            visited_subjects=chain.visited_subjects,
+            chain_length=len(chain.visited_subjects),
+            state=DignitiesService._derive_dispositorship_condition_state(
+                chain.subject_in_scope,
+                chain.termination_kind,
+                chain.initial_subject,
+                chain.terminal_subjects,
+            ),
+        )
+
+    @staticmethod
+    def _build_dispositorship_chart_condition_profile(
+        profiles: list[DispositorshipConditionProfile],
+    ) -> DispositorshipChartConditionProfile:
+        final_dispositors = {
+            terminal
+            for profile in profiles
+            if profile.termination_kind is DispositorshipTerminationKind.FINAL_DISPOSITOR
+            for terminal in profile.terminal_subjects
+        }
+        cycles = {
+            profile.cycle_members
+            for profile in profiles
+            if profile.termination_kind is DispositorshipTerminationKind.TERMINAL_CYCLE
+        }
+        has_mixed_terminals = (
+            bool(final_dispositors) and bool(cycles)
+        ) or (bool(final_dispositors or cycles) and any(
+            profile.termination_kind is DispositorshipTerminationKind.UNRESOLVED
+            for profile in profiles
+        ))
+        return DispositorshipChartConditionProfile(
+            profiles=profiles,
+            self_disposed_count=sum(
+                1 for profile in profiles if profile.state is DispositorshipConditionState.SELF_DISPOSED
+            ),
+            resolved_to_final_count=sum(
+                1 for profile in profiles if profile.state is DispositorshipConditionState.RESOLVED_TO_FINAL
+            ),
+            terminal_cycle_count=sum(
+                1 for profile in profiles if profile.state is DispositorshipConditionState.TERMINAL_CYCLE
+            ),
+            unresolved_count=sum(
+                1 for profile in profiles if profile.state is DispositorshipConditionState.UNRESOLVED
+            ),
+            out_of_scope_count=sum(
+                1 for profile in profiles if profile.state is DispositorshipConditionState.OUT_OF_SCOPE
+            ),
+            final_dispositor_count=len(final_dispositors),
+            cycle_count=len(cycles),
+            has_mixed_terminals=has_mixed_terminals,
+        )
+
+    @staticmethod
+    def _build_dispositorship_network_profile(
+        profiles: list[DispositorshipConditionProfile],
+        chains: list[DispositorshipChain],
+    ) -> DispositorshipNetworkProfile:
+        profile_map = {
+            profile.initial_subject: profile
+            for profile in profiles
+            if profile.subject_in_scope and profile.initial_subject in _PLANET_ORDER
+        }
+        direct_relations: set[tuple[str, str]] = set()
+        for chain in chains:
+            if not chain.subject_in_scope or not chain.links:
+                continue
+            first = chain.links[0]
+            if first.subject == first.dispositor:
+                continue
+            if first.dispositor not in profile_map:
+                continue
+            direct_relations.add((first.subject, first.dispositor))
+
+        edges: list[DispositorshipNetworkEdge] = []
+        for source, target in sorted(
+            direct_relations,
+            key=lambda pair: (
+                _PLANET_ORDER.index(pair[0]) if pair[0] in _PLANET_ORDER else 99,
+                _PLANET_ORDER.index(pair[1]) if pair[1] in _PLANET_ORDER else 99,
+            ),
+        ):
+            reverse_present = (target, source) in direct_relations
+            edges.append(
+                DispositorshipNetworkEdge(
+                    source_subject=source,
+                    target_subject=target,
+                    mode=(
+                        DispositorshipNetworkEdgeMode.RECIPROCAL
+                        if reverse_present else DispositorshipNetworkEdgeMode.UNILATERAL
+                    ),
+                )
+            )
+
+        outgoing = {name: 0 for name in profile_map}
+        incoming = {name: 0 for name in profile_map}
+        reciprocal_counts = {name: 0 for name in profile_map}
+        for edge in edges:
+            outgoing[edge.source_subject] += 1
+            incoming[edge.target_subject] += 1
+            if edge.mode is DispositorshipNetworkEdgeMode.RECIPROCAL:
+                reciprocal_counts[edge.source_subject] += 1
+
+        nodes = [
+            DispositorshipNetworkNode(
+                subject=subject,
+                profile=profile_map[subject],
+                outgoing_count=outgoing[subject],
+                incoming_count=incoming[subject],
+                reciprocal_count=reciprocal_counts[subject],
+            )
+            for subject in _PLANET_ORDER
+            if subject in profile_map
+        ]
+
+        max_degree = max((node.degree_count for node in nodes), default=0)
+        return DispositorshipNetworkProfile(
+            nodes=nodes,
+            edges=edges,
+            isolated_subjects=[node.subject for node in nodes if node.is_isolated],
+            most_connected_subjects=[
+                node.subject for node in nodes if node.degree_count == max_degree and max_degree > 0
+            ],
+            reciprocal_edge_count=sum(
+                1 for edge in edges if edge.mode is DispositorshipNetworkEdgeMode.RECIPROCAL
+            ),
+            unilateral_edge_count=sum(
+                1 for edge in edges if edge.mode is DispositorshipNetworkEdgeMode.UNILATERAL
+            ),
+        )
+
+    @staticmethod
+    def _build_dispositorship_chain(
+        initial_subject: str,
+        signs_by_name: dict[str, str],
+        policy: DispositorshipComputationPolicy,
+    ) -> DispositorshipChain:
+        initial_sign = signs_by_name[initial_subject]
+        links: list[DispositorLink] = []
+        visited_order: list[str] = []
+        seen_index: dict[str, int] = {}
+        current = initial_subject
+
+        while True:
+            if current not in seen_index:
+                seen_index[current] = len(visited_order)
+                visited_order.append(current)
+
+            sign = signs_by_name[current]
+            dispositor = DignitiesService._dispositor_of_sign(sign, policy)
+            links.append(DispositorLink(subject=current, subject_sign=sign, dispositor=dispositor))
+
+            if dispositor == current:
+                return DispositorshipChain(
+                    initial_subject=initial_subject,
+                    initial_sign=initial_sign,
+                    subject_in_scope=True,
+                    subject_has_dispositor=True,
+                    links=links,
+                    visited_subjects=tuple(visited_order),
+                    termination_kind=DispositorshipTerminationKind.FINAL_DISPOSITOR,
+                    terminal_subjects=(current,),
+                )
+
+            if dispositor in seen_index:
+                cycle_members = tuple(visited_order[seen_index[dispositor]:])
+                canonical_cycle = DignitiesService._canonical_cycle(cycle_members)
+                return DispositorshipChain(
+                    initial_subject=initial_subject,
+                    initial_sign=initial_sign,
+                    subject_in_scope=True,
+                    subject_has_dispositor=True,
+                    links=links,
+                    visited_subjects=tuple(visited_order),
+                    termination_kind=DispositorshipTerminationKind.TERMINAL_CYCLE,
+                    terminal_subjects=canonical_cycle,
+                    cycle_members=canonical_cycle,
+                )
+
+            if dispositor not in signs_by_name:
+                return DispositorshipChain(
+                    initial_subject=initial_subject,
+                    initial_sign=initial_sign,
+                    subject_in_scope=True,
+                    subject_has_dispositor=True,
+                    links=links,
+                    visited_subjects=tuple(visited_order),
+                    termination_kind=DispositorshipTerminationKind.UNRESOLVED,
+                )
+
+            current = dispositor
+
+    @staticmethod
     def _build_house_cusps(house_positions: list[dict]) -> list[float]:
         if not isinstance(house_positions, list):
             raise ValueError("house_positions must be a list of dictionaries")
@@ -2196,6 +3355,60 @@ def calculate_receptions(
     """Calculate formal reception relations for the Classic 7 planets present."""
 
     return _service.calculate_receptions(planet_positions, policy=policy)
+
+
+def calculate_dispositorship(
+    planet_positions: list[dict],
+    policy: DispositorshipComputationPolicy | None = None,
+) -> DispositorshipProfile:
+    """Calculate chart dispositorship under explicit Phase 1 policy."""
+
+    return _service.calculate_dispositorship(planet_positions, policy=policy)
+
+
+def calculate_dispositorship_condition_profiles(
+    planet_positions: list[dict],
+    policy: DispositorshipComputationPolicy | None = None,
+) -> list[DispositorshipConditionProfile]:
+    """Calculate integrated per-subject dispositorship condition profiles."""
+
+    return _service.calculate_dispositorship_condition_profiles(planet_positions, policy=policy)
+
+
+def calculate_dispositorship_chart_condition_profile(
+    planet_positions: list[dict],
+    policy: DispositorshipComputationPolicy | None = None,
+) -> DispositorshipChartConditionProfile:
+    """Calculate the chart-wide dispositorship condition profile."""
+
+    return _service.calculate_dispositorship_chart_condition_profile(planet_positions, policy=policy)
+
+
+def calculate_dispositorship_network_profile(
+    planet_positions: list[dict],
+    policy: DispositorshipComputationPolicy | None = None,
+) -> DispositorshipNetworkProfile:
+    """Calculate the dispositorship network profile."""
+
+    return _service.calculate_dispositorship_network_profile(planet_positions, policy=policy)
+
+
+def calculate_dispositorship_subsystem_profile(
+    planet_positions: list[dict],
+    policy: DispositorshipComputationPolicy | None = None,
+) -> DispositorshipSubsystemProfile:
+    """Calculate the fully hardened dispositorship subsystem profile."""
+
+    return _service.calculate_dispositorship_subsystem_profile(planet_positions, policy=policy)
+
+
+def compare_dispositorship(
+    planet_positions: list[dict],
+    doctrine_profiles: list[tuple[str, DispositorshipComputationPolicy | None]],
+) -> DispositorshipComparisonBundle:
+    """Compare multiple named dispositorship profiles side by side."""
+
+    return _service.compare_dispositorship(planet_positions, doctrine_profiles)
 
 
 def calculate_condition_profiles(
