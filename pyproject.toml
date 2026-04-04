@@ -68,7 +68,7 @@ dev = [
 moira-download-kernels = "moira.download_kernels:main"
 
 [tool.setuptools]
-packages = ["moira", "moira.data", "moira.compat", "moira.compat.nasa", "moira.constellations", "moira.primary_directions"]
+packages = ["moira", "moira.data", "moira.compat", "moira.compat.nasa", "moira.constellations", "moira.primary_directions", "moira.harmograms", "moira.bridges"]
 license-files = ["LICENSE"]
 
 [tool.setuptools.package-data]

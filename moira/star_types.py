@@ -192,3 +192,65 @@ class HeliacalEvent:
     classification: HeliacalEventClassification | None = None
     relation: StarRelation | None = None
     condition_profile: StarConditionProfile | None = None
+
+
+@dataclass(slots=True)
+class HeliacalBatchResult:
+    """
+    Result vessel for a catalog-wide heliacal batch search.
+
+    The four outcome categories are mutually exclusive and exhaustive
+    across the candidate set:
+
+    - ``found``             — events located within the search window
+    - ``not_found``         — names that qualified but returned no event
+    - ``skipped_latitude``  — names excluded by the latitude-limit pre-filter
+                              (star is circumpolar or never rises at observer lat)
+    - ``skipped_magnitude`` — names excluded because V magnitude > max_magnitude
+
+    Pre-filter semantics
+    --------------------
+    The ``lat_limit_deg`` field stored in each registry record defines the
+    maximum absolute observer latitude at which heliacal events are possible
+    for that star.  Formally:
+
+        lat_limit_deg ≈ 90° − |dec|
+
+    At ``|lat| > lat_limit_deg`` the star is either circumpolar (high-dec
+    northern stars at northern sites) or permanently below the horizon
+    (southern stars at high northern sites), so no heliacal event can occur
+    and the ephemeris loop is skipped entirely.
+
+    ``found`` is sorted ascending by ``jd_ut`` (earliest event first).
+    """
+
+    event_kind: str
+    jd_start: float
+    latitude: float
+    longitude: float
+    max_magnitude: float
+    search_days: int
+    found: tuple[HeliacalEvent, ...]
+    not_found: tuple[str, ...]
+    skipped_latitude: tuple[str, ...]
+    skipped_magnitude: tuple[str, ...]
+
+    @property
+    def total_catalog(self) -> int:
+        """Total number of catalog entries considered (all four buckets)."""
+        return (
+            len(self.found)
+            + len(self.not_found)
+            + len(self.skipped_latitude)
+            + len(self.skipped_magnitude)
+        )
+
+    @property
+    def total_searched(self) -> int:
+        """Number of stars for which an ephemeris search was actually run."""
+        return len(self.found) + len(self.not_found)
+
+    @property
+    def total_skipped(self) -> int:
+        """Number of stars excluded by pre-filters (latitude + magnitude)."""
+        return len(self.skipped_latitude) + len(self.skipped_magnitude)

@@ -1,0 +1,1016 @@
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <TITLE>Astrodynes. A Mathematical Formulation of Harmograms and the Strength of Number in Astral Charts</TITLE>
+   <META NAME="Author" CONTENT="Miguel Garc&iacute;a Ferr&aacute;ndez">
+   <META NAME="Description" CONTENT="A Mathematical Formulation of Harmograms and the Strength of Number in Astral Charts -- by Miguel Garc&iacute;a Ferr&aacute;ndez">
+   <META NAME="Keywords" CONTENT="Astrodynes, Astral Charts, Harmonics, Miguel Garc&iacute;a Ferr&aacute;ndez, Harmograms, Miguel Garc&iacute;a, Garc&iacute;a Ferr&aacute;ndez, Addey, Hamblin, Santos, astrology, CURA, C.U.R.A., Centre Universitaire de Recherche en Astrologie, astrologers, research, article">
+   <META NAME="Base href" CONTENT="http://cura.free.fr/">
+   <META NAME="Resource-Type" CONTENT="document">
+   <META NAME="ROBOTS" CONTENT="ALL">
+</HEAD>
+
+<BODY TEXT="#000000" BGCOLOR="#EEEEEE" LINK="#000066" VLINK="#990000" ALINK="#990000" BACKGROUND="../imago/papi07e.jpg">
+<CENTER><TABLE BORDER="0" BGCOLOR="#FFFFFF" CELLPADDING="0" CELLSPACING="0" WIDTH="90%"><TR>
+<TD HEIGHT="20" WIDTH="15%" ALIGN="CENTER"><A HREF="../07athem1.html" TARGET="_top"><FONT FACE="Arial,Helvetica" SIZE="2" COLOR="#663300">The Manifesto</FONT></A></TD>
+<TD HEIGHT="20" WIDTH="1%" ALIGN="CENTER"><FONT FACE="Arial,Helvetica" SIZE="2" COLOR="#663300">|</FONT></TD>
+<TD HEIGHT="20" WIDTH="15%" ALIGN="CENTER"><A HREF="../11domi2e.html" TARGET="_top"><FONT FACE="Arial,Helvetica" SIZE="2" COLOR="#663300">The 8 Houses</FONT></A></TD>
+<TD HEIGHT="20" WIDTH="1%" ALIGN="CENTER"><FONT FACE="Arial,Helvetica" SIZE="2" COLOR="#663300">|</FONT></TD>
+<TD HEIGHT="20" WIDTH="18%" ALIGN="CENTER"><A HREF="../artic-en.html" TARGET="_top"><FONT FACE="Arial,Helvetica" SIZE="2" COLOR="#663300">Texts and Articles</FONT></A></TD>
+<TD HEIGHT="20" WIDTH="1%" ALIGN="CENTER"><FONT FACE="Arial,Helvetica" SIZE="2" COLOR="#663300">|</FONT></TD>
+<TD HEIGHT="20" WIDTH="11%" ALIGN="CENTER"><A HREF="../histo.html" TARGET="_top"><FONT FACE="Arial,Helvetica" SIZE="2" COLOR="#663300">Review</FONT></A></TD>
+<TD HEIGHT="20" WIDTH="1%" ALIGN="CENTER"><FONT FACE="Arial,Helvetica" SIZE="2" COLOR="#663300">|</FONT></TD>
+<TD HEIGHT="20" WIDTH="9%" ALIGN="CENTER"><A HREF="../licom.html" TARGET="_top"><FONT FACE="Arial,Helvetica" SIZE="2" COLOR="#663300">Links</FONT></A></TD>
+<TD HEIGHT="20" WIDTH="1%" ALIGN="CENTER"><FONT FACE="Arial,Helvetica" SIZE="2" COLOR="#663300">|</FONT></TD>
+<TD HEIGHT="20" WIDTH="14%" ALIGN="CENTER"><A HREF="../cura.html" TARGET="_top"><FONT FACE="Arial,Helvetica" SIZE="2" COLOR="#663300">ACCUEIL (FR)</FONT></A></TD>
+<TD HEIGHT="20" WIDTH="1%" ALIGN="CENTER"><FONT FACE="Arial,Helvetica" SIZE="2" COLOR="#663300">|</FONT></TD>
+<TD HEIGHT="20" WIDTH="12%" ALIGN="CENTER"><A HREF="../cura-en.html" TARGET="_top"><FONT FACE="Arial,Helvetica" SIZE="2" COLOR="#663300">HOME (EN)</FONT></A></TD>
+</TR></TABLE></CENTER>
+
+<BR>
+<BR>
+
+<CENTER><TABLE BORDER COLS=1 WIDTH="47%" BACKGROUND="../imago/papi08e.jpg">
+<TR ALIGN=CENTER>
+<TD><FONT FACE="Arial narrow"><FONT COLOR="#663300"><FONT SIZE=+2>A Mathematical Formulation of Harmograms and the Strength of Number in Astral Charts</FONT>
+<BR><FONT SIZE=+1>by Miguel Garc&iacute;a Ferr&aacute;ndez</FONT></FONT></FONT></TD>
+</TR>
+</TABLE></CENTER>
+<BR><BR>
+<BLOCKQUOTE>
+
+<p><FONT SIZE=+2><b>Abstract</b></font>
+<p><i>Starting with a historical perspective, the mathematical equivalent
+of Harmogram computation, in terms of the Fourier Spectrum of some special
+functions, is presented. The Fourier Analysis is used to formalize one
+astrological technique inside of John Addey's Harmonic Theory, and one
+outside. The mathematical tools presented are applied to discuss some obscure
+or imprecise points in harmonic research and practice, specifically to
+the role of conjunctions in harmonic aspect sets, and to the problem of
+aspects orb. A conducting thread through the paper is the author's awareness
+of the fruitfulness of Fourier Theory as a paradigm from which to model
+Astrology. Appendix One gives mathematical details of the special functions
+used. Appendix Two -almost an afterthought- gives the harmogram formulation
+of the Cyclic Index.</i>
+<br>&nbsp;
+<p><b>Introduction. Harmograms in Perspective</b>
+<p>A <i>Harmogram</i> (Kollerstrom &amp; O'Neill, 1991) is a graph of the
+evolution with time of the strength of numbers as computed from the harmonic
+aspects (derived from the integer divisions of the circle in equal parts,
+harmonic does not mean 'harmonious') between the planetary positions in
+the sky. Central to it (and usually central in it) is a mark at the moment
+of birth of some entity, which is the subject of the harmogram. Being a
+computer programmer and researcher on harmonics myself, I built several
+years ago a module to compute and draw harmograms (though at the time I
+didn't knew of this name), a sample of which is depicted in figure 1.
+<br>&nbsp;
+<p><b>Figure 1.- Harmogram in the neighborhood of a birth</b>
+<br>&nbsp;
+</BLOCKQUOTE>
+<CENTER>
+<P><IMG SRC="25mgf01.gif" ALT="Harmogram in the neighborhood of a birth">
+</CENTER>
+<BLOCKQUOTE>
+<br>&nbsp;
+<p>In figure 1 it can be seen the evolution of the strength of the eleven
+first natural numbers in the neighborhood of a birth, and the <i>insertion
+point</i> of the birth itself. Each line in that figure is the trace of
+one harmonic number. A colleague (T. Maci&aacute;) and I are currently
+experimenting with this tool as a means to assign people (both famous and
+ordinary) to dominating number, with some success.
+<p>I arrived at my earlier version of the harmogram starting from the idea
+of harmonic transits (Maci&aacute; &amp; Garc&iacute;a, Pe&ntilde;&iacute;scola
+1994). Approaching the birth date -to investigate the harmonic neighborhood
+of a chart-, all harmonics peak as the transiting planets get near the
+natal positions. So I suppressed the transiting aspects to the birth chart
+and considered only the aspects in the sky. I.e., rediscovered the harmogram.
+<p>In any case, I don't claim anything concerning originality. I can trace
+back the idea of depicting some measure of the intensity of planetary aspects
+as a function of time to Lambert Brahy's <i>La Clef des Evenements Mondiaux</i>.
+And the idea of harmonic aspects can be traced back to Kepler. Also, the
+work of Gouchon and Barbault with the <i>cyclic index</i> can easily be
+proved to be the use of the [reversed] harmonic one of the harmogram of
+Jupiter to Pluto, with an <i>intensity function</i> -see what follows-
+of very simple facture (Appendix Two, also Garc&iacute;a, 1991).
+<p>But, even having the tool ready, I did not get interested in harmograms,
+as a means to classify people to investigate the essence of harmonic numbers,
+until I read Kollerstrom &amp; O'Neill's book. So, some of the research
+done lately by T. Maci&aacute; and I, using that tool (Barcelona, 1997),
+is in debt to their thought provoking work.
+<br>&nbsp;
+<p><b>Harmonics</b>
+<p>My interest in harmonics began when -and arose quickly after- I read
+John Addey's seminal work (<i>Harmonics in Astrology</i>, 1976). Not much
+later I had access to the excellent book by David Hamblin (<i>Harmonic
+Charts</i>, 1983) that makes a practical tool out of harmonic theory. Hamblin
+also makes a very lucid exposition of the light and dark spots of the theory.
+To my present discourse, the interesting concept is that of <i>a strong
+harmonic chart</i>, used by Hamblin to select case examples for his book.
+<p>I embrace wholly -from a technical point of view as defined in Dean
+(1996), not from a metaphysical one- Addey's idea that (almost) all of
+Astrology's can be explained as the manifestation of numerical principles
+in the sublunary world (Maci&aacute; &amp; Garc&iacute;a, Barcelona 1997).
+So, I adhere to Addey&acute;s implicit programma, which is -as I perceive
+it- that investigating the intrinsic nature of numbers should be among
+the main objectives of astrological research.
+<p>Both techniques, harmograms and strong harmonic charts, are useful tools
+to investigate the harmonic nature of the astrological phenomena. And both
+are intended to highlight the numbers that are strong in a chart. But both,
+as practical tools, have weak points. Harmograms are dependent of the <i>intensity
+function</i> used to compute the number strength (through several years
+I have made near a thousand of trials, with different charts and functions,
+to prove it to myself). The trained eye of the experienced astrologer (as
+Hamblin undoubtedly has it) is a scarce an elusive asset. A mathematical
+model of [preferably] both would be a welcome contribution. I think that
+I can make it. But first, introducing some concepts is in order.
+<br>&nbsp;
+<p><b>Astrodynes: Functions of Intensity in the Circle</b>
+<p>The dyne is an unit of force in Physics. The force is what causes the
+movement, of there the root 'dyn' in 'dynamics' or 'dynamo'. 'Astrodynes'
+could be translated for 'the force of the stars [to produce movement]'.
+In this paper it is essential to understand the concept of <i>function
+of intensity of aspects</i>; what we could call aspect astrodynes, aspectodynes
+or harmodynes.
+<p>In the analysis of the harmograms, and in that of the C60, it is necessary
+to have a clear idea of what we mean for 'function of intensity of aspects':
+a function that associates a value of force, some astrodynes, to each point
+of the circle that represents the angular separation between two planets
+or points of the chart. Almost always, one of these functions it is a function
+that is zero in most of the circle; only in the vicinities of an aspect,
+in the habitual sense, it is different from zero. I'll present enough examples
+in the text.
+<br>&nbsp;
+<p><b>Harmonic Vector of a Collection of Points in the Circle</b>
+<p>Around the spring of 1989, I had an idea visualizing the planets of
+a chart making 'plink', somewhere in their diurnal cycle. "A 'plink' somewhere
+in a circle" is the common language version of the mathematical function
+'Periodic Delta of Dirac'. So I started to play with the notion, switching
+to the zodiacal circle and soon arriving to the formulation of the <i>Harmonic
+Vector (HV)</i>: The Fourier spectrum of the sum of one Delta of Dirac
+for each planet in the chart (see Appendix One). Later, a friend informed
+me that A. Boudineau had proposed a simpler version named <i>Planetary
+Resultant</i> (Boudineau, 1985). In fact the first term, not counting harmonic
+zero, of my harmonic vector.
+<p>Each harmonic number h has a pair of values in the HV, an amplitude
+A(h) and a phase W(h). A pair that I call the <i>h-th coordinate</i> of
+the harmonic vector; a notation that is in agreement with functional spaces
+theory (Rudin, 1987). As from the Theory of Hilbert Spaces, coordinate
+0 needs a special treatment, dependent of the orthonormality of the sine/cosine
+base functions. I have chosen a convenient factor in order to get a simple
+form for <i>Parseval's formula</i> -see below-.
+<p>My work, of a bit less than two years with the harmonic vector, was
+presented in a Spanish Astrology Congress (Garc&iacute;a, 1991). Figure
+2 shows the computer version of the harmonic vector of a chart, designed
+(not very successfully) to prompt its users to investigate the device.
+Other uses of the Harmonic Vector appeared in Garc&iacute;a (Madrid, 1994)
+and in Maci&aacute; &amp; Garc&iacute;a (Valencia, 1994).
+<br>&nbsp;
+<p><b>Figure 2.- Harmonic Vector of a chart</b>
+<br>&nbsp;
+</BLOCKQUOTE>
+<CENTER>
+<P><IMG SRC="25mgf02.gif" ALT="Harmonic Vector of a chart">
+</CENTER>
+<BLOCKQUOTE>
+<br>&nbsp;
+
+<p>In the following discussion, some confusion might arise from the fact
+that we are mingling harmonic numbers, generators of harmonic charts, with
+the harmonics -the terms- of the Fourier spectrum. Some times the harmonic
+terms in the Fourier spectrum will be the subharmonics of the harmonic
+number of a [harmonic] chart -do you see what I mean?-. I've tried to make
+the distinction in the text as clear as possible. The terms in a Fourier
+spectrum can also be called the <i>Fourier Coefficients</i>.
+<br>&nbsp;
+<p><b>The Set of Parts from Zero Aries</b>
+<p>If we have a collection of points (read: planets) in the Zodiac, we
+can build the <i>Set of Parts from Zero Aries</i> by combining each planet
+with any other in the collection (and with itself), adding to the set their
+angular separation measured from 0&ordm; Aries. In fact, all the points
+deriving from the formula:
+<p>0&ordm; Aries + Planet1 - Planet2 as Planet1 and Planet2 visit all the
+planets in the collection.
+<p>From n points in the collection we get n<sup>2</sup> parts in the set.
+Akin to Arabic Parts, but using the Vernal Point instead of the Ascendant
+of the chart. Of course, we'll get n 'extra' parts of type: this-planet-with-itself
+at zero Aries. Contrary to common sense Astrology, but essential for the
+mathematical treatment.
+<p>The notable fact about this construction is that its Fourier spectrum
+of Deltas of Dirac at each Part (the Harmonic Vector of the Set, regarded
+as an independent collection of points) derives from the HV of the original
+collection by means of a simple formula. I'll omit the mathematics of the
+proof.
+<p>Let {[A(k), W(k)], k=0 to infinity} be the HV of the original collection.
+As stated, A(k) is the amplitude of the k-th harmonic, and W(k) is its
+phase. For k=0, the pair [A(0),W(0)] of a collection of n points, named
+some times harmonic zero, is always [n,0]. Amplitude equal to n, and phase
+zero.
+<p>The set of Parts from 0&ordm; Aries of the collection has PA = {[A<sup>2</sup>(k),0]}
+as harmonic vector. Amplitude squared, and phase zero. Again, for k=0,
+we get [n<sup>2</sup>,0] as harmonic zero. This property, that of being
+the terms of the HV of one collection the square of the terms of the other,
+does not hold if we don't count each planet with itself in the set of Parts.
+<br>&nbsp;
+<p><b>Instantaneous Strength of Number in a Harmogram as Parseval's Formula
+for the Inner Product Integral of two Functions</b>
+<p>Nearing our main theme, let us consider the computation of the instantaneous
+value of a harmonic trace in the harmogram, i.e. the strength of that particular
+harmonic number of the chart of a moment in time. We add the intensity
+of the aspects, with base the harmonic number, cast from a planet over
+any other (distinct) in the chart. We may, as Kollerstrom &amp; O'Neill
+do, suppress the conjunction from the account; or include it in the tally,
+as T. Maci&aacute; and I have proposed (Pe&ntilde;&iacute;scola 1994, Barcelona
+1997) and are currently doing in our research. A point that I'm going to
+discuss later.
+<p>The intensity of a harmonic aspect set, varying as a function of the
+angular distance from a planet to another, is what I call <i>Harmogram
+Intensity Function</i>. Of course, as a planet moves from the conjunction
+along the circle of angular separation, it goes in and out of aspect orb
+with the other as he passes the aspects in the set. And one expects that
+the intensity will become zero away from the partile aspects.
+<p>Let's try an alternate definition: a <i>set of harmonic aspects</i>
+is the set of zones in the circle of angular separation of two points,
+in which the value of the intensity function is not negligible. Or also,
+depending on context, it can be considered the set of angular measures
+of the centers of the peaks (the maxima) of the intensity function. I propose
+to the reader, as exercise before going on reading, to try to discover
+why that simplistic definition does not work, in practice, to investigate
+the strength of numbers in a chart. That it does not work was the motivation
+for this paper. So let's forget this definition and get back to the intensity
+functions. The second way of defining the term <i>'set of harmonic aspects'</i>
+will reappear with a more valid purpose.
+<p>Figure 3 depicts the function proposed -and used- by Kollerstrom &amp;
+O'Neill (K&amp;O), and the one used by T. Maci&aacute; and I (M&amp;G),
+both for harmonic five as example. Plus a third function of the type used
+by me, with a different orb, that I'll discuss later. The figure is compressed
+to show detail, and off-center by 180 degrees (zodiacally speaking) to
+highlight the symmetry of this kind of functions.
+<br>&nbsp;
+<p><b>Figure 3.- Three Harmogram intensity functions</b>
+<br>&nbsp;
+</BLOCKQUOTE>
+<CENTER>
+<P><IMG SRC="25mgf03.gif" ALT="Three Harmogram intensity functions">
+</CENTER>
+<BLOCKQUOTE>
+<br>&nbsp;
+
+<p>Whatever be the case, we are using the planets in the collection to
+scan a function of intensity centered at each planet of the chart, as if
+a field of force where emanating from that planet. And we add the contribution
+of each planet into a total which is the instantaneous value of the harmogram
+for that chart.
+<p>The convenient outcome is that, in so doing, we are in fact computing
+the <i>inner product integral</i> &lt;PA,f > between the intensity of aspects
+function f and the sum of Deltas of Dirac over the Set of Parts, already
+defined, PA. Working in the space of Fourier spectra, this inner product
+integral becomes a simple series -as supported by <i>Parseval's Theorem</i>
+(Apostol; also Carslaw, 1930)-, that, if the intensity function f is more
+or less well behaved, collapses to a simpler sum of a few terms.
+<p>Let {[A(k),W(k)]} be as defined earlier, and let {[F(k),O(k)]} be the
+Fourier spectrum of the function of intensity of aspects. If this last
+function has symmetry with respect to the planet generating it, O(k)=0&ordm;
+or 180&ordm; for every k. In which case the inner product integral becomes:
+<p>S A<sup>2</sup>(k) x F(k),
+<p>this infinite sum will be, in practice, over all the terms for which
+F(k) is not almost zero. For this formula to work properly, we have to
+apply a rule of signs that gives a negative value to F(k) when O(k)=180.
+I will call this formula <i>Parseval's Formula</i> for obvious reasons.
+<p><b>Mathematical note:</b> The sums of Deltas of Dirac that I'm using
+are themselves distributions rather than functions (Zemanian, 1965), what
+does not invalidate Parseval's Formula.
+<p><b>Note on implementation:</b> To get, in a computer program, an exact
+correspondence between the value computed by a K&amp;O Harmogram style
+code and a Parseval's Formula style code is essential to add all the terms
+of the Fourier series that are big enough, especially term zero. I had
+to recheck several times the mathematical derivation of this result, and
+the computer program I concocted to test it, before I got a true correspondence.
+As the Harmogram device does not tally each planet with itself, you should
+subtract n points from the Parseval value, for an n-planet set, and divide
+the result by two, to get identical results. <b>End of Notes.</b>
+<br>&nbsp;
+<p><b>Figure 4.- Fourier Spectra of the functions in figure 3</b>
+<br>&nbsp;
+</BLOCKQUOTE>
+<CENTER>
+<P><IMG SRC="25mgf04.gif" ALT="Fourier Spectra of the functions in figure 3">
+</CENTER>
+<BLOCKQUOTE>
+<br>&nbsp;
+
+<p>Figure 4 shows the Fourier spectrum of the functions in figure 3. The
+three functions are 'normalized' to a peak value of one (L(infinity) norm,
+not the more common L<sup>2</sup> or L<sup>1</sup> norms). All intensity
+functions, used in this paper to draw harmograms, will be so normalized.
+To the left of each spectrum is the peaky figure of intensity in the circle.
+The spectra are not drawn to the same scale to gain detail, and the values
+of the amplitudes in the graph are multiplied by 10000. The descending
+lines in the first spectrum are the harmonics not multiples of five, needed
+to suppress the peak at the conjunction. All three spectra quickly vanish
+to zero, as can be proved. Our function, being almost a gaussian, behaves
+even better than the one used by K&amp;O.
+<p>It is worth noting (Fig. 4) that the exclusion of conjunctions in the
+intensity function distorts, so speaking, the spectrum. You can only use
+the same intensity function for subharmonics -an implicit demand in Addey&acute;s
+theory- if that intensity function has star symmetry. Being the case, the
+spectrum of a symmetric s-point star, with orb W/s, contains exactly the
+terms of the spectrum of a single peak at zero degrees, with orb W, -the
+spectrum for a conjunction aspect- spread over the harmonics that are multiples
+of s. See Figure 5. A result that I'll use later in 'An Alternate Procedure
+for Computing Harmograms'. Note that the lower spectrum is drawn with trice
+as many harmonic terms than the uppermost. And note also the resulting
+zero amplitude of the harmonic terms not multiples of three (not labeled
+in the figure).
+<br>&nbsp;
+<p><b>Figure 5.- FS of a three points star vs. a 'one point star'</b>
+<br>&nbsp;
+</BLOCKQUOTE>
+<CENTER>
+<P><IMG SRC="25mgf05.gif" ALT="FS of a three points star vs. a 'one point star'">
+</CENTER>
+<BLOCKQUOTE>
+<br>&nbsp;
+
+<p>In the three figures, 3, 4 and 5, orbs are 'equated' to harmonic one,
+as proposed by Addey. That is to say that the true orb of the aspects is
+the annotated orb divided by the harmonic number. A rule of thumb that
+begins to have a mathematical foundation.
+<br>&nbsp;
+<p><b>The Effect of Varying Orb and a Further Discussion of The Missing
+Peak</b>
+<p>Figure 4 shows the spectra, for the same harmonic number, of two gaussian-like
+intensity functions of different orb. As can be seen, the effect of decreasing
+the orb amounts to decreasing the rate of damping of the terms in the spectrum.
+In fact, the profile of the Fourier spectrum of a gaussian function is
+another gaussian, and the product of the rate of decay -loosely speaking-
+of both functions is a constant value. So, varying the orb is akin to modifying
+the number of subharmonics that are accounted for in Parseval's formula.
+The narrower the orb, the higher the subharmonics included.
+<p>Another important fact to be learned from figure 4 is that a missing
+peak in the intensity function, at the conjunction, complicates instead
+of simplifying the spectrum. I have commented the matter above. There is
+a different line of discourse to justify the inclusion of the conjunction
+in the intensity function, as we do here in Spain. And it is that the ever
+repeated statement, in the literature on harmonics, that (I quote Hawley,
+1995) <i>As the 0&ordm; position is common to all harmonic aspects, its
+contribution can be omitted when determining ...</i> (see also Kollerstrom
+&amp; O'Neill 1991, p1) completely misses the point in harmonic theory.
+<p>The point is that the set of natural numbers has a lattice (net-like)
+structure with the partial ordering <i>m divides n</i>, that replicates
+in (is isomorphic to) the sublattice of all the multiples of a number,
+for every natural number. In other words, the opposition is present in
+all even harmonics, the trine is present in all numbers multiple of three,
+etc. Lets call <i>harmonic aspects set of a number</i> to the set of all
+angular measures that are multiples of that's integer fraction of the circle.
+The aspect set of number nine includes the whole set of aspects of number
+three, not only the conjunction. The aspect set of number ten includes
+the five aspects of number five, and the opposition. Etc.
+<p>So, either you start pruning aspects from all decomposable harmonic
+numbers -those like 4, 6, 8, 9, etc. that are not prime-, or you include
+even the conjunction in the intensity function. Also, we should never forget
+that Nature likes symmetry. As a matter of fact, after experimenting for
+a relatively short time with pruned harmonic aspect sets -even coining
+a term, that of <i>proper aspects of a harmonic number</i>, (Maci&aacute;
+&amp; Garc&iacute;a, Barcelona 1997)-, we have reverted to using the whole
+sets.
+<p><b>Note:</b> As I read <i>The Eureka Effect</i> (K&amp;O, 1996), after
+having almost completed this paper, I understood the sensible reasons adduced
+by the authors for not including the conjunction in the aspect totals.
+But I am convinced that the true nature of astrological phenomena is a
+bit different from the way it is generally perceived these days -as I gather
+by reading the available literature-. And I hope that I'm casting some
+light upon the subject with this paper.
+<br>&nbsp;
+<p><b>Measuring the Strength of Number [One] in a Chart</b>
+<p>Hamblin did a thorough and convincing job in his book to expose the
+possibilities of harmonic charts, both as aides to natal astrology and
+as research tools. But, as I pointed earlier, his expertise and insight
+cannot be purchased on the lab supplies store next street.
+<p>As I discovered the relationship between Fourier spectra and harmogram
+intensity of harmonics, I realized that I had the tool to attempt to quantify
+Hamblin's criteria. Before I present the data, it is convenient to review
+his procedure.
+<p>Hamblin defines the strength of a chart, be it harmonic or otherwise,
+as dependent of the closeness and interconnection of aspects and aspect
+patterns. Though it is possible, with hindsight, to deduce from theory
+the Fourier Analysis equivalent of that definition, I choose to go the
+empirical way, that I go on exposing: As he presents example after example
+of relevant charts, for every studied harmonic number, we are entitled
+to suppose that he values each chart irrespective of the harmonic number.
+It is worth noting that, on closer scrutiny, that is not exactly the case
+with his examples (no criticism intended), but for the sake of fairness
+and simplicity, let us assume so.
+<p>One point in which the harmonic number visibly intervenes is in the
+maximum separation between Mercury, Venus and the Sun. There are other
+astronomical phenomena, dependent of the harmonic number, that influence
+the spread of the planets in a harmonic chart, as has been rightly pointed
+out by other authors (Hawley, 1995). So I won't prosecute the issue.
+<p>As the harmonic number is not considered to judge the strength of a
+harmonic chart, we can infer that <i>he is measuring the strength of number
+one</i> in that chart. Of course, number one in a harmonic chart is that
+harmonic's number in the radix.
+<br>&nbsp;
+<p><b>The Procedure</b>
+<p>We have the Harmogram, with a repertoire of intensity functions and
+orbs, to measure the strength of a number in a chart, and have the Fourier
+Analysis equivalent of that device. So let's do reverse engineering on
+the output of Mr. Hamblin. To try every possible harmogram function with
+Hamblin's charts would be an impossible task. Fortunately Fourier Analysis
+can unveil it for us.
+<p>For each chart in Hamblin's sample we compute the Fourier spectrum of
+the Deltas of Dirac (my Harmonic Vector) of the appropriate harmonic chart.
+And tally the squares of the amplitudes of the Fourier coefficients in
+a table, graphically depicted in figure 6 and drawn as if it were a Fourier
+spectrum. In that table we are adding heterogeneous harmonics in each entry,
+but I'm confident in that the preceding discussion validates the procedure.
+We are contemplating each chart as if it were harmonic one, a radix.
+<br>&nbsp;
+<p><b>Figure 6.- Hamblins charts analyzed</b>
+<br>&nbsp;
+</BLOCKQUOTE>
+<CENTER>
+<P><IMG SRC="25mgf06.gif" ALT="Hamblins charts analyzed">
+</CENTER>
+<BLOCKQUOTE>
+<br>&nbsp;
+
+<p>After having completed the totals, the resulting graph of values should
+be an estimate of the Fourier spectrum of the [searched for] Intensity
+Function of the Harmogram, implicit in Hamblin's work.
+<br>&nbsp;
+<p><b>The Data</b>
+<p>Working with a set composed of 4 harmonic-four charts, 9 harmonics-five
+and seven, and 10 harmonic-nine, for a total of 32 charts. And adding the
+squared amplitudes of the Harmonic Vector corresponding to each harmonic
+chart, figure 6 reveals the weighty subharmonics for judging the strength
+of a chart. Only one of the charts in the first part of the book was omitted
+due to being, in Hamblins words, a weaker one. Plus a couple, or so, whose
+birth data were not available.
+<p>It is relieving to find at least four of the first five powers of two
+as prominent subharmonics in the sample. Also numbers six and twelve appear
+as lesser but noticeable harmonics, not so three -perhaps too easygoing
+a number to give strength to a chart- In any case it's an astrologer's
+criterion. It's intriguing the low value of harmonic sixteen. The sample
+of charts is not very large. Also, I don't find relevant a statistical
+analysis of significance. Years of analyzing reams of samples of natal
+data have convinced me that only replication can validate a statistical
+inference.
+<p>Table 1 summarizes the prominent harmonics. To get up to ten prominent
+harmonics -to compare table 1 with table 2 later- you have to include rare
+or high harmonics that could be artifacts of the smallness of the sample.
+<br>&nbsp;
+<p><b>Table 1. Harmonic weights by Hamblin</b>
+<table BORDER CELLPADDING=4 WIDTH="575" BORDERCOLOR="#000000" >
+<tr>
+<td VALIGN=TOP WIDTH="17%">
+<center>Harmonic</center>
+</td>
+
+<td VALIGN=TOP WIDTH="8%">
+<center>4</center>
+</td>
+
+<td VALIGN=TOP WIDTH="8%">
+<center>2</center>
+</td>
+
+<td VALIGN=TOP WIDTH="8%">
+<center>8</center>
+</td>
+
+<td VALIGN=TOP WIDTH="8%">
+<center>32</center>
+</td>
+
+<td VALIGN=TOP WIDTH="8%">
+<center>6</center>
+</td>
+
+<td VALIGN=TOP WIDTH="8%">
+<center>12</center>
+</td>
+
+<td VALIGN=TOP WIDTH="8%">
+<center>52</center>
+</td>
+
+<td VALIGN=TOP WIDTH="8%">
+<center>31</center>
+</td>
+
+<td VALIGN=TOP WIDTH="8%">
+<center>40</center>
+</td>
+
+<td VALIGN=TOP WIDTH="8%">
+<center>44</center>
+</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="17%">
+<center>Amplitude</center>
+</td>
+
+<td VALIGN=TOP WIDTH="8%">
+<center>5.89</center>
+</td>
+
+<td VALIGN=TOP WIDTH="8%">
+<center>5.80</center>
+</td>
+
+<td VALIGN=TOP WIDTH="8%">
+<center>5.70</center>
+</td>
+
+<td VALIGN=TOP WIDTH="8%">
+<center>5.63</center>
+</td>
+
+<td VALIGN=TOP WIDTH="8%">
+<center>5.21</center>
+</td>
+
+<td VALIGN=TOP WIDTH="8%">
+<center>4.85</center>
+</td>
+
+<td VALIGN=TOP WIDTH="8%">
+<center>4.77</center>
+</td>
+
+<td VALIGN=TOP WIDTH="8%">
+<center>4.38</center>
+</td>
+
+<td VALIGN=TOP WIDTH="8%">
+<center>4.30</center>
+</td>
+
+<td VALIGN=TOP WIDTH="8%">
+<center>4.21</center>
+</td>
+</tr>
+</table>
+
+<p><b>The Inferred Intensity Function. An Alternate Procedure for Computing
+Harmograms</b>
+<p>To sum up this result, one is tempted to build a function from the prominent
+harmonics obtained. And I've done so in figure 7 with the first six values
+in table 1. But the suggestion is to omit the graph; to work instead with
+the harmonic vectors of the charts; and to weight them with the coefficients
+in figure 6. Or use some other set of weights that this or that theory
+may propose.
+<br>&nbsp;
+<p><b>Figure 7.- Synthesis of a Harmogram function from Hamblins data</b>
+<br>&nbsp;
+</BLOCKQUOTE>
+<CENTER>
+<P><IMG SRC="25mgf07.gif" ALT="Synthesis of a Harmogram function from Hamblins data">
+</CENTER>
+<BLOCKQUOTE>
+<br>&nbsp;
+
+<p>If we have so chosen a set of weights for subharmonics {F(k)}, i.e.
+use a star symmetric intensity function: to judge the strength of number
+h in a chart, we can proceed as follows:
+<p>I. - Compute the coordinates in the Harmonic Vector for h, 2h, 3h, ...
+(k x h), etc.;
+<p>II. - Take their squares and multiply by the weights (forming terms
+like A<sup>2</sup>(k x h) x F(k)); and
+<p>III. - Add the products to get a weighted total: S A<sup>2</sup>(k x
+h) x F(k) adding for k=0,1,2,...
+<p>IV. - (optional) subtract from the total the number of the planets included
+and divide by two.
+<p>If we prefer to omit the conjunction (or use any other intensity function
+without h-star symmetry) we have to extend the sum to all the coordinates
+of the HV for which the Fourier coefficient of the intensity function is
+not (almost) zero. You have to tailor a specific intensity function, for
+each harmonic number h; compute the Fourier coefficients {F<sub>h</sub>(k)}
+for that function; and compute: S A<sup>2</sup>(k) x F<sub>h</sub>(k).
+<p><b>Note:</b> Don't jump to too many conclusions looking at Figure 7.
+I hope that, including the analysis of Hamblins data in this paper, I'm
+showing the complexity of harmonic phenomena as qualitatively perceived
+by astrologers. I do not intend to propose an alternate -or weird- function
+shape for harmograms. I'm just trying to share insight into the main theme.
+<br>&nbsp;
+<p><b>One Example Outside of Addey's School</b>
+<p>Here in Spain is well known the work of our dean in astrological research,
+Demetrio Santos. His C-60 device defines a value of Astrodynes, computed
+over the Zodiac from the planetary aspects to each degree, plus a means
+of directing the Ascendant, in order to predict crises in the native's
+life.
+<p>In graphical form we get a chronological dial with an intensity of 'would
+be' crises, as is depicted in figure 8. Mario Balagu&eacute;, in a private
+work session, proposed the pictorial representation to me in 1993, and
+I included it in my computer program. Since then, a lot of researchers
+and consulting astrologers are using the graphs here. And are also extending
+the technique, by changing the arc of direction of D. Santos, to other
+cycles and uses.
+<br>&nbsp;
+<p><b>Figure 8.- Santos C-60 astrodyne dial</b>
+<br>&nbsp;
+</BLOCKQUOTE>
+<CENTER>
+<P><IMG SRC="25mgf08.gif" ALT="Santos C-60 astrodyne dial">
+</CENTER>
+<BLOCKQUOTE>
+<br>&nbsp;
+
+<p>The pertaining fact about the astrodyne function of D. Santos is that
+it is computed by adding the contribution of each planet. Each planet 'generates'
+a function of astrodyne intensity, as is the case with harmograms. The
+symmetry of the graph of intensity for a single planet will give a zero-phase
+Fourier spectrum -with some negative amplitudes, see bellow-. Though, now,
+this symmetry is not a required property for the analysis.
+<p>Here I include the Fourier treatment of this device because, while diverging
+greatly in origin and purpose, it gives a result similar enough to the
+examples of Hamblin. One set of weights -Fourier coefficients- comes from
+the analyzed practice of an astrologer, the other from an intensity function
+that sprouts straight out of pure -and at times questionable- theory, however
+successful in practice.
+<p>For the sake of clarity I should point out that this astrodyne function
+was not intended to compute harmograms. Also, a scanning of the intensity
+function of each planet is not performed by the other planets. So, it is
+not fully legitimate to speak of 'harmonic weights'. Or could, in any case,
+be misleading after having discussed here Hamblins data. Instead, let us
+view a harmogram intensity function as a mix of harmonic 'energies' and
+then compare it with another mix: Santos astrodyne function.
+<br>&nbsp;
+<p><b>Figure 9a.- Santos C-60 one planet intensity function shape</b>
+<br>&nbsp;
+</BLOCKQUOTE>
+<CENTER>
+<P><IMG SRC="25mgf09a.gif" ALT="Santos C-60 one planet intensity function shape">
+</CENTER>
+<BLOCKQUOTE>
+<br>&nbsp;
+
+<p>Be it, in figure 9a, the intensity function of the astrodynes cast by
+a planet at 0&ordm; Aries, as proposed by Santos and Balagu&eacute;. And
+be it, in figure 9b, its Fourier spectrum. Table 2 lists the first ten
+more prominent harmonics in decreasing order of magnitude.
+<br>&nbsp;
+<p><b>Figure 9b.- Santos C-60 one planet intensity function spectrum</b>
+<br>&nbsp;
+</BLOCKQUOTE>
+<CENTER>
+<P><IMG SRC="25mgf09b.gif" ALT="Santos C-60 one planet intensity function spectrum">
+</CENTER>
+<BLOCKQUOTE>
+<br>&nbsp;
+
+<br>&nbsp;
+<p><b>Table 2. Harmonic weights by D. Santos</b>
+<table BORDER CELLPADDING=4 WIDTH="571" BORDERCOLOR="#000000" >
+<tr>
+<td VALIGN=TOP WIDTH="19%">Harmonic</td>
+
+<td VALIGN=TOP WIDTH="8%">12</td>
+
+<td VALIGN=TOP WIDTH="8%">8</td>
+
+<td VALIGN=TOP WIDTH="8%">24</td>
+
+<td VALIGN=TOP WIDTH="8%">16</td>
+
+<td VALIGN=TOP WIDTH="8%">4</td>
+
+<td VALIGN=TOP WIDTH="8%">6</td>
+
+<td VALIGN=TOP WIDTH="8%">20</td>
+
+<td VALIGN=TOP WIDTH="8%">18</td>
+
+<td VALIGN=TOP WIDTH="10%">10</td>
+
+<td VALIGN=TOP WIDTH="10%">36</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="19%">Amplitude</td>
+
+<td VALIGN=TOP WIDTH="8%">1.360</td>
+
+<td VALIGN=TOP WIDTH="8%">1.023</td>
+
+<td VALIGN=TOP WIDTH="8%">0.960</td>
+
+<td VALIGN=TOP WIDTH="8%">0.815</td>
+
+<td VALIGN=TOP WIDTH="8%">0.726</td>
+
+<td VALIGN=TOP WIDTH="8%">0.615</td>
+
+<td VALIGN=TOP WIDTH="8%">0.544</td>
+
+<td VALIGN=TOP WIDTH="8%">0.388</td>
+
+<td VALIGN=TOP WIDTH="10%">0.384</td>
+
+<td VALIGN=TOP WIDTH="10%">0.287</td>
+</tr>
+</table>
+
+<p>The graph and table 2 speak for themselves. Again we find the even harmonic
+numbers as prominent. Again, a lack of prominence of some of the small
+valued integers, numbers one, two, three and five, etc. Etc. As the function
+is partly based on a four spokes wheel, we have the first multiples of
+4 among the prominent harmonics. Id. id. id. for number 12 series.
+<p>The 180 phased harmonics -the descending lines in figure 9b-, equivalent
+to negative weights, are in any case of small value. They arise out of
+a certain peakyness of the intensity function, combined with a slight tendency
+in the function to favor subharmonic oppositions.
+<p><b>Note:</b> Santos (1976) does not define a value and/or shape for
+the width (the orb) of each aspect, only a value of the intensity of the
+peak for each aspect. At least until very recently, within the work presenting
+a zodiacal modulator that he names 'chromatism' (Santos, 1994), in which
+he explicitly defines shape and orb for each aspect. The amplitude for
+the peaks was set roughly to six degrees by M. Balagu&eacute; in an early
+implementation of the C-60 dial, that later, by my concourse, became the
+tool in general use here. Of course, the width of the peak reflects in
+the Fourier spectrum. I've chosen the regular implementation as example
+to analyze.
+<br>&nbsp;
+<p><b>Conclusions</b>
+<p>Apart from contributing with a mathematical model for harmograms, an
+always-convenient resource -whatever its equations- in any discipline that
+aspires to a scientific approach to the pertaining phenomena, this paper
+shows, in the particulars of the mathematical model, that harmograms in
+fact measure the projection of the planetary 'energies' onto each natural
+number.
+<p>If we accept one of the harmonic hypotheses implicit in Addey's work,
+the one that says that every natural number manifests in all its multiples
+(Addey, 1972, 1976); and we consider that the energy of a pure sine wave
+is proportional to the square of its amplitude; then we arrive to a model
+for harmograms that is also a quasi-physical model.
+<p>Accepting that line of discourse, the harmogram rises, from the level
+of a serendipitous artifact, to the category of (quasi-) scientific instrument.
+This author (me) has become convinced, in the last four years -including
+in those years the use of my first draft for the tool: harmonic transits
+(Maci&aacute; &amp; Garc&iacute;a, Pe&ntilde;&iacute;scola 1994)-, that
+the harmogram is a very effective tool. Indeed, I got interested in a mathematical
+model of it because of that effectiveness. Perhaps the reborn Astrology,
+as heralded by Addey (1972), is coming of age.
+<p>As for the analysis of Hamblin and Santos harmonic mixes, there is no
+definite conclusion. The spectra obtained from both sets of data differ
+qualitatively from a typical harmogram function. The emphasis on both is
+on harmonics that are multiples of two, even on the powers of two.
+<p>Should we change the shape of the intensity functions that we use to
+compute the intensity of harmonic numbers in harmograms? I'm not really
+sure. Parsimony counsels, for intensity peaks and/or for Fourier spectra,
+wave shapes of the type already in use (gaussian or gaussian-like); as
+functions of this type are usually encountered in other branches of the
+natural Sciences.
+<p>Should we, using the current harmogram devices, look for the strength
+of number h of a moment of time in the harmogram trace of number 2h, as
+the even harmonics are the more prominent in the studied samples/waves?
+In the trace of 4h? Again I'm not sure, but inclined to answer NO. I think
+that, before we make choices, we need a better understanding of the underlying
+phenomena.
+<p>What ever be the case, what should be clear is that the strength of
+numbers as measured by harmograms differs from the criteria of the experienced
+astrologer. It should not be surprising that astrologers give more weight
+to even harmonics, as two is the first number of manifestation (see Addey,
+Hamblin, etc.). I do support the theory that the weights used by astrologers
+in all kinds of 'quantitative' Astrology depend upon the intended purpose
+of the measuring device in which they are used. It's an open issue, well
+outside the scope of this paper.
+<p>There is another way to face the issue of the relative weight of harmonics
+(or of the intensity function spectra), considering all harmonics simultaneously
+in a circle, along the lines initiated on Maci&aacute; &amp; Garc&iacute;a
+(Barcelona 1997); that, again, is beyond the scope of this paper.
+<br>&nbsp;
+<p><b>Acknowledgments</b>
+<p>As can be inferred from the text and the references, my work in harmonics,
+including the theory and use of the harmogram, would lack substance without
+the field work of my colleague T. Maci&aacute;. Since the summer of 1993,
+when I gave him the first computer version of the tools that we are using,
+he has been testing these ideas and contributing to the symbolic appraisal
+of numbers that is central to all harmonic research. In the neighborhood
+of T. Maci&aacute;, several persons, like J. Canals and J. M. Saiz, have
+contributed greatly in the symbolic, interpretative and fieldwork.
+<br>&nbsp;
+<p><b><i>Appendix One: How to Compute the Harmonic Vector.</i></b>
+<p>The Harmonic Vector of a set of planetary positions {p<sub>i</sub>,
+i=1..n} is the Fourier spectrum of the sum of one Periodic Delta of Dirac
+at each planetary position p<sub>i</sub>.
+<p>To obtain it, for each natural number h (h=0,1,2..infinity), compute:
+<p>C(h) = S&nbsp; Cos(h x p<sub>i</sub>) and S(h) = S&nbsp; Sin(h x p<sub>i</sub>),
+sums that extend over the n values in the set of positions. Then obtain
+the amplitude and phase of the h-th harmonic by:
+<p>A(h) = Sqrt(Sqr(C(h)) + Sqr(S(h)))
+<p>W(h) = ArcTan(S(h)/C(h))
+<p>Geometrically speaking each pair [A(h),W(h)] is the pair of polar coordinates
+of the vector sum of one vector (of length 1 and angle h x p<sub>i</sub>)
+for each planetary position in the set. For h=1 we get the Planetary Resultant
+of A. Boudineau. As a matter of fact, for every h, the h-th coordinate
+of the Harmonic Vector of a radix is the Planetary Resultant of the h-harmonic
+chart.
+<br>&nbsp;
+<p><b><i>Appendix Two: The Cyclic Index as Harmogram</i></b>
+<p>A Kollerstrom &amp; O'Neill harmogram for harmonic one computes the
+intensity of a conjunction as the maximum allowed orb minus the true instantaneous
+orb. The cyclic index of Gouchon and Barbault (Barbault 1979, see also
+Baigent, etc. 1984) is computed adding all the angular distances of pairs
+formed with the outer planets plus Saturn and Jupiter.
+<p>It should be obvious that if we allow an orb for the conjunction of
+180 degrees, a harmonic-one <!--pgc-->harmogram -including from Jupiter to Pluto-
+gives the reversed shape of the cyclic index. See figure 10. The point
+stated in the <i>Introduction</i> concerning this matter is proved.
+<br>&nbsp;
+<p><b>Figure 10.- Cyclic Index of Gouchon and Barbault vs. equivalent harmogram</b>
+<br>&nbsp;
+</BLOCKQUOTE>
+<CENTER>
+<P><IMG SRC="25mgf10.gif" ALT="Cyclic Index of Gouchon and Barbault vs. equivalent harmogram">
+</CENTER>
+<BLOCKQUOTE>
+<br>&nbsp;
+
+<p>In the text I've proposed, in order to have an insight into the 'harmonic
+energies' involved, to compute the Fourier spectrum of the intensity function
+used in a harmogram. Let's do so:
+<p>The spectrum of a triangular shaped wave that rises linearly from zero
+at a distance of 180 degrees and gets to a peak value of 1 at the partile
+conjunction -to 1, as I'm using normalized functions- is depicted in figure
+11. In view of figure 11, to omit all harmonics but the first, seems to
+me the more natural simplification to that spectrum. As there is always
+convenient to have a constant term added to avoid negative values in the
+harmogram, let's say that my intensity function is:
+<br>&nbsp;
+<p><b>Figure 11.- Spectrum of a harmogram function for the Cyclic Index</b>
+<br>&nbsp;
+</BLOCKQUOTE>
+<CENTER>
+<P><IMG SRC="25mgf11.gif" ALT="Spectrum of a harmogram function for the Cyclic Index">
+</CENTER>
+<BLOCKQUOTE>
+<br>&nbsp;
+
+<p>F<sub>0</sub> + F<sub>1</sub> x Cos(w), where w is the angular distance
+whose intensity I want to compute. As I use normalized non negative functions,
+it is convenient to make both coefficients equal and divide by its sum
+to get a peak value of 1 at the partile conjunction. That gives {F<sub>0</sub>
+= 0.5 and F<sub>1</sub> = 0.5}.
+<p>Having computed the harmonic vector {[A(0),W(0)], [A(1),W(1)], ...}
+of the set of the positions of Jupiter to Pluto at each moment in time
+-and we need only the 0-th and the first components, as all other weights
+in the intensity function are zero-, we get a harmonic one dynamic as is
+shown, in figure 12, along with the harmogram trace depicted in figure
+10. The concordance is so good, as the suppressed harmonics are of low
+coefficient, that I've had to shift one of the traces in figure 12. The
+final formula for this simplified harmogram is:
+<p>n<sup>2</sup>/2 + (A(1))<sup>2</sup>/2, as a function of time
+<br>&nbsp;
+<p><b>Figure 12.- Simplified spectrum (without subharmonics) harmogram of Jupiter
+through Pluto, compared to the harmogram trace in figure 10.</b>
+<br>&nbsp;
+</BLOCKQUOTE>
+<CENTER>
+<P><IMG SRC="25mgf12.gif" ALT="Simplified spectrum (without subharmonics) harmogram of Jupiter through Pluto, compared to the harmogram trace in figure 10">
+</CENTER>
+<BLOCKQUOTE>
+<br>&nbsp;
+
+<p>So the cyclic index has the reversed behavior of (I don't mean an exact
+correspondence, to the decimal figures, with) the square of coordinate
+one of the harmonic vector of the set of planetary positions of Jupiter
+to Pluto: Boudineau's Planetary Resultant [squared] for these planets.
+Should Boudineau have draw the evolution of the value of his Planetary
+Resultant as a function of time, and see its implications, he would probably
+had been lead, half a century earlier, to the discovery of my ideas here
+presented, about harmonics and harmograms. If he did, I know of no record,
+though he says that his device could be of use in Mundane Astrology.
+<p>I've wrought this example to the fore because of its historical interest
+(that I hope that it has), and because it is the first example of a special
+kind of harmogram that I call <i>single harmonic</i> harmograms. In these,
+I omit the constant factor and do not take the square of the amplitude.
+I'm not going to develop further the idea in this paper, but I know since
+my early work with the harmonic vector in 1990 and 1991 that they have
+some intrinsic potential, as a special tool, outside of what I've exposed
+here (see Garc&iacute;a, 1991).
+<p>As we are speaking about Barbault and the Cyclic Index, I present figure
+13, as a final thought provoker.
+<br>&nbsp;
+<p><b>Figure 13.- 1-2-3 <i>Single harmonic</i> harmogram covering Second World War
+time span</b>
+<br>&nbsp;
+</BLOCKQUOTE>
+<CENTER>
+<P><IMG SRC="25mgf13.gif" ALT="13.- 1-2-3 Single harmonic harmogram covering Second World War time span">
+</CENTER>
+<BLOCKQUOTE>
+<br>&nbsp;
+<br>V1 can be read as <i>autonomous behavior/volition exertion</i>.
+<br>V2 as <i>identification of enemies/formation of parts</i>.
+<br>And V3 as <i>development/expansion/movement/easy flow</i>.
+<br>&nbsp;
+
+<p><FONT SIZE=+2><b>References</b></font>
+<p>Addey, John (1972). <i>Astrology Reborn</i>.
+<p>Addey, John (1976). <i>Harmonics in Astrology</i>. Fowler.
+<p>Apostol, Tom M. <i>Mathematical Analysis</i>. Addison-Wesley, 2nd edition.
+<p>Baigent M., Campion N. and Harvey C. (1984). <i>Mundane Astrology</i>.
+Aquarian.
+<p>Barbault Andre (1979). <i>Astrolog&iacute;a Mundial</i>. (Spanish edition).
+<p>Boudineau, Andre (1985). <i>Bases Scientifiques de l'Astrologie</i>.
+Editions Traditionnelles.
+<p>Brahy, L. G. (1934). <i>La Clef de la prevision des &eacute;v&eacute;nements
+mondiaux et des fluctuations &eacute;conomiques et boursi&egrave;res.</i>
+Editions Traditionnelles. Cuarta edici&oacute;n de 1989.
+<p>Carslaw, H. S. (1930). <i>An Introduction to the Theory of Fourier's
+Series and Integrals</i>. Dover edition of 1950.
+<p>Dean, Geoffrey. (1996). <i>Key Topic 3 - Theories of Astrology</i>.
+Correlation 15-1, p35.
+<p>Garc&iacute;a, Miguel (1991). <i>El An&aacute;lisis Arm&oacute;nico
+como Modelo de T&eacute;cnicas Astrol&oacute;gicas (The Harmonic Analysis
+as a Model for Astrological Techniques)</i>. Presented at the VIII Iberian
+Astrology Congress at M&aacute;laga. Privately published by the author.
+<p>Garc&iacute;a, M. (1994) <i>Naturaleza Hologr&aacute;fica de la Impronta
+Natal (Holographic Nature of the Natal Imprint)</i>. Proceedings of the
+First Encounter of Astrologers at Madrid.
+<p>Hamblin, David (1983). <i>Harmonic Charts</i>. Aquarian.
+<p>Hawley, Kevin (1995). <i>The Determination of Expected Harmonic Aspect
+Frequencies.</i> Correlation 14-1, p38.
+<p>Kollerstrom, N. &amp; O'Neill, M. (1991). <i>The Harmogram</i>. Privately
+published by the authors.
+<p>Kollerstrom, N. &amp; O'Neill, M. (1996). <i>The Eureka Effect</i>.
+Urania Trust.
+<p>Maci&aacute;, T. &amp; Garc&iacute;a, M. (Valencia, 1994). <i>Figuras
+de Aspectos: Teor&iacute;a y Pr&aacute;ctica (Aspect Patterns: Theory and
+Practice)</i>. Proceedings of the XI Iberian Astrology Congress at Valencia.
+<p>Maci&aacute;, T. &amp; Garc&iacute;a, M. (Pe&ntilde;&iacute;scola 1994).
+<i>Tr&aacute;nsitos Arm&oacute;nicos (Harmonic Transits)</i>. Proceedings
+of the VI Astrological Meeting at Pe&ntilde;&iacute;scola.
+<p>Maci&aacute;, T. &amp; Garc&iacute;a, M. (Barcelona, 1997). <i>Arm&oacute;nicos:
+Teor&iacute;a y Pr&aacute;ctica (Harmonics: Theory and Practice)</i>. Presented
+at the International Astrology Congress at Barcelona. The <i>Theory</i>
+part privately published by the author.
+<p>Rudin, Walter (1987). <i>Real and Complex Analysis</i>. 3rd edition.
+McGraw-Hill.
+<p>Santos, Demetrio (1976). <i>Investigaciones sobre Astrolog&iacute;a</i>.
+Editora Nacional.
+<p>Santos, D (1994). <i>Principios Astrol&oacute;gicos y Casas Fotoecl&iacute;pticas
+(Astrological Principles and Photoecliptic Houses)</i>. Proceedings of
+the VI Astrological Meeting at Pe&ntilde;&iacute;scola.
+<p>Zemanian, A. H. (1965). <i>Distribution Theory and Transform Analysis</i>.
+Dover edition of 1987.
+</BLOCKQUOTE>
+<br>&nbsp;
+<CENTER><FONT SIZE=-1><B>To cite this page:</B></FONT></CENTER>
+<CENTER><TABLE BORDER COLS=1 WIDTH="47%">
+<TR>
+<TD>
+<CENTER><FONT COLOR="#000000"><FONT SIZE=-1>Miguel Garc&iacute;a Ferr&aacute;ndez: A Mathematical Formulation of Harmograms and the Strength of Number in Astral Charts</FONT></FONT>
+<BR><FONT COLOR="#000000"><FONT SIZE=-1>http://cura.free.fr/xxv/25garcian.html</FONT></FONT>
+<BR><FONT COLOR="#000000"><FONT SIZE=-1>-----------------------</FONT></FONT>
+<BR><B><FONT COLOR="#000000"><FONT SIZE=-1>All rights reserved &copy; 2003 Miguel
+Garc&iacute;a Ferr&aacute;ndez</FONT></FONT></B></CENTER>
+</TD>
+</TR>
+</TABLE></CENTER>
+<BR><CENTER><TABLE BORDER=2 COLS=1 WIDTH="12%" BACKGROUND="../imago/papi00.jpg">
+<TR><TD><CENTER><A HREF="../cura-en.html">HOME</A></CENTER>
+</TD></TR></TABLE></CENTER>
+<CENTER><TABLE BORDER=0 COLS=3 WIDTH="50%">
+<TR><TD WIDTH="32%">
+<CENTER><TABLE BORDER=2 COLS=1 WIDTH="80%" BACKGROUND="../imago/papi00.jpg" >
+<TR><TD><CENTER><A HREF="../cura.html">ACCUEIL</A></CENTER>
+</TD></TR></TABLE></CENTER>
+</TD><TD WIDTH="36%">
+<CENTER><IMG SRC="../imago/logo.gif" ALT="C.U.R.A." HEIGHT=125 WIDTH=127></CENTER>
+</TD><TD WIDTH="32%">
+<CENTER><TABLE BORDER=2 COLS=1 WIDTH="80%" BACKGROUND="../imago/papi00.jpg" >
+<TR><TD><CENTER><A HREF="../cura-esp.html">PORTADA</A></CENTER>
+</TD></TR></TABLE></CENTER>
+</TD></TR></TABLE></CENTER>
+<CENTER><FONT FACE="Arial,Helvetica"><FONT SIZE=-2><A HREF="http://cura.free.fr" target="_blank">Centre Universitaire de Recherche en Astrologie</A>
+<BR>Web site Designer &amp; Editor: Patrice Guinard
+<BR><B>&copy; 1999-2003 Dr. Patrice Guinard</B></FONT></FONT></CENTER><BR>
+<BLOCKQUOTE>
+<script language="JavaScript1.1">
+                       <!--
+                       hsh = new Date();
+                       hsd = document;
+                       hsi = '<a href="http://www.xiti.com/xiti.asp?s=77506"'
+                       hsi += ' TARGET="_top"><img width="39" height="25" border=0 '
+                       hsi += 'src="http://logv18.xiti.com/hit.xiti?s=77506'
+                       hsi += '&p=&hl=' + hsh.getHours() + 'x' + hsh.getMinutes() + 'x' + hsh.getSeconds();
+                       if(parseFloat(navigator.appVersion)>=4)
+                       {Xiti_s=screen;hsi += '&r=' + Xiti_s.width + 'x' + Xiti_s.height + 'x' + Xiti_s.pixelDepth + 'x' +
+                       Xiti_s.colorDepth;}
+                       hsd.writeln(hsi + '&ref=' + hsd.referrer.replace('&', '$') + '" title="Mesurez votre audience"></a>');
+                       //-->
+                       </script>
+                       <noscript>
+                       <a href="http://www.xiti.com/xiti.asp?s=77506" TARGET="_top"><img width="39" height="25"
+                       border=0 src="http://logv18.xiti.com/hit.xiti?s=77506&p=xxv25garcian" title="Mesurez votre
+                       audience"></a>
+                       </noscript>
+</BLOCKQUOTE>
+</BODY>
+</HTML>
+
+

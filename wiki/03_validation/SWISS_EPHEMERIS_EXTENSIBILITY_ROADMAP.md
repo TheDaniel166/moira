@@ -3,6 +3,9 @@
 This document turns the Swiss-to-Moira parity analysis into an extendible
 execution roadmap.
 
+Last reviewed:
+- 2026-04-04 (Phase 5 / V6-partial complete)
+
 Inputs:
 - [`SWISS_EPHEMERIS_SYMBOL_TABLE.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/SWISS_EPHEMERIS_SYMBOL_TABLE.md)
 - [`SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md)
@@ -43,6 +46,32 @@ From [`SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md`](c:/Users/nilad/OneDrive/Desktop/
 - `Defer`: `134`
 - `Reject`: `79`
 
+## Current Repository Context
+
+Since the initial drafting of this roadmap, Moira has added several
+Moira-native layers that affect extensibility decisions even though they are
+not Swiss-parity targets in themselves:
+
+- a full `moira.harmograms` subsystem with explicit spectral, intensity,
+  projection, and trace strata
+- a `moira.bridges.harmograms` adaptation layer for native chart/progression
+  inputs, body filtering, and datetime-range sampling
+- selective root-level exports from `moira.__init__` for stable harmograms
+  computation surfaces
+
+This matters here for one reason:
+
+- Swiss parity work must not flatten Moira-native engine layering back into
+  Swiss-shaped convenience surfaces.
+
+In particular, when a family already has:
+- an explicit mathematical engine layer
+- an adaptation or bridge layer
+- and a selective package-root surface
+
+this roadmap should treat that as a sign of architectural maturity, not as an
+invitation to add facade-first or service-first parity wrappers.
+
 ## Decision Model
 
 - `Implement`
@@ -72,6 +101,8 @@ From [`SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md`](c:/Users/nilad/OneDrive/Desktop/
 - Add migration notes, not Swiss-shaped API debt.
 - When a deferred family already has an constitutional process parent subsystem, route the work
   through that subsystem instead of creating a detached helper API.
+- Do not let Swiss parity pressure Moira-native engine/bridge layering into a
+  workflow or service surface when the engine itself does not require one.
 
 ## Real Blockers
 
@@ -128,12 +159,32 @@ have natural entry points in the repo.
 
 | Deferred family | Defer kind | constitutional entry point | Reason |
 | --- | --- | --- | --- |
-| generalized heliacal / visibility model | `Defer.Design` + `Defer.Validation` | [`fixed_stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/fixed_stars.py), [`STARS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/STARS_BACKEND_STANDARD.md) | heliacal behavior belongs under the unified star subsystem, not as standalone Swiss compatibility flags |
+| generalized heliacal / visibility model | `Implemented.V0–V5` + `Active.V6` | [`moira/heliacal.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/heliacal.py), [`moira/stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/stars.py), [`STARS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/STARS_BACKEND_STANDARD.md) | V0–V5 complete: observer-environment policy, generalized event search, Yallop corpus (295/295), public surface widened; V6 partial: K&S 1991 moonlight and stellar catalog batch admitted |
 | model-basis controls (`DeltaT`, precession, nutation, tidal acceleration) | `Defer.Doctrine` | [`julian.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/julian.py), [`corrections.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/corrections.py), [`DELTA_T_HYBRID_MODEL.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/DELTA_T_HYBRID_MODEL.md) | these are foundational astronomy policy choices, not Swiss option constants |
 | additional ayanamsa constants / user-defined ayanamsa | `Defer.Doctrine` | [`sidereal.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/sidereal.py) | ayanamsa expansion belongs in one coherent sidereal doctrine layer |
 | eclipse / occultation path helpers | `Active.Design` + `Active.Validation` | [`eclipse.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/eclipse.py), [`ECLIPSE_MODEL_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/ECLIPSE_MODEL_STANDARD.md), [`occultations.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/occultations.py), [`ANCIENT_OCCULTATION_VALIDATION_PROGRAM.md`](c:/Users/nilad/OneDrive/Desktop/Moira/wiki/03_validation/ANCIENT_OCCULTATION_VALIDATION_PROGRAM.md) | modern/future path geometry is active and externally validated; ancient occultations belong to a separate historical-validation program |
 | orbital-elements public layer | `Defer.Design` | supporting-modules track from [`REPOSITORY_ASSESSMENT.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/REPOSITORY_ASSESSMENT.md) | should be introduced as a dedicated typed subsystem, not scattered helpers |
-| house dynamics / cusp-speed layer | `Defer.Doctrine` + `Defer.Validation` | [`houses.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/houses.py), [`HOUSES_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/HOUSES_BACKEND_STANDARD.md) | house speeds belong in the house doctrine itself, not a Swiss-style auxiliary tuple |
+| house dynamics / cusp-speed layer | `Implemented` | [`houses.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/houses.py), [`HOUSES_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/HOUSES_BACKEND_STANDARD.md) | implemented in Moira form as `HouseDynamics`, including both `cusp_speeds_at(...)` and `house_dynamics_from_armc(...)` rather than Swiss-style auxiliary tuples |
+
+## Scope Boundary
+
+This roadmap governs:
+- Swiss-to-Moira capability migration
+- deferred family constitutionalization where Swiss parity reveals a real gap
+- public engine surfaces that should exist regardless of Swiss naming
+
+This roadmap does not govern:
+- Moira-native service or workflow orchestration
+- facade-first convenience layers added only to imitate Swiss usage style
+- product ergonomics that are not required for engine truth or migration value
+
+If a candidate addition primarily answers:
+- "how should a user orchestrate this workflow?"
+
+rather than:
+- "what engine capability is missing or not yet typed?"
+
+it belongs outside this document.
 
 ## Phase 1
 
@@ -246,12 +297,12 @@ Design the deferred-but-valid subsystem families.
 
 | Family | Defer kind | Why |
 | --- | --- | --- |
-| generalized heliacal / visibility model | `Defer.Design` + `Defer.Validation` | needs one coherent heliacal subsystem design plus stronger oracle policy |
+| generalized heliacal / visibility model | `Implemented.V0–V5` + `Active.V6` | V0–V5 complete; V6 partial: K&S 1991 moonlight model, `ExtinctionCoefficient` holders, `heliacal_catalog_batch` |
 | model-basis controls | `Defer.Doctrine` | must not become a bag of Swiss option constants |
 | additional ayanamsas | `Defer.Doctrine` | each added ayanamsa must be doctrinally named and justified |
 | eclipse/occultation path helpers | `Active.Design` + `Active.Validation` | typed path/circumstance vessels exist; solar and occultation maximum geography are implemented and externally checked on the local Swiss `where` corpus |
 | orbital-elements public layer | `Defer.Design` | requires a dedicated typed subsystem |
-| house dynamics / cusp-speed layer | `Defer.Doctrine` + `Defer.Validation` | house-speed semantics need to be defined before exposure |
+| house dynamics / cusp-speed layer | `Implemented` | doctrine and validation are now embodied in `HouseDynamics`, `cusp_speeds_at(...)`, and `house_dynamics_from_armc(...)` |
 
 ### Atomic backlog
 
@@ -304,6 +355,8 @@ Design the deferred-but-valid subsystem families.
 - [x] define validation expectations before exposure (in `CuspSpeed` docstring)
 - [x] implement `cusp_speeds_at(jd_ut, lat, lon, system, *, policy, dt)` → `HouseDynamics`
       → centred finite difference over ±dt (default 1 minute) on `calculate_houses`
+- [x] implement `house_dynamics_from_armc(armc, obliquity, lat, system, *, policy, sun_longitude, darmc_deg)` → `HouseDynamics`
+      → centred finite difference over `ARMC ± darmc_deg` on `houses_from_armc`, converted to degrees/day with the sidereal rotation rate
 - [x] add direct tests (`tests/unit/test_house_dynamics.py`, 23 tests, all passing)
 
 ### Exit criteria
@@ -365,6 +418,120 @@ Implement the Phase 3 subsystem constitutions as working public surfaces.
 - [x] all Phase 4 APIs typed, doctrine-controlled, and tested
 - [x] no Swiss-style integer flags introduced
 - [x] each surface wired into top-level `moira` namespace
+
+## Phase 5
+
+### Goal
+
+Widen the admitted heliacal/visibility subsystem through its full V0–V5
+public surface and admit the first V6 optional enhancements.
+
+### Why now
+
+- Phase 3 constitutional work and Phase 4 narrow planetary helpers established
+  the doctrine foundation and validation anchor (Sothic/Sirius 139 AD)
+- Yallop lunar crescent corpus provided 295-entry oracle for the criterion-family
+  pathway, enabling V4 validation completion
+- V5 public widening was safe only after both V4 paths (planetary apparitions
+  and Yallop corpus) were verified
+- V6 optional enhancements (moonlight, catalog batch) do not change core doctrine
+  truth; they extend the admitted policy surface with clearly bounded additions
+
+### Atomic backlog
+
+#### V1 — Observer environment policy
+
+- [x] define `LightPollutionClass` (Bortle 1–9 typed scale)
+- [x] define `LightPollutionDerivationMode` (table vs linear)
+- [x] define `ObserverAid` (naked eye / binoculars / telescope)
+- [x] define `ObserverVisibilityEnvironment` (full observer environment vessel)
+      — fields: `light_pollution_class`, `limiting_magnitude`,
+        `local_horizon_altitude_deg`, `temperature_c`, `pressure_mbar`,
+        `relative_humidity`, `observer_altitude_m`, `observing_aid`
+- [x] add `VisibilityModel.to_observer_environment()` bridge for V0 backward compat
+
+#### V2 — Visibility criterion family and policy
+
+- [x] define `VisibilityCriterionFamily` (`LIMITING_MAGNITUDE_THRESHOLD`, `YALLOP_LUNAR_CRESCENT`)
+- [x] define `VisibilityExtinctionModel` and `VisibilityTwilightModel` named slots
+- [x] define `MoonlightPolicy` (`IGNORE`, `KRISCIUNAS_SCHAEFER_1991`)
+- [x] define `VisibilityPolicy` (unified admitted policy vessel)
+- [x] define `VisibilitySearchPolicy` (search-window and step-size control)
+- [x] implement `_effective_limiting_magnitude(policy)` with explicit Bortle precedence law
+- [x] implement `_policy_limiting_magnitude` Bortle table and linear fallback
+
+#### V3 — Generalized event search surface
+
+- [x] implement `visibility_assessment(body, jd_ut, lat, lon, *, policy) → VisibilityAssessment`
+- [x] implement `visibility_event(body, event_kind, jd_start, lat, lon, *, ...) → GeneralVisibilityEvent | None`
+      — routes `PLANET`, `STAR`, `MOON` target kinds
+      — routes `YALLOP_LUNAR_CRESCENT` and `LIMITING_MAGNITUDE_THRESHOLD` criterion families
+      — routes `HELIACAL_RISING`, `HELIACAL_SETTING`, `ACRONYCHAL_RISING`,
+        `ACRONYCHAL_SETTING`, `COSMIC_RISING`, `COSMIC_SETTING` event kinds
+- [x] define `LunarCrescentVisibilityClass` (A–F) and `LunarCrescentDetails` vessel
+- [x] implement `_lunar_crescent_details_for_evening` and `_lunar_crescent_details_for_morning`
+
+#### V4 — Validation corpus
+
+- [x] obtain Yallop (1997) Table 4 reference corpus (295 entries)
+- [x] implement `test_yallop_corpus_q_value_accuracy` integration test
+      — 293/295 within ±0.03 q-value, 295/295 within ±0.05
+      — mean residual 0.0077, max 0.0315
+      — 5 UTC-vs-local fixture date corrections applied and documented
+- [x] implement `test_generalized_stellar_visibility_event_matches_sothic_anchor_slice`
+      — Sirius heliacal rising 139 AD, Alexandria, within 5 days of Sothic anchor
+
+#### V5 — Public surface widening
+
+- [x] promote 18 names to `moira/__init__.py` and `moira/facade.py`:
+      `HeliacalEventKind`, `VisibilityTargetKind`, `LightPollutionClass`,
+      `LightPollutionDerivationMode`, `ObserverAid`, `ObserverVisibilityEnvironment`,
+      `VisibilityCriterionFamily`, `VisibilityExtinctionModel`, `VisibilityTwilightModel`,
+      `MoonlightPolicy`, `VisibilityPolicy`, `VisibilitySearchPolicy`,
+      `LunarCrescentVisibilityClass`, `LunarCrescentDetails`, `VisibilityAssessment`,
+      `GeneralVisibilityEvent`, `visibility_assessment`, `visibility_event`
+
+#### V6 partial — Optional enhancements
+
+- [x] implement K&S 1991 moonlight sky-brightness model (`moira/heliacal.py`):
+      — `_ks1991_moon_magnitude` (Eq. 9)
+      — `_ks1991_scattering_function` (Eq. 3)
+      — `_ks1991_moonlight_nanolamberts` (Eqs. 20–21)
+      — `_ks1991_dark_sky_nanolamberts` (Bortle SQM → nanolamberts)
+      — `_ks1991_limiting_magnitude_penalty` (Δm_L penalty)
+      — `VisibilityAssessment.moonlight_sky_nanolamberts` diagnostic field
+- [x] add `ExtinctionCoefficient` namespace with named reference holders:
+      `MAUNA_KEA` (0.172), `GOOD_DARK_SITE` (0.20), `TYPICAL` (0.25), `HAZY` (0.30)
+- [x] expose `extinction_coefficient_k: float = 0.20` on `VisibilityPolicy`
+- [x] add `ExtinctionCoefficient` to `moira/__init__.py` and `moira/facade.py`
+- [x] implement `heliacal_catalog_batch(event_kind, jd_start, lat, lon, *, ...)` (`moira/stars.py`):
+      — pre-filter 1: magnitude threshold (skips without ephemeris)
+      — pre-filter 2: latitude-limit from `lat_limit_deg` registry column
+      — per-star `arc_vis_deg` used directly as arcus visionis
+      — result in `HeliacalBatchResult` vessel with `found`, `not_found`,
+        `skipped_latitude`, `skipped_magnitude` and three property accessors
+- [x] define `HeliacalBatchResult` in `moira/star_types.py`
+- [x] promote `HeliacalBatchResult` and `heliacal_catalog_batch` to `moira/facade.py`
+- [x] add unit tests: 16 K&S 1991 tests + 8 batch tests (all passing)
+
+### Exit criteria
+
+- [x] V0–V5 generalized visibility subsystem typed, doctrine-controlled, tested
+- [x] Yallop corpus 295/295 within ±0.05; mean 0.0077; max 0.0315
+- [x] K&S 1991 moonlight model unit-tested against paper equations
+- [x] `heliacal_catalog_batch` with pre-filtering and `HeliacalBatchResult` vessel
+- [x] all new public names in `moira/__init__.py` and `moira/facade.py`
+- [x] `moira/heliacal.py` header docstring reflects actual implementation state
+
+### Open V6 items (deferred)
+
+- Live-ephemeris integration test for K&S 1991 moonlight under known bright-moon conditions
+- Stellar heliacal batch validation corpus beyond Sothic/Sirius anchor
+  (Spica, Arcturus, Antares, Regulus, Aldebaran from primary sources)
+- Terrain/horizon profile integration
+- Observer-experience scaling
+- Wavelength-specific visibility refinements
+- Research comparison across multiple visibility doctrines
 
 ## Constitutionally Rejected Classes
 

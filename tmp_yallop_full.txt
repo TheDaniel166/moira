@@ -1,0 +1,834 @@
+Tn69x.doc 1 of 14  22 /09 /2004  10:14 AM 
+NAO Technical Note No 69 
+A Method for Predicting the First Sighting of the New Crescent Moon 
+by BD Yallop 
+Summary 
+A single parameter method is obtained for predicting first sighting of the new crescent moon, 
+based on the Indian method.   Based on the method of Bruin, a simple rule is given that 
+determines the time of best visibility in the twilight sky. 
+The six ranges of the single test parameter q are calibrated by applying the q-test to a standard set 
+of 295 first sightings of the new crescent moon that cover the period 1859 to 1996. 
+The ranges of the parameter correspond to the following visibility types for the new crescent 
+moon: (A) easily visible to the unaided eye; (B) visible under perfect atmospheric conditions; (C) 
+may need optical aid to find the thin crescent moon before it can be seen with the unaided eye; (D) 
+can only be seen with binoculars or a telescope; (E) below the normal limit for detection with a 
+telescope; (F) not visible, below the Danjon limit. 
+1. Introduction. 
+Methods for predicting first sighting of the new crescent moon have been around since the time of 
+the Babylonians and maybe before that.   The ear liest methods depended upon parameters such as the 
+age of the Moon ( Age) and the time from sunset to moonset ( Lag).   In Medieval times the methods 
+became slightly more sophisticated, and they incl uded more technical parameters such as ecliptic 
+latitude and longitude. 
+In the twentieth century empirical methods have been developed based on functional relationships 
+between the arc of light ( ARCL), arc of vision ( ARCV) and the relative azimuth ( DAZ).   In this note I 
+examine three of the twentieth century me thods, due to Maunder (1911), the Indians, The Indian 
+Astronomical Ephemeris , (1996), and Bruin (1977).   My method is an adaptation of these three 
+methods. 
+2. The basic variables. 
+The angles ARCL, ARCV and DAZ, always in degrees, are defined as follows: 
+ARCL is the angle subtended at the centre of the Eart h by the centre of the Sun and the centre of the 
+Moon. 
+ARCV is the geocentric difference in altitude betw een the centre of the Sun and the centre of the 
+Moon for a given latitude and longitude, ignoring the effects of refraction. 
+DAZ is the difference in azimuth between the Sun a nd the Moon at a given latitude and longitude, the 
+difference is in the sense azimuth of the Sun minus azimuth of the Moon. 
+Angles ARCL, ARCV and DAZ satisfy the equation 
+ cos ARCL = cos ARCV cos DAZ (2.1) 
+so only two of the angles are independent variables. 
+For angles less than about 22° this approximates to 
+ ARCL 
+2 = ARCV 2 + DAZ 2 (2.2) 
+Although ARCL and ARCV are not directly observable, for historical reasons it is difficult to 
+discontinue using them. 
+3. The basic data for three twentieth century methods. 
+This section gives the basic data for the method of (a) Maunder, (b) the Indians and (c) Bruin. 
+(a) The basic data for the Maunder method ar e given on page 359 of Maunder (1911), and are 
+reproduced in Table 1: 
+ Table 1: Maunder 
+ DAZ  0° 5° 10° 15° 20° 
+ ARCV  11·0 10·5 9·5 8·0 6·0 
+Table 1 gives ARCV as a function of DAZ, i.e. ARCV = f(DAZ).   If ARCV > f(DAZ) then the crescent 
+is visible.   On the other hand if ARCV < f(DAZ) it is not visible.   Thus in principle, the degree of 
+Tn69x.doc 2 of 14  22 /09 /2004  10:14 AM 
+visibility is equivalent to testing the value of a single parameter q, where q = ARCV – f( DAZ).   In 
+section 5 it is shown how q is calibrated for the Indian method using a standard data base of 
+observations of lunar first sightings. 
+Fitting a quadratic polynomial in DAZ to ARCV using the data in Table 1 by the method of least 
+squares, yields a perfect fit, which indicates that Maunder was using a quadratic to represent his data.   
+The visibility criterion is that the crescent is visible if 
+ ARCV > 11 − |DAZ| / 20 − DAZ 2 / 100 (3.1) 
+(b) Since 1966, the basic data for the Indian me thod have been given in the Explanation to The 
+Indian Astronomical Ephemeris, which is based on Schoch (1930).   In the 1996 edition, for example, 
+they are found on page 559 under the section “Heliacal ri sing and setting of planets”.   They give the 
+data in a similar form to Maunder, i.e. a table of ARCV in terms of DAZ, which is reproduced here in 
+Table 2. 
+ Table 2: Indian 
+ DAZ 0° 5° 10° 15° 20° 
+ ARCV 10·4 10·0 9·3 8·0 6·2 
+In this case a quadratic polynomial in DAZ fitted to ARCV by the method of least squares produces the 
+following criterion: 
+ ARCV > 10·3743 − 0·0137 |DAZ| − 0·0097 DAZ 2 (3.2) 
+(c) The basic data for the Bruin method are containe d in figure 9, page 339 of Bruin (1977).   This 
+diagram yields ARCV as a function of W the width of the crescent moon, and they are reproduced in 
+Table 3.   Note that the entry for W = 0'·3 has been extrapolated, and that Bruin does not extend his 
+curves beyond W = 3'. 
+ Table 3: Bruin 
+ W  0'·3 0'·5 0'·7 1' 2' 3' 
+ ARCV  10·0 8·4 7·5 6·4 4·7 4·3 
+In this case a cubic polynomial in W is fitted to ARCV by the method of least squares.   A cubic 
+polynomial is required because the curve has an infl exion.   Moreover, since the coefficient of W 3  is 
+negative, it guarantees that the test criteria is eventually satisfied, provided that W is large enough.   
+The criterion is that the crescent is visible if 
+ ARCV > 12·4023 − 9·4878 W + 3·9512 W 2 − 0·5632 W 3 (3.3) 
+where W is the width of the crescent in minutes of arc and is given by 
+ W = 15 (1 − cos ARCL) = 15 (1 − cos ARCV cos DAZ) (3.4) 
+Notice that Bruin took the semi-diameter of the Moon to be a constant 15', and that W is a function of 
+ARCV and DAZ. 
+The criterion for Maunder (3.1) and the Indian met hod (3.2), can also be expressed as a function of 
+ARCV and W, as follows. 
+ ARCV > 13·1783 − 9·0812 W + 2·0709 W 2 − 0·3360 W 3 (3.5) 
+ ARCV > 11·8371 − 6·3226 W + 0·7319 W 2 − 0·1018 W 3 (3.6) 
+Note that an additional cubic term in W is required to maintain precision. 
+Finally for comparison I give the expression for Bruin in the alternative form 
+ARCV as a polynomial 
+in DAZ, although the precision is poor when DAZ exceeds about 20°. 
+ ARCV > 10·136 + 0·14 |DAZ| − 0·03 DAZ 2 (3.7) 
+The curves ARCV = f(DAZ) (i.e. q = 0) are drawn in Figure 1, for the three methods.   As explained 
+in section 3(a), visibility occurs when ARCV > f( DAZ) (i.e. q > 0).   Note that the Indian and Bruin 
+test are very similar between DAZ = 0°and DAZ = 20°.   For DAZ > 20° the Bruin curve behaves quite 
+differently from the Indian curve and has a strong infl exion.   At high latitudes, when the orbit of the 
+Moon is almost parallel with the horizon, this sh ape of curve produces predictions of first sighting 
+that are far too late.   Experimental data are re quired in this region to improve predictions at high 
+latitudes. 
+From 1996 March, HM Nautical Almanac Office decided to abandon its test based on the Bruin 
+method for one based on the Indian method, using the expression (3.6) since it produced more 
+Tn69x.doc 3 of 14  22 /09 /2004  10:14 AM 
+sensible results for old moonage sightings at high latitudes, which occur at least once a year for 
+latitudes around 55 °.   It also uses the topocentric width of the crescent W' in place of W, which is 
+calculated as follows: 
+ SD = 0·27245π (3.8) 
+ SD' = SD (1 + sin h sin π) (3.9) 
+ W'= SD' (1 − cos ARCL) (3.10) 
+where a dash indicates that a co-ordinate is topocentric, SD is the semi-diameter of the Moon, π is the 
+parallax of the Moon and h is the geocentric altitude of the Moon. 
+0 10 20 30 40
+0
+10
+20
+bi
+mi
+ini
+DAZi
+Comparing Bruin 
+with Maunder and  
+Indian
+x-axis = DAZ 
+y-axis = ARCV
+ 
+Figure 1: Comparison of Maunder, Indian and Bruin methods. 
+4. The concept of best time. 
+If the crescent moon is to be observed as early as possi ble it is important to know when is the best 
+time for making the observation.   If the observation is made too soon after sunset then the twilight 
+sky may be too bright to pick out the faint crescent moon.   The observer has to wait until the contrast 
+between the crescent moon and the twilight sky has in creased sufficiently for the Moon to be seen.   
+Although the twilight sky becomes darker, the bright ness of the crescent moon also diminishes due to 
+atmospheric extinction as the altitude of the setti ng Moon decreases, so there is an optimum time for 
+making the observation.   In critical cases the observation is only possible within a short period of the 
+best time. 
+Soon after sunset the observer will be using daylight vision to detect faint objects.   Objects like 
+stars are best found by looking straight at them.   As the Sun sinks to about 5° below the horizon, 
+night vision takes over.   In this case much fa inter objects can be seen, but it is necessary to use 
+averted vision.   Around this time first magnitude stars begin to pop out of the sky.   In critical cases, 
+with an elongation of say 8° and the Sun 5° below the horizon, and in the perfect geometrical situation 
+with 
+DAZ = 0, there is not much time left to obser ve the Moon before it sets in the murk on the 
+horizon.   It becomes increasingly more difficu lt to observe the crescent as the Danjon limit is 
+approached simply due to these geometrical constraints. 
+Schaefer (1988), (see pages 519 and 520) calculates the best time from the logarithm of the actual 
+total brightness of the Moon divided by the total br ightness of the Moon needed for visibility for the 
+given observing conditions.   I have found it difficu lt to repeat his calculations exactly because the 
+reference he quotes for his theoretical method, Schaefer (1990), is not readily available in most 
+libraries.   Furthermore, in his other papers that are relevant to the subject, he gives insufficient or 
+conflicting information. 
+I have found a simple rule, however, based on Bruin (1977), which is sufficient for most purposes.   
+Bruin (1977) gives a method for calculating the possibility of observing the Moon at any instant after 
+sunset, and the results are given in figure 9 on page 339 of his paper.   He plots a series of curves of 
+visibility of 
+h + s (arc of vision) against s for W = 0'·5, 0'·7, 1', 2' and 3', where 90° − s is the 
+geocentric altitude of the Sun, and h is the geocentric altitude of the Moon.   Hence s is the depression 
+of the Sun below the horizon and h + s = ARCV.   Each of these curves has a minimum, which Bruin 
+Tn69x.doc 4 of 14  22 /09 /2004  10:14 AM 
+says is when the situation is at an optimum.   On the curve for W = 0'·5, he marks the minimum as 
+point C.   If a straight line is drawn through the origin (at h + s = 0° and s = 0°) and through point C 
+(at h + s = 9°, and s = 4°), it is found that this line passes directly through the minima of the series of 
+curves for different W.   Hence at the best time 4 h = 5s.   If Ts is the time of sunset and Tm is the time 
+of moonset, then the best time Tb  is given by 
+ Tb = (5 Ts +4 Tm)/ 9 = Ts + (4/9) Lag (4.1) 
+Provided the derivation of the Bruin curves is sound, they yield, amongst other things, a very simple 
+rule for determining the best time.   It is therefore an important exercise to re-determine Bruin’s figure 
+9 using modern theories for the brightness of the twilight sky as a function of s, (and azimuth of the 
+Sun), the brightness of the Moon as a function of phase, the minimum contrast observable to the 
+human eye for a thin crescent shape, various effect s of the atmosphere, such as seeing and extinction, 
+the effects of age of the observer, and other relevant effects. 
+To this end I first attempted to re-determine figur e 9 in Bruin (1977) using his theories, with the aid 
+of the computer package called MathCad.   I wa nted to extend his curves to a wider range of 
+W, and 
+confirm my result for determining best time.   Unfortunately my attempts failed, because scaling 
+factors have to be applied to make the transforma tions produce sensible results.   In his paper Bruin 
+says he has applied a “Gestalt” factor to obtain his results. 
+From the curves in Figure 1 it appears that for DAZ < 20° Bruin adjusted his results to agree with the 
+Indian method.   Doggett and Schaefer (1994) have made some strong comments about Bruin’s 
+assumptions for his model, and they point out that some of his quantities are orders of magnitude out. 
+In spite of these difficulties Bruin’s method is a ve ry important approach to the problem because in 
+principle it provides answers to many questions that the Maunder and Indian method cannot address.   
+I am therefore making a fresh attempt to calculate  Bruin’s curves using the modern approach of 
+Schaefer. 
+The problem of predicting heliacal rising and setting of stars is similar to the problem of predicting 
+first sighting of the new crescent moon.   Three rele vant papers have been written by Schaefer (1985), 
+(1986) and (1987) on this topic, and I have ma naged to reproduce his work, apart from some 
+inconsistencies between the three papers, which still need sorting out.   A fourth paper by Schaefer 
+(1993a), repeats all the relevant formulae, but again th ere are inconsistencies.   In this last paper he 
+quotes the expression by Allen (1963) for the apparent magnitude of the Moon as a function of phase.   
+This is the remaining piece of information that is n eeded in the calculation to predict first sighting of 
+the new crescent moon. 
+In general, the magnitudes of the stars are fixed, and empirical rules are found for predicting heliacal 
+rising and setting that depend upon magnitude and 
+ARCV, Lockyer (1894).   There is also some 
+dependence upon DAZ, which is fixed for each star. 
+Unlike the stars, the Moon is always near to the Sun at first sighting.   Moreover the apparent 
+magnitude of the Moon depends upon ARCL, which in turn is a function of ARCV and DAZ, and 
+therefore we would expect there to be an empirical rule that is a function of ARCV and DAZ for 
+making the prediction.   The problem reduces to finding an expression for that function.   There is one 
+difference in the calculation that is often overlooked in the literature, a star is a point source, whilst 
+the Moon is a thin crescent. 
+I have to agree with Schaefer that his method is very short, taking only a few lines of programming.   
+I can now produce theoretically the curves 
+ARCV as a function of DAZ, and even predict what 
+happens in daylight.   I could produce and extend the curves of Bruin to find the best time using 
+modern theories, although there are more logical ways of performing this calculation using a 
+computer.   As Schaefer points out, using differe nt extinction coefficients I find an enormous 
+difference between a site at high altitude with a clear dry atmosphere, and one at sea level with a 
+humid or dusty atmosphere, so my empirical approach  must be confined to a specific type of site 
+where altitudes above sea level and extinction factors are confined to within narrow limits. 
+ 
+5. The basic data set of observations for calibrating first visibility parameters. 
+A list of 252 observations of first sighting has b een published by Schaefer, (1988) and by Doggett, 
+and Schaefer, (1994).   The list was later extended to 295 observations by Schaefer (1996).   The list 
+Tn69x.doc 5 of 14  22 /09 /2004  10:14 AM 
+includes cases of both sightings as well as non-sightings.   Even non-sightings provide relevant 
+information for calibration purposes. 
+I have re-calculated these data using my simple rule  for determining the best time, and displayed the 
+set of 295 observations in order of decreasing q in Table 4.   Columns numbered 1 to 18 have the 
+following meaning: 
+1 Number from the original lists. 
+2, 3, 4 Date of observation in the form year, month, day. 
+5 Morning (M) or evening (E) observation. 
+6 Julian Date of astronomical new moon minus 2 400 000 days. 
+7, 8 Latitude and longitude of observation. 
+9, 10, 11 Arc of light (ARCL), arc of vision (ARCV) and relative azimuth (DAZ) at best time. 
+12 Age of the Moon (Age) in hours at best time. 
+13 Time in minutes from sunset to moonset (Lag). 
+14 Parallax of the Moon (π) in minutes of arc.   Semi-diameter = 0·27245 π. 
+15 Topocentric width of the crescent W' in minutes of arc. 
+16 The test parameter (q), which is derived from the Indian method, and is defined in section 6. 
+17 Schaefer’s coded description (BES) of how each observation was made.   If the only character is a 
+“V”, then the Moon was visible to the unaided eye.    An “I” means it was not seen with the unaided 
+eye.   If the first character is followed by (F) th en optical aid was used to find the Moon, which was 
+then spotted with the unaided eye.   If the first ch aracter is followed by (B) or (T) it was visible with 
+binoculars or a telescope, respectively.   In th e second and third papers, the rules were changed as 
+follows:  If the first character is followed by (I) it was invisible with either binoculars or a telescope.   
+If the first character is followed by (V) it was visible with either binoculars or a telescope. 
+18 A prediction (BDY) of how the observation would be made, based on Schaefer’s coded description 
+in column 17, and derived from the value of the test parameter q at the best time of observation.   The 
+methods for setting the empirical limits on q are described in section 6. 
+I found it necessary to reproduce so much of the information concerning the 295 observations, 
+because the original published tables contained so many errors.   For example, in the original list of 
+252 observations, the column containing the Julian Date of the conjunction has the following errors: 
+ No  11 
+for 2401081·171 read 2401082·171 No 117 for 2441038·308 read 2441037·308 
+ No  98 for 2422933·485 read 2422993·485 No 208 for 2427216·422 read 2427216·921 
+ No 115 for 2440741·239 read 2440741·598 No 222 for 2445702·709 read 2445702·719 
+ No 116 for 2440741·239 read 2440741·598   
+Schaefer (1996) gives corrections for No. 44 and 117.    He agrees with Loewinger (1995) that 44 is 
+unreliable and should be deleted, and gives the co rrect conjunction time for 117.   I still found errors 
+in his list of 43 additional observations.   For exam ple the data for No. 285 is for the following day on 
+1991:05:16, and the following significant discrepancies were noticed in the conjunction times: 
+ No 256 
+for 2445702·709 read 2445702·719 
+ No 257 for 2445702·709 read 2445702·719 
+There are other differences in the columns for ARCL, ARCV, DAZ, and Age, some of which can be 
+explained by a different estimate for the best time.   Unfortunately Schaefer did not include his 
+estimate for best time in the original list, and there is no simple way of finding out what it should be.   
+There are also many errors in 
+Lag, which are too frequent to report.   See also the report by Loewinger 
+(1995), for further comments on errors. 
+Tn69x.doc 6 of 14  22 /09 /2004  10:14 AM 
+Table 4: The 295 observations listed in order of decreasing q 
+ No Date JD – Lat Long ARCL ARCV DAZ Age Lag π W' q Vis 
+  y m d  2 400 000 ° ° ° ° ° h m ' '  BES BDY 
+ 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 
+(A) q > +0·216 166 entries 
+ 37 1870 7 25 M 4271·971 38·0 23·7 40·3 31·1 –26·1 −81·2 −173·7 55·4 3·6 +3·730 V V 
+ 73 1879 7 22 E 7549·879 38·0 23·7 42·2 19·1 37·8 81·4 99·3 58·2 4·1 +2·804 V V 
+ 48 1872 9 30 M 5069·146 38·0 23·7 29·3 29·2 –2·4 −60·3 −148·4 54·8 1·9 +2·749 V V 
+ 74 1879 12 11 M 7696·963 38·0 23·7 32·5 25·2 −20·6 −54·7 −145·6 60·9 2·6 +2·665 V V 
+ 75 1879 12 15 E 7696·963 38·0 23·7 30·6 24·4 18·6 53·1 139·9 59·9 2·3 +2·433 V V 
+ 274 1984 10 26 E 45998·008 15·6 35·6 29·7 24·7 16·7 51·8 106·5 59·8 2·2 +2·409 V V 
+ 72 1879 6 22 E 7520·347 38·0 23·7 34·2 21·8 26·5 70·4 120·7 56·5 2·7 +2·359 V V 
+ 71 1879 5 23 E 7490·744 38·0 23·7 28·3 24·1 14·9 60·8 138·2 55·0 1·8 +2·182 V V 
+ 270 1984 8 28 E 45939·310 15·6 35·6 27·1 23·5 13·5 45·2 96·0 61·0 1·8 +2·143 V V 
+ 266 1984 6 1 E 45851·200 15·6 35·6 25·0 24·7 3·6 48·1 111·5 58·0 1·5 +2·100 V V 
+ 285 1991 5 16 E 48390·692 39·0 
+−76·8 26·1 23·1 12·3 44·6 133·6 60·8 1·7 +2·035 V V 
+ 263 1984 4 3 E 45792·007 15·6 35·6 24·5 24·5 0·2 52·4 101·1 55·1 1·4 +2·016 V V 
+ 9 1861 9 7 E 1023·425 38·0 23·7 38·9 13·7 36·5 67·1 68·2 60·4 3·7 +2·014 V V 
+ 70 1878 11 26 E 7312·884 38·0 23·7 30·6 18·7 24·3 54·7 109·3 58·6 2·2 +1·846 V V 
+ 35 1868 6 22 E 3504·115 38·0 23·7 30·2 18·4 24·0 51·8 101·3 60·7 2·3 +1·827 V V 
+ 19 1864 3 9 E 1938·666 38·0 23·7 21·8 21·6 2·3 37·3 107·9 60·1 1·2 +1·637 V V 
+ 284 1991 3 17 E 48331·841 39·0 
+−76·8 21·7 21·7 0·9 39·9 110·5 58·4 1·1 +1·617 V V 
+ 261 1984 3 4 E 45762·272 15·6 35·6 21·3 21·2 1·8 45·9 86·0 54·1 1·0 +1·511 V V 
+ 26 1865 3 28 E 2322·728 38·0 23·7 21·2 20·4 5·8 36·0 102·7 60·9 1·1 +1·496 V V 
+ 245 1989 10 3 E 47799·407 36·1 
+−108·8 34·6 13·4 32·0 75·7 67·0 54·0 2·6 +1·485 V V 
+ 65 1878 1 5 E 6988·086 38·0 23·7 23·6 19·7 13·1 50·1 109·8 54·7 1·2 +1·477 V V 
+ 267 1984 6 30 E 45880·638 15·6 35·6 21·0 20·4 5·0 37·6 90·6 59·3 1·1 +1·461 V V 
+ 276 1984 11 24 E 46027·457 15·6 35·6 22·6 19·5 11·6 40·8 86·6 58·8 1·2 +1·450 V V 
+ 21 1864 6 6 E 2026·986 38·0 23·7 27·0 17·3 20·8 54·8 94·9 55·3 1·6 +1·438 V V 
+ 4 1860 2 23 E 462·318 38·0 23·7 20·7 20·6 2·0 45·3 103·0 54·1 1·0 +1·428 V V 
+ 272 1984 9 26 E 45968·634 15·6 35·6 22·1 18·9 11·5 36·9 76·0 61·0 1·2 +1·385 V V 
+ 254 1983 11 6 E 45643·432 15·6 35·6 21·7 19·1 10·3 41·3 81·5 57·3 1·1 +1·351 V V 
+ 11 1861 11 4 E 1082·172 38·0 23·7 28·4 14·5 24·5 47·9 79·3 60·8 2·0 +1·318 V V 
+ 17 1864 1 10 E 1879·824 38·0 23·7 19·8 19·2 5·0 32·4 102·8 61·2 1·0 +1·295 V V 
+ 32 1866 4 16 E 2706·795 38·0 23·7 20·7 18·2 9·9 34·6 93·0 61·2 1·1 +1·245 V V 
+ 66 1878 6 2 E 7136·575 38·0 23·7 21·0 18·2 10·5 40·7 105·4 57·4 1·0 +1·232 V V 
+ 282 1990 11 19 E 48212·878 39·0 
+−76·8 27·9 15·0 23·6 61·4 87·0 54·0 1·7 +1·231 V V 
+ 244 1989 7 5 E 47710·708 37·4 −121·6 24·3 16·5 17·9 47·2 89·4 56·6 1·4 +1·221 V V 
+ 63 1877 11 7 E 6928·868 38·0 23·7 29·6 13·0 26·6 55·1 73·0 57·2 2·0 +1·189 V V 
+ 207 1933 3 27 E 27157·639 48·6 7·7 19·2 18·6 4·9 39·4 112·6 55·1 0·84 +1·158 V V 
+ 259 1984 2 3 E 45732·491 15·6 35·6 19·0 18·6 4·0 40·4 77·9 54·0 0·80 +1·138 V V 
+ 25 1865 1 28 E 2263·897 38·0 23·7 18·5 18·3 2·3 30·9 94·3 60·6 0·85 +1·138 V V 
+ 57 1875 7 4 E 6072·727 38·0 23·7 21·6 16·7 13·7 37·1 94·0 59·4 1·1 +1·129 V V 
+ 61 1877 3 16 E 6693·620 38·0 23·7 18·5 18·4 1·8 38·4 91·4 55·8 0·79 +1·120 V V 
+ 76 1880 1 10 M 7726·444 38·0 23·7 23·8 15·2 
+−18·4 −41·6 −87·0 60·6 1·4 +1·115 V V 
+ 217 1935 4 4 E 27896·009 48·2 5·1 18·2 17·9 3·6 30·8 109·7 59·6 0·82 +1·077 V V 
+ 24 1864 11 1 E 2175·144 38·0 23·7 23·7 15·2 18·2 48·6 79·6 56·4 1·3 +1·050 V V 
+ 264 1984 5 2 E 45821·657 15·6 35·6 17·8 17·8 0·9 36·7 75·2 56·2 0·73 +1·024 V V 
+ 210 1933 9 18 M 27335·264 48·6 7·7 19·3 17·1 
+−9·1 −37·9 −101·3 56·6 0·87 +1·024 V V 
+ 50 1872 10 4 E 5069·146 38·0 23·7 24·6 14·3 20·1 49·1 70·1 57·0 1·4 +1·016 V V 
+ 8 1861 8 8 E 994·037 38·0 23·7 29·3 10·8 27·3 52·9 52·3 59·4 2·1 +0·984 V V 
+ 168 1986 10 5 E 46707·288 40·8 
+−73·2 28·5 11·2 26·3 52·0 57·7 59·5 2·0 +0·979 V V 
+ 12 1861 12 3 E 1111·596 38·0 23·7 21·7 15·1 15·6 37·4 85·1 60·3 1·2 +0·976 V V 
+ 206 1932 4 7 E 26803·556 50·0 36·2 18·2 17·2 6·1 39·7 110·0 54·0 0·74 +0·965 V V 
+ 60 1876 7 22 E 6456·704 38·0 23·7 22·0 14·2 16·9 37·4 73·9 60·5 1·2 +0·908 V V 
+ 268 1984 7 29 E 45909·994 15·6 35·6 17·3 16·5 5·1 28·8 69·7 60·4 0·75 +0·905 V V 
+ 287 1992 3 5 E 48686·057 39·0 
+−76·8 16·9 16·9 −0·5 34·3 84·4 55·2 0·65 +0·894 V V 
+ 58 1876 2 26 E 6309·764 38·0 23·7 17·3 16·6 5·0 34·5 82·0 57·1 0·71 +0·889 V V 
+ 110 1961 1 17 E 37316·396 34·0 −118·3 16·9 16·3 4·4 28·2 81·3 61·3 0·72 +0·866 V V 
+ 5 1860 6 20 E 580·725 38·0 23·7 20·1 14·7 13·7 37·1 82·1 59·1 1·0 +0·851 V V 
+ 68 1878 7 31 E 7195·403 38·0 23·7 25·2 11·8 22·3 44·4 58·5 60·3 1·6 +0·846 V V 
+ 193 1987 5 29 E 46943·134 39·2 
+−105·5 17·4 16·2 6·4 35·8 96·3 54·5 0·68 +0·839 V V 
+ 14 1862 3 31 E 1229·823 38·0 23·7 16·4 16·4 0·1 33·6 82·4 54·6 0·61 +0·818 V V 
+Table 4: The 295 observations listed in order of decreasing q, continued 
+Tn69x.doc 7 of 14  22 /09 /2004  10:14 AM 
+ No Date JD – Lat Long ARCL ARCV DAZ Age Lag π W' q Vis 
+  y m d  2 400 000 ° ° ° ° ° h m ' '  BES BDY 
+ 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 
+(A) q > +0·216 166 entries continued 
+ 30 1865 10 21 E 2529·185 38·0 23·7 21·7 13·6 16·9 47·7 68·7 54·2 1·0 +0·770 V V 
+ 55 1874 4 17 E 5630·080 38·0 23·7 16·3 15·5 4·8 27·7 79·8 60·8 0·66 +0·762 V V 
+ 51 1872 12 31 E 5157·776 38·0 23·7 19·8 13·6 14·5 33·2 77·3 61·0 1·0 +0·744 V V 
+ 45 1872 6 7 E 4950·641 38·0 23·7 18·0 14·9 10·2 39·0 84·8 54·2 0·73 +0·734 V V 
+ 235 1989 4 4 M 47622·648 41·9 
+−88·7 24·0 11·3 −21·2 −40·4 −56·3 61·1 1·4 +0·733 V V 
+ 257 1984 1 4 E 45702·719 15·6 35·6 16·6 15·5 5·9 34·6 67·8 54·7 0·62 +0·732 V V 
+ 23 1864 9 3 E 2115·756 38·0 23·7 27·0 10·3 24·9 59·1 49·2 54·3 1·6 +0·722 V V 
+ 83 1909 2 21 E 18357·954 51·1 0·0 19·2 13·6 13·6 31·2 86·2 61·3 0·93 +0·713 V V 
+ 53 1873 5 27 E 5304·890 38·0 23·7 16·9 15·1 7·7 32·9 85·3 56·5 0·66 +0·713 V V 
+ 211 1934 3 16 E 27512·006 55·6 33·9 15·9 15·1 4·7 28·4 104·6 58·2 0·61 +0·690 V V 
+ 62 1877 6 12 E 6782·106 38·0 23·7 16·4 14·5 7·7 27·9 83·5 60·1 0·67 +0·658 V V 
+ 283 1990 12 18 E 48242·682 39·0 
+−76·8 19·0 13·6 13·3 42·0 78·3 54·3 0·81 +0·646 V V 
+ 47 1872 9 4 E 5039·537 38·0 23·7 19·7 13·1 14·7 40·4 62·9 55·3 0·88 +0·635 V V 
+ 42 1871 6 19 E 4596·604 38·0 23·7 18·2 13·8 11·9 39·9 77·3 54·4 0·74 +0·629 V V 
+ 34 1867 11 27 E 3296·716 38·0 23·7 16·8 14·4 8·7 34·5 77·0 54·4 0·63 +0·628 V V 
+ 84 1911 6 27 E 19214·057 49·9 2·3 19·2 12·7 14·5 31·4 97·3 60·8 0·93 +0·616 V V 
+ 82 1908 2 3 E 17973·859 56·0 
+−3·2 19·8 12·3 15·6 32·9 95·1 61·0 1·0 +0·603 V V 
+ 64 1877 12 6 E 6958·420 38·0 23·7 21·2 12·0 17·5 41·5 68·5 56·1 1·0 +0·598 V V 
+ 104 1922 4 28 E 23171·710 −33·9 18·5 17·6 13·6 −11·2 35·6 65·3 56·1 0·72 +0·596 V V 
+ 218 1982 4 24 E 45083·354 37·2 −84·1 16·8 13·7 9·7 28·3 68·5 60·4 0·70 +0·595 V V 
+ 248 1990 4 25 E 48006·686 37·7 −121·5 14·6 14·5 0·5 22·9 76·8 61·3 0·54 +0·591 V V 
+ 18 1864 2 8 E 1909·257 53·5 −2·3 14·9 14·4 4·1 23·6 97·4 61·3 0·56 +0·587 V V 
+ 213 1934 5 14 E 27571·021 48·2 5·1 15·8 14·3 6·7 31·4 101·1 55·2 0·57 +0·587 V V 
+ 117 1971 3 27 E 41037·308 51·0 0·0 14·7 14·4 2·9 23·7 90·1 61·0 0·54 +0·578 V V 
+ 27 1865 4 26 E 2352·094 38·0 23·7 16·0 13·9 7·9 27·5 71·0 60·2 0·63 +0·576 V V 
+ 273 1984 10 25 E 45998·008 15·6 35·6 16·0 13·6 8·3 27·4 55·4 60·5 0·64 +0·553 I V 
+ 216 1935 2 4 E 27837·186 48·2 5·1 15·0 13·9 5·5 24·9 85·0 61·3 0·57 +0·547 V V 
+ 89 1918 3 13 E 21665·328 50·2 5·1 14·3 14·2 1·6 22·4 85·4 61·3 0·52 +0·545 V V 
+ 286 1991 9 7 M 48507·960 50·4 
+−4·4 17·1 13·0 −11·2 −30·0 −79·6 59·9 0·73 +0·540 V(V) V 
+ 43 1871 8 17 E 4655·793 38·0 23·7 17·9 12·7 12·6 34·7 63·0 56·7 0·75 +0·527 V V 
+ 236 1989 4 6 E 47622·648 34·0 −107·2 14·0 14·0 −1·2 22·5 66·3 61·1 0·50 +0·510 V V 
+ 88 1916 4 3 E 20956·182 49·4 8·7 14·2 14·1 1·9 26·3 86·7 56·5 0·47 +0·507 V V 
+ 69 1878 10 27 E 7283·458 38·0 23·7 24·4 8·8 22·8 40·9 45·0 60·4 1·5 +0·498 V V 
+ 108 1953 4 14 E 34481·341 51·1 5·3 14·1 13·8 2·9 23·0 92·4 59·9 0·50 +0·497 V(F) V 
+ 249 1990 5 23 M 48035·993 31·6 
+−110·5 15·1 13·2 −7·4 −24·0 −64·5 61·3 0·58 +0·481 V V 
+ 111 1962 4 5 E 37759·324 −25·8 −28·2 15·1 13·2 −7·3 24·4 55·7 60·6 0·57 +0·477 V(F) V 
+ 277 1984 12 23 E 46056·991 15·6 35·6 15·1 13·3 7·2 27·9 58·5 57·5 0·55 +0·472 V V 
+ 29 1865 7 24 E 2440·271 38·0 23·7 23·7 9·4 21·8 47·5 46·3 55·4 1·3 +0·467 V V 
+ 101 1922 2 28 E 23112·283 
+−33·9 18·5 21·2 10·8 −18·2 47·0 48·7 54·1 1·0 +0·466 V V 
+ 212 1934 5 14 E 27571·021 50·0 36·2 14·9 13·4 6·5 29·4 99·6 55·2 0·51 +0·463 V V 
+ 291 1996 1 19 M 50103·036 32·4 −111·0 14·5 13·3 −5·8 −22·9 −64·4 61·3 0·53 +0·463 V(V) V 
+ 112 1965 9 24 M 39028·638 51·1 5·3 13·7 13·6 −1·6 −22·5 −84·0 60·2 0·47 +0·461 V V 
+ 125 1976 12 21 E 43133·589 37·6 −122·5 14·1 13·4 4·4 23·3 72·0 59·8 0·49 +0·457 V V 
+ 165 1980 7 14 E 44432·782 41·4 −70·7 20·9 10·7 18·0 41·9 58·5 55·9 1·0 +0·453 V V 
+ 1 1859 7 1 E 226·113 38·0 23·7 16·4 12·3 10·9 27·6 67·1 61·1 0·68 +0·442 V V 
+ 121 1973 3 5 E 41746·505 40·0 −85·0 13·6 13·5 −1·0 24·0 67·4 58·3 0·44 +0·436 V(F) V 
+ 13 1862 1 1 E 1141·080 37·9 22·9 14·6 13·1 6·4 25·9 70·9 59·3 0·52 +0·436 V V 
+ 219 1983 7 9 M 45526·014 37·2 −84·1 15·4 12·6 −8·9 −26·4 −68·5 60·5 0·59 +0·426 V V 
+ 79 1899 3 12 E 14725·329 52·5 13·3 13·3 13·2 1·6 21·8 83·3 59·5 0·44 +0·402 V V 
+ 214 1934 5 14 E 27571·021 55·6 33·9 15·2 12·7 8·4 30·1 117·4 55·2 0·53 +0·399 V V 
+ 109 1954 3 5 E 34806·633 44·5 
+−88·0 13·2 13·2 0·2 21·1 70·4 61·0 0·44 +0·396 V V 
+ 118 1971 4 25 E 41066·669 39·5 −88·2 13·2 13·2 0·3 21·1 71·0 60·1 0·43 +0·396 V(F) V 
+ 262 1984 4 2 E 45792·007 15·6 35·6 13·4 13·3 1·9 28·1 52·5 54·7 0·41 +0·390 I V 
+ 6 1861 3 12 E 846·067 38·0 23·7 13·4 13·3 −1·6 27·4 64·3 54·0 0·40 +0·386 V V 
+ 90 1919 4 1 E 22049·378 53·9 −1·6 13·5 12·9 4·1 22·2 86·2 61·1 0·46 +0·380 V V 
+ 114 1970 4 6 E 40682·674 48·0 −122·0 13·3 13·0 2·4 23·2 77·8 58·7 0·43 +0·378 V V 
+ 85 1911 8 25 E 19272·677 49·9 2·3 21·5 9·3 19·4 39·0 53·4 58·2 1·1 +0·366 V V 
+ 269 1984 8 27 E 45939·310 15·6 35·6 13·3 12·7 3·8 20·8 50·1 61·2 0·45 +0·354 I V 
+Table 4: The 295 observations listed in order of decreasing q, continued 
+ No Date JD – Lat Long ARCL ARCV DAZ Age Lag π W' q Vis 
+Tn69x.doc 8 of 14  22 /09 /2004  10:14 AM 
+  y m d  2 400 000 ° ° ° ° ° h m ' '  BES BDY 
+ 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 
+(A) q > +0·216 166 entries continued 
+ 208 1933 5 25 E 27216·921 55·6 33·9 15·7 12·1 10·0 32·9 121·0 53·9 0·55 +0·354 V V 
+ 192 1987 4 28 E 46913·566 37·0 −122·0 13·1 13·0 1·6 25·8 67·0 55·7 0·39 +0·353 V V 
+ 146 1978 1 9 E 43517·667 29·7 −98·1 12·8 12·8 0·0 20·3 60·1 61·0 0·42 +0·352 V V 
+ 97 1921 8 4 E 22905·346 −33·9 18·5 12·8 12·8 0·4 20·3 60·9 61·3 0·42 +0·351 V V 
+ 67 1878 7 1 E 7166·022 38·0 23·7 16·1 11·6 11·1 29·8 63·1 58·8 0·63 +0·350 V V 
+ 247 1990 4 25 E 48006·686 41·6 −73·7 12·8 12·8 0·7 19·8 71·5 61·3 0·42 +0·350 I(V) V 
+ 22 1864 8 4 E 2086·106 38·0 23·7 23·8 8·3 22·3 51·3 39·7 54·0 1·3 +0·347 I V 
+ 124 1976 12 21 E 43133·589 29·9 −81·3 12·8 12·7 1·7 20·8 60·5 59·9 0·41 +0·330 V V 
+ 167 1985 1 21 E 46086·603 19·0 −155·0 13·8 12·4 6·1 26·0 53·3 56·0 0·44 +0·320 V V 
+ 80 1900 5 29 E 15168·119 38·7 −0·7 15·3 11·7 10·0 28·9 63·8 57·7 0·56 +0·316 V V 
+ 145 1978 1 9 E 43517·667 30·0 −90·2 12·6 12·6 0·0 19·7 58·8 61·0 0·40 +0·312 V V 
+ 144 1978 1 9 E 43517·667 30·0 −90·2 12·6 12·6 0·0 19·7 58·8 61·0 0·40 +0·312 V(F) V 
+ 221 1983 12 5 E 45673·018 37·2 −84·1 17·0 11·0 12·9 34·3 60·0 55·9 0·66 +0·310 I(V) V 
+ 143 1978 1 9 E 43517·667 30·9 −90·2 12·5 12·5 0·2 19·7 59·4 61·0 0·40 +0·310 V(F) V 
+ 191 1987 4 28 E 46913·566 40·7 −111·9 12·8 12·6 2·4 25·3 69·0 55·8 0·38 +0·305 V V 
+ 215 1934 6 13 E 27600·591 55·6 33·9 19·0 10·1 16·1 41·0 97·1 54·2 0·81 +0·299 V V 
+ 38 1871 2 20 E 4478·076 38·0 23·7 14·5 11·8 8·5 26·7 57·9 56·8 0·49 +0·289 V V 
+ 139 1978 1 9 E 43517·667 27·7 
+−82·7 12·3 12·3 −0·7 19·3 56·1 61·0 0·38 +0·278 V(F) V 
+ 255 1983 12 5 E 45673·018 15·6 35·6 13·4 12·1 5·8 27·0 51·8 56·1 0·42 +0·276 I V 
+ 16 1862 7 28 E 1348·378 38·0 23·7 22·3 8·2 20·8 44·9 39·0 56·2 1·1 +0·275 I V 
+ 115 1970 6 4 E 40741·598 26·3 
+−98·2 12·4 12·4 0·5 23·4 59·6 55·6 0·36 +0·273 V V 
+ 189 1987 4 28 E 46913·566 30·6 −104·0 12·4 12·4 −0·1 24·4 58·3 55·8 0·35 +0·272 V(F) V 
+ 190 1987 4 28 E 46913·566 30·6 −104·0 12·4 12·4 −0·1 24·4 58·3 55·8 0·35 +0·272 V V 
+ 129 1977 12 11 E 43488·233 47·8 20·0 13·9 11·6 7·7 21·8 76·2 61·4 0·49 +0·272 V V 
+ 137 1978 1 9 E 43517·667 33·9 −84·3 12·3 12·2 0·8 19·2 60·2 61·0 0·38 +0·271 V(F) V 
+ 56 1875 6 4 E 6043·432 51·5 −2·6 14·2 11·5 8·4 22·7 96·3 60·8 0·51 +0·270 V V 
+ 116 1970 6 4 E 40741·598 28·0 −97·0 12·4 12·4 0·9 23·4 60·6 55·6 0·35 +0·270 V V 
+ 243 1989 6 4 E 47681·330 50·8 −1·0 14·5 11·5 8·8 25·0 92·6 58·8 0·51 +0·270 V V 
+ 130 1978 1 9 E 43517·667 41·6 −93·6 12·4 12·2 2·7 19·5 67·8 61·0 0·39 +0·269 V V 
+ 141 1978 1 9 E 43517·667 29·9 −81·3 12·2 12·2 −0·2 19·1 57·1 61·0 0·38 +0·268 V V 
+ 140 1978 1 9 E 43517·667 29·9 −81·3 12·2 12·2 −0·2 19·1 57·1 61·0 0·38 +0·268 V V 
+ 123 1976 12 21 E 43133·589 42·0 −91·6 12·9 12·0 4·7 21·0 69·2 59·9 0·41 +0·267 V(F) V 
+ 94 1921 2 8 E 22728·526 34·2 −118·0 12·4 12·3 −1·0 25·3 57·9 54·5 0·35 +0·262 V(F) V 
+ 223 1984 3 3 E 45762·272 37·2 −84·1 14·2 11·7 8·0 29·4 55·9 54·0 0·45 +0·258 I(V) V 
+ 135 1978 1 9 E 43517·667 34·0 −81·1 12·1 12·1 0·7 19·0 59·7 61·0 0·37 +0·255 V(F) V 
+ 136 1978 1 9 E 43517·667 34·0 −81·1 12·1 12·1 0·7 19·0 59·7 61·0 0·37 +0·255 V(F) V 
+ 265 1984 5 31 E 45851·200 15·6 35·6 12·2 12·1 0·9 23·7 52·2 57·5 0·35 +0·246 I V 
+ 188 1987 4 28 E 46913·566 30·3 −97·7 12·2 12·2 −0·2 23·9 57·0 55·8 0·34 +0·244 V V 
+ 134 1978 1 9 E 43517·667 36·0 −79·8 12·1 12·0 1·1 18·8 60·8 61·0 0·37 +0·240 V(F) V 
+ 142 1978 1 9 E 43517·667 43·0 −89·8 12·3 11·9 2·9 19·2 68·3 61·0 0·38 +0·240 V(F) V 
+ 132 1978 1 9 E 43517·667 36·0 −79·8 12·1 12·0 1·1 18·8 60·8 61·0 0·37 +0·240 V(F) V 
+ 133 1978 1 9 E 43517·667 36·0 −79·8 12·1 12·0 1·1 18·8 60·8 61·0 0·37 +0·240 V V 
+ 59 1876 6 22 E 6427·429 38·0 23·7 12·9 11·7 5·4 20·1 66·2 61·3 0·42 +0·239 I V 
+ 138 1978 1 9 E 43517·667 41·9 −87·6 12·2 11·9 2·6 19·1 66·9 61·0 0·38 +0·239 V V 
+ 92 1921 2 8 E 22728·526 35·2 −111·7 12·2 12·2 −0·9 24·8 57·8 54·5 0·34 +0·238 V V 
+ 187 1987 4 28 E 46913·566 41·6 −93·7 12·2 12·0 2·4 24·1 66·6 55·8 0·35 +0·228 I V 
+ 93 1921 2 8 E 22728·526 32·2 −110·0 12·2 12·1 −1·5 24·8 55·2 54·5 0·33 +0·228 V V 
+ 81 1901 4 19 E 15493·401 50·7 −2·8 13·1 11·5 6·4 22·1 73·7 61·3 0·44 +0·227 V V 
+ 126 1976 12 21 E 43133·589 43·8 −87·7 12·7 11·7 5·0 20·7 69·8 59·9 0·40 +0·227 V V 
+ 113 1970 4 6 E 40682·674 44·5 −88·0 12·0 11·9 1·0 20·7 65·6 58·8 0·35 +0·222 V(F) V 
+(B) +0·216 ≥ q > −0·014 68 entries 
+ 131 1978 1 9 E 43517·667 38·9 −76·9 11·9 11·8 1·7 18·5 62·4 61·0 0·36 +0·211 V(B)V(V) 
+ 233 1988 6 13 M 47326·885 37·2 −84·1 12·8 11·6 −5·4 −23·5 −64·5 56·8 0·39 +0·211 I(V) V(V) 
+ 40 1871 5 20 E 4566·948 38·0 23·7 14·2 11·2 8·7 31·2 59·7 54·0 0·45 +0·211 I V(V) 
+ 186 1987 4 28 E 46913·566 30·0 −90·1 11·9 11·9 −0·4 23·4 55·5 55·8 0·33 +0·210 V V(V) 
+ 185 1987 4 28 E 46913·566 40·8 −87·7 12·0 11·8 2·1 23·6 64·6 55·8 0·33 +0·205 I V(V) 
+ 184 1987 4 28 E 46913·566 33·0 −87·4 11·9 11·9 0·3 23·3 57·4 55·8 0·33 +0·204 I V(V) 
+Table 4: The 295 observations listed in order of decreasing q, continued 
+ No Date JD – Lat Long ARCL ARCV DAZ Age Lag π W' q Vis 
+Tn69x.doc 9 of 14  22 /09 /2004  10:14 AM 
+  y m d  2 400 000 ° ° ° ° ° h m ' '  BES BDY 
+ 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 
+(B) +0·216 ≥ q > −0·014 68 entries continued 
+ 164 1979 1 28 E 43901·764 37·8 −122·4 11·9 11·7 2·3 19·6 58·8 61·4 0·36 +0·201 V(F)V(V) 
+ 155 1978 3 9 E 43576·609 50·3 −119·3 12·7 11·5 5·4 23·8 67·6 58·1 0·39 +0·198 V V(V) 
+ 203 1908 5 1 E 18062·149 44·1 3·1 14·7 10·7 10·2 27·7 60·1 57·1 0·51 +0·193 V V(V) 
+ 181 1987 4 28 E 46913·566 33·7 −84·4 11·8 11·8 0·4 23·1 57·5 55·8 0·32 +0·192 I V(V) 
+ 100 1922 1 29 E 23082·492 −33·9 18·5 19·5 8·8 −17·4 42·4 40·5 54·0 0·85 +0·191 I V(V) 
+ 77 1881 3 30 E 8169·440 51·5 −2·6 11·8 11·7 1·6 20·7 73·1 57·8 0·33 +0·189 V V(V) 
+ 183 1987 4 28 E 46913·566 42·7 −84·5 12·0 11·7 2·5 23·5 66·1 55·8 0·33 +0·188 V V(V) 
+ 182 1987 4 28 E 46913·566 42·7 −84·5 12·0 11·7 2·5 23·5 66·1 55·8 0·33 +0·188 V V(V) 
+ 177 1987 4 28 E 46913·566 36·2 −81·7 11·8 11·7 1·0 23·0 59·1 55·8 0·32 +0·183 V(F)V(V) 
+ 178 1987 4 28 E 46913·566 36·2 −81·7 11·8 11·7 1·0 23·0 59·1 55·8 0·32 +0·183 V V(V) 
+ 176 1987 4 28 E 46913·566 36·2 −81·7 11·8 11·7 1·0 23·0 59·1 55·8 0·32 +0·183 I V(V) 
+ 105 1922 5 27 E 23201·253 −33·9 18·5 12·3 11·4 −4·5 22·1 56·4 57·3 0·36 +0·179 V V(V) 
+ 107 1942 12 8 E 30701·584 40·7 −74·0 12·6 11·1 5·8 19·9 61·9 61·2 0·40 +0·172 V(F)V(V) 
+ 180 1987 4 28 E 46913·566 28·0 −82·5 11·7 11·6 −0·8 22·8 52·8 55·8 0·31 +0·171 I V(V) 
+ 179 1987 4 28 E 46913·566 26·7 −81·8 11·6 11·6 −1·1 22·8 51·8 55·8 0·31 +0·164 V(F)V(V) 
+ 173 1987 4 28 E 46913·566 38·9 −77·1 11·7 11·6 1·5 22·8 60·8 55·8 0·31 +0·163 I V(V) 
+ 174 1987 4 28 E 46913·566 38·9 −77·1 11·7 11·6 1·5 22·8 60·8 55·8 0·31 +0·163 V(F)V(V) 
+ 175 1987 4 28 E 46913·566 38·9 −77·1 11·7 11·6 1·5 22·8 60·8 55·8 0·31 +0·163 V(F)V(V) 
+ 170 1987 4 28 E 46913·566 38·9 −77·0 11·6 11·5 1·5 22·8 60·8 55·8 0·31 +0·163 V(F)V(V) 
+ 171 1987 4 28 E 46913·566 38·9 −77·1 11·7 11·6 1·5 22·8 60·8 55·8 0·31 +0·163 I V(V) 
+ 172 1987 4 28 E 46913·566 38·9 −77·1 11·7 11·6 1·5 22·8 60·8 55·8 0·31 +0·163 I(B) V(V) 
+ 209 1933 8 20 M 27305·741 48·6 7·7 12·6 11·2 −5·6 −25·8 −70·0 55·5 0·36 +0·161 V V(V) 
+ 28 1865 6 24 E 2410·832 38·0 23·7 18·6 8·7 16·4 34·2 44·8 57·1 0·81 +0·161 I V(V) 
+ 99 1921 12 30 E 23052·735 −33·9 18·5 18·0 9·1 −15·5 36·7 44·1 54·7 0·73 +0·155 I V(V) 
+ 204 1911 1 31 E 19066·906 51·0 −0·9 16·4 9·7 13·3 31·6 65·2 56·6 0·63 +0·154 V V(V) 
+ 152 1978 3 9 E 43576·609 41·6 −93·6 11·8 11·3 3·3 22·1 56·9 58·1 0·33 +0·153 V V(V) 
+ 153 1978 3 9 E 43576·609 41·6 −93·6 11·8 11·3 3·3 22·1 56·9 58·1 0·33 +0·153 V V(V) 
+ 151 1978 3 9 E 43576·609 40·5 −89·0 11·6 11·2 3·0 21·7 55·4 58·2 0·33 +0·139 V V(V) 
+ 154 1978 3 9 E 43576·609 40·5 −89·0 11·6 11·2 3·0 21·7 55·4 58·2 0·33 +0·139 V V(V) 
+ 202 1885 12 7 E 9882·053 50·6 5·7 13·5 10·7 8·3 26·8 75·3 54·6 0·41 +0·136 V V(V) 
+ 205 1920 4 19 E 22433·405 43·5 7·0 11·9 10·9 4·8 21·0 59·5 60·2 0·36 +0·126 V V(V) 
+ 163 1979 1 28 E 43901·764 47·6 
+−122·3 11·7 10·9 4·2 19·2 65·5 61·4 0·35 +0·116 V(F)V(V) 
+ 2 1859 10 27 E 343·523 38·0 23·7 21·4 6·8 20·3 39·2 33·3 57·5 1·1 +0·109 V V(V) 
+ 87 1915 3 16 E 20572·321 49·4 8·7 11·2 11·0 1·7 22·3 63·9 55·2 0·29 +0·094 V V(V) 
+ 31 1866 1 17 E 2618·359 38·0 23·7 11·0 11·0 0·5 19·3 56·3 57·6 0·29 +0·093 I V(V) 
+ 91 1921 2 8 E 22728·526 42·3 
+−71·1 11·0 11·0 0·1 21·9 57·6 54·5 0·27 +0·081 V V(V) 
+ 78 1889 11 22 M 11329·573 50·9 4·2 11·5 10·6 −4·3 −19·1 −71·3 60·0 0·33 +0·079 V V(V) 
+ 290 1995 6 28 E 49896·534 −30·1 −71·0 10·9 10·9 −0·2 21·5 51·5 54·2 0·27 +0·075 V V(V) 
+ 33 1867 2 5 E 3002·261 38·0 23·7 11·0 10·8 1·6 22·0 53·6 56·1 0·28 +0·071 I V(V) 
+ 128 1977 11 10 M 43458·800 30·7 −104·0 10·7 10·7 −0·7 −18·3 −48·4 60·4 0·29 +0·062 V(F)V(V) 
+ 156 1978 3 9 E 43576·609 41·3 −72·9 11·0 10·7 2·9 20·6 52·9 58·2 0·29 +0·062 V(F)V(V) 
+ 149 1978 3 9 E 43576·609 41·3 −72·9 11·0 10·7 2·9 20·6 52·9 58·2 0·29 +0·062 V V(V) 
+ 150 1978 3 9 E 43576·609 42·7 −73·8 11·1 10·6 3·2 20·7 53·9 58·2 0·30 +0·058 V V(V) 
+ 148 1978 3 9 E 43576·609 42·7 −73·8 11·1 10·6 3·2 20·7 53·9 58·2 0·30 +0·058 V(F)V(V) 
+ 127 1977 2 18 E 43192·651 42·7 −83·6 10·7 10·7 0·4 20·0 55·5 56·7 0·27 +0·057 V(F)V(V) 
+ 201 1987 6 26 E 46972·733 37·0 −122·0 11·3 10·6 4·0 22·4 58·8 54·0 0·29 +0·055 V V(V) 
+ 200 1987 6 26 E 46972·733 33·5 −112·1 11·0 10·6 2·9 21·5 55·3 54·0 0·27 +0·043 V V(V) 
+ 161 1979 1 28 E 43901·764 38·7 −90·3 10·6 10·5 1·9 17·3 52·9 61·4 0·29 +0·038 V(B)V(V) 
+ 159 1979 1 28 E 43901·764 29·7 −82·4 10·5 10·5 0·1 17·1 46·9 61·4 0·28 +0·034 V(B)V(V) 
+ 162 1979 1 28 E 43901·764 42·0 −93·6 10·7 10·4 2·6 17·5 55·5 61·4 0·29 +0·033 V V(V) 
+ 158 1979 1 28 E 43901·764 29·9 −81·3 10·4 10·4 0·1 17·0 46·8 61·4 0·28 +0·028 V V(V) 
+ 160 1979 1 28 E 43901·764 42·0 −91·7 10·6 10·3 2·5 17·3 55·2 61·4 0·29 +0·024 V(B)V(V) 
+ 197 1987 6 26 E 46972·733 30·0 −100·0 10·6 10·4 1·8 20·5 51·6 54·0 0·25 +0·014 I V(V) 
+ 106 1931 8 13 M 26567·352 48·6 7·7 10·5 10·3 −2·0 −16·6 −66·4 60·1 0·27 +0·010 V(T)V(V) 
+ 230 1988 1 19 E 47179·727 32·2 −111·0 12·2 9·7 7·4 19·6 46·3 61·3 0·38 +0·010 I(V) V(V) 
+ 260 1984 3 3 E 45762·272 15·6 35·6 10·9 10·3 3·6 21·5 39·9 54·0 0·27 +0·007 I V(V) 
+Table 4: The 295 observations listed in order of decreasing q, continued 
+ No Date JD – Lat Long ARCL ARCV DAZ Age Lag π W' q Vis 
+  y m d  2 400 000 ° ° ° ° ° h m ' '  BES BDY 
+Tn69x.doc 10 of 14  22 /09 /2004  10:14 AM 
+ 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 
+(B) +0·216 ≥ q > −0·014 68 entries continued 
+ 199 1987 6 26 E 46972·733 40·7 −111·9 11·1 10·2 4·6 21·9 60·3 54·0 0·28 +0·003 V(B)V(V) 
+ 147 1978 3 9 E 43576·609 45·1 −64·2 10·7 10·2 3·5 20·0 53·5 58·2 0·28 +0·002 V V(V) 
+ 86 1913 11 28 E 20099·570 −33·9 18·5 10·3 10·3 0·0 16·4 53·1 58·7 0·26 −0·001 V V(V) 
+ 198 1987 6 26 E 46972·733 39·8 −105·0 10·9 10·1 4·2 21·4 58·8 54·0 0·27 −0·010 I V(V) 
+ 251 1990 5 24 E 48035·993 34·2 −118·1 10·1 10·1 0·7 15·4 51·9 61·2 0·26 −0·014 I(V) V(V) 
+ 252 1990 5 24 E 48035·993 34·2 −118·1 10·1 10·1 0·7 15·4 51·9 61·2 0·26 −0·014 V(V)V(V) 
+(C) −0·014 ≥ q > −0·160 26 entries 
+ 36 1869 5 12 E 3829·172 38·0 23·7 13·5 9·1 10·0 25·6 45·8 56·4 0·42 −0·018 I V(F) 
+ 220 1983 11 5 E 45643·432 37·2 −84·1 13·1 8·9 9·6 24·5 43·6 57·8 0·41 −0·041 I(V) V(F) 
+ 246 1990 4 24 M 48006·686 41·6 −73·7 12·1 9·1 −7·9 −18·8 −46·0 61·1 0·37 −0·048 I(V) V(F) 
+ 10 1861 10 5 E 1052·791 38·0 23·7 20·2 5·5 19·4 33·2 24·4 61·1 1·0 −0·048 I V(F) 
+ 46 1872 7 6 E 4980·267 38·0 23·7 11·4 9·6 6·1 23·8 51·9 53·9 0·29 −0·049 I V(F) 
+ 238 1989 5 5 E 47651·993 39·7 −105·5 9·8 9·8 −0·6 14·6 53·0 60·4 0·24 −0·053 I(V) V(F) 
+ 228 1987 6 26 E 46972·733 37·2 −84·1 10·3 9·8 3·1 19·8 54·3 54·0 0·24 −0·054 I(V) V(F) 
+ 250 1990 5 24 E 48035·993 31·6 −110·5 9·8 9·8 0·0 14·8 48·2 61·2 0·24 −0·054 I(V) V(F) 
+ 49 1872 10 3 E 5069·146 38·0 23·7 12·8 9·0 9·1 24·9 41·5 56·5 0·38 −0·056 I V(F) 
+ 196 1987 6 26 E 46972·733 42·7 −84·5 10·5 9·5 4·4 20·2 58·8 54·0 0·24 −0·083 V(B)V(F) 
+ 157 1979 1 27 M 43901·764 35·2 −111·7 10·4 9·2 −4·8 −16·2 −44·2 61·4 0·27 −0·093 V(B)V(F) 
+ 52 1873 4 27 E 5275·447 38·0 23·7 10·2 9·2 4·4 18·8 45·7 58·5 0·25 −0·106 I V(F) 
+ 120 1972 3 15 E 41391·983 35·5 −117·6 9·6 9·3 −2·6 14·7 42·0 60·8 0·23 −0·110 I(B) V(F) 
+ 119 1972 3 15 E 41391·983 35·5 −117·6 9·6 9·3 −2·6 14·7 42·0 60·8 0·23 −0·110 V(B)V(F) 
+ 225 1984 11 23 E 46027·457 34·0 −84·0 13·3 8·0 10·7 23·8 38·9 59·3 0·44 −0·123 I(V) V(F) 
+ 237 1989 5 5 E 47651·993 43·0 −85·7 9·2 9·2 −0·3 13·4 52·8 60·4 0·21 −0·128 I(V) V(F) 
+ 239 1989 5 5 E 47651·993 42·7 −84·8 9·2 9·2 −0·4 13·3 52·2 60·4 0·21 −0·133 I(V) V(F) 
+ 240 1989 5 5 E 47651·993 42·7 −84·8 9·2 9·2 −0·4 13·3 52·2 60·4 0·21 −0·133 I(I) V(F) 
+ 96 1921 2 8 E 22728·526 38·8 −9·1 9·3 9·2 −1·3 17·8 44·9 54·4 0·20 −0·141 I V(F) 
+ 234 1988 6 14 E 47326·885 37·2 −84·1 9·3 9·2 1·6 16·1 50·6 55·9 0·20 −0·141 I(I) V(F) 
+ 241 1989 5 5 E 47651·993 30·3 −97·0 9·4 9·0 −2·5 13·6 41·7 60·4 0·22 −0·146 I(V) V(F) 
+ 224 1984 5 1 E 45821·657 37·2 −84·1 10·2 8·8 5·1 21·0 43·3 55·8 0·24 −0·153 I(I) V(F) 
+ 289 1995 1 1 E 49718·956 33·0 −106·0 9·1 9·0 −0·3 13·5 43·2 60·2 0·20 −0·153 I(V) V(F) 
+ 95 1921 2 8 E 22728·526 36·5 −6·2 9·2 9·1 −1·7 17·7 42·8 54·4 0·19 −0·155 I V(F) 
+ 122 1973 7 1 E 41863·987 −44·0 170·5 10·6 8·5 −6·3 17·9 50·5 61·1 0·28 −0·156 I(V) V(F) 
+ 102 1922 3 29 E 23142·043 −33·9 18·5 12·9 8·0 −10·2 28·0 34·7 54·7 0·38 −0·157 I V(F) 
+(D) −0·160 ≥ q > −0·232 14 entries 
+ 44 1871 9 14 M 4685·298 38·0 23·7 9·3 8·9 2·6 −15·4 −42·2 57·1 0·21 −0·163 V I(V) 
+ 281 1990 5 24 E 48035·993 35·6 −83·5 8·9 8·9 0·2 13·2 46·2 61·2 0·20 −0·164 I(V) I(V) 
+ 39 1871 4 20 E 4537·295 38·0 23·7 11·1 8·4 7·2 22·3 40·1 54·4 0·28 −0·175 I I(V) 
+ 253 1983 11 5 E 45643·432 15·6 35·6 9·3 8·8 3·0 17·0 34·4 58·0 0·21 −0·178 I I(V) 
+ 294 1996 1 20 E 50103·036 34·1 −118·3 8·9 8·8 −1·6 12·6 41·0 61·2 0·20 −0·184 I(V) I(V) 
+ 295 1996 1 20 E 50103·036 34·1 −118·3 8·9 8·8 −1·6 12·6 41·0 61·2 0·20 −0·184 I(I) I(V) 
+ 15 1862 4 29 E 1259·477 38·0 23·7 8·9 8·9 0·2 18·1 44·6 54·1 0·18 −0·189 I I(V) 
+ 166 1981 7 30 M 44816·662 42·3 −71·3 10·1 8·3 −5·8 −18·6 −45·2 59·0 0·25 −0·205 I I(V) 
+ 293 1996 1 20 E 50103·036 32·8 −113·2 8·7 8·6 −1·8 12·3 39·2 61·2 0·19 −0·208 I(V) I(V) 
+ 98 1921 10 31 E 22993·485 −33·9 18·5 9·8 8·3 −5·3 17·9 37·8 58·1 0·23 −0·213 I I(V) 
+ 292 1996 1 20 E 50103·036 32·4 −111·0 8·7 8·5 −1·9 12·2 38·6 61·2 0·19 −0·219 I(V) I(V) 
+ 280 1990 2 25 E 47947·872 35·6 −83·5 8·5 8·5 −0·6 14·8 38·3 59·4 0·18 −0·222 I(I) I(V) 
+ 278 1990 2 25 E 47947·872 35·6 −83·5 8·5 8·5 −0·6 14·8 38·3 59·4 0·18 −0·222 V(V) I(V) 
+ 279 1990 2 25 E 47947·872 35·6 −83·5 8·5 8·5 −0·6 14·8 38·3 59·4 0·18 −0·222 I(V) I(V) 
+(E) −0·232 ≥ q > −0·293 4 entries 
+ 271 1984 9 25 E 45968·634 15·6 35·6 8·4 8·2 1·7 12·5 30·5 61·4 0·18 −0·248 I I(I) 
+ 20 1864 5 6 E 1997·510 39·6 26·2 9·1 7·8 4·7 17·3 39·5 57·6 0·20 −0·283 I I(I) 
+ 288 1992 4 2 M 48715·710 19·8 −155·5 8·1 8·1 −0·7 −13·0 −30·9 55·7 0·15 −0·284 I(I) I(I) 
+ 226 1985 4 20 E 46175·724 37·2 −84·1 8·7 7·9 3·6 19·2 37·5 54·0 0·17 −0·287 I(I) I(I) 
+ 
+ 
+Tn69x.doc 11 of 14  22 /09 /2004  10:14 AM 
+Table 4: The 295 observations listed in order of decreasing q, continued 
+ No Date JD – Lat Long ARCL ARCV DAZ Age Lag π W' q Vis 
+  y m d  2 400 000 ° ° ° ° ° h m ' '  BES BDY 
+ 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 
+(F) −0·293≥ q 17 entries 
+ 275 1984 11 23 E 46027·457 15·6 35·6 9·2 7·6 5·2 16·3 30·4 59·5 0·21 −0·296 I I 
+ 7 1861 8 7 E 994·037 38·0 23·7 16·0 5·0 15·2 28·7 21·4 59·0 0·63 −0·316 I I 
+ 231 1988 4 16 E 47268·001 37·2 −84·1 7·7 7·6 −1·2 12·4 35·9 59·2 0·15 −0·330 I(I) I 
+ 258 1984 2 2 E 45732·491 15·6 35·6 8·6 7·4 4·5 16·0 29·0 54·1 0·17 −0·340 I I 
+ 169 1986 12 31 E 46795·633 39·0 −77·0 12·4 6·0 10·8 19·0 31·7 61·3 0·39 −0·348 I(B) I 
+ 232 1988 5 15 M 47297·425 37·2 −84·1 7·7 7·1 −2·8 −12·0 −34·8 58·2 0·14 −0·383 I(I) I 
+ 54 1873 12 20 E 5512·285 38·0 23·7 11·6 5·4 10·3 20·5 27·4 58·3 0·33 −0·447 I I 
+ 3 1860 1 23 E 432·512 38·0 23·7 7·1 6·3 3·2 15·6 30·6 54·2 0·11 −0·482 I I 
+ 242 1989 6 3 E 47681·330 19·8 −155·5 7·0 6·3 −3·1 9·2 25·8 59·2 0·12 −0·484 I(I) I 
+ 222 1984 1 3 E 45702·719 37·2 −84·1 8·7 5·1 7·1 17·4 24·9 54·9 0·17 −0·565 I(I) I 
+ 227 1987 4 27 M 46913·566 37·2 −84·1 7·6 5·3 −5·5 −15·0 −22·8 56·6 0·14 −0·573 I(I) I 
+ 41 1871 6 18 E 4596·604 38·0 23·7 7·1 5·4 4·5 15·5 26·9 54·1 0·11 −0·574 I I 
+ 103 1922 4 27 E 23171·710 −33·9 18·5 6·1 5·5 −2·6 11·3 23·4 55·6 0·09 −0·576 I I 
+ 229 1987 9 23 E 47061·630 37·2 −84·1 9·9 4·2 9·0 20·5 16·7 55·9 0·23 −0·620 I(I) I 
+ 194 1987 6 25 M 46972·733 −30·1 −71·0 9·6 4·2 8·6 −18·1 −18·1 54·3 0·21 −0·632 I(B) I 
+ 195 1987 6 26 E 46972·733 −30·1 −71·0 9·0 4·0 −8·0 16·4 16·8 54·0 0·18 −0·671 I(B) I 
+ 256 1984 1 3 E 45702·719 15·6 35·6 5·5 4·2 3·6 10·2 15·3 55·0 0·07 −0·720 I I 
+6. Derivation of the q-test. 
+The visibility test parameter q is based on the Indian method, which is defined discretely by Table 2 
+and continuously by inequality (3.6).   The parameter q is calculated at the best time from the equation 
+ q = (ARCV − (11·8371 − 6·3226 W' + 0·7319 W' 2 − 0·1018 W' 3 )) / 10 (6.1) 
+where W' is the topocentric width of the crescent, and q has been scaled by a factor of 10 to confine it 
+roughly to the range –1 to +1.   (Note the use of the topocentric width of the crescent.) 
+The values of q have been calculated for the 295 observations  referred to in section 5, and the results 
+are listed in Table 4 in order of decreasing q.   Table 4 has also been partitioned into six ranges of q.   
+These ranges in the q-test have been calibrated empirically by comparing the visibility code Schaefer 
+used for the 295 observational records, with a si milar code derived from the calculated value of  q.   It 
+has also been found necessary to use theoretical arguments to obtain some of the limiting values for q.   
+Table 5 lists the six criteria by type, A to F, by range in q and by visibility code. 
+ Table 5: The q-test criteria. 
+ Criterion Range Remarks Visibility Code 
+ (A) q > +0·216 Easily visible ( ARCL ≥ 12°) V 
+ (B) +0·216 ≥ q > −0·014 Visible under perfect conditions V(V) 
+ (C) −0·014 ≥ q > −0·160 May need optical aid to find crescent V(F) 
+ (D) −0·160 ≥ q > −0·232 Will need optical aid to find crescent I(V) 
+ (E) −0·232 ≥ q > −0·293 Not visible with a telescope ARCL ≤ 8·5° I(I) 
+ (F) −0·293 ≥ q Not visible, below Danjon limit, ARCL ≤ 8° I 
+The limiting values of q were chosen for the six criteria A to F for the following reasons: 
+(A) A lower limit is required to separate observations  that are trivial from those that have some 
+element of difficulty.   After some experimentation, it was found that the ideal situation ARCL = 
+12° and DAZ = 0° produces a sensible cut-off point, for which q = +0·216.   To avoid ambiguities, 
+the constant geocentric quantity W defined by equation (3.4), that was adopted by Bruin for the 
+crescent width, was used to calculate q from equation (6.1) instead of W'. 
+There are 166 examples in Table 4 when q exceeds this value, and in general it should be very easy 
+to see the Moon in these cases, provided there is no obscuring cloud in the sky. 
+(B) From observers reports it has been found that, in general, q = 0 is close to the lower limit for 
+first visibility under perfect atmospheric conditions at sea level, without requiring optical aid.   
+Table 4 is used to set this lower limit for visibility more precisely.   From inspection of Table 4, 
+Tn69x.doc 12 of 14  22 /09 /2004  10:14 AM 
+the significance of q = 0 can be seen, but q = –0·014 is another possible cut-off value.   There are 
+68 cases in Table 4 with q in this range. 
+(C) Table 4 was used to find the cut-off point when  optical aid is always needed to find the crescent 
+moon by matching the q-test visibility code with Schaefer’s code.   The rounded value of q = –
+0·160 was chosen for the cut-off criterion.   Entry number 44, the first entry in the next group, was 
+ignored because it is false.   In Table 4 there are 26 cases that satisfy this criterion. 
+(D) In this case Table 4 has too few entri es from which to estimate a lower limit for q.   The 
+situation is made worse by the fact that where there is an entry, in most cases, the Moon was not 
+seen even with optical aid. In fact it is rare for the crescent to be observed below an apparent 
+elongation of about 7°·5, see Fatoohi et al (1998). Table 4 has 17 cases.   This is the current limit 
+below which it is not possible to see the thin crescent moon with a telescope. 
+Allowing 1° for horizontal parallax of the Moon, and ignoring the effect of refraction, for an 
+apparent elongation of 7°·5, 
+ARCL = 8°·5.   If DAZ = 0° this corresponds to a lower limit of  
+q = –0·232.   Without good finding telescopes and pos itional information, observers are unlikely to 
+see the crescent below this limit.   The only sighting that was seen both optically and visually near 
+this limit was No. 278 for which q = –0·222.   It is an important observation because it is the 
+observation with the smallest elongation, see Table 6.   If the Moon were observed near this 
+elongation and it was also at or near perigee, 
+Age would be about 12 hours. 
+(E) There is a theoretical cut-off point when the apparent elongation of the Moon from the Sun is 7°, 
+known as the Danjon limit.   This limit is obtained by extrapolating observations made at larger 
+elongations. Allowing 1° for horizontal parallax of the Moon, and ignoring the effect of refraction, 
+an apparent elongation of 7° is equivalent to ARCL = 8°.   With ARCL = 8°and DAZ = 0° the 
+corresponding lower limit on q is –0·293. 
+(F)  In Table 4 there are only 17 cases in this range of q, but three of them (169, 194 and 195) 
+contradict the q-test, in particular, 194 and 195 are anomal ous observations.   The main reason for 
+the discrepancy must be due to the extremely clear atmosphere experienced on high altitude 
+mountain sites.   The elongations, however, are well above the Danjon limit, and since 
+ARCV is 
+about 4°, the observations were probably made us ing daylight vision.   These observations show 
+that the curve q = 0 needs modifying for high altitude observations.   No 169 was made at ARCL = 
+12°·4, and width W' = 0'·39, which are both large.   Since ARCV = 6°, it should have been possible 
+to make the observation.   This observation shows also that the curve q = 0 needs modifying when 
+the atmospheric conditions are so perfect. 
+Earliest sightings are mentioned in the literature, by Schaefer et al (1993b).   For example, No. 252 is 
+type B and Nos. 239, 237 and 241 are type C.   None  of these observations were made at such a small 
+elongation as No. 278 of type D, for which
+ W'  = 0'·18.   Table 6 lists the first fifty of the 295 
+observations in order of increasing crescent width, W', which is correlated with increasing elongation.   
+Note that the fifteenth observation No. 278 is the first observation designated type V(V) according to 
+Schaefer’s coding.   Observation No. 195 is thir teenth on the list, so based on the small crescent 
+width, it was a very sharp observation indeed. 
+Many people assume that the place of earliest sighting of the the new crescent moon, given some 
+criterion such as 
+Lag = 50 minutes, will be the most easterly place that the observation can be made 
+from.   This assumption is fallacious.   In an ideal situation, earliest sighting occurs at a place where a 
+first sighting parameter such as Lag or q takes a specific value and in addition DAZ = 0.   It is easy to 
+show that in general the place on the parabolic cu rve on the surface of the Earth where the parameter 
+is a constant will not be the most easterly point on the curve.   At the place of earliest sighting the line 
+of constant altitude of the Sun is tangential to the parabolic curve (because DAZ = 0), which leaves the 
+most easterly point in daylight, except in rare cases when the declination of the Sun is zero and the 
+tangent will then be at the most easterly point. 
+The list of 295 observations in Table 4 shows bias.   For example there is a concentration on early 
+sightings, which occur when 
+DAZ ≈ 0°  and ARCL ≈ ARCV.   Cases when ARCL ≈ DAZ and ARCV is 
+small, which regularly occur at high latitudes, and th e Moon is first seen in daylight, are rare.   In 
+other words the list of 295 observations concentr ates on young moonage sightings at low latitudes, 
+and ignores old moonage sightings at high latitudes. 
+Tn69x.doc 13 of 14  22 /09 /2004  10:14 AM 
+In fact there are only nine cases for latitude > 50° where ARCL/ARCV > 1·2.   Three of these 82, 204 
+and 215, have ratios larger than 1.6, which makes th em more interesting.   There are no contradictory 
+cases, but the sample is too small to be helpful for calibration purposes. 
+Table 6: The first fifty entries of Table 5 listed in order of increasing W' 
+ No Date JD – Lat Long ARCL ARCV DAZ Age Lag π W' q Vis 
+  y m d  2 400 000 ° ° ° ° ° h m ' '  BES BDY 
+ 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 
+ 256 1984 1 3 E 45702·719 15·6 35·6 5·5 4·2 3·6 10·2 15·3 55·0 0·07 −0·720 I I 
+ 103 1922 4 27 E 23171·710 −33·9 18·5 6·1 5·5 −2·6 11·3 23·4 55·6 0·09 −0·576 I I 
+ 3 1860 1 23 E 432·512 38·0 23·7 7·1 6·3 3·2 15·6 30·6 54·2 0·11 −0·482 I I 
+ 41 1871 6 18 E 4596·604 38·0 23·7 7·1 5·4 4·5 15·5 26·9 54·1 0·11 −0·574 I I 
+ 242 1989 6 3 E 47681·330 19·8 −155·5 7·0 6·3 −3·1 9·2 25·8 59·2 0·12 −0·484 I(I) I 
+ 227 1987 4 27 M 46913·566 37·2 −84·1 7·6 5·3 −5·5 −15·0 −22·8 56·6 0·14 −0·573 I(I) I 
+ 232 1988 5 15 M 47297·425 37·2 −84·1 7·7 7·1 −2·8 −12·0 −34·8 58·2 0·14 −0·383 I(I) I 
+ 231 1988 4 16 E 47268·001 37·2 −84·1 7·7 7·6 −1·2 12·4 35·9 59·2 0·15 −0·330 I(I) I 
+ 288 1992 4 2 M 48715·710 19·8 −155·5 8·1 8·1 −0·7 −13·0 −30·9 55·7 0·15 −0·284 I(I) I(I) 
+ 222 1984 1 3 E 45702·719 37·2 −84·1 8·7 5·1 7·1 17·4 24·9 54·9 0·17 −0·565 I(I) I 
+ 258 1984 2 2 E 45732·491 15·6 35·6 8·6 7·4 4·5 16·0 29·0 54·1 0·17 −0·340 I I 
+ 226 1985 4 20 E 46175·724 37·2 −84·1 8·7 7·9 3·6 19·2 37·5 54·0 0·17 −0·287 I(I) I(I) 
+ 195 1987 6 26 E 46972·733 −30·1 −71·0 9·0 4·0 −8·0 16·4 16·8 54·0 0·18 −0·671 I(B) I 
+ 271 1984 9 25 E 45968·634 15·6 35·6 8·4 8·2 1·7 12·5 30·5 61·4 0·18 −0·248 I I(I) 
+ 278 1990 2 25 E 47947·872 35·6 −83·5 8·5 8·5 −0·6 14·8 38·3 59·4 0·18 −0·222 V(V) I(V) 
+ 279 1990 2 25 E 47947·872 35·6 −83·5 8·5 8·5 −0·6 14·8 38·3 59·4 0·18 −0·222 I(V) I(V) 
+ 280 1990 2 25 E 47947·872 35·6 −83·5 8·5 8·5 −0·6 14·8 38·3 59·4 0·18 −0·222 I(I) I(V) 
+ 15 1862 4 29 E 1259·477 38·0 23·7 8·9 8·9 0·2 18·1 44·6 54·1 0·18 −0·189 I I(V) 
+ 95 1921 2 8 E 22728·526 36·5 −6·2 9·2 9·1 −1·7 17·7 42·8 54·4 0·19 −0·155 I V(F) 
+ 292 1996 1 20 E 50103·036 32·4 −111·0 8·7 8·5 −1·9 12·2 38·6 61·2 0·19 −0·219 I(V) I(V) 
+ 293 1996 1 20 E 50103·036 32·8 −113·2 8·7 8·6 −1·8 12·3 39·2 61·2 0·19 −0·208 I(V) I(V) 
+ 281 1990 5 24 E 48035·993 35·6 −83·5 8·9 8·9 0·2 13·2 46·2 61·2 0·20 −0·164 I(V) I(V) 
+ 20 1864 5 6 E 1997·510 39·6 26·2 9·1 7·8 4·7 17·3 39·5 57·6 0·20 −0·283 I I(I) 
+ 289 1995 1 1 E 49718·956 33·0 −106·0 9·1 9·0 −0·3 13·5 43·2 60·2 0·20 −0·153 I(V) V(F) 
+ 234 1988 6 14 E 47326·885 37·2 −84·1 9·3 9·2 1·6 16·1 50·6 55·9 0·20 −0·141 I(I) V(F) 
+ 96 1921 2 8 E 22728·526 38·8 −9·1 9·3 9·2 −1·3 17·8 44·9 54·4 0·20 −0·141 I V(F) 
+ 294 1996 1 20 E 50103·036 34·1 −118·3 8·9 8·8 −1·6 12·6 41·0 61·2 0·20 −0·184 I(V) I(V) 
+ 295 1996 1 20 E 50103·036 34·1 −118·3 8·9 8·8 −1·6 12·6 41·0 61·2 0·20 −0·184 I(I) I(V) 
+ 44 1871 9 14 M 4685·298 38·0 23·7 9·3 8·9 2·6 −15·4 −42·2 57·1 0·21 −0·163 V I(V) 
+ 237 1989 5 5 E 47651·993 43·0 −85·7 9·2 9·2 −0·3 13·4 52·8 60·4 0·21 −0·128 I(V) V(F) 
+ 239 1989 5 5 E 47651·993 42·7 −84·8 9·2 9·2 −0·4 13·3 52·2 60·4 0·21 −0·133 I(V) V(F) 
+ 275 1984 11 23 E 46027·457 15·6 35·6 9·2 7·6 5·2 16·3 30·4 59·5 0·21 −0·296 I I 
+ 240 1989 5 5 E 47651·993 42·7 −84·8 9·2 9·2 −0·4 13·3 52·2 60·4 0·21 −0·133 I(I) V(F) 
+ 194 1987 6 25 M 46972·733 −30·1 −71·0 9·6 4·2 8·6 −18·1 −18·1 54·3 0·21 −0·632 I(B) I 
+ 253 1983 11 5 E 45643·432 15·6 35·6 9·3 8·8 3·0 17·0 34·4 58·0 0·21 −0·178 I I(V) 
+ 241 1989 5 5 E 47651·993 30·3 −97·0 9·4 9·0 −2·5 13·6 41·7 60·4 0·22 −0·146 I(V) V(F) 
+ 229 1987 9 23 E 47061·630 37·2 −84·1 9·9 4·2 9·0 20·5 16·7 55·9 0·23 −0·620 I(I) I 
+ 120 1972 3 15 E 41391·983 35·5 −117·6 9·6 9·3 −2·6 14·7 42·0 60·8 0·23 −0·110 I(B) V(F) 
+ 98 1921 10 31 E 22993·485 −33·9 18·5 9·8 8·3 −5·3 17·9 37·8 58·1 0·23 −0·213 I I(V) 
+ 119 1972 3 15 E 41391·983 35·5 −117·6 9·6 9·3 −2·6 14·7 42·0 60·8 0·23 −0·110 V(B)V(F) 
+ 228 1987 6 26 E 46972·733 37·2 −84·1 10·3 9·8 3·1 19·8 54·3 54·0 0·24 −0·054 I(V) V(F) 
+ 196 1987 6 26 E 46972·733 42·7 −84·5 10·5 9·5 4·4 20·2 58·8 54·0 0·24 −0·083 V(B)V(F) 
+ 224 1984 5 1 E 45821·657 37·2 −84·1 10·2 8·8 5·1 21·0 43·3 55·8 0·24 −0·153 I(I) V(F) 
+ 238 1989 5 5 E 47651·993 39·7 −105·5 9·8 9·8 −0·6 14·6 53·0 60·4 0·24 −0·053 I(V) V(F) 
+ 250 1990 5 24 E 48035·993 31·6 −110·5 9·8 9·8 0·0 14·8 48·2 61·2 0·24 −0·054 I(V) V(F) 
+ 52 1873 4 27 E 5275·447 38·0 23·7 10·2 9·2 4·4 18·8 45·7 58·5 0·25 −0·106 I V(F) 
+ 197 1987 6 26 E 46972·733 30·0 −100·0 10·6 10·4 1·8 20·5 51·6 54·0 0·25 +0·014 I V(V) 
+ 166 1981 7 30 M 44816·662 42·3 −71·3 10·1 8·3 −5·8 −18·6 −45·2 59·0 0·25 −0·205 I I(V) 
+ 86 1913 11 28 E 20099·570 −33·9 18·5 10·3 10·3 0·0 16·4 53·1 58·7 0·26 −0·001 V V(V) 
+ 251 1990 5 24 E 48035·993 34·2 −118·1 10·1 10·1 0·7 15·4 51·9 61·2 0·26 −0·014 I(V) V(V) 
+Tn69x.doc 14 of 14  22 /09 /2004  10:14 AM 
+7. A few conclusions 
+In this note I have pointed out that there is too much emphasis on making record breaking 
+observations of first sighting of the new crescent moon.   The majority of cases are not critical ones 
+and what we need are more observations of first sighting at latitudes above 50 ° when the Moon is 
+several days old, including observations made in day light.   Northern Europe would be an ideal place 
+to organise another moonwatch program to solve this problem. 
+I have given a simple method for determining the time of best visibility, which is based on the method 
+of Bruin.   His method has many other applications to problems concerning first visibility.   It would 
+be useful to update Bruin’s calculations using modern theories. 
+8. Acknowledgements 
+I would especially like to thank Mr Yaacov Loewi nger for encouraging me since 1992 to continue 
+with this project, and for checking my work so thoroughly and making useful suggestions for 
+improving this technical note.   It was he who first made me consider expressing the Bruin test as a 
+continuous function in the form of a quadratic polynomial in 
+W.   He also helped me to appreciate the 
+value of the original list of 252 observations of  first sighting for checking and calibrating other 
+theories. 
+I am also indebted to Miss Catherine Hohenkerk, who kindly TeXed this technical note for me.   She 
+amended the NAO computer program for calculating first sighting to use the method given in this 
+note, and together we updated Astronomical Information Sheet (AIS) No. 6.   An example of the 
+computer output is given in Appendix A, and furt her details concerning the output will be found in 
+AIS No. 6. 
+I am grateful to Fatoohi et al for producing a paper that gave me fresh insight to the problem. 
+I would also like to thank Dr Monzur Ahmed for advice on updating my 
+q-test, and broadcasting 
+recent changes on the internet, see http://www.starlight.demon.co.uk/ildl/jan98.htm. 
+9. References 
+Lockyer, J.N., (1894), Dawn of astronomy, Cassells, London. 
+Maunder, E.W., (1911), On the smallest visible phase of the Moon, Journal of the British 
+Astronomical Association, 21, 355–362. 
+Schoch, C., (1930), Ergaenzungsheft zu den Astr onomischen Nachrichten, 8, No. 2, B17, Tafel für 
+Neulicht. 
+Allen, C.W., (1963), 
+Astrophysical Quantities, Athlone Press, 145. 
+Bruin, F., (1977), The first visibility of the lunar crescent, Vistas in Astronomy, 21, 331–358. 
+India Meteorological Department, New Delhi, The Indian Astronomical Ephemeris, (1996), 559. 
+Schaefer, B.E., (1985), Predicting heliacal risings and settings, Sky and Telescope, 70, 261–263. 
+Schaefer, B.E.,(1986), Atmospheric extinction effects on stellar alignments, Archaeoastronomy, No 
+10, Supplement to the Journal of the History of Astronomy, S32–S42. 
+Schaefer, B.E., (1987), Heliacal rise phenomena, 
+Archaeoastronomy, No 11, Supplement to the 
+Journal of the History of Astronomy, S19–S33. 
+Schaefer, B.E., (1988), Visibility of the lunar crescent, 
+Quarterly Journal of the Royal Astronomical 
+Society, 29, 511–523. 
+Schaefer, B.E., (1990), LunarCal, Western Research Company, Inc., 2127 E. Speedway, Suite 209, 
+Tucson, AZ 85719. 
+Schaefer, B.E., (1991), Length of the lunar crescent, 
+Quarterly Journal of the Royal Astronomical 
+Society, 32, 265–277. 
+Schaefer, B.E., (1993a), Astronomy and the limits of vision, Vistas in Astronomy , 36, Part 4, 311–
+361. 
+Schaefer, B.E., Ahmad, I.A. and Doggett, L.E., (1993b), Records for young Moon sighting,
+ Quarterly 
+Journal of the Royal Astronomical Society, 34, 53–56. 
+Doggett, L.E., and Schaefer, B.E., (1994), Lunar crescent visibility, Icarus, 107, 388–403. 
+Loewinger, Y., (1995), Some Comments on ....., Quarterly Journal of the Royal Astronomical 
+Society, 36, 449–452. 
+Schaefer, B.E., (1996), Lunar Crescent Visibility, Quarterly Journal of the Royal Astronomical 
+Society, 37, 759–768. 
+Tn69x.doc 15 of 14  22 /09 /2004  10:14 AM 
+Fatoohi, L.J., Stephenson, F.R., Al-Dargazelli, S.S., (1998), The Danjon limit of first visibility of the 
+lunar crescent, Observatory, 118, 65–72. 

@@ -24,6 +24,7 @@ import pytest
 
 from moira.houses import (
     cusp_speeds_at,
+    house_dynamics_from_armc,
     calculate_houses,
     CuspSpeed,
     HouseDynamics,
@@ -33,6 +34,8 @@ from moira.houses import (
     UnknownSystemPolicy,
     PolarFallbackPolicy,
 )
+from moira.julian import local_sidereal_time, ut_to_tt
+from moira.obliquity import nutation, true_obliquity
 
 # ---------------------------------------------------------------------------
 # Constants shared across tests
@@ -263,3 +266,51 @@ def test_placidus_vs_equal_cusp3_speed_differ():
     # Placidus house 3 speed may differ
     # (not guaranteed to differ by a fixed amount, just a sanity check)
     assert math.isfinite(r_placidus.cusp_speeds[2].speed_deg_per_day)
+
+
+# ---------------------------------------------------------------------------
+# ARMC-native dynamics
+# ---------------------------------------------------------------------------
+
+def _armc_and_obliquity(jd_ut: float, longitude: float) -> tuple[float, float]:
+    jd_tt = ut_to_tt(jd_ut)
+    dpsi, _ = nutation(jd_tt)
+    eps = true_obliquity(jd_tt)
+    armc = local_sidereal_time(jd_ut, longitude, dpsi, eps)
+    return armc, eps
+
+
+def test_house_dynamics_from_armc_returns_house_dynamics():
+    armc, eps = _armc_and_obliquity(_J2000, _LON_LONDON)
+    result = house_dynamics_from_armc(armc, eps, _LAT_LONDON)
+    assert isinstance(result, HouseDynamics)
+
+
+def test_house_dynamics_from_armc_matches_houses_from_armc_cusps():
+    armc, eps = _armc_and_obliquity(_J2000, _LON_LONDON)
+    result = house_dynamics_from_armc(armc, eps, _LAT_LONDON)
+    direct = calculate_houses(_J2000, _LAT_LONDON, _LON_LONDON)
+    for c_dyn, c_dir in zip(result.house_cusps.cusps, direct.cusps):
+        assert abs(c_dyn - c_dir) < 1e-6
+
+
+def test_house_dynamics_from_armc_close_to_time_based_variant():
+    armc, eps = _armc_and_obliquity(_J2000, _LON_LONDON)
+    by_time = cusp_speeds_at(_J2000, _LAT_LONDON, _LON_LONDON)
+    by_armc = house_dynamics_from_armc(armc, eps, _LAT_LONDON)
+    assert abs(by_time.asc_speed_deg_per_day - by_armc.asc_speed_deg_per_day) < 0.5
+    assert abs(by_time.mc_speed_deg_per_day - by_armc.mc_speed_deg_per_day) < 0.5
+    assert abs(by_time.cusp_speeds[2].speed_deg_per_day - by_armc.cusp_speeds[2].speed_deg_per_day) < 1.0
+
+
+def test_house_dynamics_from_armc_whole_sign_speeds_near_zero():
+    armc, eps = _armc_and_obliquity(_J2000, _LON_LONDON)
+    result = house_dynamics_from_armc(armc, eps, _LAT_LONDON, HouseSystem.WHOLE_SIGN)
+    for cs in result.cusp_speeds:
+        assert abs(cs.speed_deg_per_day) < 1.0
+
+
+def test_house_dynamics_from_armc_rejects_non_positive_step():
+    armc, eps = _armc_and_obliquity(_J2000, _LON_LONDON)
+    with pytest.raises(ValueError, match="darmc_deg must be positive"):
+        house_dynamics_from_armc(armc, eps, _LAT_LONDON, darmc_deg=0.0)

@@ -1,7 +1,7 @@
 # Moira Engine — Feature Roadmap & Mathematical Accuracy Register
 
 **Engine version**: post-Phase α (sub-arcsecond accuracy certified)
-**Last updated**: 2026-03-22 (full audit done; E Delta-T corrected from USNO; multiple_stars.py added)
+**Last updated**: 2026-04-04 (harmograms H1-H5 completed; bridge layer expanded; selective root exports added)
 **Purpose**: Canonical record of implementation status, missing features, and mathematical improvement opportunities.
 
 ---
@@ -48,6 +48,30 @@ are exposed in the `moira` package namespace:
 | Varga / divisional charts | `varga.py` — `navamsa()`, `calculate_varga()`, `dashamansa()`, etc. — **wired** (`moira.__all__`, 46 tests) |
 | Heliacal rising / setting | `fixed_stars.py` — `heliacal_rising()`, `heliacal_setting()` — **wired** (`moira.__all__`, 46 tests) |
 | Hayz / in sect | `dignities.py` — `is_in_hayz()`, `is_in_sect()`, `SectStateKind`, `SectTruth`, `SectClassification` — **wired** (`moira.__all__`, 46 tests) |
+| Harmograms research engine | `harmograms/` — spectral vectors, zero-Aries parts, intensity spectra, projections, traces, comparison helpers |
+| Harmogram bridge layer | `bridges/harmograms.py` — native chart/progression adapters, body filters, and datetime-range sample builders |
+
+### Deferred doctrine candidate — Astrodynes / Cosmodynes
+
+Status: deferred
+
+Reason:
+- Moira can support this structurally as a derived doctrine/scoring subsystem.
+- Publicly accessible Church of Light material is sufficient for research and
+  source mapping, but not sufficient to reproduce the full method faithfully.
+- The authoritative computational tables and exact scoring rules appear to live
+  in primary manual/course material not currently available in complete form.
+
+Constraint:
+- Do not implement an approximate or blended "power score" and label it
+  astrodynes/cosmodynes.
+- Keep this family deferred until Moira has enough primary-source detail to
+  name the doctrine, implement the scoring rules explicitly, and validate them
+  against authoritative examples.
+
+Unblocker:
+- Obtain the authoritative Astrodyne / Cosmodyne manual or equivalent primary
+  formula tables and worked examples sufficient for a source-faithful build.
 
 ---
 
@@ -235,6 +259,9 @@ below shows the full historical record; nothing is currently open.
 | Feature | Location | Notes |
 |---------|----------|-------|
 | Multiple star systems | `multiple_stars.py` | 8 systems; Kepler orbital mechanics for VISUAL binaries |
+| Harmograms subsystem | `harmograms/` | H1-H5 complete: spectral foundations, intensity doctrine, projection, trace layer, research tooling |
+| Harmogram bridge layer | `bridges/harmograms.py` | Engine-facing adapters for chart/progression sources, body filtering, and range sampling |
+| Harmograms root exports | `moira.__init__` | Selected stable harmograms types and computation surfaces exported from package root |
 
 ### Multiple Star Systems — `multiple_stars.py`  **Done** (2026-03-22)
 
@@ -274,6 +301,62 @@ already in variable_stars.py, worth cross-linking), Gamma Velorum (WC8+O Wolf-Ra
 
 ---
 
+### Harmograms Subsystem — `harmograms/`  **Done** (2026-04-04)
+
+Mathematically explicit harmograms engine built in visible strata rather than
+as one opaque score.
+
+**Implemented strata:**
+- H1 spectral foundations:
+  - point-set harmonic vectors
+  - zero-Aries parts construction
+  - zero-Aries parts harmonic vectors
+- H2 intensity doctrine:
+  - named intensity families
+  - conjunction inclusion policy
+  - explicit normalization and harmonic-domain policy
+- H3 projection layer:
+  - explicit spectral projection vessels
+  - truncated-realization classification carried visibly
+- H4 trace layer:
+  - named trace families
+  - time-domain harmogram traces over supplied snapshots
+- H5 research tooling:
+  - contributor ranking
+  - spectrum comparison
+  - trace-series comparison
+
+**Admitted intensity families:**
+- cosine bell
+- top hat
+- triangular
+- gaussian
+
+**Admitted trace families:**
+- dynamic zero-Aries parts
+- transit-to-natal zero-Aries parts
+- directed-to-natal zero-Aries parts
+- progressed-to-natal zero-Aries parts
+
+**Public engine shape:**
+- selected stable types and computation surfaces exported from `moira.__init__`
+- no facade-first harmogram workflow has been frozen
+- service/workflow orchestration remains intentionally outside the engine core
+
+**Bridge layer present:**
+- `bridges/harmograms.py`
+- native `Chart` / `ProgressedChart` / mapping adapters
+- explicit body-selection filters
+- progression-family sample builders
+- datetime-range chart sampling builders
+
+This keeps the engine boundary clean:
+- mathematics in `moira.harmograms`
+- expressive adaptation in `moira.bridges`
+- no service-layer canonization in `moira.facade`
+
+---
+
 ## Part IV — What Moira Already Has That Swiss Ephemeris Lacks
 
 For reference, capabilities where Moira exceeds the standard Swiss Ephemeris distribution:
@@ -303,6 +386,7 @@ For reference, capabilities where Moira exceeds the standard Swiss Ephemeris dis
 - **Galactic coordinate system** transformations
 - **Uranian / transneptunian bodies** (Hamburg School TNPs)
 - **Harmonic charts** with full aspect-harmonic profile
+- **Harmograms subsystem** with explicit spectral vectors, zero-Aries parts, intensity spectra, projections, and named trace families
 - **Varga / divisional charts** (navamsa, dashamansa, etc.)
 - **Sothic cycle** reconstruction (Egyptian calendar anchor)
 - **Arabic lunar mansions** (manazil, all 28)

@@ -242,14 +242,18 @@ def angular_diameter(body_name: str, jd_ut: float) -> float:
 # "Computing Apparent Planetary Magnitudes for The Astronomical Almanac"
 # and the associated Astronomical Almanac treatments.
 #
+# The Moon is admitted separately using the approximate apparent-magnitude
+# phase law published by B.E. Schaefer (1993), with explicit distance terms.
+#
 # Limitations explicitly documented:
+#   - Moon:    no opposition surge or eclipse darkening correction.
 #   - Saturn:  globe-only model; ring tilt/brightness not included.
 #   - Pluto:   intentionally unsupported in the current photometric
 #              engine; adding Pluto would imply a broader admission
 #              policy for dwarf planets and related minor bodies.
 
 _SUPPORTED_BODIES = frozenset(
-    [Body.MERCURY, Body.VENUS, Body.MARS, Body.JUPITER,
+    [Body.MOON, Body.MERCURY, Body.VENUS, Body.MARS, Body.JUPITER,
      Body.SATURN, Body.URANUS, Body.NEPTUNE])
 
 _SATURN_RING_PHASE_LIMIT_DEG = 6.5
@@ -750,8 +754,34 @@ def _mag_neptune(
         mag += 7.944e-03 * beta + 9.617e-05 * beta**2
     return mag
 
+
+def _mag_moon(
+    r: float,
+    delta: float,
+    beta: float,
+    _jd_ut: float | None = None,
+    _saturn_sub_lat_geoc: float | None = None,
+) -> float:
+    """
+    Approximate apparent V magnitude of the Moon.
+
+    Source lineage:
+        B.E. Schaefer, "Astronomy and the Limits of Vision",
+        Vistas in Astronomy 36 (1993), 311-361.
+    """
+    delta_km = delta * KM_PER_AU
+    if delta_km <= 0.0 or r <= 0.0:
+        return 0.0
+    return (
+        -12.73
+        + 0.026 * beta
+        + 4.0e-9 * beta**4
+        + 5.0 * math.log10((delta_km / 384400.0) * r)
+    )
+
 # Dispatch table: body name → body-specific magnitude function.
 _BODY_MAG: dict[str, callable] = {
+    Body.MOON:    _mag_moon,
     Body.MERCURY: _mag_mercury,
     Body.VENUS:   _mag_venus,
     Body.MARS:    _mag_mars,
@@ -764,9 +794,12 @@ _BODY_MAG: dict[str, callable] = {
 
 def apparent_magnitude(body_name: str, jd_ut: float) -> float:
     """
-    Calculate apparent visual magnitude (V band) using modern planetary
-    magnitude models following Mallama & Hilton (2018) and the associated
-    Astronomical Almanac treatments.
+    Calculate apparent visual magnitude (V band).
+
+    For the planets, this uses the admitted modern planetary magnitude models
+    following Mallama & Hilton (2018) and the associated Astronomical Almanac
+    treatments. For the Moon, this uses the admitted Schaefer (1993)
+    approximate phase law.
 
     Parameters
     ----------
@@ -788,6 +821,8 @@ def apparent_magnitude(body_name: str, jd_ut: float) -> float:
 
     Notes
     -----
+        - Moon: Schaefer (1993) approximate law; opposition surge and eclipse
+            darkening are not modeled.
         - Saturn: ring model is used for geocentric conditions within the
             published validity range; otherwise a globe-only fallback is used.
     - Mars: rotational/orbital terms use the published periodic IAU/NAIF orientation model.

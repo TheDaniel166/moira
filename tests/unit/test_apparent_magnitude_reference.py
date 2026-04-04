@@ -265,3 +265,21 @@ def test_apparent_magnitude_documented_fallbacks_are_stable(
     mag = phase.apparent_magnitude(body_name, jd_ut)
 
     assert mag == pytest.approx(expected_mag, abs=1e-3)
+
+
+@pytest.mark.unit
+def test_moon_apparent_magnitude_matches_admitted_schaefer_formula(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    delta_au = 384400.0 / phase.KM_PER_AU
+    _install_sample_geometry(
+        monkeypatch,
+        Body.MOON,
+        r_au=1.0,
+        delta_au=delta_au,
+        beta_deg=0.0,
+    )
+
+    mag = phase.apparent_magnitude(Body.MOON, julian_day(2000, 1, 1))
+
+    assert mag == pytest.approx(-12.73, abs=1e-6)

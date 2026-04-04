@@ -220,7 +220,8 @@ __all__ = [
     "CuspSpeed",
     "HouseDynamics",
     "cusp_speeds_at",
-]
+    "house_dynamics_from_armc",
+  ]
 
 
 # ===========================================================================
@@ -3432,6 +3433,15 @@ class HouseDynamics:
 # HOUSE DYNAMICS COMPUTATION
 # ===========================================================================
 
+_SIDEREAL_ROTATION_DEG_PER_DAY = 360.98564736629
+
+
+def _wrapped_longitude_speed(lon_m: float, lon_p: float, step: float) -> float:
+    raw = (lon_p - lon_m) % 360.0
+    if raw > 180.0:
+        raw -= 360.0
+    return raw / (2.0 * step)
+
 def cusp_speeds_at(
     jd_ut:    float,
     latitude: float,
@@ -3486,12 +3496,6 @@ def cusp_speeds_at(
           house 4 speed equals −mc_speed_deg_per_day for most quadrant systems.
           These redundancies are intentional for uniformity.
     """
-    def _speed(lon_m: float, lon_p: float) -> float:
-        raw = (lon_p - lon_m) % 360.0
-        if raw > 180.0:
-            raw -= 360.0
-        return raw / (2.0 * dt)
-
     h_m = calculate_houses(jd_ut - dt, latitude, longitude, system, policy=policy)
     h0  = calculate_houses(jd_ut,      latitude, longitude, system, policy=policy)
     h_p = calculate_houses(jd_ut + dt, latitude, longitude, system, policy=policy)
@@ -3500,7 +3504,7 @@ def cusp_speeds_at(
         CuspSpeed(
             house=n + 1,
             cusp_longitude=h0.cusps[n],
-            speed_deg_per_day=_speed(h_m.cusps[n], h_p.cusps[n]),
+            speed_deg_per_day=_wrapped_longitude_speed(h_m.cusps[n], h_p.cusps[n], dt),
         )
         for n in range(12)
     )
@@ -3508,8 +3512,108 @@ def cusp_speeds_at(
     return HouseDynamics(
         house_cusps=h0,
         cusp_speeds=cusp_speeds,
-        asc_speed_deg_per_day=_speed(h_m.asc, h_p.asc),
-        mc_speed_deg_per_day=_speed(h_m.mc, h_p.mc),
-        vertex_speed_deg_per_day=_speed(h_m.vertex, h_p.vertex),
-        anti_vertex_speed_deg_per_day=_speed(h_m.anti_vertex, h_p.anti_vertex),
+        asc_speed_deg_per_day=_wrapped_longitude_speed(h_m.asc, h_p.asc, dt),
+        mc_speed_deg_per_day=_wrapped_longitude_speed(h_m.mc, h_p.mc, dt),
+        vertex_speed_deg_per_day=_wrapped_longitude_speed(h_m.vertex, h_p.vertex, dt),
+        anti_vertex_speed_deg_per_day=_wrapped_longitude_speed(h_m.anti_vertex, h_p.anti_vertex, dt),
+    )
+
+
+def house_dynamics_from_armc(
+    armc: float,
+    obliquity: float,
+    lat: float,
+    system: str = HouseSystem.PLACIDUS,
+    *,
+    policy: HousePolicy | None = None,
+    sun_longitude: float | None = None,
+    darmc_deg: float = _SIDEREAL_ROTATION_DEG_PER_DAY / 1440.0,
+) -> HouseDynamics:
+    """
+    Compute cusp and angle speeds directly from ARMC and obliquity.
+
+    This is the ARMC-native companion to :func:`cusp_speeds_at`. It exists for
+    specialist workflows that already operate in ARMC space, such as primary
+    directions or externally prepared house frames.
+
+    Method:
+        A centred finite difference is applied over ``ARMC ± darmc_deg`` using
+        :func:`houses_from_armc`, with obliquity held fixed. The resulting
+        derivative in degrees per degree-of-ARMC is converted to degrees/day
+        using the mean sidereal rotation rate of Earth.
+
+    Important limitation:
+        Unlike :func:`cusp_speeds_at`, this surface does not know the chart
+        epoch, so it cannot model the very small day-scale drift of obliquity.
+        It is therefore an ARMC-native dynamical approximation, not an
+        epoch-complete time derivative.
+
+    Args:
+        armc: Apparent Right Ascension of the Midheaven in degrees.
+        obliquity: True obliquity of the ecliptic in degrees.
+        lat: Geographic latitude in degrees.
+        system: House system identifier.
+        policy: House fallback doctrine.
+        sun_longitude: Required when ``system == HouseSystem.SUNSHINE``.
+        darmc_deg: Half-step in ARMC degrees for the finite difference.
+            The default corresponds to one sidereal minute of Earth rotation.
+
+    Returns:
+        A :class:`HouseDynamics` vessel with cusp and angle speeds in degrees/day.
+
+    Raises:
+        ValueError: If ``darmc_deg <= 0``.
+        ValueError: If the requested system/policy combination raises inside
+            :func:`houses_from_armc`.
+    """
+    if darmc_deg <= 0.0:
+        raise ValueError("darmc_deg must be positive")
+
+    h_m = houses_from_armc(
+        armc - darmc_deg,
+        obliquity,
+        lat,
+        system,
+        policy=policy,
+        sun_longitude=sun_longitude,
+    )
+    h0 = houses_from_armc(
+        armc,
+        obliquity,
+        lat,
+        system,
+        policy=policy,
+        sun_longitude=sun_longitude,
+    )
+    h_p = houses_from_armc(
+        armc + darmc_deg,
+        obliquity,
+        lat,
+        system,
+        policy=policy,
+        sun_longitude=sun_longitude,
+    )
+
+    def _speed_from_armc(lon_m: float, lon_p: float) -> float:
+        return (
+            _wrapped_longitude_speed(lon_m, lon_p, darmc_deg)
+            * _SIDEREAL_ROTATION_DEG_PER_DAY
+        )
+
+    cusp_speeds = tuple(
+        CuspSpeed(
+            house=n + 1,
+            cusp_longitude=h0.cusps[n],
+            speed_deg_per_day=_speed_from_armc(h_m.cusps[n], h_p.cusps[n]),
+        )
+        for n in range(12)
+    )
+
+    return HouseDynamics(
+        house_cusps=h0,
+        cusp_speeds=cusp_speeds,
+        asc_speed_deg_per_day=_speed_from_armc(h_m.asc, h_p.asc),
+        mc_speed_deg_per_day=_speed_from_armc(h_m.mc, h_p.mc),
+        vertex_speed_deg_per_day=_speed_from_armc(h_m.vertex, h_p.vertex),
+        anti_vertex_speed_deg_per_day=_speed_from_armc(h_m.anti_vertex, h_p.anti_vertex),
     )

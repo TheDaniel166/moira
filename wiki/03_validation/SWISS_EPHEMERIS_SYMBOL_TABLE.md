@@ -9,6 +9,9 @@ Total symbols: 432
 
 Status meanings:
 - `mapped`: a public Moira surface exists for the Swiss symbol's semantic job.
+- `supported`: a public Moira surface exists and is intentionally admitted, but
+  through a materially different typed API shape rather than a close symbol/form
+  correspondence.
 - `partial`: Moira covers the same semantic area, but not as a 1:1 symbol/signature/flag mapping.
 - `stdlib`: use Python or standard-library facilities instead of a Moira surface.
 - `missing`: no public Moira equivalent currently exists.
@@ -19,6 +22,8 @@ Truth basis meanings:
 - `decomposed_math`: same mathematical result exists, but is split across multiple Moira calls/results.
 - `embedded_math`: the Swiss concept exists implicitly inside a richer Moira result.
 - `api_shape_same_math`: the same underlying math/doctrine exists, but only through a materially different API shape.
+- `api_shape_different`: the capability is intentionally supported, but through
+  a typed Moira-shaped surface rather than a close Swiss-style symbol or flag.
 - `api_shape_domain`: the same domain/problem area is covered, but not with a claim of identical underlying math.
 - `symbolic`: constant/identifier correspondence rather than a numeric algorithm claim.
 - `stdlib`: handled by Python/stdlib rather than Moira.
@@ -27,9 +32,10 @@ Truth basis meanings:
 
 Status totals:
 - `mapped`: 101
+- `supported`: 18
 - `partial`: 87
 - `stdlib`: 22
-- `missing`: 151
+- `missing`: 133
 - `unsupported`: 71
 
 Truth-basis totals:
@@ -37,10 +43,11 @@ Truth-basis totals:
 - `decomposed_math`: 4
 - `embedded_math`: 1
 - `api_shape_same_math`: 74
+- `api_shape_different`: 18
 - `api_shape_domain`: 22
 - `symbolic`: 67
 - `stdlib`: 22
-- `none`: 222
+- `none`: 204
 
 | Symbol | Kind | Status | Truth basis | Moira equivalent | Notes |
 | --- | --- | --- | --- | --- | --- |
@@ -426,7 +433,7 @@ Truth-basis totals:
 | `house_pos` | function | mapped | `api_shape_same_math` | `body_house_position(longitude, house_cusps)` → `float` in `moira.houses` | returns fractional house number (e.g. 3.75 = 75% through house 3) |
 | `houses` | function | mapped | `exact_math` | `calculate_houses(...)`, `m.houses(...)` | same house-cusp computation is exposed directly |
 | `houses_armc` | function | mapped | `api_shape_same_math` | `houses_from_armc(armc, obliquity, lat, system, *, policy, sun_longitude)` → `HouseCusps` in `moira.houses` | full 18-system dispatch; typed policy replaces integer flags |
-| `houses_armc_ex2` | function | partial | `api_shape_same_math` | `houses_from_armc(...)` for base case; cusp speeds via `cusp_speeds_at(jd_ut, ...)` at the nearest epoch | ARMC base case is implemented; returning cusp speeds directly from an ARMC (without a jd_ut) remains deferred |
+| `houses_armc_ex2` | function | mapped | `api_shape_same_math` | `house_dynamics_from_armc(armc, obliquity, lat, system, *, policy, sun_longitude, darmc_deg)` → `HouseDynamics` in `moira.houses` | ARMC-native house dynamics now exist directly; fixed-obliquity finite difference in ARMC space replaces the Swiss extended tuple surface |
 | `houses_ex` | function | partial | `api_shape_same_math` | `calculate_houses(...)` plus sidereal conversion separately | sidereal house output exists, but not as a flags-based wrapper |
 | `houses_ex2` | function | mapped | `api_shape_same_math` | `cusp_speeds_at(jd_ut, lat, lon, system, *, policy, dt)` → `HouseDynamics` in `moira.houses` | centred finite difference over ±dt; returns typed `CuspSpeed` + angle speeds; 23 unit tests passing |
 | `jdet_to_utc` | function | partial | `api_shape_same_math` | `datetime_from_jd(...)`, `calendar_datetime_from_jd(...)` | shape differs |

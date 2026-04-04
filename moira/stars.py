@@ -40,6 +40,7 @@ from .star_types import (
     HeliacalEventTruth,
     HeliacalEventClassification,
     HeliacalEvent,
+    HeliacalBatchResult,
 )
 
 __all__ = [
@@ -55,6 +56,7 @@ __all__ = [
     "HeliacalEventTruth",
     "HeliacalEventClassification",
     "HeliacalEvent",
+    "HeliacalBatchResult",
     "FixedStarLookupPolicy",
     "HeliacalSearchPolicy",
     "FixedStarComputationPolicy",
@@ -71,6 +73,7 @@ __all__ = [
     "heliacal_setting",
     "heliacal_rising_event",
     "heliacal_setting_event",
+    "heliacal_catalog_batch",
     "star_chart_condition_profile",
     "star_condition_network_profile",
     "UnifiedStarMergePolicy",
@@ -1084,6 +1087,143 @@ def heliacal_setting_event(
         last_visible[1] if last_visible is not None else None,
         -resolved_arcus if last_visible is not None else None,
         last_visible[2] if last_visible is not None else None,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Catalog-wide heliacal batch search
+# ---------------------------------------------------------------------------
+
+_HELIACAL_BATCH_EVENT_KINDS: frozenset[str] = frozenset({"heliacal_rising", "heliacal_setting"})
+
+
+def heliacal_catalog_batch(
+    event_kind: str,
+    jd_start: float,
+    latitude: float,
+    longitude: float,
+    *,
+    max_magnitude: float = 6.5,
+    names: list[str] | None = None,
+    search_days: int = 400,
+    policy: FixedStarComputationPolicy | None = None,
+) -> HeliacalBatchResult:
+    """
+    Run a heliacal rising or setting search across the sovereign star catalog.
+
+    Two pre-filters are applied before any ephemeris computation, using
+    data already stored in the registry:
+
+    1. **Magnitude filter** — stars whose V magnitude exceeds ``max_magnitude``
+       are placed in ``result.skipped_magnitude`` without touching the
+       ephemeris.  Default 6.5 (naked-eye limit).
+
+    2. **Latitude-limit filter** — each registry record carries a
+       ``lat_limit_deg`` value equal to ``90° − |dec|``.  If
+       ``abs(latitude) > lat_limit_deg``, the star is either circumpolar
+       (high-declination northern star seen from a high northern latitude)
+       or permanently below the horizon (southern star at a high northern
+       latitude).  Either way heliacal events are geometrically impossible,
+       so the star is placed in ``result.skipped_latitude``.
+
+    Stars that pass both filters are searched with ``heliacal_rising_event``
+    or ``heliacal_setting_event``, using the ``arc_vis_deg`` stored in the
+    registry record as the arcus visionis threshold (falling back to the
+    Ptolemaic-table derivation only when the registry value is absent or
+    non-positive).
+
+    The ``found`` list in the result is sorted ascending by ``jd_ut``.
+
+    Parameters
+    ----------
+    event_kind : ``"heliacal_rising"`` or ``"heliacal_setting"``.
+    jd_start : Julian Day (UT1) to begin the forward search.
+    latitude, longitude : Observer geodetic coordinates (degrees).
+    max_magnitude : Faintest V magnitude to include. Default 6.5.
+    names : If given, restrict the search to this explicit subset of
+        sovereign registry names.  Names absent from the registry raise
+        ``ValueError``.
+    search_days : Forward search window per star (days). Default 400.
+    policy : Fixed-star computation policy. Defaults to
+        ``DEFAULT_FIXED_STAR_POLICY``.
+    """
+    if event_kind not in _HELIACAL_BATCH_EVENT_KINDS:
+        raise ValueError(
+            f"event_kind must be 'heliacal_rising' or 'heliacal_setting', got {event_kind!r}"
+        )
+    if not math.isfinite(jd_start):
+        raise ValueError("jd_start must be finite")
+    if not -90.0 <= latitude <= 90.0:
+        raise ValueError(f"latitude must be in [-90, 90], got {latitude}")
+    if not -180.0 <= longitude <= 180.0:
+        raise ValueError(f"longitude must be in [-180, 180], got {longitude}")
+    if not math.isfinite(max_magnitude):
+        raise ValueError("max_magnitude must be finite")
+    if not isinstance(search_days, int) or search_days <= 0:
+        raise ValueError("search_days must be a positive integer")
+
+    resolved_policy = DEFAULT_FIXED_STAR_POLICY if policy is None else policy
+
+    all_records = _load_registry_records()
+    if names is not None:
+        by_name = {r.name: r for r in all_records}
+        unknown = set(names) - by_name.keys()
+        if unknown:
+            raise ValueError(f"Unknown star names: {sorted(unknown)}")
+        records: tuple[_SovereignStarRecord, ...] = tuple(by_name[n] for n in names if n in by_name)
+    else:
+        records = all_records
+
+    abs_lat = abs(latitude)
+    search_fn = heliacal_rising_event if event_kind == "heliacal_rising" else heliacal_setting_event
+
+    found: list[HeliacalEvent] = []
+    not_found: list[str] = []
+    skipped_latitude: list[str] = []
+    skipped_magnitude: list[str] = []
+
+    for record in records:
+        # Pre-filter 1: magnitude
+        if record.magnitude_v > max_magnitude:
+            skipped_magnitude.append(record.name)
+            continue
+        # Pre-filter 2: latitude limit — circumpolar or never-visible
+        if math.isfinite(record.lat_limit_deg) and abs_lat > record.lat_limit_deg:
+            skipped_latitude.append(record.name)
+            continue
+        # Use the catalog's per-star arcus visionis where available
+        arcus: float | None = (
+            record.arc_vis_deg
+            if math.isfinite(record.arc_vis_deg) and record.arc_vis_deg > 0.0
+            else None
+        )
+        event = search_fn(
+            record.name,
+            jd_start,
+            latitude,
+            longitude,
+            arcus_visionis=arcus,
+            search_days=search_days,
+            policy=resolved_policy,
+        )
+        if event.is_found:
+            found.append(event)
+        else:
+            not_found.append(record.name)
+
+    found.sort(key=lambda e: e.jd_ut if e.jd_ut is not None else math.inf)
+
+    return HeliacalBatchResult(
+        event_kind=event_kind,
+        jd_start=jd_start,
+        latitude=latitude,
+        longitude=longitude,
+        max_magnitude=max_magnitude,
+        search_days=search_days,
+        found=tuple(found),
+        not_found=tuple(not_found),
+        skipped_latitude=tuple(skipped_latitude),
+        skipped_magnitude=tuple(skipped_magnitude),
     )
 
 

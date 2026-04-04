@@ -28,11 +28,12 @@ Phase 1 implemented (17 symbols reclassified from `support` / `none` to `impleme
 - `refrac_extended` → `atmospheric_refraction_extended(...)`
 - `time_equ` → `equation_of_time(...)`
 
-Phase 2 implemented (8 symbols reclassified from `support` / `none` to `implemented`):
+Phase 2 implemented (9 symbols reclassified from `support` / `none` to `implemented`):
 - `calc_pctr` → `planet_relative_to(body, center_body, jd_ut, reader)` → `PlanetData`
 - `helio_cross`, `helio_cross_ut` → `next_heliocentric_transit(body, target_lon, jd_start, reader)` → `float`
 - `house_pos` → `body_house_position(longitude, house_cusps)` → `float`
 - `houses_armc` → `houses_from_armc(armc, obliquity, lat, system, *, policy, sun_longitude)` → `HouseCusps`
+- `houses_armc_ex2` → `house_dynamics_from_armc(armc, obliquity, lat, system, *, policy, sun_longitude, darmc_deg)` → `HouseDynamics`
 - `houses_ex2` → `cusp_speeds_at(jd_ut, lat, lon, system, *, policy, dt)` → `HouseDynamics`
 - `mooncross_node`, `mooncross_node_ut` → `next_moon_node_crossing(jd_start, reader, ascending=True)` → `float`
 
@@ -42,9 +43,6 @@ Phase 3 implemented (1 symbol reclassified from `support` / `none` to `implement
 Phase 3 implemented orbital surfaces:
 - `get_orbital_elements` -> `orbital_elements_at(body, jd_ut)` -> `KeplerianElements` in `moira.orbits`
 - `orbit_max_min_true_distance` -> `distance_extremes_at(body, jd_ut)` -> `DistanceExtremes` in `moira.orbits`
-
-Remaining Phase 3 design vessels (fully deferred rows after the current first implementation slice):
-- `houses_armc_ex2` → base case covered by `houses_from_armc`; ARMC-direct speed surface still deferred
 
 Recommended support order (updated — all `support` items done):
 1. ~~Position-computation switches and output modes~~ — done (Phase 1)
@@ -283,8 +281,8 @@ Interpretation:
 | `helio_cross_ut` | function | implemented | Low-level specialist helper | `support` | These are real computational surfaces that fit Moira's engine style and improve migration quality for advanced users. | `next_heliocentric_transit(body, target_lon, jd_start, reader)` → `float` in `moira.planets` (UT-native). |
 | `house_pos` | function | implemented | Low-level specialist helper | `support` | These are real computational surfaces that fit Moira's engine style and improve migration quality for advanced users. | `body_house_position(longitude, house_cusps)` → `float` in `moira.houses`. |
 | `houses_armc` | function | implemented | Low-level specialist helper | `support` | These are real computational surfaces that fit Moira's engine style and improve migration quality for advanced users. | `houses_from_armc(armc, obliquity, lat, system, *, policy, sun_longitude)` → `HouseCusps` in `moira.houses`. |
-| `houses_armc_ex2` | function | missing | House speed surface | `defer` | Useful for specialist work; base case (`houses_from_armc`) is done, but returning cusp speeds directly from an ARMC argument (without a jd_ut) requires additional design. | ARMC base case done; cusp speeds from a bare ARMC still deferred pending doctrinal decision. |
-| `houses_ex2` | function | implemented | House speed surface | `defer` | Useful for specialist work, but cusp/angle speed doctrine should be designed intentionally rather than copied from Swiss tuples. | `cusp_speeds_at(jd_ut, lat, lon, system, *, policy, dt)` → `HouseDynamics` in `moira.houses`; 23 unit tests passing. |
+| `houses_armc_ex2` | function | implemented | House speed surface | `support` | This is a legitimate specialist companion to the existing house-dynamics surface for ARMC-native workflows such as primary directions. | `house_dynamics_from_armc(armc, obliquity, lat, system, *, policy, sun_longitude, darmc_deg)` → `HouseDynamics` in `moira.houses`; fixed-obliquity ARMC derivative, validated against the time-based path in `tests/unit/test_house_dynamics.py`. |
+| `houses_ex2` | function | implemented | House speed surface | `support` | This is now a live Moira-native house-dynamics surface with explicit doctrine and typed output, rather than a copied Swiss tuple. | `cusp_speeds_at(jd_ut, lat, lon, system, *, policy, dt)` → `HouseDynamics` in `moira.houses`; direct tests in `tests/unit/test_house_dynamics.py`. |
 | `lat_to_lmt` | function | missing | Legacy Swiss utility surface | `do_not_support` | These are low-value utilities that do not fit Moira's core astronomy engine priorities. | No Moira surface. Use Python/time utilities externally if needed. |
 | `lmt_to_lat` | function | missing | Legacy Swiss utility surface | `do_not_support` | These are low-value utilities that do not fit Moira's core astronomy engine priorities. | No Moira surface. Use Python/time utilities externally if needed. |
 | `lun_occult_where` | function | partial | Path/where geometry helper | `support` | Moira now has a real typed occultation path surface with exact-JD greatest-geography solving. The current external validation slice includes Swiss `where` parity at the maximum-geography level plus multiple external IOTA graze/limit text checks across independent bright-star events (El Nath, Spica N/S, epsilon Ari, Alcyone, Merope, Asellus Borealis, Regulus). Nominal site altitude is now carried through where declared by the source files, and a lunar-limb profile correction hook is in place for future topography-backed graze refinement; broader corpus work is still future work. | `lunar_occultation_path_at(...)` / `lunar_star_occultation_path_at(...)` return `OccultationPathGeometry` in `moira.occultations`. |
