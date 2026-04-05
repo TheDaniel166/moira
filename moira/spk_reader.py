@@ -32,7 +32,7 @@ except ImportError as exc:  # pragma: no cover
         "Install it with: pip install jplephem"
     ) from exc
 
-from ._kernel_paths import find_kernel
+from ._kernel_paths import find_kernel, find_planetary_kernel
 
 Vec3 = tuple[float, float, float]
 
@@ -345,8 +345,10 @@ def get_reader(kernel_path: str | Path | None = None) -> SpkReader:
     across callers or threads.
 
     Args:
-        kernel_path: Path to a compatible JPL SPK kernel file. Must be provided
-            explicitly or pre-configured via set_kernel_path(). No default kernel
+        kernel_path: Explicit path to a compatible JPL SPK kernel file. If
+            omitted, the module checks for any pre-configured path (set via
+            set_kernel_path()) and then auto-discovers the first installed
+            planetary kernel via find_planetary_kernel(). No specific DE series
             is assumed.
 
     Returns:
@@ -374,11 +376,14 @@ def get_reader(kernel_path: str | Path | None = None) -> SpkReader:
         elif _reader_path is not None:
             path = _reader_path
         else:
-            raise MissingKernelError(
-                "No planetary kernel is configured. "
-                "Call set_kernel_path() before first use, "
-                "or pass kernel_path= to Moira()."
-            )
+            discovered = find_planetary_kernel()
+            if discovered is None:
+                raise MissingKernelError(
+                    "No planetary kernel is configured and none was found on disk. "
+                    "Call set_kernel_path() before first use, "
+                    "or pass kernel_path= to Moira()."
+                )
+            path = discovered
         if _reader_path is not None and _reader_path != path:
             raise RuntimeError(
                 "Kernel path has already been configured for the next reader. "

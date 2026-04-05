@@ -6,12 +6,14 @@
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PyPI](https://img.shields.io/badge/PyPI-moira--astro-orange.svg)](https://pypi.org/project/moira-astro/)
 [![Precision: ERFA-Audited](https://img.shields.io/badge/Precision-ERFA--Audited-success.svg)](#validation-evidence)
-[![Standard: JPL DE441](https://img.shields.io/badge/Standard-JPL%20DE441-blueviolet.svg)](https://naif.jpl.nasa.gov/naif/index.html)
+[![Ephemeris: JPL DE4xx](https://img.shields.io/badge/Ephemeris-JPL%20DE4xx-blueviolet.svg)](https://naif.jpl.nasa.gov/naif/index.html)
 [![Status: Stable](https://img.shields.io/badge/status-stable-success.svg)](#requirements-and-installation)
 
 > *"Moira" — the one who measures the thread.*
 
-Moira is a pure-Python astrological engine grounded in astronomical truth. Astronomy is the foundation. Astrology is the purpose. Every astrological output — longitude, house cusp, direction arc, time-lord boundary — is derived from a verifiable astronomical substrate: **JPL DE441** state vectors, **IAU 2000A/2006** nutation and precession, and a **sovereign fixed-star registry** audited against SOFA/ERFA.
+Moira is a pure-Python astrological engine grounded in astronomical truth. Astronomy is the foundation. Astrology is the purpose. Every astrological output — longitude, house cusp, direction arc, time-lord boundary — is derived from a verifiable astronomical substrate: a **JPL DE-series planetary kernel** (de430, de440, or de441), **IAU 2000A/2006** nutation and precession, and a **sovereign fixed-star registry** audited against SOFA/ERFA.
+
+Moira was originally designed against **DE441** for its extended date coverage (−13,000 to +17,000). The engine is kernel-agnostic: it accepts any compatible JPL SPK planetary kernel the user supplies. No particular release is assumed or bundled.
 
 It is not a wrapper around Swiss Ephemeris or any other compiled library. Every stage of the reduction pipeline is implemented in readable, auditable Python with zero compiled binaries — from raw barycentric mechanics through light-time, aberration, deflection, and frame bias to the final ecliptic longitude.
 
@@ -77,7 +79,7 @@ It is not a wrapper around Swiss Ephemeris or any other compiled library. Every 
 
 ## Quick Start
 
-Moira initializes even when `de441.bsp` is missing. Kernel-dependent operations (for example `chart()`) raise a clear `MissingEphemerisKernelError` until the kernel is available. See [Kernel Setup](#kernel-setup) below before executing planetary examples.
+Moira initializes even when no planetary kernel is present. Kernel-dependent operations (for example `chart()`) raise a clear `MissingEphemerisKernelError` until a kernel is configured. See [Kernel Setup](#kernel-setup) below before executing planetary examples.
 
 ```python
 from datetime import datetime, timezone
@@ -100,8 +102,6 @@ houses = m.houses(
 )
 print(f"ASC: {houses.asc:.4f} deg  |  MC: {houses.mc:.4f} deg")
 
-**1.0.1 correction note:** The DE441 download source was corrected to the JPL SSD endpoint below.
-
 # 3. Aspect patterns
 from moira.patterns import find_all_patterns
 patterns = find_all_patterns(chart.longitudes())
@@ -115,7 +115,7 @@ for p in patterns:
 
 - Python 3.10 or later
 - `jplephem >= 2.24` (the only required runtime dependency)
-- `de441.bsp` kernel file (not bundled — see below)
+- A JPL DE-series planetary kernel (de430, de440, or de441 — not bundled; see below)
 
 ```bash
 # Standard install (pure Python)
@@ -129,34 +129,48 @@ pip install moira-astro[fast]
 
 ## Kernel Setup
 
-The JPL DE441 kernel (`de441.bsp`) is required for all planetary computation. It is not bundled with the package because the file is approximately 3.3 GB.
+Moira requires a JPL DE-series SPK planetary kernel for all planetary computation. No kernel is bundled — the files are large and the choice of release belongs to the user.
+
+**Supported kernels:**
+
+| Kernel | File | Size | Date range | Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| DE441 | `de441.bsp` | ~3.3 GB | −13,000 to +17,000 | Original design target; maximum date coverage |
+| DE440 | `de440.bsp` | ~114 MB | 1549–2650 | Modern standard; compact for most applications |
+| DE430 | `de430.bsp` | ~115 MB | 1550–2650 | Widely deployed predecessor to DE440 |
 
 Engine readiness model:
 
-- `Moira()` succeeds even if DE441 is not installed.
+- `Moira()` succeeds even if no kernel is installed. It auto-discovers any compatible kernel in the standard locations.
 - `m.is_kernel_available()` reports kernel readiness.
-- `m.get_kernel_status()` explains expected path and remediation.
+- `m.get_kernel_status()` explains expected paths and remediation.
+- `m.available_kernels` lists all installed compatible kernels.
 - Kernel-dependent calls raise `MissingEphemerisKernelError` with instructions.
 
-**Download:** [https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de441.bsp](https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de441.bsp)
+**Download links (JPL SSD):**
 
-**Default location (running from the repository):** place the file at `kernels/de441.bsp` relative to the repository root. The engine resolves this path automatically.
+- DE441: [https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de441.bsp](https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de441.bsp)
+- DE440: [https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440.bsp](https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440.bsp)
+- DE430: [https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de430.bsp](https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de430.bsp)
 
-**Custom location:** pass the path explicitly at construction, or call `set_kernel_path()` before the first `Moira()` instantiation:
+**Standard location:** Place the kernel file at `kernels/<filename>.bsp` relative to the repository root, or in `~/.moira/kernels/`. The engine resolves this automatically.
+
+**Custom location:** Pass the path explicitly at construction, or call `set_kernel_path()` before the first `Moira()` instantiation:
 
 ```python
 from moira.spk_reader import set_kernel_path
 from moira import Moira
 
-set_kernel_path("/path/to/de441.bsp")
+set_kernel_path("/path/to/de440.bsp")
 m = Moira()
 
 # readiness helpers
 print(m.is_kernel_available())
 print(m.get_kernel_status())
+print(m.available_kernels)
 ```
 
-If the kernel file is not found, construction still succeeds. The first kernel-dependent operation raises `MissingEphemerisKernelError` with guidance to run `moira-download-kernels` or configure a kernel path.
+If no kernel is found, construction still succeeds. The first kernel-dependent operation raises `MissingEphemerisKernelError` with guidance.
 
 ---
 
@@ -165,7 +179,7 @@ If the kernel file is not found, construction still succeeds. The first kernel-d
 | Layer | Source | Bundled | Note |
 | :--- | :--- | :--- | :--- |
 | IAU 2000A/2006 nutation and precession tables | IAU | Yes | 2,414 terms; pure Python |
-| DE441 planetary kernel | JPL | No | ~3.3 GB; download separately |
+| DE-series planetary kernel | JPL | No | de430 (~115 MB), de440 (~114 MB), or de441 (~3.3 GB); download separately |
 | Named star registry | Sovereign (`star_registry.csv` + JSON provenance) | Yes | 1,809 stars; license-independent |
 | Centaur kernel | Moira native | Yes | `centaurs.bsp` — Chiron, Pholus, Chariklo, Asbolus, Hylonome |
 | Minor-body kernel | Moira native | Yes | `minor_bodies.bsp` — classical asteroids and select TNOs |
@@ -213,7 +227,7 @@ When residuals remain, Moira documents them as model-basis differences rather th
 
 ```mermaid
 graph TD
-    A[JPL DE441 Kernel\nChebyshev state vectors] --> B[SSB Barycentric Position\nkm · ICRF]
+    A[JPL Planetary Kernel\nChebyshev state vectors] --> B[SSB Barycentric Position\nkm · ICRF]
     C[Sovereign Star Registry\n1809 named stars] --> D[Stellar Astrometric Position\nproper motion · parallax]
     B --> E[1 · Light-Time Iteration\nbody at t − τ  where τ = d/c]
     E --> F[2 · Gravitational Deflection\nSun · Jupiter · Saturn · Earth]

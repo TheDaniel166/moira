@@ -1234,7 +1234,13 @@ class Moira:
 
     def _try_initialize_reader(self) -> None:
         try:
-            self._reader_obj = get_reader(self._kernel_path)
+            path = self._kernel_path
+            if path is None:
+                from ._kernel_paths import find_planetary_kernel
+                discovered = find_planetary_kernel()
+                if discovered is not None:
+                    path = str(discovered)
+            self._reader_obj = get_reader(path)
             self._kernel_init_error = None
         except (FileNotFoundError, MissingKernelError) as exc:
             self._reader_obj = None

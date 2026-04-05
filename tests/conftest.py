@@ -355,6 +355,29 @@ def test_env_vars() -> Generator[dict, None, None]:
 
 
 # ---------------------------------------------------------------------------
+# Kernel singleton bootstrap
+# ---------------------------------------------------------------------------
+
+@pytest.fixture(scope="session", autouse=True)
+def _bootstrap_kernel_singleton() -> None:
+    """Configure the global SpkReader singleton once per test session.
+
+    When a planetary kernel is available, calling set_kernel_path() here ensures
+    that module-level functions (phase.apparent_magnitude, etc.) which call
+    get_reader() directly can reuse the same initialized singleton without each
+    test needing to go through the Moira facade.
+
+    No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+    """
+    from moira._kernel_paths import find_planetary_kernel
+    from moira.spk_reader import set_kernel_path
+
+    kernel = find_planetary_kernel()
+    if kernel is not None:
+        set_kernel_path(str(kernel))
+
+
+# ---------------------------------------------------------------------------
 # Moira engine fixtures
 # ---------------------------------------------------------------------------
 
