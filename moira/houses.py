@@ -226,6 +226,12 @@ __all__ = [
     "QuadrantEmphasisProfile",
     "quadrant_of",
     "quadrant_emphasis",
+    # Phase 5 — diurnal quadrants
+    "DiurnalQuadrant",
+    "DiurnalPosition",
+    "DiurnalEmphasisProfile",
+    "diurnal_position",
+    "diurnal_emphasis",
   ]
 
 
@@ -3787,4 +3793,329 @@ def quadrant_emphasis(
         western_count=counts[Quadrant.Q2] + counts[Quadrant.Q3],
         northern_count=counts[Quadrant.Q1] + counts[Quadrant.Q2],
         southern_count=counts[Quadrant.Q3] + counts[Quadrant.Q4],
+    )
+
+
+# ===========================================================================
+# DIURNAL QUADRANTS  (Phase 5)
+# ===========================================================================
+#
+# The diurnal quadrant system divides the sky by the actual daily rotation
+# of each body through the four angles (ASC, MC, DSC, IC).
+#
+#   DQ1  ASC → MC   eastern sky, above horizon, rising toward culmination
+#   DQ2  MC  → DSC  western sky, above horizon, descending toward setting
+#   DQ3  DSC → IC   western sky, below horizon, descending toward nadir
+#   DQ4  IC  → ASC  eastern sky, below horizon, ascending toward rising
+#
+# The boundaries are defined by the body's own semi-diurnal arc (SDA):
+#
+#   cos(SDA) = −tan(δ) · tan(φ)
+#
+# where δ is the body's declination and φ is the geographic latitude.
+# SDA gives the hour-angle at rising/setting.
+#
+# Hour angle (HA) = ARMC − RA, measured 0–360° westward from the MC.
+#
+# This is the framework underlying Gauquelin sectors, classical angularity,
+# hayz above/below-horizon tests, and mundane aspects.
+# ===========================================================================
+
+class DiurnalQuadrant(str, Enum):
+    """
+    The four diurnal quadrants defined by the angular frame
+    and the body's semi-diurnal arc.
+    """
+
+    DQ1 = "DQ1"  # ASC → MC   (eastern, above horizon)
+    DQ2 = "DQ2"  # MC  → DSC  (western, above horizon)
+    DQ3 = "DQ3"  # DSC → IC   (western, below horizon)
+    DQ4 = "DQ4"  # IC  → ASC  (eastern, below horizon)
+
+
+def _semi_diurnal_arc(dec: float, geo_lat: float) -> float:
+    """
+    Compute the semi-diurnal arc (SDA) in degrees.
+
+    Returns:
+        SDA in degrees [0, 180].
+        180 if circumpolar (never sets).
+        0 if body never rises.
+    """
+    tan_dec = math.tan(dec * DEG2RAD)
+    tan_lat = math.tan(geo_lat * DEG2RAD)
+    cos_sda = -(tan_dec * tan_lat)
+    if cos_sda <= -1.0:
+        return 180.0   # circumpolar — always above horizon
+    if cos_sda >= 1.0:
+        return 0.0     # never rises — always below horizon
+    return math.acos(cos_sda) * RAD2DEG
+
+
+@dataclass(frozen=True, slots=True)
+class DiurnalPosition:
+    """
+    A body's position within the diurnal quadrant framework.
+
+    Fields
+    ------
+    quadrant : DiurnalQuadrant
+        Which diurnal quadrant the body occupies.
+    hour_angle : float
+        Hour angle in degrees [0, 360), measured westward from MC.
+        0° = on MC, SDA = on DSC, 180° = on IC, 360−SDA = on ASC.
+    semi_diurnal_arc : float
+        The body's half-arc above the horizon (degrees, 0–180).
+        180° for circumpolar bodies, 0° for never-rising bodies.
+    semi_nocturnal_arc : float
+        The body's half-arc below the horizon (degrees, 0–180).
+        = 180° − semi_diurnal_arc.
+    fraction : float
+        Proportional position within the current quadrant, 0.0 at the
+        entry angle and 1.0 at the exit angle.
+    is_above_horizon : bool
+        True if the body is above the horizon (DQ1 or DQ2).
+    is_eastern : bool
+        True if the body is in the eastern sky (DQ1 or DQ4).
+    is_circumpolar : bool
+        True if the body never sets at this latitude/declination.
+    is_never_rises : bool
+        True if the body never rises at this latitude/declination.
+    ra : float
+        Right ascension used in computation (degrees, 0–360).
+    dec : float
+        Declination used in computation (degrees).
+    """
+
+    quadrant:           DiurnalQuadrant
+    hour_angle:         float
+    semi_diurnal_arc:   float
+    semi_nocturnal_arc: float
+    fraction:           float
+    is_above_horizon:   bool
+    is_eastern:         bool
+    is_circumpolar:     bool
+    is_never_rises:     bool
+    ra:                 float
+    dec:                float
+
+
+def diurnal_position(
+    ecl_lon: float,
+    ecl_lat: float,
+    armc: float,
+    obliquity: float,
+    geo_lat: float,
+) -> DiurnalPosition:
+    """
+    Compute a body's diurnal quadrant position.
+
+    Parameters
+    ----------
+    ecl_lon : float
+        Ecliptic longitude (degrees).
+    ecl_lat : float
+        Ecliptic latitude (degrees).  ~0 for most planets, nonzero for Moon.
+    armc : float
+        Local sidereal time as right ascension of the midheaven (degrees).
+    obliquity : float
+        Obliquity of the ecliptic (degrees).
+    geo_lat : float
+        Geographic latitude of the observer (degrees, north positive).
+
+    Returns
+    -------
+    DiurnalPosition
+    """
+    ra, dec = _ecl_to_eq(ecl_lon, ecl_lat, obliquity)
+    sda = _semi_diurnal_arc(dec, geo_lat)
+    sna = 180.0 - sda
+
+    ha = (armc - ra) % 360.0
+
+    circumpolar  = (sda >= 180.0)
+    never_rises  = (sda <= 0.0)
+
+    # Determine quadrant and proportional fraction.
+    # HA measured 0–360 westward from MC:
+    #   [0, SDA)          → DQ2  (MC → DSC)
+    #   [SDA, 180)        → DQ3  (DSC → IC)
+    #   [180, 360−SDA)    → DQ4  (IC → ASC)
+    #   [360−SDA, 360)    → DQ1  (ASC → MC)
+    #
+    # Circumpolar (SDA=180): only DQ1 and DQ2 exist.
+    # Never-rises (SDA=0): only DQ3 and DQ4 exist.
+
+    if circumpolar:
+        # Always above horizon; split at HA=180 conceptually,
+        # but true quadrant boundary is MC: DQ1 for HA > 180, DQ2 for HA ≤ 180.
+        if ha <= 180.0:
+            quadrant = DiurnalQuadrant.DQ2
+            fraction = ha / 180.0 if sda > 0 else 0.0
+        else:
+            quadrant = DiurnalQuadrant.DQ1
+            fraction = (ha - 180.0) / 180.0
+    elif never_rises:
+        # Always below horizon; split at IC (HA=180).
+        if ha < 180.0:
+            quadrant = DiurnalQuadrant.DQ3
+            fraction = ha / 180.0
+        else:
+            quadrant = DiurnalQuadrant.DQ4
+            fraction = (ha - 180.0) / 180.0
+    else:
+        asc_ha = 360.0 - sda  # hour angle at ASC
+        if ha < sda:
+            # DQ2: MC → DSC
+            quadrant = DiurnalQuadrant.DQ2
+            fraction = ha / sda
+        elif ha < 180.0:
+            # DQ3: DSC → IC
+            quadrant = DiurnalQuadrant.DQ3
+            fraction = (ha - sda) / sna if sna > 0 else 0.0
+        elif ha < asc_ha:
+            # DQ4: IC → ASC
+            quadrant = DiurnalQuadrant.DQ4
+            fraction = (ha - 180.0) / sna if sna > 0 else 0.0
+        else:
+            # DQ1: ASC → MC
+            quadrant = DiurnalQuadrant.DQ1
+            fraction = (ha - asc_ha) / sda
+
+    above = quadrant in (DiurnalQuadrant.DQ1, DiurnalQuadrant.DQ2)
+    eastern = quadrant in (DiurnalQuadrant.DQ1, DiurnalQuadrant.DQ4)
+
+    return DiurnalPosition(
+        quadrant=quadrant,
+        hour_angle=ha,
+        semi_diurnal_arc=sda,
+        semi_nocturnal_arc=sna,
+        fraction=max(0.0, min(1.0, fraction)),
+        is_above_horizon=above,
+        is_eastern=eastern,
+        is_circumpolar=circumpolar,
+        is_never_rises=never_rises,
+        ra=ra,
+        dec=dec,
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class DiurnalEmphasisProfile:
+    """
+    Chart-wide diurnal quadrant distribution.
+
+    Fields
+    ------
+    point_count : int
+        Total number of points placed.
+    dq1_count, dq2_count, dq3_count, dq4_count : int
+        Number of points in each diurnal quadrant.
+    dq1_points, dq2_points, dq3_points, dq4_points : tuple[str, ...]
+        Names of points in each diurnal quadrant.
+    positions : dict[str, DiurnalPosition]
+        Per-point DiurnalPosition, keyed by name.
+    dominant_quadrant : tuple[DiurnalQuadrant, ...]
+        Quadrant(s) with the highest count (ties included).
+    above_horizon_count : int
+        Points in DQ1 + DQ2.
+    below_horizon_count : int
+        Points in DQ3 + DQ4.
+    eastern_count : int
+        Points in DQ1 + DQ4.
+    western_count : int
+        Points in DQ2 + DQ3.
+    """
+
+    point_count:          int
+    dq1_count:            int
+    dq2_count:            int
+    dq3_count:            int
+    dq4_count:            int
+    dq1_points:           tuple[str, ...]
+    dq2_points:           tuple[str, ...]
+    dq3_points:           tuple[str, ...]
+    dq4_points:           tuple[str, ...]
+    positions:            dict[str, DiurnalPosition]
+    dominant_quadrant:    tuple[DiurnalQuadrant, ...]
+    above_horizon_count:  int
+    below_horizon_count:  int
+    eastern_count:        int
+    western_count:        int
+
+    def __post_init__(self) -> None:
+        total = self.dq1_count + self.dq2_count + self.dq3_count + self.dq4_count
+        if total != self.point_count:
+            raise ValueError("diurnal quadrant counts must sum to point_count")
+
+
+def diurnal_emphasis(
+    points: dict[str, tuple[float, float]],
+    armc: float,
+    obliquity: float,
+    geo_lat: float,
+) -> DiurnalEmphasisProfile:
+    """
+    Compute the diurnal quadrant emphasis for a set of named bodies.
+
+    Parameters
+    ----------
+    points : dict[str, tuple[float, float]]
+        Mapping of point name to (ecliptic_longitude, ecliptic_latitude).
+        Example: {"Sun": (280.5, 0.0), "Moon": (120.3, 5.1)}
+    armc : float
+        Right ascension of the midheaven (degrees).
+    obliquity : float
+        Obliquity of the ecliptic (degrees).
+    geo_lat : float
+        Geographic latitude (degrees, north positive).
+
+    Returns
+    -------
+    DiurnalEmphasisProfile
+    """
+    buckets: dict[DiurnalQuadrant, list[str]] = {
+        DiurnalQuadrant.DQ1: [], DiurnalQuadrant.DQ2: [],
+        DiurnalQuadrant.DQ3: [], DiurnalQuadrant.DQ4: [],
+    }
+    positions: dict[str, DiurnalPosition] = {}
+
+    for name, (lon, lat) in points.items():
+        pos = diurnal_position(lon, lat, armc, obliquity, geo_lat)
+        positions[name] = pos
+        buckets[pos.quadrant].append(name)
+
+    dq1 = tuple(buckets[DiurnalQuadrant.DQ1])
+    dq2 = tuple(buckets[DiurnalQuadrant.DQ2])
+    dq3 = tuple(buckets[DiurnalQuadrant.DQ3])
+    dq4 = tuple(buckets[DiurnalQuadrant.DQ4])
+
+    counts = {
+        DiurnalQuadrant.DQ1: len(dq1), DiurnalQuadrant.DQ2: len(dq2),
+        DiurnalQuadrant.DQ3: len(dq3), DiurnalQuadrant.DQ4: len(dq4),
+    }
+    point_count = sum(counts.values())
+
+    if point_count == 0:
+        dominant: tuple[DiurnalQuadrant, ...] = ()
+    else:
+        max_count = max(counts.values())
+        dominant = tuple(dq for dq in DiurnalQuadrant if counts[dq] == max_count)
+
+    return DiurnalEmphasisProfile(
+        point_count=point_count,
+        dq1_count=counts[DiurnalQuadrant.DQ1],
+        dq2_count=counts[DiurnalQuadrant.DQ2],
+        dq3_count=counts[DiurnalQuadrant.DQ3],
+        dq4_count=counts[DiurnalQuadrant.DQ4],
+        dq1_points=dq1,
+        dq2_points=dq2,
+        dq3_points=dq3,
+        dq4_points=dq4,
+        positions=positions,
+        dominant_quadrant=dominant,
+        above_horizon_count=counts[DiurnalQuadrant.DQ1] + counts[DiurnalQuadrant.DQ2],
+        below_horizon_count=counts[DiurnalQuadrant.DQ3] + counts[DiurnalQuadrant.DQ4],
+        eastern_count=counts[DiurnalQuadrant.DQ1] + counts[DiurnalQuadrant.DQ4],
+        western_count=counts[DiurnalQuadrant.DQ2] + counts[DiurnalQuadrant.DQ3],
     )

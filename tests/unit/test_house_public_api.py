@@ -49,6 +49,12 @@ _CURATED_PUBLIC_NAMES = [
     "QuadrantEmphasisProfile",
     "quadrant_of",
     "quadrant_emphasis",
+    # Diurnal quadrants
+    "DiurnalQuadrant",
+    "DiurnalPosition",
+    "DiurnalEmphasisProfile",
+    "diurnal_position",
+    "diurnal_emphasis",
 ]
 
 _INTERNAL_NAMES = [
@@ -86,11 +92,11 @@ class TestModuleLevelResolution:
 
 
 class TestModuleCounts:
-    def test_curated_count_is_33(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 33
+    def test_curated_count_is_38(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 38
 
-    def test_houses_all_count_is_33(self):
-        assert len(_houses_module.__all__) == 33
+    def test_houses_all_count_is_38(self):
+        assert len(_houses_module.__all__) == 38
 
 
 class TestInternalsRemainInternal:
