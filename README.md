@@ -135,11 +135,42 @@ Moira requires a JPL DE-series SPK planetary kernel for all planetary computatio
 
 | Kernel | File | Size | Date range | Notes |
 | :--- | :--- | :--- | :--- | :--- |
-| DE441 | `de441.bsp` | ~3.3 GB | −13,000 to +17,000 | Original design target; maximum date coverage |
-| DE440 | `de440.bsp` | ~114 MB | 1549–2650 | Modern standard; compact for most applications |
-| DE430 | `de430.bsp` | ~115 MB | 1550–2650 | Widely deployed predecessor to DE440 |
+| DE441 | `de441.bsp` | ~3.1 GB | ~13 200 BCE – ~17 200 CE | Original design target; maximum date coverage |
+| DE440 | `de440.bsp` | ~114 MB | 1550 BCE – 2650 CE | Current JPL standard; recommended for most users |
+| DE430 | `de430.bsp` | ~128 MB | 1550 BCE – 2650 CE | Widely deployed predecessor to DE440 |
 
-Engine readiness model:
+### Kernel Manager (GUI)
+
+The easiest way to download and configure a kernel is the built-in Tkinter interface. It requires no extra dependencies — Tkinter ships with CPython on all platforms.
+
+```bash
+moira-kernel-manager
+```
+
+The window shows all supported kernels with extended descriptions (design rationale, date coverage, size trade-offs), live Installed/Missing status for each, and a real progress bar for downloads. You can also point Moira at a `.bsp` file already on disk without re-downloading.
+
+What the GUI provides:
+
+- **Kernel list** — planetary (de430, de440, de441) and supplemental (asteroids, small bodies) sections with size, date range, and status per row.
+- **Detail panel** — selecting a row shows a full description of that kernel's coverage, accuracy, and when to prefer it over the alternatives.
+- **Download with progress** — streams the selected kernel in the background; a progress bar tracks bytes received. A Cancel button interrupts the transfer and removes the partial file.
+- **Use selected** — activates an installed kernel for the current session via `set_kernel_path()`.
+- **Browse…** — open any `.bsp` file already on disk and set it as the active kernel immediately.
+
+### CLI
+
+```bash
+# List all kernels and their status
+moira-download-kernels --list
+
+# Download all missing kernels (interactive prompt)
+moira-download-kernels
+
+# Download without prompting
+moira-download-kernels --yes
+```
+
+### Engine readiness model
 
 - `Moira()` succeeds even if no kernel is installed. It auto-discovers any compatible kernel in the standard locations.
 - `m.is_kernel_available()` reports kernel readiness.
@@ -147,15 +178,9 @@ Engine readiness model:
 - `m.available_kernels` lists all installed compatible kernels.
 - Kernel-dependent calls raise `MissingEphemerisKernelError` with instructions.
 
-**Download links (JPL SSD):**
+**Standard location:** `kernels/<filename>.bsp` relative to the repository root, or `~/.moira/kernels/`. The engine resolves either automatically.
 
-- DE441: [https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de441.bsp](https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de441.bsp)
-- DE440: [https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440.bsp](https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440.bsp)
-- DE430: [https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de430.bsp](https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de430.bsp)
-
-**Standard location:** Place the kernel file at `kernels/<filename>.bsp` relative to the repository root, or in `~/.moira/kernels/`. The engine resolves this automatically.
-
-**Custom location:** Pass the path explicitly at construction, or call `set_kernel_path()` before the first `Moira()` instantiation:
+**Custom location:** pass the path at construction, or call `set_kernel_path()` before the first `Moira()` instantiation:
 
 ```python
 from moira.spk_reader import set_kernel_path
@@ -164,13 +189,16 @@ from moira import Moira
 set_kernel_path("/path/to/de440.bsp")
 m = Moira()
 
-# readiness helpers
 print(m.is_kernel_available())
 print(m.get_kernel_status())
 print(m.available_kernels)
 ```
 
-If no kernel is found, construction still succeeds. The first kernel-dependent operation raises `MissingEphemerisKernelError` with guidance.
+**Direct download links (JPL SSD):**
+
+- DE441: [https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de441.bsp](https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de441.bsp)
+- DE440: [https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440.bsp](https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440.bsp)
+- DE430: [https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de430.bsp](https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de430.bsp)
 
 ---
 
