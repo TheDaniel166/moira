@@ -114,7 +114,7 @@ def test_relation_formalizes_guest_host_structure():
     assert own.relation_kind is EgyptianBoundRelationKind.SELF_HOSTED
     assert own.own_bound is True
 
-    benefic = relate_planet_to_egyptian_bound("Mars", 95.25)
+    benefic = relate_planet_to_egyptian_bound("Mars", 109.25)
     assert benefic.host_ruler == "Jupiter"
     assert benefic.relation_kind is EgyptianBoundRelationKind.HOSTED_BY_BENEFIC
     assert benefic.hosted_by_benefic is True
@@ -158,7 +158,7 @@ def test_condition_profile_integrates_local_bound_state():
     assert self_governed.weakening_count == 0
     assert self_governed.neutral_count == 0
 
-    supported = evaluate_egyptian_bound_condition("Mars", 95.25)
+    supported = evaluate_egyptian_bound_condition("Mars", 109.25)
     assert supported.state is EgyptianBoundConditionState.SUPPORTED
     assert supported.is_supported is True
 
@@ -175,7 +175,7 @@ def test_condition_profile_integrates_local_bound_state():
 
 def test_aggregate_profile_summarizes_local_bound_conditions():
     profiles = [
-        evaluate_egyptian_bound_condition("Mars", 95.25),
+        evaluate_egyptian_bound_condition("Mars", 109.25),
         evaluate_egyptian_bound_condition("Venus", 10.0),
         evaluate_egyptian_bound_condition("Moon", 180.0),
         evaluate_egyptian_bound_condition("Sun", 15.0),
@@ -454,6 +454,8 @@ def test_network_invariants_are_enforced():
 def test_policy_rejects_unsupported_doctrine_shape():
     with pytest.raises(ValueError):
         EgyptianBoundsPolicy(doctrine="ptolemaic")  # type: ignore[arg-type]
+    venus = evaluate_egyptian_bound_condition("Venus", 10.0)
+    mars = evaluate_egyptian_bound_condition("Mars", 109.25)
     with pytest.raises(ValueError):
         EgyptianBoundsAggregateProfile(
             profiles=(venus, mars),

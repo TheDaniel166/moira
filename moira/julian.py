@@ -1060,6 +1060,34 @@ def tt_to_tdb(jd_tt: float) -> float:
 # Sidereal time
 # ---------------------------------------------------------------------------
 
+def earth_rotation_angle(jd_ut: float) -> float:
+    """
+    Compute the Earth Rotation Angle (ERA) in degrees.
+
+    Implements the IAU 2000 linear model (IERS Conventions 2010 §5.4.2;
+    SOFA ``iauEra00``):
+
+        ERA = 360 * (0.7790572732640 + 1.00273781191135448 * D)  mod 360
+
+    where D = JD(UT1) − 2451545.0.
+
+    Args:
+        jd_ut: Julian Day Number in UT1.
+
+    Returns:
+        ERA in degrees, normalised to [0, 360).
+
+    Raises:
+        Nothing — pure arithmetic.
+
+    Side effects:
+        None.
+    """
+    D = jd_ut - J2000
+    era_turns = 0.7790572732640 + 1.00273781191135448 * D
+    return (era_turns % 1.0) * 360.0
+
+
 def greenwich_mean_sidereal_time(jd_ut: float) -> float:
     """
     Compute Greenwich Mean Sidereal Time (GMST) in degrees.
@@ -1089,8 +1117,7 @@ def greenwich_mean_sidereal_time(jd_ut: float) -> float:
     T = D / JULIAN_CENTURY       # Julian centuries
 
     # Earth Rotation Angle (ERA) — IAU 2000 definition of UT1
-    era_turns = 0.7790572732640 + 1.00273781191135448 * D
-    era_deg   = (era_turns % 1.0) * 360.0
+    era_deg = earth_rotation_angle(jd_ut)
 
     # Polynomial correction (arcseconds → degrees)
     poly_arcsec = (  0.014506

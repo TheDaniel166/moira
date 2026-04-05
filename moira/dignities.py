@@ -51,6 +51,7 @@ __all__ = [
     # Tables
     "DOMICILE", "EXALTATION", "DETRIMENT", "FALL",
     "SECT", "PREFERRED_HEMISPHERE", "PREFERRED_GENDER",
+    "PLANETARY_JOYS",
     # Enums
     "ConditionPolarity",
     "EssentialDignityKind",
@@ -118,6 +119,10 @@ __all__ = [
     # Module-level functions
     "is_in_sect",
     "is_in_hayz",
+    "is_in_halb",
+    "is_in_joy",
+    "oriental_occidental",
+    "is_besieged",
     "calculate_dignities",
     "calculate_receptions",
     "calculate_dispositorship",
@@ -192,16 +197,22 @@ FALL: dict[str, list[str]] = {
 # ---------------------------------------------------------------------------
 
 SCORE_DOMICILE   =  5;  SCORE_EXALTATION =  4
+SCORE_TRIPLICITY =  3;  SCORE_BOUND      =  2;  SCORE_FACE     =  1
 SCORE_DETRIMENT  = -5;  SCORE_FALL       = -4
 SCORE_PEREGRINE  =  0
 
 SCORE_ANGULAR    =  4;  SCORE_SUCCEDENT  =  2;  SCORE_CADENT   = -2
 SCORE_DIRECT     =  2;  SCORE_RETROGRADE = -5
-SCORE_CAZIMI     =  5   # within 17′ of Sun
-SCORE_COMBUST    = -5   # within 8°
-SCORE_SUNBEAMS   = -4   # 8°–17°
+SCORE_CAZIMI     =  5   # within 17' of Sun
+SCORE_COMBUST    = -5   # within 8 degrees
+SCORE_SUNBEAMS   = -4   # 8 degrees-17 degrees
 SCORE_MR_DOMICILE   = 5
 SCORE_MR_EXALTATION = 4
+SCORE_JOY        =  3   # planet in its joy house
+SCORE_HALB       =  1   # partial hayz (two of three sect conditions)
+SCORE_ORIENTAL   =  2   # oriental planet (favourable phase)
+SCORE_OCCIDENTAL = -2   # occidental planet (unfavourable phase)
+SCORE_BESIEGED   = -5   # enclosed between two malefics
 
 ANGULAR_HOUSES   = {1, 4, 7, 10}
 SUCCEDENT_HOUSES = {2, 5, 8, 11}
@@ -359,6 +370,200 @@ def is_in_hayz(
 
 
 # ---------------------------------------------------------------------------
+# Planetary Joys
+# ---------------------------------------------------------------------------
+# The seven classical joy-house assignments: Mercury in 1st, Moon in 3rd,
+# Venus in 5th, Mars in 6th, Sun in 9th, Jupiter in 11th, Saturn in 12th.
+# Canon: Thrasyllus (1st century CE); Brennan, Hellenistic Astrology, Ch. 5.
+
+PLANETARY_JOYS: dict[str, int] = {
+    "Mercury": 1,
+    "Moon":    3,
+    "Venus":   5,
+    "Mars":    6,
+    "Sun":     9,
+    "Jupiter": 11,
+    "Saturn":  12,
+}
+
+
+def is_in_joy(planet: str, house: int) -> bool:
+    """Return True if the planet is in its joy house."""
+    return PLANETARY_JOYS.get(planet) == house
+
+
+def is_in_halb(
+    planet: str,
+    sign: str,
+    house: int,
+    is_day_chart: bool,
+    mercury_rises_before_sun: bool = True,
+) -> bool:
+    """
+    Return True if the planet is in halb (partial hayz).
+
+    Halb requires exactly two of the three hayz conditions to be met:
+      1. Planet is in its preferred sect.
+      2. Planet is in its preferred hemisphere.
+      3. Planet is in a sign of its preferred gender.
+
+    When all three are met the planet is in full hayz, not halb.
+    When fewer than two are met the planet is neither in hayz nor halb.
+    """
+    if planet not in SECT:
+        return False
+
+    cond_sect = is_in_sect(planet, is_day_chart, mercury_rises_before_sun)
+
+    preferred_hemi = PREFERRED_HEMISPHERE.get(planet)
+    if preferred_hemi == "above":
+        cond_hemi = 7 <= house <= 12
+    elif preferred_hemi == "below":
+        cond_hemi = 1 <= house <= 6
+    else:
+        cond_hemi = True
+
+    preferred_gender = PREFERRED_GENDER.get(planet)
+    if preferred_gender == "masculine":
+        cond_gender = sign in MASCULINE_SIGNS
+    elif preferred_gender == "feminine":
+        cond_gender = sign in FEMININE_SIGNS
+    else:
+        cond_gender = True
+
+    count = sum((cond_sect, cond_hemi, cond_gender))
+    return count == 2
+
+
+# -- Superior / inferior planet classification for oriental/occidental ------
+
+_SUPERIOR_PLANETS = {"Mars", "Jupiter", "Saturn"}
+_INFERIOR_PLANETS = {"Mercury", "Venus"}
+
+
+def oriental_occidental(
+    planet: str,
+    planet_lon: float,
+    sun_lon: float,
+) -> str | None:
+    """
+    Classify a planet as oriental or occidental relative to the Sun.
+
+    Classical Ptolemaic definition:
+      - Superior planets (Mars, Jupiter, Saturn) are **oriental** when they
+        rise before the Sun, i.e. their ecliptic longitude is *behind* the
+        Sun in zodiacal order (the Sun has passed them).  They are
+        **occidental** when they set after the Sun.
+      - Inferior planets (Mercury, Venus) follow the reverse rule: oriental
+        when they are morning stars (rising before the Sun), occidental when
+        evening stars.
+      - Luminaries (Sun, Moon) have no oriental/occidental classification;
+        returns None.
+
+    The geometric test: if the forward distance from the planet to the Sun
+    (going in the zodiacal direction) is less than 180 degrees, the planet
+    is east of the Sun (occidental for superiors, oriental for inferiors).
+    Otherwise the planet is west of the Sun (oriental for superiors,
+    occidental for inferiors).
+
+    Parameters
+    ----------
+    planet     : planet name
+    planet_lon : ecliptic longitude of the planet (degrees)
+    sun_lon    : ecliptic longitude of the Sun (degrees)
+
+    Returns
+    -------
+    ``"oriental"``, ``"occidental"``, or ``None`` (for luminaries).
+    """
+    if planet in ("Sun", "Moon"):
+        return None
+
+    # Forward distance from planet to Sun in zodiacal order
+    forward_to_sun = (sun_lon - planet_lon) % 360.0
+
+    if planet in _SUPERIOR_PLANETS:
+        # Superior: oriental when west of Sun (forward_to_sun < 180),
+        # occidental when east of Sun (forward_to_sun > 180)
+        if forward_to_sun <= 180.0:
+            return "oriental"
+        return "occidental"
+
+    if planet in _INFERIOR_PLANETS:
+        # Inferior: oriental when morning star (west of Sun, forward < 180),
+        # occidental when evening star (east of Sun, forward > 180)
+        if forward_to_sun <= 180.0:
+            return "oriental"
+        return "occidental"
+
+    return None
+
+
+def is_besieged(
+    planet_lon: float,
+    chart_positions: dict[str, float],
+    planet_name: str | None = None,
+    orb: float = 12.0,
+) -> tuple[str, str] | None:
+    """
+    Determine if a planet is besieged (enclosed) between two malefics.
+
+    A planet is besieged when its nearest ecliptic neighbours on *both*
+    sides are malefics (Mars and Saturn) within the specified orb.
+
+    Parameters
+    ----------
+    planet_lon      : ecliptic longitude of the planet to test
+    chart_positions : dict of body name → longitude for the whole chart
+    planet_name     : if given, excludes this name from the neighbours
+    orb             : maximum distance for a malefic to count as enclosing
+
+    Returns
+    -------
+    Tuple of (left_malefic, right_malefic) names if besieged, else None.
+    """
+    _MALEFICS = {"Mars", "Saturn"}
+
+    # Build list of (longitude, name) for all chart bodies except the target
+    bodies = []
+    for name, lon in chart_positions.items():
+        if name == planet_name:
+            continue
+        if name in ("Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"):
+            bodies.append((lon % 360.0, name))
+
+    if len(bodies) < 2:
+        return None
+
+    target = planet_lon % 360.0
+
+    # Find nearest body on each side (forward and backward in zodiacal order)
+    nearest_forward: tuple[float, str] | None = None
+    nearest_backward: tuple[float, str] | None = None
+
+    for lon, name in bodies:
+        fwd_dist = (lon - target) % 360.0
+        bwd_dist = (target - lon) % 360.0
+
+        if fwd_dist > 0 and (nearest_forward is None or fwd_dist < nearest_forward[0]):
+            nearest_forward = (fwd_dist, name)
+        if bwd_dist > 0 and (nearest_backward is None or bwd_dist < nearest_backward[0]):
+            nearest_backward = (bwd_dist, name)
+
+    if nearest_forward is None or nearest_backward is None:
+        return None
+
+    fwd_dist, fwd_name = nearest_forward
+    bwd_dist, bwd_name = nearest_backward
+
+    if fwd_name in _MALEFICS and bwd_name in _MALEFICS:
+        if fwd_dist <= orb and bwd_dist <= orb:
+            return (bwd_name, fwd_name)
+
+    return None
+
+
+# ---------------------------------------------------------------------------
 # Result dataclass
 # ---------------------------------------------------------------------------
 
@@ -372,10 +577,13 @@ class ConditionPolarity(StrEnum):
 
 
 class EssentialDignityKind(StrEnum):
-    """Typed essential dignity kinds already present in the computational core."""
+    """Typed essential dignity kinds for the five-level classical scheme."""
 
     DOMICILE = "domicile"
     EXALTATION = "exaltation"
+    TRIPLICITY = "triplicity"
+    BOUND = "bound"
+    FACE = "face"
     DETRIMENT = "detriment"
     FALL = "fall"
     PEREGRINE = "peregrine"
@@ -395,12 +603,18 @@ class AccidentalConditionKind(StrEnum):
     MUTUAL_RECEPTION = "mutual_reception"
     MUTUAL_EXALTATION = "mutual_exaltation"
     HAYZ = "hayz"
+    JOY = "joy"
+    HALB = "halb"
+    ORIENTAL = "oriental"
+    OCCIDENTAL = "occidental"
+    BESIEGED = "besieged"
 
 
 class SectStateKind(StrEnum):
     """Lean sect-state classification derived from already-computed sect truth."""
 
     IN_HAYZ = "in_hayz"
+    IN_HALB = "in_halb"
     IN_SECT = "in_sect"
     OUT_OF_SECT = "out_of_sect"
 
@@ -1591,6 +1805,10 @@ class AccidentalDignityTruth:
     solar_condition: SolarConditionTruth = field(default_factory=lambda: SolarConditionTruth(False))
     mutual_receptions: list[MutualReceptionTruth] = field(default_factory=list)
     hayz_condition: AccidentalDignityCondition | None = None
+    halb_condition: AccidentalDignityCondition | None = None
+    joy_condition: AccidentalDignityCondition | None = None
+    oriental_condition: AccidentalDignityCondition | None = None
+    besieged_condition: AccidentalDignityCondition | None = None
 
 
 @dataclass(slots=True)
@@ -2064,6 +2282,7 @@ class DignitiesService:
                 is_day_chart=is_day_chart,
                 mercury_rises_before_sun=mercury_rises_before_sun,
                 policy=policy,
+                chart_positions=planet_lons,
             )
 
             results.append(PlanetaryDignity(
@@ -2399,6 +2618,7 @@ class DignitiesService:
         is_day_chart: bool = True,
         mercury_rises_before_sun: bool = True,
         policy: DignityComputationPolicy | None = None,
+        chart_positions: dict[str, float] | None = None,
     ) -> tuple[list[str], int, AccidentalDignityTruth, SectTruth]:
         policy = DignityComputationPolicy() if policy is None else policy
         dignities: list[str] = []
@@ -2487,6 +2707,58 @@ class DignitiesService:
             conditions.append(hayz_condition)
             score += hayz_condition.score
 
+        halb_condition: AccidentalDignityCondition | None = None
+        if hayz_condition is None and sign and is_in_halb(
+            planet, sign, house, is_day_chart, mercury_rises_before_sun
+        ):
+            halb_condition = AccidentalDignityCondition("sect", "halb", "In Halb", SCORE_HALB)
+            dignities.append(halb_condition.label)
+            conditions.append(halb_condition)
+            score += halb_condition.score
+
+        joy_condition: AccidentalDignityCondition | None = None
+        if is_in_joy(planet, house):
+            joy_condition = AccidentalDignityCondition("joy", "joy", f"In Joy (H{house})", SCORE_JOY)
+            dignities.append(joy_condition.label)
+            conditions.append(joy_condition)
+            score += joy_condition.score
+
+        # -- Oriental / Occidental --
+        # For superior planets (Mars/Jupiter/Saturn): oriental is beneficial (+2),
+        # occidental is debilitating (-2).  For inferior planets (Mercury/Venus):
+        # the reverse — occidental is beneficial, oriental is debilitating.
+        oriental_condition: AccidentalDignityCondition | None = None
+        phase = oriental_occidental(planet, planet_lon, sun_lon)
+        if phase is not None:
+            is_superior = planet in _SUPERIOR_PLANETS
+            if phase == "oriental":
+                phase_score = SCORE_ORIENTAL if is_superior else SCORE_OCCIDENTAL
+                oriental_condition = AccidentalDignityCondition(
+                    "phase", "oriental", "Oriental", phase_score,
+                )
+            else:
+                phase_score = SCORE_OCCIDENTAL if is_superior else SCORE_ORIENTAL
+                oriental_condition = AccidentalDignityCondition(
+                    "phase", "occidental", "Occidental", phase_score,
+                )
+            dignities.append(oriental_condition.label)
+            conditions.append(oriental_condition)
+            score += oriental_condition.score
+
+        # -- Besieging --
+        besieged_condition: AccidentalDignityCondition | None = None
+        if chart_positions is not None:
+            besieged = is_besieged(planet_lon, chart_positions, planet_name=planet)
+            if besieged is not None:
+                left, right = besieged
+                besieged_condition = AccidentalDignityCondition(
+                    "besieging", "besieged",
+                    f"Besieged ({left}/{right})", SCORE_BESIEGED,
+                )
+                dignities.append(besieged_condition.label)
+                conditions.append(besieged_condition)
+                score += besieged_condition.score
+
         accidental_truth = AccidentalDignityTruth(
             conditions=conditions,
             house_condition=house_condition,
@@ -2494,6 +2766,10 @@ class DignitiesService:
             solar_condition=solar_truth,
             mutual_receptions=reception_truth,
             hayz_condition=hayz_condition,
+            halb_condition=halb_condition,
+            joy_condition=joy_condition,
+            oriental_condition=oriental_condition,
+            besieged_condition=besieged_condition,
         )
 
         return dignities, score, accidental_truth, sect_truth
@@ -2594,6 +2870,11 @@ class DignitiesService:
             ("mutual_reception", "domicile"): AccidentalConditionKind.MUTUAL_RECEPTION,
             ("mutual_reception", "exaltation"): AccidentalConditionKind.MUTUAL_EXALTATION,
             ("sect", "hayz"): AccidentalConditionKind.HAYZ,
+            ("sect", "halb"): AccidentalConditionKind.HALB,
+            ("joy", "joy"): AccidentalConditionKind.JOY,
+            ("phase", "oriental"): AccidentalConditionKind.ORIENTAL,
+            ("phase", "occidental"): AccidentalConditionKind.OCCIDENTAL,
+            ("besieging", "besieged"): AccidentalConditionKind.BESIEGED,
         }
         return AccidentalConditionClassification(
             kind=kind_map[(condition.category, condition.code)],

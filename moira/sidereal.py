@@ -313,12 +313,15 @@ _AYANAMSA_DRIFT_PER_CENTURY: dict[str, float] = {
 _STAR_ANCHORED: dict[str, tuple[str, float]] = {
     # Chitrapaksha / True Lahiri: Spica (α Virginis / Chitra) at 180° sidereal
     Ayanamsa.TRUE_CHITRAPAKSHA: ("Spica",     180.0),
-    # Revati: ζ Piscium at 0° Aries sidereal (= 359° → mod 360 = 359° or 0°)
-    Ayanamsa.TRUE_REVATI:       ("Revati",      0.0),
+    # Revati: ζ Piscium at 29°50' Pisces sidereal (359°50' = 359.8333…°)
+    # Swiss sid_mode=28 uses 359°50'; the prior 0° was a rounding error that
+    # shifted the ayanamsa by ~10 arcminutes.
+    Ayanamsa.TRUE_REVATI:       ("Revati",      359.0 + 50.0 / 60.0),
     # Aldebaran at 15° Taurus sidereal (45°)
     Ayanamsa.ALDEBARAN_15_TAU:  ("Aldebaran",  45.0),
-    # Pushya-paksha: δ Cancri (Asellus Australis) at 16°40' Cancer sidereal (106.667°)
-    Ayanamsa.TRUE_PUSHYA:       ("Asellus Australis", 106.667),
+    # Pushya-paksha: δ Cancri (Asellus Australis) at 16°00' Cancer sidereal (106°)
+    # Swiss sid_mode=29 uses 106°; the prior 106.667° (16°40') was incorrect.
+    Ayanamsa.TRUE_PUSHYA:       ("Asellus Australis", 106.0),
     # Mula-paksha (Chandra Hari): λ Scorpii (Shaula) at 0° Mula sidereal (240°)
     Ayanamsa.TRUE_MULA:         ("Shaula",    240.0),
 }

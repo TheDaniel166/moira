@@ -242,14 +242,27 @@ def _altitude(
     pressure_mbar: float = 1013.25,
     temperature_c: float = 10.0,
 ) -> float:
-    """Apparent altitude of a body at a given time and location (degrees)."""
+    """Geometric altitude of a body at a given time and location (degrees).
+
+    Returns geometric (non-refracted) altitude.  The rise/set bisector uses
+    horizon-altitude thresholds (e.g. -0.8333° for the Sun) that already
+    embed the standard refraction correction by definition, so the altitude
+    signal used for bisection must be geometric.  Passing refraction=False to
+    sky_position_at keeps the two sides of the comparison consistent.
+
+    commit 4173706 (2026-03-25) added atmospheric refraction to sky_position_at
+    (refraction=True default).  Without this fix, _altitude returned apparent
+    altitude while the threshold remained geometric, shifting rise ~300 s early
+    and set ~300 s late.  The pressure_mbar / temperature_c parameters are
+    retained in the signature for API compatibility but have no effect when
+    refraction=False.
+    """
     try:
         from .planets import sky_position_at
 
         return sky_position_at(
             body_name, jd_ut, lat, lon,
-            pressure_mbar=pressure_mbar,
-            temperature_c=temperature_c,
+            refraction=False,
         ).altitude
     except Exception:
         ra, dec = _body_ra_dec(jd_ut, body_name)

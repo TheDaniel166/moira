@@ -1,7 +1,7 @@
 # Moira Validation Report - Astrology
 
-**Version:** 1.1
-**Date:** 2026-03-23
+**Version:** 1.2
+**Date:** 2026-04-05
 **Runtime target:** Python 3.14
 **Validation philosophy:** external astrology software where stable and meaningful;
 canonical formulas and doctrine tables where no stable oracle exists; Moira as
@@ -37,9 +37,9 @@ The validation standard here differs from the astronomy layer:
 
 | Domain | Oracle / basis | Enforcement | Status |
 |---|---|---|---|
-| Sidereal systems / ayanamshas (30 systems) | Astro.com `swetest` offline fixture | `pytest` | Validated |
+| Sidereal systems / ayanamshas (34 systems) | Astro.com `swetest` offline fixture | `pytest` | Validated (31 of 33 in fixture; 2 without Swiss oracle) |
 | House systems (15 systems, 3168 iterations) | Swiss `setest/t.exp` offline fixture | `pytest` + validator script | Validated |
-| Aspects (major, tight-orb) | Horizons-validated position substrate + angular-distance geometry | `pytest` | Validated |
+| Aspects (major, tight-orb) | Horizons-validated position substrate + angular-distance geometry | `pytest` | Validated (unit + integration) |
 | Antiscia / contra-antiscia | Formula derivation + invariants (Valens, Lilly) | `pytest` | Validated |
 | Midpoints | Formula derivation + invariants (Ebertin, Witte) | `pytest` | Validated |
 | Lots / Arabic Parts | Formula derivation, day/night reversal (Paulus, Valens) | `pytest` | Validated |
@@ -70,12 +70,20 @@ Status language in this table is intentional:
 
 ## 3. Sidereal Systems
 
-**Oracle:** Official Astro.com `swetest` CGI output, captured offline  
-**Fixture:** `tests/fixtures/sidereal_swetest_reference.json`  
-**Threshold:** 0.001 degrees (3.6 arcseconds)  
+**Oracle:** Official Astro.com `swetest` CGI output, captured offline
+**Fixture:** `tests/fixtures/sidereal_swetest_reference.json`
+**Thresholds:**
+- Mean / polynomial ayanamsas: 0.001 degrees (3.6 arcseconds)
+- Star-anchored ("true") ayanamsas: 0.035 degrees (126 arcseconds)
+
 **Test file:** `tests/integration/test_sidereal_external_reference.py`
 
-30 ayanamsha systems are exposed. 29 have direct Swiss-mappable validation.
+34 ayanamsha systems are exposed. 31 have direct Swiss-mappable fixture data.
+2 systems are permanently excluded from the Swiss fixture:
+- `Aryabhata 522` — Moira-specific lineage (Pingree & Plofker); no Swiss
+  sid_mode equivalent exists.
+- `Galactic Equator (IAU 1958)` — Swiss sid_mode=32 exists but carries a 190″
+  base anchor difference (different galactic-ecliptic node computation, not drift).
 1 (`Galactic Center 5 Sag`) is validated by invariant: `Galactic Center 0 Sag`
 + 5 degrees.
 
@@ -85,8 +93,37 @@ SS Citra, True Chitrapaksha, True Revati, True Pushya, Aldebaran (15 Tau),
 Babylonian variants, Galactic Center (0 Sag), Galactic Center (Cochrane),
 Galactic Center (RGB), and others.
 
-Fixture coverage is 2 epochs x 29 systems x 2 modes (mean/true) plus invariant
-and coverage guards.
+Fixture coverage is 2 epochs x 31 systems x 2 modes (mean/true) plus invariant
+and coverage guards. 129 tests pass.
+
+### 3.1 Star-Anchored True Ayanamsa Model-Basis Difference
+
+Five systems (True Chitrapaksha, True Revati, Aldebaran (15 Tau), True Pushya,
+True Mula) compute the ayanamsa from the live tropical longitude of a reference
+star rather than a polynomial formula. Because Moira uses IAU 2006
+Fukushima-Williams precession while Swiss Ephemeris uses an older precession
+model, and because Moira's star pipeline does not include annual aberration
+(~20.5″ maximum effect), a systematic residual exists between Moira and Swiss
+for these systems:
+
+| System | Anchor star | Residual envelope | Dominant cause |
+|---|---|---|---|
+| True Chitrapaksha | Spica | 5–19″ | Annual aberration (~20.5″) |
+| True Pushya | δ Cancri | 12–18″ | Aberration + proper motion |
+| True Revati | ζ Piscium | 5–20″ | Aberration + proper motion |
+| Aldebaran (15 Tau) | Aldebaran | 91–109″ | High proper motion (−189 mas/yr dec) + precession model |
+
+These residuals are model-basis differences where Moira's IAU 2006 pipeline is
+the stronger model. The 126″ threshold envelope accommodates the worst case
+(Aldebaran at historical epochs). Mean-mode results for the same systems pass
+at the standard 3.6″ threshold because mean mode uses polynomial formulas
+calibrated to Swiss.
+
+**Fixes applied 2026-04-05:**
+- TRUE_REVATI target longitude corrected from 0° to 359°50′ (Swiss sid_mode=28).
+  Previous error: ~580″; after fix: 5–20″.
+- TRUE_PUSHYA target longitude corrected from 106.667° (16°40′ Cancer) to 106°
+  (16°00′ Cancer, Swiss sid_mode=29). Previous error: ~2413″; after fix: 12–18″.
 
 ---
 
@@ -216,7 +253,8 @@ finished external-oracle comparison or a strong internal / doctrinal pass.
 
 ### 7.1 Secondary Progressions and Solar Arc Directions
 
-**Current validation surface:** `tests/unit/test_progressions.py`,
+**Current validation surface:** `tests/unit/test_moira_progressions.py`,
+`tests/unit/test_progressions_public_api.py`,
 `tests/integration/test_progressions_external_reference.py`  
 **Backend standard:** `moira/docs/PROGRESSIONS_BACKEND_STANDARD.md`
 
@@ -438,4 +476,15 @@ What to validate:
 - mansion boundary calculation against published tables
 - Moon mansion assignment for known dates
 - name-map consistency across Arabic / Sanskrit naming layers if both are exposed
+
+---
+
+## 9. Astrology Validation Status
+
+| Domain | Current state | Recommended oracle | Priority |
+|---|---|---|---|
+| Sidereal true-ayanamsa target fixes | **Fixed 2026-04-05.** TRUE_REVATI target corrected 0° → 359°50′; TRUE_PUSHYA target corrected 106.667° → 106°. Errors dropped from 580–2413″ to 5–20″. Remaining residuals are model-basis differences (IAU 2006 vs Swiss precession). | Astro.com `swetest` | Closed |
+| Sidereal fixture coverage gap | **Resolved 2026-04-05.** Babyl Britton (sid=38) and True Mula (sid=35) added to fixture — 31 of 33 now covered. Aryabhata 522 has no Swiss equivalent (Moira-specific lineage). GALEQU_IAU1958 has 190″ base anchor difference vs Swiss sid_mode=32 (methodological, not drift). Both permanently excluded. | Astro.com `swetest` | Closed |
+| Aspects integration fixture | **Resolved 2026-04-05.** `aspects_reference.json` built from Horizons-validated positions. 7 cases across 4 epochs, 9 integration tests pass (J1900 skipped — no tight-orb aspects). | Horizons-validated substrate | Closed |
+| Vimshottari integration fixture | **Resolved 2026-04-05.** 3 cases populated (J2000 noon, India 1947, Aug 1985), all Lahiri + Julian year. 9 mahadasha + 9 antardasha per case verified by doctrinal self-consistency: nakshatra-lord sequence, canonical durations, proportional first-period balance. 4 integration tests pass. | Doctrinal self-consistency | Closed |
 

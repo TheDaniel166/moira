@@ -92,6 +92,21 @@ _CURATED_PUBLIC_NAMES = [
     "almuten_figuris",
     "find_phasis",
     "mutual_receptions",
+    "is_in_sect",
+    "is_in_hayz",
+    "is_in_halb",
+    "is_in_joy",
+    "oriental_occidental",
+    "is_besieged",
+    # Tables
+    "DOMICILE",
+    "EXALTATION",
+    "DETRIMENT",
+    "FALL",
+    "SECT",
+    "PREFERRED_HEMISPHERE",
+    "PREFERRED_GENDER",
+    "PLANETARY_JOYS",
 ]
 
 _INTERNAL_NAMES = [
@@ -142,4 +157,4 @@ class TestModuleAgreement:
             )
 
     def test_curated_count_is_76(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 76
+        assert len(_CURATED_PUBLIC_NAMES) == 90

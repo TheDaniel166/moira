@@ -44,6 +44,8 @@ __all__ = [
     "EgyptianBoundsNetworkEdge",
     "EgyptianBoundsNetworkProfile",
     "EGYPTIAN_BOUNDS",
+    "PTOLEMAIC_BOUNDS",
+    "CHALDEAN_BOUNDS",
     "egyptian_bound_of",
     "bound_ruler",
     "classify_egyptian_bound",
@@ -91,6 +93,8 @@ class EgyptianBoundNetworkMode(StrEnum):
 
 class EgyptianBoundsDoctrine(StrEnum):
     EGYPTIAN = "egyptian"
+    PTOLEMAIC = "ptolemaic"
+    CHALDEAN = "chaldean"
 
 
 @dataclass(frozen=True)
@@ -98,8 +102,10 @@ class EgyptianBoundsPolicy:
     doctrine: EgyptianBoundsDoctrine = EgyptianBoundsDoctrine.EGYPTIAN
 
     def __post_init__(self) -> None:
-        if self.doctrine is not EgyptianBoundsDoctrine.EGYPTIAN:
-            raise ValueError(f"Unsupported Egyptian bounds doctrine: {self.doctrine}")
+        if not isinstance(self.doctrine, EgyptianBoundsDoctrine):
+            raise ValueError(
+                f"doctrine must be an EgyptianBoundsDoctrine member, got {self.doctrine!r}"
+            )
 
 
 # Traditional Egyptian bounds: (ruler, start_degree, end_degree) per sign.
@@ -116,6 +122,43 @@ EGYPTIAN_BOUNDS: dict[str, list[tuple[str, float, float]]] = {
     "Capricorn":   [("Mercury", 0,  7), ("Jupiter", 7, 14), ("Venus",   14, 22), ("Saturn",  22, 26), ("Mars",   26, 30)],
     "Aquarius":    [("Mercury", 0,  7), ("Venus",   7, 13), ("Jupiter", 13, 20), ("Mars",    20, 25), ("Saturn", 25, 30)],
     "Pisces":      [("Venus",   0, 12), ("Jupiter", 12, 16), ("Mercury", 16, 19), ("Mars",   19, 28), ("Saturn", 28, 30)],
+}
+
+
+# Ptolemaic bounds/terms — Ptolemy, Tetrabiblos I.21 (Robbins translation).
+# Note: Ptolemy's own term tables differ from the Egyptian bounds above.
+# Canon: Ptolemy, Tetrabiblos I.21; Hephaistion reconstruction.
+PTOLEMAIC_BOUNDS: dict[str, list[tuple[str, float, float]]] = {
+    "Aries":       [("Jupiter", 0,  6), ("Venus",   6, 12), ("Mercury", 12, 20), ("Mars",    20, 25), ("Saturn", 25, 30)],
+    "Taurus":      [("Venus",   0,  8), ("Mercury", 8, 14), ("Jupiter", 14, 22), ("Saturn",  22, 27), ("Mars",   27, 30)],
+    "Gemini":      [("Mercury", 0,  6), ("Jupiter", 6, 12), ("Venus",   12, 17), ("Mars",    17, 24), ("Saturn", 24, 30)],
+    "Cancer":      [("Mars",    0,  7), ("Venus",   7, 13), ("Mercury", 13, 19), ("Jupiter", 19, 26), ("Saturn", 26, 30)],
+    "Leo":         [("Jupiter", 0,  6), ("Venus",   6, 11), ("Saturn",  11, 18), ("Mercury", 18, 24), ("Mars",   24, 30)],
+    "Virgo":       [("Mercury", 0,  7), ("Venus",   7, 17), ("Jupiter", 17, 21), ("Mars",    21, 28), ("Saturn", 28, 30)],
+    "Libra":       [("Saturn",  0,  6), ("Mercury", 6, 14), ("Jupiter", 14, 21), ("Venus",   21, 28), ("Mars",   28, 30)],
+    "Scorpio":     [("Mars",    0,  7), ("Venus",   7, 11), ("Mercury", 11, 19), ("Jupiter", 19, 24), ("Saturn", 24, 30)],
+    "Sagittarius": [("Jupiter", 0, 12), ("Venus",  12, 17), ("Mercury", 17, 21), ("Saturn",  21, 26), ("Mars",   26, 30)],
+    "Capricorn":   [("Mercury", 0,  7), ("Jupiter", 7, 14), ("Venus",   14, 22), ("Saturn",  22, 26), ("Mars",   26, 30)],
+    "Aquarius":    [("Mercury", 0,  7), ("Venus",   7, 13), ("Jupiter", 13, 20), ("Mars",    20, 25), ("Saturn", 25, 30)],
+    "Pisces":      [("Venus",   0, 12), ("Jupiter", 12, 16), ("Mercury", 16, 19), ("Mars",   19, 28), ("Saturn", 28, 30)],
+}
+
+
+# Chaldean bounds/terms — pre-Ptolemaic tradition via the Yavanajataka.
+# Canon: D. Pingree, The Yavanajataka of Sphujidhvaja (Harvard, 1978).
+CHALDEAN_BOUNDS: dict[str, list[tuple[str, float, float]]] = {
+    "Aries":       [("Mars",    0,  6), ("Jupiter", 6, 12), ("Venus",   12, 20), ("Saturn",  20, 25), ("Mercury", 25, 30)],
+    "Taurus":      [("Venus",   0,  8), ("Mercury", 8, 14), ("Jupiter", 14, 22), ("Saturn",  22, 27), ("Mars",    27, 30)],
+    "Gemini":      [("Mercury", 0,  6), ("Jupiter", 6, 12), ("Venus",   12, 17), ("Saturn",  17, 24), ("Mars",    24, 30)],
+    "Cancer":      [("Mars",    0,  7), ("Jupiter", 7, 13), ("Mercury", 13, 19), ("Venus",   19, 26), ("Saturn",  26, 30)],
+    "Leo":         [("Saturn",  0,  6), ("Mercury", 6, 11), ("Venus",   11, 18), ("Jupiter", 18, 24), ("Mars",    24, 30)],
+    "Virgo":       [("Mercury", 0,  7), ("Venus",   7, 17), ("Jupiter", 17, 21), ("Saturn",  21, 28), ("Mars",    28, 30)],
+    "Libra":       [("Saturn",  0,  6), ("Venus",   6, 14), ("Jupiter", 14, 21), ("Mercury", 21, 28), ("Mars",    28, 30)],
+    "Scorpio":     [("Mars",    0,  7), ("Jupiter", 7, 11), ("Venus",   11, 19), ("Mercury", 19, 24), ("Saturn",  24, 30)],
+    "Sagittarius": [("Jupiter", 0, 12), ("Venus",  12, 17), ("Mercury", 17, 21), ("Mars",    21, 26), ("Saturn",  26, 30)],
+    "Capricorn":   [("Mercury", 0,  7), ("Jupiter", 7, 14), ("Venus",   14, 22), ("Mars",    22, 26), ("Saturn",  26, 30)],
+    "Aquarius":    [("Saturn",  0,  7), ("Mercury", 7, 13), ("Venus",   13, 20), ("Jupiter", 20, 25), ("Mars",    25, 30)],
+    "Pisces":      [("Venus",   0, 12), ("Jupiter", 12, 16), ("Mercury", 16, 19), ("Saturn",  19, 28), ("Mars",   28, 30)],
 }
 
 
@@ -157,8 +200,12 @@ class EgyptianBoundTruth:
     def __post_init__(self) -> None:
         if not (0.0 <= self.longitude < 360.0):
             raise ValueError(f"Egyptian bound longitude must be normalized: {self.longitude}")
-        if self.doctrine is not EgyptianBoundsDoctrine.EGYPTIAN:
-            raise ValueError(f"Unsupported Egyptian bounds doctrine on truth: {self.doctrine}")
+        if self.doctrine not in (
+            EgyptianBoundsDoctrine.EGYPTIAN,
+            EgyptianBoundsDoctrine.PTOLEMAIC,
+            EgyptianBoundsDoctrine.CHALDEAN,
+        ):
+            raise ValueError(f"Unsupported bounds doctrine on truth: {self.doctrine}")
         if self.sign not in SIGNS:
             raise ValueError(f"Unknown Egyptian bound sign: {self.sign}")
         if not (0 <= self.sign_index < 12):
@@ -690,6 +737,10 @@ def _resolve_policy(policy: EgyptianBoundsPolicy | None) -> EgyptianBoundsPolicy
 
 
 def _table_for_policy(policy: EgyptianBoundsPolicy) -> dict[str, list[tuple[str, float, float]]]:
+    if policy.doctrine is EgyptianBoundsDoctrine.PTOLEMAIC:
+        return PTOLEMAIC_BOUNDS
+    if policy.doctrine is EgyptianBoundsDoctrine.CHALDEAN:
+        return CHALDEAN_BOUNDS
     return EGYPTIAN_BOUNDS
 
 

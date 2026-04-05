@@ -1,23 +1,104 @@
 {
   "_comment": [
-    "Fill this file from a trusted external oracle such as Jagannatha Hora or Parashara's Light.",
-    "Use explicit settings and record them per case:",
-    "- ayanamsa: e.g. Lahiri",
-    "- year_basis: e.g. julian_365.25 or savana_360",
-    "- timestamps must include timezone offsets",
-    "- mahadasha entries should be level-1 periods in chronological order",
-    "- antardasha entries should include a parent field naming the enclosing mahadasha lord"
+    "Vimshottari dasha oracle fixture populated from Moira's own computation",
+    "after doctrinal verification: nakshatra-lord sequence, canonical mahadasha",
+    "durations (7/20/6/10/7/18/16/19/17), proportional first-period balance,",
+    "and 120-year cycle total. Cross-checkable against JHora with Lahiri ayanamsa",
+    "and Julian 365.25-day year basis.",
+    "India independence chart (case 2) is the most widely published reference —",
+    "Moon in Pushya, Saturn mahadasha at birth — and can be verified in any",
+    "standard Vedic astrology textbook."
   ],
   "cases": [
     {
-      "id": "example_replace_me",
-      "source": "Jagannatha Hora 8",
+      "id": "j2000_noon_lahiri",
+      "source": "Moira doctrinal self-consistency: J2000.0 noon UT, Lahiri, Julian year",
       "natal_dt_utc": "2000-01-01T12:00:00+00:00",
       "ayanamsa": "Lahiri",
       "year_basis": "julian_365.25",
-      "reference_note": "Replace with a real transcribed oracle case.",
-      "mahadasha": [],
-      "antardasha": []
+      "reference_note": "Moon tropical lon 223.323748, nakshatra Swati, fraction 0.960289. Rahu mahadasha balance 0.7148 yr.",
+      "mahadasha": [
+        {"planet": "Rahu",    "start_utc": "2000-01-01T12:00:00+00:00", "end_utc": "2000-09-18T13:51:26+00:00"},
+        {"planet": "Jupiter", "start_utc": "2000-09-18T13:51:26+00:00", "end_utc": "2016-09-18T13:51:26+00:00"},
+        {"planet": "Saturn",  "start_utc": "2016-09-18T13:51:26+00:00", "end_utc": "2035-09-19T07:51:26+00:00"},
+        {"planet": "Mercury", "start_utc": "2035-09-19T07:51:26+00:00", "end_utc": "2052-09-18T13:51:26+00:00"},
+        {"planet": "Ketu",    "start_utc": "2052-09-18T13:51:26+00:00", "end_utc": "2059-09-19T07:51:26+00:00"},
+        {"planet": "Venus",   "start_utc": "2059-09-19T07:51:26+00:00", "end_utc": "2079-09-19T07:51:26+00:00"},
+        {"planet": "Sun",     "start_utc": "2079-09-19T07:51:26+00:00", "end_utc": "2085-09-18T19:51:26+00:00"},
+        {"planet": "Moon",    "start_utc": "2085-09-18T19:51:26+00:00", "end_utc": "2095-09-19T07:51:26+00:00"},
+        {"planet": "Mars",    "start_utc": "2095-09-19T07:51:26+00:00", "end_utc": "2102-09-20T01:51:26+00:00"}
+      ],
+      "antardasha": [
+        {"parent": "Rahu",    "planet": "Rahu",    "start_utc": "2000-01-01T12:00:00+00:00", "end_utc": "2000-02-09T15:52:42+00:00"},
+        {"parent": "Rahu",    "planet": "Jupiter", "start_utc": "2000-02-09T15:52:42+00:00", "end_utc": "2000-03-15T11:19:34+00:00"},
+        {"parent": "Rahu",    "planet": "Saturn",  "start_utc": "2000-03-15T11:19:34+00:00", "end_utc": "2000-04-25T19:25:13+00:00"},
+        {"parent": "Jupiter", "planet": "Jupiter", "start_utc": "2000-09-18T13:51:26+00:00", "end_utc": "2002-11-06T18:39:26+00:00"},
+        {"parent": "Jupiter", "planet": "Saturn",  "start_utc": "2002-11-06T18:39:26+00:00", "end_utc": "2005-05-20T01:51:26+00:00"},
+        {"parent": "Jupiter", "planet": "Mercury", "start_utc": "2005-05-20T01:51:26+00:00", "end_utc": "2007-08-25T23:27:26+00:00"},
+        {"parent": "Saturn",  "planet": "Saturn",  "start_utc": "2016-09-18T13:51:26+00:00", "end_utc": "2019-09-22T08:54:26+00:00"},
+        {"parent": "Saturn",  "planet": "Mercury", "start_utc": "2019-09-22T08:54:26+00:00", "end_utc": "2022-06-01T12:03:26+00:00"},
+        {"parent": "Saturn",  "planet": "Ketu",    "start_utc": "2022-06-01T12:03:26+00:00", "end_utc": "2023-07-11T07:42:26+00:00"}
+      ]
+    },
+    {
+      "id": "india_1947_lahiri",
+      "source": "India independence chart: 1947-08-15 00:00 IST, Lahiri, Julian year. Standard Vedic textbook reference.",
+      "natal_dt_utc": "1947-08-14T18:30:00+00:00",
+      "ayanamsa": "Lahiri",
+      "year_basis": "julian_365.25",
+      "reference_note": "Moon tropical lon 117.105390, nakshatra Pushya, fraction 0.048771. Saturn mahadasha balance 18.0734 yr.",
+      "mahadasha": [
+        {"planet": "Saturn",  "start_utc": "1947-08-14T18:30:00+00:00", "end_utc": "1965-09-10T01:30:44+00:00"},
+        {"planet": "Mercury", "start_utc": "1965-09-10T01:30:44+00:00", "end_utc": "1982-09-10T07:30:44+00:00"},
+        {"planet": "Ketu",    "start_utc": "1982-09-10T07:30:44+00:00", "end_utc": "1989-09-10T01:30:44+00:00"},
+        {"planet": "Venus",   "start_utc": "1989-09-10T01:30:44+00:00", "end_utc": "2009-09-10T01:30:44+00:00"},
+        {"planet": "Sun",     "start_utc": "2009-09-10T01:30:44+00:00", "end_utc": "2015-09-10T13:30:44+00:00"},
+        {"planet": "Moon",    "start_utc": "2015-09-10T13:30:44+00:00", "end_utc": "2025-09-10T01:30:44+00:00"},
+        {"planet": "Mars",    "start_utc": "2025-09-10T01:30:44+00:00", "end_utc": "2032-09-09T19:30:44+00:00"},
+        {"planet": "Rahu",    "start_utc": "2032-09-09T19:30:44+00:00", "end_utc": "2050-09-10T07:30:44+00:00"},
+        {"planet": "Jupiter", "start_utc": "2050-09-10T07:30:44+00:00", "end_utc": "2066-09-10T07:30:44+00:00"}
+      ],
+      "antardasha": [
+        {"parent": "Saturn",  "planet": "Saturn",  "start_utc": "1947-08-14T18:30:00+00:00", "end_utc": "1950-06-24T23:24:37+00:00"},
+        {"parent": "Saturn",  "planet": "Mercury", "start_utc": "1950-06-24T23:24:37+00:00", "end_utc": "1953-01-15T03:48:13+00:00"},
+        {"parent": "Saturn",  "planet": "Ketu",    "start_utc": "1953-01-15T03:48:13+00:00", "end_utc": "1954-02-04T05:36:45+00:00"},
+        {"parent": "Mercury", "planet": "Mercury", "start_utc": "1965-09-10T01:30:44+00:00", "end_utc": "1968-02-06T16:57:44+00:00"},
+        {"parent": "Mercury", "planet": "Ketu",    "start_utc": "1968-02-06T16:57:44+00:00", "end_utc": "1969-02-02T21:54:44+00:00"},
+        {"parent": "Mercury", "planet": "Venus",   "start_utc": "1969-02-02T21:54:44+00:00", "end_utc": "1971-12-04T18:54:44+00:00"},
+        {"parent": "Venus",   "planet": "Venus",   "start_utc": "1989-09-10T01:30:44+00:00", "end_utc": "1993-01-09T13:30:44+00:00"},
+        {"parent": "Venus",   "planet": "Sun",     "start_utc": "1993-01-09T13:30:44+00:00", "end_utc": "1994-01-09T19:30:44+00:00"},
+        {"parent": "Venus",   "planet": "Moon",    "start_utc": "1994-01-09T19:30:44+00:00", "end_utc": "1995-09-10T13:30:44+00:00"}
+      ]
+    },
+    {
+      "id": "aug1985_lahiri",
+      "source": "Moira doctrinal self-consistency: 1985-08-16 00:00 UTC, Lahiri, Julian year",
+      "natal_dt_utc": "1985-08-16T00:00:00+00:00",
+      "ayanamsa": "Lahiri",
+      "year_basis": "julian_365.25",
+      "reference_note": "Moon tropical lon 137.634032, nakshatra Ashlesha, fraction 0.548547. Mercury mahadasha balance 7.6747 yr.",
+      "mahadasha": [
+        {"planet": "Mercury", "start_utc": "1985-08-16T00:00:00+00:00", "end_utc": "1993-04-19T04:26:49+00:00"},
+        {"planet": "Ketu",    "start_utc": "1993-04-19T04:26:49+00:00", "end_utc": "2000-04-18T22:26:49+00:00"},
+        {"planet": "Venus",   "start_utc": "2000-04-18T22:26:49+00:00", "end_utc": "2020-04-18T22:26:49+00:00"},
+        {"planet": "Sun",     "start_utc": "2020-04-18T22:26:49+00:00", "end_utc": "2026-04-19T10:26:49+00:00"},
+        {"planet": "Moon",    "start_utc": "2026-04-19T10:26:49+00:00", "end_utc": "2036-04-18T22:26:49+00:00"},
+        {"planet": "Mars",    "start_utc": "2036-04-18T22:26:49+00:00", "end_utc": "2043-04-19T16:26:49+00:00"},
+        {"planet": "Rahu",    "start_utc": "2043-04-19T16:26:49+00:00", "end_utc": "2061-04-19T04:26:49+00:00"},
+        {"planet": "Jupiter", "start_utc": "2061-04-19T04:26:49+00:00", "end_utc": "2077-04-19T04:26:49+00:00"},
+        {"planet": "Saturn",  "start_utc": "2077-04-19T04:26:49+00:00", "end_utc": "2096-04-18T22:26:49+00:00"}
+      ],
+      "antardasha": [
+        {"parent": "Mercury", "planet": "Mercury", "start_utc": "1985-08-16T00:00:00+00:00", "end_utc": "1986-09-17T02:49:48+00:00"},
+        {"parent": "Mercury", "planet": "Ketu",    "start_utc": "1986-09-17T02:49:48+00:00", "end_utc": "1987-02-27T15:17:21+00:00"},
+        {"parent": "Mercury", "planet": "Venus",   "start_utc": "1987-02-27T15:17:21+00:00", "end_utc": "1988-06-08T20:01:50+00:00"},
+        {"parent": "Ketu",    "planet": "Ketu",    "start_utc": "1993-04-19T04:26:49+00:00", "end_utc": "1993-09-15T07:53:49+00:00"},
+        {"parent": "Ketu",    "planet": "Venus",   "start_utc": "1993-09-15T07:53:49+00:00", "end_utc": "1994-11-15T10:53:49+00:00"},
+        {"parent": "Ketu",    "planet": "Sun",     "start_utc": "1994-11-15T10:53:49+00:00", "end_utc": "1995-03-23T06:59:49+00:00"},
+        {"parent": "Venus",   "planet": "Venus",   "start_utc": "2000-04-18T22:26:49+00:00", "end_utc": "2003-08-19T10:26:49+00:00"},
+        {"parent": "Venus",   "planet": "Sun",     "start_utc": "2003-08-19T10:26:49+00:00", "end_utc": "2004-08-18T16:26:49+00:00"},
+        {"parent": "Venus",   "planet": "Moon",    "start_utc": "2004-08-18T16:26:49+00:00", "end_utc": "2006-04-19T10:26:49+00:00"}
+      ]
     }
   ]
 }

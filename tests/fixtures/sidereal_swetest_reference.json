@@ -43,6 +43,19 @@
             "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid24+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
           }
         },
+        "Babylonian (Britton)": {
+          "mean": {
+            "ayanamsa_deg": 24.615733666667,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid38+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 38,
+          "true": {
+            "ayanamsa_deg": 24.611864083333,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid38+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
         "Babylonian (Eta Piscium)": {
           "mean": {
             "ayanamsa_deg": 24.522508833333333,
@@ -329,6 +342,19 @@
             "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid27+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
           }
         },
+        "True Mula": {
+          "mean": {
+            "ayanamsa_deg": 24.579942055556,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid35+-nonut+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 35,
+          "true": {
+            "ayanamsa_deg": 24.576072305556,
+            "jd_tt": 2451544.500738756,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid35+-ut00%3A00&b=1.1.2000&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
         "True Pushya": {
           "mean": {
             "ayanamsa_deg": 22.727048138888886,
@@ -425,6 +451,19 @@
             "ayanamsa_deg": 15.425986694444443,
             "jd_tt": 2314654.000716682,
             "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid24+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "Babylonian (Britton)": {
+          "mean": {
+            "ayanamsa_deg": 19.384728083333,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid38+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 38,
+          "true": {
+            "ayanamsa_deg": 19.384327277778,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid38+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
           }
         },
         "Babylonian (Eta Piscium)": {
@@ -711,6 +750,19 @@
             "ayanamsa_deg": 18.61960738888889,
             "jd_tt": 2314654.000716682,
             "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid27+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          }
+        },
+        "True Mula": {
+          "mean": {
+            "ayanamsa_deg": 19.356272194444,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid35+-nonut+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
+          },
+          "sid_mode": 35,
+          "true": {
+            "ayanamsa_deg": 19.355871500000,
+            "jd_tt": 2314654.000716682,
+            "url": "https://www.astro.com/cgi/swetest.cgi?arg=-sid35+-ut12%3A00&b=16.3.1625&e=-eswe&f=tPZsD&n=1&p=f+-xfSpica&s=1"
           }
         },
         "True Pushya": {

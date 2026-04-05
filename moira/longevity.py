@@ -47,6 +47,8 @@ from .dignities import (
     DOMICILE, EXALTATION,
     ANGULAR_HOUSES, SUCCEDENT_HOUSES, CADENT_HOUSES,
     CLASSIC_7,
+    SCORE_DOMICILE, SCORE_EXALTATION,
+    SCORE_TRIPLICITY, SCORE_BOUND, SCORE_FACE,
 )
 
 __all__ = [
@@ -158,39 +160,39 @@ def dignity_score_at(
     sign, deg_in_sign = _sign_and_deg(longitude)
     score = 0
 
-    # Domicile (5 pts)
+    # Domicile
     if sign in DOMICILE.get(planet, []):
-        score += 5
+        score += SCORE_DOMICILE
 
-    # Exaltation (4 pts)
+    # Exaltation
     if sign in EXALTATION.get(planet, []):
-        score += 4
+        score += SCORE_EXALTATION
 
-    # Triplicity (3 pts)
+    # Triplicity
     trip = TRIPLICITY_RULERS.get(sign)
     if trip is not None:
         day_ruler, night_ruler, part_ruler = trip
         if is_day_chart and planet == day_ruler:
-            score += 3
+            score += SCORE_TRIPLICITY
         elif not is_day_chart and planet == night_ruler:
-            score += 3
+            score += SCORE_TRIPLICITY
         elif planet == part_ruler:
             score += 1  # participating ruler is weaker by convention
 
-    # Egyptian Bound (2 pts)
+    # Egyptian Bound
     bounds = EGYPTIAN_BOUNDS.get(sign, [])
     for ruler, start, end in bounds:
         if start <= deg_in_sign < end and ruler == planet:
-            score += 2
+            score += SCORE_BOUND
             break
 
-    # Face / Decan (1 pt)
-    # Decan index: 0–35 across the zodiac
+    # Face / Decan
+    # Decan index: 0-35 across the zodiac
     lon_norm = longitude % 360.0
     decan_idx = int(lon_norm // 10) % 36
     face_ruler = FACE_RULERS[decan_idx]
     if face_ruler == planet:
-        score += 1
+        score += SCORE_FACE
 
     return score
 

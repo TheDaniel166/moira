@@ -196,6 +196,7 @@ __all__ = [
     "CANONICAL_ASPECTS",
     "DEFAULT_POLICY",
     # Enums
+    "AspectDirection",
     "AspectDomain",
     "AspectFamily",
     "AspectPatternKind",
@@ -223,7 +224,9 @@ __all__ = [
     "find_declination_aspects",
     "find_out_of_bounds",
     "find_patterns",
+    "find_whole_sign_aspects",
     "OutOfBoundsBody",
+    "overcoming",
 ]
 
 
@@ -237,9 +240,26 @@ class AspectDomain(str, Enum):
 
     ZODIACAL    — measured along the ecliptic (longitude separation).
     DECLINATION — measured in celestial latitude (parallel/contra-parallel).
+    WHOLE_SIGN  — measured by sign-count (no orb).
     """
     ZODIACAL    = "zodiacal"
     DECLINATION = "declination"
+    WHOLE_SIGN  = "whole_sign"
+
+
+class AspectDirection(str, Enum):
+    """
+    Zodiacal casting direction of an aspect ray.
+
+    SINISTER — the aspect ray goes forward in zodiacal order (e.g. from
+               Aries toward Leo for a trine).
+    DEXTER   — the aspect ray goes backward in zodiacal order (e.g. from
+               Leo toward Aries for a trine).
+
+    Canon: Ptolemy, Tetrabiblos I.13; Brennan, Hellenistic Astrology, Ch. 11.
+    """
+    SINISTER = "sinister"
+    DEXTER   = "dexter"
 
 
 class AspectTier(str, Enum):
@@ -1519,6 +1539,7 @@ class AspectData:
     applying:       bool | None = None   # True=applying, False=separating, None=unknown/stationary
     stationary:     bool        = False  # True when either body's speed is < 0.01°/day
     classification: AspectClassification | None = None  # explicit type description
+    direction:      AspectDirection | None = None  # sinister/dexter from body1's perspective
 
     # ------------------------------------------------------------------
     # Inspectability — read-only, derived-only convenience properties
@@ -1832,6 +1853,38 @@ def _is_stationary(b1: str, b2: str, speeds: dict[str, float]) -> bool:
             or abs(speeds.get(b2, 1.0)) < _STAT_BROAD)
 
 
+def _aspect_direction(lon1: float, lon2: float, angle: float) -> AspectDirection | None:
+    """
+    Determine the sinister/dexter direction of an aspect from body1's perspective.
+
+    A sinister aspect is cast forward in zodiacal order (body2 is ahead of body1).
+    A dexter aspect is cast backward (body2 is behind body1).
+    Conjunctions and oppositions have no directional polarity; return None.
+    """
+    if angle == 0.0 or angle == 180.0:
+        return None
+    forward = (lon2 - lon1) % 360.0
+    if forward <= 180.0:
+        return AspectDirection.SINISTER
+    return AspectDirection.DEXTER
+
+
+def overcoming(lon1: float, lon2: float) -> bool:
+    """
+    Return True if the body at lon1 overcomes the body at lon2.
+
+    Overcoming (katarchein) occurs when a planet is in the 10th-sign position
+    relative to another — i.e., it casts a dexter square onto the other planet.
+    The body in the superior (10th-sign) position dominates.
+
+    Canon: Vettius Valens; Brennan, Hellenistic Astrology, Ch. 11.
+    """
+    sign1 = int(lon1 % 360.0 // 30)
+    sign2 = int(lon2 % 360.0 // 30)
+    diff = (sign1 - sign2) % 12
+    return diff == 3  # body1 is 3 signs ahead = 10th-sign from body2
+
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -1930,6 +1983,7 @@ def find_aspects(
                         applying=app,
                         stationary=sta,
                         classification=_ASPECT_CLASSIFICATION[adef.name],
+                        direction=_aspect_direction(lon1, lon2, adef.angle),
                     ))
 
     results.sort(key=lambda a: a.orb)
@@ -2032,6 +2086,7 @@ def aspects_between(
                 applying=app,
                 stationary=sta,
                 classification=_ASPECT_CLASSIFICATION[adef.name],
+                direction=_aspect_direction(lon_a, lon_b, adef.angle),
             ))
 
     results.sort(key=lambda a: a.orb)
@@ -2126,6 +2181,7 @@ def aspects_to_point(
                     allowed_orb=allowed,
                     applying=None,
                     classification=_ASPECT_CLASSIFICATION[adef.name],
+                    direction=_aspect_direction(lon, point_longitude, adef.angle),
                 ))
 
     results.sort(key=lambda a: a.orb)
@@ -2269,4 +2325,100 @@ def find_out_of_bounds(
                 excess=excess,
             ))
     results.sort(key=lambda o: o.excess, reverse=True)
+    return results
+
+
+# ---------------------------------------------------------------------------
+# Whole-sign aspects (Phase 4 — Hellenistic completion)
+# ---------------------------------------------------------------------------
+
+# Sign-count → (aspect_name, symbol, angle) for the five Ptolemaic aspects
+_WHOLE_SIGN_MAP: dict[int, tuple[str, str, float]] = {
+    0:  ("Conjunction", "☌",   0.0),
+    2:  ("Sextile",    "⚹",  60.0),
+    3:  ("Square",     "□",  90.0),
+    4:  ("Trine",      "△", 120.0),
+    6:  ("Opposition", "☍", 180.0),
+    # Mirror side (e.g. 10 signs = sextile, 9 = square, 8 = trine)
+    10: ("Sextile",    "⚹",  60.0),
+    9:  ("Square",     "□",  90.0),
+    8:  ("Trine",      "△", 120.0),
+}
+
+_WHOLE_SIGN_CLASSIFICATION: dict[str, AspectClassification] = {
+    name: AspectClassification(
+        domain=AspectDomain.WHOLE_SIGN,
+        tier=AspectTier.MAJOR,
+        family=_FAMILY_BY_NAME[name],
+    )
+    for name in ("Conjunction", "Sextile", "Square", "Trine", "Opposition")
+}
+
+
+def find_whole_sign_aspects(
+    positions: dict[str, float],
+) -> list[AspectData]:
+    """
+    Detect whole-sign (sign-based) aspects among a set of bodies.
+
+    Whole-sign aspects use sign-count separation rather than degree-based
+    orbs.  Two bodies form a Ptolemaic aspect when the number of signs
+    between their sign positions matches a classical pattern:
+
+        0 signs  → Conjunction
+        2 or 10  → Sextile
+        3 or  9  → Square
+        4 or  8  → Trine
+        6        → Opposition
+
+    Aversion (1, 5, 7, 11 signs apart) yields no Ptolemaic aspect.
+
+    Whole-sign aspects carry no orb (``orb = 0.0``) and exactness is
+    always ``1.0``.  ``applying`` is always ``None`` since the aspect is
+    categorical, not orbital.
+
+    The ``direction`` field (sinister/dexter) is computed from the actual
+    longitudes, following the same logic as degree-based aspects.
+
+    Parameters
+    ----------
+    positions : dict mapping body name → ecliptic longitude (degrees)
+
+    Returns
+    -------
+    List of AspectData with ``classification.domain == WHOLE_SIGN``.
+    """
+    bodies = list(positions.keys())
+    results: list[AspectData] = []
+
+    for i in range(len(bodies)):
+        for j in range(i + 1, len(bodies)):
+            b1, b2 = bodies[i], bodies[j]
+            lon1, lon2 = positions[b1], positions[b2]
+
+            sign1 = int(lon1 % 360.0 // 30)
+            sign2 = int(lon2 % 360.0 // 30)
+            sign_diff = (sign1 - sign2) % 12
+
+            mapping = _WHOLE_SIGN_MAP.get(sign_diff)
+            if mapping is None:
+                continue
+
+            aspect_name, symbol, angle = mapping
+            sep = angular_distance(lon1, lon2)
+
+            results.append(AspectData(
+                body1=b1,
+                body2=b2,
+                aspect=aspect_name,
+                symbol=symbol,
+                angle=angle,
+                separation=sep,
+                orb=0.0,
+                allowed_orb=0.0,
+                applying=None,
+                classification=_WHOLE_SIGN_CLASSIFICATION[aspect_name],
+                direction=_aspect_direction(lon1, lon2, angle),
+            ))
+
     return results

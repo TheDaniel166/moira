@@ -5,7 +5,7 @@ import math
 import pytest
 
 from moira.coordinates import mat_mul, nutation_matrix_equatorial, precession_matrix_equatorial
-from moira.julian import greenwich_mean_sidereal_time
+from moira.julian import apparent_sidereal_time_at, earth_rotation_angle, greenwich_mean_sidereal_time, ut_to_tt
 from moira.obliquity import nutation, true_obliquity
 from moira.precession import mean_obliquity_p03, precession_matrix
 
@@ -57,6 +57,16 @@ def test_gmst_matches_erfa(label: str, jd_tt: float, jd_ut: float) -> None:
     moira_gmst = greenwich_mean_sidereal_time(jd_ut) % 360.0
 
     assert _wrapped_arcsec(erfa_gmst, moira_gmst) < PASS_THRESHOLD_ARCSEC
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize(("label", "jd_tt", "jd_ut"), TEST_EPOCHS, ids=[label for label, _, _ in TEST_EPOCHS])
+def test_era_matches_erfa(label: str, jd_tt: float, jd_ut: float) -> None:
+    d1, d2 = _split(jd_ut)
+    erfa_era = math.degrees(erfa.era00(d1, d2)) % 360.0
+    moira_era = earth_rotation_angle(jd_ut) % 360.0
+
+    assert _wrapped_arcsec(erfa_era, moira_era) < PASS_THRESHOLD_ARCSEC
 
 
 @pytest.mark.integration
@@ -130,3 +140,31 @@ def test_gast_approximation_matches_erfa(label: str, jd_tt: float, jd_ut: float)
     moira_gast_deg = (moira_gmst + moira_dpsi_deg * math.cos(moira_eps_rad)) % 360.0
 
     assert _wrapped_arcsec(erfa_gast_deg, moira_gast_deg) < PASS_THRESHOLD_ARCSEC
+
+
+# Modern epochs only (J1500–J2100): full GAST via erfa.gst06a.
+# Ancient epochs (pre-J1000) diverge up to ~1.1" due to a model-basis
+# difference between Moira's equation-of-equinoxes approach and ERFA's
+# equation-of-origins approach; see VALIDATION_ASTRONOMY.md §3.7.1.
+_MODERN_EPOCHS = [
+    ("J1500.0",  2268923.5),
+    ("J1800.0",  2378496.5),
+    ("J1900.0",  2415020.5),
+    ("J2000.0",  2451545.0),
+    ("J2010.0",  2455196.5),
+    ("J2024.0",  2460310.5),
+    ("J2050.0",  2469807.5),
+    ("J2100.0",  2488069.5),
+]
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize(("label", "jd_ut"), _MODERN_EPOCHS, ids=[l for l, _ in _MODERN_EPOCHS])
+def test_full_gast_matches_erfa_gst06a(label: str, jd_ut: float) -> None:
+    jd_tt = ut_to_tt(jd_ut)
+    d1u, d2u = _split(jd_ut)
+    d1t, d2t = _split(jd_tt)
+    erfa_gast = math.degrees(erfa.gst06a(d1u, d2u, d1t, d2t)) % 360.0
+    moira_gast = apparent_sidereal_time_at(jd_ut) % 360.0
+
+    assert _wrapped_arcsec(erfa_gast, moira_gast) < PASS_THRESHOLD_ARCSEC

@@ -986,7 +986,13 @@ def heliacal_rising_event(
         if twilight_jd is None:
             continue
         star_alt = _star_altitude(name, twilight_jd, latitude, longitude)
-        if star_alt <= 0.0:
+        # The apparent horizon lies at geometric altitude −0.5667° (standard
+        # atmospheric refraction at the horizon lifts objects by ~34 arcmin).
+        # A star at geometric altitude −0.5667° is at apparent altitude 0° and
+        # is physically at the horizon for an observer.  Using 0.0 would require
+        # the star to clear the geometric horizon, which is ~half a degree more
+        # conservative than the true visibility threshold.
+        if star_alt <= -0.5667:
             continue
         return _build_heliacal_event(
             "heliacal_rising",
@@ -1059,7 +1065,8 @@ def heliacal_setting_event(
             if twilight_jd is None:
                 continue
             star_alt = _star_altitude(name, twilight_jd, latitude, longitude)
-            if star_alt > 0.0:
+            # Same apparent-horizon correction as heliacal rising.
+            if star_alt > -0.5667:
                 last_visible = (day_offset, se, twilight_jd)
         elif last_visible is not None and abs_se < disappearance_threshold:
             last_day_offset, last_elongation, last_jd = last_visible

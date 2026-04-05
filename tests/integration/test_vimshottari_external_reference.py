@@ -28,10 +28,15 @@ def _dt(value: str) -> datetime:
 
 
 def _find_period(periods: list, planet: str, start_jd: float, end_jd: float, parent: str | None = None):
-    for period in periods:
+    search = periods
+    if parent is not None:
+        # Antardasha: search within the named parent's .sub list
+        search = []
+        for maha in periods:
+            if maha.planet == parent:
+                search.extend(maha.sub)
+    for period in search:
         if period.planet != planet:
-            continue
-        if parent is not None and period.parent_planet != parent:
             continue
         if abs(period.start_jd - start_jd) <= PASS_THRESHOLD_DAYS and abs(period.end_jd - end_jd) <= PASS_THRESHOLD_DAYS:
             return period
