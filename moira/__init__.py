@@ -6,14 +6,14 @@ in ``moira.facade``; subsystem APIs are imported from their owning modules.
 """
 
 import sys as _sys
-from ._kernel_paths import find_kernel as _find_kernel
+from ._kernel_paths import find_planetary_kernel as _find_planetary_kernel
 
-if not _find_kernel("de441.bsp").exists():
+if _find_planetary_kernel() is None:
     print(
         "\n"
-        "  [moira] WARNING: de441.bsp is not installed.\n"
-        "  Most Moira features will fail until you download the JPL kernels.\n"
-        "  Run the following command to download them:\n"
+        "  [moira] WARNING: no planetary kernel is installed.\n"
+        "  Most Moira features will fail until you install a compatible JPL SPK kernel.\n"
+        "  Run the following command to download one:\n"
         "\n"
         "      moira-download-kernels\n"
         "\n"
@@ -24,7 +24,7 @@ if not _find_kernel("de441.bsp").exists():
         file=_sys.stderr,
     )
 
-del _sys, _find_kernel
+del _sys, _find_planetary_kernel
 
 from .constants import Body, HouseSystem
 from .facade import Chart, MissingEphemerisKernelError, Moira, __author__, __version__
@@ -32,10 +32,12 @@ from .houses import HouseCusps
 from .julian import (
     CalendarDateTime,
     DeltaTPolicy,
+    apparent_sidereal_time_at,
     calendar_datetime_from_jd,
     calendar_from_jd,
     datetime_from_jd,
     delta_t,
+    delta_t_from_jd,
     format_jd_utc,
     greenwich_mean_sidereal_time,
     jd_from_datetime,
@@ -158,7 +160,9 @@ __all__ = [
     "safe_datetime_from_jd",
     "greenwich_mean_sidereal_time",
     "local_sidereal_time",
+    "apparent_sidereal_time_at",
     "delta_t",
+    "delta_t_from_jd",
     "orbital_elements_at",
     "distance_extremes_at",
     "ayanamsa",

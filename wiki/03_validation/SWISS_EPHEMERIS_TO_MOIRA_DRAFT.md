@@ -123,7 +123,7 @@ Verified equivalents in `moira.julian`:
 | `swe.julday(...)` | `moira.julian.julian_day(...)` |
 | `swe.revjul(...)` | `moira.julian.calendar_from_jd(...)` |
 | UTC `datetime -> JD` | `moira.julian.jd_from_datetime(dt)` |
-| `swe.deltat(...)` | `moira.julian.delta_t(year_decimal)` |
+| `swe.deltat(...)` | `moira.julian.delta_t_from_jd(jd_ut)` |
 | `swe.sidtime(...)` | `moira.julian.greenwich_mean_sidereal_time(jd_ut)` |
 | apparent sidereal time | `moira.julian.apparent_sidereal_time(...)` |
 | local sidereal time | `moira.julian.local_sidereal_time(...)` |
@@ -376,10 +376,10 @@ is already covered versus what still needs inclusion.
 | `close` | unsupported | none | no C-handle lifecycle |
 | `julday`, `revjul` | mapped | `julian_day`, `calendar_from_jd` | verified |
 | UTC `datetime -> JD` | mapped | `jd_from_datetime` | verified |
-| `deltat` | partial | `delta_t(year_decimal)` | same domain, different signature |
+| `deltat` | mapped | `delta_t_from_jd(jd_ut)` in `moira.julian`; `delta_t(year_decimal)` also available | JD-native wrapper added; delegates to `delta_t` via `decimal_year_from_jd` |
 | `sidtime` | mapped | `greenwich_mean_sidereal_time` | verified |
 | `calc_ut` | partial | `planet_at(...)`, `m.chart(...)`, `m.sky_position(...)` | split across low-level and facade |
-| `calc` | partial | low-level TT/UT distinction not fully inventoried yet | needs exact signature audit |
+| `calc` | mapped | `planet_at(body, jd_ut, jd_tt=...)` in `moira.planets`; `jd_tt` kwarg skips UT→TT conversion for direct TT input | TT fast path confirmed at `planets.py:608` |
 | `houses`, `houses_ex` | mapped | `calculate_houses(...)`, `m.houses(...)` | verified |
 | `set_sid_mode`, `get_ayanamsa_ut` | partial | `moira.sidereal.ayanamsa(...)` | per-call doctrine, no global mode |
 | `fixstar_ut`, `fixstar_mag` | mapped | `fixed_star_at(...)`, `star_magnitude(...)`, `m.fixed_star(...)` | verified |
@@ -470,10 +470,10 @@ named in the generated draft, with the best current status from this audit.
 | `utc_to_jd` | partial | `jd_from_datetime(...)` | exact helper name from draft not audited |
 | `jdet_to_utc` | partial | `datetime_from_jd(...)`, `calendar_datetime_from_jd(...)` | shape differs |
 | `jdut1_to_utc` | partial | `datetime_from_jd(...)`, `calendar_datetime_from_jd(...)` | no exact UT1-specific helper audited |
-| `deltat` | partial | `delta_t(year_decimal)` | signature differs |
+| `deltat` | mapped | `delta_t_from_jd(jd_ut)` in `moira.julian`; `delta_t(year_decimal)` also available | JD-native wrapper added |
 | `deltat_ex` | partial | `delta_t(...)` | no exact flag variant audited |
 | `sidtime` | mapped | `greenwich_mean_sidereal_time(...)` | verified |
-| `sidtime0` | partial | `apparent_sidereal_time(...)`, `local_sidereal_time(...)` | exact helper parity not finalized |
+| `sidtime0` | mapped | `apparent_sidereal_time_at(jd_ut, longitude=0.0)` in `moira.julian`; `longitude=0` → GAST, non-zero → LAST | wrapper added; nutation and obliquity derived internally |
 | `time_equ` | mapped | `equation_of_time(jd_tt)` in `moira.coordinates` | Phase 1 |
 | `day_of_week` | partial | compute via converted datetime/calendar | no audited direct helper yet |
 | `utc_time_zone` | stdlib | Python `datetime`/`zoneinfo` or Qt timezone handling | not a Moira concern |
@@ -483,7 +483,7 @@ named in the generated draft, with the best current status from this audit.
 | Swiss symbol | Status | Current Moira equivalent | Notes |
 | --- | --- | --- | --- |
 | `calc_ut` | partial | `planet_at(...)`, `m.chart(...)`, `m.sky_position(...)` | split across low-level and facade |
-| `calc` | partial | low-level planet pipeline, TT/UT handling internal | exact 1:1 row still needs signature audit |
+| `calc` | mapped | `planet_at(body, jd_ut, jd_tt=...)` in `moira.planets`; `jd_tt` kwarg skips UT→TT conversion for direct TT input | TT fast path confirmed at `planets.py:608` |
 | `calc_pctr` | mapped | `planet_relative_to(...)` in `moira.planets` | Phase 2 |
 | `get_planet_name` | partial | body strings / constants already carry names | no audited exact helper |
 | `get_orbital_elements` | mapped | `orbital_elements_at(body, jd_ut) → KeplerianElements` in `moira.orbits` | Phase 4 |

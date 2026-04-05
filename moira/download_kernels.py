@@ -28,10 +28,22 @@ from ._kernel_paths import find_kernel, user_kernels_dir
 
 _REGISTRY: list[dict] = [
     {
+        "filename": "de430.bsp",
+        "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de430.bsp",
+        "size_hint": "~128 MB",
+        "description": "JPL DE430 planetary ephemeris (1550 BCE – 2650 CE)",
+    },
+    {
+        "filename": "de440.bsp",
+        "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de440.bsp",
+        "size_hint": "~114 MB",
+        "description": "JPL DE440 planetary ephemeris (1550 BCE – 2650 CE, improved accuracy)",
+    },
+    {
         "filename": "de441.bsp",
         "url": "https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de441.bsp",
         "size_hint": "~3.1 GB",
-        "description": "JPL DE441 planetary ephemeris (required for all charts)",
+        "description": "JPL DE441 planetary ephemeris (extended range: ~13 200 BCE – ~17 200 CE)",
     },
     {
         "filename": "asteroids.bsp",
@@ -91,7 +103,11 @@ def _download(url: str, dest: Path, size_hint: str) -> None:
 # ---------------------------------------------------------------------------
 
 def download_missing(interactive: bool = True) -> None:
-    """Download all missing large kernels to ~/.moira/kernels/."""
+    """Download all missing kernels to ~/.moira/kernels/.
+
+    Only one planetary kernel is required (de430, de440, or de441).
+    Asteroid and small-body kernels are optional.
+    """
     dest_dir = user_kernels_dir()
     missing = [k for k in _REGISTRY if not _is_present(k["filename"])]
 

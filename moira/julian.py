@@ -16,10 +16,10 @@ Public surface:
     decimal_year, decimal_year_from_jd,
     calendar_datetime_from_jd, safe_datetime_from_jd, datetime_from_jd,
     centuries_from_j2000,
-    delta_t, delta_t_nasa_canon,
+    delta_t, delta_t_from_jd, delta_t_nasa_canon,
     ut_to_tt, ut_to_tt_nasa_canon, tt_to_ut, tt_to_ut_nasa_canon,
     tt_to_tdb,
-    greenwich_mean_sidereal_time, apparent_sidereal_time, local_sidereal_time
+    greenwich_mean_sidereal_time, apparent_sidereal_time, apparent_sidereal_time_at, local_sidereal_time
 
 Import-time side effects:
     Reads ``moira/data/delta_t_hpiers_2016.txt`` once at module load to
@@ -712,6 +712,30 @@ def delta_t(year: float) -> float:
     return -20 + 32 * u * u
 
 
+def delta_t_from_jd(jd_ut: float) -> float:
+    """
+    Approximate ΔT = TT − UT1 in seconds for a Julian Day in UT1.
+
+    Convenience wrapper over ``delta_t(year)`` for callers who hold a
+    Julian Day rather than a decimal year.  Converts ``jd_ut`` to a
+    decimal year via ``decimal_year_from_jd`` then delegates entirely
+    to ``delta_t``.
+
+    Args:
+        jd_ut: Julian Day Number in UT1.
+
+    Returns:
+        ΔT in seconds (positive means TT is ahead of UT1).
+
+    Raises:
+        Nothing — pure arithmetic.
+
+    Side effects:
+        None.
+    """
+    return delta_t(decimal_year_from_jd(jd_ut))
+
+
 def delta_t_nasa_canon(year: float) -> float:
     """
     NASA eclipse-canon ΔT model in seconds.
@@ -1146,6 +1170,41 @@ def apparent_sidereal_time(jd_ut: float, nutation_longitude: float, obliquity: f
     ee   = (nutation_longitude * math.cos(obliquity * math.pi / 180.0)
             + _gast_complementary_terms(jd_ut))
     return (gmst + ee) % 360.0
+
+
+def apparent_sidereal_time_at(jd_ut: float, longitude: float = 0.0) -> float:
+    """
+    Compute Greenwich (or Local) Apparent Sidereal Time in degrees from a
+    Julian Day alone.
+
+    Convenience wrapper over ``apparent_sidereal_time`` that derives the
+    required nutation-in-longitude and true obliquity internally.  When a
+    non-zero ``longitude`` is supplied the result is Local Apparent Sidereal
+    Time (LAST); at the default of 0.0 it is GAST.
+
+    The nutation and obliquity are computed via a deferred import of
+    ``moira.obliquity`` to avoid a module-level circular dependency
+    (``obliquity`` imports ``julian``).
+
+    Args:
+        jd_ut:     Julian Day Number in UT1.
+        longitude: Observer's geographic east longitude in degrees
+                   (default 0.0 → GAST).
+
+    Returns:
+        Apparent sidereal time in degrees, normalised to [0, 360).
+
+    Raises:
+        Nothing — pure arithmetic.
+
+    Side effects:
+        None (deferred import of ``moira.obliquity`` on first call).
+    """
+    from .obliquity import nutation as _nutation, true_obliquity as _true_obliquity
+    jd_tt = ut_to_tt(jd_ut)
+    dpsi, _deps = _nutation(jd_tt)
+    obl = _true_obliquity(jd_tt)
+    return (apparent_sidereal_time(jd_ut, dpsi, obl) + longitude) % 360.0
 
 
 def local_sidereal_time(jd_ut: float, longitude: float,

@@ -295,10 +295,10 @@ Truth-basis totals:
 | `SIDBITS` | constant | unsupported | `none` | none | Swiss engine/file/mode constant is not part of the Moira public API |
 | `SIDM_ALDEBARAN_15TAU` | constant | mapped | `symbolic` | `Ayanamsa.ALDEBARAN_15_TAU` | verified naming difference |
 | `SIDM_ARYABHATA` | constant | mapped | `symbolic` | `Ayanamsa.ARYABHATA` | verified |
-| `SIDM_ARYABHATA_522` | constant | missing | `none` | none | not present in current `Ayanamsa` namespace |
+| `SIDM_ARYABHATA_522` | constant | mapped | `symbolic` | `Ayanamsa.ARYABHATA_522` | epoch 522 CE; Aryabhatiya lineage; cited in Pingree & Plofker peer-reviewed scholarship |
 | `SIDM_ARYABHATA_MSUN` | constant | mapped | `symbolic` | `Ayanamsa.ARYABHATA_MSUN` | verified |
-| `SIDM_B1950` | constant | missing | `none` | none | not present in current `Ayanamsa` namespace |
-| `SIDM_BABYL_BRITTON` | constant | missing | `none` | none | not present in current `Ayanamsa` namespace |
+| `SIDM_B1950` | constant | unsupported | `none` | none | **Rejected C1+C4**: mathematical coordinate frame, not an astrological sidereal zodiac; no user community |
+| `SIDM_BABYL_BRITTON` | constant | mapped | `symbolic` | `Ayanamsa.BABYL_BRITTON` | Britton's Babylonian epoch; peer-reviewed in Centaurus, AHES, and JHA |
 | `SIDM_BABYL_ETPSC` | constant | mapped | `symbolic` | `Ayanamsa.ETA_PISCIUM` | verified naming difference |
 | `SIDM_BABYL_HUBER` | constant | mapped | `symbolic` | `Ayanamsa.HUBER` | verified |
 | `SIDM_BABYL_KUGLER1` | constant | mapped | `symbolic` | `Ayanamsa.KUGLER_1` | verified naming difference |
@@ -307,25 +307,25 @@ Truth-basis totals:
 | `SIDM_DELUCE` | constant | mapped | `symbolic` | `Ayanamsa.DE_LUCE` | verified naming difference |
 | `SIDM_DJWHAL_KHUL` | constant | mapped | `symbolic` | `Ayanamsa.DJWHAL_KHUL` | verified |
 | `SIDM_FAGAN_BRADLEY` | constant | mapped | `symbolic` | `Ayanamsa.FAGAN_BRADLEY` | verified |
-| `SIDM_GALALIGN_MARDYKS` | constant | missing | `none` | none | not present in current `Ayanamsa` namespace |
+| `SIDM_GALALIGN_MARDYKS` | constant | unsupported | `none` | `UserDefinedAyanamsa(30.017775)` | **Rejected C1**: practitioner publication only (Mardyks/Skydram); not peer-reviewed |
 | `SIDM_GALCENT_0SAG` | constant | mapped | `symbolic` | `Ayanamsa.GALACTIC_0_SAG` | verified naming difference |
 | `SIDM_GALCENT_COCHRANE` | constant | mapped | `symbolic` | `Ayanamsa.GALCENT_COCHRANE` | verified naming difference |
-| `SIDM_GALCENT_MULA_WILHELM` | constant | missing | `none` | none | not present in current `Ayanamsa` namespace |
+| `SIDM_GALCENT_MULA_WILHELM` | constant | unsupported | `none` | `UserDefinedAyanamsa(20.039201)` | **Rejected C3**: 0.36' from `TRUE_REVATI` — sub-arcminute; not doctrinally distinct |
 | `SIDM_GALCENT_RGILBRAND` | constant | mapped | `symbolic` | `Ayanamsa.GALCENT_RG_BRAND` | verified naming difference |
-| `SIDM_GALEQU_FIORENZA` | constant | missing | `none` | none | not present in current `Ayanamsa` namespace |
-| `SIDM_GALEQU_IAU1958` | constant | missing | `none` | none | not present in current `Ayanamsa` namespace |
-| `SIDM_GALEQU_MULA` | constant | missing | `none` | none | not present in current `Ayanamsa` namespace |
-| `SIDM_GALEQU_TRUE` | constant | missing | `none` | none | not present in current `Ayanamsa` namespace |
+| `SIDM_GALEQU_FIORENZA` | constant | unsupported | `none` | `UserDefinedAyanamsa(25.000000)` | **Rejected C1**: self-published (lunarplanner.com); round-number epoch 25.000000° undermines provenance |
+| `SIDM_GALEQU_IAU1958` | constant | mapped | `symbolic` | `Ayanamsa.GALEQU_IAU1958` | Blaauw et al. 1960 (BAN 11, 414); non-standard galactic nodal drift applied |
+| `SIDM_GALEQU_MULA` | constant | unsupported | `none` | `UserDefinedAyanamsa(23.409406)` | **Rejected C1**: composite nakshatra-galactic definition; no standalone peer-reviewed epoch publication |
+| `SIDM_GALEQU_TRUE` | constant | unsupported | `none` | none | **Rejected C1+C2**: dynamic — no fixed epoch; the galactic equator at date of computation cannot define a sidereal zodiac |
 | `SIDM_HIPPARCHOS` | constant | mapped | `symbolic` | `Ayanamsa.HIPPARCHOS` | verified |
-| `SIDM_J1900` | constant | missing | `none` | none | not present in current `Ayanamsa` namespace |
-| `SIDM_J2000` | constant | missing | `none` | none | not present in current `Ayanamsa` namespace |
+| `SIDM_J1900` | constant | unsupported | `none` | none | **Rejected C1+C4**: mathematical coordinate frame, not an astrological sidereal zodiac; no user community |
+| `SIDM_J2000` | constant | unsupported | `none` | none | **Rejected C1+C4**: mathematical coordinate frame, not an astrological sidereal zodiac; no user community |
 | `SIDM_JN_BHASIN` | constant | mapped | `symbolic` | `Ayanamsa.BHASIN` | verified naming difference |
 | `SIDM_KRISHNAMURTI` | constant | mapped | `symbolic` | `Ayanamsa.KRISHNAMURTI` | verified |
-| `SIDM_KRISHNAMURTI_VP291` | constant | missing | `none` | none | not present in current `Ayanamsa` namespace |
+| `SIDM_KRISHNAMURTI_VP291` | constant | unsupported | `none` | `UserDefinedAyanamsa(23.780346)` | **Rejected C1+C3**: C3 marginal at 1.21' from `KRISHNAMURTI`; C1 practitioner journal only (Vishnu Prabha 291); strict criteria not met |
 | `SIDM_LAHIRI` | constant | mapped | `symbolic` | `Ayanamsa.LAHIRI` | verified |
-| `SIDM_LAHIRI_1940` | constant | missing | `none` | none | not present in current `Ayanamsa` namespace |
-| `SIDM_LAHIRI_ICRC` | constant | missing | `none` | none | not present in current `Ayanamsa` namespace |
-| `SIDM_LAHIRI_VP285` | constant | missing | `none` | none | not present in current `Ayanamsa` namespace |
+| `SIDM_LAHIRI_1940` | constant | unsupported | `none` | `UserDefinedAyanamsa(23.842304)` | **Rejected C3**: 0.14' from `TRUE_CHITRAPAKSHA` — sub-arcminute; not doctrinally distinct |
+| `SIDM_LAHIRI_ICRC` | constant | unsupported | `none` | `UserDefinedAyanamsa(23.856770)` | **Rejected C3**: 0.02' from `LAHIRI` — sub-arcminute; numerically indistinguishable |
+| `SIDM_LAHIRI_VP285` | constant | unsupported | `none` | `UserDefinedAyanamsa(23.863462)` | **Rejected C3**: 0.38' from `LAHIRI` — sub-arcminute; not doctrinally distinct |
 | `SIDM_RAMAN` | constant | mapped | `symbolic` | `Ayanamsa.RAMAN` | verified |
 | `SIDM_SASSANIAN` | constant | mapped | `symbolic` | `Ayanamsa.SASSANIAN` | verified |
 | `SIDM_SS_CITRA` | constant | mapped | `symbolic` | `Ayanamsa.SS_CITRA` | verified |
@@ -333,13 +333,13 @@ Truth-basis totals:
 | `SIDM_SURYASIDDHANTA` | constant | mapped | `symbolic` | `Ayanamsa.SURYASIDDHANTA` | verified |
 | `SIDM_SURYASIDDHANTA_MSUN` | constant | mapped | `symbolic` | `Ayanamsa.SURYASIDDHANTA_MSUN` | verified |
 | `SIDM_TRUE_CITRA` | constant | mapped | `symbolic` | `Ayanamsa.TRUE_CHITRAPAKSHA` | verified naming difference |
-| `SIDM_TRUE_MULA` | constant | missing | `none` | none | not present in current `Ayanamsa` namespace |
+| `SIDM_TRUE_MULA` | constant | mapped | `symbolic` | `Ayanamsa.TRUE_MULA` | star-anchored: Shaula (λ Sco) at 240° sidereal; Chandra Hari; IJHS peer-reviewed |
 | `SIDM_TRUE_PUSHYA` | constant | mapped | `symbolic` | `Ayanamsa.TRUE_PUSHYA` | verified |
 | `SIDM_TRUE_REVATI` | constant | mapped | `symbolic` | `Ayanamsa.TRUE_REVATI` | verified |
-| `SIDM_TRUE_SHEORAN` | constant | missing | `none` | none | not present in current `Ayanamsa` namespace |
+| `SIDM_TRUE_SHEORAN` | constant | unsupported | `none` | `UserDefinedAyanamsa(25.234406)` | **Rejected C1+C2**: Sheoran's specific epoch publication not independently verifiable; anchor date not identified |
 | `SIDM_USER` | constant | mapped | `api_shape_same_math` | `UserDefinedAyanamsa(reference_value_j2000, drift_per_century)` in `moira.sidereal` | fully functional; replaces Swiss global-mutation pattern with a typed frozen dataclass |
 | `SIDM_USHASHASHI` | constant | mapped | `symbolic` | `Ayanamsa.USHA_SHASHI` | verified naming difference |
-| `SIDM_VALENS_MOON` | constant | missing | `none` | none | not present in current `Ayanamsa` namespace |
+| `SIDM_VALENS_MOON` | constant | unsupported | `none` | `UserDefinedAyanamsa(22.795590)` | **Rejected C1+C2**: anchor epoch from Vettius Valens' horoscope corpus not independently verifiable without SE source |
 | `SIDM_YUKTESHWAR` | constant | mapped | `symbolic` | `Ayanamsa.YUKTESHWAR` | verified |
 | `SIMULATE_VICTORVB` | constant | unsupported | `none` | none | Swiss compatibility flag not part of Moira API |
 | `SPLIT_DEG_KEEP_DEG` | constant | stdlib | `stdlib` | local arithmetic/formatting | no dedicated audited helper |

@@ -1,7 +1,6 @@
 """
 Moira — spk_reader.py
-The Gate to the DE441 Kernel: governs all binary SPK file access for the
-Moira ephemeris engine.
+Governs all binary SPK file access for the Moira ephemeris engine.
 
 Boundary: owns the sole point of contact between Moira and the jplephem
 library. All kernel I/O is funnelled through this module. No other module
@@ -9,14 +8,16 @@ may hold a reference to the jplephem SPK object or open the kernel file
 directly.
 
 Public surface:
-    SpkReader, get_reader(), set_kernel_path()
+    SpkReader, get_reader(), set_kernel_path(), MissingKernelError
 
 Import-time side effects: None (kernel is opened lazily on first
     SpkReader instantiation, not at import time).
 
 External dependency assumptions:
     - jplephem must be importable (pip install jplephem).
-    - kernels/de441.bsp must exist on disk before SpkReader is instantiated.
+    - A compatible JPL SPK planetary kernel must be configured via
+      set_kernel_path() or Moira(kernel_path=...) before SpkReader is
+      instantiated. No default kernel is assumed.
 """
 
 import threading
@@ -27,7 +28,7 @@ try:
     from jplephem.spk import SPK as _SPK
 except ImportError as exc:  # pragma: no cover
     raise ImportError(
-        "Moira requires jplephem to read DE441.bsp. "
+        "Moira requires jplephem to read SPK kernel files. "
         "Install it with: pip install jplephem"
     ) from exc
 
@@ -35,32 +36,33 @@ from ._kernel_paths import find_kernel
 
 Vec3 = tuple[float, float, float]
 
-_DEFAULT_KERNEL_PATH = find_kernel("de441.bsp")
+
+class MissingKernelError(RuntimeError):
+    """Raised when get_reader() is called with no planetary kernel configured."""
 
 
 class SpkReader:
     """
-    RITE: The Gate to the DE441 Kernel
+    RITE: The Gate to the Planetary Kernel
 
-    THEOREM: SpkReader governs exclusive read access to the JPL DE441 binary
-        SPK kernel, serving raw barycentric state vectors to all computation
+    THEOREM: SpkReader governs exclusive read access to a JPL binary SPK
+        kernel file, serving raw barycentric state vectors to all computation
         pillars.
 
     RITE OF PURPOSE:
         SpkReader is the single authorised gateway between Moira's pure-Python
-        astronomy layer and the binary DE441 ephemeris file. Without it, no
+        astronomy layer and a binary JPL SPK ephemeris file. Without it, no
         planetary position can be computed. It exists to enforce the invariant
         that exactly one file handle to the kernel is open at any time, and
-        that all segment-selection logic (including the two-epoch DE441
-        structure) is encapsulated in one place rather than scattered across
-        callers.
+        that all segment-selection logic (including split multi-epoch layouts)
+        is encapsulated in one place rather than scattered across callers.
 
     LAW OF OPERATION:
         Responsibilities:
-            - Open and hold the DE441 SPK kernel file handle for the lifetime
+            - Open and hold the SPK kernel file handle for the lifetime
               of the instance.
             - Select the correct kernel segment for a given (center, target, jd)
-              triple, correctly handling DE441's split two-epoch layout.
+              triple, correctly handling split multi-epoch kernel layouts.
             - Serve barycentric rectangular position vectors (km, ICRF) to
               planets.py and nodes.py.
             - Serve position-and-velocity pairs (km, km/day) when requested.
@@ -86,7 +88,7 @@ class SpkReader:
             - position() and position_and_velocity() are pure reads; they
               never modify kernel state.
         Side effects:
-            - Opens a file handle to de441.bsp on construction.
+            - Opens a file handle to the kernel on construction.
             - Closes that file handle on close() or __exit__.
         Failure behavior:
             - Raises FileNotFoundError if the kernel path does not exist at
@@ -98,7 +100,6 @@ class SpkReader:
         Performance envelope:
             - Each position() call performs one binary segment lookup and one
               Chebyshev polynomial evaluation. Typical latency is < 1 ms.
-            - DE441 covers JD 2816787.5 (−13200) through 8199721.5 (+17191).
 
     LAW OF THE DATA PATH:
         State ownership: Owns the open SPK kernel file handle and the jplephem
@@ -125,7 +126,7 @@ class SpkReader:
       "state": {"mutable": true, "owners": ["SpkReader"]},
       "effects": {
         "signals_emitted": [],
-        "io": ["de441.bsp (read)"]
+        "io": ["SPK kernel file (read)"]
       },
       "concurrency": {
         "thread": "pure_computation",
@@ -144,12 +145,12 @@ class SpkReader:
     [/MACHINE_CONTRACT]
     """
 
-    def __init__(self, kernel_path: str | Path | None = None) -> None:
-        path = Path(kernel_path) if kernel_path else _DEFAULT_KERNEL_PATH
+    def __init__(self, kernel_path: str | Path) -> None:
+        path = Path(kernel_path)
         if not path.exists():
             raise FileNotFoundError(
-                f"DE441 kernel not found at {path}. "
-                "Ensure de441.bsp is in the kernels/ directory."
+                f"Planetary kernel not found at {path}. "
+                "Ensure a compatible JPL SPK file is accessible."
             )
         self._path = path
         self._kernel = _SPK.open(str(path))
@@ -207,10 +208,10 @@ class SpkReader:
         """
         Return the kernel segment covering *jd* for the given (center, target) pair.
 
-        DE441 stores each body across two epochs (−13200→1969 and 1969→17191).
-        jplephem's kernel[c, t] returns the last matching segment, which is
-        always the modern epoch — incorrect for historical dates. This method
-        iterates all segments and returns the one whose date range covers *jd*.
+        SPK kernels may store each body across multiple non-overlapping epochs.
+        jplephem's kernel[c, t] returns the last matching segment, which may be
+        incorrect for historical dates. This method iterates all segments and
+        returns the one whose date range covers *jd*.
 
         Args:
             center: NAIF body ID of the reference body.
@@ -344,36 +345,47 @@ def get_reader(kernel_path: str | Path | None = None) -> SpkReader:
     across callers or threads.
 
     Args:
-        kernel_path: Path to the SPK kernel file. Defaults to
-            ``kernels/de441.bsp`` relative to the workspace root.
+        kernel_path: Path to a compatible JPL SPK kernel file. Must be provided
+            explicitly or pre-configured via set_kernel_path(). No default kernel
+            is assumed.
 
     Returns:
         The active SpkReader singleton.
 
     Raises:
+        MissingKernelError: If no kernel path has been configured and none is
+            provided.
         FileNotFoundError: If the kernel file does not exist at the given path.
 
     Side effects:
-        - May open a new file handle to de441.bsp on first call.
+        - May open a new file handle to the kernel file on first call.
     """
     global _reader, _reader_path
-    path = Path(kernel_path) if kernel_path else _DEFAULT_KERNEL_PATH
     with _reader_lock:
         if _reader is not None:
-            if _reader_path != path:
+            if kernel_path is not None and _reader_path != Path(kernel_path):
                 raise RuntimeError(
                     "Cannot replace the active SpkReader singleton with a different "
                     "kernel path. Call set_kernel_path() before first access."
                 )
             return _reader
+        if kernel_path is not None:
+            path = Path(kernel_path)
+        elif _reader_path is not None:
+            path = _reader_path
+        else:
+            raise MissingKernelError(
+                "No planetary kernel is configured. "
+                "Call set_kernel_path() before first use, "
+                "or pass kernel_path= to Moira()."
+            )
         if _reader_path is not None and _reader_path != path:
             raise RuntimeError(
                 "Kernel path has already been configured for the next reader. "
                 "Use the configured path or restart configuration before first access."
             )
-        if _reader is None:
-            _reader = SpkReader(path)
-            _reader_path = path
+        _reader = SpkReader(path)
+        _reader_path = path
         return _reader
 
 

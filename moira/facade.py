@@ -25,7 +25,7 @@ Import-time side effects:
       import machinery). No file I/O, no network, no threads.
 
 External dependency assumptions:
-    - de441.bsp must be locatable before any Moira() instance method that
+    - A compatible JPL SPK planetary kernel must be locatable before any Moira() instance method that
       queries planetary positions is called.
     - No Qt, no database, no OS threads required at import time.
 
@@ -70,11 +70,12 @@ from importlib.metadata import PackageNotFoundError, version as package_version
 from pathlib import Path
 
 from .constants import Body, HouseSystem, AspectDefinition, ASPECT_TIERS
-from ._kernel_paths import find_kernel, user_kernels_dir
+from ._kernel_paths import find_kernel, find_planetary_kernel, user_kernels_dir
 from .julian import (
     CalendarDateTime, DeltaTPolicy, julian_day, calendar_from_jd, calendar_datetime_from_jd,
     jd_from_datetime, datetime_from_jd, format_jd_utc, safe_datetime_from_jd,
     greenwich_mean_sidereal_time, local_sidereal_time, delta_t,
+    delta_t_from_jd, apparent_sidereal_time_at,
 )
 from .obliquity import mean_obliquity, true_obliquity, nutation
 from .coordinates import (
@@ -85,7 +86,7 @@ from .coordinates import (
     equation_of_time,
     angular_distance, normalize_degrees,
 )
-from .spk_reader import get_reader, set_kernel_path, SpkReader
+from .spk_reader import get_reader, set_kernel_path, SpkReader, MissingKernelError
 from .planets import (
     PlanetData, SkyPosition, CartesianPosition,
     planet_at, sky_position_at, all_planets_at, sun_longitude,
@@ -653,6 +654,7 @@ __all__ = [
     "CalendarDateTime", "DeltaTPolicy", "julian_day", "calendar_from_jd", "calendar_datetime_from_jd",
     "jd_from_datetime", "datetime_from_jd", "format_jd_utc", "safe_datetime_from_jd",
     "greenwich_mean_sidereal_time", "local_sidereal_time", "delta_t",
+    "delta_t_from_jd", "apparent_sidereal_time_at",
     # Obliquity & nutation
     "mean_obliquity", "true_obliquity", "nutation",
     # Coordinate utilities
@@ -1215,16 +1217,16 @@ class Chart:
 # ---------------------------------------------------------------------------
 
 class MissingEphemerisKernelError(RuntimeError):
-    """Raised when a kernel-dependent operation is attempted without DE441."""
+    """Raised when a kernel-dependent operation is attempted without a planetary kernel."""
 
 
 class Moira:
-    """Primary engine facade with deferred DE441 kernel readiness."""
+    """Primary engine facade with deferred planetary kernel readiness."""
 
     def __init__(self, kernel_path: str | None = None) -> None:
         self._kernel_path: str | None = kernel_path
         self._reader_obj: SpkReader | None = None
-        self._kernel_init_error: FileNotFoundError | None = None
+        self._kernel_init_error: FileNotFoundError | MissingKernelError | None = None
 
         if kernel_path:
             set_kernel_path(kernel_path)
@@ -1234,7 +1236,7 @@ class Moira:
         try:
             self._reader_obj = get_reader(self._kernel_path)
             self._kernel_init_error = None
-        except FileNotFoundError as exc:
+        except (FileNotFoundError, MissingKernelError) as exc:
             self._reader_obj = None
             self._kernel_init_error = exc
 
@@ -1260,11 +1262,16 @@ class Moira:
         if self._reader_obj is not None:
             return f"Kernel ready: {self._reader_obj.path}"
 
-        expected = Path(self._kernel_path) if self._kernel_path else find_kernel("de441.bsp")
-        base = (
-            f"No ephemeris kernel is loaded. Expected DE441 at {expected}. "
-            f"User kernel directory: {user_kernels_dir()}."
-        )
+        if self._kernel_path:
+            base = (
+                f"No ephemeris kernel is loaded. Configured path: {self._kernel_path}. "
+                f"User kernel directory: {user_kernels_dir()}."
+            )
+        else:
+            base = (
+                "No planetary kernel is configured. "
+                f"User kernel directory: {user_kernels_dir()}."
+            )
         if self._kernel_init_error is not None:
             base = f"{base} Last load error: {self._kernel_init_error}"
         return (
@@ -1274,8 +1281,13 @@ class Moira:
 
     @property
     def available_kernels(self) -> list[str]:
-        kernel_names = ["de441.bsp", "asteroids.bsp", "sb441-n373s.bsp", "centaurs.bsp", "minor_bodies.bsp"]
-        return [name for name in kernel_names if find_kernel(name).exists()]
+        from ._kernel_paths import PLANETARY_KERNELS
+        planetary = [name for name in PLANETARY_KERNELS if find_kernel(name).exists()]
+        supplemental = [
+            name for name in ["asteroids.bsp", "sb441-n373s.bsp", "centaurs.bsp", "minor_bodies.bsp"]
+            if find_kernel(name).exists()
+        ]
+        return planetary + supplemental
 
     def configure_kernel_path(self, path: str) -> None:
         self._kernel_path = path

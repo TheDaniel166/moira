@@ -299,7 +299,7 @@ Design the deferred-but-valid subsystem families.
 | --- | --- | --- |
 | generalized heliacal / visibility model | `Implemented.V0–V5` + `Active.V6` | V0–V5 complete; V6 partial: K&S 1991 moonlight model, `ExtinctionCoefficient` holders, `heliacal_catalog_batch` |
 | model-basis controls | `Defer.Doctrine` | must not become a bag of Swiss option constants |
-| additional ayanamsas | `Defer.Doctrine` | each added ayanamsa must be doctrinally named and justified |
+| additional ayanamsas | `Defer.Doctrine` | each added ayanamsa must be doctrinally named and justified; 18-candidate audit completed (2026-04): 4 added, 14 explicitly rejected |
 | eclipse/occultation path helpers | `Active.Design` + `Active.Validation` | typed path/circumstance vessels exist; solar and occultation maximum geography are implemented and externally checked on the local Swiss `where` corpus |
 | orbital-elements public layer | `Implemented` | `KeplerianElements`, `DistanceExtremes`, `orbital_elements_at`, `distance_extremes_at` in `moira/orbits.py` (Phase 4) |
 | house dynamics / cusp-speed layer | `Implemented` | doctrine and validation are now embodied in `HouseDynamics`, `cusp_speeds_at(...)`, and `house_dynamics_from_armc(...)` |
@@ -331,7 +331,16 @@ Design the deferred-but-valid subsystem families.
 - [x] add `UserDefinedAyanamsa` (`moira/sidereal.py`)
 - [x] audit additional `SIDM_*` candidates individually
       → Acceptance criteria documented in `UserDefinedAyanamsa` docstring.
-        Candidates not meeting all five criteria remain `UserDefinedAyanamsa` use-cases.
+        18-candidate audit completed (2026-04). 4 added: `ARYABHATA_522`,
+        `BABYL_BRITTON`, `TRUE_MULA` (Shaula anchor), `GALEQU_IAU1958`.
+        14 explicitly rejected with documented rationale in
+        `SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md` and
+        `SWISS_EPHEMERIS_SYMBOL_TABLE.md`. Rejection reasons include:
+        sub-arcminute separation from existing systems (C3 fail),
+        coordinate frames not zodiac systems (C1+C4 fail),
+        dynamic undefined epoch (C2 fail), unverifiable publication (C1+C2 fail),
+        and self-published sources (C1 fail). Candidates not meeting all five
+        criteria remain `UserDefinedAyanamsa` use-cases with J2000 values noted.
 - [x] document acceptance criteria for future ayanamsa additions
       → Documented in `UserDefinedAyanamsa` docstring (5 criteria).
 

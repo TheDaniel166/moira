@@ -69,47 +69,26 @@ A verification call or read of the function signature is all that is needed befo
 
 ---
 
-## Group D — Needs thin implementation (< 15 lines of code each)
+## Group D — Thin implementations — COMPLETED 2026-04-05
 
-### `deltat` — add `delta_t_from_jd(jd_ut: float) -> float`
+### `deltat` — `delta_t_from_jd(jd_ut: float) -> float` ✓
 
-**Current gap:** `delta_t(year_decimal)` exists but Swiss `swe.deltat(jd)` takes a JD directly.  
-**Fix:** One-liner wrapper in `moira/julian.py`:
-```python
-def delta_t_from_jd(jd_ut: float) -> float:
-    return delta_t(decimal_year_from_jd(jd_ut))
-```
+**Resolved:** `delta_t_from_jd` added to `moira/julian.py`. One-liner delegating to `delta_t(decimal_year_from_jd(jd_ut))`. Exported from `moira/__init__.py` and `moira/facade.py`. DRAFT row updated to `mapped`.
 Promote to `__init__.py` and `facade.py`. Update DRAFT row.
 
 ---
 
-### `sidtime0` — add `apparent_sidereal_time_at(jd_ut: float, longitude: float = 0.0) -> float`
+### `sidtime0` — `apparent_sidereal_time_at(jd_ut: float, longitude: float = 0.0) -> float` ✓
 
-**Current gap:** `apparent_sidereal_time(jd_ut, nutation_longitude, obliquity)` requires the caller to supply nutation components — Swiss `sidtime0` computes those internally.  
-**Fix:** Thin public wrapper in `moira/julian.py` that calls `nutation_2000a` internally and delegates:
-```python
-def apparent_sidereal_time_at(jd_ut: float, longitude: float = 0.0) -> float:
-    jd_tt = ut_to_tt(jd_ut)
-    from .nutation_2000a import nutation_components
-    dpsi, eps = nutation_components(jd_tt)
-    from .obliquity import mean_obliquity
-    obl = mean_obliquity(jd_tt) + eps
-    gast = apparent_sidereal_time(jd_ut, dpsi, obl)
-    return normalize_degrees(gast + longitude)
-```
-(Exact internal call paths need verification against the current `nutation_2000a` public surface before implementation.)  
-Update DRAFT row.
+**Resolved:** `apparent_sidereal_time_at` added to `moira/julian.py`. Derives nutation and true obliquity internally via deferred import of `moira.obliquity` (avoids circular dependency). `longitude=0` returns GAST; non-zero returns LAST. Exported from `moira/__init__.py` and `moira/facade.py`. DRAFT row updated to `mapped`.
+
+Note: the roadmap draft pseudocode referenced a non-existent `nutation_components` function. Actual implementation uses `obliquity.nutation(jd_tt)` and `obliquity.true_obliquity(jd_tt)`.
 
 ---
 
-### `calc` — document TT entry point explicitly
+### `calc` — TT entry point ✓
 
-**Current gap:** `planet_at` accepts `jd_ut` and converts to TT internally. Swiss `calc` takes TT directly. The Moira entry point for direct TT input is not documented.  
-**Fix:** Confirm whether `planet_at` exposes a `jd_tt=` kwarg or whether the caller must convert manually via `ut_to_tt(jd_ut)`. If no TT kwarg exists, add one:
-```python
-def planet_at(body, jd_ut, *, jd_tt: float | None = None, ...) -> PlanetData:
-```
-Update DRAFT row to `mapped` with explicit note on TT path.
+**Resolved:** `planet_at` already exposes `jd_tt: float | None = None` at `planets.py:608`. When supplied, the UT→TT conversion is bypassed entirely. No new code was needed. DRAFT row updated to `mapped`.
 
 ---
 
@@ -211,9 +190,9 @@ Both rows audited against `moira/rise_set.py`.
 | `jdet_to_utc` | C | `CLOSE:mapped` | Verify |
 | `jdut1_to_utc` | C | `CLOSE:mapped` | Verify + note |
 | `calc_ut` | C | `CLOSE:mapped` | Note update |
-| `deltat` | D | `THIN` | ~5 lines |
-| `sidtime0` | D | `THIN` | ~10 lines |
-| `calc` | D | `THIN` | TT kwarg or note |
+| `deltat` | D | `mapped` ✓ | `delta_t_from_jd` added |
+| `sidtime0` | D | `mapped` ✓ | `apparent_sidereal_time_at` added |
+| `calc` | D | `mapped` ✓ | `jd_tt` kwarg already existed at `planets.py:608` |
 | `pheno_ut` | E | `VESSEL` | ~80 lines |
 | `nod_aps_ut` | E | `VESSEL` | ~100 lines |
 | `sol_eclipse_when_loc` | F | **partial** (improved note) | Genuine gap: location-anchored search |
@@ -251,12 +230,11 @@ Sequence:
 
 Estimated DRAFT.md result after Phase 1 + completed Groups F & G: **partial: ~24**, **mapped: ~81**
 
-### Phase 2 — Thin implementations (Group D)
-Three small functions. Each takes < 30 minutes including tests.
+### Phase 2 — Thin implementations (Group D) — COMPLETED 2026-04-05
 
-1. `delta_t_from_jd(jd_ut)` → closes `deltat`
-2. `apparent_sidereal_time_at(jd_ut, longitude)` → closes `sidtime0`
-3. TT kwarg on `planet_at` (or documented manual path) → closes `calc`
+1. ✓ `delta_t_from_jd(jd_ut)` → closes `deltat`
+2. ✓ `apparent_sidereal_time_at(jd_ut, longitude)` → closes `sidtime0`
+3. ✓ `jd_tt` kwarg on `planet_at` already existed — closes `calc` (no code needed)
 
 ### Phase 3 — Vessel implementations (Group E)
 Two new vessels. Each requires a new dataclass + public function + tests.

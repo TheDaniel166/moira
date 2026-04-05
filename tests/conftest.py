@@ -83,11 +83,8 @@ def _load_known_issues(path: Path) -> list[dict]:
 # ---------------------------------------------------------------------------
 
 def _has_ephemeris() -> bool:
-    return any([
-        (ROOT_DIR  / "de441.bsp").exists(),
-        (ROOT_DIR  / "kernels" / "de441.bsp").exists(),
-        (ROOT_DIR  / "data"    / "de441.bsp").exists(),
-    ])
+    from moira._kernel_paths import find_planetary_kernel
+    return find_planetary_kernel() is not None
 
 
 # ---------------------------------------------------------------------------
@@ -260,7 +257,7 @@ def pytest_collection_modifyitems(config, items):
                 or os.getenv("MOIRA_TEST_MODE",  "0") == "1"
             )
             if no_dl and not _has_ephemeris():
-                item.add_marker(pytest.mark.skip(reason="de441.bsp missing and downloads disabled"))
+                item.add_marker(pytest.mark.skip(reason="no planetary kernel installed and downloads disabled"))
 
         # slow → skip when MOIRA_SKIP_SLOW=1
         if item.get_closest_marker("slow"):
@@ -364,14 +361,14 @@ def test_env_vars() -> Generator[dict, None, None]:
 @pytest.fixture(scope="session")
 def moira_engine():
     """
-    Session-scoped Moira engine (loads de441.bsp once for the whole run).
+    Session-scoped Moira engine (loads planetary kernel once for the whole run).
 
-    Skips gracefully when de441.bsp is not present rather than crashing.
+    Skips gracefully when no planetary kernel is present rather than crashing.
     Mark tests that use this fixture with @pytest.mark.requires_ephemeris,
     or rely on the auto-marker in pytest_collection_modifyitems.
     """
     if not _has_ephemeris():
-        pytest.skip("de441.bsp not found — skipping ephemeris-dependent test")
+        pytest.skip("no planetary kernel found — skipping ephemeris-dependent test")
     from moira import Moira
     return Moira()
 

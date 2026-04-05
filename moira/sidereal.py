@@ -121,7 +121,7 @@ class Ayanamsa:
     """
     RITE: The Warden of Zodiacs — the canonical namespace for ayanamsa systems.
 
-    THEOREM: Provides string constants for all 30 supported ayanamsa system
+    THEOREM: Provides string constants for all 34 supported ayanamsa system
     names and an ``ALL`` list for iteration.
 
     RITE OF PURPOSE:
@@ -140,7 +140,7 @@ class Ayanamsa:
         Dependencies:
             - None. Pure namespace class with no runtime dependencies.
         Structural invariants:
-            - ``ALL`` contains exactly 30 entries in canonical order.
+            - ``ALL`` contains exactly 34 entries in canonical order.
         Succession stance: terminal — not designed for subclassing.
 
     Canon: Lahiri Commission (1955); Swiss Ephemeris documentation;
@@ -210,6 +210,10 @@ class Ayanamsa:
     TRUE_PUSHYA     = "True Pushya"
     GALCENT_RG_BRAND = "Galactic Center (RGB)"
     GALCENT_COCHRANE = "Galactic Center (Cochrane)"
+    ARYABHATA_522    = "Aryabhata 522"          # 522 CE epoch; Aryabhatiya lineage
+    BABYL_BRITTON    = "Babylonian (Britton)"   # Britton; peer-reviewed Babylonian tablets
+    TRUE_MULA        = "True Mula"              # Star-anchored: Shaula (λ Sco) at 240°
+    GALEQU_IAU1958   = "Galactic Equator (IAU 1958)"  # Blaauw et al. 1960, BAN 11 414
 
     ALL = [
         LAHIRI, FAGAN_BRADLEY, KRISHNAMURTI, RAMAN,
@@ -221,7 +225,8 @@ class Ayanamsa:
         HIPPARCHOS, SURYASIDDHANTA, SURYASIDDHANTA_MSUN,
         ARYABHATA, ARYABHATA_MSUN, SS_REVATI, SS_CITRA,
         TRUE_REVATI, TRUE_PUSHYA, GALCENT_RG_BRAND,
-        GALCENT_COCHRANE,
+        GALCENT_COCHRANE, ARYABHATA_522, BABYL_BRITTON,
+        TRUE_MULA, GALEQU_IAU1958,
     ]
 
 
@@ -265,6 +270,20 @@ _AYANAMSA_AT_J2000: dict[str, float] = {
     Ayanamsa.TRUE_PUSHYA:       22.727067234128207,
     Ayanamsa.GALCENT_RG_BRAND:  22.46909498412821,
     Ayanamsa.GALCENT_COCHRANE:  356.846036011906,
+    # --- Added after individual doctrinal audit (2026-04) ---
+    # Epoch: AD 522 CE; Aryabhatiya lineage. Cited in Pingree & Plofker.
+    Ayanamsa.ARYABHATA_522:     20.575827873,
+    # Epoch: Babylonian tablets, Britton derivation. Peer-reviewed in Centaurus,
+    # AHES, and JHA.
+    Ayanamsa.BABYL_BRITTON:     24.615733680,
+    # Star-anchored fallback: Shaula (λ Sco) at 240° sidereal (Chandra Hari).
+    # Live star position is preferred at compute time; this polynomial is the
+    # fallback if Shaula is absent from the fixed-star catalog.
+    Ayanamsa.TRUE_MULA:         24.579939992,
+    # Epoch: IAU 1958 galactic coordinate standard (Blaauw et al. 1960,
+    # Bull. Astron. Inst. Netherlands 11, 414). Carries a non-standard drift
+    # term for the galactic nodal intersection with the ecliptic.
+    Ayanamsa.GALEQU_IAU1958:    30.023153273,
 }
 
 # Small Swiss-compatibility drift terms for systems whose historical motion
@@ -278,6 +297,11 @@ _AYANAMSA_DRIFT_PER_CENTURY: dict[str, float] = {
     Ayanamsa.TRUE_CHITRAPAKSHA: -0.0030344397134131097,
     Ayanamsa.TRUE_PUSHYA:        0.0015419877388162119,
     Ayanamsa.TRUE_REVATI:        0.0048149641721038725,
+    # TRUE_MULA polynomial fallback drift (live Shaula anchor is primary path)
+    Ayanamsa.TRUE_MULA:         -0.000290,
+    # Galactic nodal drift above standard ecliptic precession (empirically measured
+    # against pyswisseph; consistent with the IAU 1958 galactic pole definition)
+    Ayanamsa.GALEQU_IAU1958:     0.007460,
 }
 
 # ---------------------------------------------------------------------------
@@ -295,6 +319,8 @@ _STAR_ANCHORED: dict[str, tuple[str, float]] = {
     Ayanamsa.ALDEBARAN_15_TAU:  ("Aldebaran",  45.0),
     # Pushya-paksha: δ Cancri (Asellus Australis) at 16°40' Cancer sidereal (106.667°)
     Ayanamsa.TRUE_PUSHYA:       ("Asellus Australis", 106.667),
+    # Mula-paksha (Chandra Hari): λ Scorpii (Shaula) at 0° Mula sidereal (240°)
+    Ayanamsa.TRUE_MULA:         ("Shaula",    240.0),
 }
 
 
