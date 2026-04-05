@@ -1107,7 +1107,7 @@ __all__ = [
 try:
     __version__ = package_version("moira-astro")
 except PackageNotFoundError:
-    __version__ = "1.0.1"
+    __version__ = "1.0.3"
 __author__  = "Moira contributors"
 
 

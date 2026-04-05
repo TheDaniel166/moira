@@ -14,7 +14,7 @@ def test_nutation_tables_load_lazily() -> None:
 
 
 def test_runtime_version_matches_project_metadata_fallback() -> None:
-    assert moira.__version__ == "1.0.1"
+    assert moira.__version__ == "1.0.3"
 
 
 def test_moira_behavior_smoke_chart_houses_aspects_lots_and_transits(monkeypatch) -> None:
