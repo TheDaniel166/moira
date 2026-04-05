@@ -132,6 +132,7 @@ __all__ = [
     "GeneralVisibilityEvent",
     "PlanetHeliacalEvent",
     "visibility_assessment",
+    "visual_limiting_magnitude",
     "visibility_event",
     "planet_heliacal_rising",
     "planet_heliacal_setting",
@@ -1438,6 +1439,7 @@ class VisibilityAssessment:
     true_altitude_deg: float
     apparent_altitude_deg: float
     local_horizon_altitude_deg: float
+    solar_elongation_deg: float
     is_geometrically_visible: bool
     is_bright_enough: bool
     observable: bool
@@ -1568,6 +1570,7 @@ def visibility_assessment(
 
     apparent_mag = _target_apparent_magnitude(body, jd_ut)
     is_geometrically_visible = apparent_altitude_deg >= environment.local_horizon_altitude_deg
+    solar_elongation_deg = _target_signed_elongation(body, jd_ut)
 
     lunar_crescent_details = None
     if (
@@ -1591,12 +1594,71 @@ def visibility_assessment(
         true_altitude_deg=true_altitude_deg,
         apparent_altitude_deg=apparent_altitude_deg,
         local_horizon_altitude_deg=environment.local_horizon_altitude_deg,
+        solar_elongation_deg=solar_elongation_deg,
         is_geometrically_visible=is_geometrically_visible,
         is_bright_enough=is_bright_enough,
         observable=is_geometrically_visible and is_bright_enough,
         lunar_crescent_details=lunar_crescent_details,
         moonlight_sky_nanolamberts=moonlight_sky_nl,
     )
+
+
+def visual_limiting_magnitude(
+    jd_ut: float,
+    lat: float,
+    lon: float,
+    *,
+    policy: VisibilityPolicy | None = None,
+) -> float:
+    """
+    Return the effective visual limiting magnitude at a given instant.
+
+    This is the same scalar that ``visibility_assessment`` places in
+    ``VisibilityAssessment.effective_limiting_magnitude``.  It combines:
+
+    1. the Bortle-class sky limit from the observer's
+       ``LightPollutionClass`` (or an explicit ``limiting_magnitude``
+       override if supplied on the policy);
+    2. a K&S 1991 moonlight penalty when
+       ``policy.moonlight_policy == MoonlightPolicy.KRISCIUNAS_SCHAEFER_1991``
+       and the Moon is above the horizon.
+
+    The result is the faintest V-magnitude object that Moira considers
+    detectable under the given conditions.
+
+    Parameters
+    ----------
+    jd_ut:
+        Julian Day in UT1.
+    lat:
+        Observer geodetic latitude in degrees (-90 to +90).
+    lon:
+        Observer longitude in degrees (-180 to +180).
+    policy:
+        ``VisibilityPolicy`` that governs sky brightness, Bortle class,
+        and moonlight model.  Defaults to ``VisibilityPolicy()``.
+
+    Returns
+    -------
+    float
+        Effective limiting V-magnitude.
+    """
+    if not math.isfinite(jd_ut):
+        raise ValueError(f"jd_ut must be finite, got {jd_ut}")
+    if not -90.0 <= lat <= 90.0:
+        raise ValueError(f"lat must be in [-90, 90], got {lat}")
+    if not -180.0 <= lon <= 180.0:
+        raise ValueError(f"lon must be in [-180, 180], got {lon}")
+
+    resolved_policy = policy if policy is not None else VisibilityPolicy()
+    magnitude = _effective_limiting_magnitude(resolved_policy)
+    if resolved_policy.moonlight_policy is MoonlightPolicy.KRISCIUNAS_SCHAEFER_1991:
+        delta = _ks1991_limiting_magnitude_penalty(
+            resolved_policy, jd_ut, lat, lon, Body.MOON
+        )
+        if delta < 0.0:
+            magnitude += delta
+    return magnitude
 
 
 def visibility_event(

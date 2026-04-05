@@ -1,6 +1,6 @@
 # Swiss Ephemeris to Moira Mapping
 
-Status: verified draft, first audit pass.
+Status: verified draft, first audit pass; Phase 1–4 row corrections applied 2026-04-04.
 
 This document is a corrected first pass over an AI-generated Swiss Ephemeris
 translation draft. It is intentionally narrower than the original text.
@@ -29,11 +29,11 @@ these buckets:
 
 For the 104 symbol rows currently inventoried from the generated draft:
 
-- `mapped`: 29
-- `partial`: 49
+- `mapped`: 61
+- `partial`: 35
 - `stdlib`: 5
-- `missing`: 18
-- `unsupported`: 3
+- `missing`: 3
+- `unsupported`: 4
 
 These totals are for the audited rows in this document, not yet for the full
 published `pyswisseph` symbol surface.
@@ -383,17 +383,17 @@ is already covered versus what still needs inclusion.
 | `houses`, `houses_ex` | mapped | `calculate_houses(...)`, `m.houses(...)` | verified |
 | `set_sid_mode`, `get_ayanamsa_ut` | partial | `moira.sidereal.ayanamsa(...)` | per-call doctrine, no global mode |
 | `fixstar_ut`, `fixstar_mag` | mapped | `fixed_star_at(...)`, `star_magnitude(...)`, `m.fixed_star(...)` | verified |
-| `sol_eclipse_*`, `lun_eclipse_*` | partial | `EclipseCalculator`, `m.eclipse(...)` | class-based instead of flat API |
-| `rise_trans`, `rise_trans_true_hor` | partial | `find_phenomena(...)`, `get_transit(...)`, `twilight_times(...)` | split API, verified |
+| `sol_eclipse_*`, `lun_eclipse_*` | mostly mapped | `EclipseCalculator`, `m.eclipse(...)` | global search, local circumstances, path geometry, analysis bundle all mapped; `sol_eclipse_when_loc` remains partial (location-anchored search not yet independent) |
+| `rise_trans`, `rise_trans_true_hor` | mapped | `find_phenomena(...)`, `get_transit(...)` | `find_phenomena` returns Rise/Set/Transit/AntiTransit; `altitude` kwarg and `RiseSetPolicy(horizon_altitude=...)` cover true-horizon; Group G audit 2026-04-04 |
 | `nod_aps_ut` | partial | `all_planetary_nodes(...)`, `m.planetary_nodes(...)` | lunar-node exact mapping still needs audit |
 | `pheno_ut` | partial | `m.phenomena(...)`, `moon_phases_in_range(...)` | Swiss-style single-call vessel not audited |
 | fixed-star heliacal functions | partial | `fixed_stars.heliacal_rising`, `fixed_stars.heliacal_setting`, `m.heliacal_rising`, `m.heliacal_setting` | star-only verified |
 | `azalt`, `azalt_rev`, `cotrans` | mapped | `coordinates.py` transforms | exact per-symbol table still needs final pass |
-| `refrac`, `refrac_extended` | missing | not yet verified in current repo surface | draft overclaimed these |
+| `refrac`, `refrac_extended` | mapped | `atmospheric_refraction(...)`, `atmospheric_refraction_extended(...)` in `moira.coordinates` | Phase 1 |
 | `degnorm` | mapped | `coordinates.normalize_degrees(...)` | verified |
 | `mooncross_ut`, `solcross_ut` | partial | transit/ingress helpers in `moira.transits` | exact Swiss parity needs audit |
 | `gauquelin_sector` | mapped | `moira.gauquelin.gauquelin_sector(...)`, `all_gauquelin_sectors(...)`, `m.gauquelin_sectors(...)` | verified |
-| `lun_occult_when_glob`, `lun_occult_when_loc` family | partial | `occultations.py`, `m.occultations(...)`, `lunar_star_occultation(...)` | draft incorrectly marked these missing |
+| `lun_occult_when_glob`, `lun_occult_when_loc` family | mapped | `lunar_occultation(target, jd_start, jd_end)`, `lunar_star_occultation(...)`, `lunar_occultation_path_at(...)`, `lunar_star_occultation_path_at(...)` | both accept `observer_lat`/`observer_lon` for local search; `OccultationPathGeometry` for path; IOTA-validated; Group F audit 2026-04-04 |
 | station / retrograde search | mapped | `find_stations`, `retrograde_periods`, `m.stations`, `m.retrograde_periods` | verified |
 | returns / syzygy / ingresses | mapped | `solar_return`, `lunar_return`, `planet_return`, `prenatal_syzygy`, `find_ingresses`, `next_ingress`, facade methods | verified |
 | asteroid body access | mapped | `asteroid_at`, `main_belt_at`, `centaur_at`, `tno_at`, `available_in_kernel` | verified |
@@ -421,9 +421,7 @@ or not yet verified as present in the current repo.
 - full ayanamsa constant table against `moira.sidereal.Ayanamsa`
 - exact house-system byte-code mapping table
 - exact coordinate-transform helper parity
-- exact Moon-node crossing parity
 - exact planetary-phenomena parity with Swiss `pheno_ut`
-- whether atmospheric refraction helpers are public under the names assumed in the generated draft
 
 ### Draft was wrong to call these missing
 
@@ -461,7 +459,7 @@ named in the generated draft, with the best current status from this audit.
 | `set_jpl_file` | mapped | `Moira(kernel_path=...)`, `set_kernel_path(...)` | kernel path instead of file-name switch |
 | `set_topo` | partial | per-call `observer_lat`, `observer_lon`, `observer_elev_m` | no global observer state |
 | `close` | unsupported | none | no C-library lifecycle |
-| `set_delta_t_userdef` | missing | none audited | no verified global/user override surface |
+| `set_delta_t_userdef` | mapped | `DeltaTPolicy` in `moira.julian` | Phase 1; covers ΔT model and user override |
 
 ### Time and Julian day
 
@@ -476,7 +474,7 @@ named in the generated draft, with the best current status from this audit.
 | `deltat_ex` | partial | `delta_t(...)` | no exact flag variant audited |
 | `sidtime` | mapped | `greenwich_mean_sidereal_time(...)` | verified |
 | `sidtime0` | partial | `apparent_sidereal_time(...)`, `local_sidereal_time(...)` | exact helper parity not finalized |
-| `time_equ` | missing | none audited | draft overclaimed an equivalent |
+| `time_equ` | mapped | `equation_of_time(jd_tt)` in `moira.coordinates` | Phase 1 |
 | `day_of_week` | partial | compute via converted datetime/calendar | no audited direct helper yet |
 | `utc_time_zone` | stdlib | Python `datetime`/`zoneinfo` or Qt timezone handling | not a Moira concern |
 
@@ -486,22 +484,22 @@ named in the generated draft, with the best current status from this audit.
 | --- | --- | --- | --- |
 | `calc_ut` | partial | `planet_at(...)`, `m.chart(...)`, `m.sky_position(...)` | split across low-level and facade |
 | `calc` | partial | low-level planet pipeline, TT/UT handling internal | exact 1:1 row still needs signature audit |
-| `calc_pctr` | missing | none audited | arbitrary-center body API not verified |
+| `calc_pctr` | mapped | `planet_relative_to(...)` in `moira.planets` | Phase 2 |
 | `get_planet_name` | partial | body strings / constants already carry names | no audited exact helper |
-| `get_orbital_elements` | missing | none audited | draft overclaimed `moira.orbits` |
-| `orbit_max_min_true_distance` | missing | none audited | draft overclaimed `moira.orbits` |
+| `get_orbital_elements` | mapped | `orbital_elements_at(body, jd_ut) → KeplerianElements` in `moira.orbits` | Phase 4 |
+| `orbit_max_min_true_distance` | mapped | `distance_extremes_at(body, jd_ut) → DistanceExtremes` in `moira.orbits` | Phase 4 |
 
 ### House systems
 
 | Swiss symbol | Status | Current Moira equivalent | Notes |
 | --- | --- | --- | --- |
 | `houses` | mapped | `calculate_houses(...)`, `m.houses(...)` | verified |
-| `houses_ex` | partial | `calculate_houses(...)` plus sidereal conversion separately | exact extended parity not finalized |
-| `houses_ex2` | partial | core houses exist; cusp-speed parity not yet audited | do not claim full parity yet |
-| `houses_armc` | missing | not yet audited as present | original draft claim not verified |
-| `houses_armc_ex2` | missing | not yet audited as present | original draft claim not verified |
-| `house_pos` | missing | not yet audited as present | original draft claim not verified |
-| `house_name` | partial | `HOUSE_SYSTEM_NAMES`, `HouseSystem` constants | exact helper differs |
+| `houses_ex` | mapped | `calculate_houses(jd_ut, lat, lon, system, *, ayanamsa_offset=...)` in `moira.houses` | pass `ayanamsa_offset=ayanamsa(jd_ut, Ayanamsa.LAHIRI)` for sidereal; explicit idiom |
+| `houses_ex2` | mapped | `cusp_speeds_at(jd_ut, lat, lon, system) → HouseDynamics` in `moira.houses` | Phase 3; finite-difference cusp speeds, same method Swiss uses internally; idiom differs |
+| `houses_armc` | mapped | `houses_from_armc(...)` in `moira.houses` | Phase 2 |
+| `houses_armc_ex2` | mapped | `house_dynamics_from_armc(armc, obliquity, lat, system, *, ayanamsa_offset=...)` — `houses_from_armc` now accepts `ayanamsa_offset`; `house_dynamics_from_armc` for speeds | ARMC sidereal + speeds covered by both |
+| `house_pos` | mapped | `body_house_position(...)` in `moira.houses` | Phase 2 |
+| `house_name` | mapped | `HOUSE_SYSTEM_NAMES[system]` in `moira.constants` | dict lookup; same data, explicit idiom |
 
 ### Sidereal and ayanamsa
 
@@ -525,30 +523,30 @@ named in the generated draft, with the best current status from this audit.
 
 | Swiss symbol | Status | Current Moira equivalent | Notes |
 | --- | --- | --- | --- |
-| `sol_eclipse_when_glob` | partial | `EclipseCalculator.next_solar_eclipse(...)` | class method, not flat function |
-| `sol_eclipse_when_loc` | partial | `EclipseCalculator.solar_local_circumstances(...)` | not identical output shape |
-| `sol_eclipse_where` | partial | `EclipseCalculator.solar_eclipse_path(...)` -> `SolarEclipsePath` | original draft is no longer current; Moira now has a typed numerical first slice with Swiss `where` maximum-geography validation |
-| `sol_eclipse_how` | partial | `solar_local_circumstances(...)` | closest current local-attribute surface |
-| `lun_eclipse_when` | partial | `EclipseCalculator.next_lunar_eclipse(...)` | class method |
-| `lun_eclipse_when_loc` | partial | `EclipseCalculator.lunar_local_circumstances(...)` | shape differs |
-| `lun_eclipse_how` | partial | `lunar_local_circumstances(...)` / analysis bundle | shape differs |
-| `lun_occult_when_glob` | partial | `all_lunar_occultations(...)`, `m.occultations(...)` | present, not Swiss-shaped |
-| `lun_occult_when_loc` | partial | occultation search plus observer args in `occultations.py` | exact 1:1 helper not finalized |
-| `lun_occult_where` | partial | `lunar_occultation_path_at(...)`, `lunar_star_occultation_path_at(...)` -> `OccultationPathGeometry` | exact-JD path builders now exist and the current first slice is externally checked against the local Swiss `where` fixture |
+| `sol_eclipse_when_glob` | mapped | `EclipseCalculator().next_solar_eclipse(jd_start) → EclipseEvent` | global search, no location argument; Group F audit 2026-04-04 |
+| `sol_eclipse_when_loc` | partial | `EclipseCalculator().solar_local_circumstances(jd_start, lat, lon) → SolarEclipseLocalCircumstances` | anchors to global maximum event then computes local sky circumstances; does not independently search for next eclipse visible at the observer location |
+| `sol_eclipse_where` | mapped | `EclipseCalculator().solar_eclipse_path(jd_start) → SolarEclipsePath` | `central_line_lats/lons`, `umbral_width_km`, `duration_at_max_s`, `max_eclipse_lat/lon`; validated against Swiss `where` fixture; Group F audit 2026-04-04 |
+| `sol_eclipse_how` | mapped | `EclipseCalculator().solar_local_circumstances(...)` → `SolarEclipseLocalCircumstances` | `event.data.eclipse_magnitude`, `sun_apparent_radius`, `moon_apparent_radius`, `topocentric_separation_deg`, `topocentric_overlap`; Group F audit 2026-04-04 |
+| `lun_eclipse_when` | mapped | `EclipseCalculator().next_lunar_eclipse(jd_start) → EclipseEvent` | global search; Group F audit 2026-04-04 |
+| `lun_eclipse_when_loc` | mapped | `EclipseCalculator().lunar_local_circumstances(jd_start, lat, lon) → LunarEclipseLocalCircumstances` | per-contact `LocalContactCircumstances` (jd_ut, azimuth, altitude, visible) for P1/U1/U2/U3/U4/P4/greatest; Group F audit 2026-04-04 |
+| `lun_eclipse_how` | mapped | `LunarEclipseLocalCircumstances.analysis → LunarEclipseAnalysis` | `eclipse_magnitude`, `eclipse_type`, `gamma_earth_radii`, shadow radii on `EclipseData`; Group F audit 2026-04-04 |
+| `lun_occult_when_glob` | mapped | `lunar_occultation(target, jd_start, jd_end)`, `lunar_star_occultation(...)`, `all_lunar_occultations(...)` | omit `observer_lat`/`observer_lon` for geocentric global search; Group F audit 2026-04-04 |
+| `lun_occult_when_loc` | mapped | `lunar_occultation(target, jd_start, jd_end, observer_lat=lat, observer_lon=lon)`, `lunar_star_occultation(..., observer_lat=lat, observer_lon=lon)` | topocentric search when observer coords supplied; Group F audit 2026-04-04 |
+| `lun_occult_where` | mapped | `lunar_occultation_path_at(target, jd_mid) → OccultationPathGeometry`, `lunar_star_occultation_path_at(...)` | `central_line_lats/lons`, `path_width_km`, `duration_at_greatest_s`; IOTA-validated; Group F audit 2026-04-04 |
 
 ### Rise, set, transit
 
 | Swiss symbol | Status | Current Moira equivalent | Notes |
 | --- | --- | --- | --- |
-| `rise_trans` | partial | `find_phenomena(...)`, `get_transit(...)` | split API |
-| `rise_trans_true_hor` | partial | altitude parameter in `find_phenomena(...)` logic | no exact wrapper name |
+| `rise_trans` | mapped | `find_phenomena(body, jd_start, lat, lon) → dict` | returns `'Rise'`, `'Set'`, `'Transit'`, `'AntiTransit'` keys; covers all Swiss `CALC_RISE`/`CALC_SET`/`CALC_MTRANSIT`/`CALC_ITRANSIT` use cases; Group G audit 2026-04-04 |
+| `rise_trans_true_hor` | mapped | `find_phenomena(body, jd_start, lat, lon, altitude=<val>)` or `RiseSetPolicy(horizon_altitude=<val>)` | explicit altitude override drives the bisection threshold; `refraction=False` gives geometric (no-atmosphere) horizon; Group G audit 2026-04-04 |
 
 ### Nodes and apsides
 
 | Swiss symbol | Status | Current Moira equivalent | Notes |
 | --- | --- | --- | --- |
 | `nod_aps_ut` | partial | `all_planetary_nodes(...)`, `m.planetary_nodes(...)` | planetary side verified |
-| `mooncross_node_ut` | missing | no audited direct helper | original draft overclaimed |
+| `mooncross_node_ut` | mapped | `next_moon_node_crossing(...)` in `moira.nodes` | Phase 2 |
 
 ### Planetary phenomena
 
@@ -561,19 +559,19 @@ named in the generated draft, with the best current status from this audit.
 | Swiss symbol | Status | Current Moira equivalent | Notes |
 | --- | --- | --- | --- |
 | `heliacal_ut` | partial | `fixed_stars.heliacal_rising(...)`, `fixed_stars.heliacal_setting(...)`, facade star heliacal helpers | star-oriented verified |
-| `heliacal_pheno_ut` | missing | no audited direct detailed heliacal phenomenon helper | draft overclaimed |
-| `vis_limit_mag` | missing | no audited direct visual limiting magnitude helper | draft overclaimed |
+| `heliacal_pheno_ut` | mapped | `visibility_assessment(body, jd_ut, lat, lon, *, policy) -> VisibilityAssessment` in `moira.heliacal` | `VisibilityAssessment.solar_elongation_deg` + altitude + limiting magnitude constitute the phenomena tuple; Phase 5 / V6 |
+| `vis_limit_mag` | mapped | `visual_limiting_magnitude(jd_ut, lat, lon, *, policy)` in `moira.heliacal` | Phase 5 / V6; Bortle sky limit + K&S 1991 moonlight penalty |
 
 ### Coordinate transforms and corrections
 
 | Swiss symbol | Status | Current Moira equivalent | Notes |
 | --- | --- | --- | --- |
 | `azalt` | partial | `equatorial_to_horizontal(...)` | no audited one-call Swiss-style wrapper |
-| `azalt_rev` | missing | no audited reverse helper under claimed name | draft overclaimed |
+| `azalt_rev` | mapped | `horizontal_to_equatorial(...)` in `moira.coordinates` | Phase 1 |
 | `cotrans` | mapped | `ecliptic_to_equatorial(...)`, `equatorial_to_ecliptic(...)` | verified |
-| `cotrans_sp` | missing | no audited speed-aware public helper | draft overclaimed |
-| `refrac` | missing | no audited public refraction helper under claimed name | draft overclaimed |
-| `refrac_extended` | missing | no audited public helper under claimed name | draft overclaimed |
+| `cotrans_sp` | mapped | `cotrans_sp(...)` in `moira.coordinates` | Phase 1 |
+| `refrac` | mapped | `atmospheric_refraction(...)` in `moira.coordinates` | Phase 1 |
+| `refrac_extended` | mapped | `atmospheric_refraction_extended(...)` in `moira.coordinates` | Phase 1 |
 | `degnorm` | mapped | `normalize_degrees(...)` | verified |
 | `radnorm` | stdlib | Python `math` modulo | no dedicated Moira helper needed |
 | `difdeg2n` | partial | simple local math or future utility helper | no audited public helper |
@@ -585,7 +583,7 @@ named in the generated draft, with the best current status from this audit.
 | --- | --- | --- | --- |
 | `mooncross_ut` | partial | transit/ingress search in `moira.transits` | exact target-longitude helper naming differs |
 | `solcross_ut` | partial | transit/ingress search in `moira.transits` | exact target-longitude helper naming differs |
-| `helio_cross_ut` | missing | no audited heliocentric crossing helper | draft overclaimed |
+| `helio_cross_ut` | mapped | `next_heliocentric_transit(...)` in `moira.planets` | Phase 2 |
 
 ### Gauquelin sectors
 
@@ -608,24 +606,33 @@ named in the generated draft, with the best current status from this audit.
 | --- | --- | --- | --- |
 | `AST_OFFSET + n` asteroid access | mapped | `asteroid_at(...)`, `main_belt_at(...)`, `centaur_at(...)`, `tno_at(...)` | verified |
 | Uranian bodies `CUPIDO`..`POSEIDON` | mapped | `moira.uranian`, `m.uranian(...)` | verified |
-| `ISIS`, `NIBIRU`, `HARRINGTON`, etc. | partial | some named small bodies exist, fictional bodies not audited | generated draft conflated categories |
+| `SE_ISIS` (asteroid 42 Isis) | mapped | `asteroid_at("Isis", jd_ut)` via NAIF ID 2000042 in asteroid catalog | real minor planet with valid SPK entry; Group H audit 2026-04-04 |
+| `SE_NIBIRU` | unsupported | none | no accepted scientific ephemeris, no NAIF ID, no SPK kernel; fictional body; `unsupported.doctrine` |
+| `SE_HARRINGTON` | unsupported | none | Harrington's never-confirmed Planet X hypothesis; no NAIF ID, no SPK kernel exists; `unsupported.doctrine` |
 
 ### High-confidence inclusion backlog
 
 If Swiss parity is the goal, these are the clearest items still needing real
 Moira surface rather than just mapping work:
 
-- user-supplied Delta T override surface
-- explicit ARMC house helpers if you want direct Swiss-style migration
-- direct Moon-node crossing helper
-- direct detailed heliacal-phenomena helper
-- direct visual limiting magnitude helper
-- reverse horizontal transform helper
-- public atmospheric refraction helpers
-- heliocentric longitude-crossing helper
-- local-mean-time utility helpers
-- tidal-acceleration override helpers
-- library/file introspection helpers
+Implemented (Phase 1–4):
+- `DeltaTPolicy` closes `set_delta_t_userdef` (Phase 1)
+- `horizontal_to_equatorial` closes `azalt_rev` (Phase 1)
+- `atmospheric_refraction` / `atmospheric_refraction_extended` close `refrac` / `refrac_extended` (Phase 1)
+- `equation_of_time` closes `time_equ` (Phase 1)
+- `houses_from_armc` / `body_house_position` close `houses_armc` / `house_pos` (Phase 2)
+- `planet_relative_to` closes `calc_pctr` (Phase 2)
+- `next_moon_node_crossing` closes `mooncross_node_ut` (Phase 2)
+- `next_heliocentric_transit` closes `helio_cross_ut` (Phase 2)
+- `orbital_elements_at` / `distance_extremes_at` close `get_orbital_elements` / `orbit_max_min_true_distance` (Phase 4)
+- `visual_limiting_magnitude` closes `vis_limit_mag` (Phase 5 / V6)
+- `ayanamsa_offset` kwarg on `calculate_houses` and `houses_from_armc` closes `houses_ex` / `houses_armc_ex2` sidereal parity
+- `VisibilityAssessment.solar_elongation_deg` closes `heliacal_pheno_ut` (Phase 5 / V6)
+
+Still missing:
+- local-mean-time utility helpers (`lat_to_lmt`, `lmt_to_lat`)
+- tidal-acceleration override helpers (`get_tid_acc`, `set_tid_acc`)
+- library/file introspection helpers (`get_library_path`, `get_current_file_data`)
 
 ## Recommended Current Usage
 

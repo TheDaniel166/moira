@@ -338,3 +338,55 @@ def test_next_moon_node_crossing_ascending_lat_increases():
     assert lat_after > 0.0, (
         f"After ascending node crossing, Moon lat should be positive, got {lat_after:.4f}"
     )
+
+
+# ---------------------------------------------------------------------------
+# ayanamsa_offset — sidereal house shift (houses_ex / houses_armc_ex2 parity)
+# ---------------------------------------------------------------------------
+
+_JD_J2000    = 2451545.0   # J2000.0
+_LON_LONDON  = -0.1
+_LAHIRI      = 23.85       # representative Lahiri ayanamsa; not ephemeris-dependent
+
+
+def test_calculate_houses_ayanamsa_offset_shifts_all_cusps():
+    """Each cusp shifts by the ayanamsa offset, modulo 360."""
+    tropical = calculate_houses(_JD_J2000, _LAT_LONDON, _LON_LONDON)
+    sidereal = calculate_houses(_JD_J2000, _LAT_LONDON, _LON_LONDON, ayanamsa_offset=_LAHIRI)
+    for t, s in zip(tropical.cusps, sidereal.cusps):
+        expected = (t - _LAHIRI) % 360.0
+        assert abs(s - expected) < 1e-9, f"cusp tropical={t:.6f} sidereal={s:.6f}"
+
+
+def test_calculate_houses_ayanamsa_offset_shifts_angles_not_armc():
+    """ASC, MC, vertex, anti_vertex shift; ARMC (equatorial) does not."""
+    tropical = calculate_houses(_JD_J2000, _LAT_LONDON, _LON_LONDON)
+    sidereal = calculate_houses(_JD_J2000, _LAT_LONDON, _LON_LONDON, ayanamsa_offset=_LAHIRI)
+    assert abs(sidereal.asc         - (tropical.asc         - _LAHIRI) % 360.0) < 1e-9
+    assert abs(sidereal.mc          - (tropical.mc          - _LAHIRI) % 360.0) < 1e-9
+    assert abs(sidereal.vertex      - (tropical.vertex      - _LAHIRI) % 360.0) < 1e-9
+    assert abs(sidereal.anti_vertex - (tropical.anti_vertex - _LAHIRI) % 360.0) < 1e-9
+    assert abs(sidereal.armc - tropical.armc) < 1e-9
+
+
+def test_calculate_houses_ayanamsa_offset_none_unchanged():
+    """ayanamsa_offset=None (default) produces identical cusps to no kwarg."""
+    tropical = calculate_houses(_JD_J2000, _LAT_LONDON, _LON_LONDON)
+    explicit = calculate_houses(_JD_J2000, _LAT_LONDON, _LON_LONDON, ayanamsa_offset=None)
+    assert tropical.cusps == explicit.cusps
+    assert tropical.asc   == explicit.asc
+
+
+def test_calculate_houses_ayanamsa_offset_values_in_range():
+    """All shifted cusps remain in [0, 360)."""
+    sidereal = calculate_houses(_JD_J2000, _LAT_LONDON, _LON_LONDON, ayanamsa_offset=_LAHIRI)
+    assert all(0.0 <= c < 360.0 for c in sidereal.cusps)
+
+
+def test_houses_from_armc_ayanamsa_offset_shifts_all_cusps():
+    """houses_from_armc ayanamsa_offset shifts all cusps correctly."""
+    tropical = houses_from_armc(_ARMC_J2000, _OBL_J2000, _LAT_LONDON)
+    sidereal = houses_from_armc(_ARMC_J2000, _OBL_J2000, _LAT_LONDON, ayanamsa_offset=_LAHIRI)
+    for t, s in zip(tropical.cusps, sidereal.cusps):
+        expected = (t - _LAHIRI) % 360.0
+        assert abs(s - expected) < 1e-9, f"cusp tropical={t:.6f} sidereal={s:.6f}"

@@ -163,7 +163,7 @@ have natural entry points in the repo.
 | model-basis controls (`DeltaT`, precession, nutation, tidal acceleration) | `Defer.Doctrine` | [`julian.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/julian.py), [`corrections.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/corrections.py), [`DELTA_T_HYBRID_MODEL.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/DELTA_T_HYBRID_MODEL.md) | these are foundational astronomy policy choices, not Swiss option constants |
 | additional ayanamsa constants / user-defined ayanamsa | `Defer.Doctrine` | [`sidereal.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/sidereal.py) | ayanamsa expansion belongs in one coherent sidereal doctrine layer |
 | eclipse / occultation path helpers | `Active.Design` + `Active.Validation` | [`eclipse.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/eclipse.py), [`ECLIPSE_MODEL_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/ECLIPSE_MODEL_STANDARD.md), [`occultations.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/occultations.py), [`ANCIENT_OCCULTATION_VALIDATION_PROGRAM.md`](c:/Users/nilad/OneDrive/Desktop/Moira/wiki/03_validation/ANCIENT_OCCULTATION_VALIDATION_PROGRAM.md) | modern/future path geometry is active and externally validated; ancient occultations belong to a separate historical-validation program |
-| orbital-elements public layer | `Defer.Design` | supporting-modules track from [`REPOSITORY_ASSESSMENT.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/REPOSITORY_ASSESSMENT.md) | should be introduced as a dedicated typed subsystem, not scattered helpers |
+| orbital-elements public layer | `Implemented` | [`moira/orbits.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/orbits.py), [`moira/__init__.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/__init__.py) | `KeplerianElements`, `DistanceExtremes`, `orbital_elements_at`, `distance_extremes_at` implemented Phase 4; wired into top-level namespace |
 | house dynamics / cusp-speed layer | `Implemented` | [`houses.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/houses.py), [`HOUSES_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/HOUSES_BACKEND_STANDARD.md) | implemented in Moira form as `HouseDynamics`, including both `cusp_speeds_at(...)` and `house_dynamics_from_armc(...)` rather than Swiss-style auxiliary tuples |
 
 ## Scope Boundary
@@ -301,7 +301,7 @@ Design the deferred-but-valid subsystem families.
 | model-basis controls | `Defer.Doctrine` | must not become a bag of Swiss option constants |
 | additional ayanamsas | `Defer.Doctrine` | each added ayanamsa must be doctrinally named and justified |
 | eclipse/occultation path helpers | `Active.Design` + `Active.Validation` | typed path/circumstance vessels exist; solar and occultation maximum geography are implemented and externally checked on the local Swiss `where` corpus |
-| orbital-elements public layer | `Defer.Design` | requires a dedicated typed subsystem |
+| orbital-elements public layer | `Implemented` | `KeplerianElements`, `DistanceExtremes`, `orbital_elements_at`, `distance_extremes_at` in `moira/orbits.py` (Phase 4) |
 | house dynamics / cusp-speed layer | `Implemented` | doctrine and validation are now embodied in `HouseDynamics`, `cusp_speeds_at(...)`, and `house_dynamics_from_armc(...)` |
 
 ### Atomic backlog
@@ -512,6 +512,11 @@ public surface and admit the first V6 optional enhancements.
         `skipped_latitude`, `skipped_magnitude` and three property accessors
 - [x] define `HeliacalBatchResult` in `moira/star_types.py`
 - [x] promote `HeliacalBatchResult` and `heliacal_catalog_batch` to `moira/facade.py`
+- [x] implement `visual_limiting_magnitude(jd_ut, lat, lon, *, policy) -> float` (`moira/heliacal.py`):
+      — Bortle sky limit via `_effective_limiting_magnitude`
+      — K&S 1991 moonlight penalty when `MoonlightPolicy.KRISCIUNAS_SCHAEFER_1991`
+      — closes Swiss `vis_limit_mag` parity gap
+- [x] promote `visual_limiting_magnitude` to `moira/__init__.py` and `moira/facade.py`
 - [x] add unit tests: 16 K&S 1991 tests + 8 batch tests (all passing)
 
 ### Exit criteria
@@ -522,6 +527,7 @@ public surface and admit the first V6 optional enhancements.
 - [x] `heliacal_catalog_batch` with pre-filtering and `HeliacalBatchResult` vessel
 - [x] all new public names in `moira/__init__.py` and `moira/facade.py`
 - [x] `moira/heliacal.py` header docstring reflects actual implementation state
+- [x] `visual_limiting_magnitude` implemented and promoted; closes `vis_limit_mag` Swiss gap
 
 ### Open V6 items (deferred)
 

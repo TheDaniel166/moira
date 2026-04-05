@@ -173,6 +173,7 @@ from .heliacal import (
     VisibilityAssessment,
     GeneralVisibilityEvent,
     visibility_assessment,
+    visual_limiting_magnitude,
     visibility_event,
 )
 from .orbits import KeplerianElements, DistanceExtremes, orbital_elements_at, distance_extremes_at
@@ -858,7 +859,7 @@ __all__ = [
     "VisibilityPolicy", "VisibilitySearchPolicy",
     "LunarCrescentVisibilityClass", "LunarCrescentDetails",
     "VisibilityAssessment", "GeneralVisibilityEvent",
-    "visibility_assessment", "visibility_event",
+    "visibility_assessment", "visual_limiting_magnitude", "visibility_event",
     "SolarEclipsePath",
     "OccultationPathGeometry",
     "KeplerianElements", "DistanceExtremes", "orbital_elements_at", "distance_extremes_at",

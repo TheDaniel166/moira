@@ -1818,7 +1818,8 @@ def calculate_houses(
     longitude: float,
     system:    str = HouseSystem.PLACIDUS,
     *,
-    policy:    HousePolicy | None = None,
+    policy:          HousePolicy | None = None,
+    ayanamsa_offset: float | None = None,
 ) -> HouseCusps:
     """
     Calculate house cusps for a given Universal Time and observer location.
@@ -2003,14 +2004,15 @@ def calculate_houses(
     else:
         cusps = _placidus(armc, obliquity, latitude)
 
+    _shift = ayanamsa_offset if ayanamsa_offset is not None else 0.0
     return HouseCusps(
         system=system,
-        cusps=[normalize_degrees(c) for c in cusps],
-        asc=normalize_degrees(asc),
-        mc=normalize_degrees(mc),
+        cusps=[normalize_degrees(c - _shift) for c in cusps],
+        asc=normalize_degrees(asc - _shift),
+        mc=normalize_degrees(mc - _shift),
         armc=normalize_degrees(armc),
-        vertex=normalize_degrees(vertex),
-        anti_vertex=normalize_degrees(anti_vertex),
+        vertex=normalize_degrees(vertex - _shift),
+        anti_vertex=normalize_degrees(anti_vertex - _shift),
         effective_system=effective_system,
         fallback=fallback,
         fallback_reason=fallback_reason,
@@ -3158,6 +3160,7 @@ def houses_from_armc(
     *,
     policy: HousePolicy | None = None,
     sun_longitude: float | None = None,
+    ayanamsa_offset: float | None = None,
 ) -> HouseCusps:
     """
     Compute house cusps directly from a pre-computed ARMC and obliquity.
@@ -3272,14 +3275,15 @@ def houses_from_armc(
     else:
         cusps = _placidus(armc, obliquity, lat)
 
+    _shift = ayanamsa_offset if ayanamsa_offset is not None else 0.0
     return HouseCusps(
         system=system,
-        cusps=[normalize_degrees(c) for c in cusps],
-        asc=normalize_degrees(asc),
-        mc=normalize_degrees(mc),
+        cusps=[normalize_degrees(c - _shift) for c in cusps],
+        asc=normalize_degrees(asc - _shift),
+        mc=normalize_degrees(mc - _shift),
         armc=normalize_degrees(armc),
-        vertex=normalize_degrees(vertex),
-        anti_vertex=normalize_degrees(anti_vertex),
+        vertex=normalize_degrees(vertex - _shift),
+        anti_vertex=normalize_degrees(anti_vertex - _shift),
         effective_system=effective_system,
         fallback=fallback,
         fallback_reason=fallback_reason,

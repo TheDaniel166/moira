@@ -89,6 +89,7 @@ from .heliacal import (
     VisibilityAssessment,
     GeneralVisibilityEvent,
     visibility_assessment,
+    visual_limiting_magnitude,
     visibility_event,
 )
 
@@ -142,6 +143,7 @@ __all__ = [
     "VisibilityAssessment",
     "GeneralVisibilityEvent",
     "visibility_assessment",
+    "visual_limiting_magnitude",
     "visibility_event",
     "KeplerianElements",
     "DistanceExtremes",
