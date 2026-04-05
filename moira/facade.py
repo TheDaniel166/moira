@@ -122,6 +122,10 @@ from .houses import (
     compare_systems,
     compare_placements,
     distribute_points,
+    Quadrant,
+    QuadrantEmphasisProfile,
+    quadrant_of,
+    quadrant_emphasis,
 )
 from .aspects import (
     CANONICAL_ASPECTS,
@@ -319,6 +323,10 @@ from .progressions import (
     converse_tertiary_progression, converse_tertiary_ii_progression,
     ascendant_arc, minor_progression, converse_minor_progression,
     daily_house_frame, daily_houses,
+    duodenary_progression, converse_duodenary_progression,
+    quotidian_solar_progression, converse_quotidian_solar_progression,
+    quotidian_lunar_progression, converse_quotidian_lunar_progression,
+    planetary_arc, converse_planetary_arc,
     progression_relation, house_frame_relation,
     progression_condition_profile, house_frame_condition_profile,
     progression_chart_condition_profile, progression_condition_network_profile,
@@ -645,6 +653,7 @@ __all__ = [
     "HouseOccupancy", "HouseDistributionProfile",
     "calculate_houses", "assign_house", "describe_boundary", "describe_angularity",
     "compare_systems", "compare_placements", "distribute_points",
+    "Quadrant", "QuadrantEmphasisProfile", "quadrant_of", "quadrant_emphasis",
     "EclipseData", "EclipseEvent", "EclipseType", "EclipseCalculator",
     "LunarEclipseAnalysis", "LocalContactCircumstances", "LunarEclipseLocalCircumstances",
     "SolarBodyCircumstances", "SolarEclipseLocalCircumstances",
@@ -783,6 +792,10 @@ __all__ = [
     "converse_tertiary_progression", "converse_tertiary_ii_progression",
     "ascendant_arc", "minor_progression", "converse_minor_progression",
     "daily_house_frame", "daily_houses",
+    "duodenary_progression", "converse_duodenary_progression",
+    "quotidian_solar_progression", "converse_quotidian_solar_progression",
+    "quotidian_lunar_progression", "converse_quotidian_lunar_progression",
+    "planetary_arc", "converse_planetary_arc",
     "progression_relation", "house_frame_relation",
     "progression_condition_profile", "house_frame_condition_profile",
     "progression_chart_condition_profile", "progression_condition_network_profile",
@@ -2081,6 +2094,122 @@ class Moira:
             reader=self._reader,
         )
 
+    def duodenary_progression(
+        self,
+        natal_dt: datetime,
+        target_dt: datetime,
+        bodies: list[str] | None = None,
+    ) -> ProgressedChart:
+        """Duodenary progression (Carter — 1/12 day per year)."""
+        return duodenary_progression(
+            jd_from_datetime(natal_dt),
+            target_dt,
+            bodies=bodies,
+            reader=self._reader,
+        )
+
+    def converse_duodenary_progression(
+        self,
+        natal_dt: datetime,
+        target_dt: datetime,
+        bodies: list[str] | None = None,
+    ) -> ProgressedChart:
+        """Converse Duodenary progression."""
+        return converse_duodenary_progression(
+            jd_from_datetime(natal_dt),
+            target_dt,
+            bodies=bodies,
+            reader=self._reader,
+        )
+
+    def quotidian_solar_progression(
+        self,
+        natal_dt: datetime,
+        target_dt: datetime,
+        bodies: list[str] | None = None,
+    ) -> ProgressedChart:
+        """Quotidian solar progression (Sepharial — day per day within secondary chart)."""
+        return quotidian_solar_progression(
+            jd_from_datetime(natal_dt),
+            target_dt,
+            bodies=bodies,
+            reader=self._reader,
+        )
+
+    def converse_quotidian_solar_progression(
+        self,
+        natal_dt: datetime,
+        target_dt: datetime,
+        bodies: list[str] | None = None,
+    ) -> ProgressedChart:
+        """Converse Quotidian solar progression."""
+        return converse_quotidian_solar_progression(
+            jd_from_datetime(natal_dt),
+            target_dt,
+            bodies=bodies,
+            reader=self._reader,
+        )
+
+    def quotidian_lunar_progression(
+        self,
+        natal_dt: datetime,
+        target_dt: datetime,
+        bodies: list[str] | None = None,
+    ) -> ProgressedChart:
+        """Quotidian lunar progression (French school — synodic month rate)."""
+        return quotidian_lunar_progression(
+            jd_from_datetime(natal_dt),
+            target_dt,
+            bodies=bodies,
+            reader=self._reader,
+        )
+
+    def converse_quotidian_lunar_progression(
+        self,
+        natal_dt: datetime,
+        target_dt: datetime,
+        bodies: list[str] | None = None,
+    ) -> ProgressedChart:
+        """Converse Quotidian lunar progression."""
+        return converse_quotidian_lunar_progression(
+            jd_from_datetime(natal_dt),
+            target_dt,
+            bodies=bodies,
+            reader=self._reader,
+        )
+
+    def planetary_arc_directions(
+        self,
+        natal_dt: datetime,
+        target_dt: datetime,
+        arc_body: str,
+        bodies: list[str] | None = None,
+    ) -> ProgressedChart:
+        """Planetary Arc directed chart (arc of any chosen planet)."""
+        return planetary_arc(
+            jd_from_datetime(natal_dt),
+            target_dt,
+            arc_body=arc_body,
+            bodies=bodies,
+            reader=self._reader,
+        )
+
+    def converse_planetary_arc_directions(
+        self,
+        natal_dt: datetime,
+        target_dt: datetime,
+        arc_body: str,
+        bodies: list[str] | None = None,
+    ) -> ProgressedChart:
+        """Converse Planetary Arc directed chart."""
+        return converse_planetary_arc(
+            jd_from_datetime(natal_dt),
+            target_dt,
+            arc_body=arc_body,
+            bodies=bodies,
+            reader=self._reader,
+        )
+
     def ascendant_arc_directions(
         self,
         natal_dt: datetime,
@@ -2117,8 +2246,7 @@ class Moira:
         )
 
     # ------------------------------------------------------------------
-    # Transits
-    # ------------------------------------------------------------------
+    # Transits    # ------------------------------------------------------------------
 
     def transits(
         self,

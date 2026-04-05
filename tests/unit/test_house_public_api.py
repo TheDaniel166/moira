@@ -42,7 +42,13 @@ _CURATED_PUBLIC_NAMES = [
     "HouseDynamics",
     "cusp_speeds_at",
     "houses_from_armc",
+    "house_dynamics_from_armc",
     "body_house_position",
+    # Rudhyar quadrant emphasis
+    "Quadrant",
+    "QuadrantEmphasisProfile",
+    "quadrant_of",
+    "quadrant_emphasis",
 ]
 
 _INTERNAL_NAMES = [
@@ -80,11 +86,11 @@ class TestModuleLevelResolution:
 
 
 class TestModuleCounts:
-    def test_curated_count_is_28(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 28
+    def test_curated_count_is_33(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 33
 
-    def test_houses_all_count_is_28(self):
-        assert len(_houses_module.__all__) == 28
+    def test_houses_all_count_is_33(self):
+        assert len(_houses_module.__all__) == 33
 
 
 class TestInternalsRemainInternal:

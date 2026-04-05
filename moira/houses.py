@@ -221,6 +221,11 @@ __all__ = [
     "HouseDynamics",
     "cusp_speeds_at",
     "house_dynamics_from_armc",
+    # Phase 4 — Rudhyar quadrant emphasis
+    "Quadrant",
+    "QuadrantEmphasisProfile",
+    "quadrant_of",
+    "quadrant_emphasis",
   ]
 
 
@@ -3620,4 +3625,166 @@ def house_dynamics_from_armc(
         mc_speed_deg_per_day=_speed_from_armc(h_m.mc, h_p.mc),
         vertex_speed_deg_per_day=_speed_from_armc(h_m.vertex, h_p.vertex),
         anti_vertex_speed_deg_per_day=_speed_from_armc(h_m.anti_vertex, h_p.anti_vertex),
+    )
+
+
+# ===========================================================================
+# RUDHYAR QUADRANT EMPHASIS  (Phase 4)
+# ===========================================================================
+#
+# Dane Rudhyar — *The Astrology of Personality* (1936),
+#                *The Astrological Houses* (1972)
+#
+# The chart is divided into four quadrants by the ASC–DSC and MC–IC axes:
+#
+#   Q1 (Spring)  houses 1–3   ASC → IC      personal / instinctive
+#   Q2 (Summer)  houses 4–6   IC  → DSC     personal / subjective
+#   Q3 (Autumn)  houses 7–9   DSC → MC      social / relational
+#   Q4 (Winter)  houses 10–12 MC  → ASC     social / universal
+#
+# The analytical product is a quadrant emphasis profile: how many planets
+# (or other chart points) occupy each quadrant.
+# ===========================================================================
+
+class Quadrant(str, Enum):
+    """Rudhyar's four developmental quadrants."""
+
+    Q1 = "Q1"  # houses 1–3   personal / instinctive
+    Q2 = "Q2"  # houses 4–6   personal / subjective
+    Q3 = "Q3"  # houses 7–9   social / relational
+    Q4 = "Q4"  # houses 10–12 social / universal
+
+
+_HOUSE_TO_QUADRANT: dict[int, Quadrant] = {
+    1: Quadrant.Q1,  2: Quadrant.Q1,  3: Quadrant.Q1,
+    4: Quadrant.Q2,  5: Quadrant.Q2,  6: Quadrant.Q2,
+    7: Quadrant.Q3,  8: Quadrant.Q3,  9: Quadrant.Q3,
+    10: Quadrant.Q4, 11: Quadrant.Q4, 12: Quadrant.Q4,
+}
+
+
+def quadrant_of(house: int) -> Quadrant:
+    """Return the Rudhyar quadrant for a house number (1–12)."""
+    if house < 1 or house > 12:
+        raise ValueError(f"house must be 1–12, got {house}")
+    return _HOUSE_TO_QUADRANT[house]
+
+
+@dataclass(frozen=True, slots=True)
+class QuadrantEmphasisProfile:
+    """
+    Rudhyar quadrant emphasis analysis over a set of chart points.
+
+    Fields
+    ------
+    house_cusps : HouseCusps
+        The house frame used for placement.
+    point_count : int
+        Total number of points placed.
+    q1_count, q2_count, q3_count, q4_count : int
+        Number of points in each quadrant.
+    q1_points, q2_points, q3_points, q4_points : tuple[str, ...]
+        Names of points in each quadrant, preserving input order.
+    dominant_quadrant : tuple[Quadrant, ...]
+        Quadrant(s) with the highest count (ties included).
+        Empty tuple when point_count == 0.
+    eastern_count : int
+        Points in the eastern hemisphere (Q1 + Q4, houses 10–3).
+    western_count : int
+        Points in the western hemisphere (Q2 + Q3, houses 4–9).
+    northern_count : int
+        Points in the northern hemisphere (Q1 + Q2, houses 1–6).
+    southern_count : int
+        Points in the southern hemisphere (Q3 + Q4, houses 7–12).
+    """
+
+    house_cusps:        HouseCusps
+    point_count:        int
+    q1_count:           int
+    q2_count:           int
+    q3_count:           int
+    q4_count:           int
+    q1_points:          tuple[str, ...]
+    q2_points:          tuple[str, ...]
+    q3_points:          tuple[str, ...]
+    q4_points:          tuple[str, ...]
+    dominant_quadrant:  tuple[Quadrant, ...]
+    eastern_count:      int
+    western_count:      int
+    northern_count:     int
+    southern_count:     int
+
+    def __post_init__(self) -> None:
+        total = self.q1_count + self.q2_count + self.q3_count + self.q4_count
+        if total != self.point_count:
+            raise ValueError("quadrant counts must sum to point_count")
+        if self.eastern_count + self.western_count != self.point_count:
+            raise ValueError("hemisphere counts must sum to point_count")
+        if self.northern_count + self.southern_count != self.point_count:
+            raise ValueError("hemisphere counts must sum to point_count")
+
+
+def quadrant_emphasis(
+    points: dict[str, float],
+    house_cusps: HouseCusps,
+) -> QuadrantEmphasisProfile:
+    """
+    Compute the Rudhyar quadrant emphasis profile for a set of named points.
+
+    Parameters
+    ----------
+    points : dict[str, float]
+        Mapping of point name to ecliptic longitude (degrees).
+        Example: {"Sun": 120.5, "Moon": 245.3, "Mars": 15.0}
+    house_cusps : HouseCusps
+        The house frame to use for placement.
+
+    Returns
+    -------
+    QuadrantEmphasisProfile
+    """
+    buckets: dict[Quadrant, list[str]] = {
+        Quadrant.Q1: [], Quadrant.Q2: [], Quadrant.Q3: [], Quadrant.Q4: [],
+    }
+
+    for name, lon in points.items():
+        placement = assign_house(lon, house_cusps)
+        q = quadrant_of(placement.house)
+        buckets[q].append(name)
+
+    q1 = tuple(buckets[Quadrant.Q1])
+    q2 = tuple(buckets[Quadrant.Q2])
+    q3 = tuple(buckets[Quadrant.Q3])
+    q4 = tuple(buckets[Quadrant.Q4])
+
+    counts = {
+        Quadrant.Q1: len(q1),
+        Quadrant.Q2: len(q2),
+        Quadrant.Q3: len(q3),
+        Quadrant.Q4: len(q4),
+    }
+    point_count = sum(counts.values())
+
+    if point_count == 0:
+        dominant: tuple[Quadrant, ...] = ()
+    else:
+        max_count = max(counts.values())
+        dominant = tuple(q for q in Quadrant if counts[q] == max_count)
+
+    return QuadrantEmphasisProfile(
+        house_cusps=house_cusps,
+        point_count=point_count,
+        q1_count=counts[Quadrant.Q1],
+        q2_count=counts[Quadrant.Q2],
+        q3_count=counts[Quadrant.Q3],
+        q4_count=counts[Quadrant.Q4],
+        q1_points=q1,
+        q2_points=q2,
+        q3_points=q3,
+        q4_points=q4,
+        dominant_quadrant=dominant,
+        eastern_count=counts[Quadrant.Q1] + counts[Quadrant.Q4],
+        western_count=counts[Quadrant.Q2] + counts[Quadrant.Q3],
+        northern_count=counts[Quadrant.Q1] + counts[Quadrant.Q2],
+        southern_count=counts[Quadrant.Q3] + counts[Quadrant.Q4],
     )

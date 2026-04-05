@@ -79,6 +79,9 @@ __all__ = [
     "tertiary_progression", "tertiary_ii_progression",
     "minor_progression", "ascendant_arc", "converse_ascendant_arc",
     "vertex_arc",
+    "duodenary_progression",
+    "quotidian_solar_progression", "quotidian_lunar_progression",
+    "planetary_arc",
     "secondary_progression_declination",
     "daily_houses", "daily_house_frame",
     # Converse progression functions
@@ -90,6 +93,9 @@ __all__ = [
     "converse_tertiary_progression", "converse_tertiary_ii_progression",
     "converse_minor_progression",
     "converse_vertex_arc",
+    "converse_duodenary_progression",
+    "converse_quotidian_solar_progression", "converse_quotidian_lunar_progression",
+    "converse_planetary_arc",
     "converse_secondary_progression_declination",
     # Condition profile functions
     "progression_relation", "house_frame_relation",
@@ -317,6 +323,8 @@ class ProgressionConditionNetworkEdge:
             "stepped_time_key",
             "solar_arc_reference",
             "ascendant_arc_reference",
+            "vertex_arc_reference",
+            "planetary_arc_reference",
             "naibod_rate",
             "one_degree_rate",
             "progressed_house_frame",
@@ -447,6 +455,8 @@ def _build_progression_relation(
         basis = "ascendant_arc_reference"
     elif truth.reference_body == "Vertex":
         basis = "vertex_arc_reference"
+    elif truth.reference_body is not None:
+        basis = "planetary_arc_reference"
     elif "Mean Solar Arc" in truth.doctrine.technique_name:
         basis = "naibod_rate"
     elif truth.doctrine.technique_name.startswith("Naibod") or "Naibod" in truth.doctrine.technique_name:
@@ -499,6 +509,8 @@ def _validate_progression_relation(
         if truth.reference_body == "Ascendant"
         else "vertex_arc_reference"
         if truth.reference_body == "Vertex"
+        else "planetary_arc_reference"
+        if truth.reference_body is not None
         else "naibod_rate"
         if "Mean Solar Arc" in truth.doctrine.technique_name
         else "naibod_rate"
@@ -1039,6 +1051,7 @@ _TROPICAL_YEAR = TROPICAL_YEAR
 _SYNODIC_MONTH = 29.53058868
 _NAIBOD_RATE_DEG_PER_YEAR = 0.98564733
 _ONE_DEGREE_RATE_DEG_PER_YEAR = 1.0
+_DUODENARY_DIVISOR = 12.0  # Carter: 24h / 12 = 2h05m ephemeris per year
 
 
 @dataclass(frozen=True, slots=True)
@@ -1057,11 +1070,20 @@ class ProgressionDirectionPolicy:
     one_degree_rate_deg_per_year: float = _ONE_DEGREE_RATE_DEG_PER_YEAR
 
 
+_SUPPORTED_MC_METHODS = frozenset({
+    "cast_at_progressed_jd",
+    "solar_arc_mc",
+    "naibod_mc",
+    "quotidian_mc",
+})
+
+
 @dataclass(frozen=True, slots=True)
 class ProgressionHouseFramePolicy:
     """Doctrine surface for progressed house-frame techniques."""
 
     default_house_system: str = HouseSystem.PLACIDUS
+    mc_method: str = "cast_at_progressed_jd"
 
 
 @dataclass(frozen=True, slots=True)
@@ -1100,6 +1122,8 @@ def _validate_policy(policy: ProgressionComputationPolicy) -> ProgressionComputa
         raise ValueError("policy.house_frame.default_house_system must be non-empty")
     if policy.house_frame.default_house_system not in HOUSE_SYSTEM_NAMES:
         raise ValueError("policy.house_frame.default_house_system must be a supported house system code")
+    if policy.house_frame.mc_method not in _SUPPORTED_MC_METHODS:
+        raise ValueError("policy.house_frame.mc_method must be a supported MC method")
     return policy
 
 
@@ -1420,6 +1444,48 @@ def _time_key_chart(
     )
 
 
+def _resolve_progressed_mc(
+    *,
+    mc_method: str,
+    natal_jd_ut: float,
+    progressed_jd_ut: float,
+    age_years: float,
+    latitude: float,
+    longitude: float,
+    system: str,
+    reader: SpkReader,
+    naibod_rate: float,
+    tropical_year_days: float,
+) -> float | None:
+    """Compute progressed MC by the declared policy method.
+
+    Returns None for ``"cast_at_progressed_jd"`` (the default), meaning the
+    caller should use the MC from the fully-cast house frame.  For other
+    methods, returns the explicitly computed MC longitude.
+    """
+    if mc_method == "cast_at_progressed_jd":
+        return None
+    if mc_method == "solar_arc_mc":
+        natal_houses = calculate_houses(natal_jd_ut, latitude, longitude, system=system)
+        natal_sun = planet_at(Body.SUN, natal_jd_ut, reader=reader).longitude
+        prog_sun = planet_at(Body.SUN, progressed_jd_ut, reader=reader).longitude
+        arc = (prog_sun - natal_sun) % 360.0
+        return (natal_houses.mc + arc) % 360.0
+    if mc_method == "naibod_mc":
+        natal_houses = calculate_houses(natal_jd_ut, latitude, longitude, system=system)
+        arc = age_years * naibod_rate
+        return (natal_houses.mc + arc) % 360.0
+    if mc_method == "quotidian_mc":
+        completed_years = int(age_years)
+        secondary_prog_jd = natal_jd_ut + completed_years
+        fractional_year = age_years - completed_years
+        fractional_days = fractional_year * tropical_year_days
+        quotidian_jd = secondary_prog_jd + fractional_days
+        quotidian_houses = calculate_houses(quotidian_jd, latitude, longitude, system=system)
+        return quotidian_houses.mc
+    raise ValueError(f"unsupported mc_method: {mc_method!r}")
+
+
 def daily_house_frame(
     natal_jd_ut: float,
     target_date: datetime,
@@ -1440,6 +1506,20 @@ def daily_house_frame(
     age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
     progressed_jd_ut = natal_jd_ut + age_years
     houses = calculate_houses(progressed_jd_ut, latitude, longitude, system=resolved_system)
+    mc_override = _resolve_progressed_mc(
+        mc_method=resolved_policy.house_frame.mc_method,
+        natal_jd_ut=natal_jd_ut,
+        progressed_jd_ut=progressed_jd_ut,
+        age_years=age_years,
+        latitude=latitude,
+        longitude=longitude,
+        system=resolved_system,
+        reader=get_reader(),
+        naibod_rate=resolved_policy.directions.naibod_rate_deg_per_year,
+        tropical_year_days=resolved_policy.time_key.tropical_year_days,
+    )
+    if mc_override is not None:
+        houses.mc = mc_override
     truth = ProgressionComputationTruth(
         doctrine=_doctrine_truth(
             technique_name="Daily Houses",
@@ -2736,6 +2816,496 @@ def converse_minor_progression(
 
 
 # ---------------------------------------------------------------------------
+# Duodenary Progressions (Charles Carter — 1/12 day per year)
+# ---------------------------------------------------------------------------
+
+def duodenary_progression(
+    natal_jd_ut: float,
+    target_date: datetime,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    policy: ProgressionComputationPolicy | None = None,
+) -> ProgressedChart:
+    """
+    Duodenary progression (Charles Carter method).
+
+    Divides the secondary day into 12 equal segments: each 2-hour segment
+    of ephemeris time corresponds to one year of life.
+
+    SYMBOLIC KEY:
+        - unit of life: tropical year
+        - ephemeris unit: 1/12 day after birth (2h05m)
+        - rate type: variable (differential, new ephemeris chart)
+        - application: differential
+
+    Parameters
+    ----------
+    natal_jd_ut : Julian Day (UT) of birth
+    target_date : real-world date for which to calculate progressions
+    bodies      : list of Body.* constants (defaults to all planets)
+    reader      : SpkReader instance
+    policy      : ProgressionComputationPolicy
+
+    Returns
+    -------
+    ProgressedChart with chart_type="Duodenary Progression"
+    """
+    if reader is None:
+        reader = get_reader()
+    resolved_policy = _resolve_policy(policy)
+
+    age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
+    prog_jd = natal_jd_ut + age_years / _DUODENARY_DIVISOR
+
+    if bodies is None:
+        bodies = list(Body.ALL_PLANETS)
+
+    return _time_key_chart(
+        chart_type="Duodenary Progression",
+        natal_jd_ut=natal_jd_ut,
+        target_date=target_date,
+        progressed_jd_ut=prog_jd,
+        age_years=age_years,
+        bodies=bodies,
+        reader=reader,
+        life_unit="tropical_year",
+        ephemeris_unit="twelfth_day_after_birth",
+        rate_mode="variable",
+    )
+
+
+def converse_duodenary_progression(
+    natal_jd_ut: float,
+    target_date: datetime,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    policy: ProgressionComputationPolicy | None = None,
+) -> ProgressedChart:
+    """
+    Converse duodenary progression: reverse the Carter duodenary key.
+
+    SYMBOLIC KEY:
+        - unit of life: tropical year
+        - ephemeris unit: 1/12 day after birth (converse — subtracted)
+        - rate type: variable (differential, new ephemeris chart)
+        - application: differential
+
+    Parameters
+    ----------
+    natal_jd_ut : Julian Day (UT) of birth
+    target_date : real-world date for which to calculate progressions
+    bodies      : list of Body.* constants (defaults to all planets)
+    reader      : SpkReader instance
+    policy      : ProgressionComputationPolicy
+
+    Returns
+    -------
+    ProgressedChart with chart_type="Converse Duodenary Progression"
+    """
+    if reader is None:
+        reader = get_reader()
+    resolved_policy = _resolve_policy(policy)
+
+    age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
+    prog_jd = natal_jd_ut - age_years / _DUODENARY_DIVISOR
+
+    if bodies is None:
+        bodies = list(Body.ALL_PLANETS)
+
+    return _time_key_chart(
+        chart_type="Converse Duodenary Progression",
+        natal_jd_ut=natal_jd_ut,
+        target_date=target_date,
+        progressed_jd_ut=prog_jd,
+        age_years=age_years,
+        bodies=bodies,
+        reader=reader,
+        life_unit="tropical_year",
+        ephemeris_unit="twelfth_day_after_birth",
+        rate_mode="variable",
+        converse=True,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Quotidian Solar Progressions (Sepharial / French school — day per day)
+# ---------------------------------------------------------------------------
+
+def quotidian_solar_progression(
+    natal_jd_ut: float,
+    target_date: datetime,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    policy: ProgressionComputationPolicy | None = None,
+) -> ProgressedChart:
+    """
+    Quotidian solar progression (Sepharial, French school).
+
+    Two-stage time key: first advance to the secondary progressed date for
+    the completed year, then advance one ephemeris day per calendar day for
+    the fractional year.
+
+    SYMBOLIC KEY:
+        - unit of life: calendar day
+        - ephemeris unit: day after secondary date
+        - rate type: variable (differential, new ephemeris chart)
+        - application: differential
+
+    Parameters
+    ----------
+    natal_jd_ut : Julian Day (UT) of birth
+    target_date : real-world date for which to calculate progressions
+    bodies      : list of Body.* constants (defaults to all planets)
+    reader      : SpkReader instance
+    policy      : ProgressionComputationPolicy
+
+    Returns
+    -------
+    ProgressedChart with chart_type="Quotidian Solar Progression"
+    """
+    if reader is None:
+        reader = get_reader()
+    resolved_policy = _resolve_policy(policy)
+    tropical_year_days = resolved_policy.time_key.tropical_year_days
+
+    age_years = _age_years(natal_jd_ut, target_date, tropical_year_days)
+    completed_years = int(age_years)
+    secondary_prog_jd = natal_jd_ut + completed_years
+    fractional_year = age_years - completed_years
+    fractional_days = fractional_year * tropical_year_days
+    quotidian_jd = secondary_prog_jd + fractional_days
+
+    if bodies is None:
+        bodies = list(Body.ALL_PLANETS)
+
+    return _time_key_chart(
+        chart_type="Quotidian Solar Progression",
+        natal_jd_ut=natal_jd_ut,
+        target_date=target_date,
+        progressed_jd_ut=quotidian_jd,
+        age_years=age_years,
+        bodies=bodies,
+        reader=reader,
+        life_unit="calendar_day",
+        ephemeris_unit="day_after_secondary_date",
+        rate_mode="variable",
+    )
+
+
+def converse_quotidian_solar_progression(
+    natal_jd_ut: float,
+    target_date: datetime,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    policy: ProgressionComputationPolicy | None = None,
+) -> ProgressedChart:
+    """
+    Converse quotidian solar progression: reverse the quotidian solar key.
+
+    SYMBOLIC KEY:
+        - unit of life: calendar day
+        - ephemeris unit: day after secondary date (converse — subtracted)
+        - rate type: variable (differential, new ephemeris chart)
+        - application: differential
+
+    Parameters
+    ----------
+    natal_jd_ut : Julian Day (UT) of birth
+    target_date : real-world date for which to calculate progressions
+    bodies      : list of Body.* constants (defaults to all planets)
+    reader      : SpkReader instance
+    policy      : ProgressionComputationPolicy
+
+    Returns
+    -------
+    ProgressedChart with chart_type="Converse Quotidian Solar Progression"
+    """
+    if reader is None:
+        reader = get_reader()
+    resolved_policy = _resolve_policy(policy)
+    tropical_year_days = resolved_policy.time_key.tropical_year_days
+
+    age_years = _age_years(natal_jd_ut, target_date, tropical_year_days)
+    completed_years = int(age_years)
+    secondary_prog_jd = natal_jd_ut + completed_years
+    fractional_year = age_years - completed_years
+    fractional_days = fractional_year * tropical_year_days
+    quotidian_jd = secondary_prog_jd - fractional_days
+
+    if bodies is None:
+        bodies = list(Body.ALL_PLANETS)
+
+    return _time_key_chart(
+        chart_type="Converse Quotidian Solar Progression",
+        natal_jd_ut=natal_jd_ut,
+        target_date=target_date,
+        progressed_jd_ut=quotidian_jd,
+        age_years=age_years,
+        bodies=bodies,
+        reader=reader,
+        life_unit="calendar_day",
+        ephemeris_unit="day_after_secondary_date",
+        rate_mode="variable",
+        converse=True,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Quotidian Lunar Progressions (French school — synodic month rate)
+# ---------------------------------------------------------------------------
+
+def quotidian_lunar_progression(
+    natal_jd_ut: float,
+    target_date: datetime,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    policy: ProgressionComputationPolicy | None = None,
+) -> ProgressedChart:
+    """
+    Quotidian lunar progression (French school, lunar variant).
+
+    Two-stage time key: first advance to the secondary progressed date for
+    the completed year, then advance one synodic month of ephemeris time per
+    tropical year for the fractional year.
+
+    SYMBOLIC KEY:
+        - unit of life: calendar day
+        - ephemeris unit: synodic month fraction after secondary date
+        - rate type: variable (differential, new ephemeris chart)
+        - application: differential
+
+    Parameters
+    ----------
+    natal_jd_ut : Julian Day (UT) of birth
+    target_date : real-world date for which to calculate progressions
+    bodies      : list of Body.* constants (defaults to all planets)
+    reader      : SpkReader instance
+    policy      : ProgressionComputationPolicy
+
+    Returns
+    -------
+    ProgressedChart with chart_type="Quotidian Lunar Progression"
+    """
+    if reader is None:
+        reader = get_reader()
+    resolved_policy = _resolve_policy(policy)
+    tropical_year_days = resolved_policy.time_key.tropical_year_days
+    synodic_month_days = resolved_policy.time_key.synodic_month_days
+
+    age_years = _age_years(natal_jd_ut, target_date, tropical_year_days)
+    completed_years = int(age_years)
+    secondary_prog_jd = natal_jd_ut + completed_years
+    fractional_year = age_years - completed_years
+    fractional_days = fractional_year * synodic_month_days
+    quotidian_jd = secondary_prog_jd + fractional_days
+
+    if bodies is None:
+        bodies = list(Body.ALL_PLANETS)
+
+    return _time_key_chart(
+        chart_type="Quotidian Lunar Progression",
+        natal_jd_ut=natal_jd_ut,
+        target_date=target_date,
+        progressed_jd_ut=quotidian_jd,
+        age_years=age_years,
+        bodies=bodies,
+        reader=reader,
+        life_unit="calendar_day",
+        ephemeris_unit="synodic_month_fraction_after_secondary_date",
+        rate_mode="variable",
+    )
+
+
+def converse_quotidian_lunar_progression(
+    natal_jd_ut: float,
+    target_date: datetime,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    policy: ProgressionComputationPolicy | None = None,
+) -> ProgressedChart:
+    """
+    Converse quotidian lunar progression: reverse the quotidian lunar key.
+
+    SYMBOLIC KEY:
+        - unit of life: calendar day
+        - ephemeris unit: synodic month fraction after secondary date (converse — subtracted)
+        - rate type: variable (differential, new ephemeris chart)
+        - application: differential
+
+    Parameters
+    ----------
+    natal_jd_ut : Julian Day (UT) of birth
+    target_date : real-world date for which to calculate progressions
+    bodies      : list of Body.* constants (defaults to all planets)
+    reader      : SpkReader instance
+    policy      : ProgressionComputationPolicy
+
+    Returns
+    -------
+    ProgressedChart with chart_type="Converse Quotidian Lunar Progression"
+    """
+    if reader is None:
+        reader = get_reader()
+    resolved_policy = _resolve_policy(policy)
+    tropical_year_days = resolved_policy.time_key.tropical_year_days
+    synodic_month_days = resolved_policy.time_key.synodic_month_days
+
+    age_years = _age_years(natal_jd_ut, target_date, tropical_year_days)
+    completed_years = int(age_years)
+    secondary_prog_jd = natal_jd_ut + completed_years
+    fractional_year = age_years - completed_years
+    fractional_days = fractional_year * synodic_month_days
+    quotidian_jd = secondary_prog_jd - fractional_days
+
+    if bodies is None:
+        bodies = list(Body.ALL_PLANETS)
+
+    return _time_key_chart(
+        chart_type="Converse Quotidian Lunar Progression",
+        natal_jd_ut=natal_jd_ut,
+        target_date=target_date,
+        progressed_jd_ut=quotidian_jd,
+        age_years=age_years,
+        bodies=bodies,
+        reader=reader,
+        life_unit="calendar_day",
+        ephemeris_unit="synodic_month_fraction_after_secondary_date",
+        rate_mode="variable",
+        converse=True,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Planetary Arc Direction (Van Dam / European tradition — any body's arc)
+# ---------------------------------------------------------------------------
+
+def planetary_arc(
+    natal_jd_ut: float,
+    target_date: datetime,
+    arc_body: str,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    policy: ProgressionComputationPolicy | None = None,
+) -> ProgressedChart:
+    """
+    Planetary arc direction: arc of any chosen planet applied uniformly.
+
+    Generalises solar arc to any body. The arc is the difference between
+    the chosen planet's progressed and natal longitudes.
+
+    SYMBOLIC KEY:
+        - rate source: actual planetary motion (variable)
+        - application: uniform to all bodies
+        - coordinate system: ecliptic longitude
+
+    Parameters
+    ----------
+    natal_jd_ut : Julian Day (UT) of birth
+    target_date : real-world date for which to calculate directions
+    arc_body    : Body.* constant naming the reference planet (e.g. "Mars")
+    bodies      : list of Body.* constants (defaults to all planets)
+    reader      : SpkReader instance
+    policy      : ProgressionComputationPolicy
+
+    Returns
+    -------
+    ProgressedChart with chart_type="Planetary Arc Direction (<arc_body>)"
+    """
+    if reader is None:
+        reader = get_reader()
+    resolved_policy = _resolve_policy(policy)
+
+    if arc_body not in Body.ALL_PLANETS:
+        raise ValueError(f"arc_body must be a recognised planet name, got {arc_body!r}")
+
+    if bodies is None:
+        bodies = list(Body.ALL_PLANETS)
+
+    natal_ref = planet_at(arc_body, natal_jd_ut, reader=reader).longitude
+
+    age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
+    prog_jd = natal_jd_ut + age_years
+    prog_ref = planet_at(arc_body, prog_jd, reader=reader).longitude
+
+    arc = (prog_ref - natal_ref) % 360.0
+
+    return _uniform_longitude_direction(
+        chart_type=f"Planetary Arc Direction ({arc_body})",
+        natal_jd_ut=natal_jd_ut,
+        target_date=target_date,
+        arc_deg=arc,
+        age_years=age_years,
+        bodies=bodies,
+        reader=reader,
+        progressed_jd_ut=prog_jd,
+        rate_mode="variable",
+        reference_body=arc_body,
+    )
+
+
+def converse_planetary_arc(
+    natal_jd_ut: float,
+    target_date: datetime,
+    arc_body: str,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    policy: ProgressionComputationPolicy | None = None,
+) -> ProgressedChart:
+    """
+    Converse planetary arc direction: the forward planetary arc applied in reverse.
+
+    SYMBOLIC KEY:
+        - rate source: actual planetary motion (variable, converse — arc subtracted)
+        - application: uniform to all bodies
+        - coordinate system: ecliptic longitude
+
+    Parameters
+    ----------
+    natal_jd_ut : Julian Day (UT) of birth
+    target_date : real-world date for which to calculate directions
+    arc_body    : Body.* constant naming the reference planet (e.g. "Mars")
+    bodies      : list of Body.* constants (defaults to all planets)
+    reader      : SpkReader instance
+    policy      : ProgressionComputationPolicy
+
+    Returns
+    -------
+    ProgressedChart with chart_type="Converse Planetary Arc Direction (<arc_body>)"
+    """
+    if reader is None:
+        reader = get_reader()
+    resolved_policy = _resolve_policy(policy)
+
+    if arc_body not in Body.ALL_PLANETS:
+        raise ValueError(f"arc_body must be a recognised planet name, got {arc_body!r}")
+
+    if bodies is None:
+        bodies = list(Body.ALL_PLANETS)
+
+    natal_ref = planet_at(arc_body, natal_jd_ut, reader=reader).longitude
+
+    age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
+    prog_jd = natal_jd_ut + age_years
+    prog_ref = planet_at(arc_body, prog_jd, reader=reader).longitude
+
+    forward_arc = (prog_ref - natal_ref) % 360.0
+    arc = (-forward_arc) % 360.0
+
+    return _uniform_longitude_direction(
+        chart_type=f"Converse Planetary Arc Direction ({arc_body})",
+        natal_jd_ut=natal_jd_ut,
+        target_date=target_date,
+        arc_deg=arc,
+        age_years=age_years,
+        bodies=bodies,
+        reader=reader,
+        progressed_jd_ut=prog_jd,
+        rate_mode="variable",
+        reference_body=arc_body,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Declination Progressions (Charles Jayne method)
 # ---------------------------------------------------------------------------
 
@@ -3017,7 +3587,14 @@ def progression_condition_network_profile(
     for profile in profiles:
         technique_id = f"technique:{profile.technique_name}"
         if profile.relation_kind == "directing_arc" and profile.uses_reference_body:
-            target_label = "Sun" if profile.relation_basis == "solar_arc_reference" else "Ascendant"
+            if profile.relation_basis == "solar_arc_reference":
+                target_label = "Sun"
+            elif profile.relation_basis == "ascendant_arc_reference":
+                target_label = "Ascendant"
+            elif profile.relation_basis == "vertex_arc_reference":
+                target_label = "Vertex"
+            else:
+                target_label = profile.relation_basis
             target_id = f"reference:{target_label}"
             target_kind = "reference"
         else:

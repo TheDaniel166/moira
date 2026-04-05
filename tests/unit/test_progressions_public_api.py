@@ -63,6 +63,14 @@ _CURATED_PUBLIC_NAMES = [
     "converse_vertex_arc",
     "minor_progression",
     "converse_minor_progression",
+    "duodenary_progression",
+    "converse_duodenary_progression",
+    "quotidian_solar_progression",
+    "converse_quotidian_solar_progression",
+    "quotidian_lunar_progression",
+    "converse_quotidian_lunar_progression",
+    "planetary_arc",
+    "converse_planetary_arc",
     "secondary_progression_declination",
     "converse_secondary_progression_declination",
     "daily_house_frame",
@@ -109,5 +117,5 @@ class TestModuleAgreement:
                 f"moira.progressions.{name} disappeared; helper should remain module-internal"
             )
 
-    def test_curated_count_is_57(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 57
+    def test_curated_count_is_65(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 65

@@ -47,6 +47,14 @@ from moira.progressions import (
     converse_vertex_arc,
     daily_house_frame,
     daily_houses,
+    duodenary_progression,
+    converse_duodenary_progression,
+    quotidian_solar_progression,
+    converse_quotidian_solar_progression,
+    quotidian_lunar_progression,
+    converse_quotidian_lunar_progression,
+    planetary_arc,
+    converse_planetary_arc,
     mean_solar_arc_longitude,
     mean_solar_arc_right_ascension,
     minor_progression,
@@ -76,6 +84,7 @@ TROPICAL_YEAR = 365.24219
 SYNODIC_MONTH = 29.53058868
 NAIBOD_RATE = 0.98564733
 ONE_DEGREE_RATE = 1.0
+DUODENARY_DIVISOR = 12.0
 
 
 def _assert_position_matches_raw(progressed, raw) -> None:
@@ -1271,3 +1280,227 @@ def test_secondary_progression_declination_returns_equatorial_declination() -> N
     for name, pos in chart.positions.items():
         _ra, expected_dec = ecliptic_to_equatorial(raw[name].longitude, raw[name].latitude, eps)
         assert pos.declination == pytest.approx(expected_dec, abs=1e-12)
+
+
+# ---------------------------------------------------------------------------
+# Duodenary Progressions (Charles Carter — 1/12 day per year)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.requires_ephemeris
+def test_duodenary_progression_advances_one_twelfth_day_per_year() -> None:
+    natal_dt = datetime(1990, 1, 1, 6, 0, tzinfo=timezone.utc)
+    target_dt = datetime(2020, 1, 1, 6, 0, tzinfo=timezone.utc)
+    natal_jd = jd_from_datetime(natal_dt)
+    target_jd = jd_from_datetime(target_dt)
+    age_years = (target_jd - natal_jd) / TROPICAL_YEAR
+    expected_prog_jd = natal_jd + age_years / DUODENARY_DIVISOR
+
+    chart = duodenary_progression(natal_jd, target_dt)
+    raw = all_planets_at(expected_prog_jd, bodies=list(Body.ALL_PLANETS))
+
+    assert chart.chart_type == "Duodenary Progression"
+    assert chart.natal_jd_ut == pytest.approx(natal_jd, abs=1e-12)
+    assert chart.progressed_jd_ut == pytest.approx(expected_prog_jd, abs=1e-12)
+    assert chart.target_date == target_dt
+    assert chart.solar_arc_deg == pytest.approx(0.0, abs=1e-12)
+    assert chart.computation_truth.doctrine.doctrine_family == "time_key"
+    assert chart.computation_truth.doctrine.life_unit == "tropical_year"
+    assert chart.computation_truth.doctrine.ephemeris_unit == "twelfth_day_after_birth"
+    assert chart.computation_truth.doctrine.rate_mode == "variable"
+    assert chart.computation_truth.doctrine.coordinate_system == "ecliptic_longitude"
+    assert chart.is_converse is False
+    assert chart.relation_kind == "time_key"
+    assert chart.relation_basis == "continuous_time_key"
+    assert chart.condition_state == "differential"
+    _assert_position_matches_raw(chart, raw)
+
+    converse = converse_duodenary_progression(natal_jd, target_dt)
+    expected_converse_jd = natal_jd - age_years / DUODENARY_DIVISOR
+    raw_conv = all_planets_at(expected_converse_jd, bodies=list(Body.ALL_PLANETS))
+    assert converse.chart_type == "Converse Duodenary Progression"
+    assert converse.progressed_jd_ut == pytest.approx(expected_converse_jd, abs=1e-12)
+    assert converse.is_converse is True
+    _assert_position_matches_raw(converse, raw_conv)
+
+
+# ---------------------------------------------------------------------------
+# Quotidian Solar Progressions (Sepharial / French school)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.requires_ephemeris
+def test_quotidian_solar_progression_maps_fractional_year_to_days_after_secondary_date() -> None:
+    natal_dt = datetime(1985, 8, 15, 12, 0, tzinfo=timezone.utc)
+    target_dt = datetime(2025, 3, 20, 18, 0, tzinfo=timezone.utc)
+    natal_jd = jd_from_datetime(natal_dt)
+    target_jd = jd_from_datetime(target_dt)
+    age_years = (target_jd - natal_jd) / TROPICAL_YEAR
+    completed_years = int(age_years)
+    secondary_prog_jd = natal_jd + completed_years
+    fractional_year = age_years - completed_years
+    fractional_days = fractional_year * TROPICAL_YEAR
+    expected_quotidian_jd = secondary_prog_jd + fractional_days
+
+    chart = quotidian_solar_progression(natal_jd, target_dt)
+    raw = all_planets_at(expected_quotidian_jd, bodies=list(Body.ALL_PLANETS))
+
+    assert chart.chart_type == "Quotidian Solar Progression"
+    assert chart.progressed_jd_ut == pytest.approx(expected_quotidian_jd, abs=1e-12)
+    assert chart.solar_arc_deg == pytest.approx(0.0, abs=1e-12)
+    assert chart.computation_truth.doctrine.doctrine_family == "time_key"
+    assert chart.computation_truth.doctrine.life_unit == "calendar_day"
+    assert chart.computation_truth.doctrine.ephemeris_unit == "day_after_secondary_date"
+    assert chart.computation_truth.doctrine.rate_mode == "variable"
+    assert chart.is_converse is False
+    assert chart.relation_kind == "time_key"
+    assert chart.condition_state == "differential"
+    _assert_position_matches_raw(chart, raw)
+
+    converse = converse_quotidian_solar_progression(natal_jd, target_dt)
+    expected_converse_jd = secondary_prog_jd - fractional_days
+    raw_conv = all_planets_at(expected_converse_jd, bodies=list(Body.ALL_PLANETS))
+    assert converse.chart_type == "Converse Quotidian Solar Progression"
+    assert converse.progressed_jd_ut == pytest.approx(expected_converse_jd, abs=1e-12)
+    assert converse.is_converse is True
+    _assert_position_matches_raw(converse, raw_conv)
+
+
+# ---------------------------------------------------------------------------
+# Quotidian Lunar Progressions (French school — synodic month rate)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.requires_ephemeris
+def test_quotidian_lunar_progression_uses_synodic_month_rate() -> None:
+    natal_dt = datetime(1985, 8, 15, 12, 0, tzinfo=timezone.utc)
+    target_dt = datetime(2025, 3, 20, 18, 0, tzinfo=timezone.utc)
+    natal_jd = jd_from_datetime(natal_dt)
+    target_jd = jd_from_datetime(target_dt)
+    age_years = (target_jd - natal_jd) / TROPICAL_YEAR
+    completed_years = int(age_years)
+    secondary_prog_jd = natal_jd + completed_years
+    fractional_year = age_years - completed_years
+    fractional_days = fractional_year * SYNODIC_MONTH
+    expected_quotidian_jd = secondary_prog_jd + fractional_days
+
+    chart = quotidian_lunar_progression(natal_jd, target_dt)
+    raw = all_planets_at(expected_quotidian_jd, bodies=list(Body.ALL_PLANETS))
+
+    assert chart.chart_type == "Quotidian Lunar Progression"
+    assert chart.progressed_jd_ut == pytest.approx(expected_quotidian_jd, abs=1e-12)
+    assert chart.solar_arc_deg == pytest.approx(0.0, abs=1e-12)
+    assert chart.computation_truth.doctrine.doctrine_family == "time_key"
+    assert chart.computation_truth.doctrine.life_unit == "calendar_day"
+    assert chart.computation_truth.doctrine.ephemeris_unit == "synodic_month_fraction_after_secondary_date"
+    assert chart.computation_truth.doctrine.rate_mode == "variable"
+    assert chart.is_converse is False
+    _assert_position_matches_raw(chart, raw)
+
+    converse = converse_quotidian_lunar_progression(natal_jd, target_dt)
+    expected_converse_jd = secondary_prog_jd - fractional_days
+    raw_conv = all_planets_at(expected_converse_jd, bodies=list(Body.ALL_PLANETS))
+    assert converse.chart_type == "Converse Quotidian Lunar Progression"
+    assert converse.progressed_jd_ut == pytest.approx(expected_converse_jd, abs=1e-12)
+    assert converse.is_converse is True
+    _assert_position_matches_raw(converse, raw_conv)
+
+
+# ---------------------------------------------------------------------------
+# Planetary Arc Direction (Van Dam / European tradition)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.requires_ephemeris
+def test_planetary_arc_applies_chosen_body_arc_to_all_natal_positions() -> None:
+    natal_dt = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
+    target_dt = datetime(2024, 4, 8, 18, 0, tzinfo=timezone.utc)
+    natal_jd = jd_from_datetime(natal_dt)
+    target_jd = jd_from_datetime(target_dt)
+    age_years = (target_jd - natal_jd) / TROPICAL_YEAR
+    prog_jd = natal_jd + age_years
+
+    # Use Mars as arc body
+    natal_mars = planet_at(Body.MARS, natal_jd).longitude
+    prog_mars = planet_at(Body.MARS, prog_jd).longitude
+    expected_arc = (prog_mars - natal_mars) % 360.0
+
+    chart = planetary_arc(natal_jd, target_dt, arc_body=Body.MARS)
+    natal_raw = all_planets_at(natal_jd, bodies=list(Body.ALL_PLANETS))
+
+    assert chart.chart_type == f"Planetary Arc Direction ({Body.MARS})"
+    assert chart.solar_arc_deg == pytest.approx(expected_arc, abs=1e-12)
+    assert chart.computation_truth.doctrine.doctrine_family == "uniform_arc"
+    assert chart.computation_truth.doctrine.application_mode == "uniform"
+    assert chart.computation_truth.doctrine.coordinate_system == "ecliptic_longitude"
+    assert chart.is_converse is False
+    assert chart.relation_kind == "directing_arc"
+    assert chart.relation_basis == "planetary_arc_reference"
+    assert chart.relation_reference_name == Body.MARS
+
+    for name, pos in chart.positions.items():
+        expected_lon = (natal_raw[name].longitude + expected_arc) % 360.0
+        assert pos.longitude == pytest.approx(expected_lon, abs=1e-12)
+
+
+@pytest.mark.requires_ephemeris
+def test_converse_planetary_arc_reverses_arc() -> None:
+    natal_dt = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
+    target_dt = datetime(2024, 4, 8, 18, 0, tzinfo=timezone.utc)
+    natal_jd = jd_from_datetime(natal_dt)
+    target_jd = jd_from_datetime(target_dt)
+    age_years = (target_jd - natal_jd) / TROPICAL_YEAR
+    prog_jd = natal_jd + age_years
+
+    natal_jupiter = planet_at(Body.JUPITER, natal_jd).longitude
+    prog_jupiter = planet_at(Body.JUPITER, prog_jd).longitude
+    forward_arc = (prog_jupiter - natal_jupiter) % 360.0
+    expected_arc = (-forward_arc) % 360.0
+
+    converse = converse_planetary_arc(natal_jd, target_dt, arc_body=Body.JUPITER)
+    natal_raw = all_planets_at(natal_jd, bodies=list(Body.ALL_PLANETS))
+
+    assert converse.chart_type == f"Converse Planetary Arc Direction ({Body.JUPITER})"
+    assert converse.solar_arc_deg == pytest.approx(expected_arc, abs=1e-12)
+    assert converse.is_converse is True
+
+    for name, pos in converse.positions.items():
+        expected_lon = (natal_raw[name].longitude + expected_arc) % 360.0
+        assert pos.longitude == pytest.approx(expected_lon, abs=1e-12)
+
+
+@pytest.mark.requires_ephemeris
+def test_planetary_arc_matches_solar_arc_when_body_is_sun() -> None:
+    natal_dt = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
+    target_dt = datetime(2024, 4, 8, 18, 0, tzinfo=timezone.utc)
+    natal_jd = jd_from_datetime(natal_dt)
+
+    sa_chart = solar_arc(natal_jd, target_dt)
+    pa_chart = planetary_arc(natal_jd, target_dt, arc_body=Body.SUN)
+
+    assert sa_chart.solar_arc_deg == pytest.approx(pa_chart.solar_arc_deg, abs=1e-12)
+    for name in sa_chart.positions:
+        assert sa_chart.positions[name].longitude == pytest.approx(
+            pa_chart.positions[name].longitude, abs=1e-12
+        )
+
+
+@pytest.mark.requires_ephemeris
+def test_planetary_arc_rejects_invalid_body_name() -> None:
+    natal_dt = datetime(1990, 1, 1, 6, 0, tzinfo=timezone.utc)
+    natal_jd = jd_from_datetime(natal_dt)
+    target_dt = datetime(2020, 1, 1, 6, 0, tzinfo=timezone.utc)
+
+    with pytest.raises(ValueError, match="arc_body must be a recognised planet name"):
+        planetary_arc(natal_jd, target_dt, arc_body="FakePlanet")
+
+
+# ---------------------------------------------------------------------------
+# MC Policy Validation
+# ---------------------------------------------------------------------------
+
+def test_mc_policy_validation_rejects_unknown_mc_method() -> None:
+    bad_policy = ProgressionComputationPolicy(
+        house_frame=ProgressionHouseFramePolicy(mc_method="wynn_key")
+    )
+    natal_dt = datetime(1990, 1, 1, 6, 0, tzinfo=timezone.utc)
+    natal_jd = jd_from_datetime(natal_dt)
+    target_dt = datetime(2020, 1, 1, 6, 0, tzinfo=timezone.utc)
+    with pytest.raises(ValueError, match="mc_method must be a supported MC method"):
+        secondary_progression(natal_jd, target_dt, policy=bad_policy)
