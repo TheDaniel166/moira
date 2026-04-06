@@ -728,6 +728,8 @@ from .electional import (
     ElectionalPolicy, ElectionalWindow,
     find_electional_windows, find_electional_moments,
 )
+from .chart import ChartContext
+from typing import Callable
 
 __all__ = [
     "Moira", "Chart", "MissingEphemerisKernelError",
@@ -1212,7 +1214,7 @@ __all__ = [
 try:
     __version__ = package_version("moira-astro")
 except PackageNotFoundError:
-    __version__ = "1.2.0"
+    __version__ = "1.2.1"
 __author__  = "Moira contributors"
 
 
@@ -1942,24 +1944,24 @@ class Moira:
     # Midpoints
     # ------------------------------------------------------------------
 
-    def midpoints(self, chart: Chart, orb: float = 1.5) -> list[Midpoint]:
+    def midpoints(self, chart: Chart, planet_set: str = "classic") -> list[Midpoint]:
         """
         Calculate all planetary midpoints.
 
         Parameters
         ----------
-        orb : orb in degrees for midpoint aspects (default 1.5°)
+        planet_set : 'classic', 'modern', or 'extended' (default 'classic')
         """
-        return calculate_midpoints(chart.longitudes(), orb=orb)
+        return calculate_midpoints(chart.longitudes(), planet_set)
 
     def midpoints_to_point(
         self,
         chart: Chart,
         longitude: float,
         orb: float = 1.5,
-    ) -> list[Midpoint]:
+    ) -> list[tuple[Midpoint, float]]:
         """Find midpoints that fall at (or oppose) a given longitude."""
-        return midpoints_to_point(chart.longitudes(), longitude, orb=orb)
+        return midpoints_to_point(longitude, chart.longitudes(), orb=orb)
 
     # ------------------------------------------------------------------
     # Harmonics
@@ -3608,7 +3610,7 @@ class Moira:
         dt_end: datetime,
         latitude: float,
         longitude: float,
-        predicate: "Callable[[ChartContext], bool]",
+        predicate: Callable[[ChartContext], bool],
         policy: ElectionalPolicy | None = None,
     ) -> list[ElectionalWindow]:
         """

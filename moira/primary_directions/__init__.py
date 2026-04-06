@@ -29,6 +29,8 @@ from enum import StrEnum
 from typing import TYPE_CHECKING, Iterable
 
 from ..constants import Body, DEG2RAD
+from ..julian import ut_to_tt as _ut_to_tt, decimal_year as _decimal_year
+from ..planets import _approx_year as _pd_approx_year
 from .converse import PrimaryDirectionConverseDoctrine
 from .antiscia import (
     PrimaryDirectionAntisciaKind,
@@ -1540,9 +1542,11 @@ def find_primary_arcs(
     if derived_cusps:
         sp_map.update(derived_cusps)
         spec.extend(derived_cusps.values())
+    _year, _month, *_ = _pd_approx_year(chart.jd_ut)
+    _jd_tt = _ut_to_tt(chart.jd_ut, _decimal_year(_year, _month))
     derived_fixed_stars = _fixed_star_promissor_entries(
         fixed_star_targets,
-        jd_tt=chart.jd_tt,
+        jd_tt=_jd_tt,
         armc=houses.armc,
         obliquity=obl,
         geo_lat=geo_lat,
