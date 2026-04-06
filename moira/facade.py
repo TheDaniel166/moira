@@ -3172,7 +3172,9 @@ class Moira:
                     planet_data[name] = (p.longitude, p.latitude)
                 elif name in chart.nodes:
                     planet_data[name] = (chart.nodes[name].longitude, 0.0)
-        return all_galactic_positions(planet_data, obliquity, chart.jd_tt)
+        from .julian import ut_to_tt as _utt
+        jd_tt = _utt(chart.jd_ut)
+        return all_galactic_positions(planet_data, obliquity, jd_tt)
 
     def galactic_angles(self, chart: Chart) -> dict[str, tuple[float, float]]:
         """
@@ -3187,7 +3189,9 @@ class Moira:
               "North Galactic Pole", "South Galactic Pole",
               "Super-Galactic Center"
         """
-        return galactic_reference_points(chart.obliquity, chart.jd_tt)
+        from .julian import ut_to_tt as _utt
+        jd_tt = _utt(chart.jd_ut)
+        return galactic_reference_points(chart.obliquity, jd_tt)
 
     # ------------------------------------------------------------------
     # Uranian Planets (Hamburg School)
