@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import argparse
 import sys
-import urllib.request
+from urllib.request import urlopen
 from pathlib import Path
 
 from ._kernel_paths import find_kernel, user_kernels_dir
@@ -72,29 +72,78 @@ def _is_present(filename: str) -> bool:
     return find_kernel(filename).exists()
 
 
+_CHUNK_SIZE = 65_536  # 64 KiB
+_CONNECT_TIMEOUT = 30  # seconds — applies to connection and each socket read
+
+
+def _check_registry_urls() -> None:
+    """Abort at import time if any registry URL is not https://."""
+    for entry in _REGISTRY:
+        if not entry["url"].startswith("https://"):
+            raise ValueError(
+                f"Registry URL must use https://: {entry['url']!r}"
+            )
+
+
+_check_registry_urls()
+
+
 def _download(url: str, dest: Path, size_hint: str) -> None:
     dest.parent.mkdir(parents=True, exist_ok=True)
     print(f"  Downloading {dest.name} ({size_hint}) …")
     print(f"  Source : {url}")
     print(f"  Target : {dest}")
 
-    def _report(block_count: int, block_size: int, total: int) -> None:
-        downloaded = block_count * block_size
-        if total > 0:
-            pct = min(100, downloaded * 100 // total)
-            bar = "#" * (pct // 5) + "-" * (20 - pct // 5)
-            print(f"\r  [{bar}] {pct:3d}%", end="", flush=True)
-        else:
-            mb = downloaded / 1_048_576
-            print(f"\r  {mb:.1f} MB downloaded", end="", flush=True)
+    # Write to a .part file; rename into place only after full verified write.
+    part = dest.with_suffix(dest.suffix + ".part")
+    if part.exists():
+        part.unlink()  # remove any stale partial download
 
+    progress_started = False
+    newline_printed = False
     try:
-        urllib.request.urlretrieve(url, dest, reporthook=_report)
-        print()  # newline after progress bar
-    except Exception as exc:
-        print()
+        with urlopen(url, timeout=_CONNECT_TIMEOUT) as response:  # noqa: S310 — hardcoded https:// constants
+            if response.status != 200:
+                raise RuntimeError(f"HTTP {response.status} from {url}")
+            expected = int(response.headers.get("Content-Length") or 0)
+            downloaded = 0
+            with part.open("wb") as fh:
+                while True:
+                    chunk = response.read(_CHUNK_SIZE)
+                    if not chunk:
+                        break
+                    fh.write(chunk)
+                    downloaded += len(chunk)
+                    progress_started = True
+                    if expected > 0:
+                        pct = min(100, downloaded * 100 // expected)
+                        bar = "#" * (pct // 5) + "-" * (20 - pct // 5)
+                        print(f"\r  [{bar}] {pct:3d}%", end="", flush=True)
+                    else:
+                        mb = downloaded / 1_048_576
+                        print(f"\r  {mb:.1f} MB downloaded", end="", flush=True)
+
+        if progress_started:
+            print()  # newline after progress bar
+            newline_printed = True
+
+        if expected and downloaded != expected:
+            raise RuntimeError(
+                f"Incomplete download: received {downloaded} of {expected} bytes"
+            )
+
+        # Atomic promotion: dest replaced only after full verified write.
         if dest.exists():
             dest.unlink()
+        part.rename(dest)
+
+    except Exception as exc:
+        if progress_started and not newline_printed:
+            print()
+        if part.exists():
+            part.unlink()
+        if isinstance(exc, RuntimeError):
+            raise
         raise RuntimeError(f"Download failed: {exc}") from exc
 
 

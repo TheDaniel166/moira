@@ -463,6 +463,7 @@ from .transits import (
 )
 from .stations import StationEvent, find_stations, next_station, is_retrograde, retrograde_periods
 from .planetary_hours import PlanetaryHour, PlanetaryHoursDay, planetary_hours
+from .planetary_hours import PlanetaryHour as PlanetaryHourClassical
 from .stars import (
     StarPositionTruth,
     StarPositionClassification,
@@ -511,6 +512,7 @@ from .timelords import (
     FirdarSequenceKind, ZRAngularityClass,
     FirdarYearPolicy, ZRYearPolicy, TimelordComputationPolicy, DEFAULT_TIMELORD_POLICY,
     FirdarPeriod, ReleasingPeriod,
+    FirdarPeriod as FirdarPeriodTL,
     FirdarMajorGroup, ZRPeriodGroup,
     FirdarConditionProfile, ZRConditionProfile,
     FirdarSequenceProfile, ZRSequenceProfile,
@@ -930,7 +932,7 @@ __all__ = [
     # Stations
     "StationEvent", "find_stations", "next_station", "is_retrograde", "retrograde_periods",
     # Planetary Hours
-    "PlanetaryHour", "PlanetaryHoursDay", "planetary_hours",
+    "PlanetaryHour", "PlanetaryHourClassical", "PlanetaryHoursDay", "planetary_hours",
     # Heliocentric positions
     "HeliocentricData", "heliocentric_planet_at", "all_heliocentric_at",
     # Phase 2 specialist helpers
@@ -976,7 +978,7 @@ __all__ = [
     "CHALDEAN_ORDER", "MINOR_YEARS",
     "FirdarSequenceKind", "ZRAngularityClass",
     "FirdarYearPolicy", "ZRYearPolicy", "TimelordComputationPolicy", "DEFAULT_TIMELORD_POLICY",
-    "FirdarPeriod", "ReleasingPeriod",
+    "FirdarPeriod", "FirdarPeriodTL", "ReleasingPeriod",
     "FirdarMajorGroup", "ZRPeriodGroup",
     "FirdarConditionProfile", "ZRConditionProfile",
     "FirdarSequenceProfile", "ZRSequenceProfile",

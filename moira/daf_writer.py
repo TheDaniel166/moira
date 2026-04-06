@@ -335,16 +335,22 @@ def write_spk_type13(
         segment_bytes += b'\x00' * (_RECORD_SIZE - remainder)
 
     path.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile(
-        mode='wb',
-        dir=path.parent,
-        prefix=f".{path.stem}.",
-        suffix=path.suffix,
-        delete=False,
-    ) as fh:
-        fh.write(file_rec)
-        fh.write(summary_rec)
-        fh.write(name_rec)
-        fh.write(segment_bytes)
-        temp_path = Path(fh.name)
-    temp_path.replace(path)
+    temp_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode='wb',
+            dir=path.parent,
+            prefix=f".{path.stem}.",
+            suffix=path.suffix,
+            delete=False,
+        ) as fh:
+            temp_path = Path(fh.name)
+            fh.write(file_rec)
+            fh.write(summary_rec)
+            fh.write(name_rec)
+            fh.write(segment_bytes)
+        temp_path.replace(path)
+    except Exception:
+        if temp_path is not None and temp_path.exists():
+            temp_path.unlink()
+        raise
