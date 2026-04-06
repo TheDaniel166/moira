@@ -723,9 +723,9 @@ __all__ = [
     "great_conjunctions", "mutation_period_at",
     "PlanetaryAgePeriod", "PlanetaryAgeProfile",
     "planetary_age_at", "planetary_age_profile",
-    "FirdarPeriod", "FirdarSubPeriod", "FirdarSeries",
+    "FirdarSubPeriod", "FirdarSeries",
     "firdar_series", "firdar_at",
-    "PlanetaryDayInfo", "PlanetaryHour", "PlanetaryHoursProfile",
+    "PlanetaryDayInfo", "PlanetaryHoursProfile",
     "planetary_day_ruler", "planetary_hours_for_day",
     # Huber engine
     "HouseZone", "PHI", "PHI_COMPLEMENT", "CYCLE_YEARS", "YEARS_PER_HOUSE",
@@ -757,7 +757,7 @@ __all__ = [
     # Aspect backend public surface
     "CANONICAL_ASPECTS", "DEFAULT_POLICY",
     "AspectDomain", "AspectFamily", "AspectPatternKind", "AspectTier", "MotionState",
-    "AspectClassification", "AspectData", "AspectFamilyProfile", "AspectGraph",
+    "AspectClassification", "AspectFamilyProfile", "AspectGraph",
     "AspectGraphNode", "AspectHarmonicProfile", "AspectPolicy",
     "AspectStrength", "DeclinationAspect",
     "aspect_harmonic_profile", "aspect_motion_state", "aspect_strength",
@@ -964,7 +964,7 @@ __all__ = [
     "angular_diameter",
     # Dignities extensions
     "sect_light", "is_day_chart", "almuten_figuris", "find_phasis",
-    "is_in_hayz", "is_in_sect", "SectStateKind", "SectTruth", "SectClassification",
+    "is_in_hayz", "is_in_sect",
     # Nakshatras
     "NakshatraPosition", "nakshatra_of", "all_nakshatras_at",
     # Antiscia
@@ -1142,7 +1142,7 @@ __all__ = [
     "FixedStarClassification",
     "UnifiedStarRelation",
     "FixedStar",
-    "star_at", "stars_near", "stars_by_magnitude",
+    "stars_near", "stars_by_magnitude",
     "list_named_stars", "find_named_stars",
     # Multiple star systems
     "MultiType", "StarComponent", "OrbitalElements", "MultipleStarSystem",
