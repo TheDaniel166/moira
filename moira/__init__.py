@@ -45,7 +45,8 @@ from .julian import (
     local_sidereal_time,
     safe_datetime_from_jd,
 )
-from .nodes import NodeData
+from .nodes import NodeData, NodesAndApsides, nodes_and_apsides_at
+from .phenomena import PlanetPhenomena, planet_phenomena_at
 from .orbits import DistanceExtremes, KeplerianElements, distance_extremes_at, orbital_elements_at
 from .planets import CartesianPosition, PlanetData, SkyPosition
 from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal
@@ -106,6 +107,10 @@ __all__ = [
     "SkyPosition",
     "CartesianPosition",
     "NodeData",
+    "NodesAndApsides",
+    "nodes_and_apsides_at",
+    "PlanetPhenomena",
+    "planet_phenomena_at",
     "HouseCusps",
     "AspectData",
     "HarmonicDomain",

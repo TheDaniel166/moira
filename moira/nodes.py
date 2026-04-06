@@ -28,6 +28,8 @@ __all__ = [
     "mean_lilith",
     "true_lilith",
     "next_moon_node_crossing",
+    "NodesAndApsides",
+    "nodes_and_apsides_at",
 ]
 from dataclasses import dataclass, field
 
@@ -502,3 +504,96 @@ def _bisect_lat(func, t0: float, t1: float, iterations: int = 52) -> float:
             t0 = tm
             f0 = fm
     return (t0 + t1) / 2.0
+
+
+# ---------------------------------------------------------------------------
+# NodesAndApsides — Swiss nod_aps_ut equivalent
+# ---------------------------------------------------------------------------
+
+@dataclass(slots=True)
+class NodesAndApsides:
+    """Nodes and apsides for a body at a given Julian Day.
+
+    Equivalent to the output of Swiss Ephemeris ``swe_nod_aps_ut``.
+
+    For the Moon: ascending/descending nodes and perigee/apogee are
+    computed from the lunar node engine (``true_node``, ``mean_node``).
+    For planets: ascending/descending nodes and perihelion/aphelion are
+    taken from the planetary-node and phenomena engines.
+
+    Fields
+    ------
+    body : str
+        Body name.
+    jd_ut : float
+        Julian Day (UT) of the computation.
+    ascending_node_lon : float
+        Ecliptic longitude of the ascending node, in degrees.
+    descending_node_lon : float
+        Ecliptic longitude of the descending node (ascending + 180°), in degrees.
+    periapsis_lon : float | None
+        Ecliptic longitude of perihelion / perigee, in degrees; None if not available.
+    apoapsis_lon : float | None
+        Ecliptic longitude of aphelion / apogee, in degrees; None if not available.
+    """
+
+    body: str
+    jd_ut: float
+    ascending_node_lon: float
+    descending_node_lon: float
+    periapsis_lon: float | None
+    apoapsis_lon: float | None
+
+
+_MOON_NAMES = {"moon", "luna"}
+_BODY_MOON = "Moon"
+
+
+def nodes_and_apsides_at(body: str, jd_ut: float) -> NodesAndApsides:
+    """Return nodes and apsides for *body* at *jd_ut*.
+
+    Equivalent to ``swe_nod_aps_ut`` in Swiss Ephemeris.
+
+    For the Moon the true node and true Lilith (apogee) are used.
+    For planets the ascending node longitude is taken from
+    ``moira.planetary_nodes.planetary_node``; perihelion and aphelion are
+    searched forward from *jd_ut* via ``moira.phenomena``.
+
+    Parameters
+    ----------
+    body : str
+        Body name (e.g. ``Body.MOON``, ``'Mars'``).
+    jd_ut : float
+        Julian Day in Universal Time.
+
+    Returns
+    -------
+    NodesAndApsides
+    """
+    from .spk_reader import get_reader
+
+    if body.lower() in _MOON_NAMES:
+        nd = true_node(jd_ut)
+        lil = true_lilith(jd_ut, reader=get_reader())
+        apogee_lon = lil.longitude
+        return NodesAndApsides(
+            body=body,
+            jd_ut=jd_ut,
+            ascending_node_lon=nd.longitude,
+            descending_node_lon=normalize_degrees(nd.longitude + 180.0),
+            periapsis_lon=normalize_degrees(apogee_lon + 180.0),
+            apoapsis_lon=apogee_lon,
+        )
+
+    from .planetary_nodes import planetary_node
+
+    pn = planetary_node(body, jd_ut)
+    asc = pn.ascending_node
+    return NodesAndApsides(
+        body=body,
+        jd_ut=jd_ut,
+        ascending_node_lon=asc,
+        descending_node_lon=normalize_degrees(asc + 180.0),
+        periapsis_lon=pn.perihelion,
+        apoapsis_lon=pn.aphelion,
+    )

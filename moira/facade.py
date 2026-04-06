@@ -92,7 +92,7 @@ from .planets import (
     planet_at, sky_position_at, all_planets_at, sun_longitude,
     planet_relative_to, next_heliocentric_transit,
 )
-from .nodes import mean_node, true_node, mean_lilith, NodeData, next_moon_node_crossing
+from .nodes import mean_node, true_node, mean_lilith, NodeData, next_moon_node_crossing, NodesAndApsides, nodes_and_apsides_at
 from .houses import (
     HouseSystemFamily,
     HouseSystemCuspBasis,
@@ -247,6 +247,7 @@ from .eclipse import (
     LunarEclipseAnalysis,
     LunarEclipseLocalCircumstances,
     SolarEclipsePath,
+    next_solar_eclipse_at_location,
 )
 from .compat.nasa.eclipse import (
     NasaLunarEclipseContacts,
@@ -628,6 +629,7 @@ from .phenomena import (
     PhenomenonEvent, OrbitalResonance, greatest_elongation, perihelion, aphelion,
     next_moon_phase, moon_phases_in_range,
     next_conjunction, conjunctions_in_range, resonance,
+    PlanetPhenomena, planet_phenomena_at,
 )
 from .manazil import (
     MansionInfo, MansionPosition, MansionTradition, MANSIONS, MANSION_SPAN,
@@ -703,6 +705,7 @@ __all__ = [
     "Moira", "Chart", "MissingEphemerisKernelError",
     "Body", "HouseSystem", "Ayanamsa",
     "PlanetData", "SkyPosition", "CartesianPosition", "NodeData", "AspectData",
+    "NodesAndApsides", "nodes_and_apsides_at",
     # Houses backend public surface
     "HouseSystemFamily", "HouseSystemCuspBasis",
     "UnknownSystemPolicy", "PolarFallbackPolicy",
@@ -738,6 +741,7 @@ __all__ = [
     "EclipseData", "EclipseEvent", "EclipseType", "EclipseCalculator",
     "LunarEclipseAnalysis", "LocalContactCircumstances", "LunarEclipseLocalCircumstances",
     "SolarBodyCircumstances", "SolarEclipseLocalCircumstances",
+    "next_solar_eclipse_at_location",
     "NasaLunarEclipseContacts", "NasaLunarEclipseEvent",
     "next_nasa_lunar_eclipse", "previous_nasa_lunar_eclipse",
     "translate_lunar_eclipse_event",
@@ -1075,6 +1079,7 @@ __all__ = [
     "PhenomenonEvent", "OrbitalResonance", "greatest_elongation", "perihelion", "aphelion",
     "next_moon_phase", "moon_phases_in_range",
     "next_conjunction", "conjunctions_in_range", "resonance",
+    "PlanetPhenomena", "planet_phenomena_at",
     # Arabic Lunar Mansions
     "MansionInfo", "MansionPosition", "MansionTradition", "MANSIONS", "MANSION_SPAN",
     "mansion_of", "mansion_of_sidereal", "all_mansions_at", "all_mansions_at_sidereal",

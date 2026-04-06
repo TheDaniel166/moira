@@ -99,6 +99,8 @@ __all__ = [
     "LunarEclipseLocalCircumstances",
     # Phase 3 — path/where geometry vessel (Defer.Design + Defer.Validation)
     "SolarEclipsePath",
+    # sol_eclipse_when_loc equivalent
+    "next_solar_eclipse_at_location",
 ]
 
 # ---------------------------------------------------------------------------
@@ -1367,6 +1369,163 @@ class EclipseCalculator:
             topocentric_overlap=overlap,
         )
 
+    def next_solar_eclipse_at_location(
+        self,
+        jd_start: float,
+        latitude: float,
+        longitude: float,
+        *,
+        elevation_m: float = 0.0,
+        kind: str = "any",
+        max_lunations: int = 360,
+    ) -> SolarEclipseLocalCircumstances:
+        """Return local sky circumstances for the next solar eclipse visible at *latitude*, *longitude*.
+
+        Equivalent to Swiss Ephemeris ``swe_sol_eclipse_when_loc``.
+
+        Unlike ``solar_local_circumstances``, which always anchors to the next
+        *global* eclipse maximum (which may be invisible from the observer's
+        location), this method iterates eclipse candidates and skips any where
+        the Sun is below the observer's horizon throughout the eclipse window.
+
+        For each candidate global eclipse the method scans a ±4-hour window
+        around the geocentric maximum in 12-minute steps, retaining only
+        time-steps where the Sun is above the horizon.  If at least one such
+        step is found, the step with the smallest topocentric Sun–Moon
+        separation is refined to the local sub-second maximum using ternary
+        search.  That refined instant becomes the event time returned.
+
+        Parameters
+        ----------
+        jd_start : float
+            Julian Day (UT) to start searching from.
+        latitude : float
+            Observer geodetic latitude in degrees (positive north).
+        longitude : float
+            Observer geodetic longitude in degrees (positive east).
+        elevation_m : float
+            Observer elevation above the geoid in metres.
+        kind : str
+            Eclipse type filter: ``'any'``, ``'total'``, ``'annular'``,
+            ``'partial'``, ``'central'``, or ``'hybrid'``.
+        max_lunations : int
+            Maximum number of new-moon lunations to scan before giving up.
+            Default 360 (~30 years).
+
+        Returns
+        -------
+        SolarEclipseLocalCircumstances
+            Local circumstances at the time of local maximum eclipse.
+
+        Raises
+        ------
+        RuntimeError
+            If no visible eclipse of the requested kind is found within
+            *max_lunations* lunations.
+        """
+        kind_key = kind.strip().lower().replace("-", "_").replace(" ", "_")
+        if kind_key not in {"any", "total", "annular", "partial", "central", "hybrid"}:
+            raise ValueError(f"Unsupported solar eclipse kind: {kind!r}")
+
+        # Scan window: ±4 hours around geocentric maximum in 12-minute steps
+        _SCAN_STEP_DAYS = 12.0 / 1440.0   # 12 minutes
+        _SCAN_HALF_WINDOW = 4.0 / 24.0    # ±4 hours
+
+        phase_jd = next_moon_phase("New Moon", jd_start, reader=self._reader).jd_ut
+
+        for _ in range(max_lunations):
+            phase_data = self.calculate_jd(phase_jd)
+            if phase_data.is_eclipse_season:
+                best_jd = _refine_solar_maximum(self, phase_jd)
+                best_data = self.calculate_jd(best_jd)
+
+                if _matches_solar_kind(best_data, kind_key):
+                    # Scan a ±4-hour window around the geocentric maximum
+                    t = best_jd - _SCAN_HALF_WINDOW
+                    t_end = best_jd + _SCAN_HALF_WINDOW
+                    best_local_jd: float | None = None
+                    best_local_sep = float("inf")
+
+                    while t <= t_end:
+                        sep, _, _ = _topocentric_solar_geometry(
+                            self, t, latitude, longitude
+                        )
+                        if sep < best_local_sep:
+                            best_local_sep = sep
+                            best_local_jd = t
+                        t += _SCAN_STEP_DAYS
+
+                    if best_local_jd is not None and best_local_sep < float("inf"):
+                        # Sun was above horizon at some point — refine the local minimum
+                        refine_lo = best_local_jd - _SCAN_STEP_DAYS
+                        refine_hi = best_local_jd + _SCAN_STEP_DAYS
+
+                        def _local_sep(jd_t: float) -> float:
+                            s, _, _ = _topocentric_solar_geometry(
+                                self, jd_t, latitude, longitude
+                            )
+                            return s
+
+                        refined_jd = _refine_minimum(_local_sep, best_local_jd,
+                                                     window_days=_SCAN_STEP_DAYS,
+                                                     tol_days=1e-6)
+
+                        # Build local circumstances at refined instant
+                        sun = sky_position_at(
+                            Body.SUN,
+                            refined_jd,
+                            latitude,
+                            longitude,
+                            elevation_m,
+                            reader=self._reader,
+                        )
+                        moon = sky_position_at(
+                            Body.MOON,
+                            refined_jd,
+                            latitude,
+                            longitude,
+                            elevation_m,
+                            reader=self._reader,
+                        )
+                        separation = _angular_separation(
+                            sun.right_ascension,
+                            sun.declination,
+                            moon.right_ascension,
+                            moon.declination,
+                        )
+                        refined_data = self.calculate_jd(refined_jd)
+                        refined_event = EclipseEvent(jd_ut=refined_jd, data=refined_data)
+                        overlap = separation < (
+                            refined_data.sun_apparent_radius
+                            + refined_data.moon_apparent_radius
+                        )
+                        return SolarEclipseLocalCircumstances(
+                            event=refined_event,
+                            latitude=latitude,
+                            longitude=longitude,
+                            elevation_m=elevation_m,
+                            sun=SolarBodyCircumstances(
+                                azimuth=sun.azimuth,
+                                altitude=sun.altitude,
+                                visible=sun.altitude > 0.0,
+                            ),
+                            moon=SolarBodyCircumstances(
+                                azimuth=moon.azimuth,
+                                altitude=moon.altitude,
+                                visible=moon.altitude > 0.0,
+                            ),
+                            topocentric_separation_deg=separation,
+                            topocentric_overlap=overlap,
+                        )
+
+            phase_jd = next_moon_phase("New Moon", phase_jd + 1.0, reader=self._reader).jd_ut
+
+        raise RuntimeError(
+            f"No solar eclipse of kind {kind!r} visible at "
+            f"lat={latitude:.3f} lon={longitude:.3f} found within "
+            f"{max_lunations} lunations of JD {jd_start:.1f}"
+        )
+
     def solar_eclipse_path(
         self,
         jd_start: float,
@@ -2029,3 +2188,57 @@ def vertex_name(side_index: int) -> str:
     """Return the vertex label for a heptagon side index (0–6)."""
     names = ["GC", "V1", "V2", "V3", "V4", "V5", "V6"]
     return names[side_index % HEPTAGON_SIDES]
+
+
+# ---------------------------------------------------------------------------
+# Module-level convenience wrapper -- sol_eclipse_when_loc equivalent
+# ---------------------------------------------------------------------------
+
+def next_solar_eclipse_at_location(
+    jd_start: float,
+    latitude: float,
+    longitude: float,
+    *,
+    elevation_m: float = 0.0,
+    kind: str = "any",
+    max_lunations: int = 360,
+    reader=None,
+) -> SolarEclipseLocalCircumstances:
+    """Return local sky circumstances for the next solar eclipse visible at *latitude*, *longitude*.
+
+    Module-level convenience wrapper around
+    EclipseCalculator.next_solar_eclipse_at_location.
+    Equivalent to Swiss Ephemeris swe_sol_eclipse_when_loc.
+
+    Parameters
+    ----------
+    jd_start : float
+        Julian Day (UT) to start searching from.
+    latitude : float
+        Observer geodetic latitude in degrees (positive north).
+    longitude : float
+        Observer geodetic longitude in degrees (positive east).
+    elevation_m : float
+        Observer elevation above the geoid in metres.
+    kind : str
+        Eclipse type filter: 'any', 'total', 'annular', 'partial', 'central', or 'hybrid'.
+    max_lunations : int
+        Maximum lunations to scan before raising RuntimeError.
+    reader : SpkReader | None
+        Optional pre-constructed kernel reader.
+
+    Returns
+    -------
+    SolarEclipseLocalCircumstances
+    """
+    from .spk_reader import get_reader as _get_reader
+
+    calc = EclipseCalculator(reader=reader or _get_reader())
+    return calc.next_solar_eclipse_at_location(
+        jd_start,
+        latitude,
+        longitude,
+        elevation_m=elevation_m,
+        kind=kind,
+        max_lunations=max_lunations,
+    )

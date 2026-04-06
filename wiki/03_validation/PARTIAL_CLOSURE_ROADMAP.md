@@ -131,7 +131,7 @@ All rows audited against `moira/eclipse.py` and `moira/occultations.py`. 9 of 10
 | Swiss symbol | Result | Finding |
 | --- | --- | --- |
 | `sol_eclipse_when_glob` | `mapped` | `next_solar_eclipse(jd_start)` — global, no location arg |
-| `sol_eclipse_when_loc` | **partial** (improved note) | `solar_local_circumstances` anchors to global event; does not search for next eclipse specifically visible at the observer's location |
+| `sol_eclipse_when_loc` | **mapped** | `next_solar_eclipse_at_location(jd_start, lat, lon) → SolarEclipseLocalCircumstances` — scans lunations from jd_start; skips events where Sun is below horizon; refines local maximum via ternary search; also available as `EclipseCalculator().next_solar_eclipse_at_location(...)`; implemented 2026-04-06 |
 | `sol_eclipse_where` | `mapped` | `solar_eclipse_path(jd_start) → SolarEclipsePath`; validated against Swiss `where` fixture |
 | `sol_eclipse_how` | `mapped` | `SolarEclipseLocalCircumstances.event.data.eclipse_magnitude` + `sun_apparent_radius`, `moon_apparent_radius`, `topocentric_separation_deg`, `topocentric_overlap` |
 | `lun_eclipse_when` | `mapped` | `next_lunar_eclipse(jd_start)` — global search |
@@ -195,7 +195,7 @@ Both rows audited against `moira/rise_set.py`.
 | `calc` | D | `mapped` ✓ | `jd_tt` kwarg already existed at `planets.py:608` |
 | `pheno_ut` | E | `VESSEL` | ~80 lines |
 | `nod_aps_ut` | E | `VESSEL` | ~100 lines |
-| `sol_eclipse_when_loc` | F | **partial** (improved note) | Genuine gap: location-anchored search |
+| `sol_eclipse_when_loc` | F | **mapped** ✓ | `next_solar_eclipse_at_location` free function + method; location-anchored search; implemented 2026-04-06 |
 | `sol_eclipse_when_glob` | C→F | `mapped` | None |
 | `sol_eclipse_where` | F | `mapped` | None |
 | `sol_eclipse_how` | F | `mapped` | None |
@@ -217,18 +217,27 @@ Both rows audited against `moira/rise_set.py`.
 
 ## Recommended Execution Order
 
-### Phase 1 — Zero-code closes (Groups A + B + C, verification only)
-Close approximately **20 rows** with no implementation. Only row updates and one verification command per symbol.
+### Phase 1 — Zero-code closes (Groups A + B + C, verification only) — COMPLETED 2026-04-06
 
-Sequence:
-1. Verify `utc_to_jd`, `azalt`, `mooncross_ut`, `solcross_ut`, `calc_ut` in one pass — all likely already `mapped`
-2. Reclassify `set_topo`, `set_sid_mode` → `unsupported`
-3. Reclassify `day_of_week`, `get_planet_name` → `stdlib`; add `difdeg2n`, `deg_midp` as `mapped` idiom notes
-4. Confirm `jdet_to_utc`, `jdut1_to_utc` via `julian.py` public surface
-5. Confirm eclipse group-C rows (`sol_eclipse_when_glob`, `lun_eclipse_when`, `sol_eclipse_how`, `lun_eclipse_how`) via `eclipse.py` vessel fields
-6. Update `heliacal_ut` row to name both planet and star surfaces
+All rows verified in one pass against `moira.julian`, `moira.sidereal`, `moira.coordinates`, `moira.transits`, `moira.heliacal`, `moira.eclipse`. DRAFT.md updated with exact signatures and audit datestamps.
 
-Estimated DRAFT.md result after Phase 1 + completed Groups F & G: **partial: ~24**, **mapped: ~81**
+**Verified and closed:**
+1. ✓ `utc_to_jd` — `jd_from_datetime(dt: datetime) → float` confirmed in `julian.__all__`
+2. ✓ `jdet_to_utc`, `jdut1_to_utc` — `calendar_datetime_from_jd`/`datetime_from_jd` confirmed; UT1 note added
+3. ✓ `deltat_ex` — `DeltaTPolicy(model=..., fixed_delta_t=...)` + `delta_t_nasa_canon(year)` confirmed
+4. ✓ `calc_ut` — `planet_at(body, jd_ut) → PlanetData`; split is intentional architecture
+5. ✓ `set_topo`, `set_sid_mode` → `unsupported.design`; per-call idiom documented
+6. ✓ `day_of_week`, `get_planet_name` → `stdlib`
+7. ✓ `difdeg2n`, `deg_midp` → `mapped`; `normalize_degrees(a - b)` and midpoint idioms
+8. ✓ `get_ayanamsa_ex_ut` — `ayanamsa(jd_ut, Ayanamsa.X) → float` confirmed
+9. ✓ `get_ayanamsa_name` — `Ayanamsa` is a plain string-constant class (not StrEnum); `Ayanamsa.LAHIRI` returns `'Lahiri'` directly
+10. ✓ `azalt` — `equatorial_to_horizontal(ra_deg, dec_deg, lst_deg, lat_deg) → tuple[float, float]`; takes pre-computed LST
+11. ✓ `heliacal_ut` — `planet_heliacal_rising`/`planet_heliacal_setting` + `visibility_event` for general case
+12. ✓ `mooncross_ut`, `solcross_ut` — `next_transit(Body.MOON/SUN, target_lon, jd_start) → TransitEvent`
+13. ✓ Eclipse group-C rows already `mapped` (confirmed in Group F audit 2026-04-04)
+14. ✓ Overview combined rows updated to match detail rows
+
+**Finding:** `heliacal_rising` and `heliacal_setting` do not exist as public free functions; `planet_heliacal_rising` and `planet_heliacal_setting` are the correct surfaces. The roadmap's star surface note was stale.
 
 ### Phase 2 — Thin implementations (Group D) — COMPLETED 2026-04-05
 
@@ -236,14 +245,19 @@ Estimated DRAFT.md result after Phase 1 + completed Groups F & G: **partial: ~24
 2. ✓ `apparent_sidereal_time_at(jd_ut, longitude)` → closes `sidtime0`
 3. ✓ `jd_tt` kwarg on `planet_at` already existed — closes `calc` (no code needed)
 
-### Phase 3 — Vessel implementations (Group E)
-Two new vessels. Each requires a new dataclass + public function + tests.
+### Phase 3 — Vessel implementations (Group E) — COMPLETED 2026-04-06
 
-1. `planet_phenomena_at(body, jd_ut) -> PlanetPhenomena` → closes `pheno_ut`
-2. `nodes_and_apsides_at(body, jd_ut) -> NodesAndApsides` → closes `nod_aps_ut`
+1. ✓ `planet_phenomena_at(body, jd_ut) → PlanetPhenomena` added to `moira/phenomena.py`; exported from `moira/__init__.py` and `moira/facade.py`; closes `pheno_ut`
+2. ✓ `nodes_and_apsides_at(body, jd_ut) → NodesAndApsides` added to `moira/nodes.py`; exported from `moira/__init__.py` and `moira/facade.py`; closes `nod_aps_ut`
 
-### Phase 4 — Eclipse and occultation audits (Group F)
-Read-only investigation against the Swiss spec for each of the six rows. No new code unless a field is genuinely missing.
+**Notes:**
+- `PlanetPhenomena` fields: `phase_angle_deg`, `illuminated_fraction`, `elongation_deg`, `angular_diameter_arcsec`, `apparent_magnitude` — all delegates to existing `moira.phase` public functions; lazy import avoids any circularity.
+- `NodesAndApsides` fields: `ascending_node_lon`, `descending_node_lon`, `periapsis_lon`, `apoapsis_lon`. For Moon: `true_node` + `true_lilith` (apogee → apoapsis; apogee + 180° → periapsis). For planets: `planetary_node.ascending_node` / `.perihelion` / `.aphelion` (ecliptic longitudes from Meeus Table 31.a, no ephemeris call needed).
+- 11/11 drift guard tests pass after exports.
+
+### Phase 4 — Eclipse and occultation audits (Group F) — COMPLETED 2026-04-06
+
+`sol_eclipse_when_loc` was a genuine implementation gap. Closed by adding `next_solar_eclipse_at_location` as both an `EclipseCalculator` method and a module-level free function in `moira/eclipse.py`. Scans lunations from `jd_start`; uses `_topocentric_solar_geometry` to gate on Sun visibility; refines local maximum via `_refine_minimum` (ternary search); returns `SolarEclipseLocalCircumstances` at the local greatest-eclipse instant. All other Group F rows were already mapped.
 
 ### Phase 5 — Rise/set audit (Group G)
 One focused read of `find_phenomena` + `RiseSetPolicy`. Likely closes both rows with no new code.

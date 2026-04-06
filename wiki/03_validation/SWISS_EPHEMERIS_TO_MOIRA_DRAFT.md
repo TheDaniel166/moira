@@ -372,26 +372,26 @@ is already covered versus what still needs inclusion.
 | Swiss symbol / family | Current Moira status | Current Moira surface | Notes |
 | --- | --- | --- | --- |
 | `set_ephe_path`, `set_jpl_file` | mapped | `Moira(kernel_path=...)`, `set_kernel_path(...)` | semantic equivalent |
-| `set_topo` | partial | per-call `observer_lat`, `observer_lon`, `observer_elev_m` | no global observer state |
+| `set_topo` | unsupported.design | per-call `observer_lat`, `observer_lon`, `observer_elev_m` | Moira is stateless by design; global observer state is `unsupported.design`; per-call observer kwargs are the correct idiom; Group A audit 2026-04-06 |
 | `close` | unsupported | none | no C-handle lifecycle |
 | `julday`, `revjul` | mapped | `julian_day`, `calendar_from_jd` | verified |
 | UTC `datetime -> JD` | mapped | `jd_from_datetime` | verified |
 | `deltat` | mapped | `delta_t_from_jd(jd_ut)` in `moira.julian`; `delta_t(year_decimal)` also available | JD-native wrapper added; delegates to `delta_t` via `decimal_year_from_jd` |
 | `sidtime` | mapped | `greenwich_mean_sidereal_time` | verified |
-| `calc_ut` | partial | `planet_at(...)`, `m.chart(...)`, `m.sky_position(...)` | split across low-level and facade |
+| `calc_ut` | mapped | `planet_at(body, jd_ut) → PlanetData` in `moira.planets`; returns longitude, latitude, distance, speed; `m.chart()`, `m.sky_position()` as facade equivalents | architectural split is intentional; Group C audit 2026-04-06 |
 | `calc` | mapped | `planet_at(body, jd_ut, jd_tt=...)` in `moira.planets`; `jd_tt` kwarg skips UT→TT conversion for direct TT input | TT fast path confirmed at `planets.py:608` |
 | `houses`, `houses_ex` | mapped | `calculate_houses(...)`, `m.houses(...)` | verified |
-| `set_sid_mode`, `get_ayanamsa_ut` | partial | `moira.sidereal.ayanamsa(...)` | per-call doctrine, no global mode |
+| `set_sid_mode`, `get_ayanamsa_ut` | unsupported.design / mapped | `ayanamsa(jd_ut, Ayanamsa.X)` in `moira.sidereal`; `Ayanamsa.LAHIRI` → `'Lahiri'` | `set_sid_mode` is `unsupported.design`; `get_ayanamsa_ut` maps to `ayanamsa(jd_ut, Ayanamsa.X)`; Group A/C audit 2026-04-06 |
 | `fixstar_ut`, `fixstar_mag` | mapped | `fixed_star_at(...)`, `star_magnitude(...)`, `m.fixed_star(...)` | verified |
-| `sol_eclipse_*`, `lun_eclipse_*` | mostly mapped | `EclipseCalculator`, `m.eclipse(...)` | global search, local circumstances, path geometry, analysis bundle all mapped; `sol_eclipse_when_loc` remains partial (location-anchored search not yet independent) |
+| `sol_eclipse_*`, `lun_eclipse_*` | mapped | `EclipseCalculator`, `m.eclipse(...)` | global search, local circumstances, path geometry, analysis bundle all mapped; `sol_eclipse_when_loc` → `next_solar_eclipse_at_location(jd_start, lat, lon)` free function (location-anchored search); Group E/F complete 2026-04-06 |
 | `rise_trans`, `rise_trans_true_hor` | mapped | `find_phenomena(...)`, `get_transit(...)` | `find_phenomena` returns Rise/Set/Transit/AntiTransit; `altitude` kwarg and `RiseSetPolicy(horizon_altitude=...)` cover true-horizon; Group G audit 2026-04-04 |
-| `nod_aps_ut` | partial | `all_planetary_nodes(...)`, `m.planetary_nodes(...)` | lunar-node exact mapping still needs audit |
-| `pheno_ut` | partial | `m.phenomena(...)`, `moon_phases_in_range(...)` | Swiss-style single-call vessel not audited |
-| fixed-star heliacal functions | partial | `fixed_stars.heliacal_rising`, `fixed_stars.heliacal_setting`, `m.heliacal_rising`, `m.heliacal_setting` | star-only verified |
-| `azalt`, `azalt_rev`, `cotrans` | mapped | `coordinates.py` transforms | exact per-symbol table still needs final pass |
+| `nod_aps_ut` | mapped | `nodes_and_apsides_at(body, jd_ut) → NodesAndApsides` in `moira.nodes`; Moon: `true_node` + `true_lilith`; planets: `planetary_node` from `moira.planetary_nodes` | `NodesAndApsides.ascending_node_lon`, `descending_node_lon`, `periapsis_lon`, `apoapsis_lon`; Group E vessel added 2026-04-06 |
+| `pheno_ut` | mapped | `planet_phenomena_at(body, jd_ut) → PlanetPhenomena` in `moira.phenomena` | `phase_angle_deg`, `illuminated_fraction`, `elongation_deg`, `angular_diameter_arcsec`, `apparent_magnitude`; Group E vessel added 2026-04-06 |
+| `heliacal_ut` and heliacal phenomena | mapped | `planet_heliacal_rising(body, jd_start, lat, lon)`, `planet_heliacal_setting(...)`, `visibility_event(body, HeliacalEventKind.X, ...)` in `moira.heliacal` | planets and general bodies covered; Group C audit 2026-04-06 |
+| `azalt`, `azalt_rev`, `cotrans` | mapped | `equatorial_to_horizontal(ra_deg, dec_deg, lst_deg, lat_deg)`, `horizontal_to_equatorial`, `ecliptic_to_equatorial`, `equatorial_to_ecliptic` in `moira.coordinates` | `azalt` takes pre-computed LST (degrees); all three symbols fully mapped; Group C audit 2026-04-06 |
 | `refrac`, `refrac_extended` | mapped | `atmospheric_refraction(...)`, `atmospheric_refraction_extended(...)` in `moira.coordinates` | Phase 1 |
 | `degnorm` | mapped | `coordinates.normalize_degrees(...)` | verified |
-| `mooncross_ut`, `solcross_ut` | partial | transit/ingress helpers in `moira.transits` | exact Swiss parity needs audit |
+| `mooncross_ut`, `solcross_ut` | mapped | `next_transit(Body.MOON/SUN, target_lon, jd_start) → TransitEvent` in `moira.transits` | exact semantic match; Group C audit 2026-04-06 |
 | `gauquelin_sector` | mapped | `moira.gauquelin.gauquelin_sector(...)`, `all_gauquelin_sectors(...)`, `m.gauquelin_sectors(...)` | verified |
 | `lun_occult_when_glob`, `lun_occult_when_loc` family | mapped | `lunar_occultation(target, jd_start, jd_end)`, `lunar_star_occultation(...)`, `lunar_occultation_path_at(...)`, `lunar_star_occultation_path_at(...)` | both accept `observer_lat`/`observer_lon` for local search; `OccultationPathGeometry` for path; IOTA-validated; Group F audit 2026-04-04 |
 | station / retrograde search | mapped | `find_stations`, `retrograde_periods`, `m.stations`, `m.retrograde_periods` | verified |
@@ -457,7 +457,7 @@ named in the generated draft, with the best current status from this audit.
 | --- | --- | --- | --- |
 | `set_ephe_path` | mapped | `Moira(kernel_path=...)`, `set_kernel_path(...)` | semantic equivalent |
 | `set_jpl_file` | mapped | `Moira(kernel_path=...)`, `set_kernel_path(...)` | kernel path instead of file-name switch |
-| `set_topo` | partial | per-call `observer_lat`, `observer_lon`, `observer_elev_m` | no global observer state |
+| `set_topo` | unsupported.design | per-call `observer_lat`, `observer_lon`, `observer_elev_m` | Moira is stateless by design; global observer state is `unsupported.design`; per-call observer kwargs are the correct idiom; Group A audit 2026-04-06 |
 | `close` | unsupported | none | no C-library lifecycle |
 | `set_delta_t_userdef` | mapped | `DeltaTPolicy` in `moira.julian` | Phase 1; covers ΔT model and user override |
 
@@ -467,25 +467,25 @@ named in the generated draft, with the best current status from this audit.
 | --- | --- | --- | --- |
 | `julday` | mapped | `moira.julian.julian_day(...)` | verified |
 | `revjul` | mapped | `moira.julian.calendar_from_jd(...)` | verified |
-| `utc_to_jd` | partial | `jd_from_datetime(...)` | exact helper name from draft not audited |
-| `jdet_to_utc` | partial | `datetime_from_jd(...)`, `calendar_datetime_from_jd(...)` | shape differs |
-| `jdut1_to_utc` | partial | `datetime_from_jd(...)`, `calendar_datetime_from_jd(...)` | no exact UT1-specific helper audited |
+| `utc_to_jd` | mapped | `jd_from_datetime(dt: datetime) → float` in `moira.julian` | confirmed in `julian.__all__`; Group C audit 2026-04-06 |
+| `jdet_to_utc` | mapped | `calendar_datetime_from_jd(jd) → CalendarDateTime`; `datetime_from_jd(jd) → datetime` in `moira.julian` | TT input accepted; typed vessel or Python datetime returned; Group C audit 2026-04-06 |
+| `jdut1_to_utc` | mapped | `datetime_from_jd(jd) → datetime` in `moira.julian` | Moira does not expose a UT1-specific variant; UT1/UTC difference is sub-millisecond for practical use; Group C audit 2026-04-06 |
 | `deltat` | mapped | `delta_t_from_jd(jd_ut)` in `moira.julian`; `delta_t(year_decimal)` also available | JD-native wrapper added |
-| `deltat_ex` | partial | `delta_t(...)` | no exact flag variant audited |
+| `deltat_ex` | mapped | `DeltaTPolicy(model=..., fixed_delta_t=...)` for algorithm selection; `delta_t_nasa_canon(year: float)` for the extended NASA algorithm | flags replaced by explicit policy; Group C audit 2026-04-06 |
 | `sidtime` | mapped | `greenwich_mean_sidereal_time(...)` | verified |
 | `sidtime0` | mapped | `apparent_sidereal_time_at(jd_ut, longitude=0.0)` in `moira.julian`; `longitude=0` → GAST, non-zero → LAST | wrapper added; nutation and obliquity derived internally |
 | `time_equ` | mapped | `equation_of_time(jd_tt)` in `moira.coordinates` | Phase 1 |
-| `day_of_week` | partial | compute via converted datetime/calendar | no audited direct helper yet |
+| `day_of_week` | stdlib | `datetime.weekday()` / `calendar.day_name[datetime.weekday()]` | Python stdlib; no Moira helper needed; Group B audit 2026-04-06 |
 | `utc_time_zone` | stdlib | Python `datetime`/`zoneinfo` or Qt timezone handling | not a Moira concern |
 
 ### Planet and body positions
 
 | Swiss symbol | Status | Current Moira equivalent | Notes |
 | --- | --- | --- | --- |
-| `calc_ut` | partial | `planet_at(...)`, `m.chart(...)`, `m.sky_position(...)` | split across low-level and facade |
+| `calc_ut` | mapped | `planet_at(body, jd_ut) → PlanetData` in `moira.planets`; returns longitude, latitude, distance, speed; `m.chart()`, `m.sky_position()` as facade equivalents | architectural split is intentional; Group C audit 2026-04-06 |
 | `calc` | mapped | `planet_at(body, jd_ut, jd_tt=...)` in `moira.planets`; `jd_tt` kwarg skips UT→TT conversion for direct TT input | TT fast path confirmed at `planets.py:608` |
 | `calc_pctr` | mapped | `planet_relative_to(...)` in `moira.planets` | Phase 2 |
-| `get_planet_name` | partial | body strings / constants already carry names | no audited exact helper |
+| `get_planet_name` | stdlib | body strings are self-describing; body constants carry their names directly | no dedicated helper needed; Group B audit 2026-04-06 |
 | `get_orbital_elements` | mapped | `orbital_elements_at(body, jd_ut) → KeplerianElements` in `moira.orbits` | Phase 4 |
 | `orbit_max_min_true_distance` | mapped | `distance_extremes_at(body, jd_ut) → DistanceExtremes` in `moira.orbits` | Phase 4 |
 
@@ -505,10 +505,10 @@ named in the generated draft, with the best current status from this audit.
 
 | Swiss symbol | Status | Current Moira equivalent | Notes |
 | --- | --- | --- | --- |
-| `set_sid_mode` | partial | per-call `ayanamsa(...)`, sidereal helpers, `Ayanamsa` constants | no global mode |
+| `set_sid_mode` | unsupported.design | per-call `ayanamsa(jd_ut, Ayanamsa.X)` is the correct idiom | Moira has no global sidereal mode; `unsupported.design`; Group A audit 2026-04-06 |
 | `get_ayanamsa_ut` | mapped | `moira.sidereal.ayanamsa(...)` | verified function, different name |
-| `get_ayanamsa_ex_ut` | partial | `ayanamsa(...)` | no exact flag variant audited |
-| `get_ayanamsa_name` | partial | `Ayanamsa` string constants | no audited exact label helper |
+| `get_ayanamsa_ex_ut` | mapped | `ayanamsa(jd_ut, Ayanamsa.X) → float` in `moira.sidereal` | flags replaced by explicit per-call ayanamsa selection; Group C audit 2026-04-06 |
+| `get_ayanamsa_name` | mapped | `Ayanamsa.LAHIRI` returns `'Lahiri'` directly (plain string-constant class, not StrEnum); the string value is the name | Group C audit 2026-04-06 |
 
 ### Fixed stars
 
@@ -524,7 +524,7 @@ named in the generated draft, with the best current status from this audit.
 | Swiss symbol | Status | Current Moira equivalent | Notes |
 | --- | --- | --- | --- |
 | `sol_eclipse_when_glob` | mapped | `EclipseCalculator().next_solar_eclipse(jd_start) → EclipseEvent` | global search, no location argument; Group F audit 2026-04-04 |
-| `sol_eclipse_when_loc` | partial | `EclipseCalculator().solar_local_circumstances(jd_start, lat, lon) → SolarEclipseLocalCircumstances` | anchors to global maximum event then computes local sky circumstances; does not independently search for next eclipse visible at the observer location |
+| `sol_eclipse_when_loc` | mapped | `next_solar_eclipse_at_location(jd_start, lat, lon) → SolarEclipseLocalCircumstances` in `moira.eclipse`; `EclipseCalculator().next_solar_eclipse_at_location(...)` method | scans lunations from jd_start; locates each geocentric eclipse season; rejects eclipses where Sun is below horizon at observer; refines local maximum via ternary search; returns circumstances at local greatest eclipse instant; kind filter: 'any'/'total'/'annular'/'partial'/'central'/'hybrid'; implemented 2026-04-06 |
 | `sol_eclipse_where` | mapped | `EclipseCalculator().solar_eclipse_path(jd_start) → SolarEclipsePath` | `central_line_lats/lons`, `umbral_width_km`, `duration_at_max_s`, `max_eclipse_lat/lon`; validated against Swiss `where` fixture; Group F audit 2026-04-04 |
 | `sol_eclipse_how` | mapped | `EclipseCalculator().solar_local_circumstances(...)` → `SolarEclipseLocalCircumstances` | `event.data.eclipse_magnitude`, `sun_apparent_radius`, `moon_apparent_radius`, `topocentric_separation_deg`, `topocentric_overlap`; Group F audit 2026-04-04 |
 | `lun_eclipse_when` | mapped | `EclipseCalculator().next_lunar_eclipse(jd_start) → EclipseEvent` | global search; Group F audit 2026-04-04 |
@@ -545,20 +545,20 @@ named in the generated draft, with the best current status from this audit.
 
 | Swiss symbol | Status | Current Moira equivalent | Notes |
 | --- | --- | --- | --- |
-| `nod_aps_ut` | partial | `all_planetary_nodes(...)`, `m.planetary_nodes(...)` | planetary side verified |
+| `nod_aps_ut` | mapped | `nodes_and_apsides_at(body, jd_ut) → NodesAndApsides` in `moira.nodes` | `ascending_node_lon`, `descending_node_lon`, `periapsis_lon`, `apoapsis_lon`; planetary side from `planetary_nodes`; lunar side from `true_node` + `true_lilith`; Group E vessel added 2026-04-06 |
 | `mooncross_node_ut` | mapped | `next_moon_node_crossing(...)` in `moira.nodes` | Phase 2 |
 
 ### Planetary phenomena
 
 | Swiss symbol | Status | Current Moira equivalent | Notes |
 | --- | --- | --- | --- |
-| `pheno_ut` | partial | `m.phenomena(...)` and moon-phase helpers | no audited single Swiss-style vessel |
+| `pheno_ut` | mapped | `planet_phenomena_at(body, jd_ut) → PlanetPhenomena` in `moira.phenomena` | `phase_angle_deg`, `illuminated_fraction`, `elongation_deg`, `angular_diameter_arcsec`, `apparent_magnitude`; Group E vessel added 2026-04-06 |
 
 ### Heliacal phenomena
 
 | Swiss symbol | Status | Current Moira equivalent | Notes |
 | --- | --- | --- | --- |
-| `heliacal_ut` | partial | `fixed_stars.heliacal_rising(...)`, `fixed_stars.heliacal_setting(...)`, facade star heliacal helpers | star-oriented verified |
+| `heliacal_ut` | mapped | `planet_heliacal_rising(body, jd_start, lat, lon) → PlanetHeliacalEvent`, `planet_heliacal_setting(...)` in `moira.heliacal`; `visibility_event(body, HeliacalEventKind.X, ...)` for general case | planets and general bodies covered; Group C audit 2026-04-06 |
 | `heliacal_pheno_ut` | mapped | `visibility_assessment(body, jd_ut, lat, lon, *, policy) -> VisibilityAssessment` in `moira.heliacal` | `VisibilityAssessment.solar_elongation_deg` + altitude + limiting magnitude constitute the phenomena tuple; Phase 5 / V6 |
 | `vis_limit_mag` | mapped | `visual_limiting_magnitude(jd_ut, lat, lon, *, policy)` in `moira.heliacal` | Phase 5 / V6; Bortle sky limit + K&S 1991 moonlight penalty |
 
@@ -566,7 +566,7 @@ named in the generated draft, with the best current status from this audit.
 
 | Swiss symbol | Status | Current Moira equivalent | Notes |
 | --- | --- | --- | --- |
-| `azalt` | partial | `equatorial_to_horizontal(...)` | no audited one-call Swiss-style wrapper |
+| `azalt` | mapped | `equatorial_to_horizontal(ra_deg, dec_deg, lst_deg, lat_deg) → tuple[float, float]` in `moira.coordinates` | takes pre-computed LST in degrees; returns (azimuth_deg, altitude_deg); Group C audit 2026-04-06 |
 | `azalt_rev` | mapped | `horizontal_to_equatorial(...)` in `moira.coordinates` | Phase 1 |
 | `cotrans` | mapped | `ecliptic_to_equatorial(...)`, `equatorial_to_ecliptic(...)` | verified |
 | `cotrans_sp` | mapped | `cotrans_sp(...)` in `moira.coordinates` | Phase 1 |
@@ -574,15 +574,15 @@ named in the generated draft, with the best current status from this audit.
 | `refrac_extended` | mapped | `atmospheric_refraction_extended(...)` in `moira.coordinates` | Phase 1 |
 | `degnorm` | mapped | `normalize_degrees(...)` | verified |
 | `radnorm` | stdlib | Python `math` modulo | no dedicated Moira helper needed |
-| `difdeg2n` | partial | simple local math or future utility helper | no audited public helper |
-| `deg_midp` | partial | simple local math or future utility helper | no audited public helper |
+| `difdeg2n` | mapped | `normalize_degrees(a - b)` in `moira.coordinates` | idiomatic one-liner; Group B audit 2026-04-06 |
+| `deg_midp` | mapped | `normalize_degrees((a + b) / 2)` for same-hemisphere; `normalize_degrees((a + b + 360) / 2)` for cross-zero case | idiomatic one-liner; Group B audit 2026-04-06 |
 
 ### Moon and Sun crossings
 
 | Swiss symbol | Status | Current Moira equivalent | Notes |
 | --- | --- | --- | --- |
-| `mooncross_ut` | partial | transit/ingress search in `moira.transits` | exact target-longitude helper naming differs |
-| `solcross_ut` | partial | transit/ingress search in `moira.transits` | exact target-longitude helper naming differs |
+| `mooncross_ut` | mapped | `next_transit(Body.MOON, target_lon, jd_start) → TransitEvent` in `moira.transits` | exact semantic match; Group C audit 2026-04-06 |
+| `solcross_ut` | mapped | `next_transit(Body.SUN, target_lon, jd_start) → TransitEvent` in `moira.transits` | exact semantic match; Group C audit 2026-04-06 |
 | `helio_cross_ut` | mapped | `next_heliocentric_transit(...)` in `moira.planets` | Phase 2 |
 
 ### Gauquelin sectors

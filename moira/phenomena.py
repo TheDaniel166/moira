@@ -57,6 +57,8 @@ __all__ = [
     "moon_phases_in_range",
     "next_conjunction",
     "conjunctions_in_range",
+    "PlanetPhenomena",
+    "planet_phenomena_at",
 ]
 
 # ---------------------------------------------------------------------------
@@ -859,3 +861,76 @@ def conjunctions_in_range(
         else:
             break
     return conjs
+
+
+# ---------------------------------------------------------------------------
+# PlanetPhenomena — Swiss pheno_ut equivalent
+# ---------------------------------------------------------------------------
+
+@dataclass(slots=True)
+class PlanetPhenomena:
+    """Bundle of instantaneous photometric and geometric phenomena for a body.
+
+    Equivalent to the output of Swiss Ephemeris ``swe_pheno_ut``.
+
+    Fields
+    ------
+    body : str
+        Body name, as passed to ``planet_phenomena_at``.
+    jd_ut : float
+        Julian Day (UT) of the computation.
+    phase_angle_deg : float
+        Sun–body–Earth phase angle in degrees (0 = full, 180 = new).
+    illuminated_fraction : float
+        Fraction of the disc that is illuminated, in [0, 1].
+    elongation_deg : float
+        Apparent angular separation from the Sun, in degrees.
+    angular_diameter_arcsec : float
+        Apparent angular diameter of the body in arc-seconds.
+    apparent_magnitude : float
+        Apparent visual magnitude.
+    """
+
+    body: str
+    jd_ut: float
+    phase_angle_deg: float
+    illuminated_fraction: float
+    elongation_deg: float
+    angular_diameter_arcsec: float
+    apparent_magnitude: float
+
+
+def planet_phenomena_at(body: str, jd_ut: float) -> PlanetPhenomena:
+    """Return instantaneous photometric and geometric phenomena for *body* at *jd_ut*.
+
+    Equivalent to ``swe_pheno_ut`` in Swiss Ephemeris.
+
+    Parameters
+    ----------
+    body : str
+        Body name (e.g. ``Body.MARS``, ``'Mars'``).
+    jd_ut : float
+        Julian Day in Universal Time.
+
+    Returns
+    -------
+    PlanetPhenomena
+    """
+    from .phase import (
+        phase_angle as _pa,
+        illuminated_fraction as _ill,
+        elongation as _elong,
+        angular_diameter as _diam,
+        apparent_magnitude as _mag,
+    )
+
+    pa = _pa(body, jd_ut)
+    return PlanetPhenomena(
+        body=body,
+        jd_ut=jd_ut,
+        phase_angle_deg=pa,
+        illuminated_fraction=_ill(pa),
+        elongation_deg=_elong(body, jd_ut),
+        angular_diameter_arcsec=_diam(body, jd_ut),
+        apparent_magnitude=_mag(body, jd_ut),
+    )
