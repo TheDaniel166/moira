@@ -600,3 +600,21 @@ ASPECT_TIERS: dict[int, list[AspectDefinition]] = {
 DEFAULT_ORBS: dict[float, float] = {
     a.angle: a.default_orb for a in Aspect.ALL
 }
+
+# Traditional per-body full orbs (moiety = half of each value).
+#
+# Source: William Lilly, "Christian Astrology" (1647), Book I, Ch. VI.
+# These are the full orbs; the moiety of each planet is orb / 2.
+# Combined moiety for a pair = moiety(A) + moiety(B).
+#
+# Bodies not present in this table (Chiron, nodes, asteroids, calculated
+# points) fall back to a default full orb of 5° (moiety 2.5°).
+TRADITIONAL_MOIETY_ORBS: dict[str, float] = {
+    "Sun":     15.0,   # moiety 7.5°
+    "Moon":    12.0,   # moiety 6.0°
+    "Mercury":  7.0,   # moiety 3.5°
+    "Venus":    7.0,   # moiety 3.5°
+    "Mars":     7.0,   # moiety 3.5°
+    "Jupiter": 12.0,   # moiety 6.0°
+    "Saturn":  10.0,   # moiety 5.0°
+}

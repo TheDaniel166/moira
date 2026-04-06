@@ -188,13 +188,14 @@ from enum import Enum
 from itertools import combinations, permutations
 from typing import Collection
 
-from .constants import Aspect, AspectDefinition, ASPECT_TIERS, DEFAULT_ORBS
+from .constants import Aspect, AspectDefinition, ASPECT_TIERS, DEFAULT_ORBS, TRADITIONAL_MOIETY_ORBS
 from .coordinates import angular_distance
 
 __all__ = [
     # Constants
     "CANONICAL_ASPECTS",
     "DEFAULT_POLICY",
+    "TRADITIONAL_MOIETY_ORBS",
     # Enums
     "AspectDirection",
     "AspectDomain",
@@ -434,9 +435,30 @@ class AspectPolicy:
     include_minor   : include common minor aspects when ``tier`` is None.
     orbs            : custom orb table ``{angle: max_orb}``.  When provided,
                       overrides both default orbs and ``orb_factor``.
+                      Ignored when ``orb_mode="moiety"``.
     orb_factor      : multiplier applied to all default orbs (e.g. 0.5 = tight
-                      windows).  Ignored when ``orbs`` is provided.
+                      windows).  Ignored when ``orbs`` is provided or when
+                      ``orb_mode="moiety"``.
     declination_orb : orb ceiling for Parallel and Contra-Parallel detection.
+    orb_mode        : orb doctrine to apply.
+
+                      ``"fixed"`` (default) — per-aspect-angle orb window,
+                      sourced from ``orbs`` or scaled ``default_orb`` values.
+                      This is the modern / default behaviour.
+
+                      ``"moiety"`` — per-body-pair orb window computed as the
+                      sum of the two bodies' moieties (half their traditional
+                      full orbs).  ``orbs`` and ``orb_factor`` are ignored.
+                      Uses ``moiety_orbs`` when supplied; falls back to
+                      ``TRADITIONAL_MOIETY_ORBS`` (Lilly 1647) otherwise.
+                      Bodies not in the table receive a default full orb of
+                      5° (moiety 2.5°).
+
+    moiety_orbs     : custom per-body full-orb table ``{body_name: full_orb}``.
+                      Used only when ``orb_mode="moiety"``.  When ``None``,
+                      ``TRADITIONAL_MOIETY_ORBS`` is used.  Moiety of each
+                      body = ``full_orb / 2``; combined allowed orb for a pair
+                      = ``moiety(A) + moiety(B)``.
 
     All fields are optional; the defaults reproduce the historical default
     behaviour of all four detection functions.
@@ -446,12 +468,15 @@ class AspectPolicy:
     ValueError
         If ``orb_factor <= 0``.
         If ``declination_orb < 0``.
+        If ``orb_mode`` is not ``"fixed"`` or ``"moiety"``.
     """
-    tier:            int | None              = None
-    include_minor:   bool                    = True
+    tier:            int | None                = None
+    include_minor:   bool                      = True
     orbs:            dict[float, float] | None = None
-    orb_factor:      float                   = 1.0
-    declination_orb: float                   = 1.0
+    orb_factor:      float                     = 1.0
+    declination_orb: float                     = 1.0
+    orb_mode:        str                       = "fixed"
+    moiety_orbs:     dict[str, float] | None   = None
 
     def __post_init__(self) -> None:
         if self.orb_factor <= 0:
@@ -462,6 +487,10 @@ class AspectPolicy:
         if self.declination_orb < 0:
             raise ValueError(
                 f"AspectPolicy: declination_orb must be >= 0, got {self.declination_orb!r}."
+            )
+        if self.orb_mode not in ("fixed", "moiety"):
+            raise ValueError(
+                f"AspectPolicy: orb_mode must be 'fixed' or 'moiety', got {self.orb_mode!r}."
             )
 
 
@@ -1822,6 +1851,38 @@ def _resolve_aspects(
     return Aspect.MAJOR + Aspect.COMMON_MINOR if include_minor else Aspect.MAJOR
 
 
+# ---------------------------------------------------------------------------
+# Moiety orb resolution
+# ---------------------------------------------------------------------------
+
+_MOIETY_DEFAULT_FULL_ORB = 5.0  # used for bodies absent from the moiety table
+
+
+def _moiety_allowed_orb(
+    b1: str,
+    b2: str,
+    table: dict[str, float],
+) -> float:
+    """
+    Combined allowed orb for a pair of bodies under the moiety doctrine.
+
+    Each body contributes its moiety (half its full orb).  Bodies absent
+    from the table receive ``_MOIETY_DEFAULT_FULL_ORB`` (5°, moiety 2.5°).
+
+    Parameters
+    ----------
+    b1, b2 : body names (``Body.*`` string constants).
+    table  : per-body full-orb table (full orb; moiety = half).
+
+    Returns
+    -------
+    float — combined moiety in degrees.
+    """
+    m1 = table.get(b1, _MOIETY_DEFAULT_FULL_ORB) / 2.0
+    m2 = table.get(b2, _MOIETY_DEFAULT_FULL_ORB) / 2.0
+    return m1 + m2
+
+
 _STATIONARY_THRESHOLD = 0.005  # degrees/day — below this a planet is considered stationary
 
 
@@ -1954,6 +2015,9 @@ def find_aspects(
         include_minor = policy.include_minor
         orbs          = policy.orbs
         orb_factor    = policy.orb_factor
+    _use_moiety   = policy is not None and policy.orb_mode == "moiety"
+    _moiety_table = (policy.moiety_orbs if policy is not None and policy.moiety_orbs is not None
+                     else TRADITIONAL_MOIETY_ORBS)
     aspect_list = _resolve_aspects(tier, include_minor)
     bodies = list(positions.keys())
     results: list[AspectData] = []
@@ -1963,9 +2027,12 @@ def find_aspects(
             b1, b2 = bodies[i], bodies[j]
             lon1, lon2 = positions[b1], positions[b2]
             sep = angular_distance(lon1, lon2)
+            pair_allowed = _moiety_allowed_orb(b1, b2, _moiety_table) if _use_moiety else None
 
             for adef in aspect_list:
-                if orbs is not None:
+                if _use_moiety:
+                    allowed = pair_allowed
+                elif orbs is not None:
                     allowed = orbs.get(adef.angle, adef.default_orb)
                 else:
                     allowed = adef.default_orb * orb_factor
@@ -2049,6 +2116,9 @@ def aspects_between(
     -------
     List of AspectData sorted by orb.
     """
+    _use_moiety   = policy is not None and policy.orb_mode == "moiety"
+    _moiety_table = (policy.moiety_orbs if policy is not None and policy.moiety_orbs is not None
+                     else TRADITIONAL_MOIETY_ORBS)
     if policy is not None:
         orbs       = policy.orbs
         orb_factor = policy.orb_factor
@@ -2059,6 +2129,7 @@ def aspects_between(
     else:
         aspect_list = ASPECT_TIERS.get(tier, Aspect.ALL)
     sep = angular_distance(lon_a, lon_b)
+    pair_allowed = _moiety_allowed_orb(body_a, body_b, _moiety_table) if _use_moiety else None
     results: list[AspectData] = []
 
     speeds = {}
@@ -2068,7 +2139,9 @@ def aspects_between(
         speeds[body_b] = speed_b
 
     for adef in aspect_list:
-        if orbs is not None:
+        if _use_moiety:
+            allowed = pair_allowed
+        elif orbs is not None:
             allowed = orbs.get(adef.angle, adef.default_orb)
         else:
             allowed = adef.default_orb * orb_factor
@@ -2155,6 +2228,9 @@ def aspects_to_point(
     -------
     List of AspectData sorted by orb.
     """
+    _use_moiety   = policy is not None and policy.orb_mode == "moiety"
+    _moiety_table = (policy.moiety_orbs if policy is not None and policy.moiety_orbs is not None
+                     else TRADITIONAL_MOIETY_ORBS)
     if policy is not None:
         tier          = policy.tier
         include_minor = policy.include_minor
@@ -2165,8 +2241,11 @@ def aspects_to_point(
 
     for body, lon in positions.items():
         sep = angular_distance(lon, point_longitude)
+        pair_allowed = _moiety_allowed_orb(body, point_name, _moiety_table) if _use_moiety else None
         for adef in aspect_list:
-            if orbs is not None:
+            if _use_moiety:
+                allowed = pair_allowed
+            elif orbs is not None:
                 allowed = orbs.get(adef.angle, adef.default_orb)
             else:
                 allowed = adef.default_orb * orb_factor

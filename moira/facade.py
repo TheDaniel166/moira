@@ -184,6 +184,7 @@ from .huber import (
 from .aspects import (
     CANONICAL_ASPECTS,
     DEFAULT_POLICY,
+    TRADITIONAL_MOIETY_ORBS,
     AspectDomain,
     AspectFamily,
     AspectPatternKind,
@@ -498,6 +499,24 @@ from .asteroids import (
     ASTEROID_NAIF,
 )
 from .planets import HeliocentricData, heliocentric_planet_at, all_heliocentric_at
+from .planetocentric import (
+    PlanetocentricData,
+    VALID_OBSERVER_BODIES,
+    planetocentric_at,
+    all_planetocentric_at,
+)
+from .ssb import (
+    SSBPosition,
+    SSB_BODIES,
+    ssb_position_at,
+    all_ssb_positions_at,
+)
+from .light_cone import (
+    ReceivedLightPosition,
+    RECEIVED_LIGHT_BODIES,
+    received_light_at,
+    all_received_light_at,
+)
 from .rise_set import RiseSetPolicy, TwilightTimes, twilight_times
 from .phase import angular_diameter
 from .dignities import (
@@ -545,6 +564,15 @@ from .varga import (
     navamsa, saptamsa, dashamansa, dwadashamsa, trimshamsa,
 )
 from .astrocartography import ACGLine, acg_lines, acg_from_chart
+from .geodetic import (
+    GeodeticChart,
+    geodetic_mc,
+    geodetic_asc,
+    geodetic_chart,
+    geodetic_chart_from_chart,
+    geodetic_equivalents,
+    geodetic_equivalents_from_chart,
+)
 from .local_space import LocalSpacePosition, local_space_positions, local_space_from_chart
 from .parans import (
     CIRCLE_TYPES,
@@ -761,7 +789,7 @@ __all__ = [
     "ayanamsa", "tropical_to_sidereal", "sidereal_to_tropical", "list_ayanamsa_systems",
     "AspectDefinition", "ASPECT_TIERS",
     # Aspect backend public surface
-    "CANONICAL_ASPECTS", "DEFAULT_POLICY",
+    "CANONICAL_ASPECTS", "DEFAULT_POLICY", "TRADITIONAL_MOIETY_ORBS",
     "AspectDomain", "AspectFamily", "AspectPatternKind", "AspectTier", "MotionState",
     "AspectClassification", "AspectFamilyProfile", "AspectGraph",
     "AspectGraphNode", "AspectHarmonicProfile", "AspectPolicy",
@@ -939,6 +967,15 @@ __all__ = [
     "PlanetaryHour", "PlanetaryHourClassical", "PlanetaryHoursDay", "planetary_hours",
     # Heliocentric positions
     "HeliocentricData", "heliocentric_planet_at", "all_heliocentric_at",
+    # Planetocentric positions
+    "PlanetocentricData", "VALID_OBSERVER_BODIES",
+    "planetocentric_at", "all_planetocentric_at",
+    # Solar System Barycenter chart
+    "SSBPosition", "SSB_BODIES",
+    "ssb_position_at", "all_ssb_positions_at",
+    # Received-Light (light-cone) chart
+    "ReceivedLightPosition", "RECEIVED_LIGHT_BODIES",
+    "received_light_at", "all_received_light_at",
     # Phase 2 specialist helpers
     "planet_relative_to", "next_heliocentric_transit",
     "next_moon_node_crossing",
@@ -1012,6 +1049,10 @@ __all__ = [
     "navamsa", "saptamsa", "dashamansa", "dwadashamsa", "trimshamsa",
     # Astrocartography
     "ACGLine", "acg_lines", "acg_from_chart",
+    # Geodetic
+    "GeodeticChart",
+    "geodetic_mc", "geodetic_asc", "geodetic_chart", "geodetic_chart_from_chart",
+    "geodetic_equivalents", "geodetic_equivalents_from_chart",
     # Local Space
     "LocalSpacePosition", "local_space_positions", "local_space_from_chart",
     # Parans
@@ -2486,6 +2527,90 @@ class Moira:
                                    reader=self._reader)
 
     # ------------------------------------------------------------------
+    # Planetocentric positions
+    # ------------------------------------------------------------------
+
+    def planetocentric(
+        self,
+        observer: str,
+        dt: datetime,
+        bodies: list[str] | None = None,
+    ) -> dict[str, PlanetocentricData]:
+        """
+        Return ecliptic positions of all (or specified) bodies as seen from
+        the center of ``observer``.
+
+        Parameters
+        ----------
+        observer : Body name of the observer planet (e.g. ``Body.MARS``).
+                   Must be a member of ``VALID_OBSERVER_BODIES``.
+        dt       : Datetime of the computation (timezone-aware recommended).
+        bodies   : Target bodies to include.  Defaults to all
+                   ``VALID_OBSERVER_BODIES`` except ``observer`` itself.
+        """
+        return all_planetocentric_at(
+            observer, jd_from_datetime(dt), bodies=bodies, reader=self._reader
+        )
+
+    # ------------------------------------------------------------------
+    # Solar System Barycenter (SSB) chart
+    # ------------------------------------------------------------------
+
+    def ssb_chart(
+        self,
+        dt: datetime,
+        bodies: list[str] | None = None,
+    ) -> dict[str, SSBPosition]:
+        """
+        Return ecliptic positions of bodies relative to the Solar System
+        Barycenter (SSB) at the given moment.
+
+        The SSB is the true inertial center-of-mass of the solar system.
+        The Sun wanders up to ~0.010 AU from this point; all other bodies
+        are measured from this same inertial origin.  Positions are expressed
+        in the true-of-date ecliptic frame (precession + nutation applied),
+        consistent with all other Moira position products.
+
+        Parameters
+        ----------
+        dt     : Datetime of the computation (timezone-aware recommended).
+        bodies : Bodies to compute.  Defaults to all ``SSB_BODIES``
+                 (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn,
+                 Uranus, Neptune, Pluto, Earth).
+        """
+        return all_ssb_positions_at(
+            jd_from_datetime(dt), bodies=bodies, reader=self._reader
+        )
+
+    # ------------------------------------------------------------------
+    # Received-Light (light-cone) chart
+    # ------------------------------------------------------------------
+
+    def received_light(
+        self,
+        dt: datetime,
+        bodies: list[str] | None = None,
+    ) -> dict[str, ReceivedLightPosition]:
+        """
+        Return received-light positions for the given bodies at ``dt``.
+
+        Each result carries both the apparent ecliptic position (where the
+        body was when it emitted the light reaching Earth at ``dt``) and
+        the geometric position (where the body physically is at ``dt``),
+        along with the light travel time, emission Julian Date, and angular
+        displacement between the two.
+
+        Parameters
+        ----------
+        dt     : Datetime of the computation (timezone-aware recommended).
+        bodies : Bodies to compute.  Defaults to all ``RECEIVED_LIGHT_BODIES``
+                 (Sun, Moon, and all major planets).
+        """
+        return all_received_light_at(
+            jd_from_datetime(dt), bodies=bodies, reader=self._reader
+        )
+
+    # ------------------------------------------------------------------
     # Rise / Set / Twilight
     # ------------------------------------------------------------------
 
@@ -2806,6 +2931,64 @@ class Moira:
             planet_ra_dec[body] = (sky.right_ascension, sky.declination)
 
         return acg_lines(planet_ra_dec, gmst_deg, lat_step=lat_step)
+
+    # ------------------------------------------------------------------
+    # Geodetic Astrology
+    # ------------------------------------------------------------------
+
+    def geodetic(
+        self,
+        chart: Chart,
+        zodiac: str = "tropical",
+        ayanamsa_system: str | None = None,
+    ) -> GeodeticChart:
+        """
+        Compute the Geodetic chart for the chart's birth location.
+
+        The Geodetic MC is the zodiac degree native to the birth longitude;
+        the Geodetic Ascendant is derived from the MC and birth latitude.
+        No birth time is used in the derivation — only the location.
+        Obliquity is taken at the natal epoch (``chart.jd_tt``).
+
+        Parameters
+        ----------
+        chart            : natal Chart instance (location is taken from it)
+        zodiac           : "tropical" (default) or "sidereal"
+        ayanamsa_system  : required when ``zodiac="sidereal"``; a system name
+                           from ``moira.sidereal.Ayanamsa``
+        """
+        return geodetic_chart_from_chart(
+            chart,
+            zodiac=zodiac,
+            ayanamsa_system=ayanamsa_system,
+        )
+
+    def geodetic_planet_equivalents(
+        self,
+        chart: Chart,
+        bodies: list[str] | None = None,
+        zodiac: str = "tropical",
+        ayanamsa_system: str | None = None,
+    ) -> dict[str, float]:
+        """
+        Geographic longitudes where each natal planet is the Geodetic MC.
+
+        For each body, returns the geographic longitude at which that
+        planet's ecliptic position falls exactly on the Geodetic MC.
+
+        Parameters
+        ----------
+        chart            : natal Chart instance
+        bodies           : bodies to include (default: all chart planets)
+        zodiac           : "tropical" (default) or "sidereal"
+        ayanamsa_system  : required when ``zodiac="sidereal"``
+        """
+        return geodetic_equivalents_from_chart(
+            chart,
+            bodies=bodies,
+            zodiac=zodiac,
+            ayanamsa_system=ayanamsa_system,
+        )
 
     # ------------------------------------------------------------------
     # Local Space
