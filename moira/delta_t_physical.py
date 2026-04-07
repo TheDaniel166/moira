@@ -46,6 +46,8 @@ __all__ = [
     "cryo_delta_t",
     "delta_t_hybrid",
     "delta_t_hybrid_uncertainty",
+    "DeltaTBreakdown",
+    "delta_t_breakdown",
 ]
 
 
@@ -983,4 +985,152 @@ def delta_t_hybrid_uncertainty(year: float) -> float:
         + sigma_cryo ** 2
         + sigma_core ** 2
         + sigma_residual ** 2
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class DeltaTBreakdown:
+    """
+    Component breakdown of the hybrid ΔT model for a single decimal year.
+
+    All values are in seconds (TT − UT1 contribution).
+    ``secular + core + cryo + fluid + bridge + residual == total`` for all eras.
+
+    Attributes
+    ----------
+    year : float
+        Decimal year of the computation.
+    total : float
+        Total ΔT in seconds — equals ``delta_t_hybrid(year)``.
+    secular : float
+        Tidal + GIA secular parabola (always present in every era).
+    core : float
+        Core-mantle angular momentum contribution.  In the future era this
+        is the 10-year mean; in the pre-1840 era it is zero.
+    cryo : float
+        Cryosphere/hydrosphere GRACE/GRACE-FO contribution.
+    fluid : float
+        Low-frequency fluid AAM + OAM contribution (measured era only;
+        zero otherwise).
+    bridge : float
+        Smooth polynomial bridge term used in the measured era
+        (``_modern_bridge_delta_t``) or the historical era
+        (``_historical_bridge_delta_t``); zero in the future and pre-1840
+        eras.
+    residual : float
+        IERS residual spline correction (measured era only; zero otherwise).
+    era : str
+        Which era routing was applied.  One of ``'pre-1840'``,
+        ``'historical'``, ``'measured'``, or ``'future'``.
+    """
+
+    year: float
+    total: float
+    secular: float
+    core: float
+    cryo: float
+    fluid: float
+    bridge: float
+    residual: float
+    era: str
+
+
+def delta_t_breakdown(year: float) -> DeltaTBreakdown:
+    """
+    Return the component breakdown of the hybrid ΔT model for the given year.
+
+    The returned :class:`DeltaTBreakdown` exposes every additive term that
+    ``delta_t_hybrid`` uses internally so that callers can inspect the
+    relative magnitude of tidal forcing, core-mantle variation,
+    cryospheric loading, and the IERS residual correction without having to
+    call each component function individually.
+
+    Parameters
+    ----------
+    year : decimal year
+
+    Returns
+    -------
+    DeltaTBreakdown
+        Immutable dataclass whose fields sum to ``total == delta_t_hybrid(year)``.
+
+    Examples
+    --------
+    >>> from moira.delta_t_physical import delta_t_breakdown
+    >>> bd = delta_t_breakdown(2024.5)
+    >>> bd.total == bd.secular + bd.core + bd.cryo + bd.fluid + bd.bridge + bd.residual
+    True
+    """
+    y = float(year)
+
+    if y < _CORE_COVERAGE_START:
+        # Pre-1840: entire value sourced from the SMH 2016 table; the secular
+        # parabola alone captures it, all other components are zero.
+        total = _smh2016_lookup(y)
+        return DeltaTBreakdown(
+            year=y,
+            total=total,
+            secular=total,
+            core=0.0,
+            cryo=0.0,
+            fluid=0.0,
+            bridge=0.0,
+            residual=0.0,
+            era='pre-1840',
+        )
+
+    if y < _RESIDUAL_FIT_START:
+        # 1840–1962.4: physics-based historical era.
+        # secular + historical bridge + historical core.
+        sec = secular_trend(y)
+        hist_core = historical_core_delta_t(y)
+        hist_bridge = _historical_bridge_delta_t(y)
+        total = sec + hist_bridge + hist_core
+        return DeltaTBreakdown(
+            year=y,
+            total=total,
+            secular=sec,
+            core=hist_core,
+            cryo=0.0,
+            fluid=0.0,
+            bridge=hist_bridge,
+            residual=0.0,
+            era='historical',
+        )
+
+    sec = secular_trend(y)
+    fluid = fluid_lowfreq(y)
+    core = core_delta_t(y)
+    cryo = cryo_delta_t(y)
+
+    if y <= REFERENCE_YEAR:
+        # Measured era: secular + fluid + bridge + core + cryo + residual spline.
+        bridge = _modern_bridge_delta_t(y)
+        resid = _residual_at(y)
+        total = sec + fluid + bridge + core + cryo + resid
+        return DeltaTBreakdown(
+            year=y,
+            total=total,
+            secular=sec,
+            core=core,
+            cryo=cryo,
+            fluid=fluid,
+            bridge=bridge,
+            residual=resid,
+            era='measured',
+        )
+
+    # Future era (> REFERENCE_YEAR): secular + core 10-year mean + cryo trend.
+    core_mean, _ = _core_recent_stats()
+    total = sec + core_mean + cryo
+    return DeltaTBreakdown(
+        year=y,
+        total=total,
+        secular=sec,
+        core=core_mean,
+        cryo=cryo,
+        fluid=0.0,
+        bridge=0.0,
+        residual=0.0,
+        era='future',
     )

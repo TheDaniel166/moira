@@ -59,6 +59,7 @@ from .julian import (
     safe_datetime_from_jd,
     delta_t,
 )
+from .delta_t_physical import DeltaTBreakdown, delta_t_breakdown
 
 # ── Houses (basic) ───────────────────────────────────────────────────────
 from .houses import calculate_houses, assign_house
@@ -89,6 +90,7 @@ __all__ = [
     "julian_day", "calendar_from_jd", "calendar_datetime_from_jd",
     "jd_from_datetime", "datetime_from_jd", "format_jd_utc",
     "safe_datetime_from_jd", "delta_t",
+    "DeltaTBreakdown", "delta_t_breakdown",
     # Houses
     "calculate_houses", "assign_house",
     # Aspects
