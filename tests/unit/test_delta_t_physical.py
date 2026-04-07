@@ -15,6 +15,8 @@ from moira.delta_t_physical import (
     cryo_delta_t,
     delta_t_hybrid,
     delta_t_hybrid_uncertainty,
+    DeltaTBreakdown,
+    delta_t_breakdown,
     _smh2016_lookup,
     _lod_series_to_delta_t,
     _series_epoch_delta_days,
@@ -425,3 +427,91 @@ def test_delta_t_hybrid_historical_era_is_continuous_at_1840() -> None:
     just_before = delta_t_hybrid(1839.99)
     just_after = delta_t_hybrid(1840.01)
     assert abs(just_before - just_after) < 0.1
+
+
+# ---------------------------------------------------------------------------
+# delta_t_breakdown
+# ---------------------------------------------------------------------------
+
+def test_breakdown_returns_dataclass() -> None:
+    bd = delta_t_breakdown(2000.0)
+    assert isinstance(bd, DeltaTBreakdown)
+
+
+def test_breakdown_components_sum_to_total_for_all_eras() -> None:
+    for year in [1500.0, 1850.0, 1980.0, 2024.5, 2050.0]:
+        bd = delta_t_breakdown(year)
+        reconstructed = bd.secular + bd.core + bd.cryo + bd.fluid + bd.bridge + bd.residual
+        assert reconstructed == pytest.approx(bd.total, abs=1e-10), (
+            f"Components do not sum to total at year={year}: "
+            f"{reconstructed} != {bd.total}"
+        )
+
+
+def test_breakdown_total_matches_delta_t_hybrid() -> None:
+    for year in [1500.0, 1850.0, 1980.0, 2024.5, 2050.0, 2100.0]:
+        bd = delta_t_breakdown(year)
+        assert bd.total == pytest.approx(delta_t_hybrid(year), abs=1e-10)
+
+
+def test_breakdown_era_labels_are_correct() -> None:
+    assert delta_t_breakdown(1000.0).era == 'pre-1840'
+    assert delta_t_breakdown(1839.9).era == 'pre-1840'
+    assert delta_t_breakdown(1840.0).era == 'historical'
+    assert delta_t_breakdown(1900.0).era == 'historical'
+    assert delta_t_breakdown(1962.5).era == 'measured'
+    assert delta_t_breakdown(2000.0).era == 'measured'
+    assert delta_t_breakdown(2026.0).era == 'measured'
+    assert delta_t_breakdown(2050.0).era == 'future'
+
+
+def test_breakdown_pre_1840_secular_equals_total() -> None:
+    bd = delta_t_breakdown(1700.0)
+    assert bd.era == 'pre-1840'
+    assert bd.secular == pytest.approx(bd.total, abs=1e-12)
+    assert bd.core == 0.0
+    assert bd.cryo == 0.0
+    assert bd.fluid == 0.0
+    assert bd.bridge == 0.0
+    assert bd.residual == 0.0
+
+
+def test_breakdown_historical_era_cryo_fluid_residual_are_zero() -> None:
+    bd = delta_t_breakdown(1900.0)
+    assert bd.era == 'historical'
+    assert bd.cryo == 0.0
+    assert bd.fluid == 0.0
+    assert bd.residual == 0.0
+
+
+def test_breakdown_future_era_fluid_bridge_residual_are_zero() -> None:
+    bd = delta_t_breakdown(2060.0)
+    assert bd.era == 'future'
+    assert bd.fluid == 0.0
+    assert bd.bridge == 0.0
+    assert bd.residual == 0.0
+
+
+def test_breakdown_year_field_matches_input() -> None:
+    for year in [1500.0, 1900.0, 2000.0, 2050.0]:
+        bd = delta_t_breakdown(year)
+        assert bd.year == year
+
+
+def test_breakdown_all_fields_are_finite() -> None:
+    for year in [-500.0, 1000.0, 1840.0, 1900.0, 1962.5, 2000.0, 2026.0, 2050.0, 2100.0]:
+        bd = delta_t_breakdown(year)
+        for field in (bd.total, bd.secular, bd.core, bd.cryo, bd.fluid, bd.bridge, bd.residual):
+            assert math.isfinite(field), f"Non-finite component at year={year}: {bd}"
+
+
+def test_breakdown_is_accessible_from_essentials() -> None:
+    from moira.essentials import DeltaTBreakdown as BD, delta_t_breakdown as dtb
+    bd = dtb(2000.0)
+    assert isinstance(bd, BD)
+
+
+def test_breakdown_is_accessible_from_facade() -> None:
+    from moira.facade import DeltaTBreakdown as BD, delta_t_breakdown as dtb
+    bd = dtb(2000.0)
+    assert isinstance(bd, BD)
