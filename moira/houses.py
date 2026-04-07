@@ -40,7 +40,8 @@ Layers present in this file:
 
     DOCTRINE / POLICY  (Phase 4)
         UnknownSystemPolicy — enum: FALLBACK_TO_PLACIDUS (default) or RAISE.
-        PolarFallbackPolicy — enum: FALLBACK_TO_PORPHYRY (default) or RAISE.
+        PolarFallbackPolicy — enum: FALLBACK_TO_PORPHYRY (default), RAISE,
+            or EXPERIMENTAL_SEARCH.
         HousePolicy         — frozen dataclass: unknown_system + polar_fallback.
             HousePolicy.default() returns the canonical default (current behavior).
         calculate_houses(..., policy=HousePolicy.default()) — accepts an optional
@@ -511,9 +512,18 @@ class PolarFallbackPolicy(str, Enum):
         the caller considers a request for an incapable system above the
         critical latitude a programming error rather than an acceptable
         fallback condition.
+
+    EXPERIMENTAL_SEARCH
+        Opt-in research mode. For HouseSystem.PLACIDUS only, attempt a
+        branch-aware high-latitude Placidus solve using
+        ``moira.experimental_placidus``. If exactly one ordered cusp cycle is
+        found, return Placidus directly with no fallback. If no ordered cycle
+        is found, or more than one ordered cycle exists, raise ValueError.
+        Other polar-incapable systems remain unsupported in this mode.
     """
     FALLBACK_TO_PORPHYRY = "fallback_to_porphyry"
     RAISE                = "raise"
+    EXPERIMENTAL_SEARCH  = "experimental_search"
 
 
 @dataclass(frozen=True, slots=True)
@@ -562,6 +572,36 @@ class HousePolicy:
             unknown_system=UnknownSystemPolicy.RAISE,
             polar_fallback=PolarFallbackPolicy.RAISE,
         )
+
+    @classmethod
+    def experimental(cls) -> "HousePolicy":
+        """Return an explicit policy that enables high-latitude Placidus search."""
+        return cls(
+            unknown_system=UnknownSystemPolicy.FALLBACK_TO_PLACIDUS,
+            polar_fallback=PolarFallbackPolicy.EXPERIMENTAL_SEARCH,
+        )
+
+
+def _experimental_polar_placidus_cusps(
+    armc: float,
+    obliquity: float,
+    latitude: float,
+    asc: float,
+    mc: float,
+) -> list[float]:
+    """Search for a unique ordered high-latitude Placidus branch or raise."""
+    from .experimental_placidus import ExperimentalPlacidusStatus, search_experimental_placidus
+
+    result = search_experimental_placidus(
+        armc,
+        obliquity,
+        latitude,
+        asc,
+        mc,
+    )
+    if result.status == ExperimentalPlacidusStatus.UNIQUE_ORDERED_SOLUTION and result.cusps is not None:
+        return list(result.cusps)
+    raise ValueError(f"experimental Placidus search failed: {result.diagnostic_summary}")
 
 
 @dataclass(slots=True)
@@ -1850,12 +1890,15 @@ def calculate_houses(
         Two conditions can redirect computation away from the requested system.
         What happens in each case is governed by the `policy` argument:
 
-        1. Polar latitude:
-           When |latitude| >= 75.0°, the systems PLACIDUS, KOCH, PULLEN_SD,
-           and PULLEN_SR cannot converge reliably.
+                1. Polar latitude:
+                     When |latitude| >= 90° − obliquity, the systems PLACIDUS, KOCH,
+                     and PULLEN_SD are not supported by default.
            - Default policy (PolarFallbackPolicy.FALLBACK_TO_PORPHYRY): silently
              substitute Porphyry; record in HouseCusps.fallback / fallback_reason.
            - Strict policy (PolarFallbackPolicy.RAISE): raise ValueError.
+                     - Experimental policy (PolarFallbackPolicy.EXPERIMENTAL_SEARCH): for
+                         Placidus only, attempt a branch-aware high-latitude solve and use
+                         it only when exactly one ordered cusp cycle exists.
 
         2. Unknown system code:
            If `system` is not a recognised HouseSystem constant:
@@ -1944,6 +1987,7 @@ def calculate_houses(
     effective_system = system
     fallback = False
     fallback_reason: str | None = None
+    experimental_cusps: list[float] | None = None
 
     if polar:
         if active_policy.polar_fallback == PolarFallbackPolicy.RAISE:
@@ -1953,13 +1997,27 @@ def calculate_houses(
                 f"system {system!r} produces geometrically invalid cusps above this threshold "
                 f"and policy is RAISE"
             )
-        effective_system = HouseSystem.PORPHYRY
-        fallback = True
-        fallback_reason = (
-            f"|lat| {abs(latitude):.4f}° >= critical latitude {critical_lat:.4f}° "
-            f"(90° − obliquity); {system!r} produces invalid cusps above this threshold; "
-            f"fell back to Porphyry"
-        )
+        if active_policy.polar_fallback == PolarFallbackPolicy.EXPERIMENTAL_SEARCH:
+            if system != HouseSystem.PLACIDUS:
+                raise ValueError(
+                    f"experimental polar search is only implemented for {HouseSystem.PLACIDUS!r}; "
+                    f"got {system!r}"
+                )
+            experimental_cusps = _experimental_polar_placidus_cusps(
+                armc,
+                obliquity,
+                latitude,
+                asc,
+                mc,
+            )
+        else:
+            effective_system = HouseSystem.PORPHYRY
+            fallback = True
+            fallback_reason = (
+                f"|lat| {abs(latitude):.4f}° >= critical latitude {critical_lat:.4f}° "
+                f"(90° − obliquity); {system!r} produces invalid cusps above this threshold; "
+                f"fell back to Porphyry"
+            )
     elif system not in _KNOWN_SYSTEMS:
         if active_policy.unknown_system == UnknownSystemPolicy.RAISE:
             raise ValueError(
@@ -1972,7 +2030,9 @@ def calculate_houses(
         )
 
     # --- Cusp computation: dispatch to the effective system ------------------
-    if effective_system == HouseSystem.WHOLE_SIGN:
+    if experimental_cusps is not None:
+        cusps = experimental_cusps
+    elif effective_system == HouseSystem.WHOLE_SIGN:
         cusps = _whole_sign(asc)
     elif effective_system == HouseSystem.EQUAL:
         cusps = _equal_house(asc)
@@ -3206,11 +3266,16 @@ def houses_from_armc(
             condition is encountered.
     """
     active_policy = policy if policy is not None else HousePolicy.default()
+    mc          = _mc_from_armc(armc, obliquity, lat)
+    asc         = _asc_from_armc(armc, obliquity, lat)
+    vertex      = _asc_from_armc((armc + 90.0) % 360.0, obliquity, -lat)
+    anti_vertex = (vertex + 180.0) % 360.0
     critical_lat = 90.0 - obliquity
     polar = abs(lat) >= critical_lat and system in _POLAR_SYSTEMS
     effective_system = system
     fallback = False
     fallback_reason: str | None = None
+    experimental_cusps: list[float] | None = None
 
     if polar:
         if active_policy.polar_fallback == PolarFallbackPolicy.RAISE:
@@ -3220,13 +3285,27 @@ def houses_from_armc(
                 f"system {system!r} produces geometrically invalid cusps above this "
                 f"threshold and policy is RAISE"
             )
-        effective_system = HouseSystem.PORPHYRY
-        fallback = True
-        fallback_reason = (
-            f"|lat| {abs(lat):.4f}° >= critical latitude {critical_lat:.4f}° "
-            f"(90° − obliquity); {system!r} produces invalid cusps above this "
-            f"threshold; fell back to Porphyry"
-        )
+        if active_policy.polar_fallback == PolarFallbackPolicy.EXPERIMENTAL_SEARCH:
+            if system != HouseSystem.PLACIDUS:
+                raise ValueError(
+                    f"experimental polar search is only implemented for {HouseSystem.PLACIDUS!r}; "
+                    f"got {system!r}"
+                )
+            experimental_cusps = _experimental_polar_placidus_cusps(
+                armc,
+                obliquity,
+                lat,
+                asc,
+                mc,
+            )
+        else:
+            effective_system = HouseSystem.PORPHYRY
+            fallback = True
+            fallback_reason = (
+                f"|lat| {abs(lat):.4f}° >= critical latitude {critical_lat:.4f}° "
+                f"(90° − obliquity); {system!r} produces invalid cusps above this "
+                f"threshold; fell back to Porphyry"
+            )
     elif system not in _KNOWN_SYSTEMS:
         if active_policy.unknown_system == UnknownSystemPolicy.RAISE:
             raise ValueError(
@@ -3236,12 +3315,9 @@ def houses_from_armc(
         fallback = True
         fallback_reason = f"unknown system code {system!r}; fell back to Placidus"
 
-    mc          = _mc_from_armc(armc, obliquity, lat)
-    asc         = _asc_from_armc(armc, obliquity, lat)
-    vertex      = _asc_from_armc((armc + 90.0) % 360.0, obliquity, -lat)
-    anti_vertex = (vertex + 180.0) % 360.0
-
-    if effective_system == HouseSystem.WHOLE_SIGN:
+    if experimental_cusps is not None:
+        cusps = experimental_cusps
+    elif effective_system == HouseSystem.WHOLE_SIGN:
         cusps = _whole_sign(asc)
     elif effective_system == HouseSystem.EQUAL:
         cusps = _equal_house(asc)

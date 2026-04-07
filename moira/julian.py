@@ -529,6 +529,50 @@ def centuries_from_j2000(jd: float) -> float:
 # Accurate to a few seconds for historical dates; sub-second for 1900–2100.
 # ---------------------------------------------------------------------------
 
+# Tidal acceleration of the Moon embedded in the M&S / Espenak-Meeus parabolas
+# (arcsec/cy²).  Every formula in the pre-1955 polynomial branches was derived
+# assuming this value.  DE441 was integrated with a different value; the
+# correction below makes the ΔT consistent with the ephemeris actually in use.
+_TIDAL_NDOT_FORMULA: float = -26.0      # embedded in M&S 1984 and E&M polynomials
+_TIDAL_NDOT_DE441:   float = -25.936    # DE441 (Giorgini/JPL, unpub., Apr 2021)
+
+# Conversion factor: seconds of ΔT per (arcsec/cy²) per century² of baseline.
+# Derivation: McCarthy & Babcock 1986; see also Morrison & Stephenson 2012.
+# Reference epoch 1955.0 — the boundary between eclipse-record and atomic ΔT.
+_TIDAL_CONVERSION:   float = 0.91072
+_TIDAL_REF_EPOCH:    float = 1955.0
+
+
+def _tidacc_correction(year: float) -> float:
+    """
+    Tidal acceleration consistency correction for DE441 (seconds).
+
+    The M&S / Espenak-Meeus ΔT polynomials embed ṅ = −26.0 arcsec/cy².
+    DE441 was integrated with ṅ = −25.936 arcsec/cy² (Giorgini/JPL, 2021).
+    Using the wrong ṅ when converting UT → TT causes a Moon longitude error
+    that grows quadratically: ~0.032 × t² arcseconds, where t = (Y−1955)/100.
+    This correction removes that inconsistency for all ancient-era branches.
+
+    The formula is the ERFA / Swiss Ephemeris adjust_for_tidacc convention:
+        delta_dt = TIDAL_CONVERSION × (ndot_ephem − ndot_formula) × t²
+
+    Positive correction means the corrected ΔT is slightly larger (DE441 is
+    a slower braker than M&S assumed, so the ancient clock ran slightly faster
+    in the M&S picture — the correction adds back the missing time).
+
+    Significant (> 1 arcsec in Moon longitude) for epochs before ~1400 BCE.
+    Exceeds 1 arcmin for epochs before ~2400 BCE.
+
+    Args:
+        year: Decimal year.
+
+    Returns:
+        Correction in seconds to add to the raw polynomial ΔT.
+    """
+    t = (year - _TIDAL_REF_EPOCH) / 100.0
+    return _TIDAL_CONVERSION * (_TIDAL_NDOT_DE441 - _TIDAL_NDOT_FORMULA) * t * t
+
+
 def delta_t(year: float) -> float:
     """
     Approximate ΔT = TT − UT1 in seconds for any decimal year.
@@ -616,17 +660,19 @@ def delta_t(year: float) -> float:
 
     if y < -500:
         u = (y - 1820.0) / 100.0
-        return -20 + 32 * u * u
+        ans = -20 + 32 * u * u
+        return ans + _tidacc_correction(y)
 
     if y < 500:
         u = y / 100.0
-        return (10583.6
-                - 1014.41 * u
-                + 33.78311 * u**2
-                - 5.952053 * u**3
-                - 0.1798452 * u**4
-                + 0.022174192 * u**5
-                + 0.0090316521 * u**6)
+        ans = (10583.6
+               - 1014.41 * u
+               + 33.78311 * u**2
+               - 5.952053 * u**3
+               - 0.1798452 * u**4
+               + 0.022174192 * u**5
+               + 0.0090316521 * u**6)
+        return ans + _tidacc_correction(y)
 
     if y < 1600:
         u = (y - 1000.0) / 100.0

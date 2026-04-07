@@ -203,7 +203,7 @@ All public names are declared in the module `moira/houses.py`.
 | `HouseSystemCuspBasis` | `ECLIPTIC`, `EQUATORIAL`, `SEMI_ARC`, `OBLIQUE_ASCENSION`, `QUADRANT_TRISECTION`, `PRIME_VERTICAL`, `HORIZON`, `POLAR_PROJECTION`, `SINUSOIDAL`, `GREAT_CIRCLE`, `APC_FORMULA`, `SOLAR_POSITION` |
 | `HouseAngularity` | `ANGULAR`, `SUCCEDENT`, `CADENT` |
 | `UnknownSystemPolicy` | `FALLBACK_TO_PLACIDUS`, `RAISE` |
-| `PolarFallbackPolicy` | `FALLBACK_TO_PORPHYRY`, `RAISE` |
+| `PolarFallbackPolicy` | `FALLBACK_TO_PORPHYRY`, `RAISE`, `EXPERIMENTAL_SEARCH` |
 
 #### Frozen dataclass vessels
 
@@ -249,7 +249,7 @@ All public names are declared in the module `moira/houses.py`.
 
 #### 6.1 Fallback triggers
 
-Two conditions trigger a fallback. Both are evaluated before any cusp arithmetic.
+Two conditions can redirect the computation away from the default polar fallback path. Both are evaluated before any cusp arithmetic.
 
 | Trigger | Condition | Default behaviour | Strict behaviour |
 |---|---|---|---|
@@ -258,9 +258,18 @@ Two conditions trigger a fallback. Both are evaluated before any cusp arithmetic
 
 The critical latitude is computed from the chart's actual obliquity at call time.
 At J2000 obliquity (23.4377°) this is ≈ 66.56° — the geometric Arctic Circle,
-above which some ecliptic degrees become circumpolar and semi-arc iteration
-produces geometrically invalid cusp orderings. The old fixed 75.0° threshold
-was incorrect: it silently returned invalid cusp sets from ≈66.6° to 74.9°.
+above which some ecliptic degrees become circumpolar and the standard fixed-point
+semi-arc iteration can produce geometrically invalid cusp orderings. The old fixed
+75.0° threshold was incorrect: it silently returned invalid cusp sets from ≈66.6°
+to 74.9°.
+
+This does **not** mean Placidus is mathematically impossible above the critical
+latitude. The 77°N branch-search experiment showed that valid, ordered Placidus
+solutions can exist in narrow ARMC regimes. Moira therefore distinguishes between:
+
+- globally supported behavior (default production path)
+- conditionally solvable high-latitude cases (experimental search path)
+- unsupported cases where the current production solver cannot recover a valid branch
 
 Critical latitude takes precedence over unknown system when both conditions are true.
 
@@ -284,12 +293,27 @@ When no fallback occurs: `fallback = False`, `fallback_reason = None`.
 | Critical latitude + default policy | `"\|lat\| <value>° >= critical latitude <threshold>° (90° − obliquity); '<code>' produces invalid cusps above this threshold; fell back to Porphyry"` |
 | Unknown + default policy | `"unknown system code '<code>'; fell back to Placidus"` |
 
+#### 6.3a Experimental high-latitude search
+
+`PolarFallbackPolicy.EXPERIMENTAL_SEARCH` is an explicit opt-in research mode.
+It currently applies only to `HouseSystem.PLACIDUS`.
+
+- The engine calls the separate `moira.experimental_placidus` module.
+- The search solves the semi-arc equations directly and accepts the result only
+  when exactly one ordered cusp cycle exists.
+- If no ordered cycle exists, or more than one ordered cycle exists, the call
+  raises `ValueError` rather than silently falling back.
+- Successful experimental search returns `effective_system == system` and
+  `fallback == False`; the experimental nature of the computation remains
+  visible through `HouseCusps.policy`.
+
 #### 6.4 Policy factory methods
 
 | Method | `unknown_system` | `polar_fallback` |
 |---|---|---|
 | `HousePolicy.default()` | `FALLBACK_TO_PLACIDUS` | `FALLBACK_TO_PORPHYRY` |
 | `HousePolicy.strict()` | `RAISE` | `RAISE` |
+| `HousePolicy.experimental()` | `FALLBACK_TO_PLACIDUS` | `EXPERIMENTAL_SEARCH` |
 
 `HousePolicy.default()` exactly replicates all pre-Phase-4 behaviour.
 

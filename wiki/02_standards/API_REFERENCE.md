@@ -984,9 +984,9 @@ from moira.facade import (
 **House system families** (`HouseSystemFamily`):
 `ECLIPTIC_BASED  EQUATORIAL  SPACE_BASED  TIME_BASED  EQUAL_HOUSE`
 
-**`UnknownSystemPolicy`**: controls behavior when an unrecognized house system is passed — `RAISE` (raises `ValueError`) or `FALLBACK` (silently returns Placidus). Set via `HousePolicy`.
+**`UnknownSystemPolicy`**: controls behavior when an unrecognized house system is passed — `RAISE` (raises `ValueError`) or `FALLBACK_TO_PLACIDUS` (silently returns Placidus). Set via `HousePolicy`.
 
-**`PolarFallbackPolicy`**: controls behavior at polar latitudes where certain systems are undefined — `RAISE`, `PLACIDUS`, or `EQUAL`. Set via `HousePolicy`.
+**`PolarFallbackPolicy`**: controls behavior at polar latitudes where certain systems are not supported by default — `FALLBACK_TO_PORPHYRY`, `RAISE`, or `EXPERIMENTAL_SEARCH`. The experimental mode is explicit and currently attempts branch-aware high-latitude Placidus only. Set via `HousePolicy`.
 
 ### Aspects
 

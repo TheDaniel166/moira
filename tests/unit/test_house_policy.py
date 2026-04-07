@@ -53,6 +53,7 @@ class TestPolicyStructure:
     def test_polar_fallback_policy_is_enum(self):
         assert isinstance(PolarFallbackPolicy.FALLBACK_TO_PORPHYRY, PolarFallbackPolicy)
         assert isinstance(PolarFallbackPolicy.RAISE, PolarFallbackPolicy)
+        assert isinstance(PolarFallbackPolicy.EXPERIMENTAL_SEARCH, PolarFallbackPolicy)
 
     def test_house_policy_is_frozen_dataclass(self):
         p = HousePolicy.default()
@@ -68,6 +69,11 @@ class TestPolicyStructure:
         p = HousePolicy.strict()
         assert p.unknown_system == UnknownSystemPolicy.RAISE
         assert p.polar_fallback == PolarFallbackPolicy.RAISE
+
+    def test_house_policy_experimental_fields(self):
+        p = HousePolicy.experimental()
+        assert p.unknown_system == UnknownSystemPolicy.FALLBACK_TO_PLACIDUS
+        assert p.polar_fallback == PolarFallbackPolicy.EXPERIMENTAL_SEARCH
 
     def test_house_policy_custom_construction(self):
         p = HousePolicy(
