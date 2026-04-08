@@ -37,7 +37,7 @@ from .constants import DEG2RAD, RAD2DEG, sign_of
 from .julian import centuries_from_j2000, ut_to_tt, decimal_year
 from .coordinates import Vec3, vec_sub, icrf_to_ecliptic, normalize_degrees, mat_vec_mul, precession_matrix_equatorial, nutation_matrix_equatorial
 from .obliquity import mean_obliquity, nutation
-from .planets import _earth_barycentric, _approx_year
+from .planets import _earth_barycentric, approx_year as _approx_year
 from .spk_reader import get_reader, SpkReader
 
 
@@ -185,8 +185,12 @@ def true_node(
 
     Returns:
         NodeData vessel with name="True Node", tropical longitude in degrees
-        [0, 360), and speed approximated from the mean node formula
-        (≈ −0.05295°/day).
+        [0, 360), and speed set to the mean node constant −1934.136261/36525
+        ≈ −0.05295°/day.  This is a fixed approximation — the true node speed
+        is not derived from the geometric computation.  Callers consuming
+        ``speed`` for dynamic modelling (transit timing, direction rates) should
+        compute it independently via finite difference of successive
+        ``true_node()`` calls.
 
     Raises:
         FileNotFoundError: if the DE441 kernel cannot be found and reader is

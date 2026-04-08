@@ -334,12 +334,17 @@ def _star_anchored_ayanamsa(system: str, jd: float) -> float:
 
     ayanamsa = star_tropical_longitude − target_sidereal_longitude
 
-    Falls back to the polynomial approximation if the star is not found
-    in the fixed-star catalog (e.g. moira/data/star_registry.csv not present).
+    Falls back to the polynomial approximation only when the anchor star
+    cannot be found in the fixed-star catalog (``LookupError`` or
+    ``FileNotFoundError``), which occurs when ``moira/data/star_registry.csv``
+    is absent or does not contain the anchor star.
+
+    All other failures (kernel errors, numerical exceptions, etc.) propagate
+    to the caller rather than being silently swallowed.
     """
     from .stars import star_at
     from .julian import ut_to_tt, decimal_year
-    from .planets import _approx_year
+    from .planets import approx_year as _approx_year
 
     star_name, target_sid = _STAR_ANCHORED[system]
 
@@ -350,8 +355,8 @@ def _star_anchored_ayanamsa(system: str, jd: float) -> float:
         jd_tt = ut_to_tt(jd, decimal_year(year, month))
         star = star_at(star_name, jd_tt)
         return (star.longitude - target_sid) % 360.0
-    except Exception:
-        # Star not in catalog — fall back to polynomial
+    except (LookupError, FileNotFoundError):
+        # Star not in catalog or registry absent — fall back to polynomial
         base = _AYANAMSA_AT_J2000[system]
         dpsi_deg, _ = nutation(jd)
         return base + general_precession_in_longitude(jd) + dpsi_deg
@@ -363,7 +368,14 @@ def ayanamsa(
     mode: str = "true",
 ) -> float:
     """
-    Compute the ayanamsa for a given Julian Day (TT or UT — difference is negligible).
+    Compute the ayanamsa for a given Julian Day.
+
+    For the polynomial ("mean") path the TT/UT difference (~69 s) is
+    negligible.  For star-anchored ("true") systems the function converts
+    the input JD to TT internally via ``ut_to_tt()``, so the caller should
+    pass a JD in UT.  Passing a JD already in TT will introduce a ~69-second
+    epoch error that propagates into the ayanamsa at arcsecond level over
+    centuries.
 
     Parameters
     ----------

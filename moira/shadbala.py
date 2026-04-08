@@ -604,6 +604,7 @@ def _moon_mandoccha_lon(jd: float, ayanamsa_system: str) -> float:
     from .orbits import _keplerian_from_state, _rot_eq_to_ecl
     from .spk_reader import get_reader
     from .julian import ut_to_tt
+    from .obliquity import true_obliquity as _true_obliquity
     _GM_EARTH_KM3_DAY2 = 3.986004418e5 * 86400.0 ** 2
     reader = get_reader()
     jd_tt = ut_to_tt(jd)
@@ -619,7 +620,7 @@ def _moon_mandoccha_lon(jd: float, ayanamsa_system: str) -> float:
         moon_vel[1] - earth_vel[1],
         moon_vel[2] - earth_vel[2],
     )
-    eps = math.radians(23.439291111)
+    eps = math.radians(_true_obliquity(jd_tt))
     pos_ecl = _rot_eq_to_ecl(*geo_pos, eps)
     vel_ecl = _rot_eq_to_ecl(*geo_vel, eps)
     elems = _keplerian_from_state(pos_ecl, vel_ecl, _GM_EARTH_KM3_DAY2, 'Moon', jd)
@@ -884,7 +885,14 @@ def sthana_bala(
     saptavargaja_sha = 0.0
     for n in _SAPTAVARGA_DIVISIONS:
         v_sign = _varga_sign(n, lon)
-        v_dig = vedic_dignity(planet, v_sign * 30.0 + 1.0)   # probe at 1° within sign
+        # Probe at 1° within the varga sign.  vedic_dignity() checks exaltation,
+        # debilitation, and own-sign by sign index only (not by degree), so the
+        # probe point is adequate for those ranks.  The mulatrikona check is
+        # degree-sensitive: if the mulatrikona range does not include 1°, the
+        # rank falls through to own_sign.  This is a known approximation for
+        # Saptavargaja; degree-precise mulatrikona detection within each varga
+        # would require computing the planet's exact longitude within the varga.
+        v_dig = vedic_dignity(planet, v_sign * 30.0 + 1.0)
         rank_key = _DIGNITY_TO_SAPTAVARGAJA.get(v_dig.dignity_rank, 'sama')
         saptavargaja_sha += _SAPTAVARGAJA_SHA[rank_key]
 
@@ -893,8 +901,8 @@ def sthana_bala(
     # Even-sign planets (Moon, Venus): 15 Sha in even D1 and D9 signs
     # Mercury: neutral — not listed; Raman gives Mercury in both
     d1_sign  = int(lon // 30)
-    d9_sign  = SIGNS_FROM_NAVAMSA = _navamsa(lon)
-    d9_idx   = list(__import__('moira.constants', fromlist=['SIGNS']).SIGNS).index(d9_sign.sign)
+    d9_sign  = _navamsa(lon)
+    d9_idx   = int(lon // (30.0 / 9)) % 12  # Navamsa sign index (0 = Aries)
     odd_planets   = {'Sun', 'Mars', 'Jupiter', 'Saturn'}
     even_planets  = {'Moon', 'Venus'}
     ojayugma_sha  = 0.0
@@ -1009,6 +1017,8 @@ def kala_bala(
     vara_lord: str,
     planet_speeds: dict[str, float],
     hora_lord: str | None = None,
+    ayanamsa_system: str = 'Lahiri',
+    local_day_frac: float | None = None,
 ) -> KalaBala:
     """
     Compute Kala Bala (Temporal Strength) for one planet.
@@ -1021,7 +1031,8 @@ def kala_bala(
     sun_sidereal_lon : float
         Sidereal longitude of the Sun (for Ayana Bala).
     jd : float
-        Julian date (UT); used for approximate time-of-day fraction.
+        Julian date (UT); used for Abda/Masa Sankranti bisection and as
+        fallback for time-of-day fraction when ``local_day_frac`` is None.
     tithi_number : int
         Current Tithi (1–30) from Panchanga.
     is_day : bool
@@ -1034,6 +1045,18 @@ def kala_bala(
         Planetary lord of the birth hora.  When provided, contributes 60 Sha
         to the matching planet.  Compute via ``hora_lord_at(birth_jd,
         sunrise_jd)``; defaults to ``None`` (Hora Bala omitted).
+    ayanamsa_system : str
+        Ayanamsa system used for the Abda and Masa Sankranti bisections.
+        Must match the system used for all other sidereal coordinates in
+        the chart.  Defaults to ``'Lahiri'``.
+    local_day_frac : float or None, optional
+        Fractional position within the local solar day, in [0.0, 1.0).
+        0.0 corresponds to local solar midnight; 0.5 to local solar noon.
+        Used for Nathonnatha and Tribhaga Bala. When ``None`` (default),
+        the fraction is approximated from ``jd % 1.0``, which is UTC-anchored
+        and will be wrong for observers outside UTC.  Callers should pass
+        ``(jd + observer_longitude_deg / 360.0) % 1.0`` for a mean solar
+        approximation, or derive it from sunrise/sunset JDs for true solar time.
 
     Returns
     -------
@@ -1043,11 +1066,17 @@ def kala_bala(
     day_planets   = {'Sun', 'Jupiter', 'Venus'}
     night_planets = {'Moon', 'Mars', 'Saturn'}
     # Mercury is equally strong day and night
-    time_frac = (jd % 1.0)   # 0.0–1.0 within the Julian day (approx)
+    # time_frac: fractional position in local solar day [0, 1).
+    # JD epoch is noon UT, so jd % 1.0 == 0.0 at UT noon — not local noon
+    # for non-UTC observers.  Callers should pass local_day_frac for accuracy.
+    if local_day_frac is not None:
+        time_frac = float(local_day_frac) % 1.0
+    else:
+        time_frac = (jd % 1.0)
     if planet == 'Mercury':
         nathonnatha = 60.0
     elif planet in day_planets:
-        # Peaks at midday (time_frac ≈ 0.5 for mean solar noon in UTC)
+        # Peaks at midday (time_frac ≈ 0.5 for mean solar noon)
         nathonnatha = abs(math.sin(math.pi * time_frac)) * 60.0 if is_day else 30.0
     else:
         # Night planets: peak at midnight
@@ -1066,12 +1095,13 @@ def kala_bala(
     # Day: Jupiter (1st third), Sun (2nd third), Saturn (3rd third)
     # Night: Moon (1st third), Venus (2nd third), Mars (3rd third)
     # Mercury: always strong
+    # Uses the same time_frac as Nathonnatha (see local_day_frac note above).
     tribhaga = 0.0
     if planet == 'Mercury':
         tribhaga = 60.0
     else:
         if is_day:
-            third = int(time_frac * 3)   # 0, 1, or 2 (approximate)
+            third = int(time_frac * 3)   # 0, 1, or 2
             tribhaga_day_lords = ['Jupiter', 'Sun', 'Saturn']
             if third < len(tribhaga_day_lords) and planet == tribhaga_day_lords[third]:
                 tribhaga = 60.0
@@ -1099,11 +1129,11 @@ def kala_bala(
     from .spk_reader import get_reader as _get_reader
     _reader = _get_reader()
     _sun_real = _planet_at('Sun', jd, reader=_reader)
-    _sun_sid_real = _t2s(_sun_real.longitude, jd, system='Lahiri')
+    _sun_sid_real = _t2s(_sun_real.longitude, jd, system=ayanamsa_system)
     _abda_target = 0.0
     _masa_target = float(int(_sun_sid_real // 30) * 30)
-    abda_planet = _weekday_lord(_sankranti_jd(_abda_target, jd, 'Lahiri', window_days=370.0))
-    masa_planet = _weekday_lord(_sankranti_jd(_masa_target, jd, 'Lahiri', window_days=32.0))
+    abda_planet = _weekday_lord(_sankranti_jd(_abda_target, jd, ayanamsa_system, window_days=370.0))
+    masa_planet = _weekday_lord(_sankranti_jd(_masa_target, jd, ayanamsa_system, window_days=32.0))
     amvh_sha    = 0.0
     if planet == abda_planet:
         amvh_sha += 15.0
@@ -1116,8 +1146,9 @@ def kala_bala(
 
     # --- (e) Ayana Bala ---
     # Sun's declination proxy: sin(dec) ≈ sin(obliquity) × sin(sun_lon)
-    # obliquity ≈ 23.4°
-    obliquity_rad = math.radians(23.4)
+    from .obliquity import true_obliquity as _true_obliquity_kala
+    from .julian import ut_to_tt as _ut_to_tt_kala
+    obliquity_rad = math.radians(_true_obliquity_kala(_ut_to_tt_kala(jd)))
     sun_lon_rad   = math.radians(sun_sidereal_lon % 360.0)
     sin_dec       = math.sin(obliquity_rad) * math.sin(sun_lon_rad)
     dec_deg       = math.degrees(math.asin(max(-1.0, min(1.0, sin_dec))))
@@ -1366,6 +1397,7 @@ def shadbala(
             planet, p_lon, sun_sid, jd, tithi_number,
             is_day, vara_lord, planet_speeds,
             hora_lord=hora_lord,
+            ayanamsa_system=ayanamsa_system,
         )
         _mand = (
             _sun_mand_sid  if planet == 'Sun'  else

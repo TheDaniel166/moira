@@ -222,8 +222,11 @@ class SpkReader:
             The jplephem segment object whose start_jd ≤ jd ≤ end_jd.
 
         Raises:
-            KeyError: If no segment exists for the (center, target) pair, or if
-                no segment for that pair covers ``jd``.
+            KeyError: If no segment is registered for the (center, target)
+                identity pair.
+            ValueError: If segments exist for the pair but none covers ``jd``
+                (temporal coverage failure — the JD is outside the kernel's
+                epoch range for that body).
 
         Side effects:
             None.
@@ -231,8 +234,9 @@ class SpkReader:
         for seg in self._segments_for_pair(center, target):
             if seg.start_jd <= jd <= seg.end_jd:
                 return seg
-        raise KeyError(
-            f"No segment covers center={center}, target={target} at JD {jd}"
+        raise ValueError(
+            f"Segments exist for center={center}, target={target} but none "
+            f"covers JD {jd:.2f}.  Kernel coverage may not extend to this epoch."
         )
 
     def position(self, center: int, target: int, jd: float) -> Vec3:

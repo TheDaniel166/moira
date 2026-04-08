@@ -1049,13 +1049,21 @@ def tt_to_ut(
     Side effects:
         None.
     """
+    # ΔT depends on the UT year, but UT is what is being solved for.  Iterate
+    # to self-consistency (4 passes converge to sub-millisecond accuracy).
     if year is None:
         year = decimal_year_from_jd(jd_tt)
     if delta_t_policy is not None:
-        dt_sec = delta_t_policy.compute(float(year))
+        jd_ut = jd_tt - delta_t_policy.compute(float(year)) / 86400.0
+        for _ in range(4):
+            y = decimal_year_from_jd(jd_ut)
+            jd_ut = jd_tt - delta_t_policy.compute(y) / 86400.0
     else:
-        dt_sec = delta_t(float(year))
-    return jd_tt - dt_sec / 86400.0
+        jd_ut = jd_tt - delta_t(float(year)) / 86400.0
+        for _ in range(4):
+            y = decimal_year_from_jd(jd_ut)
+            jd_ut = jd_tt - delta_t(y) / 86400.0
+    return jd_ut
 
 
 def tt_to_ut_nasa_canon(jd_tt: float, year: float | None = None) -> float:
@@ -1307,7 +1315,13 @@ def local_sidereal_time(jd_ut: float, longitude: float,
         jd_ut:              Julian Day Number in UT1.
         longitude:          Observer's geographic east longitude in degrees.
         nutation_longitude: Δψ in degrees (default 0.0 → mean sidereal time).
-        obliquity:          True obliquity in degrees (default J2000 value).
+        obliquity:          True obliquity in degrees.  Defaults to the
+                            J2000.0 value (23.4392911°).  External callers
+                            should pass the date-appropriate true obliquity
+                            (from ``moira.obliquity.true_obliquity``) to
+                            avoid a silent precision regression of up to
+                            ~0.013° over 50 years from J2000.  Internal
+                            callers in ``planets.py`` pass the correct value.
 
     Returns:
         LAST in degrees, normalised to [0, 360).

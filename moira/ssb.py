@@ -203,7 +203,7 @@ def ssb_position_at(
             f"Choose from: {sorted(SSB_BODIES)}"
         )
 
-    from .planets import get_reader, _approx_year, _longitude_rate
+    from .planets import get_reader, approx_year as _approx_year, _longitude_rate
 
     if reader is None:
         reader = get_reader()

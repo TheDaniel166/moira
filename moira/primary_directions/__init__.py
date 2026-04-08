@@ -30,7 +30,7 @@ from typing import TYPE_CHECKING, Iterable
 
 from ..constants import Body, DEG2RAD
 from ..julian import ut_to_tt as _ut_to_tt, decimal_year as _decimal_year
-from ..planets import _approx_year as _pd_approx_year
+from ..planets import approx_year as _pd_approx_year
 from .converse import PrimaryDirectionConverseDoctrine
 from .antiscia import (
     PrimaryDirectionAntisciaKind,

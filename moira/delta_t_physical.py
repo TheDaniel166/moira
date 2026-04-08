@@ -138,7 +138,9 @@ def _modern_bridge_coefficients() -> tuple[float, float]:
         b3 += t3 * corrected
         y += 1.0
     det = s22 * s33 - s23 * s23
-    if det == 0.0:
+    if abs(det) < 1e-30:
+        # Near-singular normal matrix — return zero coefficients rather than
+        # producing a numerically garbage solution.
         return (0.0, 0.0)
     c2 = (b2 * s33 - b3 * s23) / det
     c3 = (s22 * b3 - s23 * b2) / det
@@ -620,8 +622,12 @@ def _lod_series_to_delta_t(
     Convert a LOD anomaly series (ms/day, annual resolution) to cumulative
     Delta T contribution (seconds) by discrete integration.
 
-    ΔT(y) = Σ (ΔLOD(t_i) - mean_LOD) × Δt_i / 86400
-    where Δt_i is days between successive annual epochs.
+    ΔT(y) = Σ (ΔLOD(t_i) - mean_LOD) × Δt_i / 1000
+    where Δt_i is days between successive annual epochs and ΔLOD is in ms/day.
+
+    Unit derivation: ΔLOD (ms/day) × Δt (days) = ms; dividing by 1000 gives
+    seconds.  The historic erroneous divisor of 86400 understated the
+    integrated contribution by a factor of 86.4.
 
     The series mean is subtracted before integration so the cumulative
     integral is zero-mean rather than drifting with the absolute LOD
@@ -638,7 +644,7 @@ def _lod_series_to_delta_t(
         y1, lod1 = series[i]
         dt_days = _series_epoch_delta_days(y0, y1)
         avg_lod_ms = ((lod0 - mean_lod) + (lod1 - mean_lod)) / 2.0
-        cumulative += avg_lod_ms * dt_days / 86400.0
+        cumulative += avg_lod_ms * dt_days / 1000.0
         result.append((y1, cumulative))
     return tuple(result)
 
@@ -695,6 +701,22 @@ def _core_recent_stats() -> tuple[float, float]:
     mean = sum(window) / len(window)
     std = statistics.stdev(window) if len(window) >= 2 else _CORE_HISTORICAL_SIGMA
     return mean, std
+
+
+@cache
+def _core_terminal_value() -> float:
+    """
+    Return the most recent measured core ΔT value (the final series point).
+
+    Used as the frozen future-era core contribution to ensure C0 continuity
+    at the measured→future boundary.  The 10-year backward mean
+    (``_core_recent_stats()[0]``) is appropriate for uncertainty estimation
+    but creates a seam discontinuity when the series is strongly trending;
+    the terminal value avoids that by anchoring the future exactly where the
+    measured era ends.
+    """
+    series = _get_core_dt_series()
+    return series[-1][1] if series else 0.0
 
 
 def core_delta_t(year: float) -> float:
@@ -791,7 +813,7 @@ def _fitted_residual_spline() -> _ResidualSplineFit:
     """
     UnivariateSpline = _require_univariate_spline()
 
-    from moira.julian import delta_t as _iers_delta_t
+    from .julian import delta_t as _iers_delta_t
 
     years_raw: list[float] = []
     residuals_raw: list[float] = []
@@ -897,7 +919,15 @@ def delta_t_hybrid(year: float) -> float:
     Era routing:
       pre-1840  : delegates to SMH 2016 table (unchanged)
       1840–2026 : secular + core + cryo + IERS residual spline
-      2026+     : secular + cryo trend extrapolation + core 10-year mean
+      2026+     : secular + cryo trend extrapolation + core terminal value
+
+    Component status:
+      The historical core angular momentum component (``historical_core_delta_t``)
+      contributes zero at all epochs because the required data file
+      ``moira/data/historical_core_angular_momentum.txt`` is not present in
+      this installation.  The function therefore sums four active components,
+      not five.  When the data file is added, the core component becomes
+      non-zero and the bridge term automatically shrinks to compensate.
 
     See DELTA_T_HYBRID_MODEL.md for the full architecture, era coverage
     table, and continuity constraint derivation.
@@ -982,13 +1012,15 @@ class DeltaTBreakdown:
         Total ΔT in seconds — equals ``delta_t_hybrid(year)``.
     secular : float
         Tidal + GIA secular parabola contribution.  In the ``'pre-1840'`` era
-        this equals the full SMH 2016 table value (``_smh2016_lookup(year)``)
-        because the physical decomposition is not applied there — it is *not*
+        this equals the full SMH 2016 table value (``_smh2016_lookup(year)``),
+        not ``secular_trend(year)`` — it is *not*
         ``secular_trend(year)``.  In all other eras it equals
         ``secular_trend(year)``.
     core : float
         Core-mantle angular momentum contribution.  In the future era this
-        is the 10-year mean; in the pre-1840 era it is zero.
+        is the terminal measured series value (``_core_terminal_value()``) —
+        the most recent data point — ensuring C0 continuity at the
+        measured→future boundary.  In the pre-1840 era it is zero.
     cryo : float
         Cryosphere/hydrosphere GRACE/GRACE-FO contribution.
     fluid : float
@@ -1103,14 +1135,16 @@ def delta_t_breakdown(year: float) -> DeltaTBreakdown:
             era='measured',
         )
 
-    # Future era (> REFERENCE_YEAR): secular + core 10-year mean + cryo trend.
-    core_mean, _ = _core_recent_stats()
-    total = sec + core_mean + cryo
+    # Future era (> REFERENCE_YEAR): secular + core terminal value + cryo trend.
+    # Use the most recent measured value rather than the 10-year backward mean
+    # so the core contribution is C0 continuous at the era boundary.
+    core_frozen = _core_terminal_value()
+    total = sec + core_frozen + cryo
     return DeltaTBreakdown(
         year=y,
         total=total,
         secular=sec,
-        core=core_mean,
+        core=core_frozen,
         cryo=cryo,
         fluid=0.0,
         bridge=0.0,

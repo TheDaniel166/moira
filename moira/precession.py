@@ -2,15 +2,21 @@
 Moira — precession.py
 The Precession Engine: governs long-term and IAU 2006 luni-solar precession.
 
-For all epochs: uses the Vondrak, Capitaine & Wallace (2011, 2012) 400-millennia
-model (eraLtpecl / eraLtpequ), valid for |T| <= 2000 centuries (±200,000 years).
-Coefficients are ported verbatim from the ERFA BSD-licensed source (liberfa/erfa,
-src/ltpecl.c and src/ltpequ.c), incorporating the 2012 corrigendum corrections.
+Model routing in ``precession_matrix()``:
 
-For the modern era (|T| <= 50 centuries), the Vondrak model agrees with IAU 2006
-to better than 100 microarcseconds, so no epoch guard or switchover is needed.
-The IAU 2006 / Fukushima-Williams four-angle path is retained for the modern-era
-nutation pipeline only, where its sub-microarcsecond precision is required.
+  |T| ≤ 50 centuries (|year − 2000| ≲ 5000):
+    IAU 2006 Fukushima-Williams parameterisation, including the J2000.0
+    frame-bias (B×P).  Equivalent to erfa.pmat06; accurate to < 0.001″.
+
+  |T| > 50 centuries (epochs beyond ~5000 years from J2000.0):
+    Vondrak, Capitaine & Wallace (2011, 2012) 400-millennia model
+    (eraLtp), valid for |T| ≤ 2000 centuries (±200,000 years).
+    Coefficients are ported verbatim from the ERFA BSD-licensed source
+    (liberfa/erfa, src/ltpecl.c and src/ltpequ.c), incorporating the
+    2012 corrigendum corrections.
+
+The two models agree to < 100 µas at the ±50-century boundary, so the
+transition is effectively discontinuity-free.
 
 Boundary: owns the full precession pipeline from Julian centuries to the final
 rotation matrix. Delegates time conversion to julian, coordinate rotation

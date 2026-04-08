@@ -240,11 +240,17 @@ def icrf_to_true_ecliptic(jd_tt: float, xyz: Vec3) -> tuple[float, float, float]
 
 def true_ecliptic_latitude(jd_tt: float, xyz: Vec3) -> float:
     """
-    Return the true ecliptic latitude of date for an ICRF/J2000 vector.
+    Return the true ecliptic latitude of date for a Mean-of-Date equatorial
+    vector.
 
-    This applies the mean-to-true equator nutation rotation before the
-    equatorial-to-ecliptic conversion, which materially improves latitude
-    accuracy while preserving the existing high-accuracy longitude pipeline.
+    **Precondition:** ``xyz`` must already be in the Mean-of-Date equatorial
+    frame — i.e., the ICRF/J2000 vector must have been precessed to the epoch
+    of ``jd_tt`` before this function is called.  This function applies only
+    the nutation rotation (mean-to-true equator), not precession.  Passing an
+    unprecessed ICRF/J2000 vector will give silently wrong ecliptic latitudes.
+
+    Contrast with ``icrf_to_true_ecliptic()``, which accepts a raw ICRF/J2000
+    vector and applies both precession and nutation internally.
     """
     from .obliquity import true_obliquity
 
@@ -302,8 +308,12 @@ def equatorial_to_horizontal(
                + math.cos(dec_r) * math.cos(lat_r) * math.cos(ha_r))
     alt = math.asin(max(-1.0, min(1.0, sin_alt))) * RAD2DEG
 
-    cos_az = ((math.sin(dec_r) - math.sin(lat_r) * sin_alt)
-              / (math.cos(lat_r) * math.cos(alt * DEG2RAD)))
+    denom_az = math.cos(lat_r) * math.cos(alt * DEG2RAD)
+    if abs(denom_az) < 1e-12:
+        # Object is at the zenith or the observer is at a geographic pole.
+        # Azimuth is undefined; return 0.0 by convention.
+        return 0.0, alt
+    cos_az = (math.sin(dec_r) - math.sin(lat_r) * sin_alt) / denom_az
     # clamp for numerical safety
     cos_az = max(-1.0, min(1.0, cos_az))
     az = math.acos(cos_az) * RAD2DEG
@@ -394,12 +404,20 @@ def aberration_correction(
     sun = sun_lon_deg * DEG2RAD
     eps = obliquity_deg * DEG2RAD
 
-    dlambda = (-k * (math.cos(sun - lon) - math.cos(lat)**2 * math.cos(eps)
-                     * math.sin(eps) * math.cos(sun) / math.cos(lat)**2)
-               / math.cos(lat))
+    cos_lat = math.cos(lat)
+    if abs(cos_lat) < 1e-12:
+        # At the ecliptic poles (lat = ±90°) the formula is undefined.
+        # Return zero correction; aberration in longitude is singular here.
+        return 0.0, 0.0
+
+    # The cos(lat)**2 terms in the numerator cancel, simplifying to:
+    # Δλ = −κ × (cos(sun−lon) − cos(ε)·sin(ε)·cos(sun)) / cos(lat)
+    dlambda = (-k * (math.cos(sun - lon) - math.cos(eps) * math.sin(eps)
+                     * math.cos(sun))
+               / cos_lat)
     dbeta   = -k * math.sin(lat) * (math.sin(sun - lon)
                                      - math.sin(eps) * math.sin(lon - sun)
-                                       / math.cos(lat))
+                                       / cos_lat)
     return dlambda, dbeta
 
 

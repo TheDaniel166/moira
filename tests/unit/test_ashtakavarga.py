@@ -13,6 +13,10 @@ Coverage
 8. transit_strength() — correct sign lookup and error paths.
 9. BhinnashtakavargaResult / AshtakavargaResult — vessel semantics.
 10. Public surface — __all__ completeness.
+21. trikona_shodhana() — arithmetic, group invariants, error paths.
+22. ekadhipatya_shodhana() — occupancy rules, hand-calculated, error paths.
+23. ashtakavarga() — Shodhana policy flag integration.
+24. validate_ashtakavarga_output() — shodhana field invariants.
 
 Source authority: B.V. Raman, "Ashtakavarga System of Prediction" (1981).
 """
@@ -31,8 +35,10 @@ from moira.ashtakavarga import (
     ashtakavarga,
     ashtakavarga_chart_profile,
     bhinnashtakavarga,
+    ekadhipatya_shodhana,
     sign_strength_profile,
     transit_strength,
+    trikona_shodhana,
     validate_ashtakavarga_output,
 )
 
@@ -540,6 +546,12 @@ class TestPublicSurface:
     def test_transit_strength_in_all(self):
         assert "transit_strength" in self._mod().__all__
 
+    def test_trikona_shodhana_in_all(self):
+        assert "trikona_shodhana" in self._mod().__all__
+
+    def test_ekadhipatya_shodhana_in_all(self):
+        assert "ekadhipatya_shodhana" in self._mod().__all__
+
 
 # ===========================================================================
 # 12. RekhaTier � P2 classification
@@ -591,6 +603,27 @@ class TestAshtakavargaPolicy:
         p = AshtakavargaPolicy()
         with pytest.raises((AttributeError, TypeError)):
             p.strong_threshold = 3  # type: ignore[misc]
+
+    def test_default_trikona_shodhana_flag_is_false(self):
+        p = AshtakavargaPolicy()
+        assert p.apply_trikona_shodhana is False
+
+    def test_default_ekadhipatya_shodhana_flag_is_false(self):
+        p = AshtakavargaPolicy()
+        assert p.apply_ekadhipatya_shodhana is False
+
+    def test_trikona_shodhana_flag_accepted(self):
+        p = AshtakavargaPolicy(apply_trikona_shodhana=True)
+        assert p.apply_trikona_shodhana is True
+
+    def test_both_shodhana_flags_accepted(self):
+        p = AshtakavargaPolicy(apply_trikona_shodhana=True, apply_ekadhipatya_shodhana=True)
+        assert p.apply_trikona_shodhana is True
+        assert p.apply_ekadhipatya_shodhana is True
+
+    def test_ekadhipatya_without_trikona_raises(self):
+        with pytest.raises(ValueError, match="apply_trikona_shodhana"):
+            AshtakavargaPolicy(apply_ekadhipatya_shodhana=True)
 
 
 # ===========================================================================
@@ -916,5 +949,431 @@ class TestValidateAshtakavargaOutput:
         object.__setattr__(bad, "sarvashtakavarga", tuple(bad_sarva))
         object.__setattr__(bad, "bhinnashtakavarga", r.bhinnashtakavarga)
         object.__setattr__(bad, "ayanamsa_system", r.ayanamsa_system)
+        object.__setattr__(bad, "shodhana_bhinnashtakavarga", None)
+        object.__setattr__(bad, "shodhana_sarvashtakavarga", None)
         with pytest.raises(ValueError):
             validate_ashtakavarga_output(bad)
+
+    def test_valid_result_with_shodhana_does_not_raise(self):
+        policy = AshtakavargaPolicy(
+            apply_trikona_shodhana=True,
+            apply_ekadhipatya_shodhana=True,
+        )
+        lons = {ref: 0.0 for ref in _REFERENCES}
+        r = ashtakavarga(lons, policy=policy)
+        validate_ashtakavarga_output(r)  # must not raise
+
+    def test_shodhana_sarva_mismatch_raises(self):
+        """shodhana_sarvashtakavarga that does not match sum of shodhana bhinna rekhas."""
+        policy = AshtakavargaPolicy(apply_trikona_shodhana=True)
+        lons = {ref: 0.0 for ref in _REFERENCES}
+        r = ashtakavarga(lons, policy=policy)
+        bad_sarva = list(r.shodhana_sarvashtakavarga)  # type: ignore[arg-type]
+        bad_sarva[0] += 1
+        bad = AshtakavargaResult.__new__(AshtakavargaResult)
+        object.__setattr__(bad, "sarvashtakavarga", r.sarvashtakavarga)
+        object.__setattr__(bad, "bhinnashtakavarga", r.bhinnashtakavarga)
+        object.__setattr__(bad, "ayanamsa_system", r.ayanamsa_system)
+        object.__setattr__(bad, "shodhana_bhinnashtakavarga", r.shodhana_bhinnashtakavarga)
+        object.__setattr__(bad, "shodhana_sarvashtakavarga", tuple(bad_sarva))
+        with pytest.raises(ValueError):
+            validate_ashtakavarga_output(bad)
+
+    def test_orphaned_shodhana_sarva_without_bhinna_raises(self):
+        """shodhana_sarvashtakavarga present but shodhana_bhinnashtakavarga=None
+        is an illegal orphaned state and must be rejected at construction time."""
+        r = self._result()
+        with pytest.raises(ValueError, match="both be present or both be None"):
+            AshtakavargaResult(
+                ayanamsa_system=r.ayanamsa_system,
+                bhinnashtakavarga=r.bhinnashtakavarga,
+                sarvashtakavarga=r.sarvashtakavarga,
+                shodhana_bhinnashtakavarga=None,
+                shodhana_sarvashtakavarga=(0,) * 12,
+            )
+
+    def test_orphaned_shodhana_bhinna_without_sarva_raises(self):
+        """shodhana_bhinnashtakavarga present but shodhana_sarvashtakavarga=None
+        is an illegal orphaned state and must be rejected at construction time."""
+        policy = AshtakavargaPolicy(apply_trikona_shodhana=True)
+        lons = {ref: 0.0 for ref in _REFERENCES}
+        r = ashtakavarga(lons, policy=policy)
+        with pytest.raises(ValueError, match="both be present or both be None"):
+            AshtakavargaResult(
+                ayanamsa_system=r.ayanamsa_system,
+                bhinnashtakavarga=r.bhinnashtakavarga,
+                sarvashtakavarga=r.sarvashtakavarga,
+                shodhana_bhinnashtakavarga=r.shodhana_bhinnashtakavarga,
+                shodhana_sarvashtakavarga=None,
+            )
+
+
+# ===========================================================================
+# 21. trikona_shodhana() — arithmetic, group invariants, error paths
+# Source: Raman (1981) — all hand-verified.
+# ===========================================================================
+
+# Hand-calculated fixture used across several tests.
+# Input:  (3, 2, 1, 4, 5, 3, 2, 6, 4, 1, 3, 5)
+# Groups:
+#   Fire  [0,4,8]  : (3,5,4) min=3 → (0,2,1)
+#   Earth [1,5,9]  : (2,3,1) min=1 → (1,2,0)
+#   Air   [2,6,10] : (1,2,3) min=1 → (0,1,2)
+#   Water [3,7,11] : (4,6,5) min=4 → (0,2,1)
+# Result: (0,1,0,0, 2,2,1,2, 1,0,2,1)
+_TRIKONA_INPUT   = (3, 2, 1, 4, 5, 3, 2, 6, 4, 1, 3, 5)
+_TRIKONA_RESULT  = (0, 1, 0, 0, 2, 2, 1, 2, 1, 0, 2, 1)
+
+
+class TestTrikonaShodhana:
+
+    def test_all_zero_input_returns_all_zero(self):
+        result = trikona_shodhana((0,) * 12)
+        assert result == (0,) * 12
+
+    def test_fire_group_reduced_correctly(self):
+        # Fire [0,4,8]: (3,5,4) → min=3 → (0,2,1)
+        result = trikona_shodhana(_TRIKONA_INPUT)
+        assert result[0] == 0
+        assert result[4] == 2
+        assert result[8] == 1
+
+    def test_earth_group_reduced_correctly(self):
+        # Earth [1,5,9]: (2,3,1) → min=1 → (1,2,0)
+        result = trikona_shodhana(_TRIKONA_INPUT)
+        assert result[1] == 1
+        assert result[5] == 2
+        assert result[9] == 0
+
+    def test_air_group_reduced_correctly(self):
+        # Air [2,6,10]: (1,2,3) → min=1 → (0,1,2)
+        result = trikona_shodhana(_TRIKONA_INPUT)
+        assert result[2] == 0
+        assert result[6] == 1
+        assert result[10] == 2
+
+    def test_water_group_reduced_correctly(self):
+        # Water [3,7,11]: (4,6,5) → min=4 → (0,2,1)
+        result = trikona_shodhana(_TRIKONA_INPUT)
+        assert result[3] == 0
+        assert result[7] == 2
+        assert result[11] == 1
+
+    def test_full_example_matches_hand_calculation(self):
+        assert trikona_shodhana(_TRIKONA_INPUT) == _TRIKONA_RESULT
+
+    def test_lowest_sign_in_each_group_becomes_zero(self):
+        """By definition: subtracting the group minimum makes the minimum sign 0."""
+        result = trikona_shodhana(_TRIKONA_INPUT)
+        for group in ((0, 4, 8), (1, 5, 9), (2, 6, 10), (3, 7, 11)):
+            assert min(result[i] for i in group) == 0
+
+    def test_all_values_non_negative(self):
+        result = trikona_shodhana(_TRIKONA_INPUT)
+        assert all(v >= 0 for v in result)
+
+    def test_grand_total_reduced_by_three_times_group_minima(self):
+        # Group minima: Fire=3, Earth=1, Air=1, Water=4 → sum=9; reduction=9×3=27
+        original_total = sum(_TRIKONA_INPUT)   # 39
+        reduced_total  = sum(_TRIKONA_RESULT)  # 12
+        assert original_total - reduced_total == 27
+        assert reduced_total == sum(trikona_shodhana(_TRIKONA_INPUT))
+
+    def test_result_is_tuple(self):
+        assert isinstance(trikona_shodhana(_TRIKONA_INPUT), tuple)
+
+    def test_result_has_12_entries(self):
+        assert len(trikona_shodhana(_TRIKONA_INPUT)) == 12
+
+    def test_wrong_length_raises_value_error(self):
+        with pytest.raises(ValueError, match="12 entries"):
+            trikona_shodhana((1, 2, 3))  # only 3 elements
+
+    def test_empty_input_raises_value_error(self):
+        with pytest.raises(ValueError):
+            trikona_shodhana(())
+
+    def test_uniform_input_all_becomes_zero(self):
+        """If all signs equal the same value k, all trines reduce to 0."""
+        for k in (0, 1, 5, 8):
+            result = trikona_shodhana((k,) * 12)
+            assert result == (0,) * 12
+
+    def test_second_application_is_idempotent(self):
+        """After Trikona Shodhana, each group already has a 0 member;
+        a second application makes no further change."""
+        once  = trikona_shodhana(_TRIKONA_INPUT)
+        twice = trikona_shodhana(once)
+        assert twice == once
+
+    def test_fire_isolated_group_reduction(self):
+        """Only Fire group signs non-zero — isolates that group's arithmetic."""
+        inp = (5, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0)
+        # Fire [0,4,8]: (5,3,4) → min=3 → (2,0,1)
+        out = trikona_shodhana(inp)
+        assert out[0] == 2
+        assert out[4] == 0
+        assert out[8] == 1
+        # non-Fire signs unchanged (all remain 0)
+        for i in (1, 2, 3, 5, 6, 7, 9, 10, 11):
+            assert out[i] == 0
+
+    @pytest.mark.parametrize("planet", _SEVEN_PLANETS)
+    def test_real_bhinna_output_satisfies_group_zero_invariant(self, planet):
+        """Every Bhinnashtakavarga output from the engine, once Trikona-reduced,
+        has at least one zero in every trine group."""
+        bhinna = bhinnashtakavarga(planet, {ref: 0 for ref in _REFERENCES})
+        reduced = trikona_shodhana(bhinna.rekhas)
+        for group in ((0, 4, 8), (1, 5, 9), (2, 6, 10), (3, 7, 11)):
+            assert min(reduced[i] for i in group) == 0, (
+                f"{planet}: group {group} has no zero after Trikona Shodhana"
+            )
+
+
+# ===========================================================================
+# 22. ekadhipatya_shodhana() — occupancy rules, hand-calculated, error paths
+# Source: Raman (1981).
+# ===========================================================================
+
+# Sign placements used across the ekadhipatya tests.
+# Mars at 0 (Aries), so Mars pair (0,7): one occupied (0), one vacant (7).
+# Venus at 1 (Taurus), so Venus pair (1,6): one occupied (1), one vacant (6).
+# Mercury at 2 (Gemini), so Mercury pair (2,5): one occupied (2), one vacant (5).
+# Sun at 4, Moon at 3: sole-ruler signs, no pair, no reduction.
+# Jupiter at 8 (Sagittarius), so Jupiter pair (8,11): one occupied (8), one vacant (11).
+# Saturn at 9 (Capricorn), so Saturn pair (9,10): one occupied (9), one vacant (10).
+# Occupancy frozenset = {0, 1, 2, 3, 4, 8, 9}
+_SI_ALL_ASYMMETRIC: dict[str, int] = {
+    'Sun': 4, 'Moon': 3, 'Mars': 0, 'Mercury': 2,
+    'Jupiter': 8, 'Venus': 1, 'Saturn': 9,
+}
+
+
+class TestEkadhipatyaShodhana:
+
+    # --- identity cases -------------------------------------------------------
+
+    def test_all_zero_input_returns_all_zero(self):
+        result = ekadhipatya_shodhana((0,) * 12, _SI_ALL_ASYMMETRIC)
+        assert result == (0,) * 12
+
+    def test_both_signs_occupied_no_reduction(self):
+        """When both signs of a dual-ruled pair are occupied, no reduction."""
+        # Put a planet in each of Mars' signs (Aries=0 and Scorpio=7).
+        si = dict(_SI_ALL_ASYMMETRIC)  # copy
+        si['Moon'] = 7  # Moon in Scorpio alongside Sun in Leo, etc.
+        # Mars pair (0,7): 0=occupied(Mars), 7=occupied(Moon) → both occupied → skip.
+        rekhas: tuple[int, ...] = (3, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0)
+        result = ekadhipatya_shodhana(rekhas, si)
+        # Signs 0 and 7 must be unchanged.
+        assert result[0] == 3
+        assert result[7] == 4
+
+    def test_both_signs_vacant_no_reduction(self):
+        """When both signs of a pair are vacant, no reduction."""
+        # Remove Mars from sign 0 by moving it elsewhere; ensure sign 7 is also empty.
+        si = {
+            'Sun': 4, 'Moon': 3, 'Mars': 5, 'Mercury': 6,
+            'Jupiter': 8, 'Venus': 11, 'Saturn': 10,
+        }
+        # Mars pair (0,7): neither 0 nor 7 in occupancy {4,3,5,6,8,11,10} → skip.
+        rekhas = (3, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0)
+        result = ekadhipatya_shodhana(rekhas, si)
+        assert result[0] == 3
+        assert result[7] == 4
+
+    # --- reduction cases ------------------------------------------------------
+
+    def test_one_occupied_one_vacant_reduces_pair(self):
+        """One occupied, one vacant: lower value subtracted from both."""
+        # Venus pair (1,6): Venus at 1, sign 6 vacant.
+        rekhas = (0, 3, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0)
+        result = ekadhipatya_shodhana(rekhas, _SI_ALL_ASYMMETRIC)
+        # min(3, 2) = 2. 3-2=1 at sign 1; 2-2=0 at sign 6.
+        assert result[1] == 1
+        assert result[6] == 0
+
+    def test_reduction_zeroes_smaller_value(self):
+        """The smaller value in the pair becomes 0 after reduction."""
+        # Mercury pair (2,5): sign 2 occupied (Mercury), sign 5 vacant.
+        rekhas = (0, 0, 1, 0, 0, 4, 0, 0, 0, 0, 0, 0)
+        result = ekadhipatya_shodhana(rekhas, _SI_ALL_ASYMMETRIC)
+        # min(1, 4) = 1. sign 2 → 0, sign 5 → 3.
+        assert result[2] == 0
+        assert result[5] == 3
+
+    def test_full_hand_calculation(self):
+        """Hand-verified case with all 5 pairs asymmetric.
+
+        Input  (post-Trikona): (0,1,0,0, 2,2,1,2, 1,0,2,1)
+        Active reductions (one occupied, one vacant for each pair):
+          Mars    (0,7) : values (0,2), min=0 → no change
+          Venus   (1,6) : values (1,1), min=1 → (0,0)
+          Mercury (2,5) : values (0,2), min=0 → no change
+          Jupiter (8,11): values (1,1), min=1 → (0,0)
+          Saturn  (9,10): values (0,2), min=0 → no change
+        Expected: (0,0,0,0, 2,2,0,2, 0,0,2,0)
+        """
+        inp      = (0, 1, 0, 0, 2, 2, 1, 2, 1, 0, 2, 1)
+        expected = (0, 0, 0, 0, 2, 2, 0, 2, 0, 0, 2, 0)
+        assert ekadhipatya_shodhana(inp, _SI_ALL_ASYMMETRIC) == expected
+
+    def test_solar_and_lunar_signs_not_reduced(self):
+        """Leo (sign 4) and Cancer (sign 3) have no paired co-ruler;
+        their rekha counts are never altered by Ekadhipatya Shodhana."""
+        rekhas = (0,) * 12
+        rekhas = rekhas[:3] + (7,) + rekhas[4:]
+        rekhas = rekhas[:4] + (6,) + rekhas[5:]  # sign 4=6, sign 3=7
+        rekhas = tuple(rekhas)
+        result = ekadhipatya_shodhana(rekhas, _SI_ALL_ASYMMETRIC)
+        assert result[3] == 7   # Cancer unchanged
+        assert result[4] == 6   # Leo unchanged
+
+    # --- structural invariants ------------------------------------------------
+
+    def test_result_is_tuple(self):
+        result = ekadhipatya_shodhana(_TRIKONA_RESULT, _SI_ALL_ASYMMETRIC)
+        assert isinstance(result, tuple)
+
+    def test_result_has_12_entries(self):
+        result = ekadhipatya_shodhana(_TRIKONA_RESULT, _SI_ALL_ASYMMETRIC)
+        assert len(result) == 12
+
+    def test_all_values_non_negative(self):
+        result = ekadhipatya_shodhana(_TRIKONA_RESULT, _SI_ALL_ASYMMETRIC)
+        assert all(v >= 0 for v in result)
+
+    def test_result_never_exceeds_input(self):
+        """Ekadhipatya Shodhana can only reduce values, never increase them."""
+        result = ekadhipatya_shodhana(_TRIKONA_RESULT, _SI_ALL_ASYMMETRIC)
+        for i, (v_in, v_out) in enumerate(zip(_TRIKONA_RESULT, result)):
+            assert v_out <= v_in, f"sign {i}: out ({v_out}) > in ({v_in})"
+
+    # --- error paths ----------------------------------------------------------
+
+    def test_wrong_length_raises_value_error(self):
+        with pytest.raises(ValueError, match="12 entries"):
+            ekadhipatya_shodhana((1, 2, 3), _SI_ALL_ASYMMETRIC)
+
+    def test_missing_planet_key_raises_key_error(self):
+        incomplete = {k: v for k, v in _SI_ALL_ASYMMETRIC.items() if k != 'Saturn'}
+        with pytest.raises(KeyError):
+            ekadhipatya_shodhana(_TRIKONA_RESULT, incomplete)
+
+
+# ===========================================================================
+# 23. ashtakavarga() — Shodhana policy flag integration
+# ===========================================================================
+
+class TestAshtakavargaShodhanaIntegration:
+
+    @pytest.fixture()
+    def base_lons(self) -> dict[str, float]:
+        return {ref: 0.0 for ref in _REFERENCES}
+
+    @pytest.fixture()
+    def trikona_policy(self) -> AshtakavargaPolicy:
+        return AshtakavargaPolicy(apply_trikona_shodhana=True)
+
+    @pytest.fixture()
+    def both_policy(self) -> AshtakavargaPolicy:
+        return AshtakavargaPolicy(
+            apply_trikona_shodhana=True,
+            apply_ekadhipatya_shodhana=True,
+        )
+
+    # --- no-shodhana default --------------------------------------------------
+
+    def test_no_policy_shodhana_fields_are_none(self, base_lons):
+        r = ashtakavarga(base_lons)
+        assert r.shodhana_bhinnashtakavarga is None
+        assert r.shodhana_sarvashtakavarga is None
+
+    def test_default_policy_shodhana_fields_are_none(self, base_lons):
+        r = ashtakavarga(base_lons, policy=AshtakavargaPolicy())
+        assert r.shodhana_bhinnashtakavarga is None
+        assert r.shodhana_sarvashtakavarga is None
+
+    # --- trikona only ---------------------------------------------------------
+
+    def test_trikona_flag_populates_shodhana_bhinna(self, base_lons, trikona_policy):
+        r = ashtakavarga(base_lons, policy=trikona_policy)
+        assert r.shodhana_bhinnashtakavarga is not None
+
+    def test_trikona_flag_populates_shodhana_sarva(self, base_lons, trikona_policy):
+        r = ashtakavarga(base_lons, policy=trikona_policy)
+        assert r.shodhana_sarvashtakavarga is not None
+        assert len(r.shodhana_sarvashtakavarga) == 12
+
+    def test_trikona_shodhana_bhinna_has_all_seven_planets(self, base_lons, trikona_policy):
+        r = ashtakavarga(base_lons, policy=trikona_policy)
+        assert set(r.shodhana_bhinnashtakavarga) == set(_SEVEN_PLANETS)  # type: ignore[arg-type]
+
+    def test_trikona_shodhana_sarva_leq_raw_sarva(self, base_lons, trikona_policy):
+        """Trikona Shodhana can only reduce rekha counts."""
+        r = ashtakavarga(base_lons, policy=trikona_policy)
+        for i in range(12):
+            assert r.shodhana_sarvashtakavarga[i] <= r.sarvashtakavarga[i], (  # type: ignore[index]
+                f"sign {i}: shodhana {r.shodhana_sarvashtakavarga[i]} "
+                f"> raw {r.sarvashtakavarga[i]}"
+            )
+
+    def test_trikona_bhinna_total_rekhas_consistent(self, base_lons, trikona_policy):
+        r = ashtakavarga(base_lons, policy=trikona_policy)
+        for planet, sbhinna in r.shodhana_bhinnashtakavarga.items():  # type: ignore[union-attr]
+            assert sbhinna.total_rekhas == sum(sbhinna.rekhas), (
+                f"{planet} shodhana total_rekhas mismatch"
+            )
+
+    def test_trikona_sarva_equals_sum_of_shodhana_bhinna(self, base_lons, trikona_policy):
+        r = ashtakavarga(base_lons, policy=trikona_policy)
+        for i in range(12):
+            expected = sum(
+                r.shodhana_bhinnashtakavarga[p].rekhas[i]  # type: ignore[index]
+                for p in _SEVEN_PLANETS
+            )
+            assert r.shodhana_sarvashtakavarga[i] == expected  # type: ignore[index]
+
+    def test_trikona_group_zeros_in_every_bhinna(self, base_lons, trikona_policy):
+        """After Trikona Shodhana, every Bhinnashtakavarga has a 0 in each trine group."""
+        r = ashtakavarga(base_lons, policy=trikona_policy)
+        for planet, sbhinna in r.shodhana_bhinnashtakavarga.items():  # type: ignore[union-attr]
+            for group in ((0, 4, 8), (1, 5, 9), (2, 6, 10), (3, 7, 11)):
+                assert min(sbhinna.rekhas[i] for i in group) == 0, (
+                    f"{planet}: trine group {group} has no zero after Trikona Shodhana"
+                )
+
+    def test_trikona_result_passes_validate(self, base_lons, trikona_policy):
+        r = ashtakavarga(base_lons, policy=trikona_policy)
+        validate_ashtakavarga_output(r)  # must not raise
+
+    # --- both flags -----------------------------------------------------------
+
+    def test_both_flags_populates_shodhana_fields(self, base_lons, both_policy):
+        r = ashtakavarga(base_lons, policy=both_policy)
+        assert r.shodhana_bhinnashtakavarga is not None
+        assert r.shodhana_sarvashtakavarga is not None
+
+    def test_ekadhipatya_sarva_leq_trikona_only_sarva(self, base_lons, trikona_policy, both_policy):
+        """Adding Ekadhipatya can only further reduce; never increase."""
+        r_trikona = ashtakavarga(base_lons, policy=trikona_policy)
+        r_both    = ashtakavarga(base_lons, policy=both_policy)
+        for i in range(12):
+            assert r_both.shodhana_sarvashtakavarga[i] <= r_trikona.shodhana_sarvashtakavarga[i], (  # type: ignore[index]
+                f"sign {i}: both-shodhana {r_both.shodhana_sarvashtakavarga[i]} "
+                f"> trikona-only {r_trikona.shodhana_sarvashtakavarga[i]}"
+            )
+
+    def test_both_result_passes_validate(self, base_lons, both_policy):
+        r = ashtakavarga(base_lons, policy=both_policy)
+        validate_ashtakavarga_output(r)  # must not raise
+
+    def test_raw_bhinnashtakavarga_unchanged_by_shodhana(self, base_lons, trikona_policy):
+        """The shodhana flag must not mutate the unreduced bhinnashtakavarga field."""
+        r_no_shodhana = ashtakavarga(base_lons)
+        r_shodhana    = ashtakavarga(base_lons, policy=trikona_policy)
+        for planet in _SEVEN_PLANETS:
+            assert r_no_shodhana.bhinnashtakavarga[planet].rekhas == \
+                   r_shodhana.bhinnashtakavarga[planet].rekhas, (
+                f"{planet} unreduced rekhas differ between shodhana and no-shodhana runs"
+            )

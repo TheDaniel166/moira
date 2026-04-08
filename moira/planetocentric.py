@@ -291,7 +291,7 @@ def planetocentric_at(
             f"planetocentric_at: observer and target must differ, got {observer!r} for both."
         )
 
-    from .planets import get_reader, _approx_year
+    from .planets import get_reader, approx_year as _approx_year
 
     if reader is None:
         reader = get_reader()
@@ -367,7 +367,7 @@ def all_planetocentric_at(
     if bodies is None:
         bodies = sorted(VALID_OBSERVER_BODIES - {observer})
 
-    from .planets import get_reader, _approx_year
+    from .planets import get_reader, approx_year as _approx_year
     if reader is None:
         reader = get_reader()
 

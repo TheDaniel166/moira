@@ -185,7 +185,7 @@ from .constants import DEG2RAD, RAD2DEG, HouseSystem, sign_of
 from .coordinates import normalize_degrees
 from .julian import local_sidereal_time, ut_to_tt, greenwich_mean_sidereal_time
 from .obliquity import true_obliquity, nutation
-from .planets import _approx_year
+from .planets import approx_year as _approx_year
 
 __all__ = [
     # Enums / doctrine

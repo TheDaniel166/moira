@@ -67,6 +67,7 @@ __all__ = [
     "sun_longitude",
     "planet_relative_to",
     "next_heliocentric_transit",
+    "approx_year",
 ]
 
 # ---------------------------------------------------------------------------
@@ -781,7 +782,12 @@ def planet_at(
     # 8. Convert to Ecliptic [True Equator of date → True Ecliptic of date]
     lon, lat, dist = icrf_to_ecliptic(xyz0, obliquity)
 
-    # 9. Speed calculation (astrometric geocentric rate)
+    # 9. Speed calculation (astrometric geocentric rate).
+    # The speed is derived from the astrometric (light-time corrected but not
+    # aberration-corrected) geocentric state, not from the final apparent
+    # position.  For fast-moving inner planets near inferior conjunction the
+    # apparent and astrometric speeds can differ at arcsecond-per-day level.
+    # The PlanetData.speed field carries this astrometric rate.
     xyz_rate, vel_rate = _geocentric_state(body, jd_tt, reader)
     speed = _longitude_rate(xyz_rate, vel_rate, obliquity)
 
@@ -1365,7 +1371,13 @@ def next_heliocentric_transit(
 
 
 def _approx_year(jd: float) -> tuple[int, int, int, float]:
-    """Fast approximate calendar date from JD — used only for ΔT lookup."""
+    """Fast approximate calendar date from JD — used only for ΔT lookup.
+
+    .. deprecated::
+        Import ``approx_year`` (the public alias) instead of this
+        underscore-prefixed name.  The two are identical; ``_approx_year``
+        is retained for internal call sites and will not be removed.
+    """
     jd = jd + 0.5
     z = int(jd)
     f = jd - z
@@ -1382,3 +1394,8 @@ def _approx_year(jd: float) -> tuple[int, int, int, float]:
     month = e - 1 if e < 14 else e - 13
     year  = c - 4716 if month > 2 else c - 4715
     return year, month, day, f * 24.0
+
+
+#: Public alias for :func:`_approx_year`.  External modules should import
+#: this name rather than the underscore-prefixed internal name.
+approx_year = _approx_year

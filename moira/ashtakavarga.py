@@ -18,9 +18,12 @@ Phase 1 (this implementation):
   - Sarvashtakavarga (sum of all 7 Bhinnashtavargas, sign by sign).
   - Transit strength query (rekha count for a given transit sign).
 
-Phase 2 (future):
-  - Trikona Shodhana (trine reduction).
-  - Ekadhipatya Shodhana (same-ruler reduction).
+Phase 2 (implemented):
+  - Trikona Shodhana (trine reduction) via ``trikona_shodhana()``.
+  - Ekadhipatya Shodhana (same-ruler reduction) via ``ekadhipatya_shodhana()``.
+  Both reductions integrate into ``ashtakavarga()`` via
+  ``AshtakavargaPolicy.apply_trikona_shodhana`` /
+  ``AshtakavargaPolicy.apply_ekadhipatya_shodhana`` flags.
 
 Rekha tables
 ------------
@@ -75,6 +78,8 @@ Public surface
 ``SignStrengthProfile``       — integrated condition profile for one sign in one planet's BAV.
 ``AshtakavargaChartProfile``  — aggregate intelligence profile for a full chart.
 ``bhinnashtakavarga``         — compute one planet's benefic-point table.
+``trikona_shodhana``          — apply trine reduction to a rekha tuple.
+``ekadhipatya_shodhana``      — apply same-ruler reduction to a rekha tuple.
 ``ashtakavarga``              — compute the full Ashtakavarga for a chart.
 ``transit_strength``          — rekha count for a transiting planet.
 ``sign_strength_profile``     — build a SignStrengthProfile for one sign.
@@ -102,6 +107,8 @@ __all__ = [
     "AshtakavargaChartProfile",
     # Functions
     "bhinnashtakavarga",
+    "trikona_shodhana",
+    "ekadhipatya_shodhana",
     "ashtakavarga",
     "transit_strength",
     "sign_strength_profile",
@@ -117,6 +124,29 @@ _SEVEN_PLANETS: tuple[str, ...] = (
     'Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn',
 )
 _REFERENCES: tuple[str, ...] = _SEVEN_PLANETS + ('Lagna',)
+
+# ---------------------------------------------------------------------------
+# Shodhana constants
+# ---------------------------------------------------------------------------
+
+# Four trine groups (0-based sign indices).
+# Source: Raman (1981), Ashtakavarga System of Prediction.
+_TRINE_GROUPS: tuple[tuple[int, int, int], ...] = (
+    (0, 4, 8),   # Fire:  Aries, Leo, Sagittarius
+    (1, 5, 9),   # Earth: Taurus, Virgo, Capricorn
+    (2, 6, 10),  # Air:   Gemini, Libra, Aquarius
+    (3, 7, 11),  # Water: Cancer, Scorpio, Pisces
+)
+
+# Dual-sign pairs sharing the same classical ruler (0-based sign indices).
+# Sun (Leo=4) and Moon (Cancer=3) rule single signs — no pair, no reduction.
+_DUAL_SIGN_PAIRS: tuple[tuple[int, int], ...] = (
+    (0, 7),   # Mars:    Aries (0), Scorpio (7)
+    (1, 6),   # Venus:   Taurus (1), Libra (6)
+    (2, 5),   # Mercury: Gemini (2), Virgo (5)
+    (8, 11),  # Jupiter: Sagittarius (8), Pisces (11)
+    (9, 10),  # Saturn:  Capricorn (9), Aquarius (10)
+)
 
 
 # ---------------------------------------------------------------------------
@@ -322,16 +352,25 @@ class AshtakavargaResult:
         The ayanamsa system used for sidereal conversion (informational;
         this module receives sign indices, not longitudes).
     bhinnashtakavarga : dict[str, BhinnashtakavargaResult]
-        Mapping of planet name → its Bhinnashtakavarga result.
+        Mapping of planet name → its unreduced Bhinnashtakavarga result.
     sarvashtakavarga : tuple[int, ...]
         12-element tuple of aggregate rekha counts (sum of all 7
         Bhinnashtavargas, sign by sign).  Maximum per sign = 56 (7 × 8).
         A sign with ≥ 28 rekhas is considered strong for transit.
+    shodhana_bhinnashtakavarga : dict[str, BhinnashtakavargaResult] or None
+        Mapping of planet name → reduced Bhinnashtakavarga after Trikona
+        Shodhana (and optionally Ekadhipatya Shodhana).  ``None`` when no
+        shodhana was requested in the policy.
+    shodhana_sarvashtakavarga : tuple[int, ...] or None
+        12-element tuple of aggregate rekha counts derived from the reduced
+        Bhinnashtavargas.  ``None`` when no shodhana was requested.
     """
 
     ayanamsa_system: str
     bhinnashtakavarga: dict[str, BhinnashtakavargaResult]
     sarvashtakavarga: tuple[int, ...]
+    shodhana_bhinnashtakavarga: dict[str, BhinnashtakavargaResult] | None = None
+    shodhana_sarvashtakavarga: tuple[int, ...] | None = None
 
     def __post_init__(self) -> None:
         if not self.ayanamsa_system:
@@ -345,6 +384,23 @@ class AshtakavargaResult:
             raise ValueError(
                 f"bhinnashtakavarga must have exactly the 7 classical planets, "
                 f"got {sorted(self.bhinnashtakavarga)}"
+            )
+        if (self.shodhana_bhinnashtakavarga is None) != (self.shodhana_sarvashtakavarga is None):
+            raise ValueError(
+                "shodhana_bhinnashtakavarga and shodhana_sarvashtakavarga "
+                "must both be present or both be None"
+            )
+        if self.shodhana_sarvashtakavarga is not None:
+            if len(self.shodhana_sarvashtakavarga) != 12:
+                raise ValueError(
+                    f"shodhana_sarvashtakavarga must have 12 entries, "
+                    f"got {len(self.shodhana_sarvashtakavarga)}"
+                )
+        if (self.shodhana_bhinnashtakavarga is not None
+                and set(self.shodhana_bhinnashtakavarga) != set(_SEVEN_PLANETS)):
+            raise ValueError(
+                f"shodhana_bhinnashtakavarga must have exactly the 7 classical "
+                f"planets, got {sorted(self.shodhana_bhinnashtakavarga)}"
             )
 
     # --- Phase 3 — Inspectability ------------------------------------------
@@ -374,9 +430,23 @@ class AshtakavargaPolicy:
         Rekha count threshold (inclusive) for classifying a sign as strong.
         Traditional default is 4 (applies to Bhinnashtakavarga transit
         strength).  Must be in [1, 8].
+    apply_trikona_shodhana : bool
+        When ``True``, ``ashtakavarga()`` applies Trikona Shodhana
+        (trine reduction) to each Bhinnashtakavarga before returning.
+        Reduced tables are stored in
+        ``AshtakavargaResult.shodhana_bhinnashtakavarga`` and
+        ``AshtakavargaResult.shodhana_sarvashtakavarga``.
+        Defaults to ``False``.
+    apply_ekadhipatya_shodhana : bool
+        When ``True``, ``ashtakavarga()`` applies Ekadhipatya Shodhana
+        (same-ruler reduction) after Trikona Shodhana.  Requires
+        ``apply_trikona_shodhana`` to also be ``True``.
+        Defaults to ``False``.
     """
     ayanamsa_system: str = 'Lahiri'
     strong_threshold: int = 4
+    apply_trikona_shodhana: bool = False
+    apply_ekadhipatya_shodhana: bool = False
 
     def __post_init__(self) -> None:
         if not self.ayanamsa_system:
@@ -387,6 +457,11 @@ class AshtakavargaPolicy:
             raise ValueError(
                 f"AshtakavargaPolicy.strong_threshold must be in [1, 8], "
                 f"got {self.strong_threshold}"
+            )
+        if self.apply_ekadhipatya_shodhana and not self.apply_trikona_shodhana:
+            raise ValueError(
+                "AshtakavargaPolicy.apply_ekadhipatya_shodhana requires "
+                "apply_trikona_shodhana to also be True"
             )
 
 
@@ -461,9 +536,120 @@ def bhinnashtakavarga(
     )
 
 
+def trikona_shodhana(rekhas: tuple[int, ...]) -> tuple[int, ...]:
+    """Apply Trikona Shodhana (trine reduction) to a Bhinnashtakavarga rekha tuple.
+
+    For each of the four trine groups (Fire, Earth, Air, Water), finds the
+    minimum rekha count among the three member signs and subtracts it from
+    all three.  The lowest sign in each trine group becomes 0; relative
+    differences within each group are preserved.
+
+    This is the first of the two classical shodhana reductions described in
+    B.V. Raman, *Ashtakavarga System of Prediction* (1981).  Apply before
+    :func:`ekadhipatya_shodhana`.
+
+    Parameters
+    ----------
+    rekhas : tuple[int, ...]
+        12-element tuple of raw rekha counts (0–8 per sign, 0-based sign
+        order from Aries).  Must be the output of :func:`bhinnashtakavarga`.
+
+    Returns
+    -------
+    tuple[int, ...]
+        12-element tuple of reduced rekha counts.  All values remain ≥ 0.
+
+    Raises
+    ------
+    ValueError
+        If ``rekhas`` does not have exactly 12 entries.
+
+    Examples
+    --------
+    >>> trikona_shodhana((3, 2, 1, 4, 5, 3, 2, 6, 4, 1, 3, 5))
+    (0, 1, 0, 0, 2, 2, 1, 2, 1, 0, 2, 1)
+    """
+    if len(rekhas) != 12:
+        raise ValueError(f"rekhas must have 12 entries, got {len(rekhas)}")
+    result = list(rekhas)
+    for a, b, c in _TRINE_GROUPS:
+        min_val = min(result[a], result[b], result[c])
+        result[a] -= min_val
+        result[b] -= min_val
+        result[c] -= min_val
+    return tuple(result)
+
+
+def ekadhipatya_shodhana(
+    rekhas: tuple[int, ...],
+    sign_indices: dict[str, int],
+) -> tuple[int, ...]:
+    """Apply Ekadhipatya Shodhana (same-ruler reduction) to a rekha tuple.
+
+    For each pair of signs governed by the same classical ruler (Mars, Venus,
+    Mercury, Jupiter, Saturn — each rules two signs), if exactly one sign of
+    the pair is occupied by a classical planet in the natal chart and the
+    other is not, the smaller rekha count is subtracted from both signs in
+    the pair (lower → 0, higher → difference).  When both or neither sign is
+    occupied the pair is left unchanged.
+
+    Sun (Leo) and Moon (Cancer) each rule only one sign, so they produce no
+    dual-sign pair and are not subject to this reduction.
+
+    This reduction must be applied *after* :func:`trikona_shodhana` per
+    classical doctrine.
+
+    Source: B.V. Raman, *Ashtakavarga System of Prediction* (1981).
+
+    Parameters
+    ----------
+    rekhas : tuple[int, ...]
+        12-element tuple of rekha counts (post-Trikona Shodhana).
+    sign_indices : dict[str, int]
+        Mapping of body name → sidereal sign index (0–11) for the natal
+        chart.  Must contain keys for the 7 classical planets.  ``'Lagna'``
+        is accepted but not used for occupancy detection; only the 7 planets
+        determine sign tenancy.
+
+    Returns
+    -------
+    tuple[int, ...]
+        12-element tuple of further-reduced rekha counts.  All values remain ≥ 0.
+
+    Raises
+    ------
+    ValueError
+        If ``rekhas`` does not have exactly 12 entries.
+    KeyError
+        If a classical planet key is missing from ``sign_indices``.
+
+    Examples
+    --------
+    >>> lons = {'Sun':0.,'Moon':40.,'Mars':70.,'Mercury':100.,
+    ...         'Jupiter':130.,'Venus':160.,'Saturn':190.,'Lagna':220.}
+    >>> si = {k: int(v // 30) for k, v in lons.items()}
+    >>> rekhas = trikona_shodhana((3,2,1,4,5,3,2,6,4,1,3,5))
+    >>> ekadhipatya_shodhana(rekhas, si)  # doctest: +SKIP
+    (...)
+    """
+    if len(rekhas) != 12:
+        raise ValueError(f"rekhas must have 12 entries, got {len(rekhas)}")
+    occupied: frozenset[int] = frozenset(sign_indices[p] for p in _SEVEN_PLANETS)
+    result = list(rekhas)
+    for a, b in _DUAL_SIGN_PAIRS:
+        a_occ = a in occupied
+        b_occ = b in occupied
+        if a_occ == b_occ:   # both tenanted or both vacant — no reduction
+            continue
+        min_val = min(result[a], result[b])
+        result[a] -= min_val
+        result[b] -= min_val
+    return tuple(result)
+
+
 def ashtakavarga(
     sidereal_longitudes: dict[str, float],
-    ayanamsa_system: str = 'Lahiri',
+    ayanamsa_system: str | None = None,
     policy: AshtakavargaPolicy | None = None,
 ) -> AshtakavargaResult:
     """
@@ -476,12 +662,15 @@ def ashtakavarga(
         the 7 classical planets and ``'Lagna'``.  Extra keys are ignored.
         Caller is responsible for tropical-to-sidereal conversion before
         calling this function.
-    ayanamsa_system : str
+    ayanamsa_system : str or None, optional
         Recorded in the result for reference.  This function does not
-        perform ayanamsa conversion.  Ignored when ``policy`` is supplied.
+        perform ayanamsa conversion.  When ``None`` (default), falls back
+        to ``policy.ayanamsa_system`` if a policy is supplied, or
+        ``'Lahiri'`` otherwise.  An explicit non-``None`` value always
+        takes precedence over the policy.
     policy : AshtakavargaPolicy or None
-        Optional policy vessel.  When provided,
-        ``policy.ayanamsa_system`` overrides ``ayanamsa_system``.
+        Optional policy vessel.  ``policy.ayanamsa_system`` is used only
+        when ``ayanamsa_system`` is ``None``.
 
     Returns
     -------
@@ -500,12 +689,12 @@ def ashtakavarga(
     >>> len(result.sarvashtakavarga)
     12
     """
-    if policy is not None:
-        ayanamsa_system = policy.ayanamsa_system
+    if ayanamsa_system is None:
+        ayanamsa_system = policy.ayanamsa_system if policy is not None else 'Lahiri'
     # Compute sign indices from sidereal longitudes
     sign_indices: dict[str, int] = {
         body: int(sidereal_longitudes[body] % 360.0 // 30)
-        for body in list(_REFERENCES)
+        for body in _REFERENCES
     }
 
     bhinna: dict[str, BhinnashtakavargaResult] = {
@@ -518,10 +707,36 @@ def ashtakavarga(
         for i in range(12)
     )
 
+    # --- Optional Shodhana reductions -----------------------------------
+    shodhana_bhinna: dict[str, BhinnashtakavargaResult] | None = None
+    shodhana_sarva: tuple[int, ...] | None = None
+
+    if policy is not None and policy.apply_trikona_shodhana:
+        reduced_rekhas: dict[str, tuple[int, ...]] = {}
+        for planet in _SEVEN_PLANETS:
+            r = trikona_shodhana(bhinna[planet].rekhas)
+            if policy.apply_ekadhipatya_shodhana:
+                r = ekadhipatya_shodhana(r, sign_indices)
+            reduced_rekhas[planet] = r
+        shodhana_bhinna = {
+            planet: BhinnashtakavargaResult(
+                planet=planet,
+                rekhas=reduced_rekhas[planet],
+                total_rekhas=sum(reduced_rekhas[planet]),
+            )
+            for planet in _SEVEN_PLANETS
+        }
+        shodhana_sarva = tuple(
+            sum(reduced_rekhas[p][i] for p in _SEVEN_PLANETS)
+            for i in range(12)
+        )
+
     return AshtakavargaResult(
         ayanamsa_system=ayanamsa_system,
         bhinnashtakavarga=bhinna,
         sarvashtakavarga=sarva,
+        shodhana_bhinnashtakavarga=shodhana_bhinna,
+        shodhana_sarvashtakavarga=shodhana_sarva,
     )
 
 
@@ -770,3 +985,34 @@ def validate_ashtakavarga_output(result: AshtakavargaResult) -> None:
                 f"{planet} total_rekhas ({bhinna.total_rekhas}) != "
                 f"sum(rekhas) ({sum(bhinna.rekhas)})"
             )
+    # Validate optional shodhana fields when present.
+    if result.shodhana_bhinnashtakavarga is not None:
+        if set(result.shodhana_bhinnashtakavarga) != set(_SEVEN_PLANETS):
+            raise ValueError(
+                f"shodhana_bhinnashtakavarga must contain exactly the 7 "
+                f"classical planets, got {sorted(result.shodhana_bhinnashtakavarga)}"
+            )
+        for planet, sbhinna in result.shodhana_bhinnashtakavarga.items():
+            if sbhinna.total_rekhas != sum(sbhinna.rekhas):
+                raise ValueError(
+                    f"shodhana {planet} total_rekhas ({sbhinna.total_rekhas}) "
+                    f"!= sum(rekhas) ({sum(sbhinna.rekhas)})"
+                )
+    if result.shodhana_sarvashtakavarga is not None:
+        if len(result.shodhana_sarvashtakavarga) != 12:
+            raise ValueError(
+                f"shodhana_sarvashtakavarga must have 12 entries, "
+                f"got {len(result.shodhana_sarvashtakavarga)}"
+            )
+        if result.shodhana_bhinnashtakavarga is not None:
+            for i in range(12):
+                expected = sum(
+                    result.shodhana_bhinnashtakavarga[p].rekhas[i]
+                    for p in _SEVEN_PLANETS
+                )
+                if result.shodhana_sarvashtakavarga[i] != expected:
+                    raise ValueError(
+                        f"shodhana_sarvashtakavarga[{i}] = "
+                        f"{result.shodhana_sarvashtakavarga[i]}, "
+                        f"expected {expected} (sum of shodhana planet rekhas)"
+                    )

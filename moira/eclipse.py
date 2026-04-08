@@ -64,7 +64,7 @@ from .eclipse_search import (
 )
 from .julian import datetime_from_jd, decimal_year, jd_from_datetime, ut_to_tt, ut_to_tt_nasa_canon
 from .planets import (
-    _approx_year,
+    approx_year as _approx_year,
     _barycentric,
     _earth_barycentric,
     _geocentric,
