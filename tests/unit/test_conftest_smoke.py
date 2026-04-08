@@ -47,11 +47,11 @@ def test_snapshot_roundtrip(snapshot, tmp_path, monkeypatch):
 
     # Point snapshot dir at a temp location
     monkeypatch.setattr(snap_mod, "SNAPSHOT_DIR", tmp_path)
-    monkeypatch.setenv("ISOPGEM_SNAPSHOT_UPDATE", "1")
+    monkeypatch.setenv("MOIRA_SNAPSHOT_UPDATE", "1")
 
     snap_mod.assert_snapshot("test_value", 42)
 
-    monkeypatch.setenv("ISOPGEM_SNAPSHOT_UPDATE", "0")
+    monkeypatch.setenv("MOIRA_SNAPSHOT_UPDATE", "0")
     snap_mod.assert_snapshot("test_value", 42)   # should pass
 
 
@@ -60,10 +60,10 @@ def test_golden_roundtrip(tmp_path, monkeypatch):
     from tools import golden as gold_mod
 
     monkeypatch.setattr(gold_mod, "GOLDEN_DIR", tmp_path)
-    monkeypatch.setenv("ISOPGEM_GOLDEN_UPDATE", "1")
+    monkeypatch.setenv("MOIRA_GOLDEN_UPDATE", "1")
     gold_mod.assert_golden("test_gold", {"a": 1})
 
-    monkeypatch.setenv("ISOPGEM_GOLDEN_UPDATE", "0")
+    monkeypatch.setenv("MOIRA_GOLDEN_UPDATE", "0")
     gold_mod.assert_golden("test_gold", {"a": 1})
 
 

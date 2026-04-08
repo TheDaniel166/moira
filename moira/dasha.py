@@ -4,24 +4,37 @@ The Dasha Engine: governs Vimshottari Dasha period computation for Vedic
 predictive astrology.
 
 Boundary: owns Vimshottari sequence arithmetic, nakshatra-based period
-initialisation, recursive sub-period generation, and active-period lookup.
+initialisation, recursive sub-period generation, active-period lookup,
+doctrinal policy surfaces, classification namespacing, integrated condition
+profiling, chart-wide sequence aggregation, and lord-pair network projection.
 Delegates sidereal longitude conversion and nakshatra lord tables to sidereal.
 Delegates Julian Day arithmetic to julian. Does NOT own natal chart construction
 or ephemeris state.
 
 Public surface:
-    VIMSHOTTARI_YEARS, VIMSHOTTARI_SEQUENCE, VIMSHOTTARI_TOTAL,
-    VIMSHOTTARI_YEAR_BASIS, VIMSHOTTARI_LEVEL_NAMES,
-    DashaLordType,
-    VimshottariYearPolicy, VimshottariAyanamsaPolicy, VimshottariComputationPolicy,
-    DEFAULT_VIMSHOTTARI_POLICY,
-    DashaPeriod,
-    DashaActiveLine,
-    DashaConditionProfile, DashaSequenceProfile,
-    DashaLordPair,
-    vimshottari, current_dasha, dasha_balance, dasha_active_line,
-    dasha_condition_profile, dasha_sequence_profile, dasha_lord_pair,
-    validate_vimshottari_output
+    Constants:
+        VIMSHOTTARI_YEARS, VIMSHOTTARI_SEQUENCE, VIMSHOTTARI_TOTAL,
+        VIMSHOTTARI_YEAR_BASIS, VIMSHOTTARI_LEVEL_NAMES
+    Classification:
+        DashaLordType
+    Policy:
+        VimshottariYearPolicy, VimshottariAyanamsaPolicy,
+        VimshottariComputationPolicy, DEFAULT_VIMSHOTTARI_POLICY
+    Vessels:
+        DashaPeriod           — single dasha period with nested sub-periods
+        DashaActiveLine       — named chain of active periods across levels
+        DashaConditionProfile — integrated per-period condition profile
+        DashaSequenceProfile  — chart-wide aggregate over a Mahadasha sequence
+        DashaLordPair         — Mahadasha / Antardasha lord network node
+    Functions:
+        vimshottari            — compute the full Vimshottari sequence from birth
+        current_dasha          — active periods at a query Julian Day
+        dasha_balance          — birth Mahadasha lord and remaining years
+        dasha_active_line      — construct DashaActiveLine from current_dasha output
+        dasha_condition_profile — build condition profile for a single period
+        dasha_sequence_profile  — aggregate profile for a full sequence
+        dasha_lord_pair         — Mahadasha / Antardasha pair from an active line
+        validate_vimshottari_output — verify cross-layer invariants on a sequence
 
 Import-time side effects: None
 
@@ -89,8 +102,10 @@ class DashaLordType:
     Typed classification of a Vimshottari dasha lord by its Jyotish planetary
     grouping.
 
-    This classification is standard across all Vimshottari schools.  It is
-    derived from the planet name alone and does not depend on chart context.
+    The nine Vimshottari lords themselves are standard across all schools.
+    The grouping into LUMINARY, INNER, OUTER, and NODE is an internal
+    analytical classification used by this engine; it is derived from the
+    planet name alone and does not depend on chart context.
 
     LUMINARY — Sun, Moon  (the two lights; fastest movers; foundational vitality)
     INNER    — Mercury, Venus  (inner planets; sub-solar orbit)
@@ -593,7 +608,7 @@ def dasha_condition_profile(period: DashaPeriod) -> DashaConditionProfile:
 @dataclass(slots=True)
 class DashaSequenceProfile:
     """
-    Chart-wide aggregate over a complete Vimshottari Mahadasha sequence.
+    Aggregate over a generated Vimshottari Mahadasha sequence.
 
     Derived from DashaConditionProfile vessels (Phase 7). Summarises the
     structural composition of a 120-year dasha cycle — how many lords of each
@@ -823,16 +838,19 @@ def validate_vimshottari_output(periods: list[DashaPeriod]) -> None:
 
     Checks the following invariants:
     - Level-1 (Mahadasha) periods are in chronological order with no JD overlaps.
-    - Every planet in the list is a recognised Vimshottari lord.
+    - Every planet in the list is a recognised Vimshottari lord (enforced
+      by DashaPeriod.__post_init__, not re-checked here).
     - Sub-periods at every level are temporally contained within their parent and
       are in chronological order with no overlaps.
 
     Raises
     ------
     ValueError
-        On the first invariant violation found. Passes silently when all
-        invariants hold.
+        If periods is empty, or on the first invariant violation found.
+        Passes silently when all invariants hold.
     """
+    if not periods:
+        raise ValueError("validate_vimshottari_output: periods list must not be empty")
     level1 = [p for p in periods if p.level == 1]
 
     # Cross-layer invariant 1: level-1 periods in chronological order, no overlap
@@ -861,6 +879,11 @@ def _sequence_from(lord: str) -> list[str]:
         ["Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury",
          "Ketu", "Venus", "Sun"]
     """
+    if lord not in VIMSHOTTARI_SEQUENCE:
+        raise ValueError(
+            f"'{lord}' is not a recognised Vimshottari lord. "
+            f"Valid lords: {VIMSHOTTARI_SEQUENCE}"
+        )
     start_idx = VIMSHOTTARI_SEQUENCE.index(lord)
     return VIMSHOTTARI_SEQUENCE[start_idx:] + VIMSHOTTARI_SEQUENCE[:start_idx]
 
@@ -910,7 +933,7 @@ def _build_sub_periods(
             end_jd=sub_end_jd,
             year_days=year_days,
             year_basis=year_basis,
-            lord_type=_DASHA_LORD_TYPE.get(sub_planet),
+            lord_type=_DASHA_LORD_TYPE[sub_planet],
         )
 
         # Recurse for deeper levels
@@ -983,9 +1006,9 @@ def vimshottari(
     # 5. Build the ordered sequence of Mahadashas starting from the birth lord
     maha_sequence = _sequence_from(starting_lord)
 
-    # 6. Generate all Mahadashas covering the full 120-year cycle
-    #    (The sequence naturally runs one full cycle of all 9 planets, but in
-    #    practice charts may be truncated; we generate the complete 120-year span.)
+    # 6. Generate one full rotation of all 9 Mahadasha lords.
+    #    The actual span is always less than 120 Vimshottari years because the
+    #    first period is truncated to the remaining nakshatra fraction.
     mahadashas: list[DashaPeriod] = []
     current_jd = natal_jd
 
@@ -1008,7 +1031,7 @@ def vimshottari(
             # Birth nakshatra context is doctrinal truth of the first period only
             birth_nakshatra=NAKSHATRA_NAMES[nak_idx] if i == 0 else None,
             nakshatra_fraction=fraction_elapsed if i == 0 else None,
-            lord_type=_DASHA_LORD_TYPE.get(lord),
+            lord_type=_DASHA_LORD_TYPE[lord],
         )
 
         # Populate sub-periods for the requested depth
@@ -1041,11 +1064,21 @@ def current_dasha(
     moon_tropical_lon : Moon's tropical ecliptic longitude at birth
     natal_jd          : Julian Day of birth (UT)
     current_jd        : Julian Day of the query moment
-    ayanamsa_system   : ayanamsa for Moon's nakshatra (default: Lahiri)
+    ayanamsa_system   : ayanamsa for Moon's nakshatra; None uses policy default
+    year_basis        : year-length doctrine key; None uses policy default
+    levels            : number of dasha levels to generate (1–5; default 5)
+    policy            : VimshottariComputationPolicy governing doctrinal defaults
 
     Returns
     -------
-    List of active DashaPeriod objects (one per active level).
+    List of active DashaPeriod objects, one per active level from Mahadasha
+    down to the deepest generated level.
+
+    Raises
+    ------
+    ValueError
+        If current_jd is not finite, is earlier than natal_jd, is beyond the
+        Vimshottari cycle cap, or falls outside the generated sequence.
     """
     pol = _resolve_vimshottari_policy(policy)
     year_basis      = year_basis      if year_basis      is not None else pol.year.year_basis
@@ -1107,11 +1140,23 @@ def dasha_balance(
     ----------
     moon_tropical_lon : Moon's tropical ecliptic longitude at birth
     natal_jd          : Julian Day of birth (UT)
-    ayanamsa_system   : ayanamsa for Moon's nakshatra (default: Lahiri)
+    ayanamsa_system   : ayanamsa for Moon's nakshatra; None uses policy default
+    year_basis        : accepted for API symmetry and validated, but does not
+                        affect the return value — the balance is always expressed
+                        in Vimshottari years (nakshatra-proportional), not
+                        calendar days
+    policy            : VimshottariComputationPolicy governing doctrinal defaults
 
     Returns
     -------
-    (lord_name, remaining_years_at_birth)
+    (lord_name, remaining_vimshottari_years_at_birth)
+        The balance in Vimshottari years (where the full Mahadasha sum is 120).
+        To convert to Julian days, multiply by the year_days for your basis.
+
+    Raises
+    ------
+    ValueError
+        If moon_tropical_lon or natal_jd is not finite, or year_basis is invalid.
     """
     pol = _resolve_vimshottari_policy(policy)
     year_basis      = year_basis      if year_basis      is not None else pol.year.year_basis
@@ -1121,7 +1166,10 @@ def dasha_balance(
         raise ValueError("moon_tropical_lon must be finite")
     if not math.isfinite(natal_jd):
         raise ValueError("natal_jd must be finite")
-    _resolve_vimshottari_year_days(year_basis)
+    # Validate year_basis; year_days is not used here because the return value
+    # of dasha_balance is in Vimshottari years (nakshatra-proportional), not
+    # calendar days.  The check is still necessary to surface invalid policy inputs.
+    _ = _resolve_vimshottari_year_days(year_basis)
 
     sid_lon = tropical_to_sidereal(moon_tropical_lon, natal_jd, system=ayanamsa_system)
 

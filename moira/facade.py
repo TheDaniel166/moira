@@ -564,6 +564,7 @@ from .varga import (
     VargaPoint, calculate_varga,
     navamsa, saptamsa, dashamansa, dwadashamsa, trimshamsa,
 )
+from .decanates import DecanatePosition, chaldean_face, triplicity_decan, vedic_drekkana
 from .astrocartography import ACGLine, acg_lines, acg_from_chart
 from .geodetic import (
     GeodeticChart,
@@ -1051,6 +1052,8 @@ __all__ = [
     # Varga (Vedic divisional charts)
     "VargaPoint", "calculate_varga",
     "navamsa", "saptamsa", "dashamansa", "dwadashamsa", "trimshamsa",
+    # Decanates
+    "DecanatePosition", "chaldean_face", "triplicity_decan", "vedic_drekkana",
     # Astrocartography
     "ACGLine", "acg_lines", "acg_from_chart",
     # Geodetic

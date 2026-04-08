@@ -76,6 +76,9 @@ from .sidereal import (
     list_ayanamsa_systems,
 )
 
+# ── Decanates ────────────────────────────────────────────────────────────
+from .decanates import DecanatePosition, chaldean_face, triplicity_decan, vedic_drekkana
+
 
 __all__ = [
     # Core
@@ -98,4 +101,6 @@ __all__ = [
     # Sidereal
     "Ayanamsa", "ayanamsa",
     "tropical_to_sidereal", "sidereal_to_tropical", "list_ayanamsa_systems",
+    # Decanates
+    "DecanatePosition", "chaldean_face", "triplicity_decan", "vedic_drekkana",
 ]

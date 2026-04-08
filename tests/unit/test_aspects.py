@@ -3155,7 +3155,7 @@ def test_aspects_surface_is_module_owned_not_root_re_exported() -> None:
 
 
 def test_aspects_dunder_all_length() -> None:
-    assert len(_aspects_module.__all__) == 31
+    assert len(_aspects_module.__all__) == 32
 
 
 def test_aspects_dunder_all_no_duplicates() -> None:
