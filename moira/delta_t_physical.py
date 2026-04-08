@@ -910,29 +910,7 @@ def delta_t_hybrid(year: float) -> float:
     -------
     ΔT = TT − UT1 in seconds
     """
-    y = float(year)
-    if y < _CORE_COVERAGE_START:
-        return _smh2016_lookup(y)
-
-    if y < _RESIDUAL_FIT_START:
-        # 1840–1962.4: physics-based historical era.
-        # secular_trend + historical bridge + historical core.
-        # Bridge = smh2016 − secular − historical_core, so the sum equals
-        # smh2016 exactly when historical_core = 0. Once Gillet historical
-        # LOD reconstruction data is loaded, historical_core absorbs the
-        # physical signal and the bridge shrinks to the unexplained residual.
-        return secular_trend(y) + _historical_bridge_delta_t(y) + historical_core_delta_t(y)
-
-    base = secular_trend(y)
-    fluid = fluid_lowfreq(y)
-    core = core_delta_t(y)
-    cryo = cryo_delta_t(y)
-
-    if y <= REFERENCE_YEAR:
-        return base + fluid + _modern_bridge_delta_t(y) + core + cryo + _residual_at(y)
-
-    core_mean, _ = _core_recent_stats()
-    return base + core_mean + cryo
+    return delta_t_breakdown(year).total
 
 
 def delta_t_hybrid_uncertainty(year: float) -> float:
@@ -1003,7 +981,11 @@ class DeltaTBreakdown:
     total : float
         Total ΔT in seconds — equals ``delta_t_hybrid(year)``.
     secular : float
-        Tidal + GIA secular parabola (always present in every era).
+        Tidal + GIA secular parabola contribution.  In the ``'pre-1840'`` era
+        this equals the full SMH 2016 table value (``_smh2016_lookup(year)``)
+        because the physical decomposition is not applied there — it is *not*
+        ``secular_trend(year)``.  In all other eras it equals
+        ``secular_trend(year)``.
     core : float
         Core-mantle angular momentum contribution.  In the future era this
         is the 10-year mean; in the pre-1840 era it is zero.
@@ -1058,14 +1040,15 @@ def delta_t_breakdown(year: float) -> DeltaTBreakdown:
     --------
     >>> from moira.delta_t_physical import delta_t_breakdown
     >>> bd = delta_t_breakdown(2024.5)
-    >>> bd.total == bd.secular + bd.core + bd.cryo + bd.fluid + bd.bridge + bd.residual
+    >>> import math
+    >>> math.isclose(bd.total, bd.secular + bd.core + bd.cryo + bd.fluid + bd.bridge + bd.residual)
     True
     """
     y = float(year)
 
     if y < _CORE_COVERAGE_START:
-        # Pre-1840: entire value sourced from the SMH 2016 table; the secular
-        # parabola alone captures it, all other components are zero.
+        # Pre-1840: entire value sourced from the SMH 2016 table.
+        # secular holds the raw table value (not secular_trend); all other components are zero.
         total = _smh2016_lookup(y)
         return DeltaTBreakdown(
             year=y,
@@ -1099,12 +1082,12 @@ def delta_t_breakdown(year: float) -> DeltaTBreakdown:
         )
 
     sec = secular_trend(y)
-    fluid = fluid_lowfreq(y)
-    core = core_delta_t(y)
     cryo = cryo_delta_t(y)
 
     if y <= REFERENCE_YEAR:
         # Measured era: secular + fluid + bridge + core + cryo + residual spline.
+        fluid = fluid_lowfreq(y)
+        core = core_delta_t(y)
         bridge = _modern_bridge_delta_t(y)
         resid = _residual_at(y)
         total = sec + fluid + bridge + core + cryo + resid

@@ -921,8 +921,18 @@ class DeltaTPolicy:
         Which ΔT algorithm to use.  Accepted values:
 
         ``'hybrid'`` (default)
-            Moira's multi-source hybrid model (see ``delta_t()``).  This is
-            the default and matches Swiss Ephemeris behaviour in the modern era.
+            Moira's multi-source table cascade (see ``delta_t()``).  Covers
+            all eras via IERS Bulletin B/A, HPIERS 2016, and
+            Morrison-Stephenson polynomials.  Matches Swiss Ephemeris
+            behaviour in the modern era.
+
+        ``'physical'``
+            Moira's physics-based hybrid model (see
+            ``delta_t_physical.delta_t_hybrid()``).  Decomposes ΔT into
+            tidal braking, GIA, core-mantle angular momentum, GRACE/GRACE-FO
+            cryosphere, and an IERS residual spline.  Preferred for future
+            epochs (post-2026) and for inspecting the physical attribution of
+            Earth-rotation change.
 
         ``'nasa_canon'``
             NASA eclipse-canon polynomial model (see ``delta_t_nasa_canon()``).
@@ -948,7 +958,7 @@ class DeltaTPolicy:
     fixed_delta_t: float | None = None
 
     def __post_init__(self) -> None:
-        allowed = ('hybrid', 'nasa_canon', 'fixed')
+        allowed = ('hybrid', 'physical', 'nasa_canon', 'fixed')
         if self.model not in allowed:
             raise ValueError(
                 f"DeltaTPolicy.model must be one of {allowed!r}, got {self.model!r}"
@@ -964,6 +974,9 @@ class DeltaTPolicy:
             return float(self.fixed_delta_t)  # type: ignore[arg-type]
         if self.model == 'nasa_canon':
             return delta_t_nasa_canon(year)
+        if self.model == 'physical':
+            from .delta_t_physical import delta_t_hybrid  # deferred: delta_t_physical imports julian
+            return delta_t_hybrid(year)
         return delta_t(year)
 
 

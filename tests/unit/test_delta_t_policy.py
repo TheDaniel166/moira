@@ -8,6 +8,7 @@ from __future__ import annotations
 import pytest
 
 from moira.julian import DeltaTPolicy, ut_to_tt, tt_to_ut, delta_t, delta_t_nasa_canon
+from moira.delta_t_physical import delta_t_hybrid
 
 _JD_J2000 = 2451545.0
 _YEAR_J2000 = 2000.0
@@ -49,6 +50,29 @@ def test_policy_hybrid_compute_matches_function():
     policy = DeltaTPolicy(model='hybrid')
     year = 2000.0
     assert policy.compute(year) == delta_t(year)
+
+
+def test_policy_physical_compute_matches_function():
+    policy = DeltaTPolicy(model='physical')
+    year = 2000.0
+    assert policy.compute(year) == delta_t_hybrid(year)
+
+
+def test_policy_physical_differs_from_table_at_future_epoch():
+    """Physical model and table cascade must diverge for post-2026 years."""
+    year = 2075.0
+    physical = DeltaTPolicy(model='physical').compute(year)
+    table    = DeltaTPolicy(model='hybrid').compute(year)
+    assert physical != table
+
+
+def test_ut_to_tt_physical_policy_applies():
+    from moira.julian import decimal_year_from_jd
+    policy = DeltaTPolicy(model='physical')
+    jd_tt = ut_to_tt(_JD_J2000, delta_t_policy=policy)
+    year = decimal_year_from_jd(_JD_J2000)
+    expected = _JD_J2000 + delta_t_hybrid(year) / 86400.0
+    assert abs(jd_tt - expected) < 1e-12
 
 
 def test_policy_is_immutable():
