@@ -45,10 +45,12 @@ correct and consistent with Moira's truth-first mandate.
 
 Boundary declaration
 --------------------
-Owns: Tithi, Vara, Yoga, Karana arithmetic and name tables, the
-      ``PanchangaElement`` and ``PanchangaResult`` result vessels.
+Owns: Tithi, Vara, Yoga, Karana arithmetic and name tables, solar
+    sidereal Sankranti search, the ``PanchangaElement``,
+    ``PanchangaResult``, and ``SankrantiResult`` result vessels.
 Delegates: Nakshatra computation to ``moira.sidereal.nakshatra_of``,
-           ayanamsa conversion to ``moira.sidereal.tropical_to_sidereal``.
+         ayanamsa conversion to ``moira.sidereal.tropical_to_sidereal``,
+         tropical solar longitude lookup to ``moira.planets.sun_longitude``.
 
 Import-time side effects: None
 
@@ -73,11 +75,14 @@ Public surface
 ``KARANA_NAMES``             — 11 Karana names.
 ``VARA_LORDS``               — 7 weekday planetary lords (Sunday-origin).
 ``VARA_NAMES``               — 7 Vedic weekday names (Sunday-origin).
+``RASHI_NAMES``              — 12 Sanskrit sign names (Mesha … Meena).
 ``PanchangaElement``         — immutable vessel for one Panchanga element.
 ``PanchangaResult``          — immutable vessel for the full five-element result.
+``SankrantiResult``          — immutable vessel for one solar sidereal ingress.
 ``TithiConditionProfile``    — integrated condition profile for the Tithi element.
 ``PanchangaProfile``         — aggregate intelligence profile for a full Panchanga.
 ``panchanga_at``             — compute all five elements for a JD and planet lons.
+``sankranti_at``             — find solar sidereal rashi ingresses in a JD window.
 ``tithi_condition_profile``  — build a TithiConditionProfile from a PanchangaResult.
 ``panchanga_profile``        — build a PanchangaProfile from a PanchangaResult.
 ``validate_panchanga_output`` — validate structural invariants of a PanchangaResult.
@@ -85,6 +90,7 @@ Public surface
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 __all__ = [
@@ -101,15 +107,18 @@ __all__ = [
     "KARANA_NAMES",
     "VARA_LORDS",
     "VARA_NAMES",
+    "RASHI_NAMES",
     # Phase 1 — Truth Preservation
     "PanchangaElement",
     "PanchangaResult",
+    "SankrantiResult",
     # Phase 7 — Integrated Local Condition
     "TithiConditionProfile",
     # Phase 8 — Aggregate Intelligence
     "PanchangaProfile",
     # Functions
     "panchanga_at",
+    "sankranti_at",
     "tithi_condition_profile",
     "panchanga_profile",
     "validate_panchanga_output",
@@ -164,9 +173,15 @@ Shakuni, Chatushpada, Naga).
 VARA_LORDS: list[str] = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn']
 VARA_NAMES: list[str] = ['Ravivara', 'Somavara', 'Mangalavara', 'Budhavara',
                           'Guruvara', 'Shukravara', 'Shanivara']
+RASHI_NAMES: list[str] = [
+    'Mesha', 'Vrishabha', 'Mithuna', 'Karka', 'Simha', 'Kanya',
+    'Tula', 'Vrischika', 'Dhanu', 'Makara', 'Kumbha', 'Meena',
+]
 
 # Yoga span in degrees
 _YOGA_SPAN: float = 360.0 / 27   # ≈ 13.3333°
+_RASHI_SPAN: float = 30.0
+_SANKRANTI_SCAN_STEP_DAYS: float = 1.0
 
 
 # ---------------------------------------------------------------------------
@@ -400,6 +415,16 @@ class PanchangaResult:
         return self.yoga.index not in _ASHUBHA_YOGA_INDICES
 
 
+@dataclass(frozen=True, slots=True)
+class SankrantiResult:
+    """Immutable witness of one sidereal solar sign ingress."""
+
+    jd: float
+    rashi_index: int
+    rashi_name: str
+    ayanamsa_system: str
+
+
 # ---------------------------------------------------------------------------
 # Phase 4 — Policy
 # ---------------------------------------------------------------------------
@@ -563,6 +588,82 @@ def _make_element(
     )
 
 
+def _normalize_ayanamsa_system_name(ayanamsa_system: str) -> str:
+    """Resolve uppercase ayanamsa enum-style names to canonical sidereal labels."""
+    from .sidereal import Ayanamsa
+
+    if hasattr(Ayanamsa, ayanamsa_system):
+        value = getattr(Ayanamsa, ayanamsa_system)
+        if isinstance(value, str):
+            return value
+    return ayanamsa_system
+
+
+def _sidereal_solar_longitude(jd: float, ayanamsa_system: str, reader: object) -> float:
+    """Return the Sun's apparent geocentric sidereal longitude in degrees."""
+    from .planets import sun_longitude
+    from .sidereal import tropical_to_sidereal
+
+    sun_tropical_lon = sun_longitude(jd, reader=reader)
+    return tropical_to_sidereal(sun_tropical_lon, jd, system=ayanamsa_system)
+
+
+def _signed_longitude_residual(longitude: float, target: float) -> float:
+    """Return the shortest signed angular residual from longitude to target."""
+    return (longitude - target + 180.0) % 360.0 - 180.0
+
+
+def _boundary_rashi_index(longitude: float, tolerance_deg: float) -> int | None:
+    """Return the entered rashi index when longitude lies on a sign boundary."""
+    remainder = longitude % _RASHI_SPAN
+    if remainder <= tolerance_deg or (_RASHI_SPAN - remainder) <= tolerance_deg:
+        return int(round(longitude / _RASHI_SPAN)) % len(RASHI_NAMES)
+    return None
+
+
+def _bisect_sankranti(
+    left_jd: float,
+    right_jd: float,
+    target_longitude: float,
+    ayanamsa_system: str,
+    tolerance_deg: float,
+    reader: object,
+) -> float:
+    """Bisect a bracketed solar sidereal boundary crossing to angular tolerance."""
+    target_longitude %= 360.0
+    left_residual = _signed_longitude_residual(
+        _sidereal_solar_longitude(left_jd, ayanamsa_system, reader),
+        target_longitude,
+    )
+    if abs(left_residual) <= tolerance_deg:
+        return left_jd
+
+    right_residual = _signed_longitude_residual(
+        _sidereal_solar_longitude(right_jd, ayanamsa_system, reader),
+        target_longitude,
+    )
+    if abs(right_residual) <= tolerance_deg:
+        return right_jd
+    if left_residual * right_residual > 0.0:
+        raise ValueError("sankranti_at requires a bracketing interval")
+
+    for _ in range(64):
+        mid_jd = (left_jd + right_jd) / 2.0
+        mid_residual = _signed_longitude_residual(
+            _sidereal_solar_longitude(mid_jd, ayanamsa_system, reader),
+            target_longitude,
+        )
+        if abs(mid_residual) <= tolerance_deg:
+            return mid_jd
+        if left_residual * mid_residual <= 0.0:
+            right_jd = mid_jd
+        else:
+            left_jd = mid_jd
+            left_residual = mid_residual
+
+    return (left_jd + right_jd) / 2.0
+
+
 # ---------------------------------------------------------------------------
 # Public function
 # ---------------------------------------------------------------------------
@@ -674,6 +775,101 @@ def panchanga_at(
         karana=karana,
         ayanamsa_system=ayanamsa_system,
     )
+
+
+def sankranti_at(
+    start_jd: float,
+    end_jd: float,
+    ayanamsa_system: str = 'LAHIRI',
+    tolerance_deg: float = 1e-6,
+) -> list[SankrantiResult]:
+    """Find all solar sidereal rashi ingresses in ``[start_jd, end_jd]``.
+
+    The search samples the Sun's apparent geocentric sidereal longitude in
+    roughly one-day steps, detects each 30° sign-boundary crossing in the
+    sampled interval, and refines the exact ingress instant by bisection to
+    the requested angular tolerance.
+    """
+    if end_jd < start_jd:
+        raise ValueError("end_jd must be greater than or equal to start_jd")
+    if tolerance_deg <= 0.0:
+        raise ValueError("tolerance_deg must be positive")
+
+    ayanamsa_system = _normalize_ayanamsa_system_name(ayanamsa_system)
+
+    from .spk_reader import get_reader
+
+    reader = get_reader()
+    if start_jd == end_jd:
+        longitude = _sidereal_solar_longitude(start_jd, ayanamsa_system, reader)
+        rashi_index = _boundary_rashi_index(longitude, tolerance_deg)
+        if rashi_index is None:
+            return []
+        return [
+            SankrantiResult(
+                jd=start_jd,
+                rashi_index=rashi_index,
+                rashi_name=RASHI_NAMES[rashi_index],
+                ayanamsa_system=ayanamsa_system,
+            )
+        ]
+
+    jd_points: list[float] = [start_jd]
+    while jd_points[-1] < end_jd:
+        jd_points.append(min(jd_points[-1] + _SANKRANTI_SCAN_STEP_DAYS, end_jd))
+
+    wrapped_longitudes = [
+        _sidereal_solar_longitude(jd, ayanamsa_system, reader)
+        for jd in jd_points
+    ]
+    unwrapped_longitudes: list[float] = [wrapped_longitudes[0]]
+    for longitude in wrapped_longitudes[1:]:
+        while longitude < unwrapped_longitudes[-1]:
+            longitude += 360.0
+        unwrapped_longitudes.append(longitude)
+
+    events: list[SankrantiResult] = []
+    for index in range(len(jd_points) - 1):
+        left_jd = jd_points[index]
+        right_jd = jd_points[index + 1]
+        left_unwrapped = unwrapped_longitudes[index]
+        right_unwrapped = unwrapped_longitudes[index + 1]
+
+        if index == 0:
+            first_boundary = math.ceil((left_unwrapped - tolerance_deg) / _RASHI_SPAN)
+        else:
+            first_boundary = math.ceil((left_unwrapped + tolerance_deg) / _RASHI_SPAN)
+        last_boundary = math.floor((right_unwrapped + tolerance_deg) / _RASHI_SPAN)
+
+        for boundary_index in range(first_boundary, last_boundary + 1):
+            boundary_longitude = boundary_index * _RASHI_SPAN
+            target_longitude = boundary_longitude % 360.0
+
+            if abs(left_unwrapped - boundary_longitude) <= tolerance_deg:
+                ingress_jd = left_jd
+            elif abs(right_unwrapped - boundary_longitude) <= tolerance_deg:
+                ingress_jd = right_jd
+            else:
+                ingress_jd = _bisect_sankranti(
+                    left_jd,
+                    right_jd,
+                    target_longitude,
+                    ayanamsa_system,
+                    tolerance_deg,
+                    reader,
+                )
+
+            rashi_index = boundary_index % len(RASHI_NAMES)
+            events.append(
+                SankrantiResult(
+                    jd=ingress_jd,
+                    rashi_index=rashi_index,
+                    rashi_name=RASHI_NAMES[rashi_index],
+                    ayanamsa_system=ayanamsa_system,
+                )
+            )
+
+    return events
 
 
 # ---------------------------------------------------------------------------

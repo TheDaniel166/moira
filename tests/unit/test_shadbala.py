@@ -28,6 +28,7 @@ from __future__ import annotations
 import math
 import pytest
 
+from moira.panchanga import sankranti_at
 from moira.shadbala import (
     MEAN_DAILY_MOTION,
     NAISARGIKA_BALA,
@@ -49,6 +50,7 @@ from moira.shadbala import (
     shadbala_condition_profile,
     sthana_bala,
     validate_shadbala_output,
+    _sankranti_jd,
 )
 
 _J2000 = 2451545.0
@@ -321,6 +323,14 @@ class TestKalaBala:
             f"Saturn should get at least Masa Bala (30 Sha) "
             f"but got {r.abda_masa_vara_hora}"
         )
+
+    @pytest.mark.requires_ephemeris
+    def test_private_sankranti_helper_matches_public_finder(self):
+        event = sankranti_at(2451312.0, 2451315.0, ayanamsa_system='Lahiri')[0]
+        assert event.rashi_index == 1
+
+        helper_jd = _sankranti_jd(30.0, 2451315.0, 'Lahiri', window_days=32.0)
+        assert helper_jd == pytest.approx(event.jd, abs=1e-8)
 
 
 # ===========================================================================

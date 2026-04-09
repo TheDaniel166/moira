@@ -21,6 +21,8 @@ import pytest
 
 from moira.panchanga import (
     KARANA_NAMES,
+    RASHI_NAMES,
+    SankrantiResult,
     TITHI_NAMES,
     VARA_LORDS,
     VARA_NAMES,
@@ -36,6 +38,7 @@ from moira.panchanga import (
     YogaClass,
     panchanga_at,
     panchanga_profile,
+    sankranti_at,
     tithi_condition_profile,
     validate_panchanga_output,
 )
@@ -88,6 +91,9 @@ class TestNameTables:
     def test_vara_names_count_7(self):
         assert len(VARA_NAMES) == 7
 
+    def test_rashi_names_count_12(self):
+        assert len(RASHI_NAMES) == 12
+
     def test_tithi_first_is_pratipada(self):
         assert TITHI_NAMES[0] == "Pratipada"
 
@@ -111,6 +117,12 @@ class TestNameTables:
 
     def test_vara_lords_saturday_last(self):
         assert VARA_LORDS[6] == "Saturn"
+
+    def test_rashi_first_is_mesha(self):
+        assert RASHI_NAMES[0] == "Mesha"
+
+    def test_rashi_last_is_meena(self):
+        assert RASHI_NAMES[11] == "Meena"
 
     def test_movable_karanas_count_7(self):
         from moira.panchanga import _MOVABLE_KARANAS
@@ -343,9 +355,55 @@ class TestPublicSurface:
     def test_required_exports_present(self):
         import moira.panchanga as mod
         for name in ("TITHI_NAMES", "YOGA_NAMES", "KARANA_NAMES",
-                     "VARA_LORDS", "VARA_NAMES",
-                     "PanchangaElement", "PanchangaResult", "panchanga_at"):
+                     "VARA_LORDS", "VARA_NAMES", "RASHI_NAMES",
+                     "PanchangaElement", "PanchangaResult", "SankrantiResult",
+                     "panchanga_at", "sankranti_at"):
             assert name in mod.__all__
+
+    def test_vedic_surface_reexports_sankranti_exports(self):
+        import moira.vedic as vedic
+
+        assert vedic.RASHI_NAMES is RASHI_NAMES
+        assert vedic.SankrantiResult is SankrantiResult
+        assert vedic.sankranti_at is sankranti_at
+
+
+class TestSankrantiResult:
+
+    def test_result_is_frozen(self):
+        result = SankrantiResult(2451545.0, 0, "Mesha", "Lahiri")
+        with pytest.raises((AttributeError, TypeError)):
+            result.rashi_name = "Vrishabha"  # type: ignore[misc]
+
+
+class TestSankrantiFinder:
+
+    @pytest.mark.requires_ephemeris
+    def test_finds_taurus_ingress_in_known_window(self):
+        from moira.planets import sun_longitude
+        from moira.sidereal import tropical_to_sidereal
+
+        events = sankranti_at(2451312.0, 2451315.0, ayanamsa_system="Lahiri")
+
+        assert len(events) == 1
+        event = events[0]
+        assert event.rashi_index == 1
+        assert event.rashi_name == "Vrishabha"
+        assert event.ayanamsa_system == "Lahiri"
+        assert event.jd == pytest.approx(2451313.61, abs=0.05)
+
+        sidereal_lon = tropical_to_sidereal(sun_longitude(event.jd), event.jd, system="Lahiri")
+        residual = min(sidereal_lon % 30.0, 30.0 - (sidereal_lon % 30.0))
+        assert residual <= 1e-5
+
+    @pytest.mark.requires_ephemeris
+    def test_uppercase_ayanamsa_constant_name_is_accepted(self):
+        events = sankranti_at(2451282.0, 2451284.0)
+
+        assert len(events) == 1
+        assert events[0].rashi_index == 0
+        assert events[0].rashi_name == "Mesha"
+        assert events[0].ayanamsa_system == "Lahiri"
 
 
 # ===========================================================================

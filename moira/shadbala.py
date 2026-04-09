@@ -681,8 +681,9 @@ def _sankranti_jd(
 
     A Sankranti is the moment at which the Sun's sidereal longitude equals
     an exact multiple of 30° (Rashi Sankranti) or 0° (Mesha Sankranti).  This
-    function locates the crossing using a bisection search on the Sun's actual
-    apparent sidereal longitude, not a mean-motion approximation.
+    function delegates to ``moira.panchanga.sankranti_at()``, which locates
+    crossings using the Sun's actual apparent sidereal longitude rather than a
+    mean-motion approximation.
 
     The bracket is ``[before_jd - window_days, before_jd]``.  Use
     ``window_days=32`` (default) for a Rashi / Masa Sankranti (at most one
@@ -709,63 +710,25 @@ def _sankranti_jd(
 
     Source
     ------
-    Search strategy mirrors the bisection used in ``moira.phenomena``
-    for Moon-phase crossings.  Sidereal conversion: ``moira.sidereal``.
+    Delegates to ``moira.panchanga.sankranti_at``.
     """
-    from .planets import planet_at
-    from .sidereal import tropical_to_sidereal
-    from .spk_reader import get_reader
-
-    reader = get_reader()
     target = target_sidereal_lon % 360.0
+    target_rashi_index = int(round(target / 30.0)) % 12
+    from .panchanga import sankranti_at
 
-    def _sun_sid(jd: float) -> float:
-        sun = planet_at('Sun', jd, reader=reader)
-        return tropical_to_sidereal(sun.longitude, jd, system=ayanamsa_system)
+    events = sankranti_at(
+        before_jd - window_days,
+        before_jd,
+        ayanamsa_system=ayanamsa_system,
+    )
+    for event in reversed(events):
+        if event.rashi_index == target_rashi_index:
+            return event.jd
 
-    # Forward residual: fraction of the Sun's circle traveled past the target.
-    # Returns a value in [0, 360): approaches 360 just before the crossing,
-    # then drops to near 0 just after.  The most recent Sankranti is found by
-    # scanning backward in time and detecting the step where this value jumps
-    # from ~0 (just after crossing) to ~360 (just before crossing).
-    def _fwd(jd: float) -> float:
-        return (_sun_sid(jd) - target) % 360.0
-
-    # Coarse scan: step backward through the window in ~3-day increments.
-    # The Sun travels ~1°/day so a 3-day step cannot skip an entire 360° cycle;
-    # at most one Sankranti can exist in the relevant window.
-    #
-    # We scan forward in the window (i.e., from early → before_jd) to detect
-    # where _fwd drops sharply (crosses zero from below 360 to near 0), which
-    # marks the forward crossing of the target.
-    scan_step = 3.0
-    n_steps = int(window_days / scan_step) + 2
-    jd_points = [before_jd - (n_steps - 1 - i) * scan_step for i in range(n_steps)]
-    # Clip the leftmost point to the window start
-    jd_points[0] = max(jd_points[0], before_jd - window_days)
-
-    fwd_vals = [_fwd(jd_i) for jd_i in jd_points]
-
-    sub_a = sub_b = None
-    for i in range(len(fwd_vals) - 1):
-        # Sign of forward crossing: fwd drops (prev >> 300, next << 60)
-        if fwd_vals[i] > 300.0 and fwd_vals[i + 1] < 60.0:
-            sub_a, sub_b = jd_points[i], jd_points[i + 1]
-            break
-
-    if sub_a is None:
-        raise ValueError(
-            f"No Sankranti at {target:.1f}° found in the {window_days:.0f}-day "
-            f"window before JD {before_jd}."
-        )
-
-    # Bisect on the signed residual (well-behaved in the narrow sub-bracket).
-    def _residual(jd: float) -> float:
-        lon = _sun_sid(jd)
-        return (lon - target + 180.0) % 360.0 - 180.0
-
-    # 1-second tolerance in Julian days
-    return _bisection_root(_residual, sub_a, sub_b, tol=1.1574e-5, max_iter=64)
+    raise ValueError(
+        f"No Sankranti at {target:.1f}° found in the {window_days:.0f}-day "
+        f"window before JD {before_jd}."
+    )
 
 
 def hora_lord_at(birth_jd: float, sunrise_jd: float) -> str:
