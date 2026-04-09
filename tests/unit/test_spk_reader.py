@@ -63,10 +63,10 @@ def test_position_raises_when_no_segment_covers_requested_jd() -> None:
 
     try:
         reader.position(0, 10, 2500.0)
-    except KeyError as exc:
-        assert "No segment covers" in str(exc)
+    except ValueError as exc:
+        assert "Segments exist" in str(exc)
     else:
-        raise AssertionError("Expected KeyError for uncovered JD")
+        raise AssertionError("Expected ValueError for uncovered JD")
 
 
 def test_closed_reader_fails_deterministically() -> None:

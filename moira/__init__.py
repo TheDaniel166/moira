@@ -49,7 +49,7 @@ from .nodes import NodeData, NodesAndApsides, nodes_and_apsides_at
 from .phenomena import PlanetPhenomena, planet_phenomena_at
 from .orbits import DistanceExtremes, KeplerianElements, distance_extremes_at, orbital_elements_at
 from .planets import CartesianPosition, PlanetData, SkyPosition
-from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal
+from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal, nakshatra_of, all_nakshatras_at
 from .aspects import AspectData
 from .harmograms import (
     HarmogramChartDomain,
@@ -295,6 +295,8 @@ __all__ = [
     "tropical_to_sidereal",
     "sidereal_to_tropical",
     "list_ayanamsa_systems",
+    "nakshatra_of",
+    "all_nakshatras_at",
     # Vedic dignities
     "VedicDignityRank",
     "CompoundRelationship",

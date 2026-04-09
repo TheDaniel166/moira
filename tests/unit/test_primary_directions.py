@@ -81,6 +81,7 @@ class _FakeChart:
     nodes: dict[str, _FakeNode]
     obliquity: float
     jd_tt: float
+    jd_ut: float
 
 
 @dataclass
@@ -103,6 +104,7 @@ def _simple_chart(*, sun_speed: float = 0.9856) -> tuple[_FakeChart, _FakeHouses
         nodes={"North Node": _FakeNode(120.0)},
         obliquity=0.0,
         jd_tt=2451545.0,
+        jd_ut=2451544.9992,
     )
     houses = _FakeHouses(
         armc=0.0,
@@ -125,6 +127,7 @@ def _oblique_chart(*, sun_speed: float = 0.9856) -> tuple[_FakeChart, _FakeHouse
         nodes={"North Node": _FakeNode(203.0)},
         obliquity=23.4392911,
         jd_tt=2451545.0,
+        jd_ut=2451544.9992,
     )
     houses = _FakeHouses(
         armc=41.0,

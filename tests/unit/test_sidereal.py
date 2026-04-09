@@ -38,7 +38,7 @@ J2020 = 2458849.5  # JD of 2020 Jan 1.5 TT
 class TestAyanamsaConstants:
 
     def test_all_length(self):
-        assert len(Ayanamsa.ALL) == 30
+        assert len(Ayanamsa.ALL) == 34
 
     def test_lahiri_in_all(self):
         assert Ayanamsa.LAHIRI in Ayanamsa.ALL
@@ -297,9 +297,9 @@ class TestListAyanamsaSystems:
         result = list_ayanamsa_systems()
         assert isinstance(result, dict)
 
-    def test_contains_all_30(self):
+    def test_contains_all_34(self):
         result = list_ayanamsa_systems()
-        assert len(result) == 30
+        assert len(result) == 34
 
     def test_lahiri_present(self):
         result = list_ayanamsa_systems()
