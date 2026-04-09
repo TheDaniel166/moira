@@ -45,7 +45,7 @@ Public surface
 import math
 from dataclasses import dataclass
 from .constants import J2000, JULIAN_CENTURY
-from .julian import centuries_from_j2000
+from .julian import centuries_from_j2000, ut_to_tt
 from .precession import general_precession_in_longitude
 from .obliquity import nutation
 
@@ -358,8 +358,9 @@ def _star_anchored_ayanamsa(system: str, jd: float) -> float:
     except (LookupError, FileNotFoundError):
         # Star not in catalog or registry absent — fall back to polynomial
         base = _AYANAMSA_AT_J2000[system]
-        dpsi_deg, _ = nutation(jd)
-        return base + general_precession_in_longitude(jd) + dpsi_deg
+        jd_tt = ut_to_tt(jd)
+        dpsi_deg, _ = nutation(jd_tt)
+        return base + general_precession_in_longitude(jd_tt) + dpsi_deg
 
 
 def ayanamsa(
@@ -370,12 +371,10 @@ def ayanamsa(
     """
     Compute the ayanamsa for a given Julian Day.
 
-    For the polynomial ("mean") path the TT/UT difference (~69 s) is
-    negligible.  For star-anchored ("true") systems the function converts
-    the input JD to TT internally via ``ut_to_tt()``, so the caller should
-    pass a JD in UT.  Passing a JD already in TT will introduce a ~69-second
-    epoch error that propagates into the ayanamsa at arcsecond level over
-    centuries.
+    The caller should pass a JD in UT. The sidereal engine converts that UT
+    epoch to TT internally before invoking TT-based precession and nutation
+    helpers, including the star-anchored fallback path. Passing a JD already
+    in TT will introduce a duplicate UT→TT shift.
 
     Parameters
     ----------
@@ -407,13 +406,15 @@ def ayanamsa(
     if mode not in ("mean", "true"):
         raise ValueError(f"mode must be 'mean' or 'true', got {mode!r}")
 
+    jd_tt = ut_to_tt(jd)
+
     # --- UserDefinedAyanamsa branch -----------------------------------------
     if isinstance(system, UserDefinedAyanamsa):
-        precession = general_precession_in_longitude(jd)
-        T = centuries_from_j2000(jd)
+        precession = general_precession_in_longitude(jd_tt)
+        T = centuries_from_j2000(jd_tt)
         base = system.reference_value_j2000 + precession + system.drift_per_century * T
         if mode == "true":
-            dpsi_deg, _ = nutation(jd)
+            dpsi_deg, _ = nutation(jd_tt)
             return base + dpsi_deg
         return base
 
@@ -428,13 +429,13 @@ def ayanamsa(
         return _star_anchored_ayanamsa(system, jd)
 
     base = _AYANAMSA_AT_J2000[system]
-    precession = general_precession_in_longitude(jd)
-    extra_drift = _AYANAMSA_DRIFT_PER_CENTURY.get(system, 0.0) * centuries_from_j2000(jd)
+    precession = general_precession_in_longitude(jd_tt)
+    extra_drift = _AYANAMSA_DRIFT_PER_CENTURY.get(system, 0.0) * centuries_from_j2000(jd_tt)
 
     if mode == "mean":
         return base + precession + extra_drift
     else:  # "true", polynomial systems
-        dpsi_deg, _ = nutation(jd)
+        dpsi_deg, _ = nutation(jd_tt)
         return base + precession + extra_drift + dpsi_deg
 
 

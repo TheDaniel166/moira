@@ -27,6 +27,33 @@ def _dummy_star(name: str = "Sirius"):
     )
 
 
+def test_solar_declination_ra_uses_tt_obliquity() -> None:
+    import moira._solar as solar_module
+
+    dummy_sun = MagicMock(longitude=15.0, latitude=1.0)
+    with patch.object(solar_module, "planet_at", return_value=dummy_sun), \
+         patch.object(solar_module, "ut_to_tt", return_value=2451545.0008) as mock_tt, \
+         patch.object(solar_module, "true_obliquity", return_value=23.4) as mock_obl:
+        solar_module._solar_declination_ra(2451545.0, MagicMock())
+
+    mock_tt.assert_called_once_with(2451545.0)
+    mock_obl.assert_called_once_with(2451545.0008)
+
+
+def test_decan_at_uses_tt_obliquity() -> None:
+    import moira.hermetic_decans as decans
+
+    with patch.object(decans, "_lst_to_ramc", return_value=120.0), \
+         patch.object(decans, "ut_to_tt", return_value=2451545.0008) as mock_tt, \
+         patch.object(decans, "true_obliquity", return_value=23.4) as mock_obl, \
+         patch.object(decans, "decan_for_longitude", return_value="Horaios"):
+        result = decans.decan_at(2451545.0, 51.5, -0.1)
+
+    assert result == "Horaios"
+    mock_tt.assert_called_once_with(2451545.0)
+    mock_obl.assert_called_once_with(2451545.0008)
+
+
 # ===========================================================================
 # 7.1 — Constants and dict structure
 # ===========================================================================

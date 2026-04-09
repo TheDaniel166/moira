@@ -1070,10 +1070,7 @@ def _ensure_secondary_kernel() -> _AsteroidKernel | None:
     """Try to load the secondary kernel; return None (not an error) if absent."""
     if _secondary_kernel is None:
         if _SECONDARY_KERNEL_PATH.exists():
-            try:
-                load_secondary_kernel()
-            except Exception:
-                pass
+            load_secondary_kernel()
     return _secondary_kernel
 
 
@@ -1081,10 +1078,7 @@ def _ensure_tertiary_kernel() -> _AsteroidKernel | None:
     """Try to load the centaur kernel; return None (not an error) if absent."""
     if _tertiary_kernel is None:
         if _TERTIARY_KERNEL_PATH.exists():
-            try:
-                load_tertiary_kernel()
-            except Exception:
-                pass
+            load_tertiary_kernel()
     return _tertiary_kernel
 
 
@@ -1119,10 +1113,7 @@ def _ensure_quaternary_kernel() -> _AsteroidKernel | None:
     """Try to load the minor bodies kernel; return None (not an error) if absent."""
     if _quaternary_kernel is None:
         if _QUATERNARY_KERNEL_PATH.exists():
-            try:
-                load_quaternary_kernel()
-            except Exception:
-                pass
+            load_quaternary_kernel()
     return _quaternary_kernel
 
 

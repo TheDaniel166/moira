@@ -21,6 +21,8 @@ External dependency assumptions:
 """
 
 import threading
+from contextlib import contextmanager
+from contextvars import ContextVar
 from pathlib import Path
 
 # jplephem is used solely as a binary SPK file reader
@@ -337,6 +339,17 @@ class SpkReader:
 _reader: SpkReader | None = None
 _reader_path: Path | None = None
 _reader_lock = threading.RLock()
+_reader_override: ContextVar[SpkReader | None] = ContextVar("moira_reader_override", default=None)
+
+
+@contextmanager
+def use_reader_override(reader: SpkReader | None):
+    """Temporarily route ``get_reader()`` to a caller-owned reader."""
+    token = _reader_override.set(reader)
+    try:
+        yield
+    finally:
+        _reader_override.reset(token)
 
 
 def get_reader(kernel_path: str | Path | None = None) -> SpkReader:
@@ -366,6 +379,14 @@ def get_reader(kernel_path: str | Path | None = None) -> SpkReader:
     Side effects:
         - May open a new file handle to the kernel file on first call.
     """
+    override = _reader_override.get()
+    if override is not None:
+        if kernel_path is not None and override.path != Path(kernel_path):
+            raise RuntimeError(
+                "Active reader override is bound to a different kernel path."
+            )
+        return override
+
     global _reader, _reader_path
     with _reader_lock:
         if _reader is not None:

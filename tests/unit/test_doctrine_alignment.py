@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -9,8 +10,9 @@ import moira.nutation_2000a as nutation_module
 
 
 def test_nutation_tables_load_lazily() -> None:
-    assert nutation_module._LS_TERMS is None
-    assert nutation_module._PL_TERMS is None
+    module = importlib.reload(nutation_module)
+    assert module._LS_TERMS is None
+    assert module._PL_TERMS is None
 
 
 def test_runtime_version_matches_project_metadata_fallback() -> None:
@@ -29,17 +31,18 @@ def test_moira_behavior_smoke_chart_houses_aspects_lots_and_transits(monkeypatch
     lot_result = [SimpleNamespace(name="Fortune", longitude=25.0)]
     transit_result = [SimpleNamespace(body="Sun", jd_ut=2451545.5)]
 
-    monkeypatch.setattr(moira, "get_reader", lambda kernel_path=None: fake_reader)
-    monkeypatch.setattr(moira, "all_planets_at", lambda *args, **kwargs: chart_result)
-    monkeypatch.setattr(moira, "true_node", lambda *args, **kwargs: node_result)
-    monkeypatch.setattr(moira, "mean_node", lambda *args, **kwargs: node_result)
-    monkeypatch.setattr(moira, "mean_lilith", lambda *args, **kwargs: node_result)
-    monkeypatch.setattr(moira, "true_obliquity", lambda jd: 23.4)
-    monkeypatch.setattr(moira, "delta_t", lambda year: 69.0)
-    monkeypatch.setattr(moira, "calculate_houses", lambda *args, **kwargs: house_result)
-    monkeypatch.setattr(moira, "find_aspects", lambda *args, **kwargs: aspect_result)
-    monkeypatch.setattr(moira, "calculate_lots", lambda *args, **kwargs: lot_result)
-    monkeypatch.setattr(moira, "find_transits", lambda *args, **kwargs: transit_result)
+    monkeypatch.setattr(moira.facade, "SpkReader", lambda path: fake_reader)
+    monkeypatch.setattr(moira.facade, "all_planets_at", lambda *args, **kwargs: chart_result)
+    monkeypatch.setattr(moira.facade, "true_node", lambda *args, **kwargs: node_result)
+    monkeypatch.setattr(moira.facade, "mean_node", lambda *args, **kwargs: node_result)
+    monkeypatch.setattr(moira.facade, "mean_lilith", lambda *args, **kwargs: node_result)
+    monkeypatch.setattr(moira.facade, "ut_to_tt", lambda jd: 2451545.0008)
+    monkeypatch.setattr(moira.facade, "true_obliquity", lambda jd: 23.4)
+    monkeypatch.setattr(moira.facade, "delta_t_from_jd", lambda jd: 69.0)
+    monkeypatch.setattr(moira.facade, "calculate_houses", lambda *args, **kwargs: house_result)
+    monkeypatch.setattr(moira.facade, "find_aspects", lambda *args, **kwargs: aspect_result)
+    monkeypatch.setattr(moira.facade, "calculate_lots", lambda *args, **kwargs: lot_result)
+    monkeypatch.setattr(moira.facade, "find_transits", lambda *args, **kwargs: transit_result)
 
     engine = moira.Moira()
     dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
@@ -50,7 +53,7 @@ def test_moira_behavior_smoke_chart_houses_aspects_lots_and_transits(monkeypatch
     lots = engine.lots(chart, houses)
     transits = engine.transits("Sun", 15.0, 2451545.0, 2451546.0)
 
-    assert chart.planets is chart_result
+    assert dict(chart.planets) == chart_result
     assert chart.nodes[moira.Body.TRUE_NODE] is node_result
     assert chart.obliquity == 23.4
     assert chart.delta_t == 69.0

@@ -861,19 +861,23 @@ class EclipseCalculator:
 
     def calculate(self, dt: datetime) -> EclipseData:
         """
-        Compute complete eclipse geometry for a given UTC datetime.
+        Compute geometric eclipse geometry for a given UTC datetime.
 
         Parameters
         ----------
-        dt : timezone-aware datetime (naïve treated as UTC)
+        dt : timezone-aware datetime
 
         Returns
         -------
         EclipseData with all positions, eclipse status, and cycle data.
-        """
-        if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=timezone.utc)
 
+        Notes
+        -----
+        This surface uses the geometric Moon path for lunar geometry.
+        Native lunar maximum search uses a different event model for umbral
+        and partial eclipses; use :meth:`calculate_lunar_event_jd` when you
+        need that explicit native event geometry.
+        """
         return self.calculate_jd(jd_from_datetime(dt))
 
     def _calculate_jd_internal(
@@ -1145,8 +1149,49 @@ class EclipseCalculator:
         return axis_km, moon_radius_km, umbra_radius_km, penumbra_radius_km, moon_dist
 
     def calculate_jd(self, jd: float) -> EclipseData:
-        """Compute complete eclipse geometry for a given UT Julian Day."""
+        """
+        Compute geometric eclipse geometry for a given UT Julian Day.
+
+        For lunar events this uses the geometric Moon path. Native lunar
+        greatest-eclipse search uses retarded-Moon geometry for umbral and
+        partial event centering; that distinct model is exposed separately via
+        :meth:`calculate_lunar_event_jd`.
+        """
         return self._calculate_jd_internal(jd, retarded_moon=False)
+
+    def calculate_lunar_event_jd(
+        self,
+        jd: float,
+        *,
+        kind: str = "umbral",
+        delta_t_mode: str = "native",
+    ) -> EclipseData:
+        """
+        Compute native lunar-event geometry for a given UT Julian Day.
+
+        Parameters
+        ----------
+        jd : float
+            Julian Day (UT) of the event instant to evaluate.
+        kind : str
+            Native lunar event family. ``"umbral"`` uses the retarded Moon
+            path used for umbral and partial greatest-eclipse centering;
+            ``"penumbral"`` uses the geometric Moon path used for penumbral
+            native search.
+        delta_t_mode : str
+            Delta-T conversion policy forwarded to the internal TT conversion.
+        """
+        kind_key = kind.strip().lower().replace("-", "_").replace(" ", "_")
+        if kind_key not in {"umbral", "penumbral"}:
+            raise ValueError(
+                f"Unsupported native lunar event kind: {kind!r}. "
+                "Expected 'umbral' or 'penumbral'."
+            )
+        return self._calculate_jd_internal(
+            jd,
+            retarded_moon=(kind_key == "umbral"),
+            delta_t_mode=delta_t_mode,
+        )
 
     def next_lunar_eclipse(
         self,

@@ -812,7 +812,7 @@ def _transit_network_edge_sort_key(
         edge.condition_state.value,
     )
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class TransitEvent:
     """
     RITE: The Transit Event Vessel
@@ -826,7 +826,7 @@ class TransitEvent:
         longitude crossed, the Julian Day of crossing, and the direction of motion.
         Without it, callers would receive unstructured tuples with no field-level
         guarantees. It exists to give every higher-level consumer a single, named,
-        mutable record of each transit crossing.
+        immutable record of each transit crossing.
 
     LAW OF OPERATION:
         Responsibilities:
@@ -858,7 +858,7 @@ class TransitEvent:
         "frozen": ["body", "longitude", "jd_ut", "direction"],
         "internal": ["datetime_utc", "calendar_utc"]
       },
-      "state": {"mutable": true, "owners": ["next_transit", "find_transits"]},
+      "state": {"mutable": false, "owners": ["next_transit", "find_transits"]},
       "effects": {
         "signals_emitted": [],
         "io": []
@@ -1016,7 +1016,7 @@ class TransitEvent:
         return None
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class IngressEvent:
     """
     RITE: The Ingress Event Vessel
@@ -1029,13 +1029,13 @@ class IngressEvent:
         event produced by the Transit Engine. It captures the body name, the sign
         entered, the Julian Day of ingress, and the direction of motion. Without it,
         callers would receive unstructured tuples with no field-level guarantees. It
-        exists to give every higher-level consumer a single, named, mutable record
+        exists to give every higher-level consumer a single, named, immutable record
         of each sign ingress.
 
     LAW OF OPERATION:
         Responsibilities:
             - Store a single sign ingress as named, typed fields
-            - Expose the sign's boundary longitude via sign_longitude property
+            - Expose the crossed boundary longitude via sign_longitude property
             - Expose UTC datetime and CalendarDateTime views via read-only properties
             - Serve as the return type of find_ingresses()
         Non-responsibilities:
@@ -1044,7 +1044,7 @@ class IngressEvent:
             - Converting Julian Days to display strings (delegates to julian)
         Dependencies:
             - Populated by find_ingresses()
-            - sign_longitude derives from SIGNS index
+            - sign_longitude resolves from computation truth when available
         Structural invariants:
             - sign is a valid member of SIGNS
             - direction is 'direct' or 'retrograde'
@@ -1062,7 +1062,7 @@ class IngressEvent:
         "frozen": ["body", "sign", "jd_ut", "direction"],
         "internal": ["sign_longitude", "datetime_utc", "calendar_utc"]
       },
-      "state": {"mutable": true, "owners": ["find_ingresses"]},
+      "state": {"mutable": false, "owners": ["find_ingresses"]},
       "effects": {
         "signals_emitted": [],
         "io": []
@@ -1136,6 +1136,8 @@ class IngressEvent:
 
     @property
     def sign_longitude(self) -> float:
+        if self.computation_truth is not None:
+            return float(self.computation_truth.boundary_longitude)
         idx = SIGNS.index(self.sign)
         return float(idx * 30)
 
@@ -1241,16 +1243,18 @@ def _resolve_longitude_truth(
     if not name:
         raise ValueError("Transit input target specification must not be empty")
 
-    try:
+    canonical_planet = next(
+        (body for body in Body.ALL_PLANETS if body.lower() == name.lower()),
+        None,
+    )
+    if canonical_planet is not None:
         return LongitudeResolutionTruth(
             requested_spec=spec,
             resolved_kind="planet",
-            resolved_name=name,
+            resolved_name=canonical_planet,
             jd_ut=jd,
-            longitude=planet_at(name, jd, reader=reader).longitude,
+            longitude=planet_at(canonical_planet, jd, reader=reader).longitude,
         )
-    except Exception:
-        pass
 
     if name == Body.TRUE_NODE:
         return LongitudeResolutionTruth(spec, "node", name, jd, true_node(jd, reader=reader).longitude)
@@ -1697,7 +1701,10 @@ def find_ingresses(
                 speed = _signed_diff(lon_after, lon_before) / 0.5
                 mov = "direct" if speed >= 0 else "retrograde"
                 # Which sign is being entered?
-                sign_idx = int(boundary / 30) % 12
+                if mov == "direct":
+                    sign_idx = int(boundary / 30) % 12
+                else:
+                    sign_idx = (int(boundary / 30) - 1) % 12
                 computation_truth = IngressComputationTruth(
                     body=body,
                     sign=SIGNS[sign_idx],
@@ -1767,11 +1774,11 @@ def next_ingress(
         reader = get_reader()
     policy = _validate_policy(policy)
 
-    # Default search window: a body needs at most ~2 sign-transit durations to
-    # cross into a new sign even during a retrograde station near a boundary.
-    # We use the _RETURN_SEARCH_DAYS table as a generous upper bound.
+    # Use a per-body ingress horizon rather than the return-search table.
+    # Return windows are tuned to longitude returns and are not sufficient to
+    # guarantee the next sign crossing for slow bodies such as Saturn.
     if max_days is None:
-        max_days = _RETURN_SEARCH_DAYS.get(body, 500.0)
+        max_days = _INGRESS_SEARCH_DAYS.get(body, 1000.0)
 
     events = find_ingresses(body, jd_start, jd_start + max_days,
                             reader=reader, policy=policy)
@@ -1826,11 +1833,11 @@ def next_ingress_into(
     policy = _validate_policy(policy)
 
     if max_days is None:
-        max_days = _RETURN_SEARCH_DAYS.get(body, 500.0)
+        max_days = _INGRESS_INTO_SEARCH_DAYS.get(body, 12000.0)
 
     # A slow body (Saturn, Pluto) may take many years to reach a specific sign.
     # Expand the window in chunks to avoid allocating a decade-long scan at once.
-    chunk = min(max_days, _RETURN_SEARCH_DAYS.get(body, 500.0))
+    chunk = min(max_days, _INGRESS_SEARCH_DAYS.get(body, 1000.0))
     jd_cursor = jd_start
     jd_limit  = jd_start + max_days
 
@@ -1870,6 +1877,40 @@ _RETURN_SEARCH_DAYS: dict[str, float] = {
     Body.URANUS:  430.0,
     Body.NEPTUNE: 430.0,
     Body.PLUTO:   430.0,
+}
+
+
+# Per-body horizons for the next sign ingress after an arbitrary start point.
+# These windows are intentionally wider than nominal sign dwell times so a
+# station near a boundary does not produce a false "no ingress found".
+_INGRESS_SEARCH_DAYS: dict[str, float] = {
+    Body.MOON:    5.0,
+    Body.SUN:     35.0,
+    Body.MERCURY: 200.0,
+    Body.VENUS:   320.0,
+    Body.MARS:    900.0,
+    Body.JUPITER: 600.0,
+    Body.SATURN:  1500.0,
+    Body.URANUS:  3200.0,
+    Body.NEPTUNE: 6200.0,
+    Body.PLUTO:   13000.0,
+}
+
+
+# Per-body horizons for "next ingress into a named sign". These must cover
+# essentially a full zodiac cycle for the slow outer bodies, but are scanned
+# in ingress-sized chunks above to keep the search bounded in practice.
+_INGRESS_INTO_SEARCH_DAYS: dict[str, float] = {
+    Body.MOON:    35.0,
+    Body.SUN:     370.0,
+    Body.MERCURY: 450.0,
+    Body.VENUS:   700.0,
+    Body.MARS:    900.0,
+    Body.JUPITER: 5000.0,
+    Body.SATURN:  12000.0,
+    Body.URANUS:  35000.0,
+    Body.NEPTUNE: 65000.0,
+    Body.PLUTO:   100000.0,
 }
 
 

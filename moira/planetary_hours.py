@@ -16,7 +16,8 @@ Import-time side effects: None
 
 External dependency assumptions:
     - No third-party packages; stdlib only plus internal moira modules.
-    - SpkReader must be initialised before planetary_hours() is called.
+    - If ``reader`` is omitted, the module-level SPK reader must already be
+      initialised; callers may also pass an explicit ``SpkReader``.
 """
 
 import math
@@ -56,7 +57,7 @@ _DAY_RULER_IDX: dict[int, int] = {
 # Result dataclasses
 # ---------------------------------------------------------------------------
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class PlanetaryHour:
     """
     RITE: The Planetary Hour Vessel
@@ -70,7 +71,7 @@ class PlanetaryHour:
         the ruling planet in Chaldean order, the start and end Julian Days, and
         whether the hour falls in the daytime or nighttime division. Without it,
         callers would receive unstructured tuples with no field-level guarantees. It
-        exists to give every higher-level consumer a single, named, mutable record
+        exists to give every higher-level consumer a single, named, immutable record
         of each planetary hour.
 
     LAW OF OPERATION:
@@ -101,7 +102,7 @@ class PlanetaryHour:
         "frozen": ["hour_number", "ruler", "jd_start", "jd_end", "is_daytime"],
         "internal": ["start_utc", "start_calendar_utc", "end_utc", "end_calendar_utc"]
       },
-      "state": {"mutable": true, "owners": ["planetary_hours"]},
+      "state": {"mutable": false, "owners": ["planetary_hours"]},
       "effects": {
         "signals_emitted": [],
         "io": []
@@ -141,7 +142,7 @@ class PlanetaryHour:
                 f"{format_jd_utc(self.jd_start)}–{self.end_calendar_utc.time_string()} UTC")
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class PlanetaryHoursDay:
     """
     RITE: The Planetary Hours Day Vessel
@@ -156,7 +157,7 @@ class PlanetaryHoursDay:
         and sunset Julian Days, and the full list of 24 PlanetaryHour instances.
         Without it, callers would receive unstructured collections with no
         field-level guarantees. It exists to give every higher-level consumer a
-        single, named, mutable record of a complete planetary hours day.
+        single, named, immutable record of a complete planetary hours day.
 
     LAW OF OPERATION:
         Responsibilities:
@@ -188,7 +189,7 @@ class PlanetaryHoursDay:
         "frozen": ["date_jd", "latitude", "longitude", "sunrise_jd", "sunset_jd", "hours"],
         "internal": ["sunrise_utc", "sunrise_calendar_utc", "sunset_utc", "sunset_calendar_utc", "hour_at", "lord_of_hour"]
       },
-      "state": {"mutable": true, "owners": ["planetary_hours"]},
+      "state": {"mutable": false, "owners": ["planetary_hours"]},
       "effects": {
         "signals_emitted": [],
         "io": []
@@ -205,7 +206,7 @@ class PlanetaryHoursDay:
     longitude:  float
     sunrise_jd: float
     sunset_jd:  float
-    hours:      list[PlanetaryHour]
+    hours:      tuple[PlanetaryHour, ...]
 
     @property
     def sunrise_utc(self) -> datetime:
@@ -258,7 +259,7 @@ def planetary_hours(
 
     Returns
     -------
-    PlanetaryHoursDay with all 24 PlanetaryHour instances
+    PlanetaryHoursDay with all 24 PlanetaryHour instances.
     """
     if reader is None:
         reader = get_reader()
@@ -344,5 +345,5 @@ def planetary_hours(
         longitude=longitude,
         sunrise_jd=jd_sunrise,
         sunset_jd=jd_sunset,
-        hours=hours,
+        hours=tuple(hours),
     )

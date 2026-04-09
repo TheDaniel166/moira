@@ -817,7 +817,7 @@ def _heliacal_signed_elongation(name: str, jd_ut: float) -> float:
 
     jd_tt = ut_to_tt(jd_ut)
     star = star_at(name, jd_tt)
-    sun = planet_at(Body.SUN, jd_tt)
+    sun = planet_at(Body.SUN, jd_ut, jd_tt=jd_tt)
     return ((star.longitude - sun.longitude + 180.0) % 360.0) - 180.0
 
 

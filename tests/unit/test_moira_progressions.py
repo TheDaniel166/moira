@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from datetime import datetime, timezone
 
 import pytest
@@ -7,7 +8,7 @@ import pytest
 from moira import Body
 from moira.constants import HouseSystem, sign_of
 from moira.coordinates import ecliptic_to_equatorial, equatorial_to_ecliptic
-from moira.houses import calculate_houses
+from moira.houses import HousePolicy, calculate_houses
 from moira.julian import jd_from_datetime
 from moira.planets import all_planets_at, planet_at
 from moira.progressions import (
@@ -428,7 +429,7 @@ def test_tertiary_ii_and_converse_tertiary_ii_use_stepped_synodic_month_key() ->
     natal_dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
     target_dt = datetime(2010, 7, 1, 12, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    completed_years = int((jd_from_datetime(target_dt) - natal_jd) / TROPICAL_YEAR)
+    completed_years = math.floor((jd_from_datetime(target_dt) - natal_jd) / TROPICAL_YEAR)
     expected_forward_jd = natal_jd + completed_years * SYNODIC_MONTH
     expected_converse_jd = natal_jd - completed_years * SYNODIC_MONTH
 
@@ -759,6 +760,19 @@ def test_invalid_house_frame_inputs_fail_clearly() -> None:
         ascendant_arc(2451545.0, target_dt, 0.0, 181.0)
     with pytest.raises(ValueError, match="system must be a supported house system code"):
         daily_house_frame(2451545.0, target_dt, 0.0, 0.0, system="?")
+
+
+def test_house_frame_policy_propagates_explicit_house_policy() -> None:
+    target_dt = datetime(2001, 1, 1, tzinfo=timezone.utc)
+    strict_policy = ProgressionComputationPolicy(
+        house_frame=ProgressionHouseFramePolicy(
+            default_house_system=HouseSystem.PLACIDUS,
+            house_policy=HousePolicy.strict(),
+        )
+    )
+
+    with pytest.raises(ValueError, match="critical latitude"):
+        daily_house_frame(2451545.0, target_dt, 89.0, 0.0, policy=strict_policy)
 
 
 def test_progression_relation_invariants_fail_on_drift() -> None:
@@ -1334,7 +1348,7 @@ def test_quotidian_solar_progression_maps_fractional_year_to_days_after_secondar
     natal_jd = jd_from_datetime(natal_dt)
     target_jd = jd_from_datetime(target_dt)
     age_years = (target_jd - natal_jd) / TROPICAL_YEAR
-    completed_years = int(age_years)
+    completed_years = math.floor(age_years)
     secondary_prog_jd = natal_jd + completed_years
     fractional_year = age_years - completed_years
     fractional_days = fractional_year * TROPICAL_YEAR
@@ -1375,7 +1389,7 @@ def test_quotidian_lunar_progression_uses_synodic_month_rate() -> None:
     natal_jd = jd_from_datetime(natal_dt)
     target_jd = jd_from_datetime(target_dt)
     age_years = (target_jd - natal_jd) / TROPICAL_YEAR
-    completed_years = int(age_years)
+    completed_years = math.floor(age_years)
     secondary_prog_jd = natal_jd + completed_years
     fractional_year = age_years - completed_years
     fractional_days = fractional_year * SYNODIC_MONTH
@@ -1504,3 +1518,47 @@ def test_mc_policy_validation_rejects_unknown_mc_method() -> None:
     target_dt = datetime(2020, 1, 1, 6, 0, tzinfo=timezone.utc)
     with pytest.raises(ValueError, match="mc_method must be a supported MC method"):
         secondary_progression(natal_jd, target_dt, policy=bad_policy)
+
+
+def test_progressions_reject_naive_target_dates_at_solver_boundary() -> None:
+    natal_jd = jd_from_datetime(datetime(1990, 1, 1, 6, 0, tzinfo=timezone.utc))
+    naive_target = datetime(2020, 1, 1, 6, 0)
+
+    with pytest.raises(ValueError, match="timezone-aware"):
+        secondary_progression(natal_jd, naive_target)
+
+
+@pytest.mark.requires_ephemeris
+def test_quotidian_solar_progression_uses_floor_for_negative_age() -> None:
+    natal_dt = datetime(2000, 1, 2, 0, 0, tzinfo=timezone.utc)
+    target_dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    natal_jd = jd_from_datetime(natal_dt)
+    target_jd = jd_from_datetime(target_dt)
+    age_years = (target_jd - natal_jd) / TROPICAL_YEAR
+
+    assert age_years < 0.0
+    assert math.floor(age_years) == -1
+
+    completed_years = math.floor(age_years)
+    secondary_prog_jd = natal_jd + completed_years
+    fractional_year = age_years - completed_years
+    expected_quotidian_jd = secondary_prog_jd + fractional_year * TROPICAL_YEAR
+
+    chart = quotidian_solar_progression(natal_jd, target_dt)
+
+    assert chart.progressed_jd_ut == pytest.approx(expected_quotidian_jd, abs=1e-12)
+
+
+@pytest.mark.requires_ephemeris
+def test_tertiary_ii_progression_uses_floor_for_negative_age() -> None:
+    natal_dt = datetime(2000, 1, 2, 0, 0, tzinfo=timezone.utc)
+    target_dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    natal_jd = jd_from_datetime(natal_dt)
+    target_jd = jd_from_datetime(target_dt)
+    age_years = (target_jd - natal_jd) / TROPICAL_YEAR
+    completed_years = math.floor(age_years)
+    expected_prog_jd = natal_jd + completed_years * SYNODIC_MONTH
+
+    chart = tertiary_ii_progression(natal_jd, target_dt)
+
+    assert chart.progressed_jd_ut == pytest.approx(expected_prog_jd, abs=1e-12)

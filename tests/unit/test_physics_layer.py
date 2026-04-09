@@ -239,12 +239,13 @@ def test_ayanamsa_mean_excludes_nutation(jd_j2000):
 def test_ayanamsa_precession_equals_general_precession(jd_j2000):
     """
     ayanamsa(jd, system, mode="mean") - _AYANAMSA_AT_J2000[system] must equal
-    general_precession_in_longitude(jd) to within floating-point rounding.
+    general_precession_in_longitude(ut_to_tt(jd)) to within floating-point
+    rounding.
     """
     system = Ayanamsa.LAHIRI
     mean_val  = ayanamsa(jd_j2000, system, mode="mean")
     base      = _AYANAMSA_AT_J2000[system]
-    precession = general_precession_in_longitude(jd_j2000)
+    precession = general_precession_in_longitude(ut_to_tt(jd_j2000))
 
     assert abs(mean_val - base - precession) < 1e-10, (
         f"ayanamsa(mean) - base = {mean_val - base:.15f}, "
@@ -349,7 +350,7 @@ def test_pbt_ayanamsa_true_minus_mean_equals_dpsi(jd, system):
     assume(system not in _STAR_ANCHORED)
     true_val = ayanamsa(jd, system, "true")
     mean_val = ayanamsa(jd, system, "mean")
-    dpsi, _ = nutation(jd)
+    dpsi, _ = nutation(ut_to_tt(jd))
 
     diff = true_val - mean_val
     assert abs(diff - dpsi) < 1e-10, (
@@ -376,14 +377,15 @@ def test_pbt_ayanamsa_true_minus_mean_equals_dpsi(jd, system):
 def test_pbt_ayanamsa_precession_consistent_with_precession_py(jd, system):
     """
     For any JD and ayanamsa system, ayanamsa(mean) - _AYANAMSA_AT_J2000[system]
-    must equal general_precession_in_longitude(jd) plus any configured
+    must equal general_precession_in_longitude(ut_to_tt(jd)) plus any configured
     system-specific drift term to within 1e-10 degrees.
     """
     assume(_math.isfinite(jd))
     base = _AYANAMSA_AT_J2000[system]
     mean_val = ayanamsa(jd, system, "mean")
-    precession = general_precession_in_longitude(jd)
-    drift = _AYANAMSA_DRIFT_PER_CENTURY.get(system, 0.0) * centuries_from_j2000(jd)
+    jd_tt = ut_to_tt(jd)
+    precession = general_precession_in_longitude(jd_tt)
+    drift = _AYANAMSA_DRIFT_PER_CENTURY.get(system, 0.0) * centuries_from_j2000(jd_tt)
 
     assert abs(mean_val - base - precession - drift) < 1e-10, (
         f"ayanamsa(mean) - base = {mean_val - base:.15e}, "

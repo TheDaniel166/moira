@@ -6,7 +6,7 @@ from dataclasses import replace
 import pytest
 
 import moira.transits as transits_module
-from moira.constants import Body, TROPICAL_YEAR
+from moira.constants import Body, SIGNS, TROPICAL_YEAR
 from moira.stars import star_at
 from moira.julian import jd_from_datetime, ut_to_tt
 from moira.nodes import true_node
@@ -47,6 +47,8 @@ from moira.transits import (
     last_new_moon,
     lunar_return,
     next_transit,
+    next_ingress,
+    next_ingress_into,
     planet_return,
     prenatal_syzygy,
     solar_return,
@@ -214,6 +216,41 @@ def test_find_ingresses_detects_both_directions_for_mercury_window() -> None:
         assert event.condition_state is TransitConditionState.BOUNDARY_EVENT
         assert event.search_kind is TransitSearchKind.SIGN_INGRESS
         assert event.wrapper_kind is TransitWrapperKind.INGRESS
+
+
+@pytest.mark.requires_ephemeris
+def test_find_ingresses_reports_entered_sign_for_retrograde_crossings() -> None:
+    start = jd_from_datetime(datetime(2023, 12, 1, 0, 0, tzinfo=timezone.utc))
+    end = jd_from_datetime(datetime(2024, 1, 20, 0, 0, tzinfo=timezone.utc))
+
+    retrograde_events = [
+        event for event in find_ingresses(Body.MERCURY, start, end)
+        if event.direction == "retrograde"
+    ]
+
+    assert retrograde_events
+    for event in retrograde_events:
+        lon_after = planet_at(Body.MERCURY, event.jd_ut + 0.02).longitude % 360.0
+        entered_sign = SIGNS[int(lon_after // 30.0) % 12]
+        assert event.sign == entered_sign
+
+
+@pytest.mark.requires_ephemeris
+def test_next_ingress_wrappers_use_ingress_safe_defaults_for_saturn() -> None:
+    start = jd_from_datetime(datetime(2024, 1, 1, 0, 0, tzinfo=timezone.utc))
+
+    expected_events = find_ingresses(Body.SATURN, start, start + 1000.0)
+    assert expected_events
+
+    first_any = next_ingress(Body.SATURN, start)
+    first_aries = next_ingress_into(Body.SATURN, "Aries", start)
+
+    assert first_any is not None
+    assert first_any.sign == "Aries"
+    assert first_any.jd_ut == pytest.approx(expected_events[0].jd_ut, abs=1e-6)
+    assert first_aries is not None
+    assert first_aries.sign == "Aries"
+    assert first_aries.jd_ut == pytest.approx(expected_events[0].jd_ut, abs=1e-6)
 
 
 @pytest.mark.requires_ephemeris
@@ -546,6 +583,16 @@ def test_transit_truth_vessels_fail_loudly_on_invalid_internal_state() -> None:
 
     with pytest.raises(ValueError, match="Transit target specification could not be resolved"):
         next_transit(Body.SUN, "Definitely Not A Real Target", 2451545.0, max_days=1.0)
+
+
+def test_planet_target_resolution_surfaces_substrate_failures(monkeypatch: pytest.MonkeyPatch) -> None:
+    def _broken_planet_at(name: str, jd: float, reader: object | None = None) -> object:
+        raise RuntimeError(f"kernel failure for {name}")
+
+    monkeypatch.setattr(transits_module, "planet_at", _broken_planet_at)
+
+    with pytest.raises(RuntimeError, match="kernel failure for Mars"):
+        transits_module._resolve_longitude_truth(Body.MARS, 2451545.0, object())
 
 
 @pytest.mark.requires_ephemeris

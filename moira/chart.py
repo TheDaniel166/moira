@@ -20,14 +20,16 @@ External dependency assumptions:
 """
 
 from dataclasses import dataclass, field
+from types import MappingProxyType
 
 from .constants import Body, HouseSystem
 from .julian import ut_to_tt
 from .planets import all_planets_at, PlanetData
-from .houses import calculate_houses, HouseCusps
+from .houses import calculate_houses, HouseCusps, HousePolicy
 from .nodes import true_node, mean_node, mean_lilith, true_lilith, NodeData
+from .spk_reader import SpkReader
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class ChartContext:
     """
     RITE: The Chart Vessel — singular cross-module data vessel of the heavens.
@@ -134,10 +136,12 @@ class ChartContext:
               Falls back to True when planets or houses are absent.
         """
         # Determine day/night based on Sun's relation to horizon (geometric)
+        object.__setattr__(self, "planets", MappingProxyType(dict(self.planets)))
+        object.__setattr__(self, "nodes", MappingProxyType(dict(self.nodes)))
         if self.planets.get(Body.SUN) and self.houses:
-            self.is_day = self._sun_is_above_horizon()
+            object.__setattr__(self, "is_day", self._sun_is_above_horizon())
         else:
-            self.is_day = True  # fallback: no Sun or no houses
+            object.__setattr__(self, "is_day", True)  # fallback: no Sun or no houses
 
     def _sun_is_above_horizon(self) -> bool:
         """Geometric check for day/night."""
@@ -159,7 +163,9 @@ def create_chart(
     latitude:   float,
     longitude:  float,
     house_system: str = HouseSystem.PLACIDUS,
-    bodies:      list[str] | None = None
+    bodies:      list[str] | None = None,
+    reader:      SpkReader | None = None,
+    policy:      HousePolicy | None = None,
 ) -> ChartContext:
     """
     Construct a fully populated ChartContext vessel for the given time and location.
@@ -181,6 +187,9 @@ def create_chart(
         bodies: List of Body constant strings to compute. When None, defaults
             to the eleven standard bodies: Sun, Moon, Mercury, Venus, Mars,
             Jupiter, Saturn, Uranus, Neptune, Pluto, and Chiron.
+        reader: Optional SpkReader. When None, the active default reader is
+            resolved lazily via get_reader().
+        policy: Optional HousePolicy governing house fallback doctrine.
 
     Returns:
         A fully populated ChartContext vessel with planets, nodes, houses,
@@ -194,17 +203,18 @@ def create_chart(
             at the given Julian Day (out-of-range epoch).
 
     Side effects:
-        - Reads the DE441 SPK kernel file from disk on the first call (via
-          get_reader()), which initialises the module-level SpkReader singleton.
-          Subsequent calls reuse the cached reader without additional I/O.
+        - When ``reader`` is None, may read the DE441 SPK kernel file from disk
+          on the first call via get_reader(). An explicit reader avoids that
+          ambient singleton lookup.
     """
     if not -90.0 <= latitude <= 90.0:
         raise ValueError(f"latitude must be in [-90, 90], got {latitude}")
     if not -180.0 <= longitude <= 180.0:
         raise ValueError(f"longitude must be in [-180, 180], got {longitude}")
 
-    from .spk_reader import get_reader
-    reader = get_reader()
+    if reader is None:
+        from .spk_reader import get_reader
+        reader = get_reader()
 
     jd_tt = ut_to_tt(jd_ut)
     if bodies is None:
@@ -223,7 +233,7 @@ def create_chart(
         Body.TRUE_LILITH: true_lilith(jd_ut, reader=reader)
     }
     
-    houses = calculate_houses(jd_ut, latitude, longitude, system=house_system)
+    houses = calculate_houses(jd_ut, latitude, longitude, system=house_system, policy=policy)
     
     return ChartContext(
         jd_ut=jd_ut,

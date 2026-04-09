@@ -415,17 +415,6 @@ _CLASSIFICATIONS: dict[str, HouseSystemClassification] = {
     HouseSystem.SUNSHINE:      HouseSystemClassification(_F.SOLAR,      _CB.SOLAR_POSITION,      False, True),
 }
 
-# Returned by classify_house_system() for any unrecognised code.
-# Matches the Placidus classification because unknown codes are computed
-# via Placidus in calculate_houses().
-_UNKNOWN_CLASSIFICATION = HouseSystemClassification(
-    family=_F.QUADRANT,
-    cusp_basis=_CB.SEMI_ARC,
-    latitude_sensitive=True,
-    polar_capable=False,
-)
-
-
 def classify_house_system(code: str) -> HouseSystemClassification:
     """
     Return the HouseSystemClassification for the given HouseSystem code.
@@ -435,17 +424,22 @@ def classify_house_system(code: str) -> HouseSystemClassification:
     polar capability.  It is derived entirely from the code string; no
     chart data or observer coordinates are needed.
 
-    When `code` is not a recognised HouseSystem constant, returns the
-    classification of HouseSystem.PLACIDUS (the fallback engine), because
-    an unknown code is computed via Placidus in calculate_houses().
+    When `code` is not a recognised HouseSystem constant, raises ValueError.
+    Classification is a property of a declared, known system code, not of a
+    downstream fallback policy.
 
     Args:
         code: A HouseSystem constant string (e.g. HouseSystem.PLACIDUS).
 
     Returns:
         A frozen HouseSystemClassification for that code.
+
+    Raises:
+        ValueError: If ``code`` is not a recognised HouseSystem constant.
     """
-    return _CLASSIFICATIONS.get(code, _UNKNOWN_CLASSIFICATION)
+    if code not in _CLASSIFICATIONS:
+        raise ValueError(f"unknown house system code {code!r}")
+    return _CLASSIFICATIONS[code]
 
 
 # ---------------------------------------------------------------------------

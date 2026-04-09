@@ -18,7 +18,7 @@ class _FakeBody:
 def test_heliacal_rising_event_returns_found_event(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd)
     monkeypatch.setattr(stars, "star_at", lambda name, jd_tt, **_: _FakeBody(100.0, magnitude=1.2))
-    monkeypatch.setattr("moira.planets.planet_at", lambda body, jd_tt: _FakeBody(114.5))
+    monkeypatch.setattr("moira.planets.planet_at", lambda body, jd_ut, **kwargs: _FakeBody(114.5))
     monkeypatch.setattr("moira.heliacal._find_sun_at_alt", lambda *args, **kwargs: 2451545.25)
     monkeypatch.setattr("moira.rise_set._altitude", lambda *args, **kwargs: 7.5)
 
@@ -41,8 +41,8 @@ def test_heliacal_setting_event_returns_last_visible_morning(monkeypatch: pytest
     def _fake_star_at(name: str, jd_tt: float, **_: object) -> _FakeBody:
         return _FakeBody(100.0, magnitude=1.2)
 
-    def _fake_planet_at(body: str, jd_tt: float) -> _FakeBody:
-        if jd_tt < 2451546.0:
+    def _fake_planet_at(body: str, jd_ut: float, **kwargs: object) -> _FakeBody:
+        if jd_ut < 2451546.0:
             return _FakeBody(114.5)
         return _FakeBody(104.0)
 
@@ -63,7 +63,7 @@ def test_heliacal_setting_event_returns_last_visible_morning(monkeypatch: pytest
 def test_heliacal_rising_returns_none_when_not_found(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd)
     monkeypatch.setattr(stars, "star_at", lambda name, jd_tt, **_: _FakeBody(100.0, magnitude=2.0))
-    monkeypatch.setattr("moira.planets.planet_at", lambda body, jd_tt: _FakeBody(100.5))
+    monkeypatch.setattr("moira.planets.planet_at", lambda body, jd_ut, **kwargs: _FakeBody(100.5))
 
     assert stars.heliacal_rising("Sirius", 2451545.0, 31.2, 29.9, arcus_visionis=10.0, search_days=5) is None
 
@@ -80,7 +80,7 @@ def test_heliacal_event_rejects_invalid_arcus() -> None:
 def test_batch_returns_heliacal_batch_result_type(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd)
     monkeypatch.setattr(stars, "star_at", lambda name, jd_tt, **_: _FakeBody(100.0, magnitude=1.2))
-    monkeypatch.setattr("moira.planets.planet_at", lambda body, jd_tt: _FakeBody(114.5))
+    monkeypatch.setattr("moira.planets.planet_at", lambda body, jd_ut, **kwargs: _FakeBody(114.5))
     monkeypatch.setattr("moira.heliacal._find_sun_at_alt", lambda *args, **kwargs: 2451545.25)
     monkeypatch.setattr("moira.rise_set._altitude", lambda *args, **kwargs: 7.5)
 
@@ -94,7 +94,7 @@ def test_batch_returns_heliacal_batch_result_type(monkeypatch: pytest.MonkeyPatc
 def test_batch_found_contains_heliacal_events(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd)
     monkeypatch.setattr(stars, "star_at", lambda name, jd_tt, **_: _FakeBody(100.0, magnitude=1.2))
-    monkeypatch.setattr("moira.planets.planet_at", lambda body, jd_tt: _FakeBody(114.5))
+    monkeypatch.setattr("moira.planets.planet_at", lambda body, jd_ut, **kwargs: _FakeBody(114.5))
     monkeypatch.setattr("moira.heliacal._find_sun_at_alt", lambda *args, **kwargs: 2451545.25)
     monkeypatch.setattr("moira.rise_set._altitude", lambda *args, **kwargs: 7.5)
 
@@ -109,7 +109,29 @@ def test_batch_found_contains_heliacal_events(monkeypatch: pytest.MonkeyPatch) -
 def test_batch_skips_faint_stars(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd)
     monkeypatch.setattr(stars, "star_at", lambda name, jd_tt, **_: _FakeBody(100.0, magnitude=9.0))
-    monkeypatch.setattr("moira.planets.planet_at", lambda body, jd_tt: _FakeBody(114.5))
+    monkeypatch.setattr("moira.planets.planet_at", lambda body, jd_ut, **kwargs: _FakeBody(114.5))
+
+
+def test_star_heliacal_signed_elongation_passes_tt_explicitly_without_double_conversion(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, float] = {}
+
+    monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd + 0.123)
+    monkeypatch.setattr(stars, "star_at", lambda name, jd_tt, **_: _FakeBody(120.0, magnitude=1.0))
+
+    def _fake_planet_at(body: str, jd_ut: float, **kwargs: object) -> _FakeBody:
+        captured["jd_ut"] = jd_ut
+        captured["jd_tt"] = float(kwargs["jd_tt"])
+        return _FakeBody(100.0)
+
+    monkeypatch.setattr("moira.planets.planet_at", _fake_planet_at)
+
+    elong = stars._heliacal_signed_elongation("Sirius", 2451545.0)
+
+    assert elong == pytest.approx(20.0)
+    assert captured["jd_ut"] == pytest.approx(2451545.0)
+    assert captured["jd_tt"] == pytest.approx(2451545.123)
 
     result = stars.heliacal_catalog_batch(
         "heliacal_rising", 2451545.0, 31.2, 29.9,
@@ -127,7 +149,7 @@ def test_batch_skips_out_of_lat_limit(monkeypatch: pytest.MonkeyPatch) -> None:
     # Observer at 60°N cannot see it.
     monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd)
     monkeypatch.setattr(stars, "star_at", lambda name, jd_tt, **_: _FakeBody(100.0, magnitude=1.0))
-    monkeypatch.setattr("moira.planets.planet_at", lambda body, jd_tt: _FakeBody(114.5))
+    monkeypatch.setattr("moira.planets.planet_at", lambda body, jd_ut, **kwargs: _FakeBody(114.5))
 
     result = stars.heliacal_catalog_batch(
         "heliacal_rising", 2451545.0, 60.0, 24.0,
@@ -140,7 +162,7 @@ def test_batch_skips_out_of_lat_limit(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_batch_total_catalog_property(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd)
     monkeypatch.setattr(stars, "star_at", lambda name, jd_tt, **_: _FakeBody(100.0, magnitude=1.2))
-    monkeypatch.setattr("moira.planets.planet_at", lambda body, jd_tt: _FakeBody(114.5))
+    monkeypatch.setattr("moira.planets.planet_at", lambda body, jd_ut, **kwargs: _FakeBody(114.5))
     monkeypatch.setattr("moira.heliacal._find_sun_at_alt", lambda *args, **kwargs: 2451545.25)
     monkeypatch.setattr("moira.rise_set._altitude", lambda *args, **kwargs: 7.5)
 
@@ -163,7 +185,7 @@ def test_batch_found_sorted_by_jd_ut(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd)
     monkeypatch.setattr(stars, "star_at", lambda name, jd_tt, **_: _FakeBody(100.0, magnitude=1.2))
-    monkeypatch.setattr("moira.planets.planet_at", lambda body, jd_tt: _FakeBody(114.5))
+    monkeypatch.setattr("moira.planets.planet_at", lambda body, jd_ut, **kwargs: _FakeBody(114.5))
     monkeypatch.setattr("moira.heliacal._find_sun_at_alt", _fake_sun_at_alt)
     monkeypatch.setattr("moira.rise_set._altitude", lambda *args, **kwargs: 7.5)
 

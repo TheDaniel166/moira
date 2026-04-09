@@ -1442,9 +1442,15 @@ def find_primary_arcs(
         s_rate = abs(solar_speed)
     else:
         sun = chart.planets.get(Body.SUN)
-        s_rate = abs(sun.speed) if sun else _DEFAULT_SOLAR_RATE
+        if sun is None:
+            raise ValueError(
+                "find_primary_arcs requires explicit solar_speed or a chart with natal Sun speed"
+            )
+        s_rate = abs(sun.speed)
     if s_rate <= 0.0:
-        s_rate = _DEFAULT_SOLAR_RATE
+        raise ValueError(
+            "find_primary_arcs requires explicit solar_speed or a chart with positive natal Sun speed"
+        )
 
     spec = speculum(chart, houses, geo_lat, obliquity=obl)
     sp_map = {e.name: e for e in spec}

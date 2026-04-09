@@ -7,7 +7,7 @@ Verifies that:
 - classify_house_system() is deterministic and maps all 18 known systems
 - Classification reflects effective_system, not requested system
 - Fallback results classify by the effective (Porphyry / Placidus) system
-- Unknown codes return a defined fallback classification
+- Unknown codes raise rather than impersonating a fallback engine
 - Classification fields have correct values per system doctrine
 - Existing calculation semantics remain unchanged (no cusp-value drift)
 """
@@ -296,7 +296,7 @@ class TestClassificationReflectsEffectiveSystem:
         requested_class = classify_house_system(requested)
         assert r.classification != requested_class
 
-    def test_unknown_code_classification_is_placidus(self):
+    def test_unknown_code_result_classification_is_placidus_after_engine_fallback(self):
         r = calculate_houses(_JD_J2000, _LAT_NORMAL, _LON, "ZZUNKNOWN")
         placidus_class = classify_house_system(HouseSystem.PLACIDUS)
         assert r.classification == placidus_class
@@ -328,18 +328,13 @@ class TestClassificationReflectsEffectiveSystem:
 # ---------------------------------------------------------------------------
 
 class TestUnknownCodeClassification:
-    def test_unknown_returns_classification(self):
-        c = classify_house_system("ZZUNKNOWN")
-        assert isinstance(c, HouseSystemClassification)
+    def test_unknown_raises_value_error(self):
+        with pytest.raises(ValueError, match="unknown house system code"):
+            classify_house_system("ZZUNKNOWN")
 
-    def test_unknown_returns_same_as_placidus(self):
-        c_unknown = classify_house_system("ZZUNKNOWN")
-        c_placidus = classify_house_system(HouseSystem.PLACIDUS)
-        assert c_unknown == c_placidus
-
-    def test_classify_empty_string(self):
-        c = classify_house_system("")
-        assert isinstance(c, HouseSystemClassification)
+    def test_classify_empty_string_raises(self):
+        with pytest.raises(ValueError, match="unknown house system code"):
+            classify_house_system("")
 
 
 # ---------------------------------------------------------------------------

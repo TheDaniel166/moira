@@ -115,6 +115,14 @@ def test_refine_minimum_finds_parabola_vertex() -> None:
     assert abs(best - 3.25) < 1e-5
 
 
+def test_refine_minimum_falls_back_cleanly_when_window_is_not_unimodal() -> None:
+    def objective(x: float) -> float:
+        return min((x + 0.35) ** 2, (x - 0.2) ** 2 + 0.01)
+
+    best = refine_minimum(objective, 0.0, window_days=1.0, tol_days=1e-6)
+    assert abs(best + 0.35) < 1e-3
+
+
 def test_refine_greatest_eclipse_helpers_return_local_event_maxima() -> None:
     calc = EclipseCalculator()
 
@@ -137,6 +145,24 @@ def test_total_lunar_eclipse_reports_larger_penumbral_than_umbral_magnitude() ->
     assert data.is_lunar_eclipse
     assert data.eclipse_type.is_total
     assert data.eclipse_type.magnitude_penumbra > data.eclipse_type.magnitude_umbral
+
+
+def test_explicit_native_lunar_event_surface_exposes_model_choice() -> None:
+    calc = EclipseCalculator()
+
+    geometric = calc.calculate_jd(2451564.705)
+    native_umbral = calc.calculate_lunar_event_jd(2451564.705, kind="umbral")
+    native_penumbral = calc.calculate_lunar_event_jd(2451564.705, kind="penumbral")
+
+    assert geometric == native_penumbral
+    assert native_umbral.is_lunar_eclipse
+    assert native_umbral.eclipse_type.is_total
+
+
+def test_explicit_native_lunar_event_surface_rejects_unknown_kind() -> None:
+    calc = EclipseCalculator()
+    with pytest.raises(ValueError, match="Unsupported native lunar event kind"):
+        calc.calculate_lunar_event_jd(2451564.705, kind="hybrid")
 
 
 @pytest.mark.slow

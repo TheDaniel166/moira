@@ -309,6 +309,64 @@ def test_visibility_event_returns_generalized_cosmic_event(monkeypatch: pytest.M
     assert event.sun_altitude_deg == pytest.approx(-18.0)
 
 
+def test_visibility_checks_surface_target_failures_instead_of_returning_none(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("moira.heliacal._target_apparent_magnitude", lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("magnitude failure")))
+
+    with pytest.raises(RuntimeError, match="magnitude failure"):
+        heliacal_module._check_visibility(
+            Body.VENUS,
+            2451545.0,
+            0.0,
+            0.0,
+            morning=True,
+            model=VisibilityModel(),
+        )
+
+
+def test_target_alt_visibility_checks_surface_target_failures_instead_of_returning_none(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("moira.heliacal._target_apparent_magnitude", lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("magnitude failure")))
+
+    with pytest.raises(RuntimeError, match="magnitude failure"):
+        heliacal_module._check_visibility_with_target_alt(
+            Body.VENUS,
+            2451545.0,
+            0.0,
+            0.0,
+            morning=True,
+            target_solar_altitude_deg=-18.0,
+            model=VisibilityModel(),
+        )
+
+
+def test_stellar_signed_elongation_passes_tt_explicitly_without_double_conversion(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, float] = {}
+
+    monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd + 0.123)
+    monkeypatch.setattr(
+        "moira.stars.star_at",
+        lambda body, jd_tt: type("Star", (), {"longitude": 120.0})(),
+    )
+
+    def _fake_planet_at(body: str, jd_ut: float, **kwargs):
+        captured["jd_ut"] = jd_ut
+        captured["jd_tt"] = kwargs["jd_tt"]
+        return type("Sun", (), {"longitude": 100.0})()
+
+    monkeypatch.setattr("moira.planets.planet_at", _fake_planet_at)
+
+    elong = heliacal_module._target_signed_elongation("Sirius", 2451545.0)
+
+    assert elong == pytest.approx(20.0)
+    assert captured["jd_ut"] == pytest.approx(2451545.0)
+    assert captured["jd_tt"] == pytest.approx(2451545.123)
+
+
 @pytest.mark.requires_ephemeris
 def test_visibility_assessment_returns_typed_result() -> None:
     result = visibility_assessment(

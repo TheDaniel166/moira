@@ -49,7 +49,7 @@ from datetime import datetime, timezone
 
 from .constants import Body, HouseSystem, HOUSE_SYSTEM_NAMES, TROPICAL_YEAR, sign_of
 from .coordinates import ecliptic_to_equatorial, equatorial_to_ecliptic
-from .houses import HouseCusps, calculate_houses
+from .houses import HouseCusps, HousePolicy, calculate_houses
 from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd, jd_from_datetime, delta_t, ut_to_tt
 from .planets import planet_at, all_planets_at
 from .obliquity import true_obliquity
@@ -1084,6 +1084,7 @@ class ProgressionHouseFramePolicy:
 
     default_house_system: str = HouseSystem.PLACIDUS
     mc_method: str = "cast_at_progressed_jd"
+    house_policy: HousePolicy = field(default_factory=HousePolicy.default)
 
 
 @dataclass(frozen=True, slots=True)
@@ -1124,6 +1125,8 @@ def _validate_policy(policy: ProgressionComputationPolicy) -> ProgressionComputa
         raise ValueError("policy.house_frame.default_house_system must be a supported house system code")
     if policy.house_frame.mc_method not in _SUPPORTED_MC_METHODS:
         raise ValueError("policy.house_frame.mc_method must be a supported MC method")
+    if not isinstance(policy.house_frame.house_policy, HousePolicy):
+        raise TypeError("policy.house_frame.house_policy must be HousePolicy")
     return policy
 
 
@@ -1134,6 +1137,8 @@ def _resolve_policy(policy: ProgressionComputationPolicy | None) -> ProgressionC
 def _validate_target_date(target_date: datetime) -> None:
     if not isinstance(target_date, datetime):
         raise TypeError("target_date must be a datetime")
+    if target_date.tzinfo is None or target_date.utcoffset() is None:
+        raise ValueError("target_date must be timezone-aware")
 
 
 def _validate_natal_jd_ut(natal_jd_ut: float) -> None:
@@ -1172,6 +1177,12 @@ def _age_years(
     _validate_natal_jd_ut(natal_jd_ut)
     _validate_target_date(target_date)
     return (jd_from_datetime(target_date) - natal_jd_ut) / tropical_year_days
+
+
+def _completed_life_years(age_years: float) -> int:
+    """Return the number of completed life years using floor semantics."""
+
+    return math.floor(age_years)
 
 
 def _default_bodies(bodies: list[str] | None) -> list[str]:
@@ -1453,6 +1464,7 @@ def _resolve_progressed_mc(
     latitude: float,
     longitude: float,
     system: str,
+    house_policy: HousePolicy,
     reader: SpkReader,
     naibod_rate: float,
     tropical_year_days: float,
@@ -1466,22 +1478,28 @@ def _resolve_progressed_mc(
     if mc_method == "cast_at_progressed_jd":
         return None
     if mc_method == "solar_arc_mc":
-        natal_houses = calculate_houses(natal_jd_ut, latitude, longitude, system=system)
+        natal_houses = calculate_houses(
+            natal_jd_ut, latitude, longitude, system=system, policy=house_policy
+        )
         natal_sun = planet_at(Body.SUN, natal_jd_ut, reader=reader).longitude
         prog_sun = planet_at(Body.SUN, progressed_jd_ut, reader=reader).longitude
         arc = (prog_sun - natal_sun) % 360.0
         return (natal_houses.mc + arc) % 360.0
     if mc_method == "naibod_mc":
-        natal_houses = calculate_houses(natal_jd_ut, latitude, longitude, system=system)
+        natal_houses = calculate_houses(
+            natal_jd_ut, latitude, longitude, system=system, policy=house_policy
+        )
         arc = age_years * naibod_rate
         return (natal_houses.mc + arc) % 360.0
     if mc_method == "quotidian_mc":
-        completed_years = int(age_years)
+        completed_years = _completed_life_years(age_years)
         secondary_prog_jd = natal_jd_ut + completed_years
         fractional_year = age_years - completed_years
         fractional_days = fractional_year * tropical_year_days
         quotidian_jd = secondary_prog_jd + fractional_days
-        quotidian_houses = calculate_houses(quotidian_jd, latitude, longitude, system=system)
+        quotidian_houses = calculate_houses(
+            quotidian_jd, latitude, longitude, system=system, policy=house_policy
+        )
         return quotidian_houses.mc
     raise ValueError(f"unsupported mc_method: {mc_method!r}")
 
@@ -1503,9 +1521,12 @@ def daily_house_frame(
     _validate_target_date(target_date)
     _validate_house_frame_inputs(latitude, longitude, system)
     resolved_system = resolved_policy.house_frame.default_house_system if system is None else system
+    house_policy = resolved_policy.house_frame.house_policy
     age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
     progressed_jd_ut = natal_jd_ut + age_years
-    houses = calculate_houses(progressed_jd_ut, latitude, longitude, system=resolved_system)
+    houses = calculate_houses(
+        progressed_jd_ut, latitude, longitude, system=resolved_system, policy=house_policy
+    )
     mc_override = _resolve_progressed_mc(
         mc_method=resolved_policy.house_frame.mc_method,
         natal_jd_ut=natal_jd_ut,
@@ -1514,6 +1535,7 @@ def daily_house_frame(
         latitude=latitude,
         longitude=longitude,
         system=resolved_system,
+        house_policy=house_policy,
         reader=get_reader(),
         naibod_rate=resolved_policy.directions.naibod_rate_deg_per_year,
         tropical_year_days=resolved_policy.time_key.tropical_year_days,
@@ -2322,7 +2344,7 @@ def tertiary_ii_progression(
     resolved_policy = _resolve_policy(policy)
 
     age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
-    completed_years = int(age_years)
+    completed_years = _completed_life_years(age_years)
     prog_jd = natal_jd_ut + completed_years * resolved_policy.time_key.synodic_month_days
 
     return _time_key_chart(
@@ -2362,7 +2384,7 @@ def converse_tertiary_ii_progression(
     resolved_policy = _resolve_policy(policy)
 
     age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
-    completed_years = int(age_years)
+    completed_years = _completed_life_years(age_years)
     prog_jd = natal_jd_ut - completed_years * resolved_policy.time_key.synodic_month_days
 
     return _time_key_chart(
@@ -2521,8 +2543,13 @@ def ascendant_arc(
     age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
     prog_jd = natal_jd_ut + age_years
     resolved_system = resolved_policy.house_frame.default_house_system if system is None else system
-    natal_houses = calculate_houses(natal_jd_ut, latitude, longitude, system=resolved_system)
-    progressed_houses = calculate_houses(prog_jd, latitude, longitude, system=resolved_system)
+    house_policy = resolved_policy.house_frame.house_policy
+    natal_houses = calculate_houses(
+        natal_jd_ut, latitude, longitude, system=resolved_system, policy=house_policy
+    )
+    progressed_houses = calculate_houses(
+        prog_jd, latitude, longitude, system=resolved_system, policy=house_policy
+    )
     arc = (progressed_houses.asc - natal_houses.asc) % 360.0
     return _uniform_longitude_direction(
         chart_type="Ascendant Arc Direction",
@@ -2566,8 +2593,13 @@ def converse_ascendant_arc(
     age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
     prog_jd = natal_jd_ut + age_years
     resolved_system = resolved_policy.house_frame.default_house_system if system is None else system
-    natal_houses = calculate_houses(natal_jd_ut, latitude, longitude, system=resolved_system)
-    progressed_houses = calculate_houses(prog_jd, latitude, longitude, system=resolved_system)
+    house_policy = resolved_policy.house_frame.house_policy
+    natal_houses = calculate_houses(
+        natal_jd_ut, latitude, longitude, system=resolved_system, policy=house_policy
+    )
+    progressed_houses = calculate_houses(
+        prog_jd, latitude, longitude, system=resolved_system, policy=house_policy
+    )
     forward_arc = (progressed_houses.asc - natal_houses.asc) % 360.0
     return _uniform_longitude_direction(
         chart_type="Converse Ascendant Arc Direction",
@@ -2634,8 +2666,13 @@ def vertex_arc(
     age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
     prog_jd = natal_jd_ut + age_years
     resolved_system = resolved_policy.house_frame.default_house_system if system is None else system
-    natal_houses = calculate_houses(natal_jd_ut, latitude, longitude, system=resolved_system)
-    progressed_houses = calculate_houses(prog_jd, latitude, longitude, system=resolved_system)
+    house_policy = resolved_policy.house_frame.house_policy
+    natal_houses = calculate_houses(
+        natal_jd_ut, latitude, longitude, system=resolved_system, policy=house_policy
+    )
+    progressed_houses = calculate_houses(
+        prog_jd, latitude, longitude, system=resolved_system, policy=house_policy
+    )
     if natal_houses.vertex is None or progressed_houses.vertex is None:
         raise ValueError(
             "Vertex arc requires a house system that computes the Vertex; "
@@ -2699,8 +2736,13 @@ def converse_vertex_arc(
     age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
     prog_jd = natal_jd_ut + age_years
     resolved_system = resolved_policy.house_frame.default_house_system if system is None else system
-    natal_houses = calculate_houses(natal_jd_ut, latitude, longitude, system=resolved_system)
-    progressed_houses = calculate_houses(prog_jd, latitude, longitude, system=resolved_system)
+    house_policy = resolved_policy.house_frame.house_policy
+    natal_houses = calculate_houses(
+        natal_jd_ut, latitude, longitude, system=resolved_system, policy=house_policy
+    )
+    progressed_houses = calculate_houses(
+        prog_jd, latitude, longitude, system=resolved_system, policy=house_policy
+    )
     if natal_houses.vertex is None or progressed_houses.vertex is None:
         raise ValueError(
             "Vertex arc requires a house system that computes the Vertex; "
@@ -2969,7 +3011,7 @@ def quotidian_solar_progression(
     tropical_year_days = resolved_policy.time_key.tropical_year_days
 
     age_years = _age_years(natal_jd_ut, target_date, tropical_year_days)
-    completed_years = int(age_years)
+    completed_years = _completed_life_years(age_years)
     secondary_prog_jd = natal_jd_ut + completed_years
     fractional_year = age_years - completed_years
     fractional_days = fractional_year * tropical_year_days
@@ -3026,7 +3068,7 @@ def converse_quotidian_solar_progression(
     tropical_year_days = resolved_policy.time_key.tropical_year_days
 
     age_years = _age_years(natal_jd_ut, target_date, tropical_year_days)
-    completed_years = int(age_years)
+    completed_years = _completed_life_years(age_years)
     secondary_prog_jd = natal_jd_ut + completed_years
     fractional_year = age_years - completed_years
     fractional_days = fractional_year * tropical_year_days
@@ -3093,7 +3135,7 @@ def quotidian_lunar_progression(
     synodic_month_days = resolved_policy.time_key.synodic_month_days
 
     age_years = _age_years(natal_jd_ut, target_date, tropical_year_days)
-    completed_years = int(age_years)
+    completed_years = _completed_life_years(age_years)
     secondary_prog_jd = natal_jd_ut + completed_years
     fractional_year = age_years - completed_years
     fractional_days = fractional_year * synodic_month_days
@@ -3151,7 +3193,7 @@ def converse_quotidian_lunar_progression(
     synodic_month_days = resolved_policy.time_key.synodic_month_days
 
     age_years = _age_years(natal_jd_ut, target_date, tropical_year_days)
-    completed_years = int(age_years)
+    completed_years = _completed_life_years(age_years)
     secondary_prog_jd = natal_jd_ut + completed_years
     fractional_year = age_years - completed_years
     fractional_days = fractional_year * synodic_month_days

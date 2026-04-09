@@ -68,6 +68,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from importlib.metadata import PackageNotFoundError, version as package_version
 from pathlib import Path
+from types import MappingProxyType
 
 from .constants import Body, HouseSystem, AspectDefinition, ASPECT_TIERS
 from ._kernel_paths import find_kernel, find_planetary_kernel, user_kernels_dir
@@ -75,6 +76,7 @@ from .julian import (
     CalendarDateTime, DeltaTPolicy, julian_day, calendar_from_jd, calendar_datetime_from_jd,
     jd_from_datetime, datetime_from_jd, format_jd_utc, safe_datetime_from_jd,
     greenwich_mean_sidereal_time, local_sidereal_time, delta_t,
+    ut_to_tt,
     delta_t_from_jd, apparent_sidereal_time_at,
 )
 from .delta_t_physical import DeltaTBreakdown, delta_t_breakdown
@@ -87,7 +89,7 @@ from .coordinates import (
     equation_of_time,
     angular_distance, normalize_degrees,
 )
-from .spk_reader import get_reader, set_kernel_path, SpkReader, MissingKernelError
+from .spk_reader import get_reader, use_reader_override, SpkReader, MissingKernelError
 from .planets import (
     PlanetData, SkyPosition, CartesianPosition,
     planet_at, sky_position_at, all_planets_at, sun_longitude,
@@ -1227,12 +1229,12 @@ __author__  = "Moira contributors"
 # Chart result
 # ---------------------------------------------------------------------------
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class Chart:
     """
     RITE: Vessel of the Heavens
 
-    THEOREM: Mutable dataclass holding a complete astrological chart snapshot
+    THEOREM: Immutable dataclass holding a complete astrological chart snapshot
              for a single Julian Day, including planetary positions, lunar nodes,
              obliquity, and ΔT.
 
@@ -1258,8 +1260,8 @@ class Chart:
             - moira.julian.datetime_from_jd, calendar_datetime_from_jd
               (used by properties).
         Mutation authority:
-            - Fields are mutable post-construction (not frozen); callers must
-              not mutate a Chart instance that is shared across pillars.
+            - Fields are frozen post-construction and mapping fields are
+              exposed read-only.
 
     LAW OF THE DATA PATH:
         Chart is a cross-pillar vessel. It is produced by moira/__init__.py
@@ -1280,11 +1282,11 @@ class Chart:
             "outputs": ["Chart instance", "longitudes()", "speeds()",
                         "datetime_utc", "calendar_utc"]
         },
-        "state": "mutable_snapshot",
+        "state": "frozen_snapshot",
         "effects": {
             "io": [],
             "signals_emitted": [],
-            "mutations": ["fields are mutable; callers must not share and mutate"]
+            "mutations": ["none"]
         },
         "concurrency": {
             "thread": "pure_computation",
@@ -1304,6 +1306,10 @@ class Chart:
     nodes:      dict[str, NodeData]
     obliquity:  float
     delta_t:    float       # seconds
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "planets", MappingProxyType(dict(self.planets)))
+        object.__setattr__(self, "nodes", MappingProxyType(dict(self.nodes)))
 
     @property
     def datetime_utc(self) -> datetime:
@@ -1340,8 +1346,6 @@ class Moira:
         self._reader_obj: SpkReader | None = None
         self._kernel_init_error: FileNotFoundError | MissingKernelError | None = None
 
-        if kernel_path:
-            set_kernel_path(kernel_path)
         self._try_initialize_reader()
 
     def _try_initialize_reader(self) -> None:
@@ -1352,11 +1356,38 @@ class Moira:
                 discovered = find_planetary_kernel()
                 if discovered is not None:
                     path = str(discovered)
-            self._reader_obj = get_reader(path)
+            if path is None:
+                raise MissingKernelError(
+                    "No planetary kernel is configured and none was found on disk."
+                )
+            self._reader_obj = SpkReader(Path(path))
             self._kernel_init_error = None
         except (FileNotFoundError, MissingKernelError) as exc:
             self._reader_obj = None
             self._kernel_init_error = exc
+
+    def __getattribute__(self, name: str):
+        attr = object.__getattribute__(self, name)
+        if (
+            callable(attr)
+            and not name.startswith("_")
+            and name not in {
+                "is_kernel_available",
+                "get_kernel_status",
+                "kernel_status",
+                "available_kernels",
+                "configure_kernel_path",
+                "download_missing_kernels",
+            }
+        ):
+            def _wrapped(*args, **kwargs):
+                reader = object.__getattribute__(self, "_reader_obj")
+                if reader is None:
+                    return attr(*args, **kwargs)
+                with use_reader_override(reader):
+                    return attr(*args, **kwargs)
+            return _wrapped
+        return attr
 
     @property
     def _reader(self) -> SpkReader:
@@ -1409,7 +1440,6 @@ class Moira:
 
     def configure_kernel_path(self, path: str) -> None:
         self._kernel_path = path
-        set_kernel_path(path)
         self._try_initialize_reader()
         if self._reader_obj is None:
             raise MissingEphemerisKernelError(self.get_kernel_status())
@@ -1438,7 +1468,7 @@ class Moira:
 
         Parameters
         ----------
-        dt              : timezone-aware datetime (naïve treated as UTC)
+        dt              : timezone-aware datetime
         bodies          : list of Body.* constants (defaults to ALL_PLANETS)
         include_nodes   : include True Node, Mean Node, Lilith
         observer_lat    : geographic latitude for topocentric Moon (degrees)
@@ -1467,9 +1497,9 @@ class Moira:
             nodes[Body.MEAN_NODE] = mean_node(jd)
             nodes[Body.LILITH]    = mean_lilith(jd)
 
-        year = dt.year if dt.year > -9999 else -9999
-        obl  = true_obliquity(jd)
-        dt_s = delta_t(float(year))
+        jd_tt = ut_to_tt(jd)
+        obl = true_obliquity(jd_tt)
+        dt_s = delta_t_from_jd(jd)
 
         return Chart(
             jd_ut=jd,
@@ -1489,6 +1519,7 @@ class Moira:
         latitude: float,
         longitude: float,
         system: str = HouseSystem.PLACIDUS,
+        policy: HousePolicy | None = None,
     ) -> HouseCusps:
         """
         Calculate house cusps for a time and geographic location.
@@ -1501,7 +1532,7 @@ class Moira:
         system    : HouseSystem.* constant
         """
         jd = jd_from_datetime(dt)
-        return calculate_houses(jd, latitude, longitude, system)
+        return calculate_houses(jd, latitude, longitude, system, policy=policy)
 
     def sky_position(
         self,
@@ -1604,7 +1635,7 @@ class Moira:
 
         Parameters
         ----------
-        dt : timezone-aware datetime (naïve treated as UTC)
+        dt : timezone-aware datetime
 
         Returns
         -------
@@ -1704,6 +1735,7 @@ class Moira:
         houses_b: HouseCusps,
         reference_latitude: float,
         house_system: str = HouseSystem.PLACIDUS,
+        policy: SynastryComputationPolicy | None = None,
     ) -> CompositeChart:
         """Build a composite chart using the reference-place house method."""
 
@@ -1714,6 +1746,7 @@ class Moira:
             houses_b,
             reference_latitude,
             house_system=house_system,
+            policy=policy,
         )
 
     def davison_chart(
@@ -1725,6 +1758,7 @@ class Moira:
         lat_b: float,
         lon_b: float,
         house_system: str = HouseSystem.PLACIDUS,
+        policy: SynastryComputationPolicy | None = None,
     ) -> DavisonChart:
         """
         Calculate a Davison Relationship Chart.
@@ -1744,6 +1778,7 @@ class Moira:
             dt_b, lat_b, lon_b,
             house_system=house_system,
             reader=self._reader,
+            policy=policy,
         )
 
     def davison_chart_uncorrected(
@@ -1755,6 +1790,7 @@ class Moira:
         lat_b: float,
         lon_b: float,
         house_system: str = HouseSystem.PLACIDUS,
+        policy: SynastryComputationPolicy | None = None,
     ) -> DavisonChart:
         """Davison chart using arithmetic midpoint time and arithmetic location."""
 
@@ -1763,6 +1799,7 @@ class Moira:
             dt_b, lat_b, lon_b,
             house_system=house_system,
             reader=self._reader,
+            policy=policy,
         )
 
     def davison_chart_reference_place(
@@ -1772,6 +1809,7 @@ class Moira:
         reference_latitude: float,
         reference_longitude: float,
         house_system: str = HouseSystem.PLACIDUS,
+        policy: SynastryComputationPolicy | None = None,
     ) -> DavisonChart:
         """Davison chart using midpoint time and an explicit reference place."""
 
@@ -1782,6 +1820,7 @@ class Moira:
             reference_longitude,
             house_system=house_system,
             reader=self._reader,
+            policy=policy,
         )
 
     def davison_chart_spherical_midpoint(
@@ -1793,6 +1832,7 @@ class Moira:
         lat_b: float,
         lon_b: float,
         house_system: str = HouseSystem.PLACIDUS,
+        policy: SynastryComputationPolicy | None = None,
     ) -> DavisonChart:
         """Davison chart using midpoint time and spherical geographic midpoint."""
 
@@ -1801,6 +1841,7 @@ class Moira:
             dt_b, lat_b, lon_b,
             house_system=house_system,
             reader=self._reader,
+            policy=policy,
         )
 
     def davison_chart_corrected(
@@ -1812,6 +1853,7 @@ class Moira:
         lat_b: float,
         lon_b: float,
         house_system: str = HouseSystem.PLACIDUS,
+        policy: SynastryComputationPolicy | None = None,
     ) -> DavisonChart:
         """Davison chart with midpoint location and corrected midpoint time."""
 
@@ -1820,6 +1862,7 @@ class Moira:
             dt_b, lat_b, lon_b,
             house_system=house_system,
             reader=self._reader,
+            policy=policy,
         )
 
     # ------------------------------------------------------------------
@@ -2513,7 +2556,8 @@ class Moira:
 
         Parameters
         ----------
-        dt        : date (calendar date is used; time-of-day is ignored)
+        dt        : timezone-aware date or datetime
+                    (calendar date is used; time-of-day is ignored)
         latitude  : geographic latitude (degrees)
         longitude : geographic east longitude (degrees)
         """
@@ -2632,7 +2676,7 @@ class Moira:
 
         Parameters
         ----------
-        dt        : date (naïve treated as UTC)
+        dt        : timezone-aware date or datetime
         latitude  : geographic latitude (degrees)
         longitude : geographic east longitude (degrees)
         """

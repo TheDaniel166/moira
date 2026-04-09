@@ -174,3 +174,15 @@ def test_set_kernel_path_rejects_change_after_singleton_open(monkeypatch) -> Non
         assert "Cannot change kernel path" in str(exc)
     else:
         raise AssertionError("Expected RuntimeError when changing active kernel path")
+
+
+def test_reader_override_routes_get_reader_without_touching_singleton(monkeypatch) -> None:
+    override = _reader_with_segments(_FakeSegment(center=0, target=10, start_jd=1000.0, end_jd=2000.0))
+    override._path = Path("kernels/override.bsp")
+
+    monkeypatch.setattr(spk_reader, "_reader", None)
+    monkeypatch.setattr(spk_reader, "_reader_path", None)
+
+    with spk_reader.use_reader_override(override):
+        assert spk_reader.get_reader() is override
+        assert spk_reader.get_reader("kernels/override.bsp") is override

@@ -47,7 +47,7 @@ from .constants import Body, DEG2RAD, RAD2DEG
 from .coordinates import ecliptic_to_equatorial
 from .midpoints import _midpoint
 from .aspects import AspectData, aspects_between
-from .julian import jd_from_datetime, datetime_from_jd, delta_t
+from .julian import jd_from_datetime, datetime_from_jd, delta_t_from_jd, ut_to_tt
 from .planets import all_planets_at
 from .nodes import true_node, mean_node, mean_lilith
 from .obliquity import true_obliquity
@@ -55,34 +55,10 @@ from .houses import (
     HouseCusps,
     HousePlacement,
     HousePolicy,
-    PolarFallbackPolicy,
-    UnknownSystemPolicy,
-    _KNOWN_SYSTEMS,
-    _POLAR_SYSTEMS,
-    _alcabitius,
-    _apc,
-    _asc_from_armc,
-    _azimuthal,
-    _campanus,
-    _carter,
-    _equal_house,
-    _koch,
-    _krusinski,
-    _mc_from_armc,
-    _meridian,
-    _morinus,
-    _placidus,
-    _porphyry,
-    _pullen_sd,
-    _pullen_sr,
-    _regiomontanus,
-    _sunshine,
-    _topocentric,
-    _vehlow,
-    _whole_sign,
     assign_house,
     calculate_houses,
     classify_house_system,
+    houses_from_armc,
 )
 from .constants import HouseSystem, sign_of
 from .spk_reader import get_reader, SpkReader
@@ -784,10 +760,13 @@ class SynastryCompositePolicy:
     """Doctrine surface for composite reference-place house selection."""
 
     reference_place_house_system: str = HouseSystem.PLACIDUS
+    house_policy: HousePolicy = field(default_factory=HousePolicy.default)
 
     def __post_init__(self) -> None:
         if not str(self.reference_place_house_system).strip():
             raise ValueError("synastry composite policy reference_place_house_system must be non-empty")
+        if not isinstance(self.house_policy, HousePolicy):
+            raise ValueError("synastry composite policy house_policy must be a HousePolicy")
 
 
 @dataclass(frozen=True, slots=True)
@@ -795,10 +774,13 @@ class SynastryDavisonPolicy:
     """Doctrine surface for Davison chart house-system defaults."""
 
     default_house_system: str = HouseSystem.PLACIDUS
+    house_policy: HousePolicy = field(default_factory=HousePolicy.default)
 
     def __post_init__(self) -> None:
         if not str(self.default_house_system).strip():
             raise ValueError("synastry Davison policy default_house_system must be non-empty")
+        if not isinstance(self.house_policy, HousePolicy):
+            raise ValueError("synastry Davison policy house_policy must be a HousePolicy")
 
 
 @dataclass(frozen=True, slots=True)
@@ -1518,7 +1500,8 @@ def composite_chart_reference_place(
     composite MC/ARMC and a supplied reference latitude.
     """
 
-    house_system = _resolve_synastry_policy(policy).composite.reference_place_house_system if house_system is None else house_system
+    composite_policy = _resolve_synastry_policy(policy).composite
+    house_system = composite_policy.reference_place_house_system if house_system is None else house_system
     _validate_house_system_code(house_system)
     _validate_finite_coordinate(reference_latitude, "reference_latitude")
     composite = composite_chart(chart_a, chart_b, policy=policy)
@@ -1532,6 +1515,7 @@ def composite_chart_reference_place(
         obliquity=mean_obliquity,
         system=house_system,
         sun_lon=composite_sun_lon,
+        policy=composite_policy.house_policy,
     )
     computation_truth = CompositeComputationTruth(
         method="reference_place",
@@ -1916,6 +1900,7 @@ def _build_relationship_chart(
     longitude: float,
     house_system: str,
     reader: SpkReader,
+    house_policy: HousePolicy | None = None,
     computation_truth: DavisonComputationTruth | None = None,
 ) -> DavisonChart:
     """Build a real chart and house frame for one relationship-chart moment/place."""
@@ -1927,9 +1912,9 @@ def _build_relationship_chart(
         Body.MEAN_NODE: mean_node(jd_ut),
         Body.LILITH: mean_lilith(jd_ut),
     }
-    year = dt_mid.year if dt_mid.year > -9999 else -9999
-    dt_s = delta_t(float(year))
-    obl = true_obliquity(jd_ut)
+    jd_tt = ut_to_tt(jd_ut)
+    dt_s = delta_t_from_jd(jd_ut)
+    obl = true_obliquity(jd_tt)
 
     from . import Chart
 
@@ -1940,7 +1925,7 @@ def _build_relationship_chart(
         obliquity=obl,
         delta_t=dt_s,
     )
-    houses = calculate_houses(jd_ut, latitude, longitude, house_system)
+    houses = calculate_houses(jd_ut, latitude, longitude, house_system, policy=house_policy)
     classification = None if computation_truth is None else _classify_davison_truth(computation_truth)
     relation = None
     if computation_truth is not None:
@@ -1986,90 +1971,17 @@ def _synastry_houses_from_armc(
     obliquity: float,
     system: str,
     sun_lon: float | None = None,
+    policy: HousePolicy | None = None,
 ) -> HouseCusps:
-    """HouseCusps constructor for reference-place relationship-chart techniques."""
+    """Delegate reference-place relationship-chart houses to the house engine."""
 
-    active_policy = HousePolicy.default()
-    critical_lat = 90.0 - obliquity
-    polar = abs(latitude) >= critical_lat and system in _POLAR_SYSTEMS
-    effective_system = system
-    fallback = False
-    fallback_reason: str | None = None
-
-    if polar:
-        if active_policy.polar_fallback == PolarFallbackPolicy.RAISE:
-            raise ValueError("reference-place synastry houses hit polar fallback under strict policy")
-        effective_system = HouseSystem.PORPHYRY
-        fallback = True
-        fallback_reason = "reference-place synastry houses fell back to Porphyry at critical latitude"
-    elif system not in _KNOWN_SYSTEMS:
-        if active_policy.unknown_system == UnknownSystemPolicy.RAISE:
-            raise ValueError("reference-place synastry houses received unknown system under strict policy")
-        effective_system = HouseSystem.PLACIDUS
-        fallback = True
-        fallback_reason = f"unknown system code {system!r}; fell back to Placidus"
-
-    mc = _mc_from_armc(armc, obliquity, latitude)
-    asc = _asc_from_armc(armc, obliquity, latitude)
-    vertex = _asc_from_armc((armc + 90.0) % 360.0, obliquity, -latitude)
-    anti_vertex = (vertex + 180.0) % 360.0
-
-    if effective_system == HouseSystem.WHOLE_SIGN:
-        cusps = _whole_sign(asc)
-    elif effective_system == HouseSystem.EQUAL:
-        cusps = _equal_house(asc)
-    elif effective_system == HouseSystem.PORPHYRY:
-        cusps = _porphyry(asc, mc)
-    elif effective_system == HouseSystem.PLACIDUS:
-        cusps = _placidus(armc, obliquity, latitude)
-    elif effective_system == HouseSystem.KOCH:
-        cusps = _koch(armc, obliquity, latitude)
-    elif effective_system == HouseSystem.CAMPANUS:
-        cusps = _campanus(armc, obliquity, latitude)
-    elif effective_system == HouseSystem.REGIOMONTANUS:
-        cusps = _regiomontanus(armc, obliquity, latitude)
-    elif effective_system == HouseSystem.ALCABITIUS:
-        cusps = _alcabitius(armc, obliquity, latitude)
-    elif effective_system == HouseSystem.MORINUS:
-        cusps = _morinus(armc, obliquity)
-    elif effective_system == HouseSystem.TOPOCENTRIC:
-        cusps = _topocentric(armc, obliquity, latitude)
-    elif effective_system == HouseSystem.MERIDIAN:
-        cusps = _meridian(armc, obliquity)
-    elif effective_system == HouseSystem.VEHLOW:
-        cusps = _vehlow(asc)
-    elif effective_system == HouseSystem.SUNSHINE:
-        if sun_lon is None:
-            raise ValueError("Sunshine reference-place synastry houses require sun_lon")
-        cusps = _sunshine(sun_lon, latitude, obliquity)
-    elif effective_system == HouseSystem.AZIMUTHAL:
-        cusps = _azimuthal(armc, obliquity, latitude)
-    elif effective_system == HouseSystem.CARTER:
-        cusps = _carter(armc, obliquity, latitude)
-    elif effective_system == HouseSystem.PULLEN_SD:
-        cusps = _pullen_sd(armc, obliquity, latitude)
-    elif effective_system == HouseSystem.PULLEN_SR:
-        cusps = _pullen_sr(armc, obliquity, latitude)
-    elif effective_system == HouseSystem.KRUSINSKI:
-        cusps = _krusinski(armc, obliquity, latitude)
-    elif effective_system == HouseSystem.APC:
-        cusps = _apc(armc, obliquity, latitude)
-    else:
-        cusps = _placidus(armc, obliquity, latitude)
-
-    return HouseCusps(
-        system=system,
-        cusps=[c % 360.0 for c in cusps],
-        asc=asc % 360.0,
-        mc=mc % 360.0,
-        armc=armc % 360.0,
-        vertex=vertex % 360.0,
-        anti_vertex=anti_vertex % 360.0,
-        effective_system=effective_system,
-        fallback=fallback,
-        fallback_reason=fallback_reason,
-        classification=classify_house_system(effective_system),
-        policy=active_policy,
+    return houses_from_armc(
+        armc,
+        obliquity,
+        latitude,
+        system,
+        policy=policy,
+        sun_longitude=sun_lon,
     )
 
 
@@ -2091,7 +2003,7 @@ def davison_chart(
 
     Parameters
     ----------
-    dt_a / dt_b         : birth datetimes (timezone-aware; naïve = UTC)
+    dt_a / dt_b         : birth datetimes (timezone-aware)
     lat_a / lat_b       : geographic latitudes (°, north positive)
     lon_a / lon_b       : geographic longitudes (°, east positive)
     house_system        : house system for the Davison chart
@@ -2103,16 +2015,11 @@ def davison_chart(
     """
     if reader is None:
         reader = get_reader()
-    house_system = _resolve_synastry_policy(policy).davison.default_house_system if house_system is None else house_system
+    davison_policy = _resolve_synastry_policy(policy).davison
+    house_system = davison_policy.default_house_system if house_system is None else house_system
     _validate_house_system_code(house_system)
     for value, name in ((lat_a, "lat_a"), (lon_a, "lon_a"), (lat_b, "lat_b"), (lon_b, "lon_b")):
         _validate_finite_coordinate(value, name)
-
-    # Ensure UTC
-    if dt_a.tzinfo is None:
-        dt_a = dt_a.replace(tzinfo=timezone.utc)
-    if dt_b.tzinfo is None:
-        dt_b = dt_b.replace(tzinfo=timezone.utc)
 
     jd_a = jd_from_datetime(dt_a)
     jd_b = jd_from_datetime(dt_b)
@@ -2136,9 +2043,9 @@ def davison_chart(
         Body.LILITH:    mean_lilith(jd_mid),
     }
 
-    year = dt_mid.year if dt_mid.year > -9999 else -9999
-    dt_s = delta_t(float(year))
-    obl = true_obliquity(jd_mid)
+    jd_tt = ut_to_tt(jd_mid)
+    dt_s = delta_t_from_jd(jd_mid)
+    obl = true_obliquity(jd_tt)
 
     # Import Chart here to avoid circular dependency at module level
     from . import Chart
@@ -2151,7 +2058,7 @@ def davison_chart(
         delta_t=dt_s,
     )
 
-    houses = calculate_houses(jd_mid, lat_mid, lon_mid, house_system)
+    houses = calculate_houses(jd_mid, lat_mid, lon_mid, house_system, policy=davison_policy.house_policy)
 
     computation_truth = DavisonComputationTruth(
         method="midpoint_location",
@@ -2213,15 +2120,11 @@ def davison_chart_uncorrected(
 
     if reader is None:
         reader = get_reader()
-    house_system = _resolve_synastry_policy(policy).davison.default_house_system if house_system is None else house_system
+    davison_policy = _resolve_synastry_policy(policy).davison
+    house_system = davison_policy.default_house_system if house_system is None else house_system
     _validate_house_system_code(house_system)
     for value, name in ((lat_a, "lat_a"), (lon_a, "lon_a"), (lat_b, "lat_b"), (lon_b, "lon_b")):
         _validate_finite_coordinate(value, name)
-    if dt_a.tzinfo is None:
-        dt_a = dt_a.replace(tzinfo=timezone.utc)
-    if dt_b.tzinfo is None:
-        dt_b = dt_b.replace(tzinfo=timezone.utc)
-
     jd_mid = (jd_from_datetime(dt_a) + jd_from_datetime(dt_b)) / 2.0
     lat_mid = (lat_a + lat_b) / 2.0
     lon_mid = _lon_midpoint_uncorrected(lon_a, lon_b)
@@ -2231,6 +2134,7 @@ def davison_chart_uncorrected(
         lon_mid,
         house_system,
         reader,
+        house_policy=davison_policy.house_policy,
         computation_truth=DavisonComputationTruth(
             method="uncorrected",
             raw_midpoint_jd=jd_mid,
@@ -2257,15 +2161,11 @@ def davison_chart_reference_place(
 
     if reader is None:
         reader = get_reader()
-    house_system = _resolve_synastry_policy(policy).davison.default_house_system if house_system is None else house_system
+    davison_policy = _resolve_synastry_policy(policy).davison
+    house_system = davison_policy.default_house_system if house_system is None else house_system
     _validate_house_system_code(house_system)
     for value, name in ((reference_latitude, "reference_latitude"), (reference_longitude, "reference_longitude")):
         _validate_finite_coordinate(value, name)
-    if dt_a.tzinfo is None:
-        dt_a = dt_a.replace(tzinfo=timezone.utc)
-    if dt_b.tzinfo is None:
-        dt_b = dt_b.replace(tzinfo=timezone.utc)
-
     jd_mid = (jd_from_datetime(dt_a) + jd_from_datetime(dt_b)) / 2.0
     return _build_relationship_chart(
         jd_mid,
@@ -2273,6 +2173,7 @@ def davison_chart_reference_place(
         reference_longitude,
         house_system,
         reader,
+        house_policy=davison_policy.house_policy,
         computation_truth=DavisonComputationTruth(
             method="reference_place",
             raw_midpoint_jd=jd_mid,
@@ -2301,15 +2202,11 @@ def davison_chart_spherical_midpoint(
 
     if reader is None:
         reader = get_reader()
-    house_system = _resolve_synastry_policy(policy).davison.default_house_system if house_system is None else house_system
+    davison_policy = _resolve_synastry_policy(policy).davison
+    house_system = davison_policy.default_house_system if house_system is None else house_system
     _validate_house_system_code(house_system)
     for value, name in ((lat_a, "lat_a"), (lon_a, "lon_a"), (lat_b, "lat_b"), (lon_b, "lon_b")):
         _validate_finite_coordinate(value, name)
-    if dt_a.tzinfo is None:
-        dt_a = dt_a.replace(tzinfo=timezone.utc)
-    if dt_b.tzinfo is None:
-        dt_b = dt_b.replace(tzinfo=timezone.utc)
-
     jd_mid = (jd_from_datetime(dt_a) + jd_from_datetime(dt_b)) / 2.0
     lat_mid, lon_mid = _spherical_geo_midpoint(lat_a, lon_a, lat_b, lon_b)
     return _build_relationship_chart(
@@ -2318,6 +2215,7 @@ def davison_chart_spherical_midpoint(
         lon_mid,
         house_system,
         reader,
+        house_policy=davison_policy.house_policy,
         computation_truth=DavisonComputationTruth(
             method="spherical_midpoint",
             raw_midpoint_jd=jd_mid,
@@ -2351,26 +2249,22 @@ def davison_chart_corrected(
 
     if reader is None:
         reader = get_reader()
-    house_system = _resolve_synastry_policy(policy).davison.default_house_system if house_system is None else house_system
+    davison_policy = _resolve_synastry_policy(policy).davison
+    house_system = davison_policy.default_house_system if house_system is None else house_system
     _validate_house_system_code(house_system)
     for value, name in ((lat_a, "lat_a"), (lon_a, "lon_a"), (lat_b, "lat_b"), (lon_b, "lon_b")):
         _validate_finite_coordinate(value, name)
-    if dt_a.tzinfo is None:
-        dt_a = dt_a.replace(tzinfo=timezone.utc)
-    if dt_b.tzinfo is None:
-        dt_b = dt_b.replace(tzinfo=timezone.utc)
-
     jd_a = jd_from_datetime(dt_a)
     jd_b = jd_from_datetime(dt_b)
     jd_mid = (jd_a + jd_b) / 2.0
     lat_mid = (lat_a + lat_b) / 2.0
     lon_mid = _lon_midpoint_uncorrected(lon_a, lon_b)
-    houses_a = calculate_houses(jd_a, lat_a, lon_a, house_system)
-    houses_b = calculate_houses(jd_b, lat_b, lon_b, house_system)
+    houses_a = calculate_houses(jd_a, lat_a, lon_a, house_system, policy=davison_policy.house_policy)
+    houses_b = calculate_houses(jd_b, lat_b, lon_b, house_system, policy=davison_policy.house_policy)
     target_mc = _midpoint(houses_a.mc, houses_b.mc)
 
     def _signed_diff(jd_value: float) -> float:
-        mc = calculate_houses(jd_value, lat_mid, lon_mid, house_system).mc
+        mc = calculate_houses(jd_value, lat_mid, lon_mid, house_system, policy=davison_policy.house_policy).mc
         return ((mc - target_mc + 540.0) % 360.0) - 180.0
 
     bracket_left = jd_mid - 0.5
@@ -2417,6 +2311,7 @@ def davison_chart_corrected(
         lon_mid,
         house_system,
         reader,
+        house_policy=davison_policy.house_policy,
         computation_truth=DavisonComputationTruth(
             method="corrected",
             raw_midpoint_jd=jd_mid,

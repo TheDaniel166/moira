@@ -40,6 +40,7 @@ from .julian import local_sidereal_time, ut_to_tt
 from .obliquity import nutation, true_obliquity
 from .coordinates import ecliptic_to_equatorial
 from .planets import planet_at
+from .constants import Body
 
 __all__ = [
     "RiseSetPolicy",
@@ -48,6 +49,17 @@ __all__ = [
     "get_transit",
     "twilight_times",
 ]
+
+
+_PLANET_NAME_LOOKUP = {
+    body.lower(): body
+    for body in Body.ALL_PLANETS
+}
+
+
+def _resolve_planet_name(body_name: str) -> str | None:
+    """Return the canonical planet name if *body_name* names a supported planet."""
+    return _PLANET_NAME_LOOKUP.get(body_name.strip().lower())
 
 
 @dataclass(frozen=True, slots=True)
@@ -183,12 +195,11 @@ def _body_ra_dec(jd_ut: float, body_name: str) -> tuple[float, float]:
     """Return apparent RA/Dec of a planet or named fixed star at the given UT JD."""
     jd_tt = ut_to_tt(jd_ut)
     eps = true_obliquity(jd_tt)
-
-    try:
-        pos = planet_at(body_name, jd_tt)
-    except Exception:
+    resolved_planet = _resolve_planet_name(body_name)
+    if resolved_planet is not None:
+        pos = planet_at(resolved_planet, jd_ut, jd_tt=jd_tt)
+    else:
         from .stars import star_at
-
         pos = star_at(body_name, jd_tt)
 
     return ecliptic_to_equatorial(pos.longitude, pos.latitude, eps)
@@ -207,11 +218,11 @@ def _hour_angle_error(
     target_ha: float = 0.0,
 ) -> float:
     """Signed hour-angle error in degrees relative to the requested meridian target."""
-    try:
+    resolved_planet = _resolve_planet_name(body_name)
+    if resolved_planet is not None:
         from .planets import sky_position_at
-
-        ra = sky_position_at(body_name, jd_ut, lat, lon).right_ascension
-    except Exception:
+        ra = sky_position_at(resolved_planet, jd_ut, lat, lon).right_ascension
+    else:
         ra, _ = _body_ra_dec(jd_ut, body_name)
     lst = _lst(jd_ut, lon)
     ha = (lst - ra) % 360.0
@@ -257,14 +268,14 @@ def _altitude(
     retained in the signature for API compatibility but have no effect when
     refraction=False.
     """
-    try:
+    resolved_planet = _resolve_planet_name(body_name)
+    if resolved_planet is not None:
         from .planets import sky_position_at
-
         return sky_position_at(
-            body_name, jd_ut, lat, lon,
+            resolved_planet, jd_ut, lat, lon,
             refraction=False,
         ).altitude
-    except Exception:
+    else:
         ra, dec = _body_ra_dec(jd_ut, body_name)
         lst = _lst(jd_ut, lon)
         ha = _signed_angle_diff(lst - ra, 0.0)

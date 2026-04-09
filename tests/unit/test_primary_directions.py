@@ -813,6 +813,59 @@ def test_find_primary_arcs_uses_absolute_natal_sun_speed_for_solar_key() -> None
     assert arc.years("solar") == pytest.approx(100.0)
 
 
+def test_find_primary_arcs_requires_solar_speed_when_chart_has_no_sun() -> None:
+    chart, houses = _simple_chart()
+    chart.planets.pop(Body.SUN)
+
+    with pytest.raises(
+        ValueError,
+        match="requires explicit solar_speed or a chart with natal Sun speed",
+    ):
+        find_primary_arcs(
+            chart,
+            houses,
+            geo_lat=0.0,
+            max_arc=100.0,
+            include_converse=False,
+            significators=[Body.MOON],
+            promissors=[Body.VENUS],
+        )
+
+
+def test_find_primary_arcs_requires_positive_natal_sun_speed_without_override() -> None:
+    chart, houses = _simple_chart(sun_speed=0.0)
+
+    with pytest.raises(
+        ValueError,
+        match="requires explicit solar_speed or a chart with positive natal Sun speed",
+    ):
+        find_primary_arcs(
+            chart,
+            houses,
+            geo_lat=0.0,
+            max_arc=100.0,
+            include_converse=False,
+            significators=[Body.SUN],
+            promissors=[Body.MOON],
+        )
+
+
+def test_find_primary_arcs_allows_explicit_solar_speed_when_chart_sun_is_invalid() -> None:
+    chart, houses = _simple_chart(sun_speed=0.0)
+    arc = find_primary_arcs(
+        chart,
+        houses,
+        geo_lat=0.0,
+        max_arc=100.0,
+        include_converse=False,
+        significators=[Body.SUN],
+        promissors=[Body.MOON],
+        solar_speed=0.75,
+    )[0]
+
+    assert arc.solar_rate == pytest.approx(0.75)
+
+
 def test_policy_is_typed_and_preserves_current_default_behavior() -> None:
     chart, houses = _simple_chart()
     default_arcs = find_primary_arcs(

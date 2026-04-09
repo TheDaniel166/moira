@@ -23,6 +23,48 @@ __all__ = [
 ]
 
 
+def _sample_window(objective, lo: float, hi: float, sample_count: int = 9) -> list[tuple[float, float]]:
+    step = (hi - lo) / (sample_count - 1)
+    return [(lo + (idx * step), objective(lo + (idx * step))) for idx in range(sample_count)]
+
+
+def _sampled_window_is_unimodal(samples: list[tuple[float, float]]) -> bool:
+    values = [value for _, value in samples]
+    min_index = min(range(len(values)), key=values.__getitem__)
+    if min_index == 0 or min_index == len(values) - 1:
+        return False
+    return (
+        all(values[idx] <= values[idx - 1] for idx in range(1, min_index + 1))
+        and all(values[idx] >= values[idx - 1] for idx in range(min_index + 1, len(values)))
+    )
+
+
+def _grid_refine_minimum(
+    objective,
+    lo: float,
+    hi: float,
+    *,
+    tol_days: float,
+    max_iter: int,
+    subdivisions: int = 8,
+) -> float:
+    for _ in range(max_iter):
+        if hi - lo < tol_days:
+            break
+        step = (hi - lo) / subdivisions
+        points = [lo + (idx * step) for idx in range(subdivisions + 1)]
+        values = [objective(point) for point in points]
+        best_index = min(range(len(values)), key=values.__getitem__)
+        if best_index == 0:
+            hi = points[1]
+        elif best_index == len(points) - 1:
+            lo = points[-2]
+        else:
+            lo = points[best_index - 1]
+            hi = points[best_index + 1]
+    return (lo + hi) / 2.0
+
+
 def refine_minimum(
     objective,
     center_jd: float,
@@ -32,12 +74,23 @@ def refine_minimum(
     max_iter: int = 30,
 ) -> float:
     """
-    Refine a local minimum near *center_jd* using ternary search.
+    Refine a local minimum near *center_jd*.
 
-    The objective is assumed to be smooth and unimodal inside the search window.
+    Prefers ternary search when sampled behavior inside the window is smooth and
+    unimodal. Falls back to bounded grid refinement when that assumption is not
+    supported by the window samples.
     """
     lo = center_jd - window_days
     hi = center_jd + window_days
+    samples = _sample_window(objective, lo, hi)
+    if not _sampled_window_is_unimodal(samples):
+        return _grid_refine_minimum(
+            objective,
+            lo,
+            hi,
+            tol_days=tol_days,
+            max_iter=max_iter,
+        )
     for _ in range(max_iter):
         if hi - lo < tol_days:
             break

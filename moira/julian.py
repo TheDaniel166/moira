@@ -357,26 +357,27 @@ def jd_from_datetime(dt: datetime) -> float:
     """
     Convert a Python ``datetime`` to a Julian Day Number in UT.
 
-    Naïve ``datetime`` objects are treated as UTC. Timezone-aware objects are
-    first converted to UTC before the JD computation, so any tzinfo is
-    accepted.
+    The input must be timezone-aware. Timezone-aware objects are first
+    converted to UTC before the JD computation.
 
     Args:
-        dt: A Python ``datetime`` (naïve or timezone-aware).
+        dt: A timezone-aware Python ``datetime``.
 
     Returns:
         Julian Day Number (UT) as a float.
 
     Raises:
-        Nothing — delegates to ``julian_day()`` which performs no validation.
+        ValueError: If ``dt`` is naive and therefore ambiguous.
 
     Side effects:
         None.
     """
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
-    else:
-        dt = dt.astimezone(timezone.utc)
+        raise ValueError(
+            "jd_from_datetime requires a timezone-aware datetime; "
+            "pass an explicit tzinfo instead of relying on an implicit UTC assumption."
+        )
+    dt = dt.astimezone(timezone.utc)
 
     hour = dt.hour + dt.minute / 60.0 + dt.second / 3600.0 + dt.microsecond / 3_600_000_000.0
     return julian_day(dt.year, dt.month, dt.day, hour)

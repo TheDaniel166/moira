@@ -5,7 +5,9 @@ from datetime import datetime, timezone
 import pytest
 
 from moira import Body, HouseSystem, Moira
-from moira.houses import assign_house
+from moira.julian import delta_t_from_jd, ut_to_tt
+from moira.obliquity import true_obliquity
+from moira.houses import HousePolicy, assign_house
 from moira.aspects import aspects_between
 from moira.midpoints import _midpoint
 from moira.synastry import (
@@ -387,6 +389,8 @@ def test_davison_chart_matches_midpoint_time_and_location_chart_cast() -> None:
         )
 
     assert davison.chart.obliquity == pytest.approx(expected_chart.obliquity, abs=1e-12)
+    assert davison.chart.obliquity == pytest.approx(true_obliquity(ut_to_tt(davison.chart.jd_ut)), abs=1e-12)
+    assert davison.chart.delta_t == pytest.approx(delta_t_from_jd(davison.chart.jd_ut), abs=1e-12)
     assert davison.houses is not None
     assert list(davison.houses.cusps) == pytest.approx(list(expected_houses.cusps), abs=1e-12)
     assert davison.houses.asc == pytest.approx(expected_houses.asc, abs=1e-12)
@@ -870,6 +874,9 @@ def test_invalid_synastry_policy_values_fail_clearly() -> None:
     with pytest.raises(ValueError, match="reference_place_house_system must be non-empty"):
         SynastryCompositePolicy(reference_place_house_system="")
 
+    with pytest.raises(ValueError, match="house_policy must be a HousePolicy"):
+        SynastryCompositePolicy(house_policy="strict")  # type: ignore[arg-type]
+
 
 def test_synastry_malformed_inputs_fail_deterministically() -> None:
     with pytest.raises(ValueError, match="synastry labels must be non-empty"):
@@ -880,6 +887,86 @@ def test_synastry_malformed_inputs_fail_deterministically() -> None:
 
     with pytest.raises(ValueError, match="synastry overlay include_nodes must be boolean"):
         house_overlay(None, None, include_nodes="yes")  # type: ignore[arg-type]
+
+
+@pytest.mark.requires_ephemeris
+def test_composite_reference_place_propagates_explicit_house_policy() -> None:
+    engine = Moira()
+    dt_a = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
+    dt_b = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    chart_a = engine.chart(dt_a)
+    chart_b = engine.chart(dt_b)
+    houses_a = engine.houses(dt_a, 51.5, -0.1, HouseSystem.PLACIDUS)
+    houses_b = engine.houses(dt_b, 40.7128, -74.0060, HouseSystem.PLACIDUS)
+    policy = SynastryComputationPolicy(
+        composite=SynastryCompositePolicy(
+            reference_place_house_system=HouseSystem.PLACIDUS,
+            house_policy=HousePolicy.strict(),
+        )
+    )
+
+    with pytest.raises(ValueError, match="critical latitude|policy is RAISE"):
+        composite_chart_reference_place(
+            chart_a,
+            chart_b,
+            houses_a,
+            houses_b,
+            reference_latitude=89.0,
+            policy=policy,
+        )
+
+
+def test_synastry_reference_place_houses_delegate_to_house_engine_experimental_policy() -> None:
+    from moira.synastry import _synastry_houses_from_armc
+    from moira.houses import houses_from_armc
+    from moira.julian import ut_to_tt
+    from moira.obliquity import true_obliquity
+
+    obliquity = true_obliquity(ut_to_tt(2451545.0))
+    experimental = HousePolicy.experimental()
+
+    synastry_houses = _synastry_houses_from_armc(
+        armc=90.0,
+        latitude=77.0,
+        obliquity=obliquity,
+        system=HouseSystem.PLACIDUS,
+        policy=experimental,
+    )
+    engine_houses = houses_from_armc(
+        90.0,
+        obliquity,
+        77.0,
+        HouseSystem.PLACIDUS,
+        policy=experimental,
+    )
+
+    assert synastry_houses.effective_system == engine_houses.effective_system
+    assert synastry_houses.fallback == engine_houses.fallback
+    assert synastry_houses.cusps == pytest.approx(engine_houses.cusps, abs=1e-12)
+
+
+@pytest.mark.requires_ephemeris
+def test_davison_policy_propagates_explicit_house_policy() -> None:
+    engine = Moira()
+    dt_a = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
+    dt_b = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    policy = SynastryComputationPolicy(
+        davison=SynastryDavisonPolicy(
+            default_house_system=HouseSystem.PLACIDUS,
+            house_policy=HousePolicy.strict(),
+        )
+    )
+
+    with pytest.raises(ValueError, match="critical latitude"):
+        engine.davison_chart(
+            dt_a,
+            89.0,
+            -0.1,
+            dt_b,
+            89.0,
+            -74.0060,
+            policy=policy,
+        )
 
 
 @pytest.mark.requires_ephemeris

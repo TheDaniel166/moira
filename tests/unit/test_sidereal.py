@@ -18,6 +18,7 @@ Coverage areas
 
 import pytest
 import moira
+import moira.sidereal as sidereal_module
 from moira.sidereal import (
     Ayanamsa, ayanamsa, tropical_to_sidereal, sidereal_to_tropical,
     nakshatra_of, all_nakshatras_at, list_ayanamsa_systems,
@@ -25,6 +26,7 @@ from moira.sidereal import (
     _STAR_ANCHORED, _AYANAMSA_AT_J2000,
 )
 from moira.stars import star_at
+from moira.julian import ut_to_tt
 
 J2000 = 2451545.0  # JD of 2000 Jan 1.5 TT
 J1956 = 2435553.5  # JD of 1956 Mar 21 0:00 TT (Lahiri anchor date)
@@ -184,6 +186,26 @@ class TestAyanamsaRouting:
         true = ayanamsa(J2000, Ayanamsa.LAHIRI, "true")
         diff = abs(true - mean)
         assert diff < 0.05
+
+    def test_polynomial_path_normalizes_ut_to_tt_before_tt_helpers(self, monkeypatch):
+        calls = {"precession": [], "nutation": []}
+
+        def fake_precession(jd_tt):
+            calls["precession"].append(jd_tt)
+            return 1.25
+
+        def fake_nutation(jd_tt):
+            calls["nutation"].append(jd_tt)
+            return 0.125, 0.0
+
+        monkeypatch.setattr(sidereal_module, "general_precession_in_longitude", fake_precession)
+        monkeypatch.setattr(sidereal_module, "nutation", fake_nutation)
+
+        ayanamsa(J2000, Ayanamsa.LAHIRI, "true")
+
+        expected_jd_tt = ut_to_tt(J2000)
+        assert calls["precession"] == [expected_jd_tt]
+        assert calls["nutation"] == [expected_jd_tt]
 
     def test_invalid_mode_raises(self):
         with pytest.raises(ValueError, match="mode"):

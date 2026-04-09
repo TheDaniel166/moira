@@ -715,7 +715,7 @@ def _moon_axis_position_angle_deg(jd_tt: float) -> float:
     Implemented from the Meeus / Eckhardt formulation reflected in the
     PyMeeus `moon_position_angle_axis()` method.
     """
-    moon = planet_at(Body.MOON, jd_tt)
+    moon = planet_at(Body.MOON, jd_tt, jd_tt=jd_tt)
     eps = true_obliquity(jd_tt)
     delta_psi, _ = nutation(jd_tt)
     moon_ra_deg, moon_dec_deg = ecliptic_to_equatorial(moon.longitude, moon.latitude, eps)
@@ -2065,6 +2065,7 @@ def lunar_star_occultation(
 
     def _moon_star_sep(jd: float) -> float:
         if observer_lat is not None and observer_lon is not None:
+            jd_tt = ut_to_tt(jd)
             moon = sky_position_at(
                 Body.MOON,
                 jd,
@@ -2077,7 +2078,7 @@ def lunar_star_occultation(
 
             star = star_at(
                 star_name,
-                jd,
+                jd_tt,
                 observer_lat=observer_lat,
                 observer_lon=observer_lon,
                 observer_elev_m=observer_elev_m,
@@ -2085,7 +2086,7 @@ def lunar_star_occultation(
             ra_star, dec_star = ecliptic_to_equatorial(
                 star.longitude,
                 star.latitude,
-                true_obliquity(jd),
+                true_obliquity(jd_tt),
             )
             return _angular_separation_equatorial(
                 moon.right_ascension,

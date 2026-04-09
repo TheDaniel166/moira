@@ -7,11 +7,12 @@ import pytest
 from moira import Chart, Moira, calendar_datetime_from_jd, datetime_from_jd, julian_day
 from moira.dasha import DashaPeriod
 from moira.occultations import CloseApproach, LunarOccultation
-from moira.phenomena import PhenomenonEvent
+from moira.phenomena import PhenomenonEvent, _helio_distance, _helio_state
 from moira.progressions import ProgressedChart
 from moira.stations import StationEvent
 from moira.timelords import FirdarPeriod, ReleasingPeriod
 from moira.transits import IngressEvent, TransitEvent
+from moira.constants import Body, KM_PER_AU
 
 
 def test_datetime_from_jd_still_rejects_bce_for_python_datetime() -> None:
@@ -93,3 +94,31 @@ def test_bce_time_lord_objects_render_without_crashing() -> None:
     assert "-1321-" in repr(firdar)
     assert "-1321-" in repr(releasing)
     assert "-1321-" in repr(dasha)
+
+
+def test_heliocentric_helpers_accept_bce_jd_without_datetime_conversion(monkeypatch) -> None:
+    class DummyReader:
+        def position(self, center: int, target: int, jd_tt: float):
+            return (1.0, 0.0, 0.0)
+
+        def position_and_velocity(self, center: int, target: int, jd_tt: float):
+            return (1.0, 0.0, 0.0), (0.5, 0.0, 0.0)
+
+    monkeypatch.setattr("moira.planets._barycentric", lambda body, jd_tt, reader: (2.0, 0.0, 0.0))
+    monkeypatch.setattr(
+        "moira.planets._barycentric_state",
+        lambda body, jd_tt, reader: ((2.0, 0.0, 0.0), (0.25, 0.0, 0.0)),
+    )
+    monkeypatch.setattr("moira.planets._earth_barycentric", lambda jd_tt, reader: (2.0, 0.0, 0.0))
+    monkeypatch.setattr(
+        "moira.planets._earth_barycentric_state",
+        lambda jd_tt, reader: ((2.0, 0.0, 0.0), (0.25, 0.0, 0.0)),
+    )
+
+    reader = DummyReader()
+    jd_bce = julian_day(0, 1, 1, 0.0)
+
+    assert _helio_distance(Body.MARS, jd_bce, reader) == pytest.approx(1.0 / KM_PER_AU)
+    pos, vel = _helio_state(Body.MARS, jd_bce, reader)
+    assert pos == pytest.approx((1.0, 0.0, 0.0))
+    assert vel == pytest.approx((-0.25, 0.0, 0.0))

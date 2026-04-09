@@ -942,7 +942,7 @@ def _target_signed_elongation(body: str, jd_ut: float) -> float:
 
     jd_tt = ut_to_tt(jd_ut)
     star = star_at(body, jd_tt)
-    sun = planet_at(_Body.SUN, jd_tt)
+    sun = planet_at(_Body.SUN, jd_ut, jd_tt=jd_tt)
     return ((star.longitude - sun.longitude + 180.0) % 360.0) - 180.0
 
 
@@ -1176,10 +1176,7 @@ def _check_visibility(
     Returns ``(twilight_jd, planet_alt_deg, sun_alt_deg, magnitude)`` if
     visible, else ``None``.
     """
-    try:
-        mag = _target_apparent_magnitude(body, jd_midnight + 0.5)
-    except Exception:
-        return None
+    mag = _target_apparent_magnitude(body, jd_midnight + 0.5)
     av = _arcus_visionis(mag, model)
     twilight_jd = _find_sun_at_alt(jd_midnight, lat, lon, -av, morning)
     if twilight_jd is None:
@@ -1228,10 +1225,7 @@ def _check_visibility_with_target_alt(
     target_solar_altitude_deg: float,
     model: VisibilityModel,
 ) -> tuple[float, float, float, float] | None:
-    try:
-        mag = _target_apparent_magnitude(body, jd_midnight + 0.5)
-    except Exception:
-        return None
+    mag = _target_apparent_magnitude(body, jd_midnight + 0.5)
 
     twilight_jd = _find_sun_at_alt(jd_midnight, lat, lon, target_solar_altitude_deg, morning)
     if twilight_jd is None:

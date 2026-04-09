@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 import pytest
 from moira import Moira
 from moira.constants import HouseSystem
+from moira.houses import HousePolicy
 
 @pytest.fixture(scope="session")
 def engine():
@@ -61,3 +62,16 @@ def test_south_pole_fallback_triggers_porphyry(engine):
 
     for i in range(12):
         assert polar_placidus.cusps[i] == pytest.approx(polar_porphyry.cusps[i], abs=1e-8)
+
+
+def test_moira_houses_propagates_explicit_strict_policy(engine):
+    dt = datetime(2000, 3, 20, 7, 35, tzinfo=timezone.utc)
+
+    with pytest.raises(ValueError, match="critical latitude"):
+        engine.houses(
+            dt,
+            latitude=90.0,
+            longitude=0.0,
+            system=HouseSystem.PLACIDUS,
+            policy=HousePolicy.strict(),
+        )

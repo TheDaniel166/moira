@@ -41,7 +41,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .constants import Body, KM_PER_AU, SIDEREAL_YEAR
-from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd, format_jd_utc, ut_to_tt, decimal_year
+from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd, format_jd_utc, ut_to_tt
 from .planets import planet_at
 from .spk_reader import get_reader, SpkReader
 
@@ -183,8 +183,7 @@ def _helio_distance(body: str, jd: float, reader: SpkReader) -> float:
     from .planets import _barycentric, _earth_barycentric
     from .constants import Body as _Body
 
-    dt = datetime_from_jd(jd)
-    jd_tt = ut_to_tt(jd, decimal_year(dt.year, dt.month))
+    jd_tt = ut_to_tt(jd)
 
     if body == _Body.EARTH:
         p_bary = _earth_barycentric(jd_tt, reader)
@@ -200,8 +199,7 @@ def _helio_state(body: str, jd: float, reader: SpkReader) -> tuple[tuple[float, 
     from .planets import _barycentric_state, _earth_barycentric_state
     from .constants import Body as _Body
 
-    dt = datetime_from_jd(jd)
-    jd_tt = ut_to_tt(jd, decimal_year(dt.year, dt.month))
+    jd_tt = ut_to_tt(jd)
 
     if body == _Body.EARTH:
         p_bary, v_bary = _earth_barycentric_state(jd_tt, reader)

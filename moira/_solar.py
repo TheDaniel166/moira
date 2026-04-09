@@ -12,6 +12,7 @@ Import-time side effects: None
 import math
 
 from .constants import Body
+from .julian import ut_to_tt
 from .obliquity import true_obliquity
 from .planets import planet_at
 from .spk_reader import SpkReader
@@ -20,7 +21,7 @@ from .spk_reader import SpkReader
 def _solar_declination_ra(jd: float, reader: SpkReader) -> tuple[float, float]:
     """Return (declination_deg, right_ascension_deg) of the Sun at jd."""
     p = planet_at(Body.SUN, jd, reader=reader)
-    obl = true_obliquity(jd)
+    obl = true_obliquity(ut_to_tt(jd))
     obl_r = math.radians(obl)
     lon_r = math.radians(p.longitude)
     lat_r = math.radians(p.latitude)

@@ -13,6 +13,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from moira.asteroids import ASTEROID_NAIF, AsteroidData
+import moira.asteroids as asteroids_module
 from moira.classical_asteroids import (
     CERES, PALLAS, JUNO, VESTA,
     CLASSICAL_NAMES,
@@ -224,6 +225,23 @@ class TestAvailableSubsetInvariant:
         with patch("moira.tno.available_in_kernel", return_value=mocked):
             result = available_tnos()
         assert set(result).issubset(set(list_tnos()))
+
+
+def test_optional_secondary_kernel_loader_surfaces_real_failures(monkeypatch: pytest.MonkeyPatch) -> None:
+    class _ExistingPath:
+        def exists(self) -> bool:
+            return True
+
+    monkeypatch.setattr(asteroids_module, "_secondary_kernel", None)
+    monkeypatch.setattr(asteroids_module, "_SECONDARY_KERNEL_PATH", _ExistingPath())
+
+    def _broken_loader(path=None) -> None:
+        raise RuntimeError("corrupt secondary kernel")
+
+    monkeypatch.setattr(asteroids_module, "load_secondary_kernel", _broken_loader)
+
+    with pytest.raises(RuntimeError, match="corrupt secondary kernel"):
+        asteroids_module._ensure_secondary_kernel()
 
     def test_available_main_belt_is_subset_of_list(self):
         mocked = ["Ceres", "Ixion", "Astraea"]  # only Astraea is main-belt
