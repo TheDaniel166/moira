@@ -10,6 +10,8 @@ from moira.constants import Body
 from moira.heliacal import (
     HeliacalEventKind,
     LunarCrescentVisibilityClass,
+    MoonlightPolicy,
+    VisibilityPolicy,
     VisibilitySearchPolicy,
     VisibilityTargetKind,
     _lunar_crescent_details_for_morning,
@@ -97,6 +99,14 @@ def _yallop_details_for_reference_row(
     ("body", "event_kind", "jd_start", "search_days", "jd_lo", "jd_hi"),
     [
         (
+            Body.MERCURY,
+            HeliacalEventKind.HELIACAL_RISING,
+            2459950.5,
+            90,
+            2459956.5,
+            2459983.5,
+        ),
+        (
             Body.VENUS,
             HeliacalEventKind.HELIACAL_RISING,
             2458994.5,
@@ -141,13 +151,18 @@ def test_generalized_planetary_visibility_event_matches_published_windows(
     """
     Validate the generalized event surface against the admitted modern
     apparition windows already used by the planetary heliacal corpus.
+
+    Mercury's Berlin row is admitted against the explicit 12 Jan 2023 to
+    08 Feb 2023 morning-apparition table published by In-The-Sky.org.
     """
+    latitude_deg = 52.52 if body is Body.MERCURY else 35.0
+    longitude_deg = 13.41 if body is Body.MERCURY else 35.0
     event = visibility_event(
         body,
         event_kind,
         jd_start,
-        35.0,
-        35.0,
+        latitude_deg,
+        longitude_deg,
         search_policy=VisibilitySearchPolicy(search_window_days=search_days),
     )
 
@@ -155,6 +170,70 @@ def test_generalized_planetary_visibility_event_matches_published_windows(
     assert event.target_kind is VisibilityTargetKind.PLANET
     assert event.kind is event_kind
     assert event.assessment.observable is True
+    assert jd_lo < event.jd_ut < jd_hi
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize(
+    ("body", "event_kind", "jd_start", "search_days", "jd_lo", "jd_hi"),
+    [
+        (
+            Body.VENUS,
+            HeliacalEventKind.HELIACAL_RISING,
+            2458994.5,
+            120,
+            2459004.0,
+            2459044.0,
+        ),
+        (
+            Body.VENUS,
+            HeliacalEventKind.ACRONYCHAL_RISING,
+            2459299.5,
+            120,
+            2459310.0,
+            2459360.0,
+        ),
+        (
+            Body.VENUS,
+            HeliacalEventKind.HELIACAL_SETTING,
+            2459050.5,
+            300,
+            2459220.0,
+            2459290.0,
+        ),
+    ],
+)
+def test_generalized_planetary_visibility_event_ks1991_slice_stays_within_admitted_windows(
+    body: str,
+    event_kind: HeliacalEventKind,
+    jd_start: float,
+    search_days: int,
+    jd_lo: float,
+    jd_hi: float,
+) -> None:
+    """
+    Validate that the admitted K&S 1991 moonlight path remains inside the
+    same published Venus visibility windows already used by the non-moonlight
+    generalized planetary slice.
+    """
+    event = visibility_event(
+        body,
+        event_kind,
+        jd_start,
+        35.0,
+        35.0,
+        visibility_policy=VisibilityPolicy(
+            moonlight_policy=MoonlightPolicy.KRISCIUNAS_SCHAEFER_1991,
+        ),
+        search_policy=VisibilitySearchPolicy(search_window_days=search_days),
+    )
+
+    assert event is not None
+    assert event.target_kind is VisibilityTargetKind.PLANET
+    assert event.kind is event_kind
+    assert event.assessment.observable is True
+    assert event.assessment.moonlight_sky_nanolamberts is not None
+    assert event.assessment.moonlight_sky_nanolamberts > 0.0
     assert jd_lo < event.jd_ut < jd_hi
 
 

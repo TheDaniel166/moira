@@ -30,7 +30,10 @@ from moira.heliacal import (
     _ks1991_scattering_function,
     _ks1991_moonlight_nanolamberts,
     _ks1991_dark_sky_nanolamberts,
+    planet_acronychal_rising,
+    planet_acronychal_setting,
     planet_heliacal_rising,
+    planet_heliacal_setting,
     visibility_assessment,
     visibility_event,
 )
@@ -494,6 +497,40 @@ def test_visibility_event_matches_legacy_planetary_wrapper() -> None:
     assert general.apparent_magnitude == pytest.approx(legacy.apparent_magnitude)
 
 
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize(
+    ("body", "kind", "jd_start", "legacy_fn", "search_days"),
+    [
+        (Body.VENUS, HeliacalEventKind.ACRONYCHAL_RISING, 2459299.5, planet_acronychal_rising, None),
+        (Body.VENUS, HeliacalEventKind.HELIACAL_SETTING, 2459050.5, planet_heliacal_setting, None),
+        (Body.SATURN, HeliacalEventKind.ACRONYCHAL_SETTING, 2459992.5 - 170.0, planet_acronychal_setting, 220),
+        (Body.JUPITER, HeliacalEventKind.ACRONYCHAL_SETTING, 2460045.5 - 170.0, planet_acronychal_setting, 220),
+        (Body.MERCURY, HeliacalEventKind.ACRONYCHAL_SETTING, 2460000.0, planet_acronychal_setting, 220),
+        (Body.MERCURY, HeliacalEventKind.ACRONYCHAL_RISING, 2460000.0, planet_acronychal_rising, 220),
+    ],
+)
+def test_visibility_event_matches_legacy_planetary_wrappers_across_event_families(
+    body: str,
+    kind: HeliacalEventKind,
+    jd_start: float,
+    legacy_fn,
+    search_days: int | None,
+) -> None:
+    kwargs = {}
+    if search_days is not None:
+        kwargs["search_policy"] = VisibilitySearchPolicy(search_window_days=search_days)
+    general = visibility_event(body, kind, jd_start, 35.0, 35.0, **kwargs)
+    legacy = legacy_fn(body, jd_start, 35.0, 35.0, **({"search_days": search_days} if search_days is not None else {}))
+    assert general is not None
+    assert legacy is not None
+    assert general.kind is kind
+    assert general.jd_ut == pytest.approx(legacy.jd_ut)
+    assert general.elongation_deg == pytest.approx(legacy.elongation_deg)
+    assert general.target_altitude_deg == pytest.approx(legacy.planet_altitude_deg)
+    assert general.sun_altitude_deg == pytest.approx(legacy.sun_altitude_deg)
+    assert general.apparent_magnitude == pytest.approx(legacy.apparent_magnitude)
+
+
 # ---------------------------------------------------------------------------
 # Krisciunas & Schaefer (1991) moonlight model — unit tests
 # Authority: Krisciunas & Schaefer (1991), PASP 103, 1033-1039.
@@ -723,3 +760,164 @@ def test_visibility_assessment_ks1991_no_penalty_when_moon_below_horizon(
 
     assert result_ks.effective_limiting_magnitude == pytest.approx(result_ignore.effective_limiting_magnitude)
     assert result_ks.moonlight_sky_nanolamberts is None
+
+
+@pytest.mark.requires_ephemeris
+def test_visibility_assessment_live_ephemeris_ks1991_populates_penalty_under_bright_moon() -> None:
+    policy_ignore = VisibilityPolicy(moonlight_policy=MoonlightPolicy.IGNORE)
+    policy_ks = VisibilityPolicy(moonlight_policy=MoonlightPolicy.KRISCIUNAS_SCHAEFER_1991)
+
+    result_ignore = visibility_assessment(Body.VENUS, 2459325.0, 35.0, 35.0, policy=policy_ignore)
+    result_ks = visibility_assessment(Body.VENUS, 2459325.0, 35.0, 35.0, policy=policy_ks)
+
+    assert result_ignore.moonlight_sky_nanolamberts is None
+    assert result_ks.moonlight_sky_nanolamberts is not None
+    assert result_ks.moonlight_sky_nanolamberts > 0.0
+    assert result_ks.effective_limiting_magnitude < result_ignore.effective_limiting_magnitude
+
+
+@pytest.mark.requires_ephemeris
+def test_visibility_assessment_live_ephemeris_ks1991_null_when_geometry_gives_no_moonlight() -> None:
+    policy_ignore = VisibilityPolicy(moonlight_policy=MoonlightPolicy.IGNORE)
+    policy_ks = VisibilityPolicy(moonlight_policy=MoonlightPolicy.KRISCIUNAS_SCHAEFER_1991)
+
+    result_ignore = visibility_assessment(Body.VENUS, 2459010.0, 35.0, 35.0, policy=policy_ignore)
+    result_ks = visibility_assessment(Body.VENUS, 2459010.0, 35.0, 35.0, policy=policy_ks)
+
+    assert result_ignore.moonlight_sky_nanolamberts is None
+    assert result_ks.moonlight_sky_nanolamberts is None
+    assert result_ks.effective_limiting_magnitude == pytest.approx(result_ignore.effective_limiting_magnitude)
+
+
+@pytest.mark.requires_ephemeris
+def test_visibility_event_live_ephemeris_ks1991_populates_event_diagnostics_and_tightens_threshold() -> None:
+    policy_ignore = VisibilityPolicy(moonlight_policy=MoonlightPolicy.IGNORE)
+    policy_ks = VisibilityPolicy(moonlight_policy=MoonlightPolicy.KRISCIUNAS_SCHAEFER_1991)
+
+    event_ignore = visibility_event(
+        Body.VENUS,
+        HeliacalEventKind.HELIACAL_SETTING,
+        2459050.5,
+        35.0,
+        35.0,
+        visibility_policy=policy_ignore,
+    )
+    event_ks = visibility_event(
+        Body.VENUS,
+        HeliacalEventKind.HELIACAL_SETTING,
+        2459050.5,
+        35.0,
+        35.0,
+        visibility_policy=policy_ks,
+    )
+
+    assert event_ignore is not None
+    assert event_ks is not None
+    assert event_ignore.assessment.moonlight_sky_nanolamberts is None
+    assert event_ks.assessment.moonlight_sky_nanolamberts is not None
+    assert event_ks.assessment.effective_limiting_magnitude < event_ignore.assessment.effective_limiting_magnitude
+
+
+@pytest.mark.requires_ephemeris
+def test_visibility_event_live_ephemeris_ks1991_can_be_active_without_material_shift() -> None:
+    policy_ignore = VisibilityPolicy(moonlight_policy=MoonlightPolicy.IGNORE)
+    policy_ks = VisibilityPolicy(moonlight_policy=MoonlightPolicy.KRISCIUNAS_SCHAEFER_1991)
+
+    event_ignore = visibility_event(
+        Body.VENUS,
+        HeliacalEventKind.HELIACAL_RISING,
+        2458994.5,
+        35.0,
+        35.0,
+        visibility_policy=policy_ignore,
+    )
+    event_ks = visibility_event(
+        Body.VENUS,
+        HeliacalEventKind.HELIACAL_RISING,
+        2458994.5,
+        35.0,
+        35.0,
+        visibility_policy=policy_ks,
+    )
+
+    assert event_ignore is not None
+    assert event_ks is not None
+    assert event_ignore.assessment.moonlight_sky_nanolamberts is None
+    assert event_ks.assessment.moonlight_sky_nanolamberts is not None
+    assert abs(event_ks.jd_ut - event_ignore.jd_ut) < 0.01
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize(
+    ("body", "kind", "jd_start", "search_days"),
+    [
+        (Body.MERCURY, HeliacalEventKind.ACRONYCHAL_SETTING, 2460000.0, 220),
+        (Body.MERCURY, HeliacalEventKind.ACRONYCHAL_RISING, 2460000.0, 220),
+    ],
+)
+def test_visibility_event_live_ephemeris_ks1991_mercury_evening_family_can_be_active_without_material_shift(
+    body: str,
+    kind: HeliacalEventKind,
+    jd_start: float,
+    search_days: int,
+) -> None:
+    policy_ignore = VisibilityPolicy(moonlight_policy=MoonlightPolicy.IGNORE)
+    policy_ks = VisibilityPolicy(moonlight_policy=MoonlightPolicy.KRISCIUNAS_SCHAEFER_1991)
+
+    event_ignore = visibility_event(
+        body,
+        kind,
+        jd_start,
+        35.0,
+        35.0,
+        visibility_policy=policy_ignore,
+        search_policy=VisibilitySearchPolicy(search_window_days=search_days),
+    )
+    event_ks = visibility_event(
+        body,
+        kind,
+        jd_start,
+        35.0,
+        35.0,
+        visibility_policy=policy_ks,
+        search_policy=VisibilitySearchPolicy(search_window_days=search_days),
+    )
+
+    assert event_ignore is not None
+    assert event_ks is not None
+    assert event_ignore.assessment.moonlight_sky_nanolamberts is None
+    assert event_ks.assessment.moonlight_sky_nanolamberts is not None
+    assert event_ks.assessment.effective_limiting_magnitude < event_ignore.assessment.effective_limiting_magnitude
+    assert abs(event_ks.jd_ut - event_ignore.jd_ut) < 0.01
+
+
+@pytest.mark.requires_ephemeris
+def test_visibility_event_live_ephemeris_ks1991_jupiter_acronychal_setting_populates_diagnostics() -> None:
+    policy_ignore = VisibilityPolicy(moonlight_policy=MoonlightPolicy.IGNORE)
+    policy_ks = VisibilityPolicy(moonlight_policy=MoonlightPolicy.KRISCIUNAS_SCHAEFER_1991)
+
+    event_ignore = visibility_event(
+        Body.JUPITER,
+        HeliacalEventKind.ACRONYCHAL_SETTING,
+        2460045.5 - 170.0,
+        35.0,
+        35.0,
+        visibility_policy=policy_ignore,
+        search_policy=VisibilitySearchPolicy(search_window_days=220),
+    )
+    event_ks = visibility_event(
+        Body.JUPITER,
+        HeliacalEventKind.ACRONYCHAL_SETTING,
+        2460045.5 - 170.0,
+        35.0,
+        35.0,
+        visibility_policy=policy_ks,
+        search_policy=VisibilitySearchPolicy(search_window_days=220),
+    )
+
+    assert event_ignore is not None
+    assert event_ks is not None
+    assert event_ignore.assessment.moonlight_sky_nanolamberts is None
+    assert event_ks.assessment.moonlight_sky_nanolamberts is not None
+    assert event_ks.assessment.effective_limiting_magnitude < event_ignore.assessment.effective_limiting_magnitude
+    assert abs(event_ks.jd_ut - event_ignore.jd_ut) < 0.01

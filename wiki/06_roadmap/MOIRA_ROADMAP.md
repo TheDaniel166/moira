@@ -53,25 +53,28 @@ are exposed in the `moira` package namespace:
 
 ### Deferred doctrine candidate — Astrodynes / Cosmodynes
 
-Status: deferred
+Status: primary-source unblocked; implementation still pending
 
 Reason:
 - Moira can support this structurally as a derived doctrine/scoring subsystem.
-- Publicly accessible Church of Light material is sufficient for research and
-  source mapping, but not sufficient to reproduce the full method faithfully.
-- The authoritative computational tables and exact scoring rules appear to live
-  in primary manual/course material not currently available in complete form.
+- `Astrodyne-Manual.pdf` is now in hand and materially unblocks the doctrine.
+- The manual provides the governing scoring rules, worked examples, house-power
+  table, zodiacal and parallel aspect procedures, and harmony/discord rollups.
+- Remaining work is now transcription and validation of the referenced tables,
+  not uncertainty about the family's primary lineage.
 
 Constraint:
 - Do not implement an approximate or blended "power score" and label it
   astrodynes/cosmodynes.
-- Keep this family deferred until Moira has enough primary-source detail to
-  name the doctrine, implement the scoring rules explicitly, and validate them
-  against authoritative examples.
+- Do not claim full source completeness or parity until the remaining tables
+  referenced by the manual are transcribed and validated against worked
+  examples.
 
 Unblocker:
-- Obtain the authoritative Astrodyne / Cosmodyne manual or equivalent primary
-  formula tables and worked examples sufficient for a source-faithful build.
+- Transcribe the remaining referenced tables from the manual/companion Church
+  of Light material and validate an implementation against manual examples.
+- See `wiki/05_research/astrodynes/astrodynes_source_assessment_2026-04-09.md`
+  for the current source audit and the exact remaining gaps.
 
 ---
 

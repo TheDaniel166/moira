@@ -29,8 +29,9 @@ import urllib.request
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from moira.houses import calculate_houses
-from moira.julian import julian_day
+from moira.houses import calculate_houses, houses_from_armc
+from moira.julian import julian_day, ut_to_tt
+from moira.obliquity import true_obliquity
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -100,10 +101,17 @@ def _parse_iterations(text: str) -> list[dict]:
             m = re.search(rf"^\s+{re.escape(key)}:\s*([^\n#]+)", block, re.M)
             return m.group(1).strip() if m else None
 
-        # Skip testcases that use iflag or isid (they may return radians)
-        if _get("iflag") is not None or _get("isid") is not None:
+        # Skip blocks that use a non-zero iflag.
+        # iflag=0 is equivalent to no flag (swe_houses_ex with no special mode)
+        # and produces degree output identical to the no-flag testcase blocks.
+        # iflag=8192 returns radians; iflag=65536 is sidereal (ayanamsa required).
+        iflag_raw = _get("iflag")
+        if iflag_raw is not None and int(iflag_raw) != 0:
             continue
-        # Skip sidereal ARMC-based testcases
+        # Skip sidereal blocks (isid carries ayanamsa ID; separate parse path)
+        if _get("isid") is not None:
+            continue
+        # Skip ARMC-direct blocks (separate parse path via _parse_armc_iterations)
         if _get("armc") is not None:
             continue
 
@@ -141,6 +149,77 @@ def _parse_iterations(text: str) -> list[dict]:
         })
 
     return results
+
+
+def _parse_armc_iterations(text: str) -> list[dict]:
+    """
+    Parse ARMC-direct ITERATION blocks from the Houses TESTSUITE (section 6.4).
+
+    These blocks (Swiss ``swe_houses_armc()``) supply ARMC directly in degrees
+    rather than deriving it from JD + geographic longitude.  The JD_UT is still
+    present as ``jd + ut/24`` and is used to compute obliquity independently.
+
+    Returns list of dicts:
+      jd_ut, armc (degrees), hsys (letter), lat, lon,
+      cusps (list of 12 floats, H1..H12)
+    """
+    start = text.find("section-descr: Houses functions")
+    if start < 0:
+        raise ValueError("Could not find 'Houses functions' section in t.exp")
+    end = text.find("\nTESTSUITE", start + 1)
+    section = text[start: end if end > 0 else len(text)]
+
+    results = []
+    blocks = re.split(r"(?=\n\s+ITERATION\b)", section)
+    for block in blocks:
+        def _get(key):
+            m = re.search(rf"^\s+{re.escape(key)}:\s*([^\n#]+)", block, re.M)
+            return m.group(1).strip() if m else None
+
+        armc_raw = _get("armc")
+        if armc_raw is None:
+            continue
+        # Guard: ARMC blocks in the fixture carry no iflag or isid
+        if _get("iflag") is not None or _get("isid") is not None:
+            continue
+
+        jd   = _get("jd")
+        ut   = _get("ut")
+        ihsy = _get("ihsy")
+        lat  = _get("geolat")
+        lon  = _get("geolon")
+
+        if not all([jd, ut, ihsy, lat, lon]):
+            continue
+
+        hsys_letter = chr(int(ihsy) & 0xFF)
+        if hsys_letter not in SUPPORTED:
+            continue
+
+        cusps = {}
+        for m in re.finditer(r"cusps\[(\d+)\]:\s*([\d.\-]+)", block):
+            cusps[int(m.group(1))] = float(m.group(2))
+        if not all(i in cusps for i in range(1, 13)):
+            continue
+
+        # Sanity: reject if cusp values look like radians (max < 7.0)
+        non_zero = [cusps[i] for i in range(1, 13) if cusps[i] != 0.0]
+        if non_zero and max(non_zero) < 7.0:
+            continue
+
+        jd_ut = float(jd) + float(ut) / 24.0
+
+        results.append({
+            "jd_ut": jd_ut,
+            "armc":  float(armc_raw),
+            "hsys":  hsys_letter,
+            "lat":   float(lat),
+            "lon":   float(lon),
+            "cusps": [cusps[i] for i in range(1, 13)],
+        })
+
+    return results
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -181,7 +260,12 @@ def validate(iterations: list[dict]) -> bool:
         lon = it["lon"]
 
         try:
-            result = calculate_houses(jd, lat, lon, sys)
+            if "armc" in it:
+                jd_tt    = ut_to_tt(jd)
+                obliquity = true_obliquity(jd_tt)
+                result   = houses_from_armc(it["armc"], obliquity, lat, sys)
+            else:
+                result = calculate_houses(jd, lat, lon, sys)
             moira_cusps = list(result.cusps)
         except Exception as exc:
             print(f"{jd:>16.4f} {sys:>4} {lat:>7.2f} {lon:>8.2f}  "
@@ -244,7 +328,11 @@ if __name__ == "__main__":
     text = _ensure_cache(refresh, offline)
 
     print("Parsing house system iterations from t.exp ...")
-    iterations = _parse_iterations(text)
-    print(f"Found {len(iterations)} iterations covering {len(set(it['hsys'] for it in iterations))} house systems")
+    iterations      = _parse_iterations(text)
+    armc_iterations = _parse_armc_iterations(text)
+    all_iterations  = iterations + armc_iterations
+    sys_count = len(set(it["hsys"] for it in all_iterations))
+    print(f"Found {len(iterations)} standard + {len(armc_iterations)} ARMC-direct "
+          f"= {len(all_iterations)} iterations covering {sys_count} house systems")
 
-    validate(iterations)
+    validate(all_iterations)

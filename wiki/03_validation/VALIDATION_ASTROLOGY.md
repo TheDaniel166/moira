@@ -1,7 +1,7 @@
 # Moira Validation Report - Astrology
 
-**Version:** 1.2
-**Date:** 2026-04-05
+**Version:** 1.3
+**Date:** 2026-04-09
 **Runtime target:** Python 3.14
 **Validation philosophy:** external astrology software where stable and meaningful;
 canonical formulas and doctrine tables where no stable oracle exists; Moira as
@@ -38,7 +38,7 @@ The validation standard here differs from the astronomy layer:
 | Domain | Oracle / basis | Enforcement | Status |
 |---|---|---|---|
 | Sidereal systems / ayanamshas (34 systems) | Astro.com `swetest` offline fixture | `pytest` | Validated (31 of 33 in fixture; 2 without Swiss oracle) |
-| House systems (15 systems, 3168 iterations) | Swiss `setest/t.exp` offline fixture | `pytest` + validator script | Validated |
+| House systems (15 systems, 7416 iterations) | Swiss `setest/t.exp` offline fixture | `pytest` + validator script | Validated |
 | Aspects (major, tight-orb) | Horizons-validated position substrate + angular-distance geometry | `pytest` | Validated (unit + integration) |
 | Antiscia / contra-antiscia | Formula derivation + invariants (Valens, Lilly) | `pytest` | Validated |
 | Midpoints | Formula derivation + invariants (Ebertin, Witte) | `pytest` | Validated |
@@ -141,14 +141,97 @@ calibrated to Swiss.
 Porphyry, Equal, Whole Sign, Alcabitius, Morinus, Topocentric, Vehlow,
 Meridian, Azimuthal, Krusinski-Pisa, APC.
 
-Stress cases covered:
+### 4.1 Corpus composition
+
+The Swiss `setest/t.exp` fixture contains 12,757 raw ITERATION blocks across
+six test sections. After analysis, the 7,416 validated iterations are drawn
+from two distinct calling conventions:
+
+| Source | Blocks | API exercised | Notes |
+|---|---|---|---|
+| Standard tropical (no flag / `iflag=0`) | 3,888 | `swe_houses()` + `swe_houses_ex(iflag=0)` | Degree output, tropical; `iflag=0` is equivalent to no flag |
+| ARMC-direct | 3,528 | `swe_houses_armc()` | ARMC supplied directly from fixture; obliquity computed independently by Moira |
+| **Total** | **7,416** | | All pass at 3.6″ threshold |
+
+The remaining 5,341 blocks are excluded for documented reasons:
+
+| Category | Count | Reason |
+|---|---|---|
+| `iflag=8192` (radians output) | 720 | Swiss returns cusps in radians under this flag; same computation, different units — excluded by design |
+| Sidereal (`iflag=65536` + `isid`) | 1,080 | Requires ayanamsa-adjusted house computation; see §4.3 |
+| `swe_house_pos()` blocks | 1,536 | Single-point house membership query, no cusp array |
+| Unsupported system (`G`) | 312 | Not mapped in Moira's HouseSystem constants |
+| Missing coordinates | 18 | Incomplete fixture records |
+| **Total excluded** | **5,341** | |
+
+Stress cases covered across all 7,416 validated iterations:
 - equatorial latitudes
 - polar edge and polar fallback behavior
 - deep southern latitudes
 - multiple east/west longitudes
+- ARMC sweep across full 24-hour range (2-hour increments)
 
-Two systems (Azimuthal, APC) were found genuinely wrong during validation and
-fixed. The offline Swiss comparison now passes across the curated matrix.
+Two systems (Azimuthal, APC) were found genuinely wrong during earlier
+validation and corrected. All 7,416 iterations now pass.
+
+### 4.2 ARMC-direct validation
+
+The 3,528 ARMC-direct blocks exercise `houses_from_armc()` — Moira's
+equivalent of Swiss `swe_houses_armc()`. In these blocks the fixture supplies
+the ARMC value directly (degrees) rather than deriving it from a Julian date
+and geographic longitude. Moira computes obliquity independently from the
+block's JD_UT via its own TT conversion and IAU 2006 pipeline.
+
+This makes ARMC-direct validation a clean geometric test: given the exact ARMC
+that Swiss used, do Moira's house cusp algorithms produce the same 12 cusp
+longitudes? Any residual here is attributable solely to the cusp computation
+itself, not to ARMC derivation. All 3,528 pass at 3.6″.
+
+### 4.3 Sidereal house blocks — residual audit
+
+The 1,080 sidereal blocks (`iflag=65536`, `isid` ∈ {0, 18, 27}) were audited
+but not included in the passing test surface. The residuals are entirely
+in ayanamsa computation, not in house cusp geometry. When Swiss's ARMC is
+supplied directly and Moira's ayanamsa is applied, all discrepancy traces to
+the ayanamsa value alone.
+
+| `isid` | System | Moira constant | Ayanamsa diff at 2013 | House cusp residual | Category |
+|---|---|---|---|---|---|
+| 0 | Fagan-Bradley | `Ayanamsa.FAGAN_BRADLEY` | +1.24″ | 1.24″ max | Precession rate |
+| 27 | True Chitrapaksha | `Ayanamsa.TRUE_CHITRAPAKSHA` | −9.71″ | 10.0″ max | Precession rate + absent aberration |
+| 18 | J2000 | None | — | — | No Moira constant |
+
+**Fagan-Bradley (+1.24″):** This is not a calibration offset. Decomposition shows:
+
+- J2000 anchor difference (Moira vs Swiss stored mean): **+0.018″** — constant, negligible
+- Precession model accumulation (IAU 2006 vs Swiss model, 13.11 years): **+1.22″** — grows linearly from J2000
+
+The Moira J2000 anchor was calibrated against Swiss at J2000 (difference is
+0.018″). The growing component is the precession rate difference between
+Moira's IAU 2006 Fukushima-Williams model and Swiss Ephemeris's older model.
+At J2000 the total residual is ≈0.02″; at 13 years it is 1.24″; projected to
+100 years it reaches ≈9.3″ in magnitude. This is not fixable by adjusting the
+J2000 anchor — the source is the precession rate, not the epoch value.
+
+**True Chitrapaksha (−9.71″):** Same IAU 2006 vs Swiss precession rate
+difference applies (~0.09″/year), but the dominant source is Moira's fixed-star
+pipeline not including annual aberration (~20.5″ maximum effect). The anchor
+star Spica's apparent position differs between Moira and Swiss by the
+aberration amount. This matches the documented residual envelope already
+recorded in §3.1 for star-anchored ayanamsas.
+
+**Conclusion:** Both residuals arise from the same root cause — Moira's
+stronger IAU 2006 precession substrate produces ayanamsa values that diverge
+from Swiss as epochs depart from J2000, with star-anchored systems carrying an
+additional aberration contribution. Neither is a calibration error. Neither is
+fixable without downgrading the precession model. The house cusp computation
+itself is correct; the residual lives entirely in the ayanamsa layer.
+
+**`isid=18` (J2000 ayanamsa):** Swiss `SE_SIDM_J2000` anchors the tropical and
+sidereal zodiacs to coincide at J2000.0, accumulating purely from precession
+thereafter. Moira does not yet have a corresponding constant. If added, it
+would carry the same precession rate residual as Fagan-Bradley (~0.09″/year),
+since the J2000 anchor would be exact by construction.
 
 ---
 
@@ -483,6 +566,7 @@ What to validate:
 
 | Domain | Current state | Recommended oracle | Priority |
 |---|---|---|---|
+| House corpus expansion | **Resolved 2026-04-09.** Standard iterations expanded from 3,168 to 3,888 by including `iflag=0` blocks (previously mislabelled as potentially radian-output; they are tropical degree output). ARMC-direct corpus added: 3,528 iterations exercising `houses_from_armc()` directly. Total validated corpus: 7,416 iterations, all passing at 3.6″. Sidereal blocks (1,080) audited: residuals are entirely in the ayanamsa layer (precession model difference), not house computation. Full audit documented in §4.3. | Swiss `setest/t.exp` | Closed |
 | Sidereal true-ayanamsa target fixes | **Fixed 2026-04-05.** TRUE_REVATI target corrected 0° → 359°50′; TRUE_PUSHYA target corrected 106.667° → 106°. Errors dropped from 580–2413″ to 5–20″. Remaining residuals are model-basis differences (IAU 2006 vs Swiss precession). | Astro.com `swetest` | Closed |
 | Sidereal fixture coverage gap | **Resolved 2026-04-05.** Babyl Britton (sid=38) and True Mula (sid=35) added to fixture — 31 of 33 now covered. Aryabhata 522 has no Swiss equivalent (Moira-specific lineage). GALEQU_IAU1958 has 190″ base anchor difference vs Swiss sid_mode=32 (methodological, not drift). Both permanently excluded. | Astro.com `swetest` | Closed |
 | Aspects integration fixture | **Resolved 2026-04-05.** `aspects_reference.json` built from Horizons-validated positions. 7 cases across 4 epochs, 9 integration tests pass (J1900 skipped — no tight-orb aspects). | Horizons-validated substrate | Closed |
