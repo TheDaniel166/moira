@@ -195,7 +195,7 @@ When `apparent=False` is passed to `planet_at()`, only the light-time correction
 All internal timestamps are expressed in **Julian Days** (JD), a continuous count of days since January 1, 4713 BCE at noon UT.
 
 - `julian_day(year, month, day, hour)` → JD via the Meeus algorithm, valid for any proleptic Gregorian date.
-- `jd_from_datetime(dt)` → JD from a Python `datetime` (naïve datetimes treated as UTC).
+- `jd_from_datetime(dt)` → JD from a timezone-aware Python `datetime` (naïve datetimes raise `ValueError`).
 - `calendar_from_jd(jd)` → `(year, month, day, decimal_hour)`.
 - `datetime_from_jd(jd)` → Python `datetime` (limited to 1 AD–9999 AD).
 - `calendar_datetime_from_jd(jd)` → `CalendarDateTime` dataclass (BCE-safe via astronomical year numbering).

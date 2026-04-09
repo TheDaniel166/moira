@@ -49,7 +49,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 from .constants import JULIAN_YEAR
-from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd, decimal_year_from_jd
+from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd
 from .sidereal import tropical_to_sidereal, Ayanamsa, NAKSHATRA_LORDS, NAKSHATRA_SPAN, NAKSHATRA_NAMES
 
 
@@ -973,6 +973,13 @@ def vimshottari(
     Returns
     -------
     List of DashaPeriod at level 1 (each with .sub populated to requested depth)
+
+    Raises
+    ------
+    ValueError
+        If moon_tropical_lon or natal_jd is not finite.
+        If levels is not in the range 1–5.
+        If year_basis is not a recognised Vimshottari doctrine key.
     """
     pol = _resolve_vimshottari_policy(policy)
     year_basis      = year_basis      if year_basis      is not None else pol.year.year_basis
@@ -984,7 +991,10 @@ def vimshottari(
         raise ValueError("natal_jd must be finite")
 
     year_days = _resolve_vimshottari_year_days(year_basis)
-    levels = max(1, min(levels, 5))
+    if not (1 <= levels <= 5):
+        raise ValueError(
+            f"vimshottari: levels must be 1–5, got {levels!r}"
+        )
 
     # 1. Convert Moon's longitude to sidereal
     sid_lon = tropical_to_sidereal(moon_tropical_lon, natal_jd, system=ayanamsa_system)

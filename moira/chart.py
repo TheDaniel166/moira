@@ -185,8 +185,9 @@ def create_chart(
         house_system: House system identifier from HouseSystem constants.
             Defaults to HouseSystem.PLACIDUS.
         bodies: List of Body constant strings to compute. When None, defaults
-            to the eleven standard bodies: Sun, Moon, Mercury, Venus, Mars,
-            Jupiter, Saturn, Uranus, Neptune, Pluto, and Chiron.
+            to the ten standard bodies: Sun, Moon, Mercury, Venus, Mars,
+            Jupiter, Saturn, Uranus, Neptune, and Pluto. Chiron remains
+            available as an explicit opt-in body.
         reader: Optional SpkReader. When None, the active default reader is
             resolved lazily via get_reader().
         policy: Optional HousePolicy governing house fallback doctrine.
@@ -218,11 +219,7 @@ def create_chart(
 
     jd_tt = ut_to_tt(jd_ut)
     if bodies is None:
-        bodies = [
-            Body.SUN, Body.MOON, Body.MERCURY, Body.VENUS, Body.MARS,
-            Body.JUPITER, Body.SATURN, Body.URANUS, Body.NEPTUNE, Body.PLUTO,
-            Body.CHIRON
-        ]
+        bodies = list(Body.ALL_PLANETS)
         
     planets = all_planets_at(jd_ut, bodies=bodies, reader=reader)
     

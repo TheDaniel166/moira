@@ -57,8 +57,7 @@ Public surface / exports:
 
 from __future__ import annotations
 
-import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Callable
 
 from .chart import ChartContext, create_chart
@@ -100,7 +99,7 @@ class ElectionalPolicy:
 
     bodies : list[str] | None
         Body list passed to create_chart(). None uses the engine default
-        (Sun through Pluto + Chiron).
+        (Sun through Pluto only). Chiron remains explicit opt-in.
 
     Raises
     ------
@@ -305,6 +304,7 @@ def find_electional_windows(
             longitude=longitude,
             house_system=policy.house_system,
             bodies=policy.bodies,
+            reader=reader,
         )
         if predicate(chart):
             qualifying.append(jd)
@@ -348,6 +348,7 @@ def find_electional_moments(
     ------
     ValueError
         If jd_start >= jd_end.
+        If latitude or longitude are out of range (delegated to create_chart).
     """
     if jd_start >= jd_end:
         raise ValueError(
@@ -370,6 +371,7 @@ def find_electional_moments(
             longitude=longitude,
             house_system=policy.house_system,
             bodies=policy.bodies,
+            reader=reader,
         )
         if predicate(chart):
             qualifying.append(jd)

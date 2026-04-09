@@ -587,6 +587,21 @@ def _compose_rotation_matrix(jd_tt: float, *, with_nutation: bool = True):
     return M
 
 
+def _chiron_planet_data(jd_ut: float, reader: SpkReader) -> PlanetData:
+    """Bridge explicit Chiron requests to the centaur kernel path."""
+    from .asteroids import asteroid_at
+
+    chiron = asteroid_at(Body.CHIRON, jd_ut, de441_reader=reader)
+    return PlanetData(
+        name=chiron.name,
+        longitude=chiron.longitude,
+        latitude=chiron.latitude,
+        distance=chiron.distance,
+        speed=chiron.speed,
+        retrograde=chiron.retrograde,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Public API: single body
 # ---------------------------------------------------------------------------
@@ -698,6 +713,21 @@ def planet_at(
 
     if reader is None:
         reader = get_reader()
+
+    if body == Body.CHIRON:
+        if center != 'geocentric':
+            raise ValueError("planet_at: Chiron currently supports only center='geocentric'.")
+        if frame != 'ecliptic':
+            raise ValueError("planet_at: Chiron currently supports only frame='ecliptic'.")
+        if not apparent:
+            raise ValueError("planet_at: Chiron currently supports only apparent=True.")
+        if observer_lat is not None or observer_lon is not None or lst_deg is not None:
+            raise ValueError("planet_at: Chiron topocentric output is not supported by this API path.")
+        if not aberration or not grav_deflection or not nutation:
+            raise ValueError(
+                "planet_at: Chiron currently supports only the default apparent correction path."
+            )
+        return _chiron_planet_data(jd_ut, reader)
 
     year, month, *_ = _approx_year(jd_ut)
     if jd_tt is None:

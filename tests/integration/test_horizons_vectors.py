@@ -13,7 +13,7 @@ from tools.benchmark_matrix import (
     VECTOR_PLANET_CASES,
     VectorCase,
 )
-from tools.horizons import VectorState, vector_state
+from tools.horizons import VectorState, vector_state, vector_state_corrected
 
 
 def _angular_error_arcsec(moira_xyz: tuple[float, float, float], ref: VectorState) -> float:
@@ -68,7 +68,7 @@ def test_asteroid_geocentric_vectors_match_horizons(name: str, case: VectorCase)
     moira_xyz = _asteroid_geocentric(
         naif_id, ut_to_tt(case.jd_ut), _kernel_for(naif_id), reader, apparent=False
     )
-    ref = vector_state(case.command, case.jd_ut)
+    ref = vector_state_corrected(case.command, case.jd_ut, vec_corr="LT")
     error_arcsec = _angular_error_arcsec(moira_xyz, ref)
 
     assert error_arcsec <= case.tolerance_arcsec, (

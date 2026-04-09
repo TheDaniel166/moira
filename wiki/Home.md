@@ -31,6 +31,8 @@ Every calculation is benchmarked against physical oracles:
 - **[Astronomical Validation](03_validation/VALIDATION_ASTRONOMY.md)**
 - **[Astrological Invariants](03_validation/VALIDATION_ASTROLOGY.md)**
 - **[Experimental Validation](03_validation/VALIDATION_EXPERIMENTAL.md)**
+- **[Killer Validation Index](03_validation/KILLER_VALIDATION_INDEX.md)**
+- **[Polar House External Reference](03_validation/POLAR_HOUSE_EXTERNAL_REFERENCE.md)**
 - **[Validation Case: The Rose of Venus (2026–2032)](03_standards/VALIDATION_CASE_VENUS_STAR.md)**
 - **[Eclipse Canon Comparison](03_validation/ECLIPSE_CATALOG_COMPARISON.md)**
 - **[Legacy Divergence Report](03_validation/SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md)**

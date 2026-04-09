@@ -64,8 +64,8 @@ Usage
     print(m.aspects(chart))
 """
 
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import datetime
 from importlib.metadata import PackageNotFoundError, version as package_version
 from pathlib import Path
 from types import MappingProxyType
@@ -161,7 +161,6 @@ from .cycles import (
     firdar_series,
     firdar_at,
     PlanetaryDayInfo,
-    PlanetaryHour,
     PlanetaryHoursProfile,
     planetary_day_ruler,
     planetary_hours_for_day,

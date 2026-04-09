@@ -527,24 +527,41 @@ def firdaria(
         Julian Day (UT) of the birth moment.
     is_day_chart : bool
         True for a diurnal (day) chart; False for a nocturnal (night) chart.
+    variant : str
+        Firdaria sequence variant: ``"standard"`` (default) or ``"bonatti"``.
+        Only affects nocturnal charts; diurnal charts always use FIRDARIA_DIURNAL.
+    include_node_subperiods : bool
+        When True, North Node and South Node major periods are also subdivided
+        into 7 sub-periods. Default False (nodes produce no sub-periods).
+    policy : TimelordComputationPolicy | None
+        Computation policy governing the Julian year constant. Uses
+        DEFAULT_TIMELORD_POLICY when None.
 
     Returns
     -------
     list[FirdarPeriod]
         All major periods, each immediately followed by their 7 sub-periods,
         in chronological order.
+
+    Raises
+    ------
+    ValueError
+        If natal_jd is not finite.
+        If variant is not ``"standard"`` or ``"bonatti"``.
     """
+    if not math.isfinite(natal_jd):
+        raise ValueError(f"firdaria: natal_jd must be finite, got {natal_jd!r}")
     pol = _resolve_timelord_policy(policy)
     sequence = _resolve_firdaria_sequence(is_day_chart, variant)
     periods:  list[FirdarPeriod] = []
     cursor_jd = natal_jd
     _year_days = pol.firdaria_year.year_days
+    _seq_kind  = _firdar_sequence_kind(is_day_chart, variant)
 
     for major_planet, major_years in sequence:
         major_start = cursor_jd
         major_end   = cursor_jd + major_years * _year_days
 
-        _seq_kind = _firdar_sequence_kind(is_day_chart, variant)
         _is_node  = major_planet in {"North Node", "South Node"}
 
         periods.append(FirdarPeriod(
@@ -624,6 +641,10 @@ def current_firdaria(
     ValueError
         If current_jd falls outside the 75-year Firdaria cycle.
     """
+    if not math.isfinite(natal_jd):
+        raise ValueError(f"current_firdaria: natal_jd must be finite, got {natal_jd!r}")
+    if not math.isfinite(current_jd):
+        raise ValueError(f"current_firdaria: current_jd must be finite, got {current_jd!r}")
     all_periods = firdaria(
         natal_jd,
         is_day_chart,
@@ -1527,13 +1548,13 @@ class ZRLevelPair:
 
     Fields
     ------
-    upper_profile       — condition profile of the outer (higher-level-number) period
-    lower_profile       — condition profile of the inner (lower-level-number) period
+    upper_profile       — condition profile of the outer (lower level number, e.g. Level 1) period
+    lower_profile       — condition profile of the inner (higher level number, e.g. Level 2) period
     house_distance      — ZR house distance from upper sign to lower sign (1–12)
     signs_are_identical — True when both levels release from the same sign
     """
-    upper_profile:       ZRConditionProfile
-    lower_profile:       ZRConditionProfile
+    upper_profile:       ZRConditionProfile  # outer period — lower level number (e.g. Level 1)
+    lower_profile:       ZRConditionProfile  # inner period — higher level number (e.g. Level 2)
     house_distance:      int
     signs_are_identical: bool
 
@@ -1583,9 +1604,9 @@ def zr_level_pair(
     Parameters
     ----------
     upper : ReleasingPeriod
-        The outer (higher level-number) releasing period.
+        The outer (lower level number, e.g. Level 1) releasing period.
     lower : ReleasingPeriod
-        The inner (lower level-number) releasing period.
+        The inner (higher level number, e.g. Level 2) releasing period.
 
     Returns
     -------
@@ -1790,9 +1811,10 @@ def _generate_releasing(
     cursor_jd = start_jd
     cycle_start_sign = start_sign
     next_is_loosing_of_bond = False
+    _unit_days = level_days[level]
 
     while cursor_jd < max_jd:
-        period_jd_len = _zr_duration_days(current_sign, level, level_days)
+        period_jd_len = float(MINOR_YEARS[current_sign]) * _unit_days
         period_end = cursor_jd + period_jd_len
 
         # Clamp to the hard boundary
@@ -1882,17 +1904,44 @@ def zodiacal_releasing(
         Julian Day (UT) of birth.
     levels : int
         Number of releasing levels to generate (1–4, default 4).
+    lot_name : str
+        Name of the releasing Lot: ``"Spirit"``, ``"Fortune"``, ``"Eros"``, or
+        ``"Necessity"``. Default ``"Spirit"``. Governs the Spirit/Fortune
+        start-sign adjustment rule and the lot_name field on each period.
+    fortune_longitude : float | None
+        Ecliptic longitude of the Lot of Fortune in the natal chart (degrees).
+        Required for angularity classification (peak periods) and for the
+        Spirit start-sign adjustment rule. Pass None to disable both.
+    use_loosing_of_bond : bool
+        When True (default), applies the Loosing of the Bond doctrine:
+        releasing skips to the opposite sign when a long sign completes a
+        full circuit back to the starting sign.
+    policy : TimelordComputationPolicy | None
+        Computation policy governing the symbolic year-length constant.
+        Uses DEFAULT_TIMELORD_POLICY when None (360-day year).
 
     Returns
     -------
     list[ReleasingPeriod]
         All releasing periods across the requested levels, in chronological
         order (Level 1, then interleaved deeper levels inside each L1 period).
+
+    Raises
+    ------
+    ValueError
+        If lot_longitude or natal_jd is not finite.
+        If fortune_longitude is provided but not finite.
+        If lot_name is not one of the four recognised lot names.
+        If levels is not in the range 1–4.
     """
     if not math.isfinite(lot_longitude):
         raise ValueError("lot_longitude must be finite")
     if not math.isfinite(natal_jd):
         raise ValueError("natal_jd must be finite")
+    if not (1 <= levels <= _ZR_MAX_LEVEL):
+        raise ValueError(
+            f"zodiacal_releasing: levels must be 1–{_ZR_MAX_LEVEL}, got {levels!r}"
+        )
     if lot_name not in {"Spirit", "Fortune", "Eros", "Necessity"}:
         raise ValueError("lot_name must be Spirit, Fortune, Eros, or Necessity")
     if fortune_longitude is not None and not math.isfinite(fortune_longitude):
@@ -1920,7 +1969,7 @@ def zodiacal_releasing(
         start_sign=start_sign,
         start_jd=natal_jd,
         level=1,
-        max_level=max(1, min(levels, _ZR_MAX_LEVEL)),
+        max_level=levels,
         max_jd=max_jd,
         lot_name=lot_name,
         fortune_sign=fortune_sign,
@@ -1946,22 +1995,34 @@ def current_releasing(
     Parameters
     ----------
     lot_longitude : float
-        Ecliptic longitude of the Lot in the natal chart.
+        Ecliptic longitude of the Lot in the natal chart (degrees, 0–360).
     natal_jd : float
         Julian Day (UT) of birth.
     current_jd : float
         Julian Day (UT) of the date to evaluate.
+    lot_name : str
+        Name of the releasing Lot. Passed through to zodiacal_releasing().
+        Default ``"Spirit"``.
+    fortune_longitude : float | None
+        Ecliptic longitude of the Lot of Fortune. Passed through to
+        zodiacal_releasing(). Pass None to disable angularity classification.
+    use_loosing_of_bond : bool
+        Whether to apply the Loosing of the Bond doctrine. Default True.
+    policy : TimelordComputationPolicy | None
+        Computation policy governing the symbolic year-length constant.
+        Uses DEFAULT_TIMELORD_POLICY when None.
 
     Returns
     -------
     list[ReleasingPeriod]
-        List of 4 ReleasingPeriod objects (Levels 1–4) active at current_jd.
+        List of up to 4 ReleasingPeriod objects (Levels 1–4) active at current_jd.
         If a level cannot be determined, the last valid period for that level
         is returned.
 
     Raises
     ------
     ValueError
+        If current_jd is not finite.
         If current_jd is before natal_jd or beyond one full primary releasing circuit.
     """
     pol = _resolve_timelord_policy(policy)

@@ -769,6 +769,53 @@ def _conjunction_separation(
     return (p1.longitude - p2.longitude + 180.0) % 360.0 - 180.0
 
 
+def _polish_conjunction_root(
+    body1: str,
+    body2: str,
+    jd: float,
+    reader: SpkReader,
+    apparent: bool = True,
+    neighborhood_steps: int = 64,
+) -> float:
+    """Pick the best nearby representable JD around a conjunction root."""
+    one_second = 1.0 / 86400.0
+
+    def metrics(t: float) -> tuple[float, float]:
+        center = _conjunction_separation(body1, body2, t, reader, apparent=apparent)
+        before = _conjunction_separation(body1, body2, t - one_second, reader, apparent=apparent)
+        after = _conjunction_separation(body1, body2, t + one_second, reader, apparent=apparent)
+        symmetry = abs(abs(after) - abs(before))
+        return center, symmetry
+
+    best_jd = jd
+    best_center, best_symmetry = metrics(jd)
+    best_score = (
+        abs(best_center) + best_symmetry,
+        max(abs(best_center), best_symmetry),
+        abs(best_center),
+        best_symmetry,
+    )
+
+    for direction in (math.inf, -math.inf):
+        candidate = jd
+        for _ in range(neighborhood_steps):
+            candidate = math.nextafter(candidate, direction)
+            center, symmetry = metrics(candidate)
+            score = (
+                abs(center) + symmetry,
+                max(abs(center), symmetry),
+                abs(center),
+                symmetry,
+            )
+            if score < best_score:
+                best_jd = candidate
+                best_center = center
+                best_symmetry = symmetry
+                best_score = score
+
+    return best_jd
+
+
 def _bisect_conjunction(
     body1: str, 
     body2: str, 
@@ -776,25 +823,43 @@ def _bisect_conjunction(
     jd_hi: float, 
     reader: SpkReader, 
     apparent: bool = True,
-    tol_days: float = 1e-8
+    tol_days: float = 1e-8,
+    max_iter: int = 96,
 ) -> float:
     """Two-pass bisection for sub-second precision."""
     def diff(t: float) -> float:
         return _conjunction_separation(body1, body2, t, reader, apparent=apparent)
 
     d_lo = diff(jd_lo)
-    for _ in range(40):
+    d_hi = diff(jd_hi)
+    if d_lo == 0.0:
+        return jd_lo
+    if d_hi == 0.0:
+        return jd_hi
+
+    for _ in range(max_iter):
         if jd_hi - jd_lo < tol_days:
             break
         jd_mid = (jd_lo + jd_hi) / 2.0
+        if jd_mid == jd_lo or jd_mid == jd_hi:
+            break
         d_mid = diff(jd_mid)
         if d_lo * d_mid <= 0:
             jd_hi = jd_mid
+            d_hi = d_mid
         else:
             jd_lo = jd_mid
             d_lo = d_mid
-            
-    return (jd_lo + jd_hi) / 2.0
+
+    jd_mid = (jd_lo + jd_hi) / 2.0
+    candidates = [jd_lo, jd_mid, jd_hi]
+    if d_hi != d_lo:
+        jd_secant = jd_lo - d_lo * (jd_hi - jd_lo) / (d_hi - d_lo)
+        if jd_lo <= jd_secant <= jd_hi:
+            candidates.append(jd_secant)
+
+    best_jd = min(candidates, key=lambda t: abs(diff(t)))
+    return best_jd
 
 
 def next_conjunction(
@@ -826,6 +891,7 @@ def next_conjunction(
             # Phase II: High-Precision Apparent Refinement
             # Bracket by 0.1 days around geometric hit
             jd_exact = _bisect_conjunction(body1, body2, jd_geo - 0.1, jd_geo + 0.1, reader, apparent=True)
+            jd_exact = _polish_conjunction_root(body1, body2, jd_exact, reader, apparent=True)
             
             p1 = planet_at(body1, jd_exact, reader=reader, apparent=True)
             return PhenomenonEvent(

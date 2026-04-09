@@ -25,7 +25,8 @@ Authority
                          universal practice
 """
 
-from dataclasses import dataclass, field
+import math
+from dataclasses import dataclass
 from enum import Enum
 
 from .constants import Body, sign_of
@@ -916,8 +917,11 @@ def planetary_age_at(age_years: float) -> PlanetaryAgePeriod:
 
     Raises
     ------
+    ValueError if age_years is non-finite (nan, inf).
     ValueError if age_years is negative.
     """
+    if not math.isfinite(age_years):
+        raise ValueError(f"age_years must be finite, got {age_years!r}")
     if age_years < 0:
         raise ValueError(f"age must be non-negative, got {age_years}")
     for row in _PTOLEMAIC_AGES:
@@ -1091,7 +1095,9 @@ def firdar_at(
     ValueError if target_jd is before birth or beyond the 75-year cycle.
     """
     if target_jd < birth_jd:
-        raise ValueError("target_jd precedes birth_jd")
+        raise ValueError(
+            f"firdar_at: target_jd ({target_jd}) precedes birth_jd ({birth_jd})"
+        )
 
     series = firdar_series(birth_jd, is_day_birth)
     for period in series.periods:
@@ -1200,9 +1206,25 @@ def planetary_hours_for_day(
     Returns
     -------
     PlanetaryHoursProfile with all 24 hours and their rulers.
+
+    Raises
+    ------
+    ValueError if sunset_jd <= sunrise_jd.
+    ValueError if next_sunrise_jd <= sunset_jd.
     """
     if next_sunrise_jd is None:
         next_sunrise_jd = sunrise_jd + 1.0
+
+    if sunset_jd <= sunrise_jd:
+        raise ValueError(
+            f"planetary_hours_for_day: sunset_jd ({sunset_jd}) must be after "
+            f"sunrise_jd ({sunrise_jd})"
+        )
+    if next_sunrise_jd <= sunset_jd:
+        raise ValueError(
+            f"planetary_hours_for_day: next_sunrise_jd ({next_sunrise_jd}) must be "
+            f"after sunset_jd ({sunset_jd})"
+        )
 
     day_length = sunset_jd - sunrise_jd
     night_length = next_sunrise_jd - sunset_jd

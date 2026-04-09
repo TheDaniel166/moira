@@ -488,12 +488,16 @@ def vector_state_corrected(
 @lru_cache(maxsize=256)
 def observer_sky_position(
     command: str,
-    jd_ut: float,
+    jd_epoch: float,
     longitude_deg: float,
     latitude_deg: float,
     elevation_km: float = 0.0,
+    time_type: str = "UT",
 ) -> ObserverSkyPosition:
-    dt = datetime_from_jd(jd_ut)
+    if time_type not in {"UT", "TT"}:
+        raise ValueError(f"observer_sky_position: time_type must be 'UT' or 'TT', got {time_type!r}")
+
+    dt = datetime_from_jd(jd_epoch)
     dt_next = dt + timedelta(days=1)
     params = {
         "format": "text",
@@ -507,6 +511,7 @@ def observer_sky_position(
         "START_TIME": f"'{_horizons_time_string(dt)}'",
         "STOP_TIME": f"'{_horizons_time_string(dt_next)}'",
         "STEP_SIZE": "'1 d'",
+        "TIME_TYPE": f"'{time_type}'",
         # Request apparent topocentric RA/Dec so the reference frame matches
         # sky_position_at(), which returns apparent topocentric coordinates
         # after precession and nutation. Quantity 1 returns ICRF RA/Dec and is
