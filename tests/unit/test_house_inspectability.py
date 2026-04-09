@@ -118,7 +118,7 @@ class TestPostInitGuardRaises:
         return [float(i * 30) for i in range(12)]
 
     def test_wrong_cusp_count_raises(self):
-        with pytest.raises(AssertionError, match="len\\(cusps\\)"):
+        with pytest.raises(ValueError, match="len\\(cusps\\)"):
             HouseCusps(
                 system=HouseSystem.PLACIDUS,
                 cusps=list(range(11)),          # only 11
@@ -131,7 +131,7 @@ class TestPostInitGuardRaises:
 
     def test_cusp0_mismatch_raises(self):
         cusps = self._good_cusps()
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             HouseCusps(
                 system=HouseSystem.PLACIDUS,
                 cusps=cusps,
@@ -145,7 +145,7 @@ class TestPostInitGuardRaises:
 
     def test_fallback_true_but_systems_equal_raises(self):
         cusps = self._good_cusps()
-        with pytest.raises(AssertionError, match="fallback"):
+        with pytest.raises(ValueError, match="fallback"):
             HouseCusps(
                 system=HouseSystem.PLACIDUS,
                 cusps=cusps,
@@ -158,7 +158,7 @@ class TestPostInitGuardRaises:
 
     def test_fallback_false_but_systems_differ_raises(self):
         cusps = self._good_cusps()
-        with pytest.raises(AssertionError, match="fallback"):
+        with pytest.raises(ValueError, match="fallback"):
             HouseCusps(
                 system=HouseSystem.PLACIDUS,
                 cusps=cusps,
@@ -171,7 +171,7 @@ class TestPostInitGuardRaises:
 
     def test_fallback_true_but_reason_none_raises(self):
         cusps = self._good_cusps()
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             HouseCusps(
                 system=HouseSystem.PLACIDUS,
                 cusps=cusps,
@@ -184,7 +184,7 @@ class TestPostInitGuardRaises:
 
     def test_fallback_false_but_reason_set_raises(self):
         cusps = self._good_cusps()
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             HouseCusps(
                 system=HouseSystem.PLACIDUS,
                 cusps=cusps,
@@ -197,7 +197,7 @@ class TestPostInitGuardRaises:
 
     def test_effective_system_set_but_classification_none_raises(self):
         cusps = self._good_cusps()
-        with pytest.raises(AssertionError, match="classification is None"):
+        with pytest.raises(ValueError, match="classification is None"):
             HouseCusps(
                 system=HouseSystem.PLACIDUS,
                 cusps=cusps,
@@ -207,6 +207,34 @@ class TestPostInitGuardRaises:
                 fallback_reason=None,
                 classification=None,            # wrong: must not be None when effective_system is set
             )
+
+    def test_policy_must_be_house_policy(self):
+        cusps = self._good_cusps()
+        with pytest.raises(TypeError, match="policy must be a HousePolicy"):
+            HouseCusps(
+                system=HouseSystem.PLACIDUS,
+                cusps=cusps,
+                asc=cusps[0], mc=90.0, armc=0.0,
+                effective_system=HouseSystem.PLACIDUS,
+                fallback=False,
+                fallback_reason=None,
+                classification=classify_house_system(HouseSystem.PLACIDUS),
+                policy="strict",  # type: ignore[arg-type]
+            )
+
+    def test_housecusps_rejects_mutation(self):
+        cusps = self._good_cusps()
+        result = HouseCusps(
+            system=HouseSystem.PLACIDUS,
+            cusps=cusps,
+            asc=cusps[0], mc=90.0, armc=0.0,
+            effective_system=HouseSystem.PLACIDUS,
+            fallback=False,
+            fallback_reason=None,
+            classification=classify_house_system(HouseSystem.PLACIDUS),
+        )
+        with pytest.raises((AttributeError, TypeError)):
+            result.cusps += (30.0,)  # type: ignore[misc]
 
 
 # ---------------------------------------------------------------------------

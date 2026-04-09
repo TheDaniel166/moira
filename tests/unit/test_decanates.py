@@ -71,6 +71,75 @@ def test_longitude_used_reduced_to_0_360():
     assert 0.0 <= pos2.longitude_used < 360.0
 
 
+def test_decanate_position_rejects_invalid_system():
+    with pytest.raises(ValueError, match="system"):
+        DecanatePosition(
+            system="bogus",
+            decan_number=1,
+            ruling_planet="Mars",
+            ruling_sign=None,
+            sign="Aries",
+            sign_symbol="♈",
+            degree_in_decan=0.0,
+            longitude_used=0.0,
+        )
+
+
+def test_decanate_position_rejects_invalid_decan_number():
+    with pytest.raises(ValueError, match="decan_number"):
+        DecanatePosition(
+            system="chaldean_face",
+            decan_number=4,
+            ruling_planet="Mars",
+            ruling_sign=None,
+            sign="Aries",
+            sign_symbol="♈",
+            degree_in_decan=0.0,
+            longitude_used=0.0,
+        )
+
+
+def test_decanate_position_rejects_invalid_degree_in_decan():
+    with pytest.raises(ValueError, match="degree_in_decan"):
+        DecanatePosition(
+            system="triplicity",
+            decan_number=2,
+            ruling_planet="Sun",
+            ruling_sign="Leo",
+            sign="Aries",
+            sign_symbol="♈",
+            degree_in_decan=10.0,
+            longitude_used=15.0,
+        )
+
+
+def test_decanate_position_rejects_invalid_longitude_used():
+    with pytest.raises(ValueError, match="longitude_used"):
+        DecanatePosition(
+            system="vedic_drekkana",
+            decan_number=1,
+            ruling_planet="Mars",
+            ruling_sign="Aries",
+            sign="Aries",
+            sign_symbol="♈",
+            degree_in_decan=2.0,
+            longitude_used=float("nan"),
+        )
+
+
+@pytest.mark.parametrize("bad_lon", [float("nan"), float("inf"), float("-inf")])
+def test_non_finite_longitudes_raise_in_tropical_decan_functions(bad_lon: float):
+    for fn in (chaldean_face, triplicity_decan):
+        with pytest.raises(ValueError, match="finite"):
+            fn(bad_lon)
+
+
+@pytest.mark.parametrize("bad_lon", [float("nan"), float("inf"), float("-inf")])
+def test_non_finite_longitudes_raise_in_vedic_drekkana(bad_lon: float):
+    with pytest.raises(ValueError, match="finite"):
+        vedic_drekkana(bad_lon, _JD_J2000)
+
+
 # ---------------------------------------------------------------------------
 # Chaldean Faces — ruling planet table
 #

@@ -236,6 +236,13 @@ __all__ = [
   ]
 
 
+def _require(condition: bool, message: str, exc_type: type[Exception] = ValueError) -> None:
+    """Raise a concrete runtime exception when an invariant is violated."""
+
+    if not condition:
+        raise exc_type(message)
+
+
 # ===========================================================================
 # CLASSIFICATION LAYER
 # ===========================================================================
@@ -576,6 +583,15 @@ class HousePolicy:
         )
 
 
+def _normalize_house_policy(policy: HousePolicy | None) -> HousePolicy:
+    """Return a validated house policy, defaulting when omitted."""
+
+    if policy is None:
+        return HousePolicy.default()
+    _require(isinstance(policy, HousePolicy), "policy must be a HousePolicy", TypeError)
+    return policy
+
+
 def _experimental_polar_placidus_cusps(
     armc: float,
     obliquity: float,
@@ -598,7 +614,7 @@ def _experimental_polar_placidus_cusps(
     raise ValueError(f"experimental Placidus search failed: {result.diagnostic_summary}")
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class HouseCusps:
     """
     RESULT VESSEL: The complete output of one calculate_houses() call.
@@ -650,7 +666,7 @@ class HouseCusps:
         - Policy enforcement (calculate_houses)
     """
     system:           str
-    cusps:            list[float]          # 12 ecliptic longitudes, degrees [0,360)
+    cusps:            tuple[float, ...]    # 12 ecliptic longitudes, degrees [0,360)
     asc:              float                # Ascendant
     mc:               float                # Midheaven
     armc:             float                # ARMC (Right Ascension of MC)
@@ -660,7 +676,7 @@ class HouseCusps:
     fallback:         bool                         = False   # True iff effective_system != system
     fallback_reason:  str | None                   = None    # Why fallback occurred; None when fallback is False
     classification:   HouseSystemClassification | None = None  # Doctrinal classification of effective_system
-    policy:           HousePolicy | None                = None  # Policy that governed fallback resolution
+    policy:           HousePolicy = field(default_factory=HousePolicy.default)  # Policy that governed fallback resolution
 
     @property
     def dsc(self) -> float:
@@ -711,8 +727,10 @@ class HouseCusps:
             4. fallback_reason is None iff fallback is False
             5. classification is not None when effective_system is set and non-empty
         """
-        assert len(self.cusps) == 12, (
-            f"HouseCusps invariant violated: len(cusps)={len(self.cusps)}, expected 12"
+        object.__setattr__(self, "cusps", tuple(self.cusps))
+        _require(
+            len(self.cusps) == 12,
+            f"HouseCusps invariant violated: len(cusps)={len(self.cusps)}, expected 12",
         )
         if (
             self.cusps
@@ -721,24 +739,33 @@ class HouseCusps:
             and self.classification.cusp_basis != HouseSystemCuspBasis.HORIZON
         ):
             diff = abs(self.cusps[0] - self.asc) % 360.0
-            assert diff < 1e-9 or abs(diff - 360.0) < 1e-9, (
+            _require(
+                diff < 1e-9 or abs(diff - 360.0) < 1e-9,
                 f"HouseCusps invariant violated: quadrant system "
-                f"cusps[0]={self.cusps[0]:.9f} != asc={self.asc:.9f}"
+                f"cusps[0]={self.cusps[0]:.9f} != asc={self.asc:.9f}",
             )
         if self.effective_system:
-            assert self.fallback == (self.system != self.effective_system), (
+            _require(
+                self.fallback == (self.system != self.effective_system),
                 f"HouseCusps invariant violated: fallback={self.fallback} but "
-                f"system={self.system!r}, effective_system={self.effective_system!r}"
+                f"system={self.system!r}, effective_system={self.effective_system!r}",
             )
-        assert (self.fallback_reason is None) == (not self.fallback), (
+        _require(
+            (self.fallback_reason is None) == (not self.fallback),
             f"HouseCusps invariant violated: fallback={self.fallback} but "
-            f"fallback_reason={self.fallback_reason!r}"
+            f"fallback_reason={self.fallback_reason!r}",
         )
         if self.effective_system:
-            assert self.classification is not None, (
+            _require(
+                self.classification is not None,
                 f"HouseCusps invariant violated: effective_system={self.effective_system!r} "
-                f"is set but classification is None"
+                f"is set but classification is None",
             )
+        _require(
+            isinstance(self.policy, HousePolicy),
+            "HouseCusps invariant violated: policy must be a HousePolicy",
+            TypeError,
+        )
 
     def sign_of_cusp(self, house: int) -> tuple[str, str, float]:
         """Return (sign, symbol, degree_within_sign) for house 1–12."""
@@ -1944,7 +1971,7 @@ def calculate_houses(
         - Lazily imports moira.planets.sun_longitude when system is
           HouseSystem.SUNSHINE; no other import-time side effects.
     """
-    active_policy = policy if policy is not None else HousePolicy.default()
+    active_policy = _normalize_house_policy(policy)
     jd_tt    = ut_to_tt(jd_ut)
     obliquity = true_obliquity(jd_tt)
     dpsi, _ = nutation(jd_tt)
@@ -1958,131 +1985,19 @@ def calculate_houses(
     vertex      = _asc_from_armc((armc + 90.0) % 360.0, obliquity, -latitude)
     anti_vertex = (vertex + 180.0) % 360.0
 
-    # --- Fallback resolution: determine effective system and reason ----------
-    #
-    # Rule 1 — Critical latitude safety valve:
-    #   The semi-arc and oblique-ascension systems (Placidus, Koch, Pullen SD)
-    #   produce geometrically disordered cusps above the critical latitude
-    #   90° − obliquity (≈ 66.56° at J2000).  At that latitude, the solar
-    #   solstice declination equals the co-latitude, so some ecliptic degrees
-    #   become circumpolar.  The underlying acos() domain error is silently
-    #   clamped, but the resulting cusp sequence is astronomically invalid
-    #   (houses swap, spans exceed 180°) for a significant fraction of ARMC
-    #   values above that threshold.  We fall back to Porphyry, which uses
-    #   only ecliptic trisection and remains valid at all latitudes.
-    #   Behavior is governed by active_policy.polar_fallback.
-    #
-    # Rule 2 — Unknown system code:
-    #   Any system code not in _KNOWN_SYSTEMS cannot be dispatched.
-    #   Behavior is governed by active_policy.unknown_system.
-    #
-    critical_lat = 90.0 - obliquity
-    polar = abs(latitude) >= critical_lat and system in _POLAR_SYSTEMS
-    effective_system = system
-    fallback = False
-    fallback_reason: str | None = None
-    experimental_cusps: list[float] | None = None
-
-    if polar:
-        if active_policy.polar_fallback == PolarFallbackPolicy.RAISE:
-            raise ValueError(
-                f"latitude |{latitude:.4f}°| >= critical latitude {critical_lat:.4f}° "
-                f"(= 90° − obliquity {obliquity:.4f}°); "
-                f"system {system!r} produces geometrically invalid cusps above this threshold "
-                f"and policy is RAISE"
-            )
-        if active_policy.polar_fallback == PolarFallbackPolicy.EXPERIMENTAL_SEARCH:
-            if system != HouseSystem.PLACIDUS:
-                raise ValueError(
-                    f"experimental polar search is only implemented for {HouseSystem.PLACIDUS!r}; "
-                    f"got {system!r}"
-                )
-            experimental_cusps = _experimental_polar_placidus_cusps(
-                armc,
-                obliquity,
-                latitude,
-                asc,
-                mc,
-            )
-        else:
-            effective_system = HouseSystem.PORPHYRY
-            fallback = True
-            fallback_reason = (
-                f"|lat| {abs(latitude):.4f}° >= critical latitude {critical_lat:.4f}° "
-                f"(90° − obliquity); {system!r} produces invalid cusps above this threshold; "
-                f"fell back to Porphyry"
-            )
-    elif system not in _KNOWN_SYSTEMS:
-        if active_policy.unknown_system == UnknownSystemPolicy.RAISE:
-            raise ValueError(
-                f"unknown house system code {system!r} and policy is RAISE"
-            )
-        effective_system = HouseSystem.PLACIDUS
-        fallback = True
-        fallback_reason = (
-            f"unknown system code {system!r}; fell back to Placidus"
-        )
-
-    # --- Cusp computation: dispatch to the effective system ------------------
-    if experimental_cusps is not None:
-        cusps = experimental_cusps
-    elif effective_system == HouseSystem.WHOLE_SIGN:
-        cusps = _whole_sign(asc)
-    elif effective_system == HouseSystem.EQUAL:
-        cusps = _equal_house(asc)
-    elif effective_system == HouseSystem.PORPHYRY:
-        cusps = _porphyry(asc, mc)
-    elif effective_system == HouseSystem.PLACIDUS:
-        cusps = _placidus(armc, obliquity, latitude)
-    elif effective_system == HouseSystem.KOCH:
-        cusps = _koch(armc, obliquity, latitude)
-    elif effective_system == HouseSystem.CAMPANUS:
-        cusps = _campanus(armc, obliquity, latitude)
-    elif effective_system == HouseSystem.REGIOMONTANUS:
-        cusps = _regiomontanus(armc, obliquity, latitude)
-    elif effective_system == HouseSystem.ALCABITIUS:
-        cusps = _alcabitius(armc, obliquity, latitude)
-    elif effective_system == HouseSystem.MORINUS:
-        cusps = _morinus(armc, obliquity)
-    elif effective_system == HouseSystem.TOPOCENTRIC:
-        cusps = _topocentric(armc, obliquity, latitude)
-    elif effective_system == HouseSystem.MERIDIAN:
-        cusps = _meridian(armc, obliquity)
-    elif effective_system == HouseSystem.VEHLOW:
-        cusps = _vehlow(asc)
-    elif effective_system == HouseSystem.SUNSHINE:
+    sun_lon = None
+    if system == HouseSystem.SUNSHINE:
         from .planets import sun_longitude
         sun_lon = sun_longitude(jd_ut)
-        cusps = _sunshine(sun_lon, latitude, obliquity)
-    elif effective_system == HouseSystem.AZIMUTHAL:
-        cusps = _azimuthal(armc, obliquity, latitude)
-    elif effective_system == HouseSystem.CARTER:
-        cusps = _carter(armc, obliquity, latitude)
-    elif effective_system == HouseSystem.PULLEN_SD:
-        cusps = _pullen_sd(armc, obliquity, latitude)
-    elif effective_system == HouseSystem.PULLEN_SR:
-        cusps = _pullen_sr(armc, obliquity, latitude)
-    elif effective_system == HouseSystem.KRUSINSKI:
-        cusps = _krusinski(armc, obliquity, latitude)
-    elif effective_system == HouseSystem.APC:
-        cusps = _apc(armc, obliquity, latitude)
-    else:
-        cusps = _placidus(armc, obliquity, latitude)
 
-    _shift = ayanamsa_offset if ayanamsa_offset is not None else 0.0
-    return HouseCusps(
-        system=system,
-        cusps=[normalize_degrees(c - _shift) for c in cusps],
-        asc=normalize_degrees(asc - _shift),
-        mc=normalize_degrees(mc - _shift),
-        armc=normalize_degrees(armc),
-        vertex=normalize_degrees(vertex - _shift),
-        anti_vertex=normalize_degrees(anti_vertex - _shift),
-        effective_system=effective_system,
-        fallback=fallback,
-        fallback_reason=fallback_reason,
-        classification=classify_house_system(effective_system),
+    return houses_from_armc(
+        armc,
+        obliquity,
+        latitude,
+        system,
         policy=active_policy,
+        sun_longitude=sun_lon,
+        ayanamsa_offset=ayanamsa_offset,
     )
 
 
@@ -2155,19 +2070,14 @@ class HousePlacement:
     cusp_longitude: float
 
     def __post_init__(self) -> None:
-        assert 1 <= self.house <= 12, (
-            f"HousePlacement invariant violated: house={self.house!r} not in [1, 12]"
-        )
-        assert 0.0 <= self.longitude < 360.0, (
-            f"HousePlacement invariant violated: longitude={self.longitude!r} not in [0, 360)"
-        )
-        assert 0.0 <= self.cusp_longitude < 360.0, (
-            f"HousePlacement invariant violated: cusp_longitude={self.cusp_longitude!r} not in [0, 360)"
-        )
+        _require(1 <= self.house <= 12, f"HousePlacement invariant violated: house={self.house!r} not in [1, 12]")
+        _require(0.0 <= self.longitude < 360.0, f"HousePlacement invariant violated: longitude={self.longitude!r} not in [0, 360)")
+        _require(0.0 <= self.cusp_longitude < 360.0, f"HousePlacement invariant violated: cusp_longitude={self.cusp_longitude!r} not in [0, 360)")
         expected_cusp = self.house_cusps.cusps[self.house - 1]
-        assert abs(self.cusp_longitude - expected_cusp) < 1e-9, (
+        _require(
+            abs(self.cusp_longitude - expected_cusp) < 1e-9,
             f"HousePlacement invariant violated: cusp_longitude={self.cusp_longitude!r} "
-            f"does not match house_cusps.cusps[{self.house - 1}]={expected_cusp!r}"
+            f"does not match house_cusps.cusps[{self.house - 1}]={expected_cusp!r}",
         )
 
 
@@ -2386,35 +2296,23 @@ class HouseBoundaryProfile:
     is_near_cusp:          bool
 
     def __post_init__(self) -> None:
-        assert 0.0 <= self.opening_cusp < 360.0, (
-            f"HouseBoundaryProfile: opening_cusp={self.opening_cusp!r} not in [0, 360)"
-        )
-        assert 0.0 <= self.closing_cusp < 360.0, (
-            f"HouseBoundaryProfile: closing_cusp={self.closing_cusp!r} not in [0, 360)"
-        )
-        assert self.dist_to_opening >= 0.0, (
-            f"HouseBoundaryProfile: dist_to_opening={self.dist_to_opening!r} < 0"
-        )
-        assert self.dist_to_closing > 0.0, (
-            f"HouseBoundaryProfile: dist_to_closing={self.dist_to_closing!r} <= 0"
-        )
-        assert abs(self.dist_to_opening + self.dist_to_closing - self.house_span) < 1e-9, (
+        _require(0.0 <= self.opening_cusp < 360.0, f"HouseBoundaryProfile: opening_cusp={self.opening_cusp!r} not in [0, 360)")
+        _require(0.0 <= self.closing_cusp < 360.0, f"HouseBoundaryProfile: closing_cusp={self.closing_cusp!r} not in [0, 360)")
+        _require(self.dist_to_opening >= 0.0, f"HouseBoundaryProfile: dist_to_opening={self.dist_to_opening!r} < 0")
+        _require(self.dist_to_closing > 0.0, f"HouseBoundaryProfile: dist_to_closing={self.dist_to_closing!r} <= 0")
+        _require(
+            abs(self.dist_to_opening + self.dist_to_closing - self.house_span) < 1e-9,
             f"HouseBoundaryProfile: dist_to_opening + dist_to_closing "
-            f"({self.dist_to_opening + self.dist_to_closing}) != house_span ({self.house_span})"
+            f"({self.dist_to_opening + self.dist_to_closing}) != house_span ({self.house_span})",
         )
-        assert self.house_span > 0.0, (
-            f"HouseBoundaryProfile: house_span={self.house_span!r} <= 0"
-        )
-        assert self.near_cusp_threshold > 0.0, (
-            f"HouseBoundaryProfile: near_cusp_threshold={self.near_cusp_threshold!r} <= 0"
-        )
-        assert self.nearest_cusp_distance >= 0.0, (
-            f"HouseBoundaryProfile: nearest_cusp_distance={self.nearest_cusp_distance!r} < 0"
-        )
-        assert self.is_near_cusp == (self.nearest_cusp_distance < self.near_cusp_threshold), (
+        _require(self.house_span > 0.0, f"HouseBoundaryProfile: house_span={self.house_span!r} <= 0")
+        _require(self.near_cusp_threshold > 0.0, f"HouseBoundaryProfile: near_cusp_threshold={self.near_cusp_threshold!r} <= 0")
+        _require(self.nearest_cusp_distance >= 0.0, f"HouseBoundaryProfile: nearest_cusp_distance={self.nearest_cusp_distance!r} < 0")
+        _require(
+            self.is_near_cusp == (self.nearest_cusp_distance < self.near_cusp_threshold),
             f"HouseBoundaryProfile: is_near_cusp inconsistent with "
             f"nearest_cusp_distance={self.nearest_cusp_distance!r} and "
-            f"near_cusp_threshold={self.near_cusp_threshold!r}"
+            f"near_cusp_threshold={self.near_cusp_threshold!r}",
         )
 
 
@@ -2631,16 +2529,16 @@ class HouseAngularityProfile:
     house:     int
 
     def __post_init__(self) -> None:
-        assert 1 <= self.house <= 12, (
-            f"HouseAngularityProfile invariant violated: house={self.house!r} not in [1, 12]"
-        )
-        assert self.house == self.placement.house, (
+        _require(1 <= self.house <= 12, f"HouseAngularityProfile invariant violated: house={self.house!r} not in [1, 12]")
+        _require(
+            self.house == self.placement.house,
             f"HouseAngularityProfile invariant violated: house={self.house!r} "
-            f"does not match placement.house={self.placement.house!r}"
+            f"does not match placement.house={self.placement.house!r}",
         )
-        assert self.category == _ANGULARITY_MAP[self.house], (
+        _require(
+            self.category == _ANGULARITY_MAP[self.house],
             f"HouseAngularityProfile invariant violated: category={self.category!r} "
-            f"does not match _ANGULARITY_MAP[{self.house}]={_ANGULARITY_MAP[self.house]!r}"
+            f"does not match _ANGULARITY_MAP[{self.house}]={_ANGULARITY_MAP[self.house]!r}",
         )
 
 
@@ -2755,21 +2653,18 @@ class HouseSystemComparison:
     families_differ:  bool
 
     def __post_init__(self) -> None:
-        assert len(self.cusp_deltas) == 12, (
-            f"HouseSystemComparison: cusp_deltas must have 12 entries; "
-            f"got {len(self.cusp_deltas)}"
+        _require(len(self.cusp_deltas) == 12, f"HouseSystemComparison: cusp_deltas must have 12 entries; got {len(self.cusp_deltas)}")
+        _require(
+            all(-180.0 < d <= 180.0 for d in self.cusp_deltas),
+            f"HouseSystemComparison: cusp_deltas contains value outside (-180, 180]: {self.cusp_deltas!r}",
         )
-        assert all(-180.0 < d <= 180.0 for d in self.cusp_deltas), (
-            f"HouseSystemComparison: cusp_deltas contains value outside (-180, 180]: "
-            f"{self.cusp_deltas!r}"
+        _require(
+            self.systems_agree == (self.left.effective_system == self.right.effective_system),
+            "HouseSystemComparison: systems_agree inconsistent with effective_system fields",
         )
-        assert self.systems_agree == (
-            self.left.effective_system == self.right.effective_system
-        ), (
-            "HouseSystemComparison: systems_agree inconsistent with effective_system fields"
-        )
-        assert self.fallback_differs == (self.left.fallback != self.right.fallback), (
-            "HouseSystemComparison: fallback_differs inconsistent with fallback fields"
+        _require(
+            self.fallback_differs == (self.left.fallback != self.right.fallback),
+            "HouseSystemComparison: fallback_differs inconsistent with fallback fields",
         )
 
 
@@ -2829,27 +2724,24 @@ class HousePlacementComparison:
     angularity_agrees: bool
 
     def __post_init__(self) -> None:
-        assert 0.0 <= self.longitude < 360.0, (
-            f"HousePlacementComparison: longitude={self.longitude!r} not in [0, 360)"
+        _require(0.0 <= self.longitude < 360.0, f"HousePlacementComparison: longitude={self.longitude!r} not in [0, 360)")
+        _require(len(self.placements) >= 2, f"HousePlacementComparison: requires at least 2 placements; got {len(self.placements)}")
+        _require(
+            len(self.houses) == len(self.placements),
+            f"HousePlacementComparison: houses length {len(self.houses)} != placements length {len(self.placements)}",
         )
-        assert len(self.placements) >= 2, (
-            f"HousePlacementComparison: requires at least 2 placements; "
-            f"got {len(self.placements)}"
+        _require(
+            all(h == pl.house for h, pl in zip(self.houses, self.placements)),
+            "HousePlacementComparison: houses tuple does not match placement.house values",
         )
-        assert len(self.houses) == len(self.placements), (
-            f"HousePlacementComparison: houses length {len(self.houses)} != "
-            f"placements length {len(self.placements)}"
-        )
-        assert all(h == pl.house for h, pl in zip(self.houses, self.placements)), (
-            "HousePlacementComparison: houses tuple does not match placement.house values"
-        )
-        assert self.all_agree == (len(set(self.houses)) == 1), (
-            "HousePlacementComparison: all_agree inconsistent with houses tuple"
+        _require(
+            self.all_agree == (len(set(self.houses)) == 1),
+            "HousePlacementComparison: all_agree inconsistent with houses tuple",
         )
         for pl in self.placements:
-            assert pl.longitude == self.longitude, (
-                f"HousePlacementComparison: placement.longitude={pl.longitude!r} "
-                f"!= longitude={self.longitude!r}"
+            _require(
+                pl.longitude == self.longitude,
+                f"HousePlacementComparison: placement.longitude={pl.longitude!r} != longitude={self.longitude!r}",
             )
 
 
@@ -3004,22 +2896,12 @@ class HouseOccupancy:
     is_empty:   bool
 
     def __post_init__(self) -> None:
-        assert 1 <= self.house <= 12, (
-            f"HouseOccupancy: house={self.house!r} not in [1, 12]"
-        )
-        assert self.count == len(self.longitudes), (
-            f"HouseOccupancy: count={self.count} != len(longitudes)={len(self.longitudes)}"
-        )
-        assert self.count == len(self.placements), (
-            f"HouseOccupancy: count={self.count} != len(placements)={len(self.placements)}"
-        )
-        assert self.is_empty == (self.count == 0), (
-            f"HouseOccupancy: is_empty={self.is_empty} inconsistent with count={self.count}"
-        )
+        _require(1 <= self.house <= 12, f"HouseOccupancy: house={self.house!r} not in [1, 12]")
+        _require(self.count == len(self.longitudes), f"HouseOccupancy: count={self.count} != len(longitudes)={len(self.longitudes)}")
+        _require(self.count == len(self.placements), f"HouseOccupancy: count={self.count} != len(placements)={len(self.placements)}")
+        _require(self.is_empty == (self.count == 0), f"HouseOccupancy: is_empty={self.is_empty} inconsistent with count={self.count}")
         for pl in self.placements:
-            assert pl.house == self.house, (
-                f"HouseOccupancy: placement.house={pl.house} != house={self.house}"
-            )
+            _require(pl.house == self.house, f"HouseOccupancy: placement.house={pl.house} != house={self.house}")
 
 
 @dataclass(frozen=True, slots=True)
@@ -3101,37 +2983,26 @@ class HouseDistributionProfile:
     cadent_count:     int
 
     def __post_init__(self) -> None:
-        assert len(self.occupancies) == 12, (
-            f"HouseDistributionProfile: len(occupancies)={len(self.occupancies)}, expected 12"
-        )
-        assert len(self.counts) == 12, (
-            f"HouseDistributionProfile: len(counts)={len(self.counts)}, expected 12"
-        )
-        assert self.point_count == sum(self.counts), (
-            f"HouseDistributionProfile: point_count={self.point_count} != sum(counts)={sum(self.counts)}"
-        )
-        assert self.angular_count + self.succedent_count + self.cadent_count == self.point_count, (
+        _require(len(self.occupancies) == 12, f"HouseDistributionProfile: len(occupancies)={len(self.occupancies)}, expected 12")
+        _require(len(self.counts) == 12, f"HouseDistributionProfile: len(counts)={len(self.counts)}, expected 12")
+        _require(self.point_count == sum(self.counts), f"HouseDistributionProfile: point_count={self.point_count} != sum(counts)={sum(self.counts)}")
+        _require(
+            self.angular_count + self.succedent_count + self.cadent_count == self.point_count,
             f"HouseDistributionProfile: angularity counts sum "
             f"({self.angular_count}+{self.succedent_count}+{self.cadent_count}) "
-            f"!= point_count={self.point_count}"
+            f"!= point_count={self.point_count}",
         )
         for i, occ in enumerate(self.occupancies):
-            assert occ.house == i + 1, (
-                f"HouseDistributionProfile: occupancies[{i}].house={occ.house}, expected {i+1}"
-            )
-            assert self.counts[i] == occ.count, (
-                f"HouseDistributionProfile: counts[{i}]={self.counts[i]} != occupancy.count={occ.count}"
-            )
+            _require(occ.house == i + 1, f"HouseDistributionProfile: occupancies[{i}].house={occ.house}, expected {i+1}")
+            _require(self.counts[i] == occ.count, f"HouseDistributionProfile: counts[{i}]={self.counts[i]} != occupancy.count={occ.count}")
         if self.point_count == 0:
-            assert self.dominant_houses == (), (
-                f"HouseDistributionProfile: dominant_houses must be () when point_count==0"
-            )
+            _require(self.dominant_houses == (), f"HouseDistributionProfile: dominant_houses must be () when point_count==0")
         else:
             max_count = max(self.counts)
             for h in self.dominant_houses:
-                assert self.counts[h - 1] == max_count, (
-                    f"HouseDistributionProfile: dominant house {h} count "
-                    f"{self.counts[h-1]} != max {max_count}"
+                _require(
+                    self.counts[h - 1] == max_count,
+                    f"HouseDistributionProfile: dominant house {h} count {self.counts[h-1]} != max {max_count}",
                 )
 
 
@@ -3259,7 +3130,7 @@ def houses_from_armc(
         ValueError: When policy requires strict behaviour and a fallback
             condition is encountered.
     """
-    active_policy = policy if policy is not None else HousePolicy.default()
+    active_policy = _normalize_house_policy(policy)
     mc          = _mc_from_armc(armc, obliquity, lat)
     asc         = _asc_from_armc(armc, obliquity, lat)
     vertex      = _asc_from_armc((armc + 90.0) % 360.0, obliquity, -lat)

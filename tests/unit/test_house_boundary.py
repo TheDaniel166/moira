@@ -174,33 +174,33 @@ class TestHouseBoundaryProfileInvariant:
         original_closing = kw["dist_to_closing"]
         kw["dist_to_opening"] = -1.0
         kw["dist_to_closing"] = original_closing
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             HouseBoundaryProfile(**kw)
 
     def test_zero_dist_to_closing_raises(self):
         kw = self._good_kwargs()
         kw["dist_to_closing"] = 0.0
         kw["house_span"] = kw["dist_to_opening"]
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             HouseBoundaryProfile(**kw)
 
     def test_span_sum_mismatch_raises(self):
         kw = self._good_kwargs()
         kw["house_span"] = kw["house_span"] + 10.0
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             HouseBoundaryProfile(**kw)
 
     def test_is_near_cusp_inconsistent_raises(self):
         kw = self._good_kwargs()
         kw["is_near_cusp"] = not kw["is_near_cusp"]
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             HouseBoundaryProfile(**kw)
 
     def test_non_positive_threshold_raises(self):
         kw = self._good_kwargs()
         kw["near_cusp_threshold"] = 0.0
         kw["is_near_cusp"] = kw["nearest_cusp_distance"] < 0.0
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             HouseBoundaryProfile(**kw)
 
 

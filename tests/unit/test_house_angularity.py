@@ -228,25 +228,25 @@ class TestHouseAngularityProfileInvariant:
     def test_house_zero_raises(self):
         kw = self._good_kwargs()
         kw["house"] = 0
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             HouseAngularityProfile(**kw)
 
     def test_house_thirteen_raises(self):
         kw = self._good_kwargs()
         kw["house"] = 13
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             HouseAngularityProfile(**kw)
 
     def test_house_mismatch_raises(self):
         pl1 = _placement_for_house(1)
         pl2 = _placement_for_house(2)
         ap1 = describe_angularity(pl1)
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             HouseAngularityProfile(placement=pl2, category=ap1.category, house=1)
 
     def test_category_mismatch_raises(self):
         pl = _placement_for_house(1)
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             HouseAngularityProfile(
                 placement=pl,
                 category=HouseAngularity.CADENT,

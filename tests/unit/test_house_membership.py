@@ -138,19 +138,19 @@ class TestHousePlacementInvariant:
     def test_house_zero_raises(self):
         kw = self._good()
         kw["house"] = 0
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             HousePlacement(**kw)
 
     def test_house_thirteen_raises(self):
         kw = self._good()
         kw["house"] = 13
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             HousePlacement(**kw)
 
     def test_cusp_longitude_mismatch_raises(self):
         kw = self._good()
         kw["cusp_longitude"] = (kw["cusp_longitude"] + 1.0) % 360.0
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             HousePlacement(**kw)
 
 

@@ -138,21 +138,21 @@ class TestHouseOccupancyInvariant:
 
     def test_house_zero_raises(self):
         kw = self._good(); kw["house"] = 0
-        with pytest.raises(AssertionError): HouseOccupancy(**kw)
+        with pytest.raises(ValueError): HouseOccupancy(**kw)
 
     def test_count_mismatch_longitudes_raises(self):
         kw = self._good(); kw["count"] = 2
-        with pytest.raises(AssertionError): HouseOccupancy(**kw)
+        with pytest.raises(ValueError): HouseOccupancy(**kw)
 
     def test_is_empty_inconsistent_raises(self):
         kw = self._good(); kw["is_empty"] = True
-        with pytest.raises(AssertionError): HouseOccupancy(**kw)
+        with pytest.raises(ValueError): HouseOccupancy(**kw)
 
     def test_placement_wrong_house_raises(self):
         hc = _make_cusps(_equal_cusps(), HouseSystem.EQUAL)
         pl = assign_house(45.0, hc)     # H2
         kw = dict(house=1, count=1, longitudes=(45.0,), placements=(pl,), is_empty=False)
-        with pytest.raises(AssertionError): HouseOccupancy(**kw)
+        with pytest.raises(ValueError): HouseOccupancy(**kw)
 
 
 # ===========================================================================

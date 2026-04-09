@@ -70,7 +70,7 @@ from .stars import star_at, StarPosition, list_stars
 from .julian import ut_to_tt
 from .obliquity import true_obliquity
 from .spk_reader import get_reader, SpkReader
-from ._solar import _solar_declination_ra, _sunrise_sunset, _refine_sunrise
+from ._solar import _sunrise_sunset, _refine_sunrise
 
 # ---------------------------------------------------------------------------
 # 36 decan name constants
@@ -287,6 +287,24 @@ def decan_star_at(name: str, jd: float) -> StarPosition:
     return star_at(DECAN_RULING_STARS[name], jd)
 
 
+def _refine_solar_event_near(
+    jd_guess: float,
+    lat: float,
+    lon: float,
+    reader: SpkReader,
+    *,
+    is_rise: bool,
+) -> float:
+    """Refine a sunrise/sunset approximation while preserving day locality."""
+    jd_event = _refine_sunrise(jd_guess, lat, lon, reader, is_rise=is_rise)
+    if not math.isfinite(jd_event):
+        raise ValueError("solar event refinement returned a non-finite JD")
+    day_shift = round(jd_guess - jd_event)
+    if abs(jd_guess - jd_event) > 0.75:
+        jd_event += day_shift
+    return jd_event
+
+
 # ---------------------------------------------------------------------------
 # Local Sidereal Time → RAMC
 # ---------------------------------------------------------------------------
@@ -318,7 +336,6 @@ def decan_at(
     jd: float,
     lat: float,
     lon: float,
-    reader: SpkReader | None = None,
 ) -> str:
     """Return the decan whose 10° zodiacal span contains the Ascendant at jd.
 
@@ -331,8 +348,6 @@ def decan_at(
     jd     : Julian Day (UT)
     lat    : geographic latitude in degrees (positive north)
     lon    : geographic longitude in degrees (positive east)
-    reader : unused; retained for API compatibility
-
     Returns
     -------
     Decan name (member of list_decans())
@@ -343,8 +358,8 @@ def decan_at(
     lat_r  = math.radians(lat)
 
     asc_lon = math.degrees(math.atan2(
-        -math.cos(ramc_r),
-        math.sin(ramc_r) * math.cos(obl_r) + math.tan(lat_r) * math.sin(obl_r),
+        math.cos(ramc_r),
+        -(math.sin(ramc_r) * math.cos(obl_r) + math.tan(lat_r) * math.sin(obl_r)),
     )) % 360.0
 
     return decan_for_longitude(asc_lon)
@@ -354,7 +369,7 @@ def decan_at(
 # Decan night hours
 # ---------------------------------------------------------------------------
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class DecanHour:
     """
     RITE: The Hour Vessel — a single decan night hour and its ruling star.
@@ -426,8 +441,27 @@ class DecanHour:
     jd_start:    float
     jd_end:      float
 
+    def __post_init__(self) -> None:
+        if not (1 <= self.hour_number <= 12):
+            raise ValueError(
+                f"DecanHour.hour_number must be in [1, 12], got {self.hour_number}"
+            )
+        if self.decan not in DECAN_RULING_STARS:
+            raise ValueError(f"DecanHour.decan must be a valid decan name, got {self.decan!r}")
+        if self.ruling_star != DECAN_RULING_STARS[self.decan]:
+            raise ValueError(
+                "DecanHour.ruling_star must match the decan's ruling star: "
+                f"{self.decan!r} -> {DECAN_RULING_STARS[self.decan]!r}, got {self.ruling_star!r}"
+            )
+        if not math.isfinite(self.jd_start) or not math.isfinite(self.jd_end):
+            raise ValueError("DecanHour.jd_start and .jd_end must be finite")
+        if not self.jd_start < self.jd_end:
+            raise ValueError(
+                f"DecanHour must satisfy jd_start < jd_end, got {self.jd_start} >= {self.jd_end}"
+            )
 
-@dataclass(slots=True)
+
+@dataclass(slots=True, frozen=True)
 class DecanHoursNight:
     """
     RITE: The Night Vessel — all 12 decan hours of a single night.
@@ -505,7 +539,43 @@ class DecanHoursNight:
     longitude:       float
     sunset_jd:       float
     next_sunrise_jd: float
-    hours:           list[DecanHour]
+    hours:           tuple[DecanHour, ...]
+
+    def __post_init__(self) -> None:
+        tol = 1e-12
+        object.__setattr__(self, "hours", tuple(self.hours))
+        if not math.isfinite(self.date_jd):
+            raise ValueError(f"DecanHoursNight.date_jd must be finite, got {self.date_jd!r}")
+        if not math.isfinite(self.latitude) or not math.isfinite(self.longitude):
+            raise ValueError("DecanHoursNight.latitude and .longitude must be finite")
+        if not math.isfinite(self.sunset_jd) or not math.isfinite(self.next_sunrise_jd):
+            raise ValueError("DecanHoursNight.sunset_jd and .next_sunrise_jd must be finite")
+        if not self.sunset_jd < self.next_sunrise_jd:
+            raise ValueError(
+                "DecanHoursNight must satisfy sunset_jd < next_sunrise_jd, "
+                f"got {self.sunset_jd} >= {self.next_sunrise_jd}"
+            )
+        if len(self.hours) != 12:
+            raise ValueError(
+                f"DecanHoursNight.hours must contain exactly 12 entries, got {len(self.hours)}"
+            )
+        for idx, hour in enumerate(self.hours, start=1):
+            if not isinstance(hour, DecanHour):
+                raise TypeError(
+                    f"DecanHoursNight.hours[{idx - 1}] must be a DecanHour, got {type(hour).__name__}"
+                )
+            if hour.hour_number != idx:
+                raise ValueError(
+                    "DecanHoursNight.hours must be sequentially numbered from 1 to 12, "
+                    f"got hour_number={hour.hour_number} at position {idx}"
+                )
+        if not math.isclose(self.hours[0].jd_start, self.sunset_jd, abs_tol=tol):
+            raise ValueError("DecanHoursNight first hour must begin at sunset_jd")
+        if not math.isclose(self.hours[-1].jd_end, self.next_sunrise_jd, abs_tol=tol):
+            raise ValueError("DecanHoursNight last hour must end at next_sunrise_jd")
+        for earlier, later in zip(self.hours, self.hours[1:]):
+            if not math.isclose(earlier.jd_end, later.jd_start, abs_tol=tol):
+                raise ValueError("DecanHoursNight.hours must form a gap-free partition of the night")
 
     def hour_at(self, jd: float) -> DecanHour | None:
         """Return the DecanHour containing the given JD, or None if outside the night."""
@@ -542,17 +612,40 @@ def decan_hours(
     if reader is None:
         reader = get_reader()
 
-    # Approximate noon for the day
-    jd_noon = math.floor(jd - 0.5) + 0.5 + 0.5
+    # Approximate local-civil day anchors from the UT date containing jd.
+    jd_noon = math.floor(jd - 0.5) + 1.0
 
-    # Sunset for this day
+    # Current day's sunrise and sunset.
     jd_sr_approx, jd_ss_approx = _sunrise_sunset(jd_noon, lat, lon, reader)
-    jd_sunset = _refine_sunrise(jd_ss_approx, lat, lon, reader, is_rise=False)
+    jd_sunrise_today = _refine_solar_event_near(
+        jd_sr_approx, lat, lon, reader, is_rise=True
+    )
+    jd_sunset_today = _refine_solar_event_near(
+        jd_ss_approx, lat, lon, reader, is_rise=False
+    )
 
-    # Next sunrise (following day)
-    jd_next_noon = jd_noon + 1.0
-    jd_nr_approx, _ = _sunrise_sunset(jd_next_noon, lat, lon, reader)
-    jd_next_sunrise = _refine_sunrise(jd_nr_approx, lat, lon, reader, is_rise=True)
+    if jd < jd_sunrise_today:
+        jd_prev_noon = jd_noon - 1.0
+        _, jd_prev_ss_approx = _sunrise_sunset(jd_prev_noon, lat, lon, reader)
+        jd_sunset = _refine_solar_event_near(
+            jd_prev_ss_approx, lat, lon, reader, is_rise=False
+        )
+        jd_next_sunrise = jd_sunrise_today
+    else:
+        jd_next_noon = jd_noon + 1.0
+        jd_nr_approx, _ = _sunrise_sunset(jd_next_noon, lat, lon, reader)
+        jd_sunset = jd_sunset_today
+        jd_next_sunrise = _refine_solar_event_near(
+            jd_nr_approx, lat, lon, reader, is_rise=True
+        )
+
+    if not math.isfinite(jd_sunset) or not math.isfinite(jd_next_sunrise):
+        raise ValueError("decan_hours could not determine a finite sunset/sunrise boundary")
+    if not jd_sunset < jd_next_sunrise:
+        raise ValueError(
+            "decan_hours requires a valid night with sunset before next sunrise; "
+            f"got sunset={jd_sunset}, next_sunrise={jd_next_sunrise}"
+        )
 
     # Decan culminating on the MC at sunset → starting index
     # (Liber Hermetis: the first hour of the night is ruled by the decan

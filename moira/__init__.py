@@ -216,6 +216,17 @@ from .heliacal import (
     visual_limiting_magnitude,
     visibility_event,
 )
+from .hermetic_decans import (
+    DecanHour,
+    DecanHoursNight,
+    DECAN_NAMES,
+    DECAN_RULING_STARS,
+    list_decans,
+    available_decans,
+    decan_for_longitude,
+    decan_at,
+    decan_hours,
+)
 
 __all__ = [
     "Moira",
@@ -273,6 +284,16 @@ __all__ = [
     "visibility_assessment",
     "visual_limiting_magnitude",
     "visibility_event",
+    # Hermetic decans
+    "DecanHour",
+    "DecanHoursNight",
+    "DECAN_NAMES",
+    "DECAN_RULING_STARS",
+    "list_decans",
+    "available_decans",
+    "decan_for_longitude",
+    "decan_at",
+    "decan_hours",
     "KeplerianElements",
     "DistanceExtremes",
     "CalendarDateTime",

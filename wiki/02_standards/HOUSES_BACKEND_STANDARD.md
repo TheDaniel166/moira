@@ -211,7 +211,7 @@ All public names are declared in the module `moira/houses.py`.
 |---|---|---|
 | `HouseSystemClassification` | 2 | `family`, `cusp_basis`, `latitude_sensitive`, `polar_capable` |
 | `HousePolicy` | 4 | `unknown_system`, `polar_fallback` |
-| `HouseCusps` | 1–4 | `system`, `cusps`, `asc`, `mc`, `armc`, `vertex`, `anti_vertex`, `effective_system`, `fallback`, `fallback_reason`, `classification`, `policy` |
+| `HouseCusps` | 1–4 | `system`, `cusps` (immutable tuple), `asc`, `mc`, `armc`, `vertex`, `anti_vertex`, `effective_system`, `fallback`, `fallback_reason`, `classification`, `policy` |
 | `HousePlacement` | 5 | `house`, `longitude`, `house_cusps`, `exact_on_cusp`, `cusp_longitude` |
 | `HouseBoundaryProfile` | 6 | `placement`, `opening_cusp`, `closing_cusp`, `dist_to_opening`, `dist_to_closing`, `house_span`, `nearest_cusp`, `nearest_cusp_distance`, `near_cusp_threshold`, `is_near_cusp` |
 | `HouseAngularityProfile` | 7 | `placement`, `category`, `house` |
@@ -325,11 +325,12 @@ It currently applies only to `HouseSystem.PLACIDUS`.
 
 | # | Invariant | Violation raises |
 |---|---|---|
-| C1 | `len(cusps) == 12` | `AssertionError` |
-| C2 | For QUADRANT family with `cusp_basis != HORIZON`: `abs(cusps[0] - asc) < 1e-9°` | `AssertionError` |
-| C3 | `fallback == (system != effective_system)` when `effective_system` is set | `AssertionError` |
-| C4 | `(fallback_reason is None) == (not fallback)` | `AssertionError` |
-| C5 | `classification is not None` when `effective_system` is non-empty | `AssertionError` |
+| C1 | `len(cusps) == 12` | `ValueError` |
+| C2 | For QUADRANT family with `cusp_basis != HORIZON`: `abs(cusps[0] - asc) < 1e-9°` | `ValueError` |
+| C3 | `fallback == (system != effective_system)` when `effective_system` is set | `ValueError` |
+| C4 | `(fallback_reason is None) == (not fallback)` | `ValueError` |
+| C5 | `classification is not None` when `effective_system` is non-empty | `ValueError` |
+| C6 | `policy` is a `HousePolicy` | `TypeError` |
 
 #### 7.2 HousePlacement invariants
 
@@ -487,8 +488,8 @@ or monkey-patched to hide real failures.
 | Layer | Must test |
 |---|---|
 | Truth preservation | `system` unchanged after fallback; `effective_system` matches what ran; `fallback` is `True` iff they differ; `fallback_reason` is None iff `fallback` is False |
-| Classification | `classify_house_system` returns correct family and cusp_basis for all 19 codes; `_UNKNOWN_CLASSIFICATION` matches Placidus |
-| Inspectability | `__post_init__` raises `AssertionError` for each violated invariant; properties are consistent with classification |
+| Classification | `classify_house_system` returns correct family and cusp_basis for all 19 recognised codes and raises on unknown codes |
+| Inspectability | `__post_init__` raises concrete runtime exceptions (`ValueError` / `TypeError`) for violated invariants; properties are consistent with classification |
 | Policy | Default policy produces no raise; strict policy raises `ValueError` on both polar and unknown triggers; error messages match §6.3 patterns |
 | Membership | Every longitude in `[0, 360)` maps to exactly one house; opening cusp belongs to its house; `exact_on_cusp` fires within `1e-9°`; wraparound cusps are handled correctly |
 | Boundary | `dist_to_opening + dist_to_closing == house_span` to `< 1e-9°`; `dist_to_closing > 0` always; `is_near_cusp` consistent with `nearest_cusp_distance`; zero/negative threshold raises `ValueError` |
@@ -518,7 +519,7 @@ Tests that require a second system for comparison may construct it inline via
 - Skip a failing test without a registered `KNOWN_ISSUES.yml` entry
 - Assert on internal private names (`_circular_diff`, `_porphyry`, etc.) unless
   testing the specific private behaviour is the stated purpose of that test class
-- Use `monkeypatch` to suppress a `ValueError` or `AssertionError` that the
+- Use `monkeypatch` to suppress a `ValueError` or `TypeError` that the
   implementation is meant to raise
 
 ---
@@ -531,29 +532,31 @@ The following inputs must always produce the stated error. This table is frozen.
 |---|---|---|---|
 | `calculate_houses` | `system not in _KNOWN_SYSTEMS` + `HousePolicy.strict()` | `ValueError` | `"unknown house system code"` |
 | `calculate_houses` | `abs(latitude) >= 90° − obliquity` + `system in _POLAR_SYSTEMS` + `HousePolicy.strict()` | `ValueError` | `"critical latitude"` |
+| `calculate_houses` / `houses_from_armc` | `policy` is not a `HousePolicy` | `TypeError` | `"policy must be a HousePolicy"` |
 | `assign_house` | `len(house_cusps.cusps) != 12` | `ValueError` | `"exactly 12 cusps"` |
 | `describe_boundary` | `near_cusp_threshold <= 0.0` | `ValueError` | `"near_cusp_threshold must be positive"` |
 | `compare_placements` | fewer than 2 `HouseCusps` supplied | `ValueError` | `"at least 2"` |
 
-The following inputs must always produce the stated `AssertionError` at
+The following inputs must always produce the stated runtime exception at
 construction time:
 
 | Vessel | Violated invariant | Raises |
 |---|---|---|
-| `HouseCusps` | `len(cusps) != 12` | `AssertionError` |
-| `HouseCusps` | `fallback != (system != effective_system)` | `AssertionError` |
-| `HouseCusps` | `fallback_reason` present when `fallback` is False | `AssertionError` |
-| `HousePlacement` | `house` outside `[1, 12]` | `AssertionError` |
-| `HousePlacement` | `cusp_longitude` does not match `house_cusps.cusps[house-1]` | `AssertionError` |
-| `HouseBoundaryProfile` | `dist_to_opening + dist_to_closing != house_span` | `AssertionError` |
-| `HouseBoundaryProfile` | `is_near_cusp` inconsistent with distances | `AssertionError` |
-| `HouseAngularityProfile` | `category != _ANGULARITY_MAP[house]` | `AssertionError` |
-| `HouseSystemComparison` | any delta outside `(-180, 180]` | `AssertionError` |
-| `HousePlacementComparison` | `len(placements) < 2` | `AssertionError` |
-| `HousePlacementComparison` | `placement.longitude != longitude` | `AssertionError` |
-| `HouseOccupancy` | `count != len(longitudes)` | `AssertionError` |
-| `HouseDistributionProfile` | `point_count != sum(counts)` | `AssertionError` |
-| `HouseDistributionProfile` | angularity sum != `point_count` | `AssertionError` |
+| `HouseCusps` | `len(cusps) != 12` | `ValueError` |
+| `HouseCusps` | `fallback != (system != effective_system)` | `ValueError` |
+| `HouseCusps` | `fallback_reason` present when `fallback` is False | `ValueError` |
+| `HouseCusps` | `policy` is not a `HousePolicy` | `TypeError` |
+| `HousePlacement` | `house` outside `[1, 12]` | `ValueError` |
+| `HousePlacement` | `cusp_longitude` does not match `house_cusps.cusps[house-1]` | `ValueError` |
+| `HouseBoundaryProfile` | `dist_to_opening + dist_to_closing != house_span` | `ValueError` |
+| `HouseBoundaryProfile` | `is_near_cusp` inconsistent with distances | `ValueError` |
+| `HouseAngularityProfile` | `category != _ANGULARITY_MAP[house]` | `ValueError` |
+| `HouseSystemComparison` | any delta outside `(-180, 180]` | `ValueError` |
+| `HousePlacementComparison` | `len(placements) < 2` | `ValueError` |
+| `HousePlacementComparison` | `placement.longitude != longitude` | `ValueError` |
+| `HouseOccupancy` | `count != len(longitudes)` | `ValueError` |
+| `HouseDistributionProfile` | `point_count != sum(counts)` | `ValueError` |
+| `HouseDistributionProfile` | angularity sum != `point_count` | `ValueError` |
 
 ---
 

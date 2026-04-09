@@ -93,6 +93,10 @@ class TestPolicyStructure:
         assert r.policy is not None
         assert isinstance(r.policy, HousePolicy)
 
+    def test_invalid_policy_type_raises_at_engine_boundary(self):
+        with pytest.raises(TypeError, match="policy must be a HousePolicy"):
+            calculate_houses(_JD_J2000, _LAT_NORMAL, _LON, HouseSystem.PLACIDUS, policy="strict")  # type: ignore[arg-type]
+
 
 # ---------------------------------------------------------------------------
 # Default policy: backward-compatible silent fallback

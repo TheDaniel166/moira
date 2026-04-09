@@ -166,6 +166,12 @@ Adds the full classical and traditional toolkit:
 | Profections | `annual_profection`, `monthly_profection`, `profection_schedule` |
 | Time lords | `firdaria`, `zodiacal_releasing`, `vimshottari` |
 | Vedic divisional | `navamsa`, `saptamsa`, `dashamansa`, `dwadashamsa`, `trimshamsa` |
+| Vedic dignities | `vedic_dignity`, `planetary_relationships`, `VedicDignityResult`, `VedicDignityPolicy` |
+| Panchanga | `panchanga_at`, `PanchangaResult`, `PanchangaPolicy`, `tithi_condition_profile` |
+| Jaimini | `jaimini_karakas`, `atmakaraka`, `JaiminiKarakaResult`, `JaiminiPolicy` |
+| Ashtakavarga | `bhinnashtakavarga`, `ashtakavarga`, `AshtakavargaResult`, `AshtakavargaPolicy` |
+| Shadbala | `shadbala`, `hora_lord_at`, `ShadbalaResult`, `ShadbalaPolicy` |
+| Alternate dashas | `ashtottari`, `yogini_dasha`, `AlternateDashaPeriod`, `AshtottariPolicy`, `YoginiPolicy` |
 | Planetary hours | `planetary_hours_for_day` |
 | Huber | `house_zones`, `age_point`, `chart_intensity_profile` |
 
@@ -334,20 +340,25 @@ one Julian Day.
 
 | Field | Type | Description |
 |---|---|---|
-| `cusps` | `list[float]` | 12 house cusp longitudes (°), index 0 = cusp 1 |
+| `cusps` | `tuple[float, ...]` | 12 house cusp longitudes (°), index 0 = cusp 1 |
 | `asc` | `float` | Ascendant (°) |
 | `mc` | `float` | Midheaven (°) |
 | `armc` | `float` | ARMC — Sidereal time × 15 (°) |
 | `vertex` | `float` | Vertex longitude (°) |
-| `eq_asc` | `float` | Equatorial Ascendant (°) |
-| `system` | `str` | HouseSystem constant used |
+| `system` | `str` | Requested house system code |
+| `effective_system` | `str` | Effective system code after policy resolution |
+| `fallback` | `bool` | Whether fallback policy altered the requested system |
+| `fallback_reason` | `str \| None` | Human-readable fallback reason, if any |
+| `classification` | `HouseSystemClassification` | Classification of the effective house system |
+| `policy` | `HousePolicy` | Governing house policy used to compute the result |
 
 ---
 
 ## 4. Moira Facade
 
 `Moira(kernel_path=None)` is the primary entry point. All methods convert
-`datetime` inputs to JD internally. Naïve datetimes are treated as UTC.
+`datetime` inputs to JD internally. `datetime` arguments must be timezone-aware;
+naïve datetimes are rejected.
 
 ### Construction
 
@@ -377,7 +388,7 @@ message.
 | Method | Returns | Description |
 |---|---|---|
 | `chart(dt, bodies=None, include_nodes=True, observer_lat=None, observer_lon=None, observer_elev_m=0.0)` | `Chart` | Complete planetary snapshot; supply observer coords for topocentric Moon |
-| `houses(dt, latitude, longitude, system=HouseSystem.PLACIDUS)` | `HouseCusps` | House cusps, angles, ARMC |
+| `houses(dt, latitude, longitude, system=HouseSystem.PLACIDUS, policy=None)` | `HouseCusps` | House cusps, angles, ARMC under explicit house policy when supplied |
 | `sky_position(dt, body, latitude, longitude, elevation_m=0.0)` | `SkyPosition` | Apparent topocentric RA/Dec + altitude/azimuth |
 | `sidereal_chart(dt, ayanamsa_system=Ayanamsa.LAHIRI, bodies=None)` | `dict[str, float]` | Body → sidereal longitude |
 | `heliocentric(dt, bodies=None)` | `dict[str, HeliocentricData]` | Heliocentric ecliptic positions |
@@ -475,8 +486,8 @@ message.
 | `house_overlay(chart_source, target_houses, include_nodes=True, source_label="A", target_label="B")` | `SynastryHouseOverlay` | Place chart_source planets in target_houses |
 | `mutual_house_overlays(chart_a, houses_a, chart_b, houses_b, include_nodes=True)` | `MutualHouseOverlay` | Both overlay directions in one call |
 | `composite_chart(chart_a, chart_b, houses_a=None, houses_b=None)` | `CompositeChart` | Midpoint composite |
-| `composite_chart_reference_place(chart_a, chart_b, houses_a, houses_b, reference_latitude, house_system=...)` | `CompositeChart` | Reference-place composite house method |
-| `davison_chart(dt_a, lat_a, lon_a, dt_b, lat_b, lon_b, house_system=...)` | `DavisonChart` | Davison Relationship Chart (spherical midpoint time + location) |
+| `composite_chart_reference_place(chart_a, chart_b, houses_a, houses_b, reference_latitude, house_system=..., policy=None)` | `CompositeChart` | Reference-place composite house method with explicit synastry policy when supplied |
+| `davison_chart(dt_a, lat_a, lon_a, dt_b, lat_b, lon_b, house_system=..., policy=None)` | `DavisonChart` | Davison Relationship Chart (spherical midpoint time + location) |
 | `davison_chart_uncorrected(...)` | `DavisonChart` | Davison with arithmetic midpoints |
 | `davison_chart_reference_place(dt_a, dt_b, ref_lat, ref_lon, house_system=...)` | `DavisonChart` | Davison with midpoint time and explicit place |
 | `davison_chart_spherical_midpoint(...)` | `DavisonChart` | Davison with midpoint time and spherical geographic midpoint |
@@ -972,14 +983,14 @@ from moira.facade import (
 
 | Function | Returns | Description |
 |---|---|---|
-| `calculate_houses(jd_ut, latitude, longitude, system=HouseSystem.PLACIDUS)` | `HouseCusps` | Compute house cusps and angles |
+| `calculate_houses(jd_ut, latitude, longitude, system=HouseSystem.PLACIDUS, *, policy=None, ayanamsa_offset=None)` | `HouseCusps` | Compute house cusps and angles under explicit house policy when supplied |
 | `assign_house(longitude, cusps)` | `HousePlacement` | Find which house a longitude falls in |
 | `describe_boundary(longitude, cusps, orb=2.0)` | `HouseBoundaryProfile` | Proximity to house cusp boundaries |
 | `describe_angularity(longitude, cusps, orb=5.0)` | `HouseAngularity` | Angular/succedent/cadent classification |
 | `compare_systems(jd_ut, latitude, longitude, systems)` | `HouseSystemComparison` | Side-by-side comparison of multiple systems |
 | `compare_placements(body_lon, systems_cusps)` | `HousePlacementComparison` | How a body's house changes across systems |
 | `distribute_points(longitudes, cusps)` | `HouseDistributionProfile` | Count of points per house |
-| `classify_house_system(system)` | `HouseSystemClassification` | Family, cusp basis, polar behavior |
+| `classify_house_system(system)` | `HouseSystemClassification` | Family, cusp basis, polar behavior for a recognized code; raises `ValueError` on unknown codes |
 
 **House system families** (`HouseSystemFamily`):
 `ECLIPTIC_BASED  EQUATORIAL  SPACE_BASED  TIME_BASED  EQUAL_HOUSE`
@@ -1343,6 +1354,85 @@ pos = calculate_varga(longitude, divisor=9)
 # VargaPoint(divisor, position_in_sign, sign_number, sign_name)
 ```
 
+### Decanates
+
+```python
+from moira.facade import chaldean_face, triplicity_decan, vedic_drekkana, DecanatePosition
+
+face = chaldean_face(longitude)
+trip = triplicity_decan(longitude)
+d3   = vedic_drekkana(longitude, jd, ayanamsa_system=Ayanamsa.LAHIRI)
+```
+
+| Function | Returns | Description |
+|---|---|---|
+| `chaldean_face(longitude)` | `DecanatePosition` | Classical Chaldean face for a tropical longitude |
+| `triplicity_decan(longitude)` | `DecanatePosition` | Western triplicity decan for a tropical longitude |
+| `vedic_drekkana(longitude, jd, ayanamsa_system=Ayanamsa.LAHIRI)` | `DecanatePosition` | Vedic D3 drekkana for a sidereally normalized longitude |
+
+#### `DecanatePosition` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `system` | `str` | Decan system name: `chaldean_face`, `triplicity`, or `vedic_drekkana` |
+| `decan_number` | `int` | Decan number within the sign, 1-3 |
+| `ruling_planet` | `str` | Planetary ruler of the decan |
+| `ruling_sign` | `str \| None` | Governing sign for triplicity or Vedic drekkana; `None` for Chaldean face |
+| `sign` | `str` | Zodiac sign containing the longitude used |
+| `sign_symbol` | `str` | Zodiac sign glyph/symbol |
+| `degree_in_decan` | `float` | Degrees elapsed within the 10° decan span |
+| `longitude_used` | `float` | Longitude actually classified after any required normalization |
+
+### Hermetic Decans
+
+```python
+from moira import (
+    DecanHour, DecanHoursNight,
+    DECAN_NAMES, DECAN_RULING_STARS,
+    list_decans, available_decans,
+    decan_for_longitude, decan_at, decan_hours,
+)
+
+name = decan_for_longitude(longitude)
+night = decan_hours(jd, latitude, longitude)
+```
+
+| Function | Returns | Description |
+|---|---|---|
+| `list_decans()` | `list[str]` | All 36 Hermetic decan names in tropical ecliptic order |
+| `available_decans()` | `list[str]` | Hermetic decans whose ruling star is present in the catalog |
+| `decan_for_longitude(lon)` | `str` | Hermetic decan name for a tropical longitude |
+| `decan_at(jd, lat, lon)` | `str` | Hermetic decan containing the Ascendant at a given moment and location |
+| `decan_hours(jd, lat, lon, reader=None)` | `DecanHoursNight` | Twelve Hermetic decan night hours for the night containing `jd` |
+
+#### `DecanHour` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `hour_number` | `int` | Hour number within the night, 1-12 |
+| `decan` | `str` | Hermetic decan name ruling the hour |
+| `ruling_star` | `str` | Ruling fixed star name for the decan |
+| `jd_start` | `float` | Hour start JD |
+| `jd_end` | `float` | Hour end JD |
+
+#### `DecanHoursNight` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `date_jd` | `float` | Reference JD for the computed night |
+| `latitude` | `float` | Observer latitude in degrees |
+| `longitude` | `float` | Observer longitude in degrees |
+| `sunset_jd` | `float` | Sunset JD beginning the night |
+| `next_sunrise_jd` | `float` | Sunrise JD ending the night |
+| `hours` | `tuple[DecanHour, ...]` | Ordered immutable tuple of the 12 decan night hours |
+
+#### Hermetic Decan constants
+
+| Public symbol | Kind | Description |
+|---|---|---|
+| `DECAN_NAMES` | `dict[str, str]` | Decan constant name → display name mapping (36 entries) |
+| `DECAN_RULING_STARS` | `dict[str, str]` | Decan name → ruling fixed star mapping (36 entries) |
+
 ---
 
 ## 9. Timing Techniques
@@ -1598,6 +1688,507 @@ from moira.facade import (
 | `lord_type` | `DashaLordType` | Lord classification metadata |
 
 `VIMSHOTTARI_YEARS`: dict of lord → years (Ketu=7, Venus=20, Sun=6, ...).
+
+---
+
+### Ashtottari & Yogini Dasha
+
+```python
+from moira import (
+    ashtottari, yogini_dasha,
+    AlternateDashaPeriod, AlternatePeriodProfile, AlternateDashaSequenceProfile,
+    AshtottariPolicy, YoginiPolicy,
+    validate_alternate_dasha_output,
+)
+```
+
+| Function | Returns | Description |
+|---|---|---|
+| `ashtottari(moon_tropical_lon, natal_jd, levels=2, policy=None)` | `list[AlternateDashaPeriod]` | Full Ashtottari dasha sequence |
+| `yogini_dasha(moon_tropical_lon, natal_jd, levels=2, policy=None)` | `list[AlternateDashaPeriod]` | Full Yogini dasha sequence |
+| `alternate_period_profile(period)` | `AlternatePeriodProfile` | Inspect one alternate-dasha period |
+| `alternate_sequence_profile(periods)` | `AlternateDashaSequenceProfile` | Aggregate profile for an alternate-dasha sequence |
+| `validate_alternate_dasha_output(periods)` | `None` | Validate alternate-dasha output structure |
+
+#### `AlternateDashaPeriod` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `system` | `str` | Dasha system name |
+| `level` | `int` | Period level within the nested sequence |
+| `lord` | `str` | Period lord |
+| `start_jd` | `float` | Start JD |
+| `end_jd` | `float` | End JD |
+| `sub` | `list[AlternateDashaPeriod]` | Nested sub-periods |
+
+#### `AlternatePeriodProfile` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `system` | `str` | Dasha system name |
+| `level` | `int` | Period level |
+| `lord` | `str` | Period lord name |
+| `planet` | `str` | Normalized planetary identity of the lord |
+| `years` | `float` | Nominal period length in years |
+| `is_node_lord` | `bool` | True when the lord is a node |
+| `is_luminary_lord` | `bool` | True when the lord is Sun or Moon |
+
+#### `AlternateDashaSequenceProfile` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `system` | `str` | Dasha system name |
+| `total_years` | `int` | Total sequence span in years |
+| `mahadasha_count` | `int` | Number of top-level periods |
+| `profiles` | `list[AlternatePeriodProfile]` | Profile for each Mahadasha lord |
+
+#### Alternate Dasha policy & constants
+
+| Public symbol | Kind | Description |
+|---|---|---|
+| `AshtottariPolicy` | dataclass | `year_basis`, `ayanamsa_system`, `bypass_eligibility`, `lagna_sign_index` |
+| `YoginiPolicy` | dataclass | `year_basis`, `ayanamsa_system` |
+| `ASHTOTTARI_YEARS` | `dict[str, int]` | Ashtottari lord → years table |
+| `ASHTOTTARI_SEQUENCE` | `tuple[str, ...]` | Ashtottari lord order |
+| `ASHTOTTARI_NAKSHATRA_LORD` | `dict[int, str]` | Nakshatra-index → Ashtottari lord mapping |
+| `ASHTOTTARI_TOTAL` | `int` | Total Ashtottari cycle years |
+| `YOGINI_YEARS` | `dict[str, int]` | Yogini lord → years table |
+| `YOGINI_SEQUENCE` | `tuple[str, ...]` | Yogini lord order |
+| `YOGINI_PLANETS` | `dict[str, str]` | Yogini name → planetary identity mapping |
+| `YOGINI_TOTAL` | `int` | Total Yogini cycle years |
+
+### Panchanga
+
+```python
+from moira import (
+    panchanga_at, tithi_condition_profile, panchanga_profile,
+    PanchangaResult, TithiConditionProfile, PanchangaProfile, PanchangaPolicy,
+    TithiPaksha, YogaClass, KaranaType, VaraLordType,
+    validate_panchanga_output,
+)
+```
+
+| Function | Returns | Description |
+|---|---|---|
+| `panchanga_at(sun_tropical_lon, moon_tropical_lon, jd, ayanamsa_system=Ayanamsa.LAHIRI, policy=None)` | `PanchangaResult` | Compute tithi, nakshatra, yoga, karana, and vara for a moment |
+| `tithi_condition_profile(result)` | `TithiConditionProfile` | Tithi waxing/waning and condition profile |
+| `panchanga_profile(result)` | `PanchangaProfile` | Aggregate Panchanga condition summary |
+| `validate_panchanga_output(result)` | `None` | Validate Panchanga result invariants |
+
+#### `PanchangaResult` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `jd` | `float` | Julian day of the computation moment |
+| `tithi` | `PanchangaElement` | Tithi element |
+| `vara` | `PanchangaElement` | Weekday element |
+| `vara_lord` | `str` | Planetary lord of the weekday |
+| `nakshatra` | `object` | Nakshatra result for the Moon |
+| `yoga` | `PanchangaElement` | Yoga element |
+| `karana` | `PanchangaElement` | Karana element |
+| `ayanamsa_system` | `str` | Governing ayanamsa system |
+
+#### `TithiConditionProfile` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `tithi_name` | `str` | Tithi name |
+| `tithi_index` | `int` | Zero-based tithi index |
+| `tithi_number` | `int` | Traditional tithi number |
+| `paksha` | `str` | Waxing or waning half |
+| `is_purnima` | `bool` | True at Full Moon tithi |
+| `is_amavasya` | `bool` | True at New Moon tithi |
+| `degrees_elapsed` | `float` | Degrees elapsed within the tithi |
+| `degrees_remaining` | `float` | Degrees remaining in the tithi |
+
+#### `PanchangaProfile` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `jd` | `float` | Julian day of the computation moment |
+| `paksha` | `str` | Waxing or waning half |
+| `is_purnima` | `bool` | Full Moon flag |
+| `is_amavasya` | `bool` | New Moon flag |
+| `yoga_class` | `str` | Classified yoga family |
+| `karana_type` | `str` | Classified karana family |
+| `vara_lord` | `str` | Weekday lord |
+| `vara_lord_type` | `str` | Benefic/malefic or related lord classification |
+| `ayanamsa_system` | `str` | Governing ayanamsa system |
+
+#### `PanchangaElement` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | `str` | Element name |
+| `index` | `int` | Zero-based element index |
+| `number` | `int` | Traditional 1-based element number |
+| `degrees_elapsed` | `float` | Degrees elapsed within the element |
+| `degrees_remaining` | `float` | Degrees remaining in the element |
+
+#### Panchanga policy & constants
+
+| Public symbol | Kind | Description |
+|---|---|---|
+| `PanchangaPolicy` | dataclass | `ayanamsa_system` |
+| `TithiPaksha` | enum-like class | `SHUKLA`, `KRISHNA` |
+| `YogaClass` | enum-like class | `AUSPICIOUS`, `INAUSPICIOUS` |
+| `KaranaType` | enum-like class | `MOVABLE`, `FIXED` |
+| `VaraLordType` | enum-like class | `LUMINARY`, `INNER`, `OUTER` |
+| `TITHI_NAMES` | `tuple[str, ...]` | Traditional tithi names |
+| `YOGA_NAMES` | `tuple[str, ...]` | Traditional yoga names |
+| `KARANA_NAMES` | `tuple[str, ...]` | Traditional karana names |
+| `VARA_LORDS` | `tuple[str, ...]` | Weekday lord sequence |
+| `VARA_NAMES` | `tuple[str, ...]` | Weekday names |
+
+### Jaimini Karakas
+
+```python
+from moira import (
+    jaimini_karakas, atmakaraka, karaka_condition_profile,
+    jaimini_chart_profile, karaka_pair,
+    JaiminiKarakaResult, KarakaConditionProfile, JaiminiChartProfile, KarakaPair,
+    JaiminiPolicy, validate_jaimini_output,
+)
+```
+
+| Function | Returns | Description |
+|---|---|---|
+| `jaimini_karakas(sidereal_longitudes, scheme=7, policy=None)` | `JaiminiKarakaResult` | Assign Jaimini karaka roles from sidereal longitudes |
+| `atmakaraka(sidereal_longitudes, scheme=7)` | `str` | Planet holding the Atmakaraka role |
+| `karaka_condition_profile(assignment, scheme)` | `KarakaConditionProfile` | Inspect one karaka assignment in context |
+| `jaimini_chart_profile(result)` | `JaiminiChartProfile` | Aggregate Jaimini karaka chart profile |
+| `karaka_pair(result, role_a, role_b)` | `KarakaPair` | Compare two named karaka roles |
+| `validate_jaimini_output(result)` | `None` | Validate Jaimini assignment output |
+
+#### `JaiminiKarakaResult` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `assignments` | `list[KarakaAssignment]` | Ordered karaka assignments |
+| `scheme` | `int` | 7- or 8-karaka assignment scheme |
+| `atmakaraka` | `str` | Planet holding the Atmakaraka role |
+| `tie_warnings` | `list[tuple[str, str]]` | Tie diagnostics emitted during assignment |
+
+#### `KarakaConditionProfile` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `karaka_name` | `str` | Karaka role name |
+| `karaka_rank` | `int` | Positional rank in the assignment order |
+| `planet` | `str` | Assigned planet |
+| `planet_type` | `str` | Planet or node type classification |
+| `degree_in_sign` | `float` | Degrees traversed within the sign |
+| `sidereal_longitude` | `float` | Full sidereal longitude |
+| `is_rahu_inverted` | `bool` | True when Rahu inversion governs the assignment |
+| `is_atmakaraka` | `bool` | True for the Atmakaraka |
+| `is_darakaraka` | `bool` | True for the Darakaraka |
+
+#### `JaiminiChartProfile` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `scheme` | `int` | 7- or 8-karaka assignment scheme |
+| `atmakaraka_planet` | `str` | Atmakaraka planet |
+| `darakaraka_planet` | `str` | Darakaraka planet |
+| `has_node_atmakaraka` | `bool` | True when a node becomes Atmakaraka |
+| `has_node_darakaraka` | `bool` | True when a node becomes Darakaraka |
+| `has_ties` | `bool` | True when assignment ties were detected |
+| `tie_count` | `int` | Number of tie warnings |
+| `profiles` | `list[KarakaConditionProfile]` | Per-role diagnostic profiles |
+
+#### `KarakaPair` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `role_a` | `str` | First requested role |
+| `role_b` | `str` | Second requested role |
+| `planet_a` | `str` | Planet assigned to the first role |
+| `planet_b` | `str` | Planet assigned to the second role |
+| `type_a` | `str` | Type classification for the first role holder |
+| `type_b` | `str` | Type classification for the second role holder |
+| `involves_node` | `bool` | True when either role holder is a node |
+| `both_are_nodes` | `bool` | True when both role holders are nodes |
+
+#### `KarakaAssignment` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `karaka_name` | `str` | Assigned karaka role |
+| `karaka_rank` | `int` | Role rank in the ordered assignment |
+| `planet` | `str` | Assigned planet |
+| `degree_in_sign` | `float` | Degrees traversed within the sign |
+| `sidereal_longitude` | `float` | Full sidereal longitude |
+| `is_rahu_inverted` | `bool` | True when Rahu inversion governs the assignment |
+
+#### Jaimini policy & enums
+
+| Public symbol | Kind | Description |
+|---|---|---|
+| `JaiminiPolicy` | dataclass | `scheme`, `ayanamsa_system` |
+| `KarakaRole` | enum-like class | Atmakaraka through Darakaraka role constants |
+| `KarakaPlanetType` | enum-like class | `LUMINARY`, `INNER`, `OUTER`, `NODE` |
+| `KARAKA_NAMES_7` | `tuple[str, ...]` | Canonical 7-karaka role sequence |
+| `KARAKA_NAMES_8` | `tuple[str, ...]` | Canonical 8-karaka role sequence |
+
+### Vedic Dignities
+
+```python
+from moira import (
+    vedic_dignity, planetary_relationships,
+    dignity_condition_profile, chart_dignity_profile,
+    VedicDignityResult, PlanetaryRelationship,
+    DignityConditionProfile, ChartDignityProfile, VedicDignityPolicy,
+    validate_dignity_output,
+)
+```
+
+| Function | Returns | Description |
+|---|---|---|
+| `vedic_dignity(planet, sidereal_longitude)` | `VedicDignityResult` | Compute exaltation, debilitation, own-sign, and Mulatrikona condition |
+| `planetary_relationships(sidereal_longitudes)` | `list[PlanetaryRelationship]` | Natural/compound relationship diagnostics across a chart |
+| `dignity_condition_profile(result)` | `DignityConditionProfile` | Inspect one Vedic dignity result |
+| `chart_dignity_profile(dignity_results)` | `ChartDignityProfile` | Aggregate chart-level dignity profile |
+| `validate_dignity_output(result)` | `None` | Validate Vedic dignity output invariants |
+
+#### `VedicDignityResult` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `planet` | `str` | Planet name |
+| `sidereal_longitude` | `float` | Sidereal longitude used for evaluation |
+| `sign_index` | `int` | Zero-based sidereal sign index |
+| `sign` | `str` | Sidereal sign name |
+| `dignity_rank` | `str` | Resulting dignity rank |
+| `is_exalted` | `bool` | Exaltation flag |
+| `is_debilitated` | `bool` | Debilitation flag |
+| `is_mulatrikona` | `bool` | Mulatrikona flag |
+| `is_own_sign` | `bool` | Own-sign flag |
+| `exaltation_score` | `float` | Continuous exaltation-strength score |
+
+#### `PlanetaryRelationship` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `from_planet` | `str` | Source planet |
+| `to_planet` | `str` | Target planet |
+| `natural` | `str` | Natural relationship |
+| `temporary` | `str` | Temporary relationship |
+| `compound` | `str` | Combined relationship result |
+
+#### `DignityConditionProfile` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `planet` | `str` | Planet name |
+| `dignity_rank` | `str` | Dignity rank |
+| `tier` | `str` | Interpreted dignity tier |
+| `exaltation_score` | `float` | Exaltation-strength score |
+| `sign_index` | `int` | Sign index |
+| `sign` | `str` | Sign name |
+
+#### `ChartDignityProfile` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `strong_count` | `int` | Count of strong dignities |
+| `neutral_count` | `int` | Count of neutral dignities |
+| `weak_count` | `int` | Count of weak dignities |
+| `strongest_planet` | `str` | Strongest planet by dignity tier |
+| `weakest_planet` | `str` | Weakest planet by dignity tier |
+| `planet_tiers` | `dict[str, str]` | Planet-to-tier mapping |
+| `exaltation_scores` | `dict[str, float]` | Planet-to-exaltation-score mapping |
+
+#### Vedic dignity policy, enums, and constants
+
+| Public symbol | Kind | Description |
+|---|---|---|
+| `VedicDignityPolicy` | dataclass | `ayanamsa_system` |
+| `VedicDignityRank` | enum-like class | `EXALTATION`, `MULATRIKONA`, `OWN_SIGN`, `FRIEND_SIGN`, `NEUTRAL_SIGN`, `ENEMY_SIGN`, `DEBILITATION` |
+| `CompoundRelationship` | enum-like class | `GREAT_FRIEND`, `FRIEND`, `NEUTRAL`, `ENEMY`, `GREAT_ENEMY` |
+| `DignityTier` | enum-like class | `STRONG`, `NEUTRAL`, `WEAK` |
+| `EXALTATION_SIGN` | `dict[str, int]` | Planet → exaltation sign index |
+| `EXALTATION_DEGREE` | `dict[str, float]` | Planet → deepest exaltation degree |
+| `DEBILITATION_SIGN` | `dict[str, int]` | Planet → debilitation sign index |
+| `MULATRIKONA_SIGN` | `dict[str, int]` | Planet → Mulatrikona sign index |
+| `MULATRIKONA_START` | `dict[str, float]` | Planet → Mulatrikona start degree |
+| `MULATRIKONA_END` | `dict[str, float]` | Planet → Mulatrikona end degree |
+| `OWN_SIGNS` | `dict[str, tuple[int, ...]]` | Planet → own-sign indices |
+| `NATURAL_FRIENDS` | `dict[str, tuple[str, ...]]` | Planet → natural friends |
+| `NATURAL_NEUTRALS` | `dict[str, tuple[str, ...]]` | Planet → natural neutrals |
+| `NATURAL_ENEMIES` | `dict[str, tuple[str, ...]]` | Planet → natural enemies |
+
+### Ashtakavarga
+
+```python
+from moira import (
+    bhinnashtakavarga, ashtakavarga,
+    sign_strength_profile, transit_strength, ashtakavarga_chart_profile,
+    BhinnashtakavargaResult, AshtakavargaResult,
+    SignStrengthProfile, AshtakavargaChartProfile, AshtakavargaPolicy,
+    validate_ashtakavarga_output,
+)
+```
+
+| Function | Returns | Description |
+|---|---|---|
+| `bhinnashtakavarga(planet, sign_indices)` | `BhinnashtakavargaResult` | Per-planet rekha distribution across the 12 signs |
+| `ashtakavarga(sidereal_longitudes, ayanamsa_system=None, policy=None)` | `AshtakavargaResult` | Full Sarvashtakavarga and Bhinnashtakavarga result |
+| `sign_strength_profile(bhinna, sign_idx, policy=None)` | `SignStrengthProfile` | Interpret one sign within a Bhinnashtakavarga result |
+| `transit_strength(planet, transit_sign_index, bhinna)` | `int` | Rekha strength of a transit through a sign |
+| `ashtakavarga_chart_profile(result, policy=None)` | `AshtakavargaChartProfile` | Aggregate Ashtakavarga chart profile |
+| `validate_ashtakavarga_output(result)` | `None` | Validate Ashtakavarga output invariants |
+
+#### `BhinnashtakavargaResult` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `planet` | `str` | Planet name |
+| `rekhas` | `tuple[int, ...]` | 12-sign rekha vector |
+| `total_rekhas` | `int` | Sum of rekhas across all signs |
+
+#### `AshtakavargaResult` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `ayanamsa_system` | `str` | Governing ayanamsa system |
+| `bhinnashtakavarga` | `dict[str, BhinnashtakavargaResult]` | Per-planet bhinna results |
+| `sarvashtakavarga` | `tuple[int, ...]` | Aggregate 12-sign Sarvashtakavarga vector |
+| `shodhana_bhinnashtakavarga` | `dict[str, BhinnashtakavargaResult] \| None` | Shodhana-adjusted bhinna results when enabled |
+| `shodhana_sarvashtakavarga` | `tuple[int, ...] \| None` | Shodhana-adjusted Sarvashtakavarga when enabled |
+
+#### `SignStrengthProfile` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `planet` | `str` | Planet name |
+| `sign_idx` | `int` | Zero-based sign index |
+| `rekha_count` | `int` | Rekha count in the sign |
+| `tier` | `str` | Strength tier under the active policy |
+
+#### `AshtakavargaChartProfile` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `sarva_total` | `int` | Total Sarvashtakavarga points |
+| `sarva_max` | `int` | Maximum sign score |
+| `sarva_max_sign_idx` | `int` | Sign index of the maximum score |
+| `sarva_min` | `int` | Minimum sign score |
+| `sarva_min_sign_idx` | `int` | Sign index of the minimum score |
+| `strong_planet_sign_counts` | `dict[str, int]` | Count of strong signs by planet |
+| `ayanamsa_system` | `str` | Governing ayanamsa system |
+
+#### Ashtakavarga policy & constants
+
+| Public symbol | Kind | Description |
+|---|---|---|
+| `AshtakavargaPolicy` | dataclass | `ayanamsa_system`, `strong_threshold`, `apply_trikona_shodhana`, `apply_ekadhipatya_shodhana` |
+| `RekhaTier` | enum-like class | Strength-tier constants for rekha interpretation |
+| `REKHA_TABLES` | `dict[str, dict[str, tuple[int, ...]]]` | Classical rekha tables used to build Bhinnashtakavarga |
+
+### Shadbala
+
+```python
+from moira import (
+    sthana_bala, dig_bala, kala_bala, chesta_bala, drig_bala,
+    shadbala, hora_lord_at,
+    shadbala_condition_profile, shadbala_chart_profile,
+    PlanetShadbala, ShadbalaResult, ShadbalaConditionProfile, ShadbalaChartProfile,
+    ShadbalaPolicy, validate_shadbala_output,
+)
+```
+
+| Function | Returns | Description |
+|---|---|---|
+| `sthana_bala(planet, sidereal_lon, houses, jd, ayanamsa_system=Ayanamsa.LAHIRI)` | `SthanaBala` | Positional strength components for one planet |
+| `dig_bala(planet, sidereal_lon, houses, jd, ayanamsa_system=Ayanamsa.LAHIRI)` | `float` | Directional strength for one planet |
+| `kala_bala(planet, sidereal_lon, sun_sidereal_lon, jd, tithi_number, is_day, vara_lord, planet_speeds, hora_lord=None, ayanamsa_system=Ayanamsa.LAHIRI, local_day_frac=None)` | `KalaBala` | Temporal strength components for one planet |
+| `chesta_bala(planet, speed, planet_sidereal_lon=None, mandoccha_sidereal_lon=None)` | `float` | Motional strength for one planet |
+| `drig_bala(planet, sidereal_longitudes)` | `float` | Aspect-based strength contribution for one planet |
+| `shadbala(sidereal_longitudes, planet_speeds, houses, jd, tithi_number, vara_lord, is_day, ayanamsa_system=Ayanamsa.LAHIRI, hora_lord=None, planet_latitudes=None)` | `ShadbalaResult` | Full Shadbala computation for the seven classical planets |
+| `hora_lord_at(birth_jd, sunrise_jd)` | `str` | Planetary hora lord at birth |
+| `shadbala_condition_profile(planet_result)` | `ShadbalaConditionProfile` | Inspect one planet’s Shadbala result |
+| `shadbala_chart_profile(result)` | `ShadbalaChartProfile` | Aggregate chart-level Shadbala profile |
+| `validate_shadbala_output(result)` | `None` | Validate Shadbala output invariants |
+
+#### `PlanetShadbala` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `planet` | `str` | Planet name |
+| `sthana_bala` | `SthanaBala` | Positional strength components |
+| `dig_bala` | `float` | Directional strength |
+| `kala_bala` | `KalaBala` | Temporal strength components |
+| `chesta_bala` | `float` | Motional strength |
+| `naisargika_bala` | `float` | Natural strength constant |
+| `drig_bala` | `float` | Aspect-based strength |
+| `total_shashtiamsas` | `float` | Total strength in shashtiamsas |
+| `total_rupas` | `float` | Total strength in rupas |
+| `required_rupas` | `float` | Required threshold for sufficiency |
+| `is_sufficient` | `bool` | Sufficiency flag |
+
+#### `ShadbalaResult` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `jd` | `float` | Julian day of the computation moment |
+| `ayanamsa_system` | `str` | Governing ayanamsa system |
+| `planets` | `dict[str, PlanetShadbala]` | Per-planet Shadbala results |
+
+#### `ShadbalaConditionProfile` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `planet` | `str` | Planet name |
+| `tier` | `str` | Interpreted strength tier |
+| `total_rupas` | `float` | Total strength in rupas |
+| `required_rupas` | `float` | Required threshold |
+| `strength_ratio` | `float` | Ratio of actual to required strength |
+| `is_sufficient` | `bool` | Sufficiency flag |
+
+#### `ShadbalaChartProfile` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `sufficient_count` | `int` | Count of planets meeting the threshold |
+| `insufficient_count` | `int` | Count of planets below threshold |
+| `strongest_planet` | `str` | Strongest planet by ratio |
+| `weakest_planet` | `str` | Weakest planet by ratio |
+| `planet_tiers` | `dict[str, str]` | Planet-to-tier mapping |
+| `strength_ratios` | `dict[str, float]` | Planet-to-ratio mapping |
+| `ayanamsa_system` | `str` | Governing ayanamsa system |
+
+#### `SthanaBala` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `uchcha` | `float` | Exaltation-proximity component |
+| `saptavargaja` | `float` | Seven-varga dignity component |
+| `ojayugma` | `float` | Odd/even sign-parity component |
+| `kendradi` | `float` | Angularity component |
+| `drekkana` | `float` | Decan-gender component |
+| `total` | `float` | Total positional strength |
+
+#### `KalaBala` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `nathonnatha` | `float` | Day/night strength component |
+| `paksha` | `float` | Lunar-phase strength component |
+| `tribhaga` | `float` | Third-of-day/night component |
+| `abda_masa_vara_hora` | `float` | Year/month/weekday/hour-lord component |
+| `ayana` | `float` | Solstitial component |
+| `yuddha` | `float` | Planetary-war bonus component |
+| `total` | `float` | Total temporal strength |
+
+#### Shadbala policy, tiers, and constants
+
+| Public symbol | Kind | Description |
+|---|---|---|
+| `ShadbalaPolicy` | dataclass | `ayanamsa_system` |
+| `ShadbalaTier` | enum-like class | `SUFFICIENT`, `INSUFFICIENT` |
+| `NAISARGIKA_BALA` | `dict[str, float]` | Natural fixed-strength constants in shashtiamsas |
+| `REQUIRED_RUPAS` | `dict[str, float]` | Required sufficiency thresholds in rupas |
+| `MEAN_DAILY_MOTION` | `dict[str, float]` | Mean daily motion constants used in Chesta Bala |
 
 ---
 
@@ -3001,7 +3592,7 @@ from moira.facade import (
 
 | Function | Signature | Description |
 |---|---|---|
-| `jd_from_datetime` | `(dt: datetime) → float` | datetime → JD UT; naïve treated as UTC |
+| `jd_from_datetime` | `(dt: datetime) → float` | timezone-aware datetime → JD UT; naïve datetimes raise `ValueError` |
 | `datetime_from_jd` | `(jd: float) → datetime` | JD UT → UTC datetime |
 | `julian_day` | `(year, month, day, hour=0.0) → float` | Calendar date → JD |
 | `calendar_from_jd` | `(jd: float) → CalendarDateTime` | JD → BCE-safe calendar breakdown |
@@ -3093,11 +3684,18 @@ result = some_function(inputs, policy=policy)
 | `AspectPolicy` | aspects | `orb_table`, `min_tier`, `include_minor`, `motion_threshold` |
 | `HousePolicy` | houses | `polar_fallback`, `unknown_system` |
 | `DignityComputationPolicy` | dignities | `doctrine`, `mercury_sect_model`, `solar_condition`, `accidental_dignity` |
+| `VedicDignityPolicy` | vedic dignities | planetary friendship and compound-relationship policy |
 | `LotsComputationPolicy` | lots | `reversal_kind`, `derived_reference`, `external_reference` |
 | `ProgressionComputationPolicy` | progressions | `time_key`, `direction`, `house_frame` |
 | `TransitComputationPolicy` | transits | `search`, `return_search`, `syzygy_search` |
 | `TransitSearchPolicy` | transits | `step_days`, `max_iterations`, `exact_threshold` |
 | `SynastryComputationPolicy` | synastry | `aspect_policy`, `overlay_policy`, `composite_policy`, `davison_policy` |
+| `JaiminiPolicy` | jaimini | karaka assignment and tie-break policy |
+| `PanchangaPolicy` | panchanga | panchanga computation and classification policy |
+| `AshtottariPolicy` | alternate dasha | Ashtottari year-basis and sequence policy |
+| `YoginiPolicy` | alternate dasha | Yogini year-basis and sequence policy |
+| `AshtakavargaPolicy` | ashtakavarga | shodhana and sign-strength interpretation policy |
+| `ShadbalaPolicy` | shadbala | sufficiency thresholds and component interpretation policy |
 | `PatternComputationPolicy` | patterns | `selection`, `stellium`, `orb_factor` |
 | `TimelordComputationPolicy` | timelords | `firdaria_year_policy`, `zr_year_policy` |
 | `VimshottariComputationPolicy` | dasha | `year_policy`, `ayanamsa_policy` |

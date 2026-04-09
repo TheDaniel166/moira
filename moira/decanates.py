@@ -77,6 +77,7 @@ Public surface
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 from .constants import SIGNS, SIGN_SYMBOLS
@@ -181,6 +182,42 @@ class DecanatePosition:
     degree_in_decan: float
     longitude_used: float
 
+    def __post_init__(self) -> None:
+        if self.system not in {"chaldean_face", "triplicity", "vedic_drekkana"}:
+            raise ValueError(f"DecanatePosition.system is invalid: {self.system!r}")
+        if self.decan_number not in {1, 2, 3}:
+            raise ValueError(
+                f"DecanatePosition.decan_number must be in {{1, 2, 3}}, got {self.decan_number}"
+            )
+        if self.ruling_planet not in _CHALDEAN_CYCLE:
+            raise ValueError(
+                f"DecanatePosition.ruling_planet must be a traditional planet, got {self.ruling_planet!r}"
+            )
+        if self.ruling_sign is not None and self.ruling_sign not in SIGNS:
+            raise ValueError(
+                f"DecanatePosition.ruling_sign must be None or a zodiac sign, got {self.ruling_sign!r}"
+            )
+        if self.sign not in SIGNS:
+            raise ValueError(f"DecanatePosition.sign must be a zodiac sign, got {self.sign!r}")
+        if self.sign_symbol not in SIGN_SYMBOLS:
+            raise ValueError(
+                f"DecanatePosition.sign_symbol must be a zodiac symbol, got {self.sign_symbol!r}"
+            )
+        if not (0.0 <= self.degree_in_decan < 10.0):
+            raise ValueError(
+                "DecanatePosition.degree_in_decan must be in [0, 10), "
+                f"got {self.degree_in_decan}"
+            )
+        if not math.isfinite(self.longitude_used) or not (0.0 <= self.longitude_used < 360.0):
+            raise ValueError(
+                "DecanatePosition.longitude_used must be finite and in [0, 360), "
+                f"got {self.longitude_used}"
+            )
+        if self.system == "chaldean_face" and self.ruling_sign is not None:
+            raise ValueError("Chaldean face results must have ruling_sign=None")
+        if self.system != "chaldean_face" and self.ruling_sign is None:
+            raise ValueError("Triplicity and Vedic drekkana results must include ruling_sign")
+
 
 # ---------------------------------------------------------------------------
 # Internal helpers
@@ -245,6 +282,8 @@ def chaldean_face(longitude: float) -> DecanatePosition:
     >>> chaldean_face(95.0).ruling_planet   # Leo ~5° — zero-based face index 9
     'Venus'
     """
+    if not math.isfinite(longitude):
+        raise ValueError(f"longitude must be finite, got {longitude!r}")
     lon = longitude % 360.0
     sign_idx, sign_name, sign_sym, decan_number, deg_in_decan = _sign_components(lon)
     face_idx = int(lon // 10)  # 0–35
@@ -289,6 +328,8 @@ def triplicity_decan(longitude: float) -> DecanatePosition:
     >>> pos.ruling_planet, pos.ruling_sign
     ('Sun', 'Leo')
     """
+    if not math.isfinite(longitude):
+        raise ValueError(f"longitude must be finite, got {longitude!r}")
     lon = longitude % 360.0
     sign_idx, sign_name, sign_sym, decan_number, deg_in_decan = _sign_components(lon)
     ruling_sign, ruling_planet = _triplicity_ruler(sign_idx, decan_number)
@@ -342,6 +383,8 @@ def vedic_drekkana(
     >>> pos.system
     'vedic_drekkana'
     """
+    if not math.isfinite(longitude):
+        raise ValueError(f"longitude must be finite, got {longitude!r}")
     from .sidereal import tropical_to_sidereal
     sid_lon = tropical_to_sidereal(longitude, jd, system=ayanamsa_system)
     sign_idx, sign_name, sign_sym, decan_number, deg_in_decan = _sign_components(sid_lon)

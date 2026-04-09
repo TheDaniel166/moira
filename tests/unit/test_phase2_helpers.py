@@ -91,6 +91,11 @@ def test_houses_from_armc_unknown_system_strict_raises():
         houses_from_armc(_ARMC_J2000, _OBL_J2000, _LAT_LONDON, system='ZZ', policy=strict)
 
 
+def test_houses_from_armc_invalid_policy_type_raises():
+    with pytest.raises(TypeError, match="policy must be a HousePolicy"):
+        houses_from_armc(_ARMC_J2000, _OBL_J2000, _LAT_LONDON, HouseSystem.PLACIDUS, policy="strict")  # type: ignore[arg-type]
+
+
 def test_houses_from_armc_polar_fallback():
     polar_lat = 89.0   # above critical latitude
     result = houses_from_armc(_ARMC_J2000, _OBL_J2000, polar_lat, HouseSystem.PLACIDUS)
