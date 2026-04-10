@@ -33,8 +33,12 @@ jobs:
       # Kernel-free unit acceptance slices
       # -----------------------------------------------------------------------
 
-      - name: Hermetic decans acceptance (87 cases)
-        run: python -m pytest tests/unit/test_hermetic_decans.py -q
+      - name: Hermetic decans acceptance (kernel-free subset)
+        # Exclude kernel-dependent sunrise/sunset goldens from CI.
+        # Those cases require an installed planetary kernel and are validated locally.
+        run: |
+          python -m pytest tests/unit/test_hermetic_decans.py -q \
+            -k "not decan_hours_start_matches_mc_decan_at_sunset and not usno_one_day_boundary_agreement"
 
       - name: Classical decanates acceptance (71 cases)
         run: python -m pytest tests/unit/test_decanates.py -q
