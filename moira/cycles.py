@@ -1,28 +1,52 @@
 """
 moira/cycles.py — Planetary Cycles Engine
 
-Governs cyclical timing frameworks grounded in astronomical periodicity:
+Purpose
+-------
+This Pillar provides cyclical timing Engines grounded in astronomical
+periodicity and classical temporal doctrine: return series, synodic-cycle
+position, Jupiter-Saturn great conjunction structure, planetary ages, a
+streamlined Firdar family, and Chaldean planetary day/hour sequences.
 
-    Return series        when a planet revisits its natal longitude
-    Synodic cycles       the phase relationship between two bodies
-    Great conjunctions   the Jupiter–Saturn 20/200/800-year doctrine
-    Planetary ages       Ptolemy's seven-age model (Tetrabiblos I.10)
-    Firdar               the Persian time-lord system (Abu Ma'shar, Bonatti)
-    Planetary days       the Chaldean weekday rulers
-    Planetary hours      unequal temporal hours with Chaldean rulers
+Boundary
+--------
+Owns:
+    - Cyclical result vessels and classification enums for the public cycles surface.
+    - Return-series aggregation and cyclical profile surfaces.
+    - Great-conjunction and mutation-period grouping logic.
+    - Planetary-age and Chaldean day/hour doctrine surfaces.
+Delegates:
+    - Exact return solving to `moira.transits`.
+    - Synodic geometry inputs to the astronomical Pillars it calls.
+    - Kernel access to `moira.spk_reader` where astronomical state is needed.
+Does not own:
+    - Natal chart construction.
+    - General transit condition profiling.
+    - The more elaborate timelord relational surfaces housed in `moira.timelords`.
 
-Authority
----------
-    Return series      — astronomical (ephemeris-derived via transits.py)
-    Synodic cycles     — astronomical (ephemeris-derived via phenomena.py / phase.py)
-    Great conjunctions — Abu Ma'shar (*On the Great Conjunctions*), Kepler,
-                         observational astronomy
-    Planetary ages     — Ptolemy (*Tetrabiblos* I.10)
-    Firdar             — Abu Ma'shar (*On the Revolutions of the Years
-                         of Nativities*), Guido Bonatti (*Liber Astronomiae*)
-    Planetary days     — universal Chaldean tradition
-    Planetary hours    — Chaldean temporal hours, Hellenistic and medieval
-                         universal practice
+Import-time side effects
+------------------------
+None.
+
+External dependency assumptions
+-------------------------------
+- A compatible planetary kernel must be discoverable for the astronomical
+  surfaces that require live planetary positions.
+- Callers supply Julian Days and natal longitudes in the expected domains.
+- Historical/doctrinal layer choices are explicit in the exposed surfaces; this
+  Pillar does not silently promote one doctrine family into another.
+
+Public surface / exports
+------------------------
+`SynodicPhase`, `GreatMutationElement`, `PlanetaryAgeName`, `ReturnEvent`,
+`ReturnSeries`, `return_series`, `half_return_series`, `lifetime_returns`,
+`SynodicCyclePosition`, `synodic_cycle_position`, `GreatConjunction`,
+`GreatConjunctionSeries`, `MutationPeriod`, `great_conjunctions`,
+`mutation_period_at`, `PlanetaryAgePeriod`, `PlanetaryAgeProfile`,
+`planetary_age_at`, `planetary_age_profile`, `FirdarSubPeriod`,
+`FirdarPeriod`, `FirdarSeries`, `firdar_series`, `firdar_at`,
+`PlanetaryDayInfo`, `PlanetaryHour`, `PlanetaryHoursProfile`,
+`planetary_day_ruler`, `planetary_hours_for_day`
 """
 
 import math
@@ -181,20 +205,47 @@ class PlanetaryAgeName(str, Enum):
 @dataclass(frozen=True, slots=True)
 class ReturnEvent:
     """
-    One planetary return occurrence.
+    RITE: Witness vessel of one return occurrence.
 
-    Fields
-    ------
-    body : str
-        The returned body.
-    return_number : int
-        Ordinal return number (1 = first return, 2 = second, ...).
-    jd_ut : float
-        Julian Day (UT) of exact return.
-    longitude : float
-        The natal longitude returned to (degrees).
-    is_half : bool
-        True if this is a half-return (opposition to natal longitude).
+    THEOREM: ReturnEvent stores one exact return or half-return event for a body at a specific Julian Day.
+
+    RITE OF PURPOSE:
+        This vessel gives the return-series surface a stable event object rather
+        than anonymous tuples. It preserves both the numerical instant and the
+        doctrinal classification of whether the event is a direct return or a
+        half-return to the opposition point.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry one return event and its ordinal number.
+            - Preserve the natal longitude target and half-return flag.
+        Non-responsibilities:
+            - Solving the return instant.
+            - Grouping events into a series.
+        Dependencies:
+            - Produced by the return-series functions in this Pillar.
+        Structural invariants:
+            - `return_number >= 1`
+
+    Canon: None (No applicable canon)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.cycles.ReturnEvent",
+      "risk": "medium",
+      "api": {
+        "frozen": ["body", "return_number", "jd_ut", "longitude", "is_half"],
+        "internal": []
+      },
+      "state": {"mutable": false, "owners": ["return_series", "half_return_series", "lifetime_returns"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "failures": {"policy": "raise_by_constructor_if_added"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     body:          str
@@ -207,22 +258,48 @@ class ReturnEvent:
 @dataclass(frozen=True, slots=True)
 class ReturnSeries:
     """
-    A complete series of returns for one body.
+    RITE: Aggregate witness vessel for a body's return cycle.
 
-    Fields
-    ------
-    body : str
-        The body whose returns are tracked.
-    natal_longitude : float
-        The natal longitude (degrees).
-    jd_start : float
-        Start of the search window.
-    jd_end : float
-        End of the search window.
-    returns : tuple[ReturnEvent, ...]
-        All returns found, ordered chronologically.
-    count : int
-        Number of returns found.
+    THEOREM: ReturnSeries stores all return events found for one body over a requested search window.
+
+    RITE OF PURPOSE:
+        This vessel preserves return-series truth as one inspectable object:
+        search range, natal longitude, ordered events, and event count. Without
+        it, callers would need to manage parallel arrays or infer context from a
+        bare tuple of events.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry the search window and natal-longitude target.
+            - Carry the chronologically ordered tuple of `ReturnEvent` objects.
+            - Carry the event count as an explicit public field.
+        Non-responsibilities:
+            - Solving exact return instants.
+            - Deciding broader transit doctrine outside return recurrence.
+        Dependencies:
+            - Produced by return-series functions in this Pillar.
+        Structural invariants:
+            - `count == len(returns)` is the intended public contract.
+
+    Canon: None (No applicable canon)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.cycles.ReturnSeries",
+      "risk": "medium",
+      "api": {
+        "frozen": ["body", "natal_longitude", "jd_start", "jd_end", "returns", "count"],
+        "internal": []
+      },
+      "state": {"mutable": false, "owners": ["return_series", "half_return_series", "lifetime_returns"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "failures": {"policy": "raise_by_constructor_if_added"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     body:             str
@@ -238,22 +315,48 @@ class ReturnSeries:
 @dataclass(frozen=True, slots=True)
 class SynodicCyclePosition:
     """
-    Snapshot of where two bodies stand in their synodic cycle.
+    RITE: Synodic witness vessel for a two-body cycle state.
 
-    Fields
-    ------
-    body1, body2 : str
-        The two bodies.
-    jd_ut : float
-        Moment of evaluation.
-    phase_angle : float
-        Phase angle from body1 to body2, 0–360° (0 = conjunction).
-    phase : SynodicPhase
-        Eight-fold phase classification.
-    is_waxing : bool
-        True if the phase angle is increasing (0–180°).
-    lon1, lon2 : float
-        Ecliptic longitudes at evaluation moment.
+    THEOREM: SynodicCyclePosition stores the evaluated phase geometry and classification of two bodies at one Julian Day.
+
+    RITE OF PURPOSE:
+        This vessel binds raw longitudes, phase angle, waxing state, and
+        eight-fold phase classification into one public object. It exists so
+        synodic state can be inspected directly instead of reconstructed from
+        multiple loose return values.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry the two bodies and the evaluation moment.
+            - Carry the raw phase geometry and the derived phase classification.
+            - Preserve the waxing or waning state as an explicit boolean.
+        Non-responsibilities:
+            - Solving conjunctions or other exact synodic roots.
+            - Inferring broader doctrinal meaning beyond the exposed fields.
+        Dependencies:
+            - Produced by `synodic_cycle_position()`.
+        Structural invariants:
+            - `phase_angle` is intended to live in the normalized `0 <= angle < 360` domain.
+
+    Canon: None (No applicable canon)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.cycles.SynodicCyclePosition",
+      "risk": "medium",
+      "api": {
+        "frozen": ["body1", "body2", "jd_ut", "phase_angle", "phase", "is_waxing", "lon1", "lon2"],
+        "internal": []
+      },
+      "state": {"mutable": false, "owners": ["synodic_cycle_position"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "failures": {"policy": "raise_by_constructor_if_added"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     body1:       str
@@ -271,22 +374,45 @@ class SynodicCyclePosition:
 @dataclass(frozen=True, slots=True)
 class GreatConjunction:
     """
-    One Jupiter–Saturn conjunction with elemental classification.
+    RITE: Witness vessel of one Jupiter-Saturn conjunction.
 
-    Fields
-    ------
-    jd_ut : float
-        Julian Day (UT) of conjunction.
-    longitude : float
-        Ecliptic longitude of the conjunction (degrees).
-    sign : str
-        Zodiac sign name.
-    sign_symbol : str
-        Zodiac sign symbol.
-    degree_in_sign : float
-        Degree within the sign.
-    element : GreatMutationElement
-        Elemental trigon of the conjunction sign.
+    THEOREM: GreatConjunction stores one exact Jupiter-Saturn conjunction together with its zodiacal and elemental classification.
+
+    RITE OF PURPOSE:
+        This vessel preserves both the astronomical instant and the doctrinal
+        sign-element interpretation used by the great-mutation surface. Without
+        it, callers would have to reconstruct sign and element meaning from a
+        bare longitude.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry one conjunction instant and longitude.
+            - Carry sign, sign symbol, degree-in-sign, and elemental trigon classification.
+        Non-responsibilities:
+            - Solving the conjunction instant.
+            - Grouping conjunctions into broader mutation periods.
+        Dependencies:
+            - Produced by `great_conjunctions()`.
+
+    Canon: Abu Ma'shar, *On the Great Conjunctions*
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.cycles.GreatConjunction",
+      "risk": "medium",
+      "api": {
+        "frozen": ["jd_ut", "longitude", "sign", "sign_symbol", "degree_in_sign", "element"],
+        "internal": []
+      },
+      "state": {"mutable": false, "owners": ["great_conjunctions"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "failures": {"policy": "raise_by_constructor_if_added"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     jd_ut:          float
@@ -300,18 +426,45 @@ class GreatConjunction:
 @dataclass(frozen=True, slots=True)
 class GreatConjunctionSeries:
     """
-    A series of Jupiter–Saturn conjunctions over a date range.
+    RITE: Aggregate witness vessel of a great-conjunction search.
 
-    Fields
-    ------
-    jd_start, jd_end : float
-        Search window.
-    conjunctions : tuple[GreatConjunction, ...]
-        All conjunctions found, chronologically ordered.
-    count : int
-        Number of conjunctions.
-    elements_represented : tuple[GreatMutationElement, ...]
-        Distinct elements that appear, in order of first occurrence.
+    THEOREM: GreatConjunctionSeries stores all Jupiter-Saturn conjunctions found over one requested search window.
+
+    RITE OF PURPOSE:
+        This vessel keeps the conjunction search range, ordered conjunction
+        witnesses, and observed elemental spread together as one stable public
+        object.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry the search window.
+            - Carry the ordered tuple of `GreatConjunction` witnesses.
+            - Carry the explicit count and represented elements.
+        Non-responsibilities:
+            - Solving conjunction instants.
+            - Defining broader historical interpretation beyond the exposed fields.
+        Dependencies:
+            - Produced by `great_conjunctions()`.
+
+    Canon: Abu Ma'shar, *On the Great Conjunctions*
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.cycles.GreatConjunctionSeries",
+      "risk": "medium",
+      "api": {
+        "frozen": ["jd_start", "jd_end", "conjunctions", "count", "elements_represented"],
+        "internal": []
+      },
+      "state": {"mutable": false, "owners": ["great_conjunctions"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "failures": {"policy": "raise_by_constructor_if_added"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     jd_start:              float
@@ -324,20 +477,45 @@ class GreatConjunctionSeries:
 @dataclass(frozen=True, slots=True)
 class MutationPeriod:
     """
-    A ~200-year period during which great conjunctions predominate
-    in one elemental trigon.
+    RITE: Grouping vessel for one elemental mutation era.
 
-    Fields
-    ------
-    element : GreatMutationElement
-        The dominant element.
-    start_conjunction : GreatConjunction
-        The first conjunction that inaugurated this element period.
-    end_conjunction : GreatConjunction | None
-        The final conjunction in this element before mutation. None if
-        the period extends beyond the search window.
-    conjunction_count : int
-        Number of conjunctions in this element during this period.
+    THEOREM: MutationPeriod stores one dominant-element span within the great-conjunction cycle.
+
+    RITE OF PURPOSE:
+        This vessel binds the dominant element and its inaugurating and terminal
+        conjunction witnesses into one inspectable period object so callers can
+        reason about mutation epochs rather than isolated conjunction events.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry the dominant element of one mutation era.
+            - Carry the inaugurating conjunction and optional terminal conjunction.
+            - Carry the conjunction count within the era.
+        Non-responsibilities:
+            - Solving conjunction instants.
+            - Performing historical interpretation beyond the exposed grouping.
+        Dependencies:
+            - Built from `GreatConjunction` witnesses in this Pillar.
+
+    Canon: Abu Ma'shar, *On the Great Conjunctions*
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.cycles.MutationPeriod",
+      "risk": "medium",
+      "api": {
+        "frozen": ["element", "start_conjunction", "end_conjunction", "conjunction_count"],
+        "internal": []
+      },
+      "state": {"mutable": false, "owners": ["great_conjunctions", "mutation_period_at"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "failures": {"policy": "raise_by_constructor_if_added"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     element:              GreatMutationElement
@@ -351,16 +529,44 @@ class MutationPeriod:
 @dataclass(frozen=True, slots=True)
 class PlanetaryAgePeriod:
     """
-    One stage in Ptolemy's seven ages of life.
+    RITE: One life-stage vessel in Ptolemy's seven-age model.
 
-    Planetary ages (Tetrabiblos I.10):
-        Moon      0–4    infancy (rapid growth, nourishment)
-        Mercury   4–14   childhood (learning, speech, reason)
-        Venus    14–22   adolescence (desire, erotic impulse)
-        Sun      22–41   prime (authority, ambition, mastery)
-        Mars     41–56   maturity (severity, toil, discontent)
-        Jupiter  56–68   elder years (retreat, dignity, foresight)
-        Saturn   68+     old age (cooling, dulling, decay)
+    THEOREM: PlanetaryAgePeriod stores one ruled age band in the seven-stage planetary life sequence.
+
+    RITE OF PURPOSE:
+        This vessel makes each age band explicit: ruler, age bounds, and label.
+        It exists so the seven-age doctrine can be inspected as structured data
+        instead of being re-encoded from prose every time it is queried.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry one age ruler and its age bounds.
+            - Carry the public label for the age band.
+        Non-responsibilities:
+            - Choosing the current age for a query.
+            - Interpreting the age beyond the exposed doctrinal banding.
+        Dependencies:
+            - Used by `planetary_age_profile()` and `planetary_age_at()`.
+
+    Canon: Ptolemy, *Tetrabiblos* I.10
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.cycles.PlanetaryAgePeriod",
+      "risk": "low",
+      "api": {
+        "frozen": ["ruler", "start_age", "end_age", "label"],
+        "internal": []
+      },
+      "state": {"mutable": false, "owners": ["planetary_age_profile", "planetary_age_at"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "failures": {"policy": "raise_by_constructor_if_added"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     ruler:      PlanetaryAgeName
@@ -372,16 +578,45 @@ class PlanetaryAgePeriod:
 @dataclass(frozen=True, slots=True)
 class PlanetaryAgeProfile:
     """
-    The full seven-age model as a single object.
+    RITE: Aggregate vessel of the full seven-age life model.
 
-    Fields
-    ------
-    periods : tuple[PlanetaryAgePeriod, ...]
-        All seven age periods in order.
-    current : PlanetaryAgePeriod | None
-        The age period for a queried age, or None if not queried.
-    queried_age : float | None
-        The age that was queried (years), or None.
+    THEOREM: PlanetaryAgeProfile stores the seven planetary age periods and the optional period selected for a queried age.
+
+    RITE OF PURPOSE:
+        This vessel keeps the entire seven-age structure and the query result in
+        one public object so callers can inspect both the full doctrine and the
+        selected current band without issuing separate calls.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry all seven age periods in order.
+            - Carry the current age period for an optional queried age.
+            - Carry the queried age itself when one was supplied.
+        Non-responsibilities:
+            - Defining the seven-age doctrine.
+            - Extending the doctrine beyond the admitted planetary-age model.
+        Dependencies:
+            - Built from `PlanetaryAgePeriod` vessels in this Pillar.
+
+    Canon: Ptolemy, *Tetrabiblos* I.10
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.cycles.PlanetaryAgeProfile",
+      "risk": "low",
+      "api": {
+        "frozen": ["periods", "current", "queried_age"],
+        "internal": []
+      },
+      "state": {"mutable": false, "owners": ["planetary_age_profile", "planetary_age_at"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "failures": {"policy": "raise_by_constructor_if_added"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     periods:      tuple[PlanetaryAgePeriod, ...]
@@ -394,22 +629,45 @@ class PlanetaryAgeProfile:
 @dataclass(frozen=True, slots=True)
 class FirdarSubPeriod:
     """
-    One sub-period within a major firdar.
+    RITE: One subordinate vessel within a major Firdar.
 
-    Each major firdar is divided into 7 sub-periods (one for each classical
-    planet), each proportional to the major firdar's duration.  The sub-rulers
-    follow the Chaldean order starting from the major ruler.
+    THEOREM: FirdarSubPeriod stores one subdivided planetary segment inside a major Firdar period.
 
-    Fields
-    ------
-    sub_ruler : str
-        The planet governing this sub-period.
-    start_jd : float
-        Start of this sub-period (JD UT).
-    end_jd : float
-        End of this sub-period (JD UT).
-    duration_years : float
-        Duration in Julian years.
+    RITE OF PURPOSE:
+        This vessel makes the internal sevenfold subdivision of a major Firdar
+        explicit and inspectable. It exists so callers can work with the admitted
+        sub-period structure as public data rather than recomputing the Chaldean
+        sequence and proportional durations from the enclosing major period.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry the sub-ruler and Julian Day bounds of one sub-period.
+            - Carry the nominal duration in Julian years.
+        Non-responsibilities:
+            - Determining whether a major period is subdivided.
+            - Computing the Chaldean order or proportional split on demand.
+        Dependencies:
+            - Built by `firdar_series()` from the Firdaria doctrine admitted by this Pillar.
+
+    Canon: Abu Ma'shar; Guido Bonatti
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.cycles.FirdarSubPeriod",
+      "risk": "low",
+      "api": {
+        "frozen": ["sub_ruler", "start_jd", "end_jd", "duration_years"],
+        "internal": []
+      },
+      "state": {"mutable": false, "owners": ["firdar_series"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "failures": {"policy": "raise_by_constructor_if_added"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     sub_ruler:      str
@@ -421,33 +679,47 @@ class FirdarSubPeriod:
 @dataclass(frozen=True, slots=True)
 class FirdarPeriod:
     """
-    One major firdar period.
+    RITE: One major Firdar vessel in the seventy-five-year sequence.
 
-    Authority: Abu Ma'shar, Bonatti.
+    THEOREM: FirdarPeriod stores one major Firdar period, including its optional subordinate planetary divisions.
 
-    Diurnal sequence (day births):
-        Sun(10) → Venus(8) → Mercury(13) → Moon(9) → Saturn(11) →
-        Jupiter(12) → Mars(7) → North Node(3) → South Node(2) = 75 years
+    RITE OF PURPOSE:
+        This vessel makes one governing Firdar explicit: ruler, bounds, ordinal
+        place in the sequence, and optional sub-periods. It exists so the full
+        diurnal or nocturnal seventy-five-year order can be exposed as public
+        structured data rather than being preserved only in sequence tables.
 
-    Nocturnal sequence (night births):
-        Moon(9) → Saturn(11) → Jupiter(12) → Mars(7) → Sun(10) →
-        Venus(8) → Mercury(13) → North Node(3) → South Node(2) = 75 years
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry one major ruler and its Julian Day bounds.
+            - Carry the sequence ordinal and nominal duration.
+            - Carry the subordinate sevenfold divisions when this authority admits them.
+        Non-responsibilities:
+            - Choosing the diurnal versus nocturnal sequence.
+            - Computing sub-period durations from scratch once instantiated.
+        Dependencies:
+            - Built by `firdar_series()` from the Firdaria doctrine admitted by this Pillar.
+            - Uses `FirdarSubPeriod` for subordinate divisions.
 
-    Fields
-    ------
-    ruler : str
-        The planet (or node) governing this firdar.
-    start_jd : float
-        Start of this firdar (JD UT).
-    end_jd : float
-        End of this firdar (JD UT).
-    duration_years : float
-        Duration in Julian years.
-    ordinal : int
-        Position in the sequence (1–9).
-    sub_periods : tuple[FirdarSubPeriod, ...] | None
-        The 7 planetary sub-periods (None for nodal firdars which some
-        authorities leave undivided).
+    Canon: Abu Ma'shar; Guido Bonatti
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.cycles.FirdarPeriod",
+      "risk": "low",
+      "api": {
+        "frozen": ["ruler", "start_jd", "end_jd", "duration_years", "ordinal", "sub_periods"],
+        "internal": []
+      },
+      "state": {"mutable": false, "owners": ["firdar_series"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "failures": {"policy": "raise_by_constructor_if_added"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     ruler:           str
@@ -461,18 +733,46 @@ class FirdarPeriod:
 @dataclass(frozen=True, slots=True)
 class FirdarSeries:
     """
-    The complete 75-year firdar sequence for a nativity.
+    RITE: The full Firdaria sequence vessel.
 
-    Fields
-    ------
-    birth_jd : float
-        Birth Julian Day.
-    is_day_birth : bool
-        True if diurnal nativity.
-    periods : tuple[FirdarPeriod, ...]
-        All 9 firdar periods in sequence.
-    total_years : float
-        Sum of all periods (~75 Julian years).
+    THEOREM: FirdarSeries stores the complete seventy-five-year Firdaria sequence for one nativity.
+
+    RITE OF PURPOSE:
+        This vessel preserves the entire major-period order of the nativity's
+        Firdaria system in one public object. It exists so callers can inspect the
+        full sequence, its birth context, and its total duration without carrying
+        loose tuples or recomputing aggregate sequence truth.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry the birth Julian Day and day-chart classification used for the sequence.
+            - Carry all major Firdar periods in order.
+            - Carry the summed nominal duration of the series.
+        Non-responsibilities:
+            - Deriving the birth chart sect.
+            - Locating the currently active period for a query instant.
+        Dependencies:
+            - Built by `firdar_series()` from `FirdarPeriod` vessels in this Pillar.
+
+    Canon: Abu Ma'shar; Guido Bonatti
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.cycles.FirdarSeries",
+      "risk": "low",
+      "api": {
+        "frozen": ["birth_jd", "is_day_birth", "periods", "total_years"],
+        "internal": []
+      },
+      "state": {"mutable": false, "owners": ["firdar_series"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "failures": {"policy": "raise_by_constructor_if_added"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     birth_jd:     float
@@ -486,16 +786,45 @@ class FirdarSeries:
 @dataclass(frozen=True, slots=True)
 class PlanetaryDayInfo:
     """
-    The planetary ruler of a calendar day.
+    RITE: The planetary day witness.
 
-    Fields
-    ------
-    ruler : str
-        The planet ruling this day.
-    weekday_name : str
-        The name of the weekday.
-    weekday_number : int
-        ISO weekday (1 = Monday, 7 = Sunday).
+    THEOREM: PlanetaryDayInfo stores the weekday identity and planetary ruler of one calendar day.
+
+    RITE OF PURPOSE:
+        This vessel exposes the admitted day-ruler doctrine as structured data.
+        It exists so planetary-day computations can return the ruler, weekday
+        name, and weekday number together instead of scattering those values
+        across unrelated return positions.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry the day's planetary ruler.
+            - Carry the weekday name and ISO weekday number.
+        Non-responsibilities:
+            - Computing sunrise or planetary hours.
+            - Interpreting day rulership beyond the exposed weekday mapping.
+        Dependencies:
+            - Built by `planetary_day()` from weekday truth admitted by this Pillar.
+
+    Canon: Vettius Valens; medieval planetary weekday doctrine
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.cycles.PlanetaryDayInfo",
+      "risk": "low",
+      "api": {
+        "frozen": ["ruler", "weekday_name", "weekday_number"],
+        "internal": []
+      },
+      "state": {"mutable": false, "owners": ["planetary_day", "planetary_hours_profile"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "failures": {"policy": "raise_by_constructor_if_added"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     ruler:          str
@@ -506,20 +835,45 @@ class PlanetaryDayInfo:
 @dataclass(frozen=True, slots=True)
 class PlanetaryHour:
     """
-    One planetary hour within a day.
+    RITE: The planetary hour witness.
 
-    Fields
-    ------
-    hour_number : int
-        1–24 (1–12 are day hours, 13–24 are night hours).
-    ruler : str
-        The planet governing this hour.
-    start_jd : float
-        Start of this hour (JD UT).
-    end_jd : float
-        End of this hour (JD UT).
-    is_day_hour : bool
-        True if this is a daytime (diurnal) hour.
+    THEOREM: PlanetaryHour stores one of the twenty-four unequal planetary hours of a civil day.
+
+    RITE OF PURPOSE:
+        This vessel makes each day or night hour explicit: ordinal, ruler, bounds,
+        and diurnal classification. It exists so planetary-hour computations can
+        return inspectable hour witnesses instead of forcing callers to reconstruct
+        hour spans from bulk tables.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry the hour number, ruler, and Julian Day bounds.
+            - Carry whether the hour belongs to the daytime or nighttime arc.
+        Non-responsibilities:
+            - Solving sunrise and sunset instants.
+            - Choosing the day ruler independently of the surrounding profile.
+        Dependencies:
+            - Built by `planetary_hours_profile()` from sunrise and sunset truth.
+
+    Canon: Vettius Valens; medieval planetary hours doctrine
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.cycles.PlanetaryHour",
+      "risk": "low",
+      "api": {
+        "frozen": ["hour_number", "ruler", "start_jd", "end_jd", "is_day_hour"],
+        "internal": []
+      },
+      "state": {"mutable": false, "owners": ["planetary_hours_profile"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "failures": {"policy": "raise_by_constructor_if_added"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     hour_number: int
@@ -532,24 +886,56 @@ class PlanetaryHour:
 @dataclass(frozen=True, slots=True)
 class PlanetaryHoursProfile:
     """
-    All 24 planetary hours for one day, with day ruler.
+    RITE: The full planetary hours profile vessel.
 
-    Fields
-    ------
-    day_info : PlanetaryDayInfo
-        The day's planetary ruler and weekday.
-    sunrise_jd : float
-        Sunrise JD used.
-    sunset_jd : float
-        Sunset JD used.
-    next_sunrise_jd : float
-        Next sunrise JD used (for nighttime hour duration).
-    hours : tuple[PlanetaryHour, ...]
-        All 24 planetary hours in order (1–24).
-    day_hour_length : float
-        Duration of one daytime hour (days).
-    night_hour_length : float
-        Duration of one nighttime hour (days).
+    THEOREM: PlanetaryHoursProfile stores the day ruler, solar bounds, and twenty-four planetary hours for one date.
+
+    RITE OF PURPOSE:
+        This vessel exposes the full planetary-hours product as one structured
+        result: day rulership, sunrise and sunset boundaries, all twenty-four
+        unequal hours, and the daytime and nighttime hour lengths. It exists so
+        callers can inspect the complete daily profile without recomputing spans
+        or coordinating multiple helper returns.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry the planetary day witness and solar boundary Julian Days.
+            - Carry all twenty-four planetary hour witnesses in order.
+            - Carry the derived daytime and nighttime hour lengths.
+        Non-responsibilities:
+            - Solving solar altitude or sunrise/sunset events on its own.
+            - Interpreting the hours beyond the exposed daily structure.
+        Dependencies:
+            - Built by `planetary_hours_profile()` from `PlanetaryDayInfo` and `PlanetaryHour` vessels.
+            - Depends on sunrise, sunset, and next-sunrise truth admitted by this Pillar.
+
+    Canon: Vettius Valens; medieval planetary hours doctrine
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.cycles.PlanetaryHoursProfile",
+      "risk": "low",
+      "api": {
+        "frozen": [
+          "day_info",
+          "sunrise_jd",
+          "sunset_jd",
+          "next_sunrise_jd",
+          "hours",
+          "day_hour_length",
+          "night_hour_length"
+        ],
+        "internal": []
+      },
+      "state": {"mutable": false, "owners": ["planetary_hours_profile"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "failures": {"policy": "raise_by_constructor_if_added"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     day_info:          PlanetaryDayInfo

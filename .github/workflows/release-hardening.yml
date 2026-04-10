@@ -1,0 +1,35 @@
+name: Release Hardening
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  release-hardening:
+    name: Release Hardening Gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install package and test dependencies
+        run: python -m pip install -e ".[dev]"
+
+      - name: Check release-facing doc consistency
+        run: python scripts/check_doc_consistency.py
+
+      - name: Run public surface and release hardening suites
+        run: |
+          python -m pytest tests/unit/test_public_api_drift.py -q
+          python -m pytest tests/unit/test_public_doctrine_surfaces.py -q
+          python -m pytest tests/unit/test_dasha.py -q
+          python -m pytest tests/unit/test_timelords.py -q
+          python -m pytest tests/unit/test_cycles.py -q

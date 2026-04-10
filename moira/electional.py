@@ -1,63 +1,48 @@
 """
 Moira — electional.py
-Electional Search Engine: governs time-window scanning to find moments that
-satisfy caller-supplied chart conditions.
-
-Archetype: Engine
 
 Purpose
 -------
-Provides a deterministic scanner that evaluates a caller-supplied predicate
-over a sequence of ChartContext snapshots within a given time range, returning
-the qualifying windows as typed result vessels.
+This Pillar provides the electional search Engine: a deterministic scan over a
+Julian-Day range that evaluates a caller-supplied predicate against successive
+`ChartContext` snapshots and returns either merged qualifying windows or the
+raw qualifying moments.
 
-Boundary declaration
---------------------
+Boundary
+--------
 Owns:
-    - ElectionalWindow  — result vessel for one qualifying time window.
-    - ElectionalPolicy  — frozen policy governing scan step and merge tolerance.
-    - find_electional_windows() — primary scanner entry point.
-    - find_electional_moments() — returns individual qualifying JDs rather than
-      merged windows.
+    - `ElectionalPolicy` — frozen search doctrine for scan cadence, merge
+      tolerance, house-system choice, and optional body subset.
+    - `ElectionalWindow` — immutable witness vessel for one merged qualifying span.
+    - `find_electional_windows()` — public merged-window search surface.
+    - `find_electional_moments()` — public raw-moment search surface.
 Delegates:
-    - Chart construction to moira.chart.create_chart.
-    - All positional truth to the engine modules called by create_chart.
-    - Kernel I/O to moira.spk_reader.
+    - Chart assembly to `moira.chart.create_chart`.
+    - Positional and house truth to the Pillars called by `create_chart()`.
+    - Kernel access to `moira.spk_reader`.
+    - Best-effort UTC repr formatting to `moira.julian`.
 
-Import-time side effects: None
+Import-time side effects
+------------------------
+None.
 
-External dependency assumptions:
-    - DE441 kernel must be accessible via moira.spk_reader.get_reader().
-    - Caller-supplied predicate must accept a ChartContext and return bool.
-    - Predicate must be pure (no side effects, deterministic for a given JD).
+External dependency assumptions
+-------------------------------
+- A compatible planetary kernel must be discoverable when `reader` is omitted.
+- The caller-supplied predicate must accept `ChartContext` and return `bool`.
+- The predicate is expected to be pure and deterministic for a given chart.
+- Search cadence is discrete; this Pillar does not refine truth between scan points.
 
-Design notes
-------------
-The engine does not encode any astrological doctrine about what constitutes a
-"good" election. That is the caller's responsibility via the predicate. The
-engine answers only: "which moments in this range satisfy your condition?"
-
-The predicate receives a fully populated ChartContext — planets, nodes, houses,
-is_day — so the caller has access to every engine primitive without needing to
-re-derive positions.
-
-Window merging doctrine
------------------------
-Consecutive qualifying JDs that are separated by no more than
-``policy.merge_gap_days`` are merged into a single ElectionalWindow. This
-prevents a 1-hour scan step from producing hundreds of single-point windows
-when a condition holds for several hours. The merge gap defaults to 1.5× the
-scan step, which is the smallest value that guarantees no false splits from
-floating-point step accumulation.
-
-Public surface / exports:
-    ElectionalPolicy, ElectionalWindow,
-    find_electional_windows, find_electional_moments
+Public surface / exports
+------------------------
+`ElectionalPolicy`, `ElectionalWindow`, `find_electional_windows`,
+`find_electional_moments`
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 from typing import Callable
 
 from .chart import ChartContext, create_chart
@@ -80,39 +65,72 @@ __all__ = [
 @dataclass(frozen=True, slots=True)
 class ElectionalPolicy:
     """
-    Governing policy for an electional search.
+    RITE: Search doctrine vessel for electional scanning.
 
-    Fields
-    ------
-    step_days : float
-        Scan step in fractional days. Smaller values increase precision at the
-        cost of more chart constructions. Default 1/24 (one hour).
-        Must be > 0.
+    THEOREM: ElectionalPolicy stores the caller-visible cadence and merge doctrine for the electional search Engine.
 
-    merge_gap_days : float | None
-        Maximum gap between consecutive qualifying JDs that will be merged into
-        a single ElectionalWindow. When None, defaults to 1.5 × step_days.
-        Set to 0.0 to disable merging (each qualifying JD becomes its own window).
+    RITE OF PURPOSE:
+        This vessel keeps electional search policy explicit instead of burying
+        cadence, merge tolerance, house-system choice, or body selection inside
+        the scanner. Without it, the Pillar would rely on ambient defaults and
+        the search contract would be less inspectable.
 
-    house_system : str
-        House system code passed to create_chart(). Defaults to Placidus.
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry step cadence in fractional days.
+            - Carry merge-gap doctrine for consecutive qualifying scan points.
+            - Carry requested house-system code and optional body subset.
+            - Normalize the body subset into immutable tuple form.
+        Non-responsibilities:
+            - Conducting any search.
+            - Constructing charts.
+            - Refining exact transition boundaries between scan points.
+        Dependencies:
+            - `moira.chart.create_chart()` consumes this vessel's house-system
+              and body policy.
+        Structural invariants:
+            - `step_days > 0`
+            - `merge_gap_days is None or merge_gap_days >= 0`
+            - `bodies is None or isinstance(bodies, tuple)`
+        Failure behavior:
+            - Raises `ValueError` for invalid cadence or merge-gap inputs.
 
-    bodies : list[str] | None
-        Body list passed to create_chart(). None uses the engine default
-        (Sun through Pluto only). Chiron remains explicit opt-in.
+    Canon: None (No applicable canon)
 
-    Raises
-    ------
-    ValueError
-        If step_days <= 0.
-        If merge_gap_days < 0.
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.electional.ElectionalPolicy",
+      "risk": "medium",
+      "api": {
+        "frozen": ["step_days", "merge_gap_days", "house_system", "bodies", "effective_merge_gap"],
+        "internal": ["__post_init__"]
+      },
+      "state": {"mutable": false, "owners": []},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "failures": {"policy": "raise"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
     step_days:      float       = 1.0 / 24.0   # one hour
     merge_gap_days: float | None = None          # defaults to 1.5 × step_days
     house_system:   str          = HouseSystem.PLACIDUS
-    bodies:         list[str] | None = None
+    bodies:         tuple[str, ...] | None = None
 
     def __post_init__(self) -> None:
+        """
+        Enforce structural constraints and freeze any caller-supplied body list.
+
+        Side effects:
+            - Rebinds `bodies` to an immutable tuple when the caller supplied a
+              mutable sequence.
+
+        Raises:
+            ValueError: If `step_days <= 0` or `merge_gap_days < 0`.
+        """
         if self.step_days <= 0:
             raise ValueError(
                 f"ElectionalPolicy: step_days must be > 0, got {self.step_days!r}"
@@ -121,10 +139,12 @@ class ElectionalPolicy:
             raise ValueError(
                 f"ElectionalPolicy: merge_gap_days must be >= 0, got {self.merge_gap_days!r}"
             )
+        if self.bodies is not None:
+            object.__setattr__(self, "bodies", tuple(self.bodies))
 
     @property
     def effective_merge_gap(self) -> float:
-        """Resolved merge gap in days (1.5 × step_days when not explicitly set)."""
+        """Return the resolved merge gap, defaulting to `1.5 * step_days` when unset."""
         if self.merge_gap_days is None:
             return self.step_days * 1.5
         return self.merge_gap_days
@@ -137,38 +157,95 @@ class ElectionalPolicy:
 @dataclass(frozen=True, slots=True)
 class ElectionalWindow:
     """
-    A contiguous time window during which the electional predicate is satisfied.
+    RITE: Merged witness vessel of a qualifying electional span.
 
-    Fields
-    ------
-    jd_start : float
-        Julian Day (UT) of the first qualifying scan point in this window.
+    THEOREM: ElectionalWindow stores one contiguous merged span of qualifying scan points together with its boundary JDs and duration.
 
-    jd_end : float
-        Julian Day (UT) of the last qualifying scan point in this window.
-        Equal to jd_start when the window contains only one qualifying moment.
+    RITE OF PURPOSE:
+        This vessel gives electional search a stable public result shape. It
+        preserves both the merged window boundaries and the underlying
+        qualifying scan points so callers can inspect what the search witnessed
+        without reconstructing the scan history themselves.
 
-    duration_hours : float
-        Length of the window in decimal hours. Zero when jd_start == jd_end.
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry the first and last qualifying JDs of one merged span.
+            - Carry the exact scan points merged into the span.
+            - Carry the derived duration in hours.
+            - Enforce structural coherence at construction.
+        Non-responsibilities:
+            - Conducting the search.
+            - Refining exact boundary times between scan points.
+            - Producing rich presentation output beyond a concise repr.
+        Dependencies:
+            - `datetime_from_jd()` is used only for best-effort repr formatting.
+        Structural invariants:
+            - `jd_start <= jd_end`
+            - `len(qualifying_jds) >= 1`
+            - `qualifying_jds[0] == jd_start`
+            - `qualifying_jds[-1] == jd_end`
+            - `duration_hours == (jd_end - jd_start) * 24`
+        Failure behavior:
+            - Raises `ValueError` when any invariant is violated.
 
-    qualifying_jds : tuple[float, ...]
-        All individual qualifying Julian Days within this window, in
-        chronological order. Always contains at least one entry.
+    Canon: None (No applicable canon)
 
-    Structural invariants
-    ---------------------
-    - jd_start <= jd_end
-    - duration_hours == (jd_end - jd_start) * 24
-    - len(qualifying_jds) >= 1
-    - qualifying_jds[0] == jd_start
-    - qualifying_jds[-1] == jd_end
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.electional.ElectionalWindow",
+      "risk": "medium",
+      "api": {
+        "frozen": ["jd_start", "jd_end", "duration_hours", "qualifying_jds"],
+        "internal": ["__post_init__", "__repr__"]
+      },
+      "state": {"mutable": false, "owners": ["_make_window"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "failures": {"policy": "raise"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
     jd_start:       float
     jd_end:         float
     duration_hours: float
     qualifying_jds: tuple[float, ...]
 
+    def __post_init__(self) -> None:
+        """
+        Enforce the documented boundary, duration, and ordering invariants.
+
+        Raises:
+            ValueError: If any window invariant is violated.
+        """
+        if not self.qualifying_jds:
+            raise ValueError("ElectionalWindow.qualifying_jds must contain at least one JD")
+        if not math.isfinite(self.jd_start) or not math.isfinite(self.jd_end):
+            raise ValueError("ElectionalWindow jd bounds must be finite")
+        if self.jd_start > self.jd_end:
+            raise ValueError(
+                f"ElectionalWindow.jd_start ({self.jd_start}) must be <= jd_end ({self.jd_end})"
+            )
+        if self.qualifying_jds[0] != self.jd_start:
+            raise ValueError("ElectionalWindow.qualifying_jds[0] must equal jd_start")
+        if self.qualifying_jds[-1] != self.jd_end:
+            raise ValueError("ElectionalWindow.qualifying_jds[-1] must equal jd_end")
+        expected_duration = (self.jd_end - self.jd_start) * 24.0
+        if not math.isclose(self.duration_hours, expected_duration, abs_tol=1e-12):
+            raise ValueError(
+                "ElectionalWindow.duration_hours must equal (jd_end - jd_start) * 24"
+            )
+
     def __repr__(self) -> str:
+        """
+        Return a concise UTC-oriented summary of the merged electional window.
+
+        Side effects:
+            - Calls `datetime_from_jd()` for best-effort UTC formatting and
+              falls back to raw JD text if conversion is unavailable.
+        """
         try:
             dt = datetime_from_jd(self.jd_start)
             dt_str = dt.strftime("%Y-%m-%d %H:%M UTC")
@@ -190,9 +267,14 @@ def _merge_jds(
     merge_gap: float,
 ) -> list[ElectionalWindow]:
     """
-    Merge a sorted list of qualifying JDs into ElectionalWindow vessels.
+    Merge sorted qualifying scan points into contiguous electional windows.
 
-    Consecutive JDs separated by <= merge_gap are grouped into one window.
+    Behavior:
+        Consecutive JDs separated by no more than `merge_gap` are grouped into
+        the same `ElectionalWindow`; larger gaps start a new merged window.
+
+    Failure behavior:
+        Expects `qualifying` to already be in chronological order.
     """
     if not qualifying:
         return []
@@ -212,6 +294,7 @@ def _merge_jds(
 
 
 def _make_window(group: list[float]) -> ElectionalWindow:
+    """Materialize one merged `ElectionalWindow` from a non-empty chronological JD group."""
     jd_start = group[0]
     jd_end   = group[-1]
     return ElectionalWindow(
@@ -236,11 +319,12 @@ def find_electional_windows(
     reader:    SpkReader | None = None,
 ) -> list[ElectionalWindow]:
     """
-    Scan a time range and return windows where the predicate is satisfied.
+    Scan a Julian-Day range and return merged windows where the predicate holds.
 
-    Constructs a ChartContext at each scan step and evaluates the predicate.
-    Consecutive qualifying moments separated by no more than
-    ``policy.effective_merge_gap`` are merged into a single ElectionalWindow.
+    Behavior:
+        Constructs a `ChartContext` at each discrete scan point, evaluates the
+        caller predicate, records qualifying JDs, then merges adjacent
+        qualifying points using `policy.effective_merge_gap`.
 
     Parameters
     ----------
@@ -281,7 +365,11 @@ def find_electional_windows(
         If latitude or longitude are out of range (delegated to create_chart).
 
     Side effects
-        Initialises the SpkReader singleton on first call if reader is None.
+        Initialises the `SpkReader` singleton on first call if `reader` is None.
+
+    Concurrency contract
+        Pure with respect to module state except for lazy singleton reader
+        initialization when `reader` is omitted.
     """
     if jd_start >= jd_end:
         raise ValueError(
@@ -323,11 +411,11 @@ def find_electional_moments(
     reader:    SpkReader | None = None,
 ) -> list[float]:
     """
-    Scan a time range and return individual qualifying Julian Days.
+    Scan a Julian-Day range and return the raw qualifying scan points.
 
-    Identical to find_electional_windows() but returns the raw list of
-    qualifying JDs rather than merged windows. Useful when the caller wants
-    to apply their own grouping logic or simply needs the timestamps.
+    Behavior:
+        Conducts the same discrete chart scan as `find_electional_windows()`
+        but skips the merge stage and returns the qualifying JDs directly.
 
     Parameters
     ----------
@@ -349,6 +437,9 @@ def find_electional_moments(
     ValueError
         If jd_start >= jd_end.
         If latitude or longitude are out of range (delegated to create_chart).
+
+    Side effects
+        Initialises the `SpkReader` singleton on first call if `reader` is None.
     """
     if jd_start >= jd_end:
         raise ValueError(

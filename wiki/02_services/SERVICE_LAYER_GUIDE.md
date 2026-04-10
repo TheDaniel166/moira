@@ -14,7 +14,7 @@ When a service method (e.g., `m.conjunctions()`) is invoked, the facade executes
 2. **UT → TT Bridge**: The JD UT is translated to Terrestrial Time (JD TT) by adding ΔT/86400, where ΔT is interpolated from multi-era historical tables spanning 1600 CE to 2500 CE.
 3. **Subsystem Delegation**: The call is routed to its sovereign module (e.g., `phenomena.py`, `dasha.py`) while passing the `Moira` instance's own `_reader` to ensure I/O consistency.
 4. **Truth Extraction**: The subsystem derives truth from the raw SPK state vectors, applying the full apparent-position pipeline where required.
-5. **Vessel Manifestation**: The result is decanted into a typed `slots`-optimized vessel and returned to the caller. Most result records are immutable, but the root `moira.Chart` vessel remains mutable by design in the current package surface.
+5. **Vessel Manifestation**: The result is decanted into a typed `slots`-optimized vessel and returned to the caller. All result records are immutable. The root `moira.Chart` vessel is `frozen=True, slots=True` as of 2.0.0.
 
 ### 1.2 The Full Method Inventory
 
@@ -793,7 +793,7 @@ class HousePlacement:
 
 ## 8. The Vessels of Truth (Schema Rigidness)
 
-Every service output is governed by the **Law of the Record**. Results must be decanted into strictly-typed vessels. Most doctrinal and policy records are immutable; the root `moira.Chart` vessel is a mutable snapshot that callers are expected to treat as read-only after construction.
+Every service output is governed by the **Law of the Record**. Results must be decanted into strictly-typed vessels. All doctrinal, policy, and result records are immutable. The root `moira.Chart` vessel is `frozen=True, slots=True` as of 2.0.0; it cannot be mutated after construction.
 
 ### 8.1 Core Positional Vessels
 
@@ -820,7 +820,7 @@ class SkyPosition:
     altitude: float         # degrees above horizon
     distance: float         # km
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class Chart:
     jd_ut: float
     planets: dict[str, PlanetData]
@@ -845,7 +845,7 @@ All data vessels obey these laws:
 
 | Invariant | Enforcement |
 |-----------|-------------|
-| **Immutability** | Default for doctrinal/policy/result records where mutation would change meaning. The root `Chart` vessel is the main exception and is mutable by implementation. |
+| **Immutability** | All doctrinal, policy, and result records are immutable. The root `Chart` vessel is `frozen=True, slots=True` as of 2.0.0. |
 | **Truth Preservation** | Vessels record the computational path (e.g., `year_basis`, `effective_system`) |
 | **No Interpretation** | Vessels carry raw truth; interpretation is the caller's responsibility |
 | **Self-Describing** | Classification enums and profiles are attached, never implied |

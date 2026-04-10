@@ -1,6 +1,6 @@
 ﻿# Moira API Reference
 
-**Version:** 1.0.3
+**Version:** 2.0.0
 **Coverage:** 13 200 BC → 17 191 AD (JPL DE441)
 **Import surface:** `import moira` provides the curated stable root, while `from moira.facade import ...` exposes the complete direct-import surface.
 

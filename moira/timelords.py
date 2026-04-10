@@ -2,39 +2,55 @@ from __future__ import annotations
 
 """
 Moira — timelords.py
-The Timelord Engine: governs Firdaria and Zodiacal Releasing time-lord
-period computation.
 
-Boundary: owns Firdaria sequence arithmetic, Chaldean sub-period generation,
-Zodiacal Releasing period recursion, Loosing of the Bond handling, and active-
-period lookup. Delegates domicile ruler lookup to profections. Delegates
-Julian Day arithmetic to julian. Does NOT own natal chart construction or
-ephemeris state.
+Purpose
+-------
+This Pillar provides the timelord Engine surfaces for Firdaria and Zodiacal
+Releasing: sequence construction, hierarchical grouping, active-period lookup,
+condition profiles, aggregate profiles, and structural Guardians for both
+time-lord families.
 
-Public surface:
-    FIRDARIA_DIURNAL, FIRDARIA_NOCTURNAL, FIRDARIA_NOCTURNAL_BONATTI,
-    CHALDEAN_ORDER,
-    MINOR_YEARS,
-    FirdarSequenceKind, ZRAngularityClass,
-    FirdarYearPolicy, ZRYearPolicy, TimelordComputationPolicy,
-    DEFAULT_TIMELORD_POLICY,
-    FirdarPeriod, ReleasingPeriod,
-    FirdarMajorGroup, ZRPeriodGroup,
-    FirdarConditionProfile, ZRConditionProfile,
-    FirdarSequenceProfile, ZRSequenceProfile,
-    FirdarActivePair, ZRLevelPair,
-    firdaria, current_firdaria,
-    zodiacal_releasing, current_releasing,
-    group_firdaria, group_releasing,
-    firdar_condition_profile, zr_condition_profile,
-    firdar_sequence_profile, zr_sequence_profile,
-    firdar_active_pair, zr_level_pair,
-    validate_firdaria_output, validate_releasing_output
+Boundary
+--------
+Owns:
+    - Firdaria sequence arithmetic and sub-period allocation.
+    - Zodiacal Releasing recursion, angularity classification, and Loosing of
+      the Bond handling.
+    - Timelord policy vessels, result vessels, relational vessels, and
+      validation Guardians.
+Delegates:
+    - Domicile ruler lookup to `moira.profections`.
+    - Calendar conversion and Julian-Day formatting views to `moira.julian`.
+Does not own:
+    - Natal chart construction.
+    - Ephemeris state or astronomical substrate computation.
+    - Lot calculation outside the caller-supplied inputs.
 
-Import-time side effects: None
+Import-time side effects
+------------------------
+None.
 
-External dependency assumptions:
-    - No third-party packages; stdlib only plus internal moira modules.
+External dependency assumptions
+-------------------------------
+- No third-party runtime dependencies beyond internal Moira Pillars and stdlib.
+- Callers provide Julian Days and lot longitudes that already satisfy their own
+  doctrinal preconditions.
+- This Pillar is symbolic-temporal; it does not query kernels or live
+  astronomical state directly.
+
+Public surface / exports
+------------------------
+`FIRDARIA_DIURNAL`, `FIRDARIA_NOCTURNAL`, `FIRDARIA_NOCTURNAL_BONATTI`,
+`CHALDEAN_ORDER`, `MINOR_YEARS`, `FirdarSequenceKind`, `ZRAngularityClass`,
+`FirdarYearPolicy`, `ZRYearPolicy`, `TimelordComputationPolicy`,
+`DEFAULT_TIMELORD_POLICY`, `FirdarPeriod`, `ReleasingPeriod`,
+`FirdarMajorGroup`, `ZRPeriodGroup`, `FirdarConditionProfile`,
+`ZRConditionProfile`, `FirdarSequenceProfile`, `ZRSequenceProfile`,
+`FirdarActivePair`, `ZRLevelPair`, `firdaria`, `current_firdaria`,
+`zodiacal_releasing`, `current_releasing`, `group_firdaria`,
+`group_releasing`, `firdar_condition_profile`, `zr_condition_profile`,
+`firdar_sequence_profile`, `zr_sequence_profile`, `firdar_active_pair`,
+`zr_level_pair`, `validate_firdaria_output`, `validate_releasing_output`
 """
 
 from dataclasses import dataclass, field
@@ -104,14 +120,47 @@ __all__ = [
 
 class FirdarSequenceKind:
     """
-    Typed classification of which Firdaria sequence generated a period.
+    RITE: Classification namespace for Firdaria sequence lineage.
 
-    Collapses the Phase-1 (is_day_chart, variant) pair into a single named
-    constant so that later layers do not need to branch on two booleans.
+    THEOREM: FirdarSequenceKind provides the canonical string constants that identify which admitted Firdaria sequence generated a period.
 
-    DIURNAL            — day-chart sequence (Sun leads)
-    NOCTURNAL_STANDARD — night-chart standard sequence (Moon leads)
-    NOCTURNAL_BONATTI  — night-chart Bonatti variant (nodes interleaved early)
+    RITE OF PURPOSE:
+        This namespace collapses the older `(is_day_chart, variant)` pair into
+        one public classification surface so later layers can carry one named
+        doctrine token instead of re-deriving sequence lineage from multiple
+        fields.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Name the admitted Firdaria sequence families.
+            - Provide stable public constants for vessel classification.
+        Non-responsibilities:
+            - Computing Firdaria periods.
+            - Enforcing sequence validity at runtime.
+        Dependencies:
+            - Consumed by `_firdar_sequence_kind()` and downstream vessels.
+        Structural invariants:
+            - All public attributes are stable string constants.
+
+    Canon: Demetra George, "Ancient Astrology in Theory and Practice" Vol.II
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.timelords.FirdarSequenceKind",
+      "risk": "low",
+      "api": {
+        "frozen": ["DIURNAL", "NOCTURNAL_STANDARD", "NOCTURNAL_BONATTI"],
+        "internal": []
+      },
+      "state": {"mutable": false, "owners": []},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "constant_namespace", "cross_thread_calls": "safe"},
+      "failures": {"policy": "n/a"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
     DIURNAL            = "diurnal"
     NOCTURNAL_STANDARD = "nocturnal_standard"
@@ -120,15 +169,47 @@ class FirdarSequenceKind:
 
 class ZRAngularityClass:
     """
-    Typed classification of a Zodiacal Releasing period's angular house
-    position relative to the Lot of Fortune.
+    RITE: Classification namespace for Fortune-relative angularity in Zodiacal Releasing.
 
-    Classifies the raw house number stored in angularity_from_fortune
-    (int | None) into the traditional three-fold Hellenistic distinction:
+    THEOREM: ZRAngularityClass provides the canonical three-fold angularity labels for a Zodiacal Releasing period's house position from Fortune.
 
-    ANGULAR   — houses 1, 4, 7, 10 from Fortune (most active)
-    SUCCEDENT — houses 2, 5, 8, 11 from Fortune (moderate)
-    CADENT    — houses 3, 6, 9, 12 from Fortune (weakest)
+    RITE OF PURPOSE:
+        This namespace turns raw Fortune-relative house counts into one stable
+        symbolic vocabulary so downstream condition profiles and aggregate
+        surfaces do not have to repeatedly translate numeric houses into
+        angular, succedent, or cadent doctrine.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Name the admitted angularity classes.
+            - Provide stable public constants for profile and vessel surfaces.
+        Non-responsibilities:
+            - Computing Fortune-relative houses.
+            - Deciding angularity from astronomical positions.
+        Dependencies:
+            - Consumed by `_zr_angularity_class()` and downstream ZR vessels.
+        Structural invariants:
+            - All public attributes are stable string constants.
+
+    Canon: Vettius Valens, *Anthologies* (Zodiacal Releasing doctrine lineage)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.timelords.ZRAngularityClass",
+      "risk": "low",
+      "api": {
+        "frozen": ["ANGULAR", "SUCCEDENT", "CADENT"],
+        "internal": []
+      },
+      "state": {"mutable": false, "owners": []},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "constant_namespace", "cross_thread_calls": "safe"},
+      "failures": {"policy": "n/a"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
     ANGULAR   = "angular"
     SUCCEDENT = "succedent"
@@ -371,18 +452,51 @@ class FirdarMajorGroup:
     """
     RITE: The Firdar Major Group Vessel
 
-    Formalizes the containment relation between a Firdaria major period and
-    the sub-periods it governs.
+    THEOREM: FirdarMajorGroup binds one major Firdaria period to the sub-periods it governs.
 
-    Previously this relation was implicit — callers had to filter the flat
-    firdaria() list by level and match sub-periods by major_planet field and
-    JD overlap. FirdarMajorGroup makes the grouping explicit and named.
+    RITE OF PURPOSE:
+        This vessel makes Firdaria containment explicit. Without it, callers
+        would have to reconstruct the relation between level-1 and level-2
+        periods by filtering a flat list and trusting contextual fields and JD
+        overlap. It preserves that relation as a first-class public object.
 
-    Fields
-    ------
-    major   — the level-1 major period
-    subs    — level-2 sub-periods belonging to this major, in chronological
-              order (empty list for node periods when not subdivided)
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry one level-1 major period and its level-2 sub-periods.
+            - Enforce level correctness and chronological ordering.
+            - Provide an inspectable relational surface for Firdaria groups.
+        Non-responsibilities:
+            - Computing major or sub-period boundaries.
+            - Resolving active periods from a query JD.
+        Dependencies:
+            - Populated by `group_firdaria()`.
+            - Consumes `FirdarPeriod` vessels produced by `firdaria()`.
+        Structural invariants:
+            - `major.level == 1`
+            - every member of `subs` has `level == 2`
+            - `subs` are in chronological order
+        Failure behavior:
+            - Raises `ValueError` when level or ordering invariants are broken.
+
+    Canon: Demetra George, "Ancient Astrology in Theory and Practice" Vol.II
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.timelords.FirdarMajorGroup",
+      "risk": "medium",
+      "api": {
+        "frozen": ["major", "subs"],
+        "internal": ["__post_init__"]
+      },
+      "state": {"mutable": true, "owners": ["group_firdaria"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
     major: FirdarPeriod
     subs:  list[FirdarPeriod]
@@ -1143,27 +1257,66 @@ def firdar_condition_profile(period: FirdarPeriod) -> FirdarConditionProfile:
 @dataclass(slots=True)
 class ZRConditionProfile:
     """
-    Integrated local condition profile for a single Zodiacal Releasing period.
+    RITE: The Zodiacal Releasing Condition Profile Vessel
 
-    Assembles all preserved, classified, and inspectable truth from
-    Phases 1–6 into one coherent per-period vessel. Callers do not need to
-    join fields from ReleasingPeriod, ZRAngularityClass, and the generation
-    context to understand what kind of releasing period they are examining.
+    THEOREM: Governs the integrated doctrinal profile for one Zodiacal Releasing period.
 
-    Fields
-    ------
-    sign                    — the releasing sign for this period
-    ruler                   — the classical domicile ruler of the sign
-    level                   — 1–4
-    level_name              — human-readable label: "Level 1" through "Level 4"
-    lot_name                — the lot from which this releasing originates
-    years                   — nominal duration in Zodiacal Releasing years
-    days                    — duration in Julian days
-    is_loosing_of_bond      — True when this period triggers the Loosing of the Bond
-    is_peak_period          — True when this sign is angular from the Lot of Fortune
-    angularity_from_fortune — house distance from Fortune (1–12), or None
-    angularity_class        — ZRAngularityClass string, or None if not a peak period
-    use_loosing_of_bond     — whether Loosing of the Bond doctrine was active during generation
+    RITE OF PURPOSE:
+        ZRConditionProfile is the public vessel that gathers the preserved context,
+        classification truth, and inspectable condition flags of one releasing
+        period into a single record. It exists so callers can inspect the local
+        doctrinal state of a period without stitching fields together from the
+        raw `ReleasingPeriod` vessel and the classification layer by hand.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry the sign, ruler, level, duration, and lot identity of one releasing period.
+            - Carry the Loosing of the Bond and peak-period classifications admitted by this Pillar.
+            - Serve as the per-period witness used by aggregate sequence and relation vessels.
+        Non-responsibilities:
+            - Computing releasing boundaries or sign transitions.
+            - Deciding angularity classes independently of the originating period truth.
+        Dependencies:
+            - Built from `ReleasingPeriod` by `zr_condition_profile()`.
+            - Depends on `ZRAngularityClass` semantics for peak-period classification.
+        Structural invariants:
+            - `level` is a Zodiacal Releasing level admitted by this Pillar.
+            - `angularity_class` is either `None` or a `ZRAngularityClass` value.
+        Behavioral invariants:
+            - The vessel preserves the originating period truth without reinterpretation.
+
+    Canon: Vettius Valens, Anthology IV; Chris Brennan, *Hellenistic Astrology* Ch.10
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.timelords.ZRConditionProfile",
+      "risk": "medium",
+      "api": {
+        "frozen": [
+          "sign",
+          "ruler",
+          "level",
+          "level_name",
+          "lot_name",
+          "years",
+          "days",
+          "is_loosing_of_bond",
+          "is_peak_period",
+          "angularity_from_fortune",
+          "angularity_class",
+          "use_loosing_of_bond"
+        ],
+        "internal": []
+      },
+      "state": {"mutable": true, "owners": ["zr_condition_profile"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise_by_constructor_if_added"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
     sign:                    str
     ruler:                   str
@@ -1218,24 +1371,60 @@ def zr_condition_profile(period: ReleasingPeriod) -> ZRConditionProfile:
 @dataclass(slots=True)
 class FirdarSequenceProfile:
     """
-    Chart-wide aggregate over a complete Firdaria major-period sequence.
+    RITE: The Firdaria Sequence Profile Vessel
 
-    Derived from FirdarConditionProfile vessels (Phase 7). Summarises the
-    structural composition of an entire 75-year Firdaria cycle — how many
-    periods of each lord-type, the total nominal years, and the sequence kind.
+    THEOREM: Governs the aggregate structural profile of a complete Firdaria major-period sequence.
 
-    The profiles tuple contains only level-1 (major) profiles in the order
-    they appear in the source firdaria() list.
+    RITE OF PURPOSE:
+        FirdarSequenceProfile is the public aggregate vessel for chart-wide
+        Firdaria sequence truth. It exists so callers can inspect the major-period
+        composition of an entire cycle, including lord-type counts and total years,
+        without recomputing those summaries from the flat period list each time.
 
-    Fields
-    ------
-    profiles              — major-period condition profiles in sequence order
-    major_count           — total number of major periods
-    luminary_major_count  — majors whose lord is a luminary (Sun or Moon)
-    planet_major_count    — majors whose lord is one of the five traditional planets
-    node_major_count      — majors whose lord is a node (North Node or South Node)
-    total_major_years     — sum of nominal years across all major periods
-    sequence_kind         — FirdarSequenceKind constant shared by all profiles, or None
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry the ordered major-period condition profiles of one Firdaria cycle.
+            - Carry aggregate counts by lord type and total major years.
+            - Preserve the shared sequence-kind classification of the underlying series.
+        Non-responsibilities:
+            - Generating the underlying Firdaria periods.
+            - Interpreting aggregate counts beyond the exposed structural summary.
+        Dependencies:
+            - Built from `FirdarConditionProfile` witnesses by `firdar_sequence_profile()`.
+            - Depends on `FirdarSequenceKind` doctrine admitted by this Pillar.
+        Structural invariants:
+            - `major_count` equals `len(profiles)`.
+            - Lord-type counts match the supplied profile tuple and sum to `major_count`.
+        Failure behavior:
+            - Raises `ValueError` when aggregate counts do not match the supplied profiles.
+
+    Canon: Abu Ma'shar, *The Abbreviation of the Introduction to Astrology*; Guido Bonatti, *Liber Astronomiae*
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.timelords.FirdarSequenceProfile",
+      "risk": "medium",
+      "api": {
+        "frozen": [
+          "profiles",
+          "major_count",
+          "luminary_major_count",
+          "planet_major_count",
+          "node_major_count",
+          "total_major_years",
+          "sequence_kind"
+        ],
+        "internal": ["profile_count", "has_node_majors"]
+      },
+      "state": {"mutable": true, "owners": ["firdar_sequence_profile"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
     profiles:             tuple["FirdarConditionProfile", ...]
     major_count:          int
@@ -1317,25 +1506,61 @@ def firdar_sequence_profile(periods: list[FirdarPeriod]) -> FirdarSequenceProfil
 @dataclass(slots=True)
 class ZRSequenceProfile:
     """
-    Chart-wide aggregate over a Zodiacal Releasing period sequence at a given level.
+    RITE: The Zodiacal Releasing Sequence Profile Vessel
 
-    Derived from ZRConditionProfile vessels (Phase 7). Summarises the structural
-    composition of a releasing sequence — how many peak periods, how many loosing-
-    of-bond events, and how the periods distribute across the three angular classes.
+    THEOREM: Governs the aggregate structural profile of a Zodiacal Releasing sequence at one level.
 
-    The profiles tuple contains profiles for the requested level in the order
-    they appear in the source zodiacal_releasing() list.
+    RITE OF PURPOSE:
+        ZRSequenceProfile is the chart-wide aggregate vessel for the doctrinal
+        composition of releasing periods at a chosen level. It exists so callers
+        can inspect peak-period frequency, Loosing of the Bond incidence, and
+        angular-class distribution without re-scanning the flat releasing list.
 
-    Fields
-    ------
-    profiles               — condition profiles at the aggregated level, in sequence order
-    period_count           — total number of profiles
-    peak_period_count      — profiles where is_peak_period == True
-    loosing_of_bond_count  — profiles where is_loosing_of_bond == True
-    angular_count          — peak periods with angularity_class == ANGULAR
-    succedent_count        — peak periods with angularity_class == SUCCEDENT
-    cadent_count           — peak periods with angularity_class == CADENT
-    total_years            — sum of nominal years across all profiles
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry the ordered condition profiles for one releasing level.
+            - Carry aggregate counts for peak periods, bond releases, and angular classes.
+            - Carry the total nominal years represented by the aggregated profiles.
+        Non-responsibilities:
+            - Generating the underlying releasing periods.
+            - Reclassifying periods beyond the supplied profile truth.
+        Dependencies:
+            - Built from `ZRConditionProfile` witnesses by `zr_sequence_profile()`.
+            - Depends on `ZRAngularityClass` semantics admitted by this Pillar.
+        Structural invariants:
+            - `period_count` equals `len(profiles)`.
+            - Angular-class counts match the supplied profiles and sum to `peak_period_count`.
+        Failure behavior:
+            - Raises `ValueError` when aggregate counts do not match the supplied profiles.
+
+    Canon: Vettius Valens, Anthology IV; Chris Brennan, *Hellenistic Astrology* Ch.10
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.timelords.ZRSequenceProfile",
+      "risk": "medium",
+      "api": {
+        "frozen": [
+          "profiles",
+          "period_count",
+          "peak_period_count",
+          "loosing_of_bond_count",
+          "angular_count",
+          "succedent_count",
+          "cadent_count",
+          "total_years"
+        ],
+        "internal": ["profile_count", "non_peak_count"]
+      },
+      "state": {"mutable": true, "owners": ["zr_sequence_profile"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
     profiles:              tuple["ZRConditionProfile", ...]
     period_count:          int
@@ -1436,21 +1661,51 @@ def zr_sequence_profile(
 @dataclass(slots=True)
 class FirdarActivePair:
     """
-    Network node: the simultaneously active major and sub Firdaria lords.
+    RITE: The Active Firdaria Pair Vessel
 
-    Projects the Phase 5 relation layer (FirdarMajorGroup) and Phase 7
-    condition profiles into an explicit structural edge between two lords that
-    are active at the same moment. This makes the "two lords simultaneously"
-    relationship available as a named, inspectable network unit rather than
-    two separate lookups.
+    THEOREM: Governs the simultaneously active major and sub-period Firdaria profiles at one Julian Day.
 
-    sub_profile is None when the active major period has no sub-periods
-    (e.g. a node major without subdivision).
+    RITE OF PURPOSE:
+        FirdarActivePair is the explicit relation vessel for the two-lord state
+        that Firdaria can produce at a given instant. It exists so callers can
+        inspect the active major and optional sub-period together as one public
+        object rather than running separate searches and reconstructing the pair.
 
-    Fields
-    ------
-    major_profile  — condition profile of the active level-1 (major) period
-    sub_profile    — condition profile of the active level-2 (sub) period, or None
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry the active major-period profile.
+            - Carry the active sub-period profile when subdivision exists.
+            - Expose simple relation predicates such as same-lord and node involvement.
+        Non-responsibilities:
+            - Locating the active periods in a period list.
+            - Interpreting the pair beyond the exposed relation predicates.
+        Dependencies:
+            - Built from `FirdarConditionProfile` witnesses by `firdar_active_pair()`.
+        Structural invariants:
+            - `major_profile` is always a major profile.
+            - `sub_profile` is `None` or a sub-period profile.
+        Failure behavior:
+            - Raises `ValueError` when supplied profiles violate the major/sub hierarchy.
+
+    Canon: Abu Ma'shar, *The Abbreviation of the Introduction to Astrology*; Guido Bonatti, *Liber Astronomiae*
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.timelords.FirdarActivePair",
+      "risk": "medium",
+      "api": {
+        "frozen": ["major_profile", "sub_profile"],
+        "internal": ["has_sub", "is_same_lord", "is_same_lord_type", "involves_node"]
+      },
+      "state": {"mutable": true, "owners": ["firdar_active_pair"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
     major_profile: FirdarConditionProfile
     sub_profile:   FirdarConditionProfile | None
@@ -1536,22 +1791,53 @@ def firdar_active_pair(
 @dataclass(slots=True)
 class ZRLevelPair:
     """
-    Network node: the structural relationship between two simultaneously
-    active Zodiacal Releasing periods at different hierarchical levels.
+    RITE: The Zodiacal Releasing Level Pair Vessel
 
-    Projects the Phase 5 relation layer (ZRPeriodGroup) and Phase 7
-    condition profiles into an explicit structural edge between two levels
-    active at the same moment. The house_distance field expresses the
-    ZR sign-distance from the upper (outer) level's sign to the lower
-    (inner) level's sign, following the standard ZR house-counting convention
-    (1 = same sign, 2 = next sign, … 12 = previous sign).
+    THEOREM: Governs the structural relation between two simultaneously active Zodiacal Releasing levels.
 
-    Fields
-    ------
-    upper_profile       — condition profile of the outer (lower level number, e.g. Level 1) period
-    lower_profile       — condition profile of the inner (higher level number, e.g. Level 2) period
-    house_distance      — ZR house distance from upper sign to lower sign (1–12)
-    signs_are_identical — True when both levels release from the same sign
+    RITE OF PURPOSE:
+        ZRLevelPair is the explicit relation vessel for the multi-level state of
+        Zodiacal Releasing. It exists so callers can inspect outer and inner
+        releasing levels together, including their sign-distance relation, without
+        reconstructing that geometry from two separate condition profiles.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry the outer and inner condition profiles active at the same instant.
+            - Carry the zodiacal house distance from the upper sign to the lower sign.
+            - Expose simple relation predicates such as adjacency and shared peak status.
+        Non-responsibilities:
+            - Locating active periods in a releasing list.
+            - Recomputing house distance from raw longitude rather than supplied sign truth.
+        Dependencies:
+            - Built from `ZRConditionProfile` witnesses by `zr_level_pair()`.
+            - Depends on the sign-ordering and house-counting doctrine admitted by this Pillar.
+        Structural invariants:
+            - `upper_profile.level` is lower than `lower_profile.level`.
+            - `house_distance` is an integer in the inclusive range 1..12.
+            - `signs_are_identical` matches the two supplied signs.
+        Failure behavior:
+            - Raises `ValueError` when the hierarchy, distance, or identical-sign flag is inconsistent.
+
+    Canon: Vettius Valens, Anthology IV; Chris Brennan, *Hellenistic Astrology* Ch.10
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.timelords.ZRLevelPair",
+      "risk": "medium",
+      "api": {
+        "frozen": ["upper_profile", "lower_profile", "house_distance", "signs_are_identical"],
+        "internal": ["is_adjacent_levels", "is_angular_distance", "is_peak_pair"]
+      },
+      "state": {"mutable": true, "owners": ["zr_level_pair"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
     upper_profile:       ZRConditionProfile  # outer period — lower level number (e.g. Level 1)
     lower_profile:       ZRConditionProfile  # inner period — higher level number (e.g. Level 2)
