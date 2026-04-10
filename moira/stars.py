@@ -295,6 +295,17 @@ def _load_provenance() -> dict[str, dict[str, object]]:
 
 @lru_cache(maxsize=1)
 def _load_registry_records() -> tuple[_SovereignStarRecord, ...]:
+    """Load sovereign registry rows and hydrate typed star records.
+
+    Merges CSV core data with optional lore/provenance JSON payloads.
+
+    Raises:
+        FileNotFoundError: If a required data file is missing.
+        KeyError: If required CSV columns are absent.
+        ValueError: If numeric coercion fails for required numeric fields.
+
+    Side effects: Reads local data files.
+    """
     lore = _load_lore()
     provenance = _load_provenance()
     records: list[_SovereignStarRecord] = []
@@ -336,6 +347,13 @@ def _build_indexes() -> tuple[
     dict[str, tuple[_SovereignStarRecord, ...]],
     dict[str, tuple[_SovereignStarRecord, ...]],
 ]:
+    """Build deterministic name/nomenclature lookup indexes for the catalog.
+
+    Returns exact and casefold maps for both traditional names and
+    nomenclature labels.
+
+    Side effects: None.
+    """
     by_name_exact: dict[str, _SovereignStarRecord] = {}
     by_name_folded: dict[str, list[_SovereignStarRecord]] = {}
     by_nomenclature_exact: dict[str, list[_SovereignStarRecord]] = {}
@@ -359,6 +377,10 @@ def _build_alias_indexes() -> tuple[
     dict[str, str],
     dict[str, tuple[str, ...]],
 ]:
+    """Build exact and casefold historical-alias lookup indexes.
+
+    Side effects: None.
+    """
     by_alias_exact = dict(_HISTORICAL_STAR_ALIASES)
     by_alias_folded: dict[str, list[str]] = {}
     for alias in _HISTORICAL_STAR_ALIASES:
@@ -371,6 +393,16 @@ def _resolve_catalog_star_record(
     key: str,
     policy: FixedStarLookupPolicy,
 ) -> tuple[_SovereignStarRecord, str]:
+    """Resolve a star against sovereign catalog names and nomenclature.
+
+    Returns ``(record, lookup_kind)`` where lookup_kind records which resolution
+    branch succeeded.
+
+    Raises:
+        KeyError: If no unambiguous match can be determined.
+
+    Side effects: None.
+    """
     by_name_exact, by_name_folded, by_nomenclature_exact, by_nomenclature_folded = _build_indexes()
 
     record = by_name_exact.get(query)
@@ -415,6 +447,14 @@ def _resolve_star_record(
     name: str,
     policy: FixedStarLookupPolicy,
 ) -> tuple[_SovereignStarRecord, str]:
+    """Resolve a user star name through catalog and historical alias layers.
+
+    Raises:
+        ValueError: If ``name`` is empty or not a string.
+        KeyError: If no unambiguous match can be resolved.
+
+    Side effects: None.
+    """
     if not isinstance(name, str) or not name.strip():
         raise ValueError("star name must be a non-empty string")
 
@@ -454,6 +494,12 @@ def _icrs_unit_vector(ra_deg: float, dec_deg: float) -> tuple[float, float, floa
 
 
 def _propagate_icrs_vector(record: _SovereignStarRecord, jd_tt: float) -> tuple[float, float, float]:
+    """Propagate ICRS unit vector from J2000 to requested TT epoch.
+
+    Applies proper motion in tangent-plane form and normalizes the result.
+
+    Side effects: None.
+    """
     dt_years = (jd_tt - _J2000) / 365.25
     if dt_years == 0.0:
         return _icrs_unit_vector(record.ra_deg, record.dec_deg)
@@ -538,6 +584,10 @@ def _emission_jd(record: _SovereignStarRecord, jd_tt: float) -> float:
 
 
 def _native_position(record: _SovereignStarRecord, jd_tt: float) -> tuple[float, float]:
+    """Return propagated true ecliptic longitude/latitude for a record at TT.
+
+    Side effects: None.
+    """
     xyz = _propagate_icrs_vector(record, jd_tt)
     lon, lat, _ = icrf_to_true_ecliptic(jd_tt, xyz)
     return lon, lat
@@ -549,6 +599,13 @@ def _build_fixed_star(
     lookup_kind: str,
     jd_tt: float,
 ) -> FixedStar:
+    """Construct the canonical FixedStar vessel from sovereign record data.
+
+    Populates truth/classification/relation/condition-profile metadata for the
+    unified star surface.
+
+    Side effects: None.
+    """
     longitude, latitude = _native_position(record, jd_tt)
     constellation = _constellation_for_star(record.name)
     classification = FixedStarClassification(
@@ -605,6 +662,12 @@ def _constellation_label_from_module_stem(stem: str) -> str:
 
 @lru_cache(maxsize=1)
 def _constellation_index() -> dict[str, str]:
+    """Build star-to-constellation map by scanning constellation modules.
+
+    Non-resolvable advertised names are skipped rather than raising.
+
+    Side effects: Imports constellation modules.
+    """
     package_dir = Path(__file__).resolve().parent / "constellations"
     memberships: dict[str, set[str]] = {}
     for module_path in sorted(package_dir.glob("stars_*.py")):
@@ -634,6 +697,11 @@ def _constellation_for_star(name: str) -> str | None:
 
 
 def load_catalog() -> None:
+    """Warm sovereign registry caches and lookup indexes.
+
+    Side effects: Reads local registry/lore/provenance files and builds in-memory
+    caches.
+    """
     _load_registry_records()
     _build_indexes()
 
@@ -644,6 +712,14 @@ def star_at(
     policy: UnifiedStarComputationPolicy | FixedStarComputationPolicy | None = None,
     **_: object,
 ) -> FixedStar:
+    """Return sovereign fixed-star position at TT epoch.
+
+    Raises:
+        ValueError: If ``jd_tt`` is non-finite.
+        KeyError: If star resolution fails.
+
+    Side effects: None.
+    """
     if not math.isfinite(jd_tt):
         raise ValueError("jd_tt must be finite")
 
@@ -750,6 +826,10 @@ def star_light_time_split(
 
 
 def all_stars_at(jd_tt: float) -> dict[str, FixedStar]:
+    """Return all sovereign stars propagated to a TT epoch.
+
+    Side effects: None.
+    """
     return {record.name: _build_fixed_star(record, record.name, "traditional_name", jd_tt) for record in _load_registry_records()}
 
 
@@ -761,6 +841,10 @@ list_stars = list_named_stars
 
 
 def find_named_stars(fragment: str, **_: object) -> list[str]:
+    """Case-insensitive substring search over star names and nomenclature.
+
+    Side effects: None.
+    """
     needle = fragment.strip().lower()
     return sorted(
         record.name
@@ -773,6 +857,13 @@ find_stars = find_named_stars
 
 
 def star_magnitude(name: str) -> float:
+    """Return catalog V magnitude for a resolved star name.
+
+    Raises:
+        KeyError: If star resolution fails.
+
+    Side effects: None.
+    """
     record, _ = _resolve_star_record(name, DEFAULT_FIXED_STAR_POLICY.lookup)
     return record.magnitude_v
 
@@ -786,10 +877,20 @@ def star_name_resolves(name: str) -> bool:
 
 
 def _longitude_delta(a: float, b: float) -> float:
+    """Return smallest absolute angular separation between two longitudes.
+
+    Side effects: None.
+    """
     return abs(((a - b + 180.0) % 360.0) - 180.0)
 
 
 def stars_near(longitude_deg: float, jd_tt: float, orb: float = 1.0, **_: object) -> list[FixedStar]:
+    """Return stars within ``orb`` degrees of target ecliptic longitude.
+
+    Results are sorted by angular distance, then magnitude, then name.
+
+    Side effects: None.
+    """
     matches: list[FixedStar] = []
     for record in _load_registry_records():
         star = _build_fixed_star(record, record.name, "traditional_name", jd_tt)
@@ -800,6 +901,12 @@ def stars_near(longitude_deg: float, jd_tt: float, orb: float = 1.0, **_: object
 
 
 def stars_by_magnitude(max_magnitude: float, jd_tt: float, **_: object) -> list[FixedStar]:
+    """Return stars brighter than or equal to ``max_magnitude`` at TT epoch.
+
+    Results are sorted by magnitude then name.
+
+    Side effects: None.
+    """
     matches = [
         _build_fixed_star(record, record.name, "traditional_name", jd_tt)
         for record in _load_registry_records()
@@ -810,7 +917,13 @@ def stars_by_magnitude(max_magnitude: float, jd_tt: float, **_: object) -> list[
 
 
 def _heliacal_signed_elongation(name: str, jd_ut: float) -> float:
-    """Signed ecliptic elongation of a fixed star from the Sun in degrees."""
+    """Signed ecliptic elongation of a fixed star from the Sun in degrees.
+
+    Negative values indicate morning sky (west of Sun); positive values indicate
+    evening sky (east of Sun).
+
+    Side effects: None.
+    """
     from .constants import Body
     from .julian import ut_to_tt
     from .planets import planet_at
@@ -830,6 +943,10 @@ def _star_altitude(
     pressure_mbar: float = 1013.25,
     temperature_c: float = 10.0,
 ) -> float:
+    """Return refraction-aware star altitude in degrees.
+
+    Side effects: None.
+    """
     from .rise_set import _altitude
 
     return _altitude(
@@ -843,6 +960,10 @@ def _star_altitude(
 
 
 def _default_arcus_for_star(name: str) -> float:
+    """Derive default arcus visionis from catalog magnitude under default model.
+
+    Side effects: None.
+    """
     from .heliacal import VisibilityModel, _arcus_visionis
 
     return _arcus_visionis(star_magnitude(name), VisibilityModel())
@@ -860,6 +981,10 @@ def _build_heliacal_event(
     qualifying_sun_altitude: float | None,
     event_jd_ut: float | None,
 ) -> HeliacalEvent:
+    """Assemble canonical HeliacalEvent vessel with truth/classification layers.
+
+    Side effects: None.
+    """
     is_found = event_jd_ut is not None
     visibility_state = "found" if is_found else "not_found"
     relation = StarRelation(
@@ -913,6 +1038,10 @@ def heliacal_rising(
     search_days: int = 400,
     policy: FixedStarComputationPolicy | None = None,
 ) -> float | None:
+    """Compatibility wrapper returning JD only for fixed-star heliacal rising.
+
+    Side effects: None.
+    """
     return heliacal_rising_event(
         name,
         jd_ut,
@@ -934,6 +1063,10 @@ def heliacal_setting(
     search_days: int = 400,
     policy: FixedStarComputationPolicy | None = None,
 ) -> float | None:
+    """Compatibility wrapper returning JD only for fixed-star heliacal setting.
+
+    Side effects: None.
+    """
     return heliacal_setting_event(
         name,
         jd_ut,
@@ -955,6 +1088,17 @@ def heliacal_rising_event(
     search_days: int = 400,
     policy: FixedStarComputationPolicy | None = None,
 ) -> HeliacalEvent:
+    """Search forward for first observable morning fixed-star appearance.
+
+    Applies morning-side signed-elongation gating and arcus-visionis twilight
+    altitude qualification with apparent-horizon correction.
+
+    Raises:
+        ValueError: For invalid policy type or invalid numeric arguments.
+        KeyError: If star name cannot be resolved.
+
+    Side effects: None.
+    """
     from .heliacal import _find_sun_at_alt
 
     resolved_policy = DEFAULT_FIXED_STAR_POLICY if policy is None else policy
@@ -975,12 +1119,11 @@ def heliacal_rising_event(
         raise ValueError("arcus_visionis must be a positive finite value")
 
     jd_mid0 = math.floor(jd_ut + 0.5) - 0.5
-    elongation_threshold = resolved_policy.heliacal.elongation_threshold
 
     for day_offset in range(search_days):
         jd_midnight = jd_mid0 + day_offset
         se = _heliacal_signed_elongation(name, jd_midnight + 0.5)
-        if se >= 0.0 or abs(se) < elongation_threshold:
+        if se >= 0.0:
             continue
         twilight_jd = _find_sun_at_alt(jd_midnight, latitude, longitude, -resolved_arcus, True)
         if twilight_jd is None:
@@ -1000,7 +1143,7 @@ def heliacal_rising_event(
             jd_ut,
             search_days,
             resolved_arcus,
-            elongation_threshold,
+            0.0,
             day_offset,
             se,
             -resolved_arcus,
@@ -1013,7 +1156,7 @@ def heliacal_rising_event(
         jd_ut,
         search_days,
         resolved_arcus,
-        elongation_threshold,
+        0.0,
         None,
         None,
         None,
@@ -1031,6 +1174,18 @@ def heliacal_setting_event(
     search_days: int = 400,
     policy: FixedStarComputationPolicy | None = None,
 ) -> HeliacalEvent:
+    """Search forward for last observable morning fixed-star appearance.
+
+    Tracks last qualifying visibility while elongation remains above the
+    policy threshold and returns the last visible day once disappearance
+    threshold is crossed.
+
+    Raises:
+        ValueError: For invalid policy type or invalid numeric arguments.
+        KeyError: If star name cannot be resolved.
+
+    Side effects: None.
+    """
     from .heliacal import _find_sun_at_alt
 
     resolved_policy = DEFAULT_FIXED_STAR_POLICY if policy is None else policy
@@ -1051,8 +1206,8 @@ def heliacal_setting_event(
         raise ValueError("arcus_visionis must be a positive finite value")
 
     jd_mid0 = math.floor(jd_ut + 0.5) - 0.5
-    elongation_threshold = resolved_policy.heliacal.elongation_threshold
-    disappearance_threshold = elongation_threshold * resolved_policy.heliacal.setting_visibility_factor
+    setting_elongation_threshold = resolved_policy.heliacal.setting_elongation_threshold
+    disappearance_threshold = setting_elongation_threshold * resolved_policy.heliacal.setting_visibility_factor
     last_visible: tuple[int, float, float] | None = None
 
     for day_offset in range(search_days):
@@ -1060,7 +1215,7 @@ def heliacal_setting_event(
         se = _heliacal_signed_elongation(name, jd_midnight + 0.5)
         abs_se = abs(se)
 
-        if se < 0.0 and abs_se >= elongation_threshold:
+        if se < 0.0 and abs_se >= setting_elongation_threshold:
             twilight_jd = _find_sun_at_alt(jd_midnight, latitude, longitude, -resolved_arcus, True)
             if twilight_jd is None:
                 continue
@@ -1076,7 +1231,7 @@ def heliacal_setting_event(
                 jd_ut,
                 search_days,
                 resolved_arcus,
-                elongation_threshold,
+                setting_elongation_threshold,
                 last_day_offset,
                 last_elongation,
                 -resolved_arcus,
@@ -1089,7 +1244,7 @@ def heliacal_setting_event(
         jd_ut,
         search_days,
         resolved_arcus,
-        elongation_threshold,
+        setting_elongation_threshold,
         last_visible[0] if last_visible is not None else None,
         last_visible[1] if last_visible is not None else None,
         -resolved_arcus if last_visible is not None else None,
@@ -1235,6 +1390,12 @@ def heliacal_catalog_batch(
 
 
 def _derive_star_position_condition_profile(position: StarPosition) -> StarConditionProfile | None:
+    """Derive a condition profile from StarPosition when not already present.
+
+    Returns None when no relation exists and no profile can be inferred.
+
+    Side effects: None.
+    """
     if position.condition_profile is not None:
         return position.condition_profile
     if position.relation is None:
@@ -1251,6 +1412,12 @@ def _derive_star_position_condition_profile(position: StarPosition) -> StarCondi
 
 
 def _derive_heliacal_condition_profile(event: HeliacalEvent) -> StarConditionProfile | None:
+    """Derive a condition profile from HeliacalEvent when not already present.
+
+    Returns None when no relation exists and no profile can be inferred.
+
+    Side effects: None.
+    """
     if event.condition_profile is not None:
         return event.condition_profile
     if event.relation is None:
@@ -1265,6 +1432,12 @@ def _derive_heliacal_condition_profile(event: HeliacalEvent) -> StarConditionPro
 
 
 def _derive_fixed_star_condition_profile(star: FixedStar) -> StarConditionProfile | None:
+    """Derive a condition profile from FixedStar when not already present.
+
+    Returns None when no relation exists and no profile can be inferred.
+
+    Side effects: None.
+    """
     if star.condition_profile is not None:
         return star.condition_profile
     if star.relation is None:
@@ -1286,6 +1459,10 @@ def _derive_fixed_star_condition_profile(star: FixedStar) -> StarConditionProfil
 
 
 def _star_condition_strength(profile: StarConditionProfile) -> int:
+    """Map profile state to deterministic strength rank for comparisons.
+
+    Side effects: None.
+    """
     if profile.result_kind == "heliacal_event":
         return 3 if profile.condition_state.name == "found" else 1
     if profile.condition_state.name == "unified_merge":
@@ -1294,6 +1471,10 @@ def _star_condition_strength(profile: StarConditionProfile) -> int:
 
 
 def _star_condition_sort_key(profile: StarConditionProfile) -> tuple[object, ...]:
+    """Return deterministic ordering key for condition profiles.
+
+    Side effects: None.
+    """
     return (
         profile.condition_state.name,
         profile.result_kind,
@@ -1306,10 +1487,18 @@ def _star_condition_sort_key(profile: StarConditionProfile) -> tuple[object, ...
 
 
 def _star_network_node_sort_key(node: StarConditionNetworkNode) -> tuple[str, str]:
+    """Return deterministic ordering key for network nodes.
+
+    Side effects: None.
+    """
     return (node.kind, node.node_id)
 
 
 def _star_network_edge_sort_key(edge: StarConditionNetworkEdge) -> tuple[str, str, str, str, str]:
+    """Return deterministic ordering key for network edges.
+
+    Side effects: None.
+    """
     return (
         edge.source_id,
         edge.target_id,
@@ -1320,6 +1509,13 @@ def _star_network_edge_sort_key(edge: StarConditionNetworkEdge) -> tuple[str, st
 
 
 def _catalog_position_source_node_id(position: StarPosition) -> str:
+    """Build stable source-node id for catalog position relation edge.
+
+    Raises:
+        AssertionError: If relation is unexpectedly missing.
+
+    Side effects: None.
+    """
     relation = position.relation
     assert relation is not None
     reference = relation.reference or position.name
@@ -1327,6 +1523,10 @@ def _catalog_position_source_node_id(position: StarPosition) -> str:
 
 
 def _heliacal_event_node_id(event: HeliacalEvent) -> str:
+    """Build stable event-node id for heliacal event network serialization.
+
+    Side effects: None.
+    """
     anchor_jd = event.jd_ut
     if anchor_jd is None and event.computation_truth is not None:
         anchor_jd = event.computation_truth.jd_start
@@ -1338,6 +1538,13 @@ def _heliacal_event_node_id(event: HeliacalEvent) -> str:
 
 
 def _fixed_star_source_node_id(star: FixedStar) -> str:
+    """Build stable source-node id for merged fixed-star relation edge.
+
+    Raises:
+        AssertionError: If relation is unexpectedly missing.
+
+    Side effects: None.
+    """
     relation = star.relation
     assert relation is not None
     return f"source:catalog_merge:{relation.basis}:{relation.source_kind}:{star.name}"

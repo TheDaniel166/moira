@@ -6,6 +6,10 @@ from pathlib import Path
 
 import pytest
 
+from moira.babylonian import (
+    admitted_babylonian_mercury_references,
+    admitted_babylonian_venus_references,
+)
 from moira.constants import Body
 from moira.heliacal import (
     HeliacalEventKind,
@@ -18,7 +22,7 @@ from moira.heliacal import (
     _lunar_crescent_details_for_evening,
     visibility_event,
 )
-from moira.julian import julian_day
+from moira.julian import calendar_datetime_from_jd, julian_day
 from moira.sothic import sothic_rising
 from moira.stars import heliacal_rising_event
 
@@ -26,6 +30,12 @@ from moira.stars import heliacal_rising_event
 _YALLOP_REFERENCE_ROWS = tuple(
     json.loads(
         (Path(__file__).resolve().parent.parent / "fixtures" / "yallop_table4_reference.json")
+        .read_text(encoding="utf-8")
+    )
+)
+_STELLAR_HELIACAL_REFERENCE_ROWS = tuple(
+    json.loads(
+        (Path(__file__).resolve().parent.parent / "fixtures" / "stellar_heliacal_reference.json")
         .read_text(encoding="utf-8")
     )
 )
@@ -175,6 +185,60 @@ def test_generalized_planetary_visibility_event_matches_published_windows(
 
 @pytest.mark.requires_ephemeris
 @pytest.mark.parametrize(
+    "reference",
+    admitted_babylonian_mercury_references(),
+    ids=lambda reference: reference.id,
+)
+def test_generalized_mercury_visibility_event_matches_admitted_babylonian_window(reference) -> None:
+    """
+    Validate the admitted Babylonian Mercury rows against their explicit
+    comparison windows.
+    """
+    event = visibility_event(
+        reference.body,
+        reference.event_kind,
+        julian_day(-388, 10, 15, 0.0),
+        reference.latitude_deg,
+        reference.longitude_deg,
+        search_policy=VisibilitySearchPolicy(search_window_days=40),
+    )
+
+    assert event is not None
+    assert event.target_kind is VisibilityTargetKind.PLANET
+    assert event.kind is HeliacalEventKind.HELIACAL_RISING
+    assert event.assessment.observable is True
+
+    solved_calendar = calendar_datetime_from_jd(event.jd_ut)
+    assert reference.comparison_window.contains_calendar_date(solved_calendar)
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize(
+    "reference",
+    admitted_babylonian_venus_references(),
+    ids=lambda reference: reference.id,
+)
+def test_generalized_venus_visibility_event_matches_admitted_babylonian_window(reference) -> None:
+    event = visibility_event(
+        reference.body,
+        reference.event_kind,
+        reference.source_window.start.jd - 20.0,
+        reference.latitude_deg,
+        reference.longitude_deg,
+        search_policy=VisibilitySearchPolicy(search_window_days=90),
+    )
+
+    assert event is not None
+    assert event.target_kind is VisibilityTargetKind.PLANET
+    assert event.kind is reference.event_kind
+    assert event.assessment.observable is True
+
+    solved_calendar = calendar_datetime_from_jd(event.jd_ut)
+    assert reference.comparison_window.contains_calendar_date(solved_calendar)
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize(
     ("body", "event_kind", "jd_start", "search_days", "jd_lo", "jd_hi"),
     [
         (
@@ -239,25 +303,40 @@ def test_generalized_planetary_visibility_event_ks1991_slice_stays_within_admitt
 
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
-def test_generalized_stellar_visibility_event_matches_sothic_anchor_slice() -> None:
+@pytest.mark.parametrize(
+    "row",
+    _STELLAR_HELIACAL_REFERENCE_ROWS,
+    ids=lambda row: str(row["row_id"]),
+)
+def test_generalized_stellar_visibility_event_matches_admitted_stellar_corpus_row(
+    row: dict[str, object],
+) -> None:
     """
     The generalized stellar branch currently delegates to the default
     star-heliacal doctrine. Measure that delegation explicitly against the
-    Sirius/Sothic anchor slice and preserve the doctrine split.
+    admitted stellar corpus row and preserve the doctrine split.
     """
-    sothic_entry = sothic_rising(31.2, 29.9, 139, 139, arcus_visionis=10.0)[0]
+    assert row["star_name"] == "Sirius"
+    assert row["event_kind"] == "heliacal_rising"
+
+    year, month, day = (int(part) for part in str(row["start_date"]).split("-"))
+    latitude = float(row["latitude_deg"])
+    longitude = float(row["longitude_deg"])
+    jd_start = julian_day(year, month, day, 0.0)
+
+    sothic_entry = sothic_rising(latitude, longitude, year, year, arcus_visionis=10.0)[0]
     direct_default = heliacal_rising_event(
-        "Sirius",
-        julian_day(139, 1, 1, 0.0),
-        31.2,
-        29.9,
+        str(row["star_name"]),
+        jd_start,
+        latitude,
+        longitude,
     )
     event = visibility_event(
-        "Sirius",
+        str(row["star_name"]),
         HeliacalEventKind.HELIACAL_RISING,
-        julian_day(139, 1, 1, 0.0),
-        31.2,
-        29.9,
+        jd_start,
+        latitude,
+        longitude,
     )
 
     assert event is not None
@@ -266,9 +345,12 @@ def test_generalized_stellar_visibility_event_matches_sothic_anchor_slice() -> N
     assert event.assessment.observable is True
     assert direct_default.is_found is True
     assert direct_default.jd_ut is not None
-    assert event.jd_ut == pytest.approx(direct_default.jd_ut, abs=1.0 / 1440.0)
+    assert event.jd_ut == pytest.approx(
+        direct_default.jd_ut,
+        abs=float(row["delegation_tolerance_minutes"]) / 1440.0,
+    )
     assert event.jd_ut < sothic_entry.jd_rising
-    assert (sothic_entry.jd_rising - event.jd_ut) < 5.0
+    assert (sothic_entry.jd_rising - event.jd_ut) < float(row["max_days_before_sothic_anchor"])
 
 
 @pytest.mark.requires_ephemeris

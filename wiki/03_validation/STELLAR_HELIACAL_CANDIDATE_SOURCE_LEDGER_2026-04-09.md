@@ -9,6 +9,10 @@ Upstream documents:
 - `wiki/03_validation/STELLAR_HELIACAL_VALIDATION_SOURCES_2026-04-09.md`
 - `wiki/03_validation/HELIACAL_VALIDATION_MATRIX_2026-04-09.md`
 
+Downstream documents:
+- `wiki/03_validation/STELLAR_HELIACAL_VALIDATION_CORPUS_2026-04-09.md`
+- `wiki/03_validation/STELLAR_HELIACAL_CASE_LEDGER_2026-04-09.md`
+
 Current status:
 - partially populated intake ledger
 - no new non-Sirius external source admitted yet
@@ -29,8 +33,8 @@ A candidate source must be captured first, then judged against:
 | Candidate ID | Star | Source title / citation | Source kind | Event kind | Site / latitude | Date or range | Criterion stated? | Oracle tier | Admission status | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | SHS-001 | Sirius | Censorinus / Sothic anchor lineage | historical anchor | heliacal rising | Alexandria band / Egyptian context | 139 AD anchor slice | partial | Tier A | admitted_anchor | Current governing stellar anchor in Moira. |
-| SHS-002 | Sirius | Bradley E. Schaefer, “The Heliacal Rise of Sirius and Ancient Egyptian Chronology” (2000) | scholarly historical reconstruction | heliacal rising | Alexandria / Egyptian chronology context | 139 AD-centered historical discussion | yes | Tier A | captured_pending_review | Strong direct candidate for expanding the current Sirius anchor documentation into a more explicit scholarly oracle row. |
-| SHS-003 | multi-star / general | Bradley E. Schaefer, “Heliacal Rise Phenomena” (1987) | scholarly methodology paper | heliacal rising / setting family | general methodological scope | general | yes | Tier A | captured_pending_review | Valuable for criterion-law and event-semantics review; not by itself a star/date oracle row. |
+| SHS-002 | Sirius | Bradley E. Schaefer, “The Heliacal Rise of Sirius and Ancient Egyptian Chronology” (2000) | scholarly historical reconstruction | heliacal rising | Alexandria / Egyptian chronology context | 139 AD-centered historical discussion | yes | Tier A | admitted_secondary | Admissible as secondary scholarly support for the existing Sirius anchor; still not a new non-Sirius corpus row. |
+| SHS-003 | multi-star / general | Bradley E. Schaefer, “Heliacal Rise Phenomena” (1987) | scholarly methodology paper | heliacal rising / setting family | general methodological scope | general | yes | Tier A | admitted_secondary | Admissible as methodology and criterion-law support only; not by itself a star/date oracle row. |
 | SHS-004 | TBD non-Sirius bright star | candidate source not yet captured | TBD | TBD | TBD | TBD | TBD | Tier A or B | candidate_needed | First non-Sirius bright-star candidate with explicit event semantics still needed. |
 | SHS-005 | TBD non-Sirius bright star | candidate source not yet captured | TBD | TBD | TBD | TBD | TBD | Tier A or B | candidate_needed | Second bright-star candidate with different declination geometry still needed. |
 | SHS-006 | TBD | candidate historical reconstruction source not yet captured | scholarly reconstruction | TBD | TBD | TBD | TBD | Tier A | candidate_needed | Reserve slot for a non-Sirius historical reconstruction source. |
@@ -67,10 +71,10 @@ If those questions cannot be answered, the source should not become part of the 
 
 The first useful additions to this ledger should be:
 
-1. review SHS-002 for direct admission fields and uncertainty notes
-2. review SHS-003 strictly as methodology support, not as a standalone event oracle
-3. capture one non-Sirius historically prominent bright-star source
-4. capture one source family from modern observational visibility literature
+1. capture one non-Sirius historically prominent bright-star source
+2. capture one source family from modern observational visibility literature
+3. convert the first admissible non-Sirius source into a row in the stellar case ledger
+4. keep SHS-002 and SHS-003 as secondary support rather than treating them as broad closure
 
 ## Current Captured Scholarly Candidates
 
@@ -79,10 +83,17 @@ Already captured in this ledger:
 - Bradley E. Schaefer, `Heliacal Rise Phenomena` (1987)
 - Bradley E. Schaefer, `The Heliacal Rise of Sirius and Ancient Egyptian Chronology` (2000)
 
-These are not yet promoted beyond `captured_pending_review` except where Moira already treats the Sirius anchor as admitted doctrine.
+These now have the following status:
+
+- SHS-002: admitted as secondary scholarly support for the Sirius anchor
+- SHS-003: admitted as secondary methodology support
+
+Neither source closes the non-Sirius corpus gap by itself.
 
 ## Current Honest State
 
 Right now, Sirius remains the only clearly admitted stellar heliacal validation anchor.
+
+Moira now also has two explicitly admitted secondary scholarly supports for that anchor and for stellar-heliacal methodology, but still lacks an admitted non-Sirius external validation row.
 
 This ledger exists so future expansion happens under provenance discipline rather than ad hoc reference gathering.

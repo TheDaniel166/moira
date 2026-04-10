@@ -14,7 +14,7 @@ class FixedStarLookupPolicy:
 
 @dataclass(frozen=True, slots=True)
 class HeliacalSearchPolicy:
-    elongation_threshold: float = 12.0
+    setting_elongation_threshold: float = 12.0
     visibility_tolerance: float = 1.0
     setting_visibility_factor: float = 0.5
 

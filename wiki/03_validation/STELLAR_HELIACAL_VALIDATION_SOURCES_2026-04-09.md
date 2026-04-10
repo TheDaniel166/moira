@@ -210,15 +210,20 @@ Unsafe wording now:
 Safe wording after a small expanded corpus:
 - "stellar heliacal validation covers a small historically and observationally grounded bright-star corpus"
 
-## 7. Immediate Next Artifact
+## 7. Immediate Next Artifacts
 
-The next useful artifact after this source note is:
-- a candidate-source capture file that lists actual stellar heliacal references row by row before any new tests are written
+The source-discovery step now has its intake artifact:
+- `wiki/03_validation/STELLAR_HELIACAL_CANDIDATE_SOURCE_LEDGER_2026-04-09.md`
+
+The next useful artifacts after this source note are:
+- `wiki/03_validation/STELLAR_HELIACAL_VALIDATION_CORPUS_2026-04-09.md`
+- `wiki/03_validation/STELLAR_HELIACAL_CASE_LEDGER_2026-04-09.md`
 
 That keeps the order correct:
 - source discovery
 - oracle admission
 - validation design
+- case-ledger capture
 - test implementation
 
 ## 8. Final Judgment

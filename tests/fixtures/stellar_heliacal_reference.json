@@ -1,0 +1,14 @@
+[
+  {
+    "row_id": "SHR-001",
+    "star_name": "Sirius",
+    "event_kind": "heliacal_rising",
+    "source": "Censorinus / Sothic 139 AD anchor slice",
+    "source_kind": "historical anchor",
+    "start_date": "139-01-01",
+    "latitude_deg": 31.2,
+    "longitude_deg": 29.9,
+    "delegation_tolerance_minutes": 1.0,
+    "max_days_before_sothic_anchor": 5.0
+  }
+]

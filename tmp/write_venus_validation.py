@@ -1,3 +1,6 @@
+from pathlib import Path
+
+content = """\
 # Validation Case: Sun-Venus Conjunctions (2026-2032)
 
 **Subject**: Geocentric apparent Sun-Venus conjunctions  
@@ -54,3 +57,8 @@ A residual of 0.055 arcmin corresponds to roughly 2-3 minutes of time error at V
 ## 6. Verification script
 
 `tmp/venus_horizons_check.py` -- queries Horizons live and prints the residual table above. Reproducible against the Horizons API as long as the target dates remain within the EOP prediction window.
+"""
+
+path = Path(r"c:\Users\nilad\OneDrive\Desktop\Moira\wiki\03_standards\VALIDATION_CASE_VENUS_STAR.md")
+path.write_text(content, encoding="utf-8")
+print("written", len(content), "bytes")

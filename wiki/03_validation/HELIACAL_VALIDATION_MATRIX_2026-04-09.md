@@ -182,12 +182,18 @@ Safe wording for moonlight now:
 ## Next Validation Documents Suggested by This Matrix
 
 1. `stellar_heliacal_validation_sources_*.md`
-   Goal: identify admissible external or historical stellar corpora beyond Sirius.
+  Goal: identify admissible external or historical stellar corpora beyond Sirius.
 
-2. `planetary_heliacal_validation_corpus_*.md`
+2. `stellar_heliacal_validation_corpus_*.md`
+  Goal: define the admitted stellar corpus shape anchored by the current Sirius slice.
+
+3. `stellar_heliacal_case_ledger_*.md`
+  Goal: capture the current admitted Sirius row and explicit future expansion rows.
+
+4. `planetary_heliacal_validation_corpus_*.md`
    Goal: define a broader planetary apparition/event corpus than the present window-based slice.
 
-3. `moonlight_visibility_integration_plan_*.md`
+5. `moonlight_visibility_integration_plan_*.md`
    Goal: define real observer/date/body cases for end-to-end moonlight validation.
 
 ## Final Judgment

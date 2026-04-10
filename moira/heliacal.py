@@ -1,27 +1,17 @@
 ﻿"""
 Moira — heliacal.py
-Heliacal and Visibility Doctrine Layer
-
-Archetype:
-    mixed doctrine + implementation module
-
-    This module contains:
-    1. admitted planetary heliacal/acronychal event computation
-    2. the fully admitted generalized visibility subsystem (V1–V5 complete)
-    3. the Krisciunas & Schaefer (1991) moonlight sky-brightness model (V6 partial)
+Heliacal and Visibility Doctrine Pillar
 
 Purpose
 -------
-Provides:
+Provides the complete heliacal and generalized visibility doctrine surface for Moira:
 - typed doctrine surfaces for heliacal phenomena and generalized visibility policy
 - concrete planetary heliacal/acronychal event helpers
 - the generalized visibility event surface for planets, fixed stars, and the Moon
 - observer-environment policy with Bortle-class light-pollution derivation
-- moonlight-aware limiting-magnitude penalty via K&S 1991
+- moonlight-aware limiting-magnitude penalty via Krisciunas & Schaefer (1991)
 
-Implementation status (2026-04-04)
------------------------------------
-Implemented:
+Implemented surfaces:
 - ``HeliacalEventKind``                    — exhaustive event-kind enum
 - ``VisibilityTargetKind``                 — planet / star / moon classifier
 - ``LightPollutionClass``                  — Bortle 1–9 typed scale
@@ -32,7 +22,7 @@ Implemented:
                                              Yallop lunar crescent
 - ``VisibilityExtinctionModel``            — named extinction treatment slot
 - ``VisibilityTwilightModel``              — named twilight treatment slot
-- ``ExtinctionCoefficient``               — named reference values (K &S 1991)
+- ``ExtinctionCoefficient``               — named reference values (K&S 1991)
 - ``MoonlightPolicy``                      — IGNORE or KRISCIUNAS_SCHAEFER_1991
 - ``VisibilityPolicy``                     — unified admitted visibility policy;
                                              includes ``extinction_coefficient_k``
@@ -45,11 +35,37 @@ Implemented:
 - ``VisibilityModel``                      — legacy narrow observer vessel (V0 compat)
 - ``HeliacalPolicy``                       — legacy narrow policy vessel (V0 compat)
 - ``visibility_assessment``               — single-instant observability check
+- ``visual_limiting_magnitude``           — effective limiting magnitude at an instant
 - ``visibility_event``                     — generalized event search surface
 - ``planet_heliacal_rising``
 - ``planet_heliacal_setting``
 - ``planet_acronychal_rising``
 - ``planet_acronychal_setting``
+
+Boundary
+--------
+Owns:
+    All heliacal and visibility doctrine surfaces listed above.
+
+Delegates to:
+    moira.stars      — fixed-star heliacal event search (heliacal_rising_event,
+                       heliacal_setting_event)
+    moira.planets    — planetary apparent positions and magnitudes
+    moira.phase      — phase angle and apparent magnitude
+    moira.rise_set   — altitude, twilight, and rise/set phenomena
+    moira.coordinates — equatorial-to-horizontal transforms
+
+Import-time side effects: None
+
+External dependency assumptions
+---------------------------------
+- DE441 kernel accessible via moira.planets (required for planetary positions).
+- moira.constants.Body constants available for body identity.
+- No OS-level features, threads, or network access required.
+
+Public surface / exports
+------------------------
+See ``__all__`` below.  All 27 names are stable public API.
 
 K&S 1991 moonlight model (V6 partial)
 --------------------------------------
@@ -80,7 +96,7 @@ Deferred
 
 Constitution entry
 ------------------
-    Subsystem:    Heliacal / Visibility
+    Pillar:       Heliacal / Visibility
     SCP entry:    moira/stars.py, STARS_BACKEND_STANDARD.md
     Current state:
         - planetary heliacal/acronychal helpers implemented (V0)
@@ -97,8 +113,6 @@ Constitution entry
     - Visibility doctrine, observer environment, and search policy stay separate.
     - HeliacalEventKind is exhaustive; new kinds require doctrinal justification.
     - Results are in Julian Day (UT1), never formatted strings.
-
-Import-time side effects: None
 """
 
 from __future__ import annotations
@@ -147,19 +161,75 @@ __all__ = [
 
 class HeliacalEventKind(str, Enum):
     """
-    The kind of heliacal or visibility event being sought.
+    RITE: The Six Gates — the canonical astronomical visibility threshold crossings.
 
-    Doctrine
-    --------
-    These are the six canonical heliacal phenomena recognised in classical
-    and modern observational astronomy.  The six form two symmetric pairs
-    around the Sun:
+    THEOREM: Exhaustive str-enum of the six classical heliacal phenomena that
+    govern event-kind dispatch throughout the visibility doctrine.
+
+    RITE OF PURPOSE:
+        Encodes the six canonical visibility boundary crossings as a typed enum
+        so callers cannot accidentally pass an out-of-range integer or an
+        ambiguous string.  Without this gate, event-kind dispatch collapses into
+        brittle integer comparisons carried wholesale from Swiss Ephemeris integer
+        flag constants.  This enum is the doctrinal identity layer for heliacal
+        event taxonomy.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Provide exhaustive named coverage of the six classical phenomena.
+            - Serve as the dispatch key for visibility_event() routing.
+            - Enforce that event-kind values are valid at the type level.
+        Non-responsibilities:
+            - Does not compute any event.
+            - Does not express a runtime dependency on Swiss Ephemeris integers.
+            - Does not distinguish planetary vs. stellar applicability.
+        Dependencies:
+            - None.  Pure enum; no runtime imports required.
+        Structural invariants:
+            - Six members exactly.  New kinds require explicit doctrinal
+              justification and a change to the event-search dispatch table.
+
+    Canon: Ptolemy via Schoch nomenclature; Swiss Ephemeris SE_HELIACAL_RISING
+           family (mapping provenance only, not runtime dependency).
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.heliacal.HeliacalEventKind",
+        "risk": "low",
+        "api": {
+            "members": ["HELIACAL_RISING", "HELIACAL_SETTING",
+                        "ACRONYCHAL_RISING", "ACRONYCHAL_SETTING",
+                        "COSMIC_RISING", "COSMIC_SETTING"]
+        },
+        "state": {
+            "mutable": false
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_enum",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": ["ValueError on invalid string construction"],
+            "policy": "str-enum construction validates implicitly"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "urania"
+    }
+    [/MACHINE_CONTRACT]
 
     Heliacal phenomena (eastern sky near sunrise):
         HELIACAL_RISING      — body first visible in the east before sunrise
                                 after a period of solar invisibility (the
-                                classical *first appearance*, *acronychal
-                                rising* in some traditions).
+                                classical *first appearance*).
         HELIACAL_SETTING     — body last visible in the east before sunrise
                                 before solar invisibility begins (*last
                                 appearance*, eastern sky).
@@ -169,14 +239,8 @@ class HeliacalEventKind(str, Enum):
         ACRONYCHAL_SETTING   — body last visible in the west after sunset.
 
     Cosmic phenomena (astronomical twilight boundary):
-        COSMIC_RISING        — body rises exactly at true astronomical
-                                dawn (no refraction or disc corrections).
-        COSMIC_SETTING       — body sets exactly at true astronomical
-                                dusk.
-
-    Implementation note: these map to the Swiss SE_HELIACAL_RISING etc.
-    integer constants but are expressed as a typed enum so that callers
-    cannot accidentally pass an out-of-range integer.
+        COSMIC_RISING        — body rises exactly at true astronomical dawn.
+        COSMIC_SETTING       — body sets exactly at true astronomical dusk.
     """
     HELIACAL_RISING   = "heliacal_rising"
     HELIACAL_SETTING  = "heliacal_setting"
@@ -187,7 +251,66 @@ class HeliacalEventKind(str, Enum):
 
 
 class VisibilityTargetKind(str, Enum):
-    """Target-family classification for generalized visibility search."""
+    """
+    RITE: The Three Families — planet, star, and Moon as distinct visibility populations.
+
+    THEOREM: Str-enum classifying the target body family for generalized
+    visibility-event dispatch and result labelling.
+
+    RITE OF PURPOSE:
+        Distinguishes planets, fixed stars, and the Moon so the visibility_event()
+        Engine can route to the correct algorithm and oracle for each family.
+        Without this classifier, the generalized surface would require callers to
+        infer target-kind semantics from body name strings, collapsing distinct
+        computational paths into one ambiguous channel.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Classify any admitted body into one of three target families.
+            - Serve as a routing discriminant inside visibility_event().
+            - Label result vessels so downstream callers can inspect target kind
+              without re-inferring it from body name.
+        Non-responsibilities:
+            - Does not infer body kind from a body name string (that is
+              done by _target_kind()).
+            - Does not define the algorithm for any family.
+        Dependencies:
+            - None.  Pure enum.
+
+    Canon: None (No applicable canon)
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.heliacal.VisibilityTargetKind",
+        "risk": "low",
+        "api": {
+            "members": ["PLANET", "STAR", "MOON"]
+        },
+        "state": {
+            "mutable": false
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_enum",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": ["ValueError on invalid string construction"],
+            "policy": "str-enum construction validates implicitly"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "urania"
+    }
+    [/MACHINE_CONTRACT]
+    """
 
     PLANET = "planet"
     STAR = "star"
@@ -195,7 +318,68 @@ class VisibilityTargetKind(str, Enum):
 
 
 class LightPollutionClass(IntEnum):
-    """Closed observing-site darkness scale used as environment policy."""
+    """
+    RITE: The Bortle Scale — the canonical darkness-class registry for observing sites.
+
+    THEOREM: Typed int-enum encoding the Bortle sky darkness scale from class 1
+    (exceptional dark site) to class 9 (inner-city sky).
+
+    RITE OF PURPOSE:
+        Encodes the Bortle scale as a typed int-enum so site darkness can be
+        expressed as a policy field without passing raw floats or magic integers.
+        Drives both limiting-magnitude derivation and K&S 1991 dark-sky
+        nanolambert derivation.  Without this typed scale, observers would need
+        to supply ad-hoc sky-brightness values whose provenance is invisible.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Provide nine named Bortle tiers as a closed typed scale.
+            - Serve as policy input to _policy_limiting_magnitude() and
+              _ks1991_dark_sky_nanolamberts().
+        Non-responsibilities:
+            - Does not define the numeric sky-brightness associated with each
+              class (held in _BORTLE_LIMITING_MAG_TABLE and _BORTLE_SKY_SQM_TABLE).
+            - Does not validate geographic site characteristics.
+        Dependencies:
+            - None.  Pure enum.
+        Structural invariants:
+            - Nine members, integer values 1–9 matching the Bortle paper.
+
+    Canon: Bortle, J.E. (2001), Sky & Telescope 101(2), 126–129.
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.heliacal.LightPollutionClass",
+        "risk": "low",
+        "api": {
+            "members": ["BORTLE_1", "BORTLE_2", "BORTLE_3", "BORTLE_4", "BORTLE_5",
+                        "BORTLE_6", "BORTLE_7", "BORTLE_8", "BORTLE_9"]
+        },
+        "state": {
+            "mutable": false
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_enum",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": ["ValueError on invalid integer construction"],
+            "policy": "int-enum construction validates implicitly"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "urania"
+    }
+    [/MACHINE_CONTRACT]
+    """
 
     BORTLE_1 = 1
     BORTLE_2 = 2
@@ -209,7 +393,65 @@ class LightPollutionClass(IntEnum):
 
 
 class ObserverAid(str, Enum):
-    """Declared observing aid for the admitted visibility family."""
+    """
+    RITE: The Instrument Witness — the declared optical instrument of the observer.
+
+    THEOREM: Str-enum of the three admitted observing instruments for the
+    visibility criterion family.
+
+    RITE OF PURPOSE:
+        Declares whether the observer uses naked eye, binoculars, or a telescope,
+        so the criterion family can adjust the effective visibility threshold.
+        The Yallop lunar crescent criterion uses observing aid to classify B/C/D
+        events as instrument-dependent.  Without this typed declaration,
+        instrument sensitivity would require separate raw flags.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Enumerate the three admitted observing instruments.
+            - Serve as an input to _yallop_class_observable() and
+              ObserverVisibilityEnvironment.observing_aid.
+        Non-responsibilities:
+            - Does not define the magnitude correction for each instrument.
+            - Does not apply to planetary position computation.
+        Dependencies:
+            - None.  Pure enum.
+
+    Canon: Yallop (1997), NAO Technical Note No. 69 (three-way instrument
+           classification for lunar crescent visibility).
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.heliacal.ObserverAid",
+        "risk": "low",
+        "api": {
+            "members": ["NAKED_EYE", "BINOCULARS", "TELESCOPE"]
+        },
+        "state": {
+            "mutable": false
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_enum",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": ["ValueError on invalid string construction"],
+            "policy": "str-enum construction validates implicitly"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "urania"
+    }
+    [/MACHINE_CONTRACT]
+    """
 
     NAKED_EYE = "naked_eye"
     BINOCULARS = "binoculars"
@@ -217,21 +459,202 @@ class ObserverAid(str, Enum):
 
 
 class LightPollutionDerivationMode(str, Enum):
-    """Policy family for deriving limiting magnitude from site darkness."""
+    """
+    RITE: The Derivation Mode — the admitted selection between two Bortle derivation paths.
+
+    THEOREM: Str-enum selecting whether limiting magnitude is derived from the
+    Bortle class via a lookup table or a linear formula.
+
+    RITE OF PURPOSE:
+        Controls how _policy_limiting_magnitude() converts a Bortle class integer
+        into a floating-point limiting magnitude.  The two modes produce slightly
+        different values and the explicit selection ensures the derivation path
+        is visible in policy rather than hidden behind a single function.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Enumerate the two admitted derivation modes.
+            - Serve as the mode selector in _policy_limiting_magnitude().
+        Non-responsibilities:
+            - Does not hold the table or formula itself.
+            - Does not affect K&S 1991 moonlight computation directly.
+        Dependencies:
+            - None.  Pure enum.
+
+    Canon: Bortle (2001), Sky & Telescope 101(2), 126–129 (table source);
+           linear formula is a Moira internal approximation.
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.heliacal.LightPollutionDerivationMode",
+        "risk": "low",
+        "api": {
+            "members": ["BORTLE_LINEAR", "BORTLE_TABLE"]
+        },
+        "state": {
+            "mutable": false
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_enum",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": ["ValueError on invalid string construction"],
+            "policy": "str-enum construction validates implicitly"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "urania"
+    }
+    [/MACHINE_CONTRACT]
+    """
 
     BORTLE_LINEAR = "bortle_linear"
     BORTLE_TABLE = "bortle_table"
 
 
 class VisibilityCriterionFamily(str, Enum):
-    """Named criterion family for the admitted visibility doctrine."""
+    """
+    RITE: The Criterion Gate — the doctrinal selection between admitted visibility
+    criterion families.
+
+    THEOREM: Str-enum naming the two currently admitted visibility criterion
+    families that govern observability decisions.
+
+    RITE OF PURPOSE:
+        Separates the limiting-magnitude threshold family (used for planets and
+        fixed stars) from the Yallop lunar crescent family (used for the Moon),
+        ensuring that each dispatch path within visibility_assessment() and
+        visibility_event() applies the correct observability test.  Explicit
+        family selection prevents silent application of a planetary threshold
+        to a crescent-moon event.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Enumerate the two admitted criterion families.
+            - Serve as the routing key in visibility_assessment() and
+              visibility_event().
+        Non-responsibilities:
+            - Does not implement either criterion.
+            - Does not validate that a body is appropriate for the selected family
+              (that is enforced at call sites).
+        Dependencies:
+            - None.  Pure enum.
+        Behavioral invariants:
+            - YALLOP_LUNAR_CRESCENT is only valid when body == Body.MOON.
+
+    Canon: Yallop (1997), NAO Technical Note No. 69 (Yallop crescent criterion);
+           Schaefer (1990), PASP 102, 212–229 (limiting-magnitude family).
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.heliacal.VisibilityCriterionFamily",
+        "risk": "low",
+        "api": {
+            "members": ["LIMITING_MAGNITUDE_THRESHOLD", "YALLOP_LUNAR_CRESCENT"]
+        },
+        "state": {
+            "mutable": false
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_enum",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": ["ValueError on invalid string construction"],
+            "policy": "str-enum construction validates implicitly"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "urania"
+    }
+    [/MACHINE_CONTRACT]
+    """
 
     LIMITING_MAGNITUDE_THRESHOLD = "limiting_magnitude_threshold"
     YALLOP_LUNAR_CRESCENT = "yallop_lunar_crescent"
 
 
 class LunarCrescentVisibilityClass(str, Enum):
-    """Yallop lunar first-sighting class."""
+    """
+    RITE: The Yallop Classes — the six canonical lunar crescent visibility grades.
+
+    THEOREM: Str-enum reproducing the six A–F observability grades defined by
+    Yallop (1997) for lunar new crescent first-sighting.
+
+    RITE OF PURPOSE:
+        Encodes the Yallop q-value classification scheme so that crescent
+        observability verdicts carry a typed, self-documenting grade rather than
+        a raw float or an opaque integer.  Classes A and B indicate naked-eye
+        visibility; C and D instrument-aided; E and F not visible.  Without
+        this enum, the q-value boundary table would need to be reproduced
+        at every call site.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Enumerate the six Yallop visibility grades.
+            - Serve as the typed verdict in LunarCrescentDetails.visibility_class
+              and VisibilityAssessment.
+        Non-responsibilities:
+            - Does not compute the q-value.
+            - Does not encode the numeric q-value boundaries (held in
+              _yallop_visibility_class()).
+        Dependencies:
+            - None.  Pure enum.
+        Structural invariants:
+            - Six members A–F, matching the Yallop paper classification table.
+
+    Canon: Yallop, B.D. (1997), "A Method for Predicting the First Sighting of
+           the New Crescent Moon," NAO Technical Note No. 69.
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.heliacal.LunarCrescentVisibilityClass",
+        "risk": "low",
+        "api": {
+            "members": ["A", "B", "C", "D", "E", "F"]
+        },
+        "state": {
+            "mutable": false
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_enum",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": ["ValueError on invalid string construction"],
+            "policy": "str-enum construction validates implicitly"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "urania"
+    }
+    [/MACHINE_CONTRACT]
+    """
 
     A = "A"
     B = "B"
@@ -243,7 +666,81 @@ class LunarCrescentVisibilityClass(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class LunarCrescentDetails:
-    """Derived Yallop first-sighting quantities for a lunar crescent assessment."""
+    """
+    RITE: The Yallop Vessel — the canonical crescent-assessment data carrier.
+
+    THEOREM: Immutable frozen dataclass carrying all Yallop (1997) derived
+    quantities produced for a single lunar crescent assessment instant.
+
+    RITE OF PURPOSE:
+        Collects the intermediate geometric and photometric quantities that the
+        Yallop q-value formula requires and produces, so that a crescent
+        assessment result is fully inspectable and reproducible.  Without this
+        vessel, callers receiving only a visibility boolean would have no way to
+        audit the arcv/arcl/width values that drove the decision.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Store all Yallop (1997) intermediate and derived quantities for
+              one assessment instant.
+            - Carry the final q-value and A–F visibility class.
+            - Serve as the inner vessel within VisibilityAssessment and
+              GeneralVisibilityEvent when criterion_family is
+              YALLOP_LUNAR_CRESCENT.
+        Non-responsibilities:
+            - Does not compute any of its fields (populated by
+              _lunar_crescent_details_at()).
+            - Does not define q-value boundaries or class transitions.
+        Dependencies:
+            - Populated exclusively by _lunar_crescent_details_at() or
+              _lunar_crescent_details_for_evening/morning().
+        Structural invariants:
+            - All float fields are finite upon construction (enforced by the
+              computing functions, not by __post_init__).
+            - visibility_class matches the q-value per the Yallop boundary table.
+
+    Canon: Yallop, B.D. (1997), "A Method for Predicting the First Sighting of
+           the New Crescent Moon," NAO Technical Note No. 69.
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.heliacal.LunarCrescentDetails",
+        "risk": "low",
+        "api": {
+            "public_attributes": [
+                "best_time_jd_ut", "sunset_jd_ut", "moonset_jd_ut",
+                "lag_minutes", "arcl_deg", "arcv_deg", "daz_deg",
+                "moon_altitude_deg", "sun_altitude_deg",
+                "lunar_parallax_arcmin", "topocentric_crescent_width_arcmin",
+                "q", "visibility_class"
+            ]
+        },
+        "state": {
+            "mutable": false,
+            "fields": "all float except visibility_class (LunarCrescentVisibilityClass)"
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_computation",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": [],
+            "policy": "caller-populated; field validity is the computing function's responsibility"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "urania"
+    }
+    [/MACHINE_CONTRACT]
+    """
 
     best_time_jd_ut: float
     sunset_jd_ut: float
@@ -261,29 +758,202 @@ class LunarCrescentDetails:
 
 
 class VisibilityExtinctionModel(str, Enum):
-    """Named extinction treatment for the admitted criterion family."""
+    """
+    RITE: The Extinction Slot — the admitted extinction treatment declaration.
+
+    THEOREM: Str-enum naming the admitted extinction treatment applied when
+    computing visibility under the LIMITING_MAGNITUDE_THRESHOLD criterion.
+
+    RITE OF PURPOSE:
+        Holds the named extinction treatment slot so that policy objects can
+        declare which extinction model governs their arcus-visionis derivation.
+        Currently a single member (LEGACY_ARCUS_VISIONIS), preserving the slot
+        for future admission of more rigorous airmass-based extinction models
+        without requiring a breaking policy-field change.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Enumerate the admitted extinction treatments.
+            - Serve as the extinction_model field of VisibilityPolicy.
+        Non-responsibilities:
+            - Does not implement extinction computation (handled by
+              _arcus_visionis()).
+            - Does not govern K&S 1991 moonlight extinction (controlled by
+              VisibilityPolicy.extinction_coefficient_k).
+        Dependencies:
+            - None.  Pure enum.
+
+    Canon: Schaefer, B.E. (1990), PASP 102, 212–229 (arcus visionis and
+           extinction foundation used in LEGACY_ARCUS_VISIONIS).
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.heliacal.VisibilityExtinctionModel",
+        "risk": "low",
+        "api": {
+            "members": ["LEGACY_ARCUS_VISIONIS"]
+        },
+        "state": {
+            "mutable": false
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_enum",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": ["ValueError on invalid string construction"],
+            "policy": "str-enum construction validates implicitly"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "urania"
+    }
+    [/MACHINE_CONTRACT]
+    """
 
     LEGACY_ARCUS_VISIONIS = "legacy_arcus_visionis"
 
 
 class VisibilityTwilightModel(str, Enum):
-    """Named twilight treatment for the admitted criterion family."""
+    """
+    RITE: The Twilight Slot — the admitted twilight treatment declaration.
+
+    THEOREM: Str-enum naming the admitted twilight treatment used to determine
+    the visibility-threshold solar depression moment.
+
+    RITE OF PURPOSE:
+        Holds the named twilight treatment so that policy objects can declare
+        which solar-depression model governs when the visibility-threshold
+        twilight moment is found.  Currently a single member
+        (ARCUS_VISIONIS_SOLAR_DEPRESSION), preserving the slot for future
+        admission of alternative twilight definitions without a breaking
+        policy-field change.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Enumerate the admitted twilight treatments.
+            - Serve as the twilight_model field of VisibilityPolicy.
+        Non-responsibilities:
+            - Does not implement the twilight search (handled by
+              _find_sun_at_alt()).
+            - Does not govern astronomical or civil twilight separately.
+        Dependencies:
+            - None.  Pure enum.
+
+    Canon: Ptolemy / Schoch arcus visionis tradition; Schaefer (1990),
+           PASP 102, 212–229 (solar-depression as visibility threshold).
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.heliacal.VisibilityTwilightModel",
+        "risk": "low",
+        "api": {
+            "members": ["ARCUS_VISIONIS_SOLAR_DEPRESSION"]
+        },
+        "state": {
+            "mutable": false
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_enum",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": ["ValueError on invalid string construction"],
+            "policy": "str-enum construction validates implicitly"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "urania"
+    }
+    [/MACHINE_CONTRACT]
+    """
 
     ARCUS_VISIONIS_SOLAR_DEPRESSION = "arcus_visionis_solar_depression"
 
 
 class ExtinctionCoefficient:
     """
-    Named broadband extinction coefficient reference values (mag/airmass).
+    RITE: The Extinction Oracle — the canonical broadband extinction coefficient registry.
 
-    These are convenience holders for the ``extinction_coefficient_k`` field
-    on :class:`VisibilityPolicy`.  Values are drawn from Schaefer (1990) and
-    Krisciunas & Schaefer (1991, PASP 103, 1033–1039).
+    THEOREM: Class-level namespace holding four named reference extinction
+    coefficients (mag/airmass) drawn from Schaefer (1990) and Krisciunas &
+    Schaefer (1991).
 
-    The four admitted site classes cover the practical range from
-    exceptional high-altitude photometric sites to degraded coastal or hazy
-    conditions.  Values outside this range are allowed by the policy field
-    but carry no named holder.
+    RITE OF PURPOSE:
+        Provides named float holders for the four admitted site-class extinction
+        values so callers can reference well-documented reference points rather
+        than supplying raw floats to VisibilityPolicy.extinction_coefficient_k.
+        Without this registry, users would need to memorise or look up the
+        K&S 1991 paper values before constructing a policy.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Expose four named float class attributes covering the practical
+              range of broadband extinction from exceptional to hazy sites.
+            - Serve as documentation-adjacent holders for
+              VisibilityPolicy.extinction_coefficient_k.
+        Non-responsibilities:
+            - Does not instantiate; all attributes are class-level floats.
+            - Does not enforce that the policy field is restricted to these
+              four values.
+            - Does not govern wavelength-dependent or narrow-band extinction.
+        Dependencies:
+            - None.  No runtime imports required.
+        Structural invariants:
+            - MAUNA_KEA (0.172) ≤ GOOD_DARK_SITE (0.20) ≤ TYPICAL (0.25)
+              ≤ HAZY (0.30).
+
+    Canon: Schaefer, B.E. (1990), PASP 102, 212–229;
+           Krisciunas, K. & Schaefer, B.E. (1991), PASP 103, 1033–1039.
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.heliacal.ExtinctionCoefficient",
+        "risk": "low",
+        "api": {
+            "public_attributes": ["MAUNA_KEA", "GOOD_DARK_SITE", "TYPICAL", "HAZY"]
+        },
+        "state": {
+            "mutable": false,
+            "fields": "class-level float constants"
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_computation",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": [],
+            "policy": "no instance construction expected"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "urania"
+    }
+    [/MACHINE_CONTRACT]
     """
 
     MAUNA_KEA: float = 0.172
@@ -300,7 +970,66 @@ class ExtinctionCoefficient:
 
 
 class MoonlightPolicy(str, Enum):
-    """Moonlight treatment slot for the currently admitted visibility doctrine."""
+    """
+    RITE: The Moonlight Gate — the admitted selection between moonlight treatment regimes.
+
+    THEOREM: Str-enum declaring whether the Krisciunas & Schaefer (1991)
+    moonlight sky-brightness penalty is applied or suppressed.
+
+    RITE OF PURPOSE:
+        Controls whether and how the Moon's contribution to sky brightness
+        reduces the effective limiting magnitude during a visibility assessment.
+        An explicit named gate prevents silent activation of the K&S 1991 model
+        when the caller has not declared a moonlight policy, and keeps the
+        computational regime visible in policy rather than hidden behind a boolean.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Enumerate the two admitted moonlight treatment regimes.
+            - Serve as the moonlight_policy field of VisibilityPolicy.
+        Non-responsibilities:
+            - Does not implement the K&S 1991 computation (handled by
+              _ks1991_limiting_magnitude_penalty()).
+            - Does not control the extinction coefficient used by K&S 1991
+              (that is VisibilityPolicy.extinction_coefficient_k).
+        Dependencies:
+            - None.  Pure enum.
+
+    Canon: Krisciunas, K. & Schaefer, B.E. (1991), PASP 103, 1033–1039
+           (for the KRISCIUNAS_SCHAEFER_1991 member).
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.heliacal.MoonlightPolicy",
+        "risk": "low",
+        "api": {
+            "members": ["IGNORE", "KRISCIUNAS_SCHAEFER_1991"]
+        },
+        "state": {
+            "mutable": false
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_enum",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": ["ValueError on invalid string construction"],
+            "policy": "str-enum construction validates implicitly"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "urania"
+    }
+    [/MACHINE_CONTRACT]
+    """
 
     IGNORE = "ignore"
     KRISCIUNAS_SCHAEFER_1991 = "krisciunas_schaefer_1991"
@@ -309,13 +1038,80 @@ class MoonlightPolicy(str, Enum):
 @dataclass(frozen=True, slots=True)
 class ObserverVisibilityEnvironment:
     """
-    Observer environment layer for the admitted visibility family.
+    RITE: The Observer Environment Vessel — the complete typed environment declaration
+    for one observing site and sky condition.
 
-    The fields are intentionally non-equivalent:
-    - ``light_pollution_class`` is a site-environment classifier
-    - ``limiting_magnitude`` is the operative threshold parameter
-    - ``local_horizon_altitude_deg`` is a geometric horizon constraint
-    - temperature/pressure/humidity support apparent-altitude correction
+    THEOREM: Immutable frozen dataclass carrying the observer's physical site
+    environment parameters required by the generalized visibility criterion family.
+
+    RITE OF PURPOSE:
+        Separates the observer's physical environment (site darkness, horizon,
+        atmosphere, instrument) from the computational visibility policy so that
+        each layer can be constructed and inspected independently.  Without this
+        vessel, environment state would be embedded alongside computational policy
+        choices, making it impossible to reuse a site environment across multiple
+        criterion families.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry site darkness class, explicit limiting magnitude override,
+              local horizon altitude, atmospheric parameters, and observing aid.
+            - Validate relative_humidity, pressure_mbar, and
+              observer_altitude_m on construction.
+            - Serve as the environment field of VisibilityPolicy.
+        Non-responsibilities:
+            - Does not compute limiting magnitude (delegated to
+              _effective_limiting_magnitude()).
+            - Does not apply atmospheric refraction (delegated to
+              moira.rise_set._altitude()).
+            - Does not carry geographic coordinates (those are function arguments).
+        Dependencies:
+            - LightPollutionClass, ObserverAid (enum dependencies only).
+        Behavioral invariants:
+            - limiting_magnitude, when provided, must be finite.
+            - relative_humidity ∈ [0, 1].
+            - pressure_mbar ≥ 0.
+            - observer_altitude_m ≥ −1000 m.
+
+    Canon: None (No applicable canon; synthesis of standard atmospheric and
+           observational parameters).
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.heliacal.ObserverVisibilityEnvironment",
+        "risk": "low",
+        "api": {
+            "public_attributes": [
+                "light_pollution_class", "limiting_magnitude",
+                "local_horizon_altitude_deg", "temperature_c",
+                "pressure_mbar", "relative_humidity",
+                "observer_altitude_m", "observing_aid"
+            ]
+        },
+        "state": {
+            "mutable": false
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_computation",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": ["ValueError on invalid humidity, pressure, or altitude"],
+            "policy": "__post_init__ enforces physical plausibility bounds"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "urania"
+    }
+    [/MACHINE_CONTRACT]
     """
 
     light_pollution_class: LightPollutionClass | None = LightPollutionClass.BORTLE_3
@@ -343,11 +1139,81 @@ class ObserverVisibilityEnvironment:
 @dataclass(frozen=True, slots=True)
 class VisibilityPolicy:
     """
-    Admitted generalized visibility policy.
+    RITE: The Visibility Doctrine — the unified policy vessel for generalized
+    observability decisions.
 
-    This currently supports:
-    - ``LIMITING_MAGNITUDE_THRESHOLD`` for generic integrated visibility
-    - ``YALLOP_LUNAR_CRESCENT`` for lunar evening crescent visibility
+    THEOREM: Immutable frozen dataclass carrying the complete set of doctrinal
+    choices governing how a body's observability is assessed or searched.
+
+    RITE OF PURPOSE:
+        Gathers criterion family, observer environment, sky model choices,
+        extinction treatment, twilight model, and moonlight policy into a single
+        typed, immutable policy object so that every visibility assessment is
+        driven by an explicit, inspectable, reproducible doctrine.  Without this
+        unification, the same parameters would need to be threaded as individual
+        keyword arguments across every call site, obscuring the operational
+        doctrine and making policy changes non-atomic.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry all doctrinal choices for an observability assessment or event
+              search in one immutable vessel.
+            - Default environment to ObserverVisibilityEnvironment() when None.
+            - Enforce that YALLOP_LUNAR_CRESCENT requires the standard twilight
+              model slot.
+        Non-responsibilities:
+            - Does not compute sky brightness, limiting magnitude, or
+              observability.
+            - Does not carry geographic coordinates (those are function arguments).
+            - Does not govern stellar heliacal event search (that uses
+              FixedStarComputationPolicy in star_types.py).
+        Dependencies:
+            - VisibilityCriterionFamily, ObserverVisibilityEnvironment,
+              LightPollutionDerivationMode, VisibilityExtinctionModel,
+              VisibilityTwilightModel, MoonlightPolicy.
+        Behavioral invariants:
+            - environment is never None after construction.
+            - YALLOP_LUNAR_CRESCENT + non-standard twilight_model raises
+              ValueError on construction.
+
+    Canon: None (No applicable canon; unified design synthesis).
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.heliacal.VisibilityPolicy",
+        "risk": "medium",
+        "api": {
+            "public_attributes": [
+                "criterion_family", "environment",
+                "light_pollution_derivation_mode", "extinction_model",
+                "twilight_model", "use_refraction", "moonlight_policy",
+                "extinction_coefficient_k"
+            ]
+        },
+        "state": {
+            "mutable": false
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_computation",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": ["ValueError for YALLOP_LUNAR_CRESCENT with incompatible twilight_model"],
+            "policy": "__post_init__ enforces criterion/twilight compatibility"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "urania"
+    }
+    [/MACHINE_CONTRACT]
     """
 
     criterion_family: VisibilityCriterionFamily = VisibilityCriterionFamily.LIMITING_MAGNITUDE_THRESHOLD
@@ -386,7 +1252,74 @@ class VisibilityPolicy:
 
 @dataclass(frozen=True, slots=True)
 class VisibilitySearchPolicy:
-    """Search-policy layer for generalized visibility-event search."""
+    """
+    RITE: The Search Warden — the policy vessel governing event-search extent
+    and step resolution.
+
+    THEOREM: Immutable frozen dataclass carrying the search-window, step-size,
+    and refinement-tolerance parameters for generalized visibility-event search.
+
+    RITE OF PURPOSE:
+        Separates search configuration from visibility doctrine so that callers
+        can tune search performance (window size, step resolution) independently
+        from the criterion family and observer environment.  Without this
+        vessel, search parameters would need to be threaded as raw int/float
+        keyword arguments alongside doctrinal choices, making the search
+        configuration invisible at the API surface.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry search_window_days, coarse_step_days, refine_tolerance_days,
+              and long_search flag as a typed, validated policy.
+            - Validate on construction that window and steps are positive and
+              finite.
+        Non-responsibilities:
+            - Does not execute any search.
+            - Does not define the visibility criterion used during search.
+        Dependencies:
+            - None (pure data vessel).
+        Behavioral invariants:
+            - search_window_days must be a positive integer.
+            - coarse_step_days and refine_tolerance_days must be positive finite
+              floats.
+
+    Canon: None (No applicable canon).
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.heliacal.VisibilitySearchPolicy",
+        "risk": "low",
+        "api": {
+            "public_attributes": [
+                "search_window_days", "coarse_step_days",
+                "refine_tolerance_days", "long_search"
+            ]
+        },
+        "state": {
+            "mutable": false
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_computation",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": ["ValueError for non-positive window or non-finite steps"],
+            "policy": "__post_init__ enforces physical plausibility bounds"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "urania"
+    }
+    [/MACHINE_CONTRACT]
+    """
 
     search_window_days: int = 400
     coarse_step_days: float = 1.0
@@ -409,39 +1342,80 @@ class VisibilitySearchPolicy:
 @dataclass(frozen=True, slots=True)
 class VisibilityModel:
     """
-    Current narrow observer-and-atmosphere vessel for admitted planetary events.
+    RITE: The V0 Observer Vessel — the legacy narrow observer-and-atmosphere carrier
+    for admitted planetary heliacal events.
 
-    Replaces Swiss Ephemeris ``AtmosphericConditions`` integer-indexed
-    array with a typed, self-documenting, immutable vessel.
+    THEOREM: Immutable frozen dataclass compressing observer physiology,
+    atmospheric extinction, and horizon threshold into a single typed vessel for
+    the V0 planetary event helpers.
 
-    Doctrine
-    --------
-    This vessel currently compresses three layers together:
+    RITE OF PURPOSE:
+        Replaces the Swiss Ephemeris integer-indexed AtmosphericConditions array
+        with a typed, self-documenting vessel so that planetary heliacal event
+        callers can express observing conditions without raw array indexing.
+        Retained for V0 backwards compatibility; new callers should use
+        ObserverVisibilityEnvironment and VisibilityPolicy for the full
+        generalized surface.
 
-    1. Observer physiology — naked-eye limiting magnitude (``limiting_mag``).
-       The standard value 6.5 represents an ideal dark-sky observer.
-       Light-polluted sites typically range from 4.0 to 5.5.
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry limiting magnitude, extinction coefficient, horizon altitude,
+              and atmospheric parameters as typed, validated fields.
+            - Serve as the visibility_model field of HeliacalPolicy.
+            - Provide to_observer_environment() for bridging into the full
+              generalized surface.
+        Non-responsibilities:
+            - Does not separate site darkness from observer physiology (by design;
+              that separation belongs to ObserverVisibilityEnvironment).
+            - Does not carry light-pollution class (use ObserverVisibilityEnvironment
+              for that).
+            - Does not apply refraction itself.
+        Dependencies:
+            - LightPollutionClass, ObserverAid (optional; passed through
+              to_observer_environment() only).
+        Behavioral invariants:
+            - relative_humidity \u2208 [0, 1].
+            - extinction_coefficient \u2265 0.
 
-    2. Atmospheric extinction — how much light is absorbed per unit airmass.
-       Encoded as ``extinction_coefficient`` (k in magnitudes/airmass).
-       Clear mountain sky ≈ 0.20; average site ≈ 0.25; hazy ≈ 0.35.
+    Canon: Schaefer, B.E. (1990), PASP 102, 212\u2013229 (physical model basis);
+           Swiss Ephemeris AtmosphericConditions (replaced interface).
 
-    3. Sky background — the brightness of the sky at the horizon that a
-       body must exceed to be seen.  The ``horizon_altitude_deg`` field
-       defines how far above the geometric horizon the effective visibility
-       horizon lies, accounting for local obstructions.
-
-    V0 boundary note
-    ----------------
-    `VisibilityModel` is sufficient for the currently admitted planetary
-    event helpers, but it is not yet the final generalized visibility-policy
-    surface. In particular:
-    - light pollution is not yet a first-class typed policy object
-    - observer environment is not yet separated from visibility criterion
-    - generalized criterion families are not yet exposed
-
-    A future generalized subsystem may preserve this vessel as a narrow input
-    layer or replace it with a fuller observer-environment object.
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.heliacal.VisibilityModel",
+        "risk": "low",
+        "api": {
+            "public_attributes": [
+                "limiting_magnitude", "extinction_coefficient",
+                "horizon_altitude_deg", "temperature_c",
+                "pressure_mbar", "relative_humidity"
+            ],
+            "public_methods": ["to_observer_environment"]
+        },
+        "state": {
+            "mutable": false
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_computation",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": ["ValueError for invalid humidity or extinction_coefficient"],
+            "policy": "__post_init__ enforces physical plausibility bounds"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "urania"
+    }
+    [/MACHINE_CONTRACT]
 
     All fields have documented physical units.  Callers must not pass raw
     Swiss integer-array indices to any Moira heliacal function.
@@ -454,7 +1428,7 @@ class VisibilityModel:
             (magnitudes/airmass).  Default 0.25 (average site).
         horizon_altitude_deg: Effective visibility horizon altitude above
             the geometric horizon (degrees).  Default 0.0.
-        temperature_c: Ambient temperature (°C) for refraction.  Default 10.
+        temperature_c: Ambient temperature (\u00b0C) for refraction.  Default 10.
         pressure_mbar: Atmospheric pressure (mbar) for refraction.
             Default 1013.25 (sea level ISA).
         relative_humidity: Relative humidity [0.0, 1.0] for extended
@@ -504,28 +1478,79 @@ class VisibilityModel:
 @dataclass(frozen=True, slots=True)
 class HeliacalPolicy:
     """
-    Current narrow doctrine control for admitted planetary heliacal events.
+    RITE: The V0 Doctrine Layer — the legacy narrow planetary heliacal event policy
+    carrier.
 
-    Replaces Swiss Ephemeris ``swe_heliacal_ut`` integer flag bitfield
-    (SE_HELFLAG_OPTICAL_PARAMS, SE_HELFLAG_NO_DETAILS, etc.) with a
-    typed, immutable, self-documenting policy object.
+    THEOREM: Immutable frozen dataclass governing three narrow doctrinal choices
+    for the V0 admitted planetary heliacal event helpers.
 
-    Doctrine
-    --------
-    The current policy governs three narrow choices:
+    RITE OF PURPOSE:
+        Replaces the Swiss Ephemeris swe_heliacal_ut integer flag bitfield with
+        a typed, self-documenting policy so that planetary heliacal event callers
+        can declare observing configuration without raw SE_HELFLAG_ constants.
+        Retained for V0 compatibility; bridges into VisibilityPolicy through
+        __post_init__ construction.  New callers using visibility_event() may
+        pass VisibilityPolicy directly and leave this vessel at default.
 
-    1. Optical aid — whether the observer uses naked eye, binoculars, or a
-       telescope.  Optical aid changes the effective ``limiting_magnitude``
-       of the observer and the angular disc threshold.
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry optical_aid, use_extended_atmosphere, visibility_model, and
+              visibility_policy as a typed, validated policy.
+            - Construct a default visibility_policy from visibility_model when
+              none is supplied.
+            - Serve as the heliacal_policy argument to visibility_event() and
+              the narrow V0 planet_heliacal_* helpers.
+        Non-responsibilities:
+            - Does not govern fixed-star heliacal search (that is
+              FixedStarComputationPolicy in star_types.py).
+            - Does not carry geographic coordinates.
+            - Does not infer body_type from body name (that is done at call time).
+        Dependencies:
+            - ObserverAid, VisibilityModel, VisibilityPolicy,
+              ObserverVisibilityEnvironment.
+        Behavioral invariants:
+            - optical_aid is normalised to an ObserverAid enum member.
+            - visibility_model is never None after construction.
+            - visibility_policy is never None after construction.
 
-    2. Atmospheric details — whether the full extended refraction model
-       (humidity, wavelength) is applied, or the standard two-parameter
-       (pressure, temperature) model is used.  The extended model is more
-       accurate but requires additional observer inputs.
+    Canon: Swiss Ephemeris swe_heliacal_ut (replaced interface);
+           Schaefer (1990), PASP 102, 212\u2013229 (physical doctrine basis).
 
-    3. Body type — whether the target is a star, planet, or the Moon.
-       Some visibility criteria differ (e.g. phase angle for planets,
-       disc threshold for the Moon).
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.heliacal.HeliacalPolicy",
+        "risk": "medium",
+        "api": {
+            "public_attributes": [
+                "optical_aid", "use_extended_atmosphere",
+                "visibility_model", "visibility_policy"
+            ],
+            "public_methods": ["default"]
+        },
+        "state": {
+            "mutable": false
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_computation",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": ["ValueError for invalid optical_aid value"],
+            "policy": "__post_init__ normalises optical_aid and populates defaults"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "urania"
+    }
+    [/MACHINE_CONTRACT]
 
     Args:
         optical_aid: One of ``'naked_eye'``, ``'binoculars'``, or
@@ -536,21 +1561,6 @@ class HeliacalPolicy:
         visibility_model: :class:`VisibilityModel` instance governing
             observer and atmospheric parameters.  Default is standard
             dark-sky conditions.
-
-    V0 boundary note
-    ----------------
-    `HeliacalPolicy` currently governs only the admitted planetary helper
-    surfaces in this module. It is not yet the final generalized policy for a
-    future visibility subsystem with:
-    - explicit observer-environment layering
-    - light-pollution policy
-    - generalized criterion-family selection
-    - generalized search doctrine
-
-    Design note: ``body_type`` is intentionally not a field here — it is
-    inferred from the body name at call time (star → catalog lookup;
-    planet → DE441; Moon → lunar orbit).  Forcing callers to specify it
-    would be Swiss-style API clutter.
     """
     optical_aid:               str            = 'naked_eye'
     use_extended_atmosphere:   bool           = False
@@ -697,6 +1707,17 @@ def _policy_limiting_magnitude(
     light_pollution_class: LightPollutionClass | None,
     mode: LightPollutionDerivationMode,
 ) -> float:
+    """
+    Derive limiting magnitude from Bortle class under the selected derivation mode.
+
+    Returns 6.5 when ``light_pollution_class`` is None.
+
+    Raises:
+        KeyError: If ``mode`` is ``BORTLE_TABLE`` and the Bortle class is not
+            present in the lookup table.
+
+    Side effects: None.
+    """
     if light_pollution_class is None:
         return 6.5
     if mode is LightPollutionDerivationMode.BORTLE_TABLE:
@@ -705,6 +1726,17 @@ def _policy_limiting_magnitude(
 
 
 def _effective_limiting_magnitude(policy: VisibilityPolicy) -> float:
+    """
+    Resolve the effective limiting magnitude from policy environment state.
+
+    Uses explicit ``environment.limiting_magnitude`` when provided; otherwise
+    derives a value from Bortle class and derivation mode.
+
+    Raises:
+        AssertionError: If ``policy.environment`` is unexpectedly None.
+
+    Side effects: None.
+    """
     environment = policy.environment
     assert environment is not None
     if environment.limiting_magnitude is not None:
@@ -882,6 +1914,19 @@ def _ks1991_limiting_magnitude_penalty(
 
 
 def _effective_visibility_model(policy: HeliacalPolicy) -> VisibilityModel:
+    """
+    Build the effective V0 visibility model from heliacal and visibility policy.
+
+    When a full ``VisibilityPolicy`` is present, this helper projects its
+    environment and limiting-magnitude state into a legacy ``VisibilityModel``
+    instance for V0 helper compatibility.
+
+    Raises:
+        AssertionError: If ``policy.visibility_policy.environment`` is
+            unexpectedly None.
+
+    Side effects: None.
+    """
     visibility_policy = policy.visibility_policy
     if visibility_policy is None:
         return policy.visibility_model
@@ -898,6 +1943,17 @@ def _effective_visibility_model(policy: HeliacalPolicy) -> VisibilityModel:
 
 
 def _true_altitude(body: str, jd_ut: float, lat: float, lon: float) -> float:
+    """
+    Compute geometric (unrefracted) altitude from RA/Dec and local sidereal time.
+
+    This helper intentionally bypasses atmospheric refraction and returns the
+    pure geometric altitude in degrees.
+
+    Raises:
+        ValueError: Propagated from trig operations if inputs are non-finite.
+
+    Side effects: None.
+    """
     from .rise_set import _body_ra_dec, _lst
 
     ra, dec = _body_ra_dec(jd_ut, body)
@@ -912,6 +1968,18 @@ def _true_altitude(body: str, jd_ut: float, lat: float, lon: float) -> float:
 
 
 def _true_horizontal(body: str, jd_ut: float, lat: float, lon: float) -> tuple[float, float]:
+    """
+    Return geometric azimuth/altitude for a body at the given instant.
+
+    Returns ``(azimuth_deg, altitude_deg)`` using equatorial-to-horizontal
+    conversion with no atmospheric refraction.
+
+    Raises:
+        ValueError: Propagated by underlying coordinate transforms for invalid
+            numeric inputs.
+
+    Side effects: None.
+    """
     from .coordinates import equatorial_to_horizontal
     from .rise_set import _body_ra_dec, _lst
 
@@ -921,7 +1989,18 @@ def _true_horizontal(body: str, jd_ut: float, lat: float, lon: float) -> tuple[f
 
 
 def _target_apparent_magnitude(body: str, jd_ut: float) -> float:
-    """Return the admitted apparent-magnitude surrogate for a visibility target."""
+    """
+    Return the admitted apparent-magnitude surrogate for a visibility target.
+
+    Planets and the Moon are routed to ``phase.apparent_magnitude``; fixed
+    stars are routed to ``stars.star_magnitude``.
+
+    Raises:
+        ValueError: Propagated by downstream magnitude providers for unsupported
+            body identities.
+
+    Side effects: None.
+    """
     if body == Body.MOON or body in _HELIACAL_PLANETS:
         from .phase import apparent_magnitude
 
@@ -932,7 +2011,18 @@ def _target_apparent_magnitude(body: str, jd_ut: float) -> float:
 
 
 def _target_signed_elongation(body: str, jd_ut: float) -> float:
-    """Signed elongation for planets or fixed stars."""
+    """
+    Return signed solar elongation for planets, Moon, or fixed stars.
+
+    Planetary and lunar elongation uses direct planetary longitudes; stellar
+    elongation uses star coordinates at TT against the Sun at UT/TT.
+
+    Raises:
+        ValueError: Propagated by downstream ephemeris/stellar providers for
+            unsupported body identities.
+
+    Side effects: None.
+    """
     if body in _HELIACAL_PLANETS or body == Body.MOON:
         return _signed_elongation(body, jd_ut)
     from .constants import Body as _Body
@@ -955,7 +2045,17 @@ def _target_altitude(
     pressure_mbar: float = 1013.25,
     temperature_c: float = 10.0,
 ) -> float:
-    """Apparent altitude of a planet, Moon, or fixed star."""
+    """
+    Return apparent altitude for a planet, Moon, or fixed star.
+
+    Uses the refraction-aware altitude engine in ``moira.rise_set``.
+
+    Raises:
+        ValueError: Propagated by downstream altitude solver for invalid body
+            identities or numeric inputs.
+
+    Side effects: None.
+    """
     from .rise_set import _altitude
 
     return _altitude(
@@ -969,6 +2069,17 @@ def _target_altitude(
 
 
 def _moon_horizontal_parallax_arcmin(jd_ut: float) -> float:
+    """
+    Compute lunar horizontal parallax in arcminutes at a UT1 instant.
+
+    Returns 0.0 when the Moon distance is non-positive.
+
+    Raises:
+        ValueError: Propagated if ephemeris provider returns invalid numeric
+            values.
+
+    Side effects: None.
+    """
     from .constants import EARTH_RADIUS_KM
     from .planets import planet_at
 
@@ -980,6 +2091,13 @@ def _moon_horizontal_parallax_arcmin(jd_ut: float) -> float:
 
 
 def _yallop_visibility_class(q: float) -> LunarCrescentVisibilityClass:
+    """
+    Classify a Yallop q-value into A-F lunar crescent visibility class.
+
+    Thresholds follow the admitted Yallop boundary table.
+
+    Side effects: None.
+    """
     if q > 0.216:
         return LunarCrescentVisibilityClass.A
     if q > -0.014:
@@ -997,6 +2115,14 @@ def _yallop_class_observable(
     visibility_class: LunarCrescentVisibilityClass,
     observer_aid: ObserverAid,
 ) -> bool:
+    """
+    Resolve whether a Yallop class is observable for the given observing aid.
+
+    A and B are naked-eye observable; C and D require binoculars or telescope;
+    E and F are not observable.
+
+    Side effects: None.
+    """
     if visibility_class in (LunarCrescentVisibilityClass.A, LunarCrescentVisibilityClass.B):
         return True
     if visibility_class in (LunarCrescentVisibilityClass.C, LunarCrescentVisibilityClass.D):
@@ -1009,6 +2135,18 @@ def _lunar_crescent_details_at(
     lat: float,
     lon: float,
 ) -> LunarCrescentDetails:
+    """
+    Compute Yallop lunar crescent detail fields at a single instant.
+
+    Produces the full ``LunarCrescentDetails`` vessel, including ARCL/ARCV,
+    parallax-adjusted crescent width, q-value, and A-F class.
+
+    Raises:
+        ValueError: Propagated from coordinate/phase providers for invalid
+            inputs.
+
+    Side effects: None.
+    """
     from .phase import elongation
 
     arcl_deg = elongation(Body.MOON, jd_ut)
@@ -1054,6 +2192,14 @@ def _lunar_crescent_details_for_evening(
     lat: float,
     lon: float,
 ) -> LunarCrescentDetails | None:
+    """
+    Compute evening crescent details using sunset-to-moonset best-time rule.
+
+    Returns None if sunset is absent, moonset is absent, or moonset does not
+    occur after sunset on the same evening window.
+
+    Side effects: None.
+    """
     from .rise_set import find_phenomena, twilight_times
 
     twilight = twilight_times(jd_midnight, lat, lon)
@@ -1088,6 +2234,14 @@ def _lunar_crescent_details_for_morning(
     lat: float,
     lon: float,
 ) -> LunarCrescentDetails | None:
+    """
+    Compute morning crescent details using moonrise-to-sunrise best-time rule.
+
+    Returns None if sunrise is absent, moonrise is absent, or moonrise occurs
+    after sunrise in the morning window.
+
+    Side effects: None.
+    """
     from .rise_set import find_phenomena, twilight_times
 
     twilight = twilight_times(jd_midnight, lat, lon)
@@ -1136,6 +2290,12 @@ def _find_sun_at_alt(
     target_alt  : Target solar altitude (negative for twilight, e.g. −12.0).
 
     Returns None if no crossing exists (polar day/night, or wrong half-day).
+
+    Raises:
+        ValueError: Propagated from solar-altitude computation for invalid
+            numeric inputs.
+
+    Side effects: None.
     """
     t0 = jd_midnight if morning else jd_midnight + 0.5
     t1 = t0 + 0.5
@@ -1175,6 +2335,12 @@ def _check_visibility(
 
     Returns ``(twilight_jd, planet_alt_deg, sun_alt_deg, magnitude)`` if
     visible, else ``None``.
+
+    Raises:
+        ValueError: Propagated by downstream magnitude/altitude helpers for
+            invalid inputs.
+
+    Side effects: None.
     """
     mag = _target_apparent_magnitude(body, jd_midnight + 0.5)
     av = _arcus_visionis(mag, model)
@@ -1194,6 +2360,16 @@ def _validate_args(
     lon: float,
     search_days: int,
 ) -> None:
+    """
+    Validate core planetary heliacal search arguments.
+
+    Raises:
+        ValueError: If body is not an admitted heliacal planet, jd_start is
+            non-finite, lat/lon are out of range, or search_days is not a
+            positive integer.
+
+    Side effects: None.
+    """
     if body not in _HELIACAL_PLANETS:
         raise ValueError(
             f"body must be a planet (not SUN, MOON, or EARTH); got {body!r}"
@@ -1209,6 +2385,11 @@ def _validate_args(
 
 
 def _target_kind(body: str) -> VisibilityTargetKind:
+    """
+    Classify a body identifier into PLANET, MOON, or STAR target kind.
+
+    Side effects: None.
+    """
     if body in _HELIACAL_PLANETS:
         return VisibilityTargetKind.PLANET
     if body == Body.MOON:
@@ -1225,6 +2406,14 @@ def _check_visibility_with_target_alt(
     target_solar_altitude_deg: float,
     model: VisibilityModel,
 ) -> tuple[float, float, float, float] | None:
+    """
+    Evaluate visibility on a day at an explicit solar-altitude threshold.
+
+    Returns ``(twilight_jd, target_alt_deg, sun_alt_deg, magnitude)`` when the
+    target is above local horizon and bright enough at the threshold moment.
+
+    Side effects: None.
+    """
     mag = _target_apparent_magnitude(body, jd_midnight + 0.5)
 
     twilight_jd = _find_sun_at_alt(jd_midnight, lat, lon, target_solar_altitude_deg, morning)
@@ -1254,6 +2443,14 @@ def _general_event_from_tuple(
     *,
     visibility_policy: VisibilityPolicy | None,
 ) -> GeneralVisibilityEvent:
+    """
+    Build ``GeneralVisibilityEvent`` from tuple payload plus assessment.
+
+    This helper normalizes tuple-based search output into the public event
+    vessel and injects the computed ``VisibilityAssessment``.
+
+    Side effects: None.
+    """
     jd_ev, target_alt, sun_alt, mag, elong = event_tuple
     assessment = visibility_assessment(
         body,
@@ -1285,6 +2482,14 @@ def _general_event_from_jd(
     sun_altitude_deg: float,
     visibility_policy: VisibilityPolicy | None,
 ) -> GeneralVisibilityEvent:
+    """
+    Build ``GeneralVisibilityEvent`` from a resolved event JD.
+
+    Recomputes signed elongation and assessment at ``jd_ev`` and stores the
+    supplied solar altitude from the upstream event source.
+
+    Side effects: None.
+    """
     assessment = visibility_assessment(
         body,
         jd_ev,
@@ -1314,6 +2519,14 @@ def _general_event_from_lunar_crescent_details(
     *,
     visibility_policy: VisibilityPolicy,
 ) -> GeneralVisibilityEvent:
+    """
+    Build ``GeneralVisibilityEvent`` from a lunar crescent details vessel.
+
+    Used for Yallop-governed Moon events where crescent details are first-class
+    output and must be preserved in the outer event vessel.
+
+    Side effects: None.
+    """
     assessment = visibility_assessment(
         Body.MOON,
         details.best_time_jd_ut,
@@ -1346,6 +2559,17 @@ def _search_visibility_event(
     search_days: int,
     target_solar_altitude_deg: float | None = None,
 ) -> tuple[float, float, float, float, float] | None:
+    """
+    Execute the core forward visibility-event search state machine.
+
+    Returns the first qualifying event tuple for rising kinds, or the last
+    qualifying visible tuple for setting kinds prior to loss conditions.
+
+    The return payload is ``(jd_ut, target_alt_deg, sun_alt_deg,
+    apparent_mag, signed_elongation_deg)``.
+
+    Side effects: None.
+    """
     morning = kind in (
         HeliacalEventKind.HELIACAL_RISING,
         HeliacalEventKind.HELIACAL_SETTING,
@@ -1418,11 +2642,79 @@ def _search_visibility_event(
 @dataclass(frozen=True, slots=True)
 class VisibilityAssessment:
     """
-    Direct visibility result for the currently admitted criterion families.
+    RITE: The Visibility Verdict — the complete observability result for one instant.
 
-    This is intentionally separate from heliacal-event search. It answers
-    whether a body is observable at a specific instant under a declared
-    policy, together with the intermediate values that justify the decision.
+    THEOREM: Immutable frozen dataclass carrying the single-instant observability
+    assessment for a body under the currently admitted criterion families.
+
+    RITE OF PURPOSE:
+        Provides a fully auditable visibility result: the raw intermediate values
+        (true and apparent altitude, effective limiting magnitude, solar
+        elongation, moonlight contribution) alongside the final observable boolean,
+        so that callers can inspect every step of the observability decision rather
+        than receiving only a boolean answer.  Without this vessel, diagnosing
+        threshold boundary cases would require re-running subcomputations manually.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry all intermediate and final values from a single call to
+              visibility_assessment().
+            - Include lunar_crescent_details when criterion_family is
+              YALLOP_LUNAR_CRESCENT.
+            - Include moonlight_sky_nanolamberts when K&S 1991 moonlight model
+              is active.
+        Non-responsibilities:
+            - Does not compute any of its fields (populated by
+              visibility_assessment()).
+            - Does not define the criterion family semantics.
+        Dependencies:
+            - VisibilityCriterionFamily, LunarCrescentDetails (optional).
+        Structural invariants:
+            - lunar_crescent_details is non-None iff criterion_family is
+              YALLOP_LUNAR_CRESCENT.
+            - moonlight_sky_nanolamberts is non-None iff K&S 1991 moonlight
+              penalty was applied.
+
+    Canon: None (No applicable canon; aggregation result vessel).
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.heliacal.VisibilityAssessment",
+        "risk": "low",
+        "api": {
+            "public_attributes": [
+                "body", "jd_ut", "criterion_family",
+                "effective_limiting_magnitude", "apparent_magnitude",
+                "true_altitude_deg", "apparent_altitude_deg",
+                "local_horizon_altitude_deg", "solar_elongation_deg",
+                "is_geometrically_visible", "is_bright_enough", "observable",
+                "lunar_crescent_details", "moonlight_sky_nanolamberts"
+            ]
+        },
+        "state": {
+            "mutable": false
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_computation",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": [],
+            "policy": "caller-populated via visibility_assessment()"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "urania"
+    }
+    [/MACHINE_CONTRACT]
     """
 
     body: str
@@ -1444,11 +2736,75 @@ class VisibilityAssessment:
 @dataclass(frozen=True, slots=True)
 class GeneralVisibilityEvent:
     """
-    Generalized visibility-event result vessel.
+    RITE: The Event Vessel — the canonical result carrier for generalized
+    visibility-event search.
 
-    This is the owning V3 surface for event search. Current implementation
-    supports the admitted planetary family and preserves explicit target-kind
-    semantics for future star/moon expansion.
+    THEOREM: Immutable frozen dataclass carrying the primary result of a
+    generalized visibility-event search across all admitted target families.
+
+    RITE OF PURPOSE:
+        Provides a unified result vessel for heliacal, acronychal, and cosmic
+        visibility events across planets, fixed stars, and the Moon, carrying
+        the event geometry (elongation, target altitude, sun altitude, magnitude)
+        alongside the full VisibilityAssessment so that callers have both the
+        event identification and its observability audit in one immutable record.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry body identity, target kind, event kind, event JD, and the
+              key geometric quantities at the event moment.
+            - Embed the full VisibilityAssessment for the event instant.
+            - Include lunar_crescent_details at the outer vessel level for easy
+              access when target_kind is MOON.
+        Non-responsibilities:
+            - Does not compute any of its fields (populated by
+              _general_event_from_tuple(), _general_event_from_jd(), or
+              _general_event_from_lunar_crescent_details()).
+            - Does not define event-search algorithm.
+        Dependencies:
+            - VisibilityTargetKind, HeliacalEventKind, VisibilityAssessment,
+              LunarCrescentDetails (optional).
+        Structural invariants:
+            - jd_ut is the UT1 Julian Day of the first visibility crossing.
+            - assessment.body == body.
+
+    Canon: None (No applicable canon; aggregation result vessel).
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.heliacal.GeneralVisibilityEvent",
+        "risk": "low",
+        "api": {
+            "public_attributes": [
+                "body", "target_kind", "kind", "jd_ut",
+                "elongation_deg", "target_altitude_deg", "sun_altitude_deg",
+                "apparent_magnitude", "assessment", "lunar_crescent_details"
+            ]
+        },
+        "state": {
+            "mutable": false
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_computation",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": [],
+            "policy": "caller-populated via visibility_event()"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "urania"
+    }
+    [/MACHINE_CONTRACT]
     """
 
     body: str
@@ -1470,7 +2826,72 @@ class GeneralVisibilityEvent:
 @dataclass(frozen=True, slots=True)
 class PlanetHeliacalEvent:
     """
-    Result vessel for a planet heliacal or acronychal visibility event.
+    RITE: The Planetary Heliacal Record — the narrow result vessel for planetary
+    visibility events.
+
+    THEOREM: Immutable frozen dataclass carrying the narrow identification and
+    geometry for a single planetary heliacal or acronychal visibility event.
+
+    RITE OF PURPOSE:
+        Provides a concise, backward-compatible result type for the V0 planetary
+        event helpers (planet_heliacal_rising, planet_heliacal_setting,
+        planet_acronychal_rising, planet_acronychal_setting), carrying only the
+        event-geometry fields that planetary event callers need without the full
+        VisibilityAssessment inner vessel.  Produced by
+        _planet_event_from_general_event() from a GeneralVisibilityEvent.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry body name, event kind, Julian Day, elongation, planet altitude,
+              sun altitude, and apparent magnitude for a planetary event.
+            - Serve as the return type of the V0 planet_heliacal_* helpers.
+        Non-responsibilities:
+            - Does not carry the full VisibilityAssessment (use
+              GeneralVisibilityEvent for that).
+            - Does not store search policy or observer environment.
+            - Cannot represent fixed-star or lunar events.
+        Dependencies:
+            - HeliacalEventKind (event-kind typing only).
+        Structural invariants:
+            - jd_ut is the UT1 Julian Day of the visibility threshold crossing.
+            - sun_altitude_deg ≈ −arcus_visionis at jd_ut by construction.
+
+    Canon: None (No applicable canon; narrow result vessel).
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.heliacal.PlanetHeliacalEvent",
+        "risk": "low",
+        "api": {
+            "public_attributes": [
+                "body", "kind", "jd_ut", "elongation_deg",
+                "planet_altitude_deg", "sun_altitude_deg", "apparent_magnitude"
+            ]
+        },
+        "state": {
+            "mutable": false
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_computation",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": [],
+            "policy": "caller-populated via _planet_event_from_general_event()"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "urania"
+    }
+    [/MACHINE_CONTRACT]
 
     Fields
     ------
@@ -1522,8 +2943,39 @@ def visibility_assessment(
     """
     Assess direct observability of a body at a single instant.
 
-    This is the standalone public surface for the currently admitted
-    criterion families.
+    This is the standalone public surface for the currently admitted criterion
+    families: LIMITING_MAGNITUDE_THRESHOLD for planets and fixed stars, and
+    YALLOP_LUNAR_CRESCENT for the Moon.
+
+    Parameters
+    ----------
+    body:
+        Body name constant (``Body.*``) or a fixed-star name string.
+    jd_ut:
+        Julian Day in UT1.
+    lat:
+        Observer geodetic latitude in degrees (−90 to +90).
+    lon:
+        Observer longitude in degrees (−180 to +180).
+    policy:
+        :class:`VisibilityPolicy` governing criterion family, observer
+        environment, and moonlight model.  Defaults to
+        ``VisibilityPolicy()`` (LIMITING_MAGNITUDE_THRESHOLD, Bortle 3,
+        no moonlight penalty).
+
+    Returns
+    -------
+    :class:`VisibilityAssessment`
+        The complete single-instant observability assessment with all
+        intermediate values.
+
+    Raises
+    ------
+    ValueError
+        If ``jd_ut`` is not finite, ``lat`` or ``lon`` are out of range,
+        or YALLOP_LUNAR_CRESCENT is requested for a body other than the Moon.
+
+    Side effects: None.
     """
     if not math.isfinite(jd_ut):
         raise ValueError(f"jd_ut must be finite, got {jd_ut}")
@@ -1667,16 +3119,59 @@ def visibility_event(
     search_policy: VisibilitySearchPolicy | None = None,
 ) -> GeneralVisibilityEvent | None:
     """
-    Generalized visibility-event search surface.
+    Generalized visibility-event search surface for all admitted target families.
 
-    Current admitted target family:
-    - planets
+    Searches forward from ``jd_start`` for the next occurrence of the requested
+    ``event_kind`` for the given body, using the declared visibility and search
+    policies.  Returns ``None`` if no event is found within the search window.
 
-    Current admitted event family:
-    - heliacal rising
-    - heliacal setting
-    - acronychal rising
-    - acronychal setting
+    Admitted target families:
+        - Planets (all non-Sun, non-Earth, non-Moon Body constants)
+        - Fixed stars (named star strings routed to moira.stars)
+        - Moon (with YALLOP_LUNAR_CRESCENT criterion for crescent events)
+
+    Admitted event kinds:
+        - HELIACAL_RISING, HELIACAL_SETTING
+        - ACRONYCHAL_RISING, ACRONYCHAL_SETTING
+        - COSMIC_RISING, COSMIC_SETTING (planets only)
+
+    Parameters
+    ----------
+    body:
+        Body name constant or fixed-star name string.
+    event_kind:
+        :class:`HeliacalEventKind` specifying which visibility crossing to find.
+    jd_start:
+        Julian Day (UT1) to begin the forward search.
+    lat:
+        Observer geodetic latitude in degrees (−90 to +90).
+    lon:
+        Observer longitude in degrees (−180 to +180).
+    heliacal_policy:
+        :class:`HeliacalPolicy` governing observer model.  Defaults to
+        ``HeliacalPolicy.default()``.
+    visibility_policy:
+        :class:`VisibilityPolicy` governing criterion family and observer
+        environment.  When supplied, overrides the policy embedded in
+        ``heliacal_policy``.
+    search_policy:
+        :class:`VisibilitySearchPolicy` governing search extent and step.
+        Defaults to ``VisibilitySearchPolicy()``.
+
+    Returns
+    -------
+    :class:`GeneralVisibilityEvent` or ``None`` if no event is found.
+
+    Raises
+    ------
+    ValueError
+        For invalid ``body`` (SUN, EARTH), invalid argument ranges, or
+        invalid search_window_days.
+    NotImplementedError
+        For YALLOP_LUNAR_CRESCENT with non-crescent event kinds, or
+        unsupported event kinds.
+
+    Side effects: None.
     """
     if body in {Body.SUN, Body.EARTH}:
         raise ValueError(f"visibility_event does not support body {body!r}")
@@ -1955,7 +3450,17 @@ def visibility_event(
 def _planet_event_from_general_event(
     event: GeneralVisibilityEvent | None,
 ) -> PlanetHeliacalEvent | None:
-    """Convert the owning V3 event vessel into the legacy planetary vessel."""
+    """
+    Convert a generalized event vessel into the legacy planetary event vessel.
+
+    Returns None when input is None.
+
+    Raises:
+        ValueError: If ``event`` is non-planetary and therefore not valid for
+            legacy planetary helper surfaces.
+
+    Side effects: None.
+    """
     if event is None:
         return None
     if event.target_kind is not VisibilityTargetKind.PLANET:
