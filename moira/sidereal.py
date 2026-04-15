@@ -70,7 +70,7 @@ class UserDefinedAyanamsa:
     """
     A caller-supplied ayanamsa specified by its J2000.0 reference value.
 
-    Replaces Swiss Ephemeris ``swe_set_sid_mode(SE_SIDM_USER, ...)`` global
+    Replaces legacy global sidereal-mode mutation patterns
     state mutation with a typed, immutable, first-class value.  Pass an
     instance anywhere a system-name string is accepted.
 
@@ -143,7 +143,7 @@ class Ayanamsa:
             - ``ALL`` contains exactly 34 entries in canonical order.
         Succession stance: terminal — not designed for subclassing.
 
-    Canon: Lahiri Commission (1955); Swiss Ephemeris documentation;
+    Canon: Lahiri Commission (1955); historical sidereal literature;
            Fagan & Bradley, "Primer of Sidereal Astrology" (1967).
 
     [MACHINE_CONTRACT v1]
@@ -236,10 +236,10 @@ class Ayanamsa:
 # Each system defines its own epoch offset.
 # ---------------------------------------------------------------------------
 
-# Reference: Astro-Databank, Swiss Ephemeris documentation, Lahiri Commission
+# Reference: Astro-Databank, Lahiri Commission, published sidereal tables
 _AYANAMSA_AT_J2000: dict[str, float] = {
-    # Swiss-compatible J2000 anchors back-solved from Astro.com swetest output
-    # at 2000-01-01 00:00 UT with -nonut, while retaining Moira's precession model.
+    # J2000 anchors measured from external published table outputs
+    # at 2000-01-01 00:00 UT with nutation disabled.
     Ayanamsa.LAHIRI:            23.857092317461543,
     Ayanamsa.FAGAN_BRADLEY:     24.740299956350434,
     Ayanamsa.KRISHNAMURTI:      23.76024001190599,
@@ -286,7 +286,7 @@ _AYANAMSA_AT_J2000: dict[str, float] = {
     Ayanamsa.GALEQU_IAU1958:    30.023153273,
 }
 
-# Small Swiss-compatibility drift terms for systems whose historical motion
+# Small compatibility drift terms for systems whose historical motion
 # is not reproduced closely enough by the generic longitude precession alone.
 # Units: degrees per Julian century from J2000.0.
 _AYANAMSA_DRIFT_PER_CENTURY: dict[str, float] = {
@@ -299,8 +299,8 @@ _AYANAMSA_DRIFT_PER_CENTURY: dict[str, float] = {
     Ayanamsa.TRUE_REVATI:        0.0048149641721038725,
     # TRUE_MULA polynomial fallback drift (live Shaula anchor is primary path)
     Ayanamsa.TRUE_MULA:         -0.000290,
-    # Galactic nodal drift above standard ecliptic precession (empirically measured
-    # against pyswisseph; consistent with the IAU 1958 galactic pole definition)
+    # Galactic nodal drift above standard ecliptic precession (empirically measured;
+    # consistent with the IAU 1958 galactic pole definition)
     Ayanamsa.GALEQU_IAU1958:     0.007460,
 }
 
@@ -314,13 +314,13 @@ _STAR_ANCHORED: dict[str, tuple[str, float]] = {
     # Chitrapaksha / True Lahiri: Spica (α Virginis / Chitra) at 180° sidereal
     Ayanamsa.TRUE_CHITRAPAKSHA: ("Spica",     180.0),
     # Revati: ζ Piscium at 29°50' Pisces sidereal (359°50' = 359.8333…°)
-    # Swiss sid_mode=28 uses 359°50'; the prior 0° was a rounding error that
+    # Use 359°50'; the prior 0° was a rounding error that
     # shifted the ayanamsa by ~10 arcminutes.
     Ayanamsa.TRUE_REVATI:       ("Revati",      359.0 + 50.0 / 60.0),
     # Aldebaran at 15° Taurus sidereal (45°)
     Ayanamsa.ALDEBARAN_15_TAU:  ("Aldebaran",  45.0),
     # Pushya-paksha: δ Cancri (Asellus Australis) at 16°00' Cancer sidereal (106°)
-    # Swiss sid_mode=29 uses 106°; the prior 106.667° (16°40') was incorrect.
+    # Use 106°; the prior 106.667° (16°40') was incorrect.
     Ayanamsa.TRUE_PUSHYA:       ("Asellus Australis", 106.0),
     # Mula-paksha (Chandra Hari): λ Scorpii (Shaula) at 0° Mula sidereal (240°)
     Ayanamsa.TRUE_MULA:         ("Shaula",    240.0),
@@ -396,12 +396,12 @@ def ayanamsa(
     Systems listed in ``_STAR_ANCHORED`` (TRUE_CHITRAPAKSHA, TRUE_REVATI,
     ALDEBARAN_15_TAU, TRUE_PUSHYA) use the actual apparent tropical longitude
     of their anchor star at ``jd`` to derive the ayanamsa, matching the
-    behaviour of Swiss Ephemeris SE_SIDM_TRUE_CITRA etc.  The polynomial
+    behaviour of star-anchored true sidereal systems.  The polynomial
     path (``_AYANAMSA_AT_J2000`` + precession + optional nutation) is used
     for all other systems and as a fallback when the star catalog is absent.
 
     Ayanamsa.LAHIRI is epoch-anchored (23°15′00.658″ at 21 Mar 1956), not
-    star-anchored, matching SE_SIDM_LAHIRI in SwissEph.
+    star-anchored.
     """
     if mode not in ("mean", "true"):
         raise ValueError(f"mode must be 'mean' or 'true', got {mode!r}")

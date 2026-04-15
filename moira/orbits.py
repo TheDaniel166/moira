@@ -17,7 +17,7 @@ Implemented doctrine
    vector at the requested epoch.
 
 3. Public shape
-   Swiss-style raw float arrays are rejected. Public results are always
+    Raw float arrays are rejected. Public results are always
    returned as ``KeplerianElements`` or ``DistanceExtremes``.
 
 4. Event search basis
@@ -89,8 +89,7 @@ class KeplerianElements:
     """
     Keplerian osculating orbital elements for a solar system body.
 
-    Equivalent to the output of Swiss Ephemeris ``swe_get_orbital_elements``,
-    expressed as a typed, named vessel rather than a raw float array.
+    Expressed as a typed, named vessel rather than a raw float array.
 
     Coordinate frame: heliocentric, J2000.0 ecliptic and equinox.
     Element type: osculating (instantaneous, valid at ``epoch_jd``).
@@ -151,8 +150,7 @@ class DistanceExtremes:
     """
     Perihelion and aphelion distances and dates for a solar system body.
 
-    Equivalent to Swiss Ephemeris ``swe_orbit_max_min_true_distance``,
-    expressed as a typed vessel.
+    Expressed as a typed vessel.
 
     This vessel records the body's next (or most recent) perihelion and
     aphelion passage, together with the heliocentric distance at each.

@@ -411,7 +411,7 @@ def true_lilith(
 
 
 # ---------------------------------------------------------------------------
-# Phase 2: next_moon_node_crossing — mooncross_node analogue
+# Phase 2: next_moon_node_crossing
 # ---------------------------------------------------------------------------
 
 def next_moon_node_crossing(
@@ -421,9 +421,6 @@ def next_moon_node_crossing(
 ) -> float:
     """
     Find the next time the Moon crosses its orbital node.
-
-    Equivalent to Swiss Ephemeris ``swe_mooncross_node`` /
-    ``swe_mooncross_node_ut``.
 
     Detection method: the Moon's geocentric ecliptic latitude passes through
     zero at each node crossing.  At the ascending node the latitude changes
@@ -511,14 +508,12 @@ def _bisect_lat(func, t0: float, t1: float, iterations: int = 52) -> float:
 
 
 # ---------------------------------------------------------------------------
-# NodesAndApsides — Swiss nod_aps_ut equivalent
+# NodesAndApsides
 # ---------------------------------------------------------------------------
 
 @dataclass(slots=True)
 class NodesAndApsides:
     """Nodes and apsides for a body at a given Julian Day.
-
-    Equivalent to the output of Swiss Ephemeris ``swe_nod_aps_ut``.
 
     For the Moon: ascending/descending nodes and perigee/apogee are
     computed from the lunar node engine (``true_node``, ``mean_node``).
@@ -555,8 +550,6 @@ _BODY_MOON = "Moon"
 
 def nodes_and_apsides_at(body: str, jd_ut: float) -> NodesAndApsides:
     """Return nodes and apsides for *body* at *jd_ut*.
-
-    Equivalent to ``swe_nod_aps_ut`` in Swiss Ephemeris.
 
     For the Moon the true node and true Lilith (apogee) are used.
     For planets the ascending node longitude is taken from

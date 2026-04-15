@@ -67,8 +67,7 @@ class RiseSetPolicy:
     """
     Typed doctrine object controlling how rise and set events are defined.
 
-    RiseSetPolicy replaces the Swiss Ephemeris ``BIT_DISC_*``,
-    ``BIT_HINDU_RISING``, and ``BIT_NO_REFRACTION`` integer-flag pattern with
+    RiseSetPolicy replaces legacy integer-flag patterns with
     a typed, immutable, self-documenting policy.  Pass an instance to
     ``find_phenomena()`` via the ``policy`` kwarg to customise the event
     definition for a specific call.
@@ -80,34 +79,29 @@ class RiseSetPolicy:
 
         ``'limb'`` (default)
             The leading edge (upper limb) of the disc crosses the horizon.
-            This is the conventional definition and matches Swiss
-            ``BIT_DISC_BOTTOM`` for rising / upper limb for setting.
+            This is the conventional definition.
 
         ``'center'``
             The centre of the disc crosses the horizon.  Corresponds to
-            Swiss ``BIT_DISC_CENTER``.
+            center-disc event definitions.
 
         ``'bottom'``
-            The trailing edge (lower limb) crosses the horizon.  Corresponds
-            to Swiss ``BIT_DISC_BOTTOM`` in the setting sense.
+            The trailing edge (lower limb) crosses the horizon.
 
     fixed_disc_size : bool
         If ``True``, use the mean angular semi-diameter of the body rather than
-        the computed apparent semi-diameter.  Corresponds to Swiss
-        ``BIT_FIXED_DISC_SIZE``.  Default: ``False``.
+        the computed apparent semi-diameter.  Default: ``False``.
 
     hindu_rising : bool
         If ``True``, apply the Hindu rising doctrine: rise is defined as the
         moment when the Sun's centre crosses a horizon that has been shifted
-        upward by one solar semi-diameter.  Corresponds to Swiss
-        ``BIT_HINDU_RISING``.  Default: ``False``.
+        upward by one solar semi-diameter.  Default: ``False``.
 
     refraction : bool
         If ``True`` (default), include atmospheric refraction in the horizon
         altitude.  Standard astronomical refraction adds approximately
         0.5667° to the geometric horizon.  Set to ``False`` for geometric
-        (refraction-free) rise/set times.  Corresponds to the absence of
-        Swiss ``BIT_NO_REFRACTION``.
+        (refraction-free) rise/set times.
 
     horizon_altitude : float or None
         Explicit horizon altitude override in degrees.  When set, this value

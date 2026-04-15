@@ -153,9 +153,8 @@ class SolarEclipsePath:
     (:class:`SolarEclipseLocalCircumstances`) which answers "what happens at
     a specific observer location."
 
-    Swiss Ephemeris ``swe_sol_eclipse_where`` and ``swe_sol_eclipse_how``
-    expose this as raw float arrays indexed by undocumented integer offsets.
-    This vessel replaces those arrays with named, typed fields.
+    Legacy engines often expose this as raw float arrays indexed by integer
+    offsets. This vessel replaces those arrays with named, typed fields.
 
     Current implementation state
     ----------------------------
@@ -167,8 +166,8 @@ class SolarEclipsePath:
 
     Validation state
     ----------------
-    The current implemented slice is externally checked against the local
-    Swiss `swe_sol_eclipse_where` fixture for greatest-geography agreement.
+    The current implemented slice is externally checked against a local
+    reference fixture for greatest-geography agreement.
     Full atlas-grade path validation against NASA or USNO path corpora is
     still future work.
 
@@ -1426,8 +1425,6 @@ class EclipseCalculator:
     ) -> SolarEclipseLocalCircumstances:
         """Return local sky circumstances for the next solar eclipse visible at *latitude*, *longitude*.
 
-        Equivalent to Swiss Ephemeris ``swe_sol_eclipse_when_loc``.
-
         Unlike ``solar_local_circumstances``, which always anchors to the next
         *global* eclipse maximum (which may be invisible from the observer's
         location), this method iterates eclipse candidates and skips any where
@@ -2236,7 +2233,7 @@ def vertex_name(side_index: int) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Module-level convenience wrapper -- sol_eclipse_when_loc equivalent
+# Module-level convenience wrapper
 # ---------------------------------------------------------------------------
 
 def next_solar_eclipse_at_location(
@@ -2253,7 +2250,6 @@ def next_solar_eclipse_at_location(
 
     Module-level convenience wrapper around
     EclipseCalculator.next_solar_eclipse_at_location.
-    Equivalent to Swiss Ephemeris swe_sol_eclipse_when_loc.
 
     Parameters
     ----------

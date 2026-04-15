@@ -129,8 +129,8 @@ class OccultationPathGeometry:
     The surface answers: "where on Earth can this occultation be seen, and
     what are the ingress/egress times at each latitude band?"
 
-    Swiss Ephemeris ``swe_sol_eclipse_where`` and ``swe_occult_where`` expose
-    this as raw float arrays.  This vessel expresses the same information as
+    Legacy engines expose this as raw float arrays. This vessel expresses the
+    same information as
     named, typed fields.
 
     Current implementation state
@@ -142,8 +142,8 @@ class OccultationPathGeometry:
 
     Validation state
     ----------------
-    The current implemented slice is externally checked against the local
-    Swiss `swe_lun_occult_where` fixture for greatest-geography agreement and
+    The current implemented slice is externally checked against a local
+    reference fixture for greatest-geography agreement and
     against external IOTA graze/limit text files for fixed-longitude graze
     boundary agreement on multiple bright-star events (currently El Nath,
     Spica north/south limits, epsilon Ari, Alcyone, Merope, Asellus

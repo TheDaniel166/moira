@@ -928,14 +928,12 @@ def conjunctions_in_range(
 
 
 # ---------------------------------------------------------------------------
-# PlanetPhenomena — Swiss pheno_ut equivalent
+# PlanetPhenomena
 # ---------------------------------------------------------------------------
 
 @dataclass(slots=True)
 class PlanetPhenomena:
     """Bundle of instantaneous photometric and geometric phenomena for a body.
-
-    Equivalent to the output of Swiss Ephemeris ``swe_pheno_ut``.
 
     Fields
     ------
@@ -966,8 +964,6 @@ class PlanetPhenomena:
 
 def planet_phenomena_at(body: str, jd_ut: float) -> PlanetPhenomena:
     """Return instantaneous photometric and geometric phenomena for *body* at *jd_ut*.
-
-    Equivalent to ``swe_pheno_ut`` in Swiss Ephemeris.
 
     Parameters
     ----------

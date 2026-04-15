@@ -108,7 +108,7 @@ Constitution entry
         - K&S 1991 moonlight model admitted (V6 partial)
 
     Design invariants (must hold in all future changes):
-    - No Swiss integer bitfields.
+    - No legacy integer bitfields.
     - Narrow planetary helpers remain distinguishable from the generalized surface.
     - Visibility doctrine, observer environment, and search policy stay separate.
     - HeliacalEventKind is exhaustive; new kinds require doctrinal justification.
@@ -170,7 +170,7 @@ class HeliacalEventKind(str, Enum):
         Encodes the six canonical visibility boundary crossings as a typed enum
         so callers cannot accidentally pass an out-of-range integer or an
         ambiguous string.  Without this gate, event-kind dispatch collapses into
-        brittle integer comparisons carried wholesale from Swiss Ephemeris integer
+        brittle integer comparisons carried wholesale from legacy integer
         flag constants.  This enum is the doctrinal identity layer for heliacal
         event taxonomy.
 
@@ -181,7 +181,7 @@ class HeliacalEventKind(str, Enum):
             - Enforce that event-kind values are valid at the type level.
         Non-responsibilities:
             - Does not compute any event.
-            - Does not express a runtime dependency on Swiss Ephemeris integers.
+            - Does not express a runtime dependency on legacy integer flags.
             - Does not distinguish planetary vs. stellar applicability.
         Dependencies:
             - None.  Pure enum; no runtime imports required.
@@ -189,7 +189,7 @@ class HeliacalEventKind(str, Enum):
             - Six members exactly.  New kinds require explicit doctrinal
               justification and a change to the event-search dispatch table.
 
-    Canon: Ptolemy via Schoch nomenclature; Swiss Ephemeris SE_HELIACAL_RISING
+    Canon: Ptolemy via Schoch nomenclature; modern heliacal event nomenclature
            family (mapping provenance only, not runtime dependency).
 
     [MACHINE_CONTRACT v1]
@@ -1350,7 +1350,7 @@ class VisibilityModel:
     the V0 planetary event helpers.
 
     RITE OF PURPOSE:
-        Replaces the Swiss Ephemeris integer-indexed AtmosphericConditions array
+        Replaces legacy integer-indexed AtmosphericConditions arrays
         with a typed, self-documenting vessel so that planetary heliacal event
         callers can express observing conditions without raw array indexing.
         Retained for V0 backwards compatibility; new callers should use
@@ -1377,8 +1377,7 @@ class VisibilityModel:
             - relative_humidity \u2208 [0, 1].
             - extinction_coefficient \u2265 0.
 
-    Canon: Schaefer, B.E. (1990), PASP 102, 212\u2013229 (physical model basis);
-           Swiss Ephemeris AtmosphericConditions (replaced interface).
+    Canon: Schaefer, B.E. (1990), PASP 102, 212\u2013229 (physical model basis).
 
     [MACHINE_CONTRACT v1]
     {
@@ -1418,7 +1417,7 @@ class VisibilityModel:
     [/MACHINE_CONTRACT]
 
     All fields have documented physical units.  Callers must not pass raw
-    Swiss integer-array indices to any Moira heliacal function.
+    legacy integer-array indices to any Moira heliacal function.
 
     Args:
         limiting_magnitude: Faintest magnitude visible to the naked eye
@@ -1485,7 +1484,7 @@ class HeliacalPolicy:
     for the V0 admitted planetary heliacal event helpers.
 
     RITE OF PURPOSE:
-        Replaces the Swiss Ephemeris swe_heliacal_ut integer flag bitfield with
+        Replaces legacy heliacal integer flag bitfields with
         a typed, self-documenting policy so that planetary heliacal event callers
         can declare observing configuration without raw SE_HELFLAG_ constants.
         Retained for V0 compatibility; bridges into VisibilityPolicy through
@@ -1513,8 +1512,7 @@ class HeliacalPolicy:
             - visibility_model is never None after construction.
             - visibility_policy is never None after construction.
 
-    Canon: Swiss Ephemeris swe_heliacal_ut (replaced interface);
-           Schaefer (1990), PASP 102, 212\u2013229 (physical doctrine basis).
+    Canon: Schaefer (1990), PASP 102, 212\u2013229 (physical doctrine basis).
 
     [MACHINE_CONTRACT v1]
     {

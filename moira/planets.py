@@ -349,7 +349,8 @@ class CartesianPosition:
     RITE OF PURPOSE:
         CartesianPosition is returned by planet_at(..., frame='cartesian').
         It exists so callers who need raw rectangular vectors for orbital
-        mechanics, numerical integration, or Swiss FLG_XYZ migration can
+        mechanics, numerical integration, or migration from integer flag
+        APIs can
         receive a typed, self-describing result instead of a bare tuple.
 
     LAW OF OPERATION:
@@ -859,8 +860,8 @@ def sky_position_at(
 
     Individual correction stages can be disabled via the ``aberration``,
     ``grav_deflection``, ``nutation``, and ``refraction`` switches. The first
-    three correspond to the Swiss Ephemeris ``FLG_NOABERR``, ``FLG_NOGDEFL``,
-    and ``FLG_NONUT`` flags respectively.
+    three correspond to conventional "no aberration", "no gravitational
+    deflection", and "no nutation" flag families respectively.
 
     Args:
         body: One of the ``Body.*`` string constants identifying the target body.
@@ -1230,7 +1231,7 @@ def _bisect(func, t0: float, t1: float, iterations: int = 52) -> float:
 
 
 # ---------------------------------------------------------------------------
-# Phase 2: planet_relative_to — calc_pctr analogue
+# Phase 2: planet_relative_to
 # ---------------------------------------------------------------------------
 
 def planet_relative_to(
@@ -1242,8 +1243,8 @@ def planet_relative_to(
     """
     Compute the position of ``body`` as seen from ``center_body``.
 
-    Equivalent to Swiss Ephemeris ``swe_calc_pctr``.  Use this when you need
-    the ecliptic position of a body relative to a centre other than Earth
+    Use this when you need the ecliptic position of a body relative to a
+    centre other than Earth
     (e.g. Mars as seen from Jupiter, or any body as seen heliocentrically by
     passing ``Body.SUN`` as ``center_body``).
 
@@ -1313,7 +1314,7 @@ def planet_relative_to(
 
 
 # ---------------------------------------------------------------------------
-# Phase 2: next_heliocentric_transit — helio_cross analogue
+# Phase 2: next_heliocentric_transit
 # ---------------------------------------------------------------------------
 
 def next_heliocentric_transit(
@@ -1327,7 +1328,7 @@ def next_heliocentric_transit(
     Find the next time ``body``'s heliocentric ecliptic longitude equals
     ``target_lon``.
 
-    Equivalent to Swiss Ephemeris ``swe_helio_cross`` / ``swe_helio_cross_ut``.
+    This is a heliocentric longitude crossing search over UT input epochs.
 
     The search scans forward from ``jd_start`` in steps proportional to the
     body's current orbital speed, then refines the crossing with 52-iteration

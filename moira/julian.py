@@ -554,7 +554,7 @@ def _tidacc_correction(year: float) -> float:
     that grows quadratically: ~0.032 × t² arcseconds, where t = (Y−1955)/100.
     This correction removes that inconsistency for all ancient-era branches.
 
-    The formula is the ERFA / Swiss Ephemeris adjust_for_tidacc convention:
+    The formula follows the ERFA-compatible adjust_for_tidacc convention:
         delta_dt = TIDAL_CONVERSION × (ndot_ephem − ndot_formula) × t²
 
     Positive correction means the corrected ΔT is slightly larger (DE441 is
@@ -911,7 +911,7 @@ class DeltaTPolicy:
     """
     Typed policy object controlling how ΔT (TT − UT1) is computed.
 
-    DeltaTPolicy replaces the Swiss Ephemeris ``set_delta_t_userdef`` global
+    DeltaTPolicy replaces legacy global ``set_delta_t_userdef``-style
     mutation pattern with a typed, immutable, per-call policy. Pass a
     DeltaTPolicy instance to ``ut_to_tt()``, ``tt_to_ut()``, or
     ``planet_at()`` to override the default hybrid model for that call.
@@ -924,8 +924,8 @@ class DeltaTPolicy:
         ``'hybrid'`` (default)
             Moira's multi-source table cascade (see ``delta_t()``).  Covers
             all eras via IERS Bulletin B/A, HPIERS 2016, and
-            Morrison-Stephenson polynomials.  Matches Swiss Ephemeris
-            behaviour in the modern era.
+            Morrison-Stephenson polynomials.  Aligned with mainstream
+            modern-era ephemeris behaviour.
 
         ``'physical'``
             Moira's physics-based hybrid model (see

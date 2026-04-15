@@ -292,25 +292,25 @@ class HouseSystem:
     RITE: The Warden of House System Codes.
 
     THEOREM: Enforces the canonical single-character (or two-character) codes
-    that identify each supported astrological house system in the Swiss Ephemeris
-    API.
+    that identify each supported astrological house system in external
+    ephemeris interfaces.
 
     RITE OF PURPOSE:
-        The Swiss Ephemeris `swe_houses` function selects a house algorithm via
-        a single-character flag. This Warden centralises those flags so that
-        every module that requests house calculations uses the correct, stable
-        code. Without it, SWE flag literals would be scattered across the
-        codebase, making it impossible to audit which systems are supported or
-        to add new ones consistently.
+        House calculation interfaces commonly select an algorithm via a
+        compact flag. This Warden centralises those flags so that every module
+        that requests house calculations uses the correct, stable code.
+        Without it, literals would be scattered across the codebase, making it
+        impossible to audit which systems are supported or to add new ones
+        consistently.
 
     LAW OF OPERATION:
         Responsibilities:
-            - Serve as the single authoritative source of SWE house-system flag
+            - Serve as the single authoritative source of house-system flag
               strings for all supported house systems.
         Non-responsibilities:
             - Does not perform any house cusp calculation.
             - Does not validate that a given code is accepted by the installed
-              Swiss Ephemeris version.
+              downstream engine version.
         Dependencies:
             - None; all values are compile-time string literals.
         Structural invariants:
@@ -356,10 +356,10 @@ class HouseSystem:
     TOPOCENTRIC    = "T"
     VEHLOW         = "V"    # Equal from ASC-15° (Vehlow)
     SUNSHINE       = "N"    # Makransky's Sunshine houses
-    AZIMUTHAL      = "H"    # Horizontal / Azimuthal houses (SWE letter 'H')
-    CARTER         = "CT"   # Carter Poli-Equatorial (SWE letter 'F')
-    PULLEN_SD      = "PS"   # Pullen Sinusoidal Delta (SWE letter 'L')
-    PULLEN_SR      = "PR"   # Pullen Sinusoidal Ratio (SWE letter 'Q')
+    AZIMUTHAL      = "H"    # Horizontal / Azimuthal houses
+    CARTER         = "CT"   # Carter Poli-Equatorial
+    PULLEN_SD      = "PS"   # Pullen Sinusoidal Delta
+    PULLEN_SR      = "PR"   # Pullen Sinusoidal Ratio
     KRUSINSKI      = "U"    # Krusinski-Pisa-Goeldi
     APC            = "Y"    # APC houses
 
