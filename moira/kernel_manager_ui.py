@@ -12,14 +12,38 @@ Launch:
 from __future__ import annotations
 
 import queue
+import sys
 import threading
 import urllib.request
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from pathlib import Path
 
-from ._kernel_paths import find_kernel, find_planetary_kernel, user_kernels_dir
-from .download_kernels import _REGISTRY
+if __package__ in (None, ""):
+    # Support direct execution as a script file:
+    #   python moira/kernel_manager_ui.py
+    _THIS_FILE = Path(__file__).resolve()
+    _PROJECT_ROOT = _THIS_FILE.parent.parent
+    if str(_PROJECT_ROOT) not in sys.path:
+        sys.path.insert(0, str(_PROJECT_ROOT))
+
+    from moira._kernel_paths import (
+        PLANETARY_KERNELS,
+        discover_kernels,
+        find_kernel,
+        find_planetary_kernel,
+        user_kernels_dir,
+    )
+    from moira.download_kernels import _REGISTRY
+else:
+    from ._kernel_paths import (
+        PLANETARY_KERNELS,
+        discover_kernels,
+        find_kernel,
+        find_planetary_kernel,
+        user_kernels_dir,
+    )
+    from .download_kernels import _REGISTRY
 
 
 # ---------------------------------------------------------------------------
@@ -97,6 +121,28 @@ _KERNEL_DETAILS: dict[str, dict] = {
 _CHUNK_SIZE = 65_536  # 64 KB per read
 
 
+def _is_planetary_registry_entry(filename: str) -> bool:
+    """True when *filename* is listed as a planetary kernel in this UI registry."""
+    detail = _KERNEL_DETAILS.get(filename, {})
+    return detail.get("type") == "planetary"
+
+
+def _is_planetary_activation_candidate(filename: str) -> bool:
+    """True when a kernel filename is acceptable as the active planetary kernel."""
+    if _is_planetary_registry_entry(filename):
+        return True
+    return filename in PLANETARY_KERNELS
+
+
+def _import_set_kernel_path():
+    """Import spk_reader.set_kernel_path in both package and script execution modes."""
+    if __package__ in (None, ""):
+        from moira.spk_reader import set_kernel_path
+    else:
+        from .spk_reader import set_kernel_path
+    return set_kernel_path
+
+
 # ---------------------------------------------------------------------------
 # Background download worker (module-level — no self reference)
 # ---------------------------------------------------------------------------
@@ -148,6 +194,7 @@ class KernelManagerApp(tk.Tk):
         self._progress_queue: "queue.Queue[tuple[str, object]]" = queue.Queue()
         self._cancel_event: threading.Event | None = None
         self._downloading = False
+        self._dynamic_details: dict[str, str] = {}
 
         self._build_widgets()
         self._refresh_tree()
@@ -166,6 +213,12 @@ class KernelManagerApp(tk.Tk):
         ttk.Label(banner, text="Active planetary kernel", font=("", 9, "bold")).pack(anchor="w")
         self._active_label = ttk.Label(banner, text="", font=("", 9))
         self._active_label.pack(anchor="w")
+        ttk.Label(
+            banner,
+            text=f"Managed directory: {user_kernels_dir()}",
+            font=("", 8),
+            foreground="#555555",
+        ).pack(anchor="w")
 
         ttk.Separator(self, orient="horizontal").pack(fill="x")
 
@@ -269,12 +322,14 @@ class KernelManagerApp(tk.Tk):
     def _refresh_tree(self) -> None:
         sel = self._tree.selection()
         prev_sel = sel[0] if sel else None
+        self._dynamic_details.clear()
 
         for iid in self._tree.get_children():
             self._tree.delete(iid)
 
         self._insert_section("── Planetary kernels", "__planetary__", "planetary")
         self._insert_section("── Supplemental kernels", "__supplemental__", "supplemental")
+        self._insert_detected_section("── Detected kernels", "__detected__")
 
         if prev_sel and self._tree.exists(prev_sel):
             self._tree.selection_set(prev_sel)
@@ -304,6 +359,48 @@ class KernelManagerApp(tk.Tk):
                 tags=("installed" if installed else "missing",),
             )
 
+    def _insert_detected_section(self, label: str, iid: str) -> None:
+        self._tree.insert(
+            "", "end",
+            iid=iid,
+            text=label,
+            values=("", "", ""),
+            tags=("section_heading",),
+        )
+
+        registry_names = {entry["filename"] for entry in _REGISTRY}
+        discovered = discover_kernels()
+        extra_names = sorted(name for name in discovered if name not in registry_names)
+        if not extra_names:
+            self._tree.insert(
+                "", "end",
+                iid="__detected_none__",
+                text="  (none)",
+                values=("", "", ""),
+                tags=("section_heading",),
+            )
+            return
+
+        for name in extra_names:
+            path = discovered[name]
+            size_mb = path.stat().st_size / (1024 * 1024)
+            size_label = f"~{size_mb:.1f} MB"
+            self._tree.insert(
+                "", "end",
+                iid=name,
+                text="  " + name,
+                values=(size_label, "—", "Installed"),
+                tags=("installed",),
+            )
+            self._dynamic_details[name] = (
+                f"Detected kernel\n\n"
+                f"{name}\n"
+                f"Path: {path}\n"
+                f"Size: {size_label}\n\n"
+                "This file is discoverable by the kernel resolver but is not "
+                "part of the default download registry shown above."
+            )
+
     def _refresh_active_label(self) -> None:
         kernel = find_planetary_kernel()
         if kernel is not None:
@@ -329,9 +426,12 @@ class KernelManagerApp(tk.Tk):
         if iid.startswith("__"):
             return
         details = _KERNEL_DETAILS.get(iid)
-        if details is None:
-            return
-        body = f"{details['title']}\n\n{details['detail']}"
+        if details is not None:
+            body = f"{details['title']}\n\n{details['detail']}"
+        else:
+            body = self._dynamic_details.get(iid)
+            if body is None:
+                return
         self._detail_text.config(state="normal")
         self._detail_text.delete("1.0", "end")
         self._detail_text.insert("end", body)
@@ -415,9 +515,16 @@ class KernelManagerApp(tk.Tk):
     def _on_use(self) -> None:
         sel = self._tree.selection()
         if not sel or sel[0].startswith("__"):
-            messagebox.showinfo("No selection", "Select an installed kernel to activate.")
+            messagebox.showinfo("No selection", "Select an installed planetary kernel to activate.")
             return
         filename = sel[0]
+        if not _is_planetary_activation_candidate(filename):
+            messagebox.showinfo(
+                "Planetary kernel required",
+                "Only planetary kernels can be activated as the engine kernel.\n"
+                "Supplemental kernels are discovered automatically when present.",
+            )
+            return
         path = find_kernel(filename)
         if not path.exists():
             messagebox.showwarning(
@@ -426,7 +533,7 @@ class KernelManagerApp(tk.Tk):
             )
             return
         try:
-            from .spk_reader import set_kernel_path
+            set_kernel_path = _import_set_kernel_path()
             set_kernel_path(str(path))
         except RuntimeError as exc:
             messagebox.showerror("Cannot switch kernel", str(exc))
@@ -447,7 +554,7 @@ class KernelManagerApp(tk.Tk):
         if not path_str:
             return
         try:
-            from .spk_reader import set_kernel_path
+            set_kernel_path = _import_set_kernel_path()
             set_kernel_path(path_str)
         except RuntimeError as exc:
             messagebox.showerror("Cannot set kernel", str(exc))

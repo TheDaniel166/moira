@@ -222,17 +222,22 @@ RULE-17  Bundle boundary inclusivity
     Test: TestEdgeCases::test_bundle_at_exact_120_boundary.
 
 RULE-18  Public surface sealed
-    moira.__all__ and moira.chart_shape.__all__ expose exactly
+    moira.chart_shape.__all__ exposes exactly
     {ChartShapeType, ChartShape, classify_chart_shape}.
     No internal name (_detect_*, _compute_*, threshold constants) appears
-    in either __all__.
-    Tests: TestPublicAPIResolution::test_all_names_in_moira_all,
+    in __all__.  These three names are intentionally NOT re-exported into
+    moira.__all__; moira.__init__ is kept thin and callers access this
+    module via ``from moira.chart_shape import ...`` or through
+    ``moira.facade``.
+    Tests: TestPublicAPIResolution::test_all_names_on_moira_package,
            TestPublicAPIResolution::test_module_all_exists_and_matches,
            TestPublicAPIResolution::test_internals_absent_from_all.
 
-RULE-19  Package / module object identity
-    moira.X is moira.chart_shape.X for every public name.
-    Test: TestPublicAPIResolution::test_package_and_module_are_same_objects.
+RULE-19  moira.__all__ exclusion is enforced
+    ChartShapeType, ChartShape, and classify_chart_shape must not appear
+    in moira.__all__.  The top-level package namespace is intentionally
+    kept thin; this module is accessible as a submodule import.
+    Test: TestPublicAPIResolution::test_all_names_on_moira_package.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 

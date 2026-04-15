@@ -11,6 +11,8 @@ Public surface:
     find_kernel(filename)        -> Path        first existing path, else user-dir path
     find_planetary_kernel()      -> Path | None first installed planetary kernel, or None
     user_kernels_dir()           -> Path        ~/.moira/kernels
+    kernel_search_dirs()         -> tuple[Path, ...] search roots in precedence order
+    discover_kernels()           -> dict[str, Path] available .bsp files by precedence
     LARGE_KERNELS                -> list        names of kernels NOT shipped in the wheel
     PLANETARY_KERNELS            -> list        known JPL planetary ephemeris filenames
 """
@@ -25,16 +27,38 @@ def user_kernels_dir() -> Path:
     return Path.home() / ".moira" / "kernels"
 
 
+def kernel_search_dirs() -> tuple[Path, ...]:
+    """Return kernel search roots in resolver precedence order."""
+    return (
+        user_kernels_dir(),
+        _PACKAGE_KERNELS_DIR,
+        _DEV_KERNELS_DIR,
+    )
+
+
 def find_kernel(filename: str) -> Path:
     """Return the first existing path for *filename*, else the user-dir path."""
-    for candidate in (
-        user_kernels_dir() / filename,
-        _PACKAGE_KERNELS_DIR / filename,
-        _DEV_KERNELS_DIR / filename,
-    ):
+    for root in kernel_search_dirs():
+        candidate = root / filename
         if candidate.exists():
             return candidate
     return user_kernels_dir() / filename
+
+
+def discover_kernels() -> dict[str, Path]:
+    """
+    Return discovered ``.bsp`` kernels as {filename: resolved_path}.
+
+    If the same filename appears in multiple roots, the first one by
+    kernel_search_dirs() precedence is retained.
+    """
+    found: dict[str, Path] = {}
+    for root in kernel_search_dirs():
+        if not root.exists() or not root.is_dir():
+            continue
+        for path in sorted(root.glob("*.bsp"), key=lambda p: p.name.lower()):
+            found.setdefault(path.name, path)
+    return found
 
 
 # Known JPL planetary ephemeris kernels, checked in this order when no

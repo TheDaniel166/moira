@@ -67,6 +67,7 @@ dev = [
 [project.scripts]
 moira-download-kernels = "moira.download_kernels:main"
 moira-kernel-manager   = "moira.kernel_manager_ui:main"
+moira-daf-writer       = "moira.daf_writer_ui:main"
 
 [tool.setuptools]
 packages = ["moira", "moira.data", "moira.compat", "moira.compat.nasa", "moira.constellations", "moira.primary_directions", "moira.harmograms", "moira.bridges"]

@@ -8,38 +8,76 @@ Purpose
 -------
 Governs computation of heliocentric ascending nodes, perihelion longitudes,
 aphelion longitudes, inclinations, eccentricities, and semi-major axes for
-Mercury through Neptune, using low-order polynomial mean orbital elements.
+any body present in the loaded SPK kernel.
+
+Two computational paths are provided:
+
+``planetary_node`` / ``all_planetary_nodes``
+    Mean orbital elements from Meeus/Simon et al. polynomial table.
+    Fast, kernel-free, Mercury–Neptune only.  Gives the slowly-drifting
+    mean node; accurate to a few arcminutes over millennia.
+
+``geometric_node``
+    Osculating node derived from DE441 state vectors via the
+    eccentricity-vector / angular-momentum method.  Generalises to any
+    body present in the loaded SPK kernel (classical planets, Chiron,
+    asteroids, TNOs).  Requires a kernel.
 
 Boundary declaration
 --------------------
 Owns: mean orbital element table (Meeus/JPL), polynomial evaluation,
-      and the ``OrbitalNode`` result vessel.
-Delegates: nothing — all computation is self-contained arithmetic over
-           the J2000 epoch constant.
+      geometric node computation from DE441 state vectors, and the
+      ``OrbitalNode`` result vessel.
+Delegates: kernel I/O to moira.spk_reader; time conversion to
+           moira.julian; precession/nutation matrices to
+           moira.coordinates; obliquity to moira.obliquity;
+           barycentric state vectors to moira.planets._barycentric_state.
 
 Import-time side effects: None
 
 External dependency assumptions
 --------------------------------
-No Qt main thread required. No database access. Valid for approximately
-2000 BCE to 3000 CE per the Meeus/Simon et al. element sets.
+``geometric_node`` requires an SPK kernel configured via
+``moira.spk_reader``.  ``planetary_node`` / ``all_planetary_nodes``
+are kernel-free.  Valid for approximately 2000 BCE to 3000 CE per
+the Meeus/Simon et al. element sets.
 
 Public surface
 --------------
 ``OrbitalNode``         — vessel for a planet's orbital node and apsides.
-``planetary_node``      — compute orbital node data for a single planet.
-``all_planetary_nodes`` — compute orbital nodes for all eight planets.
+``planetary_node``      — mean-element node for a named planet.
+``all_planetary_nodes`` — mean-element nodes for all eight planets.
+``geometric_node``      — osculating node from DE441, any SPK body.
 """
 
+from __future__ import annotations
+
+import math
 from dataclasses import dataclass
 
-from .constants import J2000, JULIAN_CENTURY
+from .constants import J2000, JULIAN_CENTURY, DEG2RAD, RAD2DEG, Body
+from .julian import ut_to_tt, decimal_year
+from .obliquity import mean_obliquity, nutation
+from .coordinates import (
+    vec_sub, mat_vec_mul,
+    precession_matrix_equatorial, nutation_matrix_equatorial,
+)
+from .planets import _barycentric_state, approx_year as _approx_year
+from .spk_reader import get_reader, SpkReader
 
 __all__ = [
     "OrbitalNode",
     "planetary_node",
     "all_planetary_nodes",
+    "geometric_node",
 ]
+
+# ---------------------------------------------------------------------------
+# Physical constants
+# ---------------------------------------------------------------------------
+
+_GM_SUN    = 132_712_440_018.0   # km³/s²  — DE441 / TDB-compatible
+_KM_PER_AU = 149_597_870.7       # km per AU (IAU 2012)
 
 # ---------------------------------------------------------------------------
 # Mean orbital elements
@@ -235,3 +273,147 @@ def planetary_node(planet: str, jd: float) -> OrbitalNode:
 def all_planetary_nodes(jd: float) -> dict[str, OrbitalNode]:
     """Compute orbital nodes for all planets."""
     return {planet: planetary_node(planet, jd) for planet in _ELEMENTS}
+
+
+# ---------------------------------------------------------------------------
+# Geometric (osculating) node — DE441 state-vector method
+# ---------------------------------------------------------------------------
+
+def geometric_node(
+    body: str,
+    jd_ut: float,
+    reader: SpkReader | None = None,
+) -> OrbitalNode:
+    """
+    Compute the osculating heliocentric ascending node and orbital elements
+    of *body* at *jd_ut* from DE441 state vectors.
+
+    Method: derives the instantaneous orbital plane from the heliocentric
+    angular momentum vector h = r × v, then intersects it with the ecliptic
+    to obtain the ascending node direction.  The eccentricity vector
+    e = (v × h)/μ − r̂ gives perihelion longitude and eccentricity.
+    Inclination follows from the angle between h and the ecliptic pole.
+    Semi-major axis is computed from the vis-viva specific orbital energy.
+
+    This is the same eccentricity-vector geometry used by true_lilith() for
+    the Moon's apogee, applied heliocentrically with μ = GM_Sun.
+
+    Generalises to any body present in the loaded SPK kernel: classical
+    planets, Pluto, Chiron (with an appropriate kernel), asteroids, TNOs.
+    For the classical 8 planets, planetary_node() gives the mean node
+    without requiring a kernel; use this function when the osculating node
+    is required or for bodies outside the mean-element table.
+
+    Parameters
+    ----------
+    body : Body.* constant or any body name present in NAIF_ROUTES.
+        Body.SUN and Body.MOON are rejected (no meaningful heliocentric
+        node in this frame).
+    jd_ut : Julian Day in Universal Time (UT1).
+    reader : open SpkReader; uses the module-level singleton if None.
+
+    Returns
+    -------
+    OrbitalNode
+        ascending_node, perihelion, aphelion : tropical ecliptic longitudes
+            in degrees [0, 360).
+        inclination, eccentricity, semi_major_axis : osculating orbital
+            elements at epoch.
+
+    Raises
+    ------
+    ValueError
+        If body is Body.SUN or Body.MOON.
+    KeyError
+        If body is not present in NAIF_ROUTES (e.g. Body.CHIRON without
+        a loaded Chiron kernel).
+    FileNotFoundError
+        If no planetary kernel is configured and reader is None.
+    """
+    if body in (Body.SUN, Body.MOON):
+        raise ValueError(
+            f"geometric_node: {body!r} does not have a meaningful "
+            "heliocentric node in this frame."
+        )
+    if reader is None:
+        reader = get_reader()
+
+    year, month, *_ = _approx_year(jd_ut)
+    jd_tt = ut_to_tt(jd_ut, decimal_year(year, month))
+
+    # True obliquity for tropical frame conversion
+    _, deps_deg = nutation(jd_tt)
+    eps = (mean_obliquity(jd_tt) + deps_deg) * DEG2RAD
+
+    # Heliocentric state vectors in ICRF (km, km/day)
+    body_pos, body_vel_d = _barycentric_state(body, jd_tt, reader)
+    sun_pos,  sun_vel_d  = reader.position_and_velocity(0, 10, jd_tt)
+    r = vec_sub(body_pos, sun_pos)
+    v_d = vec_sub(body_vel_d, sun_vel_d)
+    v = (v_d[0] / 86400.0, v_d[1] / 86400.0, v_d[2] / 86400.0)  # km/s
+
+    # Specific angular momentum h = r × v
+    hx = r[1]*v[2] - r[2]*v[1]
+    hy = r[2]*v[0] - r[0]*v[2]
+    hz = r[0]*v[1] - r[1]*v[0]
+    h_mag = math.sqrt(hx*hx + hy*hy + hz*hz)
+
+    # Ascending node direction: N = ecliptic_z × h
+    # ecliptic_z in ICRF ≈ (0, −sin ε, cos ε)
+    # Cross product components:
+    #   nx = (−sin ε)(hz) − (cos ε)(hy)
+    #   ny = (cos ε)(hx)
+    #   nz = (sin ε)(hx)
+    sin_eps = math.sin(eps)
+    cos_eps = math.cos(eps)
+    nx = -sin_eps * hz - cos_eps * hy
+    ny =  cos_eps * hx
+    nz =  sin_eps * hx
+
+    # Rotate ascending-node vector through P then N (J2000 → true-of-date)
+    P = precession_matrix_equatorial(jd_tt)
+    N_mat = nutation_matrix_equatorial(jd_tt)
+    n_prec = mat_vec_mul(P, (nx, ny, nz))
+    n_true = mat_vec_mul(N_mat, n_prec)
+
+    # Extract tropical ecliptic longitude of ascending node
+    aye = n_true[1] * cos_eps + n_true[2] * sin_eps
+    axe = n_true[0]
+    ascending_node_lon = math.atan2(aye, axe) * RAD2DEG % 360.0
+
+    # Eccentricity vector e = (v × h)/μ − r̂  (points to perihelion)
+    r_mag = math.sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2])
+    vhx = v[1]*hz - v[2]*hy
+    vhy = v[2]*hx - v[0]*hz
+    vhz = v[0]*hy - v[1]*hx
+    ex = vhx / _GM_SUN - r[0] / r_mag
+    ey = vhy / _GM_SUN - r[1] / r_mag
+    ez = vhz / _GM_SUN - r[2] / r_mag
+    eccentricity = math.sqrt(ex*ex + ey*ey + ez*ez)
+
+    # Rotate eccentricity vector → tropical longitude of perihelion
+    e_prec = mat_vec_mul(P, (ex, ey, ez))
+    e_true = mat_vec_mul(N_mat, e_prec)
+    peri_y = e_true[1] * cos_eps + e_true[2] * sin_eps
+    peri_x = e_true[0]
+    perihelion_lon = math.atan2(peri_y, peri_x) * RAD2DEG % 360.0
+    aphelion_lon   = (perihelion_lon + 180.0) % 360.0
+
+    # Inclination: angle between h and ecliptic pole
+    h_z_ecl = -hy * sin_eps + hz * cos_eps
+    inclination = math.acos(max(-1.0, min(1.0, h_z_ecl / h_mag))) * RAD2DEG
+
+    # Semi-major axis from specific orbital energy: a = −μ / (2ε)
+    v_sq  = v[0]*v[0] + v[1]*v[1] + v[2]*v[2]
+    energy = v_sq / 2.0 - _GM_SUN / r_mag
+    semi_major_axis = (-_GM_SUN / (2.0 * energy)) / _KM_PER_AU
+
+    return OrbitalNode(
+        planet=body,
+        ascending_node=ascending_node_lon,
+        perihelion=perihelion_lon,
+        aphelion=aphelion_lon,
+        inclination=inclination,
+        eccentricity=eccentricity,
+        semi_major_axis=semi_major_axis,
+    )

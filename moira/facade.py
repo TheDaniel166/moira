@@ -95,7 +95,7 @@ from .planets import (
     planet_at, sky_position_at, all_planets_at, sun_longitude,
     planet_relative_to, next_heliocentric_transit,
 )
-from .nodes import mean_node, true_node, mean_lilith, NodeData, next_moon_node_crossing, NodesAndApsides, nodes_and_apsides_at
+from .nodes import mean_node, true_node, mean_lilith, true_lilith, NodeData, next_moon_node_crossing, NodesAndApsides, nodes_and_apsides_at
 from .houses import (
     HouseSystemFamily,
     HouseSystemCuspBasis,
@@ -500,6 +500,10 @@ from .asteroids import (
     load_asteroid_kernel, load_secondary_kernel, load_tertiary_kernel,
     ASTEROID_NAIF,
 )
+from .comets import (
+    CometData, comet_at, all_comets_at, list_comets,
+    load_comet_kernel, COMET_NAIF,
+)
 from .planets import HeliocentricData, heliocentric_planet_at, all_heliocentric_at
 from .planetocentric import (
     PlanetocentricData,
@@ -612,7 +616,7 @@ from .parans import (
     natal_parans,
 )
 from .longevity import HylegResult, find_hyleg, calculate_longevity
-from .planetary_nodes import OrbitalNode, planetary_node, all_planetary_nodes
+from .planetary_nodes import OrbitalNode, planetary_node, all_planetary_nodes, geometric_node
 from .gauquelin import GauquelinPosition, gauquelin_sector, all_gauquelin_sectors
 from .galactic import (
     GalacticPosition,
@@ -985,6 +989,7 @@ __all__ = [
     # Phase 2 specialist helpers
     "planet_relative_to", "next_heliocentric_transit",
     "next_moon_node_crossing",
+    "true_lilith",
     "houses_from_armc", "body_house_position",
     # Phase 3 design vessels
     "UserDefinedAyanamsa",
@@ -1079,7 +1084,7 @@ __all__ = [
     # Longevity (Hyleg/Alcocoden)
     "HylegResult", "find_hyleg", "calculate_longevity",
     # Planetary nodes/apsides
-    "OrbitalNode", "planetary_node", "all_planetary_nodes",
+    "OrbitalNode", "planetary_node", "all_planetary_nodes", "geometric_node",
     # Gauquelin sectors
     "GauquelinPosition", "gauquelin_sector", "all_gauquelin_sectors",
     # Galactic coordinate system
@@ -1214,6 +1219,9 @@ __all__ = [
     # Electional search
     "ElectionalPolicy", "ElectionalWindow",
     "find_electional_windows", "find_electional_moments",
+    # Comets
+    "CometData", "COMET_NAIF",
+    "comet_at", "all_comets_at", "list_comets", "load_comet_kernel",
 ]
 
 
@@ -1494,7 +1502,8 @@ class Moira:
         if include_nodes:
             nodes[Body.TRUE_NODE] = true_node(jd, reader=self._reader)
             nodes[Body.MEAN_NODE] = mean_node(jd)
-            nodes[Body.LILITH]    = mean_lilith(jd)
+            nodes[Body.LILITH]      = mean_lilith(jd)
+            nodes[Body.TRUE_LILITH] = true_lilith(jd, reader=self._reader)
 
         jd_tt = ut_to_tt(jd)
         obl = true_obliquity(jd_tt)

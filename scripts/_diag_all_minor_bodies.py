@@ -15,8 +15,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import moira.asteroids  # noqa: F401 — registers Type13
 from jplephem.spk import SPK
 from moira.julian import datetime_from_jd
+from moira._kernel_paths import find_kernel
 
-kernel_path = Path("kernels/minor_bodies.bsp")
+kernel_path = find_kernel("minor_bodies.bsp")
 spk = SPK.open(str(kernel_path))
 
 # Build segment map: target → segment
