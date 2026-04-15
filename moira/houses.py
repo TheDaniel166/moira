@@ -1797,7 +1797,7 @@ def _apc_sector(n: int, ph: float, e: float, az: float) -> float:
         ascensional_offset = 0.0
     else:
         kv_den = 1.0 + tan_lat * tan_obl * math.sin(az)
-        base_angle = math.atan2(tan_lat * tan_obl * math.cos(az), kv_den)
+        base_angle = math.atan((tan_lat * tan_obl * math.cos(az)) / kv_den)
         if abs_lat_deg < _VERY_SMALL:
             ascensional_offset = (90.0 - _VERY_SMALL) * DEG2RAD
             if ph < 0.0:
@@ -1840,7 +1840,10 @@ def _apc(armc: float, obliquity: float, lat: float) -> list[float]:
 
     Reference: APC sector geometry in astronomical-house literature.
     """
-    mc  = _mc_from_armc(armc, obliquity, lat)
+    # APC follows the horizon-accessible MC branch at extreme latitudes.
+    # This preserves cusp orientation parity in the polar regime.
+    mc_raw = _mc_from_armc(armc, obliquity, lat)
+    mc  = _mc_above_horizon(mc_raw, obliquity, lat)
     asc = _asc_from_armc(armc, obliquity, lat)
 
     ph = lat       * DEG2RAD
@@ -1853,11 +1856,22 @@ def _apc(armc: float, obliquity: float, lat: float) -> list[float]:
     cusps[9] = mc
     cusps[3] = (mc + 180.0) % 360.0
 
+    # When MC is horizon-swapped at polar latitudes, APC intermediate cusps
+    # require the corresponding 180-degree parity correction.
+    mc_swapped = abs((mc - mc_raw + 180.0) % 360.0 - 180.0) > 90.0
+    if mc_swapped:
+        for i in (1, 2, 4, 5, 7, 8, 10, 11):
+            cusps[i] = (cusps[i] + 180.0) % 360.0
+
     # Polar correction. When the APC cusp set lands in the opposite hemisphere
     # from the standard ascendant, rotate the full figure by 180°.
     ac_diff = abs(((cusps[0] - asc + 180.0) % 360.0) - 180.0)
-    if abs(lat) >= 90.0 - obliquity and ac_diff > 90.0:
+    if not mc_swapped and abs(lat) >= 90.0 - obliquity and ac_diff > 90.0:
         cusps = [(c + 180.0) % 360.0 for c in cusps]
+
+    # Cardinal anchors for quadrant-system invariants.
+    cusps[0] = asc
+    cusps[6] = (asc + 180.0) % 360.0
 
     return _finalize_cusps(cusps, context="_apc")
 
