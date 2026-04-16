@@ -330,7 +330,7 @@ class HouseSystem:
           "PLACIDUS", "KOCH", "EQUAL", "WHOLE_SIGN", "CAMPANUS",
           "REGIOMONTANUS", "PORPHYRY", "MERIDIAN", "ALCABITIUS", "MORINUS",
           "TOPOCENTRIC", "VEHLOW", "SUNSHINE", "AZIMUTHAL", "CARTER",
-          "PULLEN_SD", "PULLEN_SR", "KRUSINSKI", "APC"
+                    "KRUSINSKI", "APC"
         ],
         "internal": []
       },
@@ -358,8 +358,6 @@ class HouseSystem:
     SUNSHINE       = "N"    # Makransky's Sunshine houses
     AZIMUTHAL      = "H"    # Horizontal / Azimuthal houses
     CARTER         = "CT"   # Carter Poli-Equatorial
-    PULLEN_SD      = "PS"   # Pullen Sinusoidal Delta
-    PULLEN_SR      = "PR"   # Pullen Sinusoidal Ratio
     KRUSINSKI      = "U"    # Krusinski-Pisa-Goeldi
     APC            = "Y"    # APC houses
 
@@ -379,8 +377,6 @@ HOUSE_SYSTEM_NAMES: dict[str, str] = {
     HouseSystem.SUNSHINE:       "Sunshine",
     HouseSystem.AZIMUTHAL:      "Azimuthal",
     HouseSystem.CARTER:         "Carter",
-    HouseSystem.PULLEN_SD:      "Pullen Sinusoidal Delta",
-    HouseSystem.PULLEN_SR:      "Pullen Sinusoidal Ratio",
     HouseSystem.KRUSINSKI:      "Krusinski-Pisa",
     HouseSystem.APC:            "APC",
 }

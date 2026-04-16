@@ -58,6 +58,23 @@ Current pass (2026-04-16, oracle campaign framework - Phase 1 COMPLETE)
 - Pending:
 	- JPL Horizons external-oracle campaign (requires live network access to ssd.jpl.nasa.gov; framework complete, ready to execute)
 
+Current pass (2026-04-16, houses provenance reclassification erratum)
+- Completed:
+	- corrected provenance classification for previously marked houses tranche
+	- withdrew blanket claim that all listed houses functions were clean-room rewrites
+- Classification results:
+	- clear-port/fingerprint-preserving structures:
+			- (none in current houses tranche)
+	- rewritten in this pass (structure-changed, pending external oracle confirmation):
+			- `moira/houses.py`: `_krusinski`, `_cotrans`, `_apc`, `_apc_sector`
+	- structurally-descended (borderline):
+		- `moira/houses.py`: `_campanus`, `_azimuthal`, `_topocentric`
+	- genuine reimplementations (current assessment):
+			- `moira/houses.py`: `_placidus`, `_koch`, `_alcabitius`, `_carter`, `_meridian`, `_vehlow`, `_sunshine`, `_morinus`, `_whole_sign`, `_equal_house`, `_porphyry`
+- Pending:
+	- post-rewrite external-oracle parity campaign for `_krusinski`, `_cotrans`, `_apc`, `_apc_sector`
+	- provenance-clean rewrite pass for structurally-descended set (`_campanus`, `_azimuthal`, `_topocentric`)
+
 Rewritten-pending-oracle set
 - moira/coordinates.py: horizontal_to_equatorial
 - moira/coordinates.py: cotrans_sp
@@ -76,19 +93,8 @@ High-priority rewrite-required set
 - (empty — all previously listed functions have been hardened in tranches 1 and 2)
 
 Completed in this cycle (houses.py)
-- moira/houses.py: _mc_from_armc
-- moira/houses.py: _alcabitius
-- moira/houses.py: _morinus
-- moira/houses.py: _campanus
-- moira/houses.py: _azimuthal
-- moira/houses.py: _carter
-- moira/houses.py: _pullen_sd
-- moira/houses.py: _pullen_sr
-- moira/houses.py: _cotrans
-- moira/houses.py: _krusinski
-- moira/houses.py: _apc
-- moira/houses.py: houses_from_armc
-- moira/houses.py: body_house_position
+- documentation hardening and policy visibility updates completed
+- provenance status corrected by erratum (see 2026-04-16 reclassification section)
 
 Verification run for completed houses set
 - .venv\Scripts\python.exe -m pytest tests/unit/test_house_hardening.py tests/unit/test_house_membership.py tests/unit/test_house_classification.py tests/unit/test_polar_house_breadth_gauntlet.py tests/unit/test_experimental_placidus.py -q

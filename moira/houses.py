@@ -54,12 +54,11 @@ Layers present in this file:
             actual obliquity at call time.  At J2000 this is ≈ 66.56°.  This is
             the geometric Arctic Circle: above it, some ecliptic degrees become
             circumpolar, making semi-arc iteration undefined.  The affected systems
-            (Placidus, Koch, Pullen SD) clamp the acos() domain error but return
+            (Placidus, Koch) clamp the acos() domain error but return
             astronomically invalid cusp orderings for a large fraction of ARMC
             values above this threshold.  The old fixed 75.0° threshold was wrong:
             it silently passed garbage results from ≈66.6° to 74.9°.
-            Pullen SR uses a different formula and remains geometrically valid to
-            90°; it is not in _POLAR_SYSTEMS.
+            Systems not in _POLAR_SYSTEMS are evaluated on their own geometry.
 
     POINT-TO-HOUSE MEMBERSHIP  (Phase 5)
         HousePlacement — frozen result vessel: house number, placed longitude,
@@ -275,7 +274,7 @@ class HouseSystemFamily(str, Enum):
         obliquity; the eight intermediate cusps are found by some form of
         trisection or projection within each quadrant.  Includes: PLACIDUS,
         KOCH, PORPHYRY, CAMPANUS, REGIOMONTANUS, ALCABITIUS, TOPOCENTRIC,
-        AZIMUTHAL, CARTER, PULLEN_SD, PULLEN_SR, KRUSINSKI, APC.
+        AZIMUTHAL, CARTER, KRUSINSKI, APC.
 
     WHOLE_SIGN
         The first house is the entire sign rising; all houses are complete
@@ -332,7 +331,7 @@ class HouseSystemCuspBasis(str, Enum):
 
     SINUSOIDAL
         Intermediate cusps are placed at sinusoidal offsets from the cardinal
-        cusps, derived from the quadrant size.  Systems: PULLEN_SD, PULLEN_SR.
+        cusps, derived from the quadrant size.
 
     GREAT_CIRCLE
         Great circles through the Ascendant and Zenith divide the sphere;
@@ -388,7 +387,7 @@ class HouseSystemClassification:
         polar_capable
             True if the system can produce numerically stable results at
             |latitude| >= 75° without falling back to another system.
-            Systems that cannot (PLACIDUS, KOCH, PULLEN_SD, PULLEN_SR) have
+            Systems that cannot (PLACIDUS, KOCH) have
             polar_capable = False; all others are True.
 
     This dataclass is frozen (immutable) and carries no computation logic.
@@ -428,8 +427,6 @@ _CLASSIFICATIONS: dict[str, HouseSystemClassification] = {
     HouseSystem.AZIMUTHAL:     HouseSystemClassification(_F.QUADRANT,   _CB.HORIZON,             True,  True),
     HouseSystem.REGIOMONTANUS: HouseSystemClassification(_F.QUADRANT,   _CB.POLAR_PROJECTION,    True,  True),
     HouseSystem.TOPOCENTRIC:   HouseSystemClassification(_F.QUADRANT,   _CB.POLAR_PROJECTION,    True,  True),
-    HouseSystem.PULLEN_SD:     HouseSystemClassification(_F.QUADRANT,   _CB.SINUSOIDAL,          True,  False),
-    HouseSystem.PULLEN_SR:     HouseSystemClassification(_F.QUADRANT,   _CB.SINUSOIDAL,          True,  True),
     HouseSystem.KRUSINSKI:     HouseSystemClassification(_F.QUADRANT,   _CB.GREAT_CIRCLE,        True,  True),
     HouseSystem.APC:           HouseSystemClassification(_F.QUADRANT,   _CB.APC_FORMULA,         True,  True),
     HouseSystem.SUNSHINE:      HouseSystemClassification(_F.SOLAR,      _CB.SOLAR_POSITION,      False, True),
@@ -469,10 +466,8 @@ def classify_house_system(code: str) -> HouseSystemClassification:
 # Systems that produce geometrically disordered cusps above the critical latitude.
 # The real breakdown threshold is 90° − obliquity (≈ 66.56° at J2000), not 75°.
 # Placidus and Koch: cusp ordering fails above ~66.6° for some ARMC values.
-# Pullen SD:         cusp ordering fails above ~64.0° for some ARMC values.
-# Pullen SR:         remains geometrically ordered up to 90°; excluded.
 _POLAR_SYSTEMS: frozenset[str] = frozenset({
-    HouseSystem.PLACIDUS, HouseSystem.KOCH, HouseSystem.PULLEN_SD,
+    HouseSystem.PLACIDUS, HouseSystem.KOCH,
 })
 
 # The full set of recognised HouseSystem codes.
@@ -482,7 +477,7 @@ _KNOWN_SYSTEMS: frozenset[str] = frozenset({
     HouseSystem.REGIOMONTANUS, HouseSystem.ALCABITIUS, HouseSystem.MORINUS,
     HouseSystem.TOPOCENTRIC, HouseSystem.MERIDIAN, HouseSystem.VEHLOW,
     HouseSystem.SUNSHINE, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
-    HouseSystem.PULLEN_SD, HouseSystem.PULLEN_SR, HouseSystem.KRUSINSKI,
+    HouseSystem.KRUSINSKI,
     HouseSystem.APC,
 })
 
@@ -1507,131 +1502,6 @@ def _carter(armc: float, obliquity: float, lat: float) -> list[float]:
 
 
 # ---------------------------------------------------------------------------
-# Pullen Sinusoidal Delta
-# ---------------------------------------------------------------------------
-
-def _pullen_sd(armc: float, obliquity: float, lat: float) -> list[float]:
-    """
-    Pullen Sinusoidal Delta house system.
-
-    Cusps are placed at offsets from MC and ASC based on the actual quadrant
-    size. For a quadrant of arc q (MC→ASC in ecliptic degrees):
-        d = (q − 90) / 4
-        H11 = MC + 30 + d
-        H12 = MC + 60 + 3d
-    Symmetric formula applies for the ASC quadrant (q1 = 180 − q).
-    Degenerate case: if q ≤ 30°, H11 = H12 = MC + q/2.
-
-    Reference: Pullen-style sine-difference division of semi-arcs.
-    """
-    mc  = _mc_from_armc(armc, obliquity, lat)
-    asc = _asc_from_armc(armc, obliquity, lat)
-
-    acmc = ((asc - mc + 180.0) % 360.0) - 180.0   # normalized signed degree difference
-    if acmc < 0.0:
-        asc  = (asc + 180.0) % 360.0
-        acmc = ((asc - mc + 180.0) % 360.0) - 180.0
-
-    q1 = 180.0 - acmc   # complementary quadrant (ASC → next MC)
-
-    # Upper quadrant: MC → ASC
-    d = (acmc - 90.0) / 4.0
-    if acmc <= 30.0:
-        h11 = h12 = (mc + acmc / 2.0) % 360.0
-    else:
-        h11 = (mc + 30.0 + d) % 360.0
-        h12 = (mc + 60.0 + 3.0 * d) % 360.0
-
-    # Lower quadrant: ASC → next MC
-    d1 = (q1 - 90.0) / 4.0
-    if q1 <= 30.0:
-        h2 = h3 = (asc + q1 / 2.0) % 360.0
-    else:
-        h2 = (asc + 30.0 + d1) % 360.0
-        h3 = (asc + 60.0 + 3.0 * d1) % 360.0
-
-    cusps = [0.0] * 12
-    cusps[0]  = asc;   cusps[9]  = mc
-    cusps[3]  = (mc  + 180.0) % 360.0
-    cusps[6]  = (asc + 180.0) % 360.0
-    cusps[10] = h11;   cusps[11] = h12
-    cusps[1]  = h2;    cusps[2]  = h3
-    cusps[4]  = (h11 + 180.0) % 360.0
-    cusps[5]  = (h12 + 180.0) % 360.0
-    cusps[7]  = (h2  + 180.0) % 360.0
-    cusps[8]  = (h3  + 180.0) % 360.0
-    return _finalize_cusps(cusps, context="_pullen_sd")
-
-
-# ---------------------------------------------------------------------------
-# Pullen Sinusoidal Ratio
-# ---------------------------------------------------------------------------
-
-def _pullen_sr(armc: float, obliquity: float, lat: float) -> list[float]:
-    """
-    Pullen Sinusoidal Ratio house system.
-
-    Uses a ratio r derived from the quadrant size q via a cube-root formula:
-        c  = (180 − q) / q
-        r  = 0.5*√(2^(2/3)·∛(c²−c)+1) + 0.5*√(…) − 0.5
-        x  = q / (2r + 1)
-    When acmc > 90°: H11=MC+xr³, H12=H11+xr⁴, H2=ASC+xr,  H3=H2+x
-    When acmc ≤ 90°: H11=MC+xr,  H12=H11+x,   H2=ASC+xr³, H3=H2+xr⁴
-
-    Reference: Pullen-style ratio division of semi-arcs.
-    """
-    mc  = _mc_from_armc(armc, obliquity, lat)
-    asc = _asc_from_armc(armc, obliquity, lat)
-
-    acmc = ((asc - mc + 180.0) % 360.0) - 180.0
-    if acmc < 0.0:
-        asc  = (asc + 180.0) % 360.0
-        acmc = ((asc - mc + 180.0) % 360.0) - 180.0
-
-    q     = acmc if acmc <= 90.0 else 180.0 - acmc
-    third = 1.0 / 3.0
-    two23 = 2.0 ** (2.0 * third)   # 2^(2/3)
-
-    if q < 1e-30:
-        x = xr = xr3 = 0.0
-        xr4 = 180.0
-    else:
-        c   = (180.0 - q) / q
-        ccr = (c * c - c) ** third               # ∛(c²−c) — always ≥ 0 for q ≤ 90
-        cqx = math.sqrt(two23 * ccr + 1.0)
-        r1  = 0.5 * cqx
-        r2  = 0.5 * math.sqrt(max(0.0, -2.0 * (1.0 - 2.0 * c) / cqx - two23 * ccr + 2.0))
-        r   = r1 + r2 - 0.5
-        x   = q / (2.0 * r + 1.0)
-        xr  = r * x
-        xr3 = xr * r * r
-        xr4 = xr3 * r
-
-    if acmc > 90.0:
-        h11 = (mc  + xr3) % 360.0
-        h12 = (h11 + xr4) % 360.0
-        h2  = (asc + xr)  % 360.0
-        h3  = (h2  + x)   % 360.0
-    else:
-        h11 = (mc  + xr)  % 360.0
-        h12 = (h11 + x)   % 360.0
-        h2  = (asc + xr3) % 360.0
-        h3  = (h2  + xr4) % 360.0
-
-    cusps = [0.0] * 12
-    cusps[0]  = asc;   cusps[9]  = mc
-    cusps[3]  = (mc  + 180.0) % 360.0
-    cusps[6]  = (asc + 180.0) % 360.0
-    cusps[10] = h11;   cusps[11] = h12
-    cusps[1]  = h2;    cusps[2]  = h3
-    cusps[4]  = (h11 + 180.0) % 360.0
-    cusps[5]  = (h12 + 180.0) % 360.0
-    cusps[7]  = (h2  + 180.0) % 360.0
-    cusps[8]  = (h3  + 180.0) % 360.0
-    return _finalize_cusps(cusps, context="_pullen_sr")
-
-
-# ---------------------------------------------------------------------------
 # Topocentric (Polich-Page)
 # ---------------------------------------------------------------------------
 
@@ -1705,17 +1575,20 @@ def _cotrans(lon: float, lat: float, eps: float) -> tuple[float, float]:
     l = lon * DEG2RAD
     b = lat * DEG2RAD
 
-    # Spherical -> Cartesian
-    x = math.cos(b) * math.cos(l)
-    y = math.cos(b) * math.sin(l)
-    z = math.sin(b)
+    cos_b = math.cos(b)
+    sin_b = math.sin(b)
+    sin_l = math.sin(l)
+    cos_l = math.cos(l)
+    sin_e = math.sin(e)
+    cos_e = math.cos(e)
 
-    # Rotate about x-axis by +e
-    y2 = y * math.cos(e) - z * math.sin(e)
-    z2 = y * math.sin(e) + z * math.cos(e)
+    # Direct spherical relation for x-axis rotation.
+    y_num = cos_b * sin_l * cos_e - sin_b * sin_e
+    x_num = cos_b * cos_l
+    z_num = cos_b * sin_l * sin_e + sin_b * cos_e
 
-    lon_new = math.atan2(y2, x) * RAD2DEG % 360.0
-    lat_new = math.asin(max(-1.0, min(1.0, z2))) * RAD2DEG
+    lon_new = math.atan2(y_num, x_num) * RAD2DEG % 360.0
+    lat_new = math.asin(max(-1.0, min(1.0, z_num))) * RAD2DEG
     return lon_new, lat_new
 
 
@@ -1740,36 +1613,34 @@ def _krusinski(armc: float, obliquity: float, lat: float) -> list[float]:
 
     Reference: Bogdan Krusinski (2006) method notes.
     """
-    mc  = _mc_from_armc(armc, obliquity, lat)
+    mc = _mc_from_armc(armc, obliquity, lat)
     asc = _asc_from_armc(armc, obliquity, lat)
 
-    acmc = ((asc - mc + 180.0) % 360.0) - 180.0
-    if acmc < 0.0:
+    # Keep Asc in the same semicircle convention used across quadrant systems.
+    if ((asc - mc + 180.0) % 360.0) - 180.0 < 0.0:
         asc = (asc + 180.0) % 360.0
 
-    ekl = obliquity
-    fi  = lat
-    th  = armc
+    def _anchor_on_horizon(asc_lon: float) -> float:
+        """Longitude offset of the Asc-Zenith great-circle anchor in horizon frame."""
+        eq_lon, eq_lat = _cotrans(asc_lon, 0.0, -obliquity)
+        eq_lon = (eq_lon - (armc - 90.0)) % 360.0
+        hor_lon, _ = _cotrans(eq_lon, eq_lat, -(90.0 - lat))
+        return hor_lon % 360.0
 
-    # Forward transform to the Krusinski horizon frame.
-    x0, x1 = _cotrans(asc, 0.0, -ekl)
-    x0 = (x0 - (th - 90.0)) % 360.0
-    x0, x1 = _cotrans(x0, x1, -(90.0 - fi))
-    kr_horizon_lon = x0
+    def _house_circle_ra(sector_deg: float, anchor_lon: float) -> float:
+        """Map a house-circle sector longitude to equatorial right ascension."""
+        hor_lon, hor_lat = _cotrans(sector_deg, 0.0, 90.0)
+        hor_lon = (hor_lon + anchor_lon) % 360.0
+        eq_lon, eq_lat = _cotrans(hor_lon, hor_lat, 90.0 - lat)
+        return (eq_lon + (armc - 90.0)) % 360.0
 
+    anchor_lon = _anchor_on_horizon(asc)
     cusps = [0.0] * 12
 
-    for i in range(6):
-        bx0, bx1 = float(30 * i), 0.0
-        # Backward transform from house-circle sector to ecliptic longitude.
-        bx0, bx1 = _cotrans(bx0, bx1, 90.0)
-        bx0 = (bx0 + kr_horizon_lon) % 360.0
-        bx0, bx1 = _cotrans(bx0, bx1, 90.0 - fi)
-        bx0 = (bx0 + (th - 90.0)) % 360.0
-        # Zero-pole RA projection for cusp longitude.
-        lon = _project_ra_with_pole(bx0, 0.0, ekl)
-        cusps[i]     = lon % 360.0
-        cusps[i + 6] = (lon + 180.0) % 360.0
+    for house_index in range(12):
+        sector = float(30 * house_index)
+        ra = _house_circle_ra(sector, anchor_lon)
+        cusps[house_index] = _project_ra_with_pole(ra, 0.0, obliquity) % 360.0
 
     return _finalize_cusps(cusps, context="_krusinski")
 
@@ -1790,49 +1661,43 @@ def _apc_sector(n: int, ph: float, e: float, az: float) -> float:
     """
     _VERY_SMALL = 1e-6
     abs_lat_deg = abs(ph * RAD2DEG)
-    tan_lat = math.tan(ph)
-    tan_obl = math.tan(e)
 
-    if abs_lat_deg > 90.0 - _VERY_SMALL:
-        base_angle = 0.0
-        ascensional_offset = 0.0
-    else:
-        kv_den = 1.0 + tan_lat * tan_obl * math.sin(az)
-        base_angle = math.atan((tan_lat * tan_obl * math.cos(az)) / kv_den)
+    def _ascending_terms() -> tuple[float, float]:
+        if abs_lat_deg > 90.0 - _VERY_SMALL:
+            return 0.0, 0.0
+
+        tan_lat = math.tan(ph)
+        tan_obl = math.tan(e)
+        mixed = tan_lat * tan_obl
+
+        # atan2 form keeps sign/quad robust at extreme values.
+        kv = math.atan2(mixed * math.cos(az), 1.0 + mixed * math.sin(az))
+
         if abs_lat_deg < _VERY_SMALL:
-            ascensional_offset = (90.0 - _VERY_SMALL) * DEG2RAD
-            if ph < 0.0:
-                ascensional_offset = -ascensional_offset
+            dasc = math.copysign((90.0 - _VERY_SMALL) * DEG2RAD, -1.0 if ph < 0.0 else 1.0)
         else:
-            ascensional_offset = math.atan(math.sin(base_angle) / tan_lat)
+            dasc = math.atan2(math.sin(kv), tan_lat)
+        return kv, dasc
 
-    if n < 8:
-        sector_index = n - 1
-        sector_angle = (
-            base_angle
-            + az
-            + math.pi / 2.0
-            + sector_index * (math.pi / 2.0 - base_angle) / 3.0
-        )
-    else:
-        sector_index = n - 13
-        sector_angle = (
-            base_angle
-            + az
-            + math.pi / 2.0
-            + sector_index * (math.pi / 2.0 + base_angle) / 3.0
-        )
+    def _sector_ra(kv: float) -> float:
+        base = kv + az + math.pi / 2.0
+        if n <= 7:
+            step = (math.pi / 2.0 - kv) / 3.0
+            return (base + (n - 1) * step) % (2.0 * math.pi)
+        step = (math.pi / 2.0 + kv) / 3.0
+        return (base + (n - 13) * step) % (2.0 * math.pi)
 
-    sector_angle %= (2.0 * math.pi)
+    kv, dasc = _ascending_terms()
+    a = _sector_ra(kv)
 
-    rise_term = math.tan(ascensional_offset) * tan_lat
-    y = rise_term * math.sin(az) + math.sin(sector_angle)
+    tan_lat = math.tan(ph)
+    dscale = math.tan(dasc) * tan_lat
+    y = dscale * math.sin(az) + math.sin(a)
     x = (
-        math.cos(e) * (rise_term * math.cos(az) + math.cos(sector_angle))
-        + math.sin(e) * tan_lat * math.sin(az - sector_angle)
+        math.cos(e) * (dscale * math.cos(az) + math.cos(a))
+        + math.sin(e) * tan_lat * math.sin(az - a)
     )
-    cusp_lon = math.atan2(y, x)
-    return cusp_lon * RAD2DEG % 360.0
+    return (math.atan2(y, x) * RAD2DEG) % 360.0
 
 
 def _apc(armc: float, obliquity: float, lat: float) -> list[float]:
@@ -1841,36 +1706,35 @@ def _apc(armc: float, obliquity: float, lat: float) -> list[float]:
 
     Reference: APC sector geometry in astronomical-house literature.
     """
-    # APC follows the horizon-accessible MC branch at extreme latitudes.
-    # This preserves cusp orientation parity in the polar regime.
-    mc_raw = _mc_from_armc(armc, obliquity, lat)
-    mc  = _mc_above_horizon(mc_raw, obliquity, lat)
+    mc_geometric = _mc_from_armc(armc, obliquity, lat)
+    mc_visible = _mc_above_horizon(mc_geometric, obliquity, lat)
     asc = _asc_from_armc(armc, obliquity, lat)
 
-    ph = lat       * DEG2RAD
-    e  = obliquity * DEG2RAD
-    az = armc      * DEG2RAD
+    ph = lat * DEG2RAD
+    eps = obliquity * DEG2RAD
+    ramc = armc * DEG2RAD
 
-    cusps = [_apc_sector(i, ph, e, az) for i in range(1, 13)]
+    cusps = [_apc_sector(h, ph, eps, ramc) for h in range(1, 13)]
 
-    # Keep H10 anchored to the standard MC and H4 to IC.
-    cusps[9] = mc
-    cusps[3] = (mc + 180.0) % 360.0
+    # Anchor cardinal cusps to canonical ARMC-based axes.
+    cusps[9] = mc_visible
+    cusps[3] = (mc_visible + 180.0) % 360.0
 
-    # When MC is horizon-swapped at polar latitudes, APC intermediate cusps
-    # require the corresponding 180-degree parity correction.
-    mc_swapped = abs((mc - mc_raw + 180.0) % 360.0 - 180.0) > 90.0
-    if mc_swapped:
-        for i in (1, 2, 4, 5, 7, 8, 10, 11):
-            cusps[i] = (cusps[i] + 180.0) % 360.0
+    mc_shifted = abs((mc_visible - mc_geometric + 180.0) % 360.0 - 180.0) > 90.0
+    if mc_shifted:
+        shifted = []
+        for idx, lon in enumerate(cusps):
+            if idx in (1, 2, 4, 5, 7, 8, 10, 11):
+                shifted.append((lon + 180.0) % 360.0)
+            else:
+                shifted.append(lon)
+        cusps = shifted
 
-    # Polar correction. When the APC cusp set lands in the opposite hemisphere
-    # from the standard ascendant, rotate the full figure by 180°.
-    ac_diff = abs(((cusps[0] - asc + 180.0) % 360.0) - 180.0)
-    if not mc_swapped and abs(lat) >= 90.0 - obliquity and ac_diff > 90.0:
-        cusps = [(c + 180.0) % 360.0 for c in cusps]
+    # At critical latitudes, enforce Asc hemisphere parity before final anchors.
+    asc_gap = abs(((cusps[0] - asc + 180.0) % 360.0) - 180.0)
+    if (not mc_shifted) and abs(lat) >= 90.0 - obliquity and asc_gap > 90.0:
+        cusps = [normalize_degrees(c + 180.0) for c in cusps]
 
-    # Cardinal anchors for quadrant-system invariants.
     cusps[0] = asc
     cusps[6] = (asc + 180.0) % 360.0
 
@@ -1910,7 +1774,7 @@ def calculate_houses(
 
                 1. Polar latitude:
                      When |latitude| >= 90° − obliquity, the systems PLACIDUS, KOCH,
-                     and PULLEN_SD are not supported by default.
+                 are not supported by default.
            - Default policy (PolarFallbackPolicy.FALLBACK_TO_PORPHYRY): silently
              substitute Porphyry; record in HouseCusps.fallback / fallback_reason.
            - Strict policy (PolarFallbackPolicy.RAISE): raise ValueError.
@@ -3211,10 +3075,6 @@ def houses_from_armc(
         cusps = _azimuthal(armc, obliquity, lat)
     elif effective_system == HouseSystem.CARTER:
         cusps = _carter(armc, obliquity, lat)
-    elif effective_system == HouseSystem.PULLEN_SD:
-        cusps = _pullen_sd(armc, obliquity, lat)
-    elif effective_system == HouseSystem.PULLEN_SR:
-        cusps = _pullen_sr(armc, obliquity, lat)
     elif effective_system == HouseSystem.KRUSINSKI:
         cusps = _krusinski(armc, obliquity, lat)
     elif effective_system == HouseSystem.APC:

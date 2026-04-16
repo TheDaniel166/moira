@@ -396,9 +396,7 @@ class TestSystemFamiliesAngularity:
         HouseSystem.MORINUS, HouseSystem.VEHLOW,
         HouseSystem.KOCH, HouseSystem.ALCABITIUS, HouseSystem.MERIDIAN,
         HouseSystem.AZIMUTHAL, HouseSystem.TOPOCENTRIC, HouseSystem.KRUSINSKI,
-        HouseSystem.CARTER, HouseSystem.PULLEN_SD,
-        HouseSystem.PULLEN_SR,
-    ])
+        HouseSystem.CARTER, ])
     def test_asc_is_angular_for_asc_anchored_systems(self, system):
         # For systems where cusps[0] == ASC (all except SUNSHINE and APC which
         # use non-ASC anchors), placing the ASC should land in H1.
@@ -496,3 +494,4 @@ class TestPhase7Regression:
         pl = assign_house(0.0, hc)
         bp = describe_boundary(pl)
         assert bp.dist_to_opening + bp.dist_to_closing == pytest.approx(bp.house_span, abs=1e-9)
+

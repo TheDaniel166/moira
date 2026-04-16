@@ -107,105 +107,27 @@ This chain is not a correction appended after the fact. It is the substrate on w
 
 ## 4. Comparative Audit
 
-The following audit is organized by computational domain. Each domain identifies the specific point of divergence between a traditional compact ephemeris-library model and Moira's sovereign, inspectable pipeline.
+Swiss Ephemeris is named directly here because it is a longstanding reference implementation in this domain. Its design choices are historically coherent and technically clear: compact distribution, performance-optimized internals, a stable API maintained across decades, published source, pre-interpolated binary data for efficient shipping, and a global-flag policy model that was common in its era.
 
----
+Swiss Ephemeris uses `.se1` binary data, a pre-interpolated format optimized for size and speed. Moira uses raw JPL SPK kernels directly, trading size and speed for source-level auditability.
 
-### Ephemeris Substrate
+Moira's positions are stated positively and explicitly:
 
-| Attribute | Established Library Model | Moira |
-| :--- | :--- | :--- |
-| **Data format** | Proprietary pre-interpolated binary (`.se1`) | Raw JPL SPK kernels (`.bsp`) — Chebyshev coefficients as distributed by JPL |
-| **Kernel access layer** | Compiled C integration, not separately inspectable | Sovereign `SpkReader` (`moira/spk_reader.py`) — single gateway, explicit segment selection, inspectable in source |
-| **Chebyshev evaluation** | Compiled, hidden | `jplephem` used as a binary file reader only; segment selection, epoch handling, and singleton lifecycle are Moira's own implementation |
-| **Body coverage** | Fixed compiled body set | SPK-driven; extends to 1.4M+ minor planets on demand via separate kernel files |
-| **Kernel version policy** | Bundled, opaque | Explicit — kernel path declared at engine init; version is the caller's declared choice |
+- Moira uses raw JPL SPK kernels (`.bsp`) with explicit kernel path selection.
+- Moira centralizes kernel access through `SpkReader` in `moira/spk_reader.py`.
+- Moira evaluates reduction stages as named source functions (nutation, precession, aberration, topocentric transforms).
+- Moira implements IAU 2000A nutation and IAU 2006 precession in sovereign Python modules.
+- Moira exposes the full IAU 2000A term list at runtime from `iau2000a_ls.txt` and `iau2000a_pl.txt`.
+- Moira supports an optional NumPy fast path and a scalar stdlib fallback.
+- Moira passes computation policy as explicit immutable objects (for example `DeltaTPolicy`) rather than mutable process-wide flags.
+- Moira documents time-scale expectations (TT vs UT) at the public function level.
+- Moira keeps TT to TDB conversion explicit, including the periodic approximation and its documented residual.
+- Moira keeps sidereal-time modeling explicit (ERA, GMST, GAST) with cited standards.
+- Moira treats topocentric computation as first-class, including explicit parallax and refraction functions.
+- Moira maintains star provenance explicitly (`star_provenance.json`) and supports policy-controlled Gaia enrichment.
+- Moira uses primary external validation oracles (JPL Horizons, SOFA/ERFA, IERS references) and records divergence policy as doctrine.
 
----
-
-### Reduction Pipeline
-
-| Attribute | Established Library Model | Moira |
-| :--- | :--- | :--- |
-| **Nutation theory** | IAU 2000A (compiled, internal) | IAU 2000A — sovereign Python implementation, `nutation_2000a.py` |
-| **Nutation series** | Opaque compiled evaluation | Full IERS table evaluation: 1358 lunisolar + 1056 planetary terms, read from `iau2000a_ls.txt` / `iau2000a_pl.txt` at runtime |
-| **Nutation fast path** | Compiled C loop | Optional NumPy vectorized path; scalar stdlib fallback always available |
-| **Precession theory** | IAU 2006 (compiled, internal) | IAU 2006 Fukushima-Williams four-angle parameterization (P03) — sovereign Python, `precession.py` |
-| **Obliquity** | Opaque | Mean obliquity: IAU 2006 P03 polynomial (Capitaine, Wallace & Chapront 2003); True obliquity: mean + nutation-in-obliquity from full 2000A series |
-| **Light-time correction** | Applied internally, not inspectable | Iterative correction applied explicitly in `planets.py`; each iteration is a readable function call |
-| **Aberration** | Applied internally, not inspectable | Annual aberration applied as explicit vector correction in `coordinates.py` (`aberration_correction`) |
-| **Pipeline visibility** | Single opaque function call | Each stage (nutation → precession → aberration → topocentric) is a discrete, named, testable function |
-
----
-
-### Time System
-
-| Attribute | Established Library Model | Moira |
-| :--- | :--- | :--- |
-| **ΔT model** | Internal polynomial / opaque fallback | Layered hybrid: IERS Bulletin A/B observed (2015–2026) → 5-year table (1955–2015) → SMH 2016 HPIERS table → telescopic anchors → Morrison & Stephenson (2004) polynomials |
-| **ΔT policy mechanism** | Global mutable flag (`set_delta_t_userdef`) | Immutable `DeltaTPolicy` object passed per-call; models: `'hybrid'`, `'nasa_canon'`, `'fixed'` |
-| **NASA eclipse parity** | Not distinguished | Separate `delta_t_nasa_canon()` with lunar secular-acceleration correction (`−0.000012932 × (year − 1955)²`); never the default |
-| **TT → TDB** | Implicit | Explicit periodic approximation: `0.001657 sin(g) + 0.00001385 sin(2g)` seconds; residual < 2 ms, documented |
-| **GMST formula** | IAU 1982 or 2006 (not declared) | Explicitly IAU 2006 (Capitaine et al. 2003) — ERA plus 5th-order polynomial; agreement with SOFA `iauGmst06` < 0.0001 arcsec for 1800–2200 |
-| **ERA model** | Not separately exposed | IAU 2000 linear model (IERS Conventions 2010 §5.4.2), sovereign implementation compatible with SOFA `iauEra00` |
-| **Time scale opacity** | Time scale in use is not declared to caller | Every public function that takes a JD documents whether it expects TT or UT in its signature and docstring |
-
----
-
-### Star System
-
-| Attribute | Established Library Model | Moira |
-| :--- | :--- | :--- |
-| **Catalog authority** | Internal fixed catalog, provenance undocumented | Sovereign Registry minted from IAU modern star names, resolved through SIMBAD (Hipparcos ID → Bayer → SIMBAD ID → proper name) |
-| **Catalog size** | ~1000 stars (implementation-defined) | 543+ IAU-sanctioned stars, expandable |
-| **Gaia DR3** | Not used | Optional enrichment layer — proper motion, parallax, photometry (G/BP/RP), Teff; policy-controlled, never silently applied |
-| **Per-star provenance** | None | `star_provenance.json` — source attribution, matching status, resolution notes per star |
-| **Parallax treatment** | Small additive correction | Primary geometric truth; Gaia parallax used to place the star at its true distance from the observer |
-| **Proper motion** | Static epoch (often J2000) | Propagated to the requested JD; position reflects the star's actual location at the computation epoch |
-
----
-
-### Observer / Topocentric
-
-| Attribute | Established Library Model | Moira |
-| :--- | :--- | :--- |
-| **Default position type** | Geocentric (topocentric optional) | True topocentric by default for all bodies including fixed stars |
-| **Parallax for stars** | Optional correction | Primary computation path — observer distance from Earth's center enters the unit vector directly |
-| **Atmospheric refraction** | Applied via internal model | Explicit formula in `coordinates.py` (`atmospheric_refraction`, `atmospheric_refraction_extended`); model and parameters visible in source |
-| **Horizontal coordinates** | Available | `equatorial_to_horizontal` / `horizontal_to_equatorial` — explicit rotation using GAST and observer latitude |
-
----
-
-### Policy and Design
-
-| Attribute | Established Library Model | Moira |
-| :--- | :--- | :--- |
-| **Computation policy** | Global flags and integer constants (opaque at call site) | Typed policy objects passed explicitly; policy is visible in any code that calls the engine |
-| **Uncertainty disclosure** | Silent — no uncertainty envelope published | Mandatory for ΔT model range, historical projections, and chaotic orbits (Centaurs/TNOs) |
-| **Model choice visibility** | Caller cannot inspect which model was used | Model name is part of the policy object; can be logged, tested, and audited |
-| **External dependency count** | Implicitly many (compiled into binary) | `jplephem` (SPK binary reader), NumPy (optional nutation fast path), stdlib for everything else |
-
----
-
-### Validation
-
-| Attribute | Established Library Model | Moira |
-| :--- | :--- | :--- |
-| **Oracle strategy** | Cross-software agreement (circular) | Primary oracles: JPL Horizons, SOFA/ERFA reference implementations, IERS published values |
-| **Test basis** | Unspecified | `pytest` suite with numerical benchmarks against external physical authorities |
-| **Divergence handling** | Not documented | Explicit divergence policy (Section 6); disagreements are diagnostic events, not silenced |
-
----
-
-### Documentation
-
-| Attribute | Established Library Model | Moira |
-| :--- | :--- | :--- |
-| **Standard type** | API reference manual | Constitutional doctrinal standard — doctrine, policy, and machine contracts per module |
-| **Docstring contract** | Optional / inconsistent | Machine contracts (`[MACHINE_CONTRACT]` blocks) on high-risk classes; frozen API surfaces declared explicitly |
-| **What is documented** | Public function signatures | Public signatures + computation policy + authority source + known approximations + validation oracle |
-
----
+This section is intentionally descriptive: it records design differences without ranking them.
 
 ## 5. The Four Gates of Luminous Calculation
 

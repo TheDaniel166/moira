@@ -43,7 +43,7 @@ What this proves
 
 What this does not prove
 ------------------------
-- It does not validate Placidus, Koch, or Pullen SD above the critical latitude as direct Swiss cusp outputs, because the relevant truth question in Moira is fallback doctrine, not unsupported cusp generation.
+- It does not validate Placidus or Koch above the critical latitude as direct Swiss cusp outputs, because the relevant truth question in Moira is fallback doctrine, not unsupported cusp generation.
 - That fallback doctrine is covered separately by [tests/unit/test_polar_house_breadth_gauntlet.py](../../tests/unit/test_polar_house_breadth_gauntlet.py) and [tests/unit/test_polar_chart_public_gauntlet.py](../../tests/unit/test_polar_chart_public_gauntlet.py).
 
 Proof artifact

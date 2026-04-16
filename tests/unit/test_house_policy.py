@@ -144,8 +144,7 @@ class TestStrictPolicy:
     @pytest.mark.parametrize("system", [
         HouseSystem.PLACIDUS,
         HouseSystem.KOCH,
-        HouseSystem.PULLEN_SD,
-    ])
+        ])
     def test_strict_polar_raises_for_incapable_systems(self, system):
         with pytest.raises(ValueError, match="critical latitude"):
             _polar(system, policy=HousePolicy.strict())
@@ -304,3 +303,4 @@ class TestPhase4Regression:
             assert (r.fallback_reason is None) == (not r.fallback)
             assert r.classification is not None
             assert r.policy is not None
+

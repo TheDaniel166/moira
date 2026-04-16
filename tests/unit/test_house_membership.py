@@ -446,14 +446,6 @@ class TestSystemFamilies:
         pl = self._place(HouseSystem.CARTER, 0.0)
         assert 1 <= pl.house <= 12
 
-    def test_pullen_sd_quadrant_family(self):
-        pl = self._place(HouseSystem.PULLEN_SD, 0.0)
-        assert 1 <= pl.house <= 12
-
-    def test_pullen_sr_quadrant_family(self):
-        pl = self._place(HouseSystem.PULLEN_SR, 0.0)
-        assert 1 <= pl.house <= 12
-
     def test_result_carries_truth_from_house_cusps(self):
         hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
@@ -640,3 +632,4 @@ class TestPhase5Regression:
     def test_is_quadrant_system_whole_sign(self):
         result = calculate_houses(_JD, _LAT, _LON, HouseSystem.WHOLE_SIGN)
         assert result.is_quadrant_system is False
+

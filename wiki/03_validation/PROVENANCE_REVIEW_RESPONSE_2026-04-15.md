@@ -32,8 +32,6 @@ Targeted functions completed in this cycle:
 - _campanus
 - _azimuthal
 - _carter
-- _pullen_sd
-- _pullen_sr
 - _cotrans
 - _krusinski
 - _apc

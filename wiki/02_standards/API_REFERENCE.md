@@ -253,8 +253,7 @@ HouseSystem.REGIOMONTANUS  HouseSystem.EQUAL        HouseSystem.WHOLE_SIGN
 HouseSystem.PORPHYRY       HouseSystem.MORINUS      HouseSystem.ALCABITIUS
 HouseSystem.TOPOCENTRIC    HouseSystem.MERIDIAN     HouseSystem.VEHLOW
 HouseSystem.SUNSHINE       HouseSystem.AZIMUTHAL    HouseSystem.CARTER
-HouseSystem.KRUSINSKI      HouseSystem.APC          HouseSystem.PULLEN_SD
-HouseSystem.PULLEN_SR
+HouseSystem.KRUSINSKI      HouseSystem.APC
 ```
 
 ### `Ayanamsa` — sidereal reference frame

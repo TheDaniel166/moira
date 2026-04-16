@@ -151,17 +151,14 @@ A function in phase N:
 | `R` | Regiomontanus | `QUADRANT` | `POLAR_PROJECTION` | Yes | Yes |
 | `T` | Topocentric | `QUADRANT` | `POLAR_PROJECTION` | Yes | Yes |
 | `CT` | Carter | `QUADRANT` | `EQUATORIAL` | Yes | Yes |
-| `PS` | Pullen SD | `QUADRANT` | `SINUSOIDAL` | Yes | **No** |
-| `PR` | Pullen SR | `QUADRANT` | `SINUSOIDAL` | Yes | Yes |
 | `U` | Krusinski | `QUADRANT` | `GREAT_CIRCLE` | Yes | Yes |
 | `Y` | APC | `QUADRANT` | `APC_FORMULA` | Yes | Yes |
 | `N` | Sunshine | `SOLAR` | `SOLAR_POSITION` | No | Yes |
 
-**Polar-incapable systems** (`_POLAR_SYSTEMS`): `P`, `K`, `PS`.
-These three produce geometrically disordered cusps above the critical latitude
+**Polar-incapable systems** (`_POLAR_SYSTEMS`): `P`, `K`.
+These systems produce geometrically disordered cusps above the critical latitude
 `90° − obliquity` (≈ 66.56° at J2000) and fall back to Porphyry under the default
-policy. Pullen SR (`PR`) uses a different sinusoidal formula and remains geometrically
-valid to 90°; it is not in `_POLAR_SYSTEMS`.
+policy.
 
 #### QUADRANT H1 exception
 

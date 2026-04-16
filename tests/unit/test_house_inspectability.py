@@ -4,8 +4,8 @@ Phase 3: Inspectability and Invariant Hardening Tests
 Verifies that:
 - __post_init__ invariant guard fires on construction of malformed objects
 - __post_init__ passes for all outputs of calculate_houses()
-- is_quadrant_system property is correct for all 18 systems
-- is_latitude_sensitive property is correct for all 18 systems
+- is_quadrant_system property is correct for all 17 systems
+- is_latitude_sensitive property is correct for all 17 systems
 - _POLAR_SYSTEMS and _KNOWN_SYSTEMS are at module scope and consistent
 - Convenience properties are purely derived (no data duplication)
 - Existing calculation semantics remain unchanged
@@ -46,7 +46,7 @@ _ALL_SYSTEMS = [
     HouseSystem.PORPHYRY, HouseSystem.MERIDIAN, HouseSystem.ALCABITIUS,
     HouseSystem.MORINUS, HouseSystem.TOPOCENTRIC, HouseSystem.VEHLOW,
     HouseSystem.SUNSHINE, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
-    HouseSystem.PULLEN_SD, HouseSystem.PULLEN_SR, HouseSystem.KRUSINSKI,
+    HouseSystem.KRUSINSKI,
     HouseSystem.APC,
 ]
 
@@ -65,11 +65,11 @@ class TestModuleScopeSets:
     def test_polar_systems_are_subset_of_known(self):
         assert _POLAR_SYSTEMS.issubset(_KNOWN_SYSTEMS)
 
-    def test_polar_systems_has_exactly_three_members(self):
-        assert len(_POLAR_SYSTEMS) == 3
+    def test_polar_systems_has_exactly_two_members(self):
+        assert len(_POLAR_SYSTEMS) == 2
 
-    def test_known_systems_has_exactly_19_members(self):
-        assert len(_KNOWN_SYSTEMS) == 19
+    def test_known_systems_has_exactly_17_members(self):
+        assert len(_KNOWN_SYSTEMS) == 17
 
     def test_polar_systems_members_are_polar_incapable(self):
         for code in _POLAR_SYSTEMS:
@@ -246,7 +246,7 @@ class TestIsQuadrantSystem:
         HouseSystem.PLACIDUS, HouseSystem.KOCH, HouseSystem.PORPHYRY,
         HouseSystem.CAMPANUS, HouseSystem.REGIOMONTANUS, HouseSystem.ALCABITIUS,
         HouseSystem.TOPOCENTRIC, HouseSystem.CARTER,
-        HouseSystem.PULLEN_SD, HouseSystem.PULLEN_SR, HouseSystem.KRUSINSKI,
+        HouseSystem.KRUSINSKI,
         HouseSystem.APC,
     ])
     def test_quadrant_systems_return_true(self, system):
@@ -308,7 +308,7 @@ class TestIsLatitudeSensitive:
         HouseSystem.PLACIDUS, HouseSystem.KOCH, HouseSystem.PORPHYRY,
         HouseSystem.CAMPANUS, HouseSystem.REGIOMONTANUS, HouseSystem.ALCABITIUS,
         HouseSystem.TOPOCENTRIC, HouseSystem.CARTER,
-        HouseSystem.PULLEN_SD, HouseSystem.PULLEN_SR, HouseSystem.KRUSINSKI,
+        HouseSystem.KRUSINSKI,
         HouseSystem.APC,
     ])
     def test_sensitive_systems_return_true(self, system):
@@ -422,3 +422,4 @@ class TestRegressionCalculationSemantics:
         porphyry = _polar(HouseSystem.PORPHYRY)
         for i in range(12):
             assert r.cusps[i] == pytest.approx(porphyry.cusps[i], abs=1e-8)
+

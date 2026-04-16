@@ -551,9 +551,7 @@ class TestSystemFamiliesDistribution:
         HouseSystem.MORINUS, HouseSystem.VEHLOW, HouseSystem.SUNSHINE,
         HouseSystem.KOCH, HouseSystem.ALCABITIUS, HouseSystem.MERIDIAN,
         HouseSystem.AZIMUTHAL, HouseSystem.TOPOCENTRIC, HouseSystem.KRUSINSKI,
-        HouseSystem.APC, HouseSystem.CARTER, HouseSystem.PULLEN_SD,
-        HouseSystem.PULLEN_SR,
-    ])
+        HouseSystem.APC, HouseSystem.CARTER, ])
     def test_one_per_house_for_all_systems(self, system):
         hc   = _hc(system)
         lons = _midpoints(hc)
@@ -623,3 +621,4 @@ class TestPhase9Regression:
         pl = assign_house(hc.asc, hc)
         ap = describe_angularity(pl)
         assert ap.category == HouseAngularity.ANGULAR
+

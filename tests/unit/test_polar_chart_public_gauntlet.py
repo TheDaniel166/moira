@@ -21,8 +21,7 @@ _POLAR_OBSERVERS = {
 _POLAR_LIMITED_SYSTEMS = (
     HouseSystem.PLACIDUS,
     HouseSystem.KOCH,
-    HouseSystem.PULLEN_SD,
-)
+    )
 _SUPPORTED_PUBLIC_BODIES = (
     Body.SUN,
     Body.MOON,
@@ -157,3 +156,4 @@ def test_public_chart_lots_match_porphyry_under_polar_fallback() -> None:
                         system,
                         name,
                     )
+

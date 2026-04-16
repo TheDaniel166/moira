@@ -1,7 +1,7 @@
 """
 Test of the critical latitude: house fallback above 90° − obliquity.
 
-This suite verifies that semi-arc systems (Placidus, Koch, Pullen SD) fall
+This suite verifies that semi-arc systems (Placidus, Koch) fall
 back to Porphyry above the critical latitude, which is 90° − obliquity
 (≈ 66.56° at J2000).  This threshold is not a fixed constant — it is derived
 from the chart's actual obliquity at call time.

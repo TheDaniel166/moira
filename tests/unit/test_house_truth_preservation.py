@@ -87,8 +87,7 @@ class TestNoFallback:
         HouseSystem.WHOLE_SIGN, HouseSystem.PORPHYRY, HouseSystem.CAMPANUS,
         HouseSystem.REGIOMONTANUS, HouseSystem.ALCABITIUS, HouseSystem.MORINUS,
         HouseSystem.TOPOCENTRIC, HouseSystem.MERIDIAN, HouseSystem.VEHLOW,
-        HouseSystem.AZIMUTHAL, HouseSystem.CARTER, HouseSystem.PULLEN_SD,
-        HouseSystem.PULLEN_SR, HouseSystem.KRUSINSKI, HouseSystem.APC,
+        HouseSystem.AZIMUTHAL, HouseSystem.CARTER, HouseSystem.KRUSINSKI, HouseSystem.APC,
     ])
     def test_requested_equals_effective_at_normal_latitude(self, system):
         r = _normal(system)
@@ -108,8 +107,7 @@ class TestNoFallback:
 
 
 # ---------------------------------------------------------------------------
-# Polar fallback: PLACIDUS / KOCH / PULLEN_SD -> PORPHYRY
-# (PULLEN_SR uses a different formula and does not fall back)
+# Polar fallback: PLACIDUS / KOCH -> PORPHYRY
 # The threshold is 90° − obliquity (≈ 66.56° at J2000), not a fixed constant.
 # ---------------------------------------------------------------------------
 
@@ -117,8 +115,7 @@ class TestPolarFallback:
     @pytest.mark.parametrize("requested", [
         HouseSystem.PLACIDUS,
         HouseSystem.KOCH,
-        HouseSystem.PULLEN_SD,
-    ])
+        ])
     def test_polar_fallback_sets_effective_to_porphyry(self, requested):
         r = _polar(requested)
         assert r.effective_system == HouseSystem.PORPHYRY
@@ -126,8 +123,7 @@ class TestPolarFallback:
     @pytest.mark.parametrize("requested", [
         HouseSystem.PLACIDUS,
         HouseSystem.KOCH,
-        HouseSystem.PULLEN_SD,
-    ])
+        ])
     def test_polar_fallback_preserves_requested_system(self, requested):
         r = _polar(requested)
         assert r.system == requested
@@ -135,8 +131,7 @@ class TestPolarFallback:
     @pytest.mark.parametrize("requested", [
         HouseSystem.PLACIDUS,
         HouseSystem.KOCH,
-        HouseSystem.PULLEN_SD,
-    ])
+        ])
     def test_polar_fallback_flag_is_true(self, requested):
         r = _polar(requested)
         assert r.fallback is True
@@ -144,8 +139,7 @@ class TestPolarFallback:
     @pytest.mark.parametrize("requested", [
         HouseSystem.PLACIDUS,
         HouseSystem.KOCH,
-        HouseSystem.PULLEN_SD,
-    ])
+        ])
     def test_polar_fallback_reason_is_non_empty_string(self, requested):
         r = _polar(requested)
         assert isinstance(r.fallback_reason, str)
@@ -154,8 +148,7 @@ class TestPolarFallback:
     @pytest.mark.parametrize("requested", [
         HouseSystem.PLACIDUS,
         HouseSystem.KOCH,
-        HouseSystem.PULLEN_SD,
-    ])
+        ])
     def test_polar_fallback_cusps_match_porphyry(self, requested):
         r = _polar(requested)
         porphyry = _polar(HouseSystem.PORPHYRY)
@@ -180,11 +173,6 @@ class TestPolarFallback:
         assert r.effective_system == HouseSystem.PLACIDUS
         assert r.fallback is False
         assert r.fallback_reason is None
-
-    def test_pullen_sr_does_not_fall_back_at_polar(self):
-        r = _polar(HouseSystem.PULLEN_SR)
-        assert r.effective_system == HouseSystem.PULLEN_SR
-        assert r.fallback is False
 
     def test_polar_fallback_reason_mentions_porphyry(self):
         r = _polar(HouseSystem.PLACIDUS)
@@ -285,8 +273,7 @@ class TestFallbackConsistency:
             HouseSystem.WHOLE_SIGN, HouseSystem.PORPHYRY, HouseSystem.CAMPANUS,
             HouseSystem.REGIOMONTANUS, HouseSystem.ALCABITIUS, HouseSystem.MORINUS,
             HouseSystem.TOPOCENTRIC, HouseSystem.MERIDIAN, HouseSystem.VEHLOW,
-            HouseSystem.AZIMUTHAL, HouseSystem.CARTER, HouseSystem.PULLEN_SD,
-            HouseSystem.PULLEN_SR, HouseSystem.KRUSINSKI, HouseSystem.APC,
+            HouseSystem.AZIMUTHAL, HouseSystem.CARTER, HouseSystem.KRUSINSKI, HouseSystem.APC,
         ]
         for system in systems:
             r = _normal(system)
@@ -356,3 +343,4 @@ class TestComputationSemanticsUnchanged:
             r = _normal(system)
             for cusp in r.cusps:
                 assert 0.0 <= cusp < 360.0, f"{system}: cusp {cusp} out of range"
+

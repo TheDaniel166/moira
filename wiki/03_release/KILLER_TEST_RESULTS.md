@@ -322,7 +322,7 @@ Measured policy surface
 | Metric | Measured value | Notes |
 | --- | ---: | --- |
 | Epochs swept | `4` | `1000 BCE`, `J2000`, `2020`, `3000 AD` |
-| Polar-limited systems swept | `3` | `Placidus`, `Koch`, `Pullen SD` |
+| Polar-limited systems swept | `2` | `Placidus`, `Koch` |
 | Strict-policy false negatives | `0` | Strict mode raised at every tested supra-critical case |
 | Fallback-vs-direct Porphyry cusp mismatches | `0` | ASC, MC, and all 12 cusps matched within `1e-8 deg` |
 | Downstream body-placement mismatches | `0` | Over `4` epochs x `4` polar observers x `3` systems x `4` bodies |
@@ -331,7 +331,7 @@ Interpretation
 
 - The critical latitude is behaving as a time-derived physical boundary, not as a hardcoded constant.
 - Default polar fallback preserves the requested system while producing the exact Porphyry figure that downstream house assignment sees.
-- Strict policy remains honest at the same edge: no silent acceptance of supra-critical Placidus, Koch, or Pullen SD cases was observed.
+- Strict policy remains honest at the same edge: no silent acceptance of supra-critical Placidus or Koch cases was observed.
 
 ---
 
@@ -363,7 +363,7 @@ Measured public-path envelope
 | --- | ---: | --- |
 | Epochs swept | `2` | `J2000`, `2020-12-21 TT` |
 | Polar observers swept | `2` | `north_80`, `south_80` |
-| Fallback systems swept | `3` | `Placidus`, `Koch`, `Pullen SD` |
+| Fallback systems swept | `2` | `Placidus`, `Koch` |
 | Chart-context fallback truth mismatches | `0` | Requested system preserved, effective system stayed `Porphyry` |
 | Body placement mismatches | `0` | `48` comparisons over `Sun`, `Moon`, `Mars`, `Jupiter` |
 | Angularity mismatches | `0` | `48` comparisons on the same body set |

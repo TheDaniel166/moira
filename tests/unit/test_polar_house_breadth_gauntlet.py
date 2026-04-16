@@ -17,8 +17,7 @@ _EPOCHS_UT = {
 _POLAR_LIMITED_SYSTEMS = (
     HouseSystem.PLACIDUS,
     HouseSystem.KOCH,
-    HouseSystem.PULLEN_SD,
-)
+    )
 _POLAR_OBSERVERS = {
     "north_67": (67.0, 18.0),
     "north_80": (80.0, 15.0),
@@ -114,3 +113,4 @@ def test_fallback_house_assignments_match_direct_porphyry_across_polar_matrix() 
                         system,
                         body,
                     )
+

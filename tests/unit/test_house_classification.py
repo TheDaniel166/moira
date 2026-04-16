@@ -4,7 +4,7 @@ Phase 2: House System Classification Tests
 Verifies that:
 - HouseSystemClassification, HouseSystemFamily, HouseSystemCuspBasis exist
   and are typed correctly
-- classify_house_system() is deterministic and maps all 18 known systems
+- classify_house_system() is deterministic and maps all 17 known systems
 - Classification reflects effective_system, not requested system
 - Fallback results classify by the effective (Porphyry / Placidus) system
 - Unknown codes raise rather than impersonating a fallback engine
@@ -140,7 +140,7 @@ class TestFamilyCorrectness:
         HouseSystem.PLACIDUS, HouseSystem.KOCH, HouseSystem.PORPHYRY,
         HouseSystem.CAMPANUS, HouseSystem.REGIOMONTANUS, HouseSystem.ALCABITIUS,
         HouseSystem.TOPOCENTRIC, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
-        HouseSystem.PULLEN_SD, HouseSystem.PULLEN_SR, HouseSystem.KRUSINSKI,
+        HouseSystem.KRUSINSKI,
         HouseSystem.APC,
     ])
     def test_quadrant_family_systems(self, system):
@@ -194,12 +194,6 @@ class TestCuspBasisCorrectness:
     def test_topocentric_polar_projection(self):
         assert classify_house_system(HouseSystem.TOPOCENTRIC).cusp_basis == HouseSystemCuspBasis.POLAR_PROJECTION
 
-    def test_pullen_sd_sinusoidal(self):
-        assert classify_house_system(HouseSystem.PULLEN_SD).cusp_basis == HouseSystemCuspBasis.SINUSOIDAL
-
-    def test_pullen_sr_sinusoidal(self):
-        assert classify_house_system(HouseSystem.PULLEN_SR).cusp_basis == HouseSystemCuspBasis.SINUSOIDAL
-
     def test_krusinski_great_circle(self):
         assert classify_house_system(HouseSystem.KRUSINSKI).cusp_basis == HouseSystemCuspBasis.GREAT_CIRCLE
 
@@ -230,7 +224,7 @@ class TestLatitudeSensitivity:
         HouseSystem.PLACIDUS, HouseSystem.KOCH, HouseSystem.PORPHYRY,
         HouseSystem.CAMPANUS, HouseSystem.REGIOMONTANUS, HouseSystem.ALCABITIUS,
         HouseSystem.TOPOCENTRIC, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
-        HouseSystem.PULLEN_SD, HouseSystem.PULLEN_SR, HouseSystem.KRUSINSKI,
+        HouseSystem.KRUSINSKI,
         HouseSystem.APC,
     ])
     def test_latitude_sensitive_systems(self, system):
@@ -245,8 +239,7 @@ class TestPolarCapable:
     @pytest.mark.parametrize("system", [
         HouseSystem.PLACIDUS,
         HouseSystem.KOCH,
-        HouseSystem.PULLEN_SD,
-    ])
+        ])
     def test_polar_incapable_systems(self, system):
         assert classify_house_system(system).polar_capable is False
 
@@ -256,8 +249,7 @@ class TestPolarCapable:
         HouseSystem.MORINUS, HouseSystem.TOPOCENTRIC, HouseSystem.MERIDIAN,
         HouseSystem.VEHLOW, HouseSystem.SUNSHINE, HouseSystem.AZIMUTHAL,
         HouseSystem.CARTER, HouseSystem.KRUSINSKI, HouseSystem.APC,
-        HouseSystem.PULLEN_SR,
-    ])
+        ])
     def test_polar_capable_systems(self, system):
         assert classify_house_system(system).polar_capable is True
 
@@ -279,8 +271,7 @@ class TestClassificationReflectsEffectiveSystem:
     @pytest.mark.parametrize("requested", [
         HouseSystem.PLACIDUS,
         HouseSystem.KOCH,
-        HouseSystem.PULLEN_SD,
-    ])
+        ])
     def test_polar_fallback_classification_is_porphyry(self, requested):
         r = _polar(requested)
         porphyry_class = classify_house_system(HouseSystem.PORPHYRY)
@@ -289,8 +280,7 @@ class TestClassificationReflectsEffectiveSystem:
     @pytest.mark.parametrize("requested", [
         HouseSystem.PLACIDUS,
         HouseSystem.KOCH,
-        HouseSystem.PULLEN_SD,
-    ])
+        ])
     def test_polar_fallback_classification_differs_from_requested_classification(self, requested):
         r = _polar(requested)
         requested_class = classify_house_system(requested)
@@ -348,7 +338,7 @@ class TestAllSystemsCovered:
         HouseSystem.PORPHYRY, HouseSystem.MERIDIAN, HouseSystem.ALCABITIUS,
         HouseSystem.MORINUS, HouseSystem.TOPOCENTRIC, HouseSystem.VEHLOW,
         HouseSystem.SUNSHINE, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
-        HouseSystem.PULLEN_SD, HouseSystem.PULLEN_SR, HouseSystem.KRUSINSKI,
+        HouseSystem.KRUSINSKI,
         HouseSystem.APC,
     ]
 
@@ -401,3 +391,4 @@ class TestPhase1RegressionUnchanged:
         r = _normal(HouseSystem.WHOLE_SIGN)
         for c in r.cusps:
             assert 0.0 <= c < 360.0
+

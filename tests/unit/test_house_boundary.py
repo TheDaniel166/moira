@@ -537,9 +537,7 @@ class TestSystemFamiliesBoundary:
         HouseSystem.MORINUS, HouseSystem.VEHLOW, HouseSystem.SUNSHINE,
         HouseSystem.KOCH, HouseSystem.ALCABITIUS, HouseSystem.MERIDIAN,
         HouseSystem.AZIMUTHAL, HouseSystem.TOPOCENTRIC, HouseSystem.KRUSINSKI,
-        HouseSystem.APC, HouseSystem.CARTER, HouseSystem.PULLEN_SD,
-        HouseSystem.PULLEN_SR,
-    ])
+        HouseSystem.APC, HouseSystem.CARTER, ])
     def test_span_identity_for_system(self, system):
         hc = calculate_houses(_JD, _LAT, _LON, system)
         pl = assign_house(0.0, hc)
@@ -652,3 +650,4 @@ class TestPhase6Regression:
         hc     = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
         houses = {assign_house(d / 10.0, hc).house for d in range(3600)}
         assert houses == set(range(1, 13))
+

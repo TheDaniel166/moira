@@ -730,8 +730,6 @@ Moira implements **21 house systems** spanning every major tradition:
 | **Topocentric** | Polich-Page: observer-centered conic sections |
 | **Azimuthal / Horizontal** | Horizon-based divisions |
 | **Carter (Poli-Equatorial)** | Equal ARMC divisions |
-| **Pullen (Sinusoidal Δ)** | Sinusoidal interpolation of quadrant boundaries |
-| **Pullen (Sinusoidal Ratio)** | Sinusoidal ratio variant |
 | **Krusinski** | Great circles through N/S horizon points |
 | **APC** | Ascendant-Parallel-Circle |
 

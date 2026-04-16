@@ -411,7 +411,7 @@ class TestHouseCuspsInvariants:
         HouseSystem.MORINUS, HouseSystem.MERIDIAN, HouseSystem.VEHLOW,
         HouseSystem.ALCABITIUS, HouseSystem.TOPOCENTRIC, HouseSystem.CARTER,
         HouseSystem.KRUSINSKI, HouseSystem.APC, HouseSystem.AZIMUTHAL,
-        HouseSystem.PULLEN_SD, HouseSystem.PULLEN_SR, HouseSystem.KOCH,
+        HouseSystem.KOCH,
     ])
     def test_twelve_cusps_all_systems(self, system):
         hc = calculate_houses(_JD_2000, _LAT, _LON, system=system)
@@ -423,7 +423,7 @@ class TestHouseCuspsInvariants:
         HouseSystem.MORINUS, HouseSystem.MERIDIAN, HouseSystem.VEHLOW,
         HouseSystem.ALCABITIUS, HouseSystem.TOPOCENTRIC, HouseSystem.CARTER,
         HouseSystem.KRUSINSKI, HouseSystem.APC, HouseSystem.AZIMUTHAL,
-        HouseSystem.PULLEN_SD, HouseSystem.PULLEN_SR, HouseSystem.KOCH,
+        HouseSystem.KOCH,
     ])
     def test_cusps_in_range_all_systems(self, system):
         hc = calculate_houses(_JD_2000, _LAT, _LON, system=system)
@@ -585,3 +585,4 @@ class TestTruthClassificationConsistency:
 
     def test_is_latitude_sensitive_consistent_with_classification(self, natal_houses):
         assert natal_houses.is_latitude_sensitive == natal_houses.classification.latitude_sensitive
+
