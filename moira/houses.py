@@ -1216,18 +1216,18 @@ def _campanus(armc: float, obliquity: float, lat: float) -> list[float]:
     Campanus construction using explicit spherical transformations.
 
     Step 1 — Auxiliary pole heights (prime vertical arcs 30° and 60°):
-      fh1 = arcsin(sin(φ) * sin(30°)) = arcsin(sin(φ) / 2)
-      fh2 = arcsin(sin(φ) * sin(60°)) = arcsin(sin(φ) * √3/2)
+      pole_height_30deg = arcsin(sin(φ) * sin(30°)) = arcsin(sin(φ) / 2)
+      pole_height_60deg = arcsin(sin(φ) * sin(60°)) = arcsin(sin(φ) * √3/2)
 
     Step 2 — Equatorial arc offsets:
-      xh1 = arctan(√3 / cos(φ))
-      xh2 = arctan(1 / (√3 * cos(φ)))
+      equatorial_offset_sqrt3 = arctan(√3 / cos(φ))
+      equatorial_offset_inv_sqrt3 = arctan(1 / (√3 * cos(φ)))
 
     Step 3 — Intermediate cusps via Asc1/Asc2 quadrant-aware projection:
-      cusp[11] = Asc1(ARMC + 90 − xh1, fh1)
-      cusp[12] = Asc1(ARMC + 90 − xh2, fh2)
-      cusp[2]  = Asc1(ARMC + 90 + xh2, fh2)
-      cusp[3]  = Asc1(ARMC + 90 + xh1, fh1)
+      cusp[11] = Asc1(ARMC + 90 − equatorial_offset_sqrt3, pole_height_30deg)
+      cusp[12] = Asc1(ARMC + 90 − equatorial_offset_inv_sqrt3, pole_height_60deg)
+      cusp[2]  = Asc1(ARMC + 90 + equatorial_offset_inv_sqrt3, pole_height_60deg)
+      cusp[3]  = Asc1(ARMC + 90 + equatorial_offset_sqrt3, pole_height_30deg)
 
     Reference: standard Campanus geometry in astronomical-house literature.
     """
@@ -1236,31 +1236,30 @@ def _campanus(armc: float, obliquity: float, lat: float) -> list[float]:
 
     _EPS = 1e-10
 
-    # Auxiliary pole heights
-    fh1 = math.degrees(math.asin(max(-1.0, min(1.0, math.sin(lat * DEG2RAD) / 2.0))))
-    fh2 = math.degrees(math.asin(max(-1.0, min(1.0, math.sin(lat * DEG2RAD) * math.sqrt(3.0) / 2.0))))
+    # Auxiliary pole heights for prime vertical trisection
+    pole_height_30deg = math.degrees(math.asin(max(-1.0, min(1.0, math.sin(lat * DEG2RAD) / 2.0))))
+    pole_height_60deg = math.degrees(math.asin(max(-1.0, min(1.0, math.sin(lat * DEG2RAD) * math.sqrt(3.0) / 2.0))))
 
-    # Equatorial arc offsets
-    cosfi = math.cos(lat * DEG2RAD)
-    if abs(cosfi) < _EPS:
-        xh1 = xh2 = 90.0 if lat > 0.0 else 270.0
+    # Equatorial arc offsets for intermediate cusps
+    cos_latitude = math.cos(lat * DEG2RAD)
+    if abs(cos_latitude) < _EPS:
+        equatorial_offset_sqrt3 = equatorial_offset_inv_sqrt3 = 90.0 if lat > 0.0 else 270.0
     else:
-        xh1 = math.degrees(math.atan(math.sqrt(3.0) / cosfi))
-        xh2 = math.degrees(math.atan(1.0 / (math.sqrt(3.0) * cosfi)))
+        equatorial_offset_sqrt3 = math.degrees(math.atan(math.sqrt(3.0) / cos_latitude))
+        equatorial_offset_inv_sqrt3 = math.degrees(math.atan(1.0 / (math.sqrt(3.0) * cos_latitude)))
 
     # Detect if _mc_above_horizon swapped MC (polar correction)
     mc_raw    = _mc_from_armc(armc, obliquity, lat)
     mc_swapped = abs((mc - mc_raw + 180.0) % 360.0 - 180.0) > 90.0
 
-    # Intermediate cusps
-    th = armc  # ARMC in degrees
+    # Intermediate cusps computed via quadrant-aware projection
     cusps = [0.0] * 12
     cusps[0]  = asc
     cusps[9]  = mc
-    cusps[10] = _quadrant_project_ra(th + 90.0 - xh1, fh1, obliquity)   # H11
-    cusps[11] = _quadrant_project_ra(th + 90.0 - xh2, fh2, obliquity)   # H12
-    cusps[1]  = _quadrant_project_ra(th + 90.0 + xh2, fh2, obliquity)   # H2
-    cusps[2]  = _quadrant_project_ra(th + 90.0 + xh1, fh1, obliquity)   # H3
+    cusps[10] = _quadrant_project_ra(armc + 90.0 - equatorial_offset_sqrt3, pole_height_30deg, obliquity)   # H11
+    cusps[11] = _quadrant_project_ra(armc + 90.0 - equatorial_offset_inv_sqrt3, pole_height_60deg, obliquity)   # H12
+    cusps[1]  = _quadrant_project_ra(armc + 90.0 + equatorial_offset_inv_sqrt3, pole_height_60deg, obliquity)   # H2
+    cusps[2]  = _quadrant_project_ra(armc + 90.0 + equatorial_offset_sqrt3, pole_height_30deg, obliquity)   # H3
     cusps[3]  = (mc  + 180.0) % 360.0
     cusps[6]  = (asc + 180.0) % 360.0
     cusps[4]  = (cusps[10] + 180.0) % 360.0
@@ -1410,43 +1409,43 @@ def _azimuthal(armc: float, obliquity: float, lat: float) -> list[float]:
 
     Construction uses a zenith-anchored spherical frame and a
     quadrant-aware projection back to the ecliptic:
-        fi  = 90° − lat   (complement of geographic latitude)
-        th  = ARMC + 180° (ARMC rotated 180°)
+        latitude_complement_azimuthal = 90° − lat   (complement of geographic latitude)
+        armc_rotated = ARMC + 180° (ARMC rotated 180°)
 
     Reference: horizontal-sector house constructions in modern ephemeris practice.
     """
     mc  = _mc_from_armc(armc, obliquity, lat)
-    # Coordinate transformation
-    fi = (90.0 - lat) if lat > 0.0 else (-90.0 - lat)
+    # Zenith-anchored coordinate transformation
+    latitude_complement_azimuthal = (90.0 - lat) if lat > 0.0 else (-90.0 - lat)
     _EPS = 1e-10
-    # Clamp fi away from exactly ±90°
-    if abs(abs(fi) - 90.0) < _EPS:
-        fi = math.copysign(90.0 - _EPS, fi)
-    th = (armc + 180.0) % 360.0
+    # Clamp latitude_complement_azimuthal away from exactly ±90°
+    if abs(abs(latitude_complement_azimuthal) - 90.0) < _EPS:
+        latitude_complement_azimuthal = math.copysign(90.0 - _EPS, latitude_complement_azimuthal)
+    armc_rotated = (armc + 180.0) % 360.0
 
-    fh1 = math.degrees(math.asin(max(-1.0, min(1.0, math.sin(fi * DEG2RAD) / 2.0))))
-    fh2 = math.degrees(math.asin(max(-1.0, min(1.0, math.sin(fi * DEG2RAD) * math.sqrt(3.0) / 2.0))))
-    cosfi = math.cos(fi * DEG2RAD)
-    if abs(cosfi) < _EPS:
-        # In the transformed equatorial singularity (fi = -90° for lat = 0°),
+    pole_height_30deg = math.degrees(math.asin(max(-1.0, min(1.0, math.sin(latitude_complement_azimuthal * DEG2RAD) / 2.0))))
+    pole_height_60deg = math.degrees(math.asin(max(-1.0, min(1.0, math.sin(latitude_complement_azimuthal * DEG2RAD) * math.sqrt(3.0) / 2.0))))
+    cos_latitude_complement = math.cos(latitude_complement_azimuthal * DEG2RAD)
+    if abs(cos_latitude_complement) < _EPS:
+        # In the transformed equatorial singularity (latitude_complement = -90° for lat = 0°),
         # Orient azimuthal sectors using the 90° branch rather than
         # the southern 270° branch. That keeps house numbering consistent.
-        xh1 = xh2 = 90.0
+        equatorial_offset_sqrt3 = equatorial_offset_inv_sqrt3 = 90.0
     else:
-        xh1 = math.degrees(math.atan(math.sqrt(3.0) / cosfi))
-        xh2 = math.degrees(math.atan(1.0 / (math.sqrt(3.0) * cosfi)))
+        equatorial_offset_sqrt3 = math.degrees(math.atan(math.sqrt(3.0) / cos_latitude_complement))
+        equatorial_offset_inv_sqrt3 = math.degrees(math.atan(1.0 / (math.sqrt(3.0) * cos_latitude_complement)))
 
-    asc = (_quadrant_project_ra(th + 90.0, fi, obliquity) + 180.0) % 360.0
+    asc = (_quadrant_project_ra(armc_rotated + 90.0, latitude_complement_azimuthal, obliquity) + 180.0) % 360.0
 
     cusps = [0.0] * 12
     cusps[0]  = asc
     cusps[9]  = mc
     cusps[3]  = (mc  + 180.0) % 360.0
     cusps[6]  = (asc + 180.0) % 360.0
-    cusps[10] = (_quadrant_project_ra(th + 90.0 - xh1, fh1, obliquity) + 180.0) % 360.0   # H11
-    cusps[11] = (_quadrant_project_ra(th + 90.0 - xh2, fh2, obliquity) + 180.0) % 360.0   # H12
-    cusps[1]  = (_quadrant_project_ra(th + 90.0 + xh2, fh2, obliquity) + 180.0) % 360.0   # H2
-    cusps[2]  = (_quadrant_project_ra(th + 90.0 + xh1, fh1, obliquity) + 180.0) % 360.0   # H3
+    cusps[10] = (_quadrant_project_ra(armc_rotated + 90.0 - equatorial_offset_sqrt3, pole_height_30deg, obliquity) + 180.0) % 360.0   # H11
+    cusps[11] = (_quadrant_project_ra(armc_rotated + 90.0 - equatorial_offset_inv_sqrt3, pole_height_60deg, obliquity) + 180.0) % 360.0   # H12
+    cusps[1]  = (_quadrant_project_ra(armc_rotated + 90.0 + equatorial_offset_inv_sqrt3, pole_height_60deg, obliquity) + 180.0) % 360.0   # H2
+    cusps[2]  = (_quadrant_project_ra(armc_rotated + 90.0 + equatorial_offset_sqrt3, pole_height_30deg, obliquity) + 180.0) % 360.0   # H3
     cusps[4]  = (cusps[10] + 180.0) % 360.0    # H5
     cusps[5]  = (cusps[11] + 180.0) % 360.0    # H6
     cusps[7]  = (cusps[1]  + 180.0) % 360.0    # H8
