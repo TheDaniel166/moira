@@ -11,9 +11,9 @@ Coverage areas
    'true' mode; polynomial path taken in 'mean' mode
 5. Conversion round-trips — tropical_to_sidereal + sidereal_to_tropical = identity
 6. Nakshatra arithmetic — NakshatraPosition fields, pada bounds, Revati boundary
-7. list_ayanamsa_systems — returns dict with all 30 entries
+7. list_ayanamsa_systems — returns dict with all active entries
 8. Error handling — bad mode, unknown system
-9. Reference accuracy — Lahiri at J2000 matches SwissEph within 0.01°
+9. Reference accuracy — Lahiri at J2000 matches expected external benchmark range
 """
 
 import pytest
@@ -40,7 +40,7 @@ J2020 = 2458849.5  # JD of 2020 Jan 1.5 TT
 class TestAyanamsaConstants:
 
     def test_all_length(self):
-        assert len(Ayanamsa.ALL) == 34
+        assert len(Ayanamsa.ALL) == 12
 
     def test_lahiri_in_all(self):
         assert Ayanamsa.LAHIRI in Ayanamsa.ALL
@@ -319,9 +319,9 @@ class TestListAyanamsaSystems:
         result = list_ayanamsa_systems()
         assert isinstance(result, dict)
 
-    def test_contains_all_34(self):
+    def test_contains_all_active(self):
         result = list_ayanamsa_systems()
-        assert len(result) == 34
+        assert len(result) == 12
 
     def test_lahiri_present(self):
         result = list_ayanamsa_systems()

@@ -129,7 +129,7 @@ Do not build the stellar corpus around:
 
 - unsourced astrology pages listing heliacal rising dates
 - generic historical summaries without event semantics
-- Swiss output alone
+- output from any single secondary engine alone
 - star-position references with no visibility event content
 
 These may suggest candidate dates, but they are not the oracle.

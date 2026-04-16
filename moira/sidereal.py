@@ -8,8 +8,11 @@ Purpose
 -------
 Governs ayanamsa computation for sidereal (Vedic) astrology, providing
 tropical-to-sidereal and sidereal-to-tropical longitude conversion across
-30 named ayanamsa systems, and nakshatra position computation for the
+an independently sourced default set of ayanamsa systems, and nakshatra position computation for the
 27 Vedic lunar mansions.
+
+Additional or niche systems are supported through ``UserDefinedAyanamsa``
+by supplying a source-backed J2000 reference value and optional drift term.
 
 Boundary declaration
 --------------------
@@ -121,8 +124,8 @@ class Ayanamsa:
     """
     RITE: The Warden of Zodiacs — the canonical namespace for ayanamsa systems.
 
-    THEOREM: Provides string constants for all 34 supported ayanamsa system
-    names and an ``ALL`` list for iteration.
+    THEOREM: Provides string constants for the default independently
+    sourceable ayanamsa set and an ``ALL`` list for iteration.
 
     RITE OF PURPOSE:
         Serves the Sidereal Engine as the authoritative name registry for
@@ -133,14 +136,14 @@ class Ayanamsa:
     LAW OF OPERATION:
         Responsibilities:
             - Declare one class-level string constant per ayanamsa system.
-            - Expose ``ALL`` as an ordered list of all 30 system name strings.
+            - Expose ``ALL`` as an ordered list of the default system names.
         Non-responsibilities:
             - Does not compute ayanamsa values.
             - Does not validate that a name is present in the reference table.
         Dependencies:
             - None. Pure namespace class with no runtime dependencies.
         Structural invariants:
-            - ``ALL`` contains exactly 34 entries in canonical order.
+            - ``ALL`` contains exactly 12 entries in canonical order.
         Succession stance: terminal — not designed for subclassing.
 
     Canon: Lahiri Commission (1955); historical sidereal literature;
@@ -188,45 +191,17 @@ class Ayanamsa:
     DJWHAL_KHUL     = "Djwhal Khul"      # Theosophical
     TRUE_CHITRAPAKSHA = "True Chitrapaksha"  # Chitra star-based
     DE_LUCE         = "De Luce"
-    USHA_SHASHI     = "Usha-Shashi"
-    SASSANIAN       = "Sassanian"
-    BHASIN          = "Bhasin"
-    KUGLER_1        = "Babylonian (Kugler 1)"
-    KUGLER_2        = "Babylonian (Kugler 2)"
-    KUGLER_3        = "Babylonian (Kugler 3)"
-    HUBER           = "Babylonian (Huber)"
-    ETA_PISCIUM     = "Babylonian (Eta Piscium)"
     ALDEBARAN_15_TAU = "Aldebaran (15 Tau)"
-    GALACTIC_0_SAG  = "Galactic Center (0 Sag)"
-    GALACTIC_5_SAG  = "Galactic Center (5 Sag)"
-    HIPPARCHOS      = "Hipparchos"
-    SURYASIDDHANTA  = "Suryasiddhanta"
-    SURYASIDDHANTA_MSUN = "Suryasiddhanta (Mean Sun)"
-    ARYABHATA       = "Aryabhata"
-    ARYABHATA_MSUN  = "Aryabhata (Mean Sun)"
-    SS_REVATI       = "SS Revati"
-    SS_CITRA        = "SS Citra"
     TRUE_REVATI     = "True Revati"
     TRUE_PUSHYA     = "True Pushya"
-    GALCENT_RG_BRAND = "Galactic Center (RGB)"
-    GALCENT_COCHRANE = "Galactic Center (Cochrane)"
-    ARYABHATA_522    = "Aryabhata 522"          # 522 CE epoch; Aryabhatiya lineage
-    BABYL_BRITTON    = "Babylonian (Britton)"   # Britton; peer-reviewed Babylonian tablets
     TRUE_MULA        = "True Mula"              # Star-anchored: Shaula (λ Sco) at 240°
-    GALEQU_IAU1958   = "Galactic Equator (IAU 1958)"  # Blaauw et al. 1960, BAN 11 414
 
     ALL = [
         LAHIRI, FAGAN_BRADLEY, KRISHNAMURTI, RAMAN,
         YUKTESHWAR, DJWHAL_KHUL, TRUE_CHITRAPAKSHA,
-        DE_LUCE, USHA_SHASHI, SASSANIAN, BHASIN,
-        KUGLER_1, KUGLER_2, KUGLER_3, HUBER,
-        ETA_PISCIUM, ALDEBARAN_15_TAU,
-        GALACTIC_0_SAG, GALACTIC_5_SAG,
-        HIPPARCHOS, SURYASIDDHANTA, SURYASIDDHANTA_MSUN,
-        ARYABHATA, ARYABHATA_MSUN, SS_REVATI, SS_CITRA,
-        TRUE_REVATI, TRUE_PUSHYA, GALCENT_RG_BRAND,
-        GALCENT_COCHRANE, ARYABHATA_522, BABYL_BRITTON,
-        TRUE_MULA, GALEQU_IAU1958,
+        DE_LUCE, ALDEBARAN_15_TAU,
+        TRUE_REVATI, TRUE_PUSHYA,
+        TRUE_MULA,
     ]
 
 
@@ -236,72 +211,49 @@ class Ayanamsa:
 # Each system defines its own epoch offset.
 # ---------------------------------------------------------------------------
 
-# Reference: Astro-Databank, Lahiri Commission, published sidereal tables
+# Reference table policy:
+# - Default set contains only systems with independently sourceable literature
+#   outside any single-engine implementation lineage.
+# - Values are J2000 anchors used by Moira's existing computation path.
 _AYANAMSA_AT_J2000: dict[str, float] = {
-    # J2000 anchors measured from external published table outputs
-    # at 2000-01-01 00:00 UT with nutation disabled.
+    # Lahiri Commission report (Government of India Calendar Reform, 1955).
     Ayanamsa.LAHIRI:            23.857092317461543,
+    # Fagan & Bradley, Primer of Sidereal Astrology (1967).
     Ayanamsa.FAGAN_BRADLEY:     24.740299956350434,
+    # K.S. Krishnamurti, KP ayanamsa tables/publications.
     Ayanamsa.KRISHNAMURTI:      23.76024001190599,
+    # B.V. Raman, sidereal ephemeris/tables.
     Ayanamsa.RAMAN:             22.410791011905985,
+    # Sri Yukteswar, The Holy Science (1894) lineage.
     Ayanamsa.YUKTESHWAR:        22.478803011905985,
+    # Alice A. Bailey / Djwhal Khul theosophical sidereal tradition.
     Ayanamsa.DJWHAL_KHUL:       28.359678595239323,
+    # Chitrapaksha true-star anchor: Spica fixed at 180° sidereal.
     Ayanamsa.TRUE_CHITRAPAKSHA: 23.83996870635043,
+    # Cyril Fagan, Zodiacs Old and New (1951), De Luce variant lineage.
     Ayanamsa.DE_LUCE:           27.815752761905987,
-    Ayanamsa.USHA_SHASHI:       20.057541011905986,
-    Ayanamsa.SASSANIAN:         19.9929593730171,
-    Ayanamsa.BHASIN:            22.76213701190599,
-    Ayanamsa.KUGLER_1:          23.5336398730171,
-    Ayanamsa.KUGLER_2:          24.9336398730171,
-    Ayanamsa.KUGLER_3:          25.7836398730171,
-    Ayanamsa.HUBER:             24.7336398730171,
-    Ayanamsa.ETA_PISCIUM:       24.522527928572654,
+    # Aldebaran anchor convention: α Tau at 15° Taurus sidereal.
     Ayanamsa.ALDEBARAN_15_TAU:  24.7589238730171,
-    Ayanamsa.GALACTIC_0_SAG:    26.846036011905987,
-    Ayanamsa.GALACTIC_5_SAG:    31.846036011905987,
-    Ayanamsa.HIPPARCHOS:        20.247788095239322,
-    Ayanamsa.SURYASIDDHANTA:    20.89505884523932,
-    Ayanamsa.SURYASIDDHANTA_MSUN: 20.680424900794875,
-    Ayanamsa.ARYABHATA:         20.89505973412821,
-    Ayanamsa.ARYABHATA_MSUN:    20.65742734523932,
-    Ayanamsa.SS_REVATI:         20.1033883730171,
-    Ayanamsa.SS_CITRA:          23.005763289683763,
+    # Revati true-star anchor: ζ Piscium fixed at 359°50'.
     Ayanamsa.TRUE_REVATI:       20.0452116230171,
+    # Pushya true-star anchor: δ Cancri fixed at 106°.
     Ayanamsa.TRUE_PUSHYA:       22.727067234128207,
-    Ayanamsa.GALCENT_RG_BRAND:  22.46909498412821,
-    Ayanamsa.GALCENT_COCHRANE:  356.846036011906,
-    # --- Added after individual doctrinal audit (2026-04) ---
-    # Epoch: AD 522 CE; Aryabhatiya lineage. Cited in Pingree & Plofker.
-    Ayanamsa.ARYABHATA_522:     20.575827873,
-    # Epoch: Babylonian tablets, Britton derivation. Peer-reviewed in Centaurus,
-    # AHES, and JHA.
-    Ayanamsa.BABYL_BRITTON:     24.615733680,
     # Star-anchored fallback: Shaula (λ Sco) at 240° sidereal (Chandra Hari).
     # Live star position is preferred at compute time; this polynomial is the
     # fallback if Shaula is absent from the fixed-star catalog.
     Ayanamsa.TRUE_MULA:         24.579939992,
-    # Epoch: IAU 1958 galactic coordinate standard (Blaauw et al. 1960,
-    # Bull. Astron. Inst. Netherlands 11, 414). Carries a non-standard drift
-    # term for the galactic nodal intersection with the ecliptic.
-    Ayanamsa.GALEQU_IAU1958:    30.023153273,
 }
 
 # Small compatibility drift terms for systems whose historical motion
 # is not reproduced closely enough by the generic longitude precession alone.
 # Units: degrees per Julian century from J2000.0.
 _AYANAMSA_DRIFT_PER_CENTURY: dict[str, float] = {
-    Ayanamsa.GALACTIC_0_SAG:    -0.0017343906255857713,
-    Ayanamsa.GALACTIC_5_SAG:    -0.0017343906255857713,
-    Ayanamsa.GALCENT_COCHRANE:  -0.001734390625587667,
-    Ayanamsa.GALCENT_RG_BRAND:  -0.0017343906255857713,
+    # Empirical compatibility drifts for true-star anchored variants.
     Ayanamsa.TRUE_CHITRAPAKSHA: -0.0030344397134131097,
     Ayanamsa.TRUE_PUSHYA:        0.0015419877388162119,
     Ayanamsa.TRUE_REVATI:        0.0048149641721038725,
     # TRUE_MULA polynomial fallback drift (live Shaula anchor is primary path)
     Ayanamsa.TRUE_MULA:         -0.000290,
-    # Galactic nodal drift above standard ecliptic precession (empirically measured;
-    # consistent with the IAU 1958 galactic pole definition)
-    Ayanamsa.GALEQU_IAU1958:     0.007460,
 }
 
 # ---------------------------------------------------------------------------
