@@ -66,8 +66,10 @@ asteroid_at("Sedna", jd_tt)
 asteroid_at("Gonggong", jd_tt)
 ```
 
-Swiss Ephemeris in its default install exposes four main asteroids plus Chiron and Pholus.
-Its extended asteroid package requires separate download and offers no named-body registry.
+Swiss Ephemeris ships direct built-in support for Ceres, Pallas, Juno, Vesta, Chiron,
+and Pholus. Additional asteroid coverage depends on separate asteroid ephemeris files,
+with named lookup handled through catalog-number conventions and the `seasnam.txt` name
+list rather than a bundled high-level named-body registry.
 
 ---
 
