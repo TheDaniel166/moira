@@ -965,6 +965,23 @@ class PlanetPhenomena:
 def planet_phenomena_at(body: str, jd_ut: float) -> PlanetPhenomena:
     """Return instantaneous photometric and geometric phenomena for *body* at *jd_ut*.
 
+    All quantities are computed from DE441 ICRF barycentric position vectors
+    without consulting any third-party photometric engine.  Explicit authority
+    for each delegated quantity:
+
+    - **Phase angle** (Sun–Planet–Earth angle): vector dot-product formula,
+      Seidelmann (ed.), *Explanatory Supplement to the Astronomical Almanac*
+      (1992), §3.28.
+    - **Illuminated fraction**: Lambertian disk approximation
+      ``k = (1 + cos β) / 2``; Meeus, *Astronomical Algorithms* 2nd ed., §41.
+    - **Elongation**: spherical law of cosines on geocentric ecliptic
+      coordinates; Meeus, *Astronomical Algorithms* 2nd ed., §23.
+    - **Angular diameter**: apparent angular radius = asin(R_phys / Δ);
+      physical radii from IAU 2015 nominal constants.
+    - **Apparent magnitude**: Mallama & Hilton (2018), "Computing Apparent
+      Planetary Magnitudes for The Astronomical Almanac"; Moon: Schaefer
+      (1993), *Vistas in Astronomy* 36, 311–361.
+
     Parameters
     ----------
     body : str

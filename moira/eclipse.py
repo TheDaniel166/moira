@@ -99,7 +99,7 @@ __all__ = [
     "LunarEclipseLocalCircumstances",
     # Phase 3 — path/where geometry vessel (Defer.Design + Defer.Validation)
     "SolarEclipsePath",
-    # sol_eclipse_when_loc equivalent
+    # Observer-specific solar eclipse search
     "next_solar_eclipse_at_location",
 ]
 
@@ -1425,6 +1425,22 @@ class EclipseCalculator:
     ) -> SolarEclipseLocalCircumstances:
         """Return local sky circumstances for the next solar eclipse visible at *latitude*, *longitude*.
 
+        Methodology (independently derived):
+            1. Iterate over new-moon lunations via the Moon's synodic phase
+               angle (Meeus, *Astronomical Algorithms* 2nd ed., Ch. 49).
+            2. Check eclipse-season eligibility: Sun–node distance < 18°
+               threshold derived from the Earth's shadow-cone geometry
+               (Seidelmann, *Explanatory Supplement*, §9.4).
+            3. Locate the geocentric maximum with ternary search over the
+               angular separation objective
+               (``eclipse_search.refine_solar_greatest_eclipse``).
+            4. Scan a ±4-hour window around the geocentric maximum in
+               12-minute steps, computing the full topocentric Sun–Moon
+               separation via ``sky_position_at`` (8-step IAU/SOFA
+               apparent-position pipeline backed by DE441).
+            5. Refine the local minimum with adaptive ternary/grid search
+               (``eclipse_search.refine_minimum``).
+
         Unlike ``solar_local_circumstances``, which always anchors to the next
         *global* eclipse maximum (which may be invisible from the observer's
         location), this method iterates eclipse candidates and skips any where
@@ -2249,7 +2265,11 @@ def next_solar_eclipse_at_location(
     """Return local sky circumstances for the next solar eclipse visible at *latitude*, *longitude*.
 
     Module-level convenience wrapper around
-    EclipseCalculator.next_solar_eclipse_at_location.
+    ``EclipseCalculator.next_solar_eclipse_at_location``.
+
+    All computation is performed by Moira's DE441-backed apparent-position
+    pipeline.  See the class method docstring for the full derivation
+    methodology and authority citations.
 
     Parameters
     ----------

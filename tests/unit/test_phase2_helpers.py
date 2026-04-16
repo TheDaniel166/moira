@@ -345,6 +345,30 @@ def test_next_moon_node_crossing_ascending_lat_increases():
     )
 
 
+@pytest.mark.requires_ephemeris
+def test_nodes_and_apsides_at_moon_returns_opposed_pairs():
+    from moira.nodes import nodes_and_apsides_at
+
+    out = nodes_and_apsides_at(Body.MOON, 2451545.0)
+    dn = (out.descending_node_lon - out.ascending_node_lon) % 360.0
+    pa = (out.periapsis_lon - out.apoapsis_lon) % 360.0
+
+    assert abs(dn - 180.0) < 1e-9
+    assert abs(pa - 180.0) < 1e-9
+
+
+@pytest.mark.requires_ephemeris
+def test_nodes_and_apsides_at_planet_has_normalized_longitudes():
+    from moira.nodes import nodes_and_apsides_at
+
+    out = nodes_and_apsides_at(Body.MARS, 2451545.0)
+
+    assert 0.0 <= out.ascending_node_lon < 360.0
+    assert 0.0 <= out.descending_node_lon < 360.0
+    assert out.periapsis_lon is not None and 0.0 <= out.periapsis_lon < 360.0
+    assert out.apoapsis_lon is not None and 0.0 <= out.apoapsis_lon < 360.0
+
+
 # ---------------------------------------------------------------------------
 # ayanamsa_offset — sidereal house shift (houses_ex / houses_armc_ex2 parity)
 # ---------------------------------------------------------------------------

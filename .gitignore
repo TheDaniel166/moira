@@ -59,6 +59,12 @@ wiki/00_foundations/THE_COVENANT.md
 .sophia/
 wiki/00_foundations/MEMORY_CORE.md
 
+# Swiss Ephemeris research and exploration documents (not part of canonical documentation)
+wiki/03_validation/SWISS*.md
+wiki/03_release/SPECIALIST_AUDIT*.md
+wiki/*/*/implementation_roadmap.md
+wiki/05_research/heliacal_visibility/heliacal_visibility_implementation_roadmap.md
+
 # Dot-directory Whitelist (Last wins)
 !/.gitignore
 !/.github/
@@ -71,3 +77,6 @@ CLAUDE.md
 wiki/05_research/astrodynes/astrodynes_source_assessment_2026-04-09.md
 wiki/05_research/astrodynes/astrodynes_natal_source_capture_2026-04-09.md
 .github/copilot-instructions.md
+moira/docs/HOUSES_GRANULAR_AUDIT.md
+moira/docs/ORACLE_CAMPAIGN_FRAMEWORK.md
+HOUSES_AUDIT_SUMMARY.md

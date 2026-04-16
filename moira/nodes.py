@@ -420,76 +420,79 @@ def next_moon_node_crossing(
     ascending: bool = True,
 ) -> float:
     """
-    Find the next time the Moon crosses its orbital node.
+    Find the next geocentric lunar node crossing after ``jd_start``.
 
-    Detection method: the Moon's geocentric ecliptic latitude passes through
-    zero at each node crossing.  At the ascending node the latitude changes
-    from south (negative) to north (positive); at the descending node it
-    changes from north to south.  The function scans forward in 0.5-day steps
-    (covering ~6.5° of latitude change per step) then refines with 52-iteration
-    bisection.
+    Computational object
+    --------------------
+    Root of the Moon's true ecliptic latitude of date, β(t) = 0, where
+    ``β`` changes sign across the root.
 
-    Args:
-        jd_start: Julian Day (UT1) to begin searching from.
-        reader: Open :class:`SpkReader` from :mod:`moira.spk_reader`.  Uses
-            the module-level singleton if ``None``.
-        ascending: If ``True`` (default), find the next ascending-node
-            crossing (latitude − → +).  If ``False``, find the next
-            descending-node crossing (latitude + → −).
+    Direction criterion
+    -------------------
+    - Ascending node: β changes from negative to non-negative.
+    - Descending node: β changes from non-negative to negative.
 
-    Returns:
-        Julian Day (UT1) of the next node crossing.
+    Method
+    ------
+    1. Scan forward in fixed 0.5-day brackets to locate the next sign change.
+    2. Refine the bracket root with deterministic bisection.
 
-    Raises:
-        FileNotFoundError: If the DE441 kernel is not found.
-        ValueError: If no crossing is found within 30 days (should never
-            happen for a Moon search).
+    Returns
+    -------
+    Julian Day (UT1) of the requested next crossing.
     """
     if reader is None:
         reader = get_reader()
 
-    def _moon_lat(jd_ut: float) -> float:
-        """Geocentric ecliptic latitude of the Moon (degrees)."""
+    def _moon_latitude_deg(jd_ut: float) -> float:
+        """Moon geocentric true ecliptic latitude (degrees)."""
         yr, mo, *_ = _approx_year(jd_ut)
         jd_tt = ut_to_tt(jd_ut, decimal_year(yr, mo))
-        emb_moon  = reader.position(3, 301, jd_tt)
-        emb_earth = reader.position(3, 399, jd_tt)
-        moon_geo = vec_sub(emb_moon, emb_earth)
-        # Rotate ICRF → true equatorial of date (precession + nutation)
-        dpsi_deg, deps_deg = nutation(jd_tt)
+
+        moon_bary = reader.position(3, 301, jd_tt)
+        earth_bary = reader.position(3, 399, jd_tt)
+        moon_geo = vec_sub(moon_bary, earth_bary)
+
+        deps_deg = nutation(jd_tt)[1]
         P = precession_matrix_equatorial(jd_tt)
         N = nutation_matrix_equatorial(jd_tt)
-        v1 = mat_vec_mul(P, moon_geo)
-        v_eq = mat_vec_mul(N, v1)
-        # Rotate true equatorial → ecliptic to extract latitude
-        obliquity = (mean_obliquity(jd_tt) + deps_deg) * DEG2RAD
-        cos_eps = math.cos(obliquity)
-        sin_eps = math.sin(obliquity)
-        z_ecl = -v_eq[1] * sin_eps + v_eq[2] * cos_eps
-        dist = math.sqrt(v_eq[0]**2 + v_eq[1]**2 + v_eq[2]**2)
-        if dist < 1e-30:
+        moon_true_eq = mat_vec_mul(N, mat_vec_mul(P, moon_geo))
+
+        eps = (mean_obliquity(jd_tt) + deps_deg) * DEG2RAD
+        cos_eps = math.cos(eps)
+        sin_eps = math.sin(eps)
+
+        x_eq, y_eq, z_eq = moon_true_eq
+        z_ecl = -y_eq * sin_eps + z_eq * cos_eps
+        r = math.sqrt(x_eq * x_eq + y_eq * y_eq + z_eq * z_eq)
+        if r < 1e-30:
             return 0.0
-        return math.asin(max(-1.0, min(1.0, z_ecl / dist))) * RAD2DEG
+        return math.asin(max(-1.0, min(1.0, z_ecl / r))) * RAD2DEG
 
-    step = 0.5   # days
-    max_days = 30.0
+    def _signed_target(jd_ut: float) -> float:
+        lat = _moon_latitude_deg(jd_ut)
+        return lat if ascending else -lat
 
-    f_prev = _moon_lat(jd_start)
-    t = jd_start
+    step_days = 0.5
+    max_span_days = 30.0
+    end_jd = jd_start + max_span_days
 
-    while t < jd_start + max_days:
-        t_next = t + step
-        f_next = _moon_lat(t_next)
-        if ascending and f_prev < 0.0 and f_next >= 0.0:
-            return _bisect_lat(_moon_lat, t, t_next)
-        if not ascending and f_prev >= 0.0 and f_next < 0.0:
-            return _bisect_lat(lambda jd: -_moon_lat(jd), t, t_next)
-        f_prev = f_next
-        t = t_next
+    t0 = jd_start
+    f0 = _signed_target(t0)
 
+    while t0 < end_jd:
+        t1 = min(t0 + step_days, end_jd)
+        f1 = _signed_target(t1)
+
+        if f0 <= 0.0 <= f1:
+            return _bisect_lat(_signed_target, t0, t1)
+
+        t0, f0 = t1, f1
+
+    node_name = "ascending" if ascending else "descending"
     raise ValueError(
-        f"next_moon_node_crossing: no {'ascending' if ascending else 'descending'} "
-        f"node crossing found within {max_days} days of JD {jd_start:.1f}."
+        f"next_moon_node_crossing: no {node_name} node crossing found "
+        f"within {max_span_days} days of JD {jd_start:.1f}."
     )
 
 
@@ -549,48 +552,50 @@ _BODY_MOON = "Moon"
 
 
 def nodes_and_apsides_at(body: str, jd_ut: float) -> NodesAndApsides:
-    """Return nodes and apsides for *body* at *jd_ut*.
+    """Return ascending/descending node and peri/apoapsis longitudes for ``body``.
 
-    For the Moon the true node and true Lilith (apogee) are used.
-    For planets the ascending node longitude is taken from
-    ``moira.planetary_nodes.planetary_node``; perihelion and aphelion are
-    searched forward from *jd_ut* via ``moira.phenomena``.
+    Moon path
+    ---------
+    Uses geometric lunar surfaces from this module:
+    - ascending node: ``true_node``
+    - apogee: ``true_lilith``
+    - descending/perigee derived by 180° opposition
 
-    Parameters
-    ----------
-    body : str
-        Body name (e.g. ``Body.MOON``, ``'Mars'``).
-    jd_ut : float
-        Julian Day in Universal Time.
-
-    Returns
-    -------
-    NodesAndApsides
+    Planet path
+    -----------
+    Uses ``moira.planetary_nodes.planetary_node`` as the single provider for
+    ascending node and perihelion/aphelion outputs.
     """
-    from .spk_reader import get_reader
+    body_key = body.strip().lower()
 
-    if body.lower() in _MOON_NAMES:
-        nd = true_node(jd_ut)
-        lil = true_lilith(jd_ut, reader=get_reader())
-        apogee_lon = lil.longitude
+    if body_key in _MOON_NAMES:
+        reader = get_reader()
+        node = true_node(jd_ut, reader=reader)
+        lilith = true_lilith(jd_ut, reader=reader)
+
+        asc = normalize_degrees(node.longitude)
+        apogee = normalize_degrees(lilith.longitude)
         return NodesAndApsides(
             body=body,
             jd_ut=jd_ut,
-            ascending_node_lon=nd.longitude,
-            descending_node_lon=normalize_degrees(nd.longitude + 180.0),
-            periapsis_lon=normalize_degrees(apogee_lon + 180.0),
-            apoapsis_lon=apogee_lon,
+            ascending_node_lon=asc,
+            descending_node_lon=normalize_degrees(asc + 180.0),
+            periapsis_lon=normalize_degrees(apogee + 180.0),
+            apoapsis_lon=apogee,
         )
 
     from .planetary_nodes import planetary_node
 
-    pn = planetary_node(body, jd_ut)
-    asc = pn.ascending_node
+    pdata = planetary_node(body, jd_ut)
+    asc = normalize_degrees(pdata.ascending_node)
+    peri = None if pdata.perihelion is None else normalize_degrees(pdata.perihelion)
+    apo = None if pdata.aphelion is None else normalize_degrees(pdata.aphelion)
+
     return NodesAndApsides(
         body=body,
         jd_ut=jd_ut,
         ascending_node_lon=asc,
         descending_node_lon=normalize_degrees(asc + 180.0),
-        periapsis_lon=pn.perihelion,
-        apoapsis_lon=pn.aphelion,
+        periapsis_lon=peri,
+        apoapsis_lon=apo,
     )

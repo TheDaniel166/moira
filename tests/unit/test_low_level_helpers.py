@@ -221,13 +221,16 @@ def test_equation_of_time_j2000_is_small():
     assert -5.0 < eot_minutes < 0.0, f"EoT at J2000.0 expected ~-2.9 min, got {eot_minutes:.2f}"
 
 
-def test_equation_of_time_near_zero_at_equinox():
-    """EoT is near zero around late September (autumnal equinox)."""
-    # ~25 September 2000 ≈ JD 2451808
-    jd_equinox = 2451808.0
-    eot = equation_of_time(jd_equinox)
+def test_equation_of_time_positive_in_late_september():
+    """EoT should be positive by late September (zero crossing is near early September)."""
+    # Around 25 September 2000 (JD 2451808), published EoT curves place values
+    # several minutes positive; use a conservative acceptance band.
+    jd_late_sep = 2451808.0
+    eot = equation_of_time(jd_late_sep)
     eot_minutes = eot * 4.0
-    assert abs(eot_minutes) < 2.0, f"EoT near autumnal equinox expected ~0 min, got {eot_minutes:.2f}"
+    assert 4.0 < eot_minutes < 9.0, (
+        f"Late-September EoT expected positive (roughly +6 to +7 min), got {eot_minutes:.2f}"
+    )
 
 
 def test_equation_of_time_returns_float():

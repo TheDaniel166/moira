@@ -1243,6 +1243,20 @@ def planet_relative_to(
     """
     Compute the position of ``body`` as seen from ``center_body``.
 
+    Methodology (independently derived):
+        The relative ICRF position vector is the difference of the two bodies'
+        DE441 SPK barycentric position vectors:
+
+            r_rel = r_body(SSB) − r_center(SSB)
+
+        This is the standard reduction described in Seidelmann (ed.),
+        *Explanatory Supplement to the Astronomical Almanac* (1992), §3.26.
+        The ICRF vector is then transformed to the true-of-date ecliptic frame
+        via the IAU 2000A/2006 precession–nutation matrix stack
+        (implemented in ``icrf_to_true_ecliptic``).  Longitude rate (speed)
+        is estimated with a centred ±0.5-day finite difference
+        (Meeus, *Astronomical Algorithms* 2nd ed., §33).
+
     Use this when you need the ecliptic position of a body relative to a
     centre other than Earth
     (e.g. Mars as seen from Jupiter, or any body as seen heliocentrically by
@@ -1327,6 +1341,22 @@ def next_heliocentric_transit(
     """
     Find the next time ``body``'s heliocentric ecliptic longitude equals
     ``target_lon``.
+
+    Methodology (independently derived):
+        The heliocentric longitude at each epoch is computed from the body–Sun
+        ICRF barycentric position difference rotated via ``icrf_to_true_ecliptic``
+        (IAU 2000A/2006 precession–nutation).  The search strategy follows the
+        longitude-crossing scan approach described in Meeus,
+        *Astronomical Algorithms* 2nd ed., §33:
+
+            1. Estimate the orbital angular speed from consecutive epochs to
+               select an adaptive step advancing ~1.5° per iteration.
+            2. Scan forward detecting sign changes in the phase function:
+               ``φ(t) = (lon(t) − target + 180) mod 360 − 180``.
+            3. Refine the crossing with 52-iteration deterministic bisection.
+
+        The signed-angle formulation handles the 0°/360° wraparound without
+        special cases.
 
     This is a heliocentric longitude crossing search over UT input epochs.
 
