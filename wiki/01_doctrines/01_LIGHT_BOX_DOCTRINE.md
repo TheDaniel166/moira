@@ -1,5 +1,5 @@
-# The Light Box Doctrine
-## The Inversion of the Ephemeris Standard
+# The Transparent Engine Doctrine
+## Transparency as an Ephemeris Standard
 
 **Version:** 1.3  
 **Date:** 2026-04-07  
@@ -10,44 +10,44 @@
 
 ## 1. The Core Thesis
 
-For three decades, the **Swiss Ephemeris** (1997) has served as the "Black Box" of astronomical and astrological computation. It is a masterpiece of compression and C-optimization, but its internal logic is often veiled behind binary data files (`.se1` files), complex compiled loops, and opaque "corrective" flags.
+For three decades, the **Swiss Ephemeris** (1997) has served as a major standard in astronomical and astrological computation. It is a compact, accurate, carefully engineered library. Its design priorities, however, come from a different era: compiled internals, binary data products, and runtime behavior that is not always inspectable at the same level as a source-derived, fully spelled-out pipeline.
 
-**Moira rejects the Black Box.** We assert that in an era of sub-arcsecond precision and high-availability physical data, **Transparency is the Primary Metric of Accuracy.**
+**Moira makes a different design choice.** In an era of sub-arcsecond precision and high-availability physical data, **transparency is itself part of accuracy** because it allows assumptions, authorities, and model choices to be audited directly.
 
-A "Light Box" is an engine that is **auditable at every step**, replacing hidden pre-computation with visible, runtime derivation. We do not ask the user for blind trust in a library; we provide the evidence in a readable, open-source script.
+A transparent engine is **auditable at every step**, replacing hidden pre-computation where practical with visible, runtime derivation. The point is not to denounce earlier engines, but to make Moira's own computational record readable, explicit, and reviewable.
 
 ---
 
-## 2. The Four Pillars of the Light Box
+## 2. The Four Pillars of Transparent Computation
 
 ### I. Substrate Sovereignty (Data Transparency)
 We reject the use of proprietary or opaque data formats that cannot be independently audited.
 - **The Standard (Planetary)**: Direct ingestion of **JPL DE441/440 SPK Kernels** via Moira's sovereign **`SpkReader`** (`moira/spk_reader.py`).
 - **The Standard (Stars)**: Moira's **Sovereign Star Registry** — a curated catalog of 543+ IAU-sanctioned stars, minted from IAU modern star names and cross-resolved through SIMBAD (priority order: Hipparcos ID → Bayer designation → SIMBAD ID → proper name), optionally enriched with **Gaia DR3** astrometry and photometry. Source attribution, matching status, and resolution notes are preserved per star in a provenance sidecar (`star_provenance.json`). Gaia DR3 is an enrichment layer, not the primary authority — the registry is the sovereign foundation.
-- **The Inversion (Planetary)**: Where the Black Box uses pre-interpolated grids, the Light Box uses raw Chebyshev polynomial coefficients. We do not "own" the positions; we derive them from the rawest physical evidence provided by planetary observatories. `SpkReader` is the single authorised gateway between Moira and the binary kernel: it owns the file handle, resolves NAIF body ID pairs to the correct epoch-appropriate segment, and enforces the invariant that no other module holds a direct reference to the kernel object. `jplephem` is used solely as a binary SPK file reader; all segment selection, multi-epoch handling, and singleton lifecycle are Moira's own implementation, fully inspectable in source.
-- **The Inversion (Stars)**: Where the Black Box treats stars as fixed points at infinite distance with opaque catalog provenance, the Light Box maintains explicit per-star source records, proper motion propagation to the requested epoch, and parallax-grounded distance. Every star in the registry can be traced to its originating authority. Gaia DR3 enrichment is policy-controlled and auditable; it is not silently applied.
+- **Moira's approach (Planetary)**: Moira uses raw Chebyshev polynomial coefficients from JPL SPK kernels. We do not "own" the positions; we derive them from the physical evidence provided by planetary observatories. `SpkReader` is the single authorised gateway between Moira and the binary kernel: it owns the file handle, resolves NAIF body ID pairs to the correct epoch-appropriate segment, and enforces the invariant that no other module holds a direct reference to the kernel object. `jplephem` is used solely as a binary SPK file reader; all segment selection, multi-epoch handling, and singleton lifecycle are Moira's own implementation, fully inspectable in source.
+- **Moira's approach (Stars)**: Moira maintains explicit per-star source records, proper motion propagation to the requested epoch, and parallax-grounded distance. Every star in the registry can be traced to its originating authority. Gaia DR3 enrichment is policy-controlled and auditable; it is not silently applied.
 
 ### II. Computational Lucidity (Logic Transparency)
 The reduction pipeline must be an **Open Manuscript**, not a compiled mystery.
 - **The Standard**: Sovereign Python 3.10+ implementation of the full **IAU 2000A/2006** reduction suite — no external numerical library is used in the reduction pipeline. Nutation is evaluated directly from IERS table data (1358 lunisolar + 1056 planetary terms, per IERS Conventions 2010 Chapter 5). Precession uses the Fukushima-Williams four-angle parameterization (P03, Capitaine, Wallace & Chapront 2003). Time scale conversions (UT → TT → TDB, ΔT) are implemented in `julian.py` using stdlib only. SOFA/ERFA serves as a validation oracle, not a runtime dependency.
-- **The Inversion**: We separate Nutation, Precession, Light-Time, and Aberration into discrete, testable units. Each step is a visible transformation that any developer or researcher can verify against the source literature. Because we own the implementation, there is no black box between the IAU standard and our computed result.
+- **Moira's approach**: We separate Nutation, Precession, Light-Time, and Aberration into discrete, testable units. Each step is a visible transformation that any developer or researcher can verify against the source literature.
 - **The Tradeoff**: The choice of Python is deliberate — auditability and sovereignty over raw speed. Performance in the nutation evaluator is managed through an optional NumPy vectorized fast path; the scalar fallback uses stdlib math only. We do not pretend this is free; we assert it is the correct tradeoff for an engine whose outputs must be traceable to first principles.
 
 ### III. The Disclosure of Divergence (Honest Uncertainty)
-The greatest failure of a Black Box is its silence regarding its own limits and tolerances.
+The greatest failure of any engine is silence regarding its own limits and tolerances.
 - **The Standard**: Mandatory publication of **Uncertainty Envelopes** for Delta T, future projections, and chaotic orbits (Centaurs/TNOs).
-- **The Inversion**: A Light Box does not claim a single "correct" answer for a date in 2500 BCE. It provides the **Envelope of Evidence** and explicitly documents its model-basis choices — for example, the **Stephenson, Morrison & Hohenkerk (2016)** parabolic + observation hybrid model versus the **Espenak polynomial tables** (NASA/GSFC). These are not interchangeable; their disagreements at historical extremes must be surfaced, not hidden.
+- **Moira's approach**: Moira does not claim a single "correct" answer for a date in 2500 BCE. It provides the **Envelope of Evidence** and explicitly documents its model-basis choices — for example, the **Stephenson, Morrison & Hohenkerk (2016)** parabolic + observation hybrid model versus the **Espenak polynomial tables** (NASA/GSFC). These are not interchangeable; their disagreements at historical extremes must be surfaced, not hidden.
 
 ### IV. Topocentric Humility (The Observer is the Anchor)
 We move away from "Infinite Distance" abstractions toward **Local Realism**.
 - **The Standard**: Default **True Topocentric Positions** for all bodies, including fixed stars (using Gaia parallax). Earth orientation parameters (polar motion, UT1-UTC, length-of-day) are sourced from the **IERS** (International Earth Rotation and Reference Systems Service), not approximated internally.
-- **The Inversion**: In the Black Box, parallax is often treated as a small "correction" applied to a star. In the Light Box, parallax is the **primary truth** of a star's location relative to a specific observer. Similarly, the GCRS-to-TIRS frame rotation for topocentric conversion requires real EOP data — IERS bulletins, not polynomial fallbacks — wherever precision is claimed.
+- **Moira's approach**: Parallax is treated as the **primary truth** of a star's location relative to a specific observer. Similarly, the GCRS-to-TIRS frame rotation for topocentric conversion requires real EOP data — IERS bulletins, not polynomial fallbacks — wherever precision is claimed.
 
 ---
 
 ## 3. The Time Scale Chain
 
-The Light Box doctrine extends to time itself. Positional astronomy is meaningless without an explicit, traceable answer to the question: *time in which scale, on which model, from which authority?* Moira answers that question in sovereign Python through `julian.py`, with no external time library and no hidden defaults.
+This doctrine extends to time itself. Positional astronomy is meaningless without an explicit, traceable answer to the question: *time in which scale, on which model, from which authority?* Moira answers that question in sovereign Python through `julian.py`, with no external time library and no hidden defaults.
 
 ### The Chain
 
@@ -74,7 +74,7 @@ A separate `delta_t_nasa_canon()` implements the Espenak/Meeus Five Millennium C
 
 ### DeltaTPolicy
 
-The Black Box equivalent (`Swiss Ephemeris set_delta_t_userdef`) is a global mutable flag. Moira replaces it with an immutable **`DeltaTPolicy`** object passed per-call:
+The older global-flag approach (`Swiss Ephemeris set_delta_t_userdef`) is a mutable setting. Moira replaces it with an immutable **`DeltaTPolicy`** object passed per-call:
 
 - `'hybrid'` — default multi-source model described above
 - `'nasa_canon'` — NASA eclipse-canon polynomials for catalog parity
@@ -101,19 +101,19 @@ For topocentric positions, the Earth's rotation must be placed correctly. Moira 
 
 ### The Doctrine Consequence
 
-This chain is not a correction appended after the fact. It is the substrate on which all position derivation rests. Every term — ΔT model, TDB approximation, sidereal time formula — is named, sourced, and testable. Opacity at this layer invalidates the entire Light Box claim regardless of what happens downstream.
+This chain is not a correction appended after the fact. It is the substrate on which all position derivation rests. Every term — ΔT model, TDB approximation, sidereal time formula — is named, sourced, and testable. Opacity at this layer invalidates any transparency claim regardless of what happens downstream.
 
 ---
 
-## 4. The Mirror of the Black Box: A Comparative Audit
+## 4. Comparative Audit
 
-The following audit is organized by computational domain. Each domain identifies the specific point of divergence between an opaque compiled engine and Moira's sovereign, inspectable pipeline.
+The following audit is organized by computational domain. Each domain identifies the specific point of divergence between a traditional compact ephemeris-library model and Moira's sovereign, inspectable pipeline.
 
 ---
 
 ### Ephemeris Substrate
 
-| Attribute | The Black Box (Legacy) | The Light Box (Moira) |
+| Attribute | Established Library Model | Moira |
 | :--- | :--- | :--- |
 | **Data format** | Proprietary pre-interpolated binary (`.se1`) | Raw JPL SPK kernels (`.bsp`) — Chebyshev coefficients as distributed by JPL |
 | **Kernel access layer** | Compiled C integration, not separately inspectable | Sovereign `SpkReader` (`moira/spk_reader.py`) — single gateway, explicit segment selection, inspectable in source |
@@ -125,7 +125,7 @@ The following audit is organized by computational domain. Each domain identifies
 
 ### Reduction Pipeline
 
-| Attribute | The Black Box (Legacy) | The Light Box (Moira) |
+| Attribute | Established Library Model | Moira |
 | :--- | :--- | :--- |
 | **Nutation theory** | IAU 2000A (compiled, internal) | IAU 2000A — sovereign Python implementation, `nutation_2000a.py` |
 | **Nutation series** | Opaque compiled evaluation | Full IERS table evaluation: 1358 lunisolar + 1056 planetary terms, read from `iau2000a_ls.txt` / `iau2000a_pl.txt` at runtime |
@@ -140,7 +140,7 @@ The following audit is organized by computational domain. Each domain identifies
 
 ### Time System
 
-| Attribute | The Black Box (Legacy) | The Light Box (Moira) |
+| Attribute | Established Library Model | Moira |
 | :--- | :--- | :--- |
 | **ΔT model** | Internal polynomial / opaque fallback | Layered hybrid: IERS Bulletin A/B observed (2015–2026) → 5-year table (1955–2015) → SMH 2016 HPIERS table → telescopic anchors → Morrison & Stephenson (2004) polynomials |
 | **ΔT policy mechanism** | Global mutable flag (`set_delta_t_userdef`) | Immutable `DeltaTPolicy` object passed per-call; models: `'hybrid'`, `'nasa_canon'`, `'fixed'` |
@@ -154,7 +154,7 @@ The following audit is organized by computational domain. Each domain identifies
 
 ### Star System
 
-| Attribute | The Black Box (Legacy) | The Light Box (Moira) |
+| Attribute | Established Library Model | Moira |
 | :--- | :--- | :--- |
 | **Catalog authority** | Internal fixed catalog, provenance undocumented | Sovereign Registry minted from IAU modern star names, resolved through SIMBAD (Hipparcos ID → Bayer → SIMBAD ID → proper name) |
 | **Catalog size** | ~1000 stars (implementation-defined) | 543+ IAU-sanctioned stars, expandable |
@@ -167,7 +167,7 @@ The following audit is organized by computational domain. Each domain identifies
 
 ### Observer / Topocentric
 
-| Attribute | The Black Box (Legacy) | The Light Box (Moira) |
+| Attribute | Established Library Model | Moira |
 | :--- | :--- | :--- |
 | **Default position type** | Geocentric (topocentric optional) | True topocentric by default for all bodies including fixed stars |
 | **Parallax for stars** | Optional correction | Primary computation path — observer distance from Earth's center enters the unit vector directly |
@@ -178,7 +178,7 @@ The following audit is organized by computational domain. Each domain identifies
 
 ### Policy and Design
 
-| Attribute | The Black Box (Legacy) | The Light Box (Moira) |
+| Attribute | Established Library Model | Moira |
 | :--- | :--- | :--- |
 | **Computation policy** | Global flags and integer constants (opaque at call site) | Typed policy objects passed explicitly; policy is visible in any code that calls the engine |
 | **Uncertainty disclosure** | Silent — no uncertainty envelope published | Mandatory for ΔT model range, historical projections, and chaotic orbits (Centaurs/TNOs) |
@@ -189,7 +189,7 @@ The following audit is organized by computational domain. Each domain identifies
 
 ### Validation
 
-| Attribute | The Black Box (Legacy) | The Light Box (Moira) |
+| Attribute | Established Library Model | Moira |
 | :--- | :--- | :--- |
 | **Oracle strategy** | Cross-software agreement (circular) | Primary oracles: JPL Horizons, SOFA/ERFA reference implementations, IERS published values |
 | **Test basis** | Unspecified | `pytest` suite with numerical benchmarks against external physical authorities |
@@ -199,7 +199,7 @@ The following audit is organized by computational domain. Each domain identifies
 
 ### Documentation
 
-| Attribute | The Black Box (Legacy) | The Light Box (Moira) |
+| Attribute | Established Library Model | Moira |
 | :--- | :--- | :--- |
 | **Standard type** | API reference manual | Constitutional doctrinal standard — doctrine, policy, and machine contracts per module |
 | **Docstring contract** | Optional / inconsistent | Machine contracts (`[MACHINE_CONTRACT]` blocks) on high-risk classes; frozen API surfaces declared explicitly |

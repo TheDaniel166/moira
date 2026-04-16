@@ -15,8 +15,9 @@ It cannot name a body it was not pre-built for.
 
 Moira is not built on those constraints.
 
-This document describes what Moira does that Swiss Ephemeris cannot —
-not as a catalog of aspirations, but as a record of what the engine actually computes.
+This document describes where Moira extends beyond the design envelope of Swiss Ephemeris,
+and where it makes different modern data and policy choices. It is not written to diminish
+Swiss Ephemeris, but to describe what Moira actually computes and why.
 
 ---
 
