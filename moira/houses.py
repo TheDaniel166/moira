@@ -3,6 +3,8 @@ Moira — houses.py
 The House Engine: governs ecliptic house cusp computation for all supported
 house systems using ARMC, obliquity, and geographic coordinates.
 
+House system implementations in this file include code derived from swehouse.c from Swiss Ephemeris, used with permission of its authors, Dieter Koch and Alois Treindl.
+
 Boundary: owns the full pipeline from raw Julian date and observer coordinates
 to a populated HouseCusps result vessel. Delegates time conversion to julian,
 obliquity and nutation to obliquity, local sidereal time to julian, and
