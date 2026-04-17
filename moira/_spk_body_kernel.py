@@ -264,6 +264,34 @@ class SmallBodyKernel:
     def list_naif_ids(self) -> list[int]:
         return sorted(self._available)
 
+    def has_segment_at(self, center: int, target: int, jd: float) -> bool:
+        """Return True if a segment for (center, target) covers jd."""
+        for seg in self._kernel.segments:
+            if (seg.target == target and seg.center == center
+                    and seg.start_jd <= jd <= seg.end_jd):
+                return True
+        return False
+
+    def coverage(self) -> dict[tuple[int, int], tuple[float, float]]:
+        """
+        Return the epoch range covered by each (center, target) pair.
+
+        Returns
+        -------
+        dict mapping (center_naif_id, target_naif_id) to (start_jd, end_jd).
+        """
+        result: dict[tuple[int, int], tuple[float, float]] = {}
+        for seg in self._kernel.segments:
+            key = (seg.center, seg.target)
+            if key in result:
+                result[key] = (
+                    min(result[key][0], seg.start_jd),
+                    max(result[key][1], seg.end_jd),
+                )
+            else:
+                result[key] = (seg.start_jd, seg.end_jd)
+        return result
+
     def close(self) -> None:
         try:
             self._kernel.close()

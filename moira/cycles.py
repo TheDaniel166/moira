@@ -54,7 +54,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from .constants import Body, sign_of
-from .spk_reader import SpkReader, get_reader
+from .spk_reader import KernelReader, SpkReader, get_reader
 
 
 # ===========================================================================
@@ -956,7 +956,7 @@ def return_series(
     natal_lon: float,
     jd_start: float,
     jd_end: float,
-    reader: SpkReader | None = None,
+    reader: KernelReader | None = None,
 ) -> ReturnSeries:
     """
     Find all returns of *body* to *natal_lon* within a date range.
@@ -1029,7 +1029,7 @@ def half_return_series(
     natal_lon: float,
     jd_start: float,
     jd_end: float,
-    reader: SpkReader | None = None,
+    reader: KernelReader | None = None,
 ) -> ReturnSeries:
     """
     Find all half-returns (oppositions to natal longitude) within a date range.
@@ -1096,7 +1096,7 @@ def lifetime_returns(
     natal_lon: float,
     birth_jd: float,
     years: float = 90.0,
-    reader: SpkReader | None = None,
+    reader: KernelReader | None = None,
 ) -> ReturnSeries:
     """
     Convenience wrapper: all returns of *body* over a human lifetime.
@@ -1125,7 +1125,7 @@ def synodic_cycle_position(
     body1: str,
     body2: str,
     jd_ut: float,
-    reader: SpkReader | None = None,
+    reader: KernelReader | None = None,
 ) -> SynodicCyclePosition:
     """
     Evaluate where two bodies stand in their synodic cycle at a given moment.
@@ -1198,7 +1198,7 @@ def mutation_period_at(longitude: float) -> GreatMutationElement:
 def great_conjunctions(
     jd_start: float,
     jd_end: float,
-    reader: SpkReader | None = None,
+    reader: KernelReader | None = None,
 ) -> GreatConjunctionSeries:
     """
     Find all Jupiter–Saturn conjunctions in a date range.

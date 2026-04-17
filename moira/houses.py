@@ -1208,66 +1208,108 @@ def _morinus(armc: float, obliquity: float) -> list[float]:
 
 def _campanus(armc: float, obliquity: float, lat: float) -> list[float]:
     """
-    Campanus houses: prime vertical trisection projected onto the ecliptic.
+    Campanus houses from prime-vertical trisection via explicit plane geometry.
 
-    Campanus construction using explicit spherical transformations.
+    Geometric definition used here:
+      1. In the local horizon frame, divide the prime vertical into 30° sectors.
+      2. Treat each relevant sector point as the pole of a Campanus house
+         circle. The corresponding cusp plane is orthogonal to that pole.
+      3. Intersect that plane with the ecliptic plane.
+      4. Choose the intersection that lies in the doctrinal zodiacal quadrant
+         opened by the visible MC and Ascendant.
 
-    Step 1 — Auxiliary pole heights (prime vertical arcs 30° and 60°):
-      pole_height_30deg = arcsin(sin(φ) * sin(30°)) = arcsin(sin(φ) / 2)
-      pole_height_60deg = arcsin(sin(φ) * sin(60°)) = arcsin(sin(φ) * √3/2)
-
-    Step 2 — Equatorial arc offsets:
-      equatorial_offset_sqrt3 = arctan(√3 / cos(φ))
-      equatorial_offset_inv_sqrt3 = arctan(1 / (√3 * cos(φ)))
-
-    Step 3 — Intermediate cusps via Asc1/Asc2 quadrant-aware projection:
-      cusp[11] = Asc1(ARMC + 90 − equatorial_offset_sqrt3, pole_height_30deg)
-      cusp[12] = Asc1(ARMC + 90 − equatorial_offset_inv_sqrt3, pole_height_60deg)
-      cusp[2]  = Asc1(ARMC + 90 + equatorial_offset_inv_sqrt3, pole_height_60deg)
-      cusp[3]  = Asc1(ARMC + 90 + equatorial_offset_sqrt3, pole_height_30deg)
-
-    Reference: standard Campanus geometry in astronomical-house literature.
+    This formulation keeps the derivation visible in chart-local geometry
+    rather than relying on inherited equatorial offset recipes.
     """
-    mc  = _mc_above_horizon(_mc_from_armc(armc, obliquity, lat), obliquity, lat)
+    mc_geometric = _mc_from_armc(armc, obliquity, lat)
+    mc = _mc_above_horizon(mc_geometric, obliquity, lat)
     asc = _asc_from_armc(armc, obliquity, lat)
+    ic = (mc + 180.0) % 360.0
+    dsc = (asc + 180.0) % 360.0
 
-    _EPS = 1e-10
+    phi = lat * DEG2RAD
+    theta = armc * DEG2RAD
+    eps = obliquity * DEG2RAD
+    sin_theta = math.sin(theta)
+    cos_theta = math.cos(theta)
 
-    # Auxiliary pole heights for prime vertical trisection
-    pole_height_30deg = math.degrees(math.asin(max(-1.0, min(1.0, math.sin(lat * DEG2RAD) / 2.0))))
-    pole_height_60deg = math.degrees(math.asin(max(-1.0, min(1.0, math.sin(lat * DEG2RAD) * math.sqrt(3.0) / 2.0))))
+    east = (-sin_theta, cos_theta, 0.0)
+    zenith = (
+        math.cos(phi) * cos_theta,
+        math.cos(phi) * sin_theta,
+        math.sin(phi),
+    )
+    north = (
+        -math.sin(phi) * cos_theta,
+        -math.sin(phi) * sin_theta,
+        math.cos(phi),
+    )
+    ecliptic_north = (0.0, -math.sin(eps), math.cos(eps))
 
-    # Equatorial arc offsets for intermediate cusps
-    cos_latitude = math.cos(lat * DEG2RAD)
-    if abs(cos_latitude) < _EPS:
-        equatorial_offset_sqrt3 = equatorial_offset_inv_sqrt3 = 90.0 if lat > 0.0 else 270.0
-    else:
-        equatorial_offset_sqrt3 = math.degrees(math.atan(math.sqrt(3.0) / cos_latitude))
-        equatorial_offset_inv_sqrt3 = math.degrees(math.atan(1.0 / (math.sqrt(3.0) * cos_latitude)))
+    def _cross(a: tuple[float, float, float], b: tuple[float, float, float]) -> tuple[float, float, float]:
+        return (
+            a[1] * b[2] - a[2] * b[1],
+            a[2] * b[0] - a[0] * b[2],
+            a[0] * b[1] - a[1] * b[0],
+        )
 
-    # Detect if _mc_above_horizon swapped MC (polar correction)
-    mc_raw    = _mc_from_armc(armc, obliquity, lat)
-    mc_swapped = abs((mc - mc_raw + 180.0) % 360.0 - 180.0) > 90.0
+    def _dot(a: tuple[float, float, float], b: tuple[float, float, float]) -> float:
+        return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
 
-    # Intermediate cusps computed via quadrant-aware projection
+    def _norm(v: tuple[float, float, float]) -> float:
+        return math.sqrt(_dot(v, v))
+
+    def _normalize(v: tuple[float, float, float]) -> tuple[float, float, float]:
+        mag = _norm(v)
+        if mag == 0.0:
+            raise ValueError("_campanus: degenerate vector in cusp construction")
+        return (v[0] / mag, v[1] / mag, v[2] / mag)
+
+    def _ecliptic_longitude(v: tuple[float, float, float]) -> float:
+        x_eq, y_eq, z_eq = _normalize(v)
+        y_ecl = y_eq * math.cos(eps) + z_eq * math.sin(eps)
+        return math.atan2(y_ecl, x_eq) * RAD2DEG % 360.0
+
+    def _in_forward_arc(lon: float, start: float, end: float) -> bool:
+        return (lon - start) % 360.0 < (end - start) % 360.0
+
+    def _campanus_cusp(alpha_deg: float, arc_start: float, arc_end: float) -> float:
+        alpha = alpha_deg * DEG2RAD
+        pole = _normalize((
+            math.cos(alpha) * east[0] + math.sin(alpha) * zenith[0],
+            math.cos(alpha) * east[1] + math.sin(alpha) * zenith[1],
+            math.cos(alpha) * east[2] + math.sin(alpha) * zenith[2],
+        ))
+        intersection = _cross(pole, ecliptic_north)
+        lon_a = _ecliptic_longitude(intersection)
+        lon_b = (lon_a + 180.0) % 360.0
+        if _in_forward_arc(lon_a, arc_start, arc_end):
+            return lon_a
+        if _in_forward_arc(lon_b, arc_start, arc_end):
+            return lon_b
+        span = (arc_end - arc_start) % 360.0
+        target = (arc_start + span / 2.0) % 360.0
+        diff_a = abs((lon_a - target + 180.0) % 360.0 - 180.0)
+        diff_b = abs((lon_b - target + 180.0) % 360.0 - 180.0)
+        return lon_a if diff_a <= diff_b else lon_b
+
     cusps = [0.0] * 12
-    cusps[0]  = asc
-    cusps[9]  = mc
-    cusps[10] = _quadrant_project_ra(armc + 90.0 - equatorial_offset_sqrt3, pole_height_30deg, obliquity)   # H11
-    cusps[11] = _quadrant_project_ra(armc + 90.0 - equatorial_offset_inv_sqrt3, pole_height_60deg, obliquity)   # H12
-    cusps[1]  = _quadrant_project_ra(armc + 90.0 + equatorial_offset_inv_sqrt3, pole_height_60deg, obliquity)   # H2
-    cusps[2]  = _quadrant_project_ra(armc + 90.0 + equatorial_offset_sqrt3, pole_height_30deg, obliquity)   # H3
-    cusps[3]  = (mc  + 180.0) % 360.0
-    cusps[6]  = (asc + 180.0) % 360.0
-    cusps[4]  = (cusps[10] + 180.0) % 360.0
-    cusps[5]  = (cusps[11] + 180.0) % 360.0
-    cusps[7]  = (cusps[1]  + 180.0) % 360.0
-    cusps[8]  = (cusps[2]  + 180.0) % 360.0
-
-    # When MC was swapped at polar latitudes, all intermediate cusps are 180° off
-    if mc_swapped:
-        for i in (1, 2, 4, 5, 7, 8, 10, 11):
-            cusps[i] = (cusps[i] + 180.0) % 360.0
+    cusps[0] = asc
+    cusps[9] = mc
+    cusps[3] = ic
+    cusps[6] = dsc
+    cusps[10] = _campanus_cusp(150.0, mc, asc)  # H11
+    cusps[11] = _campanus_cusp(120.0, mc, asc)  # H12
+    cusps[1] = _campanus_cusp(60.0, asc, ic)    # H2
+    cusps[2] = _campanus_cusp(30.0, asc, ic)    # H3
+    mc_shifted = abs((mc - mc_geometric + 180.0) % 360.0 - 180.0) > 90.0
+    if mc_shifted:
+        for idx in (1, 2, 10, 11):
+            cusps[idx] = (cusps[idx] + 180.0) % 360.0
+    cusps[4] = (cusps[10] + 180.0) % 360.0
+    cusps[5] = (cusps[11] + 180.0) % 360.0
+    cusps[7] = (cusps[1] + 180.0) % 360.0
+    cusps[8] = (cusps[2] + 180.0) % 360.0
 
     return _finalize_cusps(cusps, context="_campanus")
 
@@ -1399,54 +1441,125 @@ def _azimuthal(armc: float, obliquity: float, lat: float) -> list[float]:
     """
     Horizontal / Azimuthal house system.
 
-    Similar to Campanus but uses the Zenith-Nadir axis as the primary axis
-    instead of the prime vertical.  Technically: great circles through the
-    Zenith divide the sphere into 12 equal 30° sectors; cusps are where those
-    circles intersect the ecliptic.
+    Zenith-sector houses from explicit local-horizon geometry.
 
-    Construction uses a zenith-anchored spherical frame and a
-    quadrant-aware projection back to the ecliptic:
-        latitude_complement_azimuthal = 90° − lat   (complement of geographic latitude)
-        armc_rotated = ARMC + 180° (ARMC rotated 180°)
+    Geometric definition used here:
+      1. In the local horizon frame, take the vertical great circles through
+         the zenith and horizon azimuths spaced every 30°.
+      2. Each such vertical great circle defines a cusp plane.
+      3. Intersect the cusp plane with the ecliptic plane.
+      4. Choose the branch whose local azimuth matches the doctrinal vertical
+         circle for that house. The eastern sequence mirrors by hemisphere.
 
-    Reference: horizontal-sector house constructions in modern ephemeris practice.
+    This is the direct horizon-frame statement of the azimuthal system, with
+    no rotated-latitude surrogate construction.
     """
-    mc  = _mc_from_armc(armc, obliquity, lat)
-    # Zenith-anchored coordinate transformation
-    latitude_complement_azimuthal = (90.0 - lat) if lat > 0.0 else (-90.0 - lat)
-    _EPS = 1e-10
-    # Clamp latitude_complement_azimuthal away from exactly ±90°
-    if abs(abs(latitude_complement_azimuthal) - 90.0) < _EPS:
-        latitude_complement_azimuthal = math.copysign(90.0 - _EPS, latitude_complement_azimuthal)
-    armc_rotated = (armc + 180.0) % 360.0
+    mc_geometric = _mc_from_armc(armc, obliquity, lat)
+    mc = mc_geometric
+    ic = (mc + 180.0) % 360.0
 
-    pole_height_30deg = math.degrees(math.asin(max(-1.0, min(1.0, math.sin(latitude_complement_azimuthal * DEG2RAD) / 2.0))))
-    pole_height_60deg = math.degrees(math.asin(max(-1.0, min(1.0, math.sin(latitude_complement_azimuthal * DEG2RAD) * math.sqrt(3.0) / 2.0))))
-    cos_latitude_complement = math.cos(latitude_complement_azimuthal * DEG2RAD)
-    if abs(cos_latitude_complement) < _EPS:
-        # In the transformed equatorial singularity (latitude_complement = -90° for lat = 0°),
-        # Orient azimuthal sectors using the 90° branch rather than
-        # the southern 270° branch. That keeps house numbering consistent.
-        equatorial_offset_sqrt3 = equatorial_offset_inv_sqrt3 = 90.0
-    else:
-        equatorial_offset_sqrt3 = math.degrees(math.atan(math.sqrt(3.0) / cos_latitude_complement))
-        equatorial_offset_inv_sqrt3 = math.degrees(math.atan(1.0 / (math.sqrt(3.0) * cos_latitude_complement)))
+    phi = lat * DEG2RAD
+    theta = armc * DEG2RAD
+    eps = obliquity * DEG2RAD
+    sin_theta = math.sin(theta)
+    cos_theta = math.cos(theta)
 
-    asc = (_quadrant_project_ra(armc_rotated + 90.0, latitude_complement_azimuthal, obliquity) + 180.0) % 360.0
+    east = (-sin_theta, cos_theta, 0.0)
+    north = (
+        -math.sin(phi) * cos_theta,
+        -math.sin(phi) * sin_theta,
+        math.cos(phi),
+    )
+    zenith = (
+        math.cos(phi) * cos_theta,
+        math.cos(phi) * sin_theta,
+        math.sin(phi),
+    )
+    ecliptic_north = (0.0, -math.sin(eps), math.cos(eps))
+
+    def _cross(a: tuple[float, float, float], b: tuple[float, float, float]) -> tuple[float, float, float]:
+        return (
+            a[1] * b[2] - a[2] * b[1],
+            a[2] * b[0] - a[0] * b[2],
+            a[0] * b[1] - a[1] * b[0],
+        )
+
+    def _dot(a: tuple[float, float, float], b: tuple[float, float, float]) -> float:
+        return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+
+    def _norm(v: tuple[float, float, float]) -> float:
+        return math.sqrt(_dot(v, v))
+
+    def _normalize(v: tuple[float, float, float]) -> tuple[float, float, float]:
+        mag = _norm(v)
+        if mag == 0.0:
+            raise ValueError("_azimuthal: degenerate vector in cusp construction")
+        return (v[0] / mag, v[1] / mag, v[2] / mag)
+
+    def _ecliptic_longitude(v: tuple[float, float, float]) -> float:
+        x_eq, y_eq, z_eq = _normalize(v)
+        y_ecl = y_eq * math.cos(eps) + z_eq * math.sin(eps)
+        return math.atan2(y_ecl, x_eq) * RAD2DEG % 360.0
+
+    def _azimuth_of(v: tuple[float, float, float]) -> float:
+        x = _dot(v, east)
+        y = _dot(v, north)
+        return math.atan2(x, y) * RAD2DEG % 360.0
+
+    def _azimuth_diff(a: float, b: float) -> float:
+        return abs((a - b + 180.0) % 360.0 - 180.0)
+
+    def _vertical_cusp(azimuth_deg: float) -> float:
+        az = azimuth_deg * DEG2RAD
+        horizon_dir = (
+            math.sin(az) * east[0] + math.cos(az) * north[0],
+            math.sin(az) * east[1] + math.cos(az) * north[1],
+            math.sin(az) * east[2] + math.cos(az) * north[2],
+        )
+        plane_normal = _normalize(_cross(zenith, horizon_dir))
+        intersection = _cross(plane_normal, ecliptic_north)
+        inter_a = _normalize(intersection)
+        inter_b = (-inter_a[0], -inter_a[1], -inter_a[2])
+        lon_a = _ecliptic_longitude(inter_a)
+        lon_b = _ecliptic_longitude(inter_b)
+        az_a = _azimuth_of(inter_a)
+        az_b = _azimuth_of(inter_b)
+        return lon_a if _azimuth_diff(az_a, azimuth_deg) <= _azimuth_diff(az_b, azimuth_deg) else lon_b
+
+    north_sequence = {
+        11: 150.0,
+        12: 120.0,
+        1: 90.0,
+        2: 60.0,
+        3: 30.0,
+    }
+    south_sequence = {
+        11: 30.0,
+        12: 60.0,
+        1: 90.0,
+        2: 120.0,
+        3: 150.0,
+    }
+    azimuths = north_sequence if lat > 0.0 else south_sequence
+    if abs(lat) < 1e-12 and armc >= 180.0:
+        azimuths = {house: (azimuth + 180.0) % 360.0 for house, azimuth in azimuths.items()}
+
+    asc = _vertical_cusp(azimuths[1])
+    dsc = (asc + 180.0) % 360.0
 
     cusps = [0.0] * 12
-    cusps[0]  = asc
-    cusps[9]  = mc
-    cusps[3]  = (mc  + 180.0) % 360.0
-    cusps[6]  = (asc + 180.0) % 360.0
-    cusps[10] = (_quadrant_project_ra(armc_rotated + 90.0 - equatorial_offset_sqrt3, pole_height_30deg, obliquity) + 180.0) % 360.0   # H11
-    cusps[11] = (_quadrant_project_ra(armc_rotated + 90.0 - equatorial_offset_inv_sqrt3, pole_height_60deg, obliquity) + 180.0) % 360.0   # H12
-    cusps[1]  = (_quadrant_project_ra(armc_rotated + 90.0 + equatorial_offset_inv_sqrt3, pole_height_60deg, obliquity) + 180.0) % 360.0   # H2
-    cusps[2]  = (_quadrant_project_ra(armc_rotated + 90.0 + equatorial_offset_sqrt3, pole_height_30deg, obliquity) + 180.0) % 360.0   # H3
-    cusps[4]  = (cusps[10] + 180.0) % 360.0    # H5
-    cusps[5]  = (cusps[11] + 180.0) % 360.0    # H6
-    cusps[7]  = (cusps[1]  + 180.0) % 360.0    # H8
-    cusps[8]  = (cusps[2]  + 180.0) % 360.0    # H9
+    cusps[0] = asc
+    cusps[9] = mc
+    cusps[3] = ic
+    cusps[6] = dsc
+    cusps[10] = _vertical_cusp(azimuths[11])  # H11
+    cusps[11] = _vertical_cusp(azimuths[12])  # H12
+    cusps[1] = _vertical_cusp(azimuths[2])    # H2
+    cusps[2] = _vertical_cusp(azimuths[3])    # H3
+    cusps[4] = (cusps[10] + 180.0) % 360.0
+    cusps[5] = (cusps[11] + 180.0) % 360.0
+    cusps[7] = (cusps[1] + 180.0) % 360.0
+    cusps[8] = (cusps[2] + 180.0) % 360.0
 
     return _finalize_cusps(cusps, context="_azimuthal")
 
@@ -1509,47 +1622,54 @@ def _topocentric(armc: float, obliquity: float, lat: float) -> list[float]:
     """
     Topocentric House System (Polich-Page).
 
-    Divides the equatorial circle at 30°/60°/120°/150° from ARMC
-    but applies a graduated polar height for each cusp:
-      phi_n = atan(n/3 * tan(lat))
-    where n = 1 for cusps closest to ASC/MC (11 & 3), n = 2 for cusps 12 & 2.
+    Polich-Page construction from explicit equatorial pole-height doctrine.
 
-    The polar height is symmetric about the 90° (ASC) point:
-      RA+30°  (H11) → phi_1   RA+60°  (H12) → phi_2
-      RA+120° (H2)  → phi_2   RA+150° (H3)  → phi_1
+    Geometric definition used here:
+      1. Start from equatorial pole right ascensions spaced from ARMC by
+         30 deg, 60 deg, 120 deg, and 150 deg.
+      2. Assign the graduated pole heights
+             phi_1 = atan((1/3) * tan(latitude))
+             phi_2 = atan((2/3) * tan(latitude))
+         to the near-angle and far-angle intermediate cusps respectively.
+      3. Project each equatorial right ascension back to the ecliptic using the
+         corresponding pole height as the house-plane declination term.
+      4. Mirror the intermediate cusps across the opposite hemisphere and apply
+         the visible-MC branch correction at polar latitudes.
 
     Reference: Polich & Page (1955).
     """
     phi = lat * DEG2RAD
 
-    mc  = _mc_above_horizon(_mc_from_armc(armc, obliquity, lat), obliquity, lat)
+    mc_geometric = _mc_from_armc(armc, obliquity, lat)
+    mc = _mc_above_horizon(mc_geometric, obliquity, lat)
     asc = _asc_from_armc(armc, obliquity, lat)
+    ic = (mc + 180.0) % 360.0
+    dsc = (asc + 180.0) % 360.0
 
-    phi_1 = math.atan(1.0/3.0 * math.tan(phi))
-    phi_2 = math.atan(2.0/3.0 * math.tan(phi))
+    phi_1 = math.degrees(math.atan((1.0 / 3.0) * math.tan(phi)))
+    phi_2 = math.degrees(math.atan((2.0 / 3.0) * math.tan(phi)))
 
-    def _project(ra_deg: float, phi_h: float) -> float:
-        return _project_ra_with_pole(ra_deg, phi_h * RAD2DEG, obliquity)
+    cusp_specs = (
+        (10, 30.0, phi_1),
+        (11, 60.0, phi_2),
+        (1, 120.0, phi_2),
+        (2, 150.0, phi_1),
+    )
 
     cusps = [0.0] * 12
-    cusps[0]  = asc
-    cusps[9]  = mc
-    cusps[10] = _project(armc + 30.0,  phi_1)   # H11: RA+30°,  pole = phi_1
-    cusps[11] = _project(armc + 60.0,  phi_2)   # H12: RA+60°,  pole = phi_2
-    cusps[1]  = _project(armc + 120.0, phi_2)   # H2:  RA+120°, pole = phi_2
-    cusps[2]  = _project(armc + 150.0, phi_1)   # H3:  RA+150°, pole = phi_1
-
-    # Opposition
+    cusps[0] = asc
+    cusps[9] = mc
+    cusps[3] = ic
+    cusps[6] = dsc
+    for index, ra_offset_deg, pole_height_deg in cusp_specs:
+        pole_ra = (armc + ra_offset_deg) % 360.0
+        cusps[index] = _project_ra_with_pole(pole_ra, pole_height_deg, obliquity)
     cusps[4] = (cusps[10] + 180.0) % 360.0
     cusps[5] = (cusps[11] + 180.0) % 360.0
-    cusps[7] = (cusps[1]  + 180.0) % 360.0
-    cusps[8] = (cusps[2]  + 180.0) % 360.0
-    cusps[3] = (mc  + 180.0) % 360.0
-    cusps[6] = (asc + 180.0) % 360.0
+    cusps[7] = (cusps[1] + 180.0) % 360.0
+    cusps[8] = (cusps[2] + 180.0) % 360.0
 
-    # When MC was swapped at polar latitudes, all intermediate cusps are 180° off
-    mc_raw = _mc_from_armc(armc, obliquity, lat)
-    mc_swapped = abs((mc - mc_raw + 180.0) % 360.0 - 180.0) > 90.0
+    mc_swapped = abs((mc - mc_geometric + 180.0) % 360.0 - 180.0) > 90.0
     if mc_swapped:
         for i in (1, 2, 4, 5, 7, 8, 10, 11):
             cusps[i] = (cusps[i] + 180.0) % 360.0
@@ -1670,8 +1790,14 @@ def _apc_sector(n: int, ph: float, e: float, az: float) -> float:
         tan_obl = math.tan(e)
         mixed = tan_lat * tan_obl
 
-        # atan2 form keeps sign/quad robust at extreme values.
-        kv = math.atan2(mixed * math.cos(az), 1.0 + mixed * math.sin(az))
+        # atan (not atan2) restricts kv to (-π/2, π/2), keeping sector steps
+        # geometrically valid at polar latitudes where the atan2 denominator
+        # can go negative and push kv into the (π/2, π) range.
+        _denom = 1.0 + mixed * math.sin(az)
+        _numer = mixed * math.cos(az)
+        kv = (math.copysign(math.pi / 2.0, _numer)
+              if abs(_denom) < 1e-12
+              else math.atan(_numer / _denom))
 
         if abs_lat_deg < _VERY_SMALL:
             dasc = math.copysign((90.0 - _VERY_SMALL) * DEG2RAD, -1.0 if ph < 0.0 else 1.0)
@@ -1722,13 +1848,8 @@ def _apc(armc: float, obliquity: float, lat: float) -> list[float]:
 
     mc_shifted = abs((mc_visible - mc_geometric + 180.0) % 360.0 - 180.0) > 90.0
     if mc_shifted:
-        shifted = []
-        for idx, lon in enumerate(cusps):
-            if idx in (1, 2, 4, 5, 7, 8, 10, 11):
-                shifted.append((lon + 180.0) % 360.0)
-            else:
-                shifted.append(lon)
-        cusps = shifted
+        for i in (1, 2, 4, 5, 7, 8, 10, 11):
+            cusps[i] = (cusps[i] + 180.0) % 360.0
 
     # At critical latitudes, enforce Asc hemisphere parity before final anchors.
     asc_gap = abs(((cusps[0] - asc + 180.0) % 360.0) - 180.0)

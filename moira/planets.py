@@ -46,7 +46,7 @@ from .coordinates import (
 )
 from .obliquity import mean_obliquity, true_obliquity, nutation as _nutation
 from .julian import ut_to_tt, centuries_from_j2000, local_sidereal_time, decimal_year, DeltaTPolicy
-from .spk_reader import get_reader, SpkReader
+from .spk_reader import get_reader, KernelReader, SpkReader
 from .corrections import (
     apply_light_time, apply_aberration, apply_deflection, apply_frame_bias,
     apply_refraction, SCHWARZSCHILD_RADII,
@@ -407,7 +407,7 @@ class CartesianPosition:
 def _barycentric(
     body: str,
     jd_tt: float,
-    reader: SpkReader,
+    reader: KernelReader,
 ) -> Vec3:
     """
     Return the Solar System Barycentric (SSB) position of a body (km, ICRF).
@@ -430,7 +430,7 @@ def _barycentric(
 def _barycentric_state(
     body: str,
     jd_tt: float,
-    reader: SpkReader,
+    reader: KernelReader,
 ) -> tuple[Vec3, Vec3]:
     """
     Return Solar System Barycentric position and velocity of a body (km, km/day).
@@ -454,14 +454,14 @@ def _barycentric_state(
     return (x, y, z), (vx, vy, vz)
 
 
-def _earth_barycentric(jd_tt: float, reader: SpkReader) -> Vec3:
+def _earth_barycentric(jd_tt: float, reader: KernelReader) -> Vec3:
     """Return Earth's barycentric position (km, ICRF)."""
     ssb_emb = reader.position(0, 3, jd_tt)
     emb_earth = reader.position(3, 399, jd_tt)
     return vec_add(ssb_emb, emb_earth)
 
 
-def _earth_barycentric_state(jd_tt: float, reader: SpkReader) -> tuple[Vec3, Vec3]:
+def _earth_barycentric_state(jd_tt: float, reader: KernelReader) -> tuple[Vec3, Vec3]:
     """Return Earth's barycentric position and velocity (km, km/day, ICRF)."""
     ssb_emb_pos, ssb_emb_vel = reader.position_and_velocity(0, 3, jd_tt)
     emb_earth_pos, emb_earth_vel = reader.position_and_velocity(3, 399, jd_tt)
@@ -474,7 +474,7 @@ def _earth_barycentric_state(jd_tt: float, reader: SpkReader) -> tuple[Vec3, Vec
 def _geocentric(
     body: str,
     jd_tt: float,
-    reader: SpkReader,
+    reader: KernelReader,
 ) -> Vec3:
     """
     Return geocentric ICRF rectangular position of a body (km).
@@ -500,7 +500,7 @@ def _geocentric(
 def _geocentric_state(
     body: str,
     jd_tt: float,
-    reader: SpkReader,
+    reader: KernelReader,
 ) -> tuple[Vec3, Vec3]:
     """
     Return geocentric ICRF rectangular position and velocity of a body.
@@ -529,7 +529,7 @@ def _geocentric_state(
     )
 
 
-def _earth_velocity(jd_tt: float, reader: SpkReader) -> Vec3:
+def _earth_velocity(jd_tt: float, reader: KernelReader) -> Vec3:
     """
     Earth's barycentric velocity in km/day (ICRF).
     """
@@ -588,7 +588,7 @@ def _compose_rotation_matrix(jd_tt: float, *, with_nutation: bool = True):
     return M
 
 
-def _chiron_planet_data(jd_ut: float, reader: SpkReader) -> PlanetData:
+def _chiron_planet_data(jd_ut: float, reader: KernelReader) -> PlanetData:
     """Bridge explicit Chiron requests to the centaur kernel path."""
     from .asteroids import asteroid_at
 
@@ -610,7 +610,7 @@ def _chiron_planet_data(jd_ut: float, reader: SpkReader) -> PlanetData:
 def planet_at(
     body: str,
     jd_ut: float,
-    reader: SpkReader | None = None,
+    reader: KernelReader | None = None,
     obliquity: float | None = None,
     apparent: bool = True,
     aberration: bool = True,
@@ -840,7 +840,7 @@ def sky_position_at(
     observer_lat: float,
     observer_lon: float,
     observer_elev_m: float = 0.0,
-    reader: SpkReader | None = None,
+    reader: KernelReader | None = None,
     aberration: bool = True,
     grav_deflection: bool = True,
     nutation: bool = True,
@@ -981,7 +981,7 @@ def sky_position_at(
 def all_planets_at(
     jd_ut: float,
     bodies: list[str] | None = None,
-    reader: SpkReader | None = None,
+    reader: KernelReader | None = None,
     apparent: bool = True,
     aberration: bool = True,
     grav_deflection: bool = True,
@@ -1078,7 +1078,7 @@ def all_planets_at(
 def heliocentric_planet_at(
     body: str,
     jd_ut: float,
-    reader: SpkReader | None = None,
+    reader: KernelReader | None = None,
 ) -> HeliocentricData:
     """
     Compute the heliocentric ecliptic position of a body.
@@ -1154,7 +1154,7 @@ def heliocentric_planet_at(
 def all_heliocentric_at(
     jd_ut: float,
     bodies: list[str] | None = None,
-    reader: SpkReader | None = None,
+    reader: KernelReader | None = None,
 ) -> dict[str, HeliocentricData]:
     """
     Compute heliocentric positions for multiple bodies at once.
@@ -1198,7 +1198,7 @@ def all_heliocentric_at(
 # Sun longitude (used by houses and nodes modules)
 # ---------------------------------------------------------------------------
 
-def sun_longitude(jd_ut: float, reader: SpkReader | None = None) -> float:
+def sun_longitude(jd_ut: float, reader: KernelReader | None = None) -> float:
     """Return geocentric ecliptic longitude of the Sun (degrees, tropical)."""
     return planet_at(Body.SUN, jd_ut, reader=reader).longitude
 
@@ -1207,7 +1207,7 @@ def sun_longitude(jd_ut: float, reader: SpkReader | None = None) -> float:
 # Utility: approximate year from JD (avoids importing julian for a circular dep)
 # ---------------------------------------------------------------------------
 
-def _body_barycentric(body: str, jd_tt: float, reader: SpkReader) -> Vec3:
+def _body_barycentric(body: str, jd_tt: float, reader: KernelReader) -> Vec3:
     """Return SSB position of any supported body (km, ICRF)."""
     if body == Body.SUN:
         return reader.position(0, 10, jd_tt)
@@ -1238,7 +1238,7 @@ def planet_relative_to(
     body: str,
     center_body: str,
     jd_ut: float,
-    reader: SpkReader | None = None,
+    reader: KernelReader | None = None,
 ) -> PlanetData:
     """
     Compute the position of ``body`` as seen from ``center_body``.
@@ -1335,7 +1335,7 @@ def next_heliocentric_transit(
     body: str,
     target_lon: float,
     jd_start: float,
-    reader: SpkReader | None = None,
+    reader: KernelReader | None = None,
     max_days: float = 400.0,
 ) -> float:
     """

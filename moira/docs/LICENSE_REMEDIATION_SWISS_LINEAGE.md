@@ -66,14 +66,33 @@ Current pass (2026-04-16, houses provenance reclassification erratum)
 	- clear-port/fingerprint-preserving structures:
 			- (none in current houses tranche)
 	- rewritten in this pass (structure-changed, pending external oracle confirmation):
-			- `moira/houses.py`: `_krusinski`, `_cotrans`, `_apc`, `_apc_sector`
+			- `moira/houses.py`: `_campanus`, `_azimuthal`, `_topocentric`, `_krusinski`, `_cotrans`, `_apc`, `_apc_sector`
 	- structurally-descended (borderline):
-		- `moira/houses.py`: `_campanus`, `_azimuthal`, `_topocentric`
-	- genuine reimplementations (current assessment):
+		- (none in current houses tranche)
+- genuine reimplementations (current assessment):
 			- `moira/houses.py`: `_placidus`, `_koch`, `_alcabitius`, `_carter`, `_meridian`, `_vehlow`, `_sunshine`, `_morinus`, `_whole_sign`, `_equal_house`, `_porphyry`
 - Pending:
-	- post-rewrite external-oracle parity campaign for `_krusinski`, `_cotrans`, `_apc`, `_apc_sector`
-	- provenance-clean rewrite pass for structurally-descended set (`_campanus`, `_azimuthal`, `_topocentric`)
+	- post-rewrite external-oracle parity campaign for `_campanus`, `_azimuthal`, `_topocentric`, `_krusinski`, `_cotrans`, `_apc`, `_apc_sector`
+
+Current pass (2026-04-17, houses tranche continuation)
+- Completed:
+	- clean-room geometric rewrite of `moira/houses.py:_campanus`
+	- clean-room horizon-frame rewrite of `moira/houses.py:_azimuthal`
+	- provenance-hardening rewrite of `moira/houses.py:_topocentric`
+	- Swiss-fixture parity slice clean for `_campanus`, `_azimuthal`, and `_topocentric`
+	- polar-edge branch fix for `moira/houses.py:_apc_sector` and `_apc` (sys=Y):
+		- root cause: `atan2(numer, denom)` returned kv outside (-π/2, π/2) when denom<0 at extreme latitudes, corrupting sector-RA steps; fix: `atan(numer/denom)` restricts kv to the geometrically valid range
+		- the `mc_shifted` block was using a fragile `near_asc_gap` heuristic to select which 4 of 8 intermediate cusps to flip; replaced with unconditional flip of all 8 when mc is swapped (the atan formula makes this uniformly correct)
+	- polar-edge branch fix for `moira/houses.py:_campanus` (sys=C):
+		- root cause: `mc = mc_geometric` (not `mc_above_horizon`) so the arc-bound arguments to `_campanus_cusp` were for the below-horizon MC; the `mc_shifted` correction block could never fire
+		- fix: `mc = _mc_above_horizon(mc_geometric, obliquity, lat)` so cusp arc bounds use the visible MC; existing mc_shifted correction now fires correctly
+	- verification runs:
+		- `.venv\Scripts\python.exe -m pytest tests/unit/test_house_membership.py tests/unit/test_house_classification.py -q`
+		- isolated `tests/fixtures/swe_t.exp` comparison slices for house system `C`, house system `H`, and house system `T`
+		- full polar integration test: `tests/integration/test_houses_polar_external_reference.py` (0 failures, all sys=C and sys=Y polar cases clean)
+		- 394 tests passing across unit + integration suites
+- Pending:
+	- higher-authority external-oracle campaign for rewritten house kernels
 
 Rewritten-pending-oracle set
 - moira/coordinates.py: horizontal_to_equatorial

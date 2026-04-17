@@ -72,7 +72,7 @@ from .planets import (
     sky_position_at,
 )
 from .nodes import true_node
-from .spk_reader import get_reader, SpkReader
+from .spk_reader import get_reader, KernelReader, SpkReader
 from .phenomena import next_moon_phase
 from .transits import last_full_moon, last_new_moon
 from .coordinates import icrf_to_true_ecliptic
@@ -822,7 +822,7 @@ class EclipseCalculator:
     [/MACHINE_CONTRACT]
     """
 
-    def __init__(self, reader: SpkReader | None = None) -> None:
+    def __init__(self, reader: KernelReader | None = None) -> None:
         """
         Initialise the Eclipse Engine with an optional SpkReader.
 
@@ -2285,7 +2285,7 @@ def next_solar_eclipse_at_location(
         Eclipse type filter: 'any', 'total', 'annular', 'partial', 'central', or 'hybrid'.
     max_lunations : int
         Maximum lunations to scan before raising RuntimeError.
-    reader : SpkReader | None
+    reader : KernelReader | None
         Optional pre-constructed kernel reader.
 
     Returns

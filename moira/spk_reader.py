@@ -8,7 +8,9 @@ may hold a reference to the jplephem SPK object or open the kernel file
 directly.
 
 Public surface:
-    SpkReader, get_reader(), set_kernel_path(), MissingKernelError
+    KernelReader (Protocol), SpkReader, KernelPool,
+    get_reader(), set_kernel_path(), swap_reader(), reset_singleton(),
+    use_reader_override(), MissingKernelError
 
 Import-time side effects: None (kernel is opened lazily on first
     SpkReader instantiation, not at import time).
@@ -24,6 +26,7 @@ import threading
 from contextlib import contextmanager
 from contextvars import ContextVar
 from pathlib import Path
+from typing import Protocol, runtime_checkable
 
 # jplephem is used solely as a binary SPK file reader
 try:
@@ -41,6 +44,45 @@ Vec3 = tuple[float, float, float]
 
 class MissingKernelError(RuntimeError):
     """Raised when get_reader() is called with no planetary kernel configured."""
+
+
+@runtime_checkable
+class KernelReader(Protocol):
+    """
+    Structural protocol for SPK kernel readers.
+
+    Both ``SpkReader`` and ``KernelPool`` satisfy this protocol.  Use this
+    type in function signatures wherever a caller should be able to supply
+    either a single-kernel reader or a multi-kernel pool.
+
+    Methods
+    -------
+    position(center, target, jd)
+        Barycentric position of *target* relative to *center* at *jd* (TT),
+        returned as (x, y, z) in km (ICRF).
+    position_and_velocity(center, target, jd)
+        Position and velocity as ((x,y,z), (vx,vy,vz)), km and km/day.
+    has_segment(center, target)
+        True if any data exists for this body pair (epoch-agnostic).
+    has_segment_at(center, target, jd)
+        True if data for this body pair covers *jd*.
+    coverage()
+        Dict mapping (center, target) pairs to (start_jd, end_jd) ranges.
+    covered_bodies()
+        Frozenset of all target NAIF IDs present in this reader.
+    close()
+        Release all held file handles.
+    """
+
+    def position(self, center: int, target: int, jd: float) -> Vec3: ...
+    def position_and_velocity(
+        self, center: int, target: int, jd: float
+    ) -> tuple[Vec3, Vec3]: ...
+    def has_segment(self, center: int, target: int) -> bool: ...
+    def has_segment_at(self, center: int, target: int, jd: float) -> bool: ...
+    def coverage(self) -> dict[tuple[int, int], tuple[float, float]]: ...
+    def covered_bodies(self) -> frozenset[int]: ...
+    def close(self) -> None: ...
 
 
 class SpkReader:
@@ -322,6 +364,47 @@ class SpkReader:
             return False
         return False
 
+    def coverage(self) -> dict[tuple[int, int], tuple[float, float]]:
+        """
+        Return the epoch range covered by each (center, target) pair.
+
+        Returns
+        -------
+        dict mapping (center_naif_id, target_naif_id) to (start_jd, end_jd).
+        For pairs whose data is split across multiple segments, start_jd is
+        the earliest segment start and end_jd is the latest segment end.
+        """
+        self._ensure_open()
+        return {
+            pair: (
+                min(s.start_jd for s in segs),
+                max(s.end_jd   for s in segs),
+            )
+            for pair, segs in self._segments_by_pair.items()
+        }
+
+    def covered_bodies(self) -> frozenset[int]:
+        """Return the set of target NAIF IDs present in this kernel."""
+        self._ensure_open()
+        return frozenset(target for _, target in self._segments_by_pair)
+
+    def epoch_range(
+        self, center: int, target: int
+    ) -> tuple[float, float] | None:
+        """
+        Return the (start_jd, end_jd) range for a specific (center, target) pair,
+        or None if the pair is not present in this kernel.
+
+        For split multi-epoch kernels the range spans from the earliest segment
+        start to the latest segment end, which may include a gap if the kernel
+        stores non-contiguous epochs for that pair.
+        """
+        self._ensure_open()
+        segs = self._segments_by_pair.get((center, target))
+        if not segs:
+            return None
+        return (min(s.start_jd for s in segs), max(s.end_jd for s in segs))
+
     @property
     def path(self) -> Path:
         """Path to the open SPK kernel file."""
@@ -330,6 +413,185 @@ class SpkReader:
     def __repr__(self) -> str:
         """Return a concise string representation showing the kernel filename."""
         return f"SpkReader('{self._path.name}')"
+
+
+# ---------------------------------------------------------------------------
+# KernelPool — ordered multi-kernel reader with fallback
+# ---------------------------------------------------------------------------
+
+class KernelPool:
+    """
+    Ordered multi-kernel reader with transparent fallback.
+
+    Dispatches position queries to the first registered reader whose coverage
+    includes the requested (center, target, jd) triple.  Accepts any mix of
+    SpkReader and SmallBodyKernel instances, in caller-defined priority order.
+
+    Typical use cases
+    -----------------
+    - Planetary kernel + asteroid extension kernel, unified behind one interface.
+    - Primary DE series + auxiliary body kernel for trans-Neptunian objects.
+    - Per-request reader pools in multi-tenant servers via use_reader_override().
+
+    Example
+    -------
+    >>> pool = KernelPool([planetary_reader, asteroid_kernel])
+    >>> pos = pool.position(0, 2000433, jd)   # 0=SSB center, 2000433=Eros
+
+    Notes
+    -----
+    - Readers are tried in insertion order; the first covering match wins.
+    - close() closes all managed readers; after close() the pool must not be used.
+    - position_and_velocity() is only dispatched to SpkReader instances; calling
+      it when only a SmallBodyKernel covers the pair raises NotImplementedError.
+    """
+
+    def __init__(self, readers=()) -> None:
+        from ._spk_body_kernel import SmallBodyKernel as _SmallBodyKernel
+        self._SmallBodyKernel = _SmallBodyKernel
+        self._readers: list = list(readers)
+
+    # ------------------------------------------------------------------
+    # Pool management
+    # ------------------------------------------------------------------
+
+    def add(self, reader) -> None:
+        """Append *reader* to the fallback chain (lowest priority)."""
+        self._readers.append(reader)
+
+    # ------------------------------------------------------------------
+    # Core read interface (mirrors SpkReader)
+    # ------------------------------------------------------------------
+
+    def position(self, center: int, target: int, jd: float) -> Vec3:
+        """
+        Return position of *target* relative to *center* at *jd* (TT).
+
+        Tries each registered reader in order and returns the result from
+        the first one that covers the (center, target, jd) triple.
+
+        Raises
+        ------
+        KeyError
+            If no reader in the pool covers the requested triple.
+        """
+        for reader in self._readers:
+            if isinstance(reader, self._SmallBodyKernel):
+                if reader.has_segment_at(center, target, jd):
+                    return reader.position(target, jd)
+            elif reader.has_segment_at(center, target, jd):
+                return reader.position(center, target, jd)
+        raise KeyError(
+            f"No kernel in pool covers center={center}, target={target} "
+            f"at JD {jd:.2f}"
+        )
+
+    def position_and_velocity(
+        self, center: int, target: int, jd: float
+    ) -> tuple[Vec3, Vec3]:
+        """
+        Return position and velocity of *target* relative to *center* at *jd*.
+
+        Only dispatches to SpkReader instances; SmallBodyKernel readers are
+        skipped for this method.
+
+        Raises
+        ------
+        KeyError
+            If no SpkReader in the pool covers the requested triple.
+        NotImplementedError
+            If the only covering reader is a SmallBodyKernel.
+        """
+        small_body_covered = False
+        for reader in self._readers:
+            if isinstance(reader, self._SmallBodyKernel):
+                if reader.has_segment_at(center, target, jd):
+                    small_body_covered = True
+            elif reader.has_segment_at(center, target, jd):
+                return reader.position_and_velocity(center, target, jd)
+        if small_body_covered:
+            raise NotImplementedError(
+                f"SmallBodyKernel does not support position_and_velocity "
+                f"(center={center}, target={target})"
+            )
+        raise KeyError(
+            f"No kernel in pool covers center={center}, target={target} "
+            f"at JD {jd:.2f}"
+        )
+
+    # ------------------------------------------------------------------
+    # Segment presence checks
+    # ------------------------------------------------------------------
+
+    def has_segment(self, center: int, target: int) -> bool:
+        """Return True if any reader in the pool covers (center, target)."""
+        for reader in self._readers:
+            if isinstance(reader, self._SmallBodyKernel):
+                if reader.has_body(target) and reader.segment_center(target) == center:
+                    return True
+            elif reader.has_segment(center, target):
+                return True
+        return False
+
+    def has_segment_at(self, center: int, target: int, jd: float) -> bool:
+        """Return True if any reader covers (center, target) at *jd*."""
+        for reader in self._readers:
+            if reader.has_segment_at(center, target, jd):
+                return True
+        return False
+
+    # ------------------------------------------------------------------
+    # Coverage introspection
+    # ------------------------------------------------------------------
+
+    def coverage(self) -> dict[tuple[int, int], tuple[float, float]]:
+        """
+        Return merged epoch ranges across all readers.
+
+        For pairs present in multiple readers, start_jd is the minimum across
+        all readers and end_jd is the maximum — representing the full span of
+        available coverage regardless of which reader serves each sub-range.
+        """
+        merged: dict[tuple[int, int], tuple[float, float]] = {}
+        for reader in self._readers:
+            for pair, (start, end) in reader.coverage().items():
+                if pair in merged:
+                    prev = merged[pair]
+                    merged[pair] = (min(prev[0], start), max(prev[1], end))
+                else:
+                    merged[pair] = (start, end)
+        return merged
+
+    def covered_bodies(self) -> frozenset[int]:
+        """Return the union of target NAIF IDs across all readers."""
+        bodies: set[int] = set()
+        for reader in self._readers:
+            if isinstance(reader, self._SmallBodyKernel):
+                bodies.update(reader.list_naif_ids())
+            else:
+                bodies.update(reader.covered_bodies())
+        return frozenset(bodies)
+
+    # ------------------------------------------------------------------
+    # Lifecycle
+    # ------------------------------------------------------------------
+
+    def close(self) -> None:
+        """Close all managed readers."""
+        for reader in self._readers:
+            try:
+                reader.close()
+            except Exception:
+                pass
+
+    def __enter__(self) -> "KernelPool":
+        return self
+
+    def __exit__(self, *_) -> None:
+        self.close()
+
+    def __repr__(self) -> str:
+        return f"KernelPool({len(self._readers)} reader(s))"
 
 
 # ---------------------------------------------------------------------------
@@ -425,7 +687,8 @@ def set_kernel_path(path: str | Path) -> None:
 
     This must be called before the singleton reader is first acquired. Changing
     the path after a live reader exists would invalidate outstanding handles
-    and is therefore rejected.
+    and is therefore rejected.  Use :func:`swap_reader` for intentional
+    runtime reconfiguration.
 
     Args:
         path: Filesystem path to the replacement SPK kernel file.
@@ -437,6 +700,87 @@ def set_kernel_path(path: str | Path) -> None:
     with _reader_lock:
         if _reader is not None:
             raise RuntimeError(
-                "Cannot change kernel path after the singleton reader has been opened."
+                "Cannot change kernel path after the singleton reader has been opened. "
+                "Use swap_reader() for intentional runtime reconfiguration."
             )
         _reader_path = Path(path)
+
+
+def swap_reader(reader_or_path: "SpkReader | KernelPool | str | Path") -> "SpkReader | KernelPool":
+    """
+    Replace the module-level singleton with a new reader, closing the old one.
+
+    Unlike :func:`set_kernel_path`, this may be called at any time — even after
+    the singleton has already been acquired.  The existing reader is closed
+    under the module lock before the new one is installed, so outstanding
+    references held by other threads become stale after this call returns.
+
+    Intended for intentional runtime reconfiguration (kernel upgrade, kernel
+    swap between test cases, graceful hot-reload).  For per-request isolation
+    without touching the singleton, use :func:`use_reader_override` instead.
+
+    Args:
+        reader_or_path: Either a pre-opened ``SpkReader`` or ``KernelPool``
+            instance, or a filesystem path string / ``Path`` to a ``.bsp``
+            kernel file (in which case a new ``SpkReader`` is opened).
+
+    Returns:
+        The newly installed singleton (the same object passed in, or the
+        freshly-opened ``SpkReader`` when a path was supplied).
+
+    Raises:
+        FileNotFoundError: If a path was supplied and the file does not exist.
+
+    Side effects:
+        - Closes the existing singleton reader (if any).
+        - Opens a new file handle if a path was supplied.
+        - Updates both the module-level ``_reader`` and ``_reader_path``.
+    """
+    global _reader, _reader_path
+    with _reader_lock:
+        old = _reader
+        if isinstance(reader_or_path, (str, Path)):
+            new_reader: SpkReader | KernelPool = SpkReader(Path(reader_or_path))
+            new_path = Path(reader_or_path)
+        else:
+            new_reader = reader_or_path
+            new_path = getattr(reader_or_path, "path", _reader_path)
+        if old is not None:
+            try:
+                old.close()
+            except Exception:
+                pass
+        _reader = new_reader
+        _reader_path = new_path
+        return new_reader
+
+
+def reset_singleton() -> None:
+    """
+    Close and clear the module-level singleton reader.
+
+    After this call :func:`get_reader` will re-initialise the singleton on its
+    next invocation, exactly as it would on a fresh import.  ``_reader_path``
+    is also cleared so a different kernel can be configured via
+    :func:`set_kernel_path` before the next acquisition.
+
+    Intended for:
+    - Test teardown (isolate kernel state between test cases).
+    - Graceful shutdown hooks (ensure file handles are released).
+    - Re-initialisation after a failed startup attempt.
+
+    Thread safety: serialised by the module-level RLock.
+
+    Side effects:
+        - Closes the existing reader (if any); exceptions are suppressed.
+        - Clears ``_reader`` and ``_reader_path``.
+    """
+    global _reader, _reader_path
+    with _reader_lock:
+        if _reader is not None:
+            try:
+                _reader.close()
+            except Exception:
+                pass
+            _reader = None
+        _reader_path = None

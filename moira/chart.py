@@ -27,7 +27,7 @@ from .julian import ut_to_tt
 from .planets import all_planets_at, PlanetData
 from .houses import calculate_houses, HouseCusps, HousePolicy
 from .nodes import true_node, mean_node, mean_lilith, true_lilith, NodeData
-from .spk_reader import SpkReader
+from .spk_reader import KernelReader, SpkReader
 
 @dataclass(slots=True, frozen=True)
 class ChartContext:

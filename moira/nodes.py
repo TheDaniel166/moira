@@ -38,7 +38,7 @@ from .julian import centuries_from_j2000, ut_to_tt, decimal_year
 from .coordinates import Vec3, vec_sub, icrf_to_ecliptic, normalize_degrees, mat_vec_mul, precession_matrix_equatorial, nutation_matrix_equatorial
 from .obliquity import mean_obliquity, nutation
 from .planets import _earth_barycentric, approx_year as _approx_year
-from .spk_reader import get_reader, SpkReader
+from .spk_reader import get_reader, KernelReader, SpkReader
 
 
 @dataclass(slots=True)
@@ -162,7 +162,7 @@ _TRUE_NODE_STEP = 0.01   # days; ~14 minutes, enough to track node direction
 
 def true_node(
     jd_ut: float,
-    reader: SpkReader | None = None,
+    reader: KernelReader | None = None,
     jd_tt: float | None = None,
 ) -> NodeData:
     """
@@ -308,7 +308,7 @@ def mean_lilith(jd_ut: float) -> NodeData:
 
 def true_lilith(
     jd_ut: float,
-    reader: SpkReader | None = None,
+    reader: KernelReader | None = None,
 ) -> NodeData:
     """
     Governs computation of True (osculating) Black Moon Lilith — the Moon's
@@ -416,7 +416,7 @@ def true_lilith(
 
 def next_moon_node_crossing(
     jd_start: float,
-    reader: SpkReader | None = None,
+    reader: KernelReader | None = None,
     ascending: bool = True,
 ) -> float:
     """

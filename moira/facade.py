@@ -89,7 +89,7 @@ from .coordinates import (
     equation_of_time,
     angular_distance, normalize_degrees,
 )
-from .spk_reader import get_reader, use_reader_override, SpkReader, MissingKernelError
+from .spk_reader import get_reader, use_reader_override, KernelReader, SpkReader, MissingKernelError
 from .planets import (
     PlanetData, SkyPosition, CartesianPosition,
     planet_at, sky_position_at, all_planets_at, sun_longitude,
@@ -1350,7 +1350,7 @@ class Moira:
 
     def __init__(self, kernel_path: str | None = None) -> None:
         self._kernel_path: str | None = kernel_path
-        self._reader_obj: SpkReader | None = None
+        self._reader_obj: KernelReader | None = None
         self._kernel_init_error: FileNotFoundError | MissingKernelError | None = None
 
         self._try_initialize_reader()
