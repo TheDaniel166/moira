@@ -1,6 +1,6 @@
 # Moira
 
-**An Astrological Engine Built on Astronomical Truth**
+**Pure-Python Ephemeris and Astrology Computation Engine**
 
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -9,25 +9,27 @@
 [![Ephemeris: JPL DE4xx](https://img.shields.io/badge/Ephemeris-JPL%20DE4xx-blueviolet.svg)](https://naif.jpl.nasa.gov/naif/index.html)
 [![Status: Stable](https://img.shields.io/badge/status-stable-success.svg)](#requirements-and-installation)
 
-> *"Moira" — the one who measures the thread.*
+Moira is an astronomy-first astrology engine: a pure-Python ephemeris engine and astrology computation engine built for transparent astrology calculations, reproducible chart computation, and an inspectable calculation chain from astronomical inputs to astrological outputs. It is an auditable astrology engine, not a black box, with explicit computational policy, deterministic behavior, and readable reduction stages grounded in modern standards and references including JPL DE441, IAU 2000A/2006, ERFA/SOFA-aligned practices, and Gaia DR3-linked star data where applicable.
 
-Moira is a pure-Python astrological engine grounded in astronomical truth. Astronomy is the foundation. Astrology is the purpose. Every astrological output — longitude, house cusp, direction arc, time-lord boundary — is derived from a verifiable astronomical substrate: a **JPL DE-series planetary kernel** (de430, de440, or de441), **IAU 2000A/2006** nutation and precession, and a **sovereign fixed-star registry** audited against SOFA/ERFA.
+## Why Moira Exists
 
-Moira was originally designed against **DE441** for its extended date coverage (−13,000 to +17,000). The engine is kernel-agnostic: it accepts any compatible JPL SPK planetary kernel the user supplies. No particular release is assumed or bundled.
+Most astrology software surfaces results without exposing the mathematical path. Moira exists as a Swiss Ephemeris alternative for users who need visibility into assumptions, intermediates, and provenance, so astronomy remains the foundation and astrology remains the purpose.
 
-It is not a wrapper around Swiss Ephemeris or any other compiled library. Every stage of the reduction pipeline is implemented in readable, auditable Python with zero compiled binaries — from raw barycentric mechanics through light-time, aberration, deflection, and frame bias to the final ecliptic longitude.
+## What Makes It Different
 
----
+Moira is designed as a light box: core transformations are implemented in inspectable Python, computational doctrine is explicit rather than hidden in defaults, and validation is treated as first-class evidence rather than post-hoc narrative.
 
-## Design Principles
+## Who It Is For
 
-**Auditability.** Every transformation — nutation, aberration, deflection, frame bias, topocentric parallax — is implemented in readable Python. No hidden pre-computation, no opaque binaries.
+Moira is for developers, researchers, and serious practitioners who want a programmable, audit-ready engine for high-integrity astrological work, reproducible pipelines, and methodical comparison against external authorities.
 
-**Precision.** The planetary substrate is benchmarked against **JPL Horizons** and **IAU ERFA**. Fixed stars are audited against **SOFA/ERFA** anchor references from J1000 to J3000. Residuals are documented, not hidden.
+## What It Is Not
 
-**Explicit policy.** Computational choices — Delta-T branch, coordinate frame, ayanamsa definition, correction sequence — are declared, not ambient. Changing a policy is a visible act.
+Moira is not primarily a UI app, not a thin wrapper over opaque compiled stacks, and not convenience-first astrology output generation without traceability.
 
-**No runtime dependencies beyond jplephem.** The IAU 2000A nutation series (1,365 lunisolar terms + 687 planetary terms) runs in pure Python. NumPy is an optional accelerator, not a requirement.
+## Quick Capabilities
+
+Moira computes planetary and stellar positions, houses, aspects, lots, dignities, predictive techniques, eclipse and occultation events, and related analytical products on top of a modern astronomical substrate (JPL kernels, IAU models, and validated star frameworks), with pure-Python execution and inspectable intermediate stages.
 
 ---
 
