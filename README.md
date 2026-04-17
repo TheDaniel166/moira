@@ -9,7 +9,7 @@
 [![Ephemeris: JPL DE4xx](https://img.shields.io/badge/Ephemeris-JPL%20DE4xx-blueviolet.svg)](https://naif.jpl.nasa.gov/naif/index.html)
 [![Status: Stable](https://img.shields.io/badge/status-stable-success.svg)](#requirements-and-installation)
 
-Moira is an astronomy-first astrology engine: a pure-Python ephemeris engine and astrology computation engine built for transparent astrology calculations, reproducible chart computation, and an inspectable calculation chain from astronomical inputs to astrological outputs. It is an auditable astrology engine, not a black box, with explicit computational policy, deterministic behavior, and readable reduction stages grounded in modern standards and references including JPL DE441, IAU 2000A/2006, ERFA/SOFA-aligned practices, and Gaia DR3-linked star data where applicable.
+Moira is an astronomy-first astrology engine: a pure-Python ephemeris engine and astrology computation engine built for transparent astrology calculations, reproducible chart computation, and an inspectable calculation chain from astronomical inputs to astrological outputs. It is an auditable astrology engine with explicit computational policy, deterministic behavior, and readable reduction stages grounded in modern standards and references including JPL DE441, IAU 2000A/2006, ERFA/SOFA-aligned practices, and Gaia DR3-linked star data where applicable.
 
 ## Why Moira Exists
 
@@ -17,7 +17,7 @@ Most astrology software surfaces results without exposing the mathematical path.
 
 ## What Makes It Different
 
-Moira is designed as a light box: core transformations are implemented in inspectable Python, computational doctrine is explicit rather than hidden in defaults, and validation is treated as first-class evidence rather than post-hoc narrative.
+Moira is designed for full computational transparency: core transformations are implemented in inspectable Python, computational doctrine is explicit rather than hidden in defaults, and validation is treated as first-class evidence rather than post-hoc narrative.
 
 ## Who It Is For
 
@@ -47,7 +47,7 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
 
 ### Chart Calculation
 
-- **House systems** — 19 systems including Placidus, Koch, Regiomontanus, Campanus, Morinus, Porphyry, Whole Sign, Equal, APC, and Sunshine.
+- **House systems** — 17 systems including Placidus, Koch, Regiomontanus, Campanus, Morinus, Porphyry, Whole Sign, Equal, APC, and Sunshine.
 - **Aspects** — 22 zodiacal aspects with applying/separating/stationary motion-state detection; declination parallels and contra-parallels; antiscia and contra-antiscia.
 - **Aspect patterns** — 21 multi-body configurations: T-Square, Grand Trine, Grand Cross, Yod, Kite, Mystic Rectangle, Stellium, Grand Sextile, Thor's Hammer, Boomerang Yod, and more.
 - **Midpoints** — full midpoint matrix, midpoint trees, 90°/45°/22.5° dial projections, planetary pictures.
@@ -272,7 +272,7 @@ graph TD
     K --> N[Ecliptic Projection\nTrue obliquity of date]
     N --> O[Zodiacal Longitude · Latitude · Distance]
     K --> P[Sidereal Frame · Ayanamsa\noptional]
-    K --> Q[House Cusps · 19 Systems\nrequires lat/lon]
+    K --> Q[House Cusps · 17 Systems\nrequires lat/lon]
 ```
 
 ### Worked Example: Mars at J2000.0
@@ -323,7 +323,7 @@ The canonical documentation tree lives in `wiki/`. The flat `moira.wiki/` Git wi
 
 | Document | Contents |
 | :--- | :--- |
-| [`01_LIGHT_BOX_DOCTRINE.md`](wiki/01_doctrines/01_LIGHT_BOX_DOCTRINE.md) | The Light Box principle: transparency and derivation as design constraints. |
+| [`01_LIGHT_BOX_DOCTRINE.md`](wiki/01_doctrines/01_LIGHT_BOX_DOCTRINE.md) | Transparency and derivation as design constraints. |
 | [`BEYOND_SWISS_EPHEMERIS.md`](wiki/01_doctrines/BEYOND_SWISS_EPHEMERIS.md) | Capabilities enabled by sovereign catalogs, explicit policy, and modern Python. |
 | [`CONSTITUTIONAL_PROCESS.md`](wiki/00_foundations/CONSTITUTIONAL_PROCESS.md) | The Subsystem Constitutional Process — the development and governance protocol. |
 | [`MOIRA_ROADMAP.md`](wiki/06_roadmap/MOIRA_ROADMAP.md) | Feature implementation status and mathematical accuracy register. |
