@@ -3367,7 +3367,7 @@ class Moira:
         targets  : planet bodies to check (default: Mercury through Neptune)
         """
         return all_lunar_occultations(jd_start, jd_end,
-                                      targets=targets, reader=self._reader)
+                                      planets=targets, reader=self._reader)
 
     def close_approaches(
         self,

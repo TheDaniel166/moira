@@ -152,6 +152,7 @@ class OrbitalNode:
         Structural invariants:
             - ``ascending_node``, ``perihelion``, ``aphelion`` are always
               in [0, 360).
+            - ``descending_node`` (property) is ``(ascending_node + 180) % 360``.
             - ``aphelion`` is always ``(perihelion + 180) % 360``.
         Succession stance: terminal — not designed for subclassing.
 
@@ -166,7 +167,7 @@ class OrbitalNode:
         "api": {
             "public_methods": ["__repr__"],
             "public_attributes": [
-                "planet", "ascending_node", "perihelion", "aphelion",
+                "planet", "ascending_node", "descending_node", "perihelion", "aphelion",
                 "inclination", "eccentricity", "semi_major_axis"
             ]
         },
@@ -205,6 +206,11 @@ class OrbitalNode:
     inclination:        float   # orbital inclination (degrees)
     eccentricity:       float   # orbital eccentricity
     semi_major_axis:    float   # AU
+
+    @property
+    def descending_node(self) -> float:
+        """Ecliptic longitude of the descending node: ☊ + 180°, degrees [0, 360)."""
+        return (self.ascending_node + 180.0) % 360.0
 
     def __repr__(self) -> str:
         return (
