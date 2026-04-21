@@ -1681,31 +1681,31 @@ def _topocentric(armc: float, obliquity: float, lat: float) -> list[float]:
 # Coordinate rotation helper
 # ---------------------------------------------------------------------------
 
-def _cotrans(lon: float, lat: float, eps: float) -> tuple[float, float]:
+def _rotate_x_axis(lon: float, lat: float, rotation: float) -> tuple[float, float]:
     """
-    Rotate spherical coordinates by angle eps (degrees) around the x-axis.
+    Rotate spherical coordinates (lon, lat) by ``rotation`` degrees about the x-axis.
 
-    Uses the standard x-axis spherical rotation relations:
-        lon_new = atan2(cos(e)*sin(lon)*cos(lat) − sin(e)*sin(lat), cos(lon)*cos(lat))
-        lat_new = asin( sin(e)*cos(lat)*sin(lon) + cos(e)*sin(lat) )
+    Standard spherical x-axis rotation relations:
+        lon_new = atan2(cos(r)*sin(lon)*cos(lat) − sin(r)*sin(lat), cos(lon)*cos(lat))
+        lat_new = asin( sin(r)*cos(lat)*sin(lon) + cos(r)*sin(lat) )
 
     Used for ecliptic ↔ equatorial ↔ horizontal frame conversions.
     """
-    e = eps * DEG2RAD
-    l = lon * DEG2RAD
-    b = lat * DEG2RAD
+    rot_rad = rotation * DEG2RAD
+    lon_rad = lon * DEG2RAD
+    lat_rad = lat * DEG2RAD
 
-    cos_b = math.cos(b)
-    sin_b = math.sin(b)
-    sin_l = math.sin(l)
-    cos_l = math.cos(l)
-    sin_e = math.sin(e)
-    cos_e = math.cos(e)
+    cos_lat = math.cos(lat_rad)
+    sin_lat = math.sin(lat_rad)
+    sin_lon = math.sin(lon_rad)
+    cos_lon = math.cos(lon_rad)
+    sin_rot = math.sin(rot_rad)
+    cos_rot = math.cos(rot_rad)
 
     # Direct spherical relation for x-axis rotation.
-    y_num = cos_b * sin_l * cos_e - sin_b * sin_e
-    x_num = cos_b * cos_l
-    z_num = cos_b * sin_l * sin_e + sin_b * cos_e
+    y_num = cos_lat * sin_lon * cos_rot - sin_lat * sin_rot
+    x_num = cos_lat * cos_lon
+    z_num = cos_lat * sin_lon * sin_rot + sin_lat * cos_rot
 
     lon_new = math.atan2(y_num, x_num) * RAD2DEG % 360.0
     lat_new = math.asin(max(-1.0, min(1.0, z_num))) * RAD2DEG
@@ -1742,16 +1742,16 @@ def _krusinski(armc: float, obliquity: float, lat: float) -> list[float]:
 
     def _anchor_on_horizon(asc_lon: float) -> float:
         """Longitude offset of the Asc-Zenith great-circle anchor in horizon frame."""
-        eq_lon, eq_lat = _cotrans(asc_lon, 0.0, -obliquity)
+        eq_lon, eq_lat = _rotate_x_axis(asc_lon, 0.0, -obliquity)
         eq_lon = (eq_lon - (armc - 90.0)) % 360.0
-        hor_lon, _ = _cotrans(eq_lon, eq_lat, -(90.0 - lat))
+        hor_lon, _ = _rotate_x_axis(eq_lon, eq_lat, -(90.0 - lat))
         return hor_lon % 360.0
 
     def _house_circle_ra(sector_deg: float, anchor_lon: float) -> float:
         """Map a house-circle sector longitude to equatorial right ascension."""
-        hor_lon, hor_lat = _cotrans(sector_deg, 0.0, 90.0)
+        hor_lon, hor_lat = _rotate_x_axis(sector_deg, 0.0, 90.0)
         hor_lon = (hor_lon + anchor_lon) % 360.0
-        eq_lon, eq_lat = _cotrans(hor_lon, hor_lat, 90.0 - lat)
+        eq_lon, eq_lat = _rotate_x_axis(hor_lon, hor_lat, 90.0 - lat)
         return (eq_lon + (armc - 90.0)) % 360.0
 
     anchor_lon = _anchor_on_horizon(asc)
@@ -1769,78 +1769,109 @@ def _krusinski(armc: float, obliquity: float, lat: float) -> list[float]:
 # APC Houses
 # ---------------------------------------------------------------------------
 
-def _apc_sector(n: int, ph: float, e: float, az: float) -> float:
+def _apc_sector(
+    house_number: int,
+    latitude_rad: float,
+    obliquity_rad: float,
+    armc_rad: float,
+) -> float:
     """
-    Single APC house cusp sector solver.
+    Single APC (Ascendant Parallel Circle) house cusp sector solver.
 
-    Parameters:
-      n: house number 1-12
-      ph: geographic latitude (radians)
-      e: obliquity (radians)
-      az: ARMC (radians)
+    APC defines intermediate house cusps by trisecting the diurnal and
+    nocturnal arcs of the ascendant on a small circle parallel to the
+    ecliptic through the ascendant point, then projecting each sector's
+    right ascension back to the ecliptic using the ascendant's declination.
+
+    Parameters
+    ----------
+    house_number
+        Integer house number in ``[1, 12]`` (1 = Ascendant, 10 = MC).
+    latitude_rad
+        Observer geographic latitude, in radians.
+    obliquity_rad
+        Obliquity of the ecliptic, in radians.
+    armc_rad
+        Apparent right ascension of the midheaven, in radians.
+
+    Returns
+    -------
+    float
+        Ecliptic longitude of the requested APC cusp, in degrees ``[0, 360)``.
     """
     _VERY_SMALL = 1e-6
-    abs_lat_deg = abs(ph * RAD2DEG)
+    abs_latitude_deg = abs(latitude_rad * RAD2DEG)
 
     def _ascending_terms() -> tuple[float, float]:
-        if abs_lat_deg > 90.0 - _VERY_SMALL:
+        """Return (ascendant ascensional difference, ascendant declination), in radians."""
+        if abs_latitude_deg > 90.0 - _VERY_SMALL:
             return 0.0, 0.0
 
-        tan_lat = math.tan(ph)
-        tan_obl = math.tan(e)
+        tan_lat = math.tan(latitude_rad)
+        tan_obl = math.tan(obliquity_rad)
         mixed = tan_lat * tan_obl
 
-        # atan (not atan2) restricts kv to (-π/2, π/2), keeping sector steps
+        # atan (not atan2) restricts asc_ad to (-π/2, π/2), keeping sector steps
         # geometrically valid at polar latitudes where the atan2 denominator
-        # can go negative and push kv into the (π/2, π) range.
-        _denom = 1.0 + mixed * math.sin(az)
-        _numer = mixed * math.cos(az)
-        kv = (math.copysign(math.pi / 2.0, _numer)
-              if abs(_denom) < 1e-12
-              else math.atan(_numer / _denom))
+        # can go negative and push asc_ad into the (π/2, π) range.
+        denom = 1.0 + mixed * math.sin(armc_rad)
+        numer = mixed * math.cos(armc_rad)
+        asc_ad = (math.copysign(math.pi / 2.0, numer)
+                  if abs(denom) < 1e-12
+                  else math.atan(numer / denom))
 
-        if abs_lat_deg < _VERY_SMALL:
-            dasc = math.copysign((90.0 - _VERY_SMALL) * DEG2RAD, -1.0 if ph < 0.0 else 1.0)
+        if abs_latitude_deg < _VERY_SMALL:
+            asc_declination = math.copysign(
+                (90.0 - _VERY_SMALL) * DEG2RAD,
+                -1.0 if latitude_rad < 0.0 else 1.0,
+            )
         else:
-            dasc = math.atan2(math.sin(kv), tan_lat)
-        return kv, dasc
+            asc_declination = math.atan2(math.sin(asc_ad), tan_lat)
+        return asc_ad, asc_declination
 
-    def _sector_ra(kv: float) -> float:
-        base = kv + az + math.pi / 2.0
-        if n <= 7:
-            step = (math.pi / 2.0 - kv) / 3.0
-            return (base + (n - 1) * step) % (2.0 * math.pi)
-        step = (math.pi / 2.0 + kv) / 3.0
-        return (base + (n - 13) * step) % (2.0 * math.pi)
+    def _sector_right_ascension(asc_ad: float) -> float:
+        """Right ascension of the house cusp on the ascendant-parallel circle."""
+        base = asc_ad + armc_rad + math.pi / 2.0
+        if house_number <= 7:
+            step = (math.pi / 2.0 - asc_ad) / 3.0
+            return (base + (house_number - 1) * step) % (2.0 * math.pi)
+        step = (math.pi / 2.0 + asc_ad) / 3.0
+        return (base + (house_number - 13) * step) % (2.0 * math.pi)
 
-    kv, dasc = _ascending_terms()
-    a = _sector_ra(kv)
+    asc_ad, asc_declination = _ascending_terms()
+    cusp_ra = _sector_right_ascension(asc_ad)
 
-    tan_lat = math.tan(ph)
-    dscale = math.tan(dasc) * tan_lat
-    y = dscale * math.sin(az) + math.sin(a)
-    x = (
-        math.cos(e) * (dscale * math.cos(az) + math.cos(a))
-        + math.sin(e) * tan_lat * math.sin(az - a)
+    tan_lat = math.tan(latitude_rad)
+    parallel_scale = math.tan(asc_declination) * tan_lat
+    y_component = parallel_scale * math.sin(armc_rad) + math.sin(cusp_ra)
+    x_component = (
+        math.cos(obliquity_rad) * (parallel_scale * math.cos(armc_rad) + math.cos(cusp_ra))
+        + math.sin(obliquity_rad) * tan_lat * math.sin(armc_rad - cusp_ra)
     )
-    return (math.atan2(y, x) * RAD2DEG) % 360.0
+    return (math.atan2(y_component, x_component) * RAD2DEG) % 360.0
 
 
 def _apc(armc: float, obliquity: float, lat: float) -> list[float]:
     """
-    APC house system.
+    APC (Ascendant Parallel Circle) house system.
 
-    Reference: APC sector geometry in astronomical-house literature.
+    Intermediate cusps are generated from the trisection of the ascendant's
+    diurnal and nocturnal arcs on a small circle parallel to the ecliptic,
+    then projected back to the ecliptic via the ascendant's declination.
+    See ``_apc_sector`` for the geometric construction.
     """
     mc_geometric = _mc_from_armc(armc, obliquity, lat)
     mc_visible = _mc_above_horizon(mc_geometric, obliquity, lat)
     asc = _asc_from_armc(armc, obliquity, lat)
 
-    ph = lat * DEG2RAD
-    eps = obliquity * DEG2RAD
-    ramc = armc * DEG2RAD
+    lat_rad = lat * DEG2RAD
+    obliquity_rad = obliquity * DEG2RAD
+    armc_rad = armc * DEG2RAD
 
-    cusps = [_apc_sector(h, ph, eps, ramc) for h in range(1, 13)]
+    cusps = [
+        _apc_sector(h, lat_rad, obliquity_rad, armc_rad)
+        for h in range(1, 13)
+    ]
 
     # Anchor cardinal cusps to canonical ARMC-based axes.
     cusps[9] = mc_visible
