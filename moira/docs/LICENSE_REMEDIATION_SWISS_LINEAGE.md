@@ -66,13 +66,13 @@ Current pass (2026-04-16, houses provenance reclassification erratum)
 	- clear-port/fingerprint-preserving structures:
 			- (none in current houses tranche)
 	- rewritten in this pass (structure-changed, pending external oracle confirmation):
-			- `moira/houses.py`: `_campanus`, `_azimuthal`, `_topocentric`, `_krusinski`, `_cotrans`, `_apc`, `_apc_sector`
+			- `moira/houses.py`: `_campanus`, `_azimuthal`, `_topocentric`, `_krusinski`, `_rotate_x_axis` (formerly `_cotrans`), `_apc`, `_apc_sector`
 	- structurally-descended (borderline):
 		- (none in current houses tranche)
 - genuine reimplementations (current assessment):
 			- `moira/houses.py`: `_placidus`, `_koch`, `_alcabitius`, `_carter`, `_meridian`, `_vehlow`, `_sunshine`, `_morinus`, `_whole_sign`, `_equal_house`, `_porphyry`
 - Pending:
-	- post-rewrite external-oracle parity campaign for `_campanus`, `_azimuthal`, `_topocentric`, `_krusinski`, `_cotrans`, `_apc`, `_apc_sector`
+	- post-rewrite external-oracle parity campaign for `_campanus`, `_azimuthal`, `_topocentric`, `_krusinski`, `_rotate_x_axis`, `_apc`, `_apc_sector`
 
 Current pass (2026-04-17, houses tranche continuation)
 - Completed:
@@ -93,6 +93,34 @@ Current pass (2026-04-17, houses tranche continuation)
 		- 394 tests passing across unit + integration suites
 - Pending:
 	- higher-authority external-oracle campaign for rewritten house kernels
+
+Current pass (2026-04-21, houses fingerprint cleanup)
+- Completed:
+	- renamed `moira/houses.py:_cotrans` → `_rotate_x_axis`; parameters renamed
+	  (`lon`, `lat`, `eps`) → (`lon`, `lat`, `rotation`); all four call sites in
+	  `_krusinski` updated; behaviour unchanged (no algorithmic edit).
+	- renamed `moira/houses.py:_apc_sector` parameters (`n`, `ph`, `e`, `az`)
+	  → (`house_number`, `latitude_rad`, `obliquity_rad`, `armc_rad`);
+	  internal variables (`kv`, `dasc`, `a`, `k`) → (`asc_ad`,
+	  `asc_declination`, `cusp_ra`, step-only); `dscale` → `parallel_scale`;
+	  `y`/`x` → `y_component`/`x_component`. Inner helpers `_ascending_terms`
+	  and `_sector_ra` (renamed to `_sector_right_ascension`) retain their
+	  roles; the polar-atan-branch and atan2 quadrant-resolved `dasc` fix
+	  introduced in 2026-04-17 are preserved unchanged.
+	- renamed `moira/houses.py:_apc` locals (`ph`, `eps`, `ramc`) →
+	  (`lat_rad`, `obliquity_rad`, `armc_rad`); docstring expanded with
+	  Ascendant-Parallel-Circle construction summary (no Swiss phrasing).
+	- updated this ledger to reflect the `_cotrans` → `_rotate_x_axis`
+	  rename in classification and pending-oracle tables.
+- Scope limitations (unchanged by this pass):
+	- identifier cleanup only; algebraic structure of `_apc_sector` is
+	  unchanged and therefore still classified as "rewritten, pending
+	  external oracle confirmation" pending re-derivation from a primary
+	  APC source.
+- Pending:
+	- independent re-derivation of `_apc_sector` from primary Ascendant-
+	  Parallel-Circle literature, not from the Swiss implementation.
+	- post-rewrite external-oracle parity campaign for APC as a whole.
 
 Rewritten-pending-oracle set
 - moira/coordinates.py: horizontal_to_equatorial
