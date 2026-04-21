@@ -1798,6 +1798,59 @@ def _apc_sector(
     -------
     float
         Ecliptic longitude of the requested APC cusp, in degrees ``[0, 360)``.
+
+    Notation equivalence
+    --------------------
+    The descriptive names used here correspond to the following symbols in the
+    primary APC source literature (de Boer / WvA):
+
+    ==================  =============  =============================================
+    Moira name          Source symbol  Meaning
+    ==================  =============  =============================================
+    ``latitude_rad``    ``ph``         observer latitude (radians)
+    ``obliquity_rad``   ``e``          obliquity of the ecliptic (radians)
+    ``armc_rad``        ``az``         ARMC (radians)
+    ``asc_ad``          ``kv``         ascendant arc correction angle (radians)
+    ``asc_declination`` ``dasc``       declination at the ascendant parallel (radians)
+    ``cusp_ra``         ``a``          right ascension of cusp on parallel circle (radians)
+    ==================  =============  =============================================
+
+    Construction (Ingmar de Boer / WvA primary source)
+    ---------------------------------------------------
+    Step 1 — Ascendant arc correction (``kv`` in source notation):
+
+    .. code-block:: none
+
+        kv = atan( tan(ph) * tan(e) * cos(az)
+                   / (1 + tan(ph) * tan(e) * sin(az)) )
+
+    Step 2 — Ascendant declination (``dasc`` in source notation):
+
+    .. code-block:: none
+
+        dasc = atan( sin(kv) / tan(ph) )
+
+    Moira substitutes ``atan2(sin(kv), tan(ph))`` to preserve quadrant
+    correctness at polar latitudes where ``tan(ph)`` changes sign.
+
+    Step 3 — Sector right ascension (``a`` in source notation):
+
+    .. code-block:: none
+
+        Cusps 1–7:   a = kv + az + π/2 + (n − 1)  * (π/2 − kv) / 3
+        Cusps 8–12:  a = kv + az + π/2 + (n − 13) * (π/2 + kv) / 3
+
+    Step 4 — Ecliptic longitude (complete de Boer ``atan2`` expression):
+
+    .. code-block:: none
+
+        longitude = atan2(
+            tan(dasc) * tan(ph) * sin(az) + sin(a),
+            cos(e) * (tan(dasc) * tan(ph) * cos(az) + cos(a))
+                + sin(e) * tan(ph) * sin(az − a)
+        )
+
+    Reference: Ingmar de Boer, "APC Houses", ingmardeboer.nl.
     """
     _VERY_SMALL = 1e-6
     abs_latitude_deg = abs(latitude_rad * RAD2DEG)

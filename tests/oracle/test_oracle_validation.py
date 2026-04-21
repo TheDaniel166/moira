@@ -328,37 +328,116 @@ class TestOraclePhenomena:
 class TestOracleHorizonsIntegration:
     """
     Full JPL Horizons validation suite.
-    
-    This suite requires live internet access to the JPL Horizons API.
-    Tests query HORIZONS directly and compare against Moira's internally-computed
-    DE441-backed positions.
-    
+
+    Requires live internet access to the JPL Horizons API (via astroquery).
+    Each test is marked @pytest.mark.network so the conftest network-block
+    fixture allows real socket connections.
+
     Authority: JPL Solar System Dynamics Group.
-    
-    **Status (2026-04-16)**: Framework is architecturally complete and correct.
-    Live HORIZONS API execution is deferred pending proper network access setup
-    (requires either public API access or institutional credentials).
-    
-    **Path to Execution**: When deployed in an environment with HORIZONS API access:
-    1. Remove the @pytest.mark.skip decorator below
-    2. Run: pytest tests/oracle/test_oracle_validation.py::TestOracleHorizonsIntegration -v
-    3. Tests will query live HORIZONS and validate Moira positions against reference
+    Tolerances: see oracle_policy.py tolerance matrices.
+
+    Run:
+        pytest tests/oracle/test_oracle_validation.py::TestOracleHorizonsIntegration -v
     """
-    
-    @pytest.mark.skip(reason="HORIZONS API requires external network access; framework complete but deferred")
-    def test_mars_heliocentric_position_vs_horizons(self):
-        """Compare Mars heliocentric position against HORIZONS."""
-        pass
-    
-    @pytest.mark.skip(reason="HORIZONS API requires external network access; framework complete but deferred")
-    def test_moon_geocentric_position_vs_horizons(self):
-        """Compare Moon geocentric position against HORIZONS."""
-        pass
-    
-    @pytest.mark.skip(reason="HORIZONS API requires external network access; framework complete but deferred")
-    def test_venus_phase_vs_horizons_illumination(self):
-        """Compare Venus illumination (phase) against HORIZONS."""
-        pass
+
+    @pytest.fixture(scope="class")
+    def oracle(self):
+        return HorizonsOracle()
+
+    @pytest.fixture(scope="class")
+    def reader(self):
+        return get_reader()
+
+    @pytest.mark.network
+    @pytest.mark.requires_ephemeris
+    def test_mars_heliocentric_position_vs_horizons(self, oracle, reader):
+        """
+        Compare Mars heliocentric ecliptic position against JPL Horizons.
+
+        Authority: JPL Horizons VECTORS (ecliptic J2000 frame, from Sun).
+        Moira path: planet_relative_to(MARS, SUN) → true-of-date ecliptic.
+        At J2000.0 the two frames are identical by definition.
+
+        Tolerances:
+          longitude: 60 arcsec  (covers frame-bias residuals and finite-diff noise)
+          distance:  0.0001 AU  (~15 000 km; well within SPK interpolation budget)
+        """
+        jd = 2451545.0
+
+        horizons = oracle.fetch_vectors("Mars", jd, center="@sun", refplane="ecliptic")
+        assert horizons is not None, "Horizons vectors query returned None"
+
+        from moira.planets import planet_relative_to
+        mars = planet_relative_to(Body.MARS, Body.SUN, jd, reader=reader)
+
+        lon_diff = abs((mars.longitude - horizons.lon_deg + 180.0) % 360.0 - 180.0)
+        dist_diff = abs(mars.distance_au - horizons.range_au)
+
+        assert lon_diff * 3600 < 60.0, (
+            f"Mars helio longitude diff {lon_diff * 3600:.1f} arcsec exceeds 60 arcsec tolerance"
+        )
+        assert dist_diff < 0.0001, (
+            f"Mars helio distance diff {dist_diff:.6f} AU exceeds 0.0001 AU tolerance"
+        )
+
+    @pytest.mark.network
+    @pytest.mark.requires_ephemeris
+    def test_moon_geocentric_position_vs_horizons(self, oracle, reader):
+        """
+        Compare Moon geocentric ecliptic position against JPL Horizons.
+
+        Authority: JPL Horizons VECTORS (ecliptic J2000 frame, from geocenter).
+        Moira path: planet_at(MOON) apparent geocentric ecliptic.
+
+        Note: astroquery ephemerides EclLon/EclLat return the *observer's*
+        heliocentric position, not the target's. Vectors are used instead.
+
+        Tolerance: 120 arcsec longitude (Moon moves ~0.5 arcsec/s; geometric
+        vs apparent position difference at lunar distance is the main source).
+        """
+        jd = 2451545.0
+
+        horizons = oracle.fetch_vectors("Moon", jd, center="500@399", refplane="ecliptic")
+        assert horizons is not None, "Horizons vectors query returned None"
+
+        moon = planet_at(Body.MOON, jd, reader=reader)
+
+        lon_diff = abs((moon.longitude - horizons.lon_deg + 180.0) % 360.0 - 180.0)
+
+        assert lon_diff * 3600 < 120.0, (
+            f"Moon geocentric lon diff {lon_diff * 3600:.1f} arcsec exceeds 120 arcsec tolerance"
+        )
+
+    @pytest.mark.network
+    def test_venus_phase_vs_horizons_illumination(self, oracle):
+        """
+        Compare Venus illumination fraction and phase angle against JPL Horizons.
+
+        Authority: JPL Horizons observer ephemerides (geocenter).
+        Moira path: planet_phenomena_at(VENUS).
+
+        Tolerances:
+          illumination fraction: 0.01 (1 %)
+          phase angle:           1.0 degree
+        """
+        jd = 2451545.0
+
+        horizons = oracle.fetch_illumination("Venus", jd, observer="@geocenter")
+        assert horizons is not None, "Horizons illumination query returned None"
+
+        vp = planet_phenomena_at(Body.VENUS, jd)
+
+        illum_diff = abs(vp.illuminated_fraction - horizons["illumination_fraction"])
+        phase_diff = abs(vp.phase_angle_deg - horizons["phase_angle_deg"])
+
+        assert illum_diff < 0.01, (
+            f"Venus illumination diff {illum_diff:.4f} exceeds 0.01 tolerance "
+            f"(Moira={vp.illuminated_fraction:.4f}, Horizons={horizons['illumination_fraction']:.4f})"
+        )
+        assert phase_diff < 1.0, (
+            f"Venus phase angle diff {phase_diff:.2f}° exceeds 1.0° tolerance "
+            f"(Moira={vp.phase_angle_deg:.2f}°, Horizons={horizons['phase_angle_deg']:.2f}°)"
+        )
 
 
 if __name__ == "__main__":

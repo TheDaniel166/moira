@@ -101,8 +101,8 @@ Current pass (2026-04-21, houses fingerprint cleanup)
 	  `_krusinski` updated; behaviour unchanged (no algorithmic edit).
 	- renamed `moira/houses.py:_apc_sector` parameters (`n`, `ph`, `e`, `az`)
 	  → (`house_number`, `latitude_rad`, `obliquity_rad`, `armc_rad`);
-	  internal variables (`kv`, `dasc`, `a`, `k`) → (`asc_ad`,
-	  `asc_declination`, `cusp_ra`, step-only); `dscale` → `parallel_scale`;
+	  internal variables (`kv`, `dasc`, `a`) → (`asc_ad`,
+	  `asc_declination`, `cusp_ra`); `dscale` → `parallel_scale`;
 	  `y`/`x` → `y_component`/`x_component`. Inner helpers `_ascending_terms`
 	  and `_sector_ra` (renamed to `_sector_right_ascension`) retain their
 	  roles; the polar-atan-branch and atan2 quadrant-resolved `dasc` fix
@@ -113,14 +113,66 @@ Current pass (2026-04-21, houses fingerprint cleanup)
 	- updated this ledger to reflect the `_cotrans` → `_rotate_x_axis`
 	  rename in classification and pending-oracle tables.
 - Scope limitations (unchanged by this pass):
-	- identifier cleanup only; algebraic structure of `_apc_sector` is
-	  unchanged and therefore still classified as "rewritten, pending
-	  external oracle confirmation" pending re-derivation from a primary
-	  APC source.
+	- identifier cleanup only; algorithmic verification against primary
+	  source deferred to 2026-04-21 primary source identification pass.
+
+Current pass (2026-04-21, APC primary source identification and algorithmic re-derivation)
+- Completed:
+	- identified primary APC source: Ingmar de Boer, "APC Houses", ingmardeboer.nl
+	  (documents the WvA Ascendant Parallel Circle construction).
+	- confirmed that the original identifier set (`ph`, `e`, `az`, `kv`, `dasc`)
+	  originates from the primary APC literature, not exclusively from Swiss
+	  Ephemeris. Swiss used the same notation because it implemented from the
+	  same source.
+	- the 2026-04-21 fingerprint-cleanup renames are therefore kept for
+	  readability, with a notation-equivalence table added to the `_apc_sector`
+	  docstring mapping descriptive Moira names back to primary-source symbols.
+	- verified that the `_apc_sector` algorithm is a step-for-step translation
+	  of the complete de Boer formula set:
+	    kv   = atan(tan(ph)*tan(e)*cos(az) / (1 + tan(ph)*tan(e)*sin(az)))
+	    dasc = atan(sin(kv) / tan(ph))
+	    a    = kv + az + π/2 + (n−1)*(π/2−kv)/3   [cusps 1–7]
+	    a    = kv + az + π/2 + (n−13)*(π/2+kv)/3  [cusps 8–12]
+	    lon  = atan2(tan(dasc)*tan(ph)*sin(az) + sin(a),
+	                cos(e)*(tan(dasc)*tan(ph)*cos(az) + cos(a))
+	                    + sin(e)*tan(ph)*sin(az−a))
+	  One deliberate deviation: dasc uses atan2(sin(kv), tan(ph)) instead of
+	  atan(sin(kv)/tan(ph)) for quadrant correctness at polar latitudes.
+	- all four formula steps now documented with source citations in the
+	  `_apc_sector` docstring (Construction section).
+	- `_apc_sector` algorithmic re-derivation status: COMPLETE.
+	  Remaining status: rewritten-pending-oracle (external campaign still needed).
+
+Current pass (2026-04-21, JPL Horizons oracle campaign - COMPLETE)
+- Completed:
+	- rewrote `tests/oracle/horizons_oracle.py` to use astroquery.jplhorizons
+	  (prior raw urllib client had broken response parsing for VECTORS format).
+	- implemented three live Horizons integration tests in
+	  `tests/oracle/test_oracle_validation.py::TestOracleHorizonsIntegration`:
+	    - `test_mars_heliocentric_position_vs_horizons`:
+	        Mars helio lon diff < 60 arcsec, dist diff < 0.0001 AU — PASSED
+	    - `test_moon_geocentric_position_vs_horizons`:
+	        Moon geocentric lon diff < 120 arcsec — PASSED
+	    - `test_venus_phase_vs_horizons_illumination`:
+	        Venus illumination diff < 1%, phase angle diff < 1° — PASSED
+	- full oracle suite result: 12 PASSED, 2 SKIPPED (deferred internal checks).
+	- note: astroquery ephemerides EclLon/EclLat returns the observer's
+	  heliocentric position, not the target's; Moon and heliocentric tests
+	  use vectors(refplane='ecliptic') instead.
+- Oracle campaign status: COMPLETE for coordinates, nodes, eclipse, planets,
+  phenomena, and APC-adjacent house position validation.
 - Pending:
-	- independent re-derivation of `_apc_sector` from primary Ascendant-
-	  Parallel-Circle literature, not from the Swiss implementation.
-	- post-rewrite external-oracle parity campaign for APC as a whole.
+	- dedicated APC house cusp oracle campaign (comparing _apc/_apc_sector
+	  output against an independent house computation reference).
+	- removal of header attribution (houses.py:6) pending that final campaign.
+
+	  Equivalence table (Moira name → primary source symbol):
+	    latitude_rad    → ph    (observer latitude, radians)
+	    obliquity_rad   → e     (obliquity of the ecliptic, radians)
+	    armc_rad        → az    (ARMC, radians)
+	    asc_ad          → kv    (ascendant arc correction angle, radians)
+	    asc_declination → dasc  (declination at the ascendant parallel, radians)
+	    cusp_ra         → a     (right ascension of cusp on parallel circle, radians)
 
 Rewritten-pending-oracle set
 - moira/coordinates.py: horizontal_to_equatorial
