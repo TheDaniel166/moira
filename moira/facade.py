@@ -625,6 +625,16 @@ from .galactic import (
     galactic_position_of, all_galactic_positions,
     galactic_reference_points,
 )
+from .galactic_houses import (
+    GalacticAngles,
+    GalacticHouseCusps,
+    GalacticHousePlacement,
+    GalacticHouseBoundaryProfile,
+    calculate_galactic_houses,
+    assign_galactic_house,
+    body_galactic_house_position,
+    describe_galactic_boundary,
+)
 from .uranian import UranianBody, UranianPosition, uranian_at, all_uranian_at, list_uranian
 from .patterns import (
     PatternSourceKind,
@@ -1093,6 +1103,11 @@ __all__ = [
     "ecliptic_to_galactic", "galactic_to_ecliptic",
     "galactic_position_of", "all_galactic_positions",
     "galactic_reference_points",
+    # Galactic houses
+    "GalacticAngles", "GalacticHouseCusps",
+    "GalacticHousePlacement", "GalacticHouseBoundaryProfile",
+    "calculate_galactic_houses", "assign_galactic_house",
+    "body_galactic_house_position", "describe_galactic_boundary",
     # Uranian planets
     "UranianBody", "UranianPosition", "uranian_at", "all_uranian_at", "list_uranian",
     # Aspect patterns
@@ -3252,6 +3267,21 @@ class Moira:
         jd_tt = _utt(chart.jd_ut)
         return galactic_reference_points(chart.obliquity, jd_tt)
 
+    def galactic_houses(
+        self,
+        dt: datetime,
+        latitude: float,
+        longitude: float,
+    ) -> GalacticHouseCusps:
+        """
+        Compute Galactic Porphyry house cusps for a time and observer location.
+
+        Galactic house membership is defined natively on ``cusps_gal``.
+        ``cusps_ecl`` are provided for interoperability and display.
+        """
+        jd = jd_from_datetime(dt)
+        return calculate_galactic_houses(jd, latitude, longitude)
+
     # ------------------------------------------------------------------
     # Uranian Planets (Hamburg School)
     # ------------------------------------------------------------------
@@ -3745,4 +3775,3 @@ class Moira:
         else:
             kernel_name = "unavailable"
         return f"Moira(kernel='{kernel_name}', v{__version__})"
-

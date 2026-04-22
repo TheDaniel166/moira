@@ -29,6 +29,16 @@ del _sys, _find_planetary_kernel
 from .constants import Body, HouseSystem
 from .facade import Chart, MissingEphemerisKernelError, Moira, __author__, __version__
 from .houses import HouseCusps
+from .galactic_houses import (
+    GalacticAngles,
+    GalacticHouseCusps,
+    GalacticHousePlacement,
+    GalacticHouseBoundaryProfile,
+    calculate_galactic_houses,
+    assign_galactic_house,
+    body_galactic_house_position,
+    describe_galactic_boundary,
+)
 from .julian import (
     CalendarDateTime,
     DeltaTPolicy,
@@ -355,6 +365,14 @@ __all__ = [
     "PlanetPhenomena",
     "planet_phenomena_at",
     "HouseCusps",
+    "GalacticAngles",
+    "GalacticHouseCusps",
+    "GalacticHousePlacement",
+    "GalacticHouseBoundaryProfile",
+    "calculate_galactic_houses",
+    "assign_galactic_house",
+    "body_galactic_house_position",
+    "describe_galactic_boundary",
     "AspectData",
     "HarmonicDomain",
     "PointSetHarmonicVectorPolicy",
