@@ -8,6 +8,7 @@
 [![Precision: ERFA-Audited](https://img.shields.io/badge/Precision-ERFA--Audited-success.svg)](#validation-evidence)
 [![Ephemeris: JPL DE4xx](https://img.shields.io/badge/Ephemeris-JPL%20DE4xx-blueviolet.svg)](https://naif.jpl.nasa.gov/naif/index.html)
 [![Status: Stable](https://img.shields.io/badge/status-stable-success.svg)](#requirements-and-installation)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19152528.svg)](https://doi.org/10.5281/zenodo.19152528)
 
 Moira is an astronomy-first astrology engine: a pure-Python ephemeris engine and astrology computation engine built for transparent astrology calculations, reproducible chart computation, and an inspectable calculation chain from astronomical inputs to astrological outputs. It is an auditable astrology engine with explicit computational policy, deterministic behavior, and readable reduction stages grounded in modern standards and references including JPL DE441, IAU 2000A/2006, ERFA/SOFA-aligned practices, and Gaia DR3-linked star data where applicable.
 

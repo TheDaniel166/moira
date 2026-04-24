@@ -5,8 +5,8 @@ Purpose
 -------
 This Pillar provides the electional search Engine: a deterministic scan over a
 Julian-Day range that evaluates a caller-supplied predicate against successive
-`ChartContext` snapshots and returns either merged qualifying windows or the
-raw qualifying moments.
+chart snapshots or explicit frame-aware electional evaluations and returns
+either merged qualifying windows or the raw qualifying moments.
 
 Boundary
 --------
@@ -29,29 +29,34 @@ None.
 External dependency assumptions
 -------------------------------
 - A compatible planetary kernel must be discoverable when `reader` is omitted.
-- The caller-supplied predicate must accept `ChartContext` and return `bool`.
+- The caller-supplied predicate must accept the payload selected by policy and
+  return `bool`: `ChartContext` for default tropical search, or
+  `ElectionalEvaluation` for explicit sidereal search.
 - The predicate is expected to be pure and deterministic for a given chart.
 - Search cadence is discrete; this Pillar does not refine truth between scan points.
 
 Public surface / exports
 ------------------------
-`ElectionalPolicy`, `ElectionalWindow`, `find_electional_windows`,
-`find_electional_moments`
+`ElectionalPolicy`, `ElectionalEvaluation`, `ElectionalWindow`,
+`find_electional_windows`, `find_electional_moments`
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
+from types import MappingProxyType
 from typing import Callable
 
-from .chart import ChartContext, create_chart
+from .chart import create_chart
 from .constants import HouseSystem
 from .julian import datetime_from_jd
+from .sidereal import Ayanamsa, ayanamsa, tropical_to_sidereal
 from .spk_reader import get_reader, SpkReader
 
 __all__ = [
     "ElectionalPolicy",
+    "ElectionalEvaluation",
     "ElectionalWindow",
     "find_electional_windows",
     "find_electional_moments",
@@ -119,6 +124,9 @@ class ElectionalPolicy:
     merge_gap_days: float | None = None          # defaults to 1.5 × step_days
     house_system:   str          = HouseSystem.PLACIDUS
     bodies:         tuple[str, ...] | None = None
+    zodiac_frame:   str          = "tropical"
+    ayanamsa_system: str         = Ayanamsa.LAHIRI
+    ayanamsa_mode:   str         = "true"
 
     def __post_init__(self) -> None:
         """
@@ -141,6 +149,12 @@ class ElectionalPolicy:
             )
         if self.bodies is not None:
             object.__setattr__(self, "bodies", tuple(self.bodies))
+        if self.zodiac_frame not in {"tropical", "sidereal"}:
+            raise ValueError("ElectionalPolicy: zodiac_frame must be 'tropical' or 'sidereal'")
+        if self.ayanamsa_mode not in {"true", "mean"}:
+            raise ValueError("ElectionalPolicy: ayanamsa_mode must be 'true' or 'mean'")
+        if self.zodiac_frame == "sidereal" and not self.ayanamsa_system:
+            raise ValueError("ElectionalPolicy: ayanamsa_system must be non-empty")
 
     @property
     def effective_merge_gap(self) -> float:
@@ -148,6 +162,27 @@ class ElectionalPolicy:
         if self.merge_gap_days is None:
             return self.step_days * 1.5
         return self.merge_gap_days
+
+
+@dataclass(frozen=True, slots=True)
+class ElectionalEvaluation:
+    """
+    Explicit frame-aware evaluation vessel for electional predicates.
+
+    The underlying chart remains the astronomical truth carrier. This vessel
+    exposes the longitude frame selected by ``ElectionalPolicy`` without
+    mutating the chart's tropical positions.
+    """
+
+    chart: object
+    zodiac_frame: str
+    ayanamsa_system: str | None
+    ayanamsa_mode: str
+    ayanamsa_value: float
+    planet_longitudes: MappingProxyType
+    node_longitudes: MappingProxyType
+    house_cusps: tuple[float, ...] | None
+    longitudes: MappingProxyType
 
 
 # ---------------------------------------------------------------------------
@@ -305,6 +340,79 @@ def _make_window(group: list[float]) -> ElectionalWindow:
     )
 
 
+def _body_longitudes(items: object) -> dict[str, float]:
+    """Extract longitudes from a chart planet/node mapping without mutating it."""
+    return {name: float(body.longitude) for name, body in dict(items).items()}
+
+
+def _converted_longitudes(
+    longitudes: dict[str, float],
+    jd_ut: float,
+    policy: ElectionalPolicy,
+) -> dict[str, float]:
+    if policy.zodiac_frame == "tropical":
+        return {name: lon % 360.0 for name, lon in longitudes.items()}
+    return {
+        name: tropical_to_sidereal(
+            lon,
+            jd_ut,
+            system=policy.ayanamsa_system,
+            mode=policy.ayanamsa_mode,
+        )
+        for name, lon in longitudes.items()
+    }
+
+
+def _evaluation_for_chart(chart: object, policy: ElectionalPolicy) -> ElectionalEvaluation:
+    """Build the explicit electional evaluation view for a chart and policy."""
+    jd_ut = float(getattr(chart, "jd_ut"))
+    planet_lons = _converted_longitudes(
+        _body_longitudes(getattr(chart, "planets", {})),
+        jd_ut,
+        policy,
+    )
+    node_lons = _converted_longitudes(
+        _body_longitudes(getattr(chart, "nodes", {})),
+        jd_ut,
+        policy,
+    )
+    raw_houses = getattr(getattr(chart, "houses", None), "cusps", None)
+    house_cusps = None
+    if raw_houses is not None:
+        house_cusps = tuple(
+            _converted_longitudes(
+                {str(index): float(cusp) for index, cusp in enumerate(raw_houses)},
+                jd_ut,
+                policy,
+            ).values()
+        )
+    combined = {**planet_lons, **node_lons}
+    if policy.zodiac_frame == "sidereal":
+        ayanamsa_value = ayanamsa(jd_ut, policy.ayanamsa_system, policy.ayanamsa_mode)
+        ayanamsa_system: str | None = policy.ayanamsa_system
+    else:
+        ayanamsa_value = 0.0
+        ayanamsa_system = None
+    return ElectionalEvaluation(
+        chart=chart,
+        zodiac_frame=policy.zodiac_frame,
+        ayanamsa_system=ayanamsa_system,
+        ayanamsa_mode=policy.ayanamsa_mode,
+        ayanamsa_value=ayanamsa_value,
+        planet_longitudes=MappingProxyType(planet_lons),
+        node_longitudes=MappingProxyType(node_lons),
+        house_cusps=house_cusps,
+        longitudes=MappingProxyType(combined),
+    )
+
+
+def _predicate_payload(chart: object, policy: ElectionalPolicy) -> object:
+    """Return the object passed to the predicate under the selected frame."""
+    if policy.zodiac_frame == "tropical":
+        return chart
+    return _evaluation_for_chart(chart, policy)
+
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -314,7 +422,7 @@ def find_electional_windows(
     jd_end:    float,
     latitude:  float,
     longitude: float,
-    predicate: Callable[[ChartContext], bool],
+    predicate: Callable[[object], bool],
     policy:    ElectionalPolicy | None = None,
     reader:    SpkReader | None = None,
 ) -> list[ElectionalWindow]:
@@ -323,8 +431,9 @@ def find_electional_windows(
 
     Behavior:
         Constructs a `ChartContext` at each discrete scan point, evaluates the
-        caller predicate, records qualifying JDs, then merges adjacent
-        qualifying points using `policy.effective_merge_gap`.
+        caller predicate against the policy-selected payload, records qualifying
+        JDs, then merges adjacent qualifying points using
+        `policy.effective_merge_gap`.
 
     Parameters
     ----------
@@ -340,10 +449,11 @@ def find_electional_windows(
     longitude : float
         Geographic longitude of the election location, degrees [-180, 180].
 
-    predicate : Callable[[ChartContext], bool]
-        A pure function that receives a ChartContext and returns True when the
-        chart satisfies the election criteria. The predicate must be
-        deterministic and must not mutate the ChartContext.
+    predicate : Callable[[object], bool]
+        A pure function that receives either a ChartContext under default
+        tropical policy or ElectionalEvaluation under explicit sidereal policy.
+        It returns True when the chart satisfies the election criteria. The
+        predicate must be deterministic and must not mutate the payload.
 
     policy : ElectionalPolicy | None
         Scan policy. Uses ElectionalPolicy() defaults when None (1-hour step,
@@ -394,7 +504,7 @@ def find_electional_windows(
             bodies=policy.bodies,
             reader=reader,
         )
-        if predicate(chart):
+        if predicate(_predicate_payload(chart, policy)):
             qualifying.append(jd)
         jd += policy.step_days
 
@@ -406,7 +516,7 @@ def find_electional_moments(
     jd_end:    float,
     latitude:  float,
     longitude: float,
-    predicate: Callable[[ChartContext], bool],
+    predicate: Callable[[object], bool],
     policy:    ElectionalPolicy | None = None,
     reader:    SpkReader | None = None,
 ) -> list[float]:
@@ -423,7 +533,7 @@ def find_electional_moments(
     jd_end    : range end   (Julian Day UT, inclusive)
     latitude  : geographic latitude, degrees [-90, 90]
     longitude : geographic longitude, degrees [-180, 180]
-    predicate : pure function ChartContext → bool
+    predicate : pure function over ChartContext or ElectionalEvaluation
     policy    : ElectionalPolicy (defaults to 1-hour step when None)
     reader    : SpkReader (uses singleton when None)
 
@@ -464,7 +574,7 @@ def find_electional_moments(
             bodies=policy.bodies,
             reader=reader,
         )
-        if predicate(chart):
+        if predicate(_predicate_payload(chart, policy)):
             qualifying.append(jd)
         jd += policy.step_days
 
