@@ -1,0 +1,150 @@
+"""
+Internal kernel-readiness mixin for the public Moira facade.
+
+This module holds facade orchestration only. It does not own kernel I/O,
+ephemeris math, or public export policy; those remain in ``moira.spk_reader``
+and ``moira.facade`` respectively.
+"""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+from typing import Any
+
+from .spk_reader import MissingKernelError
+
+
+def _facade_module() -> Any:
+    """Return the loaded public facade module for compatibility globals."""
+
+    return sys.modules[f"{__package__}.facade"]
+
+
+class KernelFacadeMixin:
+    """Kernel discovery, readiness reporting, and reader override routing."""
+
+    def __init__(self, kernel_path: str | None = None) -> None:
+        facade = _facade_module()
+        self._kernel_path: str | None = kernel_path
+        self._reader_obj: Any | None = None
+        self._kernel_init_error: FileNotFoundError | MissingKernelError | None = None
+
+        self._try_initialize_reader()
+
+    def _try_initialize_reader(self) -> None:
+        facade = _facade_module()
+        try:
+            path = self._kernel_path
+            if path is None:
+                from ._kernel_paths import find_planetary_kernel
+
+                discovered = find_planetary_kernel()
+                if discovered is not None:
+                    path = str(discovered)
+            if path is None:
+                raise MissingKernelError(
+                    "No planetary kernel is configured and none was found on disk."
+                )
+            self._reader_obj = facade.SpkReader(Path(path))
+            self._kernel_init_error = None
+        except (FileNotFoundError, MissingKernelError) as exc:
+            self._reader_obj = None
+            self._kernel_init_error = exc
+
+    def __getattribute__(self, name: str):
+        attr = object.__getattribute__(self, name)
+        if (
+            callable(attr)
+            and not name.startswith("_")
+            and name not in {
+                "is_kernel_available",
+                "get_kernel_status",
+                "kernel_status",
+                "available_kernels",
+                "configure_kernel_path",
+                "download_missing_kernels",
+            }
+        ):
+
+            def _wrapped(*args, **kwargs):
+                reader = object.__getattribute__(self, "_reader_obj")
+                if reader is None:
+                    return attr(*args, **kwargs)
+                with _facade_module().use_reader_override(reader):
+                    return attr(*args, **kwargs)
+
+            return _wrapped
+        return attr
+
+    @property
+    def _reader(self):
+        if self._reader_obj is None:
+            self._try_initialize_reader()
+        if self._reader_obj is None:
+            raise _facade_module().MissingEphemerisKernelError(self.get_kernel_status())
+        return self._reader_obj
+
+    def is_kernel_available(self) -> bool:
+        if self._reader_obj is not None:
+            return True
+        self._try_initialize_reader()
+        return self._reader_obj is not None
+
+    @property
+    def kernel_status(self) -> str:
+        return self.get_kernel_status()
+
+    def get_kernel_status(self) -> str:
+        facade = _facade_module()
+        if self._reader_obj is not None:
+            return f"Kernel ready: {self._reader_obj.path}"
+
+        if self._kernel_path:
+            base = (
+                f"No ephemeris kernel is loaded. Configured path: {self._kernel_path}. "
+                f"User kernel directory: {facade.user_kernels_dir()}."
+            )
+        else:
+            base = (
+                "No planetary kernel is configured. "
+                f"User kernel directory: {facade.user_kernels_dir()}."
+            )
+        if self._kernel_init_error is not None:
+            base = f"{base} Last load error: {self._kernel_init_error}"
+        return (
+            f"{base} Run `moira-download-kernels` or configure a kernel path with "
+            "`Moira.configure_kernel_path(path)`."
+        )
+
+    @property
+    def available_kernels(self) -> list[str]:
+        facade = _facade_module()
+        from ._kernel_paths import PLANETARY_KERNELS
+
+        planetary = [
+            name for name in PLANETARY_KERNELS if facade.find_kernel(name).exists()
+        ]
+        supplemental = [
+            name
+            for name in [
+                "asteroids.bsp",
+                "sb441-n373s.bsp",
+                "centaurs.bsp",
+                "minor_bodies.bsp",
+            ]
+            if facade.find_kernel(name).exists()
+        ]
+        return planetary + supplemental
+
+    def configure_kernel_path(self, path: str) -> None:
+        self._kernel_path = path
+        self._try_initialize_reader()
+        if self._reader_obj is None:
+            raise _facade_module().MissingEphemerisKernelError(self.get_kernel_status())
+
+    def download_missing_kernels(self, interactive: bool = False) -> None:
+        from .download_kernels import download_missing
+
+        download_missing(interactive=interactive)
+        self._try_initialize_reader()
