@@ -1,20 +1,29 @@
 """
-Standalone Babylonian chronology support.
+Moira — babylonian.py
+Babylonian Chronology Oracle: governs historical calendar conversion and
+coordinate support for ancient astronomical validation.
 
-Purpose:
-    Own a small, explicit historical-calendar substrate for Babylonian
-    planetary validation rows without entangling that work with ``sothic.py``
-    or the core Julian/Gregorian conversion module.
+Purpose: provides a small, explicit historical-calendar substrate for Babylonian
+planetary validation rows without entangling that work with sothic.py or the
+core Julian/Gregorian conversion module.
 
-Current scope:
-    - Babylon city coordinates used by historical planetary rows
-    - Julian-calendar civil-date support for ancient source dates
-    - Parker/Dubberstein month-start conversion for Babylonian calendar dates
-    - Babylonian Mercury reference rows admitted or tracked for validation
+Boundary: owns Babylon city coordinates, Julian-calendar civil-date support for
+ancient source dates, Parker/Dubberstein month-start conversion for Babylonian
+calendar dates, and Babylonian Mercury reference rows for validation. Delegates
+modern calendar conversion to julian.py and does not own ruler-name/regnal-year
+reconstruction or public facade exposure.
 
-Non-goals in this cut:
-    - ruler-name/regnal-year reconstruction
-    - public facade exposure
+Import-time side effects: None
+
+External dependency assumptions:
+    - No external kernels or databases required
+    - Pure computational module for historical calendar work
+
+Public surface / exports:
+    BABYLON_COORDINATES       — historical city coordinates
+    babylonian_to_julian()    — calendar conversion functions
+    mercury_reference_rows()  — validation data access
+    (Limited public API - primarily internal validation support)
 """
 
 from __future__ import annotations

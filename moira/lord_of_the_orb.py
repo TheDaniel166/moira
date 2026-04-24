@@ -1,67 +1,25 @@
-from __future__ import annotations
-
 """
-Moira — lord_of_the_orb.py
-The Lord of the Orb Engine: governs computation of Abu Ma'shar's Lord of the
-Orb annual time-lord technique.
+Moira — Lord of the Orb Engine
+Governs computation of Abu Ma'shar's Lord of the Orb annual time-lord technique using planetary hour determination and Chaldean sequence arithmetic.
 
-The Lord of the Orb is determined by the planetary hour at the moment of birth.
-That planet becomes the Lord of the Orb for year 1 of life, governing the
-significations of the 1st house. Each subsequent year the next planet in the
-Chaldean order becomes Lord of the Orb for the next house, producing two
-independent cycles: the 7-planet Chaldean sequence and the 12-house sequence.
-
-Boundary declaration
---------------------
-Owns: the Lord of the Orb catalogue, Chaldean sequence arithmetic, cycle-
-      variant logic (CONTINUOUS_LOOP and SINGLE_CYCLE), house signification
-      mapping, result vessels, condition profiling, and aggregate intelligence.
-Delegates: birth planetary hour determination to moira.planetary_hours.
-           Does NOT compute the natal chart, solar return chart, or the birth
-           planetary hour. The caller supplies birth_planet (the planet ruling
-           the birth hour) as a plain string matching Body constants.
-
-Doctrine basis
---------------
-Abu Ma'shar, Kitāb taḥāwil sinī al-mawālīd; Diego de Torres, Opus
-Astrologicum (Salamanca, late 1480s–1490s). Confirmed cycle variants from:
-Benjamin N. Dykes, Persian Nativities IV (Cazimi Press, 2019), pages 126–128
-(Abu Ma'shar — ambiguous); Anthony Louis blog, 2021 (Torres — continuous loop
-confirmed with Venus worked example).
-
-Default: CONTINUOUS_LOOP (Torres, Giuntini; the better-attested variant).
-SINGLE_CYCLE is admitted as an alternative reading of Abu Ma'shar.
-
-Ranking in Abu Ma'shar's annual hierarchy: 6th of 8 annual indicators.
+Boundary: owns the Lord of the Orb catalogue, Chaldean sequence arithmetic, cycle-variant logic, house signification mapping, result vessels, condition profiling, and aggregate intelligence. Delegates birth planetary hour determination to moira.planetary_hours.
 
 Import-time side effects: None
 
-External dependency assumptions
---------------------------------
-- No third-party packages; stdlib only.
-- birth_planet must be one of the seven Chaldean planets (Saturn, Jupiter,
-  Mars, Sun, Venus, Mercury, Moon). Caller derives this from
-  moira.planetary_hours.PlanetaryHour.ruler for the birth JD.
+External dependencies:
+    - dataclasses for structured data definitions
+    - enum for enumeration types
+    - No third-party packages; stdlib only
 
-Public surface
---------------
-CHALDEAN_ORDER              — ordered tuple of 7 classical planet names
-HOUSE_SIGNIFICATIONS        — dict mapping house number (1–12) to a brief
-                              traditional signification string
-LordOfOrbCycleKind          — CONTINUOUS_LOOP or SINGLE_CYCLE
-LordOfOrbPolicy             — doctrinal configuration surface
-DEFAULT_LORD_OF_ORB_POLICY
-LordOfOrbPeriod             — primary result vessel (year, planet, house)
-LordOfOrbSequence           — ordered sequence of periods as a relational group
-LordOfOrbConditionProfile   — per-period condition integrating position and
-                              house signification
-LordOfOrbAggregate          — chart-wide aggregate intelligence
-lord_of_orb()               — main computation engine
-current_lord_of_orb()       — active period for a given year of life
-validate_lord_of_orb_output() — validation entry point
+Public surface:
+    CHALDEAN_ORDER, HOUSE_SIGNIFICATIONS, LordOfOrbCycleKind, LordOfOrbPolicy,
+    DEFAULT_LORD_OF_ORB_POLICY, LordOfOrbPeriod, LordOfOrbSequence,
+    LordOfOrbConditionProfile, LordOfOrbAggregate, lord_of_orb, current_lord_of_orb,
+    validate_lord_of_orb_output
 """
 
 from dataclasses import dataclass, field
+from enum import StrEnum
 from enum import StrEnum
 
 

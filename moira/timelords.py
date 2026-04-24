@@ -1,56 +1,31 @@
-from __future__ import annotations
-
 """
-Moira — timelords.py
+Moira — Timelords Engine
+Governs the timelord Engine surfaces for Firdaria and Zodiacal Releasing: sequence construction, hierarchical grouping, active-period lookup, condition profiles, and aggregate profiles.
 
-Purpose
--------
-This Pillar provides the timelord Engine surfaces for Firdaria and Zodiacal
-Releasing: sequence construction, hierarchical grouping, active-period lookup,
-condition profiles, aggregate profiles, and structural Guardians for both
-time-lord families.
+Boundary: owns Firdaria sequence arithmetic and sub-period allocation, Zodiacal Releasing recursion and angularity classification, timelord policy vessels, result vessels, and relational vessels. Delegates domicile ruler lookup to moira.profections.
 
-Boundary
---------
-Owns:
-    - Firdaria sequence arithmetic and sub-period allocation.
-    - Zodiacal Releasing recursion, angularity classification, and Loosing of
-      the Bond handling.
-    - Timelord policy vessels, result vessels, relational vessels, and
-      validation Guardians.
-Delegates:
-    - Domicile ruler lookup to `moira.profections`.
-    - Calendar conversion and Julian-Day formatting views to `moira.julian`.
-Does not own:
-    - Natal chart construction.
-    - Ephemeris state or astronomical substrate computation.
-    - Lot calculation outside the caller-supplied inputs.
+Import-time side effects: None
 
-Import-time side effects
-------------------------
-None.
+External dependencies:
+    - dataclasses for structured data definitions
+    - datetime for temporal operations
+    - math module for mathematical operations
+    - moira.constants for sign definitions
+    - moira.julian for calendar conversion
+    - moira.profections for domicile rulers
 
-External dependency assumptions
--------------------------------
-- No third-party runtime dependencies beyond internal Moira Pillars and stdlib.
-- Callers provide Julian Days and lot longitudes that already satisfy their own
-  doctrinal preconditions.
-- This Pillar is symbolic-temporal; it does not query kernels or live
-  astronomical state directly.
-
-Public surface / exports
-------------------------
-`FIRDARIA_DIURNAL`, `FIRDARIA_NOCTURNAL`, `FIRDARIA_NOCTURNAL_BONATTI`,
-`CHALDEAN_ORDER`, `MINOR_YEARS`, `FirdarSequenceKind`, `ZRAngularityClass`,
-`FirdarYearPolicy`, `ZRYearPolicy`, `TimelordComputationPolicy`,
-`DEFAULT_TIMELORD_POLICY`, `FirdarPeriod`, `ReleasingPeriod`,
-`FirdarMajorGroup`, `ZRPeriodGroup`, `FirdarConditionProfile`,
-`ZRConditionProfile`, `FirdarSequenceProfile`, `ZRSequenceProfile`,
-`FirdarActivePair`, `ZRLevelPair`, `firdaria`, `current_firdaria`,
-`zodiacal_releasing`, `current_releasing`, `group_firdaria`,
-`group_releasing`, `firdar_condition_profile`, `zr_condition_profile`,
-`firdar_sequence_profile`, `zr_sequence_profile`, `firdar_active_pair`,
-`zr_level_pair`, `validate_firdaria_output`, `validate_releasing_output`
+Public surface:
+    FIRDARIA_DIURNAL, FIRDARIA_NOCTURNAL, FIRDARIA_NOCTURNAL_BONATTI,
+    CHALDEAN_ORDER, MINOR_YEARS, FirdarSequenceKind, ZRAngularityClass,
+    FirdarYearPolicy, ZRYearPolicy, TimelordComputationPolicy,
+    DEFAULT_TIMELORD_POLICY, FirdarPeriod, ReleasingPeriod, FirdarMajorGroup,
+    ZRPeriodGroup, FirdarConditionProfile, ZRConditionProfile,
+    FirdarSequenceProfile, ZRSequenceProfile, FirdarActivePair, ZRLevelPair,
+    firdaria, current_firdaria, zodiacal_releasing, current_releasing,
+    group_firdaria, group_releasing, firdar_condition_profile,
+    zr_condition_profile, firdar_sequence_profile, zr_sequence_profile,
+    firdar_active_pair, zr_level_pair, validate_firdaria_output,
+    validate_releasing_output
 """
 
 from dataclasses import dataclass, field
@@ -155,7 +130,7 @@ class FirdarSequenceKind:
       },
       "state": {"mutable": false, "owners": []},
       "effects": {"signals_emitted": [], "io": []},
-      "concurrency": {"thread": "constant_namespace", "cross_thread_calls": "safe"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
       "failures": {"policy": "n/a"},
       "succession": {"stance": "terminal"},
       "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
@@ -204,7 +179,7 @@ class ZRAngularityClass:
       },
       "state": {"mutable": false, "owners": []},
       "effects": {"signals_emitted": [], "io": []},
-      "concurrency": {"thread": "constant_namespace", "cross_thread_calls": "safe"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
       "failures": {"policy": "n/a"},
       "succession": {"stance": "terminal"},
       "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
@@ -626,7 +601,7 @@ def firdaria(
     *,
     variant: str = "standard",
     include_node_subperiods: bool = False,
-    policy: TimelordComputationPolicy | None = None,
+    policy: "TimelordComputationPolicy | None" = None,
 ) -> list[FirdarPeriod]:
     """
     Generate all Firdaria major and sub-periods for a complete life cycle.
@@ -731,7 +706,7 @@ def current_firdaria(
     *,
     variant: str = "standard",
     include_node_subperiods: bool = False,
-    policy: TimelordComputationPolicy | None = None,
+    policy: "TimelordComputationPolicy | None" = None,
 ) -> tuple[FirdarPeriod, FirdarPeriod]:
     """
     Find the Firdaria major and sub-period active at a given date.
@@ -902,8 +877,8 @@ def _validate_timelord_policy(
 
 
 def _resolve_timelord_policy(
-    policy: TimelordComputationPolicy | None,
-) -> TimelordComputationPolicy:
+    policy: "TimelordComputationPolicy | None",
+) -> "TimelordComputationPolicy":
     return _validate_timelord_policy(
         DEFAULT_TIMELORD_POLICY if policy is None else policy
     )
@@ -2171,7 +2146,7 @@ def zodiacal_releasing(
     lot_name: str = "Spirit",
     fortune_longitude: float | None = None,
     use_loosing_of_bond: bool = True,
-    policy: TimelordComputationPolicy | None = None,
+    policy: "TimelordComputationPolicy | None" = None,
 ) -> list[ReleasingPeriod]:
     """
     Generate Zodiacal Releasing periods from a Lot (Fortune, Spirit, etc.).
@@ -2273,7 +2248,7 @@ def current_releasing(
     lot_name: str = "Spirit",
     fortune_longitude: float | None = None,
     use_loosing_of_bond: bool = True,
-    policy: TimelordComputationPolicy | None = None,
+    policy: "TimelordComputationPolicy | None" = None,
 ) -> list[ReleasingPeriod]:
     """
     Find the four Zodiacal Releasing periods (one per level) active at a date.

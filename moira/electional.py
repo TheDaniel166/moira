@@ -117,7 +117,7 @@ class ElectionalPolicy:
       },
       "state": {"mutable": false, "owners": []},
       "effects": {"signals_emitted": [], "io": []},
-      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
       "failures": {"policy": "raise"},
       "succession": {"stance": "terminal"},
       "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
@@ -252,7 +252,7 @@ class ElectionalWindow:
       },
       "state": {"mutable": false, "owners": ["_make_window"]},
       "effects": {"signals_emitted": [], "io": []},
-      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
       "failures": {"policy": "raise"},
       "succession": {"stance": "terminal"},
       "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
@@ -357,7 +357,7 @@ class ElectionalScoredWindow:
       },
       "state": {"mutable": false, "owners": ["find_scored_windows"]},
       "effects": {"signals_emitted": [], "io": []},
-      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
       "failures": {"policy": "raise"},
       "succession": {"stance": "terminal"},
       "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}

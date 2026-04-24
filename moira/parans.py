@@ -1,137 +1,30 @@
-﻿from __future__ import annotations
+﻿"""
+Moira — Paran Engine
+Governs computation of near-simultaneous mundane-circle crossings between two distinct bodies at a specific terrestrial location during a single 24-hour search window.
 
-"""
-Moira ? Paran Engine
-====================
-
-Archetype: Engine
-
-Operational definition
-----------------------
-In Moira, a *paran* is a pair of near-simultaneous mundane-circle crossings
-between two distinct bodies at a specific terrestrial location during a single
-24-hour search window. This engine is intentionally computational rather than
-school-specific: it detects timed crossings and compares them by orb; it does
-not enforce a narrower traditional doctrine unless the caller asks for one at
-some higher layer.
-
-Supported event types
----------------------
-The current model supports four event types:
-
-- Rise   -> ``"Rising"``
-- Set    -> ``"Setting"``
-- MC     -> ``"Culminating"``
-- IC     -> ``"AntiCulminating"``
-
-Both same-event-type pairings (for example Rise/Rise or MC/MC) and
-mixed-event-type pairings (for example Rise/MC or Set/IC) are valid in the
-current model and are returned when their event times fall within orb.
-
-Computation vs tradition
-------------------------
-This module computes paran candidates from event timing. Any historical or
-interpretive distinction between "true" parans, stricter schools of usage, or
-preferred event-pair subsets is not imposed here. The engine simply asks:
-"did body A and body B cross supported mundane circles close enough in time to
-qualify under the supplied orb?"
-
-Inherited assumptions
----------------------
-This module inherits its event timing model from ``moira.rise_set``:
-
-- rise/set times come from ``find_phenomena(..., altitude=-0.5667)``, using the
-  engine's standard stellar-style apparent horizon convention;
-- MC/IC times come from ``get_transit(..., upper=True/False)`` on the same
-  search day;
-- bodies that fail to produce a rise, set, MC, or IC event under that
-  machinery simply contribute fewer crossings here.
-
-Those assumptions are delegated, not redefined locally.
-
-Edge-case stance
-----------------
-- Circumpolar or never-rising bodies can yield fewer than four events.
-- Transit solving can fail near the poles; failures are skipped rather than
-  promoted to hard errors.
-- Results are computed only between distinct bodies; the engine does not search
-  for self-parans.
-- The search window is one UT day starting at ``jd_day``; the engine does not
-  attempt multi-day reconciliation of near-boundary crossings.
-
-Boundary declaration
---------------------
-Owns: paran detection logic, crossing-time collection, time-orb comparison,
-      ``ParanCrossing`` and ``Paran`` result vessels.
-Delegates: rise/set time computation to ``moira.rise_set``,
-           transit time computation to ``moira.rise_set.get_transit``,
-           Julian Day conversion to ``moira.julian``.
+Boundary: owns paran detection logic, crossing-time collection, time-orb comparison, ParanCrossing and Paran result vessels. Delegates rise/set time computation to moira.rise_set.
 
 Import-time side effects: None
 
-External dependency assumptions
--------------------------------
-No Qt main thread required. No database access. Requires caller to supply
-body names resolvable by ``moira.rise_set`` and a valid geographic location.
+External dependencies:
+    - math module for mathematical operations
+    - itertools for combination generation
+    - dataclasses for structured data definitions
+    - datetime for temporal operations
+    - functools for caching
+    - moira.constants for body definitions
 
-Public surface
---------------
-Constants:
-  ``CIRCLE_TYPES``            — tuple of the four mundane circle names.
-  ``DEFAULT_PARAN_POLICY``    — fully permissive default backend policy.
-
-Core vessels:
-  ``ParanCrossing``           — single mundane-circle crossing event.
-  ``Paran``                   — paran aspect between two bodies.
-  ``ParanSignature``          — lean geometric classification of a paran.
-  ``ParanStrength``           — exactness summary derived from orb only.
-
-Policy:
-  ``ParanPolicy``             — explicit backend inclusion policy.
-
-Stability (Phase 6):
-  ``ParanStability``          — perturbation stability summary.
-  ``ParanStabilitySample``    — one perturbation sample.
-  ``evaluate_paran_stability`` — evaluate stability for a single paran.
-
-Site / grid evaluation (Phase 7):
-  ``ParanSiteResult``         — result of evaluating one geographic site.
-  ``ParanFieldSample``        — one structured grid sample.
-  ``evaluate_paran_site``     — evaluate a target paran at one site.
-  ``sample_paran_field``      — sample a rectangular geographic grid.
-
-Field analysis (Phase 8):
-  ``ParanFieldAnalysis``      — structural analysis of a sampled field.
-  ``ParanFieldRegion``        — one connected threshold-passing region.
-  ``ParanFieldPeak``          — one local maximum in a sampled field.
-  ``ParanThresholdCrossing``  — one orthogonal edge crossing the threshold.
-  ``analyze_paran_field``     — analyze a sampled field for one metric.
-
-Contour extraction (Phase 9):
-  ``ParanContourExtraction``  — contour fragments from a sampled field.
-  ``ParanContourSegment``     — one marching-squares contour fragment.
-  ``ParanContourPoint``       — one interpolated contour point.
-  ``extract_paran_field_contours`` — extract contour fragments.
-
-Contour consolidation (Phase 10):
-  ``ParanContourPathSet``     — consolidated stitched contour paths.
-  ``ParanContourPath``        — one ordered open or closed contour path.
-  ``consolidate_paran_contours`` — stitch fragments into ordered paths.
-
-Higher-order field structure (Phase 11):
-  ``ParanFieldStructure``     — dominant path, hierarchy, associations.
-  ``ParanContourHierarchyEntry`` — containment-depth entry for one path.
-  ``ParanContourAssociation`` — region/peak association for one path.
-  ``analyze_paran_field_structure`` — derive structural relationships.
-
-Engine entry points:
-  ``find_parans``             — find all parans for a list of bodies on a day.
-  ``natal_parans``            — convenience wrapper for natal-day parans.
-
-Architecture standard and validation codex:
-  ``moira/docs/PARANS_BACKEND_STANDARD.md``
+Public surface:
+    CIRCLE_TYPES, DEFAULT_PARAN_POLICY, Paran, ParanCrossing, ParanSignature,
+    ParanPolicy, ParanStrength, ParanStability, ParanStabilitySample,
+    evaluate_paran_stability, ParanSiteResult, ParanFieldSample, evaluate_paran_site,
+    sample_paran_field, ParanFieldAnalysis, ParanFieldRegion, ParanFieldPeak,
+    ParanThresholdCrossing, analyze_paran_field, ParanContourExtraction,
+    ParanContourSegment, ParanContourPoint, extract_paran_field_contours,
+    ParanContourPathSet, ParanContourPath, consolidate_paran_contours,
+    ParanFieldStructure, ParanContourHierarchyEntry, ParanContourAssociation,
+    analyze_paran_field_structure, find_parans, natal_parans
 """
-
 
 import math
 import itertools
@@ -506,7 +399,7 @@ class ParanStrength:
     model: str = "inverse_minutes"
 
 
-def _derive_paran_strength(paran: Paran) -> ParanStrength:
+def _derive_paran_strength(paran: "Paran") -> ParanStrength:
     """
     Return the pure geometric strength summary for an admitted paran.
 
@@ -610,7 +503,7 @@ class ParanSiteResult:
     lat: float
     lon: float
     matched: bool
-    paran: Paran | None
+    paran: "Paran | None"
     strength: ParanStrength | None
     stability: ParanStability | None
 
@@ -869,7 +762,7 @@ def _is_same_family_label(label: str) -> bool:
     return left == right
 
 
-def _policy_allows_paran(paran: Paran, policy: ParanPolicy) -> bool:
+def _policy_allows_paran(paran: "Paran", policy: ParanPolicy) -> bool:
     """
     Return whether a classified paran passes the supplied backend policy.
 
@@ -904,9 +797,9 @@ def _policy_allows_paran(paran: Paran, policy: ParanPolicy) -> bool:
 
 
 def _matching_perturbed_paran_candidates(
-    baseline: Paran,
-    candidates: list[Paran],
-) -> list[Paran]:
+    baseline: "Paran",
+    candidates: list["Paran"],
+) -> list["Paran"]:
     """
     Return perturbed candidates that match the baseline paran identity.
 
@@ -931,9 +824,9 @@ def _matching_perturbed_paran_candidates(
 
 
 def _matching_site_paran_candidates(
-    target: Paran,
-    candidates: list[Paran],
-) -> list[Paran]:
+    target: "Paran",
+    candidates: list["Paran"],
+) -> list["Paran"]:
     """
     Return site candidates that match the target paran identity across locations.
 
@@ -1126,7 +1019,7 @@ def _extract_cell_contour_segments(
 
 
 def evaluate_paran_stability(
-    paran: Paran,
+    paran: "Paran",
     jd_day: float,
     lat: float,
     lon: float,
@@ -1239,7 +1132,7 @@ def evaluate_paran_stability(
 
 
 def evaluate_paran_site(
-    target: Paran,
+    target: "Paran",
     jd_day: float,
     lat: float,
     lon: float,
@@ -1315,7 +1208,7 @@ def evaluate_paran_site(
 
 
 def sample_paran_field(
-    target: Paran,
+    target: "Paran",
     jd_day: float,
     latitudes: list[float] | tuple[float, ...],
     longitudes: list[float] | tuple[float, ...],

@@ -1,35 +1,28 @@
-from __future__ import annotations
-
 """
-Lots Engine — moira/lots.py
+Moira — Lots Engine
+Governs computation of Arabic Parts (Hermetic Lots) for ~430 named lots using the formula Lot = ASC + Add − Subtract (mod 360°) with automatic day/night reversal.
 
-Archetype: Engine
-Purpose: Computes Arabic Parts (Hermetic Lots) for ~430 named lots drawn from
-         Hellenistic, medieval, and modern sources, using the formula
-         Lot = ASC + Add − Subtract (mod 360°) with automatic day/night
-         reversal where the tradition requires it.
-
-Boundary declaration:
-    Owns: the comprehensive lots catalogue (PARTS_DEFINITIONS), the reference-
-          key resolver (planets, angles, house cusps, rulers, fixed degrees,
-          pre-computed lots), the day/night reversal logic, and the ArabicPart
-          and PartDefinition result types.
-    Delegates: chart data access to moira.chart.ChartContext; sign arithmetic
-               to moira.constants.sign_of and SIGNS.
+Boundary: owns the comprehensive lots catalogue, the reference-key resolver, the day/night reversal logic, and the ArabicPart and PartDefinition result types. Delegates chart data access to moira.chart.ChartContext.
 
 Import-time side effects: None
 
-External dependency assumptions:
-    - moira.chart.ChartContext exposes planet longitudes, house cusps, and
-      Ascendant/MC as named attributes.
-    - moira.constants.SIGNS is an ordered list of 12 sign name strings.
+External dependencies:
+    - dataclasses for structured data definitions
+    - enum for enumeration types
+    - math module for mathematical operations
+    - moira.constants for sign arithmetic
+    - moira.chart for chart context access
 
-Public surface / exports:
-    PartDefinition        — catalogue entry for a single lot
-    ArabicPart            — computed result for a single lot
-    ArabicPartsService    — service class for computing lots from a chart
-    PARTS_DEFINITIONS     — list of all ~430 PartDefinition entries
-    calculate_arabic_parts() — module-level convenience wrapper
+Public surface:
+    LotReferenceKind, LotReversalKind, LotDependencyRole, LotConditionState,
+    LotConditionNetworkEdgeMode, LotsReferenceFailureMode, LotsDerivedReferencePolicy,
+    LotsExternalReferencePolicy, LotsComputationPolicy, LotReferenceTruth,
+    ArabicPartComputationTruth, LotReferenceClassification, ArabicPartClassification,
+    LotDependency, LotConditionProfile, LotChartConditionProfile,
+    LotConditionNetworkNode, LotConditionNetworkEdge, LotConditionNetworkProfile,
+    ArabicPart, calculate_lots, calculate_lot_dependencies, calculate_all_lot_dependencies,
+    calculate_lot_condition_profiles, calculate_lot_chart_condition_profile,
+    calculate_lot_condition_network_profile, ArabicPartsService, list_parts
 """
 
 from dataclasses import dataclass, field
@@ -796,7 +789,7 @@ class LotChartConditionProfile:
     LotConditionProfile results and does not recompute lot doctrine.
     """
 
-    profiles: list[LotConditionProfile] = field(default_factory=list)
+    profiles: list["LotConditionProfile"] = field(default_factory=list)
     direct_count: int = 0
     mixed_count: int = 0
     indirect_count: int = 0

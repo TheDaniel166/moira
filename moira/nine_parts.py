@@ -1,69 +1,23 @@
-from __future__ import annotations
-
 """
-Moira — nine_parts.py
-The Nine Parts Engine: governs computation of Abu Ma'shar's Nine Hermetic Lots
-(the seven externally evidenced planetary parts plus the admitted extension of
-the Part of the Sword and the Part of the Node), collectively known in Moira as
-the Nine Parts.
+Moira — Nine Parts Engine
+Governs computation of Abu Ma'shar's Nine Hermetic Lots using the formula Lot = ASC + Add − Subtract (mod 360°) with full day/night reversal.
 
-Boundary declaration
---------------------
-Owns: the Nine Parts catalogue, formula resolution, day/night reversal logic,
-      dependency ordering (Fortune and Spirit before derived lots), result
-      vessels, condition profiling, and aggregate intelligence.
-Delegates: sign name lookup to moira.constants. Does NOT own chart construction,
-           house calculation, or night-determination logic (caller supplies
-           is_night_chart).
-
-Doctrine basis
---------------
-Abu Ma'shar, Kitāb taḥāwil sinī al-mawālīd. Confirmed formulas and full-
-reversal rule from: Benjamin N. Dykes, Introductions to Traditional Astrology
-(Cazimi Press, 2010) and Persian Nativities Vol. II (Cazimi Press, 2010).
-
-Historical scope note
----------------------
-The seven planetary parts (Fortune, Spirit, Love, Necessity, Courage, Victory,
-Nemesis) are treated as the externally evidenced Abu Ma'shar core. The Part of
-the Sword and the Part of the Node are retained as admitted Moira extensions
-within the same computational family, but not claimed at the same confidence
-level as the seven-part core.
-
-Night = Sun in houses 1–6 (below the horizon). Full reversal: all nine parts
-use the night formula when the chart is nocturnal. No per-lot exceptions in
-the Abu Ma'shar core.
-
-Dependency order: Fortune and Spirit are computed first; Love, Necessity, and
-Victory depend on them. Sword and Node are independent.
+Boundary: owns the Nine Parts catalogue, formula resolution, day/night reversal logic, dependency ordering, result vessels, condition profiling, and aggregate intelligence. Delegates sign name lookup to moira.constants.
 
 Import-time side effects: None
 
-External dependency assumptions
---------------------------------
-- moira.constants.sign_of(longitude) returns the sign name as a string.
-- moira.constants.SIGNS is an ordered list of 12 sign name strings.
-- moira.constants.SIGN_SYMBOLS is a parallel list of 12 sign symbol strings.
-- Caller is responsible for determining is_night_chart (Sun in H1–H6).
+External dependencies:
+    - dataclasses for structured data definitions
+    - enum for enumeration types
+    - math module for mathematical operations
+    - moira.constants for sign arithmetic
 
-Public surface
---------------
-NinePartName            — canonical Abu Ma'shar part names
-NinePartFormulaVariant  — DAY or NIGHT formula used
-NinePartDependencyKind  — DIRECT (raw planets) or DERIVED (other lots)
-NinePartHistoricalStatus — CORE_SEVEN or ADMITTED_EXTENSION
-NinePartsReversalRule   — FULL_REVERSAL (only admitted rule)
-NinePartsHistoricalScope — current doctrinal provenance scope
-NinePartsPolicy         — doctrinal configuration surface
-DEFAULT_NINE_PARTS_POLICY
-NinePartComputationTruth — preserved computational truth per part
-NinePart                — primary result vessel
-NinePartsDependencyRelation — inter-lot dependency relation
-NinePartsSet            — the nine parts as a related group
-NinePartConditionProfile — integrated per-part condition profile
-NinePartsAggregate      — chart-wide aggregate intelligence
-nine_parts_abu_mashar() — main computation engine
-validate_nine_parts_output() — validation entry point
+Public surface:
+    NinePartName, NinePartFormulaVariant, NinePartDependencyKind,
+    NinePartHistoricalStatus, NinePartsReversalRule, NinePartsHistoricalScope,
+    NinePartsPolicy, DEFAULT_NINE_PARTS_POLICY, NinePartComputationTruth,
+    NinePart, NinePartsDependencyRelation, NinePartsSet, NinePartConditionProfile,
+    NinePartsAggregate, nine_parts_abu_mashar, validate_nine_parts_output
 """
 
 from dataclasses import dataclass

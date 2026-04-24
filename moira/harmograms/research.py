@@ -1,4 +1,17 @@
-from __future__ import annotations
+"""
+Moira — Harmogram Research Tools
+Governs analytical and comparison functions for harmogram research, including dominant harmonic analysis and spectrum comparison utilities.
+
+Boundary: owns research and analysis functions for harmogram data. Delegates core computations to compute module and data structures to models.
+
+Import-time side effects: None
+
+External dependencies:
+    - harmograms.models for data structure definitions
+
+Public surface:
+    dominant_harmonic_contributors, compare_intensity_spectra, compare_trace_series
+"""
 
 from .models import (
     HarmogramDominantTerm,

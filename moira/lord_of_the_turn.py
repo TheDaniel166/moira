@@ -1,75 +1,26 @@
-from __future__ import annotations
-
 """
-Moira — lord_of_the_turn.py
-The Lord of the Turn Engine: governs computation of the annual Lord of the Turn
-using Al-Qabisi's succession-hierarchy method and the Egyptian/Al-Sijzi
-testimony method.
+Moira — Lord of the Turn Engine
+Governs computation of the annual Lord of the Turn using Al-Qabisi's succession-hierarchy method and the Egyptian/Al-Sijzi testimony method.
 
-The Lord of the Turn is determined by profecting the natal Ascendant one sign
-per year to identify the Sign of the Year, then selecting the dominant planet
-governing that sign in the Solar Return (SR) chart by method-specific rules.
-
-Boundary declaration
---------------------
-Owns: profection arithmetic, the two Lord of the Turn algorithms (Al-Qabisi
-      and Egyptian/Al-Sijzi), condition assessment in the SR chart, candidate
-      selection logic, result vessels, and aggregate intelligence.
-Delegates: dignity tables to moira.dignities and moira.egyptian_bounds;
-           triplicity rulers to moira.longevity. Does NOT own solar return
-           chart construction, house calculation, or planetary ephemeris access.
-           The caller supplies the SR chart data as a LordOfTurnSRChart vessel.
-
-Doctrine basis
---------------
-Al-Qabisi (Alcabitius), Al-Madkhal ila Sina'at Ahkam al-Nujum (Introduction to
-the Art of Astrology). Translation: Charles Burnett, Keiji Yamamoto, Michio
-Yano (Warburg Institute, 2004).
-
-Al-Qabisi method: Profect natal ASC one sign per year → Sign of the Year →
-domicile lord of that sign is primary candidate. Condition check in SR (good
-SR house, not combust, not retrograde). If blocked, fall to exaltation lord,
-then sect triplicity ruler, then bound lord of the profected degree. Tiebreaker:
-candidate that aspects SR ASC or sect light (Sun by day, Moon by night).
-
-Egyptian/Al-Sijzi method: Bound lord of the profected degree is primary (the
-Egyptian tradition). Al-Sijzi refinement: the bound lord must also "witness"
-(be in a sign that casts a major aspect to) the SR ASC or sect light. If it
-does not, the testimony winner (planet with the most dignity testimonies at the
-profected degree that witnesses) becomes the Lord of the Turn.
-
-Naming note: historical sources use "Lord of the Turn" (dominus conversionis),
-"Lord of the Orb," and "Lord of the Circle" interchangeably. These are
-DISTINCT techniques in Moira: Lord of the Turn is seeded from the profected
-ASC in the SR chart; Lord of the Orb is seeded from the birth planetary hour.
+Boundary: owns profection arithmetic, the two Lord of the Turn algorithms, condition assessment in the SR chart, candidate selection logic, result vessels, and aggregate intelligence. Delegates dignity tables to moira.dignities and moira.egyptian_bounds.
 
 Import-time side effects: None
 
-External dependency assumptions
---------------------------------
-- moira.dignities: DOMICILE (planet → list[sign]), EXALTATION (planet → list[sign])
-- moira.egyptian_bounds: EGYPTIAN_BOUNDS (sign → list[(planet, start, end)])
-- moira.triplicity: triplicity_assignment_for (sign → TriplicityAssignment)
-- moira.constants: sign_of (longitude → (name, symbol, deg_in_sign)), SIGNS
-- Caller supplies LordOfTurnSRChart populated from SR chart computation.
-- Caller is responsible for computing SR Lot of Fortune with sect reversal.
+External dependencies:
+    - dataclasses for structured data definitions
+    - enum for enumeration types
+    - math module for mathematical operations
+    - moira.constants for sign and body definitions
+    - moira.dignities for dignity tables
+    - moira.egyptian_bounds for bound calculations
+    - moira.triplicity for triplicity rulers
 
-Public surface
---------------
-LordOfTurnMethod            — AL_QABISI or EGYPTIAN_AL_SIJZI
-LordOfTurnSelectionReason   — why a specific planet was selected
-LordOfTurnBlockerReason     — why a candidate was rejected
-LordOfTurnPolicy            — doctrinal configuration surface
-DEFAULT_LORD_OF_TURN_POLICY
-LordOfTurnSRChart           — input vessel for the solar return chart
-LordOfTurnProfection        — result of the natal ASC profection step
-LordOfTurnCandidateAssessment — condition profile of one candidate in SR
-LordOfTurnResult            — primary result vessel (lord + full decision path)
-LordOfTurnConditionProfile  — integrated profile including profection context
-lord_of_turn()              — dispatch function (delegates to method-specific engine)
-lord_of_turn_al_qabisi()    — Al-Qabisi succession-hierarchy engine
-lord_of_turn_egyptian_al_sijzi() — Egyptian/Al-Sijzi testimony engine
-validate_lord_of_turn_output()  — validation entry point
+Public surface:
+    LordOfTurnMethod, LordOfTurnSelectionReason, LordOfTurnBlockerReason,
+    LordOfTurnPolicy, DEFAULT_LORD_OF_TURN_POLICY, LordOfTurnSRChart,
+    LordOfTurnProfection, LordOfTurnCandidateAssessment, LordOfTurnResult,
+    LordOfTurnConditionProfile, lord_of_turn, lord_of_turn_al_qabisi,
+    lord_of_turn_egyptian_al_sijzi, validate_lord_of_turn_output
 """
 
 from dataclasses import dataclass, field

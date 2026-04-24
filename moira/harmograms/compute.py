@@ -1,4 +1,20 @@
-from __future__ import annotations
+"""
+Moira — Harmogram Computation Engine
+Governs the mathematical computation of harmonic vectors, intensity spectra, and harmogram projections for astrological pattern analysis.
+
+Boundary: owns harmonic analysis algorithms and mathematical transformations. Delegates data structure definitions to models and utility functions to helpers.
+
+Import-time side effects: None
+
+External dependencies:
+    - math module for trigonometric and complex number operations
+    - harmograms.helpers for normalization and utility functions
+    - harmograms.models for data structure definitions
+
+Public surface:
+    point_set_harmonic_vector, parts_from_zero_aries, zero_aries_parts_harmonic_vector,
+    harmonic_vector, intensity_function_spectrum, project_harmogram_strength, harmogram_trace
+"""
 
 import math
 

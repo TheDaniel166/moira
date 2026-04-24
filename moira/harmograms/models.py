@@ -1,4 +1,32 @@
-from __future__ import annotations
+"""
+Moira — Harmogram Data Models
+Governs the data structures, enumerations, and validation logic for harmonic analysis and harmogram computation systems.
+
+Boundary: owns data model definitions and validation rules. Delegates mathematical computations to compute and helper modules.
+
+Import-time side effects: None
+
+External dependencies:
+    - dataclasses for structured data definitions
+    - enum for enumeration types
+    - math module for mathematical validation
+
+Public surface:
+    HarmonicVectorNormalizationMode, ZeroAriesPairConstructionMode, SelfPairMode,
+    HarmogramIntensityFamily, HarmogramOrbMode, GaussianWidthParameterMode,
+    HarmogramOrbScalingMode, HarmogramSymmetryMode, IntensityNormalizationMode,
+    IntensitySpectrumRealizationMode, HarmogramProjectionRealizationMode,
+    HarmogramSamplingMode, HarmogramOutputMode, HarmogramChartDomain,
+    HarmogramTraceFamily, HarmonicDomain, PointSetHarmonicVectorPolicy,
+    ZeroAriesPartsPolicy, HarmogramIntensityPolicy, HarmogramSamplingPolicy,
+    HarmogramPolicy, HarmonicVectorComponent, IntensitySpectrumComponent,
+    PointSetHarmonicVector, ZeroAriesPart, ZeroAriesPartsSet,
+    ZeroAriesPartsHarmonicVector, IntensityFunctionSpectrum,
+    HarmogramProjectionTerm, HarmogramProjection, HarmogramDominantTerm,
+    IntensitySpectrumComparisonTerm, IntensitySpectrumComparison,
+    HarmogramTraceSeriesComparisonSample, HarmogramTraceSeriesComparison,
+    HarmogramTraceSample, HarmogramTraceSeries, HarmogramTrace
+"""
 
 import math
 from dataclasses import dataclass, field
@@ -488,8 +516,8 @@ class HarmogramTraceSeriesComparisonSample:
 
 @dataclass(frozen=True, slots=True)
 class HarmogramTraceSeriesComparison:
-    left: HarmogramTraceSeries
-    right: HarmogramTraceSeries
+    left: "HarmogramTraceSeries"
+    right: "HarmogramTraceSeries"
     max_absolute_delta: float
     samples: tuple[HarmogramTraceSeriesComparisonSample, ...] = field(default_factory=tuple)
 

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Moira — heliacal.py
 Heliacal and Visibility Doctrine Pillar
 
@@ -211,7 +211,7 @@ class HeliacalEventKind(str, Enum):
             "db_writes": []
         },
         "concurrency": {
-            "thread": "pure_enum",
+            "thread": "pure_computation",
             "cross_thread_calls": "safe_read_only"
         },
         "failures": {
@@ -296,7 +296,7 @@ class VisibilityTargetKind(str, Enum):
             "db_writes": []
         },
         "concurrency": {
-            "thread": "pure_enum",
+            "thread": "pure_computation",
             "cross_thread_calls": "safe_read_only"
         },
         "failures": {
@@ -365,7 +365,7 @@ class LightPollutionClass(IntEnum):
             "db_writes": []
         },
         "concurrency": {
-            "thread": "pure_enum",
+            "thread": "pure_computation",
             "cross_thread_calls": "safe_read_only"
         },
         "failures": {
@@ -437,7 +437,7 @@ class ObserverAid(str, Enum):
             "db_writes": []
         },
         "concurrency": {
-            "thread": "pure_enum",
+            "thread": "pure_computation",
             "cross_thread_calls": "safe_read_only"
         },
         "failures": {
@@ -501,7 +501,7 @@ class LightPollutionDerivationMode(str, Enum):
             "db_writes": []
         },
         "concurrency": {
-            "thread": "pure_enum",
+            "thread": "pure_computation",
             "cross_thread_calls": "safe_read_only"
         },
         "failures": {
@@ -571,7 +571,7 @@ class VisibilityCriterionFamily(str, Enum):
             "db_writes": []
         },
         "concurrency": {
-            "thread": "pure_enum",
+            "thread": "pure_computation",
             "cross_thread_calls": "safe_read_only"
         },
         "failures": {
@@ -640,7 +640,7 @@ class LunarCrescentVisibilityClass(str, Enum):
             "db_writes": []
         },
         "concurrency": {
-            "thread": "pure_enum",
+            "thread": "pure_computation",
             "cross_thread_calls": "safe_read_only"
         },
         "failures": {
@@ -803,7 +803,7 @@ class VisibilityExtinctionModel(str, Enum):
             "db_writes": []
         },
         "concurrency": {
-            "thread": "pure_enum",
+            "thread": "pure_computation",
             "cross_thread_calls": "safe_read_only"
         },
         "failures": {
@@ -868,7 +868,7 @@ class VisibilityTwilightModel(str, Enum):
             "db_writes": []
         },
         "concurrency": {
-            "thread": "pure_enum",
+            "thread": "pure_computation",
             "cross_thread_calls": "safe_read_only"
         },
         "failures": {
@@ -1015,7 +1015,7 @@ class MoonlightPolicy(str, Enum):
             "db_writes": []
         },
         "concurrency": {
-            "thread": "pure_enum",
+            "thread": "pure_computation",
             "cross_thread_calls": "safe_read_only"
         },
         "failures": {

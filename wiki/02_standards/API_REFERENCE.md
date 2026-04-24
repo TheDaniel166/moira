@@ -27,6 +27,8 @@
 17. [Constellation Oracle](#17-constellation-oracle)
 18. [Calendar & Time](#18-calendar--time)
 19. [Policy Objects](#19-policy-objects)
+20. [`moira.sky` — Strict Astronomy API](#20-moirasky--strict-astronomy-api)
+21. [`moira.vedic` — Vedic Astrology Surface](#21-moiravedic--vedic-astrology-surface)
 
 ---
 
@@ -141,6 +143,7 @@ from moira.essentials import calculate_houses, assign_house
 from moira.essentials import find_aspects, AspectPolicy, DEFAULT_POLICY
 from moira.essentials import Ayanamsa, ayanamsa, tropical_to_sidereal
 from moira.essentials import sidereal_to_tropical, list_ayanamsa_systems
+from moira.essentials import DeltaTBreakdown, delta_t_breakdown
 ```
 
 Use this when you only need: natal chart positions, house cusps, basic aspects, and sidereal conversions. It is suitable for first-time users and lightweight integrations.
@@ -172,8 +175,8 @@ Adds the full classical and traditional toolkit:
 | Ashtakavarga | `bhinnashtakavarga`, `ashtakavarga`, `AshtakavargaResult`, `AshtakavargaPolicy` |
 | Shadbala | `shadbala`, `hora_lord_at`, `ShadbalaResult`, `ShadbalaPolicy` |
 | Alternate dashas | `ashtottari`, `yogini_dasha`, `AlternateDashaPeriod`, `AshtottariPolicy`, `YoginiPolicy` |
-| Planetary hours | `planetary_hours_for_day` |
-| Huber | `house_zones`, `age_point`, `chart_intensity_profile` |
+| Planetary hours | `planetary_hours` |
+| Huber | `house_zones`, `age_point`, `chart_intensity_profile` (also importable directly from moira.huber) |
 
 ### `moira.predictive` — Forecasting surface
 
@@ -189,11 +192,13 @@ Adds the complete forecasting and relationship toolkit:
 | Progressions | `secondary_progression`, `solar_arc`, `solar_arc_right_ascension`, `naibod_longitude`, `tertiary_progression`, `tertiary_ii_progression`, `converse_*` variants, `minor_progression`, `daily_house_frame` |
 | Primary directions | `speculum`, `find_primary_arcs`, `SpeculumEntry`, `PrimaryArc` |
 | Synastry | `synastry_aspects`, `house_overlay`, `mutual_house_overlays`, `composite_chart`, `davison_chart`, `CompositeChart`, `DavisonChart` |
-| Eclipses | `EclipseData`, `EclipseEvent`, `EclipseCalculator`, `LunarEclipseAnalysis`, `next_solar_eclipse_at_location` |
-| Returns | `solar_return`, `lunar_return`, `planet_return`, `half_return_series`, `lifetime_returns` |
+| Eclipses | `EclipseData`, `EclipseEvent`, `EclipseCalculator`, `LunarEclipseAnalysis` |
+| Returns | `solar_return`, `lunar_return`, `planet_return` |
 | Stations | `find_stations`, `is_retrograde`, `retrograde_periods`, `StationEvent` |
-| Void of course | `void_of_course_window`, `is_void_of_course`, `next_void_of_course` |
+| Void of course | `void_of_course_window`, `is_void_of_course`, `next_void_of_course`, `void_periods_in_range` |
 | Phenomena | `greatest_elongation`, `perihelion`, `aphelion`, `next_moon_phase`, `moon_phases_in_range`, `next_conjunction` |
+
+> **Note:** `next_solar_eclipse_at_location` is available from `moira.facade` and `moira.eclipse` directly but is not re-exported through `moira.predictive`.
 
 ### `moira.facade` and `moira` — Complete surface vs curated root
 
@@ -223,6 +228,47 @@ The complete facade surface adds every remaining subsystem not exposed by the pr
 - Constellations oracle (48 IAU constellations)
 - Sothic cycle, Egyptian calendar
 - Longevity (hyleg/alcocoden)
+
+### `moira.vedic` — Vedic astrology surface
+
+```python
+from moira.vedic import *   # includes everything from essentials, plus the full Vedic stack
+```
+
+A parallel surface for Vedic work. Inherits all of `moira.essentials` and adds:
+
+| Added domain | Key symbols |
+|---|---|
+| Sidereal & Nakshatras | `UserDefinedAyanamsa`, `NakshatraPosition`, `nakshatra_of`, `all_nakshatras_at` |
+| Panchanga | `panchanga_at`, `sankranti_at`, `PanchangaResult`, `TithiPaksha`, `PanchangaPolicy` |
+| Vedic dignities | `vedic_dignity`, `planetary_relationships`, `VedicDignityResult`, `DignityConditionProfile`, `ChartDignityProfile` |
+| Varga (divisional) | `navamsa`, `saptamsa`, `dashamansa`, `dwadashamsa`, `trimshamsa` + 11 more vargas, `VargaPoint` |
+| Vimshottari Dasha | `vimshottari`, `current_dasha`, `dasha_balance`, `dasha_active_line`, `DashaPeriod`, `VimshottariComputationPolicy` |
+| Alternate dashas | `ashtottari`, `yogini_dasha`, `AlternateDashaPeriod`, `AshtottariPolicy`, `YoginiPolicy` |
+| Jaimini karakas | `jaimini_karakas`, `atmakaraka`, `JaiminiKarakaResult`, `JaiminiPolicy` |
+| Ashtakavarga | `bhinnashtakavarga`, `ashtakavarga`, `transit_strength`, `AshtakavargaResult`, `AshtakavargaPolicy` |
+| Shadbala | `shadbala`, `sthana_bala`, `dig_bala`, `kala_bala`, `ShadbalaResult`, `ShadbalaPolicy` |
+
+`moira.vedic` does not include the Western classical surface (Arabic lots, Firdaria, Zodiacal Releasing, Huber). For that, use `moira.classical`. See [Section 21](#21-moiravedic--vedic-astrology-surface) for the full export reference.
+
+### `moira.sky` — Strict astronomy API
+
+`moira.sky` is a sovereign low-level astronomy surface that exposes Moira's computational substrate without astrological coupling. It is organized into ten submodules:
+
+| Submodule | Purpose |
+|---|---|
+| `moira.sky.time` | UT/TT/TDB conversions, ERA, GMST, GAST, LAST, ΔT decomposition |
+| `moira.sky.position` | Five-stage astrometric correction pipeline (light-time → aberration → deflection → frame bias → topocentric) |
+| `moira.sky.frames` | ICRF/ecliptic/equatorial/horizontal transforms, precession and nutation matrices |
+| `moira.sky.visibility` | Heliacal events, Yallop lunar crescent, arcus visionis, atmospheric extinction |
+| `moira.sky.bodies` | Geocentric, heliocentric, SSB, planetocentric, and topocentric body positions; nodes and apsides |
+| `moira.sky.observation` | Phase angle, illuminated fraction, apparent magnitude, elongation, Moon phases, apsides, conjunctions |
+| `moira.sky.galactic` | Galactic coordinate transforms (Liu, Zhu & Zhang 2011), reference point catalog |
+| `moira.sky.events` | Rise/set/transit, twilight times, stations and retrograde periods |
+| `moira.sky.eclipse` | Eclipse prediction, contact times, geographic paths, Saros/Metonic identification |
+| `moira.sky.occultation` | Lunar occultations of planets and stars, graze geometry, close approaches |
+
+See [Section 20](#20-moirasky--strict-astronomy-api) for the full submodule reference.
 
 ---
 
@@ -435,6 +481,8 @@ message.
 | `syzygy(jd)` | `tuple[float, str]` | `(jd_ut, kind)` of prenatal syzygy |
 | `stations(body, jd_start, jd_end)` | `list[StationEvent]` | Retrograde and direct stations |
 | `retrograde_periods(body, jd_start, jd_end)` | `list[tuple[float, float]]` | List of `(jd_start, jd_end)` retrograde intervals |
+| `moon_void_of_course(dt, ...)` / `is_moon_void_of_course(dt, ...)` | — | See [Void of Course Moon](#void-of-course-moon) subsection below |
+| `electional_windows(dt_start, dt_end, ...)` | — | See [Electional search](#electional-search) subsection below |
 
 ### Progressions & directions
 
@@ -526,6 +574,7 @@ message.
 | `geodetic(chart, zodiac="tropical", ayanamsa_system=None)` | `GeodeticChart` | Geodetic chart frame derived from planetary longitudes |
 | `geodetic_planet_equivalents(chart, bodies=None, zodiac="tropical", ayanamsa_system=None)` | `dict[str, float]` | Geodetic longitude equivalents for selected bodies |
 | `synodic_phase(body1, body2, dt)` | `dict[str, float \| str]` | Synodic separation, cycle fraction, and phase label for two bodies |
+| `galactic_houses(dt, latitude, longitude)` | `GalacticHouseCusps` | Galactic Porphyry house cusps for a time and observer location; `cusps_gal` gives native galactic membership, `cusps_ecl` provides ecliptic interoperability |
 
 ### Phenomena & occultations
 
@@ -1327,7 +1376,7 @@ print(result.projected_years)
 
 See Section 4 (Ephemeris & Positions).
 
-### Planetary Hours
+### Planetary Hours (moira.planetary_hours)
 
 ```python
 from moira.facade import planetary_hours, PlanetaryHoursDay, PlanetaryHour
@@ -1336,6 +1385,8 @@ day = planetary_hours(jd_ut, latitude, longitude, reader=None)
 # PlanetaryHoursDay(date, day_hours: list[PlanetaryHour], night_hours: list[PlanetaryHour])
 # PlanetaryHour(ruler, start_jd, end_jd)
 ```
+
+> **Note:** This is `moira.planetary_hours.PlanetaryHour`. A distinct vessel, `moira.cycles.PlanetaryHour`, is documented in Section 10 with additional fields (`hour_number`, `is_day_hour`). The two classes serve different engines and must not be conflated.
 
 ### Varga (Vedic divisional charts)
 
@@ -1596,7 +1647,9 @@ from moira.facade import (
 | `firdar_sequence_profile(jd_natal, is_day, jd_now)` | `FirdarSequenceProfile` | Full condition profile across sequence |
 | `firdar_active_pair(jd_natal, jd_now, is_day)` | `FirdarActivePair` | Major + minor lord pair at jd_now |
 
-#### `FirdarPeriod` fields
+#### `FirdarPeriod` fields (moira.timelords)
+
+> This is `moira.timelords.FirdarPeriod`. A distinct vessel, `moira.cycles.FirdarPeriod`, is documented in Section 10 with different fields (`ruler`, `start_jd`, `end_jd`, `duration_years`, `ordinal`, `sub_periods`). The two classes serve different engines and must not be conflated.
 
 | Field | Type | Description |
 |---|---|---|
@@ -2281,7 +2334,7 @@ The Jupiter–Saturn 20/200/800-year conjunction doctrine (Abu Ma'shar, Kepler).
 | Function | Returns | Description |
 |---|---|---|
 | `great_conjunctions(jd_start, jd_end)` | `GreatConjunctionSeries` | All Jupiter–Saturn conjunctions in a range |
-| `mutation_period_at(jd_ut)` | `MutationPeriod` | Elemental mutation period enclosing a given moment |
+| `mutation_period_at(longitude)` | `GreatMutationElement` | Elemental trigon (FIRE / EARTH / AIR / WATER) for a given ecliptic longitude |
 
 #### `GreatConjunction` fields
 
@@ -2322,7 +2375,7 @@ The seven-age model from *Tetrabiblos* I.10. Each planet governs a developmental
 | Function | Returns | Description |
 |---|---|---|
 | `planetary_age_at(age_years)` | `PlanetaryAgePeriod` | Which planet governs a given age |
-| `planetary_age_profile(jd_natal, jd_now)` | `PlanetaryAgeProfile` | Full seven-period model with current period identified |
+| `planetary_age_profile(age_years=None)` | `PlanetaryAgeProfile` | Full seven-period model; pass `age_years` to identify the current period |
 
 #### `PlanetaryAgePeriod` fields
 
@@ -2438,6 +2491,8 @@ from moira.huber import (
     dynamic_intensity, intensity_at, chart_intensity_profile,
 )
 ```
+
+> The Huber symbols are also available via the cumulative tier modules: `moira.classical`, `moira.predictive`, and `moira.facade`. The `moira.huber` import path is the direct low-level surface; the tier modules re-export the same symbols.
 
 Implements the computational apparatus of the Huber method (Bruno and Louise Huber, Astrological Psychology Institute). Koch houses are prescribed by Huber doctrine; all functions accept any `HouseCusps` but note the doctrinal preference.
 
@@ -3716,6 +3771,744 @@ from moira.facade import HISTORICAL_SOTHIC_EPOCHS
 from moira.facade import CIRCLE_TYPES, DEFAULT_PARAN_POLICY
 from moira.facade import HARMONIC_PRESETS, MANSIONS
 ```
+
+---
+
+## 20. `moira.sky` — Strict Astronomy API
+
+`moira.sky` is a sovereign astronomical computation surface. Every quantity is derived from Moira's own verified pipeline — the DE441 ephemeris, IAU 2006 precession, IAU 2000A nutation, and IERS ΔT. It exposes the low-level astronomy substrate that underpins the astrological tier modules without any application-layer coupling.
+
+```python
+import moira.sky
+from moira.sky import time, position, frames, visibility
+from moira.sky import bodies, observation, galactic, events, eclipse, occultation
+```
+
+Each submodule is a self-contained import surface. Submodules do not import from each other.
+
+> **Note:** Submodules marked `[stub]` in the `moira.sky` package docstring raise `NotImplementedError` for functions not yet fully implemented. They are documented and importable, but do not silently return incorrect results.
+
+---
+
+### `moira.sky.time` — Time Systems and ΔT
+
+```python
+from moira.sky.time import (
+    CalendarDateTime, julian_day, calendar_from_jd, calendar_datetime_from_jd,
+    jd_from_datetime, decimal_year, decimal_year_from_jd, centuries_from_j2000,
+    ut_to_tt, tt_to_ut, tt_to_tdb,
+    earth_rotation_angle, greenwich_mean_sidereal_time,
+    apparent_sidereal_time, apparent_sidereal_time_at, local_sidereal_time,
+    DeltaTPolicy, delta_t, delta_t_from_jd,
+    DeltaTBreakdown, delta_t_breakdown,
+    secular_trend, core_delta_t, cryo_delta_t, fluid_lowfreq,
+)
+```
+
+**Calendar and Julian Day**
+
+| Function | Signature | Description |
+|---|---|---|
+| `julian_day` | `(year, month, day, hour=0.0) → float` | Calendar date → JD |
+| `calendar_from_jd` | `(jd: float) → CalendarDateTime` | JD → BCE-safe calendar breakdown |
+| `calendar_datetime_from_jd` | `(jd: float) → CalendarDateTime` | Alias for `calendar_from_jd` |
+| `jd_from_datetime` | `(dt: datetime) → float` | Timezone-aware datetime → JD UT; naïve datetimes raise `ValueError` |
+| `decimal_year` | `(year, month, day) → float` | Calendar date → decimal year |
+| `decimal_year_from_jd` | `(jd: float) → float` | JD → decimal year |
+| `centuries_from_j2000` | `(jd_tt: float) → float` | Julian centuries from J2000.0 |
+
+**Time scale conversions**
+
+| Function | Signature | Description |
+|---|---|---|
+| `ut_to_tt` | `(jd_ut: float) → float` | UT → Terrestrial Time (adds ΔT) |
+| `tt_to_ut` | `(jd_tt: float) → float` | TT → UT |
+| `tt_to_tdb` | `(jd_tt: float) → float` | TT → Barycentric Dynamical Time |
+
+**Earth rotation and sidereal time**
+
+| Function | Signature | Description |
+|---|---|---|
+| `earth_rotation_angle` | `(jd_ut: float) → float` | ERA in degrees |
+| `greenwich_mean_sidereal_time` | `(jd_ut: float) → float` | GMST in degrees |
+| `apparent_sidereal_time` | `(jd_ut: float) → float` | GAST in degrees |
+| `apparent_sidereal_time_at` | `(jd_ut, dpsi, obliq) → float` | GAST with supplied nutation terms |
+| `local_sidereal_time` | `(jd_ut, longitude, dpsi=None, obliq=None) → float` | LAST in degrees |
+
+**ΔT — standard**
+
+| Function | Signature | Description |
+|---|---|---|
+| `delta_t` | `(year: float) → float` | ΔT in seconds for a decimal year |
+| `delta_t_from_jd` | `(jd: float) → float` | ΔT in seconds from JD |
+
+**ΔT — physics-based decomposition**
+
+```python
+bd = delta_t_breakdown(year)
+# DeltaTBreakdown(total, secular, core, cryo, fluid, uncertainty)
+```
+
+| Function | Signature | Description |
+|---|---|---|
+| `delta_t_breakdown` | `(year: float) → DeltaTBreakdown` | Full decomposition with uncertainty band |
+| `secular_trend` | `(year: float) → float` | Tidal + non-tidal secular term |
+| `core_delta_t` | `(year: float) → float` | Core/mantle coupling contribution |
+| `cryo_delta_t` | `(year: float) → float` | Cryospheric contribution (ice mass loss) |
+| `fluid_lowfreq` | `(year: float) → float` | Fluid outer-core low-frequency term |
+
+#### `DeltaTBreakdown` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `total` | `float` | Total ΔT in seconds |
+| `secular` | `float` | Secular trend component |
+| `core` | `float` | Core coupling component |
+| `cryo` | `float` | Cryospheric component |
+| `fluid` | `float` | Fluid outer-core component |
+| `uncertainty` | `float` | Estimated 1σ uncertainty in seconds |
+
+---
+
+### `moira.sky.position` — Astrometric Correction Pipeline
+
+```python
+from moira.sky.position import (
+    apply_light_time, apply_aberration, apply_deflection, apply_frame_bias,
+    topocentric_correction, apply_refraction,
+    atmospheric_refraction, atmospheric_refraction_extended,
+)
+```
+
+The five-stage pipeline converts geometric ICRF coordinates into observable apparent positions. Apply corrections in the order listed:
+
+| Stage | Function | Description |
+|---|---|---|
+| 1 | `apply_light_time(body, jd_tt, reader, earth_ssb, barycentric_fn)` | Iterative geometric delay; returns `(corrected_xyz: Vec3, light_time_days: float)` |
+| 2 | `apply_aberration(xyz, observer_vel)` | Relativistic stellar aberration due to observer velocity |
+| 3 | `apply_deflection(xyz, jd_tt, reader)` | Gravitational light deflection by Sun, Jupiter, and Saturn |
+| 4 | `apply_frame_bias(xyz)` | IAU 2006 FK5/ICRS frame alignment (~17 mas offset) |
+| 5 | `topocentric_correction(xyz_gcrs, jd_tt, lat, lon, elev_m=0.0)` | WGS-84 observer parallax shift |
+
+Atmospheric refraction (applied after stage 5):
+
+| Function | Signature | Description |
+|---|---|---|
+| `apply_refraction(alt_deg, policy)` | `→ float` | Apply the policy-selected refraction model to an altitude in degrees |
+| `atmospheric_refraction(altitude_deg)` | `→ float` | Bennett (1982) refraction in arcminutes — fast, altitude only |
+| `atmospheric_refraction_extended(altitude_deg, temperature_C, pressure_mbar, humidity, wavelength_um, elevation_m)` | `→ float` | Full physical refraction model |
+
+---
+
+### `moira.sky.frames` — Coordinate Frame Transforms
+
+```python
+from moira.sky.frames import (
+    Vec3, Mat3,
+    icrf_to_ecliptic, icrf_to_true_ecliptic, true_ecliptic_latitude, icrf_to_equatorial,
+    ecliptic_to_equatorial, equatorial_to_ecliptic,
+    equatorial_to_horizontal, horizontal_to_equatorial,
+    precession_matrix_equatorial, nutation_matrix_equatorial,
+    rot_x, rot_y, rot_z,
+    cotrans_sp, aberration_correction,
+    normalize_degrees, angular_distance, signed_angular_distance,
+    equation_of_time,
+    LocalSpacePosition, local_space_positions,
+)
+```
+
+`Vec3 = tuple[float, float, float]` — Cartesian triple or angular triple.
+`Mat3 = tuple[Vec3, Vec3, Vec3]` — 3×3 rotation matrix as three row vectors.
+
+**Direct frame transforms**
+
+| Function | Signature | Description |
+|---|---|---|
+| `icrf_to_ecliptic` | `(xyz: Vec3, obliquity: float) → (lon, lat)` | ICRF Cartesian → ecliptic lon/lat using supplied obliquity (degrees) |
+| `icrf_to_true_ecliptic` | `(xyz: Vec3, jd_tt: float) → (lon, lat)` | ICRF → true ecliptic with full precession + nutation |
+| `true_ecliptic_latitude` | `(xyz: Vec3, jd_tt: float) → float` | Ecliptic latitude only (P+N applied) |
+| `icrf_to_equatorial` | `(xyz: Vec3) → (ra_rad, dec_rad)` | ICRF Cartesian → RA/Dec in radians |
+| `ecliptic_to_equatorial` | `(lon, lat, obliquity) → (ra, dec)` | Ecliptic → equatorial (degrees) |
+| `equatorial_to_ecliptic` | `(ra, dec, obliquity) → (lon, lat)` | Equatorial → ecliptic (degrees) |
+| `equatorial_to_horizontal` | `(ra, dec, lst, lat) → (az, alt)` | Equatorial → azimuth/altitude; azimuth 0=N, 90=E |
+| `horizontal_to_equatorial` | `(az, alt, lst, lat) → (ra, dec)` | Horizontal → equatorial (degrees) |
+
+**Rotation matrices**
+
+| Function | Signature | Description |
+|---|---|---|
+| `precession_matrix_equatorial` | `(jd_tt: float) → Mat3` | IAU 2006 precession rotation matrix |
+| `nutation_matrix_equatorial` | `(jd_tt: float) → Mat3` | IAU 2000A nutation rotation matrix |
+| `rot_x` / `rot_y` / `rot_z` | `(angle_rad: float) → Mat3` | Single-axis rotation matrices (astronomical sign convention) |
+| `cotrans_sp` | `(xyz: Vec3, matrix: Mat3) → Vec3` | Apply a rotation matrix to a Cartesian triple |
+| `aberration_correction` | `(xyz: Vec3, observer_vel: Vec3) → Vec3` | Annual aberration (geometric model) |
+
+**Utility**
+
+| Function | Signature | Description |
+|---|---|---|
+| `normalize_degrees` | `(deg: float) → float` | Fold angle into [0, 360) |
+| `angular_distance` | `(a, b: float) → float` | Unsigned shortest arc between two angles (degrees) |
+| `signed_angular_distance` | `(a, b: float) → float` | Signed angular difference (degrees) |
+| `equation_of_time` | `(jd_tt: float) → float` | Solar time correction in minutes |
+
+**Horizon frame — batch**
+
+```python
+from moira.sky.frames import local_space_positions, LocalSpacePosition
+
+positions = local_space_positions(chart_positions, jd_ut, lat, lon, reader)
+# list[LocalSpacePosition] — each has .azimuth, .altitude, .is_above, .compass_direction()
+```
+
+---
+
+### `moira.sky.bodies` — Celestial Body Positions
+
+```python
+from moira.sky.bodies import (
+    PlanetData, SkyPosition, HeliocentricData, CartesianPosition,
+    SSBPosition, SSB_BODIES, PlanetocentricData, VALID_OBSERVER_BODIES,
+    NodeData, NodesAndApsides,
+    planet_at, sky_position_at, all_planets_at, sun_longitude,
+    planet_relative_to, next_heliocentric_transit,
+    heliocentric_planet_at, all_heliocentric_at,
+    ssb_position_at, all_ssb_positions_at,
+    planetocentric_at, all_planetocentric_at,
+    mean_node, true_node, mean_lilith, true_lilith,
+    next_moon_node_crossing, nodes_and_apsides_at,
+)
+```
+
+| Function | Returns | Description |
+|---|---|---|
+| `planet_at(body, jd_ut, reader=None, ...)` | `PlanetData` | Geocentric ecliptic position |
+| `sky_position_at(body, jd_ut, observer_lat, observer_lon, observer_elev_m=0.0, reader=None)` | `SkyPosition` | Topocentric apparent RA/Dec + alt/az |
+| `all_planets_at(jd_ut, bodies=None, reader=None)` | `dict[str, PlanetData]` | All planets at one epoch |
+| `sun_longitude(jd_ut, reader=None)` | `float` | Solar ecliptic longitude (geocentric, true-of-date) |
+| `planet_relative_to(body, jd_ut, reference)` | `PlanetData` | Body position measured from reference body |
+| `next_heliocentric_transit(body, jd_start, longitude)` | `float` | Next JD when body's heliocentric longitude equals target |
+| `heliocentric_planet_at(body, jd_ut, reader=None)` | `HeliocentricData` | Heliocentric ecliptic position |
+| `all_heliocentric_at(jd_ut, bodies=None, reader=None)` | `dict[str, HeliocentricData]` | All planets heliocentrically |
+| `ssb_position_at(body, jd_ut, reader=None)` | `SSBPosition` | BCRS ecliptic position measured from Solar System Barycentre |
+| `all_ssb_positions_at(jd_ut, reader=None)` | `dict[str, SSBPosition]` | All `SSB_BODIES` from SSB |
+| `planetocentric_at(observer_body, target_body, jd_ut)` | `PlanetocentricData` | Target as seen from the center of observer body |
+| `all_planetocentric_at(observer_body, jd_ut)` | `dict[str, PlanetocentricData]` | All targets from observer body |
+| `mean_node(jd_ut)` | `NodeData` | Mean lunar ascending node |
+| `true_node(jd_ut, reader=None)` | `NodeData` | True (osculating) ascending node |
+| `mean_lilith(jd_ut)` | `NodeData` | Mean Black Moon Lilith (mean apogee) |
+| `true_lilith(jd_ut)` | `NodeData` | True Lilith (osculating apogee) |
+| `next_moon_node_crossing(jd_start, reader=None, ascending=True)` | `float` | Next Moon ecliptic crossing (JD UT) |
+| `nodes_and_apsides_at(jd_ut)` | `NodesAndApsides` | Combined node/apsides vessel (mean/true node, Lilith, perigee, apogee) |
+
+> **Note:** `moira.sky.bodies` is the strict astronomy surface for solar system bodies. Asteroids, Uranian planets, and fixed stars are not included; use `moira.facade` for those.
+
+---
+
+### `moira.sky.observation` — Observational Quantities and Phenomena
+
+```python
+from moira.sky.observation import (
+    phase_angle, illuminated_fraction, elongation,
+    synodic_phase_angle, synodic_phase_state,
+    angular_diameter, apparent_magnitude,
+    PhenomenonEvent, OrbitalResonance, PlanetPhenomena, MOON_PHASE_ANGLES,
+    greatest_elongation, perihelion, aphelion,
+    next_moon_phase, moon_phases_in_range,
+    next_conjunction, conjunctions_in_range,
+    resonance, planet_phenomena_at,
+)
+```
+
+**Phase quantities**
+
+| Function | Signature | Description |
+|---|---|---|
+| `phase_angle(body, jd_ut)` | `→ float` | Sun–Planet–Earth angle in degrees |
+| `illuminated_fraction(phase_angle)` | `→ float` | Illuminated disk fraction (0.0–1.0) |
+| `elongation(body, jd_ut)` | `→ float` | Angular separation from the Sun (0°–180°) |
+| `synodic_phase_angle(body1, body2, jd_ut)` | `→ float` | Ecliptic phase angle between any two bodies (0°–360°) |
+| `synodic_phase_state(angle_deg)` | `→ str` | Coarse phase label (e.g. "waxing", "full", "waning") |
+| `angular_diameter(body, jd_ut)` | `→ float` | Apparent angular diameter in arcseconds |
+| `apparent_magnitude(body, jd_ut)` | `→ float` | Apparent visual magnitude (V band) |
+
+**Phenomena search**
+
+| Function | Signature | Description |
+|---|---|---|
+| `greatest_elongation(body, jd_start)` | `→ PhenomenonEvent` | Next greatest elongation of Mercury or Venus |
+| `perihelion(body, jd_start)` | `→ PhenomenonEvent` | Next perihelion passage |
+| `aphelion(body, jd_start)` | `→ PhenomenonEvent` | Next aphelion passage |
+| `next_moon_phase(phase_name, jd_start)` | `→ float` | Next named Moon phase (JD UT); keys from `MOON_PHASE_ANGLES` |
+| `moon_phases_in_range(jd_start, jd_end)` | `→ list[PhenomenonEvent]` | All eight Moon phases in a date range |
+| `next_conjunction(body1, body2, jd_start)` | `→ PhenomenonEvent` | Next geocentric conjunction |
+| `conjunctions_in_range(body1, body2, jd_start, jd_end)` | `→ list[PhenomenonEvent]` | All conjunctions in a date range |
+| `resonance(body1, body2)` | `→ OrbitalResonance` | Best harmonic ratio P/Q between sidereal periods |
+| `planet_phenomena_at(body, jd_ut)` | `→ PlanetPhenomena` | Full phenomena snapshot at epoch |
+
+`MOON_PHASE_ANGLES` — dict mapping phase name → target elongation:
+`new_moon`, `first_quarter`, `full_moon`, `last_quarter`, `waxing_crescent`, `waxing_gibbous`, `waning_gibbous`, `waning_crescent`.
+
+---
+
+### `moira.sky.galactic` — Galactic Coordinate System
+
+```python
+from moira.sky.galactic import (
+    GalacticPosition,
+    equatorial_to_galactic, galactic_to_equatorial,
+    ecliptic_to_galactic, galactic_to_ecliptic,
+    galactic_reference_points, galactic_position_of, all_galactic_positions,
+)
+```
+
+Rotation matrix authority: Liu, Zhu & Zhang (2011, A&A 526, A16) — IAU 1958 galactic pole definition rigorously tied to ICRS/J2000. Galactic longitude increases eastward; 0° points toward the Galactic Center.
+
+| Function | Signature | Description |
+|---|---|---|
+| `equatorial_to_galactic(ra_deg, dec_deg)` | `→ (l, b)` | RA/Dec → galactic l/b (J2000, degrees) |
+| `galactic_to_equatorial(l_deg, b_deg)` | `→ (ra, dec)` | Galactic l/b → RA/Dec (J2000, degrees) |
+| `ecliptic_to_galactic(lon, lat, obliquity, jd_tt)` | `→ (l, b)` | Ecliptic → galactic (bridges via equatorial) |
+| `galactic_to_ecliptic(l, b, obliquity, jd_tt)` | `→ (lon, lat)` | Galactic → ecliptic (bridges via equatorial) |
+| `galactic_reference_points(obliquity, jd_tt)` | `→ dict[str, (lon, lat)]` | Ecliptic coordinates of GC, NGP, GAC, SGP, SGC at the given epoch |
+| `galactic_position_of(body, jd_ut, ...)` | `→ GalacticPosition` | `GalacticPosition` for one body |
+| `all_galactic_positions(chart_lons, jd_ut, ...)` | `→ list[GalacticPosition]` | `GalacticPosition` for all bodies in a chart |
+
+Named reference points: **GC** (Galactic Center / Sgr A*), **NGP** (North Galactic Pole, Coma Berenices), **GAC** (Galactic Anti-Center, Gemini/Auriga), **SGP** (South Galactic Pole), **SGC** (Super-Galactic Center, Virgo/M87).
+
+---
+
+### `moira.sky.events` — Rise, Set, Transit, Twilight, and Stations
+
+```python
+from moira.sky.events import (
+    RiseSetPolicy, TwilightTimes,
+    find_phenomena, get_transit, twilight_times,
+    StationEvent, find_stations, next_station, is_retrograde, retrograde_periods,
+)
+```
+
+**Rise / set / transit / twilight**
+
+| Function | Signature | Description |
+|---|---|---|
+| `find_phenomena(body, jd_day, lat, lon, policy)` | `→ dict` | Rise, set, transit dict with JD_UT values (or `None` when event does not occur that day) |
+| `get_transit(body, jd_day, lat, lon, upper=True)` | `→ float` | JD_UT of upper (or lower) meridian transit |
+| `twilight_times(jd_day, lat, lon)` | `→ TwilightTimes` | Civil / nautical / astronomical twilight table for a day and location |
+
+#### `TwilightTimes` fields
+
+| Field | Description |
+|---|---|
+| `civil_dusk`, `civil_dawn` | Sun at −6° |
+| `nautical_dusk`, `nautical_dawn` | Sun at −12° |
+| `astro_dusk`, `astro_dawn` | Sun at −18° |
+| `sunset`, `sunrise` | Limb at geometric horizon |
+| `solar_noon` | Upper meridian transit |
+
+**Stations**
+
+| Function | Signature | Description |
+|---|---|---|
+| `find_stations(body, jd_start, jd_end)` | `→ list[StationEvent]` | All SR/SD stations for a body in a date range |
+| `next_station(body, jd_start)` | `→ StationEvent` | First station (SR or SD) after jd_start |
+| `is_retrograde(body, jd_ut)` | `→ bool` | True if the body is retrograde at the given epoch |
+| `retrograde_periods(body, jd_start, jd_end)` | `→ list[tuple[float, float]]` | `(jd_SR, jd_SD)` pairs — begin and end of each retrograde arc |
+
+`StationEvent` fields: `body`, `kind` (`"SR"` = stationary retrograde / `"SD"` = stationary direct), `jd_ut`, `datetime` (UTC), `longitude`.
+
+---
+
+### `moira.sky.eclipse` — Solar and Lunar Eclipses
+
+```python
+from moira.sky.eclipse import (
+    EclipseCalculator, EclipseType,
+    EclipseData, EclipseEvent,
+    SolarEclipsePath, SolarEclipseLocalCircumstances,
+    SolarBodyCircumstances, LocalContactCircumstances,
+    LunarEclipseAnalysis, LunarEclipseLocalCircumstances, LunarEclipseContacts,
+    next_solar_eclipse_at_location, find_lunar_contacts,
+)
+```
+
+**Primary engine**
+
+```python
+calc = EclipseCalculator()
+
+# Solar eclipse search and local circumstances
+ev   = calc.next_solar_eclipse(lat, lon)
+circ = calc.solar_local_circumstances(ev, lat, lon, elev_m=0.0)
+path = calc.solar_eclipse_path(ev)
+full = calc.next_solar_eclipse_at_location(lat, lon)   # search + circumstances combined
+
+# Lunar eclipse search and analysis
+ev   = calc.next_lunar_eclipse()
+ana  = calc.analyze_lunar_eclipse(ev)
+lc   = calc.lunar_local_circumstances(ev, lat, lon, elev_m=0.0)
+
+# Geometry snapshot at any epoch
+snap = calc.calculate_jd(jd_ut)   # → EclipseData
+```
+
+**Convenience function**
+
+```python
+from moira.sky.eclipse import next_solar_eclipse_at_location
+result = next_solar_eclipse_at_location(lat, lon, jd_ut)
+```
+
+**Key vessel fields**
+
+`EclipseData`: `eclipse_type`, `eclipse_magnitude`, `saros_index`, `metonic_year`, `metonic_is_reset`, `moon_parallax`, `solar_diameter`, `moon_diameter`, `separation`, `phase_angle`.
+
+`EclipseEvent`: `jd_ut`, `eclipse_type`, `datetime_utc` (computed property).
+
+`LunarEclipseContacts`: precise TT contact times P1 (1st penumbral), U1 (1st umbral), U2 (start of totality), U3 (end of totality), U4 (last umbral), P4 (last penumbral).
+
+> **Note:** `next_solar_eclipse_at_location` is also available directly from `moira.facade` and `moira.eclipse`. It is not re-exported through `moira.predictive`.
+
+---
+
+### `moira.sky.occultation` — Occultations, Grazes, and Close Approaches
+
+```python
+from moira.sky.occultation import (
+    CloseApproach, LunarOccultation, OccultationPathGeometry,
+    GrazeCircumstances, GrazeTableRow, GrazeProductGeometry, GrazeProductTrack,
+    close_approaches, lunar_occultation, lunar_occultation_path_at, lunar_occultation_path,
+    all_lunar_occultations,
+    lunar_star_occultation, lunar_star_occultation_path_at, lunar_star_occultation_path,
+    lunar_star_graze_circumstances, lunar_star_graze_latitude,
+    lunar_star_practical_graze_latitude, lunar_star_graze_line,
+    lunar_star_graze_table, lunar_star_graze_product_at, lunar_star_graze_product_track,
+)
+```
+
+| Function | Signature | Description |
+|---|---|---|
+| `close_approaches(body1, body2, jd_start, jd_end)` | `→ list[CloseApproach]` | All minimum-separation events between two bodies |
+| `lunar_occultation(body, jd_start, jd_end)` | `→ list[LunarOccultation]` | Moon occultations of a named planet |
+| `all_lunar_occultations(jd_start, jd_end)` | `→ dict[str, list[LunarOccultation]]` | Occultations of all visible planets |
+| `lunar_occultation_path_at(event, jd_ut)` | `→ OccultationPathGeometry` | Path geometry at a given moment |
+| `lunar_occultation_path(event)` | `→ OccultationPathGeometry` | Full geographic path of a planetary occultation |
+| `lunar_star_occultation(star, jd_start, jd_end)` | `→ list[LunarOccultation]` | Moon occultations of a named fixed star |
+| `lunar_star_occultation_path(event)` | `→ OccultationPathGeometry` | Geographic path of a stellar occultation |
+| `lunar_star_graze_table(star, event)` | `→ list[GrazeTableRow]` | Latitude-keyed graze contact table |
+| `lunar_star_graze_product_track(star, event)` | `→ GrazeProductTrack` | Full graze track across a latitude band |
+
+---
+
+### `moira.sky.visibility` — Observational Visibility Doctrine
+
+```python
+from moira.sky.visibility import (
+    HeliacalEventKind, VisibilityTargetKind, LightPollutionClass,
+    LightPollutionDerivationMode, ObserverAid, VisibilityCriterionFamily,
+    LunarCrescentVisibilityClass, VisibilityExtinctionModel, VisibilityTwilightModel,
+    MoonlightPolicy,
+    ExtinctionCoefficient, ObserverVisibilityEnvironment,
+    VisibilityPolicy, VisibilitySearchPolicy, VisibilityModel, HeliacalPolicy,
+    LunarCrescentDetails, VisibilityAssessment,
+    GeneralVisibilityEvent, PlanetHeliacalEvent,
+    visibility_assessment, visual_limiting_magnitude, visibility_event,
+    planet_heliacal_rising, planet_heliacal_setting,
+    planet_acronychal_rising, planet_acronychal_setting,
+)
+```
+
+| Function | Signature | Description |
+|---|---|---|
+| `visibility_assessment(body, jd_ut, lat, lon, *, policy=None)` | `→ VisibilityAssessment` | Single-epoch observability check |
+| `visual_limiting_magnitude(jd_ut, lat, lon, *, policy=None)` | `→ float` | Effective limiting magnitude for the observer/epoch |
+| `visibility_event(body, event_kind, jd_start, lat, lon, *, heliacal_policy=None, ...)` | `→ GeneralVisibilityEvent \| None` | Search for next heliacal event |
+| `planet_heliacal_rising(body, jd_start, lat, lon, ...)` | `→ PlanetHeliacalEvent \| None` | Morning first visibility |
+| `planet_heliacal_setting(body, jd_start, lat, lon, ...)` | `→ PlanetHeliacalEvent \| None` | Evening last visibility |
+| `planet_acronychal_rising(body, jd_start, lat, lon, ...)` | `→ PlanetHeliacalEvent \| None` | Evening first visibility |
+| `planet_acronychal_setting(body, jd_start, lat, lon, ...)` | `→ PlanetHeliacalEvent \| None` | Morning last visibility |
+
+`LunarCrescentVisibilityClass` values: **A** (easily visible), **B** (visible under perfect conditions), **C** (may need optical aid), **D** (only with optical aid), **E** (not with optical aid), **F** (below the horizon).
+
+`HeliacalEventKind`: `MorningFirst`, `EveningLast`, `EveningFirst`, `MorningLast`.
+
+---
+
+## 21. `moira.vedic` — Vedic Astrology Surface
+
+`moira.vedic` collects every Vedic-domain subsystem into a single coherent import surface. It inherits the full `moira.essentials` surface and adds: sidereal positioning, nakshatras, panchanga, all 16 vargas, Vedic dignities, Vimshottari and alternate dasha systems (Ashtottari, Yogini), Jaimini karakas, Ashtakavarga, and Shadbala.
+
+It does not include the Western classical surface (Arabic lots, Firdaria, Zodiacal Releasing, Huber, etc.). For that, use `moira.classical`. For the complete surface, use `moira.facade`.
+
+```python
+from moira.vedic import *
+
+m     = Moira()
+chart = m.chart(datetime(1985, 3, 21, 6, 0, tzinfo=timezone.utc))
+
+# Sidereal and nakshatra positions
+ayan = ayanamsa(chart.jd, Ayanamsa.LAHIRI)
+naks = all_nakshatras_at(chart.longitudes(), chart.jd)
+
+# Panchanga
+pg   = panchanga_at(chart.longitudes()['Sun'], chart.longitudes()['Moon'], chart.jd)
+
+# Vedic dignities
+d    = vedic_dignity('Mars', chart.longitudes()['Mars'])
+
+# Vimshottari dasha
+periods = vimshottari(moon_lon=chart.longitudes()['Moon'], birth_jd=chart.jd)
+
+# Shadbala
+strength = shadbala(chart, latitude=28.6, longitude=77.2)
+```
+
+---
+
+### Sidereal, Ayanamsa, and Nakshatras
+
+```python
+from moira.vedic import (
+    UserDefinedAyanamsa, NakshatraPosition,
+    nakshatra_of, all_nakshatras_at,
+    # ayanamsa, tropical_to_sidereal, sidereal_to_tropical already in essentials
+)
+```
+
+| Function | Signature | Description |
+|---|---|---|
+| `nakshatra_of(tropical_longitude, jd, ayanamsa_system=Ayanamsa.LAHIRI)` | `→ NakshatraPosition` | Nakshatra position for a tropical ecliptic longitude |
+| `all_nakshatras_at(positions: dict[str, float], jd, ayanamsa_system=Ayanamsa.LAHIRI)` | `→ dict[str, NakshatraPosition]` | Nakshatra positions for all bodies in a chart |
+
+#### `NakshatraPosition` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `nakshatra` | `str` | Nakshatra name |
+| `nakshatra_index` | `int` | 0–26 |
+| `nakshatra_lord` | `str` | Dasha lord of this nakshatra |
+| `pada` | `int` | 1–4 |
+| `degrees_in` | `float` | Degrees into this nakshatra (0–13.333°) |
+| `sidereal_lon` | `float` | Sidereal longitude used for the calculation |
+
+`UserDefinedAyanamsa` — define a custom ayanamsa by specifying an offset in degrees or a reference epoch.
+
+---
+
+### Panchanga
+
+```python
+from moira.vedic import (
+    panchanga_at, sankranti_at, tithi_condition_profile, panchanga_profile,
+    PanchangaResult, SankrantiResult, TithiConditionProfile, PanchangaProfile,
+    TithiPaksha, YogaClass, KaranaType, VaraLordType, PanchangaPolicy,
+    TITHI_NAMES, YOGA_NAMES, KARANA_NAMES, VARA_LORDS, VARA_NAMES, RASHI_NAMES,
+)
+```
+
+| Function | Signature | Description |
+|---|---|---|
+| `panchanga_at(sun_tropical_lon, moon_tropical_lon, jd, ayanamsa_system='Lahiri', policy=None)` | `→ PanchangaResult` | Five Panchanga elements at a given JD |
+| `sankranti_at(jd_start, jd_end, reader=None)` | `→ SankrantiResult` | Solar ingress into each rashi in a date range |
+| `tithi_condition_profile(result)` | `→ TithiConditionProfile` | Tithi quality assessment |
+| `panchanga_profile(result)` | `→ PanchangaProfile` | Aggregate Panchanga quality profile |
+
+#### `PanchangaResult` fields
+
+| Field | Type | Description |
+|---|---|---|
+| `tithi` | `int` | Lunar day (1–30) |
+| `tithi_name` | `str` | Name from `TITHI_NAMES` |
+| `paksha` | `TithiPaksha` | `Shukla` (waxing) or `Krishna` (waning) |
+| `yoga` | `int` | Yoga index (0–26) |
+| `yoga_name` | `str` | Name from `YOGA_NAMES` |
+| `yoga_class` | `YogaClass` | Auspicious / Inauspicious / Neutral |
+| `karana` | `int` | Karana index |
+| `karana_name` | `str` | Name from `KARANA_NAMES` |
+| `karana_type` | `KaranaType` | Fixed or Movable |
+| `vara` | `int` | Weekday (0 = Sunday) |
+| `vara_lord` | `VaraLordType` | Planetary ruler of the day |
+
+---
+
+### Vedic Dignities
+
+```python
+from moira.vedic import (
+    vedic_dignity, planetary_relationships, dignity_condition_profile, chart_dignity_profile,
+    VedicDignityResult, PlanetaryRelationship, VedicDignityPolicy,
+    DignityConditionProfile, ChartDignityProfile,
+    VedicDignityRank, CompoundRelationship, DignityTier,
+)
+```
+
+| Function | Signature | Description |
+|---|---|---|
+| `vedic_dignity(planet, longitude, policy=None)` | `→ VedicDignityResult` | Essential Vedic dignity for a planet at a longitude |
+| `planetary_relationships(planet, jd_ut, policy=None)` | `→ PlanetaryRelationship` | Natural + temporary + compound friendship |
+| `dignity_condition_profile(planet, chart)` | `→ DignityConditionProfile` | Dignity assessment with tier classification |
+| `chart_dignity_profile(chart)` | `→ ChartDignityProfile` | Full chart-wide dignity analysis |
+
+Dignity constants: `EXALTATION_SIGN`, `EXALTATION_DEGREE`, `DEBILITATION_SIGN`, `MULATRIKONA_SIGN`, `OWN_SIGNS`, `NATURAL_FRIENDS`, `NATURAL_NEUTRALS`, `NATURAL_ENEMIES`.
+
+---
+
+### Varga — Divisional Charts
+
+```python
+from moira.vedic import (
+    VargaPoint, calculate_varga,
+    navamsa, saptamsa, dashamansa, dwadashamsa, trimshamsa,
+    hora, chaturthamsha, shashthamsha, ashtamsha, shodashamsha,
+    vimshamsha, chaturvimshamsha, saptavimshamsha,
+    khavedamsha, akshavedamsha, shashtiamsha,
+)
+```
+
+`calculate_varga(longitude, divisor) → VargaPoint` — low-level entry point for any divisor.
+
+Named functions follow the pattern `navamsa(longitude) → VargaPoint`:
+
+| Function | Division | Traditional name |
+|---|---|---|
+| `hora` | D-2 | Hora chart |
+| `saptamsa` | D-7 | Children / fertility |
+| `navamsa` | D-9 | Marriage / dharma |
+| `dashamansa` | D-10 | Career / profession |
+| `dwadashamsa` | D-12 | Ancestors / parents |
+| `chaturthamsha` | D-4 | Property |
+| `shashthamsha` | D-6 | Enemies / health |
+| `ashtamsha` | D-8 | Longevity |
+| `shodashamsha` | D-16 | Vehicles, comforts |
+| `vimshamsha` | D-20 | Spirituality |
+| `chaturvimshamsha` | D-24 | Education, learning |
+| `saptavimshamsha` | D-27 | Strength |
+| `trimshamsa` | D-30 | Evils, illness |
+| `khavedamsha` | D-40 | Auspicious/inauspicious effects |
+| `akshavedamsha` | D-45 | All matters |
+| `shashtiamsha` | D-60 | Past life karma |
+
+---
+
+### Vimshottari Dasha
+
+```python
+from moira.vedic import (
+    vimshottari, current_dasha, dasha_balance, dasha_active_line,
+    dasha_condition_profile, dasha_sequence_profile, dasha_lord_pair,
+    DashaPeriod, DashaActiveLine, DashaConditionProfile,
+    DashaSequenceProfile, DashaLordPair,
+    VimshottariComputationPolicy, DEFAULT_VIMSHOTTARI_POLICY,
+    VIMSHOTTARI_YEARS, VIMSHOTTARI_SEQUENCE, VIMSHOTTARI_TOTAL,
+)
+```
+
+| Function | Signature | Description |
+|---|---|---|
+| `vimshottari(moon_lon, birth_jd, policy=None)` | `→ list[DashaPeriod]` | Full 120-year dasha sequence from birth |
+| `current_dasha(moon_lon, birth_jd, current_jd, policy=None)` | `→ DashaPeriod` | Active mahadasha at `current_jd` |
+| `dasha_balance(moon_lon, birth_jd, policy=None)` | `→ tuple[str, float]` | `(lord, years_remaining)` at birth |
+| `dasha_active_line(moon_lon, birth_jd, current_jd, levels=3)` | `→ DashaActiveLine` | Active maha / antara / pratyantar chain |
+| `dasha_condition_profile(moon_lon, birth_jd, current_jd)` | `→ DashaConditionProfile` | Dasha condition assessment |
+| `dasha_sequence_profile(moon_lon, birth_jd)` | `→ DashaSequenceProfile` | Full sequence profile with period summaries |
+
+`VIMSHOTTARI_YEARS` — dict of dasha lord → years in the 120-year cycle.
+`VIMSHOTTARI_SEQUENCE` — canonical lord sequence (Ketu, Venus, Sun, Moon, …).
+
+---
+
+### Alternate Dasha Systems — Ashtottari and Yogini
+
+```python
+from moira.vedic import (
+    ashtottari, yogini_dasha,
+    AlternateDashaPeriod, AshtottariPolicy, YoginiPolicy,
+    AlternatePeriodProfile, AlternateDashaSequenceProfile,
+    ASHTOTTARI_YEARS, ASHTOTTARI_SEQUENCE, ASHTOTTARI_TOTAL,
+    YOGINI_YEARS, YOGINI_SEQUENCE, YOGINI_PLANETS, YOGINI_TOTAL,
+)
+```
+
+| Function | Signature | Description |
+|---|---|---|
+| `ashtottari(moon_lon, birth_jd, policy=None)` | `→ list[AlternateDashaPeriod]` | 108-year Ashtottari sequence |
+| `yogini_dasha(moon_lon, birth_jd, policy=None)` | `→ list[AlternateDashaPeriod]` | 36-year Yogini sequence |
+
+`AshtottariPolicy` and `YoginiPolicy` control year-basis and sequence parameters.
+
+---
+
+### Jaimini Karakas
+
+```python
+from moira.vedic import (
+    jaimini_karakas, atmakaraka, karaka_condition_profile, jaimini_chart_profile,
+    JaiminiKarakaResult, KarakaAssignment, KarakaConditionProfile, JaiminiChartProfile,
+    JaiminiPolicy, KarakaRole, KarakaPlanetType,
+    KARAKA_NAMES_7, KARAKA_NAMES_8,
+)
+```
+
+| Function | Signature | Description |
+|---|---|---|
+| `jaimini_karakas(chart_longitudes, policy=None)` | `→ JaiminiKarakaResult` | Full 7- or 8-karaka assignment by degree |
+| `atmakaraka(chart_longitudes, policy=None)` | `→ KarakaAssignment` | Highest-degree planet (soul significator) |
+| `karaka_condition_profile(chart_longitudes, policy=None)` | `→ KarakaConditionProfile` | Dignity condition for each karaka |
+| `jaimini_chart_profile(chart_longitudes, policy=None)` | `→ JaiminiChartProfile` | Full chart karaka profile |
+
+`JaiminiPolicy` controls the 7-karaka vs. 8-karaka scheme and Rahu tie-break behaviour.
+
+---
+
+### Ashtakavarga
+
+```python
+from moira.vedic import (
+    bhinnashtakavarga, ashtakavarga, transit_strength,
+    sign_strength_profile, ashtakavarga_chart_profile,
+    BhinnashtakavargaResult, AshtakavargaResult,
+    SignStrengthProfile, AshtakavargaChartProfile,
+    AshtakavargaPolicy, RekhaTier, REKHA_TABLES,
+)
+```
+
+| Function | Signature | Description |
+|---|---|---|
+| `bhinnashtakavarga(planet, chart_longitudes, policy=None)` | `→ BhinnashtakavargaResult` | Individual planet's bindus per sign (8-source table) |
+| `ashtakavarga(chart_longitudes, policy=None)` | `→ AshtakavargaResult` | Sarvashtakavarga — combined bindus per sign |
+| `transit_strength(planet, transit_lon, natal_chart_longitudes)` | `→ float` | Ashtakavarga bindus for a transit position |
+| `sign_strength_profile(chart_longitudes, policy=None)` | `→ SignStrengthProfile` | Per-sign bindu strengths with `RekhaTier` labels |
+| `ashtakavarga_chart_profile(chart_longitudes, policy=None)` | `→ AshtakavargaChartProfile` | Full chart Ashtakavarga profile |
+
+---
+
+### Shadbala
+
+```python
+from moira.vedic import (
+    shadbala, sthana_bala, dig_bala, kala_bala, chesta_bala, drig_bala,
+    hora_lord_at, shadbala_condition_profile, shadbala_chart_profile,
+    ShadbalaResult, PlanetShadbala, ShadbalaPolicy,
+    ShadbalaConditionProfile, ShadbalaChartProfile,
+    SthanaBala, KalaBala, ShadbalaTier,
+    NAISARGIKA_BALA, REQUIRED_RUPAS,
+)
+```
+
+| Function | Signature | Description |
+|---|---|---|
+| `shadbala(chart, lat, lon, policy=None)` | `→ ShadbalaResult` | Full six-fold strength for all planets |
+| `sthana_bala(planet, longitude, ...)` | `→ float` | Positional (Sthana) strength |
+| `dig_bala(planet, house_number)` | `→ float` | Directional (Dig) strength |
+| `kala_bala(planet, jd_ut, ...)` | `→ KalaBala` | Temporal (Kala) strength components |
+| `chesta_bala(planet, jd_ut, reader=None)` | `→ float` | Motional (Chesta) strength |
+| `drig_bala(planet, chart_longitudes)` | `→ float` | Aspect (Drig) strength |
+| `hora_lord_at(jd_ut, lat, lon)` | `→ str` | Planetary hour ruler at epoch and location |
+| `shadbala_condition_profile(chart, lat, lon, policy=None)` | `→ ShadbalaConditionProfile` | Condition assessment with `ShadbalaTier` labels |
+| `shadbala_chart_profile(chart, lat, lon, policy=None)` | `→ ShadbalaChartProfile` | Full chart Shadbala profile |
+
+`NAISARGIKA_BALA` — natural strength constants (Saturn lowest, Sun highest).
+`REQUIRED_RUPAS` — minimum Shadbala rupas required for each planet.
 
 ---
 

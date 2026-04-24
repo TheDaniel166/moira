@@ -1,4 +1,18 @@
-from __future__ import annotations
+"""
+Moira — Harmogram Computation Helpers
+Governs utility functions and mathematical helpers for harmonic analysis, angle normalization, and data validation in harmogram computations.
+
+Boundary: owns mathematical utility functions and data normalization. Delegates core harmonic computations to the compute module and data structure definitions to models.
+
+Import-time side effects: None
+
+External dependencies:
+    - math module for trigonometric operations and mathematical constants
+    - harmograms.models for data structure definitions and validation
+
+Public surface:
+    Internal helper functions for harmogram computation (not intended for direct external use)
+"""
 
 import math
 

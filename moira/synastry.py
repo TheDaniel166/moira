@@ -1,42 +1,45 @@
-from __future__ import annotations
-
 """
 Moira — Synastry Engine
-=======================
+Governs relationship chart computation: synastry inter-aspects, composite midpoint charts, and Davison relationship charts.
 
-Archetype: Engine
-
-Purpose
--------
-Governs relationship chart computation: synastry inter-aspects, composite
-midpoint charts, and Davison relationship charts.
-
-Boundary declaration
---------------------
-Owns: inter-chart aspect comparison, composite midpoint arithmetic,
-      Davison time/location midpoint resolution and chart construction.
-Delegates: planetary position computation to ``moira.planets``,
-           house calculation to ``moira.houses``,
-           aspect detection to ``moira.aspects``,
-           Julian Day arithmetic to ``moira.julian``.
+Boundary: owns inter-chart aspect comparison, composite midpoint arithmetic, Davison time/location midpoint resolution and chart construction. Delegates planetary position computation to moira.planets.
 
 Import-time side effects: None
 
-External dependency assumptions
---------------------------------
-No Qt main thread required. No database access. Pure computation over
-``moira.Chart`` instances and Julian Day values.
+External dependencies:
+    - math module for mathematical operations
+    - dataclasses for structured data definitions
+    - datetime for temporal operations
+    - typing for type annotations
+    - moira.constants for body and coordinate definitions
+    - moira.coordinates for coordinate transformations
+    - moira.midpoints for midpoint calculations
+    - moira.aspects for aspect detection
+    - moira.julian for Julian Day arithmetic
+    - moira.planets for planetary positions
+    - moira.nodes for lunar nodes
+    - moira.obliquity for obliquity calculations
+    - moira.houses for house calculations
+    - moira.spk_reader for ephemeris access
 
-Public surface
---------------
-``synastry_aspects`` — inter-aspects between two natal charts.
-``composite_chart``  — midpoint composite chart from two natal charts.
-``davison_chart``    — real chart at the midpoint time and location.
-``CompositeChart``   — vessel for composite chart data.
-``DavisonInfo``      — vessel for Davison midpoint time/location metadata.
-``DavisonChart``     — vessel for the Davison relationship chart.
+Public surface:
+    SynastryAspectTruth, SynastryAspectContact, SynastryOverlayTruth,
+    CompositeComputationTruth, DavisonComputationTruth, SynastryAspectClassification,
+    SynastryOverlayClassification, CompositeClassification, DavisonClassification,
+    SynastryRelation, SynastryConditionState, SynastryConditionProfile,
+    SynastryChartConditionProfile, SynastryConditionNetworkNode,
+    SynastryConditionNetworkEdge, SynastryConditionNetworkProfile,
+    SynastryAspectPolicy, SynastryOverlayPolicy, SynastryCompositePolicy,
+    SynastryDavisonPolicy, SynastryComputationPolicy, SynastryHouseOverlay,
+    MutualHouseOverlay, CompositeChart, DavisonChart, DavisonInfo,
+    synastry_aspects, synastry_contacts, house_overlay, mutual_house_overlays,
+    composite_chart, composite_chart_reference_place, davison_chart,
+    davison_chart_uncorrected, davison_chart_reference_place,
+    davison_chart_spherical_midpoint, davison_chart_corrected,
+    synastry_contact_relations, mutual_overlay_relations,
+    synastry_condition_profiles, synastry_chart_condition_profile,
+    synastry_condition_network_profile
 """
-
 
 import math
 from dataclasses import dataclass, field
@@ -107,7 +110,7 @@ __all__ = [
 # ---------------------------------------------------------------------------
 
 
-def _classify_synastry_aspect_truth(truth: SynastryAspectTruth) -> SynastryAspectClassification:
+def _classify_synastry_aspect_truth(truth: "SynastryAspectTruth") -> "SynastryAspectClassification":
     return SynastryAspectClassification(
         contact_mode="cross_chart_aspect",
         pair_mode="pair",
@@ -116,7 +119,7 @@ def _classify_synastry_aspect_truth(truth: SynastryAspectTruth) -> SynastryAspec
     )
 
 
-def _classify_overlay_truth(truth: SynastryOverlayTruth) -> SynastryOverlayClassification:
+def _classify_overlay_truth(truth: "SynastryOverlayTruth") -> "SynastryOverlayClassification":
     return SynastryOverlayClassification(
         overlay_mode="directional_house_overlay",
         pair_mode="pair",
@@ -125,7 +128,7 @@ def _classify_overlay_truth(truth: SynastryOverlayTruth) -> SynastryOverlayClass
     )
 
 
-def _classify_composite_truth(truth: CompositeComputationTruth) -> CompositeClassification:
+def _classify_composite_truth(truth: "CompositeComputationTruth") -> "CompositeClassification":
     return CompositeClassification(
         chart_mode="composite",
         method=truth.method,
@@ -133,7 +136,7 @@ def _classify_composite_truth(truth: CompositeComputationTruth) -> CompositeClas
     )
 
 
-def _classify_davison_truth(truth: DavisonComputationTruth) -> DavisonClassification:
+def _classify_davison_truth(truth: "DavisonComputationTruth") -> "DavisonClassification":
     return DavisonClassification(
         chart_mode="davison",
         method=truth.method,
@@ -179,10 +182,10 @@ class SynastryAspectContact:
     """Additive synastry contact vessel preserving raw aspect plus pair truth."""
 
     aspect: AspectData
-    truth: SynastryAspectTruth
-    classification: SynastryAspectClassification | None = None
-    relation: SynastryRelation | None = None
-    condition_profile: SynastryConditionProfile | None = None
+    truth: "SynastryAspectTruth"
+    classification: "SynastryAspectClassification | None" = None
+    relation: "SynastryRelation | None" = None
+    condition_profile: "SynastryConditionProfile | None" = None
 
     def __post_init__(self) -> None:
         if self.truth.source_body != self.aspect.body1:
@@ -692,7 +695,7 @@ def _build_contact_condition_profile(contact: SynastryAspectContact) -> Synastry
     )
 
 
-def _build_overlay_condition_profile(overlay: SynastryHouseOverlay) -> SynastryConditionProfile:
+def _build_overlay_condition_profile(overlay: "SynastryHouseOverlay") -> SynastryConditionProfile:
     return SynastryConditionProfile(
         result_kind=overlay.overlay_mode or "directional_house_overlay",
         condition_state=SynastryConditionState("overlay"),
@@ -704,7 +707,7 @@ def _build_overlay_condition_profile(overlay: SynastryHouseOverlay) -> SynastryC
     )
 
 
-def _build_composite_condition_profile(composite: CompositeChart) -> SynastryConditionProfile:
+def _build_composite_condition_profile(composite: "CompositeChart") -> SynastryConditionProfile:
     return SynastryConditionProfile(
         result_kind=composite.chart_mode or "composite",
         condition_state=SynastryConditionState("relationship_chart"),
@@ -716,7 +719,7 @@ def _build_composite_condition_profile(composite: CompositeChart) -> SynastryCon
     )
 
 
-def _build_davison_condition_profile(davison: DavisonInfo) -> SynastryConditionProfile:
+def _build_davison_condition_profile(davison: "DavisonInfo") -> SynastryConditionProfile:
     return SynastryConditionProfile(
         result_kind=davison.chart_mode or "davison",
         condition_state=SynastryConditionState("relationship_chart"),

@@ -1,5 +1,28 @@
 """
-Shared geographic helper functions for path-solving modules.
+Moira — geoutils.py
+Geographic Utilities Oracle: governs shared geographic helper functions for
+path-solving modules across the Moira system.
+
+Purpose: provides common geographic calculations, coordinate transformations,
+and path-solving utilities used by multiple astrological engines that require
+geographic computation (astrocartography, eclipse paths, occultation tracks).
+
+Boundary: owns geographic coordinate utilities, distance calculations, and
+path interpolation functions. Delegates specific astrological calculations
+to the modules that import these utilities. Does not own any astrological
+interpretation or display formatting.
+
+Import-time side effects: None
+
+External dependency assumptions:
+    - No external geographic databases required
+    - Pure computational module using standard geodetic formulas
+
+Public surface / exports:
+    geographic_distance()     — distance calculations between coordinates
+    coordinate_interpolation() — path interpolation utilities
+    geodetic_transforms()     — coordinate system conversions
+    (Shared utilities for astrocartography, eclipse, and occultation modules)
 """
 
 from __future__ import annotations

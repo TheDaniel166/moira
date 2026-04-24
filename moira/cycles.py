@@ -124,17 +124,76 @@ _JULIAN_YEAR: float = 365.25
 
 class SynodicPhase(str, Enum):
     """
-    Eight-fold synodic phase classification.
+    RITE: The Phase Oracle — eight-fold synodic phase classification archetype.
 
-    Based on the phase angle from body1 to body2 (0–360°):
-        0°   = conjunction
-        90°  = first quarter (waxing square)
-        180° = opposition
-        270° = last quarter (waning square)
+    THEOREM: Classifies synodic phase angles (0–360°) into eight traditional
+    lunar-style phases based on angular separation between two celestial bodies.
 
-    The eight phases are the four cardinals ± 45° bands, bisected
-    into crescent/gibbous halves — a convention traceable to
-    Rudhyar and adopted widely in modern practice.
+    RITE OF PURPOSE:
+        SynodicPhase serves the Cycles Engine as the canonical classifier for
+        synodic relationships between any two bodies. Without it, synodic cycle
+        analysis would lack the traditional eight-fold phase structure that
+        connects modern astrological practice to ancient lunar phase doctrine.
+        It bridges raw angular measurements to meaningful cyclical archetypes.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Classify phase angles (0–360°) into eight named phases
+            - Provide the from_angle() static method for angle-to-phase conversion
+            - Maintain the traditional 45° phase boundaries with ±22.5° bands
+            - Preserve the Rudhyar-derived eight-fold classification system
+        Non-responsibilities:
+            - Does not compute synodic angles (delegates to calling functions)
+            - Does not interpret phase meanings or provide astrological advice
+            - Does not handle multi-body or complex cyclical relationships
+        Dependencies:
+            - None (pure enumeration with static classification logic)
+        Structural invariants:
+            - Eight phases cover the complete 360° cycle without gaps or overlaps
+            - Phase boundaries are fixed at 22.5° intervals
+            - NEW phase handles both 0° vicinity and 360° wraparound
+        Behavioral invariants:
+            - from_angle() always returns a valid SynodicPhase for any input
+            - Phase classification is deterministic and stable
+
+    Canon: Dane Rudhyar, "The Lunation Cycle" (1967); traditional lunar phase doctrine.
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.cycles.SynodicPhase",
+        "risk": "low",
+        "api": {
+            "public_methods": ["from_angle"],
+            "public_attributes": [
+                "NEW", "WAXING_CRESCENT", "FIRST_QUARTER", "WAXING_GIBBOUS",
+                "FULL", "WANING_GIBBOUS", "LAST_QUARTER", "WANING_CRESCENT"
+            ]
+        },
+        "state": {
+            "mutable": false,
+            "fields": ["value"]
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_computation",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": [],
+            "policy": "pure classification never fails"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "kiro"
+    }
+    [/MACHINE_CONTRACT]
     """
 
     NEW               = "new"                # 0° ± 22.5°
@@ -169,7 +228,72 @@ class SynodicPhase(str, Enum):
 
 
 class GreatMutationElement(str, Enum):
-    """The four elemental trigons of the great conjunction cycle."""
+    """
+    RITE: The Elemental Trigon Oracle — four-fold elemental classification for great conjunctions.
+
+    THEOREM: Classifies zodiacal signs into their traditional elemental trigons
+    for Jupiter-Saturn great conjunction cycle analysis.
+
+    RITE OF PURPOSE:
+        GreatMutationElement serves the Cycles Engine as the elemental classifier
+        for the ~800-year great mutation cycle. Without it, great conjunction
+        analysis would lack the traditional elemental framework that connects
+        individual conjunctions to their broader historical and mundane context.
+        It bridges zodiacal positions to elemental doctrine.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Classify zodiacal signs into four elemental trigons
+            - Provide the traditional Fire/Earth/Air/Water groupings
+            - Support great conjunction elemental sequence analysis
+        Non-responsibilities:
+            - Does not compute conjunction positions or timing
+            - Does not interpret elemental meanings or provide predictions
+            - Does not handle sign-to-element conversion (delegates to calling code)
+        Dependencies:
+            - None (pure enumeration of traditional elemental doctrine)
+        Structural invariants:
+            - Four elements cover all twelve zodiacal signs in trigon groups
+            - Each element contains exactly three signs (120° apart)
+            - Traditional elemental assignments are preserved
+        Behavioral invariants:
+            - Enumeration values are stable and deterministic
+
+    Canon: Traditional elemental doctrine; Ptolemy, "Tetrabiblos" I.
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.cycles.GreatMutationElement",
+        "risk": "low",
+        "api": {
+            "public_attributes": ["FIRE", "EARTH", "AIR", "WATER"]
+        },
+        "state": {
+            "mutable": false,
+            "fields": ["value"]
+        },
+        "effects": {
+            "io": [],
+            "signals_emitted": [],
+            "db_writes": []
+        },
+        "concurrency": {
+            "thread": "pure_computation",
+            "cross_thread_calls": "safe_read_only"
+        },
+        "failures": {
+            "raises": [],
+            "policy": "pure enumeration never fails"
+        },
+        "succession": {
+            "stance": "terminal",
+            "override_points": []
+        },
+        "agent": "kiro"
+    }
+    [/MACHINE_CONTRACT]
+    """
 
     FIRE  = "fire"    # Aries, Leo, Sagittarius
     EARTH = "earth"   # Taurus, Virgo, Capricorn
@@ -240,7 +364,7 @@ class ReturnEvent:
       },
       "state": {"mutable": false, "owners": ["return_series", "half_return_series", "lifetime_returns"]},
       "effects": {"signals_emitted": [], "io": []},
-      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
       "failures": {"policy": "raise_by_constructor_if_added"},
       "succession": {"stance": "terminal"},
       "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
@@ -294,7 +418,7 @@ class ReturnSeries:
       },
       "state": {"mutable": false, "owners": ["return_series", "half_return_series", "lifetime_returns"]},
       "effects": {"signals_emitted": [], "io": []},
-      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
       "failures": {"policy": "raise_by_constructor_if_added"},
       "succession": {"stance": "terminal"},
       "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
@@ -351,7 +475,7 @@ class SynodicCyclePosition:
       },
       "state": {"mutable": false, "owners": ["synodic_cycle_position"]},
       "effects": {"signals_emitted": [], "io": []},
-      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
       "failures": {"policy": "raise_by_constructor_if_added"},
       "succession": {"stance": "terminal"},
       "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
@@ -407,7 +531,7 @@ class GreatConjunction:
       },
       "state": {"mutable": false, "owners": ["great_conjunctions"]},
       "effects": {"signals_emitted": [], "io": []},
-      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
       "failures": {"policy": "raise_by_constructor_if_added"},
       "succession": {"stance": "terminal"},
       "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
@@ -459,7 +583,7 @@ class GreatConjunctionSeries:
       },
       "state": {"mutable": false, "owners": ["great_conjunctions"]},
       "effects": {"signals_emitted": [], "io": []},
-      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
       "failures": {"policy": "raise_by_constructor_if_added"},
       "succession": {"stance": "terminal"},
       "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
@@ -510,7 +634,7 @@ class MutationPeriod:
       },
       "state": {"mutable": false, "owners": ["great_conjunctions", "mutation_period_at"]},
       "effects": {"signals_emitted": [], "io": []},
-      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
       "failures": {"policy": "raise_by_constructor_if_added"},
       "succession": {"stance": "terminal"},
       "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
@@ -561,7 +685,7 @@ class PlanetaryAgePeriod:
       },
       "state": {"mutable": false, "owners": ["planetary_age_profile", "planetary_age_at"]},
       "effects": {"signals_emitted": [], "io": []},
-      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
       "failures": {"policy": "raise_by_constructor_if_added"},
       "succession": {"stance": "terminal"},
       "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
@@ -611,7 +735,7 @@ class PlanetaryAgeProfile:
       },
       "state": {"mutable": false, "owners": ["planetary_age_profile", "planetary_age_at"]},
       "effects": {"signals_emitted": [], "io": []},
-      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
       "failures": {"policy": "raise_by_constructor_if_added"},
       "succession": {"stance": "terminal"},
       "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
@@ -662,7 +786,7 @@ class FirdarSubPeriod:
       },
       "state": {"mutable": false, "owners": ["firdar_series"]},
       "effects": {"signals_emitted": [], "io": []},
-      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
       "failures": {"policy": "raise_by_constructor_if_added"},
       "succession": {"stance": "terminal"},
       "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
@@ -714,7 +838,7 @@ class FirdarPeriod:
       },
       "state": {"mutable": false, "owners": ["firdar_series"]},
       "effects": {"signals_emitted": [], "io": []},
-      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
       "failures": {"policy": "raise_by_constructor_if_added"},
       "succession": {"stance": "terminal"},
       "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
@@ -767,7 +891,7 @@ class FirdarSeries:
       },
       "state": {"mutable": false, "owners": ["firdar_series"]},
       "effects": {"signals_emitted": [], "io": []},
-      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
       "failures": {"policy": "raise_by_constructor_if_added"},
       "succession": {"stance": "terminal"},
       "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
@@ -819,7 +943,7 @@ class PlanetaryDayInfo:
       },
       "state": {"mutable": false, "owners": ["planetary_day", "planetary_hours_profile"]},
       "effects": {"signals_emitted": [], "io": []},
-      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
       "failures": {"policy": "raise_by_constructor_if_added"},
       "succession": {"stance": "terminal"},
       "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
@@ -868,7 +992,7 @@ class PlanetaryHour:
       },
       "state": {"mutable": false, "owners": ["planetary_hours_profile"]},
       "effects": {"signals_emitted": [], "io": []},
-      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
       "failures": {"policy": "raise_by_constructor_if_added"},
       "succession": {"stance": "terminal"},
       "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
@@ -930,7 +1054,7 @@ class PlanetaryHoursProfile:
       },
       "state": {"mutable": false, "owners": ["planetary_hours_profile"]},
       "effects": {"signals_emitted": [], "io": []},
-      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
       "failures": {"policy": "raise_by_constructor_if_added"},
       "succession": {"stance": "terminal"},
       "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}

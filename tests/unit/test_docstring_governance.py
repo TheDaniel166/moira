@@ -27,7 +27,7 @@ from typing import NamedTuple
 # Constants
 # ---------------------------------------------------------------------------
 
-MOIRA_ROOT = Path(__file__).parents[3] / "moira"
+MOIRA_ROOT = Path(__file__).parents[2] / "moira"
 
 REQUIRED_CLASS_MARKERS = [
     "RITE:",
@@ -82,7 +82,7 @@ def check_module_docstrings(path: Path) -> list[Violation]:
     """Check that a single .py file has a non-empty module-level docstring."""
     violations: list[Violation] = []
     try:
-        source = path.read_text(encoding="utf-8")
+        source = path.read_text(encoding="utf-8-sig")
     except OSError as exc:
         violations.append(Violation(
             file=str(path),
@@ -116,7 +116,7 @@ def check_class_docstrings(path: Path) -> list[Violation]:
     """Check that every class in a .py file has all required structural markers."""
     violations: list[Violation] = []
     try:
-        source = path.read_text(encoding="utf-8")
+        source = path.read_text(encoding="utf-8-sig")
     except OSError as exc:
         violations.append(Violation(
             file=str(path),
@@ -154,7 +154,7 @@ def check_machine_contracts(path: Path) -> list[Violation]:
     """Validate every MACHINE_CONTRACT block found in class docstrings of a .py file."""
     violations: list[Violation] = []
     try:
-        source = path.read_text(encoding="utf-8")
+        source = path.read_text(encoding="utf-8-sig")
     except OSError as exc:
         violations.append(Violation(
             file=str(path),

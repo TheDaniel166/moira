@@ -3,10 +3,22 @@ Moira — _solar.py
 Internal solar helpers shared by hermetic_decans and planetary_hours.
 
 Boundary: owns solar declination/RA derivation and the sunrise/sunset
-    approximation + iterative refinement pipeline. Does NOT own planetary
-    hour arithmetic, decan assignment, or any public API surface.
+approximation + iterative refinement pipeline. Does NOT own planetary
+hour arithmetic, decan assignment, or any public API surface. Delegates
+planetary position computation to planets.py and obliquity calculation
+to obliquity.py.
 
 Import-time side effects: None
+
+External dependency assumptions:
+    - DE441 kernel must be accessible via spk_reader for solar positions
+    - No Qt main thread requirements
+    - Pure computational module
+
+Public surface / exports:
+    _solar_declination_ra()    — internal solar declination and RA computation
+    _sunrise_sunset_approx()   — internal sunrise/sunset approximation helpers
+    (Note: This is an internal module with no public API)
 """
 
 import math

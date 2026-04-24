@@ -1,4 +1,28 @@
-from __future__ import annotations
+"""
+Moira — Harmogram Bridge Engine
+Governs the translation of Moira's astronomical computations into harmogram-compatible data structures for external visualization and analysis systems.
+
+Boundary: owns harmogram data structure generation and position source normalization. Delegates astronomical computation to the core Moira engine and chart systems.
+
+Import-time side effects: None
+
+External dependencies:
+    - Moira core engine for chart computation
+    - datetime and timedelta for temporal sampling
+    - collections.abc for type annotations
+
+Public surface:
+    filter_harmogram_body_positions, build_dynamic_harmogram_samples,
+    build_transit_to_natal_harmogram_samples, build_directed_to_natal_harmogram_samples,
+    build_progressed_to_natal_harmogram_samples, build_dynamic_harmogram_samples_for_range,
+    build_transit_to_natal_harmogram_samples_for_range, build_progression_family_harmogram_samples,
+    build_secondary_progressed_harmogram_samples, build_tertiary_progressed_harmogram_samples,
+    build_tertiary_ii_progressed_harmogram_samples, build_minor_progressed_harmogram_samples,
+    build_solar_arc_directed_harmogram_samples, build_converse_secondary_progressed_harmogram_samples,
+    build_converse_tertiary_progressed_harmogram_samples, build_converse_tertiary_ii_progressed_harmogram_samples,
+    build_converse_minor_progressed_harmogram_samples, build_converse_solar_arc_directed_harmogram_samples,
+    HarmogramProgressionFamily
+"""
 
 from collections.abc import Callable, Mapping, Sequence
 from datetime import datetime, timedelta
