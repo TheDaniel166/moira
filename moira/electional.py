@@ -58,8 +58,10 @@ __all__ = [
     "ElectionalPolicy",
     "ElectionalEvaluation",
     "ElectionalWindow",
+    "ElectionalScoredWindow",
     "find_electional_windows",
     "find_electional_moments",
+    "find_scored_windows",
 ]
 
 
@@ -108,7 +110,9 @@ class ElectionalPolicy:
       "id": "moira.electional.ElectionalPolicy",
       "risk": "medium",
       "api": {
-        "frozen": ["step_days", "merge_gap_days", "house_system", "bodies", "effective_merge_gap"],
+        "frozen": ["step_days", "merge_gap_days", "house_system", "bodies", "effective_merge_gap",
+                   "zodiac_frame", "ayanamsa_system", "ayanamsa_mode",
+                   "boundary_refine_steps", "max_windows"],
         "internal": ["__post_init__"]
       },
       "state": {"mutable": false, "owners": []},
@@ -127,6 +131,8 @@ class ElectionalPolicy:
     zodiac_frame:   str          = "tropical"
     ayanamsa_system: str         = Ayanamsa.LAHIRI
     ayanamsa_mode:   str         = "true"
+    boundary_refine_steps: int   = 0
+    max_windows:    int | None   = None
 
     def __post_init__(self) -> None:
         """
@@ -155,6 +161,15 @@ class ElectionalPolicy:
             raise ValueError("ElectionalPolicy: ayanamsa_mode must be 'true' or 'mean'")
         if self.zodiac_frame == "sidereal" and not self.ayanamsa_system:
             raise ValueError("ElectionalPolicy: ayanamsa_system must be non-empty")
+        if self.boundary_refine_steps < 0:
+            raise ValueError(
+                f"ElectionalPolicy: boundary_refine_steps must be >= 0, "
+                f"got {self.boundary_refine_steps!r}"
+            )
+        if self.max_windows is not None and self.max_windows <= 0:
+            raise ValueError(
+                f"ElectionalPolicy: max_windows must be > 0, got {self.max_windows!r}"
+            )
 
     @property
     def effective_merge_gap(self) -> float:
@@ -231,7 +246,8 @@ class ElectionalWindow:
       "id": "moira.electional.ElectionalWindow",
       "risk": "medium",
       "api": {
-        "frozen": ["jd_start", "jd_end", "duration_hours", "qualifying_jds"],
+        "frozen": ["jd_start", "jd_end", "duration_hours", "qualifying_jds",
+                   "entry_bracket", "exit_bracket"],
         "internal": ["__post_init__", "__repr__"]
       },
       "state": {"mutable": false, "owners": ["_make_window"]},
@@ -247,6 +263,8 @@ class ElectionalWindow:
     jd_end:         float
     duration_hours: float
     qualifying_jds: tuple[float, ...]
+    entry_bracket:  tuple[float, float] | None = None
+    exit_bracket:   tuple[float, float] | None = None
 
     def __post_init__(self) -> None:
         """
@@ -291,6 +309,74 @@ class ElectionalWindow:
             f"{self.duration_hours:.1f}h, "
             f"{len(self.qualifying_jds)} point(s))"
         )
+
+
+# ---------------------------------------------------------------------------
+# Scored window vessel
+# ---------------------------------------------------------------------------
+
+@dataclass(frozen=True, slots=True)
+class ElectionalScoredWindow:
+    """
+    RITE: Scored variant of a qualifying electional window.
+
+    THEOREM: ElectionalScoredWindow pairs a merged qualifying span with a
+    scalar quality score and the highest-scored scan point within that span.
+
+    RITE OF PURPOSE:
+        This vessel enables ranking and filtering of electional windows by
+        numerical quality. The score and peak_jd are derived exclusively from
+        the caller-supplied scorer applied to qualifying scan points; this
+        vessel does not participate in the search itself.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Carry the underlying ElectionalWindow.
+            - Carry the aggregate score for the window's qualifying span.
+            - Carry the JD of the highest-scored qualifying scan point.
+            - Enforce structural coherence at construction.
+        Non-responsibilities:
+            - Computing scores (that is the caller's scorer function).
+            - Conducting the search (that is find_scored_windows).
+        Structural invariants:
+            - score is finite.
+            - peak_jd is one of window.qualifying_jds.
+        Failure behavior:
+            - Raises ValueError when invariants are violated.
+
+    Canon: None (No applicable canon)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.electional.ElectionalScoredWindow",
+      "risk": "low",
+      "api": {
+        "frozen": ["window", "score", "peak_jd"],
+        "internal": ["__post_init__"]
+      },
+      "state": {"mutable": false, "owners": ["find_scored_windows"]},
+      "effects": {"signals_emitted": [], "io": []},
+      "concurrency": {"thread": "pure_value_object", "cross_thread_calls": "safe"},
+      "failures": {"policy": "raise"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
+    """
+    window:  ElectionalWindow
+    score:   float
+    peak_jd: float
+
+    def __post_init__(self) -> None:
+        if not math.isfinite(self.score):
+            raise ValueError(
+                f"ElectionalScoredWindow.score must be finite, got {self.score!r}"
+            )
+        if self.peak_jd not in self.window.qualifying_jds:
+            raise ValueError(
+                "ElectionalScoredWindow.peak_jd must be one of window.qualifying_jds"
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -413,6 +499,188 @@ def _predicate_payload(chart: object, policy: ElectionalPolicy) -> object:
     return _evaluation_for_chart(chart, policy)
 
 
+def _scan_groups(
+    jd_start:  float,
+    jd_end:    float,
+    latitude:  float,
+    longitude: float,
+    predicate: Callable[[object], bool],
+    policy:    ElectionalPolicy,
+    reader:    SpkReader,
+    scorer:    Callable[[object], float] | None = None,
+) -> list[list[tuple[float, float | None]]]:
+    """
+    Scan a JD range and return qualifying scan points as merged groups.
+
+    Applies the merge-gap doctrine in-scan rather than post-hoc, enabling
+    early exit once policy.max_windows completed groups have been found.
+
+    Returns
+    -------
+    list of groups, where each group is a list of (jd, score_or_None) tuples.
+    Groups correspond 1:1 with the ElectionalWindows that _make_window would
+    produce from the same qualifying JDs.
+    """
+    completed: list[list[tuple[float, float | None]]] = []
+    group:     list[tuple[float, float | None]] = []
+    merge_gap  = policy.effective_merge_gap
+    jd         = jd_start
+
+    while jd <= jd_end:
+        chart   = create_chart(
+            jd_ut=jd,
+            latitude=latitude,
+            longitude=longitude,
+            house_system=policy.house_system,
+            bodies=policy.bodies,
+            reader=reader,
+        )
+        payload = _predicate_payload(chart, policy)
+
+        if predicate(payload):
+            if group and (jd - group[-1][0]) > merge_gap:
+                completed.append(group)
+                group = []
+                if policy.max_windows is not None and len(completed) >= policy.max_windows:
+                    return completed
+            score = scorer(payload) if scorer is not None else None
+            group.append((jd, score))
+
+        jd += policy.step_days
+
+    if group:
+        completed.append(group)
+
+    return completed
+
+
+def _bisect_boundary(
+    jd_lo:      float,
+    jd_hi:      float,
+    true_at_lo: bool,
+    latitude:   float,
+    longitude:  float,
+    predicate:  Callable[[object], bool],
+    policy:     ElectionalPolicy,
+    reader:     SpkReader,
+    steps:      int,
+) -> tuple[float, float]:
+    """
+    Narrow a predicate transition boundary between jd_lo and jd_hi via bisection.
+
+    Precondition: predicate(jd_lo) == true_at_lo, predicate(jd_hi) == (not true_at_lo).
+    Each bisection step halves the bracket width.
+
+    Returns
+    -------
+    (jd_lo', jd_hi') — refined bracket satisfying the same invariant.
+    Width is reduced by 2^steps from the initial |jd_hi - jd_lo|.
+    """
+    for _ in range(steps):
+        mid   = (jd_lo + jd_hi) / 2.0
+        chart = create_chart(
+            jd_ut=mid,
+            latitude=latitude,
+            longitude=longitude,
+            house_system=policy.house_system,
+            bodies=policy.bodies,
+            reader=reader,
+        )
+        if predicate(_predicate_payload(chart, policy)) == true_at_lo:
+            jd_lo = mid
+        else:
+            jd_hi = mid
+
+    return (jd_lo, jd_hi)
+
+
+def _refine_window(
+    window:         ElectionalWindow,
+    jd_range_start: float,
+    jd_range_end:   float,
+    latitude:       float,
+    longitude:      float,
+    predicate:      Callable[[object], bool],
+    policy:         ElectionalPolicy,
+    reader:         SpkReader,
+) -> ElectionalWindow:
+    """
+    Attempt to narrow a window's entry and exit boundaries via bisection.
+
+    Each boundary is refined only when a non-qualifying adjacent scan point
+    can be confirmed within the searched range.  A boundary that falls at or
+    before the scan range edge (no adjacent False JD available on that side)
+    is left unrefined.
+
+    entry_bracket = (false_jd, true_jd): F→T transition lies between them (lo < hi).
+    exit_bracket  = (true_jd, false_jd): T→F transition lies between them (lo < hi).
+
+    Returns the original window unchanged when neither boundary can be refined.
+    """
+    steps = policy.boundary_refine_steps
+    step  = policy.step_days
+    entry_bracket: tuple[float, float] | None = None
+    exit_bracket:  tuple[float, float] | None = None
+
+    jd_before = window.jd_start - step
+    if jd_before >= jd_range_start:
+        chart = create_chart(
+            jd_ut=jd_before,
+            latitude=latitude,
+            longitude=longitude,
+            house_system=policy.house_system,
+            bodies=policy.bodies,
+            reader=reader,
+        )
+        if not predicate(_predicate_payload(chart, policy)):
+            entry_bracket = _bisect_boundary(
+                jd_lo=jd_before,
+                jd_hi=window.jd_start,
+                true_at_lo=False,
+                latitude=latitude,
+                longitude=longitude,
+                predicate=predicate,
+                policy=policy,
+                reader=reader,
+                steps=steps,
+            )
+
+    jd_after = window.jd_end + step
+    if jd_after <= jd_range_end:
+        chart = create_chart(
+            jd_ut=jd_after,
+            latitude=latitude,
+            longitude=longitude,
+            house_system=policy.house_system,
+            bodies=policy.bodies,
+            reader=reader,
+        )
+        if not predicate(_predicate_payload(chart, policy)):
+            exit_bracket = _bisect_boundary(
+                jd_lo=window.jd_end,
+                jd_hi=jd_after,
+                true_at_lo=True,
+                latitude=latitude,
+                longitude=longitude,
+                predicate=predicate,
+                policy=policy,
+                reader=reader,
+                steps=steps,
+            )
+
+    if entry_bracket is None and exit_bracket is None:
+        return window
+
+    return ElectionalWindow(
+        jd_start=window.jd_start,
+        jd_end=window.jd_end,
+        duration_hours=window.duration_hours,
+        qualifying_jds=window.qualifying_jds,
+        entry_bracket=entry_bracket,
+        exit_bracket=exit_bracket,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -492,23 +760,18 @@ def find_electional_windows(
     if reader is None:
         reader = get_reader()
 
-    qualifying: list[float] = []
-    jd = jd_start
+    groups  = _scan_groups(jd_start, jd_end, latitude, longitude,
+                           predicate, policy, reader)
+    windows = [_make_window([jd for jd, _ in g]) for g in groups]
 
-    while jd <= jd_end:
-        chart = create_chart(
-            jd_ut=jd,
-            latitude=latitude,
-            longitude=longitude,
-            house_system=policy.house_system,
-            bodies=policy.bodies,
-            reader=reader,
-        )
-        if predicate(_predicate_payload(chart, policy)):
-            qualifying.append(jd)
-        jd += policy.step_days
+    if policy.boundary_refine_steps > 0:
+        windows = [
+            _refine_window(w, jd_start, jd_end, latitude, longitude,
+                           predicate, policy, reader)
+            for w in windows
+        ]
 
-    return _merge_jds(qualifying, policy.effective_merge_gap)
+    return windows
 
 
 def find_electional_moments(
@@ -562,20 +825,111 @@ def find_electional_moments(
     if reader is None:
         reader = get_reader()
 
-    qualifying: list[float] = []
-    jd = jd_start
+    groups = _scan_groups(jd_start, jd_end, latitude, longitude,
+                          predicate, policy, reader)
+    return [jd for group in groups for jd, _ in group]
 
-    while jd <= jd_end:
-        chart = create_chart(
-            jd_ut=jd,
-            latitude=latitude,
-            longitude=longitude,
-            house_system=policy.house_system,
-            bodies=policy.bodies,
-            reader=reader,
+
+def find_scored_windows(
+    jd_start:  float,
+    jd_end:    float,
+    latitude:  float,
+    longitude: float,
+    predicate: Callable[[object], bool],
+    scorer:    Callable[[object], float],
+    policy:    ElectionalPolicy | None = None,
+    reader:    SpkReader | None = None,
+) -> list[ElectionalScoredWindow]:
+    """
+    Scan a Julian-Day range and return scored, merged windows where the predicate holds.
+
+    Behavior:
+        Conducts the same discrete chart scan as find_electional_windows() but
+        also applies the caller-supplied scorer at each qualifying scan point.
+        Each returned window carries the score of its peak qualifying scan point
+        and the JD of that peak point, enabling ranking by quality.
+
+        The scorer receives the same payload as the predicate (ChartContext for
+        tropical policy, ElectionalEvaluation for sidereal) and must return a
+        finite float. It is called only at scan points where predicate returns
+        True. Higher scores indicate more favorable conditions; the convention
+        is caller-defined.
+
+        Boundary refinement and max_windows early-exit are honoured when set
+        in policy, identical to find_electional_windows().
+
+    Parameters
+    ----------
+    jd_start : float
+        Start of the search range (Julian Day UT, inclusive).
+    jd_end : float
+        End of the search range (Julian Day UT, inclusive).
+    latitude : float
+        Geographic latitude of the election location, degrees [-90, 90].
+    longitude : float
+        Geographic longitude of the election location, degrees [-180, 180].
+    predicate : Callable[[object], bool]
+        Pure function returning True when the chart satisfies the election
+        criteria. Must not mutate the payload.
+    scorer : Callable[[object], float]
+        Pure function returning a finite float quality score for qualifying
+        charts. Applied only at qualifying scan points. Must not mutate the
+        payload.
+    policy : ElectionalPolicy | None
+        Scan policy. Uses ElectionalPolicy() defaults when None.
+    reader : SpkReader | None
+        SPK kernel reader. Uses the module-level singleton when None.
+
+    Returns
+    -------
+    list[ElectionalScoredWindow]
+        Scored qualifying windows in chronological order. Each window carries
+        the score of its highest-scored qualifying scan point and the JD of
+        that peak point. Empty list when no moments satisfy the predicate.
+
+    Raises
+    ------
+    ValueError
+        If jd_start >= jd_end.
+        If latitude or longitude are out of range (delegated to create_chart).
+
+    Side effects
+        Initialises the SpkReader singleton on first call if reader is None.
+    """
+    if jd_start >= jd_end:
+        raise ValueError(
+            f"find_scored_windows: jd_start ({jd_start}) must be < jd_end ({jd_end})"
         )
-        if predicate(_predicate_payload(chart, policy)):
-            qualifying.append(jd)
-        jd += policy.step_days
 
-    return qualifying
+    if policy is None:
+        policy = ElectionalPolicy()
+
+    if reader is None:
+        reader = get_reader()
+
+    groups = _scan_groups(jd_start, jd_end, latitude, longitude,
+                          predicate, policy, reader, scorer=scorer)
+
+    results: list[ElectionalScoredWindow] = []
+    for group in groups:
+        jds    = [jd for jd, _ in group]
+        scores = [s for _, s in group]
+        window = _make_window(jds)
+
+        if policy.boundary_refine_steps > 0:
+            window = _refine_window(
+                window, jd_start, jd_end, latitude, longitude,
+                predicate, policy, reader,
+            )
+
+        best_i = max(
+            range(len(scores)),
+            key=lambda i: scores[i] if scores[i] is not None else float("-inf"),
+        )
+        results.append(ElectionalScoredWindow(
+            window=window,
+            score=scores[best_i],  # type: ignore[arg-type]
+            peak_jd=jds[best_i],
+        ))
+
+    return results
