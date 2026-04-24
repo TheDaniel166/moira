@@ -19,7 +19,51 @@ def _facade_module() -> Any:
 
 
 class SpatialFacadeMixin:
-    """Astrocartography, geodetic, local-space, paran, and galactic wrappers."""
+    """RITE: The Earth-Mapper — the layer that routes the public Moira surface
+    to geographically and spatially grounded techniques: astrocartography
+    lines, geodetic equivalents, local-space azimuths, parans, and
+    galactic house placements.
+
+THEOREM: Mixin that provides spatial and geographic astrological method
+         wrappers for the public ``moira.facade.Moira`` class, delegating
+         each computation to its authoritative owning module.
+
+RITE OF PURPOSE:
+    SpatialFacadeMixin extracts all spatial-technique-facing public
+    methods from the monolithic facade.py into a composable unit,
+    preserving the legacy Moira surface while routing to the correct
+    engine module without duplicating logic.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Delegate astrocartography, geodetic, local-space, paran, and
+          galactic-house computations to their owning modules.
+    Non-responsibilities:
+        - Does not implement any geographic or spatial math itself.
+        - Does not own kernel lifecycle or reader management.
+    Dependencies:
+        - moira.facade (resolved at runtime via sys.modules)
+    Structural invariants:
+        - All methods delegate to facade-module callables.
+
+Canon: Moira Sovereign Facade Architecture; moira.astrocartography,
+       moira.parans, moira.galactic_houses spatial engine modules.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira._facade_spatial.SpatialFacadeMixin",
+    "risk": "medium",
+    "api": {"frozen": ["astrocartography", "geodetic", "local_space", "parans", "galactic_houses"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "propagate"},
+    "succession": {"stance": "mixin", "override_points": []},
+    "agent": {"autofix": "disallowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     def astrocartography(
         self,

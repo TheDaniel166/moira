@@ -21,7 +21,55 @@ def _facade_module() -> Any:
 
 
 class SpecialTopicsFacadeMixin:
-    """Remaining public ``Moira`` compatibility methods."""
+    """RITE: The Final Witness — the layer that routes the public Moira surface
+    to all remaining specialised domains: eclipse geometry, primary
+    directions, longevity, phenomena, occultations, Sothic and Egyptian
+    calendar helpers, variable and multiple stars, void-of-course Moon,
+    electional windows, and representation.
+
+THEOREM: Mixin that aggregates the remaining public ``moira.facade.Moira``
+         compatibility wrappers not covered by the other facade mixins,
+         delegating each call to its authoritative owning module.
+
+RITE OF PURPOSE:
+    SpecialTopicsFacadeMixin extracts the last cluster of specialised
+    public methods from the monolithic facade.py, ensuring the Moira
+    class remains a clean composed facade rather than a method-body
+    gravity well.  Without this mixin, these methods would resist
+    isolation and accumulate silently in facade.py.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Delegate eclipse, primary-direction, longevity, phenomena,
+          occultation, Sothic, variable-star, multiple-star,
+          void-of-course, electional, and repr calls to their
+          owning modules.
+    Non-responsibilities:
+        - Does not implement any astronomical or astrological math.
+        - Does not own kernel lifecycle or reader management.
+    Dependencies:
+        - moira.facade (resolved at runtime via sys.modules)
+    Structural invariants:
+        - All methods delegate to facade-module callables.
+
+Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
+       moira.occultations, moira.electional, and related domain modules.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira._facade_special.SpecialTopicsFacadeMixin",
+    "risk": "medium",
+    "api": {"frozen": ["eclipse", "primary_directions", "longevity", "phenomena", "occultations", "void_of_course", "electional"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "propagate"},
+    "succession": {"stance": "mixin", "override_points": []},
+    "agent": {"autofix": "disallowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     def eclipse(self, dt: datetime):
         """Compute eclipse geometry and classification for a datetime."""

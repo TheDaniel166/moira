@@ -163,7 +163,47 @@ def _relation_basis_for_davison_method(method: str) -> str:
 
 @dataclass(slots=True)
 class SynastryAspectTruth:
-    """Preserve the doctrinal/computational path for one cross-chart aspect."""
+    """RITE: The Aspect Witness — the immutable record of every doctrinal
+    and computational parameter that produced one cross-chart aspect
+    so callers can reproduce or audit the result without re-running.
+
+THEOREM: Frozen provenance record for one synastry inter-aspect,
+         carrying both chart labels, body names, tier, orb policy,
+         and source/target speed at time of computation.
+
+RITE OF PURPOSE:
+    SynastryAspectTruth makes every cross-chart aspect fully auditable.
+    Without it, downstream code could not distinguish aspects computed
+    at different tiers or with different custom-orb policies, nor
+    could it reconstruct the exact inputs.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Store all parameters used to compute one synastry aspect.
+        - Be carried by SynastryAspectContact for traceability.
+    Non-responsibilities:
+        - Does not validate or compute anything; it is a value record.
+    Dependencies: None.
+    Structural invariants:
+        - source_body matches aspect.body1 in the containing contact.
+
+Canon: Moira Synastry Architecture; moira.aspects doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.SynastryAspectTruth",
+    "risk": "low",
+    "api": {"frozen": ["source_label", "target_label", "source_body", "target_body", "tier", "include_nodes", "orb_factor", "custom_orbs", "source_speed", "target_speed"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "none"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     source_label: str
     target_label: str
@@ -179,7 +219,55 @@ class SynastryAspectTruth:
 
 @dataclass(slots=True)
 class SynastryAspectContact:
-    """Additive synastry contact vessel preserving raw aspect plus pair truth."""
+    """RITE: The Aspect Contact — the composite result vessel for one
+    cross-chart synastry aspect, binding the raw aspect data to its
+    truth provenance, typed classification, relation, and condition
+    profile in a single inspectable structure.
+
+THEOREM: Additive synastry contact vessel that aggregates a raw
+         AspectData with its SynastryAspectTruth, optional
+         classification, optional relation, and optional condition
+         profile; validates all cross-field consistency at construction.
+
+RITE OF PURPOSE:
+    SynastryAspectContact ensures that every cross-chart aspect carried
+    by the facade remains coherent: body names, labels, and policy flags
+    in truth, classification, relation, and condition profile are all
+    validated to agree.  Without this vessel, callers would have to
+    independently cross-check four separate objects.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Validate body/label/flag coherence across all four components.
+        - Expose derived properties (contact_mode, includes_nodes, etc.)
+          that unify classification and truth fallbacks.
+    Non-responsibilities:
+        - Does not compute aspects; that is moira.aspects.
+        - Does not store house information.
+    Dependencies:
+        - moira.aspects.AspectData.
+        - SynastryAspectTruth, SynastryAspectClassification,
+          SynastryRelation, SynastryConditionProfile.
+    Structural invariants:
+        - truth.source_body == aspect.body1 and truth.target_body == aspect.body2.
+
+Canon: Moira Synastry Architecture; inter-chart aspect doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.SynastryAspectContact",
+    "risk": "medium",
+    "api": {"frozen": ["aspect", "truth", "classification", "relation", "condition_profile"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "raise"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     aspect: AspectData
     truth: "SynastryAspectTruth"
@@ -267,7 +355,47 @@ class SynastryAspectContact:
 
 @dataclass(slots=True)
 class SynastryOverlayTruth:
-    """Preserve the computational path for one directional house overlay."""
+    """RITE: The Overlay Witness — the provenance record of every doctrinal
+    and computational parameter that produced one directional synastry
+    house overlay so callers can audit or reproduce the result.
+
+THEOREM: Frozen provenance record for one directional synastry house
+         overlay, carrying both chart labels, node inclusion flag,
+         point count, and both the nominal and effective target house
+         system (reflecting any polar fallback).
+
+RITE OF PURPOSE:
+    SynastryOverlayTruth ensures that every house-overlay result is
+    fully traceable, including whether the target house system fell back
+    to a polar-safe system.  Without it, callers cannot distinguish
+    overlays computed with different house systems or fallback modes.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Store all parameters of one directional overlay computation.
+    Non-responsibilities:
+        - Does not compute house placements; that is moira.houses.
+    Dependencies: None.
+    Structural invariants:
+        - point_count == len(SynastryHouseOverlay.placements).
+
+Canon: Moira Synastry Architecture; house overlay doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.SynastryOverlayTruth",
+    "risk": "low",
+    "api": {"frozen": ["source_label", "target_label", "include_nodes", "point_count", "target_house_system", "target_effective_house_system", "target_has_fallback"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "none"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     source_label: str
     target_label: str
@@ -280,7 +408,45 @@ class SynastryOverlayTruth:
 
 @dataclass(slots=True)
 class CompositeComputationTruth:
-    """Preserve the doctrinal/computational path for a composite chart result."""
+    """RITE: The Composite Witness — the provenance record of every
+    doctrinal and computational parameter that produced one composite
+    midpoint chart result.
+
+THEOREM: Frozen provenance record for one composite chart computation,
+         carrying the method, mean Julian Day, house-frame inclusion
+         flag, and the relevant Midheaven/ARMC values used.
+
+RITE OF PURPOSE:
+    CompositeComputationTruth ensures that every composite chart result
+    is fully auditable, preserving the distinction between pure-midpoint
+    and reference-place methods, and whether a house frame was included.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Store all parameters used to construct one composite chart.
+    Non-responsibilities:
+        - Does not compute midpoints; that is moira.midpoints.
+    Dependencies: None.
+    Structural invariants:
+        - method is "midpoint" or "reference_place".
+
+Canon: Moira Synastry Architecture; composite chart doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.CompositeComputationTruth",
+    "risk": "low",
+    "api": {"frozen": ["method", "jd_mean", "includes_house_frame", "reference_latitude", "house_system", "composite_mc", "composite_armc", "source_house_system", "source_effective_house_system"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "none"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     method: str
     jd_mean: float
@@ -295,7 +461,47 @@ class CompositeComputationTruth:
 
 @dataclass(slots=True)
 class DavisonComputationTruth:
-    """Preserve the doctrinal/computational path for a Davison chart result."""
+    """RITE: The Davison Witness — the provenance record of every
+    doctrinal and computational parameter that produced one Davison
+    relationship chart result.
+
+THEOREM: Frozen provenance record for one Davison chart computation,
+         carrying the method, raw and used Julian Days, latitude and
+         longitude midpoint modes, midpoint coordinates, and correction
+         details.
+
+RITE OF PURPOSE:
+    DavisonComputationTruth ensures that every Davison chart result is
+    auditable, preserving the distinction between uncorrected, spherical,
+    corrected, and reference-place methods and the exact midpoint
+    coordinates used.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Store all parameters used to construct one Davison chart.
+    Non-responsibilities:
+        - Does not compute geographic midpoints; that is moira.geoutils.
+    Dependencies: None.
+    Structural invariants:
+        - method is one of the five supported Davison methods.
+
+Canon: Moira Synastry Architecture; Davison relationship chart doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.DavisonComputationTruth",
+    "risk": "low",
+    "api": {"frozen": ["method", "raw_midpoint_jd", "used_jd", "latitude_mode", "longitude_mode", "latitude_midpoint", "longitude_midpoint", "house_system", "corrected_target_mc", "correction_applied"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "none"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     method: str
     raw_midpoint_jd: float
@@ -311,7 +517,47 @@ class DavisonComputationTruth:
 
 @dataclass(slots=True)
 class SynastryAspectClassification:
-    """Typed descriptive classification derived from synastry aspect truth."""
+    """RITE: The Aspect Classifier — the typed label that identifies how
+    a cross-chart aspect was computed: contact mode, pair mode, node
+    inclusion, and custom-orb status.
+
+THEOREM: Typed, validated classification vessel derived from a
+         SynastryAspectTruth, enforcing that contact_mode is
+         "cross_chart_aspect" and pair_mode is "pair".
+
+RITE OF PURPOSE:
+    SynastryAspectClassification lifts the raw strings in
+    SynastryAspectTruth into a validated, typed form so that
+    downstream engines and renderers can branch on contact mode
+    without pattern-matching bare strings.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Validate contact_mode and pair_mode at construction.
+        - Carry the typed classification for one cross-chart aspect.
+    Non-responsibilities:
+        - Does not compute aspects.
+    Dependencies: None.
+    Structural invariants:
+        - contact_mode == "cross_chart_aspect", pair_mode == "pair".
+
+Canon: Moira Synastry Architecture; aspect classification doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.SynastryAspectClassification",
+    "risk": "low",
+    "api": {"frozen": ["contact_mode", "pair_mode", "includes_nodes", "uses_custom_orbs"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "raise"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     contact_mode: str
     pair_mode: str
@@ -327,7 +573,46 @@ class SynastryAspectClassification:
 
 @dataclass(slots=True)
 class SynastryOverlayClassification:
-    """Typed descriptive classification derived from overlay truth."""
+    """RITE: The Overlay Classifier — the typed label identifying how a
+    synastry house overlay was computed: overlay mode, pair mode, node
+    inclusion, and polar-fallback status.
+
+THEOREM: Typed, validated classification vessel derived from a
+         SynastryOverlayTruth, enforcing that overlay_mode is
+         "directional_house_overlay" and pair_mode is "pair".
+
+RITE OF PURPOSE:
+    SynastryOverlayClassification lifts the overlay computation truth
+    into a validated typed form so downstream code can branch on
+    overlay mode without touching bare strings.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Validate overlay_mode and pair_mode at construction.
+        - Carry the typed classification for one house overlay.
+    Non-responsibilities:
+        - Does not compute house placements.
+    Dependencies: None.
+    Structural invariants:
+        - overlay_mode == "directional_house_overlay", pair_mode == "pair".
+
+Canon: Moira Synastry Architecture; house overlay classification doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.SynastryOverlayClassification",
+    "risk": "low",
+    "api": {"frozen": ["overlay_mode", "pair_mode", "includes_nodes", "has_house_fallback"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "raise"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     overlay_mode: str
     pair_mode: str
@@ -343,7 +628,46 @@ class SynastryOverlayClassification:
 
 @dataclass(slots=True)
 class CompositeClassification:
-    """Typed descriptive classification derived from composite computation truth."""
+    """RITE: The Composite Classifier — the typed label identifying how a
+    composite chart was built: chart mode, method variant, and whether
+    a house frame was computed.
+
+THEOREM: Typed, validated classification vessel derived from a
+         CompositeComputationTruth, enforcing that chart_mode is
+         "composite" and method is a supported composite doctrine.
+
+RITE OF PURPOSE:
+    CompositeClassification lifts the composite truth into a validated
+    typed form that downstream engines can inspect without checking raw
+    strings and without re-reading the full truth record.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Validate chart_mode and method at construction.
+        - Carry the typed classification for one composite result.
+    Non-responsibilities:
+        - Does not compute composite charts.
+    Dependencies: None.
+    Structural invariants:
+        - chart_mode == "composite"; method in {"midpoint", "reference_place"}.
+
+Canon: Moira Synastry Architecture; composite chart doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.CompositeClassification",
+    "risk": "low",
+    "api": {"frozen": ["chart_mode", "method", "includes_house_frame"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "raise"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     chart_mode: str
     method: str
@@ -358,7 +682,48 @@ class CompositeClassification:
 
 @dataclass(slots=True)
 class DavisonClassification:
-    """Typed descriptive classification derived from Davison computation truth."""
+    """RITE: The Davison Classifier — the typed label identifying how a
+    Davison chart was computed: method variant, latitude and longitude
+    midpoint modes, and correction status.
+
+THEOREM: Typed, validated classification vessel derived from a
+         DavisonComputationTruth, enforcing chart_mode, method, and
+         correction_mode against their supported doctrinal values.
+
+RITE OF PURPOSE:
+    DavisonClassification lifts the Davison truth into a validated typed
+    form so downstream renderers can branch on method without checking
+    multiple raw string fields.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Validate chart_mode, method, and correction_mode at
+          construction.
+        - Carry the typed classification for one Davison result.
+    Non-responsibilities:
+        - Does not compute Davison charts.
+    Dependencies: None.
+    Structural invariants:
+        - chart_mode == "davison"; method and correction_mode within
+          their supported value sets.
+
+Canon: Moira Synastry Architecture; Davison relationship chart doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.DavisonClassification",
+    "risk": "low",
+    "api": {"frozen": ["chart_mode", "method", "latitude_mode", "longitude_mode", "correction_mode"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "raise"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     chart_mode: str
     method: str
@@ -383,7 +748,52 @@ class DavisonClassification:
 
 @dataclass(slots=True)
 class SynastryRelation:
-    """Explicit relational truth derived from the current synastry backend."""
+    """RITE: The Relational Bond — the explicit typed description of how
+    two chart entities are related: by aspect contact, house-overlay
+    membership, or relationship-chart derivation.
+
+THEOREM: Validated relational truth record that names the kind, basis,
+         source and target labels, optional body references, and the
+         chart method, with cross-field invariants enforced at
+         construction.
+
+RITE OF PURPOSE:
+    SynastryRelation gives every synastry result a consistent relational
+    identity independent of the rendering layer.  Without it, callers
+    would need to infer relation kind and basis from multiple fields of
+    different result types.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Validate kind, basis, labels, references, and method for
+          all three relation types at construction.
+        - Expose boolean properties for relation type testing.
+    Non-responsibilities:
+        - Does not compute aspects or house placements.
+    Dependencies: None.
+    Structural invariants:
+        - For cross_chart_contact: basis == "aspect", refs required,
+          method None.
+        - For house_overlay: basis == "house_membership", refs required.
+        - For relationship_chart: method must match basis.
+
+Canon: Moira Synastry Architecture; inter-chart relation doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.SynastryRelation",
+    "risk": "medium",
+    "api": {"frozen": ["kind", "basis", "source_label", "target_label", "source_ref", "target_ref", "method"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "raise"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     kind: str
     basis: str
@@ -469,7 +879,46 @@ class SynastryRelation:
 
 @dataclass(slots=True)
 class SynastryConditionState:
-    """Structural condition state for a single synastry result vessel."""
+    """RITE: The Condition Name — the minimal typed token that records which
+    of the three synastry result kinds (contact, overlay, relationship
+    chart) a condition profile belongs to.
+
+THEOREM: Validated single-field vessel holding one of three canonical
+         synastry condition state names: "contact", "overlay", or
+         "relationship_chart".
+
+RITE OF PURPOSE:
+    SynastryConditionState provides a single authority for condition-
+    state naming so that profiles, networks, and aggregates all use the
+    same controlled vocabulary and cannot silently misidentify a result
+    kind through typos or bare strings.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Validate name at construction against the three allowed values.
+    Non-responsibilities:
+        - Does not carry any computation; it is a value token.
+    Dependencies: None.
+    Structural invariants:
+        - name in {"contact", "overlay", "relationship_chart"}.
+
+Canon: Moira Synastry Architecture; condition state vocabulary.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.SynastryConditionState",
+    "risk": "low",
+    "api": {"frozen": ["name"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "raise"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     name: str
 
@@ -480,7 +929,51 @@ class SynastryConditionState:
 
 @dataclass(slots=True)
 class SynastryConditionProfile:
-    """Integrated per-result synastry condition profile derived from existing truth."""
+    """RITE: The Condition Profile — the integrated per-result record that
+    binds result kind, condition state, pair mode, relation kind, and
+    relation basis into a single validated synastry condition.
+
+THEOREM: Validated integrated profile for one synastry result vessel,
+         derived from existing truth and classification objects,
+         enforcing cross-field coherence between condition state,
+         result kind, and relation kind.
+
+RITE OF PURPOSE:
+    SynastryConditionProfile distils the full condition of one synastry
+    result into a compact, deterministically sortable record.  Without
+    it, chart-wide aggregation and network projection would have to
+    reconstruct condition semantics from multiple loosely coupled objects
+    on every call.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Validate result_kind, condition_state, and relation_kind
+          for mutual coherence at construction.
+        - Be sortable via _synastry_condition_sort_key.
+    Non-responsibilities:
+        - Does not compute synastry results; it is a derived record.
+    Dependencies:
+        - SynastryConditionState.
+    Structural invariants:
+        - condition_state.name and relation_kind agree on result type.
+
+Canon: Moira Synastry Architecture; condition profile doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.SynastryConditionProfile",
+    "risk": "low",
+    "api": {"frozen": ["result_kind", "condition_state", "pair_mode", "relation_kind", "relation_basis", "method", "includes_nodes", "includes_house_frame", "has_house_fallback"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "raise"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     result_kind: str
     condition_state: SynastryConditionState
@@ -533,7 +1026,53 @@ def _synastry_condition_sort_key(profile: SynastryConditionProfile) -> tuple[obj
 
 @dataclass(slots=True)
 class SynastryChartConditionProfile:
-    """Chart-wide synastry condition aggregate built from per-result profiles."""
+    """RITE: The Chart Condition Aggregate — the chart-wide synastry
+    condition summary that collects all per-result profiles, counts
+    them by type, and ranks them by condition strength.
+
+THEOREM: Validated chart-wide aggregate of SynastryConditionProfile
+         records, enforcing deterministic ordering, consistent type
+         counts, and consistent strongest/weakest rankings at
+         construction.
+
+RITE OF PURPOSE:
+    SynastryChartConditionProfile gives callers a single authoritative
+    summary of the full synastry condition landscape for a chart pair.
+    Without it, counting contact, overlay, and relationship profiles
+    and ranking them by strength would require repeated iteration over
+    a bare list.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Validate ordering, counts, strongest, and weakest at
+          construction.
+        - Expose profile_count, strongest_count, and weakest_count
+          as computed properties.
+    Non-responsibilities:
+        - Does not build profiles; that is the synastry engine.
+    Dependencies:
+        - SynastryConditionProfile.
+    Structural invariants:
+        - profiles is deterministically ordered.
+        - contact_count + overlay_count + relationship_chart_count == len(profiles).
+
+Canon: Moira Synastry Architecture; chart condition aggregate doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.SynastryChartConditionProfile",
+    "risk": "medium",
+    "api": {"frozen": ["profiles", "contact_count", "overlay_count", "relationship_chart_count", "strongest_profiles", "weakest_profiles"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "raise"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     profiles: tuple[SynastryConditionProfile, ...]
     contact_count: int
@@ -584,7 +1123,47 @@ class SynastryChartConditionProfile:
 
 @dataclass(slots=True)
 class SynastryConditionNetworkNode:
-    """One node in the synastry relation/condition network."""
+    """RITE: The Network Node — one vertex in the synastry condition/
+    relation network, representing a pair, body, or chart entity with
+    its degree counted from the edge set.
+
+THEOREM: Validated network node vessel carrying a unique node ID,
+         kind label, and validated incoming/outgoing degree counts
+         consistent with the edge set of the containing network.
+
+RITE OF PURPOSE:
+    SynastryConditionNetworkNode makes the synastry relation network
+    inspectable: callers can traverse nodes, filter by kind, and rank
+    by connectivity without re-counting edges on every call.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Validate node_id, kind, and non-negative degree counts.
+        - Expose total_degree as a computed property.
+    Non-responsibilities:
+        - Does not own edges; that is the network profile.
+    Dependencies: None.
+    Structural invariants:
+        - kind in {"pair", "body", "chart"}.
+        - incoming_count and outgoing_count match the edge set.
+
+Canon: Moira Synastry Architecture; condition network doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.SynastryConditionNetworkNode",
+    "risk": "low",
+    "api": {"frozen": ["node_id", "kind", "incoming_count", "outgoing_count"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "raise"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     node_id: str
     kind: str
@@ -606,7 +1185,49 @@ class SynastryConditionNetworkNode:
 
 @dataclass(slots=True)
 class SynastryConditionNetworkEdge:
-    """One directed edge in the synastry relation/condition network."""
+    """RITE: The Network Edge — one directed link in the synastry condition/
+    relation network, connecting a source node to a target node and
+    carrying the relation kind, basis, and condition state of the bond.
+
+THEOREM: Validated directed edge vessel carrying source and target
+         node IDs, relation kind, relation basis, and condition state,
+         with invariants enforcing consistency between relation kind
+         and condition state.
+
+RITE OF PURPOSE:
+    SynastryConditionNetworkEdge makes the network traversable:
+    callers can filter edges by relation kind, inspect condition state,
+    and trace paths without parsing multiple separate result objects.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Validate endpoints, relation_kind, and condition_state, and
+          their mutual coherence, at construction.
+    Non-responsibilities:
+        - Does not store body positions or aspect angles.
+    Dependencies: None.
+    Structural invariants:
+        - cross_chart_contact ⇒ condition_state == "contact".
+        - house_overlay ⇒ condition_state == "overlay".
+        - relationship_chart ⇒ condition_state == "relationship_chart".
+
+Canon: Moira Synastry Architecture; condition network doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.SynastryConditionNetworkEdge",
+    "risk": "low",
+    "api": {"frozen": ["source_id", "target_id", "relation_kind", "relation_basis", "condition_state"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "raise"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     source_id: str
     target_id: str
@@ -625,7 +1246,51 @@ class SynastryConditionNetworkEdge:
 
 @dataclass(slots=True)
 class SynastryConditionNetworkProfile:
-    """Network projection built from existing synastry relations and condition profiles."""
+    """RITE: The Network Profile — the complete validated graph of synastry
+    relation/condition nodes and edges with derived views for isolated
+    and most-connected nodes.
+
+THEOREM: Validated network projection built from existing synastry
+         relation and condition profile data, enforcing deterministic
+         ordering, unique node IDs, edge endpoint validity, and
+         consistency of node degree counts.
+
+RITE OF PURPOSE:
+    SynastryConditionNetworkProfile exposes the full topology of a
+    synastry pair's relation landscape so callers can query isolated
+    entities, most-connected hubs, and traversal paths without
+    reconstructing the graph from raw results.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Validate ordering, node uniqueness, edge validity, degree
+          consistency, isolated nodes, and most-connected nodes.
+        - Expose node_count and edge_count as properties.
+    Non-responsibilities:
+        - Does not build the graph; that is synastry_condition_network_profile.
+    Dependencies:
+        - SynastryConditionNetworkNode, SynastryConditionNetworkEdge.
+    Structural invariants:
+        - nodes and edges are deterministically ordered.
+        - All edge endpoints reference known node IDs.
+
+Canon: Moira Synastry Architecture; condition network doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.SynastryConditionNetworkProfile",
+    "risk": "medium",
+    "api": {"frozen": ["nodes", "edges", "isolated_nodes", "most_connected_nodes"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "raise"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     nodes: tuple[SynastryConditionNetworkNode, ...]
     edges: tuple[SynastryConditionNetworkEdge, ...]
@@ -733,7 +1398,47 @@ def _build_davison_condition_profile(davison: "DavisonInfo") -> SynastryConditio
 
 @dataclass(frozen=True, slots=True)
 class SynastryAspectPolicy:
-    """Doctrine surface for direct synastry aspect search."""
+    """RITE: The Aspect Policy — the doctrine surface that governs which
+    aspects are sought, at what orb tier, and with what orb multiplier
+    in a synastry computation.
+
+THEOREM: Frozen doctrine dataclass carrying the synastry aspect policy:
+         tier, custom-orb table, orb multiplier, and node inclusion
+         flag, with validation at construction.
+
+RITE OF PURPOSE:
+    SynastryAspectPolicy provides a single reusable, validated object
+    that callers can construct once and pass to any synastry function,
+    rather than passing four separate keyword arguments that can
+    silently differ across calls.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Validate tier, orb_factor, and orbs at construction.
+        - Be the authoritative defaults source for synastry aspect calls.
+    Non-responsibilities:
+        - Does not compute aspects.
+    Dependencies: None.
+    Structural invariants:
+        - tier in {1, 2}; orb_factor > 0 and finite.
+
+Canon: Moira Synastry Architecture; aspect policy doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.SynastryAspectPolicy",
+    "risk": "low",
+    "api": {"frozen": ["tier", "orbs", "orb_factor", "include_nodes"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "raise"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     tier: int = 2
     orbs: dict[float, float] | None = None
@@ -753,14 +1458,93 @@ class SynastryAspectPolicy:
 
 @dataclass(frozen=True, slots=True)
 class SynastryOverlayPolicy:
-    """Doctrine surface for directional synastry house overlays."""
+    """RITE: The Overlay Policy — the doctrine surface that governs whether
+    lunar nodes are included in directional synastry house overlays.
+
+THEOREM: Frozen doctrine dataclass carrying the single synastry overlay
+         policy flag: whether to include lunar nodes in overlay
+         placement lookups.
+
+RITE OF PURPOSE:
+    SynastryOverlayPolicy provides a stable, reusable policy object for
+    synastry house-overlay calls, making node-inclusion intent explicit
+    and preventing silent differences between calls.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Carry the include_nodes flag for overlay calls.
+    Non-responsibilities:
+        - Does not compute overlays or house placements.
+    Dependencies: None.
+    Structural invariants:
+        - include_nodes is bool.
+
+Canon: Moira Synastry Architecture; house overlay policy doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.SynastryOverlayPolicy",
+    "risk": "low",
+    "api": {"frozen": ["include_nodes"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "none"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     include_nodes: bool = True
 
 
 @dataclass(frozen=True, slots=True)
 class SynastryCompositePolicy:
-    """Doctrine surface for composite reference-place house selection."""
+    """RITE: The Composite Policy — the doctrine surface that governs the
+    house system and house policy used when computing composite
+    reference-place charts.
+
+THEOREM: Frozen doctrine dataclass carrying the reference-place
+         house system and HousePolicy defaults for composite chart
+         construction, with validation at construction.
+
+RITE OF PURPOSE:
+    SynastryCompositePolicy provides a stable, reusable policy object
+    for composite chart calls so callers do not need to repeat house-
+    system and policy arguments and cannot silently introduce
+    inconsistent house-frame configurations.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Validate reference_place_house_system and house_policy.
+        - Carry composite house configuration for facade delegation.
+    Non-responsibilities:
+        - Does not compute composite charts.
+    Dependencies:
+        - moira.houses.HousePolicy.
+    Structural invariants:
+        - reference_place_house_system is non-empty.
+        - house_policy is a HousePolicy instance.
+
+Canon: Moira Synastry Architecture; composite chart policy doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.SynastryCompositePolicy",
+    "risk": "low",
+    "api": {"frozen": ["reference_place_house_system", "house_policy"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "raise"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     reference_place_house_system: str = HouseSystem.PLACIDUS
     house_policy: HousePolicy = field(default_factory=HousePolicy.default)
@@ -774,7 +1558,47 @@ class SynastryCompositePolicy:
 
 @dataclass(frozen=True, slots=True)
 class SynastryDavisonPolicy:
-    """Doctrine surface for Davison chart house-system defaults."""
+    """RITE: The Davison Policy — the doctrine surface that governs the
+    house system and house policy used when constructing Davison
+    relationship charts.
+
+THEOREM: Frozen doctrine dataclass carrying the default Davison
+         house system and HousePolicy, with validation at construction.
+
+RITE OF PURPOSE:
+    SynastryDavisonPolicy provides a stable, reusable policy object
+    for Davison chart calls so callers do not need to repeat
+    house-system arguments and cannot silently use different house
+    configurations between calls.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Validate default_house_system and house_policy.
+        - Carry Davison house configuration for facade delegation.
+    Non-responsibilities:
+        - Does not compute Davison charts.
+    Dependencies:
+        - moira.houses.HousePolicy.
+    Structural invariants:
+        - default_house_system is non-empty; house_policy is HousePolicy.
+
+Canon: Moira Synastry Architecture; Davison policy doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.SynastryDavisonPolicy",
+    "risk": "low",
+    "api": {"frozen": ["default_house_system", "house_policy"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "raise"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     default_house_system: str = HouseSystem.PLACIDUS
     house_policy: HousePolicy = field(default_factory=HousePolicy.default)
@@ -788,7 +1612,50 @@ class SynastryDavisonPolicy:
 
 @dataclass(frozen=True, slots=True)
 class SynastryComputationPolicy:
-    """Lean backend policy surface for the current synastry doctrine."""
+    """RITE: The Synastry Policy — the root doctrine container that bundles
+    all four sub-policies (aspect, overlay, composite, Davison) into a
+    single composable policy object for synastry computations.
+
+THEOREM: Frozen root doctrine dataclass whose four fields are the
+         validated sub-policy objects governing aspect search, house
+         overlay, composite chart, and Davison chart computation.
+
+RITE OF PURPOSE:
+    SynastryComputationPolicy is the single object a caller constructs
+    once and passes to any synastry function to override all defaults
+    simultaneously.  Without it, callers would need to pass four
+    separate policy objects and accept silent inconsistencies between
+    calls.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Aggregate the four sub-policy objects.
+        - Provide the DEFAULT_SYNASTRY_POLICY singleton.
+    Non-responsibilities:
+        - Does not validate sub-policies; each sub-policy self-validates.
+    Dependencies:
+        - SynastryAspectPolicy, SynastryOverlayPolicy,
+          SynastryCompositePolicy, SynastryDavisonPolicy.
+    Structural invariants:
+        - All four sub-policy fields are non-None.
+
+Canon: Moira Synastry Architecture; root synastry policy doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.SynastryComputationPolicy",
+    "risk": "low",
+    "api": {"frozen": ["aspects", "overlays", "composite", "davison"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "none"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     aspects: SynastryAspectPolicy = field(default_factory=SynastryAspectPolicy)
     overlays: SynastryOverlayPolicy = field(default_factory=SynastryOverlayPolicy)
@@ -839,7 +1706,56 @@ def _validate_synastry_aspect_inputs(
 
 @dataclass(slots=True)
 class SynastryHouseOverlay:
-    """Directional synastry house-overlay result."""
+    """RITE: The Overlay Map — the composite result vessel for one
+    directional synastry house overlay, binding body placements to their
+    truth provenance, classification, relation, and condition profile
+    in a single inspectable structure.
+
+THEOREM: Validated directional synastry house-overlay result that
+         aggregates body-to-house placements with optional truth,
+         classification, relation, and condition profile, enforcing
+         cross-field consistency at construction.
+
+RITE OF PURPOSE:
+    SynastryHouseOverlay ensures that every house-overlay result is
+    self-describing and auditable: labels, node inclusion, point count,
+    and policy flags all agree across the four optional components.
+    Without it, callers would need to independently validate four
+    separate objects.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Validate source/target labels, truth coherence, classification
+          coherence, relation coherence, and condition profile coherence.
+        - Expose derived properties (overlay_mode, includes_nodes, etc.).
+        - Provide bodies_in_house() for sorted body lookup.
+    Non-responsibilities:
+        - Does not compute house placements; that is moira.houses.
+    Dependencies:
+        - moira.houses.HousePlacement.
+        - SynastryOverlayTruth, SynastryOverlayClassification,
+          SynastryRelation, SynastryConditionProfile.
+    Structural invariants:
+        - All four optional components agree on labels, node inclusion,
+          and point count when present.
+
+Canon: Moira Synastry Architecture; house overlay result doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.SynastryHouseOverlay",
+    "risk": "medium",
+    "api": {"frozen": ["source_label", "target_label", "placements", "include_nodes", "computation_truth", "classification", "relation", "condition_profile"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "raise"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     source_label: str
     target_label: str
@@ -948,7 +1864,48 @@ class SynastryHouseOverlay:
 
 @dataclass(slots=True)
 class MutualHouseOverlay:
-    """Container for the two directional house overlays in a synastry pair."""
+    """RITE: The Mutual Map — the container that binds both directional
+    synastry house overlays in a pair into one structure: Chart A's
+    bodies placed in Chart B's houses, and Chart B's bodies in Chart A's.
+
+THEOREM: Simple two-field vessel grouping the two directional house
+         overlays of a synastry pair so callers receive both directions
+         in a single return value.
+
+RITE OF PURPOSE:
+    MutualHouseOverlay eliminates the need to call house_overlay() twice
+    and manage two separate return values.  It is the standard container
+    returned by mutual_house_overlays().
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Group first_in_second and second_in_first overlays.
+    Non-responsibilities:
+        - Does not validate the overlays; each SynastryHouseOverlay
+          self-validates.
+    Dependencies:
+        - SynastryHouseOverlay.
+    Structural invariants:
+        - first_in_second.source_label == second_in_first.target_label
+          (enforced by the building function, not the vessel).
+
+Canon: Moira Synastry Architecture; mutual house overlay doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.synastry.MutualHouseOverlay",
+    "risk": "low",
+    "api": {"frozen": ["first_in_second", "second_in_first"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "none"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     first_in_second: SynastryHouseOverlay
     second_in_first: SynastryHouseOverlay

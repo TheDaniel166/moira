@@ -19,7 +19,50 @@ def _facade_module() -> Any:
 
 
 class ClassicalFacadeMixin:
-    """Lots, dignities, midpoints, harmonics, profections, and time-lords."""
+    """RITE: The Tradition-Keeper — the layer that routes the public Moira
+    surface to classical astrological techniques: Hermetic Lots, essential
+    dignities, midpoints, harmonics, profections, and time-lord systems.
+
+THEOREM: Mixin that provides classical astrological technique wrappers
+         for the public ``moira.facade.Moira`` class, delegating each
+         computation to the authoritative owning module.
+
+RITE OF PURPOSE:
+    ClassicalFacadeMixin extracts all classical-technique-facing public
+    methods from the monolithic facade.py into a coherent composable
+    unit, preserving the legacy Moira surface while routing to the
+    correct engine module without duplicating logic.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Delegate lots, dignities, midpoints, harmonics, profections,
+          and time-lord computations to their owning modules.
+    Non-responsibilities:
+        - Does not implement any astrological calculation itself.
+        - Does not own kernel lifecycle or reader management.
+    Dependencies:
+        - moira.facade (resolved at runtime via sys.modules)
+    Structural invariants:
+        - All methods delegate to facade-module callables.
+
+Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
+       classical technique modules.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira._facade_classical.ClassicalFacadeMixin",
+    "risk": "medium",
+    "api": {"frozen": ["lots", "dignities", "midpoints", "harmonics", "profections"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "propagate"},
+    "succession": {"stance": "mixin", "override_points": []},
+    "agent": {"autofix": "disallowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     def lots(self, chart, houses):
         """Compute Arabic Parts / Hermetic Lots for a chart."""

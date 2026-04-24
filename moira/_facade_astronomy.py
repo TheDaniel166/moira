@@ -19,7 +19,50 @@ def _facade_module() -> Any:
 
 
 class AstronomyFacadeMixin:
-    """Astronomy, star, visibility, nakshatra, and antiscia wrappers."""
+    """RITE: The Sky-Reader — the layer that bridges the public Moira surface
+    to heliocentric positions, fixed-star lookups, visibility conditions,
+    nakshatra placements, and antiscia geometry.
+
+THEOREM: Mixin that aggregates astronomy-facing convenience wrappers for
+         the public ``moira.facade.Moira`` class: heliocentric, star_at,
+         heliacal_rising, nakshatra, antiscia, and related methods.
+
+RITE OF PURPOSE:
+    AstronomyFacadeMixin extracts all astronomy-oriented public methods
+    from the monolithic facade.py into a coherent composable unit.
+    It preserves the legacy Moira surface while ensuring each
+    delegation routes to the authoritative engine module.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Delegate heliocentric position calls to ``all_heliocentric_at``.
+        - Delegate star lookup, heliacal, nakshatra, and antiscia calls
+          to their owning modules via the facade module reference.
+    Non-responsibilities:
+        - Does not perform any astronomical computation itself.
+        - Does not own kernel lifecycle.
+    Dependencies:
+        - moira.facade (resolved at runtime via sys.modules)
+    Structural invariants:
+        - All methods delegate to facade-module callables.
+
+Canon: Moira Sovereign Facade Architecture; moira.facade astronomy policy.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira._facade_astronomy.AstronomyFacadeMixin",
+    "risk": "medium",
+    "api": {"frozen": ["heliocentric", "star_at", "heliacal_rising", "nakshatra", "antiscia"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "propagate"},
+    "succession": {"stance": "mixin", "override_points": []},
+    "agent": {"autofix": "disallowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     def heliocentric(self, dt: datetime, bodies: list[str] | None = None):
         """Return heliocentric ecliptic positions for all or specified planets."""

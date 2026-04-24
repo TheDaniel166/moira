@@ -136,20 +136,52 @@ def _hermite_eval_3d(
 
 
 class _Type13Segment(BaseSegment):
-    """
-    jplephem BaseSegment extension for SPK type 13 (Hermite interpolation,
-    unequal time steps).
+    """RITE: The Hermite Reader — the low-level segment handler that decodes
+    unequal-step Hermite-interpolated SPK type 13 state data directly
+    from a jplephem DAF into cartesian position vectors.
 
-    Registered in jplephem's segment class registry at module import time so
-    SPK.open() handles type 13 files transparently.
+THEOREM: jplephem BaseSegment extension for SPK type 13 (Hermite
+         interpolation, unequal time steps), registered in the jplephem
+         segment class registry at import time.
 
-    Segment layout (1-indexed DAF words from start_i to end_i):
-      [start_i,          start_i + 6N − 1] : N state vectors (x,y,z,vx,vy,vz)
-      [start_i + 6N,     start_i + 7N − 1] : N epochs (seconds from J2000)
-      [start_i + 7N,     end_i − 2        ] : epoch directory (every 100th)
-      [end_i − 1,        end_i            ] : [window_size, N]
+RITE OF PURPOSE:
+    _Type13Segment allows jplephem to transparently open and query SPK
+    files whose segments use type 13 encoding (the format used by NAIF
+    for most small-body kernels).  Without this class, jplephem's
+    ``SPK.open()`` cannot read type 13 data and raises on import.
 
-    Canon: NAIF SPK Required Reading §2.3.13
+LAW OF OPERATION:
+    Responsibilities:
+        - Decode the type 13 DAF segment layout (state vectors, epoch
+          array, epoch directory, window parameters).
+        - Delegate Hermite interpolation to ``_hermite_eval_3d``.
+        - Provide ``compute()`` and ``compute_and_differentiate()``.
+    Non-responsibilities:
+        - Does not own kernel file I/O; that is jplephem SPK.
+        - Does not validate NAIF body ID or epoch coverage; the caller
+          (``SmallBodyKernel.position``) does that.
+    Dependencies:
+        - jplephem.spk.BaseSegment, reify, S_PER_DAY, T0.
+        - moira._spk_body_kernel._hermite_eval_3d.
+    Structural invariants:
+        - Registered as _segment_classes[13] at module import time.
+
+Canon: NAIF SPK Required Reading §2.3.13
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira._spk_body_kernel._Type13Segment",
+    "risk": "high",
+    "api": {"frozen": ["compute", "compute_and_differentiate"], "internal": ["_data"]},
+    "state": {"mutable": false, "owners": ["_data"]},
+    "effects": {"signals_emitted": [], "io": ["kernel_mmap_read"], "mutation": "cached_property"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "propagate"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "disallowed", "requires_human_for": ["api_change", "kernel_policy"]}
+}
+[/MACHINE_CONTRACT]
     """
 
     @reify
@@ -208,24 +240,53 @@ _segment_classes[13] = _Type13Segment
 # ---------------------------------------------------------------------------
 
 class SmallBodyKernel:
-    """
-    Thin wrapper around a jplephem SPK file for small-body position queries.
+    """RITE: The Small-Body Gate — the thin wrapper that opens one JPL SPK
+    kernel file and answers body-position queries without duplicating
+    the open/index/query logic across the asteroid and comet modules.
 
-    Opens a single JPL SPK kernel file, indexes its available NAIF body IDs
-    and reference centers, and provides a position() method returning the ICRF
-    position of a body at a given JD.
+THEOREM: Thin wrapper around a jplephem SPK file that indexes available
+         NAIF body IDs, reference centers, and epoch coverage, and
+         returns ICRF position vectors for a body at a given JD.
 
-    Used by both moira.asteroids and moira.comets; factored here to avoid
-    duplication between those modules.
+RITE OF PURPOSE:
+    SmallBodyKernel factors out the SPK open-and-query pattern shared
+    by ``moira.asteroids`` and ``moira.comets``.  Without it, both
+    modules would duplicate the segment iteration, coverage mapping,
+    and FileNotFoundError guard.
 
-    Parameters
-    ----------
-    path : Path to a .bsp SPK kernel file.
+LAW OF OPERATION:
+    Responsibilities:
+        - Open and hold a jplephem SPK kernel file.
+        - Index available NAIF IDs and their reference centers.
+        - Answer ``position()``, ``has_body()``, and ``coverage()``
+          queries.
+    Non-responsibilities:
+        - Does not own epoch-validity checking beyond segment bounds.
+        - Does not convert from ICRF to ecliptic; callers do that.
+    Dependencies:
+        - jplephem.spk.SPK.
+        - moira._spk_body_kernel._Type13Segment (registered at import).
+    Structural invariants:
+        - ``_path`` is an existing file at construction time.
+        - ``_available`` and ``_center`` are consistent with the kernel.
 
-    Raises
-    ------
-    FileNotFoundError : if the kernel file does not exist.
-    KeyError          : from position() if no segment covers the body/JD.
+Canon: NAIF SPK Required Reading; moira.asteroids and moira.comets
+       small-body kernel policy.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira._spk_body_kernel.SmallBodyKernel",
+    "risk": "high",
+    "api": {"frozen": ["has_body", "segment_center", "position", "list_naif_ids", "has_segment_at", "coverage"], "internal": ["_path", "_kernel", "_available", "_center"]},
+    "state": {"mutable": false, "owners": ["_kernel"]},
+    "effects": {"signals_emitted": [], "io": ["kernel_file_open"], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "raise"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "disallowed", "requires_human_for": ["api_change", "kernel_policy"]}
+}
+[/MACHINE_CONTRACT]
     """
 
     def __init__(self, path: Path) -> None:

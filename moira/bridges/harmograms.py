@@ -37,6 +37,49 @@ PositionSource = Chart | ProgressedChart | Mapping[str, float] | Sequence[Mappin
 
 
 class HarmogramProgressionFamily(StrEnum):
+    """RITE: The Progression-Labeller — the symbolic key that names which
+    time-direction technique a harmogram sample series was built from.
+
+THEOREM: Immutable string-enum whose members are the canonical family
+         identifiers for the ten supported progression and direction
+         techniques used in harmogram visualisation.
+
+RITE OF PURPOSE:
+    HarmogramProgressionFamily gives the harmogram bridge a controlled
+    vocabulary for selecting the correct ``Moira`` method when building
+    dynamic harmogram sample series.  Without it, callers would pass
+    bare strings that could silently drift from the registered method
+    map, causing silent attribution errors in rendered harmograms.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Enumerate the ten harmogram progression/direction families.
+        - Map to the ``Moira`` method name via ``_PROGRESSION_METHODS``.
+    Non-responsibilities:
+        - Does not own any progression computation.
+        - Does not validate epoch validity; that is the progression engine.
+    Dependencies:
+        - enum.StrEnum.
+    Structural invariants:
+        - Every member has a corresponding entry in ``_PROGRESSION_METHODS``.
+
+Canon: Moira Harmogram Bridge Architecture; moira.progressions doctrine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.bridges.harmograms.HarmogramProgressionFamily",
+    "risk": "low",
+    "api": {"frozen": ["SECONDARY", "TERTIARY", "TERTIARY_II", "MINOR", "SOLAR_ARC", "CONVERSE_SECONDARY", "CONVERSE_TERTIARY", "CONVERSE_TERTIARY_II", "CONVERSE_MINOR", "CONVERSE_SOLAR_ARC"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "none"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
     SECONDARY = "secondary"
     TERTIARY = "tertiary"
     TERTIARY_II = "tertiary_ii"

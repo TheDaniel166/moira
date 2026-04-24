@@ -21,7 +21,51 @@ def _facade_module() -> Any:
 
 
 class RelationshipFacadeMixin:
-    """Synastry, overlay, composite, and Davison facade methods."""
+    """RITE: The Chart-Weaver — the layer that routes the public Moira surface
+    to relationship chart techniques: synastry aspect overlays, composite
+    midpoint charts, and Davison time-space charts.
+
+THEOREM: Mixin that provides relationship-chart method wrappers for the
+         public ``moira.facade.Moira`` class, delegating each technique
+         to ``moira.synastry`` and related modules.
+
+RITE OF PURPOSE:
+    RelationshipFacadeMixin extracts all relationship-chart-facing public
+    methods from the monolithic facade.py into a composable unit,
+    preserving the legacy Moira surface while routing to the authoritative
+    synastry engine without duplicating logic.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Delegate synastry aspects, composite chart, and Davison
+          computation to ``moira.synastry``.
+    Non-responsibilities:
+        - Does not implement any synastry or composite math itself.
+        - Does not own kernel lifecycle or reader management.
+    Dependencies:
+        - moira.facade (resolved at runtime via sys.modules)
+        - moira.constants.HouseSystem
+    Structural invariants:
+        - All methods delegate to facade-module callables.
+
+Canon: Moira Sovereign Facade Architecture; moira.synastry relationship
+       chart engine.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira._facade_relationships.RelationshipFacadeMixin",
+    "risk": "medium",
+    "api": {"frozen": ["synastry_aspects", "composite", "davison"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "propagate"},
+    "succession": {"stance": "mixin", "override_points": []},
+    "agent": {"autofix": "disallowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     def synastry_aspects(
         self,

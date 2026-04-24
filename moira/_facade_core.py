@@ -20,7 +20,54 @@ def _facade_module() -> Any:
 
 
 class CoreFacadeMixin:
-    """Core chart and time convenience methods for ``moira.facade.Moira``."""
+    """RITE: The Chart-Maker — the layer that assembles a complete snapshot
+    of the heavens for an instant of time and returns it as a sovereign
+    Chart vessel ready for all downstream astrological use.
+
+THEOREM: Mixin that provides chart assembly, house calculation, sky-position
+         lookup, aspect finding, Julian-day conversion, and sidereal
+         time helpers for the public ``moira.facade.Moira`` class.
+
+RITE OF PURPOSE:
+    CoreFacadeMixin consolidates the most frequently called Moira
+    convenience methods — chart, houses, sky_position, aspects,
+    jd_from_datetime, and sidereal_time — into a single composable
+    unit.  Without this mixin, every delegation of these calls would
+    live in the monolithic facade.py and resist separation.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Assemble Chart vessels from ``all_planets_at``, node
+          functions, obliquity, and delta-T.
+        - Delegate house calculation to ``calculate_houses``.
+        - Delegate sky-position, aspect, and Julian-day helpers to
+          their owning modules via the facade module reference.
+    Non-responsibilities:
+        - Does not own any astronomical math.
+        - Does not manage kernel lifecycle; that is KernelFacadeMixin.
+    Dependencies:
+        - moira.facade (resolved at runtime via sys.modules)
+        - moira.nodes.true_lilith, moira.nodes.true_node, etc.
+    Structural invariants:
+        - chart() always returns a Chart vessel or raises.
+
+Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira._facade_core.CoreFacadeMixin",
+    "risk": "high",
+    "api": {"frozen": ["chart", "houses", "sky_position", "aspects", "jd_from_datetime", "sidereal_time"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "propagate"},
+    "succession": {"stance": "mixin", "override_points": []},
+    "agent": {"autofix": "disallowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     def chart(
         self,

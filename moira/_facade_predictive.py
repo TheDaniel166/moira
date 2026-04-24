@@ -22,7 +22,51 @@ def _facade_module() -> Any:
 
 
 class PredictiveFacadeMixin:
-    """Progression, transit, return, station, and planetary-hour wrappers."""
+    """RITE: The Time-Mapper — the layer that routes the public Moira surface
+    to predictive techniques: secondary progressions, transit search, solar
+    and lunar returns, station detection, syzygy, and planetary hours.
+
+THEOREM: Mixin that provides predictive astrological technique wrappers
+         for the public ``moira.facade.Moira`` class, delegating each
+         time-directed technique to the authoritative owning module.
+
+RITE OF PURPOSE:
+    PredictiveFacadeMixin extracts all predictive-technique-facing public
+    methods from the monolithic facade.py into a composable unit,
+    preserving the legacy Moira surface while cleanly routing to the
+    correct engine module without duplicating logic.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Delegate progression, transit, return, station, syzygy, and
+          planetary-hour computations to their owning modules.
+    Non-responsibilities:
+        - Does not implement any predictive calculation itself.
+        - Does not own kernel lifecycle or reader management.
+    Dependencies:
+        - moira.facade (resolved at runtime via sys.modules)
+        - moira.constants.HouseSystem
+    Structural invariants:
+        - All methods delegate to facade-module callables.
+
+Canon: Moira Sovereign Facade Architecture; moira.predictive and related
+       time-direction engine modules.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira._facade_predictive.PredictiveFacadeMixin",
+    "risk": "medium",
+    "api": {"frozen": ["progression", "transits", "solar_return", "lunar_return", "station", "planetary_hours"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "propagate"},
+    "succession": {"stance": "mixin", "override_points": []},
+    "agent": {"autofix": "disallowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
+    """
 
     def progression(
         self,

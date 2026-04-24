@@ -16,7 +16,7 @@ def test_nutation_tables_load_lazily() -> None:
 
 
 def test_runtime_version_matches_project_metadata_fallback() -> None:
-    assert moira.__version__ == "2.1.1"
+    assert moira.__version__ == "2.1.2"
 
 
 def test_moira_behavior_smoke_chart_houses_aspects_lots_and_transits(monkeypatch) -> None:
@@ -36,6 +36,7 @@ def test_moira_behavior_smoke_chart_houses_aspects_lots_and_transits(monkeypatch
     monkeypatch.setattr(moira.facade, "true_node", lambda *args, **kwargs: node_result)
     monkeypatch.setattr(moira.facade, "mean_node", lambda *args, **kwargs: node_result)
     monkeypatch.setattr(moira.facade, "mean_lilith", lambda *args, **kwargs: node_result)
+    monkeypatch.setattr(moira.facade, "true_lilith", lambda *args, **kwargs: node_result)
     monkeypatch.setattr(moira.facade, "ut_to_tt", lambda jd: 2451545.0008)
     monkeypatch.setattr(moira.facade, "true_obliquity", lambda jd: 23.4)
     monkeypatch.setattr(moira.facade, "delta_t_from_jd", lambda jd: 69.0)

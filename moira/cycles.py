@@ -302,13 +302,46 @@ class GreatMutationElement(str, Enum):
 
 
 class PlanetaryAgeName(str, Enum):
-    """
-    The seven planetary ages of human life (Ptolemy, Tetrabiblos I.10).
+    """RITE: The Age-Marker — the symbolic name binding one planet to the
+    developmental stage of human life it governs by astrological doctrine.
 
-    Each planet governs a stage of development corresponding to its
-    astronomical nature.  The Moon governs infancy (rapid change), Mercury
-    governs childhood (learning), and so on through Saturn's governance
-    of old age (contraction and cold).
+THEOREM: Immutable enumeration of the seven planetary ages of life per
+         Ptolemy, mapping each planet to its canonical stage name.
+
+RITE OF PURPOSE:
+    PlanetaryAgeName provides a controlled vocabulary for the seven
+    Ptolemaic life stages so that age-cycle engines and result vessels
+    can reference stages by name rather than bare strings, preventing
+    silent mismatches and enabling exhaustive iteration.
+
+LAW OF OPERATION:
+    Responsibilities:
+        - Declare the seven planetary age names as string enum members.
+        - Be iterable for exhaustive stage traversal.
+    Non-responsibilities:
+        - Does not store age durations; that is PlanetaryAge's role.
+        - Does not perform any computation.
+    Dependencies:
+        - None (standard-library Enum only).
+    Structural invariants:
+        - Exactly seven members, one per classical planet.
+
+Canon: Ptolemy, Tetrabiblos I.10; Vettius Valens, Anthology I.
+
+[MACHINE_CONTRACT v1]
+{
+    "scope": "class",
+    "id": "moira.cycles.PlanetaryAgeName",
+    "risk": "low",
+    "api": {"frozen": ["MOON", "MERCURY", "VENUS", "SUN", "MARS", "JUPITER", "SATURN"], "internal": []},
+    "state": {"mutable": false, "owners": []},
+    "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+    "failures": {"policy": "none"},
+    "succession": {"stance": "terminal", "override_points": []},
+    "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+}
+[/MACHINE_CONTRACT]
     """
 
     MOON    = "Moon"
