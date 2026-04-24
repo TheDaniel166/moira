@@ -49,7 +49,7 @@ External dependency assumptions
 --------------------------------
 - moira.dignities: DOMICILE (planet → list[sign]), EXALTATION (planet → list[sign])
 - moira.egyptian_bounds: EGYPTIAN_BOUNDS (sign → list[(planet, start, end)])
-- moira.longevity: TRIPLICITY_RULERS (sign → (day, night, participating))
+- moira.triplicity: triplicity_assignment_for (sign → TriplicityAssignment)
 - moira.constants: sign_of (longitude → (name, symbol, deg_in_sign)), SIGNS
 - Caller supplies LordOfTurnSRChart populated from SR chart computation.
 - Caller is responsible for computing SR Lot of Fortune with sect reversal.
@@ -79,7 +79,7 @@ from math import isfinite
 from .constants import sign_of, SIGNS
 from .dignities import DOMICILE, EXALTATION
 from .egyptian_bounds import EGYPTIAN_BOUNDS
-from .longevity import TRIPLICITY_RULERS
+from .triplicity import triplicity_assignment_for as _triplicity_assignment_for
 
 
 # ---------------------------------------------------------------------------
@@ -949,11 +949,11 @@ def _exaltation_lord_of_sign(sign: str) -> str | None:
 
 def _sect_triplicity_ruler(sign: str, is_night: bool) -> str | None:
     """Return the sect-appropriate triplicity ruler (day or night)."""
-    rulers = TRIPLICITY_RULERS.get(sign)
-    if rulers is None:
+    try:
+        assignment = _triplicity_assignment_for(sign, is_day_chart=not is_night)
+        return assignment.active_ruler
+    except ValueError:
         return None
-    day_ruler, night_ruler, _ = rulers
-    return night_ruler if is_night else day_ruler
 
 
 def _bound_lord(sign: str, degree_in_sign: float) -> str:
@@ -1009,13 +1009,11 @@ def _testimony_count(planet: str, profected_lon: float, is_day: bool) -> int:
     if sign_name in EXALTATION.get(planet, []):
         count += 1
 
-    trip = TRIPLICITY_RULERS.get(sign_name)
-    if trip:
-        day_ruler, night_ruler, part_ruler = trip
-        if (is_day and planet == day_ruler) or (not is_day and planet == night_ruler):
-            count += 1
-        elif planet == part_ruler:
-            count += 1
+    assignment = _triplicity_assignment_for(sign_name, is_day_chart=is_day)
+    if planet == assignment.active_ruler:
+        count += 1
+    elif planet == assignment.participating_ruler:
+        count += 1
 
     for ruler, start, end in EGYPTIAN_BOUNDS.get(sign_name, []):
         if start <= deg_in_sign < end and ruler == planet:

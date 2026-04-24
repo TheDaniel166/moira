@@ -344,6 +344,14 @@ from .dignities import (
     mutual_receptions,
     find_phasis,
 )
+from .triplicity import (
+    TriplicityDoctrine,
+    TriplicityElement,
+    ParticipatingRulerPolicy,
+    TriplicityAssignment,
+    triplicity_assignment_for,
+    triplicity_score,
+)
 
 __all__ = [
     "Moira",
@@ -655,6 +663,13 @@ __all__ = [
     "almuten_figuris",
     "mutual_receptions",
     "find_phasis",
+    # Triplicity
+    "TriplicityDoctrine",
+    "TriplicityElement",
+    "ParticipatingRulerPolicy",
+    "TriplicityAssignment",
+    "triplicity_assignment_for",
+    "triplicity_score",
     # Comets
     "CometData",
     "COMET_NAIF",

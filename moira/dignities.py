@@ -54,6 +54,7 @@ from .dignities_types import (
     _normalize_dispositorship_subject_name,
 )
 from .dignities_types import *  # noqa: F401, F403 — re-export full public surface
+from .triplicity import triplicity_assignment_for, ParticipatingRulerPolicy as _ParticipatingRulerPolicy
 
 __all__ = [
     # Tables
@@ -722,7 +723,7 @@ class DignitiesService:
             retro  = planet_retro.get(planet, False)
             house  = self._get_house(degree, house_cusps)
 
-            essential_truth = self._get_essential_dignity_truth(planet, sign, policy)
+            essential_truth = self._get_essential_dignity_truth(planet, sign, policy, is_day_chart)
 
             acc_list, acc_score, accidental_truth, sect_truth = self._get_accidental_dignities(
                 planet=planet,
@@ -1041,6 +1042,7 @@ class DignitiesService:
         planet: str,
         sign: str,
         policy: DignityComputationPolicy,
+        is_day_chart: bool = True,
     ) -> EssentialDignityTruth:
         if policy.essential.doctrine is not EssentialDignityDoctrine.TRADITIONAL_CLASSIC_7:
             raise ValueError(f"Unsupported essential dignity doctrine: {policy.essential.doctrine}")
@@ -1048,6 +1050,9 @@ class DignitiesService:
             return EssentialDignityTruth("essential", "Domicile", SCORE_DOMICILE, sign, tuple(DOMICILE.get(planet, ())))
         if sign in EXALTATION.get(planet, []):
             return EssentialDignityTruth("essential", "Exaltation", SCORE_EXALTATION, sign, tuple(EXALTATION.get(planet, ())))
+        assignment = triplicity_assignment_for(sign, is_day_chart=is_day_chart)
+        if planet == assignment.active_ruler:
+            return EssentialDignityTruth("essential", "Triplicity", SCORE_TRIPLICITY, sign, assignment.signs)
         if sign in DETRIMENT.get(planet, []):
             return EssentialDignityTruth("essential", "Detriment", SCORE_DETRIMENT, sign, tuple(DETRIMENT.get(planet, ())))
         if sign in FALL.get(planet, []):
@@ -1298,6 +1303,7 @@ class DignitiesService:
         kind_map = {
             "Domicile": EssentialDignityKind.DOMICILE,
             "Exaltation": EssentialDignityKind.EXALTATION,
+            "Triplicity": EssentialDignityKind.TRIPLICITY,
             "Detriment": EssentialDignityKind.DETRIMENT,
             "Fall": EssentialDignityKind.FALL,
             "Peregrine": EssentialDignityKind.PEREGRINE,

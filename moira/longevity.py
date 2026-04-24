@@ -30,7 +30,6 @@ Public surface
 --------------
 ``HylegResult``          — vessel for the full Hyleg/Alcocoden result.
 ``PTOLEMAIC_YEARS``      — dict of planet to (minor, mean, major) year tuples.
-``TRIPLICITY_RULERS``    — dict of sign to (day, night, participating) rulers.
 ``EGYPTIAN_BOUNDS``      — re-export of the Egyptian bound table.
 ``FACE_RULERS``          — list of 36 face rulers in Chaldean order.
 ``dignity_score_at``     — compute total dignity score of a planet at a degree.
@@ -48,13 +47,13 @@ from .dignities import (
     ANGULAR_HOUSES, SUCCEDENT_HOUSES, CADENT_HOUSES,
     CLASSIC_7,
     SCORE_DOMICILE, SCORE_EXALTATION,
-    SCORE_TRIPLICITY, SCORE_BOUND, SCORE_FACE,
+    SCORE_BOUND, SCORE_FACE,
 )
+from .triplicity import triplicity_score as _triplicity_score, ParticipatingRulerPolicy as _ParticipatingRulerPolicy
 
 __all__ = [
     "HylegResult",
     "PTOLEMAIC_YEARS",
-    "TRIPLICITY_RULERS",
     "EGYPTIAN_BOUNDS",
     "FACE_RULERS",
     "dignity_score_at",
@@ -78,26 +77,6 @@ PTOLEMAIC_YEARS: dict[str, tuple[float, float, float]] = {
 }
 
 # ---------------------------------------------------------------------------
-# Triplicity rulers (day, night, participating) per sign
-# Fire: Sun/Jupiter/Saturn; Earth: Venus/Moon/Mars; Air: Saturn/Mercury/Jupiter;
-# Water: Venus/Mars/Moon
-# ---------------------------------------------------------------------------
-
-TRIPLICITY_RULERS: dict[str, tuple[str, str, str]] = {
-    "Aries":       ("Sun",    "Jupiter", "Saturn"),
-    "Leo":         ("Sun",    "Jupiter", "Saturn"),
-    "Sagittarius": ("Sun",    "Jupiter", "Saturn"),
-    "Taurus":      ("Venus",  "Moon",    "Mars"),
-    "Virgo":       ("Venus",  "Moon",    "Mars"),
-    "Capricorn":   ("Venus",  "Moon",    "Mars"),
-    "Gemini":      ("Saturn", "Mercury", "Jupiter"),
-    "Libra":       ("Saturn", "Mercury", "Jupiter"),
-    "Aquarius":    ("Saturn", "Mercury", "Jupiter"),
-    "Cancer":      ("Mars",   "Venus",   "Moon"),   # Dorotheus: Mars=day, Venus=night
-    "Scorpio":     ("Mars",   "Venus",   "Moon"),
-    "Pisces":      ("Mars",   "Venus",   "Moon"),
-}
-
 # Faces / Decans — Chaldean order starting from Aries 0°
 # Each decan is 10°; 36 decans total, repeating the Chaldean sequence:
 #   Mars, Sun, Venus, Mercury, Moon, Saturn, Jupiter
@@ -169,15 +148,11 @@ def dignity_score_at(
         score += SCORE_EXALTATION
 
     # Triplicity
-    trip = TRIPLICITY_RULERS.get(sign)
-    if trip is not None:
-        day_ruler, night_ruler, part_ruler = trip
-        if is_day_chart and planet == day_ruler:
-            score += SCORE_TRIPLICITY
-        elif not is_day_chart and planet == night_ruler:
-            score += SCORE_TRIPLICITY
-        elif planet == part_ruler:
-            score += 1  # participating ruler is weaker by convention
+    score += _triplicity_score(
+        planet, sign,
+        is_day_chart=is_day_chart,
+        participating_policy=_ParticipatingRulerPolicy.AWARD_REDUCED,
+    )
 
     # Egyptian Bound
     bounds = EGYPTIAN_BOUNDS.get(sign, [])

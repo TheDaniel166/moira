@@ -55,9 +55,10 @@ from moira.uranian import uranian_at, _URANIAN_ELEMENTS
 from moira.constants import J2000
 from moira.manazil import mansion_of, MANSIONS, MANSION_SPAN
 from moira.longevity import (
-    PTOLEMAIC_YEARS, TRIPLICITY_RULERS, EGYPTIAN_BOUNDS, FACE_RULERS,
+    PTOLEMAIC_YEARS, EGYPTIAN_BOUNDS, FACE_RULERS,
     dignity_score_at, find_hyleg, calculate_longevity, HylegResult,
 )
+from moira.triplicity import triplicity_assignment_for as _triplicity_assignment_for
 from moira.dignities import ANGULAR_HOUSES, SUCCEDENT_HOUSES, CADENT_HOUSES
 from moira.timelords import (
     FIRDARIA_DIURNAL, FIRDARIA_NOCTURNAL, MINOR_YEARS, _JULIAN_YEAR, _ZR_YEAR_DAYS,
@@ -432,20 +433,26 @@ class TestEgyptianBounds:
 
 class TestTriplicityRulers:
     """
-    Authority: traditional triplicity rulers (Ptolemaic system).
-    12 signs, each with 3 rulers.
+    Authority: Dorotheus/Pingree 1976 triplicity rulers.
+    12 signs covered, each assigned to a triplicity group of 3 signs.
+    Tested via triplicity_assignment_for (moira.triplicity public surface).
     """
 
-    def test_twelve_signs(self):
-        assert len(TRIPLICITY_RULERS) == 12
+    def test_twelve_signs_covered(self):
+        from moira.constants import SIGNS
+        for sign in SIGNS:
+            a = _triplicity_assignment_for(sign, is_day_chart=True)
+            assert a.sign == sign
 
     def test_fire_triplicity_day_ruler_sun(self):
         for sign in ("Aries", "Leo", "Sagittarius"):
-            assert TRIPLICITY_RULERS[sign][0] == "Sun"
+            a = _triplicity_assignment_for(sign, is_day_chart=True)
+            assert a.day_ruler == "Sun"
 
     def test_earth_triplicity_day_ruler_venus(self):
         for sign in ("Taurus", "Virgo", "Capricorn"):
-            assert TRIPLICITY_RULERS[sign][0] == "Venus"
+            a = _triplicity_assignment_for(sign, is_day_chart=True)
+            assert a.day_ruler == "Venus"
 
 
 class TestDignityScoreAt:
