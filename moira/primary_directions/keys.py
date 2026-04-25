@@ -9,8 +9,6 @@ rules for currently admitted primary-direction keys. This module is intentionall
 orthogonal to primary-direction geometry and direction space.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from enum import StrEnum
 

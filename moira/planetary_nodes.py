@@ -50,8 +50,6 @@ Public surface
 ``geometric_node``      — osculating node from DE441, any SPK body.
 """
 
-from __future__ import annotations
-
 import math
 from dataclasses import dataclass
 

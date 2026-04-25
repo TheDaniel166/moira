@@ -41,12 +41,10 @@ Public surface / exports
 `find_electional_windows`, `find_electional_moments`
 """
 
-from __future__ import annotations
-
 import math
 from dataclasses import dataclass
 from types import MappingProxyType
-from typing import Callable
+from collections.abc import Callable
 
 from .chart import create_chart
 from .constants import HouseSystem

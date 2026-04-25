@@ -8,8 +8,6 @@ Owns the doctrinal identity, classification, and admission policy for the
 relation classes that may count as primary-direction perfections.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import Iterable

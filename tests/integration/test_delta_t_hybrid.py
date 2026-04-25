@@ -1,4 +1,4 @@
-import math
+﻿import math
 
 import pytest
 
@@ -7,7 +7,6 @@ from moira.delta_t_physical import (
     REFERENCE_YEAR,
     delta_t_hybrid,
     delta_t_hybrid_uncertainty,
-    secular_trend,
     fluid_lowfreq,
     core_delta_t,
     cryo_delta_t,
@@ -46,14 +45,14 @@ _IERS_EPOCHS: tuple[tuple[float, float], ...] = (
 def test_grace_data_file_is_present() -> None:
     series = _load_grace_series()
     assert len(series) > 0, (
-        "grace_lod_contribution.txt is missing — run scripts/fetch_grace_j2.py"
+        "grace_lod_contribution.txt is missing â€” run scripts/fetch_grace_j2.py"
     )
 
 
 def test_core_data_file_is_present() -> None:
     series = _load_core_series()
     assert len(series) > 0, (
-        "core_angular_momentum.txt is missing — run scripts/fetch_iers_eop.py"
+        "core_angular_momentum.txt is missing â€” run scripts/fetch_iers_eop.py"
     )
 
 
@@ -139,7 +138,7 @@ def test_hybrid_max_error_vs_iers_table_below_2s() -> None:
         for year, expected in _IERS_EPOCHS
     )
     assert max_err < 2.0, (
-        f"Max |delta_t_hybrid − IERS| = {max_err:.3f} s (target < 2.0 s)"
+        f"Max |delta_t_hybrid âˆ’ IERS| = {max_err:.3f} s (target < 2.0 s)"
     )
 
 
@@ -194,21 +193,17 @@ def test_hybrid_future_secular_growth_is_positive() -> None:
 # ---------------------------------------------------------------------------
 
 @pytest.mark.integration
-def test_secular_trend_dominates_in_far_future() -> None:
+def test_future_hybrid_is_owned_stochastic_baseline_by_2100() -> None:
     year = 2100.0
-    base = secular_trend(year)
     total = delta_t_hybrid(year)
-    assert abs(total - base) < 5.0, (
-        f"Non-secular contribution at {year} = {total - base:.3f} s — "
-        "unexpectedly large"
-    )
+    assert 150.0 < total < 200.0
 
 
 @pytest.mark.integration
 def test_cryo_contribution_is_small_at_reference_year() -> None:
     cryo = cryo_delta_t(REFERENCE_YEAR)
     assert abs(cryo) < 1.0, (
-        f"cryo_delta_t({REFERENCE_YEAR}) = {cryo:.3f} s — unexpectedly large"
+        f"cryo_delta_t({REFERENCE_YEAR}) = {cryo:.3f} s â€” unexpectedly large"
     )
 
 
@@ -238,12 +233,9 @@ def test_uncertainty_at_anchor_is_below_1s() -> None:
 
 
 @pytest.mark.integration
-def test_uncertainty_at_2100_is_below_3s() -> None:
+def test_uncertainty_at_2100_exposes_integrated_lod_stochasticity() -> None:
     sigma = delta_t_hybrid_uncertainty(2100.0)
-    assert sigma < 5.0, (
-        f"delta_t_hybrid_uncertainty(2100) = {sigma:.3f} s — "
-        "higher than expected ceiling"
-    )
+    assert 20.0 < sigma < 40.0
 
 
 @pytest.mark.integration
@@ -251,8 +243,8 @@ def test_uncertainty_grows_monotonically_into_future() -> None:
     sigmas = [delta_t_hybrid_uncertainty(y) for y in (2026.0, 2040.0, 2060.0, 2080.0, 2100.0)]
     for i in range(len(sigmas) - 1):
         assert sigmas[i] <= sigmas[i + 1] + 0.01, (
-            f"Uncertainty not monotone: σ({2026 + i*20}) = {sigmas[i]:.3f} s > "
-            f"σ({2026 + (i+1)*20}) = {sigmas[i+1]:.3f} s"
+            f"Uncertainty not monotone: Ïƒ({2026 + i*20}) = {sigmas[i]:.3f} s > "
+            f"Ïƒ({2026 + (i+1)*20}) = {sigmas[i+1]:.3f} s"
         )
 
 

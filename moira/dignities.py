@@ -43,8 +43,6 @@ Public surface / exports:
     ``from .dignities_types import *``.
 """
 
-from __future__ import annotations
-
 import math
 
 from .constants import SIGNS

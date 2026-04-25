@@ -86,8 +86,6 @@ Public surface
 ``validate_jaimini_output``  — validate structural invariants of a JaiminiKarakaResult.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 
 __all__ = [

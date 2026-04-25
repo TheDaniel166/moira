@@ -5,8 +5,6 @@ These methods preserve the legacy ``Moira`` convenience surface while delegating
 astronomical truth to the owning engine modules.
 """
 
-from __future__ import annotations
-
 import sys
 from datetime import datetime
 from typing import Any

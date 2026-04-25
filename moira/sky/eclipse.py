@@ -92,8 +92,6 @@ EclipseData.saros_index    position within the 223-synodic-month Saros
 EclipseData.metonic_year   position within the 19-year Metonic cycle
 """
 
-from __future__ import annotations
-
 from moira.eclipse import (
     EclipseCalculator,
     EclipseData,

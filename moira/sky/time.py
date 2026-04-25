@@ -37,16 +37,18 @@ core_delta_t     core/mantle coupling contribution
 cryo_delta_t     cryospheric contribution (ice mass loss)
 fluid_lowfreq    fluid outer core low-frequency variations
 DeltaTBreakdown  full decomposition vessel with uncertainty estimate
+DeltaTDistribution  normal approximation PDF parameters for Delta T
 delta_t_breakdown  compute DeltaTBreakdown for a given year
+delta_t_distribution  compute DeltaTDistribution for a given year
 """
-
-from __future__ import annotations
 
 from moira.delta_t_physical import (
     DeltaTBreakdown,
+    DeltaTDistribution,
     core_delta_t,
     cryo_delta_t,
     delta_t_breakdown,
+    delta_t_distribution,
     fluid_lowfreq,
     secular_trend,
 )
@@ -98,7 +100,9 @@ __all__ = [
     "delta_t_from_jd",
     # ΔT — physics-based decomposition
     "DeltaTBreakdown",
+    "DeltaTDistribution",
     "delta_t_breakdown",
+    "delta_t_distribution",
     "secular_trend",
     "core_delta_t",
     "cryo_delta_t",

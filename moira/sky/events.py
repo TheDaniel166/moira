@@ -67,8 +67,6 @@ retrograde_periods(body, jd_start, jd_end)
     List of (jd_SR, jd_SD) pairs — begin and end of each retrograde arc.
 """
 
-from __future__ import annotations
-
 from moira.rise_set import (
     RiseSetPolicy,
     TwilightTimes,

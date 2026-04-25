@@ -5,8 +5,6 @@ The methods here are compatibility wrappers. Synastry, composite, and Davison
 truth remains owned by ``moira.synastry``.
 """
 
-from __future__ import annotations
-
 import sys
 from datetime import datetime
 from typing import Any

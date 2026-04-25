@@ -7,8 +7,6 @@ Egyptian calendar helpers, variable and multiple stars, void-of-course Moon,
 electional windows, and representation.
 """
 
-from __future__ import annotations
-
 import sys
 from datetime import datetime
 from typing import Any

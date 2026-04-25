@@ -126,8 +126,6 @@ P11 -- Architecture freeze: wiki/02_standards/SHADBALA_BACKEND_STANDARD.md.
 P12 -- Public API curation: __all__, docstring.
 """
 
-from __future__ import annotations
-
 import math
 from dataclasses import dataclass
 

@@ -13,8 +13,6 @@ Kernels that already ship inside the moira wheel (centaurs.bsp,
 minor_bodies.bsp) are skipped — they are always available after install.
 """
 
-from __future__ import annotations
-
 import argparse
 import sys
 from urllib.request import urlopen

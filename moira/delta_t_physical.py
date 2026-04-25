@@ -46,6 +46,8 @@ __all__ = [
     "cryo_delta_t",
     "delta_t_hybrid",
     "delta_t_hybrid_uncertainty",
+    "DeltaTDistribution",
+    "delta_t_distribution",
     "DeltaTBreakdown",
     "delta_t_breakdown",
 ]
@@ -57,6 +59,8 @@ TIDAL_COEFF: float = 31.0
 GIA_COEFF: float = -3.0
 REFERENCE_LOD: float = 69.11474233219883
 REFERENCE_YEAR: float = 2026.0
+TIDAL_REFERENCE_YEAR: float = 1820.0
+GIA_REFERENCE_YEAR: float = 2000.0
 
 _CORE_COVERAGE_START: float = 1840.0
 _CORE_DECORRELATION_YEARS: float = 10.0
@@ -70,6 +74,7 @@ _GIA_COEFF_SIGMA: float = 0.5
 _CRYO_TREND_SIGMA: float = 0.002
 _CORE_HISTORICAL_SIGMA: float = 0.3
 _RESIDUAL_FUTURE_RMS_FALLBACK: float = 0.4
+_LOD_RANDOM_WALK_SIGMA_MS_PER_DAY_SQRT_YEAR: float = 0.23
 
 
 def _require_univariate_spline() -> type:
@@ -196,6 +201,28 @@ def _modern_bridge_delta_t(year: float) -> float:
         correction = _left_seam_correction() * math.cos(math.pi / 2.0 * phase) ** 2
         return poly_val + correction
     return poly_val
+
+
+def _future_secular_baseline(year: float) -> float:
+    """
+    Future deterministic secular baseline from tidal dissipation plus GIA.
+
+    The measured-era secular_trend() remains curvature-only so the residual
+    calibration is not contaminated by an inherited long-range slope. Future
+    forecasting is different: the expected drift must retain the physical
+    linear term implied by evaluating the tidal and GIA parabolas at their
+    own reference epochs, then anchoring the value at REFERENCE_YEAR.
+    """
+    if year <= REFERENCE_YEAR:
+        return secular_trend(year)
+
+    y_tidal = (year - TIDAL_REFERENCE_YEAR) / 100.0
+    ref_tidal = (REFERENCE_YEAR - TIDAL_REFERENCE_YEAR) / 100.0
+    y_gia = (year - GIA_REFERENCE_YEAR) / 100.0
+    ref_gia = (REFERENCE_YEAR - GIA_REFERENCE_YEAR) / 100.0
+    tidal_delta = TIDAL_COEFF * (y_tidal * y_tidal - ref_tidal * ref_tidal)
+    gia_delta = GIA_COEFF * (y_gia * y_gia - ref_gia * ref_gia)
+    return REFERENCE_LOD + tidal_delta + gia_delta
 
 
 def _load_aam_glaam_annual() -> tuple[tuple[float, float], ...]:
@@ -392,11 +419,15 @@ def _smh2016_lookup(year: float) -> float:
 
 def secular_trend(year: float) -> float:
     """
-    Physics-based secular Delta T trend from tidal braking + GIA.
+    Physics-based secular Delta T curvature from tidal braking + GIA.
 
-    Both coefficients are re-expressed around REFERENCE_YEAR after expanding
-    the original 1820/2000 reference epochs — the linear and constant terms
-    are absorbed into REFERENCE_LOD via the continuity constraint.
+    The coefficients provide the long-horizon curvature. The value and first
+    derivative are anchored at REFERENCE_YEAR by the measured-era handoff:
+    REFERENCE_LOD carries the value, and the future branch does not carry the
+    historical 1820/2000 parabola slopes forward as an implied present-day LOD
+    trend. That slope is an observed boundary condition, not something a
+    constant anchor can absorb algebraically.
+
     See DELTA_T_HYBRID_MODEL.md section 3, Phase 1 for the full derivation.
 
     Parameters
@@ -622,28 +653,43 @@ def _lod_series_to_delta_t(
     Convert a LOD anomaly series (ms/day, annual resolution) to cumulative
     Delta T contribution (seconds) by discrete integration.
 
-    ΔT(y) = Σ (ΔLOD(t_i) - mean_LOD) × Δt_i / 1000
+    ΔT(y) = Σ (ΔLOD(t_i) - fitted_linear_trend(t_i)) × Δt_i / 1000
     where Δt_i is days between successive annual epochs and ΔLOD is in ms/day.
 
     Unit derivation: ΔLOD (ms/day) × Δt (days) = ms; dividing by 1000 gives
     seconds.  The historic erroneous divisor of 86400 understated the
     integrated contribution by a factor of 86.4.
 
-    The series mean is subtracted before integration so the cumulative
-    integral is zero-mean rather than drifting with the absolute LOD
-    baseline.  This ensures the core component does not introduce a secular
-    offset that duplicates the secular_trend parabola.
+    A least-squares linear trend is subtracted before integration. Raw IERS
+    LOD contains secular tidal/GIA structure already represented by
+    secular_trend(); the core component must carry the residual fluctuation,
+    not duplicate that long-horizon drift.
     """
     if not series:
         return ()
+    if len(series) == 1:
+        return ((series[0][0], 0.0),)
+
+    # Remove the secular LOD slope before integration; secular_trend owns it.
+    mean_year = sum(year for year, _ in series) / len(series)
     mean_lod = sum(lod for _, lod in series) / len(series)
+    denom = sum((year - mean_year) ** 2 for year, _ in series)
+    slope = (
+        sum((year - mean_year) * (lod - mean_lod) for year, lod in series) / denom
+        if denom > 0.0
+        else 0.0
+    )
+    intercept = mean_lod - slope * mean_year
+
     result: list[tuple[float, float]] = [(series[0][0], 0.0)]
     cumulative = 0.0
     for i in range(1, len(series)):
         y0, lod0 = series[i - 1]
         y1, lod1 = series[i]
         dt_days = _series_epoch_delta_days(y0, y1)
-        avg_lod_ms = ((lod0 - mean_lod) + (lod1 - mean_lod)) / 2.0
+        trend0 = intercept + slope * y0
+        trend1 = intercept + slope * y1
+        avg_lod_ms = ((lod0 - trend0) + (lod1 - trend1)) / 2.0
         cumulative += avg_lod_ms * dt_days / 1000.0
         result.append((y1, cumulative))
     return tuple(result)
@@ -726,7 +772,8 @@ def core_delta_t(year: float) -> float:
     Coverage: determined by moira/data/core_angular_momentum.txt.
     Target data: Gillet et al. (2019/2022), 1840–present.
     Outside coverage: returns 0.0 (absorbed into residual for historical era;
-    replaced by the 10-year mean for future extrapolation — see delta_t_hybrid).
+    frozen at the terminal measured value for future extrapolation — see
+    delta_t_hybrid).
 
     Parameters
     ----------
@@ -806,9 +853,9 @@ def _fitted_residual_spline() -> _ResidualSplineFit:
 
     Procedure (per DELTA_T_HYBRID_MODEL.md section 3, Phase 4):
     1. Compute raw residual at each annual IERS Bulletin B point.
-    2. 3-year centred pre-smooth.
+    2. Fit annual residuals directly; no pre-smoothing is applied.
     3. Apply cosine taper over 2021–2024.
-    4. Fit UnivariateSpline with k=3, s=N, ext=1.
+    4. Fit UnivariateSpline with k=3 and bounded knot count.
     5. Interior LOO-CV diagnostic on non-boundary annual-mean epochs.
     """
     UnivariateSpline = _require_univariate_spline()
@@ -840,13 +887,13 @@ def _fitted_residual_spline() -> _ResidualSplineFit:
             knot_count=0,
         )
 
-    _, res_smooth = _three_year_smooth(years_raw, residuals_raw)
+    res_fit = residuals_raw[:]
 
     for i in range(len(years_raw)):
-        res_smooth[i] *= _cosine_taper(years_raw[i])
+        res_fit[i] *= _cosine_taper(years_raw[i])
 
     spline_years = years_raw[:]
-    spline_residuals = res_smooth[:]
+    spline_residuals = res_fit[:]
     if len(spline_years) >= 2:
         # Give the left boundary a reflected support point so the first
         # measured epoch is not treated as a free cubic seam.
@@ -856,16 +903,15 @@ def _fitted_residual_spline() -> _ResidualSplineFit:
         spline_residuals.insert(0, left_anchor_val)
 
     n_raw = len(years_raw)
-    # Target s_factor: n_raw / 15 drives the spline toward ~5-8 interior knots
-    # so that decade-scale residual oscillations are captured without the
-    # over-smoothing that results from the legacy s = n initialisation (which
-    # stalls at 2 knots once SSE < n).
-    s_factor = float(n_raw) / 15.0
+    # Target s_factor: n_raw / 30 keeps annual residual structure visible while
+    # avoiding exact interpolation. The knot cap below prevents a narrow annual
+    # noise fit from becoming the asserted model.
+    s_factor = float(n_raw) / 30.0
     spline = UnivariateSpline(spline_years, spline_residuals, k=3, s=s_factor, ext=1)
 
     knot_count = len(spline.get_knots())
     if knot_count > 20:
-        s_factor = float(n_raw) * (knot_count / 20.0) / 15.0
+        s_factor = float(n_raw) * (knot_count / 20.0) / 30.0
         spline = UnivariateSpline(spline_years, spline_residuals, k=3, s=s_factor, ext=1)
 
     loo_errors: list[float] = []
@@ -878,7 +924,7 @@ def _fitted_residual_spline() -> _ResidualSplineFit:
             continue
         try:
             sp_loo = UnivariateSpline(ys_loo, rs_loo, k=3, s=s_factor, ext=1)
-            loo_errors.append((res_smooth[i] - float(sp_loo(years_raw[i]))) ** 2)
+            loo_errors.append((res_fit[i] - float(sp_loo(years_raw[i]))) ** 2)
         except Exception:
             pass
 
@@ -891,7 +937,7 @@ def _fitted_residual_spline() -> _ResidualSplineFit:
         cv_rms = _RESIDUAL_FUTURE_RMS_FALLBACK
 
     in_sample_errors = [
-        (res_smooth[i] - float(spline(years_raw[i]))) ** 2
+        (res_fit[i] - float(spline(years_raw[i]))) ** 2
         for i in range(n_raw)
     ]
     in_sample_rms = math.sqrt(sum(in_sample_errors) / n_raw) if in_sample_errors else _RESIDUAL_FUTURE_RMS_FALLBACK
@@ -912,6 +958,75 @@ def _residual_at(year: float) -> float:
     return float(fit.spline(year))
 
 
+def _future_stochastic_delta_t_sigma(year: float) -> float:
+    """
+    One-sigma Delta T spread from stochastic future LOD variability.
+
+    LOD is modeled as Brownian motion with drift in units of ms/day. Delta T is
+    the time integral of LOD anomaly, so Var(DeltaT) grows with T^3 / 3:
+
+        sigma_dt = (JULIAN_YEAR / 1000) * sigma_lod * sqrt(T^3 / 3)
+
+    This is a normal approximation to the integrated LOD process, not a claim
+    that Earth rotation itself is white noise.
+    """
+    horizon = max(0.0, float(year) - REFERENCE_YEAR)
+    if horizon <= 0.0:
+        return 0.0
+    return (
+        JULIAN_YEAR
+        / 1000.0
+        * _LOD_RANDOM_WALK_SIGMA_MS_PER_DAY_SQRT_YEAR
+        * math.sqrt(horizon ** 3 / 3.0)
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class DeltaTDistribution:
+    """
+    Normal approximation to the future Delta T probability distribution.
+
+    The distribution is generated from the deterministic hybrid mean and the
+    stochastic LOD-process uncertainty. It is intentionally simple and
+    inspectable; callers that need non-Gaussian tails can build mixtures above
+    this surface without hiding the baseline.
+    """
+
+    year: float
+    mean: float
+    sigma: float
+
+    @property
+    def variance(self) -> float:
+        return self.sigma * self.sigma
+
+    def pdf(self, delta_t_seconds: float) -> float:
+        if self.sigma <= 0.0:
+            return math.inf if delta_t_seconds == self.mean else 0.0
+        z = (delta_t_seconds - self.mean) / self.sigma
+        return math.exp(-0.5 * z * z) / (self.sigma * math.sqrt(2.0 * math.pi))
+
+    def interval(self, sigma: float = 1.0) -> tuple[float, float]:
+        width = abs(float(sigma)) * self.sigma
+        return (self.mean - width, self.mean + width)
+
+
+def delta_t_distribution(year: float) -> DeltaTDistribution:
+    """
+    Return the normal approximation PDF parameters for Delta T at ``year``.
+
+    For measured-era dates this distribution is narrow and centered on
+    delta_t_hybrid(). For future dates, sigma includes the integrated
+    stochastic LOD-process term.
+    """
+    y = float(year)
+    return DeltaTDistribution(
+        year=y,
+        mean=delta_t_hybrid(y),
+        sigma=delta_t_hybrid_uncertainty(y),
+    )
+
+
 def delta_t_hybrid(year: float) -> float:
     """
     Physics-based hybrid Delta T model.
@@ -919,7 +1034,7 @@ def delta_t_hybrid(year: float) -> float:
     Era routing:
       pre-1840  : delegates to SMH 2016 table (unchanged)
       1840–2026 : secular + core + cryo + IERS residual spline
-      2026+     : secular + cryo trend extrapolation + core terminal value
+      2026+     : deterministic secular baseline + core terminal + cryo trend
 
     Component status:
       The historical core angular momentum component (``historical_core_delta_t``)
@@ -986,6 +1101,7 @@ def delta_t_hybrid_uncertainty(year: float) -> float:
     # always >= in_sample_rms and preserves monotone growth of sigma past
     # the REFERENCE_YEAR hand-off.
     sigma_residual = fit.in_sample_rms * 0.1 if y <= REFERENCE_YEAR else fit.cv_rms
+    sigma_lod_stochastic = _future_stochastic_delta_t_sigma(y)
 
     return math.sqrt(
         sigma_tidal ** 2
@@ -993,6 +1109,7 @@ def delta_t_hybrid_uncertainty(year: float) -> float:
         + sigma_cryo ** 2
         + sigma_core ** 2
         + sigma_residual ** 2
+        + sigma_lod_stochastic ** 2
     )
 
 
@@ -1002,7 +1119,7 @@ class DeltaTBreakdown:
     Component breakdown of the hybrid ΔT model for a single decimal year.
 
     All values are in seconds (TT − UT1 contribution).
-    ``secular + core + cryo + fluid + bridge + residual == total`` for all eras.
+        ``secular + core + cryo + fluid + bridge + residual == total`` for all eras.
 
     Attributes
     ----------
@@ -1029,8 +1146,8 @@ class DeltaTBreakdown:
     bridge : float
         Smooth polynomial bridge term used in the measured era
         (``_modern_bridge_delta_t``) or the historical era
-        (``_historical_bridge_delta_t``); zero in the future and pre-1840
-        eras.
+        (``_historical_bridge_delta_t``). It is zero in the pre-1840 and
+        future eras.
     residual : float
         IERS residual spline correction (measured era only; zero otherwise).
     era : str
@@ -1135,9 +1252,11 @@ def delta_t_breakdown(year: float) -> DeltaTBreakdown:
             era='measured',
         )
 
-    # Future era (> REFERENCE_YEAR): secular + core terminal value + cryo trend.
-    # Use the most recent measured value rather than the 10-year backward mean
-    # so the core contribution is C0 continuous at the era boundary.
+    # Future era (> REFERENCE_YEAR): owned deterministic mean from the tidal/GIA
+    # secular baseline plus visible physical components. Uncertainty is handled
+    # by delta_t_hybrid_uncertainty()/delta_t_distribution(), not by shifting
+    # the central value onto a conventional forecast.
+    sec = _future_secular_baseline(y)
     core_frozen = _core_terminal_value()
     total = sec + core_frozen + cryo
     return DeltaTBreakdown(

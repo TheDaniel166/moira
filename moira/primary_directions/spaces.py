@@ -9,8 +9,6 @@ currently admitted primary-direction spaces. This module is intentionally
 orthogonal to geometry method and time-key conversion.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import Iterable

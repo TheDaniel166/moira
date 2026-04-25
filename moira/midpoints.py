@@ -59,8 +59,6 @@ Public surface / exports:
     activated_midpoints()  — natal midpoints activated by a transit or direction
     midpoint_clusters()    — spatial midpoint hotspots on the dial
 """
-from __future__ import annotations
-
 from dataclasses import dataclass, field
 from itertools import combinations
 

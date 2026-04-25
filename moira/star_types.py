@@ -2,7 +2,6 @@
 Star Computation Types & Policies — moira/star_types.py
 """
 
-from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 from .constants import SIGNS

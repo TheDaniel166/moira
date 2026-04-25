@@ -8,8 +8,6 @@ Owns the doctrinal identity, classification, and admission policy for the kinds
 of entities currently admitted as primary-direction promissors and significators.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Iterable

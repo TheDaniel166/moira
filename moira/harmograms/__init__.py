@@ -6,8 +6,6 @@ policies, spectral vessels, projection machinery, time-domain traces, and
 comparison helpers. Astronomical generation is intentionally out of scope.
 """
 
-from __future__ import annotations
-
 from .compute import (
     _compute_components,
     _compute_intensity_components,

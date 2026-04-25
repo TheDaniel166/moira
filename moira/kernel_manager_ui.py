@@ -9,8 +9,6 @@ Launch:
     python -m moira.kernel_manager_ui
 """
 
-from __future__ import annotations
-
 import queue
 import sys
 import threading

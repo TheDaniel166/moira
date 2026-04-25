@@ -8,8 +8,6 @@ Owns the recoverable direct Placidian mundane rapt-parallel arithmetic.
 This is not a generic parallel family. It is one explicit method-bound branch.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 

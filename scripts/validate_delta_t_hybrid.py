@@ -1,9 +1,9 @@
 """
-validate_delta_t_hybrid.py — Comparison study: hybrid vs current delta_t vs quadratic.
+validate_delta_t_hybrid.py — Comparison study: hybrid vs measured/conventional Delta T.
 
 Three comparisons:
   1. hybrid vs current delta_t()         — 1962.5–2024.5 measured annual-mean era
-  2. hybrid future vs current quadratic  — 2026–2100 extrapolation divergence
+  2. hybrid future vs conventional forecast — 2026–2100 extrapolation divergence
   3. hybrid apparent-position impact     — delta_t difference converted to arcseconds
      for Moon, Sun, and outer planets using angular velocity approximations
   4. residual budget decomposition       — how much structure remains after each
@@ -35,6 +35,7 @@ from moira.delta_t_physical import (
     _three_year_smooth,
 )
 from moira.julian import delta_t as current_delta_t
+from moira.julian import delta_t_nasa_canon as conventional_delta_t
 from moira.julian import julian_day
 
 
@@ -63,11 +64,6 @@ def _arcsec_from_dt_diff(dt_diff_s: float, deg_per_day: float) -> float:
     return abs(dt_diff_s) * deg_per_second * 3600.0
 
 
-def _current_quadratic(year: float) -> float:
-    t = year - 2026.0
-    return 69.3 + 0.04 * t + 0.001 * t * t
-
-
 # ---------------------------------------------------------------------------
 # Comparison 1: hybrid vs current delta_t — measured annual-mean era 1962.5–2024.5
 # ---------------------------------------------------------------------------
@@ -85,18 +81,18 @@ def comparison_1_measured_era() -> list[tuple[float, float, float, float]]:
 
 
 # ---------------------------------------------------------------------------
-# Comparison 2: hybrid future vs current quadratic — 2026–2100
+# Comparison 2: hybrid future vs conventional long-term forecast — 2026–2100
 # ---------------------------------------------------------------------------
 
 def comparison_2_future() -> list[tuple[float, float, float, float, float]]:
     rows = []
     for y in range(2026, 2101):
         yf = float(y)
-        quad = _current_quadratic(yf)
+        table = conventional_delta_t(yf)
         hyb = delta_t_hybrid(yf)
         sigma = delta_t_hybrid_uncertainty(yf)
-        diff = hyb - quad
-        rows.append((yf, quad, hyb, diff, sigma))
+        diff = hyb - table
+        rows.append((yf, table, hyb, diff, sigma))
     return rows
 
 
@@ -108,7 +104,7 @@ def comparison_3_arcsec(
     rows_future: list[tuple[float, float, float, float, float]]
 ) -> dict[str, list[tuple[float, float]]]:
     result: dict[str, list[tuple[float, float]]] = {body: [] for body in _BODY_DEG_PER_DAY}
-    for yf, _quad, _hyb, diff, _sigma in rows_future:
+    for yf, _table, _hyb, diff, _sigma in rows_future:
         for body, deg_per_day in _BODY_DEG_PER_DAY.items():
             arcsec = _arcsec_from_dt_diff(diff, deg_per_day)
             result[body].append((yf, arcsec))
@@ -539,7 +535,7 @@ def comparison_10_core_construction_audit() -> dict[str, float] | None:
         y1, lod1 = raw_series[i]
         dt_days = _series_epoch_delta_days(y0, y1)
         avg_lod_ms = (lod0 + lod1) / 2.0
-        cumulative += avg_lod_ms * dt_days / 86400.0
+        cumulative += avg_lod_ms * dt_days / 1000.0
         no_mean.append((y1, cumulative))
 
     no_mean_vals = [v for y, v in no_mean if 1962.5 <= y <= 2024.5]
@@ -578,23 +574,23 @@ def _print_table_1(rows: list[tuple[float, float, float, float]]) -> None:
 
 def _print_table_2(rows: list[tuple[float, float, float, float, float]]) -> None:
     print("\n" + "=" * 70)
-    print("COMPARISON 2 - Hybrid vs current quadratic  [future 2026-2100]")
+    print("COMPARISON 2 - Hybrid vs conventional forecast  [future 2026-2100]")
     print("=" * 70)
-    print(f"{'Year':>6}  {'quadratic':>10}  {'hybrid':>10}  {'diff':>10}  {'+-1s':>8}")
+    print(f"{'Year':>6}  {'forecast':>10}  {'hybrid':>10}  {'diff':>10}  {'+-1s':>8}")
     print("-" * 55)
-    for y, quad, hyb, diff, sigma in rows[::5]:
-        print(f"{y:6.0f}  {quad:10.3f}  {hyb:10.3f}  {diff:+10.3f}  {sigma:8.3f}")
+    for y, table, hyb, diff, sigma in rows[::5]:
+        print(f"{y:6.0f}  {table:10.3f}  {hyb:10.3f}  {diff:+10.3f}  {sigma:8.3f}")
     diffs = [abs(r[3]) for r in rows]
     print("-" * 55)
     print(f"  Max |diff| by 2100: {max(diffs):.3f} s")
     print(f"  Hybrid +-1s at 2100: {rows[-1][4]:.3f} s")
-    print(f"  Quadratic at 2100:  {rows[-1][1]:.3f} s")
+    print(f"  Forecast at 2100:   {rows[-1][1]:.3f} s")
     print(f"  Hybrid    at 2100:  {rows[-1][2]:.3f} s")
 
 
 def _print_table_3(arcsec_data: dict[str, list[tuple[float, float]]]) -> None:
     print("\n" + "=" * 70)
-    print("COMPARISON 3 - Apparent-position impact of hybrid-quadratic diff")
+    print("COMPARISON 3 - Apparent-position impact of hybrid-forecast diff")
     print("             [arcseconds, future 2026–2100]")
     print("=" * 70)
     check_years = [2030, 2040, 2050, 2060, 2075, 2100]
@@ -609,7 +605,7 @@ def _print_table_3(arcsec_data: dict[str, list[tuple[float, float]]]) -> None:
             row += f"  {val:8.3f}"
         print(row)
     print()
-    print("  Note: values are |hybrid - quadratic| converted to apparent arcseconds.")
+    print("  Note: values are |hybrid - conventional forecast| converted to apparent arcseconds.")
     print("  These represent the position difference IF the two models diverge by")
     print("  that amount - not an error relative to Horizons.")
 
@@ -872,12 +868,12 @@ def _plot(
     # — Plot 2: future
     ax = axes[1]
     years_2 = [r[0] for r in rows_2]
-    quad_vals = [r[1] for r in rows_2]
+    table_vals = [r[1] for r in rows_2]
     hyb_vals = [r[2] for r in rows_2]
     sigmas = [r[4] for r in rows_2]
     hyb_arr = hyb_vals
     sig_arr = sigmas
-    ax.plot(years_2, quad_vals, label="current quadratic", lw=1.5, color="C0")
+    ax.plot(years_2, table_vals, label="conventional forecast", lw=1.5, color="C0")
     ax.plot(years_2, hyb_arr, label="delta_t_hybrid()", lw=1.5, linestyle="--", color="C1")
     ax.fill_between(
         years_2,
@@ -886,7 +882,7 @@ def _plot(
         alpha=0.25, color="C1", label="hybrid +-1s"
     )
     ax.set_ylabel("DeltaT (s)")
-    ax.set_title("Comparison 2 - Hybrid vs current quadratic  [2026-2100]")
+    ax.set_title("Comparison 2 - Hybrid vs conventional forecast  [2026-2100]")
     ax.legend()
     ax.grid(True, alpha=0.3)
 
@@ -899,7 +895,7 @@ def _plot(
     ax.axhline(0.75, color="r", lw=0.8, linestyle="--", label="0.75 arcsec Horizons threshold")
     ax.set_ylabel("Apparent position diff (arcsec)")
     ax.set_xlabel("Year")
-    ax.set_title("Comparison 3 - Apparent-position impact (hybrid - quadratic)")
+    ax.set_title("Comparison 3 - Apparent-position impact (hybrid - forecast)")
     ax.legend()
     ax.grid(True, alpha=0.3)
 
@@ -972,7 +968,7 @@ def main() -> int:
 
     diffs_2 = [abs(r[3]) for r in rows_2]
     print(f"\n  Future era (2026-2100):")
-    print(f"    Max  |hybrid - quadratic| = {max(diffs_2):.3f} s  (at 2100)")
+    print(f"    Max  |hybrid - forecast|  = {max(diffs_2):.3f} s")
     print(f"    Hybrid +-1s at 2100        = {rows_2[-1][4]:.3f} s")
 
     moon_2100 = dict(arcsec_data["Moon"])[2100.0]
@@ -980,7 +976,7 @@ def main() -> int:
     print(f"\n  Apparent-position impact at 2100:")
     print(f"    Moon:  {moon_2100:.2f} arcsec")
     print(f"    Sun:   {sun_2100:.2f} arcsec")
-    print(f"    (relative to current quadratic, not Horizons)")
+    print(f"    (relative to conventional forecast, not Horizons)")
 
     final_abs = [abs(row["final_model_residual"]) for row in rows_4]
     post_fluid_abs = [abs(row["secular_fluid_residual"]) for row in rows_4]

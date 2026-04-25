@@ -21,8 +21,6 @@ External dependency assumptions:
       speculum() or find_primary_arcs().
 """
 
-from __future__ import annotations
-
 import math
 from dataclasses import dataclass, field
 from enum import StrEnum
@@ -1548,8 +1546,7 @@ def find_primary_arcs(
     if derived_cusps:
         sp_map.update(derived_cusps)
         spec.extend(derived_cusps.values())
-    _year, _month, *_ = _pd_approx_year(chart.jd_ut)
-    _jd_tt = _ut_to_tt(chart.jd_ut, _decimal_year(_year, _month))
+    _jd_tt = chart.jd_tt
     derived_fixed_stars = _fixed_star_promissor_entries(
         fixed_star_targets,
         jd_tt=_jd_tt,

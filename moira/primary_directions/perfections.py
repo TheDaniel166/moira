@@ -8,8 +8,6 @@ Owns the doctrinal identity, classification, and hardened interpretation of
 currently admitted perfection kinds in the primary-directions family.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import Iterable

@@ -85,8 +85,6 @@ planet_phenomena_at(body, jd_ut)
     Full PlanetPhenomena snapshot for a body at an epoch.
 """
 
-from __future__ import annotations
-
 from moira.phase import (
     angular_diameter,
     apparent_magnitude,

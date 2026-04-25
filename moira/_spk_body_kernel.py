@@ -34,8 +34,6 @@ Public surface
                          (e.g. test_daf_writer round-trip tests)
 """
 
-from __future__ import annotations
-
 from bisect import bisect_left
 from pathlib import Path
 

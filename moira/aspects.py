@@ -180,8 +180,6 @@ Convenience properties (read-only, derived only)
 ``DeclinationAspect.orb_surplus``         — allowed_orb minus orb.
 """
 
-from __future__ import annotations
-
 from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import Enum

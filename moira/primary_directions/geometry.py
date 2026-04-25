@@ -9,8 +9,6 @@ primary-direction method families, plus the truth surface that states whether a
 method is mathematically sovereign or still using a shared narrow law.
 """
 
-from __future__ import annotations
-
 import math
 from dataclasses import dataclass
 from enum import StrEnum

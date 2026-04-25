@@ -87,8 +87,6 @@ Public surface
 ``validate_ashtakavarga_output`` — validate structural invariants of an AshtakavargaResult.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 
 __all__ = [

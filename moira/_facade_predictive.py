@@ -6,8 +6,6 @@ return, syzygy, and planetary-hour computation remains owned by the underlying
 engine modules.
 """
 
-from __future__ import annotations
-
 import sys
 from datetime import datetime
 from typing import Any

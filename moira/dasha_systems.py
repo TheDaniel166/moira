@@ -85,8 +85,6 @@ Public surface
 ``validate_alternate_dasha_output`` — validate structural invariants of a Mahadasha list.
 """
 
-from __future__ import annotations
-
 import math
 from dataclasses import dataclass, field
 

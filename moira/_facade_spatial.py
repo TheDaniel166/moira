@@ -5,8 +5,6 @@ These wrappers preserve the legacy ``Moira`` spatial surface while delegating
 the actual computations to their owning modules.
 """
 
-from __future__ import annotations
-
 import sys
 from datetime import datetime
 from typing import Any

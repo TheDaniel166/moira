@@ -115,8 +115,6 @@ Constitution entry
     - Results are in Julian Day (UT1), never formatted strings.
 """
 
-from __future__ import annotations
-
 import math
 from dataclasses import dataclass
 from enum import Enum, IntEnum

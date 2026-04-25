@@ -48,10 +48,11 @@ The dominant contributors are:
 | ΔT_cryo | Cryosphere/hydrosphere mass | GRACE/GRACE-FO mascons | 2002–present |
 | ΔT_residual | Everything else | Fit to IERS measured table | 1955–present |
 
-For **future extrapolation** (post-2026), only ΔT_tidal and ΔT_GIA can be
-computed from first principles. ΔT_core and ΔT_cryo must be projected from
-their current measured trends. ΔT_residual is assumed to continue its recent
-observed rate.
+For **future extrapolation** (post-2026), only ΔT_tidal and ΔT_GIA provide a
+deterministic secular baseline. ΔT_core and ΔT_cryo remain visible physical
+terms. The remaining unknowable part is modeled as stochastic LOD variability:
+Brownian rotation-rate noise integrated forward into a Delta T probability
+distribution.
 
 ---
 
@@ -123,10 +124,13 @@ Expanding both around `REFERENCE_YEAR` (= 2026) and collecting terms:
             = c_GIA · (t² + 0.52·t + 0.0676)
 ```
 
-The linear and constant terms are absorbed into `REFERENCE_LOD` via the
-continuity constraint (they are fixed offsets at `REFERENCE_YEAR`, not
-free parameters). Only the `t²` coefficients survive as the forward-looking
-curvature:
+The constant offsets are absorbed into `REFERENCE_LOD` via the continuity
+constraint. The linear terms are different: they are a present-day LOD slope,
+not a value offset, and a scalar anchor cannot absorb them algebraically.
+Moira's physical secular branch therefore uses the published tidal and GIA
+coefficients as curvature terms only. The current slope at `REFERENCE_YEAR`
+is treated as a measured boundary condition rather than as the slope implied
+by extending the 1820/2000 parabolas unchanged into the present.
 
 ```
 secular_trend(y) = REFERENCE_LOD + (c_tidal + c_GIA) · t²
@@ -135,9 +139,9 @@ secular_trend(y) = REFERENCE_LOD + (c_tidal + c_GIA) · t²
 ```
 
 This is why the combined coefficient in `secular_trend()` is simply the sum
-of `TIDAL_COEFF` and `GIA_COEFF` — the cross-terms and offsets are legitimately
-collapsed into the anchor. A reader verifying the formula should apply this
-expansion; the simplified form is algebraically exact, not an approximation.
+of `TIDAL_COEFF` and `GIA_COEFF`: the function is a curvature model anchored
+at the measured-era handoff. It is not the full shifted 1820/2000 parabola
+with its linear term preserved.
 
 **Implementation:**
 
@@ -146,8 +150,8 @@ expansion; the simplified form is algebraically exact, not an approximation.
 
 TIDAL_COEFF    =  31.0   # s/cy²  — Chapront 2002 lunar secular acceleration
 GIA_COEFF      =  -3.0   # s/cy²  — Caron 2018 GIA rotation contribution
-                          #          Both re-expressed around REFERENCE_YEAR;
-                          #          linear/constant terms absorbed into REFERENCE_LOD.
+                          #          Curvature terms anchored at REFERENCE_YEAR;
+                          #          constant offsets absorbed into REFERENCE_LOD.
 REFERENCE_LOD  =  69.3   # s      — see continuity constraint note below
 REFERENCE_YEAR = 2026.0  # yr     — last confirmed IERS Bulletin B year
 
@@ -155,8 +159,9 @@ def secular_trend(year: float) -> float:
     """
     Physics-based secular Delta T trend from tidal braking + GIA.
     Anchored to REFERENCE_LOD at REFERENCE_YEAR by continuity constraint.
-    Both coefficients are relative to REFERENCE_YEAR after expanding the
-    original 1820/2000 reference epochs — see algebra above.
+    The coefficients carry curvature only. The present-day slope is an
+    explicit boundary-condition policy and is not inherited from the
+    historical 1820/2000 parabola slopes.
     """
     t = (year - REFERENCE_YEAR) / 100.0
     return REFERENCE_LOD + (TIDAL_COEFF + GIA_COEFF) * t**2
@@ -416,11 +421,17 @@ def core_delta_t(year: float) -> float:
     ...
 ```
 
+Current implementation note: the source IERS EOP C04 annual LOD proxy is
+linearly detrended before integration. The secular tidal/GIA drift belongs to
+`secular_trend()`; `core_delta_t()` carries the residual core-mantle
+fluctuation component.
+
 **Note on future extrapolation:**
 
 Core-mantle fluctuations are genuinely unpredictable beyond a few years.
-For future Delta T (post-2026), this component is set to the mean of the
-last 10 years of the Gillet series rather than extrapolating the trend.
+For future Delta T (post-2026), this component is frozen at the terminal
+measured core value rather than extrapolating the trend. The recent-window
+standard deviation is used for uncertainty.
 
 The choice of 10 years is grounded in the decorrelation timescale of core
 surface flow. Geomagnetic secular variation studies (Gillet et al. 2010,
@@ -432,15 +443,11 @@ This is a consequence of the advective turnover time of the outer core
 (roughly 500 years divided by the magnetic Reynolds number, giving ~10 years
 for the dominant flow structures). Beyond that window, the core angular
 momentum performs a random walk constrained by the geometry of the
-core-mantle boundary, not a trend that can be extrapolated. Using a 10-year
-mean rather than the instantaneous last value or a linear trend therefore
-does three things simultaneously: it averages out the high-frequency noise
-in the Gillet series, it avoids locking in a transient excursion that
-happens to be large at the boundary year, and it is statistically consistent
-with a zero-mean forecast on timescales longer than the decorrelation length.
-The residual non-zero value of the 10-year mean (typically ±0.3–0.5 s) is
-absorbed into the continuity constraint at `REFERENCE_YEAR` rather than
-propagated as a trend.
+core-mantle boundary, not a trend that can be extrapolated. Moira therefore
+linearly detrends the source LOD proxy before integration and freezes the
+future-era core term at the terminal measured value. This preserves C0
+continuity at the measured-to-future boundary while keeping secular drift in
+`secular_trend()` rather than duplicating it inside `core_delta_t()`.
 
 **Deliverables:**
 - `moira/data/core_angular_momentum.txt` — Gillet et al. 2019 table
@@ -466,8 +473,8 @@ def delta_t_hybrid(year: float) -> float:
 
     For 1840–2026:  secular + core + cryo components, residual-corrected
                     against IERS measured table.
-    For 2026+:      secular + cryo trend extrapolation + core mean.
-                    More physically grounded than polynomial extrapolation.
+    For 2026+:      physical continuation plus explicit conventional forecast
+                    bridge. The bridge is policy, not measured physics.
     For pre-1840:   delegates to SMH 2016 table (unchanged — the physical
                     components do not extend this far back reliably).
     """
@@ -482,9 +489,9 @@ def delta_t_hybrid(year: float) -> float:
         residual = _fit_residual(year)   # spline fit to IERS measured − model
         return base + core + cryo + residual
 
-    # Future: secular trend + cryo projection + core mean
-    core_mean = _core_recent_mean()     # mean of last 10y of Gillet series
-    return base + core_mean + cryo
+    # Future: deterministic tidal/GIA baseline + visible physical terms.
+    core_terminal = _core_terminal_value()
+    return _future_secular_baseline(year) + core_terminal + cryo
 ```
 
 **Era coverage and the 1840–1962 regime:**
@@ -550,23 +557,12 @@ Bulletin A weekly predictions — which carry formal uncertainties of
 never used as calibration data, only as the source for `REFERENCE_LOD`
 at `REFERENCE_YEAR` when that year has not yet been confirmed by Bulletin B.
 
-**Step 2 — Pre-smooth to suppress AAM noise:**
+**Step 2 — Annual residual fit with boundary taper:**
 
-The raw residual contains genuine interannual AAM/OAM signal at the 0.1–0.3 s
-level riding on top of longer-period geophysical signal. A 3-year centred
-moving average is applied before spline fitting:
-
-```python
-residual_smooth(y) = mean(residual(y−1), residual(y), residual(y+1))
-```
-
-This preserves decadal-scale signal while suppressing the year-to-year
-atmospheric noise that the spline would otherwise chase. The choice of 3
-years is deliberate: it is the shortest window that eliminates the dominant
-annual and semi-annual AAM cycle (which IERS has already corrected for, but
-whose residuals still appear at the ~0.05 s level) without damping the
-El Niño–driven interannual signal (~3–7 year period, ~0.2 s amplitude) that
-is real and should be captured.
+The raw annual residual contains genuine interannual AAM/OAM signal at the
+0.1–0.3 s level riding on top of longer-period geophysical signal. Moira fits
+the annual residuals directly and controls roughness through the smoothing
+factor and knot cap rather than by applying a pre-smoothing moving average.
 
 **Step 3 — Smoothing spline with fixed knot placement:**
 
@@ -577,20 +573,18 @@ A **smoothing spline** (not an interpolating spline) is used.
 from scipy.interpolate import UnivariateSpline
 
 spline = UnivariateSpline(
-    years_smooth,          # annual-mean points 1962.5–2024.5
-    residual_smooth,       # 3-year smoothed residual
+    years_fit,             # annual-mean points 1962.5–2024.5
+    residual_fit,          # annual residual after boundary taper
     k=3,                   # cubic
-    s=len(years_smooth),   # smoothing factor = N gives roughly 1 effective knot per year
+    s=s_factor,            # tuned smoothing factor with bounded knot count
     ext=1,                 # return 0.0 outside the knot range (no extrapolation)
 )
 ```
 
-The smoothing factor `s = N` (number of data points) is the standard
-scipy starting point. It will be tuned by inspecting the number of knots
-the solver places automatically: the target is approximately one knot per
-3–5 years, which corresponds to the decadal geophysical signal we want to
-capture. If the automatic knot count exceeds ~20 over the 62-year window,
-`s` is increased until it falls back to that range.
+The smoothing factor is initialized below `N` so annual residual structure
+remains visible without exact interpolation. If the automatic knot count
+exceeds ~20 over the measured window, `s` is increased until it falls back
+to that range.
 
 Knot placement is **not fixed manually** — it is solver-determined from the
 smoothing constraint. Manual knot placement would require knowledge of where
@@ -608,13 +602,13 @@ mean recent residual implicitly through the continuity constraint
 `REFERENCE_LOD ≡ IERS_measured(REFERENCE_YEAR) − core − cryo − residual`
 at `REFERENCE_YEAR` (see Phase 1 for the full derivation).
 
-To avoid a discontinuity in the first derivative at 2026, the smoothed
+To avoid a discontinuity in the first derivative at 2026, the annual
 residual series is tapered to zero over the final 3 years (2021–2023) using
 a cosine window:
 
 ```python
 taper = 0.5 * (1 + cos(π × (y − 2021) / 3))   for y in [2021, 2024)
-residual_smooth_tapered(y) = residual_smooth(y) × taper
+residual_fit_tapered(y) = residual_fit(y) × taper
 ```
 
 This enforces a smooth handoff to zero rather than an abrupt drop, which
@@ -627,7 +621,7 @@ After fitting, compute an interior leave-one-out cross-validation score on
 the non-boundary annual-mean epochs:
 
 ```python
-cv_rms = sqrt(mean((residual_smooth(y_i) − spline_without_i(y_i))²
+cv_rms = sqrt(mean((residual_fit(y_i) − spline_without_i(y_i))²
                    for interior annual-mean points y_i))
 ```
 
@@ -644,16 +638,17 @@ RMS so the fit quality is always visible.
 
 - RMS residual against IERS measured table < 0.5 s (1962–2026)
 - Max residual < 2.0 s anywhere in 1962–2026
-- Future projection (2026–2100) compared against Horizons-style frozen value
-  and Moira's current quadratic — documented as three competing forecasts
+- Future projection (2026–2100) compared against the conventional
+  Morrison/Stephenson/Espenak long-term forecast
 
 **Deliverables:**
 - `delta_t_physical.delta_t_hybrid()` — assembled model
 - `delta_t_physical.delta_t_hybrid_uncertainty(year)` — returns ±1σ estimate per section 8
 - `delta_t_physical._fitted_residual_spline()` — smoothing spline fit per section 4 procedure,
   returning the spline plus named diagnostics (`cv_rms`, `in_sample_rms`, `knot_count`)
-- `scripts/validate_delta_t_hybrid.py` — full comparison against IERS,
-  SMH 2016, and Horizons-style frozen value; reports CV score and knot count
+- `scripts/validate_delta_t_hybrid.py` — full comparison against IERS and
+  the conventional long-term forecast; reports CV score, knot count, and the
+  stochastic future envelope
 - Updated `julian.py` — add hybrid model as opt-in path alongside current
   `delta_t()` function (not replacing it — parallel implementation first)
 
@@ -909,14 +904,14 @@ Modest but explicitly propagated rather than ignored.
 **Source:** Genuine physical unpredictability of core flow fluctuations
 beyond a few years.
 
-This is the dominant uncertainty source for future Delta T. Core-mantle
+This remains a physical uncertainty source for future Delta T. Core-mantle
 angular momentum exchange produces LOD variations of ±2–4 ms on decadal
 timescales. These fluctuations are not forecastable beyond the current
 geomagnetic secular variation window (~5 years ahead).
 
-For the future extrapolation the core component is set to the mean of the
-last 10 years of the Gillet series (see Phase 3). The ±1σ uncertainty is
-taken as the standard deviation of that same 10-year window:
+For the future extrapolation the core component is frozen at the terminal
+measured value (see Phase 3). The ±1σ uncertainty is taken as the standard
+deviation of the recent decorrelation window:
 
 ```python
 core_values_last_10y = [core_delta_t(y) for y in recent_years]
@@ -927,7 +922,8 @@ This is not a measurement uncertainty — it is an honest statement that
 decade-scale Earth rotation fluctuations of this magnitude will occur but
 their sign and timing cannot be predicted.
 
-**Magnitude:** σ_core_future ≈ 1–2 s. This is the dominant term.
+**Magnitude:** σ_core_future ≈ 1–2 s. This is no longer the dominant
+long-range term once integrated stochastic LOD variance is admitted.
 
 For the historical era (within the Gillet coverage window), the core
 component is directly observed rather than extrapolated. Its uncertainty
@@ -944,11 +940,9 @@ approximately ±0.3 s.
 Three distinct contributions:
 
 **Within the coverage window (1962–2023):**
-The spline tracks the smoothed residual with a target in-sample RMS < 0.2 s.
-The dominant uncertainty here is the 3-year pre-smoothing step, which
-introduces a lag of up to ±1.5 years in the representation of abrupt
-geophysical events. For apparent-position purposes this is negligible
-(< 0.01 s effect on slowly-varying residual).
+The spline tracks annual residuals directly with a target in-sample RMS
+< 0.2 s. The dominant uncertainty here is the finite knot budget and
+leave-one-out cross-validation residual, not a pre-smoothing lag.
 
 **At the taper boundary (2021–2024):**
 The cosine taper forces the residual to zero over the final 3 years of the
@@ -963,7 +957,7 @@ residual series over the fit window, taken as a flat ±1σ estimate for all
 future epochs:
 
 ```
-σ_residual(year > 2026) = rms(residual_smooth, 1962–2023)
+σ_residual(year > 2026) = rms(residual_fit, 1962–2023)
 ```
 
 Expected to be < 0.4 s based on the cross-validation target band.
@@ -988,43 +982,43 @@ def delta_t_hybrid_uncertainty(year: float) -> float:
     ±1σ uncertainty on delta_t_hybrid(year), in seconds.
 
     Components are combined in quadrature (independent sources).
-    Dominant term for future dates is core-mantle unpredictability.
+    Dominant long-range term is the integrated stochastic LOD process.
     """
     σ_tidal    = _tidal_uncertainty(year)
     σ_GIA      = _gia_uncertainty(year)
     σ_cryo     = _cryo_uncertainty(year)
     σ_core     = _core_uncertainty(year)
     σ_residual = _residual_uncertainty(year)
+    σ_lod      = _future_stochastic_delta_t_sigma(year)
 
     return math.sqrt(
-        σ_tidal**2 + σ_GIA**2 + σ_cryo**2 + σ_core**2 + σ_residual**2
+        σ_tidal**2 + σ_GIA**2 + σ_cryo**2 + σ_core**2
+        + σ_residual**2 + σ_lod**2
     )
 ```
 
 **Representative totals:**
 
-| Epoch | σ_tidal | σ_GIA | σ_cryo | σ_core | σ_residual | σ_total |
-|---|---:|---:|---:|---:|---:|---:|
-| 2026 (anchor) | 0.00 s | 0.00 s | 0.003 s | 0.30 s | 0.01 s | ~0.3 s |
-| 2050 | 0.001 s | 0.08 s | 0.06 s | 1.5 s | 0.3 s | ~1.6 s |
-| 2075 | 0.001 s | 0.17 s | 0.10 s | 1.5 s | 0.3 s | ~1.6 s |
-| 2100 | 0.002 s | 0.27 s | 0.15 s | 1.5 s | 0.3 s | ~1.6 s |
+| Epoch | σ_tidal | σ_GIA | σ_cryo | σ_core | σ_residual | σ_LOD stochastic | σ_total |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 2026 (anchor) | 0.00 s | 0.00 s | 0.003 s | 0.30 s | 0.01 s | 0.0 s | ~0.3 s |
+| 2050 | 0.001 s | 0.08 s | 0.06 s | 1.5 s | 0.4 s | ~5.7 s | ~5.7 s |
+| 2075 | 0.001 s | 0.17 s | 0.10 s | 1.5 s | 0.4 s | ~16.6 s | ~16.6 s |
+| 2100 | 0.002 s | 0.27 s | 0.15 s | 1.5 s | 0.4 s | ~30.9 s | ~30.9 s |
 
-The total future uncertainty is dominated by core-mantle unpredictability
-at all epochs beyond a few years. The ceiling of ~1.6 s reflects the
-standard deviation of observed decade-scale core fluctuations — it does
-not grow indefinitely because core fluctuations are mean-reverting on
-multi-decade timescales.
+The total future uncertainty is dominated by the integrated stochastic LOD
+process. This is intentional: Delta T is the time integral of rotation-rate
+noise, so uncertainty fans out faster than a simple random walk in Delta T.
 
 **In arcseconds (for reference):**
-A 1.6 s Delta T uncertainty translates to approximately:
-- Moon: ~23″ (fast-moving body, ~0.5°/hr)
-- Sun: ~0.4″
-- Mercury at max elongation: ~0.2″
-- Outer planets: < 0.05″
+A 31 s Delta T uncertainty at 2100 translates to approximately:
+- Moon: ~17″
+- Sun: ~1.3″
+- Mercury at max elongation: ~5″
+- Outer planets: smaller, but not zero
 
-This is the honest future accuracy ceiling for any Earth-rotation-based
-timescale model, regardless of the quality of the geometric ephemeris.
+This is the honest long-range policy envelope for any Earth-rotation-based
+timescale model without a primary long-term UT1 oracle.
 
 ---
 

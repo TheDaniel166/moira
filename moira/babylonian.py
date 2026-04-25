@@ -26,8 +26,6 @@ Public surface / exports:
     (Limited public API - primarily internal validation support)
 """
 
-from __future__ import annotations
-
 import math
 from dataclasses import dataclass
 from enum import StrEnum

@@ -87,7 +87,12 @@ from .julian import (
     ut_to_tt,
     delta_t_from_jd, apparent_sidereal_time_at,
 )
-from .delta_t_physical import DeltaTBreakdown, delta_t_breakdown
+from .delta_t_physical import (
+    DeltaTBreakdown,
+    DeltaTDistribution,
+    delta_t_breakdown,
+    delta_t_distribution,
+)
 from .obliquity import mean_obliquity, true_obliquity, nutation
 from .coordinates import (
     icrf_to_ecliptic, icrf_to_equatorial, ecliptic_to_equatorial,
@@ -754,7 +759,7 @@ from .electional import (
     find_electional_windows, find_electional_moments,
 )
 from .chart import ChartContext
-from typing import Callable
+from collections.abc import Callable
 
 __all__ = [
     "Moira", "Chart", "MissingEphemerisKernelError",
@@ -804,7 +809,8 @@ __all__ = [
     "jd_from_datetime", "datetime_from_jd", "format_jd_utc", "safe_datetime_from_jd",
     "greenwich_mean_sidereal_time", "local_sidereal_time", "delta_t",
     "delta_t_from_jd", "apparent_sidereal_time_at",
-    "DeltaTBreakdown", "delta_t_breakdown",
+    "DeltaTBreakdown", "DeltaTDistribution",
+    "delta_t_breakdown", "delta_t_distribution",
     # Obliquity & nutation
     "mean_obliquity", "true_obliquity", "nutation",
     # Coordinate utilities

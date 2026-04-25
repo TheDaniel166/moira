@@ -8,8 +8,6 @@ Owns the doctrinal identity, classification, and hardened interpretation of
 currently admitted primary-direction method families.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import Iterable

@@ -931,9 +931,9 @@ class DeltaTPolicy:
             Moira's physics-based hybrid model (see
             ``delta_t_physical.delta_t_hybrid()``).  Decomposes ΔT into
             tidal braking, GIA, core-mantle angular momentum, GRACE/GRACE-FO
-            cryosphere, and an IERS residual spline.  Preferred for future
-            epochs (post-2026) and for inspecting the physical attribution of
-            Earth-rotation change.
+            cryosphere, an IERS residual spline, and a stochastic LOD-process
+            uncertainty model. Use it for inspecting physical attribution and
+            future Delta T probability.
 
         ``'nasa_canon'``
             NASA eclipse-canon polynomial model (see ``delta_t_nasa_canon()``).

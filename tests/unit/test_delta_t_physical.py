@@ -15,6 +15,8 @@ from moira.delta_t_physical import (
     cryo_delta_t,
     delta_t_hybrid,
     delta_t_hybrid_uncertainty,
+    DeltaTDistribution,
+    delta_t_distribution,
     DeltaTBreakdown,
     delta_t_breakdown,
     _smh2016_lookup,
@@ -28,6 +30,8 @@ from moira.delta_t_physical import (
     _core_recent_stats,
     _modern_bridge_delta_t,
     _modern_bridge_coefficients,
+    _future_secular_baseline,
+    _future_stochastic_delta_t_sigma,
     _fit_fluid_lowfreq_coefficients,
     _require_univariate_spline,
     _historical_bridge_delta_t,
@@ -71,6 +75,15 @@ def test_secular_trend_combined_coefficient_is_28() -> None:
     assert abs(secular_trend(REFERENCE_YEAR + 100.0) - expected) < 1e-12
 
 
+def test_secular_trend_is_curvature_only_at_reference_year() -> None:
+    eps = 1e-4
+    slope = (
+        secular_trend(REFERENCE_YEAR + eps)
+        - secular_trend(REFERENCE_YEAR - eps)
+    ) / (2 * eps)
+    assert slope == pytest.approx(0.0, abs=1e-9)
+
+
 def test_secular_trend_at_1820_is_reasonable() -> None:
     val = secular_trend(1820.0)
     t = (1820.0 - REFERENCE_YEAR) / 100.0
@@ -98,9 +111,9 @@ def test_modern_bridge_is_zero_at_reference_year_and_in_future() -> None:
 
 
 def test_modern_bridge_is_active_in_measured_era() -> None:
-    # At 1962.5 the seam correction makes the bridge non-zero and negative
-    # (secular overshoots; bridge compensates even after fluid admission).
-    assert _modern_bridge_delta_t(1962.5) < 0.0
+    # At 1962.5 the seam correction makes the bridge non-zero. Its sign is
+    # determined by the fitted fluid/core budget and is not itself a contract.
+    assert abs(_modern_bridge_delta_t(1962.5)) > 0.0
     # At 2010.5 the fluid term absorbs most of the low-frequency correction;
     # the bridge is small but finite (no sign constraint).
     assert math.isfinite(_modern_bridge_delta_t(2010.5))
@@ -206,13 +219,20 @@ def test_lod_to_delta_t_positive_lod_accumulates_positively() -> None:
     assert result[2][1] == 0.0
 
 
-def test_lod_to_delta_t_integration_formula() -> None:
-    series = ((2000.0, 1.0), (2001.0, 3.0))
+def test_lod_to_delta_t_removes_linear_trend() -> None:
+    series = ((2000.0, 1.0), (2001.0, 3.0), (2002.0, 5.0))
     result = _lod_series_to_delta_t(series)
-    mean_lod = 2.0
+    assert [y for y, _ in result] == [2000.0, 2001.0, 2002.0]
+    assert [v for _, v in result] == pytest.approx([0.0, 0.0, 0.0], abs=1e-10)
+
+
+def test_lod_to_delta_t_integration_formula() -> None:
+    series = ((2000.0, 1.0), (2001.0, 3.0), (2002.0, 1.0))
+    result = _lod_series_to_delta_t(series)
+    mean_lod = 5.0 / 3.0
     dt_days = 1.0 * JULIAN_YEAR
     avg_anomaly = ((1.0 - mean_lod) + (3.0 - mean_lod)) / 2.0
-    expected = avg_anomaly * dt_days / 86400.0
+    expected = avg_anomaly * dt_days / 1000.0
     assert abs(result[1][1] - expected) < 1e-10
 
 
@@ -330,6 +350,15 @@ def test_delta_t_hybrid_future_grows_with_time() -> None:
     assert val_2100 > val_2050
 
 
+def test_future_secular_baseline_carries_tidal_gia_slope() -> None:
+    assert _future_secular_baseline(2050.0) > secular_trend(2050.0)
+
+
+def test_future_stochastic_lod_sigma_grows_with_integrated_horizon() -> None:
+    assert _future_stochastic_delta_t_sigma(REFERENCE_YEAR) == 0.0
+    assert _future_stochastic_delta_t_sigma(2100.0) > _future_stochastic_delta_t_sigma(2050.0)
+
+
 # ---------------------------------------------------------------------------
 # delta_t_hybrid_uncertainty
 # ---------------------------------------------------------------------------
@@ -353,6 +382,16 @@ def test_uncertainty_grows_into_future() -> None:
 def test_uncertainty_is_finite_for_all_eras() -> None:
     for year in [-500.0, 1000.0, 1840.0, 1962.0, 2026.0, 2100.0]:
         assert math.isfinite(delta_t_hybrid_uncertainty(year))
+
+
+def test_delta_t_distribution_exposes_pdf_parameters() -> None:
+    dist = delta_t_distribution(2100.0)
+    assert isinstance(dist, DeltaTDistribution)
+    assert dist.mean == pytest.approx(delta_t_hybrid(2100.0), abs=1e-12)
+    assert dist.sigma == pytest.approx(delta_t_hybrid_uncertainty(2100.0), abs=1e-12)
+    assert dist.pdf(dist.mean) > dist.pdf(dist.mean + 2.0 * dist.sigma)
+    lo, hi = dist.interval(2.0)
+    assert lo < dist.mean < hi
 
 
 def test_uncertainty_quadrature_components_are_non_negative() -> None:
@@ -484,7 +523,7 @@ def test_breakdown_historical_era_cryo_fluid_residual_are_zero() -> None:
     assert bd.residual == 0.0
 
 
-def test_breakdown_future_era_fluid_bridge_residual_are_zero() -> None:
+def test_breakdown_future_era_has_no_policy_bridge() -> None:
     bd = delta_t_breakdown(2060.0)
     assert bd.era == 'future'
     assert bd.fluid == 0.0

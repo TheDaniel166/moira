@@ -46,8 +46,6 @@ atmospheric_refraction_extended
     wavelength, and observer elevation above the horizon.
 """
 
-from __future__ import annotations
-
 from moira.coordinates import (
     atmospheric_refraction,
     atmospheric_refraction_extended,

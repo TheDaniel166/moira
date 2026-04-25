@@ -8,8 +8,6 @@ Launch:
     python moira/daf_writer_ui.py
 """
 
-from __future__ import annotations
-
 import csv
 import json
 import sys

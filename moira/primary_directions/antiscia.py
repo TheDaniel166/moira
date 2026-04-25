@@ -3,8 +3,6 @@ Moira -- primary_directions/antiscia.py
 Explicit narrow antiscia primitives for the primary-directions subsystem.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from enum import StrEnum
 

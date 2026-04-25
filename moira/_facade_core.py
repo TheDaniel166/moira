@@ -6,8 +6,6 @@ facade wrappers outside the large public export module. The computations remain
 owned by their original engine modules.
 """
 
-from __future__ import annotations
-
 import sys
 from datetime import datetime
 from typing import Any

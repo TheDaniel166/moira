@@ -82,8 +82,6 @@ lunar_star_graze_product_at(star, event, lat)
 lunar_star_graze_product_track(star, event)
 """
 
-from __future__ import annotations
-
 from moira.occultations import (
     CloseApproach,
     GrazeCircumstances,

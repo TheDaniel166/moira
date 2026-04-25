@@ -6,8 +6,6 @@ ephemeris math, or public export policy; those remain in ``moira.spk_reader``
 and ``moira.facade`` respectively.
 """
 
-from __future__ import annotations
-
 import sys
 from pathlib import Path
 from typing import Any

@@ -67,8 +67,6 @@ an application-layer function that couples to the chart object; it does
 not belong in a strict astronomy surface.
 """
 
-from __future__ import annotations
-
 from moira.coordinates import (
     Mat3,
     Vec3,

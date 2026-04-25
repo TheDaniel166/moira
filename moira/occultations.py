@@ -43,7 +43,7 @@ import math
 import time
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Callable
+from collections.abc import Callable
 
 from .constants import Body
 from .planets import planet_at, sky_position_at, _earth_barycentric_state, _geocentric

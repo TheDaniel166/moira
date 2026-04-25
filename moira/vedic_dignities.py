@@ -84,8 +84,6 @@ Public surface
 ``validate_dignity_output`` — P10 output validator.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 
 from .constants import SIGNS

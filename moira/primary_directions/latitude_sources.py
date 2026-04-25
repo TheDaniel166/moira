@@ -9,8 +9,6 @@ the currently admitted sources from which primary-direction latitude is taken
 or assigned.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import Iterable

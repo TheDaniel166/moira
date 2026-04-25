@@ -76,8 +76,6 @@ VisibilityExtinctionModel Schaefer / Fixed / Custom
 VisibilityTwilightModel   Civil / Nautical / Astronomical / SolarDepression
 """
 
-from __future__ import annotations
-
 from moira.heliacal import (
     ExtinctionCoefficient,
     GeneralVisibilityEvent,

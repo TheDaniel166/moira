@@ -13,13 +13,11 @@ Key findings (confirmed 2026-04-08):
   pre-1840    : identical — both route through the SMH 2016 table
   1840–1962   : agree to < 0.01 s — historical bridge absorbs the gap exactly
   1962–2026   : agree within 2 s — residual spline tracks IERS
-  post-2026   : diverge significantly — table cascade uses M&S parabolic
-                extrapolation; physical model uses tidal + cryo + core 10-yr mean.
-                Divergence reaches ~22 s by 2050, ~118 s by 2100.
+  post-2026   : physical model owns a deterministic tidal/GIA secular baseline
+                and exposes stochastic LOD uncertainty through its PDF surface.
 
-The divergence in the future era is expected and intentional.  The physical
-model is the preferred source for future-epoch work; the table cascade's
-polynomial extrapolation is known to overshoot the physically plausible range.
+Large future divergence is interpreted through the probability distribution,
+not hidden by forcing the central value onto a convention.
 """
 from __future__ import annotations
 
@@ -27,7 +25,10 @@ import math
 import pytest
 
 from moira.julian import DeltaTPolicy, delta_t as _table_delta_t
-from moira.delta_t_physical import delta_t_hybrid as _physical_delta_t
+from moira.delta_t_physical import (
+    delta_t_hybrid as _physical_delta_t,
+    delta_t_hybrid_uncertainty as _physical_delta_t_sigma,
+)
 
 
 def _both(year: float) -> tuple[float, float]:
@@ -80,40 +81,34 @@ def test_measured_era_models_agree_within_2s(year: float) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Future era (post-2026): models diverge — physical is lower than table
+# Future era (post-2026): conventional forecast should stay inside the stochastic envelope
 # ---------------------------------------------------------------------------
 
 @pytest.mark.integration
-@pytest.mark.parametrize(("year", "min_divergence_s"), [
-    (2050.0, 10.0),
-    (2075.0, 40.0),
-    (2100.0, 80.0),
+@pytest.mark.parametrize("year", [
+    2050.0,
+    2075.0,
+    2100.0,
 ])
-def test_future_era_models_diverge(year: float, min_divergence_s: float) -> None:
+def test_future_era_table_forecast_is_inside_two_sigma_distribution(year: float) -> None:
     """
-    The table cascade uses the M&S parabolic extrapolation past 2026, which
-    grows steeply.  The physical model uses tidal + cryo + core 10-year mean,
-    which grows conservatively.  Divergence must exceed the threshold — if it
-    doesn't, something has changed in one of the models.
+    The conventional table forecast is no longer forced into the physical
+    central value. It must remain plausible under the stochastic LOD envelope.
     """
     table, physical = _both(year)
-    divergence = table - physical
-    assert divergence > min_divergence_s, (
+    divergence = abs(table - physical)
+    sigma = _physical_delta_t_sigma(year)
+    assert divergence < 2.0 * sigma, (
         f"year={year}: table={table:.3f} s, physical={physical:.3f} s, "
-        f"divergence={divergence:.3f} s — expected > {min_divergence_s} s. "
-        "Table cascade parabola may have changed, or physical model is drifting up."
+        f"divergence={divergence:.3f} s, sigma={sigma:.3f} s"
     )
 
 
 @pytest.mark.integration
-def test_future_era_physical_is_lower_than_table() -> None:
-    """Physical model must be consistently below the table cascade post-2026."""
-    for year in (2040.0, 2060.0, 2080.0, 2100.0, 2150.0):
-        table, physical = _both(year)
-        assert physical < table, (
-            f"year={year}: physical={physical:.3f} s >= table={table:.3f} s — "
-            "expected physical model to be lower than parabolic table extrapolation"
-        )
+def test_future_era_physical_mean_is_not_conventional_policy_bridge() -> None:
+    """Physical central value must be owned by the stochastic baseline, not forced to the table."""
+    table, physical = _both(2100.0)
+    assert abs(physical - table) > 10.0
 
 
 # ---------------------------------------------------------------------------
