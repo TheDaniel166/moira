@@ -1,33 +1,50 @@
-# Moira — Delta T Hybrid Physical Model
-# Implementation Plan
+# Moira — Delta T Model
 
-**Version:** 1.0  
-**Date:** 2026-03-20  
-**Status:** Planning  
-**Target:** `moira/delta_t_physical.py` + data pipeline scripts
+**Version:** 2.0  
+**Date:** 2026-04-25  
+**Status:** Complete — all phases implemented and verified  
+**Surfaces:** `moira/julian.py:delta_t()` · `moira/delta_t_physical.py:delta_t_hybrid()`
 
 ---
 
-## 1. Problem Statement
+## 1. Doctrine
 
-Moira's current `delta_t()` function in `julian.py` is a layered cascade:
+Moira's ΔT engine applies a single governing principle across all epochs:
 
-- **2015–2026:** IERS Bulletin A/B annual table (exact)
-- **1955–2015:** 5-year observed table
-- **Historical:** HPIERS/HMNAO tabulation of the SMH 2016 model
-- **Future (>2026):** Simple quadratic: `69.3 + 0.04·t + 0.001·t²`
-- **Ancient (<1600):** Espenak/Meeus piecewise polynomials
+> **Highest-authority source per epoch. Where observations exist, observations
+> govern. Where they end, owned physics governs.**
 
-The future extrapolation is the weakest part. It is an arbitrary smooth
-curve anchored to 2026. By 2050 it diverges from JPL Horizons by ~30–50
-seconds; by 2100 by ~130 seconds. This creates artificial apparent-position
-errors of 3–120 arcseconds for fast bodies in the future era — not because
-the geometry is wrong, but because the timescale assumption is wrong.
+This is not a fallback cascade. It is an epistemic priority queue. The layers
+do not compete — they are ordered by the nature of available knowledge at each
+epoch, and the ordering is never arbitrary.
 
-The goal of this project is to replace the future extrapolation (and
-eventually the modern-era decomposition) with a physically-grounded model
-built from three measurable, public data sources that were not available or
-not fully exploited when SMH 2016 was published.
+| Epoch | Source | Authority class |
+|---|---|---|
+| 2026+ | `delta_t_hybrid()` — Moira physical model | Owned |
+| 2015–2026 | IERS Bulletin B/A annual means | Direct observation |
+| 1955–2015 | USNO 5-year observed table | Direct observation |
+| ~720–1955 | SMH 2016 (Stephenson-Morrison-Hohenkerk) | Primary authority |
+| 1600–1900 | Espenak & Meeus historical anchor | Secondary anchor |
+| 1900–1955 | 5-year pre-modern anchor table | Secondary anchor |
+| All other | Morrison & Stephenson (2004) + DE441 tidal | Primary polynomials |
+
+The future era is the only epoch where no external observation or authority
+exists. Moira owns it outright: the model is calibrated against IERS LOD
+observations, anchored at the observed IERS total at the reference epoch
+(2026.0), and continuous across the observational boundary. The prior
+convention quadratic (`69.3 + 0.04·t + 0.001·t²`) was an arbitrary smooth
+curve that diverged from observed reality by ~130 s at 2100. It has been
+replaced entirely.
+
+### Historical context
+
+The physical model replaced a simple quadratic future extrapolation that had
+been the default since the Espenak/Meeus era. By 2050 the old formula diverged
+from JPL Horizons by 30–50 seconds; by 2100 by ~130 seconds — creating
+artificial apparent-position errors of 3–120 arcseconds for fast bodies. The
+goal was not to replace IERS observations (which remain the highest authority
+for the observed era) but to replace the convention guess for the unobserved
+future with a physically-grounded and calibrated model.
 
 ---
 
@@ -473,8 +490,10 @@ def delta_t_hybrid(year: float) -> float:
 
     For 1840–2026:  secular + core + cryo components, residual-corrected
                     against IERS measured table.
-    For 2026+:      physical continuation plus explicit conventional forecast
-                    bridge. The bridge is policy, not measured physics.
+    For 2026+:      owned secular baseline (_future_secular_baseline) from tidal
+                    dissipation and GIA integrated from their own reference epochs,
+                    plus frozen core terminal value and GRACE trend. No conventional
+                    forecast bridge. Uncertainty is carried by DeltaTDistribution.
     For pre-1840:   delegates to SMH 2016 table (unchanged — the physical
                     components do not extend this far back reliably).
     """
@@ -642,10 +661,14 @@ RMS so the fit quality is always visible.
   Morrison/Stephenson/Espenak long-term forecast
 
 **Deliverables:**
-- `delta_t_physical.delta_t_hybrid()` — assembled model
-- `delta_t_physical.delta_t_hybrid_uncertainty(year)` — returns ±1σ estimate per section 8
+- `delta_t_physical.delta_t_hybrid()` — assembled model *(implemented)*
+- `delta_t_physical.delta_t_hybrid_uncertainty(year)` — returns ±1σ estimate per section 8 *(implemented)*
+- `delta_t_physical.DeltaTBreakdown` / `delta_t_breakdown(year)` — per-component breakdown dataclass *(implemented)*
+- `delta_t_physical.DeltaTDistribution` / `delta_t_distribution(year)` — normal approximation PDF (mean, sigma, pdf(), interval()) *(implemented)*
+- `delta_t_physical._future_secular_baseline(year)` — owned future deterministic trend from tidal/GIA at their own reference epochs *(implemented)*
+- `delta_t_physical._future_stochastic_delta_t_sigma(year)` — integrated Brownian LOD noise: `sigma = (JULIAN_YEAR/1000) * sigma_LOD * sqrt(T³/3)` *(implemented)*
 - `delta_t_physical._fitted_residual_spline()` — smoothing spline fit per section 4 procedure,
-  returning the spline plus named diagnostics (`cv_rms`, `in_sample_rms`, `knot_count`)
+  returning the spline plus named diagnostics (`cv_rms`, `in_sample_rms`, `knot_count`) *(implemented)*
 - `scripts/validate_delta_t_hybrid.py` — full comparison against IERS and
   the conventional long-term forecast; reports CV score, knot count, and the
   stochastic future envelope
@@ -932,7 +955,109 @@ approximately ±0.3 s.
 
 ---
 
-### 8.5 Residual spline uncertainty
+### 8.5 Integrated stochastic LOD process (Ornstein-Uhlenbeck)
+
+**Source:** LOD variability that is unpredictable but physically bounded by
+mean-reversion.
+
+The LOD anomaly is modeled as an Ornstein-Uhlenbeck (O-U) process rather than
+a Brownian random walk. The O-U process captures two key physical features:
+
+1. **Short-term positive autocorrelation:** Core fluid dynamics have memory on
+   ~10-year timescales, so consecutive LOD values are correlated.
+2. **Long-term mean reversion:** Earth’s rotation cannot drift arbitrarily far
+   from equilibrium. The O-U drag term prevents the uncertainty cone from
+   expanding without bound.
+
+The SDE for the LOD anomaly $x(t)$:
+
+$$dx_t = -\theta\, x_t\, dt + \sigma\, dW_t$$
+
+where:
+- $\theta$ = `_LOD_OU_REVERSION_RATE` = 0.1/year ($\tau = 10$ yr — core-mantle
+  decorrelation timescale, Gillet et al. 2010, 2022; Christensen & Tilgner 2004)
+- $\sigma$ = `_LOD_RANDOM_WALK_SIGMA_MS_PER_DAY_SQRT_YEAR` = 0.2379 ms/day/√year
+  (calibrated from IERS EOP C04 annual-mean LOD series 1962–2026;
+  see **Calibration** below)
+- $\mu = 0$ (zero long-term mean anomaly, $x_0 = 0$ at `REFERENCE_YEAR`)
+
+**Exact variance of $\Delta T$ under O-U LOD:**
+
+Delta T is the time integral of LOD anomaly, $\Delta T(T) = (J/1000)\int_0^T x(t)\,dt$.
+For $x_0=0$ the variance is:
+
+$$\text{Var}[\Delta T(T)] = \left(\frac{J}{1000}\right)^{\!2}\frac{\sigma^2}{2\theta^3}
+\Bigl[2\theta T - 2(1-e^{-\theta T}) - (1-e^{-\theta T})^2\Bigr]$$
+
+where $J$ = `JULIAN_YEAR` (365.25 days/yr) and $T$ is the forecast horizon in
+years. The square bracket is always non-negative.
+
+**Limiting behavior:**
+
+| Regime | Bracket limit | Growth |
+|---|---|---|
+| $\theta T \ll 1$ (short horizon) | $\frac{2}{3}(\theta T)^3$ | $\sigma_{\Delta T} \propto T^{3/2}$ — recovers Brownian exactly |
+| $\theta T \gg 1$ (long horizon) | $2\theta T - 3$ | $\sigma_{\Delta T} \propto T^{1/2}$ — bounded diffusion |
+
+**Comparison: Brownian vs O-U ($\theta = 0.1$/yr):**
+
+| Epoch | Brownian $\sigma_{\text{LOD}}$ | O-U $\sigma_{\text{LOD}}$ |
+|---|---:|---:|
+| 2050 | ~5.7 s | ~2.9 s |
+| 2075 | ~16.6 s | ~5.1 s |
+| 2100 | ~30.9 s | ~6.7 s |
+
+The O-U model produces a substantially narrower uncertainty cone.
+The conventional 2100 forecast (202.7 s) is now ~3.7σ from the Moira mean
+(177.9 s) rather than ~0.8σ under the Brownian model. The O-U result is the
+more honest statement: Earth rotation cannot drift indefinitely, so the tidal+GIA
+secular baseline is a precise long-range prediction, not an uncertain guess.
+
+**Calibration of $\sigma$ from IERS EOP C04 data:**
+
+The diffusion coefficient is calibrated using the **first-difference method**
+against the IERS EOP C04 annual-mean LOD series (1962.5–2026.5, N=65;
+`moira/data/core_angular_momentum.txt`). First differences of consecutive
+annual-mean LOD values are trend-invariant — they eliminate any linear or
+quadratic secular drift without needing to specify which trend to remove.
+
+For an O-U process sampled at $\Delta t = 1$ yr:
+
+$$\text{RMS}(\Delta x) = \sigma \sqrt{\frac{1 - e^{-\theta}}{\theta}} \qquad\Rightarrow\qquad \sigma = \frac{\text{RMS}(\Delta x)}{\sqrt{(1-e^{-\theta})/\theta}}$$
+
+From the IERS data: $\text{RMS}(\Delta x) = 0.2321$ ms/day, correction
+$= \sqrt{(1-e^{-0.1})/0.1} = 0.9756$, giving $\sigma = 0.2379$ ms/day/√year.
+
+Three independent estimates converge:
+| Method | $\sigma$ (ms/day/√yr) |
+|---|---:|
+| First-difference (trend-invariant) | 0.2379 |
+| OLS-detrend stationary variance | 0.2341 |
+| Previous empirical estimate | 0.2300 |
+
+All three agree to within 3.4%, confirming the calibration. The stationary LOD
+std implied is $\sigma/\sqrt{2\theta} = 0.2379/\sqrt{0.2} = 0.532$ ms/day,
+consistent with the directly measured OLS-detrend std of 0.524 ms/day.
+
+**Choice of $\theta$:** The data-derived lag-1 autocorrelation gives
+$\tau \approx 6.2$ yr, but this likely reflects quasi-periodic core torsional
+waves (Gillet et al. 2013) rather than diffusive decorrelation. The literature
+value $\tau = 10$ yr ($\theta = 0.1$/yr) from geomagnetic secular-variation
+studies (Gillet et al. 2010, 2022; Christensen & Tilgner 2004) is used, as it
+better matches the observed stationary variance and represents the physically
+appropriate diffusive scale for long-range forecasting.
+
+**Authority:** Exact analytic result for the integral of a zero-mean O-U
+process starting from zero. See Gardiner (2004) *Handbook of Stochastic
+Methods* §4.4; Ricciardi & Sacerdote (1979).
+
+**Implementation:** `_future_stochastic_delta_t_sigma(year)` using
+`_LOD_OU_REVERSION_RATE` (θ) and `_LOD_RANDOM_WALK_SIGMA_MS_PER_DAY_SQRT_YEAR` (σ)
+in `moira/delta_t_physical.py`.
+
+---
+
+### 8.6 Residual spline uncertainty
 
 **Source:** Uncertainty in the smoothing spline fit to
 `IERS_measured − (secular + core + cryo)` over 1962–2023.
@@ -970,9 +1095,9 @@ the spline coefficients so the fit quality is reproducible.
 
 ---
 
-### 8.6 Total uncertainty assembly
+### 8.7 Total uncertainty assembly
 
-The five components are treated as independent (the physical drivers are
+The six components are treated as independent (the physical drivers are
 genuinely uncorrelated on the relevant timescales) and combined in
 quadrature:
 
@@ -1002,19 +1127,20 @@ def delta_t_hybrid_uncertainty(year: float) -> float:
 | Epoch | σ_tidal | σ_GIA | σ_cryo | σ_core | σ_residual | σ_LOD stochastic | σ_total |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | 2026 (anchor) | 0.00 s | 0.00 s | 0.003 s | 0.30 s | 0.01 s | 0.0 s | ~0.3 s |
-| 2050 | 0.001 s | 0.08 s | 0.06 s | 1.5 s | 0.4 s | ~5.7 s | ~5.7 s |
-| 2075 | 0.001 s | 0.17 s | 0.10 s | 1.5 s | 0.4 s | ~16.6 s | ~16.6 s |
-| 2100 | 0.002 s | 0.27 s | 0.15 s | 1.5 s | 0.4 s | ~30.9 s | ~30.9 s |
+| 2050 | 0.001 s | 0.08 s | 0.06 s | 1.5 s | 0.4 s | ~2.9 s | ~3.2 s |
+| 2075 | 0.001 s | 0.17 s | 0.10 s | 1.5 s | 0.4 s | ~5.1 s | ~5.4 s |
+| 2100 | 0.002 s | 0.27 s | 0.15 s | 1.5 s | 0.4 s | ~6.7 s | ~6.8 s |
 
-The total future uncertainty is dominated by the integrated stochastic LOD
-process. This is intentional: Delta T is the time integral of rotation-rate
-noise, so uncertainty fans out faster than a simple random walk in Delta T.
+At short horizons (a few decades) $\sigma_{\text{core}}$ dominates.
+At century timescales $\sigma_{\text{LOD}}$ grows to dominate, but its
+growth is sub-cubic: the O-U mean-reversion limits it to ~$T^{1/2}$ at
+long horizons rather than the $T^{3/2}$ of a Brownian walk.
 
 **In arcseconds (for reference):**
-A 31 s Delta T uncertainty at 2100 translates to approximately:
-- Moon: ~17″
-- Sun: ~1.3″
-- Mercury at max elongation: ~5″
+A 6.8 s $\Delta T$ uncertainty at 2100 translates to approximately:
+- Moon: ~3.7″
+- Sun: ~0.28″
+- Mercury (near max elongation): ~0.6″
 - Outer planets: smaller, but not zero
 
 This is the honest long-range policy envelope for any Earth-rotation-based

@@ -35,6 +35,8 @@ from moira.delta_t_physical import (
     _fit_fluid_lowfreq_coefficients,
     _require_univariate_spline,
     _historical_bridge_delta_t,
+    _LOD_OU_REVERSION_RATE,
+    _LOD_RANDOM_WALK_SIGMA_MS_PER_DAY_SQRT_YEAR,
 )
 
 
@@ -357,6 +359,48 @@ def test_future_secular_baseline_carries_tidal_gia_slope() -> None:
 def test_future_stochastic_lod_sigma_grows_with_integrated_horizon() -> None:
     assert _future_stochastic_delta_t_sigma(REFERENCE_YEAR) == 0.0
     assert _future_stochastic_delta_t_sigma(2100.0) > _future_stochastic_delta_t_sigma(2050.0)
+
+
+def test_future_stochastic_ou_converges_to_brownian_at_short_horizons() -> None:
+    """For θT ≪ 1 the O-U formula must recover the Brownian T³/3 limit."""
+    small_T = 0.01  # years — θT = 0.001 ≪ 1
+    ou_sigma = _future_stochastic_delta_t_sigma(REFERENCE_YEAR + small_T)
+    brownian_sigma = (
+        JULIAN_YEAR
+        / 1000.0
+        * _LOD_RANDOM_WALK_SIGMA_MS_PER_DAY_SQRT_YEAR
+        * math.sqrt(small_T ** 3 / 3.0)
+    )
+    assert ou_sigma == pytest.approx(brownian_sigma, rel=1e-3)
+
+
+def test_future_stochastic_ou_grows_slower_than_brownian_at_long_horizons() -> None:
+    """At long horizons O-U sigma must grow sub-cubically (< T^{3/2} Brownian ratio)."""
+    T_far = 74.0   # 2100
+    T_near = 24.0  # 2050
+    ou_ratio = (
+        _future_stochastic_delta_t_sigma(REFERENCE_YEAR + T_far)
+        / _future_stochastic_delta_t_sigma(REFERENCE_YEAR + T_near)
+    )
+    brownian_ratio = (T_far / T_near) ** 1.5
+    assert ou_ratio < brownian_ratio
+
+
+def test_future_stochastic_ou_formula_matches_exact_at_2100() -> None:
+    """Spot-check the O-U variance formula against an independent Python derivation."""
+    T = 74.0  # 2100 − 2026
+    theta = _LOD_OU_REVERSION_RATE
+    u = 1.0 - math.exp(-theta * T)
+    bracket = 2.0 * theta * T - 2.0 * u - u * u
+    expected = (
+        JULIAN_YEAR
+        / 1000.0
+        * _LOD_RANDOM_WALK_SIGMA_MS_PER_DAY_SQRT_YEAR
+        * math.sqrt(bracket / (2.0 * theta ** 3))
+    )
+    assert _future_stochastic_delta_t_sigma(REFERENCE_YEAR + T) == pytest.approx(
+        expected, rel=1e-10
+    )
 
 
 # ---------------------------------------------------------------------------

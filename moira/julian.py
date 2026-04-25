@@ -88,8 +88,10 @@ _DELTA_T_PRE1955_5Y: tuple[tuple[float, float], ...] = (
 # Annual mean ΔT (TT − UT1, seconds) from USNO deltat.data (maia.usno.navy.mil/ser7/deltat.data).
 # Values are 12-month arithmetic means of monthly observations. Finer resolution replaces the
 # coarse 5-year table for the modern era.
-# 2015–2025: fully observed (all 12 months averaged).
-# 2026: IERS Bulletin A prediction (only Jan 2026 available as of 2026-03-22; ~69.1 s).
+# 2015–2025: fully observed (all 12 months averaged from USNO deltat.data).
+# 2026: partial-year mean of Jan–Apr from USNO/IERS Bulletin A+B as of 2026-04-25.
+#   Jan=69.1099, Feb=69.1133, Mar=69.1168, Apr=69.1330 → 4-month mean=69.12.
+#   Update to the 12-month mean once December 2026 Bulletin B is published (~Jan 2027).
 _DELTA_T_ANNUAL: tuple[tuple[float, float], ...] = (
     (2015.0, 67.84),
     (2016.0, 68.35),
@@ -102,7 +104,7 @@ _DELTA_T_ANNUAL: tuple[tuple[float, float], ...] = (
     (2023.0, 69.20),
     (2024.0, 69.17),
     (2025.0, 69.13),
-    (2026.0, 69.1),
+    (2026.0, 69.12),
 )
 
 
@@ -576,21 +578,40 @@ def _tidacc_correction(year: float) -> float:
 
 def delta_t(year: float) -> float:
     """
-    Approximate ΔT = TT − UT1 in seconds for any decimal year.
+    ΔT = TT − UT1 in seconds for any decimal year.
 
-    Governs a layered lookup strategy that selects the highest-accuracy
-    available source for each era:
+    Doctrine: highest-authority source per epoch. Where direct observations
+    exist, observations govern. Where they end, Moira's owned physical model
+    governs. The caller sees one continuous surface; the routing is internal.
 
-    - 2015–2026: annual IERS Bulletin B/A observed values (sub-second).
-    - 1955–2015: 5-year observed table blended into the annual table.
-    - HPIERS range: tabulated values from the 2016 Stephenson-Morrison-
-      Hohenkerk Earth-rotation model (loaded from disk at import time).
-    - 1600–1900: historical/telescopic anchor table (Espenak & Meeus).
-    - 1900–1955: denser 5-year pre-modern table.
-    - All other eras: Morrison & Stephenson (2004) piecewise polynomials.
+    This is not a fallback cascade — it is an epistemic priority queue:
 
-    All table-driven ranges use linear interpolation between anchor points.
-    Polynomial branches are used only when no table covers the requested year.
+    +------------------+-----------------------------------------------+
+    | Epoch            | Source and authority                          |
+    +==================+===============================================+
+    | 2026+            | Moira delta_t_hybrid() — owned physical model |
+    |                  | (tidal + GIA + cryo + stochastic LOD/O-U)     |
+    +------------------+-----------------------------------------------+
+    | 2015–2026        | IERS Bulletin B/A annual means (sub-second)   |
+    +------------------+-----------------------------------------------+
+    | 1955–2015        | USNO 5-year observed table                    |
+    +------------------+-----------------------------------------------+
+    | ~720–1955        | SMH 2016 (Stephenson-Morrison-Hohenkerk)       |
+    |                  | HPIERS/HMNAO tabulation — primary authority   |
+    +------------------+-----------------------------------------------+
+    | 1600–1900        | Espenak & Meeus historical anchor table       |
+    +------------------+-----------------------------------------------+
+    | 1900–1955        | 5-year pre-modern anchor table                |
+    +------------------+-----------------------------------------------+
+    | All other eras   | Morrison & Stephenson (2004) polynomials      |
+    |                  | with JPL DE441 tidal correction               |
+    +------------------+-----------------------------------------------+
+
+    Table-driven ranges use linear interpolation. Polynomial branches
+    apply only when no table covers the requested year. The future era
+    (post-2026) is fully owned: calibrated against IERS LOD observations,
+    anchored at the observed IERS total at the reference epoch, and
+    continuous across the observational boundary.
 
     Args:
         year: Decimal year (e.g. ``2000.5``).
@@ -599,8 +620,7 @@ def delta_t(year: float) -> float:
         ΔT in seconds (positive means TT is ahead of UT1).
 
     Raises:
-        Nothing — the function covers all real-valued years via the
-        far-past/far-future polynomial fallback.
+        Nothing — covers all real-valued years.
 
     Side effects:
         None.
@@ -746,17 +766,19 @@ def delta_t(year: float) -> float:
                 + 0.000651814 * t**4
                 + 0.00002373599 * t**5)
 
-    if y < 2050:
-        # Anchored to 2026.0 = 69.3s (IERS Bulletin A prediction).
-        # Slow growth ~0.04s/yr reflects current LOD trend.
-        t = y - 2026.0
-        return 69.3 + 0.04 * t + 0.001 * t**2
-
-    if y < 2150:
-        return -20 + 32 * ((y - 1820.0) / 100.0) ** 2 - 0.5628 * (2150.0 - y)
-
-    u = (y - 1820.0) / 100.0
-    return -20 + 32 * u * u
+    # Post-2026: delegate to the physics-based hybrid model (tidal + GIA + core +
+    # cryo + residual spline + stochastic LOD baseline).  The conventional
+    # Espenak/Stephenson far-future polynomial is retained only as a fallback
+    # when delta_t_physical is unavailable (scipy absent).
+    try:
+        from .delta_t_physical import delta_t_hybrid as _hyb  # deferred: avoids circular import
+        return _hyb(y)
+    except ImportError:
+        # Fallback: conventional Espenak/Stephenson forecast.
+        if y < 2150:
+            return -20 + 32 * ((y - 1820.0) / 100.0) ** 2 - 0.5628 * (2150.0 - y)
+        u = (y - 1820.0) / 100.0
+        return -20 + 32 * u * u
 
 
 def delta_t_from_jd(jd_ut: float) -> float:

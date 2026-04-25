@@ -234,8 +234,10 @@ def test_uncertainty_at_anchor_is_below_1s() -> None:
 
 @pytest.mark.integration
 def test_uncertainty_at_2100_exposes_integrated_lod_stochasticity() -> None:
+    # O-U calibrated (tau=10yr, sigma=0.2379 ms/day/sqrt(yr)): ~6.7 s at 2100.
+    # Brownian would give ~31 s; the O-U bound confirms mean-reversion is active.
     sigma = delta_t_hybrid_uncertainty(2100.0)
-    assert 20.0 < sigma < 40.0
+    assert 4.0 < sigma < 15.0
 
 
 @pytest.mark.integration

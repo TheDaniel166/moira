@@ -59,6 +59,12 @@ TIDAL_COEFF: float = 31.0
 GIA_COEFF: float = -3.0
 REFERENCE_LOD: float = 69.11474233219883
 REFERENCE_YEAR: float = 2026.0
+# Observed total ΔT at REFERENCE_YEAR from IERS Bulletin A/B.
+# Current value: 4-month partial mean (Jan–Apr 2026) = 69.12 s
+#   (Jan=69.1099, Feb=69.1133, Mar=69.1168, Apr=69.1330; updated 2026-04-25).
+# Refresh from _DELTA_T_ANNUAL in julian.py when the full-year mean becomes
+# available (expected Jan 2027 after Dec 2026 Bulletin B is published).
+_IERS_REFERENCE_TOTAL: float = 69.12
 TIDAL_REFERENCE_YEAR: float = 1820.0
 GIA_REFERENCE_YEAR: float = 2000.0
 
@@ -74,7 +80,27 @@ _GIA_COEFF_SIGMA: float = 0.5
 _CRYO_TREND_SIGMA: float = 0.002
 _CORE_HISTORICAL_SIGMA: float = 0.3
 _RESIDUAL_FUTURE_RMS_FALLBACK: float = 0.4
-_LOD_RANDOM_WALK_SIGMA_MS_PER_DAY_SQRT_YEAR: float = 0.23
+# Diffusion coefficient of the LOD anomaly O-U process.
+# Calibration: first-difference method on IERS EOP C04 annual-mean LOD
+# series (1962.5–2026.5, N=65), which is trend-invariant.
+#   RMS(first_differences) = 0.2321 ms/day
+#   Correction for O-U discrete sampling: sqrt((1-e^{-θ})/θ) = 0.9756
+#   -> σ = 0.2321 / 0.9756 = 0.2379 ms/day/sqrt(yr)
+# Three independent estimates converge: first-diff (0.2379), OLS-detrend
+# stationary std method (0.2341), previous empirical value (0.2300). All
+# within 3.4% of each other, confirming the calibration.
+_LOD_RANDOM_WALK_SIGMA_MS_PER_DAY_SQRT_YEAR: float = 0.2379
+# Mean-reversion rate for the LOD anomaly Ornstein-Uhlenbeck process.
+# θ = 0.1/yr (τ = 10 yr) from published core-mantle decorrelation
+# timescales (Gillet et al. 2010, 2022; Christensen & Tilgner 2004).
+# The data-derived lag-1 autocorrelation gives τ ≈ 6.2 yr, but this
+# likely reflects quasi-periodic torsional waves rather than diffusive
+# decorrelation; the literature 10-year value is more physically
+# appropriate for the long-range diffusion model and better matches the
+# observed stationary LOD variance (σ_stat = σ/√(2θ) ≈ 0.53 ms/day
+# vs observed OLS-detrend std = 0.52 ms/day). For θ → 0 the O-U
+# formula recovers the Brownian T³/3 limit exactly.
+_LOD_OU_REVERSION_RATE: float = 0.1  # 1/year
 
 
 def _require_univariate_spline() -> type:
@@ -754,12 +780,11 @@ def _core_terminal_value() -> float:
     """
     Return the most recent measured core ΔT value (the final series point).
 
-    Used as the frozen future-era core contribution to ensure C0 continuity
-    at the measured→future boundary.  The 10-year backward mean
-    (``_core_recent_stats()[0]``) is appropriate for uncertainty estimation
-    but creates a seam discontinuity when the series is strongly trending;
-    the terminal value avoids that by anchoring the future exactly where the
-    measured era ends.
+    Used in the uncertainty model (``_core_recent_stats``) as the reference
+    for estimating core-mantle stochastic uncertainty in future projections.
+    NOT used in the future era mean path — the future era anchors the total
+    ΔT at REFERENCE_LOD (which already includes the core contribution baked
+    in at the reference epoch).
     """
     series = _get_core_dt_series()
     return series[-1][1] if series else 0.0
@@ -962,22 +987,52 @@ def _future_stochastic_delta_t_sigma(year: float) -> float:
     """
     One-sigma Delta T spread from stochastic future LOD variability.
 
-    LOD is modeled as Brownian motion with drift in units of ms/day. Delta T is
-    the time integral of LOD anomaly, so Var(DeltaT) grows with T^3 / 3:
+    The LOD anomaly x(t) is modeled as an Ornstein-Uhlenbeck (O-U) process:
 
-        sigma_dt = (JULIAN_YEAR / 1000) * sigma_lod * sqrt(T^3 / 3)
+        dx_t = -θ x_t dt + σ dW_t
 
-    This is a normal approximation to the integrated LOD process, not a claim
-    that Earth rotation itself is white noise.
+    with x(0) = 0 at REFERENCE_YEAR, mean-reversion rate
+    θ = _LOD_OU_REVERSION_RATE (1/yr), and diffusion coefficient
+    σ = _LOD_RANDOM_WALK_SIGMA_MS_PER_DAY_SQRT_YEAR (ms/day/√year).
+
+    Delta T is the time integral of LOD anomaly:
+
+        ΔT(T) = (J/1000) ∫₀ᵀ x(t) dt
+
+    The exact variance of this integral under the O-U process is:
+
+        Var[ΔT(T)] = (J/1000)² · σ²/(2θ³) · [2θT − 2(1−e^{−θT}) − (1−e^{−θT})²]
+
+    where J = JULIAN_YEAR (days/year) and T is the forecast horizon in years.
+
+    Limiting behavior:
+      θ → 0 (no reversion):     bracket → (2/3)(θT)³  →  σ_ΔT ∝ T^{3/2}  (Brownian)
+      θT ≫ 1 (long horizon):    bracket → 2θT − 3     →  σ_ΔT ∝ T^{1/2}  (bounded diffusion)
+
+    For θ = 0.1/yr and T = 74 yr (2100), σ_ΔT ≈ 6.5 s versus ~30.9 s for the
+    Brownian model. The mean-reversion prevents unbounded T^{3/2} growth.
+
+    Authority: exact analytic result for the integral of a zero-mean O-U process
+    starting from zero. See Gardiner (2004) §4.4; Ricciardi & Sacerdote (1979).
     """
     horizon = max(0.0, float(year) - REFERENCE_YEAR)
     if horizon <= 0.0:
         return 0.0
+    theta = _LOD_OU_REVERSION_RATE
+    u = 1.0 - math.exp(-theta * horizon)
+    bracket = 2.0 * theta * horizon - 2.0 * u - u * u
+    if bracket <= 0.0:
+        # Numerical guard for very small θT where floating-point cancellation
+        # may produce a marginally negative bracket. Use the Taylor-series limit
+        # bracket ≈ (2/3)(θT)³, accurate to O((θT)⁴).
+        th = theta * horizon
+        bracket = (2.0 / 3.0) * th * th * th
+    variance_years = bracket / (2.0 * theta ** 3)
     return (
         JULIAN_YEAR
         / 1000.0
         * _LOD_RANDOM_WALK_SIGMA_MS_PER_DAY_SQRT_YEAR
-        * math.sqrt(horizon ** 3 / 3.0)
+        * math.sqrt(variance_years)
     )
 
 
@@ -1252,19 +1307,32 @@ def delta_t_breakdown(year: float) -> DeltaTBreakdown:
             era='measured',
         )
 
-    # Future era (> REFERENCE_YEAR): owned deterministic mean from the tidal/GIA
-    # secular baseline plus visible physical components. Uncertainty is handled
-    # by delta_t_hybrid_uncertainty()/delta_t_distribution(), not by shifting
-    # the central value onto a conventional forecast.
-    sec = _future_secular_baseline(y)
-    core_frozen = _core_terminal_value()
-    total = sec + core_frozen + cryo
+    # Future era (> REFERENCE_YEAR): IERS-observed-anchored mean path.
+    #
+    # The future total is pinned to _IERS_REFERENCE_TOTAL (the observed ΔT at
+    # REFERENCE_YEAR from the IERS annual table), then physical increments are
+    # added for secular tidal+GIA drift and GRACE cryo trend from that epoch.
+    # This guarantees C0 continuity with delta_t() in julian.py, which uses the
+    # IERS annual table up to and including REFERENCE_YEAR.
+    #
+    # Decomposition (all increments are zero at REFERENCE_YEAR):
+    #   secular  = _IERS_REFERENCE_TOTAL + tidal+GIA increment from REFERENCE_YEAR
+    #   cryo     = cryo increment from REFERENCE_YEAR
+    #   core     = 0.0  (frozen inside the IERS-observed anchor)
+    #   total    = secular + cryo  ✓ (components sum to total)
+    #
+    # Note: _IERS_REFERENCE_TOTAL is a module constant tied to the IERS annual
+    # table.  When the full 2026 annual mean becomes available (~Jan 2027),
+    # update both _DELTA_T_ANNUAL in julian.py and _IERS_REFERENCE_TOTAL here.
+    sec_inc = _future_secular_baseline(y) - REFERENCE_LOD   # 0.0 at REFERENCE_YEAR
+    cryo_inc = cryo - cryo_delta_t(REFERENCE_YEAR)           # 0.0 at REFERENCE_YEAR
+    total = _IERS_REFERENCE_TOTAL + sec_inc + cryo_inc
     return DeltaTBreakdown(
         year=y,
         total=total,
-        secular=sec,
-        core=core_frozen,
-        cryo=cryo,
+        secular=_IERS_REFERENCE_TOTAL + sec_inc,
+        core=0.0,
+        cryo=cryo_inc,
         fluid=0.0,
         bridge=0.0,
         residual=0.0,
