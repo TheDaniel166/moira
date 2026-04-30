@@ -16,6 +16,7 @@ from moira.corrections import (
     apply_frame_bias,
     apply_light_time,
     topocentric_correction,
+    apply_diurnal_aberration,
 )
 from moira.julian import DeltaTPolicy, local_sidereal_time, tt_to_ut
 from moira.obliquity import mean_obliquity, nutation
@@ -86,6 +87,7 @@ def _manual_chain_topocentric_ra_dec(body: str, jd_tt: float, reader) -> tuple[f
     xyz = mat_vec_mul(precession_matrix_equatorial(jd_tt), xyz)
     xyz = mat_vec_mul(nutation_matrix_equatorial(jd_tt), xyz)
     xyz = topocentric_correction(xyz, _OBSERVER_LAT, _OBSERVER_LON, lst_deg, _OBSERVER_ELEV_M)
+    xyz = apply_diurnal_aberration(xyz, _OBSERVER_LAT, _OBSERVER_LON, lst_deg, _OBSERVER_ELEV_M)
 
     ra_deg, dec_deg, _distance_km = icrf_to_equatorial(xyz)
     return ra_deg, dec_deg

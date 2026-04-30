@@ -50,7 +50,7 @@ from .spk_reader import get_reader, KernelReader, SpkReader
 from .corrections import (
     apply_light_time, apply_aberration, apply_deflection, apply_frame_bias,
     apply_refraction, SCHWARZSCHILD_RADII,
-    topocentric_correction, C_KM_PER_DAY,
+    topocentric_correction, apply_diurnal_aberration, C_KM_PER_DAY,
 )
 from .precession import general_precession_in_longitude
 
@@ -806,6 +806,12 @@ def planet_at(
         xyz0 = topocentric_correction(
             xyz0, observer_lat, observer_lon, lst_deg, observer_elev_m
         )
+        
+        # 7b. Topocentric diurnal aberration (geocentric only, after parallax)
+        # Apply diurnal aberration correction for observer's velocity due to Earth's rotation
+        xyz0 = apply_diurnal_aberration(
+            xyz0, observer_lat, observer_lon, lst_deg, observer_elev_m
+        )
 
     if frame == 'cartesian':
         return CartesianPosition(name=body, x=xyz0[0], y=xyz0[1], z=xyz0[2], center=center)
@@ -951,6 +957,9 @@ def sky_position_at(
     # Step 7: Topocentric correction
     lst_deg = local_sidereal_time(jd_ut, observer_lon, dpsi_deg, obliquity)
     xyz = topocentric_correction(xyz, observer_lat, observer_lon, lst_deg, observer_elev_m)
+    
+    # Step 7b: Topocentric diurnal aberration (after parallax)
+    xyz = apply_diurnal_aberration(xyz, observer_lat, observer_lon, lst_deg, observer_elev_m)
 
     ra_deg, dec_deg, dist = icrf_to_equatorial(xyz)
     az_deg, alt_deg = equatorial_to_horizontal(ra_deg, dec_deg, lst_deg, observer_lat)

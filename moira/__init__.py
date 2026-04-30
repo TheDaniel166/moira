@@ -246,6 +246,23 @@ from .comets import (
     list_comets,
     load_comet_kernel,
 )
+from .asteroid_families import (
+    asteroid_family,
+    family_members,
+    families_in_chart,
+    find_resonant_aspects,
+    resonance_network,
+    FamilyResonance,
+    ResonantAspect,
+)
+from .void_of_course import (
+    void_of_course_window,
+    is_void_of_course,
+    next_void_of_course,
+    void_periods_in_range,
+    VoidOfCourseWindow,
+    LastAspect,
+)
 from .dignities import (
     # Tables
     DOMICILE,
@@ -677,4 +694,19 @@ __all__ = [
     "all_comets_at",
     "list_comets",
     "load_comet_kernel",
+    # Asteroid families
+    "asteroid_family",
+    "family_members",
+    "families_in_chart",
+    "find_resonant_aspects",
+    "resonance_network",
+    "FamilyResonance",
+    "ResonantAspect",
+    # Void of course
+    "void_of_course_window",
+    "is_void_of_course",
+    "next_void_of_course",
+    "void_periods_in_range",
+    "VoidOfCourseWindow",
+    "LastAspect",
 ]

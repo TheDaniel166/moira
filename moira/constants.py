@@ -11,6 +11,8 @@ these values. Does not own any calculation logic, file I/O, or mutable state.
 Public surface:
     TAU, PI, DEG2RAD, RAD2DEG, ARCSEC2RAD,
     J2000, JD_DELTA, JULIAN_CENTURY, JULIAN_YEAR, TROPICAL_YEAR, SIDEREAL_YEAR,
+    C_KM_PER_DAY, KM_PER_AU, EARTH_RADIUS_KM, SUN_RADIUS_KM, MOON_RADIUS_KM,
+    EARTH_ROTATION_RATE_RAD_PER_SEC,
     NAIF, Body, NAIF_ROUTES, EARTH_ROUTE,
     SIGNS, SIGN_SYMBOLS, sign_of,
     HouseSystem, HOUSE_SYSTEM_NAMES,
@@ -61,6 +63,12 @@ SUN_RADIUS_KM: float = 696_340.0
 
 # Lunar mean radius (IAU Working Group on Cartographic Coordinates 2015)
 MOON_RADIUS_KM: float = 1_737.4
+
+# Earth's rotation rate (IERS Conventions 2010).
+# Angular velocity of Earth's rotation around the ICRF Z-axis (rad/s).
+# Assumed constant for topocentric diurnal aberration calculations.
+# Used to compute observer velocity due to Earth's rotation.
+EARTH_ROTATION_RATE_RAD_PER_SEC: float = 7.2921150e-5
 
 # ---------------------------------------------------------------------------
 # NAIF / SPICE body IDs (as used in DE441)
