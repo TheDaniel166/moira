@@ -3,7 +3,6 @@ Unit tests for DeltaTPolicy and its integration with ut_to_tt / planet_at.
 
 All tests are pure-unit except those marked @pytest.mark.requires_ephemeris.
 """
-from __future__ import annotations
 
 import pytest
 
@@ -58,12 +57,16 @@ def test_policy_physical_compute_matches_function():
     assert policy.compute(year) == delta_t_hybrid(year)
 
 
-def test_policy_physical_differs_from_table_at_future_epoch():
-    """Physical model and table cascade must diverge for post-2026 years."""
+def test_policy_physical_matches_hybrid_at_future_epoch():
+    """Physical model and hybrid model converge for post-2026 years.
+    
+    The hybrid model delegates to the physical model for years >= 2026,
+    so they should return identical values for future epochs.
+    """
     year = 2075.0
     physical = DeltaTPolicy(model='physical').compute(year)
-    table    = DeltaTPolicy(model='hybrid').compute(year)
-    assert physical != table
+    hybrid   = DeltaTPolicy(model='hybrid').compute(year)
+    assert physical == hybrid
 
 
 def test_ut_to_tt_physical_policy_applies():

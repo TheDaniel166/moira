@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -24,6 +22,7 @@ def test_moira_chart_uses_tt_obliquity_and_jd_delta_t(monkeypatch) -> None:
     monkeypatch.setattr(facade, "true_node", lambda *args, **kwargs: node_result)
     monkeypatch.setattr(facade, "mean_node", lambda *args, **kwargs: node_result)
     monkeypatch.setattr(facade, "mean_lilith", lambda *args, **kwargs: node_result)
+    monkeypatch.setattr(facade, "true_lilith", lambda *args, **kwargs: node_result)
     monkeypatch.setattr(facade, "ut_to_tt", lambda jd: 2451545.0008)
     monkeypatch.setattr(facade, "true_obliquity", lambda jd: 23.4567 if jd == 2451545.0008 else -1.0)
     monkeypatch.setattr(facade, "delta_t_from_jd", lambda jd: 64.321 if jd == 2451545.0 else -1.0)

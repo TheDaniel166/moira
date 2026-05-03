@@ -1,7 +1,8 @@
 """
 Moira — planetary_hours.py
 The Planetary Hour Engine: governs traditional planetary hour computation
-for any geographic location and date.
+for any geographic location and input instant, resolved onto the enclosing
+sunrise-based local day.
 
 Boundary: owns Chaldean hour sequence arithmetic, daytime/nighttime hour
 division, and planetary hour lookup. Delegates solar position and
@@ -147,21 +148,23 @@ class PlanetaryHoursDay:
     """
     RITE: The Planetary Hours Day Vessel
 
-    THEOREM: Governs the storage of all 24 planetary hours for a given calendar
-    day and geographic location, with sunrise and sunset boundaries.
+    THEOREM: Governs the storage of all 24 planetary hours for one
+    sunrise-based local day window at a geographic location, with sunrise and
+    sunset boundaries.
 
     RITE OF PURPOSE:
-        PlanetaryHoursDay is the authoritative data vessel for a complete day of
-        planetary hours produced by the Planetary Hour Engine. It captures the
-        reference Julian Day, the observer's latitude and longitude, the sunrise
-        and sunset Julian Days, and the full list of 24 PlanetaryHour instances.
-        Without it, callers would receive unstructured collections with no
-        field-level guarantees. It exists to give every higher-level consumer a
-        single, named, immutable record of a complete planetary hours day.
+        PlanetaryHoursDay is the authoritative data vessel for a complete
+        sunrise-to-sunrise planetary-hours window produced by the Planetary Hour
+        Engine. It captures the reference Julian Day used to select the window,
+        the observer's latitude and longitude, the sunrise and sunset Julian
+        Days, and the full list of 24 PlanetaryHour instances. Without it,
+        callers would receive unstructured collections with no field-level
+        guarantees. It exists to give every higher-level consumer a single,
+        named, immutable record of a complete planetary-hours day.
 
     LAW OF OPERATION:
         Responsibilities:
-            - Store a complete planetary hours day as named, typed fields
+            - Store a complete sunrise-based planetary hours day as named, typed fields
             - Expose sunrise and sunset as UTC datetime and CalendarDateTime views
             - Provide hour_at() and lord_of_hour() lookup methods
             - Serve as the return type of planetary_hours()
@@ -248,34 +251,80 @@ def planetary_hours(
     reader: SpkReader | None = None,
 ) -> PlanetaryHoursDay:
     """
-    Calculate all 24 planetary hours for the calendar day of *jd*.
+    Calculate all 24 planetary hours for the sunrise-based local day that
+    contains *jd*.
 
     Parameters
     ----------
-    jd        : Julian Day (UT) — any time during the target day
+    jd        : Julian Day (UT) — the instant whose enclosing planetary-hours
+                day should be resolved
     latitude  : geographic latitude (degrees, N positive)
     longitude : geographic longitude (degrees, E positive)
     reader    : SpkReader instance
 
     Returns
     -------
-    PlanetaryHoursDay with all 24 PlanetaryHour instances.
+    PlanetaryHoursDay with the sunrise, sunset, and 24 planetary hours for the
+    sunrise-to-sunrise local window containing *jd*.
     """
     if reader is None:
         reader = get_reader()
 
-    # Get approximate noon for the day
-    jd_noon = math.floor(jd - 0.5) + 0.5 + 0.5  # 12:00 UT for the day
+    # Anchor to the UT day containing jd, then choose the sunrise-based local
+    # day window that actually contains the instant.
+    jd_noon = math.floor(jd - 0.5) + 1.0
 
-    # Sunrise and sunset with iterative refinement
     jd_sr_approx, jd_ss_approx = _sunrise_sunset(jd_noon, latitude, longitude, reader)
-    jd_sunrise = _refine_sunrise(jd_sr_approx, latitude, longitude, reader, is_rise=True)
-    jd_sunset  = _refine_sunrise(jd_ss_approx, latitude, longitude, reader, is_rise=False)
+    jd_sunrise_today = _refine_sunrise(
+        jd_sr_approx,
+        latitude,
+        longitude,
+        reader,
+        is_rise=True,
+    )
+    jd_sunset_today = _refine_sunrise(
+        jd_ss_approx,
+        latitude,
+        longitude,
+        reader,
+        is_rise=False,
+    )
 
-    # Next sunrise (for night hours boundary)
-    jd_next_noon = jd_noon + 1.0
-    jd_nr_approx, _ = _sunrise_sunset(jd_next_noon, latitude, longitude, reader)
-    jd_next_sunrise = _refine_sunrise(jd_nr_approx, latitude, longitude, reader, is_rise=True)
+    if jd < jd_sunrise_today:
+        jd_prev_noon = jd_noon - 1.0
+        jd_prev_sr_approx, jd_prev_ss_approx = _sunrise_sunset(
+            jd_prev_noon,
+            latitude,
+            longitude,
+            reader,
+        )
+        jd_sunrise = _refine_sunrise(
+            jd_prev_sr_approx,
+            latitude,
+            longitude,
+            reader,
+            is_rise=True,
+        )
+        jd_sunset = _refine_sunrise(
+            jd_prev_ss_approx,
+            latitude,
+            longitude,
+            reader,
+            is_rise=False,
+        )
+        jd_next_sunrise = jd_sunrise_today
+    else:
+        jd_sunrise = jd_sunrise_today
+        jd_sunset = jd_sunset_today
+        jd_next_noon = jd_noon + 1.0
+        jd_nr_approx, _ = _sunrise_sunset(jd_next_noon, latitude, longitude, reader)
+        jd_next_sunrise = _refine_sunrise(
+            jd_nr_approx,
+            latitude,
+            longitude,
+            reader,
+            is_rise=True,
+        )
 
     # Day-of-week from sunrise JD (to determine day ruler)
     # Julian Day 0 = Monday (weekday 1 in ISO, 0 in our scheme = Sunday)

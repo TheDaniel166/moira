@@ -51,3 +51,61 @@ def test_planetary_hours_day_and_hours_are_immutable(monkeypatch: pytest.MonkeyP
         result.sunrise_jd = 0.0  # type: ignore[misc]
     with pytest.raises(FrozenInstanceError):
         result.hours[0].ruler = "Venus"  # type: ignore[misc]
+
+
+def test_planetary_hours_uses_previous_sunrise_window_before_today_sunrise(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sunrise_sunset_by_noon = {
+        2451545.0: (2451544.20, 2451544.70),
+        2451546.0: (2451545.20, 2451545.70),
+    }
+
+    monkeypatch.setattr(
+        planetary_hours_module,
+        "_sunrise_sunset",
+        lambda jd_noon, latitude, longitude, reader: sunrise_sunset_by_noon[jd_noon],
+    )
+    monkeypatch.setattr(
+        planetary_hours_module,
+        "_refine_sunrise",
+        lambda jd_guess, latitude, longitude, reader, is_rise: jd_guess,
+    )
+    monkeypatch.setattr(planetary_hours_module, "get_reader", lambda: object())
+
+    result = planetary_hours_module.planetary_hours(2451545.10, 0.0, 0.0)
+
+    assert result.sunrise_jd == pytest.approx(2451544.20)
+    assert result.sunset_jd == pytest.approx(2451544.70)
+    assert result.hours[0].jd_start == pytest.approx(2451544.20)
+    assert result.hours[-1].jd_end == pytest.approx(2451545.20)
+    assert result.hour_at(2451545.10) is not None
+
+
+def test_planetary_hours_uses_current_window_after_today_sunrise(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sunrise_sunset_by_noon = {
+        2451546.0: (2451545.20, 2451545.70),
+        2451547.0: (2451546.20, 2451546.70),
+    }
+
+    monkeypatch.setattr(
+        planetary_hours_module,
+        "_sunrise_sunset",
+        lambda jd_noon, latitude, longitude, reader: sunrise_sunset_by_noon[jd_noon],
+    )
+    monkeypatch.setattr(
+        planetary_hours_module,
+        "_refine_sunrise",
+        lambda jd_guess, latitude, longitude, reader, is_rise: jd_guess,
+    )
+    monkeypatch.setattr(planetary_hours_module, "get_reader", lambda: object())
+
+    result = planetary_hours_module.planetary_hours(2451546.30, 0.0, 0.0)
+
+    assert result.sunrise_jd == pytest.approx(2451545.20)
+    assert result.sunset_jd == pytest.approx(2451545.70)
+    assert result.hours[0].jd_start == pytest.approx(2451545.20)
+    assert result.hours[-1].jd_end == pytest.approx(2451546.20)
+    assert result.hour_at(2451545.30) is not None

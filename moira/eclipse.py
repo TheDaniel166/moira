@@ -82,6 +82,9 @@ from .eclipse_canon import (
     find_lunar_contacts_canon,
     lunar_canon_source_model,
     lunar_canon_geometry,
+    LunarCanonGeometry,
+    LunarCanonMethodId,
+    LUNAR_CANON_METHOD_IDS,
 )
 from .eclipse_contacts import LunarEclipseContacts, find_lunar_contacts
 from .corrections import apply_light_time
@@ -95,13 +98,36 @@ from .geoutils import (
 __all__ = [
     "EclipseData", "EclipseEvent", "EclipseType", "EclipseCalculator",
     "SolarBodyCircumstances", "SolarEclipseLocalCircumstances",
-    "LocalContactCircumstances", "LunarEclipseAnalysis",
+    "LocalContactCircumstances",
+    "LunarEclipseAnalysis",
     "LunarEclipseLocalCircumstances",
+    "LunarEclipseAnalysisMode",
+    "LunarEclipseContacts",
+    "LunarCanonContacts",
+    "LunarCanonGeometry",
+    "find_lunar_contacts",
+    "find_lunar_contacts_canon",
+    "lunar_canon_geometry",
+    "lunar_canon_source_model",
+    "DEFAULT_LUNAR_CANON_METHOD",
+    "LunarCanonMethodId",
+    "LUNAR_CANON_METHOD_IDS",
     # Phase 3 — path/where geometry vessel (Defer.Design + Defer.Validation)
     "SolarEclipsePath",
     # Observer-specific solar eclipse search
     "next_solar_eclipse_at_location",
     "vertex_name",
+    # Constants
+    "ECLIPSE_SEASON_THRESHOLD",
+    "ECLIPSE_LATITUDE_THRESHOLD",
+    "SAROS_SYNODIC_MONTHS",
+    "METONIC_PERIOD_DAYS",
+    "GALACTIC_CENTER_LON_J2000",
+    "PRECESSION_DEG_PER_CENTURY",
+    "AUBREY_HOLES",
+    "HEPTAGON_SIDES",
+    "POSITIONS_PER_SIDE",
+    "DEGREES_PER_STONE",
 ]
 
 # ---------------------------------------------------------------------------
