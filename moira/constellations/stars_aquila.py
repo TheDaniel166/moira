@@ -1,4 +1,4 @@
-﻿"""
+"""
 Aquila Constellation Oracle — moira/constellations/stars_aquila.py
 
 Archetype: Oracle

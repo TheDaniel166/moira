@@ -240,7 +240,8 @@ class ModuleParser:
         """
         Extract __all__ declaration from module AST.
         
-        Parses list or tuple literals assigned to __all__ at module level.
+        Parses list or tuple literals, binary additions, and local name
+        references assigned to __all__ at module level.
         
         Args:
             tree: Parsed AST module
@@ -248,26 +249,43 @@ class ModuleParser:
         Returns:
             List of exported symbol names, or None if no __all__ found
         """
+        # Create map of top-level assignments for resolution
+        name_map: dict[str, ast.expr] = {}
+        for node in tree.body:
+            if isinstance(node, ast.Assign):
+                for target in node.targets:
+                    if isinstance(target, ast.Name):
+                        name_map[target.id] = node.value
+        
         for node in tree.body:
             # Look for __all__ = [...]
             if isinstance(node, ast.Assign):
                 for target in node.targets:
                     if isinstance(target, ast.Name) and target.id == "__all__":
-                        return self._extract_list_from_value(node.value)
+                        return self._extract_list_from_value(node.value, name_map)
         
         return None
 
-    def _extract_list_from_value(self, value: ast.expr) -> list[str]:
+    def _extract_list_from_value(
+        self, 
+        value: ast.expr, 
+        name_map: dict[str, ast.expr] | None = None
+    ) -> list[str]:
         """
-        Extract string list from AST value (list or tuple literal).
+        Extract string list from AST value.
+        
+        Handles list literals, tuple literals, list() calls, binary 
+        additions, and local name references.
         
         Args:
             value: AST expression node
+            name_map: Optional map of local assignments for resolution
             
         Returns:
             List of string values
         """
         result: list[str] = []
+        name_map = name_map or {}
         
         # Handle list literals
         if isinstance(value, ast.List):
@@ -280,6 +298,25 @@ class ModuleParser:
             for elt in value.elts:
                 if isinstance(elt, ast.Constant) and isinstance(elt.value, str):
                     result.append(elt.value)
+        
+        # Handle list() calls
+        elif (isinstance(value, ast.Call) and 
+              isinstance(value.func, ast.Name) and 
+              value.func.id == "list"):
+            if value.args:
+                result.extend(self._extract_list_from_value(value.args[0], name_map))
+        
+        # Handle binary addition (list + list)
+        elif isinstance(value, ast.BinOp) and isinstance(value.op, ast.Add):
+            result.extend(self._extract_list_from_value(value.left, name_map))
+            result.extend(self._extract_list_from_value(value.right, name_map))
+            
+        # Handle name references (resolve locally)
+        elif isinstance(value, ast.Name) and value.id in name_map:
+            # Pop to prevent infinite recursion
+            orig_value = name_map.pop(value.id)
+            result.extend(self._extract_list_from_value(orig_value, name_map))
+            name_map[value.id] = orig_value
         
         return result
 

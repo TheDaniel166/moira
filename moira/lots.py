@@ -47,7 +47,7 @@ __all__ = [
     "LotConditionProfile", "LotChartConditionProfile",
     "LotConditionNetworkNode", "LotConditionNetworkEdge", "LotConditionNetworkProfile",
     # Core vessels
-    "ArabicPart",
+    "ArabicPart", "PartDefinition",
     # Functions
     "calculate_lots",
     "calculate_lot_dependencies", "calculate_all_lot_dependencies",

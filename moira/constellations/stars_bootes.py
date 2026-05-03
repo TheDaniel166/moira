@@ -1,4 +1,4 @@
-﻿"""
+"""
 Boötes Constellation Oracle — moira/constellations/stars_bootes.py
 
 Archetype: Oracle

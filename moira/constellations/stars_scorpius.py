@@ -1,4 +1,4 @@
-﻿"""
+"""
 Scorpius Constellation Oracle — moira/constellations/stars_scorpius.py
 
 Archetype: Oracle

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Capricorn Constellation Oracle — moira/constellations/stars_capricorn.py
 
 Archetype: Oracle

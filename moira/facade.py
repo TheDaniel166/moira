@@ -1,4 +1,4 @@
-﻿"""
+"""
 Moira Primary Public Surface — moira/__init__.py
 
 Archetype: Engine (primary interface)

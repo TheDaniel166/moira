@@ -1,4 +1,4 @@
-﻿"""
+"""
 Perseus Constellation Oracle — moira/constellations/stars_perseus.py
 
 Archetype: Oracle

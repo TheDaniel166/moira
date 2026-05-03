@@ -1,4 +1,4 @@
-﻿"""
+"""
 Carina Constellation Oracle — moira/constellations/stars_carina.py
 
 Archetype: Oracle

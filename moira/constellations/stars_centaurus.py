@@ -1,4 +1,4 @@
-﻿"""
+"""
 Centaurus Constellation Oracle — moira/constellations/stars_centaurus.py
 
 Archetype: Oracle

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Andromeda Constellation Oracle — moira/constellations/stars_andromeda.py
 
 Archetype: Oracle

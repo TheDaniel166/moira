@@ -1,4 +1,4 @@
-﻿"""
+"""
 Sothic Cycle Engine — moira/sothic.py
 
 Archetype: Engine

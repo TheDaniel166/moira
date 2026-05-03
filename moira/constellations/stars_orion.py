@@ -1,4 +1,4 @@
-﻿"""
+"""
 Orion Constellation Oracle — moira/constellations/stars_orion.py
 
 Archetype: Oracle

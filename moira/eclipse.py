@@ -101,6 +101,7 @@ __all__ = [
     "SolarEclipsePath",
     # Observer-specific solar eclipse search
     "next_solar_eclipse_at_location",
+    "vertex_name",
 ]
 
 # ---------------------------------------------------------------------------

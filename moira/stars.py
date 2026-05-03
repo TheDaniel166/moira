@@ -85,6 +85,7 @@ __all__ = [
     "list_named_stars",
     "find_named_stars",
     "star_name_resolves",
+    "StellarQuality",
 ]
 
 _J2000 = 2451545.0

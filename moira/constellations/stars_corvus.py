@@ -1,4 +1,4 @@
-﻿"""
+"""
 Corvus Constellation Oracle — moira/constellations/stars_corvus.py
 
 Archetype: Oracle

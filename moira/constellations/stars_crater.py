@@ -1,4 +1,4 @@
-﻿"""
+"""
 Crater Constellation Oracle — moira/constellations/stars_crater.py
 
 Archetype: Oracle

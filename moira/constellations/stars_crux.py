@@ -1,4 +1,4 @@
-﻿"""
+"""
 Crux Constellation Oracle — moira/constellations/stars_crux.py
 
 Archetype: Oracle

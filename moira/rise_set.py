@@ -1,4 +1,4 @@
-﻿"""
+"""
 Rise and Set Engine — moira/rise_set.py
 
 Archetype: Engine

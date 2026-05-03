@@ -405,7 +405,7 @@ class ExportPolicyEngine:
         symbols: list[SymbolInfo]
     ) -> list[PolicyViolation]:
         """
-        Check that facade modules re-export all imported symbols.
+        Check that facade modules re-export all imported internal symbols.
         
         Args:
             current_all: Current __all__ declaration
@@ -419,10 +419,17 @@ class ExportPolicyEngine:
         
         for symbol in symbols:
             if symbol.is_imported and symbol.name not in current_set:
+                # Only enforce re-export for internal Moira symbols
+                if not symbol.import_source or not (
+                    symbol.import_source.startswith("moira") or 
+                    symbol.import_source.startswith(".")
+                ):
+                    continue
+                    
                 violations.append(PolicyViolation(
                     rule_id="INCOMPLETE_FACADE",
                     severity=Severity.WARNING,
-                    message=f"Imported symbol '{symbol.name}' should be re-exported in __all__",
+                    message=f"Imported internal symbol '{symbol.name}' should be re-exported in __all__",
                     symbol_name=symbol.name,
                     lineno=symbol.lineno
                 ))

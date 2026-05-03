@@ -1,4 +1,4 @@
-﻿"""
+"""
 Taurus Constellation Oracle — moira/constellations/stars_taurus.py
 
 Archetype: Oracle

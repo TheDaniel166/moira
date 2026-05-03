@@ -1,4 +1,4 @@
-﻿"""
+"""
 Cassiopeia Constellation Oracle — moira/constellations/stars_cassiopeia.py
 
 Archetype: Oracle

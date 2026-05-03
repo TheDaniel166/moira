@@ -1,4 +1,4 @@
-﻿"""
+"""
 Virgo Constellation Oracle — moira/constellations/stars_virgo.py
 
 Archetype: Oracle

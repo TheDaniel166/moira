@@ -1,4 +1,4 @@
-﻿"""
+"""
 Pegasus Constellation Oracle — moira/constellations/stars_pegasus.py
 
 Archetype: Oracle

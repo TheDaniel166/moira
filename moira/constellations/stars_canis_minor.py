@@ -1,4 +1,4 @@
-﻿"""
+"""
 Canis Minor Constellation Oracle — moira/constellations/stars_canis_minor.py
 
 Archetype: Oracle

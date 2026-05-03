@@ -1,4 +1,4 @@
-﻿"""
+"""
 Oracle of the Behenian Stars — moira/behenian_stars.py
 
 Archetype: Oracle

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Sagittarius Constellation Oracle — moira/constellations/stars_sagittarius.py
 
 Archetype: Oracle

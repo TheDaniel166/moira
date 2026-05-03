@@ -1,0 +1,5091 @@
+{
+  "modules": [
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\__init__.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "package_init",
+      "audit_timestamp": "2026-05-03T09:57:09.529052"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\_export_governance\\__init__.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "package_init",
+      "audit_timestamp": "2026-05-03T09:57:09.529080"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\_export_governance\\audit_log.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529097"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\_export_governance\\classifier.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529111"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\_export_governance\\facade.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'Path' should be re-exported in __all__",
+          "symbol_name": "Path",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'FacadeAnalysisReport' should be re-exported in __all__",
+          "symbol_name": "FacadeAnalysisReport",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ModuleCategory' should be re-exported in __all__",
+          "symbol_name": "ModuleCategory",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ModuleScanner' should be re-exported in __all__",
+          "symbol_name": "ModuleScanner",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ModuleParser' should be re-exported in __all__",
+          "symbol_name": "ModuleParser",
+          "lineno": 0
+        }
+      ],
+      "module_category": "facade",
+      "audit_timestamp": "2026-05-03T09:57:09.529119"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\_export_governance\\models.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529132"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\_export_governance\\parser.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529144"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\_export_governance\\policy.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529156"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\_export_governance\\reporter.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529168"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\_export_governance\\scanner.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529180"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\_export_governance\\validator.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529192"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\_facade_astronomy.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "private",
+      "audit_timestamp": "2026-05-03T09:57:09.529198"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\_facade_classical.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "private",
+      "audit_timestamp": "2026-05-03T09:57:09.529203"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\_facade_core.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "private",
+      "audit_timestamp": "2026-05-03T09:57:09.529209"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\_facade_kernel.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "private",
+      "audit_timestamp": "2026-05-03T09:57:09.529214"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\_facade_predictive.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "private",
+      "audit_timestamp": "2026-05-03T09:57:09.529219"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\_facade_relationships.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "private",
+      "audit_timestamp": "2026-05-03T09:57:09.529224"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\_facade_spatial.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "private",
+      "audit_timestamp": "2026-05-03T09:57:09.529229"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\_facade_special.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "private",
+      "audit_timestamp": "2026-05-03T09:57:09.529234"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\_kernel_paths.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "private",
+      "audit_timestamp": "2026-05-03T09:57:09.529240"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\_solar.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "private",
+      "audit_timestamp": "2026-05-03T09:57:09.529245"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\_spk_body_kernel.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "private",
+      "audit_timestamp": "2026-05-03T09:57:09.529250"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\antiscia.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529274"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\ashtakavarga.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529285"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\aspects.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529296"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\asteroid_families.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529306"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\asteroids.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529316"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\astrocartography.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529326"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\babylonian.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529337"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\behenian_stars.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (behenian_stars.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529347"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\bridges\\__init__.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "package_init",
+      "audit_timestamp": "2026-05-03T09:57:09.529355"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\bridges\\harmograms.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529368"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\centaurs.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529378"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\chart.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529388"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\chart_shape.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529399"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\classical.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'Moira' should be re-exported in __all__",
+          "symbol_name": "Moira",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'Chart' should be re-exported in __all__",
+          "symbol_name": "Chart",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'MissingEphemerisKernelError' should be re-exported in __all__",
+          "symbol_name": "MissingEphemerisKernelError",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'Body' should be re-exported in __all__",
+          "symbol_name": "Body",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'HouseSystem' should be re-exported in __all__",
+          "symbol_name": "HouseSystem",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'PlanetData' should be re-exported in __all__",
+          "symbol_name": "PlanetData",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'SkyPosition' should be re-exported in __all__",
+          "symbol_name": "SkyPosition",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'CartesianPosition' should be re-exported in __all__",
+          "symbol_name": "CartesianPosition",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'NodeData' should be re-exported in __all__",
+          "symbol_name": "NodeData",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'HouseCusps' should be re-exported in __all__",
+          "symbol_name": "HouseCusps",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'AspectData' should be re-exported in __all__",
+          "symbol_name": "AspectData",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'CalendarDateTime' should be re-exported in __all__",
+          "symbol_name": "CalendarDateTime",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'DeltaTPolicy' should be re-exported in __all__",
+          "symbol_name": "DeltaTPolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'julian_day' should be re-exported in __all__",
+          "symbol_name": "julian_day",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'calendar_from_jd' should be re-exported in __all__",
+          "symbol_name": "calendar_from_jd",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'calendar_datetime_from_jd' should be re-exported in __all__",
+          "symbol_name": "calendar_datetime_from_jd",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'jd_from_datetime' should be re-exported in __all__",
+          "symbol_name": "jd_from_datetime",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'datetime_from_jd' should be re-exported in __all__",
+          "symbol_name": "datetime_from_jd",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'format_jd_utc' should be re-exported in __all__",
+          "symbol_name": "format_jd_utc",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'safe_datetime_from_jd' should be re-exported in __all__",
+          "symbol_name": "safe_datetime_from_jd",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'delta_t' should be re-exported in __all__",
+          "symbol_name": "delta_t",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'DeltaTBreakdown' should be re-exported in __all__",
+          "symbol_name": "DeltaTBreakdown",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'DeltaTDistribution' should be re-exported in __all__",
+          "symbol_name": "DeltaTDistribution",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'delta_t_breakdown' should be re-exported in __all__",
+          "symbol_name": "delta_t_breakdown",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'delta_t_distribution' should be re-exported in __all__",
+          "symbol_name": "delta_t_distribution",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'calculate_houses' should be re-exported in __all__",
+          "symbol_name": "calculate_houses",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'assign_house' should be re-exported in __all__",
+          "symbol_name": "assign_house",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'find_aspects' should be re-exported in __all__",
+          "symbol_name": "find_aspects",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'AspectPolicy' should be re-exported in __all__",
+          "symbol_name": "AspectPolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'DEFAULT_POLICY' should be re-exported in __all__",
+          "symbol_name": "DEFAULT_POLICY",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'Ayanamsa' should be re-exported in __all__",
+          "symbol_name": "Ayanamsa",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ayanamsa' should be re-exported in __all__",
+          "symbol_name": "ayanamsa",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'tropical_to_sidereal' should be re-exported in __all__",
+          "symbol_name": "tropical_to_sidereal",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'sidereal_to_tropical' should be re-exported in __all__",
+          "symbol_name": "sidereal_to_tropical",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'list_ayanamsa_systems' should be re-exported in __all__",
+          "symbol_name": "list_ayanamsa_systems",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'DecanatePosition' should be re-exported in __all__",
+          "symbol_name": "DecanatePosition",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'chaldean_face' should be re-exported in __all__",
+          "symbol_name": "chaldean_face",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'triplicity_decan' should be re-exported in __all__",
+          "symbol_name": "triplicity_decan",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'vedic_drekkana' should be re-exported in __all__",
+          "symbol_name": "vedic_drekkana",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol '_essentials_all' should be re-exported in __all__",
+          "symbol_name": "_essentials_all",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'HouseSystemFamily' should be re-exported in __all__",
+          "symbol_name": "HouseSystemFamily",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'HouseSystemCuspBasis' should be re-exported in __all__",
+          "symbol_name": "HouseSystemCuspBasis",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'UnknownSystemPolicy' should be re-exported in __all__",
+          "symbol_name": "UnknownSystemPolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'PolarFallbackPolicy' should be re-exported in __all__",
+          "symbol_name": "PolarFallbackPolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'HouseSystemClassification' should be re-exported in __all__",
+          "symbol_name": "HouseSystemClassification",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'classify_house_system' should be re-exported in __all__",
+          "symbol_name": "classify_house_system",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'HousePolicy' should be re-exported in __all__",
+          "symbol_name": "HousePolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'HousePlacement' should be re-exported in __all__",
+          "symbol_name": "HousePlacement",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'HouseBoundaryProfile' should be re-exported in __all__",
+          "symbol_name": "HouseBoundaryProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'HouseAngularity' should be re-exported in __all__",
+          "symbol_name": "HouseAngularity",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'HouseAngularityProfile' should be re-exported in __all__",
+          "symbol_name": "HouseAngularityProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'HouseSystemComparison' should be re-exported in __all__",
+          "symbol_name": "HouseSystemComparison",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'HousePlacementComparison' should be re-exported in __all__",
+          "symbol_name": "HousePlacementComparison",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'HouseOccupancy' should be re-exported in __all__",
+          "symbol_name": "HouseOccupancy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'HouseDistributionProfile' should be re-exported in __all__",
+          "symbol_name": "HouseDistributionProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'describe_boundary' should be re-exported in __all__",
+          "symbol_name": "describe_boundary",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'describe_angularity' should be re-exported in __all__",
+          "symbol_name": "describe_angularity",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'compare_systems' should be re-exported in __all__",
+          "symbol_name": "compare_systems",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'compare_placements' should be re-exported in __all__",
+          "symbol_name": "compare_placements",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'distribute_points' should be re-exported in __all__",
+          "symbol_name": "distribute_points",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'Quadrant' should be re-exported in __all__",
+          "symbol_name": "Quadrant",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'QuadrantEmphasisProfile' should be re-exported in __all__",
+          "symbol_name": "QuadrantEmphasisProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'quadrant_of' should be re-exported in __all__",
+          "symbol_name": "quadrant_of",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'quadrant_emphasis' should be re-exported in __all__",
+          "symbol_name": "quadrant_emphasis",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'DiurnalQuadrant' should be re-exported in __all__",
+          "symbol_name": "DiurnalQuadrant",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'DiurnalPosition' should be re-exported in __all__",
+          "symbol_name": "DiurnalPosition",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'DiurnalEmphasisProfile' should be re-exported in __all__",
+          "symbol_name": "DiurnalEmphasisProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'diurnal_position' should be re-exported in __all__",
+          "symbol_name": "diurnal_position",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'diurnal_emphasis' should be re-exported in __all__",
+          "symbol_name": "diurnal_emphasis",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'AspectDefinition' should be re-exported in __all__",
+          "symbol_name": "AspectDefinition",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ASPECT_TIERS' should be re-exported in __all__",
+          "symbol_name": "ASPECT_TIERS",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'CANONICAL_ASPECTS' should be re-exported in __all__",
+          "symbol_name": "CANONICAL_ASPECTS",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'AspectDomain' should be re-exported in __all__",
+          "symbol_name": "AspectDomain",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'AspectFamily' should be re-exported in __all__",
+          "symbol_name": "AspectFamily",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'AspectPatternKind' should be re-exported in __all__",
+          "symbol_name": "AspectPatternKind",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'AspectTier' should be re-exported in __all__",
+          "symbol_name": "AspectTier",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'MotionState' should be re-exported in __all__",
+          "symbol_name": "MotionState",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'AspectClassification' should be re-exported in __all__",
+          "symbol_name": "AspectClassification",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'AspectFamilyProfile' should be re-exported in __all__",
+          "symbol_name": "AspectFamilyProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'AspectGraph' should be re-exported in __all__",
+          "symbol_name": "AspectGraph",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'AspectGraphNode' should be re-exported in __all__",
+          "symbol_name": "AspectGraphNode",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'AspectHarmonicProfile' should be re-exported in __all__",
+          "symbol_name": "AspectHarmonicProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'AspectStrength' should be re-exported in __all__",
+          "symbol_name": "AspectStrength",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'DeclinationAspect' should be re-exported in __all__",
+          "symbol_name": "DeclinationAspect",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'aspect_harmonic_profile' should be re-exported in __all__",
+          "symbol_name": "aspect_harmonic_profile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'aspect_motion_state' should be re-exported in __all__",
+          "symbol_name": "aspect_motion_state",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'aspect_strength' should be re-exported in __all__",
+          "symbol_name": "aspect_strength",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'aspects_between' should be re-exported in __all__",
+          "symbol_name": "aspects_between",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'aspects_to_point' should be re-exported in __all__",
+          "symbol_name": "aspects_to_point",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'build_aspect_graph' should be re-exported in __all__",
+          "symbol_name": "build_aspect_graph",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'find_declination_aspects' should be re-exported in __all__",
+          "symbol_name": "find_declination_aspects",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'find_patterns' should be re-exported in __all__",
+          "symbol_name": "find_patterns",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ConditionPolarity' should be re-exported in __all__",
+          "symbol_name": "ConditionPolarity",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'EssentialDignityKind' should be re-exported in __all__",
+          "symbol_name": "EssentialDignityKind",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'AccidentalConditionKind' should be re-exported in __all__",
+          "symbol_name": "AccidentalConditionKind",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'SectStateKind' should be re-exported in __all__",
+          "symbol_name": "SectStateKind",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'SolarConditionKind' should be re-exported in __all__",
+          "symbol_name": "SolarConditionKind",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ReceptionKind' should be re-exported in __all__",
+          "symbol_name": "ReceptionKind",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ReceptionBasis' should be re-exported in __all__",
+          "symbol_name": "ReceptionBasis",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ReceptionMode' should be re-exported in __all__",
+          "symbol_name": "ReceptionMode",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'PlanetaryConditionState' should be re-exported in __all__",
+          "symbol_name": "PlanetaryConditionState",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'EssentialDignityDoctrine' should be re-exported in __all__",
+          "symbol_name": "EssentialDignityDoctrine",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'MercurySectModel' should be re-exported in __all__",
+          "symbol_name": "MercurySectModel",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'EssentialDignityPolicy' should be re-exported in __all__",
+          "symbol_name": "EssentialDignityPolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'SolarConditionPolicy' should be re-exported in __all__",
+          "symbol_name": "SolarConditionPolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'MutualReceptionPolicy' should be re-exported in __all__",
+          "symbol_name": "MutualReceptionPolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'SectHayzPolicy' should be re-exported in __all__",
+          "symbol_name": "SectHayzPolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'AccidentalDignityPolicy' should be re-exported in __all__",
+          "symbol_name": "AccidentalDignityPolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'DignityComputationPolicy' should be re-exported in __all__",
+          "symbol_name": "DignityComputationPolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'PlanetaryReception' should be re-exported in __all__",
+          "symbol_name": "PlanetaryReception",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'PlanetaryConditionProfile' should be re-exported in __all__",
+          "symbol_name": "PlanetaryConditionProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ChartConditionProfile' should be re-exported in __all__",
+          "symbol_name": "ChartConditionProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ConditionNetworkNode' should be re-exported in __all__",
+          "symbol_name": "ConditionNetworkNode",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ConditionNetworkEdge' should be re-exported in __all__",
+          "symbol_name": "ConditionNetworkEdge",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ConditionNetworkProfile' should be re-exported in __all__",
+          "symbol_name": "ConditionNetworkProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'EssentialDignityClassification' should be re-exported in __all__",
+          "symbol_name": "EssentialDignityClassification",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'AccidentalConditionClassification' should be re-exported in __all__",
+          "symbol_name": "AccidentalConditionClassification",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'AccidentalDignityClassification' should be re-exported in __all__",
+          "symbol_name": "AccidentalDignityClassification",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'SectClassification' should be re-exported in __all__",
+          "symbol_name": "SectClassification",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'SolarConditionClassification' should be re-exported in __all__",
+          "symbol_name": "SolarConditionClassification",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ReceptionClassification' should be re-exported in __all__",
+          "symbol_name": "ReceptionClassification",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'EssentialDignityTruth' should be re-exported in __all__",
+          "symbol_name": "EssentialDignityTruth",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'AccidentalDignityCondition' should be re-exported in __all__",
+          "symbol_name": "AccidentalDignityCondition",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'SolarConditionTruth' should be re-exported in __all__",
+          "symbol_name": "SolarConditionTruth",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'MutualReceptionTruth' should be re-exported in __all__",
+          "symbol_name": "MutualReceptionTruth",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'SectTruth' should be re-exported in __all__",
+          "symbol_name": "SectTruth",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'AccidentalDignityTruth' should be re-exported in __all__",
+          "symbol_name": "AccidentalDignityTruth",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'PlanetaryDignity' should be re-exported in __all__",
+          "symbol_name": "PlanetaryDignity",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'calculate_dignities' should be re-exported in __all__",
+          "symbol_name": "calculate_dignities",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'calculate_receptions' should be re-exported in __all__",
+          "symbol_name": "calculate_receptions",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'calculate_condition_profiles' should be re-exported in __all__",
+          "symbol_name": "calculate_condition_profiles",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'calculate_chart_condition_profile' should be re-exported in __all__",
+          "symbol_name": "calculate_chart_condition_profile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'calculate_condition_network_profile' should be re-exported in __all__",
+          "symbol_name": "calculate_condition_network_profile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'DignitiesService' should be re-exported in __all__",
+          "symbol_name": "DignitiesService",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'sect_light' should be re-exported in __all__",
+          "symbol_name": "sect_light",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'is_day_chart' should be re-exported in __all__",
+          "symbol_name": "is_day_chart",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'almuten_figuris' should be re-exported in __all__",
+          "symbol_name": "almuten_figuris",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'find_phasis' should be re-exported in __all__",
+          "symbol_name": "find_phasis",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'is_in_hayz' should be re-exported in __all__",
+          "symbol_name": "is_in_hayz",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'is_in_sect' should be re-exported in __all__",
+          "symbol_name": "is_in_sect",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'mutual_receptions' should be re-exported in __all__",
+          "symbol_name": "mutual_receptions",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'LotReferenceKind' should be re-exported in __all__",
+          "symbol_name": "LotReferenceKind",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'LotReversalKind' should be re-exported in __all__",
+          "symbol_name": "LotReversalKind",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'LotDependencyRole' should be re-exported in __all__",
+          "symbol_name": "LotDependencyRole",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'LotConditionState' should be re-exported in __all__",
+          "symbol_name": "LotConditionState",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'LotConditionNetworkEdgeMode' should be re-exported in __all__",
+          "symbol_name": "LotConditionNetworkEdgeMode",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'LotsReferenceFailureMode' should be re-exported in __all__",
+          "symbol_name": "LotsReferenceFailureMode",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'LotsDerivedReferencePolicy' should be re-exported in __all__",
+          "symbol_name": "LotsDerivedReferencePolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'LotsExternalReferencePolicy' should be re-exported in __all__",
+          "symbol_name": "LotsExternalReferencePolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'LotsComputationPolicy' should be re-exported in __all__",
+          "symbol_name": "LotsComputationPolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'LotReferenceTruth' should be re-exported in __all__",
+          "symbol_name": "LotReferenceTruth",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ArabicPartComputationTruth' should be re-exported in __all__",
+          "symbol_name": "ArabicPartComputationTruth",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'LotReferenceClassification' should be re-exported in __all__",
+          "symbol_name": "LotReferenceClassification",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ArabicPartClassification' should be re-exported in __all__",
+          "symbol_name": "ArabicPartClassification",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'LotDependency' should be re-exported in __all__",
+          "symbol_name": "LotDependency",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'LotConditionProfile' should be re-exported in __all__",
+          "symbol_name": "LotConditionProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'LotChartConditionProfile' should be re-exported in __all__",
+          "symbol_name": "LotChartConditionProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'LotConditionNetworkNode' should be re-exported in __all__",
+          "symbol_name": "LotConditionNetworkNode",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'LotConditionNetworkEdge' should be re-exported in __all__",
+          "symbol_name": "LotConditionNetworkEdge",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'LotConditionNetworkProfile' should be re-exported in __all__",
+          "symbol_name": "LotConditionNetworkProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ArabicPart' should be re-exported in __all__",
+          "symbol_name": "ArabicPart",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'calculate_lots' should be re-exported in __all__",
+          "symbol_name": "calculate_lots",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'calculate_lot_dependencies' should be re-exported in __all__",
+          "symbol_name": "calculate_lot_dependencies",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'calculate_all_lot_dependencies' should be re-exported in __all__",
+          "symbol_name": "calculate_all_lot_dependencies",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'calculate_lot_condition_profiles' should be re-exported in __all__",
+          "symbol_name": "calculate_lot_condition_profiles",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'calculate_lot_chart_condition_profile' should be re-exported in __all__",
+          "symbol_name": "calculate_lot_chart_condition_profile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'calculate_lot_condition_network_profile' should be re-exported in __all__",
+          "symbol_name": "calculate_lot_condition_network_profile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ArabicPartsService' should be re-exported in __all__",
+          "symbol_name": "ArabicPartsService",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'list_parts' should be re-exported in __all__",
+          "symbol_name": "list_parts",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'Midpoint' should be re-exported in __all__",
+          "symbol_name": "Midpoint",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'PlanetaryPicture' should be re-exported in __all__",
+          "symbol_name": "PlanetaryPicture",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'MidpointWeight' should be re-exported in __all__",
+          "symbol_name": "MidpointWeight",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'MidpointCluster' should be re-exported in __all__",
+          "symbol_name": "MidpointCluster",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'MidpointsService' should be re-exported in __all__",
+          "symbol_name": "MidpointsService",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'CLASSIC_7' should be re-exported in __all__",
+          "symbol_name": "CLASSIC_7",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'MODERN_3' should be re-exported in __all__",
+          "symbol_name": "MODERN_3",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'MODERN_10' should be re-exported in __all__",
+          "symbol_name": "MODERN_10",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'EXTENDED' should be re-exported in __all__",
+          "symbol_name": "EXTENDED",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'calculate_midpoints' should be re-exported in __all__",
+          "symbol_name": "calculate_midpoints",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'midpoints_to_point' should be re-exported in __all__",
+          "symbol_name": "midpoints_to_point",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'to_dial' should be re-exported in __all__",
+          "symbol_name": "to_dial",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'to_dial_90' should be re-exported in __all__",
+          "symbol_name": "to_dial_90",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'to_dial_45' should be re-exported in __all__",
+          "symbol_name": "to_dial_45",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'to_dial_22_5' should be re-exported in __all__",
+          "symbol_name": "to_dial_22_5",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'dial_90_midpoints' should be re-exported in __all__",
+          "symbol_name": "dial_90_midpoints",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'dial_45_midpoints' should be re-exported in __all__",
+          "symbol_name": "dial_45_midpoints",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'dial_22_5_midpoints' should be re-exported in __all__",
+          "symbol_name": "dial_22_5_midpoints",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'midpoint_tree' should be re-exported in __all__",
+          "symbol_name": "midpoint_tree",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'planetary_pictures' should be re-exported in __all__",
+          "symbol_name": "planetary_pictures",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'midpoint_weighting' should be re-exported in __all__",
+          "symbol_name": "midpoint_weighting",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'activated_midpoints' should be re-exported in __all__",
+          "symbol_name": "activated_midpoints",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'midpoint_clusters' should be re-exported in __all__",
+          "symbol_name": "midpoint_clusters",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'AntisciaAspect' should be re-exported in __all__",
+          "symbol_name": "AntisciaAspect",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'find_antiscia' should be re-exported in __all__",
+          "symbol_name": "find_antiscia",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'antiscia_to_point' should be re-exported in __all__",
+          "symbol_name": "antiscia_to_point",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'antiscion' should be re-exported in __all__",
+          "symbol_name": "antiscion",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'contra_antiscion' should be re-exported in __all__",
+          "symbol_name": "contra_antiscion",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'StarPositionTruth' should be re-exported in __all__",
+          "symbol_name": "StarPositionTruth",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'StarPositionClassification' should be re-exported in __all__",
+          "symbol_name": "StarPositionClassification",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'StarRelation' should be re-exported in __all__",
+          "symbol_name": "StarRelation",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'StarConditionState' should be re-exported in __all__",
+          "symbol_name": "StarConditionState",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'StarConditionProfile' should be re-exported in __all__",
+          "symbol_name": "StarConditionProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'StarChartConditionProfile' should be re-exported in __all__",
+          "symbol_name": "StarChartConditionProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'StarConditionNetworkNode' should be re-exported in __all__",
+          "symbol_name": "StarConditionNetworkNode",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'StarConditionNetworkEdge' should be re-exported in __all__",
+          "symbol_name": "StarConditionNetworkEdge",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'StarConditionNetworkProfile' should be re-exported in __all__",
+          "symbol_name": "StarConditionNetworkProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'FixedStarLookupPolicy' should be re-exported in __all__",
+          "symbol_name": "FixedStarLookupPolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'FixedStarComputationPolicy' should be re-exported in __all__",
+          "symbol_name": "FixedStarComputationPolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'DEFAULT_FIXED_STAR_POLICY' should be re-exported in __all__",
+          "symbol_name": "DEFAULT_FIXED_STAR_POLICY",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'StarPosition' should be re-exported in __all__",
+          "symbol_name": "StarPosition",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'load_catalog' should be re-exported in __all__",
+          "symbol_name": "load_catalog",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'star_at' should be re-exported in __all__",
+          "symbol_name": "star_at",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'all_stars_at' should be re-exported in __all__",
+          "symbol_name": "all_stars_at",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'list_stars' should be re-exported in __all__",
+          "symbol_name": "list_stars",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'find_stars' should be re-exported in __all__",
+          "symbol_name": "find_stars",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'star_magnitude' should be re-exported in __all__",
+          "symbol_name": "star_magnitude",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'star_chart_condition_profile' should be re-exported in __all__",
+          "symbol_name": "star_chart_condition_profile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'star_condition_network_profile' should be re-exported in __all__",
+          "symbol_name": "star_condition_network_profile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'StellarQuality' should be re-exported in __all__",
+          "symbol_name": "StellarQuality",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'UnifiedStarMergePolicy' should be re-exported in __all__",
+          "symbol_name": "UnifiedStarMergePolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'UnifiedStarComputationPolicy' should be re-exported in __all__",
+          "symbol_name": "UnifiedStarComputationPolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'FixedStarTruth' should be re-exported in __all__",
+          "symbol_name": "FixedStarTruth",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'FixedStarClassification' should be re-exported in __all__",
+          "symbol_name": "FixedStarClassification",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'UnifiedStarRelation' should be re-exported in __all__",
+          "symbol_name": "UnifiedStarRelation",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'FixedStar' should be re-exported in __all__",
+          "symbol_name": "FixedStar",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'stars_near' should be re-exported in __all__",
+          "symbol_name": "stars_near",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'stars_by_magnitude' should be re-exported in __all__",
+          "symbol_name": "stars_by_magnitude",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'list_named_stars' should be re-exported in __all__",
+          "symbol_name": "list_named_stars",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'find_named_stars' should be re-exported in __all__",
+          "symbol_name": "find_named_stars",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'MansionInfo' should be re-exported in __all__",
+          "symbol_name": "MansionInfo",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'MansionPosition' should be re-exported in __all__",
+          "symbol_name": "MansionPosition",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'MansionTradition' should be re-exported in __all__",
+          "symbol_name": "MansionTradition",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'MANSIONS' should be re-exported in __all__",
+          "symbol_name": "MANSIONS",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'MANSION_SPAN' should be re-exported in __all__",
+          "symbol_name": "MANSION_SPAN",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'mansion_of' should be re-exported in __all__",
+          "symbol_name": "mansion_of",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'mansion_of_sidereal' should be re-exported in __all__",
+          "symbol_name": "mansion_of_sidereal",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'all_mansions_at' should be re-exported in __all__",
+          "symbol_name": "all_mansions_at",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'all_mansions_at_sidereal' should be re-exported in __all__",
+          "symbol_name": "all_mansions_at_sidereal",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'moon_mansion' should be re-exported in __all__",
+          "symbol_name": "moon_mansion",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'variant_nature' should be re-exported in __all__",
+          "symbol_name": "variant_nature",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'variant_signification' should be re-exported in __all__",
+          "symbol_name": "variant_signification",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'NakshatraPosition' should be re-exported in __all__",
+          "symbol_name": "NakshatraPosition",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'nakshatra_of' should be re-exported in __all__",
+          "symbol_name": "nakshatra_of",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'all_nakshatras_at' should be re-exported in __all__",
+          "symbol_name": "all_nakshatras_at",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ProfectionResult' should be re-exported in __all__",
+          "symbol_name": "ProfectionResult",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'annual_profection' should be re-exported in __all__",
+          "symbol_name": "annual_profection",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'monthly_profection' should be re-exported in __all__",
+          "symbol_name": "monthly_profection",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'profection_schedule' should be re-exported in __all__",
+          "symbol_name": "profection_schedule",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'PlanetaryHourClassical' should be re-exported in __all__",
+          "symbol_name": "PlanetaryHourClassical",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'PlanetaryHoursDay' should be re-exported in __all__",
+          "symbol_name": "PlanetaryHoursDay",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'planetary_hours' should be re-exported in __all__",
+          "symbol_name": "planetary_hours",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'HylegResult' should be re-exported in __all__",
+          "symbol_name": "HylegResult",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'find_hyleg' should be re-exported in __all__",
+          "symbol_name": "find_hyleg",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'calculate_longevity' should be re-exported in __all__",
+          "symbol_name": "calculate_longevity",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'FIRDARIA_DIURNAL' should be re-exported in __all__",
+          "symbol_name": "FIRDARIA_DIURNAL",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'FIRDARIA_NOCTURNAL' should be re-exported in __all__",
+          "symbol_name": "FIRDARIA_NOCTURNAL",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'FIRDARIA_NOCTURNAL_BONATTI' should be re-exported in __all__",
+          "symbol_name": "FIRDARIA_NOCTURNAL_BONATTI",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'CHALDEAN_ORDER' should be re-exported in __all__",
+          "symbol_name": "CHALDEAN_ORDER",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'MINOR_YEARS' should be re-exported in __all__",
+          "symbol_name": "MINOR_YEARS",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'FirdarSequenceKind' should be re-exported in __all__",
+          "symbol_name": "FirdarSequenceKind",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ZRAngularityClass' should be re-exported in __all__",
+          "symbol_name": "ZRAngularityClass",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'FirdarYearPolicy' should be re-exported in __all__",
+          "symbol_name": "FirdarYearPolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ZRYearPolicy' should be re-exported in __all__",
+          "symbol_name": "ZRYearPolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'TimelordComputationPolicy' should be re-exported in __all__",
+          "symbol_name": "TimelordComputationPolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'DEFAULT_TIMELORD_POLICY' should be re-exported in __all__",
+          "symbol_name": "DEFAULT_TIMELORD_POLICY",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'FirdarPeriodTL' should be re-exported in __all__",
+          "symbol_name": "FirdarPeriodTL",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ReleasingPeriod' should be re-exported in __all__",
+          "symbol_name": "ReleasingPeriod",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'FirdarMajorGroup' should be re-exported in __all__",
+          "symbol_name": "FirdarMajorGroup",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ZRPeriodGroup' should be re-exported in __all__",
+          "symbol_name": "ZRPeriodGroup",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'FirdarConditionProfile' should be re-exported in __all__",
+          "symbol_name": "FirdarConditionProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ZRConditionProfile' should be re-exported in __all__",
+          "symbol_name": "ZRConditionProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'FirdarSequenceProfile' should be re-exported in __all__",
+          "symbol_name": "FirdarSequenceProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ZRSequenceProfile' should be re-exported in __all__",
+          "symbol_name": "ZRSequenceProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'FirdarActivePair' should be re-exported in __all__",
+          "symbol_name": "FirdarActivePair",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ZRLevelPair' should be re-exported in __all__",
+          "symbol_name": "ZRLevelPair",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'firdaria' should be re-exported in __all__",
+          "symbol_name": "firdaria",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'current_firdaria' should be re-exported in __all__",
+          "symbol_name": "current_firdaria",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'zodiacal_releasing' should be re-exported in __all__",
+          "symbol_name": "zodiacal_releasing",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'current_releasing' should be re-exported in __all__",
+          "symbol_name": "current_releasing",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'group_firdaria' should be re-exported in __all__",
+          "symbol_name": "group_firdaria",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'group_releasing' should be re-exported in __all__",
+          "symbol_name": "group_releasing",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'firdar_condition_profile' should be re-exported in __all__",
+          "symbol_name": "firdar_condition_profile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'zr_condition_profile' should be re-exported in __all__",
+          "symbol_name": "zr_condition_profile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'firdar_sequence_profile' should be re-exported in __all__",
+          "symbol_name": "firdar_sequence_profile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'zr_sequence_profile' should be re-exported in __all__",
+          "symbol_name": "zr_sequence_profile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'firdar_active_pair' should be re-exported in __all__",
+          "symbol_name": "firdar_active_pair",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'zr_level_pair' should be re-exported in __all__",
+          "symbol_name": "zr_level_pair",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'validate_firdaria_output' should be re-exported in __all__",
+          "symbol_name": "validate_firdaria_output",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'validate_releasing_output' should be re-exported in __all__",
+          "symbol_name": "validate_releasing_output",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'VIMSHOTTARI_YEARS' should be re-exported in __all__",
+          "symbol_name": "VIMSHOTTARI_YEARS",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'VIMSHOTTARI_SEQUENCE' should be re-exported in __all__",
+          "symbol_name": "VIMSHOTTARI_SEQUENCE",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'VIMSHOTTARI_TOTAL' should be re-exported in __all__",
+          "symbol_name": "VIMSHOTTARI_TOTAL",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'VIMSHOTTARI_YEAR_BASIS' should be re-exported in __all__",
+          "symbol_name": "VIMSHOTTARI_YEAR_BASIS",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'VIMSHOTTARI_LEVEL_NAMES' should be re-exported in __all__",
+          "symbol_name": "VIMSHOTTARI_LEVEL_NAMES",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'DashaLordType' should be re-exported in __all__",
+          "symbol_name": "DashaLordType",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'VimshottariYearPolicy' should be re-exported in __all__",
+          "symbol_name": "VimshottariYearPolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'VimshottariAyanamsaPolicy' should be re-exported in __all__",
+          "symbol_name": "VimshottariAyanamsaPolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'VimshottariComputationPolicy' should be re-exported in __all__",
+          "symbol_name": "VimshottariComputationPolicy",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'DEFAULT_VIMSHOTTARI_POLICY' should be re-exported in __all__",
+          "symbol_name": "DEFAULT_VIMSHOTTARI_POLICY",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'DashaPeriod' should be re-exported in __all__",
+          "symbol_name": "DashaPeriod",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'DashaActiveLine' should be re-exported in __all__",
+          "symbol_name": "DashaActiveLine",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'DashaConditionProfile' should be re-exported in __all__",
+          "symbol_name": "DashaConditionProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'DashaSequenceProfile' should be re-exported in __all__",
+          "symbol_name": "DashaSequenceProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'DashaLordPair' should be re-exported in __all__",
+          "symbol_name": "DashaLordPair",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'vimshottari' should be re-exported in __all__",
+          "symbol_name": "vimshottari",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'current_dasha' should be re-exported in __all__",
+          "symbol_name": "current_dasha",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'dasha_balance' should be re-exported in __all__",
+          "symbol_name": "dasha_balance",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'dasha_active_line' should be re-exported in __all__",
+          "symbol_name": "dasha_active_line",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'dasha_condition_profile' should be re-exported in __all__",
+          "symbol_name": "dasha_condition_profile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'dasha_sequence_profile' should be re-exported in __all__",
+          "symbol_name": "dasha_sequence_profile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'dasha_lord_pair' should be re-exported in __all__",
+          "symbol_name": "dasha_lord_pair",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'validate_vimshottari_output' should be re-exported in __all__",
+          "symbol_name": "validate_vimshottari_output",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'VargaPoint' should be re-exported in __all__",
+          "symbol_name": "VargaPoint",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'calculate_varga' should be re-exported in __all__",
+          "symbol_name": "calculate_varga",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'navamsa' should be re-exported in __all__",
+          "symbol_name": "navamsa",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'saptamsa' should be re-exported in __all__",
+          "symbol_name": "saptamsa",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'dashamansa' should be re-exported in __all__",
+          "symbol_name": "dashamansa",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'dwadashamsa' should be re-exported in __all__",
+          "symbol_name": "dwadashamsa",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'trimshamsa' should be re-exported in __all__",
+          "symbol_name": "trimshamsa",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'SynodicPhase' should be re-exported in __all__",
+          "symbol_name": "SynodicPhase",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'GreatMutationElement' should be re-exported in __all__",
+          "symbol_name": "GreatMutationElement",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'PlanetaryAgeName' should be re-exported in __all__",
+          "symbol_name": "PlanetaryAgeName",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ReturnEvent' should be re-exported in __all__",
+          "symbol_name": "ReturnEvent",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ReturnSeries' should be re-exported in __all__",
+          "symbol_name": "ReturnSeries",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'return_series' should be re-exported in __all__",
+          "symbol_name": "return_series",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'half_return_series' should be re-exported in __all__",
+          "symbol_name": "half_return_series",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'lifetime_returns' should be re-exported in __all__",
+          "symbol_name": "lifetime_returns",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'SynodicCyclePosition' should be re-exported in __all__",
+          "symbol_name": "SynodicCyclePosition",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'synodic_cycle_position' should be re-exported in __all__",
+          "symbol_name": "synodic_cycle_position",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'GreatConjunction' should be re-exported in __all__",
+          "symbol_name": "GreatConjunction",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'GreatConjunctionSeries' should be re-exported in __all__",
+          "symbol_name": "GreatConjunctionSeries",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'MutationPeriod' should be re-exported in __all__",
+          "symbol_name": "MutationPeriod",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'great_conjunctions' should be re-exported in __all__",
+          "symbol_name": "great_conjunctions",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'mutation_period_at' should be re-exported in __all__",
+          "symbol_name": "mutation_period_at",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'PlanetaryAgePeriod' should be re-exported in __all__",
+          "symbol_name": "PlanetaryAgePeriod",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'PlanetaryAgeProfile' should be re-exported in __all__",
+          "symbol_name": "PlanetaryAgeProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'planetary_age_at' should be re-exported in __all__",
+          "symbol_name": "planetary_age_at",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'planetary_age_profile' should be re-exported in __all__",
+          "symbol_name": "planetary_age_profile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'HouseZone' should be re-exported in __all__",
+          "symbol_name": "HouseZone",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'PHI' should be re-exported in __all__",
+          "symbol_name": "PHI",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'PHI_COMPLEMENT' should be re-exported in __all__",
+          "symbol_name": "PHI_COMPLEMENT",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'CYCLE_YEARS' should be re-exported in __all__",
+          "symbol_name": "CYCLE_YEARS",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'YEARS_PER_HOUSE' should be re-exported in __all__",
+          "symbol_name": "YEARS_PER_HOUSE",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'HouseZoneProfile' should be re-exported in __all__",
+          "symbol_name": "HouseZoneProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'AgePointPosition' should be re-exported in __all__",
+          "symbol_name": "AgePointPosition",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'DynamicIntensity' should be re-exported in __all__",
+          "symbol_name": "DynamicIntensity",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'PlanetIntensityScore' should be re-exported in __all__",
+          "symbol_name": "PlanetIntensityScore",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'ChartIntensityProfile' should be re-exported in __all__",
+          "symbol_name": "ChartIntensityProfile",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'house_zones' should be re-exported in __all__",
+          "symbol_name": "house_zones",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'age_point' should be re-exported in __all__",
+          "symbol_name": "age_point",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'age_point_contacts' should be re-exported in __all__",
+          "symbol_name": "age_point_contacts",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'dynamic_intensity' should be re-exported in __all__",
+          "symbol_name": "dynamic_intensity",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'intensity_at' should be re-exported in __all__",
+          "symbol_name": "intensity_at",
+          "lineno": 0
+        },
+        {
+          "rule_id": "INCOMPLETE_FACADE",
+          "severity": "warning",
+          "message": "Imported symbol 'chart_intensity_profile' should be re-exported in __all__",
+          "symbol_name": "chart_intensity_profile",
+          "lineno": 0
+        }
+      ],
+      "module_category": "facade",
+      "audit_timestamp": "2026-05-03T09:57:09.529405"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\classical_asteroids.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529415"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\comets.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529425"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\compat\\__init__.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "package_init",
+      "audit_timestamp": "2026-05-03T09:57:09.529433"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\compat\\nasa\\__init__.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "package_init",
+      "audit_timestamp": "2026-05-03T09:57:09.529443"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\compat\\nasa\\eclipse.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529457"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constants.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "constants",
+      "audit_timestamp": "2026-05-03T09:57:09.529466"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\__init__.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (__init__.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "package_init",
+      "audit_timestamp": "2026-05-03T09:57:09.529473"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_andromeda.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_andromeda.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529486"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_aquarius.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_aquarius.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529498"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_aquila.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_aquila.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529510"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_aries.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_aries.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529522"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_bootes.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_bootes.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529534"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_cancer.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_cancer.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529546"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_canis_major.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_canis_major.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529558"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_canis_minor.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_canis_minor.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529570"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_capricorn.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_capricorn.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529582"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_carina.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_carina.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529594"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_cassiopeia.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_cassiopeia.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529606"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_centaurus.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_centaurus.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529618"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_corvus.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_corvus.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529630"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_crater.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_crater.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529642"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_crux.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_crux.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529654"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_cygnus.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_cygnus.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529666"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_draco.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_draco.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529678"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_gemini.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_gemini.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529689"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_hercules.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_hercules.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529701"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_hydra.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_hydra.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529713"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_leo.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_leo.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529725"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_libra.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_libra.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529736"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_lyra.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_lyra.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529749"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_ophiuchus.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_ophiuchus.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529761"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_orion.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_orion.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529773"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_pegasus.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_pegasus.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529785"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_perseus.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_perseus.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529797"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_pisces.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_pisces.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529808"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_sagittarius.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_sagittarius.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529820"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_scorpius.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_scorpius.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529832"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_taurus.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_taurus.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529843"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_ursa_major.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_ursa_major.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529855"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_ursa_minor.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_ursa_minor.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529867"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\constellations\\stars_virgo.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (stars_virgo.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529879"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\coordinates.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529890"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\corrections.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529900"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\cycles.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529911"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\daf_writer.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529921"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\daf_writer_ui.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529932"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\dasha.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529942"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\dasha_systems.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529953"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\data\\__init__.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "package_init",
+      "audit_timestamp": "2026-05-03T09:57:09.529963"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\decanates.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529974"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\delta_t_physical.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529985"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\dignities.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.529995"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\dignities_types.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "types",
+      "audit_timestamp": "2026-05-03T09:57:09.530004"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\download_kernels.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530014"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\eclipse.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "MISSING_PUBLIC_FUNCTION",
+          "severity": "warning",
+          "message": "Public function 'vertex_name' should be in __all__",
+          "symbol_name": "vertex_name",
+          "lineno": 2245
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530025"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\eclipse_canon.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530035"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\eclipse_contacts.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530045"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\eclipse_geometry.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530055"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\eclipse_search.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530066"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\egyptian_bounds.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530077"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\electional.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530087"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\essentials.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "facade",
+      "audit_timestamp": "2026-05-03T09:57:09.530092"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\experimental_placidus.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530102"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\facade.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (facade.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "facade",
+      "audit_timestamp": "2026-05-03T09:57:09.530108"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\fixed_star_groups.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (fixed_star_groups.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530118"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\galactic.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530128"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\galactic_houses.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530138"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\gauquelin.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530149"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\geodetic.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530159"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\geoutils.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530169"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\harmograms\\__init__.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "package_init",
+      "audit_timestamp": "2026-05-03T09:57:09.530176"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\harmograms\\compute.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530188"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\harmograms\\helpers.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530199"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\harmograms\\models.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530211"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\harmograms\\research.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530223"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\harmonics.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530232"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\heliacal.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530243"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\hermetic_decans.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (hermetic_decans.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530253"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\houses.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530272"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\huber.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530282"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\jaimini.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530292"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\julian.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530302"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\kernel_manager_ui.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530312"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\light_cone.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530322"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\local_space.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530332"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\longevity.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530342"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\lord_of_the_orb.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530352"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\lord_of_the_turn.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530363"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\lots.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "MISSING_PUBLIC_CLASS",
+          "severity": "warning",
+          "message": "Public class 'PartDefinition' should be in __all__",
+          "symbol_name": "PartDefinition",
+          "lineno": 100
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530373"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\lunar_limb.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530383"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\main_belt.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530393"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\manazil.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530403"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\midpoints.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530413"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\multiple_stars.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530424"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\nine_parts.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530434"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\nodes.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530443"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\nutation_2000a.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530454"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\obliquity.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530464"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\occultations.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530474"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\orbits.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530484"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\panchanga.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530495"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\parans.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (parans.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530505"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\patterns.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530515"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\phase.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530525"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\phenomena.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "MISSING_PUBLIC_FUNCTION",
+          "severity": "warning",
+          "message": "Public function 'find_closest_resonance' should be in __all__",
+          "symbol_name": "find_closest_resonance",
+          "lineno": 705
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530535"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\planetary_hours.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530545"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\planetary_nodes.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530555"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\planetocentric.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530565"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\planets.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530575"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\precession.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530586"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\predictive.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530596"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\primary_directions\\__init__.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "package_init",
+      "audit_timestamp": "2026-05-03T09:57:09.530603"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\primary_directions\\antiscia.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530615"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\primary_directions\\converse.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530627"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\primary_directions\\fixed_stars.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530639"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\primary_directions\\geometry.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530651"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\primary_directions\\keys.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530662"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\primary_directions\\latitude_sources.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530674"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\primary_directions\\latitudes.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530686"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\primary_directions\\methods.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530698"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\primary_directions\\morinus.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530710"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\primary_directions\\perfections.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530722"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\primary_directions\\placidus.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530734"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\primary_directions\\ptolemy.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530745"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\primary_directions\\relations.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530757"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\primary_directions\\spaces.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530769"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\primary_directions\\targets.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530781"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\profections.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530793"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\progressions.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530809"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\rise_set.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (rise_set.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530824"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\royal_stars.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (royal_stars.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530851"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\shadbala.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530876"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\sidereal.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (sidereal.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530906"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\sky\\__init__.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "package_init",
+      "audit_timestamp": "2026-05-03T09:57:09.530923"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\sky\\bodies.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530943"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\sky\\eclipse.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530961"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\sky\\events.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530979"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\sky\\frames.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.530997"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\sky\\galactic.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.531014"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\sky\\observation.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.531035"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\sky\\occultation.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.531050"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\sky\\position.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.531063"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\sky\\time.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.531075"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\sky\\visibility.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.531088"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\sothic.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "PARSE_ERROR",
+          "severity": "error",
+          "message": "Failed to parse module: Syntax error: invalid non-printable character U+FEFF (sothic.py, line 1)",
+          "symbol_name": null,
+          "lineno": null
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.531099"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\spk_reader.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.531110"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\ssb.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.531120"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\star_types.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "types",
+      "audit_timestamp": "2026-05-03T09:57:09.531130"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\stars.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [
+        {
+          "rule_id": "MISSING_PUBLIC_CLASS",
+          "severity": "warning",
+          "message": "Public class 'StellarQuality' should be in __all__",
+          "symbol_name": "StellarQuality",
+          "lineno": 202
+        }
+      ],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.531141"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\stations.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.531152"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\synastry.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.531162"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\timelords.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.531172"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\tno.py",
+      "has_all_declaration": false,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.531182"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\transits.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.531192"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\triplicity.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.531202"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\uranian.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.531213"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\varga.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.531224"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\variable_stars.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.531234"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\vedic.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.531244"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\vedic_dignities.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.531254"
+    },
+    {
+      "module_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\void_of_course.py",
+      "has_all_declaration": true,
+      "current_all": [],
+      "defined_symbols": [],
+      "recommended_exports": [],
+      "missing_exports": [],
+      "policy_violations": [],
+      "module_category": "engine",
+      "audit_timestamp": "2026-05-03T09:57:09.531282"
+    }
+  ],
+  "summary": {
+    "total_modules": 197,
+    "modules_with_all": 112,
+    "modules_without_all": 85,
+    "coverage_percentage": 56.85,
+    "violations": {
+      "errors": 44,
+      "warnings": 363,
+      "info": 0,
+      "total": 407
+    },
+    "by_category": {
+      "engine": 169,
+      "facade": 4,
+      "constants": 1,
+      "types": 2,
+      "private": 11,
+      "package_init": 10
+    },
+    "generated_at": "2026-05-03T09:57:09.531775"
+  }
+}

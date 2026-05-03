@@ -1,4 +1,4 @@
-﻿"""
+"""
 Oracle of Star Groups — moira/fixed_star_groups.py
 
 Archetype: Oracle

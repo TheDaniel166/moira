@@ -1,4 +1,4 @@
-﻿"""
+"""
 Ursa Minor Constellation Oracle — moira/constellations/stars_ursa_minor.py
 
 Archetype: Oracle

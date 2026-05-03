@@ -1,4 +1,4 @@
-﻿"""
+"""
 Cancer Constellation Oracle — moira/constellations/stars_cancer.py
 
 Archetype: Oracle

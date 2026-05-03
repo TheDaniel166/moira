@@ -1,4 +1,4 @@
-﻿"""
+"""
 Moira — Paran Engine
 Governs computation of near-simultaneous mundane-circle crossings between two distinct bodies at a specific terrestrial location during a single 24-hour search window.
 

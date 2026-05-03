@@ -1,4 +1,4 @@
-﻿"""
+"""
 Lyra Constellation Oracle — moira/constellations/stars_lyra.py
 
 Archetype: Oracle

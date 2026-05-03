@@ -1,4 +1,4 @@
-﻿"""
+"""
 Constellation Oracle Package — moira/constellations/
 
 Archetype: Oracle (shared concern — star catalogue grouping by constellation)

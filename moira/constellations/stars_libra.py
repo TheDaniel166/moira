@@ -1,4 +1,4 @@
-﻿"""
+"""
 Libra Constellation Oracle — moira/constellations/stars_libra.py
 
 Archetype: Oracle

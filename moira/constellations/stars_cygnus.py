@@ -1,4 +1,4 @@
-﻿"""
+"""
 Cygnus Constellation Oracle — moira/constellations/stars_cygnus.py
 
 Archetype: Oracle

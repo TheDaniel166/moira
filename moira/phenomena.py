@@ -59,6 +59,7 @@ __all__ = [
     "conjunctions_in_range",
     "PlanetPhenomena",
     "planet_phenomena_at",
+    "find_closest_resonance",
 ]
 
 # ---------------------------------------------------------------------------

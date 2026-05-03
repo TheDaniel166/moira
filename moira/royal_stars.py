@@ -1,4 +1,4 @@
-﻿"""
+"""
 Oracle of the Royal Stars — moira/royal_stars.py
 
 Archetype: Oracle

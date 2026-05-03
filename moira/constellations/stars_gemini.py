@@ -1,4 +1,4 @@
-﻿"""
+"""
 Gemini Constellation Oracle — moira/constellations/stars_gemini.py
 
 Archetype: Oracle

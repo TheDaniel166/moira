@@ -153,6 +153,10 @@ class ModuleScanner:
         if module_name.startswith("test_") or module_name.endswith("_test.py"):
             return ModuleCategory.TEST
         
+        # Check for private directories (any parent directory starting with _)
+        if any(part.startswith("_") for part in relative_path.parent.parts):
+            return ModuleCategory.PRIVATE
+
         # Check for private modules (leading underscore)
         if module_name.startswith("_") and module_name != "__init__.py":
             return ModuleCategory.PRIVATE

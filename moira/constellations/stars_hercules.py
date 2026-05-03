@@ -1,4 +1,4 @@
-﻿"""
+"""
 Hercules Constellation Oracle — moira/constellations/stars_hercules.py
 
 Archetype: Oracle

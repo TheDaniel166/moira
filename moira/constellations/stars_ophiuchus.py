@@ -1,4 +1,4 @@
-﻿"""
+"""
 Ophiuchus Constellation Oracle — moira/constellations/stars_ophiuchus.py
 
 Archetype: Oracle

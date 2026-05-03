@@ -1,4 +1,4 @@
-﻿"""
+"""
 Draco Constellation Oracle — moira/constellations/stars_draco.py
 
 Archetype: Oracle

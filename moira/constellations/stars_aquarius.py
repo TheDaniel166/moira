@@ -1,4 +1,4 @@
-﻿"""
+"""
 Aquarius Constellation Oracle — moira/constellations/stars_aquarius.py
 
 Archetype: Oracle

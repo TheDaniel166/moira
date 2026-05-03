@@ -1,4 +1,4 @@
-﻿"""
+"""
 Pisces Constellation Oracle — moira/constellations/stars_pisces.py
 
 Archetype: Oracle

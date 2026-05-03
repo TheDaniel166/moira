@@ -1,4 +1,4 @@
-﻿"""
+"""
 Leo Constellation Oracle — moira/constellations/stars_leo.py
 
 Archetype: Oracle

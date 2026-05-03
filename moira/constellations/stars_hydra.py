@@ -1,4 +1,4 @@
-﻿"""
+"""
 Hydra Constellation Oracle — moira/constellations/stars_hydra.py
 
 Archetype: Oracle
