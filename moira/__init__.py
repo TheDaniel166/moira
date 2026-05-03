@@ -587,8 +587,6 @@ __all__ = [
     "shadbala_condition_profile",
     "shadbala_chart_profile",
     "validate_shadbala_output",
-    "__version__",
-    "__author__",
     # Classic Western / Hellenistic dignities
     "DOMICILE",
     "EXALTATION",
