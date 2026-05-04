@@ -35,13 +35,11 @@ except ImportError:
     _cp = None
 
 from .constants import EARTH_RADIUS_KM, MOON_RADIUS_KM, SUN_RADIUS_KM, Body
-from .corrections import topocentric_correction_batch_np
 from .eclipse import EclipseCalculator
 from .julian import local_sidereal_time
 from .planets import planet_at
 from .solar_cartography import (
     ArrayBackendInfo,
-    _KM_PER_DEG_LAT,
     _build_contours,
     _build_zero_band_from_field,
     _duration_from_margin_series,
