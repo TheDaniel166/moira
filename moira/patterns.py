@@ -793,13 +793,13 @@ def _get_aspect(
     Return the aspect between b1 and b2 if it was admitted within ``orb``
     degrees of ``target_angle``, else None.
 
-    Admission test: asp.orb <= orb.
-    The asp.orb field already encodes the angular deviation from the target
-    angle as recorded at admission time by find_aspects; no secondary
-    angle check is applied here.
+    Admission test: asp.angle matches target_angle and asp.orb <= orb.
+    The asp.orb field encodes angular deviation from the aspect definition
+    that admitted the pair, so it is only meaningful after checking that the
+    admitted aspect is the same angle this pattern edge requested.
     """
     asp = aspect_map.get((b1, b2))
-    if asp is not None and asp.orb <= orb:
+    if asp is not None and abs(float(asp.angle) - float(target_angle)) <= 1e-6 and asp.orb <= orb:
         return asp
     return None
 

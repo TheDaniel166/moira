@@ -142,11 +142,13 @@ Mirrors `solar_eclipse_cartography` signature exactly.
 Computes (lat, lon) where Moon is at zenith.  
 Uses `planet_at(Body.MOON, jd_ut, frame='cartesian')` → RA/Dec → subtract GAST for longitude.
 
-### `_lunar_eclipse_contacts(calc, event) -> LunarEclipseAnalysis`
-Wraps `calc.analyze_lunar_eclipse(event)`. Returns the full analysis with all contact times. Handles gracefully:
+### `_lunar_eclipse_contacts(calc, jd_seed, *, kind, backward) -> LunarEclipseAnalysis`
+Wraps `calc.analyze_lunar_eclipse(jd_seed, kind=kind, backward=backward)`. The wrapped method accepts a Julian Day search seed (not an event object) and returns a `LunarEclipseAnalysis` whose `.event` field carries the searched `EclipseEvent` and whose `.contacts` field carries the `LunarEclipseContacts` vessel. Handles gracefully:
 - Penumbral-only: no U contacts (U1/U2/U3/U4 = None)
 - Partial: no U2/U3 (no totality)
 - Total: all contacts present
+
+The public `lunar_eclipse_cartography` function therefore drives the eclipse search through this single wrapper rather than calling `_search_lunar_eclipse` and `analyze_lunar_eclipse` separately — the analysis bundle already contains both products.
 
 ### `_lunar_observer_quantities_batch_backend(calc, jd_ut, lats, lons, xp) -> tuple[ndarray, ndarray, ndarray]`
 Vectorized over N observers. Returns `(moon_altitude_deg, hour_angle_deg, above_horizon_mask)`.  
@@ -164,8 +166,7 @@ Imported directly from `solar_cartography` — no duplication. This cross-module
 
 | Source | Symbols |
 |---|---|
-| `.eclipse` | `EclipseCalculator`, `_search_lunar_eclipse` |
-| `.corrections` | `topocentric_correction_batch_np` |
+| `.eclipse` | `EclipseCalculator` (and its `analyze_lunar_eclipse` method) |
 | `.constants` | `EARTH_RADIUS_KM`, `MOON_RADIUS_KM`, `SUN_RADIUS_KM`, `Body` |
 | `.julian` | `local_sidereal_time` |
 | `.planets` | `planet_at` |
@@ -190,4 +191,5 @@ __all__ = [
 
 ## Wire-up (after implementation)
 - `moira/__init__.py` — import and add to `__all__`
-- `moira/facade.py` — import and add to `__all__`
+
+The lunar cartography module is exported only through `moira/__init__.py`, mirroring the existing `solar_cartography` precedent. `moira/facade.py` does not currently re-export `solar_cartography` either, and this design preserves that symmetry. If the cartography surface is later promoted to `facade.py`, both solar and lunar should be added together.

@@ -1,0 +1,1464 @@
+--- REPO/__init__.py
++++ DRIFT/__init__.py
+@@ -60,6 +60,14 @@
+ from .phenomena import PlanetPhenomena, planet_phenomena_at
+ from .orbits import DistanceExtremes, KeplerianElements, distance_extremes_at, orbital_elements_at
+ from .planets import CartesianPosition, PlanetData, SkyPosition
++from .solar_cartography import (
++    ArrayBackendInfo,
++    SolarBesselianSample,
++    SolarCartographyResult,
++    SolarContourLevel,
++    SolarShadowBand,
++    solar_eclipse_cartography,
++)
+ from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal, nakshatra_of, all_nakshatras_at
+ from .aspects import AspectData
+ from .harmograms import (
+@@ -245,23 +253,6 @@
+     all_comets_at,
+     list_comets,
+     load_comet_kernel,
+-)
+-from .asteroid_families import (
+-    asteroid_family,
+-    family_members,
+-    families_in_chart,
+-    find_resonant_aspects,
+-    resonance_network,
+-    FamilyResonance,
+-    ResonantAspect,
+-)
+-from .void_of_course import (
+-    void_of_course_window,
+-    is_void_of_course,
+-    next_void_of_course,
+-    void_periods_in_range,
+-    VoidOfCourseWindow,
+-    LastAspect,
+ )
+ from .dignities import (
+     # Tables
+@@ -587,6 +578,8 @@
+     "shadbala_condition_profile",
+     "shadbala_chart_profile",
+     "validate_shadbala_output",
++    "__version__",
++    "__author__",
+     # Classic Western / Hellenistic dignities
+     "DOMICILE",
+     "EXALTATION",
+@@ -692,19 +685,4 @@
+     "all_comets_at",
+     "list_comets",
+     "load_comet_kernel",
+-    # Asteroid families
+-    "asteroid_family",
+-    "family_members",
+-    "families_in_chart",
+-    "find_resonant_aspects",
+-    "resonance_network",
+-    "FamilyResonance",
+-    "ResonantAspect",
+-    # Void of course
+-    "void_of_course_window",
+-    "is_void_of_course",
+-    "next_void_of_course",
+-    "void_periods_in_range",
+-    "VoidOfCourseWindow",
+-    "LastAspect",
+ ]
+
+--- REPO/constants.py
++++ DRIFT/constants.py
+@@ -11,8 +11,6 @@
+ Public surface:
+     TAU, PI, DEG2RAD, RAD2DEG, ARCSEC2RAD,
+     J2000, JD_DELTA, JULIAN_CENTURY, JULIAN_YEAR, TROPICAL_YEAR, SIDEREAL_YEAR,
+-    C_KM_PER_DAY, KM_PER_AU, EARTH_RADIUS_KM, SUN_RADIUS_KM, MOON_RADIUS_KM,
+-    EARTH_ROTATION_RATE_RAD_PER_SEC,
+     NAIF, Body, NAIF_ROUTES, EARTH_ROUTE,
+     SIGNS, SIGN_SYMBOLS, sign_of,
+     HouseSystem, HOUSE_SYSTEM_NAMES,
+@@ -63,12 +61,6 @@
+ 
+ # Lunar mean radius (IAU Working Group on Cartographic Coordinates 2015)
+ MOON_RADIUS_KM: float = 1_737.4
+-
+-# Earth's rotation rate (IERS Conventions 2010).
+-# Angular velocity of Earth's rotation around the ICRF Z-axis (rad/s).
+-# Assumed constant for topocentric diurnal aberration calculations.
+-# Used to compute observer velocity due to Earth's rotation.
+-EARTH_ROTATION_RATE_RAD_PER_SEC: float = 7.2921150e-5
+ 
+ # ---------------------------------------------------------------------------
+ # NAIF / SPICE body IDs (as used in DE441)
+
+--- REPO/corrections.py
++++ DRIFT/corrections.py
+@@ -5,16 +5,13 @@
+ Purpose:
+     Governs the application of astrometric corrections that transform geometric
+     positions into apparent positions as seen by a real observer. Provides the
+-    canonical correction stages: light-time, annual aberration, gravitational
+-    deflection, frame bias, topocentric parallax, topocentric diurnal aberration,
+-    and atmospheric refraction.
++    four canonical correction stages: light-time, annual aberration, gravitational
++    deflection, frame bias, and topocentric parallax.
+ 
+ Boundary:
+-    Owns: light-time iteration, relativistic aberration (annual and diurnal),
+-          gravitational deflection (multi-body: Sun + Jupiter + Saturn + Earth via
+-          IAU SOFA LDBODY), IAU 2006 frame bias rotation, WGS-84 topocentric
+-          parallax shift, topocentric diurnal aberration (observer velocity due to
+-          Earth's rotation), and atmospheric refraction.
++    Owns: light-time iteration, relativistic aberration, gravitational deflection
++          (multi-body: Sun + Jupiter + Saturn + Earth via IAU SOFA LDBODY),
++          IAU 2006 frame bias rotation, and WGS-84 topocentric parallax shift.
+     Delegates: SPK kernel reads (via caller-supplied barycentric_fn and SpkReader),
+                coordinate type definitions (moira.coordinates), and physical
+                constants (moira.constants).
+@@ -24,48 +21,9 @@
+ External dependency assumptions:
+     - Caller supplies a SpkReader instance and a barycentric position function;
+       this Engine imposes no direct I/O.
+-    - Physical constants (speed of light, Earth radius, Earth rotation rate) are sourced from
++    - Physical constants (speed of light, Earth radius) are sourced from
+       moira.constants and moira.coordinates.
+     - All vectors are ICRF rectangular (km) unless otherwise stated.
+-
+-CORRECTION PIPELINE:
+-    The canonical astrometric correction pipeline transforms geometric positions
+-    into apparent positions as seen by a real observer on Earth's surface:
+-
+-        Geometric Position (ICRF, barycentric)
+-            ↓
+-        [Light-time iteration]
+-            ↓
+-        Geometric Position (ICRF, geocentric)
+-            ↓
+-        [Annual Aberration] — observer's motion around the Sun
+-            ↓
+-        [Gravitational Deflection] — bending of light by massive bodies
+-            ↓
+-        [Frame Bias] — IAU 2006 frame bias rotation
+-            ↓
+-        [Topocentric Parallax] — observer's position relative to Earth's center
+-            ↓
+-        [Topocentric Diurnal Aberration] — observer's velocity due to Earth's rotation
+-            ↓
+-        Topocentric Apparent Position (ICRF)
+-            ↓
+-        [Atmospheric Refraction] — bending of light by atmosphere
+-            ↓
+-        Observed Position (Horizontal)
+-
+-    Each stage is applied in order. Topocentric diurnal aberration is applied after
+-    topocentric parallax (both depend on observer location) and before atmospheric
+-    refraction (which operates on the final apparent position).
+-
+-AUTHORITATIVE SOURCES:
+-    - IAU SOFA (Standards of Fundamental Astronomy): https://www.iausofa.org/
+-    - ERFA (Essential Routines for Fundamental Astronomy): https://github.com/liberfa/erfa
+-    - IERS Conventions 2010: https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.php
+-    - JPL Horizons System: https://ssd.jpl.nasa.gov/horizons/
+-    - Meeus, J. (1998): Astronomical Algorithms, 2nd ed. Willmann-Bell.
+-    - Capitaine, N., et al. (2003): Expressions for IAU 2000 precession-nutation matrices.
+-      Astronomy & Astrophysics, 412, 567–586.
+ 
+ Public surface / exports:
+     apply_light_time(body, jd_tt, reader, earth_ssb, barycentric_fn)
+@@ -76,8 +34,8 @@
+     apply_frame_bias(xyz) -> Vec3
+     topocentric_correction(xyz_geocentric, latitude_deg, longitude_deg,
+                            lst_deg, elevation_m) -> Vec3
+-    apply_diurnal_aberration(xyz_geocentric, latitude_deg, longitude_deg,
+-                             lst_deg, elevation_m) -> Vec3
++    topocentric_correction_batch_np(xyz_geo, lats_deg, lons_deg,
++                                    gast_deg, elevation_m) -> ndarray (N, 3)
+     apply_refraction(altitude_deg, *, pressure_mbar, temperature_c) -> float
+ """
+ 
+@@ -382,235 +340,7 @@
+ 
+ 
+ # ---------------------------------------------------------------------------
+-# 5. Topocentric diurnal aberration helpers
+-# ---------------------------------------------------------------------------
+-
+-def _observer_position_icrf(
+-    latitude_deg: float,
+-    longitude_deg: float,
+-    lst_deg: float,
+-    elevation_m: float = 0.0,
+-) -> Vec3:
+-    """
+-    Compute the observer's position in the ICRF frame using WGS-84 geodetic-to-rectangular conversion.
+-
+-    This helper function computes the observer's geocentric position vector in the ICRF frame,
+-    accounting for Earth's oblate shape (WGS-84 ellipsoid) and the observer's elevation above
+-    sea level. The computation uses geodetic latitude, geographic longitude, and Local Sidereal
+-    Time to determine the observer's position relative to Earth's center.
+-
+-    The WGS-84 conversion is identical to the model used in `topocentric_correction()`, ensuring
+-    consistency across the astrometric pipeline.
+-
+-    Parameters
+-    ----------
+-    latitude_deg : float
+-        Observer's geodetic latitude in degrees. Must be in the range [-90, +90].
+-        Positive values are north of the equator; negative values are south.
+-    longitude_deg : float
+-        Observer's geographic east longitude in degrees. Typically in the range [0, 360) or [-180, +180).
+-        The function does not normalize this value; the caller is responsible for valid input.
+-    lst_deg : float
+-        Local Sidereal Time in degrees. Typically in the range [0, 360).
+-        The function does not normalize this value; the caller is responsible for valid input.
+-    elevation_m : float, optional
+-        Observer's elevation above the WGS-84 ellipsoid in metres (default 0.0).
+-        Positive values are above sea level; negative values are below (e.g., in a mine or submarine).
+-
+-    Returns
+-    -------
+-    Vec3
+-        Observer's position in the ICRF frame as a (x, y, z) tuple in kilometres.
+-        The position is measured from Earth's center.
+-
+-    Raises
+-    ------
+-    ValueError
+-        If latitude is outside the range [-90, +90] degrees.
+-
+-    Notes
+-    -----
+-    The WGS-84 conversion follows Meeus (1998) §11 and USNO Circular 179. The algorithm:
+-
+-    1. Converts geodetic latitude and LST to radians.
+-    2. Computes WGS-84 parameters: flattening f = 1/298.257223563, equatorial radius a = 6378.137 km.
+-    3. Computes intermediate values C and S accounting for Earth's oblate shape.
+-    4. Computes rectangular coordinates (x, y, z) in the ICRF frame.
+-
+-    The elevation is added directly to the scaled equatorial radius, not as a simple spherical
+-    increment — this is the correct WGS-84 separation model.
+-
+-    This function is used internally by `apply_diurnal_aberration()` to compute the observer's
+-    position for velocity calculations. It is also used by `topocentric_correction()` for
+-    parallax shifts.
+-
+-    Examples
+-    --------
+-    >>> # Observer at Greenwich Observatory (51.477°N, 0.0°E, sea level)
+-    >>> # at Local Sidereal Time 180° (noon)
+-    >>> pos = _observer_position_icrf(51.477, 0.0, 180.0, 0.0)
+-    >>> # Expected: approximately (6378.137 * cos(51.477°), 0, 6378.137 * sin(51.477°))
+-    >>> # Actual: approximately (3978.8, 0, 5028.8) km
+-
+-    >>> # Observer at North Pole (90°N, any longitude, any LST)
+-    >>> pos = _observer_position_icrf(90.0, 0.0, 0.0, 0.0)
+-    >>> # Expected: approximately (0, 0, 6356.752) km (polar radius)
+-    >>> # Actual: approximately (0, 0, 6356.752) km
+-
+-    >>> # Observer at equator (0°, 0°E, sea level)
+-    >>> pos = _observer_position_icrf(0.0, 0.0, 0.0, 0.0)
+-    >>> # Expected: approximately (6378.137, 0, 0) km
+-    >>> # Actual: approximately (6378.137, 0, 0) km
+-    """
+-    # Input validation
+-    if latitude_deg < -90.0 or latitude_deg > 90.0:
+-        raise ValueError(
+-            f"Latitude must be in [-90, +90] degrees; got {latitude_deg}"
+-        )
+-
+-    # Convert to radians
+-    lat = latitude_deg * DEG2RAD
+-    lst = lst_deg * DEG2RAD
+-
+-    # WGS-84 parameters (Meeus §11, USNO Circular 179)
+-    f = 1.0 / 298.257223563  # WGS-84 flattening
+-    a = EARTH_RADIUS_KM      # equatorial radius (km)
+-    h = elevation_m / 1000.0  # elevation in km
+-
+-    # Intermediate values accounting for Earth's oblate shape
+-    cos_lat = math.cos(lat)
+-    sin_lat = math.sin(lat)
+-    C = 1.0 / math.sqrt(cos_lat**2 + (1.0 - f)**2 * sin_lat**2)
+-    S = (1.0 - f)**2 * C
+-
+-    # Rectangular coordinates in ICRF frame
+-    # Elevation is added directly to the scaled equatorial radius (WGS-84 model)
+-    obs_x = (a * C + h) * cos_lat * math.cos(lst)
+-    obs_y = (a * C + h) * cos_lat * math.sin(lst)
+-    obs_z = (a * S + h) * sin_lat
+-
+-    return (obs_x, obs_y, obs_z)
+-
+-
+-def _observer_velocity_icrf(observer_position_icrf: Vec3) -> Vec3:
+-    """
+-    Compute the observer's velocity in the ICRF frame due to Earth's rotation.
+-
+-    This helper function computes the observer's velocity vector in the ICRF frame,
+-    arising from Earth's rotation about the Z-axis. The velocity is computed as the
+-    cross product of Earth's rotation vector ω with the observer's position vector r:
+-
+-        v = ω × r
+-
+-    where ω = (0, 0, ω_mag) with ω_mag = 7.2921150 × 10⁻⁵ rad/s (IERS Conventions 2010).
+-
+-    The cross product is perpendicular to both ω and r, meaning the observer's velocity
+-    is tangent to their circular path around Earth's rotation axis. The magnitude of the
+-    velocity is |v| = ω × r × sin(90°) = ω × r_perp, where r_perp is the observer's
+-    distance from the rotation axis.
+-
+-    The velocity is converted from rad/s to km/day by multiplying by 86400 seconds/day.
+-
+-    **Physical Interpretation:**
+-    - At the equator (r_perp = R_earth ≈ 6378 km), |v| ≈ 0.465 km/s ≈ 40.1 km/day.
+-    - At latitude φ, |v| = |v_max| × cos(φ), since r_perp = R_earth × cos(φ).
+-    - At the poles (φ = ±90°), |v| = 0, since the observer is on the rotation axis.
+-
+-    **Numerical Stability:**
+-    The cross product is exact and introduces no loss of precision. The conversion
+-    from rad/s to km/day is a simple multiplication by a constant (86400).
+-
+-    **Validation:**
+-    The computed velocity satisfies two key properties:
+-    1. v · ω = 0 (perpendicular to rotation axis)
+-    2. v · r = 0 (perpendicular to position vector)
+-
+-    These properties are verified numerically to machine precision (< 1e-14).
+-
+-    Parameters
+-    ----------
+-    observer_position_icrf : Vec3
+-        Observer's position in the ICRF frame as a (x, y, z) tuple in kilometres.
+-        This is typically computed by `_observer_position_icrf()`.
+-
+-    Returns
+-    -------
+-    Vec3
+-        Observer's velocity in the ICRF frame as a (v_x, v_y, v_z) tuple in km/day.
+-        The velocity is tangent to the observer's circular path around Earth's rotation axis.
+-
+-    Notes
+-    -----
+-    The cross product v = ω × r is computed as:
+-
+-        v_x = ω_y × r_z - ω_z × r_y = 0 × r_z - ω_mag × r_y = -ω_mag × r_y
+-        v_y = ω_z × r_x - ω_x × r_z = ω_mag × r_x - 0 × r_z = ω_mag × r_x
+-        v_z = ω_x × r_y - ω_y × r_x = 0 × r_y - 0 × r_x = 0
+-
+-    The conversion from rad/s to km/day is:
+-        v_km_day = v_rad_s × (86400 s/day)
+-
+-    This function is used internally by `apply_diurnal_aberration()` to compute the
+-    observer's velocity for relativistic aberration calculations.
+-
+-    Examples
+-    --------
+-    >>> # Observer at equator (0°, 0°E, sea level)
+-    >>> # Position: approximately (6378.137, 0, 0) km
+-    >>> pos = (6378.137, 0.0, 0.0)
+-    >>> vel = _observer_velocity_icrf(pos)
+-    >>> # Expected: approximately (0, 40.1, 0) km/day
+-    >>> # Actual: approximately (0, 40.1, 0) km/day
+-    >>> import math
+-    >>> mag = math.sqrt(vel[0]**2 + vel[1]**2 + vel[2]**2)
+-    >>> print(f"Velocity magnitude: {mag:.2f} km/day")  # ~40.1 km/day
+-
+-    >>> # Observer at North Pole (90°N, any longitude, any LST)
+-    >>> # Position: approximately (0, 0, 6356.752) km
+-    >>> pos = (0.0, 0.0, 6356.752)
+-    >>> vel = _observer_velocity_icrf(pos)
+-    >>> # Expected: approximately (0, 0, 0) km/day (on rotation axis)
+-    >>> # Actual: approximately (0, 0, 0) km/day
+-    >>> mag = math.sqrt(vel[0]**2 + vel[1]**2 + vel[2]**2)
+-    >>> print(f"Velocity magnitude: {mag:.2e} km/day")  # ~0 km/day
+-
+-    >>> # Observer at 45°N latitude
+-    >>> # Position: approximately (4512, 0, 4512) km (simplified)
+-    >>> pos = (4512.0, 0.0, 4512.0)
+-    >>> vel = _observer_velocity_icrf(pos)
+-    >>> # Expected: approximately (0, 28.4, 0) km/day (40.1 × cos(45°))
+-    >>> # Actual: approximately (0, 28.4, 0) km/day
+-    >>> mag = math.sqrt(vel[0]**2 + vel[1]**2 + vel[2]**2)
+-    >>> print(f"Velocity magnitude: {mag:.2f} km/day")  # ~28.4 km/day
+-    """
+-    from .constants import EARTH_ROTATION_RATE_RAD_PER_SEC
+-
+-    # Earth's rotation vector: ω = (0, 0, ω_mag) rad/s
+-    omega_mag = EARTH_ROTATION_RATE_RAD_PER_SEC
+-
+-    # Observer position components
+-    r_x, r_y, r_z = observer_position_icrf
+-
+-    # Cross product: v = ω × r
+-    # v_x = ω_y × r_z - ω_z × r_y = 0 - ω_mag × r_y = -ω_mag × r_y
+-    # v_y = ω_z × r_x - ω_x × r_z = ω_mag × r_x - 0 = ω_mag × r_x
+-    # v_z = ω_x × r_y - ω_y × r_x = 0 - 0 = 0
+-    v_x_rad_s = -omega_mag * r_y
+-    v_y_rad_s = omega_mag * r_x
+-    v_z_rad_s = 0.0
+-
+-    # Convert from rad/s to km/day: multiply by 86400 seconds/day
+-    # (The cross product is in km × rad/s, so multiplying by seconds/day gives km/day)
+-    SECONDS_PER_DAY = 86400.0
+-    v_x = v_x_rad_s * SECONDS_PER_DAY
+-    v_y = v_y_rad_s * SECONDS_PER_DAY
+-    v_z = v_z_rad_s * SECONDS_PER_DAY
+-
+-    return (v_x, v_y, v_z)
+-
+-
+-# ---------------------------------------------------------------------------
+-# 6. Topocentric parallax
++# 5. Topocentric parallax
+ # ---------------------------------------------------------------------------
+ 
+ def topocentric_correction(
+@@ -659,287 +389,74 @@
+     return vec_sub(xyz_geocentric, (obs_x, obs_y, obs_z))
+ 
+ 
+-# ---------------------------------------------------------------------------
+-# 7. Topocentric diurnal aberration
+-# ---------------------------------------------------------------------------
+-
+-def apply_diurnal_aberration(
+-    xyz_geocentric: Vec3,
+-    latitude_deg: float,
+-    longitude_deg: float,
+-    lst_deg: float,
++def topocentric_correction_batch_np(
++    xyz_geo,
++    lats_deg,
++    lons_deg,
++    gast_deg: float,
+     elevation_m: float = 0.0,
+-) -> Vec3:
+-    """
+-    RITE: The Aberrant Observer — one who moves with the turning Earth.
+-
+-    THEOREM: Apply topocentric diurnal aberration correction to a geocentric position,
+-    accounting for the observer's velocity due to Earth's rotation.
+-
+-    RITE OF PURPOSE:
+-        The observer on Earth's surface moves with the rotating planet, acquiring a
+-        velocity component perpendicular to the Earth-body line. This motion induces
+-        an apparent shift in the body's position — diurnal aberration — of up to ~0.32″
+-        (arcseconds) for objects near the celestial equator. This correction is the
+-        final topocentric stage before atmospheric refraction, completing Moira's
+-        astrometric pipeline to mas-level precision for surface observers.
+-
+-    LAW OF OPERATION:
+-        Responsibilities:
+-            - Validate observer latitude is in [-90, +90] degrees
+-            - Validate geocentric position is not near zero (norm > 1e-10 km)
+-            - Compute observer position in ICRF frame using WGS-84 geodetic-to-rectangular conversion
+-            - Compute observer velocity due to Earth's rotation (cross product ω × r)
+-            - Apply relativistic aberration formula to correct for diurnal aberration
+-            - Return corrected geocentric position in ICRF frame
+-
+-        Non-responsibilities:
+-            - Does not apply atmospheric refraction (separate stage)
+-            - Does not apply topocentric parallax (applied before this stage)
+-            - Does not normalize LST (caller is responsible for valid input)
+-            - Does not apply frame transformations beyond ICRF
+-
+-        Dependencies:
+-            - _observer_position_icrf() — WGS-84 geodetic-to-rectangular conversion
+-            - _observer_velocity_icrf() — cross product with Earth's rotation vector
+-            - apply_aberration() — relativistic aberration formula (IAU SOFA standard)
+-            - EARTH_ROTATION_RATE_RAD_PER_SEC — Earth's rotation rate (IERS Conventions 2010)
+-
+-        Behavioral invariants:
+-            - At observer pole (latitude = ±90°), correction is zero (observer on rotation axis)
+-            - At celestial pole (declination = ±90°), correction is zero (no perpendicular component)
+-            - Correction magnitude ≤ 0.32″ (arcseconds) for all valid inputs
+-            - Correction is perpendicular to observer's velocity vector
+-            - Numerical stability maintained for all observer latitudes and elevations
+-
+-        Failure behavior:
+-            - Raises ValueError if latitude is outside [-90, +90] degrees
+-            - Raises ValueError if geocentric position is near zero (< 1e-10 km)
+-            - Propagates ValueError from _observer_position_icrf() for invalid latitude
+-
+-        Performance envelope:
+-            - Single-body correction: < 1 millisecond on modern CPU
+-            - Batch operations (1000 bodies, same observer): < 1 second
+-            - Memory: no intermediate allocations beyond output vector
+-
+-    VALIDATION AGAINST AUTHORITATIVE SOURCES:
+-        This correction is validated against:
+-        - IAU SOFA / ERFA diurnal aberration formula (0.1 µas tolerance)
+-        - JPL Horizons topocentric apparent positions (1 mas tolerance)
+-        - IERS Conventions 2010 Earth rotation parameters
+-
+-    Canon: IAU SOFA (Standards of Fundamental Astronomy), IERS Conventions 2010,
+-           Meeus (1998) Astronomical Algorithms §11, JPL Horizons System.
+-
+-    Parameters
+-    ----------
+-    xyz_geocentric : Vec3
+-        Geocentric ICRF position of the body in kilometres. Must have norm > 1e-10 km
+-        to avoid singularities in the aberration formula.
+-    latitude_deg : float
+-        Observer's geodetic latitude in degrees. Must be in the range [-90, +90].
+-        Positive values are north of the equator; negative values are south.
+-    longitude_deg : float
+-        Observer's geographic east longitude in degrees. Typically in the range [0, 360)
+-        or [-180, +180). The function does not normalize this value; the caller is
+-        responsible for valid input.
+-    lst_deg : float
+-        Local Sidereal Time in degrees. Typically in the range [0, 360).
+-        The function does not normalize this value; the caller is responsible for valid input.
+-    elevation_m : float, optional
+-        Observer's elevation above the WGS-84 ellipsoid in metres (default 0.0).
+-        Positive values are above sea level; negative values are below (e.g., in a mine
+-        or submarine). Elevation affects the observer's distance from Earth's rotation axis,
+-        which scales the velocity magnitude.
+-
+-    Returns
+-    -------
+-    Vec3
+-        Diurnal-aberration-corrected geocentric position in ICRF frame (kilometres).
+-        The correction is typically < 0.32″ (arcseconds) and is perpendicular to the
+-        observer's velocity vector.
++):
++    """
++    Vectorised WGS-84 topocentric correction for N observers at a single epoch.
++
++    Parameters
++    ----------
++    xyz_geo : array-like (3,)
++        Geocentric apparent position in the True Equatorial of Date frame, km.
++        This is the position AFTER frame bias + precession + nutation but BEFORE
++        the topocentric step — the same frame that topocentric_correction expects.
++    lats_deg : array-like (N,)
++        Geodetic latitudes in degrees. Clamped to [−90, 90].
++    lons_deg : array-like (N,)
++        East longitudes in degrees.
++    gast_deg : float
++        Greenwich Apparent Sidereal Time in degrees. Local AST per observer is
++        ``gast_deg + lon``.
++    elevation_m : float
++        Observer elevation above WGS-84 ellipsoid in metres (same for all N).
++
++    Returns
++    -------
++    ndarray (N, 3)
++        Topocentric True Equatorial positions in km, one row per observer.
+ 
+     Raises
+     ------
+-    ValueError
+-        If latitude is outside the range [-90, +90] degrees.
+-        If geocentric position has norm < 1e-10 km (body at observer location).
+-
+-    Notes
+-    -----
+-    **Physical Basis:**
+-    The observer on Earth's surface moves with the rotating planet. At the equator,
+-    this velocity is ~0.465 km/s (~40.1 km/day). At latitude φ, the velocity magnitude
+-    is v = v_max × cos(φ). At the poles, the velocity is zero (observer on rotation axis).
+-
+-    The observer's velocity is computed as the cross product of Earth's rotation vector
+-    with the observer's position:
+-
+-        v = ω × r_observer
+-
+-    where ω = (0, 0, 7.2921150 × 10⁻⁵ rad/s) is Earth's rotation vector (IERS Conventions 2010).
+-
+-    The relativistic aberration formula (identical to annual aberration) is then applied:
+-
+-        u' = [u + (1 + (u·β)/(1+γ))·β] / [γ(1 + u·β)]
+-
+-    where u is the unit direction to the body, β = v/c, and γ = 1/√(1 - β²).
+-
+-    **Magnitude of Effect:**
+-    - Maximum: ~0.32″ (arcseconds) at equator for bodies on celestial equator
+-    - Typical: 0.01–0.32″ depending on observer latitude and body declination
+-    - Decreases as cos(declination) and cos(latitude)
+-    - Zero at observer pole and celestial pole
+-
+-    **Validation Status:**
+-    This correction is validated against IAU SOFA/ERFA (0.1 µas tolerance) and
+-    JPL Horizons (1 mas tolerance) across all observer latitudes and celestial body positions.
+-
+-    **Correction Pipeline Position:**
+-    Diurnal aberration is applied after topocentric parallax and before atmospheric refraction:
+-
+-        Geometric Position (ICRF, geocentric)
+-            ↓
+-        [Annual Aberration]
+-            ↓
+-        [Gravitational Deflection]
+-            ↓
+-        [Frame Bias]
+-            ↓
+-        [Topocentric Parallax]
+-            ↓
+-        [Topocentric Diurnal Aberration] ← THIS STAGE
+-            ↓
+-        [Atmospheric Refraction]
+-            ↓
+-        Observed Position (Horizontal)
+-
+-    **Numerical Stability:**
+-    The cross product is exact and introduces no loss of precision. The relativistic
+-    aberration formula is numerically stable for all observer latitudes and elevations.
+-    At the poles, the velocity is zero and the correction is zero (identity). At extreme
+-    elevations, the velocity magnitude scales correctly with distance from the rotation axis.
+-
+-    Examples
+-    --------
+-    **Example 1: Sun at Greenwich, noon**
+-
+-    Observer: Greenwich Observatory (51.477°N, 0.0°E, sea level)
+-    Time: 2024-01-01 12:00:00 UT (LST = 180°)
+-    Body: Sun (geocentric position ≈ 0.983 AU from Earth)
+-
+-    >>> import math
+-    >>> from moira.corrections import apply_diurnal_aberration
+-    >>> from moira.constants import KM_PER_AU
+-    >>>
+-    >>> # Geocentric position of the Sun (km)
+-    >>> xyz_sun = (0.983 * KM_PER_AU, 0.0, 0.0)
+-    >>>
+-    >>> # Observer location
+-    >>> latitude = 51.477  # degrees
+-    >>> longitude = 0.0    # degrees
+-    >>> lst = 180.0        # degrees (noon)
+-    >>> elevation = 0.0    # metres
+-    >>>
+-    >>> # Apply diurnal aberration correction
+-    >>> corrected = apply_diurnal_aberration(xyz_sun, latitude, longitude, lst, elevation)
+-    >>>
+-    >>> # Correction magnitude (arcseconds)
+-    >>> correction_vector = (
+-    ...     corrected[0] - xyz_sun[0],
+-    ...     corrected[1] - xyz_sun[1],
+-    ...     corrected[2] - xyz_sun[2],
+-    ... )
+-    >>> correction_magnitude_km = math.sqrt(
+-    ...     correction_vector[0]**2 + correction_vector[1]**2 + correction_vector[2]**2
+-    ... )
+-    >>> # Convert to arcseconds: 1 AU ≈ 206265 arcseconds
+-    >>> correction_arcsec = correction_magnitude_km / KM_PER_AU * 206265
+-    >>> print(f"Correction: {correction_arcsec:.4f} arcseconds")
+-    Correction: 0.1500 arcseconds  # Expected: ~0.15″ (mid-latitude, Sun near equator)
+-
+-    **Example 2: Observer at North Pole**
+-
+-    Observer: North Pole (90°N, any longitude, any LST)
+-    Body: Any celestial body
+-
+-    >>> # Observer at North Pole
+-    >>> latitude = 90.0
+-    >>> longitude = 0.0
+-    >>> lst = 0.0
+-    >>> elevation = 0.0
+-    >>>
+-    >>> # Any geocentric position
+-    >>> xyz_body = (1.0, 0.0, 0.0)  # 1 km away
+-    >>>
+-    >>> # Apply diurnal aberration correction
+-    >>> corrected = apply_diurnal_aberration(xyz_body, latitude, longitude, lst, elevation)
+-    >>>
+-    >>> # At the pole, observer velocity is zero, so correction is zero
+-    >>> assert corrected == xyz_body, "Correction should be zero at pole"
+-    >>> print("Correction at pole: zero (as expected)")
+-    Correction at pole: zero (as expected)
+-
+-    **Example 3: Body at celestial pole**
+-
+-    Observer: Equator (0°, 0°E, sea level)
+-    Body: Celestial North Pole (declination = +90°)
+-
+-    >>> # Observer at equator
+-    >>> latitude = 0.0
+-    >>> longitude = 0.0
+-    >>> lst = 0.0
+-    >>> elevation = 0.0
+-    >>>
+-    >>> # Body at celestial north pole (declination = +90°)
+-    >>> # Position: (0, 0, r) where r is distance
+-    >>> xyz_body = (0.0, 0.0, 1.0)  # 1 km away
+-    >>>
+-    >>> # Apply diurnal aberration correction
+-    >>> corrected = apply_diurnal_aberration(xyz_body, latitude, longitude, lst, elevation)
+-    >>>
+-    >>> # At celestial pole, correction is zero (no perpendicular component)
+-    >>> correction_magnitude = math.sqrt(
+-    ...     (corrected[0] - xyz_body[0])**2 +
+-    ...     (corrected[1] - xyz_body[1])**2 +
+-    ...     (corrected[2] - xyz_body[2])**2
+-    ... )
+-    >>> assert correction_magnitude < 1e-10, "Correction should be zero at celestial pole"
+-    >>> print("Correction at celestial pole: zero (as expected)")
+-    Correction at celestial pole: zero (as expected)
+-    """
+-    # Input validation: latitude must be in [-90, +90]
+-    if latitude_deg < -90.0 or latitude_deg > 90.0:
++    RuntimeError
++        If numpy is not available.
++    """
++    if not _HAS_NUMPY:
++        raise RuntimeError("topocentric_correction_batch_np requires numpy")
++
++    xyz = _np.asarray(xyz_geo, dtype=_np.float64)          # (3,)
++    lats = _np.clip(_np.asarray(lats_deg, dtype=_np.float64), -90.0, 90.0)
++    lons = _np.asarray(lons_deg, dtype=_np.float64)
++    if lats.shape != lons.shape:
+         raise ValueError(
+-            f"Latitude must be in [-90, +90] degrees; got {latitude_deg}"
++            f"lats_deg and lons_deg must have the same shape; got {lats.shape} vs {lons.shape}"
+         )
+ 
+-    # Input validation: geocentric position must not be near zero
+-    dist = vec_norm(xyz_geocentric)
+-    if dist < 1e-10:
+-        raise ValueError(
+-            f"Geocentric position too close to observer (< 1e-10 km); "
+-            f"norm = {dist:.2e} km"
+-        )
+-
+-    # Compute observer position in ICRF frame using WGS-84 conversion
+-    observer_position = _observer_position_icrf(
+-        latitude_deg, longitude_deg, lst_deg, elevation_m
+-    )
+-
+-    # Compute observer velocity due to Earth's rotation
+-    observer_velocity = _observer_velocity_icrf(observer_position)
+-
+-    # Apply relativistic aberration formula to correct for diurnal aberration
+-    # This is identical to the annual aberration formula, but with observer velocity
+-    # instead of Earth's orbital velocity
+-    corrected_position = apply_aberration(xyz_geocentric, observer_velocity)
+-
+-    return corrected_position
+-
+-
+-# ---------------------------------------------------------------------------
+-# 8. Atmospheric refraction
++    lat_r = _np.radians(lats)
++    last_r = _np.radians(gast_deg + lons)                  # Local Apparent Sidereal Time
++
++    # WGS-84 ellipsoid parameters (same as scalar topocentric_correction)
++    f = 1.0 / 298.257223563
++    a = EARTH_RADIUS_KM
++    h = elevation_m / 1000.0
++
++    C = 1.0 / _np.sqrt(_np.cos(lat_r) ** 2 + (1.0 - f) ** 2 * _np.sin(lat_r) ** 2)
++    S = (1.0 - f) ** 2 * C
++
++    obs_x = (a * C + h) * _np.cos(lat_r) * _np.cos(last_r)
++    obs_y = (a * C + h) * _np.cos(lat_r) * _np.sin(last_r)
++    obs_z = (a * S + h) * _np.sin(lat_r)
++
++    obs = _np.stack([obs_x, obs_y, obs_z], axis=1)         # (N, 3)
++    return xyz[_np.newaxis, :] - obs                        # (N, 3)
++
++
++# ---------------------------------------------------------------------------
++# 6. Atmospheric refraction
+ # ---------------------------------------------------------------------------
+ 
+ def apply_refraction(
+
+--- REPO/eclipse.py
++++ DRIFT/eclipse.py
+@@ -39,8 +39,16 @@
+ 
+ import math
+ import time
++from concurrent.futures import ThreadPoolExecutor
+ from dataclasses import dataclass
+ from datetime import datetime, timezone
++
++try:
++    import numpy as _np
++    _HAS_NUMPY = True
++except ImportError:
++    _np = None
++    _HAS_NUMPY = False
+ 
+ from .constants import Body, J2000
+ from .eclipse_geometry import (
+@@ -62,7 +70,7 @@
+     refine_lunar_greatest_eclipse as _refine_lunar_maximum,
+     refine_solar_greatest_eclipse as _refine_solar_maximum,
+ )
+-from .julian import datetime_from_jd, decimal_year, jd_from_datetime, ut_to_tt, ut_to_tt_nasa_canon
++from .julian import datetime_from_jd, decimal_year, jd_from_datetime, local_sidereal_time, ut_to_tt, ut_to_tt_nasa_canon
+ from .planets import (
+     approx_year as _approx_year,
+     _barycentric,
+@@ -82,12 +90,9 @@
+     find_lunar_contacts_canon,
+     lunar_canon_source_model,
+     lunar_canon_geometry,
+-    LunarCanonGeometry,
+-    LunarCanonMethodId,
+-    LUNAR_CANON_METHOD_IDS,
+ )
+ from .eclipse_contacts import LunarEclipseContacts, find_lunar_contacts
+-from .corrections import apply_light_time
++from .corrections import apply_light_time, topocentric_correction_batch_np
+ from .geoutils import (
+     EARTH_KM_PER_DEG_LAT as _KM_PER_DEG_LAT,
+     offset_geographic_km as _offset_geographic_km,
+@@ -98,36 +103,12 @@
+ __all__ = [
+     "EclipseData", "EclipseEvent", "EclipseType", "EclipseCalculator",
+     "SolarBodyCircumstances", "SolarEclipseLocalCircumstances",
+-    "LocalContactCircumstances",
+-    "LunarEclipseAnalysis",
++    "LocalContactCircumstances", "LunarEclipseAnalysis",
+     "LunarEclipseLocalCircumstances",
+-    "LunarEclipseAnalysisMode",
+-    "LunarEclipseContacts",
+-    "LunarCanonContacts",
+-    "LunarCanonGeometry",
+-    "find_lunar_contacts",
+-    "find_lunar_contacts_canon",
+-    "lunar_canon_geometry",
+-    "lunar_canon_source_model",
+-    "DEFAULT_LUNAR_CANON_METHOD",
+-    "LunarCanonMethodId",
+-    "LUNAR_CANON_METHOD_IDS",
+     # Phase 3 — path/where geometry vessel (Defer.Design + Defer.Validation)
+     "SolarEclipsePath",
+     # Observer-specific solar eclipse search
+     "next_solar_eclipse_at_location",
+-    "vertex_name",
+-    # Constants
+-    "ECLIPSE_SEASON_THRESHOLD",
+-    "ECLIPSE_LATITUDE_THRESHOLD",
+-    "SAROS_SYNODIC_MONTHS",
+-    "METONIC_PERIOD_DAYS",
+-    "GALACTIC_CENTER_LON_J2000",
+-    "PRECESSION_DEG_PER_CENTURY",
+-    "AUBREY_HOLES",
+-    "HEPTAGON_SIDES",
+-    "POSITIONS_PER_SIDE",
+-    "DEGREES_PER_STONE",
+ ]
+ 
+ # ---------------------------------------------------------------------------
+@@ -2068,6 +2049,85 @@
+     return separation, overlap_margin, central_margin
+ 
+ 
++def _topocentric_solar_geometry_batch(
++    calc: EclipseCalculator,
++    jd_ut: float,
++    lats,
++    lons,
++):
++    """
++    Compute Sun-Moon topocentric angular separations for N observer locations.
++
++    Calls sky_position_at once for each body without observer coordinates so
++    the topocentric correction is skipped, giving the geocentric apparent
++    position. Reconstructs True Equatorial xyz from RA/Dec/distance, then
++    fans the topocentric correction over all N candidates in one numpy pass.
++
++    Parameters
++    ----------
++    calc : EclipseCalculator
++    jd_ut : float
++    lats : array-like (N,)  geodetic latitudes, degrees
++    lons : array-like (N,)  east longitudes, degrees
++
++    Returns
++    -------
++    ndarray (N,)  Sun-Moon angular separations in degrees;
++                  np.inf where Sun altitude <= 0.
++    """
++    lats = _np.asarray(lats, dtype=_np.float64)
++    lons = _np.asarray(lons, dtype=_np.float64)
++
++    # Geocentric apparent positions in True Equatorial cartesian (km).
++    # planet_at with frame='cartesian' and no observer_lat/lon skips the
++    # topocentric correction step, giving the pure geocentric apparent vector.
++    sun_cart  = planet_at(Body.SUN,  jd_ut, reader=calc._reader, frame='cartesian')
++    moon_cart = planet_at(Body.MOON, jd_ut, reader=calc._reader, frame='cartesian')
++
++    sun_xyz  = _np.array([sun_cart.x,  sun_cart.y,  sun_cart.z],  dtype=_np.float64)
++    moon_xyz = _np.array([moon_cart.x, moon_cart.y, moon_cart.z], dtype=_np.float64)
++
++    # Greenwich Apparent Sidereal Time (longitude 0 gives GAST)
++    gast_deg = local_sidereal_time(jd_ut, 0.0)
++
++    # Batch topocentric correction — (N, 3) topocentric True Equatorial positions
++    sun_topo  = topocentric_correction_batch_np(sun_xyz,  lats, lons, gast_deg)
++    moon_topo = topocentric_correction_batch_np(moon_xyz, lats, lons, gast_deg)
++
++    # Convert topocentric xyz to RA/Dec
++    sun_r  = _np.linalg.norm(sun_topo,  axis=1)   # (N,)
++    moon_r = _np.linalg.norm(moon_topo, axis=1)   # (N,)
++
++    sun_dec  = _np.arcsin(_np.clip(sun_topo[:,  2] / sun_r,  -1.0, 1.0))
++    sun_ra   = _np.arctan2(sun_topo[:, 1],  sun_topo[:, 0])
++    moon_dec = _np.arcsin(_np.clip(moon_topo[:, 2] / moon_r, -1.0, 1.0))
++    moon_ra  = _np.arctan2(moon_topo[:, 1], moon_topo[:, 0])
++
++    # Sun altitude — needed to filter observers where Sun is below horizon.
++    # The scalar _topocentric_solar_geometry uses sky_position_at which applies
++    # atmospheric refraction (~0.575° at the horizon), so we add the same margin
++    # here: sun_above when geometric altitude > -0.575° (sin > -0.01003).
++    _SIN_REFRACTION_MARGIN = -0.01003  # sin(-0.575°)
++    lats_r = _np.radians(lats)
++    last_r = _np.radians(gast_deg + lons)   # Local Apparent Sidereal Time
++    ha_sun = last_r - sun_ra                 # hour angle
++    sin_alt = (
++        _np.sin(lats_r) * _np.sin(sun_dec)
++        + _np.cos(lats_r) * _np.cos(sun_dec) * _np.cos(ha_sun)
++    )
++    sun_above = sin_alt > _SIN_REFRACTION_MARGIN
++
++    # Vectorised spherical angular separation (law of cosines)
++    cos_sep = (
++        _np.sin(sun_dec) * _np.sin(moon_dec)
++        + _np.cos(sun_dec) * _np.cos(moon_dec) * _np.cos(sun_ra - moon_ra)
++    )
++    sep_deg = _np.degrees(_np.arccos(_np.clip(cos_sep, -1.0, 1.0)))
++
++    sep_deg[~sun_above] = _np.inf
++    return sep_deg
++
++
+ def _solve_solar_greatest_location(
+     calc: EclipseCalculator,
+     jd_ut: float,
+@@ -2157,22 +2217,26 @@
+ 
+ 
+ def _solve_solar_central_interval(calc: EclipseCalculator, jd_ut: float) -> tuple[float, float]:
+-    deadline = time.perf_counter() + _SOLAR_CENTRAL_INTERVAL_TIMEOUT_S
+-    margin_evals = 0
+-
+-    def central_margin_at_time(t: float) -> float:
+-        nonlocal margin_evals
+-        if (
+-            margin_evals >= _SOLAR_CENTRAL_INTERVAL_MAX_MARGIN_EVALS
+-            or time.perf_counter() >= deadline
+-        ):
+-            raise _SearchLimitReached()
+-        margin_evals += 1
+-        _, _, margin = _best_solar_central_margin(calc, t)
+-        return margin
+-
++    def build_margin_solver():
++        deadline = time.perf_counter() + _SOLAR_CENTRAL_INTERVAL_TIMEOUT_S
++        margin_evals = 0
++
++        def central_margin_at_time(t: float) -> float:
++            nonlocal margin_evals
++            if (
++                margin_evals >= _SOLAR_CENTRAL_INTERVAL_MAX_MARGIN_EVALS
++                or time.perf_counter() >= deadline
++            ):
++                raise _SearchLimitReached()
++            margin_evals += 1
++            _, _, margin = _best_solar_central_margin(calc, t)
++            return margin
++
++        return central_margin_at_time
++
++    center_margin_at_time = build_margin_solver()
+     try:
+-        center_margin = central_margin_at_time(jd_ut)
++        center_margin = center_margin_at_time(jd_ut)
+     except _SearchLimitReached:
+         return jd_ut, jd_ut
+     if center_margin <= 0.0:
+@@ -2181,6 +2245,7 @@
+     step = _SOLAR_CENTRAL_INTERVAL_STEP_DAYS
+ 
+     def solve_boundary(direction: float) -> float:
++        central_margin_at_time = build_margin_solver()
+         current = jd_ut
+         for _ in range(_SOLAR_CENTRAL_INTERVAL_SCAN_STEPS):
+             next_time = current + (direction * step)
+
+--- REPO/facade.py
++++ DRIFT/facade.py
+@@ -513,6 +513,15 @@
+     load_asteroid_kernel, load_secondary_kernel, load_tertiary_kernel,
+     ASTEROID_NAIF,
+ )
++from .asteroid_families import (
++    FamilyResonance,
++    ResonantAspect,
++    asteroid_family,
++    family_members,
++    families_in_chart,
++    find_resonant_aspects,
++    resonance_network,
++)
+ from .comets import (
+     CometData, comet_at, all_comets_at, list_comets,
+     load_comet_kernel, COMET_NAIF,
+@@ -687,6 +696,7 @@
+     PhenomenonEvent, OrbitalResonance, greatest_elongation, perihelion, aphelion,
+     next_moon_phase, moon_phases_in_range,
+     next_conjunction, conjunctions_in_range, resonance,
++    next_heliocentric_conjunction, heliocentric_conjunctions_in_range,
+     PlanetPhenomena, planet_phenomena_at,
+ )
+ from .manazil import (
+@@ -1162,6 +1172,7 @@
+     "PhenomenonEvent", "OrbitalResonance", "greatest_elongation", "perihelion", "aphelion",
+     "next_moon_phase", "moon_phases_in_range",
+     "next_conjunction", "conjunctions_in_range", "resonance",
++    "next_heliocentric_conjunction", "heliocentric_conjunctions_in_range",
+     "PlanetPhenomena", "planet_phenomena_at",
+     # Arabic Lunar Mansions
+     "MansionInfo", "MansionPosition", "MansionTradition", "MANSIONS", "MANSION_SPAN",
+@@ -1248,6 +1259,15 @@
+     # Electional search
+     "ElectionalPolicy", "ElectionalWindow",
+     "find_electional_windows", "find_electional_moments",
++    # Asteroids
++    "AsteroidData", "ASTEROID_NAIF",
++    "asteroid_at", "all_asteroids_at", "list_asteroids",
++    "available_in_kernel",
++    "load_asteroid_kernel", "load_secondary_kernel", "load_tertiary_kernel",
++    # Asteroid families
++    "FamilyResonance", "ResonantAspect",
++    "asteroid_family", "family_members", "families_in_chart",
++    "find_resonant_aspects", "resonance_network",
+     # Comets
+     "CometData", "COMET_NAIF",
+     "comet_at", "all_comets_at", "list_comets", "load_comet_kernel",
+
+--- REPO/lots.py
++++ DRIFT/lots.py
+@@ -47,7 +47,7 @@
+     "LotConditionProfile", "LotChartConditionProfile",
+     "LotConditionNetworkNode", "LotConditionNetworkEdge", "LotConditionNetworkProfile",
+     # Core vessels
+-    "ArabicPart", "PartDefinition",
++    "ArabicPart",
+     # Functions
+     "calculate_lots",
+     "calculate_lot_dependencies", "calculate_all_lot_dependencies",
+
+--- REPO/patterns.py
++++ DRIFT/patterns.py
+@@ -793,13 +793,13 @@
+     Return the aspect between b1 and b2 if it was admitted within ``orb``
+     degrees of ``target_angle``, else None.
+ 
+-    Admission test: asp.orb <= orb.
+-    The asp.orb field already encodes the angular deviation from the target
+-    angle as recorded at admission time by find_aspects; no secondary
+-    angle check is applied here.
++    Admission test: asp.angle matches target_angle and asp.orb <= orb.
++    The asp.orb field encodes angular deviation from the aspect definition
++    that admitted the pair, so it is only meaningful after checking that the
++    admitted aspect is the same angle this pattern edge requested.
+     """
+     asp = aspect_map.get((b1, b2))
+-    if asp is not None and asp.orb <= orb:
++    if asp is not None and abs(float(asp.angle) - float(target_angle)) <= 1e-6 and asp.orb <= orb:
+         return asp
+     return None
+ 
+
+--- REPO/phenomena.py
++++ DRIFT/phenomena.py
+@@ -42,7 +42,7 @@
+ 
+ from .constants import Body, KM_PER_AU, SIDEREAL_YEAR
+ from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd, format_jd_utc, ut_to_tt
+-from .planets import planet_at
++from .planets import planet_at, planet_relative_to
+ from .spk_reader import get_reader, SpkReader
+ 
+ __all__ = [
+@@ -57,9 +57,10 @@
+     "moon_phases_in_range",
+     "next_conjunction",
+     "conjunctions_in_range",
++    "next_heliocentric_conjunction",
++    "heliocentric_conjunctions_in_range",
+     "PlanetPhenomena",
+     "planet_phenomena_at",
+-    "find_closest_resonance",
+ ]
+ 
+ # ---------------------------------------------------------------------------
+@@ -929,6 +930,181 @@
+ 
+ 
+ # ---------------------------------------------------------------------------
++# Heliocentric Conjunction Solver
++# ---------------------------------------------------------------------------
++
++def _helio_conjunction_separation(
++    body1: str, body2: str, jd: float, reader: SpkReader,
++) -> float:
++    """Signed heliocentric longitude separation in (-180, +180]."""
++    p1 = planet_relative_to(body1, Body.SUN, jd, reader=reader)
++    p2 = planet_relative_to(body2, Body.SUN, jd, reader=reader)
++    return (p1.longitude - p2.longitude + 180.0) % 360.0 - 180.0
++
++
++def _bisect_helio_conjunction(
++    body1: str,
++    body2: str,
++    jd_lo: float,
++    jd_hi: float,
++    reader: SpkReader,
++    tol_days: float = 1e-8,
++    max_iter: int = 96,
++) -> float:
++    """96-iteration bisection + secant refinement for a heliocentric conjunction root."""
++    def diff(t: float) -> float:
++        return _helio_conjunction_separation(body1, body2, t, reader)
++
++    d_lo = diff(jd_lo)
++    d_hi = diff(jd_hi)
++    if d_lo == 0.0:
++        return jd_lo
++    if d_hi == 0.0:
++        return jd_hi
++
++    for _ in range(max_iter):
++        if jd_hi - jd_lo < tol_days:
++            break
++        jd_mid = (jd_lo + jd_hi) / 2.0
++        if jd_mid == jd_lo or jd_mid == jd_hi:
++            break
++        d_mid = diff(jd_mid)
++        if d_lo * d_mid <= 0:
++            jd_hi = jd_mid
++            d_hi = d_mid
++        else:
++            jd_lo = jd_mid
++            d_lo = d_mid
++
++    jd_mid = (jd_lo + jd_hi) / 2.0
++    candidates = [jd_lo, jd_mid, jd_hi]
++    if d_hi != d_lo:
++        jd_secant = jd_lo - d_lo * (jd_hi - jd_lo) / (d_hi - d_lo)
++        if jd_lo <= jd_secant <= jd_hi:
++            candidates.append(jd_secant)
++
++    return min(candidates, key=lambda t: abs(diff(t)))
++
++
++def _polish_helio_conjunction_root(
++    body1: str,
++    body2: str,
++    jd: float,
++    reader: SpkReader,
++    neighborhood_steps: int = 64,
++) -> float:
++    """Sub-second neighbourhood search for the sharpest heliocentric conjunction root."""
++    one_second = 1.0 / 86400.0
++
++    def metrics(t: float) -> tuple[float, float]:
++        center = _helio_conjunction_separation(body1, body2, t, reader)
++        before = _helio_conjunction_separation(body1, body2, t - one_second, reader)
++        after  = _helio_conjunction_separation(body1, body2, t + one_second, reader)
++        symmetry = abs(abs(after) - abs(before))
++        return center, symmetry
++
++    best_jd = jd
++    best_center, best_symmetry = metrics(jd)
++    best_score = (
++        abs(best_center) + best_symmetry,
++        max(abs(best_center), best_symmetry),
++        abs(best_center),
++        best_symmetry,
++    )
++
++    for direction in (math.inf, -math.inf):
++        candidate = jd
++        for _ in range(neighborhood_steps):
++            candidate = math.nextafter(candidate, direction)
++            center, symmetry = metrics(candidate)
++            score = (
++                abs(center) + symmetry,
++                max(abs(center), symmetry),
++                abs(center),
++                symmetry,
++            )
++            if score < best_score:
++                best_jd = candidate
++                best_center = center
++                best_symmetry = symmetry
++                best_score = score
++
++    return best_jd
++
++
++def next_heliocentric_conjunction(
++    body1: str,
++    body2: str,
++    jd_start: float,
++    reader: SpkReader | None = None,
++    max_days: float = 800.0,
++) -> PhenomenonEvent | None:
++    """Find the next heliocentric conjunction between two bodies.
++
++    A heliocentric conjunction occurs when ``body1`` and ``body2`` share the
++    same ecliptic longitude as seen from the Sun.  Detection uses a 3-day
++    geometric scan followed by the same two-pass bisection and sub-second
++    polishing used by :func:`next_conjunction`.
++    """
++    if reader is None:
++        reader = get_reader()
++
++    step = 3.0
++    jd = jd_start
++    prev_sep = _helio_conjunction_separation(body1, body2, jd, reader)
++
++    while jd < jd_start + max_days:
++        jd_next = jd + step
++        next_sep = _helio_conjunction_separation(body1, body2, jd_next, reader)
++
++        if prev_sep * next_sep < 0 and abs(prev_sep) < 90.0:
++            jd_exact = _bisect_helio_conjunction(body1, body2, jd, jd_next, reader)
++            jd_exact = _polish_helio_conjunction_root(body1, body2, jd_exact, reader)
++            p1 = planet_relative_to(body1, Body.SUN, jd_exact, reader=reader)
++            return PhenomenonEvent(
++                body=f"{body1}-{body2}",
++                phenomenon="Heliocentric Conjunction",
++                jd_ut=jd_exact,
++                value=p1.longitude,
++            )
++
++        jd = jd_next
++        prev_sep = next_sep
++
++    return None
++
++
++def heliocentric_conjunctions_in_range(
++    body1: str,
++    body2: str,
++    jd_start: float,
++    jd_end: float,
++    reader: SpkReader | None = None,
++) -> list[PhenomenonEvent]:
++    """Find all heliocentric conjunctions between two bodies in a JD range.
++
++    Returns a list of :class:`PhenomenonEvent` in chronological order.  Each
++    event carries ``jd_ut`` at sub-second precision, ``value`` equal to the
++    heliocentric longitude of ``body1`` at exact conjunction, and
++    ``phenomenon`` set to ``"Heliocentric Conjunction"``.
++    """
++    if reader is None:
++        reader = get_reader()
++
++    conjs: list[PhenomenonEvent] = []
++    jd = jd_start
++    while jd < jd_end:
++        ev = next_heliocentric_conjunction(
++            body1, body2, jd, reader=reader, max_days=(jd_end - jd + 1),
++        )
++        if ev is None:
++            break
++        conjs.append(ev)
++        jd = ev.jd_ut + 2.0
++    return conjs
++
++
++# ---------------------------------------------------------------------------
+ # PlanetPhenomena
+ # ---------------------------------------------------------------------------
+ 
+
+--- REPO/planetary_hours.py
++++ DRIFT/planetary_hours.py
+@@ -1,8 +1,7 @@
+ """
+ Moira — planetary_hours.py
+ The Planetary Hour Engine: governs traditional planetary hour computation
+-for any geographic location and input instant, resolved onto the enclosing
+-sunrise-based local day.
++for any geographic location and date.
+ 
+ Boundary: owns Chaldean hour sequence arithmetic, daytime/nighttime hour
+ division, and planetary hour lookup. Delegates solar position and
+@@ -148,23 +147,21 @@
+     """
+     RITE: The Planetary Hours Day Vessel
+ 
+-    THEOREM: Governs the storage of all 24 planetary hours for one
+-    sunrise-based local day window at a geographic location, with sunrise and
+-    sunset boundaries.
++    THEOREM: Governs the storage of all 24 planetary hours for a given calendar
++    day and geographic location, with sunrise and sunset boundaries.
+ 
+     RITE OF PURPOSE:
+-        PlanetaryHoursDay is the authoritative data vessel for a complete
+-        sunrise-to-sunrise planetary-hours window produced by the Planetary Hour
+-        Engine. It captures the reference Julian Day used to select the window,
+-        the observer's latitude and longitude, the sunrise and sunset Julian
+-        Days, and the full list of 24 PlanetaryHour instances. Without it,
+-        callers would receive unstructured collections with no field-level
+-        guarantees. It exists to give every higher-level consumer a single,
+-        named, immutable record of a complete planetary-hours day.
++        PlanetaryHoursDay is the authoritative data vessel for a complete day of
++        planetary hours produced by the Planetary Hour Engine. It captures the
++        reference Julian Day, the observer's latitude and longitude, the sunrise
++        and sunset Julian Days, and the full list of 24 PlanetaryHour instances.
++        Without it, callers would receive unstructured collections with no
++        field-level guarantees. It exists to give every higher-level consumer a
++        single, named, immutable record of a complete planetary hours day.
+ 
+     LAW OF OPERATION:
+         Responsibilities:
+-            - Store a complete sunrise-based planetary hours day as named, typed fields
++            - Store a complete planetary hours day as named, typed fields
+             - Expose sunrise and sunset as UTC datetime and CalendarDateTime views
+             - Provide hour_at() and lord_of_hour() lookup methods
+             - Serve as the return type of planetary_hours()
+@@ -251,80 +248,34 @@
+     reader: SpkReader | None = None,
+ ) -> PlanetaryHoursDay:
+     """
+-    Calculate all 24 planetary hours for the sunrise-based local day that
+-    contains *jd*.
++    Calculate all 24 planetary hours for the calendar day of *jd*.
+ 
+     Parameters
+     ----------
+-    jd        : Julian Day (UT) — the instant whose enclosing planetary-hours
+-                day should be resolved
++    jd        : Julian Day (UT) — any time during the target day
+     latitude  : geographic latitude (degrees, N positive)
+     longitude : geographic longitude (degrees, E positive)
+     reader    : SpkReader instance
+ 
+     Returns
+     -------
+-    PlanetaryHoursDay with the sunrise, sunset, and 24 planetary hours for the
+-    sunrise-to-sunrise local window containing *jd*.
++    PlanetaryHoursDay with all 24 PlanetaryHour instances.
+     """
+     if reader is None:
+         reader = get_reader()
+ 
+-    # Anchor to the UT day containing jd, then choose the sunrise-based local
+-    # day window that actually contains the instant.
+-    jd_noon = math.floor(jd - 0.5) + 1.0
+-
++    # Get approximate noon for the day
++    jd_noon = math.floor(jd - 0.5) + 0.5 + 0.5  # 12:00 UT for the day
++
++    # Sunrise and sunset with iterative refinement
+     jd_sr_approx, jd_ss_approx = _sunrise_sunset(jd_noon, latitude, longitude, reader)
+-    jd_sunrise_today = _refine_sunrise(
+-        jd_sr_approx,
+-        latitude,
+-        longitude,
+-        reader,
+-        is_rise=True,
+-    )
+-    jd_sunset_today = _refine_sunrise(
+-        jd_ss_approx,
+-        latitude,
+-        longitude,
+-        reader,
+-        is_rise=False,
+-    )
+-
+-    if jd < jd_sunrise_today:
+-        jd_prev_noon = jd_noon - 1.0
+-        jd_prev_sr_approx, jd_prev_ss_approx = _sunrise_sunset(
+-            jd_prev_noon,
+-            latitude,
+-            longitude,
+-            reader,
+-        )
+-        jd_sunrise = _refine_sunrise(
+-            jd_prev_sr_approx,
+-            latitude,
+-            longitude,
+-            reader,
+-            is_rise=True,
+-        )
+-        jd_sunset = _refine_sunrise(
+-            jd_prev_ss_approx,
+-            latitude,
+-            longitude,
+-            reader,
+-            is_rise=False,
+-        )
+-        jd_next_sunrise = jd_sunrise_today
+-    else:
+-        jd_sunrise = jd_sunrise_today
+-        jd_sunset = jd_sunset_today
+-        jd_next_noon = jd_noon + 1.0
+-        jd_nr_approx, _ = _sunrise_sunset(jd_next_noon, latitude, longitude, reader)
+-        jd_next_sunrise = _refine_sunrise(
+-            jd_nr_approx,
+-            latitude,
+-            longitude,
+-            reader,
+-            is_rise=True,
+-        )
++    jd_sunrise = _refine_sunrise(jd_sr_approx, latitude, longitude, reader, is_rise=True)
++    jd_sunset  = _refine_sunrise(jd_ss_approx, latitude, longitude, reader, is_rise=False)
++
++    # Next sunrise (for night hours boundary)
++    jd_next_noon = jd_noon + 1.0
++    jd_nr_approx, _ = _sunrise_sunset(jd_next_noon, latitude, longitude, reader)
++    jd_next_sunrise = _refine_sunrise(jd_nr_approx, latitude, longitude, reader, is_rise=True)
+ 
+     # Day-of-week from sunrise JD (to determine day ruler)
+     # Julian Day 0 = Monday (weekday 1 in ISO, 0 in our scheme = Sunday)
+
+--- REPO/planets.py
++++ DRIFT/planets.py
+@@ -50,7 +50,7 @@
+ from .corrections import (
+     apply_light_time, apply_aberration, apply_deflection, apply_frame_bias,
+     apply_refraction, SCHWARZSCHILD_RADII,
+-    topocentric_correction, apply_diurnal_aberration, C_KM_PER_DAY,
++    topocentric_correction, C_KM_PER_DAY,
+ )
+ from .precession import general_precession_in_longitude
+ 
+@@ -806,12 +806,6 @@
+         xyz0 = topocentric_correction(
+             xyz0, observer_lat, observer_lon, lst_deg, observer_elev_m
+         )
+-        
+-        # 7b. Topocentric diurnal aberration (geocentric only, after parallax)
+-        # Apply diurnal aberration correction for observer's velocity due to Earth's rotation
+-        xyz0 = apply_diurnal_aberration(
+-            xyz0, observer_lat, observer_lon, lst_deg, observer_elev_m
+-        )
+ 
+     if frame == 'cartesian':
+         return CartesianPosition(name=body, x=xyz0[0], y=xyz0[1], z=xyz0[2], center=center)
+@@ -957,9 +951,6 @@
+     # Step 7: Topocentric correction
+     lst_deg = local_sidereal_time(jd_ut, observer_lon, dpsi_deg, obliquity)
+     xyz = topocentric_correction(xyz, observer_lat, observer_lon, lst_deg, observer_elev_m)
+-    
+-    # Step 7b: Topocentric diurnal aberration (after parallax)
+-    xyz = apply_diurnal_aberration(xyz, observer_lat, observer_lon, lst_deg, observer_elev_m)
+ 
+     ra_deg, dec_deg, dist = icrf_to_equatorial(xyz)
+     az_deg, alt_deg = equatorial_to_horizontal(ra_deg, dec_deg, lst_deg, observer_lat)
+
+--- REPO/stars.py
++++ DRIFT/stars.py
+@@ -85,7 +85,6 @@
+     "list_named_stars",
+     "find_named_stars",
+     "star_name_resolves",
+-    "StellarQuality",
+ ]
+ 
+ _J2000 = 2451545.0
+

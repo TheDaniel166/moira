@@ -17,7 +17,8 @@
 | Create | `moira/lunar_cartography.py` | All data structures, helpers, public function |
 | Create | `tests/test_lunar_cartography.py` | Unit tests (kernel-free, mock-based) |
 | Modify | `moira/__init__.py` | Import + `__all__` entries |
-| Modify | `moira/facade.py` | Import + `__all__` entries |
+
+> **Note on `moira/facade.py`:** The existing `solar_cartography` module is *not* re-exported through `facade.py` — the cartography surface is published only through `moira/__init__.py`. This plan preserves that symmetry; lunar cartography is wired into `moira/__init__.py` only.
 
 ---
 
@@ -418,15 +419,17 @@ from moira.eclipse import LunarEclipseAnalysis
 
 
 def test_lunar_eclipse_contacts_delegates_to_analyze():
-    """_lunar_eclipse_contacts calls calc.analyze_lunar_eclipse(event)."""
+    """_lunar_eclipse_contacts forwards (jd_seed, kind, backward) to
+    calc.analyze_lunar_eclipse and returns its result unchanged."""
     calc = MagicMock()
-    event = MagicMock()
     fake_analysis = MagicMock(spec=LunarEclipseAnalysis)
     calc.analyze_lunar_eclipse.return_value = fake_analysis
 
-    result = _lunar_eclipse_contacts(calc, event)
+    result = _lunar_eclipse_contacts(calc, 2451545.0, kind="any", backward=False)
 
-    calc.analyze_lunar_eclipse.assert_called_once_with(event)
+    calc.analyze_lunar_eclipse.assert_called_once_with(
+        2451545.0, kind="any", backward=False
+    )
     assert result is fake_analysis
 
 
@@ -482,10 +485,18 @@ Expected: `ImportError`.
 
 ```python
 def _lunar_eclipse_contacts(
-    calc: EclipseCalculator, event
+    calc: EclipseCalculator,
+    jd_seed: float,
+    *,
+    kind: str = "any",
+    backward: bool = False,
 ) -> "LunarEclipseAnalysis":
-    """Wrap calc.analyze_lunar_eclipse to get full contact time analysis."""
-    return calc.analyze_lunar_eclipse(event)
+    """Wrap calc.analyze_lunar_eclipse to obtain the full contact-time analysis.
+
+    The returned LunarEclipseAnalysis exposes the searched event via
+    ``analysis.event`` and the contact-time vessel via ``analysis.contacts``.
+    """
+    return calc.analyze_lunar_eclipse(jd_seed, kind=kind, backward=backward)
 ```
 
 - [ ] **Step 4: Implement `_lunar_observer_quantities_batch_backend`**
@@ -598,8 +609,8 @@ def _make_calc_mock(contacts):
     calc._reader = MagicMock()
     event = MagicMock()
     event.jd_ut = 2451545.0
-    calc._search_lunar_eclipse.return_value = event
     analysis = MagicMock()
+    analysis.event = event
     analysis.contacts = contacts
     calc.analyze_lunar_eclipse.return_value = analysis
 
@@ -684,8 +695,12 @@ def lunar_eclipse_cartography(
     xp, backend_info = _select_backend(backend)
 
     # --- Find eclipse and contacts ----------------------------------------
-    event = calc._search_lunar_eclipse(jd_seed, kind=kind, backward=backward)
-    analysis = _lunar_eclipse_contacts(calc, event)
+    # ``analyze_lunar_eclipse`` accepts a Julian Day search seed (not an event
+    # object) and returns a LunarEclipseAnalysis whose ``.event`` field carries
+    # the searched event and whose ``.contacts`` field carries the contact
+    # times. The ``_lunar_eclipse_contacts`` wrapper forwards the call.
+    analysis = _lunar_eclipse_contacts(calc, jd_seed, kind=kind, backward=backward)
+    event = analysis.event
     contacts = analysis.contacts
 
     u1 = getattr(contacts, "u1", None)
@@ -873,14 +888,15 @@ git commit -m "feat: lunar_cartography — main cartography function"
 
 ---
 
-## Task 5: Wire Up `__init__.py` and `facade.py`
+## Task 5: Wire Up `moira/__init__.py`
+
+> **Scope note.** `moira/facade.py` is *not* modified by this task. The existing `solar_cartography` module is published only through `moira/__init__.py`, and lunar cartography mirrors that pattern. If a future change re-exports either cartography module through `facade.py`, both should be added together.
 
 **Files:**
 - Modify: `moira/__init__.py`
-- Modify: `moira/facade.py`
 - Modify: `tests/test_lunar_cartography.py`
 
-- [ ] **Step 1: Write failing import tests**
+- [ ] **Step 1: Write failing import test**
 
 ```python
 # append to tests/test_lunar_cartography.py
@@ -888,14 +904,9 @@ def test_lunar_cartography_importable_from_moira_top_level():
     from moira import LunarCartographyResult, lunar_eclipse_cartography
     assert LunarCartographyResult is not None
     assert lunar_eclipse_cartography is not None
-
-
-def test_lunar_cartography_importable_from_facade():
-    from moira.facade import LunarCartographyResult, lunar_eclipse_cartography
-    assert LunarCartographyResult is not None
 ```
 
-- [ ] **Step 2: Run tests — confirm FAIL**
+- [ ] **Step 2: Run test — confirm FAIL**
 
 ```
 pytest tests/test_lunar_cartography.py::test_lunar_cartography_importable_from_moira_top_level -v
@@ -904,39 +915,7 @@ Expected: `ImportError`.
 
 - [ ] **Step 3: Add to `moira/__init__.py`**
 
-Find the solar cartography import block (added in the drift-resolution session):
-```python
-from .solar_cartography import (
-    ArrayBackendInfo,
-    ...
-    solar_eclipse_cartography,
-)
-```
-
-Add immediately after it:
-```python
-from .lunar_cartography import (
-    LunarBesselianSample,
-    LunarShadowBand,
-    LunarContourLevel,
-    LunarCartographyResult,
-    lunar_eclipse_cartography,
-)
-```
-
-Then in `__all__`, find the `# Solar eclipse cartography` section and add a lunar block after it:
-```python
-    # Lunar eclipse cartography
-    "LunarBesselianSample",
-    "LunarShadowBand",
-    "LunarContourLevel",
-    "LunarCartographyResult",
-    "lunar_eclipse_cartography",
-```
-
-- [ ] **Step 4: Add to `moira/facade.py`**
-
-Find the solar_cartography import block in facade.py:
+Find the solar cartography import block:
 ```python
 from .solar_cartography import (
     ArrayBackendInfo,
@@ -959,7 +938,7 @@ from .lunar_cartography import (
 )
 ```
 
-Then in `facade.py`'s `__all__`, find the solar cartography block and add a lunar block after it:
+Then in `__all__`, find the solar cartography block (the entries `SolarBesselianSample`, `SolarCartographyResult`, `SolarContourLevel`, `SolarShadowBand`, `solar_eclipse_cartography`) and add a lunar block after it:
 ```python
     # Lunar eclipse cartography
     "LunarBesselianSample",
@@ -969,25 +948,25 @@ Then in `facade.py`'s `__all__`, find the solar cartography block and add a luna
     "lunar_eclipse_cartography",
 ```
 
-- [ ] **Step 5: Run all tests**
+- [ ] **Step 4: Run all tests**
 
 ```
 pytest tests/test_lunar_cartography.py -v
 ```
-Expected: 14 PASS.
+Expected: 13 PASS.
 
-- [ ] **Step 6: Verify top-level import works**
+- [ ] **Step 5: Verify top-level import works**
 
 ```
 python -c "from moira import lunar_eclipse_cartography, LunarCartographyResult; print('OK')"
 ```
 Expected: `OK`
 
-- [ ] **Step 7: Final commit**
+- [ ] **Step 6: Final commit**
 
 ```
-git add moira/__init__.py moira/facade.py tests/test_lunar_cartography.py
-git commit -m "feat: wire lunar_cartography into moira __init__ and facade"
+git add moira/__init__.py tests/test_lunar_cartography.py
+git commit -m "feat: wire lunar_cartography into moira top-level exports"
 ```
 
 ---
@@ -1001,7 +980,7 @@ git commit -m "feat: wire lunar_cartography into moira __init__ and facade"
 - ✅ Besselian sample series
 - ✅ GPU/CPU dual backend via `_select_backend` + `_topocentric_correction_batch_backend`
 - ✅ Adaptive grid centered on sub-lunar point
-- ✅ Wire-up in `__init__.py` and `facade.py`
+- ✅ Wire-up in `__init__.py` (mirrors `solar_cartography` — `facade.py` is intentionally not touched)
 - ✅ `eclipse_type` classification (total/partial/penumbral)
 
 **Type consistency:**

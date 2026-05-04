@@ -42,7 +42,7 @@ from datetime import datetime
 
 from .constants import Body, KM_PER_AU, SIDEREAL_YEAR
 from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd, format_jd_utc, ut_to_tt
-from .planets import planet_at
+from .planets import planet_at, planet_relative_to
 from .spk_reader import get_reader, SpkReader
 
 __all__ = [
@@ -60,6 +60,8 @@ __all__ = [
     "PlanetPhenomena",
     "planet_phenomena_at",
     "find_closest_resonance",
+    "next_heliocentric_conjunction",
+    "heliocentric_conjunctions_in_range",
 ]
 
 # ---------------------------------------------------------------------------
@@ -925,6 +927,181 @@ def conjunctions_in_range(
             jd = ev.jd_ut + 2.0 # skip past
         else:
             break
+    return conjs
+
+
+# ---------------------------------------------------------------------------
+# Heliocentric Conjunction Solver
+# ---------------------------------------------------------------------------
+
+def _helio_conjunction_separation(
+    body1: str, body2: str, jd: float, reader: SpkReader,
+) -> float:
+    """Signed heliocentric longitude separation in (-180, +180]."""
+    p1 = planet_relative_to(body1, Body.SUN, jd, reader=reader)
+    p2 = planet_relative_to(body2, Body.SUN, jd, reader=reader)
+    return (p1.longitude - p2.longitude + 180.0) % 360.0 - 180.0
+
+
+def _bisect_helio_conjunction(
+    body1: str,
+    body2: str,
+    jd_lo: float,
+    jd_hi: float,
+    reader: SpkReader,
+    tol_days: float = 1e-8,
+    max_iter: int = 96,
+) -> float:
+    """96-iteration bisection + secant refinement for a heliocentric conjunction root."""
+    def diff(t: float) -> float:
+        return _helio_conjunction_separation(body1, body2, t, reader)
+
+    d_lo = diff(jd_lo)
+    d_hi = diff(jd_hi)
+    if d_lo == 0.0:
+        return jd_lo
+    if d_hi == 0.0:
+        return jd_hi
+
+    for _ in range(max_iter):
+        if jd_hi - jd_lo < tol_days:
+            break
+        jd_mid = (jd_lo + jd_hi) / 2.0
+        if jd_mid == jd_lo or jd_mid == jd_hi:
+            break
+        d_mid = diff(jd_mid)
+        if d_lo * d_mid <= 0:
+            jd_hi = jd_mid
+            d_hi = d_mid
+        else:
+            jd_lo = jd_mid
+            d_lo = d_mid
+
+    jd_mid = (jd_lo + jd_hi) / 2.0
+    candidates = [jd_lo, jd_mid, jd_hi]
+    if d_hi != d_lo:
+        jd_secant = jd_lo - d_lo * (jd_hi - jd_lo) / (d_hi - d_lo)
+        if jd_lo <= jd_secant <= jd_hi:
+            candidates.append(jd_secant)
+
+    return min(candidates, key=lambda t: abs(diff(t)))
+
+
+def _polish_helio_conjunction_root(
+    body1: str,
+    body2: str,
+    jd: float,
+    reader: SpkReader,
+    neighborhood_steps: int = 64,
+) -> float:
+    """Sub-second neighbourhood search for the sharpest heliocentric conjunction root."""
+    one_second = 1.0 / 86400.0
+
+    def metrics(t: float) -> tuple[float, float]:
+        center = _helio_conjunction_separation(body1, body2, t, reader)
+        before = _helio_conjunction_separation(body1, body2, t - one_second, reader)
+        after  = _helio_conjunction_separation(body1, body2, t + one_second, reader)
+        symmetry = abs(abs(after) - abs(before))
+        return center, symmetry
+
+    best_jd = jd
+    best_center, best_symmetry = metrics(jd)
+    best_score = (
+        abs(best_center) + best_symmetry,
+        max(abs(best_center), best_symmetry),
+        abs(best_center),
+        best_symmetry,
+    )
+
+    for direction in (math.inf, -math.inf):
+        candidate = jd
+        for _ in range(neighborhood_steps):
+            candidate = math.nextafter(candidate, direction)
+            center, symmetry = metrics(candidate)
+            score = (
+                abs(center) + symmetry,
+                max(abs(center), symmetry),
+                abs(center),
+                symmetry,
+            )
+            if score < best_score:
+                best_jd = candidate
+                best_center = center
+                best_symmetry = symmetry
+                best_score = score
+
+    return best_jd
+
+
+def next_heliocentric_conjunction(
+    body1: str,
+    body2: str,
+    jd_start: float,
+    reader: SpkReader | None = None,
+    max_days: float = 800.0,
+) -> PhenomenonEvent | None:
+    """Find the next heliocentric conjunction between two bodies.
+
+    A heliocentric conjunction occurs when ``body1`` and ``body2`` share the
+    same ecliptic longitude as seen from the Sun.  Detection uses a 3-day
+    geometric scan followed by the same two-pass bisection and sub-second
+    polishing used by :func:`next_conjunction`.
+    """
+    if reader is None:
+        reader = get_reader()
+
+    step = 3.0
+    jd = jd_start
+    prev_sep = _helio_conjunction_separation(body1, body2, jd, reader)
+
+    while jd < jd_start + max_days:
+        jd_next = jd + step
+        next_sep = _helio_conjunction_separation(body1, body2, jd_next, reader)
+
+        if prev_sep * next_sep < 0 and abs(prev_sep) < 90.0:
+            jd_exact = _bisect_helio_conjunction(body1, body2, jd, jd_next, reader)
+            jd_exact = _polish_helio_conjunction_root(body1, body2, jd_exact, reader)
+            p1 = planet_relative_to(body1, Body.SUN, jd_exact, reader=reader)
+            return PhenomenonEvent(
+                body=f"{body1}-{body2}",
+                phenomenon="Heliocentric Conjunction",
+                jd_ut=jd_exact,
+                value=p1.longitude,
+            )
+
+        jd = jd_next
+        prev_sep = next_sep
+
+    return None
+
+
+def heliocentric_conjunctions_in_range(
+    body1: str,
+    body2: str,
+    jd_start: float,
+    jd_end: float,
+    reader: SpkReader | None = None,
+) -> list[PhenomenonEvent]:
+    """Find all heliocentric conjunctions between two bodies in a JD range.
+
+    Returns a list of :class:`PhenomenonEvent` in chronological order.  Each
+    event carries ``jd_ut`` at sub-second precision, ``value`` equal to the
+    heliocentric longitude of ``body1`` at exact conjunction, and
+    ``phenomenon`` set to ``"Heliocentric Conjunction"``.
+    """
+    if reader is None:
+        reader = get_reader()
+
+    conjs: list[PhenomenonEvent] = []
+    jd = jd_start
+    while jd < jd_end:
+        ev = next_heliocentric_conjunction(
+            body1, body2, jd, reader=reader, max_days=(jd_end - jd + 1),
+        )
+        if ev is None:
+            break
+        conjs.append(ev)
+        jd = ev.jd_ut + 2.0
     return conjs
 
 

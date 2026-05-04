@@ -60,6 +60,21 @@ from .planetary_nodes import OrbitalNode, planetary_node, all_planetary_nodes, g
 from .phenomena import PlanetPhenomena, planet_phenomena_at
 from .orbits import DistanceExtremes, KeplerianElements, distance_extremes_at, orbital_elements_at
 from .planets import CartesianPosition, PlanetData, SkyPosition
+from .solar_cartography import (
+    ArrayBackendInfo,
+    SolarBesselianSample,
+    SolarCartographyResult,
+    SolarContourLevel,
+    SolarShadowBand,
+    solar_eclipse_cartography,
+)
+from .lunar_cartography import (
+    LunarBesselianSample,
+    LunarShadowBand,
+    LunarContourLevel,
+    LunarCartographyResult,
+    lunar_eclipse_cartography,
+)
 from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal, nakshatra_of, all_nakshatras_at
 from .aspects import AspectData
 from .harmograms import (
@@ -371,6 +386,8 @@ from .triplicity import (
 )
 
 __all__ = [
+    "__version__",
+    "__author__",
     "Moira",
     "Chart",
     "MissingEphemerisKernelError",
@@ -707,4 +724,17 @@ __all__ = [
     "void_periods_in_range",
     "VoidOfCourseWindow",
     "LastAspect",
+    # Solar eclipse cartography
+    "ArrayBackendInfo",
+    "SolarBesselianSample",
+    "SolarCartographyResult",
+    "SolarContourLevel",
+    "SolarShadowBand",
+    "solar_eclipse_cartography",
+    # Lunar eclipse cartography
+    "LunarBesselianSample",
+    "LunarShadowBand",
+    "LunarContourLevel",
+    "LunarCartographyResult",
+    "lunar_eclipse_cartography",
 ]

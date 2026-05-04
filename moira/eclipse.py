@@ -2157,22 +2157,26 @@ def _best_solar_central_margin(
 
 
 def _solve_solar_central_interval(calc: EclipseCalculator, jd_ut: float) -> tuple[float, float]:
-    deadline = time.perf_counter() + _SOLAR_CENTRAL_INTERVAL_TIMEOUT_S
-    margin_evals = 0
+    def build_margin_solver():
+        deadline = time.perf_counter() + _SOLAR_CENTRAL_INTERVAL_TIMEOUT_S
+        margin_evals = 0
 
-    def central_margin_at_time(t: float) -> float:
-        nonlocal margin_evals
-        if (
-            margin_evals >= _SOLAR_CENTRAL_INTERVAL_MAX_MARGIN_EVALS
-            or time.perf_counter() >= deadline
-        ):
-            raise _SearchLimitReached()
-        margin_evals += 1
-        _, _, margin = _best_solar_central_margin(calc, t)
-        return margin
+        def central_margin_at_time(t: float) -> float:
+            nonlocal margin_evals
+            if (
+                margin_evals >= _SOLAR_CENTRAL_INTERVAL_MAX_MARGIN_EVALS
+                or time.perf_counter() >= deadline
+            ):
+                raise _SearchLimitReached()
+            margin_evals += 1
+            _, _, margin = _best_solar_central_margin(calc, t)
+            return margin
 
+        return central_margin_at_time
+
+    center_margin_at_time = build_margin_solver()
     try:
-        center_margin = central_margin_at_time(jd_ut)
+        center_margin = center_margin_at_time(jd_ut)
     except _SearchLimitReached:
         return jd_ut, jd_ut
     if center_margin <= 0.0:
@@ -2181,6 +2185,7 @@ def _solve_solar_central_interval(calc: EclipseCalculator, jd_ut: float) -> tupl
     step = _SOLAR_CENTRAL_INTERVAL_STEP_DAYS
 
     def solve_boundary(direction: float) -> float:
+        central_margin_at_time = build_margin_solver()
         current = jd_ut
         for _ in range(_SOLAR_CENTRAL_INTERVAL_SCAN_STEPS):
             next_time = current + (direction * step)

@@ -10,8 +10,14 @@ from moira.lunar_cartography import (
     LunarCartographyResult,
     _sublunar_point,
     _compute_lunar_besselian_sample,
+    _lunar_eclipse_contacts,
+    _lunar_observer_quantities_batch_backend,
+    lunar_eclipse_cartography,
 )
 from moira.solar_cartography import ArrayBackendInfo
+from moira.eclipse import LunarEclipseAnalysis
+from moira.eclipse_contacts import LunarEclipseContacts
+from moira.constants import Body
 
 
 def test_lunar_shadow_band_is_frozen():
@@ -122,3 +128,136 @@ def test_besselian_sample_magnitude_positive_at_eclipse():
     assert sample.umbral_radius_earth_radii > 0.0
     assert sample.penumbral_radius_earth_radii > sample.umbral_radius_earth_radii
     assert abs(sample.moon_declination_deg - 90.0) < 0.5
+
+
+def test_lunar_eclipse_contacts_delegates_to_analyze():
+    """_lunar_eclipse_contacts forwards (jd_seed, kind, backward) to
+    calc.analyze_lunar_eclipse and returns its result unchanged."""
+    calc = MagicMock()
+    fake_analysis = MagicMock(spec=LunarEclipseAnalysis)
+    calc.analyze_lunar_eclipse.return_value = fake_analysis
+
+    result = _lunar_eclipse_contacts(calc, 2451545.0, kind="any", backward=False)
+
+    calc.analyze_lunar_eclipse.assert_called_once_with(
+        2451545.0, kind="any", backward=False
+    )
+    assert result is fake_analysis
+
+
+def test_moon_altitude_near_zenith_at_sublunar_point():
+    """Moon at RA=0°, Dec=0°, GAST=0°: observer at (lat=0°, lon=0°) should
+    see Moon near zenith (altitude ≈ 90°)."""
+    calc = MagicMock()
+    moon = _make_moon_cart(384400.0, 0.0, 0.0)
+
+    with patch("moira.lunar_cartography.planet_at", return_value=moon), \
+         patch("moira.lunar_cartography.local_sidereal_time", return_value=0.0):
+        alt, ha, above = _lunar_observer_quantities_batch_backend(
+            calc,
+            2451545.0,
+            _np.array([0.0]),
+            _np.array([0.0]),
+            _np,
+        )
+
+    assert float(alt[0]) > 85.0
+    assert bool(above[0])
+
+
+def test_moon_below_horizon_at_antipode():
+    """Observer at antipode of sub-lunar point sees Moon below horizon."""
+    calc = MagicMock()
+    # Moon at RA=0°, Dec=0°, GAST=0° → sub-lunar at (0°, 0°)
+    # Antipode at (0°, 180°)
+    moon = _make_moon_cart(384400.0, 0.0, 0.0)
+
+    with patch("moira.lunar_cartography.planet_at", return_value=moon), \
+         patch("moira.lunar_cartography.local_sidereal_time", return_value=0.0):
+        alt, ha, above = _lunar_observer_quantities_batch_backend(
+            calc,
+            2451545.0,
+            _np.array([0.0]),
+            _np.array([180.0]),
+            _np,
+        )
+
+    assert float(alt[0]) < -85.0
+    assert not bool(above[0])
+
+
+def _make_contacts(*, total=True):
+    """Build a realistic LunarEclipseContacts for a total eclipse."""
+    g = 2451545.0
+    if total:
+        return LunarEclipseContacts(
+            p1=g - 0.08,
+            u1=g - 0.04,
+            u2=g - 0.01,
+            greatest=g,
+            u3=g + 0.01,
+            u4=g + 0.04,
+            p4=g + 0.08,
+        )
+    return LunarEclipseContacts(
+        p1=g - 0.08,
+        u1=g - 0.04,
+        u2=None,
+        greatest=g,
+        u3=None,
+        u4=g + 0.04,
+        p4=g + 0.08,
+    )
+
+
+def _make_calc_mock(contacts):
+    calc = MagicMock()
+    calc._reader = MagicMock()
+    event = MagicMock()
+    event.jd_ut = 2451545.0
+    analysis = MagicMock()
+    analysis.event = event
+    analysis.contacts = contacts
+    calc.analyze_lunar_eclipse.return_value = analysis
+
+    moon = _make_moon_cart(384400.0, 0.0, 0.0)
+    sun = _make_sun_cart(-149_597_870.0, 0.0, 0.0)
+
+    def fake_planet_at(body, jd, **kwargs):
+        return moon if body == Body.MOON else sun
+
+    return calc, fake_planet_at
+
+
+def test_lunar_cartography_returns_result_for_total_eclipse():
+    contacts = _make_contacts(total=True)
+    calc, fake_planet_at = _make_calc_mock(contacts)
+
+    with patch("moira.lunar_cartography.planet_at", side_effect=fake_planet_at), \
+         patch("moira.lunar_cartography.local_sidereal_time", return_value=0.0):
+        result = lunar_eclipse_cartography(calc, 2451545.0, backend="cpu")
+
+    assert isinstance(result, LunarCartographyResult)
+    assert result.eclipse_type == "total"
+    assert result.event_jd_ut == 2451545.0
+    assert len(result.besselian_samples) > 0
+    assert len(result.sample_jds_ut) > 0
+
+
+def test_lunar_cartography_partial_has_empty_total_band():
+    contacts = _make_contacts(total=False)
+    calc, fake_planet_at = _make_calc_mock(contacts)
+
+    with patch("moira.lunar_cartography.planet_at", side_effect=fake_planet_at), \
+         patch("moira.lunar_cartography.local_sidereal_time", return_value=0.0):
+        result = lunar_eclipse_cartography(calc, 2451545.0, backend="cpu")
+
+    assert result.eclipse_type == "partial"
+    assert result.total_band.south_curve == ()
+    assert result.total_band.north_curve == ()
+
+
+def test_lunar_cartography_importable_from_moira_top_level():
+    from moira import LunarCartographyResult, lunar_eclipse_cartography
+    assert LunarCartographyResult is not None
+    assert lunar_eclipse_cartography is not None

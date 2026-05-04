@@ -517,6 +517,15 @@ from .comets import (
     CometData, comet_at, all_comets_at, list_comets,
     load_comet_kernel, COMET_NAIF,
 )
+from .asteroid_families import (
+    FamilyResonance,
+    ResonantAspect,
+    asteroid_family,
+    family_members,
+    families_in_chart,
+    find_resonant_aspects,
+    resonance_network,
+)
 from .planets import HeliocentricData, heliocentric_planet_at, all_heliocentric_at
 from .planetocentric import (
     PlanetocentricData,
@@ -688,6 +697,7 @@ from .phenomena import (
     next_moon_phase, moon_phases_in_range,
     next_conjunction, conjunctions_in_range, resonance,
     PlanetPhenomena, planet_phenomena_at,
+    next_heliocentric_conjunction, heliocentric_conjunctions_in_range,
 )
 from .manazil import (
     MansionInfo, MansionPosition, MansionTradition, MANSIONS, MANSION_SPAN,
@@ -1163,6 +1173,7 @@ __all__ = [
     "next_moon_phase", "moon_phases_in_range",
     "next_conjunction", "conjunctions_in_range", "resonance",
     "PlanetPhenomena", "planet_phenomena_at",
+    "next_heliocentric_conjunction", "heliocentric_conjunctions_in_range",
     # Arabic Lunar Mansions
     "MansionInfo", "MansionPosition", "MansionTradition", "MANSIONS", "MANSION_SPAN",
     "mansion_of", "mansion_of_sidereal", "all_mansions_at", "all_mansions_at_sidereal",
@@ -1251,6 +1262,15 @@ __all__ = [
     # Comets
     "CometData", "COMET_NAIF",
     "comet_at", "all_comets_at", "list_comets", "load_comet_kernel",
+    # Asteroids
+    "AsteroidData", "ASTEROID_NAIF",
+    "asteroid_at", "all_asteroids_at", "list_asteroids",
+    "available_in_kernel",
+    "load_asteroid_kernel", "load_secondary_kernel", "load_tertiary_kernel",
+    # Asteroid families
+    "FamilyResonance", "ResonantAspect",
+    "asteroid_family", "family_members", "families_in_chart",
+    "find_resonant_aspects", "resonance_network",
 ]
 
 
