@@ -93,8 +93,9 @@ markers = [
     "slow:            tests that take more than ~5 seconds",
     "requires_ephemeris: tests that need de441.bsp to be present",
     "property:        property-based tests (Hypothesis)",
-    "template:        template/boilerplate tests (opt-in via ISOPGEM_RUN_TEMPLATES=1)",
-    "experimental:    experimental tests (opt-in via ISOPGEM_RUN_EXPERIMENTAL=1)",
+    "template:        template/boilerplate tests (opt-in via MOIRA_RUN_TEMPLATES=1)",
+    "experimental:    experimental tests (opt-in via MOIRA_RUN_EXPERIMENTAL=1)",
     "parallel:        safe to run in parallel with pytest-xdist",
     "serial:          must run serially (global state / file locks)",
+    "ui:              tests that require a Qt application instance (PySide6)",
 ]
