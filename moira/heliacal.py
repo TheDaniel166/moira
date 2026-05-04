@@ -1,119 +1,47 @@
 from __future__ import annotations
 """
-Moira — heliacal.py
-Heliacal and Visibility Doctrine Pillar
+Moira — Heliacal and Visibility Doctrine
+=========================================
+
+Archetype: Substrate Anchor (Phenomena Engine)
 
 Purpose
 -------
-Provides the complete heliacal and generalized visibility doctrine surface for Moira:
-- typed doctrine surfaces for heliacal phenomena and generalized visibility policy
-- concrete planetary heliacal/acronychal event helpers
-- the generalized visibility event surface for planets, fixed stars, and the Moon
-- observer-environment policy with Bortle-class light-pollution derivation
-- moonlight-aware limiting-magnitude penalty via Krisciunas & Schaefer (1991)
-
-Implemented surfaces:
-- ``HeliacalEventKind``                    — exhaustive event-kind enum
-- ``VisibilityTargetKind``                 — planet / star / moon classifier
-- ``LightPollutionClass``                  — Bortle 1–9 typed scale
-- ``LightPollutionDerivationMode``         — Bortle table or linear derivation
-- ``ObserverAid``                          — naked eye / binoculars / telescope
-- ``ObserverVisibilityEnvironment``        — full observer environment vessel
-- ``VisibilityCriterionFamily``            — limiting-magnitude threshold and
-                                             Yallop lunar crescent
-- ``VisibilityExtinctionModel``            — named extinction treatment slot
-- ``VisibilityTwilightModel``              — named twilight treatment slot
-- ``ExtinctionCoefficient``               — named reference values (K&S 1991)
-- ``MoonlightPolicy``                      — IGNORE or KRISCIUNAS_SCHAEFER_1991
-- ``VisibilityPolicy``                     — unified admitted visibility policy;
-                                             includes ``extinction_coefficient_k``
-- ``VisibilitySearchPolicy``               — search-window and step-size policy
-- ``LunarCrescentVisibilityClass``         — Yallop A–F class
-- ``LunarCrescentDetails``                 — Yallop derived quantities vessel
-- ``VisibilityAssessment``                 — direct visibility result at one instant
-- ``GeneralVisibilityEvent``               — generalized event search result
-- ``PlanetHeliacalEvent``                  — narrow planetary event result
-- ``VisibilityModel``                      — legacy narrow observer vessel (V0 compat)
-- ``HeliacalPolicy``                       — legacy narrow policy vessel (V0 compat)
-- ``visibility_assessment``               — single-instant observability check
-- ``visual_limiting_magnitude``           — effective limiting magnitude at an instant
-- ``visibility_event``                     — generalized event search surface
-- ``planet_heliacal_rising``
-- ``planet_heliacal_setting``
-- ``planet_acronychal_rising``
-- ``planet_acronychal_setting``
+Provides the complete heliacal and generalized visibility doctrine surface for Moira. 
+This includes typed doctrine surfaces for heliacal phenomena, generalized 
+visibility policy, and specialized models for moonlight-aware limiting-magnitude 
+penalties (Krisciunas & Schaefer 1991).
 
 Boundary
 --------
 Owns:
-    All heliacal and visibility doctrine surfaces listed above.
+    - HeliacalEventKind exhaustive event-kind enum.
+    - Generalized visibility event surface for planets, fixed stars, and the Moon.
+    - Observer-environment policy and Bortle-class light-pollution derivation.
+    - Moonlight-aware limiting-magnitude penalty models.
+Delegates:
+    - moira.stars      — fixed-star heliacal event search.
+    - moira.planets    — planetary apparent positions and magnitudes.
+    - moira.rise_set   — altitude, twilight, and rise/set phenomena.
 
-Delegates to:
-    moira.stars      — fixed-star heliacal event search (heliacal_rising_event,
-                       heliacal_setting_event)
-    moira.planets    — planetary apparent positions and magnitudes
-    moira.phase      — phase angle and apparent magnitude
-    moira.rise_set   — altitude, twilight, and rise/set phenomena
-    moira.coordinates — equatorial-to-horizontal transforms
+Data source
+-----------
+Krisciunas, K. & Schaefer, B.E. (1991), PASP 103, 1033–1039 (Moonlight).
+Bortle, J.E. (2001), Sky & Telescope 101(2), 126–129 (Light Pollution).
+Yallop, B.D. (1997), NAO Technical Note No. 69 (Lunar Crescent).
 
-Import-time side effects: None
+Import-time side effects
+------------------------
+None.
 
 External dependency assumptions
----------------------------------
-- DE441 kernel accessible via moira.planets (required for planetary positions).
+--------------------------------
+- DE441 kernel accessible via moira.planets.
 - moira.constants.Body constants available for body identity.
-- No OS-level features, threads, or network access required.
 
-Public surface / exports
-------------------------
-See ``__all__`` below.  All 27 names are stable public API.
-
-K&S 1991 moonlight model (V6 partial)
---------------------------------------
-Authority: Krisciunas, K. & Schaefer, B.E. (1991), PASP 103, 1033–1039.
-Implemented equations:
-- Eq. 9  — lunar apparent magnitude as a function of phase angle
-- Eq. 3  — atmospheric scattering function f(ρ)
-- Eq. 20 — top-of-atmosphere lunar illuminance I*(α)
-- Eq. 21 — moonlight sky brightness in nanolamberts
-The penalty is applied as Δm_L = −2.5 log₁₀(1 + B_moon / B_dark), where
-B_dark is derived from the Bortle SQM table.  The extinction coefficient
-defaults to 0.20 mag/airmass (good mid-latitude dark site); ``ExtinctionCoefficient``
-holds named reference values.
-
-Validation status
------------------
-- Yallop lunar crescent corpus: 295/295 within ±0.05 q-value (2026-04-05).
-  Mean residual 0.0077, max 0.0315.  See wiki/03_validation/VALIDATION_ASTRONOMY.md.
-- K&S 1991 moonlight: unit-tested against paper formulas; no live-ephemeris
-  integration corpus yet.
-
-Deferred
---------
-- Stellar heliacal event batch validation corpus beyond the Sothic/Sirius anchor.
-- Integration test for moonlight under real ephemeris conditions.
-- Summit-grade generalized visibility corpus across criterion families.
-- Terrain/horizon profile integration.
-
-Constitution entry
-------------------
-    Pillar:       Heliacal / Visibility
-    SCP entry:    moira/stars.py, STARS_BACKEND_STANDARD.md
-    Current state:
-        - planetary heliacal/acronychal helpers implemented (V0)
-        - observer-environment and light-pollution policy implemented (V1)
-        - visibility criterion family and limiting-magnitude doctrine (V2)
-        - generalized event surface for planets, stars, Moon (V3)
-        - Yallop corpus validation passing 295/295 (V4)
-        - public surface widened, 18 names promoted (V5)
-        - K&S 1991 moonlight model admitted (V6 partial)
-
-    Design invariants (must hold in all future changes):
-    - No legacy integer bitfields.
-    - Narrow planetary helpers remain distinguishable from the generalized surface.
-    - Visibility doctrine, observer environment, and search policy stay separate.
-    - HeliacalEventKind is exhaustive; new kinds require doctrinal justification.
-    - Results are in Julian Day (UT1), never formatted strings.
+Public surface
+--------------
+See __all__ below. All 27 names are stable public API.
 """
 
 import math

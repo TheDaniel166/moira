@@ -1,12 +1,39 @@
 """
-Validation engine for enforcing export governance rules.
+Moira — Governance Validation Orchestration
+===========================================
 
-This module provides comprehensive validation of __all__ declarations across
-packages, with support for strict mode and report mode.
+Archetype: Governance Logic (Logic Actor)
 
-Boundary: Owns validation orchestration and rule enforcement.
-Dependencies: scanner, parser, policy, classifier modules.
-Public surface: ValidationEngine class and ValidationResult dataclass.
+Purpose
+-------
+Governs the orchestration of export governance validation across the 
+Moira package. Coordinates discovery, parsing, and policy enforcement 
+to verify the integrity of the engine's public surface, identifying 
+structural violations and alignment issues.
+
+Boundary
+--------
+Owns:
+    - Validation orchestration logic.
+    - Strict mode enforcement policy.
+    - Aggregated validation reporting.
+Delegates:
+    - Module discovery to moira._export_governance.scanner.
+    - Symbol extraction to moira._export_governance.parser.
+    - Policy enforcement to moira._export_governance.policy.
+    - Classification to moira._export_governance.classifier.
+
+Import-time side effects
+------------------------
+None.
+
+External dependency assumptions
+--------------------------------
+- Filesystem access for scanning and reading module source code.
+
+Public surface
+--------------
+ValidationEngine class and associated result vessels.
 """
 
 from dataclasses import dataclass, field
@@ -28,7 +55,7 @@ from moira._export_governance.classifier import SymbolClassifier
 
 @dataclass
 class ValidationResult:
-    """Result of validating a single module."""
+    """Vessel: Result of validating a single module."""
     module_path: Path
     is_valid: bool
     violations: list[PolicyViolation] = field(default_factory=list)
@@ -37,7 +64,7 @@ class ValidationResult:
 
 @dataclass
 class PackageValidationResult:
-    """Result of validating an entire package."""
+    """Vessel: Result of validating an entire package."""
     total_modules: int
     valid_modules: int
     invalid_modules: int
@@ -52,10 +79,46 @@ class PackageValidationResult:
 
 class ValidationEngine:
     """
-    Validates __all__ declarations across packages.
-    
-    Provides module-level and package-level validation with configurable
-    strict mode and rule enforcement.
+    RITE: The High Auditor
+
+    THEOREM: ValidationEngine governs the complete verification 
+        cycle of the engine's public surface against its 
+        internal reality.
+
+    RITE OF PURPOSE:
+        This engine exists to provide a singular, authoritative 
+        verification entry point for the engine's governance layer. 
+        It ensures that the entire package adheres to the visibility 
+        doctrine, providing the necessary assurance that the 
+        sovereign boundary is secure and truthful.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Orchestrate the validation of individual modules.
+            - Aggregate validation results across entire packages.
+            - Enforce strictness levels based on operational requirements.
+        Non-responsibilities:
+            - Does not define policies (delegates to PolicyEngine).
+            - Does not perform AST parsing (delegates to Parser).
+        
+    Canon: Moira Export Governance Protocol v1.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira._export_governance.validator.ValidationEngine",
+      "risk": "medium",
+      "api": {
+        "frozen": ["validate_module", "validate_package", "check_rule"]
+      },
+      "state": {"mutable": true, "owners": ["Governance Auditor"]},
+      "effects": {"signals_emitted": [], "io": ["filesystem read"]},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["orchestration_logic_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     def __init__(self, package_root: Path):

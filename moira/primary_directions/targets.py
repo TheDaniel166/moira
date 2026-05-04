@@ -55,6 +55,7 @@ _PLANET_NAMES = frozenset(Body.ALL_PLANETS)
 
 
 class PrimaryDirectionTargetClass(StrEnum):
+    """Vessel: Registry of architectural classes for primary direction targets."""
     PLANET = "planet"
     NODE = "node"
     ANGLE = "angle"
@@ -63,6 +64,7 @@ class PrimaryDirectionTargetClass(StrEnum):
 
 
 class PrimaryDirectionTargetRelationKind(StrEnum):
+    """Vessel: Registry of admission relation types for targets."""
     ADMITTED_AS_BOTH = "admitted_as_both"
     ADMITTED_AS_SIGNIFICATOR_ONLY = "admitted_as_significator_only"
     ADMITTED_AS_PROMISSOR_ONLY = "admitted_as_promissor_only"
@@ -70,6 +72,7 @@ class PrimaryDirectionTargetRelationKind(StrEnum):
 
 
 class PrimaryDirectionTargetConditionState(StrEnum):
+    """Vessel: Registry of condition states for primary direction targets."""
     UNIVERSALLY_ADMITTED = "universally_admitted"
     SIGNIFICATOR_ONLY = "significator_only"
     PROMISSOR_ONLY = "promissor_only"
@@ -78,6 +81,7 @@ class PrimaryDirectionTargetConditionState(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionTargetPolicy:
+    """Vessel: Policy definition for target admission in primary directions."""
     admitted_significator_classes: frozenset[PrimaryDirectionTargetClass] = field(
         default_factory=lambda: frozenset(
             {
@@ -113,6 +117,7 @@ class PrimaryDirectionTargetPolicy:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionTargetTruth:
+    """Vessel: Immutable astronomical truth for a primary direction target."""
     name: str
     target_class: PrimaryDirectionTargetClass
     source_name: str | None = None
@@ -137,6 +142,7 @@ class PrimaryDirectionTargetTruth:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionTargetClassification:
+    """Vessel: Result of classifying a target based on policy."""
     truth: PrimaryDirectionTargetTruth
     admitted_as_significator: bool
     admitted_as_promissor: bool
@@ -150,12 +156,14 @@ class PrimaryDirectionTargetClassification:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionTargetRelation:
+    """Vessel: Established relation between a target and the system."""
     truth: PrimaryDirectionTargetTruth
     relation_kind: PrimaryDirectionTargetRelationKind
 
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionTargetRelationProfile:
+    """Vessel: Comprehensive profile of relations for a target."""
     truth: PrimaryDirectionTargetTruth
     detected_relation: PrimaryDirectionTargetRelation
     admitted_relations: tuple[PrimaryDirectionTargetRelation, ...]
@@ -179,6 +187,7 @@ class PrimaryDirectionTargetRelationProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionTargetConditionProfile:
+    """Vessel: Final condition profile for a primary direction target."""
     truth: PrimaryDirectionTargetTruth
     classification: PrimaryDirectionTargetClassification
     relation_profile: PrimaryDirectionTargetRelationProfile
@@ -197,6 +206,7 @@ class PrimaryDirectionTargetConditionProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionTargetsAggregateProfile:
+    """Vessel: Aggregated profile of multiple target conditions."""
     profiles: tuple[PrimaryDirectionTargetConditionProfile, ...]
     total_profiles: int
     planet_count: int
@@ -251,6 +261,7 @@ class PrimaryDirectionTargetsAggregateProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionTargetsNetworkNode:
+    """Vessel: Node in a primary direction targets network."""
     target_class: PrimaryDirectionTargetClass
     count: int
 
@@ -261,6 +272,7 @@ class PrimaryDirectionTargetsNetworkNode:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionTargetsNetworkEdge:
+    """Vessel: Directed edge in a primary direction targets network."""
     from_class: PrimaryDirectionTargetClass
     to_class: PrimaryDirectionTargetClass
     count: int
@@ -276,6 +288,7 @@ class PrimaryDirectionTargetsNetworkEdge:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionTargetsNetworkProfile:
+    """Vessel: Structural profile of the targets network."""
     nodes: tuple[PrimaryDirectionTargetsNetworkNode, ...]
     edges: tuple[PrimaryDirectionTargetsNetworkEdge, ...]
     dominant_class: PrimaryDirectionTargetClass

@@ -1,13 +1,36 @@
 """
-Export policy engine for recommending and validating __all__ declarations.
+Moira — Export Policy Enforcement
+=================================
 
-This module implements the policy rules that determine which symbols should
-be exported from different module categories, and validates existing __all__
-declarations against those rules.
+Archetype: Governance Logic (Logic Actor)
 
-Boundary: Owns export policy logic and validation rules.
-Dependencies: models, classifier modules.
-Public surface: ExportPolicyEngine class.
+Purpose
+-------
+Governs the enforcement of export policies across the Moira engine. 
+Implements rule-based validation of __all__ declarations, recommends 
+correct exports based on module categories, and identifies policy 
+violations to maintain the integrity of the sovereign boundary.
+
+Boundary
+--------
+Owns:
+    - Export validation rules (NO_PRIVATE_SYMBOLS, etc.).
+    - Category-specific export recommendation logic.
+Delegates:
+    - Symbol classification to moira._export_governance.classifier.
+    - Violation and status models to moira._export_governance.models.
+
+Import-time side effects
+------------------------
+None.
+
+External dependency assumptions
+--------------------------------
+None. Pure logical enforcement based on provided symbol registries.
+
+Public surface
+--------------
+ExportPolicyEngine class.
 """
 
 from pathlib import Path
@@ -24,11 +47,45 @@ from moira._export_governance.classifier import SymbolClassifier
 
 class ExportPolicyEngine:
     """
-    Applies export policy rules and validates __all__ declarations.
-    
-    This engine implements category-specific rules for determining which
-    symbols should be exported, and validates existing declarations against
-    those rules.
+    RITE: The Arbiter of Policy
+
+    THEOREM: ExportPolicyEngine governs the alignment of engine 
+        exports with the canonical Moira visibility doctrine.
+
+    RITE OF PURPOSE:
+        This engine exists to provide a deterministic enforcement 
+        layer for the engine's public surface. It prevents the 
+        accidental leakage of internal implementation details 
+        and ensures that the engine's public API remains stable, 
+        explicit, and truthful.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Recommend __all__ contents for different module categories.
+            - Validate existing __all__ declarations against rules.
+            - Identify missing or prohibited exports.
+        Non-responsibilities:
+            - Does not classify symbols (delegates to Classifier).
+            - Does not modify files (delegates to CodeGen).
+        
+    Canon: Moira Export Governance Protocol v1.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira._export_governance.policy.ExportPolicyEngine",
+      "risk": "medium",
+      "api": {
+        "frozen": ["recommend_exports", "validate_exports", "load_policy"]
+      },
+      "state": {"mutable": true, "owners": ["Governance Auditor"]},
+      "effects": {"signals_emitted": [], "io": ["none"]},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["policy_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     def __init__(self):

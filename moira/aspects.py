@@ -1,4 +1,3 @@
-from __future__ import annotations
 """
 Moira — Aspect Engine
 ======================
@@ -141,12 +140,14 @@ position and speed dicts.
 
 Public surface
 --------------
-``AspectDomain``             — enum: ZODIACAL or DECLINATION.
+``AspectDomain``             — enum: ZODIACAL, DECLINATION, or WHOLE_SIGN.
+``AspectDirection``          — enum: SINISTER or DEXTER (Hellenistic).
 ``AspectTier``               — enum: MAJOR, COMMON_MINOR, EXTENDED_MINOR.
 ``AspectFamily``             — enum: harmonic family (conjunction, trine, …).
 ``AspectClassification``     — frozen dataclass bundling domain + tier + family.
 ``AspectPolicy``             — frozen dataclass bundling all doctrine inputs.
 ``DEFAULT_POLICY``           — default policy matching current parameter defaults.
+``TRADITIONAL_MOIETY_ORBS`` — Lilly 1647 orb table for moiety mode.
 ``AspectStrength``           — frozen dataclass: orb, allowed_orb, surplus, exactness.
 ``aspect_strength``          — derive AspectStrength from any admitted vessel.
 ``MotionState``              — enum: APPLYING, SEPARATING, STATIONARY, INDETERMINATE, NONE.
@@ -163,10 +164,14 @@ Public surface
 ``aspect_harmonic_profile``  — derive harmonic/family profile from a list of admitted AspectData.
 ``AspectData``               — vessel for a detected ecliptic aspect.
 ``DeclinationAspect``        — vessel for a parallel or contra-parallel aspect.
+``OutOfBoundsBody``          — vessel for a body whose declination exceeds solar max.
 ``find_aspects``             — find all aspects in a position dict.
 ``aspects_between``          — find aspects between two specific bodies.
 ``aspects_to_point``         — find aspects from a body set to a single point.
 ``find_declination_aspects`` — find parallels and contra-parallels.
+``find_out_of_bounds``       — detect bodies beyond maximum solar declination.
+``find_whole_sign_aspects``  — find non-orb aspects by sign boundaries.
+``overcoming``               — determine Hellenistic overcoming (dominance) between bodies.
 
 Convenience properties (read-only, derived only)
 -------------------------------------------------
@@ -180,6 +185,7 @@ Convenience properties (read-only, derived only)
 ``DeclinationAspect.is_contra_parallel``  — True when aspect is "Contra-Parallel".
 ``DeclinationAspect.orb_surplus``         — allowed_orb minus orb.
 """
+from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -235,6 +241,7 @@ __all__ = [
 # ---------------------------------------------------------------------------
 
 class AspectDomain(str, Enum):
+    """Vessel: Registry of aspect measurement domains."""
     """
     Measurement dimension of an aspect.
 
@@ -248,6 +255,7 @@ class AspectDomain(str, Enum):
 
 
 class AspectDirection(str, Enum):
+    """Vessel: Registry of zodiacal aspect directions."""
     """
     Zodiacal casting direction of an aspect ray.
 
@@ -263,6 +271,7 @@ class AspectDirection(str, Enum):
 
 
 class AspectTier(str, Enum):
+    """Vessel: Registry of canonical aspect tiers."""
     """
     Canonical tier within the aspect set, taken directly from
     ``AspectDefinition.is_major`` and membership in ``Aspect.EXTENDED_MINOR``.
@@ -277,6 +286,7 @@ class AspectTier(str, Enum):
 
 
 class AspectFamily(str, Enum):
+    """Vessel: Registry of aspect harmonic families."""
     """
     Harmonic family of an ecliptic aspect, derived from the integer divisor
     of 360° that produces the aspect angle.
@@ -322,6 +332,7 @@ class AspectFamily(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class AspectClassification:
+    """Vessel: Immutable type description for an admitted aspect."""
     """
     Lean, explicit type description for an admitted aspect.
 
@@ -417,6 +428,7 @@ _CONTRA_PARALLEL_CLASSIFICATION = AspectClassification(
 
 @dataclass(frozen=True, slots=True)
 class AspectPolicy:
+    """Vessel: Policy definition for aspect detection doctrine."""
     """
     Doctrine inputs for aspect detection, bundled into a single immutable value.
 
@@ -502,6 +514,7 @@ DEFAULT_POLICY: AspectPolicy = AspectPolicy()
 
 @dataclass(frozen=True, slots=True)
 class AspectStrength:
+    """Vessel: Geometric strength of an admitted aspect."""
     """
     Pure geometric strength of an admitted aspect, derived entirely from
     the admission context already stored on the result vessel.
@@ -597,6 +610,7 @@ def aspect_strength(aspect: AspectData | DeclinationAspect) -> AspectStrength:
 # ---------------------------------------------------------------------------
 
 class MotionState(str, Enum):
+    """Vessel: Registry of temporal motion states for aspects."""
     """
     Explicit temporal-motion state of an admitted aspect, derived from the
     ``applying`` and ``stationary`` fields already preserved on the vessel.
@@ -722,6 +736,7 @@ This tuple is declaration-only; it carries no detection logic.
 # ---------------------------------------------------------------------------
 
 class AspectPatternKind(str, Enum):
+    """Vessel: Registry of multi-body aspect pattern kinds."""
     """
     Kind of multi-body aspect pattern.
 
@@ -754,6 +769,7 @@ class AspectPatternKind(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class AspectPattern:
+    """Vessel: Result vessel for a detected multi-body aspect pattern."""
     """
     A detected multi-body aspect pattern, derived entirely from
     already-admitted pairwise ``AspectData`` results.
@@ -1085,6 +1101,7 @@ def find_patterns(aspects: list[AspectData]) -> list[AspectPattern]:
 
 @dataclass(frozen=True, slots=True)
 class AspectGraphNode:
+    """Vessel: Node in a relational aspect graph representing a body."""
     """
     A node in the aspect graph, representing one celestial body.
 
@@ -1115,6 +1132,7 @@ class AspectGraphNode:
 
 @dataclass(frozen=True, slots=True)
 class AspectGraph:
+    """Vessel: Relational graph of admitted pairwise aspects."""
     """
     A relational graph built from a list of admitted pairwise ``AspectData``
     results, exposing the chart as a deterministic aspect network.
@@ -1285,6 +1303,7 @@ def _connected_components(
 
 @dataclass(frozen=True, slots=True)
 class AspectFamilyProfile:
+    """Vessel: Statistical profile of aspect harmonic families."""
     """
     Family-level distribution for a set of admitted aspects.
 
@@ -1322,6 +1341,7 @@ class AspectFamilyProfile:
 
 @dataclass(frozen=True, slots=True)
 class AspectHarmonicProfile:
+    """Vessel: Comprehensive profile of harmonic distributions."""
     """
     Chart-level harmonic analysis derived from all admitted aspects.
 
@@ -1451,6 +1471,7 @@ def aspect_harmonic_profile(aspects: list[AspectData]) -> AspectHarmonicProfile:
 
 @dataclass(slots=True)
 class AspectData:
+    """Vessel: Result vessel for a detected ecliptic aspect."""
     """
     RITE: The Aspect Vessel — a detected angular relationship between two bodies.
 
@@ -1614,6 +1635,7 @@ class AspectData:
 
 @dataclass(slots=True)
 class DeclinationAspect:
+    """Vessel: Result vessel for a detected declination aspect."""
     """
     RITE: The Declination Vessel — a parallel or contra-parallel between two bodies.
 

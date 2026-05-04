@@ -38,6 +38,7 @@ __all__ = [
 
 
 class PrimaryDirectionMethod(StrEnum):
+    """Vessel: Registry of architectural primary direction methods."""
     PLACIDUS_MUNDANE = "placidus_mundane"
     PTOLEMY_SEMI_ARC = "ptolemy_semi_arc"
     PLACIDIAN_CLASSIC_SEMI_ARC = "placidian_classic_semi_arc"
@@ -49,6 +50,7 @@ class PrimaryDirectionMethod(StrEnum):
 
 
 class PrimaryDirectionMethodKind(StrEnum):
+    """Vessel: Registry of primary direction method kinds."""
     PLACIDUS_MUNDANE = "placidus_mundane"
     PTOLEMY_SEMI_ARC = "ptolemy_semi_arc"
     PLACIDIAN_CLASSIC_SEMI_ARC = "placidian_classic_semi_arc"
@@ -60,6 +62,7 @@ class PrimaryDirectionMethodKind(StrEnum):
 
 
 class PrimaryDirectionMethodRelationKind(StrEnum):
+    """Vessel: Registry of perfection relation types for methods."""
     PLACIDIAN_MUNDANE_PERFECTION = "placidian_mundane_perfection"
     PTOLEMAIC_SEMI_ARC_PERFECTION = "ptolemaic_semi_arc_perfection"
     PLACIDIAN_CLASSIC_SEMI_ARC_PERFECTION = "placidian_classic_semi_arc_perfection"
@@ -71,6 +74,7 @@ class PrimaryDirectionMethodRelationKind(StrEnum):
 
 
 class PrimaryDirectionMethodConditionState(StrEnum):
+    """Vessel: Registry of condition states for direction methods."""
     MUNDANE_SEMI_ARC_GROUNDED = "mundane_semi_arc_grounded"
     PTOLEMAIC_SEMI_ARC_GROUNDED = "ptolemaic_semi_arc_grounded"
     CLASSIC_SEMI_ARC_GROUNDED = "classic_semi_arc_grounded"
@@ -83,6 +87,7 @@ class PrimaryDirectionMethodConditionState(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionMethodPolicy:
+    """Vessel: Policy definition for primary direction method selection."""
     method: PrimaryDirectionMethod = PrimaryDirectionMethod.PLACIDUS_MUNDANE
 
     def __post_init__(self) -> None:
@@ -103,6 +108,7 @@ class PrimaryDirectionMethodPolicy:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionMethodTruth:
+    """Vessel: Immutable architectural truth for a direction method."""
     method: PrimaryDirectionMethod
     kind: PrimaryDirectionMethodKind
     uses_semi_arcs: bool
@@ -185,6 +191,7 @@ class PrimaryDirectionMethodTruth:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionMethodClassification:
+    """Vessel: Result of classifying a method based on its traits."""
     truth: PrimaryDirectionMethodTruth
     mundane: bool
     zodiacal: bool
@@ -211,6 +218,7 @@ class PrimaryDirectionMethodClassification:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionMethodRelation:
+    """Vessel: Established relation between a method and the system."""
     truth: PrimaryDirectionMethodTruth
     relation_kind: PrimaryDirectionMethodRelationKind
 
@@ -231,6 +239,7 @@ class PrimaryDirectionMethodRelation:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionMethodRelationProfile:
+    """Vessel: Comprehensive profile of relations for a method."""
     truth: PrimaryDirectionMethodTruth
     detected_relation: PrimaryDirectionMethodRelation
     admitted_relations: tuple[PrimaryDirectionMethodRelation, ...]
@@ -254,6 +263,7 @@ class PrimaryDirectionMethodRelationProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionMethodConditionProfile:
+    """Vessel: Final condition profile for a primary direction method."""
     truth: PrimaryDirectionMethodTruth
     classification: PrimaryDirectionMethodClassification
     relation_profile: PrimaryDirectionMethodRelationProfile
@@ -284,6 +294,7 @@ class PrimaryDirectionMethodConditionProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionMethodsAggregateProfile:
+    """Vessel: Aggregated profile of multiple method conditions."""
     profiles: tuple[PrimaryDirectionMethodConditionProfile, ...]
     total_profiles: int
     mundane_count: int
@@ -313,6 +324,7 @@ class PrimaryDirectionMethodsAggregateProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionMethodsNetworkNode:
+    """Vessel: Node in a primary direction methods network."""
     method: PrimaryDirectionMethod
     count: int
 
@@ -323,6 +335,7 @@ class PrimaryDirectionMethodsNetworkNode:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionMethodsNetworkEdge:
+    """Vessel: Directed edge in a primary direction methods network."""
     from_method: PrimaryDirectionMethod
     to_method: PrimaryDirectionMethod
     count: int
@@ -338,6 +351,7 @@ class PrimaryDirectionMethodsNetworkEdge:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionMethodsNetworkProfile:
+    """Vessel: Structural profile of the methods network."""
     nodes: tuple[PrimaryDirectionMethodsNetworkNode, ...]
     edges: tuple[PrimaryDirectionMethodsNetworkEdge, ...]
     dominant_method: PrimaryDirectionMethod

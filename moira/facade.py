@@ -1,16 +1,18 @@
 from __future__ import annotations
 """
-Moira Primary Public Surface — moira/__init__.py
+Moira — Facade
+==============
 
-Archetype: Engine (primary interface)
-Purpose: Exposes the complete public API of the Moira ephemeris engine through
-         a single import surface. Provides the Moira facade class, the Chart
-         vessel, and re-exports every stable symbol from the core pillars.
+Archetype: Substrate Anchor (Primary Interface)
 
-Coverage: 13200 BC → 17191 AD (JPL DE441)
+Purpose
+-------
+Exposes the complete public API of the Moira ephemeris engine through
+a single import surface. Provides the Moira facade class, the Chart
+vessel, and re-exports every stable symbol from the core pillars.
 
-Boundary declaration
---------------------
+Boundary
+--------
 Owns:
     - Chart dataclass — complete astrological chart snapshot vessel.
     - Moira class — primary facade over all computation pillars.
@@ -21,48 +23,24 @@ Delegates:
       aspects, eclipse, fixed_stars, etc.).
     - Kernel I/O to moira.spk_reader.
 
-Import-time side effects:
-    - Registers all pillar modules in the Python module cache (standard
-      import machinery). No file I/O, no network, no threads.
+Data source
+-----------
+JPL Development Ephemerides (DE441/DE440) via SPK binary kernels.
 
-External dependency assumptions:
-    - A compatible JPL SPK planetary kernel must be locatable before any Moira() instance method that
-      queries planetary positions is called.
-    - No Qt, no database, no OS threads required at import time.
+Coverage: 13200 BC → 17191 AD (JPL DE441)
 
-Public surface / exports:
-    Moira, Chart
-    (all symbols listed in __all__ below)
+Import-time side effects
+------------------------
+None. Registers pillar modules in sys.modules; no file I/O or threading.
 
-Export stability tiers:
-    Frozen (stable):  Moira, Chart, Body, HouseSystem, Ayanamsa,
-                      PlanetData, SkyPosition, CartesianPosition, NodeData, HouseCusps,
-                      AspectData, EclipseData, EclipseEvent, EclipseType,
-                      EclipseCalculator, and all symbols present in __all__.
-    Provisional:      None currently designated.
+External dependency assumptions
+--------------------------------
+- A compatible JPL SPK planetary kernel must be locatable before position queries.
+- No Qt or DB required.
 
-Usage
------
-    from moira import Moira
-    from datetime import datetime, timezone
-
-    m = Moira()
-
-    # Planetary positions
-    chart = m.chart(datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc))
-    for body, data in chart.planets.items():
-        print(data)
-
-    # House cusps
-    houses = m.houses(
-        datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc),
-        latitude=51.5,
-        longitude=-0.1,
-    )
-    print(houses.asc, houses.mc)
-
-    # Aspects
-    print(m.aspects(chart))
+Public surface
+--------------
+Moira, Chart, and all re-exported symbols in __all__.
 """
 
 from dataclasses import dataclass

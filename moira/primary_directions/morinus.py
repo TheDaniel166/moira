@@ -20,6 +20,7 @@ __all__ = [
 
 @dataclass(frozen=True, slots=True)
 class MorinusAspectContext:
+    """Vessel: Contextual state for calculating Morinus aspectual projections."""
     source_name: str
     maximum_latitude: float
     moving_toward_maximum: bool

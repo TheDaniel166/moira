@@ -20,12 +20,14 @@ __all__ = [
 
 
 class PrimaryDirectionAntisciaKind(StrEnum):
+    """Vessel: Enumeration of antiscia reflection types."""
     ANTISCION = "antiscion"
     CONTRA_ANTISCION = "contra_antiscion"
 
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionAntisciaTarget:
+    """Vessel: Definition of a specific antiscia point to be used as a direction target."""
     source_name: str
     kind: PrimaryDirectionAntisciaKind = PrimaryDirectionAntisciaKind.ANTISCION
 

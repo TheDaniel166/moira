@@ -37,16 +37,19 @@ __all__ = [
 
 
 class PrimaryDirectionPerfectionKind(StrEnum):
+    """Vessel: Registry of architectural perfection kinds."""
     MUNDANE_POSITION_PERFECTION = "mundane_position_perfection"
     ZODIACAL_LONGITUDE_PERFECTION = "zodiacal_longitude_perfection"
     ZODIACAL_PROJECTED_PERFECTION = "zodiacal_projected_perfection"
 
 
 class PrimaryDirectionPerfectionMode(StrEnum):
+    """Vessel: Registry of perfection modes."""
     POSITIONAL = "positional"
 
 
 class PrimaryDirectionPerfectionConditionState(StrEnum):
+    """Vessel: Registry of condition states for perfection."""
     MUNDANE_POSITIONAL = "mundane_positional"
     ZODIACAL_POSITIONAL = "zodiacal_positional"
     ZODIACAL_PROJECTED = "zodiacal_projected"
@@ -54,6 +57,7 @@ class PrimaryDirectionPerfectionConditionState(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionPerfectionPolicy:
+    """Vessel: Policy definition for perfection kind selection."""
     kind: PrimaryDirectionPerfectionKind = PrimaryDirectionPerfectionKind.MUNDANE_POSITION_PERFECTION
 
     def __post_init__(self) -> None:
@@ -67,6 +71,7 @@ class PrimaryDirectionPerfectionPolicy:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionPerfectionTruth:
+    """Vessel: Immutable architectural truth for a perfection kind."""
     kind: PrimaryDirectionPerfectionKind
     mode: PrimaryDirectionPerfectionMode
     uses_significator_mundane_fraction: bool
@@ -90,6 +95,7 @@ class PrimaryDirectionPerfectionTruth:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionPerfectionClassification:
+    """Vessel: Result of classifying a perfection kind based on its traits."""
     truth: PrimaryDirectionPerfectionTruth
     positional: bool
     aspectual: bool
@@ -103,6 +109,7 @@ class PrimaryDirectionPerfectionClassification:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionPerfectionRelation:
+    """Vessel: Established relation between a perfection kind and the system."""
     truth: PrimaryDirectionPerfectionTruth
     relation_kind: PrimaryDirectionPerfectionKind
 
@@ -115,6 +122,7 @@ class PrimaryDirectionPerfectionRelation:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionPerfectionRelationProfile:
+    """Vessel: Comprehensive profile of relations for a perfection kind."""
     truth: PrimaryDirectionPerfectionTruth
     detected_relation: PrimaryDirectionPerfectionRelation
     admitted_relations: tuple[PrimaryDirectionPerfectionRelation, ...]
@@ -138,6 +146,7 @@ class PrimaryDirectionPerfectionRelationProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionPerfectionConditionProfile:
+    """Vessel: Final condition profile for a primary direction perfection."""
     truth: PrimaryDirectionPerfectionTruth
     classification: PrimaryDirectionPerfectionClassification
     relation_profile: PrimaryDirectionPerfectionRelationProfile
@@ -167,6 +176,7 @@ class PrimaryDirectionPerfectionConditionProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionPerfectionsAggregateProfile:
+    """Vessel: Aggregated profile of multiple perfection conditions."""
     profiles: tuple[PrimaryDirectionPerfectionConditionProfile, ...]
     total_profiles: int
     positional_count: int
@@ -191,6 +201,7 @@ class PrimaryDirectionPerfectionsAggregateProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionPerfectionsNetworkNode:
+    """Vessel: Node in a primary direction perfections network."""
     kind: PrimaryDirectionPerfectionKind
     count: int
 
@@ -201,6 +212,7 @@ class PrimaryDirectionPerfectionsNetworkNode:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionPerfectionsNetworkEdge:
+    """Vessel: Directed edge in a primary direction perfections network."""
     from_kind: PrimaryDirectionPerfectionKind
     to_kind: PrimaryDirectionPerfectionKind
     count: int
@@ -216,6 +228,7 @@ class PrimaryDirectionPerfectionsNetworkEdge:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionPerfectionsNetworkProfile:
+    """Vessel: Structural profile of the perfections network."""
     nodes: tuple[PrimaryDirectionPerfectionsNetworkNode, ...]
     edges: tuple[PrimaryDirectionPerfectionsNetworkEdge, ...]
     dominant_kind: PrimaryDirectionPerfectionKind

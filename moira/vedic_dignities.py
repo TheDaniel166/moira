@@ -84,6 +84,8 @@ Public surface
 ``validate_dignity_output`` — P10 output validator.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 from .constants import SIGNS
@@ -133,7 +135,7 @@ _SEVEN_PLANETS: tuple[str, ...] = (
 # ---------------------------------------------------------------------------
 
 class VedicDignityRank:
-    """String constants for the seven Parashari dignity levels."""
+    """Vessel: Registry of the seven Parashari dignity levels."""
     EXALTATION   = 'exaltation'
     MULATRIKONA  = 'mulatrikona'
     OWN_SIGN     = 'own_sign'
@@ -148,7 +150,7 @@ class VedicDignityRank:
 # ---------------------------------------------------------------------------
 
 class CompoundRelationship:
-    """String constants for the five Panchadha Maitri compound levels."""
+    """Vessel: Registry of the five Panchadha Maitri compound levels."""
     GREAT_FRIEND = 'adhi_mitra'   # Natural friend + temporary friend
     FRIEND       = 'mitra'        # Natural neutral + temporary friend
     NEUTRAL      = 'sama'         # Mixed (friend+enemy or enemy+friend)
@@ -161,13 +163,7 @@ class CompoundRelationship:
 # ---------------------------------------------------------------------------
 
 class DignityTier:
-    """
-    P2 classification tier for a planet's dignified state.
-
-    STRONG : exaltation, mulatrikona, or own sign.
-    NEUTRAL: friend sign or neutral sign.
-    WEAK   : enemy sign or debilitation.
-    """
+    """Vessel: Registry of dignity classification tiers."""
     STRONG  = 'strong'
     NEUTRAL = 'neutral'
     WEAK    = 'weak'
@@ -326,7 +322,10 @@ NATURAL_ENEMIES: dict[str, set[str]] = {
 @dataclass(frozen=True, slots=True)
 class VedicDignityResult:
     """
-    Immutable result vessel for a single planet's Vedic dignity assessment.
+    Vessel: Single-planet Vedic dignity state.
+    
+    Immutable record of a planet's Parashari dignity assessment based on 
+    its sidereal longitude and D1 sign placement.
 
     Attributes
     ----------
@@ -340,9 +339,7 @@ class VedicDignityResult:
     sign : str
         D1 sign name.
     dignity_rank : str
-        One of the ``VedicDignityRank`` constants.  Cascade order:
-        exaltation > mulatrikona > own_sign > friend_sign >
-        neutral_sign > enemy_sign > debilitation.
+        One of the ``VedicDignityRank`` constants.
     is_exalted : bool
         True when the planet is in its exaltation sign.
     is_debilitated : bool
@@ -350,14 +347,10 @@ class VedicDignityResult:
     is_mulatrikona : bool
         True when the planet is within its Mulatrikona degree range.
     is_own_sign : bool
-        True when the planet is in one of its own signs (and not
-        simultaneously in a higher state).
+        True when the planet is in one of its own signs.
     exaltation_score : float
-        Linear score in [0.0, 1.0] where 1.0 = deepest exaltation point
-        and 0.0 = deepest debilitation point.  Used as a precursor for
-        Uchcha Bala in Shadbala computation.
+        Linear score in [0.0, 1.0] used for Uchcha Bala.
     """
-
     planet: str
     sidereal_longitude: float
     sign_index: int
@@ -405,23 +398,24 @@ class VedicDignityResult:
 @dataclass(frozen=True, slots=True)
 class PlanetaryRelationship:
     """
-    Immutable result vessel for the relationship between two planets.
+    Vessel: Pairwise planetary relationship (Panchadha Maitri).
+    
+    Immutable record of the compound natural and temporary relationship 
+    between two planets according to the BPHS system.
 
     Attributes
     ----------
     from_planet : str
         The planet whose perspective is being assessed.
     to_planet : str
-        The planet being evaluated as friend/enemy from ``from_planet``.
+        The planet being evaluated.
     natural : str
         Naisargika relationship: 'friend', 'neutral', or 'enemy'.
     temporary : str
-        Tatkalika relationship based on chart positions: 'friend' or 'enemy'.
+        Tatkalika relationship: 'friend' or 'enemy'.
     compound : str
-        Panchadha Maitri compound relationship -- one of the
-        ``CompoundRelationship`` constants.
+        Panchadha Maitri compound relationship.
     """
-
     from_planet: str
     to_planet: str
     natural: str
@@ -467,9 +461,66 @@ class PlanetaryRelationship:
         )
 
 
-# ---------------------------------------------------------------------------
-# Internal helpers
-# ---------------------------------------------------------------------------
+class VedicDignityEngine:
+    """
+    RITE: The Parashari Dignity Solver
+
+    THEOREM: VedicDignityEngine governs the assessment of planetary 
+        strength and relationship according to the Brihat Parashara 
+        Hora Shastra (BPHS) doctrine.
+
+    RITE OF PURPOSE:
+        This engine exists to provide a centralized, policy-aware 
+        implementation of the classical Vedic dignity scheme. It 
+        encapsulates the hierarchical rank cascade (Uchcha -> Mulatrikona 
+        -> Swakshetra -> Maitri) and ensures that compound relationships 
+        (Panchadha Maitri) are computed correctly from both natural and 
+        temporary components.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Map sidereal longitudes to dignity ranks.
+            - Compute pairwise planetary relationships.
+            - Build local and chart-level condition profiles.
+        Non-responsibilities:
+            - Does not handle ayanamsa reduction (expects sidereal input).
+            - Does not compute Shadbala (Uchcha Bala only).
+        
+    Canon: Brihat Parashara Hora Shastra, Ch. 3, 26, 28.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.vedic_dignities.VedicDignityEngine",
+      "risk": "medium",
+      "api": {
+        "frozen": ["dignity", "relationships", "condition_profile", "chart_profile"]
+      },
+      "state": {"mutable": false, "owners": []},
+      "effects": {"signals_emitted": [], "io": ["pure computation"]},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
+    """
+
+    def dignity(self, planet: str, sidereal_longitude: float) -> VedicDignityResult:
+        """Map a planet's sidereal longitude to its dignity state."""
+        return vedic_dignity(planet, sidereal_longitude)
+
+    def relationships(self, sidereal_longitudes: dict[str, float]) -> list[PlanetaryRelationship]:
+        """Compute all pairwise Panchadha Maitri relationships."""
+        return planetary_relationships(sidereal_longitudes)
+
+    def condition_profile(self, result: VedicDignityResult) -> DignityConditionProfile:
+        """Build a local condition profile from a dignity result."""
+        return dignity_condition_profile(result)
+
+    def chart_profile(self, results: list[VedicDignityResult]) -> ChartDignityProfile:
+        """Build an aggregate chart profile."""
+        return chart_dignity_profile(results)
 
 def _natural_relationship(from_planet: str, to_planet: str) -> str:
     """Return 'friend', 'neutral', or 'enemy' from Naisargika table."""
@@ -701,15 +752,14 @@ def planetary_relationships(
 @dataclass(frozen=True, slots=True)
 class VedicDignityPolicy:
     """
-    P4 policy vessel for vedic dignity computation.
-
+    Vessel: Vedic dignity computation policy.
+    
     Attributes
     ----------
     ayanamsa_system : str
         Ayanamsa system used for sidereal reduction.  Must be non-empty.
         Default 'Lahiri'.
     """
-
     ayanamsa_system: str = 'Lahiri'
 
     def __post_init__(self) -> None:
@@ -726,8 +776,8 @@ class VedicDignityPolicy:
 @dataclass(frozen=True, slots=True)
 class DignityConditionProfile:
     """
-    P7 local condition profile for a single planet's dignity state.
-
+    Vessel: Local dignity condition for one planet.
+    
     Attributes
     ----------
     planet : str
@@ -743,7 +793,6 @@ class DignityConditionProfile:
     sign : str
         D1 sign name.
     """
-
     planet: str
     dignity_rank: str
     tier: str
@@ -791,8 +840,8 @@ def dignity_condition_profile(
 @dataclass(frozen=True, slots=True)
 class ChartDignityProfile:
     """
-    P8 aggregate dignity profile for a full chart.
-
+    Vessel: Aggregate dignity profile for a full chart.
+    
     Attributes
     ----------
     strong_count : int

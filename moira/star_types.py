@@ -9,16 +9,19 @@ from .constants import SIGNS
 # Tier 1 & 2 Policy Bases
 @dataclass(frozen=True, slots=True)
 class FixedStarLookupPolicy:
+    """Vessel: Policy for fixed star name and identity lookup."""
     allow_prefix_lookup: bool = True
 
 @dataclass(frozen=True, slots=True)
 class HeliacalSearchPolicy:
+    """Vessel: Policy for heliacal event search and visibility thresholds."""
     setting_elongation_threshold: float = 12.0
     visibility_tolerance: float = 1.0
     setting_visibility_factor: float = 0.5
 
 @dataclass(frozen=True, slots=True)
 class FixedStarComputationPolicy:
+    """Vessel: Aggregated policy for fixed star computation."""
     lookup: FixedStarLookupPolicy = field(default_factory=FixedStarLookupPolicy)
     heliacal: HeliacalSearchPolicy = field(default_factory=HeliacalSearchPolicy)
 
@@ -27,6 +30,7 @@ DEFAULT_FIXED_STAR_POLICY = FixedStarComputationPolicy()
 # Unified (Tier 2) Policies
 @dataclass(frozen=True, slots=True)
 class UnifiedStarMergePolicy:
+    """Vessel: Policy for merging fixed star data with external catalogs."""
     enable_gaia_enrichment: bool = True
     include_gaia_search_results: bool = True
     min_gaia_magnitude: float = 3.0
@@ -37,6 +41,7 @@ class UnifiedStarMergePolicy:
 
 @dataclass(frozen=True, slots=True)
 class UnifiedStarComputationPolicy:
+    """Vessel: Aggregated policy for unified (multi-catalog) star computation."""
     lookup: FixedStarLookupPolicy = field(default_factory=FixedStarLookupPolicy)
     merge: UnifiedStarMergePolicy = field(default_factory=UnifiedStarMergePolicy)
 
@@ -45,6 +50,7 @@ DEFAULT_UNIFIED_STAR_POLICY = UnifiedStarComputationPolicy()
 # Tier 1 Truth & Classification
 @dataclass(slots=True)
 class StarPositionTruth:
+    """Vessel: Immutable astronomical truth for a star's position."""
     queried_name: str
     lookup_mode: str
     matched_name: str
@@ -56,12 +62,14 @@ class StarPositionTruth:
 
 @dataclass(slots=True)
 class StarPositionClassification:
+    """Vessel: Classification of a star's positional computation."""
     lookup_kind: str
     frame_kind: str
     parallax_state: str
 
 @dataclass(slots=True)
 class StarRelation:
+    """Vessel: Relationship between a star and a reference point."""
     kind: str
     basis: str
     star_name: str
@@ -70,10 +78,12 @@ class StarRelation:
 
 @dataclass(slots=True)
 class StarConditionState:
+    """Vessel: Representation of a star's condition state."""
     name: str
 
 @dataclass(slots=True)
 class StarConditionProfile:
+    """Vessel: Comprehensive profile of a star's condition."""
     result_kind: str
     condition_state: StarConditionState
     relation_kind: str
@@ -84,6 +94,7 @@ class StarConditionProfile:
 
 @dataclass(slots=True)
 class StarPosition:
+    """Vessel: Comprehensive result of a star position computation."""
     name:       str
     nomenclature: str
     longitude:  float
@@ -104,6 +115,7 @@ class StarPosition:
 # Tier 2 (Unified) Truth & Result
 @dataclass(slots=True)
 class FixedStarTruth:
+    """Vessel: Immutable truth for a unified fixed star result."""
     lookup_kind: str
     hipparcos_name: str | None
     constellation: str | None
@@ -116,6 +128,7 @@ class FixedStarTruth:
 
 @dataclass(slots=True)
 class FixedStarClassification:
+    """Vessel: Classification of a unified fixed star result."""
     lookup_kind: str
     source_kind: str
     merge_state: str
@@ -123,6 +136,7 @@ class FixedStarClassification:
 
 @dataclass(slots=True)
 class UnifiedStarRelation:
+    """Vessel: Relationship between a unified star and a reference point."""
     kind: str
     basis: str
     star_name: str
@@ -131,6 +145,7 @@ class UnifiedStarRelation:
 
 @dataclass(slots=True)
 class StarChartConditionProfile:
+    """Vessel: Aggregated condition profile for a collection of stars."""
     profiles: tuple[StarConditionProfile, ...]
     catalog_position_count: int
     heliacal_event_count: int
@@ -140,6 +155,7 @@ class StarChartConditionProfile:
 
 @dataclass(slots=True)
 class StarConditionNetworkNode:
+    """Vessel: Node in a star condition network."""
     node_id: str
     kind: str
     incoming_count: int
@@ -147,6 +163,7 @@ class StarConditionNetworkNode:
 
 @dataclass(slots=True)
 class StarConditionNetworkEdge:
+    """Vessel: Directed edge in a star condition network."""
     source_id: str
     target_id: str
     relation_kind: str
@@ -155,6 +172,7 @@ class StarConditionNetworkEdge:
 
 @dataclass(slots=True)
 class StarConditionNetworkProfile:
+    """Vessel: Structural profile of the star condition network."""
     nodes: tuple[StarConditionNetworkNode, ...]
     edges: tuple[StarConditionNetworkEdge, ...]
     isolated_nodes: tuple[StarConditionNetworkNode, ...]
@@ -163,6 +181,7 @@ class StarConditionNetworkProfile:
 # Heliacal (Tier 1 & 2)
 @dataclass(slots=True)
 class HeliacalEventTruth:
+    """Vessel: Immutable astronomical truth for a heliacal event."""
     event_kind: str
     star_name: str
     jd_start: float
@@ -177,12 +196,14 @@ class HeliacalEventTruth:
 
 @dataclass(slots=True)
 class HeliacalEventClassification:
+    """Vessel: Classification of a heliacal event result."""
     event_kind: str
     search_kind: str
     visibility_state: str
 
 @dataclass(slots=True)
 class HeliacalEvent:
+    """Vessel: Comprehensive result of a heliacal event search."""
     event_kind: str
     star_name: str
     jd_ut: float | None

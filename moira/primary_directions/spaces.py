@@ -40,27 +40,32 @@ __all__ = [
 
 
 class PrimaryDirectionSpace(StrEnum):
+    """Vessel: Registry of supported primary direction spaces."""
     IN_MUNDO = "in_mundo"
     IN_ZODIACO = "in_zodiaco"
 
 
 class PrimaryDirectionSpaceKind(StrEnum):
+    """Vessel: Registry of primary direction space kinds."""
     WORLD_FRAME = "world_frame"
     ZODIACAL = "zodiacal"
 
 
 class PrimaryDirectionLatitudeMode(StrEnum):
+    """Vessel: Registry of latitude modes for direction spaces."""
     PRESERVED = "preserved"
     SUPPRESSED = "suppressed"
 
 
 class PrimaryDirectionSpaceRelationKind(StrEnum):
+    """Vessel: Registry of perfection relation types for spaces."""
     WORLD_FRAME_PERFECTION = "world_frame_perfection"
     ZODIACAL_LONGITUDE_PERFECTION = "zodiacal_longitude_perfection"
     ZODIACAL_PROJECTED_PERFECTION = "zodiacal_projected_perfection"
 
 
 class PrimaryDirectionSpaceConditionState(StrEnum):
+    """Vessel: Registry of condition states for direction spaces."""
     WORLD_FRAMED = "world_framed"
     ZODIACALLY_FRAMED = "zodiacally_framed"
     ZODIACALLY_PROJECTED = "zodiacally_projected"
@@ -68,6 +73,7 @@ class PrimaryDirectionSpaceConditionState(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionSpacePolicy:
+    """Vessel: Policy definition for primary direction space selection."""
     space: PrimaryDirectionSpace = PrimaryDirectionSpace.IN_MUNDO
     latitude_mode: PrimaryDirectionLatitudeMode | None = None
 
@@ -88,6 +94,7 @@ class PrimaryDirectionSpacePolicy:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionSpaceTruth:
+    """Vessel: Immutable architectural truth for a direction space."""
     space: PrimaryDirectionSpace
     kind: PrimaryDirectionSpaceKind
     latitude_mode: PrimaryDirectionLatitudeMode
@@ -126,6 +133,7 @@ class PrimaryDirectionSpaceTruth:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionSpaceClassification:
+    """Vessel: Result of classifying a direction space based on its traits."""
     truth: PrimaryDirectionSpaceTruth
     bodily: bool
     zodiacal: bool
@@ -148,6 +156,7 @@ class PrimaryDirectionSpaceClassification:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionSpaceRelation:
+    """Vessel: Established relation between a direction space and the system."""
     truth: PrimaryDirectionSpaceTruth
     relation_kind: PrimaryDirectionSpaceRelationKind
     latitude_mode: PrimaryDirectionLatitudeMode
@@ -172,6 +181,7 @@ class PrimaryDirectionSpaceRelation:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionSpaceRelationProfile:
+    """Vessel: Comprehensive profile of relations for a direction space."""
     truth: PrimaryDirectionSpaceTruth
     detected_relation: PrimaryDirectionSpaceRelation
     admitted_relations: tuple[PrimaryDirectionSpaceRelation, ...]
@@ -195,6 +205,7 @@ class PrimaryDirectionSpaceRelationProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionSpaceConditionProfile:
+    """Vessel: Final condition profile for a primary direction space."""
     truth: PrimaryDirectionSpaceTruth
     classification: PrimaryDirectionSpaceClassification
     relation_profile: PrimaryDirectionSpaceRelationProfile
@@ -224,6 +235,7 @@ class PrimaryDirectionSpaceConditionProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionSpacesAggregateProfile:
+    """Vessel: Aggregated profile of multiple direction space conditions."""
     profiles: tuple[PrimaryDirectionSpaceConditionProfile, ...]
     total_profiles: int
     world_frame_count: int
@@ -254,6 +266,7 @@ class PrimaryDirectionSpacesAggregateProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionSpacesNetworkNode:
+    """Vessel: Node in a primary direction spaces network."""
     space: PrimaryDirectionSpace
     count: int
 
@@ -264,6 +277,7 @@ class PrimaryDirectionSpacesNetworkNode:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionSpacesNetworkEdge:
+    """Vessel: Directed edge in a primary direction spaces network."""
     from_space: PrimaryDirectionSpace
     to_space: PrimaryDirectionSpace
     count: int
@@ -279,6 +293,7 @@ class PrimaryDirectionSpacesNetworkEdge:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionSpacesNetworkProfile:
+    """Vessel: Structural profile of the direction spaces network."""
     nodes: tuple[PrimaryDirectionSpacesNetworkNode, ...]
     edges: tuple[PrimaryDirectionSpacesNetworkEdge, ...]
     dominant_space: PrimaryDirectionSpace

@@ -155,11 +155,13 @@ DIRECT = "D"
 CONVERSE = "C"
 
 class PrimaryDirectionMotion(StrEnum):
+    """Vessel: Enumeration of primary direction motion vectors (Direct/Converse)."""
     DIRECT = "direct"
     CONVERSE = "converse"
 
 
 class PrimaryDirectionsPreset(StrEnum):
+    """Vessel: Collection of pre-configured primary direction calculation regimes."""
     PLACIDUS_MUNDANE = "placidus_mundane"
     PLACIDIAN_CLASSIC_MUNDANE = "placidian_classic_mundane"
     PLACIDIAN_MUNDANE_RAPT_PARALLEL_DIRECT = "placidian_mundane_rapt_parallel_direct"
@@ -187,6 +189,7 @@ class PrimaryDirectionsPreset(StrEnum):
 
 
 class PrimaryDirectionsConditionState(StrEnum):
+    """Vessel: State enumeration for primary direction search completeness."""
     DIRECT_ONLY = "direct_only"
     CONVERSE_ONLY = "converse_only"
     MIXED = "mixed"
@@ -194,6 +197,7 @@ class PrimaryDirectionsConditionState(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionsPolicy:
+    """Vessel: Governance policy for primary direction computation and relation detection."""
     method: PrimaryDirectionMethod = PrimaryDirectionMethod.PLACIDUS_MUNDANE
     space: PrimaryDirectionSpace = PrimaryDirectionSpace.IN_MUNDO
     include_converse: bool = True
@@ -691,6 +695,49 @@ def primary_directions_policy_preset(
 
 @dataclass(slots=True)
 class SpeculumEntry:
+    """
+    RITE: The Equatorial Mirror — the Engine that projects a zodiacal point
+          into the active equatorial and mundane frame of a specific locality.
+
+    THEOREM: Governs the derivation of Right Ascension, Declination, Hour Angle,
+             and Mundane Semi-Arcs for any ecliptic point.
+
+    RITE OF PURPOSE:
+        SpeculumEntry is the primary coordinate vessel for all primary direction
+        subsystems. It encapsulates the transformation from static zodiacal
+        longitude/latitude to dynamic mundane coordinates (HA, f) relative
+        to a specific Meridian and Horizon.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Store normalized equatorial and ecliptic coordinates.
+            - Validate spherical invariants (e.g., DSA + NSA = 180°).
+            - Expose mundane position fraction (f) for Placidian arithmetic.
+        Non-responsibilities:
+            - Does not compute time-keys or arcs.
+            - Does not handle precession or nutation (expects input in active frame).
+        Invariants:
+            - lon, ra are in [0, 360).
+            - dsa + nsa == 180.0.
+            - |f| <= 2.0 (IC to IC via Meridian).
+
+    Canon: Placidus de Titis, Tabulae Primi Mobilis (1657)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.primary_directions.SpeculumEntry",
+      "risk": "medium",
+      "api": {"frozen": ["name", "lon", "lat", "ra", "dec"], "internal": ["build"]},
+      "state": {"mutable": false},
+      "effects": {"io": []},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "exception"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
+    """
     name: str
     lon: float
     lat: float
@@ -806,6 +853,48 @@ class SpeculumEntry:
 
 @dataclass(slots=True)
 class PrimaryArc:
+    """
+    RITE: The Primary Path — the Engine that records a single motion cycle
+          between a Significator and a Promissor.
+
+    THEOREM: Governs the storage of the angular arc and the conversion of
+             that arc into temporal years via a specified time-key.
+
+    RITE OF PURPOSE:
+        PrimaryArc is the canonical result vessel of the primary direction engine.
+        It preserves the computational method, motion direction (Direct/Converse),
+        and the final angular arc, providing a unified surface for time-key
+        projection.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Store arc and calculation parameters.
+            - Provide convert_arc_to_time via the .years() method.
+            - Validate structural consistency (e.g., significator != promissor).
+        Non-responsibilities:
+            - Does not compute the arc itself (delegates to geometry subsystem).
+            - Does not handle relation detection (delegates to relation subsystem).
+        Invariants:
+            - arc > 0.0.
+            - significator != promissor.
+
+    Canon: Various (Ptolemy, Placidus, Magini, Argoli, etc.)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.primary_directions.PrimaryArc",
+      "risk": "low",
+      "api": {"frozen": ["significator", "promissor", "arc"], "internal": ["years"]},
+      "state": {"mutable": false},
+      "effects": {"io": []},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "exception"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
+    """
     significator: str
     promissor: str
     arc: float
@@ -870,6 +959,46 @@ class PrimaryArc:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionRelation:
+    """
+    RITE: The Perfection Binding — the Engine that determines the exact
+          temporal and doctrinal manifestation of a primary arc.
+
+    THEOREM: Governs the mapping of raw arcs to specific mundane or zodiacal
+             perfections based on the active converse doctrine and key policy.
+
+    RITE OF PURPOSE:
+        PrimaryDirectionRelation elevates a bare PrimaryArc into a qualified
+        astrological event. It couples the arc with the specific perfection
+        kind and governance policies that define its temporal "hit" date.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Store the arc and its perfection parameters.
+            - Provide year derivation via the years property.
+            - Validate that converse arcs are only admitted when the doctrine allows.
+        Non-responsibilities:
+            - Does not compute the arc.
+            - Does not aggregate multiple relations (delegates to profiles).
+        Invariants:
+            - converse arcs require MIXED or CONVERSE_ONLY doctrine.
+
+    Canon: Various (Primary Direction Tradition)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.primary_directions.PrimaryDirectionRelation",
+      "risk": "low",
+      "api": {"frozen": ["arc", "relation_kind"], "internal": ["years"]},
+      "state": {"mutable": false},
+      "effects": {"io": []},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "exception"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
+    """
     arc: PrimaryArc
     relation_kind: PrimaryDirectionPerfectionKind
     converse_doctrine: PrimaryDirectionConverseDoctrine
@@ -897,6 +1026,7 @@ class PrimaryDirectionRelation:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionRelationProfile:
+    """Vessel: Aggregated relation profile for a single primary arc."""
     arc: PrimaryArc
     detected_relation: PrimaryDirectionRelation
     admitted_relations: tuple[PrimaryDirectionRelation, ...]
@@ -928,6 +1058,7 @@ class PrimaryDirectionRelationProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionsSignificatorProfile:
+    """Vessel: Complete direction and relation summary for a single significator."""
     significator: str
     arcs: tuple[PrimaryArc, ...]
     relation_profiles: tuple[PrimaryDirectionRelationProfile, ...]
@@ -966,6 +1097,7 @@ class PrimaryDirectionsSignificatorProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionsAggregateProfile:
+    """Vessel: Engine-wide summary of all direction results for a given search."""
     profiles: tuple[PrimaryDirectionsSignificatorProfile, ...]
     total_arcs: int
     direct_count: int
@@ -1019,6 +1151,7 @@ class PrimaryDirectionsAggregateProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionsNetworkNode:
+    """Vessel: Graph node representation of a significator or promissor."""
     name: str
     incoming_count: int
     outgoing_count: int
@@ -1035,6 +1168,7 @@ class PrimaryDirectionsNetworkNode:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionsNetworkEdge:
+    """Vessel: Graph edge representation of a direction between two nodes."""
     promissor: str
     significator: str
     count: int
@@ -1053,6 +1187,7 @@ class PrimaryDirectionsNetworkEdge:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionsNetworkProfile:
+    """Vessel: Graph-theory model of the entire primary direction network."""
     nodes: tuple[PrimaryDirectionsNetworkNode, ...]
     edges: tuple[PrimaryDirectionsNetworkEdge, ...]
     most_connected: str

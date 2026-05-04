@@ -34,21 +34,25 @@ from enum import StrEnum
 
 
 class HarmonicVectorNormalizationMode(StrEnum):
+    """Vessel: Registry of normalization modes for harmonic vectors."""
     RAW_SUM = "raw_sum"
     MEAN_RESULTANT = "mean_resultant"
 
 
 class ZeroAriesPairConstructionMode(StrEnum):
+    """Vessel: Registry of construction modes for Zero-Aries parts pairs."""
     ORDERED = "ordered"
     UNORDERED = "unordered"
 
 
 class SelfPairMode(StrEnum):
+    """Vessel: Registry of modes for including or excluding self-pairs."""
     INCLUDE = "include"
     EXCLUDE = "exclude"
 
 
 class HarmogramIntensityFamily(StrEnum):
+    """Vessel: Registry of intensity function families for harmograms."""
     COSINE_BELL_HARMONIC_ASPECTS = "cosine_bell_harmonic_aspects"
     TOP_HAT_HARMONIC_ASPECTS = "top_hat_harmonic_aspects"
     TRIANGULAR_HARMONIC_ASPECTS = "triangular_harmonic_aspects"
@@ -56,6 +60,7 @@ class HarmogramIntensityFamily(StrEnum):
 
 
 class HarmogramOrbMode(StrEnum):
+    """Vessel: Registry of orb calculation modes."""
     COSINE_BELL = "cosine_bell"
     TOP_HAT = "top_hat"
     TRIANGULAR = "triangular"
@@ -63,43 +68,52 @@ class HarmogramOrbMode(StrEnum):
 
 
 class GaussianWidthParameterMode(StrEnum):
+    """Vessel: Registry of parameterization modes for Gaussian widths."""
     SIGMA = "sigma"
     FWHM = "fwhm"
 
 
 class HarmogramOrbScalingMode(StrEnum):
+    """Vessel: Registry of scaling modes for harmogram orbs."""
     EQUATED_TO_HARMONIC_ONE = "equated_to_harmonic_one"
 
 
 class HarmogramSymmetryMode(StrEnum):
+    """Vessel: Registry of symmetry modes for harmogram computation."""
     STAR_SYMMETRIC = "star_symmetric"
     CONJUNCTION_EXCLUDED = "conjunction_excluded"
 
 
 class IntensityNormalizationMode(StrEnum):
+    """Vessel: Registry of normalization modes for intensity functions."""
     PEAK_ONE = "peak_one"
 
 
 class IntensitySpectrumRealizationMode(StrEnum):
+    """Vessel: Registry of realization modes for intensity spectra."""
     NUMERICAL_TRUNCATED = "numerical_truncated"
 
 
 class HarmogramProjectionRealizationMode(StrEnum):
+    """Vessel: Registry of realization modes for harmogram projections."""
     EXACT_ALGEBRAIC_IDENTITY = "exact_algebraic_identity"
     FINITE_CLOSED_FORM = "finite_closed_form"
     NUMERICAL_TRUNCATED = "numerical_truncated"
 
 
 class HarmogramSamplingMode(StrEnum):
+    """Vessel: Registry of sampling modes for harmogram traces."""
     EXPLICIT_FIXED_STEP = "explicit_fixed_step"
 
 
 class HarmogramOutputMode(StrEnum):
+    """Vessel: Registry of output modes for harmogram results."""
     SINGLE_HARMONIC = "single_harmonic"
     MULTI_HARMONIC_FAMILY = "multi_harmonic_family"
 
 
 class HarmogramChartDomain(StrEnum):
+    """Vessel: Registry of chart domains for harmogram context."""
     STATIC_CHART_STRENGTH = "static_chart_strength"
     DYNAMIC_SKY_ONLY_TRACE = "dynamic_sky_only_trace"
     TRANSIT_TO_NATAL_TRACE = "transit_to_natal_trace"
@@ -107,6 +121,7 @@ class HarmogramChartDomain(StrEnum):
 
 
 class HarmogramTraceFamily(StrEnum):
+    """Vessel: Registry of trace families for harmogram time-series."""
     DYNAMIC_ZERO_ARIES_PARTS = "dynamic_zero_aries_parts"
     TRANSIT_TO_NATAL_ZERO_ARIES_PARTS = "transit_to_natal_zero_aries_parts"
     DIRECTED_TO_NATAL_ZERO_ARIES_PARTS = "directed_to_natal_zero_aries_parts"
@@ -115,6 +130,7 @@ class HarmogramTraceFamily(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class HarmonicDomain:
+    """Vessel: Definition of a range of harmonics for analysis."""
     harmonic_start: int = 1
     harmonic_stop: int = 12
 
@@ -131,18 +147,21 @@ class HarmonicDomain:
 
 @dataclass(frozen=True, slots=True)
 class PointSetHarmonicVectorPolicy:
+    """Vessel: Policy for computing harmonic vectors from point sets."""
     normalization_mode: HarmonicVectorNormalizationMode = HarmonicVectorNormalizationMode.MEAN_RESULTANT
     harmonic_domain: HarmonicDomain = field(default_factory=HarmonicDomain)
 
 
 @dataclass(frozen=True, slots=True)
 class ZeroAriesPartsPolicy:
+    """Vessel: Policy for constructing Zero-Aries parts sets."""
     pair_construction_mode: ZeroAriesPairConstructionMode = ZeroAriesPairConstructionMode.ORDERED
     self_pair_mode: SelfPairMode = SelfPairMode.INCLUDE
 
 
 @dataclass(frozen=True, slots=True)
 class HarmogramIntensityPolicy:
+    """Vessel: Policy for defining harmogram intensity function behavior."""
     family: HarmogramIntensityFamily = HarmogramIntensityFamily.COSINE_BELL_HARMONIC_ASPECTS
     include_conjunction: bool = True
     orb_mode: HarmogramOrbMode = HarmogramOrbMode.COSINE_BELL
@@ -181,6 +200,7 @@ class HarmogramIntensityPolicy:
 
 @dataclass(frozen=True, slots=True)
 class HarmogramSamplingPolicy:
+    """Vessel: Policy for sampling harmogram traces in time."""
     sampling_mode: HarmogramSamplingMode = HarmogramSamplingMode.EXPLICIT_FIXED_STEP
     sample_count: int | None = None
 
@@ -191,6 +211,7 @@ class HarmogramSamplingPolicy:
 
 @dataclass(frozen=True, slots=True)
 class HarmogramPolicy:
+    """Vessel: Comprehensive policy for harmogram computation."""
     point_set_policy: PointSetHarmonicVectorPolicy = field(default_factory=PointSetHarmonicVectorPolicy)
     parts_policy: ZeroAriesPartsPolicy = field(default_factory=ZeroAriesPartsPolicy)
     intensity_policy: HarmogramIntensityPolicy = field(default_factory=HarmogramIntensityPolicy)
@@ -218,6 +239,7 @@ class HarmogramPolicy:
 
 @dataclass(frozen=True, slots=True)
 class HarmonicVectorComponent:
+    """Vessel: A single frequency component of a harmonic vector."""
     harmonic: int
     amplitude: float
     phase_deg: float
@@ -237,6 +259,7 @@ class HarmonicVectorComponent:
 
 @dataclass(frozen=True, slots=True)
 class IntensitySpectrumComponent:
+    """Vessel: A single frequency component of an intensity spectrum."""
     harmonic: int
     amplitude: float
     phase_deg: float
@@ -252,6 +275,7 @@ class IntensitySpectrumComponent:
 
 @dataclass(frozen=True, slots=True)
 class PointSetHarmonicVector:
+    """Vessel: Result vessel for a harmonic vector derived from a point set."""
     policy: PointSetHarmonicVectorPolicy
     body_names: tuple[str, ...]
     point_count: int
@@ -285,6 +309,7 @@ class PointSetHarmonicVector:
 
 @dataclass(frozen=True, slots=True)
 class ZeroAriesPart:
+    """Vessel: A single Zero-Aries part definition."""
     source_name: str
     target_name: str
     longitude_deg: float
@@ -298,6 +323,7 @@ class ZeroAriesPart:
 
 @dataclass(frozen=True, slots=True)
 class ZeroAriesPartsSet:
+    """Vessel: A set of Zero-Aries parts calculated for a point set pair."""
     policy: ZeroAriesPartsPolicy
     source_body_names: tuple[str, ...]
     target_body_names: tuple[str, ...]
@@ -328,6 +354,7 @@ class ZeroAriesPartsSet:
 
 @dataclass(frozen=True, slots=True)
 class ZeroAriesPartsHarmonicVector:
+    """Vessel: Harmonic vector derived specifically from Zero-Aries parts."""
     vector_policy: PointSetHarmonicVectorPolicy
     parts_policy: ZeroAriesPartsPolicy
     source_body_names: tuple[str, ...]
@@ -367,6 +394,7 @@ class ZeroAriesPartsHarmonicVector:
 
 @dataclass(frozen=True, slots=True)
 class IntensityFunctionSpectrum:
+    """Vessel: Frequency spectrum of an intensity function."""
     policy: HarmogramIntensityPolicy
     harmonic_number: int
     realization_mode: IntensitySpectrumRealizationMode
@@ -391,6 +419,7 @@ class IntensityFunctionSpectrum:
 
 @dataclass(frozen=True, slots=True)
 class HarmogramProjectionTerm:
+    """Vessel: A single term contribution to a harmogram projection."""
     harmonic: int
     source_amplitude: float
     source_phase_deg: float
@@ -417,6 +446,7 @@ class HarmogramProjectionTerm:
 
 @dataclass(frozen=True, slots=True)
 class HarmogramProjection:
+    """Vessel: Result of projecting a harmonic vector onto an intensity spectrum."""
     source_vector: PointSetHarmonicVector | ZeroAriesPartsHarmonicVector
     intensity_spectrum: IntensityFunctionSpectrum
     normalization_mode: HarmonicVectorNormalizationMode
@@ -452,6 +482,7 @@ class HarmogramProjection:
 
 @dataclass(frozen=True, slots=True)
 class HarmogramDominantTerm:
+    """Vessel: The most significant term in a harmogram projection."""
     harmonic: int
     absolute_contribution: float
     signed_contribution: float
@@ -467,6 +498,7 @@ class HarmogramDominantTerm:
 
 @dataclass(frozen=True, slots=True)
 class IntensitySpectrumComparisonTerm:
+    """Vessel: A single term in an intensity spectrum comparison."""
     harmonic: int
     left_amplitude: float
     right_amplitude: float
@@ -484,6 +516,7 @@ class IntensitySpectrumComparisonTerm:
 
 @dataclass(frozen=True, slots=True)
 class IntensitySpectrumComparison:
+    """Vessel: Result vessel for comparing two intensity spectra."""
     left: IntensityFunctionSpectrum
     right: IntensityFunctionSpectrum
     max_absolute_delta: float
@@ -500,6 +533,7 @@ class IntensitySpectrumComparison:
 
 @dataclass(frozen=True, slots=True)
 class HarmogramTraceSeriesComparisonSample:
+    """Vessel: A single sample in a trace series comparison."""
     sample_index: int
     sample_time: float
     left_strength: float
@@ -516,6 +550,7 @@ class HarmogramTraceSeriesComparisonSample:
 
 @dataclass(frozen=True, slots=True)
 class HarmogramTraceSeriesComparison:
+    """Vessel: Result vessel for comparing two harmogram trace series."""
     left: "HarmogramTraceSeries"
     right: "HarmogramTraceSeries"
     max_absolute_delta: float
@@ -530,6 +565,7 @@ class HarmogramTraceSeriesComparison:
 
 @dataclass(frozen=True, slots=True)
 class HarmogramTraceSample:
+    """Vessel: A single time-sample within a harmogram trace series."""
     sample_index: int
     sample_time: float
     source_vector: ZeroAriesPartsHarmonicVector
@@ -549,6 +585,7 @@ class HarmogramTraceSample:
 
 @dataclass(frozen=True, slots=True)
 class HarmogramTraceSeries:
+    """Vessel: A time-series of samples for a single harmonic."""
     harmonic_number: int
     intensity_spectrum: IntensityFunctionSpectrum
     samples: tuple[HarmogramTraceSample, ...] = field(default_factory=tuple)
@@ -569,6 +606,7 @@ class HarmogramTraceSeries:
 
 @dataclass(frozen=True, slots=True)
 class HarmogramTrace:
+    """Vessel: Comprehensive time-trace of harmogram results."""
     policy: HarmogramPolicy
     interval_start: float
     interval_stop: float

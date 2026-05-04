@@ -20,10 +20,16 @@ External dependency assumptions:
     - Pure computational module for historical calendar work
 
 Public surface / exports:
-    BABYLON_COORDINATES       — historical city coordinates
-    babylonian_to_julian()    — calendar conversion functions
-    mercury_reference_rows()  — validation data access
-    (Limited public API - primarily internal validation support)
+    BABYLON_LATITUDE_DEG      — historical city latitude
+    BABYLON_LONGITUDE_DEG     — historical city longitude
+    BabylonianCivilDay        — vessel for Julian-calendar source dates
+    BabylonianCalendarDate    — vessel for Babylonian calendar dates
+    babylonian_calendar_to_civil_day() — calendar conversion
+    babylonian_month_start()  — Parker/Dubberstein month start lookup
+    babylonian_planetary_reference()   — access to historical oracle rows
+    BABYLONIAN_MERCURY_REFERENCES      — Mercury validation data
+    BABYLONIAN_VENUS_REFERENCES        — Venus validation data
+    (Full API surface documented in __all__)
 """
 
 import math
@@ -78,15 +84,18 @@ _INTERCALARY_MONTH_CODES = frozenset({"6b", "12b"})
 
 
 class BabylonianChronologyAuthority(StrEnum):
+    """Vessel: Registry of authoritative chronology regimes."""
     DE_JONG_2021 = "de_jong_2021"
     PARKER_DUBBERSTEIN_1956 = "parker_dubberstein_1956"
 
 
 class HistoricalCalendar(StrEnum):
+    """Vessel: Registry of supported historical calendar systems."""
     JULIAN = "julian"
 
 
 class BabylonianObservationClass(StrEnum):
+    """Vessel: Categorization of Babylonian observation types."""
     OBSERVED = "observed"
     IDEAL = "ideal"
     OBSERVED_AND_IDEAL = "observed_and_ideal"
@@ -96,6 +105,7 @@ class BabylonianObservationClass(StrEnum):
 
 
 class BabylonianAdmissionStrength(StrEnum):
+    """Vessel: Qualitative strength of oracle admission."""
     STRONG = "strong"
     BOUNDED = "bounded"
     WEAK = "weak"
@@ -103,11 +113,13 @@ class BabylonianAdmissionStrength(StrEnum):
 
 
 class BabylonianValidationStatus(StrEnum):
+    """Vessel: Admission lifecycle state for validation rows."""
     ADMITTED = "admitted"
     CANDIDATE = "candidate"
 
 
 class BabylonianHoldoutReason(StrEnum):
+    """Vessel: Rationale for excluding a candidate validation row."""
     EXPECTED_ONLY_SOURCE = "expected_only_source"
     OMITTED_PHASE_SOURCE = "omitted_phase_source"
     TERMINUS_SUPPORT_ONLY = "terminus_support_only"
@@ -116,12 +128,14 @@ class BabylonianHoldoutReason(StrEnum):
 
 
 class BabylonianSourceQuality(StrEnum):
+    """Vessel: Reliability categorization for historical source material."""
     RELIABLE = "reliable"
     RELATIVELY_CONSISTENT = "relatively_consistent"
     QUESTIONED = "questioned"
 
 
 class ChronologyConfidence(StrEnum):
+    """Vessel: Qualitative confidence in the underlying chronology."""
     DISPUTED = "disputed"
     SOURCE_TABLE_AVAILABLE = "source_table_available"
 
@@ -151,6 +165,7 @@ def julian_calendar_day_to_jd(year: int, month: int, day: int, hour: float = 0.0
 
 @dataclass(frozen=True, slots=True)
 class BabylonianCivilDay:
+    """Vessel: Representation of a Julian-calendar civil date for ancient sources."""
     year: int
     month: int
     day: int
@@ -179,6 +194,7 @@ class BabylonianCivilDay:
 
 @dataclass(frozen=True, slots=True)
 class BabylonianCivilWindow:
+    """Vessel: Temporal window spanning multiple Julian-calendar civil days."""
     start: BabylonianCivilDay
     end: BabylonianCivilDay
     authority: BabylonianChronologyAuthority
@@ -264,6 +280,7 @@ def babylonian_month_length(year: int, month: int | str) -> int:
 
 @dataclass(frozen=True, slots=True)
 class BabylonianCalendarDate:
+    """Vessel: Representation of a date in the Babylonian lunisolar calendar."""
     year: int
     month: str | int
     day: int
@@ -289,6 +306,7 @@ class BabylonianCalendarDate:
 
 @dataclass(frozen=True, slots=True)
 class BabylonianHistoricalPhenomenon:
+    """Vessel: Raw historical phenomenon record from ancient sources."""
     id: str
     body: str
     event_kind: HeliacalEventKind
@@ -329,6 +347,7 @@ def babylonian_calendar_to_civil_day(year: int, month: int | str, day: int) -> B
 
 @dataclass(frozen=True, slots=True)
 class BabylonianPlanetaryReference:
+    """Vessel: Refined planetary validation row for oracle comparison."""
     id: str
     body: str
     event_kind: HeliacalEventKind

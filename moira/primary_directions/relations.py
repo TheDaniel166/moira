@@ -42,6 +42,7 @@ __all__ = [
 
 
 class PrimaryDirectionRelationalKind(StrEnum):
+    """Vessel: Registry of architectural relation kinds for primary directions."""
     CONJUNCTION = "conjunction"
     OPPOSITION = "opposition"
     ZODIACAL_ASPECT = "zodiacal_aspect"
@@ -53,17 +54,20 @@ class PrimaryDirectionRelationalKind(StrEnum):
 
 
 class PrimaryDirectionRelationalMode(StrEnum):
+    """Vessel: Registry of relational modes."""
     POSITIONAL = "positional"
     DECLINATIONAL = "declinational"
 
 
 class PrimaryDirectionRelationalConditionState(StrEnum):
+    """Vessel: Registry of condition states for relations."""
     POSITIONAL_ADMITTED = "positional_admitted"
     DECLINATIONAL_ADMITTED = "declinational_admitted"
 
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionRelationPolicy:
+    """Vessel: Policy definition for admitted relation kinds."""
     admitted_kinds: frozenset[PrimaryDirectionRelationalKind] = frozenset(
         {
             PrimaryDirectionRelationalKind.CONJUNCTION,
@@ -81,6 +85,7 @@ class PrimaryDirectionRelationPolicy:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionRelationalTruth:
+    """Vessel: Immutable architectural truth for a relational kind."""
     kind: PrimaryDirectionRelationalKind
     mode: PrimaryDirectionRelationalMode
     derived_point_realizable: bool
@@ -128,6 +133,7 @@ class PrimaryDirectionRelationalTruth:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionRelationalClassification:
+    """Vessel: Result of classifying a relational kind based on its traits."""
     truth: PrimaryDirectionRelationalTruth
     positional: bool
     declinational: bool
@@ -145,6 +151,7 @@ class PrimaryDirectionRelationalClassification:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionRelationalRelation:
+    """Vessel: Established relation between a relational kind and the system."""
     truth: PrimaryDirectionRelationalTruth
     relation_kind: PrimaryDirectionRelationalKind
 
@@ -157,6 +164,7 @@ class PrimaryDirectionRelationalRelation:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionRelationalRelationProfile:
+    """Vessel: Comprehensive profile of relations for a relational kind."""
     truth: PrimaryDirectionRelationalTruth
     detected_relation: PrimaryDirectionRelationalRelation
     admitted_relations: tuple[PrimaryDirectionRelationalRelation, ...]
@@ -180,6 +188,7 @@ class PrimaryDirectionRelationalRelationProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionRelationalConditionProfile:
+    """Vessel: Final condition profile for a primary direction relation."""
     truth: PrimaryDirectionRelationalTruth
     classification: PrimaryDirectionRelationalClassification
     relation_profile: PrimaryDirectionRelationalRelationProfile
@@ -198,6 +207,7 @@ class PrimaryDirectionRelationalConditionProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionRelationsAggregateProfile:
+    """Vessel: Aggregated profile of multiple relation conditions."""
     profiles: tuple[PrimaryDirectionRelationalConditionProfile, ...]
     total_profiles: int
     positional_count: int
@@ -224,6 +234,7 @@ class PrimaryDirectionRelationsAggregateProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionRelationsNetworkNode:
+    """Vessel: Node in a primary direction relations network."""
     kind: PrimaryDirectionRelationalKind
     count: int
 
@@ -234,6 +245,7 @@ class PrimaryDirectionRelationsNetworkNode:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionRelationsNetworkEdge:
+    """Vessel: Directed edge in a primary direction relations network."""
     from_kind: PrimaryDirectionRelationalKind
     to_kind: PrimaryDirectionRelationalKind
     count: int
@@ -249,6 +261,7 @@ class PrimaryDirectionRelationsNetworkEdge:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionRelationsNetworkProfile:
+    """Vessel: Structural profile of the relations network."""
     nodes: tuple[PrimaryDirectionRelationsNetworkNode, ...]
     edges: tuple[PrimaryDirectionRelationsNetworkEdge, ...]
     dominant_kind: PrimaryDirectionRelationalKind

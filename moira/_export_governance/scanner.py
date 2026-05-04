@@ -1,13 +1,36 @@
 """
-Module scanner for discovering and categorizing Python modules.
+Moira — Module Discovery and Taxonomy
+=====================================
 
-This module provides functionality to recursively scan Python packages,
-identify modules matching patterns, and categorize them based on naming
-conventions and architectural roles.
+Archetype: Governance Logic (Logic Actor)
 
-Boundary: Owns module discovery and categorization logic.
-Dependencies: pathlib, fnmatch for pattern matching.
-Public surface: ModuleScanner class.
+Purpose
+-------
+Governs the discovery and categorization of Python modules within the 
+Moira package. Recursively scans the package structure, identifies 
+Python source files, and assigns architectural roles based on naming 
+conventions, directory structure, and pattern matching.
+
+Boundary
+--------
+Owns:
+    - Module discovery logic (filesystem traversal).
+    - Architectural categorization rules (facade, engine, constants, etc.).
+    - Pattern matching for architectural identification.
+Delegates:
+    - Category definitions to moira._export_governance.models.
+
+Import-time side effects
+------------------------
+None.
+
+External dependency assumptions
+--------------------------------
+- Filesystem read access to the package root.
+
+Public surface
+--------------
+ModuleScanner class.
 """
 
 from pathlib import Path
@@ -19,11 +42,45 @@ from moira._export_governance.models import ModuleCategory
 
 class ModuleScanner:
     """
-    Discovers and categorizes Python modules in a package.
-    
-    This scanner recursively traverses package directories, identifies Python
-    modules, applies pattern filtering, and categorizes modules based on their
-    naming conventions and architectural roles.
+    RITE: The Scout of the Starfield
+
+    THEOREM: ModuleScanner governs the identification and taxonomy 
+        of engine modules to provide a map for governance analysis.
+
+    RITE OF PURPOSE:
+        This engine exists to provide a comprehensive and categorized 
+        view of the engine's physical structure. It ensures that 
+        every Python module is identified and assigned an architectural 
+        role, allowing for the correct application of visibility and 
+        export policies.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Recursively discover Python modules in the package.
+            - Categorize modules based on naming conventions and path.
+            - Filter modules based on glob patterns.
+        Non-responsibilities:
+            - Does not parse module content (delegates to Parser).
+            - Does not validate symbols (delegates to Auditor).
+        
+    Canon: Moira Export Governance Protocol v1.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira._export_governance.scanner.ModuleScanner",
+      "risk": "low",
+      "api": {
+        "frozen": ["scan_package", "categorize_module", "get_modules_by_category"]
+      },
+      "state": {"mutable": false, "owners": []},
+      "effects": {"signals_emitted": [], "io": ["filesystem read"]},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["categorization_logic_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     # Facade module patterns

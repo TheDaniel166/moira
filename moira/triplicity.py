@@ -62,10 +62,12 @@ __all__ = [
 
 
 class TriplicityDoctrine(StrEnum):
+    """Vessel: Registry of supported triplicity doctrines."""
     DOROTHEAN_PINGREE_1976 = "dorothean_pingree_1976"
 
 
 class TriplicityElement(StrEnum):
+    """Vessel: Registry of the four classical elements."""
     FIRE  = "fire"
     EARTH = "earth"
     AIR   = "air"
@@ -73,6 +75,7 @@ class TriplicityElement(StrEnum):
 
 
 class ParticipatingRulerPolicy(StrEnum):
+    """Vessel: Policy for awarding points to participating triplicity rulers."""
     IGNORE        = "ignore"         # participating ruler contributes 0
     AWARD_REDUCED = "award_reduced"  # participating ruler contributes participating_score
 

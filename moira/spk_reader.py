@@ -49,29 +49,48 @@ class MissingKernelError(RuntimeError):
 @runtime_checkable
 class KernelReader(Protocol):
     """
-    Structural protocol for SPK kernel readers.
+    RITE: The Ephemeris Reader Interface
 
-    Both ``SpkReader`` and ``KernelPool`` satisfy this protocol.  Use this
-    type in function signatures wherever a caller should be able to supply
-    either a single-kernel reader or a multi-kernel pool.
+    THEOREM: KernelReader defines the structural protocol for all ephemeris 
+        accessors, ensuring that single-kernel readers and multi-kernel 
+        pools remain interchangeable at the architectural boundary.
 
-    Methods
-    -------
-    position(center, target, jd)
-        Barycentric position of *target* relative to *center* at *jd* (TT),
-        returned as (x, y, z) in km (ICRF).
-    position_and_velocity(center, target, jd)
-        Position and velocity as ((x,y,z), (vx,vy,vz)), km and km/day.
-    has_segment(center, target)
-        True if any data exists for this body pair (epoch-agnostic).
-    has_segment_at(center, target, jd)
-        True if data for this body pair covers *jd*.
-    coverage()
-        Dict mapping (center, target) pairs to (start_jd, end_jd) ranges.
-    covered_bodies()
-        Frozenset of all target NAIF IDs present in this reader.
-    close()
-        Release all held file handles.
+    RITE OF PURPOSE:
+        This protocol exists to enforce a stable, common surface for all 
+        computational pillars (Planets, Nodes, Stars). By programming to 
+        this interface rather than a concrete implementation, the engine 
+        preserves its ability to swap between DE440, DE431, or Small Body 
+        Kernels without re-validating the calling logic.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Define the mandatory state-vector query surface.
+            - Ensure epoch-aware coverage introspection.
+            - Enforce resource lifecycle management (close).
+        Non-responsibilities:
+            - Implementation of file I/O or polynomial math.
+        Structural invariants:
+            - Any satisfying class must be thread-safe for concurrent reads.
+        
+    Canon: NAIF SPICE SPK Specification.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "protocol",
+      "id": "moira.spk_reader.KernelReader",
+      "risk": "critical",
+      "api": {
+        "frozen": ["position", "position_and_velocity", "has_segment",
+                   "has_segment_at", "coverage", "covered_bodies", "close"]
+      },
+      "state": {"mutable": false, "owners": []},
+      "effects": {"signals_emitted": [], "io": ["read (impl dependent)"]},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     def position(self, center: int, target: int, jd: float) -> Vec3: ...
@@ -421,29 +440,52 @@ class SpkReader:
 
 class KernelPool:
     """
-    Ordered multi-kernel reader with transparent fallback.
+    RITE: The Unified Ephemeris Reservoir
 
-    Dispatches position queries to the first registered reader whose coverage
-    includes the requested (center, target, jd) triple.  Accepts any mix of
-    SpkReader and SmallBodyKernel instances, in caller-defined priority order.
+    THEOREM: KernelPool governs afallback-ordered chain of ephemeris 
+        readers, synthesizing multiple discrete kernels into a single 
+        coherent astronomical truth-source.
 
-    Typical use cases
-    -----------------
-    - Planetary kernel + asteroid extension kernel, unified behind one interface.
-    - Primary DE series + auxiliary body kernel for trans-Neptunian objects.
-    - Per-request reader pools in multi-tenant servers via use_reader_override().
+    RITE OF PURPOSE:
+        Moira's planetary truth is often fragmented across multiple 
+        files (e.g., DE441 for the planets + a separate BSP for a 
+        specific asteroid). KernelPool exists to hide this fragmentation 
+        from the rest of the engine. It ensures that the caller receives 
+        the highest-priority data available for any given epoch without 
+        knowing which specific kernel served the request.
 
-    Example
-    -------
-    >>> pool = KernelPool([planetary_reader, asteroid_kernel])
-    >>> pos = pool.position(0, 2000433, jd)   # 0=SSB center, 2000433=Eros
+    LAW OF OPERATION:
+        Responsibilities:
+            - Manage an ordered fallback chain of KernelReaders.
+            - Dispatch queries to the first reader covering the epoch.
+            - Ensure atomic resource cleanup for the entire pool.
+        Non-responsibilities:
+            - Does not own the files directly (delegates to managed readers).
+            - Does not merge overlapping segment data (first-match-wins).
+        Dependencies:
+            - All managed readers must satisfy the KernelReader protocol.
+        Side effects:
+            - Calling close() propagates to all managed readers.
+        
+    Canon: None (Implementation-specific aggregation).
 
-    Notes
-    -----
-    - Readers are tried in insertion order; the first covering match wins.
-    - close() closes all managed readers; after close() the pool must not be used.
-    - position_and_velocity() is only dispatched to SpkReader instances; calling
-      it when only a SmallBodyKernel covers the pair raises NotImplementedError.
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.spk_reader.KernelPool",
+      "risk": "high",
+      "api": {
+        "frozen": ["position", "position_and_velocity", "has_segment",
+                   "has_segment_at", "coverage", "covered_bodies", "close", "add"]
+      },
+      "state": {"mutable": true, "owners": ["KernelPool"]},
+      "effects": {"signals_emitted": [], "io": ["managed reader delegation"]},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     def __init__(self, readers=()) -> None:

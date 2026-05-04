@@ -1,0 +1,1588 @@
+EEEEEEEEEEE                                                              [100%]
+=================================== ERRORS ====================================
+__________________ ERROR at setup of test_module_docstrings ___________________
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _bootstrap_kernel_singleton() -> None:
+        """Configure the global SpkReader singleton once per test session.
+    
+        When a planetary kernel is available, calling set_kernel_path() here ensures
+        that module-level functions (phase.apparent_magnitude, etc.) which call
+        get_reader() directly can reuse the same initialized singleton without each
+        test needing to go through the Moira facade.
+    
+        No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+        """
+>       from moira._kernel_paths import find_planetary_kernel
+
+tests\conftest.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """
+    Moira public package surface.
+    
+    This module is intentionally thin. The heavyweight facade implementation lives
+    in ``moira.facade``; subsystem APIs are imported from their owning modules.
+    """
+    
+    import sys as _sys
+    from ._kernel_paths import find_planetary_kernel as _find_planetary_kernel
+    
+    if _find_planetary_kernel() is None:
+        print(
+            "\n"
+            "  [moira] WARNING: no planetary kernel is installed.\n"
+            "  Most Moira features will fail until you install a compatible JPL SPK kernel.\n"
+            "  Run the following command to download one:\n"
+            "\n"
+            "      moira-download-kernels\n"
+            "\n"
+            "  Or, inside Python:\n"
+            "\n"
+            "      from moira.download_kernels import download_missing\n"
+            "      download_missing()\n",
+            file=_sys.stderr,
+        )
+    
+    del _sys, _find_planetary_kernel
+    
+    from .constants import Body, HouseSystem
+    from .facade import Chart, MissingEphemerisKernelError, Moira, __author__, __version__
+    from .houses import HouseCusps
+    from .galactic_houses import (
+        GalacticAngles,
+        GalacticHouseCusps,
+        GalacticHousePlacement,
+        GalacticHouseBoundaryProfile,
+        calculate_galactic_houses,
+        assign_galactic_house,
+        body_galactic_house_position,
+        describe_galactic_boundary,
+    )
+    from .julian import (
+        CalendarDateTime,
+        DeltaTPolicy,
+        apparent_sidereal_time_at,
+        calendar_datetime_from_jd,
+        calendar_from_jd,
+        datetime_from_jd,
+        delta_t,
+        delta_t_from_jd,
+        format_jd_utc,
+        greenwich_mean_sidereal_time,
+        jd_from_datetime,
+        julian_day,
+        local_sidereal_time,
+        safe_datetime_from_jd,
+    )
+    from .nodes import NodeData, NodesAndApsides, nodes_and_apsides_at
+    from .planetary_nodes import OrbitalNode, planetary_node, all_planetary_nodes, geometric_node
+    from .phenomena import PlanetPhenomena, planet_phenomena_at
+    from .orbits import DistanceExtremes, KeplerianElements, distance_extremes_at, orbital_elements_at
+    from .planets import CartesianPosition, PlanetData, SkyPosition
+    from .solar_cartography import (
+        ArrayBackendInfo,
+        SolarBesselianSample,
+        SolarCartographyResult,
+        SolarContourLevel,
+        SolarShadowBand,
+        solar_eclipse_cartography,
+    )
+    from .lunar_cartography import (
+        LunarBesselianSample,
+        LunarShadowBand,
+        LunarContourLevel,
+        LunarCartographyResult,
+        lunar_eclipse_cartography,
+    )
+    from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal, nakshatra_of, all_nakshatras_at
+    from .aspects import AspectData
+    from .harmograms import (
+        HarmogramChartDomain,
+        HarmogramIntensityFamily,
+        HarmogramIntensityPolicy,
+        HarmogramPolicy,
+        HarmogramTraceFamily,
+        HarmonicDomain,
+        PointSetHarmonicVectorPolicy,
+        harmogram_trace,
+        intensity_function_spectrum,
+        parts_from_zero_aries,
+        point_set_harmonic_vector,
+        project_harmogram_strength,
+        zero_aries_parts_harmonic_vector,
+    )
+>   from .vedic_dignities import (
+        VedicDignityRank,
+        CompoundRelationship,
+        DignityTier,
+        EXALTATION_SIGN,
+        EXALTATION_DEGREE,
+        DEBILITATION_SIGN,
+        MULATRIKONA_SIGN,
+        MULATRIKONA_START,
+        MULATRIKONA_END,
+        OWN_SIGNS,
+        NATURAL_FRIENDS,
+        NATURAL_NEUTRALS,
+        NATURAL_ENEMIES,
+        VedicDignityResult,
+        PlanetaryRelationship,
+        VedicDignityPolicy,
+        DignityConditionProfile,
+        ChartDignityProfile,
+        vedic_dignity,
+        planetary_relationships,
+        dignity_condition_profile,
+        chart_dignity_profile,
+        validate_dignity_output,
+    )
+E     File "C:\Users\nilad\OneDrive\Desktop\Moira\moira\vedic_dignities.py", line 332
+E       Immutable record of a planet's Parashari dignity assessment based on 
+E                                   ^
+E   SyntaxError: unterminated string literal (detected at line 332)
+
+moira\__init__.py:95: SyntaxError
+______________ ERROR at setup of test_class_docstring_structure _______________
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _bootstrap_kernel_singleton() -> None:
+        """Configure the global SpkReader singleton once per test session.
+    
+        When a planetary kernel is available, calling set_kernel_path() here ensures
+        that module-level functions (phase.apparent_magnitude, etc.) which call
+        get_reader() directly can reuse the same initialized singleton without each
+        test needing to go through the Moira facade.
+    
+        No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+        """
+>       from moira._kernel_paths import find_planetary_kernel
+
+tests\conftest.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """
+    Moira public package surface.
+    
+    This module is intentionally thin. The heavyweight facade implementation lives
+    in ``moira.facade``; subsystem APIs are imported from their owning modules.
+    """
+    
+    import sys as _sys
+    from ._kernel_paths import find_planetary_kernel as _find_planetary_kernel
+    
+    if _find_planetary_kernel() is None:
+        print(
+            "\n"
+            "  [moira] WARNING: no planetary kernel is installed.\n"
+            "  Most Moira features will fail until you install a compatible JPL SPK kernel.\n"
+            "  Run the following command to download one:\n"
+            "\n"
+            "      moira-download-kernels\n"
+            "\n"
+            "  Or, inside Python:\n"
+            "\n"
+            "      from moira.download_kernels import download_missing\n"
+            "      download_missing()\n",
+            file=_sys.stderr,
+        )
+    
+    del _sys, _find_planetary_kernel
+    
+    from .constants import Body, HouseSystem
+    from .facade import Chart, MissingEphemerisKernelError, Moira, __author__, __version__
+    from .houses import HouseCusps
+    from .galactic_houses import (
+        GalacticAngles,
+        GalacticHouseCusps,
+        GalacticHousePlacement,
+        GalacticHouseBoundaryProfile,
+        calculate_galactic_houses,
+        assign_galactic_house,
+        body_galactic_house_position,
+        describe_galactic_boundary,
+    )
+    from .julian import (
+        CalendarDateTime,
+        DeltaTPolicy,
+        apparent_sidereal_time_at,
+        calendar_datetime_from_jd,
+        calendar_from_jd,
+        datetime_from_jd,
+        delta_t,
+        delta_t_from_jd,
+        format_jd_utc,
+        greenwich_mean_sidereal_time,
+        jd_from_datetime,
+        julian_day,
+        local_sidereal_time,
+        safe_datetime_from_jd,
+    )
+    from .nodes import NodeData, NodesAndApsides, nodes_and_apsides_at
+    from .planetary_nodes import OrbitalNode, planetary_node, all_planetary_nodes, geometric_node
+    from .phenomena import PlanetPhenomena, planet_phenomena_at
+    from .orbits import DistanceExtremes, KeplerianElements, distance_extremes_at, orbital_elements_at
+    from .planets import CartesianPosition, PlanetData, SkyPosition
+    from .solar_cartography import (
+        ArrayBackendInfo,
+        SolarBesselianSample,
+        SolarCartographyResult,
+        SolarContourLevel,
+        SolarShadowBand,
+        solar_eclipse_cartography,
+    )
+    from .lunar_cartography import (
+        LunarBesselianSample,
+        LunarShadowBand,
+        LunarContourLevel,
+        LunarCartographyResult,
+        lunar_eclipse_cartography,
+    )
+    from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal, nakshatra_of, all_nakshatras_at
+    from .aspects import AspectData
+    from .harmograms import (
+        HarmogramChartDomain,
+        HarmogramIntensityFamily,
+        HarmogramIntensityPolicy,
+        HarmogramPolicy,
+        HarmogramTraceFamily,
+        HarmonicDomain,
+        PointSetHarmonicVectorPolicy,
+        harmogram_trace,
+        intensity_function_spectrum,
+        parts_from_zero_aries,
+        point_set_harmonic_vector,
+        project_harmogram_strength,
+        zero_aries_parts_harmonic_vector,
+    )
+>   from .vedic_dignities import (
+        VedicDignityRank,
+        CompoundRelationship,
+        DignityTier,
+        EXALTATION_SIGN,
+        EXALTATION_DEGREE,
+        DEBILITATION_SIGN,
+        MULATRIKONA_SIGN,
+        MULATRIKONA_START,
+        MULATRIKONA_END,
+        OWN_SIGNS,
+        NATURAL_FRIENDS,
+        NATURAL_NEUTRALS,
+        NATURAL_ENEMIES,
+        VedicDignityResult,
+        PlanetaryRelationship,
+        VedicDignityPolicy,
+        DignityConditionProfile,
+        ChartDignityProfile,
+        vedic_dignity,
+        planetary_relationships,
+        dignity_condition_profile,
+        chart_dignity_profile,
+        validate_dignity_output,
+    )
+E     File "C:\Users\nilad\OneDrive\Desktop\Moira\moira\vedic_dignities.py", line 332
+E       Immutable record of a planet's Parashari dignity assessment based on 
+E                                   ^
+E   SyntaxError: unterminated string literal (detected at line 332)
+
+moira\__init__.py:95: SyntaxError
+______________ ERROR at setup of test_machine_contract_validity _______________
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _bootstrap_kernel_singleton() -> None:
+        """Configure the global SpkReader singleton once per test session.
+    
+        When a planetary kernel is available, calling set_kernel_path() here ensures
+        that module-level functions (phase.apparent_magnitude, etc.) which call
+        get_reader() directly can reuse the same initialized singleton without each
+        test needing to go through the Moira facade.
+    
+        No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+        """
+>       from moira._kernel_paths import find_planetary_kernel
+
+tests\conftest.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """
+    Moira public package surface.
+    
+    This module is intentionally thin. The heavyweight facade implementation lives
+    in ``moira.facade``; subsystem APIs are imported from their owning modules.
+    """
+    
+    import sys as _sys
+    from ._kernel_paths import find_planetary_kernel as _find_planetary_kernel
+    
+    if _find_planetary_kernel() is None:
+        print(
+            "\n"
+            "  [moira] WARNING: no planetary kernel is installed.\n"
+            "  Most Moira features will fail until you install a compatible JPL SPK kernel.\n"
+            "  Run the following command to download one:\n"
+            "\n"
+            "      moira-download-kernels\n"
+            "\n"
+            "  Or, inside Python:\n"
+            "\n"
+            "      from moira.download_kernels import download_missing\n"
+            "      download_missing()\n",
+            file=_sys.stderr,
+        )
+    
+    del _sys, _find_planetary_kernel
+    
+    from .constants import Body, HouseSystem
+    from .facade import Chart, MissingEphemerisKernelError, Moira, __author__, __version__
+    from .houses import HouseCusps
+    from .galactic_houses import (
+        GalacticAngles,
+        GalacticHouseCusps,
+        GalacticHousePlacement,
+        GalacticHouseBoundaryProfile,
+        calculate_galactic_houses,
+        assign_galactic_house,
+        body_galactic_house_position,
+        describe_galactic_boundary,
+    )
+    from .julian import (
+        CalendarDateTime,
+        DeltaTPolicy,
+        apparent_sidereal_time_at,
+        calendar_datetime_from_jd,
+        calendar_from_jd,
+        datetime_from_jd,
+        delta_t,
+        delta_t_from_jd,
+        format_jd_utc,
+        greenwich_mean_sidereal_time,
+        jd_from_datetime,
+        julian_day,
+        local_sidereal_time,
+        safe_datetime_from_jd,
+    )
+    from .nodes import NodeData, NodesAndApsides, nodes_and_apsides_at
+    from .planetary_nodes import OrbitalNode, planetary_node, all_planetary_nodes, geometric_node
+    from .phenomena import PlanetPhenomena, planet_phenomena_at
+    from .orbits import DistanceExtremes, KeplerianElements, distance_extremes_at, orbital_elements_at
+    from .planets import CartesianPosition, PlanetData, SkyPosition
+    from .solar_cartography import (
+        ArrayBackendInfo,
+        SolarBesselianSample,
+        SolarCartographyResult,
+        SolarContourLevel,
+        SolarShadowBand,
+        solar_eclipse_cartography,
+    )
+    from .lunar_cartography import (
+        LunarBesselianSample,
+        LunarShadowBand,
+        LunarContourLevel,
+        LunarCartographyResult,
+        lunar_eclipse_cartography,
+    )
+    from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal, nakshatra_of, all_nakshatras_at
+    from .aspects import AspectData
+    from .harmograms import (
+        HarmogramChartDomain,
+        HarmogramIntensityFamily,
+        HarmogramIntensityPolicy,
+        HarmogramPolicy,
+        HarmogramTraceFamily,
+        HarmonicDomain,
+        PointSetHarmonicVectorPolicy,
+        harmogram_trace,
+        intensity_function_spectrum,
+        parts_from_zero_aries,
+        point_set_harmonic_vector,
+        project_harmogram_strength,
+        zero_aries_parts_harmonic_vector,
+    )
+>   from .vedic_dignities import (
+        VedicDignityRank,
+        CompoundRelationship,
+        DignityTier,
+        EXALTATION_SIGN,
+        EXALTATION_DEGREE,
+        DEBILITATION_SIGN,
+        MULATRIKONA_SIGN,
+        MULATRIKONA_START,
+        MULATRIKONA_END,
+        OWN_SIGNS,
+        NATURAL_FRIENDS,
+        NATURAL_NEUTRALS,
+        NATURAL_ENEMIES,
+        VedicDignityResult,
+        PlanetaryRelationship,
+        VedicDignityPolicy,
+        DignityConditionProfile,
+        ChartDignityProfile,
+        vedic_dignity,
+        planetary_relationships,
+        dignity_condition_profile,
+        chart_dignity_profile,
+        validate_dignity_output,
+    )
+E     File "C:\Users\nilad\OneDrive\Desktop\Moira\moira\vedic_dignities.py", line 332
+E       Immutable record of a planet's Parashari dignity assessment based on 
+E                                   ^
+E   SyntaxError: unterminated string literal (detected at line 332)
+
+moira\__init__.py:95: SyntaxError
+___________ ERROR at setup of test_checker_compliant_module_passes ____________
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _bootstrap_kernel_singleton() -> None:
+        """Configure the global SpkReader singleton once per test session.
+    
+        When a planetary kernel is available, calling set_kernel_path() here ensures
+        that module-level functions (phase.apparent_magnitude, etc.) which call
+        get_reader() directly can reuse the same initialized singleton without each
+        test needing to go through the Moira facade.
+    
+        No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+        """
+>       from moira._kernel_paths import find_planetary_kernel
+
+tests\conftest.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """
+    Moira public package surface.
+    
+    This module is intentionally thin. The heavyweight facade implementation lives
+    in ``moira.facade``; subsystem APIs are imported from their owning modules.
+    """
+    
+    import sys as _sys
+    from ._kernel_paths import find_planetary_kernel as _find_planetary_kernel
+    
+    if _find_planetary_kernel() is None:
+        print(
+            "\n"
+            "  [moira] WARNING: no planetary kernel is installed.\n"
+            "  Most Moira features will fail until you install a compatible JPL SPK kernel.\n"
+            "  Run the following command to download one:\n"
+            "\n"
+            "      moira-download-kernels\n"
+            "\n"
+            "  Or, inside Python:\n"
+            "\n"
+            "      from moira.download_kernels import download_missing\n"
+            "      download_missing()\n",
+            file=_sys.stderr,
+        )
+    
+    del _sys, _find_planetary_kernel
+    
+    from .constants import Body, HouseSystem
+    from .facade import Chart, MissingEphemerisKernelError, Moira, __author__, __version__
+    from .houses import HouseCusps
+    from .galactic_houses import (
+        GalacticAngles,
+        GalacticHouseCusps,
+        GalacticHousePlacement,
+        GalacticHouseBoundaryProfile,
+        calculate_galactic_houses,
+        assign_galactic_house,
+        body_galactic_house_position,
+        describe_galactic_boundary,
+    )
+    from .julian import (
+        CalendarDateTime,
+        DeltaTPolicy,
+        apparent_sidereal_time_at,
+        calendar_datetime_from_jd,
+        calendar_from_jd,
+        datetime_from_jd,
+        delta_t,
+        delta_t_from_jd,
+        format_jd_utc,
+        greenwich_mean_sidereal_time,
+        jd_from_datetime,
+        julian_day,
+        local_sidereal_time,
+        safe_datetime_from_jd,
+    )
+    from .nodes import NodeData, NodesAndApsides, nodes_and_apsides_at
+    from .planetary_nodes import OrbitalNode, planetary_node, all_planetary_nodes, geometric_node
+    from .phenomena import PlanetPhenomena, planet_phenomena_at
+    from .orbits import DistanceExtremes, KeplerianElements, distance_extremes_at, orbital_elements_at
+    from .planets import CartesianPosition, PlanetData, SkyPosition
+    from .solar_cartography import (
+        ArrayBackendInfo,
+        SolarBesselianSample,
+        SolarCartographyResult,
+        SolarContourLevel,
+        SolarShadowBand,
+        solar_eclipse_cartography,
+    )
+    from .lunar_cartography import (
+        LunarBesselianSample,
+        LunarShadowBand,
+        LunarContourLevel,
+        LunarCartographyResult,
+        lunar_eclipse_cartography,
+    )
+    from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal, nakshatra_of, all_nakshatras_at
+    from .aspects import AspectData
+    from .harmograms import (
+        HarmogramChartDomain,
+        HarmogramIntensityFamily,
+        HarmogramIntensityPolicy,
+        HarmogramPolicy,
+        HarmogramTraceFamily,
+        HarmonicDomain,
+        PointSetHarmonicVectorPolicy,
+        harmogram_trace,
+        intensity_function_spectrum,
+        parts_from_zero_aries,
+        point_set_harmonic_vector,
+        project_harmogram_strength,
+        zero_aries_parts_harmonic_vector,
+    )
+>   from .vedic_dignities import (
+        VedicDignityRank,
+        CompoundRelationship,
+        DignityTier,
+        EXALTATION_SIGN,
+        EXALTATION_DEGREE,
+        DEBILITATION_SIGN,
+        MULATRIKONA_SIGN,
+        MULATRIKONA_START,
+        MULATRIKONA_END,
+        OWN_SIGNS,
+        NATURAL_FRIENDS,
+        NATURAL_NEUTRALS,
+        NATURAL_ENEMIES,
+        VedicDignityResult,
+        PlanetaryRelationship,
+        VedicDignityPolicy,
+        DignityConditionProfile,
+        ChartDignityProfile,
+        vedic_dignity,
+        planetary_relationships,
+        dignity_condition_profile,
+        chart_dignity_profile,
+        validate_dignity_output,
+    )
+E     File "C:\Users\nilad\OneDrive\Desktop\Moira\moira\vedic_dignities.py", line 332
+E       Immutable record of a planet's Parashari dignity assessment based on 
+E                                   ^
+E   SyntaxError: unterminated string literal (detected at line 332)
+
+moira\__init__.py:95: SyntaxError
+___ ERROR at setup of test_checker_missing_module_docstring_produces_mod001 ___
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _bootstrap_kernel_singleton() -> None:
+        """Configure the global SpkReader singleton once per test session.
+    
+        When a planetary kernel is available, calling set_kernel_path() here ensures
+        that module-level functions (phase.apparent_magnitude, etc.) which call
+        get_reader() directly can reuse the same initialized singleton without each
+        test needing to go through the Moira facade.
+    
+        No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+        """
+>       from moira._kernel_paths import find_planetary_kernel
+
+tests\conftest.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """
+    Moira public package surface.
+    
+    This module is intentionally thin. The heavyweight facade implementation lives
+    in ``moira.facade``; subsystem APIs are imported from their owning modules.
+    """
+    
+    import sys as _sys
+    from ._kernel_paths import find_planetary_kernel as _find_planetary_kernel
+    
+    if _find_planetary_kernel() is None:
+        print(
+            "\n"
+            "  [moira] WARNING: no planetary kernel is installed.\n"
+            "  Most Moira features will fail until you install a compatible JPL SPK kernel.\n"
+            "  Run the following command to download one:\n"
+            "\n"
+            "      moira-download-kernels\n"
+            "\n"
+            "  Or, inside Python:\n"
+            "\n"
+            "      from moira.download_kernels import download_missing\n"
+            "      download_missing()\n",
+            file=_sys.stderr,
+        )
+    
+    del _sys, _find_planetary_kernel
+    
+    from .constants import Body, HouseSystem
+    from .facade import Chart, MissingEphemerisKernelError, Moira, __author__, __version__
+    from .houses import HouseCusps
+    from .galactic_houses import (
+        GalacticAngles,
+        GalacticHouseCusps,
+        GalacticHousePlacement,
+        GalacticHouseBoundaryProfile,
+        calculate_galactic_houses,
+        assign_galactic_house,
+        body_galactic_house_position,
+        describe_galactic_boundary,
+    )
+    from .julian import (
+        CalendarDateTime,
+        DeltaTPolicy,
+        apparent_sidereal_time_at,
+        calendar_datetime_from_jd,
+        calendar_from_jd,
+        datetime_from_jd,
+        delta_t,
+        delta_t_from_jd,
+        format_jd_utc,
+        greenwich_mean_sidereal_time,
+        jd_from_datetime,
+        julian_day,
+        local_sidereal_time,
+        safe_datetime_from_jd,
+    )
+    from .nodes import NodeData, NodesAndApsides, nodes_and_apsides_at
+    from .planetary_nodes import OrbitalNode, planetary_node, all_planetary_nodes, geometric_node
+    from .phenomena import PlanetPhenomena, planet_phenomena_at
+    from .orbits import DistanceExtremes, KeplerianElements, distance_extremes_at, orbital_elements_at
+    from .planets import CartesianPosition, PlanetData, SkyPosition
+    from .solar_cartography import (
+        ArrayBackendInfo,
+        SolarBesselianSample,
+        SolarCartographyResult,
+        SolarContourLevel,
+        SolarShadowBand,
+        solar_eclipse_cartography,
+    )
+    from .lunar_cartography import (
+        LunarBesselianSample,
+        LunarShadowBand,
+        LunarContourLevel,
+        LunarCartographyResult,
+        lunar_eclipse_cartography,
+    )
+    from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal, nakshatra_of, all_nakshatras_at
+    from .aspects import AspectData
+    from .harmograms import (
+        HarmogramChartDomain,
+        HarmogramIntensityFamily,
+        HarmogramIntensityPolicy,
+        HarmogramPolicy,
+        HarmogramTraceFamily,
+        HarmonicDomain,
+        PointSetHarmonicVectorPolicy,
+        harmogram_trace,
+        intensity_function_spectrum,
+        parts_from_zero_aries,
+        point_set_harmonic_vector,
+        project_harmogram_strength,
+        zero_aries_parts_harmonic_vector,
+    )
+>   from .vedic_dignities import (
+        VedicDignityRank,
+        CompoundRelationship,
+        DignityTier,
+        EXALTATION_SIGN,
+        EXALTATION_DEGREE,
+        DEBILITATION_SIGN,
+        MULATRIKONA_SIGN,
+        MULATRIKONA_START,
+        MULATRIKONA_END,
+        OWN_SIGNS,
+        NATURAL_FRIENDS,
+        NATURAL_NEUTRALS,
+        NATURAL_ENEMIES,
+        VedicDignityResult,
+        PlanetaryRelationship,
+        VedicDignityPolicy,
+        DignityConditionProfile,
+        ChartDignityProfile,
+        vedic_dignity,
+        planetary_relationships,
+        dignity_condition_profile,
+        chart_dignity_profile,
+        validate_dignity_output,
+    )
+E     File "C:\Users\nilad\OneDrive\Desktop\Moira\moira\vedic_dignities.py", line 332
+E       Immutable record of a planet's Parashari dignity assessment based on 
+E                                   ^
+E   SyntaxError: unterminated string literal (detected at line 332)
+
+moira\__init__.py:95: SyntaxError
+____________ ERROR at setup of test_checker_compliant_class_passes ____________
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _bootstrap_kernel_singleton() -> None:
+        """Configure the global SpkReader singleton once per test session.
+    
+        When a planetary kernel is available, calling set_kernel_path() here ensures
+        that module-level functions (phase.apparent_magnitude, etc.) which call
+        get_reader() directly can reuse the same initialized singleton without each
+        test needing to go through the Moira facade.
+    
+        No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+        """
+>       from moira._kernel_paths import find_planetary_kernel
+
+tests\conftest.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """
+    Moira public package surface.
+    
+    This module is intentionally thin. The heavyweight facade implementation lives
+    in ``moira.facade``; subsystem APIs are imported from their owning modules.
+    """
+    
+    import sys as _sys
+    from ._kernel_paths import find_planetary_kernel as _find_planetary_kernel
+    
+    if _find_planetary_kernel() is None:
+        print(
+            "\n"
+            "  [moira] WARNING: no planetary kernel is installed.\n"
+            "  Most Moira features will fail until you install a compatible JPL SPK kernel.\n"
+            "  Run the following command to download one:\n"
+            "\n"
+            "      moira-download-kernels\n"
+            "\n"
+            "  Or, inside Python:\n"
+            "\n"
+            "      from moira.download_kernels import download_missing\n"
+            "      download_missing()\n",
+            file=_sys.stderr,
+        )
+    
+    del _sys, _find_planetary_kernel
+    
+    from .constants import Body, HouseSystem
+    from .facade import Chart, MissingEphemerisKernelError, Moira, __author__, __version__
+    from .houses import HouseCusps
+    from .galactic_houses import (
+        GalacticAngles,
+        GalacticHouseCusps,
+        GalacticHousePlacement,
+        GalacticHouseBoundaryProfile,
+        calculate_galactic_houses,
+        assign_galactic_house,
+        body_galactic_house_position,
+        describe_galactic_boundary,
+    )
+    from .julian import (
+        CalendarDateTime,
+        DeltaTPolicy,
+        apparent_sidereal_time_at,
+        calendar_datetime_from_jd,
+        calendar_from_jd,
+        datetime_from_jd,
+        delta_t,
+        delta_t_from_jd,
+        format_jd_utc,
+        greenwich_mean_sidereal_time,
+        jd_from_datetime,
+        julian_day,
+        local_sidereal_time,
+        safe_datetime_from_jd,
+    )
+    from .nodes import NodeData, NodesAndApsides, nodes_and_apsides_at
+    from .planetary_nodes import OrbitalNode, planetary_node, all_planetary_nodes, geometric_node
+    from .phenomena import PlanetPhenomena, planet_phenomena_at
+    from .orbits import DistanceExtremes, KeplerianElements, distance_extremes_at, orbital_elements_at
+    from .planets import CartesianPosition, PlanetData, SkyPosition
+    from .solar_cartography import (
+        ArrayBackendInfo,
+        SolarBesselianSample,
+        SolarCartographyResult,
+        SolarContourLevel,
+        SolarShadowBand,
+        solar_eclipse_cartography,
+    )
+    from .lunar_cartography import (
+        LunarBesselianSample,
+        LunarShadowBand,
+        LunarContourLevel,
+        LunarCartographyResult,
+        lunar_eclipse_cartography,
+    )
+    from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal, nakshatra_of, all_nakshatras_at
+    from .aspects import AspectData
+    from .harmograms import (
+        HarmogramChartDomain,
+        HarmogramIntensityFamily,
+        HarmogramIntensityPolicy,
+        HarmogramPolicy,
+        HarmogramTraceFamily,
+        HarmonicDomain,
+        PointSetHarmonicVectorPolicy,
+        harmogram_trace,
+        intensity_function_spectrum,
+        parts_from_zero_aries,
+        point_set_harmonic_vector,
+        project_harmogram_strength,
+        zero_aries_parts_harmonic_vector,
+    )
+>   from .vedic_dignities import (
+        VedicDignityRank,
+        CompoundRelationship,
+        DignityTier,
+        EXALTATION_SIGN,
+        EXALTATION_DEGREE,
+        DEBILITATION_SIGN,
+        MULATRIKONA_SIGN,
+        MULATRIKONA_START,
+        MULATRIKONA_END,
+        OWN_SIGNS,
+        NATURAL_FRIENDS,
+        NATURAL_NEUTRALS,
+        NATURAL_ENEMIES,
+        VedicDignityResult,
+        PlanetaryRelationship,
+        VedicDignityPolicy,
+        DignityConditionProfile,
+        ChartDignityProfile,
+        vedic_dignity,
+        planetary_relationships,
+        dignity_condition_profile,
+        chart_dignity_profile,
+        validate_dignity_output,
+    )
+E     File "C:\Users\nilad\OneDrive\Desktop\Moira\moira\vedic_dignities.py", line 332
+E       Immutable record of a planet's Parashari dignity assessment based on 
+E                                   ^
+E   SyntaxError: unterminated string literal (detected at line 332)
+
+moira\__init__.py:95: SyntaxError
+_________ ERROR at setup of test_checker_missing_rite_produces_cls001 _________
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _bootstrap_kernel_singleton() -> None:
+        """Configure the global SpkReader singleton once per test session.
+    
+        When a planetary kernel is available, calling set_kernel_path() here ensures
+        that module-level functions (phase.apparent_magnitude, etc.) which call
+        get_reader() directly can reuse the same initialized singleton without each
+        test needing to go through the Moira facade.
+    
+        No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+        """
+>       from moira._kernel_paths import find_planetary_kernel
+
+tests\conftest.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """
+    Moira public package surface.
+    
+    This module is intentionally thin. The heavyweight facade implementation lives
+    in ``moira.facade``; subsystem APIs are imported from their owning modules.
+    """
+    
+    import sys as _sys
+    from ._kernel_paths import find_planetary_kernel as _find_planetary_kernel
+    
+    if _find_planetary_kernel() is None:
+        print(
+            "\n"
+            "  [moira] WARNING: no planetary kernel is installed.\n"
+            "  Most Moira features will fail until you install a compatible JPL SPK kernel.\n"
+            "  Run the following command to download one:\n"
+            "\n"
+            "      moira-download-kernels\n"
+            "\n"
+            "  Or, inside Python:\n"
+            "\n"
+            "      from moira.download_kernels import download_missing\n"
+            "      download_missing()\n",
+            file=_sys.stderr,
+        )
+    
+    del _sys, _find_planetary_kernel
+    
+    from .constants import Body, HouseSystem
+    from .facade import Chart, MissingEphemerisKernelError, Moira, __author__, __version__
+    from .houses import HouseCusps
+    from .galactic_houses import (
+        GalacticAngles,
+        GalacticHouseCusps,
+        GalacticHousePlacement,
+        GalacticHouseBoundaryProfile,
+        calculate_galactic_houses,
+        assign_galactic_house,
+        body_galactic_house_position,
+        describe_galactic_boundary,
+    )
+    from .julian import (
+        CalendarDateTime,
+        DeltaTPolicy,
+        apparent_sidereal_time_at,
+        calendar_datetime_from_jd,
+        calendar_from_jd,
+        datetime_from_jd,
+        delta_t,
+        delta_t_from_jd,
+        format_jd_utc,
+        greenwich_mean_sidereal_time,
+        jd_from_datetime,
+        julian_day,
+        local_sidereal_time,
+        safe_datetime_from_jd,
+    )
+    from .nodes import NodeData, NodesAndApsides, nodes_and_apsides_at
+    from .planetary_nodes import OrbitalNode, planetary_node, all_planetary_nodes, geometric_node
+    from .phenomena import PlanetPhenomena, planet_phenomena_at
+    from .orbits import DistanceExtremes, KeplerianElements, distance_extremes_at, orbital_elements_at
+    from .planets import CartesianPosition, PlanetData, SkyPosition
+    from .solar_cartography import (
+        ArrayBackendInfo,
+        SolarBesselianSample,
+        SolarCartographyResult,
+        SolarContourLevel,
+        SolarShadowBand,
+        solar_eclipse_cartography,
+    )
+    from .lunar_cartography import (
+        LunarBesselianSample,
+        LunarShadowBand,
+        LunarContourLevel,
+        LunarCartographyResult,
+        lunar_eclipse_cartography,
+    )
+    from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal, nakshatra_of, all_nakshatras_at
+    from .aspects import AspectData
+    from .harmograms import (
+        HarmogramChartDomain,
+        HarmogramIntensityFamily,
+        HarmogramIntensityPolicy,
+        HarmogramPolicy,
+        HarmogramTraceFamily,
+        HarmonicDomain,
+        PointSetHarmonicVectorPolicy,
+        harmogram_trace,
+        intensity_function_spectrum,
+        parts_from_zero_aries,
+        point_set_harmonic_vector,
+        project_harmogram_strength,
+        zero_aries_parts_harmonic_vector,
+    )
+>   from .vedic_dignities import (
+        VedicDignityRank,
+        CompoundRelationship,
+        DignityTier,
+        EXALTATION_SIGN,
+        EXALTATION_DEGREE,
+        DEBILITATION_SIGN,
+        MULATRIKONA_SIGN,
+        MULATRIKONA_START,
+        MULATRIKONA_END,
+        OWN_SIGNS,
+        NATURAL_FRIENDS,
+        NATURAL_NEUTRALS,
+        NATURAL_ENEMIES,
+        VedicDignityResult,
+        PlanetaryRelationship,
+        VedicDignityPolicy,
+        DignityConditionProfile,
+        ChartDignityProfile,
+        vedic_dignity,
+        planetary_relationships,
+        dignity_condition_profile,
+        chart_dignity_profile,
+        validate_dignity_output,
+    )
+E     File "C:\Users\nilad\OneDrive\Desktop\Moira\moira\vedic_dignities.py", line 332
+E       Immutable record of a planet's Parashari dignity assessment based on 
+E                                   ^
+E   SyntaxError: unterminated string literal (detected at line 332)
+
+moira\__init__.py:95: SyntaxError
+________ ERROR at setup of test_checker_malformed_json_produces_mc001 _________
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _bootstrap_kernel_singleton() -> None:
+        """Configure the global SpkReader singleton once per test session.
+    
+        When a planetary kernel is available, calling set_kernel_path() here ensures
+        that module-level functions (phase.apparent_magnitude, etc.) which call
+        get_reader() directly can reuse the same initialized singleton without each
+        test needing to go through the Moira facade.
+    
+        No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+        """
+>       from moira._kernel_paths import find_planetary_kernel
+
+tests\conftest.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """
+    Moira public package surface.
+    
+    This module is intentionally thin. The heavyweight facade implementation lives
+    in ``moira.facade``; subsystem APIs are imported from their owning modules.
+    """
+    
+    import sys as _sys
+    from ._kernel_paths import find_planetary_kernel as _find_planetary_kernel
+    
+    if _find_planetary_kernel() is None:
+        print(
+            "\n"
+            "  [moira] WARNING: no planetary kernel is installed.\n"
+            "  Most Moira features will fail until you install a compatible JPL SPK kernel.\n"
+            "  Run the following command to download one:\n"
+            "\n"
+            "      moira-download-kernels\n"
+            "\n"
+            "  Or, inside Python:\n"
+            "\n"
+            "      from moira.download_kernels import download_missing\n"
+            "      download_missing()\n",
+            file=_sys.stderr,
+        )
+    
+    del _sys, _find_planetary_kernel
+    
+    from .constants import Body, HouseSystem
+    from .facade import Chart, MissingEphemerisKernelError, Moira, __author__, __version__
+    from .houses import HouseCusps
+    from .galactic_houses import (
+        GalacticAngles,
+        GalacticHouseCusps,
+        GalacticHousePlacement,
+        GalacticHouseBoundaryProfile,
+        calculate_galactic_houses,
+        assign_galactic_house,
+        body_galactic_house_position,
+        describe_galactic_boundary,
+    )
+    from .julian import (
+        CalendarDateTime,
+        DeltaTPolicy,
+        apparent_sidereal_time_at,
+        calendar_datetime_from_jd,
+        calendar_from_jd,
+        datetime_from_jd,
+        delta_t,
+        delta_t_from_jd,
+        format_jd_utc,
+        greenwich_mean_sidereal_time,
+        jd_from_datetime,
+        julian_day,
+        local_sidereal_time,
+        safe_datetime_from_jd,
+    )
+    from .nodes import NodeData, NodesAndApsides, nodes_and_apsides_at
+    from .planetary_nodes import OrbitalNode, planetary_node, all_planetary_nodes, geometric_node
+    from .phenomena import PlanetPhenomena, planet_phenomena_at
+    from .orbits import DistanceExtremes, KeplerianElements, distance_extremes_at, orbital_elements_at
+    from .planets import CartesianPosition, PlanetData, SkyPosition
+    from .solar_cartography import (
+        ArrayBackendInfo,
+        SolarBesselianSample,
+        SolarCartographyResult,
+        SolarContourLevel,
+        SolarShadowBand,
+        solar_eclipse_cartography,
+    )
+    from .lunar_cartography import (
+        LunarBesselianSample,
+        LunarShadowBand,
+        LunarContourLevel,
+        LunarCartographyResult,
+        lunar_eclipse_cartography,
+    )
+    from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal, nakshatra_of, all_nakshatras_at
+    from .aspects import AspectData
+    from .harmograms import (
+        HarmogramChartDomain,
+        HarmogramIntensityFamily,
+        HarmogramIntensityPolicy,
+        HarmogramPolicy,
+        HarmogramTraceFamily,
+        HarmonicDomain,
+        PointSetHarmonicVectorPolicy,
+        harmogram_trace,
+        intensity_function_spectrum,
+        parts_from_zero_aries,
+        point_set_harmonic_vector,
+        project_harmogram_strength,
+        zero_aries_parts_harmonic_vector,
+    )
+>   from .vedic_dignities import (
+        VedicDignityRank,
+        CompoundRelationship,
+        DignityTier,
+        EXALTATION_SIGN,
+        EXALTATION_DEGREE,
+        DEBILITATION_SIGN,
+        MULATRIKONA_SIGN,
+        MULATRIKONA_START,
+        MULATRIKONA_END,
+        OWN_SIGNS,
+        NATURAL_FRIENDS,
+        NATURAL_NEUTRALS,
+        NATURAL_ENEMIES,
+        VedicDignityResult,
+        PlanetaryRelationship,
+        VedicDignityPolicy,
+        DignityConditionProfile,
+        ChartDignityProfile,
+        vedic_dignity,
+        planetary_relationships,
+        dignity_condition_profile,
+        chart_dignity_profile,
+        validate_dignity_output,
+    )
+E     File "C:\Users\nilad\OneDrive\Desktop\Moira\moira\vedic_dignities.py", line 332
+E       Immutable record of a planet's Parashari dignity assessment based on 
+E                                   ^
+E   SyntaxError: unterminated string literal (detected at line 332)
+
+moira\__init__.py:95: SyntaxError
+_______ ERROR at setup of test_checker_missing_risk_key_produces_mc002 ________
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _bootstrap_kernel_singleton() -> None:
+        """Configure the global SpkReader singleton once per test session.
+    
+        When a planetary kernel is available, calling set_kernel_path() here ensures
+        that module-level functions (phase.apparent_magnitude, etc.) which call
+        get_reader() directly can reuse the same initialized singleton without each
+        test needing to go through the Moira facade.
+    
+        No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+        """
+>       from moira._kernel_paths import find_planetary_kernel
+
+tests\conftest.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """
+    Moira public package surface.
+    
+    This module is intentionally thin. The heavyweight facade implementation lives
+    in ``moira.facade``; subsystem APIs are imported from their owning modules.
+    """
+    
+    import sys as _sys
+    from ._kernel_paths import find_planetary_kernel as _find_planetary_kernel
+    
+    if _find_planetary_kernel() is None:
+        print(
+            "\n"
+            "  [moira] WARNING: no planetary kernel is installed.\n"
+            "  Most Moira features will fail until you install a compatible JPL SPK kernel.\n"
+            "  Run the following command to download one:\n"
+            "\n"
+            "      moira-download-kernels\n"
+            "\n"
+            "  Or, inside Python:\n"
+            "\n"
+            "      from moira.download_kernels import download_missing\n"
+            "      download_missing()\n",
+            file=_sys.stderr,
+        )
+    
+    del _sys, _find_planetary_kernel
+    
+    from .constants import Body, HouseSystem
+    from .facade import Chart, MissingEphemerisKernelError, Moira, __author__, __version__
+    from .houses import HouseCusps
+    from .galactic_houses import (
+        GalacticAngles,
+        GalacticHouseCusps,
+        GalacticHousePlacement,
+        GalacticHouseBoundaryProfile,
+        calculate_galactic_houses,
+        assign_galactic_house,
+        body_galactic_house_position,
+        describe_galactic_boundary,
+    )
+    from .julian import (
+        CalendarDateTime,
+        DeltaTPolicy,
+        apparent_sidereal_time_at,
+        calendar_datetime_from_jd,
+        calendar_from_jd,
+        datetime_from_jd,
+        delta_t,
+        delta_t_from_jd,
+        format_jd_utc,
+        greenwich_mean_sidereal_time,
+        jd_from_datetime,
+        julian_day,
+        local_sidereal_time,
+        safe_datetime_from_jd,
+    )
+    from .nodes import NodeData, NodesAndApsides, nodes_and_apsides_at
+    from .planetary_nodes import OrbitalNode, planetary_node, all_planetary_nodes, geometric_node
+    from .phenomena import PlanetPhenomena, planet_phenomena_at
+    from .orbits import DistanceExtremes, KeplerianElements, distance_extremes_at, orbital_elements_at
+    from .planets import CartesianPosition, PlanetData, SkyPosition
+    from .solar_cartography import (
+        ArrayBackendInfo,
+        SolarBesselianSample,
+        SolarCartographyResult,
+        SolarContourLevel,
+        SolarShadowBand,
+        solar_eclipse_cartography,
+    )
+    from .lunar_cartography import (
+        LunarBesselianSample,
+        LunarShadowBand,
+        LunarContourLevel,
+        LunarCartographyResult,
+        lunar_eclipse_cartography,
+    )
+    from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal, nakshatra_of, all_nakshatras_at
+    from .aspects import AspectData
+    from .harmograms import (
+        HarmogramChartDomain,
+        HarmogramIntensityFamily,
+        HarmogramIntensityPolicy,
+        HarmogramPolicy,
+        HarmogramTraceFamily,
+        HarmonicDomain,
+        PointSetHarmonicVectorPolicy,
+        harmogram_trace,
+        intensity_function_spectrum,
+        parts_from_zero_aries,
+        point_set_harmonic_vector,
+        project_harmogram_strength,
+        zero_aries_parts_harmonic_vector,
+    )
+>   from .vedic_dignities import (
+        VedicDignityRank,
+        CompoundRelationship,
+        DignityTier,
+        EXALTATION_SIGN,
+        EXALTATION_DEGREE,
+        DEBILITATION_SIGN,
+        MULATRIKONA_SIGN,
+        MULATRIKONA_START,
+        MULATRIKONA_END,
+        OWN_SIGNS,
+        NATURAL_FRIENDS,
+        NATURAL_NEUTRALS,
+        NATURAL_ENEMIES,
+        VedicDignityResult,
+        PlanetaryRelationship,
+        VedicDignityPolicy,
+        DignityConditionProfile,
+        ChartDignityProfile,
+        vedic_dignity,
+        planetary_relationships,
+        dignity_condition_profile,
+        chart_dignity_profile,
+        validate_dignity_output,
+    )
+E     File "C:\Users\nilad\OneDrive\Desktop\Moira\moira\vedic_dignities.py", line 332
+E       Immutable record of a planet's Parashari dignity assessment based on 
+E                                   ^
+E   SyntaxError: unterminated string literal (detected at line 332)
+
+moira\__init__.py:95: SyntaxError
+______ ERROR at setup of test_checker_invalid_risk_value_produces_mc003 _______
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _bootstrap_kernel_singleton() -> None:
+        """Configure the global SpkReader singleton once per test session.
+    
+        When a planetary kernel is available, calling set_kernel_path() here ensures
+        that module-level functions (phase.apparent_magnitude, etc.) which call
+        get_reader() directly can reuse the same initialized singleton without each
+        test needing to go through the Moira facade.
+    
+        No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+        """
+>       from moira._kernel_paths import find_planetary_kernel
+
+tests\conftest.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """
+    Moira public package surface.
+    
+    This module is intentionally thin. The heavyweight facade implementation lives
+    in ``moira.facade``; subsystem APIs are imported from their owning modules.
+    """
+    
+    import sys as _sys
+    from ._kernel_paths import find_planetary_kernel as _find_planetary_kernel
+    
+    if _find_planetary_kernel() is None:
+        print(
+            "\n"
+            "  [moira] WARNING: no planetary kernel is installed.\n"
+            "  Most Moira features will fail until you install a compatible JPL SPK kernel.\n"
+            "  Run the following command to download one:\n"
+            "\n"
+            "      moira-download-kernels\n"
+            "\n"
+            "  Or, inside Python:\n"
+            "\n"
+            "      from moira.download_kernels import download_missing\n"
+            "      download_missing()\n",
+            file=_sys.stderr,
+        )
+    
+    del _sys, _find_planetary_kernel
+    
+    from .constants import Body, HouseSystem
+    from .facade import Chart, MissingEphemerisKernelError, Moira, __author__, __version__
+    from .houses import HouseCusps
+    from .galactic_houses import (
+        GalacticAngles,
+        GalacticHouseCusps,
+        GalacticHousePlacement,
+        GalacticHouseBoundaryProfile,
+        calculate_galactic_houses,
+        assign_galactic_house,
+        body_galactic_house_position,
+        describe_galactic_boundary,
+    )
+    from .julian import (
+        CalendarDateTime,
+        DeltaTPolicy,
+        apparent_sidereal_time_at,
+        calendar_datetime_from_jd,
+        calendar_from_jd,
+        datetime_from_jd,
+        delta_t,
+        delta_t_from_jd,
+        format_jd_utc,
+        greenwich_mean_sidereal_time,
+        jd_from_datetime,
+        julian_day,
+        local_sidereal_time,
+        safe_datetime_from_jd,
+    )
+    from .nodes import NodeData, NodesAndApsides, nodes_and_apsides_at
+    from .planetary_nodes import OrbitalNode, planetary_node, all_planetary_nodes, geometric_node
+    from .phenomena import PlanetPhenomena, planet_phenomena_at
+    from .orbits import DistanceExtremes, KeplerianElements, distance_extremes_at, orbital_elements_at
+    from .planets import CartesianPosition, PlanetData, SkyPosition
+    from .solar_cartography import (
+        ArrayBackendInfo,
+        SolarBesselianSample,
+        SolarCartographyResult,
+        SolarContourLevel,
+        SolarShadowBand,
+        solar_eclipse_cartography,
+    )
+    from .lunar_cartography import (
+        LunarBesselianSample,
+        LunarShadowBand,
+        LunarContourLevel,
+        LunarCartographyResult,
+        lunar_eclipse_cartography,
+    )
+    from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal, nakshatra_of, all_nakshatras_at
+    from .aspects import AspectData
+    from .harmograms import (
+        HarmogramChartDomain,
+        HarmogramIntensityFamily,
+        HarmogramIntensityPolicy,
+        HarmogramPolicy,
+        HarmogramTraceFamily,
+        HarmonicDomain,
+        PointSetHarmonicVectorPolicy,
+        harmogram_trace,
+        intensity_function_spectrum,
+        parts_from_zero_aries,
+        point_set_harmonic_vector,
+        project_harmogram_strength,
+        zero_aries_parts_harmonic_vector,
+    )
+>   from .vedic_dignities import (
+        VedicDignityRank,
+        CompoundRelationship,
+        DignityTier,
+        EXALTATION_SIGN,
+        EXALTATION_DEGREE,
+        DEBILITATION_SIGN,
+        MULATRIKONA_SIGN,
+        MULATRIKONA_START,
+        MULATRIKONA_END,
+        OWN_SIGNS,
+        NATURAL_FRIENDS,
+        NATURAL_NEUTRALS,
+        NATURAL_ENEMIES,
+        VedicDignityResult,
+        PlanetaryRelationship,
+        VedicDignityPolicy,
+        DignityConditionProfile,
+        ChartDignityProfile,
+        vedic_dignity,
+        planetary_relationships,
+        dignity_condition_profile,
+        chart_dignity_profile,
+        validate_dignity_output,
+    )
+E     File "C:\Users\nilad\OneDrive\Desktop\Moira\moira\vedic_dignities.py", line 332
+E       Immutable record of a planet's Parashari dignity assessment based on 
+E                                   ^
+E   SyntaxError: unterminated string literal (detected at line 332)
+
+moira\__init__.py:95: SyntaxError
+_________ ERROR at setup of test_checker_wrong_thread_produces_mc005 __________
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _bootstrap_kernel_singleton() -> None:
+        """Configure the global SpkReader singleton once per test session.
+    
+        When a planetary kernel is available, calling set_kernel_path() here ensures
+        that module-level functions (phase.apparent_magnitude, etc.) which call
+        get_reader() directly can reuse the same initialized singleton without each
+        test needing to go through the Moira facade.
+    
+        No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+        """
+>       from moira._kernel_paths import find_planetary_kernel
+
+tests\conftest.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """
+    Moira public package surface.
+    
+    This module is intentionally thin. The heavyweight facade implementation lives
+    in ``moira.facade``; subsystem APIs are imported from their owning modules.
+    """
+    
+    import sys as _sys
+    from ._kernel_paths import find_planetary_kernel as _find_planetary_kernel
+    
+    if _find_planetary_kernel() is None:
+        print(
+            "\n"
+            "  [moira] WARNING: no planetary kernel is installed.\n"
+            "  Most Moira features will fail until you install a compatible JPL SPK kernel.\n"
+            "  Run the following command to download one:\n"
+            "\n"
+            "      moira-download-kernels\n"
+            "\n"
+            "  Or, inside Python:\n"
+            "\n"
+            "      from moira.download_kernels import download_missing\n"
+            "      download_missing()\n",
+            file=_sys.stderr,
+        )
+    
+    del _sys, _find_planetary_kernel
+    
+    from .constants import Body, HouseSystem
+    from .facade import Chart, MissingEphemerisKernelError, Moira, __author__, __version__
+    from .houses import HouseCusps
+    from .galactic_houses import (
+        GalacticAngles,
+        GalacticHouseCusps,
+        GalacticHousePlacement,
+        GalacticHouseBoundaryProfile,
+        calculate_galactic_houses,
+        assign_galactic_house,
+        body_galactic_house_position,
+        describe_galactic_boundary,
+    )
+    from .julian import (
+        CalendarDateTime,
+        DeltaTPolicy,
+        apparent_sidereal_time_at,
+        calendar_datetime_from_jd,
+        calendar_from_jd,
+        datetime_from_jd,
+        delta_t,
+        delta_t_from_jd,
+        format_jd_utc,
+        greenwich_mean_sidereal_time,
+        jd_from_datetime,
+        julian_day,
+        local_sidereal_time,
+        safe_datetime_from_jd,
+    )
+    from .nodes import NodeData, NodesAndApsides, nodes_and_apsides_at
+    from .planetary_nodes import OrbitalNode, planetary_node, all_planetary_nodes, geometric_node
+    from .phenomena import PlanetPhenomena, planet_phenomena_at
+    from .orbits import DistanceExtremes, KeplerianElements, distance_extremes_at, orbital_elements_at
+    from .planets import CartesianPosition, PlanetData, SkyPosition
+    from .solar_cartography import (
+        ArrayBackendInfo,
+        SolarBesselianSample,
+        SolarCartographyResult,
+        SolarContourLevel,
+        SolarShadowBand,
+        solar_eclipse_cartography,
+    )
+    from .lunar_cartography import (
+        LunarBesselianSample,
+        LunarShadowBand,
+        LunarContourLevel,
+        LunarCartographyResult,
+        lunar_eclipse_cartography,
+    )
+    from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal, nakshatra_of, all_nakshatras_at
+    from .aspects import AspectData
+    from .harmograms import (
+        HarmogramChartDomain,
+        HarmogramIntensityFamily,
+        HarmogramIntensityPolicy,
+        HarmogramPolicy,
+        HarmogramTraceFamily,
+        HarmonicDomain,
+        PointSetHarmonicVectorPolicy,
+        harmogram_trace,
+        intensity_function_spectrum,
+        parts_from_zero_aries,
+        point_set_harmonic_vector,
+        project_harmogram_strength,
+        zero_aries_parts_harmonic_vector,
+    )
+>   from .vedic_dignities import (
+        VedicDignityRank,
+        CompoundRelationship,
+        DignityTier,
+        EXALTATION_SIGN,
+        EXALTATION_DEGREE,
+        DEBILITATION_SIGN,
+        MULATRIKONA_SIGN,
+        MULATRIKONA_START,
+        MULATRIKONA_END,
+        OWN_SIGNS,
+        NATURAL_FRIENDS,
+        NATURAL_NEUTRALS,
+        NATURAL_ENEMIES,
+        VedicDignityResult,
+        PlanetaryRelationship,
+        VedicDignityPolicy,
+        DignityConditionProfile,
+        ChartDignityProfile,
+        vedic_dignity,
+        planetary_relationships,
+        dignity_condition_profile,
+        chart_dignity_profile,
+        validate_dignity_output,
+    )
+E     File "C:\Users\nilad\OneDrive\Desktop\Moira\moira\vedic_dignities.py", line 332
+E       Immutable record of a planet's Parashari dignity assessment based on 
+E                                   ^
+E   SyntaxError: unterminated string literal (detected at line 332)
+
+moira\__init__.py:95: SyntaxError
+=========================== short test summary info ===========================
+ERROR tests/unit/test_docstring_governance.py::test_module_docstrings -   Fil...
+ERROR tests/unit/test_docstring_governance.py::test_class_docstring_structure
+ERROR tests/unit/test_docstring_governance.py::test_machine_contract_validity
+ERROR tests/unit/test_docstring_governance.py::test_checker_compliant_module_passes
+ERROR tests/unit/test_docstring_governance.py::test_checker_missing_module_docstring_produces_mod001
+ERROR tests/unit/test_docstring_governance.py::test_checker_compliant_class_passes
+ERROR tests/unit/test_docstring_governance.py::test_checker_missing_rite_produces_cls001
+ERROR tests/unit/test_docstring_governance.py::test_checker_malformed_json_produces_mc001
+ERROR tests/unit/test_docstring_governance.py::test_checker_missing_risk_key_produces_mc002
+ERROR tests/unit/test_docstring_governance.py::test_checker_invalid_risk_value_produces_mc003
+ERROR tests/unit/test_docstring_governance.py::test_checker_wrong_thread_produces_mc005
+11 errors in 0.81s

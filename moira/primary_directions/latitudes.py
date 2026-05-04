@@ -37,6 +37,7 @@ __all__ = [
 
 
 class PrimaryDirectionLatitudeDoctrine(StrEnum):
+    """Vessel: Registry of architectural latitude doctrines for primary directions."""
     MUNDANE_PRESERVED = "mundane_preserved"
     ZODIACAL_SUPPRESSED = "zodiacal_suppressed"
     ZODIACAL_PROMISSOR_RETAINED = "zodiacal_promissor_retained"
@@ -44,6 +45,7 @@ class PrimaryDirectionLatitudeDoctrine(StrEnum):
 
 
 class PrimaryDirectionLatitudeRelationKind(StrEnum):
+    """Vessel: Registry of relation kinds for latitude treatment."""
     BODY_LATITUDE_PRESERVED = "body_latitude_preserved"
     ZODIACAL_LATITUDE_SUPPRESSED = "zodiacal_latitude_suppressed"
     PROMISSOR_LATITUDE_RETAINED = "promissor_latitude_retained"
@@ -51,6 +53,7 @@ class PrimaryDirectionLatitudeRelationKind(StrEnum):
 
 
 class PrimaryDirectionLatitudeConditionState(StrEnum):
+    """Vessel: Registry of condition states for latitude treatment."""
     PRESERVING = "preserving"
     SUPPRESSING = "suppressing"
     RETAINING_PROMISSOR_LATITUDE = "retaining_promissor_latitude"
@@ -59,6 +62,7 @@ class PrimaryDirectionLatitudeConditionState(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionLatitudePolicy:
+    """Vessel: Policy definition for latitude doctrine selection."""
     doctrine: PrimaryDirectionLatitudeDoctrine = PrimaryDirectionLatitudeDoctrine.MUNDANE_PRESERVED
 
     def __post_init__(self) -> None:
@@ -68,6 +72,7 @@ class PrimaryDirectionLatitudePolicy:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionLatitudeTruth:
+    """Vessel: Immutable architectural truth for a latitude doctrine."""
     doctrine: PrimaryDirectionLatitudeDoctrine
     preserves_latitude: bool
     zodiacal: bool
@@ -87,6 +92,7 @@ class PrimaryDirectionLatitudeTruth:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionLatitudeClassification:
+    """Vessel: Result of classifying a latitude doctrine based on its traits."""
     truth: PrimaryDirectionLatitudeTruth
     preserving: bool
     suppressing: bool
@@ -104,6 +110,7 @@ class PrimaryDirectionLatitudeClassification:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionLatitudeRelation:
+    """Vessel: Established relation between a latitude doctrine and the system."""
     truth: PrimaryDirectionLatitudeTruth
     relation_kind: PrimaryDirectionLatitudeRelationKind
 
@@ -129,6 +136,7 @@ class PrimaryDirectionLatitudeRelation:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionLatitudeRelationProfile:
+    """Vessel: Comprehensive profile of relations for a latitude doctrine."""
     truth: PrimaryDirectionLatitudeTruth
     detected_relation: PrimaryDirectionLatitudeRelation
     admitted_relations: tuple[PrimaryDirectionLatitudeRelation, ...]
@@ -152,6 +160,7 @@ class PrimaryDirectionLatitudeRelationProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionLatitudeConditionProfile:
+    """Vessel: Final condition profile for a primary direction latitude doctrine."""
     truth: PrimaryDirectionLatitudeTruth
     classification: PrimaryDirectionLatitudeClassification
     relation_profile: PrimaryDirectionLatitudeRelationProfile
@@ -187,6 +196,7 @@ class PrimaryDirectionLatitudeConditionProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionLatitudeAggregateProfile:
+    """Vessel: Aggregated profile of multiple latitude conditions."""
     profiles: tuple[PrimaryDirectionLatitudeConditionProfile, ...]
     total_profiles: int
     preserving_count: int
@@ -211,6 +221,7 @@ class PrimaryDirectionLatitudeAggregateProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionLatitudeNetworkNode:
+    """Vessel: Node in a primary direction latitude network."""
     doctrine: PrimaryDirectionLatitudeDoctrine
     count: int
 
@@ -221,6 +232,7 @@ class PrimaryDirectionLatitudeNetworkNode:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionLatitudeNetworkEdge:
+    """Vessel: Directed edge in a primary direction latitude network."""
     from_doctrine: PrimaryDirectionLatitudeDoctrine
     to_doctrine: PrimaryDirectionLatitudeDoctrine
     count: int
@@ -236,6 +248,7 @@ class PrimaryDirectionLatitudeNetworkEdge:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionLatitudeNetworkProfile:
+    """Vessel: Structural profile of the latitude network."""
     nodes: tuple[PrimaryDirectionLatitudeNetworkNode, ...]
     edges: tuple[PrimaryDirectionLatitudeNetworkEdge, ...]
     dominant_doctrine: PrimaryDirectionLatitudeDoctrine

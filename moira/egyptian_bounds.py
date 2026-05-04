@@ -65,12 +65,14 @@ _PLANET_ORDER: tuple[str, ...] = ("Sun", "Moon", "Mercury", "Venus", "Mars", "Ju
 
 
 class BoundHostNature(StrEnum):
+    """Vessel: Registry of host natures for bound rulers."""
     BENEFIC = "benefic"
     MALEFIC = "malefic"
     NEUTRAL = "neutral"
 
 
 class EgyptianBoundRelationKind(StrEnum):
+    """Vessel: Registry of guest/host relation types in Egyptian bounds."""
     SELF_HOSTED = "self_hosted"
     HOSTED_BY_BENEFIC = "hosted_by_benefic"
     HOSTED_BY_MALEFIC = "hosted_by_malefic"
@@ -78,6 +80,7 @@ class EgyptianBoundRelationKind(StrEnum):
 
 
 class EgyptianBoundConditionState(StrEnum):
+    """Vessel: Registry of condition states for bound-hosted planets."""
     SELF_GOVERNED = "self_governed"
     SUPPORTED = "supported"
     MEDIATED = "mediated"
@@ -85,11 +88,13 @@ class EgyptianBoundConditionState(StrEnum):
 
 
 class EgyptianBoundNetworkMode(StrEnum):
+    """Vessel: Registry of connectivity modes for the bound network."""
     UNILATERAL = "unilateral"
     MUTUAL = "mutual"
 
 
 class EgyptianBoundsDoctrine(StrEnum):
+    """Vessel: Registry of architectural doctrines for bound tables."""
     EGYPTIAN = "egyptian"
     PTOLEMAIC = "ptolemaic"
     CHALDEAN = "chaldean"
@@ -97,6 +102,7 @@ class EgyptianBoundsDoctrine(StrEnum):
 
 @dataclass(frozen=True)
 class EgyptianBoundsPolicy:
+    """Vessel: Policy definition for Egyptian bounds doctrine selection."""
     doctrine: EgyptianBoundsDoctrine = EgyptianBoundsDoctrine.EGYPTIAN
 
     def __post_init__(self) -> None:
@@ -162,6 +168,7 @@ CHALDEAN_BOUNDS: dict[str, list[tuple[str, float, float]]] = {
 
 @dataclass(frozen=True)
 class EgyptianBoundSegment:
+    """Vessel: A single segment definition within an Egyptian bound sign."""
     sign: str
     ruler: str
     start_degree: float
@@ -188,6 +195,7 @@ class EgyptianBoundSegment:
 
 @dataclass(frozen=True)
 class EgyptianBoundTruth:
+    """Vessel: Immutable architectural truth for an ecliptic longitude's bound."""
     longitude: float
     doctrine: EgyptianBoundsDoctrine
     sign: str
@@ -248,6 +256,7 @@ class EgyptianBoundTruth:
 
 @dataclass(frozen=True)
 class EgyptianBoundClassification:
+    """Vessel: Result of classifying a planet's relation to its occupied bound."""
     planet: str
     truth: EgyptianBoundTruth
     own_bound: bool
@@ -278,6 +287,7 @@ class EgyptianBoundClassification:
 
 @dataclass(frozen=True)
 class EgyptianBoundRelation:
+    """Vessel: Formal guest/host relation between a planet and a bound ruler."""
     guest_planet: str
     host_ruler: str
     truth: EgyptianBoundTruth
@@ -322,6 +332,7 @@ class EgyptianBoundRelation:
 
 @dataclass(frozen=True)
 class EgyptianBoundRelationProfile:
+    """Vessel: Comprehensive profile of relations for a planet in a bound."""
     planet: str
     truth: EgyptianBoundTruth
     detected_relation: EgyptianBoundRelation
@@ -384,6 +395,7 @@ class EgyptianBoundRelationProfile:
 
 @dataclass(frozen=True)
 class EgyptianBoundConditionProfile:
+    """Vessel: Integrated local condition profile for one planet's bound state."""
     planet: str
     truth: EgyptianBoundTruth
     classification: EgyptianBoundClassification
@@ -446,6 +458,7 @@ class EgyptianBoundConditionProfile:
 
 @dataclass(frozen=True)
 class EgyptianBoundsAggregateProfile:
+    """Vessel: Aggregated profile of multiple local bound conditions."""
     profiles: tuple[EgyptianBoundConditionProfile, ...]
     self_governed_count: int
     supported_count: int
@@ -538,6 +551,7 @@ class EgyptianBoundsAggregateProfile:
 
 @dataclass(frozen=True)
 class EgyptianBoundsNetworkNode:
+    """Vessel: Node in a directed guest/host network for Egyptian bounds."""
     planet: str
     profile: EgyptianBoundConditionProfile
     incoming_count: int = 0
@@ -566,6 +580,7 @@ class EgyptianBoundsNetworkNode:
 
 @dataclass(frozen=True)
 class EgyptianBoundsNetworkEdge:
+    """Vessel: Directed edge in a guest/host network for Egyptian bounds."""
     source_planet: str
     target_planet: str
     relation_kind: EgyptianBoundRelationKind
@@ -584,6 +599,7 @@ class EgyptianBoundsNetworkEdge:
 
 @dataclass(frozen=True)
 class EgyptianBoundsNetworkProfile:
+    """Vessel: Structural profile of the directed bound relation network."""
     nodes: tuple[EgyptianBoundsNetworkNode, ...]
     edges: tuple[EgyptianBoundsNetworkEdge, ...]
     isolated_planets: tuple[str, ...]

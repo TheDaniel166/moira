@@ -70,6 +70,7 @@ _LIMB_BIN_WIDTH_DEG = 0.1
 
 @dataclass(frozen=True, slots=True)
 class _LolaTile:
+    """Vessel: Cached LOLA point-cloud tile with localized selenographic coordinates."""
     lon_deg: np.ndarray
     lat_deg: np.ndarray
     radius_m: np.ndarray
@@ -77,6 +78,7 @@ class _LolaTile:
 
 @dataclass(frozen=True, slots=True)
 class _ObserverLimbContext:
+    """Vessel: Ephemeris and orientation context for a specific lunar-limb observer epoch."""
     subobserver_lon_deg: float
     subobserver_lat_deg: float
     los_j2000: np.ndarray

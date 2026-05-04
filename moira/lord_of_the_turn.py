@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Moira — Lord of the Turn Engine
 Governs computation of the annual Lord of the Turn using Al-Qabisi's succession-hierarchy method and the Egyptian/Al-Sijzi testimony method.
@@ -346,11 +348,9 @@ class LordOfTurnCandidateAssessment:
 @dataclass(slots=True, frozen=True)
 class LordOfTurnResult:
     """
-    RITE: The Turn Vessel — the planet governing a given solar return year as
-    Lord of the Turn, carrying the profection, all candidate assessments, the
-    selection reason, and the method used.
-
-    THEOREM: Primary result vessel for the Lord of the Turn engine. Preserves
+    RITE: The Turn Result Vessel
+    
+    THEOREM: Primary result vessel for the Lord of the Turn engine. Preserves 
     the complete decision path so that every selection can be audited.
 
     RITE OF PURPOSE:
@@ -359,11 +359,13 @@ class LordOfTurnResult:
         candidate list shows which planets were considered, why each was
         accepted or rejected, and how the final selection was made.
 
-    Structural invariants:
-        - lord is one of the seven classical planets.
-        - profection.profected_sign is the Sign of the Year.
-        - candidates is non-empty.
-        - selection_reason is consistent with the method used.
+    LAW OF OPERATION:
+        - Carry the identity of the selected Lord of the Turn.
+        - Carry the profection context (age, Sign of the Year).
+        - Expose convenience properties for audit trail inspection (blocked 
+          candidates, winning candidate, fallback status).
+          
+    Canon: None (Hellenistic/Medieval profection standards)
 
     [MACHINE_CONTRACT v1]
     {
@@ -450,21 +452,35 @@ class LordOfTurnResult:
 @dataclass(slots=True)
 class LordOfTurnConditionProfile:
     """
-    Integrated condition profile for a Lord of the Turn result.
+    RITE: The Integrated Condition Profile
+    
+    THEOREM: Governs the assembly of Lord of the Turn results with 
+        solar return context and sectoral lighting conditions.
 
-    Combines the result with profection context, the sect light condition in
-    the SR, and the lord's witnessing status.
+    RITE OF PURPOSE:
+        This vessel provides a high-level summary of the Lord of the Turn's 
+        status in the solar return, suitable for immediate interpretive use.
 
-    result
-        The primary LordOfTurnResult vessel.
-    sr_is_night
-        Whether the SR was nocturnal.
-    sect_light
-        'Sun' for day SR, 'Moon' for night SR.
-    lord_witnesses_sr_asc
-        True when the lord is in a sign casting a major aspect to the SR ASC.
-    lord_sr_house
-        SR house of the lord, or None if not provided.
+    LAW OF OPERATION:
+        - Integrate the core LordOfTurnResult with SR-specific conditions.
+        - Expose delegation properties for core result fields.
+        
+    Canon: None (Hellenistic/Medieval condition standards)
+
+    [MACHINE_CONTRACT v1]
+    {
+        "scope": "class",
+        "id": "moira.lord_of_the_turn.LordOfTurnConditionProfile",
+        "risk": "low",
+        "api": {"frozen": ["result", "sr_is_night", "sect_light"], "internal": []},
+        "state": {"mutable": false},
+        "effects": {"io": [], "mutation": "none"},
+        "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+        "failures": {"policy": "raise"},
+        "succession": {"stance": "terminal"},
+        "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
     result:               LordOfTurnResult
     sr_is_night:          bool

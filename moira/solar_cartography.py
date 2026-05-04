@@ -50,12 +50,14 @@ _SOLAR_PATH_SEED_EPSILON_DAYS = 0.001
 
 @dataclass(frozen=True, slots=True)
 class ArrayBackendInfo:
+    """Vessel: Information about the selected array computation backend."""
     name: str
     is_gpu: bool
 
 
 @dataclass(frozen=True, slots=True)
 class SolarBesselianSample:
+    """Vessel: Besselian elements for a specific instant in a solar eclipse."""
     jd_ut: float
     x: float
     y: float
@@ -73,6 +75,7 @@ class SolarBesselianSample:
 
 @dataclass(frozen=True, slots=True)
 class SolarShadowBand:
+    """Vessel: Geometric definition of a shadow band on the Earth's surface."""
     south_curve: tuple[tuple[float, float], ...]
     north_curve: tuple[tuple[float, float], ...]
     polygon: tuple[tuple[float, float], ...]
@@ -80,6 +83,7 @@ class SolarShadowBand:
 
 @dataclass(frozen=True, slots=True)
 class SolarContourLevel:
+    """Vessel: Geometric definition of a magnitude or duration contour."""
     kind: str
     threshold: float
     south_curve: tuple[tuple[float, float], ...]
@@ -88,6 +92,7 @@ class SolarContourLevel:
 
 @dataclass(frozen=True, slots=True)
 class SolarCartographyResult:
+    """Vessel: Comprehensive result of a solar eclipse cartography computation."""
     event_jd_ut: float
     backend: ArrayBackendInfo
     window_start_jd_ut: float

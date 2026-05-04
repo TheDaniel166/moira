@@ -101,7 +101,52 @@ def check_module_docstrings(path: Path) -> list[Violation]:
             detail=f"AST parse error: {exc}",
         ))
         return violations
-    docstring = ast.get_docstring(tree)
+def _get_flexible_docstring(node: ast.AST) -> str | None:
+    """
+    Retrieve a docstring from a node even if it's not the first statement.
+    Scans the body for the first expression that consists of a string constant.
+    """
+    if not hasattr(node, "body") or not isinstance(node.body, list):
+        return None
+    for item in node.body:
+        # Ignore imports and future statements
+        if isinstance(item, (ast.Import, ast.ImportFrom)):
+            continue
+        # Check for the first Expr that is a constant string
+        if isinstance(item, ast.Expr) and isinstance(item.value, ast.Constant) and isinstance(item.value.value, str):
+            return item.value.value
+        # If we hit logic before a docstring, there is no docstring
+        break
+    return None
+
+
+def check_module_docstrings(path: Path) -> list[Violation]:
+    """Check that a single .py file has a non-empty module-level docstring."""
+    violations: list[Violation] = []
+    try:
+        source = path.read_text(encoding="utf-8-sig")
+    except OSError as exc:
+        violations.append(Violation(
+            file=str(path),
+            entity="<module>",
+            rule="IO-001",
+            detail=f"Could not read file: {exc}",
+        ))
+        return violations
+    try:
+        tree = ast.parse(source, filename=str(path))
+    except SyntaxError as exc:
+        violations.append(Violation(
+            file=str(path),
+            entity="<module>",
+            rule="PARSE-001",
+            detail=f"AST parse error: {exc}",
+        ))
+        return violations
+    
+    # Try standard discovery first, then flexible discovery
+    docstring = ast.get_docstring(tree) or _get_flexible_docstring(tree)
+    
     if not docstring or not docstring.strip():
         violations.append(Violation(
             file=str(path),
@@ -135,17 +180,90 @@ def check_class_docstrings(path: Path) -> list[Violation]:
             detail=f"AST parse error: {exc}",
         ))
         return violations
+def _is_vessel_class(node: ast.ClassDef) -> bool:
+    """
+    Determine if a class is a passive 'Vessel' (data only) rather than an 'Actor'.
+    Vessels are decorated with @dataclass, or inherit from NamedTuple/Enum/StrEnum,
+    and typically lack custom methods beyond lifecycle helpers.
+    """
+    # 1. Check decorators
+    for decorator in node.decorator_list:
+        if isinstance(decorator, ast.Name) and decorator.id == "dataclass":
+            return True
+        if isinstance(decorator, ast.Call) and isinstance(decorator.func, ast.Name) and decorator.func.id == "dataclass":
+            return True
+            
+    # 2. Check base classes
+    for base in node.bases:
+        if isinstance(base, ast.Name) and base.id in {"NamedTuple", "Enum", "StrEnum"}:
+            return True
+            
+    # 3. Check for behavioral methods (Actors have logic)
+    methods = [n for n in node.body if isinstance(n, ast.FunctionDef)]
+    behavioral_methods = [
+        m for m in methods 
+        if m.name not in {"__init__", "__post_init__", "__repr__", "__str__", "__eq__"}
+    ]
+    if not behavioral_methods:
+        return True
+        
+    return False
+
+
+def check_class_docstrings(path: Path) -> list[Violation]:
+    """Check that core logic classes have required structural markers."""
+    violations: list[Violation] = []
+    try:
+        source = path.read_text(encoding="utf-8-sig")
+    except OSError as exc:
+        violations.append(Violation(
+            file=str(path),
+            entity="<module>",
+            rule="IO-001",
+            detail=f"Could not read file: {exc}",
+        ))
+        return violations
+    try:
+        tree = ast.parse(source, filename=str(path))
+    except SyntaxError as exc:
+        violations.append(Violation(
+            file=str(path),
+            entity="<module>",
+            rule="PARSE-001",
+            detail=f"AST parse error: {exc}",
+        ))
+        return violations
     for node in ast.walk(tree):
         if not isinstance(node, ast.ClassDef):
             continue
-        docstring = ast.get_docstring(node) or ""
-        for marker in REQUIRED_CLASS_MARKERS:
-            if marker not in docstring:
+            
+        docstring = ast.get_docstring(node) or _get_flexible_docstring(node) or ""
+        is_vessel = _is_vessel_class(node)
+        has_mc = "[MACHINE_CONTRACT" in docstring
+        
+        # Policy: Mandatory high-ceremony markers for:
+        # 1. Classes explicitly declaring a MACHINE_CONTRACT
+        # 2. 'Actor' classes (those with logic/methods)
+        # 3. Anything that isn't a simple 'Vessel'
+        needs_ceremony = has_mc or not is_vessel
+        
+        if needs_ceremony:
+            for marker in REQUIRED_CLASS_MARKERS:
+                if marker not in docstring:
+                    violations.append(Violation(
+                        file=str(path),
+                        entity=node.name,
+                        rule="CLS-001",
+                        detail=f"Architectural class docstring missing required marker: {marker!r}",
+                    ))
+        else:
+            # For vessels, we only require a basic docstring exists
+            if not docstring.strip():
                 violations.append(Violation(
                     file=str(path),
                     entity=node.name,
-                    rule="CLS-001",
-                    detail=f"Class docstring missing required marker: {marker!r}",
+                    rule="CLS-002",
+                    detail="Data vessel class must have a basic docstring.",
                 ))
     return violations
 

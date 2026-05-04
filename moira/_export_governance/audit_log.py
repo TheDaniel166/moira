@@ -1,12 +1,37 @@
 """
-Audit log management for tracking governance workflow progress.
+Moira — Audit Log Persistence
+=============================
 
-This module provides persistent storage of audit decisions, progress tracking,
-and workflow resumption support.
+Archetype: Governance Logic (Workflow Actor)
 
-Boundary: Owns audit log persistence and progress tracking.
-Dependencies: models module, json, datetime, pathlib.
-Public surface: AuditLog class.
+Purpose
+-------
+Governs the persistent storage and progress tracking of the Moira 
+export governance workflow. Manages audit decisions, status state, 
+and resumption markers to ensure the integrity of the sovereign 
+export boundary.
+
+Boundary
+--------
+Owns:
+    - Audit log JSON persistence format (v1.0).
+    - Progress tracking state (audited/pending/exempted).
+    - Workflow resumption logic.
+Delegates:
+    - Log entry models to moira._export_governance.models.
+
+Import-time side effects
+------------------------
+None.
+
+External dependency assumptions
+--------------------------------
+- Filesystem write access to the log path.
+- UTF-8 encoding support.
+
+Public surface
+--------------
+AuditLog class.
 """
 
 import json
@@ -24,10 +49,44 @@ from moira._export_governance.models import (
 
 class AuditLog:
     """
-    Manages audit log persistence and progress tracking.
-    
-    Provides methods to record audit decisions, query module status,
-    and support workflow resumption.
+    RITE: The Ledger of Truth
+
+    THEOREM: AuditLog governs the durability and consistency of the 
+        engine's governance state through versioned JSON persistence.
+
+    RITE OF PURPOSE:
+        This class exists to provide a tamper-evident record of all 
+        governance decisions. It ensures that the transition from 
+        chaotic export state to the sovereign boundary is documented, 
+        reproducible, and restorable.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Serialize/Deserialize AuditLogEntry records.
+            - Track progress metrics (coverage, pending counts).
+            - Identify resumption points for interrupted audits.
+        Non-responsibilities:
+            - Does not perform the audit (delegates to the Auditor).
+            - Does not validate engine logic (tracks metadata only).
+        
+    Canon: Moira Export Governance Protocol v1.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira._export_governance.audit_log.AuditLog",
+      "risk": "medium",
+      "api": {
+        "frozen": ["add_entry", "get_status", "save_log", "load_log"]
+      },
+      "state": {"mutable": true, "owners": ["Governance Auditor"]},
+      "effects": {"signals_emitted": [], "io": ["filesystem read/write"]},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "backup_and_reset"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["schema_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     def __init__(self, log_path: Path):

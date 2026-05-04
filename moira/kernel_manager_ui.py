@@ -182,7 +182,38 @@ def _download_worker(
 # ---------------------------------------------------------------------------
 
 class KernelManagerApp(tk.Tk):
-    """Tkinter window for managing Moira planetary kernels."""
+    """
+    RITE: The Kernel Manager Application
+    
+    THEOREM: Governs the discovery, download, and activation of JPL 
+        planetary kernels for the Moira engine.
+
+    RITE OF PURPOSE:
+        This application provides the primary administrative surface for 
+        managing the engine's ephemeris substrate.
+
+    LAW OF OPERATION:
+        - Discovers installed kernels in user_kernels_dir().
+        - Manages background download threads for registry-listed kernels.
+        - Configures the active planetary kernel path in moira.spk_reader.
+        
+    Canon: None (Internal UI implementation)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.kernel_manager_ui.KernelManagerApp",
+      "risk": "medium",
+      "api": {"frozen": [], "internal": ["_on_download", "_on_use"]},
+      "state": {"mutable": true},
+      "effects": {"io": ["network", "disk"]},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "messagebox"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
+    """
 
     def __init__(self) -> None:
         super().__init__()

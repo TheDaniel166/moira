@@ -1,12 +1,37 @@
 """
-Report generator for export governance audit results.
+Moira — Audit Result Presentation
+=================================
 
-This module generates audit reports in multiple formats (JSON, Markdown, HTML)
-and provides summary statistics across all modules.
+Archetype: Governance Logic (Logic Actor)
 
-Boundary: Owns report generation and formatting logic.
-Dependencies: models module, json, datetime.
-Public surface: AuditReporter class.
+Purpose
+-------
+Governs the presentation and persistence of export governance audit 
+results. Translates raw analysis reports into structured summaries 
+and formatted documents (JSON, Markdown, HTML) to provide visibility 
+into the engine's sovereign boundary status.
+
+Boundary
+--------
+Owns:
+    - Report formatting logic for all supported formats.
+    - Summary statistic calculation across audit populations.
+    - Report persistence (writing to filesystem).
+Delegates:
+    - Audit result models to moira._export_governance.models.
+
+Import-time side effects
+------------------------
+None.
+
+External dependency assumptions
+--------------------------------
+- Filesystem write access to the output path.
+- UTF-8 encoding support.
+
+Public surface
+--------------
+AuditReporter class.
 """
 
 import json
@@ -23,10 +48,45 @@ from moira._export_governance.models import (
 
 class AuditReporter:
     """
-    Generates audit reports in multiple formats.
-    
-    Produces module-level reports and summary statistics, with output
-    in JSON, Markdown, and HTML formats.
+    RITE: The Voice of Governance
+
+    THEOREM: AuditReporter governs the transformation of audit data 
+        into human-legible and machine-parseable artifacts for 
+        sovereign verification.
+
+    RITE OF PURPOSE:
+        This engine exists to provide transparent visibility into the 
+        state of the engine's export alignment. It serves as the 
+        canonical source of truth for governance coverage metrics, 
+        violation summaries, and historical audit artifacts.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Generate summary statistics for audit populations.
+            - Format module-level reports into multiple dialects.
+            - Persist reports to the filesystem safely.
+        Non-responsibilities:
+            - Does not perform audits (delegates to the Auditor).
+            - Does not analyze facades (delegates to the Analyzer).
+        
+    Canon: Moira Export Governance Protocol v1.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira._export_governance.reporter.AuditReporter",
+      "risk": "low",
+      "api": {
+        "frozen": ["generate_summary_report", "format_markdown", "write_report"]
+      },
+      "state": {"mutable": false, "owners": []},
+      "effects": {"signals_emitted": [], "io": ["filesystem write"]},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["formatting_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     def generate_module_report(

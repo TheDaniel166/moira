@@ -28,6 +28,7 @@ _CARDAN_RATE = 59.0 / 60.0 + 12.0 / 3600.0
 
 
 class PrimaryDirectionKey(StrEnum):
+    """Vessel: Enumeration of specific time-keys used for arc-to-year conversion."""
     PTOLEMY = "ptolemy"
     NAIBOD = "naibod"
     CARDAN = "cardan"
@@ -35,12 +36,14 @@ class PrimaryDirectionKey(StrEnum):
 
 
 class PrimaryDirectionKeyFamily(StrEnum):
+    """Vessel: Classification of time-keys as static or dynamic (solar-arc dependent)."""
     STATIC = "static"
     DYNAMIC = "dynamic"
 
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionKeyPolicy:
+    """Vessel: Governance policy for time-key selection and family derivation."""
     key: PrimaryDirectionKey = PrimaryDirectionKey.NAIBOD
 
     def __post_init__(self) -> None:
@@ -56,6 +59,7 @@ class PrimaryDirectionKeyPolicy:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionKeyTruth:
+    """Vessel: Record of the exact mathematical rate and family for a specific time-key."""
     key: PrimaryDirectionKey
     family: PrimaryDirectionKeyFamily
     rate_degrees_per_year: float

@@ -21,12 +21,14 @@ __all__ = [
 
 
 class PtolemaicParallelRelation(StrEnum):
+    """Vessel: Enumeration of Ptolemaic declination-equivalence types."""
     PARALLEL = "parallel"
     CONTRA_PARALLEL = "contra_parallel"
 
 
 @dataclass(frozen=True, slots=True)
 class PtolemaicParallelTarget:
+    """Vessel: Definition of a specific body to be used for Ptolemaic zodiacal parallels."""
     source_name: str
     relation: PtolemaicParallelRelation = PtolemaicParallelRelation.PARALLEL
 

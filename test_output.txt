@@ -1,0 +1,456 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.14.3, pytest-9.0.2, pluggy-1.6.0 -- C:\Users\nilad\OneDrive\Desktop\Moira\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+hypothesis profile 'default'
+rootdir: C:\Users\nilad\OneDrive\Desktop\Moira
+configfile: pyproject.toml
+plugins: anyio-4.13.0, hypothesis-6.151.9, cov-7.0.0, xdist-3.8.0
+collecting ... collected 11 items
+
+tests/unit/test_docstring_governance.py::test_module_docstrings PASSED   [  9%]
+tests/unit/test_docstring_governance.py::test_class_docstring_structure FAILED [ 18%]
+tests/unit/test_docstring_governance.py::test_machine_contract_validity PASSED [ 27%]
+tests/unit/test_docstring_governance.py::test_checker_compliant_module_passes PASSED [ 36%]
+tests/unit/test_docstring_governance.py::test_checker_missing_module_docstring_produces_mod001 PASSED [ 45%]
+tests/unit/test_docstring_governance.py::test_checker_compliant_class_passes PASSED [ 54%]
+tests/unit/test_docstring_governance.py::test_checker_missing_rite_produces_cls001 PASSED [ 63%]
+tests/unit/test_docstring_governance.py::test_checker_malformed_json_produces_mc001 PASSED [ 72%]
+tests/unit/test_docstring_governance.py::test_checker_missing_risk_key_produces_mc002 PASSED [ 81%]
+tests/unit/test_docstring_governance.py::test_checker_invalid_risk_value_produces_mc003 PASSED [ 90%]
+tests/unit/test_docstring_governance.py::test_checker_wrong_thread_produces_mc005 PASSED [100%]
+
+================================== FAILURES ===================================
+_______________________ test_class_docstring_structure ________________________
+
+    def test_class_docstring_structure() -> None:
+        """
+        Feature: moira-docstring-governance, Property 2: class docstrings contain required markers
+    
+        Validates: Requirements 3.1, 3.2, 3.9, 4.1, 8.2, 8.3
+        """
+        violations: list[Violation] = []
+        for path in sorted(MOIRA_ROOT.rglob("*.py")):
+            violations.extend(check_class_docstrings(path))
+>       assert violations == [], _format_violations(violations)
+E       AssertionError: 
+E         199 docstring governance violation(s) found:
+E         
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\daf_writer_ui.py :: _KernelPreview
+E             Data vessel class must have a basic docstring.
+E           [CLS-001] C:\Users\nilad\OneDrive\Desktop\Moira\moira\daf_writer_ui.py :: DAFWriterApp
+E             Architectural class docstring missing required marker: 'RITE:'
+E           [CLS-001] C:\Users\nilad\OneDrive\Desktop\Moira\moira\daf_writer_ui.py :: DAFWriterApp
+E             Architectural class docstring missing required marker: 'THEOREM:'
+E           [CLS-001] C:\Users\nilad\OneDrive\Desktop\Moira\moira\daf_writer_ui.py :: DAFWriterApp
+E             Architectural class docstring missing required marker: 'RITE OF PURPOSE:'
+E           [CLS-001] C:\Users\nilad\OneDrive\Desktop\Moira\moira\daf_writer_ui.py :: DAFWriterApp
+E             Architectural class docstring missing required marker: 'LAW OF OPERATION:'
+E           [CLS-001] C:\Users\nilad\OneDrive\Desktop\Moira\moira\daf_writer_ui.py :: DAFWriterApp
+E             Architectural class docstring missing required marker: '[MACHINE_CONTRACT v1]'
+E           [CLS-001] C:\Users\nilad\OneDrive\Desktop\Moira\moira\daf_writer_ui.py :: DAFWriterApp
+E             Architectural class docstring missing required marker: 'Canon:'
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\eclipse.py :: _SearchLimitReached
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\egyptian_bounds.py :: BoundHostNature
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\egyptian_bounds.py :: EgyptianBoundRelationKind
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\egyptian_bounds.py :: EgyptianBoundConditionState
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\egyptian_bounds.py :: EgyptianBoundNetworkMode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\egyptian_bounds.py :: EgyptianBoundsDoctrine
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\egyptian_bounds.py :: EgyptianBoundsPolicy
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\egyptian_bounds.py :: EgyptianBoundSegment
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\egyptian_bounds.py :: EgyptianBoundTruth
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\egyptian_bounds.py :: EgyptianBoundClassification
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\egyptian_bounds.py :: EgyptianBoundRelation
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\egyptian_bounds.py :: EgyptianBoundRelationProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\egyptian_bounds.py :: EgyptianBoundConditionProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\egyptian_bounds.py :: EgyptianBoundsAggregateProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\egyptian_bounds.py :: EgyptianBoundsNetworkNode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\egyptian_bounds.py :: EgyptianBoundsNetworkEdge
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\egyptian_bounds.py :: EgyptianBoundsNetworkProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmonicVectorNormalizationMode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: ZeroAriesPairConstructionMode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: SelfPairMode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmogramIntensityFamily
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmogramOrbMode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: GaussianWidthParameterMode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmogramOrbScalingMode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmogramSymmetryMode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: IntensityNormalizationMode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: IntensitySpectrumRealizationMode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmogramProjectionRealizationMode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmogramSamplingMode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmogramOutputMode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmogramChartDomain
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmogramTraceFamily
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmonicDomain
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: PointSetHarmonicVectorPolicy
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: ZeroAriesPartsPolicy
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmogramIntensityPolicy
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmogramSamplingPolicy
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmogramPolicy
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmonicVectorComponent
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: IntensitySpectrumComponent
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: PointSetHarmonicVector
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: ZeroAriesPart
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: ZeroAriesPartsSet
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: ZeroAriesPartsHarmonicVector
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: IntensityFunctionSpectrum
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmogramProjectionTerm
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmogramProjection
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmogramDominantTerm
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: IntensitySpectrumComparisonTerm
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: IntensitySpectrumComparison
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmogramTraceSeriesComparisonSample
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmogramTraceSeriesComparison
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmogramTraceSample
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmogramTraceSeries
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\harmograms\models.py :: HarmogramTrace
+E             Data vessel class must have a basic docstring.
+E           [CLS-001] C:\Users\nilad\OneDrive\Desktop\Moira\moira\kernel_manager_ui.py :: KernelManagerApp
+E             Architectural class docstring missing required marker: 'RITE:'
+E           [CLS-001] C:\Users\nilad\OneDrive\Desktop\Moira\moira\kernel_manager_ui.py :: KernelManagerApp
+E             Architectural class docstring missing required marker: 'THEOREM:'
+E           [CLS-001] C:\Users\nilad\OneDrive\Desktop\Moira\moira\kernel_manager_ui.py :: KernelManagerApp
+E             Architectural class docstring missing required marker: 'RITE OF PURPOSE:'
+E           [CLS-001] C:\Users\nilad\OneDrive\Desktop\Moira\moira\kernel_manager_ui.py :: KernelManagerApp
+E             Architectural class docstring missing required marker: 'LAW OF OPERATION:'
+E           [CLS-001] C:\Users\nilad\OneDrive\Desktop\Moira\moira\kernel_manager_ui.py :: KernelManagerApp
+E             Architectural class docstring missing required marker: '[MACHINE_CONTRACT v1]'
+E           [CLS-001] C:\Users\nilad\OneDrive\Desktop\Moira\moira\kernel_manager_ui.py :: KernelManagerApp
+E             Architectural class docstring missing required marker: 'Canon:'
+E           [CLS-001] C:\Users\nilad\OneDrive\Desktop\Moira\moira\lord_of_the_turn.py :: LordOfTurnResult
+E             Architectural class docstring missing required marker: 'LAW OF OPERATION:'
+E           [CLS-001] C:\Users\nilad\OneDrive\Desktop\Moira\moira\lord_of_the_turn.py :: LordOfTurnResult
+E             Architectural class docstring missing required marker: 'Canon:'
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\lunar_cartography.py :: LunarBesselianSample
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\lunar_cartography.py :: LunarShadowBand
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\lunar_cartography.py :: LunarContourLevel
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\lunar_cartography.py :: LunarCartographyResult
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\lunar_limb.py :: _LolaTile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\lunar_limb.py :: _ObserverLimbContext
+E             Data vessel class must have a basic docstring.
+E           [CLS-001] C:\Users\nilad\OneDrive\Desktop\Moira\moira\midpoints.py :: MidpointCluster
+E             Architectural class docstring missing required marker: 'Canon:'
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\__init__.py :: PrimaryDirectionMotion
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\__init__.py :: PrimaryDirectionsPreset
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\__init__.py :: PrimaryDirectionsConditionState
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\__init__.py :: PrimaryDirectionsPolicy
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\__init__.py :: SpeculumEntry
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\__init__.py :: PrimaryArc
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\__init__.py :: PrimaryDirectionRelation
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\__init__.py :: PrimaryDirectionRelationProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\__init__.py :: PrimaryDirectionsSignificatorProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\__init__.py :: PrimaryDirectionsAggregateProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\__init__.py :: PrimaryDirectionsNetworkNode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\__init__.py :: PrimaryDirectionsNetworkEdge
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\__init__.py :: PrimaryDirectionsNetworkProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\antiscia.py :: PrimaryDirectionAntisciaKind
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\antiscia.py :: PrimaryDirectionAntisciaTarget
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\converse.py :: PrimaryDirectionConverseDoctrine
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\converse.py :: PrimaryDirectionConverseRelationKind
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\converse.py :: PrimaryDirectionConverseConditionState
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\converse.py :: PrimaryDirectionConversePolicy
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\converse.py :: PrimaryDirectionConverseTruth
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\converse.py :: PrimaryDirectionConverseClassification
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\converse.py :: PrimaryDirectionConverseRelation
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\converse.py :: PrimaryDirectionConverseRelationProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\converse.py :: PrimaryDirectionConverseConditionProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\converse.py :: PrimaryDirectionConverseAggregateProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\converse.py :: PrimaryDirectionConverseNetworkNode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\converse.py :: PrimaryDirectionConverseNetworkEdge
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\converse.py :: PrimaryDirectionConverseNetworkProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\fixed_stars.py :: PrimaryDirectionFixedStarTarget
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\geometry.py :: _SpeculumLike
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\geometry.py :: PrimaryDirectionGeometryLaw
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\geometry.py :: PrimaryDirectionGeometrySovereignty
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\geometry.py :: PrimaryDirectionGeometryTruth
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\keys.py :: PrimaryDirectionKey
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\keys.py :: PrimaryDirectionKeyFamily
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\keys.py :: PrimaryDirectionKeyPolicy
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\keys.py :: PrimaryDirectionKeyTruth
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitude_sources.py :: PrimaryDirectionLatitudeSource
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitude_sources.py :: PrimaryDirectionLatitudeSourceRelationKind
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitude_sources.py :: PrimaryDirectionLatitudeSourceConditionState
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitude_sources.py :: PrimaryDirectionLatitudeSourcePolicy
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitude_sources.py :: PrimaryDirectionLatitudeSourceTruth
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitude_sources.py :: PrimaryDirectionLatitudeSourceClassification
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitude_sources.py :: PrimaryDirectionLatitudeSourceRelation
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitude_sources.py :: PrimaryDirectionLatitudeSourceRelationProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitude_sources.py :: PrimaryDirectionLatitudeSourceConditionProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitude_sources.py :: PrimaryDirectionLatitudeSourceAggregateProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitude_sources.py :: PrimaryDirectionLatitudeSourceNetworkNode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitude_sources.py :: PrimaryDirectionLatitudeSourceNetworkEdge
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitude_sources.py :: PrimaryDirectionLatitudeSourceNetworkProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitudes.py :: PrimaryDirectionLatitudeDoctrine
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitudes.py :: PrimaryDirectionLatitudeRelationKind
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitudes.py :: PrimaryDirectionLatitudeConditionState
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitudes.py :: PrimaryDirectionLatitudePolicy
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitudes.py :: PrimaryDirectionLatitudeTruth
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitudes.py :: PrimaryDirectionLatitudeClassification
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitudes.py :: PrimaryDirectionLatitudeRelation
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitudes.py :: PrimaryDirectionLatitudeRelationProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitudes.py :: PrimaryDirectionLatitudeConditionProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitudes.py :: PrimaryDirectionLatitudeAggregateProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitudes.py :: PrimaryDirectionLatitudeNetworkNode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitudes.py :: PrimaryDirectionLatitudeNetworkEdge
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\latitudes.py :: PrimaryDirectionLatitudeNetworkProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\methods.py :: PrimaryDirectionMethod
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\methods.py :: PrimaryDirectionMethodKind
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\methods.py :: PrimaryDirectionMethodRelationKind
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\methods.py :: PrimaryDirectionMethodConditionState
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\methods.py :: PrimaryDirectionMethodPolicy
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\methods.py :: PrimaryDirectionMethodTruth
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\methods.py :: PrimaryDirectionMethodClassification
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\methods.py :: PrimaryDirectionMethodRelation
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\methods.py :: PrimaryDirectionMethodRelationProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\methods.py :: PrimaryDirectionMethodConditionProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\methods.py :: PrimaryDirectionMethodsAggregateProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\methods.py :: PrimaryDirectionMethodsNetworkNode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\methods.py :: PrimaryDirectionMethodsNetworkEdge
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\methods.py :: PrimaryDirectionMethodsNetworkProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\morinus.py :: MorinusAspectContext
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\perfections.py :: PrimaryDirectionPerfectionKind
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\perfections.py :: PrimaryDirectionPerfectionMode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\perfections.py :: PrimaryDirectionPerfectionConditionState
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\perfections.py :: PrimaryDirectionPerfectionPolicy
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\perfections.py :: PrimaryDirectionPerfectionTruth
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\perfections.py :: PrimaryDirectionPerfectionClassification
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\perfections.py :: PrimaryDirectionPerfectionRelation
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\perfections.py :: PrimaryDirectionPerfectionRelationProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\perfections.py :: PrimaryDirectionPerfectionConditionProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\perfections.py :: PrimaryDirectionPerfectionsAggregateProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\perfections.py :: PrimaryDirectionPerfectionsNetworkNode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\perfections.py :: PrimaryDirectionPerfectionsNetworkEdge
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\perfections.py :: PrimaryDirectionPerfectionsNetworkProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\placidus.py :: PlacidianRaptParallelTarget
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\ptolemy.py :: PtolemaicParallelRelation
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\ptolemy.py :: PtolemaicParallelTarget
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\relations.py :: PrimaryDirectionRelationalKind
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\relations.py :: PrimaryDirectionRelationalMode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\relations.py :: PrimaryDirectionRelationalConditionState
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\relations.py :: PrimaryDirectionRelationPolicy
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\relations.py :: PrimaryDirectionRelationalTruth
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\relations.py :: PrimaryDirectionRelationalClassification
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\relations.py :: PrimaryDirectionRelationalRelation
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\relations.py :: PrimaryDirectionRelationalRelationProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\relations.py :: PrimaryDirectionRelationalConditionProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\relations.py :: PrimaryDirectionRelationsAggregateProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\relations.py :: PrimaryDirectionRelationsNetworkNode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\relations.py :: PrimaryDirectionRelationsNetworkEdge
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\relations.py :: PrimaryDirectionRelationsNetworkProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\spaces.py :: PrimaryDirectionSpace
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\spaces.py :: PrimaryDirectionSpaceKind
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\spaces.py :: PrimaryDirectionLatitudeMode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\spaces.py :: PrimaryDirectionSpaceRelationKind
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\spaces.py :: PrimaryDirectionSpaceConditionState
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\spaces.py :: PrimaryDirectionSpacePolicy
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\spaces.py :: PrimaryDirectionSpaceTruth
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\spaces.py :: PrimaryDirectionSpaceClassification
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\spaces.py :: PrimaryDirectionSpaceRelation
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\spaces.py :: PrimaryDirectionSpaceRelationProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\spaces.py :: PrimaryDirectionSpaceConditionProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\spaces.py :: PrimaryDirectionSpacesAggregateProfile
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\spaces.py :: PrimaryDirectionSpacesNetworkNode
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\spaces.py :: PrimaryDirectionSpacesNetworkEdge
+E             Data vessel class must have a basic docstring.
+E           [CLS-002] C:\Users\nilad\OneDrive\Desktop\Moira\moira\primary_directions\spaces.py :: PrimaryDirectionSpacesNetworkProfile
+E             Data vessel class must have a basic docstring.
+E       assert [Violation(fi...T v1]'"), ...] == []
+E         
+E         Left contains 199 more items, first extra item: Violation(file='C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\daf_writer_ui.py', entity='_KernelPreview', rule='CLS-002', detail='Data vessel class must have a basic docstring.')
+E         
+E         Full diff:
+E         - []
+E         + [
+E         +     Violation(file='C:\\Users\\nilad\\OneDrive\\Desktop\\Moira\\moira\\daf_writer_ui.py', entity='_KernelPreview', rule='CLS-002', detail='Data vessel class must have a basic docstring.'),...
+E         
+E         ...Full output truncated (199 lines hidden), use '-vv' to show
+
+tests\unit\test_docstring_governance.py:383: AssertionError
+============================ Moira: slowest tests =============================
+    0.623s  tests/unit/test_docstring_governance.py::test_class_docstring_structure
+    0.622s  tests/unit/test_docstring_governance.py::test_machine_contract_validity
+    0.431s  tests/unit/test_docstring_governance.py::test_module_docstrings
+    0.002s  tests/unit/test_docstring_governance.py::test_checker_missing_rite_produces_cls001
+    0.002s  tests/unit/test_docstring_governance.py::test_checker_compliant_module_passes
+=========================== short test summary info ===========================
+FAILED tests/unit/test_docstring_governance.py::test_class_docstring_structure
+======================== 1 failed, 10 passed in 2.51s =========================

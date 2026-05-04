@@ -38,22 +38,26 @@ __all__ = [
 
 
 class PrimaryDirectionConverseDoctrine(StrEnum):
+    """Vessel: Registry of architectural converse doctrines for primary directions."""
     DIRECT_ONLY = "direct_only"
     TRADITIONAL_CONVERSE = "traditional_converse"
 
 
 class PrimaryDirectionConverseRelationKind(StrEnum):
+    """Vessel: Registry of relation kinds for converse treatment."""
     FORWARD_ONLY = "forward_only"
     DIRECT_AND_TRADITIONAL_CONVERSE = "direct_and_traditional_converse"
 
 
 class PrimaryDirectionConverseConditionState(StrEnum):
+    """Vessel: Registry of condition states for converse treatment."""
     DIRECT_ONLY = "direct_only"
     DIRECT_AND_CONVERSE = "direct_and_converse"
 
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionConversePolicy:
+    """Vessel: Policy definition for converse doctrine selection."""
     doctrine: PrimaryDirectionConverseDoctrine = PrimaryDirectionConverseDoctrine.TRADITIONAL_CONVERSE
 
     def __post_init__(self) -> None:
@@ -67,6 +71,7 @@ class PrimaryDirectionConversePolicy:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionConverseTruth:
+    """Vessel: Immutable architectural truth for a converse doctrine."""
     doctrine: PrimaryDirectionConverseDoctrine
     includes_direct: bool
     includes_converse: bool
@@ -93,6 +98,7 @@ class PrimaryDirectionConverseTruth:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionConverseClassification:
+    """Vessel: Result of classifying a converse doctrine based on its traits."""
     truth: PrimaryDirectionConverseTruth
     direct_only: bool
     admits_converse: bool
@@ -114,6 +120,7 @@ class PrimaryDirectionConverseClassification:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionConverseRelation:
+    """Vessel: Established relation between a converse doctrine and the system."""
     truth: PrimaryDirectionConverseTruth
     relation_kind: PrimaryDirectionConverseRelationKind
     admitted_motions: tuple[str, ...]
@@ -141,6 +148,7 @@ class PrimaryDirectionConverseRelation:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionConverseRelationProfile:
+    """Vessel: Comprehensive profile of relations for a converse doctrine."""
     truth: PrimaryDirectionConverseTruth
     detected_relation: PrimaryDirectionConverseRelation
     admitted_relations: tuple[PrimaryDirectionConverseRelation, ...]
@@ -164,6 +172,7 @@ class PrimaryDirectionConverseRelationProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionConverseConditionProfile:
+    """Vessel: Final condition profile for a primary direction converse doctrine."""
     truth: PrimaryDirectionConverseTruth
     classification: PrimaryDirectionConverseClassification
     relation_profile: PrimaryDirectionConverseRelationProfile
@@ -191,6 +200,7 @@ class PrimaryDirectionConverseConditionProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionConverseAggregateProfile:
+    """Vessel: Aggregated profile of multiple converse conditions."""
     profiles: tuple[PrimaryDirectionConverseConditionProfile, ...]
     total_profiles: int
     converse_enabled_count: int
@@ -215,6 +225,7 @@ class PrimaryDirectionConverseAggregateProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionConverseNetworkNode:
+    """Vessel: Node in a primary direction converse network."""
     doctrine: PrimaryDirectionConverseDoctrine
     count: int
 
@@ -225,6 +236,7 @@ class PrimaryDirectionConverseNetworkNode:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionConverseNetworkEdge:
+    """Vessel: Directed edge in a primary direction converse network."""
     from_doctrine: PrimaryDirectionConverseDoctrine
     to_doctrine: PrimaryDirectionConverseDoctrine
     count: int
@@ -240,6 +252,7 @@ class PrimaryDirectionConverseNetworkEdge:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionConverseNetworkProfile:
+    """Vessel: Structural profile of the converse network."""
     nodes: tuple[PrimaryDirectionConverseNetworkNode, ...]
     edges: tuple[PrimaryDirectionConverseNetworkEdge, ...]
     dominant_doctrine: PrimaryDirectionConverseDoctrine

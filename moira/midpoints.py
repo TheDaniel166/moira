@@ -361,6 +361,8 @@ class MidpointCluster:
             - spread >= 0.0.
             - dial_position is in [0, dial).
 
+    Canon: Alfred Witte, Rules for Planetary Pictures (Hamburg School, 1928)
+
     [MACHINE_CONTRACT v1]
     {
         "scope": "class",

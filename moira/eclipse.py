@@ -168,6 +168,8 @@ DEGREES_PER_STONE           = 360.0 / AUBREY_HOLES
 @dataclass(frozen=True, slots=True)
 class SolarEclipsePath:
     """
+    Vessel: The Solar Eclipse Path
+    
     Typed vessel for the geographic path of a solar eclipse's central line.
 
     Initial implemented path vessel.
@@ -2003,6 +2005,7 @@ _SOLAR_CENTRAL_INTERVAL_TIMEOUT_S = 4.0
 
 
 class _SearchLimitReached(RuntimeError):
+    """Vessel: Internal exception thrown when an eclipse search exceeds safety limits."""
     pass
 
 def _bisection_root(func, left: float, right: float, *, iterations: int = 48) -> float:

@@ -24,6 +24,7 @@ __all__ = [
 
 @dataclass(frozen=True, slots=True)
 class PlacidianRaptParallelTarget:
+    """Vessel: Definition of a specific body to be used for Placidian rapt-parallel directions."""
     source_name: str
 
     def __post_init__(self) -> None:

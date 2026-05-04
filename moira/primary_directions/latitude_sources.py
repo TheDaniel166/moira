@@ -38,6 +38,7 @@ __all__ = [
 
 
 class PrimaryDirectionLatitudeSource(StrEnum):
+    """Vessel: Registry of architectural latitude sources for primary directions."""
     PROMISSOR_NATIVE = "promissor_native"
     ASSIGNED_ZERO = "assigned_zero"
     ASPECT_INHERITED = "aspect_inherited"
@@ -45,6 +46,7 @@ class PrimaryDirectionLatitudeSource(StrEnum):
 
 
 class PrimaryDirectionLatitudeSourceRelationKind(StrEnum):
+    """Vessel: Registry of relation kinds for latitude source treatment."""
     NATIVE_BODY_LATITUDE = "native_body_latitude"
     ZERO_ASSIGNED = "zero_assigned"
     ASPECT_LATITUDE_INHERITED = "aspect_latitude_inherited"
@@ -52,6 +54,7 @@ class PrimaryDirectionLatitudeSourceRelationKind(StrEnum):
 
 
 class PrimaryDirectionLatitudeSourceConditionState(StrEnum):
+    """Vessel: Registry of condition states for latitude sources."""
     BODY_DERIVED = "body_derived"
     ZERO_ASSIGNED = "zero_assigned"
     ASPECT_DERIVED = "aspect_derived"
@@ -60,6 +63,7 @@ class PrimaryDirectionLatitudeSourceConditionState(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionLatitudeSourcePolicy:
+    """Vessel: Policy definition for latitude source selection."""
     source: PrimaryDirectionLatitudeSource = PrimaryDirectionLatitudeSource.PROMISSOR_NATIVE
 
     def __post_init__(self) -> None:
@@ -69,6 +73,7 @@ class PrimaryDirectionLatitudeSourcePolicy:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionLatitudeSourceTruth:
+    """Vessel: Immutable architectural truth for a latitude source."""
     source: PrimaryDirectionLatitudeSource
     derives_from_body: bool
     assigns_zero: bool
@@ -88,6 +93,7 @@ class PrimaryDirectionLatitudeSourceTruth:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionLatitudeSourceClassification:
+    """Vessel: Result of classifying a latitude source based on its traits."""
     truth: PrimaryDirectionLatitudeSourceTruth
     body_derived: bool
     zero_assigned: bool
@@ -119,6 +125,7 @@ class PrimaryDirectionLatitudeSourceClassification:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionLatitudeSourceRelation:
+    """Vessel: Established relation between a latitude source and the system."""
     truth: PrimaryDirectionLatitudeSourceTruth
     relation_kind: PrimaryDirectionLatitudeSourceRelationKind
 
@@ -144,6 +151,7 @@ class PrimaryDirectionLatitudeSourceRelation:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionLatitudeSourceRelationProfile:
+    """Vessel: Comprehensive profile of relations for a latitude source."""
     truth: PrimaryDirectionLatitudeSourceTruth
     detected_relation: PrimaryDirectionLatitudeSourceRelation
     admitted_relations: tuple[PrimaryDirectionLatitudeSourceRelation, ...]
@@ -167,6 +175,7 @@ class PrimaryDirectionLatitudeSourceRelationProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionLatitudeSourceConditionProfile:
+    """Vessel: Final condition profile for a primary direction latitude source."""
     truth: PrimaryDirectionLatitudeSourceTruth
     classification: PrimaryDirectionLatitudeSourceClassification
     relation_profile: PrimaryDirectionLatitudeSourceRelationProfile
@@ -202,6 +211,7 @@ class PrimaryDirectionLatitudeSourceConditionProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionLatitudeSourceAggregateProfile:
+    """Vessel: Aggregated profile of multiple latitude source conditions."""
     profiles: tuple[PrimaryDirectionLatitudeSourceConditionProfile, ...]
     total_profiles: int
     body_derived_count: int
@@ -226,6 +236,7 @@ class PrimaryDirectionLatitudeSourceAggregateProfile:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionLatitudeSourceNetworkNode:
+    """Vessel: Node in a primary direction latitude source network."""
     source: PrimaryDirectionLatitudeSource
     count: int
 
@@ -236,6 +247,7 @@ class PrimaryDirectionLatitudeSourceNetworkNode:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionLatitudeSourceNetworkEdge:
+    """Vessel: Directed edge in a primary direction latitude source network."""
     from_source: PrimaryDirectionLatitudeSource
     to_source: PrimaryDirectionLatitudeSource
     count: int
@@ -251,6 +263,7 @@ class PrimaryDirectionLatitudeSourceNetworkEdge:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionLatitudeSourceNetworkProfile:
+    """Vessel: Structural profile of the latitude source network."""
     nodes: tuple[PrimaryDirectionLatitudeSourceNetworkNode, ...]
     edges: tuple[PrimaryDirectionLatitudeSourceNetworkEdge, ...]
     dominant_source: PrimaryDirectionLatitudeSource

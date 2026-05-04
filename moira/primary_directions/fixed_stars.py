@@ -21,6 +21,7 @@ __all__ = [
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionFixedStarTarget:
+    """Vessel: Definition of a specific fixed-star identity to be used as a direction target."""
     star_name: str
 
     def __post_init__(self) -> None:

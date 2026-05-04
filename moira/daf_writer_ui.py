@@ -160,6 +160,7 @@ def _search_sbdb(query: str, kind: str = "all") -> list[dict]:
 
 @dataclass
 class _KernelPreview:
+    """Vessel: Internal preview record for a candidate SPK kernel segment."""
     naif_id: int
     name: str
     center: int
@@ -487,7 +488,39 @@ def _parse_csv_to_bodies(path: Path) -> tuple[list[dict], list[_KernelPreview]]:
 
 
 class DAFWriterApp(tk.Tk):
-    """Tkinter app that guides users through building custom SPK type 13 kernels."""
+    """
+    RITE: The DAF Writer Application
+    
+    THEOREM: Governs the interactive assembly and validation of custom 
+        SPK type 13 kernels from JPL Horizons data.
+
+    RITE OF PURPOSE:
+        This application provides a graphical workspace for fetching, 
+        validating, and writing planetary ephemeris data to sovereign 
+        DAF-backed SPK kernels.
+
+    LAW OF OPERATION:
+        - Orchestrates Horizons API fetch cycles.
+        - Manages local CSV state for kernel segment previews.
+        - Invokes moira.daf_writer for final binary kernel emission.
+        
+    Canon: None (Internal UI implementation)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.daf_writer_ui.DAFWriterApp",
+      "risk": "medium",
+      "api": {"frozen": [], "internal": ["_do_search", "_fetch_horizons_to_csv"]},
+      "state": {"mutable": true},
+      "effects": {"io": ["network", "disk"]},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "messagebox"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
+    """
 
     def __init__(self) -> None:
         super().__init__()

@@ -243,7 +243,10 @@ _BISECT_TOL: float = 1e-5
 @dataclass(frozen=True, slots=True)
 class LastAspect:
     """
-    Record of the final applying major aspect the Moon makes before going VOC.
+    Vessel: Final applying aspect record.
+    
+    Contains the identity and exact timing of the final applying major 
+    aspect the Moon makes before going Void of Course.
 
     Attributes
     ----------
@@ -261,7 +264,10 @@ class LastAspect:
 @dataclass(frozen=True, slots=True)
 class VoidOfCourseWindow:
     """
-    A complete Void of Course Moon window.
+    Vessel: Void of Course Moon period.
+    
+    Represents a discrete window of time where the Moon is Void of Course, 
+    spanning from its last applying aspect to its next sign ingress.
 
     Attributes
     ----------
@@ -271,10 +277,6 @@ class VoidOfCourseWindow:
     jd_voc_end     : Julian Day the VOC period ends — Moon's sign ingress (UT)
     last_aspect    : LastAspect record, or None if Moon entered sign already VOC
     duration_hours : length of the VOC window in decimal hours
-
-    Properties
-    ----------
-    is_long : True when the VOC window exceeds 12 hours (notable in practice)
     """
     moon_sign:      str
     moon_sign_next: str
@@ -299,9 +301,70 @@ class VoidOfCourseWindow:
         )
 
 
-# ---------------------------------------------------------------------------
-# Internal helpers
-# ---------------------------------------------------------------------------
+class VoidOfCourseEngine:
+    """
+    RITE: The Void of Course Solver
+
+    THEOREM: VoidOfCourseEngine governs the identification of VOC windows 
+        by detecting the temporal boundary between lunar aspect perfection 
+        and sign ingress.
+
+    RITE OF PURPOSE:
+        This engine exists to provide a deterministic, high-precision 
+        answer to the question of lunar "void" status. It encapsulates 
+        the complex bisection logic required to find exact perfection 
+        times (~1s precision) and ensures that the doctrine of 
+        "Traditional" vs "Modern" body sets is applied consistently.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Scan lunar transits for aspect crossings.
+            - Resolve sign ingress boundaries for the Moon.
+            - Synthesize crossings into VOC windows.
+        Non-responsibilities:
+            - Does not own the ephemeris (delegates to SpkReader).
+            - Does not handle house systems or local time.
+        
+    Canon: Traditional Astrological VOC Doctrine.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.void_of_course.VoidOfCourseEngine",
+      "risk": "medium",
+      "api": {
+        "frozen": ["window", "is_void", "next_window", "windows_in_range"]
+      },
+      "state": {"mutable": false, "owners": []},
+      "effects": {"signals_emitted": [], "io": ["ephemeris read"]},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
+    """
+
+    def __init__(self, reader: SpkReader | None = None, modern: bool = False) -> None:
+        self._reader = reader or get_reader()
+        self._modern = modern
+
+    def window(self, jd: float) -> VoidOfCourseWindow:
+        """Return the VOC window containing (or next in) the current sign at jd."""
+        return _build_voc_window(jd, self._reader, self._modern)
+
+    def is_void(self, jd: float) -> bool:
+        """True if the Moon is VOC at jd."""
+        window = self.window(jd)
+        return window.jd_voc_start <= jd <= window.jd_voc_end
+
+    def next_window(self, jd: float, max_days: float = 60.0) -> VoidOfCourseWindow | None:
+        """Find the next VOC window starting strictly after jd."""
+        return next_void_of_course(jd, self._reader, self._modern, max_days)
+
+    def windows_in_range(self, jd_start: float, jd_end: float) -> list[VoidOfCourseWindow]:
+        """Return all VOC windows overlapping the range."""
+        return void_periods_in_range(jd_start, jd_end, self._reader, self._modern)
 
 def _moon_longitude(jd: float, reader: SpkReader) -> float:
     """Geocentric ecliptic longitude of the Moon in [0, 360)."""

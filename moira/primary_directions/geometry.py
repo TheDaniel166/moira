@@ -32,6 +32,7 @@ __all__ = [
 
 
 class _SpeculumLike(Protocol):
+    """Vessel: Protocol defining the minimum coordinate surface required for mundane geometry computations."""
     name: str
     lon: float
     lat: float
@@ -46,6 +47,7 @@ class _SpeculumLike(Protocol):
 
 
 class PrimaryDirectionGeometryLaw(StrEnum):
+    """Vessel: Enumeration of specific mathematical laws for primary direction arcs."""
     PLACIDUS_MUNDANE = "placidus_mundane"
     PLACIDIAN_CLASSIC_SEMI_ARC = "placidian_classic_semi_arc"
     PTOLEMAIC_PROPORTIONAL_SEMI_ARC = "ptolemaic_proportional_semi_arc"
@@ -57,12 +59,14 @@ class PrimaryDirectionGeometryLaw(StrEnum):
 
 
 class PrimaryDirectionGeometrySovereignty(StrEnum):
+    """Vessel: Classification of a geometric law as sovereign or shared."""
     SOVEREIGN = "sovereign"
     SHARED_NARROW = "shared_narrow"
 
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionGeometryTruth:
+    """Vessel: Record of the exact mathematical provenance for a primary direction method."""
     method: PrimaryDirectionMethod
     law: PrimaryDirectionGeometryLaw
     sovereignty: PrimaryDirectionGeometrySovereignty

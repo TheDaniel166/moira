@@ -8,14 +8,15 @@ Purpose
 -------
 Governs lookup of Hirayama asteroid family membership from the
 Nesvorný et al. (2015) dynamical family catalog, and detects family
-resonance across admitted aspects.  Provides five public surfaces:
+resonance across admitted aspects.  Provides seven public surfaces:
 
 - ``asteroid_family``        — family name for a single numbered asteroid
 - ``family_members``         — all catalog numbers belonging to a named family
 - ``families_in_chart``      — group a set of asteroid numbers by shared origin
 - ``find_resonant_aspects``  — tag aspects whose both bodies share a family origin
-- ``resonance_network``      — group resonant aspects by family, forming a
-                               per-family sub-network of the chart's aspect graph
+- ``resonance_network``      — group resonant aspects by family
+- ``FamilyResonance``        — qualifier vessel for shared origin family
+- ``ResonantAspect``         — result vessel for a qualified aspect
 
 Boundary
 --------
@@ -191,7 +192,7 @@ def families_in_chart(numbers: list[int]) -> dict[str, list[int]]:
 
 @dataclass(frozen=True, slots=True)
 class FamilyResonance:
-    """Qualifier vessel: both bodies in an aspect share a dynamical origin family.
+    """Vessel: Qualifier vessel: both bodies in an aspect share a dynamical origin family.
 
     This is a new dimension of aspect qualification — not harmonic family
     (trine series, conjunction series) but *physical origin family*: the two
@@ -216,7 +217,7 @@ class FamilyResonance:
 
 @dataclass(frozen=True, slots=True)
 class ResonantAspect:
-    """A detected aspect paired with its family resonance qualifier.
+    """Vessel: A detected aspect paired with its family resonance qualifier.
 
     Wraps an ``AspectData`` vessel with a ``FamilyResonance`` qualifier.
     The aspect geometry is unchanged — only the interpretive layer is

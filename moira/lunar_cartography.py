@@ -64,6 +64,7 @@ __all__ = [
 
 @dataclass(frozen=True, slots=True)
 class LunarBesselianSample:
+    """Vessel: Geometric sample of lunar eclipse conditions at a specific epoch."""
     jd_ut: float
     sublunar_lat: float
     sublunar_lon: float
@@ -75,6 +76,7 @@ class LunarBesselianSample:
 
 @dataclass(frozen=True, slots=True)
 class LunarShadowBand:
+    """Vessel: Geometric representation of a lunar shadow or visibility band."""
     south_curve: tuple[tuple[float, float], ...]
     north_curve: tuple[tuple[float, float], ...]
     polygon: tuple[tuple[float, float], ...]
@@ -82,6 +84,7 @@ class LunarShadowBand:
 
 @dataclass(frozen=True, slots=True)
 class LunarContourLevel:
+    """Vessel: Representation of an isoline or contour in lunar cartography."""
     kind: str
     threshold: float
     south_curve: tuple[tuple[float, float], ...]
@@ -90,6 +93,7 @@ class LunarContourLevel:
 
 @dataclass(frozen=True, slots=True)
 class LunarCartographyResult:
+    """Vessel: Complete cartographic model for a lunar eclipse event."""
     event_jd_ut: float
     eclipse_type: str
     backend: ArrayBackendInfo

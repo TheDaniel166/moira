@@ -1,12 +1,35 @@
 """
-Symbol classifier for determining public/private status and symbol types.
+Moira — Symbol Classification Engine
+====================================
 
-This module provides functionality to classify symbols based on naming
-conventions, decorators, and module-category-specific rules.
+Archetype: Governance Logic (Logic Actor)
 
-Boundary: Owns symbol classification logic.
-Dependencies: models module for SymbolInfo and enums.
-Public surface: SymbolClassifier class.
+Purpose
+-------
+Governs the classification of Python symbols within the Moira engine. 
+Determines public/private visibility, symbol types (constant, enum, 
+dataclass, etc.), and export eligibility based on naming conventions 
+and module-category-specific rules.
+
+Boundary
+--------
+Owns:
+    - Symbol classification logic (is_public, is_constant).
+    - Export eligibility rules per ModuleCategory.
+Delegates:
+    - Symbol metadata models to moira._export_governance.models.
+
+Import-time side effects
+------------------------
+None.
+
+External dependency assumptions
+--------------------------------
+None. Pure logical classification based on symbol names and types.
+
+Public surface
+--------------
+SymbolClassifier class.
 """
 
 from moira._export_governance.models import SymbolInfo, SymbolType, ModuleCategory
@@ -14,11 +37,45 @@ from moira._export_governance.models import SymbolInfo, SymbolType, ModuleCatego
 
 class SymbolClassifier:
     """
-    Classifies symbols as public/private and determines their types.
-    
-    Applies naming convention rules (leading underscore for private),
-    identifies symbol types (class, function, constant, etc.), and
-    applies module-category-specific classification rules.
+    RITE: The Arbiter of Visibility
+
+    THEOREM: SymbolClassifier governs the identification and taxonomy 
+        of engine symbols to enforce a consistent sovereign boundary.
+
+    RITE OF PURPOSE:
+        This engine exists to provide a deterministic, rule-based 
+        classification of the engine's internal and public surface. 
+        It transforms raw symbol metadata into actionable visibility 
+        decisions, ensuring that private implementation details 
+        remain shielded while stable APIs are correctly exposed.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Determine if a symbol name is public or private.
+            - Identify the fundamental type of a symbol.
+            - Evaluate export eligibility based on module context.
+        Non-responsibilities:
+            - Does not parse the source code (delegates to Parser).
+            - Does not modify the source code (delegates to CodeGen).
+        
+    Canon: Moira Export Governance Protocol v1.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira._export_governance.classifier.SymbolClassifier",
+      "risk": "low",
+      "api": {
+        "frozen": ["classify_symbol", "is_public_symbol", "should_export"]
+      },
+      "state": {"mutable": false, "owners": []},
+      "effects": {"signals_emitted": [], "io": ["pure computation"]},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["logic_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     def classify_symbol(

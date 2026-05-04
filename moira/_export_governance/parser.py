@@ -1,13 +1,37 @@
 """
-AST parser for extracting symbol information from Python modules.
+Moira — AST Symbol Extraction
+==============================
 
-This module provides functionality to parse Python source code using the AST
-module, extract symbol definitions, identify __all__ declarations, and track
-import statements for facade analysis.
+Archetype: Governance Logic (Logic Actor)
 
-Boundary: Owns AST parsing and symbol extraction logic.
-Dependencies: Python ast module, pathlib.
-Public surface: ModuleParser class and ParsedModule dataclass.
+Purpose
+-------
+Governs the extraction of symbol metadata from Python source code via 
+AST analysis. Identifies classes, functions, constants, and complex 
+types, while tracking import provenance and __all__ declarations to 
+support export governance verification.
+
+Boundary
+--------
+Owns:
+    - AST parsing and symbol taxonomy logic.
+    - Export declaration (__all__) extraction logic.
+    - Import provenance tracking.
+Delegates:
+    - Symbol metadata models to moira._export_governance.models.
+
+Import-time side effects
+------------------------
+None.
+
+External dependency assumptions
+--------------------------------
+- Standard library ast module.
+- Filesystem access for reading module source code.
+
+Public surface
+--------------
+ModuleParser class and ParsedModule dataclass.
 """
 
 import ast
@@ -21,7 +45,7 @@ from moira._export_governance.models import SymbolInfo, SymbolType
 @dataclass
 class ParsedModule:
     """
-    Complete parsed representation of a Python module.
+    Vessel: Complete parsed representation of a Python module.
     
     Contains all extracted information from AST parsing including symbols,
     __all__ declaration, and import statements.
@@ -35,11 +59,45 @@ class ParsedModule:
 
 class ModuleParser:
     """
-    Parses Python modules and extracts symbol information using AST.
-    
-    This parser handles various Python constructs including classes, functions,
-    constants, type aliases, enums, dataclasses, and protocols. It also extracts
-    __all__ declarations and import statements.
+    RITE: The Seer of Structure
+
+    THEOREM: ModuleParser governs the translation of Python source 
+        into a structured symbol registry for governance analysis.
+
+    RITE OF PURPOSE:
+        This engine exists to provide a truthful, structured 
+        representation of the engine's internal implementation. It 
+        serves as the primary lens through which governance policies 
+        observe and verify the integrity of the sovereign boundary.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Parse Python source into AST.
+            - Extract top-level symbol metadata.
+            - Resolve import provenance and star-import exports.
+            - Detect and extract __all__ declarations.
+        Non-responsibilities:
+            - Does not classify symbols (delegates to Classifier).
+            - Does not enforce logic policies (delegates to Auditor).
+        
+    Canon: Moira Export Governance Protocol v1.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira._export_governance.parser.ModuleParser",
+      "risk": "medium",
+      "api": {
+        "frozen": ["parse_module", "extract_symbols", "extract_all_declaration"]
+      },
+      "state": {"mutable": false, "owners": []},
+      "effects": {"signals_emitted": [], "io": ["filesystem read"]},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "return_error_vessel"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["parsing_logic_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     def parse_module(self, module_path: Path) -> ParsedModule:

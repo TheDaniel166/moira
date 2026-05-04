@@ -201,6 +201,7 @@ _HISTORICAL_STAR_ALIASES = {
 
 @dataclass(frozen=True, slots=True)
 class StellarQuality:
+    """Vessel: Registry of astrological qualities for a star."""
     element: str
     planet: str
     hot: bool
@@ -209,6 +210,7 @@ class StellarQuality:
 
 @dataclass(frozen=True, slots=True)
 class _SovereignStarRecord:
+    """Vessel: Raw star record from the sovereign registry."""
     name: str
     nomenclature: str
     gaia_dr3_id: int | None

@@ -1,12 +1,37 @@
 """
-Facade analyzer for verifying facade module export alignment.
+Moira — Facade Export Alignment
+===============================
 
-This module analyzes facade modules to ensure they properly re-export
-symbols from their delegate modules, detecting missing and stale exports.
+Archetype: Governance Logic (Logic Actor)
 
-Boundary: Owns facade analysis logic.
-Dependencies: scanner, parser modules.
-Public surface: FacadeAnalyzer class.
+Purpose
+-------
+Governs the verification of facade module export alignment. Ensures 
+that high-level facade modules correctly re-export the public surface 
+of their delegate modules, detecting missing re-exports or stale 
+entries in __all__.
+
+Boundary
+--------
+Owns:
+    - Facade analysis logic (missing vs stale detection).
+    - Delegate-to-facade alignment verification rules.
+Delegates:
+    - Module scanning to moira._export_governance.scanner.
+    - Source parsing to moira._export_governance.parser.
+    - Result models to moira._export_governance.models.
+
+Import-time side effects
+------------------------
+None.
+
+External dependency assumptions
+--------------------------------
+- Filesystem access for reading module source code.
+
+Public surface
+--------------
+FacadeAnalyzer class.
 """
 
 from pathlib import Path
@@ -18,10 +43,45 @@ from moira._export_governance.parser import ModuleParser
 
 class FacadeAnalyzer:
     """
-    Analyzes facade modules for export alignment.
-    
-    Verifies that facade modules properly re-export symbols from their
-    delegate modules, identifying missing and stale exports.
+    RITE: The Guardian of the Gate
+
+    THEOREM: FacadeAnalyzer governs the parity between the engine's 
+        internal surfaces and its public facade re-exports.
+
+    RITE OF PURPOSE:
+        This engine exists to ensure that the engine's public facade 
+        remains a faithful and complete representation of its 
+        constituent parts. It prevents "silent drift" where new features 
+        are added to substrates but forgotten in the facade, or where 
+        stale exports remain after internal refactoring.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Identify missing re-exports in facade modules.
+            - Detect stale exports that are no longer imported or defined.
+            - Verify alignment between facade __all__ and delegate __all__.
+        Non-responsibilities:
+            - Does not enforce classification rules (delegates to Classifier).
+            - Does not modify files (delegates to CodeGen).
+        
+    Canon: Moira Export Governance Protocol v1.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira._export_governance.facade.FacadeAnalyzer",
+      "risk": "medium",
+      "api": {
+        "frozen": ["analyze_facade", "verify_alignment", "identify_facade_modules"]
+      },
+      "state": {"mutable": true, "owners": ["Governance Auditor"]},
+      "effects": {"signals_emitted": [], "io": ["filesystem read"]},
+      "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+      "failures": {"policy": "raise"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["alignment_logic_change"]}
+    }
+    [/MACHINE_CONTRACT]
     """
 
     def __init__(self, package_root: Path):
