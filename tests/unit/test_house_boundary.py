@@ -32,7 +32,6 @@ from moira.constants import HouseSystem
 # ---------------------------------------------------------------------------
 # Shared chart moment
 # ---------------------------------------------------------------------------
-_JD  = 2451545.0
 _LAT = 51.5
 _LON = 0.0
 
@@ -81,10 +80,12 @@ def _boundary(lon: float, cusps_list: list[float], *, threshold: float = 3.0,
 class TestHouseBoundaryProfileStructure:
     """HouseBoundaryProfile is a frozen dataclass with correct field types."""
 
-    def setup_method(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        hc = calculate_houses(jd_j2000, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         self.bp = describe_boundary(pl)
+        self._jd = jd_j2000
 
     def test_has_placement_field(self):
         assert isinstance(self.bp.placement, HousePlacement)
@@ -139,7 +140,7 @@ class TestHouseBoundaryProfileStructure:
         assert self.bp.nearest_cusp_distance >= 0.0
 
     def test_placement_is_original(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         bp = describe_boundary(pl)
         assert bp.placement is pl
@@ -152,8 +153,12 @@ class TestHouseBoundaryProfileStructure:
 class TestHouseBoundaryProfileInvariant:
     """__post_init__ rejects internally inconsistent construction."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def _good_kwargs(self) -> dict:
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         bp = describe_boundary(pl)
         return dict(
@@ -211,6 +216,10 @@ class TestHouseBoundaryProfileInvariant:
 class TestDistanceValues:
     """Distances are correct on known cusp layouts."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_midpoint_equal_distances(self):
         # Equal 30° cusps from 0°; H1 = [0, 30). Midpoint = 15°.
         bp = _boundary(15.0, _equal_cusps(0.0))
@@ -257,7 +266,7 @@ class TestDistanceValues:
             assert bp.opening_cusp == pytest.approx(expected_opening)
 
     def test_non_uniform_porphyry_span_identity(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         for house_num in range(1, 13):
             cusp_open  = hc.cusps[house_num - 1]
             cusp_close = hc.cusps[house_num % 12]
@@ -337,6 +346,10 @@ class TestNearestCusp:
 class TestNearCuspClassification:
     """is_near_cusp respects the declared threshold deterministically."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_default_threshold_is_3_degrees(self):
         assert _NEAR_CUSP_DEFAULT_THRESHOLD == pytest.approx(3.0)
 
@@ -399,13 +412,13 @@ class TestNearCuspClassification:
         assert bp1.nearest_cusp_distance == bp2.nearest_cusp_distance
 
     def test_invalid_threshold_zero_raises(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         with pytest.raises(ValueError):
             describe_boundary(pl, near_cusp_threshold=0.0)
 
     def test_invalid_threshold_negative_raises(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         with pytest.raises(ValueError):
             describe_boundary(pl, near_cusp_threshold=-1.0)
@@ -531,6 +544,10 @@ class TestWraparoundBoundaryCases:
 class TestSystemFamiliesBoundary:
     """describe_boundary() works for all 19 system families via live calculations."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     @pytest.mark.parametrize("system", [
         HouseSystem.EQUAL, HouseSystem.WHOLE_SIGN, HouseSystem.PORPHYRY,
         HouseSystem.PLACIDUS, HouseSystem.CAMPANUS, HouseSystem.REGIOMONTANUS,
@@ -539,7 +556,7 @@ class TestSystemFamiliesBoundary:
         HouseSystem.AZIMUTHAL, HouseSystem.TOPOCENTRIC, HouseSystem.KRUSINSKI,
         HouseSystem.APC, HouseSystem.CARTER, ])
     def test_span_identity_for_system(self, system):
-        hc = calculate_houses(_JD, _LAT, _LON, system)
+        hc = calculate_houses(self._jd, _LAT, _LON, system)
         pl = assign_house(0.0, hc)
         bp = describe_boundary(pl)
         assert bp.dist_to_opening + bp.dist_to_closing == pytest.approx(bp.house_span, abs=1e-9)
@@ -549,7 +566,7 @@ class TestSystemFamiliesBoundary:
         HouseSystem.WHOLE_SIGN,
     ])
     def test_house_unchanged_by_describe_boundary(self, system):
-        hc = calculate_houses(_JD, _LAT, _LON, system)
+        hc = calculate_houses(self._jd, _LAT, _LON, system)
         pl = assign_house(0.0, hc)
         bp = describe_boundary(pl)
         assert bp.placement.house == pl.house
@@ -559,19 +576,19 @@ class TestSystemFamiliesBoundary:
         HouseSystem.WHOLE_SIGN,
     ])
     def test_longitude_unchanged_by_describe_boundary(self, system):
-        hc = calculate_houses(_JD, _LAT, _LON, system)
+        hc = calculate_houses(self._jd, _LAT, _LON, system)
         pl = assign_house(0.0, hc)
         bp = describe_boundary(pl)
         assert bp.placement.longitude == pl.longitude
 
     def test_porphyry_asc_on_opening_cusp_dist_zero(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(hc.asc, hc)
         bp = describe_boundary(pl)
         assert bp.dist_to_opening == pytest.approx(0.0, abs=1e-9)
 
     def test_placement_truth_preserved_in_profile(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         bp = describe_boundary(pl)
         assert bp.placement.house_cusps.system == HouseSystem.PORPHYRY
@@ -588,14 +605,18 @@ class TestSystemFamiliesBoundary:
 class TestDefaultThreshold:
     """describe_boundary() default threshold equals _NEAR_CUSP_DEFAULT_THRESHOLD."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_default_threshold_used_when_not_supplied(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         bp = describe_boundary(pl)
         assert bp.near_cusp_threshold == pytest.approx(_NEAR_CUSP_DEFAULT_THRESHOLD)
 
     def test_default_and_explicit_same_equal(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         bp_default  = describe_boundary(pl)
         bp_explicit = describe_boundary(pl, near_cusp_threshold=_NEAR_CUSP_DEFAULT_THRESHOLD)
@@ -610,44 +631,48 @@ class TestDefaultThreshold:
 class TestPhase6Regression:
     """All prior-phase semantics remain unchanged after Phase 6 additions."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_assign_house_still_returns_placement(self):
-        hc = calculate_houses(_JD, _LAT, _LON)
+        hc = calculate_houses(self._jd, _LAT, _LON)
         pl = assign_house(0.0, hc)
         assert isinstance(pl, HousePlacement)
 
     def test_house_number_unchanged(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         bp = describe_boundary(pl)
         assert bp.placement.house == pl.house
 
     def test_exact_on_cusp_unchanged(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl_on  = assign_house(hc.asc, hc)
         pl_off = assign_house(hc.asc + 1.0, hc)
         assert pl_on.exact_on_cusp is True
         assert pl_off.exact_on_cusp is False
 
     def test_fallback_truth_still_carried(self):
-        hc = calculate_houses(_JD, 80.0, _LON, HouseSystem.PLACIDUS)
+        hc = calculate_houses(self._jd, 80.0, _LON, HouseSystem.PLACIDUS)
         pl = assign_house(0.0, hc)
         bp = describe_boundary(pl)
         assert bp.placement.house_cusps.fallback is True
 
     def test_calculate_houses_unchanged(self):
-        result = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        result = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         assert len(result.cusps) == 12
         assert result.effective_system == HouseSystem.PORPHYRY
         assert result.classification is not None
         assert result.policy is not None
 
     def test_no_gaps_after_phase6_equal(self):
-        hc     = calculate_houses(_JD, _LAT, _LON, HouseSystem.EQUAL)
+        hc     = calculate_houses(self._jd, _LAT, _LON, HouseSystem.EQUAL)
         houses = {assign_house(d / 10.0, hc).house for d in range(3600)}
         assert houses == set(range(1, 13))
 
     def test_no_gaps_after_phase6_porphyry(self):
-        hc     = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc     = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         houses = {assign_house(d / 10.0, hc).house for d in range(3600)}
         assert houses == set(range(1, 13))
 

@@ -39,7 +39,6 @@ from moira.constants import HouseSystem
 # ---------------------------------------------------------------------------
 # Shared chart moment
 # ---------------------------------------------------------------------------
-_JD  = 2451545.0
 _LAT = 51.5
 _LON = 0.0
 
@@ -48,8 +47,8 @@ _LON = 0.0
 # Synthetic helpers
 # ---------------------------------------------------------------------------
 
-def _hc(system: str = HouseSystem.EQUAL, lat: float = _LAT) -> HouseCusps:
-    return calculate_houses(_JD, lat, _LON, system)
+def _hc(jd: float, system: str = HouseSystem.EQUAL, lat: float = _LAT) -> HouseCusps:
+    return calculate_houses(jd, lat, _LON, system)
 
 
 def _make_cusps(cusps_list: list[float], system: str = HouseSystem.EQUAL) -> HouseCusps:
@@ -220,6 +219,10 @@ class TestDistributePointsStructure:
 class TestCountsCorrectness:
     """Counts per house are correct on controlled point sets."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_one_point_per_house(self):
         hc   = _make_cusps(_equal_cusps(), HouseSystem.EQUAL)
         lons = _midpoints(hc)
@@ -256,7 +259,7 @@ class TestCountsCorrectness:
         assert all(c == 0 for c in dp.counts)
 
     def test_live_porphyry_one_per_house(self):
-        hc   = _hc(HouseSystem.PORPHYRY)
+        hc   = _hc(self._jd, HouseSystem.PORPHYRY)
         lons = _midpoints(hc)
         dp   = distribute_points(lons, hc)
         assert dp.point_count == 12
@@ -421,6 +424,10 @@ class TestAngularityTotals:
     _SUCCEDENT = {2, 5, 8, 11}
     _CADENT    = {3, 6, 9, 12}
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_zero_totals_when_empty(self):
         hc = _make_cusps(_equal_cusps(), HouseSystem.EQUAL)
         dp = distribute_points([], hc)
@@ -465,7 +472,7 @@ class TestAngularityTotals:
         assert dp.cadent_count    == 4
 
     def test_angularity_totals_live_porphyry(self):
-        hc = _hc(HouseSystem.PORPHYRY)
+        hc = _hc(self._jd, HouseSystem.PORPHYRY)
         dp = distribute_points(_midpoints(hc), hc)
         assert dp.angular_count + dp.succedent_count + dp.cadent_count == 12
 
@@ -477,15 +484,19 @@ class TestAngularityTotals:
 class TestEdgeCases:
     """Edge cases: empty input, single point, exact-on-cusp, duplicate points."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_empty_list_zero_profile(self):
-        hc = _hc(HouseSystem.PORPHYRY)
+        hc = _hc(self._jd, HouseSystem.PORPHYRY)
         dp = distribute_points([], hc)
         assert dp.point_count == 0
         assert dp.empty_houses == frozenset(range(1, 13))
         assert dp.dominant_houses == ()
 
     def test_single_point(self):
-        hc = _hc(HouseSystem.PORPHYRY)
+        hc = _hc(self._jd, HouseSystem.PORPHYRY)
         dp = distribute_points([hc.asc], hc)
         assert dp.point_count == 1
         assert dp.dominant_houses == (1,)
@@ -520,8 +531,12 @@ class TestEdgeCases:
 class TestDeterminism:
     """distribute_points() is deterministic."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_same_input_same_counts(self):
-        hc   = _hc(HouseSystem.PORPHYRY)
+        hc   = _hc(self._jd, HouseSystem.PORPHYRY)
         lons = [0.0, 45.0, 90.0, 135.0, 180.0, 225.0]
         dp1  = distribute_points(lons, hc)
         dp2  = distribute_points(lons, hc)
@@ -545,6 +560,10 @@ class TestDeterminism:
 class TestSystemFamiliesDistribution:
     """distribute_points() works across all 19 systems."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     @pytest.mark.parametrize("system", [
         HouseSystem.EQUAL, HouseSystem.WHOLE_SIGN, HouseSystem.PORPHYRY,
         HouseSystem.PLACIDUS, HouseSystem.CAMPANUS, HouseSystem.REGIOMONTANUS,
@@ -553,7 +572,7 @@ class TestSystemFamiliesDistribution:
         HouseSystem.AZIMUTHAL, HouseSystem.TOPOCENTRIC, HouseSystem.KRUSINSKI,
         HouseSystem.APC, HouseSystem.CARTER, ])
     def test_one_per_house_for_all_systems(self, system):
-        hc   = _hc(system)
+        hc   = _hc(self._jd, system)
         lons = _midpoints(hc)
         dp   = distribute_points(lons, hc)
         assert dp.point_count == 12
@@ -564,12 +583,12 @@ class TestSystemFamiliesDistribution:
         HouseSystem.EQUAL, HouseSystem.PORPHYRY, HouseSystem.WHOLE_SIGN,
     ])
     def test_angularity_sum_equals_point_count(self, system):
-        hc = _hc(system)
+        hc = _hc(self._jd, system)
         dp = distribute_points(_midpoints(hc), hc)
         assert dp.angular_count + dp.succedent_count + dp.cadent_count == dp.point_count
 
     def test_fallback_system_truth_in_profile(self):
-        hc = _hc(HouseSystem.PLACIDUS, lat=80.0)
+        hc = _hc(self._jd, HouseSystem.PLACIDUS, lat=80.0)
         assert hc.fallback is True
         dp = distribute_points([0.0], hc)
         assert dp.house_cusps.fallback is True
@@ -583,41 +602,45 @@ class TestSystemFamiliesDistribution:
 class TestPhase9Regression:
     """All prior-phase semantics remain unchanged after Phase 9 additions."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_assign_house_still_works(self):
-        hc = _hc()
+        hc = _hc(self._jd)
         pl = assign_house(0.0, hc)
         assert isinstance(pl, HousePlacement)
 
     def test_describe_boundary_still_works(self):
-        hc = _hc(HouseSystem.PORPHYRY)
+        hc = _hc(self._jd, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         bp = describe_boundary(pl)
         assert isinstance(bp, HouseBoundaryProfile)
 
     def test_describe_angularity_still_works(self):
-        hc = _hc(HouseSystem.PORPHYRY)
+        hc = _hc(self._jd, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         ap = describe_angularity(pl)
         assert isinstance(ap, HouseAngularityProfile)
 
     def test_calculate_houses_unchanged(self):
-        result = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        result = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         assert len(result.cusps) == 12
         assert result.effective_system == HouseSystem.PORPHYRY
 
     def test_no_gaps_porphyry(self):
-        hc     = _hc(HouseSystem.PORPHYRY)
+        hc     = _hc(self._jd, HouseSystem.PORPHYRY)
         houses = {assign_house(d / 10.0, hc).house for d in range(3600)}
         assert houses == set(range(1, 13))
 
     def test_boundary_span_identity(self):
-        hc = _hc(HouseSystem.PORPHYRY)
+        hc = _hc(self._jd, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         bp = describe_boundary(pl)
         assert bp.dist_to_opening + bp.dist_to_closing == pytest.approx(bp.house_span, abs=1e-9)
 
     def test_angularity_h1_still_angular(self):
-        hc = _hc(HouseSystem.PORPHYRY)
+        hc = _hc(self._jd, HouseSystem.PORPHYRY)
         pl = assign_house(hc.asc, hc)
         ap = describe_angularity(pl)
         assert ap.category == HouseAngularity.ANGULAR

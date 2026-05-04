@@ -31,7 +31,6 @@ from moira.constants import HouseSystem
 # ---------------------------------------------------------------------------
 # Shared chart moment: J2000.0, London-ish, well within polar threshold
 # ---------------------------------------------------------------------------
-_JD    = 2451545.0
 _LAT   = 51.5
 _LON   = 0.0
 
@@ -78,8 +77,9 @@ def _equal_cusps(start: float) -> list[float]:
 class TestHousePlacementStructure:
     """HousePlacement is a frozen dataclass with the correct fields and types."""
 
-    def setup_method(self):
-        self.hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self.hc = calculate_houses(jd_j2000, _LAT, _LON, HouseSystem.PORPHYRY)
         self.pl = assign_house(0.0, self.hc)
 
     def test_has_house_field(self):
@@ -125,8 +125,12 @@ class TestHousePlacementStructure:
 class TestHousePlacementInvariant:
     """__post_init__ raises on malformed construction."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def _good(self) -> dict:
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         return dict(
             house=1,
             longitude=hc.cusps[0],
@@ -374,8 +378,12 @@ class TestExactOnCusp:
 class TestSystemFamilies:
     """assign_house() works correctly for representative systems from each family."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def _place(self, system: str, longitude: float) -> HousePlacement:
-        hc = calculate_houses(_JD, _LAT, _LON, system)
+        hc = calculate_houses(self._jd, _LAT, _LON, system)
         return assign_house(longitude, hc)
 
     def test_equal_house_family(self):
@@ -447,67 +455,67 @@ class TestSystemFamilies:
         assert 1 <= pl.house <= 12
 
     def test_result_carries_truth_from_house_cusps(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         assert pl.house_cusps.system == HouseSystem.PORPHYRY
         assert pl.house_cusps.effective_system == HouseSystem.PORPHYRY
         assert pl.house_cusps.fallback is False
 
     def test_result_carries_classification(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         assert pl.house_cusps.classification is not None
         assert pl.house_cusps.classification.family == HouseSystemFamily.QUADRANT
 
     def test_result_carries_policy(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         assert pl.house_cusps.policy is not None
 
     def test_asc_in_house_one_for_equal(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.EQUAL)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.EQUAL)
         pl = assign_house(hc.asc, hc)
         assert pl.house == 1
 
     def test_asc_in_house_one_for_porphyry(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(hc.asc, hc)
         assert pl.house == 1
 
     def test_mc_in_house_ten_for_porphyry(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(hc.mc, hc)
         assert pl.house == 10
 
     def test_mc_in_house_ten_for_placidus(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PLACIDUS)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PLACIDUS)
         pl = assign_house(hc.mc, hc)
         assert pl.house == 10
 
     def test_mc_placement_equal_house(self):
         # In Equal Houses the MC is not anchored to H10; it floats.
         # Verify only that it lands in some house 1-12.
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.EQUAL)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.EQUAL)
         pl = assign_house(hc.mc, hc)
         assert 1 <= pl.house <= 12
 
     def test_no_gaps_equal_house(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.EQUAL)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.EQUAL)
         houses = {assign_house(d / 10.0, hc).house for d in range(3600)}
         assert houses == set(range(1, 13))
 
     def test_no_gaps_porphyry(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         houses = {assign_house(d / 10.0, hc).house for d in range(3600)}
         assert houses == set(range(1, 13))
 
     def test_no_gaps_placidus(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PLACIDUS)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PLACIDUS)
         houses = {assign_house(d / 10.0, hc).house for d in range(3600)}
         assert houses == set(range(1, 13))
 
     def test_no_gaps_whole_sign(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.WHOLE_SIGN)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.WHOLE_SIGN)
         houses = {assign_house(d / 10.0, hc).house for d in range(3600)}
         assert houses == set(range(1, 13))
 
@@ -560,8 +568,12 @@ class TestInputHandling:
 class TestFallbackTruthPropagation:
     """Fallback truth from HouseCusps is preserved verbatim in HousePlacement."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_polar_fallback_truth_preserved(self):
-        hc = calculate_houses(_JD, 80.0, _LON, HouseSystem.PLACIDUS)
+        hc = calculate_houses(self._jd, 80.0, _LON, HouseSystem.PLACIDUS)
         assert hc.fallback is True
         pl = assign_house(0.0, hc)
         assert pl.house_cusps.fallback is True
@@ -569,14 +581,14 @@ class TestFallbackTruthPropagation:
         assert pl.house_cusps.effective_system == HouseSystem.PORPHYRY
 
     def test_no_fallback_truth_preserved(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         assert hc.fallback is False
         pl = assign_house(0.0, hc)
         assert pl.house_cusps.fallback is False
 
     def test_house_cusps_policy_preserved(self):
         from moira.houses import HousePolicy
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY, policy=HousePolicy.default())
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY, policy=HousePolicy.default())
         pl = assign_house(0.0, hc)
         assert pl.house_cusps.policy == HousePolicy.default()
 
@@ -588,48 +600,52 @@ class TestFallbackTruthPropagation:
 class TestPhase5Regression:
     """All prior-phase invariants still hold after Phase 5 additions."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_calculate_houses_still_returns_housecusps(self):
-        result = calculate_houses(_JD, _LAT, _LON)
+        result = calculate_houses(self._jd, _LAT, _LON)
         assert isinstance(result, HouseCusps)
 
     def test_effective_system_still_populated(self):
-        result = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        result = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         assert result.effective_system == HouseSystem.PORPHYRY
 
     def test_classification_still_present(self):
-        result = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        result = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         assert result.classification is not None
 
     def test_policy_still_present(self):
-        result = calculate_houses(_JD, _LAT, _LON)
+        result = calculate_houses(self._jd, _LAT, _LON)
         assert result.policy is not None
 
     def test_cusps_still_12(self):
-        result = calculate_houses(_JD, _LAT, _LON)
+        result = calculate_houses(self._jd, _LAT, _LON)
         assert len(result.cusps) == 12
 
     def test_fallback_still_false_for_known_system(self):
-        result = calculate_houses(_JD, _LAT, _LON, HouseSystem.PLACIDUS)
+        result = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PLACIDUS)
         assert result.fallback is False
 
     def test_fallback_still_true_at_polar(self):
-        result = calculate_houses(_JD, 80.0, _LON, HouseSystem.PLACIDUS)
+        result = calculate_houses(self._jd, 80.0, _LON, HouseSystem.PLACIDUS)
         assert result.fallback is True
         assert result.effective_system == HouseSystem.PORPHYRY
 
     def test_asc_in_cusps(self):
-        result = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        result = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         assert result.asc == result.cusps[0]
 
     def test_mc_in_cusps(self):
-        result = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        result = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         assert result.mc == result.cusps[9]
 
     def test_is_quadrant_system_porphyry(self):
-        result = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        result = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         assert result.is_quadrant_system is True
 
     def test_is_quadrant_system_whole_sign(self):
-        result = calculate_houses(_JD, _LAT, _LON, HouseSystem.WHOLE_SIGN)
+        result = calculate_houses(self._jd, _LAT, _LON, HouseSystem.WHOLE_SIGN)
         assert result.is_quadrant_system is False
 

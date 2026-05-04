@@ -32,7 +32,6 @@ from moira.constants import HouseSystem
 # ---------------------------------------------------------------------------
 # Shared chart moment
 # ---------------------------------------------------------------------------
-_JD  = 2451545.0
 _LAT = 51.5
 _LON = 0.0
 
@@ -180,8 +179,9 @@ class TestDoctrineMappingCorrectness:
 class TestHouseAngularityProfileStructure:
     """HouseAngularityProfile is a frozen dataclass with correct fields."""
 
-    def setup_method(self):
-        hc      = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        hc      = calculate_houses(jd_j2000, _LAT, _LON, HouseSystem.PORPHYRY)
         pl      = assign_house(hc.asc, hc)
         self.ap = describe_angularity(pl)
         self.pl = pl
@@ -293,8 +293,12 @@ class TestDeterminism:
 class TestIndependenceFromBoundary:
     """describe_angularity and describe_boundary are independent."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_both_can_be_called_on_same_placement(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         ap = describe_angularity(pl)
         bp = describe_boundary(pl)
@@ -302,7 +306,7 @@ class TestIndependenceFromBoundary:
         assert isinstance(bp, HouseBoundaryProfile)
 
     def test_angularity_not_affected_by_boundary_call(self):
-        hc  = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc  = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl  = assign_house(0.0, hc)
         ap1 = describe_angularity(pl)
         _   = describe_boundary(pl)
@@ -310,7 +314,7 @@ class TestIndependenceFromBoundary:
         assert ap1.category == ap2.category
 
     def test_boundary_not_affected_by_angularity_call(self):
-        hc  = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc  = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl  = assign_house(0.0, hc)
         bp1 = describe_boundary(pl)
         _   = describe_angularity(pl)
@@ -318,7 +322,7 @@ class TestIndependenceFromBoundary:
         assert bp1.nearest_cusp_distance == bp2.nearest_cusp_distance
 
     def test_placement_shared_between_both(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         ap = describe_angularity(pl)
         bp = describe_boundary(pl)
@@ -333,51 +337,55 @@ class TestIndependenceFromBoundary:
 class TestPlacementTruthPreserved:
     """All prior-phase truth fields are accessible unchanged via the profile."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_system_preserved(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         ap = describe_angularity(pl)
         assert ap.placement.house_cusps.system == HouseSystem.PORPHYRY
 
     def test_effective_system_preserved(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         ap = describe_angularity(pl)
         assert ap.placement.house_cusps.effective_system == HouseSystem.PORPHYRY
 
     def test_fallback_false_preserved(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         ap = describe_angularity(pl)
         assert ap.placement.house_cusps.fallback is False
 
     def test_fallback_true_preserved(self):
-        hc = calculate_houses(_JD, 80.0, _LON, HouseSystem.PLACIDUS)
+        hc = calculate_houses(self._jd, 80.0, _LON, HouseSystem.PLACIDUS)
         pl = assign_house(0.0, hc)
         ap = describe_angularity(pl)
         assert ap.placement.house_cusps.fallback is True
         assert ap.placement.house_cusps.effective_system == HouseSystem.PORPHYRY
 
     def test_classification_preserved(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         ap = describe_angularity(pl)
         assert ap.placement.house_cusps.classification is not None
 
     def test_policy_preserved(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         ap = describe_angularity(pl)
         assert ap.placement.house_cusps.policy is not None
 
     def test_exact_on_cusp_preserved(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(hc.asc, hc)
         ap = describe_angularity(pl)
         assert ap.placement.exact_on_cusp is True
 
     def test_longitude_preserved(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(42.0, hc)
         ap = describe_angularity(pl)
         assert ap.placement.longitude == pl.longitude
@@ -390,6 +398,10 @@ class TestPlacementTruthPreserved:
 class TestSystemFamiliesAngularity:
     """describe_angularity works for all 19 systems; H1/H4/H7/H10 are always ANGULAR."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     @pytest.mark.parametrize("system", [
         HouseSystem.EQUAL, HouseSystem.WHOLE_SIGN, HouseSystem.PORPHYRY,
         HouseSystem.PLACIDUS, HouseSystem.CAMPANUS, HouseSystem.REGIOMONTANUS,
@@ -400,7 +412,7 @@ class TestSystemFamiliesAngularity:
     def test_asc_is_angular_for_asc_anchored_systems(self, system):
         # For systems where cusps[0] == ASC (all except SUNSHINE and APC which
         # use non-ASC anchors), placing the ASC should land in H1.
-        hc = calculate_houses(_JD, _LAT, _LON, system)
+        hc = calculate_houses(self._jd, _LAT, _LON, system)
         pl = assign_house(hc.asc, hc)
         ap = describe_angularity(pl)
         assert ap.house == 1
@@ -412,7 +424,7 @@ class TestSystemFamiliesAngularity:
     def test_asc_placement_valid_category_non_asc_anchored(self, system):
         # SUNSHINE anchors on the Sun (not ASC); APC can produce a rotated figure.
         # The ASC may not fall in H1, but the result must still be a valid category.
-        hc = calculate_houses(_JD, _LAT, _LON, system)
+        hc = calculate_houses(self._jd, _LAT, _LON, system)
         pl = assign_house(hc.asc, hc)
         ap = describe_angularity(pl)
         assert ap.category in (
@@ -426,7 +438,7 @@ class TestSystemFamiliesAngularity:
         HouseSystem.REGIOMONTANUS, HouseSystem.ALCABITIUS,
     ])
     def test_mc_is_angular_for_quadrant_systems(self, system):
-        hc = calculate_houses(_JD, _LAT, _LON, system)
+        hc = calculate_houses(self._jd, _LAT, _LON, system)
         pl = assign_house(hc.mc, hc)
         ap = describe_angularity(pl)
         assert ap.house == 10
@@ -437,7 +449,7 @@ class TestSystemFamiliesAngularity:
         HouseSystem.WHOLE_SIGN,
     ])
     def test_all_12_houses_covered_live(self, system):
-        hc = calculate_houses(_JD, _LAT, _LON, system)
+        hc = calculate_houses(self._jd, _LAT, _LON, system)
         seen_categories = set()
         for h in range(1, 13):
             cusp_open  = hc.cusps[h - 1]
@@ -461,36 +473,40 @@ class TestSystemFamiliesAngularity:
 class TestPhase7Regression:
     """All prior-phase semantics remain unchanged after Phase 7 additions."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_assign_house_still_returns_placement(self):
-        hc = calculate_houses(_JD, _LAT, _LON)
+        hc = calculate_houses(self._jd, _LAT, _LON)
         pl = assign_house(0.0, hc)
         assert isinstance(pl, HousePlacement)
 
     def test_describe_boundary_still_works(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         bp = describe_boundary(pl)
         assert isinstance(bp, HouseBoundaryProfile)
 
     def test_calculate_houses_unchanged(self):
-        result = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        result = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         assert len(result.cusps) == 12
         assert result.effective_system == HouseSystem.PORPHYRY
         assert result.classification is not None
 
     def test_no_gaps_porphyry(self):
-        hc     = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc     = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         houses = {assign_house(d / 10.0, hc).house for d in range(3600)}
         assert houses == set(range(1, 13))
 
     def test_house_number_unchanged_after_angularity(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         ap = describe_angularity(pl)
         assert ap.placement.house == pl.house
 
     def test_boundary_span_identity_unchanged(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         bp = describe_boundary(pl)
         assert bp.dist_to_opening + bp.dist_to_closing == pytest.approx(bp.house_span, abs=1e-9)
