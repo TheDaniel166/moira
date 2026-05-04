@@ -37,7 +37,15 @@ Public surface
 import math
 from dataclasses import dataclass, field
 
-from .constants import DEG2RAD, RAD2DEG
+from .constants import DEG2RAD, RAD2DEG, Body
+from .geoutils import wrap_longitude_deg
+
+try:
+    import numpy as _np
+    _HAS_NUMPY = True
+except ImportError:
+    _np = None
+    _HAS_NUMPY = False
 
 # WGS-84 first eccentricity squared: e² = 1 − (b/a)² ≈ 0.006694379990
 # Used to convert geodetic latitude → geocentric latitude for the horizon
@@ -60,39 +68,37 @@ class ACGLine:
     """
     RITE: The Geographic Vessel — a planet's line of power across the Earth.
 
-    THEOREM: Holds the planet name, line type (MC/IC/ASC/DSC), and either a
-    single meridian longitude or a list of sampled (latitude, longitude) curve
-    points representing one Astro*Carto*Graphy line.
+    THEOREM: Holds the planet name, line type (MC/IC/ASC/DSC/ZEN/NAD), and either
+    a single meridian longitude, a single geographic point, or a list of sampled
+    (latitude, longitude) curve points representing one ACG line.
 
     RITE OF PURPOSE:
         Serves the Astrocartography Engine as the canonical result vessel for
-        ACG line data. Each planet produces four lines; without this vessel,
-        callers would have no structured representation of the geographic
-        curves and meridians needed for map rendering or relocation analysis.
+        ACG line data. Each planet produces six primary geographic features;
+        without this vessel, callers would have no structured representation
+        of the curves, meridians, and zenith points needed for map rendering.
 
     LAW OF OPERATION:
         Responsibilities:
             - Store the planet name and line type string.
-            - For MC/IC lines: store the single geographic longitude valid at
-              all latitudes (``longitude`` field).
-            - For ASC/DSC lines: store the sampled (lat, lon) curve points
-              (``points`` field).
+            - For MC/IC lines: store the single geographic longitude.
+            - For ASC/DSC lines: store sampled (lat, lon) curve points.
+            - For ZEN/NAD points: store the single geographic (lat, lon) point.
         Non-responsibilities:
             - Does not compute lines (delegated to ``acg_lines``).
             - Does not render or project lines onto a map.
-            - Does not validate that ``line_type`` is one of MC/IC/ASC/DSC.
         Dependencies:
-            - Populated exclusively by ``acg_lines()`` or ``acg_from_chart()``.
+            - Populated by ``acg_lines()`` or ``acg_from_chart()``.
         Structural invariants:
             - For MC/IC: ``longitude`` is set, ``points`` is empty.
-            - For ASC/DSC: ``points`` is non-empty (may be empty at extreme
-              latitudes where the body is circumpolar), ``longitude`` is None.
-        Succession stance: terminal — not designed for subclassing.
+            - For ASC/DSC: ``points`` is non-empty, ``longitude`` is None.
+            - For ZEN/NAD: ``points`` contains exactly one tuple, ``longitude`` is None.
+        Succession stance: terminal.
 
     Canon: Lewis, "Astro*Carto*Graphy" (1976);
            Meeus, "Astronomical Algorithms" Ch. 24.
 
-    [MACHINE_CONTRACT v1]
+    [MACHINE_CONTRACT v2]
     {
         "scope": "class",
         "id": "moira.astrocartography.ACGLine",
@@ -103,44 +109,48 @@ class ACGLine:
         },
         "state": {
             "mutable": false,
-            "fields": ["planet", "line_type", "longitude", "points"]
+            "fields": {
+                "planet": "Canonical body name",
+                "line_type": "MC, IC, ASC, DSC, ZEN, or NAD",
+                "longitude": "float for meridians, else None",
+                "points": "list of (lat, lon) tuples"
+            }
         },
         "effects": {
             "io": [],
-            "signals_emitted": [],
-            "db_writes": []
+            "signals": [],
+            "side_effects": "none"
         },
         "concurrency": {
-            "thread": "pure_computation",
-            "cross_thread_calls": "safe_read_only"
+            "thread_safety": "thread_safe (immutable)",
+            "execution_context": "pure_computation"
         },
         "failures": {
-            "raises": [],
-            "policy": "caller ensures valid RA/Dec/GMST before construction"
+            "policy": "caller-validated RA/Dec/GMST",
+            "raises": []
         },
         "succession": {
-            "stance": "terminal",
-            "override_points": []
+            "stance": "terminal"
         },
-        "agent": "kiro"
+        "provenance": {
+            "agent": "antigravity",
+            "standard": "Moira Engine Governance 2026"
+        }
     }
     [/MACHINE_CONTRACT]
 
-    For MC/IC lines the line is a meridian: ``longitude`` holds the single
-    geographic longitude value, valid for all latitudes (``points`` is empty).
-
-    For ASC/DSC lines the line is a curve across the globe: ``points`` is a
-    list of ``(latitude, longitude)`` pairs sampled from -90° to +90°
-    (``longitude`` is ``None``).
+    For MC/IC lines: ``longitude`` holds the geographic longitude value.
+    For ASC/DSC lines: ``points`` holds a list of ``(latitude, longitude)`` pairs.
+    For ZEN/NAD points: ``points`` holds a single ``(latitude, longitude)`` pair.
     """
 
     planet:    str
-    line_type: str              # "MC", "IC", "ASC", or "DSC"
+    line_type: str              # "MC", "IC", "ASC", "DSC", "ZEN", or "NAD"
 
     # For MC/IC lines: single geographic longitude, valid at every latitude.
     longitude: float | None = None
 
-    # For ASC/DSC lines: sampled (lat, lon) curve points.
+    # For ASC/DSC lines (sampled points) or ZEN/NAD points (single point).
     points: list[tuple[float, float]] = field(default_factory=list)
 
     def __repr__(self) -> str:
@@ -149,20 +159,73 @@ class ACGLine:
                 f"ACGLine({self.planet!r}, {self.line_type!r}, "
                 f"lon={self.longitude:.4f}°)"
             )
+        if self.line_type in ("ZEN", "NAD"):
+            lat, lon = self.points[0]
+            return (
+                f"ACGLine({self.planet!r}, {self.line_type!r}, "
+                f"at {lat:.4f}°, {lon:.4f}°)"
+            )
         return (
             f"ACGLine({self.planet!r}, {self.line_type!r}, "
             f"{len(self.points)} points)"
         )
 
 
+
 # ---------------------------------------------------------------------------
 # Core computation
 # ---------------------------------------------------------------------------
+
+def _compute_acg_vectorized(
+    ra: float,
+    dec: float,
+    gmst_deg: float,
+    lats: list[float],
+    sin_h0: float,
+) -> tuple[list[tuple[float, float]], list[tuple[float, float]]]:
+    """Optional NumPy-accelerated path for ASC/DSC sampling."""
+    phi = _np.array(lats, dtype=_np.float64)
+    phi_r = phi * DEG2RAD
+    
+    # Spheroid correction
+    phi_gc_r = _np.arctan((1.0 - _WGS84_E2) * _np.tan(phi_r))
+    
+    dec_r = dec * DEG2RAD
+    cos_phi = _np.cos(phi_gc_r)
+    cos_dec = math.cos(dec_r)
+    
+    denom = cos_phi * cos_dec
+    # Avoid division by zero at poles (though lats are already clipped)
+    mask = _np.abs(denom) > 1e-12
+    
+    cos_ha = _np.full_like(phi, _np.nan)
+    cos_ha[mask] = (sin_h0 - _np.sin(phi_gc_r[mask]) * math.sin(dec_r)) / denom[mask]
+    
+    # Filter for valid HA range
+    valid_mask = (_np.abs(cos_ha) <= 1.0) & mask
+    
+    phi_valid = phi[valid_mask]
+    ha_deg = _np.arccos(cos_ha[valid_mask]) * RAD2DEG
+    
+    # ASC / DSC
+    lon_asc = (ra - gmst_deg - ha_deg) % 360.0
+    lon_dsc = (ra - gmst_deg + ha_deg) % 360.0
+    
+    # Convert to wrapped longitude [-180, 180]
+    # (Doing this via math to avoid complex numpy wrapping logic if possible, 
+    # but let's just use the scalar wrapper for consistency for now)
+    asc_pts = [(float(p), wrap_longitude_deg(float(l))) for p, l in zip(phi_valid, lon_asc)]
+    dsc_pts = [(float(p), wrap_longitude_deg(float(l))) for p, l in zip(phi_valid, lon_dsc)]
+    
+    return asc_pts, dsc_pts
+
 
 def acg_lines(
     planet_ra_dec: dict[str, tuple[float, float]],
     gmst_deg: float,
     lat_step: float = 2.0,
+    jd_ut: float | None = None,
+    refraction: bool = False,
 ) -> list[ACGLine]:
     """
     Compute ACG lines for all planets given their RA/Dec and GMST at birth.
@@ -170,38 +233,24 @@ def acg_lines(
     Parameters
     ----------
     planet_ra_dec : dict of body name → (RA degrees, Dec degrees).
-                    RA and Dec must be apparent geocentric equatorial coordinates.
-    gmst_deg      : Greenwich Mean Sidereal Time at the birth moment (degrees).
+                    RA and Dec are typically apparent geocentric equatorial
+                    coordinates.
+    gmst_deg      : Greenwich Apparent Sidereal Time at the birth moment (deg).
     lat_step      : latitude sampling resolution for ASC/DSC curves (degrees).
-                    Smaller values produce smoother curves at the cost of more
-                    computation.  Default 2.0°.
+    jd_ut         : Julian Day (UT1). Required for topocentric lunar correction.
+    refraction    : If True, apply atmospheric refraction (~34') to the horizon.
 
     Returns
     -------
-    list[ACGLine] — four lines per planet (MC, IC, ASC, DSC), in the order the
-    planets appear in *planet_ra_dec*.
-
-    Notes
-    -----
-    MC/IC lines are simple meridians (geographic longitude = constant).  The
-    formula is exact regardless of latitude.
-
-    ASC/DSC lines are computed by sampling geographic latitudes in the range
-    [−89°, +89°] (the poles are excluded because the hour-angle formula is
-    singular there).  For each latitude the hour angle at which the planet
-    rises or sets is derived from:
-
-        cos HA = −tan φ' · tan δ
-
-    where φ' is the *geocentric* latitude (converted from geodetic φ via
-    ``tan φ' = (1 − e²) · tan φ``, WGS-84) and δ is the planet's declination.
-    The geodetic→geocentric correction shifts lines by up to ~11.5′ of latitude
-    (≈ several kilometres) near ±45°; it is applied here for consistency with
-    the sub-milliarcsecond precision standard of the rest of the library.
-    If |cos HA| > 1 the planet is either circumpolar or never rises at that
-    latitude; those latitudes are silently omitted from the curve.
+    list[ACGLine] — six lines/points per planet (MC, IC, ASC, DSC, ZEN, NAD).
     """
+    from .planets import sky_position_at
+
     lines: list[ACGLine] = []
+
+    # Horizon altitude for ASC/DSC (0.0 geometric, -0.5667 apparent with refraction)
+    h0 = -0.5667 if refraction else 0.0
+    sin_h0 = math.sin(h0 * DEG2RAD)
 
     # Sample latitudes for ASC/DSC curves (avoid ±90° singularity).
     lats = [
@@ -210,50 +259,54 @@ def acg_lines(
         if -89.0 + i * lat_step <= 89.0
     ]
 
-    for body, (ra, dec) in planet_ra_dec.items():
-        # ------------------------------------------------------------------
-        # MC line — planet on the upper meridian
-        # Geographic longitude where LST = RA  →  lon = RA − GMST
-        # ------------------------------------------------------------------
-        lon_mc = (ra - gmst_deg) % 360.0
-
-        # ------------------------------------------------------------------
-        # IC line — planet on the lower meridian (antipodal)
-        # ------------------------------------------------------------------
-        lon_ic = (lon_mc + 180.0) % 360.0
+    for body, (ra_geo, dec_geo) in planet_ra_dec.items():
+        # 1. MC / IC Meridians
+        lon_mc = wrap_longitude_deg(ra_geo - gmst_deg)
+        lon_ic = wrap_longitude_deg(lon_mc + 180.0)
 
         lines.append(ACGLine(planet=body, line_type="MC", longitude=lon_mc))
         lines.append(ACGLine(planet=body, line_type="IC", longitude=lon_ic))
 
-        # ------------------------------------------------------------------
-        # ASC / DSC lines — planet on the eastern / western horizon
-        # ------------------------------------------------------------------
-        dec_r = dec * DEG2RAD
-        tan_dec = math.tan(dec_r)
+        # 2. ZEN / NAD Points
+        lines.append(ACGLine(planet=body, line_type="ZEN", points=[(dec_geo, lon_mc)]))
+        lines.append(ACGLine(planet=body, line_type="NAD", points=[(-dec_geo, lon_ic)]))
 
-        asc_points: list[tuple[float, float]] = []
-        dsc_points: list[tuple[float, float]] = []
+        # 3. ASC / DSC Lines
+        # Use vectorized path if NumPy is available and not doing topocentric Moon.
+        if _HAS_NUMPY and not (body == Body.MOON and jd_ut is not None):
+            asc_points, dsc_points = _compute_acg_vectorized(
+                ra_geo, dec_geo, gmst_deg, lats, sin_h0
+            )
+        else:
+            asc_points = []
+            dsc_points = []
+            for phi in lats:
+                phi_r = phi * DEG2RAD
+                phi_gc_r = math.atan((1.0 - _WGS84_E2) * math.tan(phi_r))
+                
+                if body == Body.MOON and jd_ut is not None:
+                    sky = sky_position_at(body, jd_ut, observer_lat=phi, observer_lon=lon_mc)
+                    ra, dec = sky.right_ascension, sky.declination
+                else:
+                    ra, dec = ra_geo, dec_geo
 
-        for phi in lats:
-            phi_r    = phi * DEG2RAD
-            # Convert geodetic → geocentric latitude before the horizon formula.
-            # tan φ' = (1 − e²) · tan φ  (WGS-84 spheroid correction)
-            phi_gc_r = math.atan((1.0 - _WGS84_E2) * math.tan(phi_r))
-            cos_ha   = -math.tan(phi_gc_r) * tan_dec
+                dec_r = dec * DEG2RAD
+                cos_phi = math.cos(phi_gc_r)
+                cos_dec = math.cos(dec_r)
+                
+                denom = cos_phi * cos_dec
+                if abs(denom) < 1e-12:
+                    continue
+                    
+                cos_ha = (sin_h0 - math.sin(phi_gc_r) * math.sin(dec_r)) / denom
+                if abs(cos_ha) > 1.0:
+                    continue
 
-            # Skip latitudes where the planet is circumpolar or never rises.
-            if abs(cos_ha) > 1.0:
-                continue
-
-            ha_deg = math.acos(cos_ha) * RAD2DEG  # always in [0°, 180°]
-
-            # ASC: planet rising on the eastern horizon
-            lon_asc = (ra - gmst_deg - ha_deg) % 360.0
-            asc_points.append((phi, lon_asc))
-
-            # DSC: planet setting on the western horizon
-            lon_dsc = (ra - gmst_deg + ha_deg) % 360.0
-            dsc_points.append((phi, lon_dsc))
+                ha_deg = math.acos(cos_ha) * RAD2DEG
+                lon_asc = wrap_longitude_deg(ra - gmst_deg - ha_deg)
+                asc_points.append((phi, lon_asc))
+                lon_dsc = wrap_longitude_deg(ra - gmst_deg + ha_deg)
+                dsc_points.append((phi, lon_dsc))
 
         lines.append(ACGLine(planet=body, line_type="ASC", points=asc_points))
         lines.append(ACGLine(planet=body, line_type="DSC", points=dsc_points))
@@ -269,6 +322,7 @@ def acg_from_chart(
     chart,
     bodies: list[str] | None = None,
     lat_step: float = 2.0,
+    refraction: bool = False,
 ) -> list[ACGLine]:
     """
     Convenience wrapper: compute ACG lines directly from a Moira ChartContext.
@@ -280,12 +334,13 @@ def acg_from_chart(
     ----------
     chart       : a ``ChartContext`` instance (from ``moira.chart``).
     bodies      : list of body names to include.  Defaults to all bodies
-                  present in ``chart.planets`` (the classical ten planets).
+                  present in ``chart.planets``.
     lat_step    : latitude sampling step passed through to :func:`acg_lines`.
+    refraction  : if True, apply atmospheric refraction to horizon curves.
 
     Returns
     -------
-    list[ACGLine] — four lines per planet.
+    list[ACGLine] — six lines/points per planet.
     """
     from .planets import sky_position_at
     from .julian import apparent_sidereal_time, ut_to_tt
@@ -294,9 +349,7 @@ def acg_from_chart(
     if bodies is None:
         bodies = list(chart.planets.keys())
 
-    # Use GAST (apparent sidereal time), not GMST — planets' apparent RA is
-    # referred to the true equinox, so the correct counterpart is GAST which
-    # includes the equation of the equinoxes (Δψ·cos ε).
+    # Use GAST (apparent sidereal time)
     jd_tt   = ut_to_tt(chart.jd_ut)
     dpsi, _ = nutation(jd_tt)
     obliq   = true_obliquity(jd_tt)
@@ -304,6 +357,7 @@ def acg_from_chart(
 
     planet_ra_dec: dict[str, tuple[float, float]] = {}
     for body in bodies:
+        # Initial geocentric RA/Dec for meridians and seed
         sky = sky_position_at(
             body,
             chart.jd_ut,
@@ -312,4 +366,10 @@ def acg_from_chart(
         )
         planet_ra_dec[body] = (sky.right_ascension, sky.declination)
 
-    return acg_lines(planet_ra_dec, gmst_deg, lat_step=lat_step)
+    return acg_lines(
+        planet_ra_dec,
+        gmst_deg,
+        lat_step=lat_step,
+        jd_ut=chart.jd_ut,
+        refraction=refraction
+    )
