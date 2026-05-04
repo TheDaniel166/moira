@@ -217,6 +217,7 @@ class _SovereignStarRecord:
     pmra_mas_yr: float
     pmdec_mas_yr: float
     parallax_mas: float
+    radial_velocity_km_s: float
     magnitude_v: float
     color_index: float
     ecl_lon_deg: float
@@ -325,6 +326,7 @@ def _load_registry_records() -> tuple[_SovereignStarRecord, ...]:
                     pmra_mas_yr=_coerce_float(row.get("pmra_mas_yr"), default=0.0),
                     pmdec_mas_yr=_coerce_float(row.get("pmdec_mas_yr"), default=0.0),
                     parallax_mas=_coerce_float(row.get("parallax_mas"), default=math.nan),
+                    radial_velocity_km_s=_coerce_float(row.get("radial_velocity_km_s"), default=0.0),
                     magnitude_v=_coerce_float(row.get("magnitude_v")),
                     color_index=_coerce_float(row.get("color_index")),
                     ecl_lon_deg=_coerce_float(row.get("ecl_lon_deg")),
@@ -532,10 +534,16 @@ def _propagate_icrs_vector(record: _SovereignStarRecord, jd_tt: float) -> tuple[
 
     if math.isfinite(record.parallax_mas) and record.parallax_mas > 0.0:
         distance_pc = 1000.0 / record.parallax_mas
+        # Exact conversion from km/s to pc/yr based on IAU 2012 constants
+        # 1 Julian year = 31557600.0 s
+        # 1 au = 149597870.7 km
+        # 1 pc = 206264.806247096355 au
+        rv_pc_yr = record.radial_velocity_km_s * (31557600.0 / (149597870.7 * 206264.806247096355))
+        
         propagated = (
-            distance_pc * p_hat[0] + tangential_velocity[0] * distance_pc * dt_years,
-            distance_pc * p_hat[1] + tangential_velocity[1] * distance_pc * dt_years,
-            distance_pc * p_hat[2] + tangential_velocity[2] * distance_pc * dt_years,
+            distance_pc * p_hat[0] + (tangential_velocity[0] * distance_pc + rv_pc_yr * p_hat[0]) * dt_years,
+            distance_pc * p_hat[1] + (tangential_velocity[1] * distance_pc + rv_pc_yr * p_hat[1]) * dt_years,
+            distance_pc * p_hat[2] + (tangential_velocity[2] * distance_pc + rv_pc_yr * p_hat[2]) * dt_years,
         )
     else:
         propagated = (

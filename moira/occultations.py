@@ -512,17 +512,22 @@ def _angular_separation_equatorial(
     ra2: float,
     dec2: float,
 ) -> float:
-    """Great-circle separation between two equatorial positions (degrees)."""
+    """
+    Great-circle separation between two equatorial positions (degrees).
+    Uses the haversine formula for numerical stability at small angles.
+    """
     ra1r = math.radians(ra1)
     dec1r = math.radians(dec1)
     ra2r = math.radians(ra2)
     dec2r = math.radians(dec2)
-    cos_sep = (
-        math.sin(dec1r) * math.sin(dec2r)
-        + math.cos(dec1r) * math.cos(dec2r) * math.cos(ra1r - ra2r)
-    )
-    cos_sep = max(-1.0, min(1.0, cos_sep))
-    return math.degrees(math.acos(cos_sep))
+
+    dra = ra2r - ra1r
+    ddec = dec2r - dec1r
+
+    a = (math.sin(ddec / 2.0)**2
+         + math.cos(dec1r) * math.cos(dec2r) * math.sin(dra / 2.0)**2)
+    sep_rad = 2.0 * math.asin(math.sqrt(max(0.0, min(1.0, a))))
+    return math.degrees(sep_rad)
 
 
 def _sep_between_topocentric(
