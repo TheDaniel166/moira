@@ -6,12 +6,9 @@ from moira.compat.nasa.eclipse import (
     next_nasa_lunar_eclipse,
     translate_lunar_eclipse_event,
 )
-from moira.eclipse import EclipseCalculator
-
-
 @pytest.mark.slow
-def test_nasa_lunar_adapter_returns_canon_fields() -> None:
-    calc = EclipseCalculator()
+def test_nasa_lunar_adapter_returns_canon_fields(eclipse_calculator) -> None:
+    calc = eclipse_calculator
     event = calc.next_lunar_eclipse(2451560.0, kind="total")
     compat = translate_lunar_eclipse_event(calc, event)
     assert compat.jd_tt > compat.jd_ut

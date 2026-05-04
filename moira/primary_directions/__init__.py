@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Moira -- primary_directions/__init__.py
 The primary-directions public engine package for the currently admitted

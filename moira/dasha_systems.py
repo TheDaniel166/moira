@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Moira — Alternative Dasha Systems
 ====================================
@@ -235,7 +237,7 @@ class AlternateDashaPeriod:
     lord: str
     start_jd: float
     end_jd: float
-    sub: list[AlternateDashaPeriod]
+    sub: list["AlternateDashaPeriod"]
 
     def __post_init__(self) -> None:
         if self.system not in ('ashtottari', 'yogini'):

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Moira — heliacal.py
 Heliacal and Visibility Doctrine Pillar

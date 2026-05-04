@@ -132,20 +132,18 @@ def test_public_chart_body_placements_and_angularity_match_porphyry_under_fallba
 
 
 @pytest.mark.requires_ephemeris
-def test_public_chart_lots_match_porphyry_under_polar_fallback() -> None:
-    engine = Moira()
-
+def test_public_chart_lots_match_porphyry_under_polar_fallback(moira_engine) -> None:
     for epoch_name, jd_ut in _EPOCHS_UT.items():
         dt = datetime_from_jd(jd_ut).astimezone(timezone.utc)
-        chart = engine.chart(dt, bodies=_body_list())
+        chart = moira_engine.chart(dt, bodies=_body_list())
 
         for observer_name, (latitude_deg, longitude_deg) in _POLAR_OBSERVERS.items():
-            porphyry_houses = engine.houses(dt, latitude_deg, longitude_deg, HouseSystem.PORPHYRY)
-            porphyry_lots = {part.name: part.longitude for part in engine.lots(chart, porphyry_houses)}
+            porphyry_houses = moira_engine.houses(dt, latitude_deg, longitude_deg, HouseSystem.PORPHYRY)
+            porphyry_lots = {part.name: part.longitude for part in moira_engine.lots(chart, porphyry_houses)}
 
             for system in _POLAR_LIMITED_SYSTEMS:
-                fallback_houses = engine.houses(dt, latitude_deg, longitude_deg, system)
-                fallback_lots = {part.name: part.longitude for part in engine.lots(chart, fallback_houses)}
+                fallback_houses = moira_engine.houses(dt, latitude_deg, longitude_deg, system)
+                fallback_lots = {part.name: part.longitude for part in moira_engine.lots(chart, fallback_houses)}
 
                 assert fallback_lots.keys() == porphyry_lots.keys(), (epoch_name, observer_name, system)
 
@@ -156,4 +154,5 @@ def test_public_chart_lots_match_porphyry_under_polar_fallback() -> None:
                         system,
                         name,
                     )
+
 

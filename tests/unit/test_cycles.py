@@ -184,72 +184,74 @@ class TestPlanetaryAges:
 # ===========================================================================
 
 class TestFirdar:
-    BIRTH_JD = 2451545.0  # J2000.0
+    @pytest.fixture(autouse=True)
+    def _jd(self, jd_j2000):
+        self.birth_jd = jd_j2000
 
     def test_diurnal_sequence_sum_is_75(self):
-        series = firdar_series(self.BIRTH_JD, is_day_birth=True)
+        series = firdar_series(self.birth_jd, is_day_birth=True)
         assert series.total_years == 75.0
 
     def test_nocturnal_sequence_sum_is_75(self):
-        series = firdar_series(self.BIRTH_JD, is_day_birth=False)
+        series = firdar_series(self.birth_jd, is_day_birth=False)
         assert series.total_years == 75.0
 
     def test_nine_periods(self):
-        series = firdar_series(self.BIRTH_JD, is_day_birth=True)
+        series = firdar_series(self.birth_jd, is_day_birth=True)
         assert len(series.periods) == 9
 
     def test_diurnal_starts_with_sun(self):
-        series = firdar_series(self.BIRTH_JD, is_day_birth=True)
+        series = firdar_series(self.birth_jd, is_day_birth=True)
         assert series.periods[0].ruler == Body.SUN
 
     def test_nocturnal_starts_with_moon(self):
-        series = firdar_series(self.BIRTH_JD, is_day_birth=False)
+        series = firdar_series(self.birth_jd, is_day_birth=False)
         assert series.periods[0].ruler == Body.MOON
 
     def test_diurnal_durations(self):
-        series = firdar_series(self.BIRTH_JD, is_day_birth=True)
+        series = firdar_series(self.birth_jd, is_day_birth=True)
         durations = [p.duration_years for p in series.periods]
         assert durations == [10, 8, 13, 9, 11, 12, 7, 3, 2]
 
     def test_nocturnal_durations(self):
-        series = firdar_series(self.BIRTH_JD, is_day_birth=False)
+        series = firdar_series(self.birth_jd, is_day_birth=False)
         durations = [p.duration_years for p in series.periods]
         assert durations == [9, 11, 12, 7, 10, 8, 13, 3, 2]
 
     def test_periods_are_contiguous(self):
-        series = firdar_series(self.BIRTH_JD, is_day_birth=True)
+        series = firdar_series(self.birth_jd, is_day_birth=True)
         for i in range(len(series.periods) - 1):
             assert abs(series.periods[i].end_jd - series.periods[i + 1].start_jd) < 0.001
 
     def test_first_period_starts_at_birth(self):
-        series = firdar_series(self.BIRTH_JD, is_day_birth=True)
-        assert series.periods[0].start_jd == self.BIRTH_JD
+        series = firdar_series(self.birth_jd, is_day_birth=True)
+        assert series.periods[0].start_jd == self.birth_jd
 
     def test_planetary_firdars_have_7_sub_periods(self):
-        series = firdar_series(self.BIRTH_JD, is_day_birth=True)
+        series = firdar_series(self.birth_jd, is_day_birth=True)
         for p in series.periods[:7]:  # first 7 are planetary
             assert p.sub_periods is not None
             assert len(p.sub_periods) == 7
 
     def test_nodal_firdars_have_no_sub_periods(self):
-        series = firdar_series(self.BIRTH_JD, is_day_birth=True)
+        series = firdar_series(self.birth_jd, is_day_birth=True)
         for p in series.periods[7:]:  # last 2 are nodal
             assert p.sub_periods is None
 
     def test_sub_periods_are_contiguous(self):
-        series = firdar_series(self.BIRTH_JD, is_day_birth=True)
+        series = firdar_series(self.birth_jd, is_day_birth=True)
         for p in series.periods[:7]:
             for i in range(len(p.sub_periods) - 1):
                 assert abs(p.sub_periods[i].end_jd - p.sub_periods[i + 1].start_jd) < 0.001
 
     def test_sub_period_starts_with_major_ruler(self):
         """First sub-period ruler matches the major firdar ruler."""
-        series = firdar_series(self.BIRTH_JD, is_day_birth=True)
+        series = firdar_series(self.birth_jd, is_day_birth=True)
         for p in series.periods[:7]:
             assert p.sub_periods[0].sub_ruler == p.ruler
 
     def test_sub_periods_follow_chaldean_order(self):
-        series = firdar_series(self.BIRTH_JD, is_day_birth=True)
+        series = firdar_series(self.birth_jd, is_day_birth=True)
         sun_firdar = series.periods[0]  # Sun firdar
         rulers = [s.sub_ruler for s in sun_firdar.sub_periods]
         # Sun is at Chaldean index 3; sequence: Sun, Venus, Mercury, Moon, Saturn, Jupiter, Mars
@@ -257,33 +259,33 @@ class TestFirdar:
         assert rulers == expected
 
     def test_firdar_at_birth(self):
-        p = firdar_at(self.BIRTH_JD, self.BIRTH_JD, is_day_birth=True)
+        p = firdar_at(self.birth_jd, self.birth_jd, is_day_birth=True)
         assert p.ruler == Body.SUN
         assert p.ordinal == 1
 
     def test_firdar_at_age_20(self):
         """Age 20: Sun(10) + Venus(8) = 18 elapsed, Mercury starts at 18."""
-        target = self.BIRTH_JD + 20 * 365.25
-        p = firdar_at(self.BIRTH_JD, target, is_day_birth=True)
+        target = self.birth_jd + 20 * 365.25
+        p = firdar_at(self.birth_jd, target, is_day_birth=True)
         assert p.ruler == Body.MERCURY
         assert p.ordinal == 3
 
     def test_firdar_at_before_birth_raises(self):
         with pytest.raises(ValueError, match="precedes"):
-            firdar_at(self.BIRTH_JD, self.BIRTH_JD - 1, is_day_birth=True)
+            firdar_at(self.birth_jd, self.birth_jd - 1, is_day_birth=True)
 
     def test_firdar_at_beyond_cycle_raises(self):
-        target = self.BIRTH_JD + 76 * 365.25
+        target = self.birth_jd + 76 * 365.25
         with pytest.raises(ValueError, match="beyond"):
-            firdar_at(self.BIRTH_JD, target, is_day_birth=True)
+            firdar_at(self.birth_jd, target, is_day_birth=True)
 
     def test_ordinals_are_sequential(self):
-        series = firdar_series(self.BIRTH_JD, is_day_birth=True)
+        series = firdar_series(self.birth_jd, is_day_birth=True)
         ordinals = [p.ordinal for p in series.periods]
         assert ordinals == list(range(1, 10))
 
     def test_periods_are_frozen(self):
-        series = firdar_series(self.BIRTH_JD, is_day_birth=True)
+        series = firdar_series(self.birth_jd, is_day_birth=True)
         with pytest.raises(AttributeError):
             series.periods[0].ruler = Body.MOON
 

@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from moira.eclipse import EclipseCalculator
 from moira.eclipse_canon import refine_lunar_greatest_eclipse_canon_tt
 from moira.eclipse_search import refine_minimum
 from moira.julian import tt_to_ut_nasa_canon
@@ -22,7 +21,7 @@ def _error_seconds(jd_ut: float, expected_ut_jd: float) -> float:
     return (jd_ut - expected_ut_jd) * _JD_SECONDS
 
 
-def test_ancient_lunar_total_residual_breakdown_is_explicit() -> None:
+def test_ancient_lunar_total_residual_breakdown_is_explicit(eclipse_calculator) -> None:
     """
     Diagnose the documented ancient lunar total residual into its main causes.
 
@@ -32,7 +31,7 @@ def test_ancient_lunar_total_residual_breakdown_is_explicit() -> None:
     row = _load_ancient_total_case()
     seed = float(row["seed_jd"]) + 40.0
     expected = float(row["expected_ut_jd"])
-    calc = EclipseCalculator()
+    calc = eclipse_calculator
 
     native_retarded = refine_minimum(
         lambda jd: calc._lunar_shadow_axis_distance_km(

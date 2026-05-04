@@ -54,8 +54,8 @@ def _aspect_signature(aspect) -> tuple[str, str, str, float, bool]:
 
 
 @pytest.mark.requires_ephemeris
-def test_synastry_aspects_match_cross_chart_engine_surface() -> None:
-    engine = Moira()
+def test_synastry_aspects_match_cross_chart_engine_surface(moira_engine) -> None:
+    engine = moira_engine
     dt_a = datetime(1990, 1, 1, 12, 0, tzinfo=timezone.utc)
     dt_b = datetime(1991, 6, 15, 18, 30, tzinfo=timezone.utc)
 
@@ -94,8 +94,8 @@ def test_synastry_aspects_match_cross_chart_engine_surface() -> None:
 
 
 @pytest.mark.requires_ephemeris
-def test_synastry_contacts_preserve_pair_truth_without_changing_aspect_semantics() -> None:
-    engine = Moira()
+def test_synastry_contacts_preserve_pair_truth_without_changing_aspect_semantics(moira_engine) -> None:
+    engine = moira_engine
     dt_a = datetime(1990, 1, 1, 12, 0, tzinfo=timezone.utc)
     dt_b = datetime(1991, 6, 15, 18, 30, tzinfo=timezone.utc)
 
@@ -146,8 +146,8 @@ def test_synastry_contacts_preserve_pair_truth_without_changing_aspect_semantics
 
 
 @pytest.mark.requires_ephemeris
-def test_composite_chart_uses_shorter_arc_midpoints_for_planets_nodes_and_houses() -> None:
-    engine = Moira()
+def test_composite_chart_uses_shorter_arc_midpoints_for_planets_nodes_and_houses(moira_engine) -> None:
+    engine = moira_engine
     dt_a = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
     dt_b = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
 
@@ -219,8 +219,8 @@ def test_composite_wraparound_midpoint_and_lon_midpoint_handle_seams() -> None:
 
 
 @pytest.mark.requires_ephemeris
-def test_house_overlay_assigns_source_points_into_target_houses_using_house_engine() -> None:
-    engine = Moira()
+def test_house_overlay_assigns_source_points_into_target_houses_using_house_engine(moira_engine) -> None:
+    engine = moira_engine
     dt_a = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
     dt_b = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
 
@@ -282,8 +282,8 @@ def test_house_overlay_assigns_source_points_into_target_houses_using_house_engi
 
 
 @pytest.mark.requires_ephemeris
-def test_mutual_house_overlays_preserve_both_directions() -> None:
-    engine = Moira()
+def test_mutual_house_overlays_preserve_both_directions(moira_engine) -> None:
+    engine = moira_engine
     dt_a = datetime(1990, 1, 1, 6, 0, tzinfo=timezone.utc)
     dt_b = datetime(1992, 7, 15, 18, 0, tzinfo=timezone.utc)
 
@@ -316,8 +316,8 @@ def test_mutual_house_overlays_preserve_both_directions() -> None:
 
 
 @pytest.mark.requires_ephemeris
-def test_davison_chart_matches_midpoint_time_and_location_chart_cast() -> None:
-    engine = Moira()
+def test_davison_chart_matches_midpoint_time_and_location_chart_cast(moira_engine) -> None:
+    engine = moira_engine
     dt_a = datetime(1990, 1, 1, 6, 0, tzinfo=timezone.utc)
     dt_b = datetime(1992, 7, 15, 18, 0, tzinfo=timezone.utc)
     lat_a, lon_a = 51.5, -0.1
@@ -398,8 +398,8 @@ def test_davison_chart_matches_midpoint_time_and_location_chart_cast() -> None:
 
 
 @pytest.mark.requires_ephemeris
-def test_davison_variants_expose_distinct_mainstream_location_doctrines() -> None:
-    engine = Moira()
+def test_davison_variants_expose_distinct_mainstream_location_doctrines(moira_engine) -> None:
+    engine = moira_engine
     dt_a = datetime(1990, 1, 1, 6, 0, tzinfo=timezone.utc)
     dt_b = datetime(1992, 7, 15, 18, 0, tzinfo=timezone.utc)
     lat_a, lon_a = 51.5, 170.0
@@ -448,8 +448,8 @@ def test_davison_variants_expose_distinct_mainstream_location_doctrines() -> Non
 
 
 @pytest.mark.requires_ephemeris
-def test_corrected_davison_preserves_midpoint_mc_doctrine() -> None:
-    engine = Moira()
+def test_corrected_davison_preserves_midpoint_mc_doctrine(moira_engine) -> None:
+    engine = moira_engine
     dt_a = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
     dt_b = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
     lat_a, lon_a = 51.5, -0.1
@@ -475,8 +475,8 @@ def test_corrected_davison_preserves_midpoint_mc_doctrine() -> None:
 
 
 @pytest.mark.requires_ephemeris
-def test_composite_reference_place_method_preserves_planet_midpoints_and_reference_place_houses() -> None:
-    engine = Moira()
+def test_composite_reference_place_method_preserves_planet_midpoints_and_reference_place_houses(moira_engine) -> None:
+    engine = moira_engine
     dt_a = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
     dt_b = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
     chart_a = engine.chart(dt_a)
@@ -512,8 +512,8 @@ def test_composite_reference_place_method_preserves_planet_midpoints_and_referen
 
 
 @pytest.mark.requires_ephemeris
-def test_synastry_relation_helpers_are_deterministic_and_aligned() -> None:
-    engine = Moira()
+def test_synastry_relation_helpers_are_deterministic_and_aligned(moira_engine) -> None:
+    engine = moira_engine
     dt_a = datetime(1990, 1, 1, 12, 0, tzinfo=timezone.utc)
     dt_b = datetime(1991, 6, 15, 18, 30, tzinfo=timezone.utc)
     chart_a = engine.chart(dt_a)
@@ -539,8 +539,8 @@ def test_synastry_relation_helpers_are_deterministic_and_aligned() -> None:
 
 
 @pytest.mark.requires_ephemeris
-def test_synastry_chart_condition_profile_is_deterministic_and_aligned() -> None:
-    engine = Moira()
+def test_synastry_chart_condition_profile_is_deterministic_and_aligned(moira_engine) -> None:
+    engine = moira_engine
     dt_a = datetime(1990, 1, 1, 12, 0, tzinfo=timezone.utc)
     dt_b = datetime(1991, 6, 15, 18, 30, tzinfo=timezone.utc)
     chart_a = engine.chart(dt_a)
@@ -610,8 +610,8 @@ def test_synastry_chart_condition_profile_invariants_fail_loudly() -> None:
 
 
 @pytest.mark.requires_ephemeris
-def test_synastry_condition_network_profile_is_deterministic_and_aligned() -> None:
-    engine = Moira()
+def test_synastry_condition_network_profile_is_deterministic_and_aligned(moira_engine) -> None:
+    engine = moira_engine
     dt_a = datetime(1990, 1, 1, 12, 0, tzinfo=timezone.utc)
     dt_b = datetime(1991, 6, 15, 18, 30, tzinfo=timezone.utc)
     chart_a = engine.chart(dt_a)
@@ -798,8 +798,8 @@ def test_synastry_classification_and_inspectability_invariants_fail_loudly() -> 
 
 
 @pytest.mark.requires_ephemeris
-def test_default_synastry_policy_preserves_existing_behavior() -> None:
-    engine = Moira()
+def test_default_synastry_policy_preserves_existing_behavior(moira_engine) -> None:
+    engine = moira_engine
     dt_a = datetime(1990, 1, 1, 12, 0, tzinfo=timezone.utc)
     dt_b = datetime(1991, 6, 15, 18, 30, tzinfo=timezone.utc)
 
@@ -817,8 +817,8 @@ def test_default_synastry_policy_preserves_existing_behavior() -> None:
 
 
 @pytest.mark.requires_ephemeris
-def test_narrower_synastry_policy_explicitly_governs_contact_overlay_and_chart_defaults() -> None:
-    engine = Moira()
+def test_narrower_synastry_policy_explicitly_governs_contact_overlay_and_chart_defaults(moira_engine) -> None:
+    engine = moira_engine
     dt_a = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
     dt_b = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
     chart_a = engine.chart(dt_a)
@@ -890,8 +890,8 @@ def test_synastry_malformed_inputs_fail_deterministically() -> None:
 
 
 @pytest.mark.requires_ephemeris
-def test_composite_reference_place_propagates_explicit_house_policy() -> None:
-    engine = Moira()
+def test_composite_reference_place_propagates_explicit_house_policy(moira_engine) -> None:
+    engine = moira_engine
     dt_a = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
     dt_b = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
     chart_a = engine.chart(dt_a)
@@ -946,8 +946,8 @@ def test_synastry_reference_place_houses_delegate_to_house_engine_experimental_p
 
 
 @pytest.mark.requires_ephemeris
-def test_davison_policy_propagates_explicit_house_policy() -> None:
-    engine = Moira()
+def test_davison_policy_propagates_explicit_house_policy(moira_engine) -> None:
+    engine = moira_engine
     dt_a = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
     dt_b = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
     policy = SynastryComputationPolicy(
@@ -970,8 +970,8 @@ def test_davison_policy_propagates_explicit_house_policy() -> None:
 
 
 @pytest.mark.requires_ephemeris
-def test_synastry_additional_hardening_failures_are_deterministic() -> None:
-    engine = Moira()
+def test_synastry_additional_hardening_failures_are_deterministic(moira_engine) -> None:
+    engine = moira_engine
     dt_a = datetime(1990, 1, 1, 12, 0, tzinfo=timezone.utc)
     dt_b = datetime(1991, 6, 15, 18, 30, tzinfo=timezone.utc)
     chart_a = engine.chart(dt_a)

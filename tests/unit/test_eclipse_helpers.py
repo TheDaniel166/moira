@@ -4,7 +4,6 @@ import pytest
 
 import moira.eclipse as eclipse
 from moira.geoutils import wrap_longitude_deg
-from moira.eclipse import EclipseCalculator
 from moira.eclipse_canon import find_lunar_contacts_canon, lunar_canon_geometry
 from moira.eclipse_geometry import (
     angular_separation,
@@ -29,8 +28,8 @@ def test_shadow_axis_offset_tracks_opposition_distance() -> None:
 def test_lunar_magnitude_helpers_match_current_formulas() -> None:
     umbral = lunar_umbral_magnitude(0.75, 0.25, 0.40)
     penumbral = lunar_penumbral_magnitude(1.25, 0.25, 0.40)
-    assert abs(umbral - 1.2) < 1e-12
-    assert abs(penumbral - 2.2) < 1e-12
+    assert umbral == pytest.approx(1.2, abs=1e-12)
+    assert penumbral == pytest.approx(2.2, abs=1e-12)
 
 
 def test_angular_separation_handles_wraparound() -> None:
@@ -98,10 +97,12 @@ def test_solar_central_interval_returns_zero_width_when_deadline_is_exhausted(
         nonlocal call_count
         call_count += 1
         return 0.0, 0.0, 0.5
-
+    
+    # We must patch at the module where it's imported/defined
+    import time
     monkeypatch.setattr(eclipse, "_best_solar_central_margin", fake_best_margin)
     monkeypatch.setattr(eclipse, "_SOLAR_CENTRAL_INTERVAL_TIMEOUT_S", 0.0)
-    monkeypatch.setattr(eclipse.time, "perf_counter", lambda: 100.0)
+    monkeypatch.setattr(time, "perf_counter", lambda: 100.0)
 
     left, right = eclipse._solve_solar_central_interval(object(), 2451401.96)
 
@@ -123,52 +124,45 @@ def test_refine_minimum_falls_back_cleanly_when_window_is_not_unimodal() -> None
     assert abs(best + 0.35) < 1e-3
 
 
-def test_refine_greatest_eclipse_helpers_return_local_event_maxima() -> None:
-    calc = EclipseCalculator()
-
+def test_refine_greatest_eclipse_helpers_return_local_event_maxima(eclipse_calculator) -> None:
     lunar_seed = 2451564.7  # 2000-01-21 total lunar eclipse
-    lunar_best = refine_lunar_greatest_eclipse(calc, lunar_seed)
-    lunar_data = calc.calculate_jd(lunar_best)
+    lunar_best = refine_lunar_greatest_eclipse(eclipse_calculator, lunar_seed)
+    lunar_data = eclipse_calculator.calculate_jd(lunar_best)
     assert lunar_data.is_lunar_eclipse
     assert lunar_data.eclipse_type.is_total
 
     solar_seed = 2451401.96  # 1999-08-11 total solar eclipse
-    solar_best = refine_solar_greatest_eclipse(calc, solar_seed)
-    solar_data = calc.calculate_jd(solar_best)
+    solar_best = refine_solar_greatest_eclipse(eclipse_calculator, solar_seed)
+    solar_data = eclipse_calculator.calculate_jd(solar_best)
     assert solar_data.is_solar_eclipse
     assert solar_data.eclipse_type.is_total
 
 
-def test_total_lunar_eclipse_reports_larger_penumbral_than_umbral_magnitude() -> None:
-    calc = EclipseCalculator()
-    data = calc.calculate_jd(2451564.705)  # 2000-01-21 total lunar eclipse near maximum
+def test_total_lunar_eclipse_reports_larger_penumbral_than_umbral_magnitude(eclipse_calculator) -> None:
+    data = eclipse_calculator.calculate_jd(2451564.705)  # 2000-01-21 total lunar eclipse near maximum
     assert data.is_lunar_eclipse
     assert data.eclipse_type.is_total
     assert data.eclipse_type.magnitude_penumbra > data.eclipse_type.magnitude_umbral
 
 
-def test_explicit_native_lunar_event_surface_exposes_model_choice() -> None:
-    calc = EclipseCalculator()
-
-    geometric = calc.calculate_jd(2451564.705)
-    native_umbral = calc.calculate_lunar_event_jd(2451564.705, kind="umbral")
-    native_penumbral = calc.calculate_lunar_event_jd(2451564.705, kind="penumbral")
+def test_explicit_native_lunar_event_surface_exposes_model_choice(eclipse_calculator) -> None:
+    geometric = eclipse_calculator.calculate_jd(2451564.705)
+    native_umbral = eclipse_calculator.calculate_lunar_event_jd(2451564.705, kind="umbral")
+    native_penumbral = eclipse_calculator.calculate_lunar_event_jd(2451564.705, kind="penumbral")
 
     assert geometric == native_penumbral
     assert native_umbral.is_lunar_eclipse
     assert native_umbral.eclipse_type.is_total
 
 
-def test_explicit_native_lunar_event_surface_rejects_unknown_kind() -> None:
-    calc = EclipseCalculator()
+def test_explicit_native_lunar_event_surface_rejects_unknown_kind(eclipse_calculator) -> None:
     with pytest.raises(ValueError, match="Unsupported native lunar event kind"):
-        calc.calculate_lunar_event_jd(2451564.705, kind="hybrid")
+        eclipse_calculator.calculate_lunar_event_jd(2451564.705, kind="hybrid")
 
 
 @pytest.mark.slow
-def test_lunar_contact_solver_returns_ordered_contacts_for_total_eclipse() -> None:
-    calc = EclipseCalculator()
-    contacts = find_lunar_contacts(calc, 2451564.705)
+def test_lunar_contact_solver_returns_ordered_contacts_for_total_eclipse(eclipse_calculator) -> None:
+    contacts = find_lunar_contacts(eclipse_calculator, 2451564.705)
     assert contacts.p1 is not None
     assert contacts.u1 is not None
     assert contacts.u2 is not None
@@ -180,29 +174,26 @@ def test_lunar_contact_solver_returns_ordered_contacts_for_total_eclipse() -> No
 
 
 @pytest.mark.slow
-def test_lunar_canon_geometry_and_search_path_are_available() -> None:
-    calc = EclipseCalculator()
-    geom = lunar_canon_geometry(calc, 2451564.705)
+def test_lunar_canon_geometry_and_search_path_are_available(eclipse_calculator) -> None:
+    geom = lunar_canon_geometry(eclipse_calculator, 2451564.705)
     assert geom.gamma_earth_radii >= 0.0
     assert geom.penumbra_radius_earth_radii > geom.umbra_radius_earth_radii > 0.0
-    contacts = find_lunar_contacts_canon(calc, 2451564.705)
+    contacts = find_lunar_contacts_canon(eclipse_calculator, 2451564.705)
     assert contacts.p1_ut is not None
-    event = calc.next_lunar_eclipse_canon(2451560.0, kind="total")
+    event = eclipse_calculator.next_lunar_eclipse_canon(2451560.0, kind="total")
     assert event.data.is_lunar_eclipse
     assert event.data.eclipse_type.is_total
 
 
-def test_unified_lunar_analysis_api_exposes_native_and_canon_modes() -> None:
-    calc = EclipseCalculator()
-
-    native = calc.analyze_lunar_eclipse(2451560.0, kind="total", mode="native")
+def test_unified_lunar_analysis_api_exposes_native_and_canon_modes(eclipse_calculator) -> None:
+    native = eclipse_calculator.analyze_lunar_eclipse(2451560.0, kind="total", mode="native")
     assert native.mode == "native"
     assert native.event.data.is_lunar_eclipse
     assert native.event.data.eclipse_type.is_total
     assert native.gamma_earth_radii is None
     assert abs(native.contacts.greatest - native.event.jd_ut) < 1e-6
 
-    canon = calc.analyze_lunar_eclipse(2451560.0, kind="total", mode="nasa_compat")
+    canon = eclipse_calculator.analyze_lunar_eclipse(2451560.0, kind="total", mode="nasa_compat")
     assert canon.mode == "nasa_compat"
     assert canon.event.data.is_lunar_eclipse
     assert canon.event.data.eclipse_type.is_total
@@ -212,20 +203,16 @@ def test_unified_lunar_analysis_api_exposes_native_and_canon_modes() -> None:
     assert "geometric Moon" in canon.source_model
 
 
-def test_unified_native_penumbral_analysis_keeps_contact_model_aligned() -> None:
-    calc = EclipseCalculator()
-
-    native = calc.analyze_lunar_eclipse(2744232.0, kind="penumbral", mode="native")
+def test_unified_native_penumbral_analysis_keeps_contact_model_aligned(eclipse_calculator) -> None:
+    native = eclipse_calculator.analyze_lunar_eclipse(2744232.0, kind="penumbral", mode="native")
     assert native.mode == "native"
     assert not native.event.data.is_lunar_eclipse
     assert native.event.data.eclipse_type.magnitude_penumbra > 0.0
     assert abs(native.contacts.greatest - native.event.jd_ut) < 1e-6
 
 
-def test_local_lunar_circumstances_api_returns_contact_bundle() -> None:
-    calc = EclipseCalculator()
-
-    local = calc.lunar_local_circumstances(
+def test_local_lunar_circumstances_api_returns_contact_bundle(eclipse_calculator) -> None:
+    local = eclipse_calculator.lunar_local_circumstances(
         2451560.0,
         51.5,
         -0.1,
@@ -247,10 +234,8 @@ def test_local_lunar_circumstances_api_returns_contact_bundle() -> None:
     assert local.greatest.jd_ut < local.u3.jd_ut < local.u4.jd_ut < local.p4.jd_ut
 
 
-def test_solar_local_circumstances_api_returns_observer_bundle() -> None:
-    calc = EclipseCalculator()
-
-    local = calc.solar_local_circumstances(
+def test_solar_local_circumstances_api_returns_observer_bundle(eclipse_calculator) -> None:
+    local = eclipse_calculator.solar_local_circumstances(
         2451400.0,
         50.0,
         0.0,
@@ -266,3 +251,4 @@ def test_solar_local_circumstances_api_returns_observer_bundle() -> None:
     assert local.topocentric_separation_deg >= 0.0
     assert local.sun.visible == (local.sun.altitude > 0.0)
     assert local.moon.visible == (local.moon.altitude > 0.0)
+

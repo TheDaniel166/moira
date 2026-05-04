@@ -33,4 +33,4 @@ Moira's shadow geometry was stress-tested against NASA's Besselian elements for 
 
 ## 4. Unresolved Risks & Future Work
 *   **Lunar Profile**: While the geometric "mean" shadow is validated, the engine currently lacks a bound lunar-limb topography dataset for "Baily's Bead" or profile-corrected graze work.
-*   **Search Engine Triage**: The future-era eclipse search regression (identified in previous sessions) remains a blocker for fully automated canonical validation across millennium ranges.
+*   **Search Engine Triage**: The future-era eclipse search regression remains a blocker for fully automated canonical validation across millennium ranges. This is identified as a Delta T policy divergence (Stephens vs. Morrison/Stephenson) rather than a solver windowing failure.

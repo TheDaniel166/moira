@@ -51,7 +51,6 @@ from pathlib import Path
 
 import pytest
 
-from moira.eclipse import EclipseCalculator
 from moira.lunar_cartography import LunarCartographyResult, lunar_eclipse_cartography
 from moira.planets import planet_at
 from moira.constants import Body
@@ -78,8 +77,8 @@ def _approx_solar_declination_deg(calc: EclipseCalculator, jd_ut: float) -> floa
 
 @pytest.mark.slow
 @pytest.mark.parametrize("case", _load_modern_total_cases(), ids=lambda c: c["label"])
-def test_lunar_cartography_matches_nasa_modern_total_eclipses(case: dict) -> None:
-    calc = EclipseCalculator()
+def test_lunar_cartography_matches_nasa_modern_total_eclipses(case: dict, eclipse_calculator) -> None:
+    calc = eclipse_calculator
     nasa_ut = float(case["ut_jd"])
 
     result = lunar_eclipse_cartography(
@@ -120,15 +119,11 @@ def test_lunar_cartography_matches_nasa_modern_total_eclipses(case: dict) -> Non
 
 
 @pytest.mark.slow
-def test_lunar_cartography_total_band_present_for_canonical_2000_total() -> None:
+def test_lunar_cartography_total_band_present_for_canonical_2000_total(eclipse_calculator) -> None:
     """For the 2000-01-21 total eclipse, totality structures must be populated.
-
-    This anchors a single canonical case to a stronger structural contract than
-    the parametrized parity sweep above: when the cartography classifies a
-    result as "total", the totality band's polygon must be non-empty so a
-    downstream consumer can render the totality footprint.
+# ... (rest of docstring)
     """
-    calc = EclipseCalculator()
+    calc = eclipse_calculator
     cases = _load_modern_total_cases()
     canonical = next(c for c in cases if c["label"].startswith("2000-01-21"))
 

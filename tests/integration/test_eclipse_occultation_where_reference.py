@@ -6,7 +6,6 @@ from pathlib import Path
 import requests
 import pytest
 
-from moira.eclipse import EclipseCalculator
 from moira.julian import julian_day, ut_to_tt
 from moira.occultations import (
     _star_topocentric_target_geometry,
@@ -230,8 +229,8 @@ def _parse_iota_annual_graze_section(
     return rows
 
 
-def test_solar_eclipse_path_matches_offline_swiss_where_reference() -> None:
-    calc = EclipseCalculator()
+def test_solar_eclipse_path_matches_offline_swiss_where_reference(eclipse_calculator) -> None:
+    calc = eclipse_calculator
     row = _parse_where_rows("swe_sol_eclipse_where")[0]
 
     path = calc.solar_eclipse_path(float(row["jd"]) - 5.0, kind="any", sample_count=1)

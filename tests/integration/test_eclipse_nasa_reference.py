@@ -2,9 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-
-from moira.eclipse import EclipseCalculator
-
+import pytest
 
 FIXTURE_PATH = Path(__file__).resolve().parents[1] / "fixtures" / "eclipse_nasa_reference.json"
 
@@ -13,7 +11,7 @@ def _load_fixture() -> dict:
     return json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
 
 
-def test_nasa_solar_eclipse_maxima_classify_correctly_across_eras() -> None:
+def test_nasa_solar_eclipse_maxima_classify_correctly_across_eras(eclipse_calculator) -> None:
     """
     Validate solar-eclipse classification at NASA catalog maxima over a wide era span.
 
@@ -23,7 +21,6 @@ def test_nasa_solar_eclipse_maxima_classify_correctly_across_eras() -> None:
     - modern
     - far future
     """
-    calc = EclipseCalculator()
     fixture = _load_fixture()
     failures: list[str] = []
     kind_map = {
@@ -34,7 +31,7 @@ def test_nasa_solar_eclipse_maxima_classify_correctly_across_eras() -> None:
     }
 
     for row in fixture["solar_maxima"]:
-        data = calc.calculate_jd(float(row["ut_jd"]))
+        data = eclipse_calculator.calculate_jd(float(row["ut_jd"]))
         expected_attr = kind_map[str(row["type"])]
         if not data.is_solar_eclipse or not getattr(data.eclipse_type, expected_attr):
             failures.append(
@@ -45,16 +42,15 @@ def test_nasa_solar_eclipse_maxima_classify_correctly_across_eras() -> None:
     assert not failures, "NASA solar maxima mismatches:\n" + "\n".join(failures[:20])
 
 
-def test_nasa_lunar_eclipse_maxima_classify_correctly_across_eras() -> None:
+def test_nasa_lunar_eclipse_maxima_classify_correctly_across_eras(eclipse_calculator) -> None:
     """
     Validate lunar-eclipse classification at NASA catalog maxima over a wide era span.
     """
-    calc = EclipseCalculator()
     fixture = _load_fixture()
     failures: list[str] = []
 
     for row in fixture["lunar_maxima"]:
-        data = calc.calculate_jd(float(row["ut_jd"]))
+        data = eclipse_calculator.calculate_jd(float(row["ut_jd"]))
         eclipse_type = str(row["type"])
         if eclipse_type == "T":
             ok = data.is_lunar_eclipse and data.eclipse_type.is_total
@@ -75,7 +71,7 @@ def test_nasa_lunar_eclipse_maxima_classify_correctly_across_eras() -> None:
     assert not failures, "NASA lunar maxima mismatches:\n" + "\n".join(failures[:20])
 
 
-def test_nasa_eclipse_search_recovers_representative_ancient_and_future_cases() -> None:
+def test_nasa_eclipse_search_recovers_representative_ancient_and_future_cases(eclipse_calculator) -> None:
     """
     Validate representative ancient/future search cases against NASA maxima.
 
@@ -88,7 +84,6 @@ def test_nasa_eclipse_search_recovers_representative_ancient_and_future_cases() 
     change.  Do not change the number without updating both the comment and
     VALIDATION_ASTRONOMY.md § 7.
     """
-    calc = EclipseCalculator()
     fixture = _load_fixture()
     failures: list[str] = []
     # Threshold history — document all changes here so the number is not magic.
@@ -123,7 +118,7 @@ def test_nasa_eclipse_search_recovers_representative_ancient_and_future_cases() 
     max_error_seconds = 90.0
 
     for row in fixture["search_cases"]["solar"]:
-        event = calc.next_solar_eclipse(float(row["seed_jd"]), kind=str(row["kind"]))
+        event = eclipse_calculator.next_solar_eclipse(float(row["seed_jd"]), kind=str(row["kind"]))
         err_seconds = abs(event.jd_ut - float(row["expected_ut_jd"])) * 86400.0
         if err_seconds > max_error_seconds:
             failures.append(
@@ -133,7 +128,7 @@ def test_nasa_eclipse_search_recovers_representative_ancient_and_future_cases() 
             )
 
     for row in fixture["search_cases"]["lunar"]:
-        event = calc.next_lunar_eclipse(float(row["seed_jd"]), kind=str(row["kind"]))
+        event = eclipse_calculator.next_lunar_eclipse(float(row["seed_jd"]), kind=str(row["kind"]))
         err_seconds = abs(event.jd_ut - float(row["expected_ut_jd"])) * 86400.0
         if err_seconds > max_error_seconds:
             failures.append(
@@ -145,7 +140,7 @@ def test_nasa_eclipse_search_recovers_representative_ancient_and_future_cases() 
     assert not failures, "NASA search mismatches:\n" + "\n".join(failures[:20])
 
 
-def test_ancient_lunar_total_native_search_stays_within_documented_residual_and_beats_canon() -> None:
+def test_ancient_lunar_total_native_search_stays_within_documented_residual_and_beats_canon(eclipse_calculator) -> None:
     """
     Diagnose and lock the current ancient worst-case lunar search behavior.
 
@@ -158,15 +153,14 @@ def test_ancient_lunar_total_native_search_stays_within_documented_residual_and_
     the current native model is already the better of the two available paths
     for this ancient case.
     """
-    calc = EclipseCalculator()
     fixture = _load_fixture()
     row = next(case for case in fixture["search_cases"]["lunar"] if case["label"] == "ancient_total")
     expected = float(row["expected_ut_jd"])
     kind = str(row["kind"])
     seed = float(row["seed_jd"])
 
-    native = calc.next_lunar_eclipse(seed, kind=kind)
-    canon = calc.next_lunar_eclipse_canon(seed, kind=kind)
+    native = eclipse_calculator.next_lunar_eclipse(seed, kind=kind)
+    canon = eclipse_calculator.next_lunar_eclipse_canon(seed, kind=kind)
 
     native_error_seconds = abs(native.jd_ut - expected) * 86400.0
     canon_error_seconds = abs(canon.jd_ut - expected) * 86400.0
@@ -178,3 +172,5 @@ def test_ancient_lunar_total_native_search_stays_within_documented_residual_and_
         f"ancient_total native residual {native_error_seconds:.3f}s should remain "
         f"better than canon residual {canon_error_seconds:.3f}s"
     )
+
+

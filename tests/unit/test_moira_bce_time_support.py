@@ -20,14 +20,14 @@ def test_datetime_from_jd_still_rejects_bce_for_python_datetime() -> None:
         datetime_from_jd(julian_day(-1321, 7, 20, 0.0))
 
 
-def test_moira_calendar_from_jd_exposes_bce_safe_top_level_api() -> None:
+def test_moira_calendar_from_jd_exposes_bce_safe_top_level_api(moira_engine) -> None:
     jd = julian_day(-1321, 7, 20, 0.0)
 
-    engine = Moira()
-    cal = engine.calendar_from_jd(jd)
+    cal = moira_engine.calendar_from_jd(jd)
 
     assert cal == calendar_datetime_from_jd(jd)
     assert cal.year == -1321
+
 
 
 def test_bce_chart_and_progressed_chart_expose_calendar_properties() -> None:

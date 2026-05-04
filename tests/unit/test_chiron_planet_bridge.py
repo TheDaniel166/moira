@@ -52,15 +52,15 @@ def test_create_chart_accepts_explicit_chiron_body_request() -> None:
 
 
 @pytest.mark.requires_ephemeris
-def test_moira_chart_accepts_explicit_chiron_body_request() -> None:
-    engine = Moira()
-    chart = engine.chart(
+def test_moira_chart_accepts_explicit_chiron_body_request(moira_engine) -> None:
+    chart = moira_engine.chart(
         datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc),
         bodies=[Body.SUN, Body.CHIRON],
     )
 
     assert set(chart.planets) == {Body.SUN, Body.CHIRON}
     assert chart.planets[Body.CHIRON].name == Body.CHIRON
+
 
 
 def test_planet_at_chiron_rejects_non_default_modes() -> None:

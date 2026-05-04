@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Moira Primary Public Surface — moira/__init__.py
 

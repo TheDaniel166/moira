@@ -30,11 +30,10 @@ def test_galactic_house_public_names_resolve_from_package_root() -> None:
         assert name in moira.__all__, f"{name} missing from moira.__all__"
 
 
-def test_moira_galactic_houses_matches_module_entry_point() -> None:
-    api = facade.Moira()
+def test_moira_galactic_houses_matches_module_entry_point(moira_engine) -> None:
     dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
 
-    via_method = api.galactic_houses(dt, 51.5, 0.0)
+    via_method = moira_engine.galactic_houses(dt, 51.5, 0.0)
     via_function = facade.calculate_galactic_houses(
         facade.jd_from_datetime(dt),
         51.5,
@@ -42,3 +41,4 @@ def test_moira_galactic_houses_matches_module_entry_point() -> None:
     )
 
     assert via_method == via_function
+

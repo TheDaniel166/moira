@@ -194,11 +194,7 @@ class TestOracleEclipse:
     Strategy: validate next_solar_eclipse_at_location against known eclipse records.
     """
     
-    @pytest.fixture(scope="module")
-    def calc(self):
-        return EclipseCalculator()
-    
-    def test_next_solar_eclipse_at_location_finds_known_eclipse(self, calc):
+    def test_next_solar_eclipse_at_location_finds_known_eclipse(self, eclipse_calculator):
         """
         Validate that the function finds a known, well-documented eclipse.
         
@@ -212,7 +208,7 @@ class TestOracleEclipse:
         # Search for any eclipse (may not be visible from this exact location)
         # This test just validates the function runs without error
         try:
-            result = calc.next_solar_eclipse_at_location(
+            result = eclipse_calculator.next_solar_eclipse_at_location(
                 jd_start, lat, lon, kind="any", max_lunations=120
             )
             

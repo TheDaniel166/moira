@@ -178,13 +178,12 @@ def test_public_surface_is_exposed_from_module_and_top_level_package() -> None:
     assert "_solve_kepler" not in ms.__all__
 
 
-def test_moira_wrapper_methods_match_subsystem_outputs() -> None:
-    engine = moira.Moira()
+def test_moira_wrapper_methods_match_subsystem_outputs(moira_engine) -> None:
     dt = datetime(2020, 1, 1, tzinfo=timezone.utc)
     jd = moira.jd_from_datetime(dt)
     sirius = ms.multiple_star("Sirius")
 
-    separation_info = engine.multiple_star_separation("Sirius", dt, aperture_mm=150.0)
+    separation_info = moira_engine.multiple_star_separation("Sirius", dt, aperture_mm=150.0)
     assert separation_info["separation_arcsec"] == pytest.approx(ms.angular_separation_at(sirius, jd))
     assert separation_info["position_angle_deg"] == pytest.approx(ms.position_angle_at(sirius, jd))
     assert separation_info["is_resolvable"] == ms.is_resolvable(sirius, jd, 150.0)
@@ -192,5 +191,5 @@ def test_moira_wrapper_methods_match_subsystem_outputs() -> None:
     assert separation_info["combined_magnitude"] == pytest.approx(ms.combined_magnitude(sirius))
     assert separation_info["system_type"] == sirius.system_type
 
-    component_info = engine.multiple_star_components("Sirius", dt)
+    component_info = moira_engine.multiple_star_components("Sirius", dt)
     assert component_info == ms.components_at(sirius, jd)

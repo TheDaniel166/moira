@@ -44,7 +44,7 @@ def _parse_when_maxima(section_name: str) -> list[dict[str, float | int]]:
     return results
 
 
-def test_solar_eclipse_maxima_match_offline_swiss_reference() -> None:
+def test_solar_eclipse_maxima_match_offline_swiss_reference(eclipse_calculator) -> None:
     """
     Validate solar-eclipse maxima against cached Swiss reference instants.
 
@@ -52,13 +52,12 @@ def test_solar_eclipse_maxima_match_offline_swiss_reference() -> None:
     Swiss-style contact solver, so this test anchors the classifier at the
     official maxima times.
     """
-    calc = EclipseCalculator()
     failures: list[str] = []
 
     for row in _parse_when_maxima("swe_sol_eclipse_when_glob"):
         jd_ut = float(row["jd_ut"])
         ifltype = int(row["ifltype"])
-        data = calc.calculate(datetime_from_jd(jd_ut))
+        data = eclipse_calculator.calculate(datetime_from_jd(jd_ut))
 
         if not data.is_solar_eclipse:
             failures.append(f"solar jd={jd_ut:.9f} expected solar eclipse, got {data}")
@@ -84,7 +83,7 @@ def test_solar_eclipse_maxima_match_offline_swiss_reference() -> None:
     assert not failures, "Solar eclipse mismatches:\n" + "\n".join(failures[:20])
 
 
-def test_lunar_eclipse_maxima_match_offline_swiss_reference() -> None:
+def test_lunar_eclipse_maxima_match_offline_swiss_reference(eclipse_calculator) -> None:
     """
     Validate lunar-eclipse maxima against cached Swiss reference instants.
 
@@ -93,13 +92,12 @@ def test_lunar_eclipse_maxima_match_offline_swiss_reference() -> None:
     - 16  = partial lunar eclipse
     - 64  = penumbral lunar eclipse
     """
-    calc = EclipseCalculator()
     failures: list[str] = []
 
     for row in _parse_when_maxima("swe_lun_eclipse_when"):
         jd_ut = float(row["jd_ut"])
         ifltype = int(row["ifltype"])
-        data = calc.calculate(datetime_from_jd(jd_ut))
+        data = eclipse_calculator.calculate(datetime_from_jd(jd_ut))
 
         if ifltype == 4:
             if not (data.is_lunar_eclipse and data.eclipse_type.is_total):
@@ -120,7 +118,7 @@ def test_lunar_eclipse_maxima_match_offline_swiss_reference() -> None:
     assert not failures, "Lunar eclipse mismatches:\n" + "\n".join(failures[:20])
 
 
-def test_lunar_eclipse_search_matches_offline_swiss_when_reference() -> None:
+def test_lunar_eclipse_search_matches_offline_swiss_when_reference(eclipse_calculator) -> None:
     """
     Validate next/previous lunar-eclipse search against Swiss `when()` maxima.
 
@@ -134,7 +132,6 @@ def test_lunar_eclipse_search_matches_offline_swiss_when_reference() -> None:
     model stays within about 90 seconds on this Swiss reference slice while
     still recovering the correct event and classification.
     """
-    calc = EclipseCalculator()
     failures: list[str] = []
     kind_map = {4: "total", 16: "partial", 64: "penumbral"}
     max_error_seconds = 90.0
@@ -168,9 +165,9 @@ def test_lunar_eclipse_search_matches_offline_swiss_when_reference() -> None:
     for row in rows:
         kind = kind_map[int(row["ifltype"])]
         if int(row["backward"]):
-            event = calc.previous_lunar_eclipse(float(row["jd"]), kind=kind)
+            event = eclipse_calculator.previous_lunar_eclipse(float(row["jd"]), kind=kind)
         else:
-            event = calc.next_lunar_eclipse(float(row["jd"]), kind=kind)
+            event = eclipse_calculator.next_lunar_eclipse(float(row["jd"]), kind=kind)
 
         err_seconds = abs(event.jd_ut - float(row["expected"])) * 86400.0
         if err_seconds > max_error_seconds:
@@ -183,7 +180,7 @@ def test_lunar_eclipse_search_matches_offline_swiss_when_reference() -> None:
     assert not failures, "Lunar eclipse search mismatches:\n" + "\n".join(failures[:20])
 
 
-def test_solar_eclipse_search_matches_offline_swiss_when_reference() -> None:
+def test_solar_eclipse_search_matches_offline_swiss_when_reference(eclipse_calculator) -> None:
     """
     Validate solar-eclipse search against Swiss `when_glob()` maxima.
 
@@ -192,7 +189,6 @@ def test_solar_eclipse_search_matches_offline_swiss_when_reference() -> None:
     - 4   = total solar eclipse
     - 16  = partial solar eclipse
     """
-    calc = EclipseCalculator()
     failures: list[str] = []
     kind_map = {32: "hybrid", 4: "total", 16: "partial"}
     max_error_seconds = 10.0
@@ -228,9 +224,9 @@ def test_solar_eclipse_search_matches_offline_swiss_when_reference() -> None:
     for row in rows:
         kind = kind_map[int(row["ifltype"])]
         if int(row["backward"]):
-            event = calc.previous_solar_eclipse(float(row["jd"]), kind=kind)
+            event = eclipse_calculator.previous_solar_eclipse(float(row["jd"]), kind=kind)
         else:
-            event = calc.next_solar_eclipse(float(row["jd"]), kind=kind)
+            event = eclipse_calculator.next_solar_eclipse(float(row["jd"]), kind=kind)
 
         err_seconds = abs(event.jd_ut - float(row["expected"])) * 86400.0
         if err_seconds > max_error_seconds:
@@ -241,3 +237,4 @@ def test_solar_eclipse_search_matches_offline_swiss_when_reference() -> None:
             )
 
     assert not failures, "Solar eclipse search mismatches:\n" + "\n".join(failures[:20])
+

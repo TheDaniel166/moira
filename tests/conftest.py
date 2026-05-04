@@ -397,6 +397,19 @@ def moira_engine():
 
 
 @pytest.fixture(scope="session")
+def reader(moira_engine):
+    """Session-scoped SpkReader instance from the Moira engine."""
+    return moira_engine._reader
+
+
+@pytest.fixture(scope="session")
+def eclipse_calculator(reader):
+    """Session-scoped EclipseCalculator instance."""
+    from moira.eclipse import EclipseCalculator
+    return EclipseCalculator(reader=reader)
+
+
+@pytest.fixture(scope="session")
 def jd_j2000() -> float:
     """Julian Day of J2000.0 epoch (2000-Jan-1.5 TT ≈ 2000-Jan-1 12:00 UTC)."""
     return 2451545.0
