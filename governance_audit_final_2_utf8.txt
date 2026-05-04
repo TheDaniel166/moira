@@ -1,0 +1,906 @@
+EEEEEEEEEEE                                                              [100%]
+=================================== ERRORS ====================================
+__________________ ERROR at setup of test_module_docstrings ___________________
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _bootstrap_kernel_singleton() -> None:
+        """Configure the global SpkReader singleton once per test session.
+    
+        When a planetary kernel is available, calling set_kernel_path() here ensures
+        that module-level functions (phase.apparent_magnitude, etc.) which call
+        get_reader() directly can reuse the same initialized singleton without each
+        test needing to go through the Moira facade.
+    
+        No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+        """
+>       from moira._kernel_paths import find_planetary_kernel
+
+tests\conftest.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+moira\__init__.py:95: in <module>
+    from .vedic_dignities import (
+moira\vedic_dignities.py:468: in <module>
+    class VedicDignityEngine:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    class VedicDignityEngine:
+        """
+        RITE: The Parashari Dignity Solver
+    
+        THEOREM: VedicDignityEngine governs the assessment of planetary
+            strength and relationship according to the Brihat Parashara
+            Hora Shastra (BPHS) doctrine.
+    
+        RITE OF PURPOSE:
+            This engine exists to provide a centralized, policy-aware
+            implementation of the classical Vedic dignity scheme. It
+            encapsulates the hierarchical rank cascade (Uchcha -> Mulatrikona
+            -> Swakshetra -> Maitri) and ensures that compound relationships
+            (Panchadha Maitri) are computed correctly from both natural and
+            temporary components.
+    
+        LAW OF OPERATION:
+            Responsibilities:
+                - Map sidereal longitudes to dignity ranks.
+                - Compute pairwise planetary relationships.
+                - Build local and chart-level condition profiles.
+            Non-responsibilities:
+                - Does not handle ayanamsa reduction (expects sidereal input).
+                - Does not compute Shadbala (Uchcha Bala only).
+    
+        Canon: Brihat Parashara Hora Shastra, Ch. 3, 26, 28.
+    
+        [MACHINE_CONTRACT v1]
+        {
+          "scope": "class",
+          "id": "moira.vedic_dignities.VedicDignityEngine",
+          "risk": "medium",
+          "api": {
+            "frozen": ["dignity", "relationships", "condition_profile", "chart_profile"]
+          },
+          "state": {"mutable": false, "owners": []},
+          "effects": {"signals_emitted": [], "io": ["pure computation"]},
+          "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+          "failures": {"policy": "raise"},
+          "succession": {"stance": "terminal"},
+          "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+        }
+        [/MACHINE_CONTRACT]
+        """
+    
+        def dignity(self, planet: str, sidereal_longitude: float) -> VedicDignityResult:
+            """Map a planet's sidereal longitude to its dignity state."""
+            return vedic_dignity(planet, sidereal_longitude)
+    
+        def relationships(self, sidereal_longitudes: dict[str, float]) -> list[PlanetaryRelationship]:
+            """Compute all pairwise Panchadha Maitri relationships."""
+            return planetary_relationships(sidereal_longitudes)
+    
+>       def condition_profile(self, result: VedicDignityResult) -> DignityConditionProfile:
+                                                                   ^^^^^^^^^^^^^^^^^^^^^^^
+E       NameError: name 'DignityConditionProfile' is not defined
+
+moira\vedic_dignities.py:521: NameError
+______________ ERROR at setup of test_class_docstring_structure _______________
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _bootstrap_kernel_singleton() -> None:
+        """Configure the global SpkReader singleton once per test session.
+    
+        When a planetary kernel is available, calling set_kernel_path() here ensures
+        that module-level functions (phase.apparent_magnitude, etc.) which call
+        get_reader() directly can reuse the same initialized singleton without each
+        test needing to go through the Moira facade.
+    
+        No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+        """
+>       from moira._kernel_paths import find_planetary_kernel
+
+tests\conftest.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+moira\__init__.py:95: in <module>
+    from .vedic_dignities import (
+moira\vedic_dignities.py:468: in <module>
+    class VedicDignityEngine:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    class VedicDignityEngine:
+        """
+        RITE: The Parashari Dignity Solver
+    
+        THEOREM: VedicDignityEngine governs the assessment of planetary
+            strength and relationship according to the Brihat Parashara
+            Hora Shastra (BPHS) doctrine.
+    
+        RITE OF PURPOSE:
+            This engine exists to provide a centralized, policy-aware
+            implementation of the classical Vedic dignity scheme. It
+            encapsulates the hierarchical rank cascade (Uchcha -> Mulatrikona
+            -> Swakshetra -> Maitri) and ensures that compound relationships
+            (Panchadha Maitri) are computed correctly from both natural and
+            temporary components.
+    
+        LAW OF OPERATION:
+            Responsibilities:
+                - Map sidereal longitudes to dignity ranks.
+                - Compute pairwise planetary relationships.
+                - Build local and chart-level condition profiles.
+            Non-responsibilities:
+                - Does not handle ayanamsa reduction (expects sidereal input).
+                - Does not compute Shadbala (Uchcha Bala only).
+    
+        Canon: Brihat Parashara Hora Shastra, Ch. 3, 26, 28.
+    
+        [MACHINE_CONTRACT v1]
+        {
+          "scope": "class",
+          "id": "moira.vedic_dignities.VedicDignityEngine",
+          "risk": "medium",
+          "api": {
+            "frozen": ["dignity", "relationships", "condition_profile", "chart_profile"]
+          },
+          "state": {"mutable": false, "owners": []},
+          "effects": {"signals_emitted": [], "io": ["pure computation"]},
+          "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+          "failures": {"policy": "raise"},
+          "succession": {"stance": "terminal"},
+          "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+        }
+        [/MACHINE_CONTRACT]
+        """
+    
+        def dignity(self, planet: str, sidereal_longitude: float) -> VedicDignityResult:
+            """Map a planet's sidereal longitude to its dignity state."""
+            return vedic_dignity(planet, sidereal_longitude)
+    
+        def relationships(self, sidereal_longitudes: dict[str, float]) -> list[PlanetaryRelationship]:
+            """Compute all pairwise Panchadha Maitri relationships."""
+            return planetary_relationships(sidereal_longitudes)
+    
+>       def condition_profile(self, result: VedicDignityResult) -> DignityConditionProfile:
+                                                                   ^^^^^^^^^^^^^^^^^^^^^^^
+E       NameError: name 'DignityConditionProfile' is not defined
+
+moira\vedic_dignities.py:521: NameError
+______________ ERROR at setup of test_machine_contract_validity _______________
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _bootstrap_kernel_singleton() -> None:
+        """Configure the global SpkReader singleton once per test session.
+    
+        When a planetary kernel is available, calling set_kernel_path() here ensures
+        that module-level functions (phase.apparent_magnitude, etc.) which call
+        get_reader() directly can reuse the same initialized singleton without each
+        test needing to go through the Moira facade.
+    
+        No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+        """
+>       from moira._kernel_paths import find_planetary_kernel
+
+tests\conftest.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+moira\__init__.py:95: in <module>
+    from .vedic_dignities import (
+moira\vedic_dignities.py:468: in <module>
+    class VedicDignityEngine:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    class VedicDignityEngine:
+        """
+        RITE: The Parashari Dignity Solver
+    
+        THEOREM: VedicDignityEngine governs the assessment of planetary
+            strength and relationship according to the Brihat Parashara
+            Hora Shastra (BPHS) doctrine.
+    
+        RITE OF PURPOSE:
+            This engine exists to provide a centralized, policy-aware
+            implementation of the classical Vedic dignity scheme. It
+            encapsulates the hierarchical rank cascade (Uchcha -> Mulatrikona
+            -> Swakshetra -> Maitri) and ensures that compound relationships
+            (Panchadha Maitri) are computed correctly from both natural and
+            temporary components.
+    
+        LAW OF OPERATION:
+            Responsibilities:
+                - Map sidereal longitudes to dignity ranks.
+                - Compute pairwise planetary relationships.
+                - Build local and chart-level condition profiles.
+            Non-responsibilities:
+                - Does not handle ayanamsa reduction (expects sidereal input).
+                - Does not compute Shadbala (Uchcha Bala only).
+    
+        Canon: Brihat Parashara Hora Shastra, Ch. 3, 26, 28.
+    
+        [MACHINE_CONTRACT v1]
+        {
+          "scope": "class",
+          "id": "moira.vedic_dignities.VedicDignityEngine",
+          "risk": "medium",
+          "api": {
+            "frozen": ["dignity", "relationships", "condition_profile", "chart_profile"]
+          },
+          "state": {"mutable": false, "owners": []},
+          "effects": {"signals_emitted": [], "io": ["pure computation"]},
+          "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+          "failures": {"policy": "raise"},
+          "succession": {"stance": "terminal"},
+          "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+        }
+        [/MACHINE_CONTRACT]
+        """
+    
+        def dignity(self, planet: str, sidereal_longitude: float) -> VedicDignityResult:
+            """Map a planet's sidereal longitude to its dignity state."""
+            return vedic_dignity(planet, sidereal_longitude)
+    
+        def relationships(self, sidereal_longitudes: dict[str, float]) -> list[PlanetaryRelationship]:
+            """Compute all pairwise Panchadha Maitri relationships."""
+            return planetary_relationships(sidereal_longitudes)
+    
+>       def condition_profile(self, result: VedicDignityResult) -> DignityConditionProfile:
+                                                                   ^^^^^^^^^^^^^^^^^^^^^^^
+E       NameError: name 'DignityConditionProfile' is not defined
+
+moira\vedic_dignities.py:521: NameError
+___________ ERROR at setup of test_checker_compliant_module_passes ____________
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _bootstrap_kernel_singleton() -> None:
+        """Configure the global SpkReader singleton once per test session.
+    
+        When a planetary kernel is available, calling set_kernel_path() here ensures
+        that module-level functions (phase.apparent_magnitude, etc.) which call
+        get_reader() directly can reuse the same initialized singleton without each
+        test needing to go through the Moira facade.
+    
+        No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+        """
+>       from moira._kernel_paths import find_planetary_kernel
+
+tests\conftest.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+moira\__init__.py:95: in <module>
+    from .vedic_dignities import (
+moira\vedic_dignities.py:468: in <module>
+    class VedicDignityEngine:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    class VedicDignityEngine:
+        """
+        RITE: The Parashari Dignity Solver
+    
+        THEOREM: VedicDignityEngine governs the assessment of planetary
+            strength and relationship according to the Brihat Parashara
+            Hora Shastra (BPHS) doctrine.
+    
+        RITE OF PURPOSE:
+            This engine exists to provide a centralized, policy-aware
+            implementation of the classical Vedic dignity scheme. It
+            encapsulates the hierarchical rank cascade (Uchcha -> Mulatrikona
+            -> Swakshetra -> Maitri) and ensures that compound relationships
+            (Panchadha Maitri) are computed correctly from both natural and
+            temporary components.
+    
+        LAW OF OPERATION:
+            Responsibilities:
+                - Map sidereal longitudes to dignity ranks.
+                - Compute pairwise planetary relationships.
+                - Build local and chart-level condition profiles.
+            Non-responsibilities:
+                - Does not handle ayanamsa reduction (expects sidereal input).
+                - Does not compute Shadbala (Uchcha Bala only).
+    
+        Canon: Brihat Parashara Hora Shastra, Ch. 3, 26, 28.
+    
+        [MACHINE_CONTRACT v1]
+        {
+          "scope": "class",
+          "id": "moira.vedic_dignities.VedicDignityEngine",
+          "risk": "medium",
+          "api": {
+            "frozen": ["dignity", "relationships", "condition_profile", "chart_profile"]
+          },
+          "state": {"mutable": false, "owners": []},
+          "effects": {"signals_emitted": [], "io": ["pure computation"]},
+          "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+          "failures": {"policy": "raise"},
+          "succession": {"stance": "terminal"},
+          "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+        }
+        [/MACHINE_CONTRACT]
+        """
+    
+        def dignity(self, planet: str, sidereal_longitude: float) -> VedicDignityResult:
+            """Map a planet's sidereal longitude to its dignity state."""
+            return vedic_dignity(planet, sidereal_longitude)
+    
+        def relationships(self, sidereal_longitudes: dict[str, float]) -> list[PlanetaryRelationship]:
+            """Compute all pairwise Panchadha Maitri relationships."""
+            return planetary_relationships(sidereal_longitudes)
+    
+>       def condition_profile(self, result: VedicDignityResult) -> DignityConditionProfile:
+                                                                   ^^^^^^^^^^^^^^^^^^^^^^^
+E       NameError: name 'DignityConditionProfile' is not defined
+
+moira\vedic_dignities.py:521: NameError
+___ ERROR at setup of test_checker_missing_module_docstring_produces_mod001 ___
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _bootstrap_kernel_singleton() -> None:
+        """Configure the global SpkReader singleton once per test session.
+    
+        When a planetary kernel is available, calling set_kernel_path() here ensures
+        that module-level functions (phase.apparent_magnitude, etc.) which call
+        get_reader() directly can reuse the same initialized singleton without each
+        test needing to go through the Moira facade.
+    
+        No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+        """
+>       from moira._kernel_paths import find_planetary_kernel
+
+tests\conftest.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+moira\__init__.py:95: in <module>
+    from .vedic_dignities import (
+moira\vedic_dignities.py:468: in <module>
+    class VedicDignityEngine:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    class VedicDignityEngine:
+        """
+        RITE: The Parashari Dignity Solver
+    
+        THEOREM: VedicDignityEngine governs the assessment of planetary
+            strength and relationship according to the Brihat Parashara
+            Hora Shastra (BPHS) doctrine.
+    
+        RITE OF PURPOSE:
+            This engine exists to provide a centralized, policy-aware
+            implementation of the classical Vedic dignity scheme. It
+            encapsulates the hierarchical rank cascade (Uchcha -> Mulatrikona
+            -> Swakshetra -> Maitri) and ensures that compound relationships
+            (Panchadha Maitri) are computed correctly from both natural and
+            temporary components.
+    
+        LAW OF OPERATION:
+            Responsibilities:
+                - Map sidereal longitudes to dignity ranks.
+                - Compute pairwise planetary relationships.
+                - Build local and chart-level condition profiles.
+            Non-responsibilities:
+                - Does not handle ayanamsa reduction (expects sidereal input).
+                - Does not compute Shadbala (Uchcha Bala only).
+    
+        Canon: Brihat Parashara Hora Shastra, Ch. 3, 26, 28.
+    
+        [MACHINE_CONTRACT v1]
+        {
+          "scope": "class",
+          "id": "moira.vedic_dignities.VedicDignityEngine",
+          "risk": "medium",
+          "api": {
+            "frozen": ["dignity", "relationships", "condition_profile", "chart_profile"]
+          },
+          "state": {"mutable": false, "owners": []},
+          "effects": {"signals_emitted": [], "io": ["pure computation"]},
+          "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+          "failures": {"policy": "raise"},
+          "succession": {"stance": "terminal"},
+          "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+        }
+        [/MACHINE_CONTRACT]
+        """
+    
+        def dignity(self, planet: str, sidereal_longitude: float) -> VedicDignityResult:
+            """Map a planet's sidereal longitude to its dignity state."""
+            return vedic_dignity(planet, sidereal_longitude)
+    
+        def relationships(self, sidereal_longitudes: dict[str, float]) -> list[PlanetaryRelationship]:
+            """Compute all pairwise Panchadha Maitri relationships."""
+            return planetary_relationships(sidereal_longitudes)
+    
+>       def condition_profile(self, result: VedicDignityResult) -> DignityConditionProfile:
+                                                                   ^^^^^^^^^^^^^^^^^^^^^^^
+E       NameError: name 'DignityConditionProfile' is not defined
+
+moira\vedic_dignities.py:521: NameError
+____________ ERROR at setup of test_checker_compliant_class_passes ____________
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _bootstrap_kernel_singleton() -> None:
+        """Configure the global SpkReader singleton once per test session.
+    
+        When a planetary kernel is available, calling set_kernel_path() here ensures
+        that module-level functions (phase.apparent_magnitude, etc.) which call
+        get_reader() directly can reuse the same initialized singleton without each
+        test needing to go through the Moira facade.
+    
+        No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+        """
+>       from moira._kernel_paths import find_planetary_kernel
+
+tests\conftest.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+moira\__init__.py:95: in <module>
+    from .vedic_dignities import (
+moira\vedic_dignities.py:468: in <module>
+    class VedicDignityEngine:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    class VedicDignityEngine:
+        """
+        RITE: The Parashari Dignity Solver
+    
+        THEOREM: VedicDignityEngine governs the assessment of planetary
+            strength and relationship according to the Brihat Parashara
+            Hora Shastra (BPHS) doctrine.
+    
+        RITE OF PURPOSE:
+            This engine exists to provide a centralized, policy-aware
+            implementation of the classical Vedic dignity scheme. It
+            encapsulates the hierarchical rank cascade (Uchcha -> Mulatrikona
+            -> Swakshetra -> Maitri) and ensures that compound relationships
+            (Panchadha Maitri) are computed correctly from both natural and
+            temporary components.
+    
+        LAW OF OPERATION:
+            Responsibilities:
+                - Map sidereal longitudes to dignity ranks.
+                - Compute pairwise planetary relationships.
+                - Build local and chart-level condition profiles.
+            Non-responsibilities:
+                - Does not handle ayanamsa reduction (expects sidereal input).
+                - Does not compute Shadbala (Uchcha Bala only).
+    
+        Canon: Brihat Parashara Hora Shastra, Ch. 3, 26, 28.
+    
+        [MACHINE_CONTRACT v1]
+        {
+          "scope": "class",
+          "id": "moira.vedic_dignities.VedicDignityEngine",
+          "risk": "medium",
+          "api": {
+            "frozen": ["dignity", "relationships", "condition_profile", "chart_profile"]
+          },
+          "state": {"mutable": false, "owners": []},
+          "effects": {"signals_emitted": [], "io": ["pure computation"]},
+          "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+          "failures": {"policy": "raise"},
+          "succession": {"stance": "terminal"},
+          "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+        }
+        [/MACHINE_CONTRACT]
+        """
+    
+        def dignity(self, planet: str, sidereal_longitude: float) -> VedicDignityResult:
+            """Map a planet's sidereal longitude to its dignity state."""
+            return vedic_dignity(planet, sidereal_longitude)
+    
+        def relationships(self, sidereal_longitudes: dict[str, float]) -> list[PlanetaryRelationship]:
+            """Compute all pairwise Panchadha Maitri relationships."""
+            return planetary_relationships(sidereal_longitudes)
+    
+>       def condition_profile(self, result: VedicDignityResult) -> DignityConditionProfile:
+                                                                   ^^^^^^^^^^^^^^^^^^^^^^^
+E       NameError: name 'DignityConditionProfile' is not defined
+
+moira\vedic_dignities.py:521: NameError
+_________ ERROR at setup of test_checker_missing_rite_produces_cls001 _________
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _bootstrap_kernel_singleton() -> None:
+        """Configure the global SpkReader singleton once per test session.
+    
+        When a planetary kernel is available, calling set_kernel_path() here ensures
+        that module-level functions (phase.apparent_magnitude, etc.) which call
+        get_reader() directly can reuse the same initialized singleton without each
+        test needing to go through the Moira facade.
+    
+        No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+        """
+>       from moira._kernel_paths import find_planetary_kernel
+
+tests\conftest.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+moira\__init__.py:95: in <module>
+    from .vedic_dignities import (
+moira\vedic_dignities.py:468: in <module>
+    class VedicDignityEngine:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    class VedicDignityEngine:
+        """
+        RITE: The Parashari Dignity Solver
+    
+        THEOREM: VedicDignityEngine governs the assessment of planetary
+            strength and relationship according to the Brihat Parashara
+            Hora Shastra (BPHS) doctrine.
+    
+        RITE OF PURPOSE:
+            This engine exists to provide a centralized, policy-aware
+            implementation of the classical Vedic dignity scheme. It
+            encapsulates the hierarchical rank cascade (Uchcha -> Mulatrikona
+            -> Swakshetra -> Maitri) and ensures that compound relationships
+            (Panchadha Maitri) are computed correctly from both natural and
+            temporary components.
+    
+        LAW OF OPERATION:
+            Responsibilities:
+                - Map sidereal longitudes to dignity ranks.
+                - Compute pairwise planetary relationships.
+                - Build local and chart-level condition profiles.
+            Non-responsibilities:
+                - Does not handle ayanamsa reduction (expects sidereal input).
+                - Does not compute Shadbala (Uchcha Bala only).
+    
+        Canon: Brihat Parashara Hora Shastra, Ch. 3, 26, 28.
+    
+        [MACHINE_CONTRACT v1]
+        {
+          "scope": "class",
+          "id": "moira.vedic_dignities.VedicDignityEngine",
+          "risk": "medium",
+          "api": {
+            "frozen": ["dignity", "relationships", "condition_profile", "chart_profile"]
+          },
+          "state": {"mutable": false, "owners": []},
+          "effects": {"signals_emitted": [], "io": ["pure computation"]},
+          "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+          "failures": {"policy": "raise"},
+          "succession": {"stance": "terminal"},
+          "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+        }
+        [/MACHINE_CONTRACT]
+        """
+    
+        def dignity(self, planet: str, sidereal_longitude: float) -> VedicDignityResult:
+            """Map a planet's sidereal longitude to its dignity state."""
+            return vedic_dignity(planet, sidereal_longitude)
+    
+        def relationships(self, sidereal_longitudes: dict[str, float]) -> list[PlanetaryRelationship]:
+            """Compute all pairwise Panchadha Maitri relationships."""
+            return planetary_relationships(sidereal_longitudes)
+    
+>       def condition_profile(self, result: VedicDignityResult) -> DignityConditionProfile:
+                                                                   ^^^^^^^^^^^^^^^^^^^^^^^
+E       NameError: name 'DignityConditionProfile' is not defined
+
+moira\vedic_dignities.py:521: NameError
+________ ERROR at setup of test_checker_malformed_json_produces_mc001 _________
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _bootstrap_kernel_singleton() -> None:
+        """Configure the global SpkReader singleton once per test session.
+    
+        When a planetary kernel is available, calling set_kernel_path() here ensures
+        that module-level functions (phase.apparent_magnitude, etc.) which call
+        get_reader() directly can reuse the same initialized singleton without each
+        test needing to go through the Moira facade.
+    
+        No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+        """
+>       from moira._kernel_paths import find_planetary_kernel
+
+tests\conftest.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+moira\__init__.py:95: in <module>
+    from .vedic_dignities import (
+moira\vedic_dignities.py:468: in <module>
+    class VedicDignityEngine:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    class VedicDignityEngine:
+        """
+        RITE: The Parashari Dignity Solver
+    
+        THEOREM: VedicDignityEngine governs the assessment of planetary
+            strength and relationship according to the Brihat Parashara
+            Hora Shastra (BPHS) doctrine.
+    
+        RITE OF PURPOSE:
+            This engine exists to provide a centralized, policy-aware
+            implementation of the classical Vedic dignity scheme. It
+            encapsulates the hierarchical rank cascade (Uchcha -> Mulatrikona
+            -> Swakshetra -> Maitri) and ensures that compound relationships
+            (Panchadha Maitri) are computed correctly from both natural and
+            temporary components.
+    
+        LAW OF OPERATION:
+            Responsibilities:
+                - Map sidereal longitudes to dignity ranks.
+                - Compute pairwise planetary relationships.
+                - Build local and chart-level condition profiles.
+            Non-responsibilities:
+                - Does not handle ayanamsa reduction (expects sidereal input).
+                - Does not compute Shadbala (Uchcha Bala only).
+    
+        Canon: Brihat Parashara Hora Shastra, Ch. 3, 26, 28.
+    
+        [MACHINE_CONTRACT v1]
+        {
+          "scope": "class",
+          "id": "moira.vedic_dignities.VedicDignityEngine",
+          "risk": "medium",
+          "api": {
+            "frozen": ["dignity", "relationships", "condition_profile", "chart_profile"]
+          },
+          "state": {"mutable": false, "owners": []},
+          "effects": {"signals_emitted": [], "io": ["pure computation"]},
+          "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+          "failures": {"policy": "raise"},
+          "succession": {"stance": "terminal"},
+          "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+        }
+        [/MACHINE_CONTRACT]
+        """
+    
+        def dignity(self, planet: str, sidereal_longitude: float) -> VedicDignityResult:
+            """Map a planet's sidereal longitude to its dignity state."""
+            return vedic_dignity(planet, sidereal_longitude)
+    
+        def relationships(self, sidereal_longitudes: dict[str, float]) -> list[PlanetaryRelationship]:
+            """Compute all pairwise Panchadha Maitri relationships."""
+            return planetary_relationships(sidereal_longitudes)
+    
+>       def condition_profile(self, result: VedicDignityResult) -> DignityConditionProfile:
+                                                                   ^^^^^^^^^^^^^^^^^^^^^^^
+E       NameError: name 'DignityConditionProfile' is not defined
+
+moira\vedic_dignities.py:521: NameError
+_______ ERROR at setup of test_checker_missing_risk_key_produces_mc002 ________
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _bootstrap_kernel_singleton() -> None:
+        """Configure the global SpkReader singleton once per test session.
+    
+        When a planetary kernel is available, calling set_kernel_path() here ensures
+        that module-level functions (phase.apparent_magnitude, etc.) which call
+        get_reader() directly can reuse the same initialized singleton without each
+        test needing to go through the Moira facade.
+    
+        No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+        """
+>       from moira._kernel_paths import find_planetary_kernel
+
+tests\conftest.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+moira\__init__.py:95: in <module>
+    from .vedic_dignities import (
+moira\vedic_dignities.py:468: in <module>
+    class VedicDignityEngine:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    class VedicDignityEngine:
+        """
+        RITE: The Parashari Dignity Solver
+    
+        THEOREM: VedicDignityEngine governs the assessment of planetary
+            strength and relationship according to the Brihat Parashara
+            Hora Shastra (BPHS) doctrine.
+    
+        RITE OF PURPOSE:
+            This engine exists to provide a centralized, policy-aware
+            implementation of the classical Vedic dignity scheme. It
+            encapsulates the hierarchical rank cascade (Uchcha -> Mulatrikona
+            -> Swakshetra -> Maitri) and ensures that compound relationships
+            (Panchadha Maitri) are computed correctly from both natural and
+            temporary components.
+    
+        LAW OF OPERATION:
+            Responsibilities:
+                - Map sidereal longitudes to dignity ranks.
+                - Compute pairwise planetary relationships.
+                - Build local and chart-level condition profiles.
+            Non-responsibilities:
+                - Does not handle ayanamsa reduction (expects sidereal input).
+                - Does not compute Shadbala (Uchcha Bala only).
+    
+        Canon: Brihat Parashara Hora Shastra, Ch. 3, 26, 28.
+    
+        [MACHINE_CONTRACT v1]
+        {
+          "scope": "class",
+          "id": "moira.vedic_dignities.VedicDignityEngine",
+          "risk": "medium",
+          "api": {
+            "frozen": ["dignity", "relationships", "condition_profile", "chart_profile"]
+          },
+          "state": {"mutable": false, "owners": []},
+          "effects": {"signals_emitted": [], "io": ["pure computation"]},
+          "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+          "failures": {"policy": "raise"},
+          "succession": {"stance": "terminal"},
+          "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+        }
+        [/MACHINE_CONTRACT]
+        """
+    
+        def dignity(self, planet: str, sidereal_longitude: float) -> VedicDignityResult:
+            """Map a planet's sidereal longitude to its dignity state."""
+            return vedic_dignity(planet, sidereal_longitude)
+    
+        def relationships(self, sidereal_longitudes: dict[str, float]) -> list[PlanetaryRelationship]:
+            """Compute all pairwise Panchadha Maitri relationships."""
+            return planetary_relationships(sidereal_longitudes)
+    
+>       def condition_profile(self, result: VedicDignityResult) -> DignityConditionProfile:
+                                                                   ^^^^^^^^^^^^^^^^^^^^^^^
+E       NameError: name 'DignityConditionProfile' is not defined
+
+moira\vedic_dignities.py:521: NameError
+______ ERROR at setup of test_checker_invalid_risk_value_produces_mc003 _______
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _bootstrap_kernel_singleton() -> None:
+        """Configure the global SpkReader singleton once per test session.
+    
+        When a planetary kernel is available, calling set_kernel_path() here ensures
+        that module-level functions (phase.apparent_magnitude, etc.) which call
+        get_reader() directly can reuse the same initialized singleton without each
+        test needing to go through the Moira facade.
+    
+        No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+        """
+>       from moira._kernel_paths import find_planetary_kernel
+
+tests\conftest.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+moira\__init__.py:95: in <module>
+    from .vedic_dignities import (
+moira\vedic_dignities.py:468: in <module>
+    class VedicDignityEngine:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    class VedicDignityEngine:
+        """
+        RITE: The Parashari Dignity Solver
+    
+        THEOREM: VedicDignityEngine governs the assessment of planetary
+            strength and relationship according to the Brihat Parashara
+            Hora Shastra (BPHS) doctrine.
+    
+        RITE OF PURPOSE:
+            This engine exists to provide a centralized, policy-aware
+            implementation of the classical Vedic dignity scheme. It
+            encapsulates the hierarchical rank cascade (Uchcha -> Mulatrikona
+            -> Swakshetra -> Maitri) and ensures that compound relationships
+            (Panchadha Maitri) are computed correctly from both natural and
+            temporary components.
+    
+        LAW OF OPERATION:
+            Responsibilities:
+                - Map sidereal longitudes to dignity ranks.
+                - Compute pairwise planetary relationships.
+                - Build local and chart-level condition profiles.
+            Non-responsibilities:
+                - Does not handle ayanamsa reduction (expects sidereal input).
+                - Does not compute Shadbala (Uchcha Bala only).
+    
+        Canon: Brihat Parashara Hora Shastra, Ch. 3, 26, 28.
+    
+        [MACHINE_CONTRACT v1]
+        {
+          "scope": "class",
+          "id": "moira.vedic_dignities.VedicDignityEngine",
+          "risk": "medium",
+          "api": {
+            "frozen": ["dignity", "relationships", "condition_profile", "chart_profile"]
+          },
+          "state": {"mutable": false, "owners": []},
+          "effects": {"signals_emitted": [], "io": ["pure computation"]},
+          "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+          "failures": {"policy": "raise"},
+          "succession": {"stance": "terminal"},
+          "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+        }
+        [/MACHINE_CONTRACT]
+        """
+    
+        def dignity(self, planet: str, sidereal_longitude: float) -> VedicDignityResult:
+            """Map a planet's sidereal longitude to its dignity state."""
+            return vedic_dignity(planet, sidereal_longitude)
+    
+        def relationships(self, sidereal_longitudes: dict[str, float]) -> list[PlanetaryRelationship]:
+            """Compute all pairwise Panchadha Maitri relationships."""
+            return planetary_relationships(sidereal_longitudes)
+    
+>       def condition_profile(self, result: VedicDignityResult) -> DignityConditionProfile:
+                                                                   ^^^^^^^^^^^^^^^^^^^^^^^
+E       NameError: name 'DignityConditionProfile' is not defined
+
+moira\vedic_dignities.py:521: NameError
+_________ ERROR at setup of test_checker_wrong_thread_produces_mc005 __________
+
+    @pytest.fixture(scope="session", autouse=True)
+    def _bootstrap_kernel_singleton() -> None:
+        """Configure the global SpkReader singleton once per test session.
+    
+        When a planetary kernel is available, calling set_kernel_path() here ensures
+        that module-level functions (phase.apparent_magnitude, etc.) which call
+        get_reader() directly can reuse the same initialized singleton without each
+        test needing to go through the Moira facade.
+    
+        No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+        """
+>       from moira._kernel_paths import find_planetary_kernel
+
+tests\conftest.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+moira\__init__.py:95: in <module>
+    from .vedic_dignities import (
+moira\vedic_dignities.py:468: in <module>
+    class VedicDignityEngine:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    class VedicDignityEngine:
+        """
+        RITE: The Parashari Dignity Solver
+    
+        THEOREM: VedicDignityEngine governs the assessment of planetary
+            strength and relationship according to the Brihat Parashara
+            Hora Shastra (BPHS) doctrine.
+    
+        RITE OF PURPOSE:
+            This engine exists to provide a centralized, policy-aware
+            implementation of the classical Vedic dignity scheme. It
+            encapsulates the hierarchical rank cascade (Uchcha -> Mulatrikona
+            -> Swakshetra -> Maitri) and ensures that compound relationships
+            (Panchadha Maitri) are computed correctly from both natural and
+            temporary components.
+    
+        LAW OF OPERATION:
+            Responsibilities:
+                - Map sidereal longitudes to dignity ranks.
+                - Compute pairwise planetary relationships.
+                - Build local and chart-level condition profiles.
+            Non-responsibilities:
+                - Does not handle ayanamsa reduction (expects sidereal input).
+                - Does not compute Shadbala (Uchcha Bala only).
+    
+        Canon: Brihat Parashara Hora Shastra, Ch. 3, 26, 28.
+    
+        [MACHINE_CONTRACT v1]
+        {
+          "scope": "class",
+          "id": "moira.vedic_dignities.VedicDignityEngine",
+          "risk": "medium",
+          "api": {
+            "frozen": ["dignity", "relationships", "condition_profile", "chart_profile"]
+          },
+          "state": {"mutable": false, "owners": []},
+          "effects": {"signals_emitted": [], "io": ["pure computation"]},
+          "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+          "failures": {"policy": "raise"},
+          "succession": {"stance": "terminal"},
+          "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+        }
+        [/MACHINE_CONTRACT]
+        """
+    
+        def dignity(self, planet: str, sidereal_longitude: float) -> VedicDignityResult:
+            """Map a planet's sidereal longitude to its dignity state."""
+            return vedic_dignity(planet, sidereal_longitude)
+    
+        def relationships(self, sidereal_longitudes: dict[str, float]) -> list[PlanetaryRelationship]:
+            """Compute all pairwise Panchadha Maitri relationships."""
+            return planetary_relationships(sidereal_longitudes)
+    
+>       def condition_profile(self, result: VedicDignityResult) -> DignityConditionProfile:
+                                                                   ^^^^^^^^^^^^^^^^^^^^^^^
+E       NameError: name 'DignityConditionProfile' is not defined
+
+moira\vedic_dignities.py:521: NameError
+=========================== short test summary info ===========================
+ERROR tests/unit/test_docstring_governance.py::test_module_docstrings - NameE...
+ERROR tests/unit/test_docstring_governance.py::test_class_docstring_structure
+ERROR tests/unit/test_docstring_governance.py::test_machine_contract_validity
+ERROR tests/unit/test_docstring_governance.py::test_checker_compliant_module_passes
+ERROR tests/unit/test_docstring_governance.py::test_checker_missing_module_docstring_produces_mod001
+ERROR tests/unit/test_docstring_governance.py::test_checker_compliant_class_passes
+ERROR tests/unit/test_docstring_governance.py::test_checker_missing_rite_produces_cls001
+ERROR tests/unit/test_docstring_governance.py::test_checker_malformed_json_produces_mc001
+ERROR tests/unit/test_docstring_governance.py::test_checker_missing_risk_key_produces_mc002
+ERROR tests/unit/test_docstring_governance.py::test_checker_invalid_risk_value_produces_mc003
+ERROR tests/unit/test_docstring_governance.py::test_checker_wrong_thread_produces_mc005
+11 errors in 1.03s
