@@ -37,7 +37,6 @@ from moira.constants import HouseSystem
 # ---------------------------------------------------------------------------
 # Shared chart moment
 # ---------------------------------------------------------------------------
-_JD  = 2451545.0
 _LAT = 51.5
 _LON = 0.0
 
@@ -46,8 +45,8 @@ _LON = 0.0
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _hc(system: str, lat: float = _LAT) -> HouseCusps:
-    return calculate_houses(_JD, lat, _LON, system)
+def _hc(jd: float, system: str, lat: float = _LAT) -> HouseCusps:
+    return calculate_houses(jd, lat, _LON, system)
 
 
 def _make_cusps(cusps_list: list[float], system: str) -> HouseCusps:
@@ -76,8 +75,13 @@ def _equal_cusps(start: float = 0.0) -> list[float]:
 class TestHouseSystemComparisonStructure:
     """HouseSystemComparison is a frozen dataclass with correct fields and types."""
 
-    def setup_method(self):
-        self.cmp = compare_systems(_hc(HouseSystem.PORPHYRY), _hc(HouseSystem.PLACIDUS))
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self.cmp = compare_systems(
+            _hc(jd_j2000, HouseSystem.PORPHYRY),
+            _hc(jd_j2000, HouseSystem.PLACIDUS),
+        )
+        self._jd = jd_j2000
 
     def test_has_left_field(self):
         assert isinstance(self.cmp.left, HouseCusps)
@@ -105,14 +109,14 @@ class TestHouseSystemComparisonStructure:
             self.cmp.systems_agree = True  # type: ignore[misc]
 
     def test_left_is_original(self):
-        hc_l = _hc(HouseSystem.PORPHYRY)
-        hc_r = _hc(HouseSystem.PLACIDUS)
+        hc_l = _hc(self._jd, HouseSystem.PORPHYRY)
+        hc_r = _hc(self._jd, HouseSystem.PLACIDUS)
         cmp  = compare_systems(hc_l, hc_r)
         assert cmp.left is hc_l
 
     def test_right_is_original(self):
-        hc_l = _hc(HouseSystem.PORPHYRY)
-        hc_r = _hc(HouseSystem.PLACIDUS)
+        hc_l = _hc(self._jd, HouseSystem.PORPHYRY)
+        hc_r = _hc(self._jd, HouseSystem.PLACIDUS)
         cmp  = compare_systems(hc_l, hc_r)
         assert cmp.right is hc_r
 
@@ -124,14 +128,18 @@ class TestHouseSystemComparisonStructure:
 class TestCuspDeltas:
     """cusp_deltas are correct signed circular differences."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_same_system_all_deltas_zero(self):
-        hc  = _hc(HouseSystem.PORPHYRY)
+        hc  = _hc(self._jd, HouseSystem.PORPHYRY)
         cmp = compare_systems(hc, hc)
         assert all(abs(d) < 1e-9 for d in cmp.cusp_deltas)
 
     def test_same_effective_system_all_deltas_zero(self):
-        hc1 = _hc(HouseSystem.PORPHYRY)
-        hc2 = _hc(HouseSystem.PORPHYRY)
+        hc1 = _hc(self._jd, HouseSystem.PORPHYRY)
+        hc2 = _hc(self._jd, HouseSystem.PORPHYRY)
         cmp = compare_systems(hc1, hc2)
         assert all(abs(d) < 1e-9 for d in cmp.cusp_deltas)
 
@@ -153,7 +161,7 @@ class TestCuspDeltas:
         assert all(abs(d - (-5.0)) < 1e-9 for d in cmp.cusp_deltas)
 
     def test_delta_range_within_180(self):
-        cmp = compare_systems(_hc(HouseSystem.PORPHYRY), _hc(HouseSystem.PLACIDUS))
+        cmp = compare_systems(_hc(self._jd, HouseSystem.PORPHYRY), _hc(self._jd, HouseSystem.PLACIDUS))
         assert all(-180.0 < d <= 180.0 or abs(d) < 1e-9 for d in cmp.cusp_deltas)
 
     def test_delta_wraparound_correct(self):
@@ -180,12 +188,12 @@ class TestCuspDeltas:
 
     def test_porphyry_vs_placidus_angular_cusps_close(self):
         # H1/H4/H7/H10 derive from same ASC/MC, so delta must be 0 or near-0
-        cmp = compare_systems(_hc(HouseSystem.PORPHYRY), _hc(HouseSystem.PLACIDUS))
+        cmp = compare_systems(_hc(self._jd, HouseSystem.PORPHYRY), _hc(self._jd, HouseSystem.PLACIDUS))
         for i in (0, 3, 6, 9):
             assert abs(cmp.cusp_deltas[i]) < 1e-9, f"H{i+1} delta={cmp.cusp_deltas[i]}"
 
     def test_whole_sign_vs_equal_h1_delta_within_30(self):
-        cmp = compare_systems(_hc(HouseSystem.WHOLE_SIGN), _hc(HouseSystem.EQUAL))
+        cmp = compare_systems(_hc(self._jd, HouseSystem.WHOLE_SIGN), _hc(self._jd, HouseSystem.EQUAL))
         assert abs(cmp.cusp_deltas[0]) < 30.0
 
 
@@ -196,28 +204,32 @@ class TestCuspDeltas:
 class TestSystemsAgreeFlag:
     """systems_agree reflects effective_system equality."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_same_effective_system_agrees(self):
-        hc1 = _hc(HouseSystem.PORPHYRY)
-        hc2 = _hc(HouseSystem.PORPHYRY)
+        hc1 = _hc(self._jd, HouseSystem.PORPHYRY)
+        hc2 = _hc(self._jd, HouseSystem.PORPHYRY)
         cmp = compare_systems(hc1, hc2)
         assert cmp.systems_agree is True
 
     def test_different_effective_systems_disagree(self):
-        cmp = compare_systems(_hc(HouseSystem.PORPHYRY), _hc(HouseSystem.PLACIDUS))
+        cmp = compare_systems(_hc(self._jd, HouseSystem.PORPHYRY), _hc(self._jd, HouseSystem.PLACIDUS))
         assert cmp.systems_agree is False
 
     def test_both_fallback_to_same_system_agree(self):
         # Both PLACIDUS at polar lat fall back to PORPHYRY → effective match
-        hc1 = _hc(HouseSystem.PLACIDUS, lat=80.0)
-        hc2 = _hc(HouseSystem.KOCH,     lat=80.0)
+        hc1 = _hc(self._jd, HouseSystem.PLACIDUS, lat=80.0)
+        hc2 = _hc(self._jd, HouseSystem.KOCH,     lat=80.0)
         assert hc1.effective_system == HouseSystem.PORPHYRY
         assert hc2.effective_system == HouseSystem.PORPHYRY
         cmp = compare_systems(hc1, hc2)
         assert cmp.systems_agree is True
 
     def test_requested_truth_still_visible_when_agree(self):
-        hc1 = _hc(HouseSystem.PLACIDUS, lat=80.0)
-        hc2 = _hc(HouseSystem.KOCH,     lat=80.0)
+        hc1 = _hc(self._jd, HouseSystem.PLACIDUS, lat=80.0)
+        hc2 = _hc(self._jd, HouseSystem.KOCH,     lat=80.0)
         cmp = compare_systems(hc1, hc2)
         assert cmp.systems_agree is True
         assert cmp.left.system  == HouseSystem.PLACIDUS
@@ -231,20 +243,24 @@ class TestSystemsAgreeFlag:
 class TestFallbackDiffersFlag:
     """fallback_differs correctly surfaces asymmetric fallback."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_neither_fallback_not_differs(self):
-        cmp = compare_systems(_hc(HouseSystem.PORPHYRY), _hc(HouseSystem.PLACIDUS))
+        cmp = compare_systems(_hc(self._jd, HouseSystem.PORPHYRY), _hc(self._jd, HouseSystem.PLACIDUS))
         assert cmp.fallback_differs is False
 
     def test_both_fallback_not_differs(self):
-        hc1 = _hc(HouseSystem.PLACIDUS, lat=80.0)
-        hc2 = _hc(HouseSystem.KOCH,     lat=80.0)
+        hc1 = _hc(self._jd, HouseSystem.PLACIDUS, lat=80.0)
+        hc2 = _hc(self._jd, HouseSystem.KOCH,     lat=80.0)
         assert hc1.fallback and hc2.fallback
         cmp = compare_systems(hc1, hc2)
         assert cmp.fallback_differs is False
 
     def test_one_fallback_one_not_differs(self):
-        hc_fallback   = _hc(HouseSystem.PLACIDUS, lat=80.0)
-        hc_no_fallback = _hc(HouseSystem.PORPHYRY, lat=80.0)
+        hc_fallback   = _hc(self._jd, HouseSystem.PLACIDUS, lat=80.0)
+        hc_no_fallback = _hc(self._jd, HouseSystem.PORPHYRY, lat=80.0)
         assert hc_fallback.fallback is True
         assert hc_no_fallback.fallback is False
         cmp = compare_systems(hc_fallback, hc_no_fallback)
@@ -258,22 +274,26 @@ class TestFallbackDiffersFlag:
 class TestFamiliesDifferFlag:
     """families_differ correctly reflects doctrinal-family differences."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_same_family_not_differs(self):
         # Both QUADRANT
-        cmp = compare_systems(_hc(HouseSystem.PORPHYRY), _hc(HouseSystem.PLACIDUS))
+        cmp = compare_systems(_hc(self._jd, HouseSystem.PORPHYRY), _hc(self._jd, HouseSystem.PLACIDUS))
         assert cmp.families_differ is False
 
     def test_different_family_differs(self):
         # QUADRANT vs WHOLE_SIGN
-        cmp = compare_systems(_hc(HouseSystem.PORPHYRY), _hc(HouseSystem.WHOLE_SIGN))
+        cmp = compare_systems(_hc(self._jd, HouseSystem.PORPHYRY), _hc(self._jd, HouseSystem.WHOLE_SIGN))
         assert cmp.families_differ is True
 
     def test_equal_vs_quadrant_differs(self):
-        cmp = compare_systems(_hc(HouseSystem.EQUAL), _hc(HouseSystem.PORPHYRY))
+        cmp = compare_systems(_hc(self._jd, HouseSystem.EQUAL), _hc(self._jd, HouseSystem.PORPHYRY))
         assert cmp.families_differ is True
 
     def test_solar_vs_quadrant_differs(self):
-        cmp = compare_systems(_hc(HouseSystem.SUNSHINE), _hc(HouseSystem.PORPHYRY))
+        cmp = compare_systems(_hc(self._jd, HouseSystem.SUNSHINE), _hc(self._jd, HouseSystem.PORPHYRY))
         assert cmp.families_differ is True
 
 
@@ -284,11 +304,12 @@ class TestFamiliesDifferFlag:
 class TestHousePlacementComparisonStructure:
     """HousePlacementComparison is a frozen dataclass with correct fields."""
 
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
         self.cmp = compare_placements(
             0.0,
-            _hc(HouseSystem.PORPHYRY),
-            _hc(HouseSystem.PLACIDUS),
+            _hc(jd_j2000, HouseSystem.PORPHYRY),
+            _hc(jd_j2000, HouseSystem.PLACIDUS),
         )
 
     def test_has_longitude_field(self):
@@ -335,17 +356,21 @@ class TestHousePlacementComparisonStructure:
 class TestComparePlacementsValues:
     """compare_placements() assigns longitude correctly under each system."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_two_systems_house_numbers_correct(self):
-        hc_p = _hc(HouseSystem.PORPHYRY)
-        hc_e = _hc(HouseSystem.EQUAL)
+        hc_p = _hc(self._jd, HouseSystem.PORPHYRY)
+        hc_e = _hc(self._jd, HouseSystem.EQUAL)
         cmp  = compare_placements(hc_p.asc, hc_p, hc_e)
         # ASC lands in H1 for both PORPHYRY and EQUAL
         assert cmp.houses[0] == 1
         assert cmp.houses[1] == 1
 
     def test_all_agree_when_same_house(self):
-        hc_p = _hc(HouseSystem.PORPHYRY)
-        hc_e = _hc(HouseSystem.PORPHYRY)
+        hc_p = _hc(self._jd, HouseSystem.PORPHYRY)
+        hc_e = _hc(self._jd, HouseSystem.PORPHYRY)
         cmp  = compare_placements(0.0, hc_p, hc_e)
         assert cmp.all_agree is True
 
@@ -364,28 +389,28 @@ class TestComparePlacementsValues:
         assert cmp2.all_agree is False
 
     def test_longitude_normalised_in_result(self):
-        hc = _hc(HouseSystem.PORPHYRY)
-        cmp = compare_placements(390.0, hc, _hc(HouseSystem.EQUAL))
+        hc = _hc(self._jd, HouseSystem.PORPHYRY)
+        cmp = compare_placements(390.0, hc, _hc(self._jd, HouseSystem.EQUAL))
         assert cmp.longitude == pytest.approx(30.0)
 
     def test_longitude_negative_normalised(self):
-        hc  = _hc(HouseSystem.PORPHYRY)
-        cmp = compare_placements(-30.0, hc, _hc(HouseSystem.EQUAL))
+        hc  = _hc(self._jd, HouseSystem.PORPHYRY)
+        cmp = compare_placements(-30.0, hc, _hc(self._jd, HouseSystem.EQUAL))
         assert cmp.longitude == pytest.approx(330.0)
 
     def test_three_systems_placements_length(self):
         cmp = compare_placements(
             0.0,
-            _hc(HouseSystem.PORPHYRY),
-            _hc(HouseSystem.PLACIDUS),
-            _hc(HouseSystem.EQUAL),
+            _hc(self._jd, HouseSystem.PORPHYRY),
+            _hc(self._jd, HouseSystem.PLACIDUS),
+            _hc(self._jd, HouseSystem.EQUAL),
         )
         assert len(cmp.placements) == 3
         assert len(cmp.houses) == 3
 
     def test_one_system_raises(self):
         with pytest.raises(ValueError):
-            compare_placements(0.0, _hc(HouseSystem.PORPHYRY))
+            compare_placements(0.0, _hc(self._jd, HouseSystem.PORPHYRY))
 
     def test_zero_systems_raises(self):
         with pytest.raises((ValueError, TypeError)):
@@ -399,16 +424,20 @@ class TestComparePlacementsValues:
 class TestAngularityAgrees:
     """angularity_agrees is consistent with per-placement angularity."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_same_house_same_angularity_agrees(self):
-        hc_p = _hc(HouseSystem.PORPHYRY)
-        hc_e = _hc(HouseSystem.EQUAL)
+        hc_p = _hc(self._jd, HouseSystem.PORPHYRY)
+        hc_e = _hc(self._jd, HouseSystem.EQUAL)
         cmp  = compare_placements(hc_p.asc, hc_p, hc_e)
         # Both should be H1 → ANGULAR
         assert cmp.angularity_agrees is True
 
     def test_angularity_agrees_consistent_with_categories(self):
-        hc_p = _hc(HouseSystem.PORPHYRY)
-        hc_e = _hc(HouseSystem.EQUAL)
+        hc_p = _hc(self._jd, HouseSystem.PORPHYRY)
+        hc_e = _hc(self._jd, HouseSystem.EQUAL)
         cmp  = compare_placements(0.0, hc_p, hc_e)
         cats = {describe_angularity(pl).category for pl in cmp.placements}
         expected = len(cats) == 1
@@ -437,41 +466,45 @@ class TestAngularityAgrees:
 class TestRequestedEffectiveTruth:
     """Requested vs effective system truth is preserved and not collapsed."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_requested_system_visible_after_compare_systems(self):
-        hc1 = _hc(HouseSystem.PLACIDUS, lat=80.0)   # falls back to PORPHYRY
-        hc2 = _hc(HouseSystem.PORPHYRY)
+        hc1 = _hc(self._jd, HouseSystem.PLACIDUS, lat=80.0)   # falls back to PORPHYRY
+        hc2 = _hc(self._jd, HouseSystem.PORPHYRY)
         cmp = compare_systems(hc1, hc2)
         assert cmp.left.system  == HouseSystem.PLACIDUS   # requested preserved
         assert cmp.right.system == HouseSystem.PORPHYRY
 
     def test_effective_system_visible_after_compare_systems(self):
-        hc1 = _hc(HouseSystem.PLACIDUS, lat=80.0)
-        hc2 = _hc(HouseSystem.PORPHYRY)
+        hc1 = _hc(self._jd, HouseSystem.PLACIDUS, lat=80.0)
+        hc2 = _hc(self._jd, HouseSystem.PORPHYRY)
         cmp = compare_systems(hc1, hc2)
         assert cmp.left.effective_system  == HouseSystem.PORPHYRY
         assert cmp.right.effective_system == HouseSystem.PORPHYRY
 
     def test_requested_system_visible_in_placement_comparison(self):
-        hc_fb    = _hc(HouseSystem.PLACIDUS, lat=80.0)
-        hc_nofb  = _hc(HouseSystem.PORPHYRY)
+        hc_fb    = _hc(self._jd, HouseSystem.PLACIDUS, lat=80.0)
+        hc_nofb  = _hc(self._jd, HouseSystem.PORPHYRY)
         cmp = compare_placements(0.0, hc_fb, hc_nofb)
         assert cmp.placements[0].house_cusps.system == HouseSystem.PLACIDUS
         assert cmp.placements[1].house_cusps.system == HouseSystem.PORPHYRY
 
     def test_fallback_reason_visible_in_placement_comparison(self):
-        hc_fb = _hc(HouseSystem.PLACIDUS, lat=80.0)
-        hc_ok = _hc(HouseSystem.PORPHYRY)
+        hc_fb = _hc(self._jd, HouseSystem.PLACIDUS, lat=80.0)
+        hc_ok = _hc(self._jd, HouseSystem.PORPHYRY)
         cmp   = compare_placements(0.0, hc_fb, hc_ok)
         assert cmp.placements[0].house_cusps.fallback_reason is not None
         assert cmp.placements[1].house_cusps.fallback_reason is None
 
     def test_classification_visible_on_both_sides(self):
-        cmp = compare_systems(_hc(HouseSystem.PORPHYRY), _hc(HouseSystem.PLACIDUS))
+        cmp = compare_systems(_hc(self._jd, HouseSystem.PORPHYRY), _hc(self._jd, HouseSystem.PLACIDUS))
         assert cmp.left.classification  is not None
         assert cmp.right.classification is not None
 
     def test_policy_visible_on_both_sides(self):
-        cmp = compare_systems(_hc(HouseSystem.PORPHYRY), _hc(HouseSystem.PLACIDUS))
+        cmp = compare_systems(_hc(self._jd, HouseSystem.PORPHYRY), _hc(self._jd, HouseSystem.PLACIDUS))
         assert cmp.left.policy  is not None
         assert cmp.right.policy is not None
 
@@ -483,9 +516,13 @@ class TestRequestedEffectiveTruth:
 class TestDeterminism:
     """compare_systems and compare_placements are deterministic."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_compare_systems_deterministic(self):
-        hc_l = _hc(HouseSystem.PORPHYRY)
-        hc_r = _hc(HouseSystem.PLACIDUS)
+        hc_l = _hc(self._jd, HouseSystem.PORPHYRY)
+        hc_r = _hc(self._jd, HouseSystem.PLACIDUS)
         cmp1 = compare_systems(hc_l, hc_r)
         cmp2 = compare_systems(hc_l, hc_r)
         assert cmp1.cusp_deltas    == cmp2.cusp_deltas
@@ -493,8 +530,8 @@ class TestDeterminism:
         assert cmp1.families_differ == cmp2.families_differ
 
     def test_compare_placements_deterministic(self):
-        hc_p = _hc(HouseSystem.PORPHYRY)
-        hc_e = _hc(HouseSystem.EQUAL)
+        hc_p = _hc(self._jd, HouseSystem.PORPHYRY)
+        hc_e = _hc(self._jd, HouseSystem.EQUAL)
         cmp1 = compare_placements(0.0, hc_p, hc_e)
         cmp2 = compare_placements(0.0, hc_p, hc_e)
         assert cmp1.houses         == cmp2.houses
@@ -502,7 +539,7 @@ class TestDeterminism:
         assert cmp1.angularity_agrees == cmp2.angularity_agrees
 
     def test_self_comparison_all_deltas_zero(self):
-        hc  = _hc(HouseSystem.PLACIDUS)
+        hc  = _hc(self._jd, HouseSystem.PLACIDUS)
         cmp = compare_systems(hc, hc)
         assert all(abs(d) < 1e-9 for d in cmp.cusp_deltas)
         assert cmp.systems_agree  is True
@@ -510,7 +547,7 @@ class TestDeterminism:
         assert cmp.families_differ is False
 
     def test_self_placement_all_agree(self):
-        hc  = _hc(HouseSystem.PORPHYRY)
+        hc  = _hc(self._jd, HouseSystem.PORPHYRY)
         cmp = compare_placements(0.0, hc, hc)
         assert cmp.all_agree is True
         assert cmp.angularity_agrees is True
@@ -523,41 +560,45 @@ class TestDeterminism:
 class TestPhase8Regression:
     """All prior-phase semantics remain unchanged after Phase 8 additions."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, jd_j2000):
+        self._jd = jd_j2000
+
     def test_assign_house_still_works(self):
-        hc = calculate_houses(_JD, _LAT, _LON)
+        hc = calculate_houses(self._jd, _LAT, _LON)
         pl = assign_house(0.0, hc)
         assert isinstance(pl, HousePlacement)
 
     def test_describe_boundary_still_works(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         bp = describe_boundary(pl)
         assert isinstance(bp, HouseBoundaryProfile)
 
     def test_describe_angularity_still_works(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         ap = describe_angularity(pl)
         assert isinstance(ap, HouseAngularityProfile)
 
     def test_calculate_houses_unchanged(self):
-        result = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        result = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         assert len(result.cusps) == 12
         assert result.effective_system == HouseSystem.PORPHYRY
 
     def test_no_gaps_porphyry(self):
-        hc     = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc     = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         houses = {assign_house(d / 10.0, hc).house for d in range(3600)}
         assert houses == set(range(1, 13))
 
     def test_boundary_span_identity(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(0.0, hc)
         bp = describe_boundary(pl)
         assert bp.dist_to_opening + bp.dist_to_closing == pytest.approx(bp.house_span, abs=1e-9)
 
     def test_angularity_h1_still_angular(self):
-        hc = calculate_houses(_JD, _LAT, _LON, HouseSystem.PORPHYRY)
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.PORPHYRY)
         pl = assign_house(hc.asc, hc)
         ap = describe_angularity(pl)
         assert ap.category == HouseAngularity.ANGULAR
