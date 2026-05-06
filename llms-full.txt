@@ -1,0 +1,31 @@
+# Moira: Full Documentation Index
+
+This document provides a comprehensive index of the Moira engine for LLMs and deep-crawling agents.
+
+## Core Doctrines
+- [Light Box Doctrine](wiki/01_doctrines/01_LIGHT_BOX_DOCTRINE.md): Rationale for transparency.
+- [Beyond Swiss Ephemeris](wiki/01_doctrines/BEYOND_SWISS_EPHEMERIS.md): Competitive analysis and unique capabilities.
+- [Subsystem Constitutional Process](wiki/00_foundations/CONSTITUTIONAL_PROCESS.md): Governance and development standards.
+
+## Astronomical Substrate
+- [Precession/Nutation](moira/nutation.py): IAU 2000A/2006 implementations.
+- [Time Systems](moira/time_utils.py): UT1, TT, TDB, and Delta-T policies.
+- [Coordinate Transforms](moira/geoutils.py): Ecliptic, equatorial, and topocentric transformations.
+
+## Astrological Engines
+- [House Systems](moira/houses.py): Implementation of 17 house systems.
+- [Predictive Techniques](moira/predictive.py): Progressions, directions, and returns.
+- [Traditional Dignities](moira/dignities.py): Domicile, exaltation, and sect logic.
+- [Arabic Parts](moira/lots.py): A catalog of 499 lots.
+
+## Specialized Catalogs
+- [Star Registry](moira/data/star_registry.csv): 1,809 named stars with Gaia DR3 mapping.
+- [Asteroid Kernels](kernels/minor_bodies.bsp): Bundled SPK kernels for major asteroids.
+
+## Verification and Quality
+- [Test Suite](tests/): Comprehensive regression and unit tests.
+- [Validation Wiki](wiki/03_validation/): Detailed reports on astronomical and astrological parity.
+
+## AI Interaction
+- [AGENTS.md](AGENTS.md): Detailed persona and operational rules.
+- [.github/copilot-instructions.md](.github/copilot-instructions.md): Integration for GitHub Copilot.

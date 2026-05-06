@@ -20,6 +20,18 @@ keywords = [
     "sidereal",
     "houses",
     "transits",
+    "swiss-ephemeris",
+    "horoscope",
+    "natal-chart",
+    "python-astrology",
+    "celestial-mechanics",
+    "jpl-de441",
+    "astrometry",
+    "ephemeris-engine",
+    "reproducible-science",
+    "astrology-api",
+    "planetary-positions",
+    "IAU-2006",
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",

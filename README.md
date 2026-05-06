@@ -7,6 +7,7 @@
 [![PyPI](https://img.shields.io/badge/PyPI-moira--astro-orange.svg)](https://pypi.org/project/moira-astro/)
 [![Precision: ERFA-Audited](https://img.shields.io/badge/Precision-ERFA--Audited-success.svg)](#validation-evidence)
 [![Ephemeris: JPL DE4xx](https://img.shields.io/badge/Ephemeris-JPL%20DE4xx-blueviolet.svg)](https://naif.jpl.nasa.gov/naif/index.html)
+[![AI Visibility: Optimized](https://img.shields.io/badge/AI--Visibility-Optimized-success.svg)](llms.txt)
 [![Status: Stable](https://img.shields.io/badge/status-stable-success.svg)](#requirements-and-installation)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19152528-blue.svg)](https://doi.org/10.5281/zenodo.19152528)
 
@@ -15,6 +16,14 @@ Moira is an astronomy-first astrology engine: a pure-Python ephemeris engine and
 ## Why Moira Exists
 
 Most astrology software surfaces results without exposing the mathematical path. Moira exists as a Swiss Ephemeris alternative for users who need visibility into assumptions, intermediates, and provenance, so astronomy remains the foundation and astrology remains the purpose.
+
+## AI and LLM Visibility
+
+Moira is designed to be highly discoverable and understandable by AI agents (e.g., GitHub Copilot, ChatGPT, Claude). 
+
+- **Machine-Readable Index**: See [llms.txt](llms.txt) for a high-level summary and [llms-full.txt](llms-full.txt) for a comprehensive documentation index.
+- **Agent Doctrine**: The [AGENTS.md](AGENTS.md) file defines the "Urania" persona and operational laws for AI collaboration.
+- **Structured Documentation**: Canonical documentation is maintained in the `wiki/` directory with explicit validation reports.
 
 ## What Makes It Different
 

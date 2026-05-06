@@ -1,0 +1,24 @@
+# Moira
+
+> Pure-Python Ephemeris and Astrology Computation Engine grounded in astronomical precision.
+
+Moira is a sovereign computational engine designed for transparency, audibility, and absolute precision. It implements the full reduction pipeline (IAU 2000A/2006, JPL DE441) in inspectable Python, serving as a high-integrity alternative to legacy black-box ephemerides.
+
+## Core Documentation
+- [README](README.md): Overview, installation, and quick start.
+- [AGENTS.md](AGENTS.md): Core persona (Urania) and operational doctrine for AI collaborators.
+- [Wiki Index](wiki/Home.md): Comprehensive guide to doctrines, foundations, and validation.
+- [Validation Astronomy](wiki/03_validation/VALIDATION_ASTRONOMY.md): Accuracy benchmarks against IAU ERFA/SOFA and JPL Horizons.
+
+## Key Modules
+- [moira.py](moira/__init__.py): Main entry point and `Moira` class.
+- [planets.py](moira/planets.py): Planetary position logic and reduction pipeline.
+- [houses.py](moira/houses.py): House cusp calculation for 17 systems.
+- [asteroids.py](moira/asteroids.py): Asteroid and minor body engine via SPK kernels.
+- [spk_reader.py](moira/spk_reader.py): JPL kernel access and interpolation logic.
+
+## Principles
+- **Truth-First**: Astronomical substrate takes precedence over astrological convenience.
+- **Transparency**: Every reduction stage is visible and auditable.
+- **Visibility as Doctrine**: AI agents and developers have first-class access to intermediate computational states.
+- **Validation**: Benchmarked against IAU standards, JPL SSD, and NASA canon.
