@@ -140,11 +140,11 @@ Canon: Moira Sovereign Facade Architecture; moira.facade astronomy policy.
     def fixed_star(self, name: str, dt: datetime):
         """Return the tropical ecliptic position of a fixed star."""
         facade = _facade_module()
-        from .julian import ut_to_tt as _utt
         from .stars import star_at as _star_at
 
         jd = facade.jd_from_datetime(dt)
-        return _star_at(name, _utt(jd))
+        jd_tt = facade.utc_to_tt(jd)
+        return _star_at(name, jd_tt)
 
     def heliacal_rising(
         self,

@@ -90,13 +90,15 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
         """
         facade = _facade_module()
         jd = facade.jd_from_datetime(dt)
+        jd_tt = facade.utc_to_tt(jd)
+        jd_ut1 = facade.utc_to_ut1(jd)
 
         lst_deg: float | None = None
         if observer_lat is not None and observer_lon is not None:
-            lst_deg = facade.local_sidereal_time(jd, observer_lon)
+            lst_deg = facade.local_sidereal_time(jd_ut1, observer_lon)
 
         planets = facade.all_planets_at(
-            jd,
+            jd_tt,
             bodies=bodies,
             reader=self._reader,
             observer_lat=observer_lat,
@@ -112,7 +114,7 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
             nodes[facade.Body.LILITH] = facade.mean_lilith(jd)
             nodes[facade.Body.TRUE_LILITH] = facade.true_lilith(jd, reader=self._reader)
 
-        jd_tt = facade.ut_to_tt(jd)
+        jd_tt = facade.utc_to_tt(jd)
         obl = facade.true_obliquity(jd_tt)
         dt_s = facade.delta_t_from_jd(jd)
 
@@ -135,9 +137,10 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
         """Calculate house cusps for a time and geographic location."""
         facade = _facade_module()
         jd = facade.jd_from_datetime(dt)
+        jd_ut1 = facade.utc_to_ut1(jd)
         house_system = facade.HouseSystem.PLACIDUS if system is None else system
         return facade.calculate_houses(
-            jd, latitude, longitude, house_system, policy=policy
+            jd_ut1, latitude, longitude, house_system, policy=policy
         )
 
     def sky_position(
