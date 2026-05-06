@@ -2,6 +2,7 @@
 Moira — julian.py
 The Julian Day Engine: governs all conversions between calendar dates,
 Julian Day Numbers, and the time scales used by the DE441 ephemeris.
+Note: Moira treats civil UTC as a proxy for astronomical UT1 (error < 0.9s).
 
 Boundary: owns the full pipeline from Python datetime / calendar tuple to
 Julian Day (JD), Terrestrial Time (TT), and sidereal time. Delegates
@@ -31,10 +32,12 @@ External dependency assumptions:
 """
 
 import math
+import bisect
 from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
-from .constants import J2000, JULIAN_CENTURY
+from .constants import J2000, JULIAN_CENTURY, TAI_TT_OFFSET
+from .data.leap_seconds import LEAP_SECONDS
 
 _DELTA_T_OBSERVED_5Y: tuple[tuple[float, float], ...] = (
     (1955.0, 31.1),
@@ -359,8 +362,9 @@ def jd_from_datetime(dt: datetime) -> float:
     """
     Convert a Python ``datetime`` to a Julian Day Number in UT.
 
-    The input must be timezone-aware. Timezone-aware objects are first
-    converted to UTC before the JD computation.
+    The input must be timezone-aware. The datetime is converted to UTC before
+    the Julian Day is calculated. Moira treats the resulting JD as the
+    Universal Time (UT1) basis for all downstream astronomical reductions.
 
     Args:
         dt: A timezone-aware Python ``datetime``.
@@ -527,8 +531,9 @@ def centuries_from_j2000(jd: float) -> float:
 # ---------------------------------------------------------------------------
 # ΔT — difference TT − UT1 in seconds
 #
-# Uses the polynomial approximations from Morrison & Stephenson (2004)
-# and Espenak & Meeus for the modern period.
+# The difference ΔT = TT − UT1 is the correction required to convert between
+# the Earth-rotation-based Universal Time (UTC/UT1) and the uniform
+# Terrestrial Time (TT) used for ephemeris lookup.
 # Accurate to a few seconds for historical dates; sub-second for 1900–2100.
 # ---------------------------------------------------------------------------
 
@@ -1003,13 +1008,101 @@ class DeltaTPolicy:
         return delta_t(year)
 
 
+def tai_minus_utc(jd_utc: float) -> float:
+    """
+    Return the TAI - UTC offset (cumulative leap seconds) for a Julian Date.
+
+    Reference: IERS Bulletin C.
+    """
+    # LEAP_SECONDS is a list of (jd, offset) sorted by jd.
+    # We find the largest jd <= jd_utc.
+    idx = bisect.bisect_right(LEAP_SECONDS, (jd_utc, float('inf'))) - 1
+    if idx < 0:
+        # Before 1972-01-01, the system was different.
+        # Moira falls back to 10.0s for the immediate pre-1972 era,
+        # but users should ideally use historical UT1/TT models directly.
+        return 10.0
+    return LEAP_SECONDS[idx][1]
+
+
+def utc_to_tai(jd_utc: float) -> float:
+    """Convert Julian Day in UTC to International Atomic Time (TAI)."""
+    return jd_utc + tai_minus_utc(jd_utc) / 86400.0
+
+
+def tai_to_tt(jd_tai: float) -> float:
+    """Convert Julian Day in TAI to Terrestrial Time (TT)."""
+    return jd_tai + TAI_TT_OFFSET / 86400.0
+
+
+def utc_to_tt(jd_utc: float) -> float:
+    """
+    Convert Julian Day in UTC to Terrestrial Time (TT).
+    This is the primary reduction for modern civil time to astronomical time.
+    """
+    return tai_to_tt(utc_to_tai(jd_utc))
+
+
+class EOPRegistry:
+    """
+    Vessel: The Warden of Earth Orientation Parameters.
+    Governs the lazy loading and interpolation of DUT1 (UT1-UTC).
+    """
+    _data: dict[int, float] | None = None
+    _path = Path(__file__).resolve().parent / "data" / "iers_eop.txt"
+
+    @classmethod
+    def get_dut1(cls, jd_utc: float) -> float:
+        """Return UT1-UTC in seconds for a given JD."""
+        if cls._data is None:
+            cls._load()
+        
+        mjd = int(jd_utc - 2400000.5)
+        # Simple nearest-neighbor for daily EOP data
+        return cls._data.get(mjd, 0.0)
+
+    @classmethod
+    def _load(cls):
+        cls._data = {}
+        if not cls._path.exists():
+            return
+        with cls._path.open("r", encoding="utf-8") as f:
+            for line in f:
+                if line.startswith("#") or not line.strip():
+                    continue
+                parts = line.split()
+                if len(parts) >= 2:
+                    try:
+                        mjd = int(float(parts[0]))
+                        dut1 = float(parts[1])
+                        cls._data[mjd] = dut1
+                    except ValueError:
+                        continue
+
+
+def utc_to_ut1(jd_utc: float) -> float:
+    """
+    Convert Julian Day in UTC to Universal Time (UT1).
+    This bridges civil time to Earth's rotation for sidereal calculations.
+    """
+    # Prefer measured DUT1 from the IERS registry if available
+    dut1 = EOPRegistry.get_dut1(jd_utc)
+    if dut1 != 0.0:
+        return jd_utc + dut1 / 86400.0
+        
+    # Fallback: derive from TT and DeltaT table
+    tt = utc_to_tt(jd_utc)
+    dt = delta_t_from_jd(jd_utc)
+    return tt - dt / 86400.0
+
+
 def ut_to_tt(
     jd_ut: float,
     year: float | None = None,
     delta_t_policy: 'DeltaTPolicy | None' = None,
 ) -> float:
     """
-    Convert a Julian Day in UT to Terrestrial Time (TT).
+    Convert Julian Day in UT1 (or UTC proxy) to Terrestrial Time (TT).
 
     Args:
         jd_ut: Julian Day Number in Universal Time.
@@ -1058,7 +1151,7 @@ def tt_to_ut(
     delta_t_policy: 'DeltaTPolicy | None' = None,
 ) -> float:
     """
-    Convert a Julian Day in TT to Universal Time (UT) using ``delta_t()``.
+    Convert a Julian Day in TT to Universal Time (UT1/UTC proxy) using ``delta_t()``.
 
     Args:
         jd_tt: Julian Day Number in Terrestrial Time.

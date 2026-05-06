@@ -45,6 +45,10 @@ JULIAN_YEAR    = 365.25        # Days per Julian year (exact by definition)
 TROPICAL_YEAR  = 365.24219     # Mean tropical year in days
 SIDEREAL_YEAR  = 365.256363    # Mean sidereal year in days
 
+# Fixed offset between International Atomic Time (TAI) and
+# Terrestrial Time (TT). Established by IAU in 1977.
+TAI_TT_OFFSET  = 32.184        # seconds (exact)
+
 # ---------------------------------------------------------------------------
 # Physical constants — single canonical source for the whole library
 # ---------------------------------------------------------------------------

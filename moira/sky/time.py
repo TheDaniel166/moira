@@ -6,7 +6,8 @@ scales, Earth rotation quantities, and physics-based ΔT decomposition.
 
 Time scales
 -----------
-UT   — Universal Time, rotationally tied to Earth orientation
+UT   — Universal Time (UT1), rotationally tied to Earth orientation.
+       Note: Moira resolves UTC to UT1/TT via historical leap second tables.
 TT   — Terrestrial Time, uniform atomic-second scale
 TDB  — Barycentric Dynamical Time, relativistic correction to TT
 ERA  — Earth Rotation Angle, precise UT1-based orientation
@@ -72,6 +73,8 @@ from moira.julian import (
     tt_to_tdb,
     tt_to_ut,
     ut_to_tt,
+    utc_to_tt,
+    utc_to_ut1,
 )
 
 __all__ = [
@@ -85,6 +88,8 @@ __all__ = [
     "decimal_year_from_jd",
     "centuries_from_j2000",
     # Time scale conversions
+    "utc_to_tt",
+    "utc_to_ut1",
     "ut_to_tt",
     "tt_to_ut",
     "tt_to_tdb",

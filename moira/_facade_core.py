@@ -81,7 +81,7 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
 
         Parameters
         ----------
-        dt              : timezone-aware datetime
+        dt              : timezone-aware datetime (UTC used as UT1 proxy)
         bodies          : list of Body.* constants (defaults to ALL_PLANETS)
         include_nodes   : include True Node, Mean Node, Lilith
         observer_lat    : geographic latitude for topocentric Moon (degrees)
