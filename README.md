@@ -83,6 +83,7 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
 - **Mapping** — Astrocartography (ACG) lines for all planets; Local Space chart positions; Gauquelin sectors.
 - **Galactic coordinates** — full equatorial-to-galactic transform and reference point catalog.
 - **Temporal systems** — 28-mansion Arabic lunar stations (Manazil); Sothic cycle drift and Egyptian civil calendar conversion; void-of-course Moon windows.
+- **Harmograms** — intensity-spectrum research engine (H1–H5); spectral vectors, zero-Aries parts construction, intensity doctrine, and time-domain trace analysis.
 - **Harmonics** — harmonic chart calculation, aspect-harmonic profiles, vibrational fingerprint analysis.
 - **Synastry** — inter-chart aspects, house overlays, composite chart (midpoint method), Davison chart (spherical midpoint).
 - **Jones chart shapes** — all 7 temperament types.
