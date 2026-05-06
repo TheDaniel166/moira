@@ -5,6 +5,7 @@ This document provides a comprehensive index of the Moira engine for LLMs and de
 ## Core Doctrines
 - [Light Box Doctrine](wiki/01_doctrines/01_LIGHT_BOX_DOCTRINE.md): Rationale for transparency.
 - [Beyond Swiss Ephemeris](wiki/01_doctrines/BEYOND_SWISS_EPHEMERIS.md): Competitive analysis and unique capabilities.
+- [Native Backend Architecture](docs/architecture/MOIRA_NATIVE_BACKEND_ARCHITECTURE.md): Dual-substrate (Python/C++) design.
 - [Subsystem Constitutional Process](wiki/00_foundations/CONSTITUTIONAL_PROCESS.md): Governance and development standards.
 
 ## Astronomical Substrate
