@@ -14,7 +14,10 @@ Moira is a sovereign computational engine designed for transparency, audibility,
 - [moira.py](moira/__init__.py): Main entry point and `Moira` class.
 - [planets.py](moira/planets.py): Planetary position logic and reduction pipeline.
 - [houses.py](moira/houses.py): House cusp calculation for 17 systems.
-- [asteroids.py](moira/asteroids.py): Asteroid and minor body engine via SPK kernels.
+- [harmograms.py](moira/harmograms.py): Research engine for planetary intensity spectra.
+- [vedic_dignities.py](moira/vedic_dignities.py): Jyotish dignity and relationship engine.
+- [heliacal.py](moira/heliacal.py): Generalized celestial visibility and events.
+- [cartography.py](moira/solar_cartography.py): Solar and Lunar eclipse cartography.
 - [spk_reader.py](moira/spk_reader.py): JPL kernel access and interpolation logic.
 
 ## Principles

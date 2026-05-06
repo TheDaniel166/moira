@@ -16,6 +16,9 @@ This document provides a comprehensive index of the Moira engine for LLMs and de
 - [House Systems](moira/houses.py): Implementation of 17 house systems.
 - [Predictive Techniques](moira/predictive.py): Progressions, directions, and returns.
 - [Traditional Dignities](moira/dignities.py): Domicile, exaltation, and sect logic.
+- [Vedic Suite](moira/dasha_systems.py): Dasha, Varga, Shadbala, and Ashtakavarga.
+- [Heliacal Phenomena](moira/heliacal.py): Rising/setting and visibility models.
+- [Harmograms](moira/harmograms.py): Spectral vectors and intensity doctrine.
 - [Arabic Parts](moira/lots.py): A catalog of 499 lots.
 
 ## Specialized Catalogs
