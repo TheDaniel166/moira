@@ -46,7 +46,7 @@ from .coordinates import (
 )
 from .obliquity import mean_obliquity, true_obliquity, nutation as _nutation
 from .julian import ut_to_tt, centuries_from_j2000, local_sidereal_time, decimal_year, DeltaTPolicy
-from .spk_reader import get_reader, KernelReader, SpkReader
+from .spk_reader import get_active_reader, KernelReader, SpkReader, MissingKernelError
 from .corrections import (
     apply_light_time, apply_aberration, apply_deflection, apply_frame_bias,
     apply_refraction, SCHWARZSCHILD_RADII,
@@ -592,7 +592,7 @@ def _chiron_planet_data(jd_ut: float, reader: KernelReader) -> PlanetData:
     """Bridge explicit Chiron requests to the centaur kernel path."""
     from .asteroids import asteroid_at
 
-    chiron = asteroid_at(Body.CHIRON, jd_ut, de441_reader=reader)
+    chiron = asteroid_at(Body.CHIRON, jd_ut, reader=reader)
     return PlanetData(
         name=chiron.name,
         longitude=chiron.longitude,
@@ -713,7 +713,12 @@ def planet_at(
         )
 
     if reader is None:
-        reader = get_reader()
+        reader = get_active_reader()
+        if reader is None:
+            raise MissingKernelError(
+                "No planetary kernel is provided and no active reader context was found. "
+                "Pass a reader explicitly or use the Moira facade."
+            )
 
     if body == Body.CHIRON:
         if center != 'geocentric':
@@ -909,7 +914,12 @@ def sky_position_at(
         call if ``reader`` is ``None`` and no singleton exists yet.
     """
     if reader is None:
-        reader = get_reader()
+        reader = get_active_reader()
+        if reader is None:
+            raise MissingKernelError(
+                "No planetary kernel is provided and no active reader context was found. "
+                "Pass a reader explicitly or use the Moira facade."
+            )
 
     year, month, *_ = _approx_year(jd_ut)
     jd_tt = ut_to_tt(jd_ut, decimal_year(year, month), delta_t_policy=delta_t_policy)
@@ -1049,7 +1059,12 @@ def all_planets_at(
     if bodies is None:
         bodies = Body.ALL_PLANETS
     if reader is None:
-        reader = get_reader()
+        reader = get_active_reader()
+        if reader is None:
+            raise MissingKernelError(
+                "No planetary kernel is provided and no active reader context was found. "
+                "Pass a reader explicitly or use the Moira facade."
+            )
 
     year, month, *_ = _approx_year(jd_ut)
     jd_tt = ut_to_tt(jd_ut, decimal_year(year, month), delta_t_policy=delta_t_policy)

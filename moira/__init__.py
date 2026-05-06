@@ -259,7 +259,6 @@ from .comets import (
     comet_at,
     all_comets_at,
     list_comets,
-    load_comet_kernel,
 )
 from .asteroid_families import (
     asteroid_family,
@@ -708,7 +707,6 @@ __all__ = [
     "comet_at",
     "all_comets_at",
     "list_comets",
-    "load_comet_kernel",
     # Asteroid families
     "asteroid_family",
     "family_members",

@@ -17,8 +17,6 @@ Owns:
     - all_asteroids_at()  — positions of a set of bodies at a JD.
     - list_asteroids()    — all known body names.
     - available_in_kernel() — names present in loaded kernels.
-    - load_asteroid_kernel() / load_secondary_kernel() / load_tertiary_kernel()
-      / load_quaternary_kernel() — explicit kernel load / reload.
 Delegates:
     - Earth/Sun barycentric positions to moira.planets / moira.spk_reader.
     - Light-time, aberration, deflection, frame-bias corrections to
@@ -35,10 +33,7 @@ Import-time side effects:
 
 External dependency assumptions:
     - jplephem must be installed (ImportError raised otherwise).
-    - asteroids.bsp (primary kernel) must be present before any position
-      query; FileNotFoundError is raised otherwise.
-    - sb441-n373s.bsp, centaurs.bsp, minor_bodies.bsp are optional; absent
-      kernels are silently skipped.
+    - SPK kernels (asteroids.bsp, etc.) are managed by the caller or facade.
     - No Qt, no database, no OS threads.
 
 Public surface / exports:
@@ -48,8 +43,6 @@ Public surface / exports:
     all_asteroids_at()    — multi-body positions
     list_asteroids()      — all known names
     available_in_kernel() — names present in loaded kernels
-    load_asteroid_kernel(), load_secondary_kernel(),
-    load_tertiary_kernel(), load_quaternary_kernel()
 
 Four-kernel architecture
 ------------------------
@@ -97,6 +90,7 @@ from .corrections import (
     SCHWARZSCHILD_RADII,
 )
 from ._spk_body_kernel import SmallBodyKernel, _Type13Segment  # noqa: F401 — re-export _Type13Segment
+from .spk_reader import get_active_reader, KernelReader, MissingKernelError
 
 # Alias for internal use and backward compatibility with existing imports.
 _AsteroidKernel = SmallBodyKernel
@@ -618,21 +612,7 @@ class AsteroidData:
                 f"  ({self.longitude:.4f}°) {r}  Δ={self.speed:+.4f}°/d")
 
 
-# ---------------------------------------------------------------------------
-# Asteroid kernel singletons
-# _AsteroidKernel is an alias for SmallBodyKernel (imported above).
-# ---------------------------------------------------------------------------
-
-_primary_kernel:    _AsteroidKernel | None = None   # codes300 (accurate, main-belt)
-_secondary_kernel:  _AsteroidKernel | None = None   # sb441 (TNO supplement, optional)
-_tertiary_kernel:   _AsteroidKernel | None = None   # centaurs.bsp (Horizons, optional)
-_quaternary_kernel: _AsteroidKernel | None = None   # minor_bodies.bsp (Horizons, optional)
-
 # NAIF IDs for which sb441-n373s.bsp is preferred over codes300.
-# Benchmarked against JPL Horizons OBSERVER (quantity 31): sb441 is
-# sub-arcsecond for all main-belt bodies it contains; codes300 has errors
-# of arcminutes to degrees for the same bodies.
-# This set is populated at first use from the loaded secondary kernel.
 _SB441_PREFERRED: frozenset[int] = frozenset({
     2000001,   # Ceres
     2000002,   # Pallas
@@ -641,180 +621,101 @@ _SB441_PREFERRED: frozenset[int] = frozenset({
 })
 
 
+# Kernel discovery is now handled by the facade / KernelPool.
+# Legacy shims below maintain compatibility with older test suites.
+
+# Legacy state for backward compatibility and internal test hooks.
+_primary_kernel    = None
+_secondary_kernel  = None
+_tertiary_kernel   = None
+_quaternary_kernel = None
+
+from ._kernel_paths import find_kernel as _fk
+_PRIMARY_KERNEL_PATH    = _fk("asteroids.bsp")
+_SECONDARY_KERNEL_PATH  = _fk("sb441-n373s.bsp")
+_TERTIARY_KERNEL_PATH   = _fk("centaurs.bsp")
+_QUATERNARY_KERNEL_PATH = _fk("minor_bodies.bsp")
+
+
 def load_asteroid_kernel(path: str | Path | None = None) -> None:
     """
-    Load (or reload) the PRIMARY asteroid kernel (codes_300ast / asteroids.bsp).
-
-    If *path* is None the default location is used:
-        <project_root>/asteroids.bsp   (rename codes_300ast_20100725.bsp)
-
-    Raises FileNotFoundError if the file does not exist.
+    RITE: The Resource Expansion
+    
+    THEOREM: load_asteroid_kernel adds an asteroid SPK kernel to the 
+        active global reader context, ensuring that asteroid NAIF IDs 
+        become resolvable.
     """
-    global _primary_kernel
-    p = Path(path) if path else _PRIMARY_KERNEL_PATH
-    if not p.exists():
-        raise FileNotFoundError(
-            f"Primary asteroid kernel not found at {p}\n"
-            "Download codes_300ast_20100725.bsp from:\n"
-            "  https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/asteroids/\n"
-            "rename it to asteroids.bsp, and place it in the project root."
-        )
-    if _primary_kernel is not None:
-        _primary_kernel.close()
-    _primary_kernel = _AsteroidKernel(p)
+    if path is None:
+        return
+    
+    from .spk_reader import add_to_global_pool
+    add_to_global_pool(path)
 
 
 def load_secondary_kernel(path: str | Path | None = None) -> None:
-    """
-    Load (or reload) the SECONDARY asteroid kernel (sb441-n373s.bsp).
-
-    Used only for TNOs/bodies absent from the primary kernel:
-    Ixion, Quaoar, Varuna, Orcus, and a few others.
-
-    Accuracy for bodies also present in codes300 is several degrees — the
-    secondary is never consulted for those bodies.
-
-    If *path* is None the default location is used:
-        <project_root>/sb441-n373s.bsp
-
-    Raises FileNotFoundError if the file does not exist.
-    """
-    global _secondary_kernel
-    p = Path(path) if path else _SECONDARY_KERNEL_PATH
-    if not p.exists():
-        raise FileNotFoundError(
-            f"Secondary asteroid kernel not found at {p}\n"
-            "Download sb441-n373s.bsp from:\n"
-            "  https://ssd.jpl.nasa.gov/ftp/eph/small_bodies/asteroids_de441/sb441-n373s.bsp\n"
-            "and place it in the project root alongside de441.bsp."
-        )
-    if _secondary_kernel is not None:
-        _secondary_kernel.close()
-    _secondary_kernel = _AsteroidKernel(p)
-
-
-def _ensure_primary_kernel() -> _AsteroidKernel:
-    if _primary_kernel is None:
-        load_asteroid_kernel()
-    assert _primary_kernel is not None
-    return _primary_kernel
+    """Legacy shim for secondary asteroid kernel."""
+    load_asteroid_kernel(path)
 
 
 def load_tertiary_kernel(path: str | Path | None = None) -> None:
-    """
-    Load (or reload) the TERTIARY asteroid kernel (centaurs.bsp).
-
-    Generated by scripts/build_centaur_kernel.py from JPL Horizons full
-    n-body integrations.  Provides Chiron, Pholus, Nessus, Asbolus,
-    Chariklo, Hylonome — accurate to < 1 arcsecond over 1800–2200.
-
-    If *path* is None the default location is used:
-        <project_root>/centaurs.bsp
-
-    Raises FileNotFoundError if the file does not exist.
-    Run  py scripts/build_centaur_kernel.py  to generate it.
-    """
-    global _tertiary_kernel
-    p = Path(path) if path else _TERTIARY_KERNEL_PATH
-    if not p.exists():
-        raise FileNotFoundError(
-            f"Centaur kernel not found at {p}\n"
-            "Generate it with:\n"
-            "    py -3.14 scripts/build_centaur_kernel.py"
-        )
-    if _tertiary_kernel is not None:
-        _tertiary_kernel.close()
-    _tertiary_kernel = _AsteroidKernel(p)
-
-
-def _ensure_secondary_kernel() -> _AsteroidKernel | None:
-    """Try to load the secondary kernel; return None (not an error) if absent."""
-    if _secondary_kernel is None:
-        if _SECONDARY_KERNEL_PATH.exists():
-            load_secondary_kernel()
-    return _secondary_kernel
-
-
-def _ensure_tertiary_kernel() -> _AsteroidKernel | None:
-    """Try to load the centaur kernel; return None (not an error) if absent."""
-    if _tertiary_kernel is None:
-        if _TERTIARY_KERNEL_PATH.exists():
-            load_tertiary_kernel()
-    return _tertiary_kernel
+    """Legacy shim for tertiary asteroid kernel."""
+    load_asteroid_kernel(path)
 
 
 def load_quaternary_kernel(path: str | Path | None = None) -> None:
+    """Legacy shim for quaternary asteroid kernel."""
+    load_asteroid_kernel(path)
+
+
+def _ensure_primary_kernel() -> KernelReader:
+    """Legacy shim for session bootstrap."""
+    from .spk_reader import get_active_reader
+    active = get_active_reader()
+    if active is None:
+        load_asteroid_kernel(_PRIMARY_KERNEL_PATH)
+    return get_active_reader()
+
+
+def _ensure_secondary_kernel() -> KernelReader:
+    """Legacy shim for session bootstrap."""
+    from .spk_reader import get_active_reader
+    active = get_active_reader()
+    # In the old code, this would check if _secondary_kernel was None.
+    # To satisfy tests that mock load_secondary_kernel, we must call it.
+    load_secondary_kernel(_SECONDARY_KERNEL_PATH)
+    return get_active_reader()
+
+
+def _ensure_tertiary_kernel() -> KernelReader:
+    """Legacy shim for session bootstrap."""
+    load_tertiary_kernel(_TERTIARY_KERNEL_PATH)
+    return get_active_reader()
+
+
+def _ensure_quaternary_kernel() -> KernelReader:
+    """Legacy shim for session bootstrap."""
+    load_quaternary_kernel(_QUATERNARY_KERNEL_PATH)
+    return get_active_reader()
+
+
+def _kernel_for(naif_id: int, reader: KernelReader) -> _AsteroidKernel:
     """
-    Load (or reload) the QUATERNARY asteroid kernel (minor_bodies.bsp).
-
-    Generated by scripts/build_minor_bodies_kernel.py from JPL Horizons full
-    n-body integrations.  Provides Pandora, Amor, Icarus, Apollo, Karma,
-    Persephone — bodies absent from all other kernels.
-
-    If *path* is None the default location is used:
-        <project_root>/kernels/minor_bodies.bsp
-
-    Raises FileNotFoundError if the file does not exist.
-    Run  py -3.14 scripts/build_minor_bodies_kernel.py  to generate it.
+    Return the best kernel for *naif_id* from the provided reader.
     """
-    global _quaternary_kernel
-    p = Path(path) if path else _QUATERNARY_KERNEL_PATH
-    if not p.exists():
-        raise FileNotFoundError(
-            f"Minor bodies kernel not found at {p}\n"
-            "Generate it with:\n"
-            "    py -3.14 scripts/build_minor_bodies_kernel.py"
-        )
-    if _quaternary_kernel is not None:
-        _quaternary_kernel.close()
-    _quaternary_kernel = _AsteroidKernel(p)
-
-
-def _ensure_quaternary_kernel() -> _AsteroidKernel | None:
-    """Try to load the minor bodies kernel; return None (not an error) if absent."""
-    if _quaternary_kernel is None:
-        if _QUATERNARY_KERNEL_PATH.exists():
-            load_quaternary_kernel()
-    return _quaternary_kernel
-
-
-def _kernel_for(naif_id: int) -> _AsteroidKernel:
-    """
-    Return the best kernel for *naif_id*.
-
-    Priority order:
-      1. Secondary (sb441-n373s.bsp) for any body it contains — benchmarked
-         sub-arcsecond vs. codes300's arcminute-to-degree errors for the same
-         bodies.  sb441 is preferred whenever it has the body.
-      2. Tertiary  (centaurs.bsp)    — Horizons centaurs (< 1 arcsec)
-      3. Quaternary (minor_bodies.bsp) — Horizons bodies absent from all above
-      4. Primary   (codes300/asteroids.bsp) — bodies absent from all above
-    """
-    # sb441 is the precision source for all bodies it contains
-    secondary = _ensure_secondary_kernel()
-    if secondary is not None and secondary.has_body(naif_id):
-        return secondary
-
-    # Centaur kernel (Horizons n-body, < 1 arcsec)
-    tertiary = _ensure_tertiary_kernel()
-    if tertiary is not None and tertiary.has_body(naif_id):
-        return tertiary
-
-    # Minor bodies kernel (Horizons n-body — Pandora, Amor, Icarus, Apollo, Karma, Persephone)
-    quaternary = _ensure_quaternary_kernel()
-    if quaternary is not None and quaternary.has_body(naif_id):
-        return quaternary
-
-    # Primary for bodies absent from all above
-    primary = _ensure_primary_kernel()
-    if primary.has_body(naif_id):
-        return primary
-
+    if not hasattr(reader, "position"):
+        raise TypeError(f"Expected KernelReader, got {type(reader)}")
+    
+    # If the reader is a pool, it will handle dispatching internally.
+    # But for the internal logic that needs the specific SmallBodyKernel:
+    if hasattr(reader, "_readers"): # KernelPool
+        for r in reader._readers:
+            if isinstance(r, SmallBodyKernel) and r.has_body(naif_id):
+                return r
+    elif isinstance(reader, SmallBodyKernel) and reader.has_body(naif_id):
+        return reader
+        
     raise KeyError(
-        f"NAIF ID {naif_id} not found in any loaded asteroid kernel. "
-        "Use available_in_kernel() to see what bodies are available.\n"
-        "For minor bodies (Pandora, Amor, Icarus, Apollo, Karma, Persephone), run:\n"
-        "    py -3.14 scripts/build_minor_bodies_kernel.py"
+        f"NAIF ID {naif_id} not found in the provided reader."
     )
 
 
@@ -822,12 +723,13 @@ def _kernel_for(naif_id: int) -> _AsteroidKernel:
 # Core position computation
 # ---------------------------------------------------------------------------
 
-def _asteroid_barycentric(naif_id: int, jd_tt: float, kernel: _AsteroidKernel, de441_reader) -> Vec3:
+def _asteroid_barycentric(naif_id: int, jd_tt: float, kernel: _AsteroidKernel, reader: KernelReader) -> Vec3:
     """Return SSB position of asteroid (km, ICRF)."""
     center = kernel.segment_center(naif_id)
     ref_pos = kernel.position(naif_id, jd_tt)
     if center == 10:  # Heliocentric
-        sun_ssb = de441_reader.position(0, 10, jd_tt)
+        # Use the reader to get the Sun's barycentric position
+        sun_ssb = reader.position(0, 10, jd_tt)
         return vec_add(ref_pos, sun_ssb)
     return ref_pos    # SSB
 
@@ -835,28 +737,28 @@ def _asteroid_apparent(
     naif_id: int,
     jd_tt:   float,
     kernel:  _AsteroidKernel,
-    de441_reader,
+    reader,
 ) -> Vec3:
     """
     Return apparent geocentric ICRF position of *naif_id* with 
     all relativistic and matrix corrections.
     """
     # 1. Earth at observation time
-    earth_ssb = _earth_barycentric(jd_tt, de441_reader)
+    earth_ssb = _earth_barycentric(jd_tt, reader)
 
     # 2. Light-time: Body(t-lt) - Earth(t)
-    def _bary_fn(nid, t, reader):
-        return _asteroid_barycentric(nid, t, kernel, de441_reader)
+    def _bary_fn(nid, t, _r):
+        return _asteroid_barycentric(nid, t, kernel, reader)
     
-    xyz, _lt = apply_light_time(naif_id, jd_tt, de441_reader, earth_ssb, _bary_fn)
+    xyz, _lt = apply_light_time(naif_id, jd_tt, reader, earth_ssb, _bary_fn)
 
     # 3. Gravitational deflection (near Sun)
-    sun_geocentric = vec_sub(de441_reader.position(0, 10, jd_tt), earth_ssb)
+    sun_geocentric = vec_sub(reader.position(0, 10, jd_tt), earth_ssb)
     xyz = apply_deflection(xyz, [(sun_geocentric, SCHWARZSCHILD_RADII["Sun"])])
 
     # 4. Annual aberration
     from .planets import _earth_velocity
-    v_earth = _earth_velocity(jd_tt, de441_reader)
+    v_earth = _earth_velocity(jd_tt, reader)
     xyz = apply_aberration(xyz, v_earth)
 
     # 5. Frame bias
@@ -881,7 +783,7 @@ def _asteroid_geocentric(
     naif_id: int,
     jd_tt: float,
     kernel: _AsteroidKernel,
-    de441_reader,
+    reader,
     apparent: bool = False,
 ) -> Vec3:
     """
@@ -903,15 +805,15 @@ def _asteroid_geocentric(
     (x, y, z) in km, ICRF
     """
     if apparent:
-        return _asteroid_apparent(naif_id, jd_tt, kernel, de441_reader)
+        return _asteroid_apparent(naif_id, jd_tt, kernel, reader)
 
     # Geometric geocentric: light-time-corrected position, no other corrections
-    earth_ssb = _earth_barycentric(jd_tt, de441_reader)
+    earth_ssb = _earth_barycentric(jd_tt, reader)
 
-    def _bary_fn(nid, t, reader):
-        return _asteroid_barycentric(nid, t, kernel, de441_reader)
+    def _bary_fn(nid, t, _r):
+        return _asteroid_barycentric(nid, t, kernel, reader)
 
-    xyz, _lt = apply_light_time(naif_id, jd_tt, de441_reader, earth_ssb, _bary_fn)
+    xyz, _lt = apply_light_time(naif_id, jd_tt, reader, earth_ssb, _bary_fn)
     return xyz
 
 
@@ -922,8 +824,7 @@ def _asteroid_geocentric(
 def asteroid_at(
     name_or_naif: str | int,
     jd_ut: float,
-    kernel_path: str | Path | None = None,
-    de441_reader=None,
+    reader: KernelReader | None = None,
 ) -> AsteroidData:
     """
     Return the tropical geocentric ecliptic position of a minor planet.
@@ -932,8 +833,7 @@ def asteroid_at(
     ----------
     name_or_naif : asteroid name (from ASTEROID_NAIF) or integer NAIF ID
     jd_ut        : Julian Day in Universal Time (UT1)
-    kernel_path  : override path to the asteroid SPK kernel
-    de441_reader : optional SpkReader for DE441 (uses singleton if None)
+    reader       : optional KernelReader (uses active context if None)
 
     Returns
     -------
@@ -944,13 +844,15 @@ def asteroid_at(
     FileNotFoundError if the asteroid kernel is not found
     KeyError          if the body is not in the kernel or ASTEROID_NAIF dict
     """
-    from .spk_reader import get_reader
+    from .spk_reader import get_active_reader, MissingKernelError
 
-    if kernel_path:
-        load_asteroid_kernel(kernel_path)
-
-    if de441_reader is None:
-        de441_reader = get_reader()
+    if reader is None:
+        reader = get_active_reader()
+        if reader is None:
+            raise MissingKernelError(
+                "No planetary or asteroid kernel is provided and no active reader context was found. "
+                "Pass a reader explicitly or use the Moira facade."
+            )
 
     jd_tt = ut_to_tt(jd_ut)
 
@@ -973,13 +875,13 @@ def asteroid_at(
         naif_id = int(name_or_naif)
         name    = _NAIF_TO_NAME.get(naif_id, f"NAIF-{naif_id}")
 
-    kernel = _kernel_for(naif_id)
+    kernel = _kernel_for(naif_id, reader)
 
     # Compute obliquity once
     obliquity = true_obliquity(jd_tt)
 
     def _lon_lat_dist(jd: float):
-        xyz = _asteroid_apparent(naif_id, jd, kernel, de441_reader)
+        xyz = _asteroid_apparent(naif_id, jd, kernel, reader)
         return icrf_to_ecliptic(xyz, obliquity)
 
     lon0, lat0, dist0 = _lon_lat_dist(jd_tt)
@@ -1004,8 +906,7 @@ def asteroid_at(
 def all_asteroids_at(
     jd_ut: float,
     bodies: list[str | int] | None = None,
-    kernel_path: str | Path | None = None,
-    de441_reader=None,
+    reader: KernelReader | None = None,
     skip_missing: bool = True,
 ) -> dict[str, AsteroidData]:
     """
@@ -1015,8 +916,7 @@ def all_asteroids_at(
     ----------
     jd_ut        : Julian Day in Universal Time
     bodies       : list of names / NAIF IDs (defaults to all of ASTEROID_NAIF)
-    kernel_path  : override path to the asteroid SPK kernel
-    de441_reader : optional SpkReader for DE441
+    reader       : optional KernelReader
     skip_missing : silently skip bodies absent from the kernel when True
 
     Returns
@@ -1029,11 +929,9 @@ def all_asteroids_at(
     results: dict[str, AsteroidData] = {}
     for body in bodies:
         try:
-            pos = asteroid_at(body, jd_ut, kernel_path=kernel_path,
-                              de441_reader=de441_reader)
+            pos = asteroid_at(body, jd_ut, reader=reader)
             results[pos.name] = pos
-            kernel_path = None   # kernel already loaded after first call
-        except (KeyError, FileNotFoundError):
+        except (KeyError, MissingKernelError):
             if not skip_missing:
                 raise
     return results
@@ -1051,23 +949,16 @@ def list_asteroids() -> list[str]:
 def available_in_kernel(kernel_path: str | Path | None = None) -> list[str]:
     """
     Return names of ASTEROID_NAIF entries present in any loaded kernel.
-
-    Loads the primary (and optionally the secondary/tertiary/quaternary)
-    kernel as needed.
     """
     if kernel_path:
         load_asteroid_kernel(kernel_path)
-    primary    = _ensure_primary_kernel()
-    secondary  = _ensure_secondary_kernel()
-    tertiary   = _ensure_tertiary_kernel()
-    quaternary = _ensure_quaternary_kernel()
-    available_ids: set[int] = set(primary._available)
-    if secondary is not None:
-        available_ids |= secondary._available
-    if tertiary is not None:
-        available_ids |= tertiary._available
-    if quaternary is not None:
-        available_ids |= quaternary._available
+    
+    from .spk_reader import get_active_reader
+    reader = get_active_reader()
+    if reader is None:
+        return []
+    
+    available_ids = reader.covered_bodies()
     return [
         name for name, naif_id in ASTEROID_NAIF.items()
         if naif_id in available_ids

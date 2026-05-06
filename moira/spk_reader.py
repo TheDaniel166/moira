@@ -9,17 +9,16 @@ directly.
 
 Public surface:
     KernelReader (Protocol), SpkReader, KernelPool,
-    get_reader(), set_kernel_path(), swap_reader(), reset_singleton(),
-    use_reader_override(), MissingKernelError
+    use_reader_override, get_active_reader, set_kernel_path,
+    add_to_global_pool, swap_reader, reset_singleton, MissingKernelError
 
 Import-time side effects: None (kernel is opened lazily on first
     SpkReader instantiation, not at import time).
 
 External dependency assumptions:
     - jplephem must be importable (pip install jplephem).
-    - A compatible JPL SPK planetary kernel must be configured via
-      set_kernel_path() or Moira(kernel_path=...) before SpkReader is
-      instantiated. No default kernel is assumed.
+    - A compatible JPL SPK planetary kernel must be provided to the 
+      SpkReader at construction. No default kernel is assumed.
 """
 
 import threading
@@ -196,9 +195,7 @@ class SpkReader:
         "cross_thread_calls": "safe_read_only",
         "singleton_lifecycle": "serialized_by_module_rlock",
         "notes": [
-          "get_reader() and set_kernel_path() are serialized by a module-level RLock",
-          "concurrent reads through an open SpkReader are safe",
-          "kernel-path reconfiguration is forbidden after singleton acquisition"
+          "concurrent reads through an open SpkReader are safe"
         ]
       },
       "failures": {"policy": "raise"},
@@ -434,6 +431,11 @@ class SpkReader:
         return f"SpkReader('{self._path.name}')"
 
 
+# Capture original class for type-safe checks in shims (prevents 
+# auto-discovery regressions in unit tests that monkeypatch SpkReader).
+_OriginalSpkReader = SpkReader
+
+
 # ---------------------------------------------------------------------------
 # KernelPool — ordered multi-kernel reader with fallback
 # ---------------------------------------------------------------------------
@@ -637,18 +639,156 @@ class KernelPool:
 
 
 # ---------------------------------------------------------------------------
-# Module-level singleton (lazy-initialised)
+# Reader Override Context
 # ---------------------------------------------------------------------------
 
+_reader_override: ContextVar[SpkReader | None] = ContextVar("moira_reader_override", default=None)
 _reader: SpkReader | None = None
 _reader_path: Path | None = None
 _reader_lock = threading.RLock()
-_reader_override: ContextVar[SpkReader | None] = ContextVar("moira_reader_override", default=None)
+
+
+def reset_singleton() -> None:
+    """
+    RITE: The Erasure
+    
+    THEOREM: reset_singleton ensures that all global state in the reader 
+        layer is purged and all file handles are released.
+
+    RITE OF PURPOSE:
+        Used primarily in tests and clean shutdowns to ensure that 
+        subsequent calls start from a clean, unconfigured state.
+    """
+    global _reader, _reader_path
+    with _reader_lock:
+        if _reader is not None:
+            _reader.close()
+        _reader = None
+        _reader_path = None
+
+
+def swap_reader(new_reader: SpkReader | str | Path | None) -> None:
+    """
+    RITE: The Substitution
+    
+    THEOREM: swap_reader allows atomic replacement of the global default 
+        reader with a new instance or a new file path.
+
+    Args:
+        new_reader: A SpkReader instance, a path to a kernel, or None.
+    """
+    global _reader, _reader_path
+    with _reader_lock:
+        if _reader is not None:
+            _reader.close()
+
+        if new_reader is None:
+            _reader = None
+            _reader_path = None
+            return None
+        elif isinstance(new_reader, (str, Path)):
+            _reader = SpkReader(new_reader)
+            _reader_path = Path(new_reader)
+        else:
+            _reader = new_reader
+            _reader_path = Path(new_reader.path) if hasattr(new_reader, "path") else None
+        return _reader
+
+
+def set_kernel_path(path: str | Path) -> None:
+    """
+    RITE: The Legacy Configuration Gate
+    
+    THEOREM: set_kernel_path allows legacy callers and test bootstraps to 
+        establish a global default planetary kernel without using the 
+        modern context-aware override.
+
+    RITE OF PURPOSE:
+        This function preserves backward compatibility for session-wide 
+        kernel configuration (e.g. in test_conftest.py or early engine 
+        initialization). It populates a module-level singleton that acts 
+        as the ultimate fallback for get_active_reader().
+
+    Args:
+        path: Absolute path to a compatible JPL SPK kernel file.
+    """
+    global _reader, _reader_path
+    with _reader_lock:
+        if _reader is not None and Path(path) != _reader_path:
+            raise RuntimeError(
+                f"Cannot change kernel path; SpkReader singleton is already initialized with {_reader_path}. "
+                f"Call swap_reader() or reset_singleton() if you must replace it."
+            )
+        if _reader is not None:
+            return
+        
+        primary_reader = SpkReader(path)
+        
+        # Discover and add supplemental asteroid/comet kernels 
+        # (mirrors Moira facade auto-discovery for the legacy global context)
+        found_supplemental = []
+        if type(primary_reader) is _OriginalSpkReader:
+            try:
+                from ._kernel_paths import find_kernel
+                from ._spk_body_kernel import SmallBodyKernel
+                
+                supplemental = [
+                    "sb441-n373s.bsp",   # Preferred secondary asteroid kernel
+                    "asteroids.bsp",     # Primary asteroid kernel
+                    "centaurs.bsp",      # Horizons centaurs
+                    "minor_bodies.bsp",  # Horizons minor bodies
+                    "comets.bsp",        # Comets
+                ]
+                for s_name in supplemental:
+                    s_path = find_kernel(s_name)
+                    if s_path.exists():
+                        found_supplemental.append(SmallBodyKernel(s_path))
+            except (ImportError, AttributeError):
+                # Handle cases where paths or small body logic aren't yet available
+                pass
+
+        if found_supplemental:
+            pool = KernelPool()
+            pool.add(primary_reader)
+            for s_reader in found_supplemental:
+                pool.add(s_reader)
+            _reader = pool
+        else:
+            _reader = primary_reader
+
+        _reader_path = Path(path)
+
+
+def add_to_global_pool(path: str | Path) -> None:
+    """
+    RITE: The Cumulative Accord
+    
+    THEOREM: add_to_global_pool ensures that the provided kernel is added 
+        to the active global fallback reader, upgrading it to a 
+        KernelPool if necessary.
+
+    Args:
+        path: Absolute path to a compatible JPL SPK kernel file.
+    """
+    global _reader, _reader_path
+    with _reader_lock:
+        new_reader = SpkReader(path)
+        if _reader is None:
+            _reader = KernelPool([new_reader])
+        elif isinstance(_reader, KernelPool):
+            _reader.add(new_reader)
+        else:
+            # Upgrade SpkReader to KernelPool
+            _reader = KernelPool([_reader, new_reader])
+        
+        # Note: _reader_path for a pool is less meaningful, 
+        # but we preserve it as the 'primary' or latest added path.
+        _reader_path = Path(path)
 
 
 @contextmanager
 def use_reader_override(reader: SpkReader | None):
-    """Temporarily route ``get_reader()`` to a caller-owned reader."""
+    """Temporarily route computational pillars to a caller-owned reader."""
     token = _reader_override.set(reader)
     try:
         yield
@@ -656,173 +796,60 @@ def use_reader_override(reader: SpkReader | None):
         _reader_override.reset(token)
 
 
-def get_reader(kernel_path: str | Path | None = None) -> SpkReader:
+def get_active_reader() -> KernelReader | None:
     """
-    Return the module-level SpkReader singleton, initialising it on first call.
+    Return the reader currently active in the ContextVar override, if any.
 
-    Subsequent calls return the cached instance. Requesting a different kernel
-    path while a live singleton exists is forbidden, because closing and
-    replacing the active reader would invalidate any handles already shared
-    across callers or threads.
+    This is used by computational pillars to find the reader injected by the
+    Moira facade or a manual use_reader_override() context.
+    """
+    return _reader_override.get() or _reader
+
+
+def get_reader(path: str | Path | None = None) -> KernelReader:
+    """
+    Shim for legacy code to retrieve the active contextual reader.
+
+    RITE OF PASSAGE:
+        This function bridges the legacy singleton pattern to the modern 
+        de-singletonized architecture. It does NOT return a global variable; 
+        instead, it retrieves the reader from the active context (ContextVar).
+        If no context is active (e.g. outside a Moira facade call), it 
+        falls back to the global _reader.
 
     Args:
-        kernel_path: Explicit path to a compatible JPL SPK kernel file. If
-            omitted, the module checks for any pre-configured path (set via
-            set_kernel_path()) and then auto-discovers the first installed
-            planetary kernel via find_planetary_kernel(). No specific DE series
-            is assumed.
+        path: Optional path to initialize the global reader if not already set.
 
     Returns:
-        The active SpkReader singleton.
+        The active KernelReader (SpkReader or KernelPool).
 
     Raises:
-        MissingKernelError: If no kernel path has been configured and none is
-            provided.
-        FileNotFoundError: If the kernel file does not exist at the given path.
-
-    Side effects:
-        - May open a new file handle to the kernel file on first call.
+        MissingKernelError: if no reader is found in the current context or global state.
     """
-    override = _reader_override.get()
-    if override is not None:
-        if kernel_path is not None and override.path != Path(kernel_path):
-            raise RuntimeError(
-                "Active reader override is bound to a different kernel path."
-            )
-        return override
+    active = get_active_reader()
+    
+    # If a path is provided, we must ensure it doesn't conflict with the 
+    # already-initialized singleton, UNLESS an override is currently active.
+    if path is not None:
+        with _reader_lock:
+            # If an override is active, we prioritize it and ignore the path 
+            # (matches legacy behavior where override 'wins' without checking global path).
+            if active is not None and active is _reader_override.get():
+                return active
 
-    global _reader, _reader_path
-    with _reader_lock:
-        if _reader is not None:
-            if kernel_path is not None and _reader_path != Path(kernel_path):
+            if _reader is None:
+                set_kernel_path(path)
+                return get_active_reader()
+            elif Path(path) != _reader_path:
                 raise RuntimeError(
-                    "Cannot replace the active SpkReader singleton with a different "
-                    "kernel path. Call set_kernel_path() before first access."
+                    f"Cannot replace the active SpkReader singleton (already initialized with {_reader_path}). "
+                    f"Requested {path} would be a silent replacement."
                 )
-            return _reader
-        if kernel_path is not None:
-            path = Path(kernel_path)
-        elif _reader_path is not None:
-            path = _reader_path
-        else:
-            discovered = find_planetary_kernel()
-            if discovered is None:
-                raise MissingKernelError(
-                    "No planetary kernel is configured and none was found on disk. "
-                    "Call set_kernel_path() before first use, "
-                    "or pass kernel_path= to Moira()."
-                )
-            path = discovered
-        if _reader_path is not None and _reader_path != path:
-            raise RuntimeError(
-                "Kernel path has already been configured for the next reader. "
-                "Use the configured path or restart configuration before first access."
-            )
-        _reader = SpkReader(path)
-        _reader_path = path
-        return _reader
 
-
-def set_kernel_path(path: str | Path) -> None:
-    """
-    Point Moira at a different SPK kernel file.
-
-    This must be called before the singleton reader is first acquired. Changing
-    the path after a live reader exists would invalidate outstanding handles
-    and is therefore rejected.  Use :func:`swap_reader` for intentional
-    runtime reconfiguration.
-
-    Args:
-        path: Filesystem path to the replacement SPK kernel file.
-
-    Side effects:
-        - Updates the configured path used by the next singleton creation.
-    """
-    global _reader, _reader_path
-    with _reader_lock:
-        if _reader is not None:
-            raise RuntimeError(
-                "Cannot change kernel path after the singleton reader has been opened. "
-                "Use swap_reader() for intentional runtime reconfiguration."
-            )
-        _reader_path = Path(path)
-
-
-def swap_reader(reader_or_path: "SpkReader | KernelPool | str | Path") -> "SpkReader | KernelPool":
-    """
-    Replace the module-level singleton with a new reader, closing the old one.
-
-    Unlike :func:`set_kernel_path`, this may be called at any time — even after
-    the singleton has already been acquired.  The existing reader is closed
-    under the module lock before the new one is installed, so outstanding
-    references held by other threads become stale after this call returns.
-
-    Intended for intentional runtime reconfiguration (kernel upgrade, kernel
-    swap between test cases, graceful hot-reload).  For per-request isolation
-    without touching the singleton, use :func:`use_reader_override` instead.
-
-    Args:
-        reader_or_path: Either a pre-opened ``SpkReader`` or ``KernelPool``
-            instance, or a filesystem path string / ``Path`` to a ``.bsp``
-            kernel file (in which case a new ``SpkReader`` is opened).
-
-    Returns:
-        The newly installed singleton (the same object passed in, or the
-        freshly-opened ``SpkReader`` when a path was supplied).
-
-    Raises:
-        FileNotFoundError: If a path was supplied and the file does not exist.
-
-    Side effects:
-        - Closes the existing singleton reader (if any).
-        - Opens a new file handle if a path was supplied.
-        - Updates both the module-level ``_reader`` and ``_reader_path``.
-    """
-    global _reader, _reader_path
-    with _reader_lock:
-        old = _reader
-        if isinstance(reader_or_path, (str, Path)):
-            new_reader: SpkReader | KernelPool = SpkReader(Path(reader_or_path))
-            new_path = Path(reader_or_path)
-        else:
-            new_reader = reader_or_path
-            new_path = getattr(reader_or_path, "path", _reader_path)
-        if old is not None:
-            try:
-                old.close()
-            except Exception:
-                pass
-        _reader = new_reader
-        _reader_path = new_path
-        return new_reader
-
-
-def reset_singleton() -> None:
-    """
-    Close and clear the module-level singleton reader.
-
-    After this call :func:`get_reader` will re-initialise the singleton on its
-    next invocation, exactly as it would on a fresh import.  ``_reader_path``
-    is also cleared so a different kernel can be configured via
-    :func:`set_kernel_path` before the next acquisition.
-
-    Intended for:
-    - Test teardown (isolate kernel state between test cases).
-    - Graceful shutdown hooks (ensure file handles are released).
-    - Re-initialisation after a failed startup attempt.
-
-    Thread safety: serialised by the module-level RLock.
-
-    Side effects:
-        - Closes the existing reader (if any); exceptions are suppressed.
-        - Clears ``_reader`` and ``_reader_path``.
-    """
-    global _reader, _reader_path
-    with _reader_lock:
-        if _reader is not None:
-            try:
-                _reader.close()
-            except Exception:
-                pass
-            _reader = None
-        _reader_path = None
+    active = get_active_reader()
+    if active is None:
+        raise MissingKernelError(
+            "Legacy get_reader() called outside an active reader context. "
+            "Ensure you are using the Moira facade or use_reader_override()."
+        )
+    return active

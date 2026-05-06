@@ -38,7 +38,7 @@ from .julian import centuries_from_j2000, ut_to_tt, decimal_year
 from .coordinates import Vec3, vec_sub, icrf_to_ecliptic, normalize_degrees, mat_vec_mul, precession_matrix_equatorial, nutation_matrix_equatorial
 from .obliquity import mean_obliquity, nutation
 from .planets import _earth_barycentric, approx_year as _approx_year
-from .spk_reader import get_reader, KernelReader, SpkReader
+from .spk_reader import get_active_reader, KernelReader, SpkReader, MissingKernelError
 
 
 @dataclass(slots=True)
@@ -203,7 +203,12 @@ def true_node(
         reader is None, but that side effect belongs to get_reader().
     """
     if reader is None:
-        reader = get_reader()
+        reader = get_active_reader()
+        if reader is None:
+            raise MissingKernelError(
+                "No planetary kernel is provided and no active reader context was found. "
+                "Pass a reader explicitly or use the Moira facade."
+            )
 
     year, month, *_ = _approx_year(jd_ut)
     if jd_tt is None:
@@ -345,7 +350,12 @@ def true_lilith(
         reader is None, but that side effect belongs to get_reader().
     """
     if reader is None:
-        reader = get_reader()
+        reader = get_active_reader()
+        if reader is None:
+            raise MissingKernelError(
+                "No planetary kernel is provided and no active reader context was found. "
+                "Pass a reader explicitly or use the Moira facade."
+            )
 
     year, month, *_ = _approx_year(jd_ut)
     jd_tt    = ut_to_tt(jd_ut, decimal_year(year, month))
@@ -442,7 +452,12 @@ def next_moon_node_crossing(
     Julian Day (UT1) of the requested next crossing.
     """
     if reader is None:
-        reader = get_reader()
+        reader = get_active_reader()
+        if reader is None:
+            raise MissingKernelError(
+                "No planetary kernel is provided and no active reader context was found. "
+                "Pass a reader explicitly or use the Moira facade."
+            )
 
     def _moon_latitude_deg(jd_ut: float) -> float:
         """Moon geocentric true ecliptic latitude (degrees)."""
@@ -551,7 +566,11 @@ _MOON_NAMES = {"moon", "luna"}
 _BODY_MOON = "Moon"
 
 
-def nodes_and_apsides_at(body: str, jd_ut: float) -> NodesAndApsides:
+def nodes_and_apsides_at(
+    body: str, 
+    jd_ut: float, 
+    reader: KernelReader | None = None
+) -> NodesAndApsides:
     """Return ascending/descending node and peri/apoapsis longitudes for ``body``.
 
     Moon path
@@ -569,7 +588,13 @@ def nodes_and_apsides_at(body: str, jd_ut: float) -> NodesAndApsides:
     body_key = body.strip().lower()
 
     if body_key in _MOON_NAMES:
-        reader = get_reader()
+        if reader is None:
+            reader = get_active_reader()
+            if reader is None:
+                raise MissingKernelError(
+                    "No planetary kernel is provided and no active reader context was found. "
+                    "Pass a reader explicitly or use the Moira facade."
+                )
         node = true_node(jd_ut, reader=reader)
         lilith = true_lilith(jd_ut, reader=reader)
 

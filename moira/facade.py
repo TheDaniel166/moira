@@ -81,7 +81,7 @@ from .coordinates import (
     equation_of_time,
     angular_distance, normalize_degrees,
 )
-from .spk_reader import get_reader, use_reader_override, KernelReader, SpkReader, MissingKernelError
+from .spk_reader import use_reader_override, KernelReader, SpkReader, MissingKernelError
 from .planets import (
     PlanetData, SkyPosition, CartesianPosition,
     planet_at, sky_position_at, all_planets_at, sun_longitude,
@@ -489,12 +489,11 @@ from .stars import (
 from .asteroids import (
     AsteroidData, asteroid_at, all_asteroids_at,
     list_asteroids, available_in_kernel,
-    load_asteroid_kernel, load_secondary_kernel, load_tertiary_kernel,
     ASTEROID_NAIF,
 )
 from .comets import (
     CometData, comet_at, all_comets_at, list_comets,
-    load_comet_kernel, COMET_NAIF,
+    COMET_NAIF,
 )
 from .asteroid_families import (
     FamilyResonance,
@@ -1240,12 +1239,12 @@ __all__ = [
     "find_electional_windows", "find_electional_moments",
     # Comets
     "CometData", "COMET_NAIF",
-    "comet_at", "all_comets_at", "list_comets", "load_comet_kernel",
+    "comet_at", "all_comets_at", "list_comets",
     # Asteroids
     "AsteroidData", "ASTEROID_NAIF",
     "asteroid_at", "all_asteroids_at", "list_asteroids",
     "available_in_kernel",
-    "load_asteroid_kernel", "load_secondary_kernel", "load_tertiary_kernel",
+    "available_in_kernel",
     # Asteroid families
     "FamilyResonance", "ResonantAspect",
     "asteroid_family", "family_members", "families_in_chart",
@@ -1256,7 +1255,7 @@ __all__ = [
 try:
     __version__ = package_version("moira-astro")
 except PackageNotFoundError:
-    __version__ = "2.2.0"
+    __version__ = "2.1.2"
 __author__  = "Moira contributors"
 
 

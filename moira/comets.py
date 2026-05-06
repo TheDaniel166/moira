@@ -10,7 +10,6 @@ Boundary declaration
 Owns:
     - COMET_NAIF         — name → NAIF ID mapping for supported comets.
     - CometData          — geocentric ecliptic position result dataclass.
-    - load_comet_kernel() — explicit kernel load / reload.
     - comet_at()         — geocentric ecliptic position of one comet at a JD.
     - all_comets_at()    — positions of all (or a subset of) comets at a JD.
     - list_comets()      — all known comet names.
@@ -39,7 +38,6 @@ Public surface / exports:
     comet_at()            — single-comet position
     all_comets_at()       — multi-comet positions
     list_comets()         — all known names
-    load_comet_kernel()   — explicit kernel load / reload
 
 NAIF ID convention for comets
 ------------------------------
@@ -81,6 +79,7 @@ from .corrections import (
     SCHWARZSCHILD_RADII,
 )
 from ._spk_body_kernel import SmallBodyKernel  # also registers _Type13Segment
+from .spk_reader import KernelReader
 
 
 __all__ = [
@@ -161,49 +160,23 @@ class CometData:
         )
 
 
-# ---------------------------------------------------------------------------
-# Kernel singleton
-# ---------------------------------------------------------------------------
-
-_comet_kernel: SmallBodyKernel | None = None
-
-
-def load_comet_kernel(path: Path | None = None) -> None:
-    """
-    Load (or reload) the comet SPK kernel.
-
-    Parameters
-    ----------
-    path : optional override path; defaults to the configured comets.bsp location.
-    """
-    global _comet_kernel
-    if _comet_kernel is not None:
-        _comet_kernel.close()
-        _comet_kernel = None
-    p = Path(path) if path is not None else _COMET_KERNEL_PATH
-    _comet_kernel = SmallBodyKernel(p)
-
-
-def _get_kernel() -> SmallBodyKernel:
-    global _comet_kernel
-    if _comet_kernel is None:
-        load_comet_kernel()
-    return _comet_kernel  # type: ignore[return-value]
+# Kernel discovery is handled by the facade/caller.
 
 
 # ---------------------------------------------------------------------------
 # Heliocentric → geocentric ecliptic pipeline
 # ---------------------------------------------------------------------------
 
-def _sun_barycentric(jd_tt: float) -> Vec3:
+def _sun_barycentric(jd_tt: float, reader) -> Vec3:
     """Barycentric ICRF position of the Sun (km)."""
-    return _planet_barycentric(10, jd_tt)
+    return reader.position(0, 10, jd_tt)
 
 
 def _comet_geocentric_ecliptic(
     naif_id: int,
     jd_ut: float,
     kernel: SmallBodyKernel,
+    reader,
 ) -> tuple[float, float, float, float]:
     """
     Return (longitude_deg, latitude_deg, distance_au, speed_deg_per_day)
@@ -216,8 +189,8 @@ def _comet_geocentric_ecliptic(
     jd_tt = ut_to_tt(jd_ut)
 
     # Earth and Sun barycentric ICRF positions (km)
-    earth_bary = _earth_barycentric(jd_tt)
-    sun_bary   = _sun_barycentric(jd_tt)
+    earth_bary = _earth_barycentric(jd_tt, reader)
+    sun_bary   = _sun_barycentric(jd_tt, reader)
 
     # Comet heliocentric ICRF (km); kernel center is Sun (NAIF 10)
     comet_helio = kernel.position(naif_id, jd_tt)
@@ -229,14 +202,15 @@ def _comet_geocentric_ecliptic(
     geo = vec_sub(comet_bary, earth_bary)
 
     # Light-time correction (iterate once)
-    geo = apply_light_time(geo, comet_bary, earth_bary, jd_tt,
-                           lambda jd: vec_add(kernel.position(naif_id, jd), sun_bary))
+    geo = apply_light_time(naif_id, jd_tt, reader, earth_bary,
+                           lambda nid, t, r: vec_add(kernel.position(nid, t), _sun_barycentric(t, r)))
 
     # Stellar aberration
-    geo = apply_aberration(geo, jd_tt)
+    from .planets import _earth_velocity
+    geo = apply_aberration(geo, _earth_velocity(jd_tt, reader))
 
     # Gravitational deflection (Sun only for small bodies)
-    geo = apply_deflection(geo, earth_bary, sun_bary, SCHWARZSCHILD_RADII)
+    geo = apply_deflection(geo, [(vec_sub(sun_bary, earth_bary), SCHWARZSCHILD_RADII["Sun"])])
 
     # Frame bias (ICRF → mean J2000)
     geo = apply_frame_bias(geo)
@@ -262,9 +236,10 @@ def _comet_geocentric_ecliptic(
         ch  = kernel.position(naif_id, jd2)
         cb  = vec_add(ch, sb)
         g   = vec_sub(cb, eb)
-        g   = apply_light_time(g, cb, eb, jd2, lambda jd: vec_add(kernel.position(naif_id, jd), sb))
-        g   = apply_aberration(g, jd2)
-        g   = apply_deflection(g, eb, sb, SCHWARZSCHILD_RADII)
+        g   = apply_light_time(naif_id, jd2, reader, eb, lambda nid, t, r: vec_add(kernel.position(nid, t), _sun_barycentric(t, r)))[0]
+        from .planets import _earth_velocity
+        g   = apply_aberration(g, _earth_velocity(jd2, reader))
+        g   = apply_deflection(g, [(vec_sub(sb, eb), SCHWARZSCHILD_RADII["Sun"])])
         g   = apply_frame_bias(g)
         eps2 = mean_obliquity(jd2)
         _, deps2 = nutation(jd2)
@@ -290,7 +265,21 @@ def _comet_geocentric_ecliptic(
 # Public API
 # ---------------------------------------------------------------------------
 
-def comet_at(name: str, jd_ut: float) -> CometData:
+def load_comet_kernel(path: str | Path | None = None) -> None:
+    """
+    RITE: The Resource Expansion
+    
+    THEOREM: load_comet_kernel adds a comet SPK kernel to the 
+        active global reader context, ensuring that comet NAIF IDs 
+        become resolvable.
+    """
+    if path is None:
+        return
+    
+    from .spk_reader import add_to_global_pool
+    add_to_global_pool(path)
+
+def comet_at(name: str, jd_ut: float, reader=None) -> CometData:
     """
     Return the geocentric tropical ecliptic position of *name* at *jd_ut*.
 
@@ -309,9 +298,29 @@ def comet_at(name: str, jd_ut: float) -> CometData:
     FileNotFoundError : if comets.bsp is not present.
     KeyError          : if the kernel has no segment covering *name* at *jd_ut*.
     """
+    from .spk_reader import get_active_reader, MissingKernelError
+    
+    if reader is None:
+        reader = get_active_reader()
+        if reader is None:
+            raise MissingKernelError("No reader context found for comets.")
+
     naif_id = COMET_NAIF[name]
-    kernel  = _get_kernel()
-    lon, lat, dist, speed = _comet_geocentric_ecliptic(naif_id, jd_ut, kernel)
+    
+    # Find the comet kernel in the pool
+    kernel = None
+    if hasattr(reader, "_readers"):
+        for r in reader._readers:
+            if isinstance(r, SmallBodyKernel) and r.has_body(naif_id):
+                kernel = r
+                break
+    elif isinstance(reader, SmallBodyKernel) and reader.has_body(naif_id):
+        kernel = reader
+
+    if kernel is None:
+        raise KeyError(f"Comet {name} (NAIF {naif_id}) not found in the provided reader.")
+
+    lon, lat, dist, speed = _comet_geocentric_ecliptic(naif_id, jd_ut, kernel, reader)
     sign_name, sign_sym = sign_of(lon)
     return CometData(
         name=name,
@@ -329,6 +338,7 @@ def comet_at(name: str, jd_ut: float) -> CometData:
 def all_comets_at(
     jd_ut: float,
     names: set[str] | None = None,
+    reader=None,
 ) -> dict[str, CometData]:
     """
     Return positions for all (or a subset of) comets at *jd_ut*.
@@ -343,17 +353,14 @@ def all_comets_at(
     dict mapping name → CometData.  Bodies unavailable in the kernel
     (outside coverage date range) are silently skipped.
     """
-    kernel  = _get_kernel()
     targets = names if names is not None else set(COMET_NAIF.keys())
     result: dict[str, CometData] = {}
     for name in targets:
-        if name not in COMET_NAIF:
-            continue
-        naif_id = COMET_NAIF[name]
-        if not kernel.has_body(naif_id):
-            continue
         try:
-            lon, lat, dist, speed = _comet_geocentric_ecliptic(naif_id, jd_ut, kernel)
+            pos = comet_at(name, jd_ut, reader=reader)
+            result[name] = pos
+        except (KeyError, MissingKernelError):
+            continue
         except (KeyError, ValueError):
             continue
         sign_name, sign_sym = sign_of(lon)

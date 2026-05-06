@@ -10,7 +10,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from .spk_reader import MissingKernelError
+from .spk_reader import MissingKernelError, KernelPool, SpkReader
+from ._spk_body_kernel import SmallBodyKernel
 
 
 def _facade_module() -> Any:
@@ -87,15 +88,34 @@ Canon: Moira Sovereign Facade Architecture; moira.facade kernel policy.
             path = self._kernel_path
             if path is None:
                 from ._kernel_paths import find_planetary_kernel
-
                 discovered = find_planetary_kernel()
                 if discovered is not None:
                     path = str(discovered)
+            
             if path is None:
                 raise MissingKernelError(
                     "No planetary kernel is configured and none was found on disk."
                 )
-            self._reader_obj = facade.SpkReader(Path(path))
+            
+            # Initialize the pool and add the primary planetary reader
+            pool = KernelPool()
+            pool.add(SpkReader(Path(path)))
+            
+            # Discover and add supplemental asteroid/comet kernels
+            from ._kernel_paths import find_kernel
+            supplemental = [
+                "sb441-n373s.bsp",   # Preferred secondary asteroid kernel
+                "asteroids.bsp",     # Primary asteroid kernel
+                "centaurs.bsp",      # Horizons centaurs
+                "minor_bodies.bsp",  # Horizons minor bodies
+                "comets.bsp",        # Comets
+            ]
+            for s_name in supplemental:
+                s_path = find_kernel(s_name)
+                if s_path.exists():
+                    pool.add(SmallBodyKernel(s_path))
+            
+            self._reader_obj = pool
             self._kernel_init_error = None
         except (FileNotFoundError, MissingKernelError) as exc:
             self._reader_obj = None

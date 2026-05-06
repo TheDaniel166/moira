@@ -98,44 +98,18 @@ class ACGLine:
     Canon: Lewis, "Astro*Carto*Graphy" (1976);
            Meeus, "Astronomical Algorithms" Ch. 24.
 
-    [MACHINE_CONTRACT v2]
+    [MACHINE_CONTRACT v1]
     {
         "scope": "class",
         "id": "moira.astrocartography.ACGLine",
         "risk": "medium",
-        "api": {
-            "public_methods": ["__repr__"],
-            "public_attributes": ["planet", "line_type", "longitude", "points"]
-        },
-        "state": {
-            "mutable": false,
-            "fields": {
-                "planet": "Canonical body name",
-                "line_type": "MC, IC, ASC, DSC, ZEN, or NAD",
-                "longitude": "float for meridians, else None",
-                "points": "list of (lat, lon) tuples"
-            }
-        },
-        "effects": {
-            "io": [],
-            "signals": [],
-            "side_effects": "none"
-        },
-        "concurrency": {
-            "thread_safety": "thread_safe (immutable)",
-            "execution_context": "pure_computation"
-        },
-        "failures": {
-            "policy": "caller-validated RA/Dec/GMST",
-            "raises": []
-        },
-        "succession": {
-            "stance": "terminal"
-        },
-        "provenance": {
-            "agent": "antigravity",
-            "standard": "Moira Engine Governance 2026"
-        }
+        "api": {"frozen": ["planet", "line_type", "longitude", "points"], "internal": []},
+        "state": {"mutable": false, "owners": []},
+        "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
+        "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
+        "failures": {"policy": "raise"},
+        "succession": {"stance": "terminal"},
+        "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
     }
     [/MACHINE_CONTRACT]
 
