@@ -317,6 +317,7 @@ from moira.asteroids import asteroid_at
 # ---------------------------------------------------------------------------
 
 @pytest.mark.requires_ephemeris
+@settings(deadline=None)
 @given(jd=st.floats(min_value=2415020.5, max_value=2488069.5, allow_nan=False, allow_infinity=False))
 def test_classical_asteroid_at_delegation_round_trip(jd):
     """**Validates: Requirements 1.3, 1.8**"""

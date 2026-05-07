@@ -2,8 +2,15 @@ import threading
 import time
 from pathlib import Path
 
+import numpy as np
+import pytest
 import moira.spk_reader as spk_reader
 from moira.spk_reader import KernelPool, KernelReader, SpkReader
+
+try:
+    from jplephem.daf import DAF as JplDaf
+except ImportError:  # pragma: no cover
+    JplDaf = None
 
 
 class _FakeSegment:
@@ -18,6 +25,23 @@ class _FakeSegment:
 
     def compute_and_differentiate(self, jd):
         return (1.0, 2.0, 3.0), (4.0, 5.0, 6.0)
+
+
+class _FakeType2Segment(_FakeSegment):
+    data_type = 2
+
+    def __init__(self, center: int, target: int, start_jd: float, end_jd: float, coeff_record=None) -> None:
+        super().__init__(center=center, target=target, start_jd=start_jd, end_jd=end_jd)
+        if coeff_record is None:
+            coeff_record = np.array(
+                [
+                    [1.0, 2.0, 3.0],
+                    [0.5, -0.25, 0.75],
+                    [10.0, 20.0, 30.0],
+                ],
+                dtype=float,
+            )
+        self._data = (0.0, 1000.0, coeff_record[:, :, np.newaxis])
 
 
 class _FakeKernel:
@@ -73,6 +97,264 @@ def test_position_raises_when_no_segment_covers_requested_jd() -> None:
         assert "Segments exist" in str(exc)
     else:
         raise AssertionError("Expected ValueError for uncovered JD")
+
+
+def test_native_position_path_is_used_for_supported_type2_segments(monkeypatch) -> None:
+    segment = _FakeType2Segment(center=0, target=10, start_jd=2451544.0, end_jd=2451546.0)
+    reader = _reader_with_segments(segment)
+
+    monkeypatch.setattr(spk_reader, "_HAS_NATIVE_SPK", True)
+
+    class _NativeStub:
+        @staticmethod
+        def spk_chebyshev_record(_coeff_record, _s):
+            return np.array([7.0, 8.0, 9.0], dtype=float)
+
+        @staticmethod
+        def spk_chebyshev_record_with_derivative(_coeff_record, _s, _scale):
+            return (
+                np.array([7.0, 8.0, 9.0], dtype=float),
+                np.array([0.1, 0.2, 0.3], dtype=float),
+            )
+
+    monkeypatch.setattr(spk_reader, "_moira_native", _NativeStub())
+
+    assert reader.position(0, 10, 2451545.0) == (7.0, 8.0, 9.0)
+
+
+def test_native_position_and_velocity_path_is_used_for_supported_type2_segments(monkeypatch) -> None:
+    segment = _FakeType2Segment(center=0, target=10, start_jd=2451544.0, end_jd=2451546.0)
+    reader = _reader_with_segments(segment)
+
+    monkeypatch.setattr(spk_reader, "_HAS_NATIVE_SPK", True)
+
+    class _NativeStub:
+        @staticmethod
+        def spk_chebyshev_record(_coeff_record, _s):
+            return np.array([7.0, 8.0, 9.0], dtype=float)
+
+        @staticmethod
+        def spk_chebyshev_record_with_derivative(_coeff_record, _s, _scale):
+            return (
+                np.array([7.0, 8.0, 9.0], dtype=float),
+                np.array([0.1, 0.2, 0.3], dtype=float),
+            )
+
+    monkeypatch.setattr(spk_reader, "_moira_native", _NativeStub())
+
+    pos, vel = reader.position_and_velocity(0, 10, 2451545.0)
+    assert pos == (7.0, 8.0, 9.0)
+    assert vel == (0.1, 0.2, 0.3)
+
+
+def test_native_helpers_fall_back_for_unsupported_segments(monkeypatch) -> None:
+    reader = _reader_with_segments(
+        _FakeSegment(center=0, target=10, start_jd=1000.0, end_jd=2000.0),
+    )
+    monkeypatch.setattr(spk_reader, "_HAS_NATIVE_SPK", True)
+
+    class _ExplodingNative:
+        @staticmethod
+        def spk_chebyshev_record(_coeff_record, _s):
+            raise AssertionError("native path should not be used")
+
+        @staticmethod
+        def spk_chebyshev_record_with_derivative(_coeff_record, _s, _scale):
+            raise AssertionError("native path should not be used")
+
+    monkeypatch.setattr(spk_reader, "_moira_native", _ExplodingNative())
+
+    assert reader.position(0, 10, 1500.0) == (1.0, 2.0, 3.0)
+    assert reader.position_and_velocity(0, 10, 1500.0) == (
+        (1.0, 2.0, 3.0),
+        (4.0, 5.0, 6.0),
+    )
+
+
+def test_open_kernel_uses_fully_native_path_without_jplephem_open(monkeypatch, tmp_path: Path) -> None:
+    kernel_path = tmp_path / "native_only.bsp"
+    kernel_path.write_bytes(b"placeholder")
+
+    monkeypatch.setattr(spk_reader, "_HAS_NATIVE_DAF", True)
+    monkeypatch.setattr(spk_reader, "_HAS_NATIVE_SEGMENTS", True)
+    monkeypatch.setattr(spk_reader, "_HAS_JPLEPHEM", False)
+    monkeypatch.setattr(spk_reader, "_SPK", None)
+
+    class _NativeStub:
+        @staticmethod
+        def read_daf_catalog(_path):
+            return {
+                "little_endian": True,
+                "summaries": [
+                    {
+                        "name": b"SEGMENT",
+                        "descriptor": (0.0, 86400.0, 10, 0, 1, 2, 100, 200),
+                    }
+                ],
+            }
+
+        @staticmethod
+        def read_spk_chebyshev_segment_payload(_path, _start_i, _end_i, _little_endian, _data_type):
+            return {
+                "init": 0.0,
+                "intlen": 86400.0,
+                "record_size": 11,
+                "record_count": 1,
+                "component_count": 3,
+                "coefficient_count": 3,
+                "coefficients": np.zeros((3, 3, 1), dtype=float),
+            }
+
+        @staticmethod
+        def spk_chebyshev_record(_coeff_record, _s):
+            return np.array([0.0, 0.0, 0.0], dtype=float)
+
+        @staticmethod
+        def spk_chebyshev_record_with_derivative(_coeff_record, _s, _scale):
+            return np.zeros(3, dtype=float), np.zeros(3, dtype=float)
+
+    monkeypatch.setattr(spk_reader, "_moira_native", _NativeStub())
+
+    kernel = spk_reader._open_kernel(kernel_path)
+    assert type(kernel).__name__ == "_NativeSpkKernel"
+    assert len(kernel.segments) == 1
+
+
+def test_open_kernel_falls_back_when_catalog_contains_unsupported_type(monkeypatch, tmp_path: Path) -> None:
+    kernel_path = tmp_path / "fallback.bsp"
+    kernel_path.write_bytes(b"placeholder")
+
+    monkeypatch.setattr(spk_reader, "_HAS_NATIVE_DAF", True)
+    monkeypatch.setattr(spk_reader, "_HAS_NATIVE_SEGMENTS", True)
+    monkeypatch.setattr(spk_reader, "_HAS_JPLEPHEM", True)
+
+    class _NativeStub:
+        @staticmethod
+        def read_daf_catalog(_path):
+            return {
+                "little_endian": True,
+                "summaries": [
+                    {
+                        "name": b"SEGMENT",
+                        "descriptor": (0.0, 86400.0, 10, 0, 1, 9, 100, 200),
+                    }
+                ],
+            }
+
+    monkeypatch.setattr(spk_reader, "_moira_native", _NativeStub())
+
+    sentinel = object()
+    monkeypatch.setattr(spk_reader._SPK, "open", lambda _path: sentinel)
+    assert spk_reader._open_kernel(kernel_path) is sentinel
+
+
+def test_open_kernel_raises_plainly_when_unsupported_and_jplephem_missing(monkeypatch, tmp_path: Path) -> None:
+    kernel_path = tmp_path / "unsupported.bsp"
+    kernel_path.write_bytes(b"placeholder")
+
+    monkeypatch.setattr(spk_reader, "_HAS_NATIVE_DAF", True)
+    monkeypatch.setattr(spk_reader, "_HAS_NATIVE_SEGMENTS", True)
+    monkeypatch.setattr(spk_reader, "_HAS_JPLEPHEM", False)
+    monkeypatch.setattr(spk_reader, "_SPK", None)
+
+    class _NativeStub:
+        @staticmethod
+        def read_daf_catalog(_path):
+            return {
+                "little_endian": True,
+                "summaries": [
+                    {
+                        "name": b"SEGMENT",
+                        "descriptor": (0.0, 86400.0, 10, 0, 1, 9, 100, 200),
+                    }
+                ],
+            }
+
+    monkeypatch.setattr(spk_reader, "_moira_native", _NativeStub())
+
+    with pytest.raises(RuntimeError, match="requires jplephem"):
+        spk_reader._open_kernel(kernel_path)
+
+
+def test_native_daf_catalog_matches_jplephem_on_moira_written_kernel(tmp_path: Path) -> None:
+    if not spk_reader._HAS_NATIVE_DAF:
+        pytest.skip("native DAF catalog reader is unavailable")
+    if JplDaf is None:
+        pytest.skip("jplephem is unavailable for parity comparison")
+
+    from moira.daf_writer import write_spk_type13
+
+    path = tmp_path / "sample_type13.bsp"
+    write_spk_type13(
+        path,
+        bodies=[
+            {
+                "naif_id": 2000433,
+                "center": 10,
+                "frame": 1,
+                "name": "EROS SAMPLE",
+                "window_size": 3,
+                "epochs_jd": [2451545.0, 2451546.0, 2451547.0],
+                "states": [
+                    [1.0, 2.0, 3.0],
+                    [4.0, 5.0, 6.0],
+                    [7.0, 8.0, 9.0],
+                    [0.01, 0.01, 0.01],
+                    [0.02, 0.02, 0.02],
+                    [0.03, 0.03, 0.03],
+                ],
+            }
+        ],
+        locifn="MOIRA TEST KERNEL",
+    )
+
+    native_catalog = spk_reader._moira_native.read_daf_catalog(str(path))
+    with path.open("rb") as fh:
+        daf = JplDaf(fh)
+        jpl_summaries = list(daf.summaries())
+
+    assert native_catalog["locidw"] == "DAF/SPK"
+    assert native_catalog["locfmt"] == "LTL-IEEE"
+    assert native_catalog["nd"] == 2
+    assert native_catalog["ni"] == 6
+    assert len(native_catalog["summaries"]) == len(jpl_summaries) == 1
+
+    native_summary = native_catalog["summaries"][0]
+    jpl_name, jpl_descriptor = jpl_summaries[0]
+    assert native_summary["name"] == jpl_name
+    assert tuple(native_summary["descriptor"]) == tuple(jpl_descriptor)
+
+
+@pytest.mark.requires_ephemeris
+def test_native_chebyshev_payload_matches_live_jplephem_segment_data() -> None:
+    if not spk_reader._HAS_NATIVE_SEGMENTS:
+        pytest.skip("native Chebyshev payload reader is unavailable")
+    if not spk_reader._HAS_JPLEPHEM:
+        pytest.skip("jplephem is unavailable for payload parity comparison")
+
+    from moira._kernel_paths import find_planetary_kernel
+
+    path = find_planetary_kernel()
+    with SpkReader(path) as reader:
+        kernel = spk_reader._SPK.open(str(path))
+        try:
+            native_segment = reader._segment_for(0, 10, 2451545.0)
+            jpl_segment = kernel[0, 10]
+            payload = spk_reader._moira_native.read_spk_chebyshev_segment_payload(
+                str(path),
+                int(jpl_segment.start_i),
+                int(jpl_segment.end_i),
+                True,
+                int(jpl_segment.data_type),
+            )
+            assert payload["init"] == jpl_segment._data[0]
+            assert payload["intlen"] == jpl_segment._data[1]
+            # Transpose native (r, 3, n) to jplephem (n, 3, r) for comparison
+            native_coeffs_jpl_shape = payload["coefficients"].transpose(2, 1, 0)
+            np.testing.assert_allclose(native_coeffs_jpl_shape, jpl_segment._data[2], rtol=0.0, atol=1e-12)
+            assert type(native_segment).__name__ == "_NativeChebyshevSegment"
+        finally:
+            kernel.close()
 
 
 def test_closed_reader_fails_deterministically() -> None:
@@ -543,3 +825,70 @@ def test_small_body_kernel_coverage_merges_split_segments() -> None:
     )
     cov = sbk.coverage()
     assert cov[(10, 2000433)] == (2451545.0, 2460000.0)
+
+
+@pytest.mark.requires_ephemeris
+def test_native_spk_record_parity_against_jplephem_type2_segment() -> None:
+    if not spk_reader._HAS_NATIVE_SPK:
+        pytest.skip("native SPK Chebyshev evaluator is unavailable")
+
+    from moira._kernel_paths import find_planetary_kernel
+
+    with SpkReader(find_planetary_kernel()) as reader:
+        jd = 2451545.0
+        segment = reader._segment_for(0, 10, jd)
+        if getattr(segment, "data_type", None) != 2:
+            pytest.skip("active planetary kernel did not expose a type-2 segment")
+
+        coeff_record, s, derivative_scale = spk_reader._native_spk_record_inputs(segment, jd)
+        native_pos = spk_reader._moira_native.spk_chebyshev_record(coeff_record, s)
+        native_pos, native_vel = spk_reader._moira_native.spk_chebyshev_record_with_derivative(
+            coeff_record, s, derivative_scale
+        )
+        ref_pos, ref_vel = segment.compute_and_differentiate(jd)
+
+        def to_list(obj):
+            return obj.tolist() if hasattr(obj, 'tolist') else list(obj)
+
+        for got, want in zip(to_list(native_pos), to_list(ref_pos)):
+            assert abs(got - float(want)) < 1e-9
+        for got, want in zip(to_list(native_vel), to_list(ref_vel)):
+            assert abs(got - float(want)) < 1e-9
+
+
+@pytest.mark.requires_ephemeris
+def test_spk_reader_native_daf_kernel_catalog_matches_live_kernel() -> None:
+    if not spk_reader._HAS_NATIVE_DAF:
+        pytest.skip("native DAF catalog reader is unavailable")
+
+    from moira._kernel_paths import find_planetary_kernel
+
+    with SpkReader(find_planetary_kernel()) as reader:
+        assert type(reader._kernel).__name__ == "_NativeSpkKernel"
+        assert reader.has_segment(0, 10) is True
+        assert reader.has_segment(0, 3) is True
+
+
+@pytest.mark.requires_ephemeris
+def test_native_segment_compute_matches_jplephem_for_live_kernel() -> None:
+    if not spk_reader._HAS_NATIVE_SEGMENTS:
+        pytest.skip("native Chebyshev segment path is unavailable")
+    if not spk_reader._HAS_JPLEPHEM:
+        pytest.skip("jplephem is unavailable for compute parity comparison")
+
+    from moira._kernel_paths import find_planetary_kernel
+
+    path = find_planetary_kernel()
+    native_reader = SpkReader(path)
+    jpl_kernel = spk_reader._SPK.open(str(path))
+    try:
+        jd = 2451545.0
+        native_segment = native_reader._segment_for(0, 10, jd)
+        jpl_segment = jpl_kernel[0, 10]
+        native_pos, native_vel = native_segment.compute_and_differentiate(jd)
+        jpl_pos, jpl_vel = jpl_segment.compute_and_differentiate(jd)
+        np.testing.assert_allclose(native_pos, jpl_pos, rtol=0.0, atol=1e-9)
+        np.testing.assert_allclose(native_vel, jpl_vel, rtol=0.0, atol=1e-9)
+    finally:
+        native_reader.close()
+        jpl_kernel.close()

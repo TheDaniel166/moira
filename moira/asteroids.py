@@ -27,12 +27,11 @@ Delegates:
     - JD conversion to moira.julian.
 
 Import-time side effects:
-    - Importing moira._spk_body_kernel registers _Type13Segment in jplephem's
-      _segment_classes dict.  This happens at import time of that module and
-      is idempotent.
+    - Importing moira._spk_body_kernel makes the native small-body segment
+      readers available to this module.
 
 External dependency assumptions:
-    - jplephem must be installed (ImportError raised otherwise).
+    - moira_native must be available for native small-body kernel access.
     - SPK kernels (asteroids.bsp, etc.) are managed by the caller or facade.
     - No Qt, no database, no OS threads.
 

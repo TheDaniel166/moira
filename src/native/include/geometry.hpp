@@ -15,6 +15,8 @@ namespace native {
 struct Vec3 {
     std::array<double, 3> data;
 
+    Vec3(double x = 0.0, double y = 0.0, double z = 0.0) : data{x, y, z} {}
+
     double& operator[](size_t i) { return data[i]; }
     const double& operator[](size_t i) const { return data[i]; }
 
@@ -33,6 +35,13 @@ struct Vec3 {
     static double dot(const Vec3& a, const Vec3& b) {
         return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
     }
+
+    Vec3 operator+(const Vec3& other) const { return {data[0] + other[0], data[1] + other[1], data[2] + other[2]}; }
+    Vec3 operator-(const Vec3& other) const { return {data[0] - other[0], data[1] - other[1], data[2] - other[2]}; }
+    Vec3 operator*(double s) const { return {data[0] * s, data[1] * s, data[2] * s}; }
+    Vec3 operator/(double s) const { return {data[0] / s, data[1] / s, data[2] / s}; }
+    double dot(const Vec3& other) const { return dot(*this, other); }
+
 
     static Vec3 cross(const Vec3& a, const Vec3& b) {
         return {
@@ -171,7 +180,7 @@ struct Mat3 {
         Vec3 u1 = Vec3::sub(r1, Vec3::project(r1, u0)).unit();
         Vec3 u2 = Vec3::sub(Vec3::sub(r2, Vec3::project(r2, u0)), Vec3::project(r2, u1)).unit();
 
-        return {{{
+        return Mat3{{{
             {u0[0], u0[1], u0[2]},
             {u1[0], u1[1], u1[2]},
             {u2[0], u2[1], u2[2]}

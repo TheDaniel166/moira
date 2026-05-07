@@ -1,3 +1,5 @@
+import builtins
+import importlib
 from pathlib import Path
 
 import pytest
@@ -5,8 +7,6 @@ import pytest
 from moira.asteroids import (
     ASTEROID_NAIF,
     _AsteroidKernel,
-    _ensure_quaternary_kernel,
-    _ensure_tertiary_kernel,
 )
 from moira.daf_writer import (
     _MAX_SUMMARIES,
@@ -323,11 +323,66 @@ def test_write_spk_type13_preserves_multiple_distinct_regimes_in_one_kernel(tmp_
         kernel.close()
 
 
+def test_spk_body_kernel_module_reload_does_not_import_jplephem(monkeypatch: pytest.MonkeyPatch) -> None:
+    import moira._spk_body_kernel as body_kernel
+
+    original_import = builtins.__import__
+
+    def _guarded_import(name, globals=None, locals=None, fromlist=(), level=0):
+        if name.startswith("jplephem"):
+            raise AssertionError("small-body kernel should not import jplephem during reload")
+        return original_import(name, globals, locals, fromlist, level)
+
+    monkeypatch.setattr(builtins, "__import__", _guarded_import)
+    reloaded = importlib.reload(body_kernel)
+    assert hasattr(reloaded, "SmallBodyKernel")
+    assert hasattr(reloaded, "_Type13Segment")
+
+
+@pytest.mark.requires_ephemeris
+def test_live_small_body_kernel_uses_native_type13_segments() -> None:
+    from moira._kernel_paths import find_kernel
+
+    path = find_kernel("centaurs.bsp")
+    if not path.exists():
+        pytest.skip("centaurs.bsp not available")
+
+    kernel = _AsteroidKernel(path)
+    try:
+        segment = next(seg for seg in kernel._kernel.segments if seg.target == ASTEROID_NAIF["Chiron"])
+        assert type(segment).__name__ == "_Type13Segment"
+        assert getattr(segment, "data_type", None) == 13
+    finally:
+        kernel.close()
+
+
+@pytest.mark.requires_ephemeris
+def test_live_small_body_kernel_uses_native_type2_segments_for_sb441() -> None:
+    from moira._kernel_paths import find_kernel
+
+    path = find_kernel("sb441-n373s.bsp")
+    if not path.exists():
+        pytest.skip("sb441-n373s.bsp not available")
+
+    kernel = _AsteroidKernel(path)
+    try:
+        segment = next(seg for seg in kernel._kernel.segments if seg.target == ASTEROID_NAIF["Ceres"])
+        assert type(segment).__name__ == "_NativeChebyshevSegment"
+        assert getattr(segment, "data_type", None) == 2
+        pos = kernel.position(ASTEROID_NAIF["Ceres"], 2451545.0)
+        assert len(pos) == 3
+    finally:
+        kernel.close()
+
+
 @pytest.mark.requires_ephemeris
 def test_write_spk_type13_reproduces_centaurs_kernel_segments(tmp_path: Path) -> None:
-    source_kernel = _ensure_tertiary_kernel()
-    if source_kernel is None:
+    from moira._kernel_paths import find_kernel
+
+    path = find_kernel("centaurs.bsp")
+    if not path.exists():
         pytest.skip("centaurs.bsp not available")
+    source_kernel = _AsteroidKernel(path)
 
     names = ("Chiron", "Pholus", "Nessus")
     bodies = []
@@ -382,13 +437,17 @@ def test_write_spk_type13_reproduces_centaurs_kernel_segments(tmp_path: Path) ->
                 assert rebuilt == pytest.approx(expected, abs=1e-6), (name, idx)
     finally:
         rebuilt_kernel.close()
+        source_kernel.close()
 
 
 @pytest.mark.requires_ephemeris
 def test_write_spk_type13_reproduces_minor_bodies_kernel_segments(tmp_path: Path) -> None:
-    source_kernel = _ensure_quaternary_kernel()
-    if source_kernel is None:
+    from moira._kernel_paths import find_kernel
+
+    path = find_kernel("minor_bodies.bsp")
+    if not path.exists():
         pytest.skip("minor_bodies.bsp not available")
+    source_kernel = _AsteroidKernel(path)
 
     names = ("Pandora", "Amor", "Icarus")
     target_ids = {ASTEROID_NAIF[name] for name in names}
@@ -443,3 +502,4 @@ def test_write_spk_type13_reproduces_minor_bodies_kernel_segments(tmp_path: Path
                 assert rebuilt == pytest.approx(expected, abs=1e-6), (name, idx)
     finally:
         rebuilt_kernel.close()
+        source_kernel.close()

@@ -1,0 +1,56 @@
+{
+  "phase": "phase2_small_body_measurement",
+  "planetary_kernel": "C:\\Users\\nilad\\.moira\\kernels\\de441.bsp",
+  "results": [
+    {
+      "kind": "raw_position",
+      "naif_id": 2000001,
+      "sample_count": 5000,
+      "repeats": 7,
+      "best_seconds": 0.03730809999979101,
+      "median_seconds": 0.0386759000029997,
+      "name": "raw_position_sb441_ceres",
+      "kernel": "sb441-n373s.bsp"
+    },
+    {
+      "kind": "raw_position",
+      "naif_id": 2002060,
+      "sample_count": 5000,
+      "repeats": 7,
+      "best_seconds": 0.4020868000006885,
+      "median_seconds": 0.4090963999988162,
+      "name": "raw_position_centaurs_chiron",
+      "kernel": "centaurs.bsp"
+    },
+    {
+      "kind": "raw_position",
+      "naif_id": 2000055,
+      "sample_count": 5000,
+      "repeats": 7,
+      "best_seconds": 0.40503040000476176,
+      "median_seconds": 0.4208357000024989,
+      "name": "raw_position_minor_bodies_pandora",
+      "kernel": "minor_bodies.bsp"
+    },
+    {
+      "kind": "public_asteroid",
+      "body": "Eros",
+      "sample_count": 5000,
+      "repeats": 7,
+      "best_seconds": 2.2882376999987173,
+      "median_seconds": 2.42372950000572,
+      "name": "public_asteroid_eros",
+      "kernel": "asteroids.bsp"
+    },
+    {
+      "kind": "public_comet",
+      "body": "Halley",
+      "sample_count": 5000,
+      "repeats": 7,
+      "best_seconds": 5.949882200002321,
+      "median_seconds": 6.082311300000583,
+      "name": "public_comet_halley",
+      "kernel": "comets.bsp"
+    }
+  ]
+}

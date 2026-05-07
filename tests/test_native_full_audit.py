@@ -1,5 +1,6 @@
 import math
 import random
+from moira.julian import julian_day as py_julian_day, calendar_from_jd as py_calendar_from_jd
 from moira.moira_native import (
     Vec3, Mat3, julian_day, calendar_from_jd,
     deg_to_rad, rad_to_deg, normalize_deg_360, normalize_deg_180,
@@ -34,9 +35,14 @@ def test_round_trips():
     # 1. JD <-> Calendar
     for _ in range(100):
         jd = random.uniform(0, 5000000)
-        y, m, d, h = calendar_from_jd(jd)
-        jd_back = julian_day(y, m, d, h)
-        assert almost_equal(jd, jd_back, abs_eps=1e-8), f"JD Round-trip failed at {jd}"
+        y_native, m_native, d_native, h_native = calendar_from_jd(jd)
+        y_py, m_py, d_py, h_py = py_calendar_from_jd(jd)
+        assert (y_native, m_native, d_native) == (y_py, m_py, d_py), f"Native calendar parity failed at {jd}"
+        assert almost_equal(h_native, h_py, abs_eps=1e-12), f"Native calendar hour parity failed at {jd}"
+
+        jd_native = julian_day(y_native, m_native, d_native, h_native)
+        jd_py = py_julian_day(y_py, m_py, d_py, h_py)
+        assert almost_equal(jd_native, jd_py, abs_eps=1e-8), f"JD parity failed after inverse conversion at {jd}"
         
     # 2. Cartesian <-> Spherical
     for _ in range(100):

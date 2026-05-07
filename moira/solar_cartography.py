@@ -165,8 +165,12 @@ def _bearing_deg(point_a: tuple[float, float], point_b: tuple[float, float]) -> 
 
 def _select_backend(preference: str) -> tuple[object, ArrayBackendInfo]:
     mode = preference.strip().lower()
-    if mode not in {"auto", "cpu", "gpu"}:
+    if mode not in {"auto", "cpu", "gpu", "moira-native"}:
         raise ValueError(f"Unsupported solar cartography backend: {preference!r}")
+    
+    if mode == "moira-native":
+        return _np, ArrayBackendInfo(name="moira-native", is_gpu=False)
+
     if mode in {"auto", "gpu"} and _cp is not None:
         try:  # pragma: no branch
             if int(_cp.cuda.runtime.getDeviceCount()) > 0:
@@ -770,46 +774,87 @@ def solar_eclipse_cartography(
     lon_values = _np.linspace(lon_min, lon_max, lon_count)
     lat_grid, lon_grid = _np.meshgrid(lat_values, lon_values, indexing="ij")
 
+
     central_window_half_days = max((float(getattr(path, "duration_at_max_s", 0.0)) / 86400.0) * 1.8, 4.5 / 24.0)
     partial_window_half_days = max(central_window_half_days, 5.0 / 24.0)
     sample_jds = _sample_interval(event.jd_ut - partial_window_half_days, event.jd_ut + partial_window_half_days, time_samples)
 
     axis_track_samples = _sample_interval(sample_jds[0], sample_jds[-1], max(31, time_samples * 4))
-    axis_centerline = tuple(
-        _solve_solar_greatest_location(calc, sample_jd)[:2]
-        for sample_jd in axis_track_samples
-    )
+    # axis_centerline computed below — either via native batch or Python loop
 
-    partial_max = xp.full(lat_grid.shape, -xp.inf, dtype=xp.float64)
-    central_max = xp.full(lat_grid.shape, -xp.inf, dtype=xp.float64)
-    magnitude_max = xp.zeros(lat_grid.shape, dtype=xp.float64)
+    _use_native = False
     raw_overlap_series: list[_np.ndarray] = []
     altitude_series: list[_np.ndarray] = []
     hour_angle_series: list[_np.ndarray] = []
 
-    for jd_ut in sample_jds:
-        overlap_margin, central_margin, magnitude = _topocentric_solar_geometry_batch_backend(
-            calc,
-            jd_ut,
-            lat_grid.ravel(),
-            lon_grid.ravel(),
-            xp,
+    if backend_info.name == "moira-native":
+        try:
+            from . import moira_native as _mn
+            sun_eval  = calc._reader.evaluator(Body.SUN,  frame="cartesian")
+            moon_eval = calc._reader.evaluator(Body.MOON, frame="cartesian")
+
+            # Native axis centerline — single C++ batch, no Python planet_at() per point
+            axis_jd_arr   = _np.array(axis_track_samples, dtype=_np.float64)
+            axis_gast_arr = _np.array([local_sidereal_time(jd, 0.0) for jd in axis_track_samples], dtype=_np.float64)
+            axis_results  = _mn.solar_centerline_batch(sun_eval, moon_eval, axis_jd_arr, axis_gast_arr)
+            axis_centerline = tuple((float(r[0]), float(r[1])) for r in axis_results)
+
+            # Native grid sweep
+            jd_arr    = _np.array(sample_jds, dtype=_np.float64)
+            gast_arr  = _np.array([local_sidereal_time(jd, 0.0) for jd in sample_jds], dtype=_np.float64)
+            lat_arr   = lat_grid.ravel().astype(_np.float64)
+            lon_arr   = lon_grid.ravel().astype(_np.float64)
+            n_obs     = lat_arr.size
+            overlap_max_arr   = _np.full(n_obs, -1e18, dtype=_np.float64)
+            central_max_arr   = _np.full(n_obs, -1e18, dtype=_np.float64)
+            magnitude_max_arr = _np.zeros(n_obs, dtype=_np.float64)
+            _mn.solar_cartography_grid_sweep(
+                sun_eval, moon_eval, jd_arr, gast_arr,
+                lat_arr, lon_arr,
+                SUN_RADIUS_KM, MOON_RADIUS_KM,
+                overlap_max_arr, central_max_arr, magnitude_max_arr,
+            )
+            partial_max   = overlap_max_arr.reshape(lat_grid.shape)
+            central_max   = central_max_arr.reshape(lat_grid.shape)
+            magnitude_max = magnitude_max_arr.reshape(lat_grid.shape)
+            # Lean second pass — altitude & hour-angle for sunrise/sunset bands
+            for i, jd_ut in enumerate(sample_jds):
+                raw_ov, sun_alt_deg, ha_deg = _mn.solar_observer_quantities_batch(
+                    sun_eval, moon_eval, float(jd_ut), float(gast_arr[i]),
+                    lat_arr, lon_arr, SUN_RADIUS_KM, MOON_RADIUS_KM
+                )
+                raw_overlap_series.append(raw_ov.reshape(lat_grid.shape))
+                altitude_series.append(sun_alt_deg.reshape(lat_grid.shape))
+                hour_angle_series.append(ha_deg.reshape(lat_grid.shape))
+            _use_native = True
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            pass
+
+    if not _use_native:
+        # Python axis centerline + grid sweep (CPU fallback)
+        axis_centerline = tuple(
+            _solve_solar_greatest_location(calc, sample_jd)[:2]
+            for sample_jd in axis_track_samples
         )
-        raw_overlap_margin, _, _, sun_altitude_deg, hour_angle_deg = _topocentric_solar_observer_quantities_batch_backend(
-            calc,
-            jd_ut,
-            lat_grid.ravel(),
-            lon_grid.ravel(),
-            xp,
-            mask_below_horizon=False,
-        )
-        raw_overlap_grid = raw_overlap_margin.reshape(lat_grid.shape)
-        raw_overlap_series.append(_to_numpy(xp, raw_overlap_grid))
-        altitude_series.append(_to_numpy(xp, sun_altitude_deg.reshape(lat_grid.shape)))
-        hour_angle_series.append(_to_numpy(xp, hour_angle_deg.reshape(lat_grid.shape)))
-        partial_max = xp.maximum(partial_max, overlap_margin.reshape(lat_grid.shape))
-        central_max = xp.maximum(central_max, central_margin.reshape(lat_grid.shape))
-        magnitude_max = xp.maximum(magnitude_max, magnitude.reshape(lat_grid.shape))
+        partial_max   = xp.full(lat_grid.shape, -xp.inf, dtype=xp.float64)
+        central_max   = xp.full(lat_grid.shape, -xp.inf, dtype=xp.float64)
+        magnitude_max = xp.zeros(lat_grid.shape, dtype=xp.float64)
+        for jd_ut in sample_jds:
+            overlap_margin, central_margin, magnitude = _topocentric_solar_geometry_batch_backend(
+                calc, jd_ut, lat_grid.ravel(), lon_grid.ravel(), xp,
+            )
+            raw_overlap_margin, _, _, sun_altitude_deg, hour_angle_deg = _topocentric_solar_observer_quantities_batch_backend(
+                calc, jd_ut, lat_grid.ravel(), lon_grid.ravel(), xp, mask_below_horizon=False,
+            )
+            raw_overlap_grid = raw_overlap_margin.reshape(lat_grid.shape)
+            raw_overlap_series.append(_to_numpy(xp, raw_overlap_grid))
+            altitude_series.append(_to_numpy(xp, sun_altitude_deg.reshape(lat_grid.shape)))
+            hour_angle_series.append(_to_numpy(xp, hour_angle_deg.reshape(lat_grid.shape)))
+            partial_max   = xp.maximum(partial_max,   overlap_margin.reshape(lat_grid.shape))
+            central_max   = xp.maximum(central_max,   central_margin.reshape(lat_grid.shape))
+            magnitude_max = xp.maximum(magnitude_max, magnitude.reshape(lat_grid.shape))
 
     partial_field = _to_numpy(xp, partial_max)
     magnitude_field = _to_numpy(xp, magnitude_max)
@@ -863,10 +908,16 @@ def solar_eclipse_cartography(
     if umbral_width_km > 0.0:
         central_jd_start, central_jd_end = _solve_solar_central_interval(calc, event.jd_ut)
         central_track_samples = _sample_interval(central_jd_start, central_jd_end, max(25, time_samples * 3))
-        centerline = tuple(
-            _solve_solar_greatest_location(calc, sample_jd)[:2]
-            for sample_jd in central_track_samples
-        )
+        if _use_native:
+            _ct_jd_arr   = _np.array(central_track_samples, dtype=_np.float64)
+            _ct_gast_arr = _np.array([local_sidereal_time(jd, 0.0) for jd in central_track_samples], dtype=_np.float64)
+            _ct_results  = _mn.solar_centerline_batch(sun_eval, moon_eval, _ct_jd_arr, _ct_gast_arr)
+            centerline = tuple((float(r[0]), float(r[1])) for r in _ct_results)
+        else:
+            centerline = tuple(
+                _solve_solar_greatest_location(calc, sample_jd)[:2]
+                for sample_jd in central_track_samples
+            )
         solved_magnitude_contours = _solve_magnitude_contours_from_centerline(
             calc,
             central_track_samples,

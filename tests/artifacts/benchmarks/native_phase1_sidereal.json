@@ -1,0 +1,48 @@
+{
+  "phase": "phase1_sidereal",
+  "functions": [
+    {
+      "name": "earth_rotation_angle",
+      "sample_count": 200000,
+      "repeats": 7,
+      "python_best_seconds": 0.015478799999982584,
+      "native_best_seconds": 0.018323400000099355,
+      "python_median_seconds": 0.015556399999695714,
+      "native_median_seconds": 0.018487499999991996,
+      "speedup_best": 0.8447558859108383,
+      "speedup_median": 0.841455037171194
+    },
+    {
+      "name": "greenwich_mean_sidereal_time",
+      "sample_count": 200000,
+      "repeats": 7,
+      "python_best_seconds": 0.10069990000010876,
+      "native_best_seconds": 0.019589999999880092,
+      "python_median_seconds": 0.10408670000015263,
+      "native_median_seconds": 0.019611000000168133,
+      "speedup_best": 5.140372639138597,
+      "speedup_median": 5.307567181646028
+    },
+    {
+      "name": "apparent_sidereal_time",
+      "sample_count": 200000,
+      "repeats": 7,
+      "python_best_seconds": 0.32021199999962846,
+      "native_best_seconds": 0.033665599999949336,
+      "python_median_seconds": 0.3226873999997224,
+      "native_median_seconds": 0.03392819999999119,
+      "speedup_best": 9.511548880759896,
+      "speedup_median": 9.510890645533985
+    }
+  ],
+  "summary": {
+    "sample_count": 200000,
+    "repeats": 7,
+    "python_total_best_seconds": 0.4363906999997198,
+    "native_total_best_seconds": 0.07157899999992878,
+    "python_total_median_seconds": 0.44233049999957075,
+    "native_total_median_seconds": 0.07202670000015132,
+    "speedup_best": 6.096630296597521,
+    "speedup_median": 6.141201804312032
+  }
+}

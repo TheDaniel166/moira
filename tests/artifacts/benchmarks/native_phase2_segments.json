@@ -1,0 +1,42 @@
+{
+  "phase": "phase2_native_segments",
+  "kernel": "C:\\Users\\nilad\\.moira\\kernels\\de441.bsp",
+  "functions": [
+    {
+      "name": "position_sun_barycenter",
+      "center": 0,
+      "target": 10,
+      "sample_count": 20000,
+      "repeats": 7,
+      "python_best_seconds": 0.08057130000088364,
+      "native_best_seconds": 0.2782724999997299,
+      "python_median_seconds": 0.08528099999966798,
+      "native_median_seconds": 0.2941629999986617,
+      "speedup_best": 0.28954100746916006,
+      "speedup_median": 0.28991069577090245
+    },
+    {
+      "name": "state_emb_barycenter",
+      "center": 0,
+      "target": 3,
+      "sample_count": 20000,
+      "repeats": 7,
+      "python_best_seconds": 0.10273900000174763,
+      "native_best_seconds": 0.3896905000001425,
+      "python_median_seconds": 0.10927010000159498,
+      "native_median_seconds": 0.42468709999957355,
+      "speedup_best": 0.2636425573672185,
+      "speedup_median": 0.2572955477143165
+    }
+  ],
+  "summary": {
+    "sample_count": 20000,
+    "repeats": 7,
+    "python_total_best_seconds": 0.18331030000263127,
+    "native_total_best_seconds": 0.6679629999998724,
+    "python_total_median_seconds": 0.19455110000126297,
+    "native_total_median_seconds": 0.7188500999982352,
+    "speedup_best": 0.2744318173351911,
+    "speedup_median": 0.2706420990992984
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "phase": "phase2_catalog_slice",
+  "kernel": "C:\\Users\\nilad\\.moira\\kernels\\de441.bsp",
+  "repeats": 15,
+  "python_best_seconds": 0.00010750000001280569,
+  "native_best_seconds": 9.219999992637895e-05,
+  "python_median_seconds": 0.00011660000018309802,
+  "native_median_seconds": 9.829999908106402e-05,
+  "speedup_best": 1.165943601937567,
+  "speedup_median": 1.186164814578917
+}

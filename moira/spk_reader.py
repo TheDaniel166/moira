@@ -27,18 +27,247 @@ from contextvars import ContextVar
 from pathlib import Path
 from typing import Protocol, runtime_checkable
 
-# jplephem is used solely as a binary SPK file reader
+T0 = 2451545.0
+S_PER_DAY = 86400.0
+
+
+def _jd(seconds: float) -> float:
+    return T0 + seconds / S_PER_DAY
+
+
+def compute_calendar_date(jd_integer: float, julian_before=None):
+    jd_integer = int(jd_integer)
+    use_gregorian = (julian_before is None) or (jd_integer >= julian_before)
+    f = jd_integer + 1401
+    f += use_gregorian * ((4 * jd_integer + 274277) // 146097 * 3 // 4 - 38)
+    e = 4 * f + 3
+    g = e % 1461 // 4
+    h = 5 * g + 2
+    day = h % 153 // 5 + 1
+    month = (h // 153 + 2) % 12 + 1
+    year = e // 1461 - 4716 + (12 + 2 - month) // 12
+    return year, month, day
+
+
+class OutOfRangeError(ValueError):
+    def __init__(self, message, out_of_range_times):
+        self.args = (message,)
+        self.out_of_range_times = out_of_range_times
+
+
 try:
     from jplephem.spk import SPK as _SPK
-except ImportError as exc:  # pragma: no cover
-    raise ImportError(
-        "Moira requires jplephem to read SPK kernel files. "
-        "Install it with: pip install jplephem"
-    ) from exc
+except ImportError:  # pragma: no cover
+    _SPK = None
+
+try:
+    from . import moira_native as _moira_native
+except ImportError:  # pragma: no cover
+    _moira_native = None
 
 from ._kernel_paths import find_kernel, find_planetary_kernel
 
 Vec3 = tuple[float, float, float]
+_HAS_JPLEPHEM = _SPK is not None
+_HAS_NATIVE_SPK = (
+    _moira_native is not None
+    and hasattr(_moira_native, "spk_chebyshev_record")
+    and hasattr(_moira_native, "spk_chebyshev_record_with_derivative")
+)
+_HAS_NATIVE_DAF = _moira_native is not None and hasattr(_moira_native, "read_daf_catalog")
+_HAS_NATIVE_SEGMENTS = (
+    _moira_native is not None
+    and hasattr(_moira_native, "read_spk_chebyshev_segment_payload")
+)
+_HAS_NATIVE_SERIES_EVAL = (
+    _moira_native is not None
+    and hasattr(_moira_native, "spk_chebyshev_series_record")
+    and hasattr(_moira_native, "spk_chebyshev_series_record_with_derivative")
+)
+_HAS_NATIVE_BULK_EVAL = (
+    _moira_native is not None
+    and hasattr(_moira_native, "spk_chebyshev_series_bulk_evaluate")
+)
+
+
+def _native_spk_record_inputs(segment, jd: float):
+    """Return native-evaluable type-2 record inputs or ``None``."""
+    if not _HAS_NATIVE_SPK or getattr(segment, "data_type", None) != 2:
+        return None
+
+    if hasattr(segment, "_load_data"):
+        init, intlen, coefficients = segment._load_data()
+    else:
+        init, intlen, coefficients = segment._data
+    if getattr(coefficients, "ndim", None) != 3:
+        return None
+
+    record_count, component_count, coefficient_count = coefficients.shape
+    if component_count != 3 or coefficient_count == 0 or record_count == 0:
+        return None
+
+    index, offset = divmod((jd - T0) * S_PER_DAY - init, intlen)
+    index = int(index)
+    if index < 0 or index > record_count:
+        return None
+    if index == record_count:
+        index -= 1
+        offset += intlen
+
+    s = 2.0 * offset / intlen - 1.0
+    derivative_scale = 2.0 * S_PER_DAY / intlen
+    return coefficients[index, :, :], s, derivative_scale
+
+
+def _native_position(segment, jd: float) -> Vec3 | None:
+    inputs = _native_spk_record_inputs(segment, jd)
+    if inputs is None:
+        return None
+
+    coeff_record, s, _derivative_scale = inputs
+    values = _moira_native.spk_chebyshev_record(coeff_record, s)
+    return (float(values[0]), float(values[1]), float(values[2]))
+
+
+def _native_position_and_velocity(
+    segment, jd: float
+) -> tuple[Vec3, Vec3] | None:
+    inputs = _native_spk_record_inputs(segment, jd)
+    if inputs is None:
+        return None
+
+    coeff_record, s, derivative_scale = inputs
+    values, rates = _moira_native.spk_chebyshev_record_with_derivative(
+        coeff_record, s, derivative_scale
+    )
+    return (
+        (float(values[0]), float(values[1]), float(values[2])),
+        (float(rates[0]), float(rates[1]), float(rates[2])),
+    )
+
+
+class _NativeSpkKernel:
+    """Thin kernel holder built from Moira-native DAF summary scanning."""
+
+    def __init__(self, path: Path, catalog: dict) -> None:
+        self.path = path
+        self.catalog = catalog
+        self.segments = [
+            _NativeChebyshevSegment(path, item["name"], item["descriptor"], catalog["little_endian"])
+            for item in catalog["summaries"]
+        ]
+
+    def close(self) -> None:
+        for segment in self.segments:
+            if "_data" in segment.__dict__:
+                del segment._data
+
+
+def _open_kernel(path: Path):
+    """Open the planetary kernel through the strongest available reader path."""
+    if _HAS_NATIVE_DAF:
+        catalog = _moira_native.read_daf_catalog(str(path))
+        if _native_catalog_is_fully_supported(catalog):
+            return _NativeSpkKernel(path, catalog)
+    if not _HAS_JPLEPHEM:
+        raise RuntimeError(
+            "This kernel path still requires jplephem because it contains unsupported "
+            "segment types for the current native reader."
+        )
+    return _SPK.open(str(path))
+
+
+class _NativeChebyshevSegment:
+    """Moira-native type-2/type-3 SPK segment with jplephem-compatible surface."""
+
+    def __init__(self, path: Path, source: bytes, descriptor, little_endian: bool) -> None:
+        self.path = path
+        self.source = source
+        self._little_endian = bool(little_endian)
+        (
+            self.start_second,
+            self.end_second,
+            self.target,
+            self.center,
+            self.frame,
+            self.data_type,
+            self.start_i,
+            self.end_i,
+        ) = descriptor
+        self.start_jd = _jd(self.start_second)
+        self.end_jd = _jd(self.end_second)
+        self._data = None
+
+    def compute(self, tdb, tdb2=0.0):
+        values, _rates = self._evaluate(float(tdb), float(tdb2), need_rates=False)
+        return values
+
+    def compute_and_differentiate(self, tdb, tdb2=0.0):
+        return self._evaluate(float(tdb), float(tdb2), need_rates=True)
+
+    def _load_data(self):
+        if self._data is None:
+            payload = _moira_native.read_spk_chebyshev_segment_payload(
+                str(self.path),
+                int(self.start_i),
+                int(self.end_i),
+                self._little_endian,
+                int(self.data_type),
+            )
+            self._data = (
+                float(payload["init"]),
+                float(payload["intlen"]),
+                payload["coefficients"],
+            )
+        return self._data
+
+    def _evaluate(self, tdb: float, tdb2: float, need_rates: bool):
+        init, intlen, coefficients = self._load_data()
+        record_count, component_count, coefficient_count = coefficients.shape
+
+        index1, offset1 = divmod((tdb - T0) * S_PER_DAY - init, intlen)
+        index2, offset2 = divmod(tdb2 * S_PER_DAY, intlen)
+        index3, offset = divmod(offset1 + offset2, intlen)
+        index = int(index1 + index2 + index3)
+        if index < 0 or index > record_count:
+            raise OutOfRangeError(
+                'segment only covers dates %d-%02d-%02d through %d-%02d-%02d'
+                % (compute_calendar_date(self.start_jd + 0.5) +
+                   compute_calendar_date(self.end_jd + 0.5)),
+                out_of_range_times=True,
+            )
+        if index == record_count:
+            index -= 1
+            offset += intlen
+
+        s = 2.0 * offset / intlen - 1.0
+        derivative_scale = 2.0 * S_PER_DAY / intlen
+
+        if _HAS_NATIVE_SERIES_EVAL:
+            if need_rates:
+                values, rates = _moira_native.spk_chebyshev_series_record_with_derivative(
+                    coefficients, index, s, derivative_scale
+                )
+                return values, rates
+
+            values = _moira_native.spk_chebyshev_series_record(coefficients, index, s)
+            return values, None
+
+        coeff_record = coefficients[index, :, :]
+        if need_rates:
+            values, rates = _moira_native.spk_chebyshev_record_with_derivative(
+                coeff_record, s, derivative_scale
+            )
+            return values, rates
+
+        values = _moira_native.spk_chebyshev_record(coeff_record, s)
+        return values, None
+
+
+def _native_catalog_is_fully_supported(catalog: dict) -> bool:
+    if not (_HAS_NATIVE_DAF and _HAS_NATIVE_SEGMENTS):
+        return False
+    return all(item["descriptor"][5] in (2, 3) for item in catalog["summaries"])
 
 
 class MissingKernelError(RuntimeError):
@@ -213,7 +442,7 @@ class SpkReader:
                 "Ensure a compatible JPL SPK file is accessible."
             )
         self._path = path
-        self._kernel = _SPK.open(str(path))
+        self._kernel = _open_kernel(path)
         self._closed = False
         self._segments_by_pair: dict[tuple[int, int], tuple[object, ...]] = {}
         for segment in self._kernel.segments:
@@ -321,6 +550,9 @@ class SpkReader:
         """
         self._ensure_open()
         segment = self._segment_for(center, target, jd)
+        native = _native_position(segment, jd)
+        if native is not None:
+            return native
         pos = segment.compute(jd)
         return (float(pos[0]), float(pos[1]), float(pos[2]))
 
@@ -347,6 +579,9 @@ class SpkReader:
         """
         self._ensure_open()
         segment = self._segment_for(center, target, jd)
+        native = _native_position_and_velocity(segment, jd)
+        if native is not None:
+            return native
         pos, vel = segment.compute_and_differentiate(jd)
         return (
             (float(pos[0]), float(pos[1]), float(pos[2])),

@@ -1,0 +1,43 @@
+{
+  "phase": "phase2_native_segments_series_eval_experiment",
+  "extension": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira C++\\moira\\_moira_native.pyd",
+  "kernel": "C:\\Users\\nilad\\.moira\\kernels\\de441.bsp",
+  "functions": [
+    {
+      "name": "position_sun_barycenter",
+      "center": 0,
+      "target": 10,
+      "sample_count": 20000,
+      "repeats": 7,
+      "python_best_seconds": 0.779992100004165,
+      "native_best_seconds": 0.2419316000014078,
+      "python_median_seconds": 0.7915149999971618,
+      "native_median_seconds": 0.2504458999974304,
+      "speedup_best": 3.224019102918454,
+      "speedup_median": 3.160423069434488
+    },
+    {
+      "name": "state_emb_barycenter",
+      "center": 0,
+      "target": 3,
+      "sample_count": 20000,
+      "repeats": 7,
+      "python_best_seconds": 1.4005692999999155,
+      "native_best_seconds": 0.28556360000220593,
+      "python_median_seconds": 1.4240015999967,
+      "native_median_seconds": 0.29049330000270857,
+      "speedup_best": 4.904579225045126,
+      "speedup_median": 4.902011853572604
+    }
+  ],
+  "summary": {
+    "sample_count": 20000,
+    "repeats": 7,
+    "python_total_best_seconds": 2.1805614000040805,
+    "native_total_best_seconds": 0.5274952000036137,
+    "python_total_median_seconds": 2.2155165999938617,
+    "native_total_median_seconds": 0.540939200000139,
+    "speedup_best": 4.1338033028341155,
+    "speedup_median": 4.095685060341888
+  }
+}

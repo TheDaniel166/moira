@@ -1246,6 +1246,7 @@ def tt_to_tdb(jd_tt: float) -> float:
 # Sidereal time
 # ---------------------------------------------------------------------------
 
+@accelerate("earth_rotation_angle")
 def earth_rotation_angle(jd_ut: float) -> float:
     """
     Compute the Earth Rotation Angle (ERA) in degrees.
@@ -1274,6 +1275,7 @@ def earth_rotation_angle(jd_ut: float) -> float:
     return (era_turns % 1.0) * 360.0
 
 
+@accelerate("greenwich_mean_sidereal_time")
 def greenwich_mean_sidereal_time(jd_ut: float) -> float:
     """
     Compute Greenwich Mean Sidereal Time (GMST) in degrees.
@@ -1356,6 +1358,7 @@ def _gast_complementary_terms(jd_ut: float) -> float:
     return ct / 3600.0   # arcseconds → degrees
 
 
+@accelerate("apparent_sidereal_time")
 def apparent_sidereal_time(jd_ut: float, nutation_longitude: float, obliquity: float) -> float:
     """
     Compute Greenwich Apparent Sidereal Time (GAST) in degrees.

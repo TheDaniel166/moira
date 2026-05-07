@@ -307,6 +307,51 @@ def lunar_eclipse_cartography(
     lon_values = _np.linspace(lon_min, lon_max, lon_count)
     lat_grid, lon_grid = _np.meshgrid(lat_values, lon_values, indexing="ij")
 
+    # Native Fast Path
+    if backend_info.name == "moira-native":
+        try:
+            from . import moira_native
+            
+            # Prepare arrays
+            jd_arr = _np.array(sample_jds, dtype=float)
+            gast_arr = _np.array([local_sidereal_time(jd, 0.0) for jd in sample_jds], dtype=float)
+            
+            # Compute magnitudes (geocentric) for each JD
+            mag_base_arr = _np.array([
+                _compute_lunar_besselian_sample(calc, jd).eclipse_magnitude 
+                for jd in sample_jds
+            ], dtype=float)
+            
+            lat_arr = lat_grid.ravel().astype(float)
+            lon_arr = lon_grid.ravel().astype(float)
+            
+            # Allocate results
+            penumbral_max_arr = _np.full(lat_arr.shape, -1e18, dtype=float)
+            partial_max_arr = _np.full(lat_arr.shape, -1e18, dtype=float)
+            total_max_arr = _np.full(lat_arr.shape, -1e18, dtype=float)
+            magnitude_max_arr = _np.zeros(lat_arr.shape, dtype=float)
+
+            u1_u4 = _np.array([u1, u4], dtype=float) if u1 is not None else None
+            u2_u3 = _np.array([u2, u3], dtype=float) if u2 is not None else None
+
+            # Get native evaluators
+            sun_eval = calc._reader.evaluator(Body.SUN, frame="cartesian")
+            moon_eval = calc._reader.evaluator(Body.MOON, frame="cartesian")
+            
+            moira_native.lunar_cartography_grid_sweep(
+                sun_eval, moon_eval, jd_arr, gast_arr, mag_base_arr,
+                lat_arr, lon_arr,
+                penumbral_max_arr, partial_max_arr, total_max_arr, magnitude_max_arr,
+                u1_u4, u2_u3
+            )
+            
+            penumbral_max = penumbral_max_arr.reshape(lat_grid.shape)
+            partial_max = partial_max_arr.reshape(lat_grid.shape)
+            total_max = total_max_arr.reshape(lat_grid.shape)
+            magnitude_max = magnitude_max_arr.reshape(lat_grid.shape)
+        except (ImportError, AttributeError):
+            pass
+
     penumbral_max = xp.full(lat_grid.shape, -xp.inf, dtype=xp.float64)
     partial_max = xp.full(lat_grid.shape, -xp.inf, dtype=xp.float64)
     total_max = xp.full(lat_grid.shape, -xp.inf, dtype=xp.float64)

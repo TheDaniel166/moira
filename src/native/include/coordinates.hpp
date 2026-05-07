@@ -15,11 +15,11 @@ inline Vec3 radec_to_vec3(double ra_deg, double dec_deg, double dist = 1.0) {
     double ra = deg_to_rad(ra_deg);
     double dec = deg_to_rad(dec_deg);
     double cos_dec = std::cos(dec);
-    return {{
+    return Vec3({
         dist * cos_dec * std::cos(ra),
         dist * cos_dec * std::sin(ra),
         dist * std::sin(dec)
-    }};
+    });
 }
 
 /**
@@ -51,6 +51,43 @@ inline Vec3 lonlat_to_vec3(double lon_deg, double lat_deg, double dist = 1.0) {
 inline std::tuple<double, double, double> vec3_to_lonlat(const Vec3& v) {
     // Math is identical to vec3_to_radec
     return vec3_to_radec(v);
+}
+
+/**
+ * @brief THEOREM: Cartesian State to Spherical with Rates.
+ */
+inline void vec3_to_lonlat_with_rates(
+    const Vec3& pos, 
+    const Vec3& vel,
+    double& lon, double& lat, double& dist,
+    double& dlon, double& dlat, double& ddist
+) {
+    double x = pos[0], y = pos[1], z = pos[2];
+    double vx = vel[0], vy = vel[1], vz = vel[2];
+    
+    double rho2 = x * x + y * y;
+    double r2 = rho2 + z * z;
+    double r = std::sqrt(r2);
+    dist = r;
+
+    if (r == 0.0) {
+        lon = lat = dist = dlon = dlat = ddist = 0.0;
+        return;
+    }
+
+    lon = normalize_deg_360(rad_to_deg(std::atan2(y, x)));
+    lat = rad_to_deg(std::asin(clamp(z / r, -1.0, 1.0)));
+
+    ddist = (x * vx + y * vy + z * vz) / r;
+
+    // Singularity guard for pole (rho=0)
+    if (rho2 < 1e-25) {
+        dlon = 0.0;
+        dlat = 0.0;
+    } else {
+        dlon = rad_to_deg((x * vy - y * vx) / rho2);
+        dlat = rad_to_deg((vz * rho2 - z * (x * vx + y * vy)) / (r2 * std::sqrt(rho2)));
+    }
 }
 
 /**

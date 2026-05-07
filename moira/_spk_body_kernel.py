@@ -1,38 +1,16 @@
 """
-moira/_spk_body_kernel.py — Shared SPK Small-Body Reader
+Native-owned small-body SPK reader infrastructure.
 
-Archetype: Internal shared infrastructure
+This module provides:
+    - _Type13Segment: SPK type 13 (Hermite) segment reader
+    - SmallBodyKernel: thin wrapper around a native DAF/SPK segment catalog
 
-Purpose
--------
-Provides the SPK type 13 segment reader and the ``SmallBodyKernel`` wrapper
-used by both ``moira.asteroids`` and ``moira.comets`` (and any future small-body
-module).  Factored out to eliminate duplication between those modules.
-
-Boundary declaration
---------------------
-Owns:
-    - _hermite_eval_3d          — Hermite divided-difference interpolation in R³
-    - _Type13Segment            — jplephem BaseSegment extension for SPK type 13
-    - SmallBodyKernel           — thin wrapper around a jplephem SPK file
-    - SPK type 13 registration  — _segment_classes[13] = _Type13Segment
-
-Delegates: nothing — all logic is self-contained or delegates to jplephem.
-
-Import-time side effects:
-    Registers _Type13Segment in jplephem's _segment_classes dict at import
-    time (_segment_classes[13] = _Type13Segment).  This is a one-time, idempotent
-    mutation of a jplephem global; re-importing is safe.
-
-External dependency assumptions:
-    jplephem must be installed.
-
-Public surface
---------------
-    SmallBodyKernel    — open an SPK file and query body positions
-    _Type13Segment     — re-exported for callers that need the class directly
-                         (e.g. test_daf_writer round-trip tests)
+The public surface intentionally preserves the existing shape used by
+``moira.asteroids`` and ``moira.comets`` while removing mandatory runtime
+dependence on ``jplephem``.
 """
+
+from __future__ import annotations
 
 from bisect import bisect_left
 from pathlib import Path
@@ -40,23 +18,49 @@ from pathlib import Path
 from .coordinates import Vec3
 
 try:
-    from jplephem.spk import (
-        SPK as _SPK,
-        BaseSegment,
-        _segment_classes,
-        S_PER_DAY,
-        T0,
-        reify,
-    )
-except ImportError as exc:
-    raise ImportError(
-        "Moira requires jplephem.  Install: pip install jplephem"
-    ) from exc
+    from . import moira_native as _moira_native
+except ImportError:  # pragma: no cover
+    _moira_native = None
+
+T0 = 2451545.0
+S_PER_DAY = 86400.0
 
 
-# ---------------------------------------------------------------------------
-# SPK Type 13: Hermite Interpolation — Unequal Time Steps
-# ---------------------------------------------------------------------------
+def _jd(seconds: float) -> float:
+    return T0 + seconds / S_PER_DAY
+
+
+def compute_calendar_date(jd_integer: float, julian_before=None):
+    jd_integer = int(jd_integer)
+    use_gregorian = (julian_before is None) or (jd_integer >= julian_before)
+    f = jd_integer + 1401
+    f += use_gregorian * ((4 * jd_integer + 274277) // 146097 * 3 // 4 - 38)
+    e = 4 * f + 3
+    g = e % 1461 // 4
+    h = 5 * g + 2
+    day = h % 153 // 5 + 1
+    month = (h // 153 + 2) % 12 + 1
+    year = e // 1461 - 4716 + (12 + 2 - month) // 12
+    return year, month, day
+
+
+class OutOfRangeError(ValueError):
+    def __init__(self, message, out_of_range_times):
+        self.args = (message,)
+        self.out_of_range_times = out_of_range_times
+
+
+_HAS_NATIVE_DAF = _moira_native is not None and hasattr(_moira_native, "read_daf_catalog")
+_HAS_NATIVE_SEGMENTS = (
+    _moira_native is not None
+    and hasattr(_moira_native, "read_spk_chebyshev_segment_payload")
+    and hasattr(_moira_native, "spk_chebyshev_record")
+    and hasattr(_moira_native, "spk_chebyshev_record_with_derivative")
+)
+_HAS_NATIVE_TYPE13 = _moira_native is not None and hasattr(
+    _moira_native, "read_spk_type13_segment_payload"
+)
+
 
 def _hermite_eval_3d(
     t: float,
@@ -64,41 +68,25 @@ def _hermite_eval_3d(
     pos: list[list[float]],
     vel: list[list[float]],
 ) -> tuple[float, float, float]:
-    """
-    Hermite divided-difference interpolation in R³.
-
-    Parameters
-    ----------
-    t   : scalar query time (seconds from J2000)
-    ti  : (n,) node times (seconds from J2000)
-    pos : (3, n) positions in km
-    vel : (3, n) velocities in km/s  [d(km)/d(second)]
-
-    Returns
-    -------
-    (3,) interpolated position in km
-    """
+    """Hermite divided-difference interpolation in R^3."""
     n = len(pos[0])
     m = 2 * n
 
-    # Extended nodes: [t0,t0, t1,t1, ..., t_{n-1},t_{n-1}]
     z = [0.0] * m
     for i, value in enumerate(ti):
-        z[2 * i]     = value
+        z[2 * i] = value
         z[2 * i + 1] = value
 
-    # Divided-differences table, working column-by-column.
     prev = [[0.0] * m for _ in range(3)]
     for axis in range(3):
         for i in range(n):
-            prev[axis][2 * i]     = pos[axis][i]
+            prev[axis][2 * i] = pos[axis][i]
             prev[axis][2 * i + 1] = pos[axis][i]
 
     coeffs = [[0.0] * m for _ in range(3)]
     for axis in range(3):
         coeffs[axis][0] = prev[axis][0]
 
-    # j = 1: equal adjacent nodes → use known derivative
     curr = [[0.0] * (m - 1) for _ in range(3)]
     for i in range(m - 1):
         if i % 2 == 0:
@@ -112,7 +100,6 @@ def _hermite_eval_3d(
         coeffs[axis][1] = curr[axis][0]
     prev = curr
 
-    # j ≥ 2: standard divided differences
     for j in range(2, m):
         curr = [[0.0] * (m - j) for _ in range(3)]
         for i in range(m - j):
@@ -123,7 +110,6 @@ def _hermite_eval_3d(
             coeffs[axis][j] = curr[axis][0]
         prev = curr
 
-    # Evaluate Newton form via Horner's method
     result = [coeffs[axis][m - 1] for axis in range(3)]
     for j in range(m - 2, -1, -1):
         delta = t - z[j]
@@ -133,86 +119,151 @@ def _hermite_eval_3d(
     return (result[0], result[1], result[2])
 
 
-class _Type13Segment(BaseSegment):
-    """RITE: The Hermite Reader — the low-level segment handler that decodes
-    unequal-step Hermite-interpolated SPK type 13 state data directly
-    from a jplephem DAF into cartesian position vectors.
+class _NativeKernelHandle:
+    def __init__(self, segments) -> None:
+        self.segments = list(segments)
 
-THEOREM: jplephem BaseSegment extension for SPK type 13 (Hermite
-         interpolation, unequal time steps), registered in the jplephem
-         segment class registry at import time.
+    def close(self) -> None:
+        for segment in self.segments:
+            if hasattr(segment, "_release"):
+                segment._release()
 
-RITE OF PURPOSE:
-    _Type13Segment allows jplephem to transparently open and query SPK
-    files whose segments use type 13 encoding (the format used by NAIF
-    for most small-body kernels).  Without this class, jplephem's
-    ``SPK.open()`` cannot read type 13 data and raises on import.
 
-LAW OF OPERATION:
-    Responsibilities:
-        - Decode the type 13 DAF segment layout (state vectors, epoch
-          array, epoch directory, window parameters).
-        - Delegate Hermite interpolation to ``_hermite_eval_3d``.
-        - Provide ``compute()`` and ``compute_and_differentiate()``.
-    Non-responsibilities:
-        - Does not own kernel file I/O; that is jplephem SPK.
-        - Does not validate NAIF body ID or epoch coverage; the caller
-          (``SmallBodyKernel.position``) does that.
-    Dependencies:
-        - jplephem.spk.BaseSegment, reify, S_PER_DAY, T0.
-        - moira._spk_body_kernel._hermite_eval_3d.
-    Structural invariants:
-        - Registered as _segment_classes[13] at module import time.
+class _NativeChebyshevSegment:
+    """Native-backed type-2/type-3 SPK segment used by ``sb441-n373s.bsp``."""
 
-Canon: NAIF SPK Required Reading §2.3.13
+    def __init__(self, path: Path, source: bytes, descriptor, little_endian: bool) -> None:
+        self.path = path
+        self.source = source
+        self._little_endian = bool(little_endian)
+        (
+            self.start_second,
+            self.end_second,
+            self.target,
+            self.center,
+            self.frame,
+            self.data_type,
+            self.start_i,
+            self.end_i,
+        ) = descriptor
+        self.start_jd = _jd(self.start_second)
+        self.end_jd = _jd(self.end_second)
+        self._data = None
 
-[MACHINE_CONTRACT v1]
-{
-    "scope": "class",
-    "id": "moira._spk_body_kernel._Type13Segment",
-    "risk": "high",
-    "api": {"frozen": ["compute", "compute_and_differentiate"], "internal": ["_data"]},
-    "state": {"mutable": false, "owners": ["_data"]},
-    "effects": {"signals_emitted": [], "io": ["kernel_mmap_read"], "mutation": "cached_property"},
-    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-    "failures": {"policy": "propagate"},
-    "succession": {"stance": "terminal", "override_points": []},
-    "agent": {"autofix": "disallowed", "requires_human_for": ["api_change", "kernel_policy"]}
-}
-[/MACHINE_CONTRACT]
-    """
+    def _release(self) -> None:
+        self._data = None
 
-    @reify
-    def _data(self):
-        ws_f, n_f = self.daf.read_array(self.end_i - 1, self.end_i)
-        n  = int(n_f)
-        ws = int(ws_f)
+    def _load_data(self):
+        if self._data is None:
+            payload = _moira_native.read_spk_chebyshev_segment_payload(
+                str(self.path),
+                int(self.start_i),
+                int(self.end_i),
+                self._little_endian,
+                int(self.data_type),
+            )
+            self._data = (
+                float(payload["init"]),
+                float(payload["intlen"]),
+                payload["coefficients"],
+            )
+        return self._data
 
-        i = self.start_i
-        raw_states = self.daf.map_array(i, i + 6 * n - 1)
-        states = [[0.0] * n for _ in range(6)]
-        for row in range(n):
-            base = row * 6
-            for axis in range(6):
-                states[axis][row] = float(raw_states[base + axis])
+    def _evaluate(self, tdb: float, tdb2: float, need_rates: bool):
+        init, intlen, coefficients = self._load_data()
+        record_count, component_count, coefficient_count = coefficients.shape
 
-        raw_epochs = self.daf.map_array(i + 6 * n, i + 7 * n - 1)
-        epochs_jd = [float(v) / S_PER_DAY + T0 for v in raw_epochs]
+        index1, offset1 = divmod((tdb - T0) * S_PER_DAY - init, intlen)
+        index2, offset2 = divmod(tdb2 * S_PER_DAY, intlen)
+        index3, offset = divmod(offset1 + offset2, intlen)
+        index = int(index1 + index2 + index3)
+        if index < 0 or index > record_count:
+            raise OutOfRangeError(
+                "segment only covers dates %d-%02d-%02d through %d-%02d-%02d"
+                % (
+                    compute_calendar_date(self.start_jd + 0.5)
+                    + compute_calendar_date(self.end_jd + 0.5)
+                ),
+                out_of_range_times=True,
+            )
+        if index == record_count:
+            index -= 1
+            offset += intlen
 
-        return states, epochs_jd, ws
+        coeff_record = coefficients[index, :, :]
+        s = 2.0 * offset / intlen - 1.0
+        derivative_scale = 2.0 * S_PER_DAY / intlen
+
+        if need_rates:
+            values, rates = _moira_native.spk_chebyshev_record_with_derivative(
+                coeff_record, s, derivative_scale
+            )
+            return values, rates
+
+        values = _moira_native.spk_chebyshev_record(coeff_record, s)
+        return values, None
 
     def compute(self, tdb, tdb2=0.0):
-        """Return (x, y, z) in km at time *tdb* (JD TDB)."""
+        values, _rates = self._evaluate(float(tdb), float(tdb2), need_rates=False)
+        return (float(values[0]), float(values[1]), float(values[2]))
+
+    def compute_and_differentiate(self, tdb, tdb2=0.0):
+        values, rates = self._evaluate(float(tdb), float(tdb2), need_rates=True)
+        return (
+            (float(values[0]), float(values[1]), float(values[2])),
+            (float(rates[0]), float(rates[1]), float(rates[2])),
+        )
+
+
+class _Type13Segment:
+    """Moira-native SPK type 13 segment object."""
+
+    def __init__(self, path: Path, source: bytes, descriptor, little_endian: bool) -> None:
+        self.path = path
+        self.source = source
+        self._little_endian = bool(little_endian)
+        (
+            self.start_second,
+            self.end_second,
+            self.target,
+            self.center,
+            self.frame,
+            self.data_type,
+            self.start_i,
+            self.end_i,
+        ) = descriptor
+        self.start_jd = _jd(self.start_second)
+        self.end_jd = _jd(self.end_second)
+        self.__data = None
+
+    def _release(self) -> None:
+        self.__data = None
+
+    @property
+    def _data(self):
+        if self.__data is None:
+            payload = _moira_native.read_spk_type13_segment_payload(
+                str(self.path),
+                int(self.start_i),
+                int(self.end_i),
+                self._little_endian,
+            )
+            states = payload["states"].tolist()
+            epochs_jd = payload["epochs_jd"].tolist()
+            self.__data = (states, epochs_jd, int(payload["window_size"]))
+        return self.__data
+
+    def compute(self, tdb, tdb2=0.0):
         states, epochs_jd, ws = self._data
         t = float(tdb) + float(tdb2)
 
-        idx   = bisect_left(epochs_jd, t)
-        half  = ws // 2
+        idx = bisect_left(epochs_jd, t)
+        half = ws // 2
         start = max(0, min(idx - half, len(epochs_jd) - ws))
 
         win_jd = epochs_jd[start:start + ws]
-        win_t  = [(jd - T0) * S_PER_DAY for jd in win_jd]
-        t_sec  = (t - T0) * S_PER_DAY
+        win_t = [(jd - T0) * S_PER_DAY for jd in win_jd]
+        t_sec = (t - T0) * S_PER_DAY
 
         pos = [axis[start:start + ws] for axis in states[:3]]
         vel = [axis[start:start + ws] for axis in states[3:]]
@@ -220,97 +271,84 @@ Canon: NAIF SPK Required Reading §2.3.13
         return _hermite_eval_3d(t_sec, win_t, pos, vel)
 
     def compute_and_differentiate(self, tdb, tdb2=0.0):
-        """Return ((x,y,z), (vx,vy,vz)) — velocity via finite difference (km, km/day)."""
-        dt  = 1.0
-        p0  = self.compute(tdb - dt * 0.5, tdb2)
-        p1  = self.compute(tdb + dt * 0.5, tdb2)
+        dt = 1.0
+        p0 = self.compute(tdb - dt * 0.5, tdb2)
+        p1 = self.compute(tdb + dt * 0.5, tdb2)
         pos = self.compute(tdb, tdb2)
         vel = tuple((b - a) / dt for a, b in zip(p0, p1))
         return pos, vel
 
 
-# Register with jplephem so SPK.open() picks up type 13 segments automatically.
-_segment_classes[13] = _Type13Segment
+def _native_catalog_is_fully_supported(catalog: dict) -> bool:
+    if not _HAS_NATIVE_DAF:
+        return False
+    for item in catalog["summaries"]:
+        data_type = int(item["descriptor"][5])
+        if data_type == 13:
+            if not _HAS_NATIVE_TYPE13:
+                return False
+        elif data_type in (2, 3):
+            if not _HAS_NATIVE_SEGMENTS:
+                return False
+        else:
+            return False
+    return True
 
 
-# ---------------------------------------------------------------------------
-# SmallBodyKernel — thin SPK file wrapper
-# ---------------------------------------------------------------------------
+def _native_segment_for(path: Path, descriptor, source: bytes, little_endian: bool):
+    data_type = int(descriptor[5])
+    if data_type == 13:
+        return _Type13Segment(path, source, descriptor, little_endian)
+    if data_type in (2, 3):
+        return _NativeChebyshevSegment(path, source, descriptor, little_endian)
+    raise RuntimeError(f"unsupported small-body SPK segment type {data_type}")
+
 
 class SmallBodyKernel:
-    """RITE: The Small-Body Gate — the thin wrapper that opens one JPL SPK
-    kernel file and answers body-position queries without duplicating
-    the open/index/query logic across the asteroid and comet modules.
-
-THEOREM: Thin wrapper around a jplephem SPK file that indexes available
-         NAIF body IDs, reference centers, and epoch coverage, and
-         returns ICRF position vectors for a body at a given JD.
-
-RITE OF PURPOSE:
-    SmallBodyKernel factors out the SPK open-and-query pattern shared
-    by ``moira.asteroids`` and ``moira.comets``.  Without it, both
-    modules would duplicate the segment iteration, coverage mapping,
-    and FileNotFoundError guard.
-
-LAW OF OPERATION:
-    Responsibilities:
-        - Open and hold a jplephem SPK kernel file.
-        - Index available NAIF IDs and their reference centers.
-        - Answer ``position()``, ``has_body()``, and ``coverage()``
-          queries.
-    Non-responsibilities:
-        - Does not own epoch-validity checking beyond segment bounds.
-        - Does not convert from ICRF to ecliptic; callers do that.
-    Dependencies:
-        - jplephem.spk.SPK.
-        - moira._spk_body_kernel._Type13Segment (registered at import).
-    Structural invariants:
-        - ``_path`` is an existing file at construction time.
-        - ``_available`` and ``_center`` are consistent with the kernel.
-
-Canon: NAIF SPK Required Reading; moira.asteroids and moira.comets
-       small-body kernel policy.
-
-[MACHINE_CONTRACT v1]
-{
-    "scope": "class",
-    "id": "moira._spk_body_kernel.SmallBodyKernel",
-    "risk": "high",
-    "api": {"frozen": ["has_body", "segment_center", "position", "list_naif_ids", "has_segment_at", "coverage"], "internal": ["_path", "_kernel", "_available", "_center"]},
-    "state": {"mutable": false, "owners": ["_kernel"]},
-    "effects": {"signals_emitted": [], "io": ["kernel_file_open"], "mutation": "none"},
-    "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-    "failures": {"policy": "raise"},
-    "succession": {"stance": "terminal", "override_points": []},
-    "agent": {"autofix": "disallowed", "requires_human_for": ["api_change", "kernel_policy"]}
-}
-[/MACHINE_CONTRACT]
-    """
+    """Thin wrapper around a native-owned SPK small-body kernel."""
 
     def __init__(self, path: Path) -> None:
+        path = Path(path)
         if not path.exists():
             raise FileNotFoundError(f"SPK kernel not found at {path}")
-        self._path   = path
-        self._kernel = _SPK.open(str(path))
+        if not _HAS_NATIVE_DAF:
+            raise ImportError(
+                "Moira small-body kernels require the native extension module."
+            )
 
-        self._available: set[int]       = set()
-        self._center:    dict[int, int] = {}
+        catalog = _moira_native.read_daf_catalog(str(path))
+        if not _native_catalog_is_fully_supported(catalog):
+            unsupported = sorted(
+                {int(item["descriptor"][5]) for item in catalog["summaries"]}
+                - {2, 3, 13}
+            )
+            raise RuntimeError(
+                "SmallBodyKernel only supports native SPK segment types 2, 3, and 13; "
+                f"found unsupported types {unsupported!r} in {path.name}"
+            )
+
+        self._path = path
+        self._catalog = catalog
+        self._kernel = _NativeKernelHandle(
+            [
+                _native_segment_for(path, item["descriptor"], item["name"], catalog["little_endian"])
+                for item in catalog["summaries"]
+            ]
+        )
+
+        self._available: set[int] = set()
+        self._center: dict[int, int] = {}
         for seg in self._kernel.segments:
             self._available.add(seg.target)
-            if seg.target not in self._center:
-                self._center[seg.target] = seg.center
+            self._center.setdefault(seg.target, seg.center)
 
     def has_body(self, naif_id: int) -> bool:
         return naif_id in self._available
 
     def segment_center(self, naif_id: int) -> int:
-        """Return the reference center NAIF ID for this body (10 = Sun for heliocentric kernels)."""
         return self._center.get(naif_id, 0)
 
     def position(self, naif_id: int, jd_tt: float) -> Vec3:
-        """
-        Return position of *naif_id* relative to its segment center (km, ICRF).
-        """
         for seg in self._kernel.segments:
             if seg.target == naif_id and seg.start_jd <= jd_tt <= seg.end_jd:
                 pos = seg.compute(jd_tt)
@@ -324,21 +362,12 @@ Canon: NAIF SPK Required Reading; moira.asteroids and moira.comets
         return sorted(self._available)
 
     def has_segment_at(self, center: int, target: int, jd: float) -> bool:
-        """Return True if a segment for (center, target) covers jd."""
         for seg in self._kernel.segments:
-            if (seg.target == target and seg.center == center
-                    and seg.start_jd <= jd <= seg.end_jd):
+            if seg.target == target and seg.center == center and seg.start_jd <= jd <= seg.end_jd:
                 return True
         return False
 
     def coverage(self) -> dict[tuple[int, int], tuple[float, float]]:
-        """
-        Return the epoch range covered by each (center, target) pair.
-
-        Returns
-        -------
-        dict mapping (center_naif_id, target_naif_id) to (start_jd, end_jd).
-        """
         result: dict[tuple[int, int], tuple[float, float]] = {}
         for seg in self._kernel.segments:
             key = (seg.center, seg.target)
