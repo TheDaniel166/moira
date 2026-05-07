@@ -1,6 +1,6 @@
 # Machine Contract: Dual-Substrate Backend Architecture
 
-**Status**: Draft / Speculative
+**Status**: Active / Baseline established
 **Context**: Moira v3.0.0+
 **Goal**: Integrate high-performance C++ kernels without sacrificing the "Light Box Doctrine" of readable, auditable Python reference code.
 
@@ -67,13 +67,25 @@ def calculate_nutation(jd_tdb):
     ...
 ```
 
-## 5. The Parity Rite (Validation Strategy)
+## 5. The Rituals of Validation
 
-To ensure the C++ substrate remains faithful to the celestial truth, we implement a **Sovereign Parity Test**.
+To ensure the C++ substrate remains faithful to the celestial truth and justified in its existence, it must pass two separate audits.
+
+### 5.1 The Parity Rite (Accuracy)
 
 1.  **Input Sampling**: Generate 1,000 random Julian Days across the DE441 range (-13200 to +17191).
 2.  **Cross-Verification**: Compute the result using both `MoiraBackend.PYTHON` and `MoiraBackend.NATIVE`.
 3.  **Threshold Audit**: The results must match within a defined epsilon (e.g., $10^{-12}$ degrees). Any divergence beyond the epsilon is a violation of the contract.
+
+### 5.2 The Performance Mandate (Efficiency)
+
+The C++ layer must not only be correct; it must be "fire." If the native backend does not meet the following minimum acceleration thresholds, it remains a speculative experiment and shall not be merged into the canonical main branch:
+
+- **Bulk Ephemeris Interpolation**: ≥ 5x speedup over Python.
+- **Search Solvers (Stations/Ingresses/Eclipses)**: ≥ 10x speedup over Python.
+- **Harmogram Trace Synthesis**: ≥ 10x speedup over Python.
+
+These benchmarks shall be measured against the reference implementation on identical hardware under standard load. Complexity without significant acceleration is considered "ceremony without fire" and is architecturally prohibited.
 
 ## 6. Implementation Stages (External Workspace)
 

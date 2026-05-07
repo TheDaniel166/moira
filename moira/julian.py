@@ -36,6 +36,7 @@ import bisect
 from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+from .dispatch import accelerate
 from .constants import J2000, JULIAN_CENTURY, TAI_TT_OFFSET
 from .data.leap_seconds import LEAP_SECONDS
 
@@ -272,6 +273,7 @@ def format_jd_utc(
 # Julian Day Number
 # ---------------------------------------------------------------------------
 
+@accelerate("julian_day")
 def julian_day(year: int, month: int, day: int, hour: float = 0.0) -> float:
     """
     Convert a proleptic Gregorian calendar date and decimal UT hour to a
@@ -312,6 +314,7 @@ def julian_day(year: int, month: int, day: int, hour: float = 0.0) -> float:
     return jd
 
 
+@accelerate("calendar_from_jd")
 def calendar_from_jd(jd: float) -> tuple[int, int, int, float]:
     """
     Convert a Julian Day Number to a proleptic Gregorian calendar date.

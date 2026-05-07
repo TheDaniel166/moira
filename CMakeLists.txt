@@ -1,0 +1,27 @@
+cmake_minimum_required(VERSION 3.12)
+project(moira_native LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Explicitly include Python and pybind11 directories to bypass config failures
+include_directories("C:/Python314/Include")
+include_directories("C:/Users/nilad/AppData/Roaming/Python/Python314/site-packages/pybind11/include")
+include_directories(src/native/include)
+
+# Define the extension module manually
+add_library(moira_native MODULE src/native/bindings/moira_native.cpp)
+
+# Link against Python library
+target_link_libraries(moira_native PRIVATE "C:/Python314/libs/python314.lib")
+
+# Set target properties to match Python's extension requirements
+set_target_properties(moira_native PROPERTIES
+    PREFIX ""
+    SUFFIX ".pyd"
+    CXX_VISIBILITY_PRESET hidden
+    VISIBILITY_INLINES_HIDDEN ON
+)
+
+# Installation (optional for now, we'll build in place)
+install(TARGETS moira_native DESTINATION .)
