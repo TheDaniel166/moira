@@ -1,0 +1,24 @@
+{
+  "value": {
+    "native_helpers": {
+      "apply_aberration_velocity": true,
+      "apply_frame_bias": true,
+      "open_spk_kernel": true,
+      "rotation_matrix_apply": true,
+      "rotation_matrix_multiply": true
+    },
+    "planetary_numpy_markers": {
+      "moira/corrections.py": [],
+      "moira/nutation_2000a.py": [],
+      "moira/planets.py": []
+    },
+    "spk_payload_surface": {
+      "coefficient_count": 11,
+      "coefficients_type": "tuple",
+      "component_count": 3,
+      "component_type": "tuple",
+      "record_count": 347474,
+      "record_type": "tuple"
+    }
+  }
+}

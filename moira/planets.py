@@ -26,13 +26,12 @@ External dependency assumptions:
 
 import math
 from dataclasses import dataclass, field
+from collections import OrderedDict
 
 try:
-    import numpy as _np
-    _HAS_NUMPY = True
+    from . import moira_native as _moira_native
 except ImportError:
-    _np = None
-    _HAS_NUMPY = False
+    _moira_native = None
 
 from .constants import (
     Body, NAIF, NAIF_ROUTES, EARTH_ROUTE,
@@ -42,11 +41,11 @@ from .coordinates import (
     Vec3, vec_add, vec_sub, vec_norm, mat_vec_mul, mat_mul,
     icrf_to_ecliptic, icrf_to_equatorial, equatorial_to_horizontal,
     normalize_degrees, precession_matrix_equatorial, nutation_matrix_equatorial,
-    icrf_to_true_ecliptic,
+    icrf_to_true_ecliptic, nutation_matrix_from_terms,
 )
 from .obliquity import mean_obliquity, true_obliquity, nutation as _nutation
 from .julian import ut_to_tt, centuries_from_j2000, local_sidereal_time, decimal_year, DeltaTPolicy
-from .spk_reader import get_active_reader, KernelReader, SpkReader, MissingKernelError
+from .spk_reader import get_active_reader, get_reader, KernelReader, SpkReader, MissingKernelError
 from .corrections import (
     apply_light_time, apply_aberration, apply_deflection, apply_frame_bias,
     apply_refraction, SCHWARZSCHILD_RADII,
@@ -404,19 +403,543 @@ class CartesianPosition:
 # Internal: chain SPK segments to get barycentric position
 # ---------------------------------------------------------------------------
 
+_VectorCache = dict[tuple[str, str, float], object]
+_NPE_ADMITTED_BODIES = (
+    Body.SUN,
+    Body.MOON,
+    Body.MERCURY,
+    Body.VENUS,
+    Body.MARS,
+    Body.JUPITER,
+    Body.SATURN,
+    Body.URANUS,
+    Body.NEPTUNE,
+    Body.PLUTO,
+)
+_NPE_PUBLIC_ROUTE_PAIRS = (
+    (0, 10),
+    (0, 3),
+    (3, 399),
+    (3, 301),
+    (0, 1),
+    (1, 199),
+    (0, 2),
+    (2, 299),
+    (0, 4),
+    (0, 5),
+    (0, 6),
+    (0, 7),
+    (0, 8),
+    (0, 9),
+)
+_NPE_BODY_ROUTE_PAIRS = {
+    Body.SUN: ((0, 10),),
+    Body.MOON: ((0, 3), (3, 301)),
+    Body.MERCURY: ((0, 1), (1, 199)),
+    Body.VENUS: ((0, 2), (2, 299)),
+    Body.MARS: ((0, 4),),
+    Body.JUPITER: ((0, 5),),
+    Body.SATURN: ((0, 6),),
+    Body.URANUS: ((0, 7),),
+    Body.NEPTUNE: ((0, 8),),
+    Body.PLUTO: ((0, 9),),
+}
+
+
+@dataclass(slots=True)
+class _ApparentContext:
+    """Internal one-JD cache for shared apparent-path state."""
+
+    jd_tt: float
+    dpsi_deg: float
+    deps_deg: float
+    obliquity: float
+    rot_mat: object | None
+    vector_cache: _VectorCache
+    earth_ssb: Vec3 | None = None
+    earth_vel: Vec3 | None = None
+    sun_geocentric: Vec3 | None = None
+    jupiter_geocentric: Vec3 | None = None
+    saturn_geocentric: Vec3 | None = None
+
+
+_HAS_NATIVE_ROTATION = (
+    _moira_native is not None
+    and hasattr(_moira_native, "rotation_matrix_multiply")
+    and hasattr(_moira_native, "rotation_matrix_apply")
+)
+# Keep enough one-JD contexts to cover ordinary chart/batch slices without
+# evicting them before adjacent same-reader lookups can reuse the work.
+_APPARENT_CONTEXT_CACHE_LIMIT = 32
+
+
+def _reader_apparent_context_cache(reader: KernelReader):
+    """Return the per-reader apparent-context cache when the reader can own one."""
+    cache = getattr(reader, "_planetary_apparent_context_cache", None)
+    if cache is not None:
+        return cache
+    try:
+        cache = OrderedDict()
+        setattr(reader, "_planetary_apparent_context_cache", cache)
+        return cache
+    except Exception:
+        return None
+
+
+def _reader_planet_call_cache(reader: KernelReader):
+    """Return the per-reader same-JD single-body cache when the reader can own one."""
+    cache = getattr(reader, "_planetary_planet_at_call_cache", None)
+    if cache is not None:
+        return cache
+    try:
+        cache = OrderedDict()
+        setattr(reader, "_planetary_planet_at_call_cache", cache)
+        return cache
+    except Exception:
+        return None
+
+
+def _cached_planet_call_context(
+    reader: KernelReader,
+    *,
+    jd_ut: float,
+    apparent: bool,
+    nutation: bool,
+    delta_t_policy: 'DeltaTPolicy | None',
+) -> tuple[float, _ApparentContext] | None:
+    """
+    Return cached TT/context state for repeated same-reader same-JD lookups.
+
+    This is intentionally narrow: it only admits the default Delta-T path so
+    that the cache key stays exact without introducing policy ambiguity.
+    """
+    if not apparent or delta_t_policy is not None:
+        return None
+    cache = _reader_planet_call_cache(reader)
+    if cache is None:
+        return None
+    key = (jd_ut, apparent, nutation)
+    state = cache.get(key)
+    if state is not None:
+        cache.move_to_end(key)
+    return state
+
+
+def _store_planet_call_context(
+    reader: KernelReader,
+    *,
+    jd_ut: float,
+    jd_tt: float,
+    apparent: bool,
+    nutation: bool,
+    context: _ApparentContext,
+) -> None:
+    """Store repeated same-JD single-body setup on the live reader with a tiny LRU law."""
+    if not apparent:
+        return
+    cache = _reader_planet_call_cache(reader)
+    if cache is None:
+        return
+    key = (jd_ut, apparent, nutation)
+    cache[key] = (jd_tt, context)
+    cache.move_to_end(key)
+    while len(cache) > _APPARENT_CONTEXT_CACHE_LIMIT:
+        cache.popitem(last=False)
+
+
+def _cached_apparent_context(
+    reader: KernelReader,
+    *,
+    jd_tt: float,
+    apparent: bool,
+    nutation: bool,
+) -> _ApparentContext | None:
+    """Return a cached one-JD apparent context for repeated single-body lookups."""
+    if not apparent:
+        return None
+    cache = _reader_apparent_context_cache(reader)
+    if cache is None:
+        return None
+    key = (jd_tt, apparent, nutation)
+    context = cache.get(key)
+    if context is not None:
+        cache.move_to_end(key)
+    return context
+
+
+def _store_apparent_context(
+    reader: KernelReader,
+    *,
+    jd_tt: float,
+    apparent: bool,
+    nutation: bool,
+    context: _ApparentContext,
+) -> None:
+    """Store a one-JD apparent context on the live reader with a tiny LRU law."""
+    if not apparent:
+        return
+    cache = _reader_apparent_context_cache(reader)
+    if cache is None:
+        return
+    key = (jd_tt, apparent, nutation)
+    cache[key] = context
+    cache.move_to_end(key)
+    while len(cache) > _APPARENT_CONTEXT_CACHE_LIMIT:
+        cache.popitem(last=False)
+
+
+def _npe_all_planets_mode_is_admitted(
+    *,
+    bodies: list[str],
+    reader: KernelReader,
+    apparent: bool,
+    aberration: bool,
+    grav_deflection: bool,
+    nutation: bool,
+    center: str,
+    observer_lat: float | None,
+    observer_lon: float | None,
+    observer_elev_m: float,
+    lst_deg: float | None,
+    delta_t_policy: 'DeltaTPolicy | None',
+) -> bool:
+    """Return True only for the first admitted native public planetary surface."""
+    if not bodies or any(body not in _NPE_ADMITTED_BODIES for body in bodies):
+        return False
+    if not apparent or not aberration or not grav_deflection or not nutation:
+        return False
+    if center != 'geocentric':
+        return False
+    if observer_lat is not None or observer_lon is not None or lst_deg is not None:
+        return False
+    if observer_elev_m != 0.0:
+        return False
+    if delta_t_policy is not None:
+        return False
+    if type(reader) is not SpkReader:
+        return False
+    kernel = getattr(reader, "_kernel", None)
+    handle = getattr(kernel, "_handle", None)
+    return handle is not None and hasattr(handle, "batch_segment_position_and_velocity")
+
+
+def _npe_public_route_segment_specs(reader: SpkReader, jd_tt: float):
+    """Return native route specs for the admitted planetary segment set, or None."""
+    kernel = getattr(reader, "_kernel", None)
+    handle = getattr(kernel, "_handle", None)
+    if handle is None or not hasattr(handle, "batch_segment_position_and_velocity"):
+        return None
+
+    specs: list[tuple[int, int, int]] = []
+    for center, target in _NPE_PUBLIC_ROUTE_PAIRS:
+        segment = reader._segment_for(center, target, jd_tt)
+        if getattr(segment, "_handle", None) is not handle:
+            return None
+        if not all(hasattr(segment, attr) for attr in ("start_i", "end_i", "data_type")):
+            return None
+        specs.append((int(segment.start_i), int(segment.end_i), int(segment.data_type)))
+    return specs
+
+
+def _npe_body_route_segment_specs(reader: SpkReader, jd_tt: float):
+    """Return admitted per-body route segment specs keyed by body, or None."""
+    kernel = getattr(reader, "_kernel", None)
+    handle = getattr(kernel, "_handle", None)
+    if handle is None or not hasattr(handle, "batch_segment_position_requests"):
+        return None
+
+    body_specs: dict[str, tuple[tuple[int, int, int], ...]] = {}
+    for body, route in _NPE_BODY_ROUTE_PAIRS.items():
+        specs: list[tuple[int, int, int]] = []
+        for center, target in route:
+            segment = reader._segment_for(center, target, jd_tt)
+            if getattr(segment, "_handle", None) is not handle:
+                return None
+            if not all(hasattr(segment, attr) for attr in ("start_i", "end_i", "data_type")):
+                return None
+            specs.append((int(segment.start_i), int(segment.end_i), int(segment.data_type)))
+        body_specs[body] = tuple(specs)
+    return body_specs
+
+
+def _prefill_npe_public_vector_cache(
+    jd_tt: float,
+    vector_cache: _VectorCache,
+    pair_states: dict[tuple[int, int], tuple[Vec3, Vec3]],
+) -> None:
+    """Prime the existing planetary cache law from one native batch segment read."""
+    ssb_sun = pair_states[(0, 10)]
+    ssb_emb = pair_states[(0, 3)]
+    emb_earth = pair_states[(3, 399)]
+    emb_moon = pair_states[(3, 301)]
+
+    earth_pos = vec_add(ssb_emb[0], emb_earth[0])
+    earth_vel = vec_add(ssb_emb[1], emb_earth[1])
+    vector_cache[("earth_bary_pos", Body.EARTH, jd_tt)] = earth_pos
+    vector_cache[("earth_bary_state", Body.EARTH, jd_tt)] = (earth_pos, earth_vel)
+    vector_cache[("body_bary_pos", Body.SUN, jd_tt)] = ssb_sun[0]
+    vector_cache[("body_bary_state", Body.SUN, jd_tt)] = ssb_sun
+
+    for body in _NPE_ADMITTED_BODIES:
+        if body == Body.SUN:
+            bary_pos, bary_vel = ssb_sun
+        elif body == Body.MOON:
+            bary_pos = vec_add(ssb_emb[0], emb_moon[0])
+            bary_vel = vec_add(ssb_emb[1], emb_moon[1])
+        else:
+            route = NAIF_ROUTES[body]
+            bary_pos = (0.0, 0.0, 0.0)
+            bary_vel = (0.0, 0.0, 0.0)
+            for pair in route:
+                pair_pos, pair_vel = pair_states[pair]
+                bary_pos = vec_add(bary_pos, pair_pos)
+                bary_vel = vec_add(bary_vel, pair_vel)
+
+        geo_pos = vec_sub(bary_pos, earth_pos)
+        geo_vel = vec_sub(bary_vel, earth_vel)
+        vector_cache[("bary_pos", body, jd_tt)] = bary_pos
+        vector_cache[("bary_state", body, jd_tt)] = (bary_pos, bary_vel)
+        vector_cache[("geo_pos", body, jd_tt)] = geo_pos
+        vector_cache[("geo_state", body, jd_tt)] = (geo_pos, geo_vel)
+
+
+def _npe_batch_barycentric_positions(
+    handle,
+    body_segment_specs: dict[str, tuple[tuple[int, int, int], ...]],
+    body_jds: dict[str, float],
+) -> dict[str, Vec3]:
+    """Evaluate admitted per-body barycentric positions for varying JDs in one native batch."""
+    requests: list[tuple[int, int, int, float]] = []
+    counts: dict[str, int] = {}
+    for body, specs in body_segment_specs.items():
+        jd = body_jds[body]
+        counts[body] = len(specs)
+        for start_i, end_i, data_type in specs:
+            requests.append((start_i, end_i, data_type, jd))
+
+    raw = handle.batch_segment_position_requests(requests)
+    cursor = 0
+    results: dict[str, Vec3] = {}
+    for body in _NPE_ADMITTED_BODIES:
+        count = counts[body]
+        x = y = z = 0.0
+        for _ in range(count):
+            pos = raw[cursor]
+            cursor += 1
+            x += float(pos[0])
+            y += float(pos[1])
+            z += float(pos[2])
+        results[body] = (x, y, z)
+    return results
+
+
+def _native_all_planets_admitted(
+    jd_ut: float,
+    bodies: list[str],
+    *,
+    reader: KernelReader,
+    jd_tt: float,
+    apparent: bool,
+    aberration: bool,
+    grav_deflection: bool,
+    nutation: bool,
+    center: str,
+    observer_lat: float | None,
+    observer_lon: float | None,
+    observer_elev_m: float,
+    lst_deg: float | None,
+    delta_t_policy: 'DeltaTPolicy | None',
+) -> dict[str, PlanetData] | None:
+    """Execute the first admitted native public substrate when the exact mode matches."""
+    if not _npe_all_planets_mode_is_admitted(
+        bodies=bodies,
+        reader=reader,
+        apparent=apparent,
+        aberration=aberration,
+        grav_deflection=grav_deflection,
+        nutation=nutation,
+        center=center,
+        observer_lat=observer_lat,
+        observer_lon=observer_lon,
+        observer_elev_m=observer_elev_m,
+        lst_deg=lst_deg,
+        delta_t_policy=delta_t_policy,
+    ):
+        return None
+
+    specs = _npe_public_route_segment_specs(reader, jd_tt)
+    if specs is None:
+        return None
+    body_segment_specs = _npe_body_route_segment_specs(reader, jd_tt)
+    if body_segment_specs is None:
+        return None
+
+    handle = reader._kernel._handle
+    batch = handle.batch_segment_position_and_velocity(specs, jd_tt)
+    pair_states: dict[tuple[int, int], tuple[Vec3, Vec3]] = {}
+    for pair, (position, velocity) in zip(_NPE_PUBLIC_ROUTE_PAIRS, batch):
+        pos = (float(position[0]), float(position[1]), float(position[2]))
+        vel = (float(velocity[0]), float(velocity[1]), float(velocity[2]))
+        pair_states[pair] = (pos, vel)
+
+    vector_cache: _VectorCache = {}
+    _prefill_npe_public_vector_cache(jd_tt, vector_cache, pair_states)
+    context = _build_apparent_context(
+        jd_tt,
+        reader,
+        apparent=apparent,
+        nutation=nutation,
+        vector_cache=vector_cache,
+    )
+
+    earth_ssb = context.earth_ssb
+    earth_vel = context.earth_vel
+    if earth_ssb is None or earth_vel is None:
+        return None
+
+    initial_bary = {
+        body: vector_cache[("bary_pos", body, jd_tt)]  # type: ignore[index]
+        for body in bodies
+    }
+    light_times = {
+        body: vec_norm(vec_sub(initial_bary[body], earth_ssb)) / C_KM_PER_DAY
+        for body in bodies
+    }
+    geocentric_lt: dict[str, Vec3] = {
+        body: vec_sub(initial_bary[body], earth_ssb)
+        for body in bodies
+    }
+
+    for _ in range(3):
+        retarded_jds = {body: jd_tt - light_times[body] for body in bodies}
+        body_bary_lt = _npe_batch_barycentric_positions(handle, body_segment_specs, retarded_jds)
+        converged = True
+        for body in bodies:
+            xyz_lt = vec_sub(body_bary_lt[body], earth_ssb)
+            lt_new = vec_norm(xyz_lt) / C_KM_PER_DAY
+            if abs(lt_new - light_times[body]) >= 1e-14:
+                converged = False
+            light_times[body] = lt_new
+            geocentric_lt[body] = xyz_lt
+        if converged:
+            break
+
+    results: dict[str, PlanetData] = {}
+    for body in bodies:
+        xyz0 = geocentric_lt[body]
+        if grav_deflection and body not in (Body.SUN, Body.MOON):
+            xyz0 = apply_deflection(xyz0, _deflectors_for_body(body, jd_tt, reader, context))
+        if aberration:
+            xyz0 = apply_aberration(xyz0, earth_vel)
+
+        xyz0 = apply_frame_bias(xyz0)
+        if context.rot_mat is not None:
+            xyz0 = _apply_rotation_matrix(context.rot_mat, xyz0)
+        else:
+            xyz0 = mat_vec_mul(precession_matrix_equatorial(jd_tt), xyz0)
+            xyz0 = mat_vec_mul(nutation_matrix_equatorial(jd_tt), xyz0)
+
+        lon, lat, dist = icrf_to_ecliptic(xyz0, context.obliquity)
+        xyz_rate, vel_rate = vector_cache[("geo_state", body, jd_tt)]  # type: ignore[index]
+        speed = _longitude_rate(xyz_rate, vel_rate, context.obliquity)
+        results[body] = PlanetData(
+            name=body,
+            longitude=lon,
+            latitude=lat,
+            distance=dist,
+            speed=speed,
+            retrograde=(speed < 0.0),
+            is_topocentric=False,
+        )
+    return results
+
+
+def _build_apparent_context(
+    jd_tt: float,
+    reader: KernelReader,
+    *,
+    apparent: bool,
+    nutation: bool,
+    vector_cache: _VectorCache | None = None,
+) -> _ApparentContext:
+    """Build one shared apparent-path context for a single JD."""
+    mean_eps = mean_obliquity(jd_tt)
+    dpsi_deg = deps_deg = 0.0
+    if apparent and nutation:
+        dpsi_deg, deps_deg = _nutation(jd_tt)
+
+    obliquity = mean_eps + (deps_deg if (apparent and nutation) else 0.0)
+    rot_mat = _compose_rotation_matrix(
+        jd_tt,
+        with_nutation=(apparent and nutation),
+        mean_obliquity_deg=mean_eps,
+        dpsi_deg=dpsi_deg,
+        deps_deg=deps_deg,
+    ) \
+        if apparent else None
+
+    cache = vector_cache if vector_cache is not None else {}
+    earth_ssb = earth_vel = None
+    if apparent:
+        earth_ssb, earth_vel = _earth_barycentric_state(jd_tt, reader, cache)
+
+    return _ApparentContext(
+        jd_tt=jd_tt,
+        dpsi_deg=dpsi_deg,
+        deps_deg=deps_deg,
+        obliquity=obliquity,
+        rot_mat=rot_mat,
+        vector_cache=cache,
+        earth_ssb=earth_ssb,
+        earth_vel=earth_vel,
+    )
+
+
+def _deflectors_for_body(
+    body: str,
+    jd_tt: float,
+    reader: KernelReader,
+    context: _ApparentContext,
+) -> list[tuple[Vec3, float]]:
+    """Return lazily materialized deflector vectors for one target body."""
+    if context.sun_geocentric is None:
+        context.sun_geocentric = _geocentric(Body.SUN, jd_tt, reader, context.vector_cache)
+
+    deflectors = [(context.sun_geocentric, SCHWARZSCHILD_RADII["Sun"])]
+
+    if body != Body.JUPITER:
+        if context.jupiter_geocentric is None:
+            context.jupiter_geocentric = _geocentric(Body.JUPITER, jd_tt, reader, context.vector_cache)
+        deflectors.append((context.jupiter_geocentric, SCHWARZSCHILD_RADII["Jupiter"]))
+
+    if body != Body.SATURN:
+        if context.saturn_geocentric is None:
+            context.saturn_geocentric = _geocentric(Body.SATURN, jd_tt, reader, context.vector_cache)
+        deflectors.append((context.saturn_geocentric, SCHWARZSCHILD_RADII["Saturn"]))
+
+    return deflectors
+
 def _barycentric(
     body: str,
     jd_tt: float,
     reader: KernelReader,
+    _vector_cache: _VectorCache | None = None,
 ) -> Vec3:
     """
     Return the Solar System Barycentric (SSB) position of a body (km, ICRF).
     """
+    cache_key = ("bary_pos", body, jd_tt)
+    if _vector_cache is not None and cache_key in _vector_cache:
+        return _vector_cache[cache_key]  # type: ignore[return-value]
+
     if body == Body.MOON:
         # Moon relative to EMB + EMB relative to SSB
         emb_moon = reader.position(3, 301, jd_tt)
         ssb_emb  = reader.position(0, 3, jd_tt)
-        return vec_add(ssb_emb, emb_moon)
+        result = vec_add(ssb_emb, emb_moon)
+        if _vector_cache is not None:
+            _vector_cache[cache_key] = result
+        return result
 
     # All other bodies: chain from SSB
     route = NAIF_ROUTES[body]
@@ -424,26 +947,37 @@ def _barycentric(
     for center, target in route:
         px, py, pz = reader.position(center, target, jd_tt)
         x += px; y += py; z += pz
-    return (x, y, z)
+    result = (x, y, z)
+    if _vector_cache is not None:
+        _vector_cache[cache_key] = result
+    return result
 
 
 def _barycentric_state(
     body: str,
     jd_tt: float,
     reader: KernelReader,
+    _vector_cache: _VectorCache | None = None,
 ) -> tuple[Vec3, Vec3]:
     """
     Return Solar System Barycentric position and velocity of a body (km, km/day).
     """
+    cache_key = ("bary_state", body, jd_tt)
+    if _vector_cache is not None and cache_key in _vector_cache:
+        return _vector_cache[cache_key]  # type: ignore[return-value]
+
     route = NAIF_ROUTES[body]
 
     if body == Body.MOON:
         ssb_emb_pos, ssb_emb_vel = reader.position_and_velocity(0, 3, jd_tt)
         emb_moon_pos, emb_moon_vel = reader.position_and_velocity(3, 301, jd_tt)
-        return (
+        result = (
             vec_add(ssb_emb_pos, emb_moon_pos),
             vec_add(ssb_emb_vel, emb_moon_vel),
         )
+        if _vector_cache is not None:
+            _vector_cache[cache_key] = result
+        return result
 
     x = y = z = 0.0
     vx = vy = vz = 0.0
@@ -451,89 +985,144 @@ def _barycentric_state(
         pos, vel = reader.position_and_velocity(center, target, jd_tt)
         x += pos[0]; y += pos[1]; z += pos[2]
         vx += vel[0]; vy += vel[1]; vz += vel[2]
-    return (x, y, z), (vx, vy, vz)
+    result = (x, y, z), (vx, vy, vz)
+    if _vector_cache is not None:
+        _vector_cache[cache_key] = result
+    return result
 
 
-def _earth_barycentric(jd_tt: float, reader: KernelReader) -> Vec3:
+def _earth_barycentric(
+    jd_tt: float,
+    reader: KernelReader,
+    _vector_cache: _VectorCache | None = None,
+) -> Vec3:
     """Return Earth's barycentric position (km, ICRF)."""
+    cache_key = ("earth_bary_pos", Body.EARTH, jd_tt)
+    if _vector_cache is not None and cache_key in _vector_cache:
+        return _vector_cache[cache_key]  # type: ignore[return-value]
     ssb_emb = reader.position(0, 3, jd_tt)
     emb_earth = reader.position(3, 399, jd_tt)
-    return vec_add(ssb_emb, emb_earth)
+    result = vec_add(ssb_emb, emb_earth)
+    if _vector_cache is not None:
+        _vector_cache[cache_key] = result
+    return result
 
 
-def _earth_barycentric_state(jd_tt: float, reader: KernelReader) -> tuple[Vec3, Vec3]:
+def _earth_barycentric_state(
+    jd_tt: float,
+    reader: KernelReader,
+    _vector_cache: _VectorCache | None = None,
+) -> tuple[Vec3, Vec3]:
     """Return Earth's barycentric position and velocity (km, km/day, ICRF)."""
+    cache_key = ("earth_bary_state", Body.EARTH, jd_tt)
+    if _vector_cache is not None and cache_key in _vector_cache:
+        return _vector_cache[cache_key]  # type: ignore[return-value]
     ssb_emb_pos, ssb_emb_vel = reader.position_and_velocity(0, 3, jd_tt)
     emb_earth_pos, emb_earth_vel = reader.position_and_velocity(3, 399, jd_tt)
-    return (
+    result = (
         vec_add(ssb_emb_pos, emb_earth_pos),
         vec_add(ssb_emb_vel, emb_earth_vel),
     )
+    if _vector_cache is not None:
+        _vector_cache[cache_key] = result
+    return result
 
 
 def _geocentric(
     body: str,
     jd_tt: float,
     reader: KernelReader,
+    _vector_cache: _VectorCache | None = None,
 ) -> Vec3:
     """
     Return geocentric ICRF rectangular position of a body (km).
     """
-    earth = _earth_barycentric(jd_tt, reader)
+    cache_key = ("geo_pos", body, jd_tt)
+    if _vector_cache is not None and cache_key in _vector_cache:
+        return _vector_cache[cache_key]  # type: ignore[return-value]
+
+    earth = _earth_barycentric(jd_tt, reader, _vector_cache)
 
     if body == Body.MOON:
         # Moon position from EMB; Earth position from EMB
         emb_moon  = reader.position(3, 301, jd_tt)
         emb_earth = reader.position(3, 399, jd_tt)
         # Geocentric Moon = EMB→Moon − EMB→Earth
-        return vec_sub(emb_moon, emb_earth)
+        result = vec_sub(emb_moon, emb_earth)
+        if _vector_cache is not None:
+            _vector_cache[cache_key] = result
+        return result
 
     if body == Body.SUN:
         ssb_sun = reader.position(0, 10, jd_tt)
-        return vec_sub(ssb_sun, earth)
+        result = vec_sub(ssb_sun, earth)
+        if _vector_cache is not None:
+            _vector_cache[cache_key] = result
+        return result
 
     # Planets: chain from SSB, then subtract Earth
-    bary = _barycentric(body, jd_tt, reader)
-    return vec_sub(bary, earth)
+    bary = _barycentric(body, jd_tt, reader, _vector_cache)
+    result = vec_sub(bary, earth)
+    if _vector_cache is not None:
+        _vector_cache[cache_key] = result
+    return result
 
 
 def _geocentric_state(
     body: str,
     jd_tt: float,
     reader: KernelReader,
+    _vector_cache: _VectorCache | None = None,
 ) -> tuple[Vec3, Vec3]:
     """
     Return geocentric ICRF rectangular position and velocity of a body.
     """
-    earth_pos, earth_vel = _earth_barycentric_state(jd_tt, reader)
+    cache_key = ("geo_state", body, jd_tt)
+    if _vector_cache is not None and cache_key in _vector_cache:
+        return _vector_cache[cache_key]  # type: ignore[return-value]
+
+    earth_pos, earth_vel = _earth_barycentric_state(jd_tt, reader, _vector_cache)
 
     if body == Body.MOON:
         emb_moon_pos, emb_moon_vel = reader.position_and_velocity(3, 301, jd_tt)
         emb_earth_pos, emb_earth_vel = reader.position_and_velocity(3, 399, jd_tt)
-        return (
+        result = (
             vec_sub(emb_moon_pos, emb_earth_pos),
             vec_sub(emb_moon_vel, emb_earth_vel),
         )
+        if _vector_cache is not None:
+            _vector_cache[cache_key] = result
+        return result
 
     if body == Body.SUN:
         sun_pos, sun_vel = reader.position_and_velocity(0, 10, jd_tt)
-        return (
+        result = (
             vec_sub(sun_pos, earth_pos),
             vec_sub(sun_vel, earth_vel),
         )
+        if _vector_cache is not None:
+            _vector_cache[cache_key] = result
+        return result
 
-    bary_pos, bary_vel = _barycentric_state(body, jd_tt, reader)
-    return (
+    bary_pos, bary_vel = _barycentric_state(body, jd_tt, reader, _vector_cache)
+    result = (
         vec_sub(bary_pos, earth_pos),
         vec_sub(bary_vel, earth_vel),
     )
+    if _vector_cache is not None:
+        _vector_cache[cache_key] = result
+    return result
 
 
-def _earth_velocity(jd_tt: float, reader: KernelReader) -> Vec3:
+def _earth_velocity(
+    jd_tt: float,
+    reader: KernelReader,
+    _vector_cache: _VectorCache | None = None,
+) -> Vec3:
     """
     Earth's barycentric velocity in km/day (ICRF).
     """
-    _, earth_vel = _earth_barycentric_state(jd_tt, reader)
+    _, earth_vel = _earth_barycentric_state(jd_tt, reader, _vector_cache)
     return earth_vel
 
 
@@ -557,17 +1146,19 @@ def _longitude_rate(xyz: Vec3, vel_xyz: Vec3, obliquity_deg: float) -> float:
 
 
 # ---------------------------------------------------------------------------
-# Internal: pre-composed rotation matrix (NumPy fast path)
+# Internal: pre-composed rotation matrix
 # ---------------------------------------------------------------------------
 
-def _compose_rotation_matrix(jd_tt: float, *, with_nutation: bool = True):
+def _compose_rotation_matrix(
+    jd_tt: float,
+    *,
+    with_nutation: bool = True,
+    mean_obliquity_deg: float | None = None,
+    dpsi_deg: float | None = None,
+    deps_deg: float | None = None,
+):
     """
-    Return the combined equatorial rotation matrix M = M_nut @ M_prec as a
-    (3, 3) numpy float64 array, or None when NumPy is unavailable.
-
-    Composing once per JD and reusing across bodies (e.g. in all_planets_at)
-    replaces two sequential mat_vec_mul calls with a single np.dot, saving
-    roughly half the rotation work per body.
+    Return the combined equatorial rotation matrix M = M_nut @ M_prec.
 
     Parameters
     ----------
@@ -576,16 +1167,25 @@ def _compose_rotation_matrix(jd_tt: float, *, with_nutation: bool = True):
 
     Returns
     -------
-    numpy.ndarray of shape (3, 3), or None if NumPy is not installed.
+    Mat3 tuple-of-tuples, composed natively when available.
     """
-    if not _HAS_NUMPY:
-        return None
     prec_mat = precession_matrix_equatorial(jd_tt)
-    M = _np.array(prec_mat, dtype=_np.float64)
-    if with_nutation:
+    if not with_nutation:
+        return prec_mat
+    if mean_obliquity_deg is not None and dpsi_deg is not None and deps_deg is not None:
+        nut_mat = nutation_matrix_from_terms(mean_obliquity_deg, dpsi_deg, deps_deg)
+    else:
         nut_mat = nutation_matrix_equatorial(jd_tt)
-        M = _np.array(nut_mat, dtype=_np.float64) @ M
-    return M
+    if _HAS_NATIVE_ROTATION:
+        return _moira_native.rotation_matrix_multiply(nut_mat, prec_mat)
+    return mat_mul(nut_mat, prec_mat)
+
+
+def _apply_rotation_matrix(rot_mat, xyz: Vec3) -> Vec3:
+    """Apply a pre-composed equatorial rotation matrix to one vector."""
+    if _HAS_NATIVE_ROTATION:
+        return _moira_native.rotation_matrix_apply(rot_mat, xyz)
+    return mat_vec_mul(rot_mat, xyz)
 
 
 def _chiron_planet_data(jd_ut: float, reader: KernelReader) -> PlanetData:
@@ -600,6 +1200,129 @@ def _chiron_planet_data(jd_ut: float, reader: KernelReader) -> PlanetData:
         distance=chiron.distance,
         speed=chiron.speed,
         retrograde=chiron.retrograde,
+    )
+
+
+def _planet_at_core(
+    body: str,
+    jd_ut: float,
+    *,
+    reader: KernelReader,
+    obliquity: float | None,
+    apparent: bool,
+    aberration: bool,
+    grav_deflection: bool,
+    nutation: bool,
+    center: str,
+    frame: str,
+    observer_lat: float | None,
+    observer_lon: float | None,
+    observer_elev_m: float,
+    lst_deg: float | None,
+    jd_tt: float,
+    _dpsi_deg: float | None = None,
+    _deps_deg: float | None = None,
+    _rot_mat=None,
+    _vector_cache: _VectorCache | None = None,
+    _context: _ApparentContext | None = None,
+) -> 'PlanetData | CartesianPosition':
+    """Canonical internal planetary pipeline shared by single- and multi-body routes."""
+    context = _context
+    if context is not None:
+        _vector_cache = context.vector_cache
+
+    dpsi_deg = deps_deg = 0.0
+    if apparent and nutation:
+        if context is not None:
+            dpsi_deg, deps_deg = context.dpsi_deg, context.deps_deg
+        elif _dpsi_deg is not None and _deps_deg is not None:
+            dpsi_deg, deps_deg = _dpsi_deg, _deps_deg
+        else:
+            dpsi_deg, deps_deg = _nutation(jd_tt)
+
+    if obliquity is None:
+        obliquity = context.obliquity if context is not None else (
+            mean_obliquity(jd_tt) + (deps_deg if (apparent and nutation) else 0.0)
+        )
+
+    if apparent:
+        if context is not None and context.earth_ssb is not None and context.earth_vel is not None:
+            earth_ssb, earth_vel = context.earth_ssb, context.earth_vel
+        else:
+            earth_ssb, earth_vel = _earth_barycentric_state(jd_tt, reader, _vector_cache)
+
+        xyz_geo, _lt = apply_light_time(
+            body,
+            jd_tt,
+            reader,
+            earth_ssb,
+            lambda body_, jd_tt_, reader_: _barycentric(body_, jd_tt_, reader_, _vector_cache),
+        )
+
+        if center == 'barycentric':
+            xyz0 = vec_add(xyz_geo, earth_ssb)
+        else:
+            xyz0 = xyz_geo
+            if grav_deflection and body not in (Body.SUN, Body.MOON):
+                if context is not None:
+                    xyz0 = apply_deflection(xyz0, _deflectors_for_body(body, jd_tt, reader, context))
+                else:
+                    sun_geocentric = _geocentric(Body.SUN, jd_tt, reader, _vector_cache)
+                    deflectors = [(sun_geocentric, SCHWARZSCHILD_RADII["Sun"])]
+                    if body != Body.JUPITER:
+                        deflectors.append((_geocentric(Body.JUPITER, jd_tt, reader, _vector_cache), SCHWARZSCHILD_RADII["Jupiter"]))
+                    if body != Body.SATURN:
+                        deflectors.append((_geocentric(Body.SATURN, jd_tt, reader, _vector_cache), SCHWARZSCHILD_RADII["Saturn"]))
+                    xyz0 = apply_deflection(xyz0, deflectors)
+
+            if aberration:
+                xyz0 = apply_aberration(xyz0, earth_vel)
+
+        xyz0 = apply_frame_bias(xyz0)
+
+        rot_mat = context.rot_mat if context is not None else _rot_mat
+        if rot_mat is not None:
+            xyz0 = _apply_rotation_matrix(rot_mat, xyz0)
+        else:
+            xyz0 = mat_vec_mul(precession_matrix_equatorial(jd_tt), xyz0)
+            if nutation:
+                xyz0 = mat_vec_mul(nutation_matrix_equatorial(jd_tt), xyz0)
+
+    else:
+        if center == 'barycentric':
+            xyz0 = _barycentric(body, jd_tt, reader, _vector_cache)
+        else:
+            xyz0 = _geocentric(body, jd_tt, reader, _vector_cache)
+
+    if (
+        center == 'geocentric'
+        and observer_lat is not None
+        and observer_lon is not None
+        and lst_deg is not None
+    ):
+        xyz0 = topocentric_correction(
+            xyz0, observer_lat, observer_lon, lst_deg, observer_elev_m
+        )
+        xyz0 = apply_diurnal_aberration(
+            xyz0, observer_lat, observer_lon, lst_deg, observer_elev_m
+        )
+
+    if frame == 'cartesian':
+        return CartesianPosition(name=body, x=xyz0[0], y=xyz0[1], z=xyz0[2], center=center)
+
+    lon, lat, dist = icrf_to_ecliptic(xyz0, obliquity)
+    xyz_rate, vel_rate = _geocentric_state(body, jd_tt, reader, _vector_cache)
+    speed = _longitude_rate(xyz_rate, vel_rate, obliquity)
+
+    _topocentric = (center == 'geocentric' and observer_lat is not None and observer_lon is not None)
+    return PlanetData(
+        name=body,
+        longitude=lon,
+        latitude=lat,
+        distance=dist,
+        speed=speed,
+        retrograde=(speed < 0.0),
+        is_topocentric=_topocentric,
     )
 
 
@@ -627,6 +1350,8 @@ def planet_at(
     _dpsi_deg: float | None = None,    # pre-computed nutation params (internal)
     _deps_deg: float | None = None,
     _rot_mat=None,                     # pre-composed numpy rotation matrix (internal)
+    _vector_cache: _VectorCache | None = None,
+    _context: _ApparentContext | None = None,
 ) -> 'PlanetData | CartesianPosition':
     """
     Compute the geocentric (or topocentric) ecliptic position of one body.
@@ -735,113 +1460,81 @@ def planet_at(
             )
         return _chiron_planet_data(jd_ut, reader)
 
-    year, month, *_ = _approx_year(jd_ut)
+    context = _context
+    if jd_tt is None and context is None and apparent:
+        cached_state = _cached_planet_call_context(
+            reader,
+            jd_ut=jd_ut,
+            apparent=apparent,
+            nutation=nutation,
+            delta_t_policy=delta_t_policy,
+        )
+        if cached_state is not None:
+            jd_tt, context = cached_state
+
     if jd_tt is None:
+        year, month, *_ = _approx_year(jd_ut)
         jd_tt = ut_to_tt(jd_ut, decimal_year(year, month), delta_t_policy=delta_t_policy)
 
-    dpsi_deg = deps_deg = 0.0
-    if apparent and nutation:
-        if _dpsi_deg is not None and _deps_deg is not None:
-            dpsi_deg, deps_deg = _dpsi_deg, _deps_deg
-        else:
-            dpsi_deg, deps_deg = _nutation(jd_tt)
-
-    if obliquity is None:
-        obliquity = mean_obliquity(jd_tt) + (deps_deg if (apparent and nutation) else 0.0)
-
-    if apparent:
-        # Fetch Earth's barycentric state once — position is needed for light-time,
-        # velocity for aberration.  A single position_and_velocity call is cheaper
-        # than separate position + position_and_velocity calls.
-        earth_ssb, earth_vel = _earth_barycentric_state(jd_tt, reader)
-
-        # 1. Light-time: Body(t-lt) − Earth(t) → geocentric vector [ICRF]
-        xyz_geo, _lt = apply_light_time(body, jd_tt, reader, earth_ssb, _barycentric)
-
-        if center == 'barycentric':
-            # Un-subtract Earth to recover body_bary(t-lt).
-            # Aberration and deflection are observer-centric terms and are not
-            # applied for barycentric output.
-            xyz0 = vec_add(xyz_geo, earth_ssb)
-        else:
-            xyz0 = xyz_geo
-            # 2. Gravitational deflection [ICRF]
-            # IAU SOFA LDBODY: Sun (~1.75" at limb) + Jupiter (~16 µas) + Saturn (~6 µas).
-            # A body is never deflected by its own gravity.
-            if grav_deflection and body not in (Body.SUN, Body.MOON):
-                sun_geocentric = _geocentric(Body.SUN, jd_tt, reader)
-                deflectors = [(sun_geocentric, SCHWARZSCHILD_RADII["Sun"])]
-                if body != Body.JUPITER:
-                    deflectors.append((_geocentric(Body.JUPITER, jd_tt, reader), SCHWARZSCHILD_RADII["Jupiter"]))
-                if body != Body.SATURN:
-                    deflectors.append((_geocentric(Body.SATURN, jd_tt, reader), SCHWARZSCHILD_RADII["Saturn"]))
-                xyz0 = apply_deflection(xyz0, deflectors)
-
-            # 3. Annual aberration [ICRF]
-            if aberration:
-                xyz0 = apply_aberration(xyz0, earth_vel)
-
-        # 4. Frame bias [ICRF → Mean Equator/Equinox J2000]
-        xyz0 = apply_frame_bias(xyz0)
-
-        # 5+6. Precession + optional Nutation
-        # Use pre-composed matrix (M_nut @ M_prec) when available; otherwise apply
-        # precession and nutation sequentially via pure-Python mat_vec_mul.
-        if _rot_mat is not None:
-            r = _rot_mat @ _np.array(xyz0, dtype=_np.float64)
-            xyz0 = (float(r[0]), float(r[1]), float(r[2]))
-        else:
-            xyz0 = mat_vec_mul(precession_matrix_equatorial(jd_tt), xyz0)
-            if nutation:
-                xyz0 = mat_vec_mul(nutation_matrix_equatorial(jd_tt), xyz0)
-
-    else:
-        if center == 'barycentric':
-            xyz0 = _barycentric(body, jd_tt, reader)
-        else:
-            xyz0 = _geocentric(body, jd_tt, reader)
-
-    # 7. Topocentric correction (geocentric only)
-    if (
-        center == 'geocentric'
-        and observer_lat is not None
-        and observer_lon is not None
-        and lst_deg is not None
-    ):
-        xyz0 = topocentric_correction(
-            xyz0, observer_lat, observer_lon, lst_deg, observer_elev_m
+    built_context = False
+    if context is None and apparent:
+        context = _cached_apparent_context(
+            reader,
+            jd_tt=jd_tt,
+            apparent=apparent,
+            nutation=nutation,
         )
-        
-        # 7b. Topocentric diurnal aberration (geocentric only, after parallax)
-        # Apply diurnal aberration correction for observer's velocity due to Earth's rotation
-        xyz0 = apply_diurnal_aberration(
-            xyz0, observer_lat, observer_lon, lst_deg, observer_elev_m
+    if context is None and apparent:
+        context = _build_apparent_context(
+            jd_tt,
+            reader,
+            apparent=apparent,
+            nutation=nutation,
+            vector_cache=_vector_cache,
+        )
+        built_context = True
+        _vector_cache = context.vector_cache
+        _store_apparent_context(
+            reader,
+            jd_tt=jd_tt,
+            apparent=apparent,
+            nutation=nutation,
+            context=context,
+        )
+    elif context is not None:
+        _vector_cache = context.vector_cache
+
+    if built_context and context is not None and delta_t_policy is None:
+        _store_planet_call_context(
+            reader,
+            jd_ut=jd_ut,
+            jd_tt=jd_tt,
+            apparent=apparent,
+            nutation=nutation,
+            context=context,
         )
 
-    if frame == 'cartesian':
-        return CartesianPosition(name=body, x=xyz0[0], y=xyz0[1], z=xyz0[2], center=center)
-
-    # 8. Convert to Ecliptic [True Equator of date → True Ecliptic of date]
-    lon, lat, dist = icrf_to_ecliptic(xyz0, obliquity)
-
-    # 9. Speed calculation (astrometric geocentric rate).
-    # The speed is derived from the astrometric (light-time corrected but not
-    # aberration-corrected) geocentric state, not from the final apparent
-    # position.  For fast-moving inner planets near inferior conjunction the
-    # apparent and astrometric speeds can differ at arcsecond-per-day level.
-    # The PlanetData.speed field carries this astrometric rate.
-    xyz_rate, vel_rate = _geocentric_state(body, jd_tt, reader)
-    speed = _longitude_rate(xyz_rate, vel_rate, obliquity)
-
-    _topocentric = (center == 'geocentric' and observer_lat is not None and observer_lon is not None)
-    return PlanetData(
-        name=body,
-        longitude=lon,
-        latitude=lat,
-        distance=dist,
-        speed=speed,
-        retrograde=(speed < 0.0),
-        is_topocentric=_topocentric,
+    return _planet_at_core(
+        body,
+        jd_ut,
+        reader=reader,
+        obliquity=obliquity,
+        apparent=apparent,
+        aberration=aberration,
+        grav_deflection=grav_deflection,
+        nutation=nutation,
+        center=center,
+        frame=frame,
+        observer_lat=observer_lat,
+        observer_lon=observer_lon,
+        observer_elev_m=observer_elev_m,
+        lst_deg=lst_deg,
+        jd_tt=jd_tt,
+        _dpsi_deg=_dpsi_deg,
+        _deps_deg=_deps_deg,
+        _rot_mat=_rot_mat,
+        _vector_cache=_vector_cache,
+        _context=context,
     )
 
 
@@ -860,6 +1553,8 @@ def sky_position_at(
     temperature_c: float = 10.0,
     relative_humidity: float = 0.0,
     delta_t_policy: 'DeltaTPolicy | None' = None,
+    _vector_cache: _VectorCache | None = None,
+    _context: _ApparentContext | None = None,
 ) -> SkyPosition:
     """
     Compute the apparent topocentric equatorial and horizontal position of a body.
@@ -923,30 +1618,34 @@ def sky_position_at(
 
     year, month, *_ = _approx_year(jd_ut)
     jd_tt = ut_to_tt(jd_ut, decimal_year(year, month), delta_t_policy=delta_t_policy)
-    dpsi_deg, deps_deg = _nutation(jd_tt)
-    obliquity = mean_obliquity(jd_tt) + (deps_deg if nutation else 0.0)
-
-    # Fetch Earth's barycentric state once — position needed for light-time,
-    # velocity for aberration.
-    earth_ssb, earth_vel = _earth_barycentric_state(jd_tt, reader)
-
-    # Pre-compose rotation matrix (M_nut @ M_prec) when NumPy is available.
-    rot_mat = _compose_rotation_matrix(jd_tt, with_nutation=nutation) if _HAS_NUMPY else None
+    context = _context or _build_apparent_context(
+        jd_tt,
+        reader,
+        apparent=True,
+        nutation=nutation,
+        vector_cache=_vector_cache,
+    )
+    _vector_cache = context.vector_cache
+    dpsi_deg, deps_deg = context.dpsi_deg, context.deps_deg
+    obliquity = context.obliquity
+    earth_ssb = context.earth_ssb
+    earth_vel = context.earth_vel
+    rot_mat = context.rot_mat
 
     # Step 1: Light-time correction
-    xyz, _lt = apply_light_time(body, jd_tt, reader, earth_ssb, _barycentric)
+    xyz, _lt = apply_light_time(
+        body,
+        jd_tt,
+        reader,
+        earth_ssb,
+        lambda body_, jd_tt_, reader_: _barycentric(body_, jd_tt_, reader_, _vector_cache),
+    )
 
     # Step 2: Gravitational deflection (skip for Sun/Moon, or if disabled)
     # IAU SOFA LDBODY: Sun (~1.75" at limb) + Jupiter (~16 µas) + Saturn (~6 µas).
     # A body is never deflected by its own gravity.
     if grav_deflection and body not in (Body.SUN, Body.MOON):
-        sun_geo = _geocentric(Body.SUN, jd_tt, reader)
-        deflectors = [(sun_geo, SCHWARZSCHILD_RADII["Sun"])]
-        if body != Body.JUPITER:
-            deflectors.append((_geocentric(Body.JUPITER, jd_tt, reader), SCHWARZSCHILD_RADII["Jupiter"]))
-        if body != Body.SATURN:
-            deflectors.append((_geocentric(Body.SATURN, jd_tt, reader), SCHWARZSCHILD_RADII["Saturn"]))
-        xyz = apply_deflection(xyz, deflectors)
+        xyz = apply_deflection(xyz, _deflectors_for_body(body, jd_tt, reader, context))
 
     # Step 3: Annual aberration
     if aberration:
@@ -957,8 +1656,7 @@ def sky_position_at(
 
     # Step 5+6: Precession + optional Nutation
     if rot_mat is not None:
-        r = rot_mat @ _np.array(xyz, dtype=_np.float64)
-        xyz = (float(r[0]), float(r[1]), float(r[2]))
+        xyz = _apply_rotation_matrix(rot_mat, xyz)
     else:
         xyz = mat_vec_mul(precession_matrix_equatorial(jd_tt), xyz)
         if nutation:
@@ -1069,28 +1767,48 @@ def all_planets_at(
     year, month, *_ = _approx_year(jd_ut)
     jd_tt = ut_to_tt(jd_ut, decimal_year(year, month), delta_t_policy=delta_t_policy)
 
-    # Pre-compute shared quantities once for all bodies.
-    dpsi_deg = deps_deg = 0.0
-    if apparent and nutation:
-        dpsi_deg, deps_deg = _nutation(jd_tt)
-    obliquity = mean_obliquity(jd_tt) + (deps_deg if (apparent and nutation) else 0.0)
+    native_results = _native_all_planets_admitted(
+        jd_ut,
+        list(bodies),
+        reader=reader,
+        jd_tt=jd_tt,
+        apparent=apparent,
+        aberration=aberration,
+        grav_deflection=grav_deflection,
+        nutation=nutation,
+        center=center,
+        observer_lat=observer_lat,
+        observer_lon=observer_lon,
+        observer_elev_m=observer_elev_m,
+        lst_deg=lst_deg,
+        delta_t_policy=delta_t_policy,
+    )
+    if native_results is not None:
+        return native_results
 
-    # Pre-compose the equatorial rotation matrix (M_nut @ M_prec) when NumPy is
-    # available; avoids recomputing precession/nutation matrices per body.
-    rot_mat = _compose_rotation_matrix(jd_tt, with_nutation=(apparent and nutation)) \
-              if (apparent and _HAS_NUMPY) else None
-
+    vector_cache: _VectorCache = {}
+    context = _build_apparent_context(
+        jd_tt,
+        reader,
+        apparent=apparent,
+        nutation=nutation,
+        vector_cache=vector_cache,
+    )
     results: dict[str, PlanetData] = {}
     for body in bodies:
-        results[body] = planet_at(  # type: ignore[assignment]
-            body, jd_ut, reader=reader, obliquity=obliquity,
+        if body == Body.CHIRON:
+            results[body] = _chiron_planet_data(jd_ut, reader)
+            continue
+        results[body] = _planet_at_core(  # type: ignore[assignment]
+            body, jd_ut, reader=reader, obliquity=context.obliquity,
             apparent=apparent, aberration=aberration,
             grav_deflection=grav_deflection, nutation=nutation,
             center=center, frame='ecliptic',
             observer_lat=observer_lat, observer_lon=observer_lon,
             observer_elev_m=observer_elev_m, lst_deg=lst_deg,
-            jd_tt=jd_tt, delta_t_policy=delta_t_policy,
-            _dpsi_deg=dpsi_deg, _deps_deg=deps_deg, _rot_mat=rot_mat,
+            jd_tt=jd_tt,
+            _dpsi_deg=context.dpsi_deg, _deps_deg=context.deps_deg, _rot_mat=context.rot_mat,
+            _vector_cache=context.vector_cache, _context=context,
         )
     return results
 
@@ -1103,6 +1821,7 @@ def heliocentric_planet_at(
     body: str,
     jd_ut: float,
     reader: KernelReader | None = None,
+    _vector_cache: _VectorCache | None = None,
 ) -> HeliocentricData:
     """
     Compute the heliocentric ecliptic position of a body.
@@ -1148,8 +1867,8 @@ def heliocentric_planet_at(
 
     # Fetch heliocentric position AND velocity from kernel state vectors —
     # no finite difference needed.
-    body_bary_pos, body_bary_vel = _barycentric_state(body, jd_tt, reader)
-    sun_bary_pos,  sun_bary_vel  = reader.position_and_velocity(0, 10, jd_tt)
+    body_bary_pos, body_bary_vel = _body_barycentric_state(body, jd_tt, reader, _vector_cache)
+    sun_bary_pos, sun_bary_vel = _body_barycentric_state(Body.SUN, jd_tt, reader, _vector_cache)
     xyz_h = vec_sub(body_bary_pos, sun_bary_pos)
     vel_h = vec_sub(body_bary_vel, sun_bary_vel)
 
@@ -1212,9 +1931,15 @@ def all_heliocentric_at(
     if reader is None:
         reader = get_reader()
 
+    vector_cache: _VectorCache = {}
     results: dict[str, HeliocentricData] = {}
     for body in bodies:
-        results[body] = heliocentric_planet_at(body, jd_ut, reader=reader)
+        results[body] = heliocentric_planet_at(
+            body,
+            jd_ut,
+            reader=reader,
+            _vector_cache=vector_cache,
+        )
     return results
 
 
@@ -1231,13 +1956,44 @@ def sun_longitude(jd_ut: float, reader: KernelReader | None = None) -> float:
 # Utility: approximate year from JD (avoids importing julian for a circular dep)
 # ---------------------------------------------------------------------------
 
-def _body_barycentric(body: str, jd_tt: float, reader: KernelReader) -> Vec3:
+def _body_barycentric(
+    body: str,
+    jd_tt: float,
+    reader: KernelReader,
+    _vector_cache: _VectorCache | None = None,
+) -> Vec3:
     """Return SSB position of any supported body (km, ICRF)."""
     if body == Body.SUN:
-        return reader.position(0, 10, jd_tt)
+        cache_key = ("body_bary_pos", Body.SUN, jd_tt)
+        if _vector_cache is not None and cache_key in _vector_cache:
+            return _vector_cache[cache_key]  # type: ignore[return-value]
+        result = reader.position(0, 10, jd_tt)
+        if _vector_cache is not None:
+            _vector_cache[cache_key] = result
+        return result
     if body == Body.EARTH:
-        return _earth_barycentric(jd_tt, reader)
-    return _barycentric(body, jd_tt, reader)
+        return _earth_barycentric(jd_tt, reader, _vector_cache)
+    return _barycentric(body, jd_tt, reader, _vector_cache)
+
+
+def _body_barycentric_state(
+    body: str,
+    jd_tt: float,
+    reader: KernelReader,
+    _vector_cache: _VectorCache | None = None,
+) -> tuple[Vec3, Vec3]:
+    """Return SSB position and velocity of any supported body (km, km/day, ICRF)."""
+    if body == Body.SUN:
+        cache_key = ("body_bary_state", Body.SUN, jd_tt)
+        if _vector_cache is not None and cache_key in _vector_cache:
+            return _vector_cache[cache_key]  # type: ignore[return-value]
+        result = reader.position_and_velocity(0, 10, jd_tt)
+        if _vector_cache is not None:
+            _vector_cache[cache_key] = result
+        return result
+    if body == Body.EARTH:
+        return _earth_barycentric_state(jd_tt, reader, _vector_cache)
+    return _barycentric_state(body, jd_tt, reader, _vector_cache)
 
 
 def _bisect(func, t0: float, t1: float, iterations: int = 52) -> float:
@@ -1263,6 +2019,7 @@ def planet_relative_to(
     center_body: str,
     jd_ut: float,
     reader: KernelReader | None = None,
+    _vector_cache: _VectorCache | None = None,
 ) -> PlanetData:
     """
     Compute the position of ``body`` as seen from ``center_body``.
@@ -1324,8 +2081,8 @@ def planet_relative_to(
     jd_tt = ut_to_tt(jd_ut, decimal_year(year, month))
 
     def _rel_vec(jd_tt_: float) -> Vec3:
-        b_bary = _body_barycentric(body, jd_tt_, reader)
-        c_bary = _body_barycentric(center_body, jd_tt_, reader)
+        b_bary = _body_barycentric(body, jd_tt_, reader, _vector_cache)
+        c_bary = _body_barycentric(center_body, jd_tt_, reader, _vector_cache)
         return vec_sub(b_bary, c_bary)
 
     xyz = _rel_vec(jd_tt)

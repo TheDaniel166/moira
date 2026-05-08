@@ -69,25 +69,107 @@ from ._kernel_paths import find_kernel, find_planetary_kernel
 
 Vec3 = tuple[float, float, float]
 _HAS_JPLEPHEM = _SPK is not None
-_HAS_NATIVE_SPK = (
-    _moira_native is not None
-    and hasattr(_moira_native, "spk_chebyshev_record")
-    and hasattr(_moira_native, "spk_chebyshev_record_with_derivative")
-)
 _HAS_NATIVE_DAF = _moira_native is not None and hasattr(_moira_native, "read_daf_catalog")
 _HAS_NATIVE_SEGMENTS = (
     _moira_native is not None
     and hasattr(_moira_native, "read_spk_chebyshev_segment_payload")
 )
-_HAS_NATIVE_SERIES_EVAL = (
+_HAS_NATIVE_SPK = _HAS_JPLEPHEM or _HAS_NATIVE_SEGMENTS
+_HAS_NATIVE_SEGMENT_EVALUATOR = (
     _moira_native is not None
-    and hasattr(_moira_native, "spk_chebyshev_series_record")
-    and hasattr(_moira_native, "spk_chebyshev_series_record_with_derivative")
+    and hasattr(_moira_native, "load_spk_segment_evaluator")
 )
-_HAS_NATIVE_BULK_EVAL = (
+_HAS_NATIVE_KERNEL_HANDLE = (
     _moira_native is not None
-    and hasattr(_moira_native, "spk_chebyshev_series_bulk_evaluate")
+    and hasattr(_moira_native, "open_spk_kernel")
 )
+
+
+def _coeff_tensor_shape(coefficients) -> tuple[int, int, int]:
+    """Return ``(record_count, component_count, coefficient_count)`` for coefficient tensors."""
+    record_count = len(coefficients)
+    component_count = len(coefficients[0]) if record_count else 0
+    coefficient_count = len(coefficients[0][0]) if component_count else 0
+    return record_count, component_count, coefficient_count
+
+
+def _coeff_record(coefficients, index: int):
+    """Return one ``(component, coefficient)`` coefficient record."""
+    return coefficients[index]
+
+
+def _eval_chebyshev_record_scalar(coeff_record, s: float) -> tuple[float, ...]:
+    """Evaluate one Chebyshev coefficient record with scalar recurrence."""
+    component_count = len(coeff_record)
+    coefficient_count = len(coeff_record[0]) if component_count else 0
+    values: list[float] = []
+
+    for component in range(component_count):
+        coeffs = coeff_record[component]
+        if coefficient_count == 0:
+            values.append(0.0)
+            continue
+        if coefficient_count == 1:
+            values.append(float(coeffs[0]))
+            continue
+
+        t_k_minus_2 = 1.0
+        t_k_minus_1 = s
+        total = float(coeffs[0]) + float(coeffs[1]) * s
+        for k in range(2, coefficient_count):
+            t_k = 2.0 * s * t_k_minus_1 - t_k_minus_2
+            total += float(coeffs[k]) * t_k
+            t_k_minus_2 = t_k_minus_1
+            t_k_minus_1 = t_k
+        values.append(total)
+
+    return tuple(values)
+
+
+def _eval_chebyshev_record_with_derivative_scalar(
+    coeff_record,
+    s: float,
+    derivative_scale: float,
+) -> tuple[tuple[float, ...], tuple[float, ...]]:
+    """Evaluate one record and its derivative with scalar Chebyshev recurrences."""
+    component_count = len(coeff_record)
+    coefficient_count = len(coeff_record[0]) if component_count else 0
+    values: list[float] = []
+    rates: list[float] = []
+
+    for component in range(component_count):
+        coeffs = coeff_record[component]
+        if coefficient_count == 0:
+            values.append(0.0)
+            rates.append(0.0)
+            continue
+        if coefficient_count == 1:
+            values.append(float(coeffs[0]))
+            rates.append(0.0)
+            continue
+
+        t_k_minus_2 = 1.0
+        t_k_minus_1 = s
+        u_k_minus_2 = 1.0
+        u_k_minus_1 = 2.0 * s
+        value = float(coeffs[0]) + float(coeffs[1]) * s
+        derivative = float(coeffs[1])
+
+        for k in range(2, coefficient_count):
+            t_k = 2.0 * s * t_k_minus_1 - t_k_minus_2
+            u_k_minus_1_current = u_k_minus_1 if k > 1 else 1.0
+            value += float(coeffs[k]) * t_k
+            derivative += float(k) * float(coeffs[k]) * u_k_minus_1_current
+            u_k = 2.0 * s * u_k_minus_1 - u_k_minus_2
+            t_k_minus_2 = t_k_minus_1
+            t_k_minus_1 = t_k
+            u_k_minus_2 = u_k_minus_1
+            u_k_minus_1 = u_k
+
+        values.append(value)
+        rates.append(derivative * derivative_scale)
+
+    return tuple(values), tuple(rates)
 
 
 def _native_spk_record_inputs(segment, jd: float):
@@ -97,12 +179,20 @@ def _native_spk_record_inputs(segment, jd: float):
 
     if hasattr(segment, "_load_data"):
         init, intlen, coefficients = segment._load_data()
+        record_count, component_count, coefficient_count = _coeff_tensor_shape(coefficients)
+        coeff_record_getter = lambda idx: _coeff_record(coefficients, idx)
     else:
         init, intlen, coefficients = segment._data
-    if getattr(coefficients, "ndim", None) != 3:
-        return None
+        coefficient_count = len(coefficients)
+        component_count = len(coefficients[0]) if coefficient_count else 0
+        record_count = len(coefficients[0][0]) if component_count else 0
 
-    record_count, component_count, coefficient_count = coefficients.shape
+        def coeff_record_getter(idx: int):
+            return tuple(
+                tuple(float(coefficients[k][component][idx]) for k in range(coefficient_count))
+                for component in range(component_count)
+            )
+
     if component_count != 3 or coefficient_count == 0 or record_count == 0:
         return None
 
@@ -116,7 +206,7 @@ def _native_spk_record_inputs(segment, jd: float):
 
     s = 2.0 * offset / intlen - 1.0
     derivative_scale = 2.0 * S_PER_DAY / intlen
-    return coefficients[index, :, :], s, derivative_scale
+    return coeff_record_getter(index), s, derivative_scale
 
 
 def _native_position(segment, jd: float) -> Vec3 | None:
@@ -125,7 +215,7 @@ def _native_position(segment, jd: float) -> Vec3 | None:
         return None
 
     coeff_record, s, _derivative_scale = inputs
-    values = _moira_native.spk_chebyshev_record(coeff_record, s)
+    values = _eval_chebyshev_record_scalar(coeff_record, s)
     return (float(values[0]), float(values[1]), float(values[2]))
 
 
@@ -137,7 +227,7 @@ def _native_position_and_velocity(
         return None
 
     coeff_record, s, derivative_scale = inputs
-    values, rates = _moira_native.spk_chebyshev_record_with_derivative(
+    values, rates = _eval_chebyshev_record_with_derivative_scalar(
         coeff_record, s, derivative_scale
     )
     return (
@@ -149,11 +239,14 @@ def _native_position_and_velocity(
 class _NativeSpkKernel:
     """Thin kernel holder built from Moira-native DAF summary scanning."""
 
-    def __init__(self, path: Path, catalog: dict) -> None:
+    def __init__(self, path: Path, catalog: dict, handle=None) -> None:
         self.path = path
         self.catalog = catalog
+        self._handle = handle
         self.segments = [
-            _NativeChebyshevSegment(path, item["name"], item["descriptor"], catalog["little_endian"])
+            _NativeChebyshevSegment(
+                path, item["name"], item["descriptor"], catalog["little_endian"], handle=handle
+            )
             for item in catalog["summaries"]
         ]
 
@@ -161,11 +254,25 @@ class _NativeSpkKernel:
         for segment in self.segments:
             if "_data" in segment.__dict__:
                 del segment._data
+        if self._handle is not None:
+            try:
+                self._handle.close()
+            except Exception:
+                pass
 
 
 def _open_kernel(path: Path):
     """Open the planetary kernel through the strongest available reader path."""
-    if _HAS_NATIVE_DAF:
+    if _moira_native is not None and hasattr(_moira_native, "open_spk_kernel"):
+        handle = _moira_native.open_spk_kernel(str(path))
+        catalog = handle.catalog()
+        if _native_catalog_is_fully_supported(catalog):
+            return _NativeSpkKernel(path, catalog, handle=handle)
+        try:
+            handle.close()
+        except Exception:
+            pass
+    elif _moira_native is not None and hasattr(_moira_native, "read_daf_catalog"):
         catalog = _moira_native.read_daf_catalog(str(path))
         if _native_catalog_is_fully_supported(catalog):
             return _NativeSpkKernel(path, catalog)
@@ -180,10 +287,11 @@ def _open_kernel(path: Path):
 class _NativeChebyshevSegment:
     """Moira-native type-2/type-3 SPK segment with jplephem-compatible surface."""
 
-    def __init__(self, path: Path, source: bytes, descriptor, little_endian: bool) -> None:
+    def __init__(self, path: Path, source: bytes, descriptor, little_endian: bool, handle=None) -> None:
         self.path = path
         self.source = source
         self._little_endian = bool(little_endian)
+        self._handle = handle
         (
             self.start_second,
             self.end_second,
@@ -197,6 +305,7 @@ class _NativeChebyshevSegment:
         self.start_jd = _jd(self.start_second)
         self.end_jd = _jd(self.end_second)
         self._data = None
+        self._native_evaluator = None
 
     def compute(self, tdb, tdb2=0.0):
         values, _rates = self._evaluate(float(tdb), float(tdb2), need_rates=False)
@@ -205,7 +314,26 @@ class _NativeChebyshevSegment:
     def compute_and_differentiate(self, tdb, tdb2=0.0):
         return self._evaluate(float(tdb), float(tdb2), need_rates=True)
 
+    def _load_native_evaluator(self):
+        if self._native_evaluator is None:
+            if self._handle is not None and hasattr(self._handle, "load_segment_evaluator"):
+                self._native_evaluator = self._handle.load_segment_evaluator(
+                    int(self.start_i),
+                    int(self.end_i),
+                    int(self.data_type),
+                )
+            elif _moira_native is not None and hasattr(_moira_native, "load_spk_segment_evaluator"):
+                self._native_evaluator = _moira_native.load_spk_segment_evaluator(
+                    str(self.path),
+                    int(self.start_i),
+                    int(self.end_i),
+                    self._little_endian,
+                    int(self.data_type),
+                )
+        return self._native_evaluator
+
     def _load_data(self):
+        self._load_native_evaluator()
         if self._data is None:
             payload = _moira_native.read_spk_chebyshev_segment_payload(
                 str(self.path),
@@ -222,8 +350,30 @@ class _NativeChebyshevSegment:
         return self._data
 
     def _evaluate(self, tdb: float, tdb2: float, need_rates: bool):
+        if self._handle is not None and tdb2 == 0.0:
+            if need_rates and hasattr(self._handle, "segment_position_and_velocity"):
+                return self._handle.segment_position_and_velocity(
+                    int(self.start_i),
+                    int(self.end_i),
+                    int(self.data_type),
+                    tdb,
+                )
+            if not need_rates and hasattr(self._handle, "segment_position"):
+                return self._handle.segment_position(
+                    int(self.start_i),
+                    int(self.end_i),
+                    int(self.data_type),
+                    tdb,
+                ), None
+
+        self._load_native_evaluator()
+        if self._native_evaluator is not None and tdb2 == 0.0:
+            if need_rates:
+                return self._native_evaluator.position_and_velocity(tdb)
+            return self._native_evaluator.position(tdb), None
+
         init, intlen, coefficients = self._load_data()
-        record_count, component_count, coefficient_count = coefficients.shape
+        record_count, component_count, coefficient_count = _coeff_tensor_shape(coefficients)
 
         index1, offset1 = divmod((tdb - T0) * S_PER_DAY - init, intlen)
         index2, offset2 = divmod(tdb2 * S_PER_DAY, intlen)
@@ -243,24 +393,14 @@ class _NativeChebyshevSegment:
         s = 2.0 * offset / intlen - 1.0
         derivative_scale = 2.0 * S_PER_DAY / intlen
 
-        if _HAS_NATIVE_SERIES_EVAL:
-            if need_rates:
-                values, rates = _moira_native.spk_chebyshev_series_record_with_derivative(
-                    coefficients, index, s, derivative_scale
-                )
-                return values, rates
-
-            values = _moira_native.spk_chebyshev_series_record(coefficients, index, s)
-            return values, None
-
-        coeff_record = coefficients[index, :, :]
+        coeff_record = _coeff_record(coefficients, index)
         if need_rates:
-            values, rates = _moira_native.spk_chebyshev_record_with_derivative(
+            values, rates = _eval_chebyshev_record_with_derivative_scalar(
                 coeff_record, s, derivative_scale
             )
             return values, rates
 
-        values = _moira_native.spk_chebyshev_record(coeff_record, s)
+        values = _eval_chebyshev_record_scalar(coeff_record, s)
         return values, None
 
 
@@ -550,7 +690,7 @@ class SpkReader:
         """
         self._ensure_open()
         segment = self._segment_for(center, target, jd)
-        native = _native_position(segment, jd)
+        native = None if hasattr(segment, "_load_native_evaluator") else _native_position(segment, jd)
         if native is not None:
             return native
         pos = segment.compute(jd)
@@ -579,7 +719,11 @@ class SpkReader:
         """
         self._ensure_open()
         segment = self._segment_for(center, target, jd)
-        native = _native_position_and_velocity(segment, jd)
+        native = (
+            None
+            if hasattr(segment, "_load_native_evaluator")
+            else _native_position_and_velocity(segment, jd)
+        )
         if native is not None:
             return native
         pos, vel = segment.compute_and_differentiate(jd)

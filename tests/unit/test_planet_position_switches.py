@@ -15,6 +15,7 @@ from __future__ import annotations
 import math
 import pytest
 
+import moira.planets as planets_module
 from moira.planets import CartesianPosition, PlanetData, planet_at, sky_position_at, all_planets_at
 from moira.constants import Body
 
@@ -51,6 +52,210 @@ def test_cartesian_position_fields():
     assert pos.y == 200.0
     assert pos.z == -50.0
     assert pos.center == "barycentric"
+
+
+def test_npe_all_planets_mode_is_admitted_requires_exact_surface():
+    class _DummyHandle:
+        def batch_segment_position_and_velocity(self, specs, jd):
+            raise AssertionError("should not run in predicate test")
+
+    class _DummyKernel:
+        _handle = _DummyHandle()
+
+    class _DummyReader:
+        _kernel = _DummyKernel()
+
+    admitted = planets_module._npe_all_planets_mode_is_admitted(
+        bodies=[Body.SUN, Body.MOON, Body.MARS],
+        reader=_DummyReader(),
+        apparent=True,
+        aberration=True,
+        grav_deflection=True,
+        nutation=True,
+        center="geocentric",
+        observer_lat=None,
+        observer_lon=None,
+        observer_elev_m=0.0,
+        lst_deg=None,
+        delta_t_policy=None,
+    )
+    assert admitted is False, "exact SpkReader ownership is required for NPE admission"
+
+
+def test_all_planets_at_returns_native_admitted_result_when_helper_supplies_one(monkeypatch: pytest.MonkeyPatch):
+    sentinel = {
+        Body.SUN: PlanetData(
+            name=Body.SUN,
+            longitude=1.0,
+            latitude=2.0,
+            distance=3.0,
+            speed=4.0,
+            retrograde=False,
+        )
+    }
+
+    calls: list[tuple[float, list[str]]] = []
+
+    def _fake_native_helper(jd_ut: float, bodies: list[str], **kwargs):
+        calls.append((jd_ut, list(bodies)))
+        return sentinel
+
+    monkeypatch.setattr(planets_module, "_native_all_planets_admitted", _fake_native_helper)
+
+    class _DummyReader:
+        pass
+
+    result = all_planets_at(_JD_J2000, bodies=[Body.SUN], reader=_DummyReader())
+    assert result is sentinel
+    assert calls == [(_JD_J2000, [Body.SUN])]
+
+
+def test_all_planets_at_falls_back_to_python_route_when_native_helper_declines(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(planets_module, "_native_all_planets_admitted", lambda *args, **kwargs: None)
+
+    class _DummyContext:
+        obliquity = 23.4
+        dpsi_deg = 0.0
+        deps_deg = 0.0
+        rot_mat = None
+        vector_cache = {}
+
+    monkeypatch.setattr(planets_module, "_build_apparent_context", lambda *args, **kwargs: _DummyContext())
+
+    calls: list[str] = []
+
+    def _fake_core(body: str, jd_ut: float, **kwargs):
+        calls.append(body)
+        return PlanetData(
+            name=body,
+            longitude=10.0,
+            latitude=0.0,
+            distance=1.0,
+            speed=0.1,
+            retrograde=False,
+        )
+
+    monkeypatch.setattr(planets_module, "_planet_at_core", _fake_core)
+
+    class _DummyReader:
+        pass
+
+    result = all_planets_at(_JD_J2000, bodies=[Body.SUN, Body.MARS], reader=_DummyReader(), center="barycentric")
+    assert list(result) == [Body.SUN, Body.MARS]
+    assert calls == [Body.SUN, Body.MARS]
+
+
+def test_planet_at_reuses_cached_apparent_context_for_same_reader_and_jd(monkeypatch: pytest.MonkeyPatch):
+    build_calls: list[float] = []
+    core_context_ids: list[int] = []
+    approx_calls: list[float] = []
+    tt_calls: list[tuple[float, float, object]] = []
+
+    class _DummyContext:
+        obliquity = 23.4
+        dpsi_deg = 0.0
+        deps_deg = 0.0
+        rot_mat = None
+        vector_cache = {}
+        earth_ssb = None
+        earth_vel = None
+
+    monkeypatch.setattr(
+        planets_module,
+        "_approx_year",
+        lambda jd: (approx_calls.append(jd), (2000, 1, 1, 0))[1],
+    )
+    monkeypatch.setattr(
+        planets_module,
+        "ut_to_tt",
+        lambda jd, year, delta_t_policy=None: (
+            tt_calls.append((jd, year, delta_t_policy)),
+            jd + 0.1,
+        )[1],
+    )
+    monkeypatch.setattr(planets_module, "_cached_apparent_context", planets_module._cached_apparent_context)
+    monkeypatch.setattr(planets_module, "_store_apparent_context", planets_module._store_apparent_context)
+    monkeypatch.setattr(planets_module, "_cached_planet_call_context", planets_module._cached_planet_call_context)
+    monkeypatch.setattr(planets_module, "_store_planet_call_context", planets_module._store_planet_call_context)
+
+    def _fake_build(jd_tt, reader, **kwargs):
+        build_calls.append(jd_tt)
+        return _DummyContext()
+
+    def _fake_core(body: str, jd_ut: float, **kwargs):
+        core_context_ids.append(id(kwargs["_context"]))
+        return PlanetData(
+            name=body,
+            longitude=10.0,
+            latitude=0.0,
+            distance=1.0,
+            speed=0.1,
+            retrograde=False,
+        )
+
+    monkeypatch.setattr(planets_module, "_build_apparent_context", _fake_build)
+    monkeypatch.setattr(planets_module, "_planet_at_core", _fake_core)
+
+    class _DummyReader:
+        pass
+
+    reader = _DummyReader()
+    first = planet_at(Body.SUN, _JD_J2000, reader=reader)
+    second = planet_at(Body.MARS, _JD_J2000, reader=reader)
+
+    assert first.name == Body.SUN
+    assert second.name == Body.MARS
+    assert build_calls == [_JD_J2000 + 0.1]
+    assert approx_calls == [_JD_J2000]
+    assert tt_calls == [(_JD_J2000, planets_module.decimal_year(2000, 1), None)]
+    assert len(core_context_ids) == 2
+    assert core_context_ids[0] == core_context_ids[1]
+
+
+def test_rotation_helpers_use_native_then_scalar_fallback(monkeypatch: pytest.MonkeyPatch):
+    calls: list[tuple[str, object, object]] = []
+
+    class _DummyNative:
+        @staticmethod
+        def rotation_matrix_multiply(a, b):
+            calls.append(("mul", a, b))
+            return (("native", 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
+
+        @staticmethod
+        def rotation_matrix_apply(m, v):
+            calls.append(("apply", m, v))
+            return (7.0, 8.0, 9.0)
+
+    monkeypatch.setattr(planets_module, "_HAS_NATIVE_ROTATION", True)
+    monkeypatch.setattr(planets_module, "_moira_native", _DummyNative())
+
+    composed = planets_module._compose_rotation_matrix(_JD_J2000, with_nutation=False)
+    assert composed == planets_module.precession_matrix_equatorial(_JD_J2000)
+
+    monkeypatch.setattr(
+        planets_module,
+        "precession_matrix_equatorial",
+        lambda jd: ((1.0, 2.0, 3.0), (4.0, 5.0, 6.0), (7.0, 8.0, 9.0)),
+    )
+    monkeypatch.setattr(
+        planets_module,
+        "nutation_matrix_equatorial",
+        lambda jd: ((9.0, 8.0, 7.0), (6.0, 5.0, 4.0), (3.0, 2.0, 1.0)),
+    )
+    composed = planets_module._compose_rotation_matrix(_JD_J2000, with_nutation=True)
+    assert composed[0][0] == "native"
+    assert calls[-1][0] == "mul"
+
+    applied = planets_module._apply_rotation_matrix(((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)), (1.0, 2.0, 3.0))
+    assert applied == (7.0, 8.0, 9.0)
+    assert calls[-1][0] == "apply"
+
+    monkeypatch.setattr(planets_module, "_HAS_NATIVE_ROTATION", False)
+    fallback = planets_module._apply_rotation_matrix(
+        ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)),
+        (1.0, 2.0, 3.0),
+    )
+    assert fallback == (1.0, 2.0, 3.0)
 
 
 # ---------------------------------------------------------------------------

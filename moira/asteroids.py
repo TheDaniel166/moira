@@ -89,7 +89,7 @@ from .corrections import (
     SCHWARZSCHILD_RADII,
 )
 from ._spk_body_kernel import SmallBodyKernel, _Type13Segment  # noqa: F401 — re-export _Type13Segment
-from .spk_reader import get_active_reader, KernelReader, MissingKernelError
+from .spk_reader import get_active_reader, get_reader, KernelReader, MissingKernelError
 
 # Alias for internal use and backward compatibility with existing imports.
 _AsteroidKernel = SmallBodyKernel
@@ -697,10 +697,14 @@ def _ensure_quaternary_kernel() -> KernelReader:
     return get_active_reader()
 
 
-def _kernel_for(naif_id: int, reader: KernelReader) -> _AsteroidKernel:
+def _kernel_for(naif_id: int, reader: KernelReader | None = None) -> _AsteroidKernel:
     """
     Return the best kernel for *naif_id* from the provided reader.
     """
+    if reader is None:
+        active = get_active_reader()
+        reader = active if active is not None else get_reader()
+
     if not hasattr(reader, "position"):
         raise TypeError(f"Expected KernelReader, got {type(reader)}")
     

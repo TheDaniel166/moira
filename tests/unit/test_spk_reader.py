@@ -104,22 +104,9 @@ def test_native_position_path_is_used_for_supported_type2_segments(monkeypatch) 
     reader = _reader_with_segments(segment)
 
     monkeypatch.setattr(spk_reader, "_HAS_NATIVE_SPK", True)
+    monkeypatch.setattr(segment, "compute", lambda _jd: (_ for _ in ()).throw(AssertionError("fallback compute should not run")))
 
-    class _NativeStub:
-        @staticmethod
-        def spk_chebyshev_record(_coeff_record, _s):
-            return np.array([7.0, 8.0, 9.0], dtype=float)
-
-        @staticmethod
-        def spk_chebyshev_record_with_derivative(_coeff_record, _s, _scale):
-            return (
-                np.array([7.0, 8.0, 9.0], dtype=float),
-                np.array([0.1, 0.2, 0.3], dtype=float),
-            )
-
-    monkeypatch.setattr(spk_reader, "_moira_native", _NativeStub())
-
-    assert reader.position(0, 10, 2451545.0) == (7.0, 8.0, 9.0)
+    assert reader.position(0, 10, 2451545.0) == (10.5, 22.25, 32.25)
 
 
 def test_native_position_and_velocity_path_is_used_for_supported_type2_segments(monkeypatch) -> None:
@@ -127,24 +114,15 @@ def test_native_position_and_velocity_path_is_used_for_supported_type2_segments(
     reader = _reader_with_segments(segment)
 
     monkeypatch.setattr(spk_reader, "_HAS_NATIVE_SPK", True)
-
-    class _NativeStub:
-        @staticmethod
-        def spk_chebyshev_record(_coeff_record, _s):
-            return np.array([7.0, 8.0, 9.0], dtype=float)
-
-        @staticmethod
-        def spk_chebyshev_record_with_derivative(_coeff_record, _s, _scale):
-            return (
-                np.array([7.0, 8.0, 9.0], dtype=float),
-                np.array([0.1, 0.2, 0.3], dtype=float),
-            )
-
-    monkeypatch.setattr(spk_reader, "_moira_native", _NativeStub())
+    monkeypatch.setattr(
+        segment,
+        "compute_and_differentiate",
+        lambda _jd: (_ for _ in ()).throw(AssertionError("fallback state compute should not run")),
+    )
 
     pos, vel = reader.position_and_velocity(0, 10, 2451545.0)
-    assert pos == (7.0, 8.0, 9.0)
-    assert vel == (0.1, 0.2, 0.3)
+    assert pos == (10.5, 22.25, 32.25)
+    assert vel == (-6825.6, -13867.2, -20606.4)
 
 
 def test_native_helpers_fall_back_for_unsupported_segments(monkeypatch) -> None:
@@ -152,17 +130,6 @@ def test_native_helpers_fall_back_for_unsupported_segments(monkeypatch) -> None:
         _FakeSegment(center=0, target=10, start_jd=1000.0, end_jd=2000.0),
     )
     monkeypatch.setattr(spk_reader, "_HAS_NATIVE_SPK", True)
-
-    class _ExplodingNative:
-        @staticmethod
-        def spk_chebyshev_record(_coeff_record, _s):
-            raise AssertionError("native path should not be used")
-
-        @staticmethod
-        def spk_chebyshev_record_with_derivative(_coeff_record, _s, _scale):
-            raise AssertionError("native path should not be used")
-
-    monkeypatch.setattr(spk_reader, "_moira_native", _ExplodingNative())
 
     assert reader.position(0, 10, 1500.0) == (1.0, 2.0, 3.0)
     assert reader.position_and_velocity(0, 10, 1500.0) == (
@@ -349,8 +316,7 @@ def test_native_chebyshev_payload_matches_live_jplephem_segment_data() -> None:
             )
             assert payload["init"] == jpl_segment._data[0]
             assert payload["intlen"] == jpl_segment._data[1]
-            # Transpose native (r, 3, n) to jplephem (n, 3, r) for comparison
-            native_coeffs_jpl_shape = payload["coefficients"].transpose(2, 1, 0)
+            native_coeffs_jpl_shape = np.array(payload["coefficients"], dtype=float).transpose(2, 1, 0)
             np.testing.assert_allclose(native_coeffs_jpl_shape, jpl_segment._data[2], rtol=0.0, atol=1e-12)
             assert type(native_segment).__name__ == "_NativeChebyshevSegment"
         finally:

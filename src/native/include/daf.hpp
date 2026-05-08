@@ -6,11 +6,15 @@
 #include <cstdint>
 #include <cstring>
 #include <fstream>
+#include <memory>
+#include <mutex>
 #include <stdexcept>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 #include <utility>
 #include <vector>
+#include "evaluators.hpp"
 
 namespace moira {
 namespace native {
@@ -58,6 +62,15 @@ struct SpkType13SegmentPayload {
 
 namespace detail {
 
+inline bool host_is_little_endian() {
+#if defined(_WIN32)
+    return true;
+#else
+    const uint16_t test = 0x0100;
+    return *reinterpret_cast<const uint8_t*>(&test) == 0x00;
+#endif
+}
+
 inline uint32_t byteswap_u32(uint32_t value) {
     return ((value & 0x000000FFu) << 24) |
            ((value & 0x0000FF00u) << 8) |
@@ -79,12 +92,7 @@ inline uint64_t byteswap_u64(uint64_t value) {
 inline uint32_t read_u32(const char* ptr, bool little_endian) {
     uint32_t value = 0;
     std::memcpy(&value, ptr, sizeof(value));
-#if defined(_WIN32)
-    constexpr bool host_little_endian = true;
-#else
-    const uint16_t test = 0x0100;
-    const bool host_little_endian = *reinterpret_cast<const uint8_t*>(&test) == 0x00;
-#endif
+    const bool host_little_endian = host_is_little_endian();
     if (host_little_endian != little_endian) {
         value = byteswap_u32(value);
     }
@@ -94,12 +102,7 @@ inline uint32_t read_u32(const char* ptr, bool little_endian) {
 inline uint64_t read_u64(const char* ptr, bool little_endian) {
     uint64_t value = 0;
     std::memcpy(&value, ptr, sizeof(value));
-#if defined(_WIN32)
-    constexpr bool host_little_endian = true;
-#else
-    const uint16_t test = 0x0100;
-    const bool host_little_endian = *reinterpret_cast<const uint8_t*>(&test) == 0x00;
-#endif
+    const bool host_little_endian = host_is_little_endian();
     if (host_little_endian != little_endian) {
         value = byteswap_u64(value);
     }
@@ -175,12 +178,7 @@ inline std::pair<std::string, bool> detect_format(const std::array<char, 1024>& 
 
 } // namespace detail
 
-inline DafCatalog read_daf_catalog(const std::string& path) {
-    std::ifstream file(path, std::ios::binary);
-    if (!file.is_open()) {
-        throw std::runtime_error("unable to open DAF file");
-    }
-
+inline DafCatalog read_daf_catalog(std::ifstream& file) {
     const auto file_record = detail::read_record(file, 1);
     const std::string locidw = detail::strip_trailing(std::string(file_record.data(), 8), ' ');
     const auto [locfmt, little_endian] = detail::detect_format(file_record);
@@ -235,12 +233,21 @@ inline DafCatalog read_daf_catalog(const std::string& path) {
     return catalog;
 }
 
+inline DafCatalog read_daf_catalog(const std::string& path) {
+    std::ifstream file(path, std::ios::binary);
+    if (!file.is_open()) {
+        throw std::runtime_error("unable to open DAF file");
+    }
+    return read_daf_catalog(file);
+}
+
 inline SpkChebyshevSegmentPayload read_spk_chebyshev_segment_payload(
-    const std::string& path,
+    std::ifstream& file,
     int32_t start_i,
     int32_t end_i,
     bool little_endian,
-    int32_t data_type
+    int32_t data_type,
+    bool reverse_coefficients = true
 ) {
     int32_t component_count = 0;
     if (data_type == 2) {
@@ -251,29 +258,21 @@ inline SpkChebyshevSegmentPayload read_spk_chebyshev_segment_payload(
         throw std::runtime_error("only SPK type 2 and type 3 payloads are supported");
     }
 
-    std::ifstream file(path, std::ios::binary);
-    if (!file.is_open()) {
-        throw std::runtime_error("unable to open DAF file");
+    std::array<char, 32> metadata_bytes{};
+    const std::streamoff metadata_offset = static_cast<std::streamoff>(end_i - 4) * 8;
+    file.seekg(metadata_offset, std::ios::beg);
+    if (!file.good()) {
+        throw std::runtime_error("failed to seek SPK segment metadata");
+    }
+    file.read(metadata_bytes.data(), static_cast<std::streamsize>(metadata_bytes.size()));
+    if (file.gcount() != static_cast<std::streamsize>(metadata_bytes.size())) {
+        throw std::runtime_error("failed to read SPK segment metadata");
     }
 
-    const auto read_word = [&](int32_t word_index) -> double {
-        const std::streamoff offset = static_cast<std::streamoff>(word_index - 1) * 8;
-        file.seekg(offset, std::ios::beg);
-        if (!file.good()) {
-            throw std::runtime_error("failed to seek DAF word");
-        }
-        std::array<char, 8> buffer{};
-        file.read(buffer.data(), static_cast<std::streamsize>(buffer.size()));
-        if (file.gcount() != static_cast<std::streamsize>(buffer.size())) {
-            throw std::runtime_error("failed to read DAF word");
-        }
-        return detail::read_f64(buffer.data(), little_endian);
-    };
-
-    const double init = read_word(end_i - 3);
-    const double intlen = read_word(end_i - 2);
-    const int32_t record_size = static_cast<int32_t>(read_word(end_i - 1));
-    const int32_t record_count = static_cast<int32_t>(read_word(end_i));
+    const double init = detail::read_f64(metadata_bytes.data(), little_endian);
+    const double intlen = detail::read_f64(metadata_bytes.data() + 8, little_endian);
+    const int32_t record_size = static_cast<int32_t>(detail::read_f64(metadata_bytes.data() + 16, little_endian));
+    const int32_t record_count = static_cast<int32_t>(detail::read_f64(metadata_bytes.data() + 24, little_endian));
     if (record_size <= 2 || record_count <= 0) {
         throw std::runtime_error("invalid SPK record sizing in segment payload");
     }
@@ -292,12 +291,6 @@ inline SpkChebyshevSegmentPayload read_spk_chebyshev_segment_payload(
         throw std::runtime_error("failed to seek SPK coefficient payload");
     }
 
-    std::vector<char> raw_bytes(static_cast<size_t>(coeff_bytes));
-    file.read(raw_bytes.data(), coeff_bytes);
-    if (file.gcount() != coeff_bytes) {
-        throw std::runtime_error("failed to read SPK coefficient payload");
-    }
-
     SpkChebyshevSegmentPayload payload;
     payload.init = init;
     payload.intlen = intlen;
@@ -307,19 +300,53 @@ inline SpkChebyshevSegmentPayload read_spk_chebyshev_segment_payload(
     payload.coefficient_count = coefficient_count;
     payload.coefficients.resize(static_cast<size_t>(coefficient_count) * component_count * record_count);
 
-    for (int32_t record_index = 0; record_index < record_count; ++record_index) {
-        const int32_t record_word_base = record_index * record_size;
-        for (int32_t component_index = 0; component_index < component_count; ++component_index) {
-            for (int32_t coefficient_index = 0; coefficient_index < coefficient_count; ++coefficient_index) {
-                const int32_t source_word_index = record_word_base + 2 + component_index * coefficient_count + coefficient_index;
-                const char* ptr = raw_bytes.data() + static_cast<size_t>(source_word_index) * 8;
-                const double value = detail::read_f64(ptr, little_endian);
+    if (detail::host_is_little_endian() == little_endian) {
+        std::vector<double> raw_words(static_cast<size_t>(coefficient_word_count));
+        file.read(reinterpret_cast<char*>(raw_words.data()), coeff_bytes);
+        if (file.gcount() != coeff_bytes) {
+            throw std::runtime_error("failed to read SPK coefficient payload");
+        }
 
-                const size_t dest_index =
+        for (int32_t record_index = 0; record_index < record_count; ++record_index) {
+            const int32_t record_word_base = record_index * record_size;
+            for (int32_t component_index = 0; component_index < component_count; ++component_index) {
+                const int32_t source_component_base = record_word_base + 2 + component_index * coefficient_count;
+                const size_t dest_component_base =
                     (static_cast<size_t>(record_index) * component_count + static_cast<size_t>(component_index))
-                    * static_cast<size_t>(coefficient_count)
-                    + static_cast<size_t>(coefficient_count - 1 - coefficient_index);
-                payload.coefficients[dest_index] = value;
+                    * static_cast<size_t>(coefficient_count);
+                for (int32_t coefficient_index = 0; coefficient_index < coefficient_count; ++coefficient_index) {
+                    const size_t dest_offset = reverse_coefficients
+                        ? static_cast<size_t>(coefficient_count - 1 - coefficient_index)
+                        : static_cast<size_t>(coefficient_index);
+                    payload.coefficients[dest_component_base + dest_offset] =
+                        raw_words[static_cast<size_t>(source_component_base + coefficient_index)];
+                }
+            }
+        }
+    } else {
+        std::vector<char> raw_bytes(static_cast<size_t>(coeff_bytes));
+        file.read(raw_bytes.data(), coeff_bytes);
+        if (file.gcount() != coeff_bytes) {
+            throw std::runtime_error("failed to read SPK coefficient payload");
+        }
+        for (int32_t record_index = 0; record_index < record_count; ++record_index) {
+            const int32_t record_word_base = record_index * record_size;
+            for (int32_t component_index = 0; component_index < component_count; ++component_index) {
+                for (int32_t coefficient_index = 0; coefficient_index < coefficient_count; ++coefficient_index) {
+                    const int32_t source_word_index = record_word_base + 2 + component_index * coefficient_count + coefficient_index;
+                    const char* ptr = raw_bytes.data() + static_cast<size_t>(source_word_index) * 8;
+                    const double value = detail::read_f64(ptr, little_endian);
+
+                    const size_t dest_index =
+                        (static_cast<size_t>(record_index) * component_count + static_cast<size_t>(component_index))
+                        * static_cast<size_t>(coefficient_count)
+                        + (
+                            reverse_coefficients
+                                ? static_cast<size_t>(coefficient_count - 1 - coefficient_index)
+                                : static_cast<size_t>(coefficient_index)
+                        );
+                    payload.coefficients[dest_index] = value;
+                }
             }
         }
     }
@@ -409,6 +436,145 @@ inline SpkType13SegmentPayload read_spk_type13_segment_payload(
 
     return payload;
 }
+
+inline SpkChebyshevSegmentPayload read_spk_chebyshev_segment_payload(
+    const std::string& path,
+    int32_t start_i,
+    int32_t end_i,
+    bool little_endian,
+    int32_t data_type,
+    bool reverse_coefficients = true
+) {
+    std::ifstream file(path, std::ios::binary);
+    if (!file.is_open()) {
+        throw std::runtime_error("unable to open DAF file");
+    }
+    return read_spk_chebyshev_segment_payload(
+        file, start_i, end_i, little_endian, data_type, reverse_coefficients
+    );
+}
+
+class NativeSpkKernelHandle {
+public:
+    struct SegmentCacheKey {
+        int32_t start_i;
+        int32_t end_i;
+        int32_t data_type;
+
+        bool operator==(const SegmentCacheKey& other) const {
+            return start_i == other.start_i
+                && end_i == other.end_i
+                && data_type == other.data_type;
+        }
+    };
+
+    struct SegmentCacheKeyHash {
+        size_t operator()(const SegmentCacheKey& key) const {
+            const size_t h1 = std::hash<int32_t>{}(key.start_i);
+            const size_t h2 = std::hash<int32_t>{}(key.end_i);
+            const size_t h3 = std::hash<int32_t>{}(key.data_type);
+            return h1 ^ (h2 << 1) ^ (h3 << 2);
+        }
+    };
+
+    explicit NativeSpkKernelHandle(std::string kernel_path)
+        : path(std::move(kernel_path)), file(path, std::ios::binary), catalog() {
+        if (!file.is_open()) {
+            throw std::runtime_error("unable to open DAF file");
+        }
+        catalog = read_daf_catalog(file);
+    }
+
+    SpkChebyshevSegmentPayload read_segment_payload(
+        int32_t start_i,
+        int32_t end_i,
+        int32_t data_type
+    ) {
+        return read_spk_chebyshev_segment_payload(
+            file,
+            start_i,
+            end_i,
+            catalog.little_endian,
+            data_type,
+            false
+        );
+    }
+
+    std::shared_ptr<SpkSegmentEvaluator> get_segment_evaluator(
+        int32_t start_i,
+        int32_t end_i,
+        int32_t data_type
+    ) {
+        const SegmentCacheKey key{start_i, end_i, data_type};
+        {
+            std::lock_guard<std::mutex> guard(cache_mutex);
+            auto it = segment_cache.find(key);
+            if (it != segment_cache.end()) {
+                return it->second;
+            }
+        }
+
+        SpkChebyshevSegmentPayload payload = read_segment_payload(start_i, end_i, data_type);
+        auto evaluator = std::make_shared<SpkSegmentEvaluator>(
+            data_type,
+            true,
+            payload.init,
+            payload.intlen,
+            payload.record_count,
+            payload.component_count,
+            payload.coefficient_count,
+            std::move(payload.coefficients)
+        );
+
+        std::lock_guard<std::mutex> guard(cache_mutex);
+        auto [it, inserted] = segment_cache.emplace(key, evaluator);
+        if (!inserted) {
+            return it->second;
+        }
+        return evaluator;
+    }
+
+    void segment_position(
+        int32_t start_i,
+        int32_t end_i,
+        int32_t data_type,
+        double jd,
+        double* result
+    ) {
+        get_segment_evaluator(start_i, end_i, data_type)->position(jd, result);
+    }
+
+    void segment_position_and_velocity(
+        int32_t start_i,
+        int32_t end_i,
+        int32_t data_type,
+        double jd,
+        double* position_out,
+        double* velocity_out
+    ) {
+        get_segment_evaluator(start_i, end_i, data_type)->position_and_velocity(
+            jd, position_out, velocity_out
+        );
+    }
+
+    void close() {
+        {
+            std::lock_guard<std::mutex> guard(cache_mutex);
+            segment_cache.clear();
+        }
+        if (file.is_open()) {
+            file.close();
+        }
+    }
+
+    std::string path;
+    std::ifstream file;
+    DafCatalog catalog;
+
+private:
+    std::mutex cache_mutex;
+    std::unordered_map<SegmentCacheKey, std::shared_ptr<SpkSegmentEvaluator>, SegmentCacheKeyHash> segment_cache;
+};
 
 } // namespace native
 } // namespace moira

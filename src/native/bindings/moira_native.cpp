@@ -2,6 +2,8 @@
 #include <pybind11/stl.h>
 #include <pybind11/functional.h>
 #include <pybind11/numpy.h>
+#include <array>
+#include <mutex>
 #include "geometry.hpp"
 #include "julian.hpp"
 #include "math_utils.hpp"
@@ -22,10 +24,298 @@ using namespace moira::native;
 
 namespace {
 
+struct NativeNutationTerm {
+    double c1 = 0.0;
+    double c2 = 0.0;
+    std::array<int, 14> args{};
+    size_t arg_count = 0;
+};
+
+std::vector<NativeNutationTerm> g_native_nutation_ls_terms;
+std::vector<NativeNutationTerm> g_native_nutation_pl_terms;
+size_t g_native_nutation_ls_j0_count = 0;
+size_t g_native_nutation_pl_j0_count = 0;
+bool g_native_nutation_tables_ready = false;
+std::mutex g_native_nutation_mutex;
+
+constexpr double NUTATION_ARCSEC = 3.141592653589793238462643383279502884 / 648000.0;
+constexpr double NUTATION_UAS2DEG = 1e-6 / 3600.0;
+
+NativeNutationTerm load_native_nutation_term(const py::handle& row_obj) {
+    py::sequence row = py::reinterpret_borrow<py::sequence>(row_obj);
+    const size_t size = static_cast<size_t>(py::len(row));
+    if (size < 3) {
+        throw std::runtime_error("Nutation term rows must contain at least 3 entries");
+    }
+
+    NativeNutationTerm term;
+    term.c1 = py::cast<double>(row[0]);
+    term.c2 = py::cast<double>(row[1]);
+    term.arg_count = size - 2;
+    if (term.arg_count > term.args.size()) {
+        throw std::runtime_error("Nutation term rows exceed the supported 14 arguments");
+    }
+    for (size_t i = 0; i < term.arg_count; ++i) {
+        term.args[i] = py::cast<int>(row[i + 2]);
+    }
+    return term;
+}
+
+void set_nutation_2000a_tables_py(
+    const py::sequence& ls_terms_src,
+    const py::sequence& pl_terms_src,
+    size_t ls_j0_count,
+    size_t pl_j0_count
+) {
+    std::lock_guard<std::mutex> lock(g_native_nutation_mutex);
+
+    std::vector<NativeNutationTerm> ls_terms;
+    std::vector<NativeNutationTerm> pl_terms;
+    ls_terms.reserve(static_cast<size_t>(py::len(ls_terms_src)));
+    pl_terms.reserve(static_cast<size_t>(py::len(pl_terms_src)));
+
+    for (const py::handle& row : ls_terms_src) {
+        ls_terms.push_back(load_native_nutation_term(row));
+    }
+    for (const py::handle& row : pl_terms_src) {
+        pl_terms.push_back(load_native_nutation_term(row));
+    }
+
+    g_native_nutation_ls_terms = std::move(ls_terms);
+    g_native_nutation_pl_terms = std::move(pl_terms);
+    g_native_nutation_ls_j0_count = ls_j0_count;
+    g_native_nutation_pl_j0_count = pl_j0_count;
+    g_native_nutation_tables_ready = true;
+}
+
+std::array<double, 14> native_fundamental_args(double T) {
+    const double tau = 2.0 * 3.141592653589793238462643383279502884;
+
+    const double l = (485868.249036
+        + T * (1717915923.2178
+        + T * (31.8792
+        + T * (0.051635
+        + T * (-0.00024470))))) * NUTATION_ARCSEC;
+
+    const double lp = (1287104.793048
+        + T * (129596581.0481
+        + T * (-0.5532
+        + T * (0.000136
+        + T * (-0.00001149))))) * NUTATION_ARCSEC;
+
+    const double F = (335779.526232
+        + T * (1739527262.8478
+        + T * (-12.7512
+        + T * (-0.001037
+        + T * (0.00000417))))) * NUTATION_ARCSEC;
+
+    const double D = (1072260.703692
+        + T * (1602961601.2090
+        + T * (-6.3706
+        + T * (0.006593
+        + T * (-0.00003169))))) * NUTATION_ARCSEC;
+
+    const double Om = (450160.398036
+        + T * (-6962890.5431
+        + T * (7.4722
+        + T * (0.007702
+        + T * (-0.00005939))))) * NUTATION_ARCSEC;
+
+    auto wrap_tau = [tau](double value) {
+        const double wrapped = std::fmod(value, tau);
+        return wrapped < 0.0 ? wrapped + tau : wrapped;
+    };
+
+    return {
+        l,
+        lp,
+        F,
+        D,
+        Om,
+        wrap_tau(4.402608842 + 2608.7903141574 * T),
+        wrap_tau(3.176146697 + 1021.3285546211 * T),
+        wrap_tau(1.753470314 + 628.3075849991 * T),
+        wrap_tau(6.203480913 + 334.0612426700 * T),
+        wrap_tau(0.599546497 + 52.9690962641 * T),
+        wrap_tau(0.874016757 + 21.3299104960 * T),
+        wrap_tau(5.481293872 + 7.4781598567 * T),
+        wrap_tau(5.311886287 + 3.8133035638 * T),
+        wrap_tau(0.02438175 + 0.00000538691 * T),
+    };
+}
+
+double native_nutation_argument(const NativeNutationTerm& term, const std::array<double, 14>& fa) {
+    double arg = 0.0;
+    for (size_t i = 0; i < term.arg_count; ++i) {
+        arg += static_cast<double>(term.args[i]) * fa[i];
+    }
+    return arg;
+}
+
+py::tuple nutation_2000a_py(double jd_tt) {
+    std::lock_guard<std::mutex> lock(g_native_nutation_mutex);
+    if (!g_native_nutation_tables_ready) {
+        throw std::runtime_error("Native nutation tables are not registered");
+    }
+
+    const double T = (jd_tt - 2451545.0) / 36525.0;
+    const std::array<double, 14> fa = native_fundamental_args(T);
+
+    double dpsi = 0.0;
+    for (size_t i = 0; i < g_native_nutation_ls_terms.size(); ++i) {
+        const NativeNutationTerm& term = g_native_nutation_ls_terms[i];
+        const double arg = native_nutation_argument(term, fa);
+        if (i < g_native_nutation_ls_j0_count) {
+            dpsi += term.c1 * std::sin(arg) + term.c2 * std::cos(arg);
+        } else {
+            dpsi += T * (term.c1 * std::sin(arg) + term.c2 * std::cos(arg));
+        }
+    }
+
+    double deps = 0.0;
+    for (size_t i = 0; i < g_native_nutation_pl_terms.size(); ++i) {
+        const NativeNutationTerm& term = g_native_nutation_pl_terms[i];
+        const double arg = native_nutation_argument(term, fa);
+        if (i < g_native_nutation_pl_j0_count) {
+            deps += term.c2 * std::cos(arg) + term.c1 * std::sin(arg);
+        } else {
+            deps += T * (term.c2 * std::cos(arg) + term.c1 * std::sin(arg));
+        }
+    }
+
+    return py::make_tuple(dpsi * NUTATION_UAS2DEG, deps * NUTATION_UAS2DEG);
+}
+
 py::list vector_to_py_list(const std::vector<double>& values) {
     py::list out;
     for (double v : values) out.append(v);
     return out;
+}
+
+void load_mat3(const py::sequence& src, double out[3][3]) {
+    if (py::len(src) != 3) {
+        throw std::runtime_error("mat3 must have exactly 3 rows");
+    }
+    for (size_t i = 0; i < 3; ++i) {
+        py::sequence row = py::reinterpret_borrow<py::sequence>(src[i]);
+        if (py::len(row) != 3) {
+            throw std::runtime_error("mat3 rows must have exactly 3 columns");
+        }
+        for (size_t j = 0; j < 3; ++j) {
+            out[i][j] = py::cast<double>(row[j]);
+        }
+    }
+}
+
+void load_vec3(const py::sequence& src, double out[3]) {
+    if (py::len(src) != 3) {
+        throw std::runtime_error("vec3 must have exactly 3 components");
+    }
+    for (size_t i = 0; i < 3; ++i) {
+        out[i] = py::cast<double>(src[i]);
+    }
+}
+
+py::tuple mat3_to_py_tuple(const double src[3][3]) {
+    return py::make_tuple(
+        py::make_tuple(src[0][0], src[0][1], src[0][2]),
+        py::make_tuple(src[1][0], src[1][1], src[1][2]),
+        py::make_tuple(src[2][0], src[2][1], src[2][2])
+    );
+}
+
+py::tuple vec3_to_py_tuple(const double src[3]) {
+    return py::make_tuple(src[0], src[1], src[2]);
+}
+
+py::tuple rotation_matrix_multiply_py(const py::sequence& a_src, const py::sequence& b_src) {
+    double a[3][3];
+    double b[3][3];
+    double out[3][3];
+    load_mat3(a_src, a);
+    load_mat3(b_src, b);
+
+    for (size_t i = 0; i < 3; ++i) {
+        for (size_t j = 0; j < 3; ++j) {
+            out[i][j] = (
+                a[i][0] * b[0][j] +
+                a[i][1] * b[1][j] +
+                a[i][2] * b[2][j]
+            );
+        }
+    }
+    return mat3_to_py_tuple(out);
+}
+
+py::tuple rotation_matrix_apply_py(const py::sequence& m_src, const py::sequence& v_src) {
+    double m[3][3];
+    double v[3];
+    double out[3];
+    load_mat3(m_src, m);
+    load_vec3(v_src, v);
+
+    for (size_t i = 0; i < 3; ++i) {
+        out[i] = m[i][0] * v[0] + m[i][1] * v[1] + m[i][2] * v[2];
+    }
+    return vec3_to_py_tuple(out);
+}
+
+py::tuple apply_aberration_velocity_py(const py::sequence& xyz_src, const py::sequence& velocity_src) {
+    double xyz_vals[3];
+    double velocity_vals[3];
+    load_vec3(xyz_src, xyz_vals);
+    load_vec3(velocity_src, velocity_vals);
+    constexpr double c_km_per_day = 299792.458 * 86400.0;
+
+    const double x = xyz_vals[0];
+    const double y = xyz_vals[1];
+    const double z = xyz_vals[2];
+    const double dist = std::sqrt(x * x + y * y + z * z);
+    if (dist < 1e-10) {
+        return py::make_tuple(x, y, z);
+    }
+
+    const double ux = x / dist;
+    const double uy = y / dist;
+    const double uz = z / dist;
+
+    const double bx = velocity_vals[0] / c_km_per_day;
+    const double by = velocity_vals[1] / c_km_per_day;
+    const double bz = velocity_vals[2] / c_km_per_day;
+
+    const double beta2 = bx * bx + by * by + bz * bz;
+    const double gamma = 1.0 / std::sqrt(1.0 - beta2);
+    const double dot = ux * bx + uy * by + uz * bz;
+    const double factor1 = 1.0 + dot / (1.0 + gamma);
+    const double factor2 = gamma * (1.0 + dot);
+
+    double ax = (ux + factor1 * bx) / factor2;
+    double ay = (uy + factor1 * by) / factor2;
+    double az = (uz + factor1 * bz) / factor2;
+
+    const double scale = dist / std::sqrt(ax * ax + ay * ay + az * az);
+    const double out[3] = {ax * scale, ay * scale, az * scale};
+    return vec3_to_py_tuple(out);
+}
+
+py::tuple apply_frame_bias_py(const py::sequence& xyz_src) {
+    double xyz_vals[3];
+    load_vec3(xyz_src, xyz_vals);
+
+    constexpr double arcsec2rad = 3.141592653589793238462643383279502884 / 648000.0;
+    constexpr double dA_r = (-14.6 / 1000.0) * arcsec2rad;
+    constexpr double xi0_r = (-16.6170 / 1000.0) * arcsec2rad;
+    constexpr double de0_r = (-6.8192 / 1000.0) * arcsec2rad;
+
+    const double x = xyz_vals[0];
+    const double y = xyz_vals[1];
+    const double z = xyz_vals[2];
+    const double xb = x - de0_r * y + xi0_r * z;
+    const double yb = de0_r * x + y - dA_r * z;
+    const double zb = -xi0_r * x + dA_r * y + z;
+
+    const double out[3] = {xb, yb, zb};
+    return vec3_to_py_tuple(out);
 }
 
 /**
@@ -235,26 +525,80 @@ py::dict read_daf_catalog_py(const std::string& path) {
     return out;
 }
 
+py::dict catalog_to_py_dict(const DafCatalog& catalog) {
+    py::list summaries;
+    for (const DafSummaryEntry& entry : catalog.summaries) {
+        py::dict item;
+        item["name"] = py::bytes(entry.name);
+        item["descriptor"] = py::make_tuple(
+            entry.start_second, entry.end_second, entry.target,
+            entry.center, entry.frame, entry.data_type,
+            entry.start_i, entry.end_i
+        );
+        summaries.append(std::move(item));
+    }
+
+    py::dict out;
+    out["locidw"] = catalog.locidw;
+    out["locfmt"] = catalog.locfmt;
+    out["nd"] = catalog.nd;
+    out["ni"] = catalog.ni;
+    out["fward"] = catalog.fward;
+    out["bward"] = catalog.bward;
+    out["free"] = catalog.free;
+    out["little_endian"] = catalog.little_endian;
+    out["summaries"] = std::move(summaries);
+    return out;
+}
+
 py::dict read_spk_chebyshev_segment_payload_py(
     const std::string& path, int32_t start_i, int32_t end_i, bool little_endian, int32_t data_type
 ) {
     SpkChebyshevSegmentPayload payload = read_spk_chebyshev_segment_payload(path, start_i, end_i, little_endian, data_type);
 
-    py::array_t<double> coeffs({payload.record_count, payload.component_count, payload.coefficient_count});
-    auto out = coeffs.mutable_unchecked<3>();
+    py::list records;
     for (size_t i = 0; i < payload.record_count; ++i) {
+        py::list components;
         for (size_t j = 0; j < payload.component_count; ++j) {
+            py::list coeffs;
             for (size_t k = 0; k < payload.coefficient_count; ++k) {
-                out(i, j, k) = payload.coefficients[(i * payload.component_count + j) * payload.coefficient_count + k];
+                coeffs.append(payload.coefficients[(i * payload.component_count + j) * payload.coefficient_count + k]);
             }
+            components.append(py::tuple(coeffs));
         }
+        records.append(py::tuple(components));
     }
 
     py::dict out_dict;
     out_dict["init"] = payload.init;
     out_dict["intlen"] = payload.intlen;
-    out_dict["coefficients"] = coeffs;
+    out_dict["record_count"] = payload.record_count;
+    out_dict["component_count"] = payload.component_count;
+    out_dict["coefficient_count"] = payload.coefficient_count;
+    out_dict["coefficients"] = py::tuple(records);
     return out_dict;
+}
+
+std::shared_ptr<SpkSegmentEvaluator> load_spk_segment_evaluator_py(
+    const std::string& path, int32_t start_i, int32_t end_i, bool little_endian, int32_t data_type
+) {
+    SpkChebyshevSegmentPayload payload = read_spk_chebyshev_segment_payload(
+        path, start_i, end_i, little_endian, data_type
+    );
+    return std::make_shared<SpkSegmentEvaluator>(
+        data_type,
+        false,
+        payload.init,
+        payload.intlen,
+        payload.record_count,
+        payload.component_count,
+        payload.coefficient_count,
+        std::move(payload.coefficients)
+    );
+}
+
+std::shared_ptr<NativeSpkKernelHandle> open_spk_kernel_py(const std::string& path) {
+    return std::make_shared<NativeSpkKernelHandle>(path);
 }
 
 py::dict read_spk_type13_segment_payload_py(const std::string& path, int32_t start_i, int32_t end_i, bool little_endian) {
@@ -711,6 +1055,93 @@ PYBIND11_MODULE(_moira_native, m) {
     py::class_<ChebyshevEvaluator, IEvaluator, std::shared_ptr<ChebyshevEvaluator>>(m, "ChebyshevEvaluator")
         .def(py::init<double, double, size_t, size_t, size_t, std::vector<double>>());
 
+    py::class_<SpkSegmentEvaluator, std::shared_ptr<SpkSegmentEvaluator>>(m, "SpkSegmentEvaluator")
+        .def("position", [](const SpkSegmentEvaluator& self, double jd) {
+            double result[3];
+            self.position(jd, result);
+            py::list out;
+            for (double value : result) out.append(value);
+            return out;
+        })
+        .def("position_and_velocity", [](const SpkSegmentEvaluator& self, double jd) {
+            double position[3];
+            double velocity[3];
+            self.position_and_velocity(jd, position, velocity);
+            py::list pos_out;
+            py::list vel_out;
+            for (double value : position) pos_out.append(value);
+            for (double value : velocity) vel_out.append(value);
+            return py::make_tuple(pos_out, vel_out);
+        });
+
+    py::class_<NativeSpkKernelHandle, std::shared_ptr<NativeSpkKernelHandle>>(m, "NativeSpkKernelHandle")
+        .def("catalog", [](const NativeSpkKernelHandle& self) {
+            return catalog_to_py_dict(self.catalog);
+        })
+        .def("load_segment_evaluator", [](NativeSpkKernelHandle& self, int32_t start_i, int32_t end_i, int32_t data_type) {
+            return self.get_segment_evaluator(start_i, end_i, data_type);
+        })
+        .def("batch_segment_position_and_velocity", [](NativeSpkKernelHandle& self, py::iterable specs, double jd) {
+            py::list out;
+            for (py::handle spec_handle : specs) {
+                auto spec = py::cast<py::tuple>(spec_handle);
+                if (py::len(spec) != 3) {
+                    throw std::runtime_error("segment spec must be a 3-tuple of (start_i, end_i, data_type)");
+                }
+                int32_t start_i = py::cast<int32_t>(spec[0]);
+                int32_t end_i = py::cast<int32_t>(spec[1]);
+                int32_t data_type = py::cast<int32_t>(spec[2]);
+                double position[3];
+                double velocity[3];
+                self.segment_position_and_velocity(start_i, end_i, data_type, jd, position, velocity);
+                py::list pos_out;
+                py::list vel_out;
+                for (double value : position) pos_out.append(value);
+                for (double value : velocity) vel_out.append(value);
+                out.append(py::make_tuple(pos_out, vel_out));
+            }
+            return out;
+        })
+        .def("batch_segment_position_requests", [](NativeSpkKernelHandle& self, py::iterable requests) {
+            py::list out;
+            for (py::handle request_handle : requests) {
+                auto request = py::cast<py::tuple>(request_handle);
+                if (py::len(request) != 4) {
+                    throw std::runtime_error(
+                        "segment request must be a 4-tuple of (start_i, end_i, data_type, jd)"
+                    );
+                }
+                int32_t start_i = py::cast<int32_t>(request[0]);
+                int32_t end_i = py::cast<int32_t>(request[1]);
+                int32_t data_type = py::cast<int32_t>(request[2]);
+                double jd = py::cast<double>(request[3]);
+                double position[3];
+                self.segment_position(start_i, end_i, data_type, jd, position);
+                py::list pos_out;
+                for (double value : position) pos_out.append(value);
+                out.append(pos_out);
+            }
+            return out;
+        })
+        .def("segment_position", [](NativeSpkKernelHandle& self, int32_t start_i, int32_t end_i, int32_t data_type, double jd) {
+            double result[3];
+            self.segment_position(start_i, end_i, data_type, jd, result);
+            py::list out;
+            for (double value : result) out.append(value);
+            return out;
+        })
+        .def("segment_position_and_velocity", [](NativeSpkKernelHandle& self, int32_t start_i, int32_t end_i, int32_t data_type, double jd) {
+            double position[3];
+            double velocity[3];
+            self.segment_position_and_velocity(start_i, end_i, data_type, jd, position, velocity);
+            py::list pos_out;
+            py::list vel_out;
+            for (double value : position) pos_out.append(value);
+            for (double value : velocity) vel_out.append(value);
+            return py::make_tuple(pos_out, vel_out);
+        })
+        .def("close", &NativeSpkKernelHandle::close);
+
     py::class_<LagrangeEvaluator, IEvaluator, std::shared_ptr<LagrangeEvaluator>>(m, "LagrangeEvaluator")
         .def(py::init<std::vector<double>, std::vector<double>, size_t>());
 
@@ -813,6 +1244,13 @@ PYBIND11_MODULE(_moira_native, m) {
     m.def("earth_rotation_angle", &earth_rotation_angle, py::arg("jd_ut"));
     m.def("greenwich_mean_sidereal_time", &greenwich_mean_sidereal_time, py::arg("jd_ut"));
     m.def("apparent_sidereal_time", &apparent_sidereal_time, py::arg("jd_ut"), py::arg("nutation_longitude"), py::arg("obliquity"));
+    m.def("set_nutation_2000a_tables", &set_nutation_2000a_tables_py,
+        py::arg("ls_terms"), py::arg("pl_terms"), py::arg("ls_j0_count"), py::arg("pl_j0_count"));
+    m.def("nutation_2000a", &nutation_2000a_py, py::arg("jd_tt"));
+    m.def("rotation_matrix_multiply", &rotation_matrix_multiply_py, py::arg("a"), py::arg("b"));
+    m.def("rotation_matrix_apply", &rotation_matrix_apply_py, py::arg("matrix"), py::arg("vector"));
+    m.def("apply_aberration_velocity", &apply_aberration_velocity_py, py::arg("xyz"), py::arg("velocity"));
+    m.def("apply_frame_bias", &apply_frame_bias_py, py::arg("xyz"));
 
     // --- Interpolation ---
     m.def("horner", [](py::array_t<double> coeffs, double x) {
@@ -857,7 +1295,9 @@ PYBIND11_MODULE(_moira_native, m) {
     }, py::arg("epochs"), py::arg("states"), py::arg("window_size"), py::arg("jd"));
 
     m.def("read_daf_catalog", &read_daf_catalog_py, py::arg("path"));
+    m.def("open_spk_kernel", &open_spk_kernel_py, py::arg("path"));
     m.def("read_spk_chebyshev_segment_payload", &read_spk_chebyshev_segment_payload_py, py::arg("path"), py::arg("start_i"), py::arg("end_i"), py::arg("little_endian"), py::arg("data_type"));
+    m.def("load_spk_segment_evaluator", &load_spk_segment_evaluator_py, py::arg("path"), py::arg("start_i"), py::arg("end_i"), py::arg("little_endian"), py::arg("data_type"));
     m.def("read_spk_type13_segment_payload", &read_spk_type13_segment_payload_py, py::arg("path"), py::arg("start_i"), py::arg("end_i"), py::arg("little_endian"));
 
     // --- Solvers ---

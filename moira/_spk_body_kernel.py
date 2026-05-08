@@ -16,6 +16,12 @@ from bisect import bisect_left
 from pathlib import Path
 
 from .coordinates import Vec3
+from .spk_reader import (
+    _coeff_record,
+    _coeff_tensor_shape,
+    _eval_chebyshev_record_scalar,
+    _eval_chebyshev_record_with_derivative_scalar,
+)
 
 try:
     from . import moira_native as _moira_native
@@ -54,8 +60,6 @@ _HAS_NATIVE_DAF = _moira_native is not None and hasattr(_moira_native, "read_daf
 _HAS_NATIVE_SEGMENTS = (
     _moira_native is not None
     and hasattr(_moira_native, "read_spk_chebyshev_segment_payload")
-    and hasattr(_moira_native, "spk_chebyshev_record")
-    and hasattr(_moira_native, "spk_chebyshev_record_with_derivative")
 )
 _HAS_NATIVE_TYPE13 = _moira_native is not None and hasattr(
     _moira_native, "read_spk_type13_segment_payload"
@@ -171,7 +175,7 @@ class _NativeChebyshevSegment:
 
     def _evaluate(self, tdb: float, tdb2: float, need_rates: bool):
         init, intlen, coefficients = self._load_data()
-        record_count, component_count, coefficient_count = coefficients.shape
+        record_count, component_count, coefficient_count = _coeff_tensor_shape(coefficients)
 
         index1, offset1 = divmod((tdb - T0) * S_PER_DAY - init, intlen)
         index2, offset2 = divmod(tdb2 * S_PER_DAY, intlen)
@@ -190,17 +194,17 @@ class _NativeChebyshevSegment:
             index -= 1
             offset += intlen
 
-        coeff_record = coefficients[index, :, :]
+        coeff_record = _coeff_record(coefficients, index)
         s = 2.0 * offset / intlen - 1.0
         derivative_scale = 2.0 * S_PER_DAY / intlen
 
         if need_rates:
-            values, rates = _moira_native.spk_chebyshev_record_with_derivative(
+            values, rates = _eval_chebyshev_record_with_derivative_scalar(
                 coeff_record, s, derivative_scale
             )
             return values, rates
 
-        values = _moira_native.spk_chebyshev_record(coeff_record, s)
+        values = _eval_chebyshev_record_scalar(coeff_record, s)
         return values, None
 
     def compute(self, tdb, tdb2=0.0):

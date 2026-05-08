@@ -211,6 +211,29 @@ def precession_matrix_equatorial(jd_tt: float) -> Mat3:
     return precession_matrix(jd_tt)
 
 
+def nutation_matrix_from_terms(
+    mean_obliquity_deg: float,
+    dpsi_deg: float,
+    deps_deg: float,
+) -> Mat3:
+    """
+    Nutation matrix from mean equator/equinox of date to true equator/equinox
+    of date, using already-computed Moira nutation terms.
+
+    This avoids re-evaluating the IAU 2000A series when the caller already owns
+    ``eps0``, ``dpsi``, and ``deps`` as part of a wider astronomical pipeline.
+    """
+    eps0_rad = mean_obliquity_deg * DEG2RAD
+    eps_rad = (mean_obliquity_deg + deps_deg) * DEG2RAD
+    dpsi_rad = dpsi_deg * DEG2RAD
+
+    # Nutation matrix (passive rotation sequence)
+    # N = R1(-eps) * R3(-dpsi) * R1(eps0)
+    return mat_mul(rot_x_axis(-eps_rad),
+           mat_mul(rot_z_axis(-dpsi_rad),
+                   rot_x_axis(eps0_rad)))
+
+
 def nutation_matrix_equatorial(jd_tt: float) -> Mat3:
     """
     Nutation matrix from mean equator/equinox of date to true equator/equinox of date.
@@ -219,16 +242,9 @@ def nutation_matrix_equatorial(jd_tt: float) -> Mat3:
     """
     from .obliquity import mean_obliquity, nutation
 
-    eps0_rad = mean_obliquity(jd_tt) * DEG2RAD
+    eps0_deg = mean_obliquity(jd_tt)
     dpsi_deg, deps_deg = nutation(jd_tt)
-    eps_rad = eps0_rad + (deps_deg * DEG2RAD)
-    dpsi_rad = dpsi_deg * DEG2RAD
-
-    # Nutation matrix (passive rotation sequence)
-    # N = R1(-eps) * R3(-dpsi) * R1(eps0)
-    return mat_mul(rot_x_axis(-eps_rad),
-           mat_mul(rot_z_axis(-dpsi_rad),
-                   rot_x_axis(eps0_rad)))
+    return nutation_matrix_from_terms(eps0_deg, dpsi_deg, deps_deg)
 
 
 def icrf_to_true_ecliptic(jd_tt: float, xyz: Vec3) -> tuple[float, float, float]:

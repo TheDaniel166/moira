@@ -78,7 +78,7 @@ Public surface / exports:
     topocentric_correction(xyz_geocentric, latitude_deg, longitude_deg,
                            lst_deg, elevation_m) -> Vec3
     topocentric_correction_batch_np(xyz_geo, lats_deg, lons_deg,
-                                    gast_deg, elevation_m) -> ndarray (N, 3)
+                                    gast_deg, elevation_m) -> tuple[Vec3, ...]
     apply_diurnal_aberration(xyz_geocentric, latitude_deg, longitude_deg,
                              lst_deg, elevation_m) -> Vec3
     apply_refraction(altitude_deg, *, pressure_mbar, temperature_c) -> float
@@ -88,15 +88,19 @@ import math
 from .constants import DEG2RAD, RAD2DEG, ARCSEC2RAD, C_KM_PER_DAY, EARTH_RADIUS_KM
 
 try:
-    import numpy as _np
-    _HAS_NUMPY = True
+    from . import moira_native as _moira_native
 except ImportError:
-    _np = None
-    _HAS_NUMPY = False
+    _moira_native = None
 from .coordinates import (
     Vec3, vec_sub, vec_norm, vec_scale, vec_add,
     atmospheric_refraction as _atmospheric_refraction,
     atmospheric_refraction_extended as _atmospheric_refraction_extended,
+)
+
+_HAS_NATIVE_CORRECTIONS = (
+    _moira_native is not None
+    and hasattr(_moira_native, "apply_aberration_velocity")
+    and hasattr(_moira_native, "apply_frame_bias")
 )
 
 # ---------------------------------------------------------------------------
@@ -132,18 +136,6 @@ _de0_mas =  -6.8192
 _dA_r  = (_dA_mas  / 1000.0) * ARCSEC2RAD
 _xi0_r = (_xi0_mas / 1000.0) * ARCSEC2RAD
 _de0_r = (_de0_mas / 1000.0) * ARCSEC2RAD
-
-# Pre-built rotation matrix for apply_frame_bias — constructed once at import.
-# Only materialised when NumPy is available; pure-Python path uses scalars above.
-if _HAS_NUMPY:
-    _FRAME_BIAS_MATRIX = _np.array([
-        [ 1.0,    -_de0_r,  _xi0_r],
-        [ _de0_r,  1.0,    -_dA_r ],
-        [-_xi0_r,  _dA_r,   1.0   ],
-    ], dtype=_np.float64)
-else:
-    _FRAME_BIAS_MATRIX = None
-
 
 # ---------------------------------------------------------------------------
 # 1. Light-time correction
@@ -221,20 +213,8 @@ def apply_aberration(
     if dist < 1e-10:
         return xyz
 
-    if _HAS_NUMPY:
-        u   = _np.asarray(xyz,               dtype=_np.float64)
-        vel = _np.asarray(earth_velocity_xyz, dtype=_np.float64)
-        u   = u / dist
-        b   = vel / C_KM_PER_DAY
-        beta2 = _np.dot(b, b)
-        gamma = 1.0 / math.sqrt(1.0 - float(beta2))
-        dot   = float(_np.dot(u, b))
-        f1 = 1.0 + dot / (1.0 + gamma)
-        f2 = gamma * (1.0 + dot)
-        a  = (u + f1 * b) / f2
-        scale = dist / float(_np.linalg.norm(a))
-        r = a * scale
-        return (float(r[0]), float(r[1]), float(r[2]))
+    if _HAS_NATIVE_CORRECTIONS:
+        return _moira_native.apply_aberration_velocity(xyz, earth_velocity_xyz)
 
     # Unit direction to body (u)
     ux, uy, uz = xyz[0] / dist, xyz[1] / dist, xyz[2] / dist
@@ -369,9 +349,8 @@ def apply_frame_bias(xyz: Vec3) -> Vec3:
     -------
     Position in dynamical mean equator/equinox J2000.0 frame (same unit)
     """
-    if _HAS_NUMPY:
-        r = _np.dot(_FRAME_BIAS_MATRIX, _np.asarray(xyz, dtype=_np.float64))
-        return (float(r[0]), float(r[1]), float(r[2]))
+    if _HAS_NATIVE_CORRECTIONS:
+        return _moira_native.apply_frame_bias(xyz)
 
     x, y, z = xyz
 
@@ -690,42 +669,34 @@ def topocentric_correction_batch_np(
 
     Returns
     -------
-    ndarray (N, 3)
-        Topocentric True Equatorial positions in km, one row per observer.
-
-    Raises
-    ------
-    RuntimeError
-        If numpy is not available.
+    tuple[Vec3, ...]
+        Topocentric True Equatorial positions in km, one vector per observer.
     """
-    if not _HAS_NUMPY:
-        raise RuntimeError("topocentric_correction_batch_np requires numpy")
-
-    xyz = _np.asarray(xyz_geo, dtype=_np.float64)          # (3,)
-    lats = _np.clip(_np.asarray(lats_deg, dtype=_np.float64), -90.0, 90.0)
-    lons = _np.asarray(lons_deg, dtype=_np.float64)
-    if lats.shape != lons.shape:
+    lats = [max(-90.0, min(90.0, float(lat))) for lat in lats_deg]
+    lons = [float(lon) for lon in lons_deg]
+    if len(lats) != len(lons):
         raise ValueError(
-            f"lats_deg and lons_deg must have the same shape; got {lats.shape} vs {lons.shape}"
+            f"lats_deg and lons_deg must have the same length; got {len(lats)} vs {len(lons)}"
         )
-
-    lat_r = _np.radians(lats)
-    last_r = _np.radians(gast_deg + lons)                  # Local Apparent Sidereal Time
+    xyz = (float(xyz_geo[0]), float(xyz_geo[1]), float(xyz_geo[2]))
 
     # WGS-84 ellipsoid parameters (same as scalar topocentric_correction)
     f = 1.0 / 298.257223563
     a = EARTH_RADIUS_KM
     h = elevation_m / 1000.0
-
-    C = 1.0 / _np.sqrt(_np.cos(lat_r) ** 2 + (1.0 - f) ** 2 * _np.sin(lat_r) ** 2)
-    S = (1.0 - f) ** 2 * C
-
-    obs_x = (a * C + h) * _np.cos(lat_r) * _np.cos(last_r)
-    obs_y = (a * C + h) * _np.cos(lat_r) * _np.sin(last_r)
-    obs_z = (a * S + h) * _np.sin(lat_r)
-
-    obs = _np.stack([obs_x, obs_y, obs_z], axis=1)         # (N, 3)
-    return xyz[_np.newaxis, :] - obs                        # (N, 3)
+    out: list[Vec3] = []
+    for lat_deg, lon_deg in zip(lats, lons):
+        lat_r = lat_deg * DEG2RAD
+        last_r = (gast_deg + lon_deg) * DEG2RAD
+        cos_lat = math.cos(lat_r)
+        sin_lat = math.sin(lat_r)
+        C = 1.0 / math.sqrt(cos_lat * cos_lat + (1.0 - f) ** 2 * sin_lat * sin_lat)
+        S = (1.0 - f) ** 2 * C
+        obs_x = (a * C + h) * cos_lat * math.cos(last_r)
+        obs_y = (a * C + h) * cos_lat * math.sin(last_r)
+        obs_z = (a * S + h) * sin_lat
+        out.append((xyz[0] - obs_x, xyz[1] - obs_y, xyz[2] - obs_z))
+    return tuple(out)
 
 
 # ---------------------------------------------------------------------------

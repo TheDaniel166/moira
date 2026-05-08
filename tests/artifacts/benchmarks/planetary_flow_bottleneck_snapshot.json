@@ -1,0 +1,3243 @@
+{
+  "phase": "planetary_flow_bottleneck_snapshot",
+  "kernel": "C:\\Users\\nilad\\.moira\\kernels\\de441.bsp",
+  "body_set": [
+    "Sun",
+    "Moon",
+    "Mercury",
+    "Venus",
+    "Mars",
+    "Jupiter",
+    "Saturn",
+    "Uranus",
+    "Neptune",
+    "Pluto"
+  ],
+  "jd_count": 24,
+  "representative_jd_ut": 2691304.2391304346,
+  "scenarios": [
+    {
+      "wall_seconds": 0.00036640001053456217,
+      "ranked_stages": [
+        {
+          "name": "planet_at",
+          "calls": 1,
+          "inclusive_seconds": 0.0003631,
+          "exclusive_seconds": 3.64e-05,
+          "avg_inclusive_ms": 0.3631,
+          "avg_exclusive_ms": 0.036399999999999995,
+          "share_of_wall_percent": 99.0993421289078
+        },
+        {
+          "name": "_build_apparent_context",
+          "calls": 1,
+          "inclusive_seconds": 0.0001195,
+          "exclusive_seconds": 1.13e-05,
+          "avg_inclusive_ms": 0.11950000000000001,
+          "avg_exclusive_ms": 0.011300000000000001,
+          "share_of_wall_percent": 32.614627883240104
+        },
+        {
+          "name": "ut_to_tt",
+          "calls": 1,
+          "inclusive_seconds": 0.0001093,
+          "exclusive_seconds": 0.0001093,
+          "avg_inclusive_ms": 0.1093,
+          "avg_exclusive_ms": 0.1093,
+          "share_of_wall_percent": 29.83078516852003
+        },
+        {
+          "name": "_planet_at_core",
+          "calls": 1,
+          "inclusive_seconds": 9.54e-05,
+          "exclusive_seconds": 1.59e-05,
+          "avg_inclusive_ms": 0.0954,
+          "avg_exclusive_ms": 0.0159,
+          "share_of_wall_percent": 26.037117155323063
+        },
+        {
+          "name": "_nutation",
+          "calls": 1,
+          "inclusive_seconds": 6.02e-05,
+          "exclusive_seconds": 6.02e-05,
+          "avg_inclusive_ms": 0.0602,
+          "avg_exclusive_ms": 0.0602,
+          "share_of_wall_percent": 16.43013053197535
+        },
+        {
+          "name": "_deflectors_for_body",
+          "calls": 1,
+          "inclusive_seconds": 3.44e-05,
+          "exclusive_seconds": 4.6e-06,
+          "avg_inclusive_ms": 0.0344,
+          "avg_exclusive_ms": 0.0046,
+          "share_of_wall_percent": 9.38864601827163
+        },
+        {
+          "name": "_geocentric",
+          "calls": 3,
+          "inclusive_seconds": 2.98e-05,
+          "exclusive_seconds": 6e-06,
+          "avg_inclusive_ms": 0.009933333333333334,
+          "avg_exclusive_ms": 0.002,
+          "share_of_wall_percent": 8.133187539084144
+        },
+        {
+          "name": "SpkReader.position",
+          "calls": 8,
+          "inclusive_seconds": 2.76e-05,
+          "exclusive_seconds": 1.95e-05,
+          "avg_inclusive_ms": 0.00345,
+          "avg_exclusive_ms": 0.0024375,
+          "share_of_wall_percent": 7.532750875124912
+        },
+        {
+          "name": "_barycentric",
+          "calls": 6,
+          "inclusive_seconds": 2.65e-05,
+          "exclusive_seconds": 9.6e-06,
+          "avg_inclusive_ms": 0.004416666666666667,
+          "avg_exclusive_ms": 0.0015999999999999999,
+          "share_of_wall_percent": 7.232532543145295
+        },
+        {
+          "name": "_compose_rotation_matrix",
+          "calls": 1,
+          "inclusive_seconds": 2.57e-05,
+          "exclusive_seconds": 7.9e-06,
+          "avg_inclusive_ms": 0.0257,
+          "avg_exclusive_ms": 0.0079,
+          "share_of_wall_percent": 7.014191938069211
+        },
+        {
+          "name": "apply_light_time",
+          "calls": 1,
+          "inclusive_seconds": 2.57e-05,
+          "exclusive_seconds": 8.4e-06,
+          "avg_inclusive_ms": 0.0257,
+          "avg_exclusive_ms": 0.0084,
+          "share_of_wall_percent": 7.014191938069211
+        },
+        {
+          "name": "_earth_barycentric_state",
+          "calls": 2,
+          "inclusive_seconds": 1.9e-05,
+          "exclusive_seconds": 4.9e-06,
+          "avg_inclusive_ms": 0.0095,
+          "avg_exclusive_ms": 0.00245,
+          "share_of_wall_percent": 5.185589370557005
+        },
+        {
+          "name": "precession_matrix_equatorial",
+          "calls": 1,
+          "inclusive_seconds": 1.78e-05,
+          "exclusive_seconds": 1.78e-05,
+          "avg_inclusive_ms": 0.0178,
+          "avg_exclusive_ms": 0.0178,
+          "share_of_wall_percent": 4.858078462942878
+        },
+        {
+          "name": "SpkReader.position_and_velocity",
+          "calls": 3,
+          "inclusive_seconds": 1.69e-05,
+          "exclusive_seconds": 1.26e-05,
+          "avg_inclusive_ms": 0.005633333333333334,
+          "avg_exclusive_ms": 0.0042,
+          "share_of_wall_percent": 4.612445282232283
+        },
+        {
+          "name": "_earth_barycentric",
+          "calls": 3,
+          "inclusive_seconds": 1.03e-05,
+          "exclusive_seconds": 3.9e-06,
+          "avg_inclusive_ms": 0.0034333333333333334,
+          "avg_exclusive_ms": 0.0013,
+          "share_of_wall_percent": 2.8111352903545868
+        },
+        {
+          "name": "NativeSpkKernelHandle.segment_position",
+          "calls": 8,
+          "inclusive_seconds": 8.1e-06,
+          "exclusive_seconds": 8.1e-06,
+          "avg_inclusive_ms": 0.0010125,
+          "avg_exclusive_ms": 0.0010125,
+          "share_of_wall_percent": 2.2106986263953545
+        },
+        {
+          "name": "_geocentric_state",
+          "calls": 1,
+          "inclusive_seconds": 8.1e-06,
+          "exclusive_seconds": 2.6e-06,
+          "avg_inclusive_ms": 0.0081,
+          "avg_exclusive_ms": 0.0026,
+          "share_of_wall_percent": 2.2106986263953545
+        },
+        {
+          "name": "_barycentric_state",
+          "calls": 1,
+          "inclusive_seconds": 5.1e-06,
+          "exclusive_seconds": 2.3e-06,
+          "avg_inclusive_ms": 0.0051,
+          "avg_exclusive_ms": 0.0023,
+          "share_of_wall_percent": 1.391921357360038
+        },
+        {
+          "name": "NativeSpkKernelHandle.segment_position_and_velocity",
+          "calls": 3,
+          "inclusive_seconds": 4.3e-06,
+          "exclusive_seconds": 4.3e-06,
+          "avg_inclusive_ms": 0.0014333333333333333,
+          "avg_exclusive_ms": 0.0014333333333333333,
+          "share_of_wall_percent": 1.1735807522839536
+        },
+        {
+          "name": "apply_deflection",
+          "calls": 1,
+          "inclusive_seconds": 4.2e-06,
+          "exclusive_seconds": 4.2e-06,
+          "avg_inclusive_ms": 0.0042,
+          "avg_exclusive_ms": 0.0042,
+          "share_of_wall_percent": 1.146288176649443
+        },
+        {
+          "name": "mean_obliquity",
+          "calls": 1,
+          "inclusive_seconds": 3.7e-06,
+          "exclusive_seconds": 3.7e-06,
+          "avg_inclusive_ms": 0.0037,
+          "avg_exclusive_ms": 0.0037,
+          "share_of_wall_percent": 1.0098252984768903
+        },
+        {
+          "name": "icrf_to_ecliptic",
+          "calls": 1,
+          "inclusive_seconds": 2.7e-06,
+          "exclusive_seconds": 2.7e-06,
+          "avg_inclusive_ms": 0.0027,
+          "avg_exclusive_ms": 0.0027,
+          "share_of_wall_percent": 0.7368995421317849
+        },
+        {
+          "name": "decimal_year",
+          "calls": 1,
+          "inclusive_seconds": 2.5e-06,
+          "exclusive_seconds": 2.5e-06,
+          "avg_inclusive_ms": 0.0025,
+          "avg_exclusive_ms": 0.0025,
+          "share_of_wall_percent": 0.6823143908627638
+        },
+        {
+          "name": "_longitude_rate",
+          "calls": 1,
+          "inclusive_seconds": 1.3e-06,
+          "exclusive_seconds": 1.3e-06,
+          "avg_inclusive_ms": 0.0013,
+          "avg_exclusive_ms": 0.0013,
+          "share_of_wall_percent": 0.35480348324863714
+        },
+        {
+          "name": "apply_aberration",
+          "calls": 1,
+          "inclusive_seconds": 1.2e-06,
+          "exclusive_seconds": 1.2e-06,
+          "avg_inclusive_ms": 0.0012,
+          "avg_exclusive_ms": 0.0012,
+          "share_of_wall_percent": 0.32751090761412655
+        },
+        {
+          "name": "_apply_rotation_matrix",
+          "calls": 1,
+          "inclusive_seconds": 1.1e-06,
+          "exclusive_seconds": 1.1e-06,
+          "avg_inclusive_ms": 0.0011,
+          "avg_exclusive_ms": 0.0011,
+          "share_of_wall_percent": 0.30021833197961606
+        },
+        {
+          "name": "apply_frame_bias",
+          "calls": 1,
+          "inclusive_seconds": 8e-07,
+          "exclusive_seconds": 8e-07,
+          "avg_inclusive_ms": 0.0007999999999999999,
+          "avg_exclusive_ms": 0.0007999999999999999,
+          "share_of_wall_percent": 0.2183406050760844
+        }
+      ],
+      "ordered_stages": [
+        {
+          "name": "planet_at",
+          "calls": 1,
+          "inclusive_seconds": 0.0003631,
+          "exclusive_seconds": 3.64e-05,
+          "avg_inclusive_ms": 0.3631,
+          "avg_exclusive_ms": 0.036399999999999995,
+          "share_of_wall_percent": 99.0993421289078
+        },
+        {
+          "name": "_build_apparent_context",
+          "calls": 1,
+          "inclusive_seconds": 0.0001195,
+          "exclusive_seconds": 1.13e-05,
+          "avg_inclusive_ms": 0.11950000000000001,
+          "avg_exclusive_ms": 0.011300000000000001,
+          "share_of_wall_percent": 32.614627883240104
+        },
+        {
+          "name": "_planet_at_core",
+          "calls": 1,
+          "inclusive_seconds": 9.54e-05,
+          "exclusive_seconds": 1.59e-05,
+          "avg_inclusive_ms": 0.0954,
+          "avg_exclusive_ms": 0.0159,
+          "share_of_wall_percent": 26.037117155323063
+        },
+        {
+          "name": "_barycentric",
+          "calls": 6,
+          "inclusive_seconds": 2.65e-05,
+          "exclusive_seconds": 9.6e-06,
+          "avg_inclusive_ms": 0.004416666666666667,
+          "avg_exclusive_ms": 0.0015999999999999999,
+          "share_of_wall_percent": 7.232532543145295
+        },
+        {
+          "name": "_barycentric_state",
+          "calls": 1,
+          "inclusive_seconds": 5.1e-06,
+          "exclusive_seconds": 2.3e-06,
+          "avg_inclusive_ms": 0.0051,
+          "avg_exclusive_ms": 0.0023,
+          "share_of_wall_percent": 1.391921357360038
+        },
+        {
+          "name": "_earth_barycentric",
+          "calls": 3,
+          "inclusive_seconds": 1.03e-05,
+          "exclusive_seconds": 3.9e-06,
+          "avg_inclusive_ms": 0.0034333333333333334,
+          "avg_exclusive_ms": 0.0013,
+          "share_of_wall_percent": 2.8111352903545868
+        },
+        {
+          "name": "_earth_barycentric_state",
+          "calls": 2,
+          "inclusive_seconds": 1.9e-05,
+          "exclusive_seconds": 4.9e-06,
+          "avg_inclusive_ms": 0.0095,
+          "avg_exclusive_ms": 0.00245,
+          "share_of_wall_percent": 5.185589370557005
+        },
+        {
+          "name": "_geocentric",
+          "calls": 3,
+          "inclusive_seconds": 2.98e-05,
+          "exclusive_seconds": 6e-06,
+          "avg_inclusive_ms": 0.009933333333333334,
+          "avg_exclusive_ms": 0.002,
+          "share_of_wall_percent": 8.133187539084144
+        },
+        {
+          "name": "_geocentric_state",
+          "calls": 1,
+          "inclusive_seconds": 8.1e-06,
+          "exclusive_seconds": 2.6e-06,
+          "avg_inclusive_ms": 0.0081,
+          "avg_exclusive_ms": 0.0026,
+          "share_of_wall_percent": 2.2106986263953545
+        },
+        {
+          "name": "_deflectors_for_body",
+          "calls": 1,
+          "inclusive_seconds": 3.44e-05,
+          "exclusive_seconds": 4.6e-06,
+          "avg_inclusive_ms": 0.0344,
+          "avg_exclusive_ms": 0.0046,
+          "share_of_wall_percent": 9.38864601827163
+        },
+        {
+          "name": "_compose_rotation_matrix",
+          "calls": 1,
+          "inclusive_seconds": 2.57e-05,
+          "exclusive_seconds": 7.9e-06,
+          "avg_inclusive_ms": 0.0257,
+          "avg_exclusive_ms": 0.0079,
+          "share_of_wall_percent": 7.014191938069211
+        },
+        {
+          "name": "_apply_rotation_matrix",
+          "calls": 1,
+          "inclusive_seconds": 1.1e-06,
+          "exclusive_seconds": 1.1e-06,
+          "avg_inclusive_ms": 0.0011,
+          "avg_exclusive_ms": 0.0011,
+          "share_of_wall_percent": 0.30021833197961606
+        },
+        {
+          "name": "_longitude_rate",
+          "calls": 1,
+          "inclusive_seconds": 1.3e-06,
+          "exclusive_seconds": 1.3e-06,
+          "avg_inclusive_ms": 0.0013,
+          "avg_exclusive_ms": 0.0013,
+          "share_of_wall_percent": 0.35480348324863714
+        },
+        {
+          "name": "_nutation",
+          "calls": 1,
+          "inclusive_seconds": 6.02e-05,
+          "exclusive_seconds": 6.02e-05,
+          "avg_inclusive_ms": 0.0602,
+          "avg_exclusive_ms": 0.0602,
+          "share_of_wall_percent": 16.43013053197535
+        },
+        {
+          "name": "mean_obliquity",
+          "calls": 1,
+          "inclusive_seconds": 3.7e-06,
+          "exclusive_seconds": 3.7e-06,
+          "avg_inclusive_ms": 0.0037,
+          "avg_exclusive_ms": 0.0037,
+          "share_of_wall_percent": 1.0098252984768903
+        },
+        {
+          "name": "ut_to_tt",
+          "calls": 1,
+          "inclusive_seconds": 0.0001093,
+          "exclusive_seconds": 0.0001093,
+          "avg_inclusive_ms": 0.1093,
+          "avg_exclusive_ms": 0.1093,
+          "share_of_wall_percent": 29.83078516852003
+        },
+        {
+          "name": "decimal_year",
+          "calls": 1,
+          "inclusive_seconds": 2.5e-06,
+          "exclusive_seconds": 2.5e-06,
+          "avg_inclusive_ms": 0.0025,
+          "avg_exclusive_ms": 0.0025,
+          "share_of_wall_percent": 0.6823143908627638
+        },
+        {
+          "name": "precession_matrix_equatorial",
+          "calls": 1,
+          "inclusive_seconds": 1.78e-05,
+          "exclusive_seconds": 1.78e-05,
+          "avg_inclusive_ms": 0.0178,
+          "avg_exclusive_ms": 0.0178,
+          "share_of_wall_percent": 4.858078462942878
+        },
+        {
+          "name": "apply_light_time",
+          "calls": 1,
+          "inclusive_seconds": 2.57e-05,
+          "exclusive_seconds": 8.4e-06,
+          "avg_inclusive_ms": 0.0257,
+          "avg_exclusive_ms": 0.0084,
+          "share_of_wall_percent": 7.014191938069211
+        },
+        {
+          "name": "apply_aberration",
+          "calls": 1,
+          "inclusive_seconds": 1.2e-06,
+          "exclusive_seconds": 1.2e-06,
+          "avg_inclusive_ms": 0.0012,
+          "avg_exclusive_ms": 0.0012,
+          "share_of_wall_percent": 0.32751090761412655
+        },
+        {
+          "name": "apply_deflection",
+          "calls": 1,
+          "inclusive_seconds": 4.2e-06,
+          "exclusive_seconds": 4.2e-06,
+          "avg_inclusive_ms": 0.0042,
+          "avg_exclusive_ms": 0.0042,
+          "share_of_wall_percent": 1.146288176649443
+        },
+        {
+          "name": "apply_frame_bias",
+          "calls": 1,
+          "inclusive_seconds": 8e-07,
+          "exclusive_seconds": 8e-07,
+          "avg_inclusive_ms": 0.0007999999999999999,
+          "avg_exclusive_ms": 0.0007999999999999999,
+          "share_of_wall_percent": 0.2183406050760844
+        },
+        {
+          "name": "icrf_to_ecliptic",
+          "calls": 1,
+          "inclusive_seconds": 2.7e-06,
+          "exclusive_seconds": 2.7e-06,
+          "avg_inclusive_ms": 0.0027,
+          "avg_exclusive_ms": 0.0027,
+          "share_of_wall_percent": 0.7368995421317849
+        },
+        {
+          "name": "SpkReader.position",
+          "calls": 8,
+          "inclusive_seconds": 2.76e-05,
+          "exclusive_seconds": 1.95e-05,
+          "avg_inclusive_ms": 0.00345,
+          "avg_exclusive_ms": 0.0024375,
+          "share_of_wall_percent": 7.532750875124912
+        },
+        {
+          "name": "SpkReader.position_and_velocity",
+          "calls": 3,
+          "inclusive_seconds": 1.69e-05,
+          "exclusive_seconds": 1.26e-05,
+          "avg_inclusive_ms": 0.005633333333333334,
+          "avg_exclusive_ms": 0.0042,
+          "share_of_wall_percent": 4.612445282232283
+        },
+        {
+          "name": "NativeSpkKernelHandle.segment_position",
+          "calls": 8,
+          "inclusive_seconds": 8.1e-06,
+          "exclusive_seconds": 8.1e-06,
+          "avg_inclusive_ms": 0.0010125,
+          "avg_exclusive_ms": 0.0010125,
+          "share_of_wall_percent": 2.2106986263953545
+        },
+        {
+          "name": "NativeSpkKernelHandle.segment_position_and_velocity",
+          "calls": 3,
+          "inclusive_seconds": 4.3e-06,
+          "exclusive_seconds": 4.3e-06,
+          "avg_inclusive_ms": 0.0014333333333333333,
+          "avg_exclusive_ms": 0.0014333333333333333,
+          "share_of_wall_percent": 1.1735807522839536
+        }
+      ],
+      "name": "planet_at_single_mars_default_warm",
+      "reader_mode": "warm",
+      "body": "Mars",
+      "jd_ut": 2691304.2391304346
+    },
+    {
+      "wall_seconds": 0.0005787999980384484,
+      "ranked_stages": [
+        {
+          "name": "planet_at",
+          "calls": 1,
+          "inclusive_seconds": 0.0005731,
+          "exclusive_seconds": 2.82e-05,
+          "avg_inclusive_ms": 0.5730999999999999,
+          "avg_exclusive_ms": 0.0282,
+          "share_of_wall_percent": 99.01520420563827
+        },
+        {
+          "name": "_build_apparent_context",
+          "calls": 1,
+          "inclusive_seconds": 0.0003011,
+          "exclusive_seconds": 1.07e-05,
+          "avg_inclusive_ms": 0.3011,
+          "avg_exclusive_ms": 0.0107,
+          "share_of_wall_percent": 52.02142381140759
+        },
+        {
+          "name": "_nutation",
+          "calls": 1,
+          "inclusive_seconds": 0.0002331,
+          "exclusive_seconds": 0.0002331,
+          "avg_inclusive_ms": 0.2331,
+          "avg_exclusive_ms": 0.2331,
+          "share_of_wall_percent": 40.272978712849905
+        },
+        {
+          "name": "ut_to_tt",
+          "calls": 1,
+          "inclusive_seconds": 0.0001744,
+          "exclusive_seconds": 0.0001744,
+          "avg_inclusive_ms": 0.1744,
+          "avg_exclusive_ms": 0.1744,
+          "share_of_wall_percent": 30.131306252771445
+        },
+        {
+          "name": "_planet_at_core",
+          "calls": 1,
+          "inclusive_seconds": 6.71e-05,
+          "exclusive_seconds": 1.46e-05,
+          "avg_inclusive_ms": 0.0671,
+          "avg_exclusive_ms": 0.0146,
+          "share_of_wall_percent": 11.592950972253234
+        },
+        {
+          "name": "apply_light_time",
+          "calls": 1,
+          "inclusive_seconds": 3.36e-05,
+          "exclusive_seconds": 8.5e-06,
+          "avg_inclusive_ms": 0.0336,
+          "avg_exclusive_ms": 0.0085,
+          "share_of_wall_percent": 5.805114048699085
+        },
+        {
+          "name": "_compose_rotation_matrix",
+          "calls": 1,
+          "inclusive_seconds": 2.9e-05,
+          "exclusive_seconds": 8.9e-06,
+          "avg_inclusive_ms": 0.029,
+          "avg_exclusive_ms": 0.0089,
+          "share_of_wall_percent": 5.010366292031949
+        },
+        {
+          "name": "_barycentric",
+          "calls": 4,
+          "inclusive_seconds": 2.51e-05,
+          "exclusive_seconds": 7.1e-06,
+          "avg_inclusive_ms": 0.006275,
+          "avg_exclusive_ms": 0.0017749999999999999,
+          "share_of_wall_percent": 4.336558411379377
+        },
+        {
+          "name": "_earth_barycentric_state",
+          "calls": 2,
+          "inclusive_seconds": 2.35e-05,
+          "exclusive_seconds": 5.6e-06,
+          "avg_inclusive_ms": 0.01175,
+          "avg_exclusive_ms": 0.0028,
+          "share_of_wall_percent": 4.060124409060372
+        },
+        {
+          "name": "SpkReader.position_and_velocity",
+          "calls": 4,
+          "inclusive_seconds": 2.3e-05,
+          "exclusive_seconds": 1.73e-05,
+          "avg_inclusive_ms": 0.00575,
+          "avg_exclusive_ms": 0.004325,
+          "share_of_wall_percent": 3.9737387833356834
+        },
+        {
+          "name": "precession_matrix_equatorial",
+          "calls": 1,
+          "inclusive_seconds": 2.01e-05,
+          "exclusive_seconds": 2.01e-05,
+          "avg_inclusive_ms": 0.0201,
+          "avg_exclusive_ms": 0.0201,
+          "share_of_wall_percent": 3.472702154132489
+        },
+        {
+          "name": "SpkReader.position",
+          "calls": 6,
+          "inclusive_seconds": 1.8e-05,
+          "exclusive_seconds": 1.35e-05,
+          "avg_inclusive_ms": 0.0030000000000000005,
+          "avg_exclusive_ms": 0.00225,
+          "share_of_wall_percent": 3.109882526088796
+        },
+        {
+          "name": "_geocentric_state",
+          "calls": 1,
+          "inclusive_seconds": 9.5e-06,
+          "exclusive_seconds": 4e-06,
+          "avg_inclusive_ms": 0.0095,
+          "avg_exclusive_ms": 0.004,
+          "share_of_wall_percent": 1.6413268887690866
+        },
+        {
+          "name": "NativeSpkKernelHandle.segment_position_and_velocity",
+          "calls": 4,
+          "inclusive_seconds": 5.7e-06,
+          "exclusive_seconds": 5.7e-06,
+          "avg_inclusive_ms": 0.0014249999999999998,
+          "avg_exclusive_ms": 0.0014249999999999998,
+          "share_of_wall_percent": 0.984796133261452
+        },
+        {
+          "name": "mean_obliquity",
+          "calls": 1,
+          "inclusive_seconds": 5.2e-06,
+          "exclusive_seconds": 5.2e-06,
+          "avg_inclusive_ms": 0.0052,
+          "avg_exclusive_ms": 0.0052,
+          "share_of_wall_percent": 0.8984105075367633
+        },
+        {
+          "name": "NativeSpkKernelHandle.segment_position",
+          "calls": 6,
+          "inclusive_seconds": 4.5e-06,
+          "exclusive_seconds": 4.5e-06,
+          "avg_inclusive_ms": 0.0007500000000000001,
+          "avg_exclusive_ms": 0.0007500000000000001,
+          "share_of_wall_percent": 0.777470631522199
+        },
+        {
+          "name": "icrf_to_ecliptic",
+          "calls": 1,
+          "inclusive_seconds": 3.4e-06,
+          "exclusive_seconds": 3.4e-06,
+          "avg_inclusive_ms": 0.0034000000000000002,
+          "avg_exclusive_ms": 0.0034000000000000002,
+          "share_of_wall_percent": 0.5874222549278837
+        },
+        {
+          "name": "decimal_year",
+          "calls": 1,
+          "inclusive_seconds": 2.3e-06,
+          "exclusive_seconds": 2.3e-06,
+          "avg_inclusive_ms": 0.0023,
+          "avg_exclusive_ms": 0.0023,
+          "share_of_wall_percent": 0.39737387833356835
+        },
+        {
+          "name": "apply_aberration",
+          "calls": 1,
+          "inclusive_seconds": 1.9e-06,
+          "exclusive_seconds": 1.9e-06,
+          "avg_inclusive_ms": 0.0019,
+          "avg_exclusive_ms": 0.0019,
+          "share_of_wall_percent": 0.32826537775381737
+        },
+        {
+          "name": "apply_frame_bias",
+          "calls": 1,
+          "inclusive_seconds": 1.4e-06,
+          "exclusive_seconds": 1.4e-06,
+          "avg_inclusive_ms": 0.0014,
+          "avg_exclusive_ms": 0.0014,
+          "share_of_wall_percent": 0.24187975202912856
+        },
+        {
+          "name": "_apply_rotation_matrix",
+          "calls": 1,
+          "inclusive_seconds": 1.4e-06,
+          "exclusive_seconds": 1.4e-06,
+          "avg_inclusive_ms": 0.0014,
+          "avg_exclusive_ms": 0.0014,
+          "share_of_wall_percent": 0.24187975202912856
+        },
+        {
+          "name": "_longitude_rate",
+          "calls": 1,
+          "inclusive_seconds": 1.3e-06,
+          "exclusive_seconds": 1.3e-06,
+          "avg_inclusive_ms": 0.0013,
+          "avg_exclusive_ms": 0.0013,
+          "share_of_wall_percent": 0.22460262688419083
+        }
+      ],
+      "ordered_stages": [
+        {
+          "name": "planet_at",
+          "calls": 1,
+          "inclusive_seconds": 0.0005731,
+          "exclusive_seconds": 2.82e-05,
+          "avg_inclusive_ms": 0.5730999999999999,
+          "avg_exclusive_ms": 0.0282,
+          "share_of_wall_percent": 99.01520420563827
+        },
+        {
+          "name": "_build_apparent_context",
+          "calls": 1,
+          "inclusive_seconds": 0.0003011,
+          "exclusive_seconds": 1.07e-05,
+          "avg_inclusive_ms": 0.3011,
+          "avg_exclusive_ms": 0.0107,
+          "share_of_wall_percent": 52.02142381140759
+        },
+        {
+          "name": "_planet_at_core",
+          "calls": 1,
+          "inclusive_seconds": 6.71e-05,
+          "exclusive_seconds": 1.46e-05,
+          "avg_inclusive_ms": 0.0671,
+          "avg_exclusive_ms": 0.0146,
+          "share_of_wall_percent": 11.592950972253234
+        },
+        {
+          "name": "_barycentric",
+          "calls": 4,
+          "inclusive_seconds": 2.51e-05,
+          "exclusive_seconds": 7.1e-06,
+          "avg_inclusive_ms": 0.006275,
+          "avg_exclusive_ms": 0.0017749999999999999,
+          "share_of_wall_percent": 4.336558411379377
+        },
+        {
+          "name": "_earth_barycentric_state",
+          "calls": 2,
+          "inclusive_seconds": 2.35e-05,
+          "exclusive_seconds": 5.6e-06,
+          "avg_inclusive_ms": 0.01175,
+          "avg_exclusive_ms": 0.0028,
+          "share_of_wall_percent": 4.060124409060372
+        },
+        {
+          "name": "_geocentric_state",
+          "calls": 1,
+          "inclusive_seconds": 9.5e-06,
+          "exclusive_seconds": 4e-06,
+          "avg_inclusive_ms": 0.0095,
+          "avg_exclusive_ms": 0.004,
+          "share_of_wall_percent": 1.6413268887690866
+        },
+        {
+          "name": "_compose_rotation_matrix",
+          "calls": 1,
+          "inclusive_seconds": 2.9e-05,
+          "exclusive_seconds": 8.9e-06,
+          "avg_inclusive_ms": 0.029,
+          "avg_exclusive_ms": 0.0089,
+          "share_of_wall_percent": 5.010366292031949
+        },
+        {
+          "name": "_apply_rotation_matrix",
+          "calls": 1,
+          "inclusive_seconds": 1.4e-06,
+          "exclusive_seconds": 1.4e-06,
+          "avg_inclusive_ms": 0.0014,
+          "avg_exclusive_ms": 0.0014,
+          "share_of_wall_percent": 0.24187975202912856
+        },
+        {
+          "name": "_longitude_rate",
+          "calls": 1,
+          "inclusive_seconds": 1.3e-06,
+          "exclusive_seconds": 1.3e-06,
+          "avg_inclusive_ms": 0.0013,
+          "avg_exclusive_ms": 0.0013,
+          "share_of_wall_percent": 0.22460262688419083
+        },
+        {
+          "name": "_nutation",
+          "calls": 1,
+          "inclusive_seconds": 0.0002331,
+          "exclusive_seconds": 0.0002331,
+          "avg_inclusive_ms": 0.2331,
+          "avg_exclusive_ms": 0.2331,
+          "share_of_wall_percent": 40.272978712849905
+        },
+        {
+          "name": "mean_obliquity",
+          "calls": 1,
+          "inclusive_seconds": 5.2e-06,
+          "exclusive_seconds": 5.2e-06,
+          "avg_inclusive_ms": 0.0052,
+          "avg_exclusive_ms": 0.0052,
+          "share_of_wall_percent": 0.8984105075367633
+        },
+        {
+          "name": "ut_to_tt",
+          "calls": 1,
+          "inclusive_seconds": 0.0001744,
+          "exclusive_seconds": 0.0001744,
+          "avg_inclusive_ms": 0.1744,
+          "avg_exclusive_ms": 0.1744,
+          "share_of_wall_percent": 30.131306252771445
+        },
+        {
+          "name": "decimal_year",
+          "calls": 1,
+          "inclusive_seconds": 2.3e-06,
+          "exclusive_seconds": 2.3e-06,
+          "avg_inclusive_ms": 0.0023,
+          "avg_exclusive_ms": 0.0023,
+          "share_of_wall_percent": 0.39737387833356835
+        },
+        {
+          "name": "precession_matrix_equatorial",
+          "calls": 1,
+          "inclusive_seconds": 2.01e-05,
+          "exclusive_seconds": 2.01e-05,
+          "avg_inclusive_ms": 0.0201,
+          "avg_exclusive_ms": 0.0201,
+          "share_of_wall_percent": 3.472702154132489
+        },
+        {
+          "name": "apply_light_time",
+          "calls": 1,
+          "inclusive_seconds": 3.36e-05,
+          "exclusive_seconds": 8.5e-06,
+          "avg_inclusive_ms": 0.0336,
+          "avg_exclusive_ms": 0.0085,
+          "share_of_wall_percent": 5.805114048699085
+        },
+        {
+          "name": "apply_aberration",
+          "calls": 1,
+          "inclusive_seconds": 1.9e-06,
+          "exclusive_seconds": 1.9e-06,
+          "avg_inclusive_ms": 0.0019,
+          "avg_exclusive_ms": 0.0019,
+          "share_of_wall_percent": 0.32826537775381737
+        },
+        {
+          "name": "apply_frame_bias",
+          "calls": 1,
+          "inclusive_seconds": 1.4e-06,
+          "exclusive_seconds": 1.4e-06,
+          "avg_inclusive_ms": 0.0014,
+          "avg_exclusive_ms": 0.0014,
+          "share_of_wall_percent": 0.24187975202912856
+        },
+        {
+          "name": "icrf_to_ecliptic",
+          "calls": 1,
+          "inclusive_seconds": 3.4e-06,
+          "exclusive_seconds": 3.4e-06,
+          "avg_inclusive_ms": 0.0034000000000000002,
+          "avg_exclusive_ms": 0.0034000000000000002,
+          "share_of_wall_percent": 0.5874222549278837
+        },
+        {
+          "name": "SpkReader.position",
+          "calls": 6,
+          "inclusive_seconds": 1.8e-05,
+          "exclusive_seconds": 1.35e-05,
+          "avg_inclusive_ms": 0.0030000000000000005,
+          "avg_exclusive_ms": 0.00225,
+          "share_of_wall_percent": 3.109882526088796
+        },
+        {
+          "name": "SpkReader.position_and_velocity",
+          "calls": 4,
+          "inclusive_seconds": 2.3e-05,
+          "exclusive_seconds": 1.73e-05,
+          "avg_inclusive_ms": 0.00575,
+          "avg_exclusive_ms": 0.004325,
+          "share_of_wall_percent": 3.9737387833356834
+        },
+        {
+          "name": "NativeSpkKernelHandle.segment_position",
+          "calls": 6,
+          "inclusive_seconds": 4.5e-06,
+          "exclusive_seconds": 4.5e-06,
+          "avg_inclusive_ms": 0.0007500000000000001,
+          "avg_exclusive_ms": 0.0007500000000000001,
+          "share_of_wall_percent": 0.777470631522199
+        },
+        {
+          "name": "NativeSpkKernelHandle.segment_position_and_velocity",
+          "calls": 4,
+          "inclusive_seconds": 5.7e-06,
+          "exclusive_seconds": 5.7e-06,
+          "avg_inclusive_ms": 0.0014249999999999998,
+          "avg_exclusive_ms": 0.0014249999999999998,
+          "share_of_wall_percent": 0.984796133261452
+        }
+      ],
+      "name": "planet_at_single_moon_default_warm",
+      "reader_mode": "warm",
+      "body": "Moon",
+      "jd_ut": 2691304.2391304346
+    },
+    {
+      "wall_seconds": 0.000524800008861348,
+      "ranked_stages": [
+        {
+          "name": "all_planets_at",
+          "calls": 1,
+          "inclusive_seconds": 0.0005208,
+          "exclusive_seconds": 1.71e-05,
+          "avg_inclusive_ms": 0.5207999999999999,
+          "avg_exclusive_ms": 0.0171,
+          "share_of_wall_percent": 99.23780320239956
+        },
+        {
+          "name": "_native_all_planets_admitted",
+          "calls": 1,
+          "inclusive_seconds": 0.0004108,
+          "exclusive_seconds": 0.0001229,
+          "avg_inclusive_ms": 0.4108,
+          "avg_exclusive_ms": 0.12290000000000001,
+          "share_of_wall_percent": 78.27743770266079
+        },
+        {
+          "name": "_build_apparent_context",
+          "calls": 1,
+          "inclusive_seconds": 0.0001092,
+          "exclusive_seconds": 1.3e-05,
+          "avg_inclusive_ms": 0.10919999999999999,
+          "avg_exclusive_ms": 0.013,
+          "share_of_wall_percent": 20.807926477922486
+        },
+        {
+          "name": "ut_to_tt",
+          "calls": 1,
+          "inclusive_seconds": 9.18e-05,
+          "exclusive_seconds": 9.18e-05,
+          "avg_inclusive_ms": 0.09179999999999999,
+          "avg_exclusive_ms": 0.09179999999999999,
+          "share_of_wall_percent": 17.492377753418353
+        },
+        {
+          "name": "_nutation",
+          "calls": 1,
+          "inclusive_seconds": 6.21e-05,
+          "exclusive_seconds": 6.21e-05,
+          "avg_inclusive_ms": 0.0621,
+          "avg_exclusive_ms": 0.0621,
+          "share_of_wall_percent": 11.833079068488889
+        },
+        {
+          "name": "_npe_batch_barycentric_positions",
+          "calls": 3,
+          "inclusive_seconds": 4.88e-05,
+          "exclusive_seconds": 3.3e-05,
+          "avg_inclusive_ms": 0.01626666666666667,
+          "avg_exclusive_ms": 0.011000000000000001,
+          "share_of_wall_percent": 9.2987803307932
+        },
+        {
+          "name": "_compose_rotation_matrix",
+          "calls": 1,
+          "inclusive_seconds": 2.89e-05,
+          "exclusive_seconds": 9.3e-06,
+          "avg_inclusive_ms": 0.028900000000000002,
+          "avg_exclusive_ms": 0.009300000000000001,
+          "share_of_wall_percent": 5.506859663113186
+        },
+        {
+          "name": "_npe_public_route_segment_specs",
+          "calls": 1,
+          "inclusive_seconds": 2.43e-05,
+          "exclusive_seconds": 2.43e-05,
+          "avg_inclusive_ms": 0.024300000000000002,
+          "avg_exclusive_ms": 0.024300000000000002,
+          "share_of_wall_percent": 4.630335287669564
+        },
+        {
+          "name": "precession_matrix_equatorial",
+          "calls": 1,
+          "inclusive_seconds": 1.96e-05,
+          "exclusive_seconds": 1.96e-05,
+          "avg_inclusive_ms": 0.0196,
+          "avg_exclusive_ms": 0.0196,
+          "share_of_wall_percent": 3.734756034498908
+        },
+        {
+          "name": "apply_deflection",
+          "calls": 8,
+          "inclusive_seconds": 1.91e-05,
+          "exclusive_seconds": 1.91e-05,
+          "avg_inclusive_ms": 0.0023875,
+          "avg_exclusive_ms": 0.0023875,
+          "share_of_wall_percent": 3.639481645863732
+        },
+        {
+          "name": "_prefill_npe_public_vector_cache",
+          "calls": 1,
+          "inclusive_seconds": 1.72e-05,
+          "exclusive_seconds": 1.72e-05,
+          "avg_inclusive_ms": 0.0172,
+          "avg_exclusive_ms": 0.0172,
+          "share_of_wall_percent": 3.2774389690500625
+        },
+        {
+          "name": "NativeSpkKernelHandle.batch_segment_position_requests",
+          "calls": 3,
+          "inclusive_seconds": 1.58e-05,
+          "exclusive_seconds": 1.58e-05,
+          "avg_inclusive_ms": 0.005266666666666667,
+          "avg_exclusive_ms": 0.005266666666666667,
+          "share_of_wall_percent": 3.010670680871569
+        },
+        {
+          "name": "_npe_body_route_segment_specs",
+          "calls": 1,
+          "inclusive_seconds": 1.32e-05,
+          "exclusive_seconds": 1.32e-05,
+          "avg_inclusive_ms": 0.0132,
+          "avg_exclusive_ms": 0.0132,
+          "share_of_wall_percent": 2.5152438599686526
+        },
+        {
+          "name": "icrf_to_ecliptic",
+          "calls": 10,
+          "inclusive_seconds": 1.3e-05,
+          "exclusive_seconds": 1.3e-05,
+          "avg_inclusive_ms": 0.0013,
+          "avg_exclusive_ms": 0.0013,
+          "share_of_wall_percent": 2.477134104514582
+        },
+        {
+          "name": "apply_aberration",
+          "calls": 10,
+          "inclusive_seconds": 8.9e-06,
+          "exclusive_seconds": 8.9e-06,
+          "avg_inclusive_ms": 0.00089,
+          "avg_exclusive_ms": 0.00089,
+          "share_of_wall_percent": 1.6958841177061368
+        },
+        {
+          "name": "NativeSpkKernelHandle.batch_segment_position_and_velocity",
+          "calls": 1,
+          "inclusive_seconds": 8.7e-06,
+          "exclusive_seconds": 8.7e-06,
+          "avg_inclusive_ms": 0.0087,
+          "avg_exclusive_ms": 0.0087,
+          "share_of_wall_percent": 1.6577743622520662
+        },
+        {
+          "name": "_deflectors_for_body",
+          "calls": 8,
+          "inclusive_seconds": 8.4e-06,
+          "exclusive_seconds": 6.8e-06,
+          "avg_inclusive_ms": 0.00105,
+          "avg_exclusive_ms": 0.0008500000000000001,
+          "share_of_wall_percent": 1.6006097290709607
+        },
+        {
+          "name": "_apply_rotation_matrix",
+          "calls": 10,
+          "inclusive_seconds": 6.4e-06,
+          "exclusive_seconds": 6.4e-06,
+          "avg_inclusive_ms": 0.0006399999999999999,
+          "avg_exclusive_ms": 0.0006399999999999999,
+          "share_of_wall_percent": 1.2195121745302557
+        },
+        {
+          "name": "_longitude_rate",
+          "calls": 10,
+          "inclusive_seconds": 5.6e-06,
+          "exclusive_seconds": 5.6e-06,
+          "avg_inclusive_ms": 0.00056,
+          "avg_exclusive_ms": 0.00056,
+          "share_of_wall_percent": 1.0670731527139736
+        },
+        {
+          "name": "apply_frame_bias",
+          "calls": 10,
+          "inclusive_seconds": 5.1e-06,
+          "exclusive_seconds": 5.1e-06,
+          "avg_inclusive_ms": 0.00051,
+          "avg_exclusive_ms": 0.00051,
+          "share_of_wall_percent": 0.9717987640787975
+        },
+        {
+          "name": "mean_obliquity",
+          "calls": 1,
+          "inclusive_seconds": 4e-06,
+          "exclusive_seconds": 4e-06,
+          "avg_inclusive_ms": 0.004,
+          "avg_exclusive_ms": 0.004,
+          "share_of_wall_percent": 0.7621951090814097
+        },
+        {
+          "name": "_geocentric",
+          "calls": 3,
+          "inclusive_seconds": 1.6e-06,
+          "exclusive_seconds": 1.6e-06,
+          "avg_inclusive_ms": 0.0005333333333333333,
+          "avg_exclusive_ms": 0.0005333333333333333,
+          "share_of_wall_percent": 0.30487804363256393
+        },
+        {
+          "name": "_earth_barycentric_state",
+          "calls": 1,
+          "inclusive_seconds": 1.2e-06,
+          "exclusive_seconds": 1.2e-06,
+          "avg_inclusive_ms": 0.0012,
+          "avg_exclusive_ms": 0.0012,
+          "share_of_wall_percent": 0.22865853272442294
+        },
+        {
+          "name": "decimal_year",
+          "calls": 1,
+          "inclusive_seconds": 1.1e-06,
+          "exclusive_seconds": 1.1e-06,
+          "avg_inclusive_ms": 0.0011,
+          "avg_exclusive_ms": 0.0011,
+          "share_of_wall_percent": 0.2096036549973877
+        }
+      ],
+      "ordered_stages": [
+        {
+          "name": "all_planets_at",
+          "calls": 1,
+          "inclusive_seconds": 0.0005208,
+          "exclusive_seconds": 1.71e-05,
+          "avg_inclusive_ms": 0.5207999999999999,
+          "avg_exclusive_ms": 0.0171,
+          "share_of_wall_percent": 99.23780320239956
+        },
+        {
+          "name": "_native_all_planets_admitted",
+          "calls": 1,
+          "inclusive_seconds": 0.0004108,
+          "exclusive_seconds": 0.0001229,
+          "avg_inclusive_ms": 0.4108,
+          "avg_exclusive_ms": 0.12290000000000001,
+          "share_of_wall_percent": 78.27743770266079
+        },
+        {
+          "name": "_build_apparent_context",
+          "calls": 1,
+          "inclusive_seconds": 0.0001092,
+          "exclusive_seconds": 1.3e-05,
+          "avg_inclusive_ms": 0.10919999999999999,
+          "avg_exclusive_ms": 0.013,
+          "share_of_wall_percent": 20.807926477922486
+        },
+        {
+          "name": "_npe_public_route_segment_specs",
+          "calls": 1,
+          "inclusive_seconds": 2.43e-05,
+          "exclusive_seconds": 2.43e-05,
+          "avg_inclusive_ms": 0.024300000000000002,
+          "avg_exclusive_ms": 0.024300000000000002,
+          "share_of_wall_percent": 4.630335287669564
+        },
+        {
+          "name": "_npe_body_route_segment_specs",
+          "calls": 1,
+          "inclusive_seconds": 1.32e-05,
+          "exclusive_seconds": 1.32e-05,
+          "avg_inclusive_ms": 0.0132,
+          "avg_exclusive_ms": 0.0132,
+          "share_of_wall_percent": 2.5152438599686526
+        },
+        {
+          "name": "_prefill_npe_public_vector_cache",
+          "calls": 1,
+          "inclusive_seconds": 1.72e-05,
+          "exclusive_seconds": 1.72e-05,
+          "avg_inclusive_ms": 0.0172,
+          "avg_exclusive_ms": 0.0172,
+          "share_of_wall_percent": 3.2774389690500625
+        },
+        {
+          "name": "_npe_batch_barycentric_positions",
+          "calls": 3,
+          "inclusive_seconds": 4.88e-05,
+          "exclusive_seconds": 3.3e-05,
+          "avg_inclusive_ms": 0.01626666666666667,
+          "avg_exclusive_ms": 0.011000000000000001,
+          "share_of_wall_percent": 9.2987803307932
+        },
+        {
+          "name": "_earth_barycentric_state",
+          "calls": 1,
+          "inclusive_seconds": 1.2e-06,
+          "exclusive_seconds": 1.2e-06,
+          "avg_inclusive_ms": 0.0012,
+          "avg_exclusive_ms": 0.0012,
+          "share_of_wall_percent": 0.22865853272442294
+        },
+        {
+          "name": "_geocentric",
+          "calls": 3,
+          "inclusive_seconds": 1.6e-06,
+          "exclusive_seconds": 1.6e-06,
+          "avg_inclusive_ms": 0.0005333333333333333,
+          "avg_exclusive_ms": 0.0005333333333333333,
+          "share_of_wall_percent": 0.30487804363256393
+        },
+        {
+          "name": "_deflectors_for_body",
+          "calls": 8,
+          "inclusive_seconds": 8.4e-06,
+          "exclusive_seconds": 6.8e-06,
+          "avg_inclusive_ms": 0.00105,
+          "avg_exclusive_ms": 0.0008500000000000001,
+          "share_of_wall_percent": 1.6006097290709607
+        },
+        {
+          "name": "_compose_rotation_matrix",
+          "calls": 1,
+          "inclusive_seconds": 2.89e-05,
+          "exclusive_seconds": 9.3e-06,
+          "avg_inclusive_ms": 0.028900000000000002,
+          "avg_exclusive_ms": 0.009300000000000001,
+          "share_of_wall_percent": 5.506859663113186
+        },
+        {
+          "name": "_apply_rotation_matrix",
+          "calls": 10,
+          "inclusive_seconds": 6.4e-06,
+          "exclusive_seconds": 6.4e-06,
+          "avg_inclusive_ms": 0.0006399999999999999,
+          "avg_exclusive_ms": 0.0006399999999999999,
+          "share_of_wall_percent": 1.2195121745302557
+        },
+        {
+          "name": "_longitude_rate",
+          "calls": 10,
+          "inclusive_seconds": 5.6e-06,
+          "exclusive_seconds": 5.6e-06,
+          "avg_inclusive_ms": 0.00056,
+          "avg_exclusive_ms": 0.00056,
+          "share_of_wall_percent": 1.0670731527139736
+        },
+        {
+          "name": "_nutation",
+          "calls": 1,
+          "inclusive_seconds": 6.21e-05,
+          "exclusive_seconds": 6.21e-05,
+          "avg_inclusive_ms": 0.0621,
+          "avg_exclusive_ms": 0.0621,
+          "share_of_wall_percent": 11.833079068488889
+        },
+        {
+          "name": "mean_obliquity",
+          "calls": 1,
+          "inclusive_seconds": 4e-06,
+          "exclusive_seconds": 4e-06,
+          "avg_inclusive_ms": 0.004,
+          "avg_exclusive_ms": 0.004,
+          "share_of_wall_percent": 0.7621951090814097
+        },
+        {
+          "name": "ut_to_tt",
+          "calls": 1,
+          "inclusive_seconds": 9.18e-05,
+          "exclusive_seconds": 9.18e-05,
+          "avg_inclusive_ms": 0.09179999999999999,
+          "avg_exclusive_ms": 0.09179999999999999,
+          "share_of_wall_percent": 17.492377753418353
+        },
+        {
+          "name": "decimal_year",
+          "calls": 1,
+          "inclusive_seconds": 1.1e-06,
+          "exclusive_seconds": 1.1e-06,
+          "avg_inclusive_ms": 0.0011,
+          "avg_exclusive_ms": 0.0011,
+          "share_of_wall_percent": 0.2096036549973877
+        },
+        {
+          "name": "precession_matrix_equatorial",
+          "calls": 1,
+          "inclusive_seconds": 1.96e-05,
+          "exclusive_seconds": 1.96e-05,
+          "avg_inclusive_ms": 0.0196,
+          "avg_exclusive_ms": 0.0196,
+          "share_of_wall_percent": 3.734756034498908
+        },
+        {
+          "name": "apply_aberration",
+          "calls": 10,
+          "inclusive_seconds": 8.9e-06,
+          "exclusive_seconds": 8.9e-06,
+          "avg_inclusive_ms": 0.00089,
+          "avg_exclusive_ms": 0.00089,
+          "share_of_wall_percent": 1.6958841177061368
+        },
+        {
+          "name": "apply_deflection",
+          "calls": 8,
+          "inclusive_seconds": 1.91e-05,
+          "exclusive_seconds": 1.91e-05,
+          "avg_inclusive_ms": 0.0023875,
+          "avg_exclusive_ms": 0.0023875,
+          "share_of_wall_percent": 3.639481645863732
+        },
+        {
+          "name": "apply_frame_bias",
+          "calls": 10,
+          "inclusive_seconds": 5.1e-06,
+          "exclusive_seconds": 5.1e-06,
+          "avg_inclusive_ms": 0.00051,
+          "avg_exclusive_ms": 0.00051,
+          "share_of_wall_percent": 0.9717987640787975
+        },
+        {
+          "name": "icrf_to_ecliptic",
+          "calls": 10,
+          "inclusive_seconds": 1.3e-05,
+          "exclusive_seconds": 1.3e-05,
+          "avg_inclusive_ms": 0.0013,
+          "avg_exclusive_ms": 0.0013,
+          "share_of_wall_percent": 2.477134104514582
+        },
+        {
+          "name": "NativeSpkKernelHandle.batch_segment_position_and_velocity",
+          "calls": 1,
+          "inclusive_seconds": 8.7e-06,
+          "exclusive_seconds": 8.7e-06,
+          "avg_inclusive_ms": 0.0087,
+          "avg_exclusive_ms": 0.0087,
+          "share_of_wall_percent": 1.6577743622520662
+        },
+        {
+          "name": "NativeSpkKernelHandle.batch_segment_position_requests",
+          "calls": 3,
+          "inclusive_seconds": 1.58e-05,
+          "exclusive_seconds": 1.58e-05,
+          "avg_inclusive_ms": 0.005266666666666667,
+          "avg_exclusive_ms": 0.005266666666666667,
+          "share_of_wall_percent": 3.010670680871569
+        }
+      ],
+      "name": "all_planets_at_single_default_warm",
+      "reader_mode": "warm",
+      "jd_ut": 2691304.2391304346,
+      "body_count": 10
+    },
+    {
+      "wall_seconds": 0.03791380001348443,
+      "ranked_stages": [
+        {
+          "name": "planet_at",
+          "calls": 240,
+          "inclusive_seconds": 0.0377284,
+          "exclusive_seconds": 0.0013919,
+          "avg_inclusive_ms": 0.15720166666666666,
+          "avg_exclusive_ms": 0.005799583333333333,
+          "share_of_wall_percent": 99.5109959607887
+        },
+        {
+          "name": "_build_apparent_context",
+          "calls": 240,
+          "inclusive_seconds": 0.0158268,
+          "exclusive_seconds": 0.0009837,
+          "avg_inclusive_ms": 0.06594499999999999,
+          "avg_exclusive_ms": 0.00409875,
+          "share_of_wall_percent": 41.744167016682674
+        },
+        {
+          "name": "_planet_at_core",
+          "calls": 240,
+          "inclusive_seconds": 0.0130747,
+          "exclusive_seconds": 0.001896,
+          "avg_inclusive_ms": 0.05447791666666667,
+          "avg_exclusive_ms": 0.007899999999999999,
+          "share_of_wall_percent": 34.485332505182406
+        },
+        {
+          "name": "_nutation",
+          "calls": 240,
+          "inclusive_seconds": 0.0101734,
+          "exclusive_seconds": 0.0101734,
+          "avg_inclusive_ms": 0.04238916666666667,
+          "avg_exclusive_ms": 0.04238916666666667,
+          "share_of_wall_percent": 26.832973736163947
+        },
+        {
+          "name": "ut_to_tt",
+          "calls": 240,
+          "inclusive_seconds": 0.0073683,
+          "exclusive_seconds": 0.0073683,
+          "avg_inclusive_ms": 0.030701250000000003,
+          "avg_exclusive_ms": 0.030701250000000003,
+          "share_of_wall_percent": 19.4343484361351
+        },
+        {
+          "name": "apply_light_time",
+          "calls": 240,
+          "inclusive_seconds": 0.0041996,
+          "exclusive_seconds": 0.0011487,
+          "avg_inclusive_ms": 0.017498333333333334,
+          "avg_exclusive_ms": 0.00478625,
+          "share_of_wall_percent": 11.076705575559215
+        },
+        {
+          "name": "_barycentric",
+          "calls": 1252,
+          "inclusive_seconds": 0.0040871,
+          "exclusive_seconds": 0.0013669,
+          "avg_inclusive_ms": 0.003264456869009584,
+          "avg_exclusive_ms": 0.0010917731629392971,
+          "share_of_wall_percent": 10.779979845191937
+        },
+        {
+          "name": "_deflectors_for_body",
+          "calls": 192,
+          "inclusive_seconds": 0.0039522,
+          "exclusive_seconds": 0.000435,
+          "avg_inclusive_ms": 0.020584375000000002,
+          "avg_exclusive_ms": 0.002265625,
+          "share_of_wall_percent": 10.424172724955978
+        },
+        {
+          "name": "SpkReader.position",
+          "calls": 1848,
+          "inclusive_seconds": 0.0038846,
+          "exclusive_seconds": 0.002818,
+          "avg_inclusive_ms": 0.0021020562770562774,
+          "avg_exclusive_ms": 0.0015248917748917749,
+          "share_of_wall_percent": 10.245873530530842
+        },
+        {
+          "name": "_geocentric",
+          "calls": 528,
+          "inclusive_seconds": 0.0035172,
+          "exclusive_seconds": 0.0009021,
+          "avg_inclusive_ms": 0.006661363636363636,
+          "avg_exclusive_ms": 0.0017085227272727274,
+          "share_of_wall_percent": 9.276833234202511
+        },
+        {
+          "name": "_compose_rotation_matrix",
+          "calls": 240,
+          "inclusive_seconds": 0.0028398,
+          "exclusive_seconds": 0.0011119,
+          "avg_inclusive_ms": 0.0118325,
+          "avg_exclusive_ms": 0.004632916666666667,
+          "share_of_wall_percent": 7.490148703084354
+        },
+        {
+          "name": "SpkReader.position_and_velocity",
+          "calls": 792,
+          "inclusive_seconds": 0.0018762,
+          "exclusive_seconds": 0.0013478,
+          "avg_inclusive_ms": 0.0023689393939393937,
+          "avg_exclusive_ms": 0.0017017676767676767,
+          "share_of_wall_percent": 4.948593913911848
+        },
+        {
+          "name": "_earth_barycentric_state",
+          "calls": 480,
+          "inclusive_seconds": 0.0017383,
+          "exclusive_seconds": 0.000556,
+          "avg_inclusive_ms": 0.0036214583333333333,
+          "avg_exclusive_ms": 0.0011583333333333333,
+          "share_of_wall_percent": 4.584874107532761
+        },
+        {
+          "name": "precession_matrix_equatorial",
+          "calls": 240,
+          "inclusive_seconds": 0.0017279,
+          "exclusive_seconds": 0.0017279,
+          "avg_inclusive_ms": 0.007199583333333333,
+          "avg_exclusive_ms": 0.007199583333333333,
+          "share_of_wall_percent": 4.557443462236586
+        },
+        {
+          "name": "_geocentric_state",
+          "calls": 240,
+          "inclusive_seconds": 0.0016072,
+          "exclusive_seconds": 0.0004846,
+          "avg_inclusive_ms": 0.006696666666666667,
+          "avg_exclusive_ms": 0.002019166666666667,
+          "share_of_wall_percent": 4.239089723078095
+        },
+        {
+          "name": "_earth_barycentric",
+          "calls": 528,
+          "inclusive_seconds": 0.0011912,
+          "exclusive_seconds": 0.0004145,
+          "avg_inclusive_ms": 0.0022560606060606056,
+          "avg_exclusive_ms": 0.0007850378787878788,
+          "share_of_wall_percent": 3.141863911231101
+        },
+        {
+          "name": "NativeSpkKernelHandle.segment_position",
+          "calls": 1848,
+          "inclusive_seconds": 0.0010666,
+          "exclusive_seconds": 0.0010666,
+          "avg_inclusive_ms": 0.0005771645021645022,
+          "avg_exclusive_ms": 0.0005771645021645022,
+          "share_of_wall_percent": 2.8132236800865456
+        },
+        {
+          "name": "_barycentric_state",
+          "calls": 192,
+          "inclusive_seconds": 0.0008898,
+          "exclusive_seconds": 0.0003584,
+          "avg_inclusive_ms": 0.0046343750000000005,
+          "avg_exclusive_ms": 0.0018666666666666666,
+          "share_of_wall_percent": 2.3469027100515736
+        },
+        {
+          "name": "NativeSpkKernelHandle.segment_position_and_velocity",
+          "calls": 792,
+          "inclusive_seconds": 0.0005284,
+          "exclusive_seconds": 0.0005284,
+          "avg_inclusive_ms": 0.0006671717171717172,
+          "avg_exclusive_ms": 0.0006671717171717172,
+          "share_of_wall_percent": 1.3936877860094983
+        },
+        {
+          "name": "apply_deflection",
+          "calls": 192,
+          "inclusive_seconds": 0.0005189,
+          "exclusive_seconds": 0.0005189,
+          "avg_inclusive_ms": 0.002702604166666667,
+          "avg_exclusive_ms": 0.002702604166666667,
+          "share_of_wall_percent": 1.3686309465562616
+        },
+        {
+          "name": "icrf_to_ecliptic",
+          "calls": 240,
+          "inclusive_seconds": 0.0002944,
+          "exclusive_seconds": 0.0002944,
+          "avg_inclusive_ms": 0.0012266666666666667,
+          "avg_exclusive_ms": 0.0012266666666666667,
+          "share_of_wall_percent": 0.7764982668455644
+        },
+        {
+          "name": "apply_aberration",
+          "calls": 240,
+          "inclusive_seconds": 0.000207,
+          "exclusive_seconds": 0.000207,
+          "avg_inclusive_ms": 0.0008625,
+          "avg_exclusive_ms": 0.0008625,
+          "share_of_wall_percent": 0.5459753438757875
+        },
+        {
+          "name": "mean_obliquity",
+          "calls": 240,
+          "inclusive_seconds": 0.0001619,
+          "exclusive_seconds": 0.0001619,
+          "avg_inclusive_ms": 0.0006745833333333333,
+          "avg_exclusive_ms": 0.0006745833333333333,
+          "share_of_wall_percent": 0.42702129552410634
+        },
+        {
+          "name": "_apply_rotation_matrix",
+          "calls": 240,
+          "inclusive_seconds": 0.0001486,
+          "exclusive_seconds": 0.0001486,
+          "avg_inclusive_ms": 0.0006191666666666667,
+          "avg_exclusive_ms": 0.0006191666666666667,
+          "share_of_wall_percent": 0.391941720289575
+        },
+        {
+          "name": "_longitude_rate",
+          "calls": 240,
+          "inclusive_seconds": 0.0001365,
+          "exclusive_seconds": 0.0001365,
+          "avg_inclusive_ms": 0.00056875,
+          "avg_exclusive_ms": 0.00056875,
+          "share_of_wall_percent": 0.36002721951229466
+        },
+        {
+          "name": "apply_frame_bias",
+          "calls": 240,
+          "inclusive_seconds": 0.0001143,
+          "exclusive_seconds": 0.0001143,
+          "avg_inclusive_ms": 0.00047625,
+          "avg_exclusive_ms": 0.00047625,
+          "share_of_wall_percent": 0.30147334205315224
+        },
+        {
+          "name": "decimal_year",
+          "calls": 240,
+          "inclusive_seconds": 6.67e-05,
+          "exclusive_seconds": 6.67e-05,
+          "avg_inclusive_ms": 0.00027791666666666665,
+          "avg_exclusive_ms": 0.00027791666666666665,
+          "share_of_wall_percent": 0.1759253885821982
+        }
+      ],
+      "ordered_stages": [
+        {
+          "name": "planet_at",
+          "calls": 240,
+          "inclusive_seconds": 0.0377284,
+          "exclusive_seconds": 0.0013919,
+          "avg_inclusive_ms": 0.15720166666666666,
+          "avg_exclusive_ms": 0.005799583333333333,
+          "share_of_wall_percent": 99.5109959607887
+        },
+        {
+          "name": "_build_apparent_context",
+          "calls": 240,
+          "inclusive_seconds": 0.0158268,
+          "exclusive_seconds": 0.0009837,
+          "avg_inclusive_ms": 0.06594499999999999,
+          "avg_exclusive_ms": 0.00409875,
+          "share_of_wall_percent": 41.744167016682674
+        },
+        {
+          "name": "_planet_at_core",
+          "calls": 240,
+          "inclusive_seconds": 0.0130747,
+          "exclusive_seconds": 0.001896,
+          "avg_inclusive_ms": 0.05447791666666667,
+          "avg_exclusive_ms": 0.007899999999999999,
+          "share_of_wall_percent": 34.485332505182406
+        },
+        {
+          "name": "_barycentric",
+          "calls": 1252,
+          "inclusive_seconds": 0.0040871,
+          "exclusive_seconds": 0.0013669,
+          "avg_inclusive_ms": 0.003264456869009584,
+          "avg_exclusive_ms": 0.0010917731629392971,
+          "share_of_wall_percent": 10.779979845191937
+        },
+        {
+          "name": "_barycentric_state",
+          "calls": 192,
+          "inclusive_seconds": 0.0008898,
+          "exclusive_seconds": 0.0003584,
+          "avg_inclusive_ms": 0.0046343750000000005,
+          "avg_exclusive_ms": 0.0018666666666666666,
+          "share_of_wall_percent": 2.3469027100515736
+        },
+        {
+          "name": "_earth_barycentric",
+          "calls": 528,
+          "inclusive_seconds": 0.0011912,
+          "exclusive_seconds": 0.0004145,
+          "avg_inclusive_ms": 0.0022560606060606056,
+          "avg_exclusive_ms": 0.0007850378787878788,
+          "share_of_wall_percent": 3.141863911231101
+        },
+        {
+          "name": "_earth_barycentric_state",
+          "calls": 480,
+          "inclusive_seconds": 0.0017383,
+          "exclusive_seconds": 0.000556,
+          "avg_inclusive_ms": 0.0036214583333333333,
+          "avg_exclusive_ms": 0.0011583333333333333,
+          "share_of_wall_percent": 4.584874107532761
+        },
+        {
+          "name": "_geocentric",
+          "calls": 528,
+          "inclusive_seconds": 0.0035172,
+          "exclusive_seconds": 0.0009021,
+          "avg_inclusive_ms": 0.006661363636363636,
+          "avg_exclusive_ms": 0.0017085227272727274,
+          "share_of_wall_percent": 9.276833234202511
+        },
+        {
+          "name": "_geocentric_state",
+          "calls": 240,
+          "inclusive_seconds": 0.0016072,
+          "exclusive_seconds": 0.0004846,
+          "avg_inclusive_ms": 0.006696666666666667,
+          "avg_exclusive_ms": 0.002019166666666667,
+          "share_of_wall_percent": 4.239089723078095
+        },
+        {
+          "name": "_deflectors_for_body",
+          "calls": 192,
+          "inclusive_seconds": 0.0039522,
+          "exclusive_seconds": 0.000435,
+          "avg_inclusive_ms": 0.020584375000000002,
+          "avg_exclusive_ms": 0.002265625,
+          "share_of_wall_percent": 10.424172724955978
+        },
+        {
+          "name": "_compose_rotation_matrix",
+          "calls": 240,
+          "inclusive_seconds": 0.0028398,
+          "exclusive_seconds": 0.0011119,
+          "avg_inclusive_ms": 0.0118325,
+          "avg_exclusive_ms": 0.004632916666666667,
+          "share_of_wall_percent": 7.490148703084354
+        },
+        {
+          "name": "_apply_rotation_matrix",
+          "calls": 240,
+          "inclusive_seconds": 0.0001486,
+          "exclusive_seconds": 0.0001486,
+          "avg_inclusive_ms": 0.0006191666666666667,
+          "avg_exclusive_ms": 0.0006191666666666667,
+          "share_of_wall_percent": 0.391941720289575
+        },
+        {
+          "name": "_longitude_rate",
+          "calls": 240,
+          "inclusive_seconds": 0.0001365,
+          "exclusive_seconds": 0.0001365,
+          "avg_inclusive_ms": 0.00056875,
+          "avg_exclusive_ms": 0.00056875,
+          "share_of_wall_percent": 0.36002721951229466
+        },
+        {
+          "name": "_nutation",
+          "calls": 240,
+          "inclusive_seconds": 0.0101734,
+          "exclusive_seconds": 0.0101734,
+          "avg_inclusive_ms": 0.04238916666666667,
+          "avg_exclusive_ms": 0.04238916666666667,
+          "share_of_wall_percent": 26.832973736163947
+        },
+        {
+          "name": "mean_obliquity",
+          "calls": 240,
+          "inclusive_seconds": 0.0001619,
+          "exclusive_seconds": 0.0001619,
+          "avg_inclusive_ms": 0.0006745833333333333,
+          "avg_exclusive_ms": 0.0006745833333333333,
+          "share_of_wall_percent": 0.42702129552410634
+        },
+        {
+          "name": "ut_to_tt",
+          "calls": 240,
+          "inclusive_seconds": 0.0073683,
+          "exclusive_seconds": 0.0073683,
+          "avg_inclusive_ms": 0.030701250000000003,
+          "avg_exclusive_ms": 0.030701250000000003,
+          "share_of_wall_percent": 19.4343484361351
+        },
+        {
+          "name": "decimal_year",
+          "calls": 240,
+          "inclusive_seconds": 6.67e-05,
+          "exclusive_seconds": 6.67e-05,
+          "avg_inclusive_ms": 0.00027791666666666665,
+          "avg_exclusive_ms": 0.00027791666666666665,
+          "share_of_wall_percent": 0.1759253885821982
+        },
+        {
+          "name": "precession_matrix_equatorial",
+          "calls": 240,
+          "inclusive_seconds": 0.0017279,
+          "exclusive_seconds": 0.0017279,
+          "avg_inclusive_ms": 0.007199583333333333,
+          "avg_exclusive_ms": 0.007199583333333333,
+          "share_of_wall_percent": 4.557443462236586
+        },
+        {
+          "name": "apply_light_time",
+          "calls": 240,
+          "inclusive_seconds": 0.0041996,
+          "exclusive_seconds": 0.0011487,
+          "avg_inclusive_ms": 0.017498333333333334,
+          "avg_exclusive_ms": 0.00478625,
+          "share_of_wall_percent": 11.076705575559215
+        },
+        {
+          "name": "apply_aberration",
+          "calls": 240,
+          "inclusive_seconds": 0.000207,
+          "exclusive_seconds": 0.000207,
+          "avg_inclusive_ms": 0.0008625,
+          "avg_exclusive_ms": 0.0008625,
+          "share_of_wall_percent": 0.5459753438757875
+        },
+        {
+          "name": "apply_deflection",
+          "calls": 192,
+          "inclusive_seconds": 0.0005189,
+          "exclusive_seconds": 0.0005189,
+          "avg_inclusive_ms": 0.002702604166666667,
+          "avg_exclusive_ms": 0.002702604166666667,
+          "share_of_wall_percent": 1.3686309465562616
+        },
+        {
+          "name": "apply_frame_bias",
+          "calls": 240,
+          "inclusive_seconds": 0.0001143,
+          "exclusive_seconds": 0.0001143,
+          "avg_inclusive_ms": 0.00047625,
+          "avg_exclusive_ms": 0.00047625,
+          "share_of_wall_percent": 0.30147334205315224
+        },
+        {
+          "name": "icrf_to_ecliptic",
+          "calls": 240,
+          "inclusive_seconds": 0.0002944,
+          "exclusive_seconds": 0.0002944,
+          "avg_inclusive_ms": 0.0012266666666666667,
+          "avg_exclusive_ms": 0.0012266666666666667,
+          "share_of_wall_percent": 0.7764982668455644
+        },
+        {
+          "name": "SpkReader.position",
+          "calls": 1848,
+          "inclusive_seconds": 0.0038846,
+          "exclusive_seconds": 0.002818,
+          "avg_inclusive_ms": 0.0021020562770562774,
+          "avg_exclusive_ms": 0.0015248917748917749,
+          "share_of_wall_percent": 10.245873530530842
+        },
+        {
+          "name": "SpkReader.position_and_velocity",
+          "calls": 792,
+          "inclusive_seconds": 0.0018762,
+          "exclusive_seconds": 0.0013478,
+          "avg_inclusive_ms": 0.0023689393939393937,
+          "avg_exclusive_ms": 0.0017017676767676767,
+          "share_of_wall_percent": 4.948593913911848
+        },
+        {
+          "name": "NativeSpkKernelHandle.segment_position",
+          "calls": 1848,
+          "inclusive_seconds": 0.0010666,
+          "exclusive_seconds": 0.0010666,
+          "avg_inclusive_ms": 0.0005771645021645022,
+          "avg_exclusive_ms": 0.0005771645021645022,
+          "share_of_wall_percent": 2.8132236800865456
+        },
+        {
+          "name": "NativeSpkKernelHandle.segment_position_and_velocity",
+          "calls": 792,
+          "inclusive_seconds": 0.0005284,
+          "exclusive_seconds": 0.0005284,
+          "avg_inclusive_ms": 0.0006671717171717172,
+          "avg_exclusive_ms": 0.0006671717171717172,
+          "share_of_wall_percent": 1.3936877860094983
+        }
+      ],
+      "name": "planet_at_default_workload_warm_reader",
+      "reader_mode": "warm"
+    },
+    {
+      "wall_seconds": 0.00753249999252148,
+      "ranked_stages": [
+        {
+          "name": "all_planets_at",
+          "calls": 24,
+          "inclusive_seconds": 0.0074996,
+          "exclusive_seconds": 0.0001152,
+          "avg_inclusive_ms": 0.31248333333333334,
+          "avg_exclusive_ms": 0.0048,
+          "share_of_wall_percent": 99.56322611942724
+        },
+        {
+          "name": "_native_all_planets_admitted",
+          "calls": 24,
+          "inclusive_seconds": 0.0065851,
+          "exclusive_seconds": 0.0020898,
+          "avg_inclusive_ms": 0.2743791666666667,
+          "avg_exclusive_ms": 0.08707500000000001,
+          "share_of_wall_percent": 87.42250257600942
+        },
+        {
+          "name": "_build_apparent_context",
+          "calls": 24,
+          "inclusive_seconds": 0.0017441,
+          "exclusive_seconds": 0.0001052,
+          "avg_inclusive_ms": 0.07267083333333334,
+          "avg_exclusive_ms": 0.004383333333333334,
+          "share_of_wall_percent": 23.1543312543193
+        },
+        {
+          "name": "_nutation",
+          "calls": 24,
+          "inclusive_seconds": 0.0012933,
+          "exclusive_seconds": 0.0012933,
+          "avg_inclusive_ms": 0.053887500000000005,
+          "avg_exclusive_ms": 0.053887500000000005,
+          "share_of_wall_percent": 17.169598423949974
+        },
+        {
+          "name": "ut_to_tt",
+          "calls": 24,
+          "inclusive_seconds": 0.0007917,
+          "exclusive_seconds": 0.0007917,
+          "avg_inclusive_ms": 0.032987499999999996,
+          "avg_exclusive_ms": 0.032987499999999996,
+          "share_of_wall_percent": 10.5104547067511
+        },
+        {
+          "name": "_npe_batch_barycentric_positions",
+          "calls": 72,
+          "inclusive_seconds": 0.0005765,
+          "exclusive_seconds": 0.0004091,
+          "avg_inclusive_ms": 0.008006944444444445,
+          "avg_exclusive_ms": 0.005681944444444444,
+          "share_of_wall_percent": 7.6535015011267
+        },
+        {
+          "name": "apply_deflection",
+          "calls": 192,
+          "inclusive_seconds": 0.0004276,
+          "exclusive_seconds": 0.0004276,
+          "avg_inclusive_ms": 0.002227083333333333,
+          "avg_exclusive_ms": 0.002227083333333333,
+          "share_of_wall_percent": 5.6767341576440185
+        },
+        {
+          "name": "_compose_rotation_matrix",
+          "calls": 24,
+          "inclusive_seconds": 0.0003165,
+          "exclusive_seconds": 0.0001192,
+          "avg_inclusive_ms": 0.0131875,
+          "avg_exclusive_ms": 0.004966666666666667,
+          "share_of_wall_percent": 4.201792237825846
+        },
+        {
+          "name": "_npe_body_route_segment_specs",
+          "calls": 24,
+          "inclusive_seconds": 0.0002422,
+          "exclusive_seconds": 0.0002422,
+          "avg_inclusive_ms": 0.010091666666666667,
+          "avg_exclusive_ms": 0.010091666666666667,
+          "share_of_wall_percent": 3.2153999368133332
+        },
+        {
+          "name": "_npe_public_route_segment_specs",
+          "calls": 24,
+          "inclusive_seconds": 0.0002395,
+          "exclusive_seconds": 0.0002395,
+          "avg_inclusive_ms": 0.009979166666666666,
+          "avg_exclusive_ms": 0.009979166666666666,
+          "share_of_wall_percent": 3.1795552636944397
+        },
+        {
+          "name": "_prefill_npe_public_vector_cache",
+          "calls": 24,
+          "inclusive_seconds": 0.0002367,
+          "exclusive_seconds": 0.0002367,
+          "avg_inclusive_ms": 0.0098625,
+          "avg_exclusive_ms": 0.0098625,
+          "share_of_wall_percent": 3.1423830100896617
+        },
+        {
+          "name": "icrf_to_ecliptic",
+          "calls": 240,
+          "inclusive_seconds": 0.0002153,
+          "exclusive_seconds": 0.0002153,
+          "avg_inclusive_ms": 0.0008970833333333333,
+          "avg_exclusive_ms": 0.0008970833333333333,
+          "share_of_wall_percent": 2.8582807861102837
+        },
+        {
+          "name": "precession_matrix_equatorial",
+          "calls": 24,
+          "inclusive_seconds": 0.0001973,
+          "exclusive_seconds": 0.0001973,
+          "avg_inclusive_ms": 0.008220833333333333,
+          "avg_exclusive_ms": 0.008220833333333333,
+          "share_of_wall_percent": 2.6193162986509937
+        },
+        {
+          "name": "apply_aberration",
+          "calls": 240,
+          "inclusive_seconds": 0.0001843,
+          "exclusive_seconds": 0.0001843,
+          "avg_inclusive_ms": 0.0007679166666666667,
+          "avg_exclusive_ms": 0.0007679166666666667,
+          "share_of_wall_percent": 2.446730835485951
+        },
+        {
+          "name": "NativeSpkKernelHandle.batch_segment_position_requests",
+          "calls": 72,
+          "inclusive_seconds": 0.0001674,
+          "exclusive_seconds": 0.0001674,
+          "avg_inclusive_ms": 0.002325,
+          "avg_exclusive_ms": 0.002325,
+          "share_of_wall_percent": 2.2223697333713957
+        },
+        {
+          "name": "_deflectors_for_body",
+          "calls": 192,
+          "inclusive_seconds": 0.000145,
+          "exclusive_seconds": 0.0001231,
+          "avg_inclusive_ms": 0.0007552083333333333,
+          "avg_exclusive_ms": 0.0006411458333333334,
+          "share_of_wall_percent": 1.9249917045331681
+        },
+        {
+          "name": "NativeSpkKernelHandle.batch_segment_position_and_velocity",
+          "calls": 24,
+          "inclusive_seconds": 0.0001346,
+          "exclusive_seconds": 0.0001346,
+          "avg_inclusive_ms": 0.005608333333333333,
+          "avg_exclusive_ms": 0.005608333333333333,
+          "share_of_wall_percent": 1.7869233340011341
+        },
+        {
+          "name": "_apply_rotation_matrix",
+          "calls": 240,
+          "inclusive_seconds": 0.0001268,
+          "exclusive_seconds": 0.0001268,
+          "avg_inclusive_ms": 0.0005283333333333333,
+          "avg_exclusive_ms": 0.0005283333333333333,
+          "share_of_wall_percent": 1.6833720561021084
+        },
+        {
+          "name": "_longitude_rate",
+          "calls": 240,
+          "inclusive_seconds": 0.0001192,
+          "exclusive_seconds": 0.0001192,
+          "avg_inclusive_ms": 0.0004966666666666666,
+          "avg_exclusive_ms": 0.0004966666666666666,
+          "share_of_wall_percent": 1.5824759391748526
+        },
+        {
+          "name": "apply_frame_bias",
+          "calls": 240,
+          "inclusive_seconds": 0.0001035,
+          "exclusive_seconds": 0.0001035,
+          "avg_inclusive_ms": 0.00043125,
+          "avg_exclusive_ms": 0.00043125,
+          "share_of_wall_percent": 1.3740458028909166
+        },
+        {
+          "name": "_geocentric",
+          "calls": 72,
+          "inclusive_seconds": 2.19e-05,
+          "exclusive_seconds": 2.19e-05,
+          "avg_inclusive_ms": 0.00030416666666666667,
+          "avg_exclusive_ms": 0.00030416666666666667,
+          "share_of_wall_percent": 0.29074012640880265
+        },
+        {
+          "name": "mean_obliquity",
+          "calls": 24,
+          "inclusive_seconds": 1.91e-05,
+          "exclusive_seconds": 1.91e-05,
+          "avg_inclusive_ms": 0.0007958333333333333,
+          "avg_exclusive_ms": 0.0007958333333333333,
+          "share_of_wall_percent": 0.2535678728040242
+        },
+        {
+          "name": "_earth_barycentric_state",
+          "calls": 24,
+          "inclusive_seconds": 1e-05,
+          "exclusive_seconds": 1e-05,
+          "avg_inclusive_ms": 0.0004166666666666667,
+          "avg_exclusive_ms": 0.0004166666666666667,
+          "share_of_wall_percent": 0.13275804858849438
+        },
+        {
+          "name": "decimal_year",
+          "calls": 24,
+          "inclusive_seconds": 7.6e-06,
+          "exclusive_seconds": 7.6e-06,
+          "avg_inclusive_ms": 0.00031666666666666665,
+          "avg_exclusive_ms": 0.00031666666666666665,
+          "share_of_wall_percent": 0.10089611692725572
+        }
+      ],
+      "ordered_stages": [
+        {
+          "name": "all_planets_at",
+          "calls": 24,
+          "inclusive_seconds": 0.0074996,
+          "exclusive_seconds": 0.0001152,
+          "avg_inclusive_ms": 0.31248333333333334,
+          "avg_exclusive_ms": 0.0048,
+          "share_of_wall_percent": 99.56322611942724
+        },
+        {
+          "name": "_native_all_planets_admitted",
+          "calls": 24,
+          "inclusive_seconds": 0.0065851,
+          "exclusive_seconds": 0.0020898,
+          "avg_inclusive_ms": 0.2743791666666667,
+          "avg_exclusive_ms": 0.08707500000000001,
+          "share_of_wall_percent": 87.42250257600942
+        },
+        {
+          "name": "_build_apparent_context",
+          "calls": 24,
+          "inclusive_seconds": 0.0017441,
+          "exclusive_seconds": 0.0001052,
+          "avg_inclusive_ms": 0.07267083333333334,
+          "avg_exclusive_ms": 0.004383333333333334,
+          "share_of_wall_percent": 23.1543312543193
+        },
+        {
+          "name": "_npe_public_route_segment_specs",
+          "calls": 24,
+          "inclusive_seconds": 0.0002395,
+          "exclusive_seconds": 0.0002395,
+          "avg_inclusive_ms": 0.009979166666666666,
+          "avg_exclusive_ms": 0.009979166666666666,
+          "share_of_wall_percent": 3.1795552636944397
+        },
+        {
+          "name": "_npe_body_route_segment_specs",
+          "calls": 24,
+          "inclusive_seconds": 0.0002422,
+          "exclusive_seconds": 0.0002422,
+          "avg_inclusive_ms": 0.010091666666666667,
+          "avg_exclusive_ms": 0.010091666666666667,
+          "share_of_wall_percent": 3.2153999368133332
+        },
+        {
+          "name": "_prefill_npe_public_vector_cache",
+          "calls": 24,
+          "inclusive_seconds": 0.0002367,
+          "exclusive_seconds": 0.0002367,
+          "avg_inclusive_ms": 0.0098625,
+          "avg_exclusive_ms": 0.0098625,
+          "share_of_wall_percent": 3.1423830100896617
+        },
+        {
+          "name": "_npe_batch_barycentric_positions",
+          "calls": 72,
+          "inclusive_seconds": 0.0005765,
+          "exclusive_seconds": 0.0004091,
+          "avg_inclusive_ms": 0.008006944444444445,
+          "avg_exclusive_ms": 0.005681944444444444,
+          "share_of_wall_percent": 7.6535015011267
+        },
+        {
+          "name": "_earth_barycentric_state",
+          "calls": 24,
+          "inclusive_seconds": 1e-05,
+          "exclusive_seconds": 1e-05,
+          "avg_inclusive_ms": 0.0004166666666666667,
+          "avg_exclusive_ms": 0.0004166666666666667,
+          "share_of_wall_percent": 0.13275804858849438
+        },
+        {
+          "name": "_geocentric",
+          "calls": 72,
+          "inclusive_seconds": 2.19e-05,
+          "exclusive_seconds": 2.19e-05,
+          "avg_inclusive_ms": 0.00030416666666666667,
+          "avg_exclusive_ms": 0.00030416666666666667,
+          "share_of_wall_percent": 0.29074012640880265
+        },
+        {
+          "name": "_deflectors_for_body",
+          "calls": 192,
+          "inclusive_seconds": 0.000145,
+          "exclusive_seconds": 0.0001231,
+          "avg_inclusive_ms": 0.0007552083333333333,
+          "avg_exclusive_ms": 0.0006411458333333334,
+          "share_of_wall_percent": 1.9249917045331681
+        },
+        {
+          "name": "_compose_rotation_matrix",
+          "calls": 24,
+          "inclusive_seconds": 0.0003165,
+          "exclusive_seconds": 0.0001192,
+          "avg_inclusive_ms": 0.0131875,
+          "avg_exclusive_ms": 0.004966666666666667,
+          "share_of_wall_percent": 4.201792237825846
+        },
+        {
+          "name": "_apply_rotation_matrix",
+          "calls": 240,
+          "inclusive_seconds": 0.0001268,
+          "exclusive_seconds": 0.0001268,
+          "avg_inclusive_ms": 0.0005283333333333333,
+          "avg_exclusive_ms": 0.0005283333333333333,
+          "share_of_wall_percent": 1.6833720561021084
+        },
+        {
+          "name": "_longitude_rate",
+          "calls": 240,
+          "inclusive_seconds": 0.0001192,
+          "exclusive_seconds": 0.0001192,
+          "avg_inclusive_ms": 0.0004966666666666666,
+          "avg_exclusive_ms": 0.0004966666666666666,
+          "share_of_wall_percent": 1.5824759391748526
+        },
+        {
+          "name": "_nutation",
+          "calls": 24,
+          "inclusive_seconds": 0.0012933,
+          "exclusive_seconds": 0.0012933,
+          "avg_inclusive_ms": 0.053887500000000005,
+          "avg_exclusive_ms": 0.053887500000000005,
+          "share_of_wall_percent": 17.169598423949974
+        },
+        {
+          "name": "mean_obliquity",
+          "calls": 24,
+          "inclusive_seconds": 1.91e-05,
+          "exclusive_seconds": 1.91e-05,
+          "avg_inclusive_ms": 0.0007958333333333333,
+          "avg_exclusive_ms": 0.0007958333333333333,
+          "share_of_wall_percent": 0.2535678728040242
+        },
+        {
+          "name": "ut_to_tt",
+          "calls": 24,
+          "inclusive_seconds": 0.0007917,
+          "exclusive_seconds": 0.0007917,
+          "avg_inclusive_ms": 0.032987499999999996,
+          "avg_exclusive_ms": 0.032987499999999996,
+          "share_of_wall_percent": 10.5104547067511
+        },
+        {
+          "name": "decimal_year",
+          "calls": 24,
+          "inclusive_seconds": 7.6e-06,
+          "exclusive_seconds": 7.6e-06,
+          "avg_inclusive_ms": 0.00031666666666666665,
+          "avg_exclusive_ms": 0.00031666666666666665,
+          "share_of_wall_percent": 0.10089611692725572
+        },
+        {
+          "name": "precession_matrix_equatorial",
+          "calls": 24,
+          "inclusive_seconds": 0.0001973,
+          "exclusive_seconds": 0.0001973,
+          "avg_inclusive_ms": 0.008220833333333333,
+          "avg_exclusive_ms": 0.008220833333333333,
+          "share_of_wall_percent": 2.6193162986509937
+        },
+        {
+          "name": "apply_aberration",
+          "calls": 240,
+          "inclusive_seconds": 0.0001843,
+          "exclusive_seconds": 0.0001843,
+          "avg_inclusive_ms": 0.0007679166666666667,
+          "avg_exclusive_ms": 0.0007679166666666667,
+          "share_of_wall_percent": 2.446730835485951
+        },
+        {
+          "name": "apply_deflection",
+          "calls": 192,
+          "inclusive_seconds": 0.0004276,
+          "exclusive_seconds": 0.0004276,
+          "avg_inclusive_ms": 0.002227083333333333,
+          "avg_exclusive_ms": 0.002227083333333333,
+          "share_of_wall_percent": 5.6767341576440185
+        },
+        {
+          "name": "apply_frame_bias",
+          "calls": 240,
+          "inclusive_seconds": 0.0001035,
+          "exclusive_seconds": 0.0001035,
+          "avg_inclusive_ms": 0.00043125,
+          "avg_exclusive_ms": 0.00043125,
+          "share_of_wall_percent": 1.3740458028909166
+        },
+        {
+          "name": "icrf_to_ecliptic",
+          "calls": 240,
+          "inclusive_seconds": 0.0002153,
+          "exclusive_seconds": 0.0002153,
+          "avg_inclusive_ms": 0.0008970833333333333,
+          "avg_exclusive_ms": 0.0008970833333333333,
+          "share_of_wall_percent": 2.8582807861102837
+        },
+        {
+          "name": "NativeSpkKernelHandle.batch_segment_position_and_velocity",
+          "calls": 24,
+          "inclusive_seconds": 0.0001346,
+          "exclusive_seconds": 0.0001346,
+          "avg_inclusive_ms": 0.005608333333333333,
+          "avg_exclusive_ms": 0.005608333333333333,
+          "share_of_wall_percent": 1.7869233340011341
+        },
+        {
+          "name": "NativeSpkKernelHandle.batch_segment_position_requests",
+          "calls": 72,
+          "inclusive_seconds": 0.0001674,
+          "exclusive_seconds": 0.0001674,
+          "avg_inclusive_ms": 0.002325,
+          "avg_exclusive_ms": 0.002325,
+          "share_of_wall_percent": 2.2223697333713957
+        }
+      ],
+      "name": "all_planets_at_default_workload_warm_reader",
+      "reader_mode": "warm"
+    },
+    {
+      "wall_seconds": 2.7419699000020046,
+      "ranked_stages": [
+        {
+          "name": "planet_at",
+          "calls": 240,
+          "inclusive_seconds": 2.7417301,
+          "exclusive_seconds": 0.0017024,
+          "avg_inclusive_ms": 11.423875416666666,
+          "avg_exclusive_ms": 0.007093333333333333,
+          "share_of_wall_percent": 99.99125446264
+        },
+        {
+          "name": "_planet_at_core",
+          "calls": 240,
+          "inclusive_seconds": 1.7983356,
+          "exclusive_seconds": 0.0022758,
+          "avg_inclusive_ms": 7.493065,
+          "avg_exclusive_ms": 0.009482500000000001,
+          "share_of_wall_percent": 65.58553396223223
+        },
+        {
+          "name": "_barycentric",
+          "calls": 1252,
+          "inclusive_seconds": 1.7877609,
+          "exclusive_seconds": 0.0016512,
+          "avg_inclusive_ms": 1.4279240415335464,
+          "avg_exclusive_ms": 0.001318849840255591,
+          "share_of_wall_percent": 65.19987327354298
+        },
+        {
+          "name": "SpkReader.position",
+          "calls": 1848,
+          "inclusive_seconds": 1.7873764,
+          "exclusive_seconds": 0.003682,
+          "avg_inclusive_ms": 0.9671950216450217,
+          "avg_exclusive_ms": 0.0019924242424242426,
+          "share_of_wall_percent": 65.18585050837696
+        },
+        {
+          "name": "NativeSpkKernelHandle.segment_position",
+          "calls": 1848,
+          "inclusive_seconds": 1.7836944,
+          "exclusive_seconds": 1.7836944,
+          "avg_inclusive_ms": 0.9652025974025973,
+          "avg_exclusive_ms": 0.9652025974025973,
+          "share_of_wall_percent": 65.05156748798359
+        },
+        {
+          "name": "apply_light_time",
+          "calls": 240,
+          "inclusive_seconds": 1.669769,
+          "exclusive_seconds": 0.0014514,
+          "avg_inclusive_ms": 6.957370833333333,
+          "avg_exclusive_ms": 0.0060475,
+          "share_of_wall_percent": 60.89669328604881
+        },
+        {
+          "name": "_build_apparent_context",
+          "calls": 240,
+          "inclusive_seconds": 0.9334456,
+          "exclusive_seconds": 0.0010855,
+          "avg_inclusive_ms": 3.8893566666666666,
+          "avg_exclusive_ms": 0.004522916666666667,
+          "share_of_wall_percent": 34.04288281936711
+        },
+        {
+          "name": "SpkReader.position_and_velocity",
+          "calls": 792,
+          "inclusive_seconds": 0.9180902,
+          "exclusive_seconds": 0.0015888,
+          "avg_inclusive_ms": 1.159204797979798,
+          "avg_exclusive_ms": 0.0020060606060606063,
+          "share_of_wall_percent": 33.48286937793624
+        },
+        {
+          "name": "_earth_barycentric_state",
+          "calls": 480,
+          "inclusive_seconds": 0.9178816,
+          "exclusive_seconds": 0.0006162,
+          "avg_inclusive_ms": 1.9122533333333331,
+          "avg_exclusive_ms": 0.00128375,
+          "share_of_wall_percent": 33.47526170872003
+        },
+        {
+          "name": "NativeSpkKernelHandle.segment_position_and_velocity",
+          "calls": 792,
+          "inclusive_seconds": 0.9165014,
+          "exclusive_seconds": 0.9165014,
+          "avg_inclusive_ms": 1.1571987373737374,
+          "avg_exclusive_ms": 1.1571987373737374,
+          "share_of_wall_percent": 33.424925634644275
+        },
+        {
+          "name": "_deflectors_for_body",
+          "calls": 192,
+          "inclusive_seconds": 0.1226614,
+          "exclusive_seconds": 0.000498,
+          "avg_inclusive_ms": 0.6388614583333333,
+          "avg_exclusive_ms": 0.0025937499999999997,
+          "share_of_wall_percent": 4.473477261727429
+        },
+        {
+          "name": "_geocentric",
+          "calls": 528,
+          "inclusive_seconds": 0.1221634,
+          "exclusive_seconds": 0.0009921,
+          "avg_inclusive_ms": 0.2313700757575758,
+          "avg_exclusive_ms": 0.0018789772727272728,
+          "share_of_wall_percent": 4.4553151367529855
+        },
+        {
+          "name": "_nutation",
+          "calls": 240,
+          "inclusive_seconds": 0.0111216,
+          "exclusive_seconds": 0.0111216,
+          "avg_inclusive_ms": 0.046340000000000006,
+          "avg_exclusive_ms": 0.046340000000000006,
+          "share_of_wall_percent": 0.40560620304372674
+        },
+        {
+          "name": "ut_to_tt",
+          "calls": 240,
+          "inclusive_seconds": 0.0081644,
+          "exclusive_seconds": 0.0081644,
+          "avg_inclusive_ms": 0.03401833333333334,
+          "avg_exclusive_ms": 0.03401833333333334,
+          "share_of_wall_percent": 0.29775673321556273
+        },
+        {
+          "name": "_compose_rotation_matrix",
+          "calls": 240,
+          "inclusive_seconds": 0.0032116,
+          "exclusive_seconds": 0.0012295,
+          "avg_inclusive_ms": 0.013381666666666665,
+          "avg_exclusive_ms": 0.005122916666666666,
+          "share_of_wall_percent": 0.1171274710199281
+        },
+        {
+          "name": "precession_matrix_equatorial",
+          "calls": 240,
+          "inclusive_seconds": 0.0019821,
+          "exclusive_seconds": 0.0019821,
+          "avg_inclusive_ms": 0.00825875,
+          "avg_exclusive_ms": 0.00825875,
+          "share_of_wall_percent": 0.07228744560611519
+        },
+        {
+          "name": "_geocentric_state",
+          "calls": 240,
+          "inclusive_seconds": 0.0018197,
+          "exclusive_seconds": 0.000521,
+          "avg_inclusive_ms": 0.007582083333333334,
+          "avg_exclusive_ms": 0.002170833333333333,
+          "share_of_wall_percent": 0.06636469641766198
+        },
+        {
+          "name": "_earth_barycentric",
+          "calls": 528,
+          "inclusive_seconds": 0.0013108,
+          "exclusive_seconds": 0.0004613,
+          "avg_inclusive_ms": 0.0024825757575757577,
+          "avg_exclusive_ms": 0.0008736742424242424,
+          "share_of_wall_percent": 0.047805047021086615
+        },
+        {
+          "name": "_barycentric_state",
+          "calls": 192,
+          "inclusive_seconds": 0.0010233,
+          "exclusive_seconds": 0.0003894,
+          "avg_inclusive_ms": 0.0053296875,
+          "avg_exclusive_ms": 0.002028125,
+          "share_of_wall_percent": 0.037319884510739955
+        },
+        {
+          "name": "apply_deflection",
+          "calls": 192,
+          "inclusive_seconds": 0.0006062,
+          "exclusive_seconds": 0.0006062,
+          "avg_inclusive_ms": 0.0031572916666666663,
+          "avg_exclusive_ms": 0.0031572916666666663,
+          "share_of_wall_percent": 0.022108193091381376
+        },
+        {
+          "name": "icrf_to_ecliptic",
+          "calls": 240,
+          "inclusive_seconds": 0.0004131,
+          "exclusive_seconds": 0.0004131,
+          "avg_inclusive_ms": 0.0017212500000000001,
+          "avg_exclusive_ms": 0.0017212500000000001,
+          "share_of_wall_percent": 0.015065810897475497
+        },
+        {
+          "name": "apply_aberration",
+          "calls": 240,
+          "inclusive_seconds": 0.0003079,
+          "exclusive_seconds": 0.0003079,
+          "avg_inclusive_ms": 0.0012829166666666668,
+          "avg_exclusive_ms": 0.0012829166666666668,
+          "share_of_wall_percent": 0.011229153171950388
+        },
+        {
+          "name": "mean_obliquity",
+          "calls": 240,
+          "inclusive_seconds": 0.0002298,
+          "exclusive_seconds": 0.0002298,
+          "avg_inclusive_ms": 0.0009575,
+          "avg_exclusive_ms": 0.0009575,
+          "share_of_wall_percent": 0.008380835982183175
+        },
+        {
+          "name": "_apply_rotation_matrix",
+          "calls": 240,
+          "inclusive_seconds": 0.0001738,
+          "exclusive_seconds": 0.0001738,
+          "avg_inclusive_ms": 0.0007241666666666667,
+          "avg_exclusive_ms": 0.0007241666666666667,
+          "share_of_wall_percent": 0.006338508675819998
+        },
+        {
+          "name": "_longitude_rate",
+          "calls": 240,
+          "inclusive_seconds": 0.0001653,
+          "exclusive_seconds": 0.0001653,
+          "avg_inclusive_ms": 0.00068875,
+          "avg_exclusive_ms": 0.00068875,
+          "share_of_wall_percent": 0.006028512566818445
+        },
+        {
+          "name": "apply_frame_bias",
+          "calls": 240,
+          "inclusive_seconds": 0.0001434,
+          "exclusive_seconds": 0.0001434,
+          "avg_inclusive_ms": 0.0005975,
+          "avg_exclusive_ms": 0.0005975,
+          "share_of_wall_percent": 0.0052298167095085595
+        },
+        {
+          "name": "decimal_year",
+          "calls": 240,
+          "inclusive_seconds": 8.21e-05,
+          "exclusive_seconds": 8.21e-05,
+          "avg_inclusive_ms": 0.00034208333333333335,
+          "avg_exclusive_ms": 0.00034208333333333335,
+          "share_of_wall_percent": 0.0029941977116502987
+        }
+      ],
+      "ordered_stages": [
+        {
+          "name": "planet_at",
+          "calls": 240,
+          "inclusive_seconds": 2.7417301,
+          "exclusive_seconds": 0.0017024,
+          "avg_inclusive_ms": 11.423875416666666,
+          "avg_exclusive_ms": 0.007093333333333333,
+          "share_of_wall_percent": 99.99125446264
+        },
+        {
+          "name": "_build_apparent_context",
+          "calls": 240,
+          "inclusive_seconds": 0.9334456,
+          "exclusive_seconds": 0.0010855,
+          "avg_inclusive_ms": 3.8893566666666666,
+          "avg_exclusive_ms": 0.004522916666666667,
+          "share_of_wall_percent": 34.04288281936711
+        },
+        {
+          "name": "_planet_at_core",
+          "calls": 240,
+          "inclusive_seconds": 1.7983356,
+          "exclusive_seconds": 0.0022758,
+          "avg_inclusive_ms": 7.493065,
+          "avg_exclusive_ms": 0.009482500000000001,
+          "share_of_wall_percent": 65.58553396223223
+        },
+        {
+          "name": "_barycentric",
+          "calls": 1252,
+          "inclusive_seconds": 1.7877609,
+          "exclusive_seconds": 0.0016512,
+          "avg_inclusive_ms": 1.4279240415335464,
+          "avg_exclusive_ms": 0.001318849840255591,
+          "share_of_wall_percent": 65.19987327354298
+        },
+        {
+          "name": "_barycentric_state",
+          "calls": 192,
+          "inclusive_seconds": 0.0010233,
+          "exclusive_seconds": 0.0003894,
+          "avg_inclusive_ms": 0.0053296875,
+          "avg_exclusive_ms": 0.002028125,
+          "share_of_wall_percent": 0.037319884510739955
+        },
+        {
+          "name": "_earth_barycentric",
+          "calls": 528,
+          "inclusive_seconds": 0.0013108,
+          "exclusive_seconds": 0.0004613,
+          "avg_inclusive_ms": 0.0024825757575757577,
+          "avg_exclusive_ms": 0.0008736742424242424,
+          "share_of_wall_percent": 0.047805047021086615
+        },
+        {
+          "name": "_earth_barycentric_state",
+          "calls": 480,
+          "inclusive_seconds": 0.9178816,
+          "exclusive_seconds": 0.0006162,
+          "avg_inclusive_ms": 1.9122533333333331,
+          "avg_exclusive_ms": 0.00128375,
+          "share_of_wall_percent": 33.47526170872003
+        },
+        {
+          "name": "_geocentric",
+          "calls": 528,
+          "inclusive_seconds": 0.1221634,
+          "exclusive_seconds": 0.0009921,
+          "avg_inclusive_ms": 0.2313700757575758,
+          "avg_exclusive_ms": 0.0018789772727272728,
+          "share_of_wall_percent": 4.4553151367529855
+        },
+        {
+          "name": "_geocentric_state",
+          "calls": 240,
+          "inclusive_seconds": 0.0018197,
+          "exclusive_seconds": 0.000521,
+          "avg_inclusive_ms": 0.007582083333333334,
+          "avg_exclusive_ms": 0.002170833333333333,
+          "share_of_wall_percent": 0.06636469641766198
+        },
+        {
+          "name": "_deflectors_for_body",
+          "calls": 192,
+          "inclusive_seconds": 0.1226614,
+          "exclusive_seconds": 0.000498,
+          "avg_inclusive_ms": 0.6388614583333333,
+          "avg_exclusive_ms": 0.0025937499999999997,
+          "share_of_wall_percent": 4.473477261727429
+        },
+        {
+          "name": "_compose_rotation_matrix",
+          "calls": 240,
+          "inclusive_seconds": 0.0032116,
+          "exclusive_seconds": 0.0012295,
+          "avg_inclusive_ms": 0.013381666666666665,
+          "avg_exclusive_ms": 0.005122916666666666,
+          "share_of_wall_percent": 0.1171274710199281
+        },
+        {
+          "name": "_apply_rotation_matrix",
+          "calls": 240,
+          "inclusive_seconds": 0.0001738,
+          "exclusive_seconds": 0.0001738,
+          "avg_inclusive_ms": 0.0007241666666666667,
+          "avg_exclusive_ms": 0.0007241666666666667,
+          "share_of_wall_percent": 0.006338508675819998
+        },
+        {
+          "name": "_longitude_rate",
+          "calls": 240,
+          "inclusive_seconds": 0.0001653,
+          "exclusive_seconds": 0.0001653,
+          "avg_inclusive_ms": 0.00068875,
+          "avg_exclusive_ms": 0.00068875,
+          "share_of_wall_percent": 0.006028512566818445
+        },
+        {
+          "name": "_nutation",
+          "calls": 240,
+          "inclusive_seconds": 0.0111216,
+          "exclusive_seconds": 0.0111216,
+          "avg_inclusive_ms": 0.046340000000000006,
+          "avg_exclusive_ms": 0.046340000000000006,
+          "share_of_wall_percent": 0.40560620304372674
+        },
+        {
+          "name": "mean_obliquity",
+          "calls": 240,
+          "inclusive_seconds": 0.0002298,
+          "exclusive_seconds": 0.0002298,
+          "avg_inclusive_ms": 0.0009575,
+          "avg_exclusive_ms": 0.0009575,
+          "share_of_wall_percent": 0.008380835982183175
+        },
+        {
+          "name": "ut_to_tt",
+          "calls": 240,
+          "inclusive_seconds": 0.0081644,
+          "exclusive_seconds": 0.0081644,
+          "avg_inclusive_ms": 0.03401833333333334,
+          "avg_exclusive_ms": 0.03401833333333334,
+          "share_of_wall_percent": 0.29775673321556273
+        },
+        {
+          "name": "decimal_year",
+          "calls": 240,
+          "inclusive_seconds": 8.21e-05,
+          "exclusive_seconds": 8.21e-05,
+          "avg_inclusive_ms": 0.00034208333333333335,
+          "avg_exclusive_ms": 0.00034208333333333335,
+          "share_of_wall_percent": 0.0029941977116502987
+        },
+        {
+          "name": "precession_matrix_equatorial",
+          "calls": 240,
+          "inclusive_seconds": 0.0019821,
+          "exclusive_seconds": 0.0019821,
+          "avg_inclusive_ms": 0.00825875,
+          "avg_exclusive_ms": 0.00825875,
+          "share_of_wall_percent": 0.07228744560611519
+        },
+        {
+          "name": "apply_light_time",
+          "calls": 240,
+          "inclusive_seconds": 1.669769,
+          "exclusive_seconds": 0.0014514,
+          "avg_inclusive_ms": 6.957370833333333,
+          "avg_exclusive_ms": 0.0060475,
+          "share_of_wall_percent": 60.89669328604881
+        },
+        {
+          "name": "apply_aberration",
+          "calls": 240,
+          "inclusive_seconds": 0.0003079,
+          "exclusive_seconds": 0.0003079,
+          "avg_inclusive_ms": 0.0012829166666666668,
+          "avg_exclusive_ms": 0.0012829166666666668,
+          "share_of_wall_percent": 0.011229153171950388
+        },
+        {
+          "name": "apply_deflection",
+          "calls": 192,
+          "inclusive_seconds": 0.0006062,
+          "exclusive_seconds": 0.0006062,
+          "avg_inclusive_ms": 0.0031572916666666663,
+          "avg_exclusive_ms": 0.0031572916666666663,
+          "share_of_wall_percent": 0.022108193091381376
+        },
+        {
+          "name": "apply_frame_bias",
+          "calls": 240,
+          "inclusive_seconds": 0.0001434,
+          "exclusive_seconds": 0.0001434,
+          "avg_inclusive_ms": 0.0005975,
+          "avg_exclusive_ms": 0.0005975,
+          "share_of_wall_percent": 0.0052298167095085595
+        },
+        {
+          "name": "icrf_to_ecliptic",
+          "calls": 240,
+          "inclusive_seconds": 0.0004131,
+          "exclusive_seconds": 0.0004131,
+          "avg_inclusive_ms": 0.0017212500000000001,
+          "avg_exclusive_ms": 0.0017212500000000001,
+          "share_of_wall_percent": 0.015065810897475497
+        },
+        {
+          "name": "SpkReader.position",
+          "calls": 1848,
+          "inclusive_seconds": 1.7873764,
+          "exclusive_seconds": 0.003682,
+          "avg_inclusive_ms": 0.9671950216450217,
+          "avg_exclusive_ms": 0.0019924242424242426,
+          "share_of_wall_percent": 65.18585050837696
+        },
+        {
+          "name": "SpkReader.position_and_velocity",
+          "calls": 792,
+          "inclusive_seconds": 0.9180902,
+          "exclusive_seconds": 0.0015888,
+          "avg_inclusive_ms": 1.159204797979798,
+          "avg_exclusive_ms": 0.0020060606060606063,
+          "share_of_wall_percent": 33.48286937793624
+        },
+        {
+          "name": "NativeSpkKernelHandle.segment_position",
+          "calls": 1848,
+          "inclusive_seconds": 1.7836944,
+          "exclusive_seconds": 1.7836944,
+          "avg_inclusive_ms": 0.9652025974025973,
+          "avg_exclusive_ms": 0.9652025974025973,
+          "share_of_wall_percent": 65.05156748798359
+        },
+        {
+          "name": "NativeSpkKernelHandle.segment_position_and_velocity",
+          "calls": 792,
+          "inclusive_seconds": 0.9165014,
+          "exclusive_seconds": 0.9165014,
+          "avg_inclusive_ms": 1.1571987373737374,
+          "avg_exclusive_ms": 1.1571987373737374,
+          "share_of_wall_percent": 33.424925634644275
+        }
+      ],
+      "name": "planet_at_default_workload_cold_reader",
+      "reader_mode": "cold",
+      "reader_open_seconds": 0.0003721000102814287,
+      "total_wall_seconds_including_open": 2.742342000012286
+    },
+    {
+      "wall_seconds": 2.7493589999940014,
+      "ranked_stages": [
+        {
+          "name": "all_planets_at",
+          "calls": 24,
+          "inclusive_seconds": 2.7493225,
+          "exclusive_seconds": 0.0001319,
+          "avg_inclusive_ms": 114.55510416666665,
+          "avg_exclusive_ms": 0.005495833333333334,
+          "share_of_wall_percent": 99.99867241804357
+        },
+        {
+          "name": "_native_all_planets_admitted",
+          "calls": 24,
+          "inclusive_seconds": 2.7483746,
+          "exclusive_seconds": 0.0022013,
+          "avg_inclusive_ms": 114.51560833333333,
+          "avg_exclusive_ms": 0.09172083333333332,
+          "share_of_wall_percent": 99.96419529082948
+        },
+        {
+          "name": "NativeSpkKernelHandle.batch_segment_position_and_velocity",
+          "calls": 24,
+          "inclusive_seconds": 2.7415072,
+          "exclusive_seconds": 2.7415072,
+          "avg_inclusive_ms": 114.22946666666667,
+          "avg_exclusive_ms": 114.22946666666667,
+          "share_of_wall_percent": 99.71441343258489
+        },
+        {
+          "name": "_build_apparent_context",
+          "calls": 24,
+          "inclusive_seconds": 0.0018626,
+          "exclusive_seconds": 0.0001234,
+          "avg_inclusive_ms": 0.07760833333333333,
+          "avg_exclusive_ms": 0.005141666666666667,
+          "share_of_wall_percent": 0.06774670023100163
+        },
+        {
+          "name": "_nutation",
+          "calls": 24,
+          "inclusive_seconds": 0.0013155,
+          "exclusive_seconds": 0.0013155,
+          "avg_inclusive_ms": 0.05481250000000001,
+          "avg_exclusive_ms": 0.05481250000000001,
+          "share_of_wall_percent": 0.04784751645757685
+        },
+        {
+          "name": "ut_to_tt",
+          "calls": 24,
+          "inclusive_seconds": 0.0008068,
+          "exclusive_seconds": 0.0008068,
+          "avg_inclusive_ms": 0.03361666666666666,
+          "avg_exclusive_ms": 0.03361666666666666,
+          "share_of_wall_percent": 0.029345021876072217
+        },
+        {
+          "name": "_npe_batch_barycentric_positions",
+          "calls": 72,
+          "inclusive_seconds": 0.0006433,
+          "exclusive_seconds": 0.0004412,
+          "avg_inclusive_ms": 0.008934722222222222,
+          "avg_exclusive_ms": 0.006127777777777777,
+          "share_of_wall_percent": 0.023398181176099722
+        },
+        {
+          "name": "apply_deflection",
+          "calls": 192,
+          "inclusive_seconds": 0.0004292,
+          "exclusive_seconds": 0.0004292,
+          "avg_inclusive_ms": 0.002235416666666667,
+          "avg_exclusive_ms": 0.002235416666666667,
+          "share_of_wall_percent": 0.015610911488857458
+        },
+        {
+          "name": "_compose_rotation_matrix",
+          "calls": 24,
+          "inclusive_seconds": 0.0003765,
+          "exclusive_seconds": 0.000133,
+          "avg_inclusive_ms": 0.0156875,
+          "avg_exclusive_ms": 0.005541666666666667,
+          "share_of_wall_percent": 0.013694101061404547
+        },
+        {
+          "name": "_prefill_npe_public_vector_cache",
+          "calls": 24,
+          "inclusive_seconds": 0.0002947,
+          "exclusive_seconds": 0.0002947,
+          "avg_inclusive_ms": 0.012279166666666667,
+          "avg_exclusive_ms": 0.012279166666666667,
+          "share_of_wall_percent": 0.010718862105699655
+        },
+        {
+          "name": "_npe_public_route_segment_specs",
+          "calls": 24,
+          "inclusive_seconds": 0.0002694,
+          "exclusive_seconds": 0.0002694,
+          "avg_inclusive_ms": 0.011224999999999999,
+          "avg_exclusive_ms": 0.011224999999999999,
+          "share_of_wall_percent": 0.009798647612064768
+        },
+        {
+          "name": "_npe_body_route_segment_specs",
+          "calls": 24,
+          "inclusive_seconds": 0.0002512,
+          "exclusive_seconds": 0.0002512,
+          "avg_inclusive_ms": 0.010466666666666666,
+          "avg_exclusive_ms": 0.010466666666666666,
+          "share_of_wall_percent": 0.009136675130477615
+        },
+        {
+          "name": "precession_matrix_equatorial",
+          "calls": 24,
+          "inclusive_seconds": 0.0002435,
+          "exclusive_seconds": 0.0002435,
+          "avg_inclusive_ms": 0.010145833333333335,
+          "avg_exclusive_ms": 0.010145833333333335,
+          "share_of_wall_percent": 0.00885660984980613
+        },
+        {
+          "name": "icrf_to_ecliptic",
+          "calls": 240,
+          "inclusive_seconds": 0.0002286,
+          "exclusive_seconds": 0.0002286,
+          "avg_inclusive_ms": 0.0009525,
+          "avg_exclusive_ms": 0.0009525,
+          "share_of_wall_percent": 0.008314665345649614
+        },
+        {
+          "name": "NativeSpkKernelHandle.batch_segment_position_requests",
+          "calls": 72,
+          "inclusive_seconds": 0.0002021,
+          "exclusive_seconds": 0.0002021,
+          "avg_inclusive_ms": 0.0028069444444444444,
+          "avg_exclusive_ms": 0.0028069444444444444,
+          "share_of_wall_percent": 0.007350804314767222
+        },
+        {
+          "name": "apply_aberration",
+          "calls": 240,
+          "inclusive_seconds": 0.0001883,
+          "exclusive_seconds": 0.0001883,
+          "avg_inclusive_ms": 0.0007845833333333333,
+          "avg_exclusive_ms": 0.0007845833333333333,
+          "share_of_wall_percent": 0.006848869136420919
+        },
+        {
+          "name": "_deflectors_for_body",
+          "calls": 192,
+          "inclusive_seconds": 0.0001549,
+          "exclusive_seconds": 0.0001311,
+          "avg_inclusive_ms": 0.0008067708333333334,
+          "avg_exclusive_ms": 0.0006828124999999999,
+          "share_of_wall_percent": 0.005634040516365377
+        },
+        {
+          "name": "_apply_rotation_matrix",
+          "calls": 240,
+          "inclusive_seconds": 0.0001267,
+          "exclusive_seconds": 0.0001267,
+          "avg_inclusive_ms": 0.0005279166666666666,
+          "avg_exclusive_ms": 0.0005279166666666666,
+          "share_of_wall_percent": 0.00460834689104902
+        },
+        {
+          "name": "_longitude_rate",
+          "calls": 240,
+          "inclusive_seconds": 0.0001125,
+          "exclusive_seconds": 0.0001125,
+          "avg_inclusive_ms": 0.00046875000000000004,
+          "avg_exclusive_ms": 0.00046875000000000004,
+          "share_of_wall_percent": 0.00409186286695355
+        },
+        {
+          "name": "apply_frame_bias",
+          "calls": 240,
+          "inclusive_seconds": 0.0001047,
+          "exclusive_seconds": 0.0001047,
+          "avg_inclusive_ms": 0.00043625,
+          "avg_exclusive_ms": 0.00043625,
+          "share_of_wall_percent": 0.0038081603748447703
+        },
+        {
+          "name": "mean_obliquity",
+          "calls": 24,
+          "inclusive_seconds": 3.51e-05,
+          "exclusive_seconds": 3.51e-05,
+          "avg_inclusive_ms": 0.0014625,
+          "avg_exclusive_ms": 0.0014625,
+          "share_of_wall_percent": 0.0012766612144895077
+        },
+        {
+          "name": "_geocentric",
+          "calls": 72,
+          "inclusive_seconds": 2.38e-05,
+          "exclusive_seconds": 2.38e-05,
+          "avg_inclusive_ms": 0.0003305555555555555,
+          "avg_exclusive_ms": 0.0003305555555555555,
+          "share_of_wall_percent": 0.0008656563220755067
+        },
+        {
+          "name": "_earth_barycentric_state",
+          "calls": 24,
+          "inclusive_seconds": 1.21e-05,
+          "exclusive_seconds": 1.21e-05,
+          "avg_inclusive_ms": 0.0005041666666666667,
+          "avg_exclusive_ms": 0.0005041666666666667,
+          "share_of_wall_percent": 0.00044010258391233737
+        },
+        {
+          "name": "decimal_year",
+          "calls": 24,
+          "inclusive_seconds": 9.2e-06,
+          "exclusive_seconds": 9.2e-06,
+          "avg_inclusive_ms": 0.00038333333333333334,
+          "avg_exclusive_ms": 0.00038333333333333334,
+          "share_of_wall_percent": 0.00033462345223086813
+        }
+      ],
+      "ordered_stages": [
+        {
+          "name": "all_planets_at",
+          "calls": 24,
+          "inclusive_seconds": 2.7493225,
+          "exclusive_seconds": 0.0001319,
+          "avg_inclusive_ms": 114.55510416666665,
+          "avg_exclusive_ms": 0.005495833333333334,
+          "share_of_wall_percent": 99.99867241804357
+        },
+        {
+          "name": "_native_all_planets_admitted",
+          "calls": 24,
+          "inclusive_seconds": 2.7483746,
+          "exclusive_seconds": 0.0022013,
+          "avg_inclusive_ms": 114.51560833333333,
+          "avg_exclusive_ms": 0.09172083333333332,
+          "share_of_wall_percent": 99.96419529082948
+        },
+        {
+          "name": "_build_apparent_context",
+          "calls": 24,
+          "inclusive_seconds": 0.0018626,
+          "exclusive_seconds": 0.0001234,
+          "avg_inclusive_ms": 0.07760833333333333,
+          "avg_exclusive_ms": 0.005141666666666667,
+          "share_of_wall_percent": 0.06774670023100163
+        },
+        {
+          "name": "_npe_public_route_segment_specs",
+          "calls": 24,
+          "inclusive_seconds": 0.0002694,
+          "exclusive_seconds": 0.0002694,
+          "avg_inclusive_ms": 0.011224999999999999,
+          "avg_exclusive_ms": 0.011224999999999999,
+          "share_of_wall_percent": 0.009798647612064768
+        },
+        {
+          "name": "_npe_body_route_segment_specs",
+          "calls": 24,
+          "inclusive_seconds": 0.0002512,
+          "exclusive_seconds": 0.0002512,
+          "avg_inclusive_ms": 0.010466666666666666,
+          "avg_exclusive_ms": 0.010466666666666666,
+          "share_of_wall_percent": 0.009136675130477615
+        },
+        {
+          "name": "_prefill_npe_public_vector_cache",
+          "calls": 24,
+          "inclusive_seconds": 0.0002947,
+          "exclusive_seconds": 0.0002947,
+          "avg_inclusive_ms": 0.012279166666666667,
+          "avg_exclusive_ms": 0.012279166666666667,
+          "share_of_wall_percent": 0.010718862105699655
+        },
+        {
+          "name": "_npe_batch_barycentric_positions",
+          "calls": 72,
+          "inclusive_seconds": 0.0006433,
+          "exclusive_seconds": 0.0004412,
+          "avg_inclusive_ms": 0.008934722222222222,
+          "avg_exclusive_ms": 0.006127777777777777,
+          "share_of_wall_percent": 0.023398181176099722
+        },
+        {
+          "name": "_earth_barycentric_state",
+          "calls": 24,
+          "inclusive_seconds": 1.21e-05,
+          "exclusive_seconds": 1.21e-05,
+          "avg_inclusive_ms": 0.0005041666666666667,
+          "avg_exclusive_ms": 0.0005041666666666667,
+          "share_of_wall_percent": 0.00044010258391233737
+        },
+        {
+          "name": "_geocentric",
+          "calls": 72,
+          "inclusive_seconds": 2.38e-05,
+          "exclusive_seconds": 2.38e-05,
+          "avg_inclusive_ms": 0.0003305555555555555,
+          "avg_exclusive_ms": 0.0003305555555555555,
+          "share_of_wall_percent": 0.0008656563220755067
+        },
+        {
+          "name": "_deflectors_for_body",
+          "calls": 192,
+          "inclusive_seconds": 0.0001549,
+          "exclusive_seconds": 0.0001311,
+          "avg_inclusive_ms": 0.0008067708333333334,
+          "avg_exclusive_ms": 0.0006828124999999999,
+          "share_of_wall_percent": 0.005634040516365377
+        },
+        {
+          "name": "_compose_rotation_matrix",
+          "calls": 24,
+          "inclusive_seconds": 0.0003765,
+          "exclusive_seconds": 0.000133,
+          "avg_inclusive_ms": 0.0156875,
+          "avg_exclusive_ms": 0.005541666666666667,
+          "share_of_wall_percent": 0.013694101061404547
+        },
+        {
+          "name": "_apply_rotation_matrix",
+          "calls": 240,
+          "inclusive_seconds": 0.0001267,
+          "exclusive_seconds": 0.0001267,
+          "avg_inclusive_ms": 0.0005279166666666666,
+          "avg_exclusive_ms": 0.0005279166666666666,
+          "share_of_wall_percent": 0.00460834689104902
+        },
+        {
+          "name": "_longitude_rate",
+          "calls": 240,
+          "inclusive_seconds": 0.0001125,
+          "exclusive_seconds": 0.0001125,
+          "avg_inclusive_ms": 0.00046875000000000004,
+          "avg_exclusive_ms": 0.00046875000000000004,
+          "share_of_wall_percent": 0.00409186286695355
+        },
+        {
+          "name": "_nutation",
+          "calls": 24,
+          "inclusive_seconds": 0.0013155,
+          "exclusive_seconds": 0.0013155,
+          "avg_inclusive_ms": 0.05481250000000001,
+          "avg_exclusive_ms": 0.05481250000000001,
+          "share_of_wall_percent": 0.04784751645757685
+        },
+        {
+          "name": "mean_obliquity",
+          "calls": 24,
+          "inclusive_seconds": 3.51e-05,
+          "exclusive_seconds": 3.51e-05,
+          "avg_inclusive_ms": 0.0014625,
+          "avg_exclusive_ms": 0.0014625,
+          "share_of_wall_percent": 0.0012766612144895077
+        },
+        {
+          "name": "ut_to_tt",
+          "calls": 24,
+          "inclusive_seconds": 0.0008068,
+          "exclusive_seconds": 0.0008068,
+          "avg_inclusive_ms": 0.03361666666666666,
+          "avg_exclusive_ms": 0.03361666666666666,
+          "share_of_wall_percent": 0.029345021876072217
+        },
+        {
+          "name": "decimal_year",
+          "calls": 24,
+          "inclusive_seconds": 9.2e-06,
+          "exclusive_seconds": 9.2e-06,
+          "avg_inclusive_ms": 0.00038333333333333334,
+          "avg_exclusive_ms": 0.00038333333333333334,
+          "share_of_wall_percent": 0.00033462345223086813
+        },
+        {
+          "name": "precession_matrix_equatorial",
+          "calls": 24,
+          "inclusive_seconds": 0.0002435,
+          "exclusive_seconds": 0.0002435,
+          "avg_inclusive_ms": 0.010145833333333335,
+          "avg_exclusive_ms": 0.010145833333333335,
+          "share_of_wall_percent": 0.00885660984980613
+        },
+        {
+          "name": "apply_aberration",
+          "calls": 240,
+          "inclusive_seconds": 0.0001883,
+          "exclusive_seconds": 0.0001883,
+          "avg_inclusive_ms": 0.0007845833333333333,
+          "avg_exclusive_ms": 0.0007845833333333333,
+          "share_of_wall_percent": 0.006848869136420919
+        },
+        {
+          "name": "apply_deflection",
+          "calls": 192,
+          "inclusive_seconds": 0.0004292,
+          "exclusive_seconds": 0.0004292,
+          "avg_inclusive_ms": 0.002235416666666667,
+          "avg_exclusive_ms": 0.002235416666666667,
+          "share_of_wall_percent": 0.015610911488857458
+        },
+        {
+          "name": "apply_frame_bias",
+          "calls": 240,
+          "inclusive_seconds": 0.0001047,
+          "exclusive_seconds": 0.0001047,
+          "avg_inclusive_ms": 0.00043625,
+          "avg_exclusive_ms": 0.00043625,
+          "share_of_wall_percent": 0.0038081603748447703
+        },
+        {
+          "name": "icrf_to_ecliptic",
+          "calls": 240,
+          "inclusive_seconds": 0.0002286,
+          "exclusive_seconds": 0.0002286,
+          "avg_inclusive_ms": 0.0009525,
+          "avg_exclusive_ms": 0.0009525,
+          "share_of_wall_percent": 0.008314665345649614
+        },
+        {
+          "name": "NativeSpkKernelHandle.batch_segment_position_and_velocity",
+          "calls": 24,
+          "inclusive_seconds": 2.7415072,
+          "exclusive_seconds": 2.7415072,
+          "avg_inclusive_ms": 114.22946666666667,
+          "avg_exclusive_ms": 114.22946666666667,
+          "share_of_wall_percent": 99.71441343258489
+        },
+        {
+          "name": "NativeSpkKernelHandle.batch_segment_position_requests",
+          "calls": 72,
+          "inclusive_seconds": 0.0002021,
+          "exclusive_seconds": 0.0002021,
+          "avg_inclusive_ms": 0.0028069444444444444,
+          "avg_exclusive_ms": 0.0028069444444444444,
+          "share_of_wall_percent": 0.007350804314767222
+        }
+      ],
+      "name": "all_planets_at_default_workload_cold_reader",
+      "reader_mode": "cold",
+      "reader_open_seconds": 0.00034759999834932387,
+      "total_wall_seconds_including_open": 2.7497065999923507
+    }
+  ]
+}

@@ -88,6 +88,32 @@ inline void spk_chebyshev_record_inplace(
     }
 }
 
+inline void spk_chebyshev_record_inplace_reverse(
+    const double* coeffs,
+    size_t coefficient_count,
+    size_t component_count,
+    double s,
+    double* result,
+    size_t coeff_stride = 1,
+    size_t component_stride = 1
+) {
+    if (coefficient_count == 0) return;
+
+    const double s2 = 2.0 * s;
+    for (size_t j = 0; j < component_count; ++j) {
+        double w1 = 0.0;
+        double w2 = 0.0;
+        for (size_t i = 0; i < coefficient_count - 1; ++i) {
+            const size_t coeff_index = coefficient_count - 1 - i;
+            double c = coeffs[coeff_index * coeff_stride + j * component_stride];
+            double tmp = w1;
+            w1 = c + s2 * w1 - w2;
+            w2 = tmp;
+        }
+        result[j] = coeffs[j * component_stride] + s * w1 - w2;
+    }
+}
+
 #if defined(__AVX2__)
 #include <immintrin.h>
 #endif
@@ -135,6 +161,43 @@ inline void spk_chebyshev_record_avx2(
 #endif
     // Fallback to scalar
     spk_chebyshev_record_inplace(coeffs, coefficient_count, component_count, s, result, coeff_stride, component_stride);
+}
+
+inline void spk_chebyshev_record_avx2_reverse(
+    const double* coeffs,
+    size_t coefficient_count,
+    size_t component_count,
+    double s,
+    double* result,
+    size_t coeff_stride = 1,
+    size_t component_stride = 1
+) {
+#if defined(__AVX2__)
+    if (component_count == 3 && component_stride == 1) {
+        __m256d s2 = _mm256_set1_pd(2.0 * s);
+        __m256d vs = _mm256_set1_pd(s);
+        __m256d w1 = _mm256_setzero_pd();
+        __m256d w2 = _mm256_setzero_pd();
+
+        for (size_t i = 0; i < coefficient_count - 1; ++i) {
+            const size_t coeff_index = coefficient_count - 1 - i;
+            const double* c_ptr = coeffs + coeff_index * coeff_stride;
+            __m256d c = _mm256_setr_pd(c_ptr[0], c_ptr[1], c_ptr[2], 0.0);
+            __m256d tmp = w1;
+            w1 = _mm256_add_pd(c, _mm256_sub_pd(_mm256_mul_pd(s2, w1), w2));
+            w2 = tmp;
+        }
+
+        __m256d cn = _mm256_setr_pd(coeffs[0], coeffs[1], coeffs[2], 0.0);
+        __m256d res = _mm256_add_pd(cn, _mm256_sub_pd(_mm256_mul_pd(vs, w1), w2));
+
+        alignas(32) double out[4];
+        _mm256_store_pd(out, res);
+        result[0] = out[0]; result[1] = out[1]; result[2] = out[2];
+        return;
+    }
+#endif
+    spk_chebyshev_record_inplace_reverse(coeffs, coefficient_count, component_count, s, result, coeff_stride, component_stride);
 }
 
 /**
@@ -203,6 +266,76 @@ inline void spk_chebyshev_record_with_derivative_inplace(
             w2 = old_w1;
         }
         result[j] = coeffs[(coefficient_count - 1) * coeff_stride + j * component_stride] + s * w1 - w2;
+        derivative[j] = w1 + s * dw1 - dw2;
+    }
+}
+
+inline void spk_chebyshev_record_with_derivative_inplace_reverse(
+    const double* coeffs,
+    size_t coefficient_count,
+    size_t component_count,
+    double s,
+    double* result,
+    double* derivative,
+    size_t coeff_stride = 1,
+    size_t component_stride = 1
+) {
+    if (coefficient_count == 0) return;
+
+#if defined(__AVX2__)
+    if (component_count == 3 && component_stride == 1) {
+        __m256d vs = _mm256_set1_pd(s);
+        __m256d s2 = _mm256_set1_pd(2.0 * s);
+        __m256d v2 = _mm256_set1_pd(2.0);
+        __m256d w1 = _mm256_setzero_pd(), w2 = _mm256_setzero_pd();
+        __m256d dw1 = _mm256_setzero_pd(), dw2 = _mm256_setzero_pd();
+
+        for (size_t i = 0; i < coefficient_count - 1; ++i) {
+            const size_t coeff_index = coefficient_count - 1 - i;
+            const double* c_ptr = coeffs + coeff_index * coeff_stride;
+            __m256d c = _mm256_setr_pd(c_ptr[0], c_ptr[1], c_ptr[2], 0.0);
+
+            __m256d old_dw1 = dw1;
+            dw1 = _mm256_add_pd(_mm256_mul_pd(v2, w1), _mm256_sub_pd(_mm256_mul_pd(s2, dw1), dw2));
+            dw2 = old_dw1;
+
+            __m256d old_w1 = w1;
+            w1 = _mm256_add_pd(c, _mm256_sub_pd(_mm256_mul_pd(s2, w1), w2));
+            w2 = old_w1;
+        }
+
+        __m256d cn = _mm256_setr_pd(coeffs[0], coeffs[1], coeffs[2], 0.0);
+        __m256d res = _mm256_add_pd(cn, _mm256_sub_pd(_mm256_mul_pd(vs, w1), w2));
+        __m256d d_res = _mm256_add_pd(w1, _mm256_sub_pd(_mm256_mul_pd(vs, dw1), dw2));
+
+        alignas(32) double out_r[4], out_d[4];
+        _mm256_store_pd(out_r, res);
+        _mm256_store_pd(out_d, d_res);
+        for (int i = 0; i < 3; ++i) {
+            result[i] = out_r[i];
+            derivative[i] = out_d[i];
+        }
+        return;
+    }
+#endif
+
+    const double s2 = 2.0 * s;
+    for (size_t j = 0; j < component_count; ++j) {
+        double w1 = 0.0, w2 = 0.0;
+        double dw1 = 0.0, dw2 = 0.0;
+        for (size_t i = 0; i < coefficient_count - 1; ++i) {
+            const size_t coeff_index = coefficient_count - 1 - i;
+            double c = coeffs[coeff_index * coeff_stride + j * component_stride];
+
+            double old_dw1 = dw1;
+            dw1 = (2.0 * w1) + (s2 * dw1 - dw2);
+            dw2 = old_dw1;
+
+            double old_w1 = w1;
+            w1 = c + s2 * w1 - w2;
+            w2 = old_w1;
+        }
+        result[j] = coeffs[j * component_stride] + s * w1 - w2;
         derivative[j] = w1 + s * dw1 - dw2;
     }
 }

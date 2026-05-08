@@ -8,12 +8,12 @@
       "target": 10,
       "sample_count": 20000,
       "repeats": 7,
-      "python_best_seconds": 0.03632699999798206,
-      "native_best_seconds": 0.0363857000011194,
-      "python_median_seconds": 0.03710209999917424,
-      "native_median_seconds": 0.03684560000328929,
-      "speedup_best": 0.9983867287660938,
-      "speedup_median": 1.0069614823984967
+      "python_best_seconds": 0.021682899998268113,
+      "native_best_seconds": 0.02195159999973839,
+      "python_median_seconds": 0.023668699999689125,
+      "native_median_seconds": 0.022813700001279358,
+      "speedup_best": 0.987759434324902,
+      "speedup_median": 1.0374774805648281
     },
     {
       "name": "state_emb_barycenter",
@@ -21,22 +21,22 @@
       "target": 3,
       "sample_count": 20000,
       "repeats": 7,
-      "python_best_seconds": 0.040723699999944074,
-      "native_best_seconds": 0.040038800001639174,
-      "python_median_seconds": 0.04119100000025355,
-      "native_median_seconds": 0.040227400000730995,
-      "speedup_best": 1.0171059072269113,
-      "speedup_median": 1.0239538225066758
+      "python_best_seconds": 0.026738800006569363,
+      "native_best_seconds": 0.025235700006305706,
+      "python_median_seconds": 0.029671599993889686,
+      "native_median_seconds": 0.02753579999989597,
+      "speedup_best": 1.0595624452615966,
+      "speedup_median": 1.0775644794776902
     }
   ],
   "summary": {
     "sample_count": 20000,
     "repeats": 7,
-    "python_total_best_seconds": 0.07705069999792613,
-    "native_total_best_seconds": 0.07642450000275858,
-    "python_total_median_seconds": 0.0782930999994278,
-    "native_total_median_seconds": 0.07707300000402029,
-    "speedup_best": 1.0081937074517329,
-    "speedup_median": 1.0158304463994376
+    "python_total_best_seconds": 0.048421700004837476,
+    "native_total_best_seconds": 0.0471873000060441,
+    "python_total_median_seconds": 0.05334029999357881,
+    "native_total_median_seconds": 0.05034950000117533,
+    "speedup_best": 1.0261595810447994,
+    "speedup_median": 1.0594007883362033
   }
 }

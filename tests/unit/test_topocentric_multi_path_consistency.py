@@ -1,5 +1,6 @@
 import pytest
 
+import moira.corrections as corrections_module
 from moira.constants import Body
 from moira.coordinates import (
     ecliptic_to_equatorial,
@@ -42,6 +43,26 @@ _SEPARATION_STEP_MISMATCH_TOLERANCE_DEG = 1e-9
 
 def _signed_angle_delta(start_deg: float, end_deg: float) -> float:
     return ((end_deg - start_deg + 180.0) % 360.0) - 180.0
+
+
+def test_corrections_native_dispatch_and_scalar_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
+    class _DummyNative:
+        @staticmethod
+        def apply_aberration_velocity(xyz, velocity):
+            return (7.0, 8.0, 9.0)
+
+        @staticmethod
+        def apply_frame_bias(xyz):
+            return (4.0, 5.0, 6.0)
+
+    monkeypatch.setattr(corrections_module, "_HAS_NATIVE_CORRECTIONS", True)
+    monkeypatch.setattr(corrections_module, "_moira_native", _DummyNative())
+
+    assert corrections_module.apply_aberration((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) == (7.0, 8.0, 9.0)
+    assert corrections_module.apply_frame_bias((1.0, 2.0, 3.0)) == (4.0, 5.0, 6.0)
+
+    monkeypatch.setattr(corrections_module, "_HAS_NATIVE_CORRECTIONS", False)
+    assert corrections_module.apply_frame_bias((1.0, 2.0, 3.0)) != (4.0, 5.0, 6.0)
 
 
 def _tt_pinned_epoch(jd_tt: float) -> tuple[float, DeltaTPolicy, float, float]:

@@ -1,0 +1,116 @@
+{
+  "phase": "planetary_benchmark_comparison_map",
+  "source_artifacts": {
+    "swiss": "tests\\artifacts\\benchmarks\\swiss_planetary_reference_benchmark.json",
+    "planet_at": "tests\\artifacts\\benchmarks\\native_phase2_planet_at.json",
+    "all_planets_at": "tests\\artifacts\\benchmarks\\native_phase2_all_planets.json"
+  },
+  "workload_alignment": {
+    "body_count": 10,
+    "jd_count": 24,
+    "swiss_calls_per_run": 240,
+    "body_set": [
+      "Sun",
+      "Moon",
+      "Mercury",
+      "Venus",
+      "Mars",
+      "Jupiter",
+      "Saturn",
+      "Uranus",
+      "Neptune",
+      "Pluto"
+    ]
+  },
+  "swiss_reference": {
+    "engine": "Swiss Ephemeris",
+    "best_seconds": 0.0018973999976878986,
+    "median_seconds": 0.002150999993318692,
+    "flags": [
+      "FLG_SWIEPH",
+      "FLG_SPEED"
+    ]
+  },
+  "surfaces": [
+    {
+      "surface": "planet_at",
+      "mode": "default_cold_reader",
+      "calls_per_run": 240,
+      "bodies_per_call": 1,
+      "moira_python_best_seconds": 2.8757165999995777,
+      "moira_python_median_seconds": 2.943064699997194,
+      "moira_native_best_seconds": 2.8938111000024946,
+      "moira_native_median_seconds": 2.987787699996261,
+      "swiss_best_seconds": 0.0018973999976878986,
+      "swiss_median_seconds": 0.002150999993318692,
+      "moira_native_vs_swiss_best_ratio": 1525.1455167749477,
+      "moira_native_vs_swiss_median_ratio": 1389.0226449450251,
+      "moira_python_vs_swiss_best_ratio": 1515.6090458015283,
+      "moira_python_vs_swiss_median_ratio": 1368.2309201017047,
+      "moira_native_vs_python_best_ratio": 1.0062921707942012,
+      "moira_native_vs_python_median_ratio": 1.0151960641569007,
+      "moira_native_speedup_over_python_best": 0.9937471730608466,
+      "moira_native_speedup_over_python_median": 0.9850313996542918
+    },
+    {
+      "surface": "planet_at",
+      "mode": "default_warm_reader",
+      "calls_per_run": 240,
+      "bodies_per_call": 1,
+      "moira_python_best_seconds": 0.002114799994160421,
+      "moira_python_median_seconds": 0.0022656999935861677,
+      "moira_native_best_seconds": 0.0021386000007623807,
+      "moira_native_median_seconds": 0.0023308999952860177,
+      "swiss_best_seconds": 0.0018973999976878986,
+      "swiss_median_seconds": 0.002150999993318692,
+      "moira_native_vs_swiss_best_ratio": 1.1271213256922101,
+      "moira_native_vs_swiss_median_ratio": 1.0836355195379455,
+      "moira_python_vs_swiss_best_ratio": 1.1145778416451135,
+      "moira_python_vs_swiss_median_ratio": 1.053324035622385,
+      "moira_native_vs_python_best_ratio": 1.0112540224454691,
+      "moira_native_vs_python_median_ratio": 1.028776979248983,
+      "moira_native_speedup_over_python_best": 0.9888712210822617,
+      "moira_native_speedup_over_python_median": 0.9720279712421341
+    },
+    {
+      "surface": "all_planets_at",
+      "mode": "default_cold_reader",
+      "calls_per_run": 24,
+      "bodies_per_call": 10,
+      "moira_python_best_seconds": 3.732302999997046,
+      "moira_python_median_seconds": 3.931530300003942,
+      "moira_native_best_seconds": 3.893275199996424,
+      "moira_native_median_seconds": 3.949499399997876,
+      "swiss_best_seconds": 0.0018973999976878986,
+      "swiss_median_seconds": 0.002150999993318692,
+      "moira_native_vs_swiss_best_ratio": 2051.9000762836645,
+      "moira_native_vs_swiss_median_ratio": 1836.1224603745122,
+      "moira_python_vs_swiss_best_ratio": 1967.061771131597,
+      "moira_python_vs_swiss_median_ratio": 1827.7686249260007,
+      "moira_native_vs_python_best_ratio": 1.0431294565311298,
+      "moira_native_vs_python_median_ratio": 1.004570510366896,
+      "moira_native_speedup_over_python_best": 0.9586537833237357,
+      "moira_native_speedup_over_python_median": 0.9954502841565329
+    },
+    {
+      "surface": "all_planets_at",
+      "mode": "default_warm_reader",
+      "calls_per_run": 24,
+      "bodies_per_call": 10,
+      "moira_python_best_seconds": 0.007838899997295812,
+      "moira_python_median_seconds": 0.008155199990142137,
+      "moira_native_best_seconds": 0.007851700007449836,
+      "moira_native_median_seconds": 0.008365799993043765,
+      "swiss_best_seconds": 0.0018973999976878986,
+      "swiss_median_seconds": 0.002150999993318692,
+      "moira_native_vs_swiss_best_ratio": 4.1381364061440005,
+      "moira_native_vs_swiss_median_ratio": 3.8892608177727177,
+      "moira_python_vs_swiss_best_ratio": 4.131390327209869,
+      "moira_python_vs_swiss_median_ratio": 3.7913528663288396,
+      "moira_native_vs_python_best_ratio": 1.0016328834604906,
+      "moira_native_vs_python_median_ratio": 1.0258240145129731,
+      "moira_native_speedup_over_python_best": 0.9983697785012318,
+      "moira_native_speedup_over_python_median": 0.9748260772338875
+    }
+  ]
+}

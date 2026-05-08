@@ -77,6 +77,139 @@ public:
 };
 
 /**
+ * @brief Native-owned SPK type-2/type-3 segment evaluator.
+ *
+ * Keeps the coefficient payload resident in native memory so Python does not
+ * have to materialize a NumPy tensor for first-use segment evaluation.
+ */
+class SpkSegmentEvaluator {
+public:
+    int32_t data_type;
+    bool coefficients_in_file_order;
+    double init;
+    double intlen;
+    size_t record_count;
+    size_t component_count;
+    size_t coefficient_count;
+    std::vector<double> coefficients;
+
+    SpkSegmentEvaluator(
+        int32_t data_type,
+        bool coefficients_in_file_order,
+        double init,
+        double intlen,
+        size_t rec_count,
+        size_t comp_count,
+        size_t coeff_count,
+        std::vector<double> coeffs
+    )
+        : data_type(data_type),
+          coefficients_in_file_order(coefficients_in_file_order),
+          init(init),
+          intlen(intlen),
+          record_count(rec_count),
+          component_count(comp_count),
+          coefficient_count(coeff_count),
+          coefficients(std::move(coeffs)) {}
+
+    void position(double jd, double* result) const {
+        if (data_type == 2) {
+            const double* ptr = record_ptr(jd);
+            const double s = normalized_time(jd);
+            if (coefficients_in_file_order) {
+                spk_chebyshev_record_avx2_reverse(ptr, coefficient_count, component_count, s, result, 1, coefficient_count);
+            } else {
+                spk_chebyshev_record_avx2(ptr, coefficient_count, component_count, s, result, 1, coefficient_count);
+            }
+            return;
+        }
+
+        double full_state[6];
+        evaluate_type3(jd, full_state);
+        result[0] = full_state[0];
+        result[1] = full_state[1];
+        result[2] = full_state[2];
+    }
+
+    void position_and_velocity(double jd, double* position_out, double* velocity_out) const {
+        if (data_type == 2) {
+            const double* ptr = record_ptr(jd);
+            const double s = normalized_time(jd);
+            const double derivative_scale = 2.0 * 86400.0 / intlen;
+            if (coefficients_in_file_order) {
+                spk_chebyshev_record_with_derivative_inplace_reverse(
+                    ptr,
+                    coefficient_count,
+                    component_count,
+                    s,
+                    position_out,
+                    velocity_out,
+                    1,
+                    coefficient_count
+                );
+            } else {
+                spk_chebyshev_record_with_derivative_inplace(
+                    ptr,
+                    coefficient_count,
+                    component_count,
+                    s,
+                    position_out,
+                    velocity_out,
+                    1,
+                    coefficient_count
+                );
+            }
+            for (size_t i = 0; i < 3; ++i) {
+                velocity_out[i] *= derivative_scale;
+            }
+            return;
+        }
+
+        double full_state[6];
+        evaluate_type3(jd, full_state);
+        position_out[0] = full_state[0];
+        position_out[1] = full_state[1];
+        position_out[2] = full_state[2];
+        velocity_out[0] = full_state[3];
+        velocity_out[1] = full_state[4];
+        velocity_out[2] = full_state[5];
+    }
+
+private:
+    size_t record_index(double jd) const {
+        double t_sec = (jd - 2451545.0) * 86400.0;
+        double d_t = t_sec - init;
+        size_t index = static_cast<size_t>(std::floor(d_t / intlen));
+        if (index >= record_count) {
+            index = record_count - 1;
+        }
+        return index;
+    }
+
+    double normalized_time(double jd) const {
+        double t_sec = (jd - 2451545.0) * 86400.0;
+        double d_t = t_sec - init;
+        size_t index = record_index(jd);
+        double s = (d_t - (static_cast<double>(index) * intlen)) / intlen;
+        return 2.0 * s - 1.0;
+    }
+
+    const double* record_ptr(double jd) const {
+        return coefficients.data() + record_index(jd) * component_count * coefficient_count;
+    }
+
+    void evaluate_type3(double jd, double* result) const {
+        const double* ptr = record_ptr(jd);
+        const double s = normalized_time(jd);
+        if (coefficients_in_file_order) {
+            spk_chebyshev_record_avx2_reverse(ptr, coefficient_count, component_count, s, result, 1, coefficient_count);
+        } else {
+            spk_chebyshev_record_avx2(ptr, coefficient_count, component_count, s, result, 1, coefficient_count);
+        }
+    }
+};
+
+/**
  * @brief THEOREM: Lagrange Segment Evaluator (Type 13).
  */
 class LagrangeEvaluator : public IEvaluator {

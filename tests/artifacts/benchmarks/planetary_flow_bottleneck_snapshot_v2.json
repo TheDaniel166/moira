@@ -1,0 +1,158 @@
+{
+  "phase": "planetary_flow_stage_timing",
+  "kernel": "C:\\Users\\nilad\\.moira\\kernels\\de441.bsp",
+  "body_set": [
+    "Sun",
+    "Moon",
+    "Mercury",
+    "Venus",
+    "Mars",
+    "Jupiter",
+    "Saturn",
+    "Uranus",
+    "Neptune",
+    "Pluto"
+  ],
+  "jd_count": 24,
+  "reference": {
+    "planet_at_public_warm_median_seconds": 0.02794949999952223,
+    "all_planets_at_public_warm_median_seconds": 0.006017700012307614
+  },
+  "stages": [
+    {
+      "name": "planet_at_public_warm",
+      "calls": 240,
+      "median_seconds": 0.02794949999952223,
+      "best_seconds": 0.02669389999937266,
+      "avg_median_ms": 0.1164562499980093,
+      "avg_best_ms": 0.11122458333071943,
+      "share_of_reference_percent": 100.0
+    },
+    {
+      "name": "all_planets_at_public_warm",
+      "calls": 24,
+      "median_seconds": 0.006017700012307614,
+      "best_seconds": 0.005600399992545135,
+      "avg_median_ms": 0.25073750051281724,
+      "avg_best_ms": 0.23334999968938064,
+      "share_of_reference_percent": 21.53061776565048
+    },
+    {
+      "name": "ut_to_tt",
+      "calls": 24,
+      "median_seconds": 0.0007158000080380589,
+      "best_seconds": 0.0007105999975465238,
+      "avg_median_ms": 0.02982500033491912,
+      "avg_best_ms": 0.02960833323110516,
+      "share_of_reference_percent": 2.561047632516842
+    },
+    {
+      "name": "build_apparent_context",
+      "calls": 24,
+      "median_seconds": 0.0016880999901331961,
+      "best_seconds": 0.0015917999990051612,
+      "avg_median_ms": 0.07033749958888318,
+      "avg_best_ms": 0.06632499995854839,
+      "share_of_reference_percent": 6.03982178630048
+    },
+    {
+      "name": "nutation_2000a",
+      "calls": 24,
+      "median_seconds": 0.0012756000069202855,
+      "best_seconds": 0.001268399995751679,
+      "avg_median_ms": 0.05315000028834523,
+      "avg_best_ms": 0.052849999822986625,
+      "share_of_reference_percent": 4.563945712596256
+    },
+    {
+      "name": "earth_barycentric_state",
+      "calls": 24,
+      "median_seconds": 2.6999914553016424e-06,
+      "best_seconds": 2.5999906938523054e-06,
+      "avg_median_ms": 0.00011249964397090177,
+      "avg_best_ms": 0.00010833294557717939,
+      "share_of_reference_percent": 0.00966024957637094
+    },
+    {
+      "name": "apply_light_time",
+      "calls": 240,
+      "median_seconds": 0.0004996999923605472,
+      "best_seconds": 0.0004948999994667247,
+      "avg_median_ms": 0.00208208330150228,
+      "avg_best_ms": 0.002062083331111353,
+      "share_of_reference_percent": 1.7878673764077677
+    },
+    {
+      "name": "apply_deflection",
+      "calls": 192,
+      "median_seconds": 0.0008187000057660043,
+      "best_seconds": 0.0008126999891828746,
+      "avg_median_ms": 0.004264062530031272,
+      "avg_best_ms": 0.004232812443660805,
+      "share_of_reference_percent": 2.9292116344836194
+    },
+    {
+      "name": "apply_aberration",
+      "calls": 240,
+      "median_seconds": 0.000647900000330992,
+      "best_seconds": 0.000643599996692501,
+      "avg_median_ms": 0.0026995833347124667,
+      "avg_best_ms": 0.0026816666528854207,
+      "share_of_reference_percent": 2.318109448620073
+    },
+    {
+      "name": "apply_frame_bias",
+      "calls": 240,
+      "median_seconds": 0.0005816000048071146,
+      "best_seconds": 0.0005772000004071742,
+      "avg_median_ms": 0.0024233333533629775,
+      "avg_best_ms": 0.002405000001696559,
+      "share_of_reference_percent": 2.0808959187715574
+    },
+    {
+      "name": "apply_rotation_matrix",
+      "calls": 240,
+      "median_seconds": 0.0006530999962706119,
+      "best_seconds": 0.0006463000026997179,
+      "avg_median_ms": 0.002721249984460883,
+      "avg_best_ms": 0.002692916677915491,
+      "share_of_reference_percent": 2.3367144180818116
+    },
+    {
+      "name": "icrf_to_ecliptic",
+      "calls": 240,
+      "median_seconds": 0.0008063999994192272,
+      "best_seconds": 0.0008020000095712021,
+      "avg_median_ms": 0.0033599999975801134,
+      "avg_best_ms": 0.0033416667065466754,
+      "share_of_reference_percent": 2.8852036688778395
+    },
+    {
+      "name": "geocentric_state",
+      "calls": 240,
+      "median_seconds": 2.6599998818710446e-05,
+      "best_seconds": 2.5899993488565087e-05,
+      "avg_median_ms": 0.00011083332841129352,
+      "avg_best_ms": 0.00010791663953568786,
+      "share_of_reference_percent": 0.0951716446418188
+    },
+    {
+      "name": "longitude_rate",
+      "calls": 240,
+      "median_seconds": 9.329999738838524e-05,
+      "best_seconds": 9.240000508725643e-05,
+      "avg_median_ms": 0.0003887499891182718,
+      "avg_best_ms": 0.0003850000211969018,
+      "share_of_reference_percent": 0.3338163380023976
+    },
+    {
+      "name": "planet_at_core",
+      "calls": 240,
+      "median_seconds": 0.0018171999981859699,
+      "best_seconds": 0.001791999995475635,
+      "avg_median_ms": 0.007571666659108208,
+      "avg_best_ms": 0.0074666666478151456,
+      "share_of_reference_percent": 6.501726321462041
+    }
+  ]
+}

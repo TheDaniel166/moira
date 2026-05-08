@@ -9,12 +9,12 @@
       "target": 10,
       "sample_count": 20000,
       "repeats": 7,
-      "python_best_seconds": 0.7386197999985598,
-      "native_best_seconds": 0.22212969999964116,
-      "python_median_seconds": 0.7466251999976521,
-      "native_median_seconds": 0.2556315000001632,
-      "speedup_best": 3.325173536000602,
-      "speedup_median": 2.9207089110582043
+      "python_best_seconds": 0.7412932000006549,
+      "native_best_seconds": 0.2487254000006942,
+      "python_median_seconds": 0.7506924999979674,
+      "native_median_seconds": 0.25795040000230074,
+      "speedup_best": 2.9803679077351406,
+      "speedup_median": 2.9102203368991546
     },
     {
       "name": "state_emb_barycenter",
@@ -22,22 +22,22 @@
       "target": 3,
       "sample_count": 20000,
       "repeats": 7,
-      "python_best_seconds": 1.3364492999971844,
-      "native_best_seconds": 0.25896750000174507,
-      "python_median_seconds": 1.3639769000001252,
-      "native_median_seconds": 0.27114760000040405,
-      "speedup_best": 5.160683483403047,
-      "speedup_median": 5.03038529567694
+      "python_best_seconds": 1.335722400002851,
+      "native_best_seconds": 0.2786943999999494,
+      "python_median_seconds": 1.3548358000007283,
+      "native_median_seconds": 0.28851009999925736,
+      "speedup_best": 4.792785215645142,
+      "speedup_median": 4.6959735551865105
     }
   ],
   "summary": {
     "sample_count": 20000,
     "repeats": 7,
-    "python_total_best_seconds": 2.075069099995744,
-    "native_total_best_seconds": 0.4810972000013862,
-    "python_total_median_seconds": 2.1106020999977773,
-    "native_total_median_seconds": 0.5267791000005673,
-    "speedup_best": 4.313201365523984,
-    "speedup_median": 4.006617005108032
+    "python_total_best_seconds": 2.077015600003506,
+    "native_total_best_seconds": 0.5274198000006436,
+    "python_total_median_seconds": 2.1055282999986957,
+    "native_total_median_seconds": 0.5464605000015581,
+    "speedup_best": 3.9380690675643413,
+    "speedup_median": 3.8530292674268174
   }
 }
