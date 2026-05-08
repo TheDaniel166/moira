@@ -9,12 +9,12 @@
       "target": 10,
       "sample_count": 20000,
       "repeats": 7,
-      "python_best_seconds": 0.779992100004165,
-      "native_best_seconds": 0.2419316000014078,
-      "python_median_seconds": 0.7915149999971618,
-      "native_median_seconds": 0.2504458999974304,
-      "speedup_best": 3.224019102918454,
-      "speedup_median": 3.160423069434488
+      "python_best_seconds": 0.7386197999985598,
+      "native_best_seconds": 0.22212969999964116,
+      "python_median_seconds": 0.7466251999976521,
+      "native_median_seconds": 0.2556315000001632,
+      "speedup_best": 3.325173536000602,
+      "speedup_median": 2.9207089110582043
     },
     {
       "name": "state_emb_barycenter",
@@ -22,22 +22,22 @@
       "target": 3,
       "sample_count": 20000,
       "repeats": 7,
-      "python_best_seconds": 1.4005692999999155,
-      "native_best_seconds": 0.28556360000220593,
-      "python_median_seconds": 1.4240015999967,
-      "native_median_seconds": 0.29049330000270857,
-      "speedup_best": 4.904579225045126,
-      "speedup_median": 4.902011853572604
+      "python_best_seconds": 1.3364492999971844,
+      "native_best_seconds": 0.25896750000174507,
+      "python_median_seconds": 1.3639769000001252,
+      "native_median_seconds": 0.27114760000040405,
+      "speedup_best": 5.160683483403047,
+      "speedup_median": 5.03038529567694
     }
   ],
   "summary": {
     "sample_count": 20000,
     "repeats": 7,
-    "python_total_best_seconds": 2.1805614000040805,
-    "native_total_best_seconds": 0.5274952000036137,
-    "python_total_median_seconds": 2.2155165999938617,
-    "native_total_median_seconds": 0.540939200000139,
-    "speedup_best": 4.1338033028341155,
-    "speedup_median": 4.095685060341888
+    "python_total_best_seconds": 2.075069099995744,
+    "native_total_best_seconds": 0.4810972000013862,
+    "python_total_median_seconds": 2.1106020999977773,
+    "native_total_median_seconds": 0.5267791000005673,
+    "speedup_best": 4.313201365523984,
+    "speedup_median": 4.006617005108032
   }
 }

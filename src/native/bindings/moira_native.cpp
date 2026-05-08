@@ -421,6 +421,268 @@ py::tuple solar_observer_quantities_batch_py(
     return py::make_tuple(raw_ov, alt, ha);
 }
 
+void solar_cartography_grid_sweep_vectors_py(
+    py::array_t<double> sun_xyz_series,
+    py::array_t<double> moon_xyz_series,
+    py::array_t<double> gasts_deg,
+    py::array_t<double> lats_deg,
+    py::array_t<double> lons_deg,
+    double sun_radius_km,
+    double moon_radius_km,
+    py::array_t<double> overlap_max,
+    py::array_t<double> central_max,
+    py::array_t<double> magnitude_max
+) {
+    auto sun_buf = sun_xyz_series.request();
+    auto moon_buf = moon_xyz_series.request();
+    auto gast_buf = gasts_deg.request();
+    auto lat_buf = lats_deg.request();
+    auto lon_buf = lons_deg.request();
+
+    if (sun_buf.ndim != 2 || moon_buf.ndim != 2 || sun_buf.shape[1] != 3 || moon_buf.shape[1] != 3) {
+        throw std::runtime_error("solar_cartography_grid_sweep_vectors expects (n, 3) state arrays.");
+    }
+    if (sun_buf.shape[0] != gast_buf.shape[0] || moon_buf.shape[0] != gast_buf.shape[0] || lat_buf.shape[0] != lon_buf.shape[0]) {
+        throw std::runtime_error("solar_cartography_grid_sweep_vectors received inconsistent array lengths.");
+    }
+
+    solar_cartography_grid_sweep_vectors(
+        static_cast<const double*>(sun_buf.ptr),
+        static_cast<const double*>(moon_buf.ptr),
+        static_cast<const double*>(gast_buf.ptr),
+        static_cast<size_t>(gast_buf.shape[0]),
+        static_cast<const double*>(lat_buf.ptr),
+        static_cast<const double*>(lon_buf.ptr),
+        static_cast<size_t>(lat_buf.shape[0]),
+        sun_radius_km,
+        moon_radius_km,
+        overlap_max.mutable_data(),
+        central_max.mutable_data(),
+        magnitude_max.mutable_data()
+    );
+}
+
+py::tuple solar_observer_quantities_batch_vectors_py(
+    py::array_t<double> sun_xyz,
+    py::array_t<double> moon_xyz,
+    double gast_deg,
+    py::array_t<double> lats_deg,
+    py::array_t<double> lons_deg,
+    double sun_radius_km,
+    double moon_radius_km
+) {
+    auto sun_buf = sun_xyz.request();
+    auto moon_buf = moon_xyz.request();
+    auto lat_buf = lats_deg.request();
+    auto lon_buf = lons_deg.request();
+
+    if (sun_buf.ndim != 1 || moon_buf.ndim != 1 || sun_buf.shape[0] != 3 || moon_buf.shape[0] != 3) {
+        throw std::runtime_error("solar_observer_quantities_batch_vectors expects length-3 state arrays.");
+    }
+    if (lat_buf.shape[0] != lon_buf.shape[0]) {
+        throw std::runtime_error("solar_observer_quantities_batch_vectors received inconsistent observer arrays.");
+    }
+
+    py::array_t<double> raw_ov(lat_buf.size);
+    py::array_t<double> alt(lat_buf.size);
+    py::array_t<double> ha(lat_buf.size);
+
+    solar_observer_quantities_batch_vectors(
+        static_cast<const double*>(sun_buf.ptr),
+        static_cast<const double*>(moon_buf.ptr),
+        gast_deg,
+        static_cast<const double*>(lat_buf.ptr),
+        static_cast<const double*>(lon_buf.ptr),
+        static_cast<size_t>(lat_buf.size),
+        sun_radius_km,
+        moon_radius_km,
+        raw_ov.mutable_data(),
+        alt.mutable_data(),
+        ha.mutable_data()
+    );
+    return py::make_tuple(raw_ov, alt, ha);
+}
+
+py::tuple solar_cross_track_limit_band_py(
+    const IEvaluator& sun,
+    const IEvaluator& moon,
+    py::array_t<double> jds,
+    py::array_t<double> gasts_deg,
+    py::array_t<double> center_lats_deg,
+    py::array_t<double> center_lons_deg,
+    int margin_kind,
+    double max_distance_km,
+    double sun_radius_km,
+    double moon_radius_km
+) {
+    auto roots = solar_cross_track_limit_band(
+        sun, moon,
+        jds.data(), gasts_deg.data(), center_lats_deg.data(), center_lons_deg.data(),
+        static_cast<size_t>(jds.size()),
+        margin_kind, max_distance_km, sun_radius_km, moon_radius_km
+    );
+
+    py::array_t<double> south_lats(roots.size());
+    py::array_t<double> south_lons(roots.size());
+    py::array_t<double> north_lats(roots.size());
+    py::array_t<double> north_lons(roots.size());
+    auto* slat = south_lats.mutable_data();
+    auto* slon = south_lons.mutable_data();
+    auto* nlat = north_lats.mutable_data();
+    auto* nlon = north_lons.mutable_data();
+    for (size_t i = 0; i < roots.size(); ++i) {
+        slat[i] = roots[i].south_lat_deg;
+        slon[i] = roots[i].south_lon_deg;
+        nlat[i] = roots[i].north_lat_deg;
+        nlon[i] = roots[i].north_lon_deg;
+    }
+    return py::make_tuple(south_lats, south_lons, north_lats, north_lons);
+}
+
+py::tuple solar_cross_track_limit_band_vectors_py(
+    py::array_t<double> sun_xyz_series,
+    py::array_t<double> moon_xyz_series,
+    py::array_t<double> gasts_deg,
+    py::array_t<double> center_lats_deg,
+    py::array_t<double> center_lons_deg,
+    int margin_kind,
+    double max_distance_km,
+    double sun_radius_km,
+    double moon_radius_km
+) {
+    auto sun_buf = sun_xyz_series.request();
+    auto moon_buf = moon_xyz_series.request();
+    auto gast_buf = gasts_deg.request();
+    auto lat_buf = center_lats_deg.request();
+    auto lon_buf = center_lons_deg.request();
+    if (sun_buf.ndim != 2 || moon_buf.ndim != 2 || sun_buf.shape[1] != 3 || moon_buf.shape[1] != 3) {
+        throw std::runtime_error("solar_cross_track_limit_band_vectors expects (n, 3) state arrays.");
+    }
+    if (sun_buf.shape[0] != moon_buf.shape[0] || sun_buf.shape[0] != gast_buf.shape[0]
+        || sun_buf.shape[0] != lat_buf.shape[0] || sun_buf.shape[0] != lon_buf.shape[0]) {
+        throw std::runtime_error("solar_cross_track_limit_band_vectors received inconsistent array lengths.");
+    }
+
+    auto roots = solar_cross_track_limit_band_vectors(
+        static_cast<const double*>(sun_buf.ptr),
+        static_cast<const double*>(moon_buf.ptr),
+        static_cast<const double*>(gast_buf.ptr),
+        static_cast<const double*>(lat_buf.ptr),
+        static_cast<const double*>(lon_buf.ptr),
+        static_cast<size_t>(gast_buf.shape[0]),
+        margin_kind,
+        max_distance_km,
+        sun_radius_km,
+        moon_radius_km
+    );
+
+    py::array_t<double> south_lats(roots.size());
+    py::array_t<double> south_lons(roots.size());
+    py::array_t<double> north_lats(roots.size());
+    py::array_t<double> north_lons(roots.size());
+    auto* slat = south_lats.mutable_data();
+    auto* slon = south_lons.mutable_data();
+    auto* nlat = north_lats.mutable_data();
+    auto* nlon = north_lons.mutable_data();
+    for (size_t i = 0; i < roots.size(); ++i) {
+        slat[i] = roots[i].south_lat_deg;
+        slon[i] = roots[i].south_lon_deg;
+        nlat[i] = roots[i].north_lat_deg;
+        nlon[i] = roots[i].north_lon_deg;
+    }
+    return py::make_tuple(south_lats, south_lons, north_lats, north_lons);
+}
+
+py::tuple solar_cross_track_magnitude_contour_py(
+    const IEvaluator& sun,
+    const IEvaluator& moon,
+    py::array_t<double> jds,
+    py::array_t<double> gasts_deg,
+    py::array_t<double> center_lats_deg,
+    py::array_t<double> center_lons_deg,
+    double threshold,
+    double max_distance_km,
+    double sun_radius_km,
+    double moon_radius_km
+) {
+    auto roots = solar_cross_track_magnitude_contour(
+        sun, moon,
+        jds.data(), gasts_deg.data(), center_lats_deg.data(), center_lons_deg.data(),
+        static_cast<size_t>(jds.size()),
+        threshold, max_distance_km, sun_radius_km, moon_radius_km
+    );
+
+    py::array_t<double> south_lats(roots.size());
+    py::array_t<double> south_lons(roots.size());
+    py::array_t<double> north_lats(roots.size());
+    py::array_t<double> north_lons(roots.size());
+    auto* slat = south_lats.mutable_data();
+    auto* slon = south_lons.mutable_data();
+    auto* nlat = north_lats.mutable_data();
+    auto* nlon = north_lons.mutable_data();
+    for (size_t i = 0; i < roots.size(); ++i) {
+        slat[i] = roots[i].south_lat_deg;
+        slon[i] = roots[i].south_lon_deg;
+        nlat[i] = roots[i].north_lat_deg;
+        nlon[i] = roots[i].north_lon_deg;
+    }
+    return py::make_tuple(south_lats, south_lons, north_lats, north_lons);
+}
+
+py::tuple solar_cross_track_magnitude_contour_vectors_py(
+    py::array_t<double> sun_xyz_series,
+    py::array_t<double> moon_xyz_series,
+    py::array_t<double> gasts_deg,
+    py::array_t<double> center_lats_deg,
+    py::array_t<double> center_lons_deg,
+    double threshold,
+    double max_distance_km,
+    double sun_radius_km,
+    double moon_radius_km
+) {
+    auto sun_buf = sun_xyz_series.request();
+    auto moon_buf = moon_xyz_series.request();
+    auto gast_buf = gasts_deg.request();
+    auto lat_buf = center_lats_deg.request();
+    auto lon_buf = center_lons_deg.request();
+    if (sun_buf.ndim != 2 || moon_buf.ndim != 2 || sun_buf.shape[1] != 3 || moon_buf.shape[1] != 3) {
+        throw std::runtime_error("solar_cross_track_magnitude_contour_vectors expects (n, 3) state arrays.");
+    }
+    if (sun_buf.shape[0] != moon_buf.shape[0] || sun_buf.shape[0] != gast_buf.shape[0]
+        || sun_buf.shape[0] != lat_buf.shape[0] || sun_buf.shape[0] != lon_buf.shape[0]) {
+        throw std::runtime_error("solar_cross_track_magnitude_contour_vectors received inconsistent array lengths.");
+    }
+
+    auto roots = solar_cross_track_magnitude_contour_vectors(
+        static_cast<const double*>(sun_buf.ptr),
+        static_cast<const double*>(moon_buf.ptr),
+        static_cast<const double*>(gast_buf.ptr),
+        static_cast<const double*>(lat_buf.ptr),
+        static_cast<const double*>(lon_buf.ptr),
+        static_cast<size_t>(gast_buf.shape[0]),
+        threshold,
+        max_distance_km,
+        sun_radius_km,
+        moon_radius_km
+    );
+
+    py::array_t<double> south_lats(roots.size());
+    py::array_t<double> south_lons(roots.size());
+    py::array_t<double> north_lats(roots.size());
+    py::array_t<double> north_lons(roots.size());
+    auto* slat = south_lats.mutable_data();
+    auto* slon = south_lons.mutable_data();
+    auto* nlat = north_lats.mutable_data();
+    auto* nlon = north_lons.mutable_data();
+    for (size_t i = 0; i < roots.size(); ++i) {
+        slat[i] = roots[i].south_lat_deg;
+        slon[i] = roots[i].south_lon_deg;
+        nlat[i] = roots[i].north_lat_deg;
+        nlon[i] = roots[i].north_lon_deg;
+    }
+    return py::make_tuple(south_lats, south_lons, north_lats, north_lons);
+}
+
 } // namespace
 
 PYBIND11_MODULE(_moira_native, m) {
@@ -660,5 +922,45 @@ PYBIND11_MODULE(_moira_native, m) {
         py::arg("lats_deg"), py::arg("lons_deg"),
         py::arg("sun_radius_km"), py::arg("moon_radius_km"),
         "Compute (raw_overlap, altitude, hour_angle) for multiple observers at a fixed JD.");
-}
 
+    m.def("solar_cartography_grid_sweep_vectors", &solar_cartography_grid_sweep_vectors_py,
+        py::arg("sun_xyz_series"), py::arg("moon_xyz_series"), py::arg("gasts_deg"),
+        py::arg("lats_deg"), py::arg("lons_deg"),
+        py::arg("sun_radius_km"), py::arg("moon_radius_km"),
+        py::arg("overlap_max"), py::arg("central_max"), py::arg("magnitude_max"),
+        "Aggregate solar cartography maxima from apparent state-vector series.");
+
+    m.def("solar_observer_quantities_batch_vectors", &solar_observer_quantities_batch_vectors_py,
+        py::arg("sun_xyz"), py::arg("moon_xyz"), py::arg("gast_deg"),
+        py::arg("lats_deg"), py::arg("lons_deg"),
+        py::arg("sun_radius_km"), py::arg("moon_radius_km"),
+        "Compute solar observer quantities from apparent state vectors.");
+
+    m.def("solar_cross_track_limit_band", &solar_cross_track_limit_band_py,
+        py::arg("sun"), py::arg("moon"), py::arg("jds"), py::arg("gasts_deg"),
+        py::arg("center_lats_deg"), py::arg("center_lons_deg"),
+        py::arg("margin_kind"), py::arg("max_distance_km"),
+        py::arg("sun_radius_km"), py::arg("moon_radius_km"),
+        "Solve solar cross-track partial/central boundary roots from a centerline.");
+
+    m.def("solar_cross_track_limit_band_vectors", &solar_cross_track_limit_band_vectors_py,
+        py::arg("sun_xyz_series"), py::arg("moon_xyz_series"), py::arg("gasts_deg"),
+        py::arg("center_lats_deg"), py::arg("center_lons_deg"),
+        py::arg("margin_kind"), py::arg("max_distance_km"),
+        py::arg("sun_radius_km"), py::arg("moon_radius_km"),
+        "Solve solar cross-track partial/central boundary roots from apparent state-vector series.");
+
+    m.def("solar_cross_track_magnitude_contour", &solar_cross_track_magnitude_contour_py,
+        py::arg("sun"), py::arg("moon"), py::arg("jds"), py::arg("gasts_deg"),
+        py::arg("center_lats_deg"), py::arg("center_lons_deg"),
+        py::arg("threshold"), py::arg("max_distance_km"),
+        py::arg("sun_radius_km"), py::arg("moon_radius_km"),
+        "Solve solar cross-track magnitude contour roots from a centerline.");
+
+    m.def("solar_cross_track_magnitude_contour_vectors", &solar_cross_track_magnitude_contour_vectors_py,
+        py::arg("sun_xyz_series"), py::arg("moon_xyz_series"), py::arg("gasts_deg"),
+        py::arg("center_lats_deg"), py::arg("center_lons_deg"),
+        py::arg("threshold"), py::arg("max_distance_km"),
+        py::arg("sun_radius_km"), py::arg("moon_radius_km"),
+        "Solve solar cross-track magnitude contour roots from apparent state-vector series.");
+}
