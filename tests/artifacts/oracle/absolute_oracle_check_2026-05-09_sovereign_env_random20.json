@@ -8,7 +8,7 @@
   "sampling": {
     "asteroid_seed": 20260509,
     "asteroid_count": 20,
-    "small_body_manifest": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira C++\\kernels\\sb441_type13\\manifest.json"
+    "small_body_manifest": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira C++\\tests\\artifacts\\kernels\\sb441_type13_full_2020_2030\\manifest.json"
   },
   "planets": {
     "rows": [
@@ -204,399 +204,399 @@
     }
   },
   "asteroids": {
-    "available_count": 361,
+    "available_count": 355,
     "sampled_bodies": [
       "Adeona",
       "Aeria",
       "Aethra",
       "Ara",
       "Arethusa",
-      "Brixia",
-      "Carlova",
-      "Edna",
-      "Erigone",
-      "Iduna",
-      "Klio",
-      "Mandeville",
-      "Marion",
-      "Medea",
-      "Ninina",
-      "Orcus",
-      "Polyxena",
-      "Sulamitis",
-      "Urania",
-      "Vesta"
+      "Bruchsalia",
+      "Cava",
+      "Ekard",
+      "Eros",
+      "Interamnia",
+      "Kreusa",
+      "Martha",
+      "Massinga",
+      "Melpomene",
+      "Oceana",
+      "Palisana",
+      "Princetonia",
+      "Tauris",
+      "Veritas",
+      "Winchester"
     ],
     "rows": [
       {
         "body": "Adeona",
         "command": "'145;'",
         "moira": {
-          "longitude_deg": 61.9352695695263,
-          "latitude_deg": -1.605137505823569,
-          "distance_km": 505802230.3085697,
-          "speed_lon_deg_per_day": 0.4678563496913739
+          "longitude_deg": 61.93526957337439,
+          "latitude_deg": -1.6051375088292896,
+          "distance_km": 505802229.7613703,
+          "speed_lon_deg_per_day": 0.4678563554975881
         },
         "horizons": {
           "longitude_deg": 61.9352646,
           "latitude_deg": -1.605142
         },
         "delta": {
-          "longitude_arcsec": 0.01789029463452607,
-          "latitude_arcsec": 0.0161790351516089
+          "longitude_arcsec": 0.01790414779634375,
+          "latitude_arcsec": 0.0161682145575881
         }
       },
       {
         "body": "Aeria",
         "command": "'369;'",
         "moira": {
-          "longitude_deg": 198.29549307080265,
-          "latitude_deg": 16.991745850870405,
-          "distance_km": 297618322.9920175,
-          "speed_lon_deg_per_day": -0.16359890393937349
+          "longitude_deg": 198.2954931416794,
+          "latitude_deg": 16.991745825203992,
+          "distance_km": 297618323.3892638,
+          "speed_lon_deg_per_day": -0.16359891054116815
         },
         "horizons": {
           "longitude_deg": 198.2954759,
           "latitude_deg": 16.9917478
         },
         "delta": {
-          "longitude_arcsec": 0.061814889488687186,
-          "latitude_arcsec": -0.007016866537412625
+          "longitude_arcsec": 0.062070045794371254,
+          "latitude_arcsec": -0.00710926562419445
         }
       },
       {
         "body": "Aethra",
         "command": "'132;'",
         "moira": {
-          "longitude_deg": 335.3248957013513,
-          "latitude_deg": 21.088093899807646,
-          "distance_km": 553763402.9845996,
-          "speed_lon_deg_per_day": 0.19594237652245283
+          "longitude_deg": 335.3248956410991,
+          "latitude_deg": 21.08809390118662,
+          "distance_km": 553763402.9186723,
+          "speed_lon_deg_per_day": 0.19594237650733248
         },
         "horizons": {
           "longitude_deg": 335.3248821,
           "latitude_deg": 21.0880967
         },
         "delta": {
-          "longitude_arcsec": 0.04896486457255378,
-          "latitude_arcsec": -0.0100806924791641
+          "longitude_arcsec": 0.04874795663454279,
+          "latitude_arcsec": -0.010075728168601472
         }
       },
       {
         "body": "Ara",
         "command": "'849;'",
         "moira": {
-          "longitude_deg": 291.6488994463254,
-          "latitude_deg": 17.494279874007244,
-          "distance_km": 289527610.3886254,
-          "speed_lon_deg_per_day": 0.113168796564878
+          "longitude_deg": 291.64889935524405,
+          "latitude_deg": 17.4942798524271,
+          "distance_km": 289527610.69662493,
+          "speed_lon_deg_per_day": 0.11316878948491649
         },
         "horizons": {
           "longitude_deg": 291.6488833,
           "latitude_deg": 17.4942827
         },
         "delta": {
-          "longitude_arcsec": 0.058126771364186425,
-          "latitude_arcsec": -0.01017357391930318
+          "longitude_arcsec": 0.057798878515313845,
+          "latitude_arcsec": -0.010251262443716769
         }
       },
       {
         "body": "Arethusa",
         "command": "'95;'",
         "moira": {
-          "longitude_deg": 219.47940614444036,
-          "latitude_deg": -6.688628112469385,
-          "distance_km": 378940204.46670866,
-          "speed_lon_deg_per_day": -0.19654807816766606
+          "longitude_deg": 219.4794061713781,
+          "latitude_deg": -6.688628105047161,
+          "distance_km": 378940204.98228556,
+          "speed_lon_deg_per_day": -0.19654808435893756
         },
         "horizons": {
           "longitude_deg": 219.4793954,
           "latitude_deg": -6.688628
         },
         "delta": {
-          "longitude_arcsec": 0.038679985345879686,
-          "latitude_arcsec": -0.00040488978889641203
+          "longitude_arcsec": 0.03877696116205698,
+          "latitude_arcsec": -0.0003781697802907047
         }
       },
       {
-        "body": "Brixia",
-        "command": "'521;'",
+        "body": "Bruchsalia",
+        "command": "'455;'",
         "moira": {
-          "longitude_deg": 50.92219332347714,
-          "latitude_deg": -4.322577088027593,
-          "distance_km": 446559381.57492745,
-          "speed_lon_deg_per_day": 0.5906609335702342
+          "longitude_deg": 294.9152394752993,
+          "latitude_deg": -4.160224391537714,
+          "distance_km": 253453755.00626472,
+          "speed_lon_deg_per_day": 0.17794602204321563
         },
         "horizons": {
-          "longitude_deg": 50.9221915,
-          "latitude_deg": -4.3225933
+          "longitude_deg": 294.915233,
+          "latitude_deg": -4.16022
         },
         "delta": {
-          "longitude_arcsec": 0.006564517684637394,
-          "latitude_arcsec": 0.05836310066591466
+          "longitude_arcsec": 0.023311077484322595,
+          "latitude_arcsec": -0.015809535770117122
         }
       },
       {
-        "body": "Carlova",
-        "command": "'360;'",
+        "body": "Cava",
+        "command": "'505;'",
         "moira": {
-          "longitude_deg": 2.2600871189834426,
-          "latitude_deg": -5.525713116400745,
-          "distance_km": 506981847.66552556,
-          "speed_lon_deg_per_day": 0.38204946871519496
+          "longitude_deg": 357.7452129426036,
+          "latitude_deg": -7.590494361937995,
+          "distance_km": 452213120.2102199,
+          "speed_lon_deg_per_day": 0.42356709941009285
         },
         "horizons": {
-          "longitude_deg": 2.2600703,
-          "latitude_deg": -5.5257156
+          "longitude_deg": 357.7451901,
+          "latitude_deg": -7.5904933
         },
         "delta": {
-          "longitude_arcsec": 0.06054834043425217,
-          "latitude_arcsec": 0.008940957318515075
+          "longitude_arcsec": 0.08223337290473864,
+          "latitude_arcsec": -0.0038229767799435876
         }
       },
       {
-        "body": "Edna",
-        "command": "'445;'",
+        "body": "Ekard",
+        "command": "'694;'",
         "moira": {
-          "longitude_deg": 105.9036833202481,
-          "latitude_deg": -2.99081872460561,
-          "distance_km": 552432727.1396166,
-          "speed_lon_deg_per_day": 0.2751125720502614
+          "longitude_deg": 233.1892913468335,
+          "latitude_deg": 0.4763664785552546,
+          "distance_km": 252973524.00337505,
+          "speed_lon_deg_per_day": -0.2498231082033726
         },
         "horizons": {
-          "longitude_deg": 105.9036676,
-          "latitude_deg": -2.9908226
+          "longitude_deg": 233.1892947,
+          "latitude_deg": 0.4763635
         },
         "delta": {
-          "longitude_arcsec": 0.05659289311097382,
-          "latitude_arcsec": 0.01395141980342629
+          "longitude_arcsec": -0.012071399419255613,
+          "latitude_arcsec": 0.010722798916584786
         }
       },
       {
-        "body": "Erigone",
-        "command": "'163;'",
+        "body": "Eros",
+        "command": "'433;'",
         "moira": {
-          "longitude_deg": 287.12539417900234,
-          "latitude_deg": 5.94934572141297,
-          "distance_km": 322249354.7551495,
-          "speed_lon_deg_per_day": 0.0008480990954922163
+          "longitude_deg": 136.8151001472939,
+          "latitude_deg": -15.747404240089448,
+          "distance_km": 120655346.55604537,
+          "speed_lon_deg_per_day": 0.8758606017250941
         },
         "horizons": {
-          "longitude_deg": 287.1253776,
-          "latitude_deg": 5.9493526
+          "longitude_deg": 136.8150852,
+          "latitude_deg": -15.7474086
         },
         "delta": {
-          "longitude_arcsec": 0.05968440850665502,
-          "latitude_arcsec": -0.02476291330708591
+          "longitude_arcsec": 0.05381025800943462,
+          "latitude_arcsec": 0.015695677986116152
         }
       },
       {
-        "body": "Iduna",
-        "command": "'176;'",
+        "body": "Interamnia",
+        "command": "'704;'",
         "moira": {
-          "longitude_deg": 97.58176387705787,
-          "latitude_deg": -19.20193482698108,
-          "distance_km": 530053366.7302396,
-          "speed_lon_deg_per_day": 0.35961168051949244
+          "longitude_deg": 219.75340444771123,
+          "latitude_deg": -20.708783473088193,
+          "distance_km": 375322944.22557616,
+          "speed_lon_deg_per_day": -0.2058526741005835
         },
         "horizons": {
-          "longitude_deg": 97.5817451,
-          "latitude_deg": -19.2019402
+          "longitude_deg": 219.7533941,
+          "latitude_deg": -20.708782
         },
         "delta": {
-          "longitude_arcsec": 0.06759740824691107,
-          "latitude_arcsec": 0.019342868107230515
+          "longitude_arcsec": 0.03725176040916267,
+          "latitude_arcsec": -0.00530311749713519
         }
       },
       {
-        "body": "Klio",
-        "command": "'84;'",
+        "body": "Kreusa",
+        "command": "'488;'",
         "moira": {
-          "longitude_deg": 81.52128206431706,
-          "latitude_deg": 5.668746861280866,
-          "distance_km": 481335007.5179453,
-          "speed_lon_deg_per_day": 0.4463517450690233
+          "longitude_deg": 288.73609356338886,
+          "latitude_deg": -2.4686842271432323,
+          "distance_km": 399709690.3679356,
+          "speed_lon_deg_per_day": 0.002166475784292743
         },
         "horizons": {
-          "longitude_deg": 81.5212675,
-          "latitude_deg": 5.6687428
+          "longitude_deg": 288.7360687,
+          "latitude_deg": -2.4686778
         },
         "delta": {
-          "longitude_arcsec": 0.052431541450914665,
-          "latitude_arcsec": 0.014620611115390147
+          "longitude_arcsec": 0.0895081999942704,
+          "latitude_arcsec": -0.02313771563624556
         }
       },
       {
-        "body": "Mandeville",
-        "command": "'739;'",
+        "body": "Martha",
+        "command": "'205;'",
         "moira": {
-          "longitude_deg": 122.79788976968318,
-          "latitude_deg": 3.612462812455404,
-          "distance_km": 368926844.7272283,
-          "speed_lon_deg_per_day": 0.32508385747826196
+          "longitude_deg": 280.1694108358354,
+          "latitude_deg": 11.386382836402897,
+          "distance_km": 313317871.38036686,
+          "speed_lon_deg_per_day": -0.01524823546992593
         },
         "horizons": {
-          "longitude_deg": 122.7978731,
-          "latitude_deg": 3.6124564
+          "longitude_deg": 280.1693918,
+          "latitude_deg": 11.3863862
         },
         "delta": {
-          "longitude_arcsec": 0.06001085948810214,
-          "latitude_arcsec": 0.02308483945441253
+          "longitude_arcsec": 0.06852900726244116,
+          "latitude_arcsec": -0.012108949574241024
         }
       },
       {
-        "body": "Marion",
-        "command": "'506;'",
+        "body": "Massinga",
+        "command": "'760;'",
         "moira": {
-          "longitude_deg": 236.6516059632104,
-          "latitude_deg": -23.655703727206642,
-          "distance_km": 355677677.28130484,
-          "speed_lon_deg_per_day": -0.2093272840204463
+          "longitude_deg": 13.04760675121684,
+          "latitude_deg": 5.655188755245533,
+          "distance_km": 692658711.0346276,
+          "speed_lon_deg_per_day": 0.2688617741645203
         },
         "horizons": {
-          "longitude_deg": 236.6515968,
-          "latitude_deg": -23.6556988
+          "longitude_deg": 13.0475878,
+          "latitude_deg": 5.6551876
         },
         "delta": {
-          "longitude_arcsec": 0.03298755741525383,
-          "latitude_arcsec": -0.017737943913687104
+          "longitude_arcsec": 0.0682243806409133,
+          "latitude_arcsec": 0.004158883918847778
         }
       },
       {
-        "body": "Medea",
-        "command": "'212;'",
+        "body": "Melpomene",
+        "command": "'18;'",
         "moira": {
-          "longitude_deg": 4.408042319493765,
-          "latitude_deg": 2.1435378721371037,
-          "distance_km": 540444236.1408536,
-          "speed_lon_deg_per_day": 0.3574522837643599
+          "longitude_deg": 292.51071542765055,
+          "latitude_deg": 12.062645855197516,
+          "distance_km": 260874696.62765622,
+          "speed_lon_deg_per_day": 0.11898518039663486
         },
         "horizons": {
-          "longitude_deg": 4.4080298,
-          "latitude_deg": 2.1435377
+          "longitude_deg": 292.5106854,
+          "latitude_deg": 12.0626518
         },
         "delta": {
-          "longitude_arcsec": 0.04507017755486231,
-          "latitude_arcsec": 0.000619693573256086
+          "longitude_arcsec": 0.10809954198975902,
+          "latitude_arcsec": -0.021401288939415508
         }
       },
       {
-        "body": "Ninina",
-        "command": "'357;'",
+        "body": "Oceana",
+        "command": "'224;'",
         "moira": {
-          "longitude_deg": 82.83811566986088,
-          "latitude_deg": -8.417690578429205,
-          "distance_km": 564616837.2244369,
-          "speed_lon_deg_per_day": 0.3661748477072706
+          "longitude_deg": 28.64082745859407,
+          "latitude_deg": 2.0574208764996915,
+          "distance_km": 538734943.6171278,
+          "speed_lon_deg_per_day": 0.4201983734425312
         },
         "horizons": {
-          "longitude_deg": 82.8381049,
-          "latitude_deg": -8.4176966
+          "longitude_deg": 28.6408073,
+          "latitude_deg": 2.0574211
         },
         "delta": {
-          "longitude_arcsec": 0.038771499112044694,
-          "latitude_arcsec": 0.02167765485836526
+          "longitude_arcsec": 0.07257093869839082,
+          "latitude_arcsec": -0.000804601110537817
         }
       },
       {
-        "body": "Orcus",
-        "command": "'90482;'",
+        "body": "Palisana",
+        "command": "'914;'",
         "moira": {
-          "longitude_deg": 166.3922451939084,
-          "latitude_deg": -20.395974574670042,
-          "distance_km": 7111256696.6548605,
-          "speed_lon_deg_per_day": -0.007793179766849789
+          "longitude_deg": 165.96166277469837,
+          "latitude_deg": -30.810618981931075,
+          "distance_km": 306781781.6164477,
+          "speed_lon_deg_per_day": 0.020089203951556556
         },
         "horizons": {
-          "longitude_deg": 166.3922177,
-          "latitude_deg": -20.39598
+          "longitude_deg": 165.9616558,
+          "latitude_deg": -30.8106224
         },
         "delta": {
-          "longitude_arcsec": 0.0989780702070675,
-          "latitude_arcsec": 0.019531187854227028
+          "longitude_arcsec": 0.02510891416704908,
+          "latitude_arcsec": 0.012305048129235274
         }
       },
       {
-        "body": "Polyxena",
-        "command": "'595;'",
+        "body": "Princetonia",
+        "command": "'508;'",
         "moira": {
-          "longitude_deg": 168.77192158581457,
-          "latitude_deg": 7.7015543196941625,
-          "distance_km": 402077014.6997128,
-          "speed_lon_deg_per_day": -0.007079855411575409
+          "longitude_deg": 151.2506967936489,
+          "latitude_deg": 12.416740622803383,
+          "distance_km": 419360769.79916143,
+          "speed_lon_deg_per_day": 0.10625927123351175
         },
         "horizons": {
-          "longitude_deg": 168.7719092,
-          "latitude_deg": 7.7015521
+          "longitude_deg": 151.2506894,
+          "latitude_deg": 12.4167385
         },
         "delta": {
-          "longitude_arcsec": 0.04458893240553152,
-          "latitude_arcsec": 0.00799089898571026
+          "longitude_arcsec": 0.026617136040840705,
+          "latitude_arcsec": 0.0076420921814701614
         }
       },
       {
-        "body": "Sulamitis",
-        "command": "'752;'",
+        "body": "Tauris",
+        "command": "'814;'",
         "moira": {
-          "longitude_deg": 317.71584602267154,
-          "latitude_deg": -3.235497322413404,
-          "distance_km": 363338847.8113337,
-          "speed_lon_deg_per_day": 0.22394749343072817
+          "longitude_deg": 273.44182964623565,
+          "latitude_deg": 3.88300623712361,
+          "distance_km": 401119571.9369843,
+          "speed_lon_deg_per_day": -0.07984612490452037
         },
         "horizons": {
-          "longitude_deg": 317.7158297,
-          "latitude_deg": -3.2354932
+          "longitude_deg": 273.4418198,
+          "latitude_deg": 3.8830043
         },
         "delta": {
-          "longitude_arcsec": 0.05876161765172583,
-          "latitude_arcsec": -0.014840688254302847
+          "longitude_arcsec": 0.035446448259790486,
+          "latitude_arcsec": 0.0069736449958668345
         }
       },
       {
-        "body": "Urania",
-        "command": "'30;'",
+        "body": "Veritas",
+        "command": "'490;'",
         "moira": {
-          "longitude_deg": 43.99017457613931,
-          "latitude_deg": 1.4069918650755762,
-          "distance_km": 459557234.60996896,
-          "speed_lon_deg_per_day": 0.5538835795961177
+          "longitude_deg": 316.3223340241651,
+          "latitude_deg": 8.756795732747515,
+          "distance_km": 430192566.3414916,
+          "speed_lon_deg_per_day": 0.18521843482335498
         },
         "horizons": {
-          "longitude_deg": 43.99015,
-          "latitude_deg": 1.4069943
+          "longitude_deg": 316.3223182,
+          "latitude_deg": 8.7568021
         },
         "delta": {
-          "longitude_arcsec": 0.08847410151702206,
-          "latitude_arcsec": -0.008765727925919009
+          "longitude_arcsec": 0.056966994475260435,
+          "latitude_arcsec": -0.022922108946943354
         }
       },
       {
-        "body": "Vesta",
-        "command": "'4;'",
+        "body": "Winchester",
+        "command": "'747;'",
         "moira": {
-          "longitude_deg": 357.9788395889994,
-          "latitude_deg": -4.761056887389609,
-          "distance_km": 422188493.218166,
-          "speed_lon_deg_per_day": 0.43611766043795797
+          "longitude_deg": 67.54456487702271,
+          "latitude_deg": -10.050695253093647,
+          "distance_km": 441146114.01999885,
+          "speed_lon_deg_per_day": 0.5855292278437219
         },
         "horizons": {
-          "longitude_deg": 357.9788225,
-          "latitude_deg": -4.7610563
+          "longitude_deg": 67.5445459,
+          "latitude_deg": -10.0507024
         },
         "delta": {
-          "longitude_arcsec": 0.061520397889580636,
-          "latitude_arcsec": -0.0021146025922291756
+          "longitude_arcsec": 0.0683172817389277,
+          "latitude_arcsec": 0.02572886287381948
         }
       }
     ],
     "summary": {
       "count": 20,
-      "median_abs_longitude_arcsec": 0.05735983223758012,
-      "median_abs_latitude_arcsec": 0.014286015459408219,
-      "max_abs_longitude_arcsec": 0.0989780702070675,
-      "max_abs_latitude_arcsec": 0.05836310066591466,
-      "worst_longitude_body": "Orcus",
-      "worst_latitude_body": "Brixia"
+      "median_abs_longitude_arcsec": 0.05538862624234753,
+      "median_abs_latitude_arcsec": 0.010487030680150777,
+      "max_abs_longitude_arcsec": 0.10809954198975902,
+      "max_abs_latitude_arcsec": 0.02572886287381948,
+      "worst_longitude_body": "Melpomene",
+      "worst_latitude_body": "Winchester"
     }
   }
 }

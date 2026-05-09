@@ -186,5 +186,6 @@ from that full sovereign build stayed healthy:
 - asteroid max absolute longitude delta: `0.1081"`
 - asteroid max absolute latitude delta: `0.0257"`
 
-This does not yet mean the public routing layer has been migrated. It does
-mean the sovereign shard build is already viable at meaningful scale.
+The public routing layer can now prefer the sovereign shard set when a
+sovereign manifest is configured or discovered. That makes the migration
+path executable in the live asteroid surface, not only in standalone audits.

@@ -13,6 +13,7 @@ dependence on ``jplephem``.
 from __future__ import annotations
 
 from bisect import bisect_left
+import json
 from pathlib import Path
 
 from .coordinates import Vec3
@@ -30,6 +31,7 @@ except ImportError:  # pragma: no cover
 
 T0 = 2451545.0
 S_PER_DAY = 86400.0
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def _jd(seconds: float) -> float:
@@ -159,12 +161,15 @@ class _NativeChebyshevSegment:
 
     def _load_data(self):
         if self._data is None:
+            # We pass reverse_coefficients=False to get standard file order [C0, C1, ... Cn]
+            # which our Python evaluator now expects.
             payload = _moira_native.read_spk_chebyshev_segment_payload(
                 str(self.path),
                 int(self.start_i),
                 int(self.end_i),
                 self._little_endian,
                 int(self.data_type),
+                False # reverse_coefficients = False
             )
             self._data = (
                 float(payload["init"]),
@@ -173,7 +178,26 @@ class _NativeChebyshevSegment:
             )
         return self._data
 
+    def _load_native_evaluator(self):
+        if not hasattr(self, "_native_evaluator"):
+            self._native_evaluator = None
+            if _HAS_NATIVE_SEGMENTS and hasattr(_moira_native, "load_spk_segment_evaluator"):
+                self._native_evaluator = _moira_native.load_spk_segment_evaluator(
+                    str(self.path),
+                    int(self.start_i),
+                    int(self.end_i),
+                    self._little_endian,
+                    int(self.data_type),
+                )
+        return self._native_evaluator
+
     def _evaluate(self, tdb: float, tdb2: float, need_rates: bool):
+        evaluator = self._load_native_evaluator()
+        if evaluator is not None and tdb2 == 0.0:
+            if need_rates:
+                return evaluator.position_and_velocity(tdb)
+            return evaluator.position(tdb), None
+
         init, intlen, coefficients = self._load_data()
         record_count, component_count, coefficient_count = _coeff_tensor_shape(coefficients)
 
@@ -181,18 +205,20 @@ class _NativeChebyshevSegment:
         index2, offset2 = divmod(tdb2 * S_PER_DAY, intlen)
         index3, offset = divmod(offset1 + offset2, intlen)
         index = int(index1 + index2 + index3)
-        if index < 0 or index > record_count:
-            raise OutOfRangeError(
-                "segment only covers dates %d-%02d-%02d through %d-%02d-%02d"
-                % (
-                    compute_calendar_date(self.start_jd + 0.5)
-                    + compute_calendar_date(self.end_jd + 0.5)
-                ),
-                out_of_range_times=True,
-            )
-        if index == record_count:
-            index -= 1
-            offset += intlen
+        if index < 0 or index >= record_count:
+            # Boundary handling for exact end matches
+            if index == record_count and offset <= 1e-7:
+                 index -= 1
+                 offset += intlen
+            else:
+                raise OutOfRangeError(
+                    "segment only covers dates %d-%02d-%02d through %d-%02d-%02d"
+                    % (
+                        compute_calendar_date(self.start_jd + 0.5)
+                        + compute_calendar_date(self.end_jd + 0.5)
+                    ),
+                    out_of_range_times=True,
+                )
 
         coeff_record = _coeff_record(coefficients, index)
         s = 2.0 * offset / intlen - 1.0
@@ -389,3 +415,41 @@ class SmallBodyKernel:
             self._kernel.close()
         except Exception:
             pass
+
+
+def _resolve_manifest_shard_path(manifest_path: Path, raw_path: str) -> Path:
+    candidate = Path(raw_path)
+    if candidate.is_absolute():
+        return candidate
+
+    manifest_relative = (manifest_path.parent / candidate).resolve()
+    if manifest_relative.exists():
+        return manifest_relative
+
+    root_relative = (ROOT / candidate).resolve()
+    if root_relative.exists():
+        return root_relative
+
+    return manifest_relative
+
+
+def small_body_readers_from_manifest(manifest_path: str | Path) -> list[SmallBodyKernel]:
+    """
+    Build ordered ``SmallBodyKernel`` readers from a sovereign shard manifest.
+    """
+    manifest = Path(manifest_path)
+    payload = json.loads(manifest.read_text(encoding="utf-8"))
+    readers: list[SmallBodyKernel] = []
+    seen: set[Path] = set()
+    for shard in payload.get("shards", []):
+        shard_path = _resolve_manifest_shard_path(manifest, str(shard["path"]))
+        if not shard_path.exists():
+            raise FileNotFoundError(
+                f"Sovereign shard listed in {manifest} was not found: {shard_path}"
+            )
+        resolved = shard_path.resolve()
+        if resolved in seen:
+            continue
+        readers.append(SmallBodyKernel(resolved))
+        seen.add(resolved)
+    return readers

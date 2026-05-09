@@ -95,10 +95,11 @@ def main() -> None:
     parser.add_argument("--shard-size", type=int, default=DEFAULT_SHARD_SIZE)
     parser.add_argument("--body", action="append", default=[], help="Repeatable asteroid name or NAIF ID.")
     parser.add_argument("--limit-bodies", type=int, default=0, help="Optional body-count cap for smoke builds.")
+    parser.add_argument("--source-kernel", default=SOURCE_KERNEL_NAME, help="Name of the source .bsp kernel.")
     args = parser.parse_args()
     args.output_dir = args.output_dir if args.output_dir.is_absolute() else (ROOT / args.output_dir)
 
-    source_path = find_kernel(SOURCE_KERNEL_NAME)
+    source_path = find_kernel(args.source_kernel)
     if not source_path.exists():
         raise FileNotFoundError(f"Source kernel not found: {source_path}")
 

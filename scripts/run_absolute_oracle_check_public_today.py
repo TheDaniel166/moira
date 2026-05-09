@@ -14,8 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in __import__("sys").path:
     __import__("sys").path.insert(0, str(ROOT))
 
-from moira._kernel_paths import find_kernel, find_planetary_kernel
-from moira._spk_body_kernel import SmallBodyKernel
+from moira._kernel_paths import find_kernel, find_planetary_kernel, find_sovereign_small_body_manifest
+from moira._spk_body_kernel import SmallBodyKernel, small_body_readers_from_manifest
 from moira.asteroids import ASTEROID_NAIF, asteroid_at
 from moira.constants import Body
 from moira.julian import julian_day
@@ -133,20 +133,17 @@ def _planet_rows(jd_ut: float, target_date: date, reader: SpkReader) -> list[dic
     return rows
 
 
-def _build_small_body_pool(planetary_path: Path, manifest_path: Path | None = None) -> tuple[KernelPool, list]:
+def _build_small_body_pool(planetary_path: Path, manifest_path: Path | None = None) -> tuple[KernelPool, list, Path | None]:
     readers = [SpkReader(planetary_path)]
-    if manifest_path is not None:
-        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-        for shard in payload.get("shards", []):
-            path = ROOT / shard["path"]
-            if path.exists():
-                readers.append(SmallBodyKernel(path))
+    discovered_manifest = manifest_path or find_sovereign_small_body_manifest()
+    if discovered_manifest is not None:
+        readers.extend(small_body_readers_from_manifest(discovered_manifest))
     else:
         for filename in SMALL_BODY_KERNELS:
             path = find_kernel(filename)
             if path.exists():
                 readers.append(SmallBodyKernel(path))
-    return KernelPool(readers), readers
+    return KernelPool(readers), readers, discovered_manifest
 
 
 def _available_asteroid_names(readers: list) -> list[str]:
@@ -231,7 +228,7 @@ def main() -> None:
     finally:
         planetary_reader.close()
 
-    pool, readers = _build_small_body_pool(planetary_path, args.small_body_manifest)
+    pool, readers, discovered_manifest = _build_small_body_pool(planetary_path, args.small_body_manifest)
     try:
         available_names = _available_asteroid_names(readers)
         if args.body:
@@ -262,6 +259,7 @@ def main() -> None:
         "sampling": {
             "asteroid_seed": RANDOM_SEED,
             "asteroid_count": args.asteroid_count,
+            "small_body_manifest": str(discovered_manifest) if discovered_manifest is not None else None,
         },
         "planets": {
             "rows": planet_rows,

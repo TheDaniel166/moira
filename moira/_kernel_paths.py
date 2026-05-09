@@ -14,6 +14,7 @@ is checked before the search-dir scan.
 Public surface:
     find_kernel(filename)        -> Path        first existing path, else user-dir path
     find_planetary_kernel()      -> Path | None first installed planetary kernel, or None
+    find_sovereign_small_body_manifest() -> Path | None first installed sovereign manifest, or None
     user_kernels_dir()           -> Path        ~/.moira/kernels
     kernel_search_dirs()         -> tuple[Path, ...] search roots in precedence order
     discover_kernels()           -> dict[str, Path] available .bsp files by precedence
@@ -30,6 +31,7 @@ from pathlib import Path
 # without hard-coding strings.
 KERNEL_PATH_ENV = "MOIRA_KERNEL_PATH"   # absolute path to one planetary kernel file
 KERNELS_DIR_ENV = "MOIRA_KERNELS_DIR"   # directory that contains kernel files
+SOVEREIGN_SMALL_BODY_MANIFEST_ENV = "MOIRA_SOVEREIGN_SMALL_BODY_MANIFEST"
 
 _PACKAGE_KERNELS_DIR = Path(__file__).parent / "kernels"
 _DEV_KERNELS_DIR = Path(__file__).parent.parent / "kernels"
@@ -72,6 +74,31 @@ def discover_kernels() -> dict[str, Path]:
         for path in sorted(root.glob("*.bsp"), key=lambda p: p.name.lower()):
             found.setdefault(path.name, path)
     return found
+
+
+def find_sovereign_small_body_manifest() -> Path | None:
+    """
+    Return the first installed sovereign small-body manifest, or ``None``.
+
+    Discovery order:
+      1. ``$MOIRA_SOVEREIGN_SMALL_BODY_MANIFEST`` if it exists
+      2. ``<root>/sb441_type13_manifest.json`` for each kernel search root
+      3. ``<root>/sb441_type13/manifest.json`` for each kernel search root
+    """
+    env_path = os.environ.get(SOVEREIGN_SMALL_BODY_MANIFEST_ENV)
+    if env_path:
+        candidate = Path(env_path)
+        if candidate.exists():
+            return candidate
+
+    for root in kernel_search_dirs():
+        direct = root / "sb441_type13_manifest.json"
+        if direct.exists():
+            return direct
+        nested = root / "sb441_type13" / "manifest.json"
+        if nested.exists():
+            return nested
+    return None
 
 
 # Known JPL planetary ephemeris kernels, checked in this order when no

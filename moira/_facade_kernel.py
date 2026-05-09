@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from .spk_reader import MissingKernelError, KernelPool, SpkReader
-from ._spk_body_kernel import SmallBodyKernel
+from ._spk_body_kernel import SmallBodyKernel, small_body_readers_from_manifest
 
 
 def _facade_module() -> Any:
@@ -102,10 +102,14 @@ Canon: Moira Sovereign Facade Architecture; moira.facade kernel policy.
             pool.add(SpkReader(Path(path)))
             
             # Discover and add supplemental asteroid/comet kernels
-            from ._kernel_paths import find_kernel
+            from ._kernel_paths import find_kernel, find_sovereign_small_body_manifest
+            manifest_path = find_sovereign_small_body_manifest()
+            if manifest_path is not None:
+                for shard_reader in small_body_readers_from_manifest(manifest_path):
+                    pool.add(shard_reader)
             supplemental = [
-                "sb441-n373s.bsp",   # Preferred secondary asteroid kernel
-                "asteroids.bsp",     # Primary asteroid kernel
+                "sb441-n373s.bsp",   # Legacy secondary asteroid kernel
+                "asteroids.bsp",     # Legacy primary asteroid kernel
                 "centaurs.bsp",      # Horizons centaurs
                 "minor_bodies.bsp",  # Horizons minor bodies
                 "comets.bsp",        # Comets
@@ -167,7 +171,9 @@ Canon: Moira Sovereign Facade Architecture; moira.facade kernel policy.
     def get_kernel_status(self) -> str:
         facade = _facade_module()
         if self._reader_obj is not None:
-            return f"Kernel ready: {self._reader_obj.path}"
+            if hasattr(self._reader_obj, "path"):
+                return f"Kernel ready: {self._reader_obj.path}"
+            return f"Kernel pool ready ({len(self._reader_obj._readers)} readers)"
 
         if self._kernel_path:
             base = (

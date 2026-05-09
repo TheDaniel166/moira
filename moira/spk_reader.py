@@ -65,7 +65,7 @@ try:
 except ImportError:  # pragma: no cover
     _moira_native = None
 
-from ._kernel_paths import find_kernel, find_planetary_kernel
+from ._kernel_paths import find_kernel, find_planetary_kernel, find_sovereign_small_body_manifest
 
 Vec3 = tuple[float, float, float]
 _HAS_JPLEPHEM = _SPK is not None
@@ -1108,12 +1108,16 @@ def set_kernel_path(path: str | Path) -> None:
         found_supplemental = []
         if type(primary_reader) is _OriginalSpkReader:
             try:
-                from ._kernel_paths import find_kernel
-                from ._spk_body_kernel import SmallBodyKernel
-                
+                from ._kernel_paths import find_kernel, find_sovereign_small_body_manifest
+                from ._spk_body_kernel import SmallBodyKernel, small_body_readers_from_manifest
+
+                manifest_path = find_sovereign_small_body_manifest()
+                if manifest_path is not None:
+                    found_supplemental.extend(small_body_readers_from_manifest(manifest_path))
+
                 supplemental = [
-                    "sb441-n373s.bsp",   # Preferred secondary asteroid kernel
-                    "asteroids.bsp",     # Primary asteroid kernel
+                    "sb441-n373s.bsp",   # Legacy secondary asteroid kernel
+                    "asteroids.bsp",     # Legacy primary asteroid kernel
                     "centaurs.bsp",      # Horizons centaurs
                     "minor_bodies.bsp",  # Horizons minor bodies
                     "comets.bsp",        # Comets
