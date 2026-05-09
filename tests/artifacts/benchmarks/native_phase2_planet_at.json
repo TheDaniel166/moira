@@ -21,12 +21,12 @@
       "body_count": 10,
       "jd_count": 24,
       "calls_per_run": 240,
-      "python_best_seconds": 2.8757165999995777,
-      "native_best_seconds": 2.8938111000024946,
-      "python_median_seconds": 2.943064699997194,
-      "native_median_seconds": 2.987787699996261,
-      "speedup_best": 0.9937471730608466,
-      "speedup_median": 0.9850313996542918
+      "python_best_seconds": 3.157370400000218,
+      "native_best_seconds": 3.15820980000035,
+      "python_median_seconds": 3.1793148000001565,
+      "native_median_seconds": 3.176153599999907,
+      "speedup_best": 0.9997342165171764,
+      "speedup_median": 1.000995291915432
     },
     {
       "name": "planet_at_default_warm_reader",
@@ -34,20 +34,20 @@
       "body_count": 10,
       "jd_count": 24,
       "calls_per_run": 240,
-      "python_best_seconds": 0.002114799994160421,
-      "native_best_seconds": 0.0021386000007623807,
-      "python_median_seconds": 0.0022656999935861677,
-      "native_median_seconds": 0.0023308999952860177,
-      "speedup_best": 0.9888712210822617,
-      "speedup_median": 0.9720279712421341
+      "python_best_seconds": 0.001954599999862694,
+      "native_best_seconds": 0.002013999999689986,
+      "python_median_seconds": 0.0019812000000456464,
+      "native_median_seconds": 0.0021265000000312284,
+      "speedup_best": 0.9705064548974998,
+      "speedup_median": 0.9316717611175884
     }
   ],
   "summary": {
-    "python_total_best_seconds": 2.877831399993738,
-    "native_total_best_seconds": 2.895949700003257,
-    "python_total_median_seconds": 2.9453303999907803,
-    "native_total_median_seconds": 2.990118599991547,
-    "speedup_best": 0.9937435722694015,
-    "speedup_median": 0.9850212630358899
+    "python_total_best_seconds": 3.1593250000000808,
+    "native_total_best_seconds": 3.1602238000000398,
+    "python_total_median_seconds": 3.181296000000202,
+    "native_total_median_seconds": 3.178280099999938,
+    "speedup_best": 0.9997155897629911,
+    "speedup_median": 1.0009489094432753
   }
 }

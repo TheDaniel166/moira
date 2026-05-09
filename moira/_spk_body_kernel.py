@@ -252,8 +252,8 @@ class _Type13Segment:
                 int(self.end_i),
                 self._little_endian,
             )
-            states = payload["states"].tolist()
-            epochs_jd = payload["epochs_jd"].tolist()
+            states = [list(axis) for axis in payload["states"]]
+            epochs_jd = list(payload["epochs_jd"])
             self.__data = (states, epochs_jd, int(payload["window_size"]))
         return self.__data
 

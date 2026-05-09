@@ -41,6 +41,123 @@ std::mutex g_native_nutation_mutex;
 constexpr double NUTATION_ARCSEC = 3.141592653589793238462643383279502884 / 648000.0;
 constexpr double NUTATION_UAS2DEG = 1e-6 / 3600.0;
 
+std::vector<double> load_double_vector(const py::handle& src_obj, const char* label) {
+    py::sequence src = py::reinterpret_borrow<py::sequence>(src_obj);
+    std::vector<double> out;
+    out.reserve(static_cast<size_t>(py::len(src)));
+    for (const py::handle& item : src) {
+        out.push_back(py::cast<double>(item));
+    }
+    if (out.empty()) {
+        throw std::runtime_error(std::string(label) + " cannot be empty");
+    }
+    return out;
+}
+
+std::vector<int32_t> load_int32_vector(const py::handle& src_obj, const char* label) {
+    py::sequence src = py::reinterpret_borrow<py::sequence>(src_obj);
+    std::vector<int32_t> out;
+    out.reserve(static_cast<size_t>(py::len(src)));
+    for (const py::handle& item : src) {
+        out.push_back(py::cast<int32_t>(item));
+    }
+    if (out.empty()) {
+        throw std::runtime_error(std::string(label) + " cannot be empty");
+    }
+    return out;
+}
+
+struct DenseMatrixView {
+    std::vector<double> values;
+    size_t rows = 0;
+    size_t cols = 0;
+};
+
+DenseMatrixView load_double_matrix(const py::handle& src_obj, const char* label) {
+    py::sequence rows_src = py::reinterpret_borrow<py::sequence>(src_obj);
+    DenseMatrixView out;
+    out.rows = static_cast<size_t>(py::len(rows_src));
+    if (out.rows == 0) {
+        throw std::runtime_error(std::string(label) + " cannot be empty");
+    }
+
+    py::sequence first_row = py::reinterpret_borrow<py::sequence>(rows_src[0]);
+    out.cols = static_cast<size_t>(py::len(first_row));
+    if (out.cols == 0) {
+        throw std::runtime_error(std::string(label) + " rows cannot be empty");
+    }
+
+    out.values.reserve(out.rows * out.cols);
+    for (const py::handle& row_obj : rows_src) {
+        py::sequence row = py::reinterpret_borrow<py::sequence>(row_obj);
+        if (static_cast<size_t>(py::len(row)) != out.cols) {
+            throw std::runtime_error(std::string(label) + " rows must have consistent length");
+        }
+        for (const py::handle& item : row) {
+            out.values.push_back(py::cast<double>(item));
+        }
+    }
+    return out;
+}
+
+struct DenseTensor3View {
+    std::vector<double> values;
+    size_t dim0 = 0;
+    size_t dim1 = 0;
+    size_t dim2 = 0;
+};
+
+DenseTensor3View load_double_tensor3(const py::handle& src_obj, const char* label) {
+    py::sequence outer = py::reinterpret_borrow<py::sequence>(src_obj);
+    DenseTensor3View out;
+    out.dim0 = static_cast<size_t>(py::len(outer));
+    if (out.dim0 == 0) {
+        throw std::runtime_error(std::string(label) + " cannot be empty");
+    }
+
+    py::sequence first_mid = py::reinterpret_borrow<py::sequence>(outer[0]);
+    out.dim1 = static_cast<size_t>(py::len(first_mid));
+    if (out.dim1 == 0) {
+        throw std::runtime_error(std::string(label) + " inner dimensions cannot be empty");
+    }
+
+    py::sequence first_inner = py::reinterpret_borrow<py::sequence>(first_mid[0]);
+    out.dim2 = static_cast<size_t>(py::len(first_inner));
+    if (out.dim2 == 0) {
+        throw std::runtime_error(std::string(label) + " innermost dimension cannot be empty");
+    }
+
+    out.values.reserve(out.dim0 * out.dim1 * out.dim2);
+    for (const py::handle& mid_obj : outer) {
+        py::sequence mid = py::reinterpret_borrow<py::sequence>(mid_obj);
+        if (static_cast<size_t>(py::len(mid)) != out.dim1) {
+            throw std::runtime_error(std::string(label) + " mid dimensions must have consistent length");
+        }
+        for (const py::handle& inner_obj : mid) {
+            py::sequence inner = py::reinterpret_borrow<py::sequence>(inner_obj);
+            if (static_cast<size_t>(py::len(inner)) != out.dim2) {
+                throw std::runtime_error(std::string(label) + " inner dimensions must have consistent length");
+            }
+            for (const py::handle& item : inner) {
+                out.values.push_back(py::cast<double>(item));
+            }
+        }
+    }
+    return out;
+}
+
+py::list matrix_to_py_list(const double* values, size_t rows, size_t cols) {
+    py::list out;
+    for (size_t i = 0; i < rows; ++i) {
+        py::list row;
+        for (size_t j = 0; j < cols; ++j) {
+            row.append(values[i * cols + j]);
+        }
+        out.append(std::move(row));
+    }
+    return out;
+}
+
 NativeNutationTerm load_native_nutation_term(const py::handle& row_obj) {
     py::sequence row = py::reinterpret_borrow<py::sequence>(row_obj);
     const size_t size = static_cast<size_t>(py::len(row));
@@ -322,15 +439,13 @@ py::tuple apply_frame_bias_py(const py::sequence& xyz_src) {
  * @brief 2D version: evaluates one record provided as a (coefficient, component) array.
  */
 py::list spk_chebyshev_record_py(
-    py::array_t<double, py::array::c_style | py::array::forcecast> coeff_record,
+    const py::sequence& coeff_record,
     double s
 ) {
-    auto buf = coeff_record.request();
-    if (buf.ndim != 2) throw std::runtime_error("Evaluator expects 2D coefficients");
-
-    const size_t component_count = static_cast<size_t>(buf.shape[0]);
-    const size_t coefficient_count = static_cast<size_t>(buf.shape[1]);
-    const auto* coeffs = static_cast<const double*>(buf.ptr);
+    DenseMatrixView coeff_record_view = load_double_matrix(coeff_record, "Evaluator coefficients");
+    const size_t component_count = coeff_record_view.rows;
+    const size_t coefficient_count = coeff_record_view.cols;
+    const auto* coeffs = coeff_record_view.values.data();
 
     std::vector<double> result(component_count);
     spk_chebyshev_record_inplace(
@@ -343,16 +458,14 @@ py::list spk_chebyshev_record_py(
 }
 
 py::tuple spk_chebyshev_record_with_derivative_py(
-    py::array_t<double, py::array::c_style | py::array::forcecast> coeff_record,
+    const py::sequence& coeff_record,
     double s,
     double derivative_scale
 ) {
-    auto buf = coeff_record.request();
-    if (buf.ndim != 2) throw std::runtime_error("Evaluator expects 2D coefficients");
-
-    const size_t component_count = static_cast<size_t>(buf.shape[0]);
-    const size_t coefficient_count = static_cast<size_t>(buf.shape[1]);
-    const auto* coeffs = static_cast<const double*>(buf.ptr);
+    DenseMatrixView coeff_record_view = load_double_matrix(coeff_record, "Evaluator coefficients");
+    const size_t component_count = coeff_record_view.rows;
+    const size_t coefficient_count = coeff_record_view.cols;
+    const auto* coeffs = coeff_record_view.values.data();
 
     std::vector<double> values(component_count);
     std::vector<double> rates(component_count);
@@ -374,18 +487,18 @@ py::tuple spk_chebyshev_record_with_derivative_py(
  * @brief 3D version: evaluates one record from a (record, component, coefficient) series.
  */
 py::list spk_chebyshev_series_record_py(
-    py::array_t<double, py::array::c_style | py::array::forcecast> coefficients,
+    const py::sequence& coefficients,
     int32_t record_index,
     double s
 ) {
-    auto buf = coefficients.request();
-    if (buf.ndim != 3) throw std::runtime_error("Series evaluator expects 3D coefficients");
-
-    const size_t component_count = static_cast<size_t>(buf.shape[1]);
-    const size_t coefficient_count = static_cast<size_t>(buf.shape[2]);
+    DenseTensor3View coeff_series_view = load_double_tensor3(coefficients, "Series evaluator coefficients");
+    const size_t component_count = coeff_series_view.dim1;
+    const size_t coefficient_count = coeff_series_view.dim2;
     const size_t record_stride = component_count * coefficient_count;
-
-    const auto* coeffs = static_cast<const double*>(buf.ptr);
+    if (record_index < 0 || static_cast<size_t>(record_index) >= coeff_series_view.dim0) {
+        throw std::runtime_error("Series evaluator record index is out of range");
+    }
+    const auto* coeffs = coeff_series_view.values.data();
     std::vector<double> result(component_count);
 
     spk_chebyshev_record_inplace(
@@ -402,19 +515,19 @@ py::list spk_chebyshev_series_record_py(
 }
 
 py::tuple spk_chebyshev_series_record_with_derivative_py(
-    py::array_t<double, py::array::c_style | py::array::forcecast> coefficients,
+    const py::sequence& coefficients,
     int32_t record_index,
     double s,
     double derivative_scale
 ) {
-    auto buf = coefficients.request();
-    if (buf.ndim != 3) throw std::runtime_error("Series evaluator expects 3D coefficients");
-
-    const size_t component_count = static_cast<size_t>(buf.shape[1]);
-    const size_t coefficient_count = static_cast<size_t>(buf.shape[2]);
+    DenseTensor3View coeff_series_view = load_double_tensor3(coefficients, "Series evaluator coefficients");
+    const size_t component_count = coeff_series_view.dim1;
+    const size_t coefficient_count = coeff_series_view.dim2;
     const size_t record_stride = component_count * coefficient_count;
-
-    const auto* coeffs = static_cast<const double*>(buf.ptr);
+    if (record_index < 0 || static_cast<size_t>(record_index) >= coeff_series_view.dim0) {
+        throw std::runtime_error("Series evaluator record index is out of range");
+    }
+    const auto* coeffs = coeff_series_view.values.data();
     std::vector<double> values(component_count);
     std::vector<double> rates(component_count);
 
@@ -437,64 +550,73 @@ py::tuple spk_chebyshev_series_record_with_derivative_py(
 }
 
 py::tuple spk_chebyshev_series_bulk_evaluate_py(
-    py::array_t<double, py::array::c_style | py::array::forcecast> coeff_series,
-    py::array_t<int32_t, py::array::c_style | py::array::forcecast> record_indices,
-    py::array_t<double, py::array::c_style | py::array::forcecast> s_values,
-    py::array_t<double, py::array::c_style | py::array::forcecast> derivative_scales,
+    const py::sequence& coeff_series,
+    const py::sequence& record_indices,
+    const py::sequence& s_values,
+    const py::sequence& derivative_scales,
     bool need_rates
 ) {
-    auto buf = coeff_series.request();
-    auto idx_buf = record_indices.request();
-    auto s_buf = s_values.request();
-    auto ds_buf = derivative_scales.request();
+    DenseTensor3View coeff_series_view = load_double_tensor3(coeff_series, "Bulk evaluator coefficients");
+    std::vector<int32_t> indices = load_int32_vector(record_indices, "Bulk evaluator record indices");
+    std::vector<double> s_vec = load_double_vector(s_values, "Bulk evaluator s values");
+    std::vector<double> ds_vec = load_double_vector(derivative_scales, "Bulk evaluator derivative scales");
 
-    if (buf.ndim != 3) throw std::runtime_error("Bulk evaluator expects 3D coefficients");
-    
-    const size_t workload_size = static_cast<size_t>(idx_buf.shape[0]);
-    const size_t record_count = static_cast<size_t>(buf.shape[0]);
-    const size_t component_count = static_cast<size_t>(buf.shape[1]);
-    const size_t coefficient_count = static_cast<size_t>(buf.shape[2]);
+    const size_t workload_size = indices.size();
+    const size_t record_count = coeff_series_view.dim0;
+    const size_t component_count = coeff_series_view.dim1;
+    const size_t coefficient_count = coeff_series_view.dim2;
     const size_t record_stride = component_count * coefficient_count;
+    if (s_vec.size() != workload_size || ds_vec.size() != workload_size) {
+        throw std::runtime_error("Bulk evaluator workload arrays must have matching length");
+    }
 
-    const auto* coeffs = static_cast<const double*>(buf.ptr);
-    const auto* indices = static_cast<const int32_t*>(idx_buf.ptr);
-    const auto* s_ptr = static_cast<const double*>(s_buf.ptr);
-    const auto* ds_ptr = static_cast<const double*>(ds_buf.ptr);
-
-    py::array_t<double> values_out({workload_size, component_count});
-    auto v_out_ptr = values_out.mutable_data();
+    const auto* coeffs = coeff_series_view.values.data();
+    std::vector<double> values_buffer(workload_size * component_count, 0.0);
+    auto* v_out_ptr = values_buffer.data();
 
     if (need_rates) {
-        py::array_t<double> rates_out({workload_size, component_count});
-        auto r_out_ptr = rates_out.mutable_data();
+        std::vector<double> rates_buffer(workload_size * component_count, 0.0);
+        auto* r_out_ptr = rates_buffer.data();
 
         for (size_t i = 0; i < workload_size; ++i) {
             const int32_t record_index = indices[i];
+            if (record_index < 0 || static_cast<size_t>(record_index) >= record_count) {
+                throw std::runtime_error("Bulk evaluator record index is out of range");
+            }
             spk_chebyshev_record_with_derivative_inplace(
                 coeffs + static_cast<size_t>(record_index) * record_stride,
-                coefficient_count, component_count, s_ptr[i],
+                coefficient_count, component_count, s_vec[i],
                 v_out_ptr + i * component_count,
                 r_out_ptr + i * component_count,
                 1, coefficient_count
             );
             
-            const double ds = ds_ptr[i];
+            const double ds = ds_vec[i];
             for (size_t j = 0; j < component_count; ++j) {
                 r_out_ptr[i * component_count + j] *= ds;
             }
         }
-        return py::make_tuple(values_out, rates_out);
+        return py::make_tuple(
+            matrix_to_py_list(values_buffer.data(), workload_size, component_count),
+            matrix_to_py_list(rates_buffer.data(), workload_size, component_count)
+        );
     } else {
         for (size_t i = 0; i < workload_size; ++i) {
             const int32_t record_index = indices[i];
+            if (record_index < 0 || static_cast<size_t>(record_index) >= record_count) {
+                throw std::runtime_error("Bulk evaluator record index is out of range");
+            }
             spk_chebyshev_record_inplace(
                 coeffs + static_cast<size_t>(record_index) * record_stride,
-                coefficient_count, component_count, s_ptr[i],
+                coefficient_count, component_count, s_vec[i],
                 v_out_ptr + i * component_count,
                 1, coefficient_count
             );
         }
-        return py::make_tuple(values_out, py::none());
+        return py::make_tuple(
+            matrix_to_py_list(values_buffer.data(), workload_size, component_count),
+            py::none()
+        );
     }
 }
 
@@ -604,20 +726,23 @@ std::shared_ptr<NativeSpkKernelHandle> open_spk_kernel_py(const std::string& pat
 py::dict read_spk_type13_segment_payload_py(const std::string& path, int32_t start_i, int32_t end_i, bool little_endian) {
     SpkType13SegmentPayload payload = read_spk_type13_segment_payload(path, start_i, end_i, little_endian);
 
-    py::array_t<double> epochs(payload.state_count);
-    std::copy(payload.epochs_jd.begin(), payload.epochs_jd.end(), epochs.mutable_data());
-
-    py::array_t<double> coeffs({static_cast<size_t>(payload.state_count), static_cast<size_t>(6)});
-    auto out = coeffs.mutable_unchecked<2>();
+    py::tuple epochs(payload.state_count);
     for (size_t i = 0; i < static_cast<size_t>(payload.state_count); ++i) {
-        for (size_t j = 0; j < 6; ++j) {
-            out(i, j) = payload.states[j * payload.state_count + i];
+        epochs[i] = payload.epochs_jd[i];
+    }
+
+    py::list states;
+    for (size_t axis = 0; axis < 6; ++axis) {
+        py::tuple axis_values(payload.state_count);
+        for (size_t i = 0; i < static_cast<size_t>(payload.state_count); ++i) {
+            axis_values[i] = payload.states[axis * payload.state_count + i];
         }
+        states.append(std::move(axis_values));
     }
 
     py::dict out_dict;
-    out_dict["epochs"] = epochs;
-    out_dict["coefficients"] = coeffs;
+    out_dict["epochs_jd"] = epochs;
+    out_dict["states"] = states;
     out_dict["window_size"] = payload.window_size;
     return out_dict;
 }
@@ -1253,20 +1378,19 @@ PYBIND11_MODULE(_moira_native, m) {
     m.def("apply_frame_bias", &apply_frame_bias_py, py::arg("xyz"));
 
     // --- Interpolation ---
-    m.def("horner", [](py::array_t<double> coeffs, double x) {
-        auto buf = coeffs.request();
+    m.def("horner", [](const py::sequence& coeffs, double x) {
+        std::vector<double> coeff_vec = load_double_vector(coeffs, "Horner coefficients");
         double res = 0.0;
-        const double* ptr = static_cast<const double*>(buf.ptr);
-        for (int i = static_cast<int>(buf.size) - 1; i >= 0; --i) {
-            res = res * x + ptr[i];
+        for (int i = static_cast<int>(coeff_vec.size()) - 1; i >= 0; --i) {
+            res = res * x + coeff_vec[static_cast<size_t>(i)];
         }
         return res;
     }, py::arg("coeffs"), py::arg("x"));
-    m.def("lagrange_interpolate", [](py::array_t<double> x_pts, py::array_t<double> y_pts, double x) {
-        auto buf_x = x_pts.request();
-        auto buf_y = y_pts.request();
-        if (buf_x.size != buf_y.size) throw std::runtime_error("Lagrange points must have same size");
-        return lagrange_interpolate(static_cast<const double*>(buf_x.ptr), static_cast<const double*>(buf_y.ptr), buf_x.size, x);
+    m.def("lagrange_interpolate", [](const py::sequence& x_pts, const py::sequence& y_pts, double x) {
+        std::vector<double> x_vec = load_double_vector(x_pts, "Lagrange x points");
+        std::vector<double> y_vec = load_double_vector(y_pts, "Lagrange y points");
+        if (x_vec.size() != y_vec.size()) throw std::runtime_error("Lagrange points must have same size");
+        return lagrange_interpolate(x_vec.data(), y_vec.data(), x_vec.size(), x);
     }, py::arg("x_pts"), py::arg("y_pts"), py::arg("x"));
     
     m.def("spk_chebyshev_record", &spk_chebyshev_record_py, py::arg("coeff_record"), py::arg("s"));
@@ -1278,15 +1402,17 @@ PYBIND11_MODULE(_moira_native, m) {
     m.def("spk_chebyshev_series_bulk_evaluate", &spk_chebyshev_series_bulk_evaluate_py, 
           py::arg("coeff_series"), py::arg("record_indices"), py::arg("s_values"), py::arg("derivative_scales"), py::arg("need_rates"));
 
-    m.def("spk_type13_record", [](py::array_t<double> epochs, py::array_t<double> states, size_t window_size, double jd) {
-        auto buf_e = epochs.request();
-        auto buf_s = states.request();
-        
+    m.def("spk_type13_record", [](const py::sequence& epochs, const py::sequence& states, size_t window_size, double jd) {
+        std::vector<double> epochs_vec = load_double_vector(epochs, "Type13 epochs");
+        DenseMatrixView states_view = load_double_matrix(states, "Type13 states");
+        if (states_view.rows * states_view.cols == 0) {
+            throw std::runtime_error("Type13 states cannot be empty");
+        }
         std::vector<double> result(6);
         spk_type13_record_inplace(
-            static_cast<const double*>(buf_e.ptr),
-            static_cast<const double*>(buf_s.ptr),
-            static_cast<size_t>(buf_e.size),
+            epochs_vec.data(),
+            states_view.values.data(),
+            epochs_vec.size(),
             window_size,
             jd,
             result.data()

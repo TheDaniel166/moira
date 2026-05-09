@@ -1203,6 +1203,55 @@ def _chiron_planet_data(jd_ut: float, reader: KernelReader) -> PlanetData:
     )
 
 
+def _planet_at_default_apparent_geocentric_ecliptic(
+    body: str,
+    *,
+    jd_tt: float,
+    reader: KernelReader,
+    context: _ApparentContext,
+) -> PlanetData:
+    """
+    Fast route for the canonical public single-body chart surface.
+
+    This preserves the same mathematical order as _planet_at_core(), but avoids
+    re-checking every generic mode branch on the dominant default path.
+    """
+    earth_ssb = context.earth_ssb
+    earth_vel = context.earth_vel
+    rot_mat = context.rot_mat
+    if earth_ssb is None or earth_vel is None or rot_mat is None:
+        raise RuntimeError("default apparent context is incomplete")
+
+    xyz0, _lt = apply_light_time(
+        body,
+        jd_tt,
+        reader,
+        earth_ssb,
+        lambda body_, jd_tt_, reader_: _barycentric(body_, jd_tt_, reader_, context.vector_cache),
+    )
+
+    if body not in (Body.SUN, Body.MOON):
+        xyz0 = apply_deflection(xyz0, _deflectors_for_body(body, jd_tt, reader, context))
+
+    xyz0 = apply_aberration(xyz0, earth_vel)
+    xyz0 = apply_frame_bias(xyz0)
+    xyz0 = _apply_rotation_matrix(rot_mat, xyz0)
+
+    lon, lat, dist = icrf_to_ecliptic(xyz0, context.obliquity)
+    xyz_rate, vel_rate = _geocentric_state(body, jd_tt, reader, context.vector_cache)
+    speed = _longitude_rate(xyz_rate, vel_rate, context.obliquity)
+
+    return PlanetData(
+        name=body,
+        longitude=lon,
+        latitude=lat,
+        distance=dist,
+        speed=speed,
+        retrograde=(speed < 0.0),
+        is_topocentric=False,
+    )
+
+
 def _planet_at_core(
     body: str,
     jd_ut: float,
@@ -1511,6 +1560,27 @@ def planet_at(
             jd_tt=jd_tt,
             apparent=apparent,
             nutation=nutation,
+            context=context,
+        )
+
+    if (
+        context is not None
+        and obliquity is None
+        and apparent
+        and aberration
+        and grav_deflection
+        and nutation
+        and center == 'geocentric'
+        and frame == 'ecliptic'
+        and observer_lat is None
+        and observer_lon is None
+        and lst_deg is None
+        and observer_elev_m == 0.0
+    ):
+        return _planet_at_default_apparent_geocentric_ecliptic(
+            body,
+            jd_tt=jd_tt,
+            reader=reader,
             context=context,
         )
 

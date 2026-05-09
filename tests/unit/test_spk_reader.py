@@ -292,6 +292,55 @@ def test_native_daf_catalog_matches_jplephem_on_moira_written_kernel(tmp_path: P
     assert tuple(native_summary["descriptor"]) == tuple(jpl_descriptor)
 
 
+def test_native_type13_payload_is_plain_python_owned(tmp_path: Path) -> None:
+    if not spk_reader._HAS_NATIVE_DAF:
+        pytest.skip("native DAF reader is unavailable")
+
+    from moira.daf_writer import write_spk_type13
+
+    path = tmp_path / "sample_type13_payload.bsp"
+    write_spk_type13(
+        path,
+        bodies=[
+            {
+                "naif_id": 2000433,
+                "center": 10,
+                "frame": 1,
+                "name": "EROS SAMPLE",
+                "window_size": 3,
+                "epochs_jd": [2451545.0, 2451546.0, 2451547.0],
+                "states": [
+                    [1.0, 2.0, 3.0],
+                    [4.0, 5.0, 6.0],
+                    [7.0, 8.0, 9.0],
+                    [0.01, 0.01, 0.01],
+                    [0.02, 0.02, 0.02],
+                    [0.03, 0.03, 0.03],
+                ],
+            }
+        ],
+        locifn="MOIRA TEST TYPE13 PAYLOAD",
+    )
+
+    native_catalog = spk_reader._moira_native.read_daf_catalog(str(path))
+    descriptor = native_catalog["summaries"][0]["descriptor"]
+    payload = spk_reader._moira_native.read_spk_type13_segment_payload(
+        str(path),
+        int(descriptor[6]),
+        int(descriptor[7]),
+        True,
+    )
+
+    assert set(payload.keys()) == {"epochs_jd", "states", "window_size"}
+    assert isinstance(payload["epochs_jd"], tuple)
+    assert isinstance(payload["states"], list)
+    assert len(payload["states"]) == 6
+    assert all(isinstance(axis, tuple) for axis in payload["states"])
+    assert payload["epochs_jd"][0] == 2451545.0
+    assert payload["states"][0][0] == 1.0
+    assert payload["window_size"] == 3
+
+
 @pytest.mark.requires_ephemeris
 def test_native_chebyshev_payload_matches_live_jplephem_segment_data() -> None:
     if not spk_reader._HAS_NATIVE_SEGMENTS:

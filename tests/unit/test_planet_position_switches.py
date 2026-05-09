@@ -152,13 +152,14 @@ def test_planet_at_reuses_cached_apparent_context_for_same_reader_and_jd(monkeyp
     tt_calls: list[tuple[float, float, object]] = []
 
     class _DummyContext:
+        jd_tt = _JD_J2000 + 0.1
         obliquity = 23.4
         dpsi_deg = 0.0
         deps_deg = 0.0
-        rot_mat = None
+        rot_mat = ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
         vector_cache = {}
-        earth_ssb = None
-        earth_vel = None
+        earth_ssb = (0.0, 0.0, 0.0)
+        earth_vel = (0.0, 0.0, 0.0)
 
     monkeypatch.setattr(
         planets_module,
@@ -195,6 +196,11 @@ def test_planet_at_reuses_cached_apparent_context_for_same_reader_and_jd(monkeyp
 
     monkeypatch.setattr(planets_module, "_build_apparent_context", _fake_build)
     monkeypatch.setattr(planets_module, "_planet_at_core", _fake_core)
+    monkeypatch.setattr(
+        planets_module,
+        "_planet_at_default_apparent_geocentric_ecliptic",
+        lambda body, **kwargs: _fake_core(body, _JD_J2000, _context=kwargs["context"]),
+    )
 
     class _DummyReader:
         pass
@@ -210,6 +216,63 @@ def test_planet_at_reuses_cached_apparent_context_for_same_reader_and_jd(monkeyp
     assert tt_calls == [(_JD_J2000, planets_module.decimal_year(2000, 1), None)]
     assert len(core_context_ids) == 2
     assert core_context_ids[0] == core_context_ids[1]
+
+
+def test_planet_at_uses_default_fast_route_only_for_exact_default_surface(monkeypatch: pytest.MonkeyPatch):
+    fast_calls: list[str] = []
+    core_calls: list[str] = []
+
+    class _DummyContext:
+        jd_tt = _JD_J2000 + 0.1
+        obliquity = 23.4
+        dpsi_deg = 0.0
+        deps_deg = 0.0
+        rot_mat = ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
+        vector_cache = {}
+        earth_ssb = (0.0, 0.0, 0.0)
+        earth_vel = (0.0, 0.0, 0.0)
+
+    monkeypatch.setattr(planets_module, "_approx_year", lambda jd: (2000, 1, 1, 0))
+    monkeypatch.setattr(planets_module, "ut_to_tt", lambda jd, year, delta_t_policy=None: jd + 0.1)
+    monkeypatch.setattr(planets_module, "_build_apparent_context", lambda *args, **kwargs: _DummyContext())
+
+    def _fake_fast(body: str, **kwargs):
+        fast_calls.append(body)
+        return PlanetData(
+            name=body,
+            longitude=1.0,
+            latitude=0.0,
+            distance=1.0,
+            speed=0.1,
+            retrograde=False,
+        )
+
+    def _fake_core(body: str, jd_ut: float, **kwargs):
+        core_calls.append(body)
+        return PlanetData(
+            name=body,
+            longitude=2.0,
+            latitude=0.0,
+            distance=1.0,
+            speed=0.1,
+            retrograde=False,
+        )
+
+    monkeypatch.setattr(planets_module, "_planet_at_default_apparent_geocentric_ecliptic", _fake_fast)
+    monkeypatch.setattr(planets_module, "_planet_at_core", _fake_core)
+
+    class _DummyReader:
+        pass
+
+    reader = _DummyReader()
+    default_result = planet_at(Body.SUN, _JD_J2000, reader=reader)
+    cart_result = planet_at(Body.SUN, _JD_J2000, reader=reader, frame="cartesian")
+
+    assert default_result.longitude == 1.0
+    assert isinstance(cart_result, PlanetData)
+    assert cart_result.longitude == 2.0
+    assert fast_calls == [Body.SUN]
+    assert core_calls == [Body.SUN]
 
 
 def test_rotation_helpers_use_native_then_scalar_fallback(monkeypatch: pytest.MonkeyPatch):

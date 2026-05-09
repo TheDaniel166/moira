@@ -74,7 +74,7 @@ Usage
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from .constants import sign_of
+from .constants import Body, sign_of
 from .coordinates import (
     Vec3, vec_add, vec_sub, vec_norm, icrf_to_ecliptic, mat_vec_mul,
     precession_matrix_equatorial, nutation_matrix_equatorial
@@ -162,6 +162,7 @@ ASTEROID_NAIF: dict[str, int] = {
     "Kassandra":    2000114,
     "Nemesis":      2000128,
     "Eros":         2000433,
+    "Toutatis":     2004179,
     "Lilith":       2001181,
     "Amor":         2001221,
     "Icarus":       2001566,
@@ -755,9 +756,23 @@ def _asteroid_apparent(
     
     xyz, _lt = apply_light_time(naif_id, jd_tt, reader, earth_ssb, _bary_fn)
 
-    # 3. Gravitational deflection (near Sun)
+    # 3. Gravitational deflection.
+    # Match the main planetary apparent path more closely by including the two
+    # dominant non-solar deflectors that can still contribute at the
+    # microarcsecond-to-tiny-subarcsecond level.
     sun_geocentric = vec_sub(reader.position(0, 10, jd_tt), earth_ssb)
-    xyz = apply_deflection(xyz, [(sun_geocentric, SCHWARZSCHILD_RADII["Sun"])])
+    jupiter_geocentric = _planet_barycentric(Body.JUPITER, jd_tt, reader)
+    jupiter_geocentric = vec_sub(jupiter_geocentric, earth_ssb)
+    saturn_geocentric = _planet_barycentric(Body.SATURN, jd_tt, reader)
+    saturn_geocentric = vec_sub(saturn_geocentric, earth_ssb)
+    xyz = apply_deflection(
+        xyz,
+        [
+            (sun_geocentric, SCHWARZSCHILD_RADII["Sun"]),
+            (jupiter_geocentric, SCHWARZSCHILD_RADII["Jupiter"]),
+            (saturn_geocentric, SCHWARZSCHILD_RADII["Saturn"]),
+        ],
+    )
 
     # 4. Annual aberration
     from .planets import _earth_velocity
