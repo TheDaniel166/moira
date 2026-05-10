@@ -86,13 +86,14 @@ Public surface / exports:
 
 import math
 from .constants import DEG2RAD, RAD2DEG, ARCSEC2RAD, C_KM_PER_DAY, EARTH_RADIUS_KM
+from .polar_motion import PolarMotionRegistry, polar_motion_matrix
 
 try:
     from . import moira_native as _moira_native
 except ImportError:
     _moira_native = None
 from .coordinates import (
-    Vec3, vec_sub, vec_norm, vec_scale, vec_add,
+    Vec3, vec_sub, vec_norm, vec_scale, vec_add, mat_vec_mul,
     atmospheric_refraction as _atmospheric_refraction,
     atmospheric_refraction_extended as _atmospheric_refraction_extended,
 )
@@ -372,6 +373,7 @@ def _observer_position_icrf(
     longitude_deg: float,
     lst_deg: float,
     elevation_m: float = 0.0,
+    jd_ut: float | None = None,
 ) -> Vec3:
     """
     Compute the observer's position in the ICRF frame using WGS-84 geodetic-to-rectangular conversion.
@@ -398,6 +400,8 @@ def _observer_position_icrf(
     elevation_m : float, optional
         Observer's elevation above the WGS-84 ellipsoid in metres (default 0.0).
         Positive values are above sea level; negative values are below (e.g., in a mine or submarine).
+    jd_ut : float, optional
+        UT Julian Day used to apply IERS polar motion to the observer position.
 
     Returns
     -------
@@ -471,7 +475,12 @@ def _observer_position_icrf(
     obs_y = (a * C + h) * cos_lat * math.sin(lst)
     obs_z = (a * S + h) * sin_lat
 
-    return (obs_x, obs_y, obs_z)
+    observer_position = (obs_x, obs_y, obs_z)
+    if jd_ut is None:
+        return observer_position
+
+    x_p_arcsec, y_p_arcsec = PolarMotionRegistry.polar_motion_at(jd_ut)
+    return mat_vec_mul(polar_motion_matrix(x_p_arcsec, y_p_arcsec), observer_position)
 
 
 def _observer_velocity_icrf(observer_position_icrf: Vec3) -> Vec3:
@@ -601,6 +610,7 @@ def topocentric_correction(
     longitude_deg: float,
     lst_deg: float,
     elevation_m: float = 0.0,
+    jd_ut: float | None = None,
 ) -> Vec3:
     """
     Shift a geocentric position vector to a topocentric (surface) observer.
@@ -615,30 +625,20 @@ def topocentric_correction(
     longitude_deg  : geographic east longitude, degrees
     lst_deg        : Local Sidereal Time, degrees
     elevation_m    : observer elevation above sea level, metres
+    jd_ut          : optional UT Julian Day used to apply IERS polar motion
 
     Returns
     -------
     Topocentric ICRF position (km)
     """
-    lat = latitude_deg * DEG2RAD
-    lst = lst_deg      * DEG2RAD
-
-    # WGS-84 geodetic → geocentric rectangular (Meeus §11, USNO Circular 179)
-    f   = 1.0 / 298.257223563   # WGS-84 flattening
-    a   = EARTH_RADIUS_KM       # equatorial radius (km)
-    h   = elevation_m / 1000.0  # elevation in km
-
-    C = 1.0 / math.sqrt(math.cos(lat)**2 + (1.0 - f)**2 * math.sin(lat)**2)
-    S = (1.0 - f)**2 * C
-
-    # Elevation is added directly to the scaled equatorial radius, not as a
-    # simple spherical increment — this is the correct WGS-84 separation.
-    obs_x = (a * C + h) * math.cos(lat) * math.cos(lst)
-    obs_y = (a * C + h) * math.cos(lat) * math.sin(lst)
-    obs_z = (a * S + h) * math.sin(lat)
-
-    # Topocentric = geocentric − observer position
-    return vec_sub(xyz_geocentric, (obs_x, obs_y, obs_z))
+    observer_position = _observer_position_icrf(
+        latitude_deg,
+        longitude_deg,
+        lst_deg,
+        elevation_m,
+        jd_ut=jd_ut,
+    )
+    return vec_sub(xyz_geocentric, observer_position)
 
 
 def topocentric_correction_batch_np(
@@ -709,6 +709,7 @@ def apply_diurnal_aberration(
     longitude_deg: float,
     lst_deg: float,
     elevation_m: float = 0.0,
+    jd_ut: float | None = None,
 ) -> Vec3:
     """
     RITE: The Aberrant Observer — one who moves with the turning Earth.
@@ -791,6 +792,9 @@ def apply_diurnal_aberration(
         Positive values are above sea level; negative values are below (e.g., in a mine
         or submarine). Elevation affects the observer's distance from Earth's rotation axis,
         which scales the velocity magnitude.
+    jd_ut : float, optional
+        UT Julian Day used to apply IERS polar motion before deriving the observer's
+        rotational velocity. Omitting it preserves the legacy zero-polar-motion path.
 
     Returns
     -------
@@ -964,7 +968,7 @@ def apply_diurnal_aberration(
 
     # Compute observer position in ICRF frame using WGS-84 conversion
     observer_position = _observer_position_icrf(
-        latitude_deg, longitude_deg, lst_deg, elevation_m
+        latitude_deg, longitude_deg, lst_deg, elevation_m, jd_ut=jd_ut
     )
 
     # Compute observer velocity due to Earth's rotation

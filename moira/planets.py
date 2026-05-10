@@ -1350,10 +1350,10 @@ def _planet_at_core(
         and lst_deg is not None
     ):
         xyz0 = topocentric_correction(
-            xyz0, observer_lat, observer_lon, lst_deg, observer_elev_m
+            xyz0, observer_lat, observer_lon, lst_deg, observer_elev_m, jd_ut=jd_ut
         )
         xyz0 = apply_diurnal_aberration(
-            xyz0, observer_lat, observer_lon, lst_deg, observer_elev_m
+            xyz0, observer_lat, observer_lon, lst_deg, observer_elev_m, jd_ut=jd_ut
         )
 
     if frame == 'cartesian':
@@ -1734,10 +1734,14 @@ def sky_position_at(
 
     # Step 7: Topocentric correction
     lst_deg = local_sidereal_time(jd_ut, observer_lon, dpsi_deg, obliquity)
-    xyz = topocentric_correction(xyz, observer_lat, observer_lon, lst_deg, observer_elev_m)
+    xyz = topocentric_correction(
+        xyz, observer_lat, observer_lon, lst_deg, observer_elev_m, jd_ut=jd_ut
+    )
     
     # Step 7b: Topocentric diurnal aberration (after parallax)
-    xyz = apply_diurnal_aberration(xyz, observer_lat, observer_lon, lst_deg, observer_elev_m)
+    xyz = apply_diurnal_aberration(
+        xyz, observer_lat, observer_lon, lst_deg, observer_elev_m, jd_ut=jd_ut
+    )
 
     ra_deg, dec_deg, dist = icrf_to_equatorial(xyz)
     az_deg, alt_deg = equatorial_to_horizontal(ra_deg, dec_deg, lst_deg, observer_lat)

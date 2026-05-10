@@ -22,6 +22,7 @@ from pathlib import Path
 _PACKAGE_ROOT = Path(__file__).resolve().parent.parent
 _LEAP_SECONDS_PY = _PACKAGE_ROOT / "data" / "leap_seconds.py"
 _EOP_DATA_TXT = _PACKAGE_ROOT / "data" / "iers_eop.txt"
+_POLAR_MOTION_TXT = _PACKAGE_ROOT / "data" / "iers_polar_motion.txt"
 
 _URL_LEAP_SECONDS = "https://hpiers.obspm.fr/iers/bul/bulc/Leap_Second.dat"
 _URL_FINALS_ALL = "https://datacenter.iers.org/products/eop/rapid/standard/csv/finals2000A.all.csv"
@@ -98,10 +99,60 @@ def update_eop_dut1():
         f.write("\n".join(extracted) + "\n")
     print(f"  Successfully updated {_EOP_DATA_TXT.relative_to(_PACKAGE_ROOT)}")
 
+
+def update_polar_motion():
+    print(f"Syncing polar motion (x_p, y_p) from {_URL_FINALS_ALL}...")
+    content = fetch_url(_URL_FINALS_ALL)
+    rows = content.splitlines()
+
+    header = rows[0].split(";")
+    try:
+        mjd_idx = header.index("MJD")
+        x_idx = header.index("x_pole")
+        y_idx = header.index("y_pole")
+    except ValueError:
+        print("  Error: Could not find MJD, x_pole, or y_pole columns in IERS CSV.")
+        return
+
+    extracted: list[tuple[float, float, float]] = []
+    for row in rows[1:]:
+        parts = row.split(";")
+        if len(parts) <= max(mjd_idx, x_idx, y_idx):
+            continue
+        mjd_str = parts[mjd_idx].strip()
+        x_str = parts[x_idx].strip()
+        y_str = parts[y_idx].strip()
+        if not mjd_str or not x_str or not y_str:
+            continue
+        try:
+            extracted.append((float(mjd_str), float(x_str), float(y_str)))
+        except ValueError:
+            continue
+
+    if not extracted:
+        print("  Error: Could not parse any polar motion rows from IERS CSV.")
+        return
+
+    with open(_POLAR_MOTION_TXT, "w", encoding="utf-8") as f:
+        f.write("# IERS polar motion data (x_p, y_p)\n")
+        f.write(f"# Source: {_URL_FINALS_ALL}\n")
+        f.write(f"# Updated: {datetime.datetime.now(datetime.timezone.utc).isoformat()}\n")
+        f.write(
+            f"# Data range (MJD): {extracted[0][0]:.1f} to {extracted[-1][0]:.1f}\n"
+        )
+        f.write(
+            "# License: IERS Datacenter source terms apply; retain source provenance when redistributing.\n"
+        )
+        f.write("# Format: MJD x_p_arcsec y_p_arcsec\n")
+        for mjd, x_p, y_p in extracted:
+            f.write(f"{mjd:.1f} {x_p:.6f} {y_p:.6f}\n")
+    print(f"  Successfully updated {_POLAR_MOTION_TXT.relative_to(_PACKAGE_ROOT)}")
+
 def main():
     try:
         update_leap_seconds()
         update_eop_dut1()
+        update_polar_motion()
         print("\nSynchronization complete. The engine is now anchored to current IERS truth.")
     except Exception as e:
         print(f"\nCritical Error during synchronization: {e}")
