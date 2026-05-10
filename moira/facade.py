@@ -45,7 +45,6 @@ Moira, Chart, and all re-exported symbols in __all__.
 
 from dataclasses import dataclass
 from datetime import datetime
-from importlib.metadata import PackageNotFoundError, version as package_version
 from pathlib import Path
 from types import MappingProxyType
 
@@ -1253,10 +1252,7 @@ __all__ = [
 ]
 
 
-try:
-    __version__ = package_version("moira-astro")
-except PackageNotFoundError:
-    __version__ = "2.1.2"
+__version__ = "3.1.0"
 __author__  = "Moira contributors"
 
 
