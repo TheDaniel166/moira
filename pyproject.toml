@@ -8,6 +8,7 @@ version = "3.0.0"
 description = "Pure Python ephemeris and astrology engine built on JPL DE441 and SPK kernels."
 readme = "README.md"
 license = "MIT"
+license-files = ["LICENSE"]
 authors = [
     { name = "Moira contributors" },
 ]
@@ -51,8 +52,6 @@ requires-python = ">=3.10"
 dependencies = [
     "jplephem>=2.24",
     "scipy>=1.14",
-    "spiceypy>=8.0",
-    "laspy[lazrs]>=2.7",
 ]
 
 [project.urls]
@@ -61,6 +60,11 @@ Repository = "https://github.com/TheDaniel166/moira"
 Issues = "https://github.com/TheDaniel166/moira/issues"
 
 [project.optional-dependencies]
+lunar = [
+    "spiceypy>=8.0",
+    "laspy[lazrs]>=2.7",
+    "requests>=2.31",
+]
 fast = [
     "numpy>=1.24",
 ]
@@ -82,8 +86,7 @@ moira-kernel-manager   = "moira.kernel_manager_ui:main"
 moira-daf-writer       = "moira.daf_writer_ui:main"
 
 [tool.setuptools]
-packages = ["moira", "moira.data", "moira.compat", "moira.compat.nasa", "moira.constellations", "moira.primary_directions", "moira.harmograms", "moira.bridges"]
-license-files = ["LICENSE"]
+packages = ["moira", "moira.data", "moira.compat", "moira.compat.nasa", "moira.constellations", "moira.primary_directions", "moira.harmograms", "moira.bridges", "moira.kernels"]
 
 [tool.setuptools.package-data]
 moira = [

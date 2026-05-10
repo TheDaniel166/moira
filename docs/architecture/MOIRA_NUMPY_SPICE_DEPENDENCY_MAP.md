@@ -1,6 +1,6 @@
 # Moira NumPy / SpiceyPy Dependency Map
 
-Status date: 2026-05-09
+Status date: 2026-05-10
 
 Purpose:
 This document records the exact remaining `NumPy` and `spiceypy` dependency
@@ -10,7 +10,7 @@ is part of the governing planetary calculation path.
 The distinction that matters is:
 
 - planetary path
-- production code outside the planetary path
+- production Python runtime
 - native binding surfaces
 - tests, scripts, scratch, and documentation
 
@@ -23,12 +23,14 @@ For the active planetary calculation path:
 - `planet_at(...)`: no `NumPy`, no `spiceypy`
 - `all_planets_at(...)`: no `NumPy`, no `spiceypy`
 
-The governing planetary manuscript is therefore free of both dependencies.
+For the broader production Python runtime:
 
-What remains is outside that path:
+- no live `NumPy` usage remains under `moira/`
+- `spiceypy` remains only in `moira/lunar_limb.py`
 
-- array-oriented native binding surfaces
-- cartography / writer / limb systems
+What remains outside that Python runtime:
+
+- `_moira_native` array-oriented binding surfaces
 - tests, scripts, scratch, and historical docs
 
 ## 1. Active Planetary Path
@@ -51,6 +53,10 @@ These are the files governing the benchmarked public planetary path.
   - no `NumPy` import
   - planetary Chebyshev fallback path is tuple/scalar-owned
 
+- [moira/lunar_limb.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/lunar_limb.py)
+  - no `NumPy` import
+  - utilizes native `LolaPointCloud` substrate
+
 - [moira/_spk_body_kernel.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/_spk_body_kernel.py:62)
   - no `NumPy` import
   - native payload readers are used, but not `NumPy` directly
@@ -59,86 +65,65 @@ These are the files governing the benchmarked public planetary path.
 
 - no `spiceypy` usage in the active planetary path
 
-## 2. Native Binding Surface Still Using NumPy
+## 2. Production Python Runtime Outside the Planetary Path
 
-These sites are not the governing planetary manuscript, but they still keep
-`_moira_native` coupled to `NumPy` array types.
+### 2.1 `NumPy`
 
-### 2.1 Binding-level NumPy header
+- [moira/astrocartography.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/astrocartography.py)
+  - NumPy removed 2026-05-10
+  - ASC/DSC sampling now uses scalar math only
 
-- [src/native/bindings/moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:4)
-  - `#include <pybind11/numpy.h>`
+- [moira/daf_writer.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/daf_writer.py)
+  - NumPy removed 2026-05-10
+  - Type-13 payload assembly and serialization now use stdlib only
 
-### 2.2 Legacy evaluator / interpolation array APIs
+- [moira/lunar_limb.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/lunar_limb.py)
+  - migrated to native substrate earlier in the same closure cycle
 
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:325)
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:346)
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:377)
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:405)
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:440)
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:1256)
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:1265)
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:1281)
+Repository scan result for `moira/`:
 
-These are legacy / helper array APIs, not the governing planetary hot path.
+- no live `import numpy`
+- no live `from numpy`
+- no live `np.` or `_np.` production call sites
 
-### 2.3 Type-13 payload still NumPy-shaped
-
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:604)
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:607)
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:610)
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:620)
-
-This remains relevant for small-body / type-13 surfaces, but not for the
-current planetary path closure.
-
-### 2.4 Non-planetary batch / cartography array APIs
-
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:630)
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:659)
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:720)
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:739)
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:769)
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:810)
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:853)
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:887)
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:943)
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:977)
-- [moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:1043)
-
-These are off the active planetary path.
-
-## 3. Production Code Outside the Planetary Path
-
-### 3.1 `NumPy`
-
-#### Optional vectorized production code
-
-- [moira/astrocartography.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/astrocartography.py:44)
-  - optional `NumPy` vectorized path
-
-- [moira/daf_writer.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/daf_writer.py:54)
-  - optional `NumPy` writer path
-
-#### Hard production dependency
-
-- [moira/lunar_limb.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/lunar_limb.py:38)
-  - hard `NumPy` dependency
-
-### 3.2 `spiceypy`
+### 2.2 `spiceypy`
 
 All current production `spiceypy` usage is concentrated in:
 
 - [moira/lunar_limb.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/lunar_limb.py:40)
   - hard `spiceypy` import
 
-- [moira/lunar_limb.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/lunar_limb.py:121)
-  - `sp.furnsh(...)`
+- [moira/lunar_limb.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/lunar_limb.py:124)
+  - kernel loading via `sp.furnsh(...)`
 
-- [moira/lunar_limb.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/lunar_limb.py:126)
-  - `sp.str2et(...)`
+- [moira/lunar_limb.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/lunar_limb.py:129)
+  - residual fallback ET conversion via `sp.str2et(...)` for pre-1972 epochs
+
+- [moira/lunar_limb.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/lunar_limb.py:190)
+  - apparent Moon state for a topocentric observer via `sp.spkcpo(...)`
+
+- [moira/lunar_limb.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/lunar_limb.py:213)
+  - body-frame rotation lookup via `sp.pxform(...)`
 
 There are no other current production `spiceypy` sites in the repository scan.
+
+## 3. Native Binding Surface Still Using NumPy
+
+These sites are not the governing planetary manuscript, but they still keep
+`_moira_native` coupled to `NumPy` array types.
+
+### 3.1 Binding-level NumPy header
+
+- [src/native/bindings/moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:4)
+  - `#include <pybind11/numpy.h>`
+
+### 3.2 Array-oriented binding APIs
+
+- `py::array_t<double>` cartography entry points
+- `py::array_t<double>` batch evaluator entry points
+- array-returning helper surfaces in the non-planetary native bridge
+
+These are the real remaining runtime-coupled NumPy surfaces.
 
 ## 4. Tests
 
@@ -169,7 +154,7 @@ NumPy-related surfaces.
 - [scripts/audit_phase4_edge_cases.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/scripts/audit_phase4_edge_cases.py:1)
 - [scripts/audit_phase3_search.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/scripts/audit_phase3_search.py:1)
 
-These are off the active planetary runtime path.
+These are off the production runtime path.
 
 ### 5.2 `spiceypy`
 
@@ -193,24 +178,13 @@ They should not be treated as live dependency authority.
 - `NumPy`: removed
 - `spiceypy`: absent
 
-### 7.2 Remaining Production Work
+### 7.2 Production Python Runtime
 
-- `NumPy`
-  - `moira/astrocartography.py`
-  - `moira/daf_writer.py`
-  - `moira/lunar_limb.py`
-  - array-oriented surfaces in `src/native/bindings/moira_native.cpp`
+- `NumPy`: removed
+- `spiceypy`: `moira/lunar_limb.py` only
 
-- `spiceypy`
-  - `moira/lunar_limb.py` only
+### 7.3 Remaining Work
 
-### 7.3 Next Logical Removal Order
-
-If the repository later wants broader dependency reduction beyond the
-planetary path, the next sensible order is:
-
-1. `_moira_native` NumPy-facing non-planetary helper surfaces
-2. `moira/astrocartography.py`
-3. `moira/daf_writer.py`
-4. `moira/lunar_limb.py` NumPy/spiceypy program
-
+1. `_moira_native` NumPy-facing array/binding surfaces
+2. test and script cleanup where worth doing
+3. the remaining `spiceypy` work in `moira/lunar_limb.py`

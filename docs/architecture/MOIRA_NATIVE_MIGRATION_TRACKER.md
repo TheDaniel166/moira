@@ -477,14 +477,15 @@ Interpretation:
   - [x] Audit Script: `scripts/audit_phase4_edge_cases.py`
 
 - [x] **Walkthrough Completed**: `PHASE_3_4_WALKTHROUGH.md`
-- [x] **Phase 5: Native Eclipse Engine**
-  - [x] Implemented **find_solar_eclipses** and **find_lunar_eclipses** kernels.
-  - [x] Established **RA-Conjunction Scanning** for robust lunation discovery.
-  - [x] Standardized **Kilometre-First** internal units across the forge.
-  - [x] Applied **JD-to-Seconds (J2000)** domain correction to native evaluators.
-  - [x] Validated **Topocentric Parallax** accuracy against the 2024 NYC total solar eclipse.
-  - [x] Achieved **0.05s discovery time** for a 100-year survey (approx. 500x speedup).
-  - [x] Benchmark Script: `scripts/benchmark_native_eclipse.py`
+- [x] **Phase 6: Native LOLA Topography Substrate**
+  - [x] Implemented **LolaPointCloud** SoA-based native data structure.
+  - [x] Developed **filter_combined** single-pass kernel for visibility and PA windowing.
+  - [x] Implemented **Andrew's Monotone Chain** 2D convex hull in native C++.
+  - [x] Optimized **Ray-Hull Intersection** for limb-radius solving.
+  - [x] Eliminated **NumPy hard dependency** from `lunar_limb.py`.
+  - [x] Achieved **4.68x speedup** on 100k-point sample filtering.
+  - [x] Benchmark Script: `tests/benchmark_lola_filters.py`
+  - [x] Oracle Validation: `tests/validate_lunar_limb_oracle.py`
 
 ---
 

@@ -3,7 +3,10 @@
 #include <pybind11/functional.h>
 #include <pybind11/numpy.h>
 #include <array>
+#include <fstream>
 #include <mutex>
+#include <sstream>
+#include <string>
 #include "geometry.hpp"
 #include "julian.hpp"
 #include "math_utils.hpp"
@@ -32,15 +35,217 @@ struct NativeNutationTerm {
     size_t arg_count = 0;
 };
 
+struct NativeLeapSecondEntry {
+    double jd_utc = 0.0;
+    double tai_minus_utc = 0.0;
+};
+
+struct NativeNaifLsk {
+    double delta_t_a = 32.184;
+    double k = 1.657e-3;
+    double eb = 1.671e-2;
+    double m0 = 6.239996;
+    double m1 = 1.99096871e-7;
+    std::vector<NativeLeapSecondEntry> delta_at;
+    bool loaded = false;
+    std::string source_path;
+};
+
 std::vector<NativeNutationTerm> g_native_nutation_ls_terms;
 std::vector<NativeNutationTerm> g_native_nutation_pl_terms;
 size_t g_native_nutation_ls_j0_count = 0;
 size_t g_native_nutation_pl_j0_count = 0;
 bool g_native_nutation_tables_ready = false;
 std::mutex g_native_nutation_mutex;
+NativeNaifLsk g_native_naif_lsk;
+std::mutex g_native_naif_lsk_mutex;
 
 constexpr double NUTATION_ARCSEC = 3.141592653589793238462643383279502884 / 648000.0;
 constexpr double NUTATION_UAS2DEG = 1e-6 / 3600.0;
+constexpr double NATIVE_J2000 = 2451545.0;
+
+std::string trim_copy(const std::string& value) {
+    const size_t first = value.find_first_not_of(" \t\r\n");
+    if (first == std::string::npos) {
+        return "";
+    }
+    const size_t last = value.find_last_not_of(" \t\r\n");
+    return value.substr(first, last - first + 1);
+}
+
+std::string replace_fortran_d(std::string value) {
+    for (char& ch : value) {
+        if (ch == 'D' || ch == 'd') {
+            ch = 'E';
+        }
+    }
+    return value;
+}
+
+int month_from_naif_abbrev(const std::string& month) {
+    if (month == "JAN") return 1;
+    if (month == "FEB") return 2;
+    if (month == "MAR") return 3;
+    if (month == "APR") return 4;
+    if (month == "MAY") return 5;
+    if (month == "JUN") return 6;
+    if (month == "JUL") return 7;
+    if (month == "AUG") return 8;
+    if (month == "SEP") return 9;
+    if (month == "OCT") return 10;
+    if (month == "NOV") return 11;
+    if (month == "DEC") return 12;
+    throw std::runtime_error("Unsupported NAIF month token in LSK: " + month);
+}
+
+double jd_from_naif_date_token(const std::string& token) {
+    if (token.size() < 2 || token[0] != '@') {
+        throw std::runtime_error("Invalid NAIF date token in LSK: " + token);
+    }
+
+    std::string raw = token.substr(1);
+    std::vector<std::string> parts;
+    std::stringstream ss(raw);
+    std::string item;
+    while (std::getline(ss, item, '-')) {
+        parts.push_back(trim_copy(item));
+    }
+    if (parts.size() != 3) {
+        throw std::runtime_error("Unsupported NAIF date token format in LSK: " + token);
+    }
+
+    const int year = std::stoi(parts[0]);
+    const int month = month_from_naif_abbrev(parts[1]);
+    const int day = std::stoi(parts[2]);
+    return julian_day(year, month, day, 0.0);
+}
+
+NativeNaifLsk parse_naif_lsk(const std::string& path) {
+    std::ifstream input(path);
+    if (!input) {
+        throw std::runtime_error("Could not open NAIF LSK: " + path);
+    }
+
+    NativeNaifLsk parsed;
+    parsed.source_path = path;
+
+    auto parse_delta_at_row = [&parsed](const std::string& row_text) {
+        const std::string row = trim_copy(row_text);
+        if (row.empty()) {
+            return;
+        }
+        const size_t comma_pos = row.find(',');
+        if (comma_pos == std::string::npos) {
+            throw std::runtime_error("Malformed DELTET/DELTA_AT row in LSK: " + row);
+        }
+        const double offset = std::stod(trim_copy(row.substr(0, comma_pos)));
+        const std::string date_token = trim_copy(row.substr(comma_pos + 1));
+        parsed.delta_at.push_back({jd_from_naif_date_token(date_token), offset});
+    };
+
+    std::string line;
+    bool in_delta_at = false;
+    while (std::getline(input, line)) {
+        const std::string trimmed = trim_copy(line);
+        if (trimmed.empty()) {
+            continue;
+        }
+
+        if (in_delta_at) {
+            const size_t close_pos = trimmed.find(')');
+            const std::string row = close_pos == std::string::npos ? trimmed : trimmed.substr(0, close_pos);
+            parse_delta_at_row(row);
+            if (close_pos != std::string::npos) {
+                in_delta_at = false;
+            }
+            continue;
+        }
+
+        if (trimmed.rfind("DELTET/DELTA_T_A", 0) == 0) {
+            const size_t eq = trimmed.find('=');
+            parsed.delta_t_a = std::stod(replace_fortran_d(trim_copy(trimmed.substr(eq + 1))));
+            continue;
+        }
+        if (trimmed.rfind("DELTET/K", 0) == 0) {
+            const size_t eq = trimmed.find('=');
+            parsed.k = std::stod(replace_fortran_d(trim_copy(trimmed.substr(eq + 1))));
+            continue;
+        }
+        if (trimmed.rfind("DELTET/EB", 0) == 0) {
+            const size_t eq = trimmed.find('=');
+            parsed.eb = std::stod(replace_fortran_d(trim_copy(trimmed.substr(eq + 1))));
+            continue;
+        }
+        if (trimmed.rfind("DELTET/M", 0) == 0) {
+            const size_t open = trimmed.find('(');
+            const size_t close = trimmed.find(')');
+            const std::string values = trimmed.substr(open + 1, close - open - 1);
+            std::stringstream value_stream(values);
+            std::string first;
+            std::string second;
+            value_stream >> first >> second;
+            parsed.m0 = std::stod(replace_fortran_d(first));
+            parsed.m1 = std::stod(replace_fortran_d(second));
+            continue;
+        }
+        if (trimmed.rfind("DELTET/DELTA_AT", 0) == 0) {
+            const size_t open = trimmed.find('(');
+            if (open != std::string::npos) {
+                const std::string inline_row = trim_copy(trimmed.substr(open + 1));
+                if (!inline_row.empty()) {
+                    parse_delta_at_row(inline_row);
+                }
+            }
+            in_delta_at = true;
+            continue;
+        }
+    }
+
+    if (parsed.delta_at.empty()) {
+        throw std::runtime_error("NAIF LSK did not provide any DELTET/DELTA_AT entries: " + path);
+    }
+    parsed.loaded = true;
+    return parsed;
+}
+
+void load_naif_lsk_py(const std::string& path) {
+    NativeNaifLsk parsed = parse_naif_lsk(path);
+    std::lock_guard<std::mutex> lock(g_native_naif_lsk_mutex);
+    g_native_naif_lsk = std::move(parsed);
+}
+
+double native_tai_minus_utc(double jd_utc) {
+    if (!g_native_naif_lsk.loaded) {
+        throw std::runtime_error("Native NAIF LSK is not loaded");
+    }
+    if (jd_utc < g_native_naif_lsk.delta_at.front().jd_utc) {
+        throw std::runtime_error("Native NAIF LSK time admission does not support pre-1972 UTC epochs");
+    }
+    double result = g_native_naif_lsk.delta_at.front().tai_minus_utc;
+    for (const NativeLeapSecondEntry& entry : g_native_naif_lsk.delta_at) {
+        if (jd_utc >= entry.jd_utc) {
+            result = entry.tai_minus_utc;
+        } else {
+            break;
+        }
+    }
+    return result;
+}
+
+double jd_utc_to_et_seconds_past_j2000_py(double jd_utc) {
+    std::lock_guard<std::mutex> lock(g_native_naif_lsk_mutex);
+    const double utc_seconds_past_j2000 = (jd_utc - NATIVE_J2000) * 86400.0;
+    const double delta_at = native_tai_minus_utc(jd_utc);
+
+    double et = utc_seconds_past_j2000 + g_native_naif_lsk.delta_t_a + delta_at;
+    for (int i = 0; i < 6; ++i) {
+        const double mean_anomaly = g_native_naif_lsk.m0 + g_native_naif_lsk.m1 * et;
+        const double eccentric_anomaly = mean_anomaly + g_native_naif_lsk.eb * std::sin(mean_anomaly);
+        const double et_minus_utc = g_native_naif_lsk.delta_t_a + delta_at + g_native_naif_lsk.k * std::sin(eccentric_anomaly);
+        et = utc_seconds_past_j2000 + et_minus_utc;
+    }
+    return et;
+}
 
 std::vector<double> load_double_vector(const py::handle& src_obj, const char* label) {
     py::sequence src = py::reinterpret_borrow<py::sequence>(src_obj);
@@ -1367,6 +1572,8 @@ PYBIND11_MODULE(_moira_native, m) {
     // --- Julian ---
     m.def("julian_day", &julian_day, py::arg("year"), py::arg("month"), py::arg("day"), py::arg("hour") = 0.0);
     m.def("calendar_from_jd", &calendar_from_jd, py::arg("jd"));
+    m.def("load_naif_lsk", &load_naif_lsk_py, py::arg("path"));
+    m.def("jd_utc_to_et_seconds_past_j2000", &jd_utc_to_et_seconds_past_j2000_py, py::arg("jd_utc"));
     m.def("earth_rotation_angle", &earth_rotation_angle, py::arg("jd_ut"));
     m.def("greenwich_mean_sidereal_time", &greenwich_mean_sidereal_time, py::arg("jd_ut"));
     m.def("apparent_sidereal_time", &apparent_sidereal_time, py::arg("jd_ut"), py::arg("nutation_longitude"), py::arg("obliquity"));
@@ -1455,6 +1662,9 @@ PYBIND11_MODULE(_moira_native, m) {
     m.def("vec3_to_radec", &vec3_to_radec, py::arg("v"));
     m.def("lonlat_to_vec3", &lonlat_to_vec3, py::arg("lon_deg"), py::arg("lat_deg"), py::arg("dist") = 1.0);
     m.def("vec3_to_lonlat", &vec3_to_lonlat, py::arg("v"));
+    m.def("vec3_to_lonlat_signed", &vec3_to_lonlat_signed, py::arg("v"));
+    m.def("geodetic_to_cartesian_wgs84", &geodetic_to_cartesian_wgs84,
+        py::arg("lon_deg"), py::arg("lat_deg"), py::arg("elevation_m") = 0.0);
     m.def("ecliptic_to_equatorial", &ecliptic_to_equatorial, py::arg("lon_deg"), py::arg("lat_deg"), py::arg("obliquity_deg"));
     m.def("equatorial_to_ecliptic", &equatorial_to_ecliptic, py::arg("ra_deg"), py::arg("dec_deg"), py::arg("obliquity_deg"));
 

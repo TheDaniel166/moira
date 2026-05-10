@@ -29,14 +29,40 @@ Import-time side effects: none
 
 import math
 import os
+import json
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from threading import Lock
 
-import laspy
-import requests
-import spiceypy as sp
+_requests_exc = None
+try:
+    import requests
+    _HAS_REQUESTS = True
+except ImportError as exc:
+    requests = None
+    _HAS_REQUESTS = False
+    _requests_exc = exc
+_laspy_exc = None
+try:
+    import laspy
+    from laspy.copc import Bounds, CopcReader
+    _HAS_LASPY = True
+except ImportError as exc:
+    laspy = None
+    Bounds = None
+    CopcReader = None
+    _HAS_LASPY = False
+    _laspy_exc = exc
+
+_spiceypy_exc = None
+try:
+    import spiceypy as sp
+    _HAS_SPICEYPY = True
+except ImportError as exc:
+    sp = None
+    _HAS_SPICEYPY = False
+    _spiceypy_exc = exc
 
 from .constants import MOON_RADIUS_KM
 try:
@@ -49,6 +75,33 @@ from typing import Sequence
 __all__ = [
     "official_lunar_limb_profile_adjustment",
 ]
+
+
+def _require_lunar_extra() -> None:
+    missing: list[str] = []
+    causes: list[str] = []
+    if not _HAS_SPICEYPY:
+        missing.append("spiceypy")
+        if _spiceypy_exc is not None:
+            causes.append(f"spiceypy: {_spiceypy_exc}")
+    if not _HAS_LASPY:
+        missing.append("laspy[lazrs]")
+        if _laspy_exc is not None:
+            causes.append(f"laspy: {_laspy_exc}")
+    if not _HAS_REQUESTS:
+        missing.append("requests")
+        if _requests_exc is not None:
+            causes.append(f"requests: {_requests_exc}")
+    if not missing:
+        return
+
+    detail = f" Missing dependencies: {', '.join(missing)}."
+    if causes:
+        detail += " Import errors: " + "; ".join(causes) + "."
+    raise ImportError(
+        "Official lunar limb / graze support requires the optional "
+        "`moira-astro[lunar]` extra." + detail
+    )
 
 
 _CACHE_LOCK = Lock()
@@ -71,6 +124,29 @@ _LIMB_TILE_EXTENT = 1
 _LIMB_PA_WINDOW_DEG = 10.0
 _LIMB_RADIAL_FLOOR_KM = MOON_RADIUS_KM - 1.0
 _LIMB_BIN_WIDTH_DEG = 0.1
+_NATIVE_LSK_MIN_JD_UTC = 2441317.5
+_MIN_LOLA_QUERY_HALF_WIDTH_KM = 250.0
+_DEFAULT_LOLA_QUERY_HALF_WIDTH_KM = 250.0
+
+
+def _stac_tile_cache_path(cache_root: Path) -> Path:
+    return cache_root / "stac_tile_cache.json"
+
+
+def _load_stac_tile_cache(cache_root: Path) -> dict[str, str]:
+    cache_path = _stac_tile_cache_path(cache_root)
+    if not cache_path.exists():
+        return {}
+    try:
+        return json.loads(cache_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def _store_stac_tile_cache(cache_root: Path, cache: dict[str, str]) -> None:
+    cache_path = _stac_tile_cache_path(cache_root)
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    cache_path.write_text(json.dumps(cache, indent=2, sort_keys=True), encoding="utf-8")
 
 
 @dataclass(frozen=True, slots=True)
@@ -112,6 +188,7 @@ def _download_file(url: str, dest: Path) -> Path:
 
 
 def _ensure_kernels_loaded(cache_root: Path) -> None:
+    _require_lunar_extra()
     global _KERNELS_LOADED
     if _KERNELS_LOADED:
         return
@@ -122,10 +199,28 @@ def _ensure_kernels_loaded(cache_root: Path) -> None:
         for filename, url in _NAIF_KERNELS.items():
             path = _download_file(url, kernels_dir / filename)
             sp.furnsh(str(path))
+            if filename == "naif0012.tls" and moira_native is not None and hasattr(moira_native, "load_naif_lsk"):
+                moira_native.load_naif_lsk(str(path))
         _KERNELS_LOADED = True
 
 
 def _jd_ut_to_et(jd_ut: float) -> float:
+    """
+    Admit the lunar-limb epoch as a UTC-style Julian Day, matching the historic
+    `sp.str2et(f"JD {jd_ut}")` production path.
+
+    This preserves the existing SPICE semantics for bare `JD` admission rather
+    than reinterpreting the input as a generic Delta-T-adjusted UT1 timescale.
+    The current native admitted regime begins at 1972-01-01 UTC, which is the
+    first epoch explicitly covered by the loaded NAIF leap-second schedule.
+    """
+    if (
+        moira_native is not None
+        and hasattr(moira_native, "jd_utc_to_et_seconds_past_j2000")
+        and jd_ut >= _NATIVE_LSK_MIN_JD_UTC
+    ):
+        return float(moira_native.jd_utc_to_et_seconds_past_j2000(jd_ut))
+    _require_lunar_extra()
     return sp.str2et(f"JD {jd_ut}")
 
 
@@ -162,6 +257,14 @@ def _earth_observer_position_km(
     observer_lon: float,
     observer_elev_m: float,
 ) -> tuple[float, float, float]:
+    if moira_native is not None and hasattr(moira_native, "geodetic_to_cartesian_wgs84"):
+        pos = moira_native.geodetic_to_cartesian_wgs84(
+            observer_lon,
+            observer_lat,
+            observer_elev_m,
+        )
+        return (float(pos.x), float(pos.y), float(pos.z))
+
     _, radii = sp.bodvrd("EARTH", "RADII", 3)
     equatorial_radius_km = float(radii[0])
     polar_radius_km = float(radii[2])
@@ -211,13 +314,24 @@ def _observer_limb_context(
     los_j2000 = _norm(observer_to_moon_j2000)
     moon_to_observer_j2000 = (-observer_to_moon_j2000[0], -observer_to_moon_j2000[1], -observer_to_moon_j2000[2])
     j2000_to_moon = sp.pxform("J2000", "MOON_ME", et)
-    m_obs_moon_raw = sp.mxv(j2000_to_moon, list(moon_to_observer_j2000))
+    if moira_native is not None and hasattr(moira_native, "rotation_matrix_apply"):
+        m_obs_moon_raw = moira_native.rotation_matrix_apply(j2000_to_moon, moon_to_observer_j2000)
+    else:
+        m_obs_moon_raw = sp.mxv(j2000_to_moon, list(moon_to_observer_j2000))
     moon_to_observer_moon = _norm((float(m_obs_moon_raw[0]), float(m_obs_moon_raw[1]), float(m_obs_moon_raw[2])))
     
-    _, lon_rad, lat_rad = sp.reclat(list(moon_to_observer_moon))
+    if moira_native is not None and hasattr(moira_native, "vec3_to_lonlat_signed"):
+        lon_deg, lat_deg, _ = moira_native.vec3_to_lonlat_signed(moira_native.Vec3(*moon_to_observer_moon))
+    else:
+        _, lon_rad, lat_rad = sp.reclat(list(moon_to_observer_moon))
+        lon_deg = lon_rad * sp.dpr()
+        lat_deg = lat_rad * sp.dpr()
     moon_to_j2000 = sp.pxform("MOON_ME", "J2000", et)
     
-    m_north_j2000_raw = sp.mxv(moon_to_j2000, [0.0, 0.0, 1.0])
+    if moira_native is not None and hasattr(moira_native, "rotation_matrix_apply"):
+        m_north_j2000_raw = moira_native.rotation_matrix_apply(moon_to_j2000, (0.0, 0.0, 1.0))
+    else:
+        m_north_j2000_raw = sp.mxv(moon_to_j2000, [0.0, 0.0, 1.0])
     moon_north_j2000 = _norm((float(m_north_j2000_raw[0]), float(m_north_j2000_raw[1]), float(m_north_j2000_raw[2])))
     
     celestial_north_j2000 = (0.0, 0.0, 1.0)
@@ -230,15 +344,21 @@ def _observer_limb_context(
     )
     sky_east_j2000 = _norm(cross_raw)
     
-    s_north_moon_raw = sp.mxv(j2000_to_moon, list(sky_north_j2000))
+    if moira_native is not None and hasattr(moira_native, "rotation_matrix_apply"):
+        s_north_moon_raw = moira_native.rotation_matrix_apply(j2000_to_moon, sky_north_j2000)
+    else:
+        s_north_moon_raw = sp.mxv(j2000_to_moon, list(sky_north_j2000))
     sky_north_moon = _norm((float(s_north_moon_raw[0]), float(s_north_moon_raw[1]), float(s_north_moon_raw[2])))
     
-    s_east_moon_raw = sp.mxv(j2000_to_moon, list(sky_east_j2000))
+    if moira_native is not None and hasattr(moira_native, "rotation_matrix_apply"):
+        s_east_moon_raw = moira_native.rotation_matrix_apply(j2000_to_moon, sky_east_j2000)
+    else:
+        s_east_moon_raw = sp.mxv(j2000_to_moon, list(sky_east_j2000))
     sky_east_moon = _norm((float(s_east_moon_raw[0]), float(s_east_moon_raw[1]), float(s_east_moon_raw[2])))
     
     return _ObserverLimbContext(
-        subobserver_lon_deg=lon_rad * sp.dpr(),
-        subobserver_lat_deg=lat_rad * sp.dpr(),
+        subobserver_lon_deg=float(lon_deg),
+        subobserver_lat_deg=float(lat_deg),
         los_j2000=los_j2000,
         observer_dir_moon=moon_to_observer_moon,
         sky_north_moon=sky_north_moon,
@@ -269,12 +389,23 @@ def _limb_point_lon_lat_deg(
         _scale(context.sky_east_moon, math.sin(pa_rad))
     )
     limb_vec_moon = _norm(limb_vec_moon)
+    if moira_native is not None and hasattr(moira_native, "vec3_to_lonlat_signed"):
+        lon_deg, lat_deg, _ = moira_native.vec3_to_lonlat_signed(moira_native.Vec3(*limb_vec_moon))
+        return _normalize_lon_deg(float(lon_deg)), float(lat_deg)
+
     _, lon_rad, lat_rad = sp.reclat(limb_vec_moon)
     return _normalize_lon_deg(lon_rad * sp.dpr()), lat_rad * sp.dpr()
 
 
 @lru_cache(maxsize=128)
-def _lola_tile_asset_url(lon_bin: int, lat_bin: int) -> str:
+def _lola_tile_asset_url(lon_bin: int, lat_bin: int, cache_root_str: str) -> str:
+    cache_root = Path(cache_root_str)
+    cache_key = f"{lon_bin},{lat_bin}"
+    cache = _load_stac_tile_cache(cache_root)
+    cached_url = cache.get(cache_key)
+    if cached_url:
+        return cached_url
+
     bbox = [lon_bin - 0.01, lat_bin - 0.01, lon_bin + 0.01, lat_bin + 0.01]
     response = requests.post(
         _STAC_SEARCH_URL,
@@ -289,17 +420,28 @@ def _lola_tile_asset_url(lon_bin: int, lat_bin: int) -> str:
     features = response.json().get("features", [])
     if not features:
         raise FileNotFoundError(f"No official LOLA tile found for lon={lon_bin}, lat={lat_bin}")
-    return str(features[0]["assets"]["data"]["href"])
+    url = str(features[0]["assets"]["data"]["href"])
+    with _CACHE_LOCK:
+        cache = _load_stac_tile_cache(cache_root)
+        cache[cache_key] = url
+        _store_stac_tile_cache(cache_root, cache)
+    return url
 
 
 @lru_cache(maxsize=16)
 def _load_lola_tile(url: str, cache_root_str: str) -> _LolaTile:
+    _require_lunar_extra()
     if moira_native is None:
         raise ImportError("Native Moira backend required for LOLA processing.")
     
     cache_root = Path(cache_root_str)
     tile_path = _download_file(url, cache_root / "lola_tiles" / Path(url).name)
-    las = laspy.read(tile_path)
+    if tile_path.suffixes[-2:] == [".copc", ".laz"]:
+        reader = CopcReader.open(tile_path)
+        bounds = Bounds(reader.header.mins, reader.header.maxs)
+        las = reader.query(bounds=bounds)
+    else:
+        las = laspy.read(tile_path)
     
     # Initialize native point cloud directly from LAS coordinates (converted to KM)
     pc = moira_native.LolaPointCloud(
@@ -311,7 +453,52 @@ def _load_lola_tile(url: str, cache_root_str: str) -> _LolaTile:
     return _LolaTile(point_cloud=pc)
 
 
-def _lola_neighbor_tile_urls(lon_deg: float, lat_deg: float) -> tuple[str, ...]:
+@lru_cache(maxsize=64)
+def _load_lola_tile_region(
+    url: str,
+    cache_root_str: str,
+    center_lon_deg: float,
+    center_lat_deg: float,
+    half_width_km: float,
+) -> _LolaTile:
+    """
+    Load only a bounded COPC region around the requested limb point when possible.
+
+    The oracle and production path only need a small neighborhood around the
+    smooth-limb target, not every point in each 15-degree LOLA tile. Querying
+    the COPC octree directly avoids whole-file decode costs while preserving the
+    final silhouette solve.
+    """
+    _require_lunar_extra()
+    if moira_native is None:
+        raise ImportError("Native Moira backend required for LOLA processing.")
+
+    cache_root = Path(cache_root_str)
+    tile_path = _download_file(url, cache_root / "lola_tiles" / Path(url).name)
+
+    if tile_path.suffixes[-2:] != [".copc", ".laz"]:
+        return _load_lola_tile(url, cache_root_str)
+
+    center = moira_native.lonlat_to_vec3(center_lon_deg, center_lat_deg, MOON_RADIUS_KM)
+    half_width_m = half_width_km * 1000.0
+    bounds = Bounds(
+        (center.x * 1000.0 - half_width_m, center.y * 1000.0 - half_width_m, center.z * 1000.0 - half_width_m),
+        (center.x * 1000.0 + half_width_m, center.y * 1000.0 + half_width_m, center.z * 1000.0 + half_width_m),
+    )
+
+    reader = CopcReader.open(tile_path)
+    las = reader.query(bounds=bounds)
+
+    pc = moira_native.LolaPointCloud(
+        [float(x) / 1000.0 for x in las.x],
+        [float(y) / 1000.0 for y in las.y],
+        [float(z) / 1000.0 for z in las.z]
+    )
+
+    return _LolaTile(point_cloud=pc)
+
+
+def _lola_neighbor_tile_urls(lon_deg: float, lat_deg: float, cache_root: Path) -> tuple[str, ...]:
     lon_bin = int(math.floor(lon_deg / _LOLA_TILE_STEP_DEG) * _LOLA_TILE_STEP_DEG)
     lat_bin = int(math.floor(lat_deg / _LOLA_TILE_STEP_DEG) * _LOLA_TILE_STEP_DEG)
     seen: set[str] = set()
@@ -327,7 +514,7 @@ def _lola_neighbor_tile_urls(lon_deg: float, lat_deg: float) -> tuple[str, ...]:
             _LOLA_TILE_STEP_DEG,
         ):
             try:
-                url = _lola_tile_asset_url(lon_bin + lon_offset, lat_bin + lat_offset)
+                url = _lola_tile_asset_url(lon_bin + lon_offset, lat_bin + lat_offset, str(cache_root))
             except FileNotFoundError:
                 continue
             if url not in seen:
@@ -344,6 +531,7 @@ def _sample_lola_limb_elevation_m(
     observer_context: _ObserverLimbContext,
     position_angle_deg: float,
     cache_root: Path,
+    query_half_width_km: float,
 ) -> float:
     """
     Sample LOLA elevation near the limb using native substrate kernels.
@@ -360,8 +548,14 @@ def _sample_lola_limb_elevation_m(
     east_vec = moira_native.Vec3(*observer_context.sky_east_moon)
     north_vec = moira_native.Vec3(*observer_context.sky_north_moon)
     
-    for tile_url in _lola_neighbor_tile_urls(lon_deg, lat_deg):
-        tile = _load_lola_tile(tile_url, str(cache_root))
+    for tile_url in _lola_neighbor_tile_urls(lon_deg, lat_deg, cache_root):
+        tile = _load_lola_tile_region(
+            tile_url,
+            str(cache_root),
+            lon_deg,
+            lat_deg,
+            query_half_width_km,
+        )
         
         # 1. Combined Filter (Visibility, PA window, Radius floor)
         filtered_pc = tile.point_cloud.filter_combined(
@@ -415,6 +609,8 @@ def official_lunar_limb_profile_adjustment(
     observer_elev_m: float,
     position_angle_deg: float,
     moon_distance_km: float,
+    *,
+    lola_query_half_width_km: float = _DEFAULT_LOLA_QUERY_HALF_WIDTH_KM,
 ) -> float:
     """
     Return an official-source lunar-limb correction in angular degrees.
@@ -423,7 +619,19 @@ def official_lunar_limb_profile_adjustment(
     - NAIF lunar orientation kernels for body-frame geometry
     - official USGS/LOLA COPC tiles for limb topography
 
+    Runtime policy:
+    - `lola_query_half_width_km` controls the bounded COPC neighborhood sampled
+      around the smooth-limb target. This is an explicit performance policy, not
+      a hidden astronomical model change.
+    - widths below `250 km` are not admitted because narrower windows failed the
+      oracle safety sweep on the current validation corpus.
+
     """
+    if lola_query_half_width_km < _MIN_LOLA_QUERY_HALF_WIDTH_KM:
+        raise ValueError(
+            f"lola_query_half_width_km must be at least {_MIN_LOLA_QUERY_HALF_WIDTH_KM} km."
+        )
+
     cache_root = _default_cache_root()
     _ensure_kernels_loaded(cache_root)
 
@@ -446,6 +654,7 @@ def official_lunar_limb_profile_adjustment(
         observer_context,
         position_angle_deg,
         cache_root,
+        lola_query_half_width_km,
     )
 
     base_radius_deg = math.degrees(math.asin(max(-1.0, min(1.0, MOON_RADIUS_KM / moon_distance_km))))

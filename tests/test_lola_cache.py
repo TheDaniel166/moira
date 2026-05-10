@@ -23,7 +23,7 @@ def test_lola_tile_cache_integrity():
     cache_root = _default_cache_root()
     
     # Discover a valid URL from neighbor tiles (e.g., near 0,0)
-    urls = _lola_neighbor_tile_urls(0.0, 0.0)
+    urls = _lola_neighbor_tile_urls(0.0, 0.0, cache_root)
     if not urls:
         pytest.skip("No LOLA tiles available in neighborhood")
     url = urls[0]

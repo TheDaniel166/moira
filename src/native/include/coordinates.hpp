@@ -54,6 +54,54 @@ inline std::tuple<double, double, double> vec3_to_lonlat(const Vec3& v) {
 }
 
 /**
+ * @brief Convert a Cartesian vector to signed longitude/latitude (degrees) and distance.
+ *
+ * Longitude follows the SPICE reclat/atan2 convention in [-180, 180].
+ */
+inline std::tuple<double, double, double> vec3_to_lonlat_signed(const Vec3& v) {
+    double x = v[0];
+    double y = v[1];
+    double z = v[2];
+    double dist = v.norm();
+    if (dist == 0.0) return {0.0, 0.0, 0.0};
+
+    double lon = rad_to_deg(std::atan2(y, x));
+    double lat = rad_to_deg(std::asin(clamp(z / dist, -1.0, 1.0)));
+    return {lon, lat, dist};
+}
+
+/**
+ * @brief Convert WGS-84 geodetic longitude/latitude/elevation to Cartesian coordinates.
+ *
+ * This is the admitted native replacement for the narrow SPICE georec usage in
+ * the lunar-limb path. Output axes follow the standard body-fixed rectangular
+ * convention: x toward lon=0, y toward lon=90E, z toward north pole.
+ */
+inline Vec3 geodetic_to_cartesian_wgs84(
+    double lon_deg,
+    double lat_deg,
+    double elevation_m = 0.0
+) {
+    constexpr double f = 1.0 / 298.257223563;
+    constexpr double a = EARTH_RADIUS_KM;
+
+    const double lon = deg_to_rad(lon_deg);
+    const double lat = deg_to_rad(lat_deg);
+    const double h = elevation_m / 1000.0;
+
+    const double cos_lat = std::cos(lat);
+    const double sin_lat = std::sin(lat);
+    const double e2 = 2.0 * f - f * f;
+    const double n = a / std::sqrt(1.0 - e2 * sin_lat * sin_lat);
+
+    return Vec3({
+        (n + h) * cos_lat * std::cos(lon),
+        (n + h) * cos_lat * std::sin(lon),
+        ((1.0 - e2) * n + h) * sin_lat
+    });
+}
+
+/**
  * @brief THEOREM: Cartesian State to Spherical with Rates.
  */
 inline void vec3_to_lonlat_with_rates(
