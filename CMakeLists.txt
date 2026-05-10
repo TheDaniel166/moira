@@ -10,7 +10,10 @@ include_directories("C:/Users/nilad/AppData/Roaming/Python/Python314/site-packag
 include_directories(src/native/include)
 
 # Define the extension module manually under a private backend name.
-add_library(_moira_native MODULE src/native/bindings/moira_native.cpp)
+add_library(_moira_native MODULE 
+    src/native/bindings/moira_native.cpp
+    src/native/src/lola.cpp
+)
 
 # Link against Python library
 target_link_libraries(_moira_native PRIVATE "C:/Python314/libs/python314.lib")

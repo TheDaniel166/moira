@@ -35,11 +35,16 @@ from pathlib import Path
 from threading import Lock
 
 import laspy
-import numpy as np
 import requests
 import spiceypy as sp
 
 from .constants import MOON_RADIUS_KM
+try:
+    from . import _moira_native as moira_native
+except ImportError:
+    moira_native = None
+
+from typing import Sequence
 
 __all__ = [
     "official_lunar_limb_profile_adjustment",
@@ -70,10 +75,8 @@ _LIMB_BIN_WIDTH_DEG = 0.1
 
 @dataclass(frozen=True, slots=True)
 class _LolaTile:
-    """Vessel: Cached LOLA point-cloud tile with localized selenographic coordinates."""
-    lon_deg: np.ndarray
-    lat_deg: np.ndarray
-    radius_m: np.ndarray
+    """Vessel: Cached LOLA point-cloud tile with native substrate storage."""
+    point_cloud: "moira_native.LolaPointCloud"
 
 
 @dataclass(frozen=True, slots=True)
@@ -81,10 +84,10 @@ class _ObserverLimbContext:
     """Vessel: Ephemeris and orientation context for a specific lunar-limb observer epoch."""
     subobserver_lon_deg: float
     subobserver_lat_deg: float
-    los_j2000: np.ndarray
-    observer_dir_moon: np.ndarray
-    sky_north_moon: np.ndarray
-    sky_east_moon: np.ndarray
+    los_j2000: Sequence[float]
+    observer_dir_moon: Sequence[float]
+    sky_north_moon: Sequence[float]
+    sky_east_moon: Sequence[float]
 
 
 def _default_cache_root() -> Path:
@@ -130,33 +133,47 @@ def _normalize_lon_deg(lon_deg: float) -> float:
     return ((lon_deg + 180.0) % 360.0) - 180.0
 
 
-def _norm(vec: np.ndarray) -> np.ndarray:
-    return vec / np.linalg.norm(vec)
+def _norm(vec: Sequence[float]) -> tuple[float, float, float]:
+    m = math.sqrt(sum(x*x for x in vec))
+    if m == 0:
+        return (vec[0], vec[1], vec[2])
+    return (vec[0] / m, vec[1] / m, vec[2] / m)
 
 
-def _project_onto_sky(vec: np.ndarray, los: np.ndarray) -> np.ndarray:
-    return vec - np.dot(vec, los) * los
+def _dot(v1: Sequence[float], v2: Sequence[float]) -> float:
+    return sum(x*y for x, y in zip(v1, v2))
+
+
+def _project_onto_sky(vec: Sequence[float], los: Sequence[float]) -> tuple[float, float, float]:
+    d = _dot(vec, los)
+    return (vec[0] - d * los[0], vec[1] - d * los[1], vec[2] - d * los[2])
+
+
+def _add(v1: Sequence[float], v2: Sequence[float]) -> tuple[float, float, float]:
+    return (v1[0] + v2[0], v1[1] + v2[1], v1[2] + v2[2])
+
+
+def _scale(vec: Sequence[float], s: float) -> tuple[float, float, float]:
+    return (vec[0] * s, vec[1] * s, vec[2] * s)
 
 
 def _earth_observer_position_km(
     observer_lat: float,
     observer_lon: float,
     observer_elev_m: float,
-) -> np.ndarray:
+) -> tuple[float, float, float]:
     _, radii = sp.bodvrd("EARTH", "RADII", 3)
     equatorial_radius_km = float(radii[0])
     polar_radius_km = float(radii[2])
     flattening = (equatorial_radius_km - polar_radius_km) / equatorial_radius_km
-    return np.array(
-        sp.georec(
-            math.radians(observer_lon),
-            math.radians(observer_lat),
-            observer_elev_m / 1000.0,
-            equatorial_radius_km,
-            flattening,
-        ),
-        dtype=float,
+    pos = sp.georec(
+        math.radians(observer_lon),
+        math.radians(observer_lat),
+        observer_elev_m / 1000.0,
+        equatorial_radius_km,
+        flattening,
     )
+    return (float(pos[0]), float(pos[1]), float(pos[2]))
 
 
 def _observer_limb_context(
@@ -180,20 +197,45 @@ def _observer_limb_context(
         "EARTH",
         "IAU_EARTH",
     )
-    observer_to_moon_j2000 = np.array(moon_state_j2000[:3], dtype=float)
+    moon_state_j2000, _ = sp.spkcpo(
+        "MOON",
+        et,
+        "J2000",
+        "OBSERVER",
+        "LT+S",
+        list(observer_pos_iau_earth),
+        "EARTH",
+        "IAU_EARTH",
+    )
+    observer_to_moon_j2000 = (float(moon_state_j2000[0]), float(moon_state_j2000[1]), float(moon_state_j2000[2]))
     los_j2000 = _norm(observer_to_moon_j2000)
-    moon_to_observer_j2000 = -observer_to_moon_j2000
+    moon_to_observer_j2000 = (-observer_to_moon_j2000[0], -observer_to_moon_j2000[1], -observer_to_moon_j2000[2])
     j2000_to_moon = sp.pxform("J2000", "MOON_ME", et)
-    moon_to_observer_moon = np.array(sp.mxv(j2000_to_moon, moon_to_observer_j2000), dtype=float)
-    moon_to_observer_moon = _norm(moon_to_observer_moon)
-    _, lon_rad, lat_rad = sp.reclat(moon_to_observer_moon)
+    m_obs_moon_raw = sp.mxv(j2000_to_moon, list(moon_to_observer_j2000))
+    moon_to_observer_moon = _norm((float(m_obs_moon_raw[0]), float(m_obs_moon_raw[1]), float(m_obs_moon_raw[2])))
+    
+    _, lon_rad, lat_rad = sp.reclat(list(moon_to_observer_moon))
     moon_to_j2000 = sp.pxform("MOON_ME", "J2000", et)
-    moon_north_j2000 = np.array(sp.mxv(moon_to_j2000, [0.0, 0.0, 1.0]), dtype=float)
-    celestial_north_j2000 = np.array([0.0, 0.0, 1.0], dtype=float)
+    
+    m_north_j2000_raw = sp.mxv(moon_to_j2000, [0.0, 0.0, 1.0])
+    moon_north_j2000 = _norm((float(m_north_j2000_raw[0]), float(m_north_j2000_raw[1]), float(m_north_j2000_raw[2])))
+    
+    celestial_north_j2000 = (0.0, 0.0, 1.0)
     sky_north_j2000 = _norm(_project_onto_sky(celestial_north_j2000, los_j2000))
-    sky_east_j2000 = _norm(np.cross(los_j2000, sky_north_j2000))
-    sky_north_moon = _norm(np.array(sp.mxv(j2000_to_moon, sky_north_j2000), dtype=float))
-    sky_east_moon = _norm(np.array(sp.mxv(j2000_to_moon, sky_east_j2000), dtype=float))
+    
+    cross_raw = (
+        los_j2000[1]*sky_north_j2000[2] - los_j2000[2]*sky_north_j2000[1],
+        los_j2000[2]*sky_north_j2000[0] - los_j2000[0]*sky_north_j2000[2],
+        los_j2000[0]*sky_north_j2000[1] - los_j2000[1]*sky_north_j2000[0]
+    )
+    sky_east_j2000 = _norm(cross_raw)
+    
+    s_north_moon_raw = sp.mxv(j2000_to_moon, list(sky_north_j2000))
+    sky_north_moon = _norm((float(s_north_moon_raw[0]), float(s_north_moon_raw[1]), float(s_north_moon_raw[2])))
+    
+    s_east_moon_raw = sp.mxv(j2000_to_moon, list(sky_east_j2000))
+    sky_east_moon = _norm((float(s_east_moon_raw[0]), float(s_east_moon_raw[1]), float(s_east_moon_raw[2])))
+    
     return _ObserverLimbContext(
         subobserver_lon_deg=lon_rad * sp.dpr(),
         subobserver_lat_deg=lat_rad * sp.dpr(),
@@ -222,9 +264,9 @@ def _limb_point_lon_lat_deg(
     # sky-plane unit vector itself, expressed in the lunar body frame. This
     # is the correct spherical baseline before topography perturbs the limb.
     pa_rad = math.radians(position_angle_deg)
-    limb_vec_moon = (
-        math.cos(pa_rad) * context.sky_north_moon
-        + math.sin(pa_rad) * context.sky_east_moon
+    limb_vec_moon = _add(
+        _scale(context.sky_north_moon, math.cos(pa_rad)),
+        _scale(context.sky_east_moon, math.sin(pa_rad))
     )
     limb_vec_moon = _norm(limb_vec_moon)
     _, lon_rad, lat_rad = sp.reclat(limb_vec_moon)
@@ -252,20 +294,21 @@ def _lola_tile_asset_url(lon_bin: int, lat_bin: int) -> str:
 
 @lru_cache(maxsize=16)
 def _load_lola_tile(url: str, cache_root_str: str) -> _LolaTile:
+    if moira_native is None:
+        raise ImportError("Native Moira backend required for LOLA processing.")
+    
     cache_root = Path(cache_root_str)
     tile_path = _download_file(url, cache_root / "lola_tiles" / Path(url).name)
     las = laspy.read(tile_path)
-    x = np.asarray(las.x, dtype=float)
-    y = np.asarray(las.y, dtype=float)
-    z = np.asarray(las.z, dtype=float)
-    radius_m = np.sqrt(x * x + y * y + z * z)
-    lon_deg = np.degrees(np.arctan2(y, x))
-    lat_deg = np.degrees(np.arcsin(z / radius_m))
-    return _LolaTile(
-        lon_deg=lon_deg,
-        lat_deg=lat_deg,
-        radius_m=radius_m,
+    
+    # Initialize native point cloud directly from LAS coordinates (converted to KM)
+    pc = moira_native.LolaPointCloud(
+        [float(x) / 1000.0 for x in las.x],
+        [float(y) / 1000.0 for y in las.y],
+        [float(z) / 1000.0 for z in las.z]
     )
+    
+    return _LolaTile(point_cloud=pc)
 
 
 def _lola_neighbor_tile_urls(lon_deg: float, lat_deg: float) -> tuple[str, ...]:
@@ -293,58 +336,6 @@ def _lola_neighbor_tile_urls(lon_deg: float, lat_deg: float) -> tuple[str, ...]:
     return tuple(urls)
 
 
-def _cross(o: tuple[float, float], a: tuple[float, float], b: tuple[float, float]) -> float:
-    return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
-
-
-def _convex_hull(points: list[tuple[float, float]]) -> list[tuple[float, float]]:
-    unique_points = sorted(set(points))
-    if len(unique_points) <= 1:
-        return unique_points
-
-    lower: list[tuple[float, float]] = []
-    for point in unique_points:
-        while len(lower) >= 2 and _cross(lower[-2], lower[-1], point) <= 0.0:
-            lower.pop()
-        lower.append(point)
-
-    upper: list[tuple[float, float]] = []
-    for point in reversed(unique_points):
-        while len(upper) >= 2 and _cross(upper[-2], upper[-1], point) <= 0.0:
-            upper.pop()
-        upper.append(point)
-
-    return lower[:-1] + upper[:-1]
-
-
-def _ray_intersection_radius_km(
-    hull: list[tuple[float, float]],
-    position_angle_deg: float,
-) -> float:
-    if not hull:
-        return MOON_RADIUS_KM
-
-    pa_rad = math.radians(position_angle_deg)
-    ray_x = math.sin(pa_rad)
-    ray_y = math.cos(pa_rad)
-    best_t: float | None = None
-    closed_hull = hull + [hull[0]]
-    for start, end in zip(closed_hull[:-1], closed_hull[1:]):
-        edge_x = end[0] - start[0]
-        edge_y = end[1] - start[1]
-        det = ray_x * (-edge_y) - ray_y * (-edge_x)
-        if abs(det) < 1e-12:
-            continue
-
-        rhs_x = start[0]
-        rhs_y = start[1]
-        t = (rhs_x * (-edge_y) - rhs_y * (-edge_x)) / det
-        u = (ray_x * rhs_y - ray_y * rhs_x) / det
-        if t >= 0.0 and 0.0 <= u <= 1.0:
-            if best_t is None or t > best_t:
-                best_t = t
-
-    return best_t if best_t is not None else MOON_RADIUS_KM
 
 
 def _sample_lola_limb_elevation_m(
@@ -354,62 +345,66 @@ def _sample_lola_limb_elevation_m(
     position_angle_deg: float,
     cache_root: Path,
 ) -> float:
-    best_by_bin: dict[int, tuple[float, float, float]] = {}
-    observer_dir = observer_context.observer_dir_moon
-    sky_east = observer_context.sky_east_moon
-    sky_north = observer_context.sky_north_moon
+    """
+    Sample LOLA elevation near the limb using native substrate kernels.
+    """
+    if moira_native is None:
+        raise ImportError("Native Moira backend required for LOLA processing.")
+
+    all_east: list[float] = []
+    all_north: list[float] = []
+    all_radius: list[float] = []
+    all_pa: list[float] = []
+    
+    obs_vec = moira_native.Vec3(*observer_context.observer_dir_moon)
+    east_vec = moira_native.Vec3(*observer_context.sky_east_moon)
+    north_vec = moira_native.Vec3(*observer_context.sky_north_moon)
+    
     for tile_url in _lola_neighbor_tile_urls(lon_deg, lat_deg):
         tile = _load_lola_tile(tile_url, str(cache_root))
-        lon_rad = np.radians(tile.lon_deg)
-        lat_rad = np.radians(tile.lat_deg)
-        radius_km = tile.radius_m / 1000.0
-        cos_lat = np.cos(lat_rad)
-        x = radius_km * cos_lat * np.cos(lon_rad)
-        y = radius_km * cos_lat * np.sin(lon_rad)
-        z = radius_km * np.sin(lat_rad)
-
-        visible = (x * observer_dir[0] + y * observer_dir[1] + z * observer_dir[2]) > 0.0
-        if not np.any(visible):
+        
+        # 1. Combined Filter (Visibility, PA window, Radius floor)
+        filtered_pc = tile.point_cloud.filter_combined(
+            obs_vec, east_vec, north_vec, 
+            position_angle_deg, _LIMB_PA_WINDOW_DEG, _LIMB_RADIAL_FLOOR_KM
+        )
+        
+        if filtered_pc.size() == 0:
             continue
-
-        proj_east_km = x[visible] * sky_east[0] + y[visible] * sky_east[1] + z[visible] * sky_east[2]
-        proj_north_km = x[visible] * sky_north[0] + y[visible] * sky_north[1] + z[visible] * sky_north[2]
-        proj_radius_km = np.sqrt(proj_east_km * proj_east_km + proj_north_km * proj_north_km)
-        point_pa_deg = (np.degrees(np.arctan2(proj_east_km, proj_north_km)) + 360.0) % 360.0
-        pa_error_deg = np.abs(((point_pa_deg - position_angle_deg + 180.0) % 360.0) - 180.0)
-
-        candidate_mask = (pa_error_deg <= _LIMB_PA_WINDOW_DEG) & (proj_radius_km >= _LIMB_RADIAL_FLOOR_KM)
-        if not np.any(candidate_mask):
-            continue
-
-        candidate_east = proj_east_km[candidate_mask]
-        candidate_north = proj_north_km[candidate_mask]
-        candidate_radius = proj_radius_km[candidate_mask]
-        candidate_pa = point_pa_deg[candidate_mask]
-        rel_pa = ((candidate_pa - position_angle_deg + 180.0) % 360.0) - 180.0
-        bin_idx = np.rint(rel_pa / _LIMB_BIN_WIDTH_DEG).astype(int)
-        order = np.lexsort((candidate_radius, bin_idx))
-        sorted_bins = bin_idx[order]
-        keep_mask = np.empty(sorted_bins.shape, dtype=bool)
-        keep_mask[:-1] = sorted_bins[1:] != sorted_bins[:-1]
-        keep_mask[-1] = True
-        best_order = order[keep_mask]
-
-        for idx, east, north, radius in zip(
-            bin_idx[best_order],
-            candidate_east[best_order],
-            candidate_north[best_order],
-            candidate_radius[best_order],
-        ):
-            current = best_by_bin.get(int(idx))
-            if current is None or radius > current[2]:
-                best_by_bin[int(idx)] = (float(east), float(north), float(radius))
-
-    if not best_by_bin:
+            
+        # 2. Bulk Projection
+        proj = filtered_pc.project_to_sky_plane(obs_vec, east_vec, north_vec)
+        all_east.extend(proj.east_km)
+        all_north.extend(proj.north_km)
+        all_radius.extend(proj.radius_km)
+        all_pa.extend(proj.pa_deg)
+        
+    if not all_east:
         return 0.0
-
-    hull = _convex_hull([(east, north) for east, north, _ in best_by_bin.values()])
-    silhouette_radius_km = _ray_intersection_radius_km(hull, position_angle_deg)
+        
+    # 3. Global Binning
+    bins = moira_native.bin_by_position_angle(all_pa, position_angle_deg, _LIMB_BIN_WIDTH_DEG)
+    
+    # 4. Lexsort and selection of max radius per bin
+    indices = moira_native.lexsort_by_bin_and_radius(bins, all_radius)
+    
+    # Extract the point with maximum radius for each bin
+    # Since lexsort is (bin, radius) ascending, the last occurrence of each bin is the max
+    best_indices = []
+    if len(indices) > 0:
+        for i in range(len(indices) - 1):
+            if bins[indices[i]] != bins[indices[i+1]]:
+                best_indices.append(indices[i])
+        best_indices.append(indices[-1])
+        
+    hull_pts = [moira_native.Point2D(all_east[i], all_north[i]) for i in best_indices]
+    
+    # 5. Native Convex Hull
+    hull = moira_native.convex_hull_2d(hull_pts)
+    
+    # 6. Native Ray-Hull Intersection
+    silhouette_radius_km = moira_native.ray_hull_intersection(hull, position_angle_deg, MOON_RADIUS_KM)
+    
     return silhouette_radius_km * 1000.0 - _LOLA_MEAN_RADIUS_M
 
 

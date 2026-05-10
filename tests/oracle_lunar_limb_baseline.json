@@ -1,0 +1,90 @@
+[
+  {
+    "input": {
+      "jd_ut": 2460408.5,
+      "observer_lat": 35.0,
+      "observer_lon": -90.0,
+      "observer_elev_m": 100.0,
+      "position_angle_deg": 0.0,
+      "moon_distance_km": 360000.0
+    },
+    "output": 0.00015342971997811539
+  },
+  {
+    "input": {
+      "jd_ut": 2460408.5,
+      "observer_lat": 35.0,
+      "observer_lon": -90.0,
+      "observer_elev_m": 100.0,
+      "position_angle_deg": 90.0,
+      "moon_distance_km": 360000.0
+    },
+    "output": 1.0084393222142829e-05
+  },
+  {
+    "input": {
+      "jd_ut": 2460408.5,
+      "observer_lat": 35.0,
+      "observer_lon": -90.0,
+      "observer_elev_m": 100.0,
+      "position_angle_deg": 180.0,
+      "moon_distance_km": 360000.0
+    },
+    "output": 0.00031654495890254264
+  },
+  {
+    "input": {
+      "jd_ut": 2460408.5,
+      "observer_lat": 35.0,
+      "observer_lon": -90.0,
+      "observer_elev_m": 100.0,
+      "position_angle_deg": 270.0,
+      "moon_distance_km": 360000.0
+    },
+    "output": 0.00011927555682217372
+  },
+  {
+    "input": {
+      "jd_ut": 2461171.0,
+      "observer_lat": 51.47,
+      "observer_lon": 0.0,
+      "observer_elev_m": 50.0,
+      "position_angle_deg": 135.0,
+      "moon_distance_km": 384400.0
+    },
+    "output": -0.000286220897485312
+  },
+  {
+    "input": {
+      "jd_ut": 2461171.0,
+      "observer_lat": 51.47,
+      "observer_lon": 0.0,
+      "observer_elev_m": 50.0,
+      "position_angle_deg": 225.0,
+      "moon_distance_km": 384400.0
+    },
+    "output": 0.00042128752139947157
+  },
+  {
+    "input": {
+      "jd_ut": 2461171.0,
+      "observer_lat": 51.47,
+      "observer_lon": 0.0,
+      "observer_elev_m": 50.0,
+      "position_angle_deg": 315.0,
+      "moon_distance_km": 384400.0
+    },
+    "output": 0.0
+  },
+  {
+    "input": {
+      "jd_ut": 2451545.0,
+      "observer_lat": 0.0,
+      "observer_lon": 0.0,
+      "observer_elev_m": 0.0,
+      "position_angle_deg": 10.0,
+      "moon_distance_km": 400000.0
+    },
+    "output": -0.0002119773187549412
+  }
+]

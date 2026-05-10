@@ -18,6 +18,7 @@
 #include "events.hpp"
 #include "cartography.hpp"
 #include "search_pool.hpp"
+#include "lola.hpp"
 
 namespace py = pybind11;
 using namespace moira::native;
@@ -1529,4 +1530,117 @@ PYBIND11_MODULE(_moira_native, m) {
         py::arg("threshold"), py::arg("max_distance_km"),
         py::arg("sun_radius_km"), py::arg("moon_radius_km"),
         "Solve solar cross-track magnitude contour roots from apparent state-vector series.");
+
+    // --- LOLA (Lunar Orbiter Laser Altimeter) ---
+    
+    py::class_<lola::SphericalCoords>(m, "SphericalCoords")
+        .def_readwrite("lon_deg", &lola::SphericalCoords::lon_deg)
+        .def_readwrite("lat_deg", &lola::SphericalCoords::lat_deg)
+        .def_readwrite("radius_km", &lola::SphericalCoords::radius_km);
+
+    py::class_<lola::SkyPlaneProjection>(m, "SkyPlaneProjection")
+        .def_readwrite("east_km", &lola::SkyPlaneProjection::east_km)
+        .def_readwrite("north_km", &lola::SkyPlaneProjection::north_km)
+        .def_readwrite("radius_km", &lola::SkyPlaneProjection::radius_km)
+        .def_readwrite("pa_deg", &lola::SkyPlaneProjection::pa_deg);
+
+    py::class_<lola::MaxPerBin>(m, "MaxPerBin")
+        .def_readwrite("bins", &lola::MaxPerBin::bins)
+        .def_readwrite("radii_km", &lola::MaxPerBin::radii_km)
+        .def_readwrite("point_indices", &lola::MaxPerBin::point_indices);
+
+    py::class_<lola::Point2D>(m, "Point2D")
+        .def(py::init<double, double>())
+        .def_readwrite("x", &lola::Point2D::x)
+        .def_readwrite("y", &lola::Point2D::y);
+
+    py::class_<lola::LolaPointCloud>(m, "LolaPointCloud")
+        .def(py::init<const std::vector<double>&, const std::vector<double>&, const std::vector<double>&>())
+        .def(py::init<>())
+        .def("size", &lola::LolaPointCloud::size)
+        .def("x_data", [](const lola::LolaPointCloud& self) { return reinterpret_cast<uintptr_t>(self.x_data()); })
+        .def("y_data", [](const lola::LolaPointCloud& self) { return reinterpret_cast<uintptr_t>(self.y_data()); })
+        .def("z_data", [](const lola::LolaPointCloud& self) { return reinterpret_cast<uintptr_t>(self.z_data()); })
+        .def("get_x", &lola::LolaPointCloud::x_list)
+        .def("get_y", &lola::LolaPointCloud::y_list)
+        .def("get_z", &lola::LolaPointCloud::z_list)
+        .def("filter_by_visibility", &lola::LolaPointCloud::filter_by_visibility)
+        .def("filter_by_position_angle", &lola::LolaPointCloud::filter_by_position_angle)
+        .def("filter_by_radius", &lola::LolaPointCloud::filter_by_radius)
+        .def("filter_combined", &lola::LolaPointCloud::filter_combined)
+        .def("to_spherical", &lola::LolaPointCloud::to_spherical)
+        .def("project_to_sky_plane", &lola::LolaPointCloud::project_to_sky_plane);
+
+    m.def("normalize_vectors_bulk", [](const std::vector<double>& x, const std::vector<double>& y, const std::vector<double>& z) {
+        size_t count = x.size();
+        if (y.size() != count || z.size() != count) throw std::invalid_argument("LOLA: Coordinate vectors must have the same size");
+        std::vector<double> ox(count), oy(count), oz(count);
+        lola::normalize_vectors_bulk(x.data(), y.data(), z.data(), ox.data(), oy.data(), oz.data(), count);
+        return py::make_tuple(ox, oy, oz);
+    }, py::arg("x"), py::arg("y"), py::arg("z"));
+
+    m.def("dot_product_bulk", [](const std::vector<double>& x, const std::vector<double>& y, const std::vector<double>& z, const Vec3& reference) {
+        size_t count = x.size();
+        if (y.size() != count || z.size() != count) throw std::invalid_argument("LOLA: Coordinate vectors must have the same size");
+        std::vector<double> results(count);
+        lola::dot_product_bulk(x.data(), y.data(), z.data(), reference, results.data(), count);
+        return results;
+    }, py::arg("x"), py::arg("y"), py::arg("z"), py::arg("reference"));
+
+    m.def("cross_product_bulk", [](const std::vector<double>& x, const std::vector<double>& y, const std::vector<double>& z, const Vec3& reference) {
+        size_t count = x.size();
+        if (y.size() != count || z.size() != count) throw std::invalid_argument("LOLA: Coordinate vectors must have the same size");
+        std::vector<double> ox(count), oy(count), oz(count);
+        lola::cross_product_bulk(x.data(), y.data(), z.data(), reference, ox.data(), oy.data(), oz.data(), count);
+        return py::make_tuple(ox, oy, oz);
+    }, py::arg("x"), py::arg("y"), py::arg("z"), py::arg("reference"));
+
+    m.def("project_onto_plane_bulk", [](const std::vector<double>& x_in, const std::vector<double>& y_in, const std::vector<double>& z_in, const Vec3& plane_normal) {
+        size_t count = x_in.size();
+        if (y_in.size() != count || z_in.size() != count) throw std::invalid_argument("LOLA: Coordinate vectors must have the same size");
+        std::vector<double> ox(count), oy(count), oz(count);
+        lola::project_onto_plane_bulk(x_in.data(), y_in.data(), z_in.data(), plane_normal, ox.data(), oy.data(), oz.data(), count);
+        return py::make_tuple(ox, oy, oz);
+    }, py::arg("x_in"), py::arg("y_in"), py::arg("z_in"), py::arg("plane_normal"));
+
+    m.def("cartesian_to_spherical_bulk", [](const std::vector<double>& x, const std::vector<double>& y, const std::vector<double>& z) {
+        size_t count = x.size();
+        if (y.size() != count || z.size() != count) throw std::invalid_argument("LOLA: Coordinate vectors must have the same size");
+        std::vector<double> lon(count), lat(count), rad(count);
+        lola::cartesian_to_spherical_bulk(x.data(), y.data(), z.data(), lon.data(), lat.data(), rad.data(), count);
+        return py::make_tuple(lon, lat, rad);
+    }, py::arg("x"), py::arg("y"), py::arg("z"));
+
+    m.def("spherical_to_cartesian_bulk", [](const std::vector<double>& lon_deg, const std::vector<double>& lat_deg, const std::vector<double>& radius_km) {
+        size_t count = lon_deg.size();
+        if (lat_deg.size() != count || radius_km.size() != count) throw std::invalid_argument("LOLA: Coordinate vectors must have the same size");
+        std::vector<double> x(count), y(count), z(count);
+        lola::spherical_to_cartesian_bulk(lon_deg.data(), lat_deg.data(), radius_km.data(), x.data(), y.data(), z.data(), count);
+        return py::make_tuple(x, y, z);
+    }, py::arg("lon_deg"), py::arg("lat_deg"), py::arg("radius_km"));
+
+    m.def("normalize_longitude_bulk", [](const std::vector<double>& lon_deg) {
+        std::vector<double> out = lon_deg;
+        lola::normalize_longitude_bulk(out.data(), out.size());
+        return out;
+    }, py::arg("lon_deg"));
+
+    m.def("bin_by_position_angle", [](const std::vector<double>& pa_deg, double target_pa_deg, double bin_width_deg) {
+        return lola::bin_by_position_angle(pa_deg.data(), target_pa_deg, bin_width_deg, pa_deg.size());
+    }, py::arg("pa_deg"), py::arg("target_pa_deg"), py::arg("bin_width_deg"));
+
+    m.def("select_max_radius_per_bin", [](const std::vector<int>& bin_indices, const std::vector<double>& radius_km) {
+        if (bin_indices.size() != radius_km.size()) throw std::invalid_argument("LOLA: bin_indices and radius_km must have the same size");
+        return lola::select_max_radius_per_bin(bin_indices.data(), radius_km.data(), bin_indices.size());
+    }, py::arg("bin_indices"), py::arg("radius_km"));
+
+    m.def("lexsort_by_bin_and_radius", [](const std::vector<int>& bin_indices, const std::vector<double>& radius_km) {
+        if (bin_indices.size() != radius_km.size()) throw std::invalid_argument("LOLA: bin_indices and radius_km must have the same size");
+        return lola::lexsort_by_bin_and_radius(bin_indices.data(), radius_km.data(), bin_indices.size());
+    }, py::arg("bin_indices"), py::arg("radius_km"));
+
+    m.def("convex_hull_2d", &lola::convex_hull_2d, py::arg("points"));
+    
+    m.def("ray_hull_intersection", &lola::ray_hull_intersection, 
+        py::arg("hull"), py::arg("position_angle_deg"), py::arg("fallback_radius_km"));
 }

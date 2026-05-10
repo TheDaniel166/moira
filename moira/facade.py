@@ -63,7 +63,7 @@ from .julian import (
     CalendarDateTime, DeltaTPolicy, julian_day, calendar_from_jd, calendar_datetime_from_jd,
     jd_from_datetime, datetime_from_jd, format_jd_utc, safe_datetime_from_jd,
     greenwich_mean_sidereal_time, local_sidereal_time, delta_t,
-    ut_to_tt,
+    ut_to_tt, utc_to_tt, utc_to_ut1,
     delta_t_from_jd, apparent_sidereal_time_at,
 )
 from .delta_t_physical import (
@@ -796,6 +796,7 @@ __all__ = [
     "CalendarDateTime", "DeltaTPolicy", "julian_day", "calendar_from_jd", "calendar_datetime_from_jd",
     "jd_from_datetime", "datetime_from_jd", "format_jd_utc", "safe_datetime_from_jd",
     "greenwich_mean_sidereal_time", "local_sidereal_time", "delta_t",
+    "ut_to_tt", "utc_to_tt", "utc_to_ut1",
     "delta_t_from_jd", "apparent_sidereal_time_at",
     "DeltaTBreakdown", "DeltaTDistribution",
     "delta_t_breakdown", "delta_t_distribution",

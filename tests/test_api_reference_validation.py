@@ -1025,8 +1025,20 @@ class TestPreservationIntegrationImports:
             datetime_from_jd,
             delta_t,
             jd_from_datetime,
+            utc_to_tt,
+            utc_to_ut1,
         )
-        assert all(x is not None for x in [jd_from_datetime, datetime_from_jd, calendar_from_jd, delta_t])
+        assert all(
+            x is not None
+            for x in [
+                jd_from_datetime,
+                datetime_from_jd,
+                calendar_from_jd,
+                delta_t,
+                utc_to_tt,
+                utc_to_ut1,
+            ]
+        )
 
     def test_firdar_period_classes_are_distinct(self):
         """
