@@ -24,6 +24,8 @@ class FixedStarComputationPolicy:
     """Vessel: Aggregated policy for fixed star computation."""
     lookup: FixedStarLookupPolicy = field(default_factory=FixedStarLookupPolicy)
     heliacal: HeliacalSearchPolicy = field(default_factory=HeliacalSearchPolicy)
+    allow_native: bool = True
+    use_native_heliacal: bool = True
 
 DEFAULT_FIXED_STAR_POLICY = FixedStarComputationPolicy()
 

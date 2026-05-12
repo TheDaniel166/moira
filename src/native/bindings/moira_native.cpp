@@ -22,6 +22,8 @@
 #include "cartography.hpp"
 #include "search_pool.hpp"
 #include "lola.hpp"
+#include "visibility.hpp"
+#include "precession.hpp"
 
 namespace py = pybind11;
 using namespace moira::native;
@@ -1386,7 +1388,7 @@ PYBIND11_MODULE(_moira_native, m) {
     py::class_<ChebyshevEvaluator, IEvaluator, std::shared_ptr<ChebyshevEvaluator>>(m, "ChebyshevEvaluator")
         .def(py::init<double, double, size_t, size_t, size_t, std::vector<double>>());
 
-    py::class_<SpkSegmentEvaluator, std::shared_ptr<SpkSegmentEvaluator>>(m, "SpkSegmentEvaluator")
+    py::class_<SpkSegmentEvaluator, std::shared_ptr<SpkSegmentEvaluator>, IEvaluator>(m, "SpkSegmentEvaluator")
         .def("position", [](const SpkSegmentEvaluator& self, double jd) {
             double result[3];
             self.position(jd, result);
@@ -1478,9 +1480,49 @@ PYBIND11_MODULE(_moira_native, m) {
 
     py::class_<RelativeEvaluator, IEvaluator, std::shared_ptr<RelativeEvaluator>>(m, "RelativeEvaluator")
         .def(py::init<std::shared_ptr<IEvaluator>, std::shared_ptr<IEvaluator>>());
+    
+    py::class_<SumEvaluator, IEvaluator, std::shared_ptr<SumEvaluator>>(m, "SumEvaluator")
+        .def(py::init<std::shared_ptr<IEvaluator>, std::shared_ptr<IEvaluator>>());
 
     m.def("longitude_difference", [](std::shared_ptr<IEvaluator> t1, std::shared_ptr<IEvaluator> t2, std::shared_ptr<IEvaluator> obs, double jd) {
         return longitude_difference(*t1, *t2, *obs, jd);
+    });
+
+    m.def("longitude_difference_batch", [](std::shared_ptr<IEvaluator> t1, std::shared_ptr<IEvaluator> t2, std::shared_ptr<IEvaluator> obs, py::array_t<double> jds) {
+        auto buf = jds.request();
+        size_t count = buf.size;
+        const double* ptr = static_cast<const double*>(buf.ptr);
+        
+        py::array_t<double> out(count);
+        auto out_ptr = static_cast<double*>(out.request().ptr);
+        
+        for (size_t i = 0; i < count; ++i) {
+            out_ptr[i] = longitude_difference(*t1, *t2, *obs, ptr[i]);
+        }
+        return out;
+    });
+
+    m.def("declination_batch", [](std::shared_ptr<IEvaluator> t, std::shared_ptr<IEvaluator> obs, py::array_t<double> jds) {
+        auto buf = jds.request();
+        size_t count = buf.size;
+        const double* ptr = static_cast<const double*>(buf.ptr);
+        
+        py::array_t<double> out(count);
+        auto out_ptr = static_cast<double*>(out.request().ptr);
+        
+        for (size_t i = 0; i < count; ++i) {
+            double r[6];
+            // Use evaluate which handles caching internally
+            double r_t[6], r_o[6];
+            t->evaluate(ptr[i], r_t);
+            obs->evaluate(ptr[i], r_o);
+            double x = r_t[0] - r_o[0];
+            double y = r_t[1] - r_o[1];
+            double z = r_t[2] - r_o[2];
+            double dist = std::sqrt(x*x + y*y + z*z);
+            out_ptr[i] = std::asin(z / dist) * 180.0 / 3.14159265358979323846;
+        }
+        return out;
     });
 
     m.def("angular_separation", [](std::shared_ptr<IEvaluator> t1, std::shared_ptr<IEvaluator> t2, std::shared_ptr<IEvaluator> obs, double jd) {
@@ -1672,6 +1714,10 @@ PYBIND11_MODULE(_moira_native, m) {
     py::class_<TopocentricEvaluator, IEvaluator, std::shared_ptr<TopocentricEvaluator>>(m, "TopocentricEvaluator")
         .def(py::init<std::shared_ptr<IEvaluator>, double, double, double>());
 
+    py::class_<FixedStarEvaluator, IEvaluator, std::shared_ptr<FixedStarEvaluator>>(m, "FixedStarEvaluator")
+        .def(py::init<double, double, double, double, double, double>(),
+             py::arg("ra_deg"), py::arg("dec_deg"), py::arg("pmra_mas"), py::arg("pmdec_mas"), py::arg("parallax"), py::arg("rv"));
+
     // --- Cartography ---
     m.def("solar_cartography_grid_sweep", &solar_cartography_grid_sweep_py,
         py::arg("sun"), py::arg("moon"), py::arg("jds"), py::arg("gasts_deg"),
@@ -1853,4 +1899,73 @@ PYBIND11_MODULE(_moira_native, m) {
     
     m.def("ray_hull_intersection", &lola::ray_hull_intersection, 
         py::arg("hull"), py::arg("position_angle_deg"), py::arg("fallback_radius_km"));
+
+    // --- Visibility ---
+    py::class_<HeliacalEvent>(m, "HeliacalEvent")
+        .def_readonly("event_kind", &HeliacalEvent::event_kind)
+        .def_readonly("jd_ut", &HeliacalEvent::jd_ut)
+        .def_readonly("is_found", &HeliacalEvent::is_found)
+        .def_readonly("arcus_visionis", &HeliacalEvent::arcus_visionis)
+        .def_readonly("elongation", &HeliacalEvent::elongation)
+        .def_readonly("star_altitude", &HeliacalEvent::star_altitude)
+        .def_readonly("day_offset", &HeliacalEvent::day_offset);
+
+    m.def("arcus_visionis", &arcus_visionis, 
+        py::arg("mag"), py::arg("limiting_mag"), py::arg("extinction_k"),
+        "Compute required Arcus Visionis for visibility via Schoch/Ptolemy logic.");
+
+    m.def("target_topocentric_altitude",
+        [](const IEvaluator& target_eval, double jd_ut, double lat_deg, double lon_deg,
+           double pressure_mbar, double temperature_c, bool use_refraction, double delta_t,
+           const IEvaluator* earth_eval) {
+            return target_topocentric_altitude(target_eval, jd_ut, lat_deg, lon_deg,
+                pressure_mbar, temperature_c, use_refraction, delta_t, earth_eval);
+        },
+        py::arg("target_eval"), py::arg("jd_ut"), py::arg("lat_deg"), py::arg("lon_deg"),
+        py::arg("pressure_mbar") = 1013.25, py::arg("temperature_c") = 10.0, py::arg("use_refraction") = true,
+        py::arg("delta_t") = 64.184, py::arg("earth_eval") = nullptr,
+        "Compute topocentric altitude with optional annual aberration via Earth evaluator.");
+
+    m.def("find_sun_at_alt",
+        [](const IEvaluator& sun_eval, double jd_midnight, double lat_deg, double lon_deg,
+           double target_alt, bool morning, double delta_t, const IEvaluator* earth_eval) {
+            return find_sun_at_alt(sun_eval, jd_midnight, lat_deg, lon_deg,
+                target_alt, morning, delta_t, earth_eval);
+        },
+        py::arg("sun_eval"), py::arg("jd_midnight"), py::arg("lat_deg"), py::arg("lon_deg"),
+        py::arg("target_alt"), py::arg("morning"), py::arg("delta_t") = 64.184,
+        py::arg("earth_eval") = nullptr,
+        "Solve for JD within a half-day window where the Sun reaches a target altitude.");
+
+    m.def("search_heliacal_rising",
+        [](const IEvaluator& star_eval, const IEvaluator& sun_eval, double jd_start,
+           double lat, double lon, double arcus_visionis_val, int search_days,
+           double delta_t, const IEvaluator* earth_eval) {
+            return search_heliacal_rising(star_eval, sun_eval, jd_start, lat, lon,
+                arcus_visionis_val, search_days, delta_t, earth_eval);
+        },
+        py::arg("star_eval"), py::arg("sun_eval"), py::arg("jd_start"),
+        py::arg("lat"), py::arg("lon"), py::arg("arcus_visionis_val"),
+        py::arg("search_days"), py::arg("delta_t") = 64.184, py::arg("earth_eval") = nullptr,
+        "Native fast-path search for star heliacal rising (morning appearance).");
+
+    m.def("search_heliacal_setting",
+        [](const IEvaluator& star_eval, const IEvaluator& sun_eval, double jd_start,
+           double lat, double lon, double arcus_visionis_val, int search_days,
+           double delta_t, const IEvaluator* earth_eval) {
+            return search_heliacal_setting(star_eval, sun_eval, jd_start, lat, lon,
+                arcus_visionis_val, search_days, delta_t, earth_eval);
+        },
+        py::arg("star_eval"), py::arg("sun_eval"), py::arg("jd_start"),
+        py::arg("lat"), py::arg("lon"), py::arg("arcus_visionis_val"),
+        py::arg("search_days"), py::arg("delta_t") = 64.184, py::arg("earth_eval") = nullptr,
+        "Native fast-path search for star heliacal setting (morning disappearance).");
+
+
+    m.def("heliacal_signed_elongation", &heliacal_signed_elongation,
+        py::arg("star_eval"), py::arg("sun_eval"), py::arg("jd_ut"), py::arg("delta_t") = 64.184,
+        "Compute signed ecliptic elongation between star and Sun.");
+
+    m.def("mean_obliquity_p03", &mean_obliquity_p03, py::arg("jd_tt"),
+        "IAU 2006 Mean Obliquity (P03 model).");
 }

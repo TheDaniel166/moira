@@ -809,6 +809,23 @@ class SpkReader:
         """Return a concise string representation showing the kernel filename."""
         return f"SpkReader('{self._path.name}')"
 
+    def evaluator(self, target: int, center: int = 0, jd_tt: float = 2451545.0) -> object:
+        """
+        Return a native IEvaluator for *target* relative to *center* at *jd_tt*.
+
+        This method allows other modules to obtain a high-performance C++ evaluator
+        for a specific body pair. If the kernel contains a segment covering the
+        requested triple, a native evaluator is returned; otherwise returns None.
+        """
+        self._ensure_open()
+        try:
+            segment = self._segment_for(center, target, jd_tt)
+            if hasattr(segment, '_load_native_evaluator'):
+                return segment._load_native_evaluator()
+        except (KeyError, ValueError):
+            pass
+        return None
+
 
 # Capture original class for type-safe checks in shims (prevents 
 # auto-discovery regressions in unit tests that monkeypatch SpkReader).
@@ -909,6 +926,23 @@ class KernelPool:
             f"at JD {jd:.2f}"
         )
 
+    def evaluator(self, target: int, center: int = 0, jd_tt: float = 2451545.0) -> object:
+        """
+        Return a native IEvaluator for *target* relative to *center* at *jd_tt*.
+
+        Searches readers in fallback order and returns the first available evaluator.
+        """
+        for reader in self._readers:
+            try:
+                if hasattr(reader, "has_segment_at") and reader.has_segment_at(center, target, jd_tt):
+                    if hasattr(reader, "evaluator"):
+                        ev = reader.evaluator(target, center, jd_tt)
+                        if ev is not None:
+                            return ev
+            except (KeyError, AttributeError):
+                continue
+        return None
+
     def position_and_velocity(
         self, center: int, target: int, jd: float
     ) -> tuple[Vec3, Vec3]:
@@ -941,6 +975,23 @@ class KernelPool:
             f"No kernel in pool covers center={center}, target={target} "
             f"at JD {jd:.2f}"
         )
+
+    def evaluator(self, target: int, center: int = 0, jd_tt: float = 2451545.0) -> object:
+        """
+        Return a native IEvaluator for *target* relative to *center* at *jd_tt*.
+
+        Searches readers in fallback order and returns the first available evaluator.
+        """
+        for reader in self._readers:
+            try:
+                if hasattr(reader, "has_segment_at") and reader.has_segment_at(center, target, jd_tt):
+                    if hasattr(reader, "evaluator"):
+                        ev = reader.evaluator(target, center, jd_tt)
+                        if ev is not None:
+                            return ev
+            except (KeyError, AttributeError):
+                continue
+        return None
 
     # ------------------------------------------------------------------
     # Segment presence checks

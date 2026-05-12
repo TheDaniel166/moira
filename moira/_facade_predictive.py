@@ -479,6 +479,33 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
             body, target_lon, jd_start, jd_end, reader=self._reader
         )
 
+    def aspect_transits(
+        self,
+        body: str,
+        target: str | float,
+        angle: float,
+        orb: float,
+        jd_start: float,
+        jd_end: float,
+    ):
+        """Find all transits of a body forming an aspect to a target (body or fixed longitude)."""
+        return _facade_module().find_aspect_transits(
+            body, target, angle, orb, jd_start, jd_end, reader=self._reader
+        )
+
+    def declination_transits(
+        self,
+        body: str,
+        target: str | float,
+        jd_start: float,
+        jd_end: float,
+        is_contra_parallel: bool = False,
+    ):
+        """Find all transits of a body forming a declination aspect (parallel or contra-parallel)."""
+        return _facade_module().find_declination_transits(
+            body, target, jd_start, jd_end, is_contra_parallel=is_contra_parallel, reader=self._reader
+        )
+
     def ingresses(self, body: str, jd_start: float, jd_end: float):
         """Find all sign ingresses for a body in a date range."""
         return _facade_module().find_ingresses(

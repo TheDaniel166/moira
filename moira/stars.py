@@ -14,6 +14,11 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
+try:
+    from . import moira_native as mn
+except ImportError:
+    mn = None
+
 from .coordinates import icrf_to_true_ecliptic
 from .star_types import (
     FixedStarLookupPolicy,
@@ -1346,6 +1351,106 @@ def heliacal_catalog_batch(
         records = all_records
 
     abs_lat = abs(latitude)
+    
+    # -----------------------------------------------------------------------
+    # NATIVE FAST-PATH (Phase 3 Integration)
+    # -----------------------------------------------------------------------
+    if (
+        mn is not None 
+        and hasattr(mn, "search_heliacal_rising") 
+        and getattr(resolved_policy, "allow_native", True)
+        and getattr(resolved_policy, "use_native_heliacal", True)
+    ):
+        from .julian import ut_to_tt
+        from .spk_reader import get_reader
+        
+        reader = get_reader()
+        jd_tt = ut_to_tt(jd_start)
+        
+        # 1. Get Earth and Sun evaluators
+        e_bary = reader.evaluator(399, 3, jd_tt)
+        emb_bary = reader.evaluator(3, 0, jd_tt)
+        sun_ssb = reader.evaluator(10, 0, jd_tt)
+        
+        if e_bary and emb_bary and sun_ssb:
+            earth_ssb = mn.SumEvaluator(e_bary, emb_bary)
+            sun_geo = mn.RelativeEvaluator(sun_ssb, earth_ssb)
+            
+            found: list[HeliacalEvent] = []
+            not_found: list[str] = []
+            skipped_latitude: list[str] = []
+            skipped_magnitude: list[str] = []
+            
+            native_search = (
+                mn.search_heliacal_rising 
+                if event_kind == "heliacal_rising" 
+                else mn.search_heliacal_setting
+            )
+            
+            for record in records:
+                # Pre-filters
+                if record.magnitude_v > max_magnitude:
+                    skipped_magnitude.append(record.name)
+                    continue
+                if math.isfinite(record.lat_limit_deg) and abs_lat > record.lat_limit_deg:
+                    skipped_latitude.append(record.name)
+                    continue
+                
+                # Setup Star Evaluator
+                star_ssb = mn.FixedStarEvaluator(
+                    record.ra_deg, record.dec_deg,
+                    record.pmra_mas_yr, record.pmdec_mas_yr,
+                    record.parallax_mas, record.radial_velocity_km_s
+                )
+                star_geo = mn.RelativeEvaluator(star_ssb, earth_ssb)
+                
+                # Use catalog arcus if available, otherwise derive
+                if math.isfinite(record.arc_vis_deg) and record.arc_vis_deg > 0.0:
+                    arcus = record.arc_vis_deg
+                else:
+                    arcus = _default_arcus_for_star(record.name)
+                
+                # Native Search with authority Delta-T and annual aberration
+                dt_val = (jd_tt - jd_start) * 86400.0
+                res = native_search(
+                    star_geo, sun_geo, jd_start, latitude, longitude, arcus, search_days,
+                    delta_t=dt_val, earth_eval=earth_ssb
+                )
+                
+                if res.is_found:
+                    # Convert native HeliacalEvent to Python HeliacalEvent
+                    found.append(_build_heliacal_event(
+                        event_kind=event_kind,
+                        name=record.name,
+                        jd_start=jd_start,
+                        search_days=search_days,
+                        arcus_visionis=arcus,
+                        elongation_threshold=getattr(resolved_policy.heliacal, "setting_elongation_threshold", 12.0),
+                        qualifying_day_offset=res.day_offset,
+                        qualifying_elongation=res.elongation,
+                        qualifying_sun_altitude=-arcus,
+                        event_jd_ut=res.jd_ut
+                    ))
+                else:
+                    not_found.append(record.name)
+
+            found.sort(key=lambda e: e.jd_ut if e.jd_ut is not None else math.inf)
+            return HeliacalBatchResult(
+                event_kind=event_kind,
+                jd_start=jd_start,
+                latitude=latitude,
+                longitude=longitude,
+                max_magnitude=max_magnitude,
+                search_days=search_days,
+                found=tuple(found),
+                not_found=tuple(not_found),
+                skipped_latitude=tuple(skipped_latitude),
+                skipped_magnitude=tuple(skipped_magnitude),
+            )
+
+    # -----------------------------------------------------------------------
+    # LEGACY PYTHON ORACLE (Fallback)
+    # -----------------------------------------------------------------------
     search_fn = heliacal_rising_event if event_kind == "heliacal_rising" else heliacal_setting_event
 
     found: list[HeliacalEvent] = []

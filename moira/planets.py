@@ -437,6 +437,7 @@ _NPE_BODY_ROUTE_PAIRS = {
     Body.MOON: ((0, 3), (3, 301)),
     Body.MERCURY: ((0, 1), (1, 199)),
     Body.VENUS: ((0, 2), (2, 299)),
+    Body.EARTH: ((0, 3), (3, 399)),
     Body.MARS: ((0, 4),),
     Body.JUPITER: ((0, 5),),
     Body.SATURN: ((0, 6),),

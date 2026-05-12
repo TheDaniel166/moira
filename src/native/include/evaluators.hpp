@@ -5,6 +5,8 @@
 #include <memory>
 #include "interpolation.hpp"
 #include "sidereal.hpp"
+#include "math_utils.hpp"
+#include "geometry.hpp"
 
 namespace moira {
 namespace native {
@@ -82,7 +84,7 @@ public:
  * Keeps the coefficient payload resident in native memory so Python does not
  * have to materialize a NumPy tensor for first-use segment evaluation.
  */
-class SpkSegmentEvaluator {
+class SpkSegmentEvaluator : public IEvaluator {
 public:
     int32_t data_type;
     bool coefficients_in_file_order;
@@ -111,6 +113,13 @@ public:
           component_count(comp_count),
           coefficient_count(coeff_count),
           coefficients(std::move(coeffs)) {}
+
+    void compute(double jd, double* result) const override {
+        double p[3], v[3];
+        position_and_velocity(jd, p, v);
+        result[0] = p[0]; result[1] = p[1]; result[2] = p[2];
+        result[3] = v[0]; result[4] = v[1]; result[5] = v[2];
+    }
 
     void position(double jd, double* result) const {
         if (data_type == 2) {
@@ -227,6 +236,62 @@ public:
 };
 
 /**
+ * @brief THEOREM: Fixed Star Evaluator.
+ * Propagates ICRS unit vector with proper motion, parallax, and radial velocity.
+ */
+class FixedStarEvaluator : public IEvaluator {
+public:
+    double ra0_rad, dec0_rad;
+    double pmra_rad_yr, pmdec_rad_yr;
+    double parallax_mas, rv_km_s;
+    Vec3 p_hat, east_hat, north_hat;
+
+    FixedStarEvaluator(double ra_deg, double dec_deg, double pmra_mas, double pmdec_mas, double parallax, double rv)
+        : ra0_rad(deg_to_rad(ra_deg)), dec0_rad(deg_to_rad(dec_deg)),
+          parallax_mas(parallax), rv_km_s(rv) {
+        
+        double cos_dec = std::cos(dec0_rad);
+        double sin_dec = std::sin(dec0_rad);
+        double cos_ra = std::cos(ra0_rad);
+        double sin_ra = std::sin(ra0_rad);
+
+        p_hat = {cos_dec * cos_ra, cos_dec * sin_ra, sin_dec};
+        east_hat = {-sin_ra, cos_ra, 0.0};
+        north_hat = {-sin_dec * cos_ra, -sin_dec * sin_ra, cos_dec};
+
+        // pmra_mas is mu_alpha* (includes cos_dec factor)
+        pmra_rad_yr = pmra_mas * ARCSEC2RAD / 1000.0;
+        pmdec_rad_yr = pmdec_mas * ARCSEC2RAD / 1000.0;
+    }
+
+    void compute(double jd_tt, double* result) const override {
+        double dt_yr = (jd_tt - 2451545.0) / 365.25;
+        
+        Vec3 v_tan = east_hat * pmra_rad_yr + north_hat * pmdec_rad_yr;
+        Vec3 propagated;
+
+        if (parallax_mas > 1e-9) {
+            double dist_au = 1000.0 / parallax_mas * (1.0 / ARCSEC2RAD);
+            double dist_km = dist_au * KM_PER_AU;
+            
+            // km/s to km/yr
+            double rv_km_yr = rv_km_s * (365.25 * 86400.0);
+            
+            propagated = (p_hat * dist_km) + (v_tan * dist_km + p_hat * rv_km_yr) * dt_yr;
+        } else {
+            // Effectively infinity: 1 million light years in KM
+            double dist_km = 1e6 * 9.4607e12; 
+            propagated = (p_hat + v_tan * dt_yr) * dist_km;
+        }
+
+        result[0] = propagated[0];
+        result[1] = propagated[1];
+        result[2] = propagated[2];
+        result[3] = result[4] = result[5] = 0.0;
+    }
+};
+
+/**
  * @brief THEOREM: Difference Evaluator (Target - Observer).
  */
 class RelativeEvaluator : public IEvaluator {
@@ -242,6 +307,25 @@ public:
         target->evaluate(jd, r_t);
         observer->evaluate(jd, r_o);
         for (int i = 0; i < 6; ++i) result[i] = r_t[i] - r_o[i];
+    }
+};
+
+/**
+ * @brief THEOREM: Sum Evaluator (A + B).
+ */
+class SumEvaluator : public IEvaluator {
+public:
+    std::shared_ptr<IEvaluator> a;
+    std::shared_ptr<IEvaluator> b;
+
+    SumEvaluator(std::shared_ptr<IEvaluator> a, std::shared_ptr<IEvaluator> b)
+        : a(std::move(a)), b(std::move(b)) {}
+
+    void compute(double jd, double* result) const override {
+        double r_a[6], r_b[6];
+        a->evaluate(jd, r_a);
+        b->evaluate(jd, r_b);
+        for (int i = 0; i < 6; ++i) result[i] = r_a[i] + r_b[i];
     }
 };
 
