@@ -299,7 +299,59 @@ forms are available for all progression families.
 Moira's progression and primary directions coverage is exceptional — matches or exceeds all competitors. The primary directions standard admits PLACIDUS_MUNDANE, PTOLEMY_SEMI_ARC, PLACIDIAN_CLASSIC_SEMI_ARC, MERIDIAN, MORINUS, REGIOMONTANUS, CAMPANUS, and TOPOCENTRIC as runtime-admitted methods; FIELD_PLANE and NEO_CONVERSE remain outside the current freeze and are Type B frontier items, not user-visible gaps. Morinus is admitted with an explicit doctrinal limit on its conjunction-style branch (shared with the equatorial family on current evidence), which is an internal precision note rather than a missing feature. No Type A gaps identified. No Type B gaps in primary directions for the current frozen surface.
 
 ## 8. Predictive — Time Lord Systems
-<!-- Task 8 -->
+
+`timelords.py` implements Firdaria (three sequence variants: diurnal, nocturnal,
+Bonatti) and Zodiacal Releasing (with angularity classification). `profections.py`
+governs annual and monthly profections. `lord_of_the_orb.py` implements Abu
+Ma'shar's Lord of the Orb using planetary hour determination and Chaldean sequence
+arithmetic. `lord_of_the_turn.py` implements the annual Lord of the Turn via
+Al-Qabisi's succession-hierarchy method and the Egyptian/Al-Sijzi testimony method.
+`dasha.py` governs Vimshottari Dasha. `dasha_systems.py` governs Ashtottari and
+Yogini Dasha. Jaimini Chara Dasha is absent — `jaimini.py` covers only Chara Karakas.
+The three classical Hellenistic time lord systems — Decennials, Triacontaeteris, and
+Aphesis/Distributions — are absent from the codebase.
+
+| Feature | Moira | Solar Fire | Sirius | Janus | Astro.com | Astro-Seek | Morinus | Co-Star | TimePassages |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Annual profections | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ~ |
+| Monthly profections | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✗ |
+| Firdaria (diurnal) | ✓ | ✓ | ✓ | ✓ | ~ | ✓ | ✗ | ✗ | ✗ |
+| Firdaria (nocturnal) | ✓ | ✓ | ✓ | ✓ | ~ | ✓ | ✗ | ✗ | ✗ |
+| Firdaria (Bonatti variant) | ✓ | ~ | ✓ | ~ | ✗ | ~ | ✗ | ✗ | ✗ |
+| Zodiacal Releasing | ✓ | ✗ | ✓ | ✓ | ~ | ✓ | ✗ | ✗ | ✗ |
+| Lord of the Orb | ✓ | ✓ | ✓ | ✓ | ✗ | ~ | ✗ | ✗ | ✗ |
+| Lord of the Turn | ✓ | ~ | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ |
+| Decennials | ✗ | ✗ | ✓ | ✓ | ✗ | ~ | ✗ | ✗ | ✗ |
+| Triacontaeteris (30-yr periods) | ✗ | ✗ | ✓ | ~ | ✗ | ✗ | ✗ | ✗ | ✗ |
+| Hellenistic aphesis / distributions | ✗ | ✗ | ✓ | ✓ | ✗ | ~ | ✗ | ✗ | ✗ |
+| Vimshottari dasha | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✗ |
+| Multiple Vedic dasha systems | ✓ | ~ | ✓ | ~ | ✗ | ~ | ✗ | ✗ | ✗ |
+| Jaimini Chara Dasha | ✗ | ✗ | ✓ | ~ | ✗ | ✗ | ✗ | ✗ | ✗ |
+
+**Gap notes:**
+
+Monthly profections are present (`monthly_profection` in `profections.py`); no gap.
+
+**Decennials absent — Type A, D=2, C=3, T=3 → score 8 → P1.** The Hellenistic
+10-year planetary time lord system (Decennials) is not implemented anywhere in the
+codebase. Sirius and Janus both support it; Astro-Seek offers partial coverage. Two of
+the eight competitors provide full support.
+
+**Triacontaeteris absent — Type A, D=1, C=2, T=3 → score 6 → P2.** The 30-year
+Hellenistic period system is absent. Only Sirius fully supports it; Janus offers partial
+coverage. Lower competitor penetration justifies P2.
+
+**Hellenistic aphesis / distributions absent — Type A, D=2, C=3, T=2 → score 7 → P1.**
+The Hellenistic planetary distributions (aphesis) system is not implemented. Sirius and
+Janus both support it; Astro-Seek offers partial coverage. This technique is closely
+related to Zodiacal Releasing (which is present) and shares the same doctrinal corpus,
+making its absence a meaningful gap relative to the Hellenistic feature set Moira
+otherwise covers well.
+
+**Jaimini Chara Dasha absent — Type A, D=2, C=3, T=3 → score 8 → P1.** `jaimini.py`
+implements Chara Karakas only; no Chara Dasha time lord system exists. `dasha_systems.py`
+covers Ashtottari and Yogini but not Chara Dasha. Sirius fully supports it. This is the
+primary Jaimini predictive technique and a meaningful gap in the Vedic suite.
 
 ## 9. Synastry & Relationship Charts
 <!-- Task 9 -->
