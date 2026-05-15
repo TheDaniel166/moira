@@ -53,7 +53,55 @@ Kronos, Apollon, Admetos, Vulkanus, Poseidon, Transpluto).
 Moira's body coverage is exceptional — it exceeds all 8 competitors in catalog breadth. No Type A gaps identified. Possible Type B: Moira's extended asteroid catalog stands at 369 named bodies (ASTEROID_NAIF); Sirius claims the largest commercial catalog and may exceed this count — verify. Fixed star catalog at 1,809 entries (star_registry.csv) is competitive with commercial leaders. Variable stars, comets (5 periodic), multiple star systems with orbital mechanics, and SSB access are unique to Moira among this competitor set. Uranian suite covers all 8 Hamburg bodies plus Transpluto (9 total).
 
 ## 2. House Systems & Chart Frames
-<!-- Task 2 -->
+
+Moira implements house cusps via `houses.py` using ARMC, obliquity, and geographic
+coordinates. The engine supports fallback from polar-incompatible systems (Placidus,
+Koch) to Porphyry above the critical latitude (~66.56°). Huber houses are in a
+separate module. Galactic, geodetic, local space, and Gauquelin sectors are also
+separate specialized modules.
+
+| Feature | Moira | Solar Fire | Sirius | Janus | Astro.com | Astro-Seek | Morinus | Co-Star | TimePassages |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Placidus | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Koch | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
+| Regiomontanus | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
+| Campanus | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
+| Equal (ASC-based) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Whole Sign | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Porphyry | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
+| Morinus | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ |
+| Alcabitius | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ |
+| Meridian / Axial Rotation | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✗ | ✗ |
+| Azimuthal / Horizontal | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✗ | ✗ |
+| Vehlow Equal | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✗ |
+| Krusinski / Poli-Goeldi | ✓ | ✓ | ✓ | ~ | ✗ | ~ | ✗ | ✗ | ✗ |
+| Huber / age progressions | ✓ | ✗ | ✓ | ~ | ✗ | ✗ | ✗ | ✗ | ✗ |
+| Gauquelin sectors | ✓ | ✓ | ✓ | ✓ | ✗ | ~ | ✗ | ✗ | ✗ |
+| Galactic houses | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
+| Geodetic houses | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✗ |
+| Local space frame | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✗ |
+| Solar sign frame (Sun on cusp 1) | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ |
+| Derived houses (from any cusp) | ✗ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✗ |
+
+**Gap notes:**  
+Moira's house system breadth is strong — all 17 systems in `HouseSystem` (including
+Alcabitius, Meridian, Azimuthal, Vehlow, Krusinski, Topocentric, Carter, APC, and
+Sunshine) are confirmed in `_KNOWN_SYSTEMS` and fully operational. The Sunshine system
+(code "N", Makransky 1988) places the Sun at cusp 12, which is a distinct variant from
+the traditional solar sign frame where the Sun's sign occupies house 1.
+
+Two gaps identified against the competitor matrix:
+
+**Solar sign frame (Sun on cusp 1) — Type A gap:** The traditional solar sign/solar
+house frame (ASC replaced by the Sun's sign cusp so that the Sun's sign = house 1) is
+absent. Moira's SUNSHINE system is the structurally different Makransky variant (Sun at
+cusp 12). Solar Fire, Sirius, Janus, Astro.com, Astro-Seek, Co-Star, and TimePassages
+all offer the traditional solar sign frame (7 of 8 competitors). D=2, C=5, T=2 → P1.
+
+**Derived houses (from any cusp) — Type A gap:** No module or function provides
+derived/turned house calculation (rotating the house wheel so that any chosen cusp
+becomes the new ASC/1st house). Solar Fire, Sirius, Janus, and Astro-Seek support
+this (4 of 8 competitors). D=1, C=4, T=2 → P2.
 
 ## 3. Aspects, Midpoints & Antiscia
 <!-- Task 3 -->
