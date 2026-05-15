@@ -137,7 +137,56 @@ dataclass, comparing each body's declination against the true obliquity
 `abs(declination) − obliquity`. All Moira cells remain ✓ as templated.
 
 ## 4. Dignities, Strength & Rulership
-<!-- Task 4 -->
+
+`dignities.py` covers essential dignities (domicile, exaltation, detriment, fall).
+`triplicity.py` covers triplicity lords across multiple systems (Ptolemaic, Dorothean,
+Lilly). `egyptian_bounds.py` covers Egyptian and Ptolemaic bounds. `decanates.py`
+and `hermetic_decans.py` cover decans/faces. The dispositorship module covers rulership
+chains. `wiki/02_standards/DIGNITIES_BACKEND_STANDARD.md` is authoritative.
+
+| Feature | Moira | Solar Fire | Sirius | Janus | Astro.com | Astro-Seek | Morinus | Co-Star | TimePassages |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Domicile / rulership | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Exaltation / fall | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Detriment | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Triplicity lords (Ptolemaic) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ~ |
+| Triplicity lords (Dorothean / Lilly) | ✓ | ✓ | ✓ | ✓ | ~ | ✓ | ✓ | ✗ | ✗ |
+| Egyptian / Ptolemaic bounds | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
+| Decanates / faces | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
+| Hermetic decanates | ✓ | ~ | ✓ | ~ | ✗ | ~ | ✗ | ✗ | ✗ |
+| Almuten calculation | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ |
+| Peregrine status | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ |
+| Mutual reception | ✓ | ✓ | ✓ | ✓ | ~ | ✓ | ✓ | ✗ | ~ |
+| Dispositor chain / final dispositor | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✗ | ✗ |
+| Accidental dignities (angularity, direct motion) | ✓ | ✓ | ✓ | ✓ | ~ | ~ | ~ | ✗ | ~ |
+| Cazimi / combust / under beams | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ~ |
+| Sect (diurnal/nocturnal) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ |
+
+**Gap notes:**  
+No gaps identified in this domain. All features are fully implemented in `dignities.py`
+and supporting modules.
+
+- **Almuten Figuris** (`almuten_figuris()` function, line 2233): scores essential
+  dignities across key chart points to identify the planet with highest aggregate dignity.
+- **Peregrine** (`SCORE_PEREGRINE`, `EssentialDignityKind.PEREGRINE`, line 1058):
+  returned when a planet holds no essential dignity in its sign — a full member of
+  `EssentialDignityTruth`.
+- **Mutual reception** (`mutual_receptions()`, `_find_mutual_receptions()`, line 2276):
+  supports both domicile and exaltation bases, configurable via `MutualReceptionPolicy`.
+- **Dispositor chains** (`_build_dispositorship_chain()`, line 1970): genuine multi-step
+  chain tracing via a `while True` walk through sign rulers, detecting final dispositors
+  (planet in own sign), terminal cycles, and unresolved chains when out-of-scope planets
+  appear. `DispositorshipTerminationKind` enumerates all outcomes.
+- **Accidental dignities — angularity and motion** (`_get_accidental_dignities()`,
+  line 1066): angular/succedent/cadent house placement scored at +4/+2/−2; direct/
+  retrograde motion tracked and scored via `include_motion` policy flag.
+- **Cazimi / combust / under beams** (lines 1113–1118): all three solar proximity
+  thresholds implemented — cazimi (17′ = 0.283°), combust (8°), under sunbeams (17°) —
+  with individual scores (SCORE_CAZIMI = +5, SCORE_COMBUST = −5, SCORE_SUNBEAMS).
+- **Sect** (`SECT` table, `is_in_sect()`, `sect_light()`, `is_in_hayz()`, lines 227–299):
+  diurnal/nocturnal sect membership fully implemented for all Classic 7, including
+  Mercury's conditional sect rule (diurnal when rising before the Sun). Hayz and halb
+  detection are also present.
 
 ## 5. Lots, Parts & Special Points
 <!-- Task 5 -->
