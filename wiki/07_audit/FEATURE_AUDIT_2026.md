@@ -440,7 +440,66 @@ returns a date range (start–end window) of continuous planetary visibility in 
 or morning sky. Type B gap. D=2, C=4, T=2 → P2.
 
 ## 11. Astrocartography & Spatial Techniques
-<!-- Task 11 -->
+
+`astrocartography.py` computes MC/IC/ASC/DSC lines with topocentric WGS-84 support;
+Zenith/Nadir lines are not produced by the module.
+`parans.py` covers latitude-based paran crossings (13-phase engine with field analysis
+and contour extraction). `geodetic.py` provides geodetic MC/ASC equivalents (tropical and
+sidereal). `local_space.py` provides azimuth/altitude-based local space charts.
+The C++ native backend (`cartography.hpp`) provides low-level eclipse cartography
+grid sweeps, not the ACG line engine.
+
+`acg_lines()` accepts any `dict[str, (RA, Dec)]`, so it is body-agnostic in principle.
+However `acg_from_chart()` defaults to `chart.planets.keys()` (the 10 classical planets
+only), and `sky_position_at()` routes bodies via `NAIF_ROUTES` which contains only those
+10 bodies. `asteroids.py` returns `AsteroidData` (ecliptic only — no RA/Dec); fixed stars
+have no `sky_position_at` path. ACG lines for asteroids and fixed stars are therefore
+absent from the current public surface.
+
+No function in the codebase (in `astrocartography.py`, `synastry.py`, `chart.py`,
+`houses.py`, or `_facade_spatial.py`) accepts a natal Julian Day plus a new geographic
+location and returns a full recalculated chart (house cusps + planet positions). The
+phrase "from a relocated chart" appears only in a `houses.py` docstring comment (line 3343)
+describing a general ARMC-based overload — no `relocated_chart()` entrypoint exists.
+
+In-mundo direction space (`IN_MUNDO` / `PrimaryDirectionSpace.IN_MUNDO`) is fully
+implemented in `moira/primary_directions/spaces.py` and `__init__.py` for primary
+direction computation, including mundane position perfection and preserved-latitude mode.
+This is the canonical definition of in-mundo aspects (angular relationships in the sphere
+of the houses, used in primary directions). It is present.
+
+| Feature | Moira | Solar Fire | Sirius | Janus | Astro.com | Astro-Seek | Morinus | Co-Star | TimePassages |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| ACG lines (MC / IC / ASC / DSC) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ |
+| ACG Zenith / Nadir lines | ✗ | ✓ | ✓ | ✓ | ~ | ~ | ✗ | ✗ | ✗ |
+| ACG for asteroids / fixed stars | ✗ | ~ | ✓ | ~ | ✗ | ~ | ✗ | ✗ | ✗ |
+| Parans | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✗ |
+| Local space charts | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✗ |
+| Geodetic equivalents | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✗ |
+| In-mundo aspects | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ✓ | ✗ | ✗ |
+| Relocated chart generation | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+
+**Gap notes:**
+
+**ACG Zenith / Nadir lines absent — Type A, D=2, C=4, T=2 → score 8 → P1.** `astrocartography.py`
+produces only MC, IC, ASC, and DSC lines; no Zenith or Nadir line is computed. Solar Fire,
+Sirius, and Janus offer full Zenith/Nadir support; Astro.com and Astro-Seek offer partial
+coverage (5 of 8 competitors). Zenith lines (where a planet passes directly overhead) are
+a standard ACG map layer used alongside the MC line.
+
+**Relocated chart generation absent — Type A, D=3, C=8, T=2 → score 11 → P1.** No function
+exists that takes a natal Julian Day and a new geographic latitude/longitude and returns a
+full chart with recalculated house cusps, ASC, MC, and planet positions. All 8 competitors
+offer this feature — it is the single largest ACG-domain gap by competitor penetration.
+`_facade_spatial.py` and `astrocartography.py` only compute ACG line curves over a map; they
+do not recast the natal chart at a new location.
+
+**ACG for asteroids / fixed stars absent — Type A, D=2, C=3, T=2 → score 7 → P1.**
+`sky_position_at()` accepts only the 10 bodies in `NAIF_ROUTES`; `AsteroidData` carries no
+RA/Dec; no path exists to compute ACG lines for the 369-entry asteroid catalog or the 1,809
+fixed stars. Sirius supports ACG for fixed stars; Solar Fire, Janus, and Astro-Seek offer
+partial coverage. The `acg_lines()` core is body-agnostic, so adding an RA/Dec source for
+asteroids and stars would be the primary implementation requirement.
 
 ## 12. Vedic / Jyotish Suite
 <!-- Task 12 -->
