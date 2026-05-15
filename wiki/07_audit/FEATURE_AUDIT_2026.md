@@ -189,7 +189,52 @@ and supporting modules.
   detection are also present.
 
 ## 5. Lots, Parts & Special Points
-<!-- Task 5 -->
+
+`lots.py` implements 512 named Arabic/Hellenistic lots (docstring says ~430 — outdated)
+using ASC + Add − Subtract (mod 360°) with automatic day/night reversal (`reverse_at_night`
+field per `PartDefinition`) and full support for derived lot references (26+ lots reference
+other lots such as Fortune, Spirit, and Syzygy as formula operands). `nine_parts.py`
+covers Abu Ma'shar's nine hermetic lots (novenaria). `manazil.py` covers the 28 Arabic
+lunar mansions across five attribution traditions (al-Biruni default, Abenragel, Ibn
+al-Arabi, Agrippa, Picatrix). `transits.py` computes the prenatal syzygy — it returns
+`(jd_syzygy, phase)`, a Julian date and phase label; the syzygy ecliptic longitude must
+be computed from the returned JD via a separate ephemeris call (lots engine accepts it as
+`syzygy: float`). Vertex is fully computed in `houses.py` (via `_asc_from_armc` applied
+to ARMC + 90° with negated latitude) and exposed as `HouseResult.vertex` / `anti_vertex`.
+East Point / Equatorial ASC is absent as a computed output point — the only reference in
+`houses.py` line 1355 is a docstring comment on Morinus internal math. Galactic Center
+and Super-Galactic Center are both present in `galactic.py` as ecliptic-longitude
+sensitive points.
+
+| Feature | Moira | Solar Fire | Sirius | Janus | Astro.com | Astro-Seek | Morinus | Co-Star | TimePassages |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Lot of Fortune | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
+| Lot of Spirit | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ |
+| Full Arabic lots catalog (100+) | ✓ (~512) | ~ (~50) | ✓ (~97) | ~ (~40) | ~ | ✓ | ✗ | ✗ | ✗ |
+| Day/night sect reversal for lots | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ~ | ✗ | ✗ |
+| Derived lot references | ✓ | ~ | ✓ | ✗ | ✗ | ~ | ✗ | ✗ | ✗ |
+| Nine Parts / Novenaria | ✓ | ✗ | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✗ |
+| Lunar Mansions (Manazil) | ✓ | ~ | ✓ | ~ | ✗ | ✓ | ✗ | ✗ | ✗ |
+| Vertex | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
+| East Point / Equatorial ASC | ✗ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✗ | ✗ |
+| Prenatal syzygy degree | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ |
+| Galactic Center as sensitive point | ✓ | ~ | ✓ | ✗ | ✗ | ~ | ✗ | ✗ | ✗ |
+| Super-Galactic Center | ✓ | ✗ | ~ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
+
+**Gap notes:**  
+Moira's lots coverage is the deepest in the comparison set at 512 entries. The docstring
+claiming ~430 is stale and should be updated.
+
+The prenatal syzygy is a minor depth gap: `prenatal_syzygy()` returns a Julian date rather
+than an ecliptic longitude directly. The longitude must be derived via a separate ephemeris
+call at that JD before passing it into the lots engine as `syzygy: float`. The feature is
+fully functional but requires two steps; Type B, low severity.
+
+- **East Point absent — Type A, D=2, C=5, T=2 → score 7 → P1.** The East Point
+  (Equatorial Ascendant / ARMC + 90° projected to ecliptic at zero latitude) is not
+  returned as a named output point in `HouseResult`. Solar Fire, Sirius, Janus, Astro-Seek,
+  and Morinus all expose it (5 of 8 competitors). Implementation is trivial — it is already
+  computed internally as the Morinus starting point.
 
 ## 6. Predictive — Transits & Returns
 <!-- Task 6 -->
