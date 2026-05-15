@@ -104,7 +104,37 @@ becomes the new ASC/1st house). Solar Fire, Sirius, Janus, and Astro-Seek suppor
 this (4 of 8 competitors). D=1, C=4, T=2 → P2.
 
 ## 3. Aspects, Midpoints & Antiscia
-<!-- Task 3 -->
+
+`aspects.py` handles longitudinal aspect detection. `midpoints.py` covers midpoint
+trees and cosmobiology. `antiscia.py` covers solstice points and contra-antiscia.
+`patterns.py` identifies aspect patterns (Grand Trine, T-Square, Grand Cross, Yod,
+Mystic Rectangle, Kite, etc.). `transits_equatorial.py` covers declination-based
+aspects (parallel, contra-parallel).
+
+| Feature | Moira | Solar Fire | Sirius | Janus | Astro.com | Astro-Seek | Morinus | Co-Star | TimePassages |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Ptolemaic aspects (conjunction–opposition) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Modern aspects (quintile, septile, novile, etc.) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ~ | ✓ |
+| Parallel (declination) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
+| Contra-parallel | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
+| Out-of-bounds planet flagging | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ~ |
+| Antiscia (solstice points) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ~ |
+| Contra-antiscia | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ |
+| Midpoints (full 45° sort) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ~ |
+| Cosmobiology (midpoint trees, pictures) | ✓ | ✓ | ✓ | ✓ | ✗ | ~ | ✗ | ✗ | ✗ |
+| Aspect patterns (Grand Trine, T-Square, etc.) | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ~ | ✓ |
+| Yod / Finger of God | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✓ |
+| Declination aspect search (transit parallels) | ✓ | ✓ | ✓ | ✓ | ~ | ✓ | ✓ | ✗ | ~ |
+
+**Gap notes:**  
+No gaps identified in this domain. Parallel and contra-parallel detection are fully
+implemented in both `aspects.py` (`find_declination_aspects`) for natal/synastry use
+and `transits_equatorial.py` (`find_declination_transits`) for predictive transit
+scanning, including a hybrid native-batch path for performance. Out-of-bounds flagging
+is implemented in `aspects.py` via `find_out_of_bounds` and the `OutOfBoundsBody`
+dataclass, comparing each body's declination against the true obliquity
+(`moira.obliquity.true_obliquity`) with excess computed as
+`abs(declination) − obliquity`. All Moira cells remain ✓ as templated.
 
 ## 4. Dignities, Strength & Rulership
 <!-- Task 4 -->
