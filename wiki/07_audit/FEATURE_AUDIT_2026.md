@@ -396,7 +396,48 @@ partial coverage (4 of 8 competitors). This is a depth gap over the existing
 cross-chart aspect grid — Type B.
 
 ## 10. Astronomical Phenomena & Events
-<!-- Task 10 -->
+
+Eclipse suite: `eclipse.py` (contacts), `eclipse_geometry.py` (geometry), `eclipse_search.py`
+(event search), `eclipse_canon.py` (historical catalog). Heliacal rises/sets: `heliacal.py`
+(C++ native LOLA backend). Occultations: `occultations.py`. Station detection: `stations.py`.
+Void of course: `void_of_course.py`. Planetary hours: `planetary_hours.py`. Phase angles:
+`phase.py`. General phenomena: `phenomena.py`.
+
+| Feature | Moira | Solar Fire | Sirius | Janus | Astro.com | Astro-Seek | Morinus | Co-Star | TimePassages |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Solar eclipses (search + contacts + geometry) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ~ |
+| Lunar eclipses | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ~ |
+| Eclipse canon (historical catalog) | ~ | ~ | ✓ | ~ | ✓ | ~ | ✗ | ✗ | ✗ |
+| Heliacal rises and sets | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✗ |
+| Occultations | ✓ | ~ | ✓ | ~ | ✗ | ✗ | ✗ | ✗ | ✗ |
+| Retrograde stations (Rx / Direct) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Void of course Moon | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ~ | ✓ |
+| Planetary hours | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ~ |
+| Cazimi / combust / under beams | ~ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ~ |
+| Phase angles (elongation, illumination %) | ✓ | ✓ | ✓ | ✓ | ~ | ✓ | ~ | ✗ | ~ |
+| Lunar phase (new, crescent, quarter, etc.) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Planetary visibility windows | ~ | ✓ | ✓ | ✓ | ✗ | ~ | ✗ | ✗ | ✗ |
+| Rise / set / culmination times | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
+
+**Gap notes:**  
+**Eclipse canon (~ for Moira):** `eclipse_canon.py` implements NASA-canon algorithmic geometry
+in TT (gamma, contact solving, method comparison against the Espenak & Meeus Five Millennium
+Canon). This is a NASA-compatibility layer for validation, not a pre-computed historical
+catalog of past eclipses. Moira has no embedded lookup table of eclipse dates for arbitrary
+historical queries. Type B gap. D=2, C=3, T=2 → P2.
+
+**Cazimi / combust / under beams (~ for Moira):** These are computed inside `dignities.py`
+as part of accidental dignity scoring (lines 1113–1118 — `SolarConditionTruth` with cazimi
+≤0.283°, combust ≤8°, under sunbeams ≤17°). `phenomena.py` has no standalone functions
+for these conditions. They are accessible via `DignitiesService` but not as independent
+phenomena events. This is a design concern (no standalone query path), not a blocking gap
+since the values are reachable. Not a Type A gap; minor Type B.
+
+**Planetary visibility windows (~ for Moira):** `heliacal.py` returns event-point dates —
+`planet_heliacal_rising()`, `planet_heliacal_setting()`, `planet_acronychal_rising()`,
+`planet_acronychal_setting()` — each returning a single `jd_ut` crossing. No function
+returns a date range (start–end window) of continuous planetary visibility in the evening
+or morning sky. Type B gap. D=2, C=4, T=2 → P2.
 
 ## 11. Astrocartography & Spatial Techniques
 <!-- Task 11 -->
