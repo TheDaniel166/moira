@@ -21,12 +21,9 @@ LolaPointCloud::LolaPointCloud(const std::vector<double>& x,
         throw std::invalid_argument(
             "LolaPointCloud: coordinate vectors must have the same size");
     }
-    // Debug print
-    // printf("LolaPointCloud created with size: %zu\n", size_);
 }
 
 LolaPointCloud LolaPointCloud::filter_by_visibility(const Vec3& observer_dir) const {
-    // Placeholder implementation - will be implemented in Phase 2
     std::vector<double> x_filtered, y_filtered, z_filtered;
     x_filtered.reserve(size_);
     y_filtered.reserve(size_);
@@ -156,7 +153,6 @@ LolaPointCloud LolaPointCloud::filter_combined(
 }
 
 SphericalCoords LolaPointCloud::to_spherical() const {
-    // Placeholder implementation - will be implemented in Phase 2
     SphericalCoords result;
     result.lon_deg.resize(size_);
     result.lat_deg.resize(size_);
@@ -209,7 +205,6 @@ void normalize_vectors_bulk(
     double* x_out, double* y_out, double* z_out,
     size_t count)
 {
-    // Placeholder implementation - will be implemented in Phase 1
     for (size_t i = 0; i < count; ++i) {
         double norm = std::sqrt(x_in[i] * x_in[i] + 
                                y_in[i] * y_in[i] + 
@@ -232,7 +227,6 @@ void dot_product_bulk(
     double* results,
     size_t count)
 {
-    // Placeholder implementation - will be implemented in Phase 1
     for (size_t i = 0; i < count; ++i) {
         results[i] = x[i] * reference[0] + 
                      y[i] * reference[1] + 
@@ -246,7 +240,6 @@ void cross_product_bulk(
     double* x_out, double* y_out, double* z_out,
     size_t count)
 {
-    // Placeholder implementation - will be implemented in Phase 1
     for (size_t i = 0; i < count; ++i) {
         x_out[i] = y[i] * reference[2] - z[i] * reference[1];
         y_out[i] = z[i] * reference[0] - x[i] * reference[2];
@@ -260,7 +253,6 @@ void project_onto_plane_bulk(
     double* x_out, double* y_out, double* z_out,
     size_t count)
 {
-    // Placeholder implementation - will be implemented in Phase 1
     for (size_t i = 0; i < count; ++i) {
         double dot = x_in[i] * plane_normal[0] + 
                      y_in[i] * plane_normal[1] + 
@@ -426,8 +418,6 @@ std::vector<size_t> lexsort_by_bin_and_radius(
 // ============================================================================
 
 std::vector<Point2D> convex_hull_2d(const std::vector<Point2D>& points) {
-    // Placeholder implementation - will be implemented in Phase 3
-    // For now, return empty hull
     if (points.size() <= 1) {
         return points;
     }
@@ -482,7 +472,6 @@ double ray_hull_intersection(
     double position_angle_deg,
     double fallback_radius_km)
 {
-    // Placeholder implementation - will be implemented in Phase 3
     if (hull.empty()) {
         return fallback_radius_km;
     }
