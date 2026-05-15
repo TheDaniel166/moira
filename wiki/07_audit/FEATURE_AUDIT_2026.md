@@ -354,7 +354,46 @@ covers Ashtottari and Yogini but not Chara Dasha. Sirius fully supports it. This
 primary Jaimini predictive technique and a meaningful gap in the Vedic suite.
 
 ## 9. Synastry & Relationship Charts
-<!-- Task 9 -->
+
+`synastry.py` implements cross-chart aspects, house overlays (both directions),
+midpoint composite, reference-place composite, Davison chart (midpoint time +
+corrected MC-preserving search). Governed by `wiki/02_standards/SYNASTRY_BACKEND_STANDARD.md`.
+
+| Feature | Moira | Solar Fire | Sirius | Janus | Astro.com | Astro-Seek | Morinus | Co-Star | TimePassages |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Cross-chart aspects (synastry grid) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| House overlays (A→B and B→A) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ~ | ✓ |
+| Midpoint composite chart | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
+| Reference-place composite | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ |
+| Davison chart (midpoint time) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
+| Davison chart (MC-corrected) | ✓ | ~ | ✓ | ~ | ✗ | ✗ | ✗ | ✗ | ✗ |
+| Progressed synastry (prog. chart vs. natal) | ✗ | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | ~ |
+| Transits to composite / Davison | ✗ | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ |
+| Synastry aspect patterns | ✗ | ✓ | ✓ | ✓ | ✗ | ~ | ✗ | ✗ | ✗ |
+
+**Gap notes:**
+
+**Progressed synastry absent — Type B, D=2, C=4, T=2 → score 8 → P1.** No function in
+`synastry.py` accepts a progressed chart as input for cross-chart comparison. No
+`progressed_` parameter prefix or `jd_progressed` parameter exists in any synastry
+entrypoint. Solar Fire, Sirius, and Janus all support progressed-chart-vs-natal synastry;
+TimePassages offers partial coverage (4 of 8 competitors). This is a depth gap over the
+existing synastry engine (core cross-chart aspects are present) — Type B.
+
+**Transits to composite / Davison absent — Type B, D=2, C=3, T=2 → score 7 → P1.**
+No function in `synastry.py`, `transits.py`, `transits_aspects.py`, or
+`transits_houses.py` accepts a `CompositeChart` or `DavisonInfo` as a transit target.
+The transit engine operates exclusively against natal charts. Solar Fire, Sirius, and
+Janus support transiting a third (composite or Davison) chart (3 of 8 competitors).
+This is a depth gap over the existing composite and Davison infrastructure — Type B.
+
+**Synastry aspect patterns absent — Type B, D=1, C=4, T=2 → score 7 → P1.** No
+cross-chart pattern detection exists in `synastry.py` — no Grand Trine, T-square, Yod,
+or other multi-body configurations involving planets from both charts are detected. The
+single-chart pattern engine (`patterns.py`) is not extended to the inter-chart domain.
+Solar Fire, Sirius, and Janus support synastry aspect patterns; Astro-Seek offers
+partial coverage (4 of 8 competitors). This is a depth gap over the existing
+cross-chart aspect grid — Type B.
 
 ## 10. Astronomical Phenomena & Events
 <!-- Task 10 -->
