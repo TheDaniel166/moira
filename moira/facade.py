@@ -677,6 +677,8 @@ from .phenomena import (
     next_conjunction, conjunctions_in_range, resonance,
     PlanetPhenomena, planet_phenomena_at,
     next_heliocentric_conjunction, heliocentric_conjunctions_in_range,
+    ProximityEvent, proximity_events_in_range, solar_condition_events_in_range,
+
 )
 from .manazil import (
     MansionInfo, MansionPosition, MansionTradition, MANSIONS, MANSION_SPAN,
@@ -1155,6 +1157,8 @@ __all__ = [
     "next_conjunction", "conjunctions_in_range", "resonance",
     "PlanetPhenomena", "planet_phenomena_at",
     "next_heliocentric_conjunction", "heliocentric_conjunctions_in_range",
+    "ProximityEvent", "proximity_events_in_range", "solar_condition_events_in_range",
+
     # Arabic Lunar Mansions
     "MansionInfo", "MansionPosition", "MansionTradition", "MANSIONS", "MANSION_SPAN",
     "mansion_of", "mansion_of_sidereal", "all_mansions_at", "all_mansions_at_sidereal",

@@ -57,7 +57,10 @@ from .julian import (
 )
 from .nodes import NodeData, NodesAndApsides, nodes_and_apsides_at
 from .planetary_nodes import OrbitalNode, planetary_node, all_planetary_nodes, geometric_node
-from .phenomena import PlanetPhenomena, planet_phenomena_at
+from .phenomena import (
+    PlanetPhenomena, planet_phenomena_at,
+    ProximityEvent, proximity_events_in_range, solar_condition_events_in_range,
+)
 from .orbits import DistanceExtremes, KeplerianElements, distance_extremes_at, orbital_elements_at
 from .planets import CartesianPosition, PlanetData, SkyPosition
 from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal, nakshatra_of, all_nakshatras_at
@@ -390,6 +393,9 @@ __all__ = [
     "geometric_node",
     "PlanetPhenomena",
     "planet_phenomena_at",
+    "ProximityEvent",
+    "proximity_events_in_range",
+    "solar_condition_events_in_range",
     "HouseCusps",
     "GalacticAngles",
     "GalacticHouseCusps",

@@ -62,6 +62,9 @@ __all__ = [
     "find_closest_resonance",
     "next_heliocentric_conjunction",
     "heliocentric_conjunctions_in_range",
+    "ProximityEvent",
+    "proximity_events_in_range",
+    "solar_condition_events_in_range",
 ]
 
 # ---------------------------------------------------------------------------
@@ -146,6 +149,22 @@ class PhenomenonEvent:
                 f"{self.value:.4f}  "
                 f"{format_jd_utc(self.jd_ut)}")
 
+
+@dataclass(slots=True)
+class ProximityEvent:
+    """
+    Result vessel for a proximity threshold crossing between two bodies.
+    """
+    body1: str
+    body2: str
+    jd_ut: float
+    threshold_deg: float
+    body1_longitude: float
+    body2_longitude: float
+    body2_latitude: float
+    body2_retrograde: bool
+    is_ingress: bool  # True if entering proximity (separation decreasing)
+    label: str | None = None
 
 @dataclass(slots=True)
 class OrbitalResonance:
@@ -1189,3 +1208,148 @@ def planet_phenomena_at(body: str, jd_ut: float) -> PlanetPhenomena:
         angular_diameter_arcsec=_diam(body, jd_ut),
         apparent_magnitude=_mag(body, jd_ut),
     )
+
+
+# ---------------------------------------------------------------------------
+# Proximity and Solar Condition Search
+# ---------------------------------------------------------------------------
+
+def _bisect_proximity(
+    body1: str,
+    body2: str,
+    target_deg: float,
+    jd_lo: float,
+    jd_hi: float,
+    reader: SpkReader,
+    apparent: bool = True,
+    tol_days: float = 1e-8,
+) -> float:
+    """Bisect to find when separation between two bodies equals target_deg."""
+    def diff(t: float) -> float:
+        # Use signed separation to handle crossings correctly
+        sep = _conjunction_separation(body1, body2, t, reader, apparent=apparent)
+        return sep - target_deg
+
+    d_lo = diff(jd_lo)
+    for _ in range(64):
+        if jd_hi - jd_lo < tol_days:
+            break
+        jd_mid = (jd_lo + jd_hi) / 2.0
+        d_mid = diff(jd_mid)
+        if d_lo * d_mid <= 0:
+            jd_hi = jd_mid
+        else:
+            jd_lo = jd_mid
+            d_lo = d_mid
+    return (jd_lo + jd_hi) / 2.0
+
+
+def proximity_events_in_range(
+    body1: str,
+    body2: str,
+    jd_start: float,
+    jd_end: float,
+    threshold_deg: float = 0.283333, # 17'
+    reader: SpkReader | None = None,
+) -> list[ProximityEvent]:
+    """
+    Find all threshold-crossing events for a proximity between two bodies.
+    
+    This function finds each conjunction and then solves for the ingress and 
+    egress moments when the separation equals +/- threshold_deg.
+    """
+    if reader is None:
+        reader = get_reader()
+
+    # 1. Find all conjunctions in the range
+    conjs = conjunctions_in_range(body1, body2, jd_start, jd_end, reader=reader)
+    events: list[ProximityEvent] = []
+
+    for conj in conjs:
+        jd_conj = conj.jd_ut
+        
+        # Search around the conjunction for the -threshold and +threshold crossings.
+        # We bracket by +/- 2 days which is plenty for 17' or even 8° proximity.
+        # Venus moves ~1°/day relative to Sun; 8.5° takes ~8.5 days.
+        # Let's use a wider bracket for safety based on the threshold.
+        bracket = max(2.0, threshold_deg * 2.0)
+        
+        # We need to find both -threshold and +threshold.
+        # Usually one is before and one is after.
+        for target in (-threshold_deg, threshold_deg):
+            jd_lo = jd_conj - bracket
+            jd_hi = jd_conj + bracket
+            
+            # Check if there is a crossing in this bracket
+            # We use a small scan to find the actual crossing if the bracket is large
+            step = 0.5
+            curr_jd = jd_lo
+            found = False
+            
+            while curr_jd < jd_hi:
+                next_jd = min(curr_jd + step, jd_hi)
+                d1 = _conjunction_separation(body1, body2, curr_jd, reader) - target
+                d2 = _conjunction_separation(body1, body2, next_jd, reader) - target
+                
+                if d1 * d2 < 0:
+                    jd_event = _bisect_proximity(body1, body2, target, curr_jd, next_jd, reader)
+                    
+                    # Compute context at the event
+                    p1 = planet_at(body1, jd_event, reader=reader)
+                    p2 = planet_at(body2, jd_event, reader=reader)
+                    
+                    # Determine ingress vs egress
+                    # Ingress: distance is decreasing
+                    dt = 0.001
+                    dist_prev = abs(_conjunction_separation(body1, body2, jd_event - dt, reader))
+                    dist_curr = abs(_conjunction_separation(body1, body2, jd_event, reader))
+                    is_ingress = dist_curr < dist_prev
+                    
+                    events.append(ProximityEvent(
+                        body1=body1,
+                        body2=body2,
+                        jd_ut=jd_event,
+                        threshold_deg=target,
+                        body1_longitude=p1.longitude,
+                        body2_longitude=p2.longitude,
+                        body2_latitude=p2.latitude,
+                        body2_retrograde=p2.retrograde,
+                        is_ingress=is_ingress
+                    ))
+                    found = True
+                    break
+                curr_jd = next_jd
+    
+    events.sort(key=lambda e: e.jd_ut)
+    return events
+
+
+def solar_condition_events_in_range(
+    planet: str,
+    jd_start: float,
+    jd_end: float,
+    condition: str = "cazimi",
+    reader: SpkReader | None = None,
+) -> list[ProximityEvent]:
+    """
+    Search for solar condition ingress/egress events for a planet.
+    
+    Supported conditions: "cazimi" (17'), "combust" (8°), "under_sunbeams" (17°)
+    """
+    thresholds = {
+        "cazimi": 0.283333,
+        "combust": 8.0,
+        "under_sunbeams": 17.0
+    }
+    
+    if condition not in thresholds:
+        raise ValueError(f"Unknown solar condition: {condition}. Expected: {list(thresholds.keys())}")
+        
+    threshold = thresholds[condition]
+    events = proximity_events_in_range(Body.SUN, planet, jd_start, jd_end, threshold, reader)
+    
+    # Add labels
+    for ev in events:
+        ev.label = f"{condition.title()} {'Ingress' if ev.is_ingress else 'Egress'}"
+        
+    return events

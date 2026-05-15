@@ -172,6 +172,22 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
             body1, body2, jd_start, jd_end, reader=self._reader
         )
 
+    def proximity_events(
+        self, body1: str, body2: str, jd_start: float, jd_end: float, threshold_deg: float
+    ):
+        """Find all threshold-crossing events between two bodies in a range."""
+        return _facade_module().proximity_events_in_range(
+            body1, body2, jd_start, jd_end, threshold_deg=threshold_deg, reader=self._reader
+        )
+
+    def solar_condition_events(
+        self, body: str, jd_start: float, jd_end: float, condition: str = "cazimi"
+    ):
+        """Find solar condition events (cazimi, combust, etc.) for a body."""
+        return _facade_module().solar_condition_events_in_range(
+            body, jd_start, jd_end, condition=condition, reader=self._reader
+        )
+
     def resonance(self, body1: str, body2: str):
         """Compute orbital resonance for two bodies."""
         return _facade_module().resonance(body1, body2)
