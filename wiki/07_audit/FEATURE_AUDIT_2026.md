@@ -237,7 +237,32 @@ fully functional but requires two steps; Type B, low severity.
   computed internally as the Morinus starting point.
 
 ## 6. Predictive — Transits & Returns
-<!-- Task 6 -->
+
+`transits.py` owns longitude-crossing detection, sign ingress search, solar/lunar/
+planetary return computation, and prenatal syzygy. `transits_aspects.py` handles
+transit-to-natal aspect events. `transits_equatorial.py` handles equatorial transits
+including declination parallels. `transits_houses.py` handles transit-through-house events.
+
+| Feature | Moira | Solar Fire | Sirius | Janus | Astro.com | Astro-Seek | Morinus | Co-Star | TimePassages |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Transits to natal (ecliptic) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Transits through houses | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ~ | ✓ |
+| Transit aspects (aspect search) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Equatorial / declination transits | ✓ | ✓ | ✓ | ✓ | ~ | ✓ | ✓ | ✗ | ~ |
+| Converse transits | ✗ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✗ | ✗ |
+| Sign ingresses | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
+| Annual ingresses (Aries ingress, etc.) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
+| Solar return | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
+| Lunar return | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
+| Planetary returns (all bodies) | ✓ | ✓ | ✓ | ✓ | ~ | ✓ | ~ | ✗ | ~ |
+| Diurnal chart (daily solar return) | ✗ | ✓ | ✓ | ✓ | ✗ | ~ | ✗ | ✗ | ✗ |
+| Eclipse hit list (upcoming eclipses to natal) | ✗ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✗ |
+| Prenatal syzygy | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ |
+
+**Gap notes:**  
+**Converse transits** confirmed absent — `find_transits()` has no `converse`, `direction`, or `backward` parameter; the function always scans forward in time. Type A, D=3, C=5, T=3 → score 9 → **P1**.  
+**Diurnal chart** confirmed absent — all `diurnal` references in the codebase relate to sect (day/night classification), Gauquelin diurnal sectors, or topocentric diurnal aberration corrections; no daily solar return chart function exists. Type A, D=2, C=4, T=3 → score 7 → **P1**.  
+**Eclipse hit list** confirmed absent — `eclipse_search.py` exposes only `refine_minimum`, `refine_lunar_greatest_eclipse`, and `refine_solar_greatest_eclipse`; no function matches upcoming eclipses to natal positions. Type A, D=2, C=4, T=2 → score 6 → **P2**.
 
 ## 7. Predictive — Progressions & Directions
 <!-- Task 7 -->
