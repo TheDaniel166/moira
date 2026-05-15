@@ -265,7 +265,38 @@ including declination parallels. `transits_houses.py` handles transit-through-ho
 **Eclipse hit list** confirmed absent — `eclipse_search.py` exposes only `refine_minimum`, `refine_lunar_greatest_eclipse`, and `refine_solar_greatest_eclipse`; no function matches upcoming eclipses to natal positions. Type A, D=2, C=4, T=2 → score 6 → **P2**.
 
 ## 7. Predictive — Progressions & Directions
-<!-- Task 7 -->
+
+`progressions.py` implements the full progression engine. Primary directions are
+governed by their own backend standard and wiki doctrine. Both forward and converse
+forms are available for all progression families.
+
+| Feature | Moira | Solar Fire | Sirius | Janus | Astro.com | Astro-Seek | Morinus | Co-Star | TimePassages |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Secondary progressions | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
+| Converse secondary progressions | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ |
+| Tertiary progressions | ✓ | ✓ | ✓ | ✓ | ~ | ✓ | ✗ | ✗ | ✗ |
+| Minor progressions | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✗ |
+| Solar arc directions | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
+| Naibod arc | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✗ | ✗ |
+| Mean solar arc | ✓ | ✓ | ✓ | ✓ | ✗ | ~ | ✗ | ✗ | ✗ |
+| One-degree arc | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✗ |
+| Ascendant arc | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✗ |
+| Vertex arc | ✓ | ~ | ✓ | ~ | ✗ | ✗ | ✗ | ✗ | ✗ |
+| Declination progressions (Jayne) | ✓ | ✗ | ✓ | ~ | ✗ | ✗ | ✗ | ✗ | ✗ |
+| Progressed house frames (daily houses) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ~ | ✗ | ✓ |
+| Primary directions — Placidus semi-arc | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ |
+| Primary directions — Regiomontanus | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ |
+| Primary directions — Campanus | ✓ | ✓ | ✓ | ✓ | ~ | ~ | ✓ | ✗ | ✗ |
+| Primary directions — Topocentric | ✓ | ~ | ✓ | ✓ | ✗ | ~ | ✓ | ✗ | ✗ |
+| Primary directions — Morinus | ✓ | ✓ | ✓ | ✓ | ✗ | ~ | ✓ | ✗ | ✗ |
+| Primary directions — Zodiacal | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ |
+| Primary directions — Mundane | ✓ | ✓ | ✓ | ✓ | ~ | ✓ | ✓ | ✗ | ✗ |
+| Primary directions — Parallels | ✓ | ✓ | ✓ | ✓ | ✗ | ~ | ✓ | ✗ | ✗ |
+| Primary directions — Fixed stars as promissors | ✓ | ✓ | ✓ | ✓ | ✗ | ~ | ✓ | ✗ | ✗ |
+| Converse primary directions | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ |
+
+**Gap notes:**  
+Moira's progression and primary directions coverage is exceptional — matches or exceeds all competitors. The primary directions standard admits PLACIDUS_MUNDANE, PTOLEMY_SEMI_ARC, PLACIDIAN_CLASSIC_SEMI_ARC, MERIDIAN, MORINUS, REGIOMONTANUS, CAMPANUS, and TOPOCENTRIC as runtime-admitted methods; FIELD_PLANE and NEO_CONVERSE remain outside the current freeze and are Type B frontier items, not user-visible gaps. Morinus is admitted with an explicit doctrinal limit on its conjunction-style branch (shared with the equatorial family on current evidence), which is an internal precision note rather than a missing feature. No Type A gaps identified. No Type B gaps in primary directions for the current frozen surface.
 
 ## 8. Predictive — Time Lord Systems
 <!-- Task 8 -->
