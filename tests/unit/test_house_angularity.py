@@ -396,7 +396,7 @@ class TestPlacementTruthPreserved:
 # ===========================================================================
 
 class TestSystemFamiliesAngularity:
-    """describe_angularity works for all 19 systems; H1/H4/H7/H10 are always ANGULAR."""
+    """describe_angularity works for all supported systems; H1/H4/H7/H10 are always ANGULAR."""
 
     @pytest.fixture(autouse=True)
     def _setup(self, jd_j2000):
@@ -419,10 +419,10 @@ class TestSystemFamiliesAngularity:
         assert ap.category == HouseAngularity.ANGULAR
 
     @pytest.mark.parametrize("system", [
-        HouseSystem.SUNSHINE, HouseSystem.APC,
+        HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN, HouseSystem.APC,
     ])
     def test_asc_placement_valid_category_non_asc_anchored(self, system):
-        # SUNSHINE anchors on the Sun (not ASC); APC can produce a rotated figure.
+        # SUNSHINE and SOLAR_SIGN anchor on the Sun (not ASC); APC can produce a rotated figure.
         # The ASC may not fall in H1, but the result must still be a valid category.
         hc = calculate_houses(self._jd, _LAT, _LON, system)
         pl = assign_house(hc.asc, hc)

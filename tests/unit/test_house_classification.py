@@ -4,7 +4,7 @@ Phase 2: House System Classification Tests
 Verifies that:
 - HouseSystemClassification, HouseSystemFamily, HouseSystemCuspBasis exist
   and are typed correctly
-- classify_house_system() is deterministic and maps all 17 known systems
+- classify_house_system() is deterministic and maps all known systems
 - Classification reflects effective_system, not requested system
 - Fallback results classify by the effective (Porphyry / Placidus) system
 - Unknown codes raise rather than impersonating a fallback engine
@@ -136,6 +136,9 @@ class TestFamilyCorrectness:
     def test_sunshine_family(self):
         assert classify_house_system(HouseSystem.SUNSHINE).family == HouseSystemFamily.SOLAR
 
+    def test_solar_sign_family(self):
+        assert classify_house_system(HouseSystem.SOLAR_SIGN).family == HouseSystemFamily.SOLAR
+
     @pytest.mark.parametrize("system", [
         HouseSystem.PLACIDUS, HouseSystem.KOCH, HouseSystem.PORPHYRY,
         HouseSystem.CAMPANUS, HouseSystem.REGIOMONTANUS, HouseSystem.ALCABITIUS,
@@ -203,6 +206,9 @@ class TestCuspBasisCorrectness:
     def test_sunshine_solar_position(self):
         assert classify_house_system(HouseSystem.SUNSHINE).cusp_basis == HouseSystemCuspBasis.SOLAR_POSITION
 
+    def test_solar_sign_ecliptic(self):
+        assert classify_house_system(HouseSystem.SOLAR_SIGN).cusp_basis == HouseSystemCuspBasis.ECLIPTIC
+
 
 # ---------------------------------------------------------------------------
 # Correctness: latitude_sensitive
@@ -216,6 +222,7 @@ class TestLatitudeSensitivity:
         HouseSystem.MORINUS,
         HouseSystem.MERIDIAN,
         HouseSystem.SUNSHINE,
+        HouseSystem.SOLAR_SIGN,
     ])
     def test_latitude_insensitive_systems(self, system):
         assert classify_house_system(system).latitude_sensitive is False
@@ -248,6 +255,7 @@ class TestPolarCapable:
         HouseSystem.CAMPANUS, HouseSystem.REGIOMONTANUS, HouseSystem.ALCABITIUS,
         HouseSystem.MORINUS, HouseSystem.TOPOCENTRIC, HouseSystem.MERIDIAN,
         HouseSystem.VEHLOW, HouseSystem.SUNSHINE, HouseSystem.AZIMUTHAL,
+        HouseSystem.SOLAR_SIGN,
         HouseSystem.CARTER, HouseSystem.KRUSINSKI, HouseSystem.APC,
         ])
     def test_polar_capable_systems(self, system):
@@ -328,7 +336,7 @@ class TestUnknownCodeClassification:
 
 
 # ---------------------------------------------------------------------------
-# All 18 known systems are covered by classify_house_system
+# All known systems are covered by classify_house_system
 # ---------------------------------------------------------------------------
 
 class TestAllSystemsCovered:
@@ -337,23 +345,23 @@ class TestAllSystemsCovered:
         HouseSystem.WHOLE_SIGN, HouseSystem.CAMPANUS, HouseSystem.REGIOMONTANUS,
         HouseSystem.PORPHYRY, HouseSystem.MERIDIAN, HouseSystem.ALCABITIUS,
         HouseSystem.MORINUS, HouseSystem.TOPOCENTRIC, HouseSystem.VEHLOW,
-        HouseSystem.SUNSHINE, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
+        HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
         HouseSystem.KRUSINSKI,
         HouseSystem.APC,
     ]
 
-    def test_all_18_systems_return_classification(self):
+    def test_all_systems_return_classification(self):
         for system in self._ALL_SYSTEMS:
             c = classify_house_system(system)
             assert isinstance(c, HouseSystemClassification), f"{system} returned no classification"
 
-    def test_all_18_systems_have_valid_family(self):
+    def test_all_systems_have_valid_family(self):
         valid = set(HouseSystemFamily)
         for system in self._ALL_SYSTEMS:
             c = classify_house_system(system)
             assert c.family in valid, f"{system}: unexpected family {c.family!r}"
 
-    def test_all_18_systems_have_valid_cusp_basis(self):
+    def test_all_systems_have_valid_cusp_basis(self):
         valid = set(HouseSystemCuspBasis)
         for system in self._ALL_SYSTEMS:
             c = classify_house_system(system)
@@ -363,6 +371,10 @@ class TestAllSystemsCovered:
         for system in self._ALL_SYSTEMS:
             r = _normal(system)
             assert r.classification is not None, f"{system}: classification is None"
+
+    def test_solar_sign_cusp_one_is_sun_sign_start(self):
+        r = _normal(HouseSystem.SOLAR_SIGN)
+        assert r.cusps[0] % 30.0 == pytest.approx(0.0, abs=1e-9)
 
 
 # ---------------------------------------------------------------------------

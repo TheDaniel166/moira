@@ -47,6 +47,496 @@ def test_current_firdaria_returns_major_for_node_period_when_no_subperiods() -> 
     assert sub.planet == "North Node"
 
 
+def test_decennials_day_sequence_starts_from_sect_light_in_zodiacal_order() -> None:
+    from moira.timelords import decennials
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    periods = decennials(2451545.0, natal_positions, True, levels=1)
+
+    assert [period.planet for period in periods if period.level == 1] == [
+        "Sun", "Mercury", "Venus", "Mars", "Moon", "Jupiter", "Saturn",
+    ]
+
+
+def test_decennials_night_sequence_starts_from_moon_in_zodiacal_order() -> None:
+    from moira.timelords import decennials, DecennialSequenceKind
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    periods = decennials(2451545.0, natal_positions, False, levels=1)
+
+    assert [period.planet for period in periods if period.level == 1] == [
+        "Moon", "Jupiter", "Saturn", "Sun", "Mercury", "Venus", "Mars",
+    ]
+    assert all(period.sequence_kind == DecennialSequenceKind.NOCTURNAL_LUNAR for period in periods)
+
+
+def test_decennials_major_periods_have_expected_lengths_and_cycle() -> None:
+    from moira.timelords import decennials, DecennialSequenceKind
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    periods = decennials(2451545.0, natal_positions, True, levels=1)
+    major = [period for period in periods if period.level == 1]
+
+    assert len(major) == 7
+    assert all(period.months == pytest.approx(129.0, abs=1e-12) for period in major)
+    assert all(period.years == pytest.approx(10.75, abs=1e-12) for period in major)
+    assert [period.major_index for period in major] == list(range(7))
+    assert all(period.sect_light == "Sun" for period in major)
+    assert all(period.sequence_kind == DecennialSequenceKind.DIURNAL_SOLAR for period in major)
+    assert all(period.is_diurnal_solar is True for period in major)
+    assert all(period.is_nocturnal_lunar is False for period in major)
+    assert all(period.month_basis_days == pytest.approx(30.0, abs=1e-12) for period in major)
+    assert all(period.major_month_total == pytest.approx(129.0, abs=1e-12) for period in major)
+    assert all(period.sequence == ("Sun", "Mercury", "Venus", "Mars", "Moon", "Jupiter", "Saturn") for period in major)
+    assert major[-1].end_jd - major[0].start_jd == pytest.approx(903.0 * 30.0, abs=1e-9)
+
+
+def test_decennials_subperiods_rotate_major_sequence_and_preserve_months() -> None:
+    from moira.timelords import decennials
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    periods = decennials(2451545.0, natal_positions, True)
+    first_major = next(period for period in periods if period.level == 1)
+    subs = [period for period in periods if period.level == 2 and period.major_planet == first_major.planet]
+
+    assert [period.planet for period in subs] == [
+        "Sun", "Mercury", "Venus", "Mars", "Moon", "Jupiter", "Saturn",
+    ]
+    assert [period.sub_index for period in subs] == list(range(7))
+    assert [period.sequence_position for period in subs] == list(range(1, 8))
+    assert all(period.major_index == 0 for period in subs)
+    assert all(period.sequence == first_major.sequence for period in subs)
+    assert all(period.effective_major_planet == "Sun" for period in subs)
+    assert all(period.rotated_sequence == first_major.sequence for period in subs)
+    assert [period.months for period in subs] == pytest.approx([19.0, 20.0, 8.0, 15.0, 25.0, 12.0, 30.0], abs=1e-12)
+
+
+def test_decennials_phase3_helpers_expose_major_relative_truth() -> None:
+    from moira.timelords import decennials
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    periods = decennials(2451545.0, natal_positions, True)
+    major = next(period for period in periods if period.level == 1 and period.planet == "Mercury")
+    sub = next(
+        period
+        for period in periods
+        if period.level == 2 and period.major_planet == "Mercury" and period.planet == "Venus"
+    )
+
+    assert major.effective_major_planet == "Mercury"
+    assert major.sequence_position == 2
+    assert major.rotated_sequence == ("Mercury", "Venus", "Mars", "Moon", "Jupiter", "Saturn", "Sun")
+    assert sub.effective_major_planet == "Mercury"
+    assert sub.sequence_position == 2
+    assert sub.rotated_sequence == ("Mercury", "Venus", "Mars", "Moon", "Jupiter", "Saturn", "Sun")
+
+
+def test_decennial_period_rejects_phase3_truth_breaks() -> None:
+    from moira.timelords import DecennialPeriod, DecennialSequenceKind
+
+    common = {
+        "start_jd": 2451545.0,
+        "end_jd": 2451546.0,
+        "years": 1.0,
+        "months": 12.0,
+        "sect_light": "Sun",
+        "sequence_kind": DecennialSequenceKind.DIURNAL_SOLAR,
+        "sequence": ("Sun", "Mercury", "Venus", "Mars", "Moon", "Jupiter", "Saturn"),
+        "major_month_total": 129.0,
+        "month_basis_days": 30.0,
+    }
+
+    with pytest.raises(ValueError, match="level-1 periods must not set major_planet"):
+        DecennialPeriod(level=1, planet="Sun", major_planet="Sun", major_index=0, **common)
+
+    with pytest.raises(ValueError, match="level-1 periods must not set sub_index"):
+        DecennialPeriod(level=1, planet="Sun", sub_index=0, major_index=0, **common)
+
+    with pytest.raises(ValueError, match="level-2 periods must preserve major_planet"):
+        DecennialPeriod(level=2, planet="Sun", major_index=0, sub_index=0, **common)
+
+    with pytest.raises(ValueError, match="level-2 periods must preserve sub_index"):
+        DecennialPeriod(
+            level=2,
+            planet="Sun",
+            major_planet="Sun",
+            parent_planet="Sun",
+            parent_level=1,
+            ancestor_planets=("Sun",),
+            major_index=0,
+            **common,
+        )
+
+    with pytest.raises(ValueError, match="major planet must match preserved sequence at major_index"):
+        DecennialPeriod(level=1, planet="Sun", major_index=1, **common)
+
+    with pytest.raises(ValueError, match="sub planet must match rotated sequence at sub_index"):
+        DecennialPeriod(
+            level=2,
+            planet="Mars",
+            major_planet="Mercury",
+            parent_planet="Mercury",
+            parent_level=1,
+            ancestor_planets=("Mercury",),
+            major_index=1,
+            sub_index=1,
+            **common,
+        )
+
+
+def test_decennials_night_periods_preserve_moon_sect_light_truth() -> None:
+    from moira.timelords import decennials, DecennialSequenceKind
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    periods = decennials(2451545.0, natal_positions, False)
+
+    assert all(period.sect_light == "Moon" for period in periods)
+    assert all(period.is_day_chart is False for period in periods)
+    assert all(period.sequence_kind == DecennialSequenceKind.NOCTURNAL_LUNAR for period in periods)
+    assert all(period.is_nocturnal_lunar is True for period in periods)
+    assert all(period.is_diurnal_solar is False for period in periods)
+    assert periods[0].sequence == ("Moon", "Jupiter", "Saturn", "Sun", "Mercury", "Venus", "Mars")
+
+
+def test_decennial_period_rejects_unknown_sequence_kind() -> None:
+    from moira.timelords import DecennialPeriod
+
+    with pytest.raises(ValueError, match="sequence_kind must be a supported DecennialSequenceKind"):
+        DecennialPeriod(
+            level=1,
+            planet="Sun",
+            start_jd=2451545.0,
+            end_jd=2451546.0,
+            years=1.0,
+            months=12.0,
+            sequence_kind="sideways",
+        )
+
+
+def test_current_decennials_returns_active_major_and_subperiod() -> None:
+    from moira.timelords import current_decennials
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    major, sub = current_decennials(2451545.0, natal_positions, True, 2451545.0 + (19.0 * 30.0) + 1.0)
+
+    assert major.planet == "Sun"
+    assert sub.planet == "Mercury"
+
+
+def test_decennials_levels_one_returns_only_major_periods_and_current_pair_collapses() -> None:
+    from moira.timelords import decennials, current_decennials
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    periods = decennials(2451545.0, natal_positions, True, levels=1)
+    major, sub = current_decennials(2451545.0, natal_positions, True, 2451545.0 + 10.0, levels=1)
+
+    assert all(period.level == 1 for period in periods)
+    assert major.planet == "Sun"
+    assert sub.planet == "Sun"
+
+
+def test_validate_decennials_output_passes_for_genuine_output() -> None:
+    from moira.timelords import decennials, validate_decennials_output
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    validate_decennials_output(decennials(2451545.0, natal_positions, True))
+
+
+def test_decennials_rejects_missing_or_nonfinite_longitudes() -> None:
+    from moira.timelords import decennials
+
+    with pytest.raises(ValueError, match="missing required planets"):
+        decennials(2451545.0, {"Sun": 10.0}, True)
+
+    with pytest.raises(ValueError, match="must be finite"):
+        decennials(
+            2451545.0,
+            {
+                "Sun": 10.0,
+                "Mercury": 20.0,
+                "Venus": 50.0,
+                "Mars": 110.0,
+                "Moon": 200.0,
+                "Jupiter": 250.0,
+                "Saturn": float("nan"),
+            },
+            True,
+        )
+
+
+def test_decennials_valens_deep_subdivision_admits_levels_three_and_four() -> None:
+    from moira.timelords import decennials, DecennialPolicy, TimelordComputationPolicy
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
+
+    periods = decennials(2451545.0, natal_positions, True, levels=4, policy=policy)
+
+    assert any(period.level == 3 for period in periods)
+    assert any(period.level == 4 for period in periods)
+    assert all(
+        period.deep_subdivision_method == "valens"
+        for period in periods
+        if period.level >= 3
+    )
+
+
+def test_decennials_hephaistio_admits_level_three_only() -> None:
+    from moira.timelords import decennials, DecennialPolicy, TimelordComputationPolicy
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="hephaistio"))
+
+    periods = decennials(2451545.0, natal_positions, True, levels=3, policy=policy)
+
+    assert any(period.level == 3 for period in periods)
+    assert not any(period.level == 4 for period in periods)
+    assert all(
+        period.deep_subdivision_method == "hephaistio"
+        for period in periods
+        if period.level == 3
+    )
+
+
+def test_decennials_rejects_unadmitted_deep_levels_without_supported_policy() -> None:
+    from moira.timelords import decennials, DecennialPolicy, TimelordComputationPolicy
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    with pytest.raises(ValueError, match="supports up to level 2"):
+        decennials(2451545.0, natal_positions, True, levels=3)
+
+    hephaistio = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="hephaistio"))
+    with pytest.raises(ValueError, match="supports up to level 3"):
+        decennials(2451545.0, natal_positions, True, levels=4, policy=hephaistio)
+
+
+def test_decennials_deep_subdivision_preserves_recursive_proportions() -> None:
+    from moira.timelords import decennials, DecennialPolicy, TimelordComputationPolicy
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
+    periods = decennials(2451545.0, natal_positions, True, levels=4, policy=policy)
+
+    l2_sun = next(period for period in periods if period.level == 2 and period.major_planet == "Sun" and period.planet == "Sun")
+    l3_sun = next(
+        period for period in periods
+        if period.level == 3 and period.ancestor_planets == ("Sun", "Sun") and period.planet == "Sun"
+    )
+    l4_sun = next(
+        period for period in periods
+        if period.level == 4 and period.ancestor_planets == ("Sun", "Sun", "Sun") and period.planet == "Sun"
+    )
+
+    assert l3_sun.days == pytest.approx(l2_sun.days * (19.0 / 129.0), abs=1e-9)
+    assert l4_sun.days == pytest.approx(l3_sun.days * (19.0 / 129.0), abs=1e-9)
+
+
+def test_current_decennials_returns_deepest_active_period_when_requested() -> None:
+    from moira.timelords import current_decennials, decennials, DecennialPolicy, TimelordComputationPolicy
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
+    periods = decennials(2451545.0, natal_positions, True, levels=4, policy=policy)
+    l4 = next(period for period in periods if period.level == 4)
+    mid_jd = (l4.start_jd + l4.end_jd) / 2.0
+
+    major, leaf = current_decennials(2451545.0, natal_positions, True, mid_jd, levels=4, policy=policy)
+
+    assert major.level == 1
+    assert leaf.level == 4
+
+
+def test_validate_decennials_output_passes_for_genuine_deep_output() -> None:
+    from moira.timelords import decennials, validate_decennials_output, DecennialPolicy, TimelordComputationPolicy
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
+
+    validate_decennials_output(decennials(2451545.0, natal_positions, True, levels=4, policy=policy))
+
+
+def test_validate_decennials_output_detects_deep_method_drift() -> None:
+    """Deep Decennials validation rejects lineage whose deep method drifts from its parent."""
+    from moira.timelords import decennials, validate_decennials_output, DecennialPolicy, TimelordComputationPolicy
+    import dataclasses
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
+    periods = decennials(2451545.0, natal_positions, True, levels=4, policy=policy)
+    target = next(period for period in periods if period.level == 3)
+    broken = dataclasses.replace(target)
+    object.__setattr__(broken, "deep_subdivision_method", "hephaistio")
+    tampered = [broken if period is target else period for period in periods]
+
+    with pytest.raises(ValueError, match="must preserve deep_subdivision_method of parent"):
+        validate_decennials_output(tampered)
+
+
+def test_validate_decennials_output_detects_invalid_parent_level_truth() -> None:
+    """Deep Decennials validation rejects subordinate periods with broken parent-level truth."""
+    from moira.timelords import decennials, validate_decennials_output, DecennialPolicy, TimelordComputationPolicy
+    import dataclasses
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="hephaistio"))
+    periods = decennials(2451545.0, natal_positions, True, levels=3, policy=policy)
+    target = next(period for period in periods if period.level == 3)
+    broken = dataclasses.replace(target)
+    object.__setattr__(broken, "parent_level", 1)
+    tampered = [broken if period is target else period for period in periods]
+
+    with pytest.raises(ValueError, match="must preserve parent_level=2"):
+        validate_decennials_output(tampered)
+
+
 def test_zodiacal_releasing_uses_same_sign_spirit_adjustment() -> None:
     from moira.timelords import zodiacal_releasing
 
@@ -468,10 +958,17 @@ def test_releasing_period_is_active_at_boundary_semantics() -> None:
 
 def test_timelord_default_policy_is_frozen_sentinel() -> None:
     """DEFAULT_TIMELORD_POLICY is a frozen sentinel with expected defaults."""
-    from moira.timelords import DEFAULT_TIMELORD_POLICY, TimelordComputationPolicy
+    from moira.timelords import DEFAULT_TIMELORD_POLICY, TimelordComputationPolicy, DecennialPolicy
 
     assert isinstance(DEFAULT_TIMELORD_POLICY, TimelordComputationPolicy)
     assert DEFAULT_TIMELORD_POLICY.firdaria_year.year_days == pytest.approx(365.25)
+    assert isinstance(DEFAULT_TIMELORD_POLICY.decennials, DecennialPolicy)
+    assert DEFAULT_TIMELORD_POLICY.decennials.start_lord_basis == "sect_light"
+    assert DEFAULT_TIMELORD_POLICY.decennials.sequence_mode == "zodiacal_from_sect_light"
+    assert DEFAULT_TIMELORD_POLICY.decennials.subperiod_mode == "rotated_minor_months"
+    assert DEFAULT_TIMELORD_POLICY.decennials.major_months == pytest.approx(129.0)
+    assert DEFAULT_TIMELORD_POLICY.decennials.month_basis_days == pytest.approx(30.0)
+    assert DEFAULT_TIMELORD_POLICY.decennials.deep_subdivision_method is None
     assert DEFAULT_TIMELORD_POLICY.zr_year.year_days == pytest.approx(360.0)
 
 
@@ -486,6 +983,31 @@ def test_timelord_policy_none_produces_same_output_as_default() -> None:
     for a, b in zip(p_none, p_default):
         assert a.start_jd == pytest.approx(b.start_jd, abs=1e-9)
         assert a.end_jd   == pytest.approx(b.end_jd,   abs=1e-9)
+
+
+def test_decennials_policy_none_produces_same_output_as_default() -> None:
+    """Passing policy=None preserves the default admitted Decennials doctrine."""
+    from moira.timelords import decennials, DEFAULT_TIMELORD_POLICY
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    p_none = decennials(2451545.0, natal_positions, True)
+    p_default = decennials(2451545.0, natal_positions, True, policy=DEFAULT_TIMELORD_POLICY)
+
+    assert len(p_none) == len(p_default)
+    for a, b in zip(p_none, p_default):
+        assert a.start_jd == pytest.approx(b.start_jd, abs=1e-9)
+        assert a.end_jd == pytest.approx(b.end_jd, abs=1e-9)
+        assert a.month_basis_days == pytest.approx(b.month_basis_days, abs=1e-12)
+        assert a.major_month_total == pytest.approx(b.major_month_total, abs=1e-12)
 
 
 def test_firdaria_policy_year_days_scales_period_boundaries() -> None:
@@ -536,6 +1058,41 @@ def test_timelord_policy_rejects_non_positive_year_days() -> None:
     with pytest.raises(ValueError, match="zr_year.year_days must be positive"):
         _validate_timelord_policy(
             TimelordComputationPolicy(zr_year=ZRYearPolicy(year_days=-1.0))
+        )
+
+
+def test_timelord_policy_rejects_unadmitted_decennials_variants() -> None:
+    """Phase 4 keeps deferred Decennials variants unselectable."""
+    from moira.timelords import DecennialPolicy, TimelordComputationPolicy, _validate_timelord_policy
+
+    with pytest.raises(ValueError, match="start_lord_basis must remain 'sect_light'"):
+        _validate_timelord_policy(
+            TimelordComputationPolicy(decennials=DecennialPolicy(start_lord_basis="ascendant"))
+        )
+
+    with pytest.raises(ValueError, match="sequence_mode must remain 'zodiacal_from_sect_light'"):
+        _validate_timelord_policy(
+            TimelordComputationPolicy(decennials=DecennialPolicy(sequence_mode="calendar_order"))
+        )
+
+    with pytest.raises(ValueError, match="subperiod_mode must remain 'rotated_minor_months'"):
+        _validate_timelord_policy(
+            TimelordComputationPolicy(decennials=DecennialPolicy(subperiod_mode="equal_months"))
+        )
+
+    with pytest.raises(ValueError, match="major_months must remain 129"):
+        _validate_timelord_policy(
+            TimelordComputationPolicy(decennials=DecennialPolicy(major_months=120.0))
+        )
+
+    with pytest.raises(ValueError, match="month_basis_days must remain 30.0"):
+        _validate_timelord_policy(
+            TimelordComputationPolicy(decennials=DecennialPolicy(month_basis_days=29.5))
+        )
+
+    with pytest.raises(ValueError, match="deep_subdivision_method must be 'valens', 'hephaistio', or None"):
+        _validate_timelord_policy(
+            TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="firmicus"))
         )
 
 
@@ -623,6 +1180,105 @@ def test_firdar_major_group_rejects_non_level1_major() -> None:
     sub_period = next(p for p in periods if p.level == 2)
     with pytest.raises(ValueError, match="level-1"):
         FirdarMajorGroup(major=sub_period, subs=[])
+
+
+def test_group_decennials_produces_one_group_per_major_period() -> None:
+    """group_decennials returns exactly one group per Decennials major period."""
+    from moira.timelords import decennials, group_decennials
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    periods = decennials(2451545.0, natal_positions, True)
+    majors = [p for p in periods if p.level == 1]
+    groups = group_decennials(periods)
+    assert len(groups) == len(majors)
+
+
+def test_group_decennials_major_planets_match_sequence() -> None:
+    """DecennialMajorGroup majors preserve the generated Decennials sequence."""
+    from moira.timelords import decennials, group_decennials
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    groups = group_decennials(decennials(2451545.0, natal_positions, True))
+    assert [g.major.planet for g in groups] == ["Sun", "Mercury", "Venus", "Mars", "Moon", "Jupiter", "Saturn"]
+
+
+def test_group_decennials_each_major_has_seven_subs() -> None:
+    """The admitted L2 Decennials doctrine gives every major exactly seven sub-periods."""
+    from moira.timelords import decennials, group_decennials
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    groups = group_decennials(decennials(2451545.0, natal_positions, True))
+    assert all(group.sub_count == 7 for group in groups)
+    assert all(group.has_subs for group in groups)
+
+
+def test_group_decennials_active_sub_at_returns_correct_period() -> None:
+    """DecennialMajorGroup.active_sub_at returns the sub-period active at a given JD."""
+    from moira.timelords import decennials, group_decennials
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    first_group = group_decennials(decennials(2451545.0, natal_positions, True))[0]
+    first_sub = first_group.subs[0]
+    mid_jd = (first_sub.start_jd + first_sub.end_jd) / 2.0
+    result = first_group.active_sub_at(mid_jd)
+    assert result is not None
+    assert result.planet == first_sub.planet
+
+
+def test_decennial_major_group_rejects_non_level1_major() -> None:
+    """DecennialMajorGroup raises ValueError when major is not a level-1 period."""
+    from moira.timelords import decennials, DecennialMajorGroup
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    periods = decennials(2451545.0, natal_positions, True)
+    sub_period = next(p for p in periods if p.level == 2)
+    with pytest.raises(ValueError, match="level-1"):
+        DecennialMajorGroup(major=sub_period, subs=[])
 
 
 def test_group_releasing_level1_groups_have_level2_subs() -> None:
@@ -752,6 +1408,174 @@ def test_firdar_major_group_rejects_out_of_order_subs() -> None:
         FirdarMajorGroup(major=major, subs=reversed_subs)
 
 
+def test_decennial_major_group_is_complete_for_admitted_output() -> None:
+    """DecennialMajorGroup.is_complete is True for the admitted seven-sub doctrine."""
+    from moira.timelords import decennials, group_decennials
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    groups = group_decennials(decennials(2451545.0, natal_positions, True))
+    assert all(group.is_complete for group in groups)
+
+
+def test_decennial_major_group_luminary_and_planetary_subs_partition_subs() -> None:
+    """Luminary and planetary Decennials subsets partition the seven sub-periods."""
+    from moira.timelords import decennials, group_decennials
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    first_group = group_decennials(decennials(2451545.0, natal_positions, True))[0]
+    assert {sub.planet for sub in first_group.luminary_subs} == {"Sun", "Moon"}
+    assert {sub.planet for sub in first_group.planetary_subs} == {"Mercury", "Venus", "Mars", "Jupiter", "Saturn"}
+    assert len(first_group.luminary_subs) + len(first_group.planetary_subs) == first_group.sub_count
+
+
+def test_decennial_major_group_rejects_wrong_major_truth_and_unordered_subs() -> None:
+    """DecennialMajorGroup hardens major truth and chronological ordering."""
+    from moira.timelords import decennials, group_decennials, DecennialMajorGroup
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    groups = group_decennials(decennials(2451545.0, natal_positions, True))
+    first_group = groups[0]
+    other_group = groups[1]
+
+    with pytest.raises(ValueError, match="must preserve major_planet 'Sun'"):
+        DecennialMajorGroup(major=first_group.major, subs=[other_group.subs[0]])
+
+    reversed_subs = list(reversed(first_group.subs))
+    with pytest.raises(ValueError, match="chronological order"):
+        DecennialMajorGroup(major=first_group.major, subs=reversed_subs)
+
+
+def test_group_decennials_builds_recursive_sub_groups_for_deep_output() -> None:
+    """Deep Decennials output groups into one-level-at-a-time recursive sub-groups."""
+    from moira.timelords import decennials, group_decennials, DecennialPolicy, TimelordComputationPolicy
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
+    groups = group_decennials(decennials(2451545.0, natal_positions, True, levels=4, policy=policy))
+
+    first_group = groups[0]
+    assert first_group.has_sub_groups
+    assert len(first_group.sub_groups) == 7
+    assert first_group.sub_groups[0].level == 2
+    assert first_group.sub_groups[0].has_sub_groups
+    assert first_group.sub_groups[0].sub_groups[0].level == 3
+    assert first_group.sub_groups[0].sub_groups[0].has_sub_groups
+    assert first_group.sub_groups[0].sub_groups[0].sub_groups[0].level == 4
+    assert first_group.sub_groups[0].sub_groups[0].sub_groups[0].is_leaf
+
+
+def test_decennial_major_group_all_periods_flat_includes_deep_descendants() -> None:
+    """DecennialMajorGroup.all_periods_flat returns the major and all nested descendants."""
+    from moira.timelords import decennials, group_decennials, DecennialPolicy, TimelordComputationPolicy
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="hephaistio"))
+    first_group = group_decennials(decennials(2451545.0, natal_positions, True, levels=3, policy=policy))[0]
+
+    flat = first_group.all_periods_flat()
+
+    assert flat[0] == first_group.major
+    assert any(period.level == 3 for period in flat)
+    assert len(flat) == 1 + 7 + 49
+
+
+def test_decennial_major_group_active_sub_group_at_returns_recursive_node() -> None:
+    """DecennialMajorGroup.active_sub_group_at returns the immediate recursive node active at jd."""
+    from moira.timelords import decennials, group_decennials, DecennialPolicy, TimelordComputationPolicy
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
+    first_group = group_decennials(decennials(2451545.0, natal_positions, True, levels=4, policy=policy))[0]
+    first_sub_group = first_group.sub_groups[0]
+    mid_jd = (first_sub_group.period.start_jd + first_sub_group.period.end_jd) / 2.0
+
+    result = first_group.active_sub_group_at(mid_jd)
+
+    assert result is not None
+    assert result.period == first_sub_group.period
+
+
+def test_decennial_period_group_rejects_invalid_child_level_or_containment() -> None:
+    """DecennialPeriodGroup hardens one-level nesting and parent containment."""
+    from moira.timelords import decennials, group_decennials, DecennialPeriodGroup, DecennialPolicy, TimelordComputationPolicy
+    import dataclasses
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
+    first_group = group_decennials(decennials(2451545.0, natal_positions, True, levels=4, policy=policy))[0]
+    l2_group = first_group.sub_groups[0]
+    l4_group = l2_group.sub_groups[0].sub_groups[0]
+
+    with pytest.raises(ValueError, match="exactly one level deeper"):
+        DecennialPeriodGroup(period=l2_group.period, sub_groups=[l4_group])
+
+    shifted = dataclasses.replace(l2_group.sub_groups[0].period, start_jd=l2_group.period.start_jd - 1.0)
+    with pytest.raises(ValueError, match="starts before parent period"):
+        DecennialPeriodGroup(
+            period=l2_group.period,
+            sub_groups=[DecennialPeriodGroup(period=shifted, sub_groups=[])]
+        )
+
+
 # -- ZRPeriodGroup hardening and inspectability --
 
 def test_zr_period_group_is_leaf_at_deepest_level() -> None:
@@ -864,6 +1688,130 @@ def test_firdar_condition_profile_sub_period_carries_major_planet() -> None:
     assert not profile.is_major
 
 
+def test_decennial_condition_profile_fields_match_period() -> None:
+    """decennial_condition_profile preserves the source period truth."""
+    from moira.timelords import decennials, decennial_condition_profile
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    major = next(p for p in decennials(2451545.0, natal_positions, True) if p.level == 1 and p.planet == "Mercury")
+    profile = decennial_condition_profile(major)
+
+    assert profile.planet == major.planet
+    assert profile.level == major.level
+    assert profile.level_name == major.level_name
+    assert profile.is_major == major.is_major
+    assert profile.lord_type == "planet"
+    assert profile.sequence_kind == major.sequence_kind
+    assert profile.major_planet == major.major_planet
+    assert profile.parent_planet == major.parent_planet
+    assert profile.parent_level == major.parent_level
+    assert profile.ancestor_planets == major.ancestor_planets
+    assert profile.effective_major_planet == major.effective_major_planet
+    assert profile.is_day_chart == major.is_day_chart
+    assert profile.sect_light == major.sect_light
+    assert profile.major_index == major.major_index
+    assert profile.sub_index == major.sub_index
+    assert profile.sequence_position == major.sequence_position
+    assert profile.deep_subdivision_method == major.deep_subdivision_method
+    assert profile.years == pytest.approx(major.years)
+    assert profile.months == pytest.approx(major.months)
+    assert profile.days == pytest.approx(major.days)
+    assert profile.month_basis_days == pytest.approx(major.month_basis_days)
+
+
+def test_decennial_condition_profile_sub_period_carries_major_truth() -> None:
+    """Sub-period Decennials profiles preserve major lord and sect-light truth."""
+    from moira.timelords import decennials, decennial_condition_profile
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    sub = next(
+        p for p in decennials(2451545.0, natal_positions, False)
+        if p.level == 2 and p.major_planet == "Moon" and p.planet == "Jupiter"
+    )
+    profile = decennial_condition_profile(sub)
+
+    assert not profile.is_major
+    assert profile.major_planet == "Moon"
+    assert profile.effective_major_planet == "Moon"
+    assert profile.sect_light == "Moon"
+    assert profile.sequence_position == 2
+    assert profile.lord_type == "planet"
+
+
+def test_decennial_condition_profile_lord_type_luminary() -> None:
+    """Decennial luminaries profile as luminaries."""
+    from moira.timelords import decennials, decennial_condition_profile
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    periods = decennials(2451545.0, natal_positions, True)
+    for period in periods:
+        if period.planet in {"Sun", "Moon"}:
+            assert decennial_condition_profile(period).lord_type == "luminary"
+
+
+def test_decennial_condition_profile_deep_period_preserves_lineage_truth() -> None:
+    """Deep Decennials profiles preserve parent lineage and deep-method truth."""
+    from moira.timelords import (
+        DecennialPolicy,
+        TimelordComputationPolicy,
+        decennials,
+        decennial_condition_profile,
+    )
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
+    deep_period = next(
+        period
+        for period in decennials(2451545.0, natal_positions, True, levels=4, policy=policy)
+        if period.level == 4
+    )
+    profile = decennial_condition_profile(deep_period)
+
+    assert profile.level == 4
+    assert profile.parent_planet == deep_period.parent_planet
+    assert profile.parent_level == 3
+    assert profile.ancestor_planets == deep_period.ancestor_planets
+    assert profile.effective_major_planet == deep_period.major_planet
+    assert profile.deep_subdivision_method == "valens"
+    assert profile.month_basis_days == pytest.approx(30.0)
+
+
 def test_zr_condition_profile_fields_match_period() -> None:
     """zr_condition_profile produces a profile whose fields match the source period."""
     from moira.timelords import zodiacal_releasing, zr_condition_profile
@@ -968,6 +1916,129 @@ def test_firdar_sequence_profile_rejects_mismatched_count() -> None:
             node_major_count     = agg.node_major_count,
             total_major_years    = agg.total_major_years,
             sequence_kind        = agg.sequence_kind,
+        )
+
+
+# -- DecennialSequenceProfile --
+
+def test_decennial_sequence_profile_major_count_matches_sequence() -> None:
+    """DecennialSequenceProfile.major_count equals the seven-major admitted cycle."""
+    from moira.timelords import decennials, decennial_sequence_profile
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    agg = decennial_sequence_profile(decennials(_P8_JD_BIRTH, natal_positions, True))
+    assert agg.major_count == 7
+    assert agg.profile_count == 56
+    assert agg.level_count_map == {1: 7, 2: 49}
+    assert agg.deepest_level == 2
+
+
+def test_decennial_sequence_profile_lord_type_counts_sum_to_major_count() -> None:
+    """Decennial luminary and planetary major counts sum to the sequence major count."""
+    from moira.timelords import decennials, decennial_sequence_profile
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    agg = decennial_sequence_profile(decennials(_P8_JD_BIRTH, natal_positions, True))
+    assert agg.luminary_major_count + agg.planetary_major_count == agg.major_count
+
+
+def test_decennial_sequence_profile_totals_and_doctrine_truth() -> None:
+    """Decennial aggregate preserves total years, months, sequence kind, and sect light."""
+    from moira.timelords import decennials, decennial_sequence_profile, DecennialSequenceKind
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    agg = decennial_sequence_profile(decennials(_P8_JD_BIRTH, natal_positions, True))
+    assert agg.total_major_years == pytest.approx(75.25, abs=1e-9)
+    assert agg.total_major_months == pytest.approx(903.0, abs=1e-9)
+    assert agg.sequence_kind == DecennialSequenceKind.DIURNAL_SOLAR
+    assert agg.sect_light == "Sun"
+    assert agg.deep_subdivision_method is None
+
+
+def test_decennial_sequence_profile_deep_output_preserves_level_map_and_method() -> None:
+    """Deep Decennials aggregates preserve total profile counts, level map, and method truth."""
+    from moira.timelords import (
+        DecennialPolicy,
+        TimelordComputationPolicy,
+        decennials,
+        decennial_sequence_profile,
+    )
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
+    agg = decennial_sequence_profile(decennials(_P8_JD_BIRTH, natal_positions, True, levels=4, policy=policy))
+
+    assert agg.major_count == 7
+    assert agg.profile_count == 2800
+    assert agg.level_count_map == {1: 7, 2: 49, 3: 343, 4: 2401}
+    assert agg.deepest_level == 4
+    assert agg.deep_subdivision_method == "valens"
+
+
+def test_decennial_sequence_profile_rejects_mismatched_count() -> None:
+    """DecennialSequenceProfile raises ValueError when major_count does not match level-1 profiles."""
+    from moira.timelords import decennials, decennial_sequence_profile, DecennialSequenceProfile
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    agg = decennial_sequence_profile(decennials(_P8_JD_BIRTH, natal_positions, True))
+    with pytest.raises(ValueError, match="major_count must equal the number of level-1 profiles"):
+        DecennialSequenceProfile(
+            profiles=agg.profiles,
+            major_count=agg.major_count + 1,
+            luminary_major_count=agg.luminary_major_count,
+            planetary_major_count=agg.planetary_major_count,
+            total_major_years=agg.total_major_years,
+            total_major_months=agg.total_major_months,
+            sequence_kind=agg.sequence_kind,
+            sect_light=agg.sect_light,
+            level_count_map=agg.level_count_map,
+            deepest_level=agg.deepest_level,
+            deep_subdivision_method=agg.deep_subdivision_method,
         )
 
 
@@ -1089,6 +2160,248 @@ def test_firdar_active_pair_rejects_sub_as_major() -> None:
         )
 
 
+# -- DecennialActivePair --
+
+def test_decennial_active_pair_major_profile_matches_active_major() -> None:
+    """decennial_active_pair returns a pair whose major_profile is the active major."""
+    from moira.timelords import decennials, decennial_active_pair
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    periods = decennials(_P8_JD_BIRTH, natal_positions, True)
+    first_major = next(period for period in periods if period.level == 1)
+    mid_jd = (first_major.start_jd + first_major.end_jd) / 2.0
+    pair = decennial_active_pair(periods, mid_jd)
+    assert pair is not None
+    assert pair.major_profile.planet == first_major.planet
+
+
+def test_decennial_active_pair_has_sub_when_sub_exists() -> None:
+    """decennial_active_pair.has_sub is True when sub-periods are generated."""
+    from moira.timelords import decennials, decennial_active_pair
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    periods = decennials(_P8_JD_BIRTH, natal_positions, True)
+    first_major = next(period for period in periods if period.level == 1)
+    mid_jd = (first_major.start_jd + first_major.end_jd) / 2.0
+    pair = decennial_active_pair(periods, mid_jd)
+    assert pair is not None
+    assert pair.has_sub
+
+
+def test_decennial_active_pair_returns_none_outside_sequence() -> None:
+    """decennial_active_pair returns None when jd is before the cycle start."""
+    from moira.timelords import decennials, decennial_active_pair
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    periods = decennials(_P8_JD_BIRTH, natal_positions, True)
+    assert decennial_active_pair(periods, _P8_JD_BIRTH - 1.0) is None
+
+
+def test_decennial_active_pair_is_same_lord_when_major_sub_identical() -> None:
+    """DecennialActivePair relation predicates hold when the major lord repeats at L2."""
+    from moira.timelords import decennials, decennial_active_pair
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    periods = decennials(_P8_JD_BIRTH, natal_positions, True)
+    first_sub = next(
+        period for period in periods
+        if period.level == 2 and period.major_planet == "Sun" and period.planet == "Sun"
+    )
+    mid_jd = (first_sub.start_jd + first_sub.end_jd) / 2.0
+    pair = decennial_active_pair(periods, mid_jd)
+    assert pair is not None
+    assert pair.is_same_lord
+    assert pair.is_same_lord_type
+    assert pair.shares_sect_light
+
+
+def test_decennial_active_pair_rejects_sub_as_major() -> None:
+    """DecennialActivePair raises ValueError when major_profile is not level-1."""
+    from moira.timelords import decennials, decennial_condition_profile, DecennialActivePair
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    periods = decennials(_P8_JD_BIRTH, natal_positions, True)
+    sub = next(period for period in periods if period.level == 2)
+    with pytest.raises(ValueError, match="level-1"):
+        DecennialActivePair(
+            major_profile=decennial_condition_profile(sub),
+            sub_profile=None,
+        )
+
+
+def test_decennial_active_path_returns_full_deep_lineage() -> None:
+    """decennial_active_path returns one active profile per generated Decennials level."""
+    from moira.timelords import (
+        DecennialPolicy,
+        TimelordComputationPolicy,
+        decennial_active_path,
+        decennials,
+    )
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
+    periods = decennials(_P8_JD_BIRTH, natal_positions, True, levels=4, policy=policy)
+    active_leaf = next(period for period in periods if period.level == 4)
+    mid_jd = (active_leaf.start_jd + active_leaf.end_jd) / 2.0
+
+    path = decennial_active_path(periods, mid_jd)
+
+    assert path is not None
+    assert [profile.level for profile in path.profiles] == [1, 2, 3, 4]
+    assert path.major_profile.level == 1
+    assert path.deepest_profile.level == 4
+    assert path.deepest_level == 4
+    assert path.has_deep_subdivision
+
+
+def test_decennial_active_path_returns_none_outside_sequence() -> None:
+    """decennial_active_path returns None when jd falls outside the Decennials cycle."""
+    from moira.timelords import decennial_active_path, decennials
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    periods = decennials(_P8_JD_BIRTH, natal_positions, True)
+    assert decennial_active_path(periods, _P8_JD_BIRTH - 1.0) is None
+
+
+def test_decennial_active_path_rejects_non_contiguous_levels() -> None:
+    """DecennialActivePath rejects profile tuples that skip a level."""
+    from moira.timelords import (
+        DecennialActivePath,
+        DecennialPolicy,
+        TimelordComputationPolicy,
+        decennial_condition_profile,
+        decennials,
+    )
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
+    periods = decennials(_P8_JD_BIRTH, natal_positions, True, levels=4, policy=policy)
+    level1 = decennial_condition_profile(next(period for period in periods if period.level == 1))
+    level3 = decennial_condition_profile(next(period for period in periods if period.level == 3))
+
+    with pytest.raises(ValueError, match="advance one level at a time"):
+        DecennialActivePath(profiles=(level1, level3))
+
+
+def test_decennial_subsystem_surfaces_agree_on_active_deep_state() -> None:
+    """Current, grouped, aggregate, pair, and path Decennials surfaces agree on one deep active instant."""
+    from moira.timelords import (
+        DecennialPolicy,
+        TimelordComputationPolicy,
+        current_decennials,
+        decennial_active_pair,
+        decennial_active_path,
+        decennial_sequence_profile,
+        decennials,
+        group_decennials,
+    )
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
+    periods = decennials(_P8_JD_BIRTH, natal_positions, True, levels=4, policy=policy)
+    groups = group_decennials(periods)
+    aggregate = decennial_sequence_profile(periods)
+    active_leaf = next(period for period in periods if period.level == 4)
+    mid_jd = (active_leaf.start_jd + active_leaf.end_jd) / 2.0
+
+    major, leaf = current_decennials(_P8_JD_BIRTH, natal_positions, True, mid_jd, levels=4, policy=policy)
+    pair = decennial_active_pair(periods, mid_jd)
+    path = decennial_active_path(periods, mid_jd)
+    group = next(item for item in groups if item.major.planet == major.planet)
+
+    assert pair is not None
+    assert path is not None
+    assert aggregate.level_count_map == {1: 7, 2: 49, 3: 343, 4: 2401}
+    assert aggregate.deepest_level == 4
+    assert group.active_sub_group_at(mid_jd) is not None
+    assert major.planet == pair.major_profile.planet == path.major_profile.planet == group.major.planet
+    assert leaf.planet == path.deepest_profile.planet
+    assert leaf.level == path.deepest_level == 4
+    assert pair.sub_profile is not None
+    assert pair.sub_profile.planet == path.profiles[1].planet
+
+
 # -- ZRLevelPair --
 
 def test_zr_level_pair_same_sign_gives_distance_1() -> None:
@@ -1197,6 +2510,50 @@ def test_firdar_active_pair_rejects_non_finite_jd() -> None:
         firdar_active_pair(periods, math.nan)
     with pytest.raises(ValueError, match="finite"):
         firdar_active_pair(periods, math.inf)
+
+
+def test_decennial_active_pair_rejects_non_finite_jd() -> None:
+    """decennial_active_pair raises ValueError for non-finite jd values."""
+    from moira.timelords import decennials, decennial_active_pair
+    import math
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    periods = decennials(_P10_JD_BIRTH, natal_positions, True)
+    with pytest.raises(ValueError, match="finite"):
+        decennial_active_pair(periods, math.nan)
+    with pytest.raises(ValueError, match="finite"):
+        decennial_active_pair(periods, math.inf)
+
+
+def test_decennial_active_path_rejects_non_finite_jd() -> None:
+    """decennial_active_path raises ValueError for non-finite jd values."""
+    from moira.timelords import decennial_active_path, decennials
+    import math
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    periods = decennials(_P10_JD_BIRTH, natal_positions, True)
+    with pytest.raises(ValueError, match="finite"):
+        decennial_active_path(periods, math.nan)
+    with pytest.raises(ValueError, match="finite"):
+        decennial_active_path(periods, math.inf)
 
 
 # -- validate_releasing_output --

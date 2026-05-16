@@ -389,6 +389,7 @@ one Julian Day.
 | `asc` | `float` | Ascendant (°) |
 | `mc` | `float` | Midheaven (°) |
 | `armc` | `float` | ARMC — Sidereal time × 15 (°) |
+| `east_point` | `float` | East Point / Equatorial Ascendant longitude (°) |
 | `vertex` | `float` | Vertex longitude (°) |
 | `system` | `str` | Requested house system code |
 | `effective_system` | `str` | Effective system code after policy resolution |

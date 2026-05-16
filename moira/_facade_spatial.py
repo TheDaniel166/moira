@@ -52,7 +52,7 @@ Canon: Moira Sovereign Facade Architecture; moira.astrocartography,
     "scope": "class",
     "id": "moira._facade_spatial.SpatialFacadeMixin",
     "risk": "medium",
-    "api": {"frozen": ["astrocartography", "geodetic", "local_space", "parans", "galactic_houses"], "internal": []},
+    "api": {"frozen": ["astrocartography", "geodetic", "local_space", "parans", "galactic_houses", "relocated_chart"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -122,6 +122,32 @@ Canon: Moira Sovereign Facade Architecture; moira.astrocartography,
             bodies=bodies,
             zodiac=zodiac,
             ayanamsa_system=ayanamsa_system,
+        )
+
+    def relocated_chart(
+        self,
+        natal_dt: datetime,
+        latitude: float,
+        longitude: float,
+        system: str | None = None,
+        bodies: list[str] | None = None,
+        policy: Any | None = None,
+    ):
+        """Compute a full relocated chart snapshot for a new geographic site."""
+        facade = _facade_module()
+        from .chart import create_chart
+
+        jd = facade.jd_from_datetime(natal_dt)
+        jd_ut1 = facade.utc_to_ut1(jd)
+        house_system = facade.HouseSystem.PLACIDUS if system is None else system
+        return create_chart(
+            jd_ut1,
+            latitude,
+            longitude,
+            house_system=house_system,
+            bodies=bodies,
+            reader=self._reader,
+            policy=policy,
         )
 
     def local_space(

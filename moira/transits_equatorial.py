@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 from .spk_reader import SpkReader, get_reader
-from .transits import _auto_step, _require_non_empty_body, _validate_transit_range, _require_positive, TransitComputationPolicy, _validate_policy
+from .transits import _auto_step, _require_non_empty_body, _validate_transit_range, _validate_search_motion, _require_positive, TransitComputationPolicy, _validate_policy
 from .planets import planet_at
 from .asteroids import asteroid_at, ASTEROID_NAIF
 from .stars import star_at
@@ -29,6 +29,7 @@ class EquatorialTransitEvent:
     is_contra_parallel: bool
     jd_exact: float
     declination: float
+    search_motion: str = "forward"
 
 def _declination(spec: str | float, jd: float, reader: SpkReader) -> float:
     """Resolves the equatorial declination of a body or a static float."""
@@ -154,10 +155,12 @@ def find_declination_transits(
     step_days: float | None = None,
     reader: SpkReader | None = None,
     policy: TransitComputationPolicy | None = None,
+    search_motion: str = "forward",
 ) -> list[EquatorialTransitEvent]:
     """Find all declination parallel (or contra-parallel) transits."""
     _require_non_empty_body(body)
     _validate_transit_range(jd_start, jd_end)
+    _validate_search_motion(search_motion)
     if step_days is not None:
         _require_positive(step_days, "step_days")
     if reader is None:
@@ -171,16 +174,17 @@ def find_declination_transits(
         windows = _find_candidate_declination_windows_native(body, target, is_contra_parallel, jd_start, jd_end, 1.0, reader)
         if windows:
             events = []
-            for jd_lo, jd_hi in windows:
+            ordered_windows = windows if search_motion == "forward" else list(reversed(windows))
+            for jd_lo, jd_hi in ordered_windows:
                 jd_exact = _find_declination_crossing(body, target, is_contra_parallel, max(jd_start, jd_lo-0.1), min(jd_end, jd_hi+0.1), reader, policy.transit.solver_tolerance_days)
                 exact_dec = _declination(body, jd_exact, reader)
-                events.append(EquatorialTransitEvent(body, target, is_contra_parallel, jd_exact, exact_dec))
+                events.append(EquatorialTransitEvent(body, target, is_contra_parallel, jd_exact, exact_dec, search_motion))
             return events
         return []
 
     # --- FALLBACK LOOP ---
     events: list[EquatorialTransitEvent] = []
-    jd = jd_start
+    jd = jd_start if search_motion == "forward" else jd_end
     
     def _diff(jd_val: float) -> float:
         b_dec = _declination(body, jd_val, reader)
@@ -189,8 +193,12 @@ def find_declination_transits(
 
     diff_prev = _diff(jd)
 
-    while jd < jd_end:
-        jd_next = min(jd + step_days, jd_end)
+    while (jd < jd_end) if search_motion == "forward" else (jd > jd_start):
+        jd_next = (
+            min(jd + step_days, jd_end)
+            if search_motion == "forward"
+            else max(jd - step_days, jd_start)
+        )
         diff_next = _diff(jd_next)
 
         if diff_prev * diff_next < 0:
@@ -201,7 +209,8 @@ def find_declination_transits(
                 target=target,
                 is_contra_parallel=is_contra_parallel,
                 jd_exact=jd_exact,
-                declination=exact_dec
+                declination=exact_dec,
+                search_motion=search_motion,
             ))
 
         jd = jd_next

@@ -36,6 +36,7 @@ def test_aspect_transits_comprehensive_and_audit(moira_engine, jd_j2000, ritual)
         assert ev.jd_entering is not None
         assert ev.jd_leaving is not None
         assert ev.jd_entering <= ev.jd_exact <= ev.jd_leaving
+        assert ev.search_motion == "forward"
 
 def test_equatorial_transits_comprehensive_and_audit(moira_engine, jd_j2000, ritual):
     """Verify equatorial (declination parallel) transits and audit performance."""
@@ -62,6 +63,7 @@ def test_equatorial_transits_comprehensive_and_audit(moira_engine, jd_j2000, rit
         assert ev.jd_exact >= jd_start
         assert ev.jd_exact <= jd_end
         assert ev.is_contra_parallel is False
+        assert ev.search_motion == "forward"
 
 def test_house_ingresses_comprehensive_and_audit(moira_engine, jd_j2000, ritual):
     """Verify topocentric house ingresses and audit performance."""
@@ -92,3 +94,81 @@ def test_house_ingresses_comprehensive_and_audit(moira_engine, jd_j2000, ritual)
         assert ev.jd_exact >= jd_start
         assert ev.jd_exact <= jd_end
         assert 1 <= ev.house_index <= 12
+        assert ev.search_motion == "forward"
+
+
+def test_aspect_transits_support_backward_search_motion(jd_j2000):
+    jd_start = jd_j2000
+    jd_end = jd_start + 365.25 * 5
+
+    forward_events = find_aspect_transits(Body.JUPITER, Body.SATURN, 90.0, 1.0, jd_start, jd_end)
+    backward_events = find_aspect_transits(
+        Body.JUPITER,
+        Body.SATURN,
+        90.0,
+        1.0,
+        jd_start,
+        jd_end,
+        search_motion="backward",
+    )
+
+    assert [event.jd_exact for event in backward_events] == pytest.approx(
+        [event.jd_exact for event in reversed(forward_events)],
+        abs=1e-6,
+    )
+    assert all(event.search_motion == "backward" for event in backward_events)
+
+
+def test_equatorial_transits_support_backward_search_motion(jd_j2000):
+    jd_start = jd_j2000
+    jd_end = jd_start + 365.25
+
+    forward_events = find_declination_transits(Body.MARS, Body.VENUS, jd_start, jd_end, is_contra_parallel=False)
+    backward_events = find_declination_transits(
+        Body.MARS,
+        Body.VENUS,
+        jd_start,
+        jd_end,
+        is_contra_parallel=False,
+        search_motion="backward",
+    )
+
+    assert [event.jd_exact for event in backward_events] == pytest.approx(
+        [event.jd_exact for event in reversed(forward_events)],
+        abs=1e-6,
+    )
+    assert all(event.search_motion == "backward" for event in backward_events)
+
+
+def test_house_ingresses_support_backward_search_motion(jd_j2000):
+    jd_start = jd_j2000
+    jd_end = jd_start + 30.0
+    lat, lon = 40.7128, -74.0060
+
+    forward_events = find_house_ingresses(Body.MOON, lat, lon, jd_start, jd_end, system="placidus")
+    backward_events = find_house_ingresses(
+        Body.MOON,
+        lat,
+        lon,
+        jd_start,
+        jd_end,
+        system="placidus",
+        search_motion="backward",
+    )
+
+    assert [event.jd_exact for event in backward_events] == pytest.approx(
+        [event.jd_exact for event in reversed(forward_events)],
+        abs=1e-5,
+    )
+    assert all(event.search_motion == "backward" for event in backward_events)
+
+
+def test_extension_surfaces_reject_invalid_search_motion(jd_j2000):
+    with pytest.raises(ValueError, match="Transit search_motion must be 'forward' or 'backward'"):
+        find_aspect_transits(Body.JUPITER, Body.SATURN, 90.0, 1.0, jd_j2000, jd_j2000 + 10.0, search_motion="sideways")
+
+    with pytest.raises(ValueError, match="Transit search_motion must be 'forward' or 'backward'"):
+        find_declination_transits(Body.MARS, Body.VENUS, jd_j2000, jd_j2000 + 10.0, search_motion="sideways")
+
+    with pytest.raises(ValueError, match="Transit search_motion must be 'forward' or 'backward'"):
+        find_house_ingresses(Body.MOON, 40.7128, -74.0060, jd_j2000, jd_j2000 + 1.0, search_motion="sideways")

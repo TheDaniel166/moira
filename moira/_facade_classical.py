@@ -51,7 +51,7 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
     "scope": "class",
     "id": "moira._facade_classical.ClassicalFacadeMixin",
     "risk": "medium",
-    "api": {"frozen": ["lots", "dignities", "midpoints", "harmonics", "profections"], "internal": []},
+    "api": {"frozen": ["lots", "dignities", "midpoints", "harmonics", "profections", "firdaria", "decennials", "current_decennials", "zodiacal_releasing", "vimshottari_dasha"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -138,6 +138,43 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
         asc = natal_houses.asc if natal_houses is not None else 0.0
         day = facade.is_day_chart(sun.longitude if sun else 0.0, asc)
         return facade.firdaria(facade.jd_from_datetime(natal_dt), day)
+
+    def decennials(self, natal_dt: datetime, natal_chart, natal_houses=None, *, policy=None):
+        """Compute the Decennials sequence from birth."""
+        facade = _facade_module()
+        sun = natal_chart.planets.get("Sun")
+        asc = natal_houses.asc if natal_houses is not None else 0.0
+        day = facade.is_day_chart(sun.longitude if sun else 0.0, asc)
+        longitudes = natal_chart.longitudes(include_nodes=False)
+        positions = {
+            planet: longitudes[planet]
+            for planet in ("Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn")
+        }
+        return facade.decennials(
+            facade.jd_from_datetime(natal_dt),
+            positions,
+            day,
+            policy=policy,
+        )
+
+    def current_decennials(self, natal_dt: datetime, current_dt: datetime, natal_chart, natal_houses=None, *, policy=None):
+        """Compute the active Decennials major and sub-period at a target date."""
+        facade = _facade_module()
+        sun = natal_chart.planets.get("Sun")
+        asc = natal_houses.asc if natal_houses is not None else 0.0
+        day = facade.is_day_chart(sun.longitude if sun else 0.0, asc)
+        longitudes = natal_chart.longitudes(include_nodes=False)
+        positions = {
+            planet: longitudes[planet]
+            for planet in ("Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn")
+        }
+        return facade.current_decennials(
+            facade.jd_from_datetime(natal_dt),
+            positions,
+            day,
+            facade.jd_from_datetime(current_dt),
+            policy=policy,
+        )
 
     def zodiacal_releasing(
         self,

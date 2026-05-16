@@ -28,7 +28,7 @@ del _sys, _find_planetary_kernel
 
 from .constants import Body, HouseSystem
 from .facade import Chart, MissingEphemerisKernelError, Moira, __author__, __version__
-from .houses import HouseCusps
+from .houses import HouseCusps, DerivedHouseCusps, derived_houses
 from .galactic_houses import (
     GalacticAngles,
     GalacticHouseCusps,
@@ -60,6 +60,7 @@ from .planetary_nodes import OrbitalNode, planetary_node, all_planetary_nodes, g
 from .phenomena import (
     PlanetPhenomena, planet_phenomena_at,
     ProximityEvent, proximity_events_in_range, solar_condition_events_in_range,
+    solar_condition_at,
 )
 from .orbits import DistanceExtremes, KeplerianElements, distance_extremes_at, orbital_elements_at
 from .planets import CartesianPosition, PlanetData, SkyPosition
@@ -396,7 +397,10 @@ __all__ = [
     "ProximityEvent",
     "proximity_events_in_range",
     "solar_condition_events_in_range",
+    "solar_condition_at",
     "HouseCusps",
+    "DerivedHouseCusps",
+    "derived_houses",
     "GalacticAngles",
     "GalacticHouseCusps",
     "GalacticHousePlacement",

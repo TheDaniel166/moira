@@ -87,7 +87,8 @@ class TestNoFallback:
         HouseSystem.WHOLE_SIGN, HouseSystem.PORPHYRY, HouseSystem.CAMPANUS,
         HouseSystem.REGIOMONTANUS, HouseSystem.ALCABITIUS, HouseSystem.MORINUS,
         HouseSystem.TOPOCENTRIC, HouseSystem.MERIDIAN, HouseSystem.VEHLOW,
-        HouseSystem.AZIMUTHAL, HouseSystem.CARTER, HouseSystem.KRUSINSKI, HouseSystem.APC,
+        HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
+        HouseSystem.KRUSINSKI, HouseSystem.APC,
     ])
     def test_requested_equals_effective_at_normal_latitude(self, system):
         r = _normal(system)
@@ -196,6 +197,8 @@ class TestNonPolarSystemsAtPolarLatitudes:
         HouseSystem.REGIOMONTANUS,
         HouseSystem.MORINUS,
         HouseSystem.VEHLOW,
+        HouseSystem.SUNSHINE,
+        HouseSystem.SOLAR_SIGN,
     ])
     def test_non_polar_systems_unchanged_at_polar_lat(self, system):
         r = _polar(system)
@@ -273,7 +276,8 @@ class TestFallbackConsistency:
             HouseSystem.WHOLE_SIGN, HouseSystem.PORPHYRY, HouseSystem.CAMPANUS,
             HouseSystem.REGIOMONTANUS, HouseSystem.ALCABITIUS, HouseSystem.MORINUS,
             HouseSystem.TOPOCENTRIC, HouseSystem.MERIDIAN, HouseSystem.VEHLOW,
-            HouseSystem.AZIMUTHAL, HouseSystem.CARTER, HouseSystem.KRUSINSKI, HouseSystem.APC,
+            HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
+            HouseSystem.KRUSINSKI, HouseSystem.APC,
         ]
         for system in systems:
             r = _normal(system)
@@ -319,6 +323,10 @@ class TestComputationSemanticsUnchanged:
         mid = (r.cusps[0] + 15.0) % 360.0
         assert mid == pytest.approx(r.asc, abs=1e-8)
 
+    def test_solar_sign_first_cusp_is_sign_start(self):
+        r = _normal(HouseSystem.SOLAR_SIGN)
+        assert r.cusps[0] % 30.0 == pytest.approx(0.0, abs=1e-8)
+
     def test_porphyry_cardinal_cusps_are_asc_ic_dsc_mc(self):
         r = _normal(HouseSystem.PORPHYRY)
         assert r.cusps[0]  == pytest.approx(r.asc, abs=1e-8)
@@ -334,6 +342,11 @@ class TestComputationSemanticsUnchanged:
     def test_anti_vertex_is_opposite_vertex(self):
         r = _normal(HouseSystem.PLACIDUS)
         assert r.anti_vertex == pytest.approx((r.vertex + 180.0) % 360.0, abs=1e-8)
+
+    def test_east_point_matches_morinus_first_cusp(self):
+        placidus = _normal(HouseSystem.PLACIDUS)
+        morinus = _normal(HouseSystem.MORINUS)
+        assert placidus.east_point == pytest.approx(morinus.cusps[0], abs=1e-8)
 
     def test_all_cusps_in_0_360_range(self):
         for system in [

@@ -1,8 +1,14 @@
 """
 Moira — Timelords Engine
-Governs the timelord Engine surfaces for Firdaria and Zodiacal Releasing: sequence construction, hierarchical grouping, active-period lookup, condition profiles, and aggregate profiles.
+Governs the timelord Engine surfaces for Firdaria, Zodiacal Releasing, and the
+constitutional Decennials subsystem: sequence construction, hierarchical
+grouping, active-period lookup, condition profiles, aggregate profiles, and
+network surfaces.
 
-Boundary: owns Firdaria sequence arithmetic and sub-period allocation, Zodiacal Releasing recursion and angularity classification, timelord policy vessels, result vessels, and relational vessels. Delegates domicile ruler lookup to moira.profections.
+Boundary: owns Firdaria sequence arithmetic and sub-period allocation,
+Decennials major/sub-period allocation, Zodiacal Releasing recursion and
+angularity classification, timelord policy vessels, result vessels, and
+relational vessels. Delegates domicile ruler lookup to moira.profections.
 
 Import-time side effects: None
 
@@ -16,15 +22,19 @@ External dependencies:
 
 Public surface:
     FIRDARIA_DIURNAL, FIRDARIA_NOCTURNAL, FIRDARIA_NOCTURNAL_BONATTI,
-    CHALDEAN_ORDER, MINOR_YEARS, FirdarSequenceKind, ZRAngularityClass,
-    FirdarYearPolicy, ZRYearPolicy, TimelordComputationPolicy,
-    DEFAULT_TIMELORD_POLICY, FirdarPeriod, ReleasingPeriod, FirdarMajorGroup,
-    ZRPeriodGroup, FirdarConditionProfile, ZRConditionProfile,
-    FirdarSequenceProfile, ZRSequenceProfile, FirdarActivePair, ZRLevelPair,
-    firdaria, current_firdaria, zodiacal_releasing, current_releasing,
-    group_firdaria, group_releasing, firdar_condition_profile,
-    zr_condition_profile, firdar_sequence_profile, zr_sequence_profile,
-    firdar_active_pair, zr_level_pair, validate_firdaria_output,
+    CHALDEAN_ORDER, MINOR_YEARS, FirdarSequenceKind, DecennialSequenceKind,
+    ZRAngularityClass, FirdarYearPolicy, DecennialPolicy, ZRYearPolicy, TimelordComputationPolicy,
+    DEFAULT_TIMELORD_POLICY, FirdarPeriod, DecennialPeriod, ReleasingPeriod,
+    FirdarMajorGroup, DecennialMajorGroup, DecennialPeriodGroup, ZRPeriodGroup,
+    FirdarConditionProfile, DecennialConditionProfile, ZRConditionProfile,
+    FirdarSequenceProfile, DecennialSequenceProfile, ZRSequenceProfile,
+    FirdarActivePair, DecennialActivePair, DecennialActivePath, ZRLevelPair,
+    firdaria, current_firdaria, decennials, current_decennials,
+    zodiacal_releasing, current_releasing, group_firdaria, group_decennials, group_releasing,
+    firdar_condition_profile, decennial_condition_profile, zr_condition_profile,
+    firdar_sequence_profile, decennial_sequence_profile, zr_sequence_profile,
+    firdar_active_pair, decennial_active_pair, decennial_active_path, zr_level_pair,
+    validate_firdaria_output, validate_decennials_output,
     validate_releasing_output
 """
 
@@ -50,41 +60,58 @@ __all__ = [
     "MINOR_YEARS",
     # Classification namespaces
     "FirdarSequenceKind",
+    "DecennialSequenceKind",
     "ZRAngularityClass",
     # Policy surfaces
     "FirdarYearPolicy",
+    "DecennialPolicy",
     "ZRYearPolicy",
     "TimelordComputationPolicy",
     "DEFAULT_TIMELORD_POLICY",
     # Truth-preservation vessels
     "FirdarPeriod",
+    "DecennialPeriod",
     "ReleasingPeriod",
     # Relational vessels
     "FirdarMajorGroup",
+    "DecennialMajorGroup",
+    "DecennialPeriodGroup",
     "ZRPeriodGroup",
     # Condition vessels
     "FirdarConditionProfile",
+    "DecennialConditionProfile",
     "ZRConditionProfile",
     # Aggregate vessels
     "FirdarSequenceProfile",
+    "DecennialSequenceProfile",
     "ZRSequenceProfile",
     # Network vessels
     "FirdarActivePair",
+    "DecennialActivePair",
+    "DecennialActivePath",
     "ZRLevelPair",
     # Computational functions
     "firdaria",
     "current_firdaria",
+    "decennials",
+    "current_decennials",
     "zodiacal_releasing",
     "current_releasing",
     "group_firdaria",
+    "group_decennials",
     "group_releasing",
     "firdar_condition_profile",
+    "decennial_condition_profile",
     "zr_condition_profile",
     "firdar_sequence_profile",
+    "decennial_sequence_profile",
     "zr_sequence_profile",
     "firdar_active_pair",
+    "decennial_active_pair",
+    "decennial_active_path",
     "zr_level_pair",
     "validate_firdaria_output",
+    "validate_decennials_output",
     "validate_releasing_output",
 ]
 
@@ -140,6 +167,19 @@ class FirdarSequenceKind:
     DIURNAL            = "diurnal"
     NOCTURNAL_STANDARD = "nocturnal_standard"
     NOCTURNAL_BONATTI  = "nocturnal_bonatti"
+
+
+class DecennialSequenceKind:
+    """
+    Classification namespace for Decennials sequence lineage.
+
+    This names the admitted sect-light-based Decennials sequence families so
+    downstream layers can consume one stable doctrinal token rather than
+    re-deriving classification from `is_day_chart` and `sect_light`.
+    """
+
+    DIURNAL_SOLAR = "diurnal_solar"
+    NOCTURNAL_LUNAR = "nocturnal_lunar"
 
 
 class ZRAngularityClass:
@@ -213,6 +253,14 @@ def _firdar_sequence_kind(is_day_chart: bool, variant: str) -> str:
     if variant == "bonatti":
         return FirdarSequenceKind.NOCTURNAL_BONATTI
     return FirdarSequenceKind.NOCTURNAL_STANDARD
+
+
+def _decennial_sequence_kind(is_day_chart: bool) -> str:
+    """Return the DecennialSequenceKind for a sect-light Decennials sequence."""
+
+    if is_day_chart:
+        return DecennialSequenceKind.DIURNAL_SOLAR
+    return DecennialSequenceKind.NOCTURNAL_LUNAR
 
 
 # ---------------------------------------------------------------------------
@@ -777,6 +825,713 @@ def current_firdaria(
 
 
 # ---------------------------------------------------------------------------
+# Decennials — minimum admitted engine
+# ---------------------------------------------------------------------------
+
+_DECENNIAL_PLANETS: tuple[str, ...] = (
+    "Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn",
+)
+_DECENNIAL_MONTHS: dict[str, int] = {
+    "Saturn": 30,
+    "Jupiter": 12,
+    "Mars": 15,
+    "Sun": 19,
+    "Venus": 8,
+    "Mercury": 20,
+    "Moon": 25,
+}
+_DECENNIAL_MAJOR_MONTHS = sum(_DECENNIAL_MONTHS.values())
+_DECENNIAL_MONTH_DAYS = 30.0
+_DECENNIAL_LUMINARIES: frozenset[str] = frozenset({"Sun", "Moon"})
+_DECENNIAL_PLANETARIES: frozenset[str] = frozenset({"Mercury", "Venus", "Mars", "Jupiter", "Saturn"})
+_DECENNIAL_MAX_LEVEL = 4
+_DECENNIAL_DEEP_METHODS: frozenset[str] = frozenset({"valens", "hephaistio"})
+
+
+@dataclass(slots=True)
+class DecennialPeriod:
+    """Truth-preservation vessel for one Decennials major or sub-period."""
+
+    level: int
+    planet: str
+    start_jd: float
+    end_jd: float
+    years: float
+    months: float
+    major_planet: str | None = None
+    parent_planet: str | None = None
+    parent_level: int | None = None
+    is_day_chart: bool | None = None
+    sect_light: str | None = None
+    sequence_kind: str | None = None
+    deep_subdivision_method: str | None = None
+    sequence: tuple[str, ...] = field(default_factory=tuple)
+    ancestor_planets: tuple[str, ...] = field(default_factory=tuple)
+    major_index: int = 0
+    sub_index: int | None = None
+    major_month_total: float = float(_DECENNIAL_MAJOR_MONTHS)
+    month_basis_days: float = _DECENNIAL_MONTH_DAYS
+
+    def __post_init__(self) -> None:
+        if self.level not in (1, 2, 3, 4):
+            raise ValueError(f"DecennialPeriod.level must be 1, 2, 3, or 4, got {self.level}")
+        if self.planet not in _DECENNIAL_PLANETS:
+            raise ValueError(f"DecennialPeriod.planet must be a classical planet, got {self.planet!r}")
+        if not math.isfinite(self.start_jd) or not math.isfinite(self.end_jd):
+            raise ValueError("DecennialPeriod start_jd and end_jd must be finite")
+        if self.end_jd <= self.start_jd:
+            raise ValueError("DecennialPeriod end_jd must be greater than start_jd")
+        if self.years <= 0:
+            raise ValueError("DecennialPeriod years must be positive")
+        if self.months <= 0:
+            raise ValueError("DecennialPeriod months must be positive")
+        if self.sect_light is not None and self.sect_light not in {"Sun", "Moon"}:
+            raise ValueError("DecennialPeriod sect_light must be Sun, Moon, or None")
+        if self.sequence_kind is not None and self.sequence_kind not in {
+            DecennialSequenceKind.DIURNAL_SOLAR,
+            DecennialSequenceKind.NOCTURNAL_LUNAR,
+        }:
+            raise ValueError("DecennialPeriod sequence_kind must be a supported DecennialSequenceKind")
+        if self.parent_planet is not None and self.parent_planet not in _DECENNIAL_PLANETS:
+            raise ValueError("DecennialPeriod parent_planet must be a classical planet or None")
+        if self.parent_level is not None and self.parent_level not in (1, 2, 3):
+            raise ValueError("DecennialPeriod parent_level must be 1, 2, 3, or None")
+        if self.deep_subdivision_method is not None and self.deep_subdivision_method not in _DECENNIAL_DEEP_METHODS:
+            raise ValueError("DecennialPeriod deep_subdivision_method must be 'valens', 'hephaistio', or None")
+        if self.sequence and set(self.sequence) != set(_DECENNIAL_PLANETS):
+            raise ValueError("DecennialPeriod sequence must contain the seven classical planets exactly once")
+        if self.major_index < 0:
+            raise ValueError("DecennialPeriod major_index must be non-negative")
+        if self.sub_index is not None and self.sub_index < 0:
+            raise ValueError("DecennialPeriod sub_index must be non-negative when set")
+        if self.major_month_total <= 0:
+            raise ValueError("DecennialPeriod major_month_total must be positive")
+        if self.month_basis_days <= 0:
+            raise ValueError("DecennialPeriod month_basis_days must be positive")
+        if self.level == 1 and self.major_planet is not None:
+            raise ValueError("DecennialPeriod level-1 periods must not set major_planet")
+        if self.level == 1 and self.parent_planet is not None:
+            raise ValueError("DecennialPeriod level-1 periods must not set parent_planet")
+        if self.level == 1 and self.parent_level is not None:
+            raise ValueError("DecennialPeriod level-1 periods must not set parent_level")
+        if self.level == 1 and self.sub_index is not None:
+            raise ValueError("DecennialPeriod level-1 periods must not set sub_index")
+        if self.level == 1 and self.ancestor_planets:
+            raise ValueError("DecennialPeriod level-1 periods must not set ancestor_planets")
+        if self.level >= 2 and not self.major_planet:
+            if self.level == 2:
+                raise ValueError("DecennialPeriod level-2 periods must preserve major_planet")
+            raise ValueError("DecennialPeriod subordinate periods must preserve major_planet")
+        if self.level >= 2 and self.sub_index is None:
+            if self.level == 2:
+                raise ValueError("DecennialPeriod level-2 periods must preserve sub_index")
+            raise ValueError("DecennialPeriod subordinate periods must preserve sub_index")
+        if self.level >= 2 and not self.parent_planet:
+            raise ValueError("DecennialPeriod subordinate periods must preserve parent_planet")
+        if self.level >= 2 and self.parent_level != self.level - 1:
+            raise ValueError("DecennialPeriod parent_level must equal level - 1 for subordinate periods")
+        if len(self.ancestor_planets) != max(0, self.level - 1):
+            raise ValueError("DecennialPeriod ancestor_planets must preserve one ancestor per prior level")
+        if self.level >= 2 and self.ancestor_planets[0] != self.major_planet:
+            raise ValueError("DecennialPeriod ancestor_planets must begin with major_planet")
+        if self.level >= 2 and self.ancestor_planets[-1] != self.parent_planet:
+            raise ValueError("DecennialPeriod ancestor_planets must end with parent_planet")
+        if self.level <= 2 and self.deep_subdivision_method is not None:
+            raise ValueError("DecennialPeriod deep_subdivision_method applies only to levels 3 and 4")
+        if self.level == 4 and self.deep_subdivision_method != "valens":
+            raise ValueError("DecennialPeriod level-4 periods are admitted only for deep_subdivision_method='valens'")
+        if self.sequence:
+            if self.major_index >= len(self.sequence):
+                raise ValueError("DecennialPeriod major_index must lie inside preserved sequence")
+            if self.level == 1 and self.sequence[self.major_index] != self.planet:
+                raise ValueError("DecennialPeriod major planet must match preserved sequence at major_index")
+            if self.level >= 2:
+                assert self.sub_index is not None
+                assert self.parent_planet is not None
+                try:
+                    anchor_index = self.sequence.index(self.parent_planet)
+                except ValueError as exc:
+                    raise ValueError("DecennialPeriod parent_planet must exist inside preserved sequence") from exc
+                rotated = self.sequence[anchor_index:] + self.sequence[:anchor_index]
+                if self.sub_index >= len(rotated):
+                    raise ValueError("DecennialPeriod sub_index must lie inside rotated sequence")
+                if rotated[self.sub_index] != self.planet:
+                    raise ValueError("DecennialPeriod sub planet must match rotated sequence at sub_index")
+                if self.major_planet != self.sequence[self.major_index]:
+                    raise ValueError("DecennialPeriod level-2 major_planet must match preserved major sequence planet")
+
+    @property
+    def is_major(self) -> bool:
+        return self.level == 1
+
+    @property
+    def is_sub(self) -> bool:
+        return self.level >= 2
+
+    @property
+    def level_name(self) -> str:
+        if self.level == 1:
+            return "Major"
+        if self.level == 2:
+            return "Sub-period"
+        if self.level == 3:
+            return "Day sub-period"
+        return "Hour sub-period"
+
+    @property
+    def is_diurnal_solar(self) -> bool:
+        return self.sequence_kind == DecennialSequenceKind.DIURNAL_SOLAR
+
+    @property
+    def is_nocturnal_lunar(self) -> bool:
+        return self.sequence_kind == DecennialSequenceKind.NOCTURNAL_LUNAR
+
+    @property
+    def effective_major_planet(self) -> str:
+        """Return the active major lord for this period."""
+
+        return self.planet if self.level == 1 else self.major_planet  # type: ignore[return-value]
+
+    @property
+    def rotated_sequence(self) -> tuple[str, ...]:
+        """Return the major-relative sequence order when preserved sequence truth exists."""
+
+        if not self.sequence:
+            return tuple()
+        if self.level == 1:
+            anchor_index = self.major_index
+        else:
+            assert self.parent_planet is not None
+            anchor_index = self.sequence.index(self.parent_planet)
+        return self.sequence[anchor_index:] + self.sequence[:anchor_index]
+
+    @property
+    def sequence_position(self) -> int:
+        """Return the 1-based position of this period within its relevant sequence."""
+
+        if self.level == 1:
+            return self.major_index + 1
+        assert self.sub_index is not None
+        return self.sub_index + 1
+
+    def is_active_at(self, jd: float) -> bool:
+        return self.start_jd <= jd < self.end_jd
+
+    @property
+    def start_dt(self) -> datetime:
+        return datetime_from_jd(self.start_jd)
+
+    @property
+    def start_calendar(self) -> CalendarDateTime:
+        return calendar_datetime_from_jd(self.start_jd)
+
+    @property
+    def end_dt(self) -> datetime:
+        return datetime_from_jd(self.end_jd)
+
+    @property
+    def end_calendar(self) -> CalendarDateTime:
+        return calendar_datetime_from_jd(self.end_jd)
+
+    @property
+    def days(self) -> float:
+        return self.end_jd - self.start_jd
+
+
+@dataclass(slots=True)
+class DecennialPeriodGroup:
+    """Recursive relation vessel for one non-major Decennials period and its children."""
+
+    period: DecennialPeriod
+    sub_groups: list["DecennialPeriodGroup"]
+
+    def __post_init__(self) -> None:
+        if self.period.level < 2:
+            raise ValueError(
+                f"DecennialPeriodGroup.period must be level 2 or deeper, got level {self.period.level}"
+            )
+        for sub_group in self.sub_groups:
+            if sub_group.period.level != self.period.level + 1:
+                raise ValueError(
+                    "DecennialPeriodGroup.sub_groups must be exactly one level deeper than their parent period"
+                )
+            if sub_group.period.start_jd < self.period.start_jd - 1e-9:
+                raise ValueError("DecennialPeriodGroup child starts before parent period")
+            if sub_group.period.end_jd > self.period.end_jd + 1e-9:
+                raise ValueError("DecennialPeriodGroup child ends after parent period")
+        for index in range(len(self.sub_groups) - 1):
+            if self.sub_groups[index].period.start_jd >= self.sub_groups[index + 1].period.start_jd:
+                raise ValueError("DecennialPeriodGroup.sub_groups must be in chronological order")
+
+    @property
+    def level(self) -> int:
+        return self.period.level
+
+    @property
+    def has_sub_groups(self) -> bool:
+        return bool(self.sub_groups)
+
+    @property
+    def is_leaf(self) -> bool:
+        return not self.sub_groups
+
+    def all_periods_flat(self) -> list[DecennialPeriod]:
+        result: list[DecennialPeriod] = [self.period]
+        for sub_group in self.sub_groups:
+            result.extend(sub_group.all_periods_flat())
+        return result
+
+    def active_sub_at(self, jd: float) -> "DecennialPeriodGroup | None":
+        for sub_group in self.sub_groups:
+            if sub_group.period.is_active_at(jd):
+                return sub_group
+        return None
+
+
+@dataclass(slots=True)
+class DecennialMajorGroup:
+    """Relational vessel binding one Decennials major period to its sub-periods."""
+
+    major: DecennialPeriod
+    subs: list[DecennialPeriod]
+    sub_groups: list[DecennialPeriodGroup] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        if self.major.level != 1:
+            raise ValueError(
+                f"DecennialMajorGroup.major must be a level-1 period, got level {self.major.level}"
+            )
+        for sub in self.subs:
+            if sub.level != 2:
+                raise ValueError(
+                    f"DecennialMajorGroup.subs must contain only level-2 periods, got level {sub.level}"
+                )
+            if sub.major_planet != self.major.planet:
+                raise ValueError(
+                    f"DecennialMajorGroup.sub-period '{sub.planet}' must preserve major_planet '{self.major.planet}'"
+                )
+            if sub.major_index != self.major.major_index:
+                raise ValueError(
+                    f"DecennialMajorGroup.sub-period '{sub.planet}' must preserve major_index {self.major.major_index}"
+                )
+        for i in range(len(self.subs) - 1):
+            if self.subs[i].start_jd >= self.subs[i + 1].start_jd:
+                raise ValueError("DecennialMajorGroup.subs must be in chronological order")
+        if not self.sub_groups and self.subs:
+            self.sub_groups = [DecennialPeriodGroup(period=sub, sub_groups=[]) for sub in self.subs]
+        if len(self.sub_groups) != len(self.subs):
+            raise ValueError("DecennialMajorGroup.sub_groups must provide one recursive group per immediate sub-period")
+        for sub_group, sub_period in zip(self.sub_groups, self.subs):
+            if sub_group.period is not sub_period:
+                raise ValueError("DecennialMajorGroup.sub_groups must align to subs in chronological order")
+
+    @property
+    def sub_count(self) -> int:
+        return len(self.subs)
+
+    @property
+    def has_subs(self) -> bool:
+        return bool(self.subs)
+
+    @property
+    def luminary_subs(self) -> list[DecennialPeriod]:
+        return [sub for sub in self.subs if sub.planet in _DECENNIAL_LUMINARIES]
+
+    @property
+    def planetary_subs(self) -> list[DecennialPeriod]:
+        return [sub for sub in self.subs if sub.planet in _DECENNIAL_PLANETARIES]
+
+    @property
+    def is_complete(self) -> bool:
+        return self.sub_count in (0, 7)
+
+    @property
+    def has_sub_groups(self) -> bool:
+        return bool(self.sub_groups)
+
+    def all_periods_flat(self) -> list[DecennialPeriod]:
+        result: list[DecennialPeriod] = [self.major]
+        for sub_group in self.sub_groups:
+            result.extend(sub_group.all_periods_flat())
+        return result
+
+    def active_sub_at(self, jd: float) -> DecennialPeriod | None:
+        for sub in self.subs:
+            if sub.is_active_at(jd):
+                return sub
+        return None
+
+    def active_sub_group_at(self, jd: float) -> DecennialPeriodGroup | None:
+        for sub_group in self.sub_groups:
+            if sub_group.period.is_active_at(jd):
+                return sub_group
+        return None
+
+
+def _normalize_lon(lon: float) -> float:
+    return lon % 360.0
+
+
+def _validate_decennial_positions(natal_positions: dict[str, float]) -> None:
+    if not isinstance(natal_positions, dict):
+        raise TypeError("natal_positions must be a dict of classical planet longitudes")
+    missing = [planet for planet in _DECENNIAL_PLANETS if planet not in natal_positions]
+    if missing:
+        raise ValueError(f"decennials: natal_positions missing required planets: {missing}")
+    for planet in _DECENNIAL_PLANETS:
+        lon = natal_positions[planet]
+        if not math.isfinite(lon):
+            raise ValueError(f"decennials: natal_positions[{planet!r}] must be finite")
+
+
+def _decennial_sequence(natal_positions: dict[str, float], is_day_chart: bool) -> list[str]:
+    sect_light = "Sun" if is_day_chart else "Moon"
+    start_lon = _normalize_lon(natal_positions[sect_light])
+    base_order = {planet: index for index, planet in enumerate(_DECENNIAL_PLANETS)}
+    return sorted(
+        _DECENNIAL_PLANETS,
+        key=lambda planet: (
+            (_normalize_lon(natal_positions[planet]) - start_lon) % 360.0,
+            0 if planet == sect_light else 1,
+            base_order[planet],
+        ),
+    )
+
+
+def _decennial_supported_max_level(policy: DecennialPolicy) -> int:
+    if policy.deep_subdivision_method is None:
+        return 2
+    if policy.deep_subdivision_method == "hephaistio":
+        return 3
+    return _DECENNIAL_MAX_LEVEL
+
+
+def _append_decennial_children(
+    parent: DecennialPeriod,
+    *,
+    sequence: tuple[str, ...],
+    target_level: int,
+    deep_subdivision_method: str | None,
+    periods: list[DecennialPeriod],
+) -> None:
+    if parent.level >= target_level:
+        return
+
+    next_level = parent.level + 1
+    try:
+        anchor_index = sequence.index(parent.planet)
+    except ValueError as exc:
+        raise ValueError(f"_append_decennial_children: parent planet {parent.planet!r} not found in preserved sequence") from exc
+    rotated = sequence[anchor_index:] + sequence[:anchor_index]
+    child_cursor = parent.start_jd
+    total_days = parent.days
+    total_months = parent.months
+    denominator = float(_DECENNIAL_MAJOR_MONTHS)
+
+    for child_index, child_planet in enumerate(rotated):
+        share = float(_DECENNIAL_MONTHS[child_planet]) / denominator
+        child_days = total_days * share
+        child_months = total_months * share
+        child_end = child_cursor + child_days
+        child = DecennialPeriod(
+            level=next_level,
+            planet=child_planet,
+            start_jd=child_cursor,
+            end_jd=child_end,
+            years=child_months / 12.0,
+            months=child_months,
+            major_planet=parent.planet if parent.level == 1 else parent.major_planet,
+            parent_planet=parent.planet,
+            parent_level=parent.level,
+            is_day_chart=parent.is_day_chart,
+            sect_light=parent.sect_light,
+            sequence_kind=parent.sequence_kind,
+            deep_subdivision_method=deep_subdivision_method if next_level >= 3 else None,
+            sequence=sequence,
+            ancestor_planets=parent.ancestor_planets + (parent.planet,),
+            major_index=parent.major_index,
+            sub_index=child_index,
+            major_month_total=parent.major_month_total,
+            month_basis_days=parent.month_basis_days,
+        )
+        periods.append(child)
+        _append_decennial_children(
+            child,
+            sequence=sequence,
+            target_level=target_level,
+            deep_subdivision_method=deep_subdivision_method,
+            periods=periods,
+        )
+        child_cursor = child_end
+
+
+def decennials(
+    natal_jd: float,
+    natal_positions: dict[str, float],
+    is_day_chart: bool,
+    *,
+    levels: int = 2,
+    policy: "TimelordComputationPolicy | None" = None,
+) -> list[DecennialPeriod]:
+    """
+    Generate Decennials major periods and admitted deeper sub-periods.
+
+    The minimum admitted Moira engine starts from the sect light, orders the
+    seven classical planets by zodiacal succession from that point, assigns
+    129 months to each major period, and subdivides each major by the
+    transmitted unequal month-allotments of the seven classical planets.
+    """
+    if not math.isfinite(natal_jd):
+        raise ValueError(f"decennials: natal_jd must be finite, got {natal_jd!r}")
+    if not (1 <= levels <= _DECENNIAL_MAX_LEVEL):
+        raise ValueError(f"decennials: levels must be 1–{_DECENNIAL_MAX_LEVEL}")
+    _validate_decennial_positions(natal_positions)
+    pol = _resolve_timelord_policy(policy)
+    max_level = _decennial_supported_max_level(pol.decennials)
+    if levels > max_level:
+        raise ValueError(
+            f"decennials: levels={levels} requires admitted deep_subdivision_method "
+            f"supporting up to level {levels}; current policy supports up to level {max_level}"
+        )
+
+    sequence = _decennial_sequence(natal_positions, is_day_chart)
+    sect_light = "Sun" if is_day_chart else "Moon"
+    sequence_kind = _decennial_sequence_kind(is_day_chart)
+    major_months = float(pol.decennials.major_months)
+    month_basis_days = float(pol.decennials.month_basis_days)
+    major_days = major_months * month_basis_days
+    periods: list[DecennialPeriod] = []
+    cursor_jd = natal_jd
+
+    for major_index, major_planet in enumerate(sequence):
+        major_start = cursor_jd
+        major_end = major_start + major_days
+        periods.append(
+            DecennialPeriod(
+                level=1,
+                planet=major_planet,
+                start_jd=major_start,
+                end_jd=major_end,
+                years=major_months / 12.0,
+                months=major_months,
+                is_day_chart=is_day_chart,
+                sect_light=sect_light,
+                sequence_kind=sequence_kind,
+                sequence=tuple(sequence),
+                ancestor_planets=tuple(),
+                major_index=major_index,
+                major_month_total=major_months,
+                month_basis_days=month_basis_days,
+            )
+        )
+
+        if levels >= 2:
+            _append_decennial_children(
+                periods[-1],
+                sequence=tuple(sequence),
+                target_level=levels,
+                deep_subdivision_method=pol.decennials.deep_subdivision_method,
+                periods=periods,
+            )
+
+        cursor_jd = major_end
+
+    return periods
+
+
+def current_decennials(
+    natal_jd: float,
+    natal_positions: dict[str, float],
+    is_day_chart: bool,
+    current_jd: float,
+    *,
+    levels: int = 2,
+    policy: "TimelordComputationPolicy | None" = None,
+) -> tuple[DecennialPeriod, DecennialPeriod]:
+    """Return the active Decennials major and sub-period at `current_jd`."""
+    if not math.isfinite(current_jd):
+        raise ValueError(f"current_decennials: current_jd must be finite, got {current_jd!r}")
+
+    periods = decennials(natal_jd, natal_positions, is_day_chart, levels=levels, policy=policy)
+    major_periods = [period for period in periods if period.level == 1]
+
+    active_major = next((period for period in major_periods if period.is_active_at(current_jd)), None)
+    if active_major is None:
+        raise ValueError(
+            f"current_jd {current_jd} falls outside the Decennials cycle starting at natal_jd {natal_jd}."
+        )
+
+    if levels == 1:
+        return active_major, active_major
+
+    active_leaf = max(
+        (period for period in periods if period.level >= 2 and period.is_active_at(current_jd)),
+        key=lambda period: period.level,
+        default=None,
+    )
+    if active_leaf is None:
+        raise ValueError(
+            f"current_decennials: no active sub-period found at jd {current_jd} inside major {active_major.planet}"
+        )
+    return active_major, active_leaf
+
+
+def validate_decennials_output(periods: list[DecennialPeriod]) -> None:
+    """Verify that a decennials() output satisfies ordering and containment invariants."""
+    by_level: dict[int, list[DecennialPeriod]] = {
+        level: [period for period in periods if period.level == level]
+        for level in range(1, _DECENNIAL_MAX_LEVEL + 1)
+    }
+    level1 = by_level[1]
+
+    for index in range(len(level1) - 1):
+        if level1[index].end_jd > level1[index + 1].start_jd + 1e-9:
+            raise ValueError(
+                f"validate_decennials_output: level-1 periods overlap or are out of order "
+                f"('{level1[index].planet}' end_jd={level1[index].end_jd:.6f} > "
+                f"'{level1[index + 1].planet}' start_jd={level1[index + 1].start_jd:.6f})"
+            )
+
+    path_map: dict[tuple[int, tuple[str, ...]], DecennialPeriod] = {}
+    child_groups: dict[tuple[int, tuple[str, ...]], list[DecennialPeriod]] = {}
+
+    for period in periods:
+        path = period.ancestor_planets + (period.planet,)
+        key = (period.level, path)
+        if key in path_map:
+            raise ValueError(
+                f"validate_decennials_output: duplicate Decennials lineage path {path} at level {period.level}"
+            )
+        path_map[key] = period
+        if period.level >= 2:
+            if period.parent_level != period.level - 1:
+                raise ValueError(
+                    f"validate_decennials_output: period '{period.planet}' (L{period.level}) must preserve parent_level={period.level - 1}"
+                )
+            if len(period.ancestor_planets) != period.level - 1:
+                raise ValueError(
+                    f"validate_decennials_output: period '{period.planet}' (L{period.level}) has ancestor path length {len(period.ancestor_planets)}, expected {period.level - 1}"
+                )
+            if period.level >= 3 and period.deep_subdivision_method is None:
+                raise ValueError(
+                    f"validate_decennials_output: period '{period.planet}' (L{period.level}) must preserve deep_subdivision_method"
+                )
+            if period.level == 4 and period.deep_subdivision_method != "valens":
+                raise ValueError(
+                    f"validate_decennials_output: period '{period.planet}' (L4) is admitted only under deep_subdivision_method='valens'"
+                )
+            parent_path = period.ancestor_planets
+            child_groups.setdefault((period.level - 1, parent_path), []).append(period)
+        elif period.deep_subdivision_method is not None:
+            raise ValueError(
+                f"validate_decennials_output: level-1 period '{period.planet}' must not preserve deep_subdivision_method"
+            )
+
+    for major in level1:
+        if major.sequence_kind != _decennial_sequence_kind(bool(major.is_day_chart)):
+            raise ValueError(
+                f"validate_decennials_output: major '{major.planet}' has inconsistent sequence_kind truth"
+            )
+        if major.sequence and major.sequence[major.major_index % len(major.sequence)] != major.planet:
+            raise ValueError(
+                f"validate_decennials_output: major '{major.planet}' has inconsistent preserved sequence position"
+            )
+
+    for level in range(2, _DECENNIAL_MAX_LEVEL + 1):
+        for period in by_level[level]:
+            parent_key = (level - 1, period.ancestor_planets)
+            parent = path_map.get(parent_key)
+            if parent is None:
+                raise ValueError(
+                    f"validate_decennials_output: level-{level} period '{period.planet}' references unknown parent path {period.ancestor_planets}"
+                )
+            if period.start_jd < parent.start_jd - 1e-9 or period.end_jd > parent.end_jd + 1e-9:
+                raise ValueError(
+                    f"validate_decennials_output: period '{period.planet}' (L{level}) escapes parent '{parent.planet}' (L{level - 1})"
+                )
+            if period.sequence != parent.sequence:
+                raise ValueError(
+                    f"validate_decennials_output: period '{period.planet}' (L{level}) must preserve sequence truth of parent '{parent.planet}'"
+                )
+            if period.sequence_kind != parent.sequence_kind:
+                raise ValueError(
+                    f"validate_decennials_output: period '{period.planet}' (L{level}) must preserve sequence_kind of parent '{parent.planet}'"
+                )
+            if period.major_index != parent.major_index:
+                raise ValueError(
+                    f"validate_decennials_output: period '{period.planet}' (L{level}) must preserve major_index of parent '{parent.planet}'"
+                )
+            if period.major_planet != parent.major_planet and not (parent.level == 1 and period.major_planet == parent.planet):
+                raise ValueError(
+                    f"validate_decennials_output: period '{period.planet}' (L{level}) must preserve major_planet truth"
+                )
+            if period.parent_planet != parent.planet:
+                raise ValueError(
+                    f"validate_decennials_output: period '{period.planet}' (L{level}) must preserve immediate parent planet '{parent.planet}'"
+                )
+            if parent.level >= 3 and period.deep_subdivision_method != parent.deep_subdivision_method:
+                raise ValueError(
+                    f"validate_decennials_output: period '{period.planet}' (L{level}) must preserve deep_subdivision_method of parent '{parent.planet}'"
+                )
+
+    for parent_key, children in child_groups.items():
+        parent = path_map[parent_key]
+        children.sort(key=lambda period: period.start_jd)
+        for index in range(len(children) - 1):
+            if children[index].end_jd > children[index + 1].start_jd + 1e-9:
+                raise ValueError(
+                    f"validate_decennials_output: children of '{parent.planet}' (L{parent.level}) overlap or are out of order"
+                )
+        total_days = 0.0
+        total_months = 0.0
+        for expected_sub_index, child in enumerate(children):
+            if child.sub_index != expected_sub_index:
+                raise ValueError(
+                    f"validate_decennials_output: child '{child.planet}' of '{parent.planet}' has sub_index={child.sub_index}, expected {expected_sub_index}"
+                )
+            total_days += child.days
+            total_months += child.months
+        if abs(total_days - parent.days) > 1e-6:
+            raise ValueError(
+                f"validate_decennials_output: child day spans of '{parent.planet}' sum to {total_days}, expected {parent.days}"
+            )
+        if abs(total_months - parent.months) > 1e-6:
+            raise ValueError(
+                f"validate_decennials_output: child month spans of '{parent.planet}' sum to {total_months}, expected {parent.months}"
+            )
+
+
+def group_decennials(periods: list[DecennialPeriod]) -> list[DecennialMajorGroup]:
+    """Group a flat Decennials output into major-period relation vessels."""
+
+    def _build_decennial_sub_groups(parent: DecennialPeriod) -> list[DecennialPeriodGroup]:
+        children = [
+            period for period in periods
+            if period.parent_level == parent.level
+            and period.parent_planet == parent.planet
+            and period.major_index == parent.major_index
+            and period.ancestor_planets == parent.ancestor_planets + (parent.planet,)
+        ]
+        children.sort(key=lambda period: period.start_jd)
+        return [
+            DecennialPeriodGroup(
+                period=child,
+                sub_groups=_build_decennial_sub_groups(child),
+            )
+            for child in children
+        ]
+
+    major_periods = [period for period in periods if period.level == 1]
+
+    groups: list[DecennialMajorGroup] = []
+    for major in major_periods:
+        sub_groups = _build_decennial_sub_groups(major)
+        subs = [sub_group.period for sub_group in sub_groups]
+        groups.append(DecennialMajorGroup(major=major, subs=subs, sub_groups=sub_groups))
+    return groups
+
+
+# ---------------------------------------------------------------------------
 # Zodiacal Releasing — tables
 # ---------------------------------------------------------------------------
 
@@ -830,6 +1585,24 @@ class FirdarYearPolicy:
 
 
 @dataclass(frozen=True, slots=True)
+class DecennialPolicy:
+    """
+    Doctrine surface for the admitted minimum Decennials engine.
+
+    This policy freezes the currently admitted doctrine explicitly, while
+    leaving deferred historical variants unselectable until separately
+    admitted.
+    """
+
+    start_lord_basis: str = "sect_light"
+    sequence_mode: str = "zodiacal_from_sect_light"
+    subperiod_mode: str = "rotated_minor_months"
+    major_months: float = float(_DECENNIAL_MAJOR_MONTHS)
+    month_basis_days: float = _DECENNIAL_MONTH_DAYS
+    deep_subdivision_method: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class ZRYearPolicy:
     """
     Doctrine surface for the Zodiacal Releasing symbolic-year constant.
@@ -853,9 +1626,11 @@ class TimelordComputationPolicy:
     per-chart inputs (is_day_chart, variant, lot_longitude, etc.).
 
     firdaria_year  — governs the Julian-year constant for Firdaria
+    decennials     — freezes the admitted Decennials doctrine
     zr_year        — governs the symbolic-year constant for Zodiacal Releasing
     """
     firdaria_year: FirdarYearPolicy = field(default_factory=FirdarYearPolicy)
+    decennials:    DecennialPolicy  = field(default_factory=DecennialPolicy)
     zr_year:       ZRYearPolicy     = field(default_factory=ZRYearPolicy)
 
 
@@ -867,10 +1642,24 @@ def _validate_timelord_policy(
 ) -> TimelordComputationPolicy:
     if not isinstance(policy.firdaria_year, FirdarYearPolicy):
         raise TypeError("policy.firdaria_year must be a FirdarYearPolicy")
+    if not isinstance(policy.decennials, DecennialPolicy):
+        raise TypeError("policy.decennials must be a DecennialPolicy")
     if not isinstance(policy.zr_year, ZRYearPolicy):
         raise TypeError("policy.zr_year must be a ZRYearPolicy")
     if policy.firdaria_year.year_days <= 0:
         raise ValueError("policy.firdaria_year.year_days must be positive")
+    if policy.decennials.start_lord_basis != "sect_light":
+        raise ValueError("policy.decennials.start_lord_basis must remain 'sect_light' for the admitted doctrine")
+    if policy.decennials.sequence_mode != "zodiacal_from_sect_light":
+        raise ValueError("policy.decennials.sequence_mode must remain 'zodiacal_from_sect_light'")
+    if policy.decennials.subperiod_mode != "rotated_minor_months":
+        raise ValueError("policy.decennials.subperiod_mode must remain 'rotated_minor_months'")
+    if abs(policy.decennials.major_months - float(_DECENNIAL_MAJOR_MONTHS)) > 1e-12:
+        raise ValueError(f"policy.decennials.major_months must remain {_DECENNIAL_MAJOR_MONTHS}")
+    if abs(policy.decennials.month_basis_days - _DECENNIAL_MONTH_DAYS) > 1e-12:
+        raise ValueError(f"policy.decennials.month_basis_days must remain {_DECENNIAL_MONTH_DAYS}")
+    if policy.decennials.deep_subdivision_method not in _DECENNIAL_DEEP_METHODS | {None}:
+        raise ValueError("policy.decennials.deep_subdivision_method must be 'valens', 'hephaistio', or None")
     if policy.zr_year.year_days <= 0:
         raise ValueError("policy.zr_year.year_days must be positive")
     return policy
@@ -1160,6 +1949,14 @@ def _firdaria_lord_type(planet: str, is_node_period: bool) -> str:
     return "planet"
 
 
+def _decennial_lord_type(planet: str) -> str:
+    """Return the lord-type label for a Decennials planet."""
+
+    if planet in _DECENNIAL_LUMINARIES:
+        return "luminary"
+    return "planet"
+
+
 @dataclass(slots=True)
 class FirdarConditionProfile:
     """
@@ -1226,6 +2023,61 @@ def firdar_condition_profile(period: FirdarPeriod) -> FirdarConditionProfile:
         is_day_chart   = period.is_day_chart,
         years          = period.years,
         days           = period.days,
+    )
+
+
+@dataclass(slots=True)
+class DecennialConditionProfile:
+    """Integrated local condition profile for one Decennials period."""
+
+    planet:                str
+    level:                 int
+    level_name:            str
+    is_major:              bool
+    lord_type:             str
+    sequence_kind:         str | None
+    major_planet:          str | None
+    parent_planet:         str | None
+    parent_level:          int | None
+    ancestor_planets:      tuple[str, ...]
+    effective_major_planet:str
+    is_day_chart:          bool | None
+    sect_light:            str | None
+    major_index:           int
+    sub_index:             int | None
+    sequence_position:     int
+    deep_subdivision_method: str | None
+    years:                 float
+    months:                float
+    days:                  float
+    month_basis_days:      float
+
+
+def decennial_condition_profile(period: DecennialPeriod) -> DecennialConditionProfile:
+    """Build a DecennialConditionProfile from a DecennialPeriod."""
+
+    return DecennialConditionProfile(
+        planet=period.planet,
+        level=period.level,
+        level_name=period.level_name,
+        is_major=period.is_major,
+        lord_type=_decennial_lord_type(period.planet),
+        sequence_kind=period.sequence_kind,
+        major_planet=period.major_planet,
+        parent_planet=period.parent_planet,
+        parent_level=period.parent_level,
+        ancestor_planets=period.ancestor_planets,
+        effective_major_planet=period.effective_major_planet,
+        is_day_chart=period.is_day_chart,
+        sect_light=period.sect_light,
+        major_index=period.major_index,
+        sub_index=period.sub_index,
+        sequence_position=period.sequence_position,
+        deep_subdivision_method=period.deep_subdivision_method,
+        years=period.years,
+        months=period.months,
+        days=period.days,
+        month_basis_days=period.month_basis_days,
     )
 
 
@@ -1475,6 +2327,92 @@ def firdar_sequence_profile(periods: list[FirdarPeriod]) -> FirdarSequenceProfil
         node_major_count     = node_count,
         total_major_years    = total_years,
         sequence_kind        = kind,
+    )
+
+
+@dataclass(slots=True)
+class DecennialSequenceProfile:
+    """Aggregate structural profile of a complete Decennials major-period sequence."""
+
+    profiles: tuple["DecennialConditionProfile", ...]
+    major_count: int
+    luminary_major_count: int
+    planetary_major_count: int
+    total_major_years: float
+    total_major_months: float
+    sequence_kind: str | None
+    sect_light: str | None
+    level_count_map: dict[int, int] = field(default_factory=dict)
+    deepest_level: int = 1
+    deep_subdivision_method: str | None = None
+
+    def __post_init__(self) -> None:
+        major_profiles = tuple(profile for profile in self.profiles if profile.level == 1)
+        if self.major_count != len(major_profiles):
+            raise ValueError("DecennialSequenceProfile.major_count must equal the number of level-1 profiles")
+        if self.luminary_major_count != sum(1 for p in major_profiles if p.lord_type == "luminary"):
+            raise ValueError("DecennialSequenceProfile.luminary_major_count does not match major profiles")
+        if self.planetary_major_count != sum(1 for p in major_profiles if p.lord_type == "planet"):
+            raise ValueError("DecennialSequenceProfile.planetary_major_count does not match major profiles")
+        if self.luminary_major_count + self.planetary_major_count != self.major_count:
+            raise ValueError("DecennialSequenceProfile lord-type counts must sum to major_count")
+        if self.profile_count != sum(self.level_count_map.values()):
+            raise ValueError("DecennialSequenceProfile.level_count_map must sum to profile_count")
+        if self.level_count_map.get(1, 0) != self.major_count:
+            raise ValueError("DecennialSequenceProfile.level_count_map[1] must equal major_count")
+        if self.deepest_level != max(self.level_count_map, default=1):
+            raise ValueError("DecennialSequenceProfile.deepest_level must match the deepest level present in level_count_map")
+        deep_methods = {
+            profile.deep_subdivision_method
+            for profile in self.profiles
+            if profile.deep_subdivision_method is not None
+        }
+        if len(deep_methods) > 1:
+            raise ValueError("DecennialSequenceProfile profiles must agree on deep_subdivision_method")
+        if self.deepest_level >= 3 and not deep_methods:
+            raise ValueError("DecennialSequenceProfile deepest_level >= 3 requires deep_subdivision_method")
+        if deep_methods and self.deep_subdivision_method != next(iter(deep_methods)):
+            raise ValueError("DecennialSequenceProfile.deep_subdivision_method must match deep profiles")
+        if self.deepest_level <= 2 and self.deep_subdivision_method is not None:
+            raise ValueError("DecennialSequenceProfile.deep_subdivision_method applies only to deep output")
+
+    @property
+    def profile_count(self) -> int:
+        return len(self.profiles)
+
+
+def decennial_sequence_profile(periods: list[DecennialPeriod]) -> DecennialSequenceProfile:
+    """Build a DecennialSequenceProfile from a flat Decennials period list."""
+
+    profiles = tuple(decennial_condition_profile(period) for period in periods)
+    major_profiles = tuple(profile for profile in profiles if profile.level == 1)
+    luminary_count = sum(1 for profile in major_profiles if profile.lord_type == "luminary")
+    planetary_count = sum(1 for profile in major_profiles if profile.lord_type == "planet")
+    total_years = sum(profile.years for profile in major_profiles)
+    total_months = sum(profile.months for profile in major_profiles)
+    sequence_kind = major_profiles[0].sequence_kind if major_profiles else None
+    sect_light = major_profiles[0].sect_light if major_profiles else None
+    level_count_map: dict[int, int] = {}
+    deepest_level = 1
+    deep_method: str | None = None
+    for profile in profiles:
+        level_count_map[profile.level] = level_count_map.get(profile.level, 0) + 1
+        deepest_level = max(deepest_level, profile.level)
+        if profile.deep_subdivision_method is not None:
+            deep_method = profile.deep_subdivision_method
+
+    return DecennialSequenceProfile(
+        profiles=profiles,
+        major_count=len(major_profiles),
+        luminary_major_count=luminary_count,
+        planetary_major_count=planetary_count,
+        total_major_years=total_years,
+        total_major_months=total_months,
+        sequence_kind=sequence_kind,
+        sect_light=sect_light,
+        level_count_map=level_count_map,
+        deepest_level=deepest_level,
+        deep_subdivision_method=deep_method,
     )
 
 
@@ -1761,6 +2699,125 @@ def firdar_active_pair(
         major_profile = firdar_condition_profile(active_major),
         sub_profile   = firdar_condition_profile(active_sub) if active_sub else None,
     )
+
+
+@dataclass(slots=True)
+class DecennialActivePair:
+    """The simultaneously active Decennials major and sub-period profiles at one Julian Day."""
+
+    major_profile: DecennialConditionProfile
+    sub_profile: DecennialConditionProfile | None
+
+    def __post_init__(self) -> None:
+        if not self.major_profile.is_major:
+            raise ValueError(
+                "DecennialActivePair.major_profile must be a major (level-1) profile"
+            )
+        if self.sub_profile is not None and self.sub_profile.is_major:
+            raise ValueError(
+                "DecennialActivePair.sub_profile must be a sub-period (level-2) profile"
+            )
+
+    @property
+    def has_sub(self) -> bool:
+        return self.sub_profile is not None
+
+    @property
+    def is_same_lord(self) -> bool:
+        return (
+            self.sub_profile is not None
+            and self.major_profile.planet == self.sub_profile.planet
+        )
+
+    @property
+    def is_same_lord_type(self) -> bool:
+        return (
+            self.sub_profile is not None
+            and self.major_profile.lord_type == self.sub_profile.lord_type
+        )
+
+    @property
+    def shares_sect_light(self) -> bool:
+        return (
+            self.sub_profile is not None
+            and self.major_profile.sect_light == self.sub_profile.sect_light
+        )
+
+
+@dataclass(slots=True)
+class DecennialActivePath:
+    """The full active Decennials lineage at one Julian Day."""
+
+    profiles: tuple[DecennialConditionProfile, ...]
+
+    def __post_init__(self) -> None:
+        if not self.profiles:
+            raise ValueError("DecennialActivePath.profiles must not be empty")
+        if self.profiles[0].level != 1:
+            raise ValueError("DecennialActivePath must begin with a level-1 profile")
+        for index in range(len(self.profiles) - 1):
+            if self.profiles[index + 1].level != self.profiles[index].level + 1:
+                raise ValueError("DecennialActivePath profiles must advance one level at a time")
+
+    @property
+    def deepest_profile(self) -> DecennialConditionProfile:
+        return self.profiles[-1]
+
+    @property
+    def deepest_level(self) -> int:
+        return self.deepest_profile.level
+
+    @property
+    def major_profile(self) -> DecennialConditionProfile:
+        return self.profiles[0]
+
+    @property
+    def has_deep_subdivision(self) -> bool:
+        return self.deepest_level >= 3
+
+
+def decennial_active_pair(
+    periods: list[DecennialPeriod],
+    jd: float,
+) -> DecennialActivePair | None:
+    """
+    Return the DecennialActivePair active at *jd*, or None if no major is active.
+    """
+    if not math.isfinite(jd):
+        raise ValueError(f"decennial_active_pair: jd must be finite, got {jd!r}")
+    active_major = next(
+        (period for period in periods if period.level == 1 and period.is_active_at(jd)),
+        None,
+    )
+    if active_major is None:
+        return None
+    active_sub = next(
+        (period for period in periods if period.level == 2 and period.is_active_at(jd)),
+        None,
+    )
+    return DecennialActivePair(
+        major_profile=decennial_condition_profile(active_major),
+        sub_profile=decennial_condition_profile(active_sub) if active_sub else None,
+    )
+
+
+def decennial_active_path(
+    periods: list[DecennialPeriod],
+    jd: float,
+) -> DecennialActivePath | None:
+    """Return the full active Decennials lineage at *jd*, or None if no major is active."""
+    if not math.isfinite(jd):
+        raise ValueError(f"decennial_active_path: jd must be finite, got {jd!r}")
+    active_profiles = tuple(
+        decennial_condition_profile(period)
+        for period in sorted(
+            (period for period in periods if period.is_active_at(jd)),
+            key=lambda period: period.level,
+        )
+    )
+    if not active_profiles:
+        return None
+    return DecennialActivePath(profiles=active_profiles)
 
 
 @dataclass(slots=True)

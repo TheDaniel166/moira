@@ -74,6 +74,19 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
         facade = _facade_module()
         return facade.EclipseCalculator(reader=self._reader).calculate(dt)
 
+    def eclipse_hits_in_range(
+        self,
+        jd_start: float,
+        jd_end: float,
+        natal_positions: dict,
+        orb: float = 1.0,
+    ):
+        """Return eclipses in [jd_start, jd_end] that hit natal positions within *orb* degrees."""
+        facade = _facade_module()
+        return facade.EclipseCalculator(reader=self._reader).eclipse_hits_in_range(
+            jd_start, jd_end, natal_positions, orb=orb
+        )
+
     def speculum(self, chart, houses, geo_lat: float):
         """Compute the Placidus mundane speculum for a natal chart."""
         return _facade_module().speculum(chart, houses, geo_lat)
@@ -110,6 +123,11 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
         """Return heliocentric orbital nodes and apsides for all planets."""
         facade = _facade_module()
         return facade.all_planetary_nodes(facade.jd_from_datetime(dt))
+
+    def planetary_node(self, planet: str, dt: datetime):
+        """Return the heliocentric orbital node and apsides for one planet."""
+        facade = _facade_module()
+        return facade.planetary_node(planet, facade.jd_from_datetime(dt))
 
     def patterns(self, chart, orb_factor: float = 1.0):
         """Find all aspect patterns in a chart."""
@@ -187,6 +205,15 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
         return _facade_module().solar_condition_events_in_range(
             body, jd_start, jd_end, condition=condition, reader=self._reader
         )
+
+    def solar_condition_at(self, body: str, jd_ut: float):
+        """Return the solar proximity condition for *body* at *jd_ut*.
+
+        Returns a SolarConditionTruth with ``present``, ``condition``
+        (``"cazimi"`` / ``"combust"`` / ``"under_sunbeams"`` / ``None``),
+        ``label``, ``score``, and ``distance_from_sun``.
+        """
+        return _facade_module().solar_condition_at(body, jd_ut, reader=self._reader)
 
     def resonance(self, body1: str, body2: str):
         """Compute orbital resonance for two bodies."""

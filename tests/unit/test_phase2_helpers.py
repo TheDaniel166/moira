@@ -117,6 +117,16 @@ def test_houses_from_armc_sunshine_with_sun_lon():
     assert result.effective_system == HouseSystem.SUNSHINE
 
 
+def test_houses_from_armc_solar_sign_with_sun_lon():
+    result = houses_from_armc(
+        _ARMC_J2000, _OBL_J2000, _LAT_LONDON,
+        HouseSystem.SOLAR_SIGN, sun_longitude=280.0,
+    )
+    assert len(result.cusps) == 12
+    assert result.effective_system == HouseSystem.SOLAR_SIGN
+    assert result.cusps[0] == pytest.approx(270.0, abs=1e-9)
+
+
 def test_houses_from_armc_whole_sign():
     result = houses_from_armc(_ARMC_J2000, _OBL_J2000, _LAT_LONDON, HouseSystem.WHOLE_SIGN)
     # All cusps must be multiples of 30°
@@ -388,11 +398,12 @@ def test_calculate_houses_ayanamsa_offset_shifts_all_cusps():
 
 
 def test_calculate_houses_ayanamsa_offset_shifts_angles_not_armc():
-    """ASC, MC, vertex, anti_vertex shift; ARMC (equatorial) does not."""
+    """ASC, MC, east_point, vertex, anti_vertex shift; ARMC (equatorial) does not."""
     tropical = calculate_houses(_JD_J2000, _LAT_LONDON, _LON_LONDON)
     sidereal = calculate_houses(_JD_J2000, _LAT_LONDON, _LON_LONDON, ayanamsa_offset=_LAHIRI)
     assert abs(sidereal.asc         - (tropical.asc         - _LAHIRI) % 360.0) < 1e-9
     assert abs(sidereal.mc          - (tropical.mc          - _LAHIRI) % 360.0) < 1e-9
+    assert abs(sidereal.east_point  - (tropical.east_point  - _LAHIRI) % 360.0) < 1e-9
     assert abs(sidereal.vertex      - (tropical.vertex      - _LAHIRI) % 360.0) < 1e-9
     assert abs(sidereal.anti_vertex - (tropical.anti_vertex - _LAHIRI) % 360.0) < 1e-9
     assert abs(sidereal.armc - tropical.armc) < 1e-9

@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 from .spk_reader import SpkReader, get_reader
-from .transits import _auto_step, _require_non_empty_body, _validate_transit_range, _require_positive, TransitComputationPolicy, _validate_policy, _resolve_longitude
+from .transits import _auto_step, _require_non_empty_body, _validate_transit_range, _validate_search_motion, _require_positive, TransitComputationPolicy, _validate_policy, _resolve_longitude
 from .houses import calculate_houses, classify_house_system
 from .constants import Body
 from .julian import ut_to_tt
@@ -22,6 +22,7 @@ class HouseIngressEvent:
     house_index: int  # 1 through 12
     jd_exact: float
     longitude: float
+    search_motion: str = "forward"
 
 def _signed_diff(a: float, b: float) -> float:
     return (a - b + 180.0) % 360.0 - 180.0
@@ -67,6 +68,7 @@ def find_house_ingresses(
     step_days: float | None = None,
     reader: SpkReader | None = None,
     policy: TransitComputationPolicy | None = None,
+    search_motion: str = "forward",
 ) -> list[HouseIngressEvent]:
     """
     Find all house ingresses of `body` for a specific geographic location.
@@ -77,6 +79,7 @@ def find_house_ingresses(
     """
     _require_non_empty_body(body)
     _validate_transit_range(jd_start, jd_end)
+    _validate_search_motion(search_motion)
     if step_days is not None:
         _require_positive(step_days, "step_days")
     if reader is None:
@@ -89,7 +92,7 @@ def find_house_ingresses(
         step_days = 0.04 # roughly 1 hour
 
     events: list[HouseIngressEvent] = []
-    jd = jd_start
+    jd = jd_start if search_motion == "forward" else jd_end
     
     def _diffs(jd_val: float) -> list[float]:
         b_lon = _resolve_longitude(body, jd_val, reader)
@@ -98,8 +101,12 @@ def find_house_ingresses(
 
     diffs_prev = _diffs(jd)
 
-    while jd < jd_end:
-        jd_next = min(jd + step_days, jd_end)
+    while (jd < jd_end) if search_motion == "forward" else (jd > jd_start):
+        jd_next = (
+            min(jd + step_days, jd_end)
+            if search_motion == "forward"
+            else max(jd - step_days, jd_start)
+        )
         diffs_next = _diffs(jd_next)
 
         for i in range(12):
@@ -113,13 +120,14 @@ def find_house_ingresses(
             # In predictive astrology, geographic house transits typically refer to 
             # exactly this daily phenomenon!
             if diffs_prev[i] * diffs_next[i] < 0 and abs(diffs_prev[i]) < 90.0 and abs(diffs_next[i]) < 90.0:
-                jd_exact = _find_house_crossing(body, i + 1, jd, jd_next, lat, lon, system, reader, tol_days=1e-5)
+                jd_exact = _find_house_crossing(body, i + 1, min(jd, jd_next), max(jd, jd_next), lat, lon, system, reader, tol_days=1e-5)
                 exact_lon = _resolve_longitude(body, jd_exact, reader)
                 events.append(HouseIngressEvent(
                     body=body,
                     house_index=i + 1,
                     jd_exact=jd_exact,
-                    longitude=exact_lon
+                    longitude=exact_lon,
+                    search_motion=search_motion,
                 ))
 
         jd = jd_next

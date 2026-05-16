@@ -542,7 +542,7 @@ class TestWraparoundBoundaryCases:
 # ===========================================================================
 
 class TestSystemFamiliesBoundary:
-    """describe_boundary() works for all 19 system families via live calculations."""
+    """describe_boundary() works for all supported system families via live calculations."""
 
     @pytest.fixture(autouse=True)
     def _setup(self, jd_j2000):
@@ -551,7 +551,7 @@ class TestSystemFamiliesBoundary:
     @pytest.mark.parametrize("system", [
         HouseSystem.EQUAL, HouseSystem.WHOLE_SIGN, HouseSystem.PORPHYRY,
         HouseSystem.PLACIDUS, HouseSystem.CAMPANUS, HouseSystem.REGIOMONTANUS,
-        HouseSystem.MORINUS, HouseSystem.VEHLOW, HouseSystem.SUNSHINE,
+        HouseSystem.MORINUS, HouseSystem.VEHLOW, HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN,
         HouseSystem.KOCH, HouseSystem.ALCABITIUS, HouseSystem.MERIDIAN,
         HouseSystem.AZIMUTHAL, HouseSystem.TOPOCENTRIC, HouseSystem.KRUSINSKI,
         HouseSystem.APC, HouseSystem.CARTER, ])

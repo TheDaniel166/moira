@@ -783,7 +783,7 @@ class TestPreservationVesselTables:
     def test_house_cusps_fields_preserved(self):
         """HouseCusps vessel fields must be unchanged."""
         self._assert_table_present_and_stable("HouseCusps", [
-            "cusps", "asc", "mc", "armc", "vertex", "system",
+            "cusps", "asc", "mc", "armc", "east_point", "vertex", "system",
         ])
 
     def test_aspect_data_fields_preserved(self):

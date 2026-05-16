@@ -422,6 +422,10 @@ class TestSystemFamilies:
         pl = self._place(HouseSystem.SUNSHINE, 0.0)
         assert 1 <= pl.house <= 12
 
+    def test_solar_sign_family(self):
+        pl = self._place(HouseSystem.SOLAR_SIGN, 0.0)
+        assert 1 <= pl.house <= 12
+
     def test_koch_quadrant_family(self):
         pl = self._place(HouseSystem.KOCH, 0.0)
         assert 1 <= pl.house <= 12
@@ -518,6 +522,12 @@ class TestSystemFamilies:
         hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.WHOLE_SIGN)
         houses = {assign_house(d / 10.0, hc).house for d in range(3600)}
         assert houses == set(range(1, 13))
+
+    def test_solar_sign_cusps_are_30_apart(self):
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.SOLAR_SIGN)
+        for i in range(12):
+            diff = (hc.cusps[(i + 1) % 12] - hc.cusps[i]) % 360.0
+            assert diff == pytest.approx(30.0, abs=1e-8)
 
 
 # ===========================================================================

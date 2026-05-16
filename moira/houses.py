@@ -200,6 +200,7 @@ __all__ = [
     "HousePolicy",
     # Result vessels
     "HouseCusps",
+    "DerivedHouseCusps",
     "HousePlacement",
     "HouseBoundaryProfile",
     "HouseAngularity",
@@ -210,6 +211,7 @@ __all__ = [
     "HouseDistributionProfile",
     # Public entry points
     "calculate_houses",
+    "derived_houses",
     "houses_from_armc",
     "assign_house",
     "body_house_position",
@@ -281,8 +283,8 @@ class HouseSystemFamily(str, Enum):
         30° sign divisions regardless of ASC degree within the sign.
 
     SOLAR
-        The Sun's ecliptic position replaces the ASC as the basis for house
-        division.  Includes: SUNSHINE.
+        The Sun anchors the house frame instead of the Ascendant. Includes:
+        SUNSHINE and SOLAR_SIGN.
     """
     EQUAL      = "equal"
     QUADRANT   = "quadrant"
@@ -297,7 +299,7 @@ class HouseSystemCuspBasis(str, Enum):
     ECLIPTIC
         Cusps are placed at equal intervals directly on the ecliptic (or at
         sign boundaries).  No projection from another frame is needed.
-        Systems: WHOLE_SIGN, EQUAL, VEHLOW.
+        Systems: WHOLE_SIGN, EQUAL, VEHLOW, SOLAR_SIGN.
 
     EQUATORIAL
         Equal 30° divisions of the celestial equator are projected onto the
@@ -430,6 +432,7 @@ _CLASSIFICATIONS: dict[str, HouseSystemClassification] = {
     HouseSystem.KRUSINSKI:     HouseSystemClassification(_F.QUADRANT,   _CB.GREAT_CIRCLE,        True,  True),
     HouseSystem.APC:           HouseSystemClassification(_F.QUADRANT,   _CB.APC_FORMULA,         True,  True),
     HouseSystem.SUNSHINE:      HouseSystemClassification(_F.SOLAR,      _CB.SOLAR_POSITION,      False, True),
+    HouseSystem.SOLAR_SIGN:    HouseSystemClassification(_F.SOLAR,      _CB.ECLIPTIC,            False, True),
 }
 
 def classify_house_system(code: str) -> HouseSystemClassification:
@@ -476,7 +479,7 @@ _KNOWN_SYSTEMS: frozenset[str] = frozenset({
     HouseSystem.PLACIDUS, HouseSystem.KOCH, HouseSystem.CAMPANUS,
     HouseSystem.REGIOMONTANUS, HouseSystem.ALCABITIUS, HouseSystem.MORINUS,
     HouseSystem.TOPOCENTRIC, HouseSystem.MERIDIAN, HouseSystem.VEHLOW,
-    HouseSystem.SUNSHINE, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
+    HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
     HouseSystem.KRUSINSKI,
     HouseSystem.APC,
 })
@@ -628,9 +631,9 @@ class HouseCusps:
     RESULT VESSEL: The complete output of one calculate_houses() call.
 
     Carries twelve ecliptic house cusp longitudes, the four angular points
-    (ASC, MC, DSC, IC), ARMC, Vertex, and Anti-Vertex for a single chart
-    moment and observer location, together with the full computation trail
-    that produced them.
+    (ASC, MC, DSC, IC), ARMC, East Point, Vertex, and Anti-Vertex for a
+    single chart moment and observer location, together with the full
+    computation trail that produced them.
 
     Cusps are indexed 0–11; house n has its opening cusp at cusps[n-1].
 
@@ -678,6 +681,7 @@ class HouseCusps:
     asc:              float                # Ascendant
     mc:               float                # Midheaven
     armc:             float                # ARMC (Right Ascension of MC)
+    east_point:       float | None = None  # East Point / Equatorial Ascendant (ARMC+90° projected at 0° latitude)
     vertex:           float | None = None  # Vertex (western prime-vertical / ecliptic intersection)
     anti_vertex:      float | None = None  # Anti-Vertex (opposite Vertex)
     effective_system: str                          = ""      # House system code actually used for computation
@@ -778,6 +782,98 @@ class HouseCusps:
     def sign_of_cusp(self, house: int) -> tuple[str, str, float]:
         """Return (sign, symbol, degree_within_sign) for house 1–12."""
         return sign_of(self.cusps[house - 1])
+
+
+# ---------------------------------------------------------------------------
+# Derived / turned houses
+# ---------------------------------------------------------------------------
+
+@dataclass(frozen=True, slots=True)
+class DerivedHouseCusps:
+    """Turned house wheel pivoted at a chosen natal house cusp.
+
+    In the traditional technique, any natal house cusp may be treated as the
+    new Ascendant of a derived chart — most commonly used to read the houses
+    of a third party from a natal chart (e.g. house 7 for the partner, house
+    4 for a parent, house 5 for a child).
+
+    Attributes
+    ----------
+    pivot_house : int
+        The natal house number (1–12) whose cusp becomes derived house 1.
+    cusps : tuple[float, ...]
+        Twelve ecliptic longitudes in degrees [0, 360). ``cusps[n-1]`` is the
+        opening cusp of derived house *n*.  ``cusps[0]`` equals
+        ``source.cusps[pivot_house - 1]``.
+    source : HouseCusps
+        The original natal house wheel this derived wheel was built from.
+    """
+
+    pivot_house: int
+    cusps:       tuple[float, ...]
+    source:      HouseCusps
+
+    def __post_init__(self) -> None:
+        if not 1 <= self.pivot_house <= 12:
+            raise ValueError(
+                f"DerivedHouseCusps: pivot_house must be 1–12, got {self.pivot_house}"
+            )
+        if len(self.cusps) != 12:
+            raise ValueError(
+                f"DerivedHouseCusps: expected 12 cusps, got {len(self.cusps)}"
+            )
+        expected = self.source.cusps[self.pivot_house - 1]
+        if abs(self.cusps[0] - expected) % 360.0 > 1e-9:
+            raise ValueError(
+                f"DerivedHouseCusps: cusps[0]={self.cusps[0]:.9f} does not match "
+                f"source.cusps[{self.pivot_house - 1}]={expected:.9f}"
+            )
+
+    def sign_of_cusp(self, house: int) -> tuple[str, str, float]:
+        """Return (sign, symbol, degree_within_sign) for derived house 1–12."""
+        return sign_of(self.cusps[house - 1])
+
+
+def derived_houses(house_cusps: HouseCusps, from_house: int) -> DerivedHouseCusps:
+    """Rotate the natal house wheel so that ``from_house`` becomes house 1.
+
+    No astronomical computation is performed.  The function operates entirely
+    on the cusp longitudes already present in *house_cusps*.
+
+    Parameters
+    ----------
+    house_cusps : HouseCusps
+        The natal house wheel to rotate.
+    from_house : int
+        Natal house number (1–12) that becomes the new first house.  House 1
+        returns the original wheel unchanged.
+
+    Returns
+    -------
+    DerivedHouseCusps
+        A frozen vessel whose ``cusps[n-1]`` is the opening cusp of derived
+        house *n*, and whose ``cusps[0]`` equals
+        ``house_cusps.cusps[from_house - 1]``.
+
+    Raises
+    ------
+    ValueError
+        If *from_house* is not in 1–12.
+
+    Examples
+    --------
+    Derived houses from the 7th (partner's chart)::
+
+        natal = calculate_houses(jd, lat, lon, system="P")
+        partner = derived_houses(natal, from_house=7)
+        # partner.cusps[0] == natal.cusps[6]   (7th cusp becomes H1)
+        # partner.cusps[6] == natal.cusps[0]   (ASC becomes partner's H7)
+    """
+    if not 1 <= from_house <= 12:
+        raise ValueError(f"derived_houses: from_house must be 1–12, got {from_house}")
+    offset = from_house - 1
+    rotated = tuple(house_cusps.cusps[(offset + i) % 12] for i in range(12))
+    return DerivedHouseCusps(pivot_house=from_house, cusps=rotated, source=house_cusps)
 
 
 # ---------------------------------------------------------------------------
@@ -1606,6 +1702,20 @@ def _sunshine(sun_lon: float, lat: float, obliquity: float) -> list[float]:
     return _finalize_cusps(cusps, context="_sunshine")
 
 
+def _solar_sign(sun_lon: float) -> list[float]:
+    """
+    Traditional solar-sign frame.
+
+    House 1 begins at 0° of the Sun's sign. The remaining houses proceed by
+    30° sign succession. This is sign-anchored rather than degree-anchored:
+    the Sun's exact longitude determines the sign, but not the intra-sign
+    offset of cusp 1.
+    """
+    sign_start = math.floor((sun_lon % 360.0) / 30.0) * 30.0
+    cusps = [(sign_start + i * 30.0) % 360.0 for i in range(12)]
+    return _finalize_cusps(cusps, context="_solar_sign")
+
+
 # ---------------------------------------------------------------------------
 # Azimuthal (Horizontal) Houses
 # ---------------------------------------------------------------------------
@@ -2208,7 +2318,7 @@ def calculate_houses(
 
     Side effects:
         - Lazily imports moira.planets.sun_longitude when system is
-          HouseSystem.SUNSHINE; no other import-time side effects.
+          HouseSystem.SUNSHINE or HouseSystem.SOLAR_SIGN; no other import-time side effects.
     """
     active_policy = _normalize_house_policy(policy)
     jd_tt    = ut_to_tt(jd_ut)
@@ -2225,7 +2335,7 @@ def calculate_houses(
     anti_vertex = (vertex + 180.0) % 360.0
 
     sun_lon = None
-    if system == HouseSystem.SUNSHINE:
+    if system in {HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN}:
         from .planets import sun_longitude
         sun_lon = sun_longitude(jd_ut)
 
@@ -2683,7 +2793,7 @@ class HouseAngularity(str, Enum):
     Doctrine scope at this phase:
         This classification is purely house-number-based.  No cusp proximity,
         no orb, no near-cusp sensitivity, and no system-family adjustments are
-        applied.  The mapping is universal across all 19 supported house systems
+        applied.  The mapping is universal across all 18 supported house systems
         because it is derived from the assigned house number alone.
 
     Future phases that are NOT the responsibility of this enum:
@@ -2797,7 +2907,7 @@ def describe_angularity(placement: HousePlacement) -> HouseAngularityProfile:
 
         The mapping is purely house-number-based.  No cusp proximity, no orb,
         no latitude sensitivity, and no system-family differences are applied
-        at this phase.  The doctrine is identical for all 19 supported house
+        at this phase.  The doctrine is identical for all 18 supported house
         systems because it derives from the assigned house number alone.
 
     RELATIONSHIP WITH OTHER LAYERS:
@@ -3370,6 +3480,7 @@ def houses_from_armc(
     active_policy = _normalize_house_policy(policy)
     mc          = _mc_from_armc(armc, obliquity, lat)
     asc         = _asc_from_armc(armc, obliquity, lat)
+    east_point  = _project_ra_morinus((armc + 90.0) % 360.0, obliquity)
     vertex      = _asc_from_armc((armc + 90.0) % 360.0, obliquity, -lat)
     anti_vertex = (vertex + 180.0) % 360.0
     critical_lat = 90.0 - obliquity
@@ -3449,6 +3560,12 @@ def houses_from_armc(
                 "houses_from_armc: sun_longitude is required for HouseSystem.SUNSHINE"
             )
         cusps = _sunshine(sun_longitude, lat, obliquity)
+    elif effective_system == HouseSystem.SOLAR_SIGN:
+        if sun_longitude is None:
+            raise ValueError(
+                "houses_from_armc: sun_longitude is required for HouseSystem.SOLAR_SIGN"
+            )
+        cusps = _solar_sign(sun_longitude)
     elif effective_system == HouseSystem.AZIMUTHAL:
         cusps = _azimuthal(armc, obliquity, lat)
     elif effective_system == HouseSystem.CARTER:
@@ -3467,6 +3584,7 @@ def houses_from_armc(
         asc=normalize_degrees(asc - _shift),
         mc=normalize_degrees(mc - _shift),
         armc=normalize_degrees(armc),
+        east_point=normalize_degrees(east_point - _shift),
         vertex=normalize_degrees(vertex - _shift),
         anti_vertex=normalize_degrees(anti_vertex - _shift),
         effective_system=effective_system,

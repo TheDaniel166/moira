@@ -97,6 +97,7 @@ from .geoutils import (
 
 __all__ = [
     "EclipseData", "EclipseEvent", "EclipseType", "EclipseCalculator",
+    "EclipseHit",
     "SolarBodyCircumstances", "SolarEclipseLocalCircumstances",
     "LocalContactCircumstances",
     "LunarEclipseAnalysis",
@@ -769,6 +770,24 @@ class SolarEclipseLocalCircumstances:
     moon: SolarBodyCircumstances
     topocentric_separation_deg: float
     topocentric_overlap: bool
+
+
+@dataclass(frozen=True, slots=True)
+class EclipseHit:
+    """A single eclipse-to-natal contact: one eclipse touching one natal point.
+
+    ``eclipse_longitude`` is the active degree of the eclipse — the
+    Sun/Moon conjunction degree for solar eclipses, and whichever axis end
+    (Moon or opposition Sun) triggered the match for lunar eclipses.
+    ``orb`` is the actual angular separation in degrees (≤ the requested orb).
+    """
+
+    event: "EclipseEvent"
+    eclipse_longitude: float
+    eclipse_kind: str        # "solar" | "lunar"
+    target_name: str
+    target_longitude: float
+    orb: float
 
 
 # ---------------------------------------------------------------------------
@@ -1813,6 +1832,130 @@ class EclipseCalculator:
 
         direction = "previous" if backward else "next"
         raise RuntimeError(f"No {direction} solar eclipse of kind {kind!r} found")
+
+    def solar_eclipses_in_range(
+        self,
+        jd_start: float,
+        jd_end: float,
+    ) -> list[EclipseEvent]:
+        """Return all solar eclipses whose maximum falls within [jd_start, jd_end].
+
+        Chains successive ``next_solar_eclipse`` calls, advancing past each
+        found event, until the next eclipse maximum falls after *jd_end*.
+        """
+        events: list[EclipseEvent] = []
+        jd = jd_start
+        while True:
+            event = self.next_solar_eclipse(jd)
+            if event.jd_ut > jd_end:
+                break
+            events.append(event)
+            jd = event.jd_ut + 1.0
+        return events
+
+    def lunar_eclipses_in_range(
+        self,
+        jd_start: float,
+        jd_end: float,
+    ) -> list[EclipseEvent]:
+        """Return all lunar eclipses whose maximum falls within [jd_start, jd_end].
+
+        Chains successive ``next_lunar_eclipse`` calls, advancing past each
+        found event, until the next eclipse maximum falls after *jd_end*.
+        """
+        events: list[EclipseEvent] = []
+        jd = jd_start
+        while True:
+            event = self.next_lunar_eclipse(jd)
+            if event.jd_ut > jd_end:
+                break
+            events.append(event)
+            jd = event.jd_ut + 1.0
+        return events
+
+    def eclipse_hits_in_range(
+        self,
+        jd_start: float,
+        jd_end: float,
+        natal_positions: dict[str, float],
+        orb: float = 1.0,
+    ) -> list["EclipseHit"]:
+        """Return every eclipse in [jd_start, jd_end] that falls within *orb*
+        degrees of any natal position.
+
+        For solar eclipses the active longitude is the Sun/Moon conjunction
+        degree (``data.sun_longitude``).  For lunar eclipses both the Moon
+        degree (``data.moon_longitude``) and the opposition Sun degree are
+        checked, since a lunar eclipse activates both axis ends.
+
+        Parameters
+        ----------
+        jd_start, jd_end : float
+            Julian Day range (Universal Time) to search.
+        natal_positions : dict[str, float]
+            Mapping of point name → ecliptic longitude (degrees) for the
+            natal chart — e.g. ``{"Sun": 15.3, "Moon": 220.1, "ASC": 5.0}``.
+        orb : float
+            Maximum angular separation in degrees for a hit to be recorded.
+            Default is 1.0°.
+
+        Returns
+        -------
+        list[EclipseHit]
+            One entry per (eclipse, natal point) pair that falls within *orb*.
+            Sorted by eclipse Julian Day, then by target name.
+        """
+        hits: list[EclipseHit] = []
+
+        for event in self.solar_eclipses_in_range(jd_start, jd_end):
+            eclipse_lon = event.data.sun_longitude
+            for name, natal_lon in natal_positions.items():
+                sep = _ecliptic_arc(eclipse_lon, natal_lon)
+                if sep <= orb:
+                    hits.append(EclipseHit(
+                        event=event,
+                        eclipse_longitude=eclipse_lon,
+                        eclipse_kind="solar",
+                        target_name=name,
+                        target_longitude=natal_lon,
+                        orb=sep,
+                    ))
+
+        for event in self.lunar_eclipses_in_range(jd_start, jd_end):
+            moon_lon = event.data.moon_longitude
+            sun_lon  = event.data.sun_longitude
+            for name, natal_lon in natal_positions.items():
+                sep_moon = _ecliptic_arc(moon_lon, natal_lon)
+                if sep_moon <= orb:
+                    hits.append(EclipseHit(
+                        event=event,
+                        eclipse_longitude=moon_lon,
+                        eclipse_kind="lunar",
+                        target_name=name,
+                        target_longitude=natal_lon,
+                        orb=sep_moon,
+                    ))
+                    continue
+                sep_sun = _ecliptic_arc(sun_lon, natal_lon)
+                if sep_sun <= orb:
+                    hits.append(EclipseHit(
+                        event=event,
+                        eclipse_longitude=sun_lon,
+                        eclipse_kind="lunar",
+                        target_name=name,
+                        target_longitude=natal_lon,
+                        orb=sep_sun,
+                    ))
+
+        hits.sort(key=lambda h: (h.event.jd_ut, h.target_name))
+        return hits
+
+
+def _ecliptic_arc(lon_a: float, lon_b: float) -> float:
+    """Shortest arc in degrees between two ecliptic longitudes."""
+    diff = abs(lon_a - lon_b) % 360.0
+    return min(diff, 360.0 - diff)
+
 
 def _galactic_center_lon_jd(jd: float) -> float:
     """Galactic Center ecliptic longitude precessed from J2000 to *jd*."""

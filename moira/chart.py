@@ -9,7 +9,7 @@ house calculation to houses, and time conversion to julian. Does not own aspect
 detection, lot computation, synastry analysis, or any display formatting.
 
 Public surface:
-    ChartContext, create_chart()
+    ChartContext, create_chart(), relocated_chart()
 
 Import-time side effects: None
 
@@ -240,4 +240,68 @@ def create_chart(
         planets=planets,
         nodes=nodes,
         houses=houses
+    )
+
+
+def relocated_chart(
+    chart: ChartContext,
+    latitude: float,
+    longitude: float,
+    house_system: str | None = None,
+    policy: HousePolicy | None = None,
+) -> ChartContext:
+    """
+    Recast an existing chart snapshot for a new geographic location.
+
+    This relocation wrapper preserves the source chart's celestial snapshot
+    (Julian Day, planetary positions, and node positions) and recalculates
+    only the local house frame for the supplied site. It therefore exposes the
+    standard astrological relocation workflow without inventing a second chart
+    assembly path.
+
+    Args:
+        chart: Existing ChartContext whose moment and celestial snapshot are to
+            be preserved.
+        latitude: New geographic latitude in decimal degrees, in [-90.0, 90.0].
+        longitude: New geographic longitude in decimal degrees, in
+            [-180.0, 180.0].
+        house_system: Optional replacement house system. When None, preserves
+            the source chart's requested house system if present, else defaults
+            to Placidus.
+        policy: Optional HousePolicy governing house fallback doctrine.
+
+    Returns:
+        A new ChartContext at the relocated site with identical planets/nodes
+        and a newly calculated HouseCusps vessel.
+    """
+    if not isinstance(chart, ChartContext):
+        raise TypeError("chart must be a ChartContext")
+    if not -90.0 <= latitude <= 90.0:
+        raise ValueError(f"latitude must be in [-90, 90], got {latitude}")
+    if not -180.0 <= longitude <= 180.0:
+        raise ValueError(f"longitude must be in [-180, 180], got {longitude}")
+
+    requested_system = house_system
+    if requested_system is None:
+        if chart.houses is not None:
+            requested_system = chart.houses.system
+        else:
+            requested_system = HouseSystem.PLACIDUS
+
+    houses = calculate_houses(
+        chart.jd_ut,
+        latitude,
+        longitude,
+        system=requested_system,
+        policy=policy,
+    )
+
+    return ChartContext(
+        jd_ut=chart.jd_ut,
+        jd_tt=chart.jd_tt,
+        latitude=latitude,
+        longitude=longitude,
+        planets=dict(chart.planets),
+        nodes=dict(chart.nodes),
+        houses=houses,
     )

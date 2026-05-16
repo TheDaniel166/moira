@@ -17,6 +17,7 @@ from .transits import (
     _auto_step,
     _require_non_empty_body,
     _validate_transit_range,
+    _validate_search_motion,
     _require_positive,
     TransitComputationPolicy,
     _validate_policy,
@@ -38,6 +39,7 @@ class AspectTransitEvent:
     jd_entering: float | None
     jd_leaving: float | None
     is_retrograde_hit: bool
+    search_motion: str = "forward"
 
 def _signed_diff(a: float, b: float) -> float:
     """Signed angular difference a − b, normalised to (−180, +180]."""
@@ -162,6 +164,7 @@ def _process_aspect_hit(
     jd_end: float,
     reader: SpkReader,
     policy: TransitComputationPolicy,
+    search_motion: str,
 ) -> AspectTransitEvent:
     """Refine a candidate window into a high-precision AspectTransitEvent."""
     # Exact hit
@@ -205,7 +208,8 @@ def _process_aspect_hit(
         jd_exact=jd_exact,
         jd_entering=jd_ent,
         jd_leaving=jd_lea,
-        is_retrograde_hit=is_retrograde
+        is_retrograde_hit=is_retrograde,
+        search_motion=search_motion,
     )
 
 def find_aspect_transits(
@@ -218,6 +222,7 @@ def find_aspect_transits(
     step_days: float | None = None,
     reader: SpkReader | None = None,
     policy: TransitComputationPolicy | None = None,
+    search_motion: str = "forward",
 ) -> list[AspectTransitEvent]:
     """
     Find all aspect transits of `body` to `target` at `angle` within a date range.
@@ -225,6 +230,7 @@ def find_aspect_transits(
     """
     _require_non_empty_body(body)
     _validate_transit_range(jd_start, jd_end)
+    _validate_search_motion(search_motion)
     if orb < 0:
         raise ValueError("Orb must be non-negative")
     if step_days is not None:
@@ -242,12 +248,13 @@ def find_aspect_transits(
         windows = _find_candidate_windows_native(body, target, angle, jd_start, jd_end, 1.0, reader)
         if windows:
             events = []
-            for jd_lo, jd_hi in windows:
+            ordered_windows = windows if search_motion == "forward" else list(reversed(windows))
+            for jd_lo, jd_hi in ordered_windows:
                 # Pad window slightly to ensure bisection doesn't miss if crossing is near boundary
                 events.append(_process_aspect_hit(
                     body, target, angle, orb, 
                     max(jd_start, jd_lo - 0.1), min(jd_end, jd_hi + 0.1),
-                    jd_start, jd_end, reader, policy
+                    jd_start, jd_end, reader, policy, search_motion
                 ))
             return events
         # If native scanner found zero windows, we are done (planetary aspects are well-behaved)
@@ -255,19 +262,37 @@ def find_aspect_transits(
 
     # --- FALLBACK / REFINEMENT LOOP ---
     events: list[AspectTransitEvent] = []
-    jd = jd_start
+    jd = jd_start if search_motion == "forward" else jd_end
     l1_prev = _resolve_longitude(body, jd, reader)
     l2_prev = _resolve_longitude(target, jd, reader)
     diff_prev = _signed_diff(l1_prev, l2_prev + angle)
 
-    while jd < jd_end:
-        jd_next = min(jd + step_days, jd_end)
+    while (jd < jd_end) if search_motion == "forward" else (jd > jd_start):
+        jd_next = (
+            min(jd + step_days, jd_end)
+            if search_motion == "forward"
+            else max(jd - step_days, jd_start)
+        )
         l1_next = _resolve_longitude(body, jd_next, reader)
         l2_next = _resolve_longitude(target, jd_next, reader)
         diff_next = _signed_diff(l1_next, l2_next + angle)
 
         if (diff_prev * diff_next < 0 and abs(diff_prev) < 90.0 and abs(diff_next) < 90.0):
-            events.append(_process_aspect_hit(body, target, angle, orb, jd, jd_next, jd_start, jd_end, reader, policy))
+            events.append(
+                _process_aspect_hit(
+                    body,
+                    target,
+                    angle,
+                    orb,
+                    min(jd, jd_next),
+                    max(jd, jd_next),
+                    jd_start,
+                    jd_end,
+                    reader,
+                    policy,
+                    search_motion,
+                )
+            )
 
         jd = jd_next
         diff_prev = diff_next

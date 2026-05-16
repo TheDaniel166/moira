@@ -29,7 +29,7 @@ A **house cusp** in Moira is:
 | *ecliptic longitude* | Degrees along the ecliptic, normalised to `[0, 360)` by `normalize_degrees` |
 | *observer location* | Geographic latitude `[-90, 90]` and longitude `[-180, 180]` in decimal degrees |
 | *Julian date* | UT1-based Julian day number |
-| *house system* | One of the 19 recognised `HouseSystem` codes |
+| *house system* | One of the 18 recognised `HouseSystem` codes |
 
 Twelve cusps are always produced. No system produces fewer or more than 12.
 
@@ -133,7 +133,7 @@ A function in phase N:
 
 ### 3. Supported Systems
 
-19 house system codes are recognised. `_KNOWN_SYSTEMS` is the authoritative frozenset.
+18 house system codes are recognised. `_KNOWN_SYSTEMS` is the authoritative frozenset.
 
 | Code | Name | Family | Cusp basis | Lat-sensitive | Polar-capable |
 |---|---|---|---|---|---|
@@ -142,6 +142,7 @@ A function in phase N:
 | `V` | Vehlow | `EQUAL` | `ECLIPTIC` | No | Yes |
 | `M` | Morinus | `EQUAL` | `EQUATORIAL` | No | Yes |
 | `X` | Meridian | `EQUAL` | `EQUATORIAL` | No | Yes |
+| `S` | Solar Sign | `SOLAR` | `ECLIPTIC` | No | Yes |
 | `O` | Porphyry | `QUADRANT` | `QUADRANT_TRISECTION` | Yes | Yes |
 | `P` | Placidus | `QUADRANT` | `SEMI_ARC` | Yes | **No** |
 | `B` | Alcabitius | `QUADRANT` | `SEMI_ARC` | Yes | Yes |
@@ -181,7 +182,7 @@ The houses backend delegates to external modules without redefining them.
 | Nutation | `moira.obliquity.nutation` | `(dpsi, deps)` in degrees |
 | Local sidereal time | `moira.julian.local_sidereal_time` | ARMC in degrees |
 | Sign labelling | `moira.constants.sign_of` | `(name, symbol, degree_within_sign)` |
-| Sun longitude (Sunshine only) | `moira.planets.sun_longitude` | Degrees; lazily imported |
+| Sun longitude (Sunshine / Solar Sign) | `moira.planets.sun_longitude` | Degrees; lazily imported |
 
 The backend does not redefine any of these. Changes to those modules propagate
 automatically to all cusp computations.
@@ -237,7 +238,7 @@ All public names are declared in the module `moira/houses.py`.
 | `_MEMBERSHIP_CUSP_TOLERANCE` | `1e-9` | Degrees; threshold for `exact_on_cusp` detection |
 | `_NEAR_CUSP_DEFAULT_THRESHOLD` | `3.0` | Degrees; default for `describe_boundary` |
 | `_POLAR_SYSTEMS` | `frozenset{'P','K','PS'}` | Systems that produce invalid cusps above the critical latitude |
-| `_KNOWN_SYSTEMS` | `frozenset` of 19 codes | All recognised `HouseSystem` values |
+| `_KNOWN_SYSTEMS` | `frozenset` of 18 codes | All recognised `HouseSystem` values |
 | `_ANGULARITY_MAP` | `dict[int, HouseAngularity]` | Static 12-entry lookup; never recomputed |
 
 ---
@@ -485,7 +486,7 @@ or monkey-patched to hide real failures.
 | Layer | Must test |
 |---|---|
 | Truth preservation | `system` unchanged after fallback; `effective_system` matches what ran; `fallback` is `True` iff they differ; `fallback_reason` is None iff `fallback` is False |
-| Classification | `classify_house_system` returns correct family and cusp_basis for all 19 recognised codes and raises on unknown codes |
+| Classification | `classify_house_system` returns correct family and cusp_basis for all 18 recognised codes and raises on unknown codes |
 | Inspectability | `__post_init__` raises concrete runtime exceptions (`ValueError` / `TypeError`) for violated invariants; properties are consistent with classification |
 | Policy | Default policy produces no raise; strict policy raises `ValueError` on both polar and unknown triggers; error messages match §6.3 patterns |
 | Membership | Every longitude in `[0, 360)` maps to exactly one house; opening cusp belongs to its house; `exact_on_cusp` fires within `1e-9°`; wraparound cusps are handled correctly |

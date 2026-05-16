@@ -26,6 +26,15 @@ A **transit event** in Moira is:
 > between a moving body and a resolved target longitude, then refining the
 > crossing by bisection.
 
+`next_transit` now admits explicit search motion:
+
+- `forward` searches from the reference Julian Day into the future
+- `backward` searches from the reference Julian Day into the past
+
+`find_transits` preserves an ordered range input, but may traverse that range
+in either `forward` or `backward` search motion. Its output ordering follows
+the chosen search motion deterministically.
+
 The computational core remains the authority for:
 
 - target resolution
@@ -230,6 +239,7 @@ The current default doctrine embodies:
 - auto-selected scan cadence by body through `_auto_step`
 - local bisection tolerance of `1e-6` days where not overridden
 - sign-change gating through signed angular difference
+- explicit search motion through `search_motion='forward'|'backward'`
 
 This doctrine governs search cadence and local refinement only.
 
@@ -407,6 +417,7 @@ Malformed public inputs must fail clearly with `ValueError`, including at least:
 - non-finite Julian Days
 - non-finite target or natal longitudes
 - invalid direction filters
+- invalid search-motion values
 - non-positive search windows or step sizes
 - unordered or zero-width date ranges where current API requires increasing ranges
 - unresolved target specifications

@@ -52,6 +52,7 @@ from moira.transits import (
     planet_return,
     prenatal_syzygy,
     solar_return,
+    solar_return_chart,
     transit_chart_condition_profile,
     transit_condition_network_profile,
     transit_condition_profiles,
@@ -95,6 +96,67 @@ def test_solar_return_uses_tropical_year_for_search_seed(monkeypatch: pytest.Mon
     assert captured["target_lon"] == natal_sun_lon
     assert captured["direction"] == "direct"
     assert captured["jd_start"] == pytest.approx(expected_start, abs=1e-12)
+
+
+def test_solar_return_chart_delegates_to_return_search_and_chart_assembly(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, object] = {}
+
+    def _fake_solar_return(
+        natal_sun_lon: float,
+        year: int,
+        reader: object | None = None,
+        policy: object | None = None,
+    ) -> float:
+        captured["return_args"] = (natal_sun_lon, year)
+        captured["return_reader"] = reader
+        captured["return_policy"] = policy
+        return 2460123.25
+
+    def _fake_create_chart(
+        jd_ut: float,
+        latitude: float,
+        longitude: float,
+        house_system: str,
+        bodies: list[str] | None = None,
+        reader: object | None = None,
+        policy: object | None = None,
+    ) -> object:
+        captured["chart_args"] = (jd_ut, latitude, longitude)
+        captured["house_system"] = house_system
+        captured["bodies"] = bodies
+        captured["chart_reader"] = reader
+        captured["house_policy"] = policy
+        return {"jd_ut": jd_ut, "latitude": latitude, "longitude": longitude}
+
+    monkeypatch.setattr(transits_module, "solar_return", _fake_solar_return)
+    monkeypatch.setattr(transits_module, "create_chart", _fake_create_chart)
+
+    fake_reader = object()
+    return_policy = object()
+    house_policy = object()
+    result = solar_return_chart(
+        123.45,
+        2026,
+        40.7128,
+        -74.0060,
+        house_system="W",
+        bodies=[Body.SUN, Body.MOON],
+        reader=fake_reader,
+        return_policy=return_policy,
+        house_policy=house_policy,
+    )
+
+    assert result == {"jd_ut": 2460123.25, "latitude": 40.7128, "longitude": -74.0060}
+    assert captured["return_args"] == (123.45, 2026)
+    assert captured["return_reader"] is fake_reader
+    assert captured["return_policy"] is return_policy
+    assert captured["chart_args"] == (2460123.25, 40.7128, -74.0060)
+    assert captured["house_system"] == "W"
+    assert captured["bodies"] == [Body.SUN, Body.MOON]
+    assert captured["chart_reader"] is fake_reader
+    assert captured["house_policy"] is house_policy
 
 
 @pytest.mark.requires_ephemeris
@@ -179,6 +241,54 @@ def test_find_transits_captures_mercury_retrograde_multi_passes() -> None:
     assert {event.direction for event in events} >= {"direct", "retrograde"}
     for event in events:
         assert _angle_diff(planet_at(Body.MERCURY, event.jd_ut).longitude, natal_point) < 1e-3
+
+
+@pytest.mark.requires_ephemeris
+def test_next_transit_supports_backward_search_motion_for_previous_crossing() -> None:
+    start = jd_from_datetime(datetime(2024, 3, 25, 0, 0, tzinfo=timezone.utc))
+
+    previous_event = next_transit(
+        Body.SUN,
+        0.0,
+        start,
+        direction="direct",
+        max_days=10.0,
+        search_motion="backward",
+    )
+    forward_event = next_transit(
+        Body.SUN,
+        0.0,
+        start - 10.0,
+        direction="direct",
+        max_days=10.0,
+    )
+
+    assert previous_event is not None
+    assert forward_event is not None
+    assert previous_event.jd_ut < start
+    assert previous_event.jd_ut == pytest.approx(forward_event.jd_ut, abs=1e-6)
+    assert previous_event.search_motion == "backward"
+    assert previous_event.computation_truth is not None
+    assert previous_event.computation_truth.search_truth.search_end_jd_ut == pytest.approx(start, abs=1e-12)
+
+
+@pytest.mark.requires_ephemeris
+def test_find_transits_supports_backward_search_motion_in_reverse_chronology() -> None:
+    start = jd_from_datetime(datetime(2023, 12, 1, 0, 0, tzinfo=timezone.utc))
+    end = jd_from_datetime(datetime(2024, 1, 20, 0, 0, tzinfo=timezone.utc))
+    natal_point = 270.0
+
+    forward_events = find_transits(Body.MERCURY, natal_point, start, end)
+    backward_events = find_transits(Body.MERCURY, natal_point, start, end, search_motion="backward")
+
+    assert forward_events
+    assert backward_events
+    assert [event.direction for event in backward_events] == [event.direction for event in reversed(forward_events)]
+    assert [event.search_motion for event in backward_events] == ["backward"] * len(backward_events)
+    assert [event.jd_ut for event in backward_events] == pytest.approx(
+        [event.jd_ut for event in reversed(forward_events)],
+        abs=1e-6,
+    )
 
 
 @pytest.mark.requires_ephemeris
@@ -315,6 +425,7 @@ def test_transit_truth_and_classification_vessels_preserve_computational_path_in
         body=Body.SUN,
         requested_target=0.0,
         direction_filter="either",
+        search_motion="forward",
         target_truth=target_truth,
         search_truth=search_truth,
     )
@@ -559,6 +670,9 @@ def test_transit_truth_vessels_fail_loudly_on_invalid_internal_state() -> None:
 
     with pytest.raises(ValueError, match="Transit input direction must be 'direct', 'retrograde', or 'either'"):
         next_transit(Body.SUN, 0.0, 2451545.0, direction="forward")
+
+    with pytest.raises(ValueError, match="Transit search_motion must be 'forward' or 'backward'"):
+        next_transit(Body.SUN, 0.0, 2451545.0, search_motion="sideways")
 
     with pytest.raises(ValueError, match="Transit input target longitude must be finite"):
         next_transit(Body.SUN, float("nan"), 2451545.0)
@@ -965,6 +1079,16 @@ def test_solar_return_matches_solar_transit_to_natal_longitude() -> None:
     returned_sun_lon = planet_at(Body.SUN, jd_return).longitude
 
     assert _angle_diff(returned_sun_lon, natal_sun_lon) < 1e-3
+
+
+@pytest.mark.requires_ephemeris
+def test_solar_return_chart_matches_natal_sun_longitude() -> None:
+    natal_dt = datetime(1990, 7, 11, 12, 0, tzinfo=timezone.utc)
+    natal_sun_lon = planet_at(Body.SUN, jd_from_datetime(natal_dt)).longitude
+
+    chart = solar_return_chart(natal_sun_lon, 2024, 51.5, -0.1)
+
+    assert _angle_diff(chart.planets[Body.SUN].longitude, natal_sun_lon) < 1e-3
 
 
 @pytest.mark.requires_ephemeris

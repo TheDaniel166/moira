@@ -558,7 +558,7 @@ class TestDeterminism:
 # ===========================================================================
 
 class TestSystemFamiliesDistribution:
-    """distribute_points() works across all 19 systems."""
+    """distribute_points() works across all supported systems."""
 
     @pytest.fixture(autouse=True)
     def _setup(self, jd_j2000):
@@ -567,7 +567,7 @@ class TestSystemFamiliesDistribution:
     @pytest.mark.parametrize("system", [
         HouseSystem.EQUAL, HouseSystem.WHOLE_SIGN, HouseSystem.PORPHYRY,
         HouseSystem.PLACIDUS, HouseSystem.CAMPANUS, HouseSystem.REGIOMONTANUS,
-        HouseSystem.MORINUS, HouseSystem.VEHLOW, HouseSystem.SUNSHINE,
+        HouseSystem.MORINUS, HouseSystem.VEHLOW, HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN,
         HouseSystem.KOCH, HouseSystem.ALCABITIUS, HouseSystem.MERIDIAN,
         HouseSystem.AZIMUTHAL, HouseSystem.TOPOCENTRIC, HouseSystem.KRUSINSKI,
         HouseSystem.APC, HouseSystem.CARTER, ])

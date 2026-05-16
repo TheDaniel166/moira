@@ -746,6 +746,7 @@ class HouseCusps:
     cusps: list[float]        # 12 ecliptic longitudes
     asc: float                # Ascendant
     mc: float                 # Midheaven (MC)
+    east_point: float         # East Point / Equatorial Ascendant
     vertex: float             # Vertex
     armc: float               # ARMC (sidereal time in degrees)
     obliquity: float          # True obliquity of ecliptic

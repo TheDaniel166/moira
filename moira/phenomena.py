@@ -41,6 +41,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .constants import Body, KM_PER_AU, SIDEREAL_YEAR
+from .dignities_types import SolarConditionTruth
 from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd, format_jd_utc, ut_to_tt
 from .planets import planet_at, planet_relative_to
 from .spk_reader import get_reader, SpkReader
@@ -65,6 +66,7 @@ __all__ = [
     "ProximityEvent",
     "proximity_events_in_range",
     "solar_condition_events_in_range",
+    "solar_condition_at",
 ]
 
 # ---------------------------------------------------------------------------
@@ -1351,5 +1353,56 @@ def solar_condition_events_in_range(
     # Add labels
     for ev in events:
         ev.label = f"{condition.title()} {'Ingress' if ev.is_ingress else 'Egress'}"
-        
+
     return events
+
+
+# Thresholds and scores for point-in-time solar condition query.
+# 17 arcminutes = 17/60° for cazimi; matches the traditional boundary.
+_CAZIMI_DEG    = 17.0 / 60.0   # ≈ 0.2833°
+_COMBUST_DEG   = 8.0
+_SUNBEAMS_DEG  = 17.0
+_SCORE_CAZIMI   =  5
+_SCORE_COMBUST  = -5
+_SCORE_SUNBEAMS = -4
+
+
+def solar_condition_at(
+    planet: str,
+    jd_ut: float,
+    reader: SpkReader | None = None,
+) -> SolarConditionTruth:
+    """Return the solar proximity condition for *planet* at *jd_ut*.
+
+    Returns a :class:`SolarConditionTruth` whose ``present`` flag is True
+    when the planet is within the under-sunbeams orb (17°). ``condition`` is
+    ``"cazimi"``, ``"combust"``, or ``"under_sunbeams"`` when present, ``None``
+    otherwise. ``distance_from_sun`` is always populated.
+
+    Luminaries (Sun, Moon) are accepted but will always return ``present=False``
+    since the solar condition is undefined for them.
+
+    Parameters
+    ----------
+    planet : str
+        Body name (e.g. ``Body.MERCURY``, ``'Mars'``).
+    jd_ut : float
+        Julian Day in Universal Time.
+    reader : SpkReader, optional
+        SPK kernel reader; default reader used when omitted.
+    """
+    if reader is None:
+        reader = get_reader()
+    if planet in (Body.SUN, Body.MOON, "Sun", "Moon"):
+        return SolarConditionTruth(False, None, None, 0, None)
+    sun = planet_at(Body.SUN, jd_ut, reader=reader)
+    p   = planet_at(planet, jd_ut, reader=reader)
+    dist = abs(p.longitude - sun.longitude) % 360.0
+    dist = min(dist, 360.0 - dist)
+    if dist <= _CAZIMI_DEG:
+        return SolarConditionTruth(True, "cazimi", "Cazimi", _SCORE_CAZIMI, dist)
+    if dist <= _COMBUST_DEG:
+        return SolarConditionTruth(True, "combust", "Combust", _SCORE_COMBUST, dist)
+    if dist <= _SUNBEAMS_DEG:
+        return SolarConditionTruth(True, "under_sunbeams", "Under Sunbeams", _SCORE_SUNBEAMS, dist)
+    return SolarConditionTruth(False, None, None, 0, dist)

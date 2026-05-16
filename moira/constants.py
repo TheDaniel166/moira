@@ -341,7 +341,7 @@ class HouseSystem:
         "frozen": [
           "PLACIDUS", "KOCH", "EQUAL", "WHOLE_SIGN", "CAMPANUS",
           "REGIOMONTANUS", "PORPHYRY", "MERIDIAN", "ALCABITIUS", "MORINUS",
-          "TOPOCENTRIC", "VEHLOW", "SUNSHINE", "AZIMUTHAL", "CARTER",
+          "TOPOCENTRIC", "VEHLOW", "SUNSHINE", "SOLAR_SIGN", "AZIMUTHAL", "CARTER",
                     "KRUSINSKI", "APC"
         ],
         "internal": []
@@ -368,6 +368,7 @@ class HouseSystem:
     TOPOCENTRIC    = "T"
     VEHLOW         = "V"    # Equal from ASC-15° (Vehlow)
     SUNSHINE       = "N"    # Makransky's Sunshine houses
+    SOLAR_SIGN     = "S"    # Traditional solar-sign frame
     AZIMUTHAL      = "H"    # Horizontal / Azimuthal houses
     CARTER         = "CT"   # Carter Poli-Equatorial
     KRUSINSKI      = "U"    # Krusinski-Pisa-Goeldi
@@ -387,6 +388,7 @@ HOUSE_SYSTEM_NAMES: dict[str, str] = {
     HouseSystem.TOPOCENTRIC:    "Topocentric",
     HouseSystem.VEHLOW:         "Vehlow Equal",
     HouseSystem.SUNSHINE:       "Sunshine",
+    HouseSystem.SOLAR_SIGN:     "Solar Sign",
     HouseSystem.AZIMUTHAL:      "Azimuthal",
     HouseSystem.CARTER:         "Carter",
     HouseSystem.KRUSINSKI:      "Krusinski-Pisa",

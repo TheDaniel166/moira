@@ -26,7 +26,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import StrEnum
 
-from .constants import Body, SIGNS, TROPICAL_YEAR
+from .constants import Body, HouseSystem, SIGNS, TROPICAL_YEAR
 from .julian import (
     CalendarDateTime,
     calendar_datetime_from_jd,
@@ -38,6 +38,8 @@ from .julian import (
 )
 from .planets import planet_at
 from .spk_reader import get_reader, SpkReader
+from .chart import ChartContext, create_chart
+from .houses import HousePolicy
 from .asteroids import asteroid_at, ASTEROID_NAIF
 from .stars import star_at
 from .nodes import mean_lilith, mean_node, true_lilith, true_node
@@ -66,7 +68,7 @@ __all__ = [
     # Core search functions
     "next_transit", "find_transits",
     "find_ingresses", "next_ingress", "next_ingress_into",
-    "solar_return", "lunar_return", "planet_return",
+    "solar_return", "solar_return_chart", "lunar_return", "planet_return",
     "last_new_moon", "last_full_moon", "prenatal_syzygy",
     # Condition profile functions
     "transit_relations", "ingress_relations",
@@ -632,6 +634,7 @@ class TransitComputationTruth:
     body: str
     requested_target: str | float
     direction_filter: str
+    search_motion: str
     target_truth: LongitudeResolutionTruth
     search_truth: CrossingSearchTruth
 
@@ -640,6 +643,8 @@ class TransitComputationTruth:
             raise ValueError("TransitComputationTruth invariant failed: body must not be empty")
         if self.direction_filter not in {"direct", "retrograde", "either"}:
             raise ValueError("TransitComputationTruth invariant failed: direction_filter must be supported")
+        if self.search_motion not in {"forward", "backward"}:
+            raise ValueError("TransitComputationTruth invariant failed: search_motion must be supported")
 
 
 @dataclass(slots=True)
@@ -967,6 +972,14 @@ class TransitEvent:
 
         if self.classification is not None:
             return self.classification.search.wrapper_kind
+        return None
+
+    @property
+    def search_motion(self) -> str | None:
+        """Return the explicit search motion when preserved computation truth is available."""
+
+        if self.computation_truth is not None:
+            return self.computation_truth.search_motion
         return None
 
     @property
@@ -1376,6 +1389,13 @@ def _validate_direction(direction: str) -> None:
         raise ValueError("Transit input direction must be 'direct', 'retrograde', or 'either'")
 
 
+def _validate_search_motion(search_motion: str) -> None:
+    """Validate public transit search-motion values consistently."""
+
+    if search_motion not in {"forward", "backward"}:
+        raise ValueError("Transit search_motion must be 'forward' or 'backward'")
+
+
 def _validate_transit_range(jd_start: float, jd_end: float, *, allow_equal: bool = False) -> None:
     """Validate ordered transit search ranges."""
 
@@ -1443,6 +1463,7 @@ def next_transit(
     step_days: float | None = None,
     reader: SpkReader | None = None,
     policy: TransitComputationPolicy | None = None,
+    search_motion: str = "forward",
 ) -> TransitEvent | None:
     """
     Find the next time *body* passes through *target_lon*.
@@ -1453,6 +1474,7 @@ def next_transit(
     target_lon  : target ecliptic longitude (0–360°)
     jd_start    : search start Julian Day (UT)
     direction   : 'direct', 'retrograde', or 'either'
+    search_motion: 'forward' (next transit) or 'backward' (previous transit)
     max_days    : maximum search window in days
     step_days   : step size for scanning (auto-selected if None)
     reader      : SpkReader instance
@@ -1464,6 +1486,7 @@ def next_transit(
     _require_non_empty_body(body)
     _require_finite_jd(jd_start, "jd_start")
     _validate_direction(direction)
+    _validate_search_motion(search_motion)
     _require_positive(max_days, "max_days")
     if step_days is not None:
         _require_positive(step_days, "step_days")
@@ -1476,10 +1499,13 @@ def next_transit(
         step_days = policy.transit.step_days_override or _auto_step(body)
 
     jd = jd_start
+    scan_step = step_days if search_motion == "forward" else -step_days
+    search_start_jd = jd_start if search_motion == "forward" else jd_start - max_days
+    search_end_jd = jd_start + max_days if search_motion == "forward" else jd_start
     lon_prev = _lon(body, jd, reader)
 
-    while jd < jd_start + max_days:
-        jd_next = jd + step_days
+    while (jd < jd_start + max_days) if search_motion == "forward" else (jd > jd_start - max_days):
+        jd_next = jd + scan_step
         lon_next = _lon(body, jd_next, reader)
 
         # Check for crossing: signed difference changes sign
@@ -1493,8 +1519,8 @@ def next_transit(
             jd_cross, search_truth = _find_crossing(
                 body,
                 target_lon,
-                jd,
-                jd_next,
+                min(jd, jd_next),
+                max(jd, jd_next),
                 reader,
                 tol_days=policy.transit.solver_tolerance_days,
             )
@@ -1510,10 +1536,11 @@ def next_transit(
                     body=body,
                     requested_target=target_lon,
                     direction_filter=direction,
+                    search_motion=search_motion,
                     target_truth=target_truth,
                     search_truth=CrossingSearchTruth(
-                        search_start_jd_ut=jd_start,
-                        search_end_jd_ut=jd_start + max_days,
+                        search_start_jd_ut=search_start_jd,
+                        search_end_jd_ut=search_end_jd,
                         step_days=step_days,
                         bracket_start_jd_ut=search_truth.bracket_start_jd_ut,
                         bracket_end_jd_ut=search_truth.bracket_end_jd_ut,
@@ -1551,6 +1578,7 @@ def find_transits(
     step_days: float | None = None,
     reader: SpkReader | None = None,
     policy: TransitComputationPolicy | None = None,
+    search_motion: str = "forward",
 ) -> list[TransitEvent]:
     """
     Find all transits of *body* to *target_lon* within a date range.
@@ -1566,10 +1594,12 @@ def find_transits(
 
     Returns
     -------
-    List of TransitEvent (chronological)
+    List of TransitEvent ordered by search motion:
+    chronological for 'forward', reverse chronological for 'backward'
     """
     _require_non_empty_body(body)
     _validate_transit_range(jd_start, jd_end)
+    _validate_search_motion(search_motion)
     if step_days is not None:
         _require_positive(step_days, "step_days")
     if reader is None:
@@ -1579,11 +1609,15 @@ def find_transits(
         step_days = policy.transit.step_days_override or _auto_step(body)
 
     events: list[TransitEvent] = []
-    jd = jd_start
+    jd = jd_start if search_motion == "forward" else jd_end
     lon_prev = _lon(body, jd, reader)
 
-    while jd < jd_end:
-        jd_next = min(jd + step_days, jd_end)
+    while (jd < jd_end) if search_motion == "forward" else (jd > jd_start):
+        jd_next = (
+            min(jd + step_days, jd_end)
+            if search_motion == "forward"
+            else max(jd - step_days, jd_start)
+        )
         lon_next = _lon(body, jd_next, reader)
 
         target_prev = _lon(target_lon, jd, reader)
@@ -1596,8 +1630,8 @@ def find_transits(
             jd_cross, search_truth = _find_crossing(
                 body,
                 target_lon,
-                jd,
-                jd_next,
+                min(jd, jd_next),
+                max(jd, jd_next),
                 reader,
                 tol_days=policy.transit.solver_tolerance_days,
             )
@@ -1610,6 +1644,7 @@ def find_transits(
                 body=body,
                 requested_target=target_lon,
                 direction_filter="either",
+                search_motion=search_motion,
                 target_truth=target_truth,
                 search_truth=CrossingSearchTruth(
                     search_start_jd_ut=jd_start,
@@ -2012,6 +2047,41 @@ def solar_return(
         direction="direct",
         reader=reader,
         policy=policy,
+    )
+
+
+def solar_return_chart(
+    natal_sun_lon: float,
+    year: int,
+    latitude: float,
+    longitude: float,
+    house_system: str = HouseSystem.PLACIDUS,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    return_policy: TransitComputationPolicy | None = None,
+    house_policy: HousePolicy | None = None,
+) -> ChartContext:
+    """
+    Construct the chart for the exact Solar Return at a geographic site.
+
+    This is a thin convenience wrapper over the existing Solar Return time
+    search and chart-assembly pipeline. It introduces no new return doctrine
+    or search math.
+    """
+    jd_return = solar_return(
+        natal_sun_lon,
+        year,
+        reader=reader,
+        policy=return_policy,
+    )
+    return create_chart(
+        jd_return,
+        latitude,
+        longitude,
+        house_system=house_system,
+        bodies=bodies,
+        reader=reader,
+        policy=house_policy,
     )
 
 

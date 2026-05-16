@@ -411,7 +411,7 @@ class TestHouseCuspsInvariants:
         HouseSystem.MORINUS, HouseSystem.MERIDIAN, HouseSystem.VEHLOW,
         HouseSystem.ALCABITIUS, HouseSystem.TOPOCENTRIC, HouseSystem.CARTER,
         HouseSystem.KRUSINSKI, HouseSystem.APC, HouseSystem.AZIMUTHAL,
-        HouseSystem.KOCH,
+        HouseSystem.KOCH, HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN,
     ])
     def test_twelve_cusps_all_systems(self, system):
         hc = calculate_houses(_JD_2000, _LAT, _LON, system=system)
@@ -423,7 +423,7 @@ class TestHouseCuspsInvariants:
         HouseSystem.MORINUS, HouseSystem.MERIDIAN, HouseSystem.VEHLOW,
         HouseSystem.ALCABITIUS, HouseSystem.TOPOCENTRIC, HouseSystem.CARTER,
         HouseSystem.KRUSINSKI, HouseSystem.APC, HouseSystem.AZIMUTHAL,
-        HouseSystem.KOCH,
+        HouseSystem.KOCH, HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN,
     ])
     def test_cusps_in_range_all_systems(self, system):
         hc = calculate_houses(_JD_2000, _LAT, _LON, system=system)
@@ -554,7 +554,7 @@ class TestTruthClassificationConsistency:
     @pytest.mark.parametrize("system", [
         HouseSystem.PLACIDUS, HouseSystem.PORPHYRY, HouseSystem.EQUAL,
         HouseSystem.WHOLE_SIGN, HouseSystem.VEHLOW, HouseSystem.MORINUS,
-        HouseSystem.SUNSHINE,
+        HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN,
     ])
     def test_classification_reflects_effective_system(self, system):
         hc = calculate_houses(_JD_2000, _LAT, _LON, system=system)

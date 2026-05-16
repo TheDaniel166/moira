@@ -55,7 +55,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
     "scope": "class",
     "id": "moira._facade_predictive.PredictiveFacadeMixin",
     "risk": "medium",
-    "api": {"frozen": ["progression", "transits", "solar_return", "lunar_return", "station", "planetary_hours"], "internal": []},
+    "api": {"frozen": ["progression", "transits", "solar_return", "solar_return_chart", "lunar_return", "station", "planetary_hours"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -473,10 +473,11 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         target_lon: float,
         jd_start: float,
         jd_end: float,
+        search_motion: str = "forward",
     ):
         """Find all transits of a body to a given longitude."""
         return _facade_module().find_transits(
-            body, target_lon, jd_start, jd_end, reader=self._reader
+            body, target_lon, jd_start, jd_end, reader=self._reader, search_motion=search_motion
         )
 
     def aspect_transits(
@@ -487,10 +488,11 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         orb: float,
         jd_start: float,
         jd_end: float,
+        search_motion: str = "forward",
     ):
         """Find all transits of a body forming an aspect to a target (body or fixed longitude)."""
         return _facade_module().find_aspect_transits(
-            body, target, angle, orb, jd_start, jd_end, reader=self._reader
+            body, target, angle, orb, jd_start, jd_end, reader=self._reader, search_motion=search_motion
         )
 
     def declination_transits(
@@ -500,10 +502,11 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         jd_start: float,
         jd_end: float,
         is_contra_parallel: bool = False,
+        search_motion: str = "forward",
     ):
         """Find all transits of a body forming a declination aspect (parallel or contra-parallel)."""
         return _facade_module().find_declination_transits(
-            body, target, jd_start, jd_end, is_contra_parallel=is_contra_parallel, reader=self._reader
+            body, target, jd_start, jd_end, is_contra_parallel=is_contra_parallel, reader=self._reader, search_motion=search_motion
         )
 
     def ingresses(self, body: str, jd_start: float, jd_end: float):
@@ -532,6 +535,32 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Find the exact Julian Day of the Solar Return for a given year."""
         return _facade_module().solar_return(
             natal_sun_lon, year, reader=self._reader
+        )
+
+    def solar_return_chart(
+        self,
+        natal_sun_lon: float,
+        year: int,
+        latitude: float,
+        longitude: float,
+        system: str | None = None,
+        bodies: list[str] | None = None,
+        house_policy: Any | None = None,
+        return_policy: Any | None = None,
+    ):
+        """Construct the chart for the exact Solar Return at a geographic site."""
+        facade = _facade_module()
+        house_system = HouseSystem.PLACIDUS if system is None else system
+        return facade.solar_return_chart(
+            natal_sun_lon,
+            year,
+            latitude,
+            longitude,
+            house_system=house_system,
+            bodies=bodies,
+            reader=self._reader,
+            return_policy=return_policy,
+            house_policy=house_policy,
         )
 
     def lunar_return(self, natal_moon_lon: float, jd_start: float) -> float:
