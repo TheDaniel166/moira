@@ -26,7 +26,7 @@
 | 3. Aspects, Midpoints & Antiscia | 12 | 0 | 0 | 100.0% |
 | 4. Dignities, Strength & Rulership | 15 | 0 | 0 | 100.0% |
 | 5. Lots, Parts & Special Points | 12 | 0 | 0 | 100.0% |
-| 6. Predictive — Transits & Returns | 12 | 0 | 1 | 92.3% |
+| 6. Predictive — Transits & Returns | 13 | 0 | 0 | 100.0% |
 | 7. Predictive — Progressions & Directions | 22 | 0 | 0 | 100.0% |
 | 8. Predictive — Time Lord Systems | 11 | 0 | 3 | 78.6% |
 | 9. Synastry & Relationship Charts | 6 | 0 | 3 | 66.7% |
@@ -36,22 +36,22 @@
 
 ### Top 10 Gaps by Priority
 
-**Post-audit update:** Relocated chart generation and East Point / Equatorial Ascendant, both previously ranked gaps in this list, have now been implemented and verified in the live codebase. Standalone cazimi / combust / under-beams query surface (previously #7) has likewise been implemented via `solar_condition_at()` in `moira.phenomena` and `Moira.solar_condition_at()` on the facade. Derived houses (previously #18, score 5) has been implemented via `derived_houses(house_cusps, from_house)` in `moira.houses` — pure arithmetic rotation with no astronomical computation. The list below has been renumbered to show the current top 10 remaining gaps.
+**Post-audit update:** Relocated chart generation and East Point / Equatorial Ascendant, both previously ranked gaps in this list, have now been implemented and verified in the live codebase. Standalone cazimi / combust / under-beams query surface (previously #7) has likewise been implemented via `solar_condition_at()` in `moira.phenomena` and `Moira.solar_condition_at()` on the facade. Derived houses (previously #18, score 5) has been implemented via `derived_houses(house_cusps, from_house)` in `moira.houses` — pure arithmetic rotation with no astronomical computation. Eclipse hit list against natal positions (previously #1 in this list) has been implemented via `EclipseCalculator.eclipse_hits_in_range()` and `EclipseHit` in `moira.eclipse`. The list below has been renumbered to show the current top 10 remaining gaps.
 
-1. Eclipse hit list against natal positions - P2, score 6 - Moira can search eclipses, but not match them to natal targets.
-2. Hellenistic aphesis / distributions - P2, score 6 - notably absent beside Zodiacal Releasing.
-3. Jaimini Chara Dasha - P2, score 6 - predictive Jaimini timing remains absent.
-4. Progressed synastry - P2, score 6 - synastry is present, but not against progressed charts.
-5. Transits to composite / Davison - P2, score 6 - relationship charts cannot yet act as transit targets.
-6. Eclipse canon as historical lookup catalog - P2, score 6 - canon validation exists, but not a historical query surface.
-7. Planetary visibility windows - P2, score 6 - heliacal events exist, but not continuous visibility intervals.
-8. ACG Zenith / Nadir lines - P2, score 6 - the cartography layer stops at MC/IC/ASC/DSC.
-9. ACG for asteroids / fixed stars - P2, score 6 - `acg_lines()` is generic, but public RA/Dec supply paths stop at classical planets.
-10. Yoga catalog - P2, score 6 - Panchanga yogas exist; natal chart-yoga detection does not.
+1. Hellenistic aphesis / distributions - P2, score 6 - notably absent beside Zodiacal Releasing.
+2. Jaimini Chara Dasha - P2, score 6 - predictive Jaimini timing remains absent.
+3. Progressed synastry - P2, score 6 - synastry is present, but not against progressed charts.
+4. Transits to composite / Davison - P2, score 6 - relationship charts cannot yet act as transit targets.
+5. Eclipse canon as historical lookup catalog - P2, score 6 - canon validation exists, but not a historical query surface.
+6. Planetary visibility windows - P2, score 6 - heliacal events exist, but not continuous visibility intervals.
+7. ACG Zenith / Nadir lines - P2, score 6 - the cartography layer stops at MC/IC/ASC/DSC.
+8. ACG for asteroids / fixed stars - P2, score 6 - `acg_lines()` is generic, but public RA/Dec supply paths stop at classical planets.
+9. Yoga catalog - P2, score 6 - Panchanga yogas exist; natal chart-yoga detection does not.
+10. Triacontaeteris - P2, score 5 - niche but tractable Hellenistic period system.
 
 ### Quick Wins
 
-- Eclipse hit list: eclipse search already exists, so the missing layer is natal-target matching rather than new eclipse astronomy.
+- ~~Eclipse hit list: eclipse search already exists, so the missing layer is natal-target matching rather than new eclipse astronomy.~~ *(resolved 2026-05-16 — `EclipseCalculator.eclipse_hits_in_range()` + `EclipseHit` in `moira.eclipse`)*
 - ~~Derived houses: turned-house rotation is conceptually simple and isolated from substrate astronomy.~~ *(resolved 2026-05-16 — `derived_houses()` in `moira.houses`)*
 
 ---
@@ -288,13 +288,13 @@ including declination parallels. `transits_houses.py` handles transit-through-ho
 | Lunar return | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
 | Planetary returns (all bodies) | ✓ | ✓ | ✓ | ✓ | ~ | ✓ | ~ | ✗ | ~ |
 | Diurnal chart (daily solar return) | ✓ | ✓ | ✓ | ✓ | ✗ | ~ | ✗ | ✗ | ✗ |
-| Eclipse hit list (upcoming eclipses to natal) | ✗ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✗ |
+| Eclipse hit list (upcoming eclipses to natal) | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ | ✗ |
 | Prenatal syzygy | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ |
 
 **Gap notes:**  
 **Post-audit update — Converse transits implemented.** The live codebase now exposes explicit reverse-time search across the transit surfaces: `find_transits()` / `next_transit()` in `transits.py`, `find_aspect_transits()` in `transits_aspects.py`, `find_declination_transits()` in `transits_equatorial.py`, and `find_house_ingresses()` in `transits_houses.py` all admit backward search. This gap is therefore closed in the current implementation truth.  
 **Post-audit update — Solar return chart wrapper implemented.** The live codebase now exposes `solar_return_chart()` in `transits.py` plus `Moira.solar_return_chart()`, composing the pre-existing `solar_return()` search with `create_chart()` rather than adding new return mathematics. This closes the daily solar return chart gap in current implementation truth.  
-**Eclipse hit list** confirmed absent — `eclipse_search.py` exposes only `refine_minimum`, `refine_lunar_greatest_eclipse`, and `refine_solar_greatest_eclipse`; no function matches upcoming eclipses to natal positions. Type A, D=2, C=2, T=2 → score 6 → **P2**.
+**Post-audit update — Eclipse hit list implemented.** `EclipseCalculator.eclipse_hits_in_range()` now accepts a JD range and a `dict[str, float]` of natal positions, returning `EclipseHit` records sorted by Julian Day then target name. Solar eclipses match on the Sun/Moon conjunction degree; lunar eclipses match on both the Moon degree and the opposition Sun axis. `EclipseHit` is exported from `moira.eclipse` and `moira.facade`; `Moira.eclipse_hits_in_range()` is on the facade class.
 
 ## 7. Predictive — Progressions & Directions
 
@@ -617,7 +617,7 @@ surface.
 
 | # | Gap | Type | Domain(s) | D | C | T | Score | Priority | Note |
 |---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|---|
-| 7 | Eclipse hit list against natal positions | A | 6 | 2 | 2 | 2 | 6 | **P2** | Eclipse search exists, but not natal targeting. |
+| 7 | ~~Eclipse hit list against natal positions~~ | — | — | — | — | — | — | **Resolved 2026-05-16** | `EclipseCalculator.eclipse_hits_in_range()` + `EclipseHit` in `moira.eclipse`; `Moira.eclipse_hits_in_range()` on the facade. |
 | 8 | Hellenistic aphesis / distributions | A | 8 | 2 | 2 | 2 | 6 | **P2** | Conspicuous omission beside Zodiacal Releasing. |
 | 9 | Jaimini Chara Dasha | A | 8, 12 | 2 | 1 | 3 | 6 | **P2** | Predictive Jaimini layer absent; already reflected in both the time-lord and Vedic domains. |
 | 10 | Progressed synastry | B | 9 | 2 | 2 | 2 | 6 | **P2** | Existing synastry engine does not accept progressed-chart inputs. |
@@ -739,7 +739,7 @@ catalogs.
 | Solar sign frame | Resolved post-audit on 2026-05-15 via explicit `HouseSystem.SOLAR_SIGN` in the live house engine | Historical competitor rationale unchanged: present in 7 of 8 competitors | Historical tractability rationale confirmed: the frame fit the existing house-system architecture as a distinct solar doctrine |
 | Decennials | Resolved post-audit on 2026-05-15 via a full constitutional Decennials subsystem in `moira/timelords.py` | Historical competitor rationale unchanged: supported fully or partially by 3 competitors | Historical tractability rationale confirmed: the existing time-lord architecture was sufficient |
 | East Point / Equatorial Ascendant | Resolved post-audit on 2026-05-16 via explicit `HouseCusps.east_point` in the live house engine | Historical competitor rationale unchanged: present in 5 of 8 competitors | Historical tractability rationale confirmed: the geometry fit the existing Morinus-adjacent house math cleanly |
-| Eclipse hit list | D=2: useful predictive auxiliary, not universal | C=2: present in 4 of 8 competitors | T=2: eclipse and natal-aspect infrastructure both exist, but are not connected |
+| ~~Eclipse hit list~~ | Resolved 2026-05-16 via `EclipseCalculator.eclipse_hits_in_range()` + `EclipseHit` in `moira.eclipse` | Historical: C=2, present in 4 of 8 competitors | Historical: T=2, eclipse and natal-aspect infrastructure were connected without new astronomy |
 | Hellenistic aphesis / distributions | D=2: important within Hellenistic practice | C=2: present fully or partially in 3 competitors | T=2: doctrinally new but adjacent to current time-lord work |
 | Jaimini Chara Dasha | D=2: central Jaimini predictive method | C=1: only Sirius fully and Janus partially show support | T=3: time-lord infrastructure is mature already |
 | Progressed synastry | D=2: meaningful relationship-analysis extension | C=2: present fully or partially in 4 competitors | T=2: reuse of progression and synastry infrastructure |

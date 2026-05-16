@@ -47,6 +47,9 @@ kernels/
 *.bpc
 *.tf
 
+# Keep the package stub so setuptools can find moira.kernels
+!moira/kernels/__init__.py
+
 # Sophia / Persona Akaschic Record (Living Memory)
 anamnesis/
 soul_diary/
