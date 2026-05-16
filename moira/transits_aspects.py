@@ -24,7 +24,10 @@ from .transits import (
 )
 from .planets import Body, _npe_body_route_segment_specs
 from .julian import ut_to_tt
-import moira.moira_native as mn
+try:
+    from . import moira_native as mn
+except ImportError:
+    mn = None
 
 __all__ = ["AspectTransitEvent", "find_aspect_transits"]
 
@@ -70,9 +73,9 @@ def _find_aspect_crossing(
             sign_lo = sign_mid
     return (jd_lo + jd_hi) / 2.0
 
-def _get_native_evaluator(body: str, specs: dict, path: str) -> mn.IEvaluator | None:
+def _get_native_evaluator(body: str, specs: dict, path: str) -> object | None:
     """Construct a native evaluator chain for a body's barycentric route."""
-    if body not in specs:
+    if mn is None or body not in specs:
         return None
     
     route = specs[body]
