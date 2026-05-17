@@ -24,7 +24,9 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          # Moira's authoritative runtime is the project .venv on Python 3.14.
+          # The kernel-free acceptance slices must run under that same port baseline.
+          python-version: "3.14"
 
       - name: Install package and test dependencies
         run: python -m pip install -e ".[dev]"

@@ -89,31 +89,41 @@ inline uint64_t byteswap_u64(uint64_t value) {
            ((value & 0xFF00000000000000ull) >> 56);
 }
 
-inline uint32_t read_u32(const char* ptr, bool little_endian) {
+inline uint32_t read_u32_swapped(const char* ptr, bool swap_bytes) {
     uint32_t value = 0;
     std::memcpy(&value, ptr, sizeof(value));
-    const bool host_little_endian = host_is_little_endian();
-    if (host_little_endian != little_endian) {
+    if (swap_bytes) {
         value = byteswap_u32(value);
     }
     return value;
 }
 
-inline uint64_t read_u64(const char* ptr, bool little_endian) {
+inline uint32_t read_u32(const char* ptr, bool little_endian) {
+    return read_u32_swapped(ptr, host_is_little_endian() != little_endian);
+}
+
+inline uint64_t read_u64_swapped(const char* ptr, bool swap_bytes) {
     uint64_t value = 0;
     std::memcpy(&value, ptr, sizeof(value));
-    const bool host_little_endian = host_is_little_endian();
-    if (host_little_endian != little_endian) {
+    if (swap_bytes) {
         value = byteswap_u64(value);
     }
     return value;
 }
 
-inline double read_f64(const char* ptr, bool little_endian) {
-    const uint64_t bits = read_u64(ptr, little_endian);
+inline uint64_t read_u64(const char* ptr, bool little_endian) {
+    return read_u64_swapped(ptr, host_is_little_endian() != little_endian);
+}
+
+inline double read_f64_swapped(const char* ptr, bool swap_bytes) {
+    const uint64_t bits = read_u64_swapped(ptr, swap_bytes);
     double value = 0.0;
     std::memcpy(&value, &bits, sizeof(value));
     return value;
+}
+
+inline double read_f64(const char* ptr, bool little_endian) {
+    return read_f64_swapped(ptr, host_is_little_endian() != little_endian);
 }
 
 inline std::string strip_trailing(const std::string& value, char trim_char) {
@@ -182,16 +192,17 @@ inline DafCatalog read_daf_catalog(std::ifstream& file) {
     const auto file_record = detail::read_record(file, 1);
     const std::string locidw = detail::strip_trailing(std::string(file_record.data(), 8), ' ');
     const auto [locfmt, little_endian] = detail::detect_format(file_record);
+    const bool swap_bytes = detail::host_is_little_endian() != little_endian;
 
     DafCatalog catalog;
     catalog.locidw = locidw;
     catalog.locfmt = locfmt;
     catalog.little_endian = little_endian;
-    catalog.nd = detail::read_u32(file_record.data() + 8, little_endian);
-    catalog.ni = detail::read_u32(file_record.data() + 12, little_endian);
-    catalog.fward = detail::read_u32(file_record.data() + 76, little_endian);
-    catalog.bward = detail::read_u32(file_record.data() + 80, little_endian);
-    catalog.free = detail::read_u32(file_record.data() + 84, little_endian);
+    catalog.nd = detail::read_u32_swapped(file_record.data() + 8, swap_bytes);
+    catalog.ni = detail::read_u32_swapped(file_record.data() + 12, swap_bytes);
+    catalog.fward = detail::read_u32_swapped(file_record.data() + 76, swap_bytes);
+    catalog.bward = detail::read_u32_swapped(file_record.data() + 80, swap_bytes);
+    catalog.free = detail::read_u32_swapped(file_record.data() + 84, swap_bytes);
 
     const size_t summary_length = static_cast<size_t>(catalog.nd) * 8 + static_cast<size_t>(catalog.ni) * 4;
     const size_t summary_step = summary_length + ((8 - (summary_length % 8)) % 8);
@@ -202,10 +213,10 @@ inline DafCatalog read_daf_catalog(std::ifstream& file) {
         const auto name_record = detail::read_record(file, record_number + 1);
 
         const uint32_t next_record = static_cast<uint32_t>(
-            detail::read_f64(summary_record.data(), little_endian)
+            detail::read_f64_swapped(summary_record.data(), swap_bytes)
         );
         const uint32_t n_summaries = static_cast<uint32_t>(
-            detail::read_f64(summary_record.data() + 16, little_endian)
+            detail::read_f64_swapped(summary_record.data() + 16, swap_bytes)
         );
 
         for (uint32_t summary_index = 0; summary_index < n_summaries; ++summary_index) {
@@ -216,14 +227,14 @@ inline DafCatalog read_daf_catalog(std::ifstream& file) {
 
             DafSummaryEntry entry;
             entry.name = detail::strip_ascii_space(std::string(name_ptr, summary_step));
-            entry.start_second = detail::read_f64(summary_ptr, little_endian);
-            entry.end_second = detail::read_f64(summary_ptr + 8, little_endian);
-            entry.target = static_cast<int32_t>(detail::read_u32(summary_ptr + 16, little_endian));
-            entry.center = static_cast<int32_t>(detail::read_u32(summary_ptr + 20, little_endian));
-            entry.frame = static_cast<int32_t>(detail::read_u32(summary_ptr + 24, little_endian));
-            entry.data_type = static_cast<int32_t>(detail::read_u32(summary_ptr + 28, little_endian));
-            entry.start_i = static_cast<int32_t>(detail::read_u32(summary_ptr + 32, little_endian));
-            entry.end_i = static_cast<int32_t>(detail::read_u32(summary_ptr + 36, little_endian));
+            entry.start_second = detail::read_f64_swapped(summary_ptr, swap_bytes);
+            entry.end_second = detail::read_f64_swapped(summary_ptr + 8, swap_bytes);
+            entry.target = static_cast<int32_t>(detail::read_u32_swapped(summary_ptr + 16, swap_bytes));
+            entry.center = static_cast<int32_t>(detail::read_u32_swapped(summary_ptr + 20, swap_bytes));
+            entry.frame = static_cast<int32_t>(detail::read_u32_swapped(summary_ptr + 24, swap_bytes));
+            entry.data_type = static_cast<int32_t>(detail::read_u32_swapped(summary_ptr + 28, swap_bytes));
+            entry.start_i = static_cast<int32_t>(detail::read_u32_swapped(summary_ptr + 32, swap_bytes));
+            entry.end_i = static_cast<int32_t>(detail::read_u32_swapped(summary_ptr + 36, swap_bytes));
             catalog.summaries.push_back(std::move(entry));
         }
 
@@ -249,6 +260,7 @@ inline SpkChebyshevSegmentPayload read_spk_chebyshev_segment_payload(
     int32_t data_type,
     bool reverse_coefficients = true
 ) {
+    const bool swap_bytes = detail::host_is_little_endian() != little_endian;
     int32_t component_count = 0;
     if (data_type == 2) {
         component_count = 3;
@@ -269,10 +281,10 @@ inline SpkChebyshevSegmentPayload read_spk_chebyshev_segment_payload(
         throw std::runtime_error("failed to read SPK segment metadata");
     }
 
-    const double init = detail::read_f64(metadata_bytes.data(), little_endian);
-    const double intlen = detail::read_f64(metadata_bytes.data() + 8, little_endian);
-    const int32_t record_size = static_cast<int32_t>(detail::read_f64(metadata_bytes.data() + 16, little_endian));
-    const int32_t record_count = static_cast<int32_t>(detail::read_f64(metadata_bytes.data() + 24, little_endian));
+    const double init = detail::read_f64_swapped(metadata_bytes.data(), swap_bytes);
+    const double intlen = detail::read_f64_swapped(metadata_bytes.data() + 8, swap_bytes);
+    const int32_t record_size = static_cast<int32_t>(detail::read_f64_swapped(metadata_bytes.data() + 16, swap_bytes));
+    const int32_t record_count = static_cast<int32_t>(detail::read_f64_swapped(metadata_bytes.data() + 24, swap_bytes));
     if (record_size <= 2 || record_count <= 0) {
         throw std::runtime_error("invalid SPK record sizing in segment payload");
     }
@@ -300,7 +312,7 @@ inline SpkChebyshevSegmentPayload read_spk_chebyshev_segment_payload(
     payload.coefficient_count = coefficient_count;
     payload.coefficients.resize(static_cast<size_t>(coefficient_count) * component_count * record_count);
 
-    if (detail::host_is_little_endian() == little_endian) {
+    if (!swap_bytes) {
         std::vector<double> raw_words(static_cast<size_t>(coefficient_word_count));
         file.read(reinterpret_cast<char*>(raw_words.data()), coeff_bytes);
         if (file.gcount() != coeff_bytes) {
@@ -335,7 +347,7 @@ inline SpkChebyshevSegmentPayload read_spk_chebyshev_segment_payload(
                 for (int32_t coefficient_index = 0; coefficient_index < coefficient_count; ++coefficient_index) {
                     const int32_t source_word_index = record_word_base + 2 + component_index * coefficient_count + coefficient_index;
                     const char* ptr = raw_bytes.data() + static_cast<size_t>(source_word_index) * 8;
-                    const double value = detail::read_f64(ptr, little_endian);
+                    const double value = detail::read_f64_swapped(ptr, swap_bytes);
 
                     const size_t dest_index =
                         (static_cast<size_t>(record_index) * component_count + static_cast<size_t>(component_index))
@@ -364,23 +376,21 @@ inline SpkType13SegmentPayload read_spk_type13_segment_payload(
     if (!file.is_open()) {
         throw std::runtime_error("unable to open DAF file");
     }
+    const bool swap_bytes = detail::host_is_little_endian() != little_endian;
 
-    const auto read_word = [&](int32_t word_index) -> double {
-        const std::streamoff offset = static_cast<std::streamoff>(word_index - 1) * 8;
-        file.seekg(offset, std::ios::beg);
-        if (!file.good()) {
-            throw std::runtime_error("failed to seek DAF word");
-        }
-        std::array<char, 8> buffer{};
-        file.read(buffer.data(), static_cast<std::streamsize>(buffer.size()));
-        if (file.gcount() != static_cast<std::streamsize>(buffer.size())) {
-            throw std::runtime_error("failed to read DAF word");
-        }
-        return detail::read_f64(buffer.data(), little_endian);
-    };
+    std::array<char, 16> trailer_bytes{};
+    const std::streamoff trailer_offset = static_cast<std::streamoff>(end_i - 2) * 8;
+    file.seekg(trailer_offset, std::ios::beg);
+    if (!file.good()) {
+        throw std::runtime_error("failed to seek SPK type 13 trailer");
+    }
+    file.read(trailer_bytes.data(), static_cast<std::streamsize>(trailer_bytes.size()));
+    if (file.gcount() != static_cast<std::streamsize>(trailer_bytes.size())) {
+        throw std::runtime_error("failed to read SPK type 13 trailer");
+    }
 
-    const int32_t window_size = static_cast<int32_t>(read_word(end_i - 1));
-    const int32_t state_count = static_cast<int32_t>(read_word(end_i));
+    const int32_t window_size = static_cast<int32_t>(detail::read_f64_swapped(trailer_bytes.data(), swap_bytes));
+    const int32_t state_count = static_cast<int32_t>(detail::read_f64_swapped(trailer_bytes.data() + 8, swap_bytes));
     if (state_count <= 0 || window_size <= 0) {
         throw std::runtime_error("invalid SPK type 13 payload sizing");
     }
@@ -423,7 +433,7 @@ inline SpkType13SegmentPayload read_spk_type13_segment_payload(
             const int64_t source_index = static_cast<int64_t>(row) * 6 + axis;
             const char* ptr = raw_bytes.data() + static_cast<size_t>(source_index) * 8;
             payload.states[static_cast<size_t>(axis) * state_count + row] =
-                detail::read_f64(ptr, little_endian);
+                detail::read_f64_swapped(ptr, swap_bytes);
         }
     }
 
@@ -431,7 +441,7 @@ inline SpkType13SegmentPayload read_spk_type13_segment_payload(
     for (int32_t idx = 0; idx < state_count; ++idx) {
         const char* ptr = raw_bytes.data() + epoch_byte_offset + static_cast<size_t>(idx) * 8;
         payload.epochs_jd[static_cast<size_t>(idx)] =
-            detail::read_f64(ptr, little_endian) / 86400.0 + 2451545.0;
+            detail::read_f64_swapped(ptr, swap_bytes) / 86400.0 + 2451545.0;
     }
 
     return payload;
