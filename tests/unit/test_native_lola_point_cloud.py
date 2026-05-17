@@ -9,28 +9,21 @@ Validates: Requirements 11.1, 11.2, 11.3, 11.4
 import pytest
 
 
-def test_lola_point_cloud_not_yet_bound():
+def test_lola_point_cloud_bound():
     """
-    Verify that LolaPointCloud is not yet exposed to Python.
-    
-    This test documents the current state: the C++ class exists but
-    pybind11 bindings have not been added yet. This is expected for Task 2.1,
-    which focuses on the C++ implementation.
-    
-    Task 2.1 validates the C++ structure exists with:
-    - Private data members (x_, y_, z_ vectors, size_)
-    - Constructor from Python lists
-    - Accessor methods (size, x_data, y_data, z_data)
-    
-    The pybind11 bindings will be added in a later task.
+    Verify that LolaPointCloud is exposed to Python.
+
+    Earlier Task 2.1 expectations assumed the C++ type existed before the
+    pybind11 surface was added. The native module now binds LolaPointCloud,
+    so this test documents the current repository state instead of the
+    historical milestone.
     """
     try:
         from moira import moira_native
-        
-        # Try to access LolaPointCloud - should not exist yet
-        assert not hasattr(moira_native, 'LolaPointCloud'), \
-            "LolaPointCloud should not be bound yet in Task 2.1"
-        
+
+        assert hasattr(moira_native, 'LolaPointCloud'), \
+            "LolaPointCloud should be bound in the native module"
+
     except ImportError:
         # Native backend not available - this is acceptable
         pytest.skip("Native backend not available")

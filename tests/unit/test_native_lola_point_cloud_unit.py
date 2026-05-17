@@ -10,7 +10,7 @@ These tests validate specific examples and edge cases:
 - Accessor methods (size, x_data, y_data, z_data)
 - Constructor validation (mismatched vector sizes should throw)
 
-Note: Tests will skip if pybind11 bindings not yet added (expected until Task 5.1).
+Note: Tests skip only when the native module is unavailable in the current environment.
 
 Validates: Requirements 11.1, 11.2, 11.3
 """
@@ -28,7 +28,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(
     not NATIVE_AVAILABLE,
-    reason="LolaPointCloud not yet bound in native backend (expected until Task 5.1)"
+    reason="LolaPointCloud native binding unavailable in this environment"
 )
 
 

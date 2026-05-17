@@ -463,7 +463,13 @@ class PatternConditionNetworkEdge:
 
 @dataclass(frozen=True, slots=True)
 class PatternConditionNetworkProfile:
-    """Deterministic network projection over pattern condition truth."""
+    """Deterministic network projection over pattern condition truth.
+
+    ``most_connected_nodes`` is intentionally a body-level diagnostic, parallel
+    to ``isolated_bodies``. Pattern nodes encode the detected structures
+    themselves and otherwise dominate simple degree counts in the bipartite
+    projection.
+    """
 
     nodes: tuple[PatternConditionNetworkNode, ...]
     edges: tuple[PatternConditionNetworkEdge, ...]
@@ -505,10 +511,11 @@ class PatternConditionNetworkProfile:
         ))
         if self.isolated_bodies != expected_isolated:
             raise ValueError("PatternConditionNetworkProfile invariant failed: isolated_bodies must match nodes")
-        max_degree = max((node.total_degree for node in self.nodes), default=0)
+        body_nodes = tuple(node for node in self.nodes if node.kind == "body")
+        max_degree = max((node.total_degree for node in body_nodes), default=0)
         expected_most_connected = tuple(sorted(
             node.label
-            for node in self.nodes
+            for node in body_nodes
             if node.total_degree == max_degree and max_degree > 0
         ))
         if self.most_connected_nodes != expected_most_connected:
@@ -2196,11 +2203,11 @@ def pattern_condition_network_profile(patterns: list[AspectPattern]) -> PatternC
         if node.total_degree == 0
     ))
     most_connected_nodes: tuple[str, ...] = ()
-    if nodes:
-        max_degree = max(node.total_degree for node in nodes)
+    if body_nodes:
+        max_degree = max(node.total_degree for node in body_nodes)
         most_connected_nodes = tuple(sorted(
             node.label
-            for node in nodes
+            for node in body_nodes
             if node.total_degree == max_degree and max_degree > 0
         ))
 

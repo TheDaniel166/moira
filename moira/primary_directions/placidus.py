@@ -1,4 +1,3 @@
-from __future__ import annotations
 """
 Moira -- primary_directions/placidus.py
 Explicit narrow Placidian parallel primitives for the primary-directions subsystem.

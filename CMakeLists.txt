@@ -33,5 +33,11 @@ set_target_properties(_moira_native PROPERTIES
     VISIBILITY_INLINES_HIDDEN ON
 )
 
+# OpenMP — enables parallel sample processing in harmogram_trace_batch
+find_package(OpenMP QUIET)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(_moira_native PRIVATE OpenMP::OpenMP_CXX)
+endif()
+
 # Installation (optional for now, we'll build in place)
 install(TARGETS _moira_native DESTINATION moira)

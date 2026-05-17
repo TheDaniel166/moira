@@ -50,7 +50,7 @@ from .constants import Body, DEG2RAD, RAD2DEG
 from .coordinates import ecliptic_to_equatorial
 from .midpoints import _midpoint
 from .aspects import AspectData, aspects_between
-from .julian import jd_from_datetime, datetime_from_jd, delta_t_from_jd, ut_to_tt
+from .julian import jd_from_datetime, datetime_from_jd, delta_t_from_jd, ut_to_tt, utc_to_tt, utc_to_ut1
 from .planets import all_planets_at
 from .nodes import true_node, mean_node, mean_lilith
 from .obliquity import true_obliquity
@@ -2866,13 +2866,13 @@ def _build_relationship_chart(
     """Build a real chart and house frame for one relationship-chart moment/place."""
 
     dt_mid = datetime_from_jd(jd_ut)
-    planets = all_planets_at(jd_ut, reader=reader)
+    jd_tt = utc_to_tt(jd_ut)
+    planets = all_planets_at(jd_tt, reader=reader)
     nodes = {
         Body.TRUE_NODE: true_node(jd_ut, reader=reader),
         Body.MEAN_NODE: mean_node(jd_ut),
         Body.LILITH: mean_lilith(jd_ut),
     }
-    jd_tt = ut_to_tt(jd_ut)
     dt_s = delta_t_from_jd(jd_ut)
     obl = true_obliquity(jd_tt)
 
@@ -2885,7 +2885,7 @@ def _build_relationship_chart(
         obliquity=obl,
         delta_t=dt_s,
     )
-    houses = calculate_houses(jd_ut, latitude, longitude, house_system, policy=house_policy)
+    houses = calculate_houses(utc_to_ut1(jd_ut), latitude, longitude, house_system, policy=house_policy)
     classification = None if computation_truth is None else _classify_davison_truth(computation_truth)
     relation = None
     if computation_truth is not None:
@@ -2995,7 +2995,8 @@ def davison_chart(
     # Build chart at the midpoint using the same public chart-state logic
     # as the main engine: geocentric UT chart positions with Moira's standard
     # obliquity and Delta T fields.
-    planets = all_planets_at(jd_mid, reader=reader)
+    jd_tt = utc_to_tt(jd_mid)
+    planets = all_planets_at(jd_tt, reader=reader)
 
     nodes = {
         Body.TRUE_NODE: true_node(jd_mid, reader=reader),
@@ -3003,7 +3004,6 @@ def davison_chart(
         Body.LILITH:    mean_lilith(jd_mid),
     }
 
-    jd_tt = ut_to_tt(jd_mid)
     dt_s = delta_t_from_jd(jd_mid)
     obl = true_obliquity(jd_tt)
 
@@ -3018,7 +3018,7 @@ def davison_chart(
         delta_t=dt_s,
     )
 
-    houses = calculate_houses(jd_mid, lat_mid, lon_mid, house_system, policy=davison_policy.house_policy)
+    houses = calculate_houses(utc_to_ut1(jd_mid), lat_mid, lon_mid, house_system, policy=davison_policy.house_policy)
 
     computation_truth = DavisonComputationTruth(
         method="midpoint_location",
@@ -3219,12 +3219,12 @@ def davison_chart_corrected(
     jd_mid = (jd_a + jd_b) / 2.0
     lat_mid = (lat_a + lat_b) / 2.0
     lon_mid = _lon_midpoint_uncorrected(lon_a, lon_b)
-    houses_a = calculate_houses(jd_a, lat_a, lon_a, house_system, policy=davison_policy.house_policy)
-    houses_b = calculate_houses(jd_b, lat_b, lon_b, house_system, policy=davison_policy.house_policy)
+    houses_a = calculate_houses(utc_to_ut1(jd_a), lat_a, lon_a, house_system, policy=davison_policy.house_policy)
+    houses_b = calculate_houses(utc_to_ut1(jd_b), lat_b, lon_b, house_system, policy=davison_policy.house_policy)
     target_mc = _midpoint(houses_a.mc, houses_b.mc)
 
     def _signed_diff(jd_value: float) -> float:
-        mc = calculate_houses(jd_value, lat_mid, lon_mid, house_system, policy=davison_policy.house_policy).mc
+        mc = calculate_houses(utc_to_ut1(jd_value), lat_mid, lon_mid, house_system, policy=davison_policy.house_policy).mc
         return ((mc - target_mc + 540.0) % 360.0) - 180.0
 
     bracket_left = jd_mid - 0.5

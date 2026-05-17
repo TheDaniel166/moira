@@ -1,4 +1,3 @@
-from __future__ import annotations
 """
 Dignity Types — moira/dignities_types.py
 

@@ -7,7 +7,8 @@ between the Python reference (Truth) and the C++ accelerated (Forge) backends.
 import os
 import functools
 from enum import Enum
-from typing import Callable, Any
+from collections.abc import Callable
+from typing import Any
 
 class MoiraBackend(Enum):
     PYTHON = "python"

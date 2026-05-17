@@ -1,7 +1,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/functional.h>
-#include <pybind11/numpy.h>
 #include <array>
 #include <fstream>
 #include <mutex>
@@ -24,6 +23,7 @@
 #include "lola.hpp"
 #include "visibility.hpp"
 #include "precession.hpp"
+#include "harmograms.hpp"
 
 namespace py = pybind11;
 using namespace moira::native;
@@ -956,409 +956,9 @@ py::dict read_spk_type13_segment_payload_py(const std::string& path, int32_t sta
 }
 
 // --- Cartography Helpers ---
+// Note: cartography Python bindings are omitted pending numpy-free redesign.
+// The C++ kernels remain available in cartography.hpp for future re-binding.
 
-void solar_cartography_grid_sweep_py(
-    const IEvaluator& sun,
-    const IEvaluator& moon,
-    py::array_t<double> jds,
-    py::array_t<double> gasts_deg,
-    py::array_t<double> lats_deg,
-    py::array_t<double> lons_deg,
-    double sun_radius_km,
-    double moon_radius_km,
-    py::array_t<double> overlap_max,
-    py::array_t<double> central_max,
-    py::array_t<double> magnitude_max
-) {
-    auto jd_ptr = jds.data();
-    auto gast_ptr = gasts_deg.data();
-    auto lat_ptr = lats_deg.data();
-    auto lon_ptr = lons_deg.data();
-    auto overlap_ptr = overlap_max.mutable_data();
-    auto central_ptr = central_max.mutable_data();
-    auto magnitude_ptr = magnitude_max.mutable_data();
-
-    solar_cartography_grid_sweep(
-        sun, moon, jd_ptr, gast_ptr, jds.size(),
-        lat_ptr, lon_ptr, lats_deg.size(),
-        sun_radius_km, moon_radius_km,
-        overlap_ptr, central_ptr, magnitude_ptr
-    );
-}
-
-void lunar_cartography_grid_sweep_py(
-    const IEvaluator& sun,
-    const IEvaluator& moon,
-    py::array_t<double> jds,
-    py::array_t<double> gasts_deg,
-    py::array_t<double> magnitudes_base,
-    py::array_t<double> lats_deg,
-    py::array_t<double> lons_deg,
-    py::array_t<double> penumbral_max,
-    py::array_t<double> partial_max,
-    py::array_t<double> total_max,
-    py::array_t<double> magnitude_max,
-    py::object u1_u4_obj,
-    py::object u2_u3_obj
-) {
-    auto jd_ptr = jds.data();
-    auto gast_ptr = gasts_deg.data();
-    auto mag_base_ptr = magnitudes_base.data();
-    auto lat_ptr = lats_deg.data();
-    auto lon_ptr = lons_deg.data();
-    auto pen_ptr = penumbral_max.mutable_data();
-    auto par_ptr = partial_max.mutable_data();
-    auto tot_ptr = total_max.mutable_data();
-    auto mag_ptr = magnitude_max.mutable_data();
-
-    double u1_u4[2], u2_u3[2];
-    double* p_u1_u4 = nullptr;
-    double* p_u2_u3 = nullptr;
-
-    if (!u1_u4_obj.is_none()) {
-        auto arr = u1_u4_obj.cast<py::array_t<double>>();
-        u1_u4[0] = arr.at(0);
-        u1_u4[1] = arr.at(1);
-        p_u1_u4 = u1_u4;
-    }
-    if (!u2_u3_obj.is_none()) {
-        auto arr = u2_u3_obj.cast<py::array_t<double>>();
-        u2_u3[0] = arr.at(0);
-        u2_u3[1] = arr.at(1);
-        p_u2_u3 = u2_u3;
-    }
-
-    lunar_cartography_grid_sweep(
-        sun, moon, jd_ptr, gast_ptr, mag_base_ptr, jds.size(),
-        lat_ptr, lon_ptr, lats_deg.size(),
-        pen_ptr, par_ptr, tot_ptr, mag_ptr,
-        p_u1_u4, p_u2_u3
-    );
-}
-
-py::tuple solar_find_greatest_eclipse_location_py(
-    const IEvaluator& sun,
-    const IEvaluator& moon,
-    double jd,
-    double gast_deg
-) {
-    auto result = solar_find_greatest_eclipse_location(sun, moon, jd, gast_deg);
-    return py::make_tuple(result.lat_deg, result.lon_deg, result.separation_deg);
-}
-
-// Batch version: solves for each JD in a list, returns list of (lat, lon, sep) tuples.
-py::list solar_centerline_batch_py(
-    const IEvaluator& sun,
-    const IEvaluator& moon,
-    py::array_t<double> jds,
-    py::array_t<double> gasts_deg
-) {
-    auto jd_ptr   = jds.data();
-    auto gast_ptr = gasts_deg.data();
-    size_t n = static_cast<size_t>(jds.size());
-    py::list results;
-    for (size_t i = 0; i < n; ++i) {
-        auto r = solar_find_greatest_eclipse_location(sun, moon, jd_ptr[i], gast_ptr[i]);
-        results.append(py::make_tuple(r.lat_deg, r.lon_deg, r.separation_deg));
-    }
-    return results;
-}
-
-py::tuple solar_observer_quantities_batch_py(
-    const IEvaluator& sun,
-    const IEvaluator& moon,
-    double jd,
-    double gast_deg,
-    py::array_t<double> lats_deg,
-    py::array_t<double> lons_deg,
-    double sun_radius_km,
-    double moon_radius_km
-) {
-    auto buf_lat = lats_deg.request();
-    auto buf_lon = lons_deg.request();
-    size_t n_obs = buf_lat.size;
-    
-    auto lat_ptr = static_cast<const double*>(buf_lat.ptr);
-    auto lon_ptr = static_cast<const double*>(buf_lon.ptr);
-    
-    py::ssize_t shape = static_cast<py::ssize_t>(n_obs);
-    py::array_t<double> raw_ov(shape);
-    py::array_t<double> alt(shape);
-    py::array_t<double> ha(shape);
-    
-    auto raw_ov_ptr = static_cast<double*>(raw_ov.request().ptr);
-    auto alt_ptr    = static_cast<double*>(alt.request().ptr);
-    auto ha_ptr     = static_cast<double*>(ha.request().ptr);
-    
-    solar_observer_quantities_batch(
-        sun, moon, jd, gast_deg, lat_ptr, lon_ptr, n_obs,
-        sun_radius_km, moon_radius_km, raw_ov_ptr, alt_ptr, ha_ptr
-    );
-    
-    return py::make_tuple(raw_ov, alt, ha);
-}
-
-void solar_cartography_grid_sweep_vectors_py(
-    py::array_t<double> sun_xyz_series,
-    py::array_t<double> moon_xyz_series,
-    py::array_t<double> gasts_deg,
-    py::array_t<double> lats_deg,
-    py::array_t<double> lons_deg,
-    double sun_radius_km,
-    double moon_radius_km,
-    py::array_t<double> overlap_max,
-    py::array_t<double> central_max,
-    py::array_t<double> magnitude_max
-) {
-    auto sun_buf = sun_xyz_series.request();
-    auto moon_buf = moon_xyz_series.request();
-    auto gast_buf = gasts_deg.request();
-    auto lat_buf = lats_deg.request();
-    auto lon_buf = lons_deg.request();
-
-    if (sun_buf.ndim != 2 || moon_buf.ndim != 2 || sun_buf.shape[1] != 3 || moon_buf.shape[1] != 3) {
-        throw std::runtime_error("solar_cartography_grid_sweep_vectors expects (n, 3) state arrays.");
-    }
-    if (sun_buf.shape[0] != gast_buf.shape[0] || moon_buf.shape[0] != gast_buf.shape[0] || lat_buf.shape[0] != lon_buf.shape[0]) {
-        throw std::runtime_error("solar_cartography_grid_sweep_vectors received inconsistent array lengths.");
-    }
-
-    solar_cartography_grid_sweep_vectors(
-        static_cast<const double*>(sun_buf.ptr),
-        static_cast<const double*>(moon_buf.ptr),
-        static_cast<const double*>(gast_buf.ptr),
-        static_cast<size_t>(gast_buf.shape[0]),
-        static_cast<const double*>(lat_buf.ptr),
-        static_cast<const double*>(lon_buf.ptr),
-        static_cast<size_t>(lat_buf.shape[0]),
-        sun_radius_km,
-        moon_radius_km,
-        overlap_max.mutable_data(),
-        central_max.mutable_data(),
-        magnitude_max.mutable_data()
-    );
-}
-
-py::tuple solar_observer_quantities_batch_vectors_py(
-    py::array_t<double> sun_xyz,
-    py::array_t<double> moon_xyz,
-    double gast_deg,
-    py::array_t<double> lats_deg,
-    py::array_t<double> lons_deg,
-    double sun_radius_km,
-    double moon_radius_km
-) {
-    auto sun_buf = sun_xyz.request();
-    auto moon_buf = moon_xyz.request();
-    auto lat_buf = lats_deg.request();
-    auto lon_buf = lons_deg.request();
-
-    if (sun_buf.ndim != 1 || moon_buf.ndim != 1 || sun_buf.shape[0] != 3 || moon_buf.shape[0] != 3) {
-        throw std::runtime_error("solar_observer_quantities_batch_vectors expects length-3 state arrays.");
-    }
-    if (lat_buf.shape[0] != lon_buf.shape[0]) {
-        throw std::runtime_error("solar_observer_quantities_batch_vectors received inconsistent observer arrays.");
-    }
-
-    py::array_t<double> raw_ov(lat_buf.size);
-    py::array_t<double> alt(lat_buf.size);
-    py::array_t<double> ha(lat_buf.size);
-
-    solar_observer_quantities_batch_vectors(
-        static_cast<const double*>(sun_buf.ptr),
-        static_cast<const double*>(moon_buf.ptr),
-        gast_deg,
-        static_cast<const double*>(lat_buf.ptr),
-        static_cast<const double*>(lon_buf.ptr),
-        static_cast<size_t>(lat_buf.size),
-        sun_radius_km,
-        moon_radius_km,
-        raw_ov.mutable_data(),
-        alt.mutable_data(),
-        ha.mutable_data()
-    );
-    return py::make_tuple(raw_ov, alt, ha);
-}
-
-py::tuple solar_cross_track_limit_band_py(
-    const IEvaluator& sun,
-    const IEvaluator& moon,
-    py::array_t<double> jds,
-    py::array_t<double> gasts_deg,
-    py::array_t<double> center_lats_deg,
-    py::array_t<double> center_lons_deg,
-    int margin_kind,
-    double max_distance_km,
-    double sun_radius_km,
-    double moon_radius_km
-) {
-    auto roots = solar_cross_track_limit_band(
-        sun, moon,
-        jds.data(), gasts_deg.data(), center_lats_deg.data(), center_lons_deg.data(),
-        static_cast<size_t>(jds.size()),
-        margin_kind, max_distance_km, sun_radius_km, moon_radius_km
-    );
-
-    py::array_t<double> south_lats(roots.size());
-    py::array_t<double> south_lons(roots.size());
-    py::array_t<double> north_lats(roots.size());
-    py::array_t<double> north_lons(roots.size());
-    auto* slat = south_lats.mutable_data();
-    auto* slon = south_lons.mutable_data();
-    auto* nlat = north_lats.mutable_data();
-    auto* nlon = north_lons.mutable_data();
-    for (size_t i = 0; i < roots.size(); ++i) {
-        slat[i] = roots[i].south_lat_deg;
-        slon[i] = roots[i].south_lon_deg;
-        nlat[i] = roots[i].north_lat_deg;
-        nlon[i] = roots[i].north_lon_deg;
-    }
-    return py::make_tuple(south_lats, south_lons, north_lats, north_lons);
-}
-
-py::tuple solar_cross_track_limit_band_vectors_py(
-    py::array_t<double> sun_xyz_series,
-    py::array_t<double> moon_xyz_series,
-    py::array_t<double> gasts_deg,
-    py::array_t<double> center_lats_deg,
-    py::array_t<double> center_lons_deg,
-    int margin_kind,
-    double max_distance_km,
-    double sun_radius_km,
-    double moon_radius_km
-) {
-    auto sun_buf = sun_xyz_series.request();
-    auto moon_buf = moon_xyz_series.request();
-    auto gast_buf = gasts_deg.request();
-    auto lat_buf = center_lats_deg.request();
-    auto lon_buf = center_lons_deg.request();
-    if (sun_buf.ndim != 2 || moon_buf.ndim != 2 || sun_buf.shape[1] != 3 || moon_buf.shape[1] != 3) {
-        throw std::runtime_error("solar_cross_track_limit_band_vectors expects (n, 3) state arrays.");
-    }
-    if (sun_buf.shape[0] != moon_buf.shape[0] || sun_buf.shape[0] != gast_buf.shape[0]
-        || sun_buf.shape[0] != lat_buf.shape[0] || sun_buf.shape[0] != lon_buf.shape[0]) {
-        throw std::runtime_error("solar_cross_track_limit_band_vectors received inconsistent array lengths.");
-    }
-
-    auto roots = solar_cross_track_limit_band_vectors(
-        static_cast<const double*>(sun_buf.ptr),
-        static_cast<const double*>(moon_buf.ptr),
-        static_cast<const double*>(gast_buf.ptr),
-        static_cast<const double*>(lat_buf.ptr),
-        static_cast<const double*>(lon_buf.ptr),
-        static_cast<size_t>(gast_buf.shape[0]),
-        margin_kind,
-        max_distance_km,
-        sun_radius_km,
-        moon_radius_km
-    );
-
-    py::array_t<double> south_lats(roots.size());
-    py::array_t<double> south_lons(roots.size());
-    py::array_t<double> north_lats(roots.size());
-    py::array_t<double> north_lons(roots.size());
-    auto* slat = south_lats.mutable_data();
-    auto* slon = south_lons.mutable_data();
-    auto* nlat = north_lats.mutable_data();
-    auto* nlon = north_lons.mutable_data();
-    for (size_t i = 0; i < roots.size(); ++i) {
-        slat[i] = roots[i].south_lat_deg;
-        slon[i] = roots[i].south_lon_deg;
-        nlat[i] = roots[i].north_lat_deg;
-        nlon[i] = roots[i].north_lon_deg;
-    }
-    return py::make_tuple(south_lats, south_lons, north_lats, north_lons);
-}
-
-py::tuple solar_cross_track_magnitude_contour_py(
-    const IEvaluator& sun,
-    const IEvaluator& moon,
-    py::array_t<double> jds,
-    py::array_t<double> gasts_deg,
-    py::array_t<double> center_lats_deg,
-    py::array_t<double> center_lons_deg,
-    double threshold,
-    double max_distance_km,
-    double sun_radius_km,
-    double moon_radius_km
-) {
-    auto roots = solar_cross_track_magnitude_contour(
-        sun, moon,
-        jds.data(), gasts_deg.data(), center_lats_deg.data(), center_lons_deg.data(),
-        static_cast<size_t>(jds.size()),
-        threshold, max_distance_km, sun_radius_km, moon_radius_km
-    );
-
-    py::array_t<double> south_lats(roots.size());
-    py::array_t<double> south_lons(roots.size());
-    py::array_t<double> north_lats(roots.size());
-    py::array_t<double> north_lons(roots.size());
-    auto* slat = south_lats.mutable_data();
-    auto* slon = south_lons.mutable_data();
-    auto* nlat = north_lats.mutable_data();
-    auto* nlon = north_lons.mutable_data();
-    for (size_t i = 0; i < roots.size(); ++i) {
-        slat[i] = roots[i].south_lat_deg;
-        slon[i] = roots[i].south_lon_deg;
-        nlat[i] = roots[i].north_lat_deg;
-        nlon[i] = roots[i].north_lon_deg;
-    }
-    return py::make_tuple(south_lats, south_lons, north_lats, north_lons);
-}
-
-py::tuple solar_cross_track_magnitude_contour_vectors_py(
-    py::array_t<double> sun_xyz_series,
-    py::array_t<double> moon_xyz_series,
-    py::array_t<double> gasts_deg,
-    py::array_t<double> center_lats_deg,
-    py::array_t<double> center_lons_deg,
-    double threshold,
-    double max_distance_km,
-    double sun_radius_km,
-    double moon_radius_km
-) {
-    auto sun_buf = sun_xyz_series.request();
-    auto moon_buf = moon_xyz_series.request();
-    auto gast_buf = gasts_deg.request();
-    auto lat_buf = center_lats_deg.request();
-    auto lon_buf = center_lons_deg.request();
-    if (sun_buf.ndim != 2 || moon_buf.ndim != 2 || sun_buf.shape[1] != 3 || moon_buf.shape[1] != 3) {
-        throw std::runtime_error("solar_cross_track_magnitude_contour_vectors expects (n, 3) state arrays.");
-    }
-    if (sun_buf.shape[0] != moon_buf.shape[0] || sun_buf.shape[0] != gast_buf.shape[0]
-        || sun_buf.shape[0] != lat_buf.shape[0] || sun_buf.shape[0] != lon_buf.shape[0]) {
-        throw std::runtime_error("solar_cross_track_magnitude_contour_vectors received inconsistent array lengths.");
-    }
-
-    auto roots = solar_cross_track_magnitude_contour_vectors(
-        static_cast<const double*>(sun_buf.ptr),
-        static_cast<const double*>(moon_buf.ptr),
-        static_cast<const double*>(gast_buf.ptr),
-        static_cast<const double*>(lat_buf.ptr),
-        static_cast<const double*>(lon_buf.ptr),
-        static_cast<size_t>(gast_buf.shape[0]),
-        threshold,
-        max_distance_km,
-        sun_radius_km,
-        moon_radius_km
-    );
-
-    py::array_t<double> south_lats(roots.size());
-    py::array_t<double> south_lons(roots.size());
-    py::array_t<double> north_lats(roots.size());
-    py::array_t<double> north_lons(roots.size());
-    auto* slat = south_lats.mutable_data();
-    auto* slon = south_lons.mutable_data();
-    auto* nlat = north_lats.mutable_data();
-    auto* nlon = north_lons.mutable_data();
-    for (size_t i = 0; i < roots.size(); ++i) {
-        slat[i] = roots[i].south_lat_deg;
-        slon[i] = roots[i].south_lon_deg;
-        nlat[i] = roots[i].north_lat_deg;
-        nlon[i] = roots[i].north_lon_deg;
-    }
-    return py::make_tuple(south_lats, south_lons, north_lats, north_lons);
-}
 
 } // namespace
 
@@ -1373,15 +973,14 @@ PYBIND11_MODULE(_moira_native, m) {
             std::vector<double> out(res, res + 6);
             return vector_to_py_list(out);
         })
-        .def("evaluate_batch", [](IEvaluator& self, py::array_t<double> jds) {
-            auto buf = jds.request();
-            size_t count = buf.size;
-            const double* ptr = static_cast<const double*>(buf.ptr);
-            
-            py::array_t<double> out({count, static_cast<size_t>(6)});
-            auto out_ptr = static_cast<double*>(out.request().ptr);
-            
-            self.evaluate_batch(ptr, count, out_ptr);
+        .def("evaluate_batch", [](IEvaluator& self, const std::vector<double>& jds) {
+            size_t count = jds.size();
+            std::vector<std::vector<double>> out(count, std::vector<double>(6));
+            std::vector<double> flat(count * 6);
+            self.evaluate_batch(jds.data(), count, flat.data());
+            for (size_t i = 0; i < count; ++i) {
+                out[i].assign(flat.data() + i * 6, flat.data() + i * 6 + 6);
+            }
             return out;
         });
 
@@ -1488,39 +1087,25 @@ PYBIND11_MODULE(_moira_native, m) {
         return longitude_difference(*t1, *t2, *obs, jd);
     });
 
-    m.def("longitude_difference_batch", [](std::shared_ptr<IEvaluator> t1, std::shared_ptr<IEvaluator> t2, std::shared_ptr<IEvaluator> obs, py::array_t<double> jds) {
-        auto buf = jds.request();
-        size_t count = buf.size;
-        const double* ptr = static_cast<const double*>(buf.ptr);
-        
-        py::array_t<double> out(count);
-        auto out_ptr = static_cast<double*>(out.request().ptr);
-        
-        for (size_t i = 0; i < count; ++i) {
-            out_ptr[i] = longitude_difference(*t1, *t2, *obs, ptr[i]);
+    m.def("longitude_difference_batch", [](std::shared_ptr<IEvaluator> t1, std::shared_ptr<IEvaluator> t2, std::shared_ptr<IEvaluator> obs, const std::vector<double>& jds) {
+        std::vector<double> out(jds.size());
+        for (size_t i = 0; i < jds.size(); ++i) {
+            out[i] = longitude_difference(*t1, *t2, *obs, jds[i]);
         }
         return out;
     });
 
-    m.def("declination_batch", [](std::shared_ptr<IEvaluator> t, std::shared_ptr<IEvaluator> obs, py::array_t<double> jds) {
-        auto buf = jds.request();
-        size_t count = buf.size;
-        const double* ptr = static_cast<const double*>(buf.ptr);
-        
-        py::array_t<double> out(count);
-        auto out_ptr = static_cast<double*>(out.request().ptr);
-        
-        for (size_t i = 0; i < count; ++i) {
-            double r[6];
-            // Use evaluate which handles caching internally
+    m.def("declination_batch", [](std::shared_ptr<IEvaluator> t, std::shared_ptr<IEvaluator> obs, const std::vector<double>& jds) {
+        std::vector<double> out(jds.size());
+        for (size_t i = 0; i < jds.size(); ++i) {
             double r_t[6], r_o[6];
-            t->evaluate(ptr[i], r_t);
-            obs->evaluate(ptr[i], r_o);
+            t->evaluate(jds[i], r_t);
+            obs->evaluate(jds[i], r_o);
             double x = r_t[0] - r_o[0];
             double y = r_t[1] - r_o[1];
             double z = r_t[2] - r_o[2];
             double dist = std::sqrt(x*x + y*y + z*z);
-            out_ptr[i] = std::asin(z / dist) * 180.0 / 3.14159265358979323846;
+            out[i] = std::asin(z / dist) * 180.0 / 3.14159265358979323846;
         }
         return out;
     });
@@ -1719,73 +1304,7 @@ PYBIND11_MODULE(_moira_native, m) {
              py::arg("ra_deg"), py::arg("dec_deg"), py::arg("pmra_mas"), py::arg("pmdec_mas"), py::arg("parallax"), py::arg("rv"));
 
     // --- Cartography ---
-    m.def("solar_cartography_grid_sweep", &solar_cartography_grid_sweep_py,
-        py::arg("sun"), py::arg("moon"), py::arg("jds"), py::arg("gasts_deg"),
-        py::arg("lats_deg"), py::arg("lons_deg"),
-        py::arg("sun_radius_km"), py::arg("moon_radius_km"),
-        py::arg("overlap_max"), py::arg("central_max"), py::arg("magnitude_max"));
-
-    m.def("lunar_cartography_grid_sweep", &lunar_cartography_grid_sweep_py,
-        py::arg("sun"), py::arg("moon"), py::arg("jds"), py::arg("gasts_deg"),
-        py::arg("magnitudes_base"), py::arg("lats_deg"), py::arg("lons_deg"),
-        py::arg("penumbral_max"), py::arg("partial_max"), py::arg("total_max"), py::arg("magnitude_max"),
-        py::arg("u1_u4") = py::none(), py::arg("u2_u3") = py::none());
-
-    m.def("solar_find_greatest_eclipse_location", &solar_find_greatest_eclipse_location_py,
-        py::arg("sun"), py::arg("moon"), py::arg("jd"), py::arg("gast_deg"),
-        "Find (lat, lon, separation_deg) of the point of greatest eclipse at a fixed JD."
-        " Exact port of Python _solve_solar_greatest_location().");
-
-    m.def("solar_centerline_batch", &solar_centerline_batch_py,
-        py::arg("sun"), py::arg("moon"), py::arg("jds"), py::arg("gasts_deg"),
-        "Batch centerline solve: returns list of (lat, lon, sep) for each JD in jds.");
-
-    m.def("solar_observer_quantities_batch", &solar_observer_quantities_batch_py,
-        py::arg("sun"), py::arg("moon"), py::arg("jd"), py::arg("gast_deg"),
-        py::arg("lats_deg"), py::arg("lons_deg"),
-        py::arg("sun_radius_km"), py::arg("moon_radius_km"),
-        "Compute (raw_overlap, altitude, hour_angle) for multiple observers at a fixed JD.");
-
-    m.def("solar_cartography_grid_sweep_vectors", &solar_cartography_grid_sweep_vectors_py,
-        py::arg("sun_xyz_series"), py::arg("moon_xyz_series"), py::arg("gasts_deg"),
-        py::arg("lats_deg"), py::arg("lons_deg"),
-        py::arg("sun_radius_km"), py::arg("moon_radius_km"),
-        py::arg("overlap_max"), py::arg("central_max"), py::arg("magnitude_max"),
-        "Aggregate solar cartography maxima from apparent state-vector series.");
-
-    m.def("solar_observer_quantities_batch_vectors", &solar_observer_quantities_batch_vectors_py,
-        py::arg("sun_xyz"), py::arg("moon_xyz"), py::arg("gast_deg"),
-        py::arg("lats_deg"), py::arg("lons_deg"),
-        py::arg("sun_radius_km"), py::arg("moon_radius_km"),
-        "Compute solar observer quantities from apparent state vectors.");
-
-    m.def("solar_cross_track_limit_band", &solar_cross_track_limit_band_py,
-        py::arg("sun"), py::arg("moon"), py::arg("jds"), py::arg("gasts_deg"),
-        py::arg("center_lats_deg"), py::arg("center_lons_deg"),
-        py::arg("margin_kind"), py::arg("max_distance_km"),
-        py::arg("sun_radius_km"), py::arg("moon_radius_km"),
-        "Solve solar cross-track partial/central boundary roots from a centerline.");
-
-    m.def("solar_cross_track_limit_band_vectors", &solar_cross_track_limit_band_vectors_py,
-        py::arg("sun_xyz_series"), py::arg("moon_xyz_series"), py::arg("gasts_deg"),
-        py::arg("center_lats_deg"), py::arg("center_lons_deg"),
-        py::arg("margin_kind"), py::arg("max_distance_km"),
-        py::arg("sun_radius_km"), py::arg("moon_radius_km"),
-        "Solve solar cross-track partial/central boundary roots from apparent state-vector series.");
-
-    m.def("solar_cross_track_magnitude_contour", &solar_cross_track_magnitude_contour_py,
-        py::arg("sun"), py::arg("moon"), py::arg("jds"), py::arg("gasts_deg"),
-        py::arg("center_lats_deg"), py::arg("center_lons_deg"),
-        py::arg("threshold"), py::arg("max_distance_km"),
-        py::arg("sun_radius_km"), py::arg("moon_radius_km"),
-        "Solve solar cross-track magnitude contour roots from a centerline.");
-
-    m.def("solar_cross_track_magnitude_contour_vectors", &solar_cross_track_magnitude_contour_vectors_py,
-        py::arg("sun_xyz_series"), py::arg("moon_xyz_series"), py::arg("gasts_deg"),
-        py::arg("center_lats_deg"), py::arg("center_lons_deg"),
-        py::arg("threshold"), py::arg("max_distance_km"),
-        py::arg("sun_radius_km"), py::arg("moon_radius_km"),
-        "Solve solar cross-track magnitude contour roots from apparent state-vector series.");
+    // Bindings omitted pending integration; C++ kernels remain in cartography.hpp.
 
     // --- LOLA (Lunar Orbiter Laser Altimeter) ---
     
@@ -1968,4 +1487,80 @@ PYBIND11_MODULE(_moira_native, m) {
 
     m.def("mean_obliquity_p03", &mean_obliquity_p03, py::arg("jd_tt"),
         "IAU 2006 Mean Obliquity (P03 model).");
+
+    // ── Harmogram acceleration kernels ────────────────────────────────────────
+
+    m.def("harmogram_compute_components",
+        [](const std::vector<double>& longitudes_deg,
+           const std::vector<int>&    harmonics,
+           bool                       raw_sum)
+        {
+            return harmogram_compute_components(longitudes_deg, harmonics, raw_sum);
+        },
+        py::arg("longitudes_deg"), py::arg("harmonics"), py::arg("raw_sum"),
+        "Compute harmonic vector components (amplitude, phase) for a set of "
+        "ecliptic longitudes. Returns list of (harmonic, amplitude, phase_deg).");
+
+    m.def("harmogram_trace_batch",
+        [](const std::vector<std::vector<double>>& samples_source_lons,
+           const std::vector<std::vector<double>>& samples_target_lons,
+           bool                                    same_source_target,
+           bool                                    ordered,
+           bool                                    include_self,
+           bool                                    raw_sum,
+           double                                  h0_contribution,
+           const std::vector<int>&                 harmonics,
+           const std::vector<std::tuple<int, double, double>>& intensity_components)
+        {
+            auto res = harmogram_trace_batch(
+                samples_source_lons, samples_target_lons,
+                same_source_target, ordered, include_self, raw_sum,
+                h0_contribution, harmonics, intensity_components
+            );
+            return py::make_tuple(res.total_strengths, res.sample_components);
+        },
+        py::arg("samples_source_lons"),
+        py::arg("samples_target_lons"),
+        py::arg("same_source_target"),
+        py::arg("ordered"),
+        py::arg("include_self"),
+        py::arg("raw_sum"),
+        py::arg("h0_contribution"),
+        py::arg("harmonics"),
+        py::arg("intensity_components"),
+        "Batch ZA-parts Fourier + intensity projection for N time samples, "
+        "parallelised via OpenMP. Returns (total_strengths[N], "
+        "sample_components[N][H]) where each component is (harmonic, amplitude, phase_deg).");
+
+    m.def("harmogram_intensity_components",
+        [](int                       harmonic_number,
+           int                       harmonic_start,
+           int                       harmonic_stop,
+           int                       sample_count,
+           const std::string&        orb_mode,
+           double                    orb_width_deg,
+           bool                      include_conjunction,
+           const std::string&        orb_scaling_mode,
+           double                    gaussian_width_deg,
+           bool                      gaussian_fwhm_mode)
+        {
+            auto [h0_amp, comps] = harmogram_intensity_components(
+                harmonic_number, harmonic_start, harmonic_stop,
+                sample_count, orb_mode, orb_width_deg, include_conjunction,
+                orb_scaling_mode, gaussian_width_deg, gaussian_fwhm_mode
+            );
+            return py::make_tuple(h0_amp, comps);
+        },
+        py::arg("harmonic_number"),
+        py::arg("harmonic_start"),
+        py::arg("harmonic_stop"),
+        py::arg("sample_count"),
+        py::arg("orb_mode"),
+        py::arg("orb_width_deg"),
+        py::arg("include_conjunction"),
+        py::arg("orb_scaling_mode"),
+        py::arg("gaussian_width_deg") = 0.0,
+        py::arg("gaussian_fwhm_mode") = false,
+        "Sample the intensity orb function and compute its DFT spectrum. "
+        "Returns (h0_amplitude, [(harmonic, amplitude, phase_deg), ...]).");
 }

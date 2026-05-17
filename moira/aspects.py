@@ -185,7 +185,6 @@ Convenience properties (read-only, derived only)
 ``DeclinationAspect.is_contra_parallel``  — True when aspect is "Contra-Parallel".
 ``DeclinationAspect.orb_surplus``         — allowed_orb minus orb.
 """
-from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field

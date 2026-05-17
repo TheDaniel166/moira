@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import pytest
 
 from moira import Body, HouseSystem, Moira
-from moira.julian import delta_t_from_jd, ut_to_tt
+from moira.julian import delta_t_from_jd, ut_to_tt, utc_to_tt
 from moira.obliquity import true_obliquity
 from moira.houses import HousePolicy, assign_house
 from moira.aspects import aspects_between
@@ -389,7 +389,7 @@ def test_davison_chart_matches_midpoint_time_and_location_chart_cast(moira_engin
         )
 
     assert davison.chart.obliquity == pytest.approx(expected_chart.obliquity, abs=1e-12)
-    assert davison.chart.obliquity == pytest.approx(true_obliquity(ut_to_tt(davison.chart.jd_ut)), abs=1e-12)
+    assert davison.chart.obliquity == pytest.approx(true_obliquity(utc_to_tt(davison.chart.jd_ut)), abs=1e-12)
     assert davison.chart.delta_t == pytest.approx(delta_t_from_jd(davison.chart.jd_ut), abs=1e-12)
     assert davison.houses is not None
     assert list(davison.houses.cusps) == pytest.approx(list(expected_houses.cusps), abs=1e-12)

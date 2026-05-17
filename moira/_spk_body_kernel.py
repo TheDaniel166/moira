@@ -10,8 +10,6 @@ The public surface intentionally preserves the existing shape used by
 dependence on ``jplephem``.
 """
 
-from __future__ import annotations
-
 from bisect import bisect_left
 import json
 from pathlib import Path

@@ -73,8 +73,8 @@ def test_no_forbidden_port_patterns(path: Path) -> None:
     source = path.read_text(encoding="utf-8-sig")
 
     assert not _FORBIDDEN_FUTURE_IMPORT.search(source), (
-        f"{_source_id(path)}: 'from __future__ import annotations' is forbidden in Python 3.14 "
-        f"(PEP 563 is native - remove this import)"
+        f"{_source_id(path)}: 'from __future__ import annotations' is disallowed by Moira's "
+        f"Python 3.14 port standard because the import is no longer needed here; remove it"
     )
 
     tree = ast.parse(source, filename=str(path))
@@ -108,7 +108,8 @@ def test_no_forbidden_port_patterns(path: Path) -> None:
                     if alias.name == "annotations":
                         pytest.fail(
                             f"{_source_id(path)}:{node.lineno} forbidden import "
-                            "'from __future__ import annotations'"
+                            "'from __future__ import annotations' under Moira's Python 3.14 "
+                            "port standard"
                         )
 
         if (

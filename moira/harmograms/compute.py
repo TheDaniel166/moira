@@ -18,6 +18,8 @@ Public surface:
 
 import math
 
+from ..dispatch import MoiraBackend, settings as _dispatch_settings
+
 from .helpers import (
     _component_to_complex,
     _intensity_at_angle_deg,
@@ -104,6 +106,20 @@ def _compute_components(
     harmonic_domain: HarmonicDomain,
     normalization_mode: HarmonicVectorNormalizationMode,
 ) -> tuple[HarmonicVectorComponent, ...]:
+    if _dispatch_settings.current_backend() is MoiraBackend.NATIVE:
+        try:
+            from .. import moira_native as _mn
+            raw_sum = normalization_mode is HarmonicVectorNormalizationMode.RAW_SUM
+            native_result = _mn.harmogram_compute_components(
+                list(longitudes_deg), list(harmonic_domain.harmonics), raw_sum
+            )
+            return tuple(
+                HarmonicVectorComponent(harmonic=h, amplitude=a, phase_deg=p)
+                for h, a, p in native_result
+            )
+        except (ImportError, AttributeError):
+            pass
+
     point_count = len(longitudes_deg)
     components: list[HarmonicVectorComponent] = []
     for harmonic in harmonic_domain.harmonics:
@@ -124,6 +140,35 @@ def _compute_intensity_components(
     *,
     policy: HarmogramIntensityPolicy,
 ) -> tuple[float, tuple[IntensitySpectrumComponent, ...]]:
+    if _dispatch_settings.current_backend() is MoiraBackend.NATIVE:
+        try:
+            from .. import moira_native as _mn
+            from .models import GaussianWidthParameterMode
+            gaussian_width_deg = policy.gaussian_width_deg if policy.gaussian_width_deg is not None else 0.0
+            gaussian_fwhm = (
+                policy.gaussian_width_parameter_mode is GaussianWidthParameterMode.FWHM
+                if hasattr(policy, "gaussian_width_parameter_mode")
+                else False
+            )
+            h0_amp, raw_comps = _mn.harmogram_intensity_components(
+                harmonic_number,
+                policy.harmonic_domain.harmonic_start,
+                policy.harmonic_domain.harmonic_stop,
+                policy.sample_count,
+                str(policy.orb_mode),
+                policy.orb_width_deg,
+                policy.include_conjunction,
+                str(policy.orb_scaling_mode),
+                gaussian_width_deg,
+                gaussian_fwhm,
+            )
+            return h0_amp, tuple(
+                IntensitySpectrumComponent(harmonic=h, amplitude=a, phase_deg=p)
+                for h, a, p in raw_comps
+            )
+        except (ImportError, AttributeError):
+            pass
+
     sample_count = policy.sample_count
     samples = tuple(
         _intensity_at_angle_deg((360.0 * index) / sample_count, harmonic_number, policy)
@@ -304,6 +349,156 @@ def harmogram_trace(
     if resolved_policy.sampling_policy.sample_count is not None and len(normalized_samples) != resolved_policy.sampling_policy.sample_count:
         raise ValueError("samples must match the declared sampling policy sample_count")
     sample_times = tuple(sample_time for sample_time, _ in normalized_samples)
+
+    # ── Native batch fast path ─────────────────────────────────────────────
+    # Fuses ZA-parts, Fourier, and projection for all N samples in one C++
+    # call, optionally parallelised via OpenMP.  Falls through to the Python
+    # reference path if the extension is unavailable or the trace family is
+    # not yet supported.
+    if _dispatch_settings.current_backend() is MoiraBackend.NATIVE:
+        try:
+            from .. import moira_native as _mn
+            if not hasattr(_mn, "harmogram_trace_batch"):
+                raise AttributeError
+
+            # Pair construction flags from policy
+            _same_src_tgt = resolved_policy.trace_family is HarmogramTraceFamily.DYNAMIC_ZERO_ARIES_PARTS
+            _ordered = resolved_policy.parts_policy.pair_construction_mode is ZeroAriesPairConstructionMode.ORDERED
+            _include_self = resolved_policy.parts_policy.self_pair_mode is SelfPairMode.INCLUDE
+            _raw_sum = resolved_policy.point_set_policy.normalization_mode is HarmonicVectorNormalizationMode.RAW_SUM
+
+            # Extract longitude arrays and body names per sample (minimal Python work)
+            _samples_src_lons: list[list[float]] = []
+            _samples_tgt_lons: list[list[float]] = []
+            _all_src_names: list[tuple[str, ...]] = []
+            _all_tgt_names: list[tuple[str, ...]] = []
+
+            for _, _payload in normalized_samples:
+                if resolved_policy.trace_family is HarmogramTraceFamily.DYNAMIC_ZERO_ARIES_PARTS:
+                    _sl = [float(p["degree"]) for p in _payload]
+                    _samples_src_lons.append(_sl)
+                    _samples_tgt_lons.append(_sl)
+                    _names = tuple(str(p["name"]) for p in _payload)
+                    _all_src_names.append(_names)
+                    _all_tgt_names.append(_names)
+                elif resolved_policy.trace_family is HarmogramTraceFamily.TRANSIT_TO_NATAL_ZERO_ARIES_PARTS:
+                    _samples_src_lons.append([float(p["degree"]) for p in _payload["transit_positions"]])
+                    _samples_tgt_lons.append([float(p["degree"]) for p in _payload["natal_positions"]])
+                    _all_src_names.append(tuple(str(p["name"]) for p in _payload["transit_positions"]))
+                    _all_tgt_names.append(tuple(str(p["name"]) for p in _payload["natal_positions"]))
+                elif resolved_policy.trace_family is HarmogramTraceFamily.DIRECTED_TO_NATAL_ZERO_ARIES_PARTS:
+                    _samples_src_lons.append([float(p["degree"]) for p in _payload["directed_positions"]])
+                    _samples_tgt_lons.append([float(p["degree"]) for p in _payload["natal_positions"]])
+                    _all_src_names.append(tuple(str(p["name"]) for p in _payload["directed_positions"]))
+                    _all_tgt_names.append(tuple(str(p["name"]) for p in _payload["natal_positions"]))
+                elif resolved_policy.trace_family is HarmogramTraceFamily.PROGRESSED_TO_NATAL_ZERO_ARIES_PARTS:
+                    _samples_src_lons.append([float(p["degree"]) for p in _payload["progressed_positions"]])
+                    _samples_tgt_lons.append([float(p["degree"]) for p in _payload["natal_positions"]])
+                    _all_src_names.append(tuple(str(p["name"]) for p in _payload["progressed_positions"]))
+                    _all_tgt_names.append(tuple(str(p["name"]) for p in _payload["natal_positions"]))
+                else:
+                    raise ValueError("unsupported harmogram trace family")
+
+            # Parts count (same for every sample in a trace)
+            _n_src = len(_samples_src_lons[0])
+            _n_tgt = len(_samples_tgt_lons[0])
+            if _same_src_tgt and not _ordered:
+                _parts_count = _n_src * (_n_src + 1) // 2 if _include_self else _n_src * (_n_src - 1) // 2
+            elif _same_src_tgt and not _include_self:
+                _parts_count = _n_src * _n_src - _n_src
+            else:
+                _parts_count = _n_src * _n_tgt
+            _h0_src_amp = float(_parts_count) if _raw_sum else 1.0
+
+            _series_native: list[HarmogramTraceSeries] = []
+            for _hn in resolved_harmonics:
+                _intensity = intensity_function_spectrum(_hn, policy=resolved_policy.intensity_policy)
+                _h0_contrib = _h0_src_amp * _intensity.harmonic_zero_amplitude
+                _int_raw = [(_c.harmonic, _c.amplitude, _c.phase_deg) for _c in _intensity.components]
+                _harmonics_list = list(resolved_policy.point_set_policy.harmonic_domain.harmonics)
+
+                _total_strengths, _all_comps = _mn.harmogram_trace_batch(
+                    _samples_src_lons,
+                    [] if _same_src_tgt else _samples_tgt_lons,
+                    _same_src_tgt,
+                    _ordered,
+                    _include_self,
+                    _raw_sum,
+                    _h0_contrib,
+                    _harmonics_list,
+                    _int_raw,
+                )
+
+                _trace_samples: list[HarmogramTraceSample] = []
+                for _i, (((_st, _), _sn, _tn, _comps, _strength)) in enumerate(
+                    zip(normalized_samples, _all_src_names, _all_tgt_names,
+                        _all_comps, _total_strengths)
+                ):
+                    _sv_comps = tuple(
+                        HarmonicVectorComponent(harmonic=_h, amplitude=_a, phase_deg=_p)
+                        for _h, _a, _p in _comps
+                    )
+                    _sv = ZeroAriesPartsHarmonicVector(
+                        vector_policy=resolved_policy.point_set_policy,
+                        parts_policy=resolved_policy.parts_policy,
+                        source_body_names=_sn,
+                        target_body_names=_tn,
+                        parts_count=_parts_count,
+                        harmonic_zero_amplitude=_h0_src_amp,
+                        components=_sv_comps,
+                    )
+                    _terms = tuple(
+                        HarmogramProjectionTerm(
+                            harmonic=_h,
+                            source_amplitude=_a,
+                            source_phase_deg=_p,
+                            intensity_amplitude=_ic.amplitude,
+                            intensity_phase_deg=_ic.phase_deg,
+                            signed_contribution=2.0 * _a * _ic.amplitude
+                                * math.cos(math.radians(_p + _ic.phase_deg)),
+                        )
+                        for (_h, _a, _p), _ic in zip(_comps, _intensity.components)
+                    )
+                    _proj = HarmogramProjection(
+                        source_vector=_sv,
+                        intensity_spectrum=_intensity,
+                        normalization_mode=resolved_policy.point_set_policy.normalization_mode,
+                        realization_mode=(
+                            HarmogramProjectionRealizationMode.NUMERICAL_TRUNCATED
+                            if _intensity.realization_mode is IntensitySpectrumRealizationMode.NUMERICAL_TRUNCATED
+                            else HarmogramProjectionRealizationMode.FINITE_CLOSED_FORM
+                        ),
+                        harmonic_zero_contribution=_h0_contrib,
+                        total_strength=_strength,
+                        terms=_terms,
+                    )
+                    _trace_samples.append(
+                        HarmogramTraceSample(
+                            sample_index=_i,
+                            sample_time=_st,
+                            source_vector=_sv,
+                            projection=_proj,
+                            total_strength=_strength,
+                        )
+                    )
+                _series_native.append(
+                    HarmogramTraceSeries(
+                        harmonic_number=_hn,
+                        intensity_spectrum=_intensity,
+                        samples=tuple(_trace_samples),
+                    )
+                )
+            return HarmogramTrace(
+                policy=resolved_policy,
+                interval_start=sample_times[0],
+                interval_stop=sample_times[-1],
+                sample_times=sample_times,
+                series=tuple(_series_native),
+            )
+        except (ImportError, AttributeError):
+            pass
+    # ── end native batch fast path ─────────────────────────────────────────
+
     source_vectors: list[ZeroAriesPartsHarmonicVector] = []
     for _, sample_payload in normalized_samples:
         if resolved_policy.trace_family is HarmogramTraceFamily.DYNAMIC_ZERO_ARIES_PARTS:

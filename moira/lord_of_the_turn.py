@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """
 Moira — Lord of the Turn Engine
 Governs computation of the annual Lord of the Turn using Al-Qabisi's succession-hierarchy method and the Egyptian/Al-Sijzi testimony method.
