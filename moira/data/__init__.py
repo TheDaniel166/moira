@@ -14,4 +14,6 @@ Public surface:
     Package initialization and data module organization
 """
 
+from __future__ import annotations
+
 # moira/data/__init__.py

@@ -340,8 +340,8 @@ class TestValidationRules:
     def test_validate_facade_completeness(self, policy_engine):
         """Test validation catches incomplete facade re-exports."""
         symbols = [
-            SymbolInfo("ImportedClass", SymbolType.CLASS, True, 1, True, "other.module"),
-            SymbolInfo("AnotherImport", SymbolType.FUNCTION, True, 2, True, "other.module"),
+            SymbolInfo("ImportedClass", SymbolType.CLASS, True, 1, True, "moira.other.module"),
+            SymbolInfo("AnotherImport", SymbolType.FUNCTION, True, 2, True, "moira.other.module"),
         ]
         current_all = ["ImportedClass"]  # Missing AnotherImport
         

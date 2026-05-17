@@ -70,6 +70,8 @@ Public surface
 ``find_all_patterns``       — detect all registered patterns in one call.
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass, field
 from enum import StrEnum

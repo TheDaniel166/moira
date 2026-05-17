@@ -43,6 +43,8 @@ Public surface
 ``variant_signification``— look up a mansion's signification in a specific tradition.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from enum import Enum
 

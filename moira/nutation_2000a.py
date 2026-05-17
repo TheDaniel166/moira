@@ -26,6 +26,8 @@ External dependency assumptions:
       format (whitespace-delimited rows, first column is a row index).
 """
 
+from __future__ import annotations
+
 import math
 import threading
 from pathlib import Path

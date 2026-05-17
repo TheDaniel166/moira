@@ -14,6 +14,8 @@ Sources:
 - EOP (DUT1): https://datacenter.iers.org/products/eop/rapid/standard/csv/finals2000A.all.csv
 """
 
+from __future__ import annotations
+
 import urllib.request
 import datetime
 import re

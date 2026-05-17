@@ -10,6 +10,8 @@ Export stability: Public API for governance tooling.
 Dependencies: Python 3.10+ standard library, AST parsing.
 """
 
+from __future__ import annotations
+
 from .models import (
     AuditDecision,
     AuditLogEntry,

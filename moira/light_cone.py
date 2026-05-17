@@ -68,6 +68,8 @@ Public surface
 ``all_received_light_at``   — received-light positions for all supported bodies.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 
 from .constants import Body, C_KM_PER_DAY, KM_PER_AU, sign_of

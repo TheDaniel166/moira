@@ -39,6 +39,8 @@ Public surface / exports:
     all_lunar_occultations()  — Moon occultations of all visible planets
 """
 
+from __future__ import annotations
+
 import math
 import time
 from dataclasses import dataclass

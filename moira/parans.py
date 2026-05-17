@@ -26,6 +26,8 @@ Public surface:
     analyze_paran_field_structure, find_parans, natal_parans
 """
 
+from __future__ import annotations
+
 import math
 import itertools
 from dataclasses import dataclass

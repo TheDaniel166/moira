@@ -34,6 +34,8 @@ Public surface
 ModuleParser class and ParsedModule dataclass.
 """
 
+from __future__ import annotations
+
 import ast
 from dataclasses import dataclass, field
 from pathlib import Path

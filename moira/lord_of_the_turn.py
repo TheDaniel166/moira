@@ -23,6 +23,8 @@ Public surface:
     lord_of_turn_egyptian_al_sijzi, validate_lord_of_turn_output
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from enum import StrEnum
 from math import isfinite

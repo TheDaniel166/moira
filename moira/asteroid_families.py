@@ -53,6 +53,8 @@ None.  The lookup table is built lazily on first function call and
 cached for the process lifetime.
 """
 
+from __future__ import annotations
+
 import csv
 from dataclasses import dataclass
 from functools import lru_cache

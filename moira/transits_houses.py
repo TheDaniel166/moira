@@ -3,6 +3,8 @@ Moira — transits_houses.py
 The Predictive Geographic Engine: governs topocentric house ingresses.
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass
 from typing import Literal

@@ -35,6 +35,8 @@ External dependency assumptions:
       accessed lazily inside _fw2m to avoid circular imports.
 """
 
+from __future__ import annotations
+
 import math
 from .julian import centuries_from_j2000
 from .constants import ARCSEC2RAD

@@ -34,6 +34,8 @@ Public surface
 FacadeAnalyzer class.
 """
 
+from __future__ import annotations
+
 from pathlib import Path
 
 from moira._export_governance.models import FacadeAnalysisReport, ModuleCategory

@@ -18,6 +18,8 @@ Public surface:
     validate_lord_of_orb_output
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from enum import StrEnum
 from enum import StrEnum

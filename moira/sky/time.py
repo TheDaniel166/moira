@@ -43,6 +43,8 @@ delta_t_breakdown  compute DeltaTBreakdown for a given year
 delta_t_distribution  compute DeltaTDistribution for a given year
 """
 
+from __future__ import annotations
+
 from moira.delta_t_physical import (
     DeltaTBreakdown,
     DeltaTDistribution,

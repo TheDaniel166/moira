@@ -32,6 +32,8 @@ Public surface
 SymbolClassifier class.
 """
 
+from __future__ import annotations
+
 from moira._export_governance.models import SymbolInfo, SymbolType, ModuleCategory
 
 

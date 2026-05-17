@@ -10,6 +10,8 @@ Dependencies: Python 3.10+ standard library (dataclasses, enum, datetime).
 Public surface: All dataclasses and enums defined here.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum

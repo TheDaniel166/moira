@@ -25,6 +25,8 @@ Public surface:
     calculate_lot_condition_network_profile, ArabicPartsService, list_parts
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from enum import StrEnum
 from math import isfinite

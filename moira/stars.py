@@ -6,6 +6,8 @@ Purpose: Unified sovereign star surface backed by the local registry CSV and
          companion JSON metadata files.
 """
 
+from __future__ import annotations
+
 import csv
 import importlib
 import json

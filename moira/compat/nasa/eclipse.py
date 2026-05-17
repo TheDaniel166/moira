@@ -34,6 +34,8 @@ Public surface / exports:
     previous_nasa_lunar_eclipse()
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 from ...eclipse import EclipseCalculator, EclipseEvent

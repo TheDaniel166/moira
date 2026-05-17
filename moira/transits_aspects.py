@@ -7,6 +7,8 @@ Boundary: Owns the geometric relation (angle and orb) between two moving or stat
 bodies. Delegates position resolution to the core transit engine.
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass
 from typing import Literal

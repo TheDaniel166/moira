@@ -202,6 +202,8 @@ RULE-11  Public surface sealed
     either __all__.
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass
 

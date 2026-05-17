@@ -172,6 +172,8 @@ RULE-12  Public surface sealed
     etc.) appears in either __all__.
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass
 

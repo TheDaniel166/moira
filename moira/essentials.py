@@ -34,6 +34,8 @@ galactic coordinates, uranian points, occultations, variable stars, and
 every other subsystem), import from ``moira.facade``.
 """
 
+from __future__ import annotations
+
 # ── Core facade ──────────────────────────────────────────────────────────
 from .facade import Moira, Chart, MissingEphemerisKernelError
 

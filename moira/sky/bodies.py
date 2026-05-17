@@ -92,6 +92,8 @@ NodeData            lunar node or Lilith: lon, speed
 NodesAndApsides     combined node/apsis bundle
 """
 
+from __future__ import annotations
+
 from moira.nodes import (
     NodeData,
     NodesAndApsides,

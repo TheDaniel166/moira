@@ -9,6 +9,8 @@ aspectual promissors when the service layer supplies the path context that the
 engine cannot derive from the natal chart alone.
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass
 

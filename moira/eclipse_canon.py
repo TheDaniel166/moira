@@ -23,6 +23,8 @@ External dependency assumptions:
     - No third-party packages; stdlib only plus internal moira modules.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 import math
 

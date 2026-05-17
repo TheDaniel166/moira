@@ -27,6 +27,8 @@ Delegates:
 Import-time side effects: none
 """
 
+from __future__ import annotations
+
 import math
 import os
 import json

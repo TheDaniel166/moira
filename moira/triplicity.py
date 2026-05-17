@@ -46,6 +46,8 @@ contexts. This module preserves Pingree's edition as the canonical source
 for the DOROTHEAN_PINGREE_1976 doctrine value.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from enum import StrEnum
 

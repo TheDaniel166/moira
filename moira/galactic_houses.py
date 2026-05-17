@@ -41,6 +41,8 @@ Public surface
 ``calculate_galactic_houses`` — compute Galactic Porphyry cusps for a chart moment.
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass
 

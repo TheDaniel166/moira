@@ -84,6 +84,8 @@ Public surface / exports:
     apply_refraction(altitude_deg, *, pressure_mbar, temperature_c) -> float
 """
 
+from __future__ import annotations
+
 import math
 from .constants import DEG2RAD, RAD2DEG, ARCSEC2RAD, C_KM_PER_DAY, EARTH_RADIUS_KM
 from .polar_motion import PolarMotionRegistry, polar_motion_matrix

@@ -5,6 +5,8 @@ Lazy loading and interpolation of IERS polar motion coordinates for
 topocentric observer corrections.
 """
 
+from __future__ import annotations
+
 import bisect
 import logging
 import math

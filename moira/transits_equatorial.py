@@ -4,6 +4,8 @@ The Predictive Equatorial Engine: governs declination parallels, contra-parallel
 and out-of-bounds (OOB) crossings.
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass
 from typing import Literal

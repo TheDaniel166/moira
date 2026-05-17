@@ -25,6 +25,8 @@ Significant dependency boundaries:
 Import-time initialization side effects: None.
 """
 
+from __future__ import annotations
+
 from .eclipse import (
     NasaLunarEclipseContacts,
     NasaLunarEclipseEvent,

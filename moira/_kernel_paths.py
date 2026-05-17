@@ -24,6 +24,8 @@ Public surface:
     KERNELS_DIR_ENV              -> str         name of the search-directory env var
 """
 
+from __future__ import annotations
+
 import os
 from pathlib import Path
 

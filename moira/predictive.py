@@ -24,6 +24,8 @@ patterns, variable stars, and every other subsystem), import from
 ``moira.facade``.
 """
 
+from __future__ import annotations
+
 # ── Everything from classical ────────────────────────────────────────────
 from .classical import *  # noqa: F401,F403
 from .classical import __all__ as _classical_all

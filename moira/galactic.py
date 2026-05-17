@@ -37,6 +37,8 @@ Public surface
 ``galactic_reference_points`` — ecliptic coordinates of five galactic landmarks.
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass
 

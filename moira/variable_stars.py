@@ -88,6 +88,8 @@ Accuracy notes
   real-time observations for current ephemeris when high precision matters.
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass, field
 from collections.abc import Iterator

@@ -34,6 +34,8 @@ Public surface / exports:
 TNO bodies are calculated using the sb441-n373s.bsp kernel.
 """
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from .asteroids import asteroid_at, AsteroidData, available_in_kernel

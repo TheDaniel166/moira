@@ -63,6 +63,8 @@ Public surface
 ``decan_hours``        — compute the 12 decan night hours for a given night.
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass
 

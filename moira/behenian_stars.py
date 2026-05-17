@@ -39,6 +39,8 @@ useful for magical applications in medieval European and Arabic astrology
 Stars sourced from moira/data/star_registry.csv via moira.stars.
 """
 
+from __future__ import annotations
+
 from .stars import star_at, StarPosition, list_stars
 
 ALGOL     = "Algol"

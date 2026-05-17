@@ -42,6 +42,8 @@ Public surface
 Moira, Chart, and all re-exported symbols in __all__.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path

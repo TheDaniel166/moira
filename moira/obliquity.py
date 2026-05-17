@@ -18,6 +18,8 @@ External dependency assumptions:
     None (stdlib only; nutation_2000a and precession are internal modules)
 """
 
+from __future__ import annotations
+
 from .nutation_2000a import nutation_2000a as _nutation_2000a
 from .precession import mean_obliquity_p03 as _mean_obliquity_p03
 

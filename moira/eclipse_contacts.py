@@ -17,6 +17,8 @@ External dependency assumptions:
     - No third-party packages; stdlib only plus internal moira modules.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 from .eclipse_search import refine_minimum

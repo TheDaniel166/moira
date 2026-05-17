@@ -31,6 +31,8 @@ External dependency assumptions:
     No jplephem, no Qt, no third-party packages.
 """
 
+from __future__ import annotations
+
 import math
 import bisect
 from dataclasses import dataclass

@@ -75,6 +75,8 @@ Public surface
 ``vedic_drekkana``    — map a longitude to its Vedic drekkana, D3 (sidereal).
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass
 

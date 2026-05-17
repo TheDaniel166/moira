@@ -45,6 +45,8 @@ Public surface
 ``all_nakshatras_at``      — compute nakshatras for a full position dict.
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass
 from .constants import J2000, JULIAN_CENTURY

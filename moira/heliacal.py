@@ -43,6 +43,8 @@ Public surface
 See __all__ below. All 27 names are stable public API.
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass
 from enum import Enum, IntEnum

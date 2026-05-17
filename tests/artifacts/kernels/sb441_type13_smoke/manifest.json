@@ -1,0 +1,45 @@
+{
+  "source_kernel": "C:\\Users\\nilad\\.moira\\kernels\\sb441-n373s.bsp",
+  "source_kernel_name": "sb441-n373s.bsp",
+  "global_sampling": {
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31",
+    "step_days": 30,
+    "window_size": 5,
+    "shard_size": 25
+  },
+  "body_count": 2,
+  "shards": [
+    {
+      "index": 1,
+      "path": "tests\\artifacts\\kernels\\sb441_type13_smoke\\sb441_type13_shard_001.bsp",
+      "body_count": 2,
+      "bodies": [
+        {
+          "name": "Ceres",
+          "naif_id": 2000001,
+          "start_jd": 2461041.5,
+          "end_jd": 2461405.5,
+          "epoch_count": 14
+        },
+        {
+          "name": "Pallas",
+          "naif_id": 2000002,
+          "start_jd": 2461041.5,
+          "end_jd": 2461405.5,
+          "epoch_count": 14
+        }
+      ],
+      "verification": {
+        "2000001": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 14.0
+        },
+        "2000002": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 14.0
+        }
+      }
+    }
+  ]
+}

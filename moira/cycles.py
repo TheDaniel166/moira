@@ -49,6 +49,8 @@ Public surface / exports
 `planetary_day_ruler`, `planetary_hours_for_day`
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass
 from enum import Enum

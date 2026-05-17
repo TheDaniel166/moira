@@ -42,6 +42,8 @@ Public surface / exports:
     predicted_sothic_epoch_year() — forward/backward epoch prediction
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass, field
 from datetime import datetime, timezone

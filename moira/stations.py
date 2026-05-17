@@ -26,6 +26,8 @@ Public surface / exports:
     retrograde_periods()  — list of (SR_jd, SD_jd) tuples in a date range
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import datetime
 

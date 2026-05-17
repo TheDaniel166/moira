@@ -14,6 +14,8 @@ Public surface:
     Internal helper functions for harmogram computation (not intended for direct external use)
 """
 
+from __future__ import annotations
+
 import math
 
 from .models import (

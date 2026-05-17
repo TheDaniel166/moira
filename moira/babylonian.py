@@ -32,6 +32,8 @@ Public surface / exports:
     (Full API surface documented in __all__)
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass
 from enum import StrEnum

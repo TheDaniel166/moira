@@ -41,6 +41,8 @@ For transits, progressions, synastry, eclipses, and returns, use
 For the complete surface, use ``moira.facade``.
 """
 
+from __future__ import annotations
+
 # ── Everything from essentials ───────────────────────────────────────────
 from .essentials import *  # noqa: F401,F403
 from .essentials import __all__ as _essentials_all

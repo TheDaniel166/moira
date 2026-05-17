@@ -5,6 +5,8 @@ These are compatibility wrappers for classical astrology surfaces. The
 underlying computations remain owned by their domain modules.
 """
 
+from __future__ import annotations
+
 import sys
 from datetime import datetime
 from typing import Any

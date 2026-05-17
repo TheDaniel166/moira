@@ -44,6 +44,8 @@ All values are little-endian IEEE 754 floating-point (LTL-IEEE).
 Word addresses (start_i, end_i, free) are 1-indexed double-precision words.
 """
 
+from __future__ import annotations
+
 import array as _array
 import struct
 import sys

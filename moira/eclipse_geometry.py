@@ -22,6 +22,8 @@ External dependency assumptions:
     - stdlib math only; no third-party packages required.
 """
 
+from __future__ import annotations
+
 import math
 
 from .constants import EARTH_RADIUS_KM, SUN_RADIUS_KM, MOON_RADIUS_KM

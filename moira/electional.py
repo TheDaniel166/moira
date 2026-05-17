@@ -41,6 +41,8 @@ Public surface / exports
 `find_electional_windows`, `find_electional_moments`
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass
 from types import MappingProxyType

@@ -7,6 +7,8 @@ house doctrine. The owning house engine may call into this module only when the
 user selects an explicit experimental policy.
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass
 from enum import Enum

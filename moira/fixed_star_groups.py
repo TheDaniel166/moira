@@ -46,6 +46,8 @@ Public surface / exports:
 Stars sourced from moira/data/star_registry.csv via moira.stars.
 """
 
+from __future__ import annotations
+
 from .stars import star_at as star_at, list_named_stars as list_stars, FixedStar as StarPosition
 
 # ---------------------------------------------------------------------------

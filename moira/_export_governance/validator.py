@@ -36,6 +36,8 @@ Public surface
 ValidationEngine class and associated result vessels.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any

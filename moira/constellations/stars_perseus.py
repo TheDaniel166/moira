@@ -31,6 +31,8 @@ Public surface / exports:
 
 Stars sourced from the Sovereign Star Registry.
 """
+
+from __future__ import annotations
 from ..stars import star_at, StarPosition
 from . import _star_name_is_resolvable
 

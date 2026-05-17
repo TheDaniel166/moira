@@ -25,6 +25,8 @@ External dependency assumptions:
       handled gracefully (empty series / fallback values).
 """
 
+from __future__ import annotations
+
 import math
 import statistics
 from dataclasses import dataclass

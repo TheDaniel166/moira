@@ -16,6 +16,8 @@ Public surface:
     harmonic_vector, intensity_function_spectrum, project_harmogram_strength, harmogram_trace
 """
 
+from __future__ import annotations
+
 import math
 
 from ..dispatch import MoiraBackend, settings as _dispatch_settings

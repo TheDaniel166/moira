@@ -1,0 +1,243 @@
+{
+  "source_kernel": "C:\\Users\\nilad\\.moira\\kernels\\sb441-n373s.bsp",
+  "source_kernel_name": "sb441-n373s.bsp",
+  "global_sampling": {
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31",
+    "step_days": 30,
+    "window_size": 5,
+    "shard_size": 25
+  },
+  "body_count": 20,
+  "shards": [
+    {
+      "index": 1,
+      "path": "tests\\artifacts\\kernels\\sb441_type13_random20\\sb441_type13_shard_001.bsp",
+      "body_count": 20,
+      "bodies": [
+        {
+          "name": "Adeona",
+          "naif_id": 2000145,
+          "start_jd": 2461041.5,
+          "end_jd": 2461405.5,
+          "epoch_count": 14
+        },
+        {
+          "name": "Aeria",
+          "naif_id": 2000369,
+          "start_jd": 2461041.5,
+          "end_jd": 2461405.5,
+          "epoch_count": 14
+        },
+        {
+          "name": "Aethra",
+          "naif_id": 2000132,
+          "start_jd": 2461041.5,
+          "end_jd": 2461405.5,
+          "epoch_count": 14
+        },
+        {
+          "name": "Apollonia",
+          "naif_id": 2000358,
+          "start_jd": 2461041.5,
+          "end_jd": 2461405.5,
+          "epoch_count": 14
+        },
+        {
+          "name": "Ara",
+          "naif_id": 2000849,
+          "start_jd": 2461041.5,
+          "end_jd": 2461405.5,
+          "epoch_count": 14
+        },
+        {
+          "name": "Boliviana",
+          "naif_id": 2000712,
+          "start_jd": 2461041.5,
+          "end_jd": 2461405.5,
+          "epoch_count": 14
+        },
+        {
+          "name": "Cantabia",
+          "naif_id": 2000740,
+          "start_jd": 2461041.5,
+          "end_jd": 2461405.5,
+          "epoch_count": 14
+        },
+        {
+          "name": "Echo",
+          "naif_id": 2000060,
+          "start_jd": 2461041.5,
+          "end_jd": 2461405.5,
+          "epoch_count": 14
+        },
+        {
+          "name": "Eos",
+          "naif_id": 2000221,
+          "start_jd": 2461041.5,
+          "end_jd": 2461405.5,
+          "epoch_count": 14
+        },
+        {
+          "name": "Hypatia",
+          "naif_id": 2000238,
+          "start_jd": 2461041.5,
+          "end_jd": 2461405.5,
+          "epoch_count": 14
+        },
+        {
+          "name": "Kalypso",
+          "naif_id": 2000053,
+          "start_jd": 2461041.5,
+          "end_jd": 2461405.5,
+          "epoch_count": 14
+        },
+        {
+          "name": "Luscinia",
+          "naif_id": 2000713,
+          "start_jd": 2461041.5,
+          "end_jd": 2461405.5,
+          "epoch_count": 14
+        },
+        {
+          "name": "Makemake",
+          "naif_id": 2136472,
+          "start_jd": 2461041.5,
+          "end_jd": 2461405.5,
+          "epoch_count": 14
+        },
+        {
+          "name": "Mashona",
+          "naif_id": 2001467,
+          "start_jd": 2461041.5,
+          "end_jd": 2461405.5,
+          "epoch_count": 14
+        },
+        {
+          "name": "Nemesis",
+          "naif_id": 2000128,
+          "start_jd": 2461041.5,
+          "end_jd": 2461405.5,
+          "epoch_count": 14
+        },
+        {
+          "name": "Oceana",
+          "naif_id": 2000224,
+          "start_jd": 2461041.5,
+          "end_jd": 2461405.5,
+          "epoch_count": 14
+        },
+        {
+          "name": "Phaeo",
+          "naif_id": 2000322,
+          "start_jd": 2461041.5,
+          "end_jd": 2461405.5,
+          "epoch_count": 14
+        },
+        {
+          "name": "Semiramis",
+          "naif_id": 2000584,
+          "start_jd": 2461041.5,
+          "end_jd": 2461405.5,
+          "epoch_count": 14
+        },
+        {
+          "name": "Tisiphone",
+          "naif_id": 2000466,
+          "start_jd": 2461041.5,
+          "end_jd": 2461405.5,
+          "epoch_count": 14
+        },
+        {
+          "name": "Ursula",
+          "naif_id": 2000375,
+          "start_jd": 2461041.5,
+          "end_jd": 2461405.5,
+          "epoch_count": 14
+        }
+      ],
+      "verification": {
+        "2000145": {
+          "max_node_error_km": 7.450580596923828e-09,
+          "epoch_count": 14.0
+        },
+        "2000369": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 14.0
+        },
+        "2000132": {
+          "max_node_error_km": 7.450580596923828e-09,
+          "epoch_count": 14.0
+        },
+        "2000358": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 14.0
+        },
+        "2000849": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 14.0
+        },
+        "2000712": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 14.0
+        },
+        "2000740": {
+          "max_node_error_km": 8.381903171539307e-09,
+          "epoch_count": 14.0
+        },
+        "2000060": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 14.0
+        },
+        "2000221": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 14.0
+        },
+        "2000238": {
+          "max_node_error_km": 7.450580596923828e-09,
+          "epoch_count": 14.0
+        },
+        "2000053": {
+          "max_node_error_km": 2.2351741790771484e-08,
+          "epoch_count": 14.0
+        },
+        "2000713": {
+          "max_node_error_km": 2.2351741790771484e-08,
+          "epoch_count": 14.0
+        },
+        "2136472": {
+          "max_node_error_km": 0.0,
+          "epoch_count": 14.0
+        },
+        "2001467": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 14.0
+        },
+        "2000128": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 14.0
+        },
+        "2000224": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 14.0
+        },
+        "2000322": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 14.0
+        },
+        "2000584": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 14.0
+        },
+        "2000466": {
+          "max_node_error_km": 7.450580596923828e-09,
+          "epoch_count": 14.0
+        },
+        "2000375": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 14.0
+        }
+      }
+    }
+  ]
+}

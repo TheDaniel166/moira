@@ -1,0 +1,3 @@
+include CMakeLists.txt
+recursive-include src *.cpp *.h *.hpp
+recursive-exclude moira/kernels *.bsp

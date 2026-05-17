@@ -34,6 +34,8 @@ the four cardinal directions and the four archangels in Persian astronomy.
 Stars sourced from moira/data/star_registry.csv via moira.stars.
 """
 
+from __future__ import annotations
+
 from .stars import star_at, StarPosition, list_stars
 
 ALDEBARAN = "Aldebaran"

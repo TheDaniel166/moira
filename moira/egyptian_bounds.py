@@ -18,6 +18,8 @@ Doctrinal notes
   traditional scoring model used elsewhere in Moira.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from enum import StrEnum
 

@@ -21,6 +21,8 @@ External dependency assumptions:
       speculum() or find_primary_arcs().
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass, field
 from enum import StrEnum

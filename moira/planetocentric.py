@@ -51,6 +51,8 @@ Public surface
 ``all_planetocentric_at`` — positions of all visible bodies from one observer.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 
 from .constants import Body, NAIF_ROUTES, KM_PER_AU, sign_of

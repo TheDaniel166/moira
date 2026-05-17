@@ -50,6 +50,8 @@ Public surface / exports:
     vibrational_fingerprint() — synthesised vibrational profile
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 
 from .constants import TROPICAL_YEAR, sign_of

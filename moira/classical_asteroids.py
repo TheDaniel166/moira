@@ -34,6 +34,8 @@ Classical Asteroids are calculated using high-precision JPL kernels
 (asteroids.bsp) generated via numerical integration.
 """
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from .asteroids import asteroid_at, AsteroidData, available_in_kernel

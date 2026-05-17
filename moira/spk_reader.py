@@ -21,6 +21,8 @@ External dependency assumptions:
       SpkReader at construction. No default kernel is assumed.
 """
 
+from __future__ import annotations
+
 import threading
 from contextlib import contextmanager
 from contextvars import ContextVar

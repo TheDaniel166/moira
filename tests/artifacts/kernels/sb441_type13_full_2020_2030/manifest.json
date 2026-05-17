@@ -1,0 +1,4054 @@
+{
+  "source_kernel": "C:\\Users\\nilad\\.moira\\kernels\\sb441-n373s.bsp",
+  "source_kernel_name": "sb441-n373s.bsp",
+  "global_sampling": {
+    "start_date": "2020-01-01",
+    "end_date": "2030-01-01",
+    "step_days": 30,
+    "window_size": 5,
+    "shard_size": 25
+  },
+  "body_count": 355,
+  "shards": [
+    {
+      "index": 1,
+      "path": "tests\\artifacts\\kernels\\sb441_type13_full_2020_2030\\sb441_type13_shard_001.bsp",
+      "body_count": 25,
+      "bodies": [
+        {
+          "name": "Ceres",
+          "naif_id": 2000001,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Pallas",
+          "naif_id": 2000002,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Juno",
+          "naif_id": 2000003,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Vesta",
+          "naif_id": 2000004,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Astraea",
+          "naif_id": 2000005,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Hebe",
+          "naif_id": 2000006,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Iris",
+          "naif_id": 2000007,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Flora",
+          "naif_id": 2000008,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Metis",
+          "naif_id": 2000009,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Hygiea",
+          "naif_id": 2000010,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Parthenope",
+          "naif_id": 2000011,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Victoria",
+          "naif_id": 2000012,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Egeria",
+          "naif_id": 2000013,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Irene",
+          "naif_id": 2000014,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Eunomia",
+          "naif_id": 2000015,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Psyche",
+          "naif_id": 2000016,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Thetis",
+          "naif_id": 2000017,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Melpomene",
+          "naif_id": 2000018,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Fortuna",
+          "naif_id": 2000019,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Massalia",
+          "naif_id": 2000020,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Lutetia",
+          "naif_id": 2000021,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Kalliope",
+          "naif_id": 2000022,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Thalia",
+          "naif_id": 2000023,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Themis",
+          "naif_id": 2000024,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Phocaea",
+          "naif_id": 2000025,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        }
+      ],
+      "verification": {
+        "2000001": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000002": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000003": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000004": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000005": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000006": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000007": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000008": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000009": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000010": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000011": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000012": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000013": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000014": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000015": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000016": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000017": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000018": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000019": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000020": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000021": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000022": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000023": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000024": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000025": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        }
+      }
+    },
+    {
+      "index": 2,
+      "path": "tests\\artifacts\\kernels\\sb441_type13_full_2020_2030\\sb441_type13_shard_002.bsp",
+      "body_count": 25,
+      "bodies": [
+        {
+          "name": "Proserpina",
+          "naif_id": 2000026,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Euterpe",
+          "naif_id": 2000027,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Bellona",
+          "naif_id": 2000028,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Amphitrite",
+          "naif_id": 2000029,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Urania",
+          "naif_id": 2000030,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Euphrosyne",
+          "naif_id": 2000031,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Pomona",
+          "naif_id": 2000032,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Circe",
+          "naif_id": 2000034,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Leukothea",
+          "naif_id": 2000035,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Atalante",
+          "naif_id": 2000036,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Fides",
+          "naif_id": 2000037,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Leda",
+          "naif_id": 2000038,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Laetitia",
+          "naif_id": 2000039,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Harmonia",
+          "naif_id": 2000040,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Daphne",
+          "naif_id": 2000041,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Isis",
+          "naif_id": 2000042,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Ariadne",
+          "naif_id": 2000043,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Nysa",
+          "naif_id": 2000044,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Eugenia",
+          "naif_id": 2000045,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Hestia",
+          "naif_id": 2000046,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Aglaja",
+          "naif_id": 2000047,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Doris",
+          "naif_id": 2000048,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Pales",
+          "naif_id": 2000049,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Virginia",
+          "naif_id": 2000050,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Nemausa",
+          "naif_id": 2000051,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        }
+      ],
+      "verification": {
+        "2000026": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000027": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000028": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000029": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000030": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000031": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000032": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000034": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000035": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000036": {
+          "max_node_error_km": 1.7229467630386353e-08,
+          "epoch_count": 123.0
+        },
+        "2000037": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000038": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000039": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000040": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000041": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000042": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000043": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000044": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000045": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000046": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000047": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 123.0
+        },
+        "2000048": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000049": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000050": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000051": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        }
+      }
+    },
+    {
+      "index": 3,
+      "path": "tests\\artifacts\\kernels\\sb441_type13_full_2020_2030\\sb441_type13_shard_003.bsp",
+      "body_count": 25,
+      "bodies": [
+        {
+          "name": "Europa",
+          "naif_id": 2000052,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Kalypso",
+          "naif_id": 2000053,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Alexandra",
+          "naif_id": 2000054,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Melete",
+          "naif_id": 2000056,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Mnemosyne",
+          "naif_id": 2000057,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Concordia",
+          "naif_id": 2000058,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Elpis",
+          "naif_id": 2000059,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Echo",
+          "naif_id": 2000060,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Erato",
+          "naif_id": 2000062,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Ausonia",
+          "naif_id": 2000063,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Cybele",
+          "naif_id": 2000065,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Leto",
+          "naif_id": 2000068,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Hesperia",
+          "naif_id": 2000069,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Panopaea",
+          "naif_id": 2000070,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Niobe",
+          "naif_id": 2000071,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Feronia",
+          "naif_id": 2000072,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Galatea",
+          "naif_id": 2000074,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Eurydike",
+          "naif_id": 2000075,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Freia",
+          "naif_id": 2000076,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Frigga",
+          "naif_id": 2000077,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Diana",
+          "naif_id": 2000078,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Eurynome",
+          "naif_id": 2000079,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Sappho",
+          "naif_id": 2000080,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Terpsichore",
+          "naif_id": 2000081,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Alkmene",
+          "naif_id": 2000082,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        }
+      ],
+      "verification": {
+        "2000052": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000053": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000054": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000056": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000057": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000058": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000059": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000060": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000062": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000063": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000065": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000068": {
+          "max_node_error_km": 2.2351741790771484e-08,
+          "epoch_count": 123.0
+        },
+        "2000069": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000070": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000071": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000072": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000074": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000075": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000076": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000077": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000078": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000079": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000080": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000081": {
+          "max_node_error_km": 5.960464477539063e-08,
+          "epoch_count": 123.0
+        },
+        "2000082": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        }
+      }
+    },
+    {
+      "index": 4,
+      "path": "tests\\artifacts\\kernels\\sb441_type13_full_2020_2030\\sb441_type13_shard_004.bsp",
+      "body_count": 25,
+      "bodies": [
+        {
+          "name": "Beatrix",
+          "naif_id": 2000083,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Klio",
+          "naif_id": 2000084,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Io",
+          "naif_id": 2000085,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Semele",
+          "naif_id": 2000086,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Sylvia",
+          "naif_id": 2000087,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Thisbe",
+          "naif_id": 2000088,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Julia",
+          "naif_id": 2000089,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Antiope",
+          "naif_id": 2000090,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Aegina",
+          "naif_id": 2000091,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Undina",
+          "naif_id": 2000092,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Minerva",
+          "naif_id": 2000093,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Aurora",
+          "naif_id": 2000094,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Arethusa",
+          "naif_id": 2000095,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Aegle",
+          "naif_id": 2000096,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Klotho",
+          "naif_id": 2000097,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Ianthe",
+          "naif_id": 2000098,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Dike",
+          "naif_id": 2000099,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Hekate",
+          "naif_id": 2000100,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Miriam",
+          "naif_id": 2000102,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Hera",
+          "naif_id": 2000103,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Klymene",
+          "naif_id": 2000104,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Artemis",
+          "naif_id": 2000105,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Dione",
+          "naif_id": 2000106,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Camilla",
+          "naif_id": 2000107,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Felicitas",
+          "naif_id": 2000109,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        }
+      ],
+      "verification": {
+        "2000083": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000084": {
+          "max_node_error_km": 3.026798367500305e-08,
+          "epoch_count": 123.0
+        },
+        "2000085": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000086": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000087": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 123.0
+        },
+        "2000088": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000089": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000090": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000091": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000092": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000093": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000094": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000095": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000096": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000097": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000098": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000099": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000100": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000102": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000103": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000104": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000105": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000106": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000107": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000109": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        }
+      }
+    },
+    {
+      "index": 5,
+      "path": "tests\\artifacts\\kernels\\sb441_type13_full_2020_2030\\sb441_type13_shard_005.bsp",
+      "body_count": 25,
+      "bodies": [
+        {
+          "name": "Lydia",
+          "naif_id": 2000110,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Ate",
+          "naif_id": 2000111,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Iphigenia",
+          "naif_id": 2000112,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Amalthea",
+          "naif_id": 2000113,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Kassandra",
+          "naif_id": 2000114,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Thyra",
+          "naif_id": 2000115,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Lomia",
+          "naif_id": 2000117,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Peitho",
+          "naif_id": 2000118,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Lachesis",
+          "naif_id": 2000120,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Hermione",
+          "naif_id": 2000121,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Alkeste",
+          "naif_id": 2000124,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Johanna",
+          "naif_id": 2000127,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Nemesis",
+          "naif_id": 2000128,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Antigone",
+          "naif_id": 2000129,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Elektra",
+          "naif_id": 2000130,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Aethra",
+          "naif_id": 2000132,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Sophrosyne",
+          "naif_id": 2000134,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Hertha",
+          "naif_id": 2000135,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Meliboea",
+          "naif_id": 2000137,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Juewa",
+          "naif_id": 2000139,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Siwa",
+          "naif_id": 2000140,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Lumen",
+          "naif_id": 2000141,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Adria",
+          "naif_id": 2000143,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Vibilia",
+          "naif_id": 2000144,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Adeona",
+          "naif_id": 2000145,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        }
+      ],
+      "verification": {
+        "2000110": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000111": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000112": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000113": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000114": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000115": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000117": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000118": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000120": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000121": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 123.0
+        },
+        "2000124": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000127": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000128": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000129": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000130": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000132": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000134": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000135": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000137": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000139": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000140": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000141": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000143": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000144": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000145": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        }
+      }
+    },
+    {
+      "index": 6,
+      "path": "tests\\artifacts\\kernels\\sb441_type13_full_2020_2030\\sb441_type13_shard_006.bsp",
+      "body_count": 25,
+      "bodies": [
+        {
+          "name": "Lucina",
+          "naif_id": 2000146,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Protogeneia",
+          "naif_id": 2000147,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Gallia",
+          "naif_id": 2000148,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Nuwa",
+          "naif_id": 2000150,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Bertha",
+          "naif_id": 2000154,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Xanthippe",
+          "naif_id": 2000156,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Aemilia",
+          "naif_id": 2000159,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Una",
+          "naif_id": 2000160,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Laurentia",
+          "naif_id": 2000162,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Erigone",
+          "naif_id": 2000163,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Eva",
+          "naif_id": 2000164,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Loreley",
+          "naif_id": 2000165,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Sibylla",
+          "naif_id": 2000168,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Ophelia",
+          "naif_id": 2000171,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Baucis",
+          "naif_id": 2000172,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Ino",
+          "naif_id": 2000173,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Andromache",
+          "naif_id": 2000175,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Iduna",
+          "naif_id": 2000176,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Irma",
+          "naif_id": 2000177,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Eucharis",
+          "naif_id": 2000181,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Eunike",
+          "naif_id": 2000185,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Lamberta",
+          "naif_id": 2000187,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Kolga",
+          "naif_id": 2000191,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Nausikaa",
+          "naif_id": 2000192,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Prokne",
+          "naif_id": 2000194,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        }
+      ],
+      "verification": {
+        "2000146": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000147": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000148": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000150": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000154": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000156": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000159": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000160": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000162": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 123.0
+        },
+        "2000163": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000164": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000165": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000168": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000171": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000172": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000173": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000175": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000176": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000177": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000181": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000185": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000187": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000191": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000192": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000194": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        }
+      }
+    },
+    {
+      "index": 7,
+      "path": "tests\\artifacts\\kernels\\sb441_type13_full_2020_2030\\sb441_type13_shard_007.bsp",
+      "body_count": 25,
+      "bodies": [
+        {
+          "name": "Eurykleia",
+          "naif_id": 2000195,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Philomela",
+          "naif_id": 2000196,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Ampella",
+          "naif_id": 2000198,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Dynamene",
+          "naif_id": 2000200,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Penelope",
+          "naif_id": 2000201,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Pompeja",
+          "naif_id": 2000203,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Martha",
+          "naif_id": 2000205,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Hersilia",
+          "naif_id": 2000206,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Dido",
+          "naif_id": 2000209,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Isabella",
+          "naif_id": 2000210,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Isolda",
+          "naif_id": 2000211,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Medea",
+          "naif_id": 2000212,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Lilaea",
+          "naif_id": 2000213,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Kleopatra",
+          "naif_id": 2000216,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Eos",
+          "naif_id": 2000221,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Rosa",
+          "naif_id": 2000223,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Oceana",
+          "naif_id": 2000224,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Henrietta",
+          "naif_id": 2000225,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Philosophia",
+          "naif_id": 2000227,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Athamantis",
+          "naif_id": 2000230,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Asterope",
+          "naif_id": 2000233,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Honoria",
+          "naif_id": 2000236,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Hypatia",
+          "naif_id": 2000238,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Vanadis",
+          "naif_id": 2000240,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Germania",
+          "naif_id": 2000241,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        }
+      ],
+      "verification": {
+        "2000195": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000196": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000198": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000200": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000201": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000203": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000205": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000206": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000209": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000210": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000211": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000212": {
+          "max_node_error_km": 2.2351741790771484e-08,
+          "epoch_count": 123.0
+        },
+        "2000213": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000216": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000221": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000223": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000224": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000225": {
+          "max_node_error_km": 1.862645149230957e-08,
+          "epoch_count": 123.0
+        },
+        "2000227": {
+          "max_node_error_km": 2.2351741790771484e-08,
+          "epoch_count": 123.0
+        },
+        "2000230": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000233": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000236": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000238": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000240": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000241": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        }
+      }
+    },
+    {
+      "index": 8,
+      "path": "tests\\artifacts\\kernels\\sb441_type13_full_2020_2030\\sb441_type13_shard_008.bsp",
+      "body_count": 25,
+      "bodies": [
+        {
+          "name": "Eukrate",
+          "naif_id": 2000247,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Bettina",
+          "naif_id": 2000250,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Aletheia",
+          "naif_id": 2000259,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Aline",
+          "naif_id": 2000266,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Adorea",
+          "naif_id": 2000268,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Sapientia",
+          "naif_id": 2000275,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Adelheid",
+          "naif_id": 2000276,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Emma",
+          "naif_id": 2000283,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Nephthys",
+          "naif_id": 2000287,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Josephina",
+          "naif_id": 2000303,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Olga",
+          "naif_id": 2000304,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Polyxo",
+          "naif_id": 2000308,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Chaldaea",
+          "naif_id": 2000313,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Phaeo",
+          "naif_id": 2000322,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Bamberga",
+          "naif_id": 2000324,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Tamara",
+          "naif_id": 2000326,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Gudrun",
+          "naif_id": 2000328,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Svea",
+          "naif_id": 2000329,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Chicago",
+          "naif_id": 2000334,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Roberta",
+          "naif_id": 2000335,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Lacadiera",
+          "naif_id": 2000336,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Devosa",
+          "naif_id": 2000337,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Budrosa",
+          "naif_id": 2000338,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Desiderata",
+          "naif_id": 2000344,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Tercidina",
+          "naif_id": 2000345,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        }
+      ],
+      "verification": {
+        "2000247": {
+          "max_node_error_km": 5.960464477539063e-08,
+          "epoch_count": 123.0
+        },
+        "2000250": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000259": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000266": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000268": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000275": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000276": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000283": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000287": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000303": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000304": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000308": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000313": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000322": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000324": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000326": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000328": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000329": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000334": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000335": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000336": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000337": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000338": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000344": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000345": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        }
+      }
+    },
+    {
+      "index": 9,
+      "path": "tests\\artifacts\\kernels\\sb441_type13_full_2020_2030\\sb441_type13_shard_009.bsp",
+      "body_count": 25,
+      "bodies": [
+        {
+          "name": "Hermentaria",
+          "naif_id": 2000346,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Pariana",
+          "naif_id": 2000347,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Dembowska",
+          "naif_id": 2000349,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Ornamenta",
+          "naif_id": 2000350,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Eleonora",
+          "naif_id": 2000354,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Liguria",
+          "naif_id": 2000356,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Ninina",
+          "naif_id": 2000357,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Apollonia",
+          "naif_id": 2000358,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Carlova",
+          "naif_id": 2000360,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Havnia",
+          "naif_id": 2000362,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Padua",
+          "naif_id": 2000363,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Corduba",
+          "naif_id": 2000365,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Vincentina",
+          "naif_id": 2000366,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Aeria",
+          "naif_id": 2000369,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Palma",
+          "naif_id": 2000372,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Melusina",
+          "naif_id": 2000373,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Ursula",
+          "naif_id": 2000375,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Campania",
+          "naif_id": 2000377,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Myrrha",
+          "naif_id": 2000381,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Ilmatar",
+          "naif_id": 2000385,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Siegena",
+          "naif_id": 2000386,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Aquitania",
+          "naif_id": 2000387,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Charybdis",
+          "naif_id": 2000388,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Industria",
+          "naif_id": 2000389,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Lampetia",
+          "naif_id": 2000393,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        }
+      ],
+      "verification": {
+        "2000346": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000347": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000349": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000350": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000354": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000356": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000357": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000358": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000360": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000362": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000363": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000365": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000366": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000369": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000372": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000373": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 123.0
+        },
+        "2000375": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000377": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000381": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000385": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000386": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000387": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000388": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000389": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000393": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        }
+      }
+    },
+    {
+      "index": 10,
+      "path": "tests\\artifacts\\kernels\\sb441_type13_full_2020_2030\\sb441_type13_shard_010.bsp",
+      "body_count": 25,
+      "bodies": [
+        {
+          "name": "Arsinoe",
+          "naif_id": 2000404,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Thia",
+          "naif_id": 2000405,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Arachne",
+          "naif_id": 2000407,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Aspasia",
+          "naif_id": 2000409,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Chloris",
+          "naif_id": 2000410,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Elisabetha",
+          "naif_id": 2000412,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Palatia",
+          "naif_id": 2000415,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Vaticana",
+          "naif_id": 2000416,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Aurelia",
+          "naif_id": 2000419,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Bertholda",
+          "naif_id": 2000420,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Diotima",
+          "naif_id": 2000423,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Gratia",
+          "naif_id": 2000424,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Hippo",
+          "naif_id": 2000426,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Nephele",
+          "naif_id": 2000431,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Pythia",
+          "naif_id": 2000432,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Eros",
+          "naif_id": 2000433,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Eichsfeldia",
+          "naif_id": 2000442,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Gyptis",
+          "naif_id": 2000444,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Edna",
+          "naif_id": 2000445,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Hamburga",
+          "naif_id": 2000449,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Patientia",
+          "naif_id": 2000451,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Mathesis",
+          "naif_id": 2000454,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Bruchsalia",
+          "naif_id": 2000455,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Megaira",
+          "naif_id": 2000464,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Alekto",
+          "naif_id": 2000465,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        }
+      ],
+      "verification": {
+        "2000404": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000405": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000407": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000409": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000410": {
+          "max_node_error_km": 1.862645149230957e-08,
+          "epoch_count": 123.0
+        },
+        "2000412": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000415": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000416": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000419": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000420": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 123.0
+        },
+        "2000423": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000424": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000426": {
+          "max_node_error_km": 2.421438694000244e-08,
+          "epoch_count": 123.0
+        },
+        "2000431": {
+          "max_node_error_km": 1.6996636986732483e-08,
+          "epoch_count": 123.0
+        },
+        "2000432": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000433": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000442": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000444": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000445": {
+          "max_node_error_km": 2.2351741790771484e-08,
+          "epoch_count": 123.0
+        },
+        "2000449": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000451": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000454": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000455": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000464": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000465": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 123.0
+        }
+      }
+    },
+    {
+      "index": 11,
+      "path": "tests\\artifacts\\kernels\\sb441_type13_full_2020_2030\\sb441_type13_shard_011.bsp",
+      "body_count": 25,
+      "bodies": [
+        {
+          "name": "Tisiphone",
+          "naif_id": 2000466,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Argentina",
+          "naif_id": 2000469,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Papagena",
+          "naif_id": 2000471,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Hedwig",
+          "naif_id": 2000476,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Emita",
+          "naif_id": 2000481,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Genua",
+          "naif_id": 2000485,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Kreusa",
+          "naif_id": 2000488,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Comacina",
+          "naif_id": 2000489,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Veritas",
+          "naif_id": 2000490,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Carina",
+          "naif_id": 2000491,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Tokio",
+          "naif_id": 2000498,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Evelyn",
+          "naif_id": 2000503,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Cava",
+          "naif_id": 2000505,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Marion",
+          "naif_id": 2000506,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Princetonia",
+          "naif_id": 2000508,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Davida",
+          "naif_id": 2000511,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Armida",
+          "naif_id": 2000514,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Amherstia",
+          "naif_id": 2000516,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Edith",
+          "naif_id": 2000517,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Brixia",
+          "naif_id": 2000521,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Herculina",
+          "naif_id": 2000532,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Montague",
+          "naif_id": 2000535,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Merapi",
+          "naif_id": 2000536,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Messalina",
+          "naif_id": 2000545,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Praxedis",
+          "naif_id": 2000547,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        }
+      ],
+      "verification": {
+        "2000466": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000469": {
+          "max_node_error_km": 1.5366822481155396e-08,
+          "epoch_count": 123.0
+        },
+        "2000471": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000476": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000481": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000485": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000488": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000489": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000490": {
+          "max_node_error_km": 2.2351741790771484e-08,
+          "epoch_count": 123.0
+        },
+        "2000491": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000498": {
+          "max_node_error_km": 1.862645149230957e-08,
+          "epoch_count": 123.0
+        },
+        "2000503": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000505": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 123.0
+        },
+        "2000506": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000508": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000511": {
+          "max_node_error_km": 2.2351741790771484e-08,
+          "epoch_count": 123.0
+        },
+        "2000514": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000516": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000517": {
+          "max_node_error_km": 1.6763806343078613e-08,
+          "epoch_count": 123.0
+        },
+        "2000521": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000532": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000535": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000536": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000545": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000547": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        }
+      }
+    },
+    {
+      "index": 12,
+      "path": "tests\\artifacts\\kernels\\sb441_type13_full_2020_2030\\sb441_type13_shard_012.bsp",
+      "body_count": 25,
+      "bodies": [
+        {
+          "name": "Peraga",
+          "naif_id": 2000554,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Stereoskopia",
+          "naif_id": 2000566,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Cheruskia",
+          "naif_id": 2000568,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Misa",
+          "naif_id": 2000569,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Semiramis",
+          "naif_id": 2000584,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Bilkis",
+          "naif_id": 2000585,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Irmgard",
+          "naif_id": 2000591,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Titania",
+          "naif_id": 2000593,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Polyxena",
+          "naif_id": 2000595,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Scheila",
+          "naif_id": 2000596,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Octavia",
+          "naif_id": 2000598,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Luisa",
+          "naif_id": 2000599,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Marianna",
+          "naif_id": 2000602,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Tekmessa",
+          "naif_id": 2000604,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Elfriede",
+          "naif_id": 2000618,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Chimaera",
+          "naif_id": 2000623,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Notburga",
+          "naif_id": 2000626,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Vundtia",
+          "naif_id": 2000635,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Zelinda",
+          "naif_id": 2000654,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Gerlinde",
+          "naif_id": 2000663,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Denise",
+          "naif_id": 2000667,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Rachele",
+          "naif_id": 2000674,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Ludmilla",
+          "naif_id": 2000675,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Genoveva",
+          "naif_id": 2000680,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Lanzia",
+          "naif_id": 2000683,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        }
+      ],
+      "verification": {
+        "2000554": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000566": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000568": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000569": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000584": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000585": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000591": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000593": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000595": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000596": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000598": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000599": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000602": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000604": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000618": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000623": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000626": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000635": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000654": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000663": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000667": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000674": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 123.0
+        },
+        "2000675": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000680": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000683": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        }
+      }
+    },
+    {
+      "index": 13,
+      "path": "tests\\artifacts\\kernels\\sb441_type13_full_2020_2030\\sb441_type13_shard_013.bsp",
+      "body_count": 25,
+      "bodies": [
+        {
+          "name": "Wratislavia",
+          "naif_id": 2000690,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Lehigh",
+          "naif_id": 2000691,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Ekard",
+          "naif_id": 2000694,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Leonora",
+          "naif_id": 2000696,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Alauda",
+          "naif_id": 2000702,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Interamnia",
+          "naif_id": 2000704,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Erminia",
+          "naif_id": 2000705,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Fringilla",
+          "naif_id": 2000709,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Boliviana",
+          "naif_id": 2000712,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Luscinia",
+          "naif_id": 2000713,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Marghanna",
+          "naif_id": 2000735,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Mandeville",
+          "naif_id": 2000739,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Cantabia",
+          "naif_id": 2000740,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Winchester",
+          "naif_id": 2000747,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Faina",
+          "naif_id": 2000751,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Sulamitis",
+          "naif_id": 2000752,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Massinga",
+          "naif_id": 2000760,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Pulcova",
+          "naif_id": 2000762,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Tatjana",
+          "naif_id": 2000769,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Tanete",
+          "naif_id": 2000772,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Irmintraud",
+          "naif_id": 2000773,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Berbericia",
+          "naif_id": 2000776,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Theobalda",
+          "naif_id": 2000778,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Armenia",
+          "naif_id": 2000780,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Pickeringia",
+          "naif_id": 2000784,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        }
+      ],
+      "verification": {
+        "2000690": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 123.0
+        },
+        "2000691": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000694": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000696": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000702": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000704": {
+          "max_node_error_km": 2.561137080192566e-08,
+          "epoch_count": 123.0
+        },
+        "2000705": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000709": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000712": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000713": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000735": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000739": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000740": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000747": {
+          "max_node_error_km": 1.862645149230957e-08,
+          "epoch_count": 123.0
+        },
+        "2000751": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000752": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000760": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000762": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 123.0
+        },
+        "2000769": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000772": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 123.0
+        },
+        "2000773": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000776": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000778": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 123.0
+        },
+        "2000780": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000784": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        }
+      }
+    },
+    {
+      "index": 14,
+      "path": "tests\\artifacts\\kernels\\sb441_type13_full_2020_2030\\sb441_type13_shard_014.bsp",
+      "body_count": 25,
+      "bodies": [
+        {
+          "name": "Bredichina",
+          "naif_id": 2000786,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Hohensteina",
+          "naif_id": 2000788,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Pretoria",
+          "naif_id": 2000790,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Ani",
+          "naif_id": 2000791,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Hispania",
+          "naif_id": 2000804,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Tauris",
+          "naif_id": 2000814,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Ara",
+          "naif_id": 2000849,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Helio",
+          "naif_id": 2000895,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Ulla",
+          "naif_id": 2000909,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Palisana",
+          "naif_id": 2000914,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Anacostia",
+          "naif_id": 2000980,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Christa",
+          "naif_id": 2001015,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Flammario",
+          "naif_id": 2001021,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Ganymed",
+          "naif_id": 2001036,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Freda",
+          "naif_id": 2001093,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Lictoria",
+          "naif_id": 2001107,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Rusthawelia",
+          "naif_id": 2001171,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Mashona",
+          "naif_id": 2001467,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Chaos",
+          "naif_id": 2019521,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Varuna",
+          "naif_id": 2020000,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Ixion",
+          "naif_id": 2028978,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Quaoar",
+          "naif_id": 2050000,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Sedna",
+          "naif_id": 2090377,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Orcus",
+          "naif_id": 2090482,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Salacia",
+          "naif_id": 2120347,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        }
+      ],
+      "verification": {
+        "2000786": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000788": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000790": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 123.0
+        },
+        "2000791": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000804": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000814": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000849": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000895": {
+          "max_node_error_km": 2.2351741790771484e-08,
+          "epoch_count": 123.0
+        },
+        "2000909": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000914": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2000980": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2001015": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2001021": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2001036": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2001093": {
+          "max_node_error_km": 1.6763806343078613e-08,
+          "epoch_count": 123.0
+        },
+        "2001107": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2001171": {
+          "max_node_error_km": 2.9802322387695312e-08,
+          "epoch_count": 123.0
+        },
+        "2001467": {
+          "max_node_error_km": 1.4901161193847656e-08,
+          "epoch_count": 123.0
+        },
+        "2019521": {
+          "max_node_error_km": 3.725290298461914e-09,
+          "epoch_count": 123.0
+        },
+        "2020000": {
+          "max_node_error_km": 0.0,
+          "epoch_count": 123.0
+        },
+        "2028978": {
+          "max_node_error_km": 3.725290298461914e-09,
+          "epoch_count": 123.0
+        },
+        "2050000": {
+          "max_node_error_km": 0.0,
+          "epoch_count": 123.0
+        },
+        "2090377": {
+          "max_node_error_km": 0.0,
+          "epoch_count": 123.0
+        },
+        "2090482": {
+          "max_node_error_km": 0.0,
+          "epoch_count": 123.0
+        },
+        "2120347": {
+          "max_node_error_km": 1.862645149230957e-09,
+          "epoch_count": 123.0
+        }
+      }
+    },
+    {
+      "index": 15,
+      "path": "tests\\artifacts\\kernels\\sb441_type13_full_2020_2030\\sb441_type13_shard_015.bsp",
+      "body_count": 5,
+      "bodies": [
+        {
+          "name": "Haumea",
+          "naif_id": 2136108,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Eris",
+          "naif_id": 2136199,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Makemake",
+          "naif_id": 2136472,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Varda",
+          "naif_id": 2174567,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        },
+        {
+          "name": "Gonggong",
+          "naif_id": 2225088,
+          "start_jd": 2458849.5,
+          "end_jd": 2462502.5,
+          "epoch_count": 123
+        }
+      ],
+      "verification": {
+        "2136108": {
+          "max_node_error_km": 0.0,
+          "epoch_count": 123.0
+        },
+        "2136199": {
+          "max_node_error_km": 3.725290298461914e-09,
+          "epoch_count": 123.0
+        },
+        "2136472": {
+          "max_node_error_km": 0.0,
+          "epoch_count": 123.0
+        },
+        "2174567": {
+          "max_node_error_km": 7.450580596923828e-09,
+          "epoch_count": 123.0
+        },
+        "2225088": {
+          "max_node_error_km": 0.0,
+          "epoch_count": 123.0
+        }
+      }
+    }
+  ]
+}

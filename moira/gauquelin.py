@@ -33,6 +33,8 @@ Public surface
 ``all_gauquelin_sectors``  — compute sectors for all bodies in a dict.
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass
 

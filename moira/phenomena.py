@@ -36,6 +36,8 @@ Public surface / exports:
     conjunctions_in_range()   — all conjunctions between two bodies in a range
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass
 from datetime import datetime

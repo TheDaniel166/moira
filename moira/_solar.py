@@ -21,6 +21,8 @@ Public surface / exports:
     (Note: This is an internal module with no public API)
 """
 
+from __future__ import annotations
+
 import math
 
 from .constants import Body

@@ -66,6 +66,8 @@ galactic_reference_points(obliquity, jd_tt)
     given epoch.
 """
 
+from __future__ import annotations
+
 from moira.galactic import (
     GalacticPosition,
     all_galactic_positions,

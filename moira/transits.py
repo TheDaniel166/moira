@@ -21,6 +21,8 @@ External dependency assumptions:
     - SpkReader must be initialised before any public function is called.
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass, field
 from datetime import datetime, timezone

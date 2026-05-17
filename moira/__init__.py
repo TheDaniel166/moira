@@ -5,6 +5,8 @@ This module is intentionally thin. The heavyweight facade implementation lives
 in ``moira.facade``; subsystem APIs are imported from their owning modules.
 """
 
+from __future__ import annotations
+
 import sys as _sys
 from ._kernel_paths import find_planetary_kernel as _find_planetary_kernel
 

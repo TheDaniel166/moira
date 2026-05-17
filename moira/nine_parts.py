@@ -20,6 +20,8 @@ Public surface:
     NinePartsAggregate, nine_parts_abu_mashar, validate_nine_parts_output
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from enum import StrEnum
 from math import isfinite

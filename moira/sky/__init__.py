@@ -55,6 +55,8 @@ Design contract
 - Stubs are documented but raise NotImplementedError — they do not pretend.
 """
 
+from __future__ import annotations
+
 from moira.sky import (  # noqa: F401  (ensure submodules are importable)
     bodies,
     eclipse,

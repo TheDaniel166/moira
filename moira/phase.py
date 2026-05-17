@@ -34,6 +34,8 @@ Public surface / exports:
     apparent_magnitude()   — apparent visual magnitude (V band, simplified model)
 """
 
+from __future__ import annotations
+
 import math
 from .constants import Body, J2000, KM_PER_AU, SUN_RADIUS_KM, MOON_RADIUS_KM
 from .planets import planet_at, _barycentric, _earth_barycentric

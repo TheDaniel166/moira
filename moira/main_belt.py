@@ -47,6 +47,8 @@ Kernel sources:
     asteroids.bsp  (codes_300ast_20100725.bsp — primary, accurate main-belt)
     sb441-n373s.bsp  (supplemental, DE441-consistent)
 """
+
+from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from .asteroids import asteroid_at, AsteroidData, available_in_kernel

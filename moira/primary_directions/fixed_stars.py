@@ -9,6 +9,8 @@ projection needed to turn catalog-backed star identities into explicit
 primary-direction promissor points.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 from ..stars import star_at, star_name_resolves

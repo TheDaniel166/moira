@@ -22,6 +22,8 @@ Significant dependency boundaries:
 Import-time initialization side effects: None.
 """
 
+from __future__ import annotations
+
 from ..stars import star_name_resolves as _star_name_resolves
 
 

@@ -67,6 +67,8 @@ Public surface
 ``shashtiamsha``      — D60 Shashtiamsha (generic).
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from .constants import sign_of, SIGNS, SIGN_SYMBOLS
 

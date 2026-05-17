@@ -57,6 +57,8 @@ Public surface
 ``geodetic_equivalents_from_chart`` — equivalents directly from a ChartContext.
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass, field
 

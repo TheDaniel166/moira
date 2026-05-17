@@ -33,6 +33,8 @@ Public surface / exports:
     twilight_times()      — full twilight table for a day and observer location
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass
 

@@ -6,6 +6,8 @@ Keeping the public import as a Python shim prevents stale extension binaries
 from winning import resolution when multiple `.pyd` files are present.
 """
 
+from __future__ import annotations
+
 import importlib.util
 from importlib.machinery import EXTENSION_SUFFIXES
 import sys

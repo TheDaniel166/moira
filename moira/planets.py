@@ -24,6 +24,8 @@ External dependency assumptions:
     - DE441 kernel must exist at kernels/de441.bsp (accessed lazily on first call).
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass, field
 from collections import OrderedDict

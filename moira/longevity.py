@@ -37,6 +37,8 @@ Public surface
 ``calculate_longevity``  — full Hyleg/Alcocoden longevity calculation.
 """
 
+from __future__ import annotations
+
 
 from dataclasses import dataclass
 

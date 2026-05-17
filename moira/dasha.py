@@ -44,6 +44,8 @@ External dependency assumptions:
       tropical_to_sidereal, Ayanamsa).
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass, field
 from datetime import datetime

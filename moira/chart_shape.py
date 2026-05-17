@@ -248,6 +248,8 @@ Public surface
 ``classify_chart_shape`` — single entry point; positions -> ChartShape.
 """
 
+from __future__ import annotations
+
 from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum

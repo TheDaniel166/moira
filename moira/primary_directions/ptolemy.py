@@ -9,6 +9,8 @@ contra-parallels by projecting a declination-equivalent ecliptic point on the
 branch nearest the source body's own longitude.
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass
 from enum import StrEnum

@@ -13,6 +13,8 @@ Public surface:
     dominant_harmonic_contributors, compare_intensity_spectra, compare_trace_series
 """
 
+from __future__ import annotations
+
 from .models import (
     HarmogramDominantTerm,
     HarmogramProjection,

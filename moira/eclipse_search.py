@@ -16,6 +16,8 @@ External dependency assumptions:
     - No third-party packages; stdlib only.
 """
 
+from __future__ import annotations
+
 __all__ = [
     "refine_minimum",
     "refine_lunar_greatest_eclipse",

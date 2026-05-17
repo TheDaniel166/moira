@@ -38,6 +38,8 @@ Public surface:
     validate_releasing_output
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from datetime import datetime
 import math

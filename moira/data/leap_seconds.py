@@ -4,6 +4,8 @@ Last Synchronized: 2026-05-06T19:41:00.675593+00:00
 Source: https://hpiers.obspm.fr/iers/bul/bulc/Leap_Second.dat
 """
 
+from __future__ import annotations
+
 LEAP_SECONDS: list[tuple[float, float]] = [
     (2441317.5, 10.0),
     (2441499.5, 11.0),

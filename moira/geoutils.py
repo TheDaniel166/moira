@@ -25,6 +25,8 @@ Public surface / exports:
     (Shared utilities for astrocartography, eclipse, and occultation modules)
 """
 
+from __future__ import annotations
+
 import math
 
 from .eclipse_geometry import EARTH_RADIUS_KM

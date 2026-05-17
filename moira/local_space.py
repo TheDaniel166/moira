@@ -34,6 +34,8 @@ Public surface
 ``local_space_from_chart``— convenience wrapper for a ``ChartContext``.
 """
 
+from __future__ import annotations
+
 
 import math
 from dataclasses import dataclass

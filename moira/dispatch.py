@@ -4,6 +4,8 @@ The Substrate Dispatcher: governs the routing of astronomical computations
 between the Python reference (Truth) and the C++ accelerated (Forge) backends.
 """
 
+from __future__ import annotations
+
 import os
 import functools
 from enum import Enum

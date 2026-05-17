@@ -36,6 +36,8 @@ Public surface / exports:
     SolarEclipsePath, LunarEclipseAnalysisMode, EclipseCalculator
 """
 
+from __future__ import annotations
+
 
 import math
 import time

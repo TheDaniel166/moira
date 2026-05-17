@@ -19,6 +19,8 @@ External dependency assumptions:
       inside create_chart() via get_reader()).
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from types import MappingProxyType
 

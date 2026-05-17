@@ -21,6 +21,8 @@ External dependency assumptions:
       initialised; callers may also pass an explicit ``SpkReader``.
 """
 
+from __future__ import annotations
+
 import math
 from dataclasses import dataclass
 from datetime import datetime, timezone

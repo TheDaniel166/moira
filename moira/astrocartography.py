@@ -33,6 +33,8 @@ Public surface
 ``acg_from_chart`` - convenience wrapper for a ``ChartContext``.
 """
 
+from __future__ import annotations
+
 
 import inspect
 import math

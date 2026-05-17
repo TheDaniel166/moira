@@ -43,6 +43,8 @@ External dependency assumptions:
     lazily inside individual functions to avoid circular imports)
 """
 
+from __future__ import annotations
+
 import math
 from .constants import DEG2RAD, RAD2DEG
 

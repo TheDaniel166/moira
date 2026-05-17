@@ -25,6 +25,8 @@ Public surface / exports:
     antiscia_to_point()   — bodies casting a shadow onto a fixed point
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 from .constants import sign_of

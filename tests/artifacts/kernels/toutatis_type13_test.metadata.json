@@ -1,0 +1,33 @@
+{
+  "target": {
+    "name": "Toutatis",
+    "naif_id": 2004179,
+    "command": "4179;",
+    "center": 10,
+    "frame": 1
+  },
+  "source": {
+    "authority": "JPL Horizons",
+    "url": "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=4179%3B&OBJ_DATA=NO&MAKE_EPHEM=YES&EPHEM_TYPE=VECTORS&CENTER=500%4010&REF_PLANE=FRAME&START_TIME=2020-Jan-01&STOP_TIME=2030-Jan-01&STEP_SIZE=30d&OUT_UNITS=KM-S&VEC_TABLE=2&VEC_LABELS=YES&CSV_FORMAT=YES&TIME_DIGITS=FRACSEC",
+    "center": "500@10",
+    "ref_plane": "FRAME",
+    "units": {
+      "position": "km",
+      "velocity_source": "km/s",
+      "velocity_written": "km/s"
+    }
+  },
+  "coverage": {
+    "start_jd": 2458849.5,
+    "end_jd": 2462479.5,
+    "epoch_count": 122,
+    "step_days": 30,
+    "window_size": 5
+  },
+  "output_bsp": "tests\\artifacts\\kernels\\toutatis_type13_test.bsp",
+  "verification": {
+    "max_node_error_km": 4.470348358154297e-08,
+    "midpoint_jd": 2460664.5,
+    "midpoint_radius_km": 148450149.28537974
+  }
+}
