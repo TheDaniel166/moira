@@ -1,6 +1,6 @@
 # Moira
 
-**Pure-Python Ephemeris and Astrology Computation Engine**
+**Ephemeris and Astrology Computation Engine**
 
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -12,7 +12,7 @@
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19152528-blue.svg)](https://doi.org/10.5281/zenodo.19152528)
 <a href="https://tools.launchllama.co?utm_source=badge&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://speaktechenglish.com/wp-content/uploads/2026/04/Screenshot_2026-04-09_at_17.40.44-removebg-preview.png" alt="Featured on Launch Llama" width="200" height="50" /></a>
 
-Moira is an astronomy-first astrology engine: a pure-Python ephemeris engine and astrology computation engine built for transparent astrology calculations, reproducible chart computation, and an inspectable calculation chain from astronomical inputs to astrological outputs. It is an auditable astrology engine with explicit computational policy, deterministic behavior, and readable reduction stages grounded in modern standards and references including JPL DE441, IAU 2000A/2006, ERFA/SOFA-aligned practices, and Gaia DR3-linked star data where applicable.
+Moira is an astronomy-first astrology engine built for transparent astrology calculations, reproducible chart computation, and an inspectable calculation chain from astronomical inputs to astrological outputs. It is an auditable astrology engine with explicit computational policy, deterministic behavior, and readable reduction stages grounded in modern standards and references including JPL DE441, IAU 2000A/2006, ERFA/SOFA-aligned practices, and Gaia DR3-linked star data where applicable. Performance-critical computations — nutation, SPK kernel reading, coordinate transforms, light-time iteration, harmogram analysis, and event searching — are executed by a native C++17 extension (`_moira_native`) compiled with pybind11.
 
 ## Why Moira Exists
 
@@ -28,7 +28,7 @@ Moira is designed to be highly discoverable and understandable by AI agents (e.g
 
 ## What Makes It Different
 
-Moira is designed for full computational transparency: core transformations are implemented in inspectable Python, computational doctrine is explicit rather than hidden in defaults, and validation is treated as first-class evidence rather than post-hoc narrative.
+Moira is designed for full computational transparency: the computation pipeline is explicit and its stages are named and controllable via the Python API, computational doctrine is explicit rather than hidden in defaults, and validation is treated as first-class evidence rather than post-hoc narrative. The high-performance core (`_moira_native`) is C++17; the Python layer owns the API surface, orchestration, and per-stage controls.
 
 ## Who It Is For
 
@@ -40,7 +40,7 @@ Moira is not primarily a UI app, not a thin wrapper over opaque compiled stacks,
 
 ## Quick Capabilities
 
-Moira computes planetary and stellar positions, houses, aspects, lots, dignities, predictive techniques, eclipse and occultation events, and related analytical products on top of a modern astronomical substrate (JPL kernels, IAU models, and validated star frameworks), with pure-Python execution and inspectable intermediate stages.
+Moira computes planetary and stellar positions, houses, aspects, lots, dignities, predictive techniques, eclipse and occultation events, and related analytical products on top of a modern astronomical substrate (JPL kernels, IAU models, and validated star frameworks), with a native C++ computational core, Python orchestration layer, and inspectable intermediate stages.
 
 ---
 
@@ -128,15 +128,16 @@ for p in patterns:
 ## Requirements and Installation
 
 - Python 3.10 or later
-- `jplephem >= 2.24` (the only required runtime dependency)
+- `scipy >= 1.14` (required runtime dependency)
+- A C++ compiler, `cmake >= 3.24`, and `pybind11 >= 2.12` (required at build time for the native extension)
 - A JPL DE-series planetary kernel (de430, de440, or de441 — not bundled; see below)
 
 ```bash
-# Standard install (pure Python)
+# Standard install (builds the native C++ extension)
 pip install moira-astro
 
-# With NumPy acceleration for the nutation engine
-pip install moira-astro[fast]
+# With Lunar Graze support (spiceypy, laspy, requests)
+pip install moira-astro[lunar-graze]
 ```
 
 ---
@@ -220,7 +221,7 @@ print(m.available_kernels)
 
 | Layer | Source | Bundled | Note |
 | :--- | :--- | :--- | :--- |
-| IAU 2000A/2006 nutation and precession tables | IAU | Yes | 2,414 terms; pure Python |
+| IAU 2000A/2006 nutation and precession tables | IAU | Yes | 2,414 terms; native C++ (`_moira_native`) |
 | DE-series planetary kernel | JPL | No | de430 (~115 MB), de440 (~114 MB), or de441 (~3.3 GB); download separately |
 | Named star registry | Sovereign (`star_registry.csv` + JSON provenance) | Yes | 1,809 stars; license-independent |
 | Centaur kernel | Moira native | Yes | `centaurs.bsp` — Chiron, Pholus, Chariklo, Asbolus, Hylonome |
@@ -228,11 +229,11 @@ print(m.available_kernels)
 
 ---
 
-## NumPy Acceleration
+## Native C++ Performance
 
-Moira is functionally identical with or without NumPy. When present, NumPy accelerates the IAU 2000A nutation evaluation from approximately 2.7 ms to 0.035 ms per call — a factor of roughly 79x. Numeric drift from the vectorised path is less than 3×10⁻¹⁶ degrees.
+Moira's computational core (`_moira_native`) is implemented in C++17 and compiled as a pybind11 extension at install time. Performance-critical paths — IAU 2000A nutation evaluation, SPK/DAF kernel reading, coordinate transforms, light-time iteration, harmogram computation, precession, and event searching — execute natively without Python overhead.
 
-The acceleration matters most in phenomenon-searching loops (retrograde periods, eclipse searches, heliacal events, conjunction sweeps) where nutation is evaluated thousands of times. For single-chart work, the pure-Python path is adequate.
+This matters most in phenomenon-searching loops (retrograde periods, eclipse searches, heliacal events, conjunction sweeps) where core transforms are evaluated thousands of times. The native extension is a required component and is built automatically during `pip install`.
 
 ---
 

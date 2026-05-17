@@ -117,9 +117,9 @@ class ModuleParser:
             source = module_path.read_text(encoding="utf-8")
             tree = ast.parse(source, filename=str(module_path))
             
-            symbols = self.extract_symbols(tree)
-            all_declaration = self.extract_all_declaration(tree)
             imports = self.extract_imports(tree, module_path)
+            symbols = self.extract_symbols(tree)
+            all_declaration = self.extract_all_declaration(tree, module_path, imports)
             
             return ParsedModule(
                 module_path=module_path,
@@ -294,7 +294,12 @@ class ModuleParser:
         
         return SymbolType.CONSTANT
 
-    def extract_all_declaration(self, tree: ast.Module) -> list[str] | None:
+    def extract_all_declaration(
+        self,
+        tree: ast.Module,
+        module_path: Path,
+        imports: dict[str, str],
+    ) -> list[str] | None:
         """
         Extract __all__ declaration from module AST.
         
@@ -314,20 +319,30 @@ class ModuleParser:
                 for target in node.targets:
                     if isinstance(target, ast.Name):
                         name_map[target.id] = node.value
+            elif isinstance(node, ast.AnnAssign):
+                if isinstance(node.target, ast.Name) and node.value is not None:
+                    name_map[node.target.id] = node.value
         
         for node in tree.body:
             # Look for __all__ = [...]
             if isinstance(node, ast.Assign):
                 for target in node.targets:
                     if isinstance(target, ast.Name) and target.id == "__all__":
-                        return self._extract_list_from_value(node.value, name_map)
+                        return self._extract_list_from_value(
+                            node.value,
+                            name_map,
+                            imports,
+                            module_path,
+                        )
         
         return None
 
     def _extract_list_from_value(
         self, 
         value: ast.expr, 
-        name_map: dict[str, ast.expr] | None = None
+        name_map: dict[str, ast.expr] | None = None,
+        imports: dict[str, str] | None = None,
+        module_path: Path | None = None,
     ) -> list[str]:
         """
         Extract string list from AST value.
@@ -344,6 +359,7 @@ class ModuleParser:
         """
         result: list[str] = []
         name_map = name_map or {}
+        imports = imports or {}
         
         # Handle list literals
         if isinstance(value, ast.List):
@@ -362,20 +378,66 @@ class ModuleParser:
               isinstance(value.func, ast.Name) and 
               value.func.id == "list"):
             if value.args:
-                result.extend(self._extract_list_from_value(value.args[0], name_map))
+                result.extend(
+                    self._extract_list_from_value(
+                        value.args[0],
+                        name_map,
+                        imports,
+                        module_path,
+                    )
+                )
         
         # Handle binary addition (list + list)
         elif isinstance(value, ast.BinOp) and isinstance(value.op, ast.Add):
-            result.extend(self._extract_list_from_value(value.left, name_map))
-            result.extend(self._extract_list_from_value(value.right, name_map))
+            result.extend(
+                self._extract_list_from_value(
+                    value.left,
+                    name_map,
+                    imports,
+                    module_path,
+                )
+            )
+            result.extend(
+                self._extract_list_from_value(
+                    value.right,
+                    name_map,
+                    imports,
+                    module_path,
+                )
+            )
             
         # Handle name references (resolve locally)
         elif isinstance(value, ast.Name) and value.id in name_map:
             # Pop to prevent infinite recursion
             orig_value = name_map.pop(value.id)
-            result.extend(self._extract_list_from_value(orig_value, name_map))
+            result.extend(
+                self._extract_list_from_value(
+                    orig_value,
+                    name_map,
+                    imports,
+                    module_path,
+                )
+            )
             name_map[value.id] = orig_value
-        
+        elif (
+            isinstance(value, ast.Name)
+            and value.id in imports
+            and imports[value.id].endswith(".__all__")
+            and module_path is not None
+        ):
+            target_module = imports[value.id][: -len(".__all__")]
+            target_file = self._resolve_module_file(target_module, module_path)
+            if target_file is not None and target_file.exists():
+                target_source = target_file.read_text(encoding="utf-8")
+                target_tree = ast.parse(target_source, filename=str(target_file))
+                target_imports = self.extract_imports(target_tree, target_file)
+                target_all = self.extract_all_declaration(
+                    target_tree,
+                    target_file,
+                    target_imports,
+                )
+                result.extend(target_all or [])
+
         return result
 
     def extract_imports(self, tree: ast.Module, module_path: Path) -> dict[str, str]:
@@ -397,7 +459,7 @@ class ModuleParser:
         for node in tree.body:
             # Handle "from X import Y" statements
             if isinstance(node, ast.ImportFrom):
-                module = node.module or ""
+                module = self._resolve_module_name(node.module or "", node.level, module_path)
                 for alias in node.names:
                     if alias.name == "*":
                         # Star imports - resolve by reading target module's __all__
@@ -406,7 +468,10 @@ class ModuleParser:
                             imports[symbol_name] = module
                         continue
                     imported_name = alias.asname if alias.asname else alias.name
-                    imports[imported_name] = module
+                    if alias.name == "__all__":
+                        imports[imported_name] = f"{module}.__all__"
+                    else:
+                        imports[imported_name] = module
             
             # Handle "import X" statements
             elif isinstance(node, ast.Import):
@@ -415,6 +480,72 @@ class ModuleParser:
                     imports[imported_name] = alias.name
         
         return imports
+
+    def _resolve_module_name(
+        self,
+        module: str,
+        level: int,
+        current_module_path: Path,
+    ) -> str:
+        """
+        Resolve an import target into a best-effort absolute module path.
+
+        Relative imports inside the Moira package are normalized to ``moira.*``
+        paths so facade analysis can reason about layered surfaces truthfully.
+        """
+        if level == 0:
+            return module
+
+        package_parts = self._module_parts_for_path(current_module_path)
+        if package_parts is None:
+            return ("." * level) + module
+
+        if current_module_path.name == "__init__.py":
+            anchor_parts = package_parts
+        else:
+            anchor_parts = package_parts[:-1]
+
+        if level > len(anchor_parts):
+            return ("." * level) + module
+
+        base_parts = anchor_parts[: len(anchor_parts) - level + 1]
+        if module:
+            base_parts.extend(module.split("."))
+        return ".".join(base_parts)
+
+    def _module_parts_for_path(self, module_path: Path) -> list[str] | None:
+        """
+        Derive the dotted module path from a filesystem path when possible.
+        """
+        module_path = module_path.resolve()
+
+        package_root: Path | None = None
+        for parent in [module_path.parent, *module_path.parents]:
+            if (parent / "__init__.py").exists():
+                package_root = parent
+                continue
+            break
+
+        if package_root is None:
+            return None
+
+        relative = module_path.relative_to(package_root.parent)
+        parts = list(relative.with_suffix("").parts)
+        if parts[-1] == "__init__":
+            parts.pop()
+        return parts
+
+    def _package_root_dir(self, module_path: Path) -> Path | None:
+        """Return the filesystem directory of the top-level package."""
+        module_parts = self._module_parts_for_path(module_path)
+        if module_parts is None:
+            return None
+
+        module_path = module_path.resolve()
+        root = module_path.parent if module_path.name == "__init__.py" else module_path.with_suffix("")
+        for _ in range(len(module_parts) - 1):
+            root = root.parent
+        return root
 
     def _resolve_star_import(self, module: str, current_module_path: Path) -> list[str]:
         """
@@ -428,50 +559,62 @@ class ModuleParser:
             List of symbol names exported by the module, or empty list if cannot resolve
         """
         try:
-            # Resolve relative imports
-            if module.startswith("."):
-                # Explicit relative import - resolve based on current module's location
-                current_dir = current_module_path.parent
-                # Count leading dots
-                level = len(module) - len(module.lstrip("."))
-                module_name = module.lstrip(".")
-                
-                # Go up 'level' directories
-                target_dir = current_dir
-                for _ in range(level - 1):
-                    target_dir = target_dir.parent
-                
-                # Construct target file path
-                if module_name:
-                    target_file = target_dir / f"{module_name}.py"
-                else:
-                    # from . import * - import from __init__.py
-                    target_file = target_dir / "__init__.py"
-            else:
-                # Implicit relative import (same directory) or absolute import
-                # Try same directory first
-                current_dir = current_module_path.parent
-                target_file = current_dir / f"{module}.py"
-                
-                if not target_file.exists():
-                    # Not in same directory - could be absolute import
-                    # For now, skip absolute imports that aren't in same directory
-                    return []
-            
+            target_file = self._resolve_module_file(module, current_module_path)
+
             # Check if target file exists
-            if not target_file.exists():
+            if target_file is None or not target_file.exists():
                 return []
             
             # Parse the target module to get its __all__
             target_source = target_file.read_text(encoding="utf-8")
             target_tree = ast.parse(target_source, filename=str(target_file))
-            target_all = self.extract_all_declaration(target_tree)
+            target_imports = self.extract_imports(target_tree, target_file)
+            target_all = self.extract_all_declaration(target_tree, target_file, target_imports)
             
             return target_all or []
             
         except Exception:
             # If we can't resolve, return empty list
             return []
+
+    def _resolve_module_file(self, module: str, current_module_path: Path) -> Path | None:
+        """
+        Resolve a module path to its source file when possible.
+        """
+        current_dir = current_module_path.parent
+
+        if module.startswith("moira."):
+            package_root = self._package_root_dir(current_module_path)
+            if package_root is None:
+                return None
+            repo_root = package_root.parent
+            module_parts = module.split(".")
+            base = repo_root.joinpath(*module_parts)
+            package_init = base / "__init__.py"
+            module_file = base.with_suffix(".py")
+            if package_init.exists():
+                return package_init
+            if module_file.exists():
+                return module_file
+            return None
+
+        if module == "moira":
+            package_root = self._package_root_dir(current_module_path)
+            if package_root is None:
+                return None
+            package_init = package_root / "__init__.py"
+            if package_init.exists():
+                return package_init
+
+        module_file = current_dir / f"{module}.py"
+        if module_file.exists():
+            return module_file
+
+        package_init = current_dir / module / "__init__.py"
+        if package_init.exists():
+            return package_init
+
+        return None
 
 
 __all__ = ["ModuleParser", "ParsedModule"]

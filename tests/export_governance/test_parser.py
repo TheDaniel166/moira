@@ -313,17 +313,37 @@ import moira.aspects as aspects
         assert "aspects" in result.imports
         assert result.imports["aspects"] == "moira.aspects"
 
-    def test_star_import_ignored(self, parser, temp_module):
-        """Test that star imports are not tracked."""
-        code = """
-from moira.aspects import *
-"""
-        temp_module.write_text(code)
-        
+    def test_star_import_resolved_from_module_all(self, parser, temp_module):
+        """Test that star imports are expanded from the delegate __all__."""
+        delegate = temp_module.parent / "delegate.py"
+        delegate.write_text(
+            '__all__ = ["PublicClass", "public_function"]\n'
+            "class PublicClass:\n    pass\n\n"
+            "def public_function():\n    pass\n",
+            encoding="utf-8",
+        )
+        temp_module.write_text("from delegate import *\n", encoding="utf-8")
+
         result = parser.parse_module(temp_module)
-        
-        # Star imports can't be tracked individually
-        assert len(result.imports) == 0
+
+        assert result.imports["PublicClass"] == "delegate"
+        assert result.imports["public_function"] == "delegate"
+
+    def test_relative_import_resolved_to_absolute_module_name(self, parser, temp_module):
+        """Test that relative imports are normalized for facade analysis."""
+        package_dir = temp_module.parent / f"moira_{temp_module.stem}"
+        package_dir.mkdir(exist_ok=True)
+        (package_dir / "__init__.py").write_text("", encoding="utf-8")
+        (package_dir / "facade.py").write_text(
+            '__all__ = ["Moira"]\nclass Moira:\n    pass\n',
+            encoding="utf-8",
+        )
+        module = package_dir / "essentials.py"
+        module.write_text("from .facade import Moira\n", encoding="utf-8")
+
+        result = parser.parse_module(module)
+
+        assert result.imports["Moira"] == f"{package_dir.name}.facade"
 
     def test_multiple_imports(self, parser, temp_module):
         """Test extracting multiple import statements."""

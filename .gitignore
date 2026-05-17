@@ -40,7 +40,7 @@ Desktop.ini
 ui/
 
 # large runtime ephemeris assets
-kernels/
+/kernels/
 *.bsp
 *.tpc
 *.tls
@@ -49,6 +49,11 @@ kernels/
 
 # Keep the package stub so setuptools can find moira.kernels
 !moira/kernels/__init__.py
+# Bundled kernels — tracked via Git LFS
+!moira/kernels/*.bsp
+!moira/kernels/sb441_type13/
+!moira/kernels/sb441_type13/*.bsp
+!moira/kernels/sb441_type13/manifest.json
 
 # Sophia / Persona Akaschic Record (Living Memory)
 anamnesis/

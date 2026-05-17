@@ -169,7 +169,11 @@ class FacadeAnalyzer:
         return {
             symbol: source
             for symbol, source in imports.items()
-            if source.startswith("moira")
+            if (
+                source.startswith("moira")
+                and not (symbol.startswith("_") and not symbol.startswith("__"))
+                and "._" not in source
+            )
         }
 
     def find_missing_exports(

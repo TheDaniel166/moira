@@ -7,6 +7,7 @@ from winning import resolution when multiple `.pyd` files are present.
 """
 
 import importlib.util
+from importlib.machinery import EXTENSION_SUFFIXES
 import sys
 from importlib import import_module
 from pathlib import Path
@@ -17,11 +18,11 @@ def _load_backend():
         return import_module("._moira_native", __package__)
     except ImportError:
         package_dir = Path(__file__).resolve().parent
-        candidates = (
-            package_dir / "_moira_native.pyd",
-            package_dir / "Release" / "_moira_native.pyd",
-            package_dir / "Debug" / "_moira_native.pyd",
-        )
+        candidates = []
+        for suffix in EXTENSION_SUFFIXES:
+            candidates.append(package_dir / f"_moira_native{suffix}")
+            candidates.extend(sorted((package_dir / "Release").glob(f"_moira_native*{suffix}")))
+            candidates.extend(sorted((package_dir / "Debug").glob(f"_moira_native*{suffix}")))
         for path in candidates:
             if not path.exists():
                 continue

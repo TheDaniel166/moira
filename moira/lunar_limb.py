@@ -100,7 +100,7 @@ def _require_lunar_extra() -> None:
         detail += " Import errors: " + "; ".join(causes) + "."
     raise ImportError(
         "Official lunar limb / graze support requires the optional "
-        "`moira-astro[lunar]` extra." + detail
+        "`moira-astro[lunar-graze]` extra." + detail
     )
 
 

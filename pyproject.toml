@@ -1,11 +1,11 @@
 [build-system]
-requires = ["setuptools>=80", "wheel"]
+requires = ["setuptools>=80", "wheel", "cmake>=3.24", "pybind11>=2.12"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "moira-astro"
 version = "3.1.0"
-description = "Pure Python ephemeris and astrology engine built on JPL DE441 and SPK kernels."
+description = "Ephemeris and astrology engine with native C++ core, built on JPL DE441 and SPK kernels."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
@@ -50,7 +50,6 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "jplephem>=2.24",
     "scipy>=1.14",
 ]
 
@@ -60,16 +59,15 @@ Repository = "https://github.com/TheDaniel166/moira"
 Issues = "https://github.com/TheDaniel166/moira/issues"
 
 [project.optional-dependencies]
-lunar = [
+lunar-graze = [
     "spiceypy>=8.0",
     "laspy[lazrs]>=2.7",
     "requests>=2.31",
 ]
-fast = [
-    "numpy>=1.24",
-]
 dev = [
     "build>=1.2",
+    "cmake>=3.24",
+    "pybind11>=2.12",
     "twine>=6.0",
     "pytest>=9.0",
     "pytest-cov>=6.0",
@@ -86,7 +84,7 @@ moira-kernel-manager   = "moira.kernel_manager_ui:main"
 moira-daf-writer       = "moira.daf_writer_ui:main"
 
 [tool.setuptools]
-packages = ["moira", "moira.data", "moira.compat", "moira.compat.nasa", "moira.constellations", "moira.primary_directions", "moira.harmograms", "moira.bridges", "moira.kernels"]
+packages = ["moira", "moira.data", "moira.compat", "moira.compat.nasa", "moira.constellations", "moira.primary_directions", "moira.harmograms", "moira.bridges", "moira.kernels", "moira.sky"]
 
 [tool.setuptools.package-data]
 moira = [
@@ -94,6 +92,8 @@ moira = [
     "data/*.csv",
     "data/*.json",
     "kernels/*.bsp",
+    "kernels/**/*.bsp",
+    "kernels/**/*.json",
 ]
 
 [tool.pytest.ini_options]
