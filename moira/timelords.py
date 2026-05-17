@@ -1198,7 +1198,7 @@ def _decennial_sequence(natal_positions: dict[str, float], is_day_chart: bool) -
     )
 
 
-def _decennial_supported_max_level(policy: DecennialPolicy) -> int:
+def _decennial_supported_max_level(policy: "DecennialPolicy") -> int:
     if policy.deep_subdivision_method is None:
         return 2
     if policy.deep_subdivision_method == "hephaistio":
