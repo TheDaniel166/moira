@@ -16,6 +16,7 @@ External dependency assumptions:
     - Pure computational module
 
 Public surface / exports:
+    _solar_longitude()         — internal solar ecliptic longitude computation
     _solar_declination_ra()    — internal solar declination and RA computation
     _sunrise_sunset_approx()   — internal sunrise/sunset approximation helpers
     (Note: This is an internal module with no public API)
@@ -30,6 +31,11 @@ from .julian import ut_to_tt
 from .obliquity import true_obliquity
 from .planets import planet_at
 from .spk_reader import SpkReader
+
+
+def _solar_longitude(jd: float, reader: SpkReader | None = None) -> float:
+    """Return the Sun's ecliptic longitude at jd."""
+    return planet_at(Body.SUN, jd, reader=reader).longitude
 
 
 def _solar_declination_ra(jd: float, reader: SpkReader) -> tuple[float, float]:

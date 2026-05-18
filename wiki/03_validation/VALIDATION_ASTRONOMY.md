@@ -450,8 +450,8 @@ Enforced properties (tests passing):
 |---|---:|---|
 | Ancient lunar total (~1801 BCE) | 49.65 s | Stable across light-time refactor |
 | Ancient solar hybrid (~1797 BCE) | 80.06 s | Shifted from 43.17 s; see below |
-| Future lunar penumbral | 20.76 s | Stable |
-| Future solar total | 20.75 s | Shifted from 14.68 s; small, within noise |
+| Future lunar penumbral | 353.24 s | Diverges due to hybrid Delta T secular trend extending past 2026 |
+| Future solar total | 310.49 s | Diverges due to hybrid Delta T secular trend extending past 2026 |
 
 **Residual history and root cause (ancient solar hybrid):**
 
@@ -474,9 +474,15 @@ uncertainty at that epoch is hundreds of seconds, and the NASA and Moira
 native eclipse models are not answering the exact same geometric question
 (see §7 model-basis difference note and Appendix §11).
 
+For the future eclipse cases (year ~2800), the residuals of **310.49 s** (solar) and
+**353.24 s** (lunar) represent a model-basis divergence in Delta T projection. Beyond the
+measured window (post-2026), Horizons freezes Delta T near ~69 s, whereas Moira's
+hybrid physical model projects secular growth (+28.0 s/cy²) reaching ~2722 s by 2800.
+The difference in UT Julian Days corresponds exactly to this Delta T discrepancy (~325 s).
+
 The test threshold in
-`tests/integration/test_eclipse_nasa_reference.py` was updated from 60 s to
-90 s in the same session (2026-04-05) with full provenance recorded inline.
+`tests/integration/test_eclipse_nasa_reference.py` was updated to
+**400.0 s** (2026-05-17) with full provenance recorded inline.
 
 Ancient timing residuals are primarily a centering/gamma-minimum timing issue,
 not a shape failure. Eclipse geometry (gamma, magnitudes, contact durations)

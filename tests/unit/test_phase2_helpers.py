@@ -127,6 +127,18 @@ def test_houses_from_armc_solar_sign_with_sun_lon():
     assert result.cusps[0] == pytest.approx(270.0, abs=1e-9)
 
 
+def test_calculate_houses_solar_sign_uses_explicit_sun_longitude():
+    result = calculate_houses(
+        2451545.0,
+        _LAT_LONDON,
+        -0.1,
+        HouseSystem.SOLAR_SIGN,
+        sun_longitude=280.0,
+    )
+    assert result.effective_system == HouseSystem.SOLAR_SIGN
+    assert result.cusps[0] == pytest.approx(270.0, abs=1e-9)
+
+
 def test_houses_from_armc_whole_sign():
     result = houses_from_armc(_ARMC_J2000, _OBL_J2000, _LAT_LONDON, HouseSystem.WHOLE_SIGN)
     # All cusps must be multiples of 30°

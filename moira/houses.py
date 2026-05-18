@@ -1,15 +1,18 @@
 """
 Moira — houses.py
-The House Engine: governs ecliptic house cusp computation for all supported
-house systems using ARMC, obliquity, and geographic coordinates.
+Purpose:
+    This Pillar provides the House Engine: ecliptic house cusp computation for
+    all supported house systems using ARMC, obliquity, and geographic
+    coordinates.
 
 House system implementations in this file include code derived from swehouse.c from Swiss Ephemeris, used with permission of its authors, Dieter Koch and Alois Treindl.
 
-Boundary: owns the full pipeline from raw Julian date and observer coordinates
-to a populated HouseCusps result vessel. Delegates time conversion to julian,
-obliquity and nutation to obliquity, local sidereal time to julian, and
-coordinate normalisation to coordinates. Does not own planet positions, aspect
-detection, chart assembly, or any display formatting.
+Boundary:
+    Owns the full pipeline from raw Julian date and observer coordinates to a
+    populated HouseCusps result vessel. Delegates time conversion to julian,
+    obliquity and nutation to obliquity, local sidereal time to julian, and
+    coordinate normalisation to coordinates. Does not own planet positions,
+    aspect detection, chart assembly, or display formatting.
 
 Layers present in this file:
     CORE COMPUTATION
@@ -154,7 +157,7 @@ Layers present in this file:
         - Hemisphere / quadrant totals (above/below horizon, eastern/western)
         - Harmonic overlays
         - Cross-system chart-distribution comparison
-Public surface:
+Public surface / exports:
     HouseSystemFamily, HouseSystemCuspBasis,
     HouseSystemClassification, classify_house_system,
     UnknownSystemPolicy, PolarFallbackPolicy, HousePolicy,
@@ -174,8 +177,8 @@ External dependency assumptions:
     - moira.obliquity must be importable (true_obliquity, nutation).
     - moira.coordinates must be importable (normalize_degrees).
     - moira.constants must be importable (DEG2RAD, RAD2DEG, HouseSystem, sign_of).
-    - moira.planets is imported lazily inside calculate_houses only when
-      HouseSystem.SUNSHINE is requested.
+    - Solar-anchored house systems may resolve the Sun's longitude through the
+      narrow solar-anchor Engine when that longitude is not supplied explicitly.
 """
 
 from __future__ import annotations
@@ -188,7 +191,7 @@ from .constants import DEG2RAD, RAD2DEG, HouseSystem, sign_of
 from .coordinates import normalize_degrees
 from .julian import local_sidereal_time, ut_to_tt, greenwich_mean_sidereal_time
 from .obliquity import true_obliquity, nutation
-from .planets import approx_year as _approx_year
+from ._solar import _solar_longitude
 
 __all__ = [
     # Enums / doctrine
@@ -265,28 +268,40 @@ def _finalize_cusps(cusps: list[float], *, context: str) -> list[float]:
 
 class HouseSystemFamily(str, Enum):
     """
-    Doctrinal family of a house system.
+    RITE: The Family Seal
 
-    EQUAL
-        All twelve houses span exactly 30° of the relevant reference frame
-        (ecliptic or equator). Cusps are spaced uniformly; no quadrant
-        trisection is involved.  Includes: EQUAL, WHOLE_SIGN, VEHLOW,
-        MORINUS, MERIDIAN.
+    THEOREM: This enum records the doctrinal family to which a house system belongs.
 
-    QUADRANT
-        The four angular cusps (ASC, IC, DSC, MC) are derived from ARMC and
-        obliquity; the eight intermediate cusps are found by some form of
-        trisection or projection within each quadrant.  Includes: PLACIDUS,
-        KOCH, PORPHYRY, CAMPANUS, REGIOMONTANUS, ALCABITIUS, TOPOCENTRIC,
-        AZIMUTHAL, CARTER, KRUSINSKI, APC.
+    RITE OF PURPOSE:
+        This enum exists so broad house-system identity can remain explicit and
+        stable across classification, policy, and comparison work. It preserves
+        the high-level doctrinal grouping of systems as executable truth rather
+        than leaving that identity implicit in comments or call-site logic.
 
-    WHOLE_SIGN
-        The first house is the entire sign rising; all houses are complete
-        30° sign divisions regardless of ASC degree within the sign.
+    LAW OF OPERATION:
+        Responsibilities:
+            - Declare the canonical house-system family labels.
+            - Preserve stable doctrinal grouping values for classification work.
+        Non-responsibilities:
+            - Does not compute cusps.
+            - Does not classify specific system codes on its own.
+        Dependencies:
+            - House classification doctrine in this Pillar.
+        Side effects:
+            - None
+        Failure behavior:
+            - None
 
-    SOLAR
-        The Sun anchors the house frame instead of the Ascendant. Includes:
-        SUNSHINE and SOLAR_SIGN.
+    Canon: None (No applicable canon)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "enum",
+      "owns_state": false,
+      "mutates_external_state": false,
+      "requires": [],
+      "guarantees": ["stable house-family taxonomy"]
+    }
     """
     EQUAL      = "equal"
     QUADRANT   = "quadrant"
@@ -296,59 +311,40 @@ class HouseSystemFamily(str, Enum):
 
 class HouseSystemCuspBasis(str, Enum):
     """
-    The projection or division method used to derive intermediate cusp positions.
+    RITE: The Cusp Basis Seal
 
-    ECLIPTIC
-        Cusps are placed at equal intervals directly on the ecliptic (or at
-        sign boundaries).  No projection from another frame is needed.
-        Systems: WHOLE_SIGN, EQUAL, VEHLOW, SOLAR_SIGN.
+    THEOREM: This enum records the computational basis used to derive intermediate house cusps.
 
-    EQUATORIAL
-        Equal 30° divisions of the celestial equator are projected onto the
-        ecliptic.  Systems: MORINUS, MERIDIAN, CARTER.
+    RITE OF PURPOSE:
+        This enum exists so cusp-generation method can remain explicit in the
+        doctrinal surface of the House Pillar. It preserves the underlying
+        projection or division basis as stable categorical truth for
+        classification and comparison work.
 
-    SEMI_ARC
-        Intermediate cusps are found via the diurnal or nocturnal semi-arc
-        of the Ascendant or of each cusp degree itself (self-referential
-        iteration).  Systems: PLACIDUS, ALCABITIUS.
+    LAW OF OPERATION:
+        Responsibilities:
+            - Declare the canonical cusp-basis labels.
+            - Preserve stable computational-basis values for classification work.
+        Non-responsibilities:
+            - Does not compute cusp positions.
+            - Does not choose among competing bases.
+        Dependencies:
+            - House classification doctrine in this Pillar.
+        Side effects:
+            - None
+        Failure behavior:
+            - None
 
-    OBLIQUE_ASCENSION
-        Cusps are placed using the oblique ascension of the MC degree,
-        projected back to the ecliptic.  Systems: KOCH.
+    Canon: None (No applicable canon)
 
-    QUADRANT_TRISECTION
-        Each of the four unequal quadrants is trisected directly in ecliptic
-        longitude.  Systems: PORPHYRY.
-
-    PRIME_VERTICAL
-        Great circles through the prime vertical are projected onto the
-        ecliptic.  Systems: CAMPANUS.
-
-    HORIZON
-        Great circles through the Zenith (horizon-based) are projected onto
-        the ecliptic.  Systems: AZIMUTHAL.
-
-    POLAR_PROJECTION
-        Each cusp uses a graduated polar height derived from the observer
-        latitude, projected onto the equator then to the ecliptic.
-        Systems: REGIOMONTANUS, TOPOCENTRIC.
-
-    SINUSOIDAL
-        Intermediate cusps are placed at sinusoidal offsets from the cardinal
-        cusps, derived from the quadrant size.
-
-    GREAT_CIRCLE
-        Great circles through the Ascendant and Zenith divide the sphere;
-        cusps are intersections with the ecliptic.  Systems: KRUSINSKI.
-
-    APC_FORMULA
-        Uses the APC formula (Boehrer / Polich) which positions cusps via a
-        composite ascension angle incorporating latitude and obliquity.
-        Systems: APC.
-
-    SOLAR_POSITION
-        The Sun's ecliptic longitude is the basis; cusps are equal 30°
-        intervals starting from the Sun.  Systems: SUNSHINE.
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "enum",
+      "owns_state": false,
+      "mutates_external_state": false,
+      "requires": [],
+      "guarantees": ["stable cusp-basis taxonomy"]
+    }
     """
     ECLIPTIC             = "ecliptic"
     EQUATORIAL           = "equatorial"
@@ -367,41 +363,48 @@ class HouseSystemCuspBasis(str, Enum):
 @dataclass(frozen=True, slots=True)
 class HouseSystemClassification:
     """
-    CLASSIFICATION: Doctrinal and computational character of a house system.
+    RITE: The House Doctrine Sigil
 
-    Describes the algorithm that produced a set of cusps — not the cusps
-    themselves.  All fields are derivable from the system code alone; none
-    depend on computed cusp values, observer latitude, or Julian date.
+    THEOREM: This dataclass records the doctrinal family and computational basis of one declared house system code.
 
-    Fields:
-        family
-            The doctrinal family of the system.  See HouseSystemFamily.
+    RITE OF PURPOSE:
+        This vessel exists so the House Pillar can attach explicit doctrinal
+        identity to a computed house figure without forcing callers to infer
+        method from cusp values alone. It preserves family, projection basis,
+        latitude sensitivity, and polar capability as first-class truth.
+        Without it, fallback auditing and system comparison would be forced to
+        reason from code strings or numeric output alone.
 
-        cusp_basis
-            The projection or division method used for intermediate cusps.
-            See HouseSystemCuspBasis.
+    LAW OF OPERATION:
+        Responsibilities:
+            - Record the doctrinal family of a house system code.
+            - Record the cusp-basis doctrine used for intermediate cusps.
+            - Record latitude sensitivity and polar capability truth.
+        Non-responsibilities:
+            - Does not compute cusps.
+            - Does not choose fallback policy.
+            - Does not compare or rank house systems.
+        Dependencies:
+            - HouseSystemFamily and HouseSystemCuspBasis enumerations.
+            - Classification table declarations in this Pillar.
+        Structural invariants:
+            - All fields are derivable from the declared system code alone.
+            - No field depends on chart time, location, or computed cusp values.
+        Side effects:
+            - None
+        Failure behavior:
+            - None at the vessel level; validation occurs where codes are classified.
 
-        latitude_sensitive
-            True if the cusp positions change with the observer's geographic
-            latitude (i.e. the system has a meaningful geographic pole).
-            False for systems where all observers at the same moment share
-            the same cusps regardless of latitude:
-            WHOLE_SIGN, EQUAL, VEHLOW, MORINUS, MERIDIAN.
+    Canon: None (No applicable canon)
 
-        polar_capable
-            True if the system can produce numerically stable results at
-            |latitude| >= 75° without falling back to another system.
-            Systems that cannot (PLACIDUS, KOCH) have
-            polar_capable = False; all others are True.
-
-    This dataclass is frozen (immutable) and carries no computation logic.
-    It is a pure doctrinal label attached to an already-computed HouseCusps.
-
-    Future layers that are NOT the responsibility of this class:
-        - Cusp-zone or angularity scoring
-        - House membership analysis
-        - Boundary sensitivity
-        - System comparison or policy selection
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "classification_vessel",
+      "owns_state": true,
+      "mutates_external_state": false,
+      "requires": ["family", "cusp_basis", "latitude_sensitive", "polar_capable"],
+      "guarantees": ["immutable doctrinal record", "code-derived semantics only"]
+    }
     """
     family:              HouseSystemFamily
     cusp_basis:          HouseSystemCuspBasis
@@ -441,23 +444,26 @@ def classify_house_system(code: str) -> HouseSystemClassification:
     """
     Return the HouseSystemClassification for the given HouseSystem code.
 
-    The classification describes the algorithm associated with that code —
+    The classification describes the algorithm associated with that code ?
     its doctrinal family, cusp-projection basis, latitude sensitivity, and
-    polar capability.  It is derived entirely from the code string; no
-    chart data or observer coordinates are needed.
+    polar capability. It is derived entirely from the code string; no chart
+    data or observer coordinates are needed.
 
-    When `code` is not a recognised HouseSystem constant, raises ValueError.
-    Classification is a property of a declared, known system code, not of a
-    downstream fallback policy.
+    When ``code`` is not a recognised HouseSystem constant, this raises
+    ``ValueError``. Classification is a property of a declared, known system
+    code, not of a downstream fallback policy.
 
     Args:
-        code: A HouseSystem constant string (e.g. HouseSystem.PLACIDUS).
+        code: A HouseSystem constant string (for example ``HouseSystem.PLACIDUS``).
 
     Returns:
         A frozen HouseSystemClassification for that code.
 
     Raises:
         ValueError: If ``code`` is not a recognised HouseSystem constant.
+
+    Side effects:
+        None
     """
     if code not in _CLASSIFICATIONS:
         raise ValueError(f"unknown house system code {code!r}")
@@ -493,18 +499,38 @@ _KNOWN_SYSTEMS: frozenset[str] = frozenset({
 
 class UnknownSystemPolicy(str, Enum):
     """
-    Doctrine governing what happens when calculate_houses() receives a system
-    code that is not present in _KNOWN_SYSTEMS.
+    RITE: The Unknown-System Policy Seal
 
-    FALLBACK_TO_PLACIDUS (default)
-        Silently substitute Placidus and record the substitution in
-        HouseCusps.fallback / HouseCusps.fallback_reason.  This is the
-        behavior present in all prior phases.
+    THEOREM: This enum records the fallback doctrine used when a requested house system code is unknown.
 
-    RAISE
-        Raise ValueError immediately instead of substituting.  Use this when
-        the caller considers an unknown code a programming error rather than
-        an acceptable fallback condition.
+    RITE OF PURPOSE:
+        This enum exists so unknown-system behavior is declared as explicit
+        policy rather than hidden control flow. It preserves the caller's
+        doctrine for unknown codes as a stable categorical choice.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Declare the canonical unknown-system fallback modes.
+        Non-responsibilities:
+            - Does not perform fallback itself.
+            - Does not validate known system codes.
+        Dependencies:
+            - House policy doctrine in this Pillar.
+        Side effects:
+            - None
+        Failure behavior:
+            - None
+
+    Canon: None (No applicable canon)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "enum",
+      "owns_state": false,
+      "mutates_external_state": false,
+      "requires": [],
+      "guarantees": ["stable unknown-system policy taxonomy"]
+    }
     """
     FALLBACK_TO_PLACIDUS = "fallback_to_placidus"
     RAISE                = "raise"
@@ -512,28 +538,38 @@ class UnknownSystemPolicy(str, Enum):
 
 class PolarFallbackPolicy(str, Enum):
     """
-    Doctrine governing what happens when calculate_houses() is called above the
-    critical latitude (90° − obliquity, ≈ 66.56° at J2000) with a system in
-    _POLAR_SYSTEMS.
+    RITE: The Polar Policy Seal
 
-    FALLBACK_TO_PORPHYRY (default)
-        Silently substitute Porphyry and record the substitution in
-        HouseCusps.fallback / HouseCusps.fallback_reason.  This is the
-        behavior present in all prior phases.
+    THEOREM: This enum records the fallback doctrine used when a requested house system is polar-incapable at the given latitude.
 
-    RAISE
-        Raise ValueError immediately instead of substituting.  Use this when
-        the caller considers a request for an incapable system above the
-        critical latitude a programming error rather than an acceptable
-        fallback condition.
+    RITE OF PURPOSE:
+        This enum exists so polar fallback behavior is declared as explicit
+        policy rather than buried in control flow. It preserves the caller's
+        doctrine for critical-latitude requests as a stable categorical choice.
 
-    EXPERIMENTAL_SEARCH
-        Opt-in research mode. For HouseSystem.PLACIDUS only, attempt a
-        branch-aware high-latitude Placidus solve using
-        ``moira.experimental_placidus``. If exactly one ordered cusp cycle is
-        found, return Placidus directly with no fallback. If no ordered cycle
-        is found, or more than one ordered cycle exists, raise ValueError.
-        Other polar-incapable systems remain unsupported in this mode.
+    LAW OF OPERATION:
+        Responsibilities:
+            - Declare the canonical polar fallback modes.
+        Non-responsibilities:
+            - Does not perform cusp computation or fallback itself.
+            - Does not determine whether a system is polar-capable.
+        Dependencies:
+            - House policy doctrine in this Pillar.
+        Side effects:
+            - None
+        Failure behavior:
+            - None
+
+    Canon: None (No applicable canon)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "enum",
+      "owns_state": false,
+      "mutates_external_state": false,
+      "requires": [],
+      "guarantees": ["stable polar-fallback policy taxonomy"]
+    }
     """
     FALLBACK_TO_PORPHYRY = "fallback_to_porphyry"
     RAISE                = "raise"
@@ -543,7 +579,34 @@ class PolarFallbackPolicy(str, Enum):
 @dataclass(frozen=True, slots=True)
 class HousePolicy:
     """
-    DOCTRINE: Governing policy for a single house computation.
+    RITE: The House Policy Seal
+
+    THEOREM: This dataclass records the fallback doctrine governing one house computation request.
+
+    RITE OF PURPOSE:
+        This vessel exists so fallback behavior is declared before any house
+        mathematics run, rather than emerging from hidden defaults or ambient
+        control flow. It preserves the caller's unknown-system and polar
+        fallback doctrine as auditable input truth.
+        Without it, fallback semantics would be implicit and harder to test.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Record unknown-system doctrine.
+            - Record polar fallback doctrine.
+            - Provide canonical default, strict, and experimental policy constructors.
+        Non-responsibilities:
+            - Does not compute cusps.
+            - Does not classify house systems.
+            - Does not decide doctrinal ranking among valid systems.
+        Dependencies:
+            - UnknownSystemPolicy and PolarFallbackPolicy enumerations.
+        Structural invariants:
+            - Fields always express doctrine only, never computed state.
+        Side effects:
+            - None
+        Failure behavior:
+            - None at the vessel level; enforcement occurs in the House Engine.
 
     Encapsulates the two doctrinal decisions that calculate_houses() must
     make when the requested system cannot be served exactly as requested:
@@ -567,6 +630,17 @@ class HousePolicy:
         - System selection or comparison logic
         - Any cusp or angular computation
         - Doctrinal ranking among systems
+
+    Canon: None (No applicable canon)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "policy_vessel",
+      "owns_state": true,
+      "mutates_external_state": false,
+      "requires": ["unknown_system", "polar_fallback"],
+      "guarantees": ["immutable fallback doctrine", "constructor-stable defaults"]
+    }
     """
     unknown_system: UnknownSystemPolicy = UnknownSystemPolicy.FALLBACK_TO_PLACIDUS
     polar_fallback: PolarFallbackPolicy = PolarFallbackPolicy.FALLBACK_TO_PORPHYRY
@@ -613,70 +687,95 @@ def _experimental_polar_placidus_cusps(
     mc: float,
 ) -> list[float]:
     """Search for a unique ordered high-latitude Placidus branch or raise."""
-    from .experimental_placidus import ExperimentalPlacidusStatus, search_experimental_placidus
+    experimental_placidus = _experimental_placidus_module()
 
-    result = search_experimental_placidus(
+    result = experimental_placidus.search_experimental_placidus(
         armc,
         obliquity,
         latitude,
         asc,
         mc,
     )
-    if result.status == ExperimentalPlacidusStatus.UNIQUE_ORDERED_SOLUTION and result.cusps is not None:
+    if (
+        result.status == experimental_placidus.ExperimentalPlacidusStatus.UNIQUE_ORDERED_SOLUTION
+        and result.cusps is not None
+    ):
         return list(result.cusps)
     raise ValueError(f"experimental Placidus search failed: {result.diagnostic_summary}")
+
+
+def _experimental_placidus_module():
+    """Return the experimental high-latitude Placidus module on explicit demand."""
+    from . import experimental_placidus
+
+    return experimental_placidus
+
+
+def _solar_house_anchor_longitude(jd_ut: float) -> float:
+    """
+    Return the solar longitude used to anchor SUNSHINE / SOLAR_SIGN houses.
+
+    Side effects:
+        - None in this Pillar; delegates the longitude resolution to the
+          internal solar longitude Engine.
+
+    Raises:
+        - Propagates any exception raised by the delegated solar longitude Engine.
+    """
+    return _solar_longitude(jd_ut)
 
 
 @dataclass(slots=True, frozen=True)
 class HouseCusps:
     """
-    RESULT VESSEL: The complete output of one calculate_houses() call.
+    RITE: The Zodiacal House Vessel
 
-    Carries twelve ecliptic house cusp longitudes, the four angular points
-    (ASC, MC, DSC, IC), ARMC, East Point, Vertex, and Anti-Vertex for a
-    single chart moment and observer location, together with the full
-    computation trail that produced them.
+    THEOREM: This dataclass carries one fully computed house figure, its angular anchors, and the fallback doctrine that governed its creation.
 
-    Cusps are indexed 0–11; house n has its opening cusp at cusps[n-1].
+    RITE OF PURPOSE:
+        This vessel exists so the House Pillar returns a complete truth object
+        rather than a loose tuple of angles. It preserves requested versus
+        effective system identity, fallback visibility, classification truth,
+        and the angular frame needed by downstream astrological technique.
+        Without it, callers would lose provenance and invariant enforcement at
+        the boundary of the House Engine.
 
-    TRUTH PRESERVATION (Phase 1):
-        system:           the house system code *requested* by the caller —
-                          never modified, even when fallback occurs.
-        effective_system: the system code that was *actually used* for cusps —
-                          equals system unless a fallback was triggered.
-        fallback:         True iff effective_system != system.
-        fallback_reason:  human-readable reason when fallback is True; None
-                          otherwise.
+    LAW OF OPERATION:
+        Responsibilities:
+            - Store the twelve cusp longitudes and angular anchors.
+            - Preserve requested-system truth alongside effective-system truth.
+            - Preserve classification and policy truth for later audit.
+            - Enforce structural invariants at construction time.
+        Non-responsibilities:
+            - Does not compute cusps.
+            - Does not assign points to houses.
+            - Does not derive angularity, distribution, or comparison products.
+        Dependencies:
+            - Valid cusp vectors produced by the House Engine.
+            - HouseSystemClassification and HousePolicy inputs.
+        Structural invariants:
+            - Exactly 12 cusps are present.
+            - Quadrant-family systems except HORIZON open house 1 at ASC.
+            - Fallback truth matches requested versus effective system truth.
+            - Classification is present when effective_system is declared.
+        Behavioral invariants:
+            - Requested system truth is never collapsed into effective system truth.
+        Side effects:
+            - None
+        Failure behavior:
+            - Raises ValueError or TypeError through invariant enforcement when
+              the vessel is constructed with inconsistent data.
 
-    CLASSIFICATION (Phase 2):
-        classification: HouseSystemClassification for the effective system —
-                        family, cusp_basis, latitude_sensitive, polar_capable.
-                        Always reflects the system that ran, not the one requested.
+    Canon: None (No applicable canon)
 
-    INSPECTABILITY (Phase 3):
-        __post_init__ enforces at construction time:
-            - len(cusps) == 12
-            - For QUADRANT family (cusp_basis ≠ HORIZON): cusps[0] == asc
-              within 1e-9°.  HORIZON (Azimuthal) and all non-quadrant systems
-              legitimately place H1 ≠ geographic ASC.
-            - fallback == (system != effective_system)
-            - fallback_reason is None iff fallback is False
-            - classification is not None when effective_system is set
-        is_quadrant_system: True iff effective system is QUADRANT family.
-        is_latitude_sensitive: True iff effective system's cusps vary with
-            observer geographic latitude.
-
-    DOCTRINE / POLICY (Phase 4):
-        policy: the HousePolicy that governed fallback resolution —
-                readable from the result for full auditability.
-
-    Non-responsibilities (delegated to dedicated layers):
-        - Cusp computation (calculate_houses)
-        - House membership analysis (assign_house / HousePlacement)
-        - Angularity scoring and cusp-zone classification (Phase 7)
-        - Boundary sensitivity (Phase 6)
-        - System comparison (Phase 8)
-        - Policy enforcement (calculate_houses)
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "result_vessel",
+      "owns_state": true,
+      "mutates_external_state": false,
+      "requires": ["12 cusp longitudes", "asc", "mc", "armc", "system truth", "policy truth"],
+      "guarantees": ["construction-time invariants", "requested/effective distinction", "audit-ready fallback metadata"]
+    }
     """
     system:           str
     cusps:            tuple[float, ...]    # 12 ecliptic longitudes, degrees [0,360)
@@ -792,23 +891,47 @@ class HouseCusps:
 
 @dataclass(frozen=True, slots=True)
 class DerivedHouseCusps:
-    """Turned house wheel pivoted at a chosen natal house cusp.
+    """
+    RITE: The Turned Wheel Vessel
 
-    In the traditional technique, any natal house cusp may be treated as the
-    new Ascendant of a derived chart — most commonly used to read the houses
-    of a third party from a natal chart (e.g. house 7 for the partner, house
-    4 for a parent, house 5 for a child).
+    THEOREM: This dataclass records a derived house wheel formed by rotating a natal house figure so a chosen cusp becomes house 1.
 
-    Attributes
-    ----------
-    pivot_house : int
-        The natal house number (1–12) whose cusp becomes derived house 1.
-    cusps : tuple[float, ...]
-        Twelve ecliptic longitudes in degrees [0, 360). ``cusps[n-1]`` is the
-        opening cusp of derived house *n*.  ``cusps[0]`` equals
-        ``source.cusps[pivot_house - 1]``.
-    source : HouseCusps
-        The original natal house wheel this derived wheel was built from.
+    RITE OF PURPOSE:
+        This vessel exists so turned-house technique can preserve its pivot
+        doctrine and natal provenance without recomputing any astronomy. It
+        lets downstream callers work with a stable derived wheel while keeping
+        the originating HouseCusps visible. Without it, turned-house logic
+        would have to travel as unnamed tuples.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Store the pivot house and rotated cusp sequence.
+            - Preserve the originating HouseCusps vessel.
+            - Enforce that derived house 1 equals the chosen natal pivot cusp.
+        Non-responsibilities:
+            - Does not compute new astronomy.
+            - Does not alter the underlying natal figure.
+        Dependencies:
+            - A valid HouseCusps vessel.
+        Structural invariants:
+            - pivot_house is in 1..12.
+            - Exactly 12 cusps are present.
+            - cusps[0] equals source.cusps[pivot_house - 1].
+        Side effects:
+            - None
+        Failure behavior:
+            - Raises ValueError when pivot or rotated cusp shape is inconsistent.
+
+    Canon: None (No applicable canon)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "derived_result_vessel",
+      "owns_state": true,
+      "mutates_external_state": false,
+      "requires": ["pivot_house", "12 rotated cusps", "origin HouseCusps"],
+      "guarantees": ["pivot-cusp alignment", "immutable derived wheel"]
+    }
     """
 
     pivot_house: int
@@ -837,39 +960,27 @@ class DerivedHouseCusps:
 
 
 def derived_houses(house_cusps: HouseCusps, from_house: int) -> DerivedHouseCusps:
-    """Rotate the natal house wheel so that ``from_house`` becomes house 1.
+    """
+    Rotate the natal house wheel so that ``from_house`` becomes house 1.
 
-    No astronomical computation is performed.  The function operates entirely
-    on the cusp longitudes already present in *house_cusps*.
+    No astronomical computation is performed. The function operates entirely
+    on the cusp longitudes already present in ``house_cusps``.
 
-    Parameters
-    ----------
-    house_cusps : HouseCusps
-        The natal house wheel to rotate.
-    from_house : int
-        Natal house number (1–12) that becomes the new first house.  House 1
-        returns the original wheel unchanged.
+    Args:
+        house_cusps: The natal house wheel to rotate.
+        from_house: Natal house number (1?12) that becomes the new first house.
+            House 1 returns the original wheel unchanged.
 
-    Returns
-    -------
-    DerivedHouseCusps
-        A frozen vessel whose ``cusps[n-1]`` is the opening cusp of derived
-        house *n*, and whose ``cusps[0]`` equals
+    Returns:
+        A frozen DerivedHouseCusps vessel whose ``cusps[n-1]`` is the opening
+        cusp of derived house ``n`` and whose ``cusps[0]`` equals
         ``house_cusps.cusps[from_house - 1]``.
 
-    Raises
-    ------
-    ValueError
-        If *from_house* is not in 1–12.
+    Raises:
+        ValueError: If ``from_house`` is not in 1?12.
 
-    Examples
-    --------
-    Derived houses from the 7th (partner's chart)::
-
-        natal = calculate_houses(jd, lat, lon, system="P")
-        partner = derived_houses(natal, from_house=7)
-        # partner.cusps[0] == natal.cusps[6]   (7th cusp becomes H1)
-        # partner.cusps[6] == natal.cusps[0]   (ASC becomes partner's H7)
+    Side effects:
+        None
     """
     if not 1 <= from_house <= 12:
         raise ValueError(f"derived_houses: from_house must be 1–12, got {from_house}")
@@ -892,10 +1003,16 @@ def _mc_from_armc(armc: float, obliquity: float, lat: float = 0.0) -> float:
     Midheaven (MC) from ARMC, obliquity, and geographic latitude.
 
     The MC is the ecliptic longitude whose right ascension equals ARMC.
-    Using atan2(sin(ARMC), cos(ARMC)×cos(ε)) preserves the correct quadrant
-    for all four quadrants of ARMC.
+    Using ``atan2(sin(ARMC), cos(ARMC) * cos(eps))`` preserves the correct
+    quadrant for all four quadrants of ARMC.
 
-    Reference: Meeus "Astronomical Algorithms" §24.
+    Reference: Meeus, *Astronomical Algorithms*, ?24.
+
+    Raises:
+        None under normal operation.
+
+    Side effects:
+        None
     """
     armc_r = armc * DEG2RAD
     eps_r  = obliquity * DEG2RAD
@@ -904,11 +1021,17 @@ def _mc_from_armc(armc: float, obliquity: float, lat: float = 0.0) -> float:
 
 def _mc_above_horizon(mc: float, obliquity: float, lat: float) -> float:
     """
-    At extreme latitudes, the standard MC (HA=0 point) may be below the horizon.
-    Some implementations swap MC↔IC for quadrant-based systems that require
-    the MC to be geometrically accessible (Campanus, Regiomontanus, etc.).
+    Return the visible MC branch when a quadrant system requires it above the horizon.
 
-    Porphyry and simple systems keep the traditional HA=0 MC regardless.
+    At extreme latitudes, the standard HA=0 MC may lie below the horizon.
+    Some quadrant systems require the geometrically accessible branch, while
+    simpler systems preserve the traditional MC without swapping.
+
+    Raises:
+        None under normal operation.
+
+    Side effects:
+        None
     """
     eps_r = obliquity * DEG2RAD
     dec = math.degrees(math.asin(
@@ -923,9 +1046,15 @@ def _asc_from_armc(armc: float, obliquity: float, lat: float) -> float:
     """
     Ascendant from ARMC, obliquity, and geographic latitude.
 
-    atan2 yields two candidate solutions 180° apart; the Ascendant is the
-    one whose ecliptic longitude falls in the same 180° semicircle as
-    ARMC + 90° (the approximate RA of the eastern horizon).
+    ``atan2`` yields two candidate solutions 180? apart; the Ascendant is the
+    one whose ecliptic longitude falls in the same semicircle as ``ARMC + 90?``,
+    the approximate right ascension of the eastern horizon.
+
+    Raises:
+        None under normal operation.
+
+    Side effects:
+        None
     """
     armc_r = armc * DEG2RAD
     eps_r  = obliquity * DEG2RAD
@@ -946,31 +1075,664 @@ def _asc_from_armc(armc: float, obliquity: float, lat: float) -> float:
     return alt if _adist(alt, expected) < _adist(raw, expected) else raw
 
 
-def _project_ra_with_pole(ra_deg: float, pole_height_deg: float, obliquity_deg: float) -> float:
+def _dot3(a: tuple[float, float, float], b: tuple[float, float, float]) -> float:
+    """3D dot product for internal spherical geometry helpers."""
+    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+
+
+def _cross3(
+    a: tuple[float, float, float],
+    b: tuple[float, float, float],
+) -> tuple[float, float, float]:
+    """3D cross product for internal spherical geometry helpers."""
+    return (
+        a[1] * b[2] - a[2] * b[1],
+        a[2] * b[0] - a[0] * b[2],
+        a[0] * b[1] - a[1] * b[0],
+    )
+
+
+def _normalize3(v: tuple[float, float, float]) -> tuple[float, float, float]:
+    """Return the unit vector of ``v`` or raise on degeneracy."""
+    norm = math.sqrt(_dot3(v, v))
+    _require(norm > 0.0, "degenerate vector in house geometry helper")
+    return (v[0] / norm, v[1] / norm, v[2] / norm)
+
+
+def _ecliptic_north_vector(obliquity_deg: float) -> tuple[float, float, float]:
     """
-    Project equatorial right ascension to ecliptic longitude with an arbitrary
-    pole height.
+    Unit normal of the ecliptic plane in equatorial coordinates.
 
-    This is the core spherical relation used by multiple quadrant systems:
+    The ecliptic is the equatorial plane rotated about the x-axis by the
+    obliquity, so its north pole is ``(0, -sin eps, cos eps)``.
 
-        tan(lambda) = sin(RA) / (cos(RA) * cos(eps) - tan(pole) * sin(eps))
+    Raises:
+        None under normal operation.
 
-    where ``pole`` is the polar-height term specific to each system.
+    Side effects:
+        None
+    """
+    eps_r = obliquity_deg * DEG2RAD
+    return (0.0, -math.sin(eps_r), math.cos(eps_r))
+
+
+def _ra_pole_plane_normal(
+    ra_deg: float,
+    pole_height_deg: float,
+) -> tuple[float, float, float]:
+    """
+    Plane normal for the RA-plus-pole construction in equatorial coordinates.
+
+    The cusp plane satisfies ``-sin(RA) * x + cos(RA) * y - tan(pole) * z = 0``.
+    Intersecting this plane with the ecliptic plane yields the projected cusp
+    direction used by several house systems.
+
+    Raises:
+        ValueError: If the constructed plane normal degenerates.
+
+    Side effects:
+        None
     """
     ra_r = ra_deg * DEG2RAD
     pole_r = pole_height_deg * DEG2RAD
-    eps_r = obliquity_deg * DEG2RAD
+    return _normalize3((
+        -math.sin(ra_r),
+        math.cos(ra_r),
+        -math.tan(pole_r),
+    ))
 
-    y = math.sin(ra_r)
-    x = math.cos(ra_r) * math.cos(eps_r) - math.tan(pole_r) * math.sin(eps_r)
-    return math.atan2(y, x) * RAD2DEG % 360.0
+
+def _equatorial_ecliptic_direction(lon_deg: float, obliquity_deg: float) -> tuple[float, float, float]:
+    """Unit ecliptic direction at longitude ``lon_deg``, expressed in equatorial axes."""
+    lon_r = lon_deg * DEG2RAD
+    eps_r = obliquity_deg * DEG2RAD
+    sin_lon = math.sin(lon_r)
+    return (
+        math.cos(lon_r),
+        sin_lon * math.cos(eps_r),
+        sin_lon * math.sin(eps_r),
+    )
+
+
+def _ecliptic_longitude_from_equatorial_vector(
+    v: tuple[float, float, float],
+    obliquity_deg: float,
+) -> float:
+    """
+    Recover ecliptic longitude from an equatorial-space vector.
+
+    Rotating the vector by ``-obliquity`` about the x-axis maps it into the
+    ecliptic frame, where longitude is recovered by the usual ``atan2(y, x)``.
+
+    Raises:
+        ValueError: If ``v`` is degenerate and cannot be normalized.
+
+    Side effects:
+        None
+    """
+    x_eq, y_eq, z_eq = _normalize3(v)
+    eps_r = obliquity_deg * DEG2RAD
+    y_ecl = y_eq * math.cos(eps_r) + z_eq * math.sin(eps_r)
+    return math.atan2(y_ecl, x_eq) * RAD2DEG % 360.0
+
+
+def _in_forward_arc(lon: float, start: float, end: float) -> bool:
+    """Return True iff ``lon`` lies in the forward arc [start, end) on the circle."""
+    return (lon - start) % 360.0 < (end - start) % 360.0
+
+
+def _circular_distance(a: float, b: float) -> float:
+    """Unsigned shortest circular distance in degrees."""
+    return abs((a - b + 180.0) % 360.0 - 180.0)
+
+
+def _select_antipodal_branch(lon: float, arc_start: float, arc_end: float) -> float:
+    """
+    Resolve an antipodal cusp ambiguity against a doctrinal zodiacal arc.
+
+    Polar-capable house systems can produce two ecliptic intersections 180?
+    apart. Moira chooses the branch that lies in the intended forward arc
+    opened by the visible angles; midpoint proximity is only a deterministic
+    tie-breaker for near-boundary numerical cases.
+
+    Raises:
+        None under normal operation.
+
+    Side effects:
+        None
+    """
+    lon_alt = (lon + 180.0) % 360.0
+    if _in_forward_arc(lon, arc_start, arc_end):
+        return lon
+    if _in_forward_arc(lon_alt, arc_start, arc_end):
+        return lon_alt
+
+    span = (arc_end - arc_start) % 360.0
+    target = (arc_start + span / 2.0) % 360.0
+    if _circular_distance(lon, target) <= _circular_distance(lon_alt, target):
+        return lon
+    return lon_alt
+
+
+def _assemble_antipodal_quadrant_cusps(
+    *,
+    asc: float,
+    mc: float,
+    h2: float,
+    h3: float,
+    h11: float,
+    h12: float,
+    context: str,
+) -> list[float]:
+    """
+    Build a quadrant-style house figure from its primary cusps.
+
+    Doctrine:
+        - Cardinal anchors are ASC, IC, DSC, and MC.
+        - Primary intermediates are H11/H12 above the horizon and H2/H3 below.
+        - Opposite houses are derived by antipodal symmetry, not recomputed.
+
+    Raises:
+        ValueError: If the assembled cusp figure fails final structural checks.
+
+    Side effects:
+        None
+    """
+    ic = (mc + 180.0) % 360.0
+    dsc = (asc + 180.0) % 360.0
+
+    cusps = [0.0] * 12
+    cusps[0] = asc
+    cusps[1] = h2
+    cusps[2] = h3
+    cusps[3] = ic
+    cusps[6] = dsc
+    cusps[9] = mc
+    cusps[10] = h11
+    cusps[11] = h12
+
+    opposite_pairs = (
+        (10, 4),  # H11 -> H5
+        (11, 5),  # H12 -> H6
+        (1, 7),   # H2  -> H8
+        (2, 8),   # H3  -> H9
+    )
+    for source, target in opposite_pairs:
+        cusps[target] = (cusps[source] + 180.0) % 360.0
+
+    return _finalize_cusps(cusps, context=context)
+
+
+def _local_horizon_basis(
+    armc_deg: float,
+    latitude_deg: float,
+) -> tuple[
+    tuple[float, float, float],
+    tuple[float, float, float],
+    tuple[float, float, float],
+]:
+    """
+    Return the local horizon basis vectors in equatorial axes.
+
+    The returned basis is ``(east, north, zenith)`` for the observer defined by
+    ``armc_deg`` and ``latitude_deg``.
+
+    Raises:
+        None under normal operation.
+
+    Side effects:
+        None
+    """
+    phi = latitude_deg * DEG2RAD
+    theta = armc_deg * DEG2RAD
+    sin_theta = math.sin(theta)
+    cos_theta = math.cos(theta)
+
+    east = (-sin_theta, cos_theta, 0.0)
+    north = (
+        -math.sin(phi) * cos_theta,
+        -math.sin(phi) * sin_theta,
+        math.cos(phi),
+    )
+    zenith = (
+        math.cos(phi) * cos_theta,
+        math.cos(phi) * sin_theta,
+        math.sin(phi),
+    )
+    return east, north, zenith
+
+
+def _ecliptic_intersection_candidates(
+    plane_normal: tuple[float, float, float],
+    obliquity_deg: float,
+) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
+    """
+    Return the antipodal ecliptic-intersection directions of a cusp plane.
+
+    Raises:
+        ValueError: If the plane/ecliptic intersection degenerates.
+
+    Side effects:
+        None
+    """
+    primary = _normalize3(_cross3(plane_normal, _ecliptic_north_vector(obliquity_deg)))
+    return primary, (-primary[0], -primary[1], -primary[2])
+
+
+def _select_horizon_branch(
+    primary: tuple[float, float, float],
+    secondary: tuple[float, float, float],
+    *,
+    zenith: tuple[float, float, float],
+    prefer_above_horizon: bool,
+    obliquity_deg: float,
+    tie_arc_start: float | None = None,
+    tie_arc_end: float | None = None,
+) -> float:
+    """
+    Select the antipodal ecliptic branch by local-horizon hemisphere.
+
+    Campanus-family cusp circles distinguish their upper and lower branches by
+    whether the selected intersection lies above or below the horizon. The
+    zodiacal arc is used only as a deterministic tie-breaker for horizon-grazing
+    numerical cases.
+
+    Raises:
+        ValueError: If neither candidate satisfies the requested hemisphere and
+            no deterministic tie-break is available.
+
+    Side effects:
+        None
+    """
+    height_primary = _dot3(_normalize3(primary), zenith)
+    height_secondary = _dot3(_normalize3(secondary), zenith)
+    lon_primary = _ecliptic_longitude_from_equatorial_vector(primary, obliquity_deg)
+    lon_secondary = _ecliptic_longitude_from_equatorial_vector(secondary, obliquity_deg)
+    eps = 1e-12
+
+    if prefer_above_horizon:
+        if height_primary > eps and height_secondary < -eps:
+            return lon_primary
+        if height_secondary > eps and height_primary < -eps:
+            return lon_secondary
+    else:
+        if height_primary < -eps and height_secondary > eps:
+            return lon_primary
+        if height_secondary < -eps and height_primary > eps:
+            return lon_secondary
+
+    if tie_arc_start is not None and tie_arc_end is not None:
+        return _select_antipodal_branch(lon_primary, tie_arc_start, tie_arc_end)
+
+    raise ValueError("local-horizon branch selection degenerated at the horizon")
+
+
+def _horizon_direction_from_azimuth(
+    azimuth_deg: float,
+    *,
+    east: tuple[float, float, float],
+    north: tuple[float, float, float],
+) -> tuple[float, float, float]:
+    """
+    Return the unit horizon direction for a local azimuth.
+
+    Raises:
+        None under normal operation.
+
+    Side effects:
+        None
+    """
+    az = azimuth_deg * DEG2RAD
+    return _normalize3((
+        math.sin(az) * east[0] + math.cos(az) * north[0],
+        math.sin(az) * east[1] + math.cos(az) * north[1],
+        math.sin(az) * east[2] + math.cos(az) * north[2],
+    ))
+
+
+def _local_azimuth_of_direction(
+    direction: tuple[float, float, float],
+    *,
+    east: tuple[float, float, float],
+    north: tuple[float, float, float],
+) -> float:
+    """
+    Return the local horizon azimuth of ``direction`` in degrees.
+
+    Raises:
+        ValueError: If ``direction`` is degenerate.
+
+    Side effects:
+        None
+    """
+    unit = _normalize3(direction)
+    return math.atan2(_dot3(unit, east), _dot3(unit, north)) * RAD2DEG % 360.0
+
+
+def _select_azimuth_branch(
+    primary: tuple[float, float, float],
+    secondary: tuple[float, float, float],
+    *,
+    azimuth_deg: float,
+    east: tuple[float, float, float],
+    north: tuple[float, float, float],
+    obliquity_deg: float,
+) -> float:
+    """
+    Select the antipodal ecliptic branch whose local azimuth best matches the target.
+
+    Raises:
+        None under normal operation.
+
+    Side effects:
+        None
+    """
+    az_primary = _local_azimuth_of_direction(primary, east=east, north=north)
+    az_secondary = _local_azimuth_of_direction(secondary, east=east, north=north)
+    diff_primary = abs((az_primary - azimuth_deg + 180.0) % 360.0 - 180.0)
+    diff_secondary = abs((az_secondary - azimuth_deg + 180.0) % 360.0 - 180.0)
+    chosen = primary if diff_primary <= diff_secondary else secondary
+    return _ecliptic_longitude_from_equatorial_vector(chosen, obliquity_deg)
+
+
+def _project_pole_height_cusp(
+    *,
+    ra_deg: float,
+    pole_height_deg: float,
+    obliquity_deg: float,
+    zenith: tuple[float, float, float],
+    prefer_above_horizon: bool,
+    tie_arc_start: float,
+    tie_arc_end: float,
+) -> float:
+    """
+    Project a pole-height cusp plane and select the visible antipodal branch.
+
+    This is the canonical branch doctrine for the pole-height family:
+    construct the equatorial cusp plane, intersect it with the ecliptic, then
+    choose the above-horizon or below-horizon branch as required by the house
+    figure. The zodiacal arc is used only as a deterministic tie-breaker for
+    horizon-grazing numerical cases.
+
+    Raises:
+        ValueError: Propagated if the cusp plane degenerates.
+
+    Side effects:
+        None
+    """
+    plane_normal = _ra_pole_plane_normal(ra_deg % 360.0, pole_height_deg)
+    primary, secondary = _ecliptic_intersection_candidates(plane_normal, obliquity_deg)
+    return _select_horizon_branch(
+        primary,
+        secondary,
+        zenith=zenith,
+        prefer_above_horizon=prefer_above_horizon,
+        obliquity_deg=obliquity_deg,
+        tie_arc_start=tie_arc_start,
+        tie_arc_end=tie_arc_end,
+    )
+
+
+def _assemble_pole_height_quadrant_family(
+    *,
+    armc_deg: float,
+    asc: float,
+    mc: float,
+    obliquity_deg: float,
+    latitude_deg: float,
+    cusp_specs: dict[int, tuple[float, float]],
+    context: str,
+) -> list[float]:
+    """
+    Assemble a quadrant figure from pole-height equatorial cusp specifications.
+
+    ``cusp_specs`` maps house numbers ``{2, 3, 11, 12}`` to
+    ``(right_ascension_deg, pole_height_deg)`` pairs.
+
+    Raises:
+        ValueError: Propagated if cusp projection or final assembly fails.
+
+    Side effects:
+        None
+    """
+    ic = (mc + 180.0) % 360.0
+    _east, _north, zenith = _local_horizon_basis(armc_deg, latitude_deg)
+
+    primaries = {
+        2: _project_pole_height_cusp(
+            ra_deg=cusp_specs[2][0],
+            pole_height_deg=cusp_specs[2][1],
+            obliquity_deg=obliquity_deg,
+            zenith=zenith,
+            prefer_above_horizon=False,
+            tie_arc_start=asc,
+            tie_arc_end=ic,
+        ),
+        3: _project_pole_height_cusp(
+            ra_deg=cusp_specs[3][0],
+            pole_height_deg=cusp_specs[3][1],
+            obliquity_deg=obliquity_deg,
+            zenith=zenith,
+            prefer_above_horizon=False,
+            tie_arc_start=asc,
+            tie_arc_end=ic,
+        ),
+        11: _project_pole_height_cusp(
+            ra_deg=cusp_specs[11][0],
+            pole_height_deg=cusp_specs[11][1],
+            obliquity_deg=obliquity_deg,
+            zenith=zenith,
+            prefer_above_horizon=True,
+            tie_arc_start=mc,
+            tie_arc_end=asc,
+        ),
+        12: _project_pole_height_cusp(
+            ra_deg=cusp_specs[12][0],
+            pole_height_deg=cusp_specs[12][1],
+            obliquity_deg=obliquity_deg,
+            zenith=zenith,
+            prefer_above_horizon=True,
+            tie_arc_start=mc,
+            tie_arc_end=asc,
+        ),
+    }
+
+    return _assemble_antipodal_quadrant_cusps(
+        asc=asc,
+        mc=mc,
+        h2=primaries[2],
+        h3=primaries[3],
+        h11=primaries[11],
+        h12=primaries[12],
+        context=context,
+    )
+
+
+def _assemble_direct_zero_pole_quadrant_family(
+    *,
+    asc: float,
+    mc: float,
+    obliquity_deg: float,
+    cusp_ras: dict[int, float],
+    context: str,
+) -> list[float]:
+    """
+    Assemble a quadrant figure from direct zero-pole equatorial cusp right ascensions.
+
+    This is the exact zero-pole member of the pole-height family. The cusp
+    right ascensions are projected directly to the ecliptic without horizon
+    hemisphere branch arbitration, then assembled through antipodal symmetry.
+
+    Raises:
+        ValueError: Propagated if cusp projection or final assembly fails.
+
+    Side effects:
+        None
+    """
+    primaries = {
+        house_index: _project_ra_with_pole(ra_deg % 360.0, 0.0, obliquity_deg)
+        for house_index, ra_deg in cusp_ras.items()
+    }
+    return _assemble_antipodal_quadrant_cusps(
+        asc=asc,
+        mc=mc,
+        h2=primaries[2],
+        h3=primaries[3],
+        h11=primaries[11],
+        h12=primaries[12],
+        context=context,
+    )
+
+
+def _koch_pole_height_specs(
+    armc_deg: float,
+    mc_deg: float,
+    obliquity_deg: float,
+    latitude_deg: float,
+) -> dict[int, tuple[float, float]]:
+    """
+    Return Koch pole-height family cusp specifications for houses 2, 3, 11, and 12.
+
+    Governing objects:
+        - MC as unit vector in equatorial space, derived from its ecliptic longitude.
+          Its z-component is sin(dec_MC); its equatorial magnitude is cos(dec_MC).
+        - Observer's zenith as unit vector in equatorial space.
+          Its z-component is sin(lat); its equatorial magnitude is cos(lat).
+
+    The diurnal semi-arc of the MC declination circle is derived from the
+    horizon constraint dot(v, zenith) = 0 at constant declination, giving
+    cos(DSA) = -tan(dec_MC)*tan(lat), expressed here entirely through the
+    governing vector components without intermediate angle formulas.
+
+    Each cusp is returned as (right_ascension_deg, pole_height_deg) where
+    pole_height_deg = latitude_deg (full observer's latitude for Koch).
+
+    Raises:
+        None under normal operation.
+
+    Side effects:
+        None
+    """
+    # Governing object 1: MC as unit vector in equatorial space
+    v_mc = _equatorial_ecliptic_direction(mc_deg, obliquity_deg)
+
+    # Governing object 2: Observer's zenith as unit vector in equatorial space
+    _, _, zenith = _local_horizon_basis(armc_deg, latitude_deg)
+
+    # Equatorial horizontal magnitudes extracted from the governing vectors
+    cos_dec_mc = math.hypot(v_mc[0], v_mc[1])
+    cos_lat = math.hypot(zenith[0], zenith[1])
+
+    # Horizon arc product: tan(dec_MC)*tan(lat) from governing vector components.
+    # This is the shared scalar that drives both DSA and the ascensional difference:
+    #   cos(DSA) = -horizon_product,  sin(AD) = horizon_product.
+    if cos_dec_mc > 0.0 and cos_lat > 0.0:
+        horizon_product = max(-1.0, min(1.0, (v_mc[2] * zenith[2]) / (cos_dec_mc * cos_lat)))
+    else:
+        horizon_product = 0.0
+
+    dsa_deg = math.degrees(math.acos(-horizon_product))
+    ad_mc = math.degrees(math.asin(horizon_product))
+
+    oa_mc = armc_deg - ad_mc
+    oa_ic = (armc_deg + 180.0) + ad_mc
+    return {
+        2: (oa_ic - 2.0 * dsa_deg / 3.0, latitude_deg),
+        3: (oa_ic - dsa_deg / 3.0, latitude_deg),
+        11: (oa_mc + dsa_deg / 3.0, latitude_deg),
+        12: (oa_mc + 2.0 * dsa_deg / 3.0, latitude_deg),
+    }
+
+
+def _alcabitius_zero_pole_specs(
+    armc_deg: float,
+    asc_deg: float,
+    obliquity_deg: float,
+    latitude_deg: float,
+) -> dict[int, float]:
+    """
+    Return Alcabitius zero-pole equatorial cusp right ascensions for the quadrant primaries.
+
+    Governing objects:
+        - Ascendant as unit vector in equatorial space, derived from its ecliptic longitude.
+          Its z-component is sin(dec_ASC); its equatorial magnitude is cos(dec_ASC).
+        - Observer's zenith as unit vector in equatorial space.
+          Its z-component is sin(lat); its equatorial magnitude is cos(lat).
+
+    The semi-diurnal arc of the Ascendant declination circle is derived from the
+    horizon constraint dot(v, zenith) = 0 at constant declination, giving
+    cos(SDA) = -tan(dec_ASC)*tan(lat), expressed here entirely through the
+    governing vector components without intermediate angle formulas.
+
+    The returned mapping expresses Alcabitius as direct equatorial sector
+    right ascensions with zero pole height, preserving its exact direct
+    projection doctrine while making the governing objects explicit.
+
+    Raises:
+        None under normal operation.
+
+    Side effects:
+        None
+    """
+    # Governing object 1: Ascendant as unit vector in equatorial space
+    v_asc = _equatorial_ecliptic_direction(asc_deg, obliquity_deg)
+
+    # Governing object 2: Observer's zenith as unit vector in equatorial space
+    _, _, zenith = _local_horizon_basis(armc_deg, latitude_deg)
+
+    # Equatorial horizontal magnitudes extracted from the governing vectors
+    cos_dec_asc = math.hypot(v_asc[0], v_asc[1])
+    cos_lat = math.hypot(zenith[0], zenith[1])
+
+    # Horizon arc product: -tan(dec_ASC)*tan(lat) from governing vector components.
+    # cos(SDA) = -tan(dec_ASC)*tan(lat) = -(v_asc[2]*zenith[2]) / (cos_dec*cos_lat).
+    if cos_dec_asc > 0.0 and cos_lat > 0.0:
+        r = max(-1.0, min(1.0, -(v_asc[2] * zenith[2]) / (cos_dec_asc * cos_lat)))
+    else:
+        r = 0.0
+
+    sda_deg = math.degrees(math.acos(r))
+    sna_deg = 180.0 - sda_deg
+    return {
+        2: armc_deg + 180.0 - 2.0 * sna_deg / 3.0,
+        3: armc_deg + 180.0 - sna_deg / 3.0,
+        11: armc_deg + sda_deg / 3.0,
+        12: armc_deg + 2.0 * sda_deg / 3.0,
+    }
+
+
+def _project_ra_with_pole(ra_deg: float, pole_height_deg: float, obliquity_deg: float) -> float:
+    """
+    Project equatorial right ascension to ecliptic longitude with an arbitrary pole height.
+
+    Moira owns this as an explicit geometric construction: build the cusp
+    plane, intersect it with the ecliptic plane, and convert the resulting
+    ecliptic direction back to tropical longitude.
+
+    Raises:
+        ValueError: If the cusp-plane or ecliptic intersection degenerates.
+
+    Side effects:
+        None
+    """
+    plane_normal = _ra_pole_plane_normal(ra_deg, pole_height_deg)
+    ecliptic_north = _ecliptic_north_vector(obliquity_deg)
+    intersection = _cross3(plane_normal, ecliptic_north)
+    return _ecliptic_longitude_from_equatorial_vector(intersection, obliquity_deg)
 
 
 def _quadrant_project_ra(ra_deg: float, pole_height_deg: float, obliquity_deg: float) -> float:
     """
-    Quadrant-aware RA->ecliptic projection helper used by Campanus/Azimuthal.
+    Quadrant-aware RA?ecliptic projection used by Campanus and Azimuthal surfaces.
 
-    Handles polar singularities and keeps the result in [0, 360).
+    This helper handles polar singularities and keeps the projected longitude
+    in the circular range.
+
+    Raises:
+        ValueError: Propagated if the delegated projection degenerates.
+
+    Side effects:
+        None
     """
     _EPS = 1e-10
     if abs(90.0 - pole_height_deg) < _EPS:
@@ -982,16 +1744,59 @@ def _quadrant_project_ra(ra_deg: float, pole_height_deg: float, obliquity_deg: f
 
 def _project_ra_morinus(ra_deg: float, obliquity_deg: float) -> float:
     """
-    Project equatorial right ascension to ecliptic longitude using the
-    Morinus inverse relation.
+    Project equatorial right ascension to ecliptic longitude using the Morinus inverse relation.
 
-        tan(lambda) = tan(RA) * cos(eps)
+    The governing identity is ``tan(lambda) = tan(RA) * cos(eps)``.
+
+    Raises:
+        None under normal operation.
+
+    Side effects:
+        None
     """
     ra_r = ra_deg * DEG2RAD
     eps_r = obliquity_deg * DEG2RAD
     y = math.sin(ra_r) * math.cos(eps_r)
     x = math.cos(ra_r)
     return math.atan2(y, x) * RAD2DEG % 360.0
+
+
+def _project_ra_equatorial(ra_deg: float, obliquity_deg: float) -> float:
+    """
+    Project equatorial right ascension to the ecliptic along the equatorial plane.
+
+    This is the pole-height-zero member of the equatorial-division family.
+
+    Raises:
+        ValueError: Propagated if the equatorial projection degenerates.
+
+    Side effects:
+        None
+    """
+    return _project_ra_with_pole(ra_deg, 0.0, obliquity_deg)
+
+
+def _equatorial_division_cycle(
+    anchor_ra_deg: float,
+    obliquity_deg: float,
+    projector,
+) -> list[float]:
+    """
+    Project a full 12-house cycle of equal 30-degree equatorial divisions.
+
+    The returned list is in house order, beginning at the projected longitude
+    of ``anchor_ra_deg`` and advancing by equal right-ascension steps.
+
+    Raises:
+        ValueError: Propagated if the supplied projector degenerates.
+
+    Side effects:
+        None
+    """
+    return [
+        projector((anchor_ra_deg + i * 30.0) % 360.0, obliquity_deg) % 360.0
+        for i in range(12)
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -1016,6 +1821,7 @@ def _ecl_to_eq(lon: float, lat: float, obliquity: float) -> tuple[float, float]:
 # ---------------------------------------------------------------------------
 
 def _whole_sign(asc: float) -> list[float]:
+    """Return whole-sign house cusps anchored to the zodiac sign containing the Ascendant."""
     sign_start = int(asc / 30.0) * 30.0
     cusps = [(sign_start + i * 30.0) % 360.0 for i in range(12)]
     return _finalize_cusps(cusps, context="_whole_sign")
@@ -1026,6 +1832,7 @@ def _whole_sign(asc: float) -> list[float]:
 # ---------------------------------------------------------------------------
 
 def _equal_house(asc: float) -> list[float]:
+    """Return equal-house cusps in 30-degree steps measured forward from the Ascendant."""
     cusps = [(asc + i * 30.0) % 360.0 for i in range(12)]
     return _finalize_cusps(cusps, context="_equal_house")
 
@@ -1038,13 +1845,15 @@ def _porphyry(asc: float, mc: float) -> list[float]:
     """
     Porphyry houses: trisect each of the four unequal quadrants.
 
-    Quadrant order (counterclockwise, increasing ecliptic longitude):
-      Q1: ASC → IC   → houses 2, 3
-      Q2: IC  → DSC  → houses 5, 6
-      Q3: DSC → MC   → houses 8, 9
-      Q4: MC  → ASC  → houses 11, 12
+    The quadrant spans ASC?IC, IC?DSC, DSC?MC, and MC?ASC are each divided
+    into three equal ecliptic arcs, with the cardinal cusps fixed at ASC,
+    IC, DSC, and MC.
 
-    Cardinal cusps: H1=ASC, H4=IC=MC+180°, H7=DSC=ASC+180°, H10=MC.
+    Raises:
+        ValueError: If final cusp normalization detects an invalid figure.
+
+    Side effects:
+        None
     """
     ic  = (mc  + 180.0) % 360.0
     dsc = (asc + 180.0) % 360.0
@@ -1071,69 +1880,108 @@ def _porphyry(asc: float, mc: float) -> list[float]:
 # Placidus (iterative)
 # ---------------------------------------------------------------------------
 
+
+def _placidus_semi_arc_event(
+    lam_rad: float,
+    obliquity_deg: float,
+    zenith: tuple[float, float, float],
+) -> tuple[float, float]:
+    """
+    Return (DSA_rad, dDSA/dλ) for ecliptic longitude lam_rad.
+
+    Governing event: the diurnal semi-arc of an ecliptic point is the arc of
+    the equator swept from the point's upper culmination to its setting.  It is
+    derived from the horizon event condition dot(v, zenith) = 0 at constant
+    declination, giving cos(DSA) = -tan(dec)*tan(lat), expressed here entirely
+    through the governing vector components of the ecliptic point and the
+    local zenith.
+
+    This is the event object that defines every Placidus cusp: the cusp at
+    fraction frac is the ecliptic point that has traversed exactly frac of
+    this arc from the local meridian.
+
+    Raises:
+        None under normal operation.
+
+    Side effects:
+        None
+    """
+    # Governing object 1: ecliptic point as unit vector in equatorial space
+    v = _equatorial_ecliptic_direction(math.degrees(lam_rad), obliquity_deg)
+
+    cos_dec = math.hypot(v[0], v[1])
+    cos_lat = math.hypot(zenith[0], zenith[1])
+
+    if cos_dec < 1e-12 or cos_lat < 1e-12:
+        return math.pi / 2.0, 0.0
+
+    # Horizon arc product: tan(dec)*tan(lat) from the governing vector components.
+    # cos(DSA) = -tan(dec)*tan(lat) = -(v[2]*zenith[2]) / (cos_dec*cos_lat).
+    horizon_product = max(-1.0, min(1.0, (v[2] * zenith[2]) / (cos_dec * cos_lat)))
+    dsa = math.acos(-horizon_product)
+    sin_dsa = math.sin(dsa)
+
+    if sin_dsa < 1e-12:
+        return dsa, 0.0
+
+    # Derivative dDSA/dλ via chain rule on the horizon event condition:
+    #   dv[2]/dλ = cos(λ)*sin(ε)  [z-component derivative of the governing vector]
+    #   dδ/dλ   = dv[2]/dλ / cos(δ)
+    #   dDSA/dλ = tan(φ)*sec²(δ) * dδ/dλ / sin(DSA)
+    # tan(φ) = zenith[2] / cos_lat  [from the governing zenith vector]
+    eps_r = obliquity_deg * DEG2RAD
+    d_sin_dec_d_lam = math.cos(lam_rad) * math.sin(eps_r)
+    d_dec_d_lam = d_sin_dec_d_lam / cos_dec
+    tan_phi = zenith[2] / cos_lat
+    d_dsa_d_lam = (tan_phi / (cos_dec * cos_dec) * d_dec_d_lam) / sin_dsa
+
+    return dsa, d_dsa_d_lam
+
+
 def _placidus(armc: float, obliquity: float, lat: float) -> list[float]:
     """
-    Placidus house cusps via Newton-Raphson root-finding on the semi-arc residual.
+    Placidus house cusps via Newton-Raphson root-finding on the semi-arc event condition.
 
-    Mathematical basis
-    ------------------
-    Each intermediate cusp λ is the unique ecliptic longitude satisfying one
-    of four transcendental equations.  For the upper (diurnal) cusps:
+    Governing event: ecliptic point λ is the cusp at fraction frac if it has
+    traversed exactly frac of its diurnal semi-arc (upper cusps) or nocturnal
+    semi-arc (lower cusps) from the local meridian:
 
-        f_upper(λ; frac) = RA(λ) − ARMC − frac · DSA(λ) = 0
+        Upper: RA(λ) − ARMC  = frac · DSA(λ)
+        Lower: IC_RA − RA(λ) = frac · NSA(λ)
 
-    For the lower (nocturnal) cusps:
+    The semi-arc event condition is evaluated by _placidus_semi_arc_event using
+    the ecliptic-point vector and the local zenith as governing objects.
+    Root-finding is the execution method, not the governing ontology.
 
-        f_lower(λ; frac) = RA(λ) − IC_RA + frac · NSA(λ) = 0
+    Raises:
+        ValueError: Propagated if iterative cusp construction fails structural checks.
 
-    where:
-        RA(λ)  = atan2(sin λ,  cos ε · cos λ)          [ecliptic → equatorial RA]
-        δ(λ)   = arcsin(sin ε · sin λ)                  [declination]
-        DSA(λ) = arccos(−tan φ · tan δ(λ))              [diurnal semi-arc]
-        NSA(λ) = π − DSA(λ)                             [nocturnal semi-arc]
-        IC_RA  = ARMC + π
-
-    These equations have no closed-form solution because DSA depends on δ(λ)
-    which depends on λ itself.  Newton-Raphson is applied to the residual
-    directly, using analytic first derivatives.
-
-    Analytic derivatives
-    --------------------
-    Let s = sin ε · sin λ,  c = cos ε · cos λ.
-
-        dRA/dλ  = cos ε / (cos²λ + sin²λ · cos²ε)
-
-        dδ/dλ   = sin ε · cos λ / √(1 − s²)
-
-        dDSA/dλ = tan φ · sin ε · cos λ · tan δ(λ)
-                  / (cos²δ(λ) · √(1 − tan²φ · tan²δ(λ)))
-
-        df_upper/dλ = dRA/dλ − frac · dDSA/dλ
-        df_lower/dλ = dRA/dλ + frac · dDSA/dλ   (NSA = π − DSA, so dNSA = −dDSA)
-
-    Convergence
-    -----------
-    Newton-Raphson converges quadratically.  Starting from the fixed-point
-    initial guess (DSA ≈ π/2), machine precision is reached in 4–6 iterations
-    for all latitudes |φ| < 66°.  Maximum 20 iterations; tolerance 1e-12 rad.
-
-    Polar guard
-    -----------
-    When |tan φ · tan δ| ≥ 1 the body is circumpolar or never rises; DSA is
-    clamped to 0 or π and the derivative is set to zero (flat region).  This
-    matches the behaviour of the polar-fallback doctrine in calculate_houses().
+    Side effects:
+        None
     """
     eps    = obliquity * DEG2RAD
-    phi    = lat       * DEG2RAD
     armc_r = armc      * DEG2RAD
     ic_r   = armc_r + math.pi
 
     cos_eps = math.cos(eps)
-    sin_eps = math.sin(eps)
-    tan_phi = math.tan(phi)
 
     mc  = _mc_from_armc(armc, obliquity, lat)
     asc = _asc_from_armc(armc, obliquity, lat)
+
+    # Governing object: observer's zenith as unit vector in equatorial space.
+    # Passed to _placidus_semi_arc_event as the horizon normal for DSA evaluation.
+    _, _, zenith = _local_horizon_basis(armc, lat)
+
+    # Initial guess basis: RA(ASC) − ARMC = DSA(ASC) exactly, because the ASC
+    # is on the eastern horizon by definition — it has traversed its full
+    # diurnal arc from the MC meridian.  Using DSA(ASC) as the seed estimate
+    # is strictly better than the equatorial approximation DSA ≈ π/2.
+    _v_asc = _equatorial_ecliptic_direction(asc, obliquity)
+    _ra_asc_r = math.atan2(_v_asc[1], _v_asc[0])
+    _dsa_asc = (_ra_asc_r - armc_r) % (2.0 * math.pi)
+    if _dsa_asc > math.pi:
+        _dsa_asc = 2.0 * math.pi - _dsa_asc
+    _nsa_asc = math.pi - _dsa_asc
 
     def _lam_to_ra(lam: float) -> float:
         """Ecliptic longitude λ (rad) → equatorial RA (rad), β = 0.
@@ -1151,46 +1999,6 @@ def _placidus(armc: float, obliquity: float, lat: float) -> list[float]:
         so λ = atan2(sin RA, cos ε · cos RA).
         """
         return math.atan2(math.sin(ra), cos_eps * math.cos(ra))
-
-    def _dsa_and_deriv(lam: float) -> tuple[float, float]:
-        """
-        Return (DSA, dDSA/dλ) for ecliptic longitude λ (rad).
-
-        DSA  = arccos(−tan φ · tan δ(λ))
-        δ(λ) = arcsin(sin ε · sin λ)
-
-        When the body is circumpolar (cos_dsa_arg ≤ −1) DSA = π, deriv = 0.
-        When the body never rises  (cos_dsa_arg ≥ +1) DSA = 0, deriv = 0.
-        """
-        sin_lam = math.sin(lam)
-        cos_lam = math.cos(lam)
-
-        # Declination
-        s = max(-1.0, min(1.0, sin_eps * sin_lam))
-        dec = math.asin(s)
-        cos_dec = math.cos(dec)   # always ≥ 0
-
-        # DSA
-        cos_dsa_arg = max(-1.0, min(1.0, -tan_phi * math.tan(dec)))
-        dsa = math.acos(cos_dsa_arg)
-
-        # dDSA/dλ — zero when clamped (circumpolar / never-rises boundary)
-        if abs(cos_dsa_arg) >= 1.0 - 1e-12:
-            return dsa, 0.0
-
-        # dδ/dλ = sin_eps · cos_lam / cos_dec
-        if cos_dec < 1e-12:
-            return dsa, 0.0
-        d_dec_d_lam = sin_eps * cos_lam / cos_dec
-
-        # dDSA/dλ = −d/dλ[arccos(−tan_phi · tan_dec)]
-        #         = tan_phi · sec²(dec) · d_dec_d_lam / sin(DSA)
-        sin_dsa = math.sin(dsa)
-        if sin_dsa < 1e-12:
-            return dsa, 0.0
-        d_dsa_d_lam = (tan_phi / (cos_dec * cos_dec) * d_dec_d_lam) / sin_dsa
-
-        return dsa, d_dsa_d_lam
 
     def _dra_d_lam(lam: float) -> float:
         """
@@ -1212,42 +2020,26 @@ def _placidus(armc: float, obliquity: float, lat: float) -> list[float]:
 
     def _solve_upper(frac: float) -> float:
         """
-        Solve f(λ) = RA(λ) − ARMC − frac·DSA(λ) = 0 via Newton-Raphson.
+        Solve the upper semi-arc event condition via Newton-Raphson.
 
+        Event: RA(λ) − ARMC − frac·DSA(λ) = 0
         Returns ecliptic longitude in degrees [0, 360).
 
-        Initial guess: the cusp lies between MC and ASC.  We estimate it as
-        MC + frac·(ASC − MC) (mod 360°), which places the starting point in
-        the correct quadrant regardless of ARMC value.
-
-        Step clamping: Newton steps are clamped to ±MAX_STEP_RAD to prevent
-        the solver from crossing the atan2 branch cut and converging to the
-        antipodal root.
+        Step clamping: Newton steps are clamped to ±60° to prevent the solver
+        from crossing the atan2 branch cut and converging to the antipodal root.
         """
         _MAX_STEP = math.pi / 3.0   # 60°
-
-        # RA-space initial guess matching the fixed-point starting point:
-        # ARMC + frac·(π/2) assumes DSA ≈ π/2, placing the guess in the
-        # correct basin of attraction for all normal latitudes.
-        lam = _ra_to_lam(armc_r + frac * (math.pi / 2))
+        lam = _ra_to_lam(armc_r + frac * _dsa_asc)
 
         for _ in range(30):
-            dsa, d_dsa = _dsa_and_deriv(lam)
+            dsa, d_dsa = _placidus_semi_arc_event(lam, obliquity, zenith)
             ra_lam = _lam_to_ra(lam)
-            # Normalize ra_lam to [armc_r − π, armc_r + π) so the residual
-            # is correct even when ARMC > 180° and atan2 wraps the cusp RA.
             ra_lam = armc_r + ((ra_lam - armc_r + math.pi) % (2.0 * math.pi) - math.pi)
-
-            # Residual: f = RA(λ) − ARMC − frac·DSA(λ)
-            f = ra_lam - armc_r - frac * dsa
-
-            # Derivative: df/dλ = dRA/dλ − frac·dDSA/dλ
+            f  = ra_lam - armc_r - frac * dsa
             df = _dra_d_lam(lam) - frac * d_dsa
-
             if abs(df) < 1e-15:
                 break
-            step = f / df
-            step = max(-_MAX_STEP, min(_MAX_STEP, step))
+            step = max(-_MAX_STEP, min(_MAX_STEP, f / df))
             lam -= step
             if abs(step) < 1e-12:
                 break
@@ -1256,43 +2048,26 @@ def _placidus(armc: float, obliquity: float, lat: float) -> list[float]:
 
     def _solve_lower(frac: float) -> float:
         """
-        Solve f(λ) = RA(λ) − IC_RA + frac·NSA(λ) = 0 via Newton-Raphson.
+        Solve the lower semi-arc event condition via Newton-Raphson.
 
-        NSA = π − DSA, so f = RA(λ) − IC_RA + frac·(π − DSA(λ))
-        and df/dλ = dRA/dλ − frac·dDSA/dλ.
-
+        Event: RA(λ) − IC_RA + frac·NSA(λ) = 0  (NSA = π − DSA)
         Returns ecliptic longitude in degrees [0, 360).
-
-        Initial guess: the cusp lies between IC and ASC (going forward).
-        We estimate it as IC + frac·(ASC − IC) (mod 360°).
 
         Step clamping: same branch-cut guard as _solve_upper.
         """
         _MAX_STEP = math.pi / 3.0   # 60°
-
-        # RA-space initial guess matching the fixed-point starting point:
-        # IC_RA − frac·(π/2) assumes NSA ≈ π/2, placing the guess in the
-        # correct basin of attraction for all normal latitudes.
-        lam = _ra_to_lam(ic_r - frac * (math.pi / 2))
+        lam = _ra_to_lam(ic_r - frac * _nsa_asc)
 
         for _ in range(30):
-            dsa, d_dsa = _dsa_and_deriv(lam)
+            dsa, d_dsa = _placidus_semi_arc_event(lam, obliquity, zenith)
             nsa = math.pi - dsa
             ra_lam = _lam_to_ra(lam)
-            # Normalize ra_lam to [ic_r − π, ic_r + π) so the residual
-            # is correct even when IC_RA > π and atan2 wraps the cusp RA.
             ra_lam = ic_r + ((ra_lam - ic_r + math.pi) % (2.0 * math.pi) - math.pi)
-
-            # Residual: f = RA(λ) − IC_RA + frac·NSA(λ)
-            f = ra_lam - ic_r + frac * nsa
-
-            # Derivative: df/dλ = dRA/dλ − frac·dDSA/dλ
+            f  = ra_lam - ic_r + frac * nsa
             df = _dra_d_lam(lam) - frac * d_dsa
-
             if abs(df) < 1e-15:
                 break
-            step = f / df
-            step = max(-_MAX_STEP, min(_MAX_STEP, step))
+            step = max(-_MAX_STEP, min(_MAX_STEP, f / df))
             lam -= step
             if abs(step) < 1e-12:
                 break
@@ -1324,65 +2099,29 @@ def _placidus(armc: float, obliquity: float, lat: float) -> list[float]:
 
 def _koch(armc: float, obliquity: float, lat: float) -> list[float]:
     """
-    Koch (Birthplace) house system.
+    Koch house cusps from oblique-ascension doctrine.
 
-    Each intermediate cusp is found by projecting an Oblique Ascension (OA)
-    back to the ecliptic.  The OA values trisect the MC degree's semi-arcs:
+    Koch divides the ascensional difference from MC to ASC into equal temporal
+    steps on the equator, then projects the resulting right ascensions back to
+    the ecliptic.
 
-      OA_MC  = ARMC - AD_MC            (OA of MC; AD = ascensional difference)
-      OA_IC  = (ARMC+180°) + AD_MC     (OA of IC; AD_IC = -AD_MC by symmetry)
-      DSA_MC = diurnal semi-arc of the MC degree (= NSA_IC by symmetry)
+    Raises:
+        ValueError: Propagated if cusp assembly or normalization fails.
 
-      H11 OA = OA_MC + DSA_MC / 3
-      H12 OA = OA_MC + 2 * DSA_MC / 3
-      H3  OA = OA_IC - DSA_MC / 3
-      H2  OA = OA_IC - 2 * DSA_MC / 3
-
-    Projection: tan(λ) = sin(OA) / (cos(OA)*cos(ε) - tan(φ)*sin(ε))
-
-    Reference: Walter Koch (1971); Holden "The Elements of House Division".
+    Side effects:
+        None
     """
-    eps = obliquity * DEG2RAD
-    phi = lat       * DEG2RAD
-
     mc  = _mc_from_armc(armc, obliquity, lat)
     asc = _asc_from_armc(armc, obliquity, lat)
-
-    # Declination and DSA of the MC degree
-    mc_r       = mc * DEG2RAD
-    sin_dec_mc = max(-1.0, min(1.0, math.sin(eps) * math.sin(mc_r)))
-    dec_mc     = math.asin(sin_dec_mc)
-    cos_dsa    = max(-1.0, min(1.0, -math.tan(phi) * math.tan(dec_mc)))
-    dsa_deg    = math.degrees(math.acos(cos_dsa))
-
-    # Ascensional difference of MC degree: AD = arcsin(tan(dec) * tan(φ))
-    sin_ad = max(-1.0, min(1.0, math.tan(dec_mc) * math.tan(phi)))
-    ad_mc  = math.degrees(math.asin(sin_ad))
-
-    # Oblique Ascensions of MC and IC
-    oa_mc = armc - ad_mc                   # OA(MC) = RA(MC) − AD_MC
-    oa_ic = (armc + 180.0) + ad_mc        # OA(IC) = RA(IC) − AD_IC = (ARMC+180°) + AD_MC
-
-    def _project(oa: float) -> float:
-        """Oblique ascension to ecliptic longitude using observer-latitude pole height."""
-        return _project_ra_with_pole(oa, lat, obliquity)
-
-    cusps = [0.0] * 12
-    cusps[0] = asc
-    cusps[9] = mc
-    cusps[3] = (mc  + 180.0) % 360.0
-    cusps[6] = (asc + 180.0) % 360.0
-
-    cusps[10] = _project(oa_mc + dsa_deg / 3.0)          # H11
-    cusps[11] = _project(oa_mc + 2.0 * dsa_deg / 3.0)    # H12
-    cusps[2]  = _project(oa_ic - dsa_deg / 3.0)           # H3
-    cusps[1]  = _project(oa_ic - 2.0 * dsa_deg / 3.0)    # H2
-
-    cusps[4] = (cusps[10] + 180.0) % 360.0
-    cusps[5] = (cusps[11] + 180.0) % 360.0
-    cusps[7] = (cusps[1]  + 180.0) % 360.0
-    cusps[8] = (cusps[2]  + 180.0) % 360.0
-    return _finalize_cusps(cusps, context="_koch")
+    return _assemble_pole_height_quadrant_family(
+        armc_deg=armc,
+        asc=asc,
+        mc=mc,
+        obliquity_deg=obliquity,
+        latitude_deg=lat,
+        cusp_specs=_koch_pole_height_specs(armc, mc, obliquity, lat),
+        context="_koch",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1391,55 +2130,27 @@ def _koch(armc: float, obliquity: float, lat: float) -> list[float]:
 
 def _alcabitius(armc: float, obliquity: float, lat: float) -> list[float]:
     """
-    Alcabitius (Semi-Arc) House System.
+    Alcabitius house cusps from semi-arc trisection.
 
-    Divides the diurnal and nocturnal semi-arcs of the Ascendant degree into thirds.
-    Projection uses pole height = 0 (along declination circles), identical to the
-    Morinus/Meridian projection.
+    Alcabitius divides the semi-arcs of the Ascendant and Descendant into
+    equal temporal parts, then projects the resulting right ascensions to the
+    ecliptic.
 
-    RA values (th = ARMC, sda = diurnal semi-arc, sna = 180 − sda):
-      H11: th + sda/3          H12: th + 2·sda/3
-      H2:  th + 180 − 2·sna/3  H3:  th + 180 − sna/3
+    Raises:
+        ValueError: Propagated if cusp projection or normalization fails.
 
-    Reference: classical Alcabitius construction in modern computational practice.
+    Side effects:
+        None
     """
-    eps    = obliquity * DEG2RAD
-    phi    = lat       * DEG2RAD
-    armc_r = armc      * DEG2RAD
-
     mc  = _mc_from_armc(armc, obliquity, lat)
     asc = _asc_from_armc(armc, obliquity, lat)
-
-    # Declination of the Ascendant degree
-    sin_dec = max(-1.0, min(1.0, math.sin(asc * DEG2RAD) * math.sin(eps)))
-    dec_r   = math.asin(sin_dec)
-
-    # Diurnal semi-arc of Ascendant (measured on equator)
-    r   = max(-1.0, min(1.0, -math.tan(phi) * math.tan(dec_r)))
-    sda = math.acos(r)          # radians
-    sna = math.pi - sda
-
-    def _project(ra_r: float) -> float:
-        """RA (radians) -> ecliptic longitude, pole height = 0."""
-        return _project_ra_with_pole(ra_r * RAD2DEG, 0.0, obliquity)
-
-    cusps = [0.0] * 12
-    cusps[0]  = asc
-    cusps[9]  = mc
-    cusps[3]  = (mc  + 180.0) % 360.0
-    cusps[6]  = (asc + 180.0) % 360.0
-
-    cusps[10] = _project(armc_r + sda / 3.0)              # H11
-    cusps[11] = _project(armc_r + 2.0 * sda / 3.0)        # H12
-    cusps[1]  = _project(armc_r + math.pi - 2.0 * sna / 3.0)  # H2
-    cusps[2]  = _project(armc_r + math.pi - sna / 3.0)    # H3
-
-    cusps[4]  = (cusps[10] + 180.0) % 360.0   # H5
-    cusps[5]  = (cusps[11] + 180.0) % 360.0   # H6
-    cusps[7]  = (cusps[1]  + 180.0) % 360.0   # H8
-    cusps[8]  = (cusps[2]  + 180.0) % 360.0   # H9
-
-    return _finalize_cusps(cusps, context="_alcabitius")
+    return _assemble_direct_zero_pole_quadrant_family(
+        asc=asc,
+        mc=mc,
+        obliquity_deg=obliquity,
+        cusp_ras=_alcabitius_zero_pole_specs(armc, asc, obliquity, lat),
+        context="_alcabitius",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1448,28 +2159,18 @@ def _alcabitius(armc: float, obliquity: float, lat: float) -> list[float]:
 
 def _morinus(armc: float, obliquity: float) -> list[float]:
     """
-    Morinus House System.
-    Equal 30° divisions of the equator projected onto the ecliptic, starting
-    from the East point (ARMC + 90°).
+    Morinus houses from equal equatorial 30-degree divisions.
 
-    The Morinus position formula maps ecliptic longitude λ → "Morinus RA":
-        tan(m) = tan(λ) / cos(ε)
-    The inverse (Morinus RA → ecliptic longitude for cusp computation) is:
-        tan(λ) = tan(m) × cos(ε)  →  λ = atan(tan(m) × cos(ε))
-    with the quadrant correction: add 180° when m ∈ (90°, 270°].
+    Morinus steps right ascension uniformly from the ARMC and projects those
+    divisions directly back to the ecliptic.
 
-    NOTE: this differs from the Meridian (Axial Rotation) projection which
-    uses atan2(sin(RA), cos(RA)×cos(ε)) — a genuinely different mapping.
+    Raises:
+        ValueError: Propagated if final cusp normalization fails.
 
-    Reference: Morinus meridian house construction.
+    Side effects:
+        None
     """
-    cusps = [0.0] * 12
-
-    for i in range(12):
-        ra = (armc + 90.0 + i * 30.0) % 360.0
-        lon = _project_ra_morinus(ra, obliquity)
-        cusps[i] = lon % 360.0
-
+    cusps = _equatorial_division_cycle((armc + 90.0) % 360.0, obliquity, _project_ra_morinus)
     return _finalize_cusps(cusps, context="_morinus")
 
 
@@ -1479,110 +2180,56 @@ def _morinus(armc: float, obliquity: float) -> list[float]:
 
 def _campanus(armc: float, obliquity: float, lat: float) -> list[float]:
     """
-    Campanus houses from prime-vertical trisection via explicit plane geometry.
+    Campanus houses from prime-vertical sector doctrine.
 
-    Geometric definition used here:
-      1. In the local horizon frame, divide the prime vertical into 30° sectors.
-      2. Treat each relevant sector point as the pole of a Campanus house
-         circle. The corresponding cusp plane is orthogonal to that pole.
-      3. Intersect that plane with the ecliptic plane.
-      4. Choose the intersection that lies in the doctrinal zodiacal quadrant
-         opened by the visible MC and Ascendant.
+    Campanus divides the prime vertical into equal sectors and projects those
+    vertical circles to the ecliptic through local horizon geometry.
 
-    This formulation keeps the derivation visible in chart-local geometry
-    rather than relying on inherited equatorial offset recipes.
+    Raises:
+        ValueError: Propagated if projection or cusp normalization fails.
+
+    Side effects:
+        None
     """
     mc_geometric = _mc_from_armc(armc, obliquity, lat)
     mc = _mc_above_horizon(mc_geometric, obliquity, lat)
     asc = _asc_from_armc(armc, obliquity, lat)
     ic = (mc + 180.0) % 360.0
-    dsc = (asc + 180.0) % 360.0
+    east, _north, zenith = _local_horizon_basis(armc, lat)
 
-    phi = lat * DEG2RAD
-    theta = armc * DEG2RAD
-    eps = obliquity * DEG2RAD
-    sin_theta = math.sin(theta)
-    cos_theta = math.cos(theta)
-
-    east = (-sin_theta, cos_theta, 0.0)
-    zenith = (
-        math.cos(phi) * cos_theta,
-        math.cos(phi) * sin_theta,
-        math.sin(phi),
-    )
-    north = (
-        -math.sin(phi) * cos_theta,
-        -math.sin(phi) * sin_theta,
-        math.cos(phi),
-    )
-    ecliptic_north = (0.0, -math.sin(eps), math.cos(eps))
-
-    def _cross(a: tuple[float, float, float], b: tuple[float, float, float]) -> tuple[float, float, float]:
-        return (
-            a[1] * b[2] - a[2] * b[1],
-            a[2] * b[0] - a[0] * b[2],
-            a[0] * b[1] - a[1] * b[0],
-        )
-
-    def _dot(a: tuple[float, float, float], b: tuple[float, float, float]) -> float:
-        return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
-
-    def _norm(v: tuple[float, float, float]) -> float:
-        return math.sqrt(_dot(v, v))
-
-    def _normalize(v: tuple[float, float, float]) -> tuple[float, float, float]:
-        mag = _norm(v)
-        if mag == 0.0:
-            raise ValueError("_campanus: degenerate vector in cusp construction")
-        return (v[0] / mag, v[1] / mag, v[2] / mag)
-
-    def _ecliptic_longitude(v: tuple[float, float, float]) -> float:
-        x_eq, y_eq, z_eq = _normalize(v)
-        y_ecl = y_eq * math.cos(eps) + z_eq * math.sin(eps)
-        return math.atan2(y_ecl, x_eq) * RAD2DEG % 360.0
-
-    def _in_forward_arc(lon: float, start: float, end: float) -> bool:
-        return (lon - start) % 360.0 < (end - start) % 360.0
-
-    def _campanus_cusp(alpha_deg: float, arc_start: float, arc_end: float) -> float:
+    def _campanus_cusp(
+        alpha_deg: float,
+        *,
+        prefer_above_horizon: bool,
+        tie_arc_start: float,
+        tie_arc_end: float,
+    ) -> float:
         alpha = alpha_deg * DEG2RAD
-        pole = _normalize((
+        plane_normal = _normalize3((
             math.cos(alpha) * east[0] + math.sin(alpha) * zenith[0],
             math.cos(alpha) * east[1] + math.sin(alpha) * zenith[1],
             math.cos(alpha) * east[2] + math.sin(alpha) * zenith[2],
         ))
-        intersection = _cross(pole, ecliptic_north)
-        lon_a = _ecliptic_longitude(intersection)
-        lon_b = (lon_a + 180.0) % 360.0
-        if _in_forward_arc(lon_a, arc_start, arc_end):
-            return lon_a
-        if _in_forward_arc(lon_b, arc_start, arc_end):
-            return lon_b
-        span = (arc_end - arc_start) % 360.0
-        target = (arc_start + span / 2.0) % 360.0
-        diff_a = abs((lon_a - target + 180.0) % 360.0 - 180.0)
-        diff_b = abs((lon_b - target + 180.0) % 360.0 - 180.0)
-        return lon_a if diff_a <= diff_b else lon_b
+        primary, secondary = _ecliptic_intersection_candidates(plane_normal, obliquity)
+        return _select_horizon_branch(
+            primary,
+            secondary,
+            zenith=zenith,
+            prefer_above_horizon=prefer_above_horizon,
+            obliquity_deg=obliquity,
+            tie_arc_start=tie_arc_start,
+            tie_arc_end=tie_arc_end,
+        )
 
-    cusps = [0.0] * 12
-    cusps[0] = asc
-    cusps[9] = mc
-    cusps[3] = ic
-    cusps[6] = dsc
-    cusps[10] = _campanus_cusp(150.0, mc, asc)  # H11
-    cusps[11] = _campanus_cusp(120.0, mc, asc)  # H12
-    cusps[1] = _campanus_cusp(60.0, asc, ic)    # H2
-    cusps[2] = _campanus_cusp(30.0, asc, ic)    # H3
-    mc_shifted = abs((mc - mc_geometric + 180.0) % 360.0 - 180.0) > 90.0
-    if mc_shifted:
-        for idx in (1, 2, 10, 11):
-            cusps[idx] = (cusps[idx] + 180.0) % 360.0
-    cusps[4] = (cusps[10] + 180.0) % 360.0
-    cusps[5] = (cusps[11] + 180.0) % 360.0
-    cusps[7] = (cusps[1] + 180.0) % 360.0
-    cusps[8] = (cusps[2] + 180.0) % 360.0
-
-    return _finalize_cusps(cusps, context="_campanus")
+    return _assemble_antipodal_quadrant_cusps(
+        asc=asc,
+        mc=mc,
+        h2=_campanus_cusp(60.0, prefer_above_horizon=False, tie_arc_start=asc, tie_arc_end=ic),
+        h3=_campanus_cusp(30.0, prefer_above_horizon=False, tie_arc_start=asc, tie_arc_end=ic),
+        h11=_campanus_cusp(150.0, prefer_above_horizon=True, tie_arc_start=mc, tie_arc_end=asc),
+        h12=_campanus_cusp(120.0, prefer_above_horizon=True, tie_arc_start=mc, tie_arc_end=asc),
+        context="_campanus",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1591,79 +2238,56 @@ def _campanus(armc: float, obliquity: float, lat: float) -> list[float]:
 
 def _regiomontanus(armc: float, obliquity: float, lat: float) -> list[float]:
     """
-    Regiomontanus: trisect the celestial equator from MC to IC (eastward).
+    Regiomontanus houses from equal equatorial sectors and graduated pole-height projection.
 
-    Equatorial RA positions going counterclockwise from MC:
-      H11: ARMC + 30°    H12: ARMC + 60°
-      H2:  ARMC + 120°   H3:  ARMC + 150°   (NOT negative offsets)
+    The celestial equator is divided into equal sectors from the meridian, and
+    those sectors are projected to the ecliptic through pole-height doctrine.
 
-    Polar height at each position:
-      phi_h = atan(tan(φ) × sin(n × 30°))
-      H11/H3 share phi_h at n=1 (sin 30°), H12/H2 at n=2 (sin 60°).
+    Raises:
+        ValueError: Propagated if branch selection or cusp normalization fails.
 
-    Projection: tan(λ) = sin(RA) / (cos(RA)*cos(ε) − tan(phi_h)*sin(ε))
+    Side effects:
+        None
     """
-    phi = lat       * DEG2RAD
-
-    mc  = _mc_above_horizon(_mc_from_armc(armc, obliquity, lat), obliquity, lat)
+    mc_raw = _mc_from_armc(armc, obliquity, lat)
+    mc  = _mc_above_horizon(mc_raw, obliquity, lat)
     asc = _asc_from_armc(armc, obliquity, lat)
-
-    def _cusp(ra_deg: float, phi_h: float) -> float:
-        return _project_ra_with_pole(ra_deg, phi_h * RAD2DEG, obliquity)
+    phi = lat * DEG2RAD
 
     phi_h1 = math.atan(math.tan(phi) * math.sin(30.0 * DEG2RAD))  # H11 & H3
     phi_h2 = math.atan(math.tan(phi) * math.sin(60.0 * DEG2RAD))  # H12 & H2
 
-    cusps = [0.0] * 12
-    cusps[0]  = asc
-    cusps[9]  = mc
-    cusps[3]  = (mc  + 180.0) % 360.0
-    cusps[6]  = (asc + 180.0) % 360.0
+    return _assemble_pole_height_quadrant_family(
+        armc_deg=armc,
+        asc=asc,
+        mc=mc,
+        obliquity_deg=obliquity,
+        latitude_deg=lat,
+        cusp_specs={
+            2: (armc + 120.0, phi_h2 * RAD2DEG),
+            3: (armc + 150.0, phi_h1 * RAD2DEG),
+            11: (armc + 30.0, phi_h1 * RAD2DEG),
+            12: (armc + 60.0, phi_h2 * RAD2DEG),
+        },
+        context="_regiomontanus",
+    )
 
-    cusps[10] = _cusp(armc + 30.0,  phi_h1)   # H11
-    cusps[11] = _cusp(armc + 60.0,  phi_h2)   # H12
-    cusps[1]  = _cusp(armc + 120.0, phi_h2)   # H2
-    cusps[2]  = _cusp(armc + 150.0, phi_h1)   # H3
-
-    cusps[4]  = (cusps[10] + 180.0) % 360.0
-    cusps[5]  = (cusps[11] + 180.0) % 360.0
-    cusps[7]  = (cusps[1]  + 180.0) % 360.0
-    cusps[8]  = (cusps[2]  + 180.0) % 360.0
-
-    # When MC was swapped at polar latitudes, all intermediate cusps are 180° off
-    mc_raw = _mc_from_armc(armc, obliquity, lat)
-    mc_swapped = abs((mc - mc_raw + 180.0) % 360.0 - 180.0) > 90.0
-    if mc_swapped:
-        for i in (1, 2, 4, 5, 7, 8, 10, 11):
-            cusps[i] = (cusps[i] + 180.0) % 360.0
-
-    return _finalize_cusps(cusps, context="_regiomontanus")
-
-
-# ---------------------------------------------------------------------------
-# Meridian (Axial Rotation)
-# ---------------------------------------------------------------------------
 
 def _meridian(armc: float, obliquity: float) -> list[float]:
-    """Meridian system: equal 30° divisions of the celestial equator from MC."""
-    eps = obliquity * DEG2RAD
-    cusps = [0.0] * 12
+    """
+    Meridian system from equal equatorial 30-degree divisions anchored to house 1.
 
-    for i in range(12):
-        ra_r = (armc + i * 30.0) * DEG2RAD
-        lon = math.atan2(math.sin(ra_r), math.cos(ra_r) * math.cos(eps)) * RAD2DEG % 360.0
-        cusps[i] = lon
+    Meridian shares the same equatorial division cycle as Morinus, but uses the
+    equatorial-plane projector rather than the Morinus inverse relation.
 
-    # Align H10 with MC (index 9)
-    # Cusp[0] in 'cusps' is at ARMC (the MC). 
-    # We need to shift it so House 10 is the MC.
-    # ARMC is the start. House 10 = index 0. House 11 = index 1.
-    # So H1 is index 3 (90 degrees later).
-    rotated = [0.0] * 12
-    for i in range(12):
-        # Index i -> House (i + 10) % 12
-        rotated[(i + 9) % 12] = cusps[i]
-    return _finalize_cusps(rotated, context="_meridian")
+    Raises:
+        ValueError: Propagated if cusp projection or normalization fails.
+
+    Side effects:
+        None
+    """
+    cusps = _equatorial_division_cycle((armc + 90.0) % 360.0, obliquity, _project_ra_equatorial)
+    return _finalize_cusps(cusps, context="_meridian")
 
 
 # ---------------------------------------------------------------------------
@@ -1672,11 +2296,16 @@ def _meridian(armc: float, obliquity: float) -> list[float]:
 
 def _vehlow(asc: float) -> list[float]:
     """
-    Vehlow Equal Houses.
-    Same as equal houses but the Ascendant falls at the MIDDLE of the 1st house,
-    not the cusp.  All cusps shift back by 15°.
+    Vehlow equal houses centered on the Ascendant.
 
-    Formula: cusp_1 = (ASC − 15°) mod 360°, then +30° each house.
+    Vehlow shifts the equal-house frame so the Ascendant lies at the midpoint
+    of house 1 instead of on its opening cusp.
+
+    Raises:
+        ValueError: Propagated if final cusp normalization fails.
+
+    Side effects:
+        None
     """
     start = (asc - 15.0) % 360.0
     cusps = [(start + i * 30.0) % 360.0 for i in range(12)]
@@ -1689,13 +2318,16 @@ def _vehlow(asc: float) -> list[float]:
 
 def _sunshine(sun_lon: float, lat: float, obliquity: float) -> list[float]:
     """
-    Sunshine house system (Robert Makransky, 1988).
-    Uses the Sun's position instead of the Ascendant as the basis.
-    The Sun is always placed at the cusp of the 12th house.
+    Sunshine houses anchored directly to the Sun's exact longitude.
 
-    Formula: cusp_12 = Sun longitude, then +30° each house proceeding
-    through 12, 1, 2, ..., 11.
-    (House 12 = Sun, house 1 = Sun+30°, ..., house 11 = Sun+330°)
+    The frame proceeds in equal 30-degree steps from the solar anchor rather
+    than from the Ascendant.
+
+    Raises:
+        ValueError: Propagated if final cusp normalization fails.
+
+    Side effects:
+        None
     """
     cusps = [0.0] * 12
     cusps[11] = sun_lon % 360.0   # 12th house cusp = Sun
@@ -1708,10 +2340,14 @@ def _solar_sign(sun_lon: float) -> list[float]:
     """
     Traditional solar-sign frame.
 
-    House 1 begins at 0° of the Sun's sign. The remaining houses proceed by
-    30° sign succession. This is sign-anchored rather than degree-anchored:
-    the Sun's exact longitude determines the sign, but not the intra-sign
-    offset of cusp 1.
+    House 1 begins at 0? of the Sun's sign, and the remaining houses proceed
+    by 30? sign succession from that sign anchor.
+
+    Raises:
+        ValueError: Propagated if final cusp normalization fails.
+
+    Side effects:
+        None
     """
     sign_start = math.floor((sun_lon % 360.0) / 30.0) * 30.0
     cusps = [(sign_start + i * 30.0) % 360.0 for i in range(12)]
@@ -1724,92 +2360,34 @@ def _solar_sign(sun_lon: float) -> list[float]:
 
 def _azimuthal(armc: float, obliquity: float, lat: float) -> list[float]:
     """
-    Horizontal / Azimuthal house system.
+    Horizontal or Azimuthal houses from explicit local-horizon geometry.
 
-    Zenith-sector houses from explicit local-horizon geometry.
+    Vertical great circles through the zenith at doctrinal horizon azimuths
+    are intersected with the ecliptic, and the visible branch is selected for
+    each cusp.
 
-    Geometric definition used here:
-      1. In the local horizon frame, take the vertical great circles through
-         the zenith and horizon azimuths spaced every 30°.
-      2. Each such vertical great circle defines a cusp plane.
-      3. Intersect the cusp plane with the ecliptic plane.
-      4. Choose the branch whose local azimuth matches the doctrinal vertical
-         circle for that house. The eastern sequence mirrors by hemisphere.
+    Raises:
+        ValueError: If local-horizon vectors degenerate or cusp normalization fails.
 
-    This is the direct horizon-frame statement of the azimuthal system, with
-    no rotated-latitude surrogate construction.
+    Side effects:
+        None
     """
-    mc_geometric = _mc_from_armc(armc, obliquity, lat)
-    mc = mc_geometric
+    mc = _mc_from_armc(armc, obliquity, lat)
     ic = (mc + 180.0) % 360.0
-
-    phi = lat * DEG2RAD
-    theta = armc * DEG2RAD
-    eps = obliquity * DEG2RAD
-    sin_theta = math.sin(theta)
-    cos_theta = math.cos(theta)
-
-    east = (-sin_theta, cos_theta, 0.0)
-    north = (
-        -math.sin(phi) * cos_theta,
-        -math.sin(phi) * sin_theta,
-        math.cos(phi),
-    )
-    zenith = (
-        math.cos(phi) * cos_theta,
-        math.cos(phi) * sin_theta,
-        math.sin(phi),
-    )
-    ecliptic_north = (0.0, -math.sin(eps), math.cos(eps))
-
-    def _cross(a: tuple[float, float, float], b: tuple[float, float, float]) -> tuple[float, float, float]:
-        return (
-            a[1] * b[2] - a[2] * b[1],
-            a[2] * b[0] - a[0] * b[2],
-            a[0] * b[1] - a[1] * b[0],
-        )
-
-    def _dot(a: tuple[float, float, float], b: tuple[float, float, float]) -> float:
-        return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
-
-    def _norm(v: tuple[float, float, float]) -> float:
-        return math.sqrt(_dot(v, v))
-
-    def _normalize(v: tuple[float, float, float]) -> tuple[float, float, float]:
-        mag = _norm(v)
-        if mag == 0.0:
-            raise ValueError("_azimuthal: degenerate vector in cusp construction")
-        return (v[0] / mag, v[1] / mag, v[2] / mag)
-
-    def _ecliptic_longitude(v: tuple[float, float, float]) -> float:
-        x_eq, y_eq, z_eq = _normalize(v)
-        y_ecl = y_eq * math.cos(eps) + z_eq * math.sin(eps)
-        return math.atan2(y_ecl, x_eq) * RAD2DEG % 360.0
-
-    def _azimuth_of(v: tuple[float, float, float]) -> float:
-        x = _dot(v, east)
-        y = _dot(v, north)
-        return math.atan2(x, y) * RAD2DEG % 360.0
-
-    def _azimuth_diff(a: float, b: float) -> float:
-        return abs((a - b + 180.0) % 360.0 - 180.0)
+    east, north, zenith = _local_horizon_basis(armc, lat)
 
     def _vertical_cusp(azimuth_deg: float) -> float:
-        az = azimuth_deg * DEG2RAD
-        horizon_dir = (
-            math.sin(az) * east[0] + math.cos(az) * north[0],
-            math.sin(az) * east[1] + math.cos(az) * north[1],
-            math.sin(az) * east[2] + math.cos(az) * north[2],
+        horizon_dir = _horizon_direction_from_azimuth(azimuth_deg, east=east, north=north)
+        plane_normal = _normalize3(_cross3(zenith, horizon_dir))
+        primary, secondary = _ecliptic_intersection_candidates(plane_normal, obliquity)
+        return _select_azimuth_branch(
+            primary,
+            secondary,
+            azimuth_deg=azimuth_deg,
+            east=east,
+            north=north,
+            obliquity_deg=obliquity,
         )
-        plane_normal = _normalize(_cross(zenith, horizon_dir))
-        intersection = _cross(plane_normal, ecliptic_north)
-        inter_a = _normalize(intersection)
-        inter_b = (-inter_a[0], -inter_a[1], -inter_a[2])
-        lon_a = _ecliptic_longitude(inter_a)
-        lon_b = _ecliptic_longitude(inter_b)
-        az_a = _azimuth_of(inter_a)
-        az_b = _azimuth_of(inter_b)
-        return lon_a if _azimuth_diff(az_a, azimuth_deg) <= _azimuth_diff(az_b, azimuth_deg) else lon_b
 
     north_sequence = {
         11: 150.0,
@@ -1855,17 +2433,16 @@ def _azimuthal(armc: float, obliquity: float, lat: float) -> list[float]:
 
 def _carter(armc: float, obliquity: float, lat: float) -> list[float]:
     """
-    Carter Poli-Equatorial house system.
+    Carter Poly-Ptolemaic houses from equatorial 30-degree stepping anchored to RA(ASC).
 
-    Divides the equator into 12 equal 30° segments starting from the RA of
-    the Ascendant, then projects each back to the ecliptic using:
-        cusp = atan(tan(RA) / cos(ε))
-    with quadrant correction (add 180° when RA ∈ (90°, 270°]).
+    The construction steps right ascension uniformly from the Ascendant's
+    equatorial longitude and projects each step back to the ecliptic.
 
-    This uses an equatorial 30° stepping anchored to RA(ASC), followed by
-    ecliptic projection at zero pole-height.
+    Raises:
+        ValueError: Propagated if cusp projection or normalization fails.
 
-    Reference: Carter/Polich-Page style horizon-based construction.
+    Side effects:
+        None
     """
     mc    = _mc_from_armc(armc, obliquity, lat)
     asc   = _asc_from_armc(armc, obliquity, lat)
@@ -1880,17 +2457,17 @@ def _carter(armc: float, obliquity: float, lat: float) -> list[float]:
     eps_r  = obliquity * DEG2RAD
     ra_asc = math.atan2(math.sin(asc_r) * math.cos(eps_r), math.cos(asc_r)) * RAD2DEG % 360.0
 
+    cycle = _equatorial_division_cycle(ra_asc, obliquity, _project_ra_equatorial)
+
     cusps = [0.0] * 12
     cusps[0] = asc
-    cusps[9] = mc
+    cusps[1] = cycle[1]
+    cusps[2] = cycle[2]
     cusps[3] = (mc  + 180.0) % 360.0
     cusps[6] = (asc + 180.0) % 360.0
-
-    for i in range(2, 13):   # H2 … H12
-        if i <= 3 or i >= 10:
-            ra = (ra_asc + (i - 1) * 30.0) % 360.0
-            lon = _project_ra_with_pole(ra, 0.0, obliquity)
-            cusps[i - 1] = lon % 360.0
+    cusps[9] = cycle[9]
+    cusps[10] = cycle[10]
+    cusps[11] = cycle[11]
 
     cusps[4] = (cusps[10] + 180.0) % 360.0
     cusps[5] = (cusps[11] + 180.0) % 360.0
@@ -1905,34 +2482,28 @@ def _carter(armc: float, obliquity: float, lat: float) -> list[float]:
 
 def _topocentric(armc: float, obliquity: float, lat: float) -> list[float]:
     """
-    Topocentric House System (Polich-Page).
+    Topocentric (Polich-Page) houses from graduated equatorial pole-height doctrine.
 
-    Polich-Page construction from explicit equatorial pole-height doctrine.
+    Equatorial pole right ascensions are spaced from ARMC, projected with the
+    doctrinal pole heights, resolved against the visible arcs, and assembled
+    into the quadrant figure.
 
-    Geometric definition used here:
-      1. Start from equatorial pole right ascensions spaced from ARMC by
-         30 deg, 60 deg, 120 deg, and 150 deg.
-      2. Assign the graduated pole heights
-             phi_1 = atan((1/3) * tan(latitude))
-             phi_2 = atan((2/3) * tan(latitude))
-         to the near-angle and far-angle intermediate cusps respectively.
-      3. Project each equatorial right ascension back to the ecliptic using the
-         corresponding pole height as the house-plane declination term.
-      4. Mirror the intermediate cusps across the opposite hemisphere and apply
-         the visible-MC branch correction at polar latitudes.
+    Raises:
+        ValueError: Propagated if branch selection or cusp normalization fails.
 
-    Reference: Polich & Page (1955).
+    Side effects:
+        None
     """
     phi = lat * DEG2RAD
 
     mc_geometric = _mc_from_armc(armc, obliquity, lat)
     mc = _mc_above_horizon(mc_geometric, obliquity, lat)
     asc = _asc_from_armc(armc, obliquity, lat)
-    ic = (mc + 180.0) % 360.0
-    dsc = (asc + 180.0) % 360.0
-
     phi_1 = math.degrees(math.atan((1.0 / 3.0) * math.tan(phi)))
     phi_2 = math.degrees(math.atan((2.0 / 3.0) * math.tan(phi)))
+
+    ic = (mc + 180.0) % 360.0
+    mc_swapped = abs((mc - mc_geometric + 180.0) % 360.0 - 180.0) > 90.0
 
     cusp_specs = (
         (10, 30.0, phi_1),
@@ -1941,25 +2512,26 @@ def _topocentric(armc: float, obliquity: float, lat: float) -> list[float]:
         (2, 150.0, phi_1),
     )
 
-    cusps = [0.0] * 12
-    cusps[0] = asc
-    cusps[9] = mc
-    cusps[3] = ic
-    cusps[6] = dsc
+    primaries: dict[int, float] = {}
     for index, ra_offset_deg, pole_height_deg in cusp_specs:
         pole_ra = (armc + ra_offset_deg) % 360.0
-        cusps[index] = _project_ra_with_pole(pole_ra, pole_height_deg, obliquity)
-    cusps[4] = (cusps[10] + 180.0) % 360.0
-    cusps[5] = (cusps[11] + 180.0) % 360.0
-    cusps[7] = (cusps[1] + 180.0) % 360.0
-    cusps[8] = (cusps[2] + 180.0) % 360.0
+        raw = _project_ra_with_pole(pole_ra, pole_height_deg, obliquity)
+        if mc_swapped:
+            primaries[index] = (raw + 180.0) % 360.0
+        elif index in (10, 11):
+            primaries[index] = _select_antipodal_branch(raw, mc, asc)
+        else:
+            primaries[index] = _select_antipodal_branch(raw, asc, ic)
 
-    mc_swapped = abs((mc - mc_geometric + 180.0) % 360.0 - 180.0) > 90.0
-    if mc_swapped:
-        for i in (1, 2, 4, 5, 7, 8, 10, 11):
-            cusps[i] = (cusps[i] + 180.0) % 360.0
-
-    return _finalize_cusps(cusps, context="_topocentric")
+    return _assemble_antipodal_quadrant_cusps(
+        asc=asc,
+        mc=mc,
+        h2=primaries[1],
+        h3=primaries[2],
+        h11=primaries[10],
+        h12=primaries[11],
+        context="_topocentric",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1968,13 +2540,16 @@ def _topocentric(armc: float, obliquity: float, lat: float) -> list[float]:
 
 def _rotate_x_axis(lon: float, lat: float, rotation: float) -> tuple[float, float]:
     """
-    Rotate spherical coordinates (lon, lat) by ``rotation`` degrees about the x-axis.
+    Rotate spherical coordinates about the x-axis by the requested angle.
 
-    Standard spherical x-axis rotation relations:
-        lon_new = atan2(cos(r)*sin(lon)*cos(lat) − sin(r)*sin(lat), cos(lon)*cos(lat))
-        lat_new = asin( sin(r)*cos(lat)*sin(lon) + cos(r)*sin(lat) )
+    This is the shared spherical-frame rotation used in the ecliptic,
+    equatorial, and horizontal transforms within the House Pillar.
 
-    Used for ecliptic ↔ equatorial ↔ horizontal frame conversions.
+    Raises:
+        None under normal operation.
+
+    Side effects:
+        None
     """
     rot_rad = rotation * DEG2RAD
     lon_rad = lon * DEG2RAD
@@ -2003,20 +2578,16 @@ def _rotate_x_axis(lon: float, lat: float, rotation: float) -> tuple[float, floa
 
 def _krusinski(armc: float, obliquity: float, lat: float) -> list[float]:
     """
-    Krusinski-Pisa house system.
+    Krusinski-Pisa houses from the great circle through the Ascendant and Zenith.
 
-        The great circle through the Ascendant and Zenith is divided into 12 equal
-        30° sectors; cusps are the ecliptic intersections of the corresponding
-        meridian circles.
+    The governing great circle is divided into equal sectors and the resulting
+    meridian circles are projected back to the ecliptic.
 
-        Construction outline:
-            Forward transform:
-                ASC (ecliptic) -> equatorial -> horizon frame aligned to ARMC.
-            Backward cusp solve for each i in 0..5:
-                (30i°, 0°) on the house circle -> horizon -> equatorial ->
-                rotate to chart ARMC -> project RA to ecliptic longitude.
+    Raises:
+        ValueError: Propagated if rotated-frame projection or normalization fails.
 
-    Reference: Bogdan Krusinski (2006) method notes.
+    Side effects:
+        None
     """
     mc = _mc_from_armc(armc, obliquity, lat)
     asc = _asc_from_armc(armc, obliquity, lat)
@@ -2040,194 +2611,250 @@ def _krusinski(armc: float, obliquity: float, lat: float) -> list[float]:
         return (eq_lon + (armc - 90.0)) % 360.0
 
     anchor_lon = _anchor_on_horizon(asc)
-    cusps = [0.0] * 12
 
-    for house_index in range(12):
-        sector = float(30 * house_index)
-        ra = _house_circle_ra(sector, anchor_lon)
-        cusps[house_index] = _project_ra_with_pole(ra, 0.0, obliquity) % 360.0
+    def _sector_longitude(sector_deg: float) -> float:
+        ra = _house_circle_ra(sector_deg, anchor_lon)
+        return _project_ra_with_pole(ra, 0.0, obliquity) % 360.0
 
-    return _finalize_cusps(cusps, context="_krusinski")
+    return _assemble_antipodal_quadrant_cusps(
+        asc=asc,
+        mc=mc,
+        h2=_sector_longitude(30.0),
+        h3=_sector_longitude(60.0),
+        h11=_sector_longitude(300.0),
+        h12=_sector_longitude(330.0),
+        context="_krusinski",
+    )
 
 
 # ---------------------------------------------------------------------------
 # APC Houses
 # ---------------------------------------------------------------------------
 
-def _apc_sector(
-    house_number: int,
-    latitude_rad: float,
-    obliquity_rad: float,
+def _apc_project(
+    cusp_ra_rad: float,
+    dsa_asc_rad: float,
+    tan_lat: float,
     armc_rad: float,
+    obliquity_rad: float,
 ) -> float:
     """
-    Single APC (Ascendant Parallel Circle) house cusp sector solver.
+    Project one APC cusp RA (on the Ascendant's parallel circle) to ecliptic
+    longitude.
 
-    APC defines intermediate house cusps by trisecting the diurnal and
-    nocturnal arcs of the ascendant on a small circle parallel to the
-    ecliptic through the ascendant point, then projecting each sector's
-    right ascension back to the ecliptic using the ascendant's declination.
+    GEOMETRIC DERIVATION:
+        Let C be a cusp point on the Ascendant's parallel circle of declination δ_asc.
+        In equatorial rectangular coordinates, the direction vector is:
+            v_eq = [cos(δ_asc)*cos(α), cos(δ_asc)*sin(α), sin(δ_asc)]^T
+        where α is the right ascension of the cusp point.
+        
+        Rotating v_eq by true obliquity ε about the x-axis into ecliptic coordinates:
+            v_ecl = R_x(ε) * v_eq
+            v_ecl = [
+                cos(δ_asc)*cos(α),
+                cos(δ_asc)*sin(α)*cos(ε) - sin(δ_asc)*sin(ε),
+                cos(δ_asc)*sin(α)*sin(ε) + sin(δ_asc)*cos(ε)
+            ]^T
+            
+        The ecliptic longitude λ is given by:
+            λ = atan2(Y_ecl, X_ecl)
+            
+        To make the projection independent of the specific declination scale cos(δ_asc),
+        we divide both components by cos(δ_asc):
+            y = Y_ecl / cos(δ_asc) = sin(α)*cos(ε) - tan(δ_asc)*sin(ε)
+            x = X_ecl / cos(δ_asc) = cos(α)
+            
+        From the horizon event condition for the Ascendant:
+            cos(DSA_asc) = -tan(δ_asc)*tan(lat)
+            
+        This defines the parallel circle scale factor, parallel_scale = -cos(DSA_asc),
+        which relates the declination to geographic latitude via:
+            tan(δ_asc) = parallel_scale / tan(lat)
+            
+        Substituting this into the divided coordinates yields the de Boer/APC
+        longitude projection equations:
+            parallel_scale = -cos(DSA_asc)
+            y = parallel_scale * sin(ARMC) + sin(α)
+            x = cos(ε) * (parallel_scale * cos(ARMC) + cos(α)) + sin(ε) * tan(lat) * sin(ARMC - α)
+            
+        This projection maps any right ascension α on the parallel circle directly
+        to the ecliptic.
 
-    Parameters
-    ----------
-    house_number
-        Integer house number in ``[1, 12]`` (1 = Ascendant, 10 = MC).
-    latitude_rad
-        Observer geographic latitude, in radians.
-    obliquity_rad
-        Obliquity of the ecliptic, in radians.
-    armc_rad
-        Apparent right ascension of the midheaven, in radians.
+    Args:
+        cusp_ra_rad:   Right ascension of the cusp point on the parallel circle.
+        dsa_asc_rad:   Diurnal semi-arc of the Ascendant (radians); equals π/2 + asc_ad.
+        tan_lat:       tan(geographic latitude).
+        armc_rad:      ARMC in radians.
+        obliquity_rad: True obliquity in radians.
 
-    Returns
-    -------
-    float
-        Ecliptic longitude of the requested APC cusp, in degrees ``[0, 360)``.
-
-    Notation equivalence
-    --------------------
-    The descriptive names used here correspond to the following symbols in the
-    primary APC source literature (de Boer / WvA):
-
-    ==================  =============  =============================================
-    Moira name          Source symbol  Meaning
-    ==================  =============  =============================================
-    ``latitude_rad``    ``ph``         observer latitude (radians)
-    ``obliquity_rad``   ``e``          obliquity of the ecliptic (radians)
-    ``armc_rad``        ``az``         ARMC (radians)
-    ``asc_ad``          ``kv``         ascendant arc correction angle (radians)
-    ``asc_declination`` ``dasc``       declination at the ascendant parallel (radians)
-    ``cusp_ra``         ``a``          right ascension of cusp on parallel circle (radians)
-    ==================  =============  =============================================
-
-    Construction (Ingmar de Boer / WvA primary source)
-    ---------------------------------------------------
-    Step 1 — Ascendant arc correction (``kv`` in source notation):
-
-    .. code-block:: none
-
-        kv = atan( tan(ph) * tan(e) * cos(az)
-                   / (1 + tan(ph) * tan(e) * sin(az)) )
-
-    Step 2 — Ascendant declination (``dasc`` in source notation):
-
-    .. code-block:: none
-
-        dasc = atan( sin(kv) / tan(ph) )
-
-    Moira substitutes ``atan2(sin(kv), tan(ph))`` to preserve quadrant
-    correctness at polar latitudes where ``tan(ph)`` changes sign.
-
-    Step 3 — Sector right ascension (``a`` in source notation):
-
-    .. code-block:: none
-
-        Cusps 1–7:   a = kv + az + π/2 + (n − 1)  * (π/2 − kv) / 3
-        Cusps 8–12:  a = kv + az + π/2 + (n − 13) * (π/2 + kv) / 3
-
-    Step 4 — Ecliptic longitude (complete de Boer ``atan2`` expression):
-
-    .. code-block:: none
-
-        longitude = atan2(
-            tan(dasc) * tan(ph) * sin(az) + sin(a),
-            cos(e) * (tan(dasc) * tan(ph) * cos(az) + cos(a))
-                + sin(e) * tan(ph) * sin(az − a)
-        )
-
-    Reference: Ingmar de Boer, "APC Houses", ingmardeboer.nl.
+    Returns:
+        Ecliptic longitude of the projected cusp, in degrees [0, 360).
     """
-    _POLAR_EPS = 1e-6   # latitude singularity guard (degrees); distinct from _EPS in _quadrant_project_ra
-    abs_latitude_deg = abs(latitude_rad * RAD2DEG)
-
-    def _ascending_terms() -> tuple[float, float]:
-        """Return (ascendant ascensional difference, ascendant declination), in radians."""
-        if abs_latitude_deg > 90.0 - _POLAR_EPS:
-            return 0.0, 0.0
-
-        tan_lat = math.tan(latitude_rad)
-        tan_obl = math.tan(obliquity_rad)
-        mixed = tan_lat * tan_obl
-
-        # atan (not atan2) restricts asc_ad to (-π/2, π/2), keeping sector steps
-        # geometrically valid at polar latitudes where the atan2 denominator
-        # can go negative and push asc_ad into the (π/2, π) range.
-        denom = 1.0 + mixed * math.sin(armc_rad)
-        numer = mixed * math.cos(armc_rad)
-        asc_ad = (math.copysign(math.pi / 2.0, numer)
-                  if abs(denom) < 1e-12
-                  else math.atan(numer / denom))
-
-        if abs_latitude_deg < _POLAR_EPS:
-            asc_declination = math.copysign(
-                (90.0 - _POLAR_EPS) * DEG2RAD,
-                -1.0 if latitude_rad < 0.0 else 1.0,
-            )
-        else:
-            asc_declination = math.atan2(math.sin(asc_ad), tan_lat)
-        return asc_ad, asc_declination
-
-    def _sector_right_ascension(asc_ad: float) -> float:
-        """Right ascension of the house cusp on the ascendant-parallel circle."""
-        base = asc_ad + armc_rad + math.pi / 2.0
-        if house_number <= 7:
-            step = (math.pi / 2.0 - asc_ad) / 3.0
-            return (base + (house_number - 1) * step) % (2.0 * math.pi)
-        step = (math.pi / 2.0 + asc_ad) / 3.0
-        return (base + (house_number - 13) * step) % (2.0 * math.pi)
-
-    asc_ad, asc_declination = _ascending_terms()
-    cusp_ra = _sector_right_ascension(asc_ad)
-
-    tan_lat = math.tan(latitude_rad)
-    parallel_scale = math.tan(asc_declination) * tan_lat
-    y_component = parallel_scale * math.sin(armc_rad) + math.sin(cusp_ra)
-    x_component = (
-        math.cos(obliquity_rad) * (parallel_scale * math.cos(armc_rad) + math.cos(cusp_ra))
-        + math.sin(obliquity_rad) * tan_lat * math.sin(armc_rad - cusp_ra)
+    parallel_scale = -math.cos(dsa_asc_rad)
+    y = parallel_scale * math.sin(armc_rad) + math.sin(cusp_ra_rad)
+    x = (
+        math.cos(obliquity_rad) * (parallel_scale * math.cos(armc_rad) + math.cos(cusp_ra_rad))
+        + math.sin(obliquity_rad) * tan_lat * math.sin(armc_rad - cusp_ra_rad)
     )
-    return (math.atan2(y_component, x_component) * RAD2DEG) % 360.0
+    return (math.atan2(y, x) * RAD2DEG) % 360.0
 
 
 def _apc(armc: float, obliquity: float, lat: float) -> list[float]:
     """
     APC (Ascendant Parallel Circle) house system.
 
-    Intermediate cusps are generated from the trisection of the ascendant's
-    diurnal and nocturnal arcs on a small circle parallel to the ecliptic,
-    then projected back to the ecliptic via the ascendant's declination.
-    See ``_apc_sector`` for the geometric construction.
+    GEOMETRIC ONTOLOGY AND DERIVATION:
+        The Ascendant (ASC) is a direction vector v_asc on the celestial sphere, defined by
+        the intersection of the ecliptic plane and the observer's eastern horizon plane.
+        The governing event for the APC system is the horizon-crossing condition of the Ascendant.
+        At the instant of rising, the Ascendant's unit direction vector satisfies the horizon
+        orthogonal relationship:
+            v_asc · Zenith = 0
+            
+        For an observer at geographic latitude φ and local sidereal time LST (ARMC), the
+        Zenith vector in equatorial coordinates is:
+            Zenith = [cos(φ)*cos(ARMC), cos(φ)*sin(ARMC), sin(φ)]^T
+            
+        And the Ascendant vector at its parallel circle of declination δ_asc is:
+            v_asc = [cos(δ_asc)*cos(α_asc), cos(δ_asc)*sin(α_asc), sin(δ_asc)]^T
+            
+        Expanding the dot product v_asc · Zenith = 0:
+            cos(δ_asc)*cos(φ)*cos(α_asc - ARMC) + sin(δ_asc)*sin(φ) = 0
+            
+        Dividing by cos(δ_asc)*cos(φ) yields:
+            cos(α_asc - ARMC) = -tan(δ_asc)*tan(φ)
+            
+        By definition, the Diurnal Semi-Arc of the Ascendant, DSA_asc, is the equatorial
+        hour angle difference from the meridian to the horizon crossing, which satisfies:
+            cos(DSA_asc) = -tan(δ_asc)*tan(φ)
+            
+        Using the classical ascensional difference, asc_ad, where DSA_asc = π/2 + asc_ad,
+        the horizon-crossing condition maps to the exact classical ascending-terms formula:
+            asc_ad = atan(p·cos(ARMC) / (1 + p·sin(ARMC)))
+        where:
+            p = tan(lat)·tan(obl)
+            
+        This geometric identity is exact and bridges the spatial vector-orthogonal definition
+        of the Ascendant horizon-crossing event to the classical ratio-of-terms formulation.
+
+    COMPLETE ARC DOCTRINE (all 12 cusps):
+        The eight intermediate cusps lie on the Ascendant's parallel declination circle
+        and are trisected across the diurnal (DSA) and nocturnal (NSA) semi-arcs:
+            Upper arc (MC → ASC, DSA_asc wide):
+                H11 = RA(ASC) − 2·DSA/3
+                H12 = RA(ASC) − 1·DSA/3
+            Lower arc (ASC → IC → DSC, NSA_asc = π − DSA_asc per half):
+                H2  = RA(ASC) + 1·NSA/3
+                H3  = RA(ASC) + 2·NSA/3
+                H5  = RA(ASC) + 4·NSA/3
+                H6  = RA(ASC) + 5·NSA/3
+            Opposite upper arc (DSC → MC):
+                H8  = RA(ASC) − 5·DSA/3
+                H9  = RA(ASC) − 4·DSA/3
+            Cardinal cusps set directly (H1=ASC, H4=IC, H7=DSC, H10=MC).
+
+    BRANCH SELECTION DOCTRINE:
+        The projection from equatorial right ascension on the parallel circle to ecliptic
+        longitude has two antipodal solutions spaced exactly 180° apart. We resolve this
+        ambiguity through two explicit, geometrically-grounded branch selection policies:
+
+        1. Projection-to-Cardinal Frame Realignment (mc_shifted):
+           The projection primitive _apc_project is anchored to ARMC, and thus its mathematical
+           meridian is the geometric MC (mc_geometric). However, for observer locations where the
+           above-horizon MC (mc_visible) is flipped by 180 degrees from mc_geometric, the raw
+           projected intermediate cusps will land in the hemisphere opposite to mc_visible.
+           We detect this frame mismatch directly by checking if mc_visible and mc_geometric are
+           in opposite hemispheres (separated by > 90 degrees). If so, we flip the raw cusps by 180°
+           to realign them with the visible MC.
+
+        2. Polar-Cap Branch (polar_flipped):
+           At latitudes exceeding the polar circle limit (|latitude| >= 90° − obliquity),
+           the Ascendant's parallel circle can become circumpolar or sink completely below
+           the horizon, causing a coordinate singularity. Under these conditions, the ecliptic
+           projection of the Ascendant's right ascension (ra_asc) can flip to the antipodal
+           ecliptic hemisphere (shifted by 180°).
+           
+           DETECTION DOCTRINE: We evaluate a probe projection at ra_asc. Under correct branch conditions,
+           projecting ra_asc through _apc_project must recover the true Ascendant (asc). If the
+           angular gap between this probe and the true Ascendant exceeds 90°, the projection is
+           flipped. The 90° threshold is a robust boundary because the branch solutions are
+           exactly 180° apart, leaving zero ambiguity.
+           This check is evaluated as a subordinate branch when mc_shifted is False.
+
+        When either detection doctrine triggers, a unified 180° correction is applied to all
+        eight intermediate cusps to align them with the correct ecliptic branch.
+
+    Raises:
+        ValueError: Propagated if final cusp normalization fails.
+
+    Side effects:
+        None
     """
     mc_geometric = _mc_from_armc(armc, obliquity, lat)
     mc_visible = _mc_above_horizon(mc_geometric, obliquity, lat)
     asc = _asc_from_armc(armc, obliquity, lat)
 
-    lat_rad = lat * DEG2RAD
-    obliquity_rad = obliquity * DEG2RAD
-    armc_rad = armc * DEG2RAD
+    lat_r  = lat * DEG2RAD
+    obl_r  = obliquity * DEG2RAD
+    armc_r = armc * DEG2RAD
 
-    cusps = [
-        _apc_sector(h, lat_rad, obliquity_rad, armc_rad)
-        for h in range(1, 13)
-    ]
+    _POLAR_EPS = 1e-6
+    abs_lat = abs(lat)
+    if abs_lat > 90.0 - _POLAR_EPS:
+        asc_ad = 0.0
+        tan_lat = 0.0
+    else:
+        tan_lat = math.tan(lat_r)
+        p = tan_lat * math.tan(obl_r)
+        denom = 1.0 + p * math.sin(armc_r)
+        numer = p * math.cos(armc_r)
+        asc_ad = (math.copysign(math.pi / 2.0, numer)
+                  if abs(denom) < 1e-12
+                  else math.atan(numer / denom))
 
-    # Anchor cardinal cusps to canonical ARMC-based axes.
-    cusps[9] = mc_visible
-    cusps[3] = (mc_visible + 180.0) % 360.0
+    dsa = math.pi / 2.0 + asc_ad
+    nsa = math.pi / 2.0 - asc_ad
+    ra_asc = armc_r + asc_ad + math.pi / 2.0
 
-    mc_shifted = abs((mc_visible - mc_geometric + 180.0) % 360.0 - 180.0) > 90.0
-    if mc_shifted:
-        for i in (1, 2, 4, 5, 7, 8, 10, 11):
-            cusps[i] = (cusps[i] + 180.0) % 360.0
+    proj = _apc_project
+    h2_raw  = proj(ra_asc + 1.0 * nsa / 3.0, dsa, tan_lat, armc_r, obl_r)
+    h3_raw  = proj(ra_asc + 2.0 * nsa / 3.0, dsa, tan_lat, armc_r, obl_r)
+    h5_raw  = proj(ra_asc + 4.0 * nsa / 3.0, dsa, tan_lat, armc_r, obl_r)
+    h6_raw  = proj(ra_asc + 5.0 * nsa / 3.0, dsa, tan_lat, armc_r, obl_r)
+    h8_raw  = proj(ra_asc - 5.0 * dsa / 3.0, dsa, tan_lat, armc_r, obl_r)
+    h9_raw  = proj(ra_asc - 4.0 * dsa / 3.0, dsa, tan_lat, armc_r, obl_r)
+    h11_raw = proj(ra_asc - 2.0 * dsa / 3.0, dsa, tan_lat, armc_r, obl_r)
+    h12_raw = proj(ra_asc - 1.0 * dsa / 3.0, dsa, tan_lat, armc_r, obl_r)
 
-    # At critical latitudes, enforce Asc hemisphere parity before final anchors.
-    asc_gap = abs(((cusps[0] - asc + 180.0) % 360.0) - 180.0)
-    if (not mc_shifted) and abs(lat) >= 90.0 - obliquity and asc_gap > 90.0:
-        cusps = [normalize_degrees(c + 180.0) for c in cusps]
+    # 1. Projection-to-Cardinal Frame Realignment (mc_shifted)
+    mc_shifted = abs(((mc_visible - mc_geometric + 180.0) % 360.0) - 180.0) > 90.0
 
-    cusps[0] = asc
-    cusps[6] = (asc + 180.0) % 360.0
+    # 2. Polar-Cap Branch Detection (polar_flipped)
+    polar_flipped = False
+    if not mc_shifted and (abs_lat >= 90.0 - obliquity):
+        probe = proj(ra_asc, dsa, tan_lat, armc_r, obl_r)
+        probe_gap = abs(((probe - asc + 180.0) % 360.0) - 180.0)
+        polar_flipped = probe_gap > 90.0
 
+    # Apply unified branch correction
+    branch_flip_required = mc_shifted or polar_flipped
+    if branch_flip_required:
+        h2  = (h2_raw  + 180.0) % 360.0
+        h3  = (h3_raw  + 180.0) % 360.0
+        h5  = (h5_raw  + 180.0) % 360.0
+        h6  = (h6_raw  + 180.0) % 360.0
+        h8  = (h8_raw  + 180.0) % 360.0
+        h9  = (h9_raw  + 180.0) % 360.0
+        h11 = (h11_raw + 180.0) % 360.0
+        h12 = (h12_raw + 180.0) % 360.0
+    else:
+        h2, h3, h5, h6, h8, h9, h11, h12 = (
+            h2_raw, h3_raw, h5_raw, h6_raw, h8_raw, h9_raw, h11_raw, h12_raw
+        )
+
+    ic  = (mc_visible + 180.0) % 360.0
+    dsc = (asc       + 180.0) % 360.0
+    cusps = [asc, h2, h3, ic, h5, h6, dsc, h8, h9, mc_visible, h11, h12]
     return _finalize_cusps(cusps, context="_apc")
 
 
@@ -2242,6 +2869,7 @@ def calculate_houses(
     system:    str = HouseSystem.PLACIDUS,
     *,
     policy:          HousePolicy | None = None,
+    sun_longitude:   float | None = None,
     ayanamsa_offset: float | None = None,
 ) -> HouseCusps:
     """
@@ -2305,6 +2933,9 @@ def calculate_houses(
             Defaults to HouseSystem.PLACIDUS.
         policy: HousePolicy governing fallback doctrine.  Keyword-only.
             Defaults to HousePolicy.default() (silent fallback, current behavior).
+        sun_longitude: Optional geocentric tropical solar longitude (degrees).
+            If supplied, SUNSHINE and SOLAR_SIGN houses use this value directly
+            instead of resolving it from the planetary oracle.
 
     Returns:
         A HouseCusps vessel containing the twelve cusp longitudes (degrees
@@ -2319,8 +2950,9 @@ def calculate_houses(
             outside computable ranges.
 
     Side effects:
-        - Lazily imports moira.planets.sun_longitude when system is
-          HouseSystem.SUNSHINE or HouseSystem.SOLAR_SIGN; no other import-time side effects.
+        - None beyond subordinate numerical calls. SUNSHINE / SOLAR_SIGN may
+          resolve the Sun's longitude through the module-scoped solar resolver
+          if ``sun_longitude`` is not supplied explicitly.
     """
     active_policy = _normalize_house_policy(policy)
     jd_tt    = ut_to_tt(jd_ut)
@@ -2336,10 +2968,9 @@ def calculate_houses(
     vertex      = _asc_from_armc((armc + 90.0) % 360.0, obliquity, -latitude)
     anti_vertex = (vertex + 180.0) % 360.0
 
-    sun_lon = None
-    if system in {HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN}:
-        from .planets import sun_longitude
-        sun_lon = sun_longitude(jd_ut)
+    sun_lon = sun_longitude
+    if sun_lon is None and system in {HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN}:
+        sun_lon = _solar_house_anchor_longitude(jd_ut)
 
     return houses_from_armc(
         armc,
@@ -2368,51 +2999,48 @@ which house the point is assigned to — it only sets exact_on_cusp.
 @dataclass(frozen=True, slots=True)
 class HousePlacement:
     """
-    POINT-TO-HOUSE MEMBERSHIP: Result vessel for a single house assignment.
+    RITE: The House Membership Witness
 
-    Records the outcome of assigning one ecliptic longitude to a house under
-    the boundary doctrine encoded in assign_house().  All fields needed to
-    audit or reproduce the result are present.
+    THEOREM: This dataclass records the assignment of one ecliptic longitude to one house under an existing house figure.
 
-    Fields:
-        house
-            The house number (1–12) to which `longitude` was assigned.
-            Derived from the cusp intervals in `house_cusps`.
+    RITE OF PURPOSE:
+        This vessel exists so point-to-house membership can be audited as a
+        distinct truth product rather than an ephemeral integer result. It
+        preserves the placed longitude, opening cusp, and governing HouseCusps
+        figure in one immutable record. Without it, later layers would lose
+        the doctrinal context of placement.
 
-        longitude
-            The ecliptic longitude (degrees, [0, 360)) that was placed.
-            This is the value passed to assign_house(); it is stored verbatim
-            so the caller can always confirm what was placed.
+    LAW OF OPERATION:
+        Responsibilities:
+            - Record the assigned house number for one longitude.
+            - Preserve the governing HouseCusps vessel.
+            - Preserve whether the longitude landed on the opening cusp.
+            - Enforce internal consistency between house and cusp_longitude.
+        Non-responsibilities:
+            - Does not compute house cusps.
+            - Does not derive boundary or angularity profiles.
+        Dependencies:
+            - A valid HouseCusps vessel.
+            - Boundary doctrine from assign_house().
+        Structural invariants:
+            - house is in 1..12.
+            - longitude and cusp_longitude live in [0, 360).
+            - cusp_longitude equals house_cusps.cusps[house - 1].
+        Side effects:
+            - None
+        Failure behavior:
+            - Raises ValueError through invariant enforcement when fields disagree.
 
-        house_cusps
-            The HouseCusps vessel that determined the placement.  Carries the
-            full truth trail: requested/effective system, fallback, fallback
-            reason, classification, and policy.
+    Canon: None (No applicable canon)
 
-        exact_on_cusp
-            True iff `longitude` coincides with the opening cusp of `house`
-            within _MEMBERSHIP_CUSP_TOLERANCE degrees.  The point is still
-            assigned to that house (the opening cusp belongs to the house it
-            opens).  False in all other cases.
-
-        cusp_longitude
-            The ecliptic longitude of the cusp that opens `house`.
-            Convenience copy of house_cusps.cusps[house - 1].
-
-    Boundary doctrine (mirrored from assign_house()):
-        - House n occupies the half-open interval [cusps[n-1], cusps[n % 12]).
-        - Spans are forward arcs on the circle: (end − start) % 360°.
-        - The opening cusp is included; the next cusp is excluded.
-        - Exact-on-cusp detection uses _MEMBERSHIP_CUSP_TOLERANCE.
-        - The membership rule is identical for all system families.
-
-    This dataclass is frozen (immutable) and carries no computation logic.
-
-    Future layers that are NOT the responsibility of this class:
-        - Angularity scoring or cusp-zone analysis
-        - System comparison or ranked placement
-        Cusp proximity and boundary sensitivity live in Phase 6
-        (HouseBoundaryProfile / describe_boundary()), which consumes this vessel.
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "membership_vessel",
+      "owns_state": true,
+      "mutates_external_state": false,
+      "requires": ["house", "longitude", "house_cusps", "exact_on_cusp", "cusp_longitude"],
+      "guarantees": ["house/cusp alignment", "immutable placement witness"]
+    }
     """
     house:         int
     longitude:     float
@@ -2434,56 +3062,23 @@ class HousePlacement:
 
 def assign_house(longitude: float, house_cusps: HouseCusps) -> HousePlacement:
     """
-    Assign an ecliptic longitude to a house (1–12) using an existing HouseCusps.
+    Assign an ecliptic longitude to a house (1?12) using an existing HouseCusps.
 
-    POINT-TO-HOUSE MEMBERSHIP:
-        Implements the canonical interval rule under explicit boundary doctrine.
-        The result is a HousePlacement vessel that records the house number,
-        the placed longitude, the cusp vessel used, the exact-on-cusp flag,
-        and the opening cusp longitude.
-
-    BOUNDARY DOCTRINE:
-        Interval rule:
-            House n occupies the half-open interval [cusps[n-1], cusps[n % 12]).
-            The opening cusp is included in the house it opens.
-            The closing cusp (= opening cusp of the next house) is excluded.
-
-        Wraparound:
-            Cusp positions are ecliptic longitudes in [0, 360).  They need not
-            increase monotonically; the span of a house is always the *forward*
-            arc on the circle:
-                span = (next_cusp − this_cusp) % 360°
-            A point at `longitude` falls in house n when:
-                (longitude − cusps[n-1]) % 360° < span_n
-            (Strictly less than, so the next cusp is excluded.)
-
-        Exact-on-cusp:
-            When (longitude − cusps[n-1]) % 360° < _MEMBERSHIP_CUSP_TOLERANCE,
-            exact_on_cusp is True.  The point is still unambiguously assigned
-            to house n (not split between houses).
-
-        System-family independence:
-            The membership rule is identical for EQUAL, QUADRANT, WHOLE_SIGN,
-            and SOLAR families.  The cusp positions differ by system; the rule
-            does not.
-
-    GUARANTEES:
-        - Always returns a house in [1, 12].
-        - Exactly one house claims any given longitude (no gaps, no overlaps).
-        - The opening cusp of a house belongs to that house.
-        - A longitude numerically equal to two consecutive cusps (degenerate
-          zero-width house) is assigned to the house that opens at that cusp.
+    This applies the canonical half-open interval rule under explicit boundary
+    doctrine and returns a HousePlacement witness for the resulting house.
 
     Args:
         longitude: Ecliptic longitude of the point, in degrees.
-            Will be normalised to [0, 360) before placement.
-        house_cusps: A HouseCusps result from calculate_houses().
+        house_cusps: A HouseCusps result from house computation.
 
     Returns:
         A frozen HousePlacement describing which house the point occupies.
 
     Raises:
-        ValueError: If house_cusps.cusps does not contain exactly 12 values.
+        ValueError: If ``house_cusps.cusps`` does not contain exactly 12 values.
+
+    Side effects:
+        None
     """
     if len(house_cusps.cusps) != 12:
         raise ValueError(
@@ -2547,93 +3142,48 @@ must pass a different value to declare a different threshold explicitly.
 @dataclass(frozen=True, slots=True)
 class HouseBoundaryProfile:
     """
-    CUSP PROXIMITY / BOUNDARY SENSITIVITY: Boundary context for a placement.
+    RITE: The Boundary Sensitivity Witness
 
-    Enriches an existing HousePlacement with the distances from the placed
-    longitude to the cusps that bracket its house, and a near-cusp flag
-    evaluated against an explicit threshold.
+    THEOREM: This dataclass enriches one house placement with forward-arc cusp distances and an explicit near-cusp judgment.
 
-    This vessel does NOT re-perform house assignment.  All placement truth
-    (house number, longitude, house_cusps, exact_on_cusp) is inherited from
-    the source HousePlacement via the `placement` field.
+    RITE OF PURPOSE:
+        This vessel exists so cusp proximity can be reasoned about without
+        re-performing house assignment or smuggling hidden orb doctrine into
+        later interpretation. It preserves the threshold and both bracket
+        distances as first-class result truth. Without it, boundary
+        sensitivity would be reduced to ad hoc arithmetic.
 
-    Fields:
-        placement
-            The HousePlacement that was profiled.  Authoritative source of
-            house number, longitude, and the HouseCusps that computed the
-            cusps.  Boundary profiling reads from this; it never modifies or
-            overrides it.
+    LAW OF OPERATION:
+        Responsibilities:
+            - Record opening and closing cusp longitudes for one placement.
+            - Record forward-arc distances within the assigned house.
+            - Record the declared near-cusp threshold and resulting judgment.
+            - Enforce additive distance invariants.
+        Non-responsibilities:
+            - Does not assign houses.
+            - Does not interpret angularity or chart emphasis.
+        Dependencies:
+            - A valid HousePlacement vessel.
+            - Forward-arc doctrine from describe_boundary().
+        Structural invariants:
+            - Cusp longitudes remain in [0, 360).
+            - dist_to_opening + dist_to_closing equals house_span.
+            - is_near_cusp matches the stored threshold test.
+        Side effects:
+            - None
+        Failure behavior:
+            - Raises ValueError through invariant enforcement when distances or threshold are inconsistent.
 
-        opening_cusp
-            Ecliptic longitude of the cusp that opens the assigned house.
-            Equal to placement.house_cusps.cusps[placement.house - 1].
-            Identical to placement.cusp_longitude.
+    Canon: None (No applicable canon)
 
-        closing_cusp
-            Ecliptic longitude of the cusp that closes the assigned house
-            (= opening cusp of the next house).
-            Equal to placement.house_cusps.cusps[placement.house % 12].
-
-        dist_to_opening
-            Forward arc (degrees) from the opening cusp to the placed
-            longitude: (longitude − opening_cusp) % 360°.
-            Always ≥ 0.  Equals 0.0 when placement.exact_on_cusp is True.
-            Equals dist from H-cusp to the point, measured inside the house.
-
-        dist_to_closing
-            Forward arc (degrees) from the placed longitude to the closing
-            cusp: (closing_cusp − longitude) % 360°.
-            Always > 0 for any placement inside the house (the closing cusp
-            is excluded by the Phase 5 interval rule, so the point never
-            coincides with it).  Equals house_span when exact_on_cusp is True.
-
-        house_span
-            Total arc of the assigned house in degrees.
-            Invariant: dist_to_opening + dist_to_closing == house_span.
-
-        nearest_cusp
-            Longitude of whichever cusp (opening or closing) is angularly
-            closer to the placed longitude under the within-house minimal
-            distance.  When both distances are equal (midpoint of the house),
-            the opening cusp is preferred.
-
-        nearest_cusp_distance
-            min(dist_to_opening, dist_to_closing).
-            Always ≤ house_span / 2.
-            Equals 0.0 when exact_on_cusp is True (opening cusp is nearest,
-            dist_to_opening is 0).
-
-        near_cusp_threshold
-            The threshold (degrees) declared by the caller and used to compute
-            is_near_cusp.  Stored so the result is fully self-describing.
-
-        is_near_cusp
-            True iff nearest_cusp_distance < near_cusp_threshold.
-            When exact_on_cusp is True, nearest_cusp_distance is 0; is_near_cusp
-            is True for any positive threshold.
-
-    Distance doctrine:
-        All distances are **forward arcs** on the ecliptic circle:
-            dist_to_opening  = (longitude − opening_cusp) % 360°
-            dist_to_closing  = (closing_cusp − longitude) % 360°
-        This preserves the Phase 5 interval direction.  Both are non-negative
-        and their sum is always house_span (up to floating-point precision).
-        nearest_cusp_distance is the minimum of the two — a within-house
-        measure, not the global minimal arc to any cusp on the zodiac.
-
-    Relationship with exact_on_cusp (Phase 5):
-        When placement.exact_on_cusp is True:
-            dist_to_opening  == 0.0  (within 1e-9°)
-            nearest_cusp     == opening_cusp
-            nearest_cusp_distance == 0.0 (or < 1e-9°)
-            is_near_cusp     == True  (for any positive threshold)
-        No special-casing is applied; the arithmetic is naturally consistent.
-
-    This dataclass is frozen (immutable) and carries no computation logic.
-
-    Future layers that are NOT the responsibility of this class:
-        - Angularity classification (Phase 7: HouseAngularityProfile)
-        - System comparison
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "boundary_profile_vessel",
+      "owns_state": true,
+      "mutates_external_state": false,
+      "requires": ["placement", "opening_cusp", "closing_cusp", "distance fields", "threshold"],
+      "guarantees": ["forward-arc consistency", "immutable cusp-boundary profile"]
+    }
     """
     placement:             HousePlacement
     opening_cusp:          float
@@ -2675,54 +3225,23 @@ def describe_boundary(
     """
     Derive boundary context for an existing HousePlacement.
 
-    CUSP PROXIMITY / BOUNDARY SENSITIVITY:
-        Computes how far the placed longitude sits from the cusps that bracket
-        its assigned house, and whether it is considered near-cusp under the
-        declared threshold.  House assignment is NOT re-performed; the
-        placement's house number and longitude are authoritative.
-
-    DISTANCE DOCTRINE:
-        dist_to_opening:
-            Forward arc from the opening cusp to the placed longitude.
-            (longitude − opening_cusp) % 360°.
-            Equals 0 when placement.exact_on_cusp is True.
-
-        dist_to_closing:
-            Forward arc from the placed longitude to the closing cusp.
-            (closing_cusp − longitude) % 360°.
-            Always positive: Phase 5 assigns the closing cusp to the next
-            house, so a point can never land exactly on the closing cusp.
-
-        house_span:
-            Total forward arc of the house.
-            Invariant: dist_to_opening + dist_to_closing == house_span.
-
-        nearest_cusp / nearest_cusp_distance:
-            The cusp that is closer (min of the two forward distances).
-            Tie-break: opening cusp preferred.
-            nearest_cusp_distance is always ≤ house_span / 2.
-
-        is_near_cusp:
-            True iff nearest_cusp_distance < near_cusp_threshold.
-
-    NEAR-CUSP THRESHOLD:
-        The `near_cusp_threshold` argument is keyword-only and defaults to
-        _NEAR_CUSP_DEFAULT_THRESHOLD (3.0°).  It is a caller-declared doctrine
-        value, not an internal constant; any positive float is accepted.  The
-        chosen threshold is stored verbatim in the result for auditability.
+    This computes forward-arc distances from the placed longitude to the
+    opening and closing cusps of its assigned house without re-performing
+    house assignment.
 
     Args:
         placement: A HousePlacement returned by assign_house().
         near_cusp_threshold: Forward-arc threshold in degrees below which a
-            placement is considered near-cusp.  Keyword-only.
-            Must be > 0.  Defaults to 3.0°.
+            placement is considered near-cusp.
 
     Returns:
-        A frozen HouseBoundaryProfile enriching the placement with boundary
-        context.
+        A frozen HouseBoundaryProfile enriching the placement with boundary context.
 
     Raises:
-        ValueError: If near_cusp_threshold is not positive.
+        ValueError: If ``near_cusp_threshold`` is not positive.
+
+    Side effects:
+        None
     """
     if near_cusp_threshold <= 0.0:
         raise ValueError(
@@ -2768,7 +3287,31 @@ def describe_boundary(
 
 class HouseAngularity(str, Enum):
     """
-    Structural angularity category of a house.
+    RITE: The Angularity Triad
+
+    THEOREM: This enum records the three traditional angularity categories assigned from house number alone.
+
+    RITE OF PURPOSE:
+        This enum exists so angular house doctrine is preserved as explicit
+        symbolic truth rather than ad hoc string literals. It gives later
+        vessels and comparisons a stable categorical surface for structural
+        house power. Without it, angularity would be harder to validate and compare.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Declare the ANGULAR, SUCCEDENT, and CADENT categories.
+            - Preserve the Phase 7 house-power taxonomy as stable values.
+        Non-responsibilities:
+            - Does not assign houses.
+            - Does not score or weight category strength.
+        Dependencies:
+            - House-number doctrine encoded in _ANGULARITY_MAP.
+        Structural invariants:
+            - Values remain the canonical category labels for this Pillar.
+        Side effects:
+            - None
+        Failure behavior:
+            - None
 
     The traditional three-tier house-power doctrine assigns every house to
     one of three categories based on its position relative to the four
@@ -2802,6 +3345,17 @@ class HouseAngularity(str, Enum):
         - Weighting or scoring the three categories
         - Combining angularity with cusp proximity for a compound strength value
         - System-comparison ranking
+
+    Canon: None (No applicable canon)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "enum",
+      "owns_state": false,
+      "mutates_external_state": false,
+      "requires": [],
+      "guarantees": ["stable angularity taxonomy"]
+    }
     """
     ANGULAR   = "angular"
     SUCCEDENT = "succedent"
@@ -2827,53 +3381,46 @@ _ANGULARITY_MAP: dict[int, HouseAngularity] = {
 @dataclass(frozen=True, slots=True)
 class HouseAngularityProfile:
     """
-    ANGULARITY / HOUSE-POWER STRUCTURE: Structural positional status of a placement.
+    RITE: The Angularity Witness
 
-    Enriches an existing HousePlacement with its traditional angularity
-    category (ANGULAR, SUCCEDENT, or CADENT), derived from the assigned
-    house number alone.
+    THEOREM: This dataclass records the angularity category of one existing house placement.
 
-    This vessel does NOT re-perform house assignment.  The placement's house
-    number is authoritative; angularity is read from it via the static
-    _ANGULARITY_MAP lookup.
+    RITE OF PURPOSE:
+        This vessel exists so structural house power can be attached to a
+        placement without recomputing membership or smuggling interpretation
+        into the lower layers. It preserves the assigned category and its
+        originating placement as one immutable witness. Without it, category
+        truth would have to be recomputed ad hoc.
 
-    Fields:
-        placement
-            The HousePlacement that was profiled.  Authoritative source of
-            the house number and all prior truth (longitude, house_cusps,
-            exact_on_cusp, cusp_longitude).  This layer reads from placement;
-            it never modifies or overrides it.
+    LAW OF OPERATION:
+        Responsibilities:
+            - Record the angularity category for one placement.
+            - Preserve the originating HousePlacement.
+            - Enforce house/category consistency against _ANGULARITY_MAP.
+        Non-responsibilities:
+            - Does not assign houses.
+            - Does not compute cusp proximity or chart-wide strength.
+        Dependencies:
+            - A valid HousePlacement vessel.
+            - _ANGULARITY_MAP doctrine.
+        Structural invariants:
+            - house matches placement.house.
+            - category matches _ANGULARITY_MAP[house].
+        Side effects:
+            - None
+        Failure behavior:
+            - Raises ValueError through invariant enforcement when house/category truth disagrees.
 
-        category
-            The HouseAngularity value for the assigned house.
-            Derived from placement.house via _ANGULARITY_MAP.
-            Always one of ANGULAR, SUCCEDENT, CADENT.
+    Canon: None (No applicable canon)
 
-        house
-            Convenience copy of placement.house (1–12).
-            Redundant with placement.house; present so callers can read
-            both category and house number from a single vessel without
-            traversing the placement chain.
-
-    Angularity doctrine:
-        ANGULAR   — house in {1, 4, 7, 10}
-        SUCCEDENT — house in {2, 5, 8, 11}
-        CADENT    — house in {3, 6, 9, 12}
-        The mapping is identical for all house systems and all latitudes.
-        No cusp proximity, orb, or boundary context influences the category
-        at this phase.
-
-    Relationship with Phase 6 (HouseBoundaryProfile):
-        describe_boundary() and describe_angularity() are independent
-        enrichment functions that both consume a HousePlacement.  They can
-        be called in any order or independently; neither depends on the other.
-
-    This dataclass is frozen (immutable) and carries no computation logic.
-
-    Future layers that are NOT the responsibility of this class:
-        - Compound strength scores combining angularity and cusp proximity
-        - System comparison or chart-wide power distribution
-        - Harmonic overlays
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "angularity_profile_vessel",
+      "owns_state": true,
+      "mutates_external_state": false,
+      "requires": ["placement", "category", "house"],
+      "guarantees": ["house/category consistency", "immutable angularity witness"]
+    }
     """
     placement: HousePlacement
     category:  HouseAngularity
@@ -2895,33 +3442,23 @@ class HouseAngularityProfile:
 
 def describe_angularity(placement: HousePlacement) -> HouseAngularityProfile:
     """
-    Derive the angularity / house-power profile for an existing HousePlacement.
+    Derive the angularity or house-power profile for an existing HousePlacement.
 
-    ANGULARITY / HOUSE-POWER STRUCTURE:
-        Maps the assigned house number to its traditional structural category
-        (ANGULAR, SUCCEDENT, or CADENT) using a static lookup table.
-        House assignment is NOT re-performed; placement.house is authoritative.
-
-    DOCTRINE:
-        ANGULAR   — houses 1, 4, 7, 10  (the four cardinal angles).
-        SUCCEDENT — houses 2, 5, 8, 11  (follow the angles).
-        CADENT    — houses 3, 6, 9, 12  (precede the angles).
-
-        The mapping is purely house-number-based.  No cusp proximity, no orb,
-        no latitude sensitivity, and no system-family differences are applied
-        at this phase.  The doctrine is identical for all 18 supported house
-        systems because it derives from the assigned house number alone.
-
-    RELATIONSHIP WITH OTHER LAYERS:
-        describe_angularity() and describe_boundary() are independent; neither
-        depends on the other.  Both consume a HousePlacement and can be called
-        in any order.
+    This maps the assigned house number to its traditional structural category
+    using the static angularity doctrine. House assignment is not re-performed;
+    ``placement.house`` is authoritative.
 
     Args:
         placement: A HousePlacement returned by assign_house().
 
     Returns:
         A frozen HouseAngularityProfile with category and house number.
+
+    Raises:
+        None under normal operation.
+
+    Side effects:
+        None
     """
     house    = placement.house
     category = _ANGULARITY_MAP[house]
@@ -2945,56 +3482,45 @@ def _circular_diff(a: float, b: float) -> float:
 @dataclass(frozen=True, slots=True)
 class HouseSystemComparison:
     """
-    SYSTEM COMPARISON: Cusp-level diff of two HouseCusps results.
+    RITE: The Cusp Comparison Witness
 
-    Compares two independently-computed HouseCusps objects that were produced
-    for the same moment and location under (potentially) different house
-    systems.  The comparison is structural and factual; it carries no
-    interpretation of which system is "better".
+    THEOREM: This dataclass records a cusp-level comparison between two computed house figures.
 
-    This vessel does NOT recompute any cusps.  All cusp values are taken
-    verbatim from the source HouseCusps objects.
+    RITE OF PURPOSE:
+        This vessel exists so system comparison remains an explicit factual
+        product rather than an informal diff performed at the call site. It
+        preserves directional cusp deltas together with fallback and family
+        agreement truth. Without it, comparison logic would be harder to audit.
 
-    Fields:
-        left
-            The first HouseCusps (the reference).
+    LAW OF OPERATION:
+        Responsibilities:
+            - Record the left and right HouseCusps being compared.
+            - Record 12 signed circular cusp deltas.
+            - Record effective-system, fallback, and family agreement flags.
+        Non-responsibilities:
+            - Does not recompute cusps.
+            - Does not rank one system above another.
+        Dependencies:
+            - Two valid HouseCusps vessels.
+            - Signed circular difference doctrine.
+        Structural invariants:
+            - cusp_deltas has 12 entries in (-180, 180].
+            - systems_agree and fallback_differs match the stored source vessels.
+        Side effects:
+            - None
+        Failure behavior:
+            - Raises ValueError through invariant enforcement when stored deltas or flags are inconsistent.
 
-        right
-            The second HouseCusps (compared against left).
+    Canon: None (No applicable canon)
 
-        cusp_deltas
-            Tuple of 12 signed circular differences, one per house:
-                cusp_deltas[i] = circular_diff(left.cusps[i], right.cusps[i])
-            Each value is in the range (−180°, 180°].
-            Positive means right cusp is ahead (counter-clockwise) of left.
-            Negative means right cusp is behind left.
-            Zero means the cusps coincide within floating-point precision.
-
-        systems_agree
-            True iff left.effective_system == right.effective_system.
-            Uses the *effective* system (the code that actually produced the
-            cusps), not the requested system.  Two calls that requested
-            different systems but both fell back to Porphyry will agree.
-
-        fallback_differs
-            True iff left.fallback != right.fallback.
-            Surfaces the case where one call fell back and the other did not,
-            which may indicate an asymmetric policy or latitude condition.
-
-        families_differ
-            True iff the doctrinal families of the two effective systems differ.
-            Derived from left.classification.family and right.classification.family.
-            None-safe: if either classification is None, families_differ is True.
-
-    Comparison doctrine:
-        - Cusp delta uses the signed circular difference (right − left),
-          preserving ecliptic direction.  The result is always in (−180, 180].
-        - systems_agree, fallback_differs, and families_differ all compare
-          effective-system properties, not requested-system properties.
-        - Requested-system truth is never discarded; it is readable via
-          left.system and right.system from the stored HouseCusps objects.
-
-    This dataclass is frozen (immutable) and carries no computation logic.
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "comparison_vessel",
+      "owns_state": true,
+      "mutates_external_state": false,
+      "requires": ["left", "right", "12 cusp deltas", "agreement flags"],
+      "guarantees": ["signed cusp-delta truth", "effective-system comparison fidelity"]
+    }
     """
     left:             HouseCusps
     right:            HouseCusps
@@ -3022,51 +3548,46 @@ class HouseSystemComparison:
 @dataclass(frozen=True, slots=True)
 class HousePlacementComparison:
     """
-    SYSTEM COMPARISON: Point-placement comparison across two or more systems.
+    RITE: The Placement Comparison Witness
 
-    Records where a single ecliptic longitude lands under each of two or more
-    independently-computed HouseCusps, and whether all systems agree on the
-    house assignment.
+    THEOREM: This dataclass records how one longitude is placed across two or more house figures.
 
-    This vessel does NOT recompute any house assignments.  The placements
-    tuple contains one HousePlacement per system, produced by assign_house()
-    for the same longitude under each system.
+    RITE OF PURPOSE:
+        This vessel exists so cross-system placement truth can be retained as
+        a first-class artifact rather than collapsed to a yes/no agreement
+        flag. It preserves every placement together with house-number and
+        angularity agreement truth. Without it, callers would lose the witness
+        chain needed for later audit.
 
-    Fields:
-        longitude
-            The ecliptic longitude that was placed (degrees, normalised to
-            [0, 360)).  Same value used for every placement in this comparison.
+    LAW OF OPERATION:
+        Responsibilities:
+            - Record the normalized longitude under comparison.
+            - Record the placements and house numbers for each compared system.
+            - Record house-number and angularity agreement truth.
+        Non-responsibilities:
+            - Does not recompute placements.
+            - Does not rank the compared systems.
+        Dependencies:
+            - At least two valid HousePlacement vessels.
+        Structural invariants:
+            - longitude is normalized to [0, 360).
+            - houses matches placement.house for every placement.
+            - all_agree matches the unique-house count.
+        Side effects:
+            - None
+        Failure behavior:
+            - Raises ValueError through invariant enforcement when stored placements disagree with summary fields.
 
-        placements
-            Tuple of HousePlacement objects, one per input HouseCusps, in the
-            same order as the systems were supplied to compare_placements().
-            Each carries the full truth trail: requested/effective system,
-            fallback, classification, policy.
+    Canon: None (No applicable canon)
 
-        houses
-            Tuple of house numbers (1–12), one per placement, in the same
-            order as placements.  Convenience copy; equivalent to reading
-            placement.house from each element of placements.
-
-        all_agree
-            True iff all house numbers in `houses` are identical.
-            A True value means every compared system places the longitude in
-            the same house.
-
-        angularity_agrees
-            True iff all placements share the same HouseAngularity category.
-            Derived via describe_angularity() at construction time.
-            Two systems may disagree on house number but agree on angularity
-            (e.g. both assign an angular house, just different ones).
-
-    Comparison doctrine:
-        - longitude is normalised to [0, 360) before placement.
-        - all_agree compares house numbers exactly; no tolerance is applied.
-        - angularity_agrees compares HouseAngularity category values.
-        - Requested-system truth is preserved on each placement's house_cusps.
-        - Requires at least 2 placements; compare_placements() enforces this.
-
-    This dataclass is frozen (immutable) and carries no computation logic.
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "placement_comparison_vessel",
+      "owns_state": true,
+      "mutates_external_state": false,
+      "requires": ["longitude", "placements", "houses", "agreement flags"],
+      "guarantees": ["placement summary fidelity", "immutable cross-system witness"]
+    }
     """
     longitude:         float
     placements:        tuple[HousePlacement, ...]
@@ -3100,30 +3621,22 @@ def compare_systems(left: HouseCusps, right: HouseCusps) -> HouseSystemCompariso
     """
     Produce a cusp-level comparison of two HouseCusps results.
 
-    SYSTEM COMPARISON:
-        Computes per-house signed circular cusp deltas and derives agreement
-        flags from the two HouseCusps objects.  No cusps are recomputed.
-
-    CUSP DELTA DOCTRINE:
-        For each house i (0–11):
-            cusp_deltas[i] = (right.cusps[i] − left.cusps[i]) mod ±180°
-        The signed circular difference preserves ecliptic direction:
-            Positive  → right cusp is counter-clockwise ahead of left.
-            Negative  → right cusp is behind left.
-            Near-zero → cusps coincide.
-        Range: (−180°, 180°].
-
-    AGREEMENT FLAGS:
-        systems_agree:    left.effective_system == right.effective_system.
-        fallback_differs: left.fallback != right.fallback.
-        families_differ:  classification families of the effective systems differ.
+    This computes per-house signed circular cusp deltas and derives the
+    agreement flags from the two stored HouseCusps vessels. No cusps are
+    recomputed.
 
     Args:
-        left:  First (reference) HouseCusps.
-        right: Second HouseCusps to compare against left.
+        left: First reference HouseCusps.
+        right: Second HouseCusps to compare against ``left``.
 
     Returns:
         A frozen HouseSystemComparison.
+
+    Raises:
+        None under normal operation.
+
+    Side effects:
+        None
     """
     deltas = tuple(
         _circular_diff(left.cusps[i], right.cusps[i]) for i in range(12)
@@ -3174,6 +3687,9 @@ def compare_placements(
 
     Raises:
         ValueError: If fewer than two HouseCusps are supplied.
+
+    Side effects:
+        None
     """
     if len(house_cusps_seq) < 2:
         raise ValueError(
@@ -3205,40 +3721,46 @@ def compare_placements(
 @dataclass(frozen=True, slots=True)
 class HouseOccupancy:
     """
-    CHART-WIDE DISTRIBUTION: Per-house occupancy record.
+    RITE: The Occupancy Witness
 
-    One HouseOccupancy exists for every house (1–12) inside a
-    HouseDistributionProfile.  It records which points from the input
-    sequence were assigned to this house.
+    THEOREM: This dataclass records which placed points occupy one house within a chart-wide distribution profile.
 
-    This vessel does NOT perform house assignment.  All placements are
-    produced upstream by distribute_points() via assign_house() and
-    stored here verbatim.
+    RITE OF PURPOSE:
+        This vessel exists so chart-wide distribution can preserve each house's
+        local population as an explicit result rather than anonymous counters.
+        It keeps occupant longitudes and placements aligned with the house they
+        occupy. Without it, distribution truth would lose local granularity.
 
-    Fields:
-        house
-            House number (1–12) this record describes.
+    LAW OF OPERATION:
+        Responsibilities:
+            - Record one house number and its occupant count.
+            - Preserve occupant longitudes and placements in input order.
+            - Record whether the house is empty.
+            - Enforce count and house-alignment invariants.
+        Non-responsibilities:
+            - Does not assign houses.
+            - Does not summarize the entire chart.
+        Dependencies:
+            - HousePlacement records produced upstream.
+        Structural invariants:
+            - count equals len(longitudes) and len(placements).
+            - every placement belongs to the recorded house.
+            - is_empty matches count == 0.
+        Side effects:
+            - None
+        Failure behavior:
+            - Raises ValueError through invariant enforcement when count or house alignment is inconsistent.
 
-        count
-            Number of points assigned to this house.  Equals len(longitudes).
+    Canon: None (No applicable canon)
 
-        longitudes
-            Tuple of normalised ecliptic longitudes (degrees, [0, 360)) of
-            the points assigned to this house, in the same order they
-            appeared in the input sequence supplied to distribute_points().
-
-        placements
-            Tuple of HousePlacement objects for each occupant, in the same
-            input order as longitudes.  Each carries the full truth trail
-            (house_cusps, effective_system, fallback, classification, policy).
-
-        is_empty
-            True iff count == 0.  Convenience flag; equivalent to count == 0.
-
-    Invariants:
-        count == len(longitudes) == len(placements)
-        is_empty == (count == 0)
-        All placements have placement.house == house.
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "occupancy_vessel",
+      "owns_state": true,
+      "mutates_external_state": false,
+      "requires": ["house", "count", "longitudes", "placements", "is_empty"],
+      "guarantees": ["count fidelity", "per-house placement alignment"]
+    }
     """
     house:      int
     count:      int
@@ -3258,70 +3780,46 @@ class HouseOccupancy:
 @dataclass(frozen=True, slots=True)
 class HouseDistributionProfile:
     """
-    CHART-WIDE DISTRIBUTION: Chart-wide house distribution analysis.
+    RITE: The Chart Distribution Witness
 
-    Summarises how a set of point longitudes distributes across the twelve
-    houses of one house system, including per-house occupancy, empty-house
-    detection, dominant-house identification, and angularity-category totals.
+    THEOREM: This dataclass records the chart-wide distribution of a point set across one house figure.
 
-    This vessel does NOT perform house assignment.  All placements are
-    produced by distribute_points() via assign_house() and stored in the
-    occupancies.
+    RITE OF PURPOSE:
+        This vessel exists so house distribution is preserved as explicit chart
+        structure rather than recomputed summaries scattered across callers. It
+        keeps per-house occupancies, dominant-house truth, and angularity
+        totals in one immutable record. Without it, higher interpretation
+        layers would lose provenance and internal consistency.
 
-    Fields:
-        house_cusps
-            The HouseCusps used for all placements in this profile.  Carries
-            full truth: requested/effective system, fallback, classification,
-            policy.
+    LAW OF OPERATION:
+        Responsibilities:
+            - Record the source HouseCusps and all per-house occupancies.
+            - Record total count, dominant houses, empty houses, and angularity totals.
+            - Enforce chart-wide count and occupancy invariants.
+        Non-responsibilities:
+            - Does not assign houses.
+            - Does not rank astrological importance beyond the stored counts.
+        Dependencies:
+            - One HouseCusps vessel and 12 HouseOccupancy vessels.
+        Structural invariants:
+            - occupancies and counts always have length 12.
+            - point_count equals sum(counts).
+            - angular_count + succedent_count + cadent_count equals point_count.
+        Side effects:
+            - None
+        Failure behavior:
+            - Raises ValueError through invariant enforcement when summary fields disagree with occupancies.
 
-        point_count
-            Total number of point longitudes that were placed.
-            Equals sum(occ.count for occ in occupancies).
+    Canon: None (No applicable canon)
 
-        occupancies
-            Tuple of 12 HouseOccupancy objects, one per house, ordered
-            house 1 → 12.  Always exactly 12 entries, even for empty houses.
-
-        counts
-            Tuple of 12 integers (convenience copy):
-                counts[i] == occupancies[i].count, for i in 0..11
-            counts[i] is the occupant count for house i+1.
-
-        empty_houses
-            Frozenset of house numbers (1–12) with zero occupants.
-
-        dominant_houses
-            Tuple of house numbers (1–12) whose occupant count equals
-            max(counts), sorted ascending.  Empty tuple if point_count == 0
-            (all counts are zero; no house is dominant).
-
-        angular_count
-            Total points assigned to houses 1, 4, 7, 10 (ANGULAR).
-
-        succedent_count
-            Total points assigned to houses 2, 5, 8, 11 (SUCCEDENT).
-
-        cadent_count
-            Total points assigned to houses 3, 6, 9, 12 (CADENT).
-
-    Distribution doctrine:
-        - Each input longitude is normalised to [0, 360) before placement.
-        - Each longitude is placed independently via assign_house().
-        - occupancies is always exactly 12 entries, houses 1–12 in order.
-        - dominant_houses lists all houses tied for the maximum count.
-          If point_count == 0, dominant_houses is an empty tuple.
-        - Angularity counts use _ANGULARITY_MAP from Phase 7; no new doctrine.
-        - Occupant order within each HouseOccupancy follows input order.
-
-    Invariants:
-        len(occupancies) == 12
-        len(counts) == 12
-        point_count == sum(counts)
-        angular_count + succedent_count + cadent_count == point_count
-        len(dominant_houses) >= 1 when point_count > 0
-        all h in dominant_houses: counts[h-1] == max(counts)
-
-    This dataclass is frozen (immutable) and carries no computation logic.
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "distribution_profile_vessel",
+      "owns_state": true,
+      "mutates_external_state": false,
+      "requires": ["house_cusps", "point_count", "occupancies", "counts", "summary sets and totals"],
+      "guarantees": ["12-house occupancy integrity", "chart-wide count consistency"]
+    }
     """
     house_cusps:      HouseCusps
     point_count:      int
@@ -3362,31 +3860,23 @@ def distribute_points(
     house_cusps: HouseCusps,
 ) -> HouseDistributionProfile:
     """
-    Place a sequence of longitudes against one HouseCusps and return a
-    chart-wide distribution profile.
+    Place a sequence of longitudes against one HouseCusps and return a chart-wide distribution profile.
 
-    CHART-WIDE DISTRIBUTION:
-        Places each longitude via assign_house() and accumulates per-house
-        occupancy records.  Derives empty-house set, dominant-house list, and
-        angularity-category totals from the resulting placements.  No new
-        house-membership logic is introduced; assign_house() is authoritative.
-
-    DISTRIBUTION DOCTRINE:
-        - Each longitude is normalised to [0, 360) before placement.
-        - Placements are accumulated per house in input order.
-        - occupancies contains exactly 12 HouseOccupancy entries, house 1–12.
-        - dominant_houses: all houses tied for max(counts); sorted ascending.
-          Empty tuple when no points are provided.
-        - empty_houses: frozenset of house numbers with count == 0.
-        - Angularity counts use _ANGULARITY_MAP (Phase 7 doctrine).
+    Each longitude is placed via ``assign_house()``, then accumulated into the
+    per-house occupancy records and chart-wide summary totals.
 
     Args:
-        longitudes: Sequence of ecliptic longitudes to place (degrees).
-            May be empty; an empty sequence produces a zero-count profile.
+        longitudes: Sequence of ecliptic longitudes to place.
         house_cusps: The HouseCusps to place all points against.
 
     Returns:
         A frozen HouseDistributionProfile.
+
+    Raises:
+        None under normal operation.
+
+    Side effects:
+        None
     """
     buckets: dict[int, list[tuple[float, HousePlacement]]] = {
         h: [] for h in range(1, 13)
@@ -3478,6 +3968,9 @@ def houses_from_armc(
             is ``None``.
         ValueError: When policy requires strict behaviour and a fallback
             condition is encountered.
+
+    Side effects:
+        None
     """
     active_policy = _normalize_house_policy(policy)
     mc          = _mc_from_armc(armc, obliquity, lat)
@@ -3628,6 +4121,9 @@ def body_house_position(longitude: float, house_cusps: HouseCusps) -> float:
     Raises:
         No exceptions under normal operation.  A degenerate house with zero
         span returns ``float(house_number)``.
+
+    Side effects:
+        None
     """
     lon = longitude % 360.0
     placement = assign_house(lon, house_cusps)
@@ -3648,7 +4144,32 @@ def body_house_position(longitude: float, house_cusps: HouseCusps) -> float:
 @dataclass(frozen=True, slots=True)
 class CuspSpeed:
     """
-    The instantaneous rate of change of a single house cusp.
+    RITE: The Cusp Motion Witness
+
+    THEOREM: This dataclass records the instantaneous longitudinal speed of one house cusp.
+
+    RITE OF PURPOSE:
+        This vessel exists so cusp-motion work can return a single-house record
+        with explicit units and local identity rather than loose numeric tuples.
+        It preserves the cusp longitude at the measurement instant together
+        with its speed. Without it, later dynamics products would be less legible.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Record one house number.
+            - Record the cusp longitude at the measurement instant.
+            - Record the instantaneous speed in degrees per day.
+        Non-responsibilities:
+            - Does not compute the derivative.
+            - Does not summarize the whole chart.
+        Dependencies:
+            - Dynamic measurement surfaces in this Pillar.
+        Structural invariants:
+            - The stored house identifies the cusp record within a 12-house frame.
+        Side effects:
+            - None
+        Failure behavior:
+            - None at the vessel level.
 
     Design vessel — Phase 3.  Computation is deferred until the doctrinal
     and validation preconditions are met.
@@ -3689,6 +4210,17 @@ class CuspSpeed:
     speed_deg_per_day : float
         Rate of change of cusp longitude (degrees/day).
         Positive = cusp moving in the direction of increasing longitude.
+
+    Canon: None (No applicable canon)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "dynamics_leaf_vessel",
+      "owns_state": true,
+      "mutates_external_state": false,
+      "requires": ["house", "cusp_longitude", "speed_deg_per_day"],
+      "guarantees": ["unit-explicit cusp motion record"]
+    }
     """
     house:              int
     cusp_longitude:     float
@@ -3698,7 +4230,32 @@ class CuspSpeed:
 @dataclass(frozen=True, slots=True)
 class HouseDynamics:
     """
-    The full set of cusp speeds for a chart, plus angle speeds.
+    RITE: The House Motion Witness
+
+    THEOREM: This dataclass records the instantaneous cusp and angle speeds for one house figure.
+
+    RITE OF PURPOSE:
+        This vessel exists so chart dynamics can preserve all cusp and angle
+        motion in one immutable result rather than scattered derivatives. It
+        keeps the parent HouseCusps together with per-cusp and per-angle
+        speeds as one coherent product. Without it, motion truth would be fragmented.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Record the source HouseCusps.
+            - Record all 12 cusp speeds.
+            - Record ASC, MC, Vertex, and Anti-Vertex speeds.
+        Non-responsibilities:
+            - Does not derive the finite differences itself.
+            - Does not interpret motion astrologically.
+        Dependencies:
+            - HouseCusps and CuspSpeed vessels.
+        Structural invariants:
+            - cusp_speeds represents the full 12-house sequence.
+        Side effects:
+            - None
+        Failure behavior:
+            - None at the vessel level.
 
     Design vessel — Phase 3.  Accompanies :class:`CuspSpeed`.
 
@@ -3728,6 +4285,17 @@ class HouseDynamics:
         Vertex speed (degrees/day).
     anti_vertex_speed_deg_per_day : float
         Anti-Vertex speed (degrees/day).
+
+    Canon: None (No applicable canon)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "dynamics_profile_vessel",
+      "owns_state": true,
+      "mutates_external_state": false,
+      "requires": ["house_cusps", "cusp_speeds", "angle speeds"],
+      "guarantees": ["single-chart motion profile"]
+    }
     """
     house_cusps:                    'HouseCusps'
     cusp_speeds:                    tuple
@@ -3745,6 +4313,7 @@ _SIDEREAL_ROTATION_DEG_PER_DAY = 360.98564736629
 
 
 def _wrapped_longitude_speed(lon_m: float, lon_p: float, step: float) -> float:
+    """Return signed longitude speed across wraparound for a centered finite difference."""
     raw = (lon_p - lon_m) % 360.0
     if raw > 180.0:
         raw -= 360.0
@@ -3798,11 +4367,18 @@ def cusp_speeds_at(
           (t−dt, t, t+dt).  If policy raises on polar fallback, all three
           evaluations will raise.
         - SUNSHINE houses require no special handling here; :func:`calculate_houses`
-          imports and calls ``sun_longitude`` internally for all three evaluations.
+          resolves the solar anchor internally when it is not supplied explicitly.
         - The cusp-speed for house 1 is numerically equal to
           ``asc_speed_deg_per_day`` (both derive from the same longitude);
           house 4 speed equals −mc_speed_deg_per_day for most quadrant systems.
-          These redundancies are intentional for uniformity.
+        These redundancies are intentional for uniformity.
+
+    Raises:
+        ValueError: Propagated if the delegated house computations reject the
+            requested inputs or policy.
+
+    Side effects:
+        None
     """
     h_m = calculate_houses(jd_ut - dt, latitude, longitude, system, policy=policy)
     h0  = calculate_houses(jd_ut,      latitude, longitude, system, policy=policy)
@@ -3873,6 +4449,9 @@ def house_dynamics_from_armc(
         ValueError: If ``darmc_deg <= 0``.
         ValueError: If the requested system/policy combination raises inside
             :func:`houses_from_armc`.
+
+    Side effects:
+        None
     """
     if darmc_deg <= 0.0:
         raise ValueError("darmc_deg must be positive")
@@ -3946,7 +4525,39 @@ def house_dynamics_from_armc(
 # ===========================================================================
 
 class Quadrant(str, Enum):
-    """Rudhyar's four developmental quadrants."""
+    """
+    RITE: The Rudhyar Quadrant Cross
+
+    THEOREM: This enum records the four developmental quadrants used in the Rudhyar emphasis framework.
+
+    RITE OF PURPOSE:
+        This enum exists so quadrant emphasis uses stable symbolic values rather
+        than informal labels. It preserves the four-quadrant framework as
+        executable doctrine for chart-distribution work.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Declare Q1 through Q4 as the canonical quadrant labels.
+        Non-responsibilities:
+            - Does not assign houses or points.
+        Dependencies:
+            - Rudhyar quadrant doctrine.
+        Side effects:
+            - None
+        Failure behavior:
+            - None
+
+    Canon: Dane Rudhyar, *The Astrology of Personality* (1936); *The Astrological Houses* (1972)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "enum",
+      "owns_state": false,
+      "mutates_external_state": false,
+      "requires": [],
+      "guarantees": ["stable Rudhyar quadrant taxonomy"]
+    }
+    """
 
     Q1 = "Q1"  # houses 1–3   personal / instinctive
     Q2 = "Q2"  # houses 4–6   personal / subjective
@@ -3963,7 +4574,15 @@ _HOUSE_TO_QUADRANT: dict[int, Quadrant] = {
 
 
 def quadrant_of(house: int) -> Quadrant:
-    """Return the Rudhyar quadrant for a house number (1–12)."""
+    """
+    Return the Rudhyar quadrant for a house number (1–12).
+
+    Raises:
+        ValueError: If ``house`` is outside 1..12.
+
+    Side effects:
+        None
+    """
     if house < 1 or house > 12:
         raise ValueError(f"house must be 1–12, got {house}")
     return _HOUSE_TO_QUADRANT[house]
@@ -3972,7 +4591,34 @@ def quadrant_of(house: int) -> Quadrant:
 @dataclass(frozen=True, slots=True)
 class QuadrantEmphasisProfile:
     """
-    Rudhyar quadrant emphasis analysis over a set of chart points.
+    RITE: The Quadrant Emphasis Witness
+
+    THEOREM: This dataclass records how a named point set distributes across Rudhyar's four quadrants within one house figure.
+
+    RITE OF PURPOSE:
+        This vessel exists so quadrant emphasis can be preserved as explicit
+        chart structure rather than ephemeral counts. It keeps the house frame,
+        per-quadrant point names, and hemisphere totals in one immutable
+        result. Without it, Rudhyar-style emphasis work would lose provenance.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Record the source HouseCusps and quadrant totals.
+            - Record the named points occupying each quadrant.
+            - Record dominant quadrant and hemisphere totals.
+            - Enforce count consistency across quadrants and hemispheres.
+        Non-responsibilities:
+            - Does not assign houses.
+            - Does not interpret psychological meaning.
+        Dependencies:
+            - One HouseCusps vessel and named-point placement results.
+        Structural invariants:
+            - Quadrant counts sum to point_count.
+            - Hemisphere totals sum to point_count.
+        Side effects:
+            - None
+        Failure behavior:
+            - Raises ValueError when stored counts are inconsistent.
 
     Fields
     ------
@@ -3995,6 +4641,16 @@ class QuadrantEmphasisProfile:
         Points in the northern hemisphere (Q1 + Q2, houses 1–6).
     southern_count : int
         Points in the southern hemisphere (Q3 + Q4, houses 7–12).
+    Canon: Dane Rudhyar, *The Astrology of Personality* (1936); *The Astrological Houses* (1972)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "quadrant_profile_vessel",
+      "owns_state": true,
+      "mutates_external_state": false,
+      "requires": ["house_cusps", "quadrant counts", "quadrant point names", "hemisphere totals"],
+      "guarantees": ["quadrant count integrity", "named-point preservation"]
+    }
     """
 
     house_cusps:        HouseCusps
@@ -4030,17 +4686,26 @@ def quadrant_emphasis(
     """
     Compute the Rudhyar quadrant emphasis profile for a set of named points.
 
+    Each named point is placed into the supplied house frame, mapped to one of
+    Rudhyar's four quadrants, and accumulated into the quadrant and hemisphere
+    totals.
+
     Parameters
     ----------
     points : dict[str, float]
-        Mapping of point name to ecliptic longitude (degrees).
-        Example: {"Sun": 120.5, "Moon": 245.3, "Mars": 15.0}
+        Mapping of point name to ecliptic longitude.
     house_cusps : HouseCusps
         The house frame to use for placement.
 
     Returns
     -------
     QuadrantEmphasisProfile
+
+    Raises:
+        None under normal operation.
+
+    Side effects:
+        None
     """
     buckets: dict[Quadrant, list[str]] = {
         Quadrant.Q1: [], Quadrant.Q2: [], Quadrant.Q3: [], Quadrant.Q4: [],
@@ -4116,8 +4781,37 @@ def quadrant_emphasis(
 
 class DiurnalQuadrant(str, Enum):
     """
-    The four diurnal quadrants defined by the angular frame
-    and the body's semi-diurnal arc.
+    RITE: The Diurnal Cross
+
+    THEOREM: This enum records the four diurnal quadrants defined by the angular frame and the body's semi-diurnal arc.
+
+    RITE OF PURPOSE:
+        This enum exists so diurnal position work uses stable quadrant labels
+        instead of ad hoc strings. It preserves the fourfold daily-rotation
+        framework used by the diurnal products in this Pillar.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Declare DQ1 through DQ4 as the canonical diurnal quadrant labels.
+        Non-responsibilities:
+            - Does not compute hour angle or arcs.
+        Dependencies:
+            - Diurnal quadrant doctrine.
+        Side effects:
+            - None
+        Failure behavior:
+            - None
+
+    Canon: None (No applicable canon)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "enum",
+      "owns_state": false,
+      "mutates_external_state": false,
+      "requires": [],
+      "guarantees": ["stable diurnal quadrant taxonomy"]
+    }
     """
 
     DQ1 = "DQ1"  # ASC → MC   (eastern, above horizon)
@@ -4130,10 +4824,14 @@ def _semi_diurnal_arc(dec: float, geo_lat: float) -> float:
     """
     Compute the semi-diurnal arc (SDA) in degrees.
 
-    Returns:
-        SDA in degrees [0, 180].
-        180 if circumpolar (never sets).
-        0 if body never rises.
+    The result is the body's half-arc above the horizon for the given
+    declination and geographic latitude.
+
+    Raises:
+        None under normal operation.
+
+    Side effects:
+        None
     """
     tan_dec = math.tan(dec * DEG2RAD)
     tan_lat = math.tan(geo_lat * DEG2RAD)
@@ -4148,7 +4846,33 @@ def _semi_diurnal_arc(dec: float, geo_lat: float) -> float:
 @dataclass(frozen=True, slots=True)
 class DiurnalPosition:
     """
-    A body's position within the diurnal quadrant framework.
+    RITE: The Diurnal Position Witness
+
+    THEOREM: This dataclass records one body's position within the diurnal quadrant framework at a given house frame.
+
+    RITE OF PURPOSE:
+        This vessel exists so diurnal-frame analysis can preserve the body's
+        quadrant, hour angle, horizon state, and proportional progress as one
+        coherent result. It keeps the body-frame geometry explicit rather than
+        collapsing it to one label. Without it, mundane position truth would be thinned.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Record the body's diurnal quadrant and hour angle.
+            - Record semi-diurnal and semi-nocturnal arcs.
+            - Record horizon/easternness flags and proportional fraction.
+            - Preserve the RA and declination actually used.
+        Non-responsibilities:
+            - Does not compute the chart's house cusps.
+            - Does not interpret the position astrologically.
+        Dependencies:
+            - Diurnal quadrant doctrine and equatorial conversion surfaces.
+        Structural invariants:
+            - fraction is constrained to the quadrant interval [0, 1].
+        Side effects:
+            - None
+        Failure behavior:
+            - None at the vessel level.
 
     Fields
     ------
@@ -4178,6 +4902,16 @@ class DiurnalPosition:
         Right ascension used in computation (degrees, 0–360).
     dec : float
         Declination used in computation (degrees).
+    Canon: None (No applicable canon)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "diurnal_position_vessel",
+      "owns_state": true,
+      "mutates_external_state": false,
+      "requires": ["quadrant", "hour_angle", "arc lengths", "flags", "ra", "dec"],
+      "guarantees": ["single-body diurnal witness"]
+    }
     """
 
     quadrant:           DiurnalQuadrant
@@ -4201,24 +4935,34 @@ def diurnal_position(
     geo_lat: float,
 ) -> DiurnalPosition:
     """
-    Compute a body's diurnal quadrant position.
+    Compute a body's position within the diurnal quadrant framework.
+
+    The ecliptic position is converted to RA and declination, the body's
+    semi-diurnal arc is evaluated for the observer latitude, and the hour-angle
+    branch determines the body's quadrant and fractional progress.
 
     Parameters
     ----------
     ecl_lon : float
-        Ecliptic longitude (degrees).
+        Ecliptic longitude in degrees.
     ecl_lat : float
-        Ecliptic latitude (degrees).  ~0 for most planets, nonzero for Moon.
+        Ecliptic latitude in degrees.
     armc : float
-        Local sidereal time as right ascension of the midheaven (degrees).
+        Right ascension of the Midheaven in degrees.
     obliquity : float
-        Obliquity of the ecliptic (degrees).
+        Obliquity of the ecliptic in degrees.
     geo_lat : float
-        Geographic latitude of the observer (degrees, north positive).
+        Geographic latitude in degrees.
 
     Returns
     -------
     DiurnalPosition
+
+    Raises:
+        None under normal operation.
+
+    Side effects:
+        None
     """
     ra, dec = _ecl_to_eq(ecl_lon, ecl_lat, obliquity)
     sda = _semi_diurnal_arc(dec, geo_lat)
@@ -4296,7 +5040,32 @@ def diurnal_position(
 @dataclass(frozen=True, slots=True)
 class DiurnalEmphasisProfile:
     """
-    Chart-wide diurnal quadrant distribution.
+    RITE: The Diurnal Emphasis Witness
+
+    THEOREM: This dataclass records how a named point set distributes across the four diurnal quadrants.
+
+    RITE OF PURPOSE:
+        This vessel exists so chart-wide diurnal emphasis can be preserved as a
+        first-class result rather than rederived from per-point positions each
+        time. It keeps counts, point names, and per-point positions together in
+        one immutable record. Without it, diurnal distribution truth would fragment.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Record diurnal quadrant counts and named-point membership.
+            - Preserve the per-point DiurnalPosition records.
+            - Record dominant quadrant and horizon/east-west totals.
+        Non-responsibilities:
+            - Does not compute the individual diurnal positions.
+            - Does not interpret the emphasis astrologically.
+        Dependencies:
+            - DiurnalPosition records produced upstream.
+        Structural invariants:
+            - dq1_count + dq2_count + dq3_count + dq4_count equals point_count.
+        Side effects:
+            - None
+        Failure behavior:
+            - Raises ValueError when stored quadrant totals are inconsistent.
 
     Fields
     ------
@@ -4318,6 +5087,16 @@ class DiurnalEmphasisProfile:
         Points in DQ1 + DQ4.
     western_count : int
         Points in DQ2 + DQ3.
+    Canon: None (No applicable canon)
+
+    [MACHINE_CONTRACT v1]
+    {
+      "type": "diurnal_profile_vessel",
+      "owns_state": true,
+      "mutates_external_state": false,
+      "requires": ["point_count", "diurnal counts", "point-name buckets", "positions"],
+      "guarantees": ["diurnal count integrity", "per-point position preservation"]
+    }
     """
 
     point_count:          int
@@ -4351,21 +5130,29 @@ def diurnal_emphasis(
     """
     Compute the diurnal quadrant emphasis for a set of named bodies.
 
+    Each named body is converted into a DiurnalPosition, grouped by diurnal
+    quadrant, and accumulated into the chart-wide diurnal emphasis totals.
+
     Parameters
     ----------
     points : dict[str, tuple[float, float]]
-        Mapping of point name to (ecliptic_longitude, ecliptic_latitude).
-        Example: {"Sun": (280.5, 0.0), "Moon": (120.3, 5.1)}
+        Mapping of point name to ``(ecliptic_longitude, ecliptic_latitude)``.
     armc : float
-        Right ascension of the midheaven (degrees).
+        Right ascension of the Midheaven in degrees.
     obliquity : float
-        Obliquity of the ecliptic (degrees).
+        Obliquity of the ecliptic in degrees.
     geo_lat : float
-        Geographic latitude (degrees, north positive).
+        Geographic latitude in degrees.
 
     Returns
     -------
     DiurnalEmphasisProfile
+
+    Raises:
+        None under normal operation.
+
+    Side effects:
+        None
     """
     buckets: dict[DiurnalQuadrant, list[str]] = {
         DiurnalQuadrant.DQ1: [], DiurnalQuadrant.DQ2: [],

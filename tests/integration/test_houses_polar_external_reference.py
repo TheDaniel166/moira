@@ -23,11 +23,11 @@ def _polar_iterations() -> list[dict]:
 
 def test_supported_polar_house_systems_match_offline_swiss_reference() -> None:
     """
-    Validate supra-critical latitude house figures against the cached Swiss fixture.
+    Secondary oracle audit of supra-critical latitude house figures.
 
-    This slice exercises only the systems that remain defined at extreme latitudes
-    in the external oracle. Fallback doctrine for unsupported semi-arc systems is
-    proved separately in the dedicated polar-house gauntlets.
+    The polar branch doctrine itself is proved in the dedicated unit gauntlets.
+    This integration slice is retained as a cached Swiss regression oracle for
+    the systems that remain defined at extreme latitudes in that external corpus.
     """
     iterations = _polar_iterations()
     assert iterations, "Expected polar house cases in the cached Swiss fixture"

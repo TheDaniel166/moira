@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from moira.constants import HouseSystem
+import moira.houses as houses_module
 from moira.experimental_placidus import (
     ExperimentalPlacidusStatus,
     scan_experimental_placidus_admissibility,
@@ -133,3 +134,24 @@ def test_experimental_policy_is_placidus_only_for_now() -> None:
             HouseSystem.KOCH,
             policy=HousePolicy.experimental(),
         )
+
+
+def test_experimental_policy_uses_named_loader_indirection(monkeypatch) -> None:
+    called = {"count": 0}
+
+    def _wrapped_loader():
+        called["count"] += 1
+        return __import__("moira.experimental_placidus", fromlist=["search_experimental_placidus"])
+
+    monkeypatch.setattr(houses_module, "_experimental_placidus_module", _wrapped_loader)
+
+    houses = houses_from_armc(
+        _ARMC_VALID,
+        _OB_J2000,
+        _LAT_77,
+        HouseSystem.PLACIDUS,
+        policy=HousePolicy.experimental(),
+    )
+
+    assert called["count"] == 1
+    assert houses.effective_system == HouseSystem.PLACIDUS

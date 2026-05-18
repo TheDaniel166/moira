@@ -129,10 +129,14 @@ calibrated to Swiss.
 
 ## 4. House Systems
 
-**Oracle:** Official Swiss Ephemeris `setest/t.exp`  
+**Primary proof:** Moira-owned geometric and structural covenant suites  
+**Secondary oracle:** Official Swiss Ephemeris `setest/t.exp`  
 **Fixture:** `tests/fixtures/swe_t.exp`  
 **Threshold:** 0.001 degrees (3.6 arcseconds)  
 **Test files:**
+- `tests/unit/test_house_projection_geometry.py`
+- `tests/unit/test_house_polar_branch_selection.py`
+- `tests/unit/test_house_quadrant_assembly.py`
 - `tests/integration/test_houses_external_reference.py`
 - `tests/unit/test_polar_houses.py`
 - `scripts/compare_swetest.py --offline`
@@ -140,6 +144,14 @@ calibrated to Swiss.
 15 house systems are validated: Placidus, Koch, Campanus, Regiomontanus,
 Porphyry, Equal, Whole Sign, Alcabitius, Morinus, Topocentric, Vehlow,
 Meridian, Azimuthal, Krusinski-Pisa, APC.
+
+Validation order is doctrinally explicit:
+- first, Moira proves the owned geometry directly by invariant tests on plane
+  intersections, branch selection, and quadrant-assembly symmetry
+- second, the cached Swiss corpus is used as a broad regression oracle across
+  historical software-compatible cases
+- therefore "matches Swiss" is not the foundation of this subsystem; it is the
+  external corroboration layer beneath already-owned computational truth
 
 ### 4.1 Corpus composition
 
@@ -182,10 +194,10 @@ the ARMC value directly (degrees) rather than deriving it from a Julian date
 and geographic longitude. Moira computes obliquity independently from the
 block's JD_UT via its own TT conversion and IAU 2006 pipeline.
 
-This makes ARMC-direct validation a clean geometric test: given the exact ARMC
-that Swiss used, do Moira's house cusp algorithms produce the same 12 cusp
-longitudes? Any residual here is attributable solely to the cusp computation
-itself, not to ARMC derivation. All 3,528 pass at 3.6″.
+This makes ARMC-direct validation a clean regression-oracle test: given the
+exact ARMC that Swiss used, do Moira's house cusp algorithms still produce the
+same 12 cusp longitudes? Any residual here is attributable solely to the cusp
+computation itself, not to ARMC derivation. All 3,528 pass at 3.6″.
 
 ### 4.3 Sidereal house blocks — residual audit
 

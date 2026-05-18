@@ -10,6 +10,9 @@ This document reflects current implementation truth as of Phase 11 (1 189 passin
 across 10 unit files and 1 integration file). It does not describe aspirational future
 capabilities.
 
+For the clean-room sovereignty remediation path beyond current implementation truth,
+see [HOUSES_SOVEREIGNTY_REMEDIATION_ROADMAP.md](../06_roadmap/HOUSES_SOVEREIGNTY_REMEDIATION_ROADMAP.md).
+
 ---
 
 ## Part I — Architecture Standard

@@ -1,6 +1,7 @@
 #ifndef MOIRA_NATIVE_EVALUATORS_HPP
 #define MOIRA_NATIVE_EVALUATORS_HPP
 
+#include <cstdint>
 #include <vector>
 #include <memory>
 #include "interpolation.hpp"
@@ -122,9 +123,13 @@ public:
     }
 
     void position(double jd, double* result) const {
+        position(jd, 0.0, result);
+    }
+
+    void position(double jd, double jd2, double* result) const {
         if (data_type == 2) {
-            const double* ptr = record_ptr(jd);
-            const double s = normalized_time(jd);
+            const double* ptr = record_ptr(jd, jd2);
+            const double s = normalized_time(jd, jd2);
             if (coefficients_in_file_order) {
                 spk_chebyshev_record_avx2_reverse(ptr, coefficient_count, component_count, s, result, 1, coefficient_count);
             } else {
@@ -134,16 +139,20 @@ public:
         }
 
         double full_state[6];
-        evaluate_type3(jd, full_state);
+        evaluate_type3(jd, jd2, full_state);
         result[0] = full_state[0];
         result[1] = full_state[1];
         result[2] = full_state[2];
     }
 
     void position_and_velocity(double jd, double* position_out, double* velocity_out) const {
+        position_and_velocity(jd, 0.0, position_out, velocity_out);
+    }
+
+    void position_and_velocity(double jd, double jd2, double* position_out, double* velocity_out) const {
         if (data_type == 2) {
-            const double* ptr = record_ptr(jd);
-            const double s = normalized_time(jd);
+            const double* ptr = record_ptr(jd, jd2);
+            const double s = normalized_time(jd, jd2);
             const double derivative_scale = 2.0 * 86400.0 / intlen;
             if (coefficients_in_file_order) {
                 spk_chebyshev_record_with_derivative_inplace_reverse(
@@ -175,7 +184,7 @@ public:
         }
 
         double full_state[6];
-        evaluate_type3(jd, full_state);
+        evaluate_type3(jd, jd2, full_state);
         position_out[0] = full_state[0];
         position_out[1] = full_state[1];
         position_out[2] = full_state[2];
@@ -185,31 +194,59 @@ public:
     }
 
 private:
-    size_t record_index(double jd) const {
-        double t_sec = (jd - 2451545.0) * 86400.0;
-        double d_t = t_sec - init;
-        size_t index = static_cast<size_t>(std::floor(d_t / intlen));
-        if (index >= record_count) {
-            index = record_count - 1;
+    std::pair<size_t, double> epoch_record_and_offset(double jd, double jd2) const {
+        const double offset_seconds = (jd - 2451545.0) * 86400.0 - init;
+        double index1;
+        double offset1;
+        {
+            const double quotient = std::floor(offset_seconds / intlen);
+            index1 = quotient;
+            offset1 = offset_seconds - quotient * intlen;
         }
-        return index;
+
+        double index2;
+        double offset2;
+        {
+            const double split_seconds = jd2 * 86400.0;
+            const double quotient = std::floor(split_seconds / intlen);
+            index2 = quotient;
+            offset2 = split_seconds - quotient * intlen;
+        }
+
+        const double combined_offset = offset1 + offset2;
+        const double index3 = std::floor(combined_offset / intlen);
+        double offset = combined_offset - index3 * intlen;
+        int64_t index = static_cast<int64_t>(index1 + index2 + index3);
+        if (index < 0) {
+            index = 0;
+            offset = 0.0;
+        } else if (static_cast<size_t>(index) > record_count) {
+            index = static_cast<int64_t>(record_count - 1);
+            offset = intlen;
+        } else if (static_cast<size_t>(index) == record_count) {
+            index -= 1;
+            offset += intlen;
+        }
+
+        return {static_cast<size_t>(index), offset};
     }
 
-    double normalized_time(double jd) const {
-        double t_sec = (jd - 2451545.0) * 86400.0;
-        double d_t = t_sec - init;
-        size_t index = record_index(jd);
-        double s = (d_t - (static_cast<double>(index) * intlen)) / intlen;
+    double normalized_time(double jd, double jd2) const {
+        const auto [index, offset] = epoch_record_and_offset(jd, jd2);
+        (void)index;
+        double s = offset / intlen;
         return 2.0 * s - 1.0;
     }
 
-    const double* record_ptr(double jd) const {
-        return coefficients.data() + record_index(jd) * component_count * coefficient_count;
+    const double* record_ptr(double jd, double jd2) const {
+        const auto [index, offset] = epoch_record_and_offset(jd, jd2);
+        (void)offset;
+        return coefficients.data() + index * component_count * coefficient_count;
     }
 
-    void evaluate_type3(double jd, double* result) const {
-        const double* ptr = record_ptr(jd);
-        const double s = normalized_time(jd);
+    void evaluate_type3(double jd, double jd2, double* result) const {
+        const double* ptr = record_ptr(jd, jd2);
+        const double s = normalized_time(jd, jd2);
         if (coefficients_in_file_order) {
             spk_chebyshev_record_avx2_reverse(ptr, coefficient_count, component_count, s, result, 1, coefficient_count);
         } else {

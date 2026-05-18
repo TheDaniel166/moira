@@ -18,11 +18,14 @@ FIXTURE_PATH = Path(__file__).resolve().parents[1] / "fixtures" / "swe_t.exp"
 
 def test_house_systems_match_offline_swiss_reference() -> None:
     """
-    Validate all Swiss-mapped house systems against the cached offline fixture.
+    Secondary oracle audit against the cached Swiss house corpus.
 
-    Covers standard (JD + lat/lon) iterations from the Swiss setest/t.exp corpus,
-    including iflag=0 blocks (swe_houses_ex with no special mode), which produce
-    degree output identical to the no-flag swe_houses() blocks.
+    Primary proof for house ownership lives in the unit-level geometric and
+    structural covenant suites. This integration test is retained as a broad
+    regression oracle over the cached Swiss `setest/t.exp` corpus, covering
+    standard (JD + lat/lon) iterations including `iflag=0` blocks
+    (`swe_houses_ex` with no special mode), whose degree output is identical
+    to the no-flag `swe_houses()` blocks.
     """
     fixture_text = FIXTURE_PATH.read_text(encoding="utf-8", errors="replace")
     iterations = _parse_iterations(fixture_text)
@@ -43,11 +46,13 @@ def test_house_systems_match_offline_swiss_reference() -> None:
 
 def test_house_systems_match_armc_direct_swiss_reference() -> None:
     """
-    Validate houses_from_armc() against the Swiss setest/t.exp ARMC-direct corpus.
+    Secondary oracle audit of ``houses_from_armc()`` against Swiss ARMC-direct cases.
 
-    These blocks exercise Swiss swe_houses_armc(): the ARMC is provided directly
-    from the fixture (degrees) rather than derived from JD + geographic longitude.
-    Obliquity is computed independently from JD_UT using Moira's own pipeline.
+    This regression slice sits beneath the primary geometry covenant tests and
+    checks that the ARMC-native public surface still agrees with the cached
+    Swiss corpus. The ARMC is provided directly from the fixture (degrees)
+    rather than derived from JD + geographic longitude, while obliquity is
+    computed independently from JD_UT using Moira's own pipeline.
 
     5376 iterations across the full range of supported house systems.
     """

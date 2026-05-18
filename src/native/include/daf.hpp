@@ -554,6 +554,17 @@ public:
         get_segment_evaluator(start_i, end_i, data_type)->position(jd, result);
     }
 
+    void segment_position(
+        int32_t start_i,
+        int32_t end_i,
+        int32_t data_type,
+        double jd,
+        double jd2,
+        double* result
+    ) {
+        get_segment_evaluator(start_i, end_i, data_type)->position(jd, jd2, result);
+    }
+
     void segment_position_and_velocity(
         int32_t start_i,
         int32_t end_i,
@@ -564,6 +575,20 @@ public:
     ) {
         get_segment_evaluator(start_i, end_i, data_type)->position_and_velocity(
             jd, position_out, velocity_out
+        );
+    }
+
+    void segment_position_and_velocity(
+        int32_t start_i,
+        int32_t end_i,
+        int32_t data_type,
+        double jd,
+        double jd2,
+        double* position_out,
+        double* velocity_out
+    ) {
+        get_segment_evaluator(start_i, end_i, data_type)->position_and_velocity(
+            jd, jd2, position_out, velocity_out
         );
     }
 

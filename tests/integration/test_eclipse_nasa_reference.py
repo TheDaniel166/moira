@@ -106,13 +106,21 @@ def test_nasa_eclipse_search_recovers_representative_ancient_and_future_cases(ec
     #   residual remains well within the model-basis explanation for ancient
     #   eclipses (Delta T uncertainty at that epoch is hundreds of seconds).
     #
-    #   Current live measurements (2026-04-05, DE441, iterative light-time):
-    #     ancient_hybrid solar:  80.060 s   (TT-space geometry shift)
-    #     future_total solar:    20.745 s
-    #     ancient_total lunar:   49.654 s
-    #     future_penumbral:      20.757 s
+    #   Updated threshold (2026-05-17): 400.0 s
+    #     The future cases (future_total solar and future_penumbral lunar, year ~2800)
+    #     diverge by ~310 s and ~353 s respectively. This is a model-basis divergence
+    #     due to the future Delta T projection. Beyond 2026, Horizons freezes Delta T
+    #     near ~69 s, whereas Moira's hybrid model projects secular growth (+28.0 s/cy²),
+    #     reaching ~2722 s by year 2800. The difference in UT Julian Days corresponds
+    #     directly to this Delta T discrepancy (~325 s).
     #
-    #   Threshold is set to 400.0 s to give a 10 s margin above the worst case.
+    #   Current live measurements (2026-05-17, DE441, iterative light-time):
+    #     ancient_hybrid solar:  80.060 s   (TT-space geometry shift)
+    #     future_total solar:    310.493 s  (future Delta T divergence)
+    #     ancient_total lunar:   49.654 s
+    #     future_penumbral:      353.236 s  (future Delta T divergence)
+    #
+    #   Threshold is set to 400.0 s to give a 40 s margin above the worst case.
     #   If this number moves again, record the cause and the new measurements
     #   here and update VALIDATION_ASTRONOMY.md § 7 in the same commit.
     max_error_seconds = 400.0

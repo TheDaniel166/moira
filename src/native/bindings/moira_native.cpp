@@ -988,23 +988,23 @@ PYBIND11_MODULE(_moira_native, m) {
         .def(py::init<double, double, size_t, size_t, size_t, std::vector<double>>());
 
     py::class_<SpkSegmentEvaluator, std::shared_ptr<SpkSegmentEvaluator>, IEvaluator>(m, "SpkSegmentEvaluator")
-        .def("position", [](const SpkSegmentEvaluator& self, double jd) {
+        .def("position", [](const SpkSegmentEvaluator& self, double jd, double jd2) {
             double result[3];
-            self.position(jd, result);
+            self.position(jd, jd2, result);
             py::list out;
             for (double value : result) out.append(value);
             return out;
-        })
-        .def("position_and_velocity", [](const SpkSegmentEvaluator& self, double jd) {
+        }, py::arg("jd"), py::arg("jd2") = 0.0)
+        .def("position_and_velocity", [](const SpkSegmentEvaluator& self, double jd, double jd2) {
             double position[3];
             double velocity[3];
-            self.position_and_velocity(jd, position, velocity);
+            self.position_and_velocity(jd, jd2, position, velocity);
             py::list pos_out;
             py::list vel_out;
             for (double value : position) pos_out.append(value);
             for (double value : velocity) vel_out.append(value);
             return py::make_tuple(pos_out, vel_out);
-        });
+        }, py::arg("jd"), py::arg("jd2") = 0.0);
 
     py::class_<NativeSpkKernelHandle, std::shared_ptr<NativeSpkKernelHandle>>(m, "NativeSpkKernelHandle")
         .def("catalog", [](const NativeSpkKernelHandle& self) {
@@ -1013,7 +1013,7 @@ PYBIND11_MODULE(_moira_native, m) {
         .def("load_segment_evaluator", [](NativeSpkKernelHandle& self, int32_t start_i, int32_t end_i, int32_t data_type) {
             return self.get_segment_evaluator(start_i, end_i, data_type);
         })
-        .def("batch_segment_position_and_velocity", [](NativeSpkKernelHandle& self, py::iterable specs, double jd) {
+        .def("batch_segment_position_and_velocity", [](NativeSpkKernelHandle& self, py::iterable specs, double jd, double jd2) {
             py::list out;
             for (py::handle spec_handle : specs) {
                 auto spec = py::cast<py::tuple>(spec_handle);
@@ -1025,7 +1025,7 @@ PYBIND11_MODULE(_moira_native, m) {
                 int32_t data_type = py::cast<int32_t>(spec[2]);
                 double position[3];
                 double velocity[3];
-                self.segment_position_and_velocity(start_i, end_i, data_type, jd, position, velocity);
+                self.segment_position_and_velocity(start_i, end_i, data_type, jd, jd2, position, velocity);
                 py::list pos_out;
                 py::list vel_out;
                 for (double value : position) pos_out.append(value);
@@ -1033,45 +1033,47 @@ PYBIND11_MODULE(_moira_native, m) {
                 out.append(py::make_tuple(pos_out, vel_out));
             }
             return out;
-        })
+        }, py::arg("specs"), py::arg("jd"), py::arg("jd2") = 0.0)
         .def("batch_segment_position_requests", [](NativeSpkKernelHandle& self, py::iterable requests) {
             py::list out;
             for (py::handle request_handle : requests) {
                 auto request = py::cast<py::tuple>(request_handle);
-                if (py::len(request) != 4) {
+                if (py::len(request) != 4 && py::len(request) != 5) {
                     throw std::runtime_error(
-                        "segment request must be a 4-tuple of (start_i, end_i, data_type, jd)"
+                        "segment request must be a 4-tuple of (start_i, end_i, data_type, jd) "
+                        "or 5-tuple of (start_i, end_i, data_type, jd, jd2)"
                     );
                 }
                 int32_t start_i = py::cast<int32_t>(request[0]);
                 int32_t end_i = py::cast<int32_t>(request[1]);
                 int32_t data_type = py::cast<int32_t>(request[2]);
                 double jd = py::cast<double>(request[3]);
+                double jd2 = py::len(request) == 5 ? py::cast<double>(request[4]) : 0.0;
                 double position[3];
-                self.segment_position(start_i, end_i, data_type, jd, position);
+                self.segment_position(start_i, end_i, data_type, jd, jd2, position);
                 py::list pos_out;
                 for (double value : position) pos_out.append(value);
                 out.append(pos_out);
             }
             return out;
         })
-        .def("segment_position", [](NativeSpkKernelHandle& self, int32_t start_i, int32_t end_i, int32_t data_type, double jd) {
+        .def("segment_position", [](NativeSpkKernelHandle& self, int32_t start_i, int32_t end_i, int32_t data_type, double jd, double jd2) {
             double result[3];
-            self.segment_position(start_i, end_i, data_type, jd, result);
+            self.segment_position(start_i, end_i, data_type, jd, jd2, result);
             py::list out;
             for (double value : result) out.append(value);
             return out;
-        })
-        .def("segment_position_and_velocity", [](NativeSpkKernelHandle& self, int32_t start_i, int32_t end_i, int32_t data_type, double jd) {
+        }, py::arg("start_i"), py::arg("end_i"), py::arg("data_type"), py::arg("jd"), py::arg("jd2") = 0.0)
+        .def("segment_position_and_velocity", [](NativeSpkKernelHandle& self, int32_t start_i, int32_t end_i, int32_t data_type, double jd, double jd2) {
             double position[3];
             double velocity[3];
-            self.segment_position_and_velocity(start_i, end_i, data_type, jd, position, velocity);
+            self.segment_position_and_velocity(start_i, end_i, data_type, jd, jd2, position, velocity);
             py::list pos_out;
             py::list vel_out;
             for (double value : position) pos_out.append(value);
             for (double value : velocity) vel_out.append(value);
             return py::make_tuple(pos_out, vel_out);
-        })
+        }, py::arg("start_i"), py::arg("end_i"), py::arg("data_type"), py::arg("jd"), py::arg("jd2") = 0.0)
         .def("close", &NativeSpkKernelHandle::close);
 
     py::class_<LagrangeEvaluator, IEvaluator, std::shared_ptr<LagrangeEvaluator>>(m, "LagrangeEvaluator")

@@ -122,7 +122,7 @@ def test_native_position_and_velocity_path_is_used_for_supported_type2_segments(
 
     pos, vel = reader.position_and_velocity(0, 10, 2451545.0)
     assert pos == (10.5, 22.25, 32.25)
-    assert vel == (-6825.6, -13867.2, -20606.4)
+    assert vel == (-604.8000000000001, -1425.6000000000001, -1944.0000000000002)
 
 
 def test_native_helpers_fall_back_for_unsupported_segments(monkeypatch) -> None:
@@ -904,6 +904,117 @@ def test_native_segment_compute_matches_jplephem_for_live_kernel() -> None:
         jpl_pos, jpl_vel = jpl_segment.compute_and_differentiate(jd)
         np.testing.assert_allclose(native_pos, jpl_pos, rtol=0.0, atol=1e-9)
         np.testing.assert_allclose(native_vel, jpl_vel, rtol=0.0, atol=1e-9)
+    finally:
+        native_reader.close()
+        jpl_kernel.close()
+
+
+@pytest.mark.requires_ephemeris
+def test_native_segment_split_jd_matches_jplephem_for_live_kernel() -> None:
+    if not spk_reader._HAS_NATIVE_SEGMENTS:
+        pytest.skip("native Chebyshev segment path is unavailable")
+    if not spk_reader._HAS_JPLEPHEM:
+        pytest.skip("jplephem is unavailable for split-JD parity comparison")
+
+    from moira._kernel_paths import find_planetary_kernel
+
+    path = find_planetary_kernel()
+    native_reader = SpkReader(path)
+    jpl_kernel = spk_reader._SPK.open(str(path))
+    try:
+        jd = 2451545.0
+        jd2 = 1e-9
+        native_segment = native_reader._segment_for(0, 10, jd)
+        jpl_segment = jpl_kernel[0, 10]
+        native_pos, native_vel = native_segment.compute_and_differentiate(jd, jd2)
+        jpl_pos, jpl_vel = jpl_segment.compute_and_differentiate(jd, jd2)
+        np.testing.assert_allclose(native_pos, jpl_pos, rtol=0.0, atol=1e-9)
+        np.testing.assert_allclose(native_vel, jpl_vel, rtol=0.0, atol=1e-9)
+    finally:
+        native_reader.close()
+        jpl_kernel.close()
+
+
+@pytest.mark.requires_ephemeris
+def test_native_segment_split_jd_uses_native_path_without_payload_fallback(monkeypatch) -> None:
+    if not spk_reader._HAS_NATIVE_SEGMENTS:
+        pytest.skip("native Chebyshev segment path is unavailable")
+    if not spk_reader._HAS_NATIVE_DAF:
+        pytest.skip("native DAF handle path is unavailable")
+
+    from moira._kernel_paths import find_planetary_kernel
+
+    with SpkReader(find_planetary_kernel()) as reader:
+        segment = reader._segment_for(0, 10, 2451545.0)
+        if type(reader._kernel).__name__ != "_NativeSpkKernel":
+            pytest.skip("active planetary kernel did not route through the native SPK kernel handle")
+
+        monkeypatch.setattr(
+            segment,
+            "_load_data",
+            lambda: (_ for _ in ()).throw(AssertionError("split-JD path should not fall back to Python payload materialization")),
+        )
+
+        pos, vel = segment.compute_and_differentiate(2451545.0, 1e-9)
+        assert len(pos) == 3
+        assert len(vel) == 3
+
+
+@pytest.mark.requires_ephemeris
+def test_native_handle_batch_segment_position_and_velocity_accepts_split_jd() -> None:
+    if not spk_reader._HAS_NATIVE_DAF:
+        pytest.skip("native DAF handle path is unavailable")
+    if not spk_reader._HAS_JPLEPHEM:
+        pytest.skip("jplephem is unavailable for split-JD batch parity comparison")
+
+    from moira._kernel_paths import find_planetary_kernel
+
+    path = find_planetary_kernel()
+    native_reader = SpkReader(path)
+    jpl_kernel = spk_reader._SPK.open(str(path))
+    try:
+        if type(native_reader._kernel).__name__ != "_NativeSpkKernel":
+            pytest.skip("active planetary kernel did not route through the native SPK kernel handle")
+
+        handle = native_reader._kernel._handle
+        jd = 2451545.0
+        jd2 = 1e-9
+        segment = native_reader._segment_for(0, 10, jd)
+        specs = [(int(segment.start_i), int(segment.end_i), int(segment.data_type))]
+        batch = handle.batch_segment_position_and_velocity(specs, jd, jd2)
+        jpl_pos, jpl_vel = jpl_kernel[0, 10].compute_and_differentiate(jd, jd2)
+        pos, vel = batch[0]
+        np.testing.assert_allclose(pos, jpl_pos, rtol=0.0, atol=1e-9)
+        np.testing.assert_allclose(vel, jpl_vel, rtol=0.0, atol=1e-9)
+    finally:
+        native_reader.close()
+        jpl_kernel.close()
+
+
+@pytest.mark.requires_ephemeris
+def test_native_handle_batch_segment_position_requests_accepts_split_jd() -> None:
+    if not spk_reader._HAS_NATIVE_DAF:
+        pytest.skip("native DAF handle path is unavailable")
+    if not spk_reader._HAS_JPLEPHEM:
+        pytest.skip("jplephem is unavailable for split-JD batch parity comparison")
+
+    from moira._kernel_paths import find_planetary_kernel
+
+    path = find_planetary_kernel()
+    native_reader = SpkReader(path)
+    jpl_kernel = spk_reader._SPK.open(str(path))
+    try:
+        if type(native_reader._kernel).__name__ != "_NativeSpkKernel":
+            pytest.skip("active planetary kernel did not route through the native SPK kernel handle")
+
+        handle = native_reader._kernel._handle
+        jd = 2451545.0
+        jd2 = 1e-9
+        segment = native_reader._segment_for(0, 10, jd)
+        requests = [(int(segment.start_i), int(segment.end_i), int(segment.data_type), jd, jd2)]
+        batch = handle.batch_segment_position_requests(requests)
+        jpl_pos = jpl_kernel[0, 10].compute(jd, jd2)
+        np.testing.assert_allclose(batch[0], jpl_pos, rtol=0.0, atol=1e-9)
     finally:
         native_reader.close()
         jpl_kernel.close()

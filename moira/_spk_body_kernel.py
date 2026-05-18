@@ -193,10 +193,10 @@ class _NativeChebyshevSegment:
 
     def _evaluate(self, tdb: float, tdb2: float, need_rates: bool):
         evaluator = self._load_native_evaluator()
-        if evaluator is not None and tdb2 == 0.0:
+        if evaluator is not None:
             if need_rates:
-                return evaluator.position_and_velocity(tdb)
-            return evaluator.position(tdb), None
+                return evaluator.position_and_velocity(tdb, tdb2)
+            return evaluator.position(tdb, tdb2), None
 
         init, intlen, coefficients = self._load_data()
         record_count, component_count, coefficient_count = _coeff_tensor_shape(coefficients)

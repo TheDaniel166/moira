@@ -101,7 +101,7 @@ def _coeff_record(coefficients, index: int):
 
 
 def _eval_chebyshev_record_scalar(coeff_record, s: float) -> tuple[float, ...]:
-    """Evaluate one Chebyshev coefficient record with scalar recurrence."""
+    """Evaluate one native-loaded SPK record with scalar Clenshaw recurrence."""
     component_count = len(coeff_record)
     coefficient_count = len(coeff_record[0]) if component_count else 0
     values: list[float] = []
@@ -115,15 +115,15 @@ def _eval_chebyshev_record_scalar(coeff_record, s: float) -> tuple[float, ...]:
             values.append(float(coeffs[0]))
             continue
 
-        t_k_minus_2 = 1.0
-        t_k_minus_1 = s
-        total = float(coeffs[0]) + float(coeffs[1]) * s
-        for k in range(2, coefficient_count):
-            t_k = 2.0 * s * t_k_minus_1 - t_k_minus_2
-            total += float(coeffs[k]) * t_k
-            t_k_minus_2 = t_k_minus_1
-            t_k_minus_1 = t_k
-        values.append(total)
+        s2 = 2.0 * s
+        w1 = 0.0
+        w2 = 0.0
+        for coeff_index in range(coefficient_count - 1):
+            c = float(coeffs[coeff_index])
+            old_w1 = w1
+            w1 = c + s2 * w1 - w2
+            w2 = old_w1
+        values.append(float(coeffs[coefficient_count - 1]) + s * w1 - w2)
 
     return tuple(values)
 
@@ -133,7 +133,7 @@ def _eval_chebyshev_record_with_derivative_scalar(
     s: float,
     derivative_scale: float,
 ) -> tuple[tuple[float, ...], tuple[float, ...]]:
-    """Evaluate one record and its derivative with scalar Chebyshev recurrences."""
+    """Evaluate one native-loaded SPK record and derivative with scalar Clenshaw recurrence."""
     component_count = len(coeff_record)
     coefficient_count = len(coeff_record[0]) if component_count else 0
     values: list[float] = []
@@ -150,26 +150,25 @@ def _eval_chebyshev_record_with_derivative_scalar(
             rates.append(0.0)
             continue
 
-        t_k_minus_2 = 1.0
-        t_k_minus_1 = s
-        u_k_minus_2 = 1.0
-        u_k_minus_1 = 2.0 * s
-        value = float(coeffs[0]) + float(coeffs[1]) * s
-        derivative = float(coeffs[1])
+        s2 = 2.0 * s
+        w1 = 0.0
+        w2 = 0.0
+        dw1 = 0.0
+        dw2 = 0.0
 
-        for k in range(2, coefficient_count):
-            t_k = 2.0 * s * t_k_minus_1 - t_k_minus_2
-            u_k_minus_1_current = u_k_minus_1 if k > 1 else 1.0
-            value += float(coeffs[k]) * t_k
-            derivative += float(k) * float(coeffs[k]) * u_k_minus_1_current
-            u_k = 2.0 * s * u_k_minus_1 - u_k_minus_2
-            t_k_minus_2 = t_k_minus_1
-            t_k_minus_1 = t_k
-            u_k_minus_2 = u_k_minus_1
-            u_k_minus_1 = u_k
+        for coeff_index in range(coefficient_count - 1):
+            c = float(coeffs[coeff_index])
 
-        values.append(value)
-        rates.append(derivative * derivative_scale)
+            old_dw1 = dw1
+            dw1 = (2.0 * w1) + (s2 * dw1 - dw2)
+            dw2 = old_dw1
+
+            old_w1 = w1
+            w1 = c + s2 * w1 - w2
+            w2 = old_w1
+
+        values.append(float(coeffs[coefficient_count - 1]) + s * w1 - w2)
+        rates.append((w1 + s * dw1 - dw2) * derivative_scale)
 
     return tuple(values), tuple(rates)
 
@@ -352,13 +351,14 @@ class _NativeChebyshevSegment:
         return self._data
 
     def _evaluate(self, tdb: float, tdb2: float, need_rates: bool):
-        if self._handle is not None and tdb2 == 0.0:
+        if self._handle is not None:
             if need_rates and hasattr(self._handle, "segment_position_and_velocity"):
                 return self._handle.segment_position_and_velocity(
                     int(self.start_i),
                     int(self.end_i),
                     int(self.data_type),
                     tdb,
+                    tdb2,
                 )
             if not need_rates and hasattr(self._handle, "segment_position"):
                 return self._handle.segment_position(
@@ -366,13 +366,14 @@ class _NativeChebyshevSegment:
                     int(self.end_i),
                     int(self.data_type),
                     tdb,
+                    tdb2,
                 ), None
 
         self._load_native_evaluator()
-        if self._native_evaluator is not None and tdb2 == 0.0:
+        if self._native_evaluator is not None:
             if need_rates:
-                return self._native_evaluator.position_and_velocity(tdb)
-            return self._native_evaluator.position(tdb), None
+                return self._native_evaluator.position_and_velocity(tdb, tdb2)
+            return self._native_evaluator.position(tdb, tdb2), None
 
         init, intlen, coefficients = self._load_data()
         record_count, component_count, coefficient_count = _coeff_tensor_shape(coefficients)
@@ -977,23 +978,6 @@ class KernelPool:
             f"No kernel in pool covers center={center}, target={target} "
             f"at JD {jd:.2f}"
         )
-
-    def evaluator(self, target: int, center: int = 0, jd_tt: float = 2451545.0) -> object:
-        """
-        Return a native IEvaluator for *target* relative to *center* at *jd_tt*.
-
-        Searches readers in fallback order and returns the first available evaluator.
-        """
-        for reader in self._readers:
-            try:
-                if hasattr(reader, "has_segment_at") and reader.has_segment_at(center, target, jd_tt):
-                    if hasattr(reader, "evaluator"):
-                        ev = reader.evaluator(target, center, jd_tt)
-                        if ev is not None:
-                            return ev
-            except (KeyError, AttributeError):
-                continue
-        return None
 
     # ------------------------------------------------------------------
     # Segment presence checks
