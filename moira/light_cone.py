@@ -15,16 +15,16 @@ Standard astrological positions already incorporate light-time correction
 one-way light travel time).  This engine makes the light-cone geometry
 *explicit* by surfacing:
 
-  - The *apparent* ecliptic position (where the body was when it emitted
-    the received light, i.e. the standard corrected position).
+  - The *apparent* ecliptic position (Moira's standard observed position:
+    light-time emission geometry plus the admitted apparent-sky corrections).
   - The *geometric* ecliptic position (where the body physically is at the
     birth moment, without any light-time correction).
   - The *light travel time* τ in days and minutes.
   - The *emission Julian Day* (jd_ut − τ): the instant when the photons
     now arriving at Earth were released.
-  - The *longitude displacement*: the angular shift between where the body
-    appears (apparent) and where it actually is (geometric) — a direct
-    measure of the light-cone parallax.
+  - The *longitude displacement*: the angular shift between Moira's apparent
+    observed longitude and the same-time geometric longitude.  This is a
+    received-light displacement measure, not a pure light-time-only term.
 
 Physical context
 ----------------
@@ -100,10 +100,10 @@ class ReceivedLightPosition:
     """
     RITE: The Received-Light Position Vessel.
 
-    THEOREM: Holds both the apparent ecliptic position of a body (where it
-    was when the light reaching Earth at the birth moment was emitted) and
-    the geometric position (where the body physically is at the birth
-    instant), along with the light-cone parameters that connect them.
+    THEOREM: Holds both Moira's apparent observed ecliptic position of a body
+    (including light-time and apparent-sky corrections) and the geometric
+    position (where the body physically is at the birth instant), along with
+    the light-cone parameters that connect them.
 
     The ``sign``, ``sign_symbol``, and ``sign_degree`` fields reflect the
     *apparent* longitude — the position an astrologer would use.
@@ -189,9 +189,9 @@ def received_light_at(
     Compute the received-light position of ``body`` at the given Julian Date.
 
     The apparent position is derived from ``planet_at(apparent=True)``,
-    which applies the full light-time correction pipeline.  The geometric
-    position is derived from ``planet_at(apparent=False)``.  The light
-    travel time is inferred from the apparent (light-time corrected)
+    which applies Moira's full apparent-position pipeline.  The geometric
+    position is derived from ``planet_at(apparent=False)``.  The light travel
+    time is inferred from the apparent pipeline's light-time-corrected
     distance:
 
         τ (days) = distance_km / C_KM_PER_DAY
@@ -220,10 +220,9 @@ def received_light_at(
     light-time corrected distance already embedded in the ``planet_at``
     apparent pipeline.  No additional iteration is performed here.
 
-    The ``speed`` and ``retrograde`` fields reflect the *apparent*
-    (light-time corrected) longitudinal rate, consistent with all other
-    Moira position products.  Speed is always the geocentric astrometric
-    rate as returned by ``planet_at``.
+    The ``speed`` and ``retrograde`` fields reflect the apparent longitudinal
+    rate returned by ``planet_at(apparent=True)``, consistent with all other
+    standard Moira position products.
     """
     if body not in RECEIVED_LIGHT_BODIES:
         raise ValueError(

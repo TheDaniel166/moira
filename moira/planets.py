@@ -344,8 +344,10 @@ class CartesianPosition:
     RITE: The Cartesian Position Vessel
 
     THEOREM: CartesianPosition is the read-only result vessel for a planetary
-        position expressed as rectangular ICRF-of-date coordinates (km) rather
-        than ecliptic longitude/latitude.
+        position expressed as rectangular coordinates (km) rather than
+        ecliptic longitude/latitude.  The coordinate orientation depends on
+        the requested correction path: true equatorial of date when
+        ``apparent=True`` and geometric ICRF when ``apparent=False``.
 
     RITE OF PURPOSE:
         CartesianPosition is returned by planet_at(..., frame='cartesian').
@@ -1450,7 +1452,8 @@ def planet_at(
         frame: Output coordinate frame. ``'ecliptic'`` (default) returns a
             ``PlanetData`` with ecliptic longitude/latitude/distance.
             ``'cartesian'`` returns a ``CartesianPosition`` with rectangular
-            ICRF-of-date coordinates (km).
+            coordinates (km): raw ICRF when ``apparent=False`` and
+            equatorial-of-date when ``apparent=True``.
         observer_lat: Geographic latitude of the observer in degrees. Required
             together with ``observer_lon`` and ``lst_deg`` to apply
             topocentric parallax correction. Has no effect when

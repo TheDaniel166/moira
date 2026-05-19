@@ -45,8 +45,8 @@ Barycentric / SSB positions  (moira.ssb)
 -----------------------------------------
 ssb_position_at(body, jd_ut)
     Position of a body measured from the Solar System Barycentre.
-    Returns SSBPosition with BCRS ecliptic longitude, latitude, distance.
-    The Sun itself is non-zero here.
+    Returns SSBPosition with true-of-date ecliptic longitude, latitude, and
+    distance using the SSB as origin.  The Sun itself is non-zero here.
 
 all_ssb_positions_at(jd_ut)
     SSBPosition for all SSB_BODIES simultaneously.
@@ -57,7 +57,7 @@ SSB_BODIES
 Planetocentric positions  (moira.planetocentric)
 -------------------------------------------------
 planetocentric_at(observer_body, target_body, jd_ut)
-    Apparent ecliptic position of ``target_body`` as seen from the center
+    Geometric ecliptic position of ``target_body`` measured from the center
     of ``observer_body``.  Returns PlanetocentricData.
 
 all_planetocentric_at(observer_body, jd_ut)
@@ -85,7 +85,8 @@ Result vessels
 PlanetData          geocentric ecliptic: lon, lat, dist, speed, obliquity
 SkyPosition         topocentric RA/Dec + alt/az
 HeliocentricData    heliocentric ecliptic: lon, lat, dist, speed
-CartesianPosition   ICRF Cartesian (x, y, z in AU)
+CartesianPosition   rectangular coordinates (x, y, z in km); true equatorial
+                    of date when apparent=True, geometric ICRF otherwise
 SSBPosition         barycentric ecliptic: lon, lat, dist
 PlanetocentricData  observer-relative ecliptic: lon, lat, dist
 NodeData            lunar node or Lilith: lon, speed

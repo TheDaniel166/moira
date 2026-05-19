@@ -22,10 +22,11 @@ small but real and directly accessible here without any approximation.
 
 Frame
 -----
-Positions are given in the true-of-date geocentric ecliptic frame
-(precession + nutation applied), consistent with all other Moira position
-products.  The frame rotations are applied to the raw ICRF barycentric
-vectors before ecliptic projection.
+Positions are given as SSB-origin ecliptic longitudes and latitudes in the
+true-of-date ecliptic frame (precession + nutation applied).  This is not a
+geocentric product: the origin remains the Solar System Barycenter while the
+orientation is rotated from raw ICRF barycentric vectors into Moira's
+true-of-date ecliptic orientation before projection.
 
 Boundary declaration
 --------------------

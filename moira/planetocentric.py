@@ -6,15 +6,16 @@ Archetype: Engine
 
 Purpose
 -------
-Governs computation of planetocentric ecliptic positions — the apparent
-positions of celestial bodies as seen from the center of a specific planet
+Governs computation of planetocentric ecliptic positions — the geometric
+positions of celestial bodies measured from the center of a specific planet
 other than Earth.
 
 Every body in the DE441 kernel can serve as an observer.  The resulting
 ecliptic longitude, latitude, distance, and longitudinal speed are expressed
-in the true-of-date geocentric ecliptic frame (precession + nutation applied),
-making the output directly comparable to Moira's geocentric and heliocentric
-position products.
+with SSB-origin vectors differenced into the requested observer-origin vector
+and then rotated into the true-of-date ecliptic orientation (precession +
+nutation applied), making the output directly comparable in orientation to
+Moira's geocentric and heliocentric position products.
 
 Heliocentric (observer = Sun) and geocentric (observer = Earth) are both
 degenerate cases of this engine, though dedicated implementations already
@@ -91,9 +92,9 @@ class PlanetocentricData:
     """
     RITE: The Observer-Planet Position Vessel.
 
-    THEOREM: Holds the apparent ecliptic position of a target body as seen
+    THEOREM: Holds the geometric ecliptic position of a target body measured
     from the center of a specified observer planet, expressed in the
-    true-of-date geocentric ecliptic frame.
+    true-of-date ecliptic orientation.
 
     RITE OF PURPOSE:
         Serves the Planetocentric Engine as the canonical result vessel.
@@ -232,12 +233,13 @@ def planetocentric_at(
     reader=None,
 ) -> PlanetocentricData:
     """
-    Compute the apparent ecliptic position of ``target`` as seen from
+    Compute the geometric ecliptic position of ``target`` measured from
     the center of ``observer``.
 
-    Positions are expressed in the true-of-date geocentric ecliptic frame
-    (precession and nutation applied), consistent with Moira's geocentric
-    and heliocentric position products.
+    Positions are expressed in the requested observer-origin frame and rotated
+    into the true-of-date ecliptic orientation (precession and nutation
+    applied), consistent in orientation with Moira's geocentric and
+    heliocentric position products.
 
     Parameters
     ----------

@@ -746,8 +746,10 @@ def _asteroid_apparent(
     reader,
 ) -> Vec3:
     """
-    Return apparent geocentric ICRF position of *naif_id* with 
-    all relativistic and matrix corrections.
+    Return apparent geocentric equatorial-of-date position of *naif_id*.
+
+    The returned vector has already passed through frame bias, precession, and
+    nutation; it is no longer an ICRF vector.
     """
     # 1. Earth at observation time
     earth_ssb = _earth_barycentric(jd_tt, reader)
@@ -807,7 +809,7 @@ def _asteroid_geocentric(
     apparent: bool = False,
 ) -> Vec3:
     """
-    Return geocentric ICRF position of *naif_id* (km).
+    Return geocentric position vector of *naif_id* (km).
 
     Parameters
     ----------
@@ -815,14 +817,16 @@ def _asteroid_geocentric(
     jd_tt        : Julian Day in Terrestrial Time
     kernel       : asteroid kernel to use (from _kernel_for)
     de441_reader : DE441 SpkReader for Earth/Sun positions
-    apparent     : if True, apply full apparent-sky corrections
-                   (deflection, aberration, frame bias, P+N matrices);
-                   if False (default), return light-time-corrected
-                   geometric geocentric vector only
+    apparent     : if True, return the apparent equatorial-of-date vector
+                   after deflection, aberration, frame bias, precession, and
+                   nutation; if False (default), return the light-time
+                   corrected geocentric astrometric vector before those
+                   observer-facing apparent corrections.
 
     Returns
     -------
-    (x, y, z) in km, ICRF
+    (x, y, z) in km.  The frame is ICRF when ``apparent=False`` and
+    equatorial-of-date when ``apparent=True``.
     """
     if apparent:
         return _asteroid_apparent(naif_id, jd_tt, kernel, reader)

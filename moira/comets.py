@@ -184,9 +184,10 @@ def _comet_geocentric_ecliptic(
     Return (longitude_deg, latitude_deg, distance_au, speed_deg_per_day)
     for *naif_id* at *jd_ut* using the supplied kernel.
 
-    The pipeline mirrors asteroids._compute_asteroid_position() exactly:
-    heliocentric ICRF → light-time iteration → aberration → deflection →
-    frame bias → precession+nutation → ecliptic.
+    The pipeline follows Moira's small-body apparent-position doctrine:
+    heliocentric ICRF → light-time iteration → annual aberration →
+    gravitational deflection → frame bias → precession+nutation →
+    true-of-date ecliptic projection.
     """
     jd_tt = ut_to_tt(jd_ut)
 

@@ -860,7 +860,7 @@ from moira.facade import (
 
 ## 6. Alternative Reference Frames
 
-Moira's default position products are geocentric ecliptic. Three additional engines surface different physical origins or light-cone geometry, each exposing the same true-of-date ecliptic frame for direct comparison.
+Moira's default position products are geocentric ecliptic. Three additional engines surface different physical origins or light-cone geometry, each exposing true-of-date ecliptic orientation for direct comparison while preserving its own origin doctrine.
 
 ### Solar System Barycenter (SSB) Chart
 
@@ -868,7 +868,7 @@ Moira's default position products are geocentric ecliptic. Three additional engi
 from moira.ssb import SSBPosition, SSB_BODIES, ssb_position_at, all_ssb_positions_at
 ```
 
-The SSB is the true inertial center-of-mass of the solar system. The Sun wanders up to ~2.2 solar radii (~0.010 AU) from the SSB, driven mainly by Jupiter's mass. All positions are expressed in the true-of-date geocentric ecliptic frame (precession + nutation applied) for comparability with standard Moira products.
+The SSB is the true inertial center-of-mass of the solar system. The Sun wanders up to ~2.2 solar radii (~0.010 AU) from the SSB, driven mainly by Jupiter's mass. Positions use the SSB as origin and true-of-date ecliptic orientation (precession + nutation applied); they are not geocentric positions.
 
 | Symbol | Type | Description |
 |---|---|---|
@@ -918,7 +918,7 @@ from moira.planetocentric import (
 )
 ```
 
-Positions of celestial bodies as seen from the center of a specified observer planet other than Earth. Any body with a barycentric state in the DE441 kernel can serve as the observer — including the Sun (heliocentric) and the Moon. Output is expressed in the same true-of-date geocentric ecliptic frame used by all other Moira position products.
+Geometric positions of celestial bodies measured from the center of a specified observer planet other than Earth. Any body with a barycentric state in the DE441 kernel can serve as the observer — including the Sun (heliocentric) and the Moon. Output preserves the requested observer-origin vector and uses true-of-date ecliptic orientation.
 
 Valid observers: `Body.SUN`, `Body.MOON`, `Body.MERCURY`, `Body.VENUS`, `Body.EARTH`, `Body.MARS`, `Body.JUPITER`, `Body.SATURN`, `Body.URANUS`, `Body.NEPTUNE`, `Body.PLUTO`
 
@@ -3998,9 +3998,9 @@ from moira.sky.bodies import (
 | `next_heliocentric_transit(body, jd_start, longitude)` | `float` | Next JD when body's heliocentric longitude equals target |
 | `heliocentric_planet_at(body, jd_ut, reader=None)` | `HeliocentricData` | Heliocentric ecliptic position |
 | `all_heliocentric_at(jd_ut, bodies=None, reader=None)` | `dict[str, HeliocentricData]` | All planets heliocentrically |
-| `ssb_position_at(body, jd_ut, reader=None)` | `SSBPosition` | BCRS ecliptic position measured from Solar System Barycentre |
+| `ssb_position_at(body, jd_ut, reader=None)` | `SSBPosition` | SSB-origin ecliptic position in true-of-date orientation |
 | `all_ssb_positions_at(jd_ut, reader=None)` | `dict[str, SSBPosition]` | All `SSB_BODIES` from SSB |
-| `planetocentric_at(observer_body, target_body, jd_ut)` | `PlanetocentricData` | Target as seen from the center of observer body |
+| `planetocentric_at(observer_body, target_body, jd_ut)` | `PlanetocentricData` | Geometric target position measured from the center of observer body |
 | `all_planetocentric_at(observer_body, jd_ut)` | `dict[str, PlanetocentricData]` | All targets from observer body |
 | `mean_node(jd_ut)` | `NodeData` | Mean lunar ascending node |
 | `true_node(jd_ut, reader=None)` | `NodeData` | True (osculating) ascending node |
