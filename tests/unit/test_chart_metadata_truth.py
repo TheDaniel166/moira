@@ -36,6 +36,77 @@ def test_moira_chart_uses_tt_obliquity_and_jd_delta_t(monkeypatch) -> None:
     assert chart.delta_t == 64.321
 
 
+def test_moira_chart_passes_ut1_to_all_planets_at(monkeypatch) -> None:
+    fake_reader = SimpleNamespace(path=Path("kernels/de441.bsp"))
+    node_result = SimpleNamespace(longitude=123.0)
+    seen: dict[str, object] = {}
+
+    monkeypatch.setattr(facade, "SpkReader", lambda path: fake_reader)
+    monkeypatch.setattr(facade, "utc_to_tt", lambda jd: jd + 0.0008)
+    monkeypatch.setattr(facade, "utc_to_ut1", lambda jd: jd + 0.1234)
+    monkeypatch.setattr(facade, "nutation", lambda jd_tt: (0.2, 0.0))
+    monkeypatch.setattr(facade, "local_sidereal_time", lambda *args: 211.0)
+    monkeypatch.setattr(facade, "true_obliquity", lambda jd: 23.4)
+    monkeypatch.setattr(facade, "delta_t_from_jd", lambda jd: 69.0)
+    monkeypatch.setattr(facade, "true_node", lambda *args, **kwargs: node_result)
+    monkeypatch.setattr(facade, "mean_node", lambda *args, **kwargs: node_result)
+    monkeypatch.setattr(facade, "mean_lilith", lambda *args, **kwargs: node_result)
+    monkeypatch.setattr(facade, "true_lilith", lambda *args, **kwargs: node_result)
+
+    def fake_all_planets_at(jd_arg, **kwargs):
+        seen["jd_arg"] = jd_arg
+        seen["kwargs"] = kwargs
+        return {"Sun": SimpleNamespace(longitude=15.0, latitude=1.0, speed=0.9)}
+
+    monkeypatch.setattr(facade, "all_planets_at", fake_all_planets_at)
+
+    engine = facade.Moira()
+    dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    engine.chart(dt, observer_lat=51.5, observer_lon=-0.1)
+
+    assert seen["jd_arg"] == jd_from_datetime(dt) + 0.1234
+
+
+def test_moira_chart_uses_apparent_lst_for_topocentric_chart(monkeypatch) -> None:
+    fake_reader = SimpleNamespace(path=Path("kernels/de441.bsp"))
+    node_result = SimpleNamespace(longitude=123.0)
+    seen: dict[str, object] = {}
+
+    monkeypatch.setattr(facade, "SpkReader", lambda path: fake_reader)
+    monkeypatch.setattr(facade, "utc_to_tt", lambda jd: jd + 0.0008)
+    monkeypatch.setattr(facade, "utc_to_ut1", lambda jd: jd + 0.1234)
+    monkeypatch.setattr(facade, "nutation", lambda jd_tt: (0.2, 0.0))
+    monkeypatch.setattr(facade, "true_obliquity", lambda jd: 23.4567)
+    monkeypatch.setattr(facade, "delta_t_from_jd", lambda jd: 69.0)
+    monkeypatch.setattr(facade, "true_node", lambda *args, **kwargs: node_result)
+    monkeypatch.setattr(facade, "mean_node", lambda *args, **kwargs: node_result)
+    monkeypatch.setattr(facade, "mean_lilith", lambda *args, **kwargs: node_result)
+    monkeypatch.setattr(facade, "true_lilith", lambda *args, **kwargs: node_result)
+
+    def fake_local_sidereal_time(*args):
+        seen["lst_args"] = args
+        return 211.0
+
+    def fake_all_planets_at(jd_arg, **kwargs):
+        seen["lst_deg"] = kwargs["lst_deg"]
+        return {"Sun": SimpleNamespace(longitude=15.0, latitude=1.0, speed=0.9)}
+
+    monkeypatch.setattr(facade, "local_sidereal_time", fake_local_sidereal_time)
+    monkeypatch.setattr(facade, "all_planets_at", fake_all_planets_at)
+
+    engine = facade.Moira()
+    dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    engine.chart(dt, observer_lat=51.5, observer_lon=-0.1)
+
+    assert seen["lst_args"] == (
+        jd_from_datetime(dt) + 0.1234,
+        -0.1,
+        0.2,
+        23.4567,
+    )
+    assert seen["lst_deg"] == 211.0
+
+
 def test_jd_from_datetime_rejects_naive_datetime() -> None:
     with pytest.raises(ValueError, match="timezone-aware datetime"):
         jd_from_datetime(datetime(2000, 1, 1, 12, 0))

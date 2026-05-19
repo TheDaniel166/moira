@@ -97,10 +97,16 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
 
         lst_deg: float | None = None
         if observer_lat is not None and observer_lon is not None:
-            lst_deg = facade.local_sidereal_time(jd_ut1, observer_lon)
+            dpsi_deg, _ = facade.nutation(jd_tt)
+            lst_deg = facade.local_sidereal_time(
+                jd_ut1,
+                observer_lon,
+                dpsi_deg,
+                facade.true_obliquity(jd_tt),
+            )
 
         planets = facade.all_planets_at(
-            jd_tt,
+            jd_ut1,
             bodies=bodies,
             reader=self._reader,
             observer_lat=observer_lat,
@@ -116,7 +122,6 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
             nodes[facade.Body.LILITH] = facade.mean_lilith(jd)
             nodes[facade.Body.TRUE_LILITH] = facade.true_lilith(jd, reader=self._reader)
 
-        jd_tt = facade.utc_to_tt(jd)
         obl = facade.true_obliquity(jd_tt)
         dt_s = facade.delta_t_from_jd(jd)
 
