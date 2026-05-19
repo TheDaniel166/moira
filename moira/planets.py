@@ -75,7 +75,7 @@ __all__ = [
 # Result dataclass
 # ---------------------------------------------------------------------------
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class PlanetData:
     """
     RITE: The Planetary Data Vessel
@@ -151,7 +151,10 @@ class PlanetData:
     sign_degree:    float= field(init=False)
 
     def __post_init__(self) -> None:
-        self.sign, self.sign_symbol, self.sign_degree = sign_of(self.longitude)
+        sign, sign_symbol, sign_degree = sign_of(self.longitude)
+        object.__setattr__(self, "sign", sign)
+        object.__setattr__(self, "sign_symbol", sign_symbol)
+        object.__setattr__(self, "sign_degree", sign_degree)
 
     @property
     def longitude_dms(self) -> tuple[int, int, float]:
@@ -174,7 +177,7 @@ class PlanetData:
                 f"  ({self.longitude:.4f}°) {r}  Δ={self.speed:+.4f}°/d")
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class SkyPosition:
     """
     RITE: The Sky Position Vessel
@@ -252,7 +255,7 @@ class SkyPosition:
 # Heliocentric result dataclass
 # ---------------------------------------------------------------------------
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class HeliocentricData:
     """
     RITE: The Heliocentric Data Vessel
@@ -325,7 +328,10 @@ class HeliocentricData:
     sign_degree: float   = field(init=False)
 
     def __post_init__(self) -> None:
-        self.sign, self.sign_symbol, self.sign_degree = sign_of(self.longitude)
+        sign, sign_symbol, sign_degree = sign_of(self.longitude)
+        object.__setattr__(self, "sign", sign)
+        object.__setattr__(self, "sign_symbol", sign_symbol)
+        object.__setattr__(self, "sign_degree", sign_degree)
 
     @property
     def distance_au(self) -> float:
@@ -338,7 +344,7 @@ class HeliocentricData:
                 f"r={self.distance_au:.4f} AU  {r}")
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class CartesianPosition:
     """
     RITE: The Cartesian Position Vessel

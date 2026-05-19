@@ -43,7 +43,7 @@ from .planets import _earth_barycentric, approx_year as _approx_year
 from .spk_reader import get_active_reader, KernelReader, SpkReader, MissingKernelError
 
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class NodeData:
     """
     RITE: The Node Data Vessel — immutable result container for a lunar node or Lilith point.
@@ -106,7 +106,10 @@ class NodeData:
     speed:       float = 0.0
 
     def __post_init__(self) -> None:
-        self.sign, self.sign_symbol, self.sign_degree = sign_of(self.longitude)
+        sign, sign_symbol, sign_degree = sign_of(self.longitude)
+        object.__setattr__(self, "sign", sign)
+        object.__setattr__(self, "sign_symbol", sign_symbol)
+        object.__setattr__(self, "sign_degree", sign_degree)
 
     def __repr__(self) -> str:
         d = int(self.sign_degree)

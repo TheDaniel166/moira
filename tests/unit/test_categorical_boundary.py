@@ -1,7 +1,10 @@
+from dataclasses import FrozenInstanceError
+
 import pytest
 
 from moira.constants import sign_of
 from moira.planets import PlanetData
+from moira.nodes import NodeData
 from moira.houses import HouseCusps, assign_house, HouseSystem
 from moira.aspects import aspects_between
 
@@ -88,3 +91,24 @@ def test_aspect_engine_does_not_coerce_floats() -> None:
     
     # The aspect engine should recognize it's not EXACTLY 90.0
     assert aspects_fuzzy[0].orb > 0.0
+
+
+def test_planet_data_is_frozen() -> None:
+    pd = PlanetData(
+        name="TestBody",
+        longitude=15.0,
+        latitude=0.0,
+        distance=1.0,
+        speed=1.0,
+        retrograde=False,
+    )
+
+    with pytest.raises(FrozenInstanceError):
+        pd.longitude = 30.0  # type: ignore[misc]
+
+
+def test_node_data_is_frozen() -> None:
+    nd = NodeData(name="Mean Node", longitude=123.0, speed=-0.05)
+
+    with pytest.raises(FrozenInstanceError):
+        nd.longitude = 210.0  # type: ignore[misc]
