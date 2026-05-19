@@ -12,11 +12,19 @@ Tests without that mark are pure-unit (no kernel required).
 """
 from __future__ import annotations
 
+from dataclasses import FrozenInstanceError
 import math
 import pytest
 
 import moira.planets as planets_module
-from moira.planets import CartesianPosition, PlanetData, planet_at, sky_position_at, all_planets_at
+from moira.planets import (
+    CartesianPosition,
+    HeliocentricData,
+    PlanetData,
+    all_planets_at,
+    planet_at,
+    sky_position_at,
+)
 from moira.constants import Body
 
 # J2000.0 epoch in UT — stable reference for all ephemeris tests.
@@ -52,6 +60,38 @@ def test_cartesian_position_fields():
     assert pos.y == 200.0
     assert pos.z == -50.0
     assert pos.center == "barycentric"
+
+
+def test_sky_position_is_frozen():
+    pos = planets_module.SkyPosition(
+        name="Mars",
+        right_ascension=10.0,
+        declination=20.0,
+        azimuth=30.0,
+        altitude=40.0,
+        distance=50.0,
+    )
+    with pytest.raises(FrozenInstanceError):
+        pos.altitude = 41.0  # type: ignore[misc]
+
+
+def test_cartesian_position_is_frozen():
+    pos = CartesianPosition(name="Mars", x=1.0, y=2.0, z=3.0, center="geocentric")
+    with pytest.raises(FrozenInstanceError):
+        pos.x = 4.0  # type: ignore[misc]
+
+
+def test_heliocentric_data_is_frozen():
+    pos = HeliocentricData(
+        name="Mars",
+        longitude=15.0,
+        latitude=1.0,
+        distance=2.0,
+        speed=0.5,
+        retrograde=False,
+    )
+    with pytest.raises(FrozenInstanceError):
+        pos.longitude = 16.0  # type: ignore[misc]
 
 
 def test_npe_all_planets_mode_is_admitted_requires_exact_surface():
