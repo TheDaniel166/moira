@@ -86,6 +86,7 @@ def _synthetic_galactic_cusps(start: float = 0.0) -> galactic_houses.GalacticHou
         cusps_ecl=cusps_ecl,
         cusps_gal=cusps_gal,
         angles=angles,
+        forward=True,
     )
 
 

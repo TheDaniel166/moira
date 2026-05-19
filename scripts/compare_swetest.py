@@ -221,6 +221,63 @@ def _parse_armc_iterations(text: str) -> list[dict]:
     return results
 
 
+def _parse_gauquelin_iterations(text: str, *, imeth: int | None = 0) -> list[dict]:
+    """
+    Parse ``swe_gauquelin_sector()`` ITERATION blocks from the Houses TESTSUITE.
+
+    The cached fixture reports Swiss ``gp`` values as sector number plus
+    fractional progress through that sector.  The fixture block does not carry
+    an explicit body field; Swiss setest uses the Sun for this slice.  Moira's
+    integration test therefore treats this parser as a Sun-only oracle corpus.
+
+    Args:
+        text: Full ``setest/t.exp`` fixture text.
+        imeth: Swiss Gauquelin method number to retain.  ``None`` keeps all
+            methods; Moira currently validates method 0 only.
+
+    Returns:
+        list of dicts with ``jd_ut``, ``lat``, ``lon``, ``imeth``, and ``gp``.
+    """
+    start = text.find("section-descr: swe_gauquelin_sector")
+    if start < 0:
+        raise ValueError("Could not find 'swe_gauquelin_sector' section in t.exp")
+    end = text.find("\n  TESTCASE", start + 1)
+    section = text[start: end if end > 0 else len(text)]
+
+    results = []
+    blocks = re.split(r"(?=\n\s+ITERATION\b)", section)
+    for block in blocks:
+        def _get(key):
+            m = re.search(rf"^\s+{re.escape(key)}:\s*([^\n#]+)", block, re.M)
+            return m.group(1).strip() if m else None
+
+        jd_ut = _get("jd_ut")
+        lat = _get("geolat")
+        lon = _get("geolon")
+        method = _get("imeth")
+        gp = _get("gp")
+        rc = _get("rc")
+
+        if not all([jd_ut, lat, lon, method, gp]):
+            continue
+        if rc is not None and int(rc) != 0:
+            continue
+
+        method_int = int(method)
+        if imeth is not None and method_int != imeth:
+            continue
+
+        results.append({
+            "jd_ut": float(jd_ut),
+            "lat": float(lat),
+            "lon": float(lon),
+            "imeth": method_int,
+            "gp": float(gp),
+        })
+
+    return results
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

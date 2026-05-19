@@ -435,6 +435,119 @@ def test_apc_project_reproduces_intermediate_cusps(
         )
 
 
+@pytest.mark.parametrize(
+    ("jd_ut", "latitude_deg", "longitude_deg"),
+    [
+        (2451545.0, 51.5, 0.0),
+        (2451545.0, 35.0, 25.0),
+        (2451545.0, -33.9, 151.2),
+    ],
+)
+def test_apc_project_governing_invariant_ra_asc_recovers_ascendant(
+    jd_ut: float,
+    latitude_deg: float,
+    longitude_deg: float,
+    moira_approx,
+) -> None:
+    """
+    Governing invariant of the APC projection: projecting ra_asc through
+    _apc_project must recover the Ascendant ecliptic longitude to numerical
+    precision.
+
+    This is an internal consistency proof, independent of external authorities.
+    The APC projection is defined as a generalisation of the Ascendant ecliptic
+    longitude formula; the identity at α = ra_asc is the algebraic anchor of
+    that definition and must hold exactly.
+    """
+    houses = calculate_houses(jd_ut, latitude_deg, longitude_deg, HouseSystem.APC)
+    obliquity = true_obliquity(ut_to_tt(jd_ut))
+
+    v_asc = _equatorial_ecliptic_direction(houses.asc, obliquity)
+    _, _, zenith = _local_horizon_basis(houses.armc, latitude_deg)
+    cos_dec_asc = math.hypot(v_asc[0], v_asc[1])
+    cos_lat = math.hypot(zenith[0], zenith[1])
+
+    ra_asc_r = math.atan2(v_asc[1], v_asc[0])
+    cos_dsa = max(-1.0, min(1.0, -(v_asc[2] * zenith[2]) / (cos_dec_asc * cos_lat)))
+    dsa_asc = math.acos(cos_dsa)
+    tan_lat = zenith[2] / cos_lat
+    armc_r = math.radians(houses.armc)
+    obl_r = math.radians(obliquity)
+
+    projected = _apc_project(ra_asc_r, dsa_asc, tan_lat, armc_r, obl_r)
+
+    assert projected == moira_approx(houses.asc, kind="longitude"), (
+        f"lat={latitude_deg} lon={longitude_deg}: "
+        f"_apc_project(ra_asc)={projected:.8f}° but asc={houses.asc:.8f}°"
+    )
+
+
+@pytest.mark.parametrize(
+    ("jd_ut", "latitude_deg", "longitude_deg"),
+    [
+        (2451545.0, 51.5, 0.0),
+        (2451545.0, 35.0, 25.0),
+        (2451545.0, -33.9, 151.2),
+    ],
+)
+def test_apc_project_reproduces_far_intermediate_cusps(
+    jd_ut: float,
+    latitude_deg: float,
+    longitude_deg: float,
+    moira_approx,
+) -> None:
+    """
+    Arc-doctrine projection covenant: _apc_project with cusp RAs from the
+    full arc trisection must reproduce H5, H6, H8, H9 — the four cusps that
+    cross the IC and DSC parallels and are computed independently (not as
+    antipodal reflections of H2, H3, H11, H12).
+
+    Arc doctrine:
+      H5:  ra_asc + 4·NSA/3    (lower arc, 1/3 past IC toward DSC)
+      H6:  ra_asc + 5·NSA/3    (lower arc, 2/3 past IC toward DSC)
+      H8:  ra_asc − 5·DSA/3    (upper arc, 2/3 past DSC toward MC)
+      H9:  ra_asc − 4·DSA/3    (upper arc, 1/3 past DSC toward MC)
+
+    Independent computation of all eight intermediate cusps is the central
+    architectural claim of Phase E-APC-3. This covenant proves it.
+    """
+    houses = calculate_houses(jd_ut, latitude_deg, longitude_deg, HouseSystem.APC)
+    obliquity = true_obliquity(ut_to_tt(jd_ut))
+
+    v_asc = _equatorial_ecliptic_direction(houses.asc, obliquity)
+    _, _, zenith = _local_horizon_basis(houses.armc, latitude_deg)
+    cos_dec_asc = math.hypot(v_asc[0], v_asc[1])
+    cos_lat = math.hypot(zenith[0], zenith[1])
+
+    ra_asc_r = math.atan2(v_asc[1], v_asc[0])
+    cos_dsa = max(-1.0, min(1.0, -(v_asc[2] * zenith[2]) / (cos_dec_asc * cos_lat)))
+    dsa_asc = math.acos(cos_dsa)
+    nsa_asc = math.pi - dsa_asc
+    tan_lat = zenith[2] / cos_lat
+    armc_r = math.radians(houses.armc)
+    obl_r = math.radians(obliquity)
+
+    # Lower arc past IC: H5 at 4/3 NSA, H6 at 5/3 NSA forward from ASC
+    for cusp_idx, frac in ((4, 4.0 / 3.0), (5, 5.0 / 3.0)):
+        cusp_ra = ra_asc_r + frac * nsa_asc
+        lon = _apc_project(cusp_ra, dsa_asc, tan_lat, armc_r, obl_r)
+        assert lon == moira_approx(houses.cusps[cusp_idx], kind="longitude"), (
+            f"H{cusp_idx + 1} lower-far cusp mismatch at "
+            f"lat={latitude_deg} lon={longitude_deg}: "
+            f"computed={lon:.6f}° expected={houses.cusps[cusp_idx]:.6f}°"
+        )
+
+    # Upper arc past DSC: H8 at −5/3 DSA, H9 at −4/3 DSA from ASC
+    for cusp_idx, frac in ((7, 5.0 / 3.0), (8, 4.0 / 3.0)):
+        cusp_ra = ra_asc_r - frac * dsa_asc
+        lon = _apc_project(cusp_ra, dsa_asc, tan_lat, armc_r, obl_r)
+        assert lon == moira_approx(houses.cusps[cusp_idx], kind="longitude"), (
+            f"H{cusp_idx + 1} upper-far cusp mismatch at "
+            f"lat={latitude_deg} lon={longitude_deg}: "
+            f"computed={lon:.6f}° expected={houses.cusps[cusp_idx]:.6f}°"
+        )
+
+
 def test_apc_structural_invariants_and_branch_selections(moira_approx) -> None:
     """
     Sovereignty Covenant: Prove the APC house system's geometric invariants and branch selections
@@ -445,10 +558,11 @@ def test_apc_structural_invariants_and_branch_selections(moira_approx) -> None:
          from MC (H10) to ASC (H1) into the correct fractions of the diurnal semi-arc (DSA).
       2. Arc-doctrine span invariants: H10 -> H11 -> H12 -> H1 spans the correct DSA, and
          H1 -> H2 -> H3 -> H4 spans the correct NSA.
-      3. MC-Shifted Branch selection: When mc_visible is flipped 180 degrees by polar elevation, the
-         direct geometric detection logic properly triggers and shifts the intermediate cusps.
-      4. Polar-cap branch selection: At high polar latitudes (lat=70), the probe gap detects when the
-         ecliptic projection of ra_asc is flipped, correctly mapping the intermediate cusps.
+      3. Endpoint sheet selection: when the raw APC projection of RA(ASC) lands
+         on the antipodal candidate, all intermediate cusps stay on the
+         Ascendant-recovering projection sheet.
+      4. Polar-cap branch selection: at high polar latitudes (lat=70), the
+         endpoint-selected sheet keeps intermediate cusps in the intended APC frame.
     """
     # Case 1: Standard mid-latitude case (London, 51.5° N)
     jd_ut = 2451545.0
@@ -484,9 +598,7 @@ def test_apc_structural_invariants_and_branch_selections(moira_approx) -> None:
         f"ASC={asc:.2f}°, H2={h2:.2f}°, H3={h3:.2f}°, IC={ic:.2f}°"
     )
 
-    # Case 2: Polar high latitude triggering polar probe detection (lat = 70.0)
-    # We select a time where the Ascendant parallel circle triggers a polar flip
-    # and verify all intermediate cusps are placed correctly relative to ASC.
+    # Case 2: Polar high latitude requiring endpoint-selected sheet continuity.
     houses_polar = calculate_houses(jd_ut, 70.0, 45.0, HouseSystem.APC)
     asc_pol = houses_polar.asc
     h12_pol = houses_polar.cusps[11]
@@ -500,10 +612,7 @@ def test_apc_structural_invariants_and_branch_selections(moira_approx) -> None:
         f"MC={mc_pol:.2f}°, H12={h12_pol:.2f}°, ASC={asc_pol:.2f}°"
     )
 
-    # Case 3: MC-Shifted check (a case where MC above-horizon flip occurs)
-    # For a high latitude or equatorial antipode case where mc_visible != mc_geometric
-    # We verify that intermediate cusps are properly directed to the hemisphere of mc_visible
-    # by checking the exact verified ecliptic longitude values for this high-latitude case.
+    # Case 3: Endpoint sheet selection in a high-latitude antipodal candidate case.
     houses_shifted = calculate_houses(jd_ut, -68.0, 180.0, HouseSystem.APC)
     asc_sh = houses_shifted.asc
     h12_sh = houses_shifted.cusps[11]
@@ -514,12 +623,11 @@ def test_apc_structural_invariants_and_branch_selections(moira_approx) -> None:
     assert asc_sh == moira_approx(114.36929515925051, kind="longitude")
     assert mc_sh == moira_approx(279.61108765511676, kind="longitude")
 
-    # Verify that the MC-shifted flip was correctly applied, yielding the verified H11 and H12 longitudes
     assert h12_sh == moira_approx(132.5490312111533, kind="longitude"), (
-        f"MC-swapped APC failed to apply the correct realignment flip. "
+        f"APC endpoint sheet selection failed. "
         f"Expected H12 to be 132.549°, got {h12_sh:.6f}°"
     )
     assert h11_sh == moira_approx(263.207069665002, kind="longitude"), (
-        f"MC-swapped APC failed to apply the correct realignment flip. "
+        f"APC endpoint sheet selection failed. "
         f"Expected H11 to be 263.207°, got {h11_sh:.6f}°"
     )

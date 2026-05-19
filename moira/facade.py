@@ -624,7 +624,12 @@ from .parans import (
 )
 from .longevity import HylegResult, find_hyleg, calculate_longevity
 from .planetary_nodes import OrbitalNode, planetary_node, all_planetary_nodes, geometric_node
-from .gauquelin import GauquelinPosition, gauquelin_sector, all_gauquelin_sectors
+from .gauquelin import (
+    GauquelinHorizonStatus,
+    GauquelinPosition,
+    gauquelin_sector,
+    all_gauquelin_sectors,
+)
 from .galactic import (
     GalacticPosition,
     equatorial_to_galactic, galactic_to_equatorial,
@@ -1308,7 +1313,7 @@ __all__ = [
     # Planetary nodes/apsides
     "OrbitalNode", "planetary_node", "all_planetary_nodes", "geometric_node",
     # Gauquelin sectors
-    "GauquelinPosition", "gauquelin_sector", "all_gauquelin_sectors",
+    "GauquelinHorizonStatus", "GauquelinPosition", "gauquelin_sector", "all_gauquelin_sectors",
     # Galactic coordinate system
     "GalacticPosition",
     "equatorial_to_galactic", "galactic_to_equatorial",

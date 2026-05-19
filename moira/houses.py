@@ -571,9 +571,11 @@ class PolarFallbackPolicy(str, Enum):
       "guarantees": ["stable polar-fallback policy taxonomy"]
     }
     """
-    FALLBACK_TO_PORPHYRY = "fallback_to_porphyry"
-    RAISE                = "raise"
-    EXPERIMENTAL_SEARCH  = "experimental_search"
+    FALLBACK_TO_PORPHYRY   = "fallback_to_porphyry"
+    FALLBACK_TO_EQUAL      = "fallback_to_equal"
+    FALLBACK_TO_WHOLE_SIGN = "fallback_to_whole_sign"
+    RAISE                  = "raise"
+    EXPERIMENTAL_SEARCH    = "experimental_search"
 
 
 @dataclass(frozen=True, slots=True)
@@ -2639,50 +2641,39 @@ def _apc_project(
     obliquity_rad: float,
 ) -> float:
     """
-    Project one APC cusp RA (on the Ascendant's parallel circle) to ecliptic
-    longitude.
+    Project a right ascension on the Ascendant's parallel circle to ecliptic longitude.
 
-    GEOMETRIC DERIVATION:
-        Let C be a cusp point on the Ascendant's parallel circle of declination δ_asc.
-        In equatorial rectangular coordinates, the direction vector is:
-            v_eq = [cos(δ_asc)*cos(α), cos(δ_asc)*sin(α), sin(δ_asc)]^T
-        where α is the right ascension of the cusp point.
-        
-        Rotating v_eq by true obliquity ε about the x-axis into ecliptic coordinates:
-            v_ecl = R_x(ε) * v_eq
-            v_ecl = [
-                cos(δ_asc)*cos(α),
-                cos(δ_asc)*sin(α)*cos(ε) - sin(δ_asc)*sin(ε),
-                cos(δ_asc)*sin(α)*sin(ε) + sin(δ_asc)*cos(ε)
-            ]^T
-            
-        The ecliptic longitude λ is given by:
-            λ = atan2(Y_ecl, X_ecl)
-            
-        To make the projection independent of the specific declination scale cos(δ_asc),
-        we divide both components by cos(δ_asc):
-            y = Y_ecl / cos(δ_asc) = sin(α)*cos(ε) - tan(δ_asc)*sin(ε)
-            x = X_ecl / cos(δ_asc) = cos(α)
-            
-        From the horizon event condition for the Ascendant:
-            cos(DSA_asc) = -tan(δ_asc)*tan(lat)
-            
-        This defines the parallel circle scale factor, parallel_scale = -cos(DSA_asc),
-        which relates the declination to geographic latitude via:
-            tan(δ_asc) = parallel_scale / tan(lat)
-            
-        Substituting this into the divided coordinates yields the de Boer/APC
-        longitude projection equations:
-            parallel_scale = -cos(DSA_asc)
-            y = parallel_scale * sin(ARMC) + sin(α)
-            x = cos(ε) * (parallel_scale * cos(ARMC) + cos(α)) + sin(ε) * tan(lat) * sin(ARMC - α)
-            
-        This projection maps any right ascension α on the parallel circle directly
-        to the ecliptic.
+    SOURCE: Leo Knegt, "Astrologie deel I: Wetenschappelijke Techniek" (Amsterdam, 1928),
+    documented by Ingmar de Boer (ingmardeboer.nl/APC_Houses).
+
+    GEOMETRIC BASIS:
+        The APC projection is a generalization of the oblique-sphere horizon formula
+        that defines the Ascendant to any right ascension α on the Ascendant's parallel
+        circle of declination δ_asc.
+
+        The Ascendant is the ecliptic degree crossing the eastern horizon at sidereal
+        time ARMC. For any α on the Ascendant's parallel circle, the APC projection
+        yields the ecliptic longitude through the same oblique-sphere construction —
+        encoding the parallel circle's geometry through a single coupling factor:
+
+            parallel_scale = -cos(DSA_asc) = tan(δ_asc) · tan(φ)
+
+        This identity comes from the horizon-crossing condition: a body on the
+        Ascendant's parallel circle (declination δ_asc) crosses the horizon when its
+        hour angle equals DSA_asc, at which point cos(DSA_asc) = -tan(δ_asc) · tan(φ).
+
+        GOVERNING INVARIANT: substituting α = ra_asc into this formula recovers the
+        standard Ascendant ecliptic longitude formula exactly — confirming the
+        projection is geometrically anchored to the Ascendant as its reference point.
+
+        This is NOT the equatorial-to-ecliptic coordinate rotation R_x(ε) of the
+        direction vector at (α, δ_asc), which would yield a different result. The APC
+        projection is a distinct construction rooted in the oblique-sphere horizon
+        geometry of the Ascendant's parallel circle.
 
     Args:
-        cusp_ra_rad:   Right ascension of the cusp point on the parallel circle.
-        dsa_asc_rad:   Diurnal semi-arc of the Ascendant (radians); equals π/2 + asc_ad.
+        cusp_ra_rad:   Right ascension of the cusp point on the parallel circle (radians).
+        dsa_asc_rad:   Diurnal semi-arc of the Ascendant (radians); DSA = π/2 + asc_ad.
         tan_lat:       tan(geographic latitude).
         armc_rad:      ARMC in radians.
         obliquity_rad: True obliquity in radians.
@@ -2697,6 +2688,39 @@ def _apc_project(
         + math.sin(obliquity_rad) * tan_lat * math.sin(armc_rad - cusp_ra_rad)
     )
     return (math.atan2(y, x) * RAD2DEG) % 360.0
+
+
+def _apc_project_candidates(
+    cusp_ra_rad: float,
+    dsa_asc_rad: float,
+    tan_lat: float,
+    armc_rad: float,
+    obliquity_rad: float,
+) -> tuple[float, float]:
+    """
+    Return the two antipodal APC ecliptic candidates for one projected right ascension.
+
+    Raises:
+        None under normal operation.
+
+    Side effects:
+        None
+    """
+    primary = _apc_project(cusp_ra_rad, dsa_asc_rad, tan_lat, armc_rad, obliquity_rad)
+    return primary, (primary + 180.0) % 360.0
+
+
+def _apc_select_branch(candidates: tuple[float, float], use_secondary_sheet: bool) -> float:
+    """
+    Select the APC ecliptic candidate on the Ascendant-anchored projection sheet.
+
+    The APC projection yields two candidates exactly 180 degrees apart. The
+    governing sheet is determined once by projecting the Ascendant's own right
+    ascension and choosing the candidate that recovers the Ascendant. Every
+    intermediate cusp on the Ascendant parallel circle then uses that same
+    projection sheet.
+    """
+    return candidates[1] if use_secondary_sheet else candidates[0]
 
 
 def _apc(armc: float, obliquity: float, lat: float) -> list[float]:
@@ -2754,35 +2778,15 @@ def _apc(armc: float, obliquity: float, lat: float) -> list[float]:
             Cardinal cusps set directly (H1=ASC, H4=IC, H7=DSC, H10=MC).
 
     BRANCH SELECTION DOCTRINE:
-        The projection from equatorial right ascension on the parallel circle to ecliptic
-        longitude has two antipodal solutions spaced exactly 180° apart. We resolve this
-        ambiguity through two explicit, geometrically-grounded branch selection policies:
+        The APC projection (_apc_project) yields two antipodal ecliptic candidates
+        exactly 180° apart. The governing projection sheet is selected from the
+        Ascendant endpoint itself: projecting RA(ASC) must recover the Ascendant
+        longitude. Every intermediate cusp on the Ascendant parallel circle then
+        uses the same endpoint-selected sheet.
 
-        1. Projection-to-Cardinal Frame Realignment (mc_shifted):
-           The projection primitive _apc_project is anchored to ARMC, and thus its mathematical
-           meridian is the geometric MC (mc_geometric). However, for observer locations where the
-           above-horizon MC (mc_visible) is flipped by 180 degrees from mc_geometric, the raw
-           projected intermediate cusps will land in the hemisphere opposite to mc_visible.
-           We detect this frame mismatch directly by checking if mc_visible and mc_geometric are
-           in opposite hemispheres (separated by > 90 degrees). If so, we flip the raw cusps by 180°
-           to realign them with the visible MC.
-
-        2. Polar-Cap Branch (polar_flipped):
-           At latitudes exceeding the polar circle limit (|latitude| >= 90° − obliquity),
-           the Ascendant's parallel circle can become circumpolar or sink completely below
-           the horizon, causing a coordinate singularity. Under these conditions, the ecliptic
-           projection of the Ascendant's right ascension (ra_asc) can flip to the antipodal
-           ecliptic hemisphere (shifted by 180°).
-           
-           DETECTION DOCTRINE: We evaluate a probe projection at ra_asc. Under correct branch conditions,
-           projecting ra_asc through _apc_project must recover the true Ascendant (asc). If the
-           angular gap between this probe and the true Ascendant exceeds 90°, the projection is
-           flipped. The 90° threshold is a robust boundary because the branch solutions are
-           exactly 180° apart, leaving zero ambiguity.
-           This check is evaluated as a subordinate branch when mc_shifted is False.
-
-        When either detection doctrine triggers, a unified 180° correction is applied to all
-        eight intermediate cusps to align them with the correct ecliptic branch.
+        This makes the branch law intrinsic to the APC object. The code no
+        longer asks whether the Midheaven was swapped; it asks which projection
+        sheet preserves the Ascendant identity that defines the system.
 
     Raises:
         ValueError: Propagated if final cusp normalization fails.
@@ -2790,17 +2794,17 @@ def _apc(armc: float, obliquity: float, lat: float) -> list[float]:
     Side effects:
         None
     """
-    mc_geometric = _mc_from_armc(armc, obliquity, lat)
-    mc_visible = _mc_above_horizon(mc_geometric, obliquity, lat)
+    mc  = _mc_above_horizon(_mc_from_armc(armc, obliquity, lat), obliquity, lat)
     asc = _asc_from_armc(armc, obliquity, lat)
+    ic  = (mc  + 180.0) % 360.0
+    dsc = (asc + 180.0) % 360.0
 
     lat_r  = lat * DEG2RAD
     obl_r  = obliquity * DEG2RAD
     armc_r = armc * DEG2RAD
 
     _POLAR_EPS = 1e-6
-    abs_lat = abs(lat)
-    if abs_lat > 90.0 - _POLAR_EPS:
+    if abs(lat) > 90.0 - _POLAR_EPS:
         asc_ad = 0.0
         tan_lat = 0.0
     else:
@@ -2816,45 +2820,25 @@ def _apc(armc: float, obliquity: float, lat: float) -> list[float]:
     nsa = math.pi / 2.0 - asc_ad
     ra_asc = armc_r + asc_ad + math.pi / 2.0
 
-    proj = _apc_project
-    h2_raw  = proj(ra_asc + 1.0 * nsa / 3.0, dsa, tan_lat, armc_r, obl_r)
-    h3_raw  = proj(ra_asc + 2.0 * nsa / 3.0, dsa, tan_lat, armc_r, obl_r)
-    h5_raw  = proj(ra_asc + 4.0 * nsa / 3.0, dsa, tan_lat, armc_r, obl_r)
-    h6_raw  = proj(ra_asc + 5.0 * nsa / 3.0, dsa, tan_lat, armc_r, obl_r)
-    h8_raw  = proj(ra_asc - 5.0 * dsa / 3.0, dsa, tan_lat, armc_r, obl_r)
-    h9_raw  = proj(ra_asc - 4.0 * dsa / 3.0, dsa, tan_lat, armc_r, obl_r)
-    h11_raw = proj(ra_asc - 2.0 * dsa / 3.0, dsa, tan_lat, armc_r, obl_r)
-    h12_raw = proj(ra_asc - 1.0 * dsa / 3.0, dsa, tan_lat, armc_r, obl_r)
+    asc_primary, asc_secondary = _apc_project_candidates(ra_asc, dsa, tan_lat, armc_r, obl_r)
+    primary_asc_gap = abs(((asc_primary - asc + 180.0) % 360.0) - 180.0)
+    secondary_asc_gap = abs(((asc_secondary - asc + 180.0) % 360.0) - 180.0)
+    use_secondary_sheet = secondary_asc_gap < primary_asc_gap
 
-    # 1. Projection-to-Cardinal Frame Realignment (mc_shifted)
-    mc_shifted = abs(((mc_visible - mc_geometric + 180.0) % 360.0) - 180.0) > 90.0
+    def proj(cusp_ra: float) -> float:
+        candidates = _apc_project_candidates(cusp_ra, dsa, tan_lat, armc_r, obl_r)
+        return _apc_select_branch(candidates, use_secondary_sheet)
 
-    # 2. Polar-Cap Branch Detection (polar_flipped)
-    polar_flipped = False
-    if not mc_shifted and (abs_lat >= 90.0 - obliquity):
-        probe = proj(ra_asc, dsa, tan_lat, armc_r, obl_r)
-        probe_gap = abs(((probe - asc + 180.0) % 360.0) - 180.0)
-        polar_flipped = probe_gap > 90.0
+    h2  = proj(ra_asc + 1.0 * nsa / 3.0)
+    h3  = proj(ra_asc + 2.0 * nsa / 3.0)
+    h5  = proj(ra_asc + 4.0 * nsa / 3.0)
+    h6  = proj(ra_asc + 5.0 * nsa / 3.0)
+    h8  = proj(ra_asc - 5.0 * dsa / 3.0)
+    h9  = proj(ra_asc - 4.0 * dsa / 3.0)
+    h11 = proj(ra_asc - 2.0 * dsa / 3.0)
+    h12 = proj(ra_asc - 1.0 * dsa / 3.0)
 
-    # Apply unified branch correction
-    branch_flip_required = mc_shifted or polar_flipped
-    if branch_flip_required:
-        h2  = (h2_raw  + 180.0) % 360.0
-        h3  = (h3_raw  + 180.0) % 360.0
-        h5  = (h5_raw  + 180.0) % 360.0
-        h6  = (h6_raw  + 180.0) % 360.0
-        h8  = (h8_raw  + 180.0) % 360.0
-        h9  = (h9_raw  + 180.0) % 360.0
-        h11 = (h11_raw + 180.0) % 360.0
-        h12 = (h12_raw + 180.0) % 360.0
-    else:
-        h2, h3, h5, h6, h8, h9, h11, h12 = (
-            h2_raw, h3_raw, h5_raw, h6_raw, h8_raw, h9_raw, h11_raw, h12_raw
-        )
-
-    ic  = (mc_visible + 180.0) % 360.0
-    dsc = (asc       + 180.0) % 360.0
-    cusps = [asc, h2, h3, ic, h5, h6, dsc, h8, h9, mc_visible, h11, h12]
+    cusps = [asc, h2, h3, ic, h5, h6, dsc, h8, h9, mc, h11, h12]
     return _finalize_cusps(cusps, context="_apc")
 
 
@@ -4007,13 +3991,28 @@ def houses_from_armc(
                 mc,
             )
         else:
-            effective_system = HouseSystem.PORPHYRY
             fallback = True
-            fallback_reason = (
-                f"|lat| {abs(lat):.4f}° >= critical latitude {critical_lat:.4f}° "
-                f"(90° − obliquity); {system!r} produces invalid cusps above this "
-                f"threshold; fell back to Porphyry"
-            )
+            if active_policy.polar_fallback == PolarFallbackPolicy.FALLBACK_TO_EQUAL:
+                effective_system = HouseSystem.EQUAL
+                fallback_reason = (
+                    f"|lat| {abs(lat):.4f}° >= critical latitude {critical_lat:.4f}° "
+                    f"(90° − obliquity); {system!r} produces invalid cusps above this "
+                    f"threshold; fell back to Equal"
+                )
+            elif active_policy.polar_fallback == PolarFallbackPolicy.FALLBACK_TO_WHOLE_SIGN:
+                effective_system = HouseSystem.WHOLE_SIGN
+                fallback_reason = (
+                    f"|lat| {abs(lat):.4f}° >= critical latitude {critical_lat:.4f}° "
+                    f"(90° − obliquity); {system!r} produces invalid cusps above this "
+                    f"threshold; fell back to Whole Sign"
+                )
+            else:
+                effective_system = HouseSystem.PORPHYRY
+                fallback_reason = (
+                    f"|lat| {abs(lat):.4f}° >= critical latitude {critical_lat:.4f}° "
+                    f"(90° − obliquity); {system!r} produces invalid cusps above this "
+                    f"threshold; fell back to Porphyry"
+                )
     elif system not in _KNOWN_SYSTEMS:
         if active_policy.unknown_system == UnknownSystemPolicy.RAISE:
             raise ValueError(

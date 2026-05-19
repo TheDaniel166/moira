@@ -50,6 +50,7 @@ from dataclasses import dataclass
 from enum import Enum, IntEnum
 
 from .constants import Body
+from .corrections import apply_refraction
 
 
 __all__ = [
@@ -990,8 +991,8 @@ class ObserverVisibilityEnvironment:
         Non-responsibilities:
             - Does not compute limiting magnitude (delegated to
               _effective_limiting_magnitude()).
-            - Does not apply atmospheric refraction (delegated to
-              moira.rise_set._altitude()).
+            - Does not decide whether atmospheric refraction is applied
+              (VisibilityPolicy.use_refraction governs that assessment step).
             - Does not carry geographic coordinates (those are function arguments).
         Dependencies:
             - LightPollutionClass, ObserverAid (enum dependencies only).
@@ -1353,8 +1354,10 @@ class VisibilityModel:
             Default 6.5 (ideal dark sky).
         extinction_coefficient: Atmospheric extinction per airmass
             (magnitudes/airmass).  Default 0.25 (average site).
-        horizon_altitude_deg: Effective visibility horizon altitude above
-            the geometric horizon (degrees).  Default 0.0.
+        horizon_altitude_deg: Legacy alias for the local visibility cutoff
+            above the geometric horizon (degrees).  This is a terrain or
+            site-obstruction threshold, not the rise/set effective geometric
+            horizon used by RiseSetPolicy.  Default 0.0.
         temperature_c: Ambient temperature (\u00b0C) for refraction.  Default 10.
         pressure_mbar: Atmospheric pressure (mbar) for refraction.
             Default 1013.25 (sea level ISA).
@@ -1565,16 +1568,24 @@ def _planet_alt(
     *,
     pressure_mbar: float = 1013.25,
     temperature_c: float = 10.0,
+    relative_humidity: float = 0.0,
 ) -> float:
-    """Altitude of *body* above the observer's horizon (degrees)."""
+    """Apparent altitude of *body* above the observer's horizon (degrees)."""
     from .rise_set import _altitude
-    return _altitude(
+
+    geometric_altitude = _altitude(
         jd,
         lat,
         lon,
         body,
         pressure_mbar=pressure_mbar,
         temperature_c=temperature_c,
+    )
+    return apply_refraction(
+        geometric_altitude,
+        pressure_mbar=pressure_mbar,
+        temperature_c=temperature_c,
+        relative_humidity=relative_humidity,
     )
 
 
@@ -1813,10 +1824,26 @@ def _ks1991_limiting_magnitude_penalty(
     from .phase import phase_angle as _phase_angle
 
     moon_az, moon_alt = _true_horizontal(Body.MOON, jd_ut, lat, lon)
+    environment = policy.environment
+    assert environment is not None
+    if policy.use_refraction:
+        moon_alt = apply_refraction(
+            moon_alt,
+            pressure_mbar=environment.pressure_mbar,
+            temperature_c=environment.temperature_c,
+            relative_humidity=environment.relative_humidity,
+        )
     if moon_alt <= 0.0:
         return 0.0
 
     tgt_az, tgt_alt = _true_horizontal(body, jd_ut, lat, lon)
+    if policy.use_refraction:
+        tgt_alt = apply_refraction(
+            tgt_alt,
+            pressure_mbar=environment.pressure_mbar,
+            temperature_c=environment.temperature_c,
+            relative_humidity=environment.relative_humidity,
+        )
     if tgt_alt <= 0.0:
         return 0.0
 
@@ -1970,11 +1997,13 @@ def _target_altitude(
     *,
     pressure_mbar: float = 1013.25,
     temperature_c: float = 10.0,
+    relative_humidity: float = 0.0,
 ) -> float:
     """
     Return apparent altitude for a planet, Moon, or fixed star.
 
-    Uses the refraction-aware altitude engine in ``moira.rise_set``.
+    Computes geometric altitude through ``moira.rise_set`` and then applies
+    Moira's explicit atmospheric refraction correction.
 
     Raises:
         ValueError: Propagated by downstream altitude solver for invalid body
@@ -1982,15 +2011,14 @@ def _target_altitude(
 
     Side effects: None.
     """
-    from .rise_set import _altitude
-
-    return _altitude(
+    return _planet_alt(
+        body,
         jd_ut,
         lat,
         lon,
-        body,
         pressure_mbar=pressure_mbar,
         temperature_c=temperature_c,
+        relative_humidity=relative_humidity,
     )
 
 
@@ -2273,7 +2301,15 @@ def _check_visibility(
     twilight_jd = _find_sun_at_alt(jd_midnight, lat, lon, -av, morning)
     if twilight_jd is None:
         return None
-    planet_alt = _target_altitude(body, twilight_jd, lat, lon)
+    planet_alt = _target_altitude(
+        body,
+        twilight_jd,
+        lat,
+        lon,
+        pressure_mbar=model.pressure_mbar,
+        temperature_c=model.temperature_c,
+        relative_humidity=model.relative_humidity,
+    )
     if planet_alt <= model.horizon_altitude_deg:
         return None
     return twilight_jd, planet_alt, -av, mag
@@ -2352,6 +2388,7 @@ def _check_visibility_with_target_alt(
         lon,
         pressure_mbar=model.pressure_mbar,
         temperature_c=model.temperature_c,
+        relative_humidity=model.relative_humidity,
     )
     if planet_alt <= model.horizon_altitude_deg:
         return None
@@ -2936,6 +2973,7 @@ def visibility_assessment(
             lon,
             pressure_mbar=environment.pressure_mbar,
             temperature_c=environment.temperature_c,
+            relative_humidity=environment.relative_humidity,
         )
     else:
         apparent_altitude_deg = true_altitude_deg

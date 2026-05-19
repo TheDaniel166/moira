@@ -959,7 +959,11 @@ def _star_altitude(
     pressure_mbar: float = 1013.25,
     temperature_c: float = 10.0,
 ) -> float:
-    """Return refraction-aware star altitude in degrees.
+    """Return geometric star altitude in degrees.
+
+    The stellar heliacal solver compares this unrefracted altitude against the
+    apparent-horizon threshold ``-0.5667``.  Refraction is therefore encoded in
+    the threshold doctrine, not applied to this altitude signal.
 
     Side effects: None.
     """

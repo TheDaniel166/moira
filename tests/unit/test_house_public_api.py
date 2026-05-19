@@ -22,6 +22,7 @@ _CURATED_PUBLIC_NAMES = [
     "HousePolicy",
     # Result vessels
     "HouseCusps",
+    "DerivedHouseCusps",
     "HousePlacement",
     "HouseBoundaryProfile",
     "HouseAngularity",
@@ -32,6 +33,7 @@ _CURATED_PUBLIC_NAMES = [
     "HouseDistributionProfile",
     # Entry points
     "calculate_houses",
+    "derived_houses",
     "assign_house",
     "describe_boundary",
     "describe_angularity",
@@ -91,11 +93,11 @@ class TestModuleLevelResolution:
 
 
 class TestModuleCounts:
-    def test_curated_count_is_38(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 38
+    def test_curated_count_is_40(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 40
 
-    def test_houses_all_count_is_38(self):
-        assert len(_houses_module.__all__) == 38
+    def test_houses_all_count_is_40(self):
+        assert len(_houses_module.__all__) == 40
 
 
 class TestInternalsRemainInternal:

@@ -456,6 +456,54 @@ def test_visibility_assessment_can_disable_refraction() -> None:
     assert without_refraction.apparent_altitude_deg == pytest.approx(without_refraction.true_altitude_deg)
 
 
+def test_visibility_assessment_applies_refraction_to_geometric_altitude(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, float] = {}
+
+    monkeypatch.setattr("moira.heliacal._true_altitude", lambda *args, **kwargs: 1.0)
+    monkeypatch.setattr("moira.heliacal._target_apparent_magnitude", lambda *args, **kwargs: -4.0)
+    monkeypatch.setattr("moira.heliacal._target_signed_elongation", lambda *args, **kwargs: 20.0)
+    monkeypatch.setattr("moira.rise_set._altitude", lambda *args, **kwargs: 1.0)
+
+    def fake_refraction(altitude_deg: float, **kwargs: float) -> float:
+        captured["altitude_deg"] = altitude_deg
+        captured["pressure_mbar"] = kwargs["pressure_mbar"]
+        captured["temperature_c"] = kwargs["temperature_c"]
+        captured["relative_humidity"] = kwargs["relative_humidity"]
+        return altitude_deg + 0.5
+
+    monkeypatch.setattr("moira.heliacal.apply_refraction", fake_refraction)
+
+    result = visibility_assessment(
+        Body.VENUS,
+        2451545.0,
+        0.0,
+        0.0,
+        policy=VisibilityPolicy(
+            environment=ObserverVisibilityEnvironment(
+                limiting_magnitude=-30.0,
+                local_horizon_altitude_deg=-90.0,
+                pressure_mbar=900.0,
+                temperature_c=5.0,
+                relative_humidity=0.75,
+            ),
+            use_refraction=True,
+        ),
+    )
+
+    assert result.true_altitude_deg == pytest.approx(1.0)
+    assert result.apparent_altitude_deg == pytest.approx(1.5)
+    assert captured == pytest.approx(
+        {
+            "altitude_deg": 1.0,
+            "pressure_mbar": 900.0,
+            "temperature_c": 5.0,
+            "relative_humidity": 0.75,
+        }
+    )
+
+
 @pytest.mark.requires_ephemeris
 def test_visibility_event_returns_generalized_planetary_event() -> None:
     event = visibility_event(

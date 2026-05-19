@@ -106,11 +106,12 @@ class RiseSetPolicy:
         (refraction-free) rise/set times.
 
     horizon_altitude : float or None
-        Explicit horizon altitude override in degrees.  When set, this value
-        is used directly as the target altitude for rise/set bisection,
-        overriding all disc-reference, refraction, and Hindu-rising
-        adjustments.  Useful when a non-standard horizon dip or elevation
-        correction is required.  Default: ``None`` (compute automatically).
+        Explicit effective geometric altitude threshold in degrees.  When set,
+        this value is used directly as the target altitude for rise/set
+        bisection, overriding all disc-reference, refraction, and Hindu-rising
+        adjustments.  Negative values encode apparent-horizon policy such as
+        atmospheric refraction or limb contact while the altitude solver itself
+        remains geometric.  Default: ``None`` (compute automatically).
 
     Examples
     --------
@@ -139,7 +140,7 @@ class RiseSetPolicy:
 
     def horizon_altitude_for(self, body_name: str) -> float:
         """
-        Return the effective horizon altitude (degrees) for a given body.
+        Return the effective geometric horizon threshold (degrees) for a body.
 
         This encapsulates the doctrine choices: disc reference, refraction,
         fixed-disc-size, and Hindu-rising adjustments.
@@ -314,10 +315,13 @@ def find_phenomena(
             definition doctrine (disc reference, refraction, Hindu rising,
             etc.).  When ``None``, the standard astronomical convention is
             used.
-        pressure_mbar: Atmospheric pressure in millibars used for the
-            refraction-corrected altitude computation.  Default 1013.25 mbar.
-        temperature_c: Air temperature in degrees Celsius used for the
-            refraction-corrected altitude computation.  Default 10.0 °C.
+        pressure_mbar: Atmospheric pressure in millibars retained for API
+            compatibility with altitude providers.  Rise/set bisection uses a
+            geometric altitude signal; refraction is encoded in the effective
+            altitude threshold instead of being applied here.
+        temperature_c: Air temperature in degrees Celsius retained for API
+            compatibility with altitude providers.  It does not alter the
+            geometric altitude signal used for bisection.
 
     Returns:
         A dict with keys ``'Rise'``, ``'Set'``, ``'Transit'``, and/or

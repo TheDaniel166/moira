@@ -5,7 +5,23 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED)
-find_package(pybind11 CONFIG REQUIRED)
+find_package(pybind11 CONFIG QUIET)
+
+if(NOT pybind11_FOUND)
+    execute_process(
+        COMMAND "${Python3_EXECUTABLE}" -c "import pybind11; print(pybind11.get_cmake_dir())"
+        RESULT_VARIABLE MOIRA_PYBIND11_DIR_RESULT
+        OUTPUT_VARIABLE MOIRA_PYBIND11_DIR
+        ERROR_QUIET
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    if(MOIRA_PYBIND11_DIR_RESULT EQUAL 0 AND MOIRA_PYBIND11_DIR)
+        list(PREPEND CMAKE_PREFIX_PATH "${MOIRA_PYBIND11_DIR}")
+    endif()
+
+    find_package(pybind11 CONFIG REQUIRED)
+endif()
 
 pybind11_add_module(_moira_native
     src/native/bindings/moira_native.cpp

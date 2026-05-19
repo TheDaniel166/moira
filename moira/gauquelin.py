@@ -37,10 +37,12 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from enum import Enum
 
 from .constants import DEG2RAD, RAD2DEG
 
 __all__ = [
+    "GauquelinHorizonStatus",
     "GauquelinPosition",
     "gauquelin_sector",
     "all_gauquelin_sectors",
@@ -51,7 +53,8 @@ __all__ = [
 # ---------------------------------------------------------------------------
 
 # The "plus zones" are the three sectors immediately following each of the
-# four angles (ASC, MC, DSC, IC) — sectors 1–3, 10–12, 19–21, 28–30.
+# four angles in Moira's sector numbering:
+#   ASC -> sectors 1-3, MC -> 10-12, DSC -> 19-21, IC -> 28-30.
 _PLUS_ZONE_SECTORS: frozenset[int] = frozenset(
     list(range(1, 4)) + list(range(10, 13)) + list(range(19, 22)) + list(range(28, 31))
 )
@@ -61,13 +64,21 @@ _PLUS_ZONE_SECTORS: frozenset[int] = frozenset(
 # Result dataclass
 # ---------------------------------------------------------------------------
 
+class GauquelinHorizonStatus(str, Enum):
+    """Visibility status of the body's diurnal circle at the chosen horizon."""
+
+    NORMAL = "normal"
+    CIRCUMPOLAR = "circumpolar"
+    NEVER_RISES = "never_rises"
+
+
 @dataclass(slots=True)
 class GauquelinPosition:
     """
     RITE: The Sector Vessel — a body's place in the diurnal wheel of influence.
 
-    THEOREM: Holds the computed Gauquelin sector number (1–36), zone
-    classification, and normalised diurnal position for a single celestial body.
+    THEOREM: Holds the computed Gauquelin sector number, zone classification,
+    and normalised diurnal position for a single celestial body.
 
     RITE OF PURPOSE:
         Serves the Gauquelin Engine as the canonical result vessel for sector
@@ -77,8 +88,8 @@ class GauquelinPosition:
 
     LAW OF OPERATION:
         Responsibilities:
-            - Store the body name, sector number (1–36), zone label, and
-              normalised diurnal position (0–360°).
+            - Store the body name, sector number, zone label, and normalised
+              diurnal position (0-360 degrees).
         Non-responsibilities:
             - Does not compute the sector (delegated to ``gauquelin_sector``).
             - Does not validate that sector is in [1, 36].
@@ -89,6 +100,11 @@ class GauquelinPosition:
             - ``zone`` is "Plus Zone" or "Neutral Zone" when sectors=36 (the
               canonical Gauquelin system); ``None`` for custom resolutions where
               no empirical plus-zone definition exists.
+            - ``degree_in_sector`` is the body's offset inside its numbered
+              sector, measured from the sector's Ascendant-anchored boundary.
+            - ``is_plus_zone`` is true only for canonical 36-sector plus zones.
+            - ``horizon_status`` exposes whether the body has ordinary rising
+              and setting events, is circumpolar, or never rises.
             - ``diurnal_position`` is always in [0, 360).
         Succession stance: terminal — not designed for subclassing.
 
@@ -102,11 +118,27 @@ class GauquelinPosition:
         "risk": "medium",
         "api": {
             "public_methods": ["__repr__"],
-            "public_attributes": ["body", "sector", "zone", "diurnal_position"]
+            "public_attributes": [
+                "body",
+                "sector",
+                "zone",
+                "diurnal_position",
+                "sectors",
+                "degree_in_sector",
+                "is_plus_zone",
+                "horizon_status"
+            ]
         },
         "state": {
             "mutable": false,
-            "fields": ["body", "sector", "zone", "diurnal_position"]
+            "fields": [
+                "body",
+                "sector",
+                "zone",
+                "diurnal_position",
+                "sectors",
+                "horizon_status"
+            ]
         },
         "effects": {
             "io": [],
@@ -134,12 +166,28 @@ class GauquelinPosition:
     sector:           int
     zone:             str | None   # None when sectors != 36 (no canonical plus-zone definition)
     diurnal_position: float
+    sectors:          int = 36
+    horizon_status:   GauquelinHorizonStatus = GauquelinHorizonStatus.NORMAL
+
+    @property
+    def degree_in_sector(self) -> float:
+        """Offset in degrees from the beginning of the numbered sector."""
+        deg_per_sector = 360.0 / self.sectors
+        shifted = (self.diurnal_position - 270.0) % 360.0
+        start = (self.sector - 1) * deg_per_sector
+        return shifted - start
+
+    @property
+    def is_plus_zone(self) -> bool:
+        """Whether this position lies in a canonical 36-sector plus zone."""
+        return self.sectors == 36 and self.sector in _PLUS_ZONE_SECTORS
 
     def __repr__(self) -> str:
         zone_str = self.zone if self.zone is not None else "N/A"
         return (
             f"GauquelinPosition({self.body!r}, sector={self.sector}, "
-            f"zone={zone_str!r}, diurnal={self.diurnal_position:.2f}°)"
+            f"zone={zone_str!r}, diurnal={self.diurnal_position:.2f}°, "
+            f"horizon_status={self.horizon_status.value!r})"
         )
 
 
@@ -165,10 +213,12 @@ def gauquelin_sector(
     2. Compute diurnal semi-arc: DSA = arccos(t), where
        t = (sin h₀ − sin φ · sin δ) / (cos φ · cos δ)
        and h₀ is the effective horizon altitude (default −0.5667°,
-       matching the standard refraction + stellar semi-diameter correction
-       used throughout the library).
+       matching the standard refraction-only apparent horizon for point-like
+       bodies).
+       Values outside [-1, 1] are not hidden: they set ``horizon_status`` to
+       circumpolar or never-rising while preserving a deterministic sector.
     3. Normalise the body's position within its diurnal arc to 0–360°
-    4. Sector = ceil(diurnal_position / 10°), clamped to 1–36
+    4. Shift the wheel so the Ascendant is 0° and assign the numbered sector.
 
     Parameters
     ----------
@@ -178,13 +228,15 @@ def gauquelin_sector(
     lst              : Local Sidereal Time (degrees)
     body             : optional name label for the returned GauquelinPosition
     horizon_altitude : effective horizon altitude in degrees (default −0.5667°).
-                       The geometric horizon is 0°; the standard apparent
-                       horizon used in rise/set timing accounts for mean
-                       refraction (~34′) and gives −0.5667° for stars and
-                       −0.8333° for the Sun/Moon.  Using the apparent horizon
-                       here ensures that a planet classified as "just risen"
-                       (sector 28) has actually cleared the visible horizon,
-                       consistent with Gauquelin's observed-rising methodology.
+                       The geometric horizon is 0°; the default −0.5667°
+                       encodes mean atmospheric refraction (~34′) for
+                       point-like bodies.  Sun/Moon limb thresholds such as
+                       −0.8333° should be supplied explicitly when that
+                       doctrine is intended.  Using the apparent horizon here
+                       ensures that a planet classified as just risen (sector
+                       1 in Moira's Ascendant-anchored numbering) has actually
+                       cleared the visible horizon, consistent with Gauquelin's
+                       observed-rising methodology.
     sectors          : number of equal divisions of the diurnal circle
                        (default 36, the canonical Gauquelin system).  Must be
                        a positive integer and a divisor of 360 for whole-degree
@@ -194,6 +246,9 @@ def gauquelin_sector(
                        because no empirical plus-zone definition exists for
                        custom resolutions.
     """
+    if sectors <= 0:
+        raise ValueError("sectors must be a positive integer")
+
     # Step 1: Hour angle (positive westward, degrees)
     ha = (lst - body_ra) % 360.0
 
@@ -214,34 +269,25 @@ def gauquelin_sector(
     else:
         t = (sin_h0 - sin_phi * sin_delta) / denom
     if t <= -1.0:
-        # Body is circumpolar — always above the horizon; use full 180° above
+        horizon_status = GauquelinHorizonStatus.CIRCUMPOLAR
         dsa = 180.0
     elif t >= 1.0:
-        # Body never rises — always below horizon; use 180° below
+        horizon_status = GauquelinHorizonStatus.NEVER_RISES
         dsa = 0.0
     else:
+        horizon_status = GauquelinHorizonStatus.NORMAL
         dsa = math.acos(t) * RAD2DEG   # degrees, range (0, 180)
 
     # Step 3: Normalise position within the diurnal arc to 0–360°
-    # Gauquelin's mapping (Ertel & Irving convention):
-    #   HA = 0  → body at MC (upper transit) → diurnal position = 0° → sector 36
-    #   HA = DSA (setting)  → sector boundary between 9 and 10
-    #   HA = 180° (IC)      → diurnal position = 180° → sector 18/19 boundary
-    #   HA = 360°-DSA (rising) → sector boundary between 27 and 28
+    # Moira's Gauquelin wheel first maps the body to a mundane position:
+    #   HA = 0             -> MC  -> diurnal position 0
+    #   HA = DSA           -> DSC -> diurnal position 90
+    #   HA = 180           -> IC  -> diurnal position 180
+    #   HA = 360 - DSA     -> ASC -> diurnal position 270
     #
-    # Sector 1 begins just PAST the Ascendant (body just risen, moving toward MC).
-    # The diurnal arc is divided into four quadrants, each of 9 sectors:
-    #   Above-horizon east  (MC to ASC): HA 0 → DSA      => sectors 36,1,2,...,9
-    #   Above-horizon west  (ASC to MC going west not applicable)
-    #
-    # Standard algorithm: map HA to a 0–360° "diurnal position" such that
-    #   sector = ceil(diurnal_position / 10), where:
-    #   - HA=0   (MC)  → diurnal_position = 0   → sector 36 (wrap)
-    #   - HA=DSA (DSC) → diurnal_position = 90
-    #   - HA=180 (IC)  → diurnal_position = 180
-    #   - HA=360-DSA (ASC) → diurnal_position = 270
-    #
-    # We use a piecewise linear mapping through the four quadrant boundaries.
+    # Numbering is then Ascendant-anchored.  Sector 1 starts at the Ascendant;
+    # sectors 10, 19, and 28 start just after MC, DSC, and IC respectively.
+    # This keeps plus zones as the sectors immediately following each angle.
     if dsa <= 0.0:
         dsa = 1e-6   # guard against pathological cases
 
@@ -285,6 +331,8 @@ def gauquelin_sector(
         sector=sector,
         zone=zone,
         diurnal_position=diurnal,
+        sectors=sectors,
+        horizon_status=horizon_status,
     )
 
 

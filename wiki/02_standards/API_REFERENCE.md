@@ -773,15 +773,22 @@ from moira.facade import (
 ### Gauquelin sectors
 
 ```python
-from moira.facade import gauquelin_sector, all_gauquelin_sectors, GauquelinPosition
+from moira.facade import (
+    GauquelinHorizonStatus,
+    GauquelinPosition,
+    gauquelin_sector,
+    all_gauquelin_sectors,
+)
 ```
 
 | Function | Returns | Description |
 |---|---|---|
-| `gauquelin_sector(ra_deg, ramc_deg, body="", ecliptic_longitude=None)` | `GauquelinPosition` | Gauquelin sector (1-36) for a single RA/RAMC position |
-| `all_gauquelin_sectors(planet_ra_dec, lat, lst)` | `list[GauquelinPosition]` | Gauquelin sectors for a dict of body -> (ra, dec) |
+| `gauquelin_sector(body_ra, body_dec, lat, lst, body="", horizon_altitude=-0.5667, sectors=36)` | `GauquelinPosition` | Gauquelin sector for a single apparent RA/Dec position at geographic latitude and local sidereal time |
+| `all_gauquelin_sectors(planet_ra_dec, lat, lst, horizon_altitude=-0.5667, sectors=36)` | `list[GauquelinPosition]` | Gauquelin sectors for a dict of body -> `(ra, dec)` |
 
-`GauquelinPosition`: `body`, `sector` (1-36), `degree_in_sector`, `zone`, `is_plus_zone`, `ecliptic_longitude`.
+`GauquelinPosition`: `body`, `sector`, `zone`, `diurnal_position`, `sectors`, `degree_in_sector`, `is_plus_zone`, `horizon_status`.
+
+`GauquelinHorizonStatus`: `NORMAL`, `CIRCUMPOLAR`, `NEVER_RISES`.
 
 ### Coordinate utilities
 

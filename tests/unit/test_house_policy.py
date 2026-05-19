@@ -165,6 +165,7 @@ class TestStrictPolicy:
     @pytest.mark.parametrize("system", [
         HouseSystem.WHOLE_SIGN, HouseSystem.EQUAL, HouseSystem.PORPHYRY,
         HouseSystem.CAMPANUS, HouseSystem.REGIOMONTANUS,
+        HouseSystem.TOPOCENTRIC, HouseSystem.ALCABITIUS,
     ])
     def test_strict_policy_does_not_raise_at_polar_for_capable_systems(self, system):
         r = _polar(system, policy=HousePolicy.strict())
@@ -303,4 +304,74 @@ class TestPhase4Regression:
             assert (r.fallback_reason is None) == (not r.fallback)
             assert r.classification is not None
             assert r.policy is not None
+
+
+# ---------------------------------------------------------------------------
+# Dynamic Fallback Targets & Expanded Polar Incapable Pipeline (Points 1, 2, 3)
+# ---------------------------------------------------------------------------
+
+class TestExpandedPolarFallbackPipeline:
+    @pytest.mark.parametrize("system", [
+        HouseSystem.PLACIDUS,
+        HouseSystem.KOCH,
+    ])
+    def test_fallback_to_equal_policy(self, system):
+        p = HousePolicy(
+            unknown_system=UnknownSystemPolicy.RAISE,
+            polar_fallback=PolarFallbackPolicy.FALLBACK_TO_EQUAL,
+        )
+        r = _polar(system, policy=p)
+        assert r.fallback is True
+        assert r.effective_system == HouseSystem.EQUAL
+        assert "fell back to Equal" in r.fallback_reason
+        assert "critical latitude" in r.fallback_reason
+
+        # Numeric convergence check: must match Equal house values
+        r_equal = _polar(HouseSystem.EQUAL)
+        for i in range(12):
+            assert r.cusps[i] == pytest.approx(r_equal.cusps[i], abs=1e-12)
+
+    @pytest.mark.parametrize("system", [
+        HouseSystem.PLACIDUS,
+        HouseSystem.KOCH,
+    ])
+    def test_fallback_to_whole_sign_policy(self, system):
+        p = HousePolicy(
+            unknown_system=UnknownSystemPolicy.RAISE,
+            polar_fallback=PolarFallbackPolicy.FALLBACK_TO_WHOLE_SIGN,
+        )
+        r = _polar(system, policy=p)
+        assert r.fallback is True
+        assert r.effective_system == HouseSystem.WHOLE_SIGN
+        assert "fell back to Whole Sign" in r.fallback_reason
+
+        # Numeric convergence check: must match Whole Sign house values
+        r_ws = _polar(HouseSystem.WHOLE_SIGN)
+        for i in range(12):
+            assert r.cusps[i] == pytest.approx(r_ws.cusps[i], abs=1e-12)
+
+    def test_koch_default_fallback_to_porphyry(self):
+        system = HouseSystem.KOCH
+        r = _polar(system)
+        assert r.fallback is True
+        assert r.effective_system == HouseSystem.PORPHYRY
+        assert "fell back to Porphyry" in r.fallback_reason
+
+        # Numeric convergence check: must match Porphyry house values
+        r_porphyry = _polar(HouseSystem.PORPHYRY)
+        for i in range(12):
+            assert r.cusps[i] == pytest.approx(r_porphyry.cusps[i], abs=1e-12)
+
+    def test_topocentric_remains_topocentric_at_polar_latitudes(self):
+        r = _polar(HouseSystem.TOPOCENTRIC)
+        assert r.fallback is False
+        assert r.effective_system == HouseSystem.TOPOCENTRIC
+        assert r.fallback_reason is None
+
+    def test_alcabitius_remains_alcabitius_at_polar_latitudes(self):
+        r = _polar(HouseSystem.ALCABITIUS)
+        assert r.fallback is False
+        assert r.effective_system == HouseSystem.ALCABITIUS
+        assert r.fallback_reason is None
+
 

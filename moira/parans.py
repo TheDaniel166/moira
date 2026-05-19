@@ -2231,9 +2231,11 @@ def find_parans(
                     qualify as a paran.  Default 4 minutes (traditional orb).
     policy        : optional backend inclusion policy. ``None`` preserves the
                     current permissive semantics.
-    pressure_mbar : atmospheric pressure in millibars for the refraction-
-                    corrected horizon altitude computation.  Default 1013.25.
-    temperature_c : air temperature in degrees Celsius for the same.
+    pressure_mbar : atmospheric pressure in millibars retained for delegated
+                    rise/set API compatibility.  Paran rise/set crossings use
+                    the fixed apparent-horizon threshold ``-0.5667``.
+    temperature_c : air temperature in degrees Celsius retained for the same
+                    compatibility path.
                     Default 10.0 °C.  Non-standard weather can shift rise/set
                     times by tens of seconds relative to standard atmosphere.
 

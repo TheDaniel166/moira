@@ -252,10 +252,10 @@ class TestPolarCapable:
 
     @pytest.mark.parametrize("system", [
         HouseSystem.WHOLE_SIGN, HouseSystem.EQUAL, HouseSystem.PORPHYRY,
-        HouseSystem.CAMPANUS, HouseSystem.REGIOMONTANUS, HouseSystem.ALCABITIUS,
-        HouseSystem.MORINUS, HouseSystem.TOPOCENTRIC, HouseSystem.MERIDIAN,
+        HouseSystem.CAMPANUS, HouseSystem.REGIOMONTANUS,
+        HouseSystem.MORINUS, HouseSystem.MERIDIAN, HouseSystem.ALCABITIUS,
         HouseSystem.VEHLOW, HouseSystem.SUNSHINE, HouseSystem.AZIMUTHAL,
-        HouseSystem.SOLAR_SIGN,
+        HouseSystem.SOLAR_SIGN, HouseSystem.TOPOCENTRIC,
         HouseSystem.CARTER, HouseSystem.KRUSINSKI, HouseSystem.APC,
         ])
     def test_polar_capable_systems(self, system):

@@ -127,12 +127,13 @@ class TestGauquelinApparentHorizon:
         return dict(body_ra=100.0, body_dec=23.0, lat=51.5, lst=100.0)
 
     def test_horizon_altitude_parameter_accepted(self) -> None:
-        from moira.gauquelin import gauquelin_sector
+        from moira.gauquelin import GauquelinHorizonStatus, gauquelin_sector
         pos = gauquelin_sector(
             body_ra=100.0, body_dec=10.0, lat=45.0, lst=90.0,
             horizon_altitude=-0.8333,
         )
         assert 1 <= pos.sector <= 36
+        assert pos.horizon_status is GauquelinHorizonStatus.NORMAL
 
     def test_geometric_vs_apparent_horizon_differs(self) -> None:
         """
@@ -157,29 +158,31 @@ class TestGauquelinApparentHorizon:
         )
         assert 1 <= pos.sector <= 36
 
-    def test_circumpolar_body_uses_full_arc(self) -> None:
+    def test_circumpolar_body_exposes_policy_status(self) -> None:
         """
         A body with dec > 90°−lat is circumpolar; DSA should be 180° (full arc
         above horizon).  The sector must still be in [1, 36].
         """
-        from moira.gauquelin import gauquelin_sector
+        from moira.gauquelin import GauquelinHorizonStatus, gauquelin_sector
         # lat=80°, dec=85° → 80+85=165 > 90, circumpolar
         pos = gauquelin_sector(
             body_ra=0.0, body_dec=85.0, lat=80.0, lst=0.0,
         )
         assert 1 <= pos.sector <= 36
+        assert pos.horizon_status is GauquelinHorizonStatus.CIRCUMPOLAR
 
-    def test_never_rises_body_still_returns_valid_sector(self) -> None:
+    def test_never_rises_body_exposes_policy_status(self) -> None:
         """
         A body with dec < -(90°-lat) never rises; DSA→0.  Engine must not
         divide-by-zero and must return a valid sector.
         """
-        from moira.gauquelin import gauquelin_sector
+        from moira.gauquelin import GauquelinHorizonStatus, gauquelin_sector
         # lat=80°, dec=-85° → body always below horizon
         pos = gauquelin_sector(
             body_ra=0.0, body_dec=-85.0, lat=80.0, lst=0.0,
         )
         assert 1 <= pos.sector <= 36
+        assert pos.horizon_status is GauquelinHorizonStatus.NEVER_RISES
 
     def test_all_sectors_use_same_horizon_altitude(self) -> None:
         from moira.gauquelin import all_gauquelin_sectors
@@ -268,6 +271,51 @@ class TestGauquelinVariableResolution:
             list(range(1, 4)) + list(range(10, 13)) +
             list(range(19, 22)) + list(range(28, 31))
         )
+
+    def test_cardinal_boundaries_have_ascendant_anchored_numbering(self) -> None:
+        """
+        At the equator with a geometric horizon, HA equals the mundane angle.
+        Moira's Gauquelin numbering starts at the Ascendant, with plus sectors
+        immediately after each angle.
+        """
+        from moira.gauquelin import gauquelin_sector
+
+        kw = dict(body_ra=0.0, body_dec=0.0, lat=0.0, horizon_altitude=0.0)
+        samples = {
+            "ASC": (270.0001, 1),
+            "MC": (0.0001, 10),
+            "DSC": (90.0001, 19),
+            "IC": (180.0001, 28),
+        }
+
+        for angle, (lst, expected_sector) in samples.items():
+            pos = gauquelin_sector(**kw, lst=lst)
+            assert pos.sector == expected_sector, angle
+            assert pos.is_plus_zone
+
+    def test_result_exposes_sector_metadata(self) -> None:
+        from moira.gauquelin import GauquelinHorizonStatus, gauquelin_sector
+
+        pos = gauquelin_sector(
+            body_ra=0.0,
+            body_dec=0.0,
+            lat=0.0,
+            lst=300.0,
+            horizon_altitude=0.0,
+            body="Mars",
+        )
+
+        assert pos.body == "Mars"
+        assert pos.sector == 3
+        assert pos.degree_in_sector == pytest.approx(10.0)
+        assert pos.is_plus_zone
+        assert pos.horizon_status is GauquelinHorizonStatus.NORMAL
+
+    def test_invalid_sector_count_rejected(self) -> None:
+        from moira.gauquelin import gauquelin_sector
+
+        with pytest.raises(ValueError, match="sectors must be a positive integer"):
+            gauquelin_sector(0.0, 0.0, 0.0, 0.0, sectors=0)
 
 
 # ---------------------------------------------------------------------------

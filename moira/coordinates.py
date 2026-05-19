@@ -646,7 +646,8 @@ def atmospheric_refraction(
 
     Parameters
     ----------
-    altitude_deg : Observed (apparent) altitude in degrees.
+    altitude_deg : Geometric altitude in degrees for the true-to-apparent
+        correction convention used by ``apply_refraction``.
     pressure_mbar : Atmospheric pressure in millibars. Default 1013.25 mbar.
     temperature_c : Air temperature in degrees Celsius. Default 10 °C.
 
@@ -687,7 +688,8 @@ def atmospheric_refraction_extended(
 
     Parameters
     ----------
-    altitude_deg : Observed (apparent) altitude in degrees.
+    altitude_deg : Geometric altitude in degrees for the true-to-apparent
+        correction convention used by ``apply_refraction``.
     pressure_mbar : Atmospheric pressure in millibars. Default 1013.25 mbar.
     temperature_c : Temperature in degrees Celsius. Default 10 °C.
     relative_humidity : Relative humidity 0–1. Default 0.5.
