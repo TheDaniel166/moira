@@ -23,6 +23,7 @@ Validation layers
 | Polar house gauntlet | Dynamic critical-latitude doctrine, strict-policy honesty, and fallback placement parity | `tests/unit/test_polar_house_breadth_gauntlet.py` |
 | Polar chart public-path gauntlet | Chart vessel, house fallback, body placement, angularity, and lots remain coherent on the public API path | `tests/unit/test_polar_chart_public_gauntlet.py` |
 | Public doctrine surface audit | Public doctrine and policy vessels remain reachable, frozen, default-constructible, and correctly classified | `tests/unit/test_public_doctrine_surfaces.py`, `wiki/03_release/KILLER_TEST_RESULTS.md` |
+| Adversarial singularity suite | Coordinate transforms, planetary geometry, time system, house cusps, and boundary ownership under degenerate inputs — reveals silent failures, not correctness | `tests/unit/test_adversarial_singularities.py`, `tests/unit/test_adversarial_house_singularities.py`, `wiki/03_validation/ADVERSARIAL_SINGULARITY_DEFECT_LEDGER.md` |
 
 How to read the stack
 ---------------------
@@ -38,6 +39,7 @@ Detailed reports
 - `wiki/03_release/KILLER_TEST_RESULTS.md`
 - `wiki/03_release/DELTA_T_500_YEAR_CHECKPOINTS.md`
 - `wiki/03_validation/POLAR_HOUSE_EXTERNAL_REFERENCE.md`
+- `wiki/03_validation/ADVERSARIAL_SINGULARITY_DEFECT_LEDGER.md`
 
 Recommended run order
 ---------------------
