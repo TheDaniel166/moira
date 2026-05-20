@@ -5,6 +5,35 @@ Philosophy: a test passes if the engine returns a finite, canonically
 normalised result OR raises a named exception. A test fails if the engine
 returns a silently wrong value. Tests that fail on first run have found a
 real defect — leave them failing; do not patch them to pass.
+
+Known failures as of 2026-05-20 (engine defects, not test defects):
+  Layer 1:
+    test_layer1c_360_degree_input_normalises_to_zero
+      ecliptic_to_equatorial(360°, 0°) returns RA=360° — output not normalised to 0°.
+    test_layer1f_icrf_to_ecliptic_zero_vector
+      icrf_to_ecliptic([0,0,0]) proceeds silently — no guard on zero-vector input.
+    test_layer1h_negative_epsilon_normalises_near_zero
+      normalize_degrees(-1e-15) returns 360.0 — floating-point boundary not clamped.
+
+  Layer 2 (test design — imprecise hardcoded station/perigee JD constants):
+    test_layer2c_retrograde_station_speed_sign_change[Mercury/Venus/Mars]
+      Station JD constants are off by more than 1 hour; speed sign has not changed yet.
+    test_layer2j_moon_distance_local_minimum_near_perigee
+      Moon perigee JD is too early; distance minimum is beyond the ±6-hour window.
+
+  Layer 3:
+    test_layer3b_year_zero_calendar_round_trip
+      calendar_from_jd(julian_day(0, 1, 1)) returns year=1 — year-zero round-trip broken.
+    test_layer3c_jd_zero_raises_named_exception
+      JD=0.0 does not raise OutOfRangeError — out-of-coverage epoch accepted silently.
+    test_layer3c_deeply_negative_jd_raises_named_exception
+      Out-of-coverage JD raises KeyError instead of OutOfRangeError.
+    test_layer3g_deep_historical_calendar_round_trip[1.0 / 500000.0 / -100000.0]
+      Calendar round-trip error of 26–38 days at deep historical JDs.
+
+  Cross-cutting:
+    test_boundary_ownership_out_of_coverage_raises_not_silence
+      Deep-past JD raises KeyError instead of OutOfRangeError.
 """
 from __future__ import annotations
 
