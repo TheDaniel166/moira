@@ -447,7 +447,6 @@ _NPE_BODY_ROUTE_PAIRS = {
     Body.MOON: ((0, 3), (3, 301)),
     Body.MERCURY: ((0, 1), (1, 199)),
     Body.VENUS: ((0, 2), (2, 299)),
-    Body.EARTH: ((0, 3), (3, 399)),
     Body.MARS: ((0, 4),),
     Body.JUPITER: ((0, 5),),
     Body.SATURN: ((0, 6),),
@@ -1409,7 +1408,7 @@ def planet_at(
     delta_t_policy: 'DeltaTPolicy | None' = None,
     _dpsi_deg: float | None = None,    # pre-computed nutation params (internal)
     _deps_deg: float | None = None,
-    _rot_mat=None,                     # pre-composed numpy rotation matrix (internal)
+    _rot_mat=None,                     # pre-composed rotation matrix — Mat3 tuple or native object (internal)
     _vector_cache: _VectorCache | None = None,
     _context: _ApparentContext | None = None,
 ) -> 'PlanetData | CartesianPosition':
