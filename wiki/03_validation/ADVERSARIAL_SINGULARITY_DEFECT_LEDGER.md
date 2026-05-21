@@ -1,7 +1,7 @@
 # Adversarial Singularity Defect Ledger
 
-Version: 1.0
-Date: 2026-05-20
+Version: 1.1
+Date: 2026-05-21
 Branch at discovery: fix/facade-core-chart-timescale
 
 ---
@@ -33,24 +33,24 @@ Run command:
 python -m pytest tests/unit/test_adversarial_singularities.py tests/unit/test_adversarial_house_singularities.py -v
 ```
 
-Suite result as of 2026-05-20: **108 collected — 56 pass, 14 fail, 2 skip (Layers 1–3); 52 pass, 0 fail, 1 skip (Layer 4).**
+Suite result as of 2026-05-21 (after DEF-001/002/003 fix): **108 collected — 59 pass, 11 fail, 2 skip (Layers 1–3); 52 pass, 0 fail, 1 skip (Layer 4).**
 
 ---
 
-## Open Defects
+## Resolved Defects
 
 ### DEF-001 — `ecliptic_to_equatorial` does not normalise RA output at 360°
 
 - **Test:** `test_layer1c_360_degree_input_normalises_to_zero`
 - **Layer:** 1c
-- **What happens:** `ecliptic_to_equatorial(360.0, 0.0, obliquity)` returns RA = 360.0°
-  instead of 0.0°. The input 360° is mathematically equivalent to 0°, but
-  the output is not normalized.
-- **Correct behaviour:** RA output must be in [0, 360). When the trigonometric
-  result produces exactly 360°, it must be clamped to 0°.
-- **Affected module:** `moira/coordinates.py`
-- **Priority:** Medium — silent wrong value at an exact boundary.
-- **Status:** Open
+- **What happened:** `ecliptic_to_equatorial(360.0, 0.0, obliquity)` returned RA = 360.0°
+  instead of 0.0°. Input 360° is mathematically 0°, but the `atan2 * RAD2DEG % 360`
+  expression produced a tiny-negative intermediate value whose IEEE 754 addition
+  to 360.0 did not underflow the representable floor, yielding 360.0.
+- **Fix:** Changed `math.atan2(y, x) * RAD2DEG % 360.0` to
+  `normalize_degrees(math.atan2(y, x) * RAD2DEG)` in `ecliptic_to_equatorial`.
+- **Fix commit:** see PR `fix/coordinate-normalize-boundary`
+- **Verified:** 2026-05-21 — test passes; killer suite 42/42.
 
 ---
 
@@ -58,17 +58,14 @@ Suite result as of 2026-05-20: **108 collected — 56 pass, 14 fail, 2 skip (Lay
 
 - **Test:** `test_layer1f_icrf_to_ecliptic_zero_vector`
 - **Layer:** 1f
-- **What happens:** `icrf_to_ecliptic((0.0, 0.0, 0.0), obliquity)` returns a
-  result with `dist = 0.0` instead of raising a named domain exception.
-  Longitude and latitude are returned as finite values even though the
-  direction is undefined.
-- **Correct behaviour:** A zero-magnitude input vector has no direction. The
-  function should raise a named exception (e.g., `ValueError`) rather than
-  returning finite angular coordinates for an undefined direction.
-- **Affected module:** `moira/coordinates.py`
-- **Priority:** Medium — silent wrong direction returned for physically
-  impossible input.
-- **Status:** Open
+- **What happened:** `icrf_to_ecliptic((0.0, 0.0, 0.0), obliquity)` returned
+  `(0.0, 0.0, 0.0)` — distance 0, but finite longitude and latitude — with no
+  exception raised.
+- **Fix:** Added `if distance == 0.0: raise ValueError(...)` immediately after
+  computing the magnitude in `icrf_to_ecliptic`. Also applied `normalize_degrees`
+  to the longitude output for consistency.
+- **Fix commit:** see PR `fix/coordinate-normalize-boundary`
+- **Verified:** 2026-05-21 — test passes; killer suite 42/42.
 
 ---
 
@@ -76,18 +73,16 @@ Suite result as of 2026-05-20: **108 collected — 56 pass, 14 fail, 2 skip (Lay
 
 - **Test:** `test_layer1h_negative_epsilon_normalises_near_zero`
 - **Layer:** 1h
-- **What happens:** `normalize_degrees(-1e-15)` returns 360.0. A tiny negative
-  value just below 0° is wrapping to 360° instead of to 0°. The correct
-  output is 0.0 (or a value arbitrarily close to 0, well within [0, 360)).
-- **Correct behaviour:** `normalize_degrees(x)` must return a value in `[0, 360)`
-  for all finite inputs. Floating-point underflow near 0° must not produce 360°.
-- **Affected module:** `moira/coordinates.py` (wherever `normalize_degrees` is
-  implemented)
-- **Priority:** High — output is 360°, which violates the [0, 360) canonical
-  invariant and would corrupt any downstream longitude comparison.
-- **Status:** Open
+- **What happened:** `normalize_degrees(-1e-15)` returned 360.0. `(-1e-15) % 360.0`
+  computes `360.0 - 1e-15`, but `1e-15` is smaller than the ULP of 360.0
+  (~5.7e-14 in float64), so the subtraction is a no-op and the result is 360.0.
+- **Fix:** Added a clamp after the modulo: `return 0.0 if result >= 360.0 else result`.
+- **Fix commit:** see PR `fix/coordinate-normalize-boundary`
+- **Verified:** 2026-05-21 — test passes; killer suite 42/42.
 
 ---
+
+## Open Defects
 
 ### DEF-004 — Year-zero calendar round-trip is broken
 
