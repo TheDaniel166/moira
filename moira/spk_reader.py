@@ -924,9 +924,9 @@ class KernelPool:
                     return reader.position(target, jd)
             elif reader.has_segment_at(center, target, jd):
                 return reader.position(center, target, jd)
-        raise KeyError(
-            f"No kernel in pool covers center={center}, target={target} "
-            f"at JD {jd:.2f}"
+        raise OutOfRangeError(
+            f"No kernel covers center={center}, target={target} at JD {jd:.2f}",
+            out_of_range_times=True,
         )
 
     def evaluator(self, target: int, center: int = 0, jd_tt: float = 2451545.0) -> object:
@@ -974,9 +974,9 @@ class KernelPool:
                 f"SmallBodyKernel does not support position_and_velocity "
                 f"(center={center}, target={target})"
             )
-        raise KeyError(
-            f"No kernel in pool covers center={center}, target={target} "
-            f"at JD {jd:.2f}"
+        raise OutOfRangeError(
+            f"No kernel covers center={center}, target={target} at JD {jd:.2f}",
+            out_of_range_times=True,
         )
 
     # ------------------------------------------------------------------

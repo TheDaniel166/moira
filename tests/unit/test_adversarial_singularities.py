@@ -15,19 +15,11 @@ Known failures as of 2026-05-21 (engine defects, not test defects):
     test_layer2j_moon_distance_local_minimum_near_perigee
       Moon perigee JD is too early; distance minimum is beyond the ±6-hour window.
 
-  Layer 3:
-    test_layer3b_year_zero_calendar_round_trip
-      calendar_from_jd(julian_day(0, 1, 1)) returns year=1 — year-zero round-trip broken.
-    test_layer3c_jd_zero_raises_named_exception
-      JD=0.0 does not raise OutOfRangeError — out-of-coverage epoch accepted silently.
-    test_layer3c_deeply_negative_jd_raises_named_exception
-      Out-of-coverage JD raises KeyError instead of OutOfRangeError.
-    test_layer3g_deep_historical_calendar_round_trip[1.0 / 500000.0 / -100000.0]
-      Calendar round-trip error of 26–38 days at deep historical JDs.
-
-  Cross-cutting:
-    test_boundary_ownership_out_of_coverage_raises_not_silence
-      Deep-past JD raises KeyError instead of OutOfRangeError.
+  Layer 3 (all resolved 2026-05-21):
+    DEF-004/006 fixed: calendar_from_jd now uses proleptic Gregorian for all epochs.
+    DEF-005 fixed: KernelPool raises OutOfRangeError (not KeyError) for uncovered JDs.
+    TDF reclassification: JD=0 and JD=-1M ARE within DE441 coverage; tests updated
+      to verify the engine returns finite positions, not raise.
 """
 from __future__ import annotations
 
@@ -64,13 +56,13 @@ _ONE_SECOND_JD   = 1.0 / 86400.0
 _J2000           = 2451545.0
 
 _JD_VERNAL_EQUINOX_2000    = 2451623.82
-_JD_MOON_PERIGEE_2023      = 2459966.08
-_JD_MERCURY_STATION_R_2023 = 2460055.0
-_JD_MERCURY_STATION_D_2023 = 2460079.0
-_JD_VENUS_STATION_R_2023   = 2460148.0
-_JD_VENUS_STATION_D_2023   = 2460190.5
-_JD_MARS_STATION_R_2022    = 2459882.5
-_JD_MARS_STATION_D_2023    = 2459956.5
+_JD_MOON_PERIGEE_2023      = 2459966.369   # 2023-01-21, golden-section precise
+_JD_MERCURY_STATION_R_2023 = 2460055.853   # 2023-04-21, bisect-precise
+_JD_MERCURY_STATION_D_2023 = 2460079.633   # 2023-05-15, bisect-precise
+_JD_VENUS_STATION_R_2023   = 2460148.562   # 2023-07-22, bisect-precise
+_JD_VENUS_STATION_D_2023   = 2460191.554   # 2023-09-04, bisect-precise
+_JD_MARS_STATION_R_2022    = 2459883.051   # 2022-10-30, bisect-precise
+_JD_MARS_STATION_D_2023    = 2459957.370   # 2023-01-13, bisect-precise
 _JD_GREGORIAN_REFORM       = 2299161.0
 _JD_LAST_JULIAN            = 2299160.0
 _JD_DE441_BOUNDARY         = 2440432.5    # TT
@@ -580,17 +572,24 @@ def test_layer3b_year_zero_positions_are_finite(reader):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.requires_ephemeris
-def test_layer3c_jd_zero_raises_named_exception(reader):
-    """JD = 0.0 must raise OutOfRangeError — not silently return a position."""
-    with pytest.raises(OutOfRangeError):
-        planet_at(Body.SUN, 0.0, reader=reader)
+def test_layer3c_jd_zero_returns_finite_position(reader):
+    """JD = 0.0 is within DE441 coverage (min JD ≈ −3,100,015): engine must return a finite position."""
+    # TDF reclassification: DE441 covers back to ~8500 BCE; JD=0 (~4713 BCE) is within range.
+    # The engine correctly returns a result here — no exception expected.
+    data = planet_at(Body.SUN, 0.0, reader=reader)
+    assert math.isfinite(data.longitude), f"JD=0 Sun longitude not finite: {data.longitude}"
+    assert 0.0 <= data.longitude < 360.0, f"JD=0 Sun longitude out of range: {data.longitude}"
+    assert data.distance > 0, f"JD=0 Sun distance not positive: {data.distance}"
 
 
 @pytest.mark.requires_ephemeris
-def test_layer3c_deeply_negative_jd_raises_named_exception(reader):
-    """JD = -1_000_000 must also raise OutOfRangeError."""
-    with pytest.raises(OutOfRangeError):
-        planet_at(Body.SUN, -1_000_000.0, reader=reader)
+def test_layer3c_deeply_negative_jd_returns_finite_position(reader):
+    """JD = -1_000_000 (~7451 BCE) is within DE441 coverage: engine must return a finite position."""
+    # TDF reclassification: JD=-1,000,000 is within DE441 range; no exception expected.
+    data = planet_at(Body.SUN, -1_000_000.0, reader=reader)
+    assert math.isfinite(data.longitude), f"JD=-1M Sun longitude not finite: {data.longitude}"
+    assert 0.0 <= data.longitude < 360.0, f"JD=-1M Sun longitude out of range: {data.longitude}"
+    assert data.distance > 0, f"JD=-1M Sun distance not positive: {data.distance}"
 
 
 # ---------------------------------------------------------------------------

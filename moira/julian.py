@@ -321,10 +321,12 @@ def calendar_from_jd(jd: float) -> tuple[int, int, int, float]:
     """
     Convert a Julian Day Number to a proleptic Gregorian calendar date.
 
-    Governs the inverse Meeus algorithm (Astronomical Algorithms, ch. 7).
-    Handles both the Julian calendar era (JD < 2299161, i.e. before 15 Oct
-    1582) and the Gregorian era transparently via the standard alpha/A
-    correction factor.
+    Governs the proleptic Gregorian inverse of Meeus ch. 7, applying the
+    alpha/A correction for ALL dates — not just post-reform dates. This keeps
+    the function consistent with ``julian_day``, which also uses the proleptic
+    Gregorian formula (B = 2 − A + floor(A/4)) for all epochs. Round-trips
+    ``julian_day(y, m, d) → calendar_from_jd → (y, m, d)`` are exact for any
+    epoch including year 0 and deep historical JDs.
 
     Args:
         jd: Julian Day Number (fractional days since JD epoch).
@@ -344,11 +346,8 @@ def calendar_from_jd(jd: float) -> tuple[int, int, int, float]:
     Z = math.floor(jd)
     F = jd - Z
 
-    if Z < 2299161:
-        A = Z
-    else:
-        alpha = math.floor((Z - 1867216.25) / 36524.25)
-        A = Z + 1 + alpha - math.floor(alpha / 4.0)
+    alpha = math.floor((Z - 1867216.25) / 36524.25)
+    A = Z + 1 + alpha - math.floor(alpha / 4.0)
 
     B = A + 1524
     C = math.floor((B - 122.1) / 365.25)
