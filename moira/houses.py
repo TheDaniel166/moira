@@ -219,6 +219,7 @@ __all__ = [
     "derived_houses",
     "houses_from_armc",
     "assign_house",
+    "house_of",
     "body_house_position",
     "describe_boundary",
     "describe_angularity",
@@ -3107,6 +3108,31 @@ def assign_house(longitude: float, house_cusps: HouseCusps) -> HousePlacement:
         exact_on_cusp=exact_on_cusp,
         cusp_longitude=house_cusps.cusps[best],
     )
+
+
+def house_of(longitude: float, house_cusps: HouseCusps) -> int:
+    """
+    Return the house number (1–12) that contains the given ecliptic longitude.
+
+    Thin wrapper over ``assign_house`` that discards the full placement
+    witness and returns only the integer house number.  The boundary doctrine
+    is the same: the half-open interval ``[cusp_i, cusp_{i+1})`` governs
+    membership, so a point exactly on a cusp belongs to that cusp's house.
+
+    Deterministic: identical inputs always produce the same house.
+
+    Args:
+        longitude:   Ecliptic longitude in degrees (any real value; normalised
+                     to [0, 360) internally).
+        house_cusps: A ``HouseCusps`` result from ``calculate_houses``.
+
+    Returns:
+        House number in [1, 12].
+
+    Raises:
+        ValueError: If ``house_cusps.cusps`` does not contain exactly 12 values.
+    """
+    return assign_house(longitude, house_cusps).house
 
 
 # ===========================================================================

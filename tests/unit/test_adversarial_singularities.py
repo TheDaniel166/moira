@@ -446,24 +446,53 @@ def test_layer2f_retrograde_loop_longitude_continuous(reader, body, jd_start,
 
 @pytest.mark.requires_ephemeris
 def test_layer2h_emb_chain_consistency(reader):
-    """SSB→EMB + EMB→Moon must equal SSB→Moon via direct segment chain."""
-    jd = _J2000
-    kernel = getattr(reader, "_kernel", None)
-    if kernel is None or not hasattr(getattr(kernel, "_handle", None), "batch_segment_position_and_velocity"):
+    """Batch and single-segment native evaluators must agree for SSB→EMB and
+    EMB→Moon; their chain sums must match across both code paths."""
+    from moira.spk_reader import SpkReader, KernelPool
+
+    # The fixture delivers a KernelPool; the planetary kernel is its first SpkReader.
+    if isinstance(reader, KernelPool):
+        spk = next((r for r in reader._readers if isinstance(r, SpkReader)), None)
+        if spk is None:
+            pytest.skip("no SpkReader found in pool")
+    else:
+        spk = reader
+
+    kernel = getattr(spk, "_kernel", None)
+    handle = getattr(kernel, "_handle", None)
+    if handle is None or not hasattr(handle, "batch_segment_position_and_velocity"):
         pytest.skip("native kernel handle not available")
 
-    seg_ssb_emb  = reader._segment_for(0, 3,   jd)
-    seg_emb_moon = reader._segment_for(3, 301,  jd)
+    jd = _J2000
+    seg_ssb_emb  = spk._segment_for(0, 3,   jd)
+    seg_emb_moon = spk._segment_for(3, 301,  jd)
 
-    pos_ssb_emb,  _ = seg_ssb_emb.compute_and_differentiate(jd)
-    pos_emb_moon, _ = seg_emb_moon.compute_and_differentiate(jd)
+    # Single-segment path: handle.segment_position_and_velocity per segment
+    pos_ssb_emb_s,  _ = seg_ssb_emb.compute_and_differentiate(jd)
+    pos_emb_moon_s, _ = seg_emb_moon.compute_and_differentiate(jd)
 
-    chained = tuple(a + b for a, b in zip(pos_ssb_emb, pos_emb_moon))
+    # Batch path: handle.batch_segment_position_and_velocity for both legs
+    specs = [
+        (int(seg_ssb_emb.start_i),  int(seg_ssb_emb.end_i),  int(seg_ssb_emb.data_type)),
+        (int(seg_emb_moon.start_i), int(seg_emb_moon.end_i), int(seg_emb_moon.data_type)),
+    ]
+    batch = handle.batch_segment_position_and_velocity(specs, jd)
+    pos_ssb_emb_b,  _ = batch[0]
+    pos_emb_moon_b, _ = batch[1]
 
+    # Single and batch must agree for each leg
     for i in range(3):
-        expected = pos_ssb_emb[i] + pos_emb_moon[i]
-        assert abs(chained[i] - expected) < 1e-10, \
-            f"EMB chain component {i} mismatch: {chained[i]} vs {expected}"
+        assert abs(pos_ssb_emb_s[i]  - pos_ssb_emb_b[i])  < 1e-6, \
+            f"SSB→EMB single/batch mismatch component {i}"
+        assert abs(pos_emb_moon_s[i] - pos_emb_moon_b[i]) < 1e-6, \
+            f"EMB→Moon single/batch mismatch component {i}"
+
+    # Chain sums from both paths must agree
+    chain_s = tuple(a + b for a, b in zip(pos_ssb_emb_s, pos_emb_moon_s))
+    chain_b = tuple(a + b for a, b in zip(pos_ssb_emb_b, pos_emb_moon_b))
+    for i in range(3):
+        assert abs(chain_s[i] - chain_b[i]) < 1e-6, \
+            f"EMB chain mismatch component {i}: single={chain_s[i]}, batch={chain_b[i]}"
 
 
 # ---------------------------------------------------------------------------
