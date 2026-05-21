@@ -84,7 +84,12 @@ from .coordinates import (
 from .obliquity import mean_obliquity, true_obliquity, nutation
 from .precession import general_precession_in_longitude
 from .julian import ut_to_tt
-from .planets import _earth_barycentric, _barycentric as _planet_barycentric
+from .planets import (
+    _apparent_geocentric_ecliptic,
+    _compose_rotation_matrix,
+    _earth_barycentric_state,
+    _barycentric as _planet_barycentric,
+)
 from ._kernel_paths import find_kernel
 from .corrections import (
     apply_light_time, apply_aberration, apply_deflection, apply_frame_bias,
@@ -900,21 +905,43 @@ def asteroid_at(
         naif_id = int(name_or_naif)
         name    = _NAIF_TO_NAME.get(naif_id, f"NAIF-{naif_id}")
 
-    kernel = _kernel_for(naif_id, reader)
+    obliquity            = true_obliquity(jd_tt)
+    earth_ssb, earth_vel = _earth_barycentric_state(jd_tt, reader)
+    rot_mat              = _compose_rotation_matrix(jd_tt)
+    deflectors           = _asteroid_deflectors(jd_tt, reader, earth_ssb)
 
-    # Compute obliquity once
-    obliquity = true_obliquity(jd_tt)
+    def _bary_fn(b, t, r):
+        return r.position(0, b, t)
 
-    def _lon_lat_dist(jd: float):
-        xyz = _asteroid_apparent(naif_id, jd, kernel, reader)
-        return icrf_to_ecliptic(xyz, obliquity)
+    lon0, lat0, dist0 = _apparent_geocentric_ecliptic(
+        naif_id, jd_tt, reader,
+        barycentric_fn=_bary_fn,
+        deflectors=deflectors,
+        earth_ssb=earth_ssb,
+        earth_vel=earth_vel,
+        obliquity=obliquity,
+        rot_mat=rot_mat,
+    )
 
-    lon0, lat0, dist0 = _lon_lat_dist(jd_tt)
+    # Speed via central finite difference; obliquity is fixed at jd_tt.
+    def _lon_at(jd: float) -> float:
+        ssb, vel = _earth_barycentric_state(jd, reader)
+        rm = _compose_rotation_matrix(jd)
+        dfl = _asteroid_deflectors(jd, reader, ssb)
+        lon, _, _ = _apparent_geocentric_ecliptic(
+            naif_id, jd, reader,
+            barycentric_fn=_bary_fn,
+            deflectors=dfl,
+            earth_ssb=ssb,
+            earth_vel=vel,
+            obliquity=obliquity,
+            rot_mat=rm,
+        )
+        return lon
 
-    # Speed via central finite difference
-    lon_m, _, _ = _lon_lat_dist(jd_tt - _SPEED_STEP)
-    lon_p, _, _ = _lon_lat_dist(jd_tt + _SPEED_STEP)
-    dlon = (lon_p - lon_m + 540.0) % 360.0 - 180.0   # wrap-safe
+    lon_m = _lon_at(jd_tt - _SPEED_STEP)
+    lon_p = _lon_at(jd_tt + _SPEED_STEP)
+    dlon  = (lon_p - lon_m + 540.0) % 360.0 - 180.0
     speed = dlon / (2.0 * _SPEED_STEP)
 
     return AsteroidData(
