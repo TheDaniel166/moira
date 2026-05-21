@@ -197,9 +197,11 @@ def icrf_to_ecliptic(xyz: Vec3, obliquity_deg: float) -> tuple[float, float, flo
     ye =  y * cos_eps + z * sin_eps
     ze = -y * sin_eps + z * cos_eps
 
-    distance  = math.sqrt(xe**2 + ye**2 + ze**2)
-    longitude = math.atan2(ye, xe) * RAD2DEG % 360.0
-    latitude  = math.asin(max(-1.0, min(1.0, ze / distance))) * RAD2DEG if distance > 0 else 0.0
+    distance = math.sqrt(xe**2 + ye**2 + ze**2)
+    if distance == 0.0:
+        raise ValueError("icrf_to_ecliptic: input vector has zero magnitude — direction undefined")
+    longitude = normalize_degrees(math.atan2(ye, xe) * RAD2DEG)
+    latitude  = math.asin(max(-1.0, min(1.0, ze / distance))) * RAD2DEG
 
     return longitude, latitude, distance
 
@@ -373,7 +375,7 @@ def ecliptic_to_equatorial(
 
     y = math.sin(lon) * math.cos(eps) - math.tan(lat) * math.sin(eps)
     x = math.cos(lon)
-    ra = math.atan2(y, x) * RAD2DEG % 360.0
+    ra = normalize_degrees(math.atan2(y, x) * RAD2DEG)
 
     return ra, dec
 
@@ -450,7 +452,10 @@ def aberration_correction(
 
 def normalize_degrees(angle: float) -> float:
     """Reduce an angle to [0, 360)."""
-    return angle % 360.0
+    result = angle % 360.0
+    # IEEE 754: a tiny negative value added to 360.0 may not underflow the
+    # representable floor, leaving result == 360.0.  Clamp it back to 0.
+    return 0.0 if result >= 360.0 else result
 
 
 def angular_distance(a: float, b: float) -> float:

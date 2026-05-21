@@ -6,14 +6,8 @@ normalised result OR raises a named exception. A test fails if the engine
 returns a silently wrong value. Tests that fail on first run have found a
 real defect — leave them failing; do not patch them to pass.
 
-Known failures as of 2026-05-20 (engine defects, not test defects):
-  Layer 1:
-    test_layer1c_360_degree_input_normalises_to_zero
-      ecliptic_to_equatorial(360°, 0°) returns RA=360° — output not normalised to 0°.
-    test_layer1f_icrf_to_ecliptic_zero_vector
-      icrf_to_ecliptic([0,0,0]) proceeds silently — no guard on zero-vector input.
-    test_layer1h_negative_epsilon_normalises_near_zero
-      normalize_degrees(-1e-15) returns 360.0 — floating-point boundary not clamped.
+Known failures as of 2026-05-21 (engine defects, not test defects):
+  Layer 1: all Layer 1 failures resolved (DEF-001/002/003 fixed 2026-05-21).
 
   Layer 2 (test design — imprecise hardcoded station/perigee JD constants):
     test_layer2c_retrograde_station_speed_sign_change[Mercury/Venus/Mars]
