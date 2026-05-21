@@ -739,6 +739,22 @@ def _asteroid_barycentric(naif_id: int, jd_tt: float, kernel: _AsteroidKernel, r
         return vec_add(ref_pos, sun_ssb)
     return ref_pos    # SSB
 
+def _asteroid_deflectors(
+    jd_tt: float,
+    reader,
+    earth_ssb: Vec3,
+) -> list:
+    """Return the three standard deflector tuples for asteroid apparent-place computation."""
+    sun_geo = vec_sub(reader.position(0, 10, jd_tt), earth_ssb)
+    jupiter_geo = vec_sub(_planet_barycentric(Body.JUPITER, jd_tt, reader), earth_ssb)
+    saturn_geo = vec_sub(_planet_barycentric(Body.SATURN, jd_tt, reader), earth_ssb)
+    return [
+        (sun_geo, SCHWARZSCHILD_RADII["Sun"]),
+        (jupiter_geo, SCHWARZSCHILD_RADII["Jupiter"]),
+        (saturn_geo, SCHWARZSCHILD_RADII["Saturn"]),
+    ]
+
+
 def _asteroid_apparent(
     naif_id: int,
     jd_tt:   float,
@@ -761,22 +777,7 @@ def _asteroid_apparent(
     xyz, _lt = apply_light_time(naif_id, jd_tt, reader, earth_ssb, _bary_fn)
 
     # 3. Gravitational deflection.
-    # Match the main planetary apparent path more closely by including the two
-    # dominant non-solar deflectors that can still contribute at the
-    # microarcsecond-to-tiny-subarcsecond level.
-    sun_geocentric = vec_sub(reader.position(0, 10, jd_tt), earth_ssb)
-    jupiter_geocentric = _planet_barycentric(Body.JUPITER, jd_tt, reader)
-    jupiter_geocentric = vec_sub(jupiter_geocentric, earth_ssb)
-    saturn_geocentric = _planet_barycentric(Body.SATURN, jd_tt, reader)
-    saturn_geocentric = vec_sub(saturn_geocentric, earth_ssb)
-    xyz = apply_deflection(
-        xyz,
-        [
-            (sun_geocentric, SCHWARZSCHILD_RADII["Sun"]),
-            (jupiter_geocentric, SCHWARZSCHILD_RADII["Jupiter"]),
-            (saturn_geocentric, SCHWARZSCHILD_RADII["Saturn"]),
-        ],
-    )
+    xyz = apply_deflection(xyz, _asteroid_deflectors(jd_tt, reader, earth_ssb))
 
     # 4. Annual aberration
     from .planets import _earth_velocity
