@@ -4,10 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from moira.asteroids import (
-    ASTEROID_NAIF,
-    _AsteroidKernel,
-)
+from moira.asteroids import ASTEROID_NAIF
+from moira._spk_body_kernel import SmallBodyKernel as _AsteroidKernel
 from moira.daf_writer import (
     _MAX_SUMMARIES,
     _RECORD_SIZE,

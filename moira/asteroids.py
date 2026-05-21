@@ -77,12 +77,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .constants import Body, sign_of
-from .coordinates import (
-    Vec3, vec_add, vec_sub, vec_norm, icrf_to_ecliptic, mat_vec_mul,
-    precession_matrix_equatorial, nutation_matrix_equatorial
-)
-from .obliquity import mean_obliquity, true_obliquity, nutation
-from .precession import general_precession_in_longitude
+from .coordinates import Vec3, vec_sub
+from .obliquity import true_obliquity
 from .julian import ut_to_tt
 from .planets import (
     _apparent_geocentric_ecliptic,
@@ -91,15 +87,9 @@ from .planets import (
     _barycentric as _planet_barycentric,
 )
 from ._kernel_paths import find_kernel
-from .corrections import (
-    apply_light_time, apply_aberration, apply_deflection, apply_frame_bias,
-    SCHWARZSCHILD_RADII,
-)
-from ._spk_body_kernel import SmallBodyKernel, _Type13Segment  # noqa: F401 — re-export _Type13Segment
-from .spk_reader import get_active_reader, get_reader, KernelReader, MissingKernelError
-
-# Alias for internal use and backward compatibility with existing imports.
-_AsteroidKernel = SmallBodyKernel
+from .corrections import SCHWARZSCHILD_RADII
+from ._spk_body_kernel import _Type13Segment  # noqa: F401 — re-export
+from .spk_reader import get_active_reader, KernelReader, MissingKernelError
 
 
 # ---------------------------------------------------------------------------
@@ -619,31 +609,6 @@ class AsteroidData:
                 f"  ({self.longitude:.4f}°) {r}  Δ={self.speed:+.4f}°/d")
 
 
-# NAIF IDs for which sb441-n373s.bsp is preferred over codes300.
-_SB441_PREFERRED: frozenset[int] = frozenset({
-    2000001,   # Ceres
-    2000002,   # Pallas
-    2000003,   # Juno
-    2000004,   # Vesta
-})
-
-
-# Kernel discovery is now handled by the facade / KernelPool.
-# Legacy shims below maintain compatibility with older test suites.
-
-# Legacy state for backward compatibility and internal test hooks.
-_primary_kernel    = None
-_secondary_kernel  = None
-_tertiary_kernel   = None
-_quaternary_kernel = None
-
-from ._kernel_paths import find_kernel as _fk
-_PRIMARY_KERNEL_PATH    = _fk("asteroids.bsp")
-_SECONDARY_KERNEL_PATH  = _fk("sb441-n373s.bsp")
-_TERTIARY_KERNEL_PATH   = _fk("centaurs.bsp")
-_QUATERNARY_KERNEL_PATH = _fk("minor_bodies.bsp")
-
-
 def load_asteroid_kernel(path: str | Path | None = None) -> None:
     """
     RITE: The Resource Expansion
@@ -659,90 +624,9 @@ def load_asteroid_kernel(path: str | Path | None = None) -> None:
     add_to_global_pool(path)
 
 
-def load_secondary_kernel(path: str | Path | None = None) -> None:
-    """Legacy shim for secondary asteroid kernel."""
-    load_asteroid_kernel(path)
-
-
-def load_tertiary_kernel(path: str | Path | None = None) -> None:
-    """Legacy shim for tertiary asteroid kernel."""
-    load_asteroid_kernel(path)
-
-
-def load_quaternary_kernel(path: str | Path | None = None) -> None:
-    """Legacy shim for quaternary asteroid kernel."""
-    load_asteroid_kernel(path)
-
-
-def _ensure_primary_kernel() -> KernelReader:
-    """Legacy shim for session bootstrap."""
-    from .spk_reader import get_active_reader
-    active = get_active_reader()
-    if active is None:
-        load_asteroid_kernel(_PRIMARY_KERNEL_PATH)
-    return get_active_reader()
-
-
-def _ensure_secondary_kernel() -> KernelReader:
-    """Legacy shim for session bootstrap."""
-    from .spk_reader import get_active_reader
-    active = get_active_reader()
-    # In the old code, this would check if _secondary_kernel was None.
-    # To satisfy tests that mock load_secondary_kernel, we must call it.
-    load_secondary_kernel(_SECONDARY_KERNEL_PATH)
-    return get_active_reader()
-
-
-def _ensure_tertiary_kernel() -> KernelReader:
-    """Legacy shim for session bootstrap."""
-    load_tertiary_kernel(_TERTIARY_KERNEL_PATH)
-    return get_active_reader()
-
-
-def _ensure_quaternary_kernel() -> KernelReader:
-    """Legacy shim for session bootstrap."""
-    load_quaternary_kernel(_QUATERNARY_KERNEL_PATH)
-    return get_active_reader()
-
-
-def _kernel_for(naif_id: int, reader: KernelReader | None = None) -> _AsteroidKernel:
-    """
-    Return the best kernel for *naif_id* from the provided reader.
-    """
-    if reader is None:
-        active = get_active_reader()
-        reader = active if active is not None else get_reader()
-
-    if not hasattr(reader, "position"):
-        raise TypeError(f"Expected KernelReader, got {type(reader)}")
-    
-    # If the reader is a pool, it will handle dispatching internally.
-    # But for the internal logic that needs the specific SmallBodyKernel:
-    if hasattr(reader, "_readers"): # KernelPool
-        for r in reader._readers:
-            if isinstance(r, SmallBodyKernel) and r.has_body(naif_id):
-                return r
-    elif isinstance(reader, SmallBodyKernel) and reader.has_body(naif_id):
-        return reader
-        
-    raise KeyError(
-        f"NAIF ID {naif_id} not found in the provided reader."
-    )
-
-
 # ---------------------------------------------------------------------------
 # Core position computation
 # ---------------------------------------------------------------------------
-
-def _asteroid_barycentric(naif_id: int, jd_tt: float, kernel: _AsteroidKernel, reader: KernelReader) -> Vec3:
-    """Return SSB position of asteroid (km, ICRF)."""
-    center = kernel.segment_center(naif_id)
-    ref_pos = kernel.position(center, naif_id, jd_tt)
-    if center == 10:  # Heliocentric
-        # Use the reader to get the Sun's barycentric position
-        sun_ssb = reader.position(0, 10, jd_tt)
-        return vec_add(ref_pos, sun_ssb)
-    return ref_pos    # SSB
 
 def _asteroid_deflectors(
     jd_tt: float,
@@ -760,91 +644,6 @@ def _asteroid_deflectors(
     ]
 
 
-def _asteroid_apparent(
-    naif_id: int,
-    jd_tt:   float,
-    kernel:  _AsteroidKernel,
-    reader,
-) -> Vec3:
-    """
-    Return apparent geocentric equatorial-of-date position of *naif_id*.
-
-    The returned vector has already passed through frame bias, precession, and
-    nutation; it is no longer an ICRF vector.
-    """
-    # 1. Earth at observation time
-    earth_ssb = _earth_barycentric(jd_tt, reader)
-
-    # 2. Light-time: Body(t-lt) - Earth(t)
-    def _bary_fn(nid, t, _r):
-        return _asteroid_barycentric(nid, t, kernel, reader)
-    
-    xyz, _lt = apply_light_time(naif_id, jd_tt, reader, earth_ssb, _bary_fn)
-
-    # 3. Gravitational deflection.
-    xyz = apply_deflection(xyz, _asteroid_deflectors(jd_tt, reader, earth_ssb))
-
-    # 4. Annual aberration
-    from .planets import _earth_velocity
-    v_earth = _earth_velocity(jd_tt, reader)
-    xyz = apply_aberration(xyz, v_earth)
-
-    # 5. Frame bias
-    xyz = apply_frame_bias(xyz)
-
-    # 6. Precession
-    P = precession_matrix_equatorial(jd_tt)
-    xyz = mat_vec_mul(P, xyz)
-
-    # 7. Nutation
-    N = nutation_matrix_equatorial(jd_tt)
-    xyz = mat_vec_mul(N, xyz)
-
-    return xyz
-
-
-# ---------------------------------------------------------------------------
-# Semi-private helpers (used by tests and integration tools)
-# ---------------------------------------------------------------------------
-
-def _asteroid_geocentric(
-    naif_id: int,
-    jd_tt: float,
-    kernel: _AsteroidKernel,
-    reader,
-    apparent: bool = False,
-) -> Vec3:
-    """
-    Return geocentric position vector of *naif_id* (km).
-
-    Parameters
-    ----------
-    naif_id      : NAIF ID of the asteroid
-    jd_tt        : Julian Day in Terrestrial Time
-    kernel       : asteroid kernel to use (from _kernel_for)
-    de441_reader : DE441 SpkReader for Earth/Sun positions
-    apparent     : if True, return the apparent equatorial-of-date vector
-                   after deflection, aberration, frame bias, precession, and
-                   nutation; if False (default), return the light-time
-                   corrected geocentric astrometric vector before those
-                   observer-facing apparent corrections.
-
-    Returns
-    -------
-    (x, y, z) in km.  The frame is ICRF when ``apparent=False`` and
-    equatorial-of-date when ``apparent=True``.
-    """
-    if apparent:
-        return _asteroid_apparent(naif_id, jd_tt, kernel, reader)
-
-    # Geometric geocentric: light-time-corrected position, no other corrections
-    earth_ssb = _earth_barycentric(jd_tt, reader)
-
-    def _bary_fn(nid, t, _r):
-        return _asteroid_barycentric(nid, t, kernel, reader)
-
-    xyz, _lt = apply_light_time(naif_id, jd_tt, reader, earth_ssb, _bary_fn)
-    return xyz
 
 
 # ---------------------------------------------------------------------------

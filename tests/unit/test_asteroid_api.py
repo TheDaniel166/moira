@@ -227,41 +227,6 @@ class TestAvailableSubsetInvariant:
         assert set(result).issubset(set(list_tnos()))
 
 
-def test_optional_secondary_kernel_loader_surfaces_real_failures(monkeypatch: pytest.MonkeyPatch) -> None:
-    class _ExistingPath:
-        def exists(self) -> bool:
-            return True
-
-    monkeypatch.setattr(asteroids_module, "_secondary_kernel", None)
-    monkeypatch.setattr(asteroids_module, "_SECONDARY_KERNEL_PATH", _ExistingPath())
-
-    def _broken_loader(path=None) -> None:
-        raise RuntimeError("corrupt secondary kernel")
-
-    monkeypatch.setattr(asteroids_module, "load_secondary_kernel", _broken_loader)
-
-    with pytest.raises(RuntimeError, match="corrupt secondary kernel"):
-        asteroids_module._ensure_secondary_kernel()
-
-    def test_available_main_belt_is_subset_of_list(self):
-        mocked = ["Ceres", "Ixion", "Astraea"]  # only Astraea is main-belt
-        with patch("moira.main_belt.available_in_kernel", return_value=mocked):
-            result = available_main_belt()
-        assert set(result).issubset(set(list_main_belt()))
-
-    def test_available_classical_only_returns_matching_names(self):
-        mocked = ["Ceres", "Vesta", "Astraea", "Ixion"]
-        with patch("moira.classical_asteroids.available_in_kernel", return_value=mocked):
-            result = available_classical_asteroids()
-        assert set(result) == {"Ceres", "Vesta"}
-
-    def test_available_tnos_only_returns_matching_names(self):
-        mocked = ["Ixion", "Quaoar", "Ceres", "Astraea"]
-        with patch("moira.tno.available_in_kernel", return_value=mocked):
-            result = available_tnos()
-        assert set(result) == {"Ixion", "Quaoar"}
-
-
 # ---------------------------------------------------------------------------
 # 4.6  Cross-group delegation does not raise (structural, no kernel)
 # ---------------------------------------------------------------------------

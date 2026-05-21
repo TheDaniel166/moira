@@ -4,9 +4,10 @@ from math import asin, degrees, sqrt
 
 import pytest
 
-from moira.asteroids import ASTEROID_NAIF, _asteroid_geocentric, _kernel_for
+from moira.asteroids import ASTEROID_NAIF
+from moira.corrections import apply_light_time
 from moira.julian import ut_to_tt
-from moira.planets import _geocentric
+from moira.planets import _earth_barycentric_state, _geocentric
 from moira.spk_reader import get_reader
 from tools.benchmark_matrix import (
     VECTOR_ASTEROID_CASES,
@@ -65,9 +66,10 @@ def test_planet_geocentric_vectors_match_horizons(body: str, case: VectorCase) -
 def test_asteroid_geocentric_vectors_match_horizons(name: str, case: VectorCase) -> None:
     reader = get_reader()
     naif_id = ASTEROID_NAIF[name]
-    moira_xyz = _asteroid_geocentric(
-        naif_id, ut_to_tt(case.jd_ut), _kernel_for(naif_id), reader, apparent=False
-    )
+    jd_tt = ut_to_tt(case.jd_ut)
+    earth_ssb, _ = _earth_barycentric_state(jd_tt, reader)
+    moira_xyz, _ = apply_light_time(naif_id, jd_tt, reader, earth_ssb,
+                                    lambda b, t, r: r.position(0, b, t))
     ref = vector_state_corrected(case.command, case.jd_ut, vec_corr="LT")
     error_arcsec = _angular_error_arcsec(moira_xyz, ref)
 
