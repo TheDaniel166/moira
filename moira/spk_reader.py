@@ -267,7 +267,7 @@ def _open_kernel(path: Path):
     if _moira_native is not None and hasattr(_moira_native, "open_spk_kernel"):
         handle = _moira_native.open_spk_kernel(str(path))
         catalog = handle.catalog()
-        if _native_catalog_is_fully_supported(catalog):
+        if _planetary_kernel_native_supported(catalog):
             return _NativeSpkKernel(path, catalog, handle=handle)
         try:
             handle.close()
@@ -275,7 +275,7 @@ def _open_kernel(path: Path):
             pass
     elif _moira_native is not None and hasattr(_moira_native, "read_daf_catalog"):
         catalog = _moira_native.read_daf_catalog(str(path))
-        if _native_catalog_is_fully_supported(catalog):
+        if _planetary_kernel_native_supported(catalog):
             return _NativeSpkKernel(path, catalog)
     if not _HAS_JPLEPHEM:
         raise RuntimeError(
@@ -407,7 +407,7 @@ class _NativeChebyshevSegment:
         return values, None
 
 
-def _native_catalog_is_fully_supported(catalog: dict) -> bool:
+def _planetary_kernel_native_supported(catalog: dict) -> bool:
     if not (_HAS_NATIVE_DAF and _HAS_NATIVE_SEGMENTS):
         return False
     return all(item["descriptor"][5] in (2, 3) for item in catalog["summaries"])

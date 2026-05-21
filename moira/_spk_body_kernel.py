@@ -309,7 +309,7 @@ class _Type13Segment:
         return pos, vel
 
 
-def _native_catalog_is_fully_supported(catalog: dict) -> bool:
+def _small_body_kernel_native_supported(catalog: dict) -> bool:
     if not _HAS_NATIVE_DAF:
         return False
     for item in catalog["summaries"]:
@@ -347,7 +347,7 @@ class SmallBodyKernel:
             )
 
         catalog = _moira_native.read_daf_catalog(str(path))
-        if not _native_catalog_is_fully_supported(catalog):
+        if not _small_body_kernel_native_supported(catalog):
             unsupported = sorted(
                 {int(item["descriptor"][5]) for item in catalog["summaries"]}
                 - {2, 3, 13}
