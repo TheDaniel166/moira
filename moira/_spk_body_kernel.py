@@ -378,15 +378,43 @@ class SmallBodyKernel:
     def segment_center(self, naif_id: int) -> int:
         return self._center.get(naif_id, 0)
 
-    def position(self, naif_id: int, jd_tt: float) -> Vec3:
+    def position(self, center: int, target: int, jd_tt: float) -> Vec3:
+        if not self.has_body(target):
+            raise KeyError(
+                f"NAIF ID {target} not found in kernel {self._path.name}"
+            )
+        seg_center = self._center[target]
+        if center != seg_center:
+            raise ValueError(
+                f"SmallBodyKernel serves NAIF {target} from center "
+                f"{seg_center}, not center {center}"
+            )
         for seg in self._kernel.segments:
-            if seg.target == naif_id and seg.start_jd <= jd_tt <= seg.end_jd:
+            if seg.target == target and seg.start_jd <= jd_tt <= seg.end_jd:
                 pos = seg.compute(jd_tt)
                 return (float(pos[0]), float(pos[1]), float(pos[2]))
         raise KeyError(
-            f"No segment covers NAIF {naif_id} at JD {jd_tt:.2f}. "
+            f"No segment covers NAIF {target} at JD {jd_tt:.2f}. "
             "The date may be outside the kernel's coverage."
         )
+
+    def position_and_velocity(
+        self, center: int, target: int, jd_tt: float
+    ) -> tuple[Vec3, Vec3]:
+        raise NotImplementedError(
+            "SmallBodyKernel does not support position_and_velocity. "
+            "Use KernelPool.position_and_velocity, which raises NotImplementedError "
+            "for small-body targets."
+        )
+
+    def has_segment(self, center: int, target: int) -> bool:
+        for seg in self._kernel.segments:
+            if seg.target == target and seg.center == center:
+                return True
+        return False
+
+    def covered_bodies(self) -> frozenset:
+        return frozenset(self._available)
 
     def list_naif_ids(self) -> list[int]:
         return sorted(self._available)

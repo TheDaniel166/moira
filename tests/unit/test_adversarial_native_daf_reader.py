@@ -98,8 +98,8 @@ def test_adversarial_small_body_kernel_accepts_exact_coverage_boundaries(
         coverage = kernel.coverage()[(10, 2000433)]
         start_jd, end_jd = coverage
 
-        start_vec = kernel.position(2000433, start_jd)
-        end_vec = kernel.position(2000433, end_jd)
+        start_vec = kernel.position(10, 2000433, start_jd)
+        end_vec = kernel.position(10, 2000433, end_jd)
 
         assert all(math.isfinite(value) for value in start_vec)
         assert all(math.isfinite(value) for value in end_vec)
@@ -121,9 +121,9 @@ def test_adversarial_small_body_kernel_rejects_one_second_outside_coverage(
         start_jd, end_jd = kernel.coverage()[(10, 2000433)]
 
         with pytest.raises(KeyError, match="No segment covers NAIF"):
-            kernel.position(2000433, start_jd - _ONE_SECOND_JD)
+            kernel.position(10, 2000433, start_jd - _ONE_SECOND_JD)
         with pytest.raises(KeyError, match="No segment covers NAIF"):
-            kernel.position(2000433, end_jd + _ONE_SECOND_JD)
+            kernel.position(10, 2000433, end_jd + _ONE_SECOND_JD)
     finally:
         kernel.close()
 
@@ -276,3 +276,66 @@ def test_adversarial_native_chebyshev_exact_end_boundary_is_inclusive_and_next_t
 
     with pytest.raises(OutOfRangeError, match="segment only covers dates"):
         segment.compute(body_kernel.T0 + 1.0 + _ONE_SECOND_JD)
+
+
+def test_small_body_kernel_position_validates_center_before_returning(
+    tmp_path: Path,
+) -> None:
+    if not body_kernel._HAS_NATIVE_DAF:
+        pytest.skip("native small-body DAF reader is unavailable")
+
+    path = tmp_path / "center_check.bsp"
+    _synthetic_type13_kernel(path)   # center=10 (heliocentric)
+
+    kernel = SmallBodyKernel(path)
+    try:
+        jd = kernel.coverage()[(10, 2000433)][0]
+        # correct center works
+        pos = kernel.position(10, 2000433, jd)
+        assert all(math.isfinite(v) for v in pos)
+        # wrong center raises ValueError
+        with pytest.raises(ValueError, match="center"):
+            kernel.position(0, 2000433, jd)
+        # unknown NAIF raises KeyError
+        with pytest.raises(KeyError):
+            kernel.position(10, 9999999, jd)
+    finally:
+        kernel.close()
+
+
+def test_small_body_kernel_position_and_velocity_raises_not_implemented(
+    tmp_path: Path,
+) -> None:
+    if not body_kernel._HAS_NATIVE_DAF:
+        pytest.skip("native small-body DAF reader is unavailable")
+
+    path = tmp_path / "pv_check.bsp"
+    _synthetic_type13_kernel(path)
+
+    kernel = SmallBodyKernel(path)
+    try:
+        jd = kernel.coverage()[(10, 2000433)][0]
+        with pytest.raises(NotImplementedError):
+            kernel.position_and_velocity(10, 2000433, jd)
+    finally:
+        kernel.close()
+
+
+def test_small_body_kernel_has_segment_and_covered_bodies(
+    tmp_path: Path,
+) -> None:
+    if not body_kernel._HAS_NATIVE_DAF:
+        pytest.skip("native small-body DAF reader is unavailable")
+
+    path = tmp_path / "protocol.bsp"
+    _synthetic_type13_kernel(path)  # naif=2000433, center=10
+
+    kernel = SmallBodyKernel(path)
+    try:
+        assert kernel.has_segment(10, 2000433) is True
+        assert kernel.has_segment(0, 2000433) is False
+        assert kernel.has_segment(10, 9999999) is False
+        assert 2000433 in kernel.covered_bodies()
+        assert isinstance(kernel.covered_bodies(), frozenset)
+    finally:
+        kernel.close()
