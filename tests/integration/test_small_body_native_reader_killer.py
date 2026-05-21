@@ -161,10 +161,11 @@ def test_small_body_kernels_fail_cleanly_outside_body_coverage() -> None:
             key = next((pair for pair in coverage if pair[1] == naif_id), None)
             if key is None:
                 pytest.skip(f"{kernel_name} does not contain representative NAIF {naif_id}")
+            center = key[0]
             start_jd, end_jd = coverage[key]
             with pytest.raises(KeyError, match="No segment covers NAIF"):
-                kernel.position(naif_id, start_jd - 1.0)
+                kernel.position(center, naif_id, start_jd - 1.0)
             with pytest.raises(KeyError, match="No segment covers NAIF"):
-                kernel.position(naif_id, end_jd + 1.0)
+                kernel.position(center, naif_id, end_jd + 1.0)
         finally:
             kernel.close()

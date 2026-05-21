@@ -695,18 +695,15 @@ def test_kernel_pool_falls_back_to_second_reader() -> None:
     assert pos == (1.0, 2.0, 3.0)
 
 
-def test_kernel_pool_raises_key_error_when_no_reader_covers_query() -> None:
+def test_kernel_pool_raises_out_of_range_when_no_reader_covers_query() -> None:
+    from moira.spk_reader import OutOfRangeError
     reader = _reader_with_segments(
         _FakeSegment(center=0, target=10, start_jd=1000.0, end_jd=2000.0),
     )
     pool = _pool_with_readers(reader)
 
-    try:
+    with pytest.raises(OutOfRangeError):
         pool.position(0, 99, 1500.0)
-    except KeyError:
-        pass
-    else:
-        raise AssertionError("Expected KeyError when no reader covers the query")
 
 
 def test_kernel_pool_has_segment_checks_all_readers() -> None:

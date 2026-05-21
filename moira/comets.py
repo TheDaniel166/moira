@@ -196,7 +196,7 @@ def _comet_geocentric_ecliptic(
     sun_bary   = _sun_barycentric(jd_tt, reader)
 
     # Comet heliocentric ICRF (km); kernel center is Sun (NAIF 10)
-    comet_helio = kernel.position(naif_id, jd_tt)
+    comet_helio = kernel.position(10, naif_id, jd_tt)
 
     # Barycentric comet position
     comet_bary = vec_add(comet_helio, sun_bary)
@@ -210,7 +210,7 @@ def _comet_geocentric_ecliptic(
         jd_tt,
         reader,
         earth_bary,
-        lambda nid, t, r: vec_add(kernel.position(nid, t), _sun_barycentric(t, r)),
+        lambda nid, t, r: vec_add(kernel.position(10, nid, t), _sun_barycentric(t, r)),
     )
 
     # Stellar aberration
@@ -241,10 +241,10 @@ def _comet_geocentric_ecliptic(
         jd2 = ut_to_tt(jd_ut + jd_off)
         eb  = _earth_barycentric(jd2, reader)
         sb  = _sun_barycentric(jd2, reader)
-        ch  = kernel.position(naif_id, jd2)
+        ch  = kernel.position(10, naif_id, jd2)
         cb  = vec_add(ch, sb)
         g   = vec_sub(cb, eb)
-        g   = apply_light_time(naif_id, jd2, reader, eb, lambda nid, t, r: vec_add(kernel.position(nid, t), _sun_barycentric(t, r)))[0]
+        g   = apply_light_time(naif_id, jd2, reader, eb, lambda nid, t, r: vec_add(kernel.position(10, nid, t), _sun_barycentric(t, r)))[0]
         from .planets import _earth_velocity
         g   = apply_aberration(g, _earth_velocity(jd2, reader))
         g   = apply_deflection(g, [(vec_sub(sb, eb), SCHWARZSCHILD_RADII["Sun"])])

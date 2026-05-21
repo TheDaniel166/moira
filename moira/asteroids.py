@@ -732,7 +732,7 @@ def _kernel_for(naif_id: int, reader: KernelReader | None = None) -> _AsteroidKe
 def _asteroid_barycentric(naif_id: int, jd_tt: float, kernel: _AsteroidKernel, reader: KernelReader) -> Vec3:
     """Return SSB position of asteroid (km, ICRF)."""
     center = kernel.segment_center(naif_id)
-    ref_pos = kernel.position(naif_id, jd_tt)
+    ref_pos = kernel.position(center, naif_id, jd_tt)
     if center == 10:  # Heliocentric
         # Use the reader to get the Sun's barycentric position
         sun_ssb = reader.position(0, 10, jd_tt)

@@ -68,6 +68,7 @@ except ImportError:  # pragma: no cover
     _moira_native = None
 
 from ._kernel_paths import find_kernel, find_planetary_kernel, find_sovereign_small_body_manifest
+from .coordinates import vec_add
 
 Vec3 = tuple[float, float, float]
 _HAS_JPLEPHEM = _SPK is not None
@@ -890,8 +891,6 @@ class KernelPool:
     """
 
     def __init__(self, readers=()) -> None:
-        from ._spk_body_kernel import SmallBodyKernel as _SmallBodyKernel
-        self._SmallBodyKernel = _SmallBodyKernel
         self._readers: list = list(readers)
 
     # ------------------------------------------------------------------
@@ -910,20 +909,30 @@ class KernelPool:
         """
         Return position of *target* relative to *center* at *jd* (TT).
 
-        Tries each registered reader in order and returns the result from
-        the first one that covers the (center, target, jd) triple.
+        Phase 1 — direct match: return from the first reader that serves
+        (center, target) at jd.
+
+        Phase 2 — center chain: if a reader serves (X, target) where X != center,
+        compose: position(X, target) + position(center, X) via recursive pool call.
+        First match wins, consistent with phase-1 ordering.
 
         Raises
         ------
-        KeyError
-            If no reader in the pool covers the requested triple.
+        OutOfRangeError
+            If no reader in the pool covers the requested triple by either phase.
         """
+        # Phase 1: direct match
         for reader in self._readers:
-            if isinstance(reader, self._SmallBodyKernel):
-                if reader.has_segment_at(center, target, jd):
-                    return reader.position(target, jd)
-            elif reader.has_segment_at(center, target, jd):
+            if reader.has_segment_at(center, target, jd):
                 return reader.position(center, target, jd)
+        # Phase 2: center chain
+        for reader in self._readers:
+            for (c, t), (seg_start, seg_end) in reader.coverage().items():
+                if t == target and c != center and seg_start <= jd <= seg_end:
+                    if reader.has_segment_at(c, target, jd):
+                        raw = reader.position(c, target, jd)
+                        bridge = self.position(center, c, jd)
+                        return vec_add(raw, bridge)
         raise OutOfRangeError(
             f"No kernel covers center={center}, target={target} at JD {jd:.2f}",
             out_of_range_times=True,
@@ -952,28 +961,19 @@ class KernelPool:
         """
         Return position and velocity of *target* relative to *center* at *jd*.
 
-        Only dispatches to SpkReader instances; SmallBodyKernel readers are
-        skipped for this method.
+        SmallBodyKernel readers raise NotImplementedError from their own
+        position_and_velocity — no special dispatch needed here.
 
         Raises
         ------
-        KeyError
-            If no SpkReader in the pool covers the requested triple.
+        OutOfRangeError
+            If no reader in the pool covers the requested triple.
         NotImplementedError
-            If the only covering reader is a SmallBodyKernel.
+            If the covering reader is a SmallBodyKernel.
         """
-        small_body_covered = False
         for reader in self._readers:
-            if isinstance(reader, self._SmallBodyKernel):
-                if reader.has_segment_at(center, target, jd):
-                    small_body_covered = True
-            elif reader.has_segment_at(center, target, jd):
+            if reader.has_segment_at(center, target, jd):
                 return reader.position_and_velocity(center, target, jd)
-        if small_body_covered:
-            raise NotImplementedError(
-                f"SmallBodyKernel does not support position_and_velocity "
-                f"(center={center}, target={target})"
-            )
         raise OutOfRangeError(
             f"No kernel covers center={center}, target={target} at JD {jd:.2f}",
             out_of_range_times=True,
@@ -986,10 +986,7 @@ class KernelPool:
     def has_segment(self, center: int, target: int) -> bool:
         """Return True if any reader in the pool covers (center, target)."""
         for reader in self._readers:
-            if isinstance(reader, self._SmallBodyKernel):
-                if reader.has_body(target) and reader.segment_center(target) == center:
-                    return True
-            elif reader.has_segment(center, target):
+            if reader.has_segment(center, target):
                 return True
         return False
 
@@ -1026,10 +1023,7 @@ class KernelPool:
         """Return the union of target NAIF IDs across all readers."""
         bodies: set[int] = set()
         for reader in self._readers:
-            if isinstance(reader, self._SmallBodyKernel):
-                bodies.update(reader.list_naif_ids())
-            else:
-                bodies.update(reader.covered_bodies())
+            bodies.update(reader.covered_bodies())
         return frozenset(bodies)
 
     # ------------------------------------------------------------------
