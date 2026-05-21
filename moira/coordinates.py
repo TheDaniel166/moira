@@ -294,7 +294,7 @@ def icrf_to_equatorial(xyz: Vec3) -> tuple[float, float, float]:
     """
     x, y, z = xyz
     distance = math.sqrt(x**2 + y**2 + z**2)
-    ra  = math.atan2(y, x) * RAD2DEG % 360.0
+    ra  = normalize_degrees(math.atan2(y, x) * RAD2DEG)
     dec = math.asin(max(-1.0, min(1.0, z / distance))) * RAD2DEG if distance > 0 else 0.0
     return ra, dec, distance
 
@@ -402,7 +402,7 @@ def equatorial_to_ecliptic(
 
     y = math.sin(ra) * math.cos(eps) + math.tan(dec) * math.sin(eps)
     x = math.cos(ra)
-    lon = math.atan2(y, x) * RAD2DEG % 360.0
+    lon = normalize_degrees(math.atan2(y, x) * RAD2DEG)
 
     return lon, lat
 
@@ -536,7 +536,7 @@ def horizontal_to_equatorial(
     ha_r = math.atan2(-x_east, z_up * cos_lat - y_north * sin_lat)
     ha_deg = ha_r * RAD2DEG
 
-    ra_deg = (lst_deg - ha_deg) % 360.0
+    ra_deg = normalize_degrees(lst_deg - ha_deg)
     return ra_deg, dec_deg
 
 
@@ -608,7 +608,7 @@ def cotrans_sp(
     dz_eq = dy_e * se + dz_e * ce
 
     ra = math.atan2(y_eq, x_eq)
-    ra_deg = ra * RAD2DEG % 360.0
+    ra_deg = normalize_degrees(ra * RAD2DEG)
 
     rho2 = x_eq * x_eq + y_eq * y_eq
     rho = math.sqrt(rho2)
