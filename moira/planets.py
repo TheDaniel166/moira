@@ -1213,6 +1213,48 @@ def _chiron_planet_data(jd_ut: float, reader: KernelReader) -> PlanetData:
     )
 
 
+def _apparent_geocentric_ecliptic(
+    body_id,
+    jd_tt: float,
+    reader: KernelReader,
+    *,
+    barycentric_fn,
+    deflectors: list,
+    earth_ssb: Vec3,
+    earth_vel: Vec3,
+    obliquity: float,
+    rot_mat,
+) -> tuple[float, float, float]:
+    """
+    Shared apparent-place pipeline: light-time → deflection → aberration →
+    frame bias → rotation (precession+nutation) → ecliptic projection.
+
+    Parameters
+    ----------
+    body_id       : opaque body identifier passed through to barycentric_fn
+    jd_tt         : Julian Day (TT)
+    reader        : active KernelReader (passed to barycentric_fn and apply_light_time)
+    barycentric_fn: callable(body_id, jd_tt, reader) → Vec3 — SSB position
+    deflectors    : list of (geocentric_vec, schwarzschild_radius) pairs;
+                    pass [] to skip deflection (Sun, Moon)
+    earth_ssb     : Earth SSB position at jd_tt (km, ICRF)
+    earth_vel     : Earth SSB velocity at jd_tt (km/day, ICRF)
+    obliquity     : true obliquity in degrees
+    rot_mat       : pre-composed M_nut @ M_prec rotation matrix
+
+    Returns
+    -------
+    (longitude, latitude, distance) in degrees, degrees, km
+    """
+    xyz, _lt = apply_light_time(body_id, jd_tt, reader, earth_ssb, barycentric_fn)
+    if deflectors:
+        xyz = apply_deflection(xyz, deflectors)
+    xyz = apply_aberration(xyz, earth_vel)
+    xyz = apply_frame_bias(xyz)
+    xyz = _apply_rotation_matrix(rot_mat, xyz)
+    return icrf_to_ecliptic(xyz, obliquity)
+
+
 def _planet_at_default_apparent_geocentric_ecliptic(
     body: str,
     *,
@@ -1232,22 +1274,22 @@ def _planet_at_default_apparent_geocentric_ecliptic(
     if earth_ssb is None or earth_vel is None or rot_mat is None:
         raise RuntimeError("default apparent context is incomplete")
 
-    xyz0, _lt = apply_light_time(
-        body,
-        jd_tt,
-        reader,
-        earth_ssb,
-        lambda body_, jd_tt_, reader_: _barycentric(body_, jd_tt_, reader_, context.vector_cache),
+    deflectors = (
+        []
+        if body in (Body.SUN, Body.MOON)
+        else _deflectors_for_body(body, jd_tt, reader, context)
     )
 
-    if body not in (Body.SUN, Body.MOON):
-        xyz0 = apply_deflection(xyz0, _deflectors_for_body(body, jd_tt, reader, context))
+    lon, lat, dist = _apparent_geocentric_ecliptic(
+        body, jd_tt, reader,
+        barycentric_fn=lambda b, t, r: _barycentric(b, t, r, context.vector_cache),
+        deflectors=deflectors,
+        earth_ssb=earth_ssb,
+        earth_vel=earth_vel,
+        obliquity=context.obliquity,
+        rot_mat=rot_mat,
+    )
 
-    xyz0 = apply_aberration(xyz0, earth_vel)
-    xyz0 = apply_frame_bias(xyz0)
-    xyz0 = _apply_rotation_matrix(rot_mat, xyz0)
-
-    lon, lat, dist = icrf_to_ecliptic(xyz0, context.obliquity)
     xyz_rate, vel_rate = _geocentric_state(body, jd_tt, reader, context.vector_cache)
     speed = _longitude_rate(xyz_rate, vel_rate, context.obliquity)
 
