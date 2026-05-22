@@ -16,14 +16,14 @@ This is therefore a **refactor-first roadmap**, not an additive feature checklis
 
 This roadmap assumes the companion constitutional doctrine packet exists:
 
-- [primary_directions_doctrine.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\01_doctrines\primary_directions\primary_directions_doctrine.md)
-- [primary_directions_direction_space_doctrine.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\01_doctrines\primary_directions\primary_directions_direction_space_doctrine.md)
-- [primary_directions_time_key_doctrine.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\01_doctrines\primary_directions\primary_directions_time_key_doctrine.md)
-- [primary_directions_ambiguity_ledger.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\01_doctrines\primary_directions\primary_directions_ambiguity_ledger.md)
-- [primary_directions_phase10_audit.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\06_roadmap\primary_directions\primary_directions_phase10_audit.md)
-- [primary_directions_constitutional_alignment.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\06_roadmap\primary_directions\primary_directions_constitutional_alignment.md)
-- [primary_directions_invariant_register.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\02_standards\primary_directions\primary_directions_invariant_register.md)
-- [primary_directions_validation_codex.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\02_standards\primary_directions\primary_directions_validation_codex.md)
+- [primary_directions_doctrine.md](../../01_doctrines/primary_directions/primary_directions_doctrine.md)
+- [primary_directions_direction_space_doctrine.md](../../01_doctrines/primary_directions/primary_directions_direction_space_doctrine.md)
+- [primary_directions_time_key_doctrine.md](../../01_doctrines/primary_directions/primary_directions_time_key_doctrine.md)
+- [primary_directions_ambiguity_ledger.md](../../01_doctrines/primary_directions/primary_directions_ambiguity_ledger.md)
+- [primary_directions_phase10_audit.md](./primary_directions_phase10_audit.md)
+- [primary_directions_constitutional_alignment.md](./primary_directions_constitutional_alignment.md)
+- [primary_directions_invariant_register.md](../../02_standards/primary_directions/primary_directions_invariant_register.md)
+- [primary_directions_validation_codex.md](../../02_standards/primary_directions/primary_directions_validation_codex.md)
 
 
 ## Current Moira State
@@ -80,9 +80,9 @@ Current constitutional status:
   - constitutionally closed through `P12` on the current admitted recoverable
     surface
   - governing freeze packet:
-    - [primary_directions_constitutional_alignment.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\06_roadmap\primary_directions\primary_directions_constitutional_alignment.md)
-    - [primary_directions_invariant_register.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\02_standards\primary_directions\primary_directions_invariant_register.md)
-    - [primary_directions_validation_codex.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\02_standards\primary_directions\primary_directions_validation_codex.md)
+    - [primary_directions_constitutional_alignment.md](./primary_directions_constitutional_alignment.md)
+    - [primary_directions_invariant_register.md](../../02_standards/primary_directions/primary_directions_invariant_register.md)
+    - [primary_directions_validation_codex.md](../../02_standards/primary_directions/primary_directions_validation_codex.md)
 - major internal doctrine owners:
   - methods: through `P10`
   - keys: through `P10`
@@ -674,19 +674,19 @@ Current next practical candidates:
 - wider non-Placidian parallel families still require additional
   method-specific governing laws
 - the governing branch policy for the wider parallel family now lives in:
-  - [primary_directions_parallel_family_matrix.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\05_research\primary_directions\primary_directions_parallel_family_matrix.md)
+  - [primary_directions_parallel_family_matrix.md](../../05_research/primary_directions/primary_directions_parallel_family_matrix.md)
 - the governing branch policy for fixed stars now lives in:
-  - [primary_directions_fixed_star_family_matrix.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\05_research\primary_directions\primary_directions_fixed_star_family_matrix.md)
+  - [primary_directions_fixed_star_family_matrix.md](../../05_research/primary_directions/primary_directions_fixed_star_family_matrix.md)
 - the governing target-family audit now lives in:
-  - [primary_directions_target_family_matrix.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\05_research\primary_directions\primary_directions_target_family_matrix.md)
+  - [primary_directions_target_family_matrix.md](../../05_research/primary_directions/primary_directions_target_family_matrix.md)
 - the first reflected-family truth card now lives in:
-  - [primary_directions_truth_card_antiscia.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\01_doctrines\primary_directions\primary_directions_truth_card_antiscia.md)
+  - [primary_directions_truth_card_antiscia.md](../../01_doctrines/primary_directions/primary_directions_truth_card_antiscia.md)
 - the remaining-frontier governance packet now lives in:
-  - [remaining_primary_directions_frontiers.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\05_research\primary_directions\remaining_primary_directions_frontiers.md)
+  - [remaining_primary_directions_frontiers.md](../../05_research/primary_directions/remaining_primary_directions_frontiers.md)
 - the dedicated `neo-converse` research packet now lives in:
-  - [primary_directions_neo_converse_research.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\05_research\primary_directions\primary_directions_neo_converse_research.md)
+  - [primary_directions_neo_converse_research.md](../../05_research/primary_directions/primary_directions_neo_converse_research.md)
 - the dedicated midpoint research packet now lives in:
-  - [primary_directions_midpoint_family_matrix.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\05_research\primary_directions\primary_directions_midpoint_family_matrix.md)
+  - [primary_directions_midpoint_family_matrix.md](../../05_research/primary_directions/primary_directions_midpoint_family_matrix.md)
 
 Current branch-selection surface:
 

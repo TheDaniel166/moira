@@ -111,7 +111,7 @@ Current policy:
 
 The governing research packet now lives in:
 
-- [primary_directions_midpoint_family_matrix.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\05_research\primary_directions\primary_directions_midpoint_family_matrix.md)
+- [primary_directions_midpoint_family_matrix.md](./primary_directions_midpoint_family_matrix.md)
 
 
 ### 3. Mundane Aspects as a Family
@@ -203,7 +203,7 @@ Current policy:
 
 The governing research packet now lives in:
 
-- [primary_directions_neo_converse_research.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\05_research\primary_directions\primary_directions_neo_converse_research.md)
+- [primary_directions_neo_converse_research.md](./primary_directions_neo_converse_research.md)
 
 
 ### 7. Field Plane

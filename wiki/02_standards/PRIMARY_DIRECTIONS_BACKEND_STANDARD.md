@@ -226,7 +226,7 @@ The thin root package `moira` does **not** re-export these internals.
 
 The governing invariant register for this subsystem is:
 
-- [primary_directions_invariant_register.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\02_standards\primary_directions\primary_directions_invariant_register.md)
+- [primary_directions_invariant_register.md](./primary_directions/primary_directions_invariant_register.md)
 
 `SpeculumEntry` invariants:
 
@@ -289,7 +289,7 @@ Current deterministic guarantees:
 
 The governing validation codex for this subsystem is:
 
-- [primary_directions_validation_codex.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\02_standards\primary_directions\primary_directions_validation_codex.md)
+- [primary_directions_validation_codex.md](./primary_directions/primary_directions_validation_codex.md)
 
 Minimum verification for the currently admitted recoverable surface should
 include:

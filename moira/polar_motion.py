@@ -20,10 +20,71 @@ _MAX_POLAR_MOTION_ARCSEC = 1.0
 
 class PolarMotionRegistry:
     """
-    Lazy registry for IERS polar motion coordinates.
+    RITE: The Polar Motion Registry.
 
-    The bundled data file stores rows as:
-        MJD x_p_arcsec y_p_arcsec
+    THEOREM: Governs lazy loading and interpolation of bundled polar-motion
+    coordinates for topocentric correction workflows.
+
+    RITE OF PURPOSE:
+        PolarMotionRegistry provides a single inspectable holder for the
+        repository's bundled IERS polar-motion table. It delays file access
+        until first use, clamps clearly invalid input rows, and offers a
+        deterministic interpolation surface for observer-frame corrections.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Load the bundled polar-motion file on first demand.
+            - Cache parsed MJD, x_p, and y_p values.
+            - Interpolate polar motion linearly between neighboring rows.
+            - Clamp out-of-bounds arcsecond values to the admitted range.
+        Non-responsibilities:
+            - Does not fetch live IERS products.
+            - Does not own refraction, precession, or topocentric transforms.
+            - Does not model sub-daily polar-motion structure beyond linear interpolation.
+        Dependencies:
+            - stdlib ``pathlib``, ``bisect``, and ``logging``.
+        Structural invariants:
+            - ``_data`` is either ``None`` or a tuple of sorted ``(mjd, x_p, y_p)`` rows.
+            - ``_mjds`` is either ``None`` or aligned with ``_data`` row order.
+            - ``_path`` always points to the bundled polar-motion file location.
+        Failure behavior:
+            - Missing files or malformed rows degrade to logged fallbacks, not hard failure.
+
+    Canon: IERS polar-motion tabulation as bundled repository data.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.polar_motion.PolarMotionRegistry",
+      "risk": "medium",
+      "api": {
+        "frozen": ["polar_motion_at"],
+        "internal": ["_load", "_data", "_mjds", "_load_attempted", "_path"]
+      },
+      "state": {
+        "mutable": true,
+        "owners": ["PolarMotionRegistry"]
+      },
+      "effects": {
+        "signals_emitted": [],
+        "io": ["bundled_file_read", "logging"]
+      },
+      "concurrency": {
+        "thread": "pure_computation",
+        "cross_thread_calls": "safe_read_only"
+      },
+      "failures": {
+        "policy": "raise"
+      },
+      "succession": {
+        "stance": "terminal"
+      },
+      "agent": {
+        "autofix": "allowed",
+        "requires_human_for": ["api_change"]
+      }
+    }
+    [/MACHINE_CONTRACT]
     """
 
     _data: tuple[tuple[float, float, float], ...] | None = None

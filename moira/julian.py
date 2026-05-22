@@ -1049,8 +1049,69 @@ def utc_to_tt(jd_utc: float) -> float:
 
 class EOPRegistry:
     """
-    Vessel: The Warden of Earth Orientation Parameters.
-    Governs the lazy loading and interpolation of DUT1 (UT1-UTC).
+    RITE: The Earth Orientation Registry.
+
+    THEOREM: Governs lazy loading and day-level lookup of DUT1 (UT1-UTC)
+    values from the bundled Earth-orientation data file.
+
+    RITE OF PURPOSE:
+        EOPRegistry provides the narrow bridge between bundled IERS-style
+        Earth-orientation data and Moira's time-scale conversion layer. It
+        keeps the file-backed DUT1 table off the import path until needed,
+        then exposes a stable lookup surface for UTC-to-UT1 adjustment.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Load the bundled DUT1 table on first demand.
+            - Cache the parsed MJD-to-DUT1 mapping for reuse.
+            - Return a deterministic DUT1 value or a zero fallback.
+        Non-responsibilities:
+            - Does not perform interpolation finer than day resolution.
+            - Does not download, refresh, or validate external IERS feeds.
+            - Does not own TT, TDB, or sidereal-time conversion policy.
+        Dependencies:
+            - stdlib ``pathlib`` for bundled file access.
+        Structural invariants:
+            - ``_data`` is either ``None`` or a dict keyed by integer MJD.
+            - ``_path`` always points to the bundled EOP text file location.
+        Failure behavior:
+            - Missing or malformed rows degrade to omission rather than raise.
+
+    Canon: IERS-style DUT1 tabulation as bundled repository data.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.julian.EOPRegistry",
+      "risk": "medium",
+      "api": {
+        "frozen": ["get_dut1"],
+        "internal": ["_load", "_data", "_path"]
+      },
+      "state": {
+        "mutable": true,
+        "owners": ["EOPRegistry"]
+      },
+      "effects": {
+        "signals_emitted": [],
+        "io": ["bundled_file_read"]
+      },
+      "concurrency": {
+        "thread": "pure_computation",
+        "cross_thread_calls": "safe_read_only"
+      },
+      "failures": {
+        "policy": "raise"
+      },
+      "succession": {
+        "stance": "terminal"
+      },
+      "agent": {
+        "autofix": "allowed",
+        "requires_human_for": ["api_change"]
+      }
+    }
+    [/MACHINE_CONTRACT]
     """
     _data: dict[int, float] | None = None
     _path = Path(__file__).resolve().parent / "data" / "iers_eop.txt"

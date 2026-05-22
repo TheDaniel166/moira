@@ -7,7 +7,7 @@ subsystem.
 
 It assumes the companion doctrine document exists:
 
-- [lord_of_the_orb_doctrine.md](lord_of_the_orb_doctrine.md)
+- [lord_of_the_orb_doctrine.md](../../01_doctrines/lord_of_the_orb/lord_of_the_orb_doctrine.md)
 
 This is an **additive roadmap**. The Lord of the Orb is a new technique with
 no existing implementation in Moira. The required infrastructure (planetary

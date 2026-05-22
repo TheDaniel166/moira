@@ -7,7 +7,7 @@ subsystem.
 
 It assumes the companion doctrine document exists:
 
-- [nine_parts_doctrine.md](nine_parts_doctrine.md)
+- [nine_parts_doctrine.md](../../01_doctrines/nine_parts/nine_parts_doctrine.md)
 
 This is an **additive roadmap**, not a refactor-first roadmap. The lot engine
 in `moira/lots.py` already provides the full arc-formula infrastructure. The

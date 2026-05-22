@@ -10,7 +10,7 @@ Purpose:
 
 This roadmap assumes the companion research note exists:
 
-- [harmograms_phase0_research.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki/05_research/harmograms/harmograms_phase0_research.md)
+- [harmograms_phase0_research.md](./harmograms_phase0_research.md)
 
 ---
 

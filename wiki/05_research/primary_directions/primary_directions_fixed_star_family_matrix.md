@@ -50,11 +50,11 @@ current primary-directions layer.
 
 The existing star engine provides:
 
-- sovereign registry-backed star identity in [stars.py](c:/Users/nilad/OneDrive/Desktop/Moira/moira/stars.py)
+- sovereign registry-backed star identity in [stars.py](../../../moira/stars.py)
 - local data provenance in:
-  - [star_registry.csv](c:/Users/nilad/OneDrive/Desktop/Moira/moira/data/star_registry.csv)
-  - [star_lore.json](c:/Users/nilad/OneDrive/Desktop/Moira/moira/data/star_lore.json)
-  - [star_provenance.json](c:/Users/nilad/OneDrive/Desktop/Moira/moira/data/star_provenance.json)
+  - [star_registry.csv](../../../moira/data/star_registry.csv)
+  - [star_lore.json](../../../moira/data/star_lore.json)
+  - [star_provenance.json](../../../moira/data/star_provenance.json)
 - geocentric true-position computation through `star_at(...)`
 - catalog listing and name-resolution helpers:
   - `list_stars()`
@@ -181,9 +181,9 @@ This keeps the first fixed-star branch fully inside already admitted geometry.
 ### Strongest Current Sources
 
 - Moira sovereign fixed-star engine and registry:
-  - [stars.py](c:/Users/nilad/OneDrive/Desktop/Moira/moira/stars.py)
-  - [star_registry.csv](c:/Users/nilad/OneDrive/Desktop/Moira/moira/data/star_registry.csv)
-  - [star_provenance.json](c:/Users/nilad/OneDrive/Desktop/Moira/moira/data/star_provenance.json)
+  - [stars.py](../../../moira/stars.py)
+  - [star_registry.csv](../../../moira/data/star_registry.csv)
+  - [star_provenance.json](../../../moira/data/star_provenance.json)
 - Astrodienst Astrowiki, `Fixed Star`:
   emphasizes that fixed stars are usually treated primarily by conjunction,
   especially to luminaries and angles, with very small orbs

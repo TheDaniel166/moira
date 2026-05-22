@@ -53,15 +53,15 @@ It is a stack:
 
 The main public planetary surfaces are:
 
-- `Moira.chart(...)` in [moira/_facade_core.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/_facade_core.py:70)
-- `Moira.sky_position(...)` in [moira/_facade_core.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/_facade_core.py:146)
-- `planet_at(...)` in [moira/planets.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/planets.py:610)
-- `sky_position_at(...)` in [moira/planets.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/planets.py:848)
-- `all_planets_at(...)` in [moira/planets.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/planets.py:1000)
-- `heliocentric_planet_at(...)` in [moira/planets.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/planets.py:1102)
-- `planet_relative_to(...)` in [moira/planets.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/planets.py:1261)
+- `Moira.chart(...)` in [moira/_facade_core.py](../../moira/_facade_core.py#L70)
+- `Moira.sky_position(...)` in [moira/_facade_core.py](../../moira/_facade_core.py#L146)
+- `planet_at(...)` in [moira/planets.py](../../moira/planets.py#L610)
+- `sky_position_at(...)` in [moira/planets.py](../../moira/planets.py#L848)
+- `all_planets_at(...)` in [moira/planets.py](../../moira/planets.py#L1000)
+- `heliocentric_planet_at(...)` in [moira/planets.py](../../moira/planets.py#L1102)
+- `planet_relative_to(...)` in [moira/planets.py](../../moira/planets.py#L1261)
 
-The facade-level reader context is established by [moira/_facade_kernel.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/_facade_kernel.py:71), which builds a `KernelPool` and wraps public calls in `use_reader_override(...)`.
+The facade-level reader context is established by [moira/_facade_kernel.py](../../moira/_facade_kernel.py#L71), which builds a `KernelPool` and wraps public calls in `use_reader_override(...)`.
 
 ---
 
@@ -96,18 +96,18 @@ The normal sky-position path is:
 
 | Stage | Main module / surface | What happens | Native status now | Notes |
 | --- | --- | --- | --- | --- |
-| Facade reader setup | [moira/_facade_kernel.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/_facade_kernel.py:71) | Builds `KernelPool` with planetary and supplemental kernels; installs reader override | Python owned | Orchestration only; no native execution here. |
-| Chart assembly | [moira/_facade_core.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/_facade_core.py:70) | Calls `all_planets_at(...)`, node functions, obliquity, delta-T, returns `Chart` | Python owned | Public entry layer remains Python by design. |
+| Facade reader setup | [moira/_facade_kernel.py](../../moira/_facade_kernel.py#L71) | Builds `KernelPool` with planetary and supplemental kernels; installs reader override | Python owned | Orchestration only; no native execution here. |
+| Chart assembly | [moira/_facade_core.py](../../moira/_facade_core.py#L70) | Calls `all_planets_at(...)`, node functions, obliquity, delta-T, returns `Chart` | Python owned | Public entry layer remains Python by design. |
 | Time conversion | `moira.julian` | `ut_to_tt`, `decimal_year`, sidereal helpers | Partial native | Julian and sidereal helper slice is native-routable; wider time policy remains Python-owned. |
-| Reader selection | [moira/spk_reader.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/spk_reader.py:166) | Chooses native DAF path or fallback path | Native active | This is the first material native choke point in the main planetary path. |
-| Planetary kernel open/catalog | [moira/spk_reader.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/spk_reader.py:149) | Native summary scan and native segment-object construction for supported segment types | Native active | Integrated and parity-tested; benchmark gain is modest for catalog open/index. |
-| Segment evaluation | [moira/spk_reader.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/spk_reader.py:122) and [moira/spk_reader.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/spk_reader.py:180) | Native Chebyshev record and series evaluation for supported type-2/type-3 segments | Native active, performance-partial | Functionally live in `SpkReader`, but current checked benchmark artifacts show regression on repeated segment workloads. |
-| Small-body supplemental path | [moira/_spk_body_kernel.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/_spk_body_kernel.py:132) | Native-owned type-13 and supported type-2/type-3 segment reading for supplemental kernels | Native active | Important adjacent branch because `KernelPool` is the real reader surface used by the facade. |
-| Barycentric route chaining | [moira/planets.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/planets.py:407) | Chains NAIF routes into body barycentric positions and states | Python owned | Calls into reader repeatedly; currently not a native wrapper surface. |
-| Earth / geocentric construction | [moira/planets.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/planets.py:457) and [moira/planets.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/planets.py:474) | Builds Earth barycentric state and subtracts to geocentric frame | Python owned | This is a high-value future closure target because it sits above native segment evaluation. |
-| Apparent correction stack | [moira/corrections.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/corrections.py:152) onward | Light-time, aberration, deflection, frame bias, parallax, diurnal aberration, refraction | Python owned | Entire correction stack remains Python-owned in the canonical planetary path. |
-| Rotation composition | [moira/planets.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/planets.py:563) | Precession/nutation rotation composition, optionally NumPy-accelerated | Python owned | Uses Python plus optional NumPy, not C++. |
-| Coordinate transforms | [moira/coordinates.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/coordinates.py:173), [moira/coordinates.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/coordinates.py:234), [moira/coordinates.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/coordinates.py:267), [moira/coordinates.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/coordinates.py:286) | Converts corrected vectors into ecliptic, equatorial, and horizontal products | Python owned | Some equivalent primitives exist in the extension, but the canonical planetary path is still Python here. |
+| Reader selection | [moira/spk_reader.py](../../moira/spk_reader.py#L166) | Chooses native DAF path or fallback path | Native active | This is the first material native choke point in the main planetary path. |
+| Planetary kernel open/catalog | [moira/spk_reader.py](../../moira/spk_reader.py#L149) | Native summary scan and native segment-object construction for supported segment types | Native active | Integrated and parity-tested; benchmark gain is modest for catalog open/index. |
+| Segment evaluation | [moira/spk_reader.py](../../moira/spk_reader.py#L122) and [moira/spk_reader.py](../../moira/spk_reader.py#L180) | Native Chebyshev record and series evaluation for supported type-2/type-3 segments | Native active, performance-partial | Functionally live in `SpkReader`, but current checked benchmark artifacts show regression on repeated segment workloads. |
+| Small-body supplemental path | [moira/_spk_body_kernel.py](../../moira/_spk_body_kernel.py#L132) | Native-owned type-13 and supported type-2/type-3 segment reading for supplemental kernels | Native active | Important adjacent branch because `KernelPool` is the real reader surface used by the facade. |
+| Barycentric route chaining | [moira/planets.py](../../moira/planets.py#L407) | Chains NAIF routes into body barycentric positions and states | Python owned | Calls into reader repeatedly; currently not a native wrapper surface. |
+| Earth / geocentric construction | [moira/planets.py](../../moira/planets.py#L457) and [moira/planets.py](../../moira/planets.py#L474) | Builds Earth barycentric state and subtracts to geocentric frame | Python owned | This is a high-value future closure target because it sits above native segment evaluation. |
+| Apparent correction stack | [moira/corrections.py](../../moira/corrections.py#L152) onward | Light-time, aberration, deflection, frame bias, parallax, diurnal aberration, refraction | Python owned | Entire correction stack remains Python-owned in the canonical planetary path. |
+| Rotation composition | [moira/planets.py](../../moira/planets.py#L563) | Precession/nutation rotation composition, optionally NumPy-accelerated | Python owned | Uses Python plus optional NumPy, not C++. |
+| Coordinate transforms | [moira/coordinates.py](../../moira/coordinates.py#L173), [moira/coordinates.py](../../moira/coordinates.py#L234), [moira/coordinates.py](../../moira/coordinates.py#L267), [moira/coordinates.py](../../moira/coordinates.py#L286) | Converts corrected vectors into ecliptic, equatorial, and horizontal products | Python owned | Some equivalent primitives exist in the extension, but the canonical planetary path is still Python here. |
 | Result packaging | `PlanetData`, `SkyPosition`, `HeliocentricData`, `Chart` | Final typed vessel construction | Python owned | Deliberately Python-facing. |
 
 ---
@@ -123,9 +123,9 @@ The first decisive native boundary is not in `planet_at(...)` itself. It is in t
 - a primary `SpkReader` for the planetary kernel
 - optional `SmallBodyKernel` instances for supplemental kernels
 
-This happens in [moira/_facade_kernel.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/_facade_kernel.py:82).
+This happens in [moira/_facade_kernel.py](../../moira/_facade_kernel.py#L82).
 
-The planetary reader path then enters native code in [moira/spk_reader.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/spk_reader.py:166):
+The planetary reader path then enters native code in [moira/spk_reader.py](../../moira/spk_reader.py#L166):
 
 - native DAF catalog reading can replace `jplephem` summary walking
 - native segment payload loading can replace `jplephem` segment data interpretation
@@ -135,7 +135,7 @@ This is the strongest current native insertion point in the planetary stack.
 
 ## 6.2 Raw Vector Acquisition
 
-Once the reader is active, [moira/planets.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/planets.py:407) constructs vectors by chaining SPK relationships:
+Once the reader is active, [moira/planets.py](../../moira/planets.py#L407) constructs vectors by chaining SPK relationships:
 
 - `_barycentric(...)`
 - `_barycentric_state(...)`
@@ -164,13 +164,13 @@ That distinction is the key truth of the present system.
 
 After raw vectors are obtained, the apparent pipeline is handled in Python:
 
-- `apply_light_time(...)` at [moira/corrections.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/corrections.py:152)
-- `apply_aberration(...)` at [moira/corrections.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/corrections.py:202)
-- `apply_deflection(...)` at [moira/corrections.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/corrections.py:272)
-- `apply_frame_bias(...)` at [moira/corrections.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/corrections.py:352)
-- `topocentric_correction(...)` at [moira/corrections.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/corrections.py:619)
-- `apply_diurnal_aberration(...)` at [moira/corrections.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/corrections.py:735)
-- `apply_refraction(...)` at [moira/corrections.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/corrections.py:1014)
+- `apply_light_time(...)` at [moira/corrections.py](../../moira/corrections.py#L152)
+- `apply_aberration(...)` at [moira/corrections.py](../../moira/corrections.py#L202)
+- `apply_deflection(...)` at [moira/corrections.py](../../moira/corrections.py#L272)
+- `apply_frame_bias(...)` at [moira/corrections.py](../../moira/corrections.py#L352)
+- `topocentric_correction(...)` at [moira/corrections.py](../../moira/corrections.py#L619)
+- `apply_diurnal_aberration(...)` at [moira/corrections.py](../../moira/corrections.py#L735)
+- `apply_refraction(...)` at [moira/corrections.py](../../moira/corrections.py#L1014)
 
 No canonical native route is active here today.
 
@@ -185,11 +185,11 @@ It is currently:
 
 Once corrected vectors are available, Python-owned transforms complete the path:
 
-- `icrf_to_ecliptic(...)` at [moira/coordinates.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/coordinates.py:173)
-- `icrf_to_true_ecliptic(...)` at [moira/coordinates.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/coordinates.py:234)
-- `icrf_to_equatorial(...)` at [moira/coordinates.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/coordinates.py:267)
-- `equatorial_to_horizontal(...)` at [moira/coordinates.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/coordinates.py:286)
-- `cotrans_sp(...)` at [moira/coordinates.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/coordinates.py:524)
+- `icrf_to_ecliptic(...)` at [moira/coordinates.py](../../moira/coordinates.py#L173)
+- `icrf_to_true_ecliptic(...)` at [moira/coordinates.py](../../moira/coordinates.py#L234)
+- `icrf_to_equatorial(...)` at [moira/coordinates.py](../../moira/coordinates.py#L267)
+- `equatorial_to_horizontal(...)` at [moira/coordinates.py](../../moira/coordinates.py#L286)
+- `cotrans_sp(...)` at [moira/coordinates.py](../../moira/coordinates.py#L524)
 
 Again, equivalent native primitives exist in the extension, but they are not yet the normal planetary-engine route.
 

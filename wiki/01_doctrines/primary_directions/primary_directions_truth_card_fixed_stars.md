@@ -23,9 +23,9 @@ The current fixed-star law is:
 
 So the branch stands on explicit substrate:
 
-- [stars.py](c:/Users/nilad/OneDrive/Desktop/Moira/moira/stars.py)
-- [primary_direction_fixed_stars.py](c:/Users/nilad/OneDrive/Desktop/Moira/moira/primary_direction_fixed_stars.py)
-- [primary_directions.py](c:/Users/nilad/OneDrive/Desktop/Moira/moira/primary_directions.py)
+- [stars.py](../../../moira/stars.py)
+- [moira/primary_directions/fixed_stars.py](../../../moira/primary_directions/fixed_stars.py)
+- [moira/primary_directions/__init__.py](../../../moira/primary_directions/__init__.py)
 
 
 ## Current Policy Boundary

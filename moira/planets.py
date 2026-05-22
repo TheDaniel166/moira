@@ -1,12 +1,13 @@
 """
-Moira — planets.py
-The Planetary Oracle: governs geocentric ecliptic position computation for all
-major bodies using DE441 barycentric state vectors.
+Moira - planets.py
+Planetary position surfaces for geocentric, topocentric, barycentric,
+heliocentric, and relative-body products.
 
-Boundary: owns the full pipeline from raw SPK state vectors to final PlanetData
-result vessels. Delegates kernel I/O to spk_reader, coordinate transforms to
-coordinates, and time conversion to julian. Does not own house calculations,
-aspect detection, or any display formatting.
+Boundary: owns the public pipeline from reader-supplied state vectors to
+PlanetData, SkyPosition, HeliocentricData, and CartesianPosition vessels.
+Delegates kernel access and contextual reader routing to spk_reader,
+coordinate transforms to coordinates, and TT/LST support to julian. Does not
+own houses, aspects, or presentation formatting.
 
 Public surface:
     PlanetData, SkyPosition, HeliocentricData, CartesianPosition,
@@ -14,14 +15,17 @@ Public surface:
     heliocentric_planet_at(), all_heliocentric_at(), sun_longitude(),
     planet_relative_to(), next_heliocentric_transit()
 
-    DeltaTPolicy is imported from moira.julian and threaded through planet_at()
-    and sky_position_at() via the delta_t_policy= kwarg.
+    DeltaTPolicy is threaded through planet_at(), sky_position_at(), and
+    all_planets_at() via delta_t_policy=.
 
 Import-time side effects: None
 
 External dependency assumptions:
-    - jplephem must be importable (via spk_reader).
-    - DE441 kernel must exist at kernels/de441.bsp (accessed lazily on first call).
+    - A KernelReader must be supplied explicitly or be active through the
+      facade/contextual reader layer for the surfaces that call
+      get_active_reader().
+    - Native and jplephem-backed reader paths are both valid; planets.py does
+      not require one specific reader backend at import time.
 """
 
 from __future__ import annotations
@@ -81,28 +85,30 @@ class PlanetData:
     RITE: The Planetary Data Vessel
 
     THEOREM: PlanetData serves as the read-only result vessel for a single
-        geocentric ecliptic position computation, carrying longitude, latitude,
-        distance, speed, and derived sign data for one celestial body.
+        ecliptic position computation, carrying longitude, latitude, distance,
+        speed, and derived sign data for one celestial body.
 
     RITE OF PURPOSE:
-        PlanetData is the canonical output type of planet_at() and
-        all_planets_at(). It exists to give callers a single, self-contained
-        object that encodes every piece of positional information they need —
-        raw ecliptic coordinates, daily motion, retrograde flag, and
-        pre-computed zodiacal sign — without requiring them to call any
-        further computation functions.
+        PlanetData is the canonical output type of planet_at(),
+        all_planets_at(), and planet_relative_to(). It exists to give callers
+        a single, self-contained object that encodes the ecliptic coordinate
+        result chosen by the calling surface: raw longitude/latitude,
+        separation, daily motion, retrograde flag, and pre-computed zodiacal
+        sign data.
 
     LAW OF OPERATION:
         Responsibilities:
-            - Hold the geocentric ecliptic longitude, latitude, distance,
-              and daily speed for one body at one instant.
+            - Hold the ecliptic longitude, latitude, distance, and daily speed
+              for one body at one instant.
             - Derive and store the zodiacal sign, sign symbol, and degree
               within sign via __post_init__.
             - Expose longitude_dms and distance_au as convenience properties.
+            - Preserve whether the source planetary path was topocentric via
+              is_topocentric when that concept applies.
         Non-responsibilities:
             - Does not compute positions; it only stores them.
             - Does not perform coordinate transforms or time conversions.
-            - Does not validate that longitude is in [0, 360) — callers
+            - Does not validate that longitude is in [0, 360) - callers
               are responsible for normalisation before construction.
         Dependencies:
             - sign_of() from constants must be importable at construction time.
@@ -183,17 +189,17 @@ class SkyPosition:
     RITE: The Sky Position Vessel
 
     THEOREM: SkyPosition serves as the read-only result vessel for a
-        topocentric apparent sky position, carrying right ascension,
-        declination, azimuth, altitude, and distance for one body as seen
-        from a specific terrestrial observer.
+        topocentric sky position, carrying right ascension, declination,
+        azimuth, altitude, and distance for one body as seen from a specific
+        terrestrial observer.
 
     RITE OF PURPOSE:
         SkyPosition is the canonical output type of sky_position_at(). It
         exists to give callers a single, self-contained object that encodes
-        the full apparent position of a body in both equatorial and horizontal
-        coordinate systems, as computed after the complete 7-step apparent
-        position pipeline (light-time, deflection, aberration, frame bias,
-        precession, nutation, topocentric correction).
+        the full topocentric position of a body in both equatorial and
+        horizontal coordinate systems, as computed by sky_position_at() after
+        the admitted planetary correction stack and optional atmospheric
+        refraction.
 
     LAW OF OPERATION:
         Responsibilities:
@@ -203,7 +209,7 @@ class SkyPosition:
             - Does not compute positions; it only stores them.
             - Does not perform coordinate transforms or time conversions.
             - Does not validate that azimuth is in [0, 360) or altitude
-              is in [−90, 90].
+              is in [-90, 90].
         Dependencies:
             - No external dependencies at construction time.
         Structural invariants:
@@ -212,7 +218,8 @@ class SkyPosition:
         Behavioral invariants:
             - All fields are read-only after construction.
         Failure behavior:
-            - Raises TypeError if any field receives a value of the wrong type.
+            - No vessel-specific validation is performed beyond ordinary
+              dataclass construction.
 
     Canon: None (No applicable canon)
 
@@ -1517,7 +1524,8 @@ def planet_at(
     _context: _ApparentContext | None = None,
 ) -> 'PlanetData | CartesianPosition':
     """
-    Compute the geocentric (or topocentric) ecliptic position of one body.
+    Compute the ecliptic or cartesian position of one body on the admitted
+    geocentric, topocentric, or barycentric planetary surfaces.
 
     Executes the full apparent-position pipeline when ``apparent=True``:
     light-time correction → gravitational deflection → annual aberration →
@@ -1534,8 +1542,9 @@ def planet_at(
         body: One of the ``Body.*`` string constants identifying the target
             body (e.g. ``Body.MARS``).
         jd_ut: Julian Day Number in Universal Time (UT1).
-        reader: An open ``SpkReader`` instance. If ``None``, the module-level
-            singleton returned by ``get_reader()`` is used.
+        reader: Active ``KernelReader``. If ``None``, planets.py requires an
+            active contextual reader from the facade or a manual
+            ``use_reader_override(...)`` scope.
         obliquity: Obliquity of the ecliptic in degrees. If ``None``, it is
             computed automatically: true obliquity (mean + nutation) when
             ``nutation=True``, mean obliquity when ``nutation=False``.
@@ -1581,16 +1590,16 @@ def planet_at(
         astrometric geocentric longitude rate regardless of ``center``.
 
     Raises:
-        FileNotFoundError: If the DE441 kernel has not been initialised and
-            the default kernel path does not exist.
-        KeyError: If the SPK kernel contains no segment for the requested body.
+        MissingKernelError: If ``reader`` is ``None`` and no active reader
+            context exists.
+        KeyError: If the active kernel set contains no segment for the
+            requested body.
         ValueError: If ``center`` or ``frame`` is not a recognised string.
         ValueError: If ``observer_lat`` or ``observer_lon`` is provided without
             ``lst_deg`` — topocentric correction requires all three.
 
     Side effects:
-        None. May initialise the module-level ``SpkReader`` singleton on first
-        call if ``reader`` is ``None`` and no singleton exists yet.
+        None beyond reading from the active kernel context.
     """
     if center not in ('geocentric', 'barycentric'):
         raise ValueError(f"center must be 'geocentric' or 'barycentric', got {center!r}")
@@ -1744,10 +1753,10 @@ def sky_position_at(
     """
     Compute the apparent topocentric equatorial and horizontal position of a body.
 
-    Executes the full 8-step apparent-position pipeline: light-time correction
-    → gravitational deflection → annual aberration → frame bias → precession
-    → nutation → topocentric correction → atmospheric refraction, then
-    projects to RA/Dec and Az/Alt.
+    Executes the admitted apparent/topocentric pipeline: light-time
+    correction → gravitational deflection → annual aberration → frame bias
+    → precession → nutation → topocentric correction → diurnal aberration
+    → optional atmospheric refraction, then projects to RA/Dec and Az/Alt.
 
     Individual correction stages can be disabled via the ``aberration``,
     ``grav_deflection``, ``nutation``, and ``refraction`` switches. The first
@@ -1761,8 +1770,9 @@ def sky_position_at(
         observer_lon: Geographic longitude of the observer in degrees.
         observer_elev_m: Observer elevation above sea level in metres.
             Defaults to 0.0.
-        reader: An open ``SpkReader`` instance. If ``None``, the module-level
-            singleton returned by ``get_reader()`` is used.
+        reader: Active ``KernelReader``. If ``None``, planets.py requires an
+            active contextual reader from the facade or a manual
+            ``use_reader_override(...)`` scope.
         aberration: If ``True`` (default), apply annual aberration correction.
         grav_deflection: If ``True`` (default), apply gravitational deflection.
         nutation: If ``True`` (default), apply the nutation matrix. When
@@ -1785,13 +1795,13 @@ def sky_position_at(
         When ``refraction=True``, altitude is the apparent (observed) altitude.
 
     Raises:
-        FileNotFoundError: If the DE441 kernel has not been initialised and
-            the default kernel path does not exist.
-        KeyError: If the SPK kernel contains no segment for the requested body.
+        MissingKernelError: If ``reader`` is ``None`` and no active reader
+            context exists.
+        KeyError: If the active kernel set contains no segment for the
+            requested body.
 
     Side effects:
-        None. May initialise the module-level ``SpkReader`` singleton on first
-        call if ``reader`` is ``None`` and no singleton exists yet.
+        None beyond reading from the active kernel context.
     """
     if reader is None:
         reader = get_active_reader()
@@ -1900,7 +1910,8 @@ def all_planets_at(
     delta_t_policy: 'DeltaTPolicy | None' = None,
 ) -> dict[str, PlanetData]:
     """
-    Compute geocentric (or topocentric) positions for multiple bodies at once.
+    Compute geocentric, topocentric, or barycentric ecliptic positions for
+    multiple bodies at once.
 
     Obliquity is computed once and shared across all body computations, making
     this more efficient than calling ``planet_at()`` in a loop when many bodies
@@ -1915,8 +1926,9 @@ def all_planets_at(
         jd_ut: Julian Day Number in Universal Time (UT1).
         bodies: List of ``Body.*`` string constants to compute. Defaults to
             ``Body.ALL_PLANETS`` when ``None``.
-        reader: An open ``SpkReader`` instance. If ``None``, the module-level
-            singleton returned by ``get_reader()`` is used.
+        reader: Active ``KernelReader``. If ``None``, planets.py requires an
+            active contextual reader from the facade or a manual
+            ``use_reader_override(...)`` scope.
         apparent: If ``True`` (default), apply the full apparent-position pipeline.
         aberration: If ``True`` (default), apply annual aberration. Ignored when
             ``apparent=False``.
@@ -1935,13 +1947,12 @@ def all_planets_at(
         vessel. Keys match the entries in ``bodies``.
 
     Raises:
-        FileNotFoundError: If the DE441 kernel has not been initialised and
-            the default kernel path does not exist.
-        KeyError: If the SPK kernel contains no segment for a requested body.
+        MissingKernelError: If ``reader`` is ``None`` and no active reader
+            context exists.
+        KeyError: If the active kernel set contains no segment for a requested body.
 
     Side effects:
-        None. May initialise the module-level ``SpkReader`` singleton on first
-        call if ``reader`` is ``None`` and no singleton exists yet.
+        None beyond reading from the active kernel context.
     """
     if bodies is None:
         bodies = Body.ALL_PLANETS
@@ -2017,15 +2028,15 @@ def heliocentric_planet_at(
 
     Returns the position in the true-of-date ecliptic frame (precession and
     nutation applied), consistent with the geocentric frame used by
-    ``planet_at()``. Speed is derived analytically from the JPL kernel
-    velocity vector, not from a finite difference.
+    ``planet_at()``. Speed is derived analytically from the SPK state vector,
+    not from a finite difference.
 
     Args:
         body: One of the ``Body.*`` string constants. Must not be ``Body.SUN``,
             which has no meaningful heliocentric position.
         jd_ut: Julian Day Number in Universal Time (UT1).
-        reader: An open ``SpkReader`` instance. If ``None``, the module-level
-            singleton returned by ``get_reader()`` is used.
+        reader: Active ``KernelReader``. If ``None``, the default contextual or
+            legacy reader returned by ``get_reader()`` is used.
 
     Returns:
         A ``HeliocentricData`` vessel containing heliocentric ecliptic
@@ -2035,13 +2046,12 @@ def heliocentric_planet_at(
     Raises:
         ValueError: If ``body`` is ``Body.SUN`` or ``Body.MOON`` (neither has
             a meaningful heliocentric ecliptic position in this frame).
-        FileNotFoundError: If the DE441 kernel has not been initialised and
-            the default kernel path does not exist.
-        KeyError: If the SPK kernel contains no segment for the requested body.
+        MissingKernelError: If no reader is available through the active
+            context or legacy fallback.
+        KeyError: If the active kernel set contains no segment for the requested body.
 
     Side effects:
-        None. May initialise the module-level ``SpkReader`` singleton on first
-        call if ``reader`` is ``None`` and no singleton exists yet.
+        None beyond reader acquisition through ``get_reader()`` when needed.
     """
     if body in (Body.SUN, Body.MOON):
         raise ValueError(
@@ -2092,28 +2102,27 @@ def all_heliocentric_at(
     Compute heliocentric positions for multiple bodies at once.
 
     Excludes ``Body.SUN`` and ``Body.MOON`` from the default body list, as
-    neither has a meaningful heliocentric position in the DE441 frame.
+    neither has a meaningful heliocentric position in this frame.
 
     Args:
         jd_ut: Julian Day Number in Universal Time (UT1).
         bodies: List of ``Body.*`` string constants to compute. Defaults to
             all planets in ``Body.ALL_PLANETS`` except ``Body.SUN`` and
             ``Body.MOON``.
-        reader: An open ``SpkReader`` instance. If ``None``, the module-level
-            singleton returned by ``get_reader()`` is used.
+        reader: Active ``KernelReader``. If ``None``, the default contextual or
+            legacy reader returned by ``get_reader()`` is used.
 
     Returns:
         A ``dict`` mapping each body name (``str``) to its
         ``HeliocentricData`` vessel.
 
     Raises:
-        FileNotFoundError: If the DE441 kernel has not been initialised and
-            the default kernel path does not exist.
-        KeyError: If the SPK kernel contains no segment for a requested body.
+        MissingKernelError: If no reader is available through the active
+            context or legacy fallback.
+        KeyError: If the active kernel set contains no segment for a requested body.
 
     Side effects:
-        None. May initialise the module-level ``SpkReader`` singleton on first
-        call if ``reader`` is ``None`` and no singleton exists yet.
+        None beyond reader acquisition through ``get_reader()`` when needed.
     """
     if bodies is None:
         bodies = [b for b in Body.ALL_PLANETS if b != Body.SUN and b != Body.MOON]
@@ -2246,8 +2255,8 @@ def planet_relative_to(
         center_body: The centre of the reference frame.  Any ``Body.*``
             constant, including ``Body.SUN`` for heliocentric positions.
         jd_ut: Julian Day in Universal Time (UT1).
-        reader: Open :class:`SpkReader`.  Uses the module-level singleton if
-            ``None``.
+        reader: Active ``KernelReader``. If ``None``, the default contextual or
+            legacy reader returned by ``get_reader()`` is used.
 
     Returns:
         A :class:`PlanetData` vessel.  ``distance`` is the separation between
@@ -2257,7 +2266,8 @@ def planet_relative_to(
 
     Raises:
         ValueError: If ``body == center_body``.
-        FileNotFoundError: If the DE441 kernel is not found.
+        MissingKernelError: If no reader is available through the active
+            context or legacy fallback.
     """
     if body == center_body:
         raise ValueError(
@@ -2340,8 +2350,8 @@ def next_heliocentric_transit(
         target_lon: Heliocentric ecliptic longitude to find (degrees; need
             not be in [0, 360)).
         jd_start: Julian Day (UT1) to begin searching from.
-        reader: Open :class:`SpkReader`.  Uses the module-level singleton if
-            ``None``.
+        reader: Active ``KernelReader``. If ``None``, the default contextual or
+            legacy reader returned by ``get_reader()`` is used.
         max_days: Maximum days to search forward.  Default 400 covers all
             inner planets and Mars comfortably; set higher for outer planets
             (e.g. 20000 for Neptune).
@@ -2352,7 +2362,8 @@ def next_heliocentric_transit(
     Raises:
         ValueError: If ``body`` is ``Body.SUN``.
         ValueError: If no crossing is found within ``max_days``.
-        FileNotFoundError: If the DE441 kernel is not found.
+        MissingKernelError: If no reader is available through the active
+            context or legacy fallback.
     """
     if body == Body.SUN:
         raise ValueError("next_heliocentric_transit: Body.SUN has no heliocentric longitude.")

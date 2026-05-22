@@ -53,6 +53,7 @@ def compute_calendar_date(jd_integer: float, julian_before=None):
 
 
 class OutOfRangeError(ValueError):
+    """Vessel: Signals that a small-body SPK segment was queried outside its admitted coverage span."""
     def __init__(self, message, out_of_range_times):
         self.args = (message,)
         self.out_of_range_times = out_of_range_times
@@ -126,6 +127,69 @@ def _hermite_eval_3d(
 
 
 class _NativeKernelHandle:
+    """
+    RITE: The Native Small-Body Kernel Handle.
+
+    THEOREM: Governs shared lifetime management for native-owned small-body
+    segment wrappers loaded from a single kernel.
+
+    RITE OF PURPOSE:
+        _NativeKernelHandle groups the segment wrappers created for one
+        native-owned small-body kernel so they can be released together.
+        It gives the higher-level kernel wrapper a single teardown surface
+        without conflating lifetime management with segment evaluation logic.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Store the live segment wrapper set for one kernel.
+            - Release segment-local native caches during teardown.
+        Non-responsibilities:
+            - Does not evaluate ephemeris values.
+            - Does not parse DAF catalogs.
+            - Does not own file-path discovery.
+        Dependencies:
+            - segment wrappers exposing ``_release()`` when needed.
+        Structural invariants:
+            - ``segments`` is always a concrete list.
+        Failure behavior:
+            - Teardown is best-effort and skips segments without ``_release``.
+
+    Canon: None (repository lifetime-management helper).
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira._spk_body_kernel._NativeKernelHandle",
+      "risk": "medium",
+      "api": {
+        "frozen": ["close"],
+        "internal": ["segments"]
+      },
+      "state": {
+        "mutable": true,
+        "owners": ["_NativeKernelHandle"]
+      },
+      "effects": {
+        "signals_emitted": [],
+        "io": []
+      },
+      "concurrency": {
+        "thread": "pure_computation",
+        "cross_thread_calls": "safe_read_only"
+      },
+      "failures": {
+        "policy": "raise"
+      },
+      "succession": {
+        "stance": "terminal"
+      },
+      "agent": {
+        "autofix": "allowed",
+        "requires_human_for": ["api_change"]
+      }
+    }
+    [/MACHINE_CONTRACT]
+    """
     def __init__(self, segments) -> None:
         self.segments = list(segments)
 
@@ -136,7 +200,71 @@ class _NativeKernelHandle:
 
 
 class _NativeChebyshevSegment:
-    """Native-backed type-2/type-3 SPK segment used by ``sb441-n373s.bsp``."""
+    """
+    RITE: The Native Small-Body Chebyshev Segment.
+
+    THEOREM: Governs one native-backed small-body SPK type-2/type-3 segment
+    and preserves the compute surface needed by the small-body kernel layer.
+
+    RITE OF PURPOSE:
+        _NativeChebyshevSegment stores descriptor truth for one small-body
+        segment, lazily acquires payloads or evaluators, and exposes the
+        same position and velocity surface expected by the asteroid/comet
+        callers above it.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Preserve one segment descriptor and its time bounds.
+            - Load native payloads or evaluators lazily.
+            - Evaluate positions and velocities for admitted epochs.
+        Non-responsibilities:
+            - Does not discover kernels or bodies.
+            - Does not own higher-level routing or identity policy.
+        Dependencies:
+            - native SPK payload/evaluator support when available.
+            - local scalar Chebyshev evaluators as fallback.
+        Structural invariants:
+            - descriptor-derived fields remain aligned with the source segment.
+            - ``start_jd`` and ``end_jd`` derive directly from stored seconds.
+        Failure behavior:
+            - Out-of-range requests raise ``OutOfRangeError``.
+
+    Canon: JPL SPK type-2/type-3 Chebyshev segment semantics.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira._spk_body_kernel._NativeChebyshevSegment",
+      "risk": "high",
+      "api": {
+        "frozen": ["compute", "compute_and_differentiate"],
+        "internal": ["_release", "_load_data", "_load_native_evaluator", "_evaluate"]
+      },
+      "state": {
+        "mutable": true,
+        "owners": ["_NativeChebyshevSegment"]
+      },
+      "effects": {
+        "signals_emitted": [],
+        "io": []
+      },
+      "concurrency": {
+        "thread": "pure_computation",
+        "cross_thread_calls": "safe_read_only"
+      },
+      "failures": {
+        "policy": "raise"
+      },
+      "succession": {
+        "stance": "terminal"
+      },
+      "agent": {
+        "autofix": "allowed",
+        "requires_human_for": ["api_change"]
+      }
+    }
+    [/MACHINE_CONTRACT]
+    """
 
     def __init__(self, path: Path, source: bytes, descriptor, little_endian: bool) -> None:
         self.path = path
@@ -246,7 +374,70 @@ class _NativeChebyshevSegment:
 
 
 class _Type13Segment:
-    """Moira-native SPK type 13 segment object."""
+    """
+    RITE: The Native Type-13 Segment Wrapper.
+
+    THEOREM: Governs one SPK type-13 Hermite segment in native-owned small-body
+    kernels and exposes a compatible compute interface to callers.
+
+    RITE OF PURPOSE:
+        _Type13Segment preserves the descriptor and state truth for one type-13
+        segment, lazily loads its payload, and evaluates positions through the
+        Hermite interpolation path required by the source segment family.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Store one type-13 descriptor and its derived time bounds.
+            - Lazily materialize states, epochs, and window size.
+            - Evaluate positions and approximate velocities for callers.
+        Non-responsibilities:
+            - Does not discover kernels or body availability.
+            - Does not own the higher-level kernel wrapper.
+        Dependencies:
+            - native type-13 payload support.
+            - local Hermite interpolation helper.
+        Structural invariants:
+            - cached payload remains aligned to the descriptor that produced it.
+            - ``start_jd`` and ``end_jd`` derive directly from stored seconds.
+        Failure behavior:
+            - Native payload failures propagate to callers.
+
+    Canon: JPL SPK type-13 Hermite segment semantics.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira._spk_body_kernel._Type13Segment",
+      "risk": "high",
+      "api": {
+        "frozen": ["compute", "compute_and_differentiate"],
+        "internal": ["_release", "_data"]
+      },
+      "state": {
+        "mutable": true,
+        "owners": ["_Type13Segment"]
+      },
+      "effects": {
+        "signals_emitted": [],
+        "io": []
+      },
+      "concurrency": {
+        "thread": "pure_computation",
+        "cross_thread_calls": "safe_read_only"
+      },
+      "failures": {
+        "policy": "raise"
+      },
+      "succession": {
+        "stance": "terminal"
+      },
+      "agent": {
+        "autofix": "allowed",
+        "requires_human_for": ["api_change"]
+      }
+    }
+    [/MACHINE_CONTRACT]
+    """
 
     def __init__(self, path: Path, source: bytes, descriptor, little_endian: bool) -> None:
         self.path = path
@@ -335,7 +526,72 @@ def _native_segment_for(path: Path, descriptor, source: bytes, little_endian: bo
 
 
 class SmallBodyKernel:
-    """Thin wrapper around a native-owned SPK small-body kernel."""
+    """
+    RITE: The Small-Body Kernel Wrapper.
+
+    THEOREM: Governs native-owned small-body SPK kernels and exposes the
+    body-availability and segment-access surface consumed by higher layers.
+
+    RITE OF PURPOSE:
+        SmallBodyKernel is the repository-owned wrapper around a supported
+        native small-body SPK kernel. It validates kernel support, builds the
+        segment handle set, and records available targets and centers so
+        asteroid and comet code can consume the kernel without direct DAF logic.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Validate that the requested kernel exists and is supported.
+            - Build and retain the native segment-handle graph.
+            - Record available target bodies and centers.
+        Non-responsibilities:
+            - Does not resolve kernel paths globally.
+            - Does not perform catalog parsing outside native helpers.
+            - Does not own asteroid/comet domain semantics.
+        Dependencies:
+            - native DAF catalog support.
+            - segment wrappers for supported data types.
+        Structural invariants:
+            - ``_available`` matches the targets exposed by the loaded segments.
+            - ``_center`` stores one center mapping per discovered target.
+        Failure behavior:
+            - Missing files and unsupported kernels raise explicit exceptions.
+
+    Canon: Native-supported SPK small-body kernel semantics within Moira.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira._spk_body_kernel.SmallBodyKernel",
+      "risk": "high",
+      "api": {
+        "frozen": ["has_body"],
+        "internal": ["_path", "_catalog", "_kernel", "_available", "_center"]
+      },
+      "state": {
+        "mutable": true,
+        "owners": ["SmallBodyKernel"]
+      },
+      "effects": {
+        "signals_emitted": [],
+        "io": ["filesystem_read"]
+      },
+      "concurrency": {
+        "thread": "pure_computation",
+        "cross_thread_calls": "safe_read_only"
+      },
+      "failures": {
+        "policy": "raise"
+      },
+      "succession": {
+        "stance": "terminal"
+      },
+      "agent": {
+        "autofix": "allowed",
+        "requires_human_for": ["api_change"]
+      }
+    }
+    [/MACHINE_CONTRACT]
+    """
 
     def __init__(self, path: Path) -> None:
         path = Path(path)

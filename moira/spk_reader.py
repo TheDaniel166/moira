@@ -52,6 +52,7 @@ def compute_calendar_date(jd_integer: float, julian_before=None):
 
 
 class OutOfRangeError(ValueError):
+    """Vessel: Signals that an SPK segment was queried outside its admitted coverage span."""
     def __init__(self, message, out_of_range_times):
         self.args = (message,)
         self.out_of_range_times = out_of_range_times
@@ -239,7 +240,71 @@ def _native_position_and_velocity(
 
 
 class _NativeSpkKernel:
-    """Thin kernel holder built from Moira-native DAF summary scanning."""
+    """
+    RITE: The Native SPK Kernel Holder.
+
+    THEOREM: Holds a native-scanned planetary SPK catalog and materializes
+    segment wrappers that preserve the reader-facing kernel surface.
+
+    RITE OF PURPOSE:
+        _NativeSpkKernel bridges native DAF catalog discovery to the Python
+        reader layer. It packages the kernel path, catalog metadata, optional
+        native handle, and wrapped segments into one inspectable object so the
+        rest of ``spk_reader.py`` can operate through a stable kernel surface.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Store native-discovered kernel metadata and segment wrappers.
+            - Expose a segment list compatible with existing reader flows.
+            - Release cached segment payloads and close native handles on teardown.
+        Non-responsibilities:
+            - Does not parse DAF catalogs itself.
+            - Does not evaluate positions directly.
+            - Does not own kernel-path resolution policy.
+        Dependencies:
+            - ``_NativeChebyshevSegment`` for per-segment wrappers.
+        Structural invariants:
+            - ``segments`` mirrors the summaries present in ``catalog``.
+            - ``path`` always identifies the kernel file represented by this holder.
+        Failure behavior:
+            - Handle close errors are swallowed during cleanup to preserve teardown safety.
+
+    Canon: JPL SPK/DAF kernel organization as mediated by Moira-native scanning.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.spk_reader._NativeSpkKernel",
+      "risk": "high",
+      "api": {
+        "frozen": ["close"],
+        "internal": ["path", "catalog", "_handle", "segments"]
+      },
+      "state": {
+        "mutable": true,
+        "owners": ["_NativeSpkKernel"]
+      },
+      "effects": {
+        "signals_emitted": [],
+        "io": []
+      },
+      "concurrency": {
+        "thread": "pure_computation",
+        "cross_thread_calls": "safe_read_only"
+      },
+      "failures": {
+        "policy": "raise"
+      },
+      "succession": {
+        "stance": "terminal"
+      },
+      "agent": {
+        "autofix": "allowed",
+        "requires_human_for": ["api_change"]
+      }
+    }
+    [/MACHINE_CONTRACT]
+    """
 
     def __init__(self, path: Path, catalog: dict, handle=None) -> None:
         self.path = path
@@ -287,7 +352,72 @@ def _open_kernel(path: Path):
 
 
 class _NativeChebyshevSegment:
-    """Moira-native type-2/type-3 SPK segment with jplephem-compatible surface."""
+    """
+    RITE: The Native Chebyshev Segment Wrapper.
+
+    THEOREM: Governs access to one native-backed SPK type-2/type-3 segment
+    while preserving the jplephem-compatible compute surface expected by Moira.
+
+    RITE OF PURPOSE:
+        _NativeChebyshevSegment keeps the reader layer sovereign over native
+        segment evaluation. It stores descriptor truth, lazily loads either a
+        native evaluator or coefficient payload, and exposes the existing
+        position / position-plus-velocity interface without changing callers.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Preserve descriptor truth for a single SPK segment.
+            - Lazily load native evaluators or coefficient payloads.
+            - Evaluate position and velocity through the strongest available path.
+        Non-responsibilities:
+            - Does not discover kernels or catalog summaries.
+            - Does not own higher-level body routing.
+            - Does not mutate upstream kernel metadata.
+        Dependencies:
+            - native SPK payload readers or evaluator loaders when available.
+            - local scalar Chebyshev evaluators as fallback.
+        Structural invariants:
+            - descriptor-derived fields remain aligned to the source segment.
+            - ``start_jd`` and ``end_jd`` derive directly from stored seconds.
+        Failure behavior:
+            - Out-of-range requests raise ``OutOfRangeError`` through the evaluation path.
+
+    Canon: JPL SPK type-2/type-3 Chebyshev segment semantics.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.spk_reader._NativeChebyshevSegment",
+      "risk": "high",
+      "api": {
+        "frozen": ["compute", "compute_and_differentiate"],
+        "internal": ["_load_native_evaluator", "_load_data", "_evaluate"]
+      },
+      "state": {
+        "mutable": true,
+        "owners": ["_NativeChebyshevSegment"]
+      },
+      "effects": {
+        "signals_emitted": [],
+        "io": []
+      },
+      "concurrency": {
+        "thread": "pure_computation",
+        "cross_thread_calls": "safe_read_only"
+      },
+      "failures": {
+        "policy": "raise"
+      },
+      "succession": {
+        "stance": "terminal"
+      },
+      "agent": {
+        "autofix": "allowed",
+        "requires_human_for": ["api_change"]
+      }
+    }
+    [/MACHINE_CONTRACT]
+    """
 
     def __init__(self, path: Path, source: bytes, descriptor, little_endian: bool, handle=None) -> None:
         self.path = path

@@ -7,10 +7,10 @@ Last reviewed:
 - 2026-04-04 (Phase 5 / V6-partial complete)
 
 Inputs:
-- [`SWISS_EPHEMERIS_SYMBOL_TABLE.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/SWISS_EPHEMERIS_SYMBOL_TABLE.md)
-- [`SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md)
-- [`REPOSITORY_ASSESSMENT.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/REPOSITORY_ASSESSMENT.md)
-- [`00_SUBSYSTEM_CONSTITUTIONALIZATION_PROCESS.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/00_SUBSYSTEM_CONSTITUTIONALIZATION_PROCESS.md)
+- [`SWISS_EPHEMERIS_SYMBOL_TABLE.md`](../../moira.wiki/SWISS_EPHEMERIS_SYMBOL_TABLE.md)
+- [`SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md`](../../moira.wiki/SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md)
+- historical `REPOSITORY_ASSESSMENT.md` input is not present in the current tracked repo
+- [`CONSTITUTIONAL_PROCESS.md`](../00_foundations/CONSTITUTIONAL_PROCESS.md)
 
 This is not a parity promise. It is a doctrine for deciding which Swiss
 surfaces should become first-class Moira surfaces, which should wait for a
@@ -39,7 +39,7 @@ This work is worth doing now for four reasons:
 
 ## Current Totals
 
-From [`SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md):
+From [`SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md`](../../moira.wiki/SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md):
 
 - Total `none` rows: `239`
 - `Implement`: `26`
@@ -159,12 +159,12 @@ have natural entry points in the repo.
 
 | Deferred family | Defer kind | constitutional entry point | Reason |
 | --- | --- | --- | --- |
-| generalized heliacal / visibility model | `Implemented.V0–V5` + `Active.V6` | [`moira/heliacal.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/heliacal.py), [`moira/stars.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/stars.py), [`STARS_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/STARS_BACKEND_STANDARD.md) | V0–V5 complete: observer-environment policy, generalized event search, Yallop corpus (295/295), public surface widened; V6 partial: K&S 1991 moonlight and stellar catalog batch admitted |
-| model-basis controls (`DeltaT`, precession, nutation, tidal acceleration) | `Defer.Doctrine` | [`julian.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/julian.py), [`corrections.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/corrections.py), [`DELTA_T_HYBRID_MODEL.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/DELTA_T_HYBRID_MODEL.md) | these are foundational astronomy policy choices, not Swiss option constants |
-| additional ayanamsa constants / user-defined ayanamsa | `Defer.Doctrine` | [`sidereal.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/sidereal.py) | ayanamsa expansion belongs in one coherent sidereal doctrine layer |
-| eclipse / occultation path helpers | `Active.Design` + `Active.Validation` | [`eclipse.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/eclipse.py), [`ECLIPSE_MODEL_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/ECLIPSE_MODEL_STANDARD.md), [`occultations.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/occultations.py), [`ANCIENT_OCCULTATION_VALIDATION_PROGRAM.md`](c:/Users/nilad/OneDrive/Desktop/Moira/wiki/03_validation/ANCIENT_OCCULTATION_VALIDATION_PROGRAM.md) | modern/future path geometry is active and externally validated; ancient occultations belong to a separate historical-validation program |
-| orbital-elements public layer | `Implemented` | [`moira/orbits.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/orbits.py), [`moira/__init__.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/__init__.py) | `KeplerianElements`, `DistanceExtremes`, `orbital_elements_at`, `distance_extremes_at` implemented Phase 4; wired into top-level namespace |
-| house dynamics / cusp-speed layer | `Implemented` | [`houses.py`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/houses.py), [`HOUSES_BACKEND_STANDARD.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/HOUSES_BACKEND_STANDARD.md) | implemented in Moira form as `HouseDynamics`, including both `cusp_speeds_at(...)` and `house_dynamics_from_armc(...)` rather than Swiss-style auxiliary tuples |
+| generalized heliacal / visibility model | `Implemented.V0–V5` + `Active.V6` | [`moira/heliacal.py`](../../moira/heliacal.py), [`moira/stars.py`](../../moira/stars.py), [`STARS_BACKEND_STANDARD.md`](../02_standards/STARS_BACKEND_STANDARD.md) | V0–V5 complete: observer-environment policy, generalized event search, Yallop corpus (295/295), public surface widened; V6 partial: K&S 1991 moonlight and stellar catalog batch admitted |
+| model-basis controls (`DeltaT`, precession, nutation, tidal acceleration) | `Defer.Doctrine` | [`julian.py`](../../moira/julian.py), [`corrections.py`](../../moira/corrections.py), [`DELTA_T_HYBRID_MODEL.md`](../02_standards/DELTA_T_HYBRID_MODEL.md) | these are foundational astronomy policy choices, not Swiss option constants |
+| additional ayanamsa constants / user-defined ayanamsa | `Defer.Doctrine` | [`sidereal.py`](../../moira/sidereal.py) | ayanamsa expansion belongs in one coherent sidereal doctrine layer |
+| eclipse / occultation path helpers | `Active.Design` + `Active.Validation` | [`eclipse.py`](../../moira/eclipse.py), [`ECLIPSE_MODEL_STANDARD.md`](../02_standards/ECLIPSE_MODEL_STANDARD.md), [`occultations.py`](../../moira/occultations.py), [`ANCIENT_OCCULTATION_VALIDATION_PROGRAM.md`](./ANCIENT_OCCULTATION_VALIDATION_PROGRAM.md) | modern/future path geometry is active and externally validated; ancient occultations belong to a separate historical-validation program |
+| orbital-elements public layer | `Implemented` | [`moira/orbits.py`](../../moira/orbits.py), [`moira/__init__.py`](../../moira/__init__.py) | `KeplerianElements`, `DistanceExtremes`, `orbital_elements_at`, `distance_extremes_at` implemented Phase 4; wired into top-level namespace |
+| house dynamics / cusp-speed layer | `Implemented` | [`houses.py`](../../moira/houses.py), [`HOUSES_BACKEND_STANDARD.md`](../02_standards/HOUSES_BACKEND_STANDARD.md) | implemented in Moira form as `HouseDynamics`, including both `cusp_speeds_at(...)` and `house_dynamics_from_armc(...)` rather than Swiss-style auxiliary tuples |
 
 ## Scope Boundary
 
@@ -586,8 +586,8 @@ Examples:
 ## Update Rule
 
 When a symbol or family changes state:
-1. update [`SWISS_EPHEMERIS_SYMBOL_TABLE.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/SWISS_EPHEMERIS_SYMBOL_TABLE.md)
-2. update [`SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md`](c:/Users/nilad/OneDrive/Desktop/Moira/moira/docs/SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md)
+1. update [`SWISS_EPHEMERIS_SYMBOL_TABLE.md`](../../moira.wiki/SWISS_EPHEMERIS_SYMBOL_TABLE.md)
+2. update [`SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md`](../../moira.wiki/SWISS_EPHEMERIS_NONE_SUPPORT_REPORT.md)
 3. update this roadmap
 4. add or update validation coverage
 5. if the work is a deferred family, update the relevant constitutional entry-point docs

@@ -1,4 +1,3 @@
-why are we writing so many documenhts
 # Moira Native Public Planetary Evaluator Spec
 
 **Status**: NPE-1 specification
@@ -165,7 +164,7 @@ Purpose:
 
 Use the existing apparent validation surface already represented by:
 
-- [test_horizons_planet_apparent.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/tests/integration/test_horizons_planet_apparent.py)
+- [test_horizons_planet_apparent.py](../../tests/integration/test_horizons_planet_apparent.py)
 
 This gives:
 

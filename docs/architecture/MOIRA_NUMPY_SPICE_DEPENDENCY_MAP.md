@@ -39,25 +39,25 @@ These are the files governing the benchmarked public planetary path.
 
 ### 1.1 `NumPy`
 
-- [moira/planets.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/planets.py:1401)
+- [moira/planets.py](../../moira/planets.py#L1401)
   - only a stale internal comment mentions `numpy`
   - there is no active `NumPy` import or execution path
 
-- [moira/nutation_2000a.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/nutation_2000a.py)
+- [moira/nutation_2000a.py](../../moira/nutation_2000a.py)
   - no `NumPy` usage
 
-- [moira/corrections.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/corrections.py)
+- [moira/corrections.py](../../moira/corrections.py)
   - no `NumPy` usage on the active planetary correction path
 
-- [moira/spk_reader.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/spk_reader.py:75)
+- [moira/spk_reader.py](../../moira/spk_reader.py#L75)
   - no `NumPy` import
   - planetary Chebyshev fallback path is tuple/scalar-owned
 
-- [moira/lunar_limb.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/lunar_limb.py)
+- [moira/lunar_limb.py](../../moira/lunar_limb.py)
   - no `NumPy` import
   - utilizes native `LolaPointCloud` substrate
 
-- [moira/_spk_body_kernel.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/_spk_body_kernel.py:62)
+- [moira/_spk_body_kernel.py](../../moira/_spk_body_kernel.py#L62)
   - no `NumPy` import
   - native payload readers are used, but not `NumPy` directly
 
@@ -69,15 +69,15 @@ These are the files governing the benchmarked public planetary path.
 
 ### 2.1 `NumPy`
 
-- [moira/astrocartography.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/astrocartography.py)
+- [moira/astrocartography.py](../../moira/astrocartography.py)
   - NumPy removed 2026-05-10
   - ASC/DSC sampling now uses scalar math only
 
-- [moira/daf_writer.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/daf_writer.py)
+- [moira/daf_writer.py](../../moira/daf_writer.py)
   - NumPy removed 2026-05-10
   - Type-13 payload assembly and serialization now use stdlib only
 
-- [moira/lunar_limb.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/lunar_limb.py)
+- [moira/lunar_limb.py](../../moira/lunar_limb.py)
   - migrated to native substrate earlier in the same closure cycle
 
 Repository scan result for `moira/`:
@@ -90,19 +90,19 @@ Repository scan result for `moira/`:
 
 All current production `spiceypy` usage is concentrated in:
 
-- [moira/lunar_limb.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/lunar_limb.py:40)
+- [moira/lunar_limb.py](../../moira/lunar_limb.py#L40)
   - hard `spiceypy` import
 
-- [moira/lunar_limb.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/lunar_limb.py:124)
+- [moira/lunar_limb.py](../../moira/lunar_limb.py#L124)
   - kernel loading via `sp.furnsh(...)`
 
-- [moira/lunar_limb.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/lunar_limb.py:129)
+- [moira/lunar_limb.py](../../moira/lunar_limb.py#L129)
   - residual fallback ET conversion via `sp.str2et(...)` for pre-1972 epochs
 
-- [moira/lunar_limb.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/lunar_limb.py:190)
+- [moira/lunar_limb.py](../../moira/lunar_limb.py#L190)
   - apparent Moon state for a topocentric observer via `sp.spkcpo(...)`
 
-- [moira/lunar_limb.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/lunar_limb.py:213)
+- [moira/lunar_limb.py](../../moira/lunar_limb.py#L213)
   - body-frame rotation lookup via `sp.pxform(...)`
 
 There are no other current production `spiceypy` sites in the repository scan.
@@ -114,7 +114,7 @@ These sites are not the governing planetary manuscript, but they still keep
 
 ### 3.1 Binding-level NumPy header
 
-- [src/native/bindings/moira_native.cpp](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/src/native/bindings/moira_native.cpp:4)
+- [src/native/bindings/moira_native.cpp](../../src/native/bindings/moira_native.cpp#L4)
   - `#include <pybind11/numpy.h>`
 
 ### 3.2 Array-oriented binding APIs
@@ -129,9 +129,9 @@ These are the real remaining runtime-coupled NumPy surfaces.
 
 ### 4.1 `NumPy`
 
-- [tests/unit/test_spk_reader.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/tests/unit/test_spk_reader.py:5)
-- [tests/unit/test_topocentric_jitter.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/tests/unit/test_topocentric_jitter.py:99)
-- [tests/unit/test_planetary_native_ownership_snapshot.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/tests/unit/test_planetary_native_ownership_snapshot.py:15)
+- [tests/unit/test_spk_reader.py](../../tests/unit/test_spk_reader.py#L5)
+- [tests/unit/test_topocentric_jitter.py](../../tests/unit/test_topocentric_jitter.py#L99)
+- [tests/unit/test_planetary_native_ownership_snapshot.py](../../tests/unit/test_planetary_native_ownership_snapshot.py#L15)
 
 These do not govern runtime dependency, but they still track or exercise
 NumPy-related surfaces.
@@ -144,15 +144,15 @@ NumPy-related surfaces.
 
 ### 5.1 `NumPy`
 
-- [scripts/validate_phase4_events.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/scripts/validate_phase4_events.py:1)
-- [scripts/validate_native_solvers.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/scripts/validate_native_solvers.py:1)
-- [scripts/validate_delta_t_hybrid.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/scripts/validate_delta_t_hybrid.py:405)
-- [scripts/stress_test_phase3.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/scripts/stress_test_phase3.py:1)
-- [scripts/build_tier2_substrate.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/scripts/build_tier2_substrate.py:3)
-- [scripts/build_sovereign_substrate.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/scripts/build_sovereign_substrate.py:13)
-- [scripts/benchmark_native_eclipse.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/scripts/benchmark_native_eclipse.py:2)
-- [scripts/audit_phase4_edge_cases.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/scripts/audit_phase4_edge_cases.py:1)
-- [scripts/audit_phase3_search.py](/c:/Users/nilad/OneDrive/Desktop/Moira%20C++/scripts/audit_phase3_search.py:1)
+- [scripts/validate_phase4_events.py](../../scripts/validate_phase4_events.py#L1)
+- [scripts/validate_native_solvers.py](../../scripts/validate_native_solvers.py#L1)
+- [scripts/validate_delta_t_hybrid.py](../../scripts/validate_delta_t_hybrid.py#L405)
+- [scripts/stress_test_phase3.py](../../scripts/stress_test_phase3.py#L1)
+- [scripts/build_tier2_substrate.py](../../scripts/build_tier2_substrate.py#L3)
+- [scripts/build_sovereign_substrate.py](../../scripts/build_sovereign_substrate.py#L13)
+- [scripts/benchmark_native_eclipse.py](../../scripts/benchmark_native_eclipse.py#L2)
+- [scripts/audit_phase4_edge_cases.py](../../scripts/audit_phase4_edge_cases.py#L1)
+- [scripts/audit_phase3_search.py](../../scripts/audit_phase3_search.py#L1)
 
 These are off the production runtime path.
 

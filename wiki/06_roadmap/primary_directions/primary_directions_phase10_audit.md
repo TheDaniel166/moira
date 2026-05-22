@@ -18,7 +18,7 @@ subsystem as walked through Phase 10 and beyond.
 
 ## Governing Constitutional Standard
 
-From [wiki/00_foundations/CONSTITUTIONAL_PROCESS.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki/00_foundations/CONSTITUTIONAL_PROCESS.md):
+From [wiki/00_foundations/CONSTITUTIONAL_PROCESS.md](../../00_foundations/CONSTITUTIONAL_PROCESS.md):
 
 - `Phase 10 - Full-Subsystem Hardening`
   - freeze cross-layer invariants
@@ -59,7 +59,7 @@ packet, includes:
   - antiscia / contra-antiscia
 
 This is materially broader than the current backend standard in
-[PRIMARY_DIRECTIONS_BACKEND_STANDARD.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki/02_standards/PRIMARY_DIRECTIONS_BACKEND_STANDARD.md),
+[PRIMARY_DIRECTIONS_BACKEND_STANDARD.md](../../02_standards/PRIMARY_DIRECTIONS_BACKEND_STANDARD.md),
 which still declares itself authoritative only for:
 
 - `Placidus mundane`
@@ -67,7 +67,7 @@ which still declares itself authoritative only for:
 - `Traditional converse` or `Direct only`
 
 The doctrine packet in
-[primary_directions_doctrine.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\01_doctrines\primary_directions\primary_directions_doctrine.md)
+[primary_directions_doctrine.md](../../01_doctrines/primary_directions/primary_directions_doctrine.md)
 formerly named itself as a `pre-constitutional doctrine layer`; the current alignment pass
 corrects that older packet language.
 
@@ -172,4 +172,3 @@ Any future widening should proceed only as:
 
 - frontier research
 - or explicit constitutional revision
-

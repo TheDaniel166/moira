@@ -21,10 +21,10 @@ itself the backend standard, but it no longer serves only as pre-Phase-1 work.
 
 The remaining-frontier governance packet now lives in:
 
-- [remaining_primary_directions_frontiers.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\05_research\primary_directions\remaining_primary_directions_frontiers.md)
-- [primary_directions_constitutional_alignment.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\06_roadmap\primary_directions\primary_directions_constitutional_alignment.md)
-- [primary_directions_invariant_register.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\02_standards\primary_directions\primary_directions_invariant_register.md)
-- [primary_directions_validation_codex.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\02_standards\primary_directions\primary_directions_validation_codex.md)
+- [remaining_primary_directions_frontiers.md](../../05_research/primary_directions/remaining_primary_directions_frontiers.md)
+- [primary_directions_constitutional_alignment.md](../../06_roadmap/primary_directions/primary_directions_constitutional_alignment.md)
+- [primary_directions_invariant_register.md](../../02_standards/primary_directions/primary_directions_invariant_register.md)
+- [primary_directions_validation_codex.md](../../02_standards/primary_directions/primary_directions_validation_codex.md)
 
 
 ## Foundational Thesis
@@ -208,7 +208,7 @@ Interpretive implication:
 
 The governing target-family audit now lives in:
 
-- [primary_directions_target_family_matrix.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\05_research\primary_directions\primary_directions_target_family_matrix.md)
+- [primary_directions_target_family_matrix.md](../../05_research/primary_directions/primary_directions_target_family_matrix.md)
 
 ### 5a. Relation / Perfection Doctrine
 
@@ -593,20 +593,20 @@ Before implementing additional primary-direction capabilities, Moira should:
 The current constitutional packet now includes the following companion
 documents:
 
-1. [primary_directions_truth_card_placidus_mundane.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\01_doctrines\primary_directions\primary_directions_truth_card_placidus_mundane.md)
-2. [primary_directions_truth_card_placidian_classic_semi_arc.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\01_doctrines\primary_directions\primary_directions_truth_card_placidian_classic_semi_arc.md)
-3. [primary_directions_truth_card_regiomontanus.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\01_doctrines\primary_directions\primary_directions_truth_card_regiomontanus.md)
-4. [primary_directions_truth_card_zodiacal_directions.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\01_doctrines\primary_directions\primary_directions_truth_card_zodiacal_directions.md)
-5. [primary_directions_truth_card_field_plane_directions.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\01_doctrines\primary_directions\primary_directions_truth_card_field_plane_directions.md)
-6. [primary_directions_direction_space_doctrine.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\01_doctrines\primary_directions\primary_directions_direction_space_doctrine.md)
-7. [primary_directions_time_key_doctrine.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\01_doctrines\primary_directions\primary_directions_time_key_doctrine.md)
-8. [primary_directions_ambiguity_ledger.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\01_doctrines\primary_directions\primary_directions_ambiguity_ledger.md)
-9. [primary_directions_parallel_family_matrix.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\05_research\primary_directions\primary_directions_parallel_family_matrix.md)
-10. [primary_directions_fixed_star_family_matrix.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\05_research\primary_directions\primary_directions_fixed_star_family_matrix.md)
-11. [primary_directions_phase10_audit.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\06_roadmap\primary_directions\primary_directions_phase10_audit.md)
-12. [primary_directions_constitutional_alignment.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\06_roadmap\primary_directions\primary_directions_constitutional_alignment.md)
-13. [primary_directions_invariant_register.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\02_standards\primary_directions\primary_directions_invariant_register.md)
-14. [primary_directions_validation_codex.md](c:/Users/nilad/OneDrive/Desktop/Moira/wiki\02_standards\primary_directions\primary_directions_validation_codex.md)
+1. [primary_directions_truth_card_placidus_mundane.md](./primary_directions_truth_card_placidus_mundane.md)
+2. [primary_directions_truth_card_placidian_classic_semi_arc.md](./primary_directions_truth_card_placidian_classic_semi_arc.md)
+3. [primary_directions_truth_card_regiomontanus.md](./primary_directions_truth_card_regiomontanus.md)
+4. [primary_directions_truth_card_zodiacal_directions.md](./primary_directions_truth_card_zodiacal_directions.md)
+5. [primary_directions_truth_card_field_plane_directions.md](./primary_directions_truth_card_field_plane_directions.md)
+6. [primary_directions_direction_space_doctrine.md](./primary_directions_direction_space_doctrine.md)
+7. [primary_directions_time_key_doctrine.md](./primary_directions_time_key_doctrine.md)
+8. [primary_directions_ambiguity_ledger.md](./primary_directions_ambiguity_ledger.md)
+9. [primary_directions_parallel_family_matrix.md](../../05_research/primary_directions/primary_directions_parallel_family_matrix.md)
+10. [primary_directions_fixed_star_family_matrix.md](../../05_research/primary_directions/primary_directions_fixed_star_family_matrix.md)
+11. [primary_directions_phase10_audit.md](../../06_roadmap/primary_directions/primary_directions_phase10_audit.md)
+12. [primary_directions_constitutional_alignment.md](../../06_roadmap/primary_directions/primary_directions_constitutional_alignment.md)
+13. [primary_directions_invariant_register.md](../../02_standards/primary_directions/primary_directions_invariant_register.md)
+14. [primary_directions_validation_codex.md](../../02_standards/primary_directions/primary_directions_validation_codex.md)
 
 Further constitutional work now depends on packet-level alignment and backend-standard
 freeze, not on missing baseline breadth.
@@ -631,4 +631,3 @@ freeze, not on missing baseline breadth.
 - Halloran primary-directions material:
   `https://www.halloran.com/placidus.htm`
   `https://www.halloran.com/allsoft.htm`
-

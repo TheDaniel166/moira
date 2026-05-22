@@ -7,7 +7,7 @@ subsystem.
 
 It assumes the companion doctrine document exists:
 
-- [lord_of_the_turn_doctrine.md](lord_of_the_turn_doctrine.md)
+- [lord_of_the_turn_doctrine.md](../../01_doctrines/lord_of_the_turn/lord_of_the_turn_doctrine.md)
 
 This is a **source-verification-first roadmap**. The Lord of the Turn is the
 least-documented of the four Medieval Time Lord techniques Moira needs to
