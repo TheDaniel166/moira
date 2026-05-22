@@ -2,8 +2,9 @@
 Benchmark the public Phase 2 `all_planets_at(...)` chart-style workload.
 
 This measures the canonical multi-body planetary product rather than raw
-reader helpers, comparing Python and native-supported reader paths under
-cold-reader and warm-reader conditions.
+reader helpers, comparing the admitted native planetary evaluator against the
+forced Python fallback route on the same public surface under cold-reader and
+warm-reader conditions.
 """
 
 from __future__ import annotations
@@ -20,6 +21,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import moira.spk_reader as spk_reader
+import moira.planets as planets_module
 from moira._kernel_paths import find_planetary_kernel
 from moira.constants import Body
 from moira.planets import all_planets_at
@@ -43,13 +45,14 @@ BODIES = [
 
 
 @contextmanager
-def _native_ephemeris(enabled: bool):
-    original = spk_reader._HAS_NATIVE_SPK
-    spk_reader._HAS_NATIVE_SPK = enabled
+def _native_planetary_evaluator(enabled: bool):
+    original = planets_module._get_native_planetary_evaluator
+    if not enabled:
+        planets_module._get_native_planetary_evaluator = lambda reader: None
     try:
         yield
     finally:
-        spk_reader._HAS_NATIVE_SPK = original
+        planets_module._get_native_planetary_evaluator = original
 
 
 def _sample_jds(reader: SpkReader, count: int) -> list[float]:
@@ -69,7 +72,7 @@ def _call_cases(reader: SpkReader, jds: list[float]) -> None:
 
 
 def _measure_cold(kernel_path: Path, jds: list[float], native_enabled: bool) -> float:
-    with _native_ephemeris(native_enabled):
+    with _native_planetary_evaluator(native_enabled):
         start = time.perf_counter()
         with SpkReader(kernel_path) as reader:
             _call_cases(reader, jds)
@@ -77,7 +80,7 @@ def _measure_cold(kernel_path: Path, jds: list[float], native_enabled: bool) -> 
 
 
 def _measure_warm(kernel_path: Path, jds: list[float], native_enabled: bool) -> float:
-    with _native_ephemeris(native_enabled):
+    with _native_planetary_evaluator(native_enabled):
         with SpkReader(kernel_path) as reader:
             _call_cases(reader, jds)
             start = time.perf_counter()
@@ -107,8 +110,11 @@ def _summarize(name: str, python_runs: list[float], native_runs: list[float]) ->
 
 
 def main() -> None:
-    if not spk_reader._HAS_NATIVE_SPK:
-        raise RuntimeError("Native SPK evaluator is not available in moira.moira_native")
+    if (
+        planets_module._moira_native is None
+        or not hasattr(planets_module._moira_native, "NativePlanetaryEvaluator")
+    ):
+        raise RuntimeError("Native planetary evaluator is not available in moira.moira_native")
 
     kernel_path = find_planetary_kernel()
     with SpkReader(kernel_path) as reader:
@@ -140,10 +146,11 @@ def main() -> None:
     summary["speedup_median"] = summary["python_total_median_seconds"] / summary["native_total_median_seconds"]
 
     payload = {
-        "phase": "phase2_all_planets_public_surface",
+        "phase": "phase2_all_planets_public_surface_native_evaluator",
         "kernel": str(kernel_path),
         "bodies": BODIES,
         "jd_count": SAMPLE_DATES,
+        "comparison": "native planetary evaluator vs forced Python fallback on the admitted public route",
         "functions": functions,
         "summary": summary,
     }

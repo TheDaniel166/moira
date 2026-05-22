@@ -1,5 +1,5 @@
 {
-  "phase": "phase2_all_planets_public_surface",
+  "phase": "phase2_all_planets_public_surface_native_evaluator",
   "kernel": "C:\\Users\\nilad\\.moira\\kernels\\de441.bsp",
   "bodies": [
     "Sun",
@@ -14,6 +14,7 @@
     "Pluto"
   ],
   "jd_count": 24,
+  "comparison": "native planetary evaluator vs forced Python fallback on the admitted public route",
   "functions": [
     {
       "name": "all_planets_at_default_cold_reader",
@@ -22,12 +23,12 @@
       "jd_count": 24,
       "calls_per_run": 24,
       "bodies_per_call": 10,
-      "python_best_seconds": 3.1378927999999178,
-      "native_best_seconds": 3.1625982000000477,
-      "python_median_seconds": 3.1797880999997687,
-      "native_median_seconds": 3.165707499999826,
-      "speedup_best": 0.99218825837562,
-      "speedup_median": 1.0044478524942508
+      "python_best_seconds": 2.6602811999982805,
+      "native_best_seconds": 2.6358145999984117,
+      "python_median_seconds": 2.752010699994571,
+      "native_median_seconds": 2.7414549000022816,
+      "speedup_best": 1.009282367583776,
+      "speedup_median": 1.0038504372230528
     },
     {
       "name": "all_planets_at_default_warm_reader",
@@ -36,20 +37,20 @@
       "jd_count": 24,
       "calls_per_run": 24,
       "bodies_per_call": 10,
-      "python_best_seconds": 0.005627600000025268,
-      "native_best_seconds": 0.005682299999989482,
-      "python_median_seconds": 0.005972699999801989,
-      "native_median_seconds": 0.005948600000010629,
-      "speedup_best": 0.9903736163236163,
-      "speedup_median": 1.0040513733973233
+      "python_best_seconds": 0.005728399999497924,
+      "native_best_seconds": 0.003489800001261756,
+      "python_median_seconds": 0.005902400000195485,
+      "native_median_seconds": 0.003620399998908397,
+      "speedup_best": 1.6414694244446073,
+      "speedup_median": 1.630317092579589
     }
   ],
   "summary": {
-    "python_total_best_seconds": 3.143520399999943,
-    "native_total_best_seconds": 3.168280500000037,
-    "python_total_median_seconds": 3.1857607999995707,
-    "native_total_median_seconds": 3.1716560999998364,
-    "speedup_best": 0.9921850038214439,
-    "speedup_median": 1.0044471088778304
+    "python_total_best_seconds": 2.6660095999977784,
+    "native_total_best_seconds": 2.6393043999996735,
+    "python_total_median_seconds": 2.7579130999947665,
+    "native_total_median_seconds": 2.74507530000119,
+    "speedup_best": 1.0101182720712731,
+    "speedup_median": 1.004676665880011
   }
 }

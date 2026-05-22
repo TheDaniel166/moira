@@ -150,6 +150,83 @@ def test_all_planets_at_returns_native_admitted_result_when_helper_supplies_one(
     assert calls == [(_JD_J2000, [Body.SUN])]
 
 
+def test_native_all_planets_admitted_uses_native_planetary_evaluator_when_available(monkeypatch: pytest.MonkeyPatch):
+    class _DummyEvaluator:
+        def __init__(self, handle):
+            self.handle = handle
+            self.calls = []
+
+        def evaluate_all_planets_apparent_geocentric_ecliptic(
+            self,
+            bodies,
+            public_specs,
+            body_specs,
+            jd_tt,
+            obliquity_deg,
+            rotation_matrix,
+        ):
+            self.calls.append((tuple(bodies), jd_tt, obliquity_deg, rotation_matrix))
+            return [
+                (Body.SUN, 1.0, 2.0, 3.0, 4.0, False),
+                (Body.MARS, 5.0, 6.0, 7.0, -8.0, True),
+            ]
+
+    dummy_native = type("DummyNative", (), {"NativePlanetaryEvaluator": _DummyEvaluator})()
+    monkeypatch.setattr(planets_module, "_moira_native", dummy_native)
+    monkeypatch.setattr(planets_module, "_npe_all_planets_mode_is_admitted", lambda **kwargs: True)
+    monkeypatch.setattr(planets_module, "_npe_public_route_segment_specs", lambda reader, jd_tt: [(1, 2, 3)])
+    monkeypatch.setattr(
+        planets_module,
+        "_npe_body_route_segment_specs",
+        lambda reader, jd_tt: {
+            Body.SUN: ((1, 2, 3),),
+            Body.MARS: ((4, 5, 6),),
+        },
+    )
+    monkeypatch.setattr(planets_module, "mean_obliquity", lambda jd_tt: 23.4)
+    monkeypatch.setattr(planets_module, "_nutation", lambda jd_tt: (0.1, 0.2))
+    monkeypatch.setattr(
+        planets_module,
+        "_compose_rotation_matrix",
+        lambda *args, **kwargs: ((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)),
+    )
+
+    class _DummyHandle:
+        pass
+
+    class _DummyKernel:
+        def __init__(self):
+            self._handle = _DummyHandle()
+
+    class _DummyReader:
+        def __init__(self):
+            self._kernel = _DummyKernel()
+
+    reader = _DummyReader()
+    result = planets_module._native_all_planets_admitted(
+        _JD_J2000,
+        [Body.SUN, Body.MARS],
+        reader=reader,
+        jd_tt=_JD_J2000 + 0.1,
+        apparent=True,
+        aberration=True,
+        grav_deflection=True,
+        nutation=True,
+        center="geocentric",
+        observer_lat=None,
+        observer_lon=None,
+        observer_elev_m=0.0,
+        lst_deg=None,
+        delta_t_policy=None,
+    )
+
+    assert result is not None
+    assert result[Body.SUN].longitude == 1.0
+    assert result[Body.MARS].speed == -8.0
+    assert result[Body.MARS].retrograde is True
+    assert hasattr(reader._kernel, "_planetary_evaluator")
+
+
 def test_all_planets_at_falls_back_to_python_route_when_native_helper_declines(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(planets_module, "_native_all_planets_admitted", lambda *args, **kwargs: None)
 
@@ -183,6 +260,28 @@ def test_all_planets_at_falls_back_to_python_route_when_native_helper_declines(m
     result = all_planets_at(_JD_J2000, bodies=[Body.SUN, Body.MARS], reader=_DummyReader(), center="barycentric")
     assert list(result) == [Body.SUN, Body.MARS]
     assert calls == [Body.SUN, Body.MARS]
+
+
+@pytest.mark.requires_ephemeris
+def test_all_planets_at_native_evaluator_matches_python_fallback():
+    if planets_module._moira_native is None or not hasattr(planets_module._moira_native, "NativePlanetaryEvaluator"):
+        pytest.skip("native planetary evaluator is unavailable")
+
+    bodies = [Body.SUN, Body.MOON, Body.MARS, Body.JUPITER]
+    native_bulk = all_planets_at(_JD_J2000, bodies=bodies)
+
+    original = planets_module._get_native_planetary_evaluator
+    planets_module._get_native_planetary_evaluator = lambda reader: None
+    try:
+        python_bulk = all_planets_at(_JD_J2000, bodies=bodies)
+    finally:
+        planets_module._get_native_planetary_evaluator = original
+
+    for body in bodies:
+        assert abs(native_bulk[body].longitude - python_bulk[body].longitude) < 1e-12
+        assert abs(native_bulk[body].latitude - python_bulk[body].latitude) < 1e-12
+        assert abs(native_bulk[body].distance - python_bulk[body].distance) < 1e-6
+        assert abs(native_bulk[body].speed - python_bulk[body].speed) < 1e-12
 
 
 def test_planet_at_reuses_cached_apparent_context_for_same_reader_and_jd(monkeypatch: pytest.MonkeyPatch):

@@ -92,7 +92,13 @@ Secondary target:
 Why this order:
 
 - `all_planets_at(...)` is the best cash-in surface because shared work naturally dominates there
-- `planet_at(...)` should remain the correctness and regression guardrail
+- `planet_at(...)` should remain the correctness and regression guardrail, not the expected speed hero
+
+The repository should read this asymmetry explicitly:
+
+- `all_planets_at(...)` is the evaluator target because it is where a higher native boundary has now shown real warm-path value
+- `planet_at(...)` is the control surface whose main job is semantic truth, parity pressure, and regression detection
+- `planet_at(...)` is not currently an equally promising native cash-in surface, and the checked benchmark story should not pretend otherwise
 
 This avoids building a native surface that is broader than the repository can honestly certify.
 
@@ -262,7 +268,7 @@ Before any performance claim:
 Only after parity gates pass:
 
 - benchmark `all_planets_at(...)`
-- then benchmark `planet_at(...)` if a single-body wrapper is added
+- then benchmark `planet_at(...)` only as a control reading unless a separate single-body native wrapper is actually proposed
 
 Success is judged only at the public surface.
 
@@ -283,6 +289,9 @@ Every admitted correction policy must still be legible from Python and documente
 ### Gate C: benchmark gate
 
 `all_planets_at(...)` must show a material and stable positive gain, not one-run noise.
+
+`planet_at(...)` does not need to become a parallel speed flagship for this evaluator design to count as successful.
+For this design, `planet_at(...)` is primarily a semantic guardrail.
 
 ### Gate D: doctrine gate
 
@@ -322,6 +331,7 @@ Minimum success:
 
 - `all_planets_at(...)` becomes clearly and stably positive
 - Python parity remains intact
+- `planet_at(...)` remains semantically exact even if its benchmark story stays flat or slightly negative
 
 Strong success:
 
@@ -351,6 +361,11 @@ It should be:
 
 Python should remain the keeper of doctrine.
 
-Native should become the executor of the admitted hot path.
+Native should become the executor of the admitted hot path where the workload actually pays for the higher boundary.
+
+At present, that means:
+
+- `all_planets_at(...)` is the cash-in surface
+- `planet_at(...)` is the control surface
 
 That is the cleanest remaining path toward materially better planetary speed without surrendering Moira's visible computational truth.

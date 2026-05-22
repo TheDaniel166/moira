@@ -19,8 +19,8 @@ It is not a general native roadmap.
 
 It is a conversion program for:
 
-- `planet_at(...)`
 - `all_planets_at(...)`
+- and the minimal single-body surfaces needed to keep that bulk route honest
 
 The standard is strict:
 
@@ -46,8 +46,8 @@ What is not yet real:
 
 Current benchmark reading:
 
-- `planet_at(...)`: only slight positive overall
-- `all_planets_at(...)`: effectively parity overall
+- `planet_at(...)`: only weakly positive overall and slightly negative in warm steady-state
+- `all_planets_at(...)`: now materially positive in warm steady-state once the admitted native evaluator is active, while cold-reader totals remain near parity
 
 So the bottleneck has moved.
 
@@ -71,7 +71,7 @@ The next work must follow these rules:
 1. optimize only where the public products spend time
 2. preserve exact planetary semantics
 3. measure only public products when judging success
-4. stop widening native depth if it does not move `planet_at(...)` or `all_planets_at(...)`
+4. stop widening native depth if it does not move the bulk chart workload materially
 
 This means:
 
@@ -100,6 +100,7 @@ This is still important, but mainly as a guardrail:
 - keep semantics exact
 - prevent regressions
 - confirm any `all_planets_at(...)` optimization is not cheating by bypassing canonical logic
+- do not mistake it for an equally promising native cash-in surface unless a separate benchmark story proves otherwise
 
 ---
 
@@ -278,10 +279,15 @@ What it changed:
 
 What the first `CI-2` measurement says:
 
-- `planet_at(...)` moved back to a slight positive overall result
-- `all_planets_at(...)` became slightly positive overall on the current artifact
+- `all_planets_at(...)` is the first surface to show a real warm-reader engine-level gain under the admitted native evaluator
+- `planet_at(...)` remains a control surface whose current warm benchmark is still slightly negative
 
-This is not a dramatic breakthrough, but it is the first public multi-body result that is directionally on the right side without changing planetary semantics.
+This is the first public multi-body result that is materially on the right side without changing planetary semantics.
+
+The repository should now read the two surfaces asymmetrically:
+
+- `all_planets_at(...)` is the legitimate native cash-in surface
+- `planet_at(...)` is the semantic guardrail and should not be over-sold as a speed target
 
 `CI-3` was then attempted as a shared astrometric speed-state preload for the multi-body workload.
 

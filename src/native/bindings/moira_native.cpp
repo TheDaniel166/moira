@@ -24,6 +24,7 @@
 #include "visibility.hpp"
 #include "precession.hpp"
 #include "harmograms.hpp"
+#include "planetary_evaluator.hpp"
 
 namespace py = pybind11;
 using namespace moira::native;
@@ -1075,6 +1076,88 @@ PYBIND11_MODULE(_moira_native, m) {
             return py::make_tuple(pos_out, vel_out);
         }, py::arg("start_i"), py::arg("end_i"), py::arg("data_type"), py::arg("jd"), py::arg("jd2") = 0.0)
         .def("close", &NativeSpkKernelHandle::close);
+
+    py::class_<NativePlanetaryEvaluator, std::shared_ptr<NativePlanetaryEvaluator>>(m, "NativePlanetaryEvaluator")
+        .def(py::init<std::shared_ptr<NativeSpkKernelHandle>>())
+        .def(
+            "evaluate_all_planets_apparent_geocentric_ecliptic",
+            [](const NativePlanetaryEvaluator& self,
+               const std::vector<std::string>& bodies,
+               py::iterable public_specs_src,
+               py::dict body_specs_src,
+               double jd_tt,
+               double obliquity_deg,
+               const py::sequence& rotation_matrix_src) {
+                std::vector<NativePlanetaryEvaluator::SegmentSpec> public_specs;
+                for (py::handle spec_handle : public_specs_src) {
+                    py::tuple spec = py::cast<py::tuple>(spec_handle);
+                    if (py::len(spec) != 3) {
+                        throw std::runtime_error("public segment spec must be a 3-tuple");
+                    }
+                    public_specs.emplace_back(
+                        py::cast<int32_t>(spec[0]),
+                        py::cast<int32_t>(spec[1]),
+                        py::cast<int32_t>(spec[2])
+                    );
+                }
+
+                NativePlanetaryEvaluator::SegmentSpecMap body_specs;
+                for (auto item : body_specs_src) {
+                    const std::string body = py::cast<std::string>(item.first);
+                    py::iterable specs_src = py::reinterpret_borrow<py::iterable>(item.second);
+                    std::vector<NativePlanetaryEvaluator::SegmentSpec> specs;
+                    for (py::handle spec_handle : specs_src) {
+                        py::tuple spec = py::cast<py::tuple>(spec_handle);
+                        if (py::len(spec) != 3) {
+                            throw std::runtime_error("body segment spec must be a 3-tuple");
+                        }
+                        specs.emplace_back(
+                            py::cast<int32_t>(spec[0]),
+                            py::cast<int32_t>(spec[1]),
+                            py::cast<int32_t>(spec[2])
+                        );
+                    }
+                    body_specs.emplace(body, std::move(specs));
+                }
+
+                double matrix_vals[3][3];
+                load_mat3(rotation_matrix_src, matrix_vals);
+                Mat3 rotation_matrix = Mat3::identity();
+                for (size_t i = 0; i < 3; ++i) {
+                    for (size_t j = 0; j < 3; ++j) {
+                        rotation_matrix[i][j] = matrix_vals[i][j];
+                    }
+                }
+
+                const auto payloads = self.evaluate_all_planets_apparent_geocentric_ecliptic(
+                    bodies,
+                    public_specs,
+                    body_specs,
+                    jd_tt,
+                    obliquity_deg,
+                    rotation_matrix
+                );
+
+                py::list out;
+                for (const NativePlanetaryPayload& payload : payloads) {
+                    out.append(py::make_tuple(
+                        payload.name,
+                        payload.longitude,
+                        payload.latitude,
+                        payload.distance,
+                        payload.speed,
+                        payload.retrograde
+                    ));
+                }
+                return out;
+            },
+            py::arg("bodies"),
+            py::arg("public_specs"),
+            py::arg("body_specs"),
+            py::arg("jd_tt"),
+            py::arg("obliquity_deg"),
+            py::arg("rotation_matrix")
+        );
 
     py::class_<LagrangeEvaluator, IEvaluator, std::shared_ptr<LagrangeEvaluator>>(m, "LagrangeEvaluator")
         .def(py::init<std::vector<double>, std::vector<double>, size_t>());

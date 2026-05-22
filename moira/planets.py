@@ -743,6 +743,28 @@ def _npe_batch_barycentric_positions(
     return results
 
 
+def _get_native_planetary_evaluator(reader: SpkReader):
+    """Return a cached native evaluator for the admitted planetary route, if available."""
+    if _moira_native is None or not hasattr(_moira_native, "NativePlanetaryEvaluator"):
+        return None
+    kernel = getattr(reader, "_kernel", None)
+    handle = getattr(kernel, "_handle", None)
+    if handle is None:
+        return None
+    evaluator = getattr(kernel, "_planetary_evaluator", None)
+    if evaluator is not None:
+        return evaluator
+    try:
+        evaluator = _moira_native.NativePlanetaryEvaluator(handle)
+    except Exception:
+        return None
+    try:
+        setattr(kernel, "_planetary_evaluator", evaluator)
+    except Exception:
+        pass
+    return evaluator
+
+
 def _native_all_planets_admitted(
     jd_ut: float,
     bodies: list[str],
@@ -784,6 +806,42 @@ def _native_all_planets_admitted(
     if body_segment_specs is None:
         return None
 
+    mean_eps = mean_obliquity(jd_tt)
+    dpsi_deg = deps_deg = 0.0
+    if apparent and nutation:
+        dpsi_deg, deps_deg = _nutation(jd_tt)
+    obliquity = mean_eps + (deps_deg if (apparent and nutation) else 0.0)
+    rot_mat = _compose_rotation_matrix(
+        jd_tt,
+        with_nutation=(apparent and nutation),
+        mean_obliquity_deg=mean_eps,
+        dpsi_deg=dpsi_deg,
+        deps_deg=deps_deg,
+    ) if apparent else None
+
+    evaluator = _get_native_planetary_evaluator(reader)
+    if evaluator is not None and rot_mat is not None:
+        payloads = evaluator.evaluate_all_planets_apparent_geocentric_ecliptic(
+            list(bodies),
+            specs,
+            body_segment_specs,
+            jd_tt,
+            obliquity,
+            rot_mat,
+        )
+        results: dict[str, PlanetData] = {}
+        for body, longitude, latitude, distance, speed, retrograde in payloads:
+            results[body] = PlanetData(
+                name=body,
+                longitude=float(longitude),
+                latitude=float(latitude),
+                distance=float(distance),
+                speed=float(speed),
+                retrograde=bool(retrograde),
+                is_topocentric=False,
+            )
+        return results
+
     handle = reader._kernel._handle
     batch = handle.batch_segment_position_and_velocity(specs, jd_tt)
     pair_states: dict[tuple[int, int], tuple[Vec3, Vec3]] = {}
@@ -794,13 +852,17 @@ def _native_all_planets_admitted(
 
     vector_cache: _VectorCache = {}
     _prefill_npe_public_vector_cache(jd_tt, vector_cache, pair_states)
-    context = _build_apparent_context(
-        jd_tt,
-        reader,
-        apparent=apparent,
-        nutation=nutation,
+    context = _ApparentContext(
+        jd_tt=jd_tt,
+        dpsi_deg=dpsi_deg,
+        deps_deg=deps_deg,
+        obliquity=obliquity,
+        rot_mat=rot_mat,
         vector_cache=vector_cache,
+        earth_ssb=None,
+        earth_vel=None,
     )
+    context.earth_ssb, context.earth_vel = _earth_barycentric_state(jd_tt, reader, vector_cache)
 
     earth_ssb = context.earth_ssb
     earth_vel = context.earth_vel

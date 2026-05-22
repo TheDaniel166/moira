@@ -21,12 +21,12 @@
       "body_count": 10,
       "jd_count": 24,
       "calls_per_run": 240,
-      "python_best_seconds": 3.157370400000218,
-      "native_best_seconds": 3.15820980000035,
-      "python_median_seconds": 3.1793148000001565,
-      "native_median_seconds": 3.176153599999907,
-      "speedup_best": 0.9997342165171764,
-      "speedup_median": 1.000995291915432
+      "python_best_seconds": 2.6544897999992827,
+      "native_best_seconds": 2.6486741000044276,
+      "python_median_seconds": 2.7304321999981767,
+      "native_median_seconds": 2.6792781000040122,
+      "speedup_best": 1.0021957023685342,
+      "speedup_median": 1.0190924936064263
     },
     {
       "name": "planet_at_default_warm_reader",
@@ -34,20 +34,20 @@
       "body_count": 10,
       "jd_count": 24,
       "calls_per_run": 240,
-      "python_best_seconds": 0.001954599999862694,
-      "native_best_seconds": 0.002013999999689986,
-      "python_median_seconds": 0.0019812000000456464,
-      "native_median_seconds": 0.0021265000000312284,
-      "speedup_best": 0.9705064548974998,
-      "speedup_median": 0.9316717611175884
+      "python_best_seconds": 0.0020578999974532053,
+      "native_best_seconds": 0.00210019999940414,
+      "python_median_seconds": 0.0021111999958520755,
+      "native_median_seconds": 0.0021610999974654987,
+      "speedup_best": 0.9798590601071633,
+      "speedup_median": 0.9769099062181551
     }
   ],
   "summary": {
-    "python_total_best_seconds": 3.1593250000000808,
-    "native_total_best_seconds": 3.1602238000000398,
-    "python_total_median_seconds": 3.181296000000202,
-    "native_total_median_seconds": 3.178280099999938,
-    "speedup_best": 0.9997155897629911,
-    "speedup_median": 1.0009489094432753
+    "python_total_best_seconds": 2.656547699996736,
+    "native_total_best_seconds": 2.6507743000038317,
+    "python_total_median_seconds": 2.7325433999940287,
+    "native_total_median_seconds": 2.6814392000014777,
+    "speedup_best": 1.0021780051183142,
+    "speedup_median": 1.019058496643341
   }
 }

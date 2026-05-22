@@ -140,6 +140,9 @@ not:
 
 - "I approximately resemble some other engine"
 
+For this specification, the admitted product is the multi-body chart workload.
+`planet_at(...)` remains a correctness control surface outside the first native evaluator claim.
+
 ---
 
 ## 7. Parity Corpus
@@ -266,6 +269,9 @@ Any call outside the admitted surface continues to use the current Python route 
 ### Gate 5: Benchmark gate
 
 The admitted `all_planets_at(...)` workload shows a material and stable positive gain over the Python route on the current benchmark slice.
+
+This gate is intentionally about `all_planets_at(...)`.
+It does not require `planet_at(...)` to become an equally strong speed surface for `NPE-1` to count as successful.
 
 ---
 
