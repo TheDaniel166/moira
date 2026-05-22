@@ -1,7 +1,7 @@
 ## Moira Experimental Validation
 
-Version: 2.0
-Date: 2026-03-23
+Version: 2.1
+Date: 2026-05-21
 Runtime target: Python 3.14
 
 This document covers Moira subsystems that are experimental, modernized, or
@@ -15,6 +15,27 @@ layer, the validation standard is a mix of:
 
 The goal is truthfulness, not false symmetry with the core astronomy and
 astrology validation docs.
+
+## 0.1 Current Rerun Receipt
+
+On 2026-05-21, the live experimental corpus named in this document was re-run
+from the project `.venv`.
+
+Current corpus result:
+
+- `717 collected`
+- `716 passed`
+- `1 failed`
+
+Current live failure:
+
+- `tests/unit/test_moira_synastry.py::test_davison_chart_matches_midpoint_time_and_location_chart_cast`
+  - Davison chart longitude output does not currently match the midpoint-time
+    chart cast assumed by that validation test
+
+This means most experimental surfaces remain healthy, but the paper cannot
+truthfully claim a clean all-green validation state for synastry composites at
+`main` until that failure is resolved or the test doctrine is corrected.
 
 ---
 
@@ -31,12 +52,12 @@ astrology validation docs.
 | Astrocartography | dedicated geometry and wrapper suite in `tests/unit/test_astrocartography.py` plus validated planetary positions | Validated |
 | Local space | dedicated spherical-astronomy and wrapper suite in `tests/unit/test_local_space.py` plus validated topocentric positions | Validated |
 | Longevity | doctrine tables and scoring logic in `tests/unit/test_experimental_validation.py` | Validated |
-| Timelords | doctrine and structural invariants in `tests/unit/test_experimental_validation.py` and `tests/unit/test_timelords.py` | Validated |
+| Timelords | doctrine and structural invariants in `tests/unit/test_experimental_validation.py`, `tests/unit/test_timelords.py`, and `tests/unit/test_timelords_public_api.py` | Validated |
 | Gauquelin sectors | canonical diurnal-arc logic in `tests/unit/test_experimental_validation.py` | Validated |
 | Arabic lunar mansions (Manazil) | equal-station arithmetic and boundary tests in `tests/unit/test_experimental_validation.py` | Validated |
-| Varga divisions | explicit geometric-division doctrine tests in `tests/unit/test_varga.py` plus public-surface coverage | Validated |
-| Synastry composites | midpoint and reference-place composite behavior in `tests/unit/test_synastry.py` | Validated |
-| Sothic cycle | doctrine, policy, and profile structure in `tests/unit/test_sothic.py` | Validated |
+| Varga divisions | explicit geometric-division doctrine tests in `tests/unit/test_varga.py` | Validated |
+| Synastry composites | midpoint, overlay, composite, Davison, and public-surface coverage in `tests/unit/test_moira_synastry.py` and `tests/unit/test_synastry_public_api.py` | Partial (live Davison failure) |
+| Sothic cycle | doctrine, policy, profile structure, and public-surface checks in `tests/unit/test_sothic.py` and `tests/unit/test_sothic_public_api.py` | Validated |
 | Multiple star systems | dedicated unit suite for catalog lookup, orbital behavior, resolvability, magnitudes, wrappers, and public surface, plus Sirius AB orbit spot checks against a published yearly ephemeris in `tests/integration/test_multiple_stars_external_reference.py` | Validated |
 
 ---
@@ -86,15 +107,15 @@ Status: Validated
 
 Measured residuals:
 - internal sovereign J2000 sweep against registry reference columns:
-  worst residual `0.003971602°` (`14.30"`) in longitude for `ome Dra`; latitude
+  worst residual `0.003971602 deg` (`14.30"`) in longitude for `ome Dra`; latitude
   residuals are materially smaller
 - ERFA anchor oracle across `Sirius`, `Algol`, `Spica`, and `Aldebaran` from
-  `J1000` to `J3000`: worst residual `0.000000133772°` (`0.00048"`) in
-  longitude for `Sirius`; worst latitude residual `0.000000006849°`
+  `J1000` to `J3000`: worst residual `0.000000133772 deg` (`0.00048"`) in
+  longitude for `Sirius`; worst latitude residual `0.000000006849 deg`
   (`0.000025"`)
 - ERFA full-catalog J2000 sweep: no large outliers remain after the case-routing
   repair; the remaining differences are at numerical-noise scale
-- Swiss audit across the same anchor matrix: worst residual `0.007512431°`
+- Swiss audit across the same anchor matrix: worst residual `0.007512431 deg`
   (`27.04"`) in longitude for `Sirius` at `J1900`; this residual is not
   materially driven by TT-vs-UT alignment
 
@@ -199,40 +220,40 @@ Truth basis:
 
 Representative computed values from the current validated corpus:
 - Sirius (`visual`):
-  - `JD 2451545.0`: separation `4.6236436381"`; position angle `149.7428251338°`
-  - `JD 2458849.5`: separation `11.2280299559"`; position angle `68.2561769339°`
+  - `JD 2451545.0`: separation `4.6236436381"`; position angle `149.7428251338 deg`
+  - `JD 2458849.5`: separation `11.2280299559"`; position angle `68.2561769339 deg`
   - combined magnitude: `-1.4601190421`
 - Alpha Centauri (`visual`):
-  - `JD 2451545.0`: separation `14.2571111404"`; position angle `222.1788135176°`
-  - `JD 2464328.5`: separation `6.4073379950"`; position angle `34.4508871197°`
+  - `JD 2451545.0`: separation `14.2571111404"`; position angle `222.1788135176 deg`
+  - `JD 2464328.5`: separation `6.4073379950"`; position angle `34.4508871197 deg`
   - combined magnitude: `-0.2719470331`
 - Castor (`wide`):
-  - reference separation `3.9"`; reference position angle `52.0°`
+  - reference separation `3.9"`; reference position angle `52.0 deg`
   - combined magnitude: `1.5759885857`
 - Albireo (`optical`):
-  - reference separation `34.4"`; reference position angle `54.0°`
+  - reference separation `34.4"`; reference position angle `54.0 deg`
   - combined magnitude: `2.9329843961`
 - Capella (`spectroscopic`):
-  - separation `0.0"`; position angle `0.0°`
+  - separation `0.0"`; position angle `0.0 deg`
   - combined magnitude: `0.0798366601`
 - Spica (`spectroscopic`):
-  - separation `0.0"`; position angle `0.0°`
+  - separation `0.0"`; position angle `0.0 deg`
   - combined magnitude: `0.8868955636`
 
 Observed agreement in the validation suite:
 - Sirius AB published orbit ephemeris comparison:
   - `2000-01-01` (`JD 2451544.5`):
-    published `rho=4.460"`, `theta=151.2°`;
-    Moira `rho=4.6231468665"`, `theta=149.7581702725°`;
-    residuals `+0.1631468665"`, `-1.4418297275°`
+    published `rho=4.460"`, `theta=151.2 deg`;
+    Moira `rho=4.6231468665"`, `theta=149.7581702725 deg`;
+    residuals `+0.1631468665"`, `-1.4418297275 deg`
   - `2020-01-01` (`JD 2458849.5`):
-    published `rho=11.193"`, `theta=68.1°`;
-    Moira `rho=11.2280299559"`, `theta=68.2561769339°`;
-    residuals `+0.0350299559"`, `+0.1561769339°`
+    published `rho=11.193"`, `theta=68.1 deg`;
+    Moira `rho=11.2280299559"`, `theta=68.2561769339 deg`;
+    residuals `+0.0350299559"`, `+0.1561769339 deg`
   - `2030-01-01` (`JD 2462502.5`):
-    published `rho=10.392"`, `theta=48.9°`;
-    Moira `rho=10.3807681631"`, `theta=48.8288701968°`;
-    residuals `-0.0112318369"`, `-0.0711298032°`
+    published `rho=10.392"`, `theta=48.9 deg`;
+    Moira `rho=10.3807681631"`, `theta=48.8288701968 deg`;
+    residuals `-0.0112318369"`, `-0.0711298032 deg`
 - Sirius and Alpha Centauri separations are strictly positive and vary across
   multi-decade epochs, confirming live Kepler/Thiele-Innes behavior
 - Castor and Albireo separation / position-angle outputs are time-invariant at
@@ -415,7 +436,6 @@ the module actually declares.
 
 Validated in:
 - `tests/unit/test_varga.py`
-- `tests/unit/test_public_surface_gaps.py`
 
 Covered:
 - D1 identity behavior
@@ -425,7 +445,7 @@ Covered:
 - scaled remainder mapping for degree-within-varga-sign
 - convenience-function naming and divisor preservation
 - output range invariants across multiple divisors
-- public-surface wiring and return-type exposure
+- declared geometric return-vessel behavior
 
 Status: Validated
 
@@ -436,16 +456,26 @@ Important scope note:
 
 ### 7.6 Synastry composites
 
-The previous status here was too weak.
+The previous status here was too strong in one respect and too weak in another.
 
-`tests/unit/test_synastry.py` already validates:
+Live validation surfaces now reside in:
+- `tests/unit/test_moira_synastry.py`
+- `tests/unit/test_synastry_public_api.py`
+
+Covered:
 - midpoint composite construction
 - shortest-arc midpoint behavior across seams
-- reference-place composite houses
-- relation/classification/condition-profile integrity
+- directional and mutual house overlays
+- synastry aspect/contact truth and condition-profile layers
+- Davison chart doctrine variants and public-surface exposure
 - policy handling and input guards
 
-Status: Validated
+Current rerun truth:
+- one live failure remains in `test_davison_chart_matches_midpoint_time_and_location_chart_cast`
+- therefore the subsystem cannot currently be described as cleanly validated at
+  `main`, even though most of the synastry surface is covered
+
+Status: Partial
 
 ---
 
@@ -471,15 +501,20 @@ software-comparison subsystem.
 
 ## 9. Remaining Work
 
-The main experimental items that still need more validation are:
+The main experimental items that still need attention are:
 
-1. Sovereign fixed-star positions
-   The core oracle path now exists via SOFA/ERFA and offline Swiss fixtures.
+1. Synastry composites
+   The live rerun found one failing Davison test in `tests/unit/test_moira_synastry.py`.
+   That must be resolved or doctrinally reclassified before the subsystem can be
+   restored to a clean validated state.
+
+2. Sovereign fixed-star breadth
+   The core oracle path already exists via SOFA/ERFA and offline Swiss fixtures.
    Remaining work is narrower: broaden the published-anchor corpus beyond the
    current star set if a richer external published reference set is desired.
 
-2. Optional external spot checks
-   Astrocartography and local space are now geometry-validated internally, but
+3. Optional external spot checks
+   Astrocartography and local space are geometry-validated internally, but
    software-to-software spot checks would still be useful as supplemental
    corroboration if a clean declared reference is available.
 

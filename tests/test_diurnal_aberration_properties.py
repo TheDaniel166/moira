@@ -452,8 +452,8 @@ class TestProperty5RelativisticAberrationFormula:
         # (first-order approximation)
         expected_correction_mag = beta_mag * r_mag
         
-        # Allow 10% tolerance for numerical precision and higher-order terms
-        tolerance = 0.1 * expected_correction_mag
+        # Allow 10% tolerance for numerical precision and higher-order terms, plus an absolute ULP floor
+        tolerance = 0.1 * expected_correction_mag + 1e-6
         assert correction_mag < expected_correction_mag + tolerance, (
             f"Correction magnitude exceeds expected value: "
             f"correction = {correction_mag:.4f} km, "

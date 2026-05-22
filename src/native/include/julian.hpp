@@ -27,20 +27,15 @@ inline double julian_day(int year, int month, int day, double hour = 0.0) {
 }
 
 /**
- * @brief THEOREM: Calendar date from Julian Day Number (Meeus inverse).
+ * @brief THEOREM: Calendar date from Julian Day Number (proleptic Gregorian Meeus inverse).
  */
 inline std::tuple<int, int, int, double> calendar_from_jd(double jd) {
     jd = jd + 0.5;
     double Z = std::floor(jd);
     double F = jd - Z;
 
-    long A;
-    if (Z < 2299161.0) {
-        A = static_cast<long>(Z);
-    } else {
-        long alpha = static_cast<long>(std::floor((Z - 1867216.25) / 36524.25));
-        A = static_cast<long>(Z + 1 + alpha - std::floor(alpha / 4.0));
-    }
+    long alpha = static_cast<long>(std::floor((Z - 1867216.25) / 36524.25));
+    long A = static_cast<long>(Z + 1 + alpha - std::floor(alpha / 4.0));
 
     long B = A + 1524;
     long C = static_cast<long>(std::floor((B - 122.1) / 365.25));

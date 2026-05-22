@@ -1,7 +1,7 @@
 # Moira Validation Report - Astrology
 
-**Version:** 1.3
-**Date:** 2026-04-09
+**Version:** 1.4
+**Date:** 2026-05-21
 **Runtime target:** Python 3.14
 **Validation philosophy:** external astrology software where stable and meaningful;
 canonical formulas and doctrine tables where no stable oracle exists; Moira as
@@ -31,15 +31,40 @@ The validation standard here differs from the astronomy layer:
   scales, while predictive or doctrine-driven techniques are validated at the
   level their own assumptions make meaningful.
 
+### 1.1 Current Rerun Receipt
+
+On 2026-05-21, the full astrology validation corpus named in this document was
+re-run from the project `.venv`.
+
+Current corpus result:
+
+- `1009 collected`
+- `1008 passed`
+- `1 skipped`
+
+The one skip is expected:
+
+- `tests/integration/test_aspects_external_reference.py`
+  - J1900 has no tight-orb major aspects in the current fixture slice
+
+The house validator script was also re-run successfully:
+
+- `python -X utf8 scripts/compare_swetest.py --offline`
+  - `7416 iterations`
+  - `0 failures`
+
+This rerun receipt supersedes older point-in-time counts recorded earlier in
+the paper.
+
 ---
 
 ## 2. Validation Surface
 
 | Domain | Oracle / basis | Enforcement | Status |
 |---|---|---|---|
-| Sidereal systems / ayanamshas (34 systems) | Astro.com `swetest` offline fixture | `pytest` | Validated (31 of 33 in fixture; 2 without Swiss oracle) |
-| House systems (15 systems, 7416 iterations) | Swiss `setest/t.exp` offline fixture | `pytest` + validator script | Validated |
-| Aspects (major, tight-orb) | Horizons-validated position substrate + angular-distance geometry | `pytest` | Validated (unit + integration) |
+| Sidereal systems / ayanamshas (34 systems) | Astro.com `swetest` offline fixture | `pytest` | Validated (49 current pytest cases; 31 Swiss-mapped systems plus invariants for the remainder) |
+| House systems (15 systems, 7416 iterations) | Swiss `setest/t.exp` offline fixture | `pytest` + validator script | Validated (65 current pytest cases + 7416-iteration offline validator) |
+| Aspects (major, tight-orb) | Horizons-validated position substrate + angular-distance geometry | `pytest` | Validated (unit + integration; 1 expected fixture skip at J1900) |
 | Antiscia / contra-antiscia | Formula derivation + invariants (Valens, Lilly) | `pytest` | Validated |
 | Midpoints | Formula derivation + invariants (Ebertin, Witte) | `pytest` | Validated |
 | Lots / Arabic Parts | Formula derivation, day/night reversal (Paulus, Valens) | `pytest` | Validated |
@@ -66,6 +91,76 @@ Status language in this table is intentional:
 - `Needs external oracle` means the technique still lacks the external
   comparison needed to close that part of the validation story.
 
+### 2.1 Python vs C++ Route Semantics
+
+This paper validates the **Python public route** unless a section explicitly
+states otherwise.
+
+That distinction matters because Moira's current native backend is a
+dual-substrate system, not a second independent doctrine authority.
+
+Current route law:
+
+- **Python owns doctrine semantics.**
+  - House fallback policy
+  - fixed-star wrapper semantics
+  - dasha settings and validation doctrine
+  - progressions, primary directions, lots, dignities, parans, and timelords
+    all remain Python-governed at the semantic layer
+- **Native C++ currently accelerates selected numerical substrata.**
+  - dispatch-routed Julian/calendar and sidereal primitives where decorated
+  - SPK/DAF reader and segment-evaluation layers where native reader ownership
+    is active
+  - no astrology-domain doctrine surface is currently native-authoritative
+
+Time semantics differ by route:
+
+- `Moira.houses(dt, lat, lon, ...)`
+  - accepts a UTC datetime
+  - converts `UTC -> JD -> UT1`
+  - then calls `calculate_houses(jd_ut1, ...)`
+- `calculate_houses(jd_ut, ...)`
+  - expects a numeric UT/UT1 Julian Day already in the correct scale
+- `Moira.fixed_star(name, dt)`
+  - accepts a UTC datetime
+  - converts `UTC -> JD -> TT`
+  - then calls `star_at(name, jd_tt)`
+- `star_at(name, jd_tt)`
+  - expects a numeric TT Julian Day already in the correct scale
+- `Moira.twilight(dt, lat, lon)`
+  - accepts a UTC datetime
+  - converts to `jd_day` and passes that day-start UT value into
+    `twilight_times(...)`
+
+Validation consequence:
+
+- public datetime routes and direct substrate routes are both valid, but they
+  do not always carry the same tolerance budget
+- route-specific micro-residuals caused by lawful timescale conversion are
+  documented as route semantics, not mislabelled as engine defects
+
+Concrete current examples from the validation corpus:
+
+- public `houses(datetime, ...)` against direct Swiss JD rows uses a slightly
+  wider public-route budget (`0.0012 deg`) than the raw direct-JD Swiss house
+  threshold (`0.001 deg`) because the facade lawfully converts through `UTC -> UT1`
+- public `fixed_star(datetime)` against direct `star_at(jd_tt)` uses a
+  dedicated route-equivalence micro-budget (`2e-6 deg`) rather than exact identity
+
+Current native parity note:
+
+- the previously documented native `calendar_from_jd()` parity defect on
+  historical/proleptic Gregorian cases has now been corrected in the native
+  substrate
+- `tests/test_native_parity.py` now passes, including the earlier boundary
+  samples at `JD 0.0`, `JD 1721058.0`, `JD 2299160.0`, `JD 2299161.0`, and
+  `JD 2451545.0`
+- this closes the specific inverse-calendar mismatch, but does not change the
+  governing route law of this paper: astrology validation claims remain
+  anchored to the Python public/reference semantics, while native parity is
+  tracked as a lower-substrate architectural concern rather than as an
+  astrology-doctrine authority
+
 ---
 
 ## 3. Sidereal Systems
@@ -80,9 +175,9 @@ Status language in this table is intentional:
 
 34 ayanamsha systems are exposed. 31 have direct Swiss-mappable fixture data.
 2 systems are permanently excluded from the Swiss fixture:
-- `Aryabhata 522` — Moira-specific lineage (Pingree & Plofker); no Swiss
+- `Aryabhata 522` - Moira-specific lineage (Pingree & Plofker); no Swiss
   sid_mode equivalent exists.
-- `Galactic Equator (IAU 1958)` — Swiss sid_mode=32 exists but carries a 190″
+- `Galactic Equator (IAU 1958)` - Swiss sid_mode=32 exists but carries a 190"
   base anchor difference (different galactic-ecliptic node computation, not drift).
 1 (`Galactic Center 5 Sag`) is validated by invariant: `Galactic Center 0 Sag`
 + 5 degrees.
@@ -93,8 +188,13 @@ SS Citra, True Chitrapaksha, True Revati, True Pushya, Aldebaran (15 Tau),
 Babylonian variants, Galactic Center (0 Sag), Galactic Center (Cochrane),
 Galactic Center (RGB), and others.
 
-Fixture coverage is 2 epochs x 31 systems x 2 modes (mean/true) plus invariant
-and coverage guards. 129 tests pass.
+The current external-reference sidereal file contains 49 pytest cases, all
+passing on the 2026-05-21 rerun.
+
+Route note:
+- sidereal doctrine claims in this paper are Python-route claims
+- native inverse-calendar parity is tracked separately and is not used as
+  authority for historical astrology validation dates
 
 ### 3.1 Star-Anchored True Ayanamsa Model-Basis Difference
 
@@ -103,27 +203,27 @@ True Mula) compute the ayanamsa from the live tropical longitude of a reference
 star rather than a polynomial formula. Because Moira uses IAU 2006
 Fukushima-Williams precession while Swiss Ephemeris uses an older precession
 model, and because Moira's star pipeline does not include annual aberration
-(~20.5″ maximum effect), a systematic residual exists between Moira and Swiss
+(~20.5" maximum effect), a systematic residual exists between Moira and Swiss
 for these systems:
 
 | System | Anchor star | Residual envelope | Dominant cause |
 |---|---|---|---|
-| True Chitrapaksha | Spica | 5–19″ | Annual aberration (~20.5″) |
-| True Pushya | δ Cancri | 12–18″ | Aberration + proper motion |
-| True Revati | ζ Piscium | 5–20″ | Aberration + proper motion |
-| Aldebaran (15 Tau) | Aldebaran | 91–109″ | High proper motion (−189 mas/yr dec) + precession model |
+| True Chitrapaksha | Spica | 5-19" | Annual aberration (~20.5") |
+| True Pushya | delta Cancri | 12-18" | Aberration + proper motion |
+| True Revati | zeta Piscium | 5-20" | Aberration + proper motion |
+| Aldebaran (15 Tau) | Aldebaran | 91-109" | High proper motion (-189 mas/yr dec) + precession model |
 
 These residuals are model-basis differences where Moira's IAU 2006 pipeline is
-the stronger model. The 126″ threshold envelope accommodates the worst case
+the stronger model. The 126" threshold envelope accommodates the worst case
 (Aldebaran at historical epochs). Mean-mode results for the same systems pass
-at the standard 3.6″ threshold because mean mode uses polynomial formulas
+at the standard 3.6" threshold because mean mode uses polynomial formulas
 calibrated to Swiss.
 
 **Fixes applied 2026-04-05:**
-- TRUE_REVATI target longitude corrected from 0° to 359°50′ (Swiss sid_mode=28).
-  Previous error: ~580″; after fix: 5–20″.
-- TRUE_PUSHYA target longitude corrected from 106.667° (16°40′ Cancer) to 106°
-  (16°00′ Cancer, Swiss sid_mode=29). Previous error: ~2413″; after fix: 12–18″.
+- TRUE_REVATI target longitude corrected from 0 deg to 359 deg 50 min (Swiss sid_mode=28).
+  Previous error: ~580"; after fix: 5-20".
+- TRUE_PUSHYA target longitude corrected from 106.667 deg (16 deg 40 min Cancer) to 106 deg
+  (16 deg 00 min Cancer, Swiss sid_mode=29). Previous error: ~2413"; after fix: 12-18".
 
 ---
 
@@ -137,13 +237,23 @@ calibrated to Swiss.
 - `tests/unit/test_house_projection_geometry.py`
 - `tests/unit/test_house_polar_branch_selection.py`
 - `tests/unit/test_house_quadrant_assembly.py`
+- `tests/unit/test_moira_polar_houses.py`
+- `tests/unit/test_polar_house_breadth_gauntlet.py`
+- `tests/unit/test_polar_chart_public_gauntlet.py`
 - `tests/integration/test_houses_external_reference.py`
-- `tests/unit/test_polar_houses.py`
-- `scripts/compare_swetest.py --offline`
+- `tests/integration/test_houses_polar_external_reference.py`
+- `python -X utf8 scripts/compare_swetest.py --offline`
 
 15 house systems are validated: Placidus, Koch, Campanus, Regiomontanus,
 Porphyry, Equal, Whole Sign, Alcabitius, Morinus, Topocentric, Vehlow,
 Meridian, Azimuthal, Krusinski-Pisa, APC.
+
+Current rerun standing for the house layer:
+
+- `65` pytest cases pass across geometry, polar branch doctrine, public-path
+  fallback coherence, and both broad and polar Swiss external-reference slices
+- the offline validator script confirms `7416` Swiss-derived iterations with
+  `0` failures
 
 Validation order is doctrinally explicit:
 - first, Moira proves the owned geometry directly by invariant tests on plane
@@ -163,14 +273,14 @@ from two distinct calling conventions:
 |---|---|---|---|
 | Standard tropical (no flag / `iflag=0`) | 3,888 | `swe_houses()` + `swe_houses_ex(iflag=0)` | Degree output, tropical; `iflag=0` is equivalent to no flag |
 | ARMC-direct | 3,528 | `swe_houses_armc()` | ARMC supplied directly from fixture; obliquity computed independently by Moira |
-| **Total** | **7,416** | | All pass at 3.6″ threshold |
+| **Total** | **7,416** | | All pass at 3.6" threshold |
 
 The remaining 5,341 blocks are excluded for documented reasons:
 
 | Category | Count | Reason |
 |---|---|---|
-| `iflag=8192` (radians output) | 720 | Swiss returns cusps in radians under this flag; same computation, different units — excluded by design |
-| Sidereal (`iflag=65536` + `isid`) | 1,080 | Requires ayanamsa-adjusted house computation; see §4.3 |
+| `iflag=8192` (radians output) | 720 | Swiss returns cusps in radians under this flag; same computation, different units - excluded by design |
+| Sidereal (`iflag=65536` + `isid`) | 1,080 | Requires ayanamsa-adjusted house computation; see section 4.3 |
 | `swe_house_pos()` blocks | 1,536 | Single-point house membership query, no cusp array |
 | Unsupported system (`G`) | 312 | Not mapped in Moira's HouseSystem constants |
 | Missing coordinates | 18 | Incomplete fixture records |
@@ -188,7 +298,7 @@ validation and corrected. All 7,416 iterations now pass.
 
 ### 4.2 ARMC-direct validation
 
-The 3,528 ARMC-direct blocks exercise `houses_from_armc()` — Moira's
+The 3,528 ARMC-direct blocks exercise `houses_from_armc()` - Moira's
 equivalent of Swiss `swe_houses_armc()`. In these blocks the fixture supplies
 the ARMC value directly (degrees) rather than deriving it from a Julian date
 and geographic longitude. Moira computes obliquity independently from the
@@ -197,11 +307,11 @@ block's JD_UT via its own TT conversion and IAU 2006 pipeline.
 This makes ARMC-direct validation a clean regression-oracle test: given the
 exact ARMC that Swiss used, do Moira's house cusp algorithms still produce the
 same 12 cusp longitudes? Any residual here is attributable solely to the cusp
-computation itself, not to ARMC derivation. All 3,528 pass at 3.6″.
+computation itself, not to ARMC derivation. All 3,528 pass at 3.6".
 
-### 4.3 Sidereal house blocks — residual audit
+### 4.3 Sidereal house blocks - residual audit
 
-The 1,080 sidereal blocks (`iflag=65536`, `isid` ∈ {0, 18, 27}) were audited
+The 1,080 sidereal blocks (`iflag=65536`, `isid` in {0, 18, 27}) were audited
 but not included in the passing test surface. The residuals are entirely
 in ayanamsa computation, not in house cusp geometry. When Swiss's ARMC is
 supplied directly and Moira's ayanamsa is applied, all discrepancy traces to
@@ -209,30 +319,30 @@ the ayanamsa value alone.
 
 | `isid` | System | Moira constant | Ayanamsa diff at 2013 | House cusp residual | Category |
 |---|---|---|---|---|---|
-| 0 | Fagan-Bradley | `Ayanamsa.FAGAN_BRADLEY` | +1.24″ | 1.24″ max | Precession rate |
-| 27 | True Chitrapaksha | `Ayanamsa.TRUE_CHITRAPAKSHA` | −9.71″ | 10.0″ max | Precession rate + absent aberration |
-| 18 | J2000 | None | — | — | No Moira constant |
+| 0 | Fagan-Bradley | `Ayanamsa.FAGAN_BRADLEY` | +1.24" | 1.24" max | Precession rate |
+| 27 | True Chitrapaksha | `Ayanamsa.TRUE_CHITRAPAKSHA` | -9.71" | 10.0" max | Precession rate + absent aberration |
+| 18 | J2000 | None | - | - | No Moira constant |
 
-**Fagan-Bradley (+1.24″):** This is not a calibration offset. Decomposition shows:
+**Fagan-Bradley (+1.24"):** This is not a calibration offset. Decomposition shows:
 
-- J2000 anchor difference (Moira vs Swiss stored mean): **+0.018″** — constant, negligible
-- Precession model accumulation (IAU 2006 vs Swiss model, 13.11 years): **+1.22″** — grows linearly from J2000
+- J2000 anchor difference (Moira vs Swiss stored mean): **+0.018"** - constant, negligible
+- Precession model accumulation (IAU 2006 vs Swiss model, 13.11 years): **+1.22"** - grows linearly from J2000
 
 The Moira J2000 anchor was calibrated against Swiss at J2000 (difference is
-0.018″). The growing component is the precession rate difference between
+0.018"). The growing component is the precession rate difference between
 Moira's IAU 2006 Fukushima-Williams model and Swiss Ephemeris's older model.
-At J2000 the total residual is ≈0.02″; at 13 years it is 1.24″; projected to
-100 years it reaches ≈9.3″ in magnitude. This is not fixable by adjusting the
-J2000 anchor — the source is the precession rate, not the epoch value.
+At J2000 the total residual is about 0.02"; at 13 years it is 1.24"; projected to
+100 years it reaches about 9.3" in magnitude. This is not fixable by adjusting the
+J2000 anchor - the source is the precession rate, not the epoch value.
 
-**True Chitrapaksha (−9.71″):** Same IAU 2006 vs Swiss precession rate
-difference applies (~0.09″/year), but the dominant source is Moira's fixed-star
-pipeline not including annual aberration (~20.5″ maximum effect). The anchor
+**True Chitrapaksha (-9.71"):** Same IAU 2006 vs Swiss precession rate
+difference applies (~0.09"/year), but the dominant source is Moira's fixed-star
+pipeline not including annual aberration (~20.5" maximum effect). The anchor
 star Spica's apparent position differs between Moira and Swiss by the
 aberration amount. This matches the documented residual envelope already
-recorded in §3.1 for star-anchored ayanamsas.
+recorded in section 3.1 for star-anchored ayanamsas.
 
-**Conclusion:** Both residuals arise from the same root cause — Moira's
+**Conclusion:** Both residuals arise from the same root cause - Moira's
 stronger IAU 2006 precession substrate produces ayanamsa values that diverge
 from Swiss as epochs depart from J2000, with star-anchored systems carrying an
 additional aberration contribution. Neither is a calibration error. Neither is
@@ -242,7 +352,8 @@ itself is correct; the residual lives entirely in the ayanamsa layer.
 **`isid=18` (J2000 ayanamsa):** Swiss `SE_SIDM_J2000` anchors the tropical and
 sidereal zodiacs to coincide at J2000.0, accumulating purely from precession
 thereafter. Moira does not yet have a corresponding constant. If added, it
-would carry the same precession rate residual as Fagan-Bradley (~0.09″/year),
+would carry the same precession rate residual as Fagan-Bradley (~0.09"/year),
+since the J2000 anchor would be exact by construction.
 since the J2000 anchor would be exact by construction.
 
 ---
@@ -271,6 +382,12 @@ since the J2000 anchor would be exact by construction.
 
 Minor aspects remain covered by the larger unit suite in
 `tests/unit/test_aspects.py`.
+
+Current rerun standing:
+- `10` integration cases are currently collected from the offline fixture
+- `9` pass
+- `1` is the expected J1900 skip because no tight-orb major aspects exist in
+  that fixture epoch
 
 ---
 
@@ -585,9 +702,10 @@ What to validate:
 
 | Domain | Current state | Recommended oracle | Priority |
 |---|---|---|---|
-| House corpus expansion | **Resolved 2026-04-09.** Standard iterations expanded from 3,168 to 3,888 by including `iflag=0` blocks (previously mislabelled as potentially radian-output; they are tropical degree output). ARMC-direct corpus added: 3,528 iterations exercising `houses_from_armc()` directly. Total validated corpus: 7,416 iterations, all passing at 3.6″. Sidereal blocks (1,080) audited: residuals are entirely in the ayanamsa layer (precession model difference), not house computation. Full audit documented in §4.3. | Swiss `setest/t.exp` | Closed |
-| Sidereal true-ayanamsa target fixes | **Fixed 2026-04-05.** TRUE_REVATI target corrected 0° → 359°50′; TRUE_PUSHYA target corrected 106.667° → 106°. Errors dropped from 580–2413″ to 5–20″. Remaining residuals are model-basis differences (IAU 2006 vs Swiss precession). | Astro.com `swetest` | Closed |
-| Sidereal fixture coverage gap | **Resolved 2026-04-05.** Babyl Britton (sid=38) and True Mula (sid=35) added to fixture — 31 of 33 now covered. Aryabhata 522 has no Swiss equivalent (Moira-specific lineage). GALEQU_IAU1958 has 190″ base anchor difference vs Swiss sid_mode=32 (methodological, not drift). Both permanently excluded. | Astro.com `swetest` | Closed |
-| Aspects integration fixture | **Resolved 2026-04-05.** `aspects_reference.json` built from Horizons-validated positions. 7 cases across 4 epochs, 9 integration tests pass (J1900 skipped — no tight-orb aspects). | Horizons-validated substrate | Closed |
-| Vimshottari integration fixture | **Resolved 2026-04-05.** 3 cases populated (J2000 noon, India 1947, Aug 1985), all Lahiri + Julian year. 9 mahadasha + 9 antardasha per case verified by doctrinal self-consistency: nakshatra-lord sequence, canonical durations, proportional first-period balance. 4 integration tests pass. | Doctrinal self-consistency | Closed |
+| House corpus expansion | **Closed, re-verified 2026-05-21.** Standard tropical blocks remain 3,888, ARMC-direct blocks remain 3,528, and the validated Swiss-derived house corpus remains 7,416 iterations total. The current pytest surface for houses is 65 passing cases across geometry, branch doctrine, public fallback behavior, and external-reference slices. Sidereal house residuals remain classified as ayanamsa-layer model-basis differences, not cusp-computation defects. | Swiss `setest/t.exp` | Closed |
+| Sidereal true-ayanamsa target fixes | **Closed, re-verified 2026-05-21.** TRUE_REVATI remains corrected from 0 deg to 359 deg 50 min and TRUE_PUSHYA remains corrected from 106.667 deg to 106 deg. Residuals remain in the documented 5-20 arcsecond envelope and are still classified as model-basis differences between Moira's IAU 2006 path and Swiss. | Astro.com `swetest` | Closed |
+| Sidereal fixture coverage gap | **Closed, re-verified 2026-05-21.** The current offline sidereal corpus still covers 31 Swiss-mapped systems, with Aryabhata 522 and GALEQU_IAU1958 remaining intentionally excluded for stated methodological reasons. The live integration file now collects 49 cases, all passing on rerun. | Astro.com `swetest` | Closed |
+| Aspects integration fixture | **Closed, re-verified 2026-05-21.** `aspects_reference.json` remains anchored to Horizons-validated positions across four epochs. The current integration file collects 10 cases: 9 pass and the J1900 no-tight-orb case remains the one expected skip. | Horizons-validated substrate | Closed |
+| Vimshottari integration fixture | **Closed, re-verified 2026-05-21.** The manual-oracle corpus still contains the three declared Lahiri plus Julian-year reference cases, and the current integration file still collects 4 passing cases. Doctrine validation remains the primary proof surface because no single Swiss-like external authority exists for Vimshottari without first fixing settings. | Doctrinal self-consistency | Closed |
+| Python versus native route semantics | **Partially closed, re-verified 2026-05-21.** Astrology validation claims in this paper remain anchored to the Python public/reference route, and native C++ is still not treated as a second astrology-doctrine authority. However, the specific native `calendar_from_jd()` parity defect on historical/proleptic Gregorian cases has been corrected, and `tests/test_native_parity.py` now passes on the previously failing boundary samples. Broader route-authority separation remains intentional doctrine, not an unresolved bug. | Python public route plus native parity audit | Intentional |
 

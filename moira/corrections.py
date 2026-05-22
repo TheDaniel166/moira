@@ -95,7 +95,8 @@ try:
 except ImportError:
     _moira_native = None
 from .coordinates import (
-    Vec3, vec_sub, vec_norm, vec_scale, vec_add, mat_vec_mul,
+    Vec3, Mat3, vec_sub, vec_norm, vec_scale, vec_add, mat_vec_mul, mat_mul,
+    precession_matrix_equatorial, nutation_matrix_equatorial,
     atmospheric_refraction as _atmospheric_refraction,
     atmospheric_refraction_extended as _atmospheric_refraction_extended,
 )
@@ -477,15 +478,50 @@ def _observer_position_icrf(
     obs_y = (a * C + h) * cos_lat * math.sin(lst)
     obs_z = (a * S + h) * sin_lat
 
-    observer_position = (obs_x, obs_y, obs_z)
     if jd_ut is None:
-        return observer_position
+        return (obs_x, obs_y, obs_z)
 
+    # 1. Compute observer's position in terrestrial ITRF frame:
+    lon = longitude_deg * DEG2RAD
+    itrf_x = (a * C + h) * cos_lat * math.cos(lon)
+    itrf_y = (a * C + h) * cos_lat * math.sin(lon)
+    itrf_z = (a * S + h) * sin_lat
+
+    # 2. Apply IERS polar motion W(t) to get TIRS coordinates:
     x_p_arcsec, y_p_arcsec = PolarMotionRegistry.polar_motion_at(jd_ut)
-    return mat_vec_mul(polar_motion_matrix(x_p_arcsec, y_p_arcsec), observer_position)
+    tirs = mat_vec_mul(polar_motion_matrix(x_p_arcsec, y_p_arcsec), (itrf_x, itrf_y, itrf_z))
+
+    # 3. Rotate TIRS around Z-axis by -GST (Greenwich Sidereal Time) to get TETE:
+    gast_deg = lst_deg - longitude_deg
+    gast_rad = gast_deg * DEG2RAD
+    cos_gst = math.cos(gast_rad)
+    sin_gst = math.sin(gast_rad)
+    tete_x = tirs[0] * cos_gst - tirs[1] * sin_gst
+    tete_y = tirs[0] * sin_gst + tirs[1] * cos_gst
+    tete_z = tirs[2]
+    tete = (tete_x, tete_y, tete_z)
+
+    # 4. Rotate from TETE to ICRF using transpose of precession-nutation: R^T = P_bias^T * N^T
+    from .julian import ut_to_tt
+    jd_tt = ut_to_tt(jd_ut)
+    p_bias = precession_matrix_equatorial(jd_tt)
+    n = nutation_matrix_equatorial(jd_tt)
+    r_mat = mat_mul(n, p_bias)
+
+    def _transpose(m: Mat3) -> Mat3:
+        return (
+            (m[0][0], m[1][0], m[2][0]),
+            (m[0][1], m[1][1], m[2][1]),
+            (m[0][2], m[1][2], m[2][2]),
+        )
+
+    return mat_vec_mul(_transpose(r_mat), tete)
 
 
-def _observer_velocity_icrf(observer_position_icrf: Vec3) -> Vec3:
+def _observer_velocity_icrf(
+    observer_position_icrf: Vec3,
+    jd_ut: float | None = None,
+) -> Vec3:
     """
     Compute the observer's velocity in the ICRF frame due to Earth's rotation.
 
@@ -578,22 +614,33 @@ def _observer_velocity_icrf(observer_position_icrf: Vec3) -> Vec3:
     """
     from .constants import EARTH_ROTATION_RATE_RAD_PER_SEC
 
-    # Earth's rotation vector: ω = (0, 0, ω_mag) rad/s
     omega_mag = EARTH_ROTATION_RATE_RAD_PER_SEC
-
-    # Observer position components
     r_x, r_y, r_z = observer_position_icrf
 
-    # Cross product: v = ω × r
-    # v_x = ω_y × r_z - ω_z × r_y = 0 - ω_mag × r_y = -ω_mag × r_y
-    # v_y = ω_z × r_x - ω_x × r_z = ω_mag × r_x - 0 = ω_mag × r_x
-    # v_z = ω_x × r_y - ω_y × r_x = 0 - 0 = 0
-    v_x_rad_s = -omega_mag * r_y
-    v_y_rad_s = omega_mag * r_x
-    v_z_rad_s = 0.0
+    if jd_ut is None:
+        # Fallback to the unrotated legacy cross product
+        v_x_rad_s = -omega_mag * r_y
+        v_y_rad_s = omega_mag * r_x
+        v_z_rad_s = 0.0
+    else:
+        # Calculate the rotation matrix R = N * P_bias
+        from .julian import ut_to_tt
+        jd_tt = ut_to_tt(jd_ut)
+        p_bias = precession_matrix_equatorial(jd_tt)
+        n = nutation_matrix_equatorial(jd_tt)
+        r_mat = mat_mul(n, p_bias)
 
-    # Convert from rad/s to km/day: multiply by 86400 seconds/day
-    # (The cross product is in km × rad/s, so multiplying by seconds/day gives km/day)
+        # Represent the Earth's rotation vector in the ICRF frame:
+        # omega_ICRF = R^T * (0, 0, omega_mag)^T, which is the third column of R^T (third row of R)
+        omega_x = r_mat[2][0] * omega_mag
+        omega_y = r_mat[2][1] * omega_mag
+        omega_z = r_mat[2][2] * omega_mag
+
+        # Cross product: v = omega x r
+        v_x_rad_s = omega_y * r_z - omega_z * r_y
+        v_y_rad_s = omega_z * r_x - omega_x * r_z
+        v_z_rad_s = omega_x * r_y - omega_y * r_x
+
     SECONDS_PER_DAY = 86400.0
     v_x = v_x_rad_s * SECONDS_PER_DAY
     v_y = v_y_rad_s * SECONDS_PER_DAY
@@ -974,7 +1021,7 @@ def apply_diurnal_aberration(
     )
 
     # Compute observer velocity due to Earth's rotation
-    observer_velocity = _observer_velocity_icrf(observer_position)
+    observer_velocity = _observer_velocity_icrf(observer_position, jd_ut=jd_ut)
 
     # Apply relativistic aberration formula to correct for diurnal aberration
     # This is identical to the annual aberration formula, but with observer velocity

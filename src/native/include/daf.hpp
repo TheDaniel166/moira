@@ -516,14 +516,11 @@ public:
         int32_t data_type
     ) {
         const SegmentCacheKey key{start_i, end_i, data_type};
-        {
-            std::lock_guard<std::mutex> guard(cache_mutex);
-            auto it = segment_cache.find(key);
-            if (it != segment_cache.end()) {
-                return it->second;
-            }
+        std::lock_guard<std::mutex> guard(cache_mutex);
+        auto it = segment_cache.find(key);
+        if (it != segment_cache.end()) {
+            return it->second;
         }
-
         SpkChebyshevSegmentPayload payload = read_segment_payload(start_i, end_i, data_type);
         auto evaluator = std::make_shared<SpkSegmentEvaluator>(
             data_type,
@@ -535,13 +532,8 @@ public:
             payload.coefficient_count,
             std::move(payload.coefficients)
         );
-
-        std::lock_guard<std::mutex> guard(cache_mutex);
-        auto [it, inserted] = segment_cache.emplace(key, evaluator);
-        if (!inserted) {
-            return it->second;
-        }
-        return evaluator;
+        auto [ins_it, inserted] = segment_cache.emplace(key, evaluator);
+        return ins_it->second;
     }
 
     void segment_position(
