@@ -181,6 +181,8 @@ Convenience properties (read-only, derived only)
 ``AspectData.is_applying``       — True when applying is True (not None or False).
 ``AspectData.is_separating``     — True when applying is False (not None or True).
 ``AspectData.orb_surplus``       — allowed_orb minus orb (remaining headroom).
+``AspectData.is_partile``        — True when both bodies occupy the same degree number within their signs.
+``AspectData.is_platic``         — True when the aspect is admitted but not partile.
 ``DeclinationAspect.is_parallel``         — True when aspect is "Parallel".
 ``DeclinationAspect.is_contra_parallel``  — True when aspect is "Contra-Parallel".
 ``DeclinationAspect.orb_surplus``         — allowed_orb minus orb.
@@ -1542,11 +1544,13 @@ class AspectData:
             "public_attributes": [
                 "body1", "body2", "aspect", "symbol",
                 "angle", "separation", "orb", "allowed_orb",
-                "applying", "stationary", "classification"
+                "applying", "stationary", "classification",
+                "direction", "sign_degree1", "sign_degree2"
             ],
             "public_properties": [
                 "is_major", "is_minor", "is_zodiacal",
-                "is_applying", "is_separating", "orb_surplus"
+                "is_applying", "is_separating", "orb_surplus", "is_partile",
+                "is_platic"
             ]
         },
         "state": {
@@ -1554,7 +1558,8 @@ class AspectData:
             "fields": [
                 "body1", "body2", "aspect", "symbol",
                 "angle", "separation", "orb", "allowed_orb",
-                "applying", "stationary", "classification"
+                "applying", "stationary", "classification",
+                "direction", "sign_degree1", "sign_degree2"
             ]
         },
         "effects": {
@@ -1590,6 +1595,8 @@ class AspectData:
     stationary:     bool        = False  # True when either body's speed is < 0.01°/day
     classification: AspectClassification | None = None  # explicit type description
     direction:      AspectDirection | None = None  # sinister/dexter from body1's perspective
+    sign_degree1:   int | None = None    # 0-29 degree number within body1's sign
+    sign_degree2:   int | None = None    # 0-29 degree number within body2's sign
 
     # ------------------------------------------------------------------
     # Inspectability — read-only, derived-only convenience properties
@@ -1627,6 +1634,25 @@ class AspectData:
     def orb_surplus(self) -> float:
         """Remaining headroom in the orb window: ``allowed_orb - orb``.  Always >= 0."""
         return self.allowed_orb - self.orb
+
+    @property
+    def is_partile(self) -> bool:
+        """
+        True when both bodies occupy the same degree number within their signs.
+
+        This follows strict partile doctrine: same degree-of-sign, not merely
+        a very tight orb.
+        """
+        return (
+            self.sign_degree1 is not None
+            and self.sign_degree2 is not None
+            and self.sign_degree1 == self.sign_degree2
+        )
+
+    @property
+    def is_platic(self) -> bool:
+        """True when the aspect is admitted but not partile."""
+        return not self.is_partile
 
     def __repr__(self) -> str:
         app = " applying" if self.applying else " separating" if self.applying is False else ""
@@ -1905,6 +1931,15 @@ def _moiety_allowed_orb(
     return m1 + m2
 
 
+def _sign_degree_number(longitude: float) -> int:
+    """
+    Return the integer degree number within the sign for a longitude.
+
+    0.0 Aries through 0.999... Aries yields 0; 29.0 through 29.999... yields 29.
+    """
+    return int((longitude % 30.0) // 1.0)
+
+
 _STATIONARY_THRESHOLD = 0.005  # degrees/day — below this a planet is considered stationary
 
 
@@ -2073,6 +2108,8 @@ def find_aspects(
                         stationary=sta,
                         classification=_ASPECT_CLASSIFICATION[adef.name],
                         direction=_aspect_direction(lon1, lon2, adef.angle),
+                        sign_degree1=_sign_degree_number(lon1),
+                        sign_degree2=_sign_degree_number(lon2),
                     ))
 
     results.sort(key=lambda a: a.orb)
@@ -2182,6 +2219,8 @@ def aspects_between(
                 stationary=sta,
                 classification=_ASPECT_CLASSIFICATION[adef.name],
                 direction=_aspect_direction(lon_a, lon_b, adef.angle),
+                sign_degree1=_sign_degree_number(lon_a),
+                sign_degree2=_sign_degree_number(lon_b),
             ))
 
     results.sort(key=lambda a: a.orb)
@@ -2283,6 +2322,8 @@ def aspects_to_point(
                     applying=None,
                     classification=_ASPECT_CLASSIFICATION[adef.name],
                     direction=_aspect_direction(lon, point_longitude, adef.angle),
+                    sign_degree1=_sign_degree_number(lon),
+                    sign_degree2=_sign_degree_number(point_longitude),
                 ))
 
     results.sort(key=lambda a: a.orb)
@@ -2520,6 +2561,8 @@ def find_whole_sign_aspects(
                 applying=None,
                 classification=_WHOLE_SIGN_CLASSIFICATION[aspect_name],
                 direction=_aspect_direction(lon1, lon2, angle),
+                sign_degree1=_sign_degree_number(lon1),
+                sign_degree2=_sign_degree_number(lon2),
             ))
 
     return results

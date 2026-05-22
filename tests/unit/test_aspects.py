@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import pytest
 
+import moira.facade as _facade_module
+
 from moira.aspects import (
     CANONICAL_ASPECTS,
     AspectClassification,
@@ -29,6 +31,7 @@ from moira.aspects import (
     find_aspects,
     find_declination_aspects,
     find_patterns,
+    find_whole_sign_aspects,
 )
 
 
@@ -3019,6 +3022,71 @@ def test_canonical_aspects_has_no_name_absent_from_family_lookup() -> None:
 # ---------------------------------------------------------------------------
 # Cross-layer: orb_surplus consistency
 # ---------------------------------------------------------------------------
+
+def test_detected_aspect_is_partile_when_bodies_share_degree_of_sign() -> None:
+    """Strict partile doctrine depends on degree-of-sign equality, not orb alone."""
+    results = find_aspects({"Sun": 14.2, "Moon": 134.8}, include_minor=False)
+
+    assert len(results) == 1
+    aspect = results[0]
+    assert aspect.aspect == "Trine"
+    assert aspect.orb == pytest.approx(0.6)
+    assert aspect.is_partile is True
+    assert aspect.is_platic is False
+    assert aspect.sign_degree1 == 14
+    assert aspect.sign_degree2 == 14
+
+
+def test_detected_exact_non_sign_based_aspect_is_not_partile() -> None:
+    """An exact harmonic aspect is not partile unless the sign degrees also match."""
+    results = aspects_between("Sun", 0.0, "Moon", 72.0, tier=1)
+
+    assert len(results) == 1
+    aspect = results[0]
+    assert aspect.aspect == "Quintile"
+    assert aspect.orb == pytest.approx(0.0)
+    assert aspect.is_partile is False
+    assert aspect.is_platic is True
+    assert aspect.sign_degree1 == 0
+    assert aspect.sign_degree2 == 12
+
+
+def test_whole_sign_aspect_carries_partile_truth_from_sign_degrees() -> None:
+    """Whole-sign aspect vessels still preserve strict partile truth."""
+    results = find_whole_sign_aspects({"Sun": 14.2, "Moon": 104.7})
+
+    assert len(results) == 1
+    aspect = results[0]
+    assert aspect.aspect == "Square"
+    assert aspect.is_partile is True
+    assert aspect.sign_degree1 == 14
+    assert aspect.sign_degree2 == 14
+
+
+def test_manual_aspect_without_sign_degree_context_is_not_partile() -> None:
+    """Manually constructed vessels remain non-partile when degree-of-sign data is absent."""
+    aspect = AspectData(
+        body1="Sun", body2="Moon", aspect="Trine", symbol="â–³",
+        angle=120.0, separation=120.0, orb=0.0, allowed_orb=8.0,
+    )
+
+    assert aspect.is_partile is False
+    assert aspect.is_platic is True
+
+
+def test_facade_find_aspects_preserves_partile_and_platic_properties() -> None:
+    """The facade surface returns AspectData vessels with partile/platic access intact."""
+    partile = _facade_module.find_aspects({"Sun": 14.2, "Moon": 134.8}, include_minor=False)
+    platic = _facade_module.aspects_between("Sun", 0.0, "Moon", 72.0, tier=1)
+
+    assert len(partile) == 1
+    assert partile[0].is_partile is True
+    assert partile[0].is_platic is False
+
+    assert len(platic) == 1
+    assert platic[0].is_partile is False
+    assert platic[0].is_platic is True
+
 
 def test_orb_surplus_equals_strength_surplus_for_detected_aspects() -> None:
     """AspectData.orb_surplus and AspectStrength.surplus are identical."""

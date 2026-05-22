@@ -1084,6 +1084,22 @@ from moira.facade import (
 | `applying` | `bool` | True if the aspect is applying |
 | `stationary` | `bool` | True if a stationary motion state affects the aspect |
 | `classification` | `AspectClassification` | Domain, family, tier, motion state, and strength metadata |
+| `direction` | `AspectDirection \| None` | Sinister/dexter casting direction from `body1`'s perspective when defined |
+| `sign_degree1` | `int \| None` | Integer degree number within `body1`'s sign, used for strict partile truth |
+| `sign_degree2` | `int \| None` | Integer degree number within `body2`'s sign, used for strict partile truth |
+
+#### `AspectData` convenience properties
+
+| Property | Type | Description |
+|---|---|---|
+| `is_major` | `bool` | True when the aspect belongs to the major Ptolemaic tier |
+| `is_minor` | `bool` | True when the aspect is not in the major tier |
+| `is_zodiacal` | `bool` | True when the aspect domain is zodiacal |
+| `is_applying` | `bool` | True only when `applying is True` |
+| `is_separating` | `bool` | True only when `applying is False` |
+| `orb_surplus` | `float` | Remaining orb headroom: `allowed_orb - orb` |
+| `is_partile` | `bool` | True when both bodies occupy the same degree number within their signs |
+| `is_platic` | `bool` | True when the admitted aspect is not partile |
 
 #### Core aspect functions
 
