@@ -5,6 +5,39 @@ All notable changes to the Moira project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.2] - 2026-05-23
+
+### Added
+- **High-Latitude House Solver**: Added experimental branch-aware Placidus solver (`experimental_placidus`) to search for unique ordered cusp cycles under polar conditions.
+- **Supplemental Kernel Diagnostics**: Enhanced engine initialization to handle optional supplemental kernels and report missing ones gracefully.
+
+## [3.2.1] - 2026-05-18
+
+### Fixed
+- **Adversarial House Singularities**: Corrected coordinate normalization at 360-degree bounds, zero-vector inputs, and resolved julian day/SPK evaluation edge cases (DEF-004/005/006 and TDF-001/002/003).
+
+## [3.2.0] - 2026-05-15
+
+### Added
+- **Native Planetary Evaluator**: Introduced C++ `NativePlanetaryEvaluator` executing center chaining, rotation matrix operations, and light-time iterations natively.
+- **SPK Kernel Compiler (GUI)**: Added Tkinter-based custom SPK Type 13 builder utility (`moira-daf-writer`).
+- **Aspect Properties**: Added `is_partile` and `is_platic` properties to `AspectData`.
+- **Zodiacal Helpers**: Added `house_of` function in `moira.houses`.
+- **Sovereign Shards**: Bundled Git LFS-tracked Type 13 asteroid kernels (`sb441_type13`) for license-independent asteroid fleet calculations.
+
+### Changed
+- **Asteroid Pipeline**: Routed asteroid evaluations through the shared apparent reduction pipeline (`_apparent_geocentric_ecliptic`).
+
+## [3.1.0] - 2026-05-10
+
+### Added
+- **Native House Engine**: Integrated C++ native house system engine bindings.
+
+## [3.0.0] - 2026-05-08
+
+### Changed
+- **Immutable Result Semantics**: Frozen dataclass structures across all primary coordinate and chart outputs to enforce immutability.
+
 ## [2.2.0] - 2026-05-04
 
 ### Added

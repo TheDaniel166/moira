@@ -12,7 +12,7 @@
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19152528-blue.svg)](https://doi.org/10.5281/zenodo.19152528)
 <a href="https://tools.launchllama.co?utm_source=badge&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://speaktechenglish.com/wp-content/uploads/2026/04/Screenshot_2026-04-09_at_17.40.44-removebg-preview.png" alt="Featured on Launch Llama" width="200" height="50" /></a>
 
-Moira is an astronomy-first astrology engine built for transparent astrology calculations, reproducible chart computation, and an inspectable calculation chain from astronomical inputs to astrological outputs. It is an auditable astrology engine with explicit computational policy, deterministic behavior, and readable reduction stages grounded in modern standards and references including JPL DE441, IAU 2000A/2006, ERFA/SOFA-aligned practices, and Gaia DR3-linked star data where applicable. Performance-critical computations — nutation, SPK kernel reading, coordinate transforms, light-time iteration, harmogram analysis, and event searching — are executed by a native C++17 extension (`_moira_native`) compiled with pybind11.
+Moira is an astronomy-first astrology engine built for transparent astrology calculations, reproducible chart computation, and an inspectable calculation chain from astronomical inputs to astrological outputs. It is an auditable astrology engine with explicit computational policy, deterministic behavior, and readable reduction stages grounded in modern standards and references including JPL DE441, IAU 2000A/2006, ERFA/SOFA-aligned practices, and Gaia DR3-linked star data where applicable. Performance-critical computations — nutation, SPK kernel reading, apparent planetary evaluation (via `NativePlanetaryEvaluator`), coordinate transforms, light-time iteration, harmogram analysis, and event searching — are executed by a native C++17 extension (`_moira_native`) compiled with pybind11.
 
 ## Why Moira Exists
 
@@ -58,8 +58,8 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
 
 ### Chart Calculation
 
-- **House systems** — 17 systems including Placidus, Koch, Regiomontanus, Campanus, Morinus, Porphyry, Whole Sign, Equal, APC, and Sunshine.
-- **Aspects** — 22 zodiacal aspects with applying/separating/stationary motion-state detection; declination parallels and contra-parallels; antiscia and contra-antiscia.
+- **House systems** — 17 systems including Placidus, Koch, Regiomontanus, Campanus, Morinus, Porphyry, Whole Sign, Equal, APC, and Sunshine. Includes experimental high-latitude branch-aware Placidus solvers (`experimental_placidus`) for polar coordinates, and `house_of` for direct house placement lookups.
+- **Aspects** — 22 zodiacal aspects with applying/separating/stationary motion-state detection; declination parallels and contra-parallels; antiscia and contra-antiscia; exact partile and orbed platic status markers (`is_partile`, `is_platic`).
 - **Aspect patterns** — 21 multi-body configurations: T-Square, Grand Trine, Grand Cross, Yod, Kite, Mystic Rectangle, Stellium, Grand Sextile, Thor's Hammer, Boomerang Yod, and more.
 - **Midpoints** — full midpoint matrix, midpoint trees, 90°/45°/22.5° dial projections, planetary pictures.
 - **Traditional dignities** — domicile, exaltation, triplicity (diurnal/nocturnal), Egyptian and Ptolemaic terms, face, sect, hayz, and Almuten Figuris.
@@ -121,6 +121,11 @@ from moira.patterns import find_all_patterns
 patterns = find_all_patterns(chart.longitudes())
 for p in patterns:
     print(f"{p.name}: {', '.join(p.bodies)}")
+
+# 4. House placement lookup
+from moira.houses import house_of
+sun_house = house_of(chart.planets['Sun'].longitude, houses)
+print(f"Sun is in house: {sun_house}")
 ```
 
 ---
@@ -185,6 +190,19 @@ moira-download-kernels
 moira-download-kernels --yes
 ```
 
+### SPK Kernel Writer (GUI)
+
+Moira supports building custom Type 13 SPK kernels using an integrated compiler GUI (built on Tkinter). This utility fetches physical position vectors directly from the JPL Horizons API and packages them into a native-readable binary kernel (`.bsp`).
+
+```bash
+moira-daf-writer
+```
+
+What the custom kernel writer provides:
+- **Guided Horizons Import**: Search the JPL Small Body Database (SBDB) by designation or name for any numbered asteroid or comet.
+- **Custom Parameter Controls**: Configure start/end Julian Days, step size in days, interpolation center, and coordinate frame.
+- **Verification Loop**: Automatically runs a post-compilation check to verify segment availability and test coordinate evaluations.
+
 ### Engine readiness model
 
 - `Moira()` succeeds even if no kernel is installed. It auto-discovers any compatible kernel in the standard locations.
@@ -226,12 +244,13 @@ print(m.available_kernels)
 | Named star registry | Sovereign (`star_registry.csv` + JSON provenance) | Yes | 1,809 stars; license-independent |
 | Centaur kernel | Moira native | Yes | `centaurs.bsp` — Chiron, Pholus, Chariklo, Asbolus, Hylonome |
 | Minor-body kernel | Moira native | Yes | `minor_bodies.bsp` — classical asteroids and select TNOs |
+| Type 13 Asteroid Shards | JPL / Horizons | Yes | Git LFS-tracked `sb441_type13` shards for apparent-place minor bodies |
 
 ---
 
 ## Native C++ Performance
 
-Moira's computational core (`_moira_native`) is implemented in C++17 and compiled as a pybind11 extension at install time. Performance-critical paths — IAU 2000A nutation evaluation, SPK/DAF kernel reading, coordinate transforms, light-time iteration, harmogram computation, precession, and event searching — execute natively without Python overhead.
+Moira's computational core (`_moira_native`) is implemented in C++17 and compiled as a pybind11 extension at install time. Performance-critical paths — IAU 2000A nutation evaluation, SPK/DAF kernel reading, apparent planetary evaluation (via `NativePlanetaryEvaluator`), coordinate transforms, light-time iteration, harmogram computation, precession, and event searching — execute natively without Python overhead.
 
 This matters most in phenomenon-searching loops (retrograde periods, eclipse searches, heliacal events, conjunction sweeps) where core transforms are evaluated thousands of times. The native extension is a required component and is built automatically during `pip install`.
 
