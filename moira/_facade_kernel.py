@@ -57,6 +57,9 @@ LAW OF OPERATION:
     Structural invariants:
         - ``_reader_obj`` is either None or a valid SpkReader instance.
         - ``_kernel_init_error`` captures the most recent init failure.
+        - ``_supplemental_kernel_init_error`` captures the most recent
+          optional supplemental-kernel load failure without blocking the
+          planetary reader.
 
 Canon: Moira Sovereign Facade Architecture; moira.facade kernel policy.
 
@@ -66,7 +69,7 @@ Canon: Moira Sovereign Facade Architecture; moira.facade kernel policy.
     "id": "moira._facade_kernel.KernelFacadeMixin",
     "risk": "high",
     "api": {"frozen": ["is_kernel_available", "get_kernel_status", "kernel_status", "available_kernels", "configure_kernel_path", "download_missing_kernels"], "internal": ["_reader", "_reader_obj", "_try_initialize_reader"]},
-    "state": {"mutable": true, "owners": ["_reader_obj", "_kernel_path", "_kernel_init_error"]},
+    "state": {"mutable": true, "owners": ["_reader_obj", "_kernel_path", "_kernel_init_error", "_supplemental_kernel_init_error"]},
     "effects": {"signals_emitted": [], "io": ["kernel_file_open"], "mutation": "instance_state"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
     "failures": {"policy": "raise"},
@@ -81,6 +84,7 @@ Canon: Moira Sovereign Facade Architecture; moira.facade kernel policy.
         self._kernel_path: str | None = kernel_path
         self._reader_obj: Any | None = None
         self._kernel_init_error: FileNotFoundError | MissingKernelError | None = None
+        self._supplemental_kernel_init_error: Exception | None = None
 
         self._try_initialize_reader()
 
@@ -99,33 +103,48 @@ Canon: Moira Sovereign Facade Architecture; moira.facade kernel policy.
                     "No planetary kernel is configured and none was found on disk."
                 )
             
-            # Initialize the pool and add the primary planetary reader
-            pool = KernelPool()
-            pool.add(SpkReader(Path(path)))
+            primary_reader = SpkReader(Path(path))
             
-            # Discover and add supplemental asteroid/comet kernels
-            from ._kernel_paths import find_kernel, find_sovereign_small_body_manifest
-            manifest_path = find_sovereign_small_body_manifest()
-            if manifest_path is not None:
-                for shard_reader in small_body_readers_from_manifest(manifest_path):
+            found_supplemental = []
+            self._supplemental_kernel_init_error = None
+            try:
+                # Supplemental asteroid/comet kernels are optional. A stale
+                # manifest, unsupported shard, or missing native extension
+                # must not block the core planetary reader.
+                from ._kernel_paths import find_kernel, find_sovereign_small_body_manifest
+
+                manifest_path = find_sovereign_small_body_manifest()
+                if manifest_path is not None:
+                    found_supplemental.extend(
+                        small_body_readers_from_manifest(manifest_path)
+                    )
+                supplemental = [
+                    "sb441-n373s.bsp",   # Legacy secondary asteroid kernel
+                    "asteroids.bsp",     # Legacy primary asteroid kernel
+                    "centaurs.bsp",      # Horizons centaurs
+                    "minor_bodies.bsp",  # Horizons minor bodies
+                    "comets.bsp",        # Comets
+                ]
+                for s_name in supplemental:
+                    s_path = find_kernel(s_name)
+                    if s_path.exists():
+                        found_supplemental.append(SmallBodyKernel(s_path))
+            except Exception as exc:
+                self._supplemental_kernel_init_error = exc
+
+            if found_supplemental:
+                pool = KernelPool()
+                pool.add(primary_reader)
+                for shard_reader in found_supplemental:
                     pool.add(shard_reader)
-            supplemental = [
-                "sb441-n373s.bsp",   # Legacy secondary asteroid kernel
-                "asteroids.bsp",     # Legacy primary asteroid kernel
-                "centaurs.bsp",      # Horizons centaurs
-                "minor_bodies.bsp",  # Horizons minor bodies
-                "comets.bsp",        # Comets
-            ]
-            for s_name in supplemental:
-                s_path = find_kernel(s_name)
-                if s_path.exists():
-                    pool.add(SmallBodyKernel(s_path))
-            
-            self._reader_obj = pool
+                self._reader_obj = pool
+            else:
+                self._reader_obj = primary_reader
             self._kernel_init_error = None
         except (FileNotFoundError, MissingKernelError) as exc:
             self._reader_obj = None
             self._kernel_init_error = exc
+            self._supplemental_kernel_init_error = None
 
     def __getattribute__(self, name: str):
         attr = object.__getattribute__(self, name)
@@ -173,9 +192,18 @@ Canon: Moira Sovereign Facade Architecture; moira.facade kernel policy.
     def get_kernel_status(self) -> str:
         facade = _facade_module()
         if self._reader_obj is not None:
+            supplemental_note = ""
+            if self._supplemental_kernel_init_error is not None:
+                supplemental_note = (
+                    " Supplemental kernels unavailable: "
+                    f"{self._supplemental_kernel_init_error}"
+                )
             if hasattr(self._reader_obj, "path"):
-                return f"Kernel ready: {self._reader_obj.path}"
-            return f"Kernel pool ready ({len(self._reader_obj._readers)} readers)"
+                return f"Kernel ready: {self._reader_obj.path}{supplemental_note}"
+            return (
+                f"Kernel pool ready ({len(self._reader_obj._readers)} readers)"
+                f"{supplemental_note}"
+            )
 
         if self._kernel_path:
             base = (
