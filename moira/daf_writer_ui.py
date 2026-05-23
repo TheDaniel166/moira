@@ -28,9 +28,11 @@ if __package__ in (None, ""):
 
     from moira._kernel_paths import user_kernels_dir
     from moira.daf_writer import write_spk_type13
+    from moira._spk_body_kernel import SmallBodyKernel
 else:
     from ._kernel_paths import user_kernels_dir
     from .daf_writer import write_spk_type13
+    from ._spk_body_kernel import SmallBodyKernel
 
 
 _REQUIRED_COLUMNS = (
@@ -53,7 +55,7 @@ _OPTIONAL_COLUMNS = (
 
 _TEMPLATE_HEADER = list(_REQUIRED_COLUMNS + _OPTIONAL_COLUMNS)
 _HORIZONS_URL = "https://ssd.jpl.nasa.gov/api/horizons.api"
-_SBDB_URL = "https://ssd-api.jpl.nasa.gov/sbdb_query.api"
+_SBDB_URL = "https://ssd-api.jpl.nasa.gov/sbdb.api"
 
 # Curated major bodies: planets, major moons, dwarf planets.
 # These are not in SBDB so we keep them locally.
@@ -90,74 +92,61 @@ _MAJOR_BODIES: list[dict] = [
 
 def _search_sbdb(query: str, kind: str = "all") -> list[dict]:
     """
-    Search the JPL Small Body Database for asteroids and comets by name or designation.
+    Search the JPL Small Body Database for an asteroid or comet by name or designation.
 
-    Returns a list of dicts with keys:
+    Uses sbdb.api with sstr for single-object exact/best-match lookup.
+    Returns a list of at most one dict with keys:
         full_name, name, pdes, type, naif (int), command (str)
 
     kind: 'all', 'asteroid', 'comet'
     """
-    params: dict[str, str] = {
-        "sb-name": query,
-        "fuzzy": "1",
-        "fields": "spkid,full_name,pdes,name,orbit_class",
-        "limit": "80",
-    }
-    if kind == "asteroid":
-        params["sb-kind"] = "a"
-    elif kind == "comet":
-        params["sb-kind"] = "c"
-
-    url = _SBDB_URL + "?" + urllib.parse.urlencode(params)
+    url = _SBDB_URL + "?" + urllib.parse.urlencode({"sstr": query})
     with urllib.request.urlopen(url, timeout=30) as resp:
         data = json.loads(resp.read().decode("utf-8"))
 
-    fields: list[str] = data.get("fields", [])
-    raw_rows: list = data.get("data") or []
+    obj = data.get("object")
+    if not obj:
+        return []
 
-    results: list[dict] = []
-    for raw in raw_rows:
-        rec = dict(zip(fields, raw))
+    spkid_raw = str(obj.get("spkid") or "").strip()
+    full_name = str(obj.get("fullname") or "").strip()
+    des = str(obj.get("des") or "").strip()
+    short_name = str(obj.get("shortname") or "").strip()
+    kind_code = str(obj.get("kind") or "")
+    oc = obj.get("orbit_class") or {}
+    body_type = oc.get("name", "Small Body") if isinstance(oc, dict) else str(oc)
 
-        spkid_raw = str(rec.get("spkid") or "").strip()
-        pdes = str(rec.get("pdes") or "").strip()
-        name = str(rec.get("name") or "").strip()
-        full_name = str(rec.get("full_name") or "").strip()
+    is_comet = kind_code.startswith("c") or bool(obj.get("prefix"))
 
-        oc = rec.get("orbit_class")
-        body_type = (
-            oc.get("name", "Small Body") if isinstance(oc, dict) else str(oc or "Small Body")
-        )
+    if kind == "asteroid" and is_comet:
+        return []
+    if kind == "comet" and not is_comet:
+        return []
 
-        # Comets: pdes ends with P or contains P/
-        is_comet = bool(pdes) and (
-            pdes.endswith("P") or "P/" in pdes or "/P" in pdes or "C/" in pdes
-        )
-
+    if is_comet:
+        naif = 0
+        command = f"DES={des};NOFRAG;CAP"
+    else:
         try:
-            naif = int(spkid_raw)
+            naif = 2000000 + (int(spkid_raw) % 10000000)
         except ValueError:
             naif = 0
+        # Horizons recognises the catalog designation number (e.g. "90482")
+        # reliably for all small bodies.  Using the NAIF ID ("2090482") only
+        # works for the handful of major asteroids shipped in the planetary
+        # kernel (Vesta, Ceres, etc.) and silently fails for TNOs and others.
+        command = des if des else full_name
 
-        if is_comet:
-            command = f"DES={pdes};NOFRAG;CAP"
-        elif naif:
-            command = str(naif)
-        else:
-            command = pdes or full_name
-
-        results.append(
-            {
-                "full_name": full_name,
-                "name": name or pdes or full_name,
-                "pdes": pdes,
-                "type": body_type,
-                "naif": naif,
-                "command": command,
-            }
-        )
-
-    return results
+    return [
+        {
+            "full_name": full_name,
+            "name": short_name or des or full_name,
+            "pdes": des,
+            "type": body_type,
+            "naif": naif,
+            "command": command,
+        }
+    ]
 
 
 @dataclass
@@ -171,6 +160,72 @@ class _KernelPreview:
     rows: int
     jd_start: float
     jd_end: float
+
+
+def _verify_kernel(path: Path, bodies: list[dict]) -> tuple[bool, list[str]]:
+    """
+    Verify a written type-13 SPK kernel via SmallBodyKernel (the sovereign
+    type-13 reader).  For each body checks:
+      1. The segment is present.
+      2. The recorded epoch range matches the written data.
+      3. A position evaluation at the midpoint returns without error.
+
+    Returns (ok, log_lines).  Never raises; all failures surface as log lines.
+    """
+    lines: list[str] = ["Kernel verification:"]
+    try:
+        kernel = SmallBodyKernel(path)
+    except Exception as exc:
+        return False, [f"Kernel verification: cannot open with SmallBodyKernel: {exc}"]
+
+    cov = kernel.coverage()
+    ok = True
+
+    for body in bodies:
+        naif: int = body["naif_id"]
+        center: int = body["center"]
+        name: str = body["name"]
+        expected_start: float = body["epochs_jd"][0]
+        expected_end: float = body["epochs_jd"][-1]
+
+        if not kernel.has_body(naif):
+            lines.append(f"  FAIL  NAIF {naif} ({name}): segment not present in kernel")
+            ok = False
+            continue
+
+        rng = cov.get((center, naif))
+        if rng is None:
+            lines.append(f"  FAIL  NAIF {naif} ({name}): no coverage entry")
+            ok = False
+            continue
+
+        start_jd, end_jd = rng
+        if abs(start_jd - expected_start) > 1e-6 or abs(end_jd - expected_end) > 1e-6:
+            lines.append(
+                f"  WARN  NAIF {naif} ({name}): epoch range mismatch — "
+                f"expected [{expected_start:.6f}, {expected_end:.6f}], "
+                f"got [{start_jd:.6f}, {end_jd:.6f}]"
+            )
+
+        mid_jd = (start_jd + end_jd) / 2.0
+        try:
+            pos = kernel.position(center, naif, mid_jd)
+            lines.append(
+                f"  OK    NAIF {naif} ({name}): "
+                f"JD [{start_jd:.3f}–{end_jd:.3f}], "
+                f"r = ({pos[0]:.3f}, {pos[1]:.3f}, {pos[2]:.3f}) km"
+            )
+        except Exception as exc:
+            lines.append(f"  FAIL  NAIF {naif} ({name}): eval at JD {mid_jd:.3f} failed: {exc}")
+            ok = False
+
+    n_ok = sum(1 for ln in lines if ln.strip().startswith("OK"))
+    n_total = len(bodies)
+    if ok:
+        lines.append(f"Verification passed — {n_ok}/{n_total} segment(s) confirmed.")
+    else:
+        lines.append(f"Verification FAILED — {n_ok}/{n_total} segment(s) confirmed.")
+    return ok, lines
 
 
 def _jd_to_cal(jd: float) -> str:
@@ -451,7 +506,12 @@ def _parse_csv_to_bodies(path: Path) -> tuple[list[dict], list[_KernelPreview]]:
 
     for naif_id in sorted(grouped):
         entry = grouped[naif_id]
-        rows = sorted(entry["rows"], key=lambda r: r[0])
+        # Deduplicate by JD (last row wins) so that re-fetching and appending
+        # to the same CSV does not cause spurious monotonicity failures.
+        deduped: dict[float, tuple] = {}
+        for row in entry["rows"]:
+            deduped[row[0]] = row
+        rows = sorted(deduped.values(), key=lambda r: r[0])
 
         for idx in range(len(rows) - 1):
             if rows[idx][0] >= rows[idx + 1][0]:
@@ -552,6 +612,7 @@ class DAFWriterApp(tk.Tk):
         self._hz_batch_text: tk.Text | None = None
 
         self._bodies_cache: list[dict] = []
+        self._status_label: tk.Label | None = None
 
         self._build_widgets()
         self._log("Ready. Choose a CSV input and validate before writing.")
@@ -784,8 +845,35 @@ class DAFWriterApp(tk.Tk):
         ttk.Button(btns, text="Build Kernel", command=self._build_kernel, width=14).pack(side="left", padx=(6, 0))
         ttk.Button(btns, text="Close", command=self.destroy, width=10).pack(side="right")
 
+        self._status_label = tk.Label(
+            root, text="", anchor="w", font=("", 9, "bold"), pady=4
+        )
+        self._status_label.grid(row=11, column=0, columnspan=4, sticky="we")
+
         root.columnconfigure(1, weight=1)
         root.columnconfigure(2, weight=1)
+
+    def _set_status(self, ok: bool | None, text: str) -> None:
+        """Update the verification status indicator. ok=True→green, False→red, None→clear."""
+        if self._status_label is None:
+            return
+        if ok is None:
+            self._status_label.config(text="", foreground="black")
+        elif ok:
+            self._status_label.config(text=f"✓  {text}", foreground="#1a7a1a")
+        else:
+            self._status_label.config(text=f"✗  {text}", foreground="#aa1111")
+
+    def _run_verification(self, output_path: Path) -> None:
+        """Verify the freshly-written kernel and update the status indicator."""
+        ok, lines = _verify_kernel(output_path, self._bodies_cache)
+        for line in lines:
+            self._log(line)
+        n = len(self._bodies_cache)
+        if ok:
+            self._set_status(True, f"{n} segment(s) verified — {output_path.name}")
+        else:
+            self._set_status(False, f"Verification failed — see log above")
 
     def _log(self, text: str) -> None:
         self._log_text.config(state="normal")
@@ -991,6 +1079,7 @@ class DAFWriterApp(tk.Tk):
         self._log(
             f"Kernel written: {output_path} ({output_path.stat().st_size:,} bytes)"
         )
+        self._run_verification(output_path)
 
     # ------------------------------------------------------------------
     # Body search helpers
@@ -1153,6 +1242,7 @@ class DAFWriterApp(tk.Tk):
             return
 
         self._log(f"Kernel written: {output_path} ({output_path.stat().st_size:,} bytes)")
+        self._run_verification(output_path)
         messagebox.showinfo("Build complete", f"Kernel written:\n{output_path}")
 
 

@@ -106,11 +106,11 @@ def find_sovereign_small_body_manifest() -> Path | None:
 # Known JPL planetary ephemeris kernels, checked in this order when no
 # explicit kernel path has been configured.
 PLANETARY_KERNELS: list[str] = [
-    "de430.bsp",
-    "de440.bsp",
     "de441.bsp",
+    "de440.bsp",
     "de432.bsp",
     "de431.bsp",
+    "de430.bsp",
 ]
 
 

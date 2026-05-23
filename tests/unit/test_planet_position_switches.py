@@ -45,6 +45,140 @@ def test_planet_at_invalid_frame_raises():
         planet_at(Body.MARS, _JD_J2000, frame="spherical")
 
 
+def test_planet_at_named_asteroid_uses_small_body_provider(monkeypatch: pytest.MonkeyPatch):
+    class _DummyReader:
+        pass
+
+    class _AsteroidResult:
+        name = "Ceres"
+        longitude = 12.5
+        latitude = 1.25
+        distance = 123456.0
+        speed = -0.25
+        retrograde = True
+
+    calls: list[tuple[str, float, object]] = []
+
+    def _fake_asteroid_at(name: str, jd_ut: float, reader=None):
+        calls.append((name, jd_ut, reader))
+        return _AsteroidResult()
+
+    import moira.asteroids as asteroids_module
+
+    monkeypatch.setattr(asteroids_module, "asteroid_at", _fake_asteroid_at)
+
+    reader = _DummyReader()
+    result = planet_at("Ceres", _JD_J2000, reader=reader)
+
+    assert isinstance(result, PlanetData)
+    assert result.name == "Ceres"
+    assert result.longitude == 12.5
+    assert result.distance == 123456.0
+    assert result.retrograde is True
+    assert calls == [("Ceres", _JD_J2000, reader)]
+
+
+def test_planet_at_named_comet_uses_small_body_provider(monkeypatch: pytest.MonkeyPatch):
+    class _DummyReader:
+        pass
+
+    class _CometResult:
+        name = "Halley"
+        longitude = 42.0
+        latitude = -3.0
+        distance = 2.0
+        speed = 0.75
+        retrograde = False
+
+    calls: list[tuple[str, float, object]] = []
+
+    def _fake_comet_at(name: str, jd_ut: float, reader=None):
+        calls.append((name, jd_ut, reader))
+        return _CometResult()
+
+    import moira.comets as comets_module
+
+    monkeypatch.setattr(comets_module, "comet_at", _fake_comet_at)
+
+    reader = _DummyReader()
+    result = planet_at("Halley", _JD_J2000, reader=reader)
+
+    assert isinstance(result, PlanetData)
+    assert result.name == "Halley"
+    assert result.longitude == 42.0
+    assert result.distance == pytest.approx(2.0 * planets_module.KM_PER_AU)
+    assert result.retrograde is False
+    assert calls == [("Halley", _JD_J2000, reader)]
+
+
+def test_planet_at_small_body_rejects_unsupported_modes(monkeypatch: pytest.MonkeyPatch):
+    class _DummyReader:
+        pass
+
+    reader = _DummyReader()
+    with pytest.raises(ValueError, match="asteroid bodies currently support only the default apparent geocentric ecliptic path"):
+        planet_at("Ceres", _JD_J2000, reader=reader, center="barycentric")
+
+    with pytest.raises(ValueError, match="comet bodies currently support only the default apparent geocentric ecliptic path"):
+        planet_at("Halley", _JD_J2000, reader=reader, frame="cartesian")
+
+
+def test_all_planets_at_admits_small_bodies_on_unified_surface(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(planets_module, "_native_all_planets_admitted", lambda *args, **kwargs: None)
+
+    class _DummyContext:
+        obliquity = 23.4
+        dpsi_deg = 0.0
+        deps_deg = 0.0
+        rot_mat = None
+        vector_cache = {}
+
+    monkeypatch.setattr(planets_module, "_build_apparent_context", lambda *args, **kwargs: _DummyContext())
+
+    class _DummyReader:
+        pass
+
+    def _fake_core(body: str, jd_ut: float, **kwargs):
+        return PlanetData(
+            name=body,
+            longitude=10.0,
+            latitude=0.0,
+            distance=1.0,
+            speed=0.1,
+            retrograde=False,
+        )
+
+    def _fake_planet_at(body: str, jd_ut: float, **kwargs):
+        if body == "Ceres":
+            return PlanetData(
+                name="Ceres",
+                longitude=20.0,
+                latitude=1.0,
+                distance=2.0,
+                speed=0.2,
+                retrograde=False,
+            )
+        if body == "Halley":
+            return PlanetData(
+                name="Halley",
+                longitude=30.0,
+                latitude=2.0,
+                distance=3.0,
+                speed=0.3,
+                retrograde=True,
+            )
+        return _fake_core(body, jd_ut, **kwargs)
+
+    monkeypatch.setattr(planets_module, "_planet_at_core", _fake_core)
+    monkeypatch.setattr(planets_module, "planet_at", _fake_planet_at)
+
+    result = all_planets_at(_JD_J2000, bodies=[Body.SUN, "Ceres", "Halley"], reader=_DummyReader())
+
+    assert list(result) == [Body.SUN, "Ceres", "Halley"]
+    assert result["Ceres"].longitude == 20.0
+    assert result["Halley"].retrograde is True
+
+
 def test_cartesian_position_repr():
     pos = CartesianPosition(name="Mars", x=1.0, y=2.0, z=3.0, center="geocentric")
     r = repr(pos)

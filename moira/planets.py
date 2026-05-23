@@ -1282,6 +1282,101 @@ def _chiron_planet_data(jd_ut: float, reader: KernelReader) -> PlanetData:
     )
 
 
+def _planet_data_from_asteroid_result(asteroid) -> PlanetData:
+    """Adapt AsteroidData to the canonical planetary result vessel."""
+    return PlanetData(
+        name=asteroid.name,
+        longitude=asteroid.longitude,
+        latitude=asteroid.latitude,
+        distance=asteroid.distance,
+        speed=asteroid.speed,
+        retrograde=asteroid.retrograde,
+        is_topocentric=False,
+    )
+
+
+def _planet_data_from_comet_result(comet) -> PlanetData:
+    """Adapt CometData to the canonical planetary result vessel."""
+    return PlanetData(
+        name=comet.name,
+        longitude=comet.longitude,
+        latitude=comet.latitude,
+        distance=comet.distance * KM_PER_AU,
+        speed=comet.speed,
+        retrograde=comet.retrograde,
+        is_topocentric=False,
+    )
+
+
+def _resolve_small_body_name(body: str) -> tuple[str, str] | None:
+    """
+    Resolve a public body name to an admitted small-body family and canonical name.
+
+    Returns:
+        ("asteroid" | "comet", canonical_name) when the body belongs to a
+        small-body family admitted through the planetary front door, otherwise
+        ``None``.
+    """
+    from .asteroids import ASTEROID_NAIF
+    from .comets import COMET_NAIF
+
+    if body in ASTEROID_NAIF:
+        return "asteroid", body
+    if body in COMET_NAIF:
+        return "comet", body
+
+    lowered = body.lower()
+    for name in ASTEROID_NAIF:
+        if name.lower() == lowered:
+            return "asteroid", name
+    for name in COMET_NAIF:
+        if name.lower() == lowered:
+            return "comet", name
+    return None
+
+
+def _small_body_mode_is_supported(
+    *,
+    apparent: bool,
+    aberration: bool,
+    grav_deflection: bool,
+    nutation: bool,
+    center: str,
+    frame: str,
+    observer_lat: float | None,
+    observer_lon: float | None,
+    observer_elev_m: float,
+    lst_deg: float | None,
+    obliquity: float | None,
+    jd_tt: float | None,
+    delta_t_policy: 'DeltaTPolicy | None',
+) -> bool:
+    """Return True only for the small-body mode currently supported by provider adapters."""
+    return (
+        apparent
+        and aberration
+        and grav_deflection
+        and nutation
+        and center == "geocentric"
+        and frame == "ecliptic"
+        and observer_lat is None
+        and observer_lon is None
+        and observer_elev_m == 0.0
+        and lst_deg is None
+        and obliquity is None
+        and jd_tt is None
+        and delta_t_policy is None
+    )
+
+
+def _small_body_mode_error(surface: str, family: str) -> ValueError:
+    """Return the canonical unsupported-mode error for small-body front-door admission."""
+    return ValueError(
+        f"{surface}: {family} bodies currently support only the default "
+        "apparent geocentric ecliptic path through this API."
+    )
+
+
 def _apparent_geocentric_ecliptic(
     body_id,
     jd_tt: float,
@@ -1618,20 +1713,34 @@ def planet_at(
                 "Pass a reader explicitly or use the Moira facade."
             )
 
-    if body == Body.CHIRON:
-        if center != 'geocentric':
-            raise ValueError("planet_at: Chiron currently supports only center='geocentric'.")
-        if frame != 'ecliptic':
-            raise ValueError("planet_at: Chiron currently supports only frame='ecliptic'.")
-        if not apparent:
-            raise ValueError("planet_at: Chiron currently supports only apparent=True.")
-        if observer_lat is not None or observer_lon is not None or lst_deg is not None:
-            raise ValueError("planet_at: Chiron topocentric output is not supported by this API path.")
-        if not aberration or not grav_deflection or not nutation:
-            raise ValueError(
-                "planet_at: Chiron currently supports only the default apparent correction path."
+    small_body = _resolve_small_body_name(body)
+    if small_body is not None:
+        family, canonical_name = small_body
+        if not _small_body_mode_is_supported(
+            apparent=apparent,
+            aberration=aberration,
+            grav_deflection=grav_deflection,
+            nutation=nutation,
+            center=center,
+            frame=frame,
+            observer_lat=observer_lat,
+            observer_lon=observer_lon,
+            observer_elev_m=observer_elev_m,
+            lst_deg=lst_deg,
+            obliquity=obliquity,
+            jd_tt=jd_tt,
+            delta_t_policy=delta_t_policy,
+        ):
+            raise _small_body_mode_error("planet_at", family)
+        if family == "asteroid":
+            from .asteroids import asteroid_at
+            return _planet_data_from_asteroid_result(
+                asteroid_at(canonical_name, jd_ut, reader=reader)
             )
-        return _chiron_planet_data(jd_ut, reader)
+        from .comets import comet_at
+        return _planet_data_from_comet_result(
+            comet_at(canonical_name, jd_ut, reader=reader)
+        )
 
     context = _context
     if jd_tt is None and context is None and apparent:
@@ -1996,8 +2105,25 @@ def all_planets_at(
     )
     results: dict[str, PlanetData] = {}
     for body in bodies:
-        if body == Body.CHIRON:
-            results[body] = _chiron_planet_data(jd_ut, reader)
+        if _resolve_small_body_name(body) is not None:
+            small_body_result = planet_at(
+                body,
+                jd_ut,
+                reader=reader,
+                apparent=apparent,
+                aberration=aberration,
+                grav_deflection=grav_deflection,
+                nutation=nutation,
+                center=center,
+                frame='ecliptic',
+                observer_lat=observer_lat,
+                observer_lon=observer_lon,
+                observer_elev_m=observer_elev_m,
+                lst_deg=lst_deg,
+                delta_t_policy=delta_t_policy,
+            )
+            assert isinstance(small_body_result, PlanetData)
+            results[small_body_result.name] = small_body_result
             continue
         results[body] = _planet_at_core(  # type: ignore[assignment]
             body, jd_ut, reader=reader, obliquity=context.obliquity,

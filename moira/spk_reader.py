@@ -345,8 +345,10 @@ def _open_kernel(path: Path):
             return _NativeSpkKernel(path, catalog)
     if not _HAS_JPLEPHEM:
         raise RuntimeError(
-            "This kernel path still requires jplephem because it contains unsupported "
-            "segment types for the current native reader."
+            f"Kernel '{path}' contains segment types not supported by Moira's native "
+            "reader and cannot be opened. This kernel is not part of Moira's standard "
+            "supported set. If you are using a custom or third-party SPK kernel, ensure "
+            "it uses Type 2 or Type 3 Chebyshev segments."
         )
     return _SPK.open(str(path))
 
@@ -1287,8 +1289,10 @@ def set_kernel_path(path: str | Path) -> None:
                     s_path = find_kernel(s_name)
                     if s_path.exists():
                         found_supplemental.append(SmallBodyKernel(s_path))
-            except (ImportError, AttributeError):
-                # Handle cases where paths or small body logic aren't yet available
+            except Exception:
+                # Supplemental kernel discovery is best-effort: missing shards,
+                # unsupported segment types, or import failures must not prevent
+                # the primary planetary kernel from initialising.
                 pass
 
         if found_supplemental:
