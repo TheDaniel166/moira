@@ -1398,6 +1398,14 @@ PYBIND11_MODULE(_moira_native, m) {
         .def_readwrite("lat_deg", &lola::SphericalCoords::lat_deg)
         .def_readwrite("radius_km", &lola::SphericalCoords::radius_km);
 
+    py::class_<CubicSmoothingSpline>(m, "CubicSmoothingSpline")
+        .def(py::init<const std::vector<double>&, const std::vector<double>&, double>(),
+             py::arg("x"), py::arg("y"), py::arg("p"))
+        .def("evaluate", &CubicSmoothingSpline::evaluate, py::arg("target"))
+        .def("get_knots", &CubicSmoothingSpline::get_knots)
+        .def("get_y_hat", &CubicSmoothingSpline::get_y_hat)
+        .def("get_M", &CubicSmoothingSpline::get_M);
+
     py::class_<lola::SkyPlaneProjection>(m, "SkyPlaneProjection")
         .def_readwrite("east_km", &lola::SkyPlaneProjection::east_km)
         .def_readwrite("north_km", &lola::SkyPlaneProjection::north_km)

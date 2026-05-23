@@ -5,6 +5,8 @@
 #include <array>
 #include <utility>
 #include <algorithm>
+#include <cmath>
+#include <stdexcept>
 
 namespace moira {
 namespace native {
@@ -379,6 +381,217 @@ inline void spk_type13_record_inplace(
         );
     }
 }
+
+/**
+ * @brief Natural cubic smoothing spline solver and evaluator.
+ * Minimizes: sum((y_i - f(x_i))^2) + p * integral(f''(t)^2 dt)
+ * Solves the interior second derivatives (M) using an O(n) pentadiagonal Cholesky solver.
+ */
+class CubicSmoothingSpline {
+public:
+    CubicSmoothingSpline(const std::vector<double>& x,
+                         const std::vector<double>& y,
+                         double p)
+        : x_(x), y_(y), p_(p) {
+        fit();
+    }
+
+    double evaluate(double target) const {
+        if (x_.empty()) return 0.0;
+        if (target <= x_.front()) return y_hat_.front();
+        if (target >= x_.back()) return y_hat_.back();
+
+        // Binary search to find containing interval [x_[idx], x_[idx+1]]
+        auto it = std::upper_bound(x_.begin(), x_.end(), target);
+        size_t idx = std::distance(x_.begin(), it) - 1;
+
+        double hi = h_[idx];
+        double xi = x_[idx];
+        double xi1 = x_[idx + 1];
+        double yi = y_hat_[idx];
+        double yi1 = y_hat_[idx + 1];
+        double mi = M_[idx];
+        double mi1 = M_[idx + 1];
+
+        double A = (xi1 - target) / hi;
+        double B = (target - xi) / hi;
+        return A * yi + B * yi1 + ((A * A * A - A) * mi + (B * B * B - B) * mi1) * (hi * hi) / 6.0;
+    }
+
+    std::vector<double> get_knots() const {
+        return x_;
+    }
+
+    std::vector<double> get_y_hat() const {
+        return y_hat_;
+    }
+
+    std::vector<double> get_M() const {
+        return M_;
+    }
+
+private:
+    std::vector<double> x_;
+    std::vector<double> y_;
+    double p_;
+    std::vector<double> h_;
+    std::vector<double> y_hat_;
+    std::vector<double> M_;
+
+    void fit() {
+        size_t n = x_.size();
+        if (n < 3) {
+            y_hat_ = y_;
+            M_.assign(n, 0.0);
+            return;
+        }
+
+        h_.resize(n - 1);
+        for (size_t i = 0; i < n - 1; ++i) {
+            h_[i] = x_[i + 1] - x_[i];
+            if (h_[i] <= 0.0) {
+                throw std::invalid_argument("CubicSmoothingSpline: x values must be strictly increasing");
+            }
+        }
+
+        size_t N = n - 2;
+        std::vector<double> d(N, 0.0);
+        std::vector<double> e(N - 1, 0.0);
+        std::vector<double> f(N - 2, 0.0);
+
+        for (size_t j = 0; j < N; ++j) {
+            double qtq_j = 1.0 / (h_[j] * h_[j]) + 
+                           (1.0 / h_[j] + 1.0 / h_[j+1]) * (1.0 / h_[j] + 1.0 / h_[j+1]) + 
+                           1.0 / (h_[j+1] * h_[j+1]);
+            d[j] = p_ * qtq_j + (h_[j] + h_[j+1]) / 3.0;
+
+            if (j < N - 1) {
+                double qtq_je = -1.0 / h_[j+1] * (1.0 / h_[j] + 2.0 / h_[j+1] + 1.0 / h_[j+2]);
+                e[j] = p_ * qtq_je + h_[j+1] / 6.0;
+            }
+
+            if (j < N - 2) {
+                double qtq_jf = 1.0 / (h_[j+1] * h_[j+2]);
+                f[j] = p_ * qtq_jf;
+            }
+        }
+
+        // b = Q.T * y
+        std::vector<double> b(N, 0.0);
+        for (size_t j = 0; j < N; ++j) {
+            b[j] = y_[j] / h_[j] - 
+                   y_[j+1] * (1.0 / h_[j] + 1.0 / h_[j+1]) + 
+                   y_[j+2] / h_[j+1];
+        }
+
+        // Solve pentadiagonal system K * M = b via banded Cholesky (L * L^T)
+        std::vector<double> M_int(N, 0.0);
+
+        if (N == 1) {
+            if (d[0] <= 0.0) {
+                throw std::runtime_error("CubicSmoothingSpline Cholesky: system is not positive-definite");
+            }
+            double l0 = std::sqrt(d[0]);
+            double z0 = b[0] / l0;
+            M_int[0] = z0 / l0;
+        } else if (N == 2) {
+            if (d[0] <= 0.0) {
+                throw std::runtime_error("CubicSmoothingSpline Cholesky: system is not positive-definite");
+            }
+            double l0 = std::sqrt(d[0]);
+            double c0 = e[0] / l0;
+            double d1_val = d[1] - c0 * c0;
+            if (d1_val <= 0.0) {
+                throw std::runtime_error("CubicSmoothingSpline Cholesky: system is not positive-definite");
+            }
+            double l1 = std::sqrt(d1_val);
+
+            double z0 = b[0] / l0;
+            double z1 = (b[1] - c0 * z0) / l1;
+
+            M_int[1] = z1 / l1;
+            M_int[0] = (z0 - c0 * M_int[1]) / l0;
+        } else {
+            std::vector<double> l(N, 0.0);
+            std::vector<double> c(N - 1, 0.0);
+            std::vector<double> g(N - 2, 0.0);
+
+            if (d[0] <= 0.0) {
+                throw std::runtime_error("CubicSmoothingSpline Cholesky: system is not positive-definite");
+            }
+            l[0] = std::sqrt(d[0]);
+            c[0] = e[0] / l[0];
+            g[0] = f[0] / l[0];
+
+            double d1_val = d[1] - c[0] * c[0];
+            if (d1_val <= 0.0) {
+                throw std::runtime_error("CubicSmoothingSpline Cholesky: system is not positive-definite");
+            }
+            l[1] = std::sqrt(d1_val);
+            c[1] = (e[1] - c[0] * g[0]) / l[1];
+            if (N > 3) {
+                g[1] = f[1] / l[1];
+            }
+
+            for (size_t i = 2; i < N; ++i) {
+                double val = d[i] - c[i-1] * c[i-1] - g[i-2] * g[i-2];
+                if (val <= 0.0) {
+                    throw std::runtime_error("CubicSmoothingSpline Cholesky: system is not positive-definite");
+                }
+                l[i] = std::sqrt(val);
+                if (i < N - 1) {
+                    c[i] = (e[i] - c[i-1] * g[i-1]) / l[i];
+                }
+                if (i < N - 2) {
+                    g[i] = f[i] / l[i];
+                }
+            }
+
+            // Forward substitution: L * z = b
+            std::vector<double> z(N, 0.0);
+            z[0] = b[0] / l[0];
+            z[1] = (b[1] - c[0] * z[0]) / l[1];
+            for (size_t i = 2; i < N; ++i) {
+                z[i] = (b[i] - c[i-1] * z[i-1] - g[i-2] * z[i-2]) / l[i];
+            }
+
+            // Backward substitution: L^T * M_int = z
+            M_int[N - 1] = z[N - 1] / l[N - 1];
+            M_int[N - 2] = (z[N - 2] - c[N - 2] * M_int[N - 1]) / l[N - 2];
+            for (int i = static_cast<int>(N) - 3; i >= 0; --i) {
+                M_int[i] = (z[i] - c[i] * M_int[i+1] - g[i] * M_int[i+2]) / l[i];
+            }
+        }
+
+        M_.assign(n, 0.0);
+        for (size_t i = 0; i < N; ++i) {
+            M_[i + 1] = M_int[i];
+        }
+
+        // y_hat = y - p * Q * M_int
+        y_hat_ = y_;
+        for (size_t i = 0; i < n; ++i) {
+            double qm = 0.0;
+            if (i == 0) {
+                qm = M_int[0] / h_[0];
+            } else if (i == n - 1) {
+                qm = M_int[N - 1] / h_[n - 2];
+            } else {
+                size_t j = i - 1;
+                double val = 0.0;
+                if (j > 0) {
+                    val += M_int[j - 1] / h_[j];
+                }
+                val -= M_int[j] * (1.0 / h_[j] + 1.0 / h_[j+1]);
+                if (j < N - 1) {
+                    val += M_int[j + 1] / h_[j+1];
+                }
+                qm = val;
+            }
+            y_hat_[i] -= p_ * qm;
+        }
+    }
+};
 
 } // namespace native
 } // namespace moira

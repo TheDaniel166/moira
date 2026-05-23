@@ -25,7 +25,6 @@ External dependency assumptions:
       handled gracefully (empty series / fallback values).
 """
 
-from __future__ import annotations
 
 import math
 import statistics
@@ -33,6 +32,7 @@ from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
 
+from ._moira_native import CubicSmoothingSpline
 from .constants import JULIAN_YEAR
 from .julian import julian_day
 
@@ -103,25 +103,6 @@ _LOD_RANDOM_WALK_SIGMA_MS_PER_DAY_SQRT_YEAR: float = 0.2379
 # vs observed OLS-detrend std = 0.52 ms/day). For θ → 0 the O-U
 # formula recovers the Brownian T³/3 limit exactly.
 _LOD_OU_REVERSION_RATE: float = 0.1  # 1/year
-
-
-def _require_univariate_spline() -> type:
-    """
-    Return scipy's UnivariateSpline or raise a hard runtime error.
-
-    The residual spline is not optional for Moira's asserted hybrid ΔT model.
-    If scipy is missing, callers must see a clear failure instead of a silent
-    fallback to an incomplete model.
-    """
-    try:
-        from scipy.interpolate import UnivariateSpline
-    except ImportError as exc:
-        raise RuntimeError(
-            "delta_t_hybrid requires scipy.interpolate.UnivariateSpline. "
-            "Install Moira runtime dependencies to enable the residual spline."
-        ) from exc
-    return UnivariateSpline
-
 
 @dataclass(frozen=True, slots=True)
 class _ResidualSplineFit:
@@ -874,19 +855,15 @@ def _fitted_residual_spline() -> _ResidualSplineFit:
     Fit a smoothing spline to IERS_measured − (secular + core + cryo) over
     the 1962–taper-end window.
 
-    Returns the spline plus named diagnostics. The spline dependency is
-    mandatory for the asserted hybrid ΔT model and will raise if scipy is
-    unavailable.
+    Returns the spline plus named diagnostics.
 
     Procedure (per DELTA_T_HYBRID_MODEL.md section 3, Phase 4):
     1. Compute raw residual at each annual IERS Bulletin B point.
     2. Fit annual residuals directly; no pre-smoothing is applied.
     3. Apply cosine taper over 2021–2024.
-    4. Fit UnivariateSpline with k=3 and bounded knot count.
+    4. Fit CubicSmoothingSpline with calibrated p = 0.1483103.
     5. Interior LOO-CV diagnostic on non-boundary annual-mean epochs.
     """
-    UnivariateSpline = _require_univariate_spline()
-
     from .julian import delta_t as _iers_delta_t
 
     years_raw: list[float] = []
@@ -930,16 +907,8 @@ def _fitted_residual_spline() -> _ResidualSplineFit:
         spline_residuals.insert(0, left_anchor_val)
 
     n_raw = len(years_raw)
-    # Target s_factor: n_raw / 30 keeps annual residual structure visible while
-    # avoiding exact interpolation. The knot cap below prevents a narrow annual
-    # noise fit from becoming the asserted model.
-    s_factor = float(n_raw) / 30.0
-    spline = UnivariateSpline(spline_years, spline_residuals, k=3, s=s_factor, ext=1)
-
-    knot_count = len(spline.get_knots())
-    if knot_count > 20:
-        s_factor = float(n_raw) * (knot_count / 20.0) / 30.0
-        spline = UnivariateSpline(spline_years, spline_residuals, k=3, s=s_factor, ext=1)
+    p_param = 0.1483103
+    spline = CubicSmoothingSpline(spline_years, spline_residuals, p_param)
 
     loo_errors: list[float] = []
     for i in range(1, len(years_raw) - 1):
@@ -950,21 +919,18 @@ def _fitted_residual_spline() -> _ResidualSplineFit:
         if len(ys_loo) < 5:
             continue
         try:
-            sp_loo = UnivariateSpline(ys_loo, rs_loo, k=3, s=s_factor, ext=1)
-            loo_errors.append((res_fit[i] - float(sp_loo(years_raw[i]))) ** 2)
+            sp_loo = CubicSmoothingSpline(ys_loo, rs_loo, p_param)
+            loo_errors.append((res_fit[i] - float(sp_loo.evaluate(years_raw[i]))) ** 2)
         except Exception:
             pass
 
     if loo_errors:
         cv_rms = math.sqrt(sum(loo_errors) / len(loo_errors))
-        if cv_rms > 0.4:
-            s_factor *= cv_rms / 0.4
-            spline = UnivariateSpline(spline_years, spline_residuals, k=3, s=s_factor, ext=1)
     else:
         cv_rms = _RESIDUAL_FUTURE_RMS_FALLBACK
 
     in_sample_errors = [
-        (res_fit[i] - float(spline(years_raw[i]))) ** 2
+        (res_fit[i] - float(spline.evaluate(years_raw[i]))) ** 2
         for i in range(n_raw)
     ]
     in_sample_rms = math.sqrt(sum(in_sample_errors) / n_raw) if in_sample_errors else _RESIDUAL_FUTURE_RMS_FALLBACK
@@ -982,7 +948,7 @@ def _residual_at(year: float) -> float:
     fit = _fitted_residual_spline()
     if fit.spline is None:
         return 0.0
-    return float(fit.spline(year))
+    return float(fit.spline.evaluate(year))
 
 
 def _future_stochastic_delta_t_sigma(year: float) -> float:

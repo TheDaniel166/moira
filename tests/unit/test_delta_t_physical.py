@@ -33,7 +33,6 @@ from moira.delta_t_physical import (
     _future_secular_baseline,
     _future_stochastic_delta_t_sigma,
     _fit_fluid_lowfreq_coefficients,
-    _require_univariate_spline,
     _historical_bridge_delta_t,
     _LOD_OU_REVERSION_RATE,
     _LOD_RANDOM_WALK_SIGMA_MS_PER_DAY_SQRT_YEAR,
@@ -177,20 +176,19 @@ def test_smh2016_lookup_interpolates_between_table_entries() -> None:
     assert min(lo, hi) <= mid <= max(lo, hi)
 
 
-def test_require_univariate_spline_raises_clearly_when_scipy_missing(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    real_import = builtins.__import__
-
-    def _fake_import(name, globals=None, locals=None, fromlist=(), level=0):
-        if name == "scipy.interpolate":
-            raise ImportError("mock missing scipy")
-        return real_import(name, globals, locals, fromlist, level)
-
-    monkeypatch.setattr(builtins, "__import__", _fake_import)
-
-    with pytest.raises(RuntimeError, match="delta_t_hybrid requires scipy.interpolate.UnivariateSpline"):
-        _require_univariate_spline()
+def test_cubic_smoothing_spline_direct_evaluation() -> None:
+    from moira._moira_native import CubicSmoothingSpline
+    # 5 points of a simple quadratic curve
+    x = [0.0, 1.0, 2.0, 3.0, 4.0]
+    y = [0.0, 1.0, 4.0, 9.0, 16.0]
+    # Set a tiny p (almost exact interpolation)
+    spline = CubicSmoothingSpline(x, y, 1e-12)
+    # Check that evaluation matches y values at the knots
+    for xi, yi in zip(x, y):
+        assert spline.evaluate(xi) == pytest.approx(yi, abs=1e-5)
+    # Check extrapolation clamps to boundary values
+    assert spline.evaluate(-1.0) == pytest.approx(y[0], abs=1e-5)
+    assert spline.evaluate(5.0) == pytest.approx(y[-1], abs=1e-5)
 
 
 # ---------------------------------------------------------------------------
