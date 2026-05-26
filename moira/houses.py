@@ -475,11 +475,22 @@ def classify_house_system(code: str) -> HouseSystemClassification:
 # Module-scope policy sets used by calculate_houses() and __post_init__
 # ---------------------------------------------------------------------------
 
-# Systems that produce geometrically disordered cusps above the critical latitude.
-# The real breakdown threshold is 90° − obliquity (≈ 66.56° at J2000), not 75°.
-# Placidus and Koch: cusp ordering fails above ~66.6° for some ARMC values.
+# Systems that produce geometrically disordered cusps above the critical latitude
+# (90° − obliquity ≈ 66.56° at J2000).  All six systems here share the same root
+# cause: their cusp construction paths call _asc_from_armc (which contains
+# math.tan(lat_r)) or compute explicit pole heights via math.tan(phi), both of
+# which overflow to ~1.6e16 at lat = ±90°, cascading into NaN or inverted cusps.
+#
+#   Placidus / Koch        — direct sin/cos of semi-arc that diverges above Arctic circle
+#   Regiomontanus          — pole heights phi_h1/phi_h2 = atan(tan(phi)*sin(...))
+#   Topocentric            — pole heights phi_1/phi_2   = atan((k/3)*tan(phi))
+#   Campanus               — prime-vertical basis degenerates; _asc_from_armc overflows
+#   Alcabitius             — _asc_from_armc overflows (SDA guard saves one path,
+#                            but the Ascendant seed is already garbage at lat ≥ critical)
 _POLAR_SYSTEMS: frozenset[str] = frozenset({
     HouseSystem.PLACIDUS, HouseSystem.KOCH,
+    HouseSystem.REGIOMONTANUS, HouseSystem.TOPOCENTRIC,
+    HouseSystem.CAMPANUS, HouseSystem.ALCABITIUS,
 })
 
 # The full set of recognised HouseSystem codes.
@@ -2352,7 +2363,7 @@ def _solar_sign(sun_lon: float) -> list[float]:
     Side effects:
         None
     """
-    sign_start = math.floor((sun_lon % 360.0) / 30.0) * 30.0
+    sign_start = math.floor(((sun_lon % 360.0) + 1e-11) / 30.0) * 30.0
     cusps = [(sign_start + i * 30.0) % 360.0 for i in range(12)]
     return _finalize_cusps(cusps, context="_solar_sign")
 
@@ -3078,7 +3089,7 @@ def assign_house(longitude: float, house_cusps: HouseCusps) -> HousePlacement:
         span       = (cusp_close - cusp_open) % 360.0
         dist       = (lon - cusp_open) % 360.0
 
-        if dist < span:
+        if dist < span - 1e-12:  # epsilon guard: prevents FP rounding from capturing lon == cusp_close
             house         = i + 1
             exact_on_cusp = dist < _MEMBERSHIP_CUSP_TOLERANCE
             return HousePlacement(
@@ -3092,10 +3103,12 @@ def assign_house(longitude: float, house_cusps: HouseCusps) -> HousePlacement:
     # Fallback: assign to the house whose cusp is angularly closest.
     # This can only be reached in pathological cusp sets (e.g. duplicate cusps
     # leaving a zero-width gap not covered above), and is deterministic.
+    # _circular_distance gives shortest-arc (unsigned) distance, so a planet
+    # at 10° is correctly 0.001° from a cusp at 10.001°, not 359.999° away.
     min_dist = 361.0
     best     = 0
     for i in range(12):
-        d = (lon - house_cusps.cusps[i]) % 360.0
+        d = _circular_distance(lon, house_cusps.cusps[i])
         if d < min_dist:
             min_dist = d
             best     = i

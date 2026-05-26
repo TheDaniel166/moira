@@ -18,25 +18,38 @@ Usage
     chart = m.chart(datetime(1985, 3, 21, 6, 0, tzinfo=timezone.utc))
 
     # Ayanamsa and sidereal positions
-    ayan = ayanamsa(chart.jd, Ayanamsa.LAHIRI)
-    naks = all_nakshatras_at(chart.jd, chart.longitudes())
+    ayan = ayanamsa(chart.jd_ut, Ayanamsa.LAHIRI)
+    naks = all_nakshatras_at(chart.longitudes(), chart.jd_ut)
 
     # Panchanga for the moment
-    pg = panchanga_at(chart.jd, latitude=28.6, longitude=77.2)
+    pg = panchanga_at(
+        chart.planets['Sun'].longitude,
+        chart.planets['Moon'].longitude,
+        chart.jd_ut,
+    )
 
     # Vedic dignities
     dignities = {b: vedic_dignity(lon) for b, lon in chart.longitudes().items()}
 
     # Vimshottari dasha
-    periods = vimshottari(moon_lon=chart.longitudes()['Moon'], birth_jd=chart.jd)
+    periods = vimshottari(moon_lon=chart.longitudes()['Moon'], birth_jd=chart.jd_ut)
 
     # Shadbala
-    strength = shadbala(chart.jd, latitude=28.6, longitude=77.2)
+    strength = shadbala(
+        sidereal_longitudes=m.sidereal_chart(datetime(1985, 3, 21, 6, 0, tzinfo=timezone.utc)),
+        planet_speeds={b: p.speed for b, p in chart.planets.items()},
+        houses=m.houses(chart.jd_ut, latitude=28.6, longitude=77.2),
+        jd=chart.jd_ut,
+        tithi_number=pg.tithi.number,
+        vara_lord=pg.vara_lord,
+        is_day=chart.is_day,
+    )
 
 Next step
 ---------
 For transits, progressions, synastry, eclipses, and returns, use
-``moira.predictive``.
+``moira.predictive``. The core Vedic return entry points ``varshaphal()``
+and ``varshaphal_chart()`` are also re-exported here.
 
 For the complete surface, use ``moira.facade``.
 """
@@ -241,6 +254,23 @@ from .shadbala import (
     validate_shadbala_output,
 )
 
+from .transits import varshaphal, varshaphal_chart
+from .varshaphal import (
+    TajikaAspectPolicy,
+    TajikaAspect,
+    TajikaYoga,
+    VarshaphalSahamDefinition,
+    VarshaphalSaham,
+    MunthaConditionProfile,
+    VarshaphalChart,
+    muntha,
+    tajika_aspects,
+    tajika_yogas,
+    muntha_condition_profile,
+    varshaphal_sahams,
+    build_varshaphal_chart,
+)
+
 
 # ── Build __all__ ────────────────────────────────────────────────────────
 
@@ -412,6 +442,22 @@ _VEDIC_OWN: list[str] = [
     "shadbala_condition_profile",
     "shadbala_chart_profile",
     "validate_shadbala_output",
+    # Vedic returns
+    "varshaphal",
+    "varshaphal_chart",
+    "TajikaAspectPolicy",
+    "TajikaAspect",
+    "TajikaYoga",
+    "VarshaphalSahamDefinition",
+    "VarshaphalSaham",
+    "MunthaConditionProfile",
+    "VarshaphalChart",
+    "muntha",
+    "tajika_aspects",
+    "tajika_yogas",
+    "muntha_condition_profile",
+    "varshaphal_sahams",
+    "build_varshaphal_chart",
 ]
 
 __all__ = list(_essentials_all) + _VEDIC_OWN

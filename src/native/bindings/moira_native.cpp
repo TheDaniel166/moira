@@ -787,22 +787,25 @@ py::tuple spk_chebyshev_series_bulk_evaluate_py(
         std::vector<double> rates_buffer(workload_size * component_count, 0.0);
         auto* r_out_ptr = rates_buffer.data();
 
-        for (size_t i = 0; i < workload_size; ++i) {
-            const int32_t record_index = indices[i];
-            if (record_index < 0 || static_cast<size_t>(record_index) >= record_count) {
-                throw std::runtime_error("Bulk evaluator record index is out of range");
-            }
-            spk_chebyshev_record_with_derivative_inplace(
-                coeffs + static_cast<size_t>(record_index) * record_stride,
-                coefficient_count, component_count, s_vec[i],
-                v_out_ptr + i * component_count,
-                r_out_ptr + i * component_count,
-                1, coefficient_count
-            );
-            
-            const double ds = ds_vec[i];
-            for (size_t j = 0; j < component_count; ++j) {
-                r_out_ptr[i * component_count + j] *= ds;
+        {
+            py::gil_scoped_release release;
+            for (size_t i = 0; i < workload_size; ++i) {
+                const int32_t record_index = indices[i];
+                if (record_index < 0 || static_cast<size_t>(record_index) >= record_count) {
+                    throw std::runtime_error("Bulk evaluator record index is out of range");
+                }
+                spk_chebyshev_record_with_derivative_inplace(
+                    coeffs + static_cast<size_t>(record_index) * record_stride,
+                    coefficient_count, component_count, s_vec[i],
+                    v_out_ptr + i * component_count,
+                    r_out_ptr + i * component_count,
+                    1, coefficient_count
+                );
+
+                const double ds = ds_vec[i];
+                for (size_t j = 0; j < component_count; ++j) {
+                    r_out_ptr[i * component_count + j] *= ds;
+                }
             }
         }
         return py::make_tuple(
@@ -810,17 +813,20 @@ py::tuple spk_chebyshev_series_bulk_evaluate_py(
             matrix_to_py_list(rates_buffer.data(), workload_size, component_count)
         );
     } else {
-        for (size_t i = 0; i < workload_size; ++i) {
-            const int32_t record_index = indices[i];
-            if (record_index < 0 || static_cast<size_t>(record_index) >= record_count) {
-                throw std::runtime_error("Bulk evaluator record index is out of range");
+        {
+            py::gil_scoped_release release;
+            for (size_t i = 0; i < workload_size; ++i) {
+                const int32_t record_index = indices[i];
+                if (record_index < 0 || static_cast<size_t>(record_index) >= record_count) {
+                    throw std::runtime_error("Bulk evaluator record index is out of range");
+                }
+                spk_chebyshev_record_inplace(
+                    coeffs + static_cast<size_t>(record_index) * record_stride,
+                    coefficient_count, component_count, s_vec[i],
+                    v_out_ptr + i * component_count,
+                    1, coefficient_count
+                );
             }
-            spk_chebyshev_record_inplace(
-                coeffs + static_cast<size_t>(record_index) * record_stride,
-                coefficient_count, component_count, s_vec[i],
-                v_out_ptr + i * component_count,
-                1, coefficient_count
-            );
         }
         return py::make_tuple(
             matrix_to_py_list(values_buffer.data(), workload_size, component_count),
@@ -970,7 +976,10 @@ PYBIND11_MODULE(_moira_native, m) {
     py::class_<IEvaluator, std::shared_ptr<IEvaluator>>(m, "IEvaluator")
         .def("evaluate", [](IEvaluator& self, double jd) {
             double res[6];
-            self.evaluate(jd, res);
+            {
+                py::gil_scoped_release release;
+                self.evaluate(jd, res);
+            }
             std::vector<double> out(res, res + 6);
             return vector_to_py_list(out);
         })
@@ -978,7 +987,10 @@ PYBIND11_MODULE(_moira_native, m) {
             size_t count = jds.size();
             std::vector<std::vector<double>> out(count, std::vector<double>(6));
             std::vector<double> flat(count * 6);
-            self.evaluate_batch(jds.data(), count, flat.data());
+            {
+                py::gil_scoped_release release;
+                self.evaluate_batch(jds.data(), count, flat.data());
+            }
             for (size_t i = 0; i < count; ++i) {
                 out[i].assign(flat.data() + i * 6, flat.data() + i * 6 + 6);
             }
@@ -991,7 +1003,10 @@ PYBIND11_MODULE(_moira_native, m) {
     py::class_<SpkSegmentEvaluator, std::shared_ptr<SpkSegmentEvaluator>, IEvaluator>(m, "SpkSegmentEvaluator")
         .def("position", [](const SpkSegmentEvaluator& self, double jd, double jd2) {
             double result[3];
-            self.position(jd, jd2, result);
+            {
+                py::gil_scoped_release release;
+                self.position(jd, jd2, result);
+            }
             py::list out;
             for (double value : result) out.append(value);
             return out;
@@ -999,7 +1014,10 @@ PYBIND11_MODULE(_moira_native, m) {
         .def("position_and_velocity", [](const SpkSegmentEvaluator& self, double jd, double jd2) {
             double position[3];
             double velocity[3];
-            self.position_and_velocity(jd, jd2, position, velocity);
+            {
+                py::gil_scoped_release release;
+                self.position_and_velocity(jd, jd2, position, velocity);
+            }
             py::list pos_out;
             py::list vel_out;
             for (double value : position) pos_out.append(value);
@@ -1012,31 +1030,71 @@ PYBIND11_MODULE(_moira_native, m) {
             return catalog_to_py_dict(self.catalog);
         })
         .def("load_segment_evaluator", [](NativeSpkKernelHandle& self, int32_t start_i, int32_t end_i, int32_t data_type) {
-            return self.get_segment_evaluator(start_i, end_i, data_type);
+            std::shared_ptr<SpkSegmentEvaluator> evaluator;
+            {
+                py::gil_scoped_release release;
+                evaluator = self.get_segment_evaluator(start_i, end_i, data_type);
+            }
+            return evaluator;
         })
         .def("batch_segment_position_and_velocity", [](NativeSpkKernelHandle& self, py::iterable specs, double jd, double jd2) {
-            py::list out;
+            struct SegmentRequestSpec {
+                int32_t start_i;
+                int32_t end_i;
+                int32_t data_type;
+            };
+
+            std::vector<SegmentRequestSpec> parsed_specs;
             for (py::handle spec_handle : specs) {
                 auto spec = py::cast<py::tuple>(spec_handle);
                 if (py::len(spec) != 3) {
                     throw std::runtime_error("segment spec must be a 3-tuple of (start_i, end_i, data_type)");
                 }
-                int32_t start_i = py::cast<int32_t>(spec[0]);
-                int32_t end_i = py::cast<int32_t>(spec[1]);
-                int32_t data_type = py::cast<int32_t>(spec[2]);
-                double position[3];
-                double velocity[3];
-                self.segment_position_and_velocity(start_i, end_i, data_type, jd, jd2, position, velocity);
+                parsed_specs.push_back(SegmentRequestSpec{
+                    py::cast<int32_t>(spec[0]),
+                    py::cast<int32_t>(spec[1]),
+                    py::cast<int32_t>(spec[2]),
+                });
+            }
+
+            std::vector<std::array<double, 3>> positions(parsed_specs.size());
+            std::vector<std::array<double, 3>> velocities(parsed_specs.size());
+            {
+                py::gil_scoped_release release;
+                for (size_t index = 0; index < parsed_specs.size(); ++index) {
+                    const SegmentRequestSpec& spec = parsed_specs[index];
+                    self.segment_position_and_velocity(
+                        spec.start_i,
+                        spec.end_i,
+                        spec.data_type,
+                        jd,
+                        jd2,
+                        positions[index].data(),
+                        velocities[index].data()
+                    );
+                }
+            }
+
+            py::list out;
+            for (size_t index = 0; index < parsed_specs.size(); ++index) {
                 py::list pos_out;
                 py::list vel_out;
-                for (double value : position) pos_out.append(value);
-                for (double value : velocity) vel_out.append(value);
+                for (double value : positions[index]) pos_out.append(value);
+                for (double value : velocities[index]) vel_out.append(value);
                 out.append(py::make_tuple(pos_out, vel_out));
             }
             return out;
         }, py::arg("specs"), py::arg("jd"), py::arg("jd2") = 0.0)
         .def("batch_segment_position_requests", [](NativeSpkKernelHandle& self, py::iterable requests) {
-            py::list out;
+            struct SegmentPositionRequest {
+                int32_t start_i;
+                int32_t end_i;
+                int32_t data_type;
+                double jd;
+                double jd2;
+            };
+
+            std::vector<SegmentPositionRequest> parsed_requests;
             for (py::handle request_handle : requests) {
                 auto request = py::cast<py::tuple>(request_handle);
                 if (py::len(request) != 4 && py::len(request) != 5) {
@@ -1045,13 +1103,33 @@ PYBIND11_MODULE(_moira_native, m) {
                         "or 5-tuple of (start_i, end_i, data_type, jd, jd2)"
                     );
                 }
-                int32_t start_i = py::cast<int32_t>(request[0]);
-                int32_t end_i = py::cast<int32_t>(request[1]);
-                int32_t data_type = py::cast<int32_t>(request[2]);
-                double jd = py::cast<double>(request[3]);
-                double jd2 = py::len(request) == 5 ? py::cast<double>(request[4]) : 0.0;
-                double position[3];
-                self.segment_position(start_i, end_i, data_type, jd, jd2, position);
+                parsed_requests.push_back(SegmentPositionRequest{
+                    py::cast<int32_t>(request[0]),
+                    py::cast<int32_t>(request[1]),
+                    py::cast<int32_t>(request[2]),
+                    py::cast<double>(request[3]),
+                    py::len(request) == 5 ? py::cast<double>(request[4]) : 0.0,
+                });
+            }
+
+            std::vector<std::array<double, 3>> positions(parsed_requests.size());
+            {
+                py::gil_scoped_release release;
+                for (size_t index = 0; index < parsed_requests.size(); ++index) {
+                    const SegmentPositionRequest& request = parsed_requests[index];
+                    self.segment_position(
+                        request.start_i,
+                        request.end_i,
+                        request.data_type,
+                        request.jd,
+                        request.jd2,
+                        positions[index].data()
+                    );
+                }
+            }
+
+            py::list out;
+            for (const auto& position : positions) {
                 py::list pos_out;
                 for (double value : position) pos_out.append(value);
                 out.append(pos_out);
@@ -1060,7 +1138,10 @@ PYBIND11_MODULE(_moira_native, m) {
         })
         .def("segment_position", [](NativeSpkKernelHandle& self, int32_t start_i, int32_t end_i, int32_t data_type, double jd, double jd2) {
             double result[3];
-            self.segment_position(start_i, end_i, data_type, jd, jd2, result);
+            {
+                py::gil_scoped_release release;
+                self.segment_position(start_i, end_i, data_type, jd, jd2, result);
+            }
             py::list out;
             for (double value : result) out.append(value);
             return out;
@@ -1068,14 +1149,20 @@ PYBIND11_MODULE(_moira_native, m) {
         .def("segment_position_and_velocity", [](NativeSpkKernelHandle& self, int32_t start_i, int32_t end_i, int32_t data_type, double jd, double jd2) {
             double position[3];
             double velocity[3];
-            self.segment_position_and_velocity(start_i, end_i, data_type, jd, jd2, position, velocity);
+            {
+                py::gil_scoped_release release;
+                self.segment_position_and_velocity(start_i, end_i, data_type, jd, jd2, position, velocity);
+            }
             py::list pos_out;
             py::list vel_out;
             for (double value : position) pos_out.append(value);
             for (double value : velocity) vel_out.append(value);
             return py::make_tuple(pos_out, vel_out);
         }, py::arg("start_i"), py::arg("end_i"), py::arg("data_type"), py::arg("jd"), py::arg("jd2") = 0.0)
-        .def("close", &NativeSpkKernelHandle::close);
+        .def("close", [](NativeSpkKernelHandle& self) {
+            py::gil_scoped_release release;
+            self.close();
+        });
 
     py::class_<NativePlanetaryEvaluator, std::shared_ptr<NativePlanetaryEvaluator>>(m, "NativePlanetaryEvaluator")
         .def(py::init<std::shared_ptr<NativeSpkKernelHandle>>())
@@ -1129,14 +1216,18 @@ PYBIND11_MODULE(_moira_native, m) {
                     }
                 }
 
-                const auto payloads = self.evaluate_all_planets_apparent_geocentric_ecliptic(
-                    bodies,
-                    public_specs,
-                    body_specs,
-                    jd_tt,
-                    obliquity_deg,
-                    rotation_matrix
-                );
+                std::vector<NativePlanetaryPayload> payloads;
+                {
+                    py::gil_scoped_release release;
+                    payloads = self.evaluate_all_planets_apparent_geocentric_ecliptic(
+                        bodies,
+                        public_specs,
+                        body_specs,
+                        jd_tt,
+                        obliquity_deg,
+                        rotation_matrix
+                    );
+                }
 
                 py::list out;
                 for (const NativePlanetaryPayload& payload : payloads) {
@@ -1443,7 +1534,10 @@ PYBIND11_MODULE(_moira_native, m) {
         size_t count = x.size();
         if (y.size() != count || z.size() != count) throw std::invalid_argument("LOLA: Coordinate vectors must have the same size");
         std::vector<double> ox(count), oy(count), oz(count);
-        lola::normalize_vectors_bulk(x.data(), y.data(), z.data(), ox.data(), oy.data(), oz.data(), count);
+        {
+            py::gil_scoped_release release;
+            lola::normalize_vectors_bulk(x.data(), y.data(), z.data(), ox.data(), oy.data(), oz.data(), count);
+        }
         return py::make_tuple(ox, oy, oz);
     }, py::arg("x"), py::arg("y"), py::arg("z"));
 
@@ -1451,7 +1545,10 @@ PYBIND11_MODULE(_moira_native, m) {
         size_t count = x.size();
         if (y.size() != count || z.size() != count) throw std::invalid_argument("LOLA: Coordinate vectors must have the same size");
         std::vector<double> results(count);
-        lola::dot_product_bulk(x.data(), y.data(), z.data(), reference, results.data(), count);
+        {
+            py::gil_scoped_release release;
+            lola::dot_product_bulk(x.data(), y.data(), z.data(), reference, results.data(), count);
+        }
         return results;
     }, py::arg("x"), py::arg("y"), py::arg("z"), py::arg("reference"));
 
@@ -1459,7 +1556,10 @@ PYBIND11_MODULE(_moira_native, m) {
         size_t count = x.size();
         if (y.size() != count || z.size() != count) throw std::invalid_argument("LOLA: Coordinate vectors must have the same size");
         std::vector<double> ox(count), oy(count), oz(count);
-        lola::cross_product_bulk(x.data(), y.data(), z.data(), reference, ox.data(), oy.data(), oz.data(), count);
+        {
+            py::gil_scoped_release release;
+            lola::cross_product_bulk(x.data(), y.data(), z.data(), reference, ox.data(), oy.data(), oz.data(), count);
+        }
         return py::make_tuple(ox, oy, oz);
     }, py::arg("x"), py::arg("y"), py::arg("z"), py::arg("reference"));
 
@@ -1467,7 +1567,10 @@ PYBIND11_MODULE(_moira_native, m) {
         size_t count = x_in.size();
         if (y_in.size() != count || z_in.size() != count) throw std::invalid_argument("LOLA: Coordinate vectors must have the same size");
         std::vector<double> ox(count), oy(count), oz(count);
-        lola::project_onto_plane_bulk(x_in.data(), y_in.data(), z_in.data(), plane_normal, ox.data(), oy.data(), oz.data(), count);
+        {
+            py::gil_scoped_release release;
+            lola::project_onto_plane_bulk(x_in.data(), y_in.data(), z_in.data(), plane_normal, ox.data(), oy.data(), oz.data(), count);
+        }
         return py::make_tuple(ox, oy, oz);
     }, py::arg("x_in"), py::arg("y_in"), py::arg("z_in"), py::arg("plane_normal"));
 
@@ -1475,7 +1578,10 @@ PYBIND11_MODULE(_moira_native, m) {
         size_t count = x.size();
         if (y.size() != count || z.size() != count) throw std::invalid_argument("LOLA: Coordinate vectors must have the same size");
         std::vector<double> lon(count), lat(count), rad(count);
-        lola::cartesian_to_spherical_bulk(x.data(), y.data(), z.data(), lon.data(), lat.data(), rad.data(), count);
+        {
+            py::gil_scoped_release release;
+            lola::cartesian_to_spherical_bulk(x.data(), y.data(), z.data(), lon.data(), lat.data(), rad.data(), count);
+        }
         return py::make_tuple(lon, lat, rad);
     }, py::arg("x"), py::arg("y"), py::arg("z"));
 
@@ -1483,27 +1589,36 @@ PYBIND11_MODULE(_moira_native, m) {
         size_t count = lon_deg.size();
         if (lat_deg.size() != count || radius_km.size() != count) throw std::invalid_argument("LOLA: Coordinate vectors must have the same size");
         std::vector<double> x(count), y(count), z(count);
-        lola::spherical_to_cartesian_bulk(lon_deg.data(), lat_deg.data(), radius_km.data(), x.data(), y.data(), z.data(), count);
+        {
+            py::gil_scoped_release release;
+            lola::spherical_to_cartesian_bulk(lon_deg.data(), lat_deg.data(), radius_km.data(), x.data(), y.data(), z.data(), count);
+        }
         return py::make_tuple(x, y, z);
     }, py::arg("lon_deg"), py::arg("lat_deg"), py::arg("radius_km"));
 
     m.def("normalize_longitude_bulk", [](const std::vector<double>& lon_deg) {
         std::vector<double> out = lon_deg;
-        lola::normalize_longitude_bulk(out.data(), out.size());
+        {
+            py::gil_scoped_release release;
+            lola::normalize_longitude_bulk(out.data(), out.size());
+        }
         return out;
     }, py::arg("lon_deg"));
 
     m.def("bin_by_position_angle", [](const std::vector<double>& pa_deg, double target_pa_deg, double bin_width_deg) {
+        py::gil_scoped_release release;
         return lola::bin_by_position_angle(pa_deg.data(), target_pa_deg, bin_width_deg, pa_deg.size());
     }, py::arg("pa_deg"), py::arg("target_pa_deg"), py::arg("bin_width_deg"));
 
     m.def("select_max_radius_per_bin", [](const std::vector<int>& bin_indices, const std::vector<double>& radius_km) {
         if (bin_indices.size() != radius_km.size()) throw std::invalid_argument("LOLA: bin_indices and radius_km must have the same size");
+        py::gil_scoped_release release;
         return lola::select_max_radius_per_bin(bin_indices.data(), radius_km.data(), bin_indices.size());
     }, py::arg("bin_indices"), py::arg("radius_km"));
 
     m.def("lexsort_by_bin_and_radius", [](const std::vector<int>& bin_indices, const std::vector<double>& radius_km) {
         if (bin_indices.size() != radius_km.size()) throw std::invalid_argument("LOLA: bin_indices and radius_km must have the same size");
+        py::gil_scoped_release release;
         return lola::lexsort_by_bin_and_radius(bin_indices.data(), radius_km.data(), bin_indices.size());
     }, py::arg("bin_indices"), py::arg("radius_km"));
 
@@ -1588,6 +1703,7 @@ PYBIND11_MODULE(_moira_native, m) {
            const std::vector<int>&    harmonics,
            bool                       raw_sum)
         {
+            py::gil_scoped_release release;
             return harmogram_compute_components(longitudes_deg, harmonics, raw_sum);
         },
         py::arg("longitudes_deg"), py::arg("harmonics"), py::arg("raw_sum"),
@@ -1605,11 +1721,15 @@ PYBIND11_MODULE(_moira_native, m) {
            const std::vector<int>&                 harmonics,
            const std::vector<std::tuple<int, double, double>>& intensity_components)
         {
-            auto res = harmogram_trace_batch(
-                samples_source_lons, samples_target_lons,
-                same_source_target, ordered, include_self, raw_sum,
-                h0_contribution, harmonics, intensity_components
-            );
+            HarmogramBatchResult res;
+            {
+                py::gil_scoped_release release;
+                res = harmogram_trace_batch(
+                    samples_source_lons, samples_target_lons,
+                    same_source_target, ordered, include_self, raw_sum,
+                    h0_contribution, harmonics, intensity_components
+                );
+            }
             return py::make_tuple(res.total_strengths, res.sample_components);
         },
         py::arg("samples_source_lons"),
@@ -1637,11 +1757,16 @@ PYBIND11_MODULE(_moira_native, m) {
            double                    gaussian_width_deg,
            bool                      gaussian_fwhm_mode)
         {
-            auto [h0_amp, comps] = harmogram_intensity_components(
-                harmonic_number, harmonic_start, harmonic_stop,
-                sample_count, orb_mode, orb_width_deg, include_conjunction,
-                orb_scaling_mode, gaussian_width_deg, gaussian_fwhm_mode
-            );
+            std::tuple<double, std::vector<std::tuple<int, double, double>>> result;
+            {
+                py::gil_scoped_release release;
+                result = harmogram_intensity_components(
+                    harmonic_number, harmonic_start, harmonic_stop,
+                    sample_count, orb_mode, orb_width_deg, include_conjunction,
+                    orb_scaling_mode, gaussian_width_deg, gaussian_fwhm_mode
+                );
+            }
+            auto [h0_amp, comps] = result;
             return py::make_tuple(h0_amp, comps);
         },
         py::arg("harmonic_number"),

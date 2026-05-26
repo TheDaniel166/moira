@@ -284,6 +284,68 @@ def test_moira_solar_return_chart_delegates_to_predictive_wrapper(monkeypatch) -
     assert seen["kwargs"]["reader"] is engine._reader
 
 
+def test_moira_varshaphal_chart_delegates_to_predictive_wrapper(monkeypatch) -> None:
+    seen: dict[str, object] = {}
+    fake_chart = object()
+
+    def fake_varshaphal_chart(*args, **kwargs):
+        seen["args"] = args
+        seen["kwargs"] = kwargs
+        return fake_chart
+
+    monkeypatch.setattr(facade, "varshaphal_chart", fake_varshaphal_chart)
+
+    engine = facade.Moira()
+    result = engine.varshaphal_chart(
+        2451545.0,
+        2026,
+        40.7128,
+        -74.0060,
+        ayanamsa_system=facade.Ayanamsa.KRISHNAMURTI,
+        system=facade.HouseSystem.WHOLE_SIGN,
+        bodies=[facade.Body.SUN],
+    )
+
+    assert result is fake_chart
+    assert seen["args"] == (2451545.0, 2026, 40.7128, -74.0060)
+    assert seen["kwargs"]["ayanamsa_system"] == facade.Ayanamsa.KRISHNAMURTI
+    assert seen["kwargs"]["house_system"] == facade.HouseSystem.WHOLE_SIGN
+    assert seen["kwargs"]["bodies"] == [facade.Body.SUN]
+    assert seen["kwargs"]["reader"] is engine._reader
+
+
+def test_moira_build_varshaphal_chart_delegates_to_predictive_wrapper(monkeypatch) -> None:
+    seen: dict[str, object] = {}
+    fake_bundle = object()
+
+    def fake_build_varshaphal_chart(*args, **kwargs):
+        seen["args"] = args
+        seen["kwargs"] = kwargs
+        return fake_bundle
+
+    monkeypatch.setattr(facade, "build_varshaphal_chart", fake_build_varshaphal_chart)
+
+    engine = facade.Moira()
+    result = engine.build_varshaphal_chart(
+        2451545.0,
+        12.0,
+        77.0,
+        2026,
+        28.6,
+        77.2,
+        ayanamsa_system=facade.Ayanamsa.KRISHNAMURTI,
+        system=facade.HouseSystem.WHOLE_SIGN,
+        bodies=[facade.Body.SUN],
+    )
+
+    assert result is fake_bundle
+    assert seen["args"] == (2451545.0, 12.0, 77.0, 2026, 28.6, 77.2)
+    assert seen["kwargs"]["ayanamsa_system"] == facade.Ayanamsa.KRISHNAMURTI
+    assert seen["kwargs"]["house_system"] == facade.HouseSystem.WHOLE_SIGN
+    assert seen["kwargs"]["bodies"] == [facade.Body.SUN]
+    assert seen["kwargs"]["reader"] is engine._reader
+
+
 def test_moira_decennials_delegates_to_timelord_wrapper(monkeypatch) -> None:
     seen: dict[str, object] = {}
     fake_periods = object()

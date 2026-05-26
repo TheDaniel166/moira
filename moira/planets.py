@@ -26,6 +26,21 @@ External dependency assumptions:
       get_active_reader().
     - Native and jplephem-backed reader paths are both valid; planets.py does
       not require one specific reader backend at import time.
+
+Substrate numerical boundary:
+    The Python fallback path and the native C++ path (_moira_native) are not
+    required to produce bit-identical results.  The C++ compiler may emit
+    Fused Multiply-Add (FMA) instructions or use extended-precision registers
+    that group floating-point additions differently from the sequential Python
+    loops (e.g. _prefill_npe_public_vector_cache, _npe_batch_barycentric_positions).
+    Because floating-point addition is non-associative, these differences are
+    irreducible without disabling hardware-level optimisations that exist for
+    legitimate performance reasons.  The resulting discrepancy is at the
+    micro-arcsecond level — well within the interpolation noise of any SPK
+    segment — and carries no astrological significance.  Callers that require
+    reproducible cross-substrate agreement should always pin to one execution
+    path via the reader backend selection, not rely on numerical identity
+    between the two paths.
 """
 
 from __future__ import annotations
@@ -167,8 +182,15 @@ class PlanetData:
         """Longitude within sign as (degrees, minutes, seconds)."""
         d = self.sign_degree
         deg = int(d)
-        m   = int((d - deg) * 60)
-        s   = ((d - deg) * 60 - m) * 60
+        min_frac = (d - deg) * 60
+        m = int(min_frac)
+        s = round((min_frac - m) * 60, 9)
+        if s >= 60.0:
+            s = 0.0
+            m += 1
+            if m >= 60:
+                m = 0
+                deg += 1
         return deg, m, s
 
     @property
@@ -527,18 +549,21 @@ def _cached_planet_call_context(
     """
     Return cached TT/context state for repeated same-reader same-JD lookups.
 
-    This is intentionally narrow: it only admits the default Delta-T path so
-    that the cache key stays exact without introducing policy ambiguity.
+    DeltaTPolicy is frozen=True and therefore hashable; it is included in the
+    cache key so that custom-policy callers benefit from caching equally.
     """
-    if not apparent or delta_t_policy is not None:
+    if not apparent:
         return None
     cache = _reader_planet_call_cache(reader)
     if cache is None:
         return None
-    key = (jd_ut, apparent, nutation)
+    key = (jd_ut, apparent, nutation, delta_t_policy)
     state = cache.get(key)
     if state is not None:
-        cache.move_to_end(key)
+        try:
+            cache.move_to_end(key)
+        except KeyError:
+            pass  # key evicted by a concurrent writer between get() and move_to_end()
     return state
 
 
@@ -550,6 +575,7 @@ def _store_planet_call_context(
     apparent: bool,
     nutation: bool,
     context: _ApparentContext,
+    delta_t_policy: 'DeltaTPolicy | None',
 ) -> None:
     """Store repeated same-JD single-body setup on the live reader with a tiny LRU law."""
     if not apparent:
@@ -557,9 +583,12 @@ def _store_planet_call_context(
     cache = _reader_planet_call_cache(reader)
     if cache is None:
         return
-    key = (jd_ut, apparent, nutation)
+    key = (jd_ut, apparent, nutation, delta_t_policy)
     cache[key] = (jd_tt, context)
-    cache.move_to_end(key)
+    try:
+        cache.move_to_end(key)
+    except KeyError:
+        pass  # key evicted by a concurrent reader between setitem and move_to_end()
     while len(cache) > _APPARENT_CONTEXT_CACHE_LIMIT:
         cache.popitem(last=False)
 
@@ -580,7 +609,10 @@ def _cached_apparent_context(
     key = (jd_tt, apparent, nutation)
     context = cache.get(key)
     if context is not None:
-        cache.move_to_end(key)
+        try:
+            cache.move_to_end(key)
+        except KeyError:
+            pass  # key evicted by a concurrent writer between get() and move_to_end()
     return context
 
 
@@ -600,7 +632,10 @@ def _store_apparent_context(
         return
     key = (jd_tt, apparent, nutation)
     cache[key] = context
-    cache.move_to_end(key)
+    try:
+        cache.move_to_end(key)
+    except KeyError:
+        pass  # key evicted by a concurrent reader between setitem and move_to_end()
     while len(cache) > _APPARENT_CONTEXT_CACHE_LIMIT:
         cache.popitem(last=False)
 
@@ -684,7 +719,14 @@ def _prefill_npe_public_vector_cache(
     vector_cache: _VectorCache,
     pair_states: dict[tuple[int, int], tuple[Vec3, Vec3]],
 ) -> None:
-    """Prime the existing planetary cache law from one native batch segment read."""
+    """
+    Prime the existing planetary cache law from one native batch segment read.
+
+    Summation order note: barycentric positions are accumulated via sequential
+    vec_add calls.  The C++ path may group the same additions differently (or
+    use FMA), so this path is not guaranteed to be bit-identical to the native
+    evaluator.  See the module-level substrate numerical boundary note.
+    """
     ssb_sun = pair_states[(0, 10)]
     ssb_emb = pair_states[(0, 3)]
     emb_earth = pair_states[(3, 399)]
@@ -1786,7 +1828,7 @@ def planet_at(
     elif context is not None:
         _vector_cache = context.vector_cache
 
-    if built_context and context is not None and delta_t_policy is None:
+    if built_context and context is not None:
         _store_planet_call_context(
             reader,
             jd_ut=jd_ut,
@@ -1794,6 +1836,7 @@ def planet_at(
             apparent=apparent,
             nutation=nutation,
             context=context,
+            delta_t_policy=delta_t_policy,
         )
 
     if (

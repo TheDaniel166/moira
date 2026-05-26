@@ -12,9 +12,9 @@ Usage
     from moira.predictive import *
 
     # Everything from classical is included, plus:
-    transits   = find_transits(chart.jd, chart.jd + 365.25, Body.SATURN, natal_lon)
+    transits   = find_transits(Body.SATURN, natal_lon, chart.jd_ut, chart.jd_ut + 365.25)
     progressed = secondary_progression(natal_jd, transit_jd)
-    sr         = solar_return(natal_jd, 2026)
+    sr         = solar_return(chart.planets[Body.SUN].longitude, 2026)
 
 Next step
 ---------
@@ -46,7 +46,7 @@ from .transits import (
     TransitEvent, IngressEvent,
     next_transit, find_transits, find_ingresses,
     next_ingress, next_ingress_into,
-    solar_return, solar_return_chart, lunar_return,
+    solar_return, solar_return_chart, varshaphal, varshaphal_chart, lunar_return,
     last_new_moon, last_full_moon, prenatal_syzygy,
     planet_return,
     transit_relations, ingress_relations,
@@ -173,6 +173,48 @@ from .orbits import KeplerianElements, DistanceExtremes, orbital_elements_at, di
 
 # ── Planetary nodes / apsides ────────────────────────────────────────────
 from .planetary_nodes import OrbitalNode, planetary_node, all_planetary_nodes
+from .batch import (
+    PlanetTimeSeries,
+    BatchFailure,
+    ChartBatchRequest,
+    ChartBatchResult,
+    EventBatchRequest,
+    EventBatchResult,
+    ReturnBatchRequest,
+    ReturnBatchResult,
+    TransitBatchRequest,
+    TransitBatchResult,
+    ProgressionBatchRequest,
+    ProgressionBatchResult,
+    BodyVoidWindow,
+    BodyVoidWindows,
+    BATCH_EVENT_KINDS,
+    BATCH_RETURN_KINDS,
+    BATCH_PROGRESSION_TECHNIQUES,
+    planet_time_series,
+    batch_charts,
+    batch_events,
+    batch_transits,
+    batch_returns,
+    batch_progressions,
+    find_all_ingresses,
+    void_periods_all_planets,
+)
+from .varshaphal import (
+    TajikaAspectPolicy,
+    TajikaAspect,
+    TajikaYoga,
+    VarshaphalSahamDefinition,
+    VarshaphalSaham,
+    MunthaConditionProfile,
+    VarshaphalChart,
+    muntha,
+    tajika_aspects,
+    tajika_yogas,
+    muntha_condition_profile,
+    varshaphal_sahams,
+    build_varshaphal_chart,
+)
 
 
 # ── Build __all__ ────────────────────────────────────────────────────────
@@ -193,12 +235,15 @@ _PREDICTIVE_OWN: list[str] = [
     "TransitEvent", "IngressEvent",
     "next_transit", "find_transits", "find_ingresses",
     "next_ingress", "next_ingress_into",
-    "solar_return", "solar_return_chart", "lunar_return",
+    "solar_return", "solar_return_chart", "varshaphal", "varshaphal_chart", "lunar_return",
     "last_new_moon", "last_full_moon", "prenatal_syzygy",
     "planet_return",
     "transit_relations", "ingress_relations",
     "transit_condition_profiles", "ingress_condition_profiles",
     "transit_chart_condition_profile", "transit_condition_network_profile",
+    "TajikaAspectPolicy", "TajikaAspect", "TajikaYoga",
+    "VarshaphalSahamDefinition", "VarshaphalSaham", "MunthaConditionProfile", "VarshaphalChart",
+    "muntha", "tajika_aspects", "tajika_yogas", "muntha_condition_profile", "varshaphal_sahams", "build_varshaphal_chart",
     # Progressions
     "ProgressionDoctrineTruth", "ProgressionComputationTruth",
     "ProgressionDoctrineClassification", "ProgressionComputationClassification",
@@ -289,6 +334,18 @@ _PREDICTIVE_OWN: list[str] = [
     "orbital_elements_at", "distance_extremes_at",
     # Planetary nodes
     "OrbitalNode", "planetary_node", "all_planetary_nodes",
+    # Batch assembly
+    "PlanetTimeSeries", "BatchFailure", "ChartBatchRequest", "ChartBatchResult",
+    "EventBatchRequest", "EventBatchResult",
+    "ReturnBatchRequest", "ReturnBatchResult",
+    "TransitBatchRequest", "TransitBatchResult",
+    "ProgressionBatchRequest", "ProgressionBatchResult",
+    "BodyVoidWindow", "BodyVoidWindows", "BATCH_EVENT_KINDS",
+    "BATCH_RETURN_KINDS",
+    "BATCH_PROGRESSION_TECHNIQUES",
+    "planet_time_series", "batch_charts", "batch_events", "batch_transits",
+    "batch_returns",
+    "batch_progressions", "find_all_ingresses", "void_periods_all_planets",
 ]
 
 __all__ = list(_classical_all) + _PREDICTIVE_OWN

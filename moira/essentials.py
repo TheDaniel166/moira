@@ -14,7 +14,7 @@ Usage
     for body, data in chart.planets.items():
         print(body, data.longitude)
 
-    houses = m.houses(chart.jd, latitude=51.5, longitude=-0.1)
+    houses = m.houses(chart.jd_ut, latitude=51.5, longitude=-0.1)
     print(houses.asc, houses.mc)
 
     aspects = m.aspects(chart)

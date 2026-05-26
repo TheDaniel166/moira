@@ -2,6 +2,7 @@
 #define MOIRA_NATIVE_EVALUATORS_HPP
 
 #include <cstdint>
+#include <mutex>
 #include <vector>
 #include <memory>
 #include "interpolation.hpp"
@@ -19,6 +20,7 @@ class IEvaluator {
 protected:
     mutable double last_jd = -1.0;
     mutable double last_result[6];
+    mutable std::mutex cache_mutex;
 
 public:
     virtual ~IEvaluator() = default;
@@ -27,13 +29,21 @@ public:
      * @brief THEOREM: Single JD evaluation with 1-element cache.
      */
     void evaluate(double jd, double* result) const {
-        if (jd == last_jd) {
-            for (int i = 0; i < 6; ++i) result[i] = last_result[i];
-            return;
+        {
+            std::lock_guard<std::mutex> lock(cache_mutex);
+            if (jd == last_jd) {
+                for (int i = 0; i < 6; ++i) result[i] = last_result[i];
+                return;
+            }
         }
+
         compute(jd, result);
-        last_jd = jd;
-        for (int i = 0; i < 6; ++i) last_result[i] = result[i];
+
+        {
+            std::lock_guard<std::mutex> lock(cache_mutex);
+            for (int i = 0; i < 6; ++i) last_result[i] = result[i];
+            last_jd = jd;
+        }
     }
 
     /**

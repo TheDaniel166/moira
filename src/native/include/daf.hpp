@@ -500,6 +500,9 @@ public:
         int32_t end_i,
         int32_t data_type
     ) {
+        if (closed_) {
+            throw std::runtime_error("native SPK kernel handle is closed");
+        }
         return read_spk_chebyshev_segment_payload(
             file,
             start_i,
@@ -517,6 +520,9 @@ public:
     ) {
         const SegmentCacheKey key{start_i, end_i, data_type};
         std::lock_guard<std::mutex> guard(cache_mutex);
+        if (closed_) {
+            throw std::runtime_error("native SPK kernel handle is closed");
+        }
         auto it = segment_cache.find(key);
         if (it != segment_cache.end()) {
             return it->second;
@@ -585,13 +591,15 @@ public:
     }
 
     void close() {
-        {
-            std::lock_guard<std::mutex> guard(cache_mutex);
-            segment_cache.clear();
+        std::lock_guard<std::mutex> guard(cache_mutex);
+        if (closed_) {
+            return;
         }
+        segment_cache.clear();
         if (file.is_open()) {
             file.close();
         }
+        closed_ = true;
     }
 
     std::string path;
@@ -600,6 +608,7 @@ public:
 
 private:
     std::mutex cache_mutex;
+    bool closed_ = false;
     std::unordered_map<SegmentCacheKey, std::shared_ptr<SpkSegmentEvaluator>, SegmentCacheKeyHash> segment_cache;
 };
 

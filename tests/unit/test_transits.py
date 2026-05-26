@@ -53,6 +53,8 @@ from moira.transits import (
     prenatal_syzygy,
     solar_return,
     solar_return_chart,
+    varshaphal,
+    varshaphal_chart,
     transit_chart_condition_profile,
     transit_condition_network_profile,
     transit_condition_profiles,
@@ -150,6 +152,109 @@ def test_solar_return_chart_delegates_to_return_search_and_chart_assembly(
 
     assert result == {"jd_ut": 2460123.25, "latitude": 40.7128, "longitude": -74.0060}
     assert captured["return_args"] == (123.45, 2026)
+    assert captured["return_reader"] is fake_reader
+    assert captured["return_policy"] is return_policy
+    assert captured["chart_args"] == (2460123.25, 40.7128, -74.0060)
+
+
+def test_varshaphal_refines_sidereal_return_from_tropical_seed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    birth_jd = 2451545.0
+    jd_seed = 2461000.0
+
+    class _Planet:
+        def __init__(self, longitude: float):
+            self.longitude = longitude
+
+    def _fake_solar_return(
+        natal_sun_lon: float,
+        year: int,
+        reader: object | None = None,
+        policy: object | None = None,
+    ) -> float:
+        assert natal_sun_lon == pytest.approx(100.0)
+        assert year == 2026
+        return jd_seed
+
+    def _fake_planet_at(body: str, jd: float, reader: object | None = None) -> _Planet:
+        assert body == Body.SUN
+        if abs(jd - birth_jd) < 1e-9:
+            return _Planet(100.0)
+        return _Planet(99.0 + (jd - jd_seed))
+
+    def _fake_tropical_to_sidereal(
+        longitude: float,
+        jd: float,
+        system: str = "Lahiri",
+    ) -> float:
+        if abs(jd - birth_jd) < 1e-9:
+            return longitude - 20.0
+        return longitude - (20.0 - (jd - jd_seed))
+
+    monkeypatch.setattr(transits_module, "solar_return", _fake_solar_return)
+    monkeypatch.setattr(transits_module, "planet_at", _fake_planet_at)
+    monkeypatch.setattr(transits_module, "tropical_to_sidereal", _fake_tropical_to_sidereal)
+
+    result = varshaphal(birth_jd, 2026)
+
+    assert result == pytest.approx(jd_seed + 0.5, abs=1e-6)
+
+
+def test_varshaphal_chart_delegates_to_varshaphal_and_chart_assembly(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, object] = {}
+
+    def _fake_varshaphal(
+        birth_jd: float,
+        year: int,
+        ayanamsa_system: str = "Lahiri",
+        reader: object | None = None,
+        policy: object | None = None,
+    ) -> float:
+        captured["return_args"] = (birth_jd, year, ayanamsa_system)
+        captured["return_reader"] = reader
+        captured["return_policy"] = policy
+        return 2460123.25
+
+    def _fake_create_chart(
+        jd_ut: float,
+        latitude: float,
+        longitude: float,
+        house_system: str,
+        bodies: list[str] | None = None,
+        reader: object | None = None,
+        policy: object | None = None,
+    ) -> object:
+        captured["chart_args"] = (jd_ut, latitude, longitude)
+        captured["house_system"] = house_system
+        captured["bodies"] = bodies
+        captured["chart_reader"] = reader
+        captured["house_policy"] = policy
+        return {"jd_ut": jd_ut, "latitude": latitude, "longitude": longitude}
+
+    monkeypatch.setattr(transits_module, "varshaphal", _fake_varshaphal)
+    monkeypatch.setattr(transits_module, "create_chart", _fake_create_chart)
+
+    fake_reader = object()
+    return_policy = object()
+    house_policy = object()
+    result = varshaphal_chart(
+        2451545.0,
+        2026,
+        40.7128,
+        -74.0060,
+        ayanamsa_system="Krishnamurti",
+        house_system="W",
+        bodies=[Body.SUN, Body.MOON],
+        reader=fake_reader,
+        return_policy=return_policy,
+        house_policy=house_policy,
+    )
+
+    assert result == {"jd_ut": 2460123.25, "latitude": 40.7128, "longitude": -74.0060}
+    assert captured["return_args"] == (2451545.0, 2026, "Krishnamurti")
     assert captured["return_reader"] is fake_reader
     assert captured["return_policy"] is return_policy
     assert captured["chart_args"] == (2460123.25, 40.7128, -74.0060)

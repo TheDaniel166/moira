@@ -313,8 +313,9 @@ def _star_anchored_ayanamsa(system: str, jd: float) -> float:
         # Star not in catalog or registry absent — fall back to polynomial
         base = _AYANAMSA_AT_J2000[system]
         jd_tt = ut_to_tt(jd)
+        extra_drift = _AYANAMSA_DRIFT_PER_CENTURY.get(system, 0.0) * centuries_from_j2000(jd_tt)
         dpsi_deg, _ = nutation(jd_tt)
-        return base + general_precession_in_longitude(jd_tt) + dpsi_deg
+        return base + general_precession_in_longitude(jd_tt) + extra_drift + dpsi_deg
 
 
 def ayanamsa(

@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import math
 from datetime import datetime, timezone
+from types import SimpleNamespace
 
 import pytest
 
+import moira.progressions as progressions_module
 from moira import Body
 from moira.constants import HouseSystem, sign_of
 from moira.coordinates import ecliptic_to_equatorial, equatorial_to_ecliptic
@@ -749,6 +751,28 @@ def test_malformed_progression_inputs_fail_deterministically() -> None:
         secondary_progression(2451545.0, target_dt, bodies=[Body.SUN, Body.SUN])
     with pytest.raises(ValueError, match="bodies must contain non-empty strings"):
         secondary_progression(2451545.0, target_dt, bodies=[""])
+    with pytest.raises(ValueError, match="bodies contains unsupported body name 'FakePlanet'"):
+        secondary_progression(2451545.0, target_dt, bodies=["FakePlanet"])
+
+
+def test_secondary_progression_admits_small_body_names(monkeypatch: pytest.MonkeyPatch) -> None:
+    target_dt = datetime(2001, 1, 1, tzinfo=timezone.utc)
+    seen: dict[str, object] = {}
+
+    def fake_all_planets_at(jd_ut: float, bodies: list[str] | None = None, reader=None):
+        seen["jd_ut"] = jd_ut
+        seen["bodies"] = list(bodies or [])
+        return {
+            name: SimpleNamespace(longitude=10.0, speed=0.1, retrograde=False)
+            for name in (bodies or [])
+        }
+
+    monkeypatch.setattr(progressions_module, "all_planets_at", fake_all_planets_at)
+
+    chart = secondary_progression(2451545.0, target_dt, bodies=["Ceres", "Halley"])
+
+    assert seen["bodies"] == ["Ceres", "Halley"]
+    assert list(chart.positions) == ["Ceres", "Halley"]
 
 
 def test_invalid_house_frame_inputs_fail_clearly() -> None:
@@ -1501,8 +1525,38 @@ def test_planetary_arc_rejects_invalid_body_name() -> None:
     natal_jd = jd_from_datetime(natal_dt)
     target_dt = datetime(2020, 1, 1, 6, 0, tzinfo=timezone.utc)
 
-    with pytest.raises(ValueError, match="arc_body must be a recognised planet name"):
+    with pytest.raises(ValueError, match="arc_body must be a recognised supported body name"):
         planetary_arc(natal_jd, target_dt, arc_body="FakePlanet")
+
+
+def test_planetary_arc_admits_comet_arc_body(monkeypatch: pytest.MonkeyPatch) -> None:
+    natal_dt = datetime(1990, 1, 1, 6, 0, tzinfo=timezone.utc)
+    natal_jd = jd_from_datetime(natal_dt)
+    target_dt = datetime(2020, 1, 1, 6, 0, tzinfo=timezone.utc)
+
+    calls: list[tuple[str, float]] = []
+
+    def fake_planet_at(body: str, jd_ut: float, reader=None):
+        calls.append((body, jd_ut))
+        longitude = 15.0 if len(calls) == 1 else 42.0
+        return SimpleNamespace(longitude=longitude)
+
+    def fake_uniform_longitude_direction(**kwargs):
+        return SimpleNamespace(
+            chart_type=kwargs["chart_type"],
+            positions={name: None for name in kwargs["bodies"]},
+            solar_arc_deg=kwargs["arc_deg"],
+        )
+
+    monkeypatch.setattr(progressions_module, "planet_at", fake_planet_at)
+    monkeypatch.setattr(progressions_module, "_uniform_longitude_direction", fake_uniform_longitude_direction)
+
+    chart = planetary_arc(natal_jd, target_dt, arc_body="Halley", bodies=["Sun", "Halley"])
+
+    assert calls[0][0] == "Halley"
+    assert calls[1][0] == "Halley"
+    assert chart.chart_type == "Planetary Arc Direction (Halley)"
+    assert list(chart.positions) == ["Sun", "Halley"]
 
 
 # ---------------------------------------------------------------------------

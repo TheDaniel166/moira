@@ -57,7 +57,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
     "scope": "class",
     "id": "moira._facade_predictive.PredictiveFacadeMixin",
     "risk": "medium",
-    "api": {"frozen": ["progression", "transits", "solar_return", "solar_return_chart", "lunar_return", "station", "planetary_hours"], "internal": []},
+    "api": {"frozen": ["progression", "transits", "solar_return", "solar_return_chart", "varshaphal", "varshaphal_chart", "build_varshaphal_chart", "lunar_return", "station", "planetary_hours"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -565,6 +565,84 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
             house_policy=house_policy,
         )
 
+    def varshaphal(
+        self,
+        birth_jd: float,
+        year: int,
+        ayanamsa_system: str | None = None,
+    ) -> float:
+        """Find the exact sidereal solar return JD for a Varshaphal year."""
+        facade = _facade_module()
+        system = facade.Ayanamsa.LAHIRI if ayanamsa_system is None else ayanamsa_system
+        return facade.varshaphal(
+            birth_jd,
+            year,
+            ayanamsa_system=system,
+            reader=self._reader,
+        )
+
+    def varshaphal_chart(
+        self,
+        birth_jd: float,
+        year: int,
+        latitude: float,
+        longitude: float,
+        ayanamsa_system: str | None = None,
+        system: str | None = None,
+        bodies: list[str] | None = None,
+        house_policy: Any | None = None,
+        return_policy: Any | None = None,
+    ):
+        """Construct the chart for the exact sidereal solar return at a site."""
+        facade = _facade_module()
+        ayanamsa = facade.Ayanamsa.LAHIRI if ayanamsa_system is None else ayanamsa_system
+        house_system = HouseSystem.PLACIDUS if system is None else system
+        return facade.varshaphal_chart(
+            birth_jd,
+            year,
+            latitude,
+            longitude,
+            ayanamsa_system=ayanamsa,
+            house_system=house_system,
+            bodies=bodies,
+            reader=self._reader,
+            return_policy=return_policy,
+            house_policy=house_policy,
+        )
+
+    def build_varshaphal_chart(
+        self,
+        birth_jd: float,
+        natal_latitude: float,
+        natal_longitude: float,
+        year: int,
+        latitude: float,
+        longitude: float,
+        ayanamsa_system: str | None = None,
+        system: str | None = None,
+        bodies: list[str] | None = None,
+        house_policy: Any | None = None,
+        return_policy: Any | None = None,
+    ):
+        """Build a structured Varshaphal doctrine vessel with Muntha and Sahams."""
+        facade = _facade_module()
+        ayanamsa = facade.Ayanamsa.LAHIRI if ayanamsa_system is None else ayanamsa_system
+        house_system = HouseSystem.PLACIDUS if system is None else system
+        return facade.build_varshaphal_chart(
+            birth_jd,
+            natal_latitude,
+            natal_longitude,
+            year,
+            latitude,
+            longitude,
+            ayanamsa_system=ayanamsa,
+            house_system=house_system,
+            bodies=bodies,
+            reader=self._reader,
+            return_policy=return_policy,
+            house_policy=house_policy,
+        )
+
     def lunar_return(self, natal_moon_lon: float, jd_start: float) -> float:
         """Find the next Lunar Return after jd_start."""
         return _facade_module().lunar_return(
@@ -613,3 +691,27 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
             longitude,
             reader=self._reader,
         )
+
+    def batch_charts(self, requests):
+        """Build many Chart vessels from explicit chart batch requests."""
+        facade = _facade_module()
+        return facade.batch_charts(requests, reader=self._reader)
+
+    def batch_transits(self, requests):
+        """Run many transit searches while preserving request order."""
+        return _facade_module().batch_transits(requests, reader=self._reader)
+
+    def batch_events(self, requests):
+        """Run many predictive event searches across the public event family."""
+        return _facade_module().batch_events(requests, reader=self._reader)
+
+    def batch_returns(self, requests):
+        """Run many scalar return searches across the public return family."""
+        return _facade_module().batch_returns(requests, reader=self._reader)
+
+    def batch_progressions(
+        self,
+        requests,
+    ):
+        """Run many progression requests across the public progression family."""
+        return _facade_module().batch_progressions(requests, reader=self._reader)

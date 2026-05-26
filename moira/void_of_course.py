@@ -177,6 +177,8 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
+from .asteroids import ASTEROID_NAIF, asteroid_at
+from .comets import COMET_NAIF, comet_at
 from .constants import Body, SIGNS, sign_of
 from .planets import planet_at
 from .spk_reader import get_reader, SpkReader
@@ -368,19 +370,70 @@ class VoidOfCourseEngine:
         """Return all VOC windows overlapping the range."""
         return void_periods_in_range(jd_start, jd_end, self._reader, self._modern)
 
+def _body_longitude(body: str, jd: float, reader: SpkReader) -> float:
+    """Geocentric ecliptic longitude of a supported moving body in [0, 360)."""
+    canonical_planet = next(
+        (candidate for candidate in Body.ALL_PLANETS if candidate.lower() == body.lower()),
+        None,
+    )
+    if canonical_planet is not None:
+        return planet_at(canonical_planet, jd, reader=reader).longitude % 360.0
+
+    asteroid_match = next(
+        (candidate for candidate in ASTEROID_NAIF if candidate.lower() == body.lower()),
+        None,
+    )
+    if asteroid_match is not None:
+        return asteroid_at(asteroid_match, jd, reader=reader).longitude % 360.0
+
+    comet_match = next(
+        (candidate for candidate in COMET_NAIF if candidate.lower() == body.lower()),
+        None,
+    )
+    if comet_match is not None:
+        return comet_at(comet_match, jd, reader=reader).longitude % 360.0
+
+    raise ValueError(f"_body_longitude: unsupported body {body!r}")
+
+
 def _moon_longitude(jd: float, reader: SpkReader) -> float:
     """Geocentric ecliptic longitude of the Moon in [0, 360)."""
-    return planet_at(Body.MOON, jd, reader=reader).longitude % 360.0
+    return _body_longitude(Body.MOON, jd, reader)
 
 
 def _planet_longitude(body: str, jd: float, reader: SpkReader) -> float:
     """Geocentric ecliptic longitude of a planet in [0, 360)."""
-    return planet_at(body, jd, reader=reader).longitude % 360.0
+    return _body_longitude(body, jd, reader)
 
 
 def _moon_sign_index(jd: float, reader: SpkReader) -> int:
     """Return the 0-based zodiac sign index (0=Aries … 11=Pisces) for the Moon."""
     return int(_moon_longitude(jd, reader) // 30.0)
+
+
+def _body_sign_index(body: str, jd: float, reader: SpkReader) -> int:
+    """Return the 0-based zodiac sign index for a supported moving body."""
+    return int(_body_longitude(body, jd, reader) // 30.0)
+
+
+def _body_scan_step(body: str, jd: float, reader: SpkReader) -> float:
+    """
+    Choose a safe ingress scan step for the moving body.
+
+    The Moon keeps the frozen _SCAN_STEP cadence. Slower bodies use an adaptive
+    step based on estimated longitudinal speed so long sign transits remain
+    tractable without changing lunar doctrine.
+    """
+    if body.lower() == Body.MOON.lower():
+        return _SCAN_STEP
+
+    lon_before = _body_longitude(body, jd - 0.5, reader)
+    lon_after = _body_longitude(body, jd + 0.5, reader)
+    speed = abs((lon_after - lon_before + 180.0) % 360.0 - 180.0)
+    if speed < 1e-6:
+        return 365.25
+    step = 30.0 / speed / 4.0
+    return min(max(step, _SCAN_STEP), 365.25)
 
 
 def _moon_last_sign_ingress(jd: float, reader: SpkReader) -> float:
@@ -414,6 +467,37 @@ def _moon_last_sign_ingress(jd: float, reader: SpkReader) -> float:
     return jd - _MAX_SIGN_TRANSIT_DAYS
 
 
+def _body_last_sign_ingress(body: str, jd: float, reader: SpkReader) -> float:
+    """Find the JD when a supported moving body most recently entered its current sign."""
+    if body.lower() == Body.MOON.lower():
+        return _moon_last_sign_ingress(jd, reader)
+
+    target_sign = _body_sign_index(body, jd, reader)
+    step_days = _body_scan_step(body, jd, reader)
+    scan_limit_days = max(_MAX_SIGN_TRANSIT_DAYS, step_days * 200.0)
+    jd_scan = jd
+
+    while jd_scan > jd - scan_limit_days:
+        jd_prev = jd_scan - step_days
+        if _body_sign_index(body, jd_prev, reader) != target_sign:
+            lo, hi = jd_prev, jd_scan
+            for _ in range(_BISECT_ITER):
+                if hi - lo < _BISECT_TOL:
+                    break
+                mid = (lo + hi) / 2.0
+                if _body_sign_index(body, mid, reader) == target_sign:
+                    hi = mid
+                else:
+                    lo = mid
+            return (lo + hi) / 2.0
+        jd_scan = jd_prev
+
+    raise RuntimeError(
+        f"_body_last_sign_ingress: {body} did not change sign within "
+        f"{scan_limit_days:.2f} days before JD {jd:.2f}"
+    )
+
+
 def _moon_next_sign_ingress(jd: float, reader: SpkReader) -> float:
     """
     Find the JD when the Moon next changes sign after jd.
@@ -442,6 +526,37 @@ def _moon_next_sign_ingress(jd: float, reader: SpkReader) -> float:
     raise RuntimeError(
         f"_moon_next_sign_ingress: Moon did not change sign within "
         f"{_MAX_SIGN_TRANSIT_DAYS} days of JD {jd:.2f}"
+    )
+
+
+def _body_next_sign_ingress(body: str, jd: float, reader: SpkReader) -> float:
+    """Find the JD when a supported moving body next changes sign after jd."""
+    if body.lower() == Body.MOON.lower():
+        return _moon_next_sign_ingress(jd, reader)
+
+    current_sign = _body_sign_index(body, jd, reader)
+    step_days = _body_scan_step(body, jd, reader)
+    scan_limit_days = max(_MAX_SIGN_TRANSIT_DAYS, step_days * 200.0)
+    jd_scan = jd
+
+    while jd_scan < jd + scan_limit_days:
+        jd_next = jd_scan + step_days
+        if _body_sign_index(body, jd_next, reader) != current_sign:
+            lo, hi = jd_scan, jd_next
+            for _ in range(_BISECT_ITER):
+                if hi - lo < _BISECT_TOL:
+                    break
+                mid = (lo + hi) / 2.0
+                if _body_sign_index(body, mid, reader) == current_sign:
+                    lo = mid
+                else:
+                    hi = mid
+            return (lo + hi) / 2.0
+        jd_scan = jd_next
+
+    raise RuntimeError(
+        f"_body_next_sign_ingress: {body} did not change sign within "
+        f"{scan_limit_days:.2f} days after JD {jd:.2f}"
     )
 
 
@@ -551,6 +666,94 @@ def _find_aspect_perfections(
     return perfections
 
 
+def _find_body_aspect_perfections(
+    moving_body: str,
+    jd_start: float,
+    jd_end: float,
+    bodies: tuple[str, ...],
+    reader: SpkReader,
+) -> list[LastAspect]:
+    """
+    Generic aspect-perfection scan for an arbitrary moving body.
+
+    The Moon path retains the frozen lunar scan cadence. Non-lunar bodies use
+    an adaptive sign-ingress cadence chosen by _body_scan_step.
+    """
+    if moving_body.lower() == Body.MOON.lower():
+        return _find_aspect_perfections(jd_start, jd_end, bodies, reader)
+
+    perfections: list[LastAspect] = []
+    scan_step = min(_body_scan_step(moving_body, (jd_start + jd_end) / 2.0, reader), 5.0)
+
+    for body in bodies:
+        if body.lower() == moving_body.lower():
+            continue
+        for target in _ASPECT_TARGETS:
+            jd = jd_start
+            moving_lon = _body_longitude(moving_body, jd, reader)
+            planet_lon = _planet_longitude(body, jd, reader)
+            sig_prev = _aspect_signal(moving_lon, planet_lon, target)
+
+            while jd < jd_end:
+                jd_next = min(jd + scan_step, jd_end)
+                moving_lon_next = _body_longitude(moving_body, jd_next, reader)
+                planet_lon_next = _planet_longitude(body, jd_next, reader)
+                sig_next = _aspect_signal(moving_lon_next, planet_lon_next, target)
+
+                if (sig_prev * sig_next < 0.0
+                        and abs(sig_prev) < 90.0
+                        and abs(sig_next) < 90.0):
+                    jd_exact = _bisect_body_aspect(moving_body, body, target, jd, jd_next, reader)
+                    perfections.append(LastAspect(
+                        body=body,
+                        aspect_name=_ASPECT_NAMES[target],
+                        angle=target,
+                        jd_exact=jd_exact,
+                    ))
+
+                jd = jd_next
+                sig_prev = sig_next
+
+    perfections.sort(key=lambda a: a.jd_exact)
+    return perfections
+
+
+def _bisect_body_aspect(
+    moving_body: str,
+    body: str,
+    target: float,
+    jd_lo: float,
+    jd_hi: float,
+    reader: SpkReader,
+) -> float:
+    """Bisect to find an exact aspect perfection for an arbitrary moving body."""
+    if moving_body.lower() == Body.MOON.lower():
+        return _bisect_aspect(body, target, jd_lo, jd_hi, reader)
+
+    sig_lo = _aspect_signal(
+        _body_longitude(moving_body, jd_lo, reader),
+        _planet_longitude(body, jd_lo, reader),
+        target,
+    )
+
+    for _ in range(_BISECT_ITER):
+        if jd_hi - jd_lo < _BISECT_TOL:
+            break
+        jd_mid = (jd_lo + jd_hi) / 2.0
+        sig_mid = _aspect_signal(
+            _body_longitude(moving_body, jd_mid, reader),
+            _planet_longitude(body, jd_mid, reader),
+            target,
+        )
+        if sig_lo * sig_mid <= 0.0:
+            jd_hi = jd_mid
+        else:
+            jd_lo = jd_mid
+            sig_lo = sig_mid
+
+    return (jd_lo + jd_hi) / 2.0
+
+
 def _build_voc_window(
     jd_ref: float,
     reader: SpkReader,
@@ -566,24 +769,9 @@ def _build_voc_window(
         4. The last perfection = VOC start.
            If none, the Moon entered its current sign already VOC → VOC start = jd_sign_entry.
     """
-    bodies = _MODERN_BODIES if modern else _TRADITIONAL_BODIES
-
-    jd_sign_entry = _moon_last_sign_ingress(jd_ref, reader)
-    jd_sign_exit  = _moon_next_sign_ingress(jd_ref, reader)
-
-    moon_sign_name, _, _ = sign_of(_moon_longitude(jd_ref, reader))
-    moon_sign_next, _, _ = sign_of(_moon_longitude(jd_sign_exit + _BISECT_TOL, reader))
-
-    perfections = _find_aspect_perfections(jd_sign_entry, jd_sign_exit, bodies, reader)
-
-    if perfections:
-        last_asp = perfections[-1]
-        jd_voc_start = last_asp.jd_exact
-    else:
-        last_asp = None
-        jd_voc_start = jd_sign_entry
-
-    duration_hours = (jd_sign_exit - jd_voc_start) * 24.0
+    moon_sign_name, moon_sign_next, jd_voc_start, jd_sign_exit, last_asp, duration_hours = (
+        _build_body_void_window_data(Body.MOON, jd_ref, reader, modern)
+    )
 
     return VoidOfCourseWindow(
         moon_sign=moon_sign_name,
@@ -593,6 +781,45 @@ def _build_voc_window(
         last_aspect=last_asp,
         duration_hours=duration_hours,
     )
+
+
+def _build_body_void_window_data(
+    moving_body: str,
+    jd_ref: float,
+    reader: SpkReader,
+    modern: bool,
+) -> tuple[str, str, float, float, LastAspect | None, float]:
+    """
+    Build the generic sign-window data for a moving body.
+
+    Returns:
+        sign_name, next_sign_name, jd_voc_start, jd_voc_end, last_aspect, duration_hours
+    """
+    bodies = _MODERN_BODIES if modern else _TRADITIONAL_BODIES
+
+    jd_sign_entry = _body_last_sign_ingress(moving_body, jd_ref, reader)
+    jd_sign_exit = _body_next_sign_ingress(moving_body, jd_ref, reader)
+
+    sign_name, _, _ = sign_of(_body_longitude(moving_body, jd_ref, reader))
+    next_sign_name, _, _ = sign_of(_body_longitude(moving_body, jd_sign_exit + _BISECT_TOL, reader))
+
+    perfections = _find_body_aspect_perfections(
+        moving_body,
+        jd_sign_entry,
+        jd_sign_exit,
+        bodies,
+        reader,
+    )
+
+    if perfections:
+        last_aspect = perfections[-1]
+        jd_voc_start = last_aspect.jd_exact
+    else:
+        last_aspect = None
+        jd_voc_start = jd_sign_entry
+
+    duration_hours = (jd_sign_exit - jd_voc_start) * 24.0
+    return sign_name, next_sign_name, jd_voc_start, jd_sign_exit, last_aspect, duration_hours
 
 
 # ---------------------------------------------------------------------------

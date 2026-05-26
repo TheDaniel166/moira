@@ -43,6 +43,7 @@ from .spk_reader import get_reader, SpkReader
 from .chart import ChartContext, create_chart
 from .houses import HousePolicy
 from .asteroids import asteroid_at, ASTEROID_NAIF
+from .sidereal import Ayanamsa, UserDefinedAyanamsa, tropical_to_sidereal
 from .stars import star_at
 from .nodes import mean_lilith, mean_node, true_lilith, true_node
 
@@ -70,7 +71,7 @@ __all__ = [
     # Core search functions
     "next_transit", "find_transits",
     "find_ingresses", "next_ingress", "next_ingress_into",
-    "solar_return", "solar_return_chart", "lunar_return", "planet_return",
+    "solar_return", "solar_return_chart", "varshaphal", "varshaphal_chart", "lunar_return", "planet_return",
     "last_new_moon", "last_full_moon", "prenatal_syzygy",
     # Condition profile functions
     "transit_relations", "ingress_relations",
@@ -1452,6 +1453,47 @@ def _find_crossing(
     )
 
 
+def _sun_sidereal_longitude(
+    jd_ut: float,
+    reader: SpkReader,
+    ayanamsa_system: str | UserDefinedAyanamsa,
+) -> float:
+    """Resolve the Sun's sidereal longitude at *jd_ut* for one ayanamsa system."""
+
+    sun_tropical = planet_at(Body.SUN, jd_ut, reader=reader).longitude
+    return tropical_to_sidereal(sun_tropical, jd_ut, system=ayanamsa_system)
+
+
+def _find_sidereal_solar_return_crossing(
+    natal_sidereal_sun_lon: float,
+    jd_lo: float,
+    jd_hi: float,
+    reader: SpkReader,
+    ayanamsa_system: str | UserDefinedAyanamsa,
+    tol_days: float,
+) -> float:
+    """Bisect one bracketed sidereal solar-return crossing."""
+
+    diff_lo = _signed_diff(
+        _sun_sidereal_longitude(jd_lo, reader, ayanamsa_system),
+        natal_sidereal_sun_lon,
+    )
+    for _ in range(60):
+        jd_mid = (jd_lo + jd_hi) / 2.0
+        if jd_hi - jd_lo < tol_days:
+            break
+        diff_mid = _signed_diff(
+            _sun_sidereal_longitude(jd_mid, reader, ayanamsa_system),
+            natal_sidereal_sun_lon,
+        )
+        if diff_lo == 0.0 or diff_lo * diff_mid <= 0.0:
+            jd_hi = jd_mid
+        else:
+            jd_lo = jd_mid
+            diff_lo = diff_mid
+    return (jd_lo + jd_hi) / 2.0
+
+
 # ---------------------------------------------------------------------------
 # Public: find next/previous transit of a body to a longitude
 # ---------------------------------------------------------------------------
@@ -2073,6 +2115,113 @@ def solar_return_chart(
     jd_return = solar_return(
         natal_sun_lon,
         year,
+        reader=reader,
+        policy=return_policy,
+    )
+    return create_chart(
+        jd_return,
+        latitude,
+        longitude,
+        house_system=house_system,
+        bodies=bodies,
+        reader=reader,
+        policy=house_policy,
+    )
+
+
+def varshaphal(
+    birth_jd: float,
+    year: int,
+    ayanamsa_system: str | UserDefinedAyanamsa = Ayanamsa.LAHIRI,
+    reader: SpkReader | None = None,
+    policy: TransitComputationPolicy | None = None,
+) -> float:
+    """
+    Find the Julian Day of the sidereal solar return used for a basic Varshaphal.
+
+    This computes the Sun's natal sidereal longitude under the selected
+    ayanamsa, seeds from the tropical solar return in the requested calendar
+    year, then refines the exact sidereal return moment. It does not implement
+    broader Tajika doctrine such as Muntha, Sahams, or Tajika aspects.
+    """
+    _require_finite_jd(birth_jd, "birth_jd")
+    if reader is None:
+        reader = get_reader()
+    policy = _validate_policy(policy)
+
+    natal_sun_tropical = planet_at(Body.SUN, birth_jd, reader=reader).longitude
+    natal_sun_sidereal = tropical_to_sidereal(
+        natal_sun_tropical,
+        birth_jd,
+        system=ayanamsa_system,
+    )
+    jd_seed = solar_return(
+        natal_sun_tropical,
+        year,
+        reader=reader,
+        policy=policy,
+    )
+
+    step_days = min(policy.returns.step_days_override or _auto_step(Body.SUN), 1.0)
+    search_radius = max(5.0, step_days * 4.0)
+    jd = jd_seed - search_radius
+    jd_end = jd_seed + search_radius
+    diff_prev = _signed_diff(
+        _sun_sidereal_longitude(jd, reader, ayanamsa_system),
+        natal_sun_sidereal,
+    )
+    if diff_prev == 0.0:
+        return jd
+
+    while jd < jd_end:
+        jd_next = min(jd + step_days, jd_end)
+        diff_next = _signed_diff(
+            _sun_sidereal_longitude(jd_next, reader, ayanamsa_system),
+            natal_sun_sidereal,
+        )
+        if diff_next == 0.0:
+            return jd_next
+        if diff_prev * diff_next < 0.0 and abs(diff_prev) < 90.0 and abs(diff_next) < 90.0:
+            return _find_sidereal_solar_return_crossing(
+                natal_sun_sidereal,
+                jd,
+                jd_next,
+                reader,
+                ayanamsa_system,
+                policy.returns.solver_tolerance_days,
+            )
+        jd = jd_next
+        diff_prev = diff_next
+
+    raise RuntimeError(
+        "Sidereal solar return not found within "
+        f"{search_radius:.1f} days of the tropical solar return seed for year {year}"
+    )
+
+
+def varshaphal_chart(
+    birth_jd: float,
+    year: int,
+    latitude: float,
+    longitude: float,
+    ayanamsa_system: str | UserDefinedAyanamsa = Ayanamsa.LAHIRI,
+    house_system: str = HouseSystem.PLACIDUS,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    return_policy: TransitComputationPolicy | None = None,
+    house_policy: HousePolicy | None = None,
+) -> ChartContext:
+    """
+    Construct the chart for the exact sidereal solar return moment.
+
+    The returned vessel is the standard Moira chart snapshot at the Varshaphal
+    instant. This wrapper owns only the sidereal return timing, not the wider
+    Tajika interpretive layer.
+    """
+    jd_return = varshaphal(
+        birth_jd,
+        year,
+        ayanamsa_system=ayanamsa_system,
         reader=reader,
         policy=return_policy,
     )

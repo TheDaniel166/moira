@@ -53,7 +53,7 @@ from .constants import Body, HouseSystem, HOUSE_SYSTEM_NAMES, TROPICAL_YEAR, sig
 from .coordinates import ecliptic_to_equatorial, equatorial_to_ecliptic
 from .houses import HouseCusps, HousePolicy, calculate_houses
 from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd, jd_from_datetime, delta_t, ut_to_tt
-from .planets import planet_at, all_planets_at
+from .planets import planet_at, all_planets_at, _resolve_small_body_name
 from .obliquity import true_obliquity
 from .spk_reader import get_reader, SpkReader
 
@@ -1157,7 +1157,15 @@ def _validate_bodies(bodies: list[str] | None) -> None:
             raise ValueError("bodies must contain non-empty strings")
         if body in seen:
             raise ValueError("bodies may not contain duplicates")
+        if not _is_supported_progression_body(body):
+            raise ValueError(f"bodies contains unsupported body name {body!r}")
         seen.add(body)
+
+
+def _is_supported_progression_body(body: str) -> bool:
+    if body in Body.ALL_PLANETS:
+        return True
+    return _resolve_small_body_name(body) is not None
 
 
 def _validate_house_frame_inputs(latitude: float, longitude: float, system: str | None) -> None:
@@ -3246,8 +3254,8 @@ def planetary_arc(
     ----------
     natal_jd_ut : Julian Day (UT) of birth
     target_date : real-world date for which to calculate directions
-    arc_body    : Body.* constant naming the reference planet (e.g. "Mars")
-    bodies      : list of Body.* constants (defaults to all planets)
+    arc_body    : supported body name naming the reference body (e.g. "Mars", "Ceres")
+    bodies      : list of supported body names (defaults to all planets)
     reader      : SpkReader instance
     policy      : ProgressionComputationPolicy
 
@@ -3259,8 +3267,8 @@ def planetary_arc(
         reader = get_reader()
     resolved_policy = _resolve_policy(policy)
 
-    if arc_body not in Body.ALL_PLANETS:
-        raise ValueError(f"arc_body must be a recognised planet name, got {arc_body!r}")
+    if not _is_supported_progression_body(arc_body):
+        raise ValueError(f"arc_body must be a recognised supported body name, got {arc_body!r}")
 
     if bodies is None:
         bodies = list(Body.ALL_PLANETS)
@@ -3307,8 +3315,8 @@ def converse_planetary_arc(
     ----------
     natal_jd_ut : Julian Day (UT) of birth
     target_date : real-world date for which to calculate directions
-    arc_body    : Body.* constant naming the reference planet (e.g. "Mars")
-    bodies      : list of Body.* constants (defaults to all planets)
+    arc_body    : supported body name naming the reference body (e.g. "Mars", "Ceres")
+    bodies      : list of supported body names (defaults to all planets)
     reader      : SpkReader instance
     policy      : ProgressionComputationPolicy
 
@@ -3320,8 +3328,8 @@ def converse_planetary_arc(
         reader = get_reader()
     resolved_policy = _resolve_policy(policy)
 
-    if arc_body not in Body.ALL_PLANETS:
-        raise ValueError(f"arc_body must be a recognised planet name, got {arc_body!r}")
+    if not _is_supported_progression_body(arc_body):
+        raise ValueError(f"arc_body must be a recognised supported body name, got {arc_body!r}")
 
     if bodies is None:
         bodies = list(Body.ALL_PLANETS)

@@ -1399,8 +1399,15 @@ class ArabicPart:
     def longitude_dms(self) -> tuple[int, int, float]:
         d = self.sign_degree
         deg = int(d)
-        m   = int((d - deg) * 60)
-        s   = ((d - deg) * 60 - m) * 60
+        min_frac = (d - deg) * 60
+        m = int(min_frac)
+        s = round((min_frac - m) * 60, 9)
+        if s >= 60.0:
+            s = 0.0
+            m += 1
+            if m >= 60:
+                m = 0
+                deg += 1
         return deg, m, s
 
     @property

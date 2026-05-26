@@ -181,8 +181,8 @@ Convenience properties (read-only, derived only)
 ``AspectData.is_applying``       — True when applying is True (not None or False).
 ``AspectData.is_separating``     — True when applying is False (not None or True).
 ``AspectData.orb_surplus``       — allowed_orb minus orb (remaining headroom).
-``AspectData.is_partile``        — True when both bodies occupy the same degree number within their signs.
-``AspectData.is_platic``         — True when the aspect is admitted but not partile.
+``AspectData.is_partile``        — True when a major aspect has both bodies at the same degree-of-sign; False for non-major.
+``AspectData.is_platic``         — True when a major aspect is admitted but not partile; False for non-major.
 ``DeclinationAspect.is_parallel``         — True when aspect is "Parallel".
 ``DeclinationAspect.is_contra_parallel``  — True when aspect is "Contra-Parallel".
 ``DeclinationAspect.orb_surplus``         — allowed_orb minus orb.
@@ -466,7 +466,11 @@ class AspectPolicy:
                       Uses ``moiety_orbs`` when supplied; falls back to
                       ``TRADITIONAL_MOIETY_ORBS`` (Lilly 1647) otherwise.
                       Bodies not in the table receive a default full orb of
-                      5° (moiety 2.5°).
+                      5° (moiety 2.5°).  Detection is **restricted to the five
+                      Ptolemaic major aspects** (Conjunction, Sextile, Square,
+                      Trine, Opposition) regardless of ``tier`` or
+                      ``include_minor``; moiety doctrine has no historical basis
+                      for minor or harmonic aspects.
 
     moiety_orbs     : custom per-body full-orb table ``{body_name: full_orb}``.
                       Used only when ``orb_mode="moiety"``.  When ``None``,
@@ -483,6 +487,7 @@ class AspectPolicy:
         If ``orb_factor <= 0``.
         If ``declination_orb < 0``.
         If ``orb_mode`` is not ``"fixed"`` or ``"moiety"``.
+        If any value in ``moiety_orbs`` is ``<= 0``.
     """
     tier:            int | None                = None
     include_minor:   bool                      = True
@@ -506,6 +511,13 @@ class AspectPolicy:
             raise ValueError(
                 f"AspectPolicy: orb_mode must be 'fixed' or 'moiety', got {self.orb_mode!r}."
             )
+        if self.moiety_orbs is not None:
+            bad = {k: v for k, v in self.moiety_orbs.items() if v <= 0}
+            if bad:
+                raise ValueError(
+                    f"AspectPolicy: moiety_orbs values must be > 0; "
+                    f"got non-positive full-orb values for: {bad}."
+                )
 
 
 DEFAULT_POLICY: AspectPolicy = AspectPolicy()
@@ -1638,21 +1650,28 @@ class AspectData:
     @property
     def is_partile(self) -> bool:
         """
-        True when both bodies occupy the same degree number within their signs.
+        True when this is a Ptolemaic major aspect and both bodies share the
+        same integer degree-of-sign.
 
-        This follows strict partile doctrine: same degree-of-sign, not merely
-        a very tight orb.
+        Returns ``False`` for non-major (non-Ptolemaic) aspects; sign-degree
+        coincidence carries no doctrinal weight outside the five major aspects.
         """
         return (
-            self.sign_degree1 is not None
+            self.is_major
+            and self.sign_degree1 is not None
             and self.sign_degree2 is not None
             and self.sign_degree1 == self.sign_degree2
         )
 
     @property
     def is_platic(self) -> bool:
-        """True when the aspect is admitted but not partile."""
-        return not self.is_partile
+        """
+        True when this is a Ptolemaic major aspect admitted within orb but not partile.
+
+        Returns ``False`` for non-major aspects; neither partile nor platic
+        applies outside the five Ptolemaic major aspects.
+        """
+        return self.is_major and not self.is_partile
 
     def __repr__(self) -> str:
         app = " applying" if self.applying else " separating" if self.applying is False else ""
@@ -1935,9 +1954,15 @@ def _sign_degree_number(longitude: float) -> int:
     """
     Return the integer degree number within the sign for a longitude.
 
-    0.0 Aries through 0.999... Aries yields 0; 29.0 through 29.999... yields 29.
+    0.0 Aries through 0.999... Aries yields 0; 29.0 through (30 - 1e-11)
+    yields 29.  Values within 1e-11° of a 30°-boundary are snapped to
+    degree 0 of the following sign to absorb floating-point rounding noise
+    from upstream ephemeris calculations.
     """
-    return int((longitude % 30.0) // 1.0)
+    within_sign = longitude % 30.0
+    if within_sign > 30.0 - 1e-11:
+        return 0
+    return int(within_sign)
 
 
 _STATIONARY_THRESHOLD = 0.005  # degrees/day — below this a planet is considered stationary
@@ -1947,6 +1972,7 @@ def _applying(
     b1: str, lon1: float,
     b2: str, lon2: float,
     speeds: dict[str, float],
+    angle: float,
 ) -> bool | None:
     """
     True = applying, False = separating, None = unknown or stationary.
@@ -1954,14 +1980,26 @@ def _applying(
     Returns None when either body's daily speed is below the stationary
     threshold (< 0.005°/day), because the applying/separating distinction
     is not meaningful for a body that is effectively motionless.
+
+    The signed shortest-arc difference ``diff = (lon2 - lon1 + 180) % 360 - 180``
+    gives the rate of change of the angular separation:
+
+        d(sep)/dt = speed_b2 - speed_b1   when diff >= 0
+        d(sep)/dt = speed_b1 - speed_b2   when diff <  0
+
+    The orb ``|sep - angle|`` is decreasing (applying) when:
+        sep >= angle  →  d(sep)/dt < 0
+        sep <  angle  →  d(sep)/dt > 0
     """
     if b1 not in speeds or b2 not in speeds:
         return None
-    if abs(speeds.get(b1, 1.0)) < _STATIONARY_THRESHOLD or abs(speeds.get(b2, 1.0)) < _STATIONARY_THRESHOLD:
+    if (abs(speeds.get(b1, 1.0)) < _STATIONARY_THRESHOLD
+            or abs(speeds.get(b2, 1.0)) < _STATIONARY_THRESHOLD):
         return None
-    relative_speed = speeds[b1] - speeds[b2]
     diff = (lon2 - lon1 + 180.0) % 360.0 - 180.0
-    return relative_speed > 0 if diff > 0 else relative_speed < 0
+    sep = abs(diff)
+    dsep_dt = (speeds[b2] - speeds[b1]) if diff >= 0 else (speeds[b1] - speeds[b2])
+    return dsep_dt < 0 if sep >= angle else dsep_dt > 0
 
 
 def _is_stationary(b1: str, b2: str, speeds: dict[str, float]) -> bool:
@@ -1997,8 +2035,8 @@ def overcoming(lon1: float, lon2: float) -> bool:
 
     Canon: Vettius Valens; Brennan, Hellenistic Astrology, Ch. 11.
     """
-    sign1 = int(lon1 % 360.0 // 30)
-    sign2 = int(lon2 % 360.0 // 30)
+    sign1 = int((lon1 % 360.0 + 1e-11) // 30) % 12
+    sign2 = int((lon2 % 360.0 + 1e-11) // 30) % 12
     diff = (sign1 - sign2) % 12
     return diff == 3  # body1 is 3 signs ahead = 10th-sign from body2
 
@@ -2042,6 +2080,9 @@ def find_aspects(
     over the individual ``tier``, ``include_minor``, ``orbs``, and
     ``orb_factor`` parameters.
 
+    When ``policy.orb_mode="moiety"``, detection is restricted to the five
+    Ptolemaic major aspects regardless of ``tier`` or ``include_minor``.
+
     Doctrine inputs (current policy knobs)
     ---------------------------------------
     orbs         : custom orb table {angle: max_orb}.  When provided,
@@ -2075,7 +2116,7 @@ def find_aspects(
     _use_moiety   = policy is not None and policy.orb_mode == "moiety"
     _moiety_table = (policy.moiety_orbs if policy is not None and policy.moiety_orbs is not None
                      else TRADITIONAL_MOIETY_ORBS)
-    aspect_list = _resolve_aspects(tier, include_minor)
+    aspect_list = Aspect.MAJOR if _use_moiety else _resolve_aspects(tier, include_minor)
     bodies = list(positions.keys())
     results: list[AspectData] = []
 
@@ -2095,7 +2136,7 @@ def find_aspects(
                     allowed = adef.default_orb * orb_factor
                 orb = abs(sep - adef.angle)
                 if orb <= allowed:
-                    app = _applying(b1, lon1, b2, lon2, speeds) if speeds else None
+                    app = _applying(b1, lon1, b2, lon2, speeds, adef.angle) if speeds else None
                     sta = _is_stationary(b1, b2, speeds) if speeds else False
                     results.append(AspectData(
                         body1=b1, body2=b2,
@@ -2155,6 +2196,9 @@ def aspects_between(
     Note: ``policy.tier=None`` resolves via ``policy.include_minor``; it does
     not fall back to this function's default ``tier=2``.
 
+    When ``policy.orb_mode="moiety"``, detection is restricted to the five
+    Ptolemaic major aspects regardless of ``tier`` or ``include_minor``.
+
     Doctrine inputs (current policy knobs)
     ---------------------------------------
     tier       : aspect set (default 2 = all aspects)
@@ -2181,7 +2225,9 @@ def aspects_between(
     if policy is not None:
         orbs       = policy.orbs
         orb_factor = policy.orb_factor
-        if policy.tier is not None:
+        if _use_moiety:
+            aspect_list = Aspect.MAJOR
+        elif policy.tier is not None:
             aspect_list = ASPECT_TIERS.get(policy.tier, Aspect.ALL)
         else:
             aspect_list = _resolve_aspects(None, policy.include_minor)
@@ -2206,7 +2252,7 @@ def aspects_between(
             allowed = adef.default_orb * orb_factor
         orb = abs(sep - adef.angle)
         if orb <= allowed:
-            app = _applying(body_a, lon_a, body_b, lon_b, speeds) if speeds else None
+            app = _applying(body_a, lon_a, body_b, lon_b, speeds, adef.angle) if speeds else None
             sta = _is_stationary(body_a, body_b, speeds) if speeds else False
             results.append(AspectData(
                 body1=body_a, body2=body_b,
@@ -2267,6 +2313,9 @@ def aspects_to_point(
     over the individual ``tier``, ``include_minor``, ``orbs``, and
     ``orb_factor`` parameters.
 
+    When ``policy.orb_mode="moiety"``, detection is restricted to the five
+    Ptolemaic major aspects regardless of ``tier`` or ``include_minor``.
+
     Doctrine inputs (current policy knobs)
     ---------------------------------------
     orbs         : custom orb table {angle: max_orb}
@@ -2297,7 +2346,7 @@ def aspects_to_point(
         include_minor = policy.include_minor
         orbs          = policy.orbs
         orb_factor    = policy.orb_factor
-    aspect_list = _resolve_aspects(tier, include_minor)
+    aspect_list = Aspect.MAJOR if _use_moiety else _resolve_aspects(tier, include_minor)
     results: list[AspectData] = []
 
     for body, lon in positions.items():
@@ -2538,8 +2587,8 @@ def find_whole_sign_aspects(
             b1, b2 = bodies[i], bodies[j]
             lon1, lon2 = positions[b1], positions[b2]
 
-            sign1 = int(lon1 % 360.0 // 30)
-            sign2 = int(lon2 % 360.0 // 30)
+            sign1 = int((lon1 % 360.0 + 1e-11) // 30) % 12
+            sign2 = int((lon2 % 360.0 + 1e-11) // 30) % 12
             sign_diff = (sign1 - sign2) % 12
 
             mapping = _WHOLE_SIGN_MAP.get(sign_diff)

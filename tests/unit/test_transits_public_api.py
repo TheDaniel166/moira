@@ -48,6 +48,8 @@ _CURATED_PUBLIC_NAMES = [
     "find_ingresses",
     "solar_return",
     "solar_return_chart",
+    "varshaphal",
+    "varshaphal_chart",
     "lunar_return",
     "last_new_moon",
     "last_full_moon",
@@ -94,5 +96,5 @@ class TestModuleAgreement:
                 f"moira.transits.{name} disappeared; helper should remain module-internal"
             )
 
-    def test_curated_count_is_43(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 43
+    def test_curated_count_is_45(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 45
