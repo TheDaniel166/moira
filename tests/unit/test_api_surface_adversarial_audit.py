@@ -688,6 +688,7 @@ _EXPECTED_MOIRA_METHODS = {
     "solar_return",
     "solar_return_chart",
     "build_varshaphal_chart",
+    "mudda_dasha",
     "varshaphal",
     "varshaphal_chart",
     "sothic_cycle",

@@ -11,7 +11,7 @@ Three major developments close or substantially narrow the gaps identified in th
 
 1. **Batch Operations API implemented** — `moira/batch.py` ships 8 batch functions covering charts, events, transits, returns, progressions (40 techniques), ingresses, void-of-course, and time series. Gap #1 is closed.
 2. **C++ native evaluation layer added** — A hybrid Python/C++ architecture now underpins SPK polynomial evaluation, fixed star propagation, topocentric correction, and event search, with AVX2 SIMD acceleration and thread-safe caching. This creates a new competitive advantage and changes the "Pure Python" positioning.
-3. **Vedic depth expanded substantially** — Full Shadbala, Ashtakavarga, Panchanga, Jaimini Karakas, Vedic dignities, Ashtottari Dasha, and Yogini Dasha are now implemented. The remaining Vedic gap is now concentrated in specialized doctrine layers such as Tajika/Varshaphal, KP, natal yoga catalogs, Jaimini Chara Dasha, and Muhurta workflows.
+3. **Vedic depth expanded substantially** — Full Shadbala, Ashtakavarga, Panchanga, Jaimini Karakas, Vedic dignities, Ashtottari Dasha, Yogini Dasha, and a serious Varshaphal/Tajika annual layer are now implemented. The remaining Vedic gap is now concentrated in specialized doctrine breadth and workflow layers such as KP, natal yoga catalogs, Jaimini Chara Dasha, Muhurta workflows, and rectification.
 
 ---
 
@@ -19,7 +19,7 @@ Three major developments close or substantially narrow the gaps identified in th
 
 Moira is **astronomically comprehensive**, **computationally transparent**, and now **batch-capable** in ways that professional astrology software is not. The remaining strategic gaps are:
 
-1. **Vedic Completeness** — Core Jyotish infrastructure is strong, but Tajika/Varshaphal, KP, Jaimini Chara Dasha, natal yoga catalogs, Muhurta workflows, and birth time rectification remain absent
+1. **Vedic Completeness** — Core Jyotish infrastructure is strong, and Varshaphal/Tajika is now substantially present; the remaining Vedic gap is concentrated in KP, Jaimini Chara Dasha, natal yoga catalogs, Muhurta workflows, and birth time rectification
 2. **REST API / Service Layer** — No HTTP interface; still Python-library-only
 3. **Report Generation & Templating** — No HTML/PDF report output
 4. **Research & Statistical Tools** — No chart database, filtering, or aggregation layer
@@ -270,10 +270,10 @@ Moira is **astronomically comprehensive**, **computationally transparent**, and 
 
 ---
 
-### 3. **Vedic Technique Depth** (LOW–MEDIUM PRIORITY — substantially reduced)
+### 3. **Vedic Technique Depth** (LOW PRIORITY — substantially reduced)
 **Professional Need:** Vedic practitioners need specialized tools
 
-**Moira Status:** Deep Vedic core coverage; the remaining gap is primarily doctrinal and workflow-specific rather than substrate-level
+**Moira Status:** Deep Vedic core coverage; Varshaphal/Tajika is now a serious annual-return subsystem, and the remaining gap is primarily breadth, workflow, and synthesis rather than missing foundation
 - ✓ Vimshottari Dasha
 - ✓ Ashtottari Dasha
 - ✓ Yogini Dasha
@@ -284,7 +284,7 @@ Moira is **astronomically comprehensive**, **computationally transparent**, and 
 - ✓ Vedic dignities, compound relationships
 - ✓ Nakshatras (27 lunar mansions)
 - ✓ Divisional charts (Varga; Shodashvarga depth is present)
-- ✗ **Tajika / Varshaphal annual-return doctrine** — no Muntha, Sahams, or Tajika aspect layer
+- ✓ **Tajika / Varshaphal annual-return doctrine** — sidereal annual return timing, annual chart vessel, Muntha, Sahams, Tajika aspects/yogas, Varshesha, Tajika strength, Mudda Dasha, Tāsīra timing, annual judgement, and topic-specific channels are present
 - ✗ **KP astrology (Krishnamurti Paddhati)** — no KP cusp workflow, star-lord / sub-lord chain, ruling planets, or significator logic
 - ✗ **Jaimini Chara Dasha** — Karakas are implemented, but the time-lord system itself is absent
 - ✗ **Natal yoga catalog** — Panchanga nitya yogas exist, but named chart-yoga families (Raja, Dhana, Nabhasa, etc.) are not surfaced
@@ -292,7 +292,7 @@ Moira is **astronomically comprehensive**, **computationally transparent**, and 
 - ✗ **Birth time rectification** — not implemented
 - ✗ **Bhava Chalit** — not implemented
 
-**Gap remaining:** Moira can now claim substantial Jyotish infrastructure, but it cannot yet claim parity with Parashara's Light or Sirius on specialized Vedic doctrine. The clearest remaining gaps are Tajika/Varshaphal, KP, Jaimini Chara Dasha, natal yoga catalogs, Muhurta workflow, and rectification.
+**Gap remaining:** Moira can now claim substantial Jyotish infrastructure and real annual-return support, but it cannot yet claim parity with Parashara's Light or Sirius across the full practitioner workflow. The clearest remaining gaps are KP, Jaimini Chara Dasha, natal yoga catalogs, Muhurta workflow, rectification, and additional long-tail refinement within Tajika rather than missing annual architecture.
 
 ---
 
@@ -308,10 +308,10 @@ Moira is **astronomically comprehensive**, **computationally transparent**, and 
 - ✓ Proximity/conjunction events via `proximity_events_in_range()`
 - ✓ Void-of-course Moon with dedicated API
 - ✓ Planetary phenomena via `planet_phenomena_at()`
-- ✗ **Lunar phases** — not exposed as a simple `find_lunar_phases()` API
+- ✓ **Lunar phases** — exposed via `find_lunar_phases(jd_start, jd_end)` on the predictive/transit surface
 - ✗ **Planetary visibility window** — "is planet visible tonight?" convenience API; `visibility_assessment()` exists but requires non-trivial setup
 
-**Opportunity:** Expose `find_lunar_phases(jd_start, jd_end)` convenience function; add `visibility_tonight()` or similar convenience surface.
+**Opportunity:** Add `visibility_tonight()` or similar convenience surface for practitioner-facing visibility checks.
 
 ---
 
@@ -412,15 +412,15 @@ Moira is **astronomically comprehensive**, **computationally transparent**, and 
 
 ---
 
-### 12. **NEW: Lunar Phase API** (LOW PRIORITY — newly identified)
+### 12. **NEW: Lunar Phase API** — **CLOSED** ✓
 **Professional Need:** Simple `find_lunar_phases()` call for phase calendars
 
-**Moira Status:** Computable but not surfaced
-- ✓ Sun–Moon angular separation computable via existing APIs
-- ✗ No `find_lunar_phases()` convenience function
-- ✗ No phase calendar output (new/crescent/first quarter/full/last quarter/balsamic)
+**Moira Status:** Surfaced on the predictive/transit layer
+- ✓ `find_lunar_phases(jd_start, jd_end)` convenience function
+- ✓ Lightweight phase calendar output with phase type + JD
+- ✓ Backed by the existing eight-phase Moon phase engine rather than duplicated search math
 
-**Opportunity:** Small addition; high discoverability value for practitioners.
+**Impact:** Practitioner discoverability gap is closed.
 
 ---
 
@@ -521,12 +521,7 @@ Moira is **astronomically comprehensive**, **computationally transparent**, and 
    - **Impact:** Closes a notable gap vs. Solar Fire batch workflows
    - **Effort:** Low (1 week — batch infrastructure already in place)
 
-3. **Lunar Phase Convenience API**
-   - `find_lunar_phases(jd_start, jd_end)` returning phase type + JD
-   - **Impact:** High discoverability; fills practitioner calendar use case
-   - **Effort:** Very low (2-3 days)
-
-4. **Thread Safety Documentation & GIL Release Audit**
+3. **Thread Safety Documentation & GIL Release Audit**
    - Document `SpkReader` and `Moira` facade threading contracts
    - Annotate C++ extension calls with GIL release where safe
    - **Impact:** Required before REST API deployment is production-safe
@@ -535,9 +530,9 @@ Moira is **astronomically comprehensive**, **computationally transparent**, and 
 ### **Tier 2: Vedic & Professional Workflow (Implement Second)**
 
 5. **Varshaphal (Annual Charts)**
-   - Solar return for sidereal Sun return (Vedic annual chart)
-   - **Impact:** Closes one of the most visible remaining Vedic doctrine gaps, especially if extended to Tajika objects like Muntha and Sahams
-   - **Effort:** Medium (1-2 weeks; solar return machinery exists)
+   - Remaining work is refinement: additional long-tail Tajika yogas, house-based/monthly/daily period variants, and stronger interpretive/report synthesis
+   - **Impact:** No longer a foundation gap; now a completion and practitioner-polish track
+   - **Effort:** Medium-high (incremental doctrine work, not a missing base implementation)
 
 6. **Chart Persistence & Storage**
    - Canonical chart JSON schema
@@ -636,8 +631,7 @@ The remaining strategic priorities in order are:
 1. **REST API** — transforms Moira from a library into a platform
 2. **Thread safety formalization** — required before server deployment
 3. **Batch synastry** — low-effort gap closure using existing batch infrastructure
-4. **Lunar phase convenience API** — small addition, high practitioner value
-5. **Varshaphal / Tajika** — closes one of the most visible remaining Vedic doctrine gaps
-6. **Chart persistence + research tools** — unlocks the research and data workflows that Solar Fire and Kepler own today
+4. **Muhurta / practitioner workflow** — now the clearer Vedic workflow gap after the Varshaphal annual layer
+5. **Chart persistence + research tools** — unlocks the research and data workflows that Solar Fire and Kepler own today
 
 The opportunity is no longer solely to offer Moira as a Python library. The C++ layer, batch API, and comprehensive technique coverage now support positioning Moira as **a production computational platform** that application developers, researchers, and Vedic/Western practitioners can build on top of — either as a library, a REST service, or a hosted API.

@@ -57,7 +57,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
     "scope": "class",
     "id": "moira._facade_predictive.PredictiveFacadeMixin",
     "risk": "medium",
-    "api": {"frozen": ["progression", "transits", "solar_return", "solar_return_chart", "varshaphal", "varshaphal_chart", "build_varshaphal_chart", "lunar_return", "station", "planetary_hours"], "internal": []},
+    "api": {"frozen": ["progression", "transits", "solar_return", "solar_return_chart", "varshaphal", "varshaphal_chart", "build_varshaphal_chart", "mudda_dasha", "lunar_return", "station", "planetary_hours"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -641,6 +641,26 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
             reader=self._reader,
             return_policy=return_policy,
             house_policy=house_policy,
+        )
+
+    def mudda_dasha(
+        self,
+        birth_jd: float,
+        year: int,
+        ayanamsa_system: str | None = None,
+        school: str = "gauri",
+        return_policy: Any | None = None,
+    ):
+        """Build the annual mudda dasha schedule from the natal lunar asterism."""
+        facade = _facade_module()
+        ayanamsa = facade.Ayanamsa.LAHIRI if ayanamsa_system is None else ayanamsa_system
+        return facade.mudda_dasha(
+            birth_jd,
+            year,
+            ayanamsa_system=ayanamsa,
+            school=school,
+            reader=self._reader,
+            return_policy=return_policy,
         )
 
     def lunar_return(self, natal_moon_lon: float, jd_start: float) -> float:

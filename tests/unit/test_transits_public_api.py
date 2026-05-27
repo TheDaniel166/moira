@@ -43,6 +43,7 @@ _CURATED_PUBLIC_NAMES = [
     # Result vessels / entry points
     "TransitEvent",
     "IngressEvent",
+    "LunarPhaseEvent",
     "next_transit",
     "find_transits",
     "find_ingresses",
@@ -54,6 +55,7 @@ _CURATED_PUBLIC_NAMES = [
     "last_new_moon",
     "last_full_moon",
     "prenatal_syzygy",
+    "find_lunar_phases",
     "planet_return",
     "transit_relations",
     "ingress_relations",
@@ -96,5 +98,5 @@ class TestModuleAgreement:
                 f"moira.transits.{name} disappeared; helper should remain module-internal"
             )
 
-    def test_curated_count_is_45(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 45
+    def test_curated_count_is_47(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 47

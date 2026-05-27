@@ -39,6 +39,8 @@ from moira.transits import (
     TransitConditionNetworkEdge,
     TransitConditionNetworkProfile,
     TransitEvent,
+    LunarPhaseEvent,
+    find_lunar_phases,
     find_ingresses,
     find_transits,
     ingress_condition_profiles,
@@ -1253,6 +1255,25 @@ def test_prenatal_syzygy_returns_latest_of_new_or_full_moon() -> None:
 
     assert phase in {"New Moon", "Full Moon"}
     assert jd_syzygy == max(jd_nm, jd_fm)
+
+
+def test_find_lunar_phases_rejects_inverted_range() -> None:
+    with pytest.raises(ValueError, match="jd_end must be >="):
+        find_lunar_phases(10.0, 9.0)
+
+
+@pytest.mark.requires_ephemeris
+def test_find_lunar_phases_returns_phase_type_and_jd() -> None:
+    jd_start = jd_from_datetime(datetime(2024, 4, 1, 0, 0, tzinfo=timezone.utc))
+    jd_end = jd_from_datetime(datetime(2024, 4, 30, 0, 0, tzinfo=timezone.utc))
+
+    phases = find_lunar_phases(jd_start, jd_end)
+
+    assert phases
+    assert all(isinstance(event, LunarPhaseEvent) for event in phases)
+    assert phases == tuple(sorted(phases, key=lambda event: event.jd_ut))
+    assert {"New Moon", "First Quarter", "Full Moon", "Last Quarter"} <= {event.phase_type for event in phases}
+    assert all(jd_start <= event.jd_ut <= jd_end for event in phases)
 
 
 @pytest.mark.requires_ephemeris

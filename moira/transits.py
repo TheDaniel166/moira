@@ -9,10 +9,10 @@ position resolution to planets, nodes, asteroids, and fixed_stars. Delegates
 Julian Day arithmetic to julian. Does NOT own ephemeris state.
 
 Public surface:
-    TransitEvent, IngressEvent,
+    TransitEvent, IngressEvent, LunarPhaseEvent,
     next_transit, find_transits, find_ingresses,
     planet_return, solar_return, lunar_return,
-    last_new_moon, last_full_moon, prenatal_syzygy
+    last_new_moon, last_full_moon, prenatal_syzygy, find_lunar_phases
 
 Import-time side effects: None
 
@@ -67,12 +67,12 @@ __all__ = [
     "TransitConditionNetworkNode", "TransitConditionNetworkEdge",
     "TransitConditionNetworkProfile",
     # Event vessels
-    "TransitEvent", "IngressEvent",
+    "TransitEvent", "IngressEvent", "LunarPhaseEvent",
     # Core search functions
     "next_transit", "find_transits",
     "find_ingresses", "next_ingress", "next_ingress_into",
     "solar_return", "solar_return_chart", "varshaphal", "varshaphal_chart", "lunar_return", "planet_return",
-    "last_new_moon", "last_full_moon", "prenatal_syzygy",
+    "last_new_moon", "last_full_moon", "prenatal_syzygy", "find_lunar_phases",
     # Condition profile functions
     "transit_relations", "ingress_relations",
     "transit_condition_profiles", "ingress_condition_profiles",
@@ -1030,6 +1030,27 @@ class TransitEvent:
         if self.condition_profile is not None:
             return self.condition_profile.condition_state
         return None
+
+
+@dataclass(slots=True, frozen=True)
+class LunarPhaseEvent:
+    """Lightweight calendar-facing Moon phase event."""
+
+    phase_type: str
+    jd_ut: float
+    phase_angle: float
+
+    def __post_init__(self) -> None:
+        if not self.phase_type:
+            raise ValueError("LunarPhaseEvent invariant failed: phase_type must not be empty")
+        if not math.isfinite(self.jd_ut):
+            raise ValueError("LunarPhaseEvent invariant failed: jd_ut must be finite")
+        if not math.isfinite(self.phase_angle):
+            raise ValueError("LunarPhaseEvent invariant failed: phase_angle must be finite")
+
+    @property
+    def calendar_utc(self) -> CalendarDateTime:
+        return calendar_datetime_from_jd(self.jd_ut)
 
 
 @dataclass(slots=True, frozen=True)
@@ -2449,6 +2470,38 @@ def prenatal_syzygy(
     if jd_nm >= jd_fm:
         return jd_nm, "New Moon"
     return jd_fm, "Full Moon"
+
+
+def find_lunar_phases(
+    jd_start: float,
+    jd_end: float,
+    reader: SpkReader | None = None,
+) -> tuple[LunarPhaseEvent, ...]:
+    """
+    Return all eight Moon phases in a date range as a convenience calendar surface.
+
+    This is a thin wrapper over the underlying phenomena engine. It preserves
+    the exact solved JD and phase angle while presenting a simpler practitioner-
+    facing vessel than the broader generic phenomena object.
+    """
+
+    _require_finite_jd(jd_start, "jd_start")
+    _require_finite_jd(jd_end, "jd_end")
+    if jd_end < jd_start:
+        raise ValueError("jd_end must be >= jd_start")
+    if reader is None:
+        reader = get_reader()
+
+    from .phenomena import moon_phases_in_range
+
+    return tuple(
+        LunarPhaseEvent(
+            phase_type=event.phenomenon,
+            jd_ut=event.jd_ut,
+            phase_angle=event.value,
+        )
+        for event in moon_phases_in_range(jd_start, jd_end, reader=reader)
+    )
 
 
 def transit_relations(events: list[TransitEvent]) -> list[TransitRelation]:
