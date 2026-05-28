@@ -54,6 +54,8 @@ LunarCrescentVisibilityClass
 Heliacal events
 ---------------
 visibility_assessment       single-epoch check — body visible at this moment?
+visibility_tonight         practitioner alias for single-epoch check
+is_visible_tonight         boolean verdict alias over visibility_tonight
 visual_limiting_magnitude   effective limiting magnitude at epoch
 visibility_event            search for next first/last heliacal event
 planet_heliacal_rising      morning first visibility (planet)
@@ -105,6 +107,8 @@ from moira.heliacal import (
     planet_heliacal_setting,
     visibility_assessment,
     visibility_event,
+    visibility_tonight,
+    is_visible_tonight,
     visual_limiting_magnitude,
 )
 
@@ -136,6 +140,8 @@ __all__ = [
     "visibility_assessment",
     "visual_limiting_magnitude",
     "visibility_event",
+    "visibility_tonight",
+    "is_visible_tonight",
     "planet_heliacal_rising",
     "planet_heliacal_setting",
     "planet_acronychal_rising",

@@ -1,9 +1,9 @@
 from pathlib import Path
 
 # The source file
-in_file = r"C:\Users\nilad\Downloads\modern-iau-star-names.csv"
+in_file = r"C:\Users\nilad\Downloads\IAU-Catalog of Star Names (always up to date).csv"
 # The clean destination
-out_file = r"C:\Users\nilad\OneDrive\Desktop\Moira\moira\data\modern-iau-star-names-clean.csv"
+out_file = "moira/data/modern-iau-star-names-clean.csv"
 
 def cleanse_encoding():
     try:

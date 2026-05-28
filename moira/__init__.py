@@ -230,6 +230,8 @@ from .heliacal import (
     VisibilityAssessment,
     GeneralVisibilityEvent,
     visibility_assessment,
+    visibility_tonight,
+    is_visible_tonight,
     visual_limiting_magnitude,
     visibility_event,
 )
@@ -476,6 +478,8 @@ __all__ = [
     "VisibilityAssessment",
     "GeneralVisibilityEvent",
     "visibility_assessment",
+    "visibility_tonight",
+    "is_visible_tonight",
     "visual_limiting_magnitude",
     "visibility_event",
     # Hermetic decans

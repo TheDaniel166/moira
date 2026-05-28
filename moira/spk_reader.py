@@ -654,6 +654,12 @@ class SpkReader:
         Behavioral invariants:
             - position() and position_and_velocity() are pure reads; they
               never modify kernel state.
+        Concurrency contract:
+            - Concurrent reads through an already-open SpkReader are admitted.
+            - Module-level singleton replacement is serialized by the reader
+              RLock, but that serialization does not make live hot-swapping
+              safe for in-flight request traffic.
+            - close() must not race with active reads on the same reader.
         Side effects:
             - Opens a file handle to the kernel on construction.
             - Closes that file handle on close() or __exit__.
@@ -1336,7 +1342,11 @@ def add_to_global_pool(path: str | Path) -> None:
 
 @contextmanager
 def use_reader_override(reader: SpkReader | None):
-    """Temporarily route computational pillars to a caller-owned reader."""
+    """Temporarily route computational pillars to a caller-owned reader.
+
+    This is safe for per-call reader routing during pure read computation.
+    It does not make reader lifecycle mutation safe across threads.
+    """
     token = _reader_override.set(reader)
     try:
         yield

@@ -35,6 +35,8 @@ from moira.heliacal import (
     planet_heliacal_rising,
     planet_heliacal_setting,
     visibility_assessment,
+    visibility_tonight,
+    is_visible_tonight,
     visibility_event,
 )
 import moira.heliacal as heliacal_module
@@ -386,6 +388,22 @@ def test_visibility_assessment_returns_typed_result() -> None:
     )
     assert isinstance(result, VisibilityAssessment)
     assert result.criterion_family is VisibilityCriterionFamily.LIMITING_MAGNITUDE_THRESHOLD
+
+
+@pytest.mark.requires_ephemeris
+def test_visibility_tonight_is_honest_alias_for_visibility_assessment() -> None:
+    policy = VisibilityPolicy(
+        environment=ObserverVisibilityEnvironment(
+            limiting_magnitude=-30.0,
+            local_horizon_altitude_deg=-90.0,
+        )
+    )
+
+    direct = visibility_assessment(Body.VENUS, 2451545.0, 0.0, 0.0, policy=policy)
+    alias = visibility_tonight(Body.VENUS, 2451545.0, 0.0, 0.0, policy=policy)
+
+    assert alias == direct
+    assert is_visible_tonight(Body.VENUS, 2451545.0, 0.0, 0.0, policy=policy) is direct.observable
 
 
 @pytest.mark.requires_ephemeris

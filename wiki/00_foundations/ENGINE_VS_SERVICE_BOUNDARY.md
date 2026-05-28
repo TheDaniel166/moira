@@ -10,6 +10,9 @@ and any surrounding **service layer**.
 It exists to keep the engine coherent as Moira becomes more publicly exposed and
 feature requests expand beyond pure computation.
 
+For REST and HTTP-specific operating rules, see the narrower companion document
+`docs/architecture/MOIRA_SERVER_BOUNDARY.md`.
+
 ---
 
 ## 1. Core Rule

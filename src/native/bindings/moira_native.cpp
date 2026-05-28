@@ -836,7 +836,11 @@ py::tuple spk_chebyshev_series_bulk_evaluate_py(
 }
 
 py::dict read_daf_catalog_py(const std::string& path) {
-    DafCatalog catalog = read_daf_catalog(path);
+    DafCatalog catalog;
+    {
+        py::gil_scoped_release release;
+        catalog = read_daf_catalog(path);
+    }
     py::list summaries;
     for (const DafSummaryEntry& entry : catalog.summaries) {
         py::dict item;
@@ -891,7 +895,11 @@ py::dict catalog_to_py_dict(const DafCatalog& catalog) {
 py::dict read_spk_chebyshev_segment_payload_py(
     const std::string& path, int32_t start_i, int32_t end_i, bool little_endian, int32_t data_type
 ) {
-    SpkChebyshevSegmentPayload payload = read_spk_chebyshev_segment_payload(path, start_i, end_i, little_endian, data_type);
+    SpkChebyshevSegmentPayload payload;
+    {
+        py::gil_scoped_release release;
+        payload = read_spk_chebyshev_segment_payload(path, start_i, end_i, little_endian, data_type);
+    }
 
     py::list records;
     for (size_t i = 0; i < payload.record_count; ++i) {
@@ -919,9 +927,13 @@ py::dict read_spk_chebyshev_segment_payload_py(
 std::shared_ptr<SpkSegmentEvaluator> load_spk_segment_evaluator_py(
     const std::string& path, int32_t start_i, int32_t end_i, bool little_endian, int32_t data_type
 ) {
-    SpkChebyshevSegmentPayload payload = read_spk_chebyshev_segment_payload(
-        path, start_i, end_i, little_endian, data_type
-    );
+    SpkChebyshevSegmentPayload payload;
+    {
+        py::gil_scoped_release release;
+        payload = read_spk_chebyshev_segment_payload(
+            path, start_i, end_i, little_endian, data_type
+        );
+    }
     return std::make_shared<SpkSegmentEvaluator>(
         data_type,
         false,
@@ -935,11 +947,16 @@ std::shared_ptr<SpkSegmentEvaluator> load_spk_segment_evaluator_py(
 }
 
 std::shared_ptr<NativeSpkKernelHandle> open_spk_kernel_py(const std::string& path) {
+    py::gil_scoped_release release;
     return std::make_shared<NativeSpkKernelHandle>(path);
 }
 
 py::dict read_spk_type13_segment_payload_py(const std::string& path, int32_t start_i, int32_t end_i, bool little_endian) {
-    SpkType13SegmentPayload payload = read_spk_type13_segment_payload(path, start_i, end_i, little_endian);
+    SpkType13SegmentPayload payload;
+    {
+        py::gil_scoped_release release;
+        payload = read_spk_type13_segment_payload(path, start_i, end_i, little_endian);
+    }
 
     py::tuple epochs(payload.state_count);
     for (size_t i = 0; i < static_cast<size_t>(payload.state_count); ++i) {
@@ -1265,23 +1282,29 @@ PYBIND11_MODULE(_moira_native, m) {
 
     m.def("longitude_difference_batch", [](std::shared_ptr<IEvaluator> t1, std::shared_ptr<IEvaluator> t2, std::shared_ptr<IEvaluator> obs, const std::vector<double>& jds) {
         std::vector<double> out(jds.size());
-        for (size_t i = 0; i < jds.size(); ++i) {
-            out[i] = longitude_difference(*t1, *t2, *obs, jds[i]);
+        {
+            py::gil_scoped_release release;
+            for (size_t i = 0; i < jds.size(); ++i) {
+                out[i] = longitude_difference(*t1, *t2, *obs, jds[i]);
+            }
         }
         return out;
     });
 
     m.def("declination_batch", [](std::shared_ptr<IEvaluator> t, std::shared_ptr<IEvaluator> obs, const std::vector<double>& jds) {
         std::vector<double> out(jds.size());
-        for (size_t i = 0; i < jds.size(); ++i) {
-            double r_t[6], r_o[6];
-            t->evaluate(jds[i], r_t);
-            obs->evaluate(jds[i], r_o);
-            double x = r_t[0] - r_o[0];
-            double y = r_t[1] - r_o[1];
-            double z = r_t[2] - r_o[2];
-            double dist = std::sqrt(x*x + y*y + z*z);
-            out[i] = std::asin(z / dist) * 180.0 / 3.14159265358979323846;
+        {
+            py::gil_scoped_release release;
+            for (size_t i = 0; i < jds.size(); ++i) {
+                double r_t[6], r_o[6];
+                t->evaluate(jds[i], r_t);
+                obs->evaluate(jds[i], r_o);
+                double x = r_t[0] - r_o[0];
+                double y = r_t[1] - r_o[1];
+                double z = r_t[2] - r_o[2];
+                double dist = std::sqrt(x*x + y*y + z*z);
+                out[i] = std::asin(z / dist) * 180.0 / 3.14159265358979323846;
+            }
         }
         return out;
     });
@@ -1292,6 +1315,7 @@ PYBIND11_MODULE(_moira_native, m) {
 
     m.def("find_conjunctions", [](std::shared_ptr<IEvaluator> t1, std::shared_ptr<IEvaluator> t2, std::shared_ptr<IEvaluator> obs, double a, double b, double dt) {
         auto f = [&](double jd) { return longitude_difference(*t1, *t2, *obs, jd); };
+        py::gil_scoped_release release;
         return find_roots(f, a, b, dt);
     });
 
@@ -1303,14 +1327,17 @@ PYBIND11_MODULE(_moira_native, m) {
             while (val <= -180.0) val += 360.0;
             return val;
         };
+        py::gil_scoped_release release;
         return find_roots(f, a, b, dt);
     });
 
     m.def("find_stations", [](std::shared_ptr<IEvaluator> target, std::shared_ptr<IEvaluator> obs, double a, double b, double dt) {
+        py::gil_scoped_release release;
         return find_stations(*target, *obs, a, b, dt);
     });
 
     m.def("find_ingresses", [](std::shared_ptr<IEvaluator> target, std::shared_ptr<IEvaluator> obs, double a, double b, double dt) {
+        py::gil_scoped_release release;
         return find_ingresses(*target, *obs, a, b, dt);
     });
 
@@ -1321,10 +1348,16 @@ PYBIND11_MODULE(_moira_native, m) {
         .def_readonly("t_end", &OccultationEvent::t_end)
         .def_readonly("is_total", &OccultationEvent::is_total);
 
-    m.def("find_occultations", &find_occultations, 
-          py::arg("target1"), py::arg("r1_km"),
-          py::arg("target2"), py::arg("r2_km"),
-          py::arg("observer"), py::arg("a"), py::arg("b"), py::arg("dt"));
+    m.def("find_occultations",
+        [](const IEvaluator& target1, double r1_km,
+           const IEvaluator& target2, double r2_km,
+           const IEvaluator& observer, double a, double b, double dt) {
+            py::gil_scoped_release release;
+            return find_occultations(target1, r1_km, target2, r2_km, observer, a, b, dt);
+        },
+        py::arg("target1"), py::arg("r1_km"),
+        py::arg("target2"), py::arg("r2_km"),
+        py::arg("observer"), py::arg("a"), py::arg("b"), py::arg("dt"));
 
     py::enum_<EventType>(m, "EventType")
         .value("STATION", EventType::STATION)
@@ -1343,7 +1376,10 @@ PYBIND11_MODULE(_moira_native, m) {
         .def("add_station_task", &SearchPool::add_station_task)
         .def("add_ingress_task", &SearchPool::add_ingress_task)
         .def("add_occultation_task", &SearchPool::add_occultation_task)
-        .def("run", &SearchPool::run, py::arg("a"), py::arg("b"), py::arg("dt") = 0.5);
+        .def("run", [](SearchPool& self, double a, double b, double dt) {
+            py::gil_scoped_release release;
+            return self.run(a, b, dt);
+        }, py::arg("a"), py::arg("b"), py::arg("dt") = 0.5);
 
 
     // --- Geometry ---
@@ -1449,8 +1485,14 @@ PYBIND11_MODULE(_moira_native, m) {
     m.def("angular_separation", py::overload_cast<const IEvaluator&, const IEvaluator&, const IEvaluator&, double>(&angular_separation));
     m.def("angular_separation", py::overload_cast<const Vec3&, const Vec3&>(&angular_separation));
     
-    m.def("find_solar_eclipses", &find_solar_eclipses, py::arg("sun"), py::arg("moon"), py::arg("jd_start"), py::arg("jd_end"), py::arg("r_sun_km"), py::arg("r_moon_km"), py::arg("dt_days"));
-    m.def("find_lunar_eclipses", &find_lunar_eclipses, py::arg("sun"), py::arg("moon"), py::arg("jd_start"), py::arg("jd_end"), py::arg("r_sun_km"), py::arg("r_moon_km"), py::arg("r_earth_km"), py::arg("dt_days"));
+    m.def("find_solar_eclipses", [](std::shared_ptr<IEvaluator> sun, std::shared_ptr<IEvaluator> moon, double jd_start, double jd_end, double r_sun_km, double r_moon_km, double dt_days) {
+        py::gil_scoped_release release;
+        return find_solar_eclipses(sun, moon, jd_start, jd_end, r_sun_km, r_moon_km, dt_days);
+    }, py::arg("sun"), py::arg("moon"), py::arg("jd_start"), py::arg("jd_end"), py::arg("r_sun_km"), py::arg("r_moon_km"), py::arg("dt_days"));
+    m.def("find_lunar_eclipses", [](std::shared_ptr<IEvaluator> sun, std::shared_ptr<IEvaluator> moon, double jd_start, double jd_end, double r_sun_km, double r_moon_km, double r_earth_km, double dt_days) {
+        py::gil_scoped_release release;
+        return find_lunar_eclipses(sun, moon, jd_start, jd_end, r_sun_km, r_moon_km, r_earth_km, dt_days);
+    }, py::arg("sun"), py::arg("moon"), py::arg("jd_start"), py::arg("jd_end"), py::arg("r_sun_km"), py::arg("r_moon_km"), py::arg("r_earth_km"), py::arg("dt_days"));
     
     py::class_<Event>(m, "Event")
         .def_readwrite("type", &Event::type)
@@ -1645,6 +1687,7 @@ PYBIND11_MODULE(_moira_native, m) {
         [](const IEvaluator& target_eval, double jd_ut, double lat_deg, double lon_deg,
            double pressure_mbar, double temperature_c, bool use_refraction, double delta_t,
            const IEvaluator* earth_eval) {
+            py::gil_scoped_release release;
             return target_topocentric_altitude(target_eval, jd_ut, lat_deg, lon_deg,
                 pressure_mbar, temperature_c, use_refraction, delta_t, earth_eval);
         },
@@ -1656,6 +1699,7 @@ PYBIND11_MODULE(_moira_native, m) {
     m.def("find_sun_at_alt",
         [](const IEvaluator& sun_eval, double jd_midnight, double lat_deg, double lon_deg,
            double target_alt, bool morning, double delta_t, const IEvaluator* earth_eval) {
+            py::gil_scoped_release release;
             return find_sun_at_alt(sun_eval, jd_midnight, lat_deg, lon_deg,
                 target_alt, morning, delta_t, earth_eval);
         },
@@ -1668,6 +1712,7 @@ PYBIND11_MODULE(_moira_native, m) {
         [](const IEvaluator& star_eval, const IEvaluator& sun_eval, double jd_start,
            double lat, double lon, double arcus_visionis_val, int search_days,
            double delta_t, const IEvaluator* earth_eval) {
+            py::gil_scoped_release release;
             return search_heliacal_rising(star_eval, sun_eval, jd_start, lat, lon,
                 arcus_visionis_val, search_days, delta_t, earth_eval);
         },
@@ -1680,6 +1725,7 @@ PYBIND11_MODULE(_moira_native, m) {
         [](const IEvaluator& star_eval, const IEvaluator& sun_eval, double jd_start,
            double lat, double lon, double arcus_visionis_val, int search_days,
            double delta_t, const IEvaluator* earth_eval) {
+            py::gil_scoped_release release;
             return search_heliacal_setting(star_eval, sun_eval, jd_start, lat, lon,
                 arcus_visionis_val, search_days, delta_t, earth_eval);
         },

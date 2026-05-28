@@ -309,9 +309,10 @@ Moira is **astronomically comprehensive**, **computationally transparent**, and 
 - ✓ Void-of-course Moon with dedicated API
 - ✓ Planetary phenomena via `planet_phenomena_at()`
 - ✓ **Lunar phases** — exposed via `find_lunar_phases(jd_start, jd_end)` on the predictive/transit surface
-- ✗ **Planetary visibility window** — "is planet visible tonight?" convenience API; `visibility_assessment()` exists but requires non-trivial setup
+- ✓ **Planetary visibility convenience** — `visibility_tonight()` and `is_visible_tonight()` now expose the single-epoch practitioner-facing verdict directly
+- ✗ **Visibility window search convenience** — there is still no thin `next_visible_window()`-style helper over the full heliacal search subsystem
 
-**Opportunity:** Add `visibility_tonight()` or similar convenience surface for practitioner-facing visibility checks.
+**Opportunity:** If needed, add a thin `next_visible_window()` or similar alias over the existing heliacal event search for the remaining discoverability gap.
 
 ---
 
@@ -401,14 +402,14 @@ Moira is **astronomically comprehensive**, **computationally transparent**, and 
 ### 11. **NEW: Concurrency & Thread Safety at Scale** (MEDIUM PRIORITY — newly identified)
 **Professional Need:** Multi-threaded servers and parallel chart processing
 
-**Moira Status:** Partially addressed; GIL constraints remain
+**Moira Status:** Substantially addressed; closure work is now documentation and audit completion
 - ✓ C++ evaluator layer uses mutex-guarded caching — thread-safe per evaluator
 - ✓ `search_pool.hpp` — native thread pool for event searches
-- ✗ Python-level `Moira()` session and `SpkReader` are not designed for concurrent access
-- ✗ GIL release strategy for long-running C++ operations not yet formalized (audit in progress)
-- ✗ No documented threading model for the public API
+- ✓ `SpkReader` and reader singleton lifecycle now carry explicit concurrent-read and serialized-lifecycle contracts
+- ✓ Long-running pure-native C++ entry points have explicit GIL-release coverage on the major search, payload, kernel-handle, and bulk-compute paths
+- ✗ Public deployment guidance for threaded services still needs to be consumed by downstream REST/server work
 
-**Opportunity:** Formalize GIL release annotations for C++ extension calls; document thread-safety contract for `SpkReader` and the `Moira` facade; expose a `ThreadedMoira` or process-pool pattern for server deployments.
+**Opportunity:** Treat this as a production-guidance and server-pattern concern rather than a missing substrate concern; prefer a documented stable-reader deployment model and process-worker isolation where needed.
 
 ---
 
@@ -511,7 +512,7 @@ Moira is **astronomically comprehensive**, **computationally transparent**, and 
    - FastAPI server with endpoints for all major Moira functions
    - OpenAPI schema for discoverability
    - Docker container for easy deployment
-   - GIL release formalization as prerequisite
+   - Consume the documented stable-reader deployment model during service packaging
    - **Impact:** Opens Moira to web/mobile developers; enables hosted service revenue
    - **Effort:** Medium (3-4 weeks given C++ layer already handles hot path)
 
@@ -522,10 +523,10 @@ Moira is **astronomically comprehensive**, **computationally transparent**, and 
    - **Effort:** Low (1 week — batch infrastructure already in place)
 
 3. **Thread Safety Documentation & GIL Release Audit**
-   - Document `SpkReader` and `Moira` facade threading contracts
-   - Annotate C++ extension calls with GIL release where safe
-   - **Impact:** Required before REST API deployment is production-safe
-   - **Effort:** Low-medium (1-2 weeks)
+   - Public threading contract, native GIL audit, rebuild proof, runtime verification, and adversarial verification are now in place
+   - Remaining work is not engine closure; it is correct adoption of the documented deployment model in future REST/service packaging
+   - **Impact:** Important for production operations, but no longer an open engine substrate gap
+   - **Effort:** Low
 
 ### **Tier 2: Vedic & Professional Workflow (Implement Second)**
 
@@ -629,9 +630,9 @@ Moira's foundation has materially strengthened since April 2026. The batch opera
 The remaining strategic priorities in order are:
 
 1. **REST API** — transforms Moira from a library into a platform
-2. **Thread safety formalization** — required before server deployment
-3. **Batch synastry** — low-effort gap closure using existing batch infrastructure
-4. **Muhurta / practitioner workflow** — now the clearer Vedic workflow gap after the Varshaphal annual layer
-5. **Chart persistence + research tools** — unlocks the research and data workflows that Solar Fire and Kepler own today
+2. **Batch synastry** — low-effort gap closure using existing batch infrastructure
+3. **Muhurta / practitioner workflow** — now the clearer Vedic workflow gap after the Varshaphal annual layer
+4. **Chart persistence + research tools** — unlocks the research and data workflows that Solar Fire and Kepler own today
+5. **REST deployment packaging discipline** — apply the documented stable-reader and no-hot-swap threading model when the server layer is built
 
 The opportunity is no longer solely to offer Moira as a Python library. The C++ layer, batch API, and comprehensive technique coverage now support positioning Moira as **a production computational platform** that application developers, researchers, and Vedic/Western practitioners can build on top of — either as a library, a REST service, or a hosted API.

@@ -62,6 +62,11 @@ lunar-graze = [
     "laspy[lazrs]>=2.7",
     "requests>=2.31",
 ]
+server = [
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "pydantic>=2.8",
+]
 dev = [
     "build>=1.2",
     "cmake>=3.24",
@@ -82,7 +87,7 @@ moira-kernel-manager   = "moira.kernel_manager_ui:main"
 moira-daf-writer       = "moira.daf_writer_ui:main"
 
 [tool.setuptools]
-packages = ["moira", "moira.data", "moira.compat", "moira.compat.nasa", "moira.constellations", "moira.primary_directions", "moira.harmograms", "moira.bridges", "moira.kernels", "moira.sky"]
+packages = ["moira", "moira.data", "moira.compat", "moira.compat.nasa", "moira.constellations", "moira.primary_directions", "moira.harmograms", "moira.bridges", "moira.kernels", "moira.sky", "moira_server", "moira_server.models", "moira_server.routers", "moira_server.serializers", "moira_server.services"]
 
 [tool.setuptools.package-data]
 moira = [

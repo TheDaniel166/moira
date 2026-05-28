@@ -51,6 +51,8 @@ LAW OF OPERATION:
     Non-responsibilities:
         - Does not own or implement any astronomical computation.
         - Does not manage thread-level concurrency beyond reader routing.
+        - Does not make global kernel mutation or reconfiguration safe under
+          concurrent request traffic.
     Dependencies:
         - moira.spk_reader.SpkReader
         - moira.facade.use_reader_override (context manager)
@@ -60,6 +62,13 @@ LAW OF OPERATION:
         - ``_supplemental_kernel_init_error`` captures the most recent
           optional supplemental-kernel load failure without blocking the
           planetary reader.
+    Concurrency contract:
+        - Pure read-only facade calls on a stable initialized instance are
+          admitted across threads.
+        - Reader override routing gives each public call a consistent active
+          reader context.
+        - Lifecycle mutation APIs such as kernel reconfiguration remain
+          startup/test operations, not live threaded deployment primitives.
 
 Canon: Moira Sovereign Facade Architecture; moira.facade kernel policy.
 

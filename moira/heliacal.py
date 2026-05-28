@@ -77,6 +77,8 @@ __all__ = [
     "visibility_assessment",
     "visual_limiting_magnitude",
     "visibility_event",
+    "visibility_tonight",
+    "is_visible_tonight",
     "planet_heliacal_rising",
     "planet_heliacal_setting",
     "planet_acronychal_rising",
@@ -3069,6 +3071,42 @@ def visual_limiting_magnitude(
         if delta < 0.0:
             magnitude += delta
     return magnitude
+
+
+def visibility_tonight(
+    body: str,
+    jd_ut: float,
+    lat: float,
+    lon: float,
+    *,
+    policy: VisibilityPolicy | None = None,
+) -> VisibilityAssessment:
+    """
+    Convenience alias for a practitioner-facing single-night visibility check.
+
+    This wrapper introduces no new visibility doctrine. It delegates directly
+    to ``visibility_assessment()`` at the supplied Julian Day.
+    """
+
+    return visibility_assessment(body, jd_ut, lat, lon, policy=policy)
+
+
+def is_visible_tonight(
+    body: str,
+    jd_ut: float,
+    lat: float,
+    lon: float,
+    *,
+    policy: VisibilityPolicy | None = None,
+) -> bool:
+    """
+    Return only the boolean verdict from ``visibility_tonight()``.
+
+    This is the minimal discoverability alias for callers who want a simple
+    yes/no answer without inspecting the full assessment vessel.
+    """
+
+    return visibility_tonight(body, jd_ut, lat, lon, policy=policy).observable
 
 
 def visibility_event(

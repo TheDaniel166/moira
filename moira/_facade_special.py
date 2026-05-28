@@ -178,6 +178,18 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
             jd_start, jd_end, reader=self._reader
         )
 
+    def visibility_tonight(self, body: str, jd_ut: float, lat: float, lon: float, *, policy=None):
+        """Return the practitioner-facing visibility assessment alias for one epoch."""
+        return _facade_module().visibility_tonight(
+            body, jd_ut, lat, lon, policy=policy
+        )
+
+    def is_visible_tonight(self, body: str, jd_ut: float, lat: float, lon: float, *, policy=None) -> bool:
+        """Return only the boolean visibility verdict for one epoch."""
+        return _facade_module().is_visible_tonight(
+            body, jd_ut, lat, lon, policy=policy
+        )
+
     def next_conjunction(
         self, body1: str, body2: str, jd_start: float, max_days: float = 1200.0
     ):
