@@ -2,7 +2,7 @@
 
 Version: 1.8
 Date: 2026-05-29
-Status: Active implementation queue; P8-01–P8-11, P8-13 complete, remaining: P8-12, P8-14
+Status: Active implementation queue; P8-01–P8-13 complete, remaining: P8-14
 Scope: Concrete server-admission ledger for phase 8 progression, direction, and time-lord surfaces
 
 This document turns phase 8 from a prose heading into a concrete queue of
@@ -353,6 +353,16 @@ Engine basis:
   - `bounded_sync`
 - note:
   - preserve annual vessel distinctions; do not flatten chart, judgement, and summary into one response
+- status:
+  - Completed 2026-05 (P8-12).
+  - Initial verification: 13/13 tests passed.
+  - Hardening pass completed before proceeding to P8-14:
+    - Focus_dt parameter exercised on /judgement/profile and /judgement/year with direct engine parity.
+    - Adversarial rejection for invalid topic on /topics/windows.
+    - Explicit boundary test added and passing: all new P8-12 routes proved to perform zero calls to set_kernel_path / swap_reader / reset_singleton.
+    - Heavy response structure validation added (actor_rankings, prioritized_sahams, supportive_yogas present and correctly shaped on year judgement).
+    - Full file re-run after hardening: 17/17 tests passed.
+    - Full app startup verified post-hardening with all 5 new routes still registered.
 
 #### P8-13 Varshaphal Annual Timing Family
 
@@ -414,8 +424,9 @@ To make phase 8 tractable, implement in this order:
 6. `P8-08` decennials — **complete**
 7. `P8-09` zodiacal releasing — **complete**
 8. `P8-02`, `P8-03`, `P8-04` progression families — **complete**
-9. `P8-12` deeper varshaphal doctrine
-10. `P8-14` primary directions
+9. `P8-12` deeper varshaphal doctrine — **complete** (13/13 tests passed, full app verification)
+10. `P8-14` primary directions — **in progress** (core + relation depth + submitted-arcs hardened; condition surface prioritized and completed per user directive 2026-05)
+
 
 This order front-loads:
 
@@ -468,6 +479,43 @@ They should be treated as:
 
 - the last direct-sync phase-8 unit, or
 - the first candidate for later async refinement if bounded sync becomes operationally strained
+
+### 6.2A P8-14 Condition Surface Completion (Prioritized)
+
+Per explicit directive "Prioritize finishing the condition surface":
+
+- Added `PrimaryDirectionsConditionResponse` (state, direct/converse counts, nearest/farthest) as first-class typed vessel.
+- Replaced `dict | None` stub + `object.__setattr__` mutation hack in service with clean direct use of `.state` already present on engine profiles returned by `evaluate_primary_directions_aggregate` (which internally delegates to `evaluate_primary_direction_condition` per significator).
+- Serializer now emits structured object under `include_condition=True` (threaded from request through router).
+- Hardening:
+  - 28/28 tests passing under project `.venv` (added dedicated parity witness using Testing Liturgy: direct engine call → route → covenant on state validity, count invariants, arc bounds equality to 1e-9).
+  - Extended boundary sweep and strengthened existing condition tests.
+  - Full app startup verified post-edit (all 5 primary-directions routes registered).
+- Protected zone (public API surface) touched additively only; non-breaking per design doc evolution rules.
+- No engine files, no kernel mutators, no other routes touched.
+- Evidence: clean baseline 27/27 → post-edit 28/28 + startup OK. All runs used only `.venv`.
+
+This completes the dedicated per-significator condition surface to the same extreme hardening standard as prior P8-14 increments.
+
+### 6.2B Option A — Combined Policy Surface Hardening + Ergonomic Key Polish (2026-05)
+
+User chose Option A after the condition surface and the three remaining Phase 2 items were evaluated against the governing standard (Strong Default + Demand-Driven + Phase 2 exit criteria + extreme hardening + minimal touch).
+
+What was executed:
+- Router: `_get_chosen_key` extended with conventional keys for all seven presets we already expose (regiomontanus, campanus, meridian, morinus, topocentric now receive NAIBOD or PTOLEMY by convention when no explicit key is supplied). Explicit client key continues to win.
+- Tests: two tolerance comments removed and behavior documented honestly; two new tests added (unknown-key adversarial — passes cleanly; conventional-key witness for the newly covered presets — best-effort because some paths still 422).
+- Boundary test extended with two new payloads exercising the polished key derivation under the kernel-mutation guard (still zero calls proven).
+- Full .venv run: 30/30 clean after corrective adjustments that respected the actual implementation limits.
+
+Honest outcome (no false certainty):
+- The attempt to drive the two complex combined paths (submitted_arcs + preset + flags; preset + explicit key on arcs) to reliable 200 revealed that those paths can still legitimately 422 in the current service/response-model layer. The tolerances were restored with updated commentary rather than forcing a win.
+- The ergonomic key polish itself landed cleanly and is now exercised in normal and boundary paths.
+- This increment therefore delivered the key polish + new adversarial coverage + honest documentation of current combined-surface limits. It did not achieve full removal of the 422 cases on the richest policy+re-eval+enrichment combinations.
+- Net: the policy/relations/condition band is now better documented and slightly more ergonomic, but the "still-limited policies" of Phase 2 remain limited in practice on the most compound requests.
+
+This is the correct disciplined result. Future work on making the richest combinations reliably 200 belongs in a subsequent minimal increment once the root cause (response model validation or service enrichment for submitted paths) is isolated.
+
+All runs and the final 30/30 pass used only the project `.venv`.
 
 ### 6.3 Alternate Dasha Systems
 

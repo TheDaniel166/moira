@@ -11,6 +11,7 @@ from .relationship import router as relationship_router
 from .returns import router as returns_router
 from .timelords import router as timelords_router
 from .transits import router as transits_router
+from .primary_directions import router as primary_directions_router
 from .varshaphal import router as varshaphal_router
 from .visibility import router as visibility_router
 
@@ -21,6 +22,7 @@ __all__ = [
     "health_router",
     "phenomena_router",
     "positions_router",
+    "primary_directions_router",
     "progressions_router",
     "relationship_router",
     "returns_router",

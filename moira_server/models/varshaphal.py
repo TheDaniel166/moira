@@ -240,6 +240,202 @@ class MuddaPeriodJudgementResponse(_StrictModel):
     sub_result: MuddaPeriodResultProfileResponse
 
 
+# ---------------------------------------------------------------------------
+# P8-12: Deeper Varshaphal annual doctrine response models
+# These preserve the full engine vessel distinctions without flattening.
+# ---------------------------------------------------------------------------
+
+class TajikaPanchavargiStrengthResponse(_StrictModel):
+    """Primary-source Tajika five-dignity strength on the 20-point scale."""
+    planet: str
+    longitude: float
+    sign: str
+    domicile_lord: str
+    domicile_relationship: str
+    domicile_score: float
+    exaltation_basis_planet: str | None
+    exaltation_relationship: str
+    exaltation_score: float
+    hadda_lord: str
+    hadda_relationship: str
+    hadda_score: float
+    decan_lord: str
+    decan_relationship: str
+    decan_score: float
+    musallaha_lord: str
+    musallaha_relationship: str
+    musallaha_score: float
+    total_score: float
+
+
+class TajikaKalaBalaResponse(_StrictModel):
+    """Primary-source Tajika temporal strength breakdown."""
+    planet: str
+    sect_strength: float
+    luminary_elongation_strength: float
+    venus_elongation_strength: float
+    night_watch_strength: float
+    total_score: float
+
+
+class TajikaChestaBalaResponse(_StrictModel):
+    """Primary-source Tajika motion strength breakdown."""
+    planet: str
+    motion_mode_strength: float
+    benefic_contact_strength: float
+    solar_synodic_strength: float
+    blocked_by_malefic_contact: bool
+    total_score: float
+
+
+class TajikaDrigBalaResponse(_StrictModel):
+    """Primary-source Tajika aspect strength breakdown."""
+    planet: str
+    ascendant_aspect_strength: float
+    benefic_support_strength: float
+    blocked_by_malefic_square: bool
+    total_score: float
+
+
+class TajikaShadbalaProfileResponse(_StrictModel):
+    """Primary-source Tajika sixfold strength profile for one annual planet."""
+    planet: str
+    panchavargi_strength: TajikaPanchavargiStrengthResponse
+    directional_strength: float
+    temporal_strength: TajikaKalaBalaResponse
+    natural_strength: float
+    motion_strength: TajikaChestaBalaResponse
+    aspect_strength: TajikaDrigBalaResponse
+    total_score: float
+
+
+class VarshaphalActorJudgementResponse(_StrictModel):
+    """Ranked annual testimony for one governing actor in the return chart."""
+    actor: str
+    planet: str
+    house: int
+    supportive_yoga_count: int
+    obstructive_yoga_count: int
+    panchavargi_strength: TajikaPanchavargiStrengthResponse
+    shadbala: TajikaShadbalaProfileResponse
+    authority_score: float
+    authority: str
+
+
+class VarshaphalSahamJudgementResponse(_StrictModel):
+    """Ranked annual testimony for one Saham through its place and ruler."""
+    saham_name: str
+    house: int
+    ruler: str
+    ruler_house: int
+    ruler_strength: TajikaShadbalaProfileResponse
+    relevance_score: float
+    authority: str
+
+
+class VarshaphalSahamPriorityResponse(_StrictModel):
+    """Source-owned gate for whether a Saham should weigh in the annual verdict."""
+    saham_name: str
+    annual_judgement: VarshaphalSahamJudgementResponse
+    natal_judgement: VarshaphalSahamJudgementResponse
+    priority: str
+    is_considered: bool
+    doctrine: str
+
+
+class VarshaphalJudgementProfileResponse(_StrictModel):
+    """First annual judgement scaffold built around the ruler of the year."""
+    varshesha: VarsheshaResultResponse
+    supportive_yogas: list[str]
+    obstructive_yogas: list[str]
+    varshesha_house: int
+    varshesha_dignity: str  # simplified; engine carries full VedicDignityResult
+    varshesha_strength: TajikaPanchavargiStrengthResponse
+    varshesha_shadbala: TajikaShadbalaProfileResponse
+    muntha_lord_shadbala: TajikaShadbalaProfileResponse
+    year_lagna_lord: str
+    year_lagna_lord_strong: bool
+    actor_rankings: list[VarshaphalActorJudgementResponse]
+    key_saham_rankings: list[VarshaphalSahamJudgementResponse]
+    # mudda_period is optional and heavy; exposed via dedicated timing routes
+    strongest_testimonies: list[str]
+    yearly_strength_balance: str
+    ascendant_authority_indication: str
+
+
+class VarshaphalYearJudgementResponse(_StrictModel):
+    """Consolidated annual verdict surface over the Varshaphal doctrine layers."""
+    profile: VarshaphalJudgementProfileResponse
+    dominant_governor: VarshaphalActorJudgementResponse | None
+    supporting_governors: list[VarshaphalActorJudgementResponse]
+    strained_governors: list[VarshaphalActorJudgementResponse]
+    topics: list["VarshaphalTopicJudgementResponse"]
+    foreground_topics: list["VarshaphalTopicJudgementResponse"]
+    obstructed_topics: list["VarshaphalTopicJudgementResponse"]
+    background_topics: list["VarshaphalTopicJudgementResponse"]
+    prioritized_sahams: list[VarshaphalSahamPriorityResponse]
+    disregarded_sahams: list[VarshaphalSahamPriorityResponse]
+    key_sahams: list[VarshaphalSahamJudgementResponse]
+    # timed_period exposed via dedicated timing routes
+    supportive_yogas: list[str]
+    obstructive_yogas: list[str]
+    decisive_testimonies: list[str]
+    final_verdict: str
+    conflict_resolution: str
+    verdict_basis: list[str]
+
+
+class VarshaphalTopicJudgementResponse(_StrictModel):
+    """Named annual result channel built from source-owned Sahama and house testimonies."""
+    topic: str
+    saham_name: str
+    polarity: str
+    # saham_priority may be heavy; optional for transport economy
+    house_numbers: list[int]
+    house_rulers: list[str]
+    supportive_relation_to_varshesha: bool
+    obstructive_relation_to_varshesha: bool
+    timed_activation: str
+    emphasis_score: float
+    judgement: str
+    basis: list[str]
+
+
+class VarshaphalTopicWindowResponse(_StrictModel):
+    """Timed activation window for one annual topic within the Mudda or Tāsīra sequence."""
+    topic: str
+    start_jd: float
+    end_jd: float
+    source: str
+    major_lord: str
+    sub_lord: str
+    activation_kind: str
+    basis: list[str]
+
+
+class VarshaphalYearSummaryResponse(_StrictModel):
+    """Structured summary/report surface for a Varshaphal year."""
+    yearly_tone: str
+    dominant_governor: str | None
+    foreground_topics: list[str]
+    obstructed_topics: list[str]
+    background_topics: list[str]
+    timed_highlights: list[str]
+    strongest_testimonies: list[str]
+    narrative_basis: list[str]
+
+
+# Forward refs for recursive / self-referential models
+VarshaphalYearJudgementResponse.model_rebuild()
+VarshaphalTopicJudgementResponse.model_rebuild()
+
+
+# Request model for deeper doctrine queries (focus date for timed judgement surfaces)
+class VarshaphalDoctrineRequest(VarshaphalChartRequest):
+    """Request for deeper annual doctrine surfaces. Inherits chart construction parameters."""
+    focus_dt: datetime | None = None  # optional focus moment inside the year for timed profiles
+
+
 __all__ = [
     "MuddaDashaActivationResponse",
     "MuddaDashaPeriodResponse",
@@ -248,13 +444,27 @@ __all__ = [
     "MuddaPeriodResultProfileResponse",
     "MunthaConditionProfileResponse",
     "TajikaAspectResponse",
+    "TajikaChestaBalaResponse",
+    "TajikaDrigBalaResponse",
+    "TajikaKalaBalaResponse",
+    "TajikaPanchavargiStrengthResponse",
+    "TajikaShadbalaProfileResponse",
     "TajikaYogaResponse",
     "TasiraDashaResponse",
     "TasiraPeriodResponse",
+    "VarshaphalActorJudgementResponse",
     "VarshaphalChartRequest",
     "VarshaphalChartResponse",
+    "VarshaphalDoctrineRequest",
     "VarshaphalHouseCuspsResponse",
+    "VarshaphalJudgementProfileResponse",
+    "VarshaphalSahamJudgementResponse",
+    "VarshaphalSahamPriorityResponse",
     "VarshaphalSahamResponse",
     "VarshaphalTimingRequest",
+    "VarshaphalTopicJudgementResponse",
+    "VarshaphalTopicWindowResponse",
+    "VarshaphalYearJudgementResponse",
+    "VarshaphalYearSummaryResponse",
     "VarsheshaResultResponse",
 ]

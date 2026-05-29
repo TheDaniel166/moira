@@ -17,6 +17,7 @@ from .routers import (
     health_router,
     phenomena_router,
     positions_router,
+    primary_directions_router,
     progressions_router,
     relationship_router,
     returns_router,
@@ -73,4 +74,5 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(relationship_router)
     app.include_router(timelords_router)
     app.include_router(varshaphal_router)
+    app.include_router(primary_directions_router)
     return app

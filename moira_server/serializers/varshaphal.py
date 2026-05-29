@@ -11,11 +11,24 @@ from moira.varshaphal import (
     MuddaPeriodResultProfile,
     MunthaConditionProfile,
     TajikaAspect,
+    TajikaChestaBala,
+    TajikaDrigBala,
+    TajikaKalaBala,
+    TajikaPanchavargiStrength,
+    TajikaShadbalaProfile,
     TajikaYoga,
     TasiraDasha,
     TasiraPeriod,
+    VarshaphalActorJudgement,
     VarshaphalChart,
+    VarshaphalJudgementProfile,
     VarshaphalSaham,
+    VarshaphalSahamJudgement,
+    VarshaphalSahamPriority,
+    VarshaphalTopicJudgement,
+    VarshaphalTopicWindow,
+    VarshaphalYearJudgement,
+    VarshaphalYearSummary,
     VarsheshaResult,
 )
 
@@ -27,12 +40,25 @@ from ..models.varshaphal import (
     MuddaPeriodResultProfileResponse,
     MunthaConditionProfileResponse,
     TajikaAspectResponse,
+    TajikaChestaBalaResponse,
+    TajikaDrigBalaResponse,
+    TajikaKalaBalaResponse,
+    TajikaPanchavargiStrengthResponse,
+    TajikaShadbalaProfileResponse,
     TajikaYogaResponse,
     TasiraDashaResponse,
     TasiraPeriodResponse,
+    VarshaphalActorJudgementResponse,
     VarshaphalChartResponse,
     VarshaphalHouseCuspsResponse,
+    VarshaphalJudgementProfileResponse,
+    VarshaphalSahamJudgementResponse,
+    VarshaphalSahamPriorityResponse,
     VarshaphalSahamResponse,
+    VarshaphalTopicJudgementResponse,
+    VarshaphalTopicWindowResponse,
+    VarshaphalYearJudgementResponse,
+    VarshaphalYearSummaryResponse,
     VarsheshaResultResponse,
 )
 
@@ -236,9 +262,221 @@ def serialize_mudda_judgement(judgement: MuddaPeriodJudgement) -> MuddaPeriodJud
     )
 
 
+# ---------------------------------------------------------------------------
+# P8-12 serializers — thin declarative mappings only
+# ---------------------------------------------------------------------------
+
+def _serialize_panchavargi_strength(p: TajikaPanchavargiStrength) -> TajikaPanchavargiStrengthResponse:
+    return TajikaPanchavargiStrengthResponse(
+        planet=p.planet,
+        longitude=p.longitude,
+        sign=p.sign,
+        domicile_lord=p.domicile_lord,
+        domicile_relationship=p.domicile_relationship,
+        domicile_score=p.domicile_score,
+        exaltation_basis_planet=p.exaltation_basis_planet,
+        exaltation_relationship=p.exaltation_relationship,
+        exaltation_score=p.exaltation_score,
+        hadda_lord=p.hadda_lord,
+        hadda_relationship=p.hadda_relationship,
+        hadda_score=p.hadda_score,
+        decan_lord=p.decan_lord,
+        decan_relationship=p.decan_relationship,
+        decan_score=p.decan_score,
+        musallaha_lord=p.musallaha_lord,
+        musallaha_relationship=p.musallaha_relationship,
+        musallaha_score=p.musallaha_score,
+        total_score=p.total_score,
+    )
+
+
+def _serialize_kala_bala(k: TajikaKalaBala) -> TajikaKalaBalaResponse:
+    return TajikaKalaBalaResponse(
+        planet=k.planet,
+        sect_strength=k.sect_strength,
+        luminary_elongation_strength=k.luminary_elongation_strength,
+        venus_elongation_strength=k.venus_elongation_strength,
+        night_watch_strength=k.night_watch_strength,
+        total_score=k.total_score,
+    )
+
+
+def _serialize_chesta_bala(c: TajikaChestaBala) -> TajikaChestaBalaResponse:
+    return TajikaChestaBalaResponse(
+        planet=c.planet,
+        motion_mode_strength=c.motion_mode_strength,
+        benefic_contact_strength=c.benefic_contact_strength,
+        solar_synodic_strength=c.solar_synodic_strength,
+        blocked_by_malefic_contact=c.blocked_by_malefic_contact,
+        total_score=c.total_score,
+    )
+
+
+def _serialize_drig_bala(d: TajikaDrigBala) -> TajikaDrigBalaResponse:
+    return TajikaDrigBalaResponse(
+        planet=d.planet,
+        ascendant_aspect_strength=d.ascendant_aspect_strength,
+        benefic_support_strength=d.benefic_support_strength,
+        blocked_by_malefic_square=d.blocked_by_malefic_square,
+        total_score=d.total_score,
+    )
+
+
+def _serialize_shadbala_profile(s: TajikaShadbalaProfile) -> TajikaShadbalaProfileResponse:
+    return TajikaShadbalaProfileResponse(
+        planet=s.planet,
+        panchavargi_strength=_serialize_panchavargi_strength(s.panchavargi_strength),
+        directional_strength=s.directional_strength,
+        temporal_strength=_serialize_kala_bala(s.temporal_strength),
+        natural_strength=s.natural_strength,
+        motion_strength=_serialize_chesta_bala(s.motion_strength),
+        aspect_strength=_serialize_drig_bala(s.aspect_strength),
+        total_score=s.total_score,
+    )
+
+
+def _serialize_actor_judgement(a: VarshaphalActorJudgement) -> VarshaphalActorJudgementResponse:
+    return VarshaphalActorJudgementResponse(
+        actor=a.actor,
+        planet=a.planet,
+        house=a.house,
+        supportive_yoga_count=a.supportive_yoga_count,
+        obstructive_yoga_count=a.obstructive_yoga_count,
+        panchavargi_strength=_serialize_panchavargi_strength(a.panchavargi_strength),
+        shadbala=_serialize_shadbala_profile(a.shadbala),
+        authority_score=a.authority_score,
+        authority=a.authority,
+    )
+
+
+def _serialize_saham_judgement(sj: VarshaphalSahamJudgement) -> VarshaphalSahamJudgementResponse:
+    return VarshaphalSahamJudgementResponse(
+        saham_name=sj.saham_name,
+        house=sj.house,
+        ruler=sj.ruler,
+        ruler_house=sj.ruler_house,
+        ruler_strength=_serialize_shadbala_profile(sj.ruler_strength),
+        relevance_score=sj.relevance_score,
+        authority=sj.authority,
+    )
+
+
+def _serialize_saham_priority(sp: VarshaphalSahamPriority) -> VarshaphalSahamPriorityResponse:
+    return VarshaphalSahamPriorityResponse(
+        saham_name=sp.saham_name,
+        annual_judgement=_serialize_saham_judgement(sp.annual_judgement),
+        natal_judgement=_serialize_saham_judgement(sp.natal_judgement),
+        priority=sp.priority,
+        is_considered=sp.is_considered,
+        doctrine=sp.doctrine,
+    )
+
+
+def serialize_varshaphal_judgement_profile(profile: VarshaphalJudgementProfile) -> VarshaphalJudgementProfileResponse:
+    """Serialize the core annual judgement scaffold (P8-12)."""
+    return VarshaphalJudgementProfileResponse(
+        varshesha=_serialize_varshesha(profile.varshesha),
+        supportive_yogas=list(profile.supportive_yogas),
+        obstructive_yogas=list(profile.obstructive_yogas),
+        varshesha_house=profile.varshesha_house,
+        varshesha_dignity=profile.varshesha_dignity.name if hasattr(profile.varshesha_dignity, "name") else str(profile.varshesha_dignity),
+        varshesha_strength=_serialize_panchavargi_strength(profile.varshesha_strength),
+        varshesha_shadbala=_serialize_shadbala_profile(profile.varshesha_shadbala),
+        muntha_lord_shadbala=_serialize_shadbala_profile(profile.muntha_lord_shadbala),
+        year_lagna_lord=profile.year_lagna_lord,
+        year_lagna_lord_strong=profile.year_lagna_lord_strong,
+        actor_rankings=[_serialize_actor_judgement(a) for a in profile.actor_rankings],
+        key_saham_rankings=[_serialize_saham_judgement(sj) for sj in profile.key_saham_rankings],
+        strongest_testimonies=list(profile.strongest_testimonies),
+        yearly_strength_balance=profile.yearly_strength_balance,
+        ascendant_authority_indication=profile.ascendant_authority_indication,
+    )
+
+
+def serialize_varshaphal_year_judgement(judgement: VarshaphalYearJudgement) -> VarshaphalYearJudgementResponse:
+    """Serialize the full consolidated annual verdict (P8-12)."""
+    return VarshaphalYearJudgementResponse(
+        profile=serialize_varshaphal_judgement_profile(judgement.profile),
+        dominant_governor=_serialize_actor_judgement(judgement.dominant_governor) if judgement.dominant_governor else None,
+        supporting_governors=[_serialize_actor_judgement(g) for g in judgement.supporting_governors],
+        strained_governors=[_serialize_actor_judgement(g) for g in judgement.strained_governors],
+        topics=[_serialize_topic_judgement(t) for t in judgement.topics],
+        foreground_topics=[_serialize_topic_judgement(t) for t in judgement.foreground_topics],
+        obstructed_topics=[_serialize_topic_judgement(t) for t in judgement.obstructed_topics],
+        background_topics=[_serialize_topic_judgement(t) for t in judgement.background_topics],
+        prioritized_sahams=[_serialize_saham_priority(p) for p in judgement.prioritized_sahams],
+        disregarded_sahams=[_serialize_saham_priority(p) for p in judgement.disregarded_sahams],
+        key_sahams=[_serialize_saham_judgement(sj) for sj in judgement.key_sahams],
+        supportive_yogas=list(judgement.supportive_yogas),
+        obstructive_yogas=list(judgement.obstructive_yogas),
+        decisive_testimonies=list(judgement.decisive_testimonies),
+        final_verdict=judgement.final_verdict,
+        conflict_resolution=judgement.conflict_resolution,
+        verdict_basis=list(judgement.verdict_basis),
+    )
+
+
+def _serialize_topic_judgement(tj: VarshaphalTopicJudgement) -> VarshaphalTopicJudgementResponse:
+    return VarshaphalTopicJudgementResponse(
+        topic=tj.topic,
+        saham_name=tj.saham_name,
+        polarity=tj.polarity,
+        house_numbers=list(tj.house_numbers),
+        house_rulers=list(tj.house_rulers),
+        supportive_relation_to_varshesha=tj.supportive_relation_to_varshesha,
+        obstructive_relation_to_varshesha=tj.obstructive_relation_to_varshesha,
+        timed_activation=tj.timed_activation,
+        emphasis_score=tj.emphasis_score,
+        judgement=tj.judgement,
+        basis=list(tj.basis),
+    )
+
+
+def serialize_varshaphal_topic_judgements(topics: tuple[VarshaphalTopicJudgement, ...] | list[VarshaphalTopicJudgement]) -> list[VarshaphalTopicJudgementResponse]:
+    """Serialize topic judgement list (P8-12)."""
+    return [_serialize_topic_judgement(t) for t in topics]
+
+
+def serialize_varshaphal_topic_windows(windows: tuple[VarshaphalTopicWindow, ...] | list[VarshaphalTopicWindow]) -> list[VarshaphalTopicWindowResponse]:
+    """Serialize timed topic activation windows (P8-12)."""
+    return [
+        VarshaphalTopicWindowResponse(
+            topic=w.topic,
+            start_jd=w.start_jd,
+            end_jd=w.end_jd,
+            source=w.source,
+            major_lord=w.major_lord,
+            sub_lord=w.sub_lord,
+            activation_kind=w.activation_kind,
+            basis=list(w.basis),
+        )
+        for w in windows
+    ]
+
+
+def serialize_varshaphal_year_summary(summary: VarshaphalYearSummary) -> VarshaphalYearSummaryResponse:
+    """Serialize the structured annual summary (P8-12)."""
+    return VarshaphalYearSummaryResponse(
+        yearly_tone=summary.yearly_tone,
+        dominant_governor=summary.dominant_governor,
+        foreground_topics=list(summary.foreground_topics),
+        obstructed_topics=list(summary.obstructed_topics),
+        background_topics=list(summary.background_topics),
+        timed_highlights=list(summary.timed_highlights),
+        strongest_testimonies=list(summary.strongest_testimonies),
+        narrative_basis=list(summary.narrative_basis),
+    )
+
+
 __all__ = [
     "serialize_mudda_activation",
     "serialize_mudda_judgement",
     "serialize_tasira_active",
     "serialize_varshaphal_chart",
+    # P8-12
+    "serialize_varshaphal_judgement_profile",
+    "serialize_varshaphal_topic_judgements",
+    "serialize_varshaphal_topic_windows",
+    "serialize_varshaphal_year_judgement",
+    "serialize_varshaphal_year_summary",
 ]
