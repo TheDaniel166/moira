@@ -27,7 +27,8 @@ Import-time side effects: None
 External dependency assumptions:
     - DE441 SPK kernel must be accessible via moira.spk_reader.get_reader()
       (loaded lazily on first EclipseCalculator method call).
-    - jplephem must be importable (used internally by SpkReader).
+    - SpkReader may serve the supported planetary path through Moira's native
+      reader; jplephem remains only an optional fallback for unsupported layouts.
 
 Public surface / exports:
     EclipseType, EclipseData, EclipseEvent, LunarEclipseAnalysis,

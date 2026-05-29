@@ -13,13 +13,16 @@ from .lifecycle import create_engine
 from .routers import (
     batch_router,
     chart_router,
+    dasha_router,
     health_router,
     phenomena_router,
     positions_router,
+    progressions_router,
     relationship_router,
     returns_router,
     timelords_router,
     transits_router,
+    varshaphal_router,
     visibility_router,
 )
 
@@ -65,6 +68,9 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(batch_router)
     app.include_router(visibility_router)
     app.include_router(phenomena_router)
+    app.include_router(dasha_router)
+    app.include_router(progressions_router)
     app.include_router(relationship_router)
     app.include_router(timelords_router)
+    app.include_router(varshaphal_router)
     return app

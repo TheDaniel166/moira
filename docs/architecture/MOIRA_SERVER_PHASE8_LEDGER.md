@@ -1,8 +1,8 @@
 # Moira Server Phase 8 Ledger
 
-Version: 1.0
-Date: 2026-05-28
-Status: Active implementation queue; P8-06 complete, remaining units pending
+Version: 1.8
+Date: 2026-05-29
+Status: Active implementation queue; P8-01–P8-11, P8-13 complete, remaining: P8-12, P8-14
 Scope: Concrete server-admission ledger for phase 8 progression, direction, and time-lord surfaces
 
 This document turns phase 8 from a prose heading into a concrete queue of
@@ -94,6 +94,8 @@ Engine basis:
   - computation truth
   - relation
   - condition profile
+- note:
+  - implemented; converse expressed via `converse: bool` request field
 
 #### P8-02 Arc Direction Route Family
 
@@ -121,7 +123,9 @@ Engine basis:
 - classification:
   - `bounded_sync`
 - note:
-  - expose by explicit `method` field rather than one route per engine function
+  - implemented; single route with `method` dispatch and `converse: bool`
+  - `planetary_arc` requires `arc_body` field; all other methods use standard signature
+  - returns `ProgressedChartResponse` (serializer already live from P8-01)
 
 #### P8-03 Tertiary And Minor Progression Family
 
@@ -142,6 +146,9 @@ Engine basis:
   - `/v1/progressions/time-key`
 - classification:
   - `bounded_sync`
+- note:
+  - implemented; single route with `method` dispatch (tertiary, tertiary_ii, minor,
+    duodenary, quotidian_solar, quotidian_lunar) and `converse: bool`
 
 #### P8-04 House-Frame Progression Family
 
@@ -156,6 +163,11 @@ Engine basis:
   - `/v1/progressions/house-frame`
 - classification:
   - `bounded_sync`
+- note:
+  - implemented; three routes: house-frame (full ProgressedHouseFrame), house-frame/cusps
+    (light HouseCusps response), house-frame/arc (ascendant_arc/vertex_arc method dispatch)
+  - P8-05 profile and network endpoints now accept house_frame_items alongside items,
+    completing the full mixed aggregation surface
 
 #### P8-05 Progression Aggregate Surfaces
 
@@ -171,6 +183,10 @@ Engine basis:
   - `/v1/progressions/network`
 - classification:
   - `direct_sync`
+- note:
+  - implemented; profile and network endpoints accept a list of secondary progression
+    requests and aggregate over the computed charts; house-frame surfaces deferred
+    until P8-04 is implemented
 
 ### 3.2 Profections
 
@@ -220,6 +236,10 @@ Engine basis:
   - `/v1/timelords/firdaria/*`
 - classification:
   - `bounded_sync`
+- note:
+  - implemented; five routes: sequence, groups, current, profile, active-pair
+  - caller supplies `is_day_chart`; variant and include_node_subperiods are optional
+  - active-pair returns `active: false` (not 422) when query_dt is outside the 75-year cycle
 
 #### P8-08 Decennials Family
 
@@ -235,6 +255,11 @@ Engine basis:
   - `/v1/timelords/decennials/*`
 - classification:
   - `bounded_sync`
+- note:
+  - implemented; six routes: sequence, groups, current, profile, active-pair, active-path
+  - natal positions derived from engine.chart() at the service layer (same pattern as dasha)
+  - active-pair and active-path both return optional wrappers (active=false outside cycle)
+  - levels capped at 4 per engine maximum; default=2 for transport economy
 
 #### P8-09 Zodiacal Releasing Family
 
@@ -250,7 +275,11 @@ Engine basis:
 - classification:
   - `bounded_sync`
 - note:
-  - keep level-pair and angularity truth visible
+  - implemented; five routes: sequence, groups, current, profile, level-pair
+  - caller supplies lot_longitude and optionally fortune_longitude directly;
+    the server does not compute Lots — doctrinal Lot choice belongs to the caller
+  - ZRPeriodGroup serialized recursively (sub_groups); model_rebuild() applied
+  - level-pair rejects upper_level >= lower_level at service layer (422)
 
 ### 3.4 Dasha
 
@@ -273,6 +302,11 @@ Engine basis:
   - `/v1/dasha/vimshottari/*`
 - classification:
   - `bounded_sync`
+- note:
+  - implemented; five routes: sequence, balance, current, profile, lord-pair
+  - Moon tropical longitude derived from engine.chart() at the service layer
+  - DashaPeriod serialized as nested tree (sub[] field); defaults to levels=2 for sequence
+  - current and lord-pair default to levels=5 to expose the full active chain
 
 ### 3.5 Varshaphal
 
@@ -288,10 +322,14 @@ Engine basis:
   - `varshaphal_chart`
   - `build_varshaphal_chart`
 - route group:
-  - `/v1/varshaphal/return`
   - `/v1/varshaphal/chart`
 - classification:
   - `bounded_sync`
+- note:
+  - implemented; single route returns full VarshaphalChart vessel including
+    tajika aspects/yogas, muntha, varshesha, sahams, mudda and tasira schedules
+  - year_judgement_verdict (final_verdict string) included; full P8-12 doctrine
+    vessels (VarshaphalJudgementProfile, VarshaphalYearJudgement) deferred to P8-12
 
 #### P8-12 Varshaphal Annual Doctrine Family
 
@@ -325,10 +363,16 @@ Engine basis:
   - `active_tasira_period`
   - `mudda_period_judgement`
 - route group:
-  - `/v1/varshaphal/mudda/*`
-  - `/v1/varshaphal/tasira/*`
+  - `/v1/varshaphal/mudda/active`
+  - `/v1/varshaphal/tasira/active`
+  - `/v1/varshaphal/mudda/judgement`
 - classification:
   - `bounded_sync`
+- note:
+  - implemented; each timing route rebuilds the chart from request parameters,
+    then extracts the timing surface — no chart caching at this stage
+  - mudda_dasha and tasira_periods schedules are embedded in the P8-11 chart
+    response; the P8-13 routes provide active-period queries and timed judgement
 
 ### 3.6 Primary Directions
 
@@ -362,14 +406,14 @@ Engine basis:
 
 To make phase 8 tractable, implement in this order:
 
-1. `P8-06` profections
-2. `P8-01` and `P8-05` progressions
-3. `P8-07` firdaria
-4. `P8-10` vimshottari dasha
-5. `P8-11` and `P8-13` varshaphal return/timing
-6. `P8-08` decennials
-7. `P8-09` zodiacal releasing
-8. `P8-02`, `P8-03`, `P8-04` remaining progression families
+1. `P8-06` profections — **complete**
+2. `P8-01` and `P8-05` progressions — **complete**
+3. `P8-07` firdaria — **complete**
+4. `P8-10` vimshottari dasha — **complete**
+5. `P8-11` and `P8-13` varshaphal return/timing — **complete**
+6. `P8-08` decennials — **complete**
+7. `P8-09` zodiacal releasing — **complete**
+8. `P8-02`, `P8-03`, `P8-04` progression families — **complete**
 9. `P8-12` deeper varshaphal doctrine
 10. `P8-14` primary directions
 

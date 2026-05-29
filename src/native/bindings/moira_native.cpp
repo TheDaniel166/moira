@@ -927,6 +927,19 @@ py::dict read_spk_chebyshev_segment_payload_py(
 std::shared_ptr<SpkSegmentEvaluator> load_spk_segment_evaluator_py(
     const std::string& path, int32_t start_i, int32_t end_i, bool little_endian, int32_t data_type
 ) {
+    if (data_type == 13) {
+        SpkType13SegmentPayload payload;
+        {
+            py::gil_scoped_release release;
+            payload = read_spk_type13_segment_payload(path, start_i, end_i, little_endian);
+        }
+        return std::make_shared<SpkSegmentEvaluator>(
+            std::move(payload.epochs_jd),
+            std::move(payload.states),
+            static_cast<size_t>(payload.window_size)
+        );
+    }
+
     SpkChebyshevSegmentPayload payload;
     {
         py::gil_scoped_release release;
@@ -1267,8 +1280,9 @@ PYBIND11_MODULE(_moira_native, m) {
             py::arg("rotation_matrix")
         );
 
-    py::class_<LagrangeEvaluator, IEvaluator, std::shared_ptr<LagrangeEvaluator>>(m, "LagrangeEvaluator")
+    py::class_<Type13Evaluator, IEvaluator, std::shared_ptr<Type13Evaluator>>(m, "Type13Evaluator")
         .def(py::init<std::vector<double>, std::vector<double>, size_t>());
+    m.attr("LagrangeEvaluator") = m.attr("Type13Evaluator");
 
     py::class_<RelativeEvaluator, IEvaluator, std::shared_ptr<RelativeEvaluator>>(m, "RelativeEvaluator")
         .def(py::init<std::shared_ptr<IEvaluator>, std::shared_ptr<IEvaluator>>());

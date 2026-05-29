@@ -45,7 +45,7 @@ All positional truth in Moira originates from a single source: the **JPL DE441 B
 
 ```
 SpkReader
-├── __init__(kernel_path)     → opens DAF/BSP via jplephem
+├── __init__(kernel_path)     → opens DAF/BSP through Moira's native reader when supported
 ├── position(center, target, jd) → Vec3 (x, y, z) in km, ICRF
 └── position_and_velocity(center, target, jd) → (Vec3, Vec3) in km, km/day
 ```
@@ -874,7 +874,7 @@ The Moira service layer utilizes **Memory-Mapped DAF/BSP file handling** via the
 
 ### 9.3 No External Dependencies (Pure Python)
 
-All vector/matrix operations in `coordinates.py` are implemented in **pure Python tuples** — no NumPy, no SciPy. This eliminates import overhead, simplifies deployment, and ensures the engine runs on any Python 3.10+ environment. The only external dependency for ephemeris I/O is `jplephem`.
+All vector/matrix operations in `coordinates.py` are implemented in **pure Python tuples** — no NumPy, no SciPy. This eliminates import overhead, simplifies deployment, and ensures the engine runs on any Python 3.10+ environment. Planetary ephemeris I/O is native-first in `SpkReader`, with `jplephem` retained only as an optional fallback for unsupported SPK layouts.
 
 ### 9.4 Thread Safety and Shared Reader State
 

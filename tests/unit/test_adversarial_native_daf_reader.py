@@ -303,7 +303,7 @@ def test_small_body_kernel_position_validates_center_before_returning(
         kernel.close()
 
 
-def test_small_body_kernel_position_and_velocity_raises_not_implemented(
+def test_small_body_kernel_position_and_velocity_returns_segment_state_vector(
     tmp_path: Path,
 ) -> None:
     if not body_kernel._HAS_NATIVE_DAF:
@@ -314,9 +314,29 @@ def test_small_body_kernel_position_and_velocity_raises_not_implemented(
 
     kernel = SmallBodyKernel(path)
     try:
-        jd = kernel.coverage()[(10, 2000433)][0]
-        with pytest.raises(NotImplementedError):
-            kernel.position_and_velocity(10, 2000433, jd)
+        jd = 2451546.0
+        pos, vel = kernel.position_and_velocity(10, 2000433, jd)
+        assert pos == pytest.approx((2.0, 5.0, 8.0))
+        assert vel == pytest.approx((864.0, 1728.0, 2592.0))
+    finally:
+        kernel.close()
+
+
+def test_type13_segment_velocity_matches_embedded_node_derivative(
+    tmp_path: Path,
+) -> None:
+    if not body_kernel._HAS_NATIVE_DAF:
+        pytest.skip("native small-body DAF reader is unavailable")
+
+    path = tmp_path / "type13_derivative.bsp"
+    _synthetic_type13_kernel(path)
+
+    kernel = SmallBodyKernel(path)
+    try:
+        segment = kernel._kernel.segments[0]
+        pos, vel = segment.compute_and_differentiate(2451546.0)
+        assert pos == pytest.approx((2.0, 5.0, 8.0))
+        assert vel == pytest.approx((864.0, 1728.0, 2592.0))
     finally:
         kernel.close()
 

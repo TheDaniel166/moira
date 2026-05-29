@@ -15,8 +15,9 @@ Public surface:
 Import-time side effects: None
 
 External dependency assumptions:
-    - jplephem must be importable (via spk_reader) for true_node() and true_lilith().
     - DE441 kernel must exist at kernels/de441.bsp (accessed lazily on first call).
+    - true_node() and true_lilith() rely on spk_reader kernel access; for the
+      standard supported planetary path this may be satisfied without jplephem.
 """
 
 from __future__ import annotations

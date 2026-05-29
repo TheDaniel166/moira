@@ -126,6 +126,68 @@ def _hermite_eval_3d(
     return (result[0], result[1], result[2])
 
 
+def _hermite_eval_3d_with_derivative(
+    t: float,
+    ti: list[float],
+    pos: list[list[float]],
+    vel: list[list[float]],
+) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
+    """Evaluate the Type 13 Hermite interpolant and its exact derivative in one pass."""
+    n = len(pos[0])
+    m = 2 * n
+
+    z = [0.0] * m
+    for i, value in enumerate(ti):
+        z[2 * i] = value
+        z[2 * i + 1] = value
+
+    prev = [[0.0] * m for _ in range(3)]
+    for axis in range(3):
+        for i in range(n):
+            prev[axis][2 * i] = pos[axis][i]
+            prev[axis][2 * i + 1] = pos[axis][i]
+
+    coeffs = [[0.0] * m for _ in range(3)]
+    for axis in range(3):
+        coeffs[axis][0] = prev[axis][0]
+
+    curr = [[0.0] * (m - 1) for _ in range(3)]
+    for i in range(m - 1):
+        if i % 2 == 0:
+            for axis in range(3):
+                curr[axis][i] = vel[axis][i // 2]
+        else:
+            denom = z[i + 1] - z[i]
+            for axis in range(3):
+                curr[axis][i] = (prev[axis][i + 1] - prev[axis][i]) / denom
+    for axis in range(3):
+        coeffs[axis][1] = curr[axis][0]
+    prev = curr
+
+    for j in range(2, m):
+        curr = [[0.0] * (m - j) for _ in range(3)]
+        for i in range(m - j):
+            denom = z[i + j] - z[i]
+            for axis in range(3):
+                curr[axis][i] = (prev[axis][i + 1] - prev[axis][i]) / denom
+        for axis in range(3):
+            coeffs[axis][j] = curr[axis][0]
+        prev = curr
+
+    values = [coeffs[axis][m - 1] for axis in range(3)]
+    derivatives = [0.0, 0.0, 0.0]
+    for j in range(m - 2, -1, -1):
+        delta = t - z[j]
+        for axis in range(3):
+            derivatives[axis] = values[axis] + delta * derivatives[axis]
+            values[axis] = coeffs[axis][j] + delta * values[axis]
+
+    return (
+        (values[0], values[1], values[2]),
+        (derivatives[0], derivatives[1], derivatives[2]),
+    )
+
+
 class _NativeKernelHandle:
     """
     RITE: The Native Small-Body Kernel Handle.
@@ -389,7 +451,7 @@ class _Type13Segment:
         Responsibilities:
             - Store one type-13 descriptor and its derived time bounds.
             - Lazily materialize states, epochs, and window size.
-            - Evaluate positions and approximate velocities for callers.
+            - Evaluate positions and exact Hermite velocities for callers.
         Non-responsibilities:
             - Does not discover kernels or body availability.
             - Does not own the higher-level kernel wrapper.
@@ -492,12 +554,22 @@ class _Type13Segment:
         return _hermite_eval_3d(t_sec, win_t, pos, vel)
 
     def compute_and_differentiate(self, tdb, tdb2=0.0):
-        dt = 1.0
-        p0 = self.compute(tdb - dt * 0.5, tdb2)
-        p1 = self.compute(tdb + dt * 0.5, tdb2)
-        pos = self.compute(tdb, tdb2)
-        vel = tuple((b - a) / dt for a, b in zip(p0, p1))
-        return pos, vel
+        states, epochs_jd, ws = self._data
+        t = float(tdb) + float(tdb2)
+
+        idx = bisect_left(epochs_jd, t)
+        half = ws // 2
+        start = max(0, min(idx - half, len(epochs_jd) - ws))
+
+        win_jd = epochs_jd[start:start + ws]
+        win_t = [(jd - T0) * S_PER_DAY for jd in win_jd]
+        t_sec = (t - T0) * S_PER_DAY
+
+        pos = [axis[start:start + ws] for axis in states[:3]]
+        vel = [axis[start:start + ws] for axis in states[3:]]
+
+        position, rate = _hermite_eval_3d_with_derivative(t_sec, win_t, pos, vel)
+        return position, tuple(v * S_PER_DAY for v in rate)
 
 
 def _small_body_kernel_native_supported(catalog: dict) -> bool:
@@ -657,10 +729,26 @@ class SmallBodyKernel:
     def position_and_velocity(
         self, center: int, target: int, jd_tt: float
     ) -> tuple[Vec3, Vec3]:
-        raise NotImplementedError(
-            "SmallBodyKernel does not support position_and_velocity. "
-            "Use KernelPool.position_and_velocity, which raises NotImplementedError "
-            "for small-body targets."
+        if not self.has_body(target):
+            raise KeyError(
+                f"NAIF ID {target} not found in kernel {self._path.name}"
+            )
+        seg_center = self._center[target]
+        if center != seg_center:
+            raise ValueError(
+                f"SmallBodyKernel serves NAIF {target} from center "
+                f"{seg_center}, not center {center}"
+            )
+        for seg in self._kernel.segments:
+            if seg.target == target and seg.start_jd <= jd_tt <= seg.end_jd:
+                pos, vel = seg.compute_and_differentiate(jd_tt)
+                return (
+                    (float(pos[0]), float(pos[1]), float(pos[2])),
+                    (float(vel[0]), float(vel[1]), float(vel[2])),
+                )
+        raise KeyError(
+            f"No segment covers NAIF {target} at JD {jd_tt:.2f}. "
+            "The date may be outside the kernel's coverage."
         )
 
     def has_segment(self, center: int, target: int) -> bool:

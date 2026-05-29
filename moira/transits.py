@@ -474,6 +474,7 @@ class ReturnSearchPolicy:
     step_days_override: float | None = None
     default_max_days: float | None = None
     per_body_max_days: tuple[tuple[str, float], ...] = ()
+    solver_tolerance_days: float = 1e-6
 
 
 @dataclass(slots=True, frozen=True)

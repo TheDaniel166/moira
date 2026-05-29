@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from moira import moira_native
 
 
@@ -27,16 +29,17 @@ def test_legacy_native_evaluator_helpers_accept_plain_python_sequences() -> None
     assert len(record_value) == 2
 
     type13_value = moira_native.spk_type13_record(
-        [0.0, 1.0, 2.0, 3.0],
+        [2451545.0, 2451546.0, 2451547.0, 2451548.0],
         [
             [0.0, 1.0, 4.0, 9.0],
             [0.0, 1.0, 4.0, 9.0],
             [0.0, 1.0, 4.0, 9.0],
-            [0.0, 1.0, 4.0, 9.0],
-            [0.0, 1.0, 4.0, 9.0],
-            [0.0, 1.0, 4.0, 9.0],
+            [0.0, 2.0 / 86400.0, 4.0 / 86400.0, 6.0 / 86400.0],
+            [0.0, 2.0 / 86400.0, 4.0 / 86400.0, 6.0 / 86400.0],
+            [0.0, 2.0 / 86400.0, 4.0 / 86400.0, 6.0 / 86400.0],
         ],
         4,
-        1.5,
+        2451546.5,
     )
-    assert all(abs(value - 2.25) < 1e-12 for value in type13_value)
+    assert type13_value[:3] == [pytest.approx(2.25)] * 3
+    assert type13_value[3:] == [pytest.approx(3.0)] * 3

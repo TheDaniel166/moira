@@ -90,10 +90,10 @@ public:
 };
 
 /**
- * @brief Native-owned SPK type-2/type-3 segment evaluator.
+ * @brief Native-owned SPK segment evaluator for supported type-2/type-3/type-13 payloads.
  *
- * Keeps the coefficient payload resident in native memory so Python does not
- * have to materialize a NumPy tensor for first-use segment evaluation.
+ * Keeps the segment payload resident in native memory so Python does not have
+ * to materialize large intermediate structures for first-use segment evaluation.
  */
 class SpkSegmentEvaluator : public IEvaluator {
 public:
@@ -105,6 +105,9 @@ public:
     size_t component_count;
     size_t coefficient_count;
     std::vector<double> coefficients;
+    std::vector<double> type13_epochs_jd;
+    std::vector<double> type13_states;
+    size_t type13_window_size;
 
     SpkSegmentEvaluator(
         int32_t data_type,
@@ -123,7 +126,24 @@ public:
           record_count(rec_count),
           component_count(comp_count),
           coefficient_count(coeff_count),
-          coefficients(std::move(coeffs)) {}
+          coefficients(std::move(coeffs)),
+          type13_window_size(0) {}
+
+    SpkSegmentEvaluator(
+        std::vector<double> epochs_jd,
+        std::vector<double> states,
+        size_t window_size
+    )
+        : data_type(13),
+          coefficients_in_file_order(false),
+          init(0.0),
+          intlen(0.0),
+          record_count(0),
+          component_count(0),
+          coefficient_count(0),
+          type13_epochs_jd(std::move(epochs_jd)),
+          type13_states(std::move(states)),
+          type13_window_size(window_size) {}
 
     void compute(double jd, double* result) const override {
         double p[3], v[3];
@@ -137,6 +157,22 @@ public:
     }
 
     void position(double jd, double jd2, double* result) const {
+        if (data_type == 13) {
+            double full_state[6];
+            spk_type13_record_inplace(
+                type13_epochs_jd.data(),
+                type13_states.data(),
+                type13_epochs_jd.size(),
+                type13_window_size,
+                jd + jd2,
+                full_state
+            );
+            result[0] = full_state[0];
+            result[1] = full_state[1];
+            result[2] = full_state[2];
+            return;
+        }
+
         if (data_type == 2) {
             const double* ptr = record_ptr(jd, jd2);
             const double s = normalized_time(jd, jd2);
@@ -160,6 +196,25 @@ public:
     }
 
     void position_and_velocity(double jd, double jd2, double* position_out, double* velocity_out) const {
+        if (data_type == 13) {
+            double full_state[6];
+            spk_type13_record_inplace(
+                type13_epochs_jd.data(),
+                type13_states.data(),
+                type13_epochs_jd.size(),
+                type13_window_size,
+                jd + jd2,
+                full_state
+            );
+            position_out[0] = full_state[0];
+            position_out[1] = full_state[1];
+            position_out[2] = full_state[2];
+            velocity_out[0] = full_state[3];
+            velocity_out[1] = full_state[4];
+            velocity_out[2] = full_state[5];
+            return;
+        }
+
         if (data_type == 2) {
             const double* ptr = record_ptr(jd, jd2);
             const double s = normalized_time(jd, jd2);
@@ -266,15 +321,15 @@ private:
 };
 
 /**
- * @brief THEOREM: Lagrange Segment Evaluator (Type 13).
+ * @brief THEOREM: Hermite Segment Evaluator (Type 13).
  */
-class LagrangeEvaluator : public IEvaluator {
+class Type13Evaluator : public IEvaluator {
 public:
     std::vector<double> epochs;
     std::vector<double> states;
     size_t window_size;
 
-    LagrangeEvaluator(std::vector<double> epochs, std::vector<double> states, size_t window_size)
+    Type13Evaluator(std::vector<double> epochs, std::vector<double> states, size_t window_size)
         : epochs(std::move(epochs)), states(std::move(states)), window_size(window_size) {}
 
     void compute(double jd, double* result) const override {

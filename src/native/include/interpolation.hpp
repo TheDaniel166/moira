@@ -343,8 +343,9 @@ inline void spk_chebyshev_record_with_derivative_inplace_reverse(
 }
 
 /**
- * @brief THEOREM: SPK Type 13 (Small Body) evaluation.
- * Uses Lagrange interpolation on a sliding window of points.
+ * @brief THEOREM: SPK Type 13 Hermite state-vector evaluation.
+ * Uses the same divided-difference Hermite interpolation doctrine as the
+ * Python small-body path, over a centered sliding window of node states.
  */
 inline void spk_type13_record_inplace(
     const double* epochs,
@@ -356,29 +357,72 @@ inline void spk_type13_record_inplace(
 ) {
     if (state_count == 0) return;
 
-    // 1. Find the first epoch > jd
-    const double* it = std::upper_bound(epochs, epochs + state_count, jd);
+    constexpr double T0 = 2451545.0;
+    constexpr double S_PER_DAY = 86400.0;
+
+    const double* it = std::lower_bound(epochs, epochs + state_count, jd);
     size_t idx = std::distance(epochs, it);
 
-    // 2. Determine window start
-    // Window should be centered if possible
     int start_idx = static_cast<int>(idx) - static_cast<int>(window_size) / 2;
     if (start_idx < 0) start_idx = 0;
     if (start_idx + static_cast<int>(window_size) > static_cast<int>(state_count)) {
         start_idx = static_cast<int>(state_count) - static_cast<int>(window_size);
     }
-    if (start_idx < 0) start_idx = 0; // Guard for state_count < window_size
+    if (start_idx < 0) start_idx = 0;
 
     size_t actual_window = std::min(window_size, state_count - start_idx);
+    const size_t hermite_order = actual_window * 2;
+    const double t_sec = (jd - T0) * S_PER_DAY;
 
-    // 3. Interpolate each component
-    for (size_t j = 0; j < 6; ++j) {
-        result[j] = lagrange_interpolate(
-            epochs + start_idx,
-            states + j * state_count + start_idx,
-            actual_window,
-            jd
-        );
+    std::vector<double> z(hermite_order);
+    for (size_t i = 0; i < actual_window; ++i) {
+        const double epoch_sec = (epochs[start_idx + i] - T0) * S_PER_DAY;
+        z[2 * i] = epoch_sec;
+        z[2 * i + 1] = epoch_sec;
+    }
+
+    for (size_t axis = 0; axis < 3; ++axis) {
+        std::vector<double> prev(hermite_order);
+        std::vector<double> coeffs(hermite_order);
+        for (size_t i = 0; i < actual_window; ++i) {
+            const double position = states[axis * state_count + start_idx + i];
+            prev[2 * i] = position;
+            prev[2 * i + 1] = position;
+        }
+        coeffs[0] = prev[0];
+
+        std::vector<double> curr(hermite_order - 1);
+        for (size_t i = 0; i < hermite_order - 1; ++i) {
+            if ((i % 2) == 0) {
+                curr[i] = states[(axis + 3) * state_count + start_idx + i / 2];
+            } else {
+                const double denom = z[i + 1] - z[i];
+                curr[i] = (prev[i + 1] - prev[i]) / denom;
+            }
+        }
+        coeffs[1] = curr[0];
+        prev = std::move(curr);
+
+        for (size_t j = 2; j < hermite_order; ++j) {
+            curr.assign(hermite_order - j, 0.0);
+            for (size_t i = 0; i < hermite_order - j; ++i) {
+                const double denom = z[i + j] - z[i];
+                curr[i] = (prev[i + 1] - prev[i]) / denom;
+            }
+            coeffs[j] = curr[0];
+            prev = std::move(curr);
+        }
+
+        double value = coeffs[hermite_order - 1];
+        double derivative = 0.0;
+        for (size_t j = hermite_order - 1; j-- > 0;) {
+            const double delta = t_sec - z[j];
+            derivative = value + delta * derivative;
+            value = coeffs[j] + delta * value;
+        }
+
+        result[axis] = value;
+        result[axis + 3] = derivative * S_PER_DAY;
     }
 }
 

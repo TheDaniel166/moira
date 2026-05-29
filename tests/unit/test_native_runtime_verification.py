@@ -5,8 +5,10 @@ import math
 import pytest
 
 from moira import moira_native
+from moira._spk_body_kernel import SmallBodyKernel
 from moira._kernel_paths import find_planetary_kernel
 from moira.constants import EARTH_RADIUS_KM, MOON_RADIUS_KM, SUN_RADIUS_KM
+from moira.daf_writer import write_spk_type13
 from moira.julian import julian_day, ut_to_tt
 from moira.spk_reader import SpkReader, use_reader_override
 import moira.stars as stars
@@ -39,6 +41,31 @@ def _earth_sun_moon_geometry(reader: SpkReader, jd_tt: float):
     moon_ssb = moira_native.SumEvaluator(emb_bary, emb_moon)
     moon_geo = moira_native.RelativeEvaluator(moon_ssb, earth_ssb)
     return earth_ssb, sun_ssb, moon_ssb, sun_geo, moon_geo
+
+
+def _synthetic_type13_kernel(path) -> None:
+    write_spk_type13(
+        path,
+        bodies=[
+            {
+                "naif_id": 2000433,
+                "center": 10,
+                "frame": 1,
+                "name": "EROS SAMPLE",
+                "window_size": 3,
+                "epochs_jd": [2451545.0, 2451546.0, 2451547.0],
+                "states": [
+                    [1.0, 2.0, 3.0],
+                    [4.0, 5.0, 6.0],
+                    [7.0, 8.0, 9.0],
+                    [0.01, 0.01, 0.01],
+                    [0.02, 0.02, 0.02],
+                    [0.03, 0.03, 0.03],
+                ],
+            }
+        ],
+        locifn="MOIRA NATIVE TYPE13 TEST",
+    )
 
 
 @pytest.mark.requires_ephemeris
@@ -91,6 +118,31 @@ def test_native_direct_segment_evaluator_matches_live_segment_oracle_for_split_j
         assert got == pytest.approx(want, abs=1e-9)
     for got, want in zip(eval_vel, seg_vel):
         assert got == pytest.approx(want, abs=1e-9)
+
+
+def test_native_type13_segment_evaluator_matches_python_small_body_oracle(tmp_path) -> None:
+    path = tmp_path / "native_type13_eval.bsp"
+    _synthetic_type13_kernel(path)
+
+    kernel = SmallBodyKernel(path)
+    try:
+        segment = kernel._kernel.segments[0]
+        evaluator = moira_native.load_spk_segment_evaluator(
+            str(path),
+            int(segment.start_i),
+            int(segment.end_i),
+            bool(segment._little_endian),
+            int(segment.data_type),
+        )
+        eval_pos, eval_vel = evaluator.position_and_velocity(2451546.0, 0.0)
+        seg_pos, seg_vel = segment.compute_and_differentiate(2451546.0)
+    finally:
+        kernel.close()
+
+    for got, want in zip(eval_pos, seg_pos):
+        assert got == pytest.approx(want, abs=1e-12)
+    for got, want in zip(eval_vel, seg_vel):
+        assert got == pytest.approx(want, abs=1e-12)
 
 
 @pytest.mark.requires_ephemeris

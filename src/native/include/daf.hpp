@@ -527,17 +527,32 @@ public:
         if (it != segment_cache.end()) {
             return it->second;
         }
-        SpkChebyshevSegmentPayload payload = read_segment_payload(start_i, end_i, data_type);
-        auto evaluator = std::make_shared<SpkSegmentEvaluator>(
-            data_type,
-            true,
-            payload.init,
-            payload.intlen,
-            payload.record_count,
-            payload.component_count,
-            payload.coefficient_count,
-            std::move(payload.coefficients)
-        );
+        std::shared_ptr<SpkSegmentEvaluator> evaluator;
+        if (data_type == 13) {
+            SpkType13SegmentPayload payload = read_spk_type13_segment_payload(
+                path,
+                start_i,
+                end_i,
+                catalog.little_endian
+            );
+            evaluator = std::make_shared<SpkSegmentEvaluator>(
+                std::move(payload.epochs_jd),
+                std::move(payload.states),
+                static_cast<size_t>(payload.window_size)
+            );
+        } else {
+            SpkChebyshevSegmentPayload payload = read_segment_payload(start_i, end_i, data_type);
+            evaluator = std::make_shared<SpkSegmentEvaluator>(
+                data_type,
+                true,
+                payload.init,
+                payload.intlen,
+                payload.record_count,
+                payload.component_count,
+                payload.coefficient_count,
+                std::move(payload.coefficients)
+            );
+        }
         auto [ins_it, inserted] = segment_cache.emplace(key, evaluator);
         return ins_it->second;
     }

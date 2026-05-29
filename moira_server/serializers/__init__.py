@@ -29,7 +29,22 @@ from .phenomena import (
     serialize_visibility_assessment_compact,
     serialize_void_of_course_window,
 )
+from .dasha import (
+    serialize_dasha_active_line,
+    serialize_dasha_balance,
+    serialize_dasha_lord_pair,
+    serialize_dasha_sequence,
+    serialize_dasha_sequence_profile,
+)
 from .positions import serialize_planet, serialize_sky_position
+from .progressions import (
+    serialize_daily_houses,
+    serialize_progressed_chart,
+    serialize_progressed_declination_chart,
+    serialize_progressed_house_frame,
+    serialize_progression_chart_condition_profile,
+    serialize_progression_condition_network_profile,
+)
 from .relationship import (
     serialize_aspect,
     serialize_aspect_pattern,
@@ -48,11 +63,36 @@ from .relationship import (
     serialize_synastry_network,
 )
 from .returns import serialize_return_event
-from .timelords import serialize_monthly_profection, serialize_profection_result
+from .timelords import (
+    serialize_current_decennials,
+    serialize_current_firdaria,
+    serialize_zr_current,
+    serialize_zr_groups,
+    serialize_zr_level_pair,
+    serialize_zr_sequence,
+    serialize_zr_sequence_profile,
+    serialize_decennial_active_pair_optional,
+    serialize_decennial_active_path_optional,
+    serialize_decennial_sequence_profile,
+    serialize_decennials_groups,
+    serialize_decennials_sequence,
+    serialize_firdar_active_pair_optional,
+    serialize_firdar_sequence_profile,
+    serialize_firdaria_groups,
+    serialize_firdaria_sequence,
+    serialize_monthly_profection,
+    serialize_profection_result,
+)
 from .transits import (
     serialize_ingress_event,
     serialize_lunar_phase_event,
     serialize_transit_event,
+)
+from .varshaphal import (
+    serialize_mudda_activation,
+    serialize_mudda_judgement,
+    serialize_tasira_active,
+    serialize_varshaphal_chart,
 )
 from .visibility import serialize_lunar_crescent_details, serialize_visibility_assessment
 
@@ -93,11 +133,38 @@ __all__ = [
     "serialize_synastry_contact",
     "serialize_synastry_network",
     "serialize_planet_heliacal_event",
+    "serialize_daily_houses",
+    "serialize_progressed_chart",
+    "serialize_progressed_declination_chart",
+    "serialize_progressed_house_frame",
+    "serialize_progression_chart_condition_profile",
+    "serialize_progression_condition_network_profile",
     "serialize_progression_payload",
     "serialize_retrograde_period",
     "serialize_return_event",
+    "serialize_dasha_active_line",
+    "serialize_dasha_balance",
+    "serialize_dasha_lord_pair",
+    "serialize_dasha_sequence",
+    "serialize_dasha_sequence_profile",
+    "serialize_current_decennials",
+    "serialize_current_firdaria",
+    "serialize_decennial_active_pair_optional",
+    "serialize_decennial_active_path_optional",
+    "serialize_decennial_sequence_profile",
+    "serialize_decennials_groups",
+    "serialize_decennials_sequence",
+    "serialize_firdar_active_pair_optional",
+    "serialize_firdar_sequence_profile",
+    "serialize_firdaria_groups",
+    "serialize_firdaria_sequence",
     "serialize_monthly_profection",
     "serialize_profection_result",
+    "serialize_zr_current",
+    "serialize_zr_groups",
+    "serialize_zr_level_pair",
+    "serialize_zr_sequence",
+    "serialize_zr_sequence_profile",
     "serialize_rise_set_phenomena",
     "serialize_sky_position",
     "serialize_solar_body_circumstances",
@@ -105,6 +172,10 @@ __all__ = [
     "serialize_station_event",
     "serialize_transit_event",
     "serialize_twilight_times",
+    "serialize_mudda_activation",
+    "serialize_mudda_judgement",
+    "serialize_tasira_active",
+    "serialize_varshaphal_chart",
     "serialize_lunar_crescent_details",
     "serialize_visibility_assessment_compact",
     "serialize_visibility_assessment",

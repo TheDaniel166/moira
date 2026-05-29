@@ -14,9 +14,10 @@ Public surface:
 Import-time side effects: None
 
 External dependency assumptions:
-    - jplephem must be importable (via spk_reader).
     - DE441 kernel must exist at kernels/de441.bsp (accessed lazily on first call
       inside create_chart() via get_reader()).
+    - spk_reader may satisfy planetary kernel access through Moira's native path;
+      jplephem is only needed for unsupported fallback layouts.
 """
 
 from __future__ import annotations

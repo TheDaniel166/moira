@@ -2,10 +2,10 @@
 Moira — spk_reader.py
 Governs all binary SPK file access for the Moira ephemeris engine.
 
-Boundary: owns the sole point of contact between Moira and the jplephem
-library. All kernel I/O is funnelled through this module. No other module
-may hold a reference to the jplephem SPK object or open the kernel file
-directly.
+Boundary: owns the sole point of contact between Moira and planetary SPK
+kernel access in Moira. All planetary kernel I/O is funnelled through this
+module. No other module may hold a reference to the active kernel reader or
+open the planetary kernel file directly.
 
 Public surface:
     KernelReader (Protocol), SpkReader, KernelPool,
@@ -16,9 +16,11 @@ Import-time side effects: None (kernel is opened lazily on first
     SpkReader instantiation, not at import time).
 
 External dependency assumptions:
-    - jplephem must be importable (pip install jplephem).
-    - A compatible JPL SPK planetary kernel must be provided to the 
+    - A compatible JPL SPK planetary kernel must be provided to the
       SpkReader at construction. No default kernel is assumed.
+    - jplephem is optional. Moira prefers the native planetary reader path
+      when available and only falls back to jplephem for unsupported segment
+      layouts.
 """
 
 from __future__ import annotations
@@ -643,11 +645,12 @@ class SpkReader:
             - Does not validate that NAIF body IDs are astronomically
               meaningful.
         Dependencies:
-            - jplephem must be importable at module load time.
             - The kernel file at the given path must exist before __init__
               is called.
+            - jplephem is only required when the kernel cannot be served by
+              Moira's native planetary reader path.
         Structural invariants:
-            - self._kernel is always a valid open jplephem SPK object while
+            - self._kernel is always a valid open kernel reader object while
               the instance is alive and close() has not been called.
             - self._path always reflects the path from which the kernel was
               opened.
@@ -675,8 +678,9 @@ class SpkReader:
               Chebyshev polynomial evaluation. Typical latency is < 1 ms.
 
     LAW OF THE DATA PATH:
-        State ownership: Owns the open SPK kernel file handle and the jplephem
-            SPK object. No other module may hold a reference to the kernel object.
+        State ownership: Owns the open SPK kernel file handle and the active
+            kernel reader object. No other module may hold a reference to the
+            kernel object.
         Mutation rules: The kernel is opened lazily on first call to get_state().
             Once open, the file handle is never closed during normal operation.
         Persistence: Kernel state persists for the lifetime of the SpkReader
