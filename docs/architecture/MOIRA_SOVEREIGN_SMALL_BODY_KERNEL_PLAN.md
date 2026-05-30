@@ -164,6 +164,9 @@ This does not yet prove that the full sovereign small-body migration is
 complete. It does prove that the replacement doctrine is executable and that
 it resolves the diagnosed failure class on a representative real subset.
 
+## Next Major Technical Step
+See the dedicated follow-on plan: `MOIRA_NATIVE_TYPE13_EVALUATION_COMPLETION_PLAN.md` (focuses on moving the actual Type-13 Hermite math into native code, which is the largest remaining gap after reader ownership).
+
 ## Broader Build Milestone
 
 The sovereign path has also now cleared a broader practical milestone:

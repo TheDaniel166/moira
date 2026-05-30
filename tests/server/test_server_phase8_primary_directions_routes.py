@@ -693,15 +693,9 @@ def test_primary_directions_submitted_arcs_with_preset_and_condition(client_with
 
     resp = client_with_engine.post("/v1/primary-directions/profile", json=payload)
 
-    # This increment's hardening attempt showed that submitted_arcs + preset + both include_* flags
-    # can still legitimately produce 422 in the current response-model/service path.
-    # We keep the tolerance but have removed the "known limitation" comment and now treat 422 as
-    # documented current behavior rather than a bug to paper over. Future minimal increment can
-    # target the root cause (likely model validation on enriched submitted paths).
-    assert resp.status_code in (200, 422)
-    if resp.status_code == 200:
-        body = resp.json()
-        assert body["aggregate"]["total_arcs"] == len(submitted)
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["aggregate"]["total_arcs"] == len(submitted)
 
 
 def test_primary_directions_preset_with_explicit_key_override(client_with_engine: TestClient) -> None:
@@ -716,16 +710,12 @@ def test_primary_directions_preset_with_explicit_key_override(client_with_engine
     }
 
     resp = client_with_engine.post("/v1/primary-directions/arcs", json=payload)
-    # This increment confirmed that preset + explicit key override on /arcs can still 422
-    # in some paths. We document the actual behavior rather than claiming a hardening win
-    # that the implementation does not yet support. The key derivation logic itself is exercised.
-    assert resp.status_code in (200, 422)
-    if resp.status_code == 200:
-        body = resp.json()
-        assert "arcs" in body
-        if body["arcs"]:
-            first = body["arcs"][0]
-            assert first.get("key") in ("PTOLEMY", "ptoLEMY", "Ptolemy")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert "arcs" in body
+    if body["arcs"]:
+        first = body["arcs"][0]
+        assert first.get("key") in ("PTOLEMY", "ptoLEMY", "Ptolemy")
 
 
 # ---------------------------------------------------------------------------

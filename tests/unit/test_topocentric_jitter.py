@@ -96,8 +96,6 @@ def test_observer_sweeps_preserve_velocity_sign_outside_parallax_margin() -> Non
     agrees with barycentric/geocentric velocity outside of the narrow temporal
     margin where parallax exceeds planetary speed (the micro-oscillation zone).
     """
-    import numpy as np
-    
     # Evaluate at a time where Mars is moving slowly but definitely direct
     # (e.g. 10 days after the station)
     jd_eval = julian_day(2025, 3, 6, 0.0)

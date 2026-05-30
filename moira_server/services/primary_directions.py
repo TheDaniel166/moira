@@ -11,6 +11,8 @@ from __future__ import annotations
 from moira import Moira
 from moira.constants import HouseSystem
 from moira.primary_directions import (
+    PrimaryDirectionMethod,
+    PrimaryDirectionSpace,
     PrimaryDirectionsPolicy,
     find_primary_arcs,
     speculum as compute_speculum,
@@ -79,40 +81,42 @@ def compute_speculum_service(
 
 
 # Simple named presets for Phase 2 policy growth (strong defaults)
+# Use the actual engine enum members so PrimaryDirectionsPolicy construction
+# satisfies the isinstance checks in __post_init__.
 _PRESETS = {
     "placidian_mundane": {
-        "method": "PLACIDUS_MUNDANE",
-        "space": "IN_MUNDO",
+        "method": PrimaryDirectionMethod.PLACIDUS_MUNDANE,
+        "space": PrimaryDirectionSpace.IN_MUNDO,
         "include_converse": True,
     },
     "ptolemy_semiarc": {
-        "method": "PTOLEMY_SEMI_ARC",
-        "space": "IN_ZODIACO",
+        "method": PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
+        "space": PrimaryDirectionSpace.IN_ZODIACO,
         "include_converse": True,
     },
     "topocentric": {
-        "method": "TOPOCENTRIC",
-        "space": "IN_MUNDO",
+        "method": PrimaryDirectionMethod.TOPOCENTRIC,
+        "space": PrimaryDirectionSpace.IN_MUNDO,
         "include_converse": True,
     },
     "regiomontanus": {
-        "method": "REGIOMONTANUS",
-        "space": "IN_MUNDO",
+        "method": PrimaryDirectionMethod.REGIOMONTANUS,
+        "space": PrimaryDirectionSpace.IN_MUNDO,
         "include_converse": True,
     },
     "campanus": {
-        "method": "CAMPANUS",
-        "space": "IN_MUNDO",
+        "method": PrimaryDirectionMethod.CAMPANUS,
+        "space": PrimaryDirectionSpace.IN_MUNDO,
         "include_converse": True,
     },
     "meridian": {
-        "method": "MERIDIAN",
-        "space": "IN_MUNDO",
+        "method": PrimaryDirectionMethod.MERIDIAN,
+        "space": PrimaryDirectionSpace.IN_MUNDO,
         "include_converse": True,
     },
     "morinus": {
-        "method": "MORINUS",
-        "space": "IN_MUNDO",
+        "method": PrimaryDirectionMethod.MORINUS,
+        "space": PrimaryDirectionSpace.IN_MUNDO,
         "include_converse": True,
     },
 }
@@ -265,8 +269,8 @@ def _convert_submitted_arcs(submitted: list, resolved_policy: "PrimaryDirections
             promissor=item.promissor,
             arc=item.arc,
             direction=item.direction.upper(),
-            method=item.method or "PLACIDUS_MUNDANE",
-            space=item.space or "IN_MUNDO",
+            method=item.method or "placidus_mundane",
+            space=item.space or "in_mundo",
             solar_rate=item.solar_rate or 0.9856,
             _chosen_key=chosen_key,
         ))

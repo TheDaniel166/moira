@@ -1,4 +1,4 @@
-import numpy as np
+import math
 import time
 from scipy import optimize
 from moira import _moira_native
@@ -61,9 +61,9 @@ def test_newton_safe():
     
     # Test case: f(x) = cos(x) - x (Root near 0.739)
     def f(x):
-        return np.cos(x) - x
+        return math.cos(x) - x
     def df(x):
-        return -np.sin(x) - 1
+        return -math.sin(x) - 1
 
     a, b = 0.0, 1.0
     
@@ -90,7 +90,7 @@ def test_find_roots():
     # Test case: f(x) = sin(x) in [0, 10]
     # Roots at 0, PI, 2*PI, 3*PI
     def f(x):
-        return np.sin(x)
+        return math.sin(x)
 
     a, b = 0.1, 10.0 # Start slightly above 0 to avoid exactly matching it
     dt = 0.5
@@ -98,7 +98,7 @@ def test_find_roots():
     native_roots = _moira_native.find_roots(f, a, b, dt, tol=1e-12)
     print(f"Native Roots: {[r for r in native_roots]}")
     
-    expected = [np.pi, 2*np.pi, 3*np.pi]
+    expected = [math.pi, 2*math.pi, 3*math.pi]
     assert len(native_roots) == len(expected), f"Expected {len(expected)} roots, got {len(native_roots)}"
     for got, want in zip(native_roots, expected):
         diff = abs(got - want)
@@ -139,10 +139,8 @@ def test_spk_type13():
     # Test case: f(t) = t^2 for each component
     # Epochs: [0, 1, 2, 3, 4]
     # States: [[0, 1, 4, 9, 16], ...]
-    epochs = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
-    states = np.zeros((6, 5))
-    for i in range(6):
-        states[i] = epochs**2
+    epochs = [0.0, 1.0, 2.0, 3.0, 4.0]
+    states = [[t*t for t in epochs] for _ in range(6)]
     
     jd = 1.5
     window_size = 4

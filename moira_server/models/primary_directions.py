@@ -55,8 +55,8 @@ class PrimaryDirectionsPolicyRequest(_StrictModel):
     """
 
     preset: str | None = None          # e.g. "placidian_mundane", "ptolemy_semiarc" (Phase 2)
-    method: str | None = None          # e.g. "PLACIDUS_MUNDANE"
-    space: str | None = None           # e.g. "IN_MUNDO" or "IN_ZODIACO"
+    method: str | None = None          # e.g. "placidus_mundane" (engine PrimaryDirectionMethod value)
+    space: str | None = None           # e.g. "in_mundo" or "in_zodiaco" (engine PrimaryDirectionSpace value)
     include_converse: bool | None = None
     key: str | None = None             # e.g. "NAIBOD", "PTOLEMY", "CARDAN", "SOLAR" (Phase 2)
 

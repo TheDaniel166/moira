@@ -1,5 +1,4 @@
 import time
-import numpy as np
 from moira import _moira_native, spk_reader
 from moira.constants import NAIF, Body, EARTH_RADIUS_KM, SUN_RADIUS_KM, MOON_RADIUS_KM
 

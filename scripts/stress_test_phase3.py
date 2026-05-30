@@ -1,4 +1,5 @@
-import numpy as np
+import random
+import math
 import time
 import concurrent.futures
 from moira import _moira_native
@@ -9,15 +10,23 @@ def create_synthetic_body(freq, phase, amplitude=1.0):
     coeff_count = 16
     record_count = 2000 # ~100 years of data
     
-    coeffs = np.random.uniform(-amplitude, amplitude, (record_count, 3, coeff_count))
+    # Pure Python random + structured sine data (no numpy)
+    coeffs = []
+    for r in range(record_count):
+        row = []
+        for c in range(3):
+            row.append([random.uniform(-amplitude, amplitude) for _ in range(coeff_count)])
+        coeffs.append(row)
+    
     # Add some structure so it's not pure noise
-    t = np.linspace(0, 1, coeff_count)
+    t = [i / (coeff_count - 1) for i in range(coeff_count)]
     for r in range(record_count):
         for c in range(3):
-            coeffs[r, c] = np.sin(freq * t + phase + r) * amplitude
-            
+            for i in range(coeff_count):
+                coeffs[r][c][i] = math.sin(freq * t[i] + phase + r) * amplitude
+    
     # Flatten for the evaluator
-    coeffs_flat = coeffs.flatten().tolist()
+    coeffs_flat = [v for row in coeffs for comp in row for v in comp]
     
     return _moira_native.ChebyshevEvaluator(
         2460000.5, # init

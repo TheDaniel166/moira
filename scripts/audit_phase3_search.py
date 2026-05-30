@@ -1,4 +1,4 @@
-import numpy as np
+
 import time
 from moira import _moira_native
 
@@ -60,12 +60,12 @@ def audit_native_search():
     
     # 5. Batch Evaluation Audit
     print("\n--- Batched Evaluation Performance ---")
-    jds = np.linspace(a, b, 1000)
+    jds = [a + i * (b - a) / 999 for i in range(1000)]
     start = time.perf_counter()
     res_batch = sun_eval.evaluate_batch(jds)
     batch_time = time.perf_counter() - start
     print(f"Batch Eval Time (1000 JDs):    {batch_time*1e3:.2f} ms")
-    print(f"Batch Result Shape:           {res_batch.shape}")
+    print(f"Batch Result Length:          {len(res_batch)}")
 
 if __name__ == "__main__":
     audit_native_search()

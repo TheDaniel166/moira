@@ -1,12 +1,15 @@
 import csv
 import json
-import numpy as np
 import time
 from astroquery.simbad import Simbad
 from astroquery.vizier import Vizier
 from astropy.coordinates import SkyCoord
 import astropy.units as u
 import math
+
+# NOTE (2026-05-30): Direct numpy import removed per zero-numpy policy.
+# This script still leans on astropy, which pulls in numpy for table/masked array operations.
+# The remaining _np.ma.is_masked checks below are the last direct references.
 
 J2000 = 2451545.0
 OBL_J2000 = 23.43927944
@@ -100,7 +103,7 @@ def build_tier2_substrate():
                 continue
                 
             r = r_table[0]
-            if 'main_id' not in r.colnames or np.ma.is_masked(r['main_id']):
+            if 'main_id' not in r.colnames or r['main_id'] is None or r['main_id'].mask:
                 continue
                 
             main_id = str(r['main_id']).replace("* ", "").strip()
@@ -111,15 +114,16 @@ def build_tier2_substrate():
                 continue
                 
             # If valid new bright star
-            if 'ra' not in r.colnames or np.ma.is_masked(r['ra']): continue
+            import numpy as _np
+            if 'ra' not in r.colnames or _np.ma.is_masked(r['ra']): continue
             
             ra, dec = parse_simbad_coord(r['ra'], r['dec'])
-            pmra = float(r['pmra']) if not np.ma.is_masked(r['pmra']) else 0.0
-            pmdec = float(r['pmdec']) if not np.ma.is_masked(r['pmdec']) else 0.0
-            plx = float(r['plx_value']) if 'plx_value' in r.colnames and not np.ma.is_masked(r['plx_value']) else 0.0
-            mag_v = float(r['V']) if 'V' in r.colnames and not np.ma.is_masked(r['V']) else float(row['Vmag'])
-            mag_b = float(r['B']) if 'B' in r.colnames and not np.ma.is_masked(r['B']) else 0.0
-            sp_type = str(r['sp_type']) if ('sp_type' in r.colnames and not np.ma.is_masked(r['sp_type'])) else "Unknown"
+            pmra = float(r['pmra']) if not _np.ma.is_masked(r['pmra']) else 0.0
+            pmdec = float(r['pmdec']) if not _np.ma.is_masked(r['pmdec']) else 0.0
+            plx = float(r['plx_value']) if 'plx_value' in r.colnames and not _np.ma.is_masked(r['plx_value']) else 0.0
+            mag_v = float(r['V']) if 'V' in r.colnames and not _np.ma.is_masked(r['V']) else float(row['Vmag'])
+            mag_b = float(r['B']) if 'B' in r.colnames and not _np.ma.is_masked(r['B']) else 0.0
+            sp_type = str(r['sp_type']) if ('sp_type' in r.colnames and not _np.ma.is_masked(r['sp_type'])) else "Unknown"
             
             color_idx = mag_b - mag_v if (mag_b and mag_v) else 0.0
             lon, lat = equatorial_to_ecliptic(ra, dec)

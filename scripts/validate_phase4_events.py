@@ -1,4 +1,4 @@
-import numpy as np
+import math
 from moira import _moira_native
 
 def test_phase4_events():
@@ -17,7 +17,7 @@ def test_phase4_events():
     coeffs = [0.0] * (record_count * 3 * coeff_count)
     
     # Simple model for the test
-    t_vals = np.linspace(0, 1, coeff_count)
+    t_vals = [i / (coeff_count - 1) for i in range(coeff_count)]
     for r in range(record_count):
         # We'll just use a constant for Y and Z, and make X move to trigger longitude changes
         # But for dlon=0, we need relative velocity.
@@ -37,11 +37,11 @@ def test_phase4_events():
     class AnalyticCircleEvaluator(_moira_native.IEvaluator):
         def compute(self, jd, res):
             t = jd - 2460000.5
-            res[0] = np.cos(t)
-            res[1] = np.sin(t)
+            res[0] = math.cos(t)
+            res[1] = math.sin(t)
             res[2] = 0.0
-            res[3] = -np.sin(t)
-            res[4] = np.cos(t)
+            res[3] = -math.sin(t)
+            res[4] = math.cos(t)
             res[5] = 0.0
             
     # Wait! Python-side subclassing of IEvaluator might not work as expected for native search

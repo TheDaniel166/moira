@@ -793,6 +793,13 @@ from .electional import (
     ElectionalPolicy, ElectionalWindow,
     find_electional_windows, find_electional_moments,
 )
+from .muhurta import (
+    MuhurtaPolicy,
+    MuhurtaClassification,
+    MuhurtaScore,
+    classify_muhurta,
+    score_muhurta,
+)
 from .harmograms import (
     HarmogramChartDomain,
     HarmogramIntensityFamily,
@@ -1550,6 +1557,9 @@ __all__ = [
     # Electional search
     "ElectionalPolicy", "ElectionalWindow",
     "find_electional_windows", "find_electional_moments",
+    # Muhurta (Tier 2 Vedic competitive edge work)
+    "MuhurtaPolicy", "MuhurtaClassification", "MuhurtaScore",
+    "classify_muhurta", "score_muhurta",
     # Comets
     "CometData", "COMET_NAIF",
     "comet_at", "all_comets_at", "list_comets",

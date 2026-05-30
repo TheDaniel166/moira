@@ -1,4 +1,3 @@
-import numpy as np
 from moira import _moira_native
 
 def audit_edge_cases():

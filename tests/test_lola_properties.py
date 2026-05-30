@@ -270,12 +270,15 @@ def test_property_15_max_radius_per_bin(bins, radii):
 )
 @settings(max_examples=50)
 def test_property_16_lexsort_parity(bins, radii):
-    import numpy as np
+    # Pure-Python lexsort equivalent (stable sort by (radii, bins))
     size = min(len(bins), len(radii))
     bins, radii = bins[:size], radii[:size]
     indices = moira_native.lexsort_by_bin_and_radius(bins, radii)
-    expected_indices = np.lexsort((radii, bins))
-    assert list(indices) == list(expected_indices)
+
+    # Build expected using pure Python (equivalent to np.lexsort((radii, bins)))
+    paired = sorted(range(size), key=lambda i: (radii[i], bins[i]))
+    expected_indices = paired
+    assert list(indices) == expected_indices
 
 @given(pts=st.lists(st.tuples(st.floats(-100, 100), st.floats(-100, 100)), min_size=3, max_size=50))
 @settings(max_examples=50)

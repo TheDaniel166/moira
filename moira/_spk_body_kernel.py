@@ -2,12 +2,16 @@
 Native-owned small-body SPK reader infrastructure.
 
 This module provides:
-    - _Type13Segment: SPK type 13 (Hermite) segment reader
-    - SmallBodyKernel: thin wrapper around a native DAF/SPK segment catalog
+    - _Type13Segment: SPK type 13 (Hermite) segment reader with *preferred* native
+      SpkSegmentEvaluator; falls back to the pure-Python reference implementation
+      (`_hermite_eval_3d` / `_hermite_eval_3d_with_derivative`) when native is unavailable.
+    - _NativeChebyshevSegment: SPK type 2/3 Chebyshev segment reader with preferred native evaluator.
+    - SmallBodyKernel: thin wrapper around a native DAF/SPK segment catalog.
 
-The public surface intentionally preserves the existing shape used by
-``moira.asteroids`` and ``moira.comets`` while removing mandatory runtime
-dependence on ``jplephem``.
+The Python Hermite functions are intentionally retained as the permanent guarded
+fallback (and as the reference implementation for parity/diagnostic tooling).
+The public surface preserves the exact shape used by ``moira.asteroids`` and
+``moira.comets`` while removing mandatory runtime dependence on ``jplephem``.
 """
 
 from __future__ import annotations
@@ -68,6 +72,18 @@ _HAS_NATIVE_TYPE13 = _moira_native is not None and hasattr(
     _moira_native, "read_spk_type13_segment_payload"
 )
 
+# Private hooks for benchmarking and differential testing.
+# Type 13 (Hermite)
+import os as _os
+_FORCE_PYTHON_TYPE13_FALLBACK = (
+    _os.environ.get("MOIRA_FORCE_PYTHON_TYPE13", "").lower() in ("1", "true", "yes")
+)
+
+# Chebyshev (Type 2/3) — added during the 2026-05-30 fine-tooth-comb for consistency
+_FORCE_PYTHON_CHEBYSHEV_FALLBACK = (
+    _os.environ.get("MOIRA_FORCE_PYTHON_CHEBYSHEV", "").lower() in ("1", "true", "yes")
+)
+
 
 def _hermite_eval_3d(
     t: float,
@@ -75,7 +91,24 @@ def _hermite_eval_3d(
     pos: list[list[float]],
     vel: list[list[float]],
 ) -> tuple[float, float, float]:
-    """Hermite divided-difference interpolation in R^3."""
+    """
+    Hermite divided-difference interpolation in R^3 (pure Python reference/fallback).
+
+    ROLE (post-Phase 1 native Type 13 wiring):
+        This is the **official guarded fallback** implementation of SPK Type 13
+        Hermite interpolation. It is used only when the native SpkSegmentEvaluator
+        (data_type=13) cannot be loaded or is unavailable.
+
+        It is also the canonical Python reference implementation used by
+        adversarial parity tests and diagnostic scripts (e.g. trace_hermite.py)
+        to validate the C++ `spk_type13_record_inplace` / Type13SegmentEvaluator
+        behavior on both synthetic and real sovereign sb441_type13 shards.
+
+    Numerical contract:
+        Must produce results identical (to machine precision on real orbital data)
+        with the native C++ path for all admitted window sizes and boundary cases.
+        Proven via `test_type13_window_adversarial.py` on real Type 13 data.
+    """
     n = len(pos[0])
     m = 2 * n
 
@@ -132,7 +165,21 @@ def _hermite_eval_3d_with_derivative(
     pos: list[list[float]],
     vel: list[list[float]],
 ) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
-    """Evaluate the Type 13 Hermite interpolant and its exact derivative in one pass."""
+    """
+    Evaluate the Type 13 Hermite interpolant and its exact derivative in one pass
+    (pure Python reference/fallback).
+
+    ROLE (post-Phase 1 native Type 13 wiring):
+        Companion to `_hermite_eval_3d`. This is the **official guarded fallback**
+        for position + velocity (derivative) when the native evaluator is unavailable.
+
+        The caller in `_Type13Segment._evaluate` is responsible for scaling the
+        returned rate tuple by S_PER_DAY (the native path already returns velocities
+        in km/day units).
+
+        Used by the same adversarial parity tests and diagnostic tooling as the
+        non-derivative variant.
+    """
     n = len(pos[0])
     m = 2 * n
 
@@ -369,9 +416,17 @@ class _NativeChebyshevSegment:
         return self._data
 
     def _load_native_evaluator(self):
-        if not hasattr(self, "_native_evaluator"):
+        # Robust to runtime toggling (parallel to Type 13).
+        current_force = _FORCE_PYTHON_CHEBYSHEV_FALLBACK
+        if getattr(self, "_native_evaluator_force_mode", None) != current_force:
             self._native_evaluator = None
-            if _HAS_NATIVE_SEGMENTS and hasattr(_moira_native, "load_spk_segment_evaluator"):
+            self._native_evaluator_force_mode = current_force
+
+            if (
+                not current_force
+                and _HAS_NATIVE_SEGMENTS
+                and hasattr(_moira_native, "load_spk_segment_evaluator")
+            ):
                 self._native_evaluator = _moira_native.load_spk_segment_evaluator(
                     str(self.path),
                     int(self.start_i),
@@ -450,19 +505,22 @@ class _Type13Segment:
     LAW OF OPERATION:
         Responsibilities:
             - Store one type-13 descriptor and its derived time bounds.
-            - Lazily materialize states, epochs, and window size.
+            - Lazily materialize states, epochs, and window size (for fallback).
+            - Prefer native SpkSegmentEvaluator (data_type=13) for Hermite evaluation when available.
+            - Fall back to Python divided-difference implementation using loaded state vectors.
             - Evaluate positions and exact Hermite velocities for callers.
         Non-responsibilities:
             - Does not discover kernels or body availability.
             - Does not own the higher-level kernel wrapper.
         Dependencies:
-            - native type-13 payload support.
-            - local Hermite interpolation helper.
+            - native type-13 payload + evaluator support when available.
+            - local Hermite interpolation helper as fallback.
         Structural invariants:
             - cached payload remains aligned to the descriptor that produced it.
             - ``start_jd`` and ``end_jd`` derive directly from stored seconds.
+            - Native evaluator (when acquired) owns its own copy of the Hermite table.
         Failure behavior:
-            - Native payload failures propagate to callers.
+            - Native payload/evaluator failures fall back to Python path; hard failures propagate.
 
     Canon: JPL SPK type-13 Hermite segment semantics.
 
@@ -473,7 +531,7 @@ class _Type13Segment:
       "risk": "high",
       "api": {
         "frozen": ["compute", "compute_and_differentiate"],
-        "internal": ["_release", "_data"]
+        "internal": ["_release", "_data", "_load_native_evaluator", "_evaluate"]
       },
       "state": {
         "mutable": true,
@@ -518,9 +576,11 @@ class _Type13Segment:
         self.start_jd = _jd(self.start_second)
         self.end_jd = _jd(self.end_second)
         self.__data = None
+        self._native_evaluator = None
 
     def _release(self) -> None:
         self.__data = None
+        self._native_evaluator = None
 
     @property
     def _data(self):
@@ -536,7 +596,38 @@ class _Type13Segment:
             self.__data = (states, epochs_jd, int(payload["window_size"]))
         return self.__data
 
-    def compute(self, tdb, tdb2=0.0):
+    def _load_native_evaluator(self):
+        # Robust to runtime toggling of _FORCE_PYTHON_TYPE13_FALLBACK (used by benchmarks and differential tests).
+        # We track which "force mode" the cached evaluator belongs to.
+        current_force = _FORCE_PYTHON_TYPE13_FALLBACK
+        if getattr(self, "_native_evaluator_force_mode", None) != current_force:
+            self._native_evaluator = None
+            self._native_evaluator_force_mode = current_force
+
+            if (
+                not current_force
+                and _HAS_NATIVE_TYPE13
+                and hasattr(_moira_native, "load_spk_segment_evaluator")
+            ):
+                self._native_evaluator = _moira_native.load_spk_segment_evaluator(
+                    str(self.path),
+                    int(self.start_i),
+                    int(self.end_i),
+                    self._little_endian,
+                    int(self.data_type),
+                )
+        return self._native_evaluator
+
+    def _evaluate(self, tdb: float, tdb2: float, need_rates: bool):
+        evaluator = self._load_native_evaluator()
+        if evaluator is not None:
+            if need_rates:
+                return evaluator.position_and_velocity(tdb, tdb2)
+            return evaluator.position(tdb, tdb2), None
+
+        # Fallback path: pure-Python reference Hermite implementation.
+        # Only reached when native SpkSegmentEvaluator (data_type=13) is unavailable.
+        # This path is intentionally kept as the permanent, no-native-dependency fallback.
         states, epochs_jd, ws = self._data
         t = float(tdb) + float(tdb2)
 
@@ -551,25 +642,22 @@ class _Type13Segment:
         pos = [axis[start:start + ws] for axis in states[:3]]
         vel = [axis[start:start + ws] for axis in states[3:]]
 
-        return _hermite_eval_3d(t_sec, win_t, pos, vel)
+        if need_rates:
+            position, rate = _hermite_eval_3d_with_derivative(t_sec, win_t, pos, vel)
+            return position, tuple(v * S_PER_DAY for v in rate)
+
+        return _hermite_eval_3d(t_sec, win_t, pos, vel), None
+
+    def compute(self, tdb, tdb2=0.0):
+        values, _rates = self._evaluate(float(tdb), float(tdb2), need_rates=False)
+        return (float(values[0]), float(values[1]), float(values[2]))
 
     def compute_and_differentiate(self, tdb, tdb2=0.0):
-        states, epochs_jd, ws = self._data
-        t = float(tdb) + float(tdb2)
-
-        idx = bisect_left(epochs_jd, t)
-        half = ws // 2
-        start = max(0, min(idx - half, len(epochs_jd) - ws))
-
-        win_jd = epochs_jd[start:start + ws]
-        win_t = [(jd - T0) * S_PER_DAY for jd in win_jd]
-        t_sec = (t - T0) * S_PER_DAY
-
-        pos = [axis[start:start + ws] for axis in states[:3]]
-        vel = [axis[start:start + ws] for axis in states[3:]]
-
-        position, rate = _hermite_eval_3d_with_derivative(t_sec, win_t, pos, vel)
-        return position, tuple(v * S_PER_DAY for v in rate)
+        values, rates = self._evaluate(float(tdb), float(tdb2), need_rates=True)
+        return (
+            (float(values[0]), float(values[1]), float(values[2])),
+            (float(rates[0]), float(rates[1]), float(rates[2])),
+        )
 
 
 def _small_body_kernel_native_supported(catalog: dict) -> bool:

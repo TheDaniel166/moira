@@ -126,6 +126,13 @@ from .jaimini import (
     karaka_pair,
     validate_jaimini_output,
 )
+from .muhurta import (
+    MuhurtaPolicy,
+    MuhurtaClassification,
+    MuhurtaScore,
+    classify_muhurta,
+    score_muhurta,
+)
 from .panchanga import (
     TithiPaksha,
     YogaClass,
@@ -576,6 +583,12 @@ __all__ = [
     "tithi_condition_profile",
     "panchanga_profile",
     "validate_panchanga_output",
+    # Muhurta (Vedic electional) — Tier 2 competitive gap work
+    "MuhurtaPolicy",
+    "MuhurtaClassification",
+    "MuhurtaScore",
+    "classify_muhurta",
+    "score_muhurta",
     # Dasha systems
     "ASHTOTTARI_YEARS",
     "ASHTOTTARI_SEQUENCE",

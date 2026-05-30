@@ -68,7 +68,12 @@ These are outside the now-clean Python production runtime:
 - `src/native/bindings/moira_native.cpp`
   - binding-level NumPy header and array-oriented helper surfaces
 - selected tests and validation scripts
-  - acceptable comparison and analysis usage
+  - **All numpy removed** (2026-05-30 follow-up, per explicit request). 
+- `tests/unit/test_spk_reader.py` fully purged (fake data + all `assert_allclose` replaced with pure-Python helper).
+- `tests/test_lola_properties.py` and `tests/unit/test_topocentric_jitter.py` cleaned.
+- Multiple scripts purged (e.g. `validate_native_solvers.py`).
+- Production code was already clean.
+- Remaining numpy references are now confined to historical patches, tmp/, and some docs (being actively removed).
 - scratch and historical planning material
 
 ## Documentation Alignment

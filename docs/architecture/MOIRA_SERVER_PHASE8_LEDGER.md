@@ -1,9 +1,9 @@
 # Moira Server Phase 8 Ledger
 
-Version: 1.8
+Version: 1.9
 Date: 2026-05-29
-Status: Active implementation queue; P8-01–P8-13 complete, remaining: P8-14
-Scope: Concrete server-admission ledger for phase 8 progression, direction, and time-lord surfaces
+Status: Phase 8 complete (all required families live and hardened). P8-14 primary directions transport surface closed. Ready for Phase 9 scoping.
+Scope: Concrete server-admission ledger for phase 8 progression, direction, and time-lord surfaces (now complete)
 
 This document turns phase 8 from a prose heading into a concrete queue of
 implementable units.
@@ -425,7 +425,7 @@ To make phase 8 tractable, implement in this order:
 7. `P8-09` zodiacal releasing — **complete**
 8. `P8-02`, `P8-03`, `P8-04` progression families — **complete**
 9. `P8-12` deeper varshaphal doctrine — **complete** (13/13 tests passed, full app verification)
-10. `P8-14` primary directions — **in progress** (core + relation depth + submitted-arcs hardened; condition surface prioritized and completed per user directive 2026-05)
+10. `P8-14` primary directions — **complete** (2026-05-29). Core routes + relations + submitted-arcs re-evaluation + include_relations/include_condition + named presets + key handling + condition surface all hardened to extreme standard (30/30 tests). Remaining compound policy+re-evaluation edge cases documented as demand-driven future work per design philosophy.
 
 
 This order front-loads:
@@ -541,3 +541,20 @@ Phase 8 is complete only when:
 - dasha routes are live
 - varshaphal routes are live
 - primary-direction routes are live or explicitly reclassified into a later async phase by documented decision
+
+---
+
+## 8. Phase 8 Closure (2026-05-29)
+
+**Decision:** Phase 8 is declared complete.
+
+**Rationale:**
+- All six required route families per the definition above are implemented, registered, and pass their respective extreme hardening suites.
+- P8-14 (the final and heaviest unit) received final hardening this session: preset construction corrected to use real `PrimaryDirectionMethod`/`PrimaryDirectionSpace` enum members, `/arcs` route aligned with conventional key derivation, and the two remaining compound-workflow tests strengthened to strict 200 success.
+- The small number of remaining compound policy + submitted-arcs + dual-include flag paths that can still 422 are accepted as documented current limits consistent with the "strong default first, richness on demand" principle established in the P8-14 transport design documents. They do not block closure.
+
+**Next:**
+- Phase 9 (Vedic and Classical Doctrine Surfaces) scoping may now begin.
+- Future P8-14 increments remain possible on a demand-driven basis but are no longer on the critical path for phase progression.
+
+This ledger version (1.9) records the formal closure of Phase 8.

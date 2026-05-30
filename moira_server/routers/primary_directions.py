@@ -95,7 +95,7 @@ def primary_directions_arcs_route(
     engine: Moira = Depends(get_engine),
 ) -> PrimaryDirectionsArcsResponse:
     arcs = compute_arcs_service(engine, request)
-    chosen_key = request.policy.key if request.policy and request.policy.key else None
+    chosen_key = _get_chosen_key(request)
     return serialize_arcs(arcs, chosen_key=chosen_key)
 
 
