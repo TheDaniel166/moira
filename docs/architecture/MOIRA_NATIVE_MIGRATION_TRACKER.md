@@ -140,7 +140,7 @@ Artifact:
 
 - [x] `tests/artifacts/benchmarks/native_phase2_ephemeris.json`
 
-Measured on 2026-05-07 with `scripts/benchmark_native_phase2_ephemeris.py`:
+Measured on 2026-05-07 with archived script `scripts/archive/phase2_migration_benchmarks/benchmark_native_phase2_ephemeris.py`:
 
 - `position(0, 10)` bulk workload: Python median `0.788760s`, native median `0.056287s`, speedup `14.01x`
 - `position_and_velocity(0, 3)` bulk workload: Python median `1.469189s`, native median `0.083782s`, speedup `17.54x`
@@ -174,7 +174,7 @@ Artifact:
 
 - [x] `tests/artifacts/benchmarks/native_phase2_catalog.json`
 
-Measured on 2026-05-07 with `scripts/benchmark_native_phase2_catalog.py`:
+Measured on 2026-05-07 with archived script `scripts/archive/phase2_migration_benchmarks/benchmark_native_phase2_catalog.py`:
 
 - planetary kernel catalog open/index path: Python median `0.000117s`, native median `0.000098s`, speedup `1.19x`
 
@@ -206,7 +206,7 @@ Artifact:
 
 - [x] `tests/artifacts/benchmarks/native_phase2_segments.json`
 
-Measured on 2026-05-07 with `scripts/benchmark_native_phase2_segments.py`:
+Measured on 2026-05-07 with archived script `scripts/archive/phase2_migration_benchmarks/benchmark_native_phase2_segments.py`:
 
 - `position(0, 10)` bulk workload: Python median `0.078926s`, native median `0.280447s`, speedup `0.28x`
 - `position_and_velocity(0, 3)` bulk workload: Python median `0.104304s`, native median `0.342221s`, speedup `0.30x`
@@ -317,7 +317,7 @@ Experimental optimization artifact:
 
 - [x] `tests/artifacts/benchmarks/native_phase2_segments_series_eval_experiment.json`
 
-Measured on 2026-05-07 with `scripts/benchmark_native_phase2_segments_series_eval.py`:
+Measured on 2026-05-07 with archived script `scripts/archive/phase2_migration_benchmarks/benchmark_native_phase2_segments_series_eval.py`:
 
 - combined repeated planetary native-segment workload: Python median `0.198565s`, experimental native median `0.661552s`, speedup `0.30x`
 
@@ -430,19 +430,19 @@ Interpretation:
 - [x] Added native record parity and reader-integration coverage in:
   - `tests/unit/test_spk_reader.py`
 - [x] Added and ran Phase 2 ephemeris benchmark:
-  - `scripts/benchmark_native_phase2_ephemeris.py`
+  - archived in `scripts/archive/phase2_migration_benchmarks/benchmark_native_phase2_ephemeris.py`
   - `tests/artifacts/benchmarks/native_phase2_ephemeris.json`
   - combined bulk ephemeris median speedup: `16.12x`
 - [x] Phase 2 continued with native DAF/SPK catalog reading for planetary kernel summary construction
 - [x] `SpkReader` now prefers native summary scanning over `jplephem` summary walking when available
 - [x] Added and ran Phase 2 catalog benchmark:
-  - `scripts/benchmark_native_phase2_catalog.py`
+  - archived in `scripts/archive/phase2_migration_benchmarks/benchmark_native_phase2_catalog.py`
   - `tests/artifacts/benchmarks/native_phase2_catalog.json`
   - catalog median speedup: `1.19x`
 - [x] Phase 2 advanced to native payload extraction and native Chebyshev segment objects for supported planetary summaries
 - [x] `SpkReader` now avoids `jplephem` record interpretation for supported type-2/type-3 planetary segments
 - [x] Added and ran native-segment benchmark:
-  - `scripts/benchmark_native_phase2_segments.py`
+  - archived in `scripts/archive/phase2_migration_benchmarks/benchmark_native_phase2_segments.py`
   - `tests/artifacts/benchmarks/native_phase2_segments.json`
   - combined native-segment median speedup: `0.29x` (ownership gain, current performance regression)
 - [x] Phase 2 removed mandatory `jplephem` imports from the supported planetary reader path
@@ -472,7 +472,7 @@ Interpretation:
   - [x] Integrated **1-Element Result Caching** at the kernel level for bisection loops.
   - [x] Added **Batch Evaluation** support for vectorized JD lookups.
   - [x] Verified **4.2x faster** search performance and **230k events/sec** throughput.
-  - [x] Audit Script: `scripts/audit_phase3_search.py`
+  - [x] Audit Script: archived in `scripts/archive/phase3_phase4_migration_audits/audit_phase3_search.py` (one-shot Phase 3)
 
 - [x] **Phase 4: Native Event Assemblies & Consolidation**
   - [x] Implemented **Planetary Station Discovery** using longitude rates ($\dot{\lambda}$).
@@ -480,7 +480,7 @@ Interpretation:
   - [x] Implemented **Extreme Occultation Discovery** with contact phase (C1-C4) solving.
   - [x] Established **Unified Search Pool** state machine for consolidated multi-event surveys.
   - [x] Added **Numerical Diligence Layer**: Pole singularity guards and adaptive bracketing.
-  - [x] Audit Script: `scripts/audit_phase4_edge_cases.py`
+  - [x] Audit Script: archived in `scripts/archive/phase3_phase4_migration_audits/audit_phase4_edge_cases.py` (one-shot Phase 4)
 
 - [x] **Walkthrough Completed**: `PHASE_3_4_WALKTHROUGH.md`
 - [x] **Phase 6: Native LOLA Topography Substrate**

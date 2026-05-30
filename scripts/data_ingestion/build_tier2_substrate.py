@@ -7,9 +7,19 @@ from astropy.coordinates import SkyCoord
 import astropy.units as u
 import math
 
-# NOTE (2026-05-30): Direct numpy import removed per zero-numpy policy.
-# This script still leans on astropy, which pulls in numpy for table/masked array operations.
-# The remaining _np.ma.is_masked checks below are the last direct references.
+"""
+ONE-TIME DATA INGESTION SCRIPT
+
+Purpose: Builds the core Tier 2 / Vedic star substrate:
+  - moira/data/star_registry.csv
+  - moira/data/star_lore.json
+  - moira/data/star_provenance.json
+
+This was a one-shot (or occasional refresh) builder for populating the star data
+used by Tier 2 features. Run only when you need to refresh the registry from SIMBAD/Vizier.
+
+Last significant run context: Around the time of Tier 2 Vedic work (2026).
+"""
 
 J2000 = 2451545.0
 OBL_J2000 = 23.43927944

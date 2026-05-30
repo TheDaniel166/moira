@@ -144,15 +144,14 @@ NumPy-related surfaces.
 
 ### 5.1 `NumPy`
 
-- [scripts/validate_phase4_events.py](../../scripts/validate_phase4_events.py#L1)
-- [scripts/validate_native_solvers.py](../../scripts/validate_native_solvers.py#L1)
-- [scripts/validate_delta_t_hybrid.py](../../scripts/validate_delta_t_hybrid.py#L405)
-- [scripts/stress_test_phase3.py](../../scripts/stress_test_phase3.py#L1)
-- [scripts/build_tier2_substrate.py](../../scripts/build_tier2_substrate.py#L3)
-- [scripts/build_sovereign_substrate.py](../../scripts/build_sovereign_substrate.py#L13)
-- [scripts/benchmark_native_eclipse.py](../../scripts/benchmark_native_eclipse.py#L2)
-- [scripts/audit_phase4_edge_cases.py](../../scripts/audit_phase4_edge_cases.py#L1)
-- [scripts/audit_phase3_search.py](../../scripts/audit_phase3_search.py#L1)
+- Archived (one-shot Phase 3/4, numpy removed before archiving): `scripts/archive/phase3_phase4_migration_audits/`
+  - validate_phase4_events.py, stress_test_phase3.py, audit_phase4_edge_cases.py, audit_phase3_search.py
+- Still present / actively maintained (numpy cleaned):
+  - [scripts/validate_native_solvers.py](../../scripts/validate_native_solvers.py#L1)
+  - [scripts/validate_delta_t_hybrid.py](../../scripts/validate_delta_t_hybrid.py#L405)
+  - [scripts/data_ingestion/build_tier2_substrate.py](../../scripts/data_ingestion/build_tier2_substrate.py#L3)
+  - [scripts/data_ingestion/build_sovereign_substrate.py](../../scripts/data_ingestion/build_sovereign_substrate.py#L13)
+- Recently archived (one-shot, numpy cleaned before archiving): `scripts/archive/one_shot_debug_and_diagnostics/benchmark_native_eclipse.py` and similar historical benchmarks.
 
 These are off the production runtime path.
 

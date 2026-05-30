@@ -46,7 +46,7 @@
 - Confirm decision: Move Type 13 evaluation to native (recommended) vs. keep Python math over native payloads.
 - Audit current Python Hermite implementation for any special cases or numerical differences vs. the C++ version.
 - Add or update machine contracts for the new native path.
-- Create benchmark suite entry for Type 13 (extend `scripts/benchmark_native_phase2_small_bodies.py` or new script).
+- Create benchmark suite entry for Type 13 (the original Phase 2 `benchmark_native_phase2_small_bodies.py` is still in scripts/; other Phase 2 measurement scripts are archived in `scripts/archive/phase2_migration_benchmarks/`).
 
 **Deliverable**: Go/No-go decision recorded in migration tracker + benchmark baseline.
 

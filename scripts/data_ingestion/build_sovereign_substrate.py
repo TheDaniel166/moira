@@ -5,6 +5,18 @@ import time
 from pathlib import Path
 from dataclasses import dataclass, asdict
 
+"""
+ONE-TIME DATA INGESTION SCRIPT (Sovereign / IAU-focused)
+
+Purpose: Builds (or patches) the star substrate focused on IAU-sanctioned / sovereign star names.
+Outputs to the same files as build_tier2_substrate.py.
+
+This is a companion / more targeted version of the Tier 2 substrate builder.
+Run only when refreshing the sovereign star portion of the registry.
+
+Contains lazy numpy handling for astropy masked arrays.
+"""
+
 # Only active if astroquery works
 try:
     from astroquery.simbad import Simbad
