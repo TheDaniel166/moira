@@ -257,6 +257,46 @@ Canon: Moira Sovereign Facade Architecture; moira.facade kernel policy.
         if self._reader_obj is None:
             raise _facade_module().MissingEphemerisKernelError(self.get_kernel_status())
 
+    def load_small_body_manifest(self, manifest_path: str | Path) -> None:
+        """
+        Load sovereign small-body Type 13 shards from a manifest and merge them
+        into the active reader pool.
+
+        This enables the fast native Type 13 path for asteroids/comets without
+        hacks. Intended for server "fast API" setups and websites.
+        """
+        from pathlib import Path as _Path
+        from .spk_reader import KernelPool
+
+        manifest_path = _Path(manifest_path)
+        if not manifest_path.exists():
+            raise FileNotFoundError(f"Small body manifest not found: {manifest_path}")
+
+        new_kernels = small_body_readers_from_manifest(manifest_path)
+
+        current_reader = self._reader_obj
+        if current_reader is None:
+            # No planetary yet — just use the small body ones (unusual but allowed)
+            if len(new_kernels) == 1:
+                self._reader_obj = new_kernels[0]
+            else:
+                pool = KernelPool()
+                for k in new_kernels:
+                    pool.add(k)
+                self._reader_obj = pool
+        else:
+            # Merge into existing pool or reader
+            if isinstance(current_reader, KernelPool):
+                for k in new_kernels:
+                    current_reader.add(k)
+            else:
+                # Wrap existing reader + new small body kernels into a pool
+                pool = KernelPool()
+                pool.add(current_reader)
+                for k in new_kernels:
+                    pool.add(k)
+                self._reader_obj = pool
+
     def download_missing_kernels(self, interactive: bool = False) -> None:
         from .download_kernels import download_missing
 

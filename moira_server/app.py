@@ -11,6 +11,8 @@ from .config import ServerConfig
 from .errors import register_exception_handlers
 from .lifecycle import create_engine
 from .routers import (
+    asteroids_router,
+    comets_router,
     batch_router,
     chart_router,
     dasha_router,
@@ -75,4 +77,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(timelords_router)
     app.include_router(varshaphal_router)
     app.include_router(primary_directions_router)
+    app.include_router(asteroids_router)   # Fast small-body surfaces (website integration)
+    app.include_router(comets_router)      # Symmetric fast comet surfaces
+    app.include_router(stars_router)       # Fixed stars for the website / Manus AI
     return app

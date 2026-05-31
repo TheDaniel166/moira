@@ -273,6 +273,12 @@ New dedicated script: `scripts/benchmark_type13_native_vs_fallback.py`
 
 **Key Observation**: The native C++ divided-difference / Hermite implementation dramatically outperforms the pure-Python version, with the advantage growing with larger window sizes (more arithmetic per call). This is the expected and desired result for Phase 3.
 
+**Fresh run (2026-05-30)** on a larger real sovereign shard (`sb441_type13_shard_001.bsp`, Ceres):
+- High-level repeated position (2000 calls): **~10.2x** median speedup (significantly better than the initial smoke-shard run).
+- Micro-bench numbers remained consistent (≈9x / 28x / 58x).
+
+This provides stronger evidence that real-world small-body workloads will see meaningful gains from the native Type 13 path. The item "benchmark native small-body type-13 workloads" in the main migration tracker is now closed.
+
 ### Implications
 - For typical single-asteroid `asteroid_at` / `comet_at` use cases → modest or no visible wall-time improvement (higher stack dominates).
 - For **bulk** workloads (`all_asteroids_at` over many bodies, event searches, dense sampling, Monte-Carlo, etc.) that perform thousands to millions of raw Type 13 evaluations → **very significant** wins (10-50x on the evaluation kernel itself).

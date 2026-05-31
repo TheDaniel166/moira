@@ -21,6 +21,11 @@ It sits downstream of:
 
 "Full engine exposure" does not mean "HTTP-wrap every file in the repository."
 
+**Website-driven prioritization note (added 2026-05-30):**
+The user is actively building a public Moira website that consumes this REST API (via Manus AI and direct calls). Website needs may require us to deviate from the planned phase order (e.g. accelerating small-body and stars surfaces). When this happens, we still follow the transport discipline and verification rules below, but the sequencing can be adjusted.
+
+See `.remember/remember.md` for the persistent memory of this context.
+
 It means:
 
 - expose the full stable public computational surface

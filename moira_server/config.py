@@ -14,6 +14,7 @@ class ServerConfig:
     port: int = 8000
     log_level: str = "info"
     kernel_path: str | None = None
+    small_body_manifest: str | None = None   # Path to sovereign small-body manifest.json for fast Type 13 native asteroids/comets
     docs_enabled: bool = True
     require_kernel_ready: bool = False
 
@@ -28,6 +29,7 @@ class ServerConfig:
             port=int(os.getenv("MOIRA_SERVER_PORT", "8000")),
             log_level=os.getenv("MOIRA_SERVER_LOG_LEVEL", "info"),
             kernel_path=os.getenv("MOIRA_SERVER_KERNEL_PATH") or None,
+            small_body_manifest=os.getenv("MOIRA_SERVER_SMALL_BODY_MANIFEST") or None,
             docs_enabled=docs_raw not in {"0", "false", "no", "off"},
             require_kernel_ready=require_raw in {"1", "true", "yes", "on"},
         )

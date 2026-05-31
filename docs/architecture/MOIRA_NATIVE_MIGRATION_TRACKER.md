@@ -382,16 +382,20 @@ Interpretation:
 
 ## Next Up
 
-- [ ] benchmark native small-body type-13 workloads before claiming performance value
+- [x] benchmark native small-body type-13 workloads (see `scripts/benchmark_type13_native_vs_fallback.py` and artifact `tests/artifacts/benchmarks/type13_native_evaluation_phase3.json`). On real sovereign sb441_type13 shard (Ceres, ~11k epochs):
+  - High-level repeated position (2000 calls, realistic `asteroid_at`-style): **~10.2x** median speedup (native vs pure-Python fallback).
+  - Isolated Hermite micro-benchmark: **8.8x** (window=4), **28x** (window=8), **58x** (window=12).
+  - This closes the main open small-body Type 13 performance item. Bulk/event workloads will see the largest absolute gains.
 - [ ] reduce Python/native marshaling overhead in repeated planetary native segment evaluation
 - [ ] remove direct `jplephem` imports from parity-only tests and scripts or quarantine them clearly as optional comparison tooling
 - [x] Phase 0 started for native Type 13 evaluation (see `MOIRA_NATIVE_TYPE13_EVALUATION_COMPLETION_PLAN.md` and `MOIRA_TYPE13_PYTHON_VS_NATIVE_AUDIT_2026-05-30.md`)
 - [x] Phase 1: Native `SpkSegmentEvaluator` (data_type=13) wired as preferred path in `_Type13Segment` + `SmallBodyKernel` (full validation on real sb441_type13 shards via killer + adversarial tests; machine-precision parity proven).
 - [x] Phase 2: Pure-Python `_hermite_eval_3d*` functions retained as **permanent guarded fallback + reference implementation** (Option A). Explicit documentation added; mirrors Chebyshev design. No removal (see dedicated plan for rationale).
-- [x] Phase 3: Benchmark complete. New script `scripts/benchmark_type13_native_vs_fallback.py` + force hook. On real sb441_type13 shard (Ceres):
-  - High-level repeated position (2000 calls): ~1.0x (higher stack dominates, as expected).
-  - Isolated Hermite micro-bench (1000 pos+vel calls): **8.3x** (ws=4), **21.5x** (ws=8), **55.5x** (ws=12) native vs Python fallback.
-  - Bulk/event-search workloads will see the largest gains. Artifact + full analysis in the dedicated Type 13 plan.
+- [x] Phase 3: Benchmark complete. New script `scripts/benchmark_type13_native_vs_fallback.py` + force hook. Fresh run on real sovereign sb441_type13 shard (Ceres):
+  - High-level repeated position (2000 calls): **~10.2x** median (much stronger than early runs on smaller shards).
+  - Isolated Hermite micro-bench (1000 pos+vel calls): **8.8x** (ws=4), **28x** (ws=8), **58x** (ws=12) native vs Python fallback.
+  - Artifact: `tests/artifacts/benchmarks/type13_native_evaluation_phase3.json`
+  - Bulk/event-search workloads on many Type 13 bodies will see the largest absolute wins. This item is now closed.
 
 ## Deferred Until Later
 

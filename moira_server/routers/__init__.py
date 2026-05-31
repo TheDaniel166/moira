@@ -11,11 +11,17 @@ from .relationship import router as relationship_router
 from .returns import router as returns_router
 from .timelords import router as timelords_router
 from .transits import router as transits_router
+from .asteroids import router as asteroids_router
+from .comets import router as comets_router
+from .stars import router as stars_router
 from .primary_directions import router as primary_directions_router
 from .varshaphal import router as varshaphal_router
 from .visibility import router as visibility_router
 
 __all__ = [
+    "asteroids_router",
+    "comets_router",
+    "stars_router",
     "batch_router",
     "chart_router",
     "dasha_router",
