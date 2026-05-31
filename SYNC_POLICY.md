@@ -29,5 +29,14 @@ You should see the updates immediately in VS Code / File Explorer without extra 
 ## Why This Matters
 You treat me as a coding collaborator. Staying in tune with the actual state of the project is as important as the technical work itself. This policy removes friction so we stay aligned in real time.
 
+## Memory System
+
+Project memory now uses a hybrid approach for robustness:
+- **Central authoritative memory** lives at: `\\?\C:\Users\nilad\OneDrive\.moira-memory\moira\`
+- The repo's `.remember/remember.md` is a lightweight bootstrap/pointer file.
+- I will keep both the local bootstrap and the central memory in sync during work.
+
+This ensures memory survives worktree changes, fresh clones, and different machines.
+
 ## How to Update This Policy
-Just tell me the new rule and I will update this file + the `.remember/remember.md` handoff.
+Just tell me the new rule and I will update this file + the central memory at `.moira-memory/moira/`.

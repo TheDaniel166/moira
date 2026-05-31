@@ -5,6 +5,15 @@ All notable changes to the Moira project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.3] - 2026-05-30
+
+### Added
+- **Primary Directions REST Surface (P8-14)**: Completed the dedicated per-significator condition surface with a first-class typed `PrimaryDirectionsConditionResponse`, exposing `evaluate_primary_direction_condition` results through the `/profile` endpoint when `include_condition=true`.
+- **Policy Ergonomics**: Extended conventional time-key derivation (`_get_chosen_key`) to all seven supported presets in the primary directions router, with explicit client key override always taking precedence.
+
+### Changed
+- Improved hardening and documentation around combined policy + submitted-arcs + enrichment paths in the primary directions transport layer (P8-14). Remaining 422 cases on the richest combinations are now explicitly documented rather than masked.
+
 ## [3.2.2] - 2026-05-23
 
 ### Added
