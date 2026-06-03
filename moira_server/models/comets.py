@@ -47,3 +47,13 @@ class CometsBulkResponse(_StrictModel):
     results: dict[str, CometPositionResponse]
     missing: list[str] = []
     sovereign_used: bool = False
+
+
+class CometListItem(_StrictModel):
+    name: str
+    naif_id: int
+
+
+class CometListResponse(_StrictModel):
+    bodies: list[CometListItem]
+    total: int

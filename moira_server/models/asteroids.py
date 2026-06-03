@@ -56,3 +56,13 @@ class AsteroidsBulkResponse(_StrictModel):
     results: dict[str, AsteroidPositionResponse]  # keyed by requested name/naif
     missing: list[str] = []
     sovereign_used: bool = False
+
+
+class AsteroidListItem(_StrictModel):
+    name: str
+    naif_id: int
+
+
+class AsteroidListResponse(_StrictModel):
+    bodies: list[AsteroidListItem]
+    total: int

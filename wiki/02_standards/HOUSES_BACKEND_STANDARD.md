@@ -147,7 +147,7 @@ A function in phase N:
 | `X` | Meridian | `EQUAL` | `EQUATORIAL` | No | Yes |
 | `S` | Solar Sign | `SOLAR` | `ECLIPTIC` | No | Yes |
 | `O` | Porphyry | `QUADRANT` | `QUADRANT_TRISECTION` | Yes | Yes |
-| `P` | Placidus | `QUADRANT` | `SEMI_ARC` | Yes | **No** |
+| `P` | Placidus | `QUADRANT` | `SEMI_ARC` | Yes | Yes |  # integrated high-lat branch search; polar_capable via own doctrine (unique ordered when exists)
 | `B` | Alcabitius | `QUADRANT` | `SEMI_ARC` | Yes | Yes |
 | `K` | Koch | `QUADRANT` | `OBLIQUE_ASCENSION` | Yes | **No** |
 | `C` | Campanus | `QUADRANT` | `PRIME_VERTICAL` | Yes | Yes |
@@ -159,10 +159,13 @@ A function in phase N:
 | `Y` | APC | `QUADRANT` | `APC_FORMULA` | Yes | Yes |
 | `N` | Sunshine | `SOLAR` | `SOLAR_POSITION` | No | Yes |
 
-**Polar-incapable systems** (`_POLAR_SYSTEMS`): `P`, `K`.
-These systems produce geometrically disordered cusps above the critical latitude
-`90° − obliquity` (≈ 66.56° at J2000) and fall back to Porphyry under the default
-policy.
+**Polar-incapable systems** (`_POLAR_SYSTEMS`): `K` (and four projection/prime-vertical systems).
+Placidus (P) has integrated branch-search doctrine for high latitudes (unique
+ordered semi-arc cycles when they exist for the position); it is no longer
+blanket pre-empted and is marked polar_capable=True. When no unique ordered
+solution exists for a given high-lat ARMC, policy still governs fallback/raise.
+The remaining listed systems fall back (or raise) under default policy above
+critical latitude (`90° − obliquity` ≈ 66.56° at J2000).
 
 #### QUADRANT H1 exception
 
@@ -296,7 +299,7 @@ When no fallback occurs: `fallback = False`, `fallback_reason = None`.
 
 #### 6.3a Experimental high-latitude search
 
-`PolarFallbackPolicy.EXPERIMENTAL_SEARCH` is an explicit opt-in research mode.
+`PolarFallbackPolicy.EXPERIMENTAL_SEARCH` is an explicit opt-in research mode that loads the separate experimental_<system>.py module for the requested polar system (Placidus is the reference full implementation; others are per-system research stubs following the same isolation pattern).
 It currently applies only to `HouseSystem.PLACIDUS`.
 
 - The engine calls the separate `moira.experimental_placidus` module.

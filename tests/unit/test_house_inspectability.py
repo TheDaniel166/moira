@@ -65,11 +65,11 @@ class TestModuleScopeSets:
     def test_polar_systems_are_subset_of_known(self):
         assert _POLAR_SYSTEMS.issubset(_KNOWN_SYSTEMS)
 
-    def test_polar_systems_has_exactly_two_members(self):
-        assert len(_POLAR_SYSTEMS) == 2
+    def test_polar_systems_has_exactly_five_members(self):
+        assert len(_POLAR_SYSTEMS) == 5
 
-    def test_known_systems_has_exactly_18_members(self):
-        assert len(_KNOWN_SYSTEMS) == 18
+    def test_known_systems_has_exactly_19_members(self):
+        assert len(_KNOWN_SYSTEMS) == 19
 
     def test_polar_systems_members_are_polar_incapable(self):
         for code in _POLAR_SYSTEMS:

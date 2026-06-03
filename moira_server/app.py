@@ -23,6 +23,7 @@ from .routers import (
     progressions_router,
     relationship_router,
     returns_router,
+    stars_router,
     timelords_router,
     transits_router,
     varshaphal_router,

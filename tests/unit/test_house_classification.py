@@ -244,7 +244,6 @@ class TestLatitudeSensitivity:
 
 class TestPolarCapable:
     @pytest.mark.parametrize("system", [
-        HouseSystem.PLACIDUS,
         HouseSystem.KOCH,
         ])
     def test_polar_incapable_systems(self, system):
@@ -252,17 +251,17 @@ class TestPolarCapable:
 
     @pytest.mark.parametrize("system", [
         HouseSystem.WHOLE_SIGN, HouseSystem.EQUAL, HouseSystem.PORPHYRY,
-        HouseSystem.CAMPANUS, HouseSystem.REGIOMONTANUS,
-        HouseSystem.MORINUS, HouseSystem.MERIDIAN, HouseSystem.ALCABITIUS,
+        HouseSystem.MORINUS, HouseSystem.MERIDIAN,
         HouseSystem.VEHLOW, HouseSystem.SUNSHINE, HouseSystem.AZIMUTHAL,
-        HouseSystem.SOLAR_SIGN, HouseSystem.TOPOCENTRIC,
+        HouseSystem.SOLAR_SIGN,
         HouseSystem.CARTER, HouseSystem.KRUSINSKI, HouseSystem.APC,
+        HouseSystem.PLACIDUS,
         ])
     def test_polar_capable_systems(self, system):
         assert classify_house_system(system).polar_capable is True
 
     def test_polar_capable_consistency_with_fallback_systems(self):
-        """Systems in _POLAR_SYSTEMS must have polar_capable=False."""
+        """Systems remaining in _POLAR_SYSTEMS (post-Placidus integration) must have polar_capable=False."""
         from moira.houses import _POLAR_SYSTEMS
         for system in _POLAR_SYSTEMS:
             c = classify_house_system(system)

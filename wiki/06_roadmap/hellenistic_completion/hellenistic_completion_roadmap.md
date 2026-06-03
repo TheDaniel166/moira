@@ -1,5 +1,7 @@
 # Hellenistic Astrology Completion Roadmap
 
+**Note (2026-05-29 code verification):** A documentation + code verification pass against this roadmap (cross-referenced with WESTERN_HELLENISTIC_GAP_TRACKER.md and FEATURE_AUDIT_2026.md) found that many items listed as "Partial" or "Absent" below are now implemented in the live codebase (e.g., first-class triplicity/bound/face in EssentialDignityKind, PLANETARY_JOYS + is_in_joy, PTOLEMAIC/CHALDEAN bounds tables + doctrine support, is_in_halb + SCORE_HALB, oriental_occidental(), is_besieged(), AspectDomain.WHOLE_SIGN + find_whole_sign_aspects()). The roadmap text below is retained for historical reference but is partially outdated. See the GAP_TRACKER for current verified status and remaining gaps.
+
 ## Purpose
 
 This is an **additive roadmap** governing the closure of partial and absent
@@ -46,24 +48,26 @@ Companion documents:
 | Solar condition (cazimi, combust, under the beams) | `moira/dignities.py` |
 | Mutual reception (domicile + exaltation) | `moira/dignities.py` |
 
-### Partial
+### Partial / Verified Updates (as of 2026-05 code verification)
 
-| Feature | What exists | What is missing |
-|---------|-------------|-----------------|
-| Bounds/terms | Egyptian bounds only | Ptolemaic terms, Chaldean terms |
-| Essential dignity enum | Domicile, exaltation, detriment, fall, peregrine | Triplicity, bound, face as first-class `EssentialDignityKind` members |
-| Hayz | `is_in_hayz()` | Halb (the nocturnal partial-hayz) |
-| Planetary condition | Cazimi, combust, under the beams | Oriental/occidental (morning/evening star), besieging |
-| Aspect direction | Sinister/dexter exists in primary directions | Not in the general aspect engine |
+**Note:** Several items below have been implemented since this roadmap was drafted. See code verification in WESTERN_HELLENISTIC_GAP_TRACKER.md.
 
-### Absent
+| Feature | What exists | What is missing (per original) | Verification Status |
+|---------|-------------|--------------------------------|---------------------|
+| Bounds/terms | Egyptian bounds only | Ptolemaic terms, Chaldean terms | **Implemented**: PTOLEMAIC_BOUNDS + CHALDEAN_BOUNDS tables + full doctrine support in egyptian_bounds.py |
+| Essential dignity enum | Domicile, exaltation, detriment, fall, peregrine | Triplicity, bound, face as first-class `EssentialDignityKind` members | **Implemented**: TRIPLICITY, BOUND, FACE in EssentialDignityKind + scoring in dignities.py/longevity.py |
+| Hayz | `is_in_hayz()` | Halb (the nocturnal partial-hayz) | **Implemented**: is_in_halb() + SCORE_HALB + wiring in calculate_dignities |
+| Planetary condition | Cazimi, combust, under the beams | Oriental/occidental (morning/evening star), besieging | **Implemented**: oriental_occidental(), is_besieged() + conditions |
+| Aspect direction | Sinister/dexter exists in primary directions | Not in the general aspect engine | Partial: direction logic present; full general engine + overcoming needs confirmation |
 
-| Feature | Doctrinal significance |
-|---------|----------------------|
-| Planetary joys | Foundational to Hellenistic house rationale |
-| Overcoming (katarchein) | The zodiacal-superiority doctrine |
-| Whole-sign aspects | Sign-based aspect mode distinct from degree-based |
-| Besieging (enclosure) | Malefic enclosure condition |
+### Absent (Original List; Some Verified Closed)
+
+| Feature | Doctrinal significance | Verification Status |
+|---------|----------------------|---------------------|
+| Planetary joys | Foundational to Hellenistic house rationale | **Implemented**: PLANETARY_JOYS + is_in_joy() + JOY condition |
+| Overcoming (katarchein) | The zodiacal-superiority doctrine | Not yet located in general code (timelords or aspects) |
+| Whole-sign aspects | Sign-based aspect mode distinct from degree-based | **Implemented**: AspectDomain.WHOLE_SIGN + find_whole_sign_aspects() |
+| Besieging (enclosure) | Malefic enclosure condition | **Implemented**: is_besieged() |
 
 ---
 
@@ -118,6 +122,8 @@ accidental dignity scoring.
 ---
 
 ## Implementation Phases
+
+**Verification note (2026-05-29):** Per code review, the bulk of the tasks in Phases 1-4 below have been completed in the live code (see updated "Current Moira State" above and WESTERN_HELLENISTIC_GAP_TRACKER.md). The detailed task lists are retained for reference. Remaining work is now concentrated on confirmed gaps from FEATURE_AUDIT_2026.md (aphesis/distributions, Triacontaeteris, synastry depth, full ACG, etc.).
 
 ### Phase 1 -- Essential Dignity Completion and Planetary Joys
 

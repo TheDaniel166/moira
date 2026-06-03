@@ -1,0 +1,4234 @@
+{
+  "calendar": {
+    "system": "Regiomontanus experimental",
+    "date_start_utc": "2000-01-01T00:00:00+00:00",
+    "date_end_utc": "2000-12-31T22:00:00+00:00",
+    "cadence_hours": 2,
+    "longitude_deg": 0.0,
+    "latitude_range_deg": {
+      "min": -89.9,
+      "max": 89.9,
+      "step": 0.1,
+      "sampled_polar_band_start": 66.6,
+      "count": 468
+    },
+    "dates": 366,
+    "slots_per_day": 12,
+    "calendar_rows": 171288,
+    "output_csv": "reports/validation/experimental_regiomontanus_greenwich_2000_2h_daily_calendar.csv"
+  },
+  "latitude_summaries": [
+    {
+      "latitude": -89.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -89.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -89.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -89.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -89.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -89.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -89.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -89.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -89.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -89.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -88.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -88.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -88.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -88.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -88.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -88.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -88.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -88.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -88.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -88.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -87.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -87.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -87.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -87.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -87.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -87.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -87.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -87.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -87.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -87.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -86.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -86.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -86.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -86.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -86.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -86.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -86.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -86.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -86.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -86.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -85.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -85.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -85.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -85.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -85.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -85.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -85.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -85.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -85.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -85.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -84.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -84.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -84.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -84.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -84.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -84.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -84.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -84.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -84.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -84.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -83.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -83.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -83.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -83.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -83.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -83.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -83.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -83.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -83.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -83.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -82.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -82.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -82.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -82.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -82.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -82.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -82.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -82.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -82.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -82.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -81.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -81.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -81.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -81.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -81.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -81.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -81.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -81.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -81.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -81.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -80.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -80.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -80.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -80.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -80.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -80.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -80.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -80.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -80.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -80.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -79.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -79.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -79.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -79.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -79.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -79.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -79.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -79.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -79.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -79.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -78.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -78.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -78.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -78.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -78.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -78.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -78.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -78.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -78.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -78.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -77.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -77.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -77.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -77.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -77.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -77.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -77.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -77.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -77.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -77.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -76.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -76.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -76.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -76.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -76.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -76.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -76.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -76.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -76.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -76.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -75.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -75.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -75.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -75.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -75.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -75.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -75.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -75.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -75.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -75.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -74.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -74.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -74.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -74.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -74.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -74.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -74.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -74.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -74.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -74.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -73.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -73.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -73.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -73.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -73.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -73.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -73.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -73.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -73.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -73.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -72.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -72.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -72.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -72.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -72.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -72.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -72.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -72.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -72.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -72.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -71.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -71.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -71.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -71.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -71.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -71.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -71.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -71.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -71.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -71.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -70.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -70.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -70.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -70.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -70.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -70.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -70.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -70.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -70.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -70.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -69.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -69.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -69.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -69.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -69.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -69.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -69.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -69.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -69.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -69.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -68.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -68.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -68.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -68.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -68.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -68.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -68.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -68.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -68.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -68.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -67.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -67.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -67.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -67.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -67.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -67.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -67.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -67.2,
+      "day_count": 366,
+      "all_pass_days": 23,
+      "all_fail_days": 0,
+      "mixed_days": 343,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -67.1,
+      "day_count": 366,
+      "all_pass_days": 47,
+      "all_fail_days": 0,
+      "mixed_days": 319,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -67.0,
+      "day_count": 366,
+      "all_pass_days": 83,
+      "all_fail_days": 0,
+      "mixed_days": 283,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -66.9,
+      "day_count": 366,
+      "all_pass_days": 115,
+      "all_fail_days": 0,
+      "mixed_days": 251,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -66.8,
+      "day_count": 366,
+      "all_pass_days": 156,
+      "all_fail_days": 0,
+      "mixed_days": 210,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -66.7,
+      "day_count": 366,
+      "all_pass_days": 204,
+      "all_fail_days": 0,
+      "mixed_days": 162,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": -66.6,
+      "day_count": 366,
+      "all_pass_days": 282,
+      "all_fail_days": 0,
+      "mixed_days": 84,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 66.6,
+      "day_count": 366,
+      "all_pass_days": 282,
+      "all_fail_days": 0,
+      "mixed_days": 84,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 66.7,
+      "day_count": 366,
+      "all_pass_days": 204,
+      "all_fail_days": 0,
+      "mixed_days": 162,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 66.8,
+      "day_count": 366,
+      "all_pass_days": 156,
+      "all_fail_days": 0,
+      "mixed_days": 210,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 66.9,
+      "day_count": 366,
+      "all_pass_days": 116,
+      "all_fail_days": 0,
+      "mixed_days": 250,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 67.0,
+      "day_count": 366,
+      "all_pass_days": 82,
+      "all_fail_days": 0,
+      "mixed_days": 284,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 67.1,
+      "day_count": 366,
+      "all_pass_days": 47,
+      "all_fail_days": 0,
+      "mixed_days": 319,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 67.2,
+      "day_count": 366,
+      "all_pass_days": 23,
+      "all_fail_days": 0,
+      "mixed_days": 343,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 67.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 67.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 67.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 67.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 67.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 67.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 67.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 68.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 68.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 68.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 68.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 68.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 68.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 68.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 68.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 68.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 68.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 69.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 69.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 69.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 69.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 69.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 69.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 69.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 69.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 69.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 69.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 70.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 70.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 70.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 70.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 70.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 70.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 70.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 70.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 70.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 70.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 71.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 71.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 71.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 71.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 71.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 71.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 71.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 71.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 71.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 71.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 72.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 72.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 72.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 72.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 72.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 72.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 72.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 72.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 72.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 72.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 73.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 73.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 73.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 73.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 73.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 73.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 73.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 73.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 73.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 73.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 74.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 74.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 74.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 74.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 74.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 74.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 74.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 74.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 74.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 74.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 75.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 75.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 75.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 75.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 75.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 75.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 75.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 75.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 75.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 75.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 76.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 76.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 76.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 76.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 76.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 76.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 76.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 76.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 76.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 76.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 77.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 77.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 77.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 77.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 77.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 77.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 77.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 77.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 77.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 77.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 78.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 78.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 78.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 78.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 78.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 78.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 78.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 78.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 78.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 78.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 79.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 79.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 79.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 79.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 79.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 79.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 79.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 79.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 79.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 79.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 80.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 80.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 80.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 80.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 80.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 80.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 80.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 80.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 80.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 80.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 81.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 81.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 81.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 81.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 81.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 81.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 81.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 81.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 81.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 81.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 82.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 82.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 82.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 82.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 82.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 82.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 82.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 82.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 82.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 82.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 83.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 83.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 83.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 83.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 83.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 83.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 83.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 83.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 83.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 83.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 84.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 84.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 84.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 84.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 84.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 84.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 84.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 84.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 84.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 84.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 85.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 85.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 85.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 85.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 85.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 85.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 85.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 85.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 85.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 85.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 86.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 86.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 86.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 86.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 86.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 86.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 86.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 86.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 86.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 86.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 87.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 87.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 87.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 87.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 87.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 87.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 87.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 87.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 87.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 87.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 88.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 88.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 88.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 88.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 88.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 88.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 88.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 88.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 88.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 88.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 89.0,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 89.1,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 89.2,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 89.3,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 89.4,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 89.5,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 89.6,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 89.7,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 89.8,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    },
+    {
+      "latitude": 89.9,
+      "day_count": 366,
+      "all_pass_days": 0,
+      "all_fail_days": 0,
+      "mixed_days": 366,
+      "first_success_date_utc": "2000-01-01",
+      "last_success_date_utc": "2000-12-31"
+    }
+  ]
+}

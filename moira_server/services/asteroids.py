@@ -8,12 +8,14 @@ Designed for "fast API" use on websites:
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 
 from moira import Moira
-from moira.asteroids import asteroid_at, AsteroidData
-from moira.spk_reader import KernelPool
+from moira.asteroids import ASTEROID_NAIF, AsteroidData, asteroid_at
 
 from ..models.asteroids import (
+    AsteroidListItem,
+    AsteroidListResponse,
     AsteroidPositionRequest,
     AsteroidPositionResponse,
     AsteroidsBulkRequest,
@@ -94,31 +96,26 @@ def compute_asteroids_bulk(
     )
 
 
-def list_sovereign_asteroids(engine: Moira, name_filter: str | None = None) -> list[str]:
+def list_sovereign_asteroids(engine: Moira, name_filter: str | None = None) -> AsteroidListResponse:
     """
     Return bodies available in the loaded sovereign small-body kernels.
     Supports basic name/NAIF filtering for website search.
     """
     reader = _get_small_body_reader(engine)
     if reader is None:
-        return []
+        return AsteroidListResponse(bodies=[], total=0)
 
-    bodies: set[str] = set()
-    # The reader may be a pool or single kernel
-    segments = []
-    if hasattr(reader, "segments"):
-        segments = reader.segments
-    elif hasattr(reader, "_kernel"):
-        segments = reader._kernel.segments
-
-    for seg in segments:
-        if getattr(seg, "data_type", None) == 13:
-            naif = getattr(seg, "target", None)
-            if naif:
-                bodies.add(str(naif))
-
-    result = sorted(bodies)
+    covered_ids = reader.covered_bodies() if hasattr(reader, "covered_bodies") else frozenset()
+    result = [
+        AsteroidListItem(name=name, naif_id=naif_id)
+        for name, naif_id in ASTEROID_NAIF.items()
+        if naif_id in covered_ids
+    ]
     if name_filter:
         nf = name_filter.lower()
-        result = [b for b in result if nf in b.lower()]
-    return result
+        result = [
+            body for body in result
+            if nf in body.name.lower() or nf in str(body.naif_id)
+        ]
+    result.sort(key=lambda body: body.name)
+    return AsteroidListResponse(bodies=result, total=len(result))

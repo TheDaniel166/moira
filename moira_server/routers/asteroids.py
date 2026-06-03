@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends
 
 from ..dependencies import get_engine
 from ..models.asteroids import (
+    AsteroidListResponse,
     AsteroidPositionRequest,
     AsteroidPositionResponse,
     AsteroidsBulkRequest,
@@ -50,14 +51,13 @@ def asteroids_bulk(
     return compute_asteroids_bulk(engine, request)
 
 
-@router.get("/list", response_model=list[str])
+@router.get("/list", response_model=AsteroidListResponse)
 def list_asteroids(
     q: str | None = None,  # name/NAIF contains filter for search
     engine=Depends(get_engine),
-) -> list[str]:
+) -> AsteroidListResponse:
     """List / search bodies in the loaded sovereign small-body catalog.
 
-    Use ?q=ceres for filtering. Fast (no heavy computation).
+    Use ?q=ceres or ?q=2000001 for filtering. Fast (no heavy computation).
     """
     return list_sovereign_asteroids(engine, name_filter=q)
-

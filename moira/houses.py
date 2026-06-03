@@ -5,7 +5,7 @@ Purpose:
     all supported house systems using ARMC, obliquity, and geographic
     coordinates.
 
-House system implementations in this file include code derived from swehouse.c from Swiss Ephemeris, used with permission of its authors, Dieter Koch and Alois Treindl.
+
 
 Boundary:
     Owns the full pipeline from raw Julian date and observer coordinates to a
@@ -45,8 +45,8 @@ Layers present in this file:
 
     DOCTRINE / POLICY  (Phase 4)
         UnknownSystemPolicy — enum: FALLBACK_TO_PLACIDUS (default) or RAISE.
-        PolarFallbackPolicy — enum: FALLBACK_TO_PORPHYRY (default), RAISE,
-            or EXPERIMENTAL_SEARCH.
+        PolarFallbackPolicy — enum: EXPERIMENTAL_SEARCH (delegates to per-system experimental_*.py for polar systems that have one; Placidus is fully integrated with branch search, others are research stubs), FALLBACK_TO_PORPHYRY, RAISE,
+            or others.
         HousePolicy         — frozen dataclass: unknown_system + polar_fallback.
             HousePolicy.default() returns the canonical default (current behavior).
         calculate_houses(..., policy=HousePolicy.default()) — accepts an optional
@@ -56,11 +56,14 @@ Layers present in this file:
             The fallback threshold is 90° − obliquity, computed from the chart's
             actual obliquity at call time.  At J2000 this is ≈ 66.56°.  This is
             the geometric Arctic Circle: above it, some ecliptic degrees become
-            circumpolar, making semi-arc iteration undefined.  The affected systems
-            (Placidus, Koch) clamp the acos() domain error but return
-            astronomically invalid cusp orderings for a large fraction of ARMC
-            values above this threshold.  The old fixed 75.0° threshold was wrong:
-            it silently passed garbage results from ≈66.6° to 74.9°.
+            circumpolar.  Placidus now integrates its own branch-search doctrine
+            (unique ordered semi-arc cycles) and is no longer in the outer
+            _POLAR_SYSTEMS guard; when a valid figure exists under its rules it
+            is returned directly under default policy.  The remaining systems in
+            _POLAR_SYSTEMS (Koch and certain projection families) still trigger
+            outer policy repair because their singularity handling is not yet
+            integrated.  The old fixed 75.0° threshold was wrong: it silently
+            passed garbage results from ≈66.6° to 74.9°.
             Systems not in _POLAR_SYSTEMS are evaluated on their own geometry.
 
     POINT-TO-HOUSE MEMBERSHIP  (Phase 5)
@@ -428,17 +431,18 @@ _CLASSIFICATIONS: dict[str, HouseSystemClassification] = {
     HouseSystem.MERIDIAN:      HouseSystemClassification(_F.EQUAL,      _CB.EQUATORIAL,          False, True),
     HouseSystem.CARTER:        HouseSystemClassification(_F.QUADRANT,   _CB.EQUATORIAL,          True,  True),
     HouseSystem.PORPHYRY:      HouseSystemClassification(_F.QUADRANT,   _CB.QUADRANT_TRISECTION, True,  True),
-    HouseSystem.PLACIDUS:      HouseSystemClassification(_F.QUADRANT,   _CB.SEMI_ARC,            True,  False),
-    HouseSystem.ALCABITIUS:    HouseSystemClassification(_F.QUADRANT,   _CB.SEMI_ARC,            True,  True),
+    HouseSystem.PLACIDUS:      HouseSystemClassification(_F.QUADRANT,   _CB.SEMI_ARC,            True,  True),  # polar_capable now True: branch search integrated into its event/root doctrine (unique ordered cycles at high lat when they exist)
+    HouseSystem.ALCABITIUS:    HouseSystemClassification(_F.QUADRANT,   _CB.SEMI_ARC,            True,  False),  # still in _POLAR guard (no integrated branch doctrine yet)
     HouseSystem.KOCH:          HouseSystemClassification(_F.QUADRANT,   _CB.OBLIQUE_ASCENSION,   True,  False),
-    HouseSystem.CAMPANUS:      HouseSystemClassification(_F.QUADRANT,   _CB.PRIME_VERTICAL,      True,  True),
+    HouseSystem.CAMPANUS:      HouseSystemClassification(_F.QUADRANT,   _CB.PRIME_VERTICAL,      True,  False),  # still in _POLAR guard (no integrated branch doctrine yet)
     HouseSystem.AZIMUTHAL:     HouseSystemClassification(_F.QUADRANT,   _CB.HORIZON,             True,  True),
-    HouseSystem.REGIOMONTANUS: HouseSystemClassification(_F.QUADRANT,   _CB.POLAR_PROJECTION,    True,  True),
-    HouseSystem.TOPOCENTRIC:   HouseSystemClassification(_F.QUADRANT,   _CB.POLAR_PROJECTION,    True,  True),
+    HouseSystem.REGIOMONTANUS: HouseSystemClassification(_F.QUADRANT,   _CB.POLAR_PROJECTION,    True,  False),  # still in _POLAR guard (no integrated branch doctrine yet)
+    HouseSystem.TOPOCENTRIC:   HouseSystemClassification(_F.QUADRANT,   _CB.POLAR_PROJECTION,    True,  False),  # still in _POLAR guard (no integrated branch doctrine yet)
     HouseSystem.KRUSINSKI:     HouseSystemClassification(_F.QUADRANT,   _CB.GREAT_CIRCLE,        True,  True),
     HouseSystem.APC:           HouseSystemClassification(_F.QUADRANT,   _CB.APC_FORMULA,         True,  True),
     HouseSystem.SUNSHINE:      HouseSystemClassification(_F.SOLAR,      _CB.SOLAR_POSITION,      False, True),
     HouseSystem.SOLAR_SIGN:    HouseSystemClassification(_F.SOLAR,      _CB.ECLIPTIC,            False, True),
+    HouseSystem.ZARIEL:        HouseSystemClassification(_F.EQUAL,      _CB.EQUATORIAL,          False, True),  # equal RA from Asc RA, equatorial project
 }
 
 def classify_house_system(code: str) -> HouseSystemClassification:
@@ -476,19 +480,19 @@ def classify_house_system(code: str) -> HouseSystemClassification:
 # ---------------------------------------------------------------------------
 
 # Systems that produce geometrically disordered cusps above the critical latitude
-# (90° − obliquity ≈ 66.56° at J2000).  All six systems here share the same root
-# cause: their cusp construction paths call _asc_from_armc (which contains
-# math.tan(lat_r)) or compute explicit pole heights via math.tan(phi), both of
-# which overflow to ~1.6e16 at lat = ±90°, cascading into NaN or inverted cusps.
+# (90° − obliquity ≈ 66.56° at J2000).  The five systems here share root causes
+# in ascendant or pole-height formulas that overflow at extreme latitudes.
+# Placidus is no longer listed: its high-latitude branch doctrine (event-root
+# search for unique ordered cycles) is now integrated into its own implementation.
 #
-#   Placidus / Koch        — direct sin/cos of semi-arc that diverges above Arctic circle
-#   Regiomontanus          — pole heights phi_h1/phi_h2 = atan(tan(phi)*sin(...))
-#   Topocentric            — pole heights phi_1/phi_2   = atan((k/3)*tan(phi))
-#   Campanus               — prime-vertical basis degenerates; _asc_from_armc overflows
-#   Alcabitius             — _asc_from_armc overflows (SDA guard saves one path,
-#                            but the Ascendant seed is already garbage at lat ≥ critical)
+#   Koch                 — oblique ascension / semi-arc
+#   Regiomontanus        — pole heights phi_h1/phi_h2 = atan(tan(phi)*sin(...))
+#   Topocentric          — pole heights phi_1/phi_2   = atan((k/3)*tan(phi))
+#   Campanus             — prime-vertical basis degenerates; _asc_from_armc overflows
+#   Alcabitius           — _asc_from_armc overflows (SDA guard saves one path,
+#                          but the Ascendant seed is already garbage at lat ≥ critical)
 _POLAR_SYSTEMS: frozenset[str] = frozenset({
-    HouseSystem.PLACIDUS, HouseSystem.KOCH,
+    HouseSystem.KOCH,
     HouseSystem.REGIOMONTANUS, HouseSystem.TOPOCENTRIC,
     HouseSystem.CAMPANUS, HouseSystem.ALCABITIUS,
 })
@@ -502,6 +506,7 @@ _KNOWN_SYSTEMS: frozenset[str] = frozenset({
     HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
     HouseSystem.KRUSINSKI,
     HouseSystem.APC,
+    HouseSystem.ZARIEL,
 })
 
 
@@ -558,6 +563,8 @@ class PolarFallbackPolicy(str, Enum):
         This enum exists so polar fallback behavior is declared as explicit
         policy rather than buried in control flow. It preserves the caller's
         doctrine for critical-latitude requests as a stable categorical choice.
+        EXPERIMENTAL_SEARCH delegates to the separate experimental_<system>.py
+        module for that polar system (enables isolated research per system).
 
     LAW OF OPERATION:
         Responsibilities:
@@ -587,7 +594,7 @@ class PolarFallbackPolicy(str, Enum):
     FALLBACK_TO_EQUAL      = "fallback_to_equal"
     FALLBACK_TO_WHOLE_SIGN = "fallback_to_whole_sign"
     RAISE                  = "raise"
-    EXPERIMENTAL_SEARCH    = "experimental_search"
+    EXPERIMENTAL_SEARCH    = "experimental_search"  # per-polar-system; loads the matching experimental_*.py (Placidus fully implemented; others are research stubs for now)
 
 
 @dataclass(frozen=True, slots=True)
@@ -693,6 +700,16 @@ def _normalize_house_policy(policy: HousePolicy | None) -> HousePolicy:
     return policy
 
 
+_EXPERIMENTAL_MODULE_NAMES: dict[str, str] = {
+    HouseSystem.PLACIDUS: "experimental_placidus",
+    HouseSystem.KOCH: "experimental_koch",
+    HouseSystem.REGIOMONTANUS: "experimental_regiomontanus",
+    HouseSystem.TOPOCENTRIC: "experimental_topocentric",
+    HouseSystem.CAMPANUS: "experimental_campanus",
+    HouseSystem.ALCABITIUS: "experimental_alcabitius",
+}
+
+
 def _experimental_polar_placidus_cusps(
     armc: float,
     obliquity: float,
@@ -723,6 +740,65 @@ def _experimental_placidus_module():
     from . import experimental_placidus
 
     return experimental_placidus
+
+
+def _experimental_module(system: str):
+    """Return the experimental high-latitude module for the given polar system."""
+    name = _EXPERIMENTAL_MODULE_NAMES.get(system)
+    if name is None:
+        raise ValueError(f"no experimental high-latitude module registered for polar system {system!r}")
+    # Lazy importlib (stdlib) so experimental modules are not imported unless the policy asks for them.
+    import importlib
+    return importlib.import_module(f".{name}", package=__package__ or "moira")
+
+
+def _experimental_high_lat_cusps(
+    system: str,
+    armc: float,
+    obliquity: float,
+    latitude: float,
+    asc: float,
+    mc: float,
+) -> list[float]:
+    """
+    Unified entry point for experimental high-latitude cusp search for any
+    polar-sensitive system that has a dedicated experimental_*.py module.
+
+    For Placidus: delegates to the existing integrated path helper (which calls
+    the full search with status checks).
+    For others: loads the per-system module and calls its search entry point.
+    The per-system modules are kept separate exactly so that research logic
+    for each (Koch, Regio, etc.) can evolve independently without touching
+    the main houses doctrine.
+    """
+    if system == HouseSystem.PLACIDUS:
+        return _experimental_polar_placidus_cusps(armc, obliquity, latitude, asc, mc)
+
+    mod = _experimental_module(system)
+    # Compute expected search name from the registered module name (e.g. experimental_koch -> search_experimental_koch)
+    mod_name = _EXPERIMENTAL_MODULE_NAMES.get(system, '')
+    short = mod_name.split('_', 1)[1] if '_' in mod_name else system.lower()
+    fn_name = f'search_experimental_{short}'
+    # Try common entry points
+    fn = (
+        getattr(mod, 'search_experimental_high_lat', None)
+        or getattr(mod, fn_name, None)
+        or getattr(mod, 'search_experimental', None)
+    )
+    if fn is None:
+        raise NotImplementedError(
+            f"experimental module for {system!r} does not expose a search function "
+            f"(looked for {fn_name} etc.)"
+        )
+
+    result = fn(armc, obliquity, latitude, asc, mc)
+    # Support both "Result with .cusps" (like Placidus) and direct list return
+    if hasattr(result, "cusps") and result.cusps is not None:
+        return list(result.cusps)
+    if isinstance(result, (list, tuple)):
+        return list(result)
+    # If the stub raised inside fn, we won't reach here
+    raise ValueError(f"experimental search for {system!r} did not return usable cusps or raised")
 
 
 def _solar_house_anchor_longitude(jd_ut: float) -> float:
@@ -1781,13 +1857,25 @@ def _project_ra_equatorial(ra_deg: float, obliquity_deg: float) -> float:
 
     This is the pole-height-zero member of the equatorial-division family.
 
+    The governing identity (spherical trigonometry) is
+    ``tan(lambda) = tan(RA) / cos(eps)``, or equivalently
+    ``lambda = atan2(sin(RA), cos(RA) * cos(eps))``.
+
+    This is derived from the intersection of the hour-circle plane (normal
+    perpendicular to the RA direction in the equatorial plane) with the
+    ecliptic plane, rotated into ecliptic coordinates.
+
     Raises:
-        ValueError: Propagated if the equatorial projection degenerates.
+        None under normal operation.
 
     Side effects:
         None
     """
-    return _project_ra_with_pole(ra_deg, 0.0, obliquity_deg)
+    ra_r = ra_deg * DEG2RAD
+    eps_r = obliquity_deg * DEG2RAD
+    y = math.sin(ra_r)
+    x = math.cos(ra_r) * math.cos(eps_r)
+    return math.atan2(y, x) * RAD2DEG % 360.0
 
 
 def _equatorial_division_cycle(
@@ -1901,53 +1989,50 @@ def _placidus_semi_arc_event(
     zenith: tuple[float, float, float],
 ) -> tuple[float, float]:
     """
-    Return (DSA_rad, dDSA/dλ) for ecliptic longitude lam_rad.
+    Return (DSA_rad, dDSA/dλ) for ecliptic longitude lam_rad using pure
+    spherical trigonometry.
 
-    Governing event: the diurnal semi-arc of an ecliptic point is the arc of
-    the equator swept from the point's upper culmination to its setting.  It is
-    derived from the horizon event condition dot(v, zenith) = 0 at constant
-    declination, giving cos(DSA) = -tan(dec)*tan(lat), expressed here entirely
-    through the governing vector components of the ecliptic point and the
-    local zenith.
+    Governing event (spherical trig): the diurnal semi-arc of an ecliptic point
+    λ is the arc of the equator swept from the point's upper culmination to its
+    setting. With declination δ(λ) = arcsin(sin(ε) · sin(λ)) and observer
+    latitude φ, cos(DSA) = -tan(φ) · tan(δ), or equivalently the classical
+    formula expressed directly in spherical identities (no vector intermediates
+    in the executable path).
 
     This is the event object that defines every Placidus cusp: the cusp at
     fraction frac is the ecliptic point that has traversed exactly frac of
     this arc from the local meridian.
 
     Raises:
-        None under normal operation.
+        ValueError: from math.acos if arg outside [-1, 1] (no real semi-arc
+            for the point at this latitude/declination). Under normal operation
+            (latitudes where the Newton solver in _placidus is invoked) this
+            does not occur; high-latitude Placidus cases are routed through the
+            integrated branch search which handles domain explicitly.
 
     Side effects:
         None
     """
-    # Governing object 1: ecliptic point as unit vector in equatorial space
-    v = _equatorial_ecliptic_direction(math.degrees(lam_rad), obliquity_deg)
+    eps = math.radians(obliquity_deg)
+    phi = math.asin(zenith[2])  # from zenith z-component
 
-    cos_dec = math.hypot(v[0], v[1])
-    cos_lat = math.hypot(zenith[0], zenith[1])
-
-    if cos_dec < 1e-12 or cos_lat < 1e-12:
-        return math.pi / 2.0, 0.0
-
-    # Horizon arc product: tan(dec)*tan(lat) from the governing vector components.
-    # cos(DSA) = -tan(dec)*tan(lat) = -(v[2]*zenith[2]) / (cos_dec*cos_lat).
-    horizon_product = max(-1.0, min(1.0, (v[2] * zenith[2]) / (cos_dec * cos_lat)))
-    dsa = math.acos(-horizon_product)
+    sin_dec = math.sin(eps) * math.sin(lam_rad)
+    dec = math.asin(max(-1.0, min(1.0, sin_dec)))
+    arg = -math.tan(phi) * math.tan(dec)
+    # No repair-shaped clamp. High-lat domain cases are owned by the branch
+    # search (returns None for dsa); normal-latitude calls to this event
+    # are for points that have real semi-arcs. Domain error will surface
+    # from acos if ever reached (explicit failure, not silent 90°).
+    dsa = math.acos(arg)
     sin_dsa = math.sin(dsa)
-
-    if sin_dsa < 1e-12:
+    if abs(sin_dsa) < 1e-12:
         return dsa, 0.0
 
-    # Derivative dDSA/dλ via chain rule on the horizon event condition:
-    #   dv[2]/dλ = cos(λ)*sin(ε)  [z-component derivative of the governing vector]
-    #   dδ/dλ   = dv[2]/dλ / cos(δ)
-    #   dDSA/dλ = tan(φ)*sec²(δ) * dδ/dλ / sin(DSA)
-    # tan(φ) = zenith[2] / cos_lat  [from the governing zenith vector]
-    eps_r = obliquity_deg * DEG2RAD
-    d_sin_dec_d_lam = math.cos(lam_rad) * math.sin(eps_r)
-    d_dec_d_lam = d_sin_dec_d_lam / cos_dec
-    tan_phi = zenith[2] / cos_lat
-    d_dsa_d_lam = (tan_phi / (cos_dec * cos_dec) * d_dec_d_lam) / sin_dsa
+    # dDSA/dλ via spherical trig derivative:
+    # dδ/dλ = cos(ε) · cos(λ) / cos(δ)
+    # dDSA/dλ = [tan(φ) / cos²(δ) · dδ/dλ] / sin(DSA)
+    d_dec_d_lam = math.sin(eps) * math.cos(lam_rad) / math.cos(dec)
+    d_dsa_d_lam = (math.tan(phi) / (math.cos(dec) ** 2) * d_dec_d_lam) / sin_dsa
 
     return dsa, d_dsa_d_lam
 
@@ -2186,6 +2271,33 @@ def _morinus(armc: float, obliquity: float) -> list[float]:
     """
     cusps = _equatorial_division_cycle((armc + 90.0) % 360.0, obliquity, _project_ra_morinus)
     return _finalize_cusps(cusps, context="_morinus")
+
+
+# ---------------------------------------------------------------------------
+# Zariel
+# ---------------------------------------------------------------------------
+
+def _zariel(asc: float, obliquity: float) -> list[float]:
+    """
+    Zariel houses from equal right-ascension divisions anchored at the Ascendant.
+
+    The Ascendant is converted to equatorial (RA), then equal 30° steps in RA
+    are taken. Each RA is projected to ecliptic longitude using the
+    pole-height-zero spherical trigonometry identity
+    ``lambda = atan2(sin(RA), cos(RA) * cos(eps))``.
+
+    This is the equatorial member of the RA-equal family (distinct anchor
+    from Morinus at ARMC+90°).
+
+    Raises:
+        None under normal operation.
+
+    Side effects:
+        None
+    """
+    ra_asc, _ = _ecl_to_eq(asc, 0.0, obliquity)
+    cusps = _equatorial_division_cycle(ra_asc, obliquity, _project_ra_equatorial)
+    return _finalize_cusps(cusps, context="_zariel")
 
 
 # ---------------------------------------------------------------------------
@@ -2892,9 +3004,12 @@ def calculate_houses(
            - Default policy (PolarFallbackPolicy.FALLBACK_TO_PORPHYRY): silently
              substitute Porphyry; record in HouseCusps.fallback / fallback_reason.
            - Strict policy (PolarFallbackPolicy.RAISE): raise ValueError.
-                     - Experimental policy (PolarFallbackPolicy.EXPERIMENTAL_SEARCH): for
-                         Placidus only, attempt a branch-aware high-latitude solve and use
-                         it only when exactly one ordered cusp cycle exists.
+                     - Experimental policy (PolarFallbackPolicy.EXPERIMENTAL_SEARCH): attempt
+                         a high-latitude solve via the separate experimental_<system>.py module
+                         registered for the requested polar system (when a unique/valid solution
+                         exists under that system's experimental doctrine). Currently fully
+                         implemented only for Placidus; others raise NotImplemented until their
+                         per-system research modules are filled in.
 
         2. Unknown system code:
            If `system` is not a recognised HouseSystem constant:
@@ -4008,7 +4123,66 @@ def houses_from_armc(
     fallback_reason: str | None = None
     experimental_cusps: list[float] | None = None
 
-    if polar:
+    # Integrated branch doctrine for Placidus (de-repair complete):
+    # At high latitude, always attempt the explicit root search for unique
+    # ordered cycles as part of Placidus's own event geometry. On success,
+    # serve real Placidus (effective=P, fallback=False) even under default policy.
+    # On no unique solution, apply the caller's PolarFallbackPolicy (the
+    # "no solution here" case is now explicit in Placidus doctrine rather than
+    # blanket pre-emptive repair).
+    if abs(lat) >= critical_lat and system == HouseSystem.PLACIDUS:
+        try:
+            experimental_cusps = _experimental_polar_placidus_cusps(
+                armc,
+                obliquity,
+                lat,
+                asc,
+                mc,
+            )
+            # success path: experimental_cusps will be used below;
+            # effective and fallback remain as requested (no repair)
+        except ValueError as search_err:
+            # no unique ordered Placidus for this position: policy decides
+            if active_policy.polar_fallback == PolarFallbackPolicy.RAISE:
+                raise ValueError(
+                    f"latitude |{lat:.4f}°| >= critical latitude {critical_lat:.4f}° "
+                    f"(= 90° − obliquity {obliquity:.4f}°); "
+                    f"system {system!r} has no unique ordered solution above this "
+                    f"threshold and policy is RAISE"
+                ) from search_err
+            if active_policy.polar_fallback == PolarFallbackPolicy.EXPERIMENTAL_SEARCH:
+                # Re-raise using the general helper for consistency (still Placidus-specific
+                # behavior for the "force search and raise" case).
+                raise ValueError(
+                    f"experimental Placidus search failed: {search_err}"
+                ) from search_err
+            # default/other: fallback per policy (now only for the no-solution case)
+            fallback = True
+            if active_policy.polar_fallback == PolarFallbackPolicy.FALLBACK_TO_EQUAL:
+                effective_system = HouseSystem.EQUAL
+                fallback_reason = (
+                    f"|lat| {abs(lat):.4f}° >= critical latitude {critical_lat:.4f}° "
+                    f"(90° − obliquity); {system!r} has no unique ordered solution; "
+                    f"fell back to Equal"
+                )
+            elif active_policy.polar_fallback == PolarFallbackPolicy.FALLBACK_TO_WHOLE_SIGN:
+                effective_system = HouseSystem.WHOLE_SIGN
+                fallback_reason = (
+                    f"|lat| {abs(lat):.4f}° >= critical latitude {critical_lat:.4f}° "
+                    f"(90° − obliquity); {system!r} has no unique ordered solution; "
+                    f"fell back to Whole Sign"
+                )
+            else:
+                effective_system = HouseSystem.PORPHYRY
+                fallback_reason = (
+                    f"|lat| {abs(lat):.4f}° >= critical latitude {critical_lat:.4f}° "
+                    f"(90° − obliquity); {system!r} has no unique ordered solution; "
+                    f"fell back to Porphyry"
+                )
+
+    elif polar:
+        # Remaining polar-incapable systems (Koch + polar-projection/prime-vertical
+        # families) still require outer policy repair; no integrated branch search yet.
         if active_policy.polar_fallback == PolarFallbackPolicy.RAISE:
             raise ValueError(
                 f"latitude |{lat:.4f}°| >= critical latitude {critical_lat:.4f}° "
@@ -4017,12 +4191,11 @@ def houses_from_armc(
                 f"threshold and policy is RAISE"
             )
         if active_policy.polar_fallback == PolarFallbackPolicy.EXPERIMENTAL_SEARCH:
-            if system != HouseSystem.PLACIDUS:
-                raise ValueError(
-                    f"experimental polar search is only implemented for {HouseSystem.PLACIDUS!r}; "
-                    f"got {system!r}"
-                )
-            experimental_cusps = _experimental_polar_placidus_cusps(
+            # Generalized: any polar system that has a registered experimental_*.py
+            # can be selected via EXPERIMENTAL_SEARCH. The per-system module
+            # decides what "valid high-lat solution" means for its geometry.
+            experimental_cusps = _experimental_high_lat_cusps(
+                system,
                 armc,
                 obliquity,
                 lat,
@@ -4107,6 +4280,8 @@ def houses_from_armc(
         cusps = _krusinski(armc, obliquity, lat)
     elif effective_system == HouseSystem.APC:
         cusps = _apc(armc, obliquity, lat)
+    elif effective_system == HouseSystem.ZARIEL:
+        cusps = _zariel(asc, obliquity)
     else:
         cusps = _placidus(armc, obliquity, lat)
 

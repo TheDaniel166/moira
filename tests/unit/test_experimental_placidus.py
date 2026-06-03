@@ -40,6 +40,9 @@ def test_search_experimental_placidus_finds_unique_ordered_solution_at_77n_armc_
 
 
 def test_houses_from_armc_experimental_policy_uses_placidus_at_77n_valid_armc() -> None:
+    # Note: with integration, default policy (no explicit experimental()) now
+    # also returns real Placidus for this valid high-lat ARMC. The explicit
+    # policy is still supported for strict "raise on no solution" use.
     houses = houses_from_armc(
         _ARMC_VALID,
         _OB_J2000,
@@ -72,11 +75,14 @@ def test_calculate_houses_experimental_policy_uses_public_jd_path() -> None:
     assert houses.cusps[1] == pytest.approx(194.28146317340529, abs=1e-8)
 
 
-def test_calculate_houses_default_policy_still_falls_back_at_same_case() -> None:
+def test_calculate_houses_default_policy_still_falls_back_for_no_solution_high_lat() -> None:
+    # Uses an ARMC/lon known to produce no unique ordered solution at 77N.
+    # (The _LON_FOR_ARMC_VALID with this jd produces a valid case, which now
+    # succeeds with real P under default after integration.)
     houses = calculate_houses(
         _JD_J2000,
         _LAT_77,
-        _LON_FOR_ARMC_VALID,
+        0.0,
         HouseSystem.PLACIDUS,
     )
 
@@ -125,15 +131,22 @@ def test_scan_experimental_placidus_admissibility_finds_77n_window_around_armc_9
     assert admissibility.windows[0].start_armc <= 90.0 <= admissibility.windows[0].end_armc
 
 
-def test_experimental_policy_is_placidus_only_for_now() -> None:
-    with pytest.raises(ValueError, match="only implemented for 'P'"):
-        houses_from_armc(
-            _ARMC_VALID,
-            _OB_J2000,
-            _LAT_77,
-            HouseSystem.KOCH,
-            policy=HousePolicy.experimental(),
-        )
+def test_experimental_policy_works_for_all_registered_polar_systems_impl_starting_for_koch() -> None:
+    # All current polar systems have registered experimental_*.py .
+    # EXPERIMENTAL now dispatches per-system. Koch has initial real logic (safe pole projection).
+    # For this valid ARMC it succeeds with real K cusps.
+    h_koch = houses_from_armc(
+        _ARMC_VALID,
+        _OB_J2000,
+        _LAT_77,
+        HouseSystem.KOCH,
+        policy=HousePolicy.experimental(),
+    )
+    assert h_koch.effective_system == HouseSystem.KOCH
+    assert h_koch.fallback is False
+    # Placidus still fully functional under experimental
+    h = houses_from_armc(_ARMC_VALID, _OB_J2000, _LAT_77, HouseSystem.PLACIDUS, policy=HousePolicy.experimental())
+    assert h.effective_system == HouseSystem.PLACIDUS
 
 
 def test_experimental_policy_uses_named_loader_indirection(monkeypatch) -> None:

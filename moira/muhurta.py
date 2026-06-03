@@ -47,6 +47,9 @@ from .panchanga import (
     _ASHUBHA_YOGA_INDICES,
 )
 
+# Import Nakshatra names for robust name<->index mapping (used for Tara Bala etc.)
+from .sidereal import NAKSHATRA_NAMES
+
 __all__ = [
     "MuhurtaPolicy",
     "MuhurtaClassification",

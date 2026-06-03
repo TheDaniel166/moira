@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from moira import Moira
-from moira.comets import comet_at, CometData
-from moira.spk_reader import KernelPool
+from moira.comets import COMET_NAIF, CometData, comet_at
 
 from ..models.comets import (
+    CometListItem,
+    CometListResponse,
     CometPositionRequest,
     CometPositionResponse,
     CometsBulkRequest,
@@ -80,23 +83,22 @@ def compute_comets_bulk(
     )
 
 
-def list_sovereign_comets(engine: Moira, name_filter: str | None = None) -> list[str]:
+def list_sovereign_comets(engine: Moira, name_filter: str | None = None) -> CometListResponse:
     reader = _get_small_body_reader(engine)
     if reader is None:
-        return []
-    bodies: set[str] = set()
-    segments = []
-    if hasattr(reader, "segments"):
-        segments = reader.segments
-    elif hasattr(reader, "_kernel"):
-        segments = reader._kernel.segments
-    for seg in segments:
-        if getattr(seg, "data_type", None) == 13:
-            naif = getattr(seg, "target", None)
-            if naif:
-                bodies.add(str(naif))
-    result = sorted(bodies)
+        return CometListResponse(bodies=[], total=0)
+
+    covered_ids = reader.covered_bodies() if hasattr(reader, "covered_bodies") else frozenset()
+    result = [
+        CometListItem(name=name, naif_id=naif_id)
+        for name, naif_id in COMET_NAIF.items()
+        if naif_id in covered_ids
+    ]
     if name_filter:
         nf = name_filter.lower()
-        result = [b for b in result if nf in b.lower()]
-    return result
+        result = [
+            body for body in result
+            if nf in body.name.lower() or nf in str(body.naif_id)
+        ]
+    result.sort(key=lambda body: body.name)
+    return CometListResponse(bodies=result, total=len(result))

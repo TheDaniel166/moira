@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends
 
 from ..dependencies import get_engine
 from ..models.comets import (
+    CometListResponse,
     CometPositionRequest,
     CometPositionResponse,
     CometsBulkRequest,
@@ -36,10 +37,10 @@ def comets_bulk(
     return compute_comets_bulk(engine, request)
 
 
-@router.get("/list", response_model=list[str])
+@router.get("/list", response_model=CometListResponse)
 def list_comets(
     q: str | None = None,
     engine=Depends(get_engine),
-) -> list[str]:
-    """List / search comets in the loaded sovereign catalog (?q=halley)."""
+) -> CometListResponse:
+    """List / search comets in the loaded sovereign catalog (?q=halley or ?q=1000001)."""
     return list_sovereign_comets(engine, name_filter=q)

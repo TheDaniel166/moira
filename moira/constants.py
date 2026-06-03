@@ -344,7 +344,7 @@ class HouseSystem:
           "PLACIDUS", "KOCH", "EQUAL", "WHOLE_SIGN", "CAMPANUS",
           "REGIOMONTANUS", "PORPHYRY", "MERIDIAN", "ALCABITIUS", "MORINUS",
           "TOPOCENTRIC", "VEHLOW", "SUNSHINE", "SOLAR_SIGN", "AZIMUTHAL", "CARTER",
-                    "KRUSINSKI", "APC"
+                    "KRUSINSKI", "APC", "ZARIEL"
         ],
         "internal": []
       },
@@ -375,6 +375,7 @@ class HouseSystem:
     CARTER         = "CT"   # Carter Poli-Equatorial
     KRUSINSKI      = "U"    # Krusinski-Pisa-Goeldi
     APC            = "Y"    # APC houses
+    ZARIEL         = "Z"    # Zariel (equal RA divisions from Ascendant RA, projected)
 
 HOUSE_SYSTEM_NAMES: dict[str, str] = {
     HouseSystem.PLACIDUS:      "Placidus",
@@ -395,6 +396,7 @@ HOUSE_SYSTEM_NAMES: dict[str, str] = {
     HouseSystem.CARTER:         "Carter",
     HouseSystem.KRUSINSKI:      "Krusinski-Pisa",
     HouseSystem.APC:            "APC",
+    HouseSystem.ZARIEL:         "Zariel",
 }
 
 # ---------------------------------------------------------------------------
