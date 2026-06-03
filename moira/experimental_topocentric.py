@@ -20,6 +20,8 @@ import math
 from dataclasses import dataclass
 from enum import Enum
 
+from ._house_quality import strictly_ordered_cusp_cycle
+
 
 __all__ = [
     "ExperimentalTopocentricStatus",
@@ -147,10 +149,10 @@ def search_experimental_topocentric(
         )
 
     cusps = tuple(cusp_list)
-    unwrapped = [0.0] + [((c - asc) % 360.0) for c in cusps[1:]]
-    is_ordered = all(
-        unwrapped[i + 1] - unwrapped[i] > ordering_tolerance
-        for i in range(11)
+    is_ordered = strictly_ordered_cusp_cycle(
+        cusps,
+        asc,
+        ordering_tolerance=ordering_tolerance,
     )
 
     if is_ordered:

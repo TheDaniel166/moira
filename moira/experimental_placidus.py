@@ -14,6 +14,8 @@ from dataclasses import dataclass
 from enum import Enum
 from itertools import product
 
+from ._house_quality import strictly_ordered_cusp_cycle
+
 
 __all__ = [
     "ExperimentalPlacidusStatus",
@@ -195,10 +197,6 @@ def search_experimental_placidus(
             prev_y = y
         return tuple(sorted(roots))
 
-    def ordered_cycle(cusps: tuple[float, ...]) -> bool:
-        unwrapped = [0.0] + [((cusp - asc) % 360.0) for cusp in cusps[1:]]
-        return all(unwrapped[i + 1] - unwrapped[i] > ordering_tolerance for i in range(11))
-
     h11_roots = roots_for(1.0 / 3.0, lower=False)
     h12_roots = roots_for(2.0 / 3.0, lower=False)
     h3_roots = roots_for(1.0 / 3.0, lower=True)
@@ -221,7 +219,11 @@ def search_experimental_placidus(
                 h11,
                 h12,
             )
-            if ordered_cycle(cusps):
+            if strictly_ordered_cusp_cycle(
+                cusps,
+                asc,
+                ordering_tolerance=ordering_tolerance,
+            ):
                 ordered.append(cusps)
 
     if len(ordered) == 1:
