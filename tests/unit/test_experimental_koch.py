@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from moira.constants import HouseSystem
+import moira.houses as houses_module
 from moira.experimental_koch import (
     ExperimentalKochAdmissibilityMap,
     ExperimentalKochStatus,
@@ -105,10 +106,50 @@ def test_search_experimental_koch_reports_no_valid_solution_at_armc_0() -> None:
         mc=0.0,
     )
 
-    assert result.status == ExperimentalKochStatus.NO_VALID_SOLUTION
+    assert result.status == ExperimentalKochStatus.UNORDERED_CUSP_CYCLE
     assert result.has_solution is False
     assert result.cusps is None
     assert "assembled cusps not strictly ordered" in result.diagnostic_summary
+
+
+def test_search_experimental_koch_reports_branch_selection_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    def _raise_branch_failure(*args, **kwargs):
+        raise RuntimeError("forced branch failure")
+
+    monkeypatch.setattr(houses_module, "_select_horizon_branch", _raise_branch_failure)
+
+    result = search_experimental_koch(
+        _ARMC_VALID,
+        _OB_J2000,
+        _LAT_77,
+        asc=180.0,
+        mc=90.0,
+    )
+
+    assert result.status == ExperimentalKochStatus.HORIZON_BRANCH_SELECTION_FAILED
+    assert result.has_solution is False
+    assert result.cusps is None
+    assert "horizon branch selection failed" in result.diagnostic_summary
+
+
+def test_search_experimental_koch_reports_assembly_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+    def _raise_assembly_failure(*args, **kwargs):
+        raise RuntimeError("forced assembly failure")
+
+    monkeypatch.setattr(houses_module, "_assemble_antipodal_quadrant_cusps", _raise_assembly_failure)
+
+    result = search_experimental_koch(
+        _ARMC_VALID,
+        _OB_J2000,
+        _LAT_77,
+        asc=180.0,
+        mc=90.0,
+    )
+
+    assert result.status == ExperimentalKochStatus.ASSEMBLY_FAILED
+    assert result.has_solution is False
+    assert result.cusps is None
+    assert "assembly failed" in result.diagnostic_summary
 
 
 def test_scan_experimental_koch_admissibility_finds_77n_window_around_armc_90() -> None:

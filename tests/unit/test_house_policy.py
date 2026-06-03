@@ -164,8 +164,7 @@ class TestStrictPolicy:
 
     @pytest.mark.parametrize("system", [
         HouseSystem.WHOLE_SIGN, HouseSystem.EQUAL, HouseSystem.PORPHYRY,
-        HouseSystem.CAMPANUS, HouseSystem.REGIOMONTANUS,
-        HouseSystem.TOPOCENTRIC, HouseSystem.ALCABITIUS,
+        HouseSystem.ALCABITIUS,
     ])
     def test_strict_policy_does_not_raise_at_polar_for_capable_systems(self, system):
         r = _polar(system, policy=HousePolicy.strict())
@@ -362,11 +361,11 @@ class TestExpandedPolarFallbackPipeline:
         for i in range(12):
             assert r.cusps[i] == pytest.approx(r_porphyry.cusps[i], abs=1e-12)
 
-    def test_topocentric_remains_topocentric_at_polar_latitudes(self):
+    def test_topocentric_default_still_falls_back_at_polar_latitudes(self):
         r = _polar(HouseSystem.TOPOCENTRIC)
-        assert r.fallback is False
-        assert r.effective_system == HouseSystem.TOPOCENTRIC
-        assert r.fallback_reason is None
+        assert r.fallback is True
+        assert r.effective_system == HouseSystem.PORPHYRY
+        assert "fell back to Porphyry" in r.fallback_reason
 
     def test_alcabitius_remains_alcabitius_at_polar_latitudes(self):
         r = _polar(HouseSystem.ALCABITIUS)

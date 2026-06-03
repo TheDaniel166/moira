@@ -255,7 +255,7 @@ class TestPolarCapable:
         HouseSystem.VEHLOW, HouseSystem.SUNSHINE, HouseSystem.AZIMUTHAL,
         HouseSystem.SOLAR_SIGN,
         HouseSystem.CARTER, HouseSystem.KRUSINSKI, HouseSystem.APC,
-        HouseSystem.PLACIDUS,
+        HouseSystem.PLACIDUS, HouseSystem.ALCABITIUS,
         ])
     def test_polar_capable_systems(self, system):
         assert classify_house_system(system).polar_capable is True

@@ -59,10 +59,12 @@ Layers present in this file:
             circumpolar.  Placidus now integrates its own branch-search doctrine
             (unique ordered semi-arc cycles) and is no longer in the outer
             _POLAR_SYSTEMS guard; when a valid figure exists under its rules it
-            is returned directly under default policy.  The remaining systems in
-            _POLAR_SYSTEMS (Koch and certain projection families) still trigger
-            outer policy repair because their singularity handling is not yet
-            integrated.  The old fixed 75.0° threshold was wrong: it silently
+            is returned directly under default policy.  Alcabitius likewise now
+            integrates its direct zero-pole ordered-figure doctrine and is no
+            longer guarded as a polar-incapable system.  The remaining systems
+            in _POLAR_SYSTEMS (Koch and certain projection families) still
+            trigger outer policy repair because their singularity handling is
+            not yet integrated.  The old fixed 75.0° threshold was wrong: it silently
             passed garbage results from ≈66.6° to 74.9°.
             Systems not in _POLAR_SYSTEMS are evaluated on their own geometry.
 
@@ -432,7 +434,7 @@ _CLASSIFICATIONS: dict[str, HouseSystemClassification] = {
     HouseSystem.CARTER:        HouseSystemClassification(_F.QUADRANT,   _CB.EQUATORIAL,          True,  True),
     HouseSystem.PORPHYRY:      HouseSystemClassification(_F.QUADRANT,   _CB.QUADRANT_TRISECTION, True,  True),
     HouseSystem.PLACIDUS:      HouseSystemClassification(_F.QUADRANT,   _CB.SEMI_ARC,            True,  True),  # polar_capable now True: branch search integrated into its event/root doctrine (unique ordered cycles at high lat when they exist)
-    HouseSystem.ALCABITIUS:    HouseSystemClassification(_F.QUADRANT,   _CB.SEMI_ARC,            True,  False),  # still in _POLAR guard (no integrated branch doctrine yet)
+    HouseSystem.ALCABITIUS:    HouseSystemClassification(_F.QUADRANT,   _CB.SEMI_ARC,            True,  True),   # polar_capable now True: direct zero-pole ordered-figure doctrine integrated at high latitude
     HouseSystem.KOCH:          HouseSystemClassification(_F.QUADRANT,   _CB.OBLIQUE_ASCENSION,   True,  False),
     HouseSystem.CAMPANUS:      HouseSystemClassification(_F.QUADRANT,   _CB.PRIME_VERTICAL,      True,  False),  # still in _POLAR guard (no integrated branch doctrine yet)
     HouseSystem.AZIMUTHAL:     HouseSystemClassification(_F.QUADRANT,   _CB.HORIZON,             True,  True),
@@ -480,21 +482,21 @@ def classify_house_system(code: str) -> HouseSystemClassification:
 # ---------------------------------------------------------------------------
 
 # Systems that produce geometrically disordered cusps above the critical latitude
-# (90° − obliquity ≈ 66.56° at J2000).  The five systems here share root causes
+# (90° − obliquity ≈ 66.56° at J2000).  The four systems here share root causes
 # in ascendant or pole-height formulas that overflow at extreme latitudes.
 # Placidus is no longer listed: its high-latitude branch doctrine (event-root
 # search for unique ordered cycles) is now integrated into its own implementation.
+# Alcabitius is likewise no longer listed: its direct zero-pole ordered-figure
+# doctrine is now integrated into its own implementation.
 #
 #   Koch                 — oblique ascension / semi-arc
 #   Regiomontanus        — pole heights phi_h1/phi_h2 = atan(tan(phi)*sin(...))
 #   Topocentric          — pole heights phi_1/phi_2   = atan((k/3)*tan(phi))
 #   Campanus             — prime-vertical basis degenerates; _asc_from_armc overflows
-#   Alcabitius           — _asc_from_armc overflows (SDA guard saves one path,
-#                          but the Ascendant seed is already garbage at lat ≥ critical)
 _POLAR_SYSTEMS: frozenset[str] = frozenset({
     HouseSystem.KOCH,
     HouseSystem.REGIOMONTANUS, HouseSystem.TOPOCENTRIC,
-    HouseSystem.CAMPANUS, HouseSystem.ALCABITIUS,
+    HouseSystem.CAMPANUS,
 })
 
 # The full set of recognised HouseSystem codes.
@@ -4130,19 +4132,29 @@ def houses_from_armc(
     # On no unique solution, apply the caller's PolarFallbackPolicy (the
     # "no solution here" case is now explicit in Placidus doctrine rather than
     # blanket pre-emptive repair).
-    if abs(lat) >= critical_lat and system == HouseSystem.PLACIDUS:
+    if abs(lat) >= critical_lat and system in (HouseSystem.PLACIDUS, HouseSystem.ALCABITIUS):
         try:
-            experimental_cusps = _experimental_polar_placidus_cusps(
-                armc,
-                obliquity,
-                lat,
-                asc,
-                mc,
-            )
+            if system == HouseSystem.PLACIDUS:
+                experimental_cusps = _experimental_polar_placidus_cusps(
+                    armc,
+                    obliquity,
+                    lat,
+                    asc,
+                    mc,
+                )
+            else:
+                experimental_cusps = _experimental_high_lat_cusps(
+                    system,
+                    armc,
+                    obliquity,
+                    lat,
+                    asc,
+                    mc,
+                )
             # success path: experimental_cusps will be used below;
             # effective and fallback remain as requested (no repair)
         except ValueError as search_err:
-            # no unique ordered Placidus for this position: policy decides
+            # no unique ordered figure for this position: policy decides
             if active_policy.polar_fallback == PolarFallbackPolicy.RAISE:
                 raise ValueError(
                     f"latitude |{lat:.4f}°| >= critical latitude {critical_lat:.4f}° "
@@ -4151,10 +4163,12 @@ def houses_from_armc(
                     f"threshold and policy is RAISE"
                 ) from search_err
             if active_policy.polar_fallback == PolarFallbackPolicy.EXPERIMENTAL_SEARCH:
-                # Re-raise using the general helper for consistency (still Placidus-specific
-                # behavior for the "force search and raise" case).
+                if system == HouseSystem.PLACIDUS:
+                    raise ValueError(
+                        f"experimental Placidus search failed: {search_err}"
+                    ) from search_err
                 raise ValueError(
-                    f"experimental Placidus search failed: {search_err}"
+                    f"experimental search for {system!r} did not return usable cusps or raised"
                 ) from search_err
             # default/other: fallback per policy (now only for the no-solution case)
             fallback = True

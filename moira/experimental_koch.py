@@ -43,8 +43,9 @@ class ExperimentalKochStatus(str, Enum):
     NOT_IMPLEMENTED = "not_implemented"
     UNIQUE_ORDERED_SOLUTION = "unique_ordered_solution"
     NO_VALID_SOLUTION = "no_valid_solution"
-    # Additional statuses can be added as the high-lat doctrine for Koch
-    # (equatorial sector or safe pole projection) is refined.
+    HORIZON_BRANCH_SELECTION_FAILED = "horizon_branch_selection_failed"
+    ASSEMBLY_FAILED = "assembly_failed"
+    UNORDERED_CUSP_CYCLE = "unordered_cusp_cycle"
 
 
 @dataclass(frozen=True, slots=True)
@@ -123,7 +124,8 @@ def search_experimental_koch(
     cusps form a strictly ordered cycle.
 
     If a valid ordered set is obtained, it is returned (status UNIQUE_ORDERED_SOLUTION).
-    Otherwise cusps=None (NO_VALID_SOLUTION).
+    Otherwise cusps=None and the failure is classified by doctrine stage:
+    horizon branch selection, assembly, or post-assembly cusp ordering.
 
     The search is currently "direct" (one candidate from the doctrine) with
     post-check for order; if multiple branches appear in future refinements
@@ -191,7 +193,7 @@ def search_experimental_koch(
                 latitude=latitude,
                 asc=asc,
                 mc=mc,
-                status=ExperimentalKochStatus.NO_VALID_SOLUTION,
+                status=ExperimentalKochStatus.HORIZON_BRANCH_SELECTION_FAILED,
                 cusps=None,
                 diagnostic_summary="horizon branch selection failed for safe pole projection",
             )
@@ -214,7 +216,7 @@ def search_experimental_koch(
             latitude=latitude,
             asc=asc,
             mc=mc,
-            status=ExperimentalKochStatus.NO_VALID_SOLUTION,
+            status=ExperimentalKochStatus.ASSEMBLY_FAILED,
             cusps=None,
             diagnostic_summary=f"assembly failed: {e}",
         )
@@ -232,7 +234,7 @@ def search_experimental_koch(
         status = ExperimentalKochStatus.UNIQUE_ORDERED_SOLUTION
         diag = "safe pole projection yielded ordered Koch cusps"
     else:
-        status = ExperimentalKochStatus.NO_VALID_SOLUTION
+        status = ExperimentalKochStatus.UNORDERED_CUSP_CYCLE
         cusps = None
         diag = "assembled cusps not strictly ordered"
 
