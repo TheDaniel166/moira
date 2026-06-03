@@ -221,7 +221,6 @@ def search_experimental_placidus(
             )
             if strictly_ordered_cusp_cycle(
                 cusps,
-                asc,
                 ordering_tolerance=ordering_tolerance,
             ):
                 ordered.append(cusps)

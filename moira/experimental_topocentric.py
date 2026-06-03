@@ -151,7 +151,6 @@ def search_experimental_topocentric(
     cusps = tuple(cusp_list)
     is_ordered = strictly_ordered_cusp_cycle(
         cusps,
-        asc,
         ordering_tolerance=ordering_tolerance,
     )
 

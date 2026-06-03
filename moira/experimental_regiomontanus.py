@@ -198,7 +198,6 @@ def search_experimental_regiomontanus(
     cusps = tuple(cusps_list)
     is_ordered = strictly_ordered_cusp_cycle(
         cusps,
-        asc,
         ordering_tolerance=kwargs.get("ordering_tolerance", 1e-7),
     )
 

@@ -229,7 +229,6 @@ def search_experimental_koch(
     # of "valid house figure").
     is_ordered = strictly_ordered_cusp_cycle(
         cusps,
-        asc,
         ordering_tolerance=ordering_tolerance,
     )
 
