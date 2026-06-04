@@ -12,6 +12,7 @@ from typing import Any
 
 from moira import Moira
 from moira.asteroids import ASTEROID_NAIF, AsteroidData, asteroid_at
+from moira.julian import jd_from_datetime
 
 from ..models.asteroids import (
     AsteroidListItem,
@@ -39,9 +40,10 @@ def compute_asteroid_position(
 ) -> AsteroidPositionResponse:
     """High-performance asteroid position using native Type 13 path when available."""
     reader = _get_small_body_reader(engine)
+    jd_ut = jd_from_datetime(request.dt) if isinstance(request.dt, datetime) else float(request.dt)
     data: AsteroidData = asteroid_at(
         request.body,
-        request.dt,
+        jd_ut,
         reader=reader,   # This is the key: passes sovereign fast kernels if present
     )
 
@@ -56,6 +58,9 @@ def compute_asteroid_position(
         distance=data.distance,
         speed=data.speed,
         retrograde=data.retrograde,
+        sign=data.sign,
+        sign_symbol=data.sign_symbol,
+        sign_degree=data.sign_degree,
         is_sovereign=is_sovereign,
     )
 
@@ -69,9 +74,10 @@ def compute_asteroids_bulk(
     results: dict[str, AsteroidPositionResponse] = {}
     missing: list[str] = []
 
+    jd_ut = jd_from_datetime(request.dt) if isinstance(request.dt, datetime) else float(request.dt)
     for body in request.bodies:
         try:
-            data = asteroid_at(body, request.dt, reader=reader)
+            data = asteroid_at(body, jd_ut, reader=reader)
             is_sovereign = reader is not None
             results[str(body)] = AsteroidPositionResponse(
                 name=data.name,
@@ -81,6 +87,9 @@ def compute_asteroids_bulk(
                 distance=data.distance,
                 speed=data.speed,
                 retrograde=data.retrograde,
+                sign=data.sign,
+                sign_symbol=data.sign_symbol,
+                sign_degree=data.sign_degree,
                 is_sovereign=is_sovereign,
             )
         except Exception:
