@@ -2,14 +2,21 @@
 
 Routes:
     POST /v1/progressions/secondary                — secondary (and converse) progression chart
+    POST /v1/progressions/secondary/reduction      — secondary progression chart with reduction truth
     POST /v1/progressions/secondary-declination    — secondary declination chart (Charles Jayne)
+    POST /v1/progressions/secondary-declination/reduction — secondary declination chart with reduction truth
     POST /v1/progressions/arc                      — arc direction chart (method-dispatched)
+    POST /v1/progressions/arc/reduction            — arc direction chart with reduction truth
     POST /v1/progressions/time-key                 — time-key progression chart (method-dispatched)
+    POST /v1/progressions/time-key/reduction       — time-key progression chart with reduction truth
     POST /v1/progressions/house-frame              — daily house frame (full truth vessel)
+    POST /v1/progressions/house-frame/reduction    — daily house frame with reduction truth
     POST /v1/progressions/house-frame/cusps        — daily house cusps (light response)
     POST /v1/progressions/house-frame/arc          — angle-arc direction (ascendant/vertex arc)
     POST /v1/progressions/profile                  — aggregate condition profile over N charts/frames
+    POST /v1/progressions/profile/reduction        — aggregate condition profile with reduction truth
     POST /v1/progressions/network                  — network condition profile over N charts/frames
+    POST /v1/progressions/network/reduction        — network condition profile with reduction truth
 """
 
 from __future__ import annotations
@@ -25,9 +32,15 @@ from ..models.progressions import (
     HouseFrameArcRequest,
     HouseFrameProgressionRequest,
     ProgressedChartResponse,
+    ProgressedChartReductionResponse,
     ProgressedDeclinationChartResponse,
+    ProgressedDeclinationChartReductionResponse,
+    ProgressedHouseFrameArcReductionResponse,
     ProgressedHouseFrameResponse,
+    ProgressedHouseFrameReductionResponse,
     ProgressionChartConditionProfileResponse,
+    ProgressionChartConditionProfileReductionResponse,
+    ProgressionConditionNetworkProfileReductionResponse,
     ProgressionConditionNetworkProfileResponse,
     ProgressionNetworkRequest,
     ProgressionProfileRequest,
@@ -38,20 +51,34 @@ from ..models.progressions import (
 from ..serializers.progressions import (
     serialize_daily_houses,
     serialize_progressed_chart,
+    serialize_progressed_chart_with_reduction,
+    serialize_progressed_house_frame_arc_with_reduction,
     serialize_progressed_declination_chart,
+    serialize_progressed_declination_chart_with_reduction,
     serialize_progressed_house_frame,
+    serialize_progressed_house_frame_with_reduction,
     serialize_progression_chart_condition_profile,
+    serialize_progression_chart_condition_profile_with_reduction,
+    serialize_progression_condition_network_profile_with_reduction,
     serialize_progression_condition_network_profile,
 )
 from ..services.progressions import (
     compute_arc_progression_chart,
+    compute_arc_progression_chart_with_reduction,
     compute_daily_house_frame,
+    compute_daily_house_frame_with_reduction,
     compute_house_frame_arc_chart,
+    compute_house_frame_arc_chart_with_reduction,
     compute_progression_chart_condition_profile_service,
+    compute_progression_chart_condition_profile_with_reduction_service,
     compute_progression_condition_network_profile_service,
+    compute_progression_condition_network_profile_with_reduction_service,
     compute_secondary_progression_chart,
+    compute_secondary_progression_chart_with_reduction,
     compute_secondary_progression_declination_chart,
+    compute_secondary_progression_declination_chart_with_reduction,
     compute_time_key_progression_chart,
+    compute_time_key_progression_chart_with_reduction,
 )
 
 
@@ -66,6 +93,15 @@ def secondary_progression_route(
     return serialize_progressed_chart(compute_secondary_progression_chart(engine, request))
 
 
+@router.post("/progressions/secondary/reduction", response_model=ProgressedChartReductionResponse)
+def secondary_progression_reduction_route(
+    request: SecondaryProgressionRequest,
+    engine: Moira = Depends(get_engine),
+) -> ProgressedChartReductionResponse:
+    chart, reduction = compute_secondary_progression_chart_with_reduction(engine, request)
+    return serialize_progressed_chart_with_reduction(chart, reduction)
+
+
 @router.post("/progressions/secondary-declination", response_model=ProgressedDeclinationChartResponse)
 def secondary_declination_route(
     request: SecondaryProgressionDeclinationRequest,
@@ -76,12 +112,35 @@ def secondary_declination_route(
     )
 
 
+@router.post(
+    "/progressions/secondary-declination/reduction",
+    response_model=ProgressedDeclinationChartReductionResponse,
+)
+def secondary_declination_reduction_route(
+    request: SecondaryProgressionDeclinationRequest,
+    engine: Moira = Depends(get_engine),
+) -> ProgressedDeclinationChartReductionResponse:
+    chart, reduction = compute_secondary_progression_declination_chart_with_reduction(
+        engine, request
+    )
+    return serialize_progressed_declination_chart_with_reduction(chart, reduction)
+
+
 @router.post("/progressions/arc", response_model=ProgressedChartResponse)
 def arc_progression_route(
     request: ArcProgressionRequest,
     engine: Moira = Depends(get_engine),
 ) -> ProgressedChartResponse:
     return serialize_progressed_chart(compute_arc_progression_chart(engine, request))
+
+
+@router.post("/progressions/arc/reduction", response_model=ProgressedChartReductionResponse)
+def arc_progression_reduction_route(
+    request: ArcProgressionRequest,
+    engine: Moira = Depends(get_engine),
+) -> ProgressedChartReductionResponse:
+    chart, reduction = compute_arc_progression_chart_with_reduction(engine, request)
+    return serialize_progressed_chart_with_reduction(chart, reduction)
 
 
 @router.post("/progressions/time-key", response_model=ProgressedChartResponse)
@@ -92,12 +151,30 @@ def time_key_progression_route(
     return serialize_progressed_chart(compute_time_key_progression_chart(engine, request))
 
 
+@router.post("/progressions/time-key/reduction", response_model=ProgressedChartReductionResponse)
+def time_key_progression_reduction_route(
+    request: TimeKeyProgressionRequest,
+    engine: Moira = Depends(get_engine),
+) -> ProgressedChartReductionResponse:
+    chart, reduction = compute_time_key_progression_chart_with_reduction(engine, request)
+    return serialize_progressed_chart_with_reduction(chart, reduction)
+
+
 @router.post("/progressions/house-frame", response_model=ProgressedHouseFrameResponse)
 def house_frame_route(
     request: HouseFrameProgressionRequest,
     engine: Moira = Depends(get_engine),
 ) -> ProgressedHouseFrameResponse:
     return serialize_progressed_house_frame(compute_daily_house_frame(engine, request))
+
+
+@router.post("/progressions/house-frame/reduction", response_model=ProgressedHouseFrameReductionResponse)
+def house_frame_reduction_route(
+    request: HouseFrameProgressionRequest,
+    engine: Moira = Depends(get_engine),
+) -> ProgressedHouseFrameReductionResponse:
+    frame, reduction = compute_daily_house_frame_with_reduction(engine, request)
+    return serialize_progressed_house_frame_with_reduction(frame, reduction)
 
 
 @router.post("/progressions/house-frame/cusps", response_model=DailyHousesResponse)
@@ -116,6 +193,18 @@ def house_frame_arc_route(
     return serialize_progressed_chart(compute_house_frame_arc_chart(engine, request))
 
 
+@router.post(
+    "/progressions/house-frame/arc/reduction",
+    response_model=ProgressedHouseFrameArcReductionResponse,
+)
+def house_frame_arc_reduction_route(
+    request: HouseFrameArcRequest,
+    engine: Moira = Depends(get_engine),
+) -> ProgressedHouseFrameArcReductionResponse:
+    chart, reduction = compute_house_frame_arc_chart_with_reduction(engine, request)
+    return serialize_progressed_house_frame_arc_with_reduction(chart, reduction)
+
+
 @router.post("/progressions/profile", response_model=ProgressionChartConditionProfileResponse)
 def progression_profile_route(
     request: ProgressionProfileRequest,
@@ -126,6 +215,17 @@ def progression_profile_route(
     )
 
 
+@router.post("/progressions/profile/reduction", response_model=ProgressionChartConditionProfileReductionResponse)
+def progression_profile_reduction_route(
+    request: ProgressionProfileRequest,
+    engine: Moira = Depends(get_engine),
+) -> ProgressionChartConditionProfileReductionResponse:
+    profile, reduction = compute_progression_chart_condition_profile_with_reduction_service(
+        engine, request
+    )
+    return serialize_progression_chart_condition_profile_with_reduction(profile, reduction)
+
+
 @router.post("/progressions/network", response_model=ProgressionConditionNetworkProfileResponse)
 def progression_network_route(
     request: ProgressionNetworkRequest,
@@ -134,3 +234,14 @@ def progression_network_route(
     return serialize_progression_condition_network_profile(
         compute_progression_condition_network_profile_service(engine, request)
     )
+
+
+@router.post("/progressions/network/reduction", response_model=ProgressionConditionNetworkProfileReductionResponse)
+def progression_network_reduction_route(
+    request: ProgressionNetworkRequest,
+    engine: Moira = Depends(get_engine),
+) -> ProgressionConditionNetworkProfileReductionResponse:
+    network, reduction = compute_progression_condition_network_profile_with_reduction_service(
+        engine, request
+    )
+    return serialize_progression_condition_network_profile_with_reduction(network, reduction)

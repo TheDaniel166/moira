@@ -7,9 +7,9 @@ from fastapi import APIRouter, Depends
 from moira import Moira
 
 from ..dependencies import get_engine
-from ..models.chart import ChartRequest, ChartResponse, HousesRequest, HousesResponse
-from ..serializers.chart import serialize_chart, serialize_houses
-from ..services.chart import compute_chart, compute_houses
+from ..models.chart import ChartReductionResponse, ChartRequest, ChartResponse, HousesRequest, HousesResponse
+from ..serializers.chart import serialize_chart, serialize_chart_with_reduction, serialize_houses
+from ..services.chart import compute_chart, compute_chart_with_reduction, compute_houses
 
 
 router = APIRouter(prefix="/v1", tags=["chart"])
@@ -23,6 +23,17 @@ def chart_route(
     """Serialize a canonical chart result for transport."""
 
     return serialize_chart(compute_chart(engine, request))
+
+
+@router.post("/chart/reduction", response_model=ChartReductionResponse)
+def chart_reduction_route(
+    request: ChartRequest,
+    engine: Moira = Depends(get_engine),
+) -> ChartReductionResponse:
+    """Serialize a chart together with its reduction truth."""
+
+    chart, reduction = compute_chart_with_reduction(engine, request)
+    return serialize_chart_with_reduction(chart, reduction)
 
 
 @router.post("/houses", response_model=HousesResponse)

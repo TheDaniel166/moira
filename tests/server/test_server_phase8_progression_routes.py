@@ -94,6 +94,35 @@ def test_converse_secondary_progression_route_matches_engine(client_with_engine:
 
 
 @pytest.mark.requires_ephemeris
+def test_secondary_progression_reduction_route_exposes_computation_truth(
+    client_with_engine: TestClient,
+) -> None:
+    resp = client_with_engine.post(
+        "/v1/progressions/secondary/reduction",
+        json={"natal": _NATAL_PAYLOAD, "target_dt": _TARGET_ISO, "converse": False},
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["result"]["chart_type"] == "Secondary Progression"
+    assert body["reduction"]["requested_natal_datetime"] == _NATAL_DT.isoformat()
+    assert body["reduction"]["requested_target_datetime"] == _TARGET_DT.isoformat()
+    assert body["reduction"]["computation_truth"]["doctrine"]["doctrine_family"] == "time_key"
+    assert body["reduction"]["classification"]["uses_directed_arc"] is False
+    assert body["reduction"]["stage_sequence"] == [
+        "natal_datetime_to_jd",
+        "target_datetime_to_jd",
+        "age_years_resolution",
+        "progressed_jd_resolution",
+        "progressed_chart_assembly",
+    ]
+    assert (
+        body["reduction"]["computation_truth"]["progressed_jd_ut"]
+        == pytest.approx(body["result"]["progressed_jd_ut"])
+    )
+
+
+@pytest.mark.requires_ephemeris
 def test_secondary_declination_route_matches_engine(client_with_engine: TestClient) -> None:
     natal_jd = jd_from_datetime(_NATAL_DT)
     direct = secondary_progression_declination(natal_jd_ut=natal_jd, target_date=_TARGET_DT)
@@ -125,6 +154,27 @@ def test_converse_secondary_declination_route_matches_engine(client_with_engine:
     body = resp.json()
     assert body["is_converse"] is True
     assert body["positions"]["Sun"]["declination"] == pytest.approx(direct.positions["Sun"].declination)
+
+
+@pytest.mark.requires_ephemeris
+def test_secondary_declination_reduction_route_exposes_declination_truth(
+    client_with_engine: TestClient,
+) -> None:
+    resp = client_with_engine.post(
+        "/v1/progressions/secondary-declination/reduction",
+        json={"natal": _NATAL_PAYLOAD, "target_dt": _TARGET_ISO, "converse": True},
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["result"]["coordinate_system"] == "declination"
+    assert body["reduction"]["computation_truth"]["doctrine"]["coordinate_system"] == "declination"
+    assert body["reduction"]["classification"]["doctrine"]["converse"] is True
+    assert body["reduction"]["stage_sequence"][-1] == "declination_projection"
+    assert (
+        body["reduction"]["computation_truth"]["progressed_jd_ut"]
+        == pytest.approx(body["result"]["progressed_jd_ut"])
+    )
 
 
 # ---------------------------------------------------------------------------

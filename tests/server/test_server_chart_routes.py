@@ -48,6 +48,55 @@ def test_chart_route_matches_engine_selected_truth(client_with_engine: TestClien
 
 
 @pytest.mark.requires_ephemeris
+def test_chart_reduction_route_exposes_pipeline_truth(
+    client_with_engine: TestClient,
+    moira_engine,
+) -> None:
+    dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    direct = moira_engine.chart(
+        dt,
+        bodies=["Sun", "Moon"],
+        include_nodes=True,
+        observer_lat=40.7128,
+        observer_lon=-74.0060,
+        observer_elev_m=10.0,
+    )
+
+    response = client_with_engine.post(
+        "/v1/chart/reduction",
+        json={
+            "dt": dt.isoformat(),
+            "bodies": ["Sun", "Moon"],
+            "include_nodes": True,
+            "observer_lat": 40.7128,
+            "observer_lon": -74.0060,
+            "observer_elev_m": 10.0,
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["result"]["jd_ut"] == pytest.approx(direct.jd_ut)
+    assert body["result"]["planets"]["Sun"]["longitude"] == pytest.approx(direct.planets["Sun"].longitude)
+    assert body["result"]["planets"]["Moon"]["is_topocentric"] is True
+    assert body["result"]["nodes"]["True Node"]["longitude"] == pytest.approx(direct.nodes["True Node"].longitude)
+    assert body["reduction"]["engine_surface"] == "Moira.chart"
+    assert body["reduction"]["source_vessel"] == "Chart"
+    assert body["reduction"]["requested_bodies"] == ["Sun", "Moon"]
+    assert body["reduction"]["returned_bodies"] == ["Sun", "Moon"]
+    assert body["reduction"]["include_nodes_requested"] is True
+    assert body["reduction"]["include_nodes_returned"] is True
+    assert body["reduction"]["topocentric_requested"] is True
+    assert body["reduction"]["observer"]["latitude"] == pytest.approx(40.7128)
+    assert body["reduction"]["observer"]["longitude"] == pytest.approx(-74.0060)
+    assert body["reduction"]["observer"]["local_sidereal_time_deg"] is not None
+    assert "all_planets_at" in body["reduction"]["stage_sequence"]
+    assert body["reduction"]["planet_reductions"]["Moon"]["topocentric_applied"] is True
+    assert body["reduction"]["planet_reductions"]["Sun"]["center"] == "geocentric"
+    assert body["reduction"]["node_reductions"]["True Node"]["source_surface"] == "moira.true_node"
+
+
+@pytest.mark.requires_ephemeris
 def test_planet_position_route_matches_engine_selected_truth(
     client_with_engine: TestClient,
     moira_engine,
@@ -108,6 +157,48 @@ def test_planet_position_route_preserves_topocentric_truth(
 
 
 @pytest.mark.requires_ephemeris
+def test_planet_position_reduction_route_exposes_pipeline_truth(
+    client_with_engine: TestClient,
+    moira_engine,
+) -> None:
+    dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    direct = moira_engine.chart(
+        dt,
+        bodies=["Moon"],
+        include_nodes=False,
+        observer_lat=40.7128,
+        observer_lon=-74.0060,
+        observer_elev_m=10.0,
+    ).planets["Moon"]
+
+    response = client_with_engine.post(
+        "/v1/positions/planet/reduction",
+        json={
+            "dt": dt.isoformat(),
+            "body": "Moon",
+            "observer_lat": 40.7128,
+            "observer_lon": -74.0060,
+            "observer_elev_m": 10.0,
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["result"]["longitude"] == pytest.approx(direct.longitude)
+    assert body["result"]["is_topocentric"] is True
+    assert body["reduction"]["engine_surface"] == "Moira.chart"
+    assert body["reduction"]["source_vessel"] == "PlanetData"
+    assert body["reduction"]["selection_surface"] == "chart.planets[body]"
+    assert body["reduction"]["topocentric_requested"] is True
+    assert body["reduction"]["topocentric_applied"] is True
+    assert body["reduction"]["observer"]["latitude"] == pytest.approx(40.7128)
+    assert body["reduction"]["observer"]["longitude"] == pytest.approx(-74.0060)
+    assert body["reduction"]["observer"]["local_sidereal_time_deg"] is not None
+    assert "all_planets_at" in body["reduction"]["stage_sequence"]
+    assert "planet_selection" in body["reduction"]["stage_sequence"]
+
+
+@pytest.mark.requires_ephemeris
 def test_sky_position_route_matches_engine_selected_truth(
     client_with_engine: TestClient,
     moira_engine,
@@ -132,6 +223,39 @@ def test_sky_position_route_matches_engine_selected_truth(
     assert body["declination"] == pytest.approx(direct.declination)
     assert body["azimuth"] == pytest.approx(direct.azimuth)
     assert body["altitude"] == pytest.approx(direct.altitude)
+
+
+@pytest.mark.requires_ephemeris
+def test_sky_position_reduction_route_exposes_pipeline_truth(
+    client_with_engine: TestClient,
+    moira_engine,
+) -> None:
+    dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    direct = moira_engine.sky_position(dt, "Venus", 51.5, -0.1)
+
+    response = client_with_engine.post(
+        "/v1/positions/sky/reduction",
+        json={
+            "dt": dt.isoformat(),
+            "body": "Venus",
+            "latitude": 51.5,
+            "longitude": -0.1,
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["result"]["right_ascension"] == pytest.approx(direct.right_ascension)
+    assert body["result"]["declination"] == pytest.approx(direct.declination)
+    assert body["reduction"]["engine_surface"] == "Moira.sky_position"
+    assert body["reduction"]["source_vessel"] == "SkyPosition"
+    assert body["reduction"]["observer"]["latitude"] == pytest.approx(51.5)
+    assert body["reduction"]["observer"]["longitude"] == pytest.approx(-0.1)
+    assert body["reduction"]["observer"]["local_sidereal_time_deg"] is not None
+    assert body["reduction"]["refraction"] is True
+    assert body["reduction"]["coordinate_frames"] == ["equatorial", "horizontal"]
+    assert "horizontal_projection" in body["reduction"]["stage_sequence"]
+    assert "optional_refraction" in body["reduction"]["stage_sequence"]
 
 
 @pytest.mark.requires_ephemeris

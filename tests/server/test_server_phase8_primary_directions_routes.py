@@ -130,6 +130,36 @@ def test_primary_directions_arcs_route_matches_engine(client_with_engine: TestCl
 
 
 @pytest.mark.requires_ephemeris
+def test_primary_directions_arcs_reduction_route_exposes_policy_truth(
+    client_with_engine: TestClient,
+) -> None:
+    payload = {
+        **_PD_SEARCH_PAYLOAD,
+        "max_arc": 45.0,
+        "policy": {"preset": "regiomontanus"},
+    }
+
+    resp = client_with_engine.post("/v1/primary-directions/arcs/reduction", json=payload)
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert "result" in body
+    assert "reduction" in body
+    assert body["reduction"]["engine_surface"] == "moira.find_primary_arcs"
+    assert body["reduction"]["result_surface"] == "primary_direction_arc_search"
+    assert body["reduction"]["search_mode"] == "engine_search"
+    assert body["reduction"]["max_arc"] == pytest.approx(45.0)
+    assert body["reduction"]["house_context"]["requested_system"] == "PLACIDUS"
+    assert body["reduction"]["resolved_policy"]["method"] == "regiomontanus"
+    assert body["reduction"]["resolved_policy"]["space"] == "in_mundo"
+    assert body["reduction"]["resolved_policy"]["include_converse"] is True
+    assert body["reduction"]["resolved_policy"]["key"] == "NAIBOD"
+    assert body["reduction"]["resolved_policy"]["key_source"] == "preset_convention"
+    assert "policy_resolution" in body["reduction"]["stage_sequence"]
+    assert "primary_arc_search" in body["reduction"]["stage_sequence"]
+
+
+@pytest.mark.requires_ephemeris
 def test_primary_directions_profile_route_matches_engine(client_with_engine: TestClient, moira_engine) -> None:
     chart, houses = _direct_chart_and_houses(moira_engine)
     direct_arcs = find_primary_arcs(chart, houses, _OBSERVER_LAT, max_arc=60.0)
@@ -149,6 +179,31 @@ def test_primary_directions_profile_route_matches_engine(client_with_engine: Tes
     if body["aggregate"]["profiles"]:
         assert "significator" in body["aggregate"]["profiles"][0]
     # No exact count required in first-pass due to construction differences
+
+
+@pytest.mark.requires_ephemeris
+def test_primary_directions_profile_reduction_route_exposes_policy_truth(
+    client_with_engine: TestClient,
+) -> None:
+    payload = {
+        **_PD_SEARCH_PAYLOAD,
+        "max_arc": 40.0,
+        "include_condition": True,
+        "policy": {"preset": "campanus"},
+    }
+
+    resp = client_with_engine.post("/v1/primary-directions/profile/reduction", json=payload)
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert "result" in body
+    assert "aggregate" in body["result"]
+    assert body["reduction"]["result_surface"] == "primary_direction_aggregate_profile"
+    assert body["reduction"]["include_condition_requested"] is True
+    assert body["reduction"]["resolved_policy"]["method"] == "campanus"
+    assert body["reduction"]["resolved_policy"]["space"] == "in_mundo"
+    assert body["reduction"]["resolved_policy"]["key"] == "NAIBOD"
+    assert body["reduction"]["house_context"]["requested_system"] == "PLACIDUS"
 
 
 @pytest.mark.requires_ephemeris
@@ -355,6 +410,30 @@ def test_primary_directions_network_route_matches_engine(client_with_engine: Tes
     # Relaxed for first-pass differences
     assert len(body["network"]["nodes"]) <= len(direct_network.nodes) + 5
     assert len(body["network"]["edges"]) >= 0
+
+
+@pytest.mark.requires_ephemeris
+def test_primary_directions_network_reduction_route_exposes_policy_truth(
+    client_with_engine: TestClient,
+) -> None:
+    payload = {
+        **_PD_SEARCH_PAYLOAD,
+        "max_arc": 35.0,
+        "policy": {"preset": "meridian"},
+    }
+
+    resp = client_with_engine.post("/v1/primary-directions/network/reduction", json=payload)
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert "result" in body
+    assert "network" in body["result"]
+    assert body["reduction"]["result_surface"] == "primary_direction_network_profile"
+    assert body["reduction"]["search_mode"] == "engine_search"
+    assert body["reduction"]["resolved_policy"]["method"] == "meridian"
+    assert body["reduction"]["resolved_policy"]["key"] == "PTOLEMY"
+    assert body["reduction"]["resolved_policy"]["key_source"] == "preset_convention"
+    assert "primary_arc_search" in body["reduction"]["stage_sequence"]
 
 
 # ---------------------------------------------------------------------------

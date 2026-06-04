@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from moira import Moira
 from moira.julian import jd_from_datetime
 from moira.progressions import (
     ProgressedChart,
+    ProgressionComputationClassification,
+    ProgressionComputationTruth,
     ProgressedDeclinationChart,
     ProgressedHouseFrame,
     ProgressionChartConditionProfile,
@@ -49,6 +53,8 @@ from moira.progressions import (
     secondary_progression_declination,
     solar_arc,
     solar_arc_right_ascension,
+    house_frame_condition_profile,
+    progression_condition_profile,
     tertiary_ii_progression,
     tertiary_progression,
 )
@@ -67,6 +73,109 @@ from ..models.progressions import (
     TimeKeyProgressionRequest,
 )
 from ._shared import require_aware_datetime
+
+
+_SECONDARY_STAGE_SEQUENCE = [
+    "natal_datetime_to_jd",
+    "target_datetime_to_jd",
+    "age_years_resolution",
+    "progressed_jd_resolution",
+    "progressed_chart_assembly",
+]
+_SECONDARY_DECLINATION_STAGE_SEQUENCE = [
+    "natal_datetime_to_jd",
+    "target_datetime_to_jd",
+    "age_years_resolution",
+    "progressed_jd_resolution",
+    "declination_projection",
+]
+_ARC_STAGE_SEQUENCE = [
+    "natal_datetime_to_jd",
+    "target_datetime_to_jd",
+    "age_years_resolution",
+    "reference_arc_resolution",
+    "directed_chart_assembly",
+]
+_TIME_KEY_STAGE_SEQUENCE = [
+    "natal_datetime_to_jd",
+    "target_datetime_to_jd",
+    "age_years_resolution",
+    "time_key_progressed_jd_resolution",
+    "progressed_chart_assembly",
+]
+_HOUSE_FRAME_STAGE_SEQUENCE = [
+    "natal_datetime_to_jd",
+    "target_datetime_to_jd",
+    "age_years_resolution",
+    "progressed_jd_resolution",
+    "house_frame_assembly",
+]
+_HOUSE_FRAME_ARC_STAGE_SEQUENCE = [
+    "natal_datetime_to_jd",
+    "target_datetime_to_jd",
+    "age_years_resolution",
+    "angle_arc_reference_resolution",
+    "directed_chart_assembly",
+]
+_PROFILE_STAGE_SEQUENCE = [
+    "request_validation",
+    "progression_chart_assembly",
+    "house_frame_assembly",
+    "aggregate_condition_profile",
+]
+_NETWORK_STAGE_SEQUENCE = [
+    "request_validation",
+    "progression_chart_assembly",
+    "house_frame_assembly",
+    "aggregate_condition_network",
+]
+
+
+@dataclass(frozen=True, slots=True)
+class ProgressionReductionContext:
+    requested_natal_datetime: str
+    requested_target_datetime: str
+    requested_bodies: list[str] | None
+    computation_truth: ProgressionComputationTruth
+    classification: ProgressionComputationClassification | None
+    stage_sequence: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class HouseFrameReductionContext:
+    requested_natal_datetime: str
+    requested_target_datetime: str
+    requested_latitude: float
+    requested_longitude: float
+    requested_house_system: str | None
+    requested_bodies: list[str] | None
+    computation_truth: ProgressionComputationTruth
+    classification: ProgressionComputationClassification | None
+    stage_sequence: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class HouseFrameArcReductionContext:
+    requested_natal_datetime: str
+    requested_target_datetime: str
+    requested_latitude: float
+    requested_longitude: float
+    requested_house_system: str | None
+    requested_method: str
+    requested_converse: bool
+    requested_bodies: list[str] | None
+    computation_truth: ProgressionComputationTruth
+    classification: ProgressionComputationClassification | None
+    stage_sequence: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class ProgressionAggregateReductionContext:
+    chart_item_count: int
+    house_frame_item_count: int
+    item_profiles: list
+    stage_sequence: list[str]
+
 
 # ---------------------------------------------------------------------------
 # Dispatch tables
@@ -137,6 +246,57 @@ def compute_secondary_progression_declination_chart(
     return fn(natal_jd_ut=natal_jd, target_date=request.target_dt, bodies=request.natal.bodies)
 
 
+def _build_progression_reduction_context(
+    *,
+    natal_dt,
+    target_dt,
+    bodies: list[str] | None,
+    computation_truth: ProgressionComputationTruth,
+    classification: ProgressionComputationClassification | None,
+    stage_sequence: list[str],
+) -> ProgressionReductionContext:
+    return ProgressionReductionContext(
+        requested_natal_datetime=natal_dt.isoformat(),
+        requested_target_datetime=target_dt.isoformat(),
+        requested_bodies=(list(bodies) if bodies is not None else None),
+        computation_truth=computation_truth,
+        classification=classification,
+        stage_sequence=list(stage_sequence),
+    )
+
+
+def compute_secondary_progression_chart_with_reduction(
+    engine: Moira,
+    request: SecondaryProgressionRequest,
+) -> tuple[ProgressedChart, ProgressionReductionContext]:
+    chart = compute_secondary_progression_chart(engine, request)
+    reduction = _build_progression_reduction_context(
+        natal_dt=request.natal.dt,
+        target_dt=request.target_dt,
+        bodies=request.natal.bodies,
+        computation_truth=chart.computation_truth,
+        classification=chart.classification,
+        stage_sequence=_SECONDARY_STAGE_SEQUENCE,
+    )
+    return chart, reduction
+
+
+def compute_secondary_progression_declination_chart_with_reduction(
+    engine: Moira,
+    request: SecondaryProgressionDeclinationRequest,
+) -> tuple[ProgressedDeclinationChart, ProgressionReductionContext]:
+    chart = compute_secondary_progression_declination_chart(engine, request)
+    reduction = _build_progression_reduction_context(
+        natal_dt=request.natal.dt,
+        target_dt=request.target_dt,
+        bodies=request.natal.bodies,
+        computation_truth=chart.computation_truth,
+        classification=chart.classification,
+        stage_sequence=_SECONDARY_DECLINATION_STAGE_SEQUENCE,
+    )
+    return chart, reduction
+
+
 # ---------------------------------------------------------------------------
 # P8-02 arc direction
 # ---------------------------------------------------------------------------
@@ -170,6 +330,22 @@ def compute_arc_progression_chart(
     return fn(natal_jd_ut=natal_jd, target_date=request.target_dt, bodies=request.natal.bodies)
 
 
+def compute_arc_progression_chart_with_reduction(
+    engine: Moira,
+    request: ArcProgressionRequest,
+) -> tuple[ProgressedChart, ProgressionReductionContext]:
+    chart = compute_arc_progression_chart(engine, request)
+    reduction = _build_progression_reduction_context(
+        natal_dt=request.natal.dt,
+        target_dt=request.target_dt,
+        bodies=request.natal.bodies,
+        computation_truth=chart.computation_truth,
+        classification=chart.classification,
+        stage_sequence=_ARC_STAGE_SEQUENCE,
+    )
+    return chart, reduction
+
+
 # ---------------------------------------------------------------------------
 # P8-03 time-key progression
 # ---------------------------------------------------------------------------
@@ -190,6 +366,22 @@ def compute_time_key_progression_chart(
     direct_fn, converse_fn = _TIME_KEY_DISPATCH[request.method]
     fn = converse_fn if request.converse else direct_fn
     return fn(natal_jd_ut=natal_jd, target_date=request.target_dt, bodies=request.natal.bodies)
+
+
+def compute_time_key_progression_chart_with_reduction(
+    engine: Moira,
+    request: TimeKeyProgressionRequest,
+) -> tuple[ProgressedChart, ProgressionReductionContext]:
+    chart = compute_time_key_progression_chart(engine, request)
+    reduction = _build_progression_reduction_context(
+        natal_dt=request.natal.dt,
+        target_dt=request.target_dt,
+        bodies=request.natal.bodies,
+        computation_truth=chart.computation_truth,
+        classification=chart.classification,
+        stage_sequence=_TIME_KEY_STAGE_SEQUENCE,
+    )
+    return chart, reduction
 
 
 # ---------------------------------------------------------------------------
@@ -218,6 +410,25 @@ def compute_daily_house_frame(
     )
 
 
+def compute_daily_house_frame_with_reduction(
+    engine: Moira,
+    request: HouseFrameProgressionRequest,
+) -> tuple[ProgressedHouseFrame, HouseFrameReductionContext]:
+    frame = compute_daily_house_frame(engine, request)
+    reduction = HouseFrameReductionContext(
+        requested_natal_datetime=request.natal.dt.isoformat(),
+        requested_target_datetime=request.target_dt.isoformat(),
+        requested_latitude=request.natal.latitude,
+        requested_longitude=request.natal.longitude,
+        requested_house_system=request.natal.house_system,
+        requested_bodies=(list(request.natal.bodies) if request.natal.bodies is not None else None),
+        computation_truth=frame.computation_truth,
+        classification=frame.classification,
+        stage_sequence=list(_HOUSE_FRAME_STAGE_SEQUENCE),
+    )
+    return frame, reduction
+
+
 def compute_house_frame_arc_chart(
     engine: Moira,
     request: HouseFrameArcRequest,
@@ -244,6 +455,27 @@ def compute_house_frame_arc_chart(
     )
 
 
+def compute_house_frame_arc_chart_with_reduction(
+    engine: Moira,
+    request: HouseFrameArcRequest,
+) -> tuple[ProgressedChart, HouseFrameArcReductionContext]:
+    chart = compute_house_frame_arc_chart(engine, request)
+    reduction = HouseFrameArcReductionContext(
+        requested_natal_datetime=request.natal.dt.isoformat(),
+        requested_target_datetime=request.target_dt.isoformat(),
+        requested_latitude=request.natal.latitude,
+        requested_longitude=request.natal.longitude,
+        requested_house_system=request.natal.house_system,
+        requested_method=request.method,
+        requested_converse=request.converse,
+        requested_bodies=(list(request.natal.bodies) if request.natal.bodies is not None else None),
+        computation_truth=chart.computation_truth,
+        classification=chart.classification,
+        stage_sequence=list(_HOUSE_FRAME_ARC_STAGE_SEQUENCE),
+    )
+    return chart, reduction
+
+
 # ---------------------------------------------------------------------------
 # P8-05 aggregate surfaces (now with house-frame support)
 # ---------------------------------------------------------------------------
@@ -252,8 +484,7 @@ def compute_progression_chart_condition_profile_service(
     engine: Moira,
     request: ProgressionProfileRequest,
 ) -> ProgressionChartConditionProfile:
-    charts = [compute_secondary_progression_chart(engine, item) for item in request.items]
-    frames = [compute_daily_house_frame(engine, item) for item in request.house_frame_items]
+    charts, frames = _compute_progression_aggregate_inputs(engine, request.items, request.house_frame_items)
     return progression_chart_condition_profile(
         charts=charts if charts else None,
         house_frames=frames if frames else None,
@@ -264,21 +495,97 @@ def compute_progression_condition_network_profile_service(
     engine: Moira,
     request: ProgressionNetworkRequest,
 ) -> ProgressionConditionNetworkProfile:
-    charts = [compute_secondary_progression_chart(engine, item) for item in request.items]
-    frames = [compute_daily_house_frame(engine, item) for item in request.house_frame_items]
+    charts, frames = _compute_progression_aggregate_inputs(engine, request.items, request.house_frame_items)
     return progression_condition_network_profile(
         charts=charts if charts else None,
         house_frames=frames if frames else None,
     )
 
 
+def _compute_progression_aggregate_inputs(
+    engine: Moira,
+    chart_items: list[SecondaryProgressionRequest],
+    house_frame_items: list[HouseFrameProgressionRequest],
+) -> tuple[list[ProgressedChart], list[ProgressedHouseFrame]]:
+    charts = [compute_secondary_progression_chart(engine, item) for item in chart_items]
+    frames = [compute_daily_house_frame(engine, item) for item in house_frame_items]
+    return charts, frames
+
+
+def _build_progression_aggregate_reduction_context(
+    *,
+    charts: list[ProgressedChart],
+    frames: list[ProgressedHouseFrame],
+    stage_sequence: list[str],
+) -> ProgressionAggregateReductionContext:
+    item_profiles = [
+        progression_condition_profile(chart)
+        for chart in charts
+    ] + [
+        house_frame_condition_profile(frame)
+        for frame in frames
+    ]
+    return ProgressionAggregateReductionContext(
+        chart_item_count=len(charts),
+        house_frame_item_count=len(frames),
+        item_profiles=item_profiles,
+        stage_sequence=list(stage_sequence),
+    )
+
+
+def compute_progression_chart_condition_profile_with_reduction_service(
+    engine: Moira,
+    request: ProgressionProfileRequest,
+) -> tuple[ProgressionChartConditionProfile, ProgressionAggregateReductionContext]:
+    charts, frames = _compute_progression_aggregate_inputs(engine, request.items, request.house_frame_items)
+    profile = progression_chart_condition_profile(
+        charts=charts if charts else None,
+        house_frames=frames if frames else None,
+    )
+    reduction = _build_progression_aggregate_reduction_context(
+        charts=charts,
+        frames=frames,
+        stage_sequence=_PROFILE_STAGE_SEQUENCE,
+    )
+    return profile, reduction
+
+
+def compute_progression_condition_network_profile_with_reduction_service(
+    engine: Moira,
+    request: ProgressionNetworkRequest,
+) -> tuple[ProgressionConditionNetworkProfile, ProgressionAggregateReductionContext]:
+    charts, frames = _compute_progression_aggregate_inputs(engine, request.items, request.house_frame_items)
+    network = progression_condition_network_profile(
+        charts=charts if charts else None,
+        house_frames=frames if frames else None,
+    )
+    reduction = _build_progression_aggregate_reduction_context(
+        charts=charts,
+        frames=frames,
+        stage_sequence=_NETWORK_STAGE_SEQUENCE,
+    )
+    return network, reduction
+
+
 __all__ = [
     "compute_arc_progression_chart",
+    "compute_arc_progression_chart_with_reduction",
     "compute_daily_house_frame",
+    "compute_daily_house_frame_with_reduction",
     "compute_house_frame_arc_chart",
+    "compute_house_frame_arc_chart_with_reduction",
     "compute_progression_chart_condition_profile_service",
+    "compute_progression_chart_condition_profile_with_reduction_service",
     "compute_progression_condition_network_profile_service",
+    "compute_progression_condition_network_profile_with_reduction_service",
     "compute_secondary_progression_chart",
+    "compute_secondary_progression_chart_with_reduction",
     "compute_secondary_progression_declination_chart",
+    "compute_secondary_progression_declination_chart_with_reduction",
     "compute_time_key_progression_chart",
+    "compute_time_key_progression_chart_with_reduction",
+    "HouseFrameReductionContext",
+    "HouseFrameArcReductionContext",
+    "ProgressionAggregateReductionContext",
+    "ProgressionReductionContext",
 ]

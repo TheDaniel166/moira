@@ -4,7 +4,16 @@ from __future__ import annotations
 
 from moira import PlanetData, SkyPosition
 
-from ..models.positions import PlanetPositionResponse, SkyPositionResponse
+from ..models.positions import (
+    PlanetPositionReductionResponse,
+    PlanetPositionReductionTruthResponse,
+    PlanetPositionResponse,
+    PositionObserverContextResponse,
+    SkyPositionReductionResponse,
+    SkyPositionReductionTruthResponse,
+    SkyPositionResponse,
+)
+from ..services.positions import PlanetPositionReductionContext, SkyPositionReductionContext
 
 
 def serialize_planet(planet: PlanetData) -> PlanetPositionResponse:
@@ -35,4 +44,80 @@ def serialize_sky_position(position: SkyPosition) -> SkyPositionResponse:
         azimuth=position.azimuth,
         altitude=position.altitude,
         distance=position.distance,
+    )
+
+
+def _serialize_observer_context(context) -> PositionObserverContextResponse:
+    return PositionObserverContextResponse(
+        latitude=context.latitude,
+        longitude=context.longitude,
+        elevation_m=context.elevation_m,
+        local_sidereal_time_deg=context.local_sidereal_time_deg,
+    )
+
+
+def serialize_planet_with_reduction(
+    planet: PlanetData,
+    reduction: PlanetPositionReductionContext,
+) -> PlanetPositionReductionResponse:
+    """Serialize a planetary position with its reduction truth."""
+
+    return PlanetPositionReductionResponse(
+        result=serialize_planet(planet),
+        reduction=PlanetPositionReductionTruthResponse(
+            engine_surface="Moira.chart",
+            source_vessel="PlanetData",
+            requested_datetime=reduction.requested_datetime,
+            normalized_datetime_utc=reduction.normalized_datetime_utc,
+            jd_ut=reduction.jd_ut,
+            jd_tt=reduction.jd_tt,
+            delta_t_seconds=reduction.delta_t_seconds,
+            body=planet.name,
+            observer=_serialize_observer_context(reduction.observer),
+            stage_sequence=reduction.stage_sequence,
+            selection_surface="chart.planets[body]",
+            include_nodes=False,
+            apparent=True,
+            aberration=True,
+            grav_deflection=True,
+            nutation=True,
+            frame="ecliptic",
+            center="geocentric",
+            obliquity_deg=reduction.obliquity_deg,
+            topocentric_requested=reduction.topocentric_requested,
+            topocentric_applied=reduction.topocentric_applied,
+        ),
+    )
+
+
+def serialize_sky_position_with_reduction(
+    position: SkyPosition,
+    reduction: SkyPositionReductionContext,
+) -> SkyPositionReductionResponse:
+    """Serialize a sky position with its reduction truth."""
+
+    return SkyPositionReductionResponse(
+        result=serialize_sky_position(position),
+        reduction=SkyPositionReductionTruthResponse(
+            engine_surface="Moira.sky_position",
+            source_vessel="SkyPosition",
+            requested_datetime=reduction.requested_datetime,
+            normalized_datetime_utc=reduction.normalized_datetime_utc,
+            jd_ut=reduction.jd_ut,
+            jd_tt=reduction.jd_tt,
+            delta_t_seconds=reduction.delta_t_seconds,
+            body=position.name,
+            observer=_serialize_observer_context(reduction.observer),
+            stage_sequence=reduction.stage_sequence,
+            apparent=True,
+            aberration=True,
+            grav_deflection=True,
+            nutation=True,
+            refraction=True,
+            pressure_mbar=1013.25,
+            temperature_c=10.0,
+            relative_humidity=0.0,
+            obliquity_deg=reduction.obliquity_deg,
+            coordinate_frames=["equatorial", "horizontal"],
+        ),
     )

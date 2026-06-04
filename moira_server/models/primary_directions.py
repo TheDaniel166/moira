@@ -1,11 +1,12 @@
-"""Transport models for P8-14 Primary Directions (first pass).
+"""Transport models for P8-14 Primary Directions.
 
-This is a deliberately scoped first-pass surface over the primary directions engine.
+This is a deliberately scoped transport surface over the primary directions engine.
 
 Governing principle:
 - Start with a strong, opinionated default policy.
 - Allow API richness to grow incrementally based on real usage.
-- Preserve the major doctrinal distinctions without transporting the full engine policy surface.
+- Keep compact routes compact, while sibling reduction routes provide a lawful
+  path to resolved policy and reduction truth.
 
 See docs/architecture/P8-14_PRIMARY_DIRECTIONS_FIRST_PASS.md for the full design rationale and limitations.
 """
@@ -17,6 +18,7 @@ from datetime import datetime
 from pydantic import Field
 
 from .common import _StrictModel
+from .positions import PositionObserverContextResponse
 
 
 # ---------------------------------------------------------------------------
@@ -233,25 +235,92 @@ class PrimaryDirectionsArcsResponse(_StrictModel):
     arcs: list[PrimaryArcResponse]
 
 
+class PrimaryDirectionsResolvedPolicyResponse(_StrictModel):
+    method: str
+    space: str
+    include_converse: bool
+    converse_doctrine: str
+    key: str
+    key_source: str
+    latitude_doctrine: str
+    latitude_source: str
+    perfection_kind: str
+    admitted_relation_kinds: list[str]
+    admitted_significator_classes: list[str]
+    admitted_promissor_classes: list[str]
+
+
+class PrimaryDirectionsHouseContextResponse(_StrictModel):
+    requested_system: str
+    effective_system: str
+    fallback: bool
+    fallback_reason: str | None = None
+
+
+class PrimaryDirectionsArcsReductionTruthResponse(_StrictModel):
+    engine_surface: str
+    result_surface: str
+    requested_datetime: str
+    normalized_datetime_utc: str
+    jd_ut: float
+    jd_tt: float
+    delta_t_seconds: float
+    observer: PositionObserverContextResponse
+    requested_bodies: list[str] | None = None
+    include_nodes_requested: bool
+    search_mode: str
+    max_arc: float
+    significators_requested: list[str] | None = None
+    promissors_requested: list[str] | None = None
+    include_relations_requested: bool
+    include_condition_requested: bool
+    submitted_arc_count: int
+    chosen_key: str
+    house_context: PrimaryDirectionsHouseContextResponse
+    resolved_policy: PrimaryDirectionsResolvedPolicyResponse
+    stage_sequence: list[str]
+
+
+class PrimaryDirectionsArcsReductionResponse(_StrictModel):
+    result: PrimaryDirectionsArcsResponse
+    reduction: PrimaryDirectionsArcsReductionTruthResponse
+
+
 class PrimaryDirectionsProfileResponse(_StrictModel):
     aggregate: PrimaryDirectionsAggregateProfileResponse
+
+
+class PrimaryDirectionsProfileReductionResponse(_StrictModel):
+    result: PrimaryDirectionsProfileResponse
+    reduction: PrimaryDirectionsArcsReductionTruthResponse
 
 
 class PrimaryDirectionsNetworkResponse(_StrictModel):
     network: PrimaryDirectionsNetworkProfileResponse
 
 
+class PrimaryDirectionsNetworkReductionResponse(_StrictModel):
+    result: PrimaryDirectionsNetworkResponse
+    reduction: PrimaryDirectionsArcsReductionTruthResponse
+
+
 __all__ = [
     "PrimaryDirectionsAggregateProfileResponse",
     "PrimaryDirectionsArcsResponse",
+    "PrimaryDirectionsArcsReductionResponse",
+    "PrimaryDirectionsArcsReductionTruthResponse",
     "PrimaryDirectionsBaseRequest",
     "PrimaryDirectionsConditionResponse",
+    "PrimaryDirectionsHouseContextResponse",
     "PrimaryDirectionsNetworkEdgeResponse",
     "PrimaryDirectionsNetworkNodeResponse",
     "PrimaryDirectionsNetworkProfileResponse",
     "PrimaryDirectionsNetworkResponse",
+    "PrimaryDirectionsNetworkReductionResponse",
     "PrimaryDirectionsPolicyRequest",
     "PrimaryDirectionsProfileResponse",
+    "PrimaryDirectionsProfileReductionResponse",
+    "PrimaryDirectionsResolvedPolicyResponse",
     "PrimaryDirectionsSearchRequest",
     "PrimaryDirectionsSignificatorProfileResponse",
     "PrimaryDirectionsSpeculumResponse",

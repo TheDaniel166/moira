@@ -33,6 +33,45 @@ class PlanetPositionResponse(_StrictModel):
     distance_au: float
 
 
+class PositionObserverContextResponse(_StrictModel):
+    latitude: float | None = None
+    longitude: float | None = None
+    elevation_m: float
+    local_sidereal_time_deg: float | None = None
+
+
+class PositionPipelineTruthResponse(_StrictModel):
+    engine_surface: str
+    source_vessel: str
+    requested_datetime: str
+    normalized_datetime_utc: str
+    jd_ut: float
+    jd_tt: float
+    delta_t_seconds: float
+    body: str
+    observer: PositionObserverContextResponse
+    stage_sequence: list[str]
+
+
+class PlanetPositionReductionTruthResponse(PositionPipelineTruthResponse):
+    selection_surface: str
+    include_nodes: bool
+    apparent: bool
+    aberration: bool
+    grav_deflection: bool
+    nutation: bool
+    frame: str
+    center: str
+    obliquity_deg: float
+    topocentric_requested: bool
+    topocentric_applied: bool
+
+
+class PlanetPositionReductionResponse(_StrictModel):
+    result: PlanetPositionResponse
+    reduction: PlanetPositionReductionTruthResponse
+
+
 class SkyPositionRequest(_StrictModel):
     dt: datetime
     body: str
@@ -50,9 +89,33 @@ class SkyPositionResponse(_StrictModel):
     distance: float
 
 
+class SkyPositionReductionTruthResponse(PositionPipelineTruthResponse):
+    apparent: bool
+    aberration: bool
+    grav_deflection: bool
+    nutation: bool
+    refraction: bool
+    pressure_mbar: float
+    temperature_c: float
+    relative_humidity: float
+    obliquity_deg: float
+    coordinate_frames: list[str]
+
+
+class SkyPositionReductionResponse(_StrictModel):
+    result: SkyPositionResponse
+    reduction: SkyPositionReductionTruthResponse
+
+
 __all__ = [
     "PlanetPositionRequest",
     "PlanetPositionResponse",
+    "PlanetPositionReductionResponse",
+    "PlanetPositionReductionTruthResponse",
+    "PositionObserverContextResponse",
+    "PositionPipelineTruthResponse",
     "SkyPositionRequest",
     "SkyPositionResponse",
+    "SkyPositionReductionResponse",
+    "SkyPositionReductionTruthResponse",
 ]

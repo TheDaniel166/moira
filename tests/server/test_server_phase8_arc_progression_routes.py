@@ -175,6 +175,31 @@ def test_planetary_arc_route_matches_engine(client_with_engine: TestClient) -> N
     assert body["relation"]["reference_name"] == "Mars"
 
 
+@pytest.mark.requires_ephemeris
+def test_arc_reduction_route_exposes_directed_arc_truth(client_with_engine: TestClient) -> None:
+    resp = client_with_engine.post(
+        "/v1/progressions/arc/reduction",
+        json={
+            "natal": _NATAL_PAYLOAD,
+            "target_dt": _TARGET_ISO,
+            "method": "planetary_arc",
+            "arc_body": "Mars",
+        },
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["result"]["chart_type"] == "Planetary Arc Direction (Mars)"
+    assert body["reduction"]["classification"]["uses_directed_arc"] is True
+    assert body["reduction"]["classification"]["uses_reference_body"] is True
+    assert body["reduction"]["computation_truth"]["reference_body"] == "Mars"
+    assert body["reduction"]["stage_sequence"][-1] == "directed_chart_assembly"
+    assert (
+        body["reduction"]["computation_truth"]["directed_arc_deg"]
+        == pytest.approx(body["result"]["solar_arc_deg"], rel=1e-6)
+    )
+
+
 # ---------------------------------------------------------------------------
 # P8-03 time-key parity witnesses
 # ---------------------------------------------------------------------------
@@ -247,6 +272,22 @@ def test_quotidian_solar_progression_route_matches_engine(client_with_engine: Te
     assert body["positions"]["Sun"]["longitude"] == pytest.approx(
         direct.positions["Sun"].longitude, rel=1e-6
     )
+
+
+@pytest.mark.requires_ephemeris
+def test_time_key_reduction_route_exposes_stepped_key_truth(client_with_engine: TestClient) -> None:
+    resp = client_with_engine.post(
+        "/v1/progressions/time-key/reduction",
+        json={"natal": _NATAL_PAYLOAD, "target_dt": _TARGET_ISO, "method": "tertiary_ii"},
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["result"]["chart_type"] == "Tertiary II Progression"
+    assert body["reduction"]["classification"]["uses_stepped_key"] is True
+    assert body["reduction"]["computation_truth"]["stepped_years"] is not None
+    assert body["reduction"]["computation_truth"]["doctrine"]["doctrine_family"] == "time_key"
+    assert body["reduction"]["stage_sequence"][-1] == "progressed_chart_assembly"
 
 
 # ---------------------------------------------------------------------------

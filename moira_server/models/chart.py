@@ -6,7 +6,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict
 
-from .positions import PlanetPositionResponse, SkyPositionResponse
+from .positions import PlanetPositionResponse, PositionObserverContextResponse
 
 
 class _StrictModel(BaseModel):
@@ -40,6 +40,51 @@ class ChartResponse(_StrictModel):
     nodes: dict[str, NodePositionResponse]
 
 
+class ChartPlanetReductionSummaryResponse(_StrictModel):
+    source_vessel: str
+    selection_surface: str
+    apparent: bool
+    aberration: bool
+    grav_deflection: bool
+    nutation: bool
+    frame: str
+    center: str
+    topocentric_applied: bool
+    stage_sequence: list[str]
+
+
+class ChartNodeReductionSummaryResponse(_StrictModel):
+    source_vessel: str
+    source_surface: str
+    stage_sequence: list[str]
+
+
+class ChartReductionTruthResponse(_StrictModel):
+    engine_surface: str
+    source_vessel: str
+    requested_datetime: str
+    normalized_datetime_utc: str
+    jd_ut: float
+    jd_ut1: float
+    jd_tt: float
+    delta_t_seconds: float
+    obliquity_deg: float
+    requested_bodies: list[str] | None = None
+    returned_bodies: list[str]
+    include_nodes_requested: bool
+    include_nodes_returned: bool
+    topocentric_requested: bool
+    observer: PositionObserverContextResponse
+    stage_sequence: list[str]
+    planet_reductions: dict[str, ChartPlanetReductionSummaryResponse]
+    node_reductions: dict[str, ChartNodeReductionSummaryResponse]
+
+
+class ChartReductionResponse(_StrictModel):
+    result: ChartResponse
+    reduction: ChartReductionTruthResponse
+
+
 class HousesRequest(_StrictModel):
     dt: datetime
     latitude: float
@@ -68,8 +113,12 @@ class HousesResponse(_StrictModel):
 
 
 __all__ = [
+    "ChartPlanetReductionSummaryResponse",
+    "ChartReductionResponse",
+    "ChartReductionTruthResponse",
     "ChartRequest",
     "ChartResponse",
+    "ChartNodeReductionSummaryResponse",
     "HousesRequest",
     "HousesResponse",
     "NodePositionResponse",

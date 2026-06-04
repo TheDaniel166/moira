@@ -19,18 +19,26 @@ from moira.primary_directions import (
 
 from ..models.primary_directions import (
     PrimaryArcResponse,
+    PrimaryDirectionsArcsReductionResponse,
     PrimaryDirectionRelationProfileResponse,
     PrimaryDirectionRelationResponse,
     PrimaryDirectionsAggregateProfileResponse,
     PrimaryDirectionsArcsResponse,
+    PrimaryDirectionsArcsReductionTruthResponse,
     PrimaryDirectionsNetworkEdgeResponse,
     PrimaryDirectionsNetworkNodeResponse,
     PrimaryDirectionsNetworkProfileResponse,
+    PrimaryDirectionsNetworkReductionResponse,
     PrimaryDirectionsProfileResponse,
+    PrimaryDirectionsProfileReductionResponse,
     PrimaryDirectionsSignificatorProfileResponse,
+    PrimaryDirectionsHouseContextResponse,
+    PrimaryDirectionsResolvedPolicyResponse,
     PrimaryDirectionsSpeculumResponse,
     SpeculumEntryResponse,
 )
+from .positions import _serialize_observer_context
+from ..services.primary_directions import PrimaryDirectionsArcsReductionContext
 
 
 def _serialize_speculum_entry(e: SpeculumEntry) -> SpeculumEntryResponse:
@@ -98,6 +106,92 @@ def serialize_arcs(
             )
             for a in arcs
         ]
+    )
+
+
+def serialize_arcs_with_reduction(
+    arcs: list[PrimaryArc],
+    reduction: PrimaryDirectionsArcsReductionContext,
+    chosen_key: str | None = None,
+) -> PrimaryDirectionsArcsReductionResponse:
+    """Serialize arc search results together with reduction truth."""
+
+    return PrimaryDirectionsArcsReductionResponse(
+        result=serialize_arcs(arcs, chosen_key=chosen_key),
+        reduction=_serialize_reduction_truth(reduction, result_surface="primary_direction_arc_search"),
+    )
+
+
+def _serialize_reduction_truth(
+    reduction: PrimaryDirectionsArcsReductionContext,
+    *,
+    result_surface: str,
+) -> PrimaryDirectionsArcsReductionTruthResponse:
+    return PrimaryDirectionsArcsReductionTruthResponse(
+        engine_surface="moira.find_primary_arcs",
+        result_surface=result_surface,
+        requested_datetime=reduction.requested_datetime,
+        normalized_datetime_utc=reduction.normalized_datetime_utc,
+        jd_ut=reduction.jd_ut,
+        jd_tt=reduction.jd_tt,
+        delta_t_seconds=reduction.delta_t_seconds,
+        observer=_serialize_observer_context(reduction.observer),
+        requested_bodies=reduction.requested_bodies,
+        include_nodes_requested=reduction.include_nodes_requested,
+        search_mode=reduction.search_mode,
+        max_arc=reduction.max_arc,
+        significators_requested=reduction.significators_requested,
+        promissors_requested=reduction.promissors_requested,
+        include_relations_requested=reduction.include_relations_requested,
+        include_condition_requested=reduction.include_condition_requested,
+        submitted_arc_count=reduction.submitted_arc_count,
+        chosen_key=reduction.chosen_key,
+        house_context=PrimaryDirectionsHouseContextResponse(
+            requested_system=reduction.house_context.requested_system,
+            effective_system=reduction.house_context.effective_system,
+            fallback=reduction.house_context.fallback,
+            fallback_reason=reduction.house_context.fallback_reason,
+        ),
+        resolved_policy=PrimaryDirectionsResolvedPolicyResponse(
+            method=reduction.resolved_policy.method,
+            space=reduction.resolved_policy.space,
+            include_converse=reduction.resolved_policy.include_converse,
+            converse_doctrine=reduction.resolved_policy.converse_doctrine,
+            key=reduction.resolved_policy.key,
+            key_source=reduction.resolved_policy.key_source,
+            latitude_doctrine=reduction.resolved_policy.latitude_doctrine,
+            latitude_source=reduction.resolved_policy.latitude_source,
+            perfection_kind=reduction.resolved_policy.perfection_kind,
+            admitted_relation_kinds=reduction.resolved_policy.admitted_relation_kinds,
+            admitted_significator_classes=reduction.resolved_policy.admitted_significator_classes,
+            admitted_promissor_classes=reduction.resolved_policy.admitted_promissor_classes,
+        ),
+        stage_sequence=reduction.stage_sequence,
+    )
+
+
+def serialize_profile_with_reduction(
+    agg: PrimaryDirectionsAggregateProfile,
+    reduction: PrimaryDirectionsArcsReductionContext,
+    *,
+    chosen_key: str | None = None,
+    include_condition: bool = False,
+) -> PrimaryDirectionsProfileReductionResponse:
+    return PrimaryDirectionsProfileReductionResponse(
+        result=serialize_profile(agg, chosen_key=chosen_key, include_condition=include_condition),
+        reduction=_serialize_reduction_truth(reduction, result_surface="primary_direction_aggregate_profile"),
+    )
+
+
+def serialize_network_with_reduction(
+    net: PrimaryDirectionsNetworkProfile,
+    reduction: PrimaryDirectionsArcsReductionContext,
+    *,
+    chosen_key: str | None = None,
+) -> PrimaryDirectionsNetworkReductionResponse:
+    return PrimaryDirectionsNetworkReductionResponse(
+        result=serialize_network(net, chosen_key=chosen_key),
+        reduction=_serialize_reduction_truth(reduction, result_surface="primary_direction_network_profile"),
     )
 
 
@@ -241,7 +335,10 @@ def serialize_network(
 
 __all__ = [
     "serialize_arcs",
+    "serialize_arcs_with_reduction",
     "serialize_network",
+    "serialize_network_with_reduction",
     "serialize_profile",
+    "serialize_profile_with_reduction",
     "serialize_speculum",
 ]

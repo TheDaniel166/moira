@@ -20,8 +20,11 @@ from moira import Moira
 from ..dependencies import get_engine
 from ..models.primary_directions import (
     PrimaryDirectionRelationProfileResponse,
+    PrimaryDirectionsArcsReductionResponse,
     PrimaryDirectionsBaseRequest,
+    PrimaryDirectionsNetworkReductionResponse,
     PrimaryDirectionsNetworkResponse,
+    PrimaryDirectionsProfileReductionResponse,
     PrimaryDirectionsProfileResponse,
     PrimaryDirectionsRelationsRequest,
     PrimaryDirectionsSearchRequest,
@@ -30,14 +33,20 @@ from ..models.primary_directions import (
 )
 from ..serializers.primary_directions import (
     serialize_arcs,
+    serialize_arcs_with_reduction,
     serialize_network,
+    serialize_network_with_reduction,
     serialize_profile,
+    serialize_profile_with_reduction,
     serialize_speculum,
 )
 from ..services.primary_directions import (
     compute_arcs_service,
+    compute_arcs_with_reduction_service,
     compute_network_service,
+    compute_network_with_reduction_service,
     compute_profile_service,
+    compute_profile_with_reduction_service,
     compute_relations_service,
     compute_speculum_service,
 )
@@ -99,6 +108,16 @@ def primary_directions_arcs_route(
     return serialize_arcs(arcs, chosen_key=chosen_key)
 
 
+@router.post("/primary-directions/arcs/reduction", response_model=PrimaryDirectionsArcsReductionResponse)
+def primary_directions_arcs_reduction_route(
+    request: PrimaryDirectionsSearchRequest,
+    engine: Moira = Depends(get_engine),
+) -> PrimaryDirectionsArcsReductionResponse:
+    arcs, reduction = compute_arcs_with_reduction_service(engine, request)
+    chosen_key = _get_chosen_key(request)
+    return serialize_arcs_with_reduction(arcs, reduction, chosen_key=chosen_key)
+
+
 @router.post("/primary-directions/profile", response_model=PrimaryDirectionsProfileResponse)
 def primary_directions_profile_route(
     request: PrimaryDirectionsSearchRequest,
@@ -143,6 +162,22 @@ def primary_directions_profile_route(
         return PrimaryDirectionsProfileResponse(aggregate=empty_agg)
 
 
+@router.post("/primary-directions/profile/reduction", response_model=PrimaryDirectionsProfileReductionResponse)
+def primary_directions_profile_reduction_route(
+    request: PrimaryDirectionsSearchRequest,
+    engine: Moira = Depends(get_engine),
+) -> PrimaryDirectionsProfileReductionResponse:
+    profile, reduction = compute_profile_with_reduction_service(engine, request)
+    chosen_key = _get_chosen_key(request)
+    include_cond = getattr(request, "include_condition", False)
+    return serialize_profile_with_reduction(
+        profile,
+        reduction,
+        chosen_key=chosen_key,
+        include_condition=include_cond,
+    )
+
+
 @router.post("/primary-directions/network", response_model=PrimaryDirectionsNetworkResponse)
 def primary_directions_network_route(
     request: PrimaryDirectionsSearchRequest,
@@ -178,6 +213,16 @@ def primary_directions_network_route(
             isolated=[],
         )
         return PrimaryDirectionsNetworkResponse(network=empty_net)
+
+
+@router.post("/primary-directions/network/reduction", response_model=PrimaryDirectionsNetworkReductionResponse)
+def primary_directions_network_reduction_route(
+    request: PrimaryDirectionsSearchRequest,
+    engine: Moira = Depends(get_engine),
+) -> PrimaryDirectionsNetworkReductionResponse:
+    network, reduction = compute_network_with_reduction_service(engine, request)
+    chosen_key = _get_chosen_key(request)
+    return serialize_network_with_reduction(network, reduction, chosen_key=chosen_key)
 
 
 # Phase 2 dedicated lightweight endpoint for rich relation evaluation on submitted arcs

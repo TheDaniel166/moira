@@ -37,6 +37,51 @@ The `Moira` facade exposes **70+ public methods** organized into ten sovereign d
 
 ---
 
+### 1.3 REST Reduction Visibility Contract
+
+The REST access surface must not collapse a facade-visible reduction pipeline
+into an opaque final-only payload by default and then leave no lawful path to
+recover the omitted truth.
+
+This is a hard service-layer rule, derived from Moira's light-box doctrine:
+- visible computational truth must remain requestable across transport
+- explicit engine policy must remain inspectable across transport
+- fallback, branch, and effective-vs-requested truth must not disappear at the
+  serializer boundary
+
+Therefore, for any REST endpoint backed by a facade or engine call that carries
+reduction truth, the transport contract must support one of the following:
+
+1. compact final result plus explicit reduction expansion flags
+2. compact final result plus a dedicated sibling reduction endpoint
+3. a dual-surface response shape with separate `result` and `reduction`
+   sections
+
+What the REST layer must preserve when the underlying engine surface exposes it:
+- normalized and derived inputs that materially affect computation
+- policy actually applied
+- requested vs. effective system truth
+- fallback or branch decisions
+- classification truth
+- intermediate reduction stages or summary traces
+- warnings, ambiguities, and provenance-bearing notes
+
+What the REST layer may do for transport economy:
+- omit heavy reduction payloads by default
+- expose reduction detail only when explicitly requested
+- summarize intermediate stages rather than mirror every internal object 1:1
+
+What the REST layer may not do:
+- permanently hide reduction truth that exists on the facade path
+- force network callers to accept black-box results where direct Python callers
+  can inspect the reduction
+- silently discard policy, fallback, or branch truth during serialization
+
+This rule applies repository-wide to `moira_server` models, serializers,
+services, and routers.
+
+---
+
 ## 2. The Ephemeris Substrate (SPK Reader & DE441)
 
 ### 2.1 The Kernel Gateway

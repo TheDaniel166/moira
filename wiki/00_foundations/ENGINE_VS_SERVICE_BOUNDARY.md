@@ -77,6 +77,8 @@ That includes:
 - retries, batching, progress reporting, and job control
 - user-meaningful workflows built from engine primitives
 - policy choices that are about application behavior rather than mathematical truth
+- transport adaptation for REST or other network surfaces, provided that
+  transport economy does not hide engine truth that the facade already exposes
 
 The service layer should answer questions like:
 
@@ -162,7 +164,34 @@ The engine should not own:
 
 These things may call the engine, but they should not be embedded into it.
 
----
+### 6.1 Reduction Visibility Rule
+
+When a service layer serializes engine results for transport, it must not turn a
+truth-bearing engine call into a black box merely because the output is crossing
+HTTP.
+
+If the facade path exposes:
+- applied policy
+- effective vs. requested system truth
+- fallback or branch decisions
+- classification truth
+- reduction-stage or intermediate vessels
+
+then the transport contract must preserve a lawful way to request or receive
+that truth as well.
+
+Transport economy is allowed.
+Transport opacity is not.
+
+This means a REST surface may:
+- return a compact final result by default
+- gate heavier reduction detail behind explicit inclusion flags or dedicated
+  reduction endpoints
+
+but it may not define the public network contract such that the reduction
+pipeline becomes in principle unavailable to the caller.
+
+--- 
 
 ## 7. Validation Artifacts
 

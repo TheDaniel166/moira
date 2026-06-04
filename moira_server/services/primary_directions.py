@@ -8,6 +8,8 @@ See docs/architecture/P8-14_PRIMARY_DIRECTIONS_FIRST_PASS.md for scope.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from moira import Moira
 from moira.constants import HouseSystem
 from moira.primary_directions import (
@@ -23,6 +25,119 @@ from ..models.primary_directions import (
     PrimaryDirectionsSearchRequest,
 )
 from ._shared import require_aware_datetime, require_supported_chart_bodies
+
+
+_PD_STAGE_SEQUENCE = [
+    "datetime_to_jd",
+    "chart_assembly",
+    "houses_assembly",
+    "policy_resolution",
+    "primary_arc_search",
+]
+_PD_SUBMITTED_STAGE_SEQUENCE = [
+    "datetime_to_jd",
+    "chart_assembly",
+    "houses_assembly",
+    "policy_resolution",
+    "submitted_arc_reuse",
+]
+
+
+@dataclass(frozen=True, slots=True)
+class PrimaryDirectionsResolvedPolicyContext:
+    method: str
+    space: str
+    include_converse: bool
+    converse_doctrine: str
+    key: str
+    key_source: str
+    latitude_doctrine: str
+    latitude_source: str
+    perfection_kind: str
+    admitted_relation_kinds: list[str]
+    admitted_significator_classes: list[str]
+    admitted_promissor_classes: list[str]
+
+
+@dataclass(frozen=True, slots=True)
+class PrimaryDirectionsHouseContext:
+    requested_system: str
+    effective_system: str
+    fallback: bool
+    fallback_reason: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class PrimaryDirectionsObserverContext:
+    latitude: float
+    longitude: float
+    elevation_m: float
+    local_sidereal_time_deg: float | None
+
+
+@dataclass(frozen=True, slots=True)
+class PrimaryDirectionsArcsReductionContext:
+    requested_datetime: str
+    normalized_datetime_utc: str
+    jd_ut: float
+    jd_tt: float
+    delta_t_seconds: float
+    observer: PrimaryDirectionsObserverContext
+    requested_bodies: list[str] | None
+    include_nodes_requested: bool
+    search_mode: str
+    max_arc: float
+    significators_requested: list[str] | None
+    promissors_requested: list[str] | None
+    include_relations_requested: bool
+    include_condition_requested: bool
+    submitted_arc_count: int
+    chosen_key: str
+    house_context: PrimaryDirectionsHouseContext
+    resolved_policy: PrimaryDirectionsResolvedPolicyContext
+    stage_sequence: list[str]
+
+
+def _build_arcs_reduction_context(
+    chart,
+    houses,
+    request: PrimaryDirectionsSearchRequest,
+    resolved_policy: PrimaryDirectionsPolicy | None,
+) -> PrimaryDirectionsArcsReductionContext:
+    chosen_key, _ = _chosen_key_and_source(request)
+    observer_lon = request.observer_lon or request.longitude
+    observer = PrimaryDirectionsObserverContext(
+        latitude=request.observer_lat,
+        longitude=observer_lon,
+        elevation_m=request.observer_elev_m,
+        local_sidereal_time_deg=None,
+    )
+    return PrimaryDirectionsArcsReductionContext(
+        requested_datetime=request.dt.isoformat(),
+        normalized_datetime_utc=chart.datetime_utc.isoformat(),
+        jd_ut=chart.jd_ut,
+        jd_tt=chart.jd_ut + (chart.delta_t / 86400.0),
+        delta_t_seconds=chart.delta_t,
+        observer=observer,
+        requested_bodies=(list(request.bodies) if request.bodies is not None else None),
+        include_nodes_requested=request.include_nodes,
+        search_mode=("submitted_arcs" if request.submitted_arcs else "engine_search"),
+        max_arc=request.max_arc,
+        significators_requested=(list(request.significators) if request.significators is not None else None),
+        promissors_requested=(list(request.promissors) if request.promissors is not None else None),
+        include_relations_requested=request.include_relations,
+        include_condition_requested=request.include_condition,
+        submitted_arc_count=(len(request.submitted_arcs) if request.submitted_arcs is not None else 0),
+        chosen_key=chosen_key,
+        house_context=PrimaryDirectionsHouseContext(
+            requested_system=request.house_system or HouseSystem.PLACIDUS,
+            effective_system=houses.effective_system,
+            fallback=houses.fallback,
+            fallback_reason=houses.fallback_reason,
+        ),
+        resolved_policy=_resolved_policy_context(resolved_policy, request),
+        stage_sequence=list(_PD_SUBMITTED_STAGE_SEQUENCE if request.submitted_arcs else _PD_STAGE_SEQUENCE),
+    )
 
 
 def _build_chart_and_houses(engine: Moira, request: PrimaryDirectionsBaseRequest):
@@ -46,6 +161,53 @@ def _build_chart_and_houses(engine: Moira, request: PrimaryDirectionsBaseRequest
     )
 
     return chart, houses
+
+
+def _chosen_key_and_source(request: PrimaryDirectionsSearchRequest) -> tuple[str, str]:
+    if not request.policy:
+        return "NAIBOD", "engine_default"
+    if request.policy.key:
+        return request.policy.key, "explicit"
+
+    preset = (request.policy.preset or "").lower()
+    conventional_keys = {
+        "placidian_mundane": "NAIBOD",
+        "ptolemy_semiarc": "PTOLEMY",
+        "regiomontanus": "NAIBOD",
+        "campanus": "NAIBOD",
+        "meridian": "PTOLEMY",
+        "morinus": "NAIBOD",
+        "topocentric": "NAIBOD",
+    }
+    if preset in conventional_keys:
+        return conventional_keys[preset], "preset_convention"
+    return "NAIBOD", "engine_default"
+
+
+def _resolved_policy_context(
+    resolved_policy: PrimaryDirectionsPolicy | None,
+    request: PrimaryDirectionsSearchRequest,
+) -> PrimaryDirectionsResolvedPolicyContext:
+    policy = resolved_policy if resolved_policy is not None else PrimaryDirectionsPolicy()
+    chosen_key, key_source = _chosen_key_and_source(request)
+    return PrimaryDirectionsResolvedPolicyContext(
+        method=str(policy.method),
+        space=str(policy.space),
+        include_converse=policy.include_converse,
+        converse_doctrine=str(policy.converse_doctrine),
+        key=chosen_key,
+        key_source=key_source,
+        latitude_doctrine=str(policy.latitude_policy.doctrine),
+        latitude_source=str(policy.latitude_source_policy.source),
+        perfection_kind=str(policy.perfection_policy.kind),
+        admitted_relation_kinds=sorted(str(kind) for kind in policy.relation_policy.admitted_kinds),
+        admitted_significator_classes=sorted(
+            str(kind) for kind in policy.target_policy.admitted_significator_classes
+        ),
+        admitted_promissor_classes=sorted(
+            str(kind) for kind in policy.target_policy.admitted_promissor_classes
+        ),
+    )
 
 
 def compute_speculum_service(
@@ -170,13 +332,17 @@ def compute_arcs_service(
     request: PrimaryDirectionsSearchRequest,
 ) -> list:
     """Return arcs, either by searching or using client-submitted arcs (Phase 2)."""
+    chart, houses = _build_chart_and_houses(engine, request)
+    return _compute_arcs_from_chart_and_houses(chart, houses, request)
+
+
+def _compute_arcs_from_chart_and_houses(chart, houses, request: PrimaryDirectionsSearchRequest) -> list:
+    """Return arcs from prebuilt chart and houses contexts."""
     # Phase 2 re-evaluation support: if client submitted arcs, use them directly.
     if request.submitted_arcs:
         resolved_policy = _resolve_policy(request)
         return _convert_submitted_arcs(request.submitted_arcs, resolved_policy=resolved_policy)
 
-    # Normal search path (Phase 1 behavior)
-    chart, houses = _build_chart_and_houses(engine, request)
     geo_lat = request.observer_lat
 
     resolved_policy = _resolve_policy(request)
@@ -215,6 +381,45 @@ def compute_arcs_service(
         call_kwargs["policy"] = resolved_policy
 
     return find_primary_arcs(**call_kwargs)
+
+
+def compute_arcs_with_reduction_service(
+    engine: Moira,
+    request: PrimaryDirectionsSearchRequest,
+) -> tuple[list, PrimaryDirectionsArcsReductionContext]:
+    """Return arcs together with transport-safe reduction truth."""
+
+    chart, houses = _build_chart_and_houses(engine, request)
+    resolved_policy = _resolve_policy(request)
+    arcs = _compute_arcs_from_chart_and_houses(chart, houses, request)
+    reduction = _build_arcs_reduction_context(chart, houses, request, resolved_policy)
+    return arcs, reduction
+
+
+def compute_profile_with_reduction_service(
+    engine: Moira,
+    request: PrimaryDirectionsSearchRequest,
+):
+    """Return aggregate profile together with transport-safe reduction truth."""
+
+    chart, houses = _build_chart_and_houses(engine, request)
+    resolved_policy = _resolve_policy(request)
+    profile = compute_profile_service(engine, request)
+    reduction = _build_arcs_reduction_context(chart, houses, request, resolved_policy)
+    return profile, reduction
+
+
+def compute_network_with_reduction_service(
+    engine: Moira,
+    request: PrimaryDirectionsSearchRequest,
+):
+    """Return network profile together with transport-safe reduction truth."""
+
+    chart, houses = _build_chart_and_houses(engine, request)
+    resolved_policy = _resolve_policy(request)
+    network = compute_network_service(engine, request)
+    reduction = _build_arcs_reduction_context(chart, houses, request, resolved_policy)
+    return network, reduction
 
 
 def _convert_submitted_arcs(submitted: list, resolved_policy: "PrimaryDirectionsPolicy | None" = None) -> list:
@@ -393,7 +598,10 @@ def _resolve_policy_for_relations(req) -> "PrimaryDirectionsPolicy | None":
 
 __all__ = [
     "compute_arcs_service",
+    "compute_arcs_with_reduction_service",
     "compute_network_service",
+    "compute_network_with_reduction_service",
     "compute_profile_service",
+    "compute_profile_with_reduction_service",
     "compute_speculum_service",
 ]

@@ -217,6 +217,84 @@ class ProgressedChartResponse(_StrictModel):
     condition_profile: ProgressionConditionProfileResponse | None
 
 
+class ProgressionDoctrineTruthResponse(_StrictModel):
+    technique_name: str
+    doctrine_family: str
+    life_unit: str
+    ephemeris_unit: str
+    rate_mode: str
+    application_mode: str
+    coordinate_system: str
+    converse: bool
+
+
+class ProgressionComputationTruthResponse(_StrictModel):
+    doctrine: ProgressionDoctrineTruthResponse
+    target_jd_ut: float
+    age_years: float
+    progressed_jd_ut: float
+    directed_arc_deg: float | None = None
+    reference_body: str | None = None
+    reference_start_value: float | None = None
+    reference_end_value: float | None = None
+    stepped_years: int | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    house_system: str | None = None
+
+
+class ProgressionDoctrineClassificationResponse(_StrictModel):
+    technique_name: str
+    doctrine_family: str
+    rate_mode: str
+    application_mode: str
+    coordinate_system: str
+    converse: bool
+
+
+class ProgressionComputationClassificationResponse(_StrictModel):
+    doctrine: ProgressionDoctrineClassificationResponse
+    uses_directed_arc: bool
+    uses_reference_body: bool
+    uses_stepped_key: bool
+    uses_house_frame: bool
+
+
+class ProgressedChartReductionTruthResponse(_StrictModel):
+    engine_surface: str
+    requested_natal_datetime: str
+    requested_target_datetime: str
+    requested_bodies: list[str] | None = None
+    computation_truth: ProgressionComputationTruthResponse
+    classification: ProgressionComputationClassificationResponse | None = None
+    stage_sequence: list[str]
+
+
+class ProgressedChartReductionResponse(_StrictModel):
+    result: ProgressedChartResponse
+    reduction: ProgressedChartReductionTruthResponse
+
+
+class ProgressedHouseFrameArcReductionTruthResponse(_StrictModel):
+    engine_surface: str
+    requested_natal_datetime: str
+    requested_target_datetime: str
+    requested_latitude: float
+    requested_longitude: float
+    requested_house_system: str | None = None
+    requested_method: str
+    requested_converse: bool
+    requested_bodies: list[str] | None = None
+    computation_truth: ProgressionComputationTruthResponse
+    classification: ProgressionComputationClassificationResponse | None = None
+    stage_sequence: list[str]
+
+
+class ProgressedHouseFrameArcReductionResponse(_StrictModel):
+    result: ProgressedChartResponse
+    reduction: ProgressedHouseFrameArcReductionTruthResponse
+
+
 class ProgressedDeclinationChartResponse(_StrictModel):
     chart_type: str
     natal_jd_ut: float
@@ -229,6 +307,29 @@ class ProgressedDeclinationChartResponse(_StrictModel):
     condition_state: str
     relation: ProgressionRelationResponse
     condition_profile: ProgressionConditionProfileResponse
+
+
+class ProgressedDeclinationChartReductionResponse(_StrictModel):
+    result: ProgressedDeclinationChartResponse
+    reduction: ProgressedChartReductionTruthResponse
+
+
+class ProgressedHouseFrameReductionTruthResponse(_StrictModel):
+    engine_surface: str
+    requested_natal_datetime: str
+    requested_target_datetime: str
+    requested_latitude: float
+    requested_longitude: float
+    requested_house_system: str | None = None
+    requested_bodies: list[str] | None = None
+    computation_truth: ProgressionComputationTruthResponse
+    classification: ProgressionComputationClassificationResponse | None = None
+    stage_sequence: list[str]
+
+
+class ProgressedHouseFrameReductionResponse(_StrictModel):
+    result: ProgressedHouseFrameResponse
+    reduction: ProgressedHouseFrameReductionTruthResponse
 
 
 # ---------------------------------------------------------------------------
@@ -272,6 +373,24 @@ class ProgressionConditionNetworkProfileResponse(_StrictModel):
     target_node_count: int
     most_connected_nodes: list[str]
     isolated_nodes: list[str]
+
+
+class ProgressionAggregateReductionTruthResponse(_StrictModel):
+    engine_surface: str
+    chart_item_count: int
+    house_frame_item_count: int
+    item_profiles: list[ProgressionConditionProfileResponse]
+    stage_sequence: list[str]
+
+
+class ProgressionChartConditionProfileReductionResponse(_StrictModel):
+    result: ProgressionChartConditionProfileResponse
+    reduction: ProgressionAggregateReductionTruthResponse
+
+
+class ProgressionConditionNetworkProfileReductionResponse(_StrictModel):
+    result: ProgressionConditionNetworkProfileResponse
+    reduction: ProgressionAggregateReductionTruthResponse
 
 
 # ---------------------------------------------------------------------------
@@ -374,9 +493,23 @@ __all__ = [
     "ProgressionRelationResponse",
     "ProgressionConditionProfileResponse",
     "ProgressedChartResponse",
+    "ProgressedChartReductionResponse",
+    "ProgressedChartReductionTruthResponse",
+    "ProgressedHouseFrameArcReductionResponse",
+    "ProgressedHouseFrameArcReductionTruthResponse",
+    "ProgressedDeclinationChartReductionResponse",
+    "ProgressedHouseFrameReductionResponse",
+    "ProgressedHouseFrameReductionTruthResponse",
     "ProgressedDeclinationChartResponse",
     "ProgressionChartConditionProfileResponse",
+    "ProgressionChartConditionProfileReductionResponse",
+    "ProgressionComputationClassificationResponse",
+    "ProgressionComputationTruthResponse",
+    "ProgressionAggregateReductionTruthResponse",
+    "ProgressionConditionNetworkProfileReductionResponse",
     "ProgressionNetworkNodeResponse",
     "ProgressionNetworkEdgeResponse",
     "ProgressionConditionNetworkProfileResponse",
+    "ProgressionDoctrineClassificationResponse",
+    "ProgressionDoctrineTruthResponse",
 ]

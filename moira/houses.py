@@ -1173,6 +1173,49 @@ def _asc_from_armc(armc: float, obliquity: float, lat: float) -> float:
     return alt if _adist(alt, expected) < _adist(raw, expected) else raw
 
 
+def _vertex_from_armc(armc: float, obliquity: float, lat: float) -> float:
+    """
+    Vertex: western intersection of the prime vertical with the ecliptic.
+
+    Derivation: cross product of the prime vertical's pole and the ecliptic's
+    pole in equatorial Cartesian coordinates, then projected to ecliptic longitude.
+
+        n_pv  = (cos(ARMC)·sin(lat), sin(ARMC)·sin(lat), −cos(lat))
+        n_ecl = (0, −sin(ε), cos(ε))
+        intersection → y = −cos(ARMC), x = sin(ARMC)·cos(ε) − cot(lat)·sin(ε)
+        Vertex = atan2(y, x)  [western branch]  % 360°
+
+    Degenerate at lat = 0° (equatorial observer, cot → ∞) and at lat = ±90°.
+    Returns 0.0 in those cases.
+
+    Raises:
+        None under normal operation.
+
+    Side effects:
+        None
+    """
+    sin_lat = math.sin(lat * DEG2RAD)
+    if abs(sin_lat) < 1e-9:
+        return 0.0
+
+    armc_r = armc * DEG2RAD
+    eps_r  = obliquity * DEG2RAD
+    lat_r  = lat * DEG2RAD
+
+    y = -math.cos(armc_r)
+    x = math.sin(armc_r) * math.cos(eps_r) - (math.cos(lat_r) / sin_lat) * math.sin(eps_r)
+
+    raw  = math.atan2(y, x) * RAD2DEG % 360.0
+    alt  = (raw + 180.0) % 360.0
+    west = (armc - 90.0) % 360.0
+
+    def _adist(a: float, b: float) -> float:
+        d = abs(a - b) % 360.0
+        return d if d <= 180.0 else 360.0 - d
+
+    return alt if _adist(alt, west) < _adist(raw, west) else raw
+
+
 def _dot3(a: tuple[float, float, float], b: tuple[float, float, float]) -> float:
     """3D dot product for internal spherical geometry helpers."""
     return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
@@ -3262,11 +3305,6 @@ def calculate_houses(
     mc      = _mc_from_armc(armc, obliquity, latitude)
     asc     = _asc_from_armc(armc, obliquity, latitude)
 
-    # Vertex: western intersection of the prime vertical with the ecliptic.
-    # Formula from Meeus §24: treat ARMC+90° as a new ARMC and negate latitude.
-    vertex      = _asc_from_armc((armc + 90.0) % 360.0, obliquity, -latitude)
-    anti_vertex = (vertex + 180.0) % 360.0
-
     sun_lon = sun_longitude
     if sun_lon is None and system in {HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN}:
         sun_lon = _solar_house_anchor_longitude(jd_ut)
@@ -4302,7 +4340,7 @@ def houses_from_armc(
     mc          = _mc_from_armc(armc, obliquity, lat)
     asc         = _asc_from_armc(armc, obliquity, lat)
     east_point  = _project_ra_morinus((armc + 90.0) % 360.0, obliquity)
-    vertex      = _asc_from_armc((armc + 90.0) % 360.0, obliquity, -lat)
+    vertex      = _vertex_from_armc(armc, obliquity, lat)
     anti_vertex = (vertex + 180.0) % 360.0
     critical_lat = 90.0 - obliquity
     polar = abs(lat) >= critical_lat and system in _POLAR_SYSTEMS

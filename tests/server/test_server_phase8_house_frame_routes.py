@@ -17,6 +17,7 @@ from moira.progressions import (
     converse_ascendant_arc,
     daily_house_frame,
     progression_chart_condition_profile,
+    progression_condition_network_profile,
     secondary_progression,
     vertex_arc,
 )
@@ -70,6 +71,26 @@ def test_house_frame_route_matches_engine(client_with_engine: TestClient) -> Non
     assert body["relation_kind"] == direct.relation_kind
     assert body["condition_state"] == direct.condition_state
     assert body["condition_profile"]["uses_house_frame"] is True
+
+
+@pytest.mark.requires_ephemeris
+def test_house_frame_reduction_route_exposes_house_frame_truth(
+    client_with_engine: TestClient,
+) -> None:
+    resp = client_with_engine.post("/v1/progressions/house-frame/reduction", json=_HF_PAYLOAD)
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["result"]["chart_type"] == "Daily Houses"
+    assert body["reduction"]["requested_latitude"] == pytest.approx(_LAT)
+    assert body["reduction"]["requested_longitude"] == pytest.approx(_LON)
+    assert body["reduction"]["computation_truth"]["doctrine"]["doctrine_family"] == "house_frame"
+    assert body["reduction"]["classification"]["uses_house_frame"] is True
+    assert body["reduction"]["stage_sequence"][-1] == "house_frame_assembly"
+    assert (
+        body["reduction"]["computation_truth"]["progressed_jd_ut"]
+        == pytest.approx(body["result"]["progressed_jd_ut"])
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -148,6 +169,31 @@ def test_vertex_arc_route_matches_engine(client_with_engine: TestClient) -> None
     assert body["relation"]["reference_name"] == "Vertex"
 
 
+@pytest.mark.requires_ephemeris
+def test_house_frame_arc_reduction_route_exposes_request_context(
+    client_with_engine: TestClient,
+) -> None:
+    resp = client_with_engine.post(
+        "/v1/progressions/house-frame/arc/reduction",
+        json={**_HF_PAYLOAD, "method": "ascendant_arc", "converse": True},
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["result"]["chart_type"] == "Converse Ascendant Arc Direction"
+    assert body["reduction"]["requested_method"] == "ascendant_arc"
+    assert body["reduction"]["requested_converse"] is True
+    assert body["reduction"]["requested_latitude"] == pytest.approx(_LAT)
+    assert body["reduction"]["requested_longitude"] == pytest.approx(_LON)
+    assert body["reduction"]["classification"]["uses_directed_arc"] is True
+    assert body["reduction"]["classification"]["uses_reference_body"] is True
+    assert body["reduction"]["stage_sequence"][-1] == "directed_chart_assembly"
+    assert (
+        body["reduction"]["computation_truth"]["directed_arc_deg"]
+        == pytest.approx(body["result"]["solar_arc_deg"], rel=1e-6)
+    )
+
+
 # ---------------------------------------------------------------------------
 # P8-05 completion: profile with house_frame_items
 # ---------------------------------------------------------------------------
@@ -190,6 +236,56 @@ def test_profile_accepts_house_frame_items_only(client_with_engine: TestClient) 
     assert body["profile_count"] == 1
     assert body["house_frame_count"] == 1
     assert body["time_key_count"] == 0
+
+
+@pytest.mark.requires_ephemeris
+def test_profile_reduction_exposes_mixed_aggregate_truth(client_with_engine: TestClient) -> None:
+    resp = client_with_engine.post(
+        "/v1/progressions/profile/reduction",
+        json={
+            "items": [{"natal": {"dt": _NATAL_ISO}, "target_dt": _TARGET_ISO}],
+            "house_frame_items": [_HF_PAYLOAD],
+        },
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["result"]["profile_count"] == 2
+    assert body["reduction"]["chart_item_count"] == 1
+    assert body["reduction"]["house_frame_item_count"] == 1
+    assert len(body["reduction"]["item_profiles"]) == 2
+    assert body["reduction"]["stage_sequence"][-1] == "aggregate_condition_profile"
+    assert any(
+        profile["uses_house_frame"] is True for profile in body["reduction"]["item_profiles"]
+    )
+
+
+@pytest.mark.requires_ephemeris
+def test_network_reduction_exposes_component_profiles(client_with_engine: TestClient) -> None:
+    natal_jd = jd_from_datetime(_NATAL_DT)
+    sp_chart = secondary_progression(natal_jd, _TARGET_DT)
+    hf_frame = daily_house_frame(natal_jd, _TARGET_DT, _LAT, _LON)
+    direct_net = progression_condition_network_profile(charts=[sp_chart], house_frames=[hf_frame])
+
+    resp = client_with_engine.post(
+        "/v1/progressions/network/reduction",
+        json={
+            "items": [{"natal": {"dt": _NATAL_ISO}, "target_dt": _TARGET_ISO}],
+            "house_frame_items": [_HF_PAYLOAD],
+        },
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["result"]["technique_node_count"] == direct_net.technique_node_count
+    assert body["reduction"]["chart_item_count"] == 1
+    assert body["reduction"]["house_frame_item_count"] == 1
+    assert len(body["reduction"]["item_profiles"]) == 2
+    assert body["reduction"]["stage_sequence"][-1] == "aggregate_condition_network"
+    assert any(
+        profile["relation_kind"] == "house_frame_projection"
+        for profile in body["reduction"]["item_profiles"]
+    )
 
 
 # ---------------------------------------------------------------------------
