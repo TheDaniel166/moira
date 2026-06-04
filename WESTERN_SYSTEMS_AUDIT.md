@@ -303,7 +303,8 @@ All under Urania, pre-edit ritual, minimal touch, spherical/vector geometry (the
 - **Core 22 coverage is excellent for traditional + many modern Western 12-house systems.** The 22 + 5 dedicated give near-complete coverage of what most Western practitioners request (Placidus, Koch, Regio, Campanus, Whole Sign, Equal/Vehlow, Alcabitius, Porphyry, Meridian, Morinus, Topocentric, Zariel, Equal from MC, Pullen SD, Pullen SR, etc., plus modern Galactic/Gauquelin/Geodetic/Local Space/Huber).
 - **Absent ("forgotten") common or niche Western house systems (Zariel, Equal MC, and now Pullen SD/SR addressed in code):**
   - "Vertical" or "Meridian Vertical" variants (Meridian X is present, but some software has distinct vertical formulations).
-  - Rare/niche: "Octant" (8-house), certain "Porphyry variants" (Neo-Porphyry / Pullen Point), "Zariel" derivatives, or "Horizontal from East Point".
+  - Rare/niche: "Octant" (8-house), certain "Porphyry variants" (Neo-Porphyry / Pullen Point), or "Zariel" derivatives.
+  - "Horizontal from East Point" is not counted as absent here: source review shows this is the already-implemented Horizon/Azimuthal system (`HouseSystem.AZIMUTHAL`, code `H`), whose first cusp is the due-East horizon point rather than the geographic Ascendant.
   - These remaining are the primary "forgotten" ones. Not mentioned as planned in current roadmaps/standards (focus has been on clean-room for the existing 18 + sovereignty remediation).
 - Some exotic hybrid/polar edge cases still rely on fallback or experimental (documented in HOUSES_SOVEREIGNTY_REMEDIATION_ROADMAP.md — remediation not 100% complete for all 18; Type B depth/ownership gap).
 - Full "psychological house meaning", interpretive reports, or house-based dignity overlays (beyond structural angularity/placement) are limited (Type B — calc + classification strong, meaning layer thin).
@@ -313,9 +314,9 @@ All under Urania, pre-edit ritual, minimal touch, spherical/vector geometry (the
 
 **Refs:** wiki/02_standards/HOUSES_BACKEND_STANDARD.md (now factually 22 in code), moira/constants.py (22 codes + names incl ZARIEL, EQUAL_MC, PULLEN_SD, PULLEN_SR), moira/houses.py (full _CLASSIFICATIONS, _KNOWN_SYSTEMS, calculate_houses + `_pullen_sd` + `_pullen_sr` + sinusoidal helpers), wiki/01_doctrines/houses/pullen_sinusoidal_admission_doctrine.md, wiki/01_doctrines/houses/pullen_sinusoidal_runtime_design_note.md, tests/unit/test_pullen_houses.py, huber.py, galactic_houses.py, gauquelin.py, geodetic.py, local_space.py, HOUSES_SOVEREIGNTY_REMEDIATION_ROADMAP.md.
 
-**Mermaid update note:** Updated in mind to reflect "18 core + 5 dedicated (Zariel now Full; Pullen etc. still absent)" — edit the graph in doc on next visual pass if needed.
+**Mermaid update note:** The visual summary text above still contains older houses wording in places; any next visual pass should reflect current truth: 22 core systems are live, Zariel / Equal MC / Pullen SD / Pullen SR are admitted, and Horizon/Azimuthal already covers the due-East horizontal doctrine.
 
-This starts the "in order" deep audit of the audit doc's first category. All 18 core are present and mature; the "forgotten" are the niche ones listed above. 
+This starts the "in order" deep audit of the audit doc's first category. All 22 current core systems are present and mature; the remaining "forgotten" items are niche variants listed above. 
 
 (Next in order would be Aspects or Dignities — let me know.)
 
