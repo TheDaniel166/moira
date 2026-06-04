@@ -184,6 +184,7 @@ from .aspects import (
     DEFAULT_POLICY,
     TRADITIONAL_MOIETY_ORBS,
     AspectDomain,
+    AspectDirection,
     AspectFamily,
     AspectPatternKind,
     AspectTier,
@@ -538,7 +539,7 @@ from .light_cone import (
 from .rise_set import RiseSetPolicy, TwilightTimes, twilight_times
 from .phase import angular_diameter
 from .dignities import (
-    sect_light, is_day_chart, almuten_figuris, find_phasis,
+    sect_light, is_day_chart, almuten_figuris, almuten_of_degree, find_phasis,
     is_in_hayz, is_in_sect, SectStateKind, SectTruth, SectClassification,
 )
 from .sidereal import NakshatraPosition, nakshatra_of, all_nakshatras_at
@@ -583,7 +584,14 @@ from .varga import (
     navamsa, saptamsa, dashamansa, dwadashamsa, trimshamsa,
 )
 from .decanates import DecanatePosition, chaldean_face, triplicity_decan, vedic_drekkana
-from .astrocartography import ACGLine, acg_lines, acg_from_chart
+from .astrocartography import (
+    ACGLine,
+    SubPlanetaryPoint,
+    acg_lines,
+    acg_from_chart,
+    subplanetary_points,
+    subplanetary_from_chart,
+)
 from .geodetic import (
     GeodeticChart,
     geodetic_mc,
@@ -1115,7 +1123,7 @@ __all__ = [
     "AspectDefinition", "ASPECT_TIERS",
     # Aspect backend public surface
     "CANONICAL_ASPECTS", "DEFAULT_POLICY", "TRADITIONAL_MOIETY_ORBS",
-    "AspectDomain", "AspectFamily", "AspectPatternKind", "AspectTier", "MotionState",
+    "AspectDomain", "AspectDirection", "AspectFamily", "AspectPatternKind", "AspectTier", "MotionState",
     "AspectClassification", "AspectFamilyProfile", "AspectGraph",
     "AspectGraphNode", "AspectHarmonicProfile", "AspectPolicy",
     "AspectStrength", "DeclinationAspect",
@@ -1333,7 +1341,7 @@ __all__ = [
     # Angular diameter
     "angular_diameter",
     # Dignities extensions
-    "sect_light", "is_day_chart", "almuten_figuris", "find_phasis",
+    "sect_light", "is_day_chart", "almuten_figuris", "almuten_of_degree", "find_phasis",
     "is_in_hayz", "is_in_sect",
     # Nakshatras
     "NakshatraPosition", "nakshatra_of", "all_nakshatras_at",
@@ -1378,7 +1386,8 @@ __all__ = [
     # Decanates
     "DecanatePosition", "chaldean_face", "triplicity_decan", "vedic_drekkana",
     # Astrocartography
-    "ACGLine", "acg_lines", "acg_from_chart",
+    "ACGLine", "SubPlanetaryPoint", "acg_lines", "acg_from_chart",
+    "subplanetary_points", "subplanetary_from_chart",
     # Geodetic
     "GeodeticChart",
     "geodetic_mc", "geodetic_asc", "geodetic_chart", "geodetic_chart_from_chart",

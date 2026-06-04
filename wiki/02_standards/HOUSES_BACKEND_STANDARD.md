@@ -6,7 +6,7 @@ The Moira houses backend is a sovereign computational subsystem. Its definitions
 layer boundaries, invariants, failure doctrine, and determinism rules are stated
 here and are frozen until explicitly superseded by a revision to this document.
 
-This document reflects current implementation truth as of Phase 11 (1 189 passing tests
+This document reflects current implementation truth as of Phase 11 (1 194 passing tests
 across 10 unit files and 1 integration file). It does not describe aspirational future
 capabilities.
 
@@ -32,7 +32,7 @@ A **house cusp** in Moira is:
 | *ecliptic longitude* | Degrees along the ecliptic, normalised to `[0, 360)` by `normalize_degrees` |
 | *observer location* | Geographic latitude `[-90, 90]` and longitude `[-180, 180]` in decimal degrees |
 | *Julian date* | UT1-based Julian day number |
-| *house system* | One of the 18 recognised `HouseSystem` codes |
+| *house system* | One of the 20 recognised `HouseSystem` codes |
 
 Twelve cusps are always produced. No system produces fewer or more than 12.
 
@@ -136,15 +136,17 @@ A function in phase N:
 
 ### 3. Supported Systems
 
-18 house system codes are recognised. `_KNOWN_SYSTEMS` is the authoritative frozenset.
+20 house system codes are recognised. `_KNOWN_SYSTEMS` is the authoritative frozenset.
 
 | Code | Name | Family | Cusp basis | Lat-sensitive | Polar-capable |
 |---|---|---|---|---|---|
 | `W` | Whole Sign | `WHOLE_SIGN` | `ECLIPTIC` | No | Yes |
 | `E` | Equal | `EQUAL` | `ECLIPTIC` | No | Yes |
+| `EM` | Equal from MC | `EQUAL` | `ECLIPTIC` | No | Yes |
 | `V` | Vehlow | `EQUAL` | `ECLIPTIC` | No | Yes |
 | `M` | Morinus | `EQUAL` | `EQUATORIAL` | No | Yes |
 | `X` | Meridian | `EQUAL` | `EQUATORIAL` | No | Yes |
+| `Z` | Zariel | `EQUAL` | `EQUATORIAL` | No | Yes |
 | `S` | Solar Sign | `SOLAR` | `ECLIPTIC` | No | Yes |
 | `O` | Porphyry | `QUADRANT` | `QUADRANT_TRISECTION` | Yes | Yes |
 | `P` | Placidus | `QUADRANT` | `SEMI_ARC` | Yes | Yes |  # integrated high-lat branch search; polar_capable via own doctrine (unique ordered when exists)
@@ -244,7 +246,7 @@ All public names are declared in the module `moira/houses.py`.
 | `_MEMBERSHIP_CUSP_TOLERANCE` | `1e-9` | Degrees; threshold for `exact_on_cusp` detection |
 | `_NEAR_CUSP_DEFAULT_THRESHOLD` | `3.0` | Degrees; default for `describe_boundary` |
 | `_POLAR_SYSTEMS` | `frozenset{'P','K','PS'}` | Systems that produce invalid cusps above the critical latitude |
-| `_KNOWN_SYSTEMS` | `frozenset` of 18 codes | All recognised `HouseSystem` values |
+| `_KNOWN_SYSTEMS` | `frozenset` of 20 codes | All recognised `HouseSystem` values |
 | `_ANGULARITY_MAP` | `dict[int, HouseAngularity]` | Static 12-entry lookup; never recomputed |
 
 ---

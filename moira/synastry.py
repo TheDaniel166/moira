@@ -70,6 +70,7 @@ from .spk_reader import get_reader, SpkReader
 
 if TYPE_CHECKING:
     from .__init__ import Chart
+    from .progressions import ProgressedChart, ProgressedHouseFrame
 
 
 __all__ = [
@@ -1913,8 +1914,8 @@ Canon: Moira Synastry Architecture; mutual house overlay doctrine.
     second_in_first: SynastryHouseOverlay
 
 def synastry_aspects(
-    chart_a: "Chart",
-    chart_b: "Chart",
+    chart_a: Chart | ProgressedChart,
+    chart_b: Chart | ProgressedChart,
     tier: int | None = None,
     orbs: dict[float, float] | None = None,
     orb_factor: float | None = None,
@@ -1940,6 +1941,11 @@ def synastry_aspects(
     -------
     List of AspectData sorted by orb.
     """
+    if not (hasattr(chart_a, "longitudes") and hasattr(chart_a, "speeds")):
+        raise TypeError("chart_a must be a Chart or ProgressedChart instance")
+    if not (hasattr(chart_b, "longitudes") and hasattr(chart_b, "speeds")):
+        raise TypeError("chart_b must be a Chart or ProgressedChart instance")
+
     active_policy = _resolve_synastry_policy(policy).aspects
     tier = active_policy.tier if tier is None else tier
     orbs = active_policy.orbs if orbs is None else orbs
@@ -1977,8 +1983,8 @@ def synastry_aspects(
 
 
 def synastry_contacts(
-    chart_a: "Chart",
-    chart_b: "Chart",
+    chart_a: Chart | ProgressedChart,
+    chart_b: Chart | ProgressedChart,
     tier: int | None = None,
     orbs: dict[float, float] | None = None,
     orb_factor: float | None = None,
@@ -1988,6 +1994,11 @@ def synastry_contacts(
     policy: SynastryComputationPolicy | None = None,
 ) -> list[SynastryAspectContact]:
     """Return additive synastry contact vessels over the current aspect engine."""
+
+    if not (hasattr(chart_a, "longitudes") and hasattr(chart_a, "speeds")):
+        raise TypeError("chart_a must be a Chart or ProgressedChart instance")
+    if not (hasattr(chart_b, "longitudes") and hasattr(chart_b, "speeds")):
+        raise TypeError("chart_b must be a Chart or ProgressedChart instance")
 
     active_policy = _resolve_synastry_policy(policy).aspects
     tier = active_policy.tier if tier is None else tier
@@ -2062,8 +2073,8 @@ def synastry_contacts(
 
 
 def house_overlay(
-    chart_source: "Chart",
-    target_houses: HouseCusps,
+    chart_source: Chart | ProgressedChart,
+    target_houses: HouseCusps | ProgressedHouseFrame,
     *,
     include_nodes: bool | None = None,
     source_label: str = "A",
@@ -2078,13 +2089,19 @@ def house_overlay(
     ``target_houses`` using the existing house membership doctrine.
     """
 
+    if not (hasattr(chart_source, "longitudes") and hasattr(chart_source, "speeds")):
+        raise TypeError("chart_source must be a Chart or ProgressedChart instance")
+    cusps_to_use = target_houses.houses if hasattr(target_houses, "houses") else target_houses
+    if not isinstance(cusps_to_use, HouseCusps):
+        raise TypeError("target_houses must be HouseCusps or ProgressedHouseFrame wrapping HouseCusps")
+
     include_nodes = _resolve_synastry_policy(policy).overlays.include_nodes if include_nodes is None else include_nodes
     if not isinstance(include_nodes, bool):
         raise ValueError("synastry overlay include_nodes must be boolean")
     _validate_label_pair(source_label, target_label)
     longitudes = chart_source.longitudes(include_nodes=include_nodes)
     placements = {
-        name: assign_house(longitude, target_houses)
+        name: assign_house(longitude, cusps_to_use)
         for name, longitude in longitudes.items()
     }
     truth = SynastryOverlayTruth(
@@ -2092,9 +2109,9 @@ def house_overlay(
         target_label=target_label,
         include_nodes=include_nodes,
         point_count=len(placements),
-        target_house_system=target_houses.system,
-        target_effective_house_system=target_houses.effective_system,
-        target_has_fallback=target_houses.fallback,
+        target_house_system=cusps_to_use.system,
+        target_effective_house_system=cusps_to_use.effective_system,
+        target_has_fallback=cusps_to_use.fallback,
     )
     classification = _classify_overlay_truth(truth)
     relation = SynastryRelation(
@@ -2129,10 +2146,10 @@ def house_overlay(
 
 
 def mutual_house_overlays(
-    chart_a: "Chart",
-    houses_a: HouseCusps,
-    chart_b: "Chart",
-    houses_b: HouseCusps,
+    chart_a: Chart | ProgressedChart,
+    houses_a: HouseCusps | ProgressedHouseFrame,
+    chart_b: Chart | ProgressedChart,
+    houses_b: HouseCusps | ProgressedHouseFrame,
     *,
     include_nodes: bool | None = None,
     first_label: str = "A",

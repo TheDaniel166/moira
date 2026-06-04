@@ -211,3 +211,77 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             levels=levels,
             ayanamsa_system=system,
         )
+
+    def almuten_of_degree(self, longitude: float, is_day: bool) -> str:
+        """Compute the essential almuten of a zodiacal degree."""
+        return _facade_module().almuten_of_degree(longitude, is_day)
+
+    def almuten_figuris(
+        self,
+        chart,
+        houses,
+        prenatal_syzygy_lon: float | None = None,
+        day_ruler: str | None = None,
+        hour_ruler: str | None = None,
+        strict: bool = False,
+    ) -> str:
+        """
+        Compute the traditional Almuten Figuris for a natal chart.
+        If prenatal_syzygy_lon, day_ruler, or hour_ruler are not passed,
+        they are resolved automatically from the chart and house coordinates.
+        If strict is True, any auto-resolution errors will bubble up.
+        """
+        facade = _facade_module()
+        lons = chart.longitudes(include_nodes=False)
+        day = facade.is_day_chart(lons.get("Sun", 0.0), houses.asc)
+
+        # 1. Resolve prenatal syzygy degree if not provided
+        if prenatal_syzygy_lon is None:
+            try:
+                from .transits import prenatal_syzygy
+                from .planets import planet_at
+                reader = getattr(chart, "_reader", None)
+                jd_syzygy, phase = prenatal_syzygy(chart.jd_ut, reader=reader)
+                if phase == "New Moon":
+                    prenatal_syzygy_lon = planet_at("Sun", jd_syzygy, reader=reader).longitude
+                else:
+                    prenatal_syzygy_lon = planet_at("Moon", jd_syzygy, reader=reader).longitude
+            except Exception as e:
+                if strict:
+                    raise e
+
+        # 2. Resolve day and hour rulers if not provided
+        if day_ruler is None or hour_ruler is None:
+            lat = getattr(houses, "geo_lat", getattr(chart, "latitude", None))
+            lon = getattr(houses, "geo_lon", getattr(chart, "longitude", None))
+            reader = getattr(chart, "_reader", None)
+            if lat is not None and lon is not None:
+                try:
+                    from .planetary_hours import planetary_hours
+                    ph_day = planetary_hours(chart.jd_ut, lat, lon, reader=reader)
+                    found_hour = None
+                    for h in ph_day.day_hours:
+                        if h.start_jd <= chart.jd_ut <= h.end_jd:
+                            found_hour = h
+                            break
+                    if found_hour is None:
+                        for h in ph_day.night_hours:
+                            if h.start_jd <= chart.jd_ut <= h.end_jd:
+                                found_hour = h
+                                break
+                    if found_hour is not None:
+                        hour_ruler = found_hour.ruler
+                    if ph_day.day_hours:
+                        day_ruler = ph_day.day_hours[0].ruler
+                except Exception as e:
+                    if strict:
+                        raise e
+
+        return facade.almuten_figuris(
+            lons,
+            houses.cusps,
+            day,
+            prenatal_syzygy_lon=prenatal_syzygy_lon,
+            day_ruler=day_ruler,
+            hour_ruler=hour_ruler,
+        )

@@ -3321,6 +3321,61 @@ def test_is_applying_and_is_separating_never_both_true() -> None:
         assert not (a.is_applying and a.is_separating)
 
 
+def test_aspect_direction_sinister_dexter() -> None:
+    from moira.aspects import AspectDirection
+    # Sun at Aries 0°, Moon at Gemini 0° (ahead by 60° -> sinister sextile)
+    results_sinister = find_aspects(
+        {
+            "Sun": 0.0,
+            "Moon": 60.0,
+        },
+        include_minor=False,
+    )
+    assert len(results_sinister) == 1
+    assert results_sinister[0].aspect == "Sextile"
+    assert results_sinister[0].direction == AspectDirection.SINISTER
+
+    # Sun at Aries 0°, Moon at Aquarius 0° (behind by 60° / ahead by 300° -> dexter sextile)
+    results_dexter = find_aspects(
+        {
+            "Sun": 0.0,
+            "Moon": 300.0,
+        },
+        include_minor=False,
+    )
+    assert len(results_dexter) == 1
+    assert results_dexter[0].aspect == "Sextile"
+    assert results_dexter[0].direction == AspectDirection.DEXTER
+
+    # Conjunction and opposition have no direction polarity
+    results_conj = find_aspects(
+        {
+            "Sun": 0.0,
+            "Moon": 0.0,
+        },
+        include_minor=False,
+    )
+    assert len(results_conj) == 1
+    assert results_conj[0].direction is None
+
+    results_opp = find_aspects(
+        {
+            "Sun": 0.0,
+            "Moon": 180.0,
+        },
+        include_minor=False,
+    )
+    assert len(results_opp) == 1
+    assert results_opp[0].direction is None
+
+    # Test aspects_between
+    res_between_sin = aspects_between("Sun", 0.0, "Moon", 60.0, tier=0)
+    assert res_between_sin[0].direction == AspectDirection.SINISTER
+
+    res_between_dex = aspects_between("Sun", 0.0, "Moon", 300.0, tier=0)
+    assert res_between_dex[0].direction == AspectDirection.DEXTER
+
+
 # ===========================================================================
 # Phase 14 — Public API exposure and surface curation
 # ===========================================================================
@@ -3332,6 +3387,7 @@ import moira as _moira_package
 _EXPECTED_PUBLIC = {
     "CANONICAL_ASPECTS",
     "DEFAULT_POLICY",
+    "AspectDirection",
     "AspectDomain",
     "AspectFamily",
     "AspectPatternKind",

@@ -28,6 +28,12 @@ def _lines_by_type(lines: list[acg.ACGLine]) -> dict[tuple[str, str], acg.ACGLin
     return {(line.planet, line.line_type): line for line in lines}
 
 
+def _points_by_type(
+    points: list[acg.SubPlanetaryPoint],
+) -> dict[tuple[str, str], acg.SubPlanetaryPoint]:
+    return {(point.planet, point.point_type): point for point in points}
+
+
 def test_acg_lines_returns_four_lines_per_body_in_expected_shape() -> None:
     lines = acg.acg_lines({"Sun": (100.0, 10.0), "Moon": (250.0, -5.0)}, gmst_deg=20.0, lat_step=30.0)
 
@@ -105,6 +111,43 @@ def test_acgline_repr_reports_meridian_or_sample_count() -> None:
     assert "2 points" in repr(asc)
 
 
+def test_subplanetary_points_return_zenith_and_nadir_per_body() -> None:
+    points = acg.subplanetary_points({"Sun": (100.0, 10.0), "Moon": (250.0, -5.0)}, gmst_deg=20.0)
+
+    assert len(points) == 4
+    by_key = _points_by_type(points)
+    for body in ("Sun", "Moon"):
+        assert by_key[(body, "Zenith")]
+        assert by_key[(body, "Nadir")]
+
+
+def test_subplanetary_points_use_hour_angle_longitude_and_antipode() -> None:
+    point_map = _points_by_type(acg.subplanetary_points({"Sun": (100.0, 15.0)}, gmst_deg=20.0))
+    zenith = point_map[("Sun", "Zenith")]
+    nadir = point_map[("Sun", "Nadir")]
+
+    assert zenith.longitude == pytest.approx(80.0)
+    assert nadir.longitude == pytest.approx(-100.0)
+    assert nadir.latitude == pytest.approx(-zenith.latitude)
+    assert _wrap_diff(nadir.longitude, zenith.longitude) == pytest.approx(-180.0)
+
+
+def test_subplanetary_points_convert_declination_to_geodetic_latitude() -> None:
+    point_map = _points_by_type(acg.subplanetary_points({"Sun": (0.0, 45.0)}, gmst_deg=0.0))
+    zenith = point_map[("Sun", "Zenith")]
+    expected = math.degrees(math.atan(math.tan(math.radians(45.0)) / (1.0 - acg._WGS84_E2)))
+
+    assert zenith.latitude == pytest.approx(expected)
+    assert zenith.latitude > 45.0
+
+
+def test_subplanetary_point_repr_reports_coordinates() -> None:
+    point = acg.SubPlanetaryPoint("Sun", "Zenith", 12.3456, -78.9)
+
+    assert "lat=12.3456deg" in repr(point)
+    assert "lon=-78.9000deg" in repr(point)
+
+
 @dataclass
 class _FakePlanet:
     right_ascension: float
@@ -159,3 +202,86 @@ def test_acg_from_chart_uses_apparent_sidereal_and_chart_planet_radec(monkeypatc
     assert calls["planet_ra_dec"] == {"Sun": (10.0, 1.0), "Moon": (20.0, -2.0)}
     assert calls["gmst_deg"] == pytest.approx(111.0)
     assert calls["lat_step"] == pytest.approx(5.0)
+
+
+def test_subplanetary_from_chart_uses_geocentric_ecliptic_surface(monkeypatch: pytest.MonkeyPatch) -> None:
+    chart = _FakeChart(
+        jd_ut=2460389.75,
+        latitude=40.7128,
+        longitude=-74.006,
+        planets={"Sun": object(), "Moon": object()},
+    )
+    calls: dict[str, object] = {}
+
+    @dataclass
+    class _FakePlanetData:
+        longitude: float
+        latitude: float
+
+    monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd + 0.1)
+    monkeypatch.setattr("moira.obliquity.nutation", lambda jd_tt: (0.2, 0.0))
+    monkeypatch.setattr("moira.obliquity.true_obliquity", lambda jd_tt: 23.4)
+    monkeypatch.setattr("moira.julian.apparent_sidereal_time", lambda jd_ut, dpsi, obliq: 111.0)
+
+    def fake_planet_at(body: str, jd_ut: float):
+        calls.setdefault("planet_at", []).append((body, jd_ut))
+        if body == "Sun":
+            return _FakePlanetData(longitude=0.0, latitude=0.0)
+        return _FakePlanetData(longitude=90.0, latitude=45.0 - 23.4)
+
+    def fake_subplanetary_points(
+        planet_ra_dec: dict[str, tuple[float, float]],
+        gmst_deg: float,
+    ):
+        calls["planet_ra_dec"] = planet_ra_dec
+        calls["gmst_deg"] = gmst_deg
+        return ["sentinel"]
+
+    monkeypatch.setattr("moira.planets.planet_at", fake_planet_at)
+    monkeypatch.setattr(acg, "subplanetary_points", fake_subplanetary_points)
+
+    result = acg.subplanetary_from_chart(chart, bodies=["Sun", "Moon"])
+
+    assert result == ["sentinel"]
+    assert calls["planet_at"] == [
+        ("Sun", chart.jd_ut),
+        ("Moon", chart.jd_ut),
+    ]
+    assert calls["planet_ra_dec"]["Sun"] == pytest.approx((0.0, 0.0))
+    assert calls["planet_ra_dec"]["Moon"][0] == pytest.approx(90.0)
+    assert calls["gmst_deg"] == pytest.approx(111.0)
+
+
+def test_subplanetary_from_chart_admits_small_body_through_planet_surface(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    chart = _FakeChart(
+        jd_ut=2451545.0,
+        latitude=0.0,
+        longitude=0.0,
+        planets={"Ceres": object()},
+    )
+    calls: list[tuple[str, float]] = []
+
+    @dataclass
+    class _FakePlanetData:
+        longitude: float
+        latitude: float
+
+    monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd)
+    monkeypatch.setattr("moira.obliquity.nutation", lambda jd_tt: (0.0, 0.0))
+    monkeypatch.setattr("moira.obliquity.true_obliquity", lambda jd_tt: 23.4392911)
+    monkeypatch.setattr("moira.julian.apparent_sidereal_time", lambda jd_ut, dpsi, obliq: 0.0)
+
+    def fake_planet_at(body: str, jd_ut: float):
+        calls.append((body, jd_ut))
+        return _FakePlanetData(longitude=15.0, latitude=2.0)
+
+    monkeypatch.setattr("moira.planets.planet_at", fake_planet_at)
+
+    points = acg.subplanetary_from_chart(chart, bodies=["Ceres"])
+
+    assert calls == [("Ceres", chart.jd_ut)]
+    point_map = _points_by_type(points)
+    assert ("Ceres", "Zenith") in point_map
+    assert ("Ceres", "Nadir") in point_map

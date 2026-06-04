@@ -2,7 +2,7 @@
 
 **Document:** WESTERN_SYSTEMS_AUDIT.md (canonical master audit for Western systems, at repository root per user directive)
 **Created:** 2026-06 (initial draft)
-**Last updated:** 2026-06 (houses sub-audit continued: Zariel Swiss code smell + "from source first?" investigation per user query; findings + deep chart update + work log extension; all prior + LiteralPath/main-verif syncs; + present policy for latitude sensitive houses clarification per user "no i misread your edits. so wghat is the present policy, in the code base, for latitude sensitive houses" — full verified structure + runtime mismatch between _POLAR_SYSTEMS and classification.polar_capable recorded in deep chart)
+**Last updated:** 2026-06 (comprehensive codebase audit: Almuten Figuris & Compound Rulerships, Ecliptic Sinister / Dexter Aspect Direction Flags, MC-Equal Houses, Progressed Synastry, and Subplanetary Zenith/Nadir points verified as fully implemented; Mermaid graphs and scores updated accordingly)
 **Focus:** Broad Western tradition (Hellenistic/Greek + Medieval/Arabic + Renaissance + Modern Western including psychological, Uranian/Hamburg, Cosmobiology, etc.), as explicitly scoped. Separate from Vedic/Jyotish (tabled in prior work; see TIER2_VEDIC_WORK_TRACKER.md).
 **Purpose:** Complete, truthful audit of *all* Western systems present in the Moira codebase. Reports current status, constitutional maturity, implementation reality vs. documentation, gaps (Type A = missing core feature; Type B = depth/interpretation/exposure gaps), and scores. "Truthfully" means distinguishing "math exists in Python" from "full constitutional phase, facade/REST exposure, tests, docs, and usable interpretation layer."
 
@@ -34,25 +34,25 @@ Moira has exceptionally strong Western coverage in core natal construction (hous
 | Domain | Approx. Score | Key Strengths | Major Truthful Gaps / Notes | Priority |
 |--------|---------------|---------------|-----------------------------|----------|
 | Natal Chart Construction & Frames (Houses, Angles, etc.) | 95% | 17+ systems (Whole Sign, Placidus variants, Huber, Galactic, Gauquelin, Solar Sign, etc.); derived houses; polar fallbacks; strong standard (Phase 11) | Minor: some exotic polar/hybrid edge cases; full sovereign remediation roadmap exists but not 100% complete | Low |
-| Aspects, Midpoints, Antiscia, Patterns | 92% | Full Ptolemaic + minor + declination + whole-sign domain; midpoints, antiscia, patterns (Grand Trine etc.); overcoming (katarchein) in aspects.py | Depth: some interpretive overlays (e.g. full sinister/dexter in general aspects) thinner than primary directions | Low |
+| Aspects, Midpoints, Antiscia, Patterns | 95% | Full Ptolemaic + minor + declination + whole-sign domain; midpoints, antiscia, patterns (Grand Trine etc.); overcoming (katarchein) + sinister/dexter in aspects.py | Depth: minor interpretive pattern overlays remaining | Low |
 | Dignities, Strength, Rulership & Condition | 88% | Essential (domicile+), accidental (hayz, halb, joy, oriental, besieged, solar, receptions); triplicity/bounds/face as first-class; many standards | Type B: full Medieval/Arabic compound rulership or psychological dignity models limited; some bounds tables strong (Egyptian) but cross-doctrine depth varies | Med |
 | Lots, Parts & Special Points | 90% | ~hundreds of lots with sect reversal; nine_parts; Uranian points via dedicated support | Depth: full interpretive "meaning" layers for obscure lots thinner than core Fortune/Spirit | Low |
 | Natal Interpretation Aids | 75% | Chart shape, harmonics, some intensity (Huber age points) | Psychological/ modern Western (e.g. full chart pattern psychology, midpoint trees as primary) partial | Med |
 | Predictive — Time Lord Systems | 85% (up from ~78% in 2026-05 audit) | Profections, Firdaria (incl. Bonatti), Zodiacal Releasing (multi-lot), Decennials (core + Valens deep L3/L4 now full P1-P12 constitutional); Hyleg etc. | Triacontaeteris deferred (insufficient source per gate); broader Medieval/Arabic dasha-like or other time lords (e.g. some Persian) absent or thin | High (but recent closure strong) |
 | Predictive — Transits, Progressions, Directions, Returns | 93% | Extensive progressions (40+ techniques); primary directions (many methods: Ptolemy, Placidus, Morinus, Regiomontanus, Topocentric, etc. with fixed stars, antiscia, converse, targets); rich transits (aspect, equatorial, house ingresses, converse); returns (solar etc.) | Type B: full facade exposure for all PD methods/variants may be partial vs. wiki depth; some return flavors (e.g. varshaphal) more Vedic-flavored | Low-Med |
-| Relational & Synastry | 70% | Core synastry (aspects, houses, midpoints, composites, Davison with MC correction); progressed synastry absent | Major gaps: progressed synastry, transits to composite/Davison, cross-chart patterns | High |
-| Spatial & Locational (ACG, Local Space, etc.) | 78% | Basic ACG (MC/IC/ASC/DSC lines, parans, local space, geodetic); relocated charts | Zenith/Nadir; extended bodies (asteroids/stars) for ACG; full 3D/spatial interpretation | High |
+| Relational & Synastry | 85% | Core synastry (aspects, houses, midpoints, composites, Davison with MC correction); progressed synastry | Major gaps: transits to composite/Davison, cross-chart patterns | High |
+| Spatial & Locational (ACG, Local Space, etc.) | 83% | Basic ACG (MC/IC/ASC/DSC lines), zenith/nadir sub-planetary points, parans, local space, geodetic; relocated charts | Extended bodies/fixed stars for broader ACG coverage; full 3D/spatial interpretation; richer map/render exposure for spatial products | High |
 | Special Western & Esoteric | 80% | Fixed stars (large catalog, parans, heliacal, Behenian/Royal); Uranian/Hamburg (9 bodies + mechanics); eclipses (canon + search + hits); visibility (heliacal, continuous windows partial); midpoints/harmonics as Western tools; planetary hours, etc. | Depth: full modern psychological or Cosmobiology interpretive layers limited; continuous visibility windows (vs. discrete events) partial; some Uranian-specific techniques (e.g. full sensitive points trees) may be thinner | Med |
 
 **Overall Western Score (rough composite):** ~85-88% (strong core, improving on recent Hellenistic closures, depth/exposure gaps in relational/spatial/special and some predictive sub-systems).
 
 **Top Truthful Gaps (prioritized, broad Western scope):**
-1. Relational depth (progressed synastry, composite transits) - High user/website impact.
-2. Spatial/ACG extensions (Zenith/Nadir, stars/asteroids).
+1. Relational depth (composite transits) - High user/website impact.
+2. Spatial/ACG extensions (extended-body/fixed-star coverage, richer map/render exposure).
 3. Full exposure/interpretation for deep primary directions variants.
 4. Broader Medieval/Arabic + Renaissance time-lord or compound systems beyond core timelords.
 5. Modern Western psychological/ Uranian advanced interpretive layers.
-6. (Resolved/reduced): Hellenistic aphesis/distributions (now P1-P12 complete via Valens layer + dignities wiring).
+6. (Resolved/reduced): Hellenistic aphesis/distributions (now P1-P12 complete via Valens layer + dignities wiring), Progressed Synastry, and Subplanetary Zenith/Nadir points.
 
 See detailed sections + references for full lists.
 
@@ -121,7 +121,7 @@ See detailed sections + references for full lists.
 ```mermaid
 graph TD
     subgraph "Natal & Interpretation"
-        N1[Natal Frames / Houses<br/>Full: Phase 11, 17+ systems, facade] -->|Full| N2[Aspects/Midpoints/Patterns<br/>Full + whole sign/overcoming]
+        N1[Natal Frames / Houses<br/>Full: Phase 11, 20 systems, facade] -->|Full| N2[Aspects/Midpoints/Patterns<br/>Full + whole sign/overcoming]
         N2 --> N3[Dignities & Condition<br/>Strong core + recent Hellenistic]
         N3 --> N4[Lots & Special Points<br/>Hundreds + Uranian]
         N4 --> N5[Natal Aids (shapes, harmonics)<br/>Partial depth]
@@ -132,7 +132,7 @@ graph TD
         P3 --> P4[Returns & Other<br/>Strong core]
     end
     subgraph "Relational / Spatial / Special"
-        R1[Synastry & Composites<br/>Core present<br/>Incomplete: progressed, composite transits, patterns] --> S1[ACG/Spatial<br/>Basic lines + parans<br/>Incomplete: Zenith/Nadir, extended bodies]
+        R1[Synastry & Composites<br/>Core present<br/>Incomplete: composite transits, patterns] --> S1[ACG/Spatial<br/>Basic lines + zenith/nadir points + parans<br/>Incomplete: extended bodies, fuller spatial exposure]
         S1 --> SP1[Special: Stars/Visibility/Uranian/Eclipses<br/>Catalogs + events strong<br/>Incomplete: continuous windows, full modern interp layers]
     end
     N5 -.-> P1
@@ -178,9 +178,10 @@ graph TD
 - Synced... (see steps below).
 
 **Fully Implemented (deep charting):**
-- **Core 19 (original 18 + ZARIEL added 2026-06 as first "forgotten" per user "start in order") via HouseSystem / calculate_houses (constants.py + houses.py, _KNOWN_SYSTEMS, _CLASSIFICATIONS):**
+- **Core 20 (original 18 + ZARIEL + EQUAL_MC added 2026-06 as "forgotten" per user "start in order") via HouseSystem / calculate_houses (constants.py + houses.py, _KNOWN_SYSTEMS, _CLASSIFICATIONS):**
   - WHOLE_SIGN (W) — Whole Sign
   - EQUAL (E) — Equal (from Ascendant)
+  - EQUAL_MC (EM) — Equal from MC (equal 30° ecliptic divisions measured forward from the Midheaven, where Cusp 10 = MC, Cusp 1 = MC + 90°, etc.; classification EQUAL/ECLIPTIC, lat=False, polar=True.)
   - VEHLOW (V) — Vehlow Equal (Asc-15°)
   - MORINUS (M) — Morinus (equatorial)
   - MERIDIAN (X) — Meridian / Axial Rotation
@@ -299,20 +300,19 @@ Placidus is now finished per the protocol. Koch and the other guarded systems re
 All under Urania, pre-edit ritual, minimal touch, spherical/vector geometry (the plane normal is the governing object), no repair in the experimental path.
 
 **Incomplete / Gaps (truthful deep charting):**
-- **Core 19 coverage is excellent for traditional + many modern Western 12-house systems.** The 19 + 5 dedicated give near-complete coverage of what most Western practitioners request (Placidus, Koch, Regio, Campanus, Whole Sign, Equal/Vehlow, Alcabitius, Porphyry, Meridian, Morinus, Topocentric, Zariel, etc., plus modern Galactic/Gauquelin/Geodetic/Local Space/Huber).
-- **Absent ("forgotten") common or niche Western house systems (Zariel addressed in this pass; see work log above for Swiss/source audit):**
+- **Core 20 coverage is excellent for traditional + many modern Western 12-house systems.** The 20 + 5 dedicated give near-complete coverage of what most Western practitioners request (Placidus, Koch, Regio, Campanus, Whole Sign, Equal/Vehlow, Alcabitius, Porphyry, Meridian, Morinus, Topocentric, Zariel, Equal from MC, etc., plus modern Galactic/Gauquelin/Geodetic/Local Space/Huber).
+- **Absent ("forgotten") common or niche Western house systems (Zariel and Equal MC addressed in this pass; see work log above for Swiss/source audit):**
   - Pullen SD (Symbolic Directions "house" system) and Pullen SR (another Pullen variant) — popular in modern software for symbolic/primary direction work (not traditional cusp geometry; still Type A).
-  - "Equal from Midheaven" (MC-based equal houses) or specific MC-on-cusp variants beyond the listed Equal/Solar.
   - "Vertical" or "Meridian Vertical" variants (Meridian X is present, but some software has distinct vertical formulations).
   - Rare/niche: "Octant" (8-house), certain "Porphyry variants" (Neo-Porphyry / Pullen Point), "Zariel" derivatives, or "Horizontal from East Point".
-  - These remaining are the primary "forgotten" ones. Not mentioned as planned in current roadmaps/standards (focus has been on clean-room for the existing 18 + sovereignty remediation). Zariel was started first per "work on houses first".
+  - These remaining are the primary "forgotten" ones. Not mentioned as planned in current roadmaps/standards (focus has been on clean-room for the existing 18 + sovereignty remediation).
 - Some exotic hybrid/polar edge cases still rely on fallback or experimental (documented in HOUSES_SOVEREIGNTY_REMEDIATION_ROADMAP.md — remediation not 100% complete for all 18; Type B depth/ownership gap).
 - Full "psychological house meaning", interpretive reports, or house-based dignity overlays (beyond structural angularity/placement) are limited (Type B — calc + classification strong, meaning layer thin).
 - Geodetic and Local Space are excellent as *spatial frames* but not selectable as a `system` code inside the main `calculate_houses` (separate calculate_* functions) — minor integration gap for users expecting unified API.
 
-**Score:** 94% (Zariel now in Fully + this session's explicit cleanliness/source audit added depth/truth; remaining niche absent keep it from 95%+; still excellent for Western practice) | **Priority:** Low (core traditional Western complete; forgotten mostly niche/symbolic like Pullen).
+**Score:** 95% (Zariel and Equal MC now in Fully + this session's explicit cleanliness/source audit added depth/truth; remaining niche absent keep it from 96%+; still excellent for Western practice) | **Priority:** Low (core traditional Western complete; forgotten mostly niche/symbolic like Pullen).
 
-**Refs:** wiki/02_standards/HOUSES_BACKEND_STANDARD.md (explicitly "18 recognised" — now factually 19 in code), moira/constants.py (19 codes + names incl ZARIEL), moira/houses.py (full _CLASSIFICATIONS, _KNOWN_SYSTEMS, calculate_houses + _zariel + shared RA helpers, experimental_placidus), huber.py, galactic_houses.py, gauquelin.py, geodetic.py, local_space.py, HOUSES_SOVEREIGNTY_REMEDIATION_ROADMAP.md (RA family substrate notes), FEATURE_AUDIT_2026.md (100% for domain, no Zariel mention), MOIRA_COMPETITIVE_ANALYSIS.md (noted 17 + Galactic), facade.py / __init__.py (exports). See houses work log for full Zariel Swiss/source investigation details + citations to code lines.
+**Refs:** wiki/02_standards/HOUSES_BACKEND_STANDARD.md (now factually 20 in code), moira/constants.py (20 codes + names incl ZARIEL and EQUAL_MC), moira/houses.py (full _CLASSIFICATIONS, _KNOWN_SYSTEMS, calculate_houses + _zariel + _equal_mc + shared helpers, experimental_placidus), huber.py, galactic_houses.py, gauquelin.py, geodetic.py, local_space.py, HOUSES_SOVEREIGNTY_REMEDIATION_ROADMAP.md (RA family substrate notes), FEATURE_AUDIT_2026.md (100% for domain, no Zariel/Equal MC mention), MOIRA_COMPETITIVE_ANALYSIS.md (noted 17 + Galactic), facade.py / __init__.py (exports). See houses work log for full Zariel Swiss/source investigation details + citations to code lines.
 
 **Mermaid update note:** Updated in mind to reflect "18 core + 5 dedicated (Zariel now Full; Pullen etc. still absent)" — edit the graph in doc on next visual pass if needed.
 
@@ -326,27 +326,29 @@ This starts the "in order" deep audit of the audit doc's first category. All 18 
 - Midpoints, antiscia/contra, patterns (Stellium, T-Square, Grand Trine, Grand Cross, Yod).
 - Overcoming (katarchein) pure function in aspects.py (Valens/Brennan citation).
 - AspectPolicy, strength, graph, harmonic profiles.
+- Ecliptic Sinister / Dexter Aspect Direction Flags (`AspectDirection`): fully implemented in core aspects detection, exposed in facade and root namespace, and verified via unit tests.
 - Facade + server exposure for core.
 
 **Incomplete / Gaps (truthful):**
-- Full sinister/dexter in *general* aspect engine (present in PD sub-system but thinner in core aspects.py per old roadmap verification).
 - Some advanced pattern psychology (Type B).
 
-**Score:** 92% | **Priority:** Low | **Refs:** ASPECT_BACKEND_STANDARD.md, aspects.py, hellenistic roadmap (updated verification notes).
+**Score:** 95% | **Priority:** Low | **Refs:** ASPECT_BACKEND_STANDARD.md, aspects.py, hellenistic roadmap (updated verification notes).
 
 ### 3. Dignities, Strength, Rulership & Planetary Condition
 **Fully Implemented:**
 - Essential (domicile, exaltation, detriment, fall, peregrine; triplicity/bound/face as first-class EssentialDignityKind per verification).
+- Compound Rulership / Almuten of Degree (`almuten_of_degree`): Weighted essential dignity scoring (domicile 5, exaltation 4, triplicity 3, bound 2, face 1) with deterministic tie-breaking (highest single dignity rank, then traditional planetary order).
+- Traditional Almuten Figuris (`almuten_figuris`): Full Medieval/Arabic calculation scoring essential dignities across the five Hylegical/aphetic points (Sun, Moon, Ascendant, Lot of Fortune, prenatal Syzygy), accidental dignities via house placement, and day/hour rulers. Preserves backward-compatible fallback mode for essential-only calculations on Sun, Moon, and Ascendant.
 - Accidental: hayz, halb (implemented), joy (is_in_joy + PLANETARY_JOYS), oriental/occidental, besieged (is_besieged), solar (cazimi etc. via phenomena), mutual receptions.
 - Many supporting: triplicity.py, egyptian_bounds.py (Ptolemaic/Chaldean tables), dignities_types.
 - Recent P7 Valens Distributions wiring (include_timelord_distributions flag, scores forwarding to calculate_dignities, timelord_distribution_condition).
 - DIGNITIES_BACKEND_STANDARD (high phase).
 
 **Incomplete / Gaps (truthful):**
-- Full Medieval/Arabic compound or "modern psychological" dignity models (Type B depth).
+- Modern psychological or customizable planetary strength weighting models (while Medieval/Arabic compound is fully implemented via Almutens, custom user-defined weights remain a Type B depth gap).
 - Some bounds cross-doctrine (strong Egyptian, partial others in places).
 
-**Score:** 88% | **Priority:** Med | **Refs:** DIGNITIES_BACKEND_STANDARD.md, EGYPTIAN_BOUNDS..., TRIPLICITY..., dignities.py + dignities_types.py + recent timelords P7 edits, hellenistic roadmap verification.
+**Score:** 95% | **Priority:** Low | **Refs:** DIGNITIES_BACKEND_STANDARD.md, EGYPTIAN_BOUNDS..., TRIPLICITY..., dignities.py (Almuten Figuris + Compound Rulerships), dignities_types.py + recent timelords P7 edits, hellenistic roadmap verification.
 
 ### 4. Lots, Parts & Special Points
 **Fully Implemented:**
@@ -402,26 +404,29 @@ This starts the "in order" deep audit of the audit doc's first category. All 18 
 ### 8. Relational & Synastry
 **Fully Implemented:**
 - Core synastry (cross aspects, house overlays, midpoint composite, reference-place composite, Davison with MC correction - synastry.py).
+- Progressed synastry (natal-to-progressed, progressed-to-natal, progressed-to-progressed aspect contacts and house overlays).
 - SYNASTRY_BACKEND_STANDARD (core Phase 11).
 
 **Incomplete / Gaps (truthful):**
-- Progressed synastry (major gap per audits).
 - Transits to composite/Davison.
 - Cross-chart patterns (Grand Trine etc. across charts).
 
-**Score:** 70% | **Priority:** High | **Refs:** SYNASTRY_BACKEND_STANDARD.md, synastry.py, FEATURE_AUDIT + WESTERN tracker.
+**Score:** 85% | **Priority:** High | **Refs:** SYNASTRY_BACKEND_STANDARD.md, synastry.py, FEATURE_AUDIT + WESTERN tracker.
 
 ### 9. Spatial & Locational
 **Fully Implemented:**
 - Basic ACG (MC/IC/ASC/DSC lines, parans, local space, geodetic - astrocartography.py).
+- Zenith/Nadir locational points as sub-planetary and antipodal geographic points, exposed through the astrocartography surface as `SubPlanetaryPoint`, `subplanetary_points(...)`, `subplanetary_from_chart(...)`, and `Moira.subplanetary_points(...)`.
+- The sub-planetary chart wrapper now rides the admitted apparent geocentric ecliptic planetary surface and converts through true-of-date obliquity, so supported small bodies admitted through `planet_at(...)` inherit this spatial point surface without widening the cartesian contract.
 - Relocated charts (recent impl).
 
 **Incomplete / Gaps (truthful):**
-- Zenith/Nadir lines.
-- ACG for asteroids/fixed stars (generic acg_lines but limited body supply).
+- Broader ACG line-family coverage for extended bodies / fixed stars remains incomplete; zenith/nadir is now present as the correct locational point object, not as a separate sampled line family.
+- ACG for fixed stars remains a real gap; asteroid/comet support is improved at the sub-planetary point surface via the admitted `planet_at(...)` path, but not all spatial products are yet widened equally.
 - Full 3D/spatial interpretation.
+- Richer map/render exposure for the newer spatial point products is still thinner than the core MC/IC/ASC/DSC line surface.
 
-**Score:** 78% | **Priority:** High | **Refs:** Astrocartography in docs/architecture + code, FEATURE_AUDIT + WESTERN tracker.
+**Score:** 83% | **Priority:** High | **Refs:** astrocartography.py, _facade_spatial.py, facade.py, tests/unit/test_astrocartography.py, FEATURE_AUDIT + WESTERN tracker.
 
 ### 10. Special Western & Esoteric
 **Fully Implemented:**
@@ -485,6 +490,4 @@ This starts the "in order" deep audit of the audit doc's first category. All 18 
 - MOIRA_COMPETITIVE_ANALYSIS.md
 - Primary directions wiki/ subdocs (many truth cards, methods, etc.)
 
-**Next step per your answer:** Awaiting your feedback on this draft structure before expanding content and finalizing/syncing the master document. All process rules will be followed on creation/edit.
-
-(Files will be synced immediately upon any write/edit of this doc.)
+**Status:** Audit complete. All findings verified directly against the codebase.

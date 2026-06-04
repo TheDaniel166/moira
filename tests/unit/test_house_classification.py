@@ -126,6 +126,8 @@ class TestFamilyCorrectness:
         HouseSystem.VEHLOW,
         HouseSystem.MORINUS,
         HouseSystem.MERIDIAN,
+        HouseSystem.ZARIEL,
+        HouseSystem.EQUAL_MC,
     ])
     def test_equal_family_systems(self, system):
         assert classify_house_system(system).family == HouseSystemFamily.EQUAL
@@ -160,6 +162,9 @@ class TestCuspBasisCorrectness:
 
     def test_equal_ecliptic(self):
         assert classify_house_system(HouseSystem.EQUAL).cusp_basis == HouseSystemCuspBasis.ECLIPTIC
+
+    def test_equal_mc_ecliptic(self):
+        assert classify_house_system(HouseSystem.EQUAL_MC).cusp_basis == HouseSystemCuspBasis.ECLIPTIC
 
     def test_vehlow_ecliptic(self):
         assert classify_house_system(HouseSystem.VEHLOW).cusp_basis == HouseSystemCuspBasis.ECLIPTIC
@@ -223,6 +228,8 @@ class TestLatitudeSensitivity:
         HouseSystem.MERIDIAN,
         HouseSystem.SUNSHINE,
         HouseSystem.SOLAR_SIGN,
+        HouseSystem.ZARIEL,
+        HouseSystem.EQUAL_MC,
     ])
     def test_latitude_insensitive_systems(self, system):
         assert classify_house_system(system).latitude_sensitive is False
@@ -255,7 +262,8 @@ class TestPolarCapable:
         HouseSystem.VEHLOW, HouseSystem.SUNSHINE, HouseSystem.AZIMUTHAL,
         HouseSystem.SOLAR_SIGN,
         HouseSystem.CARTER, HouseSystem.KRUSINSKI, HouseSystem.APC,
-        HouseSystem.PLACIDUS, HouseSystem.ALCABITIUS,
+        HouseSystem.PLACIDUS, HouseSystem.ALCABITIUS, HouseSystem.ZARIEL,
+        HouseSystem.EQUAL_MC,
         ])
     def test_polar_capable_systems(self, system):
         assert classify_house_system(system).polar_capable is True
@@ -347,6 +355,7 @@ class TestAllSystemsCovered:
         HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
         HouseSystem.KRUSINSKI,
         HouseSystem.APC,
+        HouseSystem.ZARIEL, HouseSystem.EQUAL_MC,
     ]
 
     def test_all_systems_return_classification(self):

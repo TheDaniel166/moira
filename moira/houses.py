@@ -445,6 +445,7 @@ _CLASSIFICATIONS: dict[str, HouseSystemClassification] = {
     HouseSystem.SUNSHINE:      HouseSystemClassification(_F.SOLAR,      _CB.SOLAR_POSITION,      False, True),
     HouseSystem.SOLAR_SIGN:    HouseSystemClassification(_F.SOLAR,      _CB.ECLIPTIC,            False, True),
     HouseSystem.ZARIEL:        HouseSystemClassification(_F.EQUAL,      _CB.EQUATORIAL,          False, True),  # equal RA from Asc RA, equatorial project
+    HouseSystem.EQUAL_MC:      HouseSystemClassification(_F.EQUAL,      _CB.ECLIPTIC,            False, True),  # equal from MC
 }
 
 def classify_house_system(code: str) -> HouseSystemClassification:
@@ -509,6 +510,7 @@ _KNOWN_SYSTEMS: frozenset[str] = frozenset({
     HouseSystem.KRUSINSKI,
     HouseSystem.APC,
     HouseSystem.ZARIEL,
+    HouseSystem.EQUAL_MC,
 })
 
 
@@ -1939,6 +1941,18 @@ def _equal_house(asc: float) -> list[float]:
     """Return equal-house cusps in 30-degree steps measured forward from the Ascendant."""
     cusps = [(asc + i * 30.0) % 360.0 for i in range(12)]
     return _finalize_cusps(cusps, context="_equal_house")
+
+
+# ---------------------------------------------------------------------------
+# Equal Houses from the Midheaven (MC-Equal)
+# ---------------------------------------------------------------------------
+
+def _equal_mc(mc: float) -> list[float]:
+    """Return equal-house cusps in 30-degree steps measured forward from the MC.
+    House 10 begins at the MC, and the remaining cusps proceed sequentially.
+    """
+    cusps = [(mc + 90.0 + i * 30.0) % 360.0 for i in range(12)]
+    return _finalize_cusps(cusps, context="_equal_mc")
 
 
 # ---------------------------------------------------------------------------
@@ -4296,6 +4310,8 @@ def houses_from_armc(
         cusps = _apc(armc, obliquity, lat)
     elif effective_system == HouseSystem.ZARIEL:
         cusps = _zariel(asc, obliquity)
+    elif effective_system == HouseSystem.EQUAL_MC:
+        cusps = _equal_mc(mc)
     else:
         cusps = _placidus(armc, obliquity, lat)
 

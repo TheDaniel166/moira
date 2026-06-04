@@ -67,7 +67,7 @@ from .phenomena import (
 from .orbits import DistanceExtremes, KeplerianElements, distance_extremes_at, orbital_elements_at
 from .planets import CartesianPosition, PlanetData, SkyPosition
 from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal, nakshatra_of, all_nakshatras_at
-from .aspects import AspectData
+from .aspects import AspectData, AspectDirection
 from .harmograms import (
     HarmogramChartDomain,
     HarmogramIntensityFamily,
@@ -372,6 +372,7 @@ from .dignities import (
     sect_light,
     is_day_chart,
     almuten_figuris,
+    almuten_of_degree,
     mutual_receptions,
     find_phasis,
 )
@@ -448,6 +449,7 @@ __all__ = [
     "body_galactic_house_position",
     "describe_galactic_boundary",
     "AspectData",
+    "AspectDirection",
     "HarmonicDomain",
     "PointSetHarmonicVectorPolicy",
     "HarmogramIntensityFamily",
@@ -733,6 +735,7 @@ __all__ = [
     "sect_light",
     "is_day_chart",
     "almuten_figuris",
+    "almuten_of_degree",
     "mutual_receptions",
     "find_phasis",
     # Triplicity

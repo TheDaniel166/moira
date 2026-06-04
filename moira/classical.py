@@ -82,7 +82,7 @@ from .dignities import (
     calculate_condition_profiles, calculate_chart_condition_profile,
     calculate_condition_network_profile,
     DignitiesService,
-    sect_light, is_day_chart, almuten_figuris, find_phasis,
+    sect_light, is_day_chart, almuten_figuris, almuten_of_degree, find_phasis,
     is_in_hayz, is_in_sect,
     mutual_receptions,
 )
@@ -283,7 +283,7 @@ _CLASSICAL_OWN: list[str] = [
     "calculate_condition_profiles", "calculate_chart_condition_profile",
     "calculate_condition_network_profile",
     "DignitiesService",
-    "sect_light", "is_day_chart", "almuten_figuris", "find_phasis",
+    "sect_light", "is_day_chart", "almuten_figuris", "almuten_of_degree", "find_phasis",
     "is_in_hayz", "is_in_sect",
     "mutual_receptions",
     # Lots

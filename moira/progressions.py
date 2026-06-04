@@ -955,6 +955,19 @@ class ProgressedChart:
     def condition_state(self) -> str | None:
         return None if self.condition_profile is None else self.condition_profile.structural_state
 
+    def longitudes(self, include_nodes: bool = True) -> dict[str, float]:
+        """Return a flat dict of body name -> ecliptic longitude."""
+        node_names = {Body.TRUE_NODE, Body.MEAN_NODE, Body.LILITH, Body.TRUE_LILITH}
+        if include_nodes:
+            return {name: pos.longitude for name, pos in self.positions.items()}
+        else:
+            return {name: pos.longitude for name, pos in self.positions.items() if name not in node_names}
+
+    def speeds(self) -> dict[str, float]:
+        """Return a flat dict of body name -> speed."""
+        node_names = {Body.TRUE_NODE, Body.MEAN_NODE, Body.LILITH, Body.TRUE_LILITH}
+        return {name: pos.speed for name, pos in self.positions.items() if name not in node_names}
+
 
 @dataclass(slots=True)
 class ProgressedHouseFrame:

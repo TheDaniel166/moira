@@ -90,6 +90,7 @@ _CURATED_PUBLIC_NAMES = [
     "sect_light",
     "is_day_chart",
     "almuten_figuris",
+    "almuten_of_degree",
     "find_phasis",
     "mutual_receptions",
     "is_in_sect",
@@ -157,4 +158,5 @@ class TestModuleAgreement:
             )
 
     def test_curated_count_is_76(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 90
+        assert len(_CURATED_PUBLIC_NAMES) == 91
+

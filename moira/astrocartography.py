@@ -50,8 +50,11 @@ _WGS84_E2 = 0.00669437999014
 
 __all__ = [
     "ACGLine",
+    "SubPlanetaryPoint",
     "acg_lines",
     "acg_from_chart",
+    "subplanetary_points",
+    "subplanetary_from_chart",
 ]
 
 
@@ -119,6 +122,54 @@ class ACGLine:
             f"ACGLine({self.planet!r}, {self.line_type!r}, "
             f"{len(self.points)} points)"
         )
+
+
+@dataclass(slots=True)
+class SubPlanetaryPoint:
+    """
+    Typed vessel for a body's zenith or nadir geographic point on Earth.
+
+    The governing object is the terrestrial surface point whose local zenith
+    (or nadir) is collinear with the body's apparent geocentric equatorial
+    direction at a given epoch.
+    """
+
+    planet: str
+    point_type: str
+    latitude: float
+    longitude: float
+
+    def __repr__(self) -> str:
+        return (
+            f"SubPlanetaryPoint({self.planet!r}, {self.point_type!r}, "
+            f"lat={self.latitude:.4f}deg, lon={self.longitude:.4f}deg)"
+        )
+
+
+def _wrap_longitude_deg(longitude_deg: float) -> float:
+    """Normalize an east longitude into [-180, 180)."""
+    wrapped = (longitude_deg + 180.0) % 360.0 - 180.0
+    if wrapped == -180.0 and longitude_deg > 0.0:
+        return 180.0
+    return wrapped
+
+
+def _geodetic_latitude_from_declination(declination_deg: float) -> float:
+    """
+    Convert a geocentric declination to the matching WGS-84 geodetic latitude.
+
+    Governing object:
+        The zenith point is the surface location whose ellipsoidal normal is
+        parallel to the body's geocentric apparent direction.
+    """
+    if not -90.0 <= declination_deg <= 90.0:
+        raise ValueError(
+            f"declination must lie in [-90, 90] degrees, got {declination_deg!r}"
+        )
+    if abs(abs(declination_deg) - 90.0) < 1e-12:
+        return declination_deg
+    declination_r = declination_deg * DEG2RAD
+    return math.degrees(math.atan(math.tan(declination_r) / (1.0 - _WGS84_E2)))
 
 
 def _compute_acg_curve_samples(
@@ -280,3 +331,82 @@ def acg_from_chart(
     if "refraction" in params:
         kwargs["refraction"] = refraction
     return acg_lines(planet_ra_dec, gmst_deg, **kwargs)
+
+
+def subplanetary_points(
+    planet_ra_dec: dict[str, tuple[float, float]],
+    gmst_deg: float,
+) -> list[SubPlanetaryPoint]:
+    """
+    Return zenith and nadir geographic points for bodies at one epoch.
+
+    Parameters
+    ----------
+    planet_ra_dec : dict of body name -> (RA degrees, Dec degrees).
+                    Coordinates are interpreted as apparent geocentric
+                    equatorial positions in the true equator of date.
+    gmst_deg      : Greenwich Apparent Sidereal Time at the epoch (deg).
+
+    Returns
+    -------
+    list[SubPlanetaryPoint] - two points per body: Zenith and Nadir.
+    """
+    points: list[SubPlanetaryPoint] = []
+    for body, (right_ascension, declination) in planet_ra_dec.items():
+        zenith_latitude = _geodetic_latitude_from_declination(declination)
+        zenith_longitude = _wrap_longitude_deg(right_ascension - gmst_deg)
+        points.append(
+            SubPlanetaryPoint(
+                planet=body,
+                point_type="Zenith",
+                latitude=zenith_latitude,
+                longitude=zenith_longitude,
+            )
+        )
+        points.append(
+            SubPlanetaryPoint(
+                planet=body,
+                point_type="Nadir",
+                latitude=-zenith_latitude,
+                longitude=_wrap_longitude_deg(zenith_longitude + 180.0),
+            )
+        )
+    return points
+
+
+def subplanetary_from_chart(
+    chart,
+    bodies: list[str] | None = None,
+) -> list[SubPlanetaryPoint]:
+    """
+    Convenience wrapper: compute sub-planetary zenith/nadir points from a chart.
+
+    Uses the admitted apparent geocentric ecliptic surface, then converts the
+    result into true-of-date equatorial RA/Dec so the geographic points remain
+    globally defined for the epoch itself and inherit the existing small-body
+    admission path.
+    """
+    from .coordinates import ecliptic_to_equatorial
+    from .julian import apparent_sidereal_time, ut_to_tt
+    from .obliquity import nutation, true_obliquity
+    from .planets import planet_at
+
+    if bodies is None:
+        bodies = list(chart.planets.keys())
+
+    jd_tt = ut_to_tt(chart.jd_ut)
+    dpsi, _ = nutation(jd_tt)
+    obliquity = true_obliquity(jd_tt)
+    gmst_deg = apparent_sidereal_time(chart.jd_ut, dpsi, obliquity)
+
+    planet_ra_dec: dict[str, tuple[float, float]] = {}
+    for body in bodies:
+        position = planet_at(body, chart.jd_ut)
+        right_ascension, declination = ecliptic_to_equatorial(
+            position.longitude,
+            position.latitude,
+            obliquity,
+        )
+        planet_ra_dec[body] = (right_ascension, declination)
+
+    return subplanetary_points(planet_ra_dec, gmst_deg)

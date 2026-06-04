@@ -146,6 +146,7 @@ __all__ = [
     "sect_light",
     "is_day_chart",
     "almuten_figuris",
+    "almuten_of_degree",
     "mutual_receptions",
     "find_phasis",
 ]
@@ -2267,46 +2268,243 @@ def is_day_chart(sun_longitude: float, asc_longitude: float) -> bool:
 
 
 # ---------------------------------------------------------------------------
-# Almuten Figuris
+# Almuten Figuris & Compound Rulerships
 # ---------------------------------------------------------------------------
+
+ALMUTEN_HOUSE_SCORES: dict[int, int] = {
+    1: 12,
+    10: 11,
+    7: 10,
+    4: 9,
+    11: 8,
+    5: 7,
+    9: 6,
+    3: 5,
+    2: 4,
+    8: 3,
+    6: 2,
+    12: 1,
+}
+
+
+def almuten_of_degree(longitude: float, is_day: bool) -> str:
+    """
+    Find the Almuten of a specific ecliptic longitude (degree) based on
+    essential dignity scores: domicile (5), exaltation (4), triplicity (3),
+    bound/term (2), and face/decan (1).
+
+    Parameters
+    ----------
+    longitude : float
+        Ecliptic longitude in degrees.
+    is_day : bool
+        True if the chart is diurnal (affects triplicity).
+
+    Returns
+    -------
+    str
+        The name of the planet (Classic 7) with the highest score.
+    """
+    if not isinstance(longitude, (int, float)):
+        raise TypeError(f"longitude must be float or int, got {type(longitude).__name__}")
+    if math.isnan(longitude) or math.isinf(longitude):
+        raise ValueError("longitude cannot be NaN or infinite")
+    if not isinstance(is_day, bool):
+        raise TypeError(f"is_day must be a boolean, got {type(is_day).__name__}")
+
+    from .longevity import dignity_score_at, EGYPTIAN_BOUNDS, FACE_RULERS, _sign_and_deg
+    from .triplicity import triplicity_score as _triplicity_score
+
+    scores: dict[str, int] = {}
+    for planet in _PLANET_ORDER:
+        scores[planet] = dignity_score_at(planet, longitude, is_day)
+
+    sign, deg_in_sign = _sign_and_deg(longitude)
+
+    def get_highest_rank(planet: str) -> int:
+        if sign in DOMICILE.get(planet, []):
+            return 5
+        if sign in EXALTATION.get(planet, []):
+            return 4
+        tri_score = _triplicity_score(
+            planet, sign,
+            is_day_chart=is_day,
+            participating_policy=_ParticipatingRulerPolicy.AWARD_REDUCED,
+        )
+        if tri_score > 0:
+            return 3
+        bounds = EGYPTIAN_BOUNDS.get(sign, [])
+        for ruler, start, end in bounds:
+            if start <= deg_in_sign < end and ruler == planet:
+                return 2
+        lon_norm = longitude % 360.0
+        decan_idx = int(lon_norm // 10) % 36
+        face_ruler = FACE_RULERS[decan_idx]
+        if face_ruler == planet:
+            return 1
+        return 0
+
+    best_planet = max(
+        _PLANET_ORDER,
+        key=lambda p: (scores[p], get_highest_rank(p), -_PLANET_ORDER.index(p))
+    )
+    return best_planet
+
 
 def almuten_figuris(
     planet_positions: dict[str, float],
-    asc_longitude: float,
+    cusps: list[float] | dict[int, float] | float,
     is_day: bool,
+    *,
+    prenatal_syzygy_lon: float | None = None,
+    day_ruler: str | None = None,
+    hour_ruler: str | None = None,
 ) -> str:
     """
-    Find the Almuten Figuris — the planet with the most essential dignities
-    across the key chart points (Sun, Moon, Ascendant).
+    Find the Almuten Figuris — the planet with the most essential and accidental
+    dignities across the key aphetic points.
 
-    For each of the Classic 7 planets, sum the dignity score it holds at
-    the Sun's degree, Moon's degree, and ASC degree.
-    The planet with the highest total score is the Almuten Figuris.
+    If `cusps` is a float/int (representing the Ascendant longitude), we fall
+    back to the old simplified calculation scoring only Sun, Moon, and Ascendant
+    for essential dignities.
+
+    Otherwise, we perform the full traditional calculation scoring:
+    - Essential dignities at Sun, Moon, Ascendant, Lot of Fortune, and prenatal Syzygy.
+    - Accidental dignities based on house placement of each planet.
+    - Planetary day (+7) and hour (+6) rulers.
 
     Parameters
     ----------
     planet_positions : dict of body → longitude (must include "Sun", "Moon")
-    asc_longitude    : Ascendant longitude
+    cusps            : list of 12 cusps, dict of 1..12 cusps, or float (ASC longitude for fallback)
     is_day           : True for day chart (affects triplicity)
+    prenatal_syzygy_lon : optional prenatal syzygy longitude
+    day_ruler        : optional day ruler planet name
+    hour_ruler       : optional hour ruler planet name
 
     Returns
     -------
     Planet name (string)
     """
-    from .longevity import dignity_score_at
+    if not isinstance(planet_positions, dict):
+        raise TypeError(f"planet_positions must be a dictionary, got {type(planet_positions).__name__}")
+    for k, v in planet_positions.items():
+        if not isinstance(k, str):
+            raise TypeError(f"planet_positions keys must be strings, got {type(k).__name__}")
+        if not isinstance(v, (int, float)):
+            raise TypeError(f"planet_positions value for '{k}' must be float or int, got {type(v).__name__}")
+        if math.isnan(v) or math.isinf(v):
+            raise ValueError(f"planet position for '{k}' cannot be NaN or infinite")
 
-    key_points = [
-        planet_positions.get("Sun", 0.0),
-        planet_positions.get("Moon", 0.0),
-        asc_longitude,
-    ]
+    if "Sun" not in planet_positions:
+        raise ValueError("planet_positions must contain 'Sun'")
+    if "Moon" not in planet_positions:
+        raise ValueError("planet_positions must contain 'Moon'")
 
-    scores: dict[str, int] = {}
-    for planet in CLASSIC_7:
-        total = sum(dignity_score_at(planet, lon, is_day) for lon in key_points)
-        scores[planet] = total
+    if not isinstance(is_day, bool):
+        raise TypeError(f"is_day must be a boolean, got {type(is_day).__name__}")
 
-    return max(scores, key=lambda p: scores[p])
+    if prenatal_syzygy_lon is not None:
+        if not isinstance(prenatal_syzygy_lon, (int, float)):
+            raise TypeError(f"prenatal_syzygy_lon must be float or int, got {type(prenatal_syzygy_lon).__name__}")
+        if math.isnan(prenatal_syzygy_lon) or math.isinf(prenatal_syzygy_lon):
+            raise ValueError("prenatal_syzygy_lon cannot be NaN or infinite")
+
+    if day_ruler is not None:
+        if not isinstance(day_ruler, str):
+            raise TypeError(f"day_ruler must be a string, got {type(day_ruler).__name__}")
+        if day_ruler not in CLASSIC_7:
+            raise ValueError(f"day_ruler must be one of the Classic 7 planets {CLASSIC_7}, got '{day_ruler}'")
+
+    if hour_ruler is not None:
+        if not isinstance(hour_ruler, str):
+            raise TypeError(f"hour_ruler must be a string, got {type(hour_ruler).__name__}")
+        if hour_ruler not in CLASSIC_7:
+            raise ValueError(f"hour_ruler must be one of the Classic 7 planets {CLASSIC_7}, got '{hour_ruler}'")
+
+    from .longevity import dignity_score_at, _get_house
+
+    # 1. Fallback to old simplified calculation if cusps is a single float
+    if isinstance(cusps, (int, float)):
+        if math.isnan(cusps) or math.isinf(cusps):
+            raise ValueError("cusps as a float/int cannot be NaN or infinite")
+        asc_longitude = float(cusps)
+        key_points = [
+            planet_positions.get("Sun", 0.0),
+            planet_positions.get("Moon", 0.0),
+            asc_longitude,
+        ]
+        scores: dict[str, int] = {}
+        for planet in _PLANET_ORDER:
+            total = sum(dignity_score_at(planet, lon, is_day) for lon in key_points)
+            scores[planet] = total
+        return max(_PLANET_ORDER, key=lambda p: scores[p])
+
+    # Validate cusps sequence or dictionary
+    if isinstance(cusps, dict):
+        for i in range(1, 13):
+            if i not in cusps:
+                raise ValueError(f"cusps dictionary is missing key for house {i}")
+            val = cusps[i]
+            if not isinstance(val, (int, float)):
+                raise TypeError(f"cusps value for house {i} must be float or int, got {type(val).__name__}")
+            if math.isnan(val) or math.isinf(val):
+                raise ValueError(f"cusps value for house {i} cannot be NaN or infinite")
+        asc_longitude = cusps[1]
+    elif isinstance(cusps, (list, tuple)):
+        if len(cusps) < 12:
+            raise ValueError(f"cusps sequence must contain at least 12 elements, got {len(cusps)}")
+        for i in range(12):
+            val = cusps[i]
+            if not isinstance(val, (int, float)):
+                raise TypeError(f"cusps value at index {i} must be float or int, got {type(val).__name__}")
+            if math.isnan(val) or math.isinf(val):
+                raise ValueError(f"cusps value at index {i} cannot be NaN or infinite")
+        asc_longitude = cusps[0]
+    else:
+        raise TypeError(f"cusps must be float, list, or dict, got {type(cusps).__name__}")
+
+    sun_longitude = planet_positions.get("Sun", 0.0)
+    moon_longitude = planet_positions.get("Moon", 0.0)
+
+    # Calculate Lot of Fortune
+    if is_day:
+        fortune_longitude = (asc_longitude + moon_longitude - sun_longitude) % 360.0
+    else:
+        fortune_longitude = (asc_longitude + sun_longitude - moon_longitude) % 360.0
+
+    # Resolve prenatal syzygy degree
+    syzygy_longitude = prenatal_syzygy_lon
+    if syzygy_longitude is None:
+        syzygy_longitude = planet_positions.get("Syzygy")
+
+    # Determine key points to score essential dignities at
+    key_points = [sun_longitude, moon_longitude, asc_longitude, fortune_longitude]
+    if syzygy_longitude is not None:
+        key_points.append(syzygy_longitude)
+
+    scores = {}
+    for planet in _PLANET_ORDER:
+        # Sum essential dignities across key points
+        essential_total = sum(dignity_score_at(planet, lon, is_day) for lon in key_points)
+
+        # Accidental dignity: house placement of the planet itself
+        planet_lon = planet_positions.get(planet)
+        house_points = 0
+        if planet_lon is not None:
+            house_num = _get_house(planet_lon, cusps)
+            house_points = ALMUTEN_HOUSE_SCORES.get(house_num, 0)
+
+        # Accidental dignity: day and hour rulers
+        ruler_points = 0
+        if day_ruler is not None and day_ruler == planet:
+            ruler_points += 7
+        if hour_ruler is not None and hour_ruler == planet:
+            ruler_points += 6
+
+        scores[planet] = essential_total + house_points + ruler_points
+
+    return max(_PLANET_ORDER, key=lambda p: scores[p])
 
 
 # ---------------------------------------------------------------------------

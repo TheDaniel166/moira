@@ -54,7 +54,7 @@ Canon: Moira Sovereign Facade Architecture; moira.astrocartography,
     "scope": "class",
     "id": "moira._facade_spatial.SpatialFacadeMixin",
     "risk": "medium",
-    "api": {"frozen": ["astrocartography", "geodetic", "local_space", "parans", "galactic_houses", "relocated_chart"], "internal": []},
+    "api": {"frozen": ["astrocartography", "subplanetary_points", "geodetic", "local_space", "parans", "galactic_houses", "relocated_chart"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -97,6 +97,17 @@ Canon: Moira Sovereign Facade Architecture; moira.astrocartography,
             planet_ra_dec[body] = (sky.right_ascension, sky.declination)
 
         return facade.acg_lines(planet_ra_dec, gmst_deg, lat_step=lat_step)
+
+    def subplanetary_points(
+        self,
+        chart,
+        bodies: list[str] | None = None,
+    ):
+        """Compute zenith/nadir geographic points for chart bodies."""
+        return _facade_module().subplanetary_from_chart(
+            chart,
+            bodies=bodies,
+        )
 
     def geodetic(
         self,

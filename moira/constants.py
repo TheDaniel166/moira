@@ -344,7 +344,7 @@ class HouseSystem:
           "PLACIDUS", "KOCH", "EQUAL", "WHOLE_SIGN", "CAMPANUS",
           "REGIOMONTANUS", "PORPHYRY", "MERIDIAN", "ALCABITIUS", "MORINUS",
           "TOPOCENTRIC", "VEHLOW", "SUNSHINE", "SOLAR_SIGN", "AZIMUTHAL", "CARTER",
-                    "KRUSINSKI", "APC", "ZARIEL"
+                    "KRUSINSKI", "APC", "ZARIEL", "EQUAL_MC"
         ],
         "internal": []
       },
@@ -376,6 +376,7 @@ class HouseSystem:
     KRUSINSKI      = "U"    # Krusinski-Pisa-Goeldi
     APC            = "Y"    # APC houses
     ZARIEL         = "Z"    # Zariel (equal RA divisions from Ascendant RA, projected)
+    EQUAL_MC       = "EM"   # Equal Houses from the Midheaven (MC-Equal)
 
 HOUSE_SYSTEM_NAMES: dict[str, str] = {
     HouseSystem.PLACIDUS:      "Placidus",
@@ -397,6 +398,7 @@ HOUSE_SYSTEM_NAMES: dict[str, str] = {
     HouseSystem.KRUSINSKI:      "Krusinski-Pisa",
     HouseSystem.APC:            "APC",
     HouseSystem.ZARIEL:         "Zariel",
+    HouseSystem.EQUAL_MC:       "Equal from MC",
 }
 
 # ---------------------------------------------------------------------------
