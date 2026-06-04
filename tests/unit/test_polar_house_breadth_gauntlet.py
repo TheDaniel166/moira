@@ -15,9 +15,11 @@ _EPOCHS_UT = {
     "3000_ad": 2816788.0,
 }
 _POLAR_LIMITED_SYSTEMS = (
-    HouseSystem.PLACIDUS,
     HouseSystem.KOCH,
-    )
+    HouseSystem.CAMPANUS,
+    HouseSystem.REGIOMONTANUS,
+    HouseSystem.TOPOCENTRIC,
+)
 _POLAR_OBSERVERS = {
     "north_67": (67.0, 18.0),
     "north_80": (80.0, 15.0),
@@ -66,6 +68,30 @@ def test_dynamic_critical_latitude_fallback_holds_across_epoch_matrix() -> None:
             _assert_same_house_figure(above, porphyry)
 
 
+def test_placidus_above_critical_latitude_is_branch_or_fallback_by_chart() -> None:
+    for epoch_name, jd_ut in _EPOCHS_UT.items():
+        critical_latitude_deg = _critical_latitude_deg(jd_ut)
+        below_latitude_deg = critical_latitude_deg - 0.5
+        above_latitude_deg = critical_latitude_deg + 0.5
+
+        below = calculate_houses(jd_ut, below_latitude_deg, 0.0, HouseSystem.PLACIDUS)
+        above = calculate_houses(jd_ut, above_latitude_deg, 0.0, HouseSystem.PLACIDUS)
+
+        assert below.system == HouseSystem.PLACIDUS, epoch_name
+        assert below.effective_system == HouseSystem.PLACIDUS, epoch_name
+        assert below.fallback is False, epoch_name
+
+        assert above.system == HouseSystem.PLACIDUS, epoch_name
+        if above.fallback:
+            porphyry = calculate_houses(jd_ut, above_latitude_deg, 0.0, HouseSystem.PORPHYRY)
+            assert above.effective_system == HouseSystem.PORPHYRY, epoch_name
+            assert "critical latitude" in (above.fallback_reason or "").lower(), epoch_name
+            _assert_same_house_figure(above, porphyry)
+        else:
+            assert above.effective_system == HouseSystem.PLACIDUS, epoch_name
+            assert above.fallback_reason is None, epoch_name
+
+
 def test_strict_polar_policy_raises_across_dynamic_critical_latitude_matrix() -> None:
     for epoch_name, jd_ut in _EPOCHS_UT.items():
         above_latitude_deg = _critical_latitude_deg(jd_ut) + 0.5
@@ -79,6 +105,33 @@ def test_strict_polar_policy_raises_across_dynamic_critical_latitude_matrix() ->
                     system,
                     policy=HousePolicy.strict(),
                 )
+
+
+def test_strict_placidus_policy_raises_only_when_default_branch_search_fails() -> None:
+    for epoch_name, jd_ut in _EPOCHS_UT.items():
+        above_latitude_deg = _critical_latitude_deg(jd_ut) + 0.5
+        default_result = calculate_houses(jd_ut, above_latitude_deg, 0.0, HouseSystem.PLACIDUS)
+
+        if default_result.fallback:
+            with pytest.raises(ValueError, match="critical latitude"):
+                calculate_houses(
+                    jd_ut,
+                    above_latitude_deg,
+                    0.0,
+                    HouseSystem.PLACIDUS,
+                    policy=HousePolicy.strict(),
+                )
+        else:
+            strict_result = calculate_houses(
+                jd_ut,
+                above_latitude_deg,
+                0.0,
+                HouseSystem.PLACIDUS,
+                policy=HousePolicy.strict(),
+            )
+            assert strict_result.effective_system == HouseSystem.PLACIDUS, epoch_name
+            assert strict_result.fallback is False, epoch_name
+            _assert_same_house_figure(strict_result, default_result)
 
 
 @pytest.mark.requires_ephemeris
@@ -113,4 +166,40 @@ def test_fallback_house_assignments_match_direct_porphyry_across_polar_matrix() 
                         system,
                         body,
                     )
+
+
+@pytest.mark.requires_ephemeris
+def test_placidus_polar_assignments_match_porphyry_only_when_fallback_occurs() -> None:
+    for epoch_name, jd_ut in _EPOCHS_UT.items():
+        for observer_name, (latitude_deg, longitude_deg) in _POLAR_OBSERVERS.items():
+            result = calculate_houses(jd_ut, latitude_deg, longitude_deg, HouseSystem.PLACIDUS)
+            if not result.fallback:
+                assert result.effective_system == HouseSystem.PLACIDUS, (
+                    epoch_name,
+                    observer_name,
+                )
+                continue
+
+            porphyry = calculate_houses(jd_ut, latitude_deg, longitude_deg, HouseSystem.PORPHYRY)
+            assert result.effective_system == HouseSystem.PORPHYRY, (
+                epoch_name,
+                observer_name,
+            )
+            _assert_same_house_figure(result, porphyry)
+
+            for body in _HOUSE_SENSITIVE_BODIES:
+                body_longitude_deg = planet_at(body, jd_ut).longitude
+                result_placement = assign_house(body_longitude_deg, result)
+                porphyry_placement = assign_house(body_longitude_deg, porphyry)
+
+                assert result_placement.house == porphyry_placement.house, (
+                    epoch_name,
+                    observer_name,
+                    body,
+                )
+                assert result_placement.exact_on_cusp is porphyry_placement.exact_on_cusp, (
+                    epoch_name,
+                    observer_name,
+                    body,
+                )
 

@@ -146,7 +146,7 @@ class TestFamilyCorrectness:
         HouseSystem.CAMPANUS, HouseSystem.REGIOMONTANUS, HouseSystem.ALCABITIUS,
         HouseSystem.TOPOCENTRIC, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
         HouseSystem.KRUSINSKI,
-        HouseSystem.APC,
+        HouseSystem.APC, HouseSystem.PULLEN_SD, HouseSystem.PULLEN_SR,
     ])
     def test_quadrant_family_systems(self, system):
         assert classify_house_system(system).family == HouseSystemFamily.QUADRANT
@@ -214,6 +214,12 @@ class TestCuspBasisCorrectness:
     def test_solar_sign_ecliptic(self):
         assert classify_house_system(HouseSystem.SOLAR_SIGN).cusp_basis == HouseSystemCuspBasis.ECLIPTIC
 
+    def test_pullen_sd_sinusoidal(self):
+        assert classify_house_system(HouseSystem.PULLEN_SD).cusp_basis == HouseSystemCuspBasis.SINUSOIDAL
+
+    def test_pullen_sr_sinusoidal(self):
+        assert classify_house_system(HouseSystem.PULLEN_SR).cusp_basis == HouseSystemCuspBasis.SINUSOIDAL
+
 
 # ---------------------------------------------------------------------------
 # Correctness: latitude_sensitive
@@ -239,7 +245,7 @@ class TestLatitudeSensitivity:
         HouseSystem.CAMPANUS, HouseSystem.REGIOMONTANUS, HouseSystem.ALCABITIUS,
         HouseSystem.TOPOCENTRIC, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
         HouseSystem.KRUSINSKI,
-        HouseSystem.APC,
+        HouseSystem.APC, HouseSystem.PULLEN_SD, HouseSystem.PULLEN_SR,
     ])
     def test_latitude_sensitive_systems(self, system):
         assert classify_house_system(system).latitude_sensitive is True
@@ -263,7 +269,7 @@ class TestPolarCapable:
         HouseSystem.SOLAR_SIGN,
         HouseSystem.CARTER, HouseSystem.KRUSINSKI, HouseSystem.APC,
         HouseSystem.PLACIDUS, HouseSystem.ALCABITIUS, HouseSystem.ZARIEL,
-        HouseSystem.EQUAL_MC,
+        HouseSystem.EQUAL_MC, HouseSystem.PULLEN_SD, HouseSystem.PULLEN_SR,
         ])
     def test_polar_capable_systems(self, system):
         assert classify_house_system(system).polar_capable is True
@@ -355,7 +361,7 @@ class TestAllSystemsCovered:
         HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
         HouseSystem.KRUSINSKI,
         HouseSystem.APC,
-        HouseSystem.ZARIEL, HouseSystem.EQUAL_MC,
+        HouseSystem.ZARIEL, HouseSystem.EQUAL_MC, HouseSystem.PULLEN_SD, HouseSystem.PULLEN_SR,
     ]
 
     def test_all_systems_return_classification(self):

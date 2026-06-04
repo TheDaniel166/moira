@@ -108,7 +108,10 @@ class TestNoFallback:
 
 
 # ---------------------------------------------------------------------------
-# Polar fallback: PLACIDUS / KOCH -> PORPHYRY
+# Polar fallback for this specific chart:
+# - Koch falls back above the critical latitude.
+# - Placidus may either resolve its integrated branch doctrine or fall back
+#   when no unique ordered figure exists. At J2000 / 80° latitude, it falls back.
 # The threshold is 90° − obliquity (≈ 66.56° at J2000), not a fixed constant.
 # ---------------------------------------------------------------------------
 
@@ -185,7 +188,7 @@ class TestPolarFallback:
 
 
 # ---------------------------------------------------------------------------
-# Non-polar systems at polar latitudes must NOT fall back
+# Systems with native polar-capable doctrine remain unchanged at polar latitudes
 # ---------------------------------------------------------------------------
 
 class TestNonPolarSystemsAtPolarLatitudes:
@@ -193,12 +196,13 @@ class TestNonPolarSystemsAtPolarLatitudes:
         HouseSystem.WHOLE_SIGN,
         HouseSystem.EQUAL,
         HouseSystem.PORPHYRY,
-        HouseSystem.CAMPANUS,
-        HouseSystem.REGIOMONTANUS,
+        HouseSystem.ALCABITIUS,
         HouseSystem.MORINUS,
         HouseSystem.VEHLOW,
         HouseSystem.SUNSHINE,
         HouseSystem.SOLAR_SIGN,
+        HouseSystem.PULLEN_SD,
+        HouseSystem.PULLEN_SR,
     ])
     def test_non_polar_systems_unchanged_at_polar_lat(self, system):
         r = _polar(system)
@@ -206,6 +210,20 @@ class TestNonPolarSystemsAtPolarLatitudes:
         assert r.effective_system == system
         assert r.fallback is False
         assert r.fallback_reason is None
+
+
+class TestPolarIncapableProjectionSystemsAtPolarLatitudes:
+    @pytest.mark.parametrize("system", [
+        HouseSystem.CAMPANUS,
+        HouseSystem.REGIOMONTANUS,
+        HouseSystem.TOPOCENTRIC,
+    ])
+    def test_projection_systems_fall_back_to_porphyry_at_polar_lat(self, system):
+        r = _polar(system)
+        assert r.system == system
+        assert r.effective_system == HouseSystem.PORPHYRY
+        assert r.fallback is True
+        assert "Porphyry" in (r.fallback_reason or "")
 
 
 # ---------------------------------------------------------------------------

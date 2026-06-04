@@ -35,6 +35,7 @@ _CURATED_PUBLIC_NAMES = [
     "calculate_houses",
     "derived_houses",
     "assign_house",
+    "house_of",
     "describe_boundary",
     "describe_angularity",
     "compare_systems",
@@ -93,11 +94,11 @@ class TestModuleLevelResolution:
 
 
 class TestModuleCounts:
-    def test_curated_count_is_40(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 40
+    def test_curated_count_is_41(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 41
 
-    def test_houses_all_count_is_40(self):
-        assert len(_houses_module.__all__) == 40
+    def test_houses_all_count_is_41(self):
+        assert len(_houses_module.__all__) == 41
 
 
 class TestInternalsRemainInternal:

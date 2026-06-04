@@ -106,9 +106,7 @@ def _krusinski_primary_longitudes(
     ("jd_ut", "latitude_deg", "longitude_deg"),
     [
         (2451545.0, 51.5, 0.0),
-        (2451545.0, 80.0, 0.0),
-        (2456334.666667, 89.9, 0.0),
-        (2456334.500000, -89.9, 0.0),
+        (2456334.500000, -35.0, 0.0),
     ],
 )
 def test_campanus_selects_horizon_hemisphere_branches_at_construction_time(
@@ -144,19 +142,23 @@ def test_campanus_selects_horizon_hemisphere_branches_at_construction_time(
         (2456334.500000, -89.9, 0.0),
     ],
 )
-def test_campanus_preserves_visible_mc_without_retroactive_intermediate_flips(
+def test_campanus_polar_domain_falls_back_to_porphyry(
     jd_ut: float,
     latitude_deg: float,
     longitude_deg: float,
     moira_approx,
 ) -> None:
     houses = calculate_houses(jd_ut, latitude_deg, longitude_deg, HouseSystem.CAMPANUS)
-    obliquity = true_obliquity(ut_to_tt(jd_ut))
-    mc_geometric = _mc_from_armc(houses.armc, obliquity, latitude_deg)
-    mc_visible = _mc_above_horizon(mc_geometric, obliquity, latitude_deg)
+    porphyry = calculate_houses(jd_ut, latitude_deg, longitude_deg, HouseSystem.PORPHYRY)
 
-    assert houses.mc == moira_approx(mc_geometric, kind="longitude")
-    assert houses.cusps[9] == moira_approx(mc_visible, kind="longitude")
+    assert houses.system == HouseSystem.CAMPANUS
+    assert houses.effective_system == HouseSystem.PORPHYRY
+    assert houses.fallback is True
+    assert "critical latitude" in (houses.fallback_reason or "").lower()
+    assert houses.asc == moira_approx(porphyry.asc, kind="longitude")
+    assert houses.mc == moira_approx(porphyry.mc, kind="longitude")
+    for actual, expected in zip(houses.cusps, porphyry.cusps, strict=True):
+        assert actual == moira_approx(expected, kind="longitude")
 
 
 @pytest.mark.parametrize(

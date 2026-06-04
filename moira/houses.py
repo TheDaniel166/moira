@@ -446,6 +446,8 @@ _CLASSIFICATIONS: dict[str, HouseSystemClassification] = {
     HouseSystem.SOLAR_SIGN:    HouseSystemClassification(_F.SOLAR,      _CB.ECLIPTIC,            False, True),
     HouseSystem.ZARIEL:        HouseSystemClassification(_F.EQUAL,      _CB.EQUATORIAL,          False, True),  # equal RA from Asc RA, equatorial project
     HouseSystem.EQUAL_MC:      HouseSystemClassification(_F.EQUAL,      _CB.ECLIPTIC,            False, True),  # equal from MC
+    HouseSystem.PULLEN_SD:     HouseSystemClassification(_F.QUADRANT,   _CB.SINUSOIDAL,          True,  True),
+    HouseSystem.PULLEN_SR:     HouseSystemClassification(_F.QUADRANT,   _CB.SINUSOIDAL,          True,  True),
 }
 
 def classify_house_system(code: str) -> HouseSystemClassification:
@@ -511,6 +513,8 @@ _KNOWN_SYSTEMS: frozenset[str] = frozenset({
     HouseSystem.APC,
     HouseSystem.ZARIEL,
     HouseSystem.EQUAL_MC,
+    HouseSystem.PULLEN_SD,
+    HouseSystem.PULLEN_SR,
 })
 
 
@@ -1953,6 +1957,174 @@ def _equal_mc(mc: float) -> list[float]:
     """
     cusps = [(mc + 90.0 + i * 30.0) % 360.0 for i in range(12)]
     return _finalize_cusps(cusps, context="_equal_mc")
+
+
+# ---------------------------------------------------------------------------
+# Pullen Sinusoidal Houses
+# ---------------------------------------------------------------------------
+
+def _ecliptic_quadrant_arcs(asc: float, mc: float) -> tuple[float, float, float, float]:
+    """
+    Return the four forward ecliptic quadrant arcs anchored by Asc/MC.
+
+    The returned arcs are:
+      Asc -> IC, IC -> DSC, DSC -> MC, MC -> Asc
+    where IC = MC + 180° and DSC = ASC + 180°.
+    """
+    ic = (mc + 180.0) % 360.0
+    dsc = (asc + 180.0) % 360.0
+    return (
+        (ic - asc) % 360.0,
+        (dsc - ic) % 360.0,
+        (mc - dsc) % 360.0,
+        (asc - mc) % 360.0,
+    )
+
+
+def _compressed_expanded_quadrants(asc: float, mc: float) -> tuple[float, float, bool]:
+    """
+    Return the compressed quadrant size q, expanded size 180-q, and orientation.
+
+    The orientation flag is True exactly when the MC -> ASC quadrant is the
+    compressed member of the complementary pair.
+    """
+    asc_to_ic, ic_to_dsc, dsc_to_mc, mc_to_asc = _ecliptic_quadrant_arcs(asc, mc)
+    _require(
+        abs((asc_to_ic + mc_to_asc) - 180.0) < 1e-8,
+        "_compressed_expanded_quadrants: Asc/IC and MC/Asc quadrants do not sum to 180°",
+    )
+    _require(
+        abs((ic_to_dsc + dsc_to_mc) - 180.0) < 1e-8,
+        "_compressed_expanded_quadrants: IC/DSC and DSC/MC quadrants do not sum to 180°",
+    )
+    compressed_is_mc_to_asc = mc_to_asc <= dsc_to_mc
+    q = mc_to_asc if compressed_is_mc_to_asc else dsc_to_mc
+    return q, 180.0 - q, compressed_is_mc_to_asc
+
+
+def _pullen_sd_widths(q: float) -> tuple[float, float, float, float, float, float]:
+    """
+    Return the six doctrinal Pullen SD widths for compressed and expanded sides.
+
+    Order:
+      compressed flank, compressed middle, compressed flank,
+      expanded flank, expanded middle, expanded flank
+    """
+    _require(0.0 <= q <= 90.0 + 1e-9, f"_pullen_sd_widths: q must lie in [0, 90], got {q!r}")
+    if q < 30.0:
+        flank = q / 2.0
+        return flank, 0.0, flank, (180.0 - q) / 4.0, (180.0 - q) / 2.0, (180.0 - q) / 4.0
+
+    n = (90.0 - q) / 4.0
+    x = (q - 30.0) / 2.0
+    return x + n, x, x + n, x + 3.0 * n, x + 4.0 * n, x + 3.0 * n
+
+
+def _solve_pullen_sr_ratio(q: float) -> float:
+    """
+    Solve the Pullen SR ratio parameter r for a compressed quadrant size q.
+    """
+    _require(0.0 < q <= 90.0 + 1e-9, f"_solve_pullen_sr_ratio: q must lie in (0, 90], got {q!r}")
+    if abs(q - 90.0) < 1e-12:
+        return 1.0
+
+    expanded = 180.0 - q
+
+    def f(r: float) -> float:
+        x = q / (2.0 * r + 1.0)
+        return x * (r ** 3) * (r + 2.0) - expanded
+
+    lo = 1.0
+    hi = 2.0
+    while f(hi) <= 0.0:
+        hi *= 2.0
+        _require(hi < 1e12, "_solve_pullen_sr_ratio: failed to bracket SR ratio root")
+
+    for _ in range(80):
+        mid = (lo + hi) / 2.0
+        if f(mid) <= 0.0:
+            lo = mid
+        else:
+            hi = mid
+    return (lo + hi) / 2.0
+
+
+def _pullen_sr_widths(q: float) -> tuple[float, float, float, float, float, float]:
+    """
+    Return the six doctrinal Pullen SR widths for compressed and expanded sides.
+
+    Order:
+      compressed flank, compressed middle, compressed flank,
+      expanded flank, expanded middle, expanded flank
+    """
+    _require(0.0 <= q <= 90.0 + 1e-9, f"_pullen_sr_widths: q must lie in [0, 90], got {q!r}")
+    if q <= 1e-12:
+        return 0.0, 0.0, 0.0, 0.0, 180.0, 0.0
+    r = _solve_pullen_sr_ratio(q)
+    x = q / (2.0 * r + 1.0)
+    return r * x, x, r * x, (r ** 3) * x, (r ** 4) * x, (r ** 3) * x
+
+
+def _assemble_pullen_cusps(
+    asc: float,
+    mc: float,
+    widths: tuple[float, float, float, float, float, float],
+    compressed_is_mc_to_asc: bool,
+) -> list[float]:
+    """
+    Assemble the 12 cusp openings from Asc/MC anchors and doctrinal widths.
+    """
+    small_flank, small_middle, _small_flank_2, big_flank, big_middle, _big_flank_2 = widths
+    small = (small_flank, small_middle, small_flank)
+    big = (big_flank, big_middle, big_flank)
+    if compressed_is_mc_to_asc:
+        house_widths = [
+            big[0], big[1], big[2],
+            small[0], small[1], small[2],
+            big[0], big[1], big[2],
+            small[0], small[1], small[2],
+        ]
+    else:
+        house_widths = [
+            small[0], small[1], small[2],
+            big[0], big[1], big[2],
+            small[0], small[1], small[2],
+            big[0], big[1], big[2],
+        ]
+
+    cusps = [0.0] * 12
+    cusps[0] = asc
+    for index in range(1, 12):
+        cusps[index] = (cusps[index - 1] + house_widths[index - 1]) % 360.0
+
+    ic = (mc + 180.0) % 360.0
+    dsc = (asc + 180.0) % 360.0
+    _require(abs((((cusps[3] - ic) + 180.0) % 360.0) - 180.0) < 1e-8, "_assemble_pullen_cusps: H4 failed IC anchor")
+    _require(abs((((cusps[6] - dsc) + 180.0) % 360.0) - 180.0) < 1e-8, "_assemble_pullen_cusps: H7 failed DSC anchor")
+    _require(abs((((cusps[9] - mc) + 180.0) % 360.0) - 180.0) < 1e-8, "_assemble_pullen_cusps: H10 failed MC anchor")
+    return _finalize_cusps(cusps, context="_assemble_pullen_cusps")
+
+
+def _pullen_sd(asc: float, mc: float) -> list[float]:
+    """Pullen Sinusoidal Delta houses from source-owned ecliptic width law."""
+    q, _expanded, compressed_is_mc_to_asc = _compressed_expanded_quadrants(asc, mc)
+    return _assemble_pullen_cusps(
+        asc,
+        mc,
+        _pullen_sd_widths(q),
+        compressed_is_mc_to_asc,
+    )
+
+
+def _pullen_sr(asc: float, mc: float) -> list[float]:
+    """Pullen Sinusoidal Ratio houses from source-owned ecliptic width law."""
+    q, _expanded, compressed_is_mc_to_asc = _compressed_expanded_quadrants(asc, mc)
+    return _assemble_pullen_cusps(
+        asc,
+        mc,
+        _pullen_sr_widths(q),
+        compressed_is_mc_to_asc,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -4312,6 +4484,10 @@ def houses_from_armc(
         cusps = _zariel(asc, obliquity)
     elif effective_system == HouseSystem.EQUAL_MC:
         cusps = _equal_mc(mc)
+    elif effective_system == HouseSystem.PULLEN_SD:
+        cusps = _pullen_sd(asc, mc)
+    elif effective_system == HouseSystem.PULLEN_SR:
+        cusps = _pullen_sr(asc, mc)
     else:
         cusps = _placidus(armc, obliquity, lat)
 

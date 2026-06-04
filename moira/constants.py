@@ -344,7 +344,7 @@ class HouseSystem:
           "PLACIDUS", "KOCH", "EQUAL", "WHOLE_SIGN", "CAMPANUS",
           "REGIOMONTANUS", "PORPHYRY", "MERIDIAN", "ALCABITIUS", "MORINUS",
           "TOPOCENTRIC", "VEHLOW", "SUNSHINE", "SOLAR_SIGN", "AZIMUTHAL", "CARTER",
-                    "KRUSINSKI", "APC", "ZARIEL", "EQUAL_MC"
+                    "KRUSINSKI", "APC", "ZARIEL", "EQUAL_MC", "PULLEN_SD", "PULLEN_SR"
         ],
         "internal": []
       },
@@ -377,6 +377,8 @@ class HouseSystem:
     APC            = "Y"    # APC houses
     ZARIEL         = "Z"    # Zariel (equal RA divisions from Ascendant RA, projected)
     EQUAL_MC       = "EM"   # Equal Houses from the Midheaven (MC-Equal)
+    PULLEN_SD      = "PSD"  # Pullen Sinusoidal Delta
+    PULLEN_SR      = "PSR"  # Pullen Sinusoidal Ratio
 
 HOUSE_SYSTEM_NAMES: dict[str, str] = {
     HouseSystem.PLACIDUS:      "Placidus",
@@ -399,6 +401,8 @@ HOUSE_SYSTEM_NAMES: dict[str, str] = {
     HouseSystem.APC:            "APC",
     HouseSystem.ZARIEL:         "Zariel",
     HouseSystem.EQUAL_MC:       "Equal from MC",
+    HouseSystem.PULLEN_SD:      "Pullen SD",
+    HouseSystem.PULLEN_SR:      "Pullen SR",
 }
 
 # ---------------------------------------------------------------------------

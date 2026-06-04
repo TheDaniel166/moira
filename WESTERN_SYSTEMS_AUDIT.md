@@ -300,9 +300,8 @@ Placidus is now finished per the protocol. Koch and the other guarded systems re
 All under Urania, pre-edit ritual, minimal touch, spherical/vector geometry (the plane normal is the governing object), no repair in the experimental path.
 
 **Incomplete / Gaps (truthful deep charting):**
-- **Core 20 coverage is excellent for traditional + many modern Western 12-house systems.** The 20 + 5 dedicated give near-complete coverage of what most Western practitioners request (Placidus, Koch, Regio, Campanus, Whole Sign, Equal/Vehlow, Alcabitius, Porphyry, Meridian, Morinus, Topocentric, Zariel, Equal from MC, etc., plus modern Galactic/Gauquelin/Geodetic/Local Space/Huber).
-- **Absent ("forgotten") common or niche Western house systems (Zariel and Equal MC addressed in this pass; see work log above for Swiss/source audit):**
-  - Pullen SD (Symbolic Directions "house" system) and Pullen SR (another Pullen variant) — popular in modern software for symbolic/primary direction work (not traditional cusp geometry; still Type A).
+- **Core 22 coverage is excellent for traditional + many modern Western 12-house systems.** The 22 + 5 dedicated give near-complete coverage of what most Western practitioners request (Placidus, Koch, Regio, Campanus, Whole Sign, Equal/Vehlow, Alcabitius, Porphyry, Meridian, Morinus, Topocentric, Zariel, Equal from MC, Pullen SD, Pullen SR, etc., plus modern Galactic/Gauquelin/Geodetic/Local Space/Huber).
+- **Absent ("forgotten") common or niche Western house systems (Zariel, Equal MC, and now Pullen SD/SR addressed in code):**
   - "Vertical" or "Meridian Vertical" variants (Meridian X is present, but some software has distinct vertical formulations).
   - Rare/niche: "Octant" (8-house), certain "Porphyry variants" (Neo-Porphyry / Pullen Point), "Zariel" derivatives, or "Horizontal from East Point".
   - These remaining are the primary "forgotten" ones. Not mentioned as planned in current roadmaps/standards (focus has been on clean-room for the existing 18 + sovereignty remediation).
@@ -310,9 +309,9 @@ All under Urania, pre-edit ritual, minimal touch, spherical/vector geometry (the
 - Full "psychological house meaning", interpretive reports, or house-based dignity overlays (beyond structural angularity/placement) are limited (Type B — calc + classification strong, meaning layer thin).
 - Geodetic and Local Space are excellent as *spatial frames* but not selectable as a `system` code inside the main `calculate_houses` (separate calculate_* functions) — minor integration gap for users expecting unified API.
 
-**Score:** 95% (Zariel and Equal MC now in Fully + this session's explicit cleanliness/source audit added depth/truth; remaining niche absent keep it from 96%+; still excellent for Western practice) | **Priority:** Low (core traditional Western complete; forgotten mostly niche/symbolic like Pullen).
+**Score:** 96% (Zariel, Equal MC, and now source-owned Pullen SD/SR are live; remaining absences are niche variants and sovereignty-depth edge work rather than major Western coverage gaps) | **Priority:** Low.
 
-**Refs:** wiki/02_standards/HOUSES_BACKEND_STANDARD.md (now factually 20 in code), moira/constants.py (20 codes + names incl ZARIEL and EQUAL_MC), moira/houses.py (full _CLASSIFICATIONS, _KNOWN_SYSTEMS, calculate_houses + _zariel + _equal_mc + shared helpers, experimental_placidus), huber.py, galactic_houses.py, gauquelin.py, geodetic.py, local_space.py, HOUSES_SOVEREIGNTY_REMEDIATION_ROADMAP.md (RA family substrate notes), FEATURE_AUDIT_2026.md (100% for domain, no Zariel/Equal MC mention), MOIRA_COMPETITIVE_ANALYSIS.md (noted 17 + Galactic), facade.py / __init__.py (exports). See houses work log for full Zariel Swiss/source investigation details + citations to code lines.
+**Refs:** wiki/02_standards/HOUSES_BACKEND_STANDARD.md (now factually 22 in code), moira/constants.py (22 codes + names incl ZARIEL, EQUAL_MC, PULLEN_SD, PULLEN_SR), moira/houses.py (full _CLASSIFICATIONS, _KNOWN_SYSTEMS, calculate_houses + `_pullen_sd` + `_pullen_sr` + sinusoidal helpers), wiki/01_doctrines/houses/pullen_sinusoidal_admission_doctrine.md, wiki/01_doctrines/houses/pullen_sinusoidal_runtime_design_note.md, tests/unit/test_pullen_houses.py, huber.py, galactic_houses.py, gauquelin.py, geodetic.py, local_space.py, HOUSES_SOVEREIGNTY_REMEDIATION_ROADMAP.md.
 
 **Mermaid update note:** Updated in mind to reflect "18 core + 5 dedicated (Zariel now Full; Pullen etc. still absent)" — edit the graph in doc on next visual pass if needed.
 

@@ -32,7 +32,7 @@ A **house cusp** in Moira is:
 | *ecliptic longitude* | Degrees along the ecliptic, normalised to `[0, 360)` by `normalize_degrees` |
 | *observer location* | Geographic latitude `[-90, 90]` and longitude `[-180, 180]` in decimal degrees |
 | *Julian date* | UT1-based Julian day number |
-| *house system* | One of the 20 recognised `HouseSystem` codes |
+| *house system* | One of the 22 recognised `HouseSystem` codes |
 
 Twelve cusps are always produced. No system produces fewer or more than 12.
 
@@ -136,7 +136,7 @@ A function in phase N:
 
 ### 3. Supported Systems
 
-20 house system codes are recognised. `_KNOWN_SYSTEMS` is the authoritative frozenset.
+22 house system codes are recognised. `_KNOWN_SYSTEMS` is the authoritative frozenset.
 
 | Code | Name | Family | Cusp basis | Lat-sensitive | Polar-capable |
 |---|---|---|---|---|---|
@@ -147,6 +147,8 @@ A function in phase N:
 | `M` | Morinus | `EQUAL` | `EQUATORIAL` | No | Yes |
 | `X` | Meridian | `EQUAL` | `EQUATORIAL` | No | Yes |
 | `Z` | Zariel | `EQUAL` | `EQUATORIAL` | No | Yes |
+| `PSD` | Pullen SD | `QUADRANT` | `SINUSOIDAL` | Yes | Yes |
+| `PSR` | Pullen SR | `QUADRANT` | `SINUSOIDAL` | Yes | Yes |
 | `S` | Solar Sign | `SOLAR` | `ECLIPTIC` | No | Yes |
 | `O` | Porphyry | `QUADRANT` | `QUADRANT_TRISECTION` | Yes | Yes |
 | `P` | Placidus | `QUADRANT` | `SEMI_ARC` | Yes | Yes |  # integrated high-lat branch search; polar_capable via own doctrine (unique ordered when exists)

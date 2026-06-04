@@ -48,6 +48,8 @@ _ALL_SYSTEMS = [
     HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
     HouseSystem.KRUSINSKI,
     HouseSystem.APC,
+    HouseSystem.PULLEN_SD,
+    HouseSystem.PULLEN_SR,
 ]
 
 
@@ -68,8 +70,8 @@ class TestModuleScopeSets:
     def test_polar_systems_has_exactly_four_members(self):
         assert len(_POLAR_SYSTEMS) == 4
 
-    def test_known_systems_has_exactly_19_members(self):
-        assert len(_KNOWN_SYSTEMS) == 19
+    def test_known_systems_has_exactly_22_members(self):
+        assert len(_KNOWN_SYSTEMS) == 22
 
     def test_polar_systems_members_are_polar_incapable(self):
         for code in _POLAR_SYSTEMS:

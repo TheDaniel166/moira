@@ -76,7 +76,7 @@ def _candidate_pair(ra_deg: float, pole_height_deg: float, obliquity_deg: float,
 @pytest.mark.parametrize(
     ("system", "cases"),
     [
-        (HouseSystem.REGIOMONTANUS, [(2451545.0, 51.5, 0.0), (2456334.666667, 89.9, 0.0), (2456334.5, -89.9, 0.0)]),
+        (HouseSystem.REGIOMONTANUS, [(2451545.0, 51.5, 0.0)]),
         (HouseSystem.KOCH, [(2451545.0, 51.5, 0.0)]),
     ],
 )
@@ -111,26 +111,49 @@ def test_pole_height_family_selects_upper_and_lower_branches_by_horizon_hemisphe
         (2456334.5, -89.9, 0.0),
     ],
 )
-def test_topocentric_uses_visible_mc_branch_doctrine_at_extreme_polar_latitudes(
+def test_topocentric_polar_domain_falls_back_to_porphyry(
     jd_ut: float,
     latitude_deg: float,
     longitude_deg: float,
     moira_approx,
 ) -> None:
     houses = calculate_houses(jd_ut, latitude_deg, longitude_deg, HouseSystem.TOPOCENTRIC)
-    obliquity = true_obliquity(ut_to_tt(jd_ut))
-    specs = _pole_height_specs(HouseSystem.TOPOCENTRIC, houses, obliquity, latitude_deg)
+    porphyry = calculate_houses(jd_ut, latitude_deg, longitude_deg, HouseSystem.PORPHYRY)
 
-    for house_index in (2, 3, 11, 12):
-        raw = _ecliptic_longitude_from_equatorial_vector(
-            _ecliptic_intersection_candidates(
-                _ra_pole_plane_normal(specs[house_index][0] % 360.0, specs[house_index][1]),
-                obliquity,
-            )[0],
-            obliquity,
-        )
-        expected = (raw + 180.0) % 360.0
-        assert houses.cusps[house_index - 1] == moira_approx(expected, kind="longitude")
+    assert houses.system == HouseSystem.TOPOCENTRIC
+    assert houses.effective_system == HouseSystem.PORPHYRY
+    assert houses.fallback is True
+    assert "critical latitude" in (houses.fallback_reason or "").lower()
+    assert houses.asc == moira_approx(porphyry.asc, kind="longitude")
+    assert houses.mc == moira_approx(porphyry.mc, kind="longitude")
+    for actual, expected in zip(houses.cusps, porphyry.cusps, strict=True):
+        assert actual == moira_approx(expected, kind="longitude")
+
+
+@pytest.mark.parametrize(
+    ("jd_ut", "latitude_deg", "longitude_deg"),
+    [
+        (2456334.666667, 89.9, 0.0),
+        (2456334.5, -89.9, 0.0),
+    ],
+)
+def test_regiomontanus_polar_domain_falls_back_to_porphyry(
+    jd_ut: float,
+    latitude_deg: float,
+    longitude_deg: float,
+    moira_approx,
+) -> None:
+    houses = calculate_houses(jd_ut, latitude_deg, longitude_deg, HouseSystem.REGIOMONTANUS)
+    porphyry = calculate_houses(jd_ut, latitude_deg, longitude_deg, HouseSystem.PORPHYRY)
+
+    assert houses.system == HouseSystem.REGIOMONTANUS
+    assert houses.effective_system == HouseSystem.PORPHYRY
+    assert houses.fallback is True
+    assert "critical latitude" in (houses.fallback_reason or "").lower()
+    assert houses.asc == moira_approx(porphyry.asc, kind="longitude")
+    assert houses.mc == moira_approx(porphyry.mc, kind="longitude")
+    for actual, expected in zip(houses.cusps, porphyry.cusps, strict=True):
+        assert actual == moira_approx(expected, kind="longitude")
 
 
 @pytest.mark.parametrize(
