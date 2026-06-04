@@ -79,22 +79,74 @@ This page currently contains reproducible experiments for:
 Validation status
 -----------------
 
-| System | Experimental live | Surface mapped | Witness charts here | Dominant failure mode | Promotion readiness |
-| --- | --- | --- | --- | --- | --- |
-| `Placidus` | yes | yes | yes | missing required roots | already integrated |
-| `Koch` | yes | yes | yes | unordered cusp cycle | not yet |
-| `Regiomontanus` | yes | yes | yes | no valid ordered figure | candidate after more doctrine work |
-| `Topocentric` | yes | yes | yes | unordered cusp cycle | possible later, not first |
-| `Campanus` | yes | yes | yes | unordered cusp cycle | stronger candidate |
-| `Alcabitius` | yes | yes | yes | rare unordered cusp cycle | strongest promotion candidate |
+| System | Experimental live | Ordered latitudes | Practical latitudes | Stable latitudes | Dominant failure mode | Promotion readiness |
+| --- | --- | --- | --- | --- | --- | --- |
+| `Placidus` | yes | `217 / 468` | `217 / 468` | `14 / 468` | missing required roots | already integrated |
+| `Koch` | yes | `468 / 468` | `256 / 468` | `64 / 468` | unordered cusp cycle | not yet |
+| `Regiomontanus` | yes | `468 / 468` | `298 / 468` | `162 / 468` | no valid ordered figure / practical collapse near the pole | candidate after more doctrine work |
+| `Topocentric` | yes | `468 / 468` | `342 / 468` | `162 / 468` | unordered cusp cycle | possible later, not first |
+| `Campanus` | yes | `468 / 468` | `468 / 468` | `290 / 468` | unordered cusp cycle | stronger candidate |
+| `Alcabitius` | yes | `468 / 468` | `468 / 468` | `468 / 468` | rare unordered cusp cycle | strongest promotion candidate |
 
 Current promotion recommendation:
 
 - `Alcabitius` is the best candidate to move out of experimental-only handling first.
 - It has the strongest Greenwich 2000 surface, the cleanest taxonomy, zero assembly failures, and the clearest direct governing object.
 
+Current practical-screening doctrine
+------------------------------------
+
+The validation corpus now records three distinct layers:
+
+- `ordered`: the cusp cycle stays strictly forward in house order
+- `practically admissible`: the ordered cycle also satisfies `rho_max = 7.0`
+- `practically stable`: the practical result survives a full `stability_radius = 2` neighborhood
+
+That means a chart can be:
+
+- ordered but still too distorted to count as practical
+- practical at one timestamp but too fragile to count as stable
+
+This matters most near the pole. The witness charts below prove that the implementations are real. The sweep artifacts show how much of the polar surface remains merely ordered, how much remains practical, and how much remains stable under the current doctrine.
+
 Part I - Placidus experiments
 -----------------------------
+
+### Greenwich year-2000 coverage sweep
+
+This is the broader proof run for experimental Placidus:
+
+- System: `HouseSystem.PLACIDUS`
+- Policy: `HousePolicy.experimental()`
+- Longitude: `0.0`
+- Date range: `2000-01-01 00:00:00 UTC` through `2000-12-31 22:00:00 UTC`
+- Time cadence: every `2` hours
+- Latitude range: every polar latitude from `-89.9` to `89.9` in `0.1` increments, using the sampled polar-cap band
+- Timestamp count: `4392`
+- Latitude count: `468`
+- Total evaluations: `2055456`
+
+What was successful:
+
+- `217 / 468` sampled latitudes produced some ordered figure
+- `217 / 468` sampled latitudes produced some practically admissible figure under `rho_max = 7.0`
+- `14 / 468` sampled latitudes produced some practically stable figure under `stability_radius = 2`
+- the dominant failure mode remained `NO_REQUIRED_ROOTS`, not ordering failure
+
+Representative success fractions:
+
+| Latitude | Successful charts | Total charts | Success fraction | Practical charts | Stable charts |
+| --- | --- | --- | --- | --- | --- |
+| `66.6` | `3945` | `4392` | `0.898224043716` | `2080` | `536` |
+| `77.0` | `21` | `4392` | `0.004781420765` | `21` | `0` |
+| `89.9` | `0` | `4392` | `0.0` | `0` | `0` |
+
+Sweep artifacts:
+
+- [experimental_placidus_greenwich_2000_2h_by_latitude.csv](/C:/Users/nilad/OneDrive/Desktop/Moira%20C++/reports/validation/experimental_placidus_greenwich_2000_2h_by_latitude.csv)
+- [experimental_placidus_greenwich_2000_2h_summary.json](/C:/Users/nilad/OneDrive/Desktop/Moira%20C++/reports/validation/experimental_placidus_greenwich_2000_2h_summary.json)
+- [experimental_placidus_greenwich_2000_2h_daily_calendar.csv](/C:/Users/nilad/OneDrive/Desktop/Moira%20C++/reports/validation/experimental_placidus_greenwich_2000_2h_daily_calendar.csv)
+- [experimental_placidus_greenwich_2000_2h_daily_calendar_summary.json](/C:/Users/nilad/OneDrive/Desktop/Moira%20C++/reports/validation/experimental_placidus_greenwich_2000_2h_daily_calendar_summary.json)
 
 ### Experiment P1 - Experimental Placidus
 
@@ -212,6 +264,42 @@ Expected houses:
 
 Part II - Koch experiments
 --------------------------
+
+### Greenwich year-2000 coverage sweep
+
+This is the broader proof run for experimental Koch:
+
+- System: `HouseSystem.KOCH`
+- Policy: `HousePolicy.experimental()`
+- Longitude: `0.0`
+- Date range: `2000-01-01 00:00:00 UTC` through `2000-12-31 22:00:00 UTC`
+- Time cadence: every `2` hours
+- Latitude range: every polar latitude from `-89.9` to `89.9` in `0.1` increments, using the sampled polar-cap band
+- Timestamp count: `4392`
+- Latitude count: `468`
+- Total evaluations: `2055456`
+
+What was successful:
+
+- `468 / 468` sampled latitudes produced some ordered figure
+- `256 / 468` sampled latitudes produced some practically admissible figure under `rho_max = 7.0`
+- `64 / 468` sampled latitudes produced some practically stable figure under `stability_radius = 2`
+- failures were dominated by `UNORDERED_CUSP_CYCLE`, not branch-selection or assembly failure
+
+Representative success fractions:
+
+| Latitude | Successful charts | Total charts | Success fraction | Practical charts | Stable charts |
+| --- | --- | --- | --- | --- | --- |
+| `66.6` | `4243` | `4392` | `0.966074681239` | `2124` | `654` |
+| `77.0` | `668` | `4392` | `0.152094717668` | `246` | `0` |
+| `89.9` | `6` | `4392` | `0.001366120219` | `0` | `0` |
+
+Sweep artifacts:
+
+- [experimental_koch_greenwich_2000_2h_by_latitude.csv](/C:/Users/nilad/OneDrive/Desktop/Moira%20C++/reports/validation/experimental_koch_greenwich_2000_2h_by_latitude.csv)
+- [experimental_koch_greenwich_2000_2h_summary.json](/C:/Users/nilad/OneDrive/Desktop/Moira%20C++/reports/validation/experimental_koch_greenwich_2000_2h_summary.json)
+- [experimental_koch_greenwich_2000_2h_daily_calendar.csv](/C:/Users/nilad/OneDrive/Desktop/Moira%20C++/reports/validation/experimental_koch_greenwich_2000_2h_daily_calendar.csv)
+- [experimental_koch_greenwich_2000_2h_daily_calendar_summary.json](/C:/Users/nilad/OneDrive/Desktop/Moira%20C++/reports/validation/experimental_koch_greenwich_2000_2h_daily_calendar_summary.json)
 
 ### Experiment K1 - Experimental Koch
 
@@ -355,8 +443,10 @@ This is the broader proof run for experimental Regiomontanus:
 
 What was successful:
 
-- every sampled polar latitude had at least one successful experimental Regiomontanus chart
-- `468 / 468` sampled latitudes produced some valid ordered figure
+- every sampled polar latitude had at least one ordered experimental Regiomontanus chart
+- `468 / 468` sampled latitudes produced some ordered figure
+- `298 / 468` sampled latitudes produced some practically admissible figure under `rho_max = 7.0`
+- `162 / 468` sampled latitudes produced some practically stable figure under `stability_radius = 2`
 
 Representative success fractions:
 
@@ -511,6 +601,8 @@ What was successful:
 
 - every sampled polar latitude had at least one successful experimental Topocentric chart
 - `468 / 468` sampled latitudes produced some valid ordered figure
+- `342 / 468` sampled latitudes produced some practically admissible figure under `rho_max = 7.0`
+- `162 / 468` sampled latitudes produced some practically stable figure under `stability_radius = 2`
 - failures were `UNORDERED_CUSP_CYCLE`, not assembly failures
 
 Representative success fractions:
@@ -656,6 +748,8 @@ What was successful:
 
 - every sampled polar latitude had at least one successful experimental Campanus chart
 - `468 / 468` sampled latitudes produced some valid ordered figure
+- `468 / 468` sampled latitudes produced some practically admissible figure under `rho_max = 7.0`
+- `290 / 468` sampled latitudes produced some practically stable figure under `stability_radius = 2`
 - failures were `UNORDERED_CUSP_CYCLE`, not branch-selection or assembly failures
 
 Representative success fractions:
@@ -801,6 +895,8 @@ What was successful:
 
 - every sampled polar latitude had at least one successful experimental Alcabitius chart
 - `468 / 468` sampled latitudes produced some valid ordered figure
+- `468 / 468` sampled latitudes produced some practically admissible figure under `rho_max = 7.0`
+- `468 / 468` sampled latitudes produced some practically stable figure under `stability_radius = 2`
 - failures were rare `UNORDERED_CUSP_CYCLE` cases, not assembly failures
 
 Representative success fractions:

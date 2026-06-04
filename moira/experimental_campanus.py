@@ -21,7 +21,13 @@ import math
 from dataclasses import dataclass
 from enum import Enum
 
-from ._house_quality import strictly_ordered_cusp_cycle
+from ._house_quality import (
+    HouseCycleVerdict,
+    HouseDistortionProfile,
+    house_cycle_verdict,
+    stable_true_flags,
+    strictly_ordered_cusp_cycle,
+)
 
 
 __all__ = [
@@ -55,6 +61,9 @@ class ExperimentalCampanusResult:
     status: ExperimentalCampanusStatus
     cusps: tuple[float, ...] | None = None
     diagnostic_summary: str = ""
+    quality_verdict: HouseCycleVerdict | None = None
+    distortion_profile: HouseDistortionProfile | None = None
+    practical_rho_max: float | None = None
 
     @property
     def has_solution(self) -> bool:
@@ -82,6 +91,12 @@ class ExperimentalCampanusAdmissibilityMap:
     valid_armcs: tuple[float, ...]
     windows: tuple[ExperimentalCampanusWindow, ...]
     total_samples: int
+    practical_rho_max: float | None = None
+    practically_valid_armcs: tuple[float, ...] = ()
+    practical_windows: tuple[ExperimentalCampanusWindow, ...] = ()
+    stability_radius: int = 0
+    stable_practical_armcs: tuple[float, ...] = ()
+    stable_practical_windows: tuple[ExperimentalCampanusWindow, ...] = ()
 
     @property
     def valid_fraction(self) -> float:
@@ -102,6 +117,7 @@ def search_experimental_campanus(
     mc: float,
     *,
     ordering_tolerance: float = 1e-7,
+    rho_max: float | None = None,
     **kwargs,
 ) -> ExperimentalCampanusResult:
     """
@@ -199,10 +215,20 @@ def search_experimental_campanus(
     if is_ordered:
         status = ExperimentalCampanusStatus.UNIQUE_ORDERED_SOLUTION
         diag = "local-horizon prime-vertical construction yielded ordered Campanus cusps"
+        quality_verdict: HouseCycleVerdict | None = None
+        distortion_profile: HouseDistortionProfile | None = None
+        if rho_max is not None:
+            quality_verdict, distortion_profile = house_cycle_verdict(
+                cusps,
+                rho_max=rho_max,
+                ordering_tolerance=ordering_tolerance,
+            )
     else:
         status = ExperimentalCampanusStatus.UNORDERED_CUSP_CYCLE
         cusps = None
         diag = "assembled cusps not strictly ordered"
+        quality_verdict = None
+        distortion_profile = None
 
     return ExperimentalCampanusResult(
         armc=armc,
@@ -213,6 +239,9 @@ def search_experimental_campanus(
         status=status,
         cusps=cusps,
         diagnostic_summary=diag,
+        quality_verdict=quality_verdict,
+        distortion_profile=distortion_profile,
+        practical_rho_max=rho_max,
     )
 
 
@@ -224,6 +253,8 @@ def scan_experimental_campanus_admissibility(
     armc_end: float = 360.0,
     armc_step: float = 0.5,
     ordering_tolerance: float = 1e-7,
+    rho_max: float | None = None,
+    stability_radius: int = 0,
 ) -> ExperimentalCampanusAdmissibilityMap:
     """Scan ARMC space for unique ordered experimental Campanus solutions."""
     from .houses import _asc_from_armc, _mc_from_armc
@@ -232,8 +263,12 @@ def scan_experimental_campanus_admissibility(
         raise ValueError("armc_step must be > 0")
     if armc_end < armc_start:
         raise ValueError("armc_end must be >= armc_start")
+    if stability_radius < 0:
+        raise ValueError("stability_radius must be >= 0")
 
     valid_armcs: list[float] = []
+    practical_armcs: list[float] = []
+    practical_flags: list[bool] = []
     armc = armc_start
     while armc <= armc_end + 1e-12:
         asc = _asc_from_armc(armc, obliquity, latitude)
@@ -245,9 +280,14 @@ def scan_experimental_campanus_admissibility(
             asc,
             mc,
             ordering_tolerance=ordering_tolerance,
+            rho_max=rho_max,
         )
         if result.status == ExperimentalCampanusStatus.UNIQUE_ORDERED_SOLUTION:
             valid_armcs.append(round(armc, 10))
+        is_practical = result.quality_verdict == "practically_admissible"
+        practical_flags.append(is_practical)
+        if is_practical:
+            practical_armcs.append(round(armc, 10))
         armc += armc_step
 
     windows: list[ExperimentalCampanusWindow] = []
@@ -273,6 +313,58 @@ def scan_experimental_campanus_admissibility(
             )
         )
 
+    practical_windows: list[ExperimentalCampanusWindow] = []
+    if practical_armcs:
+        start = prev = practical_armcs[0]
+        for armc_value in practical_armcs[1:]:
+            if abs(armc_value - prev - armc_step) < 1e-9:
+                prev = armc_value
+            else:
+                practical_windows.append(
+                    ExperimentalCampanusWindow(
+                        start_armc=start,
+                        end_armc=prev,
+                        sample_count=int(round((prev - start) / armc_step)) + 1,
+                    )
+                )
+                start = prev = armc_value
+        practical_windows.append(
+            ExperimentalCampanusWindow(
+                start_armc=start,
+                end_armc=prev,
+                sample_count=int(round((prev - start) / armc_step)) + 1,
+            )
+        )
+
+    stable_practical_flags = stable_true_flags(practical_flags, radius=stability_radius)
+    stable_practical_armcs = tuple(
+        round(armc_start + index * armc_step, 10)
+        for index, is_stable in enumerate(stable_practical_flags)
+        if is_stable
+    )
+    stable_practical_windows: list[ExperimentalCampanusWindow] = []
+    if stable_practical_armcs:
+        start = prev = stable_practical_armcs[0]
+        for armc_value in stable_practical_armcs[1:]:
+            if abs(armc_value - prev - armc_step) < 1e-9:
+                prev = armc_value
+            else:
+                stable_practical_windows.append(
+                    ExperimentalCampanusWindow(
+                        start_armc=start,
+                        end_armc=prev,
+                        sample_count=int(round((prev - start) / armc_step)) + 1,
+                    )
+                )
+                start = prev = armc_value
+        stable_practical_windows.append(
+            ExperimentalCampanusWindow(
+                start_armc=start,
+                end_armc=prev,
+                sample_count=int(round((prev - start) / armc_step)) + 1,
+            )
+        )
+
     total_samples = int(round((armc_end - armc_start) / armc_step)) + 1
     return ExperimentalCampanusAdmissibilityMap(
         latitude=latitude,
@@ -283,4 +375,10 @@ def scan_experimental_campanus_admissibility(
         valid_armcs=tuple(valid_armcs),
         windows=tuple(windows),
         total_samples=total_samples,
+        practical_rho_max=rho_max,
+        practically_valid_armcs=tuple(practical_armcs),
+        practical_windows=tuple(practical_windows),
+        stability_radius=stability_radius,
+        stable_practical_armcs=stable_practical_armcs,
+        stable_practical_windows=tuple(stable_practical_windows),
     )

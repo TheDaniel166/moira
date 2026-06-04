@@ -19,6 +19,8 @@ from typing import Literal
 
 
 _EXTREME_HOUSE_TOLERANCE = 1e-9
+DEFAULT_PRACTICAL_RHO_MAX = 7.0
+DEFAULT_STABILITY_RADIUS = 2
 
 
 HouseCycleVerdict = Literal[
@@ -141,3 +143,32 @@ def house_cycle_verdict(
     if admissible:
         return "practically_admissible", profile
     return "ordered_but_impractical", profile
+
+
+def stable_true_flags(
+    flags: tuple[bool, ...] | list[bool],
+    *,
+    radius: int,
+) -> tuple[bool, ...]:
+    """
+    Mark samples whose full radius-neighborhood is also True.
+
+    A sample is stable only when:
+    - the sample itself is True
+    - the requested neighborhood fits inside the sampled range
+    - every sample in that closed neighborhood is True
+    """
+    if radius < 0:
+        raise ValueError("radius must be >= 0")
+
+    stable: list[bool] = []
+    count = len(flags)
+    for index, flag in enumerate(flags):
+        if not flag:
+            stable.append(False)
+            continue
+        if index - radius < 0 or index + radius >= count:
+            stable.append(False)
+            continue
+        stable.append(all(flags[neighbor] for neighbor in range(index - radius, index + radius + 1)))
+    return tuple(stable)

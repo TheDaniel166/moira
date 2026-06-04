@@ -194,9 +194,9 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import Enum
 from itertools import combinations, permutations
-from typing import Collection
+from typing import Collection, Callable
 
-from .constants import Aspect, AspectDefinition, ASPECT_TIERS, DEFAULT_ORBS, TRADITIONAL_MOIETY_ORBS
+from .constants import Aspect, AspectDefinition, ASPECT_TIERS, DEFAULT_ORBS, TRADITIONAL_MOIETY_ORBS, Body
 from .coordinates import angular_distance
 
 __all__ = [
@@ -757,29 +757,50 @@ class AspectPatternKind(str, Enum):
 
     Implemented (detectable by ``find_patterns``)
     ----------------------------------------------
-    STELLIUM    — three or more bodies within mutual Conjunction orbs.
-                  Minimum size: 3 bodies; no maximum imposed.
-    T_SQUARE    — three bodies: one Opposition and two Squares forming a
-                  right-angle cross (the apex body squares both poles).
-    GRAND_TRINE — three bodies each separated by a Trine (120°), forming
-                  an equilateral triangle in the chart.
-    GRAND_CROSS — four bodies: two Oppositions and four Squares forming a
-                  square cross (each body squares its two neighbours and
-                  opposes the one across).
-    YOD         — three bodies: two Quincunxes (150°) sharing an apex and
-                  a Sextile (60°) connecting the base pair.  Also called
-                  the Finger of God.
-
-    Deferred (not yet implemented)
-    ------------------------------
-    Kite, Mystic Rectangle, Grand Quintile, and other oriented or 5-body
-    patterns require topology reasoning not yet in scope.
+    STELLIUM         — three or more bodies within mutual Conjunction orbs.
+    T_SQUARE         — three bodies: one Opposition and two Squares forming a
+                       right-angle cross (the apex body squares both poles).
+    GRAND_TRINE      — three bodies each separated by a Trine (120°), forming
+                       an equilateral triangle in the chart.
+    GRAND_CROSS      — four bodies: two Oppositions and four Squares forming a
+                       square cross.
+    YOD              — three bodies: two Quincunxes (150°) sharing an apex and
+                       a Sextile (60°) connecting the base pair.
+    KITE             — four bodies: a Grand Trine and a fourth body opposing the apex
+                       and forming sextiles to the other two.
+    MYSTIC_RECTANGLE — four bodies: two Oppositions, two Trines, and two Sextiles.
+    CRADLE           — four bodies: one Opposition, three Sextiles, and two Trines.
+    WEDGE            — three bodies: one Opposition, one Trine, and one Sextile.
+    BUTTERFLY        — four bodies: two Wedges sharing the same Opposition axis.
+    GRAND_SEXTILE    — six bodies forming a closed loop of six Sextiles.
+    GOLDEN_YOD       — three bodies: two Biquintiles (144°) and a Quintile (72°).
+    THORS_HAMMER     — three bodies: two Sesquiquadrates (135°) and a Square (90°).
+    FINGER_OF_WORLD  — three bodies: two Semisquares (45°) and a Square (90°).
+    GRAND_QUINTILE   — five bodies: five Quintiles forming a closed pentagon.
+    GRAND_SEPTILE    — seven bodies: seven Septiles forming a closed heptagon.
+    GRAND_NOVILE     — nine bodies: nine Noviles forming a closed nonagon.
+    ENVELOPE         — five bodies: a Mystic Rectangle connected to a fifth body.
+    YOD_OF_DESTINY   — four bodies: three Quincunxes sharing an apex and two Sextiles.
     """
-    STELLIUM    = "stellium"
-    T_SQUARE    = "t_square"
-    GRAND_TRINE = "grand_trine"
-    GRAND_CROSS = "grand_cross"
-    YOD         = "yod"
+    STELLIUM         = "stellium"
+    T_SQUARE         = "t_square"
+    GRAND_TRINE      = "grand_trine"
+    GRAND_CROSS      = "grand_cross"
+    YOD              = "yod"
+    KITE             = "kite"
+    MYSTIC_RECTANGLE = "mystic_rectangle"
+    CRADLE           = "cradle"
+    WEDGE            = "wedge"
+    BUTTERFLY        = "butterfly"
+    GRAND_SEXTILE    = "grand_sextile"
+    GOLDEN_YOD       = "golden_yod"
+    THORS_HAMMER     = "thors_hammer"
+    FINGER_OF_WORLD  = "finger_of_world"
+    GRAND_QUINTILE   = "grand_quintile"
+    GRAND_SEPTILE    = "grand_septile"
+    GRAND_NOVILE     = "grand_novile"
+    ENVELOPE         = "envelope"
+    YOD_OF_DESTINY   = "yod_of_destiny"
 
 
 @dataclass(frozen=True, slots=True)
@@ -903,151 +924,321 @@ def _find_stellia(
     return results
 
 
-def _find_t_squares(
-    idx: dict[frozenset[str], list[AspectData]],
-    all_bodies: set[str],
+@dataclass(frozen=True, slots=True)
+class _PatternTemplate:
+    kind: AspectPatternKind
+    num_bodies: int
+    edges: list[tuple[int, int, frozenset[str]]]
+    filter_fn: Callable[[tuple[str, ...], list[AspectData]], bool] | None = None
+
+
+_PATTERN_TEMPLATES: list[_PatternTemplate] = [
+    # 1. T-Square
+    _PatternTemplate(
+        kind=AspectPatternKind.T_SQUARE,
+        num_bodies=3,
+        edges=[
+            (1, 2, frozenset({"Opposition"})),
+            (0, 1, frozenset({"Square"})),
+            (0, 2, frozenset({"Square"})),
+        ],
+    ),
+    # 2. Grand Trine
+    _PatternTemplate(
+        kind=AspectPatternKind.GRAND_TRINE,
+        num_bodies=3,
+        edges=[
+            (0, 1, frozenset({"Trine"})),
+            (1, 2, frozenset({"Trine"})),
+            (0, 2, frozenset({"Trine"})),
+        ],
+    ),
+    # 3. Grand Cross
+    _PatternTemplate(
+        kind=AspectPatternKind.GRAND_CROSS,
+        num_bodies=4,
+        edges=[
+            (0, 2, frozenset({"Opposition"})),
+            (1, 3, frozenset({"Opposition"})),
+            (0, 1, frozenset({"Square"})),
+            (1, 2, frozenset({"Square"})),
+            (2, 3, frozenset({"Square"})),
+            (3, 0, frozenset({"Square"})),
+        ],
+    ),
+    # 4. Yod
+    _PatternTemplate(
+        kind=AspectPatternKind.YOD,
+        num_bodies=3,
+        edges=[
+            (1, 2, frozenset({"Sextile"})),
+            (0, 1, frozenset({"Quincunx"})),
+            (0, 2, frozenset({"Quincunx"})),
+        ],
+    ),
+    # 5. Kite
+    _PatternTemplate(
+        kind=AspectPatternKind.KITE,
+        num_bodies=4,
+        edges=[
+            (0, 1, frozenset({"Trine"})),
+            (0, 2, frozenset({"Trine"})),
+            (1, 2, frozenset({"Trine"})),
+            (0, 3, frozenset({"Opposition"})),
+            (1, 3, frozenset({"Sextile"})),
+            (2, 3, frozenset({"Sextile"})),
+        ],
+    ),
+    # 6. Mystic Rectangle
+    _PatternTemplate(
+        kind=AspectPatternKind.MYSTIC_RECTANGLE,
+        num_bodies=4,
+        edges=[
+            (0, 3, frozenset({"Opposition"})),
+            (1, 2, frozenset({"Opposition"})),
+            (0, 1, frozenset({"Trine"})),
+            (2, 3, frozenset({"Trine"})),
+            (0, 2, frozenset({"Sextile"})),
+            (1, 3, frozenset({"Sextile"})),
+        ],
+    ),
+    # 7. Cradle
+    _PatternTemplate(
+        kind=AspectPatternKind.CRADLE,
+        num_bodies=4,
+        edges=[
+            (0, 3, frozenset({"Opposition"})),
+            (0, 1, frozenset({"Sextile"})),
+            (1, 2, frozenset({"Sextile"})),
+            (2, 3, frozenset({"Sextile"})),
+            (0, 2, frozenset({"Trine"})),
+            (1, 3, frozenset({"Trine"})),
+        ],
+    ),
+    # 8. Wedge
+    _PatternTemplate(
+        kind=AspectPatternKind.WEDGE,
+        num_bodies=3,
+        edges=[
+            (1, 2, frozenset({"Opposition"})),
+            (0, 1, frozenset({"Trine", "Sextile"})),
+            (0, 2, frozenset({"Trine", "Sextile"})),
+        ],
+        filter_fn=lambda bodies, aspects: {a.aspect for a in aspects} == {"Opposition", "Trine", "Sextile"},
+    ),
+    # 9. Butterfly
+    _PatternTemplate(
+        kind=AspectPatternKind.BUTTERFLY,
+        num_bodies=4,
+        edges=[
+            (0, 1, frozenset({"Opposition"})),
+            (0, 2, frozenset({"Trine", "Sextile"})),
+            (1, 2, frozenset({"Trine", "Sextile"})),
+            (0, 3, frozenset({"Trine", "Sextile"})),
+            (1, 3, frozenset({"Trine", "Sextile"})),
+        ],
+        filter_fn=lambda bodies, aspects: (
+            len(aspects) == 5
+            and sum(1 for a in aspects if a.aspect == "Opposition") == 1
+            and sum(1 for a in aspects if a.aspect == "Trine") == 2
+            and sum(1 for a in aspects if a.aspect == "Sextile") == 2
+            and {a.aspect for a in aspects if frozenset((a.body1, a.body2)) == frozenset((bodies[0], bodies[2])) or frozenset((a.body1, a.body2)) == frozenset((bodies[1], bodies[2]))} == {"Trine", "Sextile"}
+            and {a.aspect for a in aspects if frozenset((a.body1, a.body2)) == frozenset((bodies[0], bodies[3])) or frozenset((a.body1, a.body2)) == frozenset((bodies[1], bodies[3]))} == {"Trine", "Sextile"}
+        ),
+    ),
+    # 10. Grand Sextile
+    _PatternTemplate(
+        kind=AspectPatternKind.GRAND_SEXTILE,
+        num_bodies=6,
+        edges=[
+            (0, 3, frozenset({"Opposition"})),
+            (1, 4, frozenset({"Opposition"})),
+            (2, 5, frozenset({"Opposition"})),
+            (0, 2, frozenset({"Trine"})),
+            (2, 4, frozenset({"Trine"})),
+            (4, 0, frozenset({"Trine"})),
+            (1, 3, frozenset({"Trine"})),
+            (3, 5, frozenset({"Trine"})),
+            (5, 1, frozenset({"Trine"})),
+            (0, 1, frozenset({"Sextile"})),
+            (1, 2, frozenset({"Sextile"})),
+            (2, 3, frozenset({"Sextile"})),
+            (3, 4, frozenset({"Sextile"})),
+            (4, 5, frozenset({"Sextile"})),
+            (5, 0, frozenset({"Sextile"})),
+        ],
+    ),
+    # 11. Golden Yod
+    _PatternTemplate(
+        kind=AspectPatternKind.GOLDEN_YOD,
+        num_bodies=3,
+        edges=[
+            (1, 2, frozenset({"Quintile"})),
+            (0, 1, frozenset({"Biquintile"})),
+            (0, 2, frozenset({"Biquintile"})),
+        ],
+    ),
+    # 12. Thor's Hammer
+    _PatternTemplate(
+        kind=AspectPatternKind.THORS_HAMMER,
+        num_bodies=3,
+        edges=[
+            (1, 2, frozenset({"Square"})),
+            (0, 1, frozenset({"Sesquiquadrate"})),
+            (0, 2, frozenset({"Sesquiquadrate"})),
+        ],
+    ),
+    # 13. Finger of the World
+    _PatternTemplate(
+        kind=AspectPatternKind.FINGER_OF_WORLD,
+        num_bodies=3,
+        edges=[
+            (1, 2, frozenset({"Square"})),
+            (0, 1, frozenset({"Semisquare"})),
+            (0, 2, frozenset({"Semisquare"})),
+        ],
+    ),
+    # 14. Grand Quintile
+    _PatternTemplate(
+        kind=AspectPatternKind.GRAND_QUINTILE,
+        num_bodies=5,
+        edges=[
+            (0, 1, frozenset({"Quintile"})),
+            (1, 2, frozenset({"Quintile"})),
+            (2, 3, frozenset({"Quintile"})),
+            (3, 4, frozenset({"Quintile"})),
+            (4, 0, frozenset({"Quintile"})),
+        ],
+    ),
+    # 15. Grand Septile
+    _PatternTemplate(
+        kind=AspectPatternKind.GRAND_SEPTILE,
+        num_bodies=7,
+        edges=[
+            (0, 1, frozenset({"Septile"})),
+            (1, 2, frozenset({"Septile"})),
+            (2, 3, frozenset({"Septile"})),
+            (3, 4, frozenset({"Septile"})),
+            (4, 5, frozenset({"Septile"})),
+            (5, 6, frozenset({"Septile"})),
+            (6, 0, frozenset({"Septile"})),
+        ],
+    ),
+    # 16. Grand Novile
+    _PatternTemplate(
+        kind=AspectPatternKind.GRAND_NOVILE,
+        num_bodies=9,
+        edges=[
+            (0, 1, frozenset({"Novile"})),
+            (1, 2, frozenset({"Novile"})),
+            (2, 3, frozenset({"Novile"})),
+            (3, 4, frozenset({"Novile"})),
+            (4, 5, frozenset({"Novile"})),
+            (5, 6, frozenset({"Novile"})),
+            (6, 7, frozenset({"Novile"})),
+            (7, 8, frozenset({"Novile"})),
+            (8, 0, frozenset({"Novile"})),
+        ],
+    ),
+    # 17. Envelope
+    _PatternTemplate(
+        kind=AspectPatternKind.ENVELOPE,
+        num_bodies=5,
+        edges=[
+            (0, 3, frozenset({"Opposition"})),
+            (1, 2, frozenset({"Opposition"})),
+            (0, 1, frozenset({"Trine"})),
+            (2, 3, frozenset({"Trine"})),
+            (0, 2, frozenset({"Sextile"})),
+            (1, 3, frozenset({"Sextile"})),
+            (0, 4, frozenset({"Conjunction", "Sextile", "Square", "Trine", "Opposition"})),
+            (1, 4, frozenset({"Conjunction", "Sextile", "Square", "Trine", "Opposition"})),
+            (2, 4, frozenset({"Conjunction", "Sextile", "Square", "Trine", "Opposition"})),
+            (3, 4, frozenset({"Conjunction", "Sextile", "Square", "Trine", "Opposition"})),
+        ],
+    ),
+    # 18. Yod of Destiny
+    _PatternTemplate(
+        kind=AspectPatternKind.YOD_OF_DESTINY,
+        num_bodies=4,
+        edges=[
+            (0, 1, frozenset({"Quincunx"})),
+            (0, 2, frozenset({"Quincunx"})),
+            (0, 3, frozenset({"Quincunx"})),
+            (1, 2, frozenset({"Sextile"})),
+            (2, 3, frozenset({"Sextile"})),
+        ],
+    ),
+]
+
+
+def _match_pattern_template(
+    template: _PatternTemplate,
+    adjacency: dict[str, dict[str, list[AspectData]]],
+    all_bodies: list[str],
 ) -> list[AspectPattern]:
-    """
-    Detect T-Squares: A opposes B, C squares both A and B.
+    num_vertices = template.num_bodies
+    constraints = [[] for _ in range(num_vertices)]
+    for u, v, allowed in template.edges:
+        u, v = min(u, v), max(u, v)
+        constraints[v].append((u, allowed))
 
-    C is the apex; A–B is the opposition axis.  All three permutations of
-    apex are checked.
-    """
     results: list[AspectPattern] = []
-    seen: set[frozenset[str]] = set()
-    bl = sorted(all_bodies)
-    for i, a in enumerate(bl):
-        for j in range(i + 1, len(bl)):
-            b = bl[j]
-            opp = _aspects_of_kind(idx, a, b, "Opposition")
-            if not opp:
-                continue
-            for k in range(len(bl)):
-                c = bl[k]
-                if c == a or c == b:
-                    continue
-                sq_ac = _aspects_of_kind(idx, a, c, "Square")
-                sq_bc = _aspects_of_kind(idx, b, c, "Square")
-                if sq_ac and sq_bc:
-                    key = frozenset((a, b, c))
-                    if key not in seen:
-                        seen.add(key)
-                        contrib = opp[:1] + sq_ac[:1] + sq_bc[:1]
-                        results.append(AspectPattern(
-                            kind=AspectPatternKind.T_SQUARE,
-                            bodies=key,
-                            aspects=tuple(sorted(contrib, key=lambda x: (x.body1, x.body2, x.aspect))),
-                        ))
-    return results
+    seen_sets: set[frozenset[str]] = set()
 
+    current = [None] * num_vertices
+    used = set()
 
-def _find_grand_trines(
-    idx: dict[frozenset[str], list[AspectData]],
-    all_bodies: set[str],
-) -> list[AspectPattern]:
-    """
-    Detect Grand Trines: A trines B, B trines C, A trines C.
-    """
-    results: list[AspectPattern] = []
-    seen: set[frozenset[str]] = set()
-    bl = sorted(all_bodies)
-    for i, a in enumerate(bl):
-        for j in range(i + 1, len(bl)):
-            b = bl[j]
-            tr_ab = _aspects_of_kind(idx, a, b, "Trine")
-            if not tr_ab:
-                continue
-            for k in range(j + 1, len(bl)):
-                c = bl[k]
-                tr_bc = _aspects_of_kind(idx, b, c, "Trine")
-                tr_ac = _aspects_of_kind(idx, a, c, "Trine")
-                if tr_bc and tr_ac:
-                    key = frozenset((a, b, c))
-                    if key not in seen:
-                        seen.add(key)
-                        contrib = tr_ab[:1] + tr_bc[:1] + tr_ac[:1]
-                        results.append(AspectPattern(
-                            kind=AspectPatternKind.GRAND_TRINE,
-                            bodies=key,
-                            aspects=tuple(sorted(contrib, key=lambda x: (x.body1, x.body2, x.aspect))),
-                        ))
-    return results
+    def backtrack(idx: int) -> None:
+        if idx == num_vertices:
+            bodies_tuple = tuple(current)
+            bodies_set = frozenset(bodies_tuple)
+            if bodies_set in seen_sets:
+                return
 
+            match_aspects: list[AspectData] = []
+            for u, v, allowed in template.edges:
+                b_u, b_v = bodies_tuple[u], bodies_tuple[v]
+                aspect_candidates = adjacency[b_u][b_v]
+                match_aspects.append(next(a for a in aspect_candidates if a.aspect in allowed))
 
-def _find_grand_crosses(
-    idx: dict[frozenset[str], list[AspectData]],
-    all_bodies: set[str],
-) -> list[AspectPattern]:
-    """
-    Detect Grand Crosses: four bodies forming two opposition axes with
-    each body squaring its two neighbours.
+            if template.filter_fn is not None:
+                if not template.filter_fn(bodies_tuple, match_aspects):
+                    return
 
-    Required edges: A–B opp, C–D opp, A–C sq, A–D sq, B–C sq, B–D sq.
-    All valid labellings of the four bodies are checked.
-    """
-    results: list[AspectPattern] = []
-    seen: set[frozenset[str]] = set()
+            seen_sets.add(bodies_set)
+            results.append(AspectPattern(
+                kind=template.kind,
+                bodies=bodies_set,
+                aspects=tuple(sorted(match_aspects, key=lambda a: (a.body1, a.body2, a.aspect))),
+            ))
+            return
 
-    for quad in combinations(sorted(all_bodies), 4):
-        key = frozenset(quad)
-        if key in seen:
-            continue
-        for a, b, c, d in permutations(quad):
-            opp_ab = _aspects_of_kind(idx, a, b, "Opposition")
-            opp_cd = _aspects_of_kind(idx, c, d, "Opposition")
-            sq_ac  = _aspects_of_kind(idx, a, c, "Square")
-            sq_ad  = _aspects_of_kind(idx, a, d, "Square")
-            sq_bc  = _aspects_of_kind(idx, b, c, "Square")
-            sq_bd  = _aspects_of_kind(idx, b, d, "Square")
-            if opp_ab and opp_cd and sq_ac and sq_ad and sq_bc and sq_bd:
-                seen.add(key)
-                contrib = (
-                    opp_ab[:1] + opp_cd[:1] +
-                    sq_ac[:1] + sq_ad[:1] + sq_bc[:1] + sq_bd[:1]
-                )
-                results.append(AspectPattern(
-                    kind=AspectPatternKind.GRAND_CROSS,
-                    bodies=key,
-                    aspects=tuple(sorted(contrib, key=lambda x: (x.body1, x.body2, x.aspect))),
-                ))
-                break
-    return results
+        candidates = None
+        for u, allowed in constraints[idx]:
+            b_u = current[u]
+            neighbors = set()
+            for b_neighbor, aspect_list in adjacency.get(b_u, {}).items():
+                if any(a.aspect in allowed for a in aspect_list):
+                    neighbors.add(b_neighbor)
+            if candidates is None:
+                candidates = neighbors
+            else:
+                candidates &= neighbors
+            if not candidates:
+                return
 
+        iter_candidates = all_bodies if candidates is None else candidates
 
-def _find_yods(
-    idx: dict[frozenset[str], list[AspectData]],
-    all_bodies: set[str],
-) -> list[AspectPattern]:
-    """
-    Detect Yods (Finger of God): apex A is quincunx both B and C,
-    and B and C are sextile each other.
+        for b in iter_candidates:
+            if b not in used:
+                current[idx] = b
+                used.add(b)
+                backtrack(idx + 1)
+                used.remove(b)
+                current[idx] = None
 
-    All three permutations of apex are checked.
-    """
-    results: list[AspectPattern] = []
-    seen: set[frozenset[str]] = set()
-    bl = sorted(all_bodies)
-    for i, b in enumerate(bl):
-        for j in range(i + 1, len(bl)):
-            c = bl[j]
-            sext = _aspects_of_kind(idx, b, c, "Sextile")
-            if not sext:
-                continue
-            for a in bl:
-                if a == b or a == c:
-                    continue
-                q_ab = _aspects_of_kind(idx, a, b, "Quincunx")
-                q_ac = _aspects_of_kind(idx, a, c, "Quincunx")
-                if q_ab and q_ac:
-                    key = frozenset((a, b, c))
-                    if key not in seen:
-                        seen.add(key)
-                        contrib = sext[:1] + q_ab[:1] + q_ac[:1]
-                        results.append(AspectPattern(
-                            kind=AspectPatternKind.YOD,
-                            bodies=key,
-                            aspects=tuple(sorted(contrib, key=lambda x: (x.body1, x.body2, x.aspect))),
-                        ))
+    backtrack(0)
     return results
 
 
@@ -1061,16 +1252,29 @@ def find_patterns(aspects: list[AspectData]) -> list[AspectPattern]:
 
     Implemented patterns (see ``AspectPatternKind`` for full doctrine)
     ------------------------------------------------------------------
-    STELLIUM    — ≥3 bodies in mutual Conjunction.
-    T_SQUARE    — 3 bodies: one Opposition + two Squares (apex squares both poles).
-    GRAND_TRINE — 3 bodies: three mutual Trines.
-    GRAND_CROSS — 4 bodies: two Oppositions + four Squares forming a closed cross.
-    YOD         — 3 bodies: Sextile base + two Quincunxes meeting at an apex.
+    STELLIUM         — ≥3 bodies in mutual Conjunction.
+    T_SQUARE         — 3 bodies: one Opposition + two Squares.
+    GRAND_TRINE      — 3 bodies: three mutual Trines.
+    GRAND_CROSS      — 4 bodies: two Oppositions + four Squares.
+    YOD              — 3 bodies: Sextile base + two Quincunxes meeting at apex.
+    KITE             — 4 bodies: Grand Trine + Opposition apex-focus + two Sextiles.
+    MYSTIC_RECTANGLE — 4 bodies: two Oppositions + two Trines + two Sextiles.
+    CRADLE           — 4 bodies: one Opposition + three Sextiles + two Trines.
+    WEDGE            — 3 bodies: one Opposition + one Trine + one Sextile.
+    BUTTERFLY        — 4 bodies: two Wedges sharing an Opposition axis.
+    GRAND_SEXTILE    — 6 bodies: six consecutive Sextiles forming a loop.
+    GOLDEN_YOD       — 3 bodies: two Biquintiles + one Quintile.
+    THORS_HAMMER     — 3 bodies: two Sesquiquadrates + one Square.
+    FINGER_OF_WORLD  — 3 bodies: two Semisquares + one Square.
+    GRAND_QUINTILE   — 5 bodies: five Quintiles forming a closed pentagon.
+    GRAND_SEPTILE    — 7 bodies: seven Septiles forming a closed heptagon.
+    GRAND_NOVILE     — 9 bodies: nine Noviles forming a closed nonagon.
+    ENVELOPE         — 5 bodies: a Mystic Rectangle connected to a fifth body.
+    YOD_OF_DESTINY   — 4 bodies: three Quincunxes sharing apex + two Sextiles.
 
     Each detected pattern is reported at most once per unique body set.
     Sub-patterns contained within a larger Stellium are suppressed; all
-    other pattern types are independent (a Grand Cross may also contain
-    T-Squares; both are reported).
+    other pattern types are independent.
 
     Determinism contract
     --------------------
@@ -1079,35 +1283,42 @@ def find_patterns(aspects: list[AspectData]) -> list[AspectPattern]:
 
     - ``bodies`` is a ``frozenset`` — order-independent.
     - ``aspects`` inside each pattern is sorted by ``(body1, body2, aspect)``
-      — identical for any permutation of the input list that contains the
-      same logical pairwise aspects.
-    - Patterns of the same kind are emitted in the order determined by
-      sorted body-name iteration (the outer loops in each helper always
-      iterate over ``sorted(all_bodies)``).
+      — identical for any permutation of the input list.
+    - Patterns are emitted in the order of `AspectPatternKind` enum declaration.
+      Within each kind, they are sorted by lexicographically ordered body names.
 
     Parameters
     ----------
-    aspects : list of ``AspectData`` as returned by ``find_aspects``,
-              ``aspects_between``, or any combination.
+    aspects : list of ``AspectData`` as returned by ``find_aspects``.
 
     Returns
     -------
-    List of ``AspectPattern``, in the order: Stellia, T-Squares, Grand
-    Trines, Grand Crosses, Yods.  Empty list when no pattern is found.
+    List of ``AspectPattern``, empty list when no pattern is found.
     """
     if not aspects:
         return []
 
-    idx       = _aspect_index(aspects)
-    all_b: set[str] = {a.body1 for a in aspects} | {a.body2 for a in aspects}
+    idx = _aspect_index(aspects)
+    all_names: set[str] = {a.body1 for a in aspects} | {a.body2 for a in aspects}
+    all_bodies = sorted(all_names)
 
-    return (
-        _find_stellia(aspects, idx)
-        + _find_t_squares(idx, all_b)
-        + _find_grand_trines(idx, all_b)
-        + _find_grand_crosses(idx, all_b)
-        + _find_yods(idx, all_b)
-    )
+    # Build adjacency mapping for templates matcher
+    adjacency: dict[str, dict[str, list[AspectData]]] = {}
+    for a in aspects:
+        adjacency.setdefault(a.body1, {}).setdefault(a.body2, []).append(a)
+        adjacency.setdefault(a.body2, {}).setdefault(a.body1, []).append(a)
+
+    results = []
+    # 1. Stellia
+    results.extend(_find_stellia(aspects, idx))
+
+    # 2. Declarative patterns
+    for template in _PATTERN_TEMPLATES:
+        matched = _match_pattern_template(template, adjacency, all_bodies)
+        matched.sort(key=lambda p: sorted(p.bodies))
+        results.extend(matched)
+
+    return results
 
 
 # ---------------------------------------------------------------------------
@@ -1617,20 +1828,21 @@ class AspectData:
     @property
     def is_major(self) -> bool:
         """True when this aspect belongs to the five Ptolemaic major aspects."""
-        return (self.classification is not None
-                and self.classification.tier is AspectTier.MAJOR)
+        if self.classification is not None:
+            return self.classification.tier is AspectTier.MAJOR
+        return self.aspect in ("Conjunction", "Sextile", "Square", "Trine", "Opposition")
 
     @property
     def is_minor(self) -> bool:
         """True when this aspect is not a Ptolemaic major aspect."""
-        return (self.classification is not None
-                and self.classification.tier is not AspectTier.MAJOR)
+        if self.classification is not None:
+            return self.classification.tier is not AspectTier.MAJOR
+        return not self.is_major
 
     @property
     def is_zodiacal(self) -> bool:
         """True when this aspect is measured along the ecliptic (always True for AspectData)."""
-        return (self.classification is not None
-                and self.classification.domain is AspectDomain.ZODIACAL)
+        return True
 
     @property
     def is_applying(self) -> bool:
@@ -1666,12 +1878,9 @@ class AspectData:
     @property
     def is_platic(self) -> bool:
         """
-        True when this is a Ptolemaic major aspect admitted within orb but not partile.
-
-        Returns ``False`` for non-major aspects; neither partile nor platic
-        applies outside the five Ptolemaic major aspects.
+        True when this aspect is admitted within orb but not partile.
         """
-        return self.is_major and not self.is_partile
+        return not self.is_partile
 
     def __repr__(self) -> str:
         app = " applying" if self.applying else " separating" if self.applying is False else ""
@@ -1965,7 +2174,24 @@ def _sign_degree_number(longitude: float) -> int:
     return int(within_sign)
 
 
-_STATIONARY_THRESHOLD = 0.005  # degrees/day — below this a planet is considered stationary
+_STATIONARY_THRESHOLDS: dict[str, float] = {
+    Body.MERCURY: 0.060,
+    Body.VENUS:   0.050,
+    Body.MARS:    0.015,
+    Body.JUPITER: 0.008,
+    Body.SATURN:  0.004,
+    Body.URANUS:  0.0015,
+    Body.NEPTUNE: 0.0008,
+    Body.PLUTO:   0.0005,
+}
+
+
+def _is_stationary(b1: str, b2: str, speeds: dict[str, float]) -> bool:
+    """Return True when either body's speed is below its specific stationary threshold."""
+    t1 = _STATIONARY_THRESHOLDS.get(b1, 0.005)
+    t2 = _STATIONARY_THRESHOLDS.get(b2, 0.005)
+    return (abs(speeds.get(b1, 1.0)) < t1
+            or abs(speeds.get(b2, 1.0)) < t2)
 
 
 def _applying(
@@ -1977,9 +2203,9 @@ def _applying(
     """
     True = applying, False = separating, None = unknown or stationary.
 
-    Returns None when either body's daily speed is below the stationary
-    threshold (< 0.005°/day), because the applying/separating distinction
-    is not meaningful for a body that is effectively motionless.
+    Returns None when either body's daily speed is below its specific stationary
+    threshold, because the applying/separating distinction is not meaningful
+    for a body that is effectively motionless.
 
     The signed shortest-arc difference ``diff = (lon2 - lon1 + 180) % 360 - 180``
     gives the rate of change of the angular separation:
@@ -1993,20 +2219,12 @@ def _applying(
     """
     if b1 not in speeds or b2 not in speeds:
         return None
-    if (abs(speeds.get(b1, 1.0)) < _STATIONARY_THRESHOLD
-            or abs(speeds.get(b2, 1.0)) < _STATIONARY_THRESHOLD):
+    if _is_stationary(b1, b2, speeds):
         return None
     diff = (lon2 - lon1 + 180.0) % 360.0 - 180.0
     sep = abs(diff)
     dsep_dt = (speeds[b2] - speeds[b1]) if diff >= 0 else (speeds[b1] - speeds[b2])
     return dsep_dt < 0 if sep >= angle else dsep_dt > 0
-
-
-def _is_stationary(b1: str, b2: str, speeds: dict[str, float]) -> bool:
-    """Return True when either body's speed is below 0.01°/day."""
-    _STAT_BROAD = 0.01
-    return (abs(speeds.get(b1, 1.0)) < _STAT_BROAD
-            or abs(speeds.get(b2, 1.0)) < _STAT_BROAD)
 
 
 def _aspect_direction(lon1: float, lon2: float, angle: float) -> AspectDirection | None:

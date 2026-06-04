@@ -41,6 +41,22 @@ def test_search_experimental_alcabitius_finds_unique_ordered_solution_at_77n_arm
     assert result.cusps[11] == pytest.approx(147.81905630537835, abs=1e-9)
 
 
+def test_search_experimental_alcabitius_reports_quality_verdict_when_rho_ceiling_supplied() -> None:
+    result = search_experimental_alcabitius(
+        _ARMC_VALID,
+        _OB_J2000,
+        _LAT_77,
+        asc=180.0,
+        mc=90.0,
+        rho_max=10.0,
+    )
+
+    assert result.status == ExperimentalAlcabitiusStatus.UNIQUE_ORDERED_SOLUTION
+    assert result.quality_verdict == "practically_admissible"
+    assert result.distortion_profile is not None
+    assert result.practical_rho_max == pytest.approx(10.0, abs=1e-12)
+
+
 def test_houses_from_armc_experimental_policy_uses_alcabitius_at_77n_valid_armc() -> None:
     houses = houses_from_armc(
         _ARMC_VALID,
@@ -167,10 +183,45 @@ def test_scan_experimental_alcabitius_admissibility_recovers_measured_77n_window
     )
 
 
+def test_scan_experimental_alcabitius_admissibility_tracks_practical_and_stable_windows() -> None:
+    admissibility = scan_experimental_alcabitius_admissibility(
+        _LAT_77,
+        _OB_J2000,
+        armc_start=0.0,
+        armc_end=355.0,
+        armc_step=5.0,
+        rho_max=10.0,
+        stability_radius=1,
+    )
+
+    assert admissibility.practical_rho_max == pytest.approx(10.0, abs=1e-12)
+    assert len(admissibility.practically_valid_armcs) == 58
+    assert admissibility.practical_windows == (
+        ExperimentalAlcabitiusWindow(start_armc=0.0, end_armc=190.0, sample_count=39),
+        ExperimentalAlcabitiusWindow(start_armc=230.0, end_armc=310.0, sample_count=17),
+        ExperimentalAlcabitiusWindow(start_armc=350.0, end_armc=355.0, sample_count=2),
+    )
+    assert admissibility.stability_radius == 1
+    assert len(admissibility.stable_practical_armcs) == 52
+    assert admissibility.stable_practical_windows == (
+        ExperimentalAlcabitiusWindow(start_armc=5.0, end_armc=185.0, sample_count=37),
+        ExperimentalAlcabitiusWindow(start_armc=235.0, end_armc=305.0, sample_count=15),
+    )
+
+
 def test_scan_experimental_alcabitius_admissibility_rejects_non_positive_step() -> None:
     with pytest.raises(ValueError, match="armc_step must be > 0"):
         scan_experimental_alcabitius_admissibility(
             _LAT_77,
             _OB_J2000,
             armc_step=0.0,
+        )
+
+
+def test_scan_experimental_alcabitius_admissibility_rejects_negative_stability_radius() -> None:
+    with pytest.raises(ValueError, match="stability_radius must be >= 0"):
+        scan_experimental_alcabitius_admissibility(
+            _LAT_77,
+            _OB_J2000,
+            stability_radius=-1,
         )

@@ -9,6 +9,7 @@ from moira._house_quality import (
     house_cycle_verdict,
     house_distortion_profile,
     practically_admissible_cusp_cycle,
+    stable_true_flags,
     strictly_ordered_cusp_cycle,
 )
 
@@ -208,3 +209,15 @@ def test_house_cycle_verdict_reports_practically_admissible() -> None:
     assert verdict == "practically_admissible"
     assert profile is not None
     assert profile.distortion_ratio == pytest.approx(1.0, abs=1e-12)
+
+
+def test_stable_true_flags_requires_full_true_neighborhood() -> None:
+    flags = (False, True, True, True, False, True, True)
+
+    assert stable_true_flags(flags, radius=0) == flags
+    assert stable_true_flags(flags, radius=1) == (False, False, True, False, False, False, False)
+
+
+def test_stable_true_flags_rejects_negative_radius() -> None:
+    with pytest.raises(ValueError, match="radius must be >= 0"):
+        stable_true_flags((True, True), radius=-1)

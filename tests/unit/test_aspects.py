@@ -1461,6 +1461,30 @@ def _qcx(b1: str, b2: str) -> AspectData:
     return _make_aspect(b1, b2, "Quincunx", 150.0, "⚻")
 
 
+def _quint(b1: str, b2: str) -> AspectData:
+    return _make_aspect(b1, b2, "Quintile", 72.0, "Q")
+
+
+def _biq(b1: str, b2: str) -> AspectData:
+    return _make_aspect(b1, b2, "Biquintile", 144.0, "bQ")
+
+
+def _sesq(b1: str, b2: str) -> AspectData:
+    return _make_aspect(b1, b2, "Sesquiquadrate", 135.0, "⚼")
+
+
+def _semi(b1: str, b2: str) -> AspectData:
+    return _make_aspect(b1, b2, "Semisquare", 45.0, "angle")
+
+
+def _sept(b1: str, b2: str) -> AspectData:
+    return _make_aspect(b1, b2, "Septile", 360.0 / 7.0, "S")
+
+
+def _nov(b1: str, b2: str) -> AspectData:
+    return _make_aspect(b1, b2, "Novile", 40.0, "N")
+
+
 # ---------------------------------------------------------------------------
 # find_patterns — empty input
 # ---------------------------------------------------------------------------
@@ -1699,9 +1723,15 @@ def test_aspect_pattern_aspects_is_tuple() -> None:
 
 
 def test_aspect_pattern_kind_enum_values() -> None:
-    """AspectPatternKind has exactly the five documented string members."""
+    """AspectPatternKind has exactly the nineteen documented string members."""
     members = {m.value for m in AspectPatternKind}
-    assert members == {"stellium", "t_square", "grand_trine", "grand_cross", "yod"}
+    assert members == {
+        "stellium", "t_square", "grand_trine", "grand_cross", "yod",
+        "kite", "mystic_rectangle", "cradle", "wedge", "butterfly",
+        "grand_sextile", "golden_yod", "thors_hammer", "finger_of_world",
+        "grand_quintile", "grand_septile", "grand_novile", "envelope",
+        "yod_of_destiny"
+    }
 
 
 def test_aspect_pattern_all_bodies_appear_in_contributing_aspects() -> None:
@@ -1713,6 +1743,168 @@ def test_aspect_pattern_all_bodies_appear_in_contributing_aspects() -> None:
         bodies_in_aspects.add(a.body1)
         bodies_in_aspects.add(a.body2)
     assert p.bodies <= bodies_in_aspects
+
+
+def test_find_patterns_kite_detected() -> None:
+    aspects = [
+        _trine("Sun", "Moon"), _trine("Moon", "Mars"), _trine("Sun", "Mars"),
+        _opp("Sun", "Venus"), _sext("Moon", "Venus"), _sext("Mars", "Venus")
+    ]
+    patterns = find_patterns(aspects)
+    kites = [p for p in patterns if p.kind == AspectPatternKind.KITE]
+    assert len(kites) == 1
+    assert kites[0].bodies == frozenset({"Sun", "Moon", "Mars", "Venus"})
+    assert len(kites[0].aspects) == 6
+
+
+def test_find_patterns_mystic_rectangle_detected() -> None:
+    aspects = [
+        _opp("Sun", "Moon"), _opp("Mars", "Venus"),
+        _trine("Sun", "Mars"), _trine("Moon", "Venus"),
+        _sext("Sun", "Venus"), _sext("Moon", "Mars")
+    ]
+    patterns = find_patterns(aspects)
+    rects = [p for p in patterns if p.kind == AspectPatternKind.MYSTIC_RECTANGLE]
+    assert len(rects) == 1
+    assert rects[0].bodies == frozenset({"Sun", "Moon", "Mars", "Venus"})
+    assert len(rects[0].aspects) == 6
+
+
+def test_find_patterns_cradle_detected() -> None:
+    aspects = [
+        _opp("Sun", "Moon"),
+        _sext("Sun", "Mars"), _sext("Mars", "Venus"), _sext("Venus", "Moon"),
+        _trine("Sun", "Venus"), _trine("Mars", "Moon")
+    ]
+    patterns = find_patterns(aspects)
+    cradles = [p for p in patterns if p.kind == AspectPatternKind.CRADLE]
+    assert len(cradles) == 1
+    assert cradles[0].bodies == frozenset({"Sun", "Moon", "Mars", "Venus"})
+    assert len(cradles[0].aspects) == 6
+
+
+def test_find_patterns_wedge_detected() -> None:
+    aspects = [
+        _opp("Sun", "Moon"), _trine("Sun", "Mars"), _sext("Moon", "Mars")
+    ]
+    patterns = find_patterns(aspects)
+    wedges = [p for p in patterns if p.kind == AspectPatternKind.WEDGE]
+    assert len(wedges) == 1
+    assert wedges[0].bodies == frozenset({"Sun", "Moon", "Mars"})
+
+
+def test_find_patterns_butterfly_detected() -> None:
+    aspects = [
+        _opp("Sun", "Moon"),
+        _trine("Sun", "Mars"), _sext("Moon", "Mars"),
+        _sext("Sun", "Venus"), _trine("Moon", "Venus")
+    ]
+    patterns = find_patterns(aspects)
+    butterflies = [p for p in patterns if p.kind == AspectPatternKind.BUTTERFLY]
+    assert len(butterflies) == 1
+    assert butterflies[0].bodies == frozenset({"Sun", "Moon", "Mars", "Venus"})
+
+
+def test_find_patterns_grand_sextile_detected() -> None:
+    aspects = [
+        _opp("A", "D"), _opp("B", "E"), _opp("C", "F"),
+        _trine("A", "C"), _trine("C", "E"), _trine("E", "A"),
+        _trine("B", "D"), _trine("D", "F"), _trine("F", "B"),
+        _sext("A", "B"), _sext("B", "C"), _sext("C", "D"),
+        _sext("D", "E"), _sext("E", "F"), _sext("F", "A")
+    ]
+    patterns = find_patterns(aspects)
+    gsexts = [p for p in patterns if p.kind == AspectPatternKind.GRAND_SEXTILE]
+    assert len(gsexts) == 1
+    assert gsexts[0].bodies == frozenset({"A", "B", "C", "D", "E", "F"})
+
+
+def test_find_patterns_golden_yod_detected() -> None:
+    aspects = [
+        _quint("Moon", "Mars"), _biq("Sun", "Moon"), _biq("Sun", "Mars")
+    ]
+    patterns = find_patterns(aspects)
+    gyods = [p for p in patterns if p.kind == AspectPatternKind.GOLDEN_YOD]
+    assert len(gyods) == 1
+    assert gyods[0].bodies == frozenset({"Sun", "Moon", "Mars"})
+
+
+def test_find_patterns_thors_hammer_detected() -> None:
+    aspects = [
+        _sq("Moon", "Mars"), _sesq("Sun", "Moon"), _sesq("Sun", "Mars")
+    ]
+    patterns = find_patterns(aspects)
+    hammers = [p for p in patterns if p.kind == AspectPatternKind.THORS_HAMMER]
+    assert len(hammers) == 1
+    assert hammers[0].bodies == frozenset({"Sun", "Moon", "Mars"})
+
+
+def test_find_patterns_finger_of_world_detected() -> None:
+    aspects = [
+        _sq("Moon", "Mars"), _semi("Sun", "Moon"), _semi("Sun", "Mars")
+    ]
+    patterns = find_patterns(aspects)
+    fingers = [p for p in patterns if p.kind == AspectPatternKind.FINGER_OF_WORLD]
+    assert len(fingers) == 1
+    assert fingers[0].bodies == frozenset({"Sun", "Moon", "Mars"})
+
+
+def test_find_patterns_grand_quintile_detected() -> None:
+    aspects = [
+        _quint("A", "B"), _quint("B", "C"), _quint("C", "D"),
+        _quint("D", "E"), _quint("E", "A")
+    ]
+    patterns = find_patterns(aspects)
+    gquints = [p for p in patterns if p.kind == AspectPatternKind.GRAND_QUINTILE]
+    assert len(gquints) == 1
+    assert gquints[0].bodies == frozenset({"A", "B", "C", "D", "E"})
+
+
+def test_find_patterns_grand_septile_detected() -> None:
+    aspects = [
+        _sept("A", "B"), _sept("B", "C"), _sept("C", "D"),
+        _sept("D", "E"), _sept("E", "F"), _sept("F", "G"), _sept("G", "A")
+    ]
+    patterns = find_patterns(aspects)
+    gsepts = [p for p in patterns if p.kind == AspectPatternKind.GRAND_SEPTILE]
+    assert len(gsepts) == 1
+    assert gsepts[0].bodies == frozenset({"A", "B", "C", "D", "E", "F", "G"})
+
+
+def test_find_patterns_grand_novile_detected() -> None:
+    aspects = [
+        _nov("A", "B"), _nov("B", "C"), _nov("C", "D"),
+        _nov("D", "E"), _nov("E", "F"), _nov("F", "G"),
+        _nov("G", "H"), _nov("H", "I"), _nov("I", "A")
+    ]
+    patterns = find_patterns(aspects)
+    gnovs = [p for p in patterns if p.kind == AspectPatternKind.GRAND_NOVILE]
+    assert len(gnovs) == 1
+    assert gnovs[0].bodies == frozenset({"A", "B", "C", "D", "E", "F", "G", "H", "I"})
+
+
+def test_find_patterns_envelope_detected() -> None:
+    aspects = [
+        _opp("A", "D"), _opp("B", "C"),
+        _trine("A", "B"), _trine("C", "D"),
+        _sext("A", "C"), _sext("B", "D"),
+        _sext("E", "A"), _trine("E", "B"), _sq("E", "C"), _conj("E", "D")
+    ]
+    patterns = find_patterns(aspects)
+    envelopes = [p for p in patterns if p.kind == AspectPatternKind.ENVELOPE]
+    assert len(envelopes) == 1
+    assert envelopes[0].bodies == frozenset({"A", "B", "C", "D", "E"})
+
+
+def test_find_patterns_yod_of_destiny_detected() -> None:
+    aspects = [
+        _qcx("A", "B"), _qcx("A", "C"), _qcx("A", "D"),
+        _sext("B", "C"), _sext("C", "D")
+    ]
+    patterns = find_patterns(aspects)
+    destinies = [p for p in patterns if p.kind == AspectPatternKind.YOD_OF_DESTINY]
+    assert len(destinies) == 1
+    assert destinies[0].bodies == frozenset({"A", "B", "C", "D"})
 
 
 # ===========================================================================

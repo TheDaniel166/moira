@@ -6,7 +6,13 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from moira._house_quality import (
+    DEFAULT_PRACTICAL_RHO_MAX,
+    DEFAULT_STABILITY_RADIUS,
+    stable_true_flags,
+)
 from moira.experimental_topocentric import (
+    ExperimentalTopocentricResult,
     ExperimentalTopocentricStatus,
     search_experimental_topocentric,
 )
@@ -23,6 +29,8 @@ LONGITUDE = 0.0
 LATITUDE_START = 66.6
 LATITUDE_END = 89.9
 LATITUDE_STEP = 0.1
+PRACTICAL_RHO_MAX = DEFAULT_PRACTICAL_RHO_MAX
+STABILITY_RADIUS = DEFAULT_STABILITY_RADIUS
 REPORTS_DIR = Path("reports/validation")
 BY_LATITUDE_CSV = REPORTS_DIR / "experimental_topocentric_greenwich_2000_2h_by_latitude.csv"
 SUMMARY_JSON = REPORTS_DIR / "experimental_topocentric_greenwich_2000_2h_summary.json"
@@ -90,17 +98,17 @@ def _build_timestamps() -> list[TimestampMeta]:
 def _evaluate(
     latitude: float,
     ts: TimestampMeta,
-) -> tuple[ExperimentalTopocentricStatus, tuple[float, ...] | None]:
+) -> ExperimentalTopocentricResult:
     asc = _asc_from_armc(ts.armc, ts.obliquity, latitude)
     mc = _mc_from_armc(ts.armc, ts.obliquity, latitude)
-    result = search_experimental_topocentric(
+    return search_experimental_topocentric(
         ts.armc,
         ts.obliquity,
         latitude,
         asc=asc,
         mc=mc,
+        rho_max=PRACTICAL_RHO_MAX,
     )
-    return result.status, result.cusps
 
 
 def main() -> None:
@@ -121,8 +129,13 @@ def main() -> None:
                 "latitude",
                 "date",
                 "pass_count",
+                "ordered_count",
+                "practical_count",
+                "stable_count",
                 "fail_count",
                 "success_fraction",
+                "practical_fraction",
+                "stable_fraction",
                 "any_pass",
                 "all_pass",
                 "all_fail",
@@ -136,10 +149,16 @@ def main() -> None:
 
         for latitude in latitudes:
             success_count = 0
+            practical_count = 0
+            stable_count = 0
             total_count = 0
             status_counts = {status: 0 for status in STATUS_ORDER}
             first_success_datetime: str | None = None
             last_success_datetime: str | None = None
+            first_practical_datetime: str | None = None
+            last_practical_datetime: str | None = None
+            first_stable_datetime: str | None = None
+            last_stable_datetime: str | None = None
             first_success_payload: dict[str, object] | None = None
 
             total_pass_days = 0
@@ -147,14 +166,27 @@ def main() -> None:
             total_mixed_days = 0
             first_success_date: str | None = None
             last_success_date: str | None = None
+            first_practical_date: str | None = None
+            last_practical_date: str | None = None
+            first_stable_date: str | None = None
+            last_stable_date: str | None = None
 
             current_date: str | None = None
             day_slots: dict[str, str] = {}
             day_status_counts = {status: 0 for status in STATUS_ORDER}
             day_pass_count = 0
+            day_practical_count = 0
+            day_stable_count = 0
             day_fail_count = 0
             day_first_pass: str | None = None
             day_last_pass: str | None = None
+
+            evaluations = [(ts, _evaluate(latitude, ts)) for ts in timestamps]
+            practical_flags = [
+                result.quality_verdict == "practically_admissible"
+                for _, result in evaluations
+            ]
+            stable_flags = stable_true_flags(practical_flags, radius=STABILITY_RADIUS)
 
             def flush_day() -> None:
                 nonlocal total_pass_days
@@ -162,6 +194,10 @@ def main() -> None:
                 nonlocal total_mixed_days
                 nonlocal first_success_date
                 nonlocal last_success_date
+                nonlocal first_practical_date
+                nonlocal last_practical_date
+                nonlocal first_stable_date
+                nonlocal last_stable_date
                 if current_date is None:
                     return
 
@@ -169,8 +205,13 @@ def main() -> None:
                     "latitude": f"{latitude:.1f}",
                     "date": current_date,
                     "pass_count": day_pass_count,
+                    "ordered_count": day_pass_count,
+                    "practical_count": day_practical_count,
+                    "stable_count": day_stable_count,
                     "fail_count": day_fail_count,
                     "success_fraction": day_pass_count / len(SLOT_LABELS),
+                    "practical_fraction": day_practical_count / len(SLOT_LABELS),
+                    "stable_fraction": day_stable_count / len(SLOT_LABELS),
                     "any_pass": day_pass_count > 0,
                     "all_pass": day_fail_count == 0,
                     "all_fail": day_pass_count == 0,
@@ -193,8 +234,14 @@ def main() -> None:
                 if day_pass_count > 0:
                     first_success_date = first_success_date or current_date
                     last_success_date = current_date
+                if day_practical_count > 0:
+                    first_practical_date = first_practical_date or current_date
+                    last_practical_date = current_date
+                if day_stable_count > 0:
+                    first_stable_date = first_stable_date or current_date
+                    last_stable_date = current_date
 
-            for ts in timestamps:
+            for index, (ts, result) in enumerate(evaluations):
                 ts_date = ts.dt.date().isoformat()
                 if current_date is None:
                     current_date = ts_date
@@ -204,11 +251,14 @@ def main() -> None:
                     day_slots = {}
                     day_status_counts = {status: 0 for status in STATUS_ORDER}
                     day_pass_count = 0
+                    day_practical_count = 0
+                    day_stable_count = 0
                     day_fail_count = 0
                     day_first_pass = None
                     day_last_pass = None
 
-                status, cusps = _evaluate(latitude, ts)
+                status = result.status
+                cusps = result.cusps
                 succeeded = status == ExperimentalTopocentricStatus.UNIQUE_ORDERED_SOLUTION
                 total_count += 1
                 status_counts[status] += 1
@@ -224,6 +274,16 @@ def main() -> None:
                     if day_first_pass is None:
                         day_first_pass = success_iso
                     day_last_pass = success_iso
+                    if practical_flags[index]:
+                        practical_count += 1
+                        day_practical_count += 1
+                        first_practical_datetime = first_practical_datetime or success_iso
+                        last_practical_datetime = success_iso
+                    if stable_flags[index]:
+                        stable_count += 1
+                        day_stable_count += 1
+                        first_stable_datetime = first_stable_datetime or success_iso
+                        last_stable_datetime = success_iso
                     if first_success_payload is None and cusps is not None:
                         first_success_payload = {
                             "datetime_utc": success_iso,
@@ -242,10 +302,19 @@ def main() -> None:
             by_latitude_row = {
                 "latitude": f"{latitude:.1f}",
                 "success_count": success_count,
+                "ordered_count": success_count,
+                "practical_count": practical_count,
+                "stable_count": stable_count,
                 "total_count": total_count,
                 "success_fraction": success_fraction,
+                "practical_fraction": practical_count / total_count if total_count else 0.0,
+                "stable_fraction": stable_count / total_count if total_count else 0.0,
                 "first_success_datetime_utc": first_success_datetime or "",
                 "last_success_datetime_utc": last_success_datetime or "",
+                "first_practical_datetime_utc": first_practical_datetime or "",
+                "last_practical_datetime_utc": last_practical_datetime or "",
+                "first_stable_datetime_utc": first_stable_datetime or "",
+                "last_stable_datetime_utc": last_stable_datetime or "",
             }
             for status in STATUS_ORDER:
                 by_latitude_row[f"{status.value}_count"] = status_counts[status]
@@ -262,6 +331,12 @@ def main() -> None:
                 "mixed_days": total_mixed_days,
                 "first_success_date_utc": first_success_date,
                 "last_success_date_utc": last_success_date,
+                "first_practical_date_utc": first_practical_date,
+                "last_practical_date_utc": last_practical_date,
+                "first_stable_date_utc": first_stable_date,
+                "last_stable_date_utc": last_stable_date,
+                "practical_count": practical_count,
+                "stable_count": stable_count,
             }
             for status in STATUS_ORDER:
                 calendar_summary[f"{status.value}_count"] = status_counts[status]
@@ -273,10 +348,19 @@ def main() -> None:
             fieldnames=[
                 "latitude",
                 "success_count",
+                "ordered_count",
+                "practical_count",
+                "stable_count",
                 "total_count",
                 "success_fraction",
+                "practical_fraction",
+                "stable_fraction",
                 "first_success_datetime_utc",
                 "last_success_datetime_utc",
+                "first_practical_datetime_utc",
+                "last_practical_datetime_utc",
+                "first_stable_datetime_utc",
+                "last_stable_datetime_utc",
                 *_status_count_fields(),
             ],
         )
@@ -305,13 +389,19 @@ def main() -> None:
                     },
                     "timestamp_count": len(timestamps),
                     "evaluation_count": len(latitudes) * len(timestamps),
+                    "practical_rho_max": PRACTICAL_RHO_MAX,
+                    "stability_radius": STABILITY_RADIUS,
                 },
                 "aggregate": {
                     "latitudes_with_any_success": latitudes_with_any_success,
+                    "latitudes_with_any_practical": sum(1 for row in by_latitude_rows if int(row["practical_count"]) > 0),
+                    "latitudes_with_any_stable": sum(1 for row in by_latitude_rows if int(row["stable_count"]) > 0),
                     "status_totals": {
                         status.value: sum(int(row[f"{status.value}_count"]) for row in by_latitude_rows)
                         for status in STATUS_ORDER
                     },
+                    "practical_total": sum(int(row["practical_count"]) for row in by_latitude_rows),
+                    "stable_total": sum(int(row["stable_count"]) for row in by_latitude_rows),
                     "best_latitude_by_fraction": {
                         "latitude": float(best_row["latitude"]),
                         "success_count": int(best_row["success_count"]),
@@ -360,6 +450,8 @@ def main() -> None:
                         "sampled_polar_band_start": LATITUDE_START,
                         "count": len(latitudes),
                     },
+                    "practical_rho_max": PRACTICAL_RHO_MAX,
+                    "stability_radius": STABILITY_RADIUS,
                     "dates": len(dates),
                     "slots_per_day": len(SLOT_LABELS),
                     "calendar_rows": len(latitudes) * len(dates),

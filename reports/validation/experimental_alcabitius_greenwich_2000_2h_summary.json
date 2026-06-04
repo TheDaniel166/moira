@@ -13,15 +13,21 @@
       "count": 468
     },
     "timestamp_count": 4392,
-    "evaluation_count": 2055456
+    "evaluation_count": 2055456,
+    "practical_rho_max": 7.0,
+    "stability_radius": 2
   },
   "aggregate": {
     "latitudes_with_any_success": 468,
+    "latitudes_with_any_practical": 468,
+    "latitudes_with_any_stable": 468,
     "status_totals": {
       "unique_ordered_solution": 2037098,
       "assembly_failed": 0,
       "unordered_cusp_cycle": 18358
     },
+    "practical_total": 1526764,
+    "stable_total": 408252,
     "best_latitude_by_fraction": {
       "latitude": -89.8,
       "success_count": 4392,
