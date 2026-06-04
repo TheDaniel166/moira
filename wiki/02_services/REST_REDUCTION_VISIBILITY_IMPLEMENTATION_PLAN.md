@@ -197,6 +197,9 @@ Current state:
 Goal:
 - ensure aggregate routes do not erase per-item reduction truth
 
+Status:
+- started as of 2026-06-04 on `batch/charts` and `batch/progressions`
+
 Families:
 - `batch`
 - any multi-result wrappers introduced later
@@ -209,6 +212,16 @@ Primary deliverables:
 
 Exit criteria:
 - aggregation does not silently black-box already-compliant route families
+
+Current state:
+- `/v1/batch/charts/reduction` now preserves per-item chart reduction truth
+- `/v1/batch/progressions/reduction` now preserves per-item progression reduction truth
+- compact `batch/transits` and transit/ingress-style `batch/events` already
+  preserve embedded wrapped-family truth through their event payloads
+- `batch/returns` remains bounded by the weaker direct `returns` family
+- heterogeneous `batch/events` remain mixed because not every event subtype has
+  the same admitted reduction depth
+- Wave 4 is therefore started but not closed
 
 ---
 
@@ -275,7 +288,10 @@ The concrete next steps are:
    gain a sibling reduction route.
 3. Sweep `timelords`.
 4. Sweep `returns`, `varshaphal`, `visibility`, and `phenomena`.
-5. Audit `batch` embedding behavior after the family-level work stabilizes.
+5. Decide whether `returns` should gain a family-level reduction contract
+   before widening `batch/returns`.
+6. Revisit heterogeneous `batch/events` only after the weaker event subtypes
+   have stronger family-level truth surfaces.
 
 Sequencing law:
 - do not start broad family consistency work until `chart` is closed

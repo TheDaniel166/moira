@@ -6,7 +6,11 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict
 
-from .chart import ChartRequest, ChartResponse, HousesResponse
+from .chart import ChartReductionTruthResponse, ChartRequest, ChartResponse, HousesResponse
+from .progressions import (
+    ProgressionComputationClassificationResponse,
+    ProgressionComputationTruthResponse,
+)
 from .returns import ReturnEventResponse
 from .transits import IngressEventResponse, TransitEventResponse
 
@@ -34,6 +38,18 @@ class ChartBatchItemResponse(_StrictModel):
 
 class ChartsBatchResponse(_StrictModel):
     results: list[ChartBatchItemResponse]
+
+
+class ChartBatchReductionItemResponse(_StrictModel):
+    request: ChartRequest
+    ok: bool
+    chart: ChartResponse | None = None
+    reduction: ChartReductionTruthResponse | None = None
+    failure: BatchFailureResponse | None = None
+
+
+class ChartsBatchReductionResponse(_StrictModel):
+    results: list[ChartBatchReductionItemResponse]
 
 
 class TransitBatchItemRequest(_StrictModel):
@@ -287,10 +303,40 @@ class ProgressionsBatchResponse(_StrictModel):
     results: list[ProgressionBatchItemResponse]
 
 
+class ProgressionBatchReductionTruthResponse(_StrictModel):
+    engine_surface: str
+    requested_technique: str
+    requested_target_datetime: str
+    requested_natal_jd_ut: float | None = None
+    requested_natal_datetime: str | None = None
+    requested_bodies: list[str] | None = None
+    requested_latitude: float | None = None
+    requested_longitude: float | None = None
+    requested_house_system: str | None = None
+    requested_arc_body: str | None = None
+    computation_truth: ProgressionComputationTruthResponse
+    classification: ProgressionComputationClassificationResponse | None = None
+    stage_sequence: list[str]
+
+
+class ProgressionBatchReductionItemResponse(_StrictModel):
+    request: ProgressionBatchItemRequest
+    ok: bool
+    result: ProgressionPayloadResponse | None = None
+    reduction: ProgressionBatchReductionTruthResponse | None = None
+    failure: BatchFailureResponse | None = None
+
+
+class ProgressionsBatchReductionResponse(_StrictModel):
+    results: list[ProgressionBatchReductionItemResponse]
+
+
 __all__ = [
     "BatchFailureResponse",
     "ChartBatchItemResponse",
+    "ChartBatchReductionItemResponse",
     "ChartsBatchRequest",
+    "ChartsBatchReductionResponse",
     "ChartsBatchResponse",
     "EventBatchItemRequest",
     "EventBatchItemResponse",
@@ -298,7 +344,10 @@ __all__ = [
     "EventsBatchResponse",
     "ProgressionBatchItemRequest",
     "ProgressionBatchItemResponse",
+    "ProgressionBatchReductionItemResponse",
+    "ProgressionBatchReductionTruthResponse",
     "ProgressionsBatchRequest",
+    "ProgressionsBatchReductionResponse",
     "ProgressionsBatchResponse",
     "ReturnBatchItemRequest",
     "ReturnBatchItemResponse",

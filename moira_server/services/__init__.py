@@ -2,8 +2,10 @@
 
 from .batch import (
     compute_batch_charts,
+    compute_batch_charts_with_reduction,
     compute_batch_events,
     compute_batch_progressions,
+    compute_batch_progressions_with_reduction,
     compute_batch_returns,
     compute_batch_transits,
 )
@@ -130,8 +132,10 @@ from .visibility import compute_visibility_assessment, compute_visibility_tonigh
 
 __all__ = [
     "compute_batch_charts",
+    "compute_batch_charts_with_reduction",
     "compute_batch_events",
     "compute_batch_progressions",
+    "compute_batch_progressions_with_reduction",
     "compute_batch_returns",
     "compute_batch_transits",
     "compute_all_lunar_occultations",

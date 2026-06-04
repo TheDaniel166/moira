@@ -56,6 +56,35 @@ def test_batch_charts_route_preserves_item_level_failure_isolation(
 
 
 @pytest.mark.requires_ephemeris
+def test_batch_charts_reduction_route_preserves_item_reduction_truth(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/batch/charts/reduction",
+        json={
+            "requests": [
+                {
+                    "dt": "2000-01-01T12:00:00+00:00",
+                    "bodies": ["Sun"],
+                    "include_nodes": False,
+                },
+                {"dt": "2000-01-01T12:00:00+00:00", "bodies": ["NotAPlanet"]},
+            ]
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["results"][0]["ok"] is True
+    assert body["results"][0]["chart"]["planets"]["Sun"]["name"] == "Sun"
+    assert body["results"][0]["reduction"]["engine_surface"] == "Moira.chart"
+    assert body["results"][0]["reduction"]["requested_bodies"] == ["Sun"]
+    assert body["results"][0]["reduction"]["returned_bodies"] == ["Sun"]
+    assert body["results"][1]["ok"] is False
+    assert body["results"][1]["reduction"] is None
+
+
+@pytest.mark.requires_ephemeris
 def test_batch_transits_route_preserves_item_level_failure_isolation(
     client_with_engine: TestClient,
 ) -> None:
@@ -87,6 +116,33 @@ def test_batch_transits_route_preserves_item_level_failure_isolation(
     assert body["results"][0]["events"][0]["body"] == "Sun"
     assert body["results"][1]["ok"] is False
     assert "NotAPlanet" in body["results"][1]["failure"]["message"]
+
+
+@pytest.mark.requires_ephemeris
+def test_batch_transits_route_preserves_embedded_transit_truth(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/batch/transits",
+        json={
+            "requests": [
+                {
+                    "body": "Sun",
+                    "target_lon": 300.0,
+                    "jd_start": 2451545.0,
+                    "jd_end": 2451545.0 + 365.25,
+                }
+            ]
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    event = body["results"][0]["events"][0]
+    assert event["computation_truth"] is not None
+    assert event["classification"] is not None
+    assert event["relation"] is not None
+    assert event["condition_profile"] is not None
 
 
 @pytest.mark.requires_ephemeris
@@ -220,6 +276,33 @@ def test_batch_events_route_serializes_heterogeneous_event_payloads(
 
 
 @pytest.mark.requires_ephemeris
+def test_batch_events_route_preserves_embedded_ingress_truth(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/batch/events",
+        json={
+            "requests": [
+                {
+                    "kind": "ingress",
+                    "body": "Sun",
+                    "jd_start": 2451545.0,
+                    "jd_end": 2451545.0 + 365.25,
+                }
+            ]
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    event = body["results"][0]["events"][0]
+    assert event["computation_truth"] is not None
+    assert event["classification"] is not None
+    assert event["relation"] is not None
+    assert event["condition_profile"] is not None
+
+
+@pytest.mark.requires_ephemeris
 def test_batch_progressions_route_serializes_all_result_families(
     client_with_engine: TestClient,
 ) -> None:
@@ -260,6 +343,51 @@ def test_batch_progressions_route_serializes_all_result_families(
     assert "positions" in body["results"][1]["result"]
     assert body["results"][2]["result"]["result_type"] == "progressed_house_frame"
     assert "houses" in body["results"][2]["result"]
+
+
+@pytest.mark.requires_ephemeris
+def test_batch_progressions_reduction_route_preserves_item_level_reduction_truth(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/batch/progressions/reduction",
+        json={
+            "requests": [
+                {
+                    "technique": "secondary",
+                    "natal_dt": "2000-01-01T12:00:00+00:00",
+                    "target_date": "2001-01-01T00:00:00+00:00",
+                    "bodies": ["Sun", "Moon"],
+                },
+                {
+                    "technique": "daily_house_frame",
+                    "natal_dt": "2000-01-01T12:00:00+00:00",
+                    "target_date": "2001-01-01T00:00:00+00:00",
+                    "latitude": 51.5,
+                    "longitude": -0.1,
+                    "system": "P",
+                },
+                {
+                    "technique": "not_real",
+                    "natal_dt": "2000-01-01T12:00:00+00:00",
+                    "target_date": "2001-01-01T00:00:00+00:00",
+                },
+            ]
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["results"][0]["ok"] is True
+    assert body["results"][0]["reduction"]["requested_technique"] == "secondary"
+    assert body["results"][0]["reduction"]["computation_truth"]["doctrine"]["doctrine_family"] == "time_key"
+    assert body["results"][0]["reduction"]["classification"]["uses_directed_arc"] is False
+    assert body["results"][1]["ok"] is True
+    assert body["results"][1]["reduction"]["requested_technique"] == "daily_house_frame"
+    assert body["results"][1]["reduction"]["requested_latitude"] == pytest.approx(51.5)
+    assert body["results"][1]["reduction"]["classification"]["uses_house_frame"] is True
+    assert body["results"][2]["ok"] is False
+    assert body["results"][2]["reduction"] is None
 
 
 @pytest.mark.requires_ephemeris

@@ -46,7 +46,7 @@ This audit is about transport truth, not numerical correctness.
 | `returns` / `varshaphal` | `Partial` | meaningful typed result surfaces exist | transport economy is prioritized; reduction-path contract not yet explicit |
 | `phenomena` | `Partial` | event truth exists at engine level | transport audit not yet widened enough to guarantee reduction exposure uniformly |
 | `visibility` | `Partial` | domain-rich results exist | observer-environment and reduction path need explicit transport guarantees |
-| `batch` | `Partial` | aggregates multiple typed results | likely flattens per-result reduction detail depending on embedded family |
+| `batch` | `Partial` | `charts` and `progressions` now have sibling batch reduction endpoints; `transits` and transit/ingress event payloads already preserve embedded wrapped-family truth | `returns` still wraps a partial family, and heterogeneous `events` remain mixed because some event subtypes do not yet carry full reduction doctrine |
 
 ---
 
@@ -200,17 +200,46 @@ Current truth preserved:
 Judgment:
 - already broadly aligned with the reduction contract
 
+### 3.7 `batch`
+
+Files:
+- [moira_server/models/batch.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/models/batch.py)
+- [moira_server/routers/batch.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/routers/batch.py)
+- [moira_server/serializers/batch.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/serializers/batch.py)
+- [moira_server/services/batch.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/services/batch.py)
+
+Current truth preserved:
+- compact batch routes still preserve:
+  - item-local success/failure isolation
+  - compact result payloads for all admitted families
+  - embedded transit/ingress truth where the wrapped event serializer already
+    carries it
+- sibling reduction routes now preserve:
+  - `/v1/batch/charts/reduction`
+    - per-item chart reduction truth
+    - per-item failure isolation
+  - `/v1/batch/progressions/reduction`
+    - per-item progression computation truth
+    - per-item classification truth
+    - request-local batch technique context
+    - per-item failure isolation
+
+Current gap:
+- `batch/returns` still wraps a return family that does not yet expose a lawful
+  reduction transport of its own
+- heterogeneous `batch/events` items remain only as strong as their underlying
+  event subtype; station/aspect/equatorial items do not yet carry the same
+  admitted reduction depth as transit/ingress items
+- `batch` therefore does not yet preserve reduction uniformly across every
+  embedded family
+
+Judgment:
+- Wave 4 has started cleanly
+- `batch` is improved but still `Partial`
+
 ---
 
 ## 4. Priority Remediation Order
-
-### Priority 1
-
-`primary-directions`
-
-Reason:
-- the major route-uniformity work is now complete
-- only a narrow residual question remains around `speculum`
 
 ### Priority 1
 
@@ -250,6 +279,10 @@ Foundational targets now live:
    `progressions`.
 2. Audit whether the `positions` reduction surface should eventually add
    optional deeper policy toggles beyond the current admitted defaults.
+3. Continue Wave 4 by deciding whether `returns` should first gain a direct
+   reduction contract before `batch/returns` is widened.
+4. Revisit heterogeneous `batch/events` only after the weaker event subtypes
+   have stronger family-level truth surfaces.
 
 ---
 
@@ -261,7 +294,7 @@ It already contains several route families that preserve real doctrinal and
 reduction truth well, especially `transits` and `relationship`.
 
 However, the REST surface as a whole does not yet satisfy the newly frozen
-contract uniformly because several Wave 3 families still expose reduction truth
-inconsistently, even though the foundational surfaces, the primary-directions
-search family, and the first progression chart-producing routes now have lawful
-reduction paths.
+contract uniformly because some remaining family surfaces and some batch
+wrappers still expose reduction truth inconsistently, even though the
+foundational surfaces, the primary-directions search family, the progressions
+family, and the first Wave 4 batch reductions now have lawful truth paths.

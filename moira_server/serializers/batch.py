@@ -18,6 +18,8 @@ from moira.transits_equatorial import EquatorialTransitEvent
 from ..models.batch import (
     AspectTransitEventResponse,
     BatchFailureResponse,
+    ChartBatchReductionItemResponse,
+    ChartsBatchReductionResponse,
     EquatorialTransitEventResponse,
     ProgressedChartResultResponse,
     ProgressedDeclinationChartResultResponse,
@@ -25,12 +27,23 @@ from ..models.batch import (
     ProgressedHouseFrameResultResponse,
     ProgressedPositionResponse,
     ProgressionClassificationResponse,
+    ProgressionComputationClassificationResponse,
+    ProgressionComputationTruthResponse,
     ProgressionConditionProfileResponse,
     ProgressionDoctrineResponse,
+    ProgressionBatchReductionItemResponse,
+    ProgressionBatchReductionTruthResponse,
+    ProgressionsBatchReductionResponse,
     ProgressionPayloadResponse,
     ProgressionRelationResponse,
     StationEventResponse,
 )
+from ..models.progressions import (
+    ProgressionDoctrineClassificationResponse,
+    ProgressionDoctrineTruthResponse,
+)
+from ..serializers.chart import serialize_chart_with_reduction
+from ..services.batch import BatchProgressionReductionContext
 from .chart import serialize_houses
 from .transits import serialize_ingress_event, serialize_transit_event
 
@@ -231,8 +244,110 @@ def serialize_progression_payload(result) -> ProgressionPayloadResponse:
     raise ValueError(f"unsupported batch progression payload type: {type(result).__name__}")
 
 
+def serialize_chart_batch_with_reduction_item(item) -> ChartBatchReductionItemResponse:
+    if item.failure is not None:
+        return ChartBatchReductionItemResponse(
+            request=item.request,
+            ok=False,
+            failure=serialize_batch_failure(item.failure),
+        )
+    reduction_payload = serialize_chart_with_reduction(item.chart, item.reduction)
+    return ChartBatchReductionItemResponse(
+        request=item.request,
+        ok=True,
+        chart=reduction_payload.result,
+        reduction=reduction_payload.reduction,
+    )
+
+
+def _serialize_progression_computation_truth(truth) -> ProgressionComputationTruthResponse:
+    return ProgressionComputationTruthResponse(
+        doctrine=ProgressionDoctrineTruthResponse(
+            technique_name=truth.doctrine.technique_name,
+            doctrine_family=truth.doctrine.doctrine_family,
+            life_unit=truth.doctrine.life_unit,
+            ephemeris_unit=truth.doctrine.ephemeris_unit,
+            rate_mode=truth.doctrine.rate_mode,
+            application_mode=truth.doctrine.application_mode,
+            coordinate_system=truth.doctrine.coordinate_system,
+            converse=truth.doctrine.converse,
+        ),
+        target_jd_ut=truth.target_jd_ut,
+        age_years=truth.age_years,
+        progressed_jd_ut=truth.progressed_jd_ut,
+        directed_arc_deg=truth.directed_arc_deg,
+        reference_body=truth.reference_body,
+        reference_start_value=truth.reference_start_value,
+        reference_end_value=truth.reference_end_value,
+        stepped_years=truth.stepped_years,
+        latitude=truth.latitude,
+        longitude=truth.longitude,
+        house_system=truth.house_system,
+    )
+
+
+def _serialize_progression_computation_classification(
+    classification,
+) -> ProgressionComputationClassificationResponse:
+    return ProgressionComputationClassificationResponse(
+        doctrine=ProgressionDoctrineClassificationResponse(
+            technique_name=classification.doctrine.technique_name,
+            doctrine_family=classification.doctrine.doctrine_family,
+            rate_mode=classification.doctrine.rate_mode,
+            application_mode=classification.doctrine.application_mode,
+            coordinate_system=classification.doctrine.coordinate_system,
+            converse=classification.doctrine.converse,
+        ),
+        uses_directed_arc=classification.uses_directed_arc,
+        uses_reference_body=classification.uses_reference_body,
+        uses_stepped_key=classification.uses_stepped_key,
+        uses_house_frame=classification.uses_house_frame,
+    )
+
+
+def _serialize_batch_progression_reduction_truth(
+    reduction: BatchProgressionReductionContext,
+) -> ProgressionBatchReductionTruthResponse:
+    return ProgressionBatchReductionTruthResponse(
+        engine_surface=reduction.engine_surface,
+        requested_technique=reduction.requested_technique,
+        requested_target_datetime=reduction.requested_target_datetime,
+        requested_natal_jd_ut=reduction.requested_natal_jd_ut,
+        requested_natal_datetime=reduction.requested_natal_datetime,
+        requested_bodies=reduction.requested_bodies,
+        requested_latitude=reduction.requested_latitude,
+        requested_longitude=reduction.requested_longitude,
+        requested_house_system=reduction.requested_house_system,
+        requested_arc_body=reduction.requested_arc_body,
+        computation_truth=_serialize_progression_computation_truth(reduction.computation_truth),
+        classification=(
+            _serialize_progression_computation_classification(reduction.classification)
+            if reduction.classification is not None
+            else None
+        ),
+        stage_sequence=reduction.stage_sequence,
+    )
+
+
+def serialize_progression_batch_with_reduction_item(item) -> ProgressionBatchReductionItemResponse:
+    if item.failure is not None:
+        return ProgressionBatchReductionItemResponse(
+            request=item.request,
+            ok=False,
+            failure=serialize_batch_failure(item.failure),
+        )
+    return ProgressionBatchReductionItemResponse(
+        request=item.request,
+        ok=True,
+        result=serialize_progression_payload(item.result),
+        reduction=_serialize_batch_progression_reduction_truth(item.reduction),
+    )
+
+
 __all__ = [
     "serialize_batch_failure",
+    "serialize_chart_batch_with_reduction_item",
     "serialize_event_payload",
+    "serialize_progression_batch_with_reduction_item",
     "serialize_progression_payload",
 ]

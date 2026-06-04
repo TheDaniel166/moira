@@ -9,13 +9,17 @@ from moira import Body, Moira
 from ..dependencies import get_engine
 from ..models.batch import (
     ChartBatchItemResponse,
+    ChartBatchReductionItemResponse,
     ChartsBatchRequest,
+    ChartsBatchReductionResponse,
     ChartsBatchResponse,
     EventBatchItemResponse,
     EventsBatchRequest,
     EventsBatchResponse,
     ProgressionBatchItemResponse,
+    ProgressionBatchReductionItemResponse,
     ProgressionsBatchRequest,
+    ProgressionsBatchReductionResponse,
     ProgressionsBatchResponse,
     ReturnBatchItemResponse,
     ReturnsBatchRequest,
@@ -26,7 +30,9 @@ from ..models.batch import (
 )
 from ..serializers.batch import (
     serialize_batch_failure,
+    serialize_chart_batch_with_reduction_item,
     serialize_event_payload,
+    serialize_progression_batch_with_reduction_item,
     serialize_progression_payload,
 )
 from ..serializers.chart import serialize_chart
@@ -34,8 +40,10 @@ from ..serializers.returns import serialize_return_event
 from ..serializers.transits import serialize_transit_event
 from ..services.batch import (
     compute_batch_charts,
+    compute_batch_charts_with_reduction,
     compute_batch_events,
     compute_batch_progressions,
+    compute_batch_progressions_with_reduction,
     compute_batch_returns,
     compute_batch_transits,
 )
@@ -60,6 +68,17 @@ def batch_charts_route(
             )
             for idx, result in enumerate(results)
         ]
+    )
+
+
+@router.post("/charts/reduction", response_model=ChartsBatchReductionResponse)
+def batch_charts_reduction_route(
+    request: ChartsBatchRequest,
+    engine: Moira = Depends(get_engine),
+) -> ChartsBatchReductionResponse:
+    results = compute_batch_charts_with_reduction(engine, request)
+    return ChartsBatchReductionResponse(
+        results=[serialize_chart_batch_with_reduction_item(result) for result in results]
     )
 
 
@@ -150,4 +169,15 @@ def batch_progressions_route(
             )
             for idx, result in enumerate(results)
         ]
+    )
+
+
+@router.post("/progressions/reduction", response_model=ProgressionsBatchReductionResponse)
+def batch_progressions_reduction_route(
+    request: ProgressionsBatchRequest,
+    engine: Moira = Depends(get_engine),
+) -> ProgressionsBatchReductionResponse:
+    results = compute_batch_progressions_with_reduction(engine, request)
+    return ProgressionsBatchReductionResponse(
+        results=[serialize_progression_batch_with_reduction_item(result) for result in results]
     )
