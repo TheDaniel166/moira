@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from fastapi import FastAPI, Request
 
+from .cache import ChartLRUCache
 from .config import ServerConfig
 from .errors import register_exception_handlers
 from .lifecycle import create_engine
@@ -17,7 +18,9 @@ from .routers import (
     chart_router,
     dasha_router,
     health_router,
+    locations_router,
     phenomena_router,
+    pipeline_router,
     positions_router,
     primary_directions_router,
     progressions_router,
@@ -35,6 +38,7 @@ from .routers import (
 async def _lifespan(app: FastAPI):
     config = app.state.server_config
     app.state.engine = create_engine(config)
+    app.state.chart_cache = ChartLRUCache(maxsize=512)
     yield
 
 
@@ -78,7 +82,9 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(timelords_router)
     app.include_router(varshaphal_router)
     app.include_router(primary_directions_router)
+    app.include_router(locations_router)   # City/timezone lookup for chart calculator
     app.include_router(asteroids_router)   # Fast small-body surfaces (website integration)
     app.include_router(comets_router)      # Symmetric fast comet surfaces
     app.include_router(stars_router)       # Fixed stars for the website / Manus AI
+    app.include_router(pipeline_router)    # Reduction pipeline breakdown for planet positions
     return app
