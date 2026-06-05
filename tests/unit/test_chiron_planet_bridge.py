@@ -63,6 +63,24 @@ def test_moira_chart_accepts_explicit_chiron_body_request(moira_engine) -> None:
 
 
 
-def test_planet_at_chiron_rejects_non_default_modes() -> None:
-    with pytest.raises(ValueError, match="Chiron"):
-        planet_at(Body.CHIRON, 2451545.0, apparent=False)
+@pytest.mark.requires_ephemeris
+def test_planet_at_chiron_supports_partial_correction_modes() -> None:
+    # apparent=False (geometric) is now routed through _asteroid_at_with_flags
+    result = planet_at(Body.CHIRON, 2451545.0, apparent=False)
+    assert result.name == Body.CHIRON
+    assert 0.0 <= result.longitude < 360.0
+
+    # aberration=False is also supported
+    result_no_aber = planet_at(Body.CHIRON, 2451545.0, aberration=False)
+    assert result_no_aber.name == Body.CHIRON
+    assert 0.0 <= result_no_aber.longitude < 360.0
+
+
+def test_planet_at_chiron_still_rejects_unsupported_modes() -> None:
+    # Observer coordinates are not supported for small bodies
+    with pytest.raises(ValueError):
+        planet_at(Body.CHIRON, 2451545.0, observer_lat=51.5, observer_lon=-0.1, lst_deg=0.0)
+
+    # Barycentric center is not supported for small bodies
+    with pytest.raises(ValueError):
+        planet_at(Body.CHIRON, 2451545.0, center="barycentric")

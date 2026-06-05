@@ -77,8 +77,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .constants import Body, sign_of
-from .coordinates import Vec3, vec_sub
-from .obliquity import true_obliquity
+from .coordinates import Vec3, vec_sub, icrf_to_ecliptic
+from .obliquity import true_obliquity, mean_obliquity
 from .julian import ut_to_tt
 from .planets import (
     _apparent_geocentric_ecliptic,
@@ -651,6 +651,122 @@ def _asteroid_deflectors(
     ]
 
 
+def _asteroid_at_with_flags(
+    name_or_naif: str | int,
+    jd_ut: float,
+    reader: KernelReader | None = None,
+    *,
+    apparent: bool = True,
+    aberration: bool = True,
+    grav_deflection: bool = True,
+    nutation: bool = True,
+) -> 'AsteroidData':
+    """
+    Return the geocentric ecliptic position of a minor planet with selectable
+    correction stages.  Serves the planet_at() front door when partial-correction
+    modes are requested.  Full-correction (all flags True) is numerically
+    equivalent to asteroid_at().
+
+    apparent=False returns the raw geometric geocentric position (no light-time,
+    no frame transforms).  When apparent=True the pipeline is:
+      light-time → optional deflection → optional aberration → frame bias →
+      precession (+ optional nutation) → ecliptic projection.
+
+    Aberration is suppressed by passing a zero Earth velocity to
+    _apparent_geocentric_ecliptic rather than bypassing the call, which keeps
+    the pipeline structure uniform across all partial modes.
+    """
+    if reader is None:
+        reader = get_active_reader()
+        if reader is None:
+            raise MissingKernelError(
+                "No planetary or asteroid kernel is provided and no active reader "
+                "context was found. Pass a reader explicitly or use the Moira facade."
+            )
+
+    jd_tt = ut_to_tt(jd_ut)
+
+    # Resolve name → NAIF ID (mirrors asteroid_at resolution)
+    if isinstance(name_or_naif, str):
+        key = name_or_naif.strip()
+        if key not in ASTEROID_NAIF:
+            lower = key.lower()
+            match = next((v for k, v in ASTEROID_NAIF.items() if k.lower() == lower), None)
+            if match is None:
+                raise KeyError(
+                    f"Asteroid {name_or_naif!r} not in ASTEROID_NAIF. "
+                    "Pass an integer NAIF ID directly, or use list_asteroids()."
+                )
+            naif_id = match
+        else:
+            naif_id = ASTEROID_NAIF[key]
+        name = key
+    else:
+        naif_id = int(name_or_naif)
+        name = _NAIF_TO_NAME.get(naif_id, f"NAIF-{naif_id}")
+
+    def _bary_fn(b, t, r):
+        return r.position(0, b, t)
+
+    if not apparent:
+        # Geometric: raw geocentric ICRF, no light-time, no frame transforms.
+        earth_ssb, _ = _earth_barycentric_state(jd_tt, reader)
+        body_ssb = reader.position(0, naif_id, jd_tt)
+        xyz = vec_sub(body_ssb, earth_ssb)
+        obliquity_val = mean_obliquity(jd_tt)
+        lon0, lat0, dist0 = icrf_to_ecliptic(xyz, obliquity_val)
+    else:
+        earth_ssb, earth_vel = _earth_barycentric_state(jd_tt, reader)
+        rot_mat = _compose_rotation_matrix(jd_tt, with_nutation=nutation)
+        deflectors = _asteroid_deflectors(jd_tt, reader, earth_ssb) if grav_deflection else []
+        earth_vel_used = earth_vel if aberration else (0.0, 0.0, 0.0)
+        obliquity_val = true_obliquity(jd_tt) if nutation else mean_obliquity(jd_tt)
+        lon0, lat0, dist0 = _apparent_geocentric_ecliptic(
+            naif_id, jd_tt, reader,
+            barycentric_fn=_bary_fn,
+            deflectors=deflectors,
+            earth_ssb=earth_ssb,
+            earth_vel=earth_vel_used,
+            obliquity=obliquity_val,
+            rot_mat=rot_mat,
+        )
+
+    # Speed via central finite difference; obliquity fixed at jd_tt.
+    def _lon_at(jd: float) -> float:
+        if not apparent:
+            ssb, _ = _earth_barycentric_state(jd, reader)
+            b_ssb = reader.position(0, naif_id, jd)
+            lon, _, _ = icrf_to_ecliptic(vec_sub(b_ssb, ssb), obliquity_val)
+            return lon
+        ssb, vel = _earth_barycentric_state(jd, reader)
+        rm = _compose_rotation_matrix(jd, with_nutation=nutation)
+        dfl = _asteroid_deflectors(jd, reader, ssb) if grav_deflection else []
+        vel_used = vel if aberration else (0.0, 0.0, 0.0)
+        lon, _, _ = _apparent_geocentric_ecliptic(
+            naif_id, jd, reader,
+            barycentric_fn=_bary_fn,
+            deflectors=dfl,
+            earth_ssb=ssb,
+            earth_vel=vel_used,
+            obliquity=obliquity_val,
+            rot_mat=rm,
+        )
+        return lon
+
+    lon_m = _lon_at(jd_tt - _SPEED_STEP)
+    lon_p = _lon_at(jd_tt + _SPEED_STEP)
+    dlon = (lon_p - lon_m + 540.0) % 360.0 - 180.0
+    speed = dlon / (2.0 * _SPEED_STEP)
+
+    return AsteroidData(
+        name=name,
+        naif_id=naif_id,
+        longitude=lon0,
+        latitude=lat0,
+        distance=dist0,
+        speed=speed,
+        retrograde=(speed < 0.0),
+    )
 
 
 # ---------------------------------------------------------------------------

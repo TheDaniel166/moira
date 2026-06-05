@@ -57,15 +57,15 @@ def test_planet_at_named_asteroid_uses_small_body_provider(monkeypatch: pytest.M
         speed = -0.25
         retrograde = True
 
-    calls: list[tuple[str, float, object]] = []
+    calls: list = []
 
-    def _fake_asteroid_at(name: str, jd_ut: float, reader=None):
-        calls.append((name, jd_ut, reader))
+    def _fake_asteroid_at_with_flags(name, jd_ut, reader=None, *, apparent, aberration, grav_deflection, nutation):
+        calls.append((name, jd_ut, reader, apparent, aberration, grav_deflection, nutation))
         return _AsteroidResult()
 
     import moira.asteroids as asteroids_module
 
-    monkeypatch.setattr(asteroids_module, "asteroid_at", _fake_asteroid_at)
+    monkeypatch.setattr(asteroids_module, "_asteroid_at_with_flags", _fake_asteroid_at_with_flags)
 
     reader = _DummyReader()
     result = planet_at("Ceres", _JD_J2000, reader=reader)
@@ -75,7 +75,15 @@ def test_planet_at_named_asteroid_uses_small_body_provider(monkeypatch: pytest.M
     assert result.longitude == 12.5
     assert result.distance == 123456.0
     assert result.retrograde is True
-    assert calls == [("Ceres", _JD_J2000, reader)]
+    assert len(calls) == 1
+    name, jd_ut, r, apparent, aberration, grav_deflection, nutation = calls[0]
+    assert name == "Ceres"
+    assert jd_ut == _JD_J2000
+    assert r is reader
+    assert apparent is True
+    assert aberration is True
+    assert grav_deflection is True
+    assert nutation is True
 
 
 def test_planet_at_named_comet_uses_small_body_provider(monkeypatch: pytest.MonkeyPatch):

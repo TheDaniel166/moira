@@ -1393,13 +1393,14 @@ def _small_body_mode_is_supported(
     jd_tt: float | None,
     delta_t_policy: 'DeltaTPolicy | None',
 ) -> bool:
-    """Return True only for the small-body mode currently supported by provider adapters."""
+    """
+    Return True for small-body modes that can be routed through the flag-aware
+    pipeline.  Any combination of apparent/aberration/grav_deflection/nutation is
+    accepted; only the observer, frame, and override-parameter constraints apply.
+    Comets enforce the full-correction restriction separately in planet_at().
+    """
     return (
-        apparent
-        and aberration
-        and grav_deflection
-        and nutation
-        and center == "geocentric"
+        center == "geocentric"
         and frame == "ecliptic"
         and observer_lat is None
         and observer_lon is None
@@ -1802,10 +1803,19 @@ def planet_at(
         ):
             raise _small_body_mode_error("planet_at", family)
         if family == "asteroid":
-            from .asteroids import asteroid_at
+            from .asteroids import _asteroid_at_with_flags
             return _planet_data_from_asteroid_result(
-                asteroid_at(canonical_name, jd_ut, reader=reader)
+                _asteroid_at_with_flags(
+                    canonical_name, jd_ut, reader=reader,
+                    apparent=apparent,
+                    aberration=aberration,
+                    grav_deflection=grav_deflection,
+                    nutation=nutation,
+                )
             )
+        # Comet partial-correction modes are not yet supported.
+        if not (apparent and aberration and grav_deflection and nutation):
+            raise _small_body_mode_error("planet_at", "comet")
         from .comets import comet_at
         return _planet_data_from_comet_result(
             comet_at(canonical_name, jd_ut, reader=reader)
