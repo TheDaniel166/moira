@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 
 from moira import Body, Moira
+from moira.asteroids import ASTEROID_NAIF
 from moira.eclipse import EclipseCalculator, next_solar_eclipse_at_location
 from moira.heliacal import (
     HeliacalEventKind,
@@ -80,7 +81,10 @@ from ..models.phenomena import (
 )
 
 
-_VALID_STATION_BODIES = frozenset(Body.ALL_PLANETS)
+# Station detection works for any body that planet_at() can return a speed for.
+# This includes all 10 classical planets and all small bodies in ASTEROID_NAIF.
+# Sun and Moon are excluded because they have no retrograde motion.
+_VALID_STATION_BODIES = frozenset(Body.ALL_PLANETS) | frozenset(ASTEROID_NAIF.keys())
 _VALID_CLOSE_APPROACH_BODIES = frozenset(Body.ALL_PLANETS)
 _VALID_LUNAR_OCCULTATION_TARGETS = frozenset(
     body for body in Body.ALL_PLANETS if body not in {Body.MOON, Body.EARTH}
@@ -107,8 +111,11 @@ _VALID_PARAN_FIELD_METRICS = frozenset({"match_presence", "exactness_score", "su
 
 def _require_supported_station_body(body: str) -> None:
     if body not in _VALID_STATION_BODIES:
-        supported = ", ".join(sorted(_VALID_STATION_BODIES))
-        raise ValueError(f"unsupported station body {body!r}; supported bodies: {supported}")
+        planets = ", ".join(sorted(Body.ALL_PLANETS))
+        raise ValueError(
+            f"unsupported station body {body!r}; supported bodies: {planets}, "
+            f"and all asteroids in ASTEROID_NAIF (Chiron, Ceres, Pallas, Juno, Vesta, ...)"
+        )
 
 
 def _require_allowed(value: str, name: str, allowed: frozenset[str]) -> str:
