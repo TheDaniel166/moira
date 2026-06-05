@@ -60,7 +60,7 @@ from .constants import (
 )
 from .coordinates import (
     Vec3, vec_add, vec_sub, vec_norm, mat_vec_mul, mat_mul,
-    icrf_to_ecliptic, icrf_to_equatorial, equatorial_to_horizontal,
+    icrf_to_ecliptic, icrf_to_equatorial, equatorial_to_horizontal, equatorial_to_ecliptic,
     normalize_degrees, precession_matrix_equatorial, nutation_matrix_equatorial,
     icrf_to_true_ecliptic, nutation_matrix_from_terms,
 )
@@ -1786,6 +1786,44 @@ def planet_at(
     small_body = _resolve_small_body_name(body)
     if small_body is not None:
         family, canonical_name = small_body
+        # Topocentric asteroid pipeline: delegate to sky_position_at() which
+        # already handles the full topocentric correction chain for asteroids,
+        # then convert RA/Dec back to ecliptic longitude/latitude.
+        if family == "asteroid" and observer_lat is not None and observer_lon is not None:
+            sky = sky_position_at(
+                body,
+                jd_ut,
+                observer_lat=observer_lat,
+                observer_lon=observer_lon,
+                observer_elev_m=observer_elev_m,
+                reader=reader,
+                aberration=aberration,
+                grav_deflection=grav_deflection,
+                nutation=nutation,
+            )
+            # Determine obliquity for the RA/Dec → ecliptic conversion.
+            year, month, *_ = _approx_year(jd_ut)
+            _jd_tt = ut_to_tt(jd_ut, decimal_year(year, month))
+            obl = true_obliquity(_jd_tt) if nutation else mean_obliquity(_jd_tt)
+            lon_ecl, lat_ecl = equatorial_to_ecliptic(
+                sky.right_ascension, sky.declination, obl
+            )
+            # Compute geocentric speed via finite difference (same as _asteroid_at_with_flags).
+            from .asteroids import _asteroid_at_with_flags
+            geo = _asteroid_at_with_flags(
+                canonical_name, jd_ut, reader=reader,
+                apparent=apparent, aberration=aberration,
+                grav_deflection=grav_deflection, nutation=nutation,
+            )
+            return PlanetData(
+                name=canonical_name,
+                longitude=lon_ecl,
+                latitude=lat_ecl,
+                distance=sky.distance,
+                speed=geo.speed,
+                retrograde=geo.retrograde,
+                is_topocentric=True,
+            )
         if not _small_body_mode_is_supported(
             apparent=apparent,
             aberration=aberration,
