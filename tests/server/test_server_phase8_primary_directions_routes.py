@@ -160,6 +160,23 @@ def test_primary_directions_arcs_reduction_route_exposes_policy_truth(
 
 
 @pytest.mark.requires_ephemeris
+def test_primary_directions_reduction_route_rejects_small_body_targets(
+    client_with_engine: TestClient,
+) -> None:
+    payload = {
+        **_PD_SEARCH_PAYLOAD,
+        "bodies": ["Sun", "Ceres"],
+    }
+
+    resp = client_with_engine.post("/v1/primary-directions/arcs/reduction", json=payload)
+
+    assert resp.status_code == 422
+    body = resp.json()
+    assert "unsupported chart bodies" in body["message"]
+    assert "Ceres" in body["message"]
+
+
+@pytest.mark.requires_ephemeris
 def test_primary_directions_profile_route_matches_engine(client_with_engine: TestClient, moira_engine) -> None:
     chart, houses = _direct_chart_and_houses(moira_engine)
     direct_arcs = find_primary_arcs(chart, houses, _OBSERVER_LAT, max_arc=60.0)

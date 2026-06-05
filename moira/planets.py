@@ -1452,13 +1452,40 @@ def _apparent_geocentric_ecliptic(
     -------
     (longitude, latitude, distance) in degrees, degrees, km
     """
+    xyz = _apparent_geocentric_equatorial_vector(
+        body_id,
+        jd_tt,
+        reader,
+        barycentric_fn=barycentric_fn,
+        deflectors=deflectors,
+        earth_ssb=earth_ssb,
+        earth_vel=earth_vel,
+        rot_mat=rot_mat,
+        aberration=True,
+    )
+    return icrf_to_ecliptic(xyz, obliquity)
+
+
+def _apparent_geocentric_equatorial_vector(
+    body_id,
+    jd_tt: float,
+    reader: KernelReader,
+    *,
+    barycentric_fn,
+    deflectors: list,
+    earth_ssb: Vec3,
+    earth_vel: Vec3,
+    rot_mat,
+    aberration: bool,
+) -> Vec3:
+    """Return apparent geocentric equatorial-of-date ICRF vector before ecliptic projection."""
     xyz, _lt = apply_light_time(body_id, jd_tt, reader, earth_ssb, barycentric_fn)
     if deflectors:
         xyz = apply_deflection(xyz, deflectors)
-    xyz = apply_aberration(xyz, earth_vel)
+    if aberration:
+        xyz = apply_aberration(xyz, earth_vel)
     xyz = apply_frame_bias(xyz)
-    xyz = _apply_rotation_matrix(rot_mat, xyz)
-    return icrf_to_ecliptic(xyz, obliquity)
+    return _apply_rotation_matrix(rot_mat, xyz)
 
 
 def _planet_at_default_apparent_geocentric_ecliptic(
@@ -1978,6 +2005,83 @@ def sky_position_at(
     earth_ssb = context.earth_ssb
     earth_vel = context.earth_vel
     rot_mat = context.rot_mat
+
+    small_body = _resolve_small_body_name(body)
+    if small_body is not None:
+        family, canonical_name = small_body
+        if family == "asteroid":
+            from .asteroids import ASTEROID_NAIF, _asteroid_deflectors
+
+            body_id = ASTEROID_NAIF[canonical_name]
+            xyz = _apparent_geocentric_equatorial_vector(
+                body_id,
+                jd_tt,
+                reader,
+                barycentric_fn=lambda body_, jd_tt_, reader_: reader_.position(0, body_, jd_tt_),
+                deflectors=(_asteroid_deflectors(jd_tt, reader, earth_ssb) if grav_deflection else []),
+                earth_ssb=earth_ssb,
+                earth_vel=earth_vel,
+                rot_mat=rot_mat,
+                aberration=aberration,
+            )
+        else:
+            from .comets import COMET_NAIF, SmallBodyKernel, _sun_barycentric
+
+            body_id = COMET_NAIF[canonical_name]
+            kernel = None
+            if hasattr(reader, "_readers"):
+                for subreader in reader._readers:
+                    if isinstance(subreader, SmallBodyKernel) and subreader.has_body(body_id):
+                        kernel = subreader
+                        break
+            elif isinstance(reader, SmallBodyKernel) and reader.has_body(body_id):
+                kernel = reader
+            if kernel is None:
+                raise KeyError(f"Comet {canonical_name} (NAIF {body_id}) not found in the provided reader.")
+
+            xyz = _apparent_geocentric_equatorial_vector(
+                body_id,
+                jd_tt,
+                reader,
+                barycentric_fn=lambda body_, jd_tt_, reader_: vec_add(
+                    kernel.position(10, body_, jd_tt_),
+                    _sun_barycentric(jd_tt_, reader_),
+                ),
+                deflectors=(
+                    [(vec_sub(_sun_barycentric(jd_tt, reader), earth_ssb), SCHWARZSCHILD_RADII["Sun"])]
+                    if grav_deflection
+                    else []
+                ),
+                earth_ssb=earth_ssb,
+                earth_vel=earth_vel,
+                rot_mat=rot_mat,
+                aberration=aberration,
+            )
+
+        lst_deg = local_sidereal_time(jd_ut, observer_lon, dpsi_deg, obliquity)
+        xyz = topocentric_correction(
+            xyz, observer_lat, observer_lon, lst_deg, observer_elev_m, jd_ut=jd_ut
+        )
+        xyz = apply_diurnal_aberration(
+            xyz, observer_lat, observer_lon, lst_deg, observer_elev_m, jd_ut=jd_ut
+        )
+        ra_deg, dec_deg, dist = icrf_to_equatorial(xyz)
+        az_deg, alt_deg = equatorial_to_horizontal(ra_deg, dec_deg, lst_deg, observer_lat)
+        if refraction:
+            alt_deg = apply_refraction(
+                alt_deg,
+                pressure_mbar=pressure_mbar,
+                temperature_c=temperature_c,
+                relative_humidity=relative_humidity,
+            )
+        return SkyPosition(
+            name=canonical_name,
+            right_ascension=ra_deg,
+            declination=dec_deg,
+            azimuth=az_deg,
+            altitude=alt_deg,
+            distance=dist,
+        )
 
     # Step 1: Light-time correction
     xyz, _lt = apply_light_time(

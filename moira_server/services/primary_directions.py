@@ -142,7 +142,7 @@ def _build_arcs_reduction_context(
 
 def _build_chart_and_houses(engine: Moira, request: PrimaryDirectionsBaseRequest):
     require_aware_datetime(request.dt)
-    require_supported_chart_bodies(request.bodies)
+    require_supported_chart_bodies(request.bodies, allow_small_bodies=False)
 
     chart = engine.chart(
         request.dt,

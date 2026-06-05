@@ -85,6 +85,31 @@ def test_batch_charts_reduction_route_preserves_item_reduction_truth(
 
 
 @pytest.mark.requires_ephemeris
+def test_batch_charts_reduction_route_admits_small_bodies(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/batch/charts/reduction",
+        json={
+            "requests": [
+                {
+                    "dt": "2000-01-01T12:00:00+00:00",
+                    "bodies": ["Ceres"],
+                    "include_nodes": False,
+                }
+            ]
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["results"][0]["ok"] is True
+    assert body["results"][0]["chart"]["planets"]["Ceres"]["name"] == "Ceres"
+    assert body["results"][0]["reduction"]["requested_bodies"] == ["Ceres"]
+    assert body["results"][0]["reduction"]["returned_bodies"] == ["Ceres"]
+
+
+@pytest.mark.requires_ephemeris
 def test_batch_transits_route_preserves_item_level_failure_isolation(
     client_with_engine: TestClient,
 ) -> None:

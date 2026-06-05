@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from moira import Body, Moira
+from moira.planets import _resolve_small_body_name
 
 from ..models.chart import ChartRequest, HousesRequest
 
@@ -15,12 +16,31 @@ def require_aware_datetime(value) -> None:
         raise ValueError("datetime inputs must be timezone-aware")
 
 
-def require_supported_chart_bodies(bodies: list[str] | None) -> None:
+def _body_is_supported(body: str, *, allow_small_bodies: bool) -> bool:
+    if body in _VALID_CHART_BODIES:
+        return True
+    if not allow_small_bodies:
+        return False
+    return _resolve_small_body_name(body) is not None
+
+
+def _supported_body_message(*, allow_small_bodies: bool) -> str:
+    supported = ", ".join(sorted(_VALID_CHART_BODIES))
+    if allow_small_bodies:
+        return f"{supported}, plus admitted asteroid/comet names"
+    return supported
+
+
+def require_supported_chart_bodies(
+    bodies: list[str] | None,
+    *,
+    allow_small_bodies: bool = True,
+) -> None:
     if bodies is None:
         return
-    invalid = sorted(body for body in bodies if body not in _VALID_CHART_BODIES)
+    invalid = sorted(body for body in bodies if not _body_is_supported(body, allow_small_bodies=allow_small_bodies))
     if invalid:
-        supported = ", ".join(sorted(_VALID_CHART_BODIES))
+        supported = _supported_body_message(allow_small_bodies=allow_small_bodies)
         invalid_text = ", ".join(repr(body) for body in invalid)
         raise ValueError(f"unsupported chart bodies: {invalid_text}; supported bodies: {supported}")
 

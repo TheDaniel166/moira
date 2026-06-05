@@ -97,6 +97,32 @@ def test_chart_reduction_route_exposes_pipeline_truth(
 
 
 @pytest.mark.requires_ephemeris
+def test_chart_reduction_route_admits_small_bodies(
+    client_with_engine: TestClient,
+    moira_engine,
+) -> None:
+    dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    direct = moira_engine.chart(dt, bodies=["Ceres"], include_nodes=False)
+
+    response = client_with_engine.post(
+        "/v1/chart/reduction",
+        json={
+            "dt": dt.isoformat(),
+            "bodies": ["Ceres"],
+            "include_nodes": False,
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["result"]["planets"]["Ceres"]["longitude"] == pytest.approx(direct.planets["Ceres"].longitude)
+    assert body["result"]["planets"]["Ceres"]["latitude"] == pytest.approx(direct.planets["Ceres"].latitude)
+    assert body["reduction"]["requested_bodies"] == ["Ceres"]
+    assert body["reduction"]["returned_bodies"] == ["Ceres"]
+    assert body["reduction"]["planet_reductions"]["Ceres"]["selection_surface"] == "chart.planets[body]"
+
+
+@pytest.mark.requires_ephemeris
 def test_planet_position_route_matches_engine_selected_truth(
     client_with_engine: TestClient,
     moira_engine,
@@ -199,6 +225,31 @@ def test_planet_position_reduction_route_exposes_pipeline_truth(
 
 
 @pytest.mark.requires_ephemeris
+def test_planet_position_reduction_route_admits_small_bodies(
+    client_with_engine: TestClient,
+    moira_engine,
+) -> None:
+    dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    direct = moira_engine.chart(dt, bodies=["Ceres"], include_nodes=False).planets["Ceres"]
+
+    response = client_with_engine.post(
+        "/v1/positions/planet/reduction",
+        json={
+            "dt": dt.isoformat(),
+            "body": "Ceres",
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["result"]["name"] == "Ceres"
+    assert body["result"]["longitude"] == pytest.approx(direct.longitude)
+    assert body["result"]["latitude"] == pytest.approx(direct.latitude)
+    assert body["reduction"]["engine_surface"] == "Moira.chart"
+    assert body["reduction"]["selection_surface"] == "chart.planets[body]"
+
+
+@pytest.mark.requires_ephemeris
 def test_sky_position_route_matches_engine_selected_truth(
     client_with_engine: TestClient,
     moira_engine,
@@ -256,6 +307,49 @@ def test_sky_position_reduction_route_exposes_pipeline_truth(
     assert body["reduction"]["coordinate_frames"] == ["equatorial", "horizontal"]
     assert "horizontal_projection" in body["reduction"]["stage_sequence"]
     assert "optional_refraction" in body["reduction"]["stage_sequence"]
+
+
+@pytest.mark.requires_ephemeris
+def test_sky_position_routes_admit_small_bodies(
+    client_with_engine: TestClient,
+    moira_engine,
+) -> None:
+    dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    direct = moira_engine.sky_position(dt, "Ceres", 51.5, -0.1)
+
+    response = client_with_engine.post(
+        "/v1/positions/sky",
+        json={
+            "dt": dt.isoformat(),
+            "body": "Ceres",
+            "latitude": 51.5,
+            "longitude": -0.1,
+        },
+    )
+    reduction_response = client_with_engine.post(
+        "/v1/positions/sky/reduction",
+        json={
+            "dt": dt.isoformat(),
+            "body": "Ceres",
+            "latitude": 51.5,
+            "longitude": -0.1,
+        },
+    )
+
+    assert response.status_code == 200
+    assert reduction_response.status_code == 200
+
+    body = response.json()
+    reduction_body = reduction_response.json()
+    assert body["name"] == "Ceres"
+    assert body["right_ascension"] == pytest.approx(direct.right_ascension)
+    assert body["declination"] == pytest.approx(direct.declination)
+    assert body["azimuth"] == pytest.approx(direct.azimuth)
+    assert body["altitude"] == pytest.approx(direct.altitude)
+    assert reduction_body["result"]["name"] == "Ceres"
+    assert reduction_body["result"]["right_ascension"] == pytest.approx(direct.right_ascension)
+    assert reduction_body["result"]["declination"] == pytest.approx(direct.declination)
+    assert reduction_body["reduction"]["engine_surface"] == "Moira.sky_position"
 
 
 @pytest.mark.requires_ephemeris
