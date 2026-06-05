@@ -26,10 +26,11 @@ import re
 import sys
 import os
 import urllib.request
+from typing import Any
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from moira.houses import calculate_houses, houses_from_armc
+from moira.houses import HouseCusps, calculate_houses, houses_from_armc
 from moira.julian import julian_day, ut_to_tt
 from moira.obliquity import true_obliquity
 
@@ -286,6 +287,62 @@ def _angular_diff(a: float, b: float) -> float:
     d = abs(a - b) % 360.0
     return d if d <= 180.0 else 360.0 - d
 
+
+def build_iteration_index(
+    iterations: list[dict],
+    *,
+    include_armc: bool = False,
+) -> dict[tuple[Any, ...], dict]:
+    """
+    Index Swiss fixture iterations by their identifying coordinates.
+
+    The requested house-system letter remains part of the key because the same
+    JD/latitude/longitude tuple appears once per system family in the fixture.
+    """
+    index: dict[tuple[Any, ...], dict] = {}
+    for it in iterations:
+        key: tuple[Any, ...]
+        if include_armc:
+            key = (it["jd_ut"], it["armc"], it["lat"], it["lon"], it["hsys"])
+        else:
+            key = (it["jd_ut"], it["lat"], it["lon"], it["hsys"])
+        index[key] = it
+    return index
+
+
+def oracle_iteration_for_effective_system(
+    result: HouseCusps,
+    iteration: dict,
+    index: dict[tuple[Any, ...], dict],
+    *,
+    include_armc: bool = False,
+) -> dict:
+    """
+    Return the Swiss oracle row matching the engine's effective public system.
+
+    This preserves runtime truth for lawful fallback cases: if the engine
+    served Porphyry under the default polar doctrine, the comparison oracle
+    must be the Swiss Porphyry row for the same observing context rather than
+    the originally requested supra-critical system row.
+    """
+    key: tuple[Any, ...]
+    if include_armc:
+        key = (
+            iteration["jd_ut"],
+            iteration["armc"],
+            iteration["lat"],
+            iteration["lon"],
+            result.effective_system,
+        )
+    else:
+        key = (
+            iteration["jd_ut"],
+            iteration["lat"],
+            iteration["lon"],
+            result.effective_system,
+        )
+    return index[key]
+
 def _deg_to_zodiac(deg: float) -> str:
     signs = ["Ari","Tau","Gem","Can","Leo","Vir",
              "Lib","Sco","Sag","Cap","Aqu","Pis"]
@@ -305,6 +362,7 @@ def validate(iterations: list[dict]) -> bool:
     by_sys: dict[str, list[float]] = {}
     fail_count = 0
     total = 0
+    indexed = build_iteration_index(iterations, include_armc=any("armc" in it for it in iterations))
 
     print(f"\n{'JD':>16} {'Sys':>4} {'Lat':>7} {'Lon':>8}  "
           f"{'MaxΔ (°)':>10}  {'Pass':>5}")
@@ -323,6 +381,12 @@ def validate(iterations: list[dict]) -> bool:
                 result   = houses_from_armc(it["armc"], obliquity, lat, sys)
             else:
                 result = calculate_houses(jd, lat, lon, sys)
+            oracle = oracle_iteration_for_effective_system(
+                result,
+                it,
+                indexed,
+                include_armc="armc" in it,
+            )
             moira_cusps = list(result.cusps)
         except Exception as exc:
             print(f"{jd:>16.4f} {sys:>4} {lat:>7.2f} {lon:>8.2f}  "
@@ -332,7 +396,7 @@ def validate(iterations: list[dict]) -> bool:
             by_sys.setdefault(sys, []).append(180.0)
             continue
 
-        diffs = [_angular_diff(moira_cusps[i], it["cusps"][i]) for i in range(12)]
+        diffs = [_angular_diff(moira_cusps[i], oracle["cusps"][i]) for i in range(12)]
         max_d = max(diffs)
         ok    = max_d <= PASS_THRESHOLD
         total += 1

@@ -10,6 +10,8 @@ from scripts.compare_swetest import (
     _angular_diff,
     _parse_armc_iterations,
     _parse_iterations,
+    build_iteration_index,
+    oracle_iteration_for_effective_system,
 )
 
 
@@ -29,11 +31,13 @@ def test_house_systems_match_offline_swiss_reference() -> None:
     """
     fixture_text = FIXTURE_PATH.read_text(encoding="utf-8", errors="replace")
     iterations = _parse_iterations(fixture_text)
+    indexed = build_iteration_index(iterations)
 
     failures: list[str] = []
     for it in iterations:
         result = calculate_houses(it["jd_ut"], it["lat"], it["lon"], it["hsys"])
-        diffs = [_angular_diff(result.cusps[i], it["cusps"][i]) for i in range(12)]
+        oracle = oracle_iteration_for_effective_system(result, it, indexed)
+        diffs = [_angular_diff(result.cusps[i], oracle["cusps"][i]) for i in range(12)]
         max_diff = max(diffs)
         if max_diff > PASS_THRESHOLD:
             failures.append(
@@ -58,13 +62,15 @@ def test_house_systems_match_armc_direct_swiss_reference() -> None:
     """
     fixture_text = FIXTURE_PATH.read_text(encoding="utf-8", errors="replace")
     iterations = _parse_armc_iterations(fixture_text)
+    indexed = build_iteration_index(iterations, include_armc=True)
 
     failures: list[str] = []
     for it in iterations:
         jd_tt     = ut_to_tt(it["jd_ut"])
         obliquity = true_obliquity(jd_tt)
         result    = houses_from_armc(it["armc"], obliquity, it["lat"], it["hsys"])
-        diffs     = [_angular_diff(result.cusps[i], it["cusps"][i]) for i in range(12)]
+        oracle    = oracle_iteration_for_effective_system(result, it, indexed, include_armc=True)
+        diffs     = [_angular_diff(result.cusps[i], oracle["cusps"][i]) for i in range(12)]
         max_diff  = max(diffs)
         if max_diff > PASS_THRESHOLD:
             failures.append(

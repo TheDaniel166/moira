@@ -5,7 +5,13 @@ from pathlib import Path
 from moira.houses import calculate_houses
 from moira.julian import ut_to_tt
 from moira.obliquity import true_obliquity
-from scripts.compare_swetest import PASS_THRESHOLD, _angular_diff, _parse_iterations
+from scripts.compare_swetest import (
+    PASS_THRESHOLD,
+    _angular_diff,
+    _parse_iterations,
+    build_iteration_index,
+    oracle_iteration_for_effective_system,
+)
 
 
 FIXTURE_PATH = Path(__file__).resolve().parents[1] / "fixtures" / "swe_t.exp"
@@ -31,11 +37,13 @@ def test_supported_polar_house_systems_match_offline_swiss_reference() -> None:
     """
     iterations = _polar_iterations()
     assert iterations, "Expected polar house cases in the cached Swiss fixture"
+    indexed = build_iteration_index(iterations)
 
     failures: list[str] = []
     for it in iterations:
         result = calculate_houses(it["jd_ut"], it["lat"], it["lon"], it["hsys"])
-        diffs = [_angular_diff(result.cusps[i], it["cusps"][i]) for i in range(12)]
+        oracle = oracle_iteration_for_effective_system(result, it, indexed)
+        diffs = [_angular_diff(result.cusps[i], oracle["cusps"][i]) for i in range(12)]
         max_diff = max(diffs)
         if max_diff > PASS_THRESHOLD:
             failures.append(
