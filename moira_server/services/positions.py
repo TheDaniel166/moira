@@ -8,6 +8,7 @@ from datetime import timezone
 from moira import Body, Moira, PlanetData, SkyPosition
 from moira.julian import delta_t_from_jd, jd_from_datetime, local_sidereal_time, utc_to_tt, utc_to_ut1
 from moira.obliquity import nutation, true_obliquity
+from moira.planets import _resolve_small_body_name
 
 from ..models.positions import PlanetPositionRequest, SkyPositionRequest
 
@@ -86,9 +87,14 @@ def _require_aware_datetime(value) -> None:
 
 
 def _require_supported_planet_body(body: str) -> None:
-    if body not in _VALID_PLANET_BODIES:
-        supported = ", ".join(sorted(_VALID_PLANET_BODIES))
-        raise ValueError(f"unsupported planet body {body!r}; supported bodies: {supported}")
+    if body in _VALID_PLANET_BODIES:
+        return
+    if _resolve_small_body_name(body) is not None:
+        return
+    supported = ", ".join(sorted(_VALID_PLANET_BODIES))
+    raise ValueError(
+        f"unsupported planet body {body!r}; supported bodies: {supported}, plus admitted asteroid/comet names"
+    )
 
 
 def _sidereal_context(jd_utc: float, longitude: float) -> tuple[float, float]:
