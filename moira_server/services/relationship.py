@@ -24,10 +24,14 @@ from moira.synastry import (
     davison_chart_reference_place,
     davison_chart_spherical_midpoint,
     davison_chart_uncorrected,
+    house_overlay,
     mutual_house_overlays,
+    mutual_overlay_relations,
     synastry_aspects,
     synastry_chart_condition_profile,
     synastry_condition_network_profile,
+    synastry_condition_profiles,
+    synastry_contact_relations,
     synastry_contacts,
 )
 
@@ -48,6 +52,7 @@ from ..models.relationship import (
     PlanetaryPictureRequest,
     RelationshipPartyRequest,
     SingleChartAnalysisRequest,
+    SynastryDirectionalOverlayRequest,
     SynastryPairRequest,
 )
 
@@ -119,6 +124,39 @@ def compute_synastry_overlays(engine: Moira, request: SynastryPairRequest):
         first_label=request.first_label,
         second_label=request.second_label,
     )
+
+
+def compute_synastry_directional_overlay(engine: Moira, request: SynastryDirectionalOverlayRequest):
+    chart_a, houses_a, chart_b, houses_b = _pair_artifacts(engine, request)
+    if request.direction == "first_in_second":
+        return house_overlay(
+            chart_a,
+            houses_b,
+            include_nodes=request.include_nodes,
+            source_label=request.first_label,
+            target_label=request.second_label,
+        )
+    if request.direction == "second_in_first":
+        return house_overlay(
+            chart_b,
+            houses_a,
+            include_nodes=request.include_nodes,
+            source_label=request.second_label,
+            target_label=request.first_label,
+        )
+    raise ValueError("direction must be 'first_in_second' or 'second_in_first'")
+
+
+def compute_synastry_contact_relations(engine: Moira, request: SynastryPairRequest):
+    return synastry_contact_relations(compute_synastry_contacts(engine, request))
+
+
+def compute_synastry_overlay_relations(engine: Moira, request: SynastryPairRequest):
+    return mutual_overlay_relations(compute_synastry_overlays(engine, request))
+
+
+def compute_synastry_condition_profiles(engine: Moira, request: SynastryPairRequest):
+    return synastry_condition_profiles(compute_synastry_contacts(engine, request))
 
 
 def compute_composite_chart(engine: Moira, request: CompositeChartRequest):
@@ -295,7 +333,11 @@ __all__ = [
     "compute_planetary_pictures",
     "compute_synastry_aspects",
     "compute_synastry_chart_profile",
+    "compute_synastry_condition_profiles",
     "compute_synastry_contacts",
+    "compute_synastry_contact_relations",
+    "compute_synastry_directional_overlay",
     "compute_synastry_network",
+    "compute_synastry_overlay_relations",
     "compute_synastry_overlays",
 ]

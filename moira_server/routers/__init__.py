@@ -2,9 +2,12 @@
 
 from .batch import router as batch_router
 from .chart import router as chart_router
+from .chart_wheel import router as chart_wheel_router
 from .dasha import router as dasha_router
 from .health import router as health_router
+from .locations import router as locations_router
 from .phenomena import router as phenomena_router
+from .pipeline import router as pipeline_router
 from .positions import router as positions_router
 from .progressions import router as progressions_router
 from .relationship import router as relationship_router
@@ -24,9 +27,12 @@ __all__ = [
     "stars_router",
     "batch_router",
     "chart_router",
+    "chart_wheel_router",
     "dasha_router",
     "health_router",
+    "locations_router",
     "phenomena_router",
+    "pipeline_router",
     "positions_router",
     "primary_directions_router",
     "progressions_router",

@@ -30,9 +30,13 @@ from ..models.relationship import (
     SingleChartAnalysisRequest,
     SynastryAspectSearchResponse,
     SynastryChartConditionProfileResponse,
+    SynastryConditionProfileListResponse,
     SynastryConditionNetworkProfileResponse,
     SynastryContactSearchResponse,
+    SynastryDirectionalOverlayRequest,
+    SynastryHouseOverlayResponse,
     SynastryPairRequest,
+    SynastryRelationListResponse,
     ChartShapeResponse,
 )
 from ..serializers.relationship import (
@@ -51,6 +55,8 @@ from ..serializers.relationship import (
     serialize_synastry_chart_condition_profile,
     serialize_synastry_contact,
     serialize_synastry_network,
+    serialize_synastry_overlay,
+    serialize_synastry_relation,
 )
 from ..services.relationship import (
     compute_chart_shape,
@@ -66,8 +72,12 @@ from ..services.relationship import (
     compute_planetary_pictures,
     compute_synastry_aspects,
     compute_synastry_chart_profile,
+    compute_synastry_condition_profiles,
     compute_synastry_contacts,
+    compute_synastry_contact_relations,
+    compute_synastry_directional_overlay,
     compute_synastry_network,
+    compute_synastry_overlay_relations,
     compute_synastry_overlays,
 )
 
@@ -85,9 +95,37 @@ def synastry_contacts_route(request: SynastryPairRequest, engine: Moira = Depend
     return SynastryContactSearchResponse(events=[serialize_synastry_contact(item) for item in compute_synastry_contacts(engine, request)])
 
 
+@router.post("/synastry/contact-relations", response_model=SynastryRelationListResponse)
+def synastry_contact_relations_route(request: SynastryPairRequest, engine: Moira = Depends(get_engine)) -> SynastryRelationListResponse:
+    return SynastryRelationListResponse(
+        relations=[serialize_synastry_relation(item) for item in compute_synastry_contact_relations(engine, request)]
+    )
+
+
+@router.post("/synastry/condition-profiles", response_model=SynastryConditionProfileListResponse)
+def synastry_condition_profiles_route(request: SynastryPairRequest, engine: Moira = Depends(get_engine)) -> SynastryConditionProfileListResponse:
+    from ..serializers.relationship import serialize_synastry_condition_profile
+
+    return SynastryConditionProfileListResponse(
+        profiles=[serialize_synastry_condition_profile(item) for item in compute_synastry_condition_profiles(engine, request)]
+    )
+
+
+@router.post("/synastry/overlay", response_model=SynastryHouseOverlayResponse)
+def synastry_directional_overlay_route(request: SynastryDirectionalOverlayRequest, engine: Moira = Depends(get_engine)) -> SynastryHouseOverlayResponse:
+    return serialize_synastry_overlay(compute_synastry_directional_overlay(engine, request))
+
+
 @router.post("/synastry/overlays", response_model=MutualHouseOverlayResponse)
 def synastry_overlays_route(request: SynastryPairRequest, engine: Moira = Depends(get_engine)) -> MutualHouseOverlayResponse:
     return serialize_mutual_overlay(compute_synastry_overlays(engine, request))
+
+
+@router.post("/synastry/overlay-relations", response_model=SynastryRelationListResponse)
+def synastry_overlay_relations_route(request: SynastryPairRequest, engine: Moira = Depends(get_engine)) -> SynastryRelationListResponse:
+    return SynastryRelationListResponse(
+        relations=[serialize_synastry_relation(item) for item in compute_synastry_overlay_relations(engine, request)]
+    )
 
 
 @router.post("/synastry/chart-condition", response_model=SynastryChartConditionProfileResponse)

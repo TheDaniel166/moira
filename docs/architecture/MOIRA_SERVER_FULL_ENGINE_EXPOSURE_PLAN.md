@@ -67,8 +67,29 @@ The implemented server already exposes these route families:
   occultation path geometry, heliacal event search, paran core search, and
   paran site/field/contour/structure products
 - annual, monthly, and schedule-based profections
+- website-only location lookup and reduction-pipeline inspection aliases
+- website-only chart-wheel drawing primitive packets
+- fixed-star, variable-star, and multiple-star catalog/state surfaces
 
 This is the completed first wave.
+
+The website-only location and pipeline routes are admitted as transport
+conveniences, not as engine doctrine. Location lookup is a bounded seeded
+gazetteer for chart-entry UX. Pipeline routes are aliases over existing
+reduction-truth services and must not become a second reduction implementation.
+Chart-wheel primitive routes are likewise website rendering support: they
+normalize chart truth into deterministic drawing coordinates, rings, cusps,
+house sectors, point placements, label anchors, aspect line endpoints, stroke
+keys, and collision groups. Preset and validation routes may help the website
+designer UI normalize display configuration, but they must not change
+longitudes, house cusps, aspect doctrine, or any canonical engine result.
+
+Variable-star and multiple-star routes are admitted under the Phase 11 catalog
+and stars family. Variable-star endpoints preserve catalog records separately
+from photometric state, extrema, aggregate catalog profile, and two-star
+condition relations. Multiple-star endpoints preserve system catalog records
+separately from orbital/component state, separation, position angle, and
+telescope-resolvability products.
 
 The remaining work is expansion, not bootstrap.
 
@@ -222,7 +243,11 @@ Current status:
 - implemented:
   - `/v1/synastry/aspects`
   - `/v1/synastry/contacts`
+  - `/v1/synastry/contact-relations`
+  - `/v1/synastry/condition-profiles`
+  - `/v1/synastry/overlay`
   - `/v1/synastry/overlays`
+  - `/v1/synastry/overlay-relations`
   - `/v1/synastry/chart-condition`
   - `/v1/synastry/network`
   - `/v1/composite/chart`
@@ -408,6 +433,24 @@ Proposed route groups:
 - `/v1/asteroids/*`
 - `/v1/comets/*`
 - `/v1/catalogs/*`
+
+Current status:
+
+- implemented:
+  - `/v1/stars/position`
+  - `/v1/stars/bulk`
+  - `/v1/stars/list`
+  - `/v1/stars/variable/list`
+  - `/v1/stars/variable/{name}`
+  - `/v1/stars/variable/state`
+  - `/v1/stars/variable/range`
+  - `/v1/stars/variable/catalog-profile`
+  - `/v1/stars/variable/pair`
+  - `/v1/stars/multiple/list`
+  - `/v1/stars/multiple/{name}`
+  - `/v1/stars/multiple/state`
+  - `/v1/asteroids/*` fast website small-body surfaces
+  - `/v1/comets/*` fast website comet surfaces
 
 Required transport discipline:
 

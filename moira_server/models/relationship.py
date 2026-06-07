@@ -35,6 +35,10 @@ class SynastryPairRequest(_StrictModel):
     include_nodes: bool | None = None
 
 
+class SynastryDirectionalOverlayRequest(SynastryPairRequest):
+    direction: str = "first_in_second"
+
+
 class AspectClassificationResponse(_StrictModel):
     domain: str
     tier: str
@@ -114,6 +118,14 @@ class SynastryAspectSearchResponse(_StrictModel):
 
 class SynastryContactSearchResponse(_StrictModel):
     events: list[SynastryContactResponse]
+
+
+class SynastryRelationListResponse(_StrictModel):
+    relations: list[SynastryRelationResponse]
+
+
+class SynastryConditionProfileListResponse(_StrictModel):
+    profiles: list[SynastryConditionProfileResponse]
 
 
 class HousePlacementResponse(_StrictModel):
@@ -512,6 +524,9 @@ __all__ = [
     "SynastryAspectSearchResponse",
     "SynastryChartConditionProfileResponse",
     "SynastryConditionNetworkProfileResponse",
+    "SynastryConditionProfileListResponse",
     "SynastryContactSearchResponse",
+    "SynastryDirectionalOverlayRequest",
     "SynastryPairRequest",
+    "SynastryRelationListResponse",
 ]

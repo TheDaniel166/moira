@@ -16,6 +16,7 @@ from .routers import (
     comets_router,
     batch_router,
     chart_router,
+    chart_wheel_router,
     dasha_router,
     health_router,
     locations_router,
@@ -70,6 +71,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     register_exception_handlers(app)
     app.include_router(health_router)
     app.include_router(chart_router)
+    app.include_router(chart_wheel_router)  # Website-only chart-wheel drawing primitives
     app.include_router(positions_router)
     app.include_router(transits_router)
     app.include_router(returns_router)

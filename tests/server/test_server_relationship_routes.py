@@ -11,10 +11,14 @@ from moira.patterns import find_all_patterns, pattern_chart_condition_profile, p
 from moira.synastry import (
     composite_chart,
     davison_chart,
+    house_overlay,
     mutual_house_overlays,
+    mutual_overlay_relations,
     synastry_aspects,
     synastry_chart_condition_profile,
     synastry_condition_network_profile,
+    synastry_condition_profiles,
+    synastry_contact_relations,
     synastry_contacts,
 )
 from moira_server.app import create_app
@@ -191,3 +195,69 @@ def test_phase_seven_relationship_routes_match_engine_truth(client_with_engine: 
 
     assert clusters_response.status_code == 200
     assert len(clusters_response.json()["events"]) == len(direct_clusters)
+
+
+@pytest.mark.requires_ephemeris
+def test_synastry_layered_helper_routes_match_engine_truth(
+    client_with_engine: TestClient,
+    moira_engine,
+) -> None:
+    pair = _pair_payload()
+    dt_a = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    dt_b = datetime(1990, 6, 15, 6, 30, tzinfo=timezone.utc)
+    chart_a = moira_engine.chart(dt_a)
+    houses_a = moira_engine.houses(dt_a, pair["first"]["latitude"], pair["first"]["longitude"])  # type: ignore[index]
+    chart_b = moira_engine.chart(dt_b)
+    houses_b = moira_engine.houses(dt_b, pair["second"]["latitude"], pair["second"]["longitude"])  # type: ignore[index]
+
+    contacts = synastry_contacts(chart_a, chart_b)
+    overlays = mutual_house_overlays(chart_a, houses_a, chart_b, houses_b)
+    direct_overlay = house_overlay(chart_a, houses_b, source_label="A", target_label="B")
+    direct_contact_relations = synastry_contact_relations(contacts)
+    direct_condition_profiles = synastry_condition_profiles(contacts)
+    direct_overlay_relations = mutual_overlay_relations(overlays)
+
+    contact_relations_response = client_with_engine.post("/v1/synastry/contact-relations", json=pair)
+    condition_profiles_response = client_with_engine.post("/v1/synastry/condition-profiles", json=pair)
+    overlay_response = client_with_engine.post(
+        "/v1/synastry/overlay",
+        json={**pair, "direction": "first_in_second"},
+    )
+    overlay_relations_response = client_with_engine.post("/v1/synastry/overlay-relations", json=pair)
+
+    assert contact_relations_response.status_code == 200
+    assert len(contact_relations_response.json()["relations"]) == len(direct_contact_relations)
+    if direct_contact_relations:
+        assert contact_relations_response.json()["relations"][0]["kind"] == direct_contact_relations[0].kind
+        assert contact_relations_response.json()["relations"][0]["basis"] == direct_contact_relations[0].basis
+
+    assert condition_profiles_response.status_code == 200
+    assert len(condition_profiles_response.json()["profiles"]) == len(direct_condition_profiles)
+    if direct_condition_profiles:
+        assert (
+            condition_profiles_response.json()["profiles"][0]["result_kind"]
+            == direct_condition_profiles[0].result_kind
+        )
+
+    assert overlay_response.status_code == 200
+    overlay_body = overlay_response.json()
+    assert overlay_body["source_label"] == direct_overlay.source_label
+    assert overlay_body["target_label"] == direct_overlay.target_label
+    assert len(overlay_body["placements"]) == len(direct_overlay.placements)
+    assert overlay_body["relation"]["kind"] == direct_overlay.relation.kind
+
+    assert overlay_relations_response.status_code == 200
+    assert len(overlay_relations_response.json()["relations"]) == len(direct_overlay_relations)
+    assert overlay_relations_response.json()["relations"][0]["kind"] == direct_overlay_relations[0].kind
+
+
+def test_synastry_directional_overlay_rejects_unknown_direction(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/synastry/overlay",
+        json={**_pair_payload(), "direction": "sideways"},
+    )
+
+    assert response.status_code == 422
+    assert "direction" in response.json()["message"]
