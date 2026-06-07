@@ -2608,6 +2608,7 @@ class ZRSequenceProfile:
     @property
     def non_peak_count(self) -> int:
         """Number of periods that are not peak periods."""
+        return self.period_count - self.peak_period_count
 
 # ---------------------------------------------------------------------------
 # Phase 1 Layering: Valens Distributions (source-backed from Anthologies Bk IV)
