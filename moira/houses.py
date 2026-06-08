@@ -3430,7 +3430,7 @@ def assign_house(longitude: float, house_cusps: HouseCusps) -> HousePlacement:
         span       = (cusp_close - cusp_open) % 360.0
         dist       = (lon - cusp_open) % 360.0
 
-        if dist < span - 1e-12:  # epsilon guard: prevents FP rounding from capturing lon == cusp_close
+        if dist < span:
             house         = i + 1
             exact_on_cusp = dist < _MEMBERSHIP_CUSP_TOLERANCE
             return HousePlacement(
