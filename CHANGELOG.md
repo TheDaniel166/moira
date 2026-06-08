@@ -5,6 +5,14 @@ All notable changes to the Moira project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.4] - 2026-06-08
+
+### Fixed
+- **Release Lineage**: Reconciled the `v3.2.1` release branch into `main` so the release tag is contained in current history.
+- **House Boundary Membership**: Preserved the documented half-open interval rule for `assign_house()`, so longitudes strictly below a closing cusp remain in the prior house while exact cusp hits enter the opening house.
+- **Package Data Policy**: Made wheel builds obey the declared package-data policy so `.bsp` kernels are not silently bundled into PyPI artifacts.
+- **Version Truth**: Aligned runtime metadata and release-facing doctrine tests with the `3.2.4` package version.
+
 ## [3.2.3] - 2026-05-30
 
 ### Added
