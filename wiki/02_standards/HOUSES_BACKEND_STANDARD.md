@@ -6,12 +6,13 @@ The Moira houses backend is a sovereign computational subsystem. Its definitions
 layer boundaries, invariants, failure doctrine, and determinism rules are stated
 here and are frozen until explicitly superseded by a revision to this document.
 
-This document reflects current implementation truth as of Phase 11 (1 194 passing tests
-across 10 unit files and 1 integration file). It does not describe aspirational future
-capabilities.
+This document reflects current implementation truth for the public house-system
+surface. It does not describe aspirational future capabilities.
 
 For the clean-room sovereignty remediation path beyond current implementation truth,
 see [HOUSES_SOVEREIGNTY_REMEDIATION_ROADMAP.md](../06_roadmap/HOUSES_SOVEREIGNTY_REMEDIATION_ROADMAP.md).
+For the house-system derivation and discretionary divergence record, see
+[HOUSE_SYSTEM_DIVERGENCE.md](../01_doctrines/houses/HOUSE_SYSTEM_DIVERGENCE.md).
 
 ---
 
@@ -154,21 +155,22 @@ A function in phase N:
 | `P` | Placidus | `QUADRANT` | `SEMI_ARC` | Yes | Yes |  # integrated high-lat branch search; polar_capable via own doctrine (unique ordered when exists)
 | `B` | Alcabitius | `QUADRANT` | `SEMI_ARC` | Yes | Yes |
 | `K` | Koch | `QUADRANT` | `OBLIQUE_ASCENSION` | Yes | **No** |
-| `C` | Campanus | `QUADRANT` | `PRIME_VERTICAL` | Yes | Yes |
+| `C` | Campanus | `QUADRANT` | `PRIME_VERTICAL` | Yes | **No** |
 | `H` | Azimuthal | `QUADRANT` | `HORIZON` | Yes | Yes |
-| `R` | Regiomontanus | `QUADRANT` | `POLAR_PROJECTION` | Yes | Yes |
-| `T` | Topocentric | `QUADRANT` | `POLAR_PROJECTION` | Yes | Yes |
+| `R` | Regiomontanus | `QUADRANT` | `POLAR_PROJECTION` | Yes | **No** |
+| `T` | Topocentric | `QUADRANT` | `POLAR_PROJECTION` | Yes | **No** |
 | `CT` | Carter | `QUADRANT` | `EQUATORIAL` | Yes | Yes |
 | `U` | Krusinski | `QUADRANT` | `GREAT_CIRCLE` | Yes | Yes |
 | `Y` | APC | `QUADRANT` | `APC_FORMULA` | Yes | Yes |
 | `N` | Sunshine | `SOLAR` | `SOLAR_POSITION` | No | Yes |
 
-**Polar-incapable systems** (`_POLAR_SYSTEMS`): `K` (and four projection/prime-vertical systems).
+**Polar-incapable systems** (`_POLAR_SYSTEMS`): `K`, `C`, `R`, and `T`.
 Placidus (P) has integrated branch-search doctrine for high latitudes (unique
 ordered semi-arc cycles when they exist for the position); it is no longer
 blanket pre-empted and is marked polar_capable=True. When no unique ordered
 solution exists for a given high-lat ARMC, policy still governs fallback/raise.
-The remaining listed systems fall back (or raise) under default policy above
+Alcabitius (B) likewise has integrated direct zero-pole ordered-figure doctrine
+and is marked polar_capable=True. The remaining listed systems fall back (or raise) under default policy above
 critical latitude (`90° − obliquity` ≈ 66.56° at J2000).
 
 #### QUADRANT H1 exception
@@ -211,7 +213,7 @@ All public names are declared in the module `moira/houses.py`.
 | `HouseSystemCuspBasis` | `ECLIPTIC`, `EQUATORIAL`, `SEMI_ARC`, `OBLIQUE_ASCENSION`, `QUADRANT_TRISECTION`, `PRIME_VERTICAL`, `HORIZON`, `POLAR_PROJECTION`, `SINUSOIDAL`, `GREAT_CIRCLE`, `APC_FORMULA`, `SOLAR_POSITION` |
 | `HouseAngularity` | `ANGULAR`, `SUCCEDENT`, `CADENT` |
 | `UnknownSystemPolicy` | `FALLBACK_TO_PLACIDUS`, `RAISE` |
-| `PolarFallbackPolicy` | `FALLBACK_TO_PORPHYRY`, `RAISE`, `EXPERIMENTAL_SEARCH` |
+| `PolarFallbackPolicy` | `FALLBACK_TO_PORPHYRY`, `FALLBACK_TO_EQUAL`, `FALLBACK_TO_WHOLE_SIGN`, `RAISE`, `EXPERIMENTAL_SEARCH` |
 
 #### Frozen dataclass vessels
 
@@ -247,8 +249,8 @@ All public names are declared in the module `moira/houses.py`.
 |---|---|---|
 | `_MEMBERSHIP_CUSP_TOLERANCE` | `1e-9` | Degrees; threshold for `exact_on_cusp` detection |
 | `_NEAR_CUSP_DEFAULT_THRESHOLD` | `3.0` | Degrees; default for `describe_boundary` |
-| `_POLAR_SYSTEMS` | `frozenset{'P','K','PS'}` | Systems that produce invalid cusps above the critical latitude |
-| `_KNOWN_SYSTEMS` | `frozenset` of 20 codes | All recognised `HouseSystem` values |
+| `_POLAR_SYSTEMS` | `frozenset{'K','C','R','T'}` | Systems still outer-guarded above the critical latitude |
+| `_KNOWN_SYSTEMS` | `frozenset` of 22 codes | All recognised `HouseSystem` values |
 | `_ANGULARITY_MAP` | `dict[int, HouseAngularity]` | Static 12-entry lookup; never recomputed |
 
 ---
@@ -261,7 +263,7 @@ Two conditions can redirect the computation away from the default polar fallback
 
 | Trigger | Condition | Default behaviour | Strict behaviour |
 |---|---|---|---|
-| Critical latitude | `abs(latitude) >= 90° − obliquity` and `system in _POLAR_SYSTEMS` | Substitute Porphyry | Raise `ValueError` |
+| Critical latitude | `abs(latitude) >= 90° − obliquity` and either the requested system is in `_POLAR_SYSTEMS` or integrated high-latitude search for Placidus/Alcabitius finds no unique ordered figure | Substitute according to `PolarFallbackPolicy` | Raise `ValueError` |
 | Unknown system | `system not in _KNOWN_SYSTEMS` | Substitute Placidus | Raise `ValueError` |
 
 The critical latitude is computed from the chart's actual obliquity at call time.
@@ -303,12 +305,12 @@ When no fallback occurs: `fallback = False`, `fallback_reason = None`.
 
 #### 6.3a Experimental high-latitude search
 
-`PolarFallbackPolicy.EXPERIMENTAL_SEARCH` is an explicit opt-in research mode that loads the separate experimental_<system>.py module for the requested polar system (Placidus is the reference full implementation; others are per-system research stubs following the same isolation pattern).
-It currently applies only to `HouseSystem.PLACIDUS`.
+`PolarFallbackPolicy.EXPERIMENTAL_SEARCH` is an explicit opt-in research mode that loads the separate experimental_<system>.py module for a requested polar system when such a module is registered. The per-system module owns the definition of an admissible high-latitude figure for that geometry.
 
-- The engine calls the separate `moira.experimental_placidus` module.
-- The search solves the semi-arc equations directly and accepts the result only
-  when exactly one ordered cusp cycle exists.
+- The engine calls the registered `moira.experimental_<system>` module for the
+  requested system.
+- The search accepts the result only when the module's own doctrine identifies
+  exactly one admissible ordered cusp cycle.
 - If no ordered cycle exists, or more than one ordered cycle exists, the call
   raises `ValueError` rather than silently falling back.
 - Successful experimental search returns `effective_system == system` and
@@ -471,21 +473,22 @@ or monkey-patched to hide real failures.
 
 ### 11. Test File Register
 
-| File | Phase(s) | Tests | Focus |
-|---|---|---|---|
-| `tests/unit/test_house_truth_preservation.py` | 1 | 85 | `system` / `effective_system` / `fallback` field integrity |
-| `tests/unit/test_house_classification.py` | 2 | 126 | `HouseSystemFamily`, `HouseSystemCuspBasis`, `classify_house_system` |
-| `tests/unit/test_house_inspectability.py` | 3 | 222 | `__post_init__` guard paths, `is_quadrant_system`, `is_latitude_sensitive` |
-| `tests/unit/test_house_policy.py` | 4 | 51 | `HousePolicy`, `UnknownSystemPolicy`, `PolarFallbackPolicy`, strict raises |
-| `tests/unit/test_house_membership.py` | 5 | 128 | `assign_house`, boundary interval, wraparound, exact-on-cusp |
-| `tests/unit/test_house_boundary.py` | 6 | 154 | `describe_boundary`, distance doctrine, span-sum identity, threshold |
-| `tests/unit/test_house_angularity.py` | 7 | 107 | `describe_angularity`, `_ANGULARITY_MAP`, all 12 houses |
-| `tests/unit/test_house_comparison.py` | 8 | 69 | `compare_systems`, `compare_placements`, delta range, agreement flags |
-| `tests/unit/test_house_distribution.py` | 9 | 110 | `distribute_points`, occupancy counts, empty/dominant, angularity totals |
-| `tests/unit/test_house_hardening.py` | 10 | 133 | Cross-layer consistency, failure behavior, determinism, invariant preservation |
-| `tests/unit/test_polar_houses.py` | 3–4 | 3 | Polar fallback at extreme latitudes |
-| `tests/integration/test_houses_external_reference.py` | 1 | 1 | Placidus cusps vs external reference values |
-| **Total** | | **1 189** | |
+| File | Phase(s) | Focus |
+|---|---|---|
+| `tests/unit/test_house_truth_preservation.py` | 1 | `system` / `effective_system` / `fallback` field integrity |
+| `tests/unit/test_house_classification.py` | 2 | `HouseSystemFamily`, `HouseSystemCuspBasis`, `classify_house_system` |
+| `tests/unit/test_house_inspectability.py` | 3 | `__post_init__` guard paths, `is_quadrant_system`, `is_latitude_sensitive` |
+| `tests/unit/test_house_policy.py` | 4 | `HousePolicy`, `UnknownSystemPolicy`, `PolarFallbackPolicy`, strict raises |
+| `tests/unit/test_house_membership.py` | 5 | `assign_house`, boundary interval, wraparound, exact-on-cusp |
+| `tests/unit/test_house_boundary.py` | 6 | `describe_boundary`, distance doctrine, span-sum identity, threshold |
+| `tests/unit/test_house_angularity.py` | 7 | `describe_angularity`, `_ANGULARITY_MAP`, all 12 houses |
+| `tests/unit/test_house_comparison.py` | 8 | `compare_systems`, `compare_placements`, delta range, agreement flags |
+| `tests/unit/test_house_distribution.py` | 9 | `distribute_points`, occupancy counts, empty/dominant, angularity totals |
+| `tests/unit/test_house_hardening.py` | 10 | Cross-layer consistency, failure behavior, determinism, invariant preservation |
+| `tests/unit/test_polar_houses.py` | 3-4 | Polar fallback at extreme latitudes |
+| `tests/integration/test_houses_external_reference.py` | 1 | Placidus cusps vs external reference values |
+
+Exact test counts belong to live pytest output, not this doctrine file.
 
 ---
 

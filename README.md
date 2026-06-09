@@ -58,7 +58,7 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
 
 ### Chart Calculation
 
-- **House systems** — 17 systems including Placidus, Koch, Regiomontanus, Campanus, Morinus, Porphyry, Whole Sign, Equal, APC, and Sunshine. Includes experimental high-latitude branch-aware Placidus solvers (`experimental_placidus`) for polar coordinates, and `house_of` for direct house placement lookups.
+- **House systems** — 22 systems including Placidus, Koch, Regiomontanus, Campanus, Morinus, Porphyry, Whole Sign, Equal, APC, Pullen Sinusoidal Delta/Ratio, and Sunshine. Includes branch-aware high-latitude doctrine where admitted, explicit polar fallback policy, and `house_of` for direct house placement lookups.
 - **Aspects** — 22 zodiacal aspects with applying/separating/stationary motion-state detection; declination parallels and contra-parallels; antiscia and contra-antiscia; exact partile and orbed platic status markers (`is_partile`, `is_platic`).
 - **Aspect patterns** — 21 multi-body configurations: T-Square, Grand Trine, Grand Cross, Yod, Kite, Mystic Rectangle, Stellium, Grand Sextile, Thor's Hammer, Boomerang Yod, and more.
 - **Midpoints** — full midpoint matrix, midpoint trees, 90°/45°/22.5° dial projections, planetary pictures.
@@ -304,7 +304,7 @@ graph TD
     K --> N[Ecliptic Projection\nTrue obliquity of date]
     N --> O[Zodiacal Longitude · Latitude · Distance]
     K --> P[Sidereal Frame · Ayanamsa\noptional]
-    K --> Q[House Cusps · 17 Systems\nrequires lat/lon]
+    K --> Q[House Cusps · 22 Systems\nrequires lat/lon]
 ```
 
 ### Worked Example: Mars at J2000.0
@@ -357,6 +357,7 @@ The canonical documentation tree lives in `wiki/`. The flat `moira.wiki/` Git wi
 | :--- | :--- |
 | [`01_LIGHT_BOX_DOCTRINE.md`](wiki/01_doctrines/01_LIGHT_BOX_DOCTRINE.md) | Transparency and derivation as design constraints. |
 | [`BEYOND_SWISS_EPHEMERIS.md`](wiki/01_doctrines/BEYOND_SWISS_EPHEMERIS.md) | Capabilities enabled by sovereign catalogs, explicit policy, and modern Python. |
+| [`HOUSE_SYSTEM_DIVERGENCE.md`](wiki/01_doctrines/houses/HOUSE_SYSTEM_DIVERGENCE.md) | House-system derivation and discretionary divergence from conventional Swiss-facing behavior. |
 | [`CONSTITUTIONAL_PROCESS.md`](wiki/00_foundations/CONSTITUTIONAL_PROCESS.md) | The Subsystem Constitutional Process — the development and governance protocol. |
 | [`MOIRA_ROADMAP.md`](wiki/06_roadmap/MOIRA_ROADMAP.md) | Feature implementation status and mathematical accuracy register. |
 
@@ -364,5 +365,4 @@ The canonical documentation tree lives in `wiki/`. The flat `moira.wiki/` Git wi
 
 ## License
 
-MIT (c) 2026 Burkett
-
+MIT (c) 2026 TheDaniel166. See [PROVENANCE.md](PROVENANCE.md) for license and Swiss-lineage provenance clarity.
