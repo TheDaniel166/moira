@@ -38,9 +38,16 @@ def transit_search_route(
     request: TransitSearchRequest,
     engine: Moira = Depends(get_engine),
 ) -> TransitSearchResponse:
-    return TransitSearchResponse(
-        events=[serialize_transit_event(event) for event in compute_transits(engine, request)]
-    )
+    events = [serialize_transit_event(event) for event in compute_transits(engine, request)]
+    # Transport-layer echo of the caller's requested controls into the
+    # computation_truth (per the B decision on the "requested vs applied" item).
+    # This augments the engine-provided applied values without mutating engine vessels.
+    for ev in events:
+        if ev.computation_truth is not None:
+            ev.computation_truth.requested_step_days = request.step_days
+            ev.computation_truth.requested_tolerance_days = request.solver_tolerance_days
+            ev.computation_truth.requested_direction = request.direction
+    return TransitSearchResponse(events=events)
 
 
 @router.post("/transits/ingresses", response_model=IngressSearchResponse)
@@ -48,9 +55,13 @@ def ingress_search_route(
     request: IngressSearchRequest,
     engine: Moira = Depends(get_engine),
 ) -> IngressSearchResponse:
-    return IngressSearchResponse(
-        events=[serialize_ingress_event(event) for event in compute_ingresses(engine, request)]
-    )
+    events = [serialize_ingress_event(event) for event in compute_ingresses(engine, request)]
+    for ev in events:
+        if ev.computation_truth is not None:
+            ev.computation_truth.requested_step_days = request.step_days
+            ev.computation_truth.requested_tolerance_days = request.solver_tolerance_days
+            ev.computation_truth.requested_direction = request.direction
+    return IngressSearchResponse(events=events)
 
 
 @router.post("/transits/next-ingress", response_model=IngressEventResponse | None)
@@ -59,7 +70,14 @@ def next_ingress_route(
     engine: Moira = Depends(get_engine),
 ) -> IngressEventResponse | None:
     event = compute_next_ingress(engine, request)
-    return serialize_ingress_event(event) if event is not None else None
+    if event is None:
+        return None
+    ev = serialize_ingress_event(event)
+    if ev.computation_truth is not None:
+        ev.computation_truth.requested_step_days = request.step_days
+        ev.computation_truth.requested_tolerance_days = request.solver_tolerance_days
+        ev.computation_truth.requested_direction = request.direction
+    return ev
 
 
 @router.post("/lunar-phases", response_model=LunarPhaseSearchResponse)

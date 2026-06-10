@@ -32,6 +32,12 @@ class TransitComputationTruthResponse(_StrictModel):
     requested_target: str | float
     direction_filter: str
     search_motion: str
+    # The following three are transport-layer echoes of the caller's controls
+    # (populated in the router from the original request). They sit alongside
+    # the engine-provided applied values in search_truth / target_truth.
+    requested_step_days: float | None = None
+    requested_tolerance_days: float | None = None
+    requested_direction: str | None = None
     target_truth: LongitudeResolutionTruthResponse
     search_truth: CrossingSearchTruthResponse
 
@@ -40,6 +46,11 @@ class IngressComputationTruthResponse(_StrictModel):
     body: str
     sign: str
     boundary_longitude: float
+    # Transport-layer echoes of caller controls for the ingress search
+    # (populated from the request at the router boundary).
+    requested_step_days: float | None = None
+    requested_tolerance_days: float | None = None
+    requested_direction: str | None = None
     search_truth: CrossingSearchTruthResponse
 
 
@@ -125,6 +136,21 @@ class TransitSearchRequest(_StrictModel):
     jd_start: float
     jd_end: float
     search_motion: str = "forward"
+    step_days: float | None = None
+    # Optional caller-supplied scan step (days) for the longitude-crossing search.
+    # When None (default), the engine selects an auto step based on body speed
+    # (or any TransitComputationPolicy override). This controls search cadence
+    # and initial bracket size only; final crossings are always refined by bisection.
+    # See moira.transits.TransitSearchPolicy and _auto_step.
+    solver_tolerance_days: float | None = None
+    # Optional solver tolerance (days) for the final bisection. Default in engine
+    # policy is 1e-6. When supplied, it is used for the crossing refinement.
+    direction: str = "either"
+    # Direction filter for the search ('direct', 'retrograde', or 'either').
+    # For range searches (/transits/search) this is recorded as the requested filter
+    # but the underlying find_transits discovers all crossings in the window and
+    # reports their actual direction; it does not restrict the result set.
+    # The actual direction of each returned event is always in the .direction field.
 
 
 class TransitSearchResponse(_StrictModel):
@@ -135,6 +161,17 @@ class IngressSearchRequest(_StrictModel):
     body: str
     jd_start: float
     jd_end: float
+    step_days: float | None = None
+    # Optional caller-supplied scan step (days) for the sign ingress search.
+    # When None (default), the engine selects an auto step based on body speed
+    # (or any TransitComputationPolicy override). This controls search cadence
+    # and initial bracket size only; final ingresses are always refined by bisection.
+    # See moira.transits.TransitSearchPolicy and _auto_step.
+    solver_tolerance_days: float | None = None
+    # Optional solver tolerance (days) for bisection refinement of the boundary crossing.
+    direction: str = "either"
+    # Direction filter (advisory for ingress searches; actual direction of the
+    # sign crossing is reported on each event).
 
 
 class IngressSearchResponse(_StrictModel):
@@ -145,6 +182,16 @@ class NextIngressRequest(_StrictModel):
     body: str
     jd_start: float
     max_days: float | None = None
+    step_days: float | None = None
+    # Optional caller-supplied scan step (days) for the next-ingress search.
+    # When None (default), the engine selects an auto step based on body speed
+    # (or any TransitComputationPolicy override). Passed via policy.ingress when
+    # invoking the lower-level next_ingress. See moira.transits.TransitSearchPolicy.
+    solver_tolerance_days: float | None = None
+    # Optional solver tolerance passed through the policy for bisection.
+    direction: str = "either"
+    # Direction filter (passed through policy where the lower next_ingress / find
+    # paths support it).
 
 
 class LunarPhaseSearchRequest(_StrictModel):
