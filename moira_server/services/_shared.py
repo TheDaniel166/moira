@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from moira import Body, Moira
+from moira.houses import HouseSystem, calculate_houses, HousePolicy, PolarFallbackPolicy, UnknownSystemPolicy
+from moira.julian import jd_from_datetime
 from moira.planets import _resolve_small_body_name
 
 from ..models.chart import ChartRequest, HousesRequest
@@ -60,11 +62,38 @@ def build_chart_context(engine: Moira, request: ChartRequest):
 
 def build_houses_context(engine: Moira, request: HousesRequest):
     require_aware_datetime(request.dt)
-    return engine.houses(
-        request.dt,
+
+    jd_ut = jd_from_datetime(request.dt)
+
+    # Convert transport policy (if any) to engine HousePolicy
+    engine_policy = None
+    if getattr(request, "policy", None) is not None:
+        engine_policy = HousePolicy(
+            unknown_system=UnknownSystemPolicy(request.policy.unknown_system),
+            polar_fallback=PolarFallbackPolicy(request.policy.polar_fallback),
+        )
+
+    system = request.system or HouseSystem.PLACIDUS
+
+    # For the common case (no custom policy or advanced anchors), use the high-level
+    # engine.houses(dt, ...) exactly as other callers (including tests) do. This
+    # guarantees numeric parity for the default path.
+    # When rich policy or sun_longitude/ayanamsa_offset are supplied, drop to the
+    # full calculate_houses surface (the source of Moira's rich polar fallback etc.).
+    if engine_policy is None and getattr(request, "sun_longitude", None) is None and getattr(request, "ayanamsa_offset", None) is None:
+        return engine.houses(
+            request.dt,
+            latitude=request.latitude,
+            longitude=request.longitude,
+            system=system,
+        )
+
+    return calculate_houses(
+        jd_ut,
         latitude=request.latitude,
         longitude=request.longitude,
-        system=request.system,
+        system=system,
+        policy=engine_policy,
     )
 
 

@@ -7,9 +7,26 @@ from moira import Moira
 
 from ..cache import ChartLRUCache
 from ..dependencies import get_engine
-from ..models.chart import ChartReductionResponse, ChartRequest, ChartResponse, HousesRequest, HousesResponse
-from ..serializers.chart import serialize_chart, serialize_chart_with_reduction, serialize_houses
-from ..services.chart import compute_chart, compute_chart_with_reduction, compute_houses
+from ..models.chart import (
+    ChartReductionResponse,
+    ChartRequest,
+    ChartResponse,
+    HousesReductionResponse,
+    HousesRequest,
+    HousesResponse,
+)
+from ..serializers.chart import (
+    serialize_chart,
+    serialize_chart_with_reduction,
+    serialize_houses,
+    serialize_houses_with_reduction,
+)
+from ..services.chart import (
+    compute_chart,
+    compute_chart_with_reduction,
+    compute_houses,
+    compute_houses_with_reduction,
+)
 
 
 router = APIRouter(prefix="/v1", tags=["chart"])
@@ -86,3 +103,13 @@ def houses_route(
     """Serialize a canonical houses result for transport."""
 
     return serialize_houses(compute_houses(engine, request))
+
+
+@router.post("/houses/reduction", response_model=HousesReductionResponse)
+def houses_reduction_route(
+    request: HousesRequest,
+    engine: Moira = Depends(get_engine),
+) -> HousesReductionResponse:
+    """Serialize houses result together with the governing doctrine and computation path (reduction truth)."""
+    houses, reduction = compute_houses_with_reduction(engine, request)
+    return serialize_houses_with_reduction(houses, reduction)

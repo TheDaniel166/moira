@@ -3,18 +3,25 @@
 from __future__ import annotations
 
 from moira import Chart, HouseCusps, NodeData
+from moira.houses import PolarFallbackPolicy, UnknownSystemPolicy
 
 from ..models.chart import (
+    CalendarDateTimeResponse,
     ChartNodeReductionSummaryResponse,
     ChartPlanetReductionSummaryResponse,
     ChartReductionResponse,
     ChartReductionTruthResponse,
     ChartResponse,
+    HousePolicyRequest,
+    HousePolicyResponse,
+    HousesReductionResponse,
+    HousesReductionTruthResponse,
+    HouseSystemClassificationResponse,
     HousesResponse,
     NodePositionResponse,
 )
 from ..serializers.positions import _serialize_observer_context
-from ..services.chart import ChartReductionContext
+from ..services.chart import ChartReductionContext, HousesReductionContext
 from .positions import serialize_planet
 
 
@@ -34,9 +41,26 @@ def serialize_node(node: NodeData) -> NodePositionResponse:
 def serialize_chart(chart: Chart) -> ChartResponse:
     """Serialize a canonical Chart vessel into transport form."""
 
+    cal = getattr(chart, "calendar_utc", None)
+    calendar_utc = (
+        CalendarDateTimeResponse(
+            year=cal.year,
+            month=cal.month,
+            day=cal.day,
+            hour=cal.hour,
+            minute=cal.minute,
+            second=cal.second,
+            microsecond=cal.microsecond,
+            tzname=cal.tzname,
+        )
+        if cal is not None
+        else None
+    )
+
     return ChartResponse(
         jd_ut=chart.jd_ut,
         datetime_utc=chart.datetime_utc.isoformat(),
+        calendar_utc=calendar_utc,
         obliquity=chart.obliquity,
         delta_t=chart.delta_t,
         planets={name: serialize_planet(planet) for name, planet in chart.planets.items()},
@@ -100,6 +124,19 @@ def serialize_houses(houses: HouseCusps) -> HousesResponse:
     """Serialize a canonical HouseCusps vessel into transport form."""
 
     classification = houses.classification
+    pol = getattr(houses, "policy", None)
+    if pol is not None:
+        policy = HousePolicyResponse(
+            unknown_system=pol.unknown_system,
+            polar_fallback=pol.polar_fallback,
+        )
+    else:
+        # Robust fallback: engine should always provide, but ensure full shape is always exposed
+        policy = HousePolicyResponse(
+            unknown_system=UnknownSystemPolicy.FALLBACK_TO_PLACIDUS,
+            polar_fallback=PolarFallbackPolicy.FALLBACK_TO_PORPHYRY,
+        )
+
     return HousesResponse(
         system=houses.system,
         effective_system=houses.effective_system,
@@ -109,6 +146,7 @@ def serialize_houses(houses: HouseCusps) -> HousesResponse:
         classification_cusp_basis=(classification.cusp_basis.value if classification is not None else None),
         classification_latitude_sensitive=(classification.latitude_sensitive if classification is not None else None),
         classification_polar_capable=(classification.polar_capable if classification is not None else None),
+        policy=policy,
         asc=houses.asc,
         mc=houses.mc,
         armc=houses.armc,
@@ -118,4 +156,51 @@ def serialize_houses(houses: HouseCusps) -> HousesResponse:
         vertex=houses.vertex,
         anti_vertex=houses.anti_vertex,
         cusps=list(houses.cusps),
+    )
+
+
+def serialize_houses_with_reduction(
+    houses: HouseCusps,
+    reduction: HousesReductionContext,
+) -> HousesReductionResponse:
+    """Serialize houses result with its reduction doctrine truth."""
+    # Reuse the compact serializer for the result (it already includes the policy echo)
+    result = serialize_houses(houses)
+
+    # Build nested classification if present in context
+    classification = None
+    if reduction.classification_family is not None:
+        classification = HouseSystemClassificationResponse(
+            family=reduction.classification_family,
+            cusp_basis=reduction.classification_cusp_basis,
+            latitude_sensitive=reduction.classification_latitude_sensitive or False,
+            polar_capable=reduction.classification_polar_capable or False,
+        )
+
+    # Build requested policy as nested schema if provided in the request
+    requested_policy = None
+    if reduction.requested_policy_unknown_system is not None and reduction.requested_policy_polar_fallback is not None:
+        requested_policy = HousePolicyResponse(
+            unknown_system=reduction.requested_policy_unknown_system,
+            polar_fallback=reduction.requested_policy_polar_fallback,
+        )
+
+    return HousesReductionResponse(
+        result=result,
+        reduction=HousesReductionTruthResponse(
+            engine_surface="Moira.houses",
+            source_vessel="HouseCusps",
+            requested_datetime=reduction.requested_datetime,
+            normalized_jd_ut=reduction.normalized_jd_ut,
+            requested_system=reduction.requested_system,
+            effective_system=reduction.effective_system,
+            requested_policy=requested_policy,
+            applied_policy=HousePolicyResponse(
+                unknown_system=reduction.applied_policy_unknown_system,
+                polar_fallback=reduction.applied_policy_polar_fallback,
+            ),
+            fallback=reduction.fallback,
+            fallback_reason=reduction.fallback_reason,
+            classification=classification,
+        ),
     )

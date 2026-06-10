@@ -17,6 +17,12 @@ class PlanetPositionRequest(_StrictModel):
     observer_lat: float | None = None
     observer_lon: float | None = None
     observer_elev_m: float = 0.0
+    # Independent correction controls (to support partial pipelines in reduction truth,
+    # addressing the chart-mediated limitation and deeper policy toggles).
+    apparent: bool = True
+    aberration: bool = True
+    grav_deflection: bool = True
+    nutation: bool = True
 
 
 class PlanetPositionResponse(_StrictModel):
@@ -78,6 +84,14 @@ class SkyPositionRequest(_StrictModel):
     latitude: float
     longitude: float
     elevation_m: float = 0.0
+    # Independent correction and environment controls for sky pipeline.
+    aberration: bool = True
+    grav_deflection: bool = True
+    nutation: bool = True
+    refraction: bool = True
+    pressure_mbar: float = 1013.25
+    temperature_c: float = 10.0
+    relative_humidity: float = 0.0
 
 
 class SkyPositionResponse(_StrictModel):

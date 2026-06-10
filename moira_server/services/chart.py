@@ -5,7 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from moira import Body, Moira
-from moira.julian import utc_to_tt, utc_to_ut1
+from moira.houses import PolarFallbackPolicy, UnknownSystemPolicy
+from moira.julian import jd_from_datetime, utc_to_tt, utc_to_ut1
 
 from ..models.chart import ChartRequest, HousesRequest
 from ._shared import (
@@ -182,3 +183,60 @@ def compute_houses(engine: Moira, request: HousesRequest):
     """Compute houses from a transport request."""
 
     return build_houses_context(engine, request)
+
+
+@dataclass(frozen=True, slots=True)
+class HousesReductionContext:
+    """Internal context for houses reduction truth (doctrine and path).
+
+    Captures enough to expose the *full* HousePolicy shape (nested via response model)
+    plus richer classification as a nested schema in the reduction truth.
+    """
+    requested_datetime: str
+    normalized_jd_ut: float
+    requested_system: str | None
+    effective_system: str
+    applied_policy_unknown_system: UnknownSystemPolicy
+    applied_policy_polar_fallback: PolarFallbackPolicy
+    fallback: bool
+    fallback_reason: str | None
+    classification_family: str | None
+    classification_cusp_basis: str | None
+    classification_latitude_sensitive: bool | None
+    classification_polar_capable: bool | None
+    requested_policy_unknown_system: UnknownSystemPolicy | None = None
+    requested_policy_polar_fallback: PolarFallbackPolicy | None = None
+
+
+def compute_houses_with_reduction(engine: Moira, request: HousesRequest):
+    """Compute houses together with transport-safe reduction truth (doctrine applied)."""
+    _require_aware_datetime(request.dt)
+    houses = build_houses_context(engine, request)
+
+    classification = getattr(houses, "classification", None)
+    pol = getattr(houses, "policy", None)
+
+    jd_ut = jd_from_datetime(request.dt)
+
+    # Capture requested policy for richer reduction truth (full object shape)
+    req_pol = getattr(request, "policy", None)
+    req_unknown = req_pol.unknown_system if req_pol is not None else None
+    req_polar = req_pol.polar_fallback if req_pol is not None else None
+
+    reduction = HousesReductionContext(
+        requested_datetime=request.dt.isoformat(),
+        normalized_jd_ut=jd_ut,
+        requested_system=request.system,
+        effective_system=houses.effective_system,
+        applied_policy_unknown_system=(pol.unknown_system if pol is not None else UnknownSystemPolicy.FALLBACK_TO_PLACIDUS),
+        applied_policy_polar_fallback=(pol.polar_fallback if pol is not None else PolarFallbackPolicy.FALLBACK_TO_PORPHYRY),
+        requested_policy_unknown_system=req_unknown,
+        requested_policy_polar_fallback=req_polar,
+        fallback=houses.fallback,
+        fallback_reason=houses.fallback_reason,
+        classification_family=(classification.family.value if classification is not None else None),
+        classification_cusp_basis=(classification.cusp_basis.value if classification is not None else None),
+        classification_latitude_sensitive=(classification.latitude_sensitive if classification is not None else None),
+        classification_polar_capable=(classification.polar_capable if classification is not None else None),
+    )
+    return houses, reduction

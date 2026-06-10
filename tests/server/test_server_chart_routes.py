@@ -5,6 +5,9 @@ from datetime import datetime, timezone
 from fastapi.testclient import TestClient
 import pytest
 
+from moira.planets import planet_at
+from moira.julian import jd_from_datetime
+
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
 
@@ -153,14 +156,18 @@ def test_planet_position_route_preserves_topocentric_truth(
     moira_engine,
 ) -> None:
     dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
-    direct = moira_engine.chart(
-        dt,
-        bodies=["Moon"],
-        include_nodes=False,
+    direct = planet_at(
+        "Moon",
+        jd_from_datetime(dt),
+        reader=None,
+        apparent=True,
+        aberration=True,
+        grav_deflection=True,
+        nutation=True,
         observer_lat=40.7128,
         observer_lon=-74.0060,
         observer_elev_m=10.0,
-    ).planets["Moon"]
+    )
 
     response = client_with_engine.post(
         "/v1/positions/planet",
@@ -188,14 +195,18 @@ def test_planet_position_reduction_route_exposes_pipeline_truth(
     moira_engine,
 ) -> None:
     dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
-    direct = moira_engine.chart(
-        dt,
-        bodies=["Moon"],
-        include_nodes=False,
+    direct = planet_at(
+        "Moon",
+        jd_from_datetime(dt),
+        reader=None,
+        apparent=True,
+        aberration=True,
+        grav_deflection=True,
+        nutation=True,
         observer_lat=40.7128,
         observer_lon=-74.0060,
         observer_elev_m=10.0,
-    ).planets["Moon"]
+    )
 
     response = client_with_engine.post(
         "/v1/positions/planet/reduction",
@@ -205,6 +216,10 @@ def test_planet_position_reduction_route_exposes_pipeline_truth(
             "observer_lat": 40.7128,
             "observer_lon": -74.0060,
             "observer_elev_m": 10.0,
+            "apparent": True,
+            "aberration": True,
+            "grav_deflection": True,
+            "nutation": True,
         },
     )
 
@@ -212,9 +227,9 @@ def test_planet_position_reduction_route_exposes_pipeline_truth(
     body = response.json()
     assert body["result"]["longitude"] == pytest.approx(direct.longitude)
     assert body["result"]["is_topocentric"] is True
-    assert body["reduction"]["engine_surface"] == "Moira.chart"
+    assert body["reduction"]["engine_surface"] == "Moira.planet_at"
     assert body["reduction"]["source_vessel"] == "PlanetData"
-    assert body["reduction"]["selection_surface"] == "chart.planets[body]"
+    assert body["reduction"]["selection_surface"] == "planet_at"
     assert body["reduction"]["topocentric_requested"] is True
     assert body["reduction"]["topocentric_applied"] is True
     assert body["reduction"]["observer"]["latitude"] == pytest.approx(40.7128)
@@ -222,6 +237,11 @@ def test_planet_position_reduction_route_exposes_pipeline_truth(
     assert body["reduction"]["observer"]["local_sidereal_time_deg"] is not None
     assert "all_planets_at" in body["reduction"]["stage_sequence"]
     assert "planet_selection" in body["reduction"]["stage_sequence"]
+    # New correction controls reflected in reduction (requested == applied for default full)
+    assert body["reduction"]["apparent"] is True
+    assert body["reduction"]["aberration"] is True
+    assert body["reduction"]["grav_deflection"] is True
+    assert body["reduction"]["nutation"] is True
 
 
 @pytest.mark.requires_ephemeris
@@ -230,13 +250,25 @@ def test_planet_position_reduction_route_admits_small_bodies(
     moira_engine,
 ) -> None:
     dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
-    direct = moira_engine.chart(dt, bodies=["Ceres"], include_nodes=False).planets["Ceres"]
+    direct = planet_at(
+        "Ceres",
+        jd_from_datetime(dt),
+        reader=None,
+        apparent=True,
+        aberration=True,
+        grav_deflection=True,
+        nutation=True,
+    )
 
     response = client_with_engine.post(
         "/v1/positions/planet/reduction",
         json={
             "dt": dt.isoformat(),
             "body": "Ceres",
+            "apparent": True,
+            "aberration": True,
+            "grav_deflection": True,
+            "nutation": True,
         },
     )
 
@@ -245,8 +277,10 @@ def test_planet_position_reduction_route_admits_small_bodies(
     assert body["result"]["name"] == "Ceres"
     assert body["result"]["longitude"] == pytest.approx(direct.longitude)
     assert body["result"]["latitude"] == pytest.approx(direct.latitude)
-    assert body["reduction"]["engine_surface"] == "Moira.chart"
-    assert body["reduction"]["selection_surface"] == "chart.planets[body]"
+    assert body["reduction"]["engine_surface"] == "Moira.planet_at"
+    assert body["reduction"]["selection_surface"] == "planet_at"
+    assert body["reduction"]["apparent"] is True
+    assert body["reduction"]["aberration"] is True
 
 
 @pytest.mark.requires_ephemeris
@@ -291,6 +325,13 @@ def test_sky_position_reduction_route_exposes_pipeline_truth(
             "body": "Venus",
             "latitude": 51.5,
             "longitude": -0.1,
+            "aberration": True,
+            "grav_deflection": True,
+            "nutation": True,
+            "refraction": True,
+            "pressure_mbar": 1013.25,
+            "temperature_c": 10.0,
+            "relative_humidity": 0.0,
         },
     )
 
@@ -307,6 +348,10 @@ def test_sky_position_reduction_route_exposes_pipeline_truth(
     assert body["reduction"]["coordinate_frames"] == ["equatorial", "horizontal"]
     assert "horizontal_projection" in body["reduction"]["stage_sequence"]
     assert "optional_refraction" in body["reduction"]["stage_sequence"]
+    # Refraction params from request, reflected (closing hardcode gap)
+    assert body["reduction"]["pressure_mbar"] == 1013.25
+    assert body["reduction"]["temperature_c"] == 10.0
+    assert body["reduction"]["relative_humidity"] == 0.0
 
 
 @pytest.mark.requires_ephemeris
@@ -333,6 +378,13 @@ def test_sky_position_routes_admit_small_bodies(
             "body": "Ceres",
             "latitude": 51.5,
             "longitude": -0.1,
+            "aberration": True,
+            "grav_deflection": True,
+            "nutation": True,
+            "refraction": True,
+            "pressure_mbar": 1013.25,
+            "temperature_c": 10.0,
+            "relative_humidity": 0.0,
         },
     )
 
@@ -373,6 +425,185 @@ def test_houses_route_matches_engine_selected_truth(client_with_engine: TestClie
     assert body["asc"] == pytest.approx(direct.asc)
     assert body["mc"] == pytest.approx(direct.mc)
     assert body["cusps"][0] == pytest.approx(direct.cusps[0])
+
+
+@pytest.mark.requires_ephemeris
+def test_houses_route_exposes_governing_policy(client_with_engine: TestClient, moira_engine) -> None:
+    """Policy echo is now present (robustness: the doctrine actually applied is visible)."""
+    dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    response = client_with_engine.post(
+        "/v1/houses",
+        json={
+            "dt": dt.isoformat(),
+            "latitude": 51.5,
+            "longitude": -0.1,
+            "system": "PLAcidUS",
+        },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert "policy" in body
+    assert body["policy"] is not None
+    assert "unknown_system" in body["policy"]
+    assert "polar_fallback" in body["policy"]
+
+
+@pytest.mark.requires_ephemeris
+def test_houses_reduction_route_exposes_doctrine_truth(client_with_engine: TestClient, moira_engine) -> None:
+    """Dedicated reduction surface for houses (per audit: policy and reduction sibling for houses).
+
+    Now exposes the *full* HousePolicy as a nested schema (rich polar fallback options documented
+    via the enum-backed model) and richer truth including requested_policy and nested classification.
+    """
+    dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    response = client_with_engine.post(
+        "/v1/houses/reduction",
+        json={
+            "dt": dt.isoformat(),
+            "latitude": 51.5,
+            "longitude": -0.1,
+        },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert "result" in body
+    assert "reduction" in body
+    red = body["reduction"]
+    assert red["engine_surface"] == "Moira.houses"
+    assert red["source_vessel"] == "HouseCusps"
+    assert "applied_policy" in red
+    assert isinstance(red.get("applied_policy"), dict)
+    assert "unknown_system" in red["applied_policy"]
+    assert "polar_fallback" in red["applied_policy"]
+    assert red["fallback"] is not None
+    assert "effective_system" in red
+
+    # More fields in reduction truth: nested schemas for policy and classification
+    # classification may be present
+    if "classification" in red and red["classification"] is not None:
+        cls = red["classification"]
+        assert "family" in cls
+        assert "cusp_basis" in cls
+        assert "latitude_sensitive" in cls
+        assert "polar_capable" in cls
+
+    # requested_policy present (None for default case is fine)
+    assert "requested_policy" in red
+
+
+@pytest.mark.requires_ephemeris
+def test_houses_policy_input_is_respected(client_with_engine: TestClient, moira_engine) -> None:
+    """Input policy is accepted and the echoed policy reflects control (robustness for doctrine)."""
+    dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    # Use strict policy (should still succeed for normal lat, but proves transport)
+    response = client_with_engine.post(
+        "/v1/houses",
+        json={
+            "dt": dt.isoformat(),
+            "latitude": 51.5,
+            "longitude": -0.1,
+            "system": "placidus",
+            "policy": {
+                "unknown_system": "fallback_to_placidus",
+                "polar_fallback": "raise",
+            },
+        },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["policy"]["polar_fallback"] == "raise"
+
+    # Also verify reduction carries the full requested vs applied policy shapes (rich nested)
+    red_resp = client_with_engine.post(
+        "/v1/houses/reduction",
+        json={
+            "dt": dt.isoformat(),
+            "latitude": 51.5,
+            "longitude": -0.1,
+            "system": "placidus",
+            "policy": {
+                "unknown_system": "fallback_to_placidus",
+                "polar_fallback": "raise",
+            },
+        },
+    )
+    assert red_resp.status_code == 200
+    red_body = red_resp.json()["reduction"]
+    assert red_body["requested_policy"] is not None
+    assert red_body["requested_policy"]["polar_fallback"] == "raise"
+    assert red_body["applied_policy"]["polar_fallback"] == "raise"
+
+
+@pytest.mark.requires_ephemeris
+def test_houses_polar_fallback_policies(client_with_engine: TestClient, moira_engine) -> None:
+    """Exercise the FastAPI houses endpoints (compact and reduction) for polar fallback doctrine.
+
+    Covers:
+    - Default policy at supra-critical latitude (triggers fallback, echoes default polar_fallback).
+    - RAISE policy at polar latitude (surfaces as 422 validation_error with engine's polar/raise message).
+    - Reduction endpoint reports the applied polar_fallback policy.
+    Uses koch at 70° (a system that remains polar-incapable under default doctrine).
+    """
+    dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    lat = 70.0  # well above critical latitude (~66.56°)
+    lon = 0.0
+    system = "koch"  # remains polar-incapable under default doctrine (clean fallback to porphyry)
+
+    # Default policy at polar latitude: API should produce fallback=True and echo the engine default polar_fallback
+    resp = client_with_engine.post(
+        "/v1/houses",
+        json={
+            "dt": dt.isoformat(),
+            "latitude": lat,
+            "longitude": lon,
+            "system": system,
+        },
+    )
+    if resp.status_code != 200:
+        print("DEFAULT POLAR ERROR BODY:", resp.json())
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["system"] == system
+    assert body["fallback"] is True
+    assert body["policy"] is not None
+    assert body["policy"]["polar_fallback"] == "fallback_to_porphyry"
+
+    # RAISE at polar latitude must fail with proper error envelope (ValueError from engine -> 422)
+    resp_raise = client_with_engine.post(
+        "/v1/houses",
+        json={
+            "dt": dt.isoformat(),
+            "latitude": lat,
+            "longitude": lon,
+            "system": system,
+            "policy": {
+                "unknown_system": "fallback_to_placidus",
+                "polar_fallback": "raise",
+            },
+        },
+    )
+    assert resp_raise.status_code == 422
+    err = resp_raise.json()
+    assert err["error_code"] == "validation_error"
+    msg = err.get("message", "").lower()
+    assert "latitude" in msg or "polar" in msg or "raise" in msg
+
+    # Reduction surface also respects and reports the polar fallback policy
+    red_resp = client_with_engine.post(
+        "/v1/houses/reduction",
+        json={
+            "dt": dt.isoformat(),
+            "latitude": lat,
+            "longitude": lon,
+            "system": system,
+        },
+    )
+    if red_resp.status_code != 200:
+        print("REDUCTION DEFAULT POLAR ERROR BODY:", red_resp.json())
+    assert red_resp.status_code == 200
+    red = red_resp.json()["reduction"]
+    assert red["applied_policy"]["polar_fallback"] == "fallback_to_porphyry"
+    assert red["fallback"] is True
 
 
 def test_phase_two_routes_reject_naive_datetimes_as_validation_failures(

@@ -60,12 +60,12 @@ def serialize_planet_with_reduction(
     planet: PlanetData,
     reduction: PlanetPositionReductionContext,
 ) -> PlanetPositionReductionResponse:
-    """Serialize a planetary position with its reduction truth."""
+    """Serialize a planetary position with its reduction truth (using actual requested/applied from context)."""
 
     return PlanetPositionReductionResponse(
         result=serialize_planet(planet),
         reduction=PlanetPositionReductionTruthResponse(
-            engine_surface="Moira.chart",
+            engine_surface="Moira.planet_at",
             source_vessel="PlanetData",
             requested_datetime=reduction.requested_datetime,
             normalized_datetime_utc=reduction.normalized_datetime_utc,
@@ -75,12 +75,12 @@ def serialize_planet_with_reduction(
             body=planet.name,
             observer=_serialize_observer_context(reduction.observer),
             stage_sequence=reduction.stage_sequence,
-            selection_surface="chart.planets[body]",
+            selection_surface="planet_at",
             include_nodes=False,
-            apparent=True,
-            aberration=True,
-            grav_deflection=True,
-            nutation=True,
+            apparent=reduction.apparent,
+            aberration=reduction.aberration,
+            grav_deflection=reduction.grav_deflection,
+            nutation=reduction.nutation,
             frame="ecliptic",
             center="geocentric",
             obliquity_deg=reduction.obliquity_deg,
@@ -94,7 +94,7 @@ def serialize_sky_position_with_reduction(
     position: SkyPosition,
     reduction: SkyPositionReductionContext,
 ) -> SkyPositionReductionResponse:
-    """Serialize a sky position with its reduction truth."""
+    """Serialize a sky position with its reduction truth (using actual from context, no hardcodes)."""
 
     return SkyPositionReductionResponse(
         result=serialize_sky_position(position),
@@ -109,14 +109,14 @@ def serialize_sky_position_with_reduction(
             body=position.name,
             observer=_serialize_observer_context(reduction.observer),
             stage_sequence=reduction.stage_sequence,
-            apparent=True,
-            aberration=True,
-            grav_deflection=True,
-            nutation=True,
-            refraction=True,
-            pressure_mbar=1013.25,
-            temperature_c=10.0,
-            relative_humidity=0.0,
+            apparent=reduction.aberration,  # note: for sky the 'apparent' in truth aligns to the first corrections
+            aberration=reduction.aberration,
+            grav_deflection=reduction.grav_deflection,
+            nutation=reduction.nutation,
+            refraction=reduction.refraction,
+            pressure_mbar=reduction.pressure_mbar,
+            temperature_c=reduction.temperature_c,
+            relative_humidity=reduction.relative_humidity,
             obliquity_deg=reduction.obliquity_deg,
             coordinate_frames=["equatorial", "horizontal"],
         ),

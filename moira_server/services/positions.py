@@ -6,9 +6,9 @@ from dataclasses import dataclass
 from datetime import timezone
 
 from moira import Body, Moira, PlanetData, SkyPosition
-from moira.julian import delta_t_from_jd, jd_from_datetime, local_sidereal_time, utc_to_tt, utc_to_ut1
+from moira.julian import delta_t_from_jd, datetime_from_jd, jd_from_datetime, local_sidereal_time, utc_to_tt, utc_to_ut1
 from moira.obliquity import nutation, true_obliquity
-from moira.planets import _resolve_small_body_name
+from moira.planets import _resolve_small_body_name, planet_at, sky_position_at
 
 from ..models.positions import PlanetPositionRequest, SkyPositionRequest
 
@@ -67,6 +67,11 @@ class PlanetPositionReductionContext:
     obliquity_deg: float
     topocentric_requested: bool
     topocentric_applied: bool
+    # Correction flags as requested (to reflect actual applied subset in reduction truth).
+    apparent: bool
+    aberration: bool
+    grav_deflection: bool
+    nutation: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -79,6 +84,14 @@ class SkyPositionReductionContext:
     observer: PositionObserverContext
     stage_sequence: list[str]
     obliquity_deg: float
+    # Refraction and correction params as requested (to avoid hardcodes in truth and support partial).
+    aberration: bool
+    grav_deflection: bool
+    nutation: bool
+    refraction: bool
+    pressure_mbar: float
+    temperature_c: float
+    relative_humidity: float
 
 
 def _require_aware_datetime(value) -> None:
@@ -107,54 +120,65 @@ def _sidereal_context(jd_utc: float, longitude: float) -> tuple[float, float]:
 
 
 def compute_planet_position(engine: Moira, request: PlanetPositionRequest) -> PlanetData:
-    """Compute one planet position from a transport request."""
+    """Compute one planet position from a transport request using pure low-level planet_at
+    to support independent correction controls (closing the chart-mediated gap).
+    """
 
     _require_aware_datetime(request.dt)
     _require_supported_planet_body(request.body)
-    chart = engine.chart(
-        request.dt,
-        bodies=[request.body],
-        include_nodes=False,
+    jd_ut = jd_from_datetime(request.dt)
+    return planet_at(
+        request.body,
+        jd_ut,
+        reader=None,  # use active reader (set by the Moira engine instance in server lifecycle)
+        apparent=request.apparent,
+        aberration=request.aberration,
+        grav_deflection=request.grav_deflection,
+        nutation=request.nutation,
         observer_lat=request.observer_lat,
         observer_lon=request.observer_lon,
         observer_elev_m=request.observer_elev_m,
     )
-    if request.body not in chart.planets:
-        raise ValueError(f"body {request.body!r} was not returned by chart assembly")
-    return chart.planets[request.body]
 
 
 def compute_planet_position_with_reduction(
     engine: Moira,
     request: PlanetPositionRequest,
 ) -> tuple[PlanetData, PlanetPositionReductionContext]:
-    """Compute one planet position together with transport-safe reduction truth."""
+    """Compute one planet position together with transport-safe reduction truth
+    using pure low-level path and requested correction flags (no hardcodes).
+    """
 
     _require_aware_datetime(request.dt)
     _require_supported_planet_body(request.body)
-    chart = engine.chart(
-        request.dt,
-        bodies=[request.body],
-        include_nodes=False,
+    jd_ut = jd_from_datetime(request.dt)
+    planet = planet_at(
+        request.body,
+        jd_ut,
+        reader=None,
+        apparent=request.apparent,
+        aberration=request.aberration,
+        grav_deflection=request.grav_deflection,
+        nutation=request.nutation,
         observer_lat=request.observer_lat,
         observer_lon=request.observer_lon,
         observer_elev_m=request.observer_elev_m,
     )
-    if request.body not in chart.planets:
-        raise ValueError(f"body {request.body!r} was not returned by chart assembly")
 
-    jd_ut = chart.jd_ut
     jd_tt = utc_to_tt(jd_ut)
     lst_deg: float | None = None
     if request.observer_lat is not None and request.observer_lon is not None:
         lst_deg, _ = _sidereal_context(jd_ut, request.observer_lon)
+    obliquity_deg = true_obliquity(jd_tt)
+    delta_t_seconds = delta_t_from_jd(jd_ut)
+    normalized_datetime_utc = datetime_from_jd(jd_ut).astimezone(timezone.utc).isoformat()
 
     reduction = PlanetPositionReductionContext(
         requested_datetime=request.dt.isoformat(),
-        normalized_datetime_utc=chart.datetime_utc.isoformat(),
+        normalized_datetime_utc=normalized_datetime_utc,
         jd_ut=jd_ut,
         jd_tt=jd_tt,
-        delta_t_seconds=chart.delta_t,
+        delta_t_seconds=delta_t_seconds,
         observer=PositionObserverContext(
             latitude=request.observer_lat,
             longitude=request.observer_lon,
@@ -162,23 +186,38 @@ def compute_planet_position_with_reduction(
             local_sidereal_time_deg=lst_deg,
         ),
         stage_sequence=list(_PLANET_STAGE_SEQUENCE),
-        obliquity_deg=chart.obliquity,
+        obliquity_deg=obliquity_deg,
         topocentric_requested=(request.observer_lat is not None and request.observer_lon is not None),
-        topocentric_applied=chart.planets[request.body].is_topocentric,
+        topocentric_applied=planet.is_topocentric,
+        apparent=request.apparent,
+        aberration=request.aberration,
+        grav_deflection=request.grav_deflection,
+        nutation=request.nutation,
     )
-    return chart.planets[request.body], reduction
+    return planet, reduction
 
 
 def compute_sky_position(engine: Moira, request: SkyPositionRequest) -> SkyPosition:
-    """Compute one sky position from a transport request."""
+    """Compute one sky position from a transport request using low-level sky_position_at
+    with controllable correction and refraction params (closing hardcode gap).
+    """
 
     _require_aware_datetime(request.dt)
-    return engine.sky_position(
-        request.dt,
+    jd_ut = jd_from_datetime(request.dt)
+    return sky_position_at(
         request.body,
+        jd_ut,
         request.latitude,
         request.longitude,
-        elevation_m=request.elevation_m,
+        observer_elev_m=request.elevation_m,
+        reader=None,
+        aberration=request.aberration,
+        grav_deflection=request.grav_deflection,
+        nutation=request.nutation,
+        refraction=request.refraction,
+        pressure_mbar=request.pressure_mbar,
+        temperature_c=request.temperature_c,
+        relative_humidity=request.relative_humidity,
     )
 
 
@@ -186,25 +225,38 @@ def compute_sky_position_with_reduction(
     engine: Moira,
     request: SkyPositionRequest,
 ) -> tuple[SkyPosition, SkyPositionReductionContext]:
-    """Compute one sky position together with transport-safe reduction truth."""
+    """Compute one sky position together with transport-safe reduction truth
+    using requested correction/refraction params (no hardcodes in truth).
+    """
 
     _require_aware_datetime(request.dt)
-    position = engine.sky_position(
-        request.dt,
+    jd_ut = jd_from_datetime(request.dt)
+    position = sky_position_at(
         request.body,
+        jd_ut,
         request.latitude,
         request.longitude,
-        elevation_m=request.elevation_m,
+        observer_elev_m=request.elevation_m,
+        reader=None,
+        aberration=request.aberration,
+        grav_deflection=request.grav_deflection,
+        nutation=request.nutation,
+        refraction=request.refraction,
+        pressure_mbar=request.pressure_mbar,
+        temperature_c=request.temperature_c,
+        relative_humidity=request.relative_humidity,
     )
-    jd_ut = jd_from_datetime(request.dt)
     jd_tt = utc_to_tt(jd_ut)
     lst_deg, obliquity_deg = _sidereal_context(jd_ut, request.longitude)
+    delta_t_seconds = delta_t_from_jd(jd_ut)
+    # Derive normalized from the jd used in computation (addressing the input-projection gap)
+    normalized_datetime_utc = datetime_from_jd(jd_ut).astimezone(timezone.utc).isoformat()
     reduction = SkyPositionReductionContext(
         requested_datetime=request.dt.isoformat(),
-        normalized_datetime_utc=request.dt.astimezone(timezone.utc).isoformat(),
+        normalized_datetime_utc=normalized_datetime_utc,
         jd_ut=jd_ut,
         jd_tt=jd_tt,
-        delta_t_seconds=delta_t_from_jd(jd_ut),
+        delta_t_seconds=delta_t_seconds,
         observer=PositionObserverContext(
             latitude=request.latitude,
             longitude=request.longitude,
@@ -213,5 +265,12 @@ def compute_sky_position_with_reduction(
         ),
         stage_sequence=list(_SKY_STAGE_SEQUENCE),
         obliquity_deg=obliquity_deg,
+        aberration=request.aberration,
+        grav_deflection=request.grav_deflection,
+        nutation=request.nutation,
+        refraction=request.refraction,
+        pressure_mbar=request.pressure_mbar,
+        temperature_c=request.temperature_c,
+        relative_humidity=request.relative_humidity,
     )
     return position, reduction

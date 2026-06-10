@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
+
+from moira.houses import PolarFallbackPolicy, UnknownSystemPolicy
 
 from .positions import PlanetPositionResponse, PositionObserverContextResponse
 
@@ -31,9 +34,22 @@ class ChartRequest(_StrictModel):
     observer_elev_m: float = 0.0
 
 
+class CalendarDateTimeResponse(_StrictModel):
+    """BCE-safe structured calendar representation (astronomical year numbering)."""
+    year: int
+    month: int
+    day: int
+    hour: int
+    minute: int
+    second: int
+    microsecond: int = 0
+    tzname: str = "UTC"
+
+
 class ChartResponse(_StrictModel):
     jd_ut: float
     datetime_utc: str
+    calendar_utc: CalendarDateTimeResponse | None = None
     obliquity: float
     delta_t: float
     planets: dict[str, PlanetPositionResponse]
@@ -85,11 +101,30 @@ class ChartReductionResponse(_StrictModel):
     reduction: ChartReductionTruthResponse
 
 
+class HousePolicyRequest(_StrictModel):
+    """Input doctrine for unknown-system and polar fallback.
+    Uses Moira's full rich enums so that all options (including EXPERIMENTAL_SEARCH,
+    FALLBACK_TO_EQUAL, FALLBACK_TO_WHOLE_SIGN, RAISE, etc.) are first-class and validated.
+    Defaults match HousePolicy.default().
+    """
+    unknown_system: UnknownSystemPolicy = UnknownSystemPolicy.FALLBACK_TO_PLACIDUS
+    polar_fallback: PolarFallbackPolicy = PolarFallbackPolicy.FALLBACK_TO_PORPHYRY
+
+
 class HousesRequest(_StrictModel):
     dt: datetime
     latitude: float
     longitude: float
     system: str | None = None
+    policy: HousePolicyRequest | None = None
+
+
+class HousePolicyResponse(_StrictModel):
+    """Governing doctrine for unknown-system and polar-latitude fallback resolution.
+    Uses the full Moira enums (no artificial limits on polar fallback options).
+    """
+    unknown_system: UnknownSystemPolicy
+    polar_fallback: PolarFallbackPolicy
 
 
 class HousesResponse(_StrictModel):
@@ -101,6 +136,7 @@ class HousesResponse(_StrictModel):
     classification_cusp_basis: str | None = None
     classification_latitude_sensitive: bool | None = None
     classification_polar_capable: bool | None = None
+    policy: HousePolicyResponse
     asc: float
     mc: float
     armc: float
@@ -112,14 +148,65 @@ class HousesResponse(_StrictModel):
     cusps: list[float]
 
 
+class HouseSystemClassificationResponse(_StrictModel):
+    """Doctrinal classification of the (effective) house system.
+    Mirrors the engine's HouseSystemClassification for nested schema exposure in reduction truth.
+    """
+    family: str
+    cusp_basis: str
+    latitude_sensitive: bool
+    polar_capable: bool
+
+
+class HousesReductionTruthResponse(_StrictModel):
+    """Reduction truth for houses: the doctrine and computation path that produced the result.
+
+    This now exposes the *full* HousePolicy object shape as a proper nested schema
+    (using the canonical Moira enums for unknown_system and the rich polar_fallback options
+    including EXPERIMENTAL_SEARCH, FALLBACK_TO_EQUAL, FALLBACK_TO_WHOLE_SIGN, etc.).
+
+    Additional fields beyond the compact HousesResponse capture the complete governance:
+    - requested vs applied policy
+    - full classification as nested object
+    - explicit fallback provenance
+    """
+    engine_surface: str
+    source_vessel: str
+    requested_datetime: str
+    normalized_jd_ut: float
+    requested_system: str | None
+    effective_system: str
+    requested_policy: HousePolicyResponse | None = None
+    applied_policy: HousePolicyResponse
+    fallback: bool
+    fallback_reason: str | None = None
+    classification: HouseSystemClassificationResponse | None = None
+
+
+class HousesReductionResponse(_StrictModel):
+    result: HousesResponse
+    reduction: HousesReductionTruthResponse
+
+
 __all__ = [
+    "CalendarDateTimeResponse",
     "ChartPlanetReductionSummaryResponse",
     "ChartReductionResponse",
     "ChartReductionTruthResponse",
     "ChartRequest",
     "ChartResponse",
     "ChartNodeReductionSummaryResponse",
+    "HousePolicyRequest",
+    "HousePolicyResponse",
+    "HouseSystemClassificationResponse",
+    "HousesReductionResponse",
+    "HousesReductionTruthResponse",
     "HousesRequest",
     "HousesResponse",
     "NodePositionResponse",
 ]
+
+# Rebuild for forward references (Pydantic v2 + string annotations in unions/optionals)
+HousesRequest.model_rebuild()
+HousesResponse.model_rebuild()
+HousesReductionResponse.model_rebuild()
