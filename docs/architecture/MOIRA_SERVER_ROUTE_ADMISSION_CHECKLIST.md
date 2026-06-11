@@ -1,7 +1,7 @@
 # Moira Server Route Admission Checklist
 
-Version: 1.0
-Date: 2026-05-28
+Version: 1.1
+Date: 2026-06-11
 Status: Active implementation checklist
 Scope: Required gate before any new `moira_server` route family is admitted
 
@@ -26,22 +26,68 @@ It is downstream of:
 
 No new route family is admitted until these steps are completed in order:
 
-1. classify the engine surface
-2. decide synchronous vs batch vs async transport stance
-3. define request and response models
-4. define the serializer truth contract
-5. bind a service adapter to the stable engine surface
-6. add route handlers
-7. add parity and adversarial tests
-8. update architecture status docs
+1. evaluate the engine family before transport design
+2. classify the engine surface
+3. decide synchronous vs batch vs async transport stance
+4. define request and response models
+5. define the serializer truth contract
+6. bind a service adapter to the stable engine surface
+7. add route handlers
+8. add parity and adversarial tests
+9. update architecture status docs
 
 ---
 
-## 2. Admission Questions
+## 2. Pre-Admission Evaluation
+
+Before a route family is shaped for REST, the underlying engine family must be
+evaluated as an engine family.
+
+This stage asks whether the substrate is complete enough, stable enough, and
+truthful enough to expose. It is not yet a transport-design exercise.
+
+Every candidate family must answer:
+
+- What is the governing computational or doctrinal object?
+- Is the family complete enough to expose, or are required public surfaces still
+  missing?
+- Is the doctrine stable, or are active questions still unresolved?
+- Are all policy objects, result vessels, condition profiles, truth records,
+  validation helpers, and public facade exports present where the family
+  naturally requires them?
+- Does the family already have backend-standard documentation, provenance, and
+  validation evidence?
+- Are there known accuracy, doctrine, naming, coverage, or ergonomics problems
+  that should be improved before REST admission?
+- Are there surfaces that should remain engine-only, deferred, batched, or
+  excluded from ordinary public compute routes?
+
+The output of this stage should be a short family evaluation record in the
+phase ledger, with one of these statuses:
+
+- `admit_now` - engine family is complete and doctrine-stable enough for REST
+- `admit_after_minor_engine_work` - bounded engine/doc fixes should precede REST
+- `defer_for_engine_completion` - transport work would expose an incomplete
+  family
+- `defer_for_doctrine` - doctrine is not stable enough for public transport
+- `exclude_from_rest` - family does not belong on the ordinary REST compute
+  surface
+
+Fail if:
+
+- route design begins before the family evaluation is recorded
+- REST exposure is used to paper over missing engine doctrine or missing result
+  vessels
+- "we can expose what exists" becomes a substitute for asking whether what
+  exists is actually complete enough and doctrine-stable
+
+---
+
+## 3. Admission Questions
 
 Every candidate endpoint must answer all of the following.
 
-### 2.1 Engine Ownership
+### 3.1 Engine Ownership
 
 - Is there a stable public engine surface already?
 - Is the route calling `moira`, `moira.predictive`, `moira.vedic`, `moira.facade`, or another public package surface rather than a private helper?
@@ -52,7 +98,7 @@ Fail if:
 - the route would need to re-implement doctrine in the server
 - the route would need to call `_facade_*`, `_export_governance/*`, or internal helper strata as if they were public doctrine
 
-### 2.2 Read-Only Request Flow
+### 3.2 Read-Only Request Flow
 
 - Is the surface read-only during request handling?
 - Does the route avoid `set_kernel_path()`, `swap_reader()`, `reset_singleton()`, or equivalent lifecycle mutation?
@@ -63,7 +109,7 @@ Fail if:
 - request flow mutates kernel lifecycle state
 - the route depends on on-demand kernel acquisition or reconfiguration
 
-### 2.3 Transport Honesty
+### 3.3 Transport Honesty
 
 - Does the engine already expose a canonical result vessel?
 - Can the server preserve the doctrinal distinctions in that vessel?
@@ -74,7 +120,7 @@ Fail if:
 - the route would collapse different doctrinal products into one vague schema
 - event summaries, path products, profiles, and raw result families would be flattened together
 
-### 2.4 Operational Stance
+### 3.4 Operational Stance
 
 - Is ordinary synchronous request/response sane for this surface?
 - If not, should the route be batch, bounded, paged, or async?
@@ -86,11 +132,11 @@ Fail if:
 
 ---
 
-## 3. Transport Decision Matrix
+## 4. Transport Decision Matrix
 
 Use this matrix before writing code.
 
-### 3.1 Synchronous Direct Route
+### 4.1 Synchronous Direct Route
 
 Use when all are true:
 
@@ -105,7 +151,7 @@ Examples:
 - synastry contacts
 - annual profection
 
-### 3.2 Batch Route
+### 4.2 Batch Route
 
 Use when:
 
@@ -118,7 +164,7 @@ Requirements:
 - item-local truth preservation
 - no route-level masking of partial failure
 
-### 3.3 Async Or Heavy Route
+### 4.3 Async Or Heavy Route
 
 Use when:
 
@@ -134,7 +180,7 @@ Examples:
 
 ---
 
-## 4. Request-Model Checklist
+## 5. Request-Model Checklist
 
 Every new route family must define:
 
@@ -153,7 +199,7 @@ Anti-pattern:
 
 ---
 
-## 5. Response-Model Checklist
+## 6. Response-Model Checklist
 
 Every new route family must define:
 
@@ -177,7 +223,7 @@ Fail if:
 
 ---
 
-## 6. Serializer Checklist
+## 7. Serializer Checklist
 
 Before a serializer is admitted:
 
@@ -207,7 +253,7 @@ Anti-pattern:
 
 ---
 
-## 7. Service-Adapter Checklist
+## 8. Service-Adapter Checklist
 
 Every new service helper must:
 
@@ -228,24 +274,24 @@ Fail if:
 
 ---
 
-## 8. Testing Checklist
+## 9. Testing Checklist
 
 Every new route family must add:
 
-### 8.1 Parity Witness
+### 9.1 Parity Witness
 
 - one focused live-engine parity test
 - direct comparison to the real engine surface
 - enough assertions to prove route truth, not just `200 OK`
 
-### 8.2 Adversarial Witness
+### 9.2 Adversarial Witness
 
 - invalid body/method inputs
 - reversed windows where applicable
 - missing required inputs
 - hostile mixed batch items where batch surfaces exist
 
-### 8.3 Structural Verification
+### 9.3 Structural Verification
 
 - route module import/compile sanity
 - broader server suite pass when the family is admitted
@@ -260,7 +306,7 @@ Minimum verification commands:
 
 ---
 
-## 9. Documentation Checklist
+## 10. Documentation Checklist
 
 After a route family is implemented:
 
@@ -274,10 +320,11 @@ Fail if:
 
 ---
 
-## 10. Definition Of Admission
+## 11. Definition Of Admission
 
 A route family is admitted only when all are true:
 
+- pre-admission family evaluation is recorded
 - the engine surface is stable and public
 - request flow is read-only
 - request/response models are explicit

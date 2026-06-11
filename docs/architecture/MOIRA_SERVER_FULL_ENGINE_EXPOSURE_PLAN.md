@@ -1,8 +1,8 @@
 # Moira Server Full Engine Exposure Plan
 
-Version: 1.4
-Date: 2026-05-28
-Status: Governing expansion plan after phases 1-7; remaining expansion begins at phase 8
+Version: 1.5
+Date: 2026-06-11
+Status: Governing expansion plan after phase 8 closure; phase 9 is the next planned frontier
 Scope: Full public engine exposure through REST, subject to server-boundary law
 
 This document defines the remaining work required to expose the full
@@ -52,6 +52,10 @@ The server must not expose, through normal request flow:
 
 ## 2. Present State
 
+Authoritative live route inventory:
+
+- `wiki/02_services/REST_API_REFERENCE.md`
+
 The implemented server already exposes these route families:
 
 - operational health and kernel readiness
@@ -67,11 +71,20 @@ The implemented server already exposes these route families:
   occultation path geometry, heliacal event search, paran core search, and
   paran site/field/contour/structure products
 - annual, monthly, and schedule-based profections
+- progressions, progression reduction views, and progressed house-frame routes
+- Firdaria, Decennials, and Zodiacal Releasing timelord routes
+- Vimshottari dasha routes
+- Varshaphal annual chart, judgement, topic, Mudda, and Tasira routes
+- primary-direction speculum, arcs, relations, profile, network, and reduction
+  routes
 - website-only location lookup and reduction-pipeline inspection aliases
 - website-only chart-wheel drawing primitive packets
+- asteroid and comet position, bulk, and list routes for fast website
+  integration
 - fixed-star, variable-star, and multiple-star catalog/state surfaces
 
-This is the completed first wave.
+This is the completed surface through phase 8, with a website-driven early
+subset of phase 11 admitted under the same transport discipline.
 
 The website-only location and pipeline routes are admitted as transport
 conveniences, not as engine doctrine. Location lookup is a bounded seeded
@@ -91,7 +104,16 @@ condition relations. Multiple-star endpoints preserve system catalog records
 separately from orbital/component state, separation, position angle, and
 telescope-resolvability products.
 
-The remaining work is expansion, not bootstrap.
+Asteroid and comet routes are also admitted under the website-driven Phase 11
+catalog and small-body acceleration. They are fast bounded surfaces for single
+object lookup, bounded bulk computation, and listing. They do not close the
+entire catalog/small-body phase.
+
+The remaining work is expansion, not bootstrap. The next planned frontier is
+phase 9: Vedic and classical doctrine surfaces. As of this audit, the live app
+does not expose broad `/v1/panchanga/*`, `/v1/shadbala/*`, `/v1/varga/*`,
+`/v1/ashtakavarga/*`, `/v1/jaimini/*`, `/v1/vedic/*`, or `/v1/classical/*`
+route families.
 
 ---
 
@@ -339,6 +361,26 @@ Special handling:
   flattened annual verdict endpoint
 
 ## Phase 9: Vedic And Classical Doctrine Surfaces
+
+Pre-admission rule:
+
+Before any Phase 9 family is admitted to REST, create a Phase 9 scoping ledger
+that evaluates each candidate engine family first. The ledger must ask whether
+the family is complete, doctrine-stable, facade-visible, documented,
+validated, and ergonomically ready for public transport.
+
+Each family should receive one of the pre-admission statuses defined in
+`docs/architecture/MOIRA_SERVER_ROUTE_ADMISSION_CHECKLIST.md`:
+
+- `admit_now`
+- `admit_after_minor_engine_work`
+- `defer_for_engine_completion`
+- `defer_for_doctrine`
+- `exclude_from_rest`
+
+The Phase 9 ledger should be written before request models, serializers, or
+routers are designed. REST must not become a way to expose incomplete doctrine
+more quickly than the engine can honestly support it.
 
 Modules:
 

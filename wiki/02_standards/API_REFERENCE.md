@@ -4,6 +4,9 @@
 **Coverage:** 13 200 BC → 17 191 AD (JPL DE441)
 **Import surface:** `import moira` provides the curated stable root, while `from moira.facade import ...` exposes the complete direct-import surface.
 
+This is the Python engine/import reference. The HTTP transport surface is
+documented separately in `wiki/02_services/REST_API_REFERENCE.md`.
+
 ---
 
 ## Table of Contents

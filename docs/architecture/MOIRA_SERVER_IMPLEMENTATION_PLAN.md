@@ -1,12 +1,14 @@
 # Moira Server Implementation Plan
 
-Version: 1.5
-Date: 2026-05-28
-Status: Phases 1-7 complete; remaining expansion begins at phase 8
+Version: 1.6
+Date: 2026-06-11
+Status: Phases 1-8 complete; Phase 9 scoping is the next planned expansion frontier
 Scope: REST access surface over the existing Moira engine
 
-This document defines the concrete implementation sequence for a future REST
-server built on top of Moira.
+This document defines the concrete implementation sequence for the REST server
+built on top of Moira. It began as a future implementation plan; it now records
+the implemented base architecture and the phase sequence that subsequent route
+families must continue to obey.
 
 Current implementation state:
 
@@ -19,17 +21,24 @@ Current implementation state:
   network profiles, composite charts, Davison charts, chart-shape
   classification, pattern detection and pattern profiles, and midpoint
   calculation, targeting, pictures, weighting, and clustering
-- phase 8 has now begun with profection routes and the first shared
-  transport-helper extraction for chart-backed route families
+- phase 8 is implemented and closed: progressions, profections, timelords,
+  Vimshottari dasha, Varshaphal, and primary directions are registered through
+  dedicated route families
+- website-driven acceleration has also admitted a bounded Phase 11 subset:
+  fixed-star, variable-star, multiple-star, asteroid, and comet routes
+- website support routes are live for location lookup, timezone validation,
+  chart-wheel drawing packets, and reduction-pipeline inspection aliases
 - the server now exposes the operational, chart, position, transit, return,
-  batch, visibility, full phase-6 phenomena, and full phase-7 relationship
-  surfaces defined in this document
+  batch, visibility, full phase-6 phenomena, full phase-7 relationship, and
+  full phase-8 progression/timing/direction surfaces defined in this document
 - adversarial transport tests exist for the currently admitted route families
+- the live route inventory is documented in
+  `wiki/02_services/REST_API_REFERENCE.md`
 
 What this document now governs:
 
 - the implemented base architecture and admission rules
-- the first completed rollout wave
+- the completed rollout waves through phase 8
 - the sequencing logic future route families must still obey
 
 It assumes and inherits:

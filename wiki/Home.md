@@ -22,7 +22,8 @@ The engine is composed of sovereign, constitutionalized subsystems:
 - **[Vimshottari Dasha](02_standards/DASHA_BACKEND_STANDARD.md)**
 - **[Fixed Star Logic](02_standards/STARS_BACKEND_STANDARD.md)**
 - **[Service Layer Guide](02_services/SERVICE_LAYER_GUIDE.md)**
-- **[API Reference](02_standards/API_REFERENCE.md)**
+- **[Python API Reference](02_standards/API_REFERENCE.md)**
+- **[REST API Reference](02_services/REST_API_REFERENCE.md)**
 
 ---
 
@@ -45,4 +46,3 @@ Every calculation is benchmarked against physical oracles:
 ---
 
 **"Transparency is the Primary Metric of Accuracy."**
-

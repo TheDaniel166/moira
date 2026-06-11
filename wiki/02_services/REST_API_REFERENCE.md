@@ -1,0 +1,296 @@
+# Moira REST API Reference
+
+Version: 0.1.0 transport surface
+Date audited: 2026-06-11
+Source of truth: `moira_server.app.create_app()` route registry
+
+This document describes the HTTP transport surface currently registered by
+`moira_server`. It is separate from `wiki/02_standards/API_REFERENCE.md`, which
+documents the Python engine/import surface.
+
+The REST layer is an access surface over the engine. It must preserve engine
+truth, explicit computation policy, and request-flow read-only behavior. Route
+presence here means the endpoint is registered by the live FastAPI application;
+it does not imply that the corresponding engine family is complete beyond the
+transport contract documented for that family.
+
+## Current Surface Summary
+
+- Total non-documentation routes: 166
+- Operational/meta routes: 4
+- Versioned `/v1` routes: 162
+- OpenAPI path, when enabled by server configuration: `/openapi.json`
+- Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
+
+## Present Expansion State
+
+The REST implementation is past bootstrap.
+
+Implemented:
+
+- phases 1-5: operational, chart, positions, transits, returns, batch, and visibility
+- phase 6: stations, void-of-course, rise/set, eclipses, occultations, heliacal events, and parans
+- phase 7: synastry, composite, Davison, chart shape, patterns, and midpoints
+- phase 8: progressions, profections, timelords, Vimshottari dasha, Varshaphal, and primary directions
+- website-accelerated Phase 11 subset: fixed stars, variable stars, multiple stars, asteroids, and comets
+- website support: locations, chart-wheel packets, and reduction-pipeline inspection aliases
+
+Not yet broadly exposed as REST families:
+
+- phase 9 Vedic and classical doctrine routes: `/v1/panchanga/*`, `/v1/shadbala/*`, `/v1/varga/*`, `/v1/ashtakavarga/*`, `/v1/jaimini/*`, `/v1/vedic/*`, `/v1/classical/*`
+- phase 10 spatial and Earth-facing mapping routes: `/v1/astrocartography/*`, `/v1/local-space/*`, `/v1/geodetic/*`, `/v1/galactic/*`, `/v1/gauquelin/*`
+- phase 12 specialist analytical families: `/v1/uranian/*`, `/v1/harmonics/*`, `/v1/phase/*`, `/v1/antiscia/*`, `/v1/special/*`
+- phase 13 electional/search workflow routes: `/v1/electional/*`
+
+## Route Families
+
+| Family | Routes |
+|---|---:|
+| meta | 4 |
+| asteroids | 3 |
+| batch | 7 |
+| chart | 2 |
+| chart-shape | 1 |
+| comets | 3 |
+| composite | 1 |
+| dasha | 5 |
+| davison | 1 |
+| eclipses | 5 |
+| heliacal | 2 |
+| houses | 2 |
+| locations | 2 |
+| lunar-phases | 1 |
+| midpoints | 5 |
+| occultations | 8 |
+| parans | 8 |
+| patterns | 3 |
+| pipeline | 3 |
+| positions | 4 |
+| primary-directions | 8 |
+| profections | 3 |
+| progressions | 17 |
+| returns | 3 |
+| rise-set | 3 |
+| stars | 12 |
+| stations | 4 |
+| synastry | 9 |
+| timelords | 16 |
+| transits | 3 |
+| varshaphal | 9 |
+| visibility | 2 |
+| void-of-course | 4 |
+| website | 3 |
+
+## Operational Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| GET | `/health` | `health` |
+| GET | `/ready` | `ready` |
+| GET | `/meta/version` | `version` |
+| GET | `/meta/kernel` | `kernel_meta` |
+
+## Chart And Position Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| POST | `/v1/chart` | `chart_route` |
+| POST | `/v1/chart/reduction` | `chart_reduction_route` |
+| POST | `/v1/houses` | `houses_route` |
+| POST | `/v1/houses/reduction` | `houses_reduction_route` |
+| POST | `/v1/positions/planet` | `planet_position_route` |
+| POST | `/v1/positions/planet/reduction` | `planet_position_reduction_route` |
+| POST | `/v1/positions/sky` | `sky_position_route` |
+| POST | `/v1/positions/sky/reduction` | `sky_position_reduction_route` |
+| POST | `/v1/pipeline/chart` | `pipeline_chart_route` |
+| POST | `/v1/pipeline/positions/planet` | `pipeline_planet_position_route` |
+| POST | `/v1/pipeline/positions/sky` | `pipeline_sky_position_route` |
+
+## Transits, Returns, Batch, And Visibility
+
+| Method | Path | Handler |
+|---|---|---|
+| POST | `/v1/transits/search` | `transit_search_route` |
+| POST | `/v1/transits/ingresses` | `ingress_search_route` |
+| POST | `/v1/transits/next-ingress` | `next_ingress_route` |
+| POST | `/v1/returns/solar` | `solar_return_route` |
+| POST | `/v1/returns/lunar` | `lunar_return_route` |
+| POST | `/v1/returns/planet` | `planet_return_route` |
+| POST | `/v1/lunar-phases` | `lunar_phase_route` |
+| POST | `/v1/batch/charts` | `batch_charts_route` |
+| POST | `/v1/batch/charts/reduction` | `batch_charts_reduction_route` |
+| POST | `/v1/batch/transits` | `batch_transits_route` |
+| POST | `/v1/batch/returns` | `batch_returns_route` |
+| POST | `/v1/batch/events` | `batch_events_route` |
+| POST | `/v1/batch/progressions` | `batch_progressions_route` |
+| POST | `/v1/batch/progressions/reduction` | `batch_progressions_reduction_route` |
+| POST | `/v1/visibility/assessment` | `visibility_assessment_route` |
+| POST | `/v1/visibility/tonight` | `visibility_tonight_route` |
+
+## Phenomena Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| POST | `/v1/stations/search` | `station_search_route` |
+| POST | `/v1/stations/next` | `next_station_route` |
+| POST | `/v1/stations/is-retrograde` | `station_state_route` |
+| POST | `/v1/stations/retrograde-periods` | `retrograde_periods_route` |
+| POST | `/v1/void-of-course/window` | `void_of_course_window_route` |
+| POST | `/v1/void-of-course/next` | `next_void_of_course_route` |
+| POST | `/v1/void-of-course/is-active` | `void_of_course_state_route` |
+| POST | `/v1/void-of-course/range` | `void_of_course_range_route` |
+| POST | `/v1/rise-set/phenomena` | `rise_set_phenomena_route` |
+| POST | `/v1/rise-set/transit` | `rise_set_transit_route` |
+| POST | `/v1/rise-set/twilight` | `twilight_times_route` |
+| POST | `/v1/eclipses/solar/next` | `next_solar_eclipse_route` |
+| POST | `/v1/eclipses/lunar/next` | `next_lunar_eclipse_route` |
+| POST | `/v1/eclipses/solar/local-visible` | `next_visible_solar_eclipse_route` |
+| POST | `/v1/eclipses/lunar/local` | `lunar_eclipse_local_route` |
+| POST | `/v1/eclipses/solar/path` | `solar_eclipse_path_route` |
+| POST | `/v1/occultations/close-approaches` | `close_approaches_route` |
+| POST | `/v1/occultations/lunar` | `lunar_occultations_route` |
+| POST | `/v1/occultations/lunar-star` | `lunar_star_occultations_route` |
+| POST | `/v1/occultations/all-lunar` | `all_lunar_occultations_route` |
+| POST | `/v1/occultations/lunar-path` | `lunar_occultation_path_route` |
+| POST | `/v1/occultations/lunar-path-at` | `lunar_occultation_path_at_route` |
+| POST | `/v1/occultations/lunar-star-path` | `lunar_star_occultation_path_route` |
+| POST | `/v1/occultations/lunar-star-path-at` | `lunar_star_occultation_path_at_route` |
+| POST | `/v1/heliacal/planet` | `planet_heliacal_event_route` |
+| POST | `/v1/heliacal/visibility-event` | `general_visibility_event_route` |
+| POST | `/v1/parans/search` | `paran_search_route` |
+| POST | `/v1/parans/natal` | `natal_paran_search_route` |
+| POST | `/v1/parans/site` | `paran_site_route` |
+| POST | `/v1/parans/field/samples` | `paran_field_samples_route` |
+| POST | `/v1/parans/field/analysis` | `paran_field_analysis_route` |
+| POST | `/v1/parans/field/contours` | `paran_field_contours_route` |
+| POST | `/v1/parans/field/paths` | `paran_field_paths_route` |
+| POST | `/v1/parans/field/structure` | `paran_field_structure_route` |
+
+## Relationship And Pattern Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| POST | `/v1/synastry/aspects` | `synastry_aspects_route` |
+| POST | `/v1/synastry/contacts` | `synastry_contacts_route` |
+| POST | `/v1/synastry/contact-relations` | `synastry_contact_relations_route` |
+| POST | `/v1/synastry/condition-profiles` | `synastry_condition_profiles_route` |
+| POST | `/v1/synastry/overlay` | `synastry_directional_overlay_route` |
+| POST | `/v1/synastry/overlays` | `synastry_overlays_route` |
+| POST | `/v1/synastry/overlay-relations` | `synastry_overlay_relations_route` |
+| POST | `/v1/synastry/chart-condition` | `synastry_chart_condition_route` |
+| POST | `/v1/synastry/network` | `synastry_network_route` |
+| POST | `/v1/composite/chart` | `composite_chart_route` |
+| POST | `/v1/davison/chart` | `davison_chart_route` |
+| POST | `/v1/chart-shape/classify` | `chart_shape_route` |
+| POST | `/v1/patterns/find` | `patterns_route` |
+| POST | `/v1/patterns/chart-profile` | `pattern_chart_profile_route` |
+| POST | `/v1/patterns/network` | `pattern_network_route` |
+| POST | `/v1/midpoints/calculate` | `midpoints_route` |
+| POST | `/v1/midpoints/to-point` | `midpoints_to_point_route` |
+| POST | `/v1/midpoints/pictures` | `midpoint_pictures_route` |
+| POST | `/v1/midpoints/weighting` | `midpoint_weighting_route` |
+| POST | `/v1/midpoints/clusters` | `midpoint_clusters_route` |
+
+## Progressions, Timelords, Dasha, Varshaphal, And Primary Directions
+
+| Method | Path | Handler |
+|---|---|---|
+| POST | `/v1/progressions/secondary` | `secondary_progression_route` |
+| POST | `/v1/progressions/secondary/reduction` | `secondary_progression_reduction_route` |
+| POST | `/v1/progressions/secondary-declination` | `secondary_declination_route` |
+| POST | `/v1/progressions/secondary-declination/reduction` | `secondary_declination_reduction_route` |
+| POST | `/v1/progressions/arc` | `arc_progression_route` |
+| POST | `/v1/progressions/arc/reduction` | `arc_progression_reduction_route` |
+| POST | `/v1/progressions/time-key` | `time_key_progression_route` |
+| POST | `/v1/progressions/time-key/reduction` | `time_key_progression_reduction_route` |
+| POST | `/v1/progressions/house-frame` | `house_frame_route` |
+| POST | `/v1/progressions/house-frame/reduction` | `house_frame_reduction_route` |
+| POST | `/v1/progressions/house-frame/cusps` | `daily_houses_route` |
+| POST | `/v1/progressions/house-frame/arc` | `house_frame_arc_route` |
+| POST | `/v1/progressions/house-frame/arc/reduction` | `house_frame_arc_reduction_route` |
+| POST | `/v1/progressions/profile` | `progression_profile_route` |
+| POST | `/v1/progressions/profile/reduction` | `progression_profile_reduction_route` |
+| POST | `/v1/progressions/network` | `progression_network_route` |
+| POST | `/v1/progressions/network/reduction` | `progression_network_reduction_route` |
+| POST | `/v1/profections/annual` | `annual_profection_route` |
+| POST | `/v1/profections/monthly` | `monthly_profection_route` |
+| POST | `/v1/profections/schedule` | `profection_schedule_route` |
+| POST | `/v1/timelords/firdaria/sequence` | `firdaria_sequence_route` |
+| POST | `/v1/timelords/firdaria/groups` | `firdaria_groups_route` |
+| POST | `/v1/timelords/firdaria/current` | `firdaria_current_route` |
+| POST | `/v1/timelords/firdaria/profile` | `firdaria_profile_route` |
+| POST | `/v1/timelords/firdaria/active-pair` | `firdaria_active_pair_route` |
+| POST | `/v1/timelords/decennials/sequence` | `decennials_sequence_route` |
+| POST | `/v1/timelords/decennials/groups` | `decennials_groups_route` |
+| POST | `/v1/timelords/decennials/current` | `decennials_current_route` |
+| POST | `/v1/timelords/decennials/profile` | `decennials_profile_route` |
+| POST | `/v1/timelords/decennials/active-pair` | `decennials_active_pair_route` |
+| POST | `/v1/timelords/decennials/active-path` | `decennials_active_path_route` |
+| POST | `/v1/timelords/zodiacal-releasing/sequence` | `zr_sequence_route` |
+| POST | `/v1/timelords/zodiacal-releasing/groups` | `zr_groups_route` |
+| POST | `/v1/timelords/zodiacal-releasing/current` | `zr_current_route` |
+| POST | `/v1/timelords/zodiacal-releasing/profile` | `zr_profile_route` |
+| POST | `/v1/timelords/zodiacal-releasing/level-pair` | `zr_level_pair_route` |
+| POST | `/v1/dasha/vimshottari/sequence` | `dasha_sequence_route` |
+| POST | `/v1/dasha/vimshottari/balance` | `dasha_balance_route` |
+| POST | `/v1/dasha/vimshottari/current` | `dasha_current_route` |
+| POST | `/v1/dasha/vimshottari/profile` | `dasha_profile_route` |
+| POST | `/v1/dasha/vimshottari/lord-pair` | `dasha_lord_pair_route` |
+| POST | `/v1/varshaphal/chart` | `varshaphal_chart_route` |
+| POST | `/v1/varshaphal/judgement/profile` | `varshaphal_judgement_profile_route` |
+| POST | `/v1/varshaphal/judgement/year` | `varshaphal_year_judgement_route` |
+| POST | `/v1/varshaphal/summary` | `varshaphal_year_summary_route` |
+| POST | `/v1/varshaphal/topics` | `varshaphal_topics_route` |
+| POST | `/v1/varshaphal/topics/windows` | `varshaphal_topic_windows_route` |
+| POST | `/v1/varshaphal/mudda/active` | `varshaphal_mudda_active_route` |
+| POST | `/v1/varshaphal/mudda/judgement` | `varshaphal_mudda_judgement_route` |
+| POST | `/v1/varshaphal/tasira/active` | `varshaphal_tasira_active_route` |
+| POST | `/v1/primary-directions/speculum` | `primary_directions_speculum_route` |
+| POST | `/v1/primary-directions/arcs` | `primary_directions_arcs_route` |
+| POST | `/v1/primary-directions/arcs/reduction` | `primary_directions_arcs_reduction_route` |
+| POST | `/v1/primary-directions/relations` | `primary_directions_relations_route` |
+| POST | `/v1/primary-directions/profile` | `primary_directions_profile_route` |
+| POST | `/v1/primary-directions/profile/reduction` | `primary_directions_profile_reduction_route` |
+| POST | `/v1/primary-directions/network` | `primary_directions_network_route` |
+| POST | `/v1/primary-directions/network/reduction` | `primary_directions_network_reduction_route` |
+
+## Catalog, Star, Small-Body, And Website Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| POST | `/v1/stars/position` | `star_position` |
+| POST | `/v1/stars/bulk` | `stars_bulk` |
+| GET | `/v1/stars/list` | `list_stars` |
+| GET | `/v1/stars/variable/list` | `list_variable_stars_route` |
+| GET | `/v1/stars/variable/{name}` | `variable_star_catalog_route` |
+| POST | `/v1/stars/variable/state` | `variable_star_state_route` |
+| POST | `/v1/stars/variable/range` | `variable_star_range_route` |
+| POST | `/v1/stars/variable/catalog-profile` | `variable_star_catalog_profile_route` |
+| POST | `/v1/stars/variable/pair` | `variable_star_pair_route` |
+| GET | `/v1/stars/multiple/list` | `list_multiple_stars_route` |
+| GET | `/v1/stars/multiple/{name}` | `multiple_star_catalog_route` |
+| POST | `/v1/stars/multiple/state` | `multiple_star_state_route` |
+| POST | `/v1/asteroids/position` | `asteroid_position` |
+| POST | `/v1/asteroids/bulk` | `asteroids_bulk` |
+| GET | `/v1/asteroids/list` | `list_asteroids` |
+| POST | `/v1/comets/position` | `comet_position` |
+| POST | `/v1/comets/bulk` | `comets_bulk` |
+| GET | `/v1/comets/list` | `list_comets` |
+| GET | `/v1/locations/search` | `location_search_route` |
+| POST | `/v1/locations/timezone/validate` | `timezone_validate_route` |
+| GET | `/v1/website/chart-wheel/presets` | `chart_wheel_presets_route` |
+| POST | `/v1/website/chart-wheel/validate` | `chart_wheel_validate_route` |
+| POST | `/v1/website/chart-wheel/packet` | `chart_wheel_packet_route` |
+
+## Documentation Boundary
+
+Use this document for HTTP route presence and family status.
+
+Use `wiki/02_standards/API_REFERENCE.md` for Python import surfaces, engine
+classes, engine functions, and canonical result vessels.
+
+Use `docs/architecture/MOIRA_SERVER_BOUNDARY.md` for the governing rule that the
+server transports truth and the engine computes truth.
+
+Use `docs/architecture/MOIRA_SERVER_ROUTE_ADMISSION_CHECKLIST.md` before adding
+or widening a route family.
