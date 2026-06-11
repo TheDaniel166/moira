@@ -43,10 +43,10 @@ This audit is about transport truth, not numerical correctness.
 | `progressions` | `Compliant` | rich doctrine/relation/condition truth plus sibling reduction endpoints across secondary, declination, arc, time-key, house-frame, profile, and network surfaces | `house-frame/cusps` remains intentionally compact-first, but no major family-level reduction gap remains |
 | `timelords` | `Partial` | sequence/profile surfaces preserve significant doctrinal structure | policy and reduction provenance are not framed as explicit transport options |
 | `primary-directions` | `Compliant` | compact routes preserve meaningful results and search-derived routes now have sibling reduction endpoints for `arcs`, `profile`, and `network` | `speculum` remains compact-first, but the family now has a lawful route-uniform reduction path where search doctrine lives |
-| `returns` / `varshaphal` | `Partial` | meaningful typed result surfaces exist | transport economy is prioritized; reduction-path contract not yet explicit |
+| `returns` / `varshaphal` | `Compliant` | embedded computation_truth (reusing transits structures for the underlying next_transit search derivation, with brackets/step/tolerance/PLANET_RETURN wrapper) + request controls for step_days/solver_tolerance_days (direction already present for planet); now provides direct reduction path | returns family now closed at direct level (embedded truth on ReturnEventResponse); varshaphal remains separate |
 | `phenomena` | `Partial` | event truth exists at engine level | transport audit not yet widened enough to guarantee reduction exposure uniformly |
 | `visibility` | `Partial` | domain-rich results exist | observer-environment and reduction path need explicit transport guarantees |
-| `batch` | `Partial` | `charts` and `progressions` now have sibling batch reduction endpoints; `transits` and transit/ingress event payloads already preserve embedded wrapped-family truth | `returns` still wraps a partial family, and heterogeneous `events` remain mixed because some event subtypes do not yet carry full reduction doctrine |
+| `batch` | `Partial` | `charts` and `progressions` now have sibling batch reduction endpoints; `transits` and transit/ingress/return event payloads now preserve embedded wrapped-family truth (returns direct now Compliant) | `batch/returns` wrapper itself not yet widened to surface the now-available direct returns reduction; heterogeneous `events` remain mixed because some event subtypes (station/aspect/etc.) do not yet carry full reduction doctrine |
 
 ---
 
@@ -225,13 +225,12 @@ Current truth preserved:
     - per-item failure isolation
 
 Current gap:
-- `batch/returns` still wraps a return family that does not yet expose a lawful
-  reduction transport of its own
+- `batch/returns` now can embed the direct returns family's reduction (embedded computation_truth from the transits-derived search + request controls); the wrapper itself has not yet been widened to surface it uniformly
 - heterogeneous `batch/events` items remain only as strong as their underlying
   event subtype; station/aspect/equatorial items do not yet carry the same
-  admitted reduction depth as transit/ingress items
+  admitted reduction depth as transit/ingress/return items
 - `batch` therefore does not yet preserve reduction uniformly across every
-  embedded family
+  embedded family (returns direct now compliant, but aggregate not yet updated)
 
 Judgment:
 - Wave 4 has started cleanly
@@ -243,11 +242,13 @@ Judgment:
 
 ### Priority 1
 
-`timelords`, `returns`, `varshaphal`, `visibility`, `phenomena`
+`timelords`, `varshaphal`, `visibility`, `phenomena`
 
 Reason:
 - mostly structurally healthy
 - need consistency work more than first-principles redesign
+
+(Note: returns direct family addressed in Wave 3/4 via embedded transits-derived reduction truth + controls; varshaphal remains separate.)
 
 ---
 
@@ -279,8 +280,8 @@ Foundational targets now live:
    `progressions`.
 2. Audit whether the `positions` reduction surface should eventually add
    optional deeper policy toggles beyond the current admitted defaults.
-3. Continue Wave 4 by deciding whether `returns` should first gain a direct
-   reduction contract before `batch/returns` is widened.
+3. Update `batch/returns` now that the direct returns family has a lawful embedded
+   reduction contract (computation_truth + controls).
 4. Revisit heterogeneous `batch/events` only after the weaker event subtypes
    have stronger family-level truth surfaces.
 
@@ -291,10 +292,13 @@ Foundational targets now live:
 The server is not uniformly non-compliant.
 
 It already contains several route families that preserve real doctrinal and
-reduction truth well, especially `transits` and `relationship`.
+reduction truth well, especially `transits`, `relationship`, and now `returns`
+(direct family, via embedded transits-derived computation_truth on ReturnEventResponse
+plus request policy controls).
 
 However, the REST surface as a whole does not yet satisfy the newly frozen
-contract uniformly because some remaining family surfaces and some batch
-wrappers still expose reduction truth inconsistently, even though the
-foundational surfaces, the primary-directions search family, the progressions
-family, and the first Wave 4 batch reductions now have lawful truth paths.
+contract uniformly because some remaining family surfaces (timelords, varshaphal,
+visibility, phenomena) and some batch wrappers still expose reduction truth
+inconsistently, even though the foundational surfaces, the primary-directions
+search family, the progressions family, the direct returns family, and the
+first Wave 4 batch reductions now have lawful truth paths.

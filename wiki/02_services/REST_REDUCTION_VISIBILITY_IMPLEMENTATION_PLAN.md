@@ -287,9 +287,8 @@ The concrete next steps are:
 2. Decide whether `primary-directions/speculum` should remain compact-only or
    gain a sibling reduction route.
 3. Sweep `timelords`.
-4. Sweep `returns`, `varshaphal`, `visibility`, and `phenomena`.
-5. Decide whether `returns` should gain a family-level reduction contract
-   before widening `batch/returns`.
+4. Sweep `varshaphal`, `visibility`, and `phenomena`. (returns direct family now complete with embedded reduction contract + controls.)
+5. Update `batch/returns` now that direct returns has a family-level reduction contract (embedded computation_truth).
 6. Revisit heterogeneous `batch/events` only after the weaker event subtypes
    have stronger family-level truth surfaces.
 

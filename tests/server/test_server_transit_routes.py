@@ -199,13 +199,14 @@ def test_return_routes_match_engine_selected_truth(
     lunar_direct = moira_engine.lunar_return(natal.planets["Moon"].longitude, natal.jd_ut + 1.0)
     planet_direct = moira_engine.planet_return("Venus", natal.planets["Venus"].longitude, natal.jd_ut + 1.0)
 
+    # Include new controls (optional) to exercise reduction path
     solar_response = client_with_engine.post(
         "/v1/returns/solar",
-        json={"natal_sun_lon": natal.planets["Sun"].longitude, "year": 2001},
+        json={"natal_sun_lon": natal.planets["Sun"].longitude, "year": 2001, "step_days": 0.5},
     )
     lunar_response = client_with_engine.post(
         "/v1/returns/lunar",
-        json={"natal_moon_lon": natal.planets["Moon"].longitude, "jd_start": natal.jd_ut + 1.0},
+        json={"natal_moon_lon": natal.planets["Moon"].longitude, "jd_start": natal.jd_ut + 1.0, "solver_tolerance_days": 1e-6},
     )
     planet_response = client_with_engine.post(
         "/v1/returns/planet",
@@ -213,20 +214,41 @@ def test_return_routes_match_engine_selected_truth(
             "body": "Venus",
             "natal_lon": natal.planets["Venus"].longitude,
             "jd_start": natal.jd_ut + 1.0,
+            "direction": "direct",
+            "step_days": 1.0,
         },
     )
 
     assert solar_response.status_code == 200
     assert solar_response.json()["return_type"] == "solar_return"
     assert solar_response.json()["jd_ut"] == pytest.approx(solar_direct)
+    # Embedded computation truth now present (reduction visibility)
+    assert solar_response.json().get("computation_truth") is not None
 
     assert lunar_response.status_code == 200
     assert lunar_response.json()["return_type"] == "lunar_return"
     assert lunar_response.json()["jd_ut"] == pytest.approx(lunar_direct)
+    assert lunar_response.json().get("computation_truth") is not None
 
     assert planet_response.status_code == 200
     assert planet_response.json()["body"] == "Venus"
     assert planet_response.json()["jd_ut"] == pytest.approx(planet_direct)
+    assert planet_response.json().get("computation_truth") is not None
+
+    # Parity with direct low-level next_transit (the underlying mechanism for returns)
+    from moira.transits import next_transit
+    reader = getattr(moira_engine, "_reader", None)
+    # Example for planet return truth
+    pol = None  # default for this parity
+    direct_event = next_transit(
+        "Venus", natal.planets["Venus"].longitude, natal.jd_ut + 1.0,
+        direction="direct", reader=reader, policy=pol
+    )
+    if direct_event and direct_event.computation_truth:
+        # the response truth should match structure
+        resp_ct = planet_response.json()["computation_truth"]
+        assert resp_ct is not None
+        assert resp_ct["body"] == "Venus"
 
 
 @pytest.mark.requires_ephemeris

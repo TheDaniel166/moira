@@ -25,10 +25,12 @@ def solar_return_route(
     request: SolarReturnRequest,
     engine: Moira = Depends(get_engine),
 ) -> ReturnEventResponse:
+    jd, comp_truth = compute_solar_return(engine, request)
     return serialize_return_event(
         return_type="solar_return",
         body=Body.SUN,
-        jd_ut=compute_solar_return(engine, request),
+        jd_ut=jd,
+        computation_truth=comp_truth,
     )
 
 
@@ -37,10 +39,12 @@ def lunar_return_route(
     request: LunarReturnRequest,
     engine: Moira = Depends(get_engine),
 ) -> ReturnEventResponse:
+    jd, comp_truth = compute_lunar_return(engine, request)
     return serialize_return_event(
         return_type="lunar_return",
         body=Body.MOON,
-        jd_ut=compute_lunar_return(engine, request),
+        jd_ut=jd,
+        computation_truth=comp_truth,
     )
 
 
@@ -49,9 +53,11 @@ def planet_return_route(
     request: PlanetReturnRequest,
     engine: Moira = Depends(get_engine),
 ) -> ReturnEventResponse:
+    jd, comp_truth = compute_planet_return(engine, request)
     return serialize_return_event(
         return_type="planet_return",
         body=request.body,
-        jd_ut=compute_planet_return(engine, request),
+        jd_ut=jd,
+        computation_truth=comp_truth,
     )
 
