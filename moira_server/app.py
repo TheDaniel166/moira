@@ -18,8 +18,11 @@ from .routers import (
     chart_router,
     chart_wheel_router,
     dasha_router,
+    dignities_router,
     health_router,
+    jaimini_router,
     locations_router,
+    panchanga_router,
     phenomena_router,
     pipeline_router,
     positions_router,
@@ -27,6 +30,7 @@ from .routers import (
     progressions_router,
     relationship_router,
     returns_router,
+    shadbala_router,
     stars_router,
     timelords_router,
     transits_router,
@@ -84,6 +88,10 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(timelords_router)
     app.include_router(varshaphal_router)
     app.include_router(primary_directions_router)
+    app.include_router(panchanga_router)    # Phase-9 Panchanga doctrine surface
+    app.include_router(shadbala_router)     # Phase-9 Shadbala doctrine surface
+    app.include_router(jaimini_router)      # Phase-9 Jaimini doctrine surface
+    app.include_router(dignities_router)    # Phase-9 Classical Dignities doctrine surface
     app.include_router(locations_router)   # City/timezone lookup for chart calculator
     app.include_router(asteroids_router)   # Fast small-body surfaces (website integration)
     app.include_router(comets_router)      # Symmetric fast comet surfaces

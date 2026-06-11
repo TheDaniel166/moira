@@ -4,14 +4,18 @@ from .batch import router as batch_router
 from .chart import router as chart_router
 from .chart_wheel import router as chart_wheel_router
 from .dasha import router as dasha_router
+from .dignities import router as dignities_router
 from .health import router as health_router
+from .jaimini import router as jaimini_router
 from .locations import router as locations_router
+from .panchanga import router as panchanga_router
 from .phenomena import router as phenomena_router
 from .pipeline import router as pipeline_router
 from .positions import router as positions_router
 from .progressions import router as progressions_router
 from .relationship import router as relationship_router
 from .returns import router as returns_router
+from .shadbala import router as shadbala_router
 from .timelords import router as timelords_router
 from .transits import router as transits_router
 from .asteroids import router as asteroids_router
@@ -29,8 +33,11 @@ __all__ = [
     "chart_router",
     "chart_wheel_router",
     "dasha_router",
+    "dignities_router",
     "health_router",
+    "jaimini_router",
     "locations_router",
+    "panchanga_router",
     "phenomena_router",
     "pipeline_router",
     "positions_router",
@@ -38,6 +45,7 @@ __all__ = [
     "progressions_router",
     "relationship_router",
     "returns_router",
+    "shadbala_router",
     "timelords_router",
     "transits_router",
     "varshaphal_router",

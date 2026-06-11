@@ -16,9 +16,9 @@ transport contract documented for that family.
 
 ## Current Surface Summary
 
-- Total non-documentation routes: 166
+- Total non-documentation routes: 188
 - Operational/meta routes: 4
-- Versioned `/v1` routes: 162
+- Versioned `/v1` routes: 184
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 
@@ -32,12 +32,17 @@ Implemented:
 - phase 6: stations, void-of-course, rise/set, eclipses, occultations, heliacal events, and parans
 - phase 7: synastry, composite, Davison, chart shape, patterns, and midpoints
 - phase 8: progressions, profections, timelords, Vimshottari dasha, Varshaphal, and primary directions
+- phase 9 opened with Panchanga direct and chart-backed instant/profile routes,
+  followed by chart-backed Shadbala result/profile/network/condition routes
+  direct/chart-backed Jaimini karaka/profile/condition/pair routes, and
+  chart-backed Classical Dignities result/reception/condition/profile/network
+  routes
 - website-accelerated Phase 11 subset: fixed stars, variable stars, multiple stars, asteroids, and comets
 - website support: locations, chart-wheel packets, and reduction-pipeline inspection aliases
 
 Not yet broadly exposed as REST families:
 
-- phase 9 Vedic and classical doctrine routes: `/v1/panchanga/*`, `/v1/shadbala/*`, `/v1/varga/*`, `/v1/ashtakavarga/*`, `/v1/jaimini/*`, `/v1/vedic/*`, `/v1/classical/*`
+- remaining phase 9 Vedic and classical doctrine routes: `/v1/varga/*`, `/v1/ashtakavarga/*`, `/v1/vedic/*`, `/v1/classical/*`
 - phase 10 spatial and Earth-facing mapping routes: `/v1/astrocartography/*`, `/v1/local-space/*`, `/v1/geodetic/*`, `/v1/galactic/*`, `/v1/gauquelin/*`
 - phase 12 specialist analytical families: `/v1/uranian/*`, `/v1/harmonics/*`, `/v1/phase/*`, `/v1/antiscia/*`, `/v1/special/*`
 - phase 13 electional/search workflow routes: `/v1/electional/*`
@@ -55,13 +60,16 @@ Not yet broadly exposed as REST families:
 | composite | 1 |
 | dasha | 5 |
 | davison | 1 |
+| dignities | 6 |
 | eclipses | 5 |
 | heliacal | 2 |
 | houses | 2 |
+| jaimini | 8 |
 | locations | 2 |
 | lunar-phases | 1 |
 | midpoints | 5 |
 | occultations | 8 |
+| panchanga | 4 |
 | parans | 8 |
 | patterns | 3 |
 | pipeline | 3 |
@@ -70,6 +78,7 @@ Not yet broadly exposed as REST families:
 | profections | 3 |
 | progressions | 17 |
 | returns | 3 |
+| shadbala | 4 |
 | rise-set | 3 |
 | stars | 12 |
 | stations | 4 |
@@ -190,6 +199,48 @@ Not yet broadly exposed as REST families:
 | POST | `/v1/midpoints/pictures` | `midpoint_pictures_route` |
 | POST | `/v1/midpoints/weighting` | `midpoint_weighting_route` |
 | POST | `/v1/midpoints/clusters` | `midpoint_clusters_route` |
+
+## Panchanga Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| POST | `/v1/panchanga/instant` | `panchanga_instant_route` |
+| POST | `/v1/panchanga/instant/profile` | `panchanga_instant_profile_route` |
+| POST | `/v1/panchanga/chart` | `panchanga_chart_route` |
+| POST | `/v1/panchanga/chart/profile` | `panchanga_chart_profile_route` |
+
+## Shadbala Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| POST | `/v1/shadbala/chart` | `shadbala_chart_route` |
+| POST | `/v1/shadbala/chart/profile` | `shadbala_chart_profile_route` |
+| POST | `/v1/shadbala/chart/network` | `shadbala_chart_network_route` |
+| POST | `/v1/shadbala/chart/condition` | `shadbala_chart_condition_route` |
+
+## Jaimini Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| POST | `/v1/jaimini/karakas` | `jaimini_karakas_route` |
+| POST | `/v1/jaimini/karakas/profile` | `jaimini_karakas_profile_route` |
+| POST | `/v1/jaimini/karakas/condition` | `jaimini_karakas_condition_route` |
+| POST | `/v1/jaimini/karakas/pair` | `jaimini_karakas_pair_route` |
+| POST | `/v1/jaimini/chart/karakas` | `jaimini_chart_karakas_route` |
+| POST | `/v1/jaimini/chart/profile` | `jaimini_chart_profile_route` |
+| POST | `/v1/jaimini/chart/condition` | `jaimini_chart_condition_route` |
+| POST | `/v1/jaimini/chart/pair` | `jaimini_chart_pair_route` |
+
+## Classical Dignities Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| POST | `/v1/dignities/chart` | `dignities_chart_route` |
+| POST | `/v1/dignities/chart/receptions` | `dignities_chart_receptions_route` |
+| POST | `/v1/dignities/chart/conditions` | `dignities_chart_conditions_route` |
+| POST | `/v1/dignities/chart/condition` | `dignities_chart_condition_route` |
+| POST | `/v1/dignities/chart/profile` | `dignities_chart_profile_route` |
+| POST | `/v1/dignities/chart/network` | `dignities_chart_network_route` |
 
 ## Progressions, Timelords, Dasha, Varshaphal, And Primary Directions
 

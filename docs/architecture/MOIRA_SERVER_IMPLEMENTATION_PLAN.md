@@ -1,8 +1,8 @@
 # Moira Server Implementation Plan
 
-Version: 1.6
+Version: 1.7
 Date: 2026-06-11
-Status: Phases 1-8 complete; Phase 9 scoping is the next planned expansion frontier
+Status: Phases 1-8 complete; Phase 9 opened with Panchanga, Shadbala, and Jaimini
 Scope: REST access surface over the existing Moira engine
 
 This document defines the concrete implementation sequence for the REST server
@@ -24,6 +24,9 @@ Current implementation state:
 - phase 8 is implemented and closed: progressions, profections, timelords,
   Vimshottari dasha, Varshaphal, and primary directions are registered through
   dedicated route families
+- phase 9 has opened with Panchanga direct/chart-backed instant and profile
+  routes, chart-backed Shadbala result/profile/network/condition routes, and
+  direct/chart-backed Jaimini karaka/profile/condition/pair routes
 - website-driven acceleration has also admitted a bounded Phase 11 subset:
   fixed-star, variable-star, multiple-star, asteroid, and comet routes
 - website support routes are live for location lookup, timezone validation,
@@ -50,6 +53,7 @@ It assumes and inherits:
 - `docs/architecture/MOIRA_SERVER_ROUTE_ADMISSION_CHECKLIST.md`
 - `docs/architecture/MOIRA_SERVER_SHARED_PRIMITIVES.md`
 - `docs/architecture/MOIRA_SERVER_PHASE8_LEDGER.md`
+- `docs/architecture/MOIRA_SERVER_PHASE9_LEDGER.md`
 
 The purpose of this plan is to make the service layer buildable without
 guessing:

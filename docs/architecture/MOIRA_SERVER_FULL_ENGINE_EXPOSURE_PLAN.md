@@ -1,8 +1,8 @@
 # Moira Server Full Engine Exposure Plan
 
-Version: 1.5
+Version: 1.6
 Date: 2026-06-11
-Status: Governing expansion plan after phase 8 closure; phase 9 is the next planned frontier
+Status: Governing expansion plan after phase 8 closure; phase 9 opened with Panchanga, Shadbala, and Jaimini
 Scope: Full public engine exposure through REST, subject to server-boundary law
 
 This document defines the remaining work required to expose the full
@@ -77,6 +77,9 @@ The implemented server already exposes these route families:
 - Varshaphal annual chart, judgement, topic, Mudda, and Tasira routes
 - primary-direction speculum, arcs, relations, profile, network, and reduction
   routes
+- Panchanga direct and chart-backed instant/profile routes
+- Shadbala chart-backed result/profile/network/condition routes
+- Jaimini direct and chart-backed karaka/profile/condition/pair routes
 - website-only location lookup and reduction-pipeline inspection aliases
 - website-only chart-wheel drawing primitive packets
 - asteroid and comet position, bulk, and list routes for fast website
@@ -109,11 +112,10 @@ catalog and small-body acceleration. They are fast bounded surfaces for single
 object lookup, bounded bulk computation, and listing. They do not close the
 entire catalog/small-body phase.
 
-The remaining work is expansion, not bootstrap. The next planned frontier is
-phase 9: Vedic and classical doctrine surfaces. As of this audit, the live app
-does not expose broad `/v1/panchanga/*`, `/v1/shadbala/*`, `/v1/varga/*`,
-`/v1/ashtakavarga/*`, `/v1/jaimini/*`, `/v1/vedic/*`, or `/v1/classical/*`
-route families.
+The remaining work is expansion, not bootstrap. Phase 9 has opened with
+Panchanga, chart-backed Shadbala, and direct/chart-backed Jaimini. As of this
+audit, the live app does not expose broad `/v1/varga/*`,
+`/v1/ashtakavarga/*`, `/v1/vedic/*`, or `/v1/classical/*` route families.
 
 ---
 
@@ -381,6 +383,10 @@ Each family should receive one of the pre-admission statuses defined in
 The Phase 9 ledger should be written before request models, serializers, or
 routers are designed. REST must not become a way to expose incomplete doctrine
 more quickly than the engine can honestly support it.
+
+Current ledger:
+
+- `docs/architecture/MOIRA_SERVER_PHASE9_LEDGER.md`
 
 Modules:
 
