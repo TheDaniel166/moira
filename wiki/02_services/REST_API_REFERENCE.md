@@ -16,9 +16,9 @@ transport contract documented for that family.
 
 ## Current Surface Summary
 
-- Total non-documentation routes: 188
+- Total non-documentation routes: 231
 - Operational/meta routes: 4
-- Versioned `/v1` routes: 184
+- Versioned `/v1` routes: 227
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 
@@ -36,13 +36,22 @@ Implemented:
   followed by chart-backed Shadbala result/profile/network/condition routes
   direct/chart-backed Jaimini karaka/profile/condition/pair routes, and
   chart-backed Classical Dignities result/reception/condition/profile/network
-  routes
+  routes, followed by Classical Lots catalogue and chart-backed
+  result/dependency/condition/profile/network routes, and Triplicity
+  table/assignment/score routes, followed by Egyptian Bounds table, bound,
+  classification, relation, condition, aggregate, and network routes, followed
+  by Vedic Dignities dignity/relationship/condition/chart-profile routes,
+  Ashtakavarga result/profile/sign-profile/transit-strength routes, and
+  alternate dasha Ashtottari/Yogini sequence/profile plus period-profile
+  routes, Varga generic/named/Shodashvarga/batch routes, and
+  Decans/Decanates decanate-placement plus Hermetic catalog/longitude/rising/
+  night-hour routes
 - website-accelerated Phase 11 subset: fixed stars, variable stars, multiple stars, asteroids, and comets
 - website support: locations, chart-wheel packets, and reduction-pipeline inspection aliases
 
 Not yet broadly exposed as REST families:
 
-- remaining phase 9 Vedic and classical doctrine routes: `/v1/varga/*`, `/v1/ashtakavarga/*`, `/v1/vedic/*`, `/v1/classical/*`
+- phase 9 umbrella aggregation modules: `/v1/vedic/*` and `/v1/classical/*`
 - phase 10 spatial and Earth-facing mapping routes: `/v1/astrocartography/*`, `/v1/local-space/*`, `/v1/geodetic/*`, `/v1/galactic/*`, `/v1/gauquelin/*`
 - phase 12 specialist analytical families: `/v1/uranian/*`, `/v1/harmonics/*`, `/v1/phase/*`, `/v1/antiscia/*`, `/v1/special/*`
 - phase 13 electional/search workflow routes: `/v1/electional/*`
@@ -52,6 +61,8 @@ Not yet broadly exposed as REST families:
 | Family | Routes |
 |---|---:|
 | meta | 4 |
+| ashtakavarga | 4 |
+| alternate-dashas | 5 |
 | asteroids | 3 |
 | batch | 7 |
 | chart | 2 |
@@ -60,12 +71,16 @@ Not yet broadly exposed as REST families:
 | composite | 1 |
 | dasha | 5 |
 | davison | 1 |
+| decanates | 4 |
 | dignities | 6 |
+| egyptian-bounds | 7 |
 | eclipses | 5 |
 | heliacal | 2 |
+| hermetic-decans | 4 |
 | houses | 2 |
 | jaimini | 8 |
 | locations | 2 |
+| lots | 7 |
 | lunar-phases | 1 |
 | midpoints | 5 |
 | occultations | 8 |
@@ -85,7 +100,10 @@ Not yet broadly exposed as REST families:
 | synastry | 9 |
 | timelords | 16 |
 | transits | 3 |
+| triplicity | 3 |
 | varshaphal | 9 |
+| varga | 5 |
+| vedic-dignities | 4 |
 | visibility | 2 |
 | void-of-course | 4 |
 | website | 3 |
@@ -242,6 +260,79 @@ Not yet broadly exposed as REST families:
 | POST | `/v1/dignities/chart/profile` | `dignities_chart_profile_route` |
 | POST | `/v1/dignities/chart/network` | `dignities_chart_network_route` |
 
+## Classical Lots Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| GET | `/v1/lots/catalog` | `lots_catalog_route` |
+| POST | `/v1/lots/chart` | `lots_chart_route` |
+| POST | `/v1/lots/chart/dependencies` | `lots_chart_dependencies_route` |
+| POST | `/v1/lots/chart/conditions` | `lots_chart_conditions_route` |
+| POST | `/v1/lots/chart/condition` | `lots_chart_condition_route` |
+| POST | `/v1/lots/chart/profile` | `lots_chart_profile_route` |
+| POST | `/v1/lots/chart/network` | `lots_chart_network_route` |
+
+## Triplicity Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| GET | `/v1/triplicity/table` | `triplicity_table_route` |
+| POST | `/v1/triplicity/assignment` | `triplicity_assignment_route` |
+| POST | `/v1/triplicity/score` | `triplicity_score_route` |
+
+## Egyptian Bounds Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| GET | `/v1/egyptian-bounds/table` | `egyptian_bounds_table_route` |
+| POST | `/v1/egyptian-bounds/bound` | `egyptian_bound_route` |
+| POST | `/v1/egyptian-bounds/classification` | `egyptian_bound_classification_route` |
+| POST | `/v1/egyptian-bounds/relation` | `egyptian_bound_relation_route` |
+| POST | `/v1/egyptian-bounds/condition` | `egyptian_bound_condition_route` |
+| POST | `/v1/egyptian-bounds/aggregate` | `egyptian_bounds_aggregate_route` |
+| POST | `/v1/egyptian-bounds/network` | `egyptian_bounds_network_route` |
+
+## Vedic Dignities Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| POST | `/v1/vedic-dignities/dignity` | `vedic_dignity_route` |
+| POST | `/v1/vedic-dignities/relationships` | `vedic_dignity_relationships_route` |
+| POST | `/v1/vedic-dignities/condition` | `vedic_dignity_condition_route` |
+| POST | `/v1/vedic-dignities/chart-profile` | `vedic_dignity_chart_profile_route` |
+
+## Ashtakavarga Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| POST | `/v1/ashtakavarga/result` | `ashtakavarga_result_route` |
+| POST | `/v1/ashtakavarga/profile` | `ashtakavarga_profile_route` |
+| POST | `/v1/ashtakavarga/sign-profile` | `ashtakavarga_sign_profile_route` |
+| POST | `/v1/ashtakavarga/transit-strength` | `ashtakavarga_transit_strength_route` |
+
+## Varga Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| POST | `/v1/varga/generic` | `varga_generic_route` |
+| POST | `/v1/varga/named` | `varga_named_route` |
+| POST | `/v1/varga/shodashvarga` | `varga_shodashvarga_route` |
+| POST | `/v1/varga/named/batch` | `varga_named_batch_route` |
+| POST | `/v1/varga/shodashvarga/batch` | `varga_shodashvarga_batch_route` |
+
+## Decans And Decanates Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| POST | `/v1/decanates/chaldean-face` | `chaldean_face_route` |
+| POST | `/v1/decanates/triplicity` | `triplicity_decan_route` |
+| POST | `/v1/decanates/vedic-drekkana` | `vedic_drekkana_route` |
+| POST | `/v1/decanates/set` | `decanate_set_route` |
+| GET | `/v1/hermetic-decans/catalog` | `hermetic_decan_catalog_route` |
+| POST | `/v1/hermetic-decans/longitude` | `hermetic_decan_longitude_route` |
+| POST | `/v1/hermetic-decans/rising` | `hermetic_rising_decan_route` |
+| POST | `/v1/hermetic-decans/night-hours` | `hermetic_decan_night_hours_route` |
+
 ## Progressions, Timelords, Dasha, Varshaphal, And Primary Directions
 
 | Method | Path | Handler |
@@ -287,6 +378,11 @@ Not yet broadly exposed as REST families:
 | POST | `/v1/dasha/vimshottari/current` | `dasha_current_route` |
 | POST | `/v1/dasha/vimshottari/profile` | `dasha_profile_route` |
 | POST | `/v1/dasha/vimshottari/lord-pair` | `dasha_lord_pair_route` |
+| POST | `/v1/dasha/alternate/ashtottari/sequence` | `ashtottari_sequence_route` |
+| POST | `/v1/dasha/alternate/ashtottari/profile` | `ashtottari_profile_route` |
+| POST | `/v1/dasha/alternate/yogini/sequence` | `yogini_sequence_route` |
+| POST | `/v1/dasha/alternate/yogini/profile` | `yogini_profile_route` |
+| POST | `/v1/dasha/alternate/period-profile` | `alternate_period_profile_route` |
 | POST | `/v1/varshaphal/chart` | `varshaphal_chart_route` |
 | POST | `/v1/varshaphal/judgement/profile` | `varshaphal_judgement_profile_route` |
 | POST | `/v1/varshaphal/judgement/year` | `varshaphal_year_judgement_route` |

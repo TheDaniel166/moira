@@ -2,11 +2,12 @@
 
 Version: 1.0
 Date: 2026-06-11
-Status: P9-05 route family designed; implementation pending
+Status: P9-05 admitted; catalogue plus six chart-backed Classical Lots routes live and tested
 Scope: Phase 9 Classical Lots REST admission design
 
 This document declares the REST route shapes admitted for the Classical Lots
-family before model and router work begins.
+family and records the implemented model, serializer, service, router, and
+verification state.
 
 It is downstream of:
 
@@ -41,9 +42,8 @@ Route tag:
 
 - `lots`
 
-This family is not live yet. The admitted paths in this document become
-documentation-facing only after implementation, route registration, and
-verification.
+This family is live. The admitted paths are recorded in
+`wiki/02_services/REST_API_REFERENCE.md`.
 
 ---
 
@@ -458,14 +458,23 @@ Suggested tests:
 
 ## 8. Admission State
 
-P9-05 is designed, not implemented.
+P9-05 is admitted.
 
-Next implementation files are expected to be:
+Implemented files:
 
 - `moira_server/models/lots.py`
 - `moira_server/serializers/lots.py`
 - `moira_server/services/lots.py`
 - `moira_server/routers/lots.py`
-- updates to `moira_server/app.py`
-- updates to package `__init__.py` exports
-- updates to `wiki/02_services/REST_API_REFERENCE.md` after routes are live
+- `tests/server/test_server_lots_routes.py`
+- route registration in `moira_server/app.py`
+- package `__init__.py` exports
+- `wiki/02_services/REST_API_REFERENCE.md`
+
+Verification:
+
+- `python -m py_compile` over the new Lots model, serializer, service, router,
+  app, and package export files
+- `pytest tests/server/test_server_lots_routes.py
+  tests/server/test_server_startup.py tests/server/test_server_error_mapping.py
+  -q`

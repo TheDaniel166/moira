@@ -96,7 +96,7 @@ __all__ = [
     "shashtiamsha",
 ]
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class VargaPoint:
     """
     RITE: The Division Vessel — a body's place in a Vedic divisional chart.

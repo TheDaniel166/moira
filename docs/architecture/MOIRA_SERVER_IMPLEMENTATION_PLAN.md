@@ -2,7 +2,7 @@
 
 Version: 1.7
 Date: 2026-06-11
-Status: Phases 1-8 complete; Phase 9 opened with Panchanga, Shadbala, and Jaimini
+Status: Phases 1-8 complete; Phase 9 named candidate families admitted through P9-12 Decans / Decanates
 Scope: REST access surface over the existing Moira engine
 
 This document defines the concrete implementation sequence for the REST server
@@ -24,9 +24,19 @@ Current implementation state:
 - phase 8 is implemented and closed: progressions, profections, timelords,
   Vimshottari dasha, Varshaphal, and primary directions are registered through
   dedicated route families
-- phase 9 has opened with Panchanga direct/chart-backed instant and profile
-  routes, chart-backed Shadbala result/profile/network/condition routes, and
-  direct/chart-backed Jaimini karaka/profile/condition/pair routes
+- phase 9 has admitted Panchanga direct/chart-backed instant and profile
+  routes, chart-backed Shadbala result/profile/network/condition routes,
+  direct/chart-backed Jaimini karaka/profile/condition/pair routes,
+  chart-backed Classical Dignities result/reception/condition/profile/network
+  routes, Classical Lots catalogue and chart-backed
+  result/dependency/condition/profile/network routes, Triplicity
+  table/assignment/score routes, Egyptian Bounds table/bound/classification/
+  relation/condition/aggregate/network routes, Vedic Dignities
+  dignity/relationship/condition/chart-profile routes, Ashtakavarga
+  result/profile/sign-profile/transit-strength routes, and alternate dasha
+  Ashtottari/Yogini sequence/profile plus period-profile routes, Varga
+  generic/named/Shodashvarga/batch routes, and Decans/Decanates
+  decanate-placement plus Hermetic catalog/longitude/rising/night-hour routes
 - website-driven acceleration has also admitted a bounded Phase 11 subset:
   fixed-star, variable-star, multiple-star, asteroid, and comet routes
 - website support routes are live for location lookup, timezone validation,
@@ -35,6 +45,9 @@ Current implementation state:
   batch, visibility, full phase-6 phenomena, full phase-7 relationship, and
   full phase-8 progression/timing/direction surfaces defined in this document
 - adversarial transport tests exist for the currently admitted route families
+- post-Phase-9 sidereal chart derivation is planned as a shared
+  request-scoped workflow before deferred chart-backed Vedic/classical
+  convenience variants are admitted
 - the live route inventory is documented in
   `wiki/02_services/REST_API_REFERENCE.md`
 
@@ -54,6 +67,7 @@ It assumes and inherits:
 - `docs/architecture/MOIRA_SERVER_SHARED_PRIMITIVES.md`
 - `docs/architecture/MOIRA_SERVER_PHASE8_LEDGER.md`
 - `docs/architecture/MOIRA_SERVER_PHASE9_LEDGER.md`
+- `docs/architecture/POST_PHASE9_SIDEREAL_CHART_DERIVATION_WORKFLOW.md`
 
 The purpose of this plan is to make the service layer buildable without
 guessing:
@@ -81,6 +95,13 @@ It must not:
 - create a second doctrine layer
 - move astronomy or astrology into route handlers
 - mutate shared kernel lifecycle state after startup
+
+Post-Phase-9 addition:
+
+- deferred chart-backed Vedic/classical convenience routes must use the shared
+  request-scoped sidereal chart derivation workflow before admission
+- no route should invent one-off sidereal reduction, Lagna derivation, or
+  ayanamsa provenance handling when the shared adapter can provide it
 
 ---
 

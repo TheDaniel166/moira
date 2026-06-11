@@ -2,7 +2,7 @@
 
 Version: 0.1
 Date: 2026-06-11
-Status: P9-01 Panchanga, P9-02 Shadbala, P9-03 Jaimini, and P9-04 Classical Dignities admitted; remaining Phase 9 families under evaluation
+Status: P9-01 Panchanga, P9-02 Shadbala, P9-03 Jaimini, P9-04 Classical Dignities, P9-05 Lots, P9-06 Triplicity, P9-07 Egyptian Bounds, P9-08 Vedic Dignities, P9-09 Ashtakavarga, P9-10 Alternate Dasha Systems, P9-11 Varga, and P9-12 Decans / Decanates admitted; Phase 9 named candidate families admitted
 Scope: Vedic and classical doctrine surfaces before REST transport design
 
 This ledger governs Phase 9 of the Moira REST expansion: Vedic and classical
@@ -74,14 +74,14 @@ them.
 | P9-02 | Shadbala | `admitted` | Four chart-backed REST routes live and tested: result, profile, network, and condition. |
 | P9-03 | Jaimini | `admitted` | Eight direct/chart-backed REST routes live and tested: karakas, profile, condition, and pair. |
 | P9-04 | Classical dignities | `admitted` | Six chart-backed REST routes are live and tested against the Phase 11 backend standard, public result/truth/profile surfaces, validation doctrine, and facade/root exports. |
-| P9-05 | Lots | `designed` | Phase 11 backend standard, doctrine/policy/dependency/profile surfaces, facade/root exports, tests, and a chart-backed transport design exist. |
-| P9-06 | Triplicity | `admit_now` | Phase 11/12 backend standard, explicit doctrine and policy surfaces, facade/root exports, and tests exist. |
-| P9-07 | Egyptian bounds | `admit_now` | Backend standard says phases P1-P12 complete, public vessels/functions and tests exist. |
-| P9-08 | Vedic dignities | `admit_after_minor_engine_work` | Engine surface, policy/profile vessels, validation helper, exports, and tests exist; a dedicated backend-standard document is not present. |
-| P9-09 | Ashtakavarga | `admit_after_minor_engine_work` | Engine docstring says Phase 12 complete with policy/profile/validation surfaces; tests and exports exist; a dedicated backend-standard document is not present. |
-| P9-10 | Alternate dasha systems | `admit_after_minor_engine_work` | Ashtottari/Yogini surfaces, policies, profiles, exports, and tests exist; the current Dasha standard is Vimshottari-centered and does not yet provide a dedicated alternate-dasha REST admission standard. |
-| P9-11 | Varga | `admit_after_minor_engine_work` | Engine and tests exist, but no backend-standard document is present and `VargaPoint` declares immutable state in its machine contract while the dataclass is not frozen. |
-| P9-12 | Decans / decanates | `admit_after_minor_engine_work` | Public engine surfaces and tests exist, but no dedicated backend-standard document was found for decan transport admission. |
+| P9-05 | Lots | `admitted` | Catalogue plus six chart-backed REST routes are live and tested against the Phase 11 backend standard, doctrine/policy/dependency/profile surfaces, and facade/root exports. |
+| P9-06 | Triplicity | `admitted` | Three direct-sync REST routes are live and tested against the Phase 11/12 backend standard, explicit doctrine/policy surfaces, and facade/root exports. |
+| P9-07 | Egyptian bounds | `admitted` | Seven direct-sync REST routes are live and tested against the backend standard, table/truth/classification/relation/condition/aggregate/network surfaces, and explicit doctrine policy. |
+| P9-08 | Vedic dignities | `admitted` | Four direct-sync REST routes are live and tested against the backend standard, dignity/relationship/condition/chart-profile surfaces, and ayanamsa provenance policy. |
+| P9-09 | Ashtakavarga | `admitted` | Four direct-sync REST routes are live and tested against the backend standard, BAV/SAV result, shodhana policy, sign-strength, transit-strength, and chart-profile surfaces. |
+| P9-10 | Alternate dasha systems | `admitted` | Five direct-compute REST routes are live and tested against the backend standard, Ashtottari/Yogini sequence/profile surfaces, period-profile projection, and eligibility-limit truth. |
+| P9-11 | Varga | `admitted` | Five direct-sync REST routes are live and tested against the backend standard, generic/named VargaPoint surfaces, Shodashvarga set, and batch projections. |
+| P9-12 | Decans / decanates | `admitted` | Eight direct-sync REST routes are live and tested against the backend standard, decanate placement truth, Hermetic catalog/longitude/rising lookup, and night-hour vessel serialization. |
 | P9-U1 | `moira.vedic` umbrella | `exclude_from_rest` | Import aggregation surface; expose named Vedic doctrine families instead. |
 | P9-U2 | `moira.classical` umbrella | `exclude_from_rest` | Import aggregation surface; expose named classical doctrine families instead. |
 
@@ -273,7 +273,7 @@ Next action:
 
 ### P9-05 Lots
 
-Status: `designed`
+Status: `admitted`
 
 Governing object:
 
@@ -288,6 +288,7 @@ Evidence:
 - Public exports are present through `moira`, `moira.classical`, and
   `moira.facade`.
 - Unit tests exist for public API and dignity/lots behavior.
+- Server route tests exist: `tests/server/test_server_lots_routes.py`
 
 REST admission notes:
 
@@ -302,7 +303,7 @@ REST admission notes:
 - Direct caller-owned lot bundles are deferred until a strict consistency
   contract exists for positions, houses, day/night state, externals, and
   policy.
-- Planned routes:
+- Live routes:
   - `GET /v1/lots/catalog`
   - `POST /v1/lots/chart`
   - `POST /v1/lots/chart/dependencies`
@@ -310,15 +311,18 @@ REST admission notes:
   - `POST /v1/lots/chart/condition`
   - `POST /v1/lots/chart/profile`
   - `POST /v1/lots/chart/network`
+- Verification:
+  - `tests/server/test_server_lots_routes.py`
+  - `tests/server/test_server_startup.py`
+  - `tests/server/test_server_error_mapping.py`
 
 Next action:
 
-- Implement the chart-backed P9-05 service, models, serializers, router, tests,
-  and REST reference entries.
+- P9-05 is admitted.
 
 ### P9-06 Triplicity
 
-Status: `admit_now`
+Status: `admitted`
 
 Governing object:
 
@@ -327,23 +331,35 @@ Governing object:
 Evidence:
 
 - Backend standard: `wiki/02_standards/TRIPLICITY_BACKEND_STANDARD.md`
+- Transport design: `docs/architecture/P9-06_TRIPLICITY_TRANSPORT_DESIGN.md`
 - Engine module: `moira/triplicity.py`
 - Public exports are present through `moira`, `moira.classical`, and
   `moira.facade`.
 - Unit test file exists: `tests/unit/test_triplicity.py`
+- Server route tests exist: `tests/server/test_server_triplicity_routes.py`
 
 REST admission notes:
 
 - This is a small direct-sync family.
 - Participating-ruler policy and doctrine selection must be visible.
+- Triplicity is a chart-free datum-provider module. First admission is
+  direct-sync only and requires callers to supply `is_day_chart` explicitly.
+- Live routes:
+  - `GET /v1/triplicity/table`
+  - `POST /v1/triplicity/assignment`
+  - `POST /v1/triplicity/score`
+- Verification:
+  - `tests/server/test_server_triplicity_routes.py`
+  - `tests/server/test_server_startup.py`
+  - `tests/server/test_server_error_mapping.py`
 
 Next action:
 
-- Good candidate for a small Phase 9 route after Panchanga proves the pattern.
+- P9-06 is admitted.
 
 ### P9-07 Egyptian Bounds
 
-Status: `admit_now`
+Status: `admitted`
 
 Governing object:
 
@@ -353,23 +369,40 @@ Governing object:
 Evidence:
 
 - Backend standard: `wiki/02_standards/EGYPTIAN_BOUNDS_BACKEND_STANDARD.md`
+- Transport design: `docs/architecture/P9-07_EGYPTIAN_BOUNDS_TRANSPORT_DESIGN.md`
 - Engine module: `moira/egyptian_bounds.py`
 - Standard records phases P1-P12 complete.
 - Unit tests exist for engine and public API behavior.
+- Server route tests exist: `tests/server/test_server_egyptian_bounds_routes.py`
 
 REST admission notes:
 
 - This family should preserve segment truth separately from relation/profile
   products.
 - Doctrine/policy selection must be explicit.
+- First admission is direct-sync. The server consumes caller-supplied
+  longitudes and optional sect/Mercury context; it does not derive chart
+  positions.
+- Live routes:
+  - `GET /v1/egyptian-bounds/table`
+  - `POST /v1/egyptian-bounds/bound`
+  - `POST /v1/egyptian-bounds/classification`
+  - `POST /v1/egyptian-bounds/relation`
+  - `POST /v1/egyptian-bounds/condition`
+  - `POST /v1/egyptian-bounds/aggregate`
+  - `POST /v1/egyptian-bounds/network`
+- Verification:
+  - `tests/server/test_server_egyptian_bounds_routes.py`
+  - `tests/server/test_server_startup.py`
+  - `tests/server/test_server_error_mapping.py`
 
 Next action:
 
-- Admit after the smaller direct-sync route pattern is established.
+- P9-07 is admitted.
 
 ### P9-08 Vedic Dignities
 
-Status: `admit_after_minor_engine_work`
+Status: `admitted`
 
 Governing object:
 
@@ -378,27 +411,41 @@ Governing object:
 Evidence:
 
 - Engine module: `moira/vedic_dignities.py`
+- Backend standard: `wiki/02_standards/VEDIC_DIGNITIES_BACKEND_STANDARD.md`
+- Transport design: `docs/architecture/P9-08_VEDIC_DIGNITIES_TRANSPORT_DESIGN.md`
 - Public surfaces include `VedicDignityResult`, `VedicDignityPolicy`,
   `DignityConditionProfile`, `ChartDignityProfile`, and
   `validate_dignity_output`.
 - Public exports are present through `moira`, `moira.vedic`, and
   `moira.facade`.
 - Unit test file exists: `tests/unit/test_vedic_dignities.py`
+- Server route tests exist: `tests/server/test_server_vedic_dignities_routes.py`
 
-Gap:
+REST admission notes:
 
-- No dedicated `wiki/02_standards/*VEDIC_DIGNITIES*_BACKEND_STANDARD.md` file
-  was found.
+- First admission should be direct-sync because `moira.vedic_dignities`
+  consumes caller-supplied sidereal longitudes.
+- The `ayanamsa_system` policy field records provenance for upstream sidereal
+  reduction; the engine does not perform tropical-to-sidereal conversion.
+- Chart-backed convenience routes should be deferred until the server adapter
+  explicitly owns sidereal reduction and ayanamsa policy truth.
+- Live routes:
+  - `POST /v1/vedic-dignities/dignity`
+  - `POST /v1/vedic-dignities/relationships`
+  - `POST /v1/vedic-dignities/condition`
+  - `POST /v1/vedic-dignities/chart-profile`
+- Verification:
+  - `tests/server/test_server_vedic_dignities_routes.py`
+  - `tests/server/test_server_startup.py`
+  - `tests/server/test_server_error_mapping.py`
 
-Required minor work before REST:
+Next action:
 
-- Add a backend-standard document or explicitly admit Vedic dignities under an
-  existing Vedic standard.
-- Reconfirm validation commands and public surface freeze in that document.
+- P9-08 is admitted.
 
 ### P9-09 Ashtakavarga
 
-Status: `admit_after_minor_engine_work`
+Status: `admitted`
 
 Governing object:
 
@@ -408,6 +455,8 @@ Governing object:
 Evidence:
 
 - Engine module: `moira/ashtakavarga.py`
+- Backend standard: `wiki/02_standards/ASHTAKAVARGA_BACKEND_STANDARD.md`
+- Transport design: `docs/architecture/P9-09_ASHTAKAVARGA_TRANSPORT_DESIGN.md`
 - Module docstring states Phase 12 public API curation and all twelve phases
   complete.
 - Public surfaces include `AshtakavargaPolicy`, `BhinnashtakavargaResult`,
@@ -417,18 +466,32 @@ Evidence:
   `moira.facade`.
 - Unit test file exists: `tests/unit/test_ashtakavarga.py`
 
-Gap:
+REST admission notes:
 
-- No dedicated backend-standard document was found in `wiki/02_standards`.
+- First admission should be direct-sync because `moira.ashtakavarga` consumes
+  caller-supplied sidereal longitudes or sign indices.
+- The `ayanamsa_system` policy field records provenance for upstream sidereal
+  reduction; the engine does not perform tropical-to-sidereal conversion.
+- Chart-backed convenience routes should be deferred until the server adapter
+  explicitly owns sidereal reduction, Lagna derivation, and ayanamsa policy
+  truth.
+- Live routes:
+  - `POST /v1/ashtakavarga/result`
+  - `POST /v1/ashtakavarga/profile`
+  - `POST /v1/ashtakavarga/sign-profile`
+  - `POST /v1/ashtakavarga/transit-strength`
+- Verification:
+  - `tests/server/test_server_ashtakavarga_routes.py`
+  - `tests/server/test_server_startup.py`
+  - `tests/server/test_server_error_mapping.py`
 
-Required minor work before REST:
+Next action:
 
-- Add `ASHTAKAVARGA_BACKEND_STANDARD.md` or equivalent standard record before
-  route design.
+- P9-09 is admitted.
 
 ### P9-10 Alternate Dasha Systems
 
-Status: `admit_after_minor_engine_work`
+Status: `admitted`
 
 Governing object:
 
@@ -438,26 +501,44 @@ Governing object:
 Evidence:
 
 - Engine module: `moira/dasha_systems.py`
+- Backend standard: `wiki/02_standards/ALTERNATE_DASHAS_BACKEND_STANDARD.md`
+- Transport design: `docs/architecture/P9-10_ALTERNATE_DASHAS_TRANSPORT_DESIGN.md`
 - Public surfaces include `ashtottari`, `yogini_dasha`,
   `AshtottariPolicy`, `YoginiPolicy`, `AlternateDashaPeriod`,
   `alternate_period_profile`, and `alternate_sequence_profile`.
 - Public exports are present through `moira.vedic` and `moira.facade`.
 - Unit test file exists: `tests/unit/test_dasha_systems.py`
 
-Gap:
+REST admission notes:
 
-- The current `wiki/02_standards/DASHA_BACKEND_STANDARD.md` is centered on
-  Vimshottari. It does not yet act as a clear admission standard for the
-  alternate systems.
+- The current `wiki/02_standards/DASHA_BACKEND_STANDARD.md` remains
+  Vimshottari-centered by design; alternate systems now have their own standard.
+- First admission should be direct computation from caller-supplied
+  `moon_tropical_lon`, `natal_jd`, `levels`, and explicit policy.
+- Chart-backed convenience routes should be deferred until the server adapter
+  explicitly owns natal Moon derivation and policy provenance.
+- Ashtottari transport must preserve current eligibility truth: full
+  Rahu/Lagna eligibility checking is not implemented, so first admission should
+  either require `bypass_eligibility=True` or expose the engine rejection for
+  `lagna_sign_index` without bypass.
+- Live routes:
+  - `POST /v1/dasha/alternate/ashtottari/sequence`
+  - `POST /v1/dasha/alternate/ashtottari/profile`
+  - `POST /v1/dasha/alternate/yogini/sequence`
+  - `POST /v1/dasha/alternate/yogini/profile`
+  - `POST /v1/dasha/alternate/period-profile`
+- Verification:
+  - `tests/server/test_server_alternate_dashas_routes.py`
+  - `tests/server/test_server_startup.py`
+  - `tests/server/test_server_error_mapping.py`
 
-Required minor work before REST:
+Next action:
 
-- Add an alternate-dasha standard section or separate backend-standard document
-  before exposing `/v1/dasha/ashtottari/*` or `/v1/dasha/yogini/*`.
+- P9-10 is admitted.
 
 ### P9-11 Varga
 
-Status: `admit_after_minor_engine_work`
+Status: `admitted`
 
 Governing object:
 
@@ -466,6 +547,8 @@ Governing object:
 Evidence:
 
 - Engine module: `moira/varga.py`
+- Backend standard: `wiki/02_standards/VARGA_BACKEND_STANDARD.md`
+- Transport design: `docs/architecture/P9-11_VARGA_TRANSPORT_DESIGN.md`
 - Public surfaces include `VargaPoint`, `calculate_varga`, and the named
   varga helpers.
 - Public exports are present through `moira.vedic`, `moira.classical`, and
@@ -473,22 +556,34 @@ Evidence:
 - Unit test files exist: `tests/unit/test_varga.py` and
   `tests/unit/test_shodashvarga.py`
 
-Gaps:
+REST admission notes:
 
-- No dedicated backend-standard document was found in `wiki/02_standards`.
-- `VargaPoint` declares immutable state in its machine contract, but the
-  dataclass is not declared `frozen=True`.
-- No dedicated validation helper was found in the first audit pass.
+- First admission should be direct-sync because `moira.varga` consumes
+  caller-supplied sidereal longitudes.
+- REST must reject non-finite longitudes before calling the engine.
+- The backend standard records that no dedicated `validate_varga_output(...)`
+  helper is currently exposed; validation coverage is by vessel immutability,
+  range tests, boundary tests, and wrapper-specific rule tests.
+- Chart-backed convenience routes should be deferred until the server adapter
+  explicitly owns tropical-to-sidereal reduction and ayanamsa policy truth.
+- Live routes:
+  - `POST /v1/varga/generic`
+  - `POST /v1/varga/named`
+  - `POST /v1/varga/shodashvarga`
+  - `POST /v1/varga/named/batch`
+  - `POST /v1/varga/shodashvarga/batch`
+- Verification:
+  - `tests/server/test_server_varga_routes.py`
+  - `tests/server/test_server_startup.py`
+  - `tests/server/test_server_error_mapping.py`
 
-Required minor work before REST:
+Next action:
 
-- Make the vessel contract and dataclass mutability agree.
-- Add a backend-standard document.
-- Decide whether a validation helper is required before public transport.
+- P9-11 is admitted.
 
 ### P9-12 Decans / Decanates
 
-Status: `admit_after_minor_engine_work`
+Status: `admitted`
 
 Governing object:
 
@@ -496,46 +591,109 @@ Governing object:
 
 Evidence:
 
+- Backend standard: `wiki/02_standards/DECANS_BACKEND_STANDARD.md`
+- Transport design: `docs/architecture/P9-12_DECANS_TRANSPORT_DESIGN.md`
 - Engine modules: `moira/decanates.py` and `moira/hermetic_decans.py`
 - Public exports are present through `moira`, `moira.classical`, and
   `moira.facade`.
 - Unit tests exist for decanates and Hermetic decans.
 
-Gap:
+REST admission notes:
 
-- No dedicated backend-standard document was found for REST admission.
+- Decanate placement and Hermetic decan-hour computation are distinct route
+  families and must not be flattened into one generic decan product.
+- First admission is direct-sync. Decanate routes consume caller-supplied
+  longitude; Vedic drekkana additionally consumes JD and ayanamsa policy.
+- Hermetic routes expose catalog, tropical longitude lookup, rising decan, and
+  night-hour products.
+- Chart-backed convenience routes are deferred until the server adapter owns
+  planetary longitude derivation, sidereal reduction where needed, and chart
+  policy truth.
+- Live routes:
+  - `POST /v1/decanates/chaldean-face`
+  - `POST /v1/decanates/triplicity`
+  - `POST /v1/decanates/vedic-drekkana`
+  - `POST /v1/decanates/set`
+  - `GET /v1/hermetic-decans/catalog`
+  - `POST /v1/hermetic-decans/longitude`
+  - `POST /v1/hermetic-decans/rising`
+  - `POST /v1/hermetic-decans/night-hours`
+- Verification:
+  - `tests/server/test_server_decans_routes.py`
+  - `tests/server/test_server_startup.py`
+  - `tests/server/test_server_error_mapping.py`
 
-Required minor work before REST:
+Next action:
 
-- Add or locate the backend standard before deciding route shape.
+- P9-12 is admitted.
 
 ### P9-U1 Vedic Umbrella
 
 Status: `exclude_from_rest`
 
+Governing object:
+
+- `moira.vedic` is a Python import aggregation surface over multiple Vedic
+  doctrine families. It is not a single computational object.
+
 Reason:
 
 - `moira.vedic` is an import aggregation surface. Exposing it as one generic
   REST endpoint would collapse distinct doctrine families.
+- Its exports include families with different input contracts: direct
+  sidereal longitude surfaces, chart-backed surfaces, timing sequences,
+  profile surfaces, and policy-bound strength calculations.
+- A `/v1/vedic` route would either become an unsafe catch-all or would need to
+  invent a new composite product not owned by the engine.
 
 Required REST posture:
 
 - Expose named families: Panchanga, Varga, Vedic dignities, Jaimini,
   Ashtakavarga, Shadbala, and alternate dasha systems.
+- Preserve each named family's own route prefix, input contract, policy fields,
+  and validation doctrine.
+- Do not register:
+  - `GET /v1/vedic`
+  - `POST /v1/vedic`
+  - any catch-all route under `/v1/vedic/*`
+
+Verification:
+
+- `tests/server/test_server_phase9_umbrella_exclusions.py`
 
 ### P9-U2 Classical Umbrella
 
 Status: `exclude_from_rest`
 
+Governing object:
+
+- `moira.classical` is a Python import aggregation surface over traditional
+  and classical astrology modules. It is not a single computational object.
+
 Reason:
 
 - `moira.classical` is an import aggregation surface. Exposing it as one
   generic REST endpoint would hide doctrine distinctions.
+- Its exports span many different contracts: houses, aspects, dignities, lots,
+  midpoints, antiscia, fixed stars, mansions, profections, planetary hours,
+  longevity, time-lords, Vimshottari dasha, Varga, cycles, and Huber surfaces.
+- A `/v1/classical` route would either become an unsafe catch-all or would
+  invent a composite product not owned by the engine.
 
 Required REST posture:
 
 - Expose named families: Dignities, Lots, Triplicity, Egyptian bounds,
   decans/decanates, and other admitted classical subsurfaces.
+- Preserve each named family's own route prefix, input contract, policy fields,
+  and validation doctrine.
+- Do not register:
+  - `GET /v1/classical`
+  - `POST /v1/classical`
+  - any catch-all route under `/v1/classical/*`
+
+Verification:
+
+- `tests/server/test_server_phase9_umbrella_exclusions.py`
 
 ---
 
@@ -564,9 +722,18 @@ larger or less documented surfaces.
 
 ## 6. Immediate Next Step
 
-Begin P9-01 Panchanga REST design only if the user confirms that Panchanga is
-the desired first Phase 9 route family.
+All named Phase 9 candidate families in this ledger are admitted.
 
-If the user wants the cleanest pre-admission closure first, perform the minor
-engine/doc hardening for P9-11 Varga before any route work, because the
-machine-contract immutability mismatch is a concrete truth issue.
+Remaining Phase 9 umbrella modules, `moira.vedic` and `moira.classical`, remain
+excluded from REST as aggregation surfaces. Future route work should proceed
+from a new candidate ledger or the next numbered server phase rather than
+creating generic umbrella endpoints.
+
+Post-Phase-9 workflow addition:
+
+- `docs/architecture/POST_PHASE9_SIDEREAL_CHART_DERIVATION_WORKFLOW.md`
+
+This workflow should precede deferred chart-backed convenience variants for
+direct-sync Vedic/classical families. It defines the request-scoped
+`SiderealChartContext` adapter needed for the server to own sidereal reduction,
+Lagna derivation, node truth, and ayanamsa provenance without global state.

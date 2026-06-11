@@ -120,15 +120,19 @@ A phase-N function:
 
 ### 3. Doctrine and Policy Surface
 
-#### 3.1 Admitted doctrine
+#### 3.1 Admitted doctrines
 
 Current doctrine surface:
 
 | Type | Member |
 |---|---|
 | `EgyptianBoundsDoctrine` | `EGYPTIAN` |
+| `EgyptianBoundsDoctrine` | `PTOLEMAIC` |
+| `EgyptianBoundsDoctrine` | `CHALDEAN` |
 
-No alternate term table is currently admitted.
+The Egyptian table remains the default doctrine. Ptolemaic and Chaldean term
+tables are also live in the implementation and selected through the same
+policy vessel.
 
 #### 3.2 Policy
 
@@ -151,7 +155,7 @@ All public names are declared in `moira/egyptian_bounds.py`.
 | Name | Members |
 |---|---|
 | `BoundHostNature` | `BENEFIC`, `MALEFIC`, `NEUTRAL` |
-| `EgyptianBoundsDoctrine` | `EGYPTIAN` |
+| `EgyptianBoundsDoctrine` | `EGYPTIAN`, `PTOLEMAIC`, `CHALDEAN` |
 | `EgyptianBoundRelationKind` | `SELF_HOSTED`, `HOSTED_BY_BENEFIC`, `HOSTED_BY_MALEFIC`, `HOSTED_BY_NEUTRAL` |
 | `EgyptianBoundConditionState` | `SELF_GOVERNED`, `SUPPORTED`, `MEDIATED`, `CONSTRAINED` |
 | `EgyptianBoundNetworkMode` | `UNILATERAL`, `MUTUAL` |

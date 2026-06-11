@@ -12,16 +12,22 @@ from .config import ServerConfig
 from .errors import register_exception_handlers
 from .lifecycle import create_engine
 from .routers import (
+    ashtakavarga_router,
+    alternate_dashas_router,
     asteroids_router,
     comets_router,
     batch_router,
     chart_router,
     chart_wheel_router,
     dasha_router,
+    decanates_router,
     dignities_router,
+    egyptian_bounds_router,
+    hermetic_decans_router,
     health_router,
     jaimini_router,
     locations_router,
+    lots_router,
     panchanga_router,
     phenomena_router,
     pipeline_router,
@@ -33,8 +39,11 @@ from .routers import (
     shadbala_router,
     stars_router,
     timelords_router,
+    triplicity_router,
     transits_router,
     varshaphal_router,
+    varga_router,
+    vedic_dignities_router,
     visibility_router,
 )
 
@@ -92,6 +101,15 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(shadbala_router)     # Phase-9 Shadbala doctrine surface
     app.include_router(jaimini_router)      # Phase-9 Jaimini doctrine surface
     app.include_router(dignities_router)    # Phase-9 Classical Dignities doctrine surface
+    app.include_router(lots_router)         # Phase-9 Classical Lots doctrine surface
+    app.include_router(triplicity_router)   # Phase-9 Triplicity doctrine surface
+    app.include_router(egyptian_bounds_router)  # Phase-9 Egyptian Bounds doctrine surface
+    app.include_router(vedic_dignities_router)  # Phase-9 Vedic Dignities doctrine surface
+    app.include_router(ashtakavarga_router)  # Phase-9 Ashtakavarga doctrine surface
+    app.include_router(alternate_dashas_router)  # Phase-9 alternate dasha systems
+    app.include_router(varga_router)  # Phase-9 Varga divisional chart surface
+    app.include_router(decanates_router)  # Phase-9 decanate doctrine surface
+    app.include_router(hermetic_decans_router)  # Phase-9 Hermetic decan surface
     app.include_router(locations_router)   # City/timezone lookup for chart calculator
     app.include_router(asteroids_router)   # Fast small-body surfaces (website integration)
     app.include_router(comets_router)      # Symmetric fast comet surfaces

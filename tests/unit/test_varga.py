@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+from dataclasses import FrozenInstanceError
 
 import moira.varga as varga
 
@@ -73,6 +74,13 @@ def test_varga_repr_contains_name_number_sign_and_minutes() -> None:
     assert "(D9)" in text
     assert result.sign in text
     assert result.sign_symbol in text
+
+
+def test_vargapoint_machine_contract_is_immutable() -> None:
+    result = varga.navamsa(10.5)
+
+    with pytest.raises((AttributeError, FrozenInstanceError)):
+        result.sign = "Taurus"
 
 
 @pytest.mark.parametrize(

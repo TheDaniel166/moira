@@ -272,6 +272,31 @@ Fail if:
 
 - route handlers begin reconstructing engine doctrine themselves
 
+### 8.1 Sidereal Chart Derivation Gate
+
+For chart-backed Vedic or classical routes that require sidereal longitudes,
+sidereal sign indices, Lagna, nodes, or ayanamsa provenance, the route family
+must use the post-Phase-9 shared derivation workflow:
+
+- `docs/architecture/POST_PHASE9_SIDEREAL_CHART_DERIVATION_WORKFLOW.md`
+
+Required answers before route design:
+
+- Which bodies are required?
+- Are nodes required?
+- Are houses or Lagna required?
+- Are planet speeds required?
+- Which ayanamsa system is used?
+- Which derived inputs will be returned as provenance?
+
+Fail if:
+
+- a route creates an ambient current ayanamsa
+- a route stores request-derived sidereal positions in module-level state
+- a route hides tropical-to-sidereal conversion without response provenance
+- two route families implement separate, inconsistent sidereal chart
+  derivation paths
+
 ---
 
 ## 9. Testing Checklist

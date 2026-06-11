@@ -9,6 +9,25 @@ from .batch import (
     compute_batch_returns,
     compute_batch_transits,
 )
+from .ashtakavarga import (
+    AshtakavargaChartProfileResult,
+    AshtakavargaSignProfileResult,
+    AshtakavargaTransitStrengthResult,
+    compute_ashtakavarga_chart_profile,
+    compute_ashtakavarga_result,
+    compute_ashtakavarga_sign_profile,
+    compute_ashtakavarga_transit_strength,
+)
+from .alternate_dashas import (
+    AlternateDashaProfileResult,
+    AlternateDashaSequenceResult,
+    compute_alternate_period_profile,
+    compute_ashtottari_profile,
+    compute_ashtottari_sequence,
+    compute_yogini_profile,
+    compute_yogini_sequence,
+    period_from_request,
+)
 from .chart import compute_chart, compute_chart_with_reduction, compute_houses
 from .phenomena import (
     compute_all_lunar_occultations,
@@ -42,6 +61,16 @@ from .dasha import (
     compute_dasha_sequence,
     compute_dasha_sequence_profile_service,
 )
+from .decans import (
+    compute_chaldean_face,
+    compute_decanate_set,
+    compute_hermetic_decan_longitude,
+    compute_hermetic_decan_night_hours,
+    compute_hermetic_rising_decan,
+    compute_triplicity_decan,
+    compute_vedic_drekkana,
+    list_hermetic_decan_catalog,
+)
 from .dignities import (
     compute_dignities_chart,
     compute_dignities_chart_condition,
@@ -49,6 +78,15 @@ from .dignities import (
     compute_dignities_chart_network,
     compute_dignities_chart_profile,
     compute_dignities_chart_receptions,
+)
+from .egyptian_bounds import (
+    compute_egyptian_bound_classification,
+    compute_egyptian_bound_condition_profile,
+    compute_egyptian_bound_relation_profile,
+    compute_egyptian_bound_truth,
+    compute_egyptian_bounds_aggregate_profile,
+    compute_egyptian_bounds_network_profile,
+    list_egyptian_bounds_table,
 )
 from .jaimini import (
     compute_jaimini_chart,
@@ -59,6 +97,15 @@ from .jaimini import (
     compute_jaimini_direct_condition,
     compute_jaimini_direct_pair,
     compute_jaimini_direct_profile,
+)
+from .lots import (
+    compute_lots_chart,
+    compute_lots_chart_condition,
+    compute_lots_chart_conditions,
+    compute_lots_chart_dependencies,
+    compute_lots_chart_network,
+    compute_lots_chart_profile,
+    list_lot_catalog,
 )
 from .panchanga import (
     compute_panchanga_chart,
@@ -71,6 +118,28 @@ from .shadbala import (
     compute_shadbala_chart_condition,
     compute_shadbala_chart_network,
     compute_shadbala_chart_profile,
+)
+from .triplicity import (
+    TriplicityScoreResult,
+    compute_triplicity_assignment,
+    compute_triplicity_score,
+    list_triplicity_table,
+)
+from .vedic_dignities import (
+    VedicChartDignityResult,
+    VedicDignityConditionResult,
+    compute_vedic_chart_dignity_profile,
+    compute_vedic_dignity,
+    compute_vedic_dignity_condition,
+    compute_vedic_dignity_relationships,
+)
+from .varga import (
+    VARGA_FUNCTIONS,
+    compute_varga_generic,
+    compute_varga_named,
+    compute_varga_named_batch,
+    compute_varga_shodashvarga,
+    compute_varga_shodashvarga_batch,
 )
 from .positions import (
     compute_planet_position,
@@ -161,6 +230,11 @@ from .varshaphal import (
 from .visibility import compute_visibility_assessment, compute_visibility_tonight
 
 __all__ = [
+    "AshtakavargaChartProfileResult",
+    "AshtakavargaSignProfileResult",
+    "AshtakavargaTransitStrengthResult",
+    "AlternateDashaProfileResult",
+    "AlternateDashaSequenceResult",
     "compute_batch_charts",
     "compute_batch_charts_with_reduction",
     "compute_batch_events",
@@ -169,7 +243,14 @@ __all__ = [
     "compute_batch_returns",
     "compute_batch_transits",
     "compute_all_lunar_occultations",
+    "compute_ashtakavarga_chart_profile",
+    "compute_ashtakavarga_result",
+    "compute_ashtakavarga_sign_profile",
+    "compute_ashtakavarga_transit_strength",
+    "compute_alternate_period_profile",
     "compute_annual_profection",
+    "compute_ashtottari_profile",
+    "compute_ashtottari_sequence",
     "compute_current_decennials_service",
     "compute_current_releasing_service",
     "compute_decennial_active_pair_service",
@@ -182,12 +263,27 @@ __all__ = [
     "compute_dasha_lord_pair_service",
     "compute_dasha_sequence",
     "compute_dasha_sequence_profile_service",
+    "compute_chaldean_face",
+    "compute_decanate_set",
+    "compute_hermetic_decan_longitude",
+    "compute_hermetic_decan_night_hours",
+    "compute_hermetic_rising_decan",
+    "compute_triplicity_decan",
+    "compute_vedic_drekkana",
     "compute_dignities_chart",
     "compute_dignities_chart_condition",
     "compute_dignities_chart_conditions",
     "compute_dignities_chart_network",
     "compute_dignities_chart_profile",
     "compute_dignities_chart_receptions",
+    "compute_egyptian_bound_classification",
+    "compute_egyptian_bound_condition_profile",
+    "compute_egyptian_bound_relation_profile",
+    "compute_egyptian_bound_truth",
+    "compute_egyptian_bounds_aggregate_profile",
+    "compute_egyptian_bounds_network_profile",
+    "list_egyptian_bounds_table",
+    "list_hermetic_decan_catalog",
     "compute_jaimini_chart",
     "compute_jaimini_chart_condition",
     "compute_jaimini_chart_pair",
@@ -196,6 +292,13 @@ __all__ = [
     "compute_jaimini_direct_condition",
     "compute_jaimini_direct_pair",
     "compute_jaimini_direct_profile",
+    "compute_lots_chart",
+    "compute_lots_chart_condition",
+    "compute_lots_chart_conditions",
+    "compute_lots_chart_dependencies",
+    "compute_lots_chart_network",
+    "compute_lots_chart_profile",
+    "list_lot_catalog",
     "compute_panchanga_chart",
     "compute_panchanga_chart_profile",
     "compute_panchanga_direct",
@@ -204,6 +307,17 @@ __all__ = [
     "compute_shadbala_chart_condition",
     "compute_shadbala_chart_network",
     "compute_shadbala_chart_profile",
+    "TriplicityScoreResult",
+    "compute_triplicity_assignment",
+    "compute_triplicity_score",
+    "list_triplicity_table",
+    "VedicChartDignityResult",
+    "VedicDignityConditionResult",
+    "VARGA_FUNCTIONS",
+    "compute_vedic_chart_dignity_profile",
+    "compute_vedic_dignity",
+    "compute_vedic_dignity_condition",
+    "compute_vedic_dignity_relationships",
     "compute_current_firdaria",
     "compute_firdar_active_pair_service",
     "compute_firdar_sequence_profile_service",
@@ -281,6 +395,11 @@ __all__ = [
     "compute_mudda_judgement",
     "compute_tasira_active",
     "compute_varshaphal_chart",
+    "compute_varga_generic",
+    "compute_varga_named",
+    "compute_varga_named_batch",
+    "compute_varga_shodashvarga",
+    "compute_varga_shodashvarga_batch",
     "compute_visibility_assessment",
     "compute_zr_groups",
     "compute_zr_level_pair_service",
@@ -290,4 +409,7 @@ __all__ = [
     "compute_void_of_course_state",
     "compute_void_of_course_window",
     "compute_void_periods",
+    "compute_yogini_profile",
+    "compute_yogini_sequence",
+    "period_from_request",
 ]
