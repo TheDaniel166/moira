@@ -32,7 +32,7 @@ from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
 
-from ._moira_native import CubicSmoothingSpline
+from .moira_native import CubicSmoothingSpline
 from .constants import JULIAN_YEAR
 from .julian import julian_day
 

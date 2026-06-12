@@ -373,6 +373,7 @@ def _bootstrap_kernel_singleton() -> None:
     from moira.spk_reader import set_kernel_path
 
     kernel = find_planetary_kernel()
+    print (kernel)
     if kernel is not None:
         set_kernel_path(str(kernel))
 

@@ -1574,7 +1574,7 @@ __all__ = [
     "comet_at", "all_comets_at", "list_comets",
     # Asteroids
     "AsteroidData", "ASTEROID_NAIF",
-    "asteroid_at", "all_asteroids_at", "list_asteroids",
+    "asteroid_at", "all_asteroids_at", "glist_asteroids",
     "available_in_kernel",
     # Asteroid families
     "FamilyResonance", "ResonantAspect",
