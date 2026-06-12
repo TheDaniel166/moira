@@ -7,6 +7,7 @@ import math
 from pydantic import Field, field_validator, model_validator
 
 from .common import _StrictModel
+from .sidereal_context import SiderealChartBaseRequest, SiderealChartProvenanceResponse
 
 
 _REQUIRED_REFERENCES = frozenset(
@@ -106,6 +107,43 @@ class AshtakavargaTransitStrengthRequest(AshtakavargaDirectRequest):
         return value
 
 
+class AshtakavargaChartBaseRequest(SiderealChartBaseRequest):
+    policy: AshtakavargaPolicyRequest | None = None
+
+    @model_validator(mode="after")
+    def _policy_matches_chart_ayanamsa(self) -> "AshtakavargaChartBaseRequest":
+        if (
+            self.policy is not None
+            and self.policy.ayanamsa_system != self.ayanamsa_system
+        ):
+            raise ValueError("policy ayanamsa_system must match ayanamsa_system")
+        return self
+
+
+class AshtakavargaChartSignProfileRequest(AshtakavargaChartBaseRequest):
+    planet: str
+    sign_index: int = Field(ge=0, le=11)
+
+    @field_validator("planet")
+    @classmethod
+    def _non_empty_planet(cls, value: str) -> str:
+        if not value:
+            raise ValueError("planet must be non-empty")
+        return value
+
+
+class AshtakavargaChartTransitStrengthRequest(AshtakavargaChartBaseRequest):
+    planet: str
+    transit_sign_index: int = Field(ge=0, le=11)
+
+    @field_validator("planet")
+    @classmethod
+    def _non_empty_planet(cls, value: str) -> str:
+        if not value:
+            raise ValueError("planet must be non-empty")
+        return value
+
+
 class BhinnashtakavargaResultResponse(_StrictModel):
     planet: str
     rekhas: tuple[int, ...]
@@ -147,6 +185,26 @@ class AshtakavargaTransitStrengthResponse(_StrictModel):
     tier: str
 
 
+class AshtakavargaChartResultResponse(_StrictModel):
+    result: AshtakavargaResultResponse
+    provenance: SiderealChartProvenanceResponse
+
+
+class AshtakavargaChartProfileBackedResponse(_StrictModel):
+    result: AshtakavargaChartProfileResponse
+    provenance: SiderealChartProvenanceResponse
+
+
+class AshtakavargaChartSignProfileResponse(_StrictModel):
+    result: SignStrengthProfileResponse
+    provenance: SiderealChartProvenanceResponse
+
+
+class AshtakavargaChartTransitStrengthResponse(_StrictModel):
+    result: AshtakavargaTransitStrengthResponse
+    provenance: SiderealChartProvenanceResponse
+
+
 def _validate_required_keys(value: dict[str, object], field_name: str) -> None:
     missing = sorted(_REQUIRED_REFERENCES - set(value))
     if missing:
@@ -154,7 +212,14 @@ def _validate_required_keys(value: dict[str, object], field_name: str) -> None:
 
 
 __all__ = [
+    "AshtakavargaChartBaseRequest",
+    "AshtakavargaChartProfileBackedResponse",
     "AshtakavargaChartProfileResponse",
+    "AshtakavargaChartResultResponse",
+    "AshtakavargaChartSignProfileRequest",
+    "AshtakavargaChartSignProfileResponse",
+    "AshtakavargaChartTransitStrengthRequest",
+    "AshtakavargaChartTransitStrengthResponse",
     "AshtakavargaDirectRequest",
     "AshtakavargaPolicyRequest",
     "AshtakavargaResultResponse",

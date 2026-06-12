@@ -14,6 +14,7 @@ from .lifecycle import create_engine
 from .routers import (
     ashtakavarga_router,
     alternate_dashas_router,
+    astrocartography_router,
     asteroids_router,
     comets_router,
     batch_router,
@@ -23,9 +24,12 @@ from .routers import (
     decanates_router,
     dignities_router,
     egyptian_bounds_router,
+    galactic_router,
+    geodetic_router,
     hermetic_decans_router,
     health_router,
     jaimini_router,
+    local_space_router,
     locations_router,
     lots_router,
     panchanga_router,
@@ -110,6 +114,10 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(varga_router)  # Phase-9 Varga divisional chart surface
     app.include_router(decanates_router)  # Phase-9 decanate doctrine surface
     app.include_router(hermetic_decans_router)  # Phase-9 Hermetic decan surface
+    app.include_router(astrocartography_router)  # Phase-10 bounded spatial line/point surface
+    app.include_router(local_space_router)  # Phase-10 observer-local horizon surface
+    app.include_router(geodetic_router)  # Phase-10 geodetic zodiac mapping surface
+    app.include_router(galactic_router)  # Phase-10 galactic coordinate-frame surface
     app.include_router(locations_router)   # City/timezone lookup for chart calculator
     app.include_router(asteroids_router)   # Fast small-body surfaces (website integration)
     app.include_router(comets_router)      # Symmetric fast comet surfaces

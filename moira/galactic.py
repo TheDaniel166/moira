@@ -175,6 +175,19 @@ _SGC_DEC =  12.3911
 # Core coordinate transforms
 # ---------------------------------------------------------------------------
 
+def _require_finite(name: str, value: float) -> float:
+    if not math.isfinite(value):
+        raise ValueError(f"{name} must be finite")
+    return value
+
+
+def _require_latitude(name: str, value: float) -> float:
+    _require_finite(name, value)
+    if not -90.0 <= value <= 90.0:
+        raise ValueError(f"{name} must be in [-90, 90]")
+    return value
+
+
 def equatorial_to_galactic(ra: float, dec: float) -> tuple[float, float]:
     """
     Convert equatorial RA/Dec (degrees, J2000/ICRS) to galactic (ℓ, b).
@@ -184,6 +197,9 @@ def equatorial_to_galactic(ra: float, dec: float) -> tuple[float, float]:
     (galactic_longitude, galactic_latitude) in degrees.
     ℓ ∈ [0°, 360°), b ∈ [−90°, +90°].
     """
+    _require_finite("ra", ra)
+    _require_latitude("dec", dec)
+
     ra_r  = ra  * DEG2RAD
     dec_r = dec * DEG2RAD
 
@@ -209,6 +225,9 @@ def galactic_to_equatorial(l: float, b: float) -> tuple[float, float]:
     (right_ascension, declination) in degrees.
     RA ∈ [0°, 360°), Dec ∈ [−90°, +90°].
     """
+    _require_finite("l", l)
+    _require_latitude("b", b)
+
     l_r = l * DEG2RAD
     b_r = b * DEG2RAD
 
@@ -247,6 +266,11 @@ def ecliptic_to_galactic(
     -------
     (galactic_longitude, galactic_latitude) in degrees.
     """
+    _require_finite("lon", lon)
+    _require_latitude("lat", lat)
+    _require_finite("obliquity", obliquity)
+    _require_finite("jd_tt", jd_tt)
+
     # of-date ecliptic → of-date equatorial
     ra_od, dec_od = ecliptic_to_equatorial(lon, lat, obliquity)
     # of-date equatorial → J2000/ICRS (inverse nutation + inverse precession)
@@ -276,6 +300,11 @@ def galactic_to_ecliptic(
     -------
     (ecliptic_longitude, ecliptic_latitude) in degrees.
     """
+    _require_finite("l", l)
+    _require_latitude("b", b)
+    _require_finite("obliquity", obliquity)
+    _require_finite("jd_tt", jd_tt)
+
     # galactic → J2000/ICRS equatorial
     ra_j2000, dec_j2000 = galactic_to_equatorial(l, b)
     # J2000/ICRS → of-date equatorial (precession + nutation)
@@ -408,6 +437,11 @@ class GalacticPosition:
 
 def _great_circle(l1: float, b1: float, l2: float, b2: float) -> float:
     """Great-circle distance between two galactic positions (degrees)."""
+    _require_finite("l1", l1)
+    _require_latitude("b1", b1)
+    _require_finite("l2", l2)
+    _require_latitude("b2", b2)
+
     l1r = l1 * DEG2RAD;  b1r = b1 * DEG2RAD
     l2r = l2 * DEG2RAD;  b2r = b2 * DEG2RAD
     cos_d = (math.sin(b1r)*math.sin(b2r)
@@ -443,6 +477,9 @@ def galactic_reference_points(obliquity: float, jd_tt: float) -> dict[str, tuple
     "South Galactic Pole"  — b=−90°  (Sculptor constellation)
     "Super-Galactic Center"— center of Local Supercluster (M87/Virgo cluster)
     """
+    _require_finite("obliquity", obliquity)
+    _require_finite("jd_tt", jd_tt)
+
     def _ecl(ra: float, dec: float) -> tuple[float, float]:
         # Stored coordinates are J2000/ICRS; precess to of-date before
         # applying the obliquity rotation.
@@ -485,6 +522,9 @@ def galactic_position_of(
     -------
     GalacticPosition
     """
+    if not body:
+        raise ValueError("body must be non-empty")
+
     l, b = ecliptic_to_galactic(ecliptic_lon, ecliptic_lat, obliquity, jd_tt)
     return GalacticPosition(
         body=body,

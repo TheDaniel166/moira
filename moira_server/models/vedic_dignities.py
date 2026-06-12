@@ -7,6 +7,7 @@ import math
 from pydantic import Field, field_validator
 
 from .common import _StrictModel
+from .sidereal_context import SiderealChartBaseRequest, SiderealChartProvenanceResponse
 
 
 class VedicDignityPolicyRequest(_StrictModel):
@@ -57,6 +58,21 @@ class VedicDignityChartRequest(_StrictModel):
         return value
 
 
+class VedicDignityChartBackedRequest(SiderealChartBaseRequest):
+    planet: str
+
+    @field_validator("planet")
+    @classmethod
+    def _non_empty_planet(cls, value: str) -> str:
+        if not value:
+            raise ValueError("planet must be non-empty")
+        return value
+
+
+class VedicDignityChartBackedProfileRequest(SiderealChartBaseRequest):
+    pass
+
+
 class VedicDignityResultResponse(_StrictModel):
     planet: str
     sidereal_longitude: float
@@ -99,6 +115,21 @@ class VedicDignityConditionResponse(_StrictModel):
     sign: str
 
 
+class VedicDignityChartBackedResultResponse(_StrictModel):
+    result: VedicDignityResultResponse
+    provenance: SiderealChartProvenanceResponse
+
+
+class VedicDignityChartBackedRelationshipsResponse(_StrictModel):
+    result: VedicDignityRelationshipsResponse
+    provenance: SiderealChartProvenanceResponse
+
+
+class VedicDignityChartBackedProfileResponse(_StrictModel):
+    result: VedicChartDignityProfileResponse
+    provenance: SiderealChartProvenanceResponse
+
+
 class VedicChartDignityProfileResponse(_StrictModel):
     ayanamsa_system: str
     results: dict[str, VedicDignityResultResponse]
@@ -113,6 +144,11 @@ class VedicChartDignityProfileResponse(_StrictModel):
 
 __all__ = [
     "VedicChartDignityProfileResponse",
+    "VedicDignityChartBackedProfileRequest",
+    "VedicDignityChartBackedProfileResponse",
+    "VedicDignityChartBackedRelationshipsResponse",
+    "VedicDignityChartBackedRequest",
+    "VedicDignityChartBackedResultResponse",
     "VedicDignityChartRequest",
     "VedicDignityConditionResponse",
     "VedicDignityPolicyRequest",

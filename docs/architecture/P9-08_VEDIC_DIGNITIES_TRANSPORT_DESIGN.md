@@ -2,7 +2,7 @@
 
 Version: 1.0
 Date: 2026-06-11
-Status: P9-08 admitted; four direct-sync Vedic Dignities routes live and tested
+Status: P9-08 admitted; four direct-sync and three chart-backed Vedic Dignities routes live and tested
 Scope: Phase 9 Vedic Dignities REST admission design
 
 This document declares the REST route shapes admitted for the Vedic Dignities
@@ -207,9 +207,10 @@ Response:
 
 ---
 
-## 3. Deferred Chart-Backed Surface
+## 3. Chart-Backed Surface
 
-The following route shapes are intentionally not part of first admission:
+The following route shapes are admitted after the post-Phase-9 shared
+`SiderealChartContext` workflow:
 
 - `POST /v1/vedic-dignities/chart/dignity`
 - `POST /v1/vedic-dignities/chart/relationships`
@@ -219,13 +220,17 @@ Reason:
 
 - `moira.vedic_dignities` expects sidereal longitudes.
 - It does not compute tropical positions or ayanamsa reduction.
-- A chart-backed route would require a server adapter that visibly owns
+- Chart-backed routes require a server adapter that visibly owns
   tropical-to-sidereal derivation, ayanamsa choice, and planetary inclusion
   policy before calling this module.
 
-If chart-backed Vedic dignity convenience is later admitted, it should be
-designed as a chart-owning adapter, not as a hidden behavior inside this
-direct-sync family.
+Implementation:
+
+- Chart-backed Vedic Dignities routes use
+  `docs/architecture/POST_PHASE9_SIDEREAL_CHART_DERIVATION_WORKFLOW.md`.
+- Responses embed compact sidereal chart provenance.
+- Direct-vs-chart parity is verified in
+  `tests/server/test_server_vedic_dignities_routes.py`.
 
 ---
 

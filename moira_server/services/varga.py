@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import dataclass
 
+from moira import Moira
 from moira.varga import (
     VargaPoint,
     akshavedamsha,
@@ -26,11 +28,19 @@ from moira.varga import (
 )
 
 from ..models.varga import (
+    VargaChartNamedRequest,
+    VargaChartShodashvargaBatchRequest,
+    VargaChartShodashvargaRequest,
     VargaGenericRequest,
     VargaNamedBatchRequest,
     VargaNamedRequest,
     VargaShodashvargaBatchRequest,
     VargaShodashvargaRequest,
+)
+from .sidereal_context import (
+    SiderealChartContext,
+    SiderealChartRequirements,
+    derive_sidereal_chart_context,
 )
 
 
@@ -52,6 +62,27 @@ VARGA_FUNCTIONS: dict[str, Callable[[float], VargaPoint]] = {
     "akshavedamsha": akshavedamsha,
     "shashtiamsha": shashtiamsha,
 }
+
+
+@dataclass(frozen=True, slots=True)
+class VargaChartNamedResult:
+    context: SiderealChartContext
+    body: str
+    varga: str
+    result: VargaPoint
+
+
+@dataclass(frozen=True, slots=True)
+class VargaChartShodashvargaResult:
+    context: SiderealChartContext
+    body: str
+    results: dict[str, VargaPoint]
+
+
+@dataclass(frozen=True, slots=True)
+class VargaChartShodashvargaBatchResult:
+    context: SiderealChartContext
+    results: dict[str, dict[str, VargaPoint]]
 
 
 def compute_varga_generic(request: VargaGenericRequest) -> VargaPoint:
@@ -97,8 +128,72 @@ def compute_varga_shodashvarga_batch(
     }
 
 
+def compute_varga_chart_named(
+    engine: Moira,
+    request: VargaChartNamedRequest,
+) -> VargaChartNamedResult:
+    context = _derive_varga_context(engine, request, (request.body,))
+    return VargaChartNamedResult(
+        context=context,
+        body=request.body,
+        varga=request.varga,
+        result=VARGA_FUNCTIONS[request.varga](context.sidereal_longitudes[request.body]),
+    )
+
+
+def compute_varga_chart_shodashvarga(
+    engine: Moira,
+    request: VargaChartShodashvargaRequest,
+) -> VargaChartShodashvargaResult:
+    context = _derive_varga_context(engine, request, (request.body,))
+    return VargaChartShodashvargaResult(
+        context=context,
+        body=request.body,
+        results={
+            selector: function(context.sidereal_longitudes[request.body])
+            for selector, function in VARGA_FUNCTIONS.items()
+        },
+    )
+
+
+def compute_varga_chart_shodashvarga_batch(
+    engine: Moira,
+    request: VargaChartShodashvargaBatchRequest,
+) -> VargaChartShodashvargaBatchResult:
+    bodies = tuple(request.bodies)
+    context = _derive_varga_context(engine, request, bodies)
+    return VargaChartShodashvargaBatchResult(
+        context=context,
+        results={
+            body: {
+                selector: function(context.sidereal_longitudes[body])
+                for selector, function in VARGA_FUNCTIONS.items()
+            }
+            for body in bodies
+        },
+    )
+
+
+def _derive_varga_context(
+    engine: Moira,
+    request,
+    required_bodies: tuple[str, ...],
+) -> SiderealChartContext:
+    return derive_sidereal_chart_context(
+        engine,
+        request,
+        SiderealChartRequirements(required_bodies=required_bodies),
+    )
+
+
 __all__ = [
     "VARGA_FUNCTIONS",
+    "VargaChartNamedResult",
+    "VargaChartShodashvargaBatchResult",
+    "VargaChartShodashvargaResult",
+    "compute_varga_chart_named",
+    "compute_varga_chart_shodashvarga",
+    "compute_varga_chart_shodashvarga_batch",
     "compute_varga_generic",
     "compute_varga_named",
     "compute_varga_named_batch",

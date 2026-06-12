@@ -8,18 +8,32 @@ from .batch import (
     serialize_progression_payload,
 )
 from .ashtakavarga import (
+    serialize_ashtakavarga_chart_profile_backed,
     serialize_ashtakavarga_chart_profile,
+    serialize_ashtakavarga_chart_result_backed,
+    serialize_ashtakavarga_chart_sign_profile,
+    serialize_ashtakavarga_chart_transit_strength,
     serialize_ashtakavarga_result,
     serialize_ashtakavarga_transit_strength,
     serialize_bhinnashtakavarga_result,
     serialize_sign_strength_profile,
 )
 from .alternate_dashas import (
+    serialize_alternate_dasha_chart_profile,
+    serialize_alternate_dasha_chart_sequence,
     serialize_alternate_dasha_period,
     serialize_alternate_dasha_profile,
     serialize_alternate_dasha_sequence,
     serialize_alternate_dasha_sequence_profile,
     serialize_alternate_period_profile,
+)
+from .astrocartography import (
+    serialize_astrocartography_line,
+    serialize_astrocartography_lines,
+    serialize_astrocartography_observer,
+    serialize_astrocartography_provenance,
+    serialize_astrocartography_subplanetary,
+    serialize_subplanetary_point,
 )
 from .chart import serialize_chart, serialize_chart_with_reduction, serialize_houses, serialize_node
 from .phenomena import (
@@ -53,6 +67,8 @@ from .dasha import (
     serialize_dasha_sequence_profile,
 )
 from .decans import (
+    serialize_decanate_chart_position,
+    serialize_decanate_chart_set,
     serialize_decanate_position,
     serialize_decanate_set,
     serialize_hermetic_decan_catalog,
@@ -84,6 +100,22 @@ from .egyptian_bounds import (
     serialize_egyptian_bounds_network_profile,
     serialize_egyptian_bounds_table,
 )
+from .geodetic import (
+    serialize_geodetic_chart,
+    serialize_geodetic_chart_result,
+    serialize_geodetic_equivalent,
+    serialize_geodetic_equivalents_result,
+    serialize_geodetic_provenance,
+)
+from .galactic import (
+    serialize_ecliptic_coordinate,
+    serialize_equatorial_coordinate,
+    serialize_galactic_coordinate,
+    serialize_galactic_position,
+    serialize_galactic_positions,
+    serialize_galactic_provenance,
+    serialize_reference_points,
+)
 from .jaimini import (
     serialize_jaimini_chart_profile,
     serialize_jaimini_result,
@@ -105,6 +137,12 @@ from .lots import (
     serialize_lots_result,
     serialize_part_definition,
 )
+from .local_space import (
+    serialize_local_space_observer,
+    serialize_local_space_position,
+    serialize_local_space_positions,
+    serialize_local_space_provenance,
+)
 from .panchanga import (
     serialize_nakshatra_position,
     serialize_panchanga_element,
@@ -121,6 +159,12 @@ from .shadbala import (
     serialize_shadbala_result,
     serialize_sthana_bala,
 )
+from .sidereal_context import (
+    serialize_sidereal_chart_context,
+    serialize_sidereal_chart_provenance,
+    serialize_sidereal_house_context,
+    serialize_sidereal_observer_context,
+)
 from .triplicity import (
     serialize_triplicity_assignment,
     serialize_triplicity_score,
@@ -128,12 +172,18 @@ from .triplicity import (
 )
 from .vedic_dignities import (
     serialize_vedic_chart_dignity_profile,
+    serialize_vedic_dignity_chart_backed_profile,
+    serialize_vedic_dignity_chart_backed_relationships,
+    serialize_vedic_dignity_chart_backed_result,
     serialize_vedic_dignity_condition,
     serialize_vedic_dignity_relationships,
     serialize_vedic_dignity_result,
     serialize_vedic_planetary_relationship,
 )
 from .varga import (
+    serialize_varga_chart_named,
+    serialize_varga_chart_shodashvarga,
+    serialize_varga_chart_shodashvarga_batch,
     serialize_varga_named_batch,
     serialize_varga_point,
     serialize_varga_shodashvarga,
@@ -220,9 +270,20 @@ from .varshaphal import (
 from .visibility import serialize_lunar_crescent_details, serialize_visibility_assessment
 
 __all__ = [
+    "serialize_astrocartography_line",
+    "serialize_astrocartography_lines",
+    "serialize_astrocartography_observer",
+    "serialize_astrocartography_provenance",
+    "serialize_astrocartography_subplanetary",
+    "serialize_ashtakavarga_chart_profile_backed",
     "serialize_ashtakavarga_chart_profile",
+    "serialize_ashtakavarga_chart_result_backed",
+    "serialize_ashtakavarga_chart_sign_profile",
+    "serialize_ashtakavarga_chart_transit_strength",
     "serialize_ashtakavarga_result",
     "serialize_ashtakavarga_transit_strength",
+    "serialize_alternate_dasha_chart_profile",
+    "serialize_alternate_dasha_chart_sequence",
     "serialize_alternate_dasha_period",
     "serialize_alternate_dasha_profile",
     "serialize_alternate_dasha_sequence",
@@ -291,6 +352,8 @@ __all__ = [
     "serialize_dasha_lord_pair",
     "serialize_dasha_sequence",
     "serialize_dasha_sequence_profile",
+    "serialize_decanate_chart_position",
+    "serialize_decanate_chart_set",
     "serialize_decanate_position",
     "serialize_decanate_set",
     "serialize_hermetic_decan_catalog",
@@ -317,6 +380,18 @@ __all__ = [
     "serialize_egyptian_bounds_network_node",
     "serialize_egyptian_bounds_network_profile",
     "serialize_egyptian_bounds_table",
+    "serialize_geodetic_chart",
+    "serialize_geodetic_chart_result",
+    "serialize_geodetic_equivalent",
+    "serialize_geodetic_equivalents_result",
+    "serialize_geodetic_provenance",
+    "serialize_ecliptic_coordinate",
+    "serialize_equatorial_coordinate",
+    "serialize_galactic_coordinate",
+    "serialize_galactic_position",
+    "serialize_galactic_positions",
+    "serialize_galactic_provenance",
+    "serialize_reference_points",
     "serialize_jaimini_chart_profile",
     "serialize_jaimini_result",
     "serialize_karaka_assignment",
@@ -333,6 +408,10 @@ __all__ = [
     "serialize_lots_conditions",
     "serialize_lots_dependencies",
     "serialize_lots_result",
+    "serialize_local_space_observer",
+    "serialize_local_space_position",
+    "serialize_local_space_positions",
+    "serialize_local_space_provenance",
     "serialize_part_definition",
     "serialize_nakshatra_position",
     "serialize_panchanga_element",
@@ -345,12 +424,19 @@ __all__ = [
     "serialize_shadbala_condition_profile",
     "serialize_shadbala_network_profile",
     "serialize_shadbala_result",
+    "serialize_sidereal_chart_context",
+    "serialize_sidereal_chart_provenance",
+    "serialize_sidereal_house_context",
+    "serialize_sidereal_observer_context",
     "serialize_sign_strength_profile",
     "serialize_sthana_bala",
     "serialize_triplicity_assignment",
     "serialize_triplicity_score",
     "serialize_triplicity_table",
     "serialize_vedic_chart_dignity_profile",
+    "serialize_vedic_dignity_chart_backed_profile",
+    "serialize_vedic_dignity_chart_backed_relationships",
+    "serialize_vedic_dignity_chart_backed_result",
     "serialize_vedic_dignity_condition",
     "serialize_vedic_dignity_relationships",
     "serialize_vedic_dignity_result",
@@ -382,6 +468,7 @@ __all__ = [
     "serialize_sky_position_with_reduction",
     "serialize_solar_body_circumstances",
     "serialize_solar_eclipse_local",
+    "serialize_subplanetary_point",
     "serialize_station_event",
     "serialize_speculum",
     "serialize_transit_event",
@@ -390,6 +477,9 @@ __all__ = [
     "serialize_mudda_judgement",
     "serialize_tasira_active",
     "serialize_varshaphal_chart",
+    "serialize_varga_chart_named",
+    "serialize_varga_chart_shodashvarga",
+    "serialize_varga_chart_shodashvarga_batch",
     "serialize_varga_named_batch",
     "serialize_varga_point",
     "serialize_varga_shodashvarga",

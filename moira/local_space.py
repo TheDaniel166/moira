@@ -213,6 +213,8 @@ def local_space_positions(
     The +180° offset converts from the traditional astronomical azimuth
     (South = 0°) to the navigational convention (North = 0°, East = 90°).
     """
+    _validate_local_space_inputs(planet_ra_dec, latitude, lst_deg)
+
     lat_r = latitude * DEG2RAD
 
     results: list[LocalSpacePosition] = []
@@ -255,6 +257,24 @@ def local_space_positions(
 
     results.sort(key=lambda p: p.azimuth)
     return results
+
+
+def _validate_local_space_inputs(
+    planet_ra_dec: dict[str, tuple[float, float]],
+    latitude: float,
+    lst_deg: float,
+) -> None:
+    if not math.isfinite(latitude) or not -90.0 <= latitude <= 90.0:
+        raise ValueError(f"latitude must be finite and in [-90, 90], got {latitude!r}")
+    if not math.isfinite(lst_deg):
+        raise ValueError(f"lst_deg must be finite, got {lst_deg!r}")
+    for body, (ra, dec) in planet_ra_dec.items():
+        if not body:
+            raise ValueError("Local Space body names must be non-empty")
+        if not math.isfinite(ra) or not math.isfinite(dec):
+            raise ValueError(f"RA/Dec for {body!r} must be finite")
+        if not -90.0 <= dec <= 90.0:
+            raise ValueError(f"declination for {body!r} must lie in [-90, 90], got {dec!r}")
 
 
 # ---------------------------------------------------------------------------

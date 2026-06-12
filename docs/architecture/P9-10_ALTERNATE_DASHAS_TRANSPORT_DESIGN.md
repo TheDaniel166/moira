@@ -2,7 +2,7 @@
 
 Version: 0.1
 Date: 2026-06-11
-Status: P9-10 admitted; five direct-compute alternate dasha routes live and tested
+Status: P9-10 admitted; five direct-compute and four chart-backed alternate dasha routes live and tested
 Scope: Phase 9 alternate dasha REST admission design
 
 This document declares the REST route shapes admitted for alternate Vedic dasha
@@ -328,12 +328,12 @@ Sequence/profile route responses must also preserve policy provenance:
 
 ---
 
-## 6. Deferred Chart-Backed Surface
+## 6. Chart-Backed Surface
 
-Chart-backed alternate-dasha routes are intentionally not part of first
-admission.
+Chart-backed alternate-dasha routes are admitted after the post-Phase-9 shared
+`SiderealChartContext` workflow.
 
-Deferred shapes:
+Live shapes:
 
 - `POST /v1/dasha/alternate/ashtottari/chart/sequence`
 - `POST /v1/dasha/alternate/ashtottari/chart/profile`
@@ -343,9 +343,17 @@ Deferred shapes:
 Reason:
 
 - `moira.dasha_systems` consumes Moon tropical longitude and natal JD.
-- The first route family should not hide natal Moon derivation in transport.
-- Chart-backed routes need the server adapter to own birth chart reduction,
+- Chart-backed routes use the server adapter to own birth chart derivation,
   Moon extraction, and policy provenance clearly.
+
+Implementation:
+
+- Responses expose the derived Moon tropical longitude and natal JD because
+  those are the actual dasha engine inputs.
+- Responses also embed compact sidereal chart provenance from the shared
+  adapter.
+- Direct-vs-chart parity is verified in
+  `tests/server/test_server_alternate_dashas_routes.py`.
 
 ---
 
@@ -356,7 +364,6 @@ The first P9-10 admission does not expose:
 - Kalachakra Dasha
 - Chara Dasha
 - Vimshottari routes; those already exist under `/v1/dasha/vimshottari/*`
-- chart-backed natal Moon derivation
 - full Ashtottari Rahu/Lagna eligibility implementation
 - interpretive prediction text
 - generic `/v1/vedic` umbrella routes

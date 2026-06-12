@@ -8,6 +8,7 @@ from typing import Literal
 from pydantic import Field, field_validator
 
 from .common import _StrictModel
+from .sidereal_context import SiderealChartBaseRequest, SiderealChartProvenanceResponse
 
 
 VargaSelector = Literal[
@@ -94,6 +95,33 @@ class VargaShodashvargaBatchRequest(_StrictModel):
         return value
 
 
+class VargaChartNamedRequest(SiderealChartBaseRequest):
+    body: str
+    varga: VargaSelector
+
+    @field_validator("body")
+    @classmethod
+    def _non_empty_body(cls, value: str) -> str:
+        if not value:
+            raise ValueError("body must be non-empty")
+        return value
+
+
+class VargaChartShodashvargaRequest(SiderealChartBaseRequest):
+    body: str
+
+    @field_validator("body")
+    @classmethod
+    def _non_empty_body(cls, value: str) -> str:
+        if not value:
+            raise ValueError("body must be non-empty")
+        return value
+
+
+class VargaChartShodashvargaBatchRequest(SiderealChartBaseRequest):
+    bodies: list[str] = Field(min_length=1)
+
+
 class VargaPointResponse(_StrictModel):
     varga_name: str
     varga_number: int
@@ -118,6 +146,24 @@ class VargaShodashvargaBatchResponse(_StrictModel):
     results: dict[str, dict[str, VargaPointResponse]]
 
 
+class VargaChartNamedResponse(_StrictModel):
+    body: str
+    varga: str
+    result: VargaPointResponse
+    provenance: SiderealChartProvenanceResponse
+
+
+class VargaChartShodashvargaResponse(_StrictModel):
+    body: str
+    result: VargaShodashvargaResponse
+    provenance: SiderealChartProvenanceResponse
+
+
+class VargaChartShodashvargaBatchResponse(_StrictModel):
+    results: dict[str, dict[str, VargaPointResponse]]
+    provenance: SiderealChartProvenanceResponse
+
+
 def _validate_longitude_map(value: dict[str, float]) -> None:
     if not value:
         raise ValueError("longitudes must be non-empty")
@@ -130,6 +176,12 @@ def _validate_longitude_map(value: dict[str, float]) -> None:
 
 __all__ = [
     "VargaGenericRequest",
+    "VargaChartNamedRequest",
+    "VargaChartNamedResponse",
+    "VargaChartShodashvargaBatchRequest",
+    "VargaChartShodashvargaBatchResponse",
+    "VargaChartShodashvargaRequest",
+    "VargaChartShodashvargaResponse",
     "VargaNamedBatchRequest",
     "VargaNamedBatchResponse",
     "VargaNamedRequest",

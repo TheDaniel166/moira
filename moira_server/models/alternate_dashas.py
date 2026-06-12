@@ -5,9 +5,10 @@ from __future__ import annotations
 import math
 from typing import Literal
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 
 from .common import _StrictModel
+from .sidereal_context import SiderealChartBaseRequest, SiderealChartProvenanceResponse
 
 
 YearBasis = Literal[
@@ -71,6 +72,34 @@ class YoginiSequenceRequest(_StrictModel):
         if not math.isfinite(value):
             raise ValueError("moon_tropical_lon and natal_jd must be finite")
         return value
+
+
+class AshtottariChartSequenceRequest(SiderealChartBaseRequest):
+    levels: int = Field(default=2, ge=1, le=4)
+    policy: AshtottariPolicyRequest | None = None
+
+    @model_validator(mode="after")
+    def _policy_matches_chart_ayanamsa(self) -> "AshtottariChartSequenceRequest":
+        if (
+            self.policy is not None
+            and self.policy.ayanamsa_system != self.ayanamsa_system
+        ):
+            raise ValueError("policy ayanamsa_system must match ayanamsa_system")
+        return self
+
+
+class YoginiChartSequenceRequest(SiderealChartBaseRequest):
+    levels: int = Field(default=2, ge=1, le=4)
+    policy: YoginiPolicyRequest | None = None
+
+    @model_validator(mode="after")
+    def _policy_matches_chart_ayanamsa(self) -> "YoginiChartSequenceRequest":
+        if (
+            self.policy is not None
+            and self.policy.ayanamsa_system != self.ayanamsa_system
+        ):
+            raise ValueError("policy ayanamsa_system must match ayanamsa_system")
+        return self
 
 
 class AlternateDashaPeriodRequest(_StrictModel):
@@ -146,7 +175,23 @@ class AlternateDashaProfileResponse(_StrictModel):
     profile: AlternateDashaSequenceProfileResponse
 
 
+class AlternateDashaChartSequenceResponse(_StrictModel):
+    result: AlternateDashaSequenceResponse
+    moon_tropical_longitude: float
+    natal_jd: float
+    provenance: SiderealChartProvenanceResponse
+
+
+class AlternateDashaChartProfileResponse(_StrictModel):
+    result: AlternateDashaProfileResponse
+    moon_tropical_longitude: float
+    natal_jd: float
+    provenance: SiderealChartProvenanceResponse
+
+
 __all__ = [
+    "AlternateDashaChartProfileResponse",
+    "AlternateDashaChartSequenceResponse",
     "AlternateDashaPeriodRequest",
     "AlternateDashaPeriodResponse",
     "AlternateDashaProfileResponse",
@@ -154,9 +199,11 @@ __all__ = [
     "AlternateDashaSequenceResponse",
     "AlternateDashaSystemName",
     "AlternatePeriodProfileResponse",
+    "AshtottariChartSequenceRequest",
     "AshtottariPolicyRequest",
     "AshtottariSequenceRequest",
     "YearBasis",
+    "YoginiChartSequenceRequest",
     "YoginiPolicyRequest",
     "YoginiSequenceRequest",
 ]

@@ -2,10 +2,21 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from moira import Moira
+
+from ..dependencies import get_engine
 
 from ..models.ashtakavarga import (
+    AshtakavargaChartBaseRequest,
+    AshtakavargaChartProfileBackedResponse,
     AshtakavargaChartProfileResponse,
+    AshtakavargaChartResultResponse,
+    AshtakavargaChartSignProfileRequest,
+    AshtakavargaChartSignProfileResponse,
+    AshtakavargaChartTransitStrengthRequest,
+    AshtakavargaChartTransitStrengthResponse,
     AshtakavargaDirectRequest,
     AshtakavargaResultResponse,
     AshtakavargaSignProfileRequest,
@@ -14,13 +25,21 @@ from ..models.ashtakavarga import (
     SignStrengthProfileResponse,
 )
 from ..serializers.ashtakavarga import (
+    serialize_ashtakavarga_chart_profile_backed,
     serialize_ashtakavarga_chart_profile,
+    serialize_ashtakavarga_chart_result_backed,
+    serialize_ashtakavarga_chart_sign_profile,
+    serialize_ashtakavarga_chart_transit_strength,
     serialize_ashtakavarga_result,
     serialize_ashtakavarga_transit_strength,
     serialize_sign_strength_profile,
 )
 from ..services.ashtakavarga import (
+    compute_ashtakavarga_chart_profile_backed,
     compute_ashtakavarga_chart_profile,
+    compute_ashtakavarga_chart_result,
+    compute_ashtakavarga_chart_sign_profile,
+    compute_ashtakavarga_chart_transit_strength,
     compute_ashtakavarga_result,
     compute_ashtakavarga_sign_profile,
     compute_ashtakavarga_transit_strength,
@@ -66,4 +85,47 @@ def ashtakavarga_transit_strength_route(
 ) -> AshtakavargaTransitStrengthResponse:
     return serialize_ashtakavarga_transit_strength(
         compute_ashtakavarga_transit_strength(request)
+    )
+
+
+@router.post("/chart/result", response_model=AshtakavargaChartResultResponse)
+def ashtakavarga_chart_result_route(
+    request: AshtakavargaChartBaseRequest,
+    engine: Moira = Depends(get_engine),
+) -> AshtakavargaChartResultResponse:
+    return serialize_ashtakavarga_chart_result_backed(
+        compute_ashtakavarga_chart_result(engine, request)
+    )
+
+
+@router.post("/chart/profile", response_model=AshtakavargaChartProfileBackedResponse)
+def ashtakavarga_chart_profile_route(
+    request: AshtakavargaChartBaseRequest,
+    engine: Moira = Depends(get_engine),
+) -> AshtakavargaChartProfileBackedResponse:
+    return serialize_ashtakavarga_chart_profile_backed(
+        compute_ashtakavarga_chart_profile_backed(engine, request)
+    )
+
+
+@router.post("/chart/sign-profile", response_model=AshtakavargaChartSignProfileResponse)
+def ashtakavarga_chart_sign_profile_route(
+    request: AshtakavargaChartSignProfileRequest,
+    engine: Moira = Depends(get_engine),
+) -> AshtakavargaChartSignProfileResponse:
+    return serialize_ashtakavarga_chart_sign_profile(
+        compute_ashtakavarga_chart_sign_profile(engine, request)
+    )
+
+
+@router.post(
+    "/chart/transit-strength",
+    response_model=AshtakavargaChartTransitStrengthResponse,
+)
+def ashtakavarga_chart_transit_strength_route(
+    request: AshtakavargaChartTransitStrengthRequest,
+    engine: Moira = Depends(get_engine),
+) -> AshtakavargaChartTransitStrengthResponse:
+    return serialize_ashtakavarga_chart_transit_strength(
+        compute_ashtakavarga_chart_transit_strength(engine, request)
     )

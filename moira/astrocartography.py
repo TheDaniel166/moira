@@ -230,6 +230,11 @@ def acg_lines(
     """
     from .planets import sky_position_at
 
+    if not math.isfinite(gmst_deg):
+        raise ValueError(f"gmst_deg must be finite, got {gmst_deg!r}")
+    if not math.isfinite(lat_step) or not 0.0 < lat_step <= 178.0:
+        raise ValueError(f"lat_step must be finite and in (0, 178], got {lat_step!r}")
+
     lines: list[ACGLine] = []
     h0 = -0.5667 if refraction else 0.0
     sin_h0 = math.sin(h0 * DEG2RAD)
@@ -240,6 +245,12 @@ def acg_lines(
     ]
 
     for body, (ra_geo, dec_geo) in planet_ra_dec.items():
+        if not math.isfinite(ra_geo) or not math.isfinite(dec_geo):
+            raise ValueError(f"RA/Dec for {body!r} must be finite")
+        if not -90.0 <= dec_geo <= 90.0:
+            raise ValueError(
+                f"declination for {body!r} must lie in [-90, 90] degrees, got {dec_geo!r}"
+            )
         lon_mc = (ra_geo - gmst_deg) % 360.0
         lon_ic = (lon_mc + 180.0) % 360.0
 
@@ -351,8 +362,12 @@ def subplanetary_points(
     -------
     list[SubPlanetaryPoint] - two points per body: Zenith and Nadir.
     """
+    if not math.isfinite(gmst_deg):
+        raise ValueError(f"gmst_deg must be finite, got {gmst_deg!r}")
     points: list[SubPlanetaryPoint] = []
     for body, (right_ascension, declination) in planet_ra_dec.items():
+        if not math.isfinite(right_ascension) or not math.isfinite(declination):
+            raise ValueError(f"RA/Dec for {body!r} must be finite")
         zenith_latitude = _geodetic_latitude_from_declination(declination)
         zenith_longitude = _wrap_longitude_deg(right_ascension - gmst_deg)
         points.append(

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -275,3 +277,121 @@ def test_ashtakavarga_routes_are_registered() -> None:
     assert "/v1/ashtakavarga/profile" in paths
     assert "/v1/ashtakavarga/sign-profile" in paths
     assert "/v1/ashtakavarga/transit-strength" in paths
+    assert "/v1/ashtakavarga/chart/result" in paths
+    assert "/v1/ashtakavarga/chart/profile" in paths
+    assert "/v1/ashtakavarga/chart/sign-profile" in paths
+    assert "/v1/ashtakavarga/chart/transit-strength" in paths
+
+
+def _chart_payload() -> dict[str, object]:
+    return {
+        "dt": datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc).isoformat(),
+        "ayanamsa_system": "Lahiri",
+        "observer_lat": 40.7128,
+        "observer_lon": -74.0060,
+    }
+
+
+def _direct_longitudes_from_chart_response(body: dict[str, object]) -> dict[str, float]:
+    provenance = body["provenance"]
+    sidereal = dict(provenance["sidereal_longitudes"])
+    sidereal["Lagna"] = provenance["sidereal_lagna"]
+    return sidereal
+
+
+def test_ashtakavarga_chart_result_route_matches_direct_route() -> None:
+    with _client() as client:
+        chart_response = client.post(
+            "/v1/ashtakavarga/chart/result",
+            json=_chart_payload(),
+        )
+
+    assert chart_response.status_code == 200
+    chart_body = chart_response.json()
+
+    with _client() as client:
+        direct_response = client.post(
+            "/v1/ashtakavarga/result",
+            json={
+                "sidereal_longitudes": _direct_longitudes_from_chart_response(chart_body),
+                "policy": {"ayanamsa_system": "Lahiri"},
+            },
+        )
+
+    assert direct_response.status_code == 200
+    assert chart_body["result"] == direct_response.json()
+    assert chart_body["provenance"]["sidereal_lagna"] is not None
+    assert chart_body["provenance"]["observer"]["latitude"] == pytest.approx(40.7128)
+
+
+def test_ashtakavarga_chart_profile_route_matches_direct_route() -> None:
+    with _client() as client:
+        chart_response = client.post(
+            "/v1/ashtakavarga/chart/profile",
+            json=_chart_payload(),
+        )
+
+    assert chart_response.status_code == 200
+    chart_body = chart_response.json()
+
+    with _client() as client:
+        direct_response = client.post(
+            "/v1/ashtakavarga/profile",
+            json={
+                "sidereal_longitudes": _direct_longitudes_from_chart_response(chart_body),
+                "policy": {"ayanamsa_system": "Lahiri"},
+            },
+        )
+
+    assert direct_response.status_code == 200
+    assert chart_body["result"] == direct_response.json()
+
+
+def test_ashtakavarga_chart_sign_profile_route_matches_direct_route() -> None:
+    payload = _chart_payload()
+    payload.update({"planet": "Sun", "sign_index": 0})
+
+    with _client() as client:
+        chart_response = client.post(
+            "/v1/ashtakavarga/chart/sign-profile",
+            json=payload,
+        )
+
+    assert chart_response.status_code == 200
+    chart_body = chart_response.json()
+
+    with _client() as client:
+        direct_response = client.post(
+            "/v1/ashtakavarga/sign-profile",
+            json={
+                "sidereal_longitudes": _direct_longitudes_from_chart_response(chart_body),
+                "planet": "Sun",
+                "sign_index": 0,
+                "policy": {"ayanamsa_system": "Lahiri"},
+            },
+        )
+
+    assert direct_response.status_code == 200
+    assert chart_body["result"] == direct_response.json()
+
+
+def test_ashtakavarga_chart_route_rejects_missing_observer() -> None:
+    with _client() as client:
+        response = client.post(
+            "/v1/ashtakavarga/chart/result",
+            json={
+                "dt": datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc).isoformat(),
+            },
+        )
+
+    _assert_validation_envelope(response, message_fragment="observer latitude")
+
+
+def test_ashtakavarga_chart_route_rejects_policy_ayanamsa_mismatch() -> None:
+    payload = _chart_payload()
+    payload["policy"] = {"ayanamsa_system": "Krishnamurti"}
+
+    with _client() as client:
+        response = client.post("/v1/ashtakavarga/chart/result", json=payload)
+
+    _assert_validation_envelope(response, message_fragment="must match")

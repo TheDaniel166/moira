@@ -77,11 +77,11 @@ them.
 | P9-05 | Lots | `admitted` | Catalogue plus six chart-backed REST routes are live and tested against the Phase 11 backend standard, doctrine/policy/dependency/profile surfaces, and facade/root exports. |
 | P9-06 | Triplicity | `admitted` | Three direct-sync REST routes are live and tested against the Phase 11/12 backend standard, explicit doctrine/policy surfaces, and facade/root exports. |
 | P9-07 | Egyptian bounds | `admitted` | Seven direct-sync REST routes are live and tested against the backend standard, table/truth/classification/relation/condition/aggregate/network surfaces, and explicit doctrine policy. |
-| P9-08 | Vedic dignities | `admitted` | Four direct-sync REST routes are live and tested against the backend standard, dignity/relationship/condition/chart-profile surfaces, and ayanamsa provenance policy. |
-| P9-09 | Ashtakavarga | `admitted` | Four direct-sync REST routes are live and tested against the backend standard, BAV/SAV result, shodhana policy, sign-strength, transit-strength, and chart-profile surfaces. |
-| P9-10 | Alternate dasha systems | `admitted` | Five direct-compute REST routes are live and tested against the backend standard, Ashtottari/Yogini sequence/profile surfaces, period-profile projection, and eligibility-limit truth. |
-| P9-11 | Varga | `admitted` | Five direct-sync REST routes are live and tested against the backend standard, generic/named VargaPoint surfaces, Shodashvarga set, and batch projections. |
-| P9-12 | Decans / decanates | `admitted` | Eight direct-sync REST routes are live and tested against the backend standard, decanate placement truth, Hermetic catalog/longitude/rising lookup, and night-hour vessel serialization. |
+| P9-08 | Vedic dignities | `admitted` | Four direct-sync and three chart-backed REST routes are live and tested against the backend standard, dignity/relationship/condition/chart-profile surfaces, and ayanamsa provenance policy. |
+| P9-09 | Ashtakavarga | `admitted` | Four direct-sync and four chart-backed REST routes are live and tested against the backend standard, BAV/SAV result, shodhana policy, sign-strength, transit-strength, chart-profile, and Lagna derivation provenance surfaces. |
+| P9-10 | Alternate dasha systems | `admitted` | Five direct-compute and four chart-backed REST routes are live and tested against the backend standard, Ashtottari/Yogini sequence/profile surfaces, period-profile projection, natal Moon derivation, and eligibility-limit truth. |
+| P9-11 | Varga | `admitted` | Five direct-sync and three chart-backed REST routes are live and tested against the backend standard, generic/named VargaPoint surfaces, Shodashvarga set, and batch projections. |
+| P9-12 | Decans / decanates | `admitted` | Eight direct-sync and two chart-backed REST routes are live and tested against the backend standard, decanate placement truth, body-backed Vedic drekkana/decanate set derivation, Hermetic catalog/longitude/rising lookup, and night-hour vessel serialization. |
 | P9-U1 | `moira.vedic` umbrella | `exclude_from_rest` | Import aggregation surface; expose named Vedic doctrine families instead. |
 | P9-U2 | `moira.classical` umbrella | `exclude_from_rest` | Import aggregation surface; expose named classical doctrine families instead. |
 
@@ -423,17 +423,20 @@ Evidence:
 
 REST admission notes:
 
-- First admission should be direct-sync because `moira.vedic_dignities`
+- First admission is direct-sync because `moira.vedic_dignities`
   consumes caller-supplied sidereal longitudes.
 - The `ayanamsa_system` policy field records provenance for upstream sidereal
   reduction; the engine does not perform tropical-to-sidereal conversion.
-- Chart-backed convenience routes should be deferred until the server adapter
-  explicitly owns sidereal reduction and ayanamsa policy truth.
+- Chart-backed convenience routes are live after the post-Phase-9 shared
+  adapter explicitly owns sidereal reduction and ayanamsa policy truth.
 - Live routes:
   - `POST /v1/vedic-dignities/dignity`
   - `POST /v1/vedic-dignities/relationships`
   - `POST /v1/vedic-dignities/condition`
   - `POST /v1/vedic-dignities/chart-profile`
+  - `POST /v1/vedic-dignities/chart/dignity`
+  - `POST /v1/vedic-dignities/chart/relationships`
+  - `POST /v1/vedic-dignities/chart/profile`
 - Verification:
   - `tests/server/test_server_vedic_dignities_routes.py`
   - `tests/server/test_server_startup.py`
@@ -468,18 +471,22 @@ Evidence:
 
 REST admission notes:
 
-- First admission should be direct-sync because `moira.ashtakavarga` consumes
+- First admission is direct-sync because `moira.ashtakavarga` consumes
   caller-supplied sidereal longitudes or sign indices.
 - The `ayanamsa_system` policy field records provenance for upstream sidereal
   reduction; the engine does not perform tropical-to-sidereal conversion.
-- Chart-backed convenience routes should be deferred until the server adapter
-  explicitly owns sidereal reduction, Lagna derivation, and ayanamsa policy
-  truth.
+- Chart-backed convenience routes are live after the post-Phase-9 shared
+  adapter explicitly owns sidereal reduction, Lagna derivation, and ayanamsa
+  policy truth.
 - Live routes:
   - `POST /v1/ashtakavarga/result`
   - `POST /v1/ashtakavarga/profile`
   - `POST /v1/ashtakavarga/sign-profile`
   - `POST /v1/ashtakavarga/transit-strength`
+  - `POST /v1/ashtakavarga/chart/result`
+  - `POST /v1/ashtakavarga/chart/profile`
+  - `POST /v1/ashtakavarga/chart/sign-profile`
+  - `POST /v1/ashtakavarga/chart/transit-strength`
 - Verification:
   - `tests/server/test_server_ashtakavarga_routes.py`
   - `tests/server/test_server_startup.py`
@@ -513,10 +520,10 @@ REST admission notes:
 
 - The current `wiki/02_standards/DASHA_BACKEND_STANDARD.md` remains
   Vimshottari-centered by design; alternate systems now have their own standard.
-- First admission should be direct computation from caller-supplied
+- First admission is direct computation from caller-supplied
   `moon_tropical_lon`, `natal_jd`, `levels`, and explicit policy.
-- Chart-backed convenience routes should be deferred until the server adapter
-  explicitly owns natal Moon derivation and policy provenance.
+- Chart-backed convenience routes are live after the post-Phase-9 shared
+  adapter explicitly owns natal Moon derivation and policy provenance.
 - Ashtottari transport must preserve current eligibility truth: full
   Rahu/Lagna eligibility checking is not implemented, so first admission should
   either require `bypass_eligibility=True` or expose the engine rejection for
@@ -524,8 +531,12 @@ REST admission notes:
 - Live routes:
   - `POST /v1/dasha/alternate/ashtottari/sequence`
   - `POST /v1/dasha/alternate/ashtottari/profile`
+  - `POST /v1/dasha/alternate/ashtottari/chart/sequence`
+  - `POST /v1/dasha/alternate/ashtottari/chart/profile`
   - `POST /v1/dasha/alternate/yogini/sequence`
   - `POST /v1/dasha/alternate/yogini/profile`
+  - `POST /v1/dasha/alternate/yogini/chart/sequence`
+  - `POST /v1/dasha/alternate/yogini/chart/profile`
   - `POST /v1/dasha/alternate/period-profile`
 - Verification:
   - `tests/server/test_server_alternate_dashas_routes.py`
@@ -558,20 +569,24 @@ Evidence:
 
 REST admission notes:
 
-- First admission should be direct-sync because `moira.varga` consumes
+- First admission is direct-sync because `moira.varga` consumes
   caller-supplied sidereal longitudes.
 - REST must reject non-finite longitudes before calling the engine.
 - The backend standard records that no dedicated `validate_varga_output(...)`
   helper is currently exposed; validation coverage is by vessel immutability,
   range tests, boundary tests, and wrapper-specific rule tests.
-- Chart-backed convenience routes should be deferred until the server adapter
-  explicitly owns tropical-to-sidereal reduction and ayanamsa policy truth.
+- Chart-backed convenience routes are live after the post-Phase-9 shared
+  adapter explicitly owns tropical-to-sidereal reduction and ayanamsa policy
+  truth.
 - Live routes:
   - `POST /v1/varga/generic`
   - `POST /v1/varga/named`
   - `POST /v1/varga/shodashvarga`
   - `POST /v1/varga/named/batch`
   - `POST /v1/varga/shodashvarga/batch`
+  - `POST /v1/varga/chart/named`
+  - `POST /v1/varga/chart/shodashvarga`
+  - `POST /v1/varga/chart/shodashvarga/batch`
 - Verification:
   - `tests/server/test_server_varga_routes.py`
   - `tests/server/test_server_startup.py`
@@ -606,14 +621,17 @@ REST admission notes:
   longitude; Vedic drekkana additionally consumes JD and ayanamsa policy.
 - Hermetic routes expose catalog, tropical longitude lookup, rising decan, and
   night-hour products.
-- Chart-backed convenience routes are deferred until the server adapter owns
-  planetary longitude derivation, sidereal reduction where needed, and chart
-  policy truth.
+- Chart-backed Decanates routes are live after the post-Phase-9 shared adapter
+  owns body longitude derivation, sidereal reduction provenance, and chart
+  policy truth. Hermetic routes remain direct because they are location/JD
+  observational products rather than body-backed sidereal chart conveniences.
 - Live routes:
   - `POST /v1/decanates/chaldean-face`
   - `POST /v1/decanates/triplicity`
   - `POST /v1/decanates/vedic-drekkana`
   - `POST /v1/decanates/set`
+  - `POST /v1/decanates/chart/vedic-drekkana`
+  - `POST /v1/decanates/chart/set`
   - `GET /v1/hermetic-decans/catalog`
   - `POST /v1/hermetic-decans/longitude`
   - `POST /v1/hermetic-decans/rising`

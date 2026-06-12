@@ -2,7 +2,7 @@
 
 Version: 1.0
 Date: 2026-06-11
-Status: P9-09 admitted; four direct-sync Ashtakavarga routes live and tested
+Status: P9-09 admitted; four direct-sync and four chart-backed Ashtakavarga routes live and tested
 Scope: Phase 9 Ashtakavarga REST admission design
 
 This document declares the REST route shapes admitted for the Ashtakavarga
@@ -191,9 +191,17 @@ Response preserves:
 
 ---
 
-## 4. Deferred Chart-Backed Surface
+## 4. Chart-Backed Surface
 
-Chart-backed Ashtakavarga remains deferred.
+Chart-backed Ashtakavarga is admitted after the post-Phase-9 shared
+`SiderealChartContext` workflow.
+
+Live shapes:
+
+- `POST /v1/ashtakavarga/chart/result`
+- `POST /v1/ashtakavarga/chart/profile`
+- `POST /v1/ashtakavarga/chart/sign-profile`
+- `POST /v1/ashtakavarga/chart/transit-strength`
 
 Reason:
 
@@ -202,26 +210,28 @@ Reason:
 - It does not compute ayanamsa reduction.
 - It does not derive Lagna from datetime/location/houses.
 
-The deferred route family should wait until the server owns a shared Vedic chart
-reduction adapter that visibly performs:
+The chart-backed route family uses the shared post-Phase-9 adapter to visibly
+perform:
 
 - tropical planetary derivation
 - explicit ayanamsa reduction
 - sidereal Lagna derivation
 - reduction provenance serialization
 
-Only after that adapter exists should chart-backed routes such as
-`POST /v1/ashtakavarga/chart/result` be admitted.
+Implementation:
+
+- Chart-backed requests require observer latitude and longitude because Lagna
+  is a required Ashtakavarga reference.
+- Responses embed compact sidereal chart provenance.
+- Direct-vs-chart parity is verified in
+  `tests/server/test_server_ashtakavarga_routes.py`.
 
 ---
 
 ## 5. Explicit Non-Goals
 
-The first P9-09 admission does not expose:
+P9-09 does not expose:
 
-- chart-backed datetime/location computation
-- tropical-to-sidereal conversion
-- Lagna derivation
 - interpretive prediction text
 - Varga integration
 - Shadbala integration

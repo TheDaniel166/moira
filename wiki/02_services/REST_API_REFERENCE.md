@@ -1,7 +1,7 @@
 # Moira REST API Reference
 
 Version: 0.1.0 transport surface
-Date audited: 2026-06-11
+Date audited: 2026-06-12
 Source of truth: `moira_server.app.create_app()` route registry
 
 This document describes the HTTP transport surface currently registered by
@@ -16,9 +16,9 @@ transport contract documented for that family.
 
 ## Current Surface Summary
 
-- Total non-documentation routes: 231
+- Total non-documentation routes: 263
 - Operational/meta routes: 4
-- Versioned `/v1` routes: 227
+- Versioned `/v1` routes: 259
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 
@@ -40,19 +40,27 @@ Implemented:
   result/dependency/condition/profile/network routes, and Triplicity
   table/assignment/score routes, followed by Egyptian Bounds table, bound,
   classification, relation, condition, aggregate, and network routes, followed
-  by Vedic Dignities dignity/relationship/condition/chart-profile routes,
-  Ashtakavarga result/profile/sign-profile/transit-strength routes, and
-  alternate dasha Ashtottari/Yogini sequence/profile plus period-profile
-  routes, Varga generic/named/Shodashvarga/batch routes, and
-  Decans/Decanates decanate-placement plus Hermetic catalog/longitude/rising/
-  night-hour routes
+  by Vedic Dignities direct and chart-backed dignity/relationship/profile routes,
+  Ashtakavarga direct and chart-backed result/profile/sign-profile/
+  transit-strength routes, and alternate dasha direct and chart-backed
+  Ashtottari/Yogini sequence/profile plus period-profile
+  routes, Varga direct and chart-backed generic/named/Shodashvarga/batch routes, and
+  Decans/Decanates direct and chart-backed decanate-placement plus Hermetic
+  catalog/longitude/rising/night-hour routes
 - website-accelerated Phase 11 subset: fixed stars, variable stars, multiple stars, asteroids, and comets
+- phase 10 opened with bounded Astrocartography line and subplanetary point
+  routes, followed by bounded Local Space direct and chart-backed horizon
+  position routes, and bounded Geodetic direct/chart-backed location-chart and
+  equivalent-longitude routes, followed by bounded Galactic coordinate-frame
+  transform, reference-point, and chart-position routes; dense maps, tiles,
+  contours, grids, projection products, geographic search, relocation
+  synthesis, galactic houses, and catalog sweeps remain deferred
 - website support: locations, chart-wheel packets, and reduction-pipeline inspection aliases
 
 Not yet broadly exposed as REST families:
 
 - phase 9 umbrella aggregation modules: `/v1/vedic/*` and `/v1/classical/*`
-- phase 10 spatial and Earth-facing mapping routes: `/v1/astrocartography/*`, `/v1/local-space/*`, `/v1/geodetic/*`, `/v1/galactic/*`, `/v1/gauquelin/*`
+- remaining phase 10 spatial and Earth-facing routes: `/v1/gauquelin/*`; expanded Astrocartography, Local Space, Geodetic, and Galactic map/rendering/projection products remain deferred
 - phase 12 specialist analytical families: `/v1/uranian/*`, `/v1/harmonics/*`, `/v1/phase/*`, `/v1/antiscia/*`, `/v1/special/*`
 - phase 13 electional/search workflow routes: `/v1/electional/*`
 
@@ -61,8 +69,9 @@ Not yet broadly exposed as REST families:
 | Family | Routes |
 |---|---:|
 | meta | 4 |
-| ashtakavarga | 4 |
-| alternate-dashas | 5 |
+| ashtakavarga | 8 |
+| alternate-dashas | 9 |
+| astrocartography | 4 |
 | asteroids | 3 |
 | batch | 7 |
 | chart | 2 |
@@ -71,15 +80,18 @@ Not yet broadly exposed as REST families:
 | composite | 1 |
 | dasha | 5 |
 | davison | 1 |
-| decanates | 4 |
+| decanates | 6 |
 | dignities | 6 |
 | egyptian-bounds | 7 |
 | eclipses | 5 |
+| galactic | 6 |
+| geodetic | 4 |
 | heliacal | 2 |
 | hermetic-decans | 4 |
 | houses | 2 |
 | jaimini | 8 |
 | locations | 2 |
+| local-space | 2 |
 | lots | 7 |
 | lunar-phases | 1 |
 | midpoints | 5 |
@@ -102,8 +114,8 @@ Not yet broadly exposed as REST families:
 | transits | 3 |
 | triplicity | 3 |
 | varshaphal | 9 |
-| varga | 5 |
-| vedic-dignities | 4 |
+| varga | 8 |
+| vedic-dignities | 7 |
 | visibility | 2 |
 | void-of-course | 4 |
 | website | 3 |
@@ -300,6 +312,9 @@ Not yet broadly exposed as REST families:
 | POST | `/v1/vedic-dignities/relationships` | `vedic_dignity_relationships_route` |
 | POST | `/v1/vedic-dignities/condition` | `vedic_dignity_condition_route` |
 | POST | `/v1/vedic-dignities/chart-profile` | `vedic_dignity_chart_profile_route` |
+| POST | `/v1/vedic-dignities/chart/dignity` | `vedic_dignity_chart_backed_route` |
+| POST | `/v1/vedic-dignities/chart/relationships` | `vedic_dignity_chart_backed_relationships_route` |
+| POST | `/v1/vedic-dignities/chart/profile` | `vedic_dignity_chart_backed_profile_route` |
 
 ## Ashtakavarga Routes
 
@@ -309,6 +324,10 @@ Not yet broadly exposed as REST families:
 | POST | `/v1/ashtakavarga/profile` | `ashtakavarga_profile_route` |
 | POST | `/v1/ashtakavarga/sign-profile` | `ashtakavarga_sign_profile_route` |
 | POST | `/v1/ashtakavarga/transit-strength` | `ashtakavarga_transit_strength_route` |
+| POST | `/v1/ashtakavarga/chart/result` | `ashtakavarga_chart_result_route` |
+| POST | `/v1/ashtakavarga/chart/profile` | `ashtakavarga_chart_profile_route` |
+| POST | `/v1/ashtakavarga/chart/sign-profile` | `ashtakavarga_chart_sign_profile_route` |
+| POST | `/v1/ashtakavarga/chart/transit-strength` | `ashtakavarga_chart_transit_strength_route` |
 
 ## Varga Routes
 
@@ -319,6 +338,9 @@ Not yet broadly exposed as REST families:
 | POST | `/v1/varga/shodashvarga` | `varga_shodashvarga_route` |
 | POST | `/v1/varga/named/batch` | `varga_named_batch_route` |
 | POST | `/v1/varga/shodashvarga/batch` | `varga_shodashvarga_batch_route` |
+| POST | `/v1/varga/chart/named` | `varga_chart_named_route` |
+| POST | `/v1/varga/chart/shodashvarga` | `varga_chart_shodashvarga_route` |
+| POST | `/v1/varga/chart/shodashvarga/batch` | `varga_chart_shodashvarga_batch_route` |
 
 ## Decans And Decanates Routes
 
@@ -328,10 +350,48 @@ Not yet broadly exposed as REST families:
 | POST | `/v1/decanates/triplicity` | `triplicity_decan_route` |
 | POST | `/v1/decanates/vedic-drekkana` | `vedic_drekkana_route` |
 | POST | `/v1/decanates/set` | `decanate_set_route` |
+| POST | `/v1/decanates/chart/vedic-drekkana` | `vedic_drekkana_chart_route` |
+| POST | `/v1/decanates/chart/set` | `decanate_set_chart_route` |
 | GET | `/v1/hermetic-decans/catalog` | `hermetic_decan_catalog_route` |
 | POST | `/v1/hermetic-decans/longitude` | `hermetic_decan_longitude_route` |
 | POST | `/v1/hermetic-decans/rising` | `hermetic_rising_decan_route` |
 | POST | `/v1/hermetic-decans/night-hours` | `hermetic_decan_night_hours_route` |
+
+## Astrocartography Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| POST | `/v1/astrocartography/lines` | `astrocartography_lines_route` |
+| POST | `/v1/astrocartography/chart/lines` | `astrocartography_chart_lines_route` |
+| POST | `/v1/astrocartography/subplanetary` | `astrocartography_subplanetary_route` |
+| POST | `/v1/astrocartography/chart/subplanetary` | `astrocartography_chart_subplanetary_route` |
+
+## Local Space Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| POST | `/v1/local-space/positions` | `local_space_positions_route` |
+| POST | `/v1/local-space/chart/positions` | `local_space_chart_positions_route` |
+
+## Geodetic Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| POST | `/v1/geodetic/location-chart` | `geodetic_location_chart_route` |
+| POST | `/v1/geodetic/chart/location-chart` | `geodetic_chart_location_chart_route` |
+| POST | `/v1/geodetic/equivalents` | `geodetic_equivalents_route` |
+| POST | `/v1/geodetic/chart/equivalents` | `geodetic_chart_equivalents_route` |
+
+## Galactic Coordinates Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| POST | `/v1/galactic/equatorial-to-galactic` | `equatorial_to_galactic_route` |
+| POST | `/v1/galactic/galactic-to-equatorial` | `galactic_to_equatorial_route` |
+| POST | `/v1/galactic/ecliptic-to-galactic` | `ecliptic_to_galactic_route` |
+| POST | `/v1/galactic/galactic-to-ecliptic` | `galactic_to_ecliptic_route` |
+| POST | `/v1/galactic/reference-points` | `galactic_reference_points_route` |
+| POST | `/v1/galactic/chart/positions` | `galactic_chart_positions_route` |
 
 ## Progressions, Timelords, Dasha, Varshaphal, And Primary Directions
 
@@ -380,8 +440,12 @@ Not yet broadly exposed as REST families:
 | POST | `/v1/dasha/vimshottari/lord-pair` | `dasha_lord_pair_route` |
 | POST | `/v1/dasha/alternate/ashtottari/sequence` | `ashtottari_sequence_route` |
 | POST | `/v1/dasha/alternate/ashtottari/profile` | `ashtottari_profile_route` |
+| POST | `/v1/dasha/alternate/ashtottari/chart/sequence` | `ashtottari_chart_sequence_route` |
+| POST | `/v1/dasha/alternate/ashtottari/chart/profile` | `ashtottari_chart_profile_route` |
 | POST | `/v1/dasha/alternate/yogini/sequence` | `yogini_sequence_route` |
 | POST | `/v1/dasha/alternate/yogini/profile` | `yogini_profile_route` |
+| POST | `/v1/dasha/alternate/yogini/chart/sequence` | `yogini_chart_sequence_route` |
+| POST | `/v1/dasha/alternate/yogini/chart/profile` | `yogini_chart_profile_route` |
 | POST | `/v1/dasha/alternate/period-profile` | `alternate_period_profile_route` |
 | POST | `/v1/varshaphal/chart` | `varshaphal_chart_route` |
 | POST | `/v1/varshaphal/judgement/profile` | `varshaphal_judgement_profile_route` |

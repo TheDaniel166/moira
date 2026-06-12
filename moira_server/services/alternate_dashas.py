@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from moira import Moira
 from moira.dasha_systems import (
     AlternateDashaPeriod,
     AlternateDashaSequenceProfile,
@@ -19,8 +20,15 @@ from moira.dasha_systems import (
 
 from ..models.alternate_dashas import (
     AlternateDashaPeriodRequest,
+    AshtottariChartSequenceRequest,
     AshtottariSequenceRequest,
+    YoginiChartSequenceRequest,
     YoginiSequenceRequest,
+)
+from .sidereal_context import (
+    SiderealChartContext,
+    SiderealChartRequirements,
+    derive_sidereal_chart_context,
 )
 
 
@@ -38,6 +46,18 @@ class AlternateDashaSequenceResult:
 class AlternateDashaProfileResult:
     sequence: AlternateDashaSequenceResult
     profile: AlternateDashaSequenceProfile
+
+
+@dataclass(frozen=True, slots=True)
+class AlternateDashaChartSequenceResult:
+    context: SiderealChartContext
+    sequence: AlternateDashaSequenceResult
+
+
+@dataclass(frozen=True, slots=True)
+class AlternateDashaChartProfileResult:
+    context: SiderealChartContext
+    profile: AlternateDashaProfileResult
 
 
 def _ashtottari_policy_from_request(
@@ -93,6 +113,38 @@ def compute_ashtottari_profile(
     )
 
 
+def compute_ashtottari_chart_sequence(
+    engine: Moira,
+    request: AshtottariChartSequenceRequest,
+) -> AlternateDashaChartSequenceResult:
+    context = _derive_alternate_dasha_context(engine, request)
+    return AlternateDashaChartSequenceResult(
+        context=context,
+        sequence=compute_ashtottari_sequence(
+            AshtottariSequenceRequest(
+                moon_tropical_lon=context.tropical_longitudes["Moon"],
+                natal_jd=context.jd_ut,
+                levels=request.levels,
+                policy=request.policy,
+            )
+        ),
+    )
+
+
+def compute_ashtottari_chart_profile(
+    engine: Moira,
+    request: AshtottariChartSequenceRequest,
+) -> AlternateDashaChartProfileResult:
+    sequence = compute_ashtottari_chart_sequence(engine, request)
+    return AlternateDashaChartProfileResult(
+        context=sequence.context,
+        profile=AlternateDashaProfileResult(
+            sequence=sequence.sequence,
+            profile=alternate_sequence_profile(sequence.sequence.periods),
+        ),
+    )
+
+
 def compute_yogini_sequence(
     request: YoginiSequenceRequest,
 ) -> AlternateDashaSequenceResult:
@@ -122,6 +174,46 @@ def compute_yogini_profile(
     )
 
 
+def compute_yogini_chart_sequence(
+    engine: Moira,
+    request: YoginiChartSequenceRequest,
+) -> AlternateDashaChartSequenceResult:
+    context = _derive_alternate_dasha_context(engine, request)
+    return AlternateDashaChartSequenceResult(
+        context=context,
+        sequence=compute_yogini_sequence(
+            YoginiSequenceRequest(
+                moon_tropical_lon=context.tropical_longitudes["Moon"],
+                natal_jd=context.jd_ut,
+                levels=request.levels,
+                policy=request.policy,
+            )
+        ),
+    )
+
+
+def compute_yogini_chart_profile(
+    engine: Moira,
+    request: YoginiChartSequenceRequest,
+) -> AlternateDashaChartProfileResult:
+    sequence = compute_yogini_chart_sequence(engine, request)
+    return AlternateDashaChartProfileResult(
+        context=sequence.context,
+        profile=AlternateDashaProfileResult(
+            sequence=sequence.sequence,
+            profile=alternate_sequence_profile(sequence.sequence.periods),
+        ),
+    )
+
+
+def _derive_alternate_dasha_context(engine: Moira, request) -> SiderealChartContext:
+    return derive_sidereal_chart_context(
+        engine,
+        request,
+        SiderealChartRequirements(required_bodies=("Moon",)),
+    )
+
+
 def period_from_request(request: AlternateDashaPeriodRequest) -> AlternateDashaPeriod:
     return AlternateDashaPeriod(
         system=request.system,
@@ -140,11 +232,17 @@ def compute_alternate_period_profile(
 
 
 __all__ = [
+    "AlternateDashaChartProfileResult",
+    "AlternateDashaChartSequenceResult",
     "AlternateDashaProfileResult",
     "AlternateDashaSequenceResult",
     "compute_alternate_period_profile",
+    "compute_ashtottari_chart_profile",
+    "compute_ashtottari_chart_sequence",
     "compute_ashtottari_profile",
     "compute_ashtottari_sequence",
+    "compute_yogini_chart_profile",
+    "compute_yogini_chart_sequence",
     "compute_yogini_profile",
     "compute_yogini_sequence",
     "period_from_request",

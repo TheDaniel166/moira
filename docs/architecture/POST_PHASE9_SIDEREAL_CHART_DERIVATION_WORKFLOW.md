@@ -2,7 +2,7 @@
 
 Version: 0.1
 Date: 2026-06-11
-Status: Planned post-Phase-9 implementation workflow
+Status: Complete; shared adapter and named post-Phase-9 consumers live
 Scope: Shared server-owned derivation layer for deferred chart-backed Vedic and classical routes
 
 Phase 9 admitted the named Vedic and classical doctrine families. Several
@@ -214,15 +214,18 @@ Admit chart-backed variants in the lowest-risk order:
    - Inputs: natal datetime, ayanamsa, dasha policy.
    - Needs Moon longitude and natal JD.
    - Must preserve Ashtottari eligibility truth.
+   - Status: live.
 
 4. **Ashtakavarga chart-backed convenience**
    - Inputs: datetime, ayanamsa, required planets, Lagna.
    - Needs sidereal signs and sidereal Lagna.
    - Higher risk because Lagna/observer requirements become mandatory.
+   - Status: live.
 
 5. **Vedic drekkana/decanate chart-backed convenience**
    - Inputs: datetime, ayanamsa, selected body.
    - Needs body longitude, JD, and policy provenance.
+   - Status: live for Decanates body-backed Vedic drekkana and decanate set.
 
 Do not admit all chart-backed variants at once. Each family should have its own
 transport design update, parity tests, adversarial tests, and REST reference
@@ -554,14 +557,14 @@ Admission proof:
 
 ### Gate 9 - Later Consumers
 
-Admit only after Vedic dignities and Varga have proven the adapter:
+Admitted after Vedic dignities and Varga proved the adapter:
 
 - alternate dasha chart-backed routes
 - Ashtakavarga chart-backed routes
 - Vedic drekkana/decanate chart-backed routes
 
-Each later family must update its own P9 transport design and add focused
-server route tests before REST reference changes.
+Each later family updated its own P9 transport design and added focused server
+route tests before REST reference changes.
 
 ### Gate 10 - Documentation And Route Inventory
 
@@ -617,15 +620,15 @@ Before declaring the workflow complete:
 
 ## 12. Work Breakdown Checklist
 
-- [ ] Gate 0: audit existing chart/sidereal/house surfaces
-- [ ] Gate 1: add shared request/provenance models
-- [ ] Gate 2: add immutable requirements contract
-- [ ] Gate 3: add frozen context vessels
-- [ ] Gate 4: implement derivation service
-- [ ] Gate 5: add serializers
-- [ ] Gate 6: add shared adapter tests
-- [ ] Gate 7: admit Vedic dignities chart-backed routes
-- [ ] Gate 8: admit Varga chart-backed routes
-- [ ] Gate 9: schedule later consumers
-- [ ] Gate 10: update docs and route inventory per consumer
-- [ ] Gate 11: run regression ritual
+- [x] Gate 0: audit existing chart/sidereal/house surfaces
+- [x] Gate 1: add shared request/provenance models
+- [x] Gate 2: add immutable requirements contract
+- [x] Gate 3: add frozen context vessels
+- [x] Gate 4: implement derivation service
+- [x] Gate 5: add serializers
+- [x] Gate 6: add shared adapter tests
+- [x] Gate 7: admit Vedic dignities chart-backed routes
+- [x] Gate 8: admit Varga chart-backed routes
+- [x] Gate 9: admit later consumers
+- [x] Gate 10: update docs and route inventory per consumer
+- [x] Gate 11: run regression ritual

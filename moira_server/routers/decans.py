@@ -2,9 +2,16 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from moira import Moira
+
+from ..dependencies import get_engine
 
 from ..models.decans import (
+    DecanateChartBodyRequest,
+    DecanateChartPositionResponse,
+    DecanateChartSetResponse,
     DecanateLongitudeRequest,
     DecanatePositionResponse,
     DecanateSetRequest,
@@ -17,6 +24,8 @@ from ..models.decans import (
     VedicDrekkanaRequest,
 )
 from ..serializers.decans import (
+    serialize_decanate_chart_position,
+    serialize_decanate_chart_set,
     serialize_decanate_position,
     serialize_decanate_set,
     serialize_hermetic_decan_catalog,
@@ -26,11 +35,13 @@ from ..serializers.decans import (
 from ..services.decans import (
     compute_chaldean_face,
     compute_decanate_set,
+    compute_decanate_set_chart,
     compute_hermetic_decan_longitude,
     compute_hermetic_decan_night_hours,
     compute_hermetic_rising_decan,
     compute_triplicity_decan,
     compute_vedic_drekkana,
+    compute_vedic_drekkana_chart,
     list_hermetic_decan_catalog,
 )
 
@@ -66,6 +77,29 @@ def vedic_drekkana_route(
 @decanates_router.post("/set", response_model=DecanateSetResponse)
 def decanate_set_route(request: DecanateSetRequest) -> DecanateSetResponse:
     return serialize_decanate_set(compute_decanate_set(request))
+
+
+@decanates_router.post(
+    "/chart/vedic-drekkana",
+    response_model=DecanateChartPositionResponse,
+)
+def vedic_drekkana_chart_route(
+    request: DecanateChartBodyRequest,
+    engine: Moira = Depends(get_engine),
+) -> DecanateChartPositionResponse:
+    return serialize_decanate_chart_position(
+        compute_vedic_drekkana_chart(engine, request)
+    )
+
+
+@decanates_router.post("/chart/set", response_model=DecanateChartSetResponse)
+def decanate_set_chart_route(
+    request: DecanateChartBodyRequest,
+    engine: Moira = Depends(get_engine),
+) -> DecanateChartSetResponse:
+    return serialize_decanate_chart_set(
+        compute_decanate_set_chart(engine, request)
+    )
 
 
 @hermetic_decans_router.get("/catalog", response_model=HermeticDecanCatalogResponse)

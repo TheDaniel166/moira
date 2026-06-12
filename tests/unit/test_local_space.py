@@ -84,6 +84,27 @@ def test_local_space_sorts_by_azimuth() -> None:
     assert [row.azimuth for row in rows] == sorted(row.azimuth for row in rows)
 
 
+@pytest.mark.parametrize(
+    ("planet_ra_dec", "latitude", "lst_deg", "message"),
+    [
+        ({"Sun": (0.0, 0.0)}, float("nan"), 0.0, "latitude"),
+        ({"Sun": (0.0, 0.0)}, 91.0, 0.0, "latitude"),
+        ({"Sun": (0.0, 0.0)}, 0.0, float("nan"), "lst_deg"),
+        ({"Sun": (float("nan"), 0.0)}, 0.0, 0.0, "RA/Dec"),
+        ({"Sun": (0.0, 91.0)}, 0.0, 0.0, "declination"),
+        ({"": (0.0, 0.0)}, 0.0, 0.0, "body names"),
+    ],
+)
+def test_local_space_rejects_invalid_inputs(
+    planet_ra_dec: dict[str, tuple[float, float]],
+    latitude: float,
+    lst_deg: float,
+    message: str,
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        ls.local_space_positions(planet_ra_dec, latitude=latitude, lst_deg=lst_deg)
+
+
 def test_compass_direction_octants_and_repr() -> None:
     labels = {
         0.0: "N",

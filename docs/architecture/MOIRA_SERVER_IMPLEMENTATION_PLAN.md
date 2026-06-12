@@ -48,6 +48,8 @@ Current implementation state:
 - post-Phase-9 sidereal chart derivation is planned as a shared
   request-scoped workflow before deferred chart-backed Vedic/classical
   convenience variants are admitted
+- phase 10 spatial and Earth-facing mapping candidates have an evaluation
+  ledger only; no Phase 10 routes are admitted yet
 - the live route inventory is documented in
   `wiki/02_services/REST_API_REFERENCE.md`
 
@@ -67,6 +69,7 @@ It assumes and inherits:
 - `docs/architecture/MOIRA_SERVER_SHARED_PRIMITIVES.md`
 - `docs/architecture/MOIRA_SERVER_PHASE8_LEDGER.md`
 - `docs/architecture/MOIRA_SERVER_PHASE9_LEDGER.md`
+- `docs/architecture/MOIRA_SERVER_PHASE10_LEDGER.md`
 - `docs/architecture/POST_PHASE9_SIDEREAL_CHART_DERIVATION_WORKFLOW.md`
 
 The purpose of this plan is to make the service layer buildable without

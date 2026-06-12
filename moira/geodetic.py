@@ -220,6 +220,30 @@ def _asc_from_armc(armc: float, obliquity: float, lat: float) -> float:
     return alt if _adist(alt, expected) < _adist(raw, expected) else raw
 
 
+def _validate_finite(name: str, value: float) -> None:
+    if not math.isfinite(value):
+        raise ValueError(f"{name} must be finite, got {value!r}")
+
+
+def _validate_geodetic_inputs(
+    geo_longitude: float,
+    geo_latitude: float,
+    obliquity: float,
+    ayanamsa_deg: float,
+) -> None:
+    _validate_finite("geo_longitude", geo_longitude)
+    _validate_finite("geo_latitude", geo_latitude)
+    _validate_finite("obliquity", obliquity)
+    _validate_finite("ayanamsa_deg", ayanamsa_deg)
+    if not -90.0 <= geo_latitude <= 90.0:
+        raise ValueError(f"geo_latitude must be in [-90, 90], got {geo_latitude!r}")
+
+
+def _validate_zodiac(zodiac: str) -> None:
+    if zodiac not in ("tropical", "sidereal"):
+        raise ValueError(f"zodiac must be 'tropical' or 'sidereal', got {zodiac!r}")
+
+
 # ---------------------------------------------------------------------------
 # Core computation
 # ---------------------------------------------------------------------------
@@ -252,6 +276,8 @@ def geodetic_mc(
     -------
     float — Geodetic MC in degrees, range [0°, 360°).
     """
+    _validate_finite("geo_longitude", geo_longitude)
+    _validate_finite("ayanamsa_deg", ayanamsa_deg)
     return (geo_longitude - ayanamsa_deg) % 360.0
 
 
@@ -284,6 +310,7 @@ def geodetic_asc(
     Results very near the poles are mathematically extrapolated but
     observationally meaningless.
     """
+    _validate_geodetic_inputs(geo_longitude, geo_latitude, obliquity, ayanamsa_deg)
     mc   = geodetic_mc(geo_longitude, ayanamsa_deg)
     armc = _armc_from_mc(mc, obliquity)
     return _asc_from_armc(armc, obliquity, geo_latitude)
@@ -315,6 +342,8 @@ def geodetic_chart(
     -------
     GeodeticChart — immutable vessel with MC, ASC, and derivation metadata.
     """
+    _validate_geodetic_inputs(geo_longitude, geo_latitude, obliquity, ayanamsa_deg)
+    _validate_zodiac(zodiac)
     mc   = geodetic_mc(geo_longitude, ayanamsa_deg)
     armc = _armc_from_mc(mc, obliquity)
     asc  = _asc_from_armc(armc, obliquity, geo_latitude)
@@ -357,6 +386,7 @@ def geodetic_chart_from_chart(
     ValueError
         If ``zodiac="sidereal"`` and ``ayanamsa_system`` is not provided.
     """
+    _validate_zodiac(zodiac)
     from .obliquity import true_obliquity
 
     if zodiac == "sidereal" and ayanamsa_system is None:
@@ -421,8 +451,12 @@ def geodetic_equivalents(
     -------
     dict mapping body name → geographic longitude in [−180°, +180°].
     """
+    _validate_finite("ayanamsa_deg", ayanamsa_deg)
     result: dict[str, float] = {}
     for body, lon in planet_longitudes.items():
+        if not body:
+            raise ValueError("Geodetic equivalent body names must be non-empty")
+        _validate_finite(f"longitude for {body!r}", lon)
         geo_lon = (lon + ayanamsa_deg) % 360.0
         result[body] = wrap_longitude_deg(geo_lon)
     return result
@@ -457,6 +491,7 @@ def geodetic_equivalents_from_chart(
     ValueError
         If ``zodiac="sidereal"`` and ``ayanamsa_system`` is not provided.
     """
+    _validate_zodiac(zodiac)
     if zodiac == "sidereal" and ayanamsa_system is None:
         raise ValueError(
             "ayanamsa_system is required when zodiac='sidereal'. "

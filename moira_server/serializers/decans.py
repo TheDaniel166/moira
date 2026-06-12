@@ -6,6 +6,8 @@ from moira.decanates import DecanatePosition
 from moira.hermetic_decans import DecanHoursNight
 
 from ..models.decans import (
+    DecanateChartPositionResponse,
+    DecanateChartSetResponse,
     DecanatePositionResponse,
     DecanateSetResponse,
     HermeticDecanCatalogResponse,
@@ -14,6 +16,8 @@ from ..models.decans import (
     HermeticDecanLookupResponse,
     HermeticDecanNightHoursResponse,
 )
+from ..services.decans import DecanateChartPositionResult, DecanateChartSetResult
+from .sidereal_context import serialize_sidereal_chart_provenance
 
 
 def serialize_decanate_position(position: DecanatePosition) -> DecanatePositionResponse:
@@ -36,6 +40,30 @@ def serialize_decanate_set(
         chaldean_face=serialize_decanate_position(positions["chaldean_face"]),
         triplicity=serialize_decanate_position(positions["triplicity"]),
         vedic_drekkana=serialize_decanate_position(positions["vedic_drekkana"]),
+    )
+
+
+def serialize_decanate_chart_position(
+    result: DecanateChartPositionResult,
+) -> DecanateChartPositionResponse:
+    return DecanateChartPositionResponse(
+        body=result.body,
+        result=serialize_decanate_position(result.position),
+        tropical_longitude=result.context.tropical_longitudes[result.body],
+        jd=result.context.jd_ut,
+        provenance=serialize_sidereal_chart_provenance(result.context),
+    )
+
+
+def serialize_decanate_chart_set(
+    result: DecanateChartSetResult,
+) -> DecanateChartSetResponse:
+    return DecanateChartSetResponse(
+        body=result.body,
+        result=serialize_decanate_set(result.positions),
+        tropical_longitude=result.context.tropical_longitudes[result.body],
+        jd=result.context.jd_ut,
+        provenance=serialize_sidereal_chart_provenance(result.context),
     )
 
 
@@ -100,6 +128,8 @@ def serialize_hermetic_decan_night_hours(
 
 
 __all__ = [
+    "serialize_decanate_chart_position",
+    "serialize_decanate_chart_set",
     "serialize_decanate_position",
     "serialize_decanate_set",
     "serialize_hermetic_decan_catalog",

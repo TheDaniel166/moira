@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -218,7 +220,91 @@ def test_decan_routes_are_registered() -> None:
     assert "/v1/decanates/triplicity" in paths
     assert "/v1/decanates/vedic-drekkana" in paths
     assert "/v1/decanates/set" in paths
+    assert "/v1/decanates/chart/vedic-drekkana" in paths
+    assert "/v1/decanates/chart/set" in paths
     assert "/v1/hermetic-decans/catalog" in paths
     assert "/v1/hermetic-decans/longitude" in paths
     assert "/v1/hermetic-decans/rising" in paths
     assert "/v1/hermetic-decans/night-hours" in paths
+
+
+def test_vedic_drekkana_chart_route_matches_direct_route() -> None:
+    payload = {
+        "dt": datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc).isoformat(),
+        "body": "Sun",
+        "ayanamsa_system": "Lahiri",
+    }
+
+    with _client() as client:
+        chart_response = client.post(
+            "/v1/decanates/chart/vedic-drekkana",
+            json=payload,
+        )
+
+    assert chart_response.status_code == 200
+    chart_body = chart_response.json()
+
+    with _client() as client:
+        direct_response = client.post(
+            "/v1/decanates/vedic-drekkana",
+            json={
+                "longitude": chart_body["tropical_longitude"],
+                "jd": chart_body["jd"],
+                "ayanamsa_system": "Lahiri",
+            },
+        )
+
+    assert direct_response.status_code == 200
+    assert chart_body["result"] == direct_response.json()
+    assert chart_body["body"] == "Sun"
+    assert chart_body["provenance"]["requested_bodies"] == ["Sun"]
+
+
+def test_decanate_set_chart_route_matches_direct_route() -> None:
+    payload = {
+        "dt": datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc).isoformat(),
+        "body": "Moon",
+        "ayanamsa_system": "Lahiri",
+    }
+
+    with _client() as client:
+        chart_response = client.post("/v1/decanates/chart/set", json=payload)
+
+    assert chart_response.status_code == 200
+    chart_body = chart_response.json()
+
+    with _client() as client:
+        direct_response = client.post(
+            "/v1/decanates/set",
+            json={
+                "longitude": chart_body["tropical_longitude"],
+                "jd": chart_body["jd"],
+                "ayanamsa_system": "Lahiri",
+            },
+        )
+
+    assert direct_response.status_code == 200
+    assert chart_body["result"] == direct_response.json()
+
+
+def test_decanate_chart_route_rejects_naive_datetime() -> None:
+    with _client() as client:
+        response = client.post(
+            "/v1/decanates/chart/vedic-drekkana",
+            json={"dt": "2000-01-01T12:00:00", "body": "Sun"},
+        )
+
+    _assert_validation_envelope(response, message_fragment="timezone-aware")
+
+
+def test_decanate_chart_route_rejects_invalid_body() -> None:
+    with _client() as client:
+        response = client.post(
+            "/v1/decanates/chart/vedic-drekkana",
+            json={
+                "dt": datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc).isoformat(),
+                "body": "NotAPlanet",
+            },
+        )
+
+    _assert_validation_envelope(response, message_fragment="unsupported chart bodies")

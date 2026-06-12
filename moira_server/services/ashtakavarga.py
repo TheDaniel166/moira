@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from moira import Moira
 from moira.ashtakavarga import (
     AshtakavargaChartProfile,
     AshtakavargaPolicy,
@@ -18,10 +19,22 @@ from moira.ashtakavarga import (
 )
 
 from ..models.ashtakavarga import (
+    AshtakavargaChartBaseRequest,
+    AshtakavargaChartSignProfileRequest,
+    AshtakavargaChartTransitStrengthRequest,
     AshtakavargaDirectRequest,
+    AshtakavargaPolicyRequest,
     AshtakavargaSignProfileRequest,
     AshtakavargaTransitStrengthRequest,
 )
+from .sidereal_context import (
+    SiderealChartContext,
+    SiderealChartRequirements,
+    derive_sidereal_chart_context,
+)
+
+
+_ASHTAKAVARGA_BODIES = ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn")
 
 
 @dataclass(frozen=True, slots=True)
@@ -43,6 +56,30 @@ class AshtakavargaTransitStrengthResult:
     transit_sign_index: int
     rekha_count: int
     tier: str
+
+
+@dataclass(frozen=True, slots=True)
+class AshtakavargaChartBackedResult:
+    context: SiderealChartContext
+    result: AshtakavargaResult
+
+
+@dataclass(frozen=True, slots=True)
+class AshtakavargaChartBackedProfileResult:
+    context: SiderealChartContext
+    profile: AshtakavargaChartProfileResult
+
+
+@dataclass(frozen=True, slots=True)
+class AshtakavargaChartBackedSignProfileResult:
+    context: SiderealChartContext
+    profile: AshtakavargaSignProfileResult
+
+
+@dataclass(frozen=True, slots=True)
+class AshtakavargaChartBackedTransitStrengthResult:
+    context: SiderealChartContext
+    transit_strength: AshtakavargaTransitStrengthResult
 
 
 def _policy_from_request(request) -> AshtakavargaPolicy:
@@ -122,10 +159,120 @@ def compute_ashtakavarga_transit_strength(
     )
 
 
+def compute_ashtakavarga_chart_result(
+    engine: Moira,
+    request: AshtakavargaChartBaseRequest,
+) -> AshtakavargaChartBackedResult:
+    context = _derive_ashtakavarga_context(engine, request)
+    _, result = compute_ashtakavarga_result(_direct_request_from_context(context, request))
+    return AshtakavargaChartBackedResult(context=context, result=result)
+
+
+def compute_ashtakavarga_chart_profile_backed(
+    engine: Moira,
+    request: AshtakavargaChartBaseRequest,
+) -> AshtakavargaChartBackedProfileResult:
+    context = _derive_ashtakavarga_context(engine, request)
+    return AshtakavargaChartBackedProfileResult(
+        context=context,
+        profile=compute_ashtakavarga_chart_profile(
+            _direct_request_from_context(context, request)
+        ),
+    )
+
+
+def compute_ashtakavarga_chart_sign_profile(
+    engine: Moira,
+    request: AshtakavargaChartSignProfileRequest,
+) -> AshtakavargaChartBackedSignProfileResult:
+    context = _derive_ashtakavarga_context(engine, request)
+    return AshtakavargaChartBackedSignProfileResult(
+        context=context,
+        profile=compute_ashtakavarga_sign_profile(
+            AshtakavargaSignProfileRequest(
+                sidereal_longitudes=_ashtakavarga_longitudes_from_context(context),
+                policy=_policy_request_from_chart_request(request),
+                planet=request.planet,
+                sign_index=request.sign_index,
+            )
+        ),
+    )
+
+
+def compute_ashtakavarga_chart_transit_strength(
+    engine: Moira,
+    request: AshtakavargaChartTransitStrengthRequest,
+) -> AshtakavargaChartBackedTransitStrengthResult:
+    context = _derive_ashtakavarga_context(engine, request)
+    return AshtakavargaChartBackedTransitStrengthResult(
+        context=context,
+        transit_strength=compute_ashtakavarga_transit_strength(
+            AshtakavargaTransitStrengthRequest(
+                sidereal_longitudes=_ashtakavarga_longitudes_from_context(context),
+                policy=_policy_request_from_chart_request(request),
+                planet=request.planet,
+                transit_sign_index=request.transit_sign_index,
+            )
+        ),
+    )
+
+
+def _derive_ashtakavarga_context(
+    engine: Moira,
+    request: AshtakavargaChartBaseRequest,
+) -> SiderealChartContext:
+    return derive_sidereal_chart_context(
+        engine,
+        request,
+        SiderealChartRequirements(
+            required_bodies=_ASHTAKAVARGA_BODIES,
+            require_lagna=True,
+        ),
+    )
+
+
+def _ashtakavarga_longitudes_from_context(
+    context: SiderealChartContext,
+) -> dict[str, float]:
+    longitudes = {
+        body: context.sidereal_longitudes[body]
+        for body in _ASHTAKAVARGA_BODIES
+    }
+    assert context.sidereal_lagna is not None
+    longitudes["Lagna"] = context.sidereal_lagna
+    return longitudes
+
+
+def _policy_request_from_chart_request(
+    request: AshtakavargaChartBaseRequest,
+) -> AshtakavargaPolicyRequest:
+    if request.policy is not None:
+        return request.policy
+    return AshtakavargaPolicyRequest(ayanamsa_system=request.ayanamsa_system)
+
+
+def _direct_request_from_context(
+    context: SiderealChartContext,
+    request: AshtakavargaChartBaseRequest,
+) -> AshtakavargaDirectRequest:
+    return AshtakavargaDirectRequest(
+        sidereal_longitudes=_ashtakavarga_longitudes_from_context(context),
+        policy=_policy_request_from_chart_request(request),
+    )
+
+
 __all__ = [
+    "AshtakavargaChartBackedProfileResult",
+    "AshtakavargaChartBackedResult",
+    "AshtakavargaChartBackedSignProfileResult",
+    "AshtakavargaChartBackedTransitStrengthResult",
     "AshtakavargaChartProfileResult",
     "AshtakavargaSignProfileResult",
     "AshtakavargaTransitStrengthResult",
+    "compute_ashtakavarga_chart_profile_backed",
+    "compute_ashtakavarga_chart_result",
+    "compute_ashtakavarga_chart_sign_profile",
+    "compute_ashtakavarga_chart_transit_strength",
     "compute_ashtakavarga_chart_profile",
     "compute_ashtakavarga_result",
     "compute_ashtakavarga_sign_profile",

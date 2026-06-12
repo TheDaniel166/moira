@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
+from moira import Moira
 from moira.decanates import (
     DecanatePosition,
     chaldean_face,
@@ -19,12 +22,32 @@ from moira.hermetic_decans import (
 )
 
 from ..models.decans import (
+    DecanateChartBodyRequest,
     DecanateLongitudeRequest,
     DecanateSetRequest,
     HermeticLocationRequest,
     HermeticLongitudeRequest,
     VedicDrekkanaRequest,
 )
+from .sidereal_context import (
+    SiderealChartContext,
+    SiderealChartRequirements,
+    derive_sidereal_chart_context,
+)
+
+
+@dataclass(frozen=True, slots=True)
+class DecanateChartPositionResult:
+    context: SiderealChartContext
+    body: str
+    position: DecanatePosition
+
+
+@dataclass(frozen=True, slots=True)
+class DecanateChartSetResult:
+    context: SiderealChartContext
+    body: str
+    positions: dict[str, DecanatePosition]
 
 
 def compute_chaldean_face(request: DecanateLongitudeRequest) -> DecanatePosition:
@@ -57,6 +80,54 @@ def compute_decanate_set(
     }
 
 
+def compute_vedic_drekkana_chart(
+    engine: Moira,
+    request: DecanateChartBodyRequest,
+) -> DecanateChartPositionResult:
+    context = _derive_decanate_context(engine, request)
+    return DecanateChartPositionResult(
+        context=context,
+        body=request.body,
+        position=vedic_drekkana(
+            context.tropical_longitudes[request.body],
+            context.jd_ut,
+            ayanamsa_system=request.ayanamsa_system,
+        ),
+    )
+
+
+def compute_decanate_set_chart(
+    engine: Moira,
+    request: DecanateChartBodyRequest,
+) -> DecanateChartSetResult:
+    context = _derive_decanate_context(engine, request)
+    longitude = context.tropical_longitudes[request.body]
+    return DecanateChartSetResult(
+        context=context,
+        body=request.body,
+        positions={
+            "chaldean_face": chaldean_face(longitude),
+            "triplicity": triplicity_decan(longitude),
+            "vedic_drekkana": vedic_drekkana(
+                longitude,
+                context.jd_ut,
+                ayanamsa_system=request.ayanamsa_system,
+            ),
+        },
+    )
+
+
+def _derive_decanate_context(
+    engine: Moira,
+    request: DecanateChartBodyRequest,
+) -> SiderealChartContext:
+    return derive_sidereal_chart_context(
+        engine,
+        request,
+        SiderealChartRequirements(required_bodies=(request.body,)),
+    )
+
+
 def list_hermetic_decan_catalog() -> list[tuple[int, str, str]]:
     return [
         (index, name, DECAN_RULING_STARS[name])
@@ -85,12 +156,16 @@ def compute_hermetic_decan_night_hours(
 
 
 __all__ = [
+    "DecanateChartPositionResult",
+    "DecanateChartSetResult",
     "compute_chaldean_face",
     "compute_decanate_set",
+    "compute_decanate_set_chart",
     "compute_hermetic_decan_longitude",
     "compute_hermetic_decan_night_hours",
     "compute_hermetic_rising_decan",
     "compute_triplicity_decan",
+    "compute_vedic_drekkana_chart",
     "compute_vedic_drekkana",
     "list_hermetic_decan_catalog",
 ]

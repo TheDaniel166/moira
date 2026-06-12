@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -263,3 +265,96 @@ def test_alternate_dasha_routes_are_registered() -> None:
     assert "/v1/dasha/alternate/yogini/sequence" in paths
     assert "/v1/dasha/alternate/yogini/profile" in paths
     assert "/v1/dasha/alternate/period-profile" in paths
+    assert "/v1/dasha/alternate/ashtottari/chart/sequence" in paths
+    assert "/v1/dasha/alternate/ashtottari/chart/profile" in paths
+    assert "/v1/dasha/alternate/yogini/chart/sequence" in paths
+    assert "/v1/dasha/alternate/yogini/chart/profile" in paths
+
+
+def test_ashtottari_chart_sequence_route_matches_direct_route() -> None:
+    payload = {
+        "dt": datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc).isoformat(),
+        "levels": 1,
+        "ayanamsa_system": "Lahiri",
+    }
+
+    with _client() as client:
+        chart_response = client.post(
+            "/v1/dasha/alternate/ashtottari/chart/sequence",
+            json=payload,
+        )
+
+    assert chart_response.status_code == 200
+    chart_body = chart_response.json()
+
+    with _client() as client:
+        direct_response = client.post(
+            "/v1/dasha/alternate/ashtottari/sequence",
+            json={
+                "moon_tropical_lon": chart_body["moon_tropical_longitude"],
+                "natal_jd": chart_body["natal_jd"],
+                "levels": 1,
+                "policy": {"ayanamsa_system": "Lahiri"},
+            },
+        )
+
+    assert direct_response.status_code == 200
+    assert chart_body["result"] == direct_response.json()
+    assert chart_body["provenance"]["requested_bodies"] == ["Moon"]
+    assert "Moon" in chart_body["provenance"]["sidereal_longitudes"]
+
+
+def test_yogini_chart_profile_route_matches_direct_route() -> None:
+    payload = {
+        "dt": datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc).isoformat(),
+        "levels": 1,
+        "ayanamsa_system": "Lahiri",
+    }
+
+    with _client() as client:
+        chart_response = client.post(
+            "/v1/dasha/alternate/yogini/chart/profile",
+            json=payload,
+        )
+
+    assert chart_response.status_code == 200
+    chart_body = chart_response.json()
+
+    with _client() as client:
+        direct_response = client.post(
+            "/v1/dasha/alternate/yogini/profile",
+            json={
+                "moon_tropical_lon": chart_body["moon_tropical_longitude"],
+                "natal_jd": chart_body["natal_jd"],
+                "levels": 1,
+                "policy": {"ayanamsa_system": "Lahiri"},
+            },
+        )
+
+    assert direct_response.status_code == 200
+    assert chart_body["result"] == direct_response.json()
+    assert chart_body["provenance"]["ayanamsa_system"] == "Lahiri"
+
+
+def test_alternate_dasha_chart_route_rejects_naive_datetime() -> None:
+    with _client() as client:
+        response = client.post(
+            "/v1/dasha/alternate/yogini/chart/sequence",
+            json={"dt": "2000-01-01T12:00:00"},
+        )
+
+    _assert_validation_envelope(response, message_fragment="timezone-aware")
+
+
+def test_alternate_dasha_chart_route_rejects_policy_ayanamsa_mismatch() -> None:
+    with _client() as client:
+        response = client.post(
+            "/v1/dasha/alternate/ashtottari/chart/sequence",
+            json={
+                "dt": datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc).isoformat(),
+                "ayanamsa_system": "Lahiri",
+                "policy": {"ayanamsa_system": "Krishnamurti"},
+            },
+        )
+
+    _assert_validation_envelope(response, message_fragment="must match")

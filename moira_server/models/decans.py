@@ -7,6 +7,7 @@ import math
 from pydantic import Field, field_validator
 
 from .common import _StrictModel
+from .sidereal_context import SiderealChartBaseRequest, SiderealChartProvenanceResponse
 
 
 class DecanateLongitudeRequest(_StrictModel):
@@ -43,6 +44,17 @@ class DecanateSetRequest(VedicDrekkanaRequest):
     pass
 
 
+class DecanateChartBodyRequest(SiderealChartBaseRequest):
+    body: str
+
+    @field_validator("body")
+    @classmethod
+    def _non_empty_body(cls, value: str) -> str:
+        if not value:
+            raise ValueError("body must be non-empty")
+        return value
+
+
 class DecanatePositionResponse(_StrictModel):
     system: str
     decan_number: int
@@ -58,6 +70,22 @@ class DecanateSetResponse(_StrictModel):
     chaldean_face: DecanatePositionResponse
     triplicity: DecanatePositionResponse
     vedic_drekkana: DecanatePositionResponse
+
+
+class DecanateChartPositionResponse(_StrictModel):
+    body: str
+    result: DecanatePositionResponse
+    tropical_longitude: float
+    jd: float
+    provenance: SiderealChartProvenanceResponse
+
+
+class DecanateChartSetResponse(_StrictModel):
+    body: str
+    result: DecanateSetResponse
+    tropical_longitude: float
+    jd: float
+    provenance: SiderealChartProvenanceResponse
 
 
 class HermeticLongitudeRequest(_StrictModel):
@@ -123,6 +151,9 @@ class HermeticDecanNightHoursResponse(_StrictModel):
 
 
 __all__ = [
+    "DecanateChartBodyRequest",
+    "DecanateChartPositionResponse",
+    "DecanateChartSetResponse",
     "DecanateLongitudeRequest",
     "DecanatePositionResponse",
     "DecanateSetRequest",

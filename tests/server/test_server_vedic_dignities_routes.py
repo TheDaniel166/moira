@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -267,3 +269,113 @@ def test_vedic_dignity_routes_are_registered() -> None:
     assert "/v1/vedic-dignities/relationships" in paths
     assert "/v1/vedic-dignities/condition" in paths
     assert "/v1/vedic-dignities/chart-profile" in paths
+    assert "/v1/vedic-dignities/chart/dignity" in paths
+    assert "/v1/vedic-dignities/chart/relationships" in paths
+    assert "/v1/vedic-dignities/chart/profile" in paths
+
+
+def test_vedic_dignity_chart_backed_route_matches_direct_route_with_provenance() -> None:
+    payload = {
+        "dt": datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc).isoformat(),
+        "planet": "Sun",
+        "ayanamsa_system": "Lahiri",
+    }
+
+    with _client() as client:
+        chart_response = client.post("/v1/vedic-dignities/chart/dignity", json=payload)
+
+    assert chart_response.status_code == 200
+    chart_body = chart_response.json()
+    sidereal_sun = chart_body["provenance"]["sidereal_longitudes"]["Sun"]
+
+    with _client() as client:
+        direct_response = client.post(
+            "/v1/vedic-dignities/dignity",
+            json={
+                "planet": "Sun",
+                "sidereal_longitude": sidereal_sun,
+                "policy": {"ayanamsa_system": "Lahiri"},
+            },
+        )
+
+    assert direct_response.status_code == 200
+    assert chart_body["result"] == direct_response.json()
+    assert chart_body["provenance"]["ayanamsa_system"] == "Lahiri"
+    assert chart_body["provenance"]["ayanamsa_offset"] > 0.0
+    assert chart_body["provenance"]["requested_bodies"] == ["Sun"]
+    assert chart_body["provenance"]["stage_sequence"][0] == "datetime_validation"
+
+
+def test_vedic_dignity_chart_backed_relationships_match_direct_route() -> None:
+    payload = {
+        "dt": datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc).isoformat(),
+        "ayanamsa_system": "Lahiri",
+    }
+
+    with _client() as client:
+        chart_response = client.post("/v1/vedic-dignities/chart/relationships", json=payload)
+
+    assert chart_response.status_code == 200
+    chart_body = chart_response.json()
+
+    with _client() as client:
+        direct_response = client.post(
+            "/v1/vedic-dignities/relationships",
+            json={
+                "sidereal_longitudes": chart_body["provenance"]["sidereal_longitudes"],
+                "policy": {"ayanamsa_system": "Lahiri"},
+            },
+        )
+
+    assert direct_response.status_code == 200
+    assert chart_body["result"] == direct_response.json()
+    assert set(chart_body["provenance"]["sidereal_longitudes"]) >= set(_ALL_LONS)
+
+
+def test_vedic_dignity_chart_backed_profile_matches_direct_route() -> None:
+    payload = {
+        "dt": datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc).isoformat(),
+        "ayanamsa_system": "Lahiri",
+    }
+
+    with _client() as client:
+        chart_response = client.post("/v1/vedic-dignities/chart/profile", json=payload)
+
+    assert chart_response.status_code == 200
+    chart_body = chart_response.json()
+
+    with _client() as client:
+        direct_response = client.post(
+            "/v1/vedic-dignities/chart-profile",
+            json={
+                "sidereal_longitudes": chart_body["provenance"]["sidereal_longitudes"],
+                "policy": {"ayanamsa_system": "Lahiri"},
+            },
+        )
+
+    assert direct_response.status_code == 200
+    assert chart_body["result"] == direct_response.json()
+    assert chart_body["provenance"]["observer"] is None
+
+
+def test_vedic_dignity_chart_backed_route_rejects_naive_datetime() -> None:
+    with _client() as client:
+        response = client.post(
+            "/v1/vedic-dignities/chart/dignity",
+            json={"dt": "2000-01-01T12:00:00", "planet": "Sun"},
+        )
+
+    _assert_validation_envelope(response, message_fragment="timezone-aware")
+
+
+def test_vedic_dignity_chart_backed_route_rejects_invalid_planet() -> None:
+    with _client() as client:
+        response = client.post(
+            "/v1/vedic-dignities/chart/dignity",
+            json={
+                "dt": datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc).isoformat(),
+                "planet": "Rahu",
+            },
+        )
+
+    _assert_validation_envelope(response, message_fragment="unsupported chart bodies")

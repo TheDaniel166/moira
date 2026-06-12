@@ -229,3 +229,44 @@ class TestGeodeticEquivalents:
         assert equiv["Sun"]     == pytest.approx(30.0)
         assert equiv["Moon"]    == pytest.approx(120.0)
         assert equiv["Mercury"] == pytest.approx(-90.0)  # 270° → −90°
+
+
+class TestGeodeticInputValidation:
+    def test_geodetic_mc_rejects_non_finite_inputs(self) -> None:
+        with pytest.raises(ValueError, match="geo_longitude"):
+            geo.geodetic_mc(float("nan"))
+        with pytest.raises(ValueError, match="ayanamsa_deg"):
+            geo.geodetic_mc(0.0, ayanamsa_deg=float("nan"))
+
+    @pytest.mark.parametrize(
+        ("longitude", "latitude", "obliquity", "ayanamsa", "message"),
+        [
+            (float("nan"), 0.0, OBL_J2000, 0.0, "geo_longitude"),
+            (0.0, float("nan"), OBL_J2000, 0.0, "geo_latitude"),
+            (0.0, 91.0, OBL_J2000, 0.0, "geo_latitude"),
+            (0.0, 0.0, float("nan"), 0.0, "obliquity"),
+            (0.0, 0.0, OBL_J2000, float("nan"), "ayanamsa_deg"),
+        ],
+    )
+    def test_geodetic_asc_rejects_invalid_inputs(
+        self,
+        longitude: float,
+        latitude: float,
+        obliquity: float,
+        ayanamsa: float,
+        message: str,
+    ) -> None:
+        with pytest.raises(ValueError, match=message):
+            geo.geodetic_asc(longitude, latitude, obliquity, ayanamsa_deg=ayanamsa)
+
+    def test_geodetic_chart_rejects_invalid_zodiac(self) -> None:
+        with pytest.raises(ValueError, match="zodiac"):
+            geo.geodetic_chart(0.0, 51.5, OBL_J2000, zodiac="invented")
+
+    def test_geodetic_equivalents_rejects_invalid_inputs(self) -> None:
+        with pytest.raises(ValueError, match="body names"):
+            geo.geodetic_equivalents({"": 30.0})
+        with pytest.raises(ValueError, match="longitude"):
+            geo.geodetic_equivalents({"Sun": float("nan")})
+        with pytest.raises(ValueError, match="ayanamsa_deg"):
+            geo.geodetic_equivalents({"Sun": 30.0}, ayanamsa_deg=float("nan"))

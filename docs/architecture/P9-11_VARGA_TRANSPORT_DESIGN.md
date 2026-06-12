@@ -2,7 +2,7 @@
 
 Version: 0.1
 Date: 2026-06-11
-Status: P9-11 admitted; five direct-sync Varga routes live and tested
+Status: P9-11 admitted; five direct-sync and three chart-backed Varga routes live and tested
 Scope: Phase 9 Varga REST admission design
 
 This document declares the REST route shapes admitted for Vedic
@@ -301,11 +301,12 @@ represent a planet, asteroid, point, Lot, or other caller-owned position.
 
 ---
 
-## 6. Deferred Chart-Backed Surface
+## 6. Chart-Backed Surface
 
-Chart-backed Varga routes are intentionally not part of first admission.
+Chart-backed Varga routes are admitted after the post-Phase-9 shared
+`SiderealChartContext` workflow.
 
-Deferred shapes:
+Live shapes:
 
 - `POST /v1/varga/chart/named`
 - `POST /v1/varga/chart/shodashvarga`
@@ -318,6 +319,13 @@ Reason:
 - It does not compute ayanamsa reduction.
 - A chart-backed route must make tropical-to-sidereal reduction and ayanamsa
   policy provenance visible.
+
+Implementation:
+
+- Chart-backed Varga routes use
+  `docs/architecture/POST_PHASE9_SIDEREAL_CHART_DERIVATION_WORKFLOW.md`.
+- Responses embed compact sidereal chart provenance.
+- Direct-vs-chart parity is verified in `tests/server/test_server_varga_routes.py`.
 
 ---
 

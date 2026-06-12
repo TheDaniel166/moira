@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -184,3 +186,111 @@ def test_varga_routes_are_registered() -> None:
     assert "/v1/varga/shodashvarga" in paths
     assert "/v1/varga/named/batch" in paths
     assert "/v1/varga/shodashvarga/batch" in paths
+    assert "/v1/varga/chart/named" in paths
+    assert "/v1/varga/chart/shodashvarga" in paths
+    assert "/v1/varga/chart/shodashvarga/batch" in paths
+
+
+def test_varga_chart_named_route_matches_direct_named_route() -> None:
+    payload = {
+        "dt": datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc).isoformat(),
+        "body": "Sun",
+        "varga": "navamsa",
+        "ayanamsa_system": "Lahiri",
+    }
+
+    with _client() as client:
+        chart_response = client.post("/v1/varga/chart/named", json=payload)
+
+    assert chart_response.status_code == 200
+    chart_body = chart_response.json()
+    sidereal_sun = chart_body["provenance"]["sidereal_longitudes"]["Sun"]
+
+    with _client() as client:
+        direct_response = client.post(
+            "/v1/varga/named",
+            json={"sidereal_longitude": sidereal_sun, "varga": "navamsa"},
+        )
+
+    assert direct_response.status_code == 200
+    assert chart_body["result"] == direct_response.json()
+    assert chart_body["body"] == "Sun"
+    assert chart_body["varga"] == "navamsa"
+    assert chart_body["provenance"]["requested_bodies"] == ["Sun"]
+
+
+def test_varga_chart_shodashvarga_route_matches_direct_route() -> None:
+    payload = {
+        "dt": datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc).isoformat(),
+        "body": "Moon",
+        "ayanamsa_system": "Lahiri",
+    }
+
+    with _client() as client:
+        chart_response = client.post("/v1/varga/chart/shodashvarga", json=payload)
+
+    assert chart_response.status_code == 200
+    chart_body = chart_response.json()
+    sidereal_moon = chart_body["provenance"]["sidereal_longitudes"]["Moon"]
+
+    with _client() as client:
+        direct_response = client.post(
+            "/v1/varga/shodashvarga",
+            json={"sidereal_longitude": sidereal_moon},
+        )
+
+    assert direct_response.status_code == 200
+    assert chart_body["result"] == direct_response.json()
+    assert set(chart_body["result"]["vargas"]) == set(VARGA_FUNCTIONS)
+
+
+def test_varga_chart_shodashvarga_batch_route_preserves_body_truth() -> None:
+    payload = {
+        "dt": datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc).isoformat(),
+        "bodies": ["Sun", "Moon"],
+        "ayanamsa_system": "Lahiri",
+    }
+
+    with _client() as client:
+        chart_response = client.post("/v1/varga/chart/shodashvarga/batch", json=payload)
+
+    assert chart_response.status_code == 200
+    chart_body = chart_response.json()
+    direct_payload = {
+        body: chart_body["provenance"]["sidereal_longitudes"][body]
+        for body in payload["bodies"]
+    }
+
+    with _client() as client:
+        direct_response = client.post(
+            "/v1/varga/shodashvarga/batch",
+            json={"longitudes": direct_payload},
+        )
+
+    assert direct_response.status_code == 200
+    assert chart_body["results"] == direct_response.json()["results"]
+    assert chart_body["provenance"]["requested_bodies"] == ["Sun", "Moon"]
+
+
+def test_varga_chart_named_route_rejects_naive_datetime() -> None:
+    with _client() as client:
+        response = client.post(
+            "/v1/varga/chart/named",
+            json={"dt": "2000-01-01T12:00:00", "body": "Sun", "varga": "navamsa"},
+        )
+
+    _assert_validation_envelope(response, message_fragment="timezone-aware")
+
+
+def test_varga_chart_named_route_rejects_invalid_body() -> None:
+    with _client() as client:
+        response = client.post(
+            "/v1/varga/chart/named",
+            json={
+                "dt": datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc).isoformat(),
+                "body": "NotAPlanet",
+                "varga": "navamsa",
+            },
+        )
+
+    _assert_validation_envelope(response, message_fragment="unsupported chart bodies")

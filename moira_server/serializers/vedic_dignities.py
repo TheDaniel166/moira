@@ -10,12 +10,16 @@ from moira.vedic_dignities import (
 )
 
 from ..models.vedic_dignities import (
+    VedicDignityChartBackedProfileResponse,
+    VedicDignityChartBackedRelationshipsResponse,
+    VedicDignityChartBackedResultResponse,
     VedicChartDignityProfileResponse,
     VedicDignityConditionResponse,
     VedicDignityRelationshipsResponse,
     VedicDignityResultResponse,
     VedicPlanetaryRelationshipResponse,
 )
+from .sidereal_context import serialize_sidereal_chart_provenance
 
 
 def serialize_vedic_dignity_result(
@@ -114,8 +118,58 @@ def serialize_vedic_chart_dignity_profile(
     )
 
 
+def serialize_vedic_dignity_chart_backed_result(
+    result: VedicDignityResult,
+    *,
+    ayanamsa_system: str,
+    context,
+) -> VedicDignityChartBackedResultResponse:
+    return VedicDignityChartBackedResultResponse(
+        result=serialize_vedic_dignity_result(
+            result,
+            ayanamsa_system=ayanamsa_system,
+        ),
+        provenance=serialize_sidereal_chart_provenance(context),
+    )
+
+
+def serialize_vedic_dignity_chart_backed_relationships(
+    relationships: list[PlanetaryRelationship],
+    *,
+    ayanamsa_system: str,
+    context,
+) -> VedicDignityChartBackedRelationshipsResponse:
+    return VedicDignityChartBackedRelationshipsResponse(
+        result=serialize_vedic_dignity_relationships(
+            relationships,
+            ayanamsa_system=ayanamsa_system,
+        ),
+        provenance=serialize_sidereal_chart_provenance(context),
+    )
+
+
+def serialize_vedic_dignity_chart_backed_profile(
+    profile: ChartDignityProfile,
+    *,
+    results: dict[str, VedicDignityResult],
+    ayanamsa_system: str,
+    context,
+) -> VedicDignityChartBackedProfileResponse:
+    return VedicDignityChartBackedProfileResponse(
+        result=serialize_vedic_chart_dignity_profile(
+            profile,
+            results=results,
+            ayanamsa_system=ayanamsa_system,
+        ),
+        provenance=serialize_sidereal_chart_provenance(context),
+    )
+
+
 __all__ = [
     "serialize_vedic_chart_dignity_profile",
+    "serialize_vedic_dignity_chart_backed_profile",
+    "serialize_vedic_dignity_chart_backed_relationships",
+    "serialize_vedic_dignity_chart_backed_result",
     "serialize_vedic_dignity_condition",
     "serialize_vedic_dignity_relationships",
     "serialize_vedic_dignity_result",

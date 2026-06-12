@@ -2,6 +2,7 @@
 
 from .ashtakavarga import router as ashtakavarga_router
 from .alternate_dashas import router as alternate_dashas_router
+from .astrocartography import router as astrocartography_router
 from .batch import router as batch_router
 from .chart import router as chart_router
 from .chart_wheel import router as chart_wheel_router
@@ -9,8 +10,11 @@ from .dasha import router as dasha_router
 from .decans import decanates_router, hermetic_decans_router
 from .dignities import router as dignities_router
 from .egyptian_bounds import router as egyptian_bounds_router
+from .geodetic import router as geodetic_router
+from .galactic import router as galactic_router
 from .health import router as health_router
 from .jaimini import router as jaimini_router
+from .local_space import router as local_space_router
 from .locations import router as locations_router
 from .lots import router as lots_router
 from .panchanga import router as panchanga_router
@@ -36,6 +40,7 @@ from .visibility import router as visibility_router
 __all__ = [
     "ashtakavarga_router",
     "alternate_dashas_router",
+    "astrocartography_router",
     "asteroids_router",
     "comets_router",
     "stars_router",
@@ -46,9 +51,12 @@ __all__ = [
     "decanates_router",
     "dignities_router",
     "egyptian_bounds_router",
+    "geodetic_router",
+    "galactic_router",
     "hermetic_decans_router",
     "health_router",
     "jaimini_router",
+    "local_space_router",
     "locations_router",
     "lots_router",
     "panchanga_router",

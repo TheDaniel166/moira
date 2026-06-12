@@ -2,7 +2,7 @@
 
 Version: 0.1
 Date: 2026-06-11
-Status: P9-12 admitted; eight direct-sync decans/decanates routes live and tested
+Status: P9-12 admitted; eight direct-sync and two chart-backed decans/decanates routes live and tested
 Scope: Phase 9 decans/decanates REST admission design
 
 This document declares the REST route shapes admitted for `moira.decanates`
@@ -35,9 +35,11 @@ Reason:
 
 ---
 
-## 2. Initial Transport Stance
+## 2. Transport Stance
 
-The first admission is direct-sync.
+The first admission was direct-sync. Post-Phase-9 hardening adds chart-backed
+body routes for the Decanates family through the shared
+`SiderealChartContext` workflow.
 
 Decanate routes consume:
 
@@ -217,6 +219,56 @@ Response:
 
 - night boundary fields plus twelve `DecanHour` entries
 
+### 3.9 Chart-Backed Vedic Drekkana
+
+Route:
+
+- `POST /v1/decanates/chart/vedic-drekkana`
+
+Purpose:
+
+- Derive one chart body's tropical longitude and JD, then resolve
+  `vedic_drekkana(...)`.
+
+Input:
+
+- `dt`
+- `body`
+- optional `ayanamsa_system`
+
+Response:
+
+- `body`
+- `result`
+- derived `tropical_longitude`
+- derived `jd`
+- sidereal chart provenance
+
+### 3.10 Chart-Backed Decanate Set
+
+Route:
+
+- `POST /v1/decanates/chart/set`
+
+Purpose:
+
+- Derive one chart body's tropical longitude and JD, then resolve the
+  Chaldean face, triplicity decan, and Vedic drekkana for that body.
+
+Input:
+
+- `dt`
+- `body`
+- optional `ayanamsa_system`
+
+Response:
+
+- `body`
+- `result`
+- derived `tropical_longitude`
+- derived `jd`
+- sidereal chart provenance
+
 ---
 
 ## 4. Response Semantics
@@ -247,9 +299,8 @@ intervals into civil times.
 
 ## 5. Explicit Non-Goals
 
-P9-12 first admission does not expose:
+P9-12 does not expose:
 
-- chart-backed decan routes
 - interpretive decan meanings
 - fixed-star position lookup for ruling stars
 - sidereal Egyptian decan star-clock reconstruction

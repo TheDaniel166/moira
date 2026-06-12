@@ -2,9 +2,19 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from moira import Moira
+
+from ..dependencies import get_engine
 
 from ..models.varga import (
+    VargaChartNamedRequest,
+    VargaChartNamedResponse,
+    VargaChartShodashvargaBatchRequest,
+    VargaChartShodashvargaBatchResponse,
+    VargaChartShodashvargaRequest,
+    VargaChartShodashvargaResponse,
     VargaGenericRequest,
     VargaNamedBatchRequest,
     VargaNamedBatchResponse,
@@ -16,12 +26,18 @@ from ..models.varga import (
     VargaShodashvargaResponse,
 )
 from ..serializers.varga import (
+    serialize_varga_chart_named,
+    serialize_varga_chart_shodashvarga,
+    serialize_varga_chart_shodashvarga_batch,
     serialize_varga_named_batch,
     serialize_varga_point,
     serialize_varga_shodashvarga,
     serialize_varga_shodashvarga_batch,
 )
 from ..services.varga import (
+    compute_varga_chart_named,
+    compute_varga_chart_shodashvarga,
+    compute_varga_chart_shodashvarga_batch,
     compute_varga_generic,
     compute_varga_named,
     compute_varga_named_batch,
@@ -69,4 +85,46 @@ def varga_shodashvarga_batch_route(
 ) -> VargaShodashvargaBatchResponse:
     return serialize_varga_shodashvarga_batch(
         compute_varga_shodashvarga_batch(request)
+    )
+
+
+@router.post("/chart/named", response_model=VargaChartNamedResponse)
+def varga_chart_named_route(
+    request: VargaChartNamedRequest,
+    engine: Moira = Depends(get_engine),
+) -> VargaChartNamedResponse:
+    result = compute_varga_chart_named(engine, request)
+    return serialize_varga_chart_named(
+        body=result.body,
+        varga=result.varga,
+        result=result.result,
+        context=result.context,
+    )
+
+
+@router.post("/chart/shodashvarga", response_model=VargaChartShodashvargaResponse)
+def varga_chart_shodashvarga_route(
+    request: VargaChartShodashvargaRequest,
+    engine: Moira = Depends(get_engine),
+) -> VargaChartShodashvargaResponse:
+    result = compute_varga_chart_shodashvarga(engine, request)
+    return serialize_varga_chart_shodashvarga(
+        body=result.body,
+        results=result.results,
+        context=result.context,
+    )
+
+
+@router.post(
+    "/chart/shodashvarga/batch",
+    response_model=VargaChartShodashvargaBatchResponse,
+)
+def varga_chart_shodashvarga_batch_route(
+    request: VargaChartShodashvargaBatchRequest,
+    engine: Moira = Depends(get_engine),
+) -> VargaChartShodashvargaBatchResponse:
+    result = compute_varga_chart_shodashvarga_batch(engine, request)
+    return serialize_varga_chart_shodashvarga_batch(
+        results=result.results,
+        context=result.context,
     )

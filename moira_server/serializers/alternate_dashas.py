@@ -9,6 +9,8 @@ from moira.dasha_systems import (
 )
 
 from ..models.alternate_dashas import (
+    AlternateDashaChartProfileResponse,
+    AlternateDashaChartSequenceResponse,
     AlternateDashaPeriodResponse,
     AlternateDashaProfileResponse,
     AlternateDashaSequenceProfileResponse,
@@ -16,9 +18,12 @@ from ..models.alternate_dashas import (
     AlternatePeriodProfileResponse,
 )
 from ..services.alternate_dashas import (
+    AlternateDashaChartProfileResult,
+    AlternateDashaChartSequenceResult,
     AlternateDashaProfileResult,
     AlternateDashaSequenceResult,
 )
+from .sidereal_context import serialize_sidereal_chart_provenance
 
 
 def serialize_alternate_dasha_period(
@@ -88,7 +93,31 @@ def serialize_alternate_dasha_profile(
     )
 
 
+def serialize_alternate_dasha_chart_sequence(
+    result: AlternateDashaChartSequenceResult,
+) -> AlternateDashaChartSequenceResponse:
+    return AlternateDashaChartSequenceResponse(
+        result=serialize_alternate_dasha_sequence(result.sequence),
+        moon_tropical_longitude=result.context.tropical_longitudes["Moon"],
+        natal_jd=result.context.jd_ut,
+        provenance=serialize_sidereal_chart_provenance(result.context),
+    )
+
+
+def serialize_alternate_dasha_chart_profile(
+    result: AlternateDashaChartProfileResult,
+) -> AlternateDashaChartProfileResponse:
+    return AlternateDashaChartProfileResponse(
+        result=serialize_alternate_dasha_profile(result.profile),
+        moon_tropical_longitude=result.context.tropical_longitudes["Moon"],
+        natal_jd=result.context.jd_ut,
+        provenance=serialize_sidereal_chart_provenance(result.context),
+    )
+
+
 __all__ = [
+    "serialize_alternate_dasha_chart_profile",
+    "serialize_alternate_dasha_chart_sequence",
     "serialize_alternate_dasha_period",
     "serialize_alternate_dasha_profile",
     "serialize_alternate_dasha_sequence",

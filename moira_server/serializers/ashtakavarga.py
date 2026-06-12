@@ -10,13 +10,24 @@ from moira.ashtakavarga import (
 )
 
 from ..models.ashtakavarga import (
+    AshtakavargaChartProfileBackedResponse,
     AshtakavargaChartProfileResponse,
+    AshtakavargaChartResultResponse,
+    AshtakavargaChartSignProfileResponse,
+    AshtakavargaChartTransitStrengthResponse,
     AshtakavargaResultResponse,
     AshtakavargaTransitStrengthResponse,
     BhinnashtakavargaResultResponse,
     SignStrengthProfileResponse,
 )
-from ..services.ashtakavarga import AshtakavargaTransitStrengthResult
+from ..services.ashtakavarga import (
+    AshtakavargaChartBackedProfileResult,
+    AshtakavargaChartBackedResult,
+    AshtakavargaChartBackedSignProfileResult,
+    AshtakavargaChartBackedTransitStrengthResult,
+    AshtakavargaTransitStrengthResult,
+)
+from .sidereal_context import serialize_sidereal_chart_provenance
 
 
 def serialize_bhinnashtakavarga_result(
@@ -94,7 +105,53 @@ def serialize_ashtakavarga_transit_strength(
     )
 
 
+def serialize_ashtakavarga_chart_result_backed(
+    result: AshtakavargaChartBackedResult,
+) -> AshtakavargaChartResultResponse:
+    return AshtakavargaChartResultResponse(
+        result=serialize_ashtakavarga_result(result.result),
+        provenance=serialize_sidereal_chart_provenance(result.context),
+    )
+
+
+def serialize_ashtakavarga_chart_profile_backed(
+    result: AshtakavargaChartBackedProfileResult,
+) -> AshtakavargaChartProfileBackedResponse:
+    return AshtakavargaChartProfileBackedResponse(
+        result=serialize_ashtakavarga_chart_profile(
+            result.profile.profile,
+            result=result.profile.result,
+        ),
+        provenance=serialize_sidereal_chart_provenance(result.context),
+    )
+
+
+def serialize_ashtakavarga_chart_sign_profile(
+    result: AshtakavargaChartBackedSignProfileResult,
+) -> AshtakavargaChartSignProfileResponse:
+    return AshtakavargaChartSignProfileResponse(
+        result=serialize_sign_strength_profile(
+            result.profile.profile,
+            ayanamsa_system=result.profile.ayanamsa_system,
+        ),
+        provenance=serialize_sidereal_chart_provenance(result.context),
+    )
+
+
+def serialize_ashtakavarga_chart_transit_strength(
+    result: AshtakavargaChartBackedTransitStrengthResult,
+) -> AshtakavargaChartTransitStrengthResponse:
+    return AshtakavargaChartTransitStrengthResponse(
+        result=serialize_ashtakavarga_transit_strength(result.transit_strength),
+        provenance=serialize_sidereal_chart_provenance(result.context),
+    )
+
+
 __all__ = [
+    "serialize_ashtakavarga_chart_profile_backed",
+    "serialize_ashtakavarga_chart_result_backed",
+    "serialize_ashtakavarga_chart_sign_profile",
+    "serialize_ashtakavarga_chart_transit_strength",
     "serialize_ashtakavarga_chart_profile",
     "serialize_ashtakavarga_result",
     "serialize_ashtakavarga_transit_strength",

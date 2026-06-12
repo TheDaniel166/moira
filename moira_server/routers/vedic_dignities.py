@@ -2,9 +2,18 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from moira import Moira
+
+from ..dependencies import get_engine
 
 from ..models.vedic_dignities import (
+    VedicDignityChartBackedProfileRequest,
+    VedicDignityChartBackedProfileResponse,
+    VedicDignityChartBackedRelationshipsResponse,
+    VedicDignityChartBackedRequest,
+    VedicDignityChartBackedResultResponse,
     VedicChartDignityProfileResponse,
     VedicDignityChartRequest,
     VedicDignityConditionResponse,
@@ -13,6 +22,9 @@ from ..models.vedic_dignities import (
     VedicDignityResultResponse,
 )
 from ..serializers.vedic_dignities import (
+    serialize_vedic_dignity_chart_backed_profile,
+    serialize_vedic_dignity_chart_backed_relationships,
+    serialize_vedic_dignity_chart_backed_result,
     serialize_vedic_chart_dignity_profile,
     serialize_vedic_dignity_condition,
     serialize_vedic_dignity_relationships,
@@ -21,6 +33,9 @@ from ..serializers.vedic_dignities import (
 from ..services.vedic_dignities import (
     compute_vedic_chart_dignity_profile,
     compute_vedic_dignity,
+    compute_vedic_dignity_chart_backed,
+    compute_vedic_dignity_chart_backed_profile,
+    compute_vedic_dignity_chart_backed_relationships,
     compute_vedic_dignity_condition,
     compute_vedic_dignity_relationships,
 )
@@ -72,4 +87,47 @@ def vedic_dignity_chart_profile_route(
         result.profile,
         results=result.results,
         ayanamsa_system=result.ayanamsa_system,
+    )
+
+
+@router.post("/chart/dignity", response_model=VedicDignityChartBackedResultResponse)
+def vedic_dignity_chart_backed_route(
+    request: VedicDignityChartBackedRequest,
+    engine: Moira = Depends(get_engine),
+) -> VedicDignityChartBackedResultResponse:
+    result = compute_vedic_dignity_chart_backed(engine, request)
+    return serialize_vedic_dignity_chart_backed_result(
+        result.result,
+        ayanamsa_system=result.context.ayanamsa_system,
+        context=result.context,
+    )
+
+
+@router.post(
+    "/chart/relationships",
+    response_model=VedicDignityChartBackedRelationshipsResponse,
+)
+def vedic_dignity_chart_backed_relationships_route(
+    request: VedicDignityChartBackedProfileRequest,
+    engine: Moira = Depends(get_engine),
+) -> VedicDignityChartBackedRelationshipsResponse:
+    result = compute_vedic_dignity_chart_backed_relationships(engine, request)
+    return serialize_vedic_dignity_chart_backed_relationships(
+        result.relationships,
+        ayanamsa_system=result.context.ayanamsa_system,
+        context=result.context,
+    )
+
+
+@router.post("/chart/profile", response_model=VedicDignityChartBackedProfileResponse)
+def vedic_dignity_chart_backed_profile_route(
+    request: VedicDignityChartBackedProfileRequest,
+    engine: Moira = Depends(get_engine),
+) -> VedicDignityChartBackedProfileResponse:
+    result = compute_vedic_dignity_chart_backed_profile(engine, request)
+    return serialize_vedic_dignity_chart_backed_profile(
+        result.profile,
+        results=result.results,
+        ayanamsa_system=result.context.ayanamsa_system,
+        context=result.context,
     )

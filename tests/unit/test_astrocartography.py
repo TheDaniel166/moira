@@ -88,6 +88,32 @@ def test_high_declination_body_skips_circumpolar_latitudes() -> None:
     assert max(abs(lat) for lat, _ in dsc.points) <= 10.0
 
 
+@pytest.mark.parametrize("lat_step", [0.0, -1.0, math.inf, math.nan, 179.0])
+def test_acg_lines_rejects_invalid_lat_step(lat_step: float) -> None:
+    with pytest.raises(ValueError, match="lat_step"):
+        acg.acg_lines({"Sun": (100.0, 10.0)}, gmst_deg=20.0, lat_step=lat_step)
+
+
+@pytest.mark.parametrize(
+    "planet_ra_dec",
+    [
+        {"Sun": (math.nan, 10.0)},
+        {"Sun": (100.0, math.inf)},
+        {"Sun": (100.0, 91.0)},
+    ],
+)
+def test_acg_lines_rejects_invalid_ra_dec(
+    planet_ra_dec: dict[str, tuple[float, float]],
+) -> None:
+    with pytest.raises(ValueError):
+        acg.acg_lines(planet_ra_dec, gmst_deg=20.0)
+
+
+def test_acg_lines_rejects_non_finite_gmst() -> None:
+    with pytest.raises(ValueError, match="gmst_deg"):
+        acg.acg_lines({"Sun": (100.0, 10.0)}, gmst_deg=math.inf)
+
+
 def test_asc_and_dsc_are_symmetric_about_mc_meridian() -> None:
     ra = 123.4
     dec = 23.5
@@ -139,6 +165,16 @@ def test_subplanetary_points_convert_declination_to_geodetic_latitude() -> None:
 
     assert zenith.latitude == pytest.approx(expected)
     assert zenith.latitude > 45.0
+
+
+def test_subplanetary_points_rejects_non_finite_gmst() -> None:
+    with pytest.raises(ValueError, match="gmst_deg"):
+        acg.subplanetary_points({"Sun": (100.0, 10.0)}, gmst_deg=math.nan)
+
+
+def test_subplanetary_points_rejects_non_finite_ra_dec() -> None:
+    with pytest.raises(ValueError, match="RA/Dec"):
+        acg.subplanetary_points({"Sun": (100.0, math.inf)}, gmst_deg=20.0)
 
 
 def test_subplanetary_point_repr_reports_coordinates() -> None:
