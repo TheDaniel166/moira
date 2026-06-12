@@ -16,6 +16,7 @@ Owns:
     - asteroid_at()       — position of one body at a JD.
     - all_asteroids_at()  — positions of a set of bodies at a JD.
     - list_asteroids()    — all known body names.
+    - list_asteroid_naifs()    — all known body NAIF IDs.
     - available_in_kernel() — names present in loaded kernels.
 Delegates:
     - Earth/Sun barycentric positions to moira.planets / moira.spk_reader.
@@ -41,6 +42,7 @@ Public surface / exports:
     asteroid_at()         — single-body position
     all_asteroids_at()    — multi-body positions
     list_asteroids()      — all known names
+    list_asteroid_naifs()    — all known body NAIF IDs.
     available_in_kernel() — names present in loaded kernels
 
 Four-kernel architecture
@@ -919,6 +921,9 @@ def list_asteroids() -> list[str]:
     """Return the list of asteroid names known to Moira (ASTEROID_NAIF keys)."""
     return list(ASTEROID_NAIF.keys())
 
+def list_asteroid_naifs() -> list[int]:
+    """Return the list of asteroid NAIF ids known to Moira (ASTEROID_NAIF values)."""
+    return list(ASTEROID_NAIF.values())
 
 def available_in_kernel(kernel_path: str | Path | None = None) -> list[str]:
     """
