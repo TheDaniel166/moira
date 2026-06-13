@@ -16,9 +16,9 @@ transport contract documented for that family.
 
 ## Current Surface Summary
 
-- Total non-documentation routes: 283
+- Total non-documentation routes: 321
 - Operational/meta routes: 4
-- Versioned `/v1` routes: 279
+- Versioned `/v1` routes: 317
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 
@@ -61,13 +61,37 @@ Implemented:
   synthesis, rendered galactic house charts, rendered Gauquelin wheels,
   statistical workflows, and catalog sweeps remain deferred
 - website support: locations, chart-wheel packets, and reduction-pipeline inspection aliases
+- phase 12 opened with bounded Uranian/Hamburg School hypothetical-body
+  catalog, single-position, and bulk-position routes, followed by bounded
+  Harmonics preset, direct chart, age-harmonic chart, conjunction,
+  pattern-score, aspect, sweep, fingerprint, and composite routes over
+  caller-supplied longitudes, followed by bounded Phase/Photometry illuminated
+  fraction, synodic, elongation, phase-angle, angular-diameter, and
+  apparent-magnitude routes, followed by bounded ordinary Antiscia direct
+  reflection, pair contact, and fixed-point contact routes, followed by a
+  bounded Abu Ma'shar Nine Parts aggregate route, followed by bounded
+  sunrise-based Planetary Hours schedule and hour-at routes, followed by
+  direct-cusp Huber dynamic intensity, house-zone, Age Point,
+  intensity-at-longitude, chart intensity profile, and bounded Age Point
+  contact routes, followed by caller-seeded Lord of the Orb sequence and
+  current-period routes, and a caller-supplied Solar Return Lord of the Turn
+  profile route
+- phase 13 opened with a bounded electional predicate-profile catalogue and
+  electional window, raw moment, scorer-profile catalogue, and bounded scored
+  window routes over server-defined predicate and numeric scorer profiles
 
 Not yet broadly exposed as REST families:
 
 - phase 9 umbrella aggregation modules: `/v1/vedic/*` and `/v1/classical/*`
 - expanded phase 10 spatial and Earth-facing products: Astrocartography, Local Space, Geodetic, Galactic, Galactic Houses, and Gauquelin map/rendering/projection/statistical products remain deferred
-- phase 12 specialist analytical families: `/v1/uranian/*`, `/v1/harmonics/*`, `/v1/phase/*`, `/v1/antiscia/*`, `/v1/special/*`
-- phase 13 electional/search workflow routes: `/v1/electional/*`
+- remaining phase 12 specialist analytical families: `/v1/sothic/*` is
+  deliberately deferred for specialist review and public heliacal-search
+  failure semantics; `/v1/longevity/*` is deliberately deferred for doctrine,
+  validation, and public-language safeguards; `/v1/special/*` also remains
+  unexposed
+- remaining phase 13 electional/search workflow surfaces: arbitrary predicate
+  routes, arbitrary scorer routes, Western electional doctrine, and
+  advice/recommendation language
 - generic Phase 11 catalog umbrella routes: `/v1/catalogs/*` remain
   intentionally absent; P11-U1 permits only a future discovery-only registry
   design, not cross-family search, member lookup, computation, or catalog
@@ -80,6 +104,7 @@ Not yet broadly exposed as REST families:
 | meta | 4 |
 | ashtakavarga | 8 |
 | alternate-dashas | 9 |
+| antiscia | 3 |
 | astrocartography | 4 |
 | asteroids | 9 |
 | batch | 7 |
@@ -92,26 +117,34 @@ Not yet broadly exposed as REST families:
 | decanates | 6 |
 | dignities | 6 |
 | egyptian-bounds | 7 |
+| electional | 5 |
 | eclipses | 5 |
 | galactic | 6 |
 | galactic-houses | 3 |
 | gauquelin | 3 |
 | geodetic | 4 |
 | heliacal | 2 |
+| harmonics | 9 |
 | hermetic-decans | 4 |
 | houses | 2 |
+| huber | 6 |
 | jaimini | 8 |
 | locations | 2 |
 | local-space | 2 |
+| lord-of-the-orb | 2 |
+| lord-of-the-turn | 1 |
 | lots | 7 |
 | lunar-phases | 1 |
 | manazil | 4 |
 | midpoints | 5 |
 | nodes | 4 |
+| nine-parts | 1 |
 | occultations | 8 |
 | panchanga | 4 |
 | parans | 8 |
 | patterns | 3 |
+| phase | 6 |
+| planetary-hours | 2 |
 | pipeline | 3 |
 | positions | 4 |
 | primary-directions | 8 |
@@ -126,6 +159,7 @@ Not yet broadly exposed as REST families:
 | timelords | 16 |
 | transits | 3 |
 | triplicity | 3 |
+| uranian | 3 |
 | varshaphal | 9 |
 | varga | 8 |
 | vedic-dignities | 7 |
@@ -549,6 +583,44 @@ Body-class truth:
 | POST | `/v1/nodes/planetary/mean` | `mean_planetary_node_route` |
 | POST | `/v1/nodes/planetary/mean/bulk` | `mean_planetary_nodes_bulk_route` |
 | POST | `/v1/nodes/geometric` | `geometric_node_route` |
+| GET | `/v1/uranian/catalog` | `uranian_catalog_route` |
+| POST | `/v1/uranian/position` | `uranian_position_route` |
+| POST | `/v1/uranian/bulk` | `uranian_bulk_route` |
+| GET | `/v1/harmonics/presets` | `harmonic_presets_route` |
+| POST | `/v1/harmonics/chart` | `harmonic_chart_route` |
+| POST | `/v1/harmonics/age-chart` | `harmonic_age_chart_route` |
+| POST | `/v1/harmonics/conjunctions` | `harmonic_conjunctions_route` |
+| POST | `/v1/harmonics/pattern-score` | `harmonic_pattern_score_route` |
+| POST | `/v1/harmonics/aspects` | `harmonic_aspects_route` |
+| POST | `/v1/harmonics/sweep` | `harmonic_sweep_route` |
+| POST | `/v1/harmonics/fingerprint` | `harmonic_fingerprint_route` |
+| POST | `/v1/harmonics/composite` | `harmonic_composite_route` |
+| POST | `/v1/phase/illuminated-fraction` | `illuminated_fraction_route` |
+| POST | `/v1/phase/synodic` | `synodic_phase_route` |
+| POST | `/v1/phase/elongation` | `elongation_route` |
+| POST | `/v1/phase/angle` | `phase_angle_route` |
+| POST | `/v1/phase/angular-diameter` | `angular_diameter_route` |
+| POST | `/v1/phase/apparent-magnitude` | `apparent_magnitude_route` |
+| POST | `/v1/antiscia/reflect` | `antiscia_reflect_route` |
+| POST | `/v1/antiscia/contacts` | `antiscia_contacts_route` |
+| POST | `/v1/antiscia/to-point` | `antiscia_to_point_route` |
+| POST | `/v1/nine-parts/abu-mashar` | `abu_mashar_nine_parts_route` |
+| POST | `/v1/planetary-hours/schedule` | `planetary_hours_schedule_route` |
+| POST | `/v1/planetary-hours/hour-at` | `planetary_hours_hour_at_route` |
+| POST | `/v1/huber/dynamic-intensity` | `huber_dynamic_intensity_route` |
+| POST | `/v1/huber/house-zones` | `huber_house_zones_route` |
+| POST | `/v1/huber/age-point` | `huber_age_point_route` |
+| POST | `/v1/huber/intensity-at` | `huber_intensity_at_route` |
+| POST | `/v1/huber/chart-intensity-profile` | `huber_chart_intensity_profile_route` |
+| POST | `/v1/huber/age-point-contacts` | `huber_age_point_contacts_route` |
+| POST | `/v1/lord-of-the-orb/sequence` | `lord_of_the_orb_sequence_route` |
+| POST | `/v1/lord-of-the-orb/current` | `lord_of_the_orb_current_route` |
+| POST | `/v1/lord-of-the-turn/profile` | `lord_of_the_turn_profile_route` |
+| GET | `/v1/electional/predicate-profiles` | `electional_predicate_profiles_route` |
+| GET | `/v1/electional/scorer-profiles` | `electional_scorer_profiles_route` |
+| POST | `/v1/electional/windows` | `electional_windows_route` |
+| POST | `/v1/electional/moments` | `electional_moments_route` |
+| POST | `/v1/electional/scored` | `electional_scored_route` |
 | GET | `/v1/locations/search` | `location_search_route` |
 | POST | `/v1/locations/timezone/validate` | `timezone_validate_route` |
 | GET | `/v1/website/chart-wheel/presets` | `chart_wheel_presets_route` |
@@ -750,6 +822,337 @@ This admission does not expose lunar true/mean node REST routes, chart-backed
 node profiles, nodal aspect networks, catalog-wide small-body node sweeps,
 rendered node maps, asteroid/comet route changes, or small-body kernel manifest
 management.
+
+### Uranian REST Admission Boundary
+
+The admitted Uranian / Hamburg School REST surface is the bounded synchronous
+P12-01 `/v1/uranian/*` family:
+
+- `GET /v1/uranian/catalog`
+- `POST /v1/uranian/position`
+- `POST /v1/uranian/bulk`
+
+Catalog responses expose the current nine-name table from `moira.uranian`,
+including `Transpluto`. Position and bulk responses expose tropical ecliptic
+longitude, sign fields, constant mean daily speed, `body_kind` value
+`hypothetical_body`, and provenance identifying the source module, engine
+entrypoint, Hamburg/Uranian school, linear mean-motion table model, J2000
+epoch, tropical frame, no physical ephemeris, and no SPK kernel usage.
+
+This admission does not expose Uranian midpoint trees, dial products,
+cosmobiology networks, chart interpretation, physical body substitution,
+kernel-backed Transpluto/TNO computation, or any claim that these hypothetical
+mean points are JPL/NAIF physical-body states.
+
+### Harmonics REST Admission Boundary
+
+The admitted Harmonics REST surface is the bounded P12-02
+`/v1/harmonics/*` family:
+
+- `GET /v1/harmonics/presets`
+- `POST /v1/harmonics/chart`
+- `POST /v1/harmonics/age-chart`
+- `POST /v1/harmonics/conjunctions`
+- `POST /v1/harmonics/pattern-score`
+- `POST /v1/harmonics/aspects`
+- `POST /v1/harmonics/sweep`
+- `POST /v1/harmonics/fingerprint`
+- `POST /v1/harmonics/composite`
+
+These routes accept caller-supplied named ecliptic longitude maps. They do not
+construct charts, derive ephemeris positions, use houses, apply ayanamsa, or
+perform event search. Direct chart responses preserve the requested/effective
+integer harmonic, input count, sorted harmonic-position records, preset
+metadata when known, and provenance identifying `moira.harmonics`,
+`calculate_harmonic`, caller-supplied longitude ownership, and the formula
+`(longitude * harmonic) mod 360`.
+
+Age-harmonic responses preserve the derived decimal harmonic, `jd_birth`,
+`jd_now`, and the basis `(jd_now - jd_birth) / tropical_year`.
+
+Pattern-analysis routes expose one-harmonic conjunctions, one-harmonic pattern
+scores, harmonic aspect decoding, bounded sweeps, bounded vibrational
+fingerprints, and bounded composite harmonic comparison. Sweep and fingerprint
+provenance explicitly labels scores as pattern-density measures rather than
+interpretive judgments.
+
+This admission does not expose unbounded harmonic sweeps, automatic chart
+construction, transit/progression harmonic search, harmogram/spectral-analysis
+products, chart rendering, or interpretive narrative text.
+
+### Phase And Photometry REST Admission Boundary
+
+The admitted Phase / Elongation / Magnitude REST surface is the bounded P12-03
+`/v1/phase/*` family:
+
+- `POST /v1/phase/illuminated-fraction`
+- `POST /v1/phase/synodic`
+- `POST /v1/phase/elongation`
+- `POST /v1/phase/angle`
+- `POST /v1/phase/angular-diameter`
+- `POST /v1/phase/apparent-magnitude`
+
+`/v1/phase/illuminated-fraction` is pure scalar mathematics over a supplied
+phase angle and does not require a kernel. Synodic phase, elongation,
+phase-angle, angular-diameter, and apparent-magnitude routes are direct
+one-epoch products over engine-supported bodies and preserve product-specific
+basis and kernel requirement truth in provenance.
+
+Angular diameter is admitted only for the engine radius-table support set:
+Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, and Pluto.
+Apparent V magnitude is admitted only for Moon, Mercury, Venus, Mars, Jupiter,
+Saturn, Uranus, Neptune, with model-family provenance for Schaefer 1993 lunar
+phase law or Mallama/Hilton 2018 planetary magnitude models. Sun, Pluto,
+dwarf planets, asteroids, comets, fixed stars, and variable stars remain
+excluded from this apparent-magnitude route.
+
+This admission does not expose topocentric phase or magnitude, atmospheric
+extinction, visual limiting magnitude, visibility scoring, heliacal
+visibility, eclipse darkening, moon-phase or conjunction event searches,
+minor-body photometry, fixed-star or variable-star photometry, interpretive
+astrological phase text, or sky rendering.
+
+### Antiscia REST Admission Boundary
+
+The admitted ordinary Antiscia REST surface is the bounded P12-04
+`/v1/antiscia/*` family:
+
+- `POST /v1/antiscia/reflect`
+- `POST /v1/antiscia/contacts`
+- `POST /v1/antiscia/to-point`
+
+`/v1/antiscia/reflect` computes direct antiscion and/or contra-antiscion
+reflections of a caller-supplied finite longitude. Contact routes accept
+caller-supplied named longitude maps only; they do not construct charts,
+derive ephemeris positions, use houses, or compute chart motion.
+
+Responses preserve the engine labels `Antiscion` and `Contra-Antiscion`,
+the `body1` body whose reflected point forms a contact, the reflected
+`shadow`, explicit `orb`, and increasing-orb ordering. Provenance records
+`moira.antiscia`, `ordinary_antiscia`, the two reflection formulae,
+`not_primary_direction_antiscia`, no chart motion, and no ephemeris use.
+
+This admission does not expose primary-direction antiscia, directed arcs,
+transits, progressions, chart construction, house derivation, antiscia
+networks, scoring profiles, or interpretive narrative text.
+
+### Nine Parts REST Admission Boundary
+
+The admitted Abu Ma'shar Nine Parts REST surface is the bounded P12-05
+`/v1/nine-parts/*` family:
+
+- `POST /v1/nine-parts/abu-mashar`
+
+This route accepts a caller-supplied Ascendant longitude, required planetary
+longitudes, and caller-supplied `is_night_chart` truth. It does not construct a
+chart, derive the Ascendant, determine sect, compute houses, or infer night
+status.
+
+The response preserves the complete `NinePartsAggregate` shape: nine parts in
+canonical Abu Ma'shar order, computation truth for each part, dependency
+relations, condition profiles, aggregate summaries, effective policy, validation
+results from `validate_nine_parts_output`, and provenance. Sword and Node
+remain `admitted_extension` records with `planet_association: null`; they are
+not collapsed into ordinary planetary lots.
+
+Only the `full_reversal` reversal rule and
+`evidenced_core_plus_admitted_extension` historical scope are admitted. This
+admission does not expose solar-return integration, Al-Sijzi Transfer of
+Management, longevity integration, comparison bundles against `moira.lots`,
+Hellenistic nonomoiria, Vedic Navamsha or D9 routes, or interpretive narrative
+text.
+
+### Planetary Hours REST Admission Boundary
+
+The admitted Planetary Hours REST surface is the bounded P12-06
+`/v1/planetary-hours/*` family:
+
+- `POST /v1/planetary-hours/schedule`
+- `POST /v1/planetary-hours/hour-at`
+
+These routes accept a caller-supplied Julian Day UT and numeric geographic
+latitude/longitude. They do not perform timezone lookup, location-name lookup,
+geocoding, chart construction, or civil-day calendar expansion.
+
+Responses preserve the dedicated `moira.planetary_hours.PlanetaryHour` vessel
+fields: `hour_number`, `ruler`, `jd_start`, `jd_end`, and `is_daytime`.
+Provenance explicitly distinguishes this vessel from
+`moira.cycles.PlanetaryHour`, records the Chaldean-order and weekday-rulership
+basis, records reader policy, and states that ISO timestamps, when included,
+are UTC output only.
+
+The route family surfaces sunrise/sunset resolution failure as a visible
+validation error. It does not invent sunrise or sunset values, does not use a
+fixed six-to-six fallback, and does not replace the sunrise-based doctrine with
+civil-clock approximation.
+
+This admission does not expose `moira.cycles` planetary-day profiles,
+electional scoring, recommendation text, annual time-lord techniques, Lord of
+the Orb calculation, or automatic birth planetary-hour derivation for other
+lordship systems.
+
+### Huber REST Admission Boundary
+
+The admitted Huber REST surface is the direct-cusp P12-07 `/v1/huber/*`
+family:
+
+- `POST /v1/huber/dynamic-intensity`
+- `POST /v1/huber/house-zones`
+- `POST /v1/huber/age-point`
+- `POST /v1/huber/intensity-at`
+- `POST /v1/huber/chart-intensity-profile`
+- `POST /v1/huber/age-point-contacts`
+
+These routes expose `moira.huber` computations over caller-supplied house
+frames. The Huber transport layer does not calculate houses, construct charts,
+derive locations, derive timezones, or substitute house systems. Direct house
+frames require exactly 12 finite cusp longitudes plus caller-supplied
+Ascendant, MC, and ARMC anchors required to construct Moira's `HouseCusps`
+vessel.
+
+Responses record `house_frame_source: caller_supplied`,
+`cusp_derivation_owner: caller_supplied`, requested/effective house-system
+truth, fallback truth, whether the effective frame is Koch, and the Huber
+doctrine preference for Koch houses. Non-Koch direct frames are accepted as
+computational inputs but are reported as not doctrinally complete Huber house
+fidelity.
+
+The route family preserves the Dynamic Intensity Curve basis as
+`piecewise_half_cosine_reconstruction` and keeps the limitation that the
+primary-text exact formula has not been independently verified. Age Point
+contact scans are bounded by maximum point count, maximum age span, minimum
+step size, and maximum orb.
+
+This admission does not expose chart-backed Huber house derivation,
+independent house calculation inside Huber transport, psychological
+interpretation text, counseling, health or clinical claims, chart rendering,
+unbounded Age Point searches, transit/progression timing outside Age Point
+mechanics, or generic `/v1/special/*` computation.
+
+### Lord Of The Orb REST Admission Boundary
+
+The admitted Lord of the Orb REST surface is the bounded P12-10
+`/v1/lord-of-the-orb/*` family:
+
+- `POST /v1/lord-of-the-orb/sequence`
+- `POST /v1/lord-of-the-orb/current`
+
+These routes expose `moira.lord_of_the_orb` over a caller-supplied
+`birth_planet`, understood as the ruler of the birth planetary hour. The
+transport layer does not calculate planetary hours, does not construct charts,
+does not derive the birth-hour ruler, and does not orchestrate Abu Ma'shar's
+full annual hierarchy.
+
+Sequence responses preserve ordered period records, condition profiles,
+aggregate benefic/malefic and planet-count summaries, effective cycle policy,
+validation output, and provenance. Current-period responses map completed age
+to year of life (`age 0` is year 1) and return the active period plus its
+condition profile.
+
+The admitted cycle variants are `continuous_loop` and `single_cycle`. Sequence
+requests are bounded to at most 252 years, and current-period requests are
+bounded to ages 0 through 251. Provenance records the caller-supplied birth
+planet source, the fact that planetary-hour derivation is not owned by this
+route, Chaldean-order cycle basis, twelve-house modular cycle basis, hierarchy
+rank 6, and the distinction from `moira.lord_of_the_turn`.
+
+This admission does not expose birth planetary-hour derivation, chart
+construction, annual hierarchy orchestration, profections or firdaria
+integration, natal or solar-return dignity scoring, comparison bundles,
+interpretive narrative text, or generic `/v1/special/*` computation.
+
+### Lord Of The Turn REST Admission Boundary
+
+The admitted Lord of the Turn REST surface is the bounded P12-11
+`/v1/lord-of-the-turn/*` family:
+
+- `POST /v1/lord-of-the-turn/profile`
+
+This route exposes `moira.lord_of_the_turn.lord_of_turn` over caller-supplied
+Solar Return chart data. It accepts natal Ascendant longitude, completed age,
+method policy, combust-orb policy, and an SR chart vessel containing SR
+Ascendant, classical planet longitudes, optional house placements,
+caller-supplied sect flag, optional retrograde planet list, and optional SR Lot
+of Fortune longitude.
+
+Responses preserve the integrated condition profile, selected result,
+profection truth, candidate assessments, method policy, validation output, and
+provenance. Candidate assessments expose candidate role, SR house, combustion
+state, retrograde state, blocker reasons, witnessing truth, and binary
+testimony count. Provenance explicitly records that Solar Return construction,
+house calculation, ephemeris derivation, automatic sect calculation, and annual
+hierarchy orchestration are not owned by this route.
+
+The admitted method variants are `al_qabisi` and `egyptian_al_sijzi`.
+Transport provenance preserves Al-Qabisi sequential succession as
+`sequential_succession_no_simultaneous_tiebreak` and Egyptian/Al-Sijzi
+testimony as `binary_dignity_type_count_not_weighted_almuten`. When house
+placements are omitted, the response exposes the engine's `DOMICILE_ONLY`
+mode rather than implying a full SR condition assessment.
+
+This admission does not expose Solar Return chart construction, house
+calculation, ephemeris derivation, automatic sect calculation, automatic SR
+Lot of Fortune calculation, annual hierarchy orchestration, combined annual
+timing dashboards, interpretive narrative text, or generic `/v1/special/*`
+computation.
+
+### Electional Search REST Admission Boundary
+
+The admitted Phase 13 electional REST surface is the bounded Stage 1
+`/v1/electional/*` subset:
+
+- `GET /v1/electional/predicate-profiles`
+- `GET /v1/electional/scorer-profiles`
+- `POST /v1/electional/windows`
+- `POST /v1/electional/moments`
+- `POST /v1/electional/scored`
+
+`/v1/electional/predicate-profiles` exposes the server-defined predicate
+catalogue admitted for REST use. `/v1/electional/windows` calls
+`moira.electional.find_electional_windows` through that catalogue and returns
+merged scan-witness windows over discrete chart snapshots.
+`/v1/electional/moments` calls `moira.electional.find_electional_moments`
+through the same catalogue and returns raw qualifying scan-point JDs.
+`/v1/electional/scorer-profiles` exposes the server-defined numeric scorer
+catalogue admitted for REST use. `/v1/electional/scored` calls
+`moira.electional.find_scored_windows` through the admitted predicate and
+scorer catalogues and returns scored merged windows.
+
+The admitted predicate profiles are:
+
+- `body_longitude_range_v1`
+- `body_house_membership_v1`
+- `body_angular_separation_range_v1`
+
+The admitted scorer profiles are:
+
+- `body_longitude_target_closeness_v1`
+- `body_angular_separation_target_closeness_v1`
+
+Responses preserve predicate, policy, scan, validation, bounds, and provenance
+truth. Window responses preserve merged scan-witness windows. Moment responses
+preserve raw qualifying scan points. Scored responses preserve the declared
+scorer profile, finite `[0.0, 1.0]` numeric-fit scores, returned-window
+`score_rank`, and `peak_jd` as the highest-scored qualifying scan point inside
+the returned window. Provenance states that these are discrete sampled chart
+states; these routes do not claim continuous truth, exact event-boundary
+solving, or exact score-peak solving.
+
+The REST bounds are intentionally narrow: maximum 31-day search span,
+15-minute minimum cadence, maximum 1000 computed scan points, maximum 64
+returned windows, maximum 1000 returned raw moments, maximum 12 requested
+bodies, and at most 8 optional boundary refinement steps for the window route.
+Boundary refinement, when requested for windows, is bracket evidence, not exact
+root truth. The raw-moment route requires `boundary_refine_steps` to be `0`
+and disables window-count early exit so raw scan points are not truncated by
+the window grouping helper.
+For scored windows, `max_windows` remains chronological early exit; score
+ranks are over the returned windows only and are not a global optimum claim.
+
+This admission does not expose arbitrary executable predicates, arbitrary
+executable scorers, server-defined Western electional judgement,
+auspicious/inauspicious labels, recommendation text, unbounded scans, async
+search jobs, or electional advice language.
 
 ### Catalog Umbrella Boundary
 

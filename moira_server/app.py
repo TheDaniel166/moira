@@ -14,6 +14,7 @@ from .lifecycle import create_engine
 from .routers import (
     ashtakavarga_router,
     alternate_dashas_router,
+    antiscia_router,
     astrocartography_router,
     asteroids_router,
     comets_router,
@@ -24,20 +25,28 @@ from .routers import (
     decanates_router,
     dignities_router,
     egyptian_bounds_router,
+    electional_router,
     galactic_router,
     galactic_houses_router,
     gauquelin_router,
     geodetic_router,
+    harmonics_router,
     hermetic_decans_router,
     health_router,
+    huber_router,
     jaimini_router,
     local_space_router,
     locations_router,
+    lord_of_the_orb_router,
+    lord_of_the_turn_router,
     lots_router,
     manazil_router,
     nodes_router,
+    nine_parts_router,
     panchanga_router,
+    phase_router,
     phenomena_router,
+    planetary_hours_router,
     pipeline_router,
     positions_router,
     primary_directions_router,
@@ -49,6 +58,7 @@ from .routers import (
     timelords_router,
     triplicity_router,
     transits_router,
+    uranian_router,
     varshaphal_router,
     varga_router,
     vedic_dignities_router,
@@ -130,5 +140,15 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(stars_router)       # Fixed stars for the website / Manus AI
     app.include_router(manazil_router)      # Phase-11 Arabic lunar mansion catalog/doctrine surface
     app.include_router(nodes_router)        # Phase-11 planetary and small-body orbital node surface
+    app.include_router(uranian_router)      # Phase-12 Uranian/Hamburg School hypothetical-body surface
+    app.include_router(harmonics_router)    # Phase-12 direct harmonic projection surface
+    app.include_router(phase_router)        # Phase-12 phase, elongation, and photometry surface
+    app.include_router(antiscia_router)      # Phase-12 ordinary antiscia reflection/contact surface
+    app.include_router(nine_parts_router)    # Phase-12 Abu Ma'shar Nine Parts aggregate surface
+    app.include_router(planetary_hours_router)  # Phase-12 sunrise-based planetary-hours surface
+    app.include_router(huber_router)  # Phase-12 direct Huber house-frame surface
+    app.include_router(lord_of_the_orb_router)  # Phase-12 caller-seeded Lord of the Orb surface
+    app.include_router(lord_of_the_turn_router)  # Phase-12 caller-supplied Lord of the Turn surface
+    app.include_router(electional_router)  # Phase-13 bounded electional scan-witness surface
     app.include_router(pipeline_router)    # Reduction pipeline breakdown for planet positions
     return app

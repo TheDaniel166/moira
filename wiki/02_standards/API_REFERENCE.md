@@ -574,7 +574,7 @@ message.
 | `received_light(dt, bodies=None)` | `dict[str, ReceivedLightPosition]` | Apparent received-light positions with explicit light-cone geometry |
 | `galactic_chart(chart, bodies=None)` | `list[GalacticPosition]` | Galactic longitude/latitude for chart bodies |
 | `galactic_angles(chart)` | `dict[str, tuple[float, float]]` | Ecliptic long/lat of major galactic reference points |
-| `uranian(dt)` | `dict[str, UranianPosition]` | Positions of the eight Uranian/Hamburg School bodies |
+| `uranian(dt)` | `dict[str, UranianPosition]` | Positions of the current nine Uranian/Hamburg School and Transpluto hypothetical bodies |
 | `geodetic(chart, zodiac="tropical", ayanamsa_system=None)` | `GeodeticChart` | Geodetic chart frame derived from planetary longitudes |
 | `geodetic_planet_equivalents(chart, bodies=None, zodiac="tropical", ayanamsa_system=None)` | `dict[str, float]` | Geodetic longitude equivalents for selected bodies |
 | `synodic_phase(body1, body2, dt)` | `dict[str, float \| str]` | Synodic separation, cycle fraction, and phase label for two bodies |
@@ -747,10 +747,10 @@ from moira.facade import uranian_at, all_uranian_at, list_uranian, UranianBody, 
 | Function | Returns | Description |
 |---|---|---|
 | `uranian_at(body, jd_ut)` | `UranianPosition` | Single Uranian body position |
-| `all_uranian_at(jd_ut)` | `dict[str, UranianPosition]` | All eight Uranian bodies |
-| `list_uranian()` | `list[str]` | Uranian body names (Cupido through Poseidon) |
+| `all_uranian_at(jd_ut)` | `dict[str, UranianPosition]` | All current nine Uranian/Hamburg School and Transpluto hypothetical bodies |
+| `list_uranian()` | `list[str]` | Uranian body names (Cupido through Poseidon, plus Transpluto) |
 
-`UranianBody` constants: `CUPIDO  HADES  ZEUS  KRONOS  APOLLON  ADMETOS  VULKANUS  POSEIDON`
+`UranianBody` constants: `CUPIDO  HADES  ZEUS  KRONOS  APOLLON  ADMETOS  VULKANUS  POSEIDON  TRANSPLUTO`
 
 ### Galactic coordinates
 
