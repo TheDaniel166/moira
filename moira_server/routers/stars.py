@@ -126,7 +126,7 @@ def variable_star_pair_route(request: VariableStarPairRequest) -> VariableStarPa
 def list_multiple_stars_route(
     q: str | None = Query(None, description="Search term"),
     system_type: str | None = Query(None, description="System type: visual, wide, spectroscopic, optical"),
-    limit: int = Query(100, le=500),
+    limit: int = Query(100, ge=1, le=500),
 ) -> MultipleStarListResponse:
     """List multiple-star systems from the local orbital catalog."""
 

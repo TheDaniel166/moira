@@ -19,6 +19,8 @@ from .jaimini import router as jaimini_router
 from .local_space import router as local_space_router
 from .locations import router as locations_router
 from .lots import router as lots_router
+from .manazil import router as manazil_router
+from .nodes import router as nodes_router
 from .panchanga import router as panchanga_router
 from .phenomena import router as phenomena_router
 from .pipeline import router as pipeline_router
@@ -63,6 +65,8 @@ __all__ = [
     "local_space_router",
     "locations_router",
     "lots_router",
+    "manazil_router",
+    "nodes_router",
     "panchanga_router",
     "phenomena_router",
     "pipeline_router",

@@ -38,6 +38,7 @@ from ..models.stars import (
     StarPositionResponse,
     StarsBulkRequest,
     StarsBulkResponse,
+    VARIABLE_STAR_RANGE_MAX_DAYS,
     VariableStarCatalogProfileRequest,
     VariableStarCatalogProfileResponse,
     VariableStarCatalogResponse,
@@ -49,11 +50,15 @@ from ..models.stars import (
     VariableStarStateResponse,
 )
 from ..serializers.stars import (
+    serialize_multiple_list_provenance,
     serialize_multiple_state,
+    serialize_multiple_state_provenance,
     serialize_multiple_system,
     serialize_star,
+    serialize_variable_computation_provenance,
     serialize_variable_catalog_profile,
     serialize_variable_pair,
+    serialize_variable_range_provenance,
     serialize_variable_star,
     serialize_variable_state,
 )
@@ -67,8 +72,9 @@ def _to_jd_tt(dt: datetime) -> float:
 
 def compute_star_position(engine: Moira, request: StarPositionRequest) -> StarPositionResponse:
     """Single star position using the sovereign star catalog."""
-    data: StarPosition = star_at(request.star, _to_jd_tt(request.dt))
-    return serialize_star(data)
+    jd_tt = _to_jd_tt(request.dt)
+    data: StarPosition = star_at(request.star, jd_tt)
+    return serialize_star(data, requested_datetime=request.dt, jd_tt=jd_tt)
 
 
 def compute_stars_bulk(engine: Moira, request: StarsBulkRequest) -> StarsBulkResponse:
@@ -88,7 +94,7 @@ def compute_stars_bulk(engine: Moira, request: StarsBulkRequest) -> StarsBulkRes
 
     return StarsBulkResponse(
         dt=request.dt,
-        results={k: serialize_star(v) for k, v in results.items()},
+        results={k: serialize_star(v, requested_datetime=request.dt, jd_tt=jd_tt) for k, v in results.items()},
         missing=missing,
     )
 
@@ -148,6 +154,21 @@ def compute_variable_star_state(request: VariableStarStateRequest) -> VariableSt
         profile,
         next_minimum(star, jd),
         next_maximum(star, jd),
+        provenance=serialize_variable_computation_provenance(
+            requested_datetime=request.dt,
+            jd=jd,
+            requested_stars=[request.star],
+            returned_stars=[star.name],
+            eclipse_threshold=(policy.eclipse_threshold if policy is not None else None),
+            stage_sequence=[
+                "datetime_validation",
+                "julian_day_conversion",
+                "variable_star_catalog_resolution",
+                "condition_profile_computation",
+                "next_extrema_computation",
+                "variable_star_response_serialization",
+            ],
+        ),
     )
 
 
@@ -156,11 +177,14 @@ def compute_variable_star_range(request: VariableStarRangeRequest) -> VariableSt
 
     if request.jd_end < request.jd_start:
         raise ValueError("jd_end must be greater than or equal to jd_start")
+    if request.jd_end - request.jd_start > VARIABLE_STAR_RANGE_MAX_DAYS:
+        raise ValueError(f"variable-star range may span at most {VARIABLE_STAR_RANGE_MAX_DAYS:g} days")
     star = variable_star(request.star)
     return VariableStarRangeResponse(
         star=star.name,
         minima_jd=minima_in_range(star, request.jd_start, request.jd_end),
         maxima_jd=maxima_in_range(star, request.jd_start, request.jd_end),
+        provenance=serialize_variable_range_provenance(star, request.jd_start, request.jd_end),
     )
 
 
@@ -170,20 +194,54 @@ def compute_variable_catalog_profile(
     """Compute the aggregate variable-star catalog profile."""
 
     jd = jd_from_datetime(request.dt)
-    return serialize_variable_catalog_profile(catalog_profile(jd, policy=_policy(request.eclipse_threshold)))
+    policy = _policy(request.eclipse_threshold)
+    profile = catalog_profile(jd, policy=policy)
+    return serialize_variable_catalog_profile(
+        profile,
+        provenance=serialize_variable_computation_provenance(
+            requested_datetime=request.dt,
+            jd=jd,
+            requested_stars=list_variable_stars(),
+            returned_stars=[item.name for item in profile.profiles],
+            eclipse_threshold=(policy.eclipse_threshold if policy is not None else None),
+            stage_sequence=[
+                "datetime_validation",
+                "julian_day_conversion",
+                "variable_star_catalog_profile_computation",
+                "variable_star_response_serialization",
+            ],
+        ),
+    )
 
 
 def compute_variable_pair(request: VariableStarPairRequest) -> VariableStarPairResponse:
     """Compute a two-star variable-state relation."""
 
     jd = jd_from_datetime(request.dt)
+    primary = variable_star(request.primary)
+    secondary = variable_star(request.secondary)
+    policy = _policy(request.eclipse_threshold)
     return serialize_variable_pair(
         star_state_pair(
-            variable_star(request.primary),
-            variable_star(request.secondary),
+            primary,
+            secondary,
             jd,
-            policy=_policy(request.eclipse_threshold),
-        )
+            policy=policy,
+        ),
+        provenance=serialize_variable_computation_provenance(
+            requested_datetime=request.dt,
+            jd=jd,
+            requested_stars=[request.primary, request.secondary],
+            returned_stars=[primary.name, secondary.name],
+            eclipse_threshold=(policy.eclipse_threshold if policy is not None else None),
+            stage_sequence=[
+                "datetime_validation",
+                "julian_day_conversion",
+                "variable_star_catalog_resolution",
+                "star_state_pair_computation",
+                "variable_star_response_serialization",
+            ],
+        ),
     )
 
 
@@ -210,15 +268,22 @@ def list_multiple_star_catalog(
         names = [name for name in names if needle in name.casefold()]
 
     limited = names[:limit]
-    return MultipleStarListResponse(systems=limited, total=len(limited))
+    return MultipleStarListResponse(
+        systems=limited,
+        total=len(limited),
+        provenance=serialize_multiple_list_provenance(
+            q=q,
+            system_type=system_type,
+            limit=limit,
+            returned_count=len(limited),
+        ),
+    )
 
 
 def compute_multiple_star_state(request: MultipleStarStateRequest) -> MultipleStarStateResponse:
     """Compute multiple-star separation, position angle, and resolvability state."""
 
     require_aware_datetime(request.dt)
-    if request.aperture_mm <= 0.0:
-        raise ValueError("aperture_mm must be positive")
 
     jd = jd_from_datetime(request.dt)
     system = multiple_star(request.system)
@@ -227,4 +292,11 @@ def compute_multiple_star_state(request: MultipleStarStateRequest) -> MultipleSt
         system,
         snapshot,
         is_resolvable(system, jd, request.aperture_mm),
+        provenance=serialize_multiple_state_provenance(
+            system,
+            requested_datetime=request.dt,
+            jd=jd,
+            requested_system=request.system,
+            aperture_mm=request.aperture_mm,
+        ),
     )

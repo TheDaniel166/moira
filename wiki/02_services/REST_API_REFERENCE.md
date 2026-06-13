@@ -1,7 +1,7 @@
 # Moira REST API Reference
 
 Version: 0.1.0 transport surface
-Date audited: 2026-06-12
+Date audited: 2026-06-13
 Source of truth: `moira_server.app.create_app()` route registry
 
 This document describes the HTTP transport surface currently registered by
@@ -16,9 +16,9 @@ transport contract documented for that family.
 
 ## Current Surface Summary
 
-- Total non-documentation routes: 269
+- Total non-documentation routes: 283
 - Operational/meta routes: 4
-- Versioned `/v1` routes: 265
+- Versioned `/v1` routes: 279
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 
@@ -47,7 +47,9 @@ Implemented:
   routes, Varga direct and chart-backed generic/named/Shodashvarga/batch routes, and
   Decans/Decanates direct and chart-backed decanate-placement plus Hermetic
   catalog/longitude/rising/night-hour routes
-- website-accelerated Phase 11 subset: fixed stars, variable stars, multiple stars, asteroids, and comets
+- Phase 11 admitted surfaces: fixed stars, variable stars, multiple stars,
+  asteroids, comets, asteroid subsets/families, Manazil, and planetary/
+  small-body nodes
 - phase 10 opened with bounded Astrocartography line and subplanetary point
   routes, followed by bounded Local Space direct and chart-backed horizon
   position routes, and bounded Geodetic direct/chart-backed location-chart and
@@ -66,6 +68,10 @@ Not yet broadly exposed as REST families:
 - expanded phase 10 spatial and Earth-facing products: Astrocartography, Local Space, Geodetic, Galactic, Galactic Houses, and Gauquelin map/rendering/projection/statistical products remain deferred
 - phase 12 specialist analytical families: `/v1/uranian/*`, `/v1/harmonics/*`, `/v1/phase/*`, `/v1/antiscia/*`, `/v1/special/*`
 - phase 13 electional/search workflow routes: `/v1/electional/*`
+- generic Phase 11 catalog umbrella routes: `/v1/catalogs/*` remain
+  intentionally absent; P11-U1 permits only a future discovery-only registry
+  design, not cross-family search, member lookup, computation, or catalog
+  sweeps
 
 ## Route Families
 
@@ -75,7 +81,7 @@ Not yet broadly exposed as REST families:
 | ashtakavarga | 8 |
 | alternate-dashas | 9 |
 | astrocartography | 4 |
-| asteroids | 3 |
+| asteroids | 9 |
 | batch | 7 |
 | chart | 2 |
 | chart-shape | 1 |
@@ -99,7 +105,9 @@ Not yet broadly exposed as REST families:
 | local-space | 2 |
 | lots | 7 |
 | lunar-phases | 1 |
+| manazil | 4 |
 | midpoints | 5 |
+| nodes | 4 |
 | occultations | 8 |
 | panchanga | 4 |
 | parans | 8 |
@@ -524,14 +532,235 @@ Body-class truth:
 | POST | `/v1/asteroids/position` | `asteroid_position` |
 | POST | `/v1/asteroids/bulk` | `asteroids_bulk` |
 | GET | `/v1/asteroids/list` | `list_asteroids` |
+| GET | `/v1/asteroids/subsets` | `asteroid_subsets` |
+| GET | `/v1/asteroids/subsets/{subset}/list` | `asteroid_subset_list` |
+| POST | `/v1/asteroids/subsets/{subset}/positions` | `asteroid_subset_positions` |
+| GET | `/v1/asteroids/families/by-number/{number}` | `asteroid_family_by_number` |
+| GET | `/v1/asteroids/families/{family_name}/members` | `asteroid_family_members` |
+| POST | `/v1/asteroids/families/chart` | `asteroid_families_in_chart` |
 | POST | `/v1/comets/position` | `comet_position` |
 | POST | `/v1/comets/bulk` | `comets_bulk` |
 | GET | `/v1/comets/list` | `list_comets` |
+| GET | `/v1/manazil/catalog` | `manazil_catalog_route` |
+| POST | `/v1/manazil/position` | `manazil_position_route` |
+| POST | `/v1/manazil/bulk` | `manazil_bulk_route` |
+| GET | `/v1/manazil/traditions/{tradition}/mansions/{mansion_index}` | `manazil_tradition_lookup_route` |
+| GET | `/v1/nodes/catalog` | `node_catalog_route` |
+| POST | `/v1/nodes/planetary/mean` | `mean_planetary_node_route` |
+| POST | `/v1/nodes/planetary/mean/bulk` | `mean_planetary_nodes_bulk_route` |
+| POST | `/v1/nodes/geometric` | `geometric_node_route` |
 | GET | `/v1/locations/search` | `location_search_route` |
 | POST | `/v1/locations/timezone/validate` | `timezone_validate_route` |
 | GET | `/v1/website/chart-wheel/presets` | `chart_wheel_presets_route` |
 | POST | `/v1/website/chart-wheel/validate` | `chart_wheel_validate_route` |
 | POST | `/v1/website/chart-wheel/packet` | `chart_wheel_packet_route` |
+
+### Fixed-Star REST Admission Boundary
+
+The admitted fixed-star REST surface is the bounded synchronous
+`/v1/stars/position`, `/v1/stars/bulk`, and `/v1/stars/list` family.
+
+`/v1/stars/position` and `/v1/stars/bulk` return fixed-star longitude,
+latitude, magnitude, zodiac sign fields, and an explicit `provenance` object
+derived from the live `FixedStar` vessel truth/classification/relation fields.
+The provenance records the requested datetime, normalized UTC datetime, TT
+Julian Day, lookup/source/merge state, observer mode, relation basis, condition
+state, and transport stage sequence.
+
+This admission does not expose heliacal event search, star condition networks,
+catalog-wide heavy sweeps, rendered star maps, or fixed-star astrocartography.
+Those remain separate expansion candidates.
+
+### Variable-Star REST Admission Boundary
+
+The admitted variable-star REST surface is the bounded synchronous
+`/v1/stars/variable/*` family:
+
+- `GET /v1/stars/variable/list`
+- `GET /v1/stars/variable/{name}`
+- `POST /v1/stars/variable/state`
+- `POST /v1/stars/variable/range`
+- `POST /v1/stars/variable/catalog-profile`
+- `POST /v1/stars/variable/pair`
+
+Catalog responses include catalog-source provenance over the curated Variable
+Star Oracle. State, range, catalog-profile, and pair responses include
+computation provenance recording the Julian Day or datetime context, requested
+and returned stars, eclipse-threshold policy, phase convention, catalog sources,
+and stage sequence.
+
+This admission does not expose real-time AAVSO/VSX observation refresh,
+exhaustive GCVS catalog search, rendered light curves, variable-star positional
+overlays, secondary-eclipse dedicated products, or multi-period semi-regular
+models beyond the current dominant-period engine.
+
+### Multiple-Star REST Admission Boundary
+
+The admitted multiple-star REST surface is the bounded synchronous
+`/v1/stars/multiple/*` family:
+
+- `GET /v1/stars/multiple/list`
+- `GET /v1/stars/multiple/{name}`
+- `POST /v1/stars/multiple/state`
+
+Catalog and state responses include provenance derived from the Multiple Star
+Systems Oracle: catalog sources, system type, orbit model, orbital doctrine,
+Dawes-limit aperture policy, combined-magnitude doctrine, primary-orbit label,
+period uncertainty, requested aperture, computed Dawes limit, and stage
+sequence.
+
+This admission does not expose catalog-wide state sweeps, rendered orbit
+diagrams, multi-aperture observing plans, arbitrary seeing policies, new catalog
+ingestion, or exhaustive WDS/INT4 exposure.
+
+### Asteroid REST Admission Boundary
+
+The admitted asteroid REST surface is the bounded synchronous
+`/v1/asteroids/*` family:
+
+- `POST /v1/asteroids/position`
+- `POST /v1/asteroids/bulk`
+- `GET /v1/asteroids/list`
+
+Position and bulk responses include geocentric tropical ecliptic longitude,
+latitude, distance, speed, retrograde state, zodiac sign fields, and explicit
+provenance. The provenance records the requested datetime, normalized UTC
+datetime, UT Julian Day, requested and returned asteroid identity, returned
+NAIF ID, kernel source, known-catalog truth, loaded-kernel availability, NAIF
+convention, frame, and transport stage sequence.
+
+The route family distinguishes a known asteroid identity in `ASTEROID_NAIF`
+from a body actually covered by the loaded small-body reader. `is_sovereign` is
+only asserted when the returned NAIF ID is present in `reader.covered_bodies()`;
+reader presence alone is not treated as asteroid coverage.
+
+This admission does not expose asteroid families, centaur/TNO/main-belt subset
+routes, catalog-wide asteroid sweeps, topocentric positions, equatorial
+positions, asteroid photometry, rendered maps, asteroid astrocartography, kernel
+manifest management, or full small-body migration proof.
+
+### Asteroid Subset And Family REST Admission Boundary
+
+The admitted asteroid subset and family REST surface is the bounded synchronous
+P11-06 extension under `/v1/asteroids/*`:
+
+- `GET /v1/asteroids/subsets`
+- `GET /v1/asteroids/subsets/{subset}/list`
+- `POST /v1/asteroids/subsets/{subset}/positions`
+- `GET /v1/asteroids/families/by-number/{number}`
+- `GET /v1/asteroids/families/{family_name}/members`
+- `POST /v1/asteroids/families/chart`
+
+Subset routes expose curated Moira identity sets: `classical`, `main_belt`,
+`centaurs`, and `tnos`. Subset list responses include body names, NAIF IDs,
+loaded-kernel availability by returned NAIF ID, subset source module, catalog
+source, query/limit truth, and stage sequence. Subset position responses
+delegate to the admitted asteroid position transport and add subset provenance.
+
+Family routes expose Nesvorny/PDS dynamical-family catalog membership. They use
+MPC catalog numbers and Nesvorny family names, not NAIF IDs. Responses record
+`NASA_PDS_ast_nesvorny_families_v2_2015`, `MPC_catalog_number`,
+`moira.asteroid_families`, and transport stage sequence.
+
+This admission preserves catalog labels exactly. Similar family labels such as
+`Koronis`, `Koronis(2)`, and `Karin` remain distinct.
+
+This admission does not expose family-wide position sweeps, resonance/aspect
+networks, rendered family maps, asteroid-family astrocartography, arbitrary
+family catalog search, photometry, topocentric/equatorial subset products,
+kernel manifest management, or edits to the bundled family catalog.
+
+### Comet REST Admission Boundary
+
+The admitted comet REST surface is the bounded synchronous `/v1/comets/*`
+family:
+
+- `POST /v1/comets/position`
+- `POST /v1/comets/bulk`
+- `GET /v1/comets/list`
+
+Position and bulk responses include geocentric tropical ecliptic longitude,
+latitude, distance, speed, retrograde state, zodiac sign fields, and explicit
+provenance. The provenance records the requested datetime, normalized UTC
+datetime, UT Julian Day, requested comet identity, resolved engine comet name,
+returned comet identity, returned NAIF ID, kernel source, known-catalog truth,
+loaded-kernel availability, periodic-comet NAIF convention, frame, and
+transport stage sequence.
+
+The route family distinguishes a known comet identity in `COMET_NAIF` from a
+body actually covered by the loaded small-body reader. REST requests may use
+known comet names or known comet NAIF IDs; numeric IDs are resolved to the
+engine comet name before `comet_at(...)` is called. `is_sovereign` is only
+asserted when the returned NAIF ID is present in `reader.covered_bodies()`;
+reader presence alone is not treated as comet coverage.
+
+This admission does not expose non-periodic comet expansion, comet family or
+dynamical-class routes, catalog-wide comet sweeps, topocentric positions,
+equatorial positions, comet photometry, rendered maps, comet astrocartography,
+kernel manifest management, or full small-body migration proof.
+
+### Manazil REST Admission Boundary
+
+The admitted Arabic lunar mansion REST surface is the bounded synchronous
+`/v1/manazil/*` family:
+
+- `GET /v1/manazil/catalog`
+- `POST /v1/manazil/position`
+- `POST /v1/manazil/bulk`
+- `GET /v1/manazil/traditions/{tradition}/mansions/{mansion_index}`
+
+Catalog responses expose the 28 equal Arabic lunar mansions, the `360 / 28`
+span, and admitted traditions. Position responses accept direct ecliptic
+longitude and explicit `tropical` or `sidereal` mode. Sidereal mode requires
+`jd_ut` and records ayanamsa system/mode in provenance. Bulk responses accept 1
+to 500 named longitudes. Tradition lookup responses expose the selected
+nature/signification for one mansion in one admitted tradition.
+
+The route family preserves Arabic Manazil doctrine separately from Vedic
+nakshatra doctrine. Variant traditions alter textual attribution only; they do
+not alter the 28 equal mansion boundaries.
+
+This admission does not expose chart-backed Moon mansion routes, natal mansion
+profiles, electional scoring, mansion condition networks, heliacal/fixed-star
+mansion variants, Vedic nakshatra routes, or alternate non-equal mansion
+boundary systems.
+
+### Planetary And Small-Body Nodes REST Admission Boundary
+
+The admitted node REST surface is the bounded synchronous `/v1/nodes/*`
+family:
+
+- `GET /v1/nodes/catalog`
+- `POST /v1/nodes/planetary/mean`
+- `POST /v1/nodes/planetary/mean/bulk`
+- `POST /v1/nodes/geometric`
+
+Mean planetary routes expose kernel-free Meeus / Simon mean orbital element
+nodes and apsides for Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and
+Neptune. Responses include ascending node, descending node, perihelion,
+aphelion, inclination, eccentricity, semi-major axis, method, JD scale, frame,
+kernel requirement, source module, validity note, and stage sequence.
+
+The geometric route exposes a single reader-backed osculating heliocentric node
+and apsides record using angular-momentum and eccentricity-vector geometry from
+the active reader state vectors. It records the active-reader dependency in
+provenance and does not imply small-body availability from catalog identity.
+
+This admission does not expose lunar true/mean node REST routes, chart-backed
+node profiles, nodal aspect networks, catalog-wide small-body node sweeps,
+rendered node maps, asteroid/comet route changes, or small-body kernel manifest
+management.
+
+### Catalog Umbrella Boundary
+
+There is no admitted `/v1/catalogs/*` route family.
+
+The P11-U1 doctrine decision keeps a future catalog umbrella deferred and
+restricts any later candidate to discovery-only registry metadata. It may point
+clients to admitted family-native route prefixes and doctrine documents, but it
+must not return catalog member records, perform cross-family search, compute
+positions, expose loaded-kernel coverage lists, join catalog identities, or run
+catalog-wide sweeps.
 
 ## Documentation Boundary
 

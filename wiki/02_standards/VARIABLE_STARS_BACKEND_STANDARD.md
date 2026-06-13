@@ -112,7 +112,7 @@ The Variable Star Oracle does not compute the following. Callers are responsible
   The module does not fetch live AAVSO observations.
 - **Ecliptic position.** `VariableStar` carries no positional data. Ecliptic
   longitude, conjunction with natal planets, and chart overlay are computed
-  externally (via `fixed_stars.py` or `stars.py`).
+  externally via `stars.py`.
 
 ---
 
@@ -402,7 +402,7 @@ The following are explicitly outside the scope of this subsystem.
 
 - **Ecliptic position.** The Variable Star Oracle computes brightness phases, not
   positional data. Ecliptic longitude, right ascension, or conjunction with natal
-  planets is a concern for `fixed_stars.py` and `stars.py`.
+  planets is a concern for `stars.py`.
 
 - **Real-time ephemeris updates.** Mira and semi-regular stars have drifting periods.
   The module uses fixed catalog epochs and periods. Fetching current AAVSO data is

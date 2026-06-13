@@ -8,8 +8,8 @@ determinism rules are stated here and are frozen until explicitly superseded by
 a revision to this document.
 
 This document reflects current implementation truth as of Unified-Stars Phase
-11. It describes the subsystem that actually exists in `moira/fixed_stars.py`
-and `moira/stars.py`; it does not describe aspirational future capabilities.
+11. It describes the subsystem that actually exists in `moira/stars.py` and
+`moira/star_types.py`; it does not describe aspirational future capabilities.
 
 ---
 
@@ -21,15 +21,15 @@ and `moira/stars.py`; it does not describe aspirational future capabilities.
 
 The unified-star backend is a subsystem cluster with two authoritative files:
 
-- `moira/fixed_stars.py`
 - `moira/stars.py`
+- `moira/star_types.py`
 
 Their boundary is normative:
 
 | File | Authority |
 |---|---|
-| `moira/fixed_stars.py` | fixed-star catalog lookup, proper-motion propagation, frame conversion, parallax handling, heliacal event search, and subsystem-level aggregate/network vessels |
-| `moira/stars.py` | unified public star surface, Gaia enrichment, named lookup, proximity search, magnitude search, source precedence, and merge doctrine |
+| `moira/stars.py` | fixed-star catalog lookup, proper-motion propagation, frame conversion, parallax handling, heliacal event search, unified public star surface, Gaia enrichment, named lookup, proximity search, magnitude search, source precedence, and merge doctrine |
+| `moira/star_types.py` | fixed-star, heliacal, unified-star, relation, condition-profile, policy, and network result vessels |
 
 `moira/gaia.py` is a delegated dependency. It is not the constitutional center
 of this subsystem.
@@ -38,11 +38,12 @@ of this subsystem.
 
 A **fixed-star position** in Moira is:
 
-> The authoritative output of `fixed_star_at`, computed by catalog resolution,
+> The authoritative output of `star_at`, computed by catalog resolution,
 > proper-motion propagation from catalog epoch, frame conversion to tropical
 > ecliptic of date, and first-order annual stellar parallax where admitted.
 
-`StarPosition` is the authoritative position vessel.
+`FixedStar` is the authoritative public position vessel. `StarPosition`
+remains a lower-layer vessel type for legacy structural surfaces.
 
 #### 1.3 Heliacal event
 
@@ -140,9 +141,8 @@ layers. Each layer consumes outputs already produced below it. No layer reaches
 upward.
 
 ```
-Core      - Authoritative unified-star computation (`fixed_star_at`,
-            heliacal event search, `star_at`, `stars_near`,
-            `stars_by_magnitude`)
+Core      - Authoritative unified-star computation (`star_at`,
+            heliacal event search, `stars_near`, `stars_by_magnitude`)
 Phase  1  - Truth preservation
 Phase  2  - Classification
 Phase  3  - Inspectability and vessel hardening
@@ -232,7 +232,7 @@ The following terms are now frozen:
 
 | Term | Meaning |
 |---|---|
-| fixed-star position | the direct catalog-derived position result from `fixed_star_at` |
+| fixed-star position | the direct catalog-derived position result from `star_at` |
 | heliacal event | the explicit rising/setting event vessel over the legacy JD wrappers |
 | unified star | the merged public star result over Hipparcos / Gaia doctrine |
 | catalog lookup | relation kind for direct fixed-star lookup |
@@ -351,9 +351,9 @@ Changes to the unified-star subsystem must be validated in the project `.venv`.
 Minimum commands:
 
 ```powershell
-.\.venv\Scripts\python.exe -m py_compile moira\fixed_stars.py moira\stars.py tests\unit\test_fixed_stars_api.py
-.\.venv\Scripts\python.exe -m pytest tests\unit\test_fixed_stars_api.py -q -k "Phase1TruthPreservation or Phase3InspectabilityAndHardening or Phase4PolicySurface or Phase5Relations or Phase6RelationInspectabilityAndHardening or Phase7ConditionProfiles or Phase8ChartConditionProfile or Phase9ConditionNetworkProfile or Phase10SubsystemHardening"
-.\.venv\Scripts\python.exe -m pytest tests\unit\test_fixed_stars_api.py -q -k "heliacal_rising or heliacal_setting or star_at or fixed_star_at or stars_near or stars_by_magnitude"
+.\.venv\Scripts\python.exe -m py_compile moira\stars.py moira\star_types.py tests\unit\test_stars_public_api.py tests\unit\test_stars_condition_profiles.py tests\unit\test_stars_heliacal.py tests\unit\test_stars_sovereign_catalog.py
+.\.venv\Scripts\python.exe -m pytest tests\unit\test_stars_public_api.py tests\unit\test_stars_condition_profiles.py tests\unit\test_stars_heliacal.py tests\unit\test_stars_sovereign_catalog.py -q
+.\.venv\Scripts\python.exe -m pytest tests\integration\test_stars_external_reference.py tests\integration\test_stars_erfa_reference.py tests\integration\test_stars_sovereign_identity.py -q
 ```
 
 If a future change touches the slower legacy star-group delegations, the full
