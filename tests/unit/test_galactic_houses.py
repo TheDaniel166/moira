@@ -6,6 +6,15 @@ from moira import galactic_houses
 
 
 def test_calculate_galactic_houses_rejects_invalid_geographic_coordinates() -> None:
+    with pytest.raises(ValueError, match="jd_ut must be finite"):
+        galactic_houses.calculate_galactic_houses(float("nan"), 0.0, 0.0)
+
+    with pytest.raises(ValueError, match="latitude must be finite"):
+        galactic_houses.calculate_galactic_houses(2460000.5, float("nan"), 0.0)
+
+    with pytest.raises(ValueError, match="longitude must be finite"):
+        galactic_houses.calculate_galactic_houses(2460000.5, 0.0, float("nan"))
+
     with pytest.raises(ValueError, match="latitude must be in \\[-90, 90\\]"):
         galactic_houses.calculate_galactic_houses(2460000.5, 91.0, 0.0)
 
@@ -122,6 +131,13 @@ def test_assign_galactic_house_normalizes_input() -> None:
     assert placement_b.galactic_longitude == pytest.approx(placement_a.galactic_longitude)
 
 
+def test_assign_galactic_house_rejects_non_finite_longitude() -> None:
+    house_cusps = _synthetic_galactic_cusps(0.0)
+
+    with pytest.raises(ValueError, match="galactic_longitude must be finite"):
+        galactic_houses.assign_galactic_house(float("nan"), house_cusps)
+
+
 def test_body_galactic_house_position_matches_membership_and_midpoint_fraction() -> None:
     house_cusps = _synthetic_galactic_cusps(0.0)
 
@@ -131,6 +147,13 @@ def test_body_galactic_house_position_matches_membership_and_midpoint_fraction()
 
     assert position == pytest.approx(3.5)
     assert int(position) == placement.house
+
+
+def test_body_galactic_house_position_rejects_non_finite_longitude() -> None:
+    house_cusps = _synthetic_galactic_cusps(0.0)
+
+    with pytest.raises(ValueError, match="galactic_longitude must be finite"):
+        galactic_houses.body_galactic_house_position(float("nan"), house_cusps)
 
 
 def test_describe_galactic_boundary_reports_forward_arc_distances() -> None:
@@ -152,6 +175,9 @@ def test_describe_galactic_boundary_reports_forward_arc_distances() -> None:
 def test_describe_galactic_boundary_rejects_non_positive_threshold() -> None:
     house_cusps = _synthetic_galactic_cusps(0.0)
     placement = galactic_houses.assign_galactic_house(75.0, house_cusps)
+
+    with pytest.raises(ValueError, match="near_cusp_threshold must be finite"):
+        galactic_houses.describe_galactic_boundary(placement, near_cusp_threshold=float("nan"))
 
     with pytest.raises(ValueError, match="near_cusp_threshold must be positive"):
         galactic_houses.describe_galactic_boundary(placement, near_cusp_threshold=0.0)

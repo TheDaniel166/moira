@@ -20,6 +20,7 @@ CoordinateSource = Literal[
     "chart_geocentric_ecliptic_to_equatorial",
 ]
 ObserverSource = Literal["direct_none", "chart_request", "acg_override", "default_zero"]
+SubjectClass = Literal["caller_supplied", "planet", "asteroid", "comet"]
 
 
 class AstrocartographyCoordinateRequest(_StrictModel):
@@ -195,6 +196,15 @@ class AstrocartographyObserverResponse(_StrictModel):
     source: ObserverSource
 
 
+class AstrocartographySubjectProvenanceResponse(_StrictModel):
+    requested_label: str
+    returned_label: str
+    subject_class: SubjectClass
+    canonical_name: str | None = None
+    naif_id: int | None = None
+    position_source: str
+
+
 class AstrocartographyProvenanceResponse(_StrictModel):
     requested_datetime: str | None = None
     normalized_datetime_utc: str | None = None
@@ -207,6 +217,7 @@ class AstrocartographyProvenanceResponse(_StrictModel):
     returned_bodies: list[str]
     observer: AstrocartographyObserverResponse
     coordinate_source: CoordinateSource
+    subjects: list[AstrocartographySubjectProvenanceResponse]
     lat_step: float | None = None
     refraction: bool | None = None
     stage_sequence: list[str]
@@ -243,8 +254,10 @@ __all__ = [
     "AstrocartographyLinesResponse",
     "AstrocartographyObserverResponse",
     "AstrocartographyProvenanceResponse",
+    "AstrocartographySubjectProvenanceResponse",
     "AstrocartographySubplanetaryPointResponse",
     "AstrocartographySubplanetaryResponse",
     "CoordinateSource",
     "ObserverSource",
+    "SubjectClass",
 ]

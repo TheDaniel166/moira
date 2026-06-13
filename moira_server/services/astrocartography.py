@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from moira import Moira
+from moira import Body, Moira
 from moira.astrocartography import (
     ACGLine,
     SubPlanetaryPoint,
@@ -15,6 +15,7 @@ from moira.coordinates import ecliptic_to_equatorial
 from moira.julian import apparent_sidereal_time, ut_to_tt
 from moira.obliquity import nutation, true_obliquity
 from moira.planets import planet_at, sky_position_at
+from moira.planets import _resolve_small_body_name
 
 from ..models.astrocartography import (
     ASTROCARTOGRAPHY_MAX_BODIES,
@@ -24,6 +25,7 @@ from ..models.astrocartography import (
     AstrocartographyDirectSubplanetaryRequest,
     CoordinateSource,
     ObserverSource,
+    SubjectClass,
 )
 from ..models.chart import ChartRequest
 from ._shared import build_chart_context, require_supported_chart_bodies
@@ -72,6 +74,16 @@ class AstrocartographyObserverContext:
 
 
 @dataclass(frozen=True, slots=True)
+class AstrocartographySubjectProvenance:
+    requested_label: str
+    returned_label: str
+    subject_class: SubjectClass
+    canonical_name: str | None
+    naif_id: int | None
+    position_source: str
+
+
+@dataclass(frozen=True, slots=True)
 class AstrocartographyProvenance:
     requested_datetime: str | None
     normalized_datetime_utc: str | None
@@ -84,6 +96,7 @@ class AstrocartographyProvenance:
     returned_bodies: tuple[str, ...]
     observer: AstrocartographyObserverContext
     coordinate_source: CoordinateSource
+    subjects: tuple[AstrocartographySubjectProvenance, ...]
     lat_step: float | None
     refraction: bool | None
     stage_sequence: tuple[str, ...]
@@ -131,6 +144,7 @@ def compute_astrocartography_direct_lines(
                 source="direct_none",
             ),
             coordinate_source="direct_ra_dec",
+            subjects=_direct_subject_provenance(tuple(request.positions)),
             lat_step=request.lat_step,
             refraction=request.refraction,
             stage_sequence=DIRECT_LINES_STAGE_SEQUENCE,
@@ -162,6 +176,7 @@ def compute_astrocartography_direct_subplanetary(
                 source="direct_none",
             ),
             coordinate_source="direct_ra_dec",
+            subjects=_direct_subject_provenance(tuple(request.positions)),
             lat_step=None,
             refraction=None,
             stage_sequence=DIRECT_SUBPLANETARY_STAGE_SEQUENCE,
@@ -370,6 +385,7 @@ def _chart_provenance(
         returned_bodies=bodies,
         observer=observer,
         coordinate_source=coordinate_source,
+        subjects=_chart_subject_provenance(bodies, coordinate_source),
         lat_step=lat_step,
         refraction=refraction,
         stage_sequence=stage_sequence,
@@ -383,10 +399,92 @@ def _direct_ra_dec_map(positions) -> dict[str, tuple[float, float]]:
     }
 
 
+def _direct_subject_provenance(
+    bodies: tuple[str, ...],
+) -> tuple[AstrocartographySubjectProvenance, ...]:
+    return tuple(
+        AstrocartographySubjectProvenance(
+            requested_label=body,
+            returned_label=body,
+            subject_class="caller_supplied",
+            canonical_name=None,
+            naif_id=None,
+            position_source="caller_supplied_direct_ra_dec",
+        )
+        for body in bodies
+    )
+
+
+def _chart_subject_provenance(
+    bodies: tuple[str, ...],
+    coordinate_source: CoordinateSource,
+) -> tuple[AstrocartographySubjectProvenance, ...]:
+    return tuple(
+        _chart_subject_for_body(body, coordinate_source)
+        for body in bodies
+    )
+
+
+def _chart_subject_for_body(
+    body: str,
+    coordinate_source: CoordinateSource,
+) -> AstrocartographySubjectProvenance:
+    small_body = _resolve_small_body_name(body)
+    if small_body is not None:
+        family, canonical_name = small_body
+        naif_id = _small_body_naif_id(family, canonical_name)
+        return AstrocartographySubjectProvenance(
+            requested_label=body,
+            returned_label=body,
+            subject_class=family,
+            canonical_name=canonical_name,
+            naif_id=naif_id,
+            position_source=_chart_position_source(family, coordinate_source),
+        )
+    if body in Body.ALL_PLANETS:
+        return AstrocartographySubjectProvenance(
+            requested_label=body,
+            returned_label=body,
+            subject_class="planet",
+            canonical_name=body,
+            naif_id=None,
+            position_source=_chart_position_source("planet", coordinate_source),
+        )
+    return AstrocartographySubjectProvenance(
+        requested_label=body,
+        returned_label=body,
+        subject_class="caller_supplied",
+        canonical_name=None,
+        naif_id=None,
+        position_source=_chart_position_source("unknown", coordinate_source),
+    )
+
+
+def _small_body_naif_id(family: str, canonical_name: str) -> int | None:
+    if family == "asteroid":
+        from moira.asteroids import ASTEROID_NAIF
+
+        return ASTEROID_NAIF.get(canonical_name)
+    if family == "comet":
+        from moira.comets import COMET_NAIF
+
+        return COMET_NAIF.get(canonical_name)
+    return None
+
+
+def _chart_position_source(family: str, coordinate_source: CoordinateSource) -> str:
+    if coordinate_source == "chart_apparent_topocentric_ra_dec":
+        return f"moira.planets.sky_position_at:{family}"
+    if coordinate_source == "chart_geocentric_ecliptic_to_equatorial":
+        return f"moira.planets.planet_at:{family}"
+    return str(coordinate_source)
+
+
 __all__ = [
     "AstrocartographyLinesResult",
     "AstrocartographyObserverContext",
     "AstrocartographyProvenance",
+    "AstrocartographySubjectProvenance",
     "AstrocartographySubplanetaryResult",
     "compute_astrocartography_chart_lines",
     "compute_astrocartography_chart_subplanetary",

@@ -246,8 +246,22 @@ def gauquelin_sector(
                        because no empirical plus-zone definition exists for
                        custom resolutions.
     """
-    if sectors <= 0:
+    if isinstance(sectors, bool) or not isinstance(sectors, int) or sectors <= 0:
         raise ValueError("sectors must be a positive integer")
+    if not math.isfinite(body_ra):
+        raise ValueError("body_ra must be finite")
+    if not math.isfinite(body_dec):
+        raise ValueError("body_dec must be finite")
+    if not -90.0 <= body_dec <= 90.0:
+        raise ValueError("body_dec must be in [-90, 90]")
+    if not math.isfinite(lat):
+        raise ValueError("lat must be finite")
+    if not -90.0 <= lat <= 90.0:
+        raise ValueError("lat must be in [-90, 90]")
+    if not math.isfinite(lst):
+        raise ValueError("lst must be finite")
+    if not math.isfinite(horizon_altitude):
+        raise ValueError("horizon_altitude must be finite")
 
     # Step 1: Hour angle (positive westward, degrees)
     ha = (lst - body_ra) % 360.0

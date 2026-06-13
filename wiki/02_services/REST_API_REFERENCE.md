@@ -16,9 +16,9 @@ transport contract documented for that family.
 
 ## Current Surface Summary
 
-- Total non-documentation routes: 263
+- Total non-documentation routes: 269
 - Operational/meta routes: 4
-- Versioned `/v1` routes: 259
+- Versioned `/v1` routes: 265
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 
@@ -52,15 +52,18 @@ Implemented:
   routes, followed by bounded Local Space direct and chart-backed horizon
   position routes, and bounded Geodetic direct/chart-backed location-chart and
   equivalent-longitude routes, followed by bounded Galactic coordinate-frame
-  transform, reference-point, and chart-position routes; dense maps, tiles,
-  contours, grids, projection products, geographic search, relocation
-  synthesis, galactic houses, and catalog sweeps remain deferred
+  transform, reference-point, and chart-position routes, followed by bounded
+  Galactic Houses cusp, direct-placement, and chart-backed placement routes,
+  and canonical Gauquelin direct/chart-backed sector routes; dense maps,
+  tiles, contours, grids, projection products, geographic search, relocation
+  synthesis, rendered galactic house charts, rendered Gauquelin wheels,
+  statistical workflows, and catalog sweeps remain deferred
 - website support: locations, chart-wheel packets, and reduction-pipeline inspection aliases
 
 Not yet broadly exposed as REST families:
 
 - phase 9 umbrella aggregation modules: `/v1/vedic/*` and `/v1/classical/*`
-- remaining phase 10 spatial and Earth-facing routes: `/v1/gauquelin/*`; expanded Astrocartography, Local Space, Geodetic, and Galactic map/rendering/projection products remain deferred
+- expanded phase 10 spatial and Earth-facing products: Astrocartography, Local Space, Geodetic, Galactic, Galactic Houses, and Gauquelin map/rendering/projection/statistical products remain deferred
 - phase 12 specialist analytical families: `/v1/uranian/*`, `/v1/harmonics/*`, `/v1/phase/*`, `/v1/antiscia/*`, `/v1/special/*`
 - phase 13 electional/search workflow routes: `/v1/electional/*`
 
@@ -85,6 +88,8 @@ Not yet broadly exposed as REST families:
 | egyptian-bounds | 7 |
 | eclipses | 5 |
 | galactic | 6 |
+| galactic-houses | 3 |
+| gauquelin | 3 |
 | geodetic | 4 |
 | heliacal | 2 |
 | hermetic-decans | 4 |
@@ -366,6 +371,25 @@ Not yet broadly exposed as REST families:
 | POST | `/v1/astrocartography/subplanetary` | `astrocartography_subplanetary_route` |
 | POST | `/v1/astrocartography/chart/subplanetary` | `astrocartography_chart_subplanetary_route` |
 
+Body-class truth:
+
+- Direct Astrocartography routes are caller-owned coordinate routes. Their
+  labels may name selected planets, minor bodies, fixed stars, or other
+  apparent RA/Dec subjects when the caller supplies valid RA/Dec and sidereal
+  time.
+- Chart-backed Astrocartography line routes admit selected chart planets and
+  selected asteroids when the public apparent topocentric RA/Dec path supports
+  the subject. Chart-backed comet lines remain deferred.
+- Chart-backed Astrocartography subplanetary routes admit selected chart
+  planets plus selected asteroids and comets through the geocentric
+  ecliptic-to-equatorial path.
+- Chart-backed fixed-star Astrocartography is not admitted. Fixed stars are
+  supported only through direct caller-owned RA/Dec in the current ACG surface.
+- Catalog-wide fixed-star, asteroid, comet, and small-body sweeps remain
+  deferred.
+- Astrocartography provenance includes a `subjects` list carrying subject
+  class, canonical name, NAIF ID when applicable, and position source.
+
 ## Local Space Routes
 
 | Method | Path | Handler |
@@ -392,6 +416,22 @@ Not yet broadly exposed as REST families:
 | POST | `/v1/galactic/galactic-to-ecliptic` | `galactic_to_ecliptic_route` |
 | POST | `/v1/galactic/reference-points` | `galactic_reference_points_route` |
 | POST | `/v1/galactic/chart/positions` | `galactic_chart_positions_route` |
+
+## Galactic Houses Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| POST | `/v1/galactic-houses/cusps` | `galactic_house_cusps_route` |
+| POST | `/v1/galactic-houses/placement` | `galactic_house_placement_route` |
+| POST | `/v1/galactic-houses/chart/placements` | `galactic_house_chart_placements_route` |
+
+## Gauquelin Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| POST | `/v1/gauquelin/sector` | `gauquelin_sector_route` |
+| POST | `/v1/gauquelin/sectors` | `gauquelin_sectors_route` |
+| POST | `/v1/gauquelin/chart/sectors` | `gauquelin_chart_sectors_route` |
 
 ## Progressions, Timelords, Dasha, Varshaphal, And Primary Directions
 

@@ -10,6 +10,7 @@ from ..models.astrocartography import (
     AstrocartographyLinesResponse,
     AstrocartographyObserverResponse,
     AstrocartographyProvenanceResponse,
+    AstrocartographySubjectProvenanceResponse,
     AstrocartographySubplanetaryPointResponse,
     AstrocartographySubplanetaryResponse,
 )
@@ -74,6 +75,17 @@ def serialize_astrocartography_provenance(
         returned_bodies=list(provenance.returned_bodies),
         observer=serialize_astrocartography_observer(provenance.observer),
         coordinate_source=provenance.coordinate_source,
+        subjects=[
+            AstrocartographySubjectProvenanceResponse(
+                requested_label=subject.requested_label,
+                returned_label=subject.returned_label,
+                subject_class=subject.subject_class,
+                canonical_name=subject.canonical_name,
+                naif_id=subject.naif_id,
+                position_source=subject.position_source,
+            )
+            for subject in provenance.subjects
+        ],
         lat_step=provenance.lat_step,
         refraction=provenance.refraction,
         stage_sequence=list(provenance.stage_sequence),

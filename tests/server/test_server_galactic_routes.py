@@ -191,7 +191,7 @@ def test_galactic_routes_are_registered(client_with_engine: TestClient) -> None:
     paths = {
         route.path
         for route in client_with_engine.app.routes
-        if route.path.startswith("/v1/galactic")
+        if route.path.startswith("/v1/galactic/")
     }
 
     assert paths == {

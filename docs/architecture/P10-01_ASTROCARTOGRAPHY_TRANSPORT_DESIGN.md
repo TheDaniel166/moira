@@ -103,6 +103,7 @@ Do not admit:
 
 - unbounded body lists
 - catalog-wide fixed-star ACG
+- catalog-wide asteroid, comet, or small-body ACG
 - rendered maps
 - dense geographic grids
 - contour extraction
@@ -163,6 +164,7 @@ Minimum provenance fields:
 - `returned_bodies`
 - `observer`
 - `coordinate_source`
+- `subjects`
 - `stage_sequence`
 
 Observer provenance:
@@ -312,6 +314,10 @@ Truth boundary:
 - The caller owns the supplied RA/Dec and sidereal-time truth.
 - The server validates and transports those values.
 - The server does not reinterpret direct RA/Dec as chart-derived.
+- The body label is a subject label, not a planet-only assertion. Direct
+  coordinate input may represent a selected planet, minor body, fixed star, or
+  other caller-owned apparent RA/Dec subject, provided validation and response
+  bounds are satisfied.
 
 Engine path:
 
@@ -321,6 +327,7 @@ Response:
 
 - list of `ACGLine` responses
 - provenance block with `coordinate_source="direct_ra_dec"`
+- subject provenance with `subject_class="caller_supplied"`
 
 ### 7.2 Chart-Backed ACG Lines
 
@@ -373,6 +380,16 @@ Response:
 
 - list of `ACGLine` responses
 - provenance block with `coordinate_source="chart_apparent_topocentric_ra_dec"`
+- subject provenance for chart planets and selected asteroids
+
+Current subject-class boundary:
+
+- selected asteroids are admitted when `sky_position_at(...)` can derive the
+  apparent topocentric RA/Dec path
+- selected comets remain deferred for chart-backed lines because the public
+  comet front door currently admits only the default apparent geocentric
+  ecliptic path
+- fixed stars remain deferred for chart-backed lines
 
 ### 7.3 Direct Subplanetary Points
 
@@ -397,6 +414,7 @@ Input:
 Truth boundary:
 
 - The caller owns the supplied RA/Dec and sidereal-time truth.
+- The body label is a subject label, not a planet-only assertion.
 
 Engine path:
 
@@ -406,6 +424,7 @@ Response:
 
 - list of `SubPlanetaryPoint` responses
 - provenance block with `coordinate_source="direct_ra_dec"`
+- subject provenance with `subject_class="caller_supplied"`
 
 ### 7.4 Chart-Backed Subplanetary Points
 
@@ -448,6 +467,7 @@ Response:
 - list of `SubPlanetaryPoint` responses
 - provenance block with
   `coordinate_source="chart_geocentric_ecliptic_to_equatorial"`
+- subject provenance for chart planets and selected asteroids/comets
 
 ---
 
@@ -517,6 +537,35 @@ Subplanetary response:
 
 Do not bundle subplanetary points into the line response unless a later
 combined route is explicitly admitted.
+
+### 8.5 Subject Provenance
+
+Every response provenance block includes `subjects`.
+
+Subject provenance fields:
+
+- `requested_label`
+- `returned_label`
+- `subject_class`
+- `canonical_name`
+- `naif_id`
+- `position_source`
+
+Subject-class values:
+
+- `caller_supplied`
+- `planet`
+- `asteroid`
+- `comet`
+
+Rules:
+
+- Direct RA/Dec routes use `subject_class="caller_supplied"` because the caller
+  owns the coordinate truth and the server must not reinterpret labels.
+- Chart-backed planet routes use `subject_class="planet"`.
+- Chart-backed selected asteroid/comet routes use the canonical small-body
+  identity and NAIF ID when the admitted coordinate path supports the product.
+- Fixed stars are not chart bodies in P10-01.
 
 ---
 

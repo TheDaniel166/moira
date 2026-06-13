@@ -25,6 +25,8 @@ from .routers import (
     dignities_router,
     egyptian_bounds_router,
     galactic_router,
+    galactic_houses_router,
+    gauquelin_router,
     geodetic_router,
     hermetic_decans_router,
     health_router,
@@ -118,6 +120,8 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(local_space_router)  # Phase-10 observer-local horizon surface
     app.include_router(geodetic_router)  # Phase-10 geodetic zodiac mapping surface
     app.include_router(galactic_router)  # Phase-10 galactic coordinate-frame surface
+    app.include_router(galactic_houses_router)  # Phase-10 Galactic Porphyry house surface
+    app.include_router(gauquelin_router)  # Phase-10 Gauquelin sector surface
     app.include_router(locations_router)   # City/timezone lookup for chart calculator
     app.include_router(asteroids_router)   # Fast small-body surfaces (website integration)
     app.include_router(comets_router)      # Symmetric fast comet surfaces

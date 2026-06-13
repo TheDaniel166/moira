@@ -80,6 +80,31 @@ _NEAR_CUSP_DEFAULT_THRESHOLD: float = 3.0
 # Low-level altitude helper
 # ---------------------------------------------------------------------------
 
+def _require_finite(name: str, value: float) -> float:
+    if not math.isfinite(value):
+        raise ValueError(f"{name} must be finite")
+    return value
+
+
+def _require_latitude(value: float) -> float:
+    _require_finite("latitude", value)
+    if not -90.0 <= value <= 90.0:
+        raise ValueError(f"latitude must be in [-90, 90], got {value}")
+    return value
+
+
+def _require_longitude(value: float) -> float:
+    _require_finite("longitude", value)
+    if not -180.0 <= value <= 180.0:
+        raise ValueError(f"longitude must be in [-180, 180], got {value}")
+    return value
+
+
+def _require_galactic_longitude(value: float) -> float:
+    _require_finite("galactic_longitude", value)
+    return value
+
+
 def _gal_altitude(l: float, armc: float, lat: float, jd_tt: float) -> float:
     """
     Altitude (degrees) of the galactic equator point at galactic longitude l.
@@ -477,6 +502,7 @@ def assign_galactic_house(
     Uses the native galactic cusp cycle in ``house_cusps.cusps_gal`` with the
     same half-open interval doctrine as the ecliptic house layer.
     """
+    _require_galactic_longitude(galactic_longitude)
     if len(house_cusps.cusps_gal) != 12:
         raise ValueError(
             f"assign_galactic_house requires exactly 12 galactic cusps; got {len(house_cusps.cusps_gal)}"
@@ -527,6 +553,7 @@ def body_galactic_house_position(
     Returns H in [1.0, 13.0), where int(H) is the house number and the
     fractional part measures progress through that galactic house.
     """
+    _require_galactic_longitude(galactic_longitude)
     lon = galactic_longitude % 360.0
     placement = assign_galactic_house(lon, house_cusps)
     house = placement.house
@@ -555,6 +582,7 @@ def describe_galactic_boundary(
     assignment. It measures forward-arc distances to the galactic cusps that
     open and close the assigned house.
     """
+    _require_finite("near_cusp_threshold", near_cusp_threshold)
     if near_cusp_threshold <= 0.0:
         raise ValueError(
             f"near_cusp_threshold must be positive; got {near_cusp_threshold!r}"
@@ -629,10 +657,9 @@ def calculate_galactic_houses(
         H7 = GD  (galactic setting),  H10 = GMC (upper galactic transit).
     Intermediate cusps trisect each quadrant along the galactic equator.
     """
-    if not -90.0 <= latitude <= 90.0:
-        raise ValueError(f"latitude must be in [-90, 90], got {latitude}")
-    if not -180.0 <= longitude <= 180.0:
-        raise ValueError(f"longitude must be in [-180, 180], got {longitude}")
+    _require_finite("jd_ut", jd_ut)
+    _require_latitude(latitude)
+    _require_longitude(longitude)
 
     jd_tt     = ut_to_tt(jd_ut)
     dpsi, _   = nutation(jd_tt)

@@ -1,8 +1,8 @@
 # Moira Server Phase 10 Evaluation Ledger
 
-Version: 0.8
+Version: 0.12
 Date: 2026-06-12
-Status: P10-01 through P10-04 admitted; remaining Phase 10 families under evaluation
+Status: P10-01 through P10-06 admitted
 Scope: Spatial and Earth-facing mapping REST candidate evaluation
 
 Phase 10 covers spatial, geographic, and frame-transform surfaces. These
@@ -11,9 +11,8 @@ families. Their REST admission must preserve coordinate frame truth,
 observer/location semantics, result-size boundaries, and validation provenance.
 
 This ledger records Phase 10 evaluation status and the admitted
-Astrocartography, Local Space, Geodetic, and Galactic Coordinates transport
-slices. It does not broaden the remaining Phase 10 families beyond their
-evaluation state.
+Astrocartography, Local Space, Geodetic, Galactic Coordinates, Galactic
+Houses, and Gauquelin Sectors transport slices.
 
 It is downstream of:
 
@@ -63,22 +62,27 @@ Phase 10 must distinguish:
 | P10-02 | Local Space | `admitted` | Two bounded direct/chart-backed horizon-position routes are live with explicit observer, LST, RA/Dec provenance, route tests, and route-count audit; rendered compass charts, map products, projection products, and catalog sweeps remain deferred. |
 | P10-03 | Geodetic | `admitted` | Four bounded direct/chart-backed location-chart and equivalent-longitude routes are live with explicit zodiac and ayanamsa provenance, route tests, and route-count audit; primitive helper routes, map products, projection products, geographic search, relocation synthesis, and catalog sweeps remain deferred. |
 | P10-04 | Galactic Coordinates | `admitted` | Six bounded raw-transform, reference-point, and chart-backed galactic position routes are live with explicit frame, epoch, body, and stage provenance; galactic houses, maps, projections, catalog sweeps, and proper-motion products remain deferred. |
-| P10-05 | Galactic Houses | `admit_after_minor_engine_work` | Public vessels and tests exist, but REST admission needs explicit route doctrine for Galactic Porphyry angles, cusp membership, and boundary profiles. |
-| P10-06 | Gauquelin Sectors | `admit_after_minor_engine_work` | Core sector vessel and external-reference validation exist, but REST admission needs an apparent RA/Dec/LST derivation contract and clear handling for circumpolar/never-rises statuses. |
+| P10-05 | Galactic Houses | `admitted` | Three bounded Galactic Porphyry cusp, direct-placement, and chart-backed placement routes are live with native galactic cusp truth, ecliptic projection truth, boundary profiles, provenance, route tests, and route-count audit; rendered charts, projections, maps, catalog sweeps, and alternate galactic house systems remain deferred. |
+| P10-06 | Gauquelin Sectors | `admitted` | Three bounded canonical Gauquelin sector routes are live with direct and chart-backed apparent RA/Dec/LST shapes, horizon-status preservation, route tests, and route-count audit; custom sector counts, rendered wheels, statistical workflows, and catalog sweeps remain deferred. |
 
 P10-01 is admitted as a narrow synchronous line/point product family. P10-02 is
 admitted as a narrow synchronous observer-local horizon-position family. P10-03
 is admitted as a narrow synchronous geodetic chart/equivalent family. P10-04 is
-admitted as a narrow synchronous galactic coordinate-frame family. The remaining
-Phase 10 families still need family-specific
-backend-standard packets and transport designs before route work.
+admitted as a narrow synchronous galactic coordinate-frame family. P10-05 is
+admitted as a narrow synchronous Galactic Porphyry house family. P10-06 is
+admitted as a narrow synchronous canonical Gauquelin sector family.
 
 ---
 
-## 3. Shared Pre-Route Work
+## 3. Shared Spatial Primitive Consolidation
 
-Before any Phase 10 router work, create a shared spatial transport design that
-answers:
+Phase 10 route admission proceeded family by family and is now complete for the
+first bounded surface. The earlier shared spatial primitive recommendation is
+therefore no longer a pre-route blocker. It remains useful as a post-admission
+consolidation artifact before any expansion that widens chart-backed spatial
+derivation or introduces heavier products.
+
+The consolidation artifact should answer:
 
 - how chart-backed routes obtain apparent RA/Dec, ecliptic longitude/latitude,
   JD, LST, obliquity, and observer truth
@@ -87,12 +91,13 @@ answers:
 - how large sampled outputs are bounded
 - which frame labels are serialized for every result family
 
-This should be a design document only at first, likely:
+Recommended artifact:
 
 - `docs/architecture/PHASE10_SPATIAL_TRANSPORT_PRIMITIVES.md`
 
-It should not replace engine computation. It should only define how the server
-will expose existing spatial truth without flattening frames.
+It should not replace engine computation or retroactively redefine admitted
+routes. It should document the shared derivation contracts already used by the
+server and set stricter rules for later spatial expansion.
 
 ---
 
@@ -370,7 +375,7 @@ Admission verification:
 
 ## 8. P10-05 Galactic Houses
 
-Status: `admit_after_minor_engine_work`
+Status: `admitted`
 
 Governing object:
 
@@ -388,31 +393,62 @@ Evidence:
 - Unit tests exist:
   `tests/unit/test_galactic_houses.py` and
   `tests/unit/test_galactic_houses_public_api.py`.
+- Backend-standard packet exists:
+  `wiki/02_standards/GALACTIC_HOUSES_BACKEND_STANDARD.md`.
+- Transport design exists:
+  `docs/architecture/P10-05_GALACTIC_HOUSES_TRANSPORT_DESIGN.md`.
+- Live transport files exist under `moira_server/models/galactic_houses.py`,
+  `moira_server/services/galactic_houses.py`,
+  `moira_server/serializers/galactic_houses.py`, and
+  `moira_server/routers/galactic_houses.py`.
+- Route tests exist:
+  `tests/server/test_server_galactic_houses_routes.py`.
 
 Readiness:
 
 - The engine has a strong governing object and result vessels.
 - REST admission should follow Galactic Coordinates because it depends on
   those frame semantics.
+- Galactic Coordinates is now admitted.
+- Public input hygiene has been hardened for non-finite JD, location,
+  galactic longitude, and near-cusp threshold values.
+- The live REST surface preserves native galactic cusps, ecliptic projected
+  cusps, placement membership, fractional position, and boundary profiles.
 
-Required before transport design:
+Resolved for transport design:
 
-- Write or identify a Galactic Houses backend-standard/admission packet.
-- Define chart-time/location request truth and observer validation.
-- Decide whether body-house placement is chart-backed in first admission or
-  direct from supplied galactic/ecliptic body position.
-- Preserve both galactic and ecliptic cusp truth in responses.
+- Galactic Houses backend-standard/admission packet written.
+- Chart-time/location request truth and observer validation are declared.
+- First admission should include chart-backed body placement and direct
+  placement from supplied galactic longitude plus supplied cusps.
+- Both galactic and ecliptic cusp truth are preserved in responses.
 
 Recommended first transport stance:
 
 - synchronous
-- admit after P10-04 Galactic Coordinates admission
+- bounded cusp, direct-placement, and chart-backed placement routes
+- no rendered charts, projection helpers, map products, catalog sweeps, or
+  alternate galactic house systems in P10-05
+
+Live routes:
+
+- `POST /v1/galactic-houses/cusps`
+- `POST /v1/galactic-houses/placement`
+- `POST /v1/galactic-houses/chart/placements`
+
+Admission verification:
+
+- `python -m py_compile` over the new models, services, serializers, router,
+  route exports, app wiring, and route tests.
+- `python -m pytest tests/unit/test_galactic_houses.py tests/unit/test_galactic_houses_public_api.py tests/server/test_server_galactic_houses_routes.py tests/server/test_server_galactic_routes.py -q`
+- Route registry audit after admission: 266 non-documentation routes, 262
+  versioned `/v1` routes, and exactly 3 `/v1/galactic-houses/*` routes.
 
 ---
 
 ## 9. P10-06 Gauquelin Sectors
 
-Status: `admit_after_minor_engine_work`
+Status: `admitted`
 
 Governing object:
 
@@ -425,6 +461,18 @@ Evidence:
 - Public surfaces include `GauquelinHorizonStatus`, `GauquelinPosition`,
   `gauquelin_sector`, and `all_gauquelin_sectors`.
 - Facade support exists through `SpatialFacadeMixin.gauquelin_sectors(...)`.
+- Backend-standard packet exists:
+  `wiki/02_standards/GAUQUELIN_BACKEND_STANDARD.md`.
+- Transport design exists:
+  `docs/architecture/P10-06_GAUQUELIN_SECTORS_TRANSPORT_DESIGN.md`.
+- Focused unit tests exist:
+  `tests/unit/test_gauquelin.py`.
+- Live transport files exist under `moira_server/models/gauquelin.py`,
+  `moira_server/services/gauquelin.py`,
+  `moira_server/serializers/gauquelin.py`, and
+  `moira_server/routers/gauquelin.py`.
+- Route tests exist:
+  `tests/server/test_server_gauquelin_routes.py`.
 - External-reference validation exists:
   `tests/integration/test_gauquelin_external_reference.py`.
 - Validation index records Gauquelin external reference checks in
@@ -433,24 +481,49 @@ Evidence:
 Readiness:
 
 - The direct sector engine is bounded and result-shaped.
-- Chart-backed REST requires a careful apparent RA/Dec and LST derivation
-  contract.
+- Chart-backed apparent RA/Dec and LST derivation policy is declared.
+- Public input hygiene now rejects non-finite RA, declination, latitude, LST,
+  horizon altitude, non-integer sector counts, and out-of-range declination or
+  latitude.
+- REST design preserves circumpolar and never-rising states as explicit
+  `horizon_status` values rather than validation errors.
+- The live REST surface preserves canonical 36-sector plus-zone semantics,
+  direct RA/Dec/LST provenance, chart-backed apparent topocentric RA/Dec and
+  LST provenance, and horizon-status degeneracy truth.
 
-Required before transport design:
+Resolved for transport design:
 
-- Write or identify a Gauquelin backend-standard/admission packet.
-- Define direct input route shape for RA/Dec/LST.
-- Define chart-backed input route shape only after the shared spatial
-  derivation design exists.
-- Preserve `horizon_status` explicitly; do not collapse circumpolar or
-  never-rises cases into ordinary sector errors.
-- Decide whether custom sector counts are admitted or canonical 36-sector
-  mode is first.
+- Gauquelin backend-standard/admission packet written.
+- Direct input route shapes for RA/Dec/LST are declared.
+- Chart-backed route shape is declared with apparent topocentric RA/Dec and
+  LST provenance.
+- `horizon_status` preservation is required.
+- First REST admission is canonical 36-sector only; custom sector counts remain
+  engine-supported but deferred from REST because public plus-zone semantics
+  are canonical 36-sector semantics.
 
 Recommended first transport stance:
 
-- synchronous for direct sector and bounded all-body sector products
-- chart-backed route after shared spatial derivation primitives are designed
+- synchronous
+- bounded direct single-sector, direct multi-body sector, and chart-backed
+  sector routes
+- no custom sector-count REST policy, rendered wheels, map products,
+  statistical workflows, catalog sweeps, or async jobs in P10-06
+
+Designed routes:
+
+- `POST /v1/gauquelin/sector`
+- `POST /v1/gauquelin/sectors`
+- `POST /v1/gauquelin/chart/sectors`
+
+Admission verification:
+
+- `python -m py_compile` over the new models, services, serializers, router,
+  route exports, app wiring, model exports, and route tests.
+- `python -m pytest tests/server/test_server_gauquelin_routes.py -q`
+- `python -m pytest tests/unit/test_gauquelin.py tests/unit/test_session_fixes.py tests/integration/test_gauquelin_external_reference.py tests/server/test_server_gauquelin_routes.py -q`
+- Route registry audit after admission: 269 non-documentation routes, 265
+  versioned `/v1` routes, and exactly 3 `/v1/gauquelin/*` routes.
 
 ---
 
@@ -476,10 +549,54 @@ Reason:
 
 ---
 
-## 11. Post-Phase-10 Rendering Convenience Operation
+## 11. Post-Phase-10 Astrocartography Expansion Order
 
-After the Phase 10 computational families are admitted, Moira may add a
-separate rendering-convenience operation for Astrocartography map clients.
+After the Phase 10 computational families are admitted, Moira should complete
+the selected minor-body and fixed-star Astrocartography admission workflow
+before implementing the rendering-convenience adapter.
+
+Reason:
+
+- The Astrocartography core accepts caller-owned RA/Dec maps and is therefore
+  capable of selected non-planet labels at the direct-coordinate layer.
+- That does not automatically mean the chart-backed/server-derived surfaces own
+  asteroid, comet, or fixed-star coordinate derivation truth.
+- Rendering primitives should consume admitted line truth; they should not
+  decide which celestial subject classes are admitted.
+
+First post-Phase-10 Astrocartography operation:
+
+- `docs/architecture/POST_PHASE10_ASTROCARTOGRAPHY_MINOR_BODY_STAR_ADMISSION_WORKFLOW.md`
+
+This operation established:
+
+- direct-coordinate minor-body and fixed-star Astrocartography is documented
+  and tested through caller-owned RA/Dec
+- selected asteroid chart-backed line support is admitted with subject
+  provenance
+- selected asteroid/comet chart-backed subplanetary support is admitted with
+  subject provenance
+- selected comet chart-backed line support remains deferred until the public
+  comet topocentric RA/Dec path is admitted
+- selected fixed-star server-derived support remains deferred
+- catalog-wide sweeps remain deferred
+- subject provenance is serialized for direct labels, planets, selected
+  asteroids, and selected comets
+
+Second post-Phase-10 Astrocartography operation:
+
+- `docs/architecture/POST_PHASE10_ASTROCARTOGRAPHY_RENDERING_ADAPTER_WORKFLOW.md`
+
+The rendering adapter is now implemented as an internal helper after the
+subject-class admission truth above was settled. No public route was added.
+
+---
+
+## 12. Post-Phase-10 Rendering Convenience Operation
+
+After the selected minor-body and fixed-star Astrocartography admission
+workflow completed, Moira added a separate internal rendering-convenience
+operation for Astrocartography map clients.
 
 This must be treated as a map-adapter layer, not as a new astronomical
 computation and not as an implicit widening of P10-01.
@@ -507,9 +624,17 @@ Forbidden scope without a separate admission design:
 - catalog-wide fixed-star or asteroid sweeps
 - async heavy-output workflows
 
-Recommended artifact:
+Workflow artifact:
 
 - `docs/architecture/POST_PHASE10_ASTROCARTOGRAPHY_RENDERING_ADAPTER_WORKFLOW.md`
+
+Implemented adapter:
+
+- `moira_server/services/astrocartography_rendering.py`
+
+Verification:
+
+- `tests/server/test_server_astrocartography_rendering_adapter.py`
 
 Recommended implementation stance:
 
@@ -529,25 +654,25 @@ Admission rule:
 
 ---
 
-## 12. Explicit Non-Goals For Evaluation
+## 13. Explicit Non-Goals For Post-Admission Expansion
 
-The remaining Phase 10 evaluation does not:
+Post-admission Phase 10 expansion does not implicitly:
 
 - add REST routes
 - create request or response models
 - introduce async job infrastructure
-- add map rendering
+- add rendered map products
 - expose dense grid or tiled map products
 - change astronomical engine computation
 - change validation baselines
 
 ---
 
-## 13. Evaluation Result
+## 14. Evaluation Result
 
-Phase 10 is proceeding family by family. P10-01 through P10-04 have completed
-transport design and first-route implementation; the remaining Phase 10
-families are still at evaluation.
+Phase 10 has completed the first bounded route admission pass for P10-01
+through P10-06. Later Phase 10 work should be treated as explicit expansion,
+not as implicit widening of the admitted surfaces.
 
 The shared spatial transport primitive artifact is still recommended before
 later families that depend on apparent RA/Dec, LST, or frame-bridging policy:
@@ -557,6 +682,7 @@ later families that depend on apparent RA/Dec, LST, or frame-bridging policy:
 For P10-01 specifically, any next step is a separate expansion design, not an
 implicit widening of the admitted surface. Expansion candidates include:
 
+- selected minor-body and fixed-star Astrocartography admission
 - async/heavy map products
 - dense grids
 - contours

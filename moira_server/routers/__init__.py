@@ -12,6 +12,8 @@ from .dignities import router as dignities_router
 from .egyptian_bounds import router as egyptian_bounds_router
 from .geodetic import router as geodetic_router
 from .galactic import router as galactic_router
+from .galactic_houses import router as galactic_houses_router
+from .gauquelin import router as gauquelin_router
 from .health import router as health_router
 from .jaimini import router as jaimini_router
 from .local_space import router as local_space_router
@@ -53,6 +55,8 @@ __all__ = [
     "egyptian_bounds_router",
     "geodetic_router",
     "galactic_router",
+    "galactic_houses_router",
+    "gauquelin_router",
     "hermetic_decans_router",
     "health_router",
     "jaimini_router",

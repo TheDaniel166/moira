@@ -1,8 +1,8 @@
 # Moira Server Implementation Plan
 
-Version: 1.7
-Date: 2026-06-11
-Status: Phases 1-8 complete; Phase 9 named candidate families admitted through P9-12 Decans / Decanates
+Version: 1.8
+Date: 2026-06-12
+Status: Phases 1-10 admitted; post-Phase-10 rendering adapter workflow begins
 Scope: REST access surface over the existing Moira engine
 
 This document defines the concrete implementation sequence for the REST server
@@ -37,26 +37,35 @@ Current implementation state:
   Ashtottari/Yogini sequence/profile plus period-profile routes, Varga
   generic/named/Shodashvarga/batch routes, and Decans/Decanates
   decanate-placement plus Hermetic catalog/longitude/rising/night-hour routes
+- phase 10 is implemented as a bounded first admission: Astrocartography line
+  and subplanetary routes, Local Space direct/chart-backed horizon routes,
+  Geodetic direct/chart-backed location-chart and equivalent routes, Galactic
+  coordinate transform/reference/chart-position routes, Galactic Houses cusp
+  and placement routes, and canonical Gauquelin direct/chart-backed sector
+  routes
 - website-driven acceleration has also admitted a bounded Phase 11 subset:
   fixed-star, variable-star, multiple-star, asteroid, and comet routes
 - website support routes are live for location lookup, timezone validation,
   chart-wheel drawing packets, and reduction-pipeline inspection aliases
 - the server now exposes the operational, chart, position, transit, return,
   batch, visibility, full phase-6 phenomena, full phase-7 relationship, and
-  full phase-8 progression/timing/direction surfaces defined in this document
+  full phase-8 progression/timing/direction surfaces defined in this document,
+  plus the admitted phase-9 doctrine and phase-10 spatial surfaces tracked by
+  their phase ledgers
 - adversarial transport tests exist for the currently admitted route families
 - post-Phase-9 sidereal chart derivation is planned as a shared
   request-scoped workflow before deferred chart-backed Vedic/classical
   convenience variants are admitted
-- phase 10 spatial and Earth-facing mapping candidates have an evaluation
-  ledger only; no Phase 10 routes are admitted yet
+- post-Phase-10 spatial work now starts as explicit expansion only; the first
+  documented operation is an Astrocartography rendering-adapter workflow, not a
+  new computation route or dense map product
 - the live route inventory is documented in
   `wiki/02_services/REST_API_REFERENCE.md`
 
 What this document now governs:
 
 - the implemented base architecture and admission rules
-- the completed rollout waves through phase 8
+- the completed rollout waves through phase 10
 - the sequencing logic future route families must still obey
 
 It assumes and inherits:
@@ -71,6 +80,7 @@ It assumes and inherits:
 - `docs/architecture/MOIRA_SERVER_PHASE9_LEDGER.md`
 - `docs/architecture/MOIRA_SERVER_PHASE10_LEDGER.md`
 - `docs/architecture/POST_PHASE9_SIDEREAL_CHART_DERIVATION_WORKFLOW.md`
+- `docs/architecture/POST_PHASE10_ASTROCARTOGRAPHY_RENDERING_ADAPTER_WORKFLOW.md`
 
 The purpose of this plan is to make the service layer buildable without
 guessing:
@@ -105,6 +115,14 @@ Post-Phase-9 addition:
   request-scoped sidereal chart derivation workflow before admission
 - no route should invent one-off sidereal reduction, Lagna derivation, or
   ayanamsa provenance handling when the shared adapter can provide it
+
+Post-Phase-10 addition:
+
+- rendering-convenience work must begin as adapter materialization over already
+  admitted Astrocartography line truth
+- no adapter may claim to be a new Astrocartography computation, GeoJSON
+  authority, rendered map, tile product, dense grid, contour product, or async
+  spatial workflow without a separate admission design
 
 ---
 
