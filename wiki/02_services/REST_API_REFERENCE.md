@@ -1,7 +1,7 @@
 # Moira REST API Reference
 
 Version: 0.1.0 transport surface
-Date audited: 2026-06-13
+Date audited: 2026-06-14
 Source of truth: `moira_server.app.create_app()` route registry
 
 This document describes the HTTP transport surface currently registered by
@@ -16,9 +16,9 @@ transport contract documented for that family.
 
 ## Current Surface Summary
 
-- Total non-documentation routes: 321
+- Total non-documentation routes: 346
 - Operational/meta routes: 4
-- Versioned `/v1` routes: 317
+- Versioned `/v1` routes: 342
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 
@@ -79,6 +79,23 @@ Implemented:
 - phase 13 opened with a bounded electional predicate-profile catalogue and
   electional window, raw moment, scorer-profile catalogue, and bounded scored
   window routes over server-defined predicate and numeric scorer profiles
+- post-phase gap closure P-GAP-01 admits frame-specific position products:
+  heliocentric, planetocentric, Solar System Barycenter, and received-light
+  position routes under `/v1/positions/frame/*`
+- post-phase gap closure P-GAP-02 admits bounded Vedic Muhurta moment
+  classification and raw-score routes over direct and chart-backed Panchanga
+  truth under `/v1/muhurta/*`
+- post-phase gap closure P-GAP-03 admits heliocentric J2000 osculating
+  orbital elements and heliocentric distance-extrema routes under
+  `/v1/orbits/*`
+- post-phase gap closure P-GAP-04 admits bounded generic phenomena and
+  solar-condition routes under `/v1/phenomena/*` and
+  `/v1/solar-condition/*`
+- post-phase gap closure P-GAP-05 admits mechanical sidereal and Nakshatra
+  utility routes under `/v1/sidereal/*` and `/v1/nakshatra/*`
+- post-phase gap closure P-GAP-06 admits bounded harmogram vector,
+  Zero-Aries vector, intensity-spectrum, projection, and explicit-sample
+  trace routes under `/v1/harmograms/*`
 
 Not yet broadly exposed as REST families:
 
@@ -124,6 +141,7 @@ Not yet broadly exposed as REST families:
 | gauquelin | 3 |
 | geodetic | 4 |
 | heliacal | 2 |
+| harmograms | 5 |
 | harmonics | 9 |
 | hermetic-decans | 4 |
 | houses | 2 |
@@ -137,22 +155,29 @@ Not yet broadly exposed as REST families:
 | lunar-phases | 1 |
 | manazil | 4 |
 | midpoints | 5 |
+| muhurta | 4 |
+| nakshatra | 2 |
 | nodes | 4 |
 | nine-parts | 1 |
 | occultations | 8 |
+| orbits | 2 |
 | panchanga | 4 |
 | parans | 8 |
 | patterns | 3 |
 | phase | 6 |
+| phenomena | 3 |
 | planetary-hours | 2 |
 | pipeline | 3 |
 | positions | 4 |
+| positions-frame | 4 |
 | primary-directions | 8 |
 | profections | 3 |
 | progressions | 17 |
 | returns | 3 |
 | shadbala | 4 |
 | rise-set | 3 |
+| sidereal | 3 |
+| solar-condition | 2 |
 | stars | 12 |
 | stations | 4 |
 | synastry | 9 |
@@ -188,9 +213,41 @@ Not yet broadly exposed as REST families:
 | POST | `/v1/positions/planet/reduction` | `planet_position_reduction_route` |
 | POST | `/v1/positions/sky` | `sky_position_route` |
 | POST | `/v1/positions/sky/reduction` | `sky_position_reduction_route` |
+| POST | `/v1/positions/frame/heliocentric` | `frame_heliocentric_route` |
+| POST | `/v1/positions/frame/planetocentric` | `frame_planetocentric_route` |
+| POST | `/v1/positions/frame/ssb` | `frame_ssb_route` |
+| POST | `/v1/positions/frame/received-light` | `frame_received_light_route` |
 | POST | `/v1/pipeline/chart` | `pipeline_chart_route` |
 | POST | `/v1/pipeline/positions/planet` | `pipeline_planet_position_route` |
 | POST | `/v1/pipeline/positions/sky` | `pipeline_sky_position_route` |
+
+### Frame-Specific Positions REST Admission Boundary
+
+The admitted P-GAP-01 frame-specific position surface is the bounded
+`/v1/positions/frame/*` route family. It exposes heliocentric, planetocentric,
+Solar System Barycenter, and received-light products that were already public
+through the Python `Moira` facade.
+
+These routes are transport adapters over existing engine computations. They do
+not build charts, mutate kernel paths, perform searches, generate dense
+ephemeris tables, or reinterpret the ordinary geocentric/topocentric
+`/v1/positions/*` routes.
+
+All four responses preserve request echo, time reduction, center/frame truth,
+body bounds, validation truth, and provenance. Received-light responses also
+preserve the apparent position, same-time geometric comparison, emission Julian
+day, and one-way light-travel duration.
+
+Admitted products:
+
+- `/v1/positions/frame/heliocentric`: Sun-centered true-of-date ecliptic
+  positions for admitted planets except Sun and Moon
+- `/v1/positions/frame/planetocentric`: true-of-date ecliptic positions from a
+  named observer body center, with observer-target identity rejected
+- `/v1/positions/frame/ssb`: geometric Solar System Barycenter positions,
+  including the Sun where requested
+- `/v1/positions/frame/received-light`: Earth received-light positions for
+  admitted physical planets, with nonphysical points rejected
 
 ## Transits, Returns, Batch, And Visibility
 
@@ -285,6 +342,70 @@ Not yet broadly exposed as REST families:
 | POST | `/v1/panchanga/instant/profile` | `panchanga_instant_profile_route` |
 | POST | `/v1/panchanga/chart` | `panchanga_chart_route` |
 | POST | `/v1/panchanga/chart/profile` | `panchanga_chart_profile_route` |
+| GET | `/v1/sidereal/ayanamsa-systems` | `sidereal_ayanamsa_systems_route` |
+| POST | `/v1/sidereal/ayanamsa` | `sidereal_ayanamsa_route` |
+| POST | `/v1/sidereal/convert` | `sidereal_convert_route` |
+| POST | `/v1/nakshatra/position` | `nakshatra_position_route` |
+| POST | `/v1/nakshatra/bulk` | `nakshatra_bulk_route` |
+| POST | `/v1/muhurta/direct/classification` | `muhurta_direct_classification_route` |
+| POST | `/v1/muhurta/direct/score` | `muhurta_direct_score_route` |
+| POST | `/v1/muhurta/chart/classification` | `muhurta_chart_classification_route` |
+| POST | `/v1/muhurta/chart/score` | `muhurta_chart_score_route` |
+
+### Sidereal And Nakshatra Utility REST Admission Boundary
+
+The admitted P-GAP-05 utility surface is the bounded synchronous
+`/v1/sidereal/*` and `/v1/nakshatra/*` route family:
+
+- `GET /v1/sidereal/ayanamsa-systems`
+- `POST /v1/sidereal/ayanamsa`
+- `POST /v1/sidereal/convert`
+- `POST /v1/nakshatra/position`
+- `POST /v1/nakshatra/bulk`
+
+`/v1/sidereal/ayanamsa-systems` exposes the built-in ayanamsa registry and
+J2000 reference values. `/v1/sidereal/ayanamsa` exposes one date-specific
+ayanamsa value for an admitted named system and mode. `/v1/sidereal/convert`
+converts one longitude between tropical and sidereal frames.
+
+`/v1/nakshatra/position` and `/v1/nakshatra/bulk` expose mechanical placement
+into Moira's current 27-equal-Nakshatra taxonomy. Responses preserve
+Nakshatra name, 0-based index, 1-based number, lord, pada, degrees elapsed,
+degrees remaining, and sidereal longitude.
+
+This admission does not expose Panchanga judgement, Muhurta classification,
+Dasha balance, chart-backed Moon derivation, chart-backed sidereal houses,
+Varga projection, Manazil, Abhijit Nakshatra, user-defined ayanamsa REST
+payloads, mutable global sidereal mode, interpretation text, recommendations,
+dense tables, async sweeps, or kernel path mutation.
+
+### Muhurta REST Admission Boundary
+
+The admitted P-GAP-02 Muhurta REST surface is the bounded synchronous
+`/v1/muhurta/*` route family. It exposes Vedic Muhurta moment classification
+and raw engine scoring over Panchanga truth.
+
+Direct routes reuse the direct Panchanga derivation path: caller-supplied Sun
+longitude, Moon longitude, JD, and ayanamsa policy. Chart-backed routes reuse
+the chart-backed Panchanga derivation path: `Moira.chart` derives Sun/Moon
+truth, then `moira.panchanga.panchanga_at` supplies the five Panchanga limbs.
+
+The admitted routes are:
+
+- `POST /v1/muhurta/direct/classification`
+- `POST /v1/muhurta/direct/score`
+- `POST /v1/muhurta/chart/classification`
+- `POST /v1/muhurta/chart/score`
+
+Responses preserve request echo, Panchanga source limbs, exposed Muhurta
+policy weights, classification labels, reasons, and provenance. Score
+responses preserve the raw unbounded engine score, score breakdown, score
+scale, and score direction.
+
+This admission does not expose Muhurta search windows, activity-specific
+guidance, Abhijit/Brahma Muhurta routes, Tara Bala inputs, recommendation
+language, Western electional doctrine, arbitrary predicates, arbitrary scorers,
+or async search jobs.
 
 ## Shadbala Routes
 
@@ -583,6 +704,13 @@ Body-class truth:
 | POST | `/v1/nodes/planetary/mean` | `mean_planetary_node_route` |
 | POST | `/v1/nodes/planetary/mean/bulk` | `mean_planetary_nodes_bulk_route` |
 | POST | `/v1/nodes/geometric` | `geometric_node_route` |
+| POST | `/v1/orbits/elements` | `orbital_elements_route` |
+| POST | `/v1/orbits/distance-extremes` | `distance_extremes_route` |
+| POST | `/v1/phenomena/planet` | `planet_phenomena_route` |
+| POST | `/v1/phenomena/orbital-events` | `orbital_phenomena_events_route` |
+| POST | `/v1/phenomena/proximity` | `proximity_events_route` |
+| POST | `/v1/solar-condition/instant` | `solar_condition_instant_route` |
+| POST | `/v1/solar-condition/events` | `solar_condition_events_route` |
 | GET | `/v1/uranian/catalog` | `uranian_catalog_route` |
 | POST | `/v1/uranian/position` | `uranian_position_route` |
 | POST | `/v1/uranian/bulk` | `uranian_bulk_route` |
@@ -595,6 +723,11 @@ Body-class truth:
 | POST | `/v1/harmonics/sweep` | `harmonic_sweep_route` |
 | POST | `/v1/harmonics/fingerprint` | `harmonic_fingerprint_route` |
 | POST | `/v1/harmonics/composite` | `harmonic_composite_route` |
+| POST | `/v1/harmograms/vector` | `harmogram_vector_route` |
+| POST | `/v1/harmograms/zero-aries-vector` | `harmogram_zero_aries_vector_route` |
+| POST | `/v1/harmograms/intensity-spectrum` | `harmogram_intensity_spectrum_route` |
+| POST | `/v1/harmograms/projection` | `harmogram_projection_route` |
+| POST | `/v1/harmograms/trace` | `harmogram_trace_route` |
 | POST | `/v1/phase/illuminated-fraction` | `illuminated_fraction_route` |
 | POST | `/v1/phase/synodic` | `synodic_phase_route` |
 | POST | `/v1/phase/elongation` | `elongation_route` |
@@ -823,6 +956,73 @@ node profiles, nodal aspect networks, catalog-wide small-body node sweeps,
 rendered node maps, asteroid/comet route changes, or small-body kernel manifest
 management.
 
+### Orbital Elements REST Admission Boundary
+
+The admitted P-GAP-03 orbital REST surface is the bounded synchronous
+`/v1/orbits/*` family:
+
+- `POST /v1/orbits/elements`
+- `POST /v1/orbits/distance-extremes`
+
+`/v1/orbits/elements` exposes one epoch's heliocentric J2000 ecliptic/equinox
+osculating Keplerian elements for an admitted major body. Responses include
+semi-major axis, eccentricity, inclination, longitude of ascending node,
+argument of perihelion, mean anomaly, mean motion, orbital period, and the
+derived perihelion/aphelion distances of the osculating ellipse.
+
+`/v1/orbits/distance-extremes` exposes the next heliocentric perihelion and
+aphelion events after `jd_ut` on the live heliocentric distance curve. The
+response records that the events are semantic extrema, not a forced
+chronological pair and not merely algebra from one epoch's osculating ellipse.
+
+Both routes accept one admitted body and one finite `jd_ut`. The response
+provenance records `moira.orbits`, the engine entrypoint, Sun center, J2000
+ecliptic/equinox frame, osculating element type, DE-series state source, no
+apparent correction, no light-time correction, and no mean-element table.
+
+This admission does not expose mean element tables, geocentric lunar elements,
+comet elements, asteroid elements, Uranian mean elements, visual-binary
+Campbell elements, arbitrary centers/reference planes, apparent or
+light-time-corrected element products, dense ephemeris tables, or kernel path
+mutation.
+
+### Generic Phenomena And Solar Conditions REST Admission Boundary
+
+The admitted P-GAP-04 REST surface is the bounded synchronous generic
+phenomena and solar-condition surface:
+
+- `POST /v1/phenomena/planet`
+- `POST /v1/phenomena/orbital-events`
+- `POST /v1/phenomena/proximity`
+- `POST /v1/solar-condition/instant`
+- `POST /v1/solar-condition/events`
+
+`/v1/phenomena/planet` exposes one instant's physical/photometric state for
+an admitted body: phase angle, illuminated fraction, elongation, angular
+diameter, and apparent magnitude.
+
+`/v1/phenomena/orbital-events` exposes a bounded event search over admitted
+event kinds: greatest eastern/western elongation for Mercury and Venus, and
+perihelion/aphelion for admitted major bodies. Event responses label both the
+event kind and the value unit.
+
+`/v1/phenomena/proximity` exposes angular threshold ingress/egress crossings
+for an admitted body pair. The response preserves the caller threshold,
+signed event threshold, event direction, longitudes, latitude, retrograde
+state, and event label.
+
+`/v1/solar-condition/instant` exposes classical solar-condition truth at one
+instant. Sun and Moon inputs are accepted and return absent truth, matching
+engine behavior. `/v1/solar-condition/events` exposes bounded cazimi,
+combust, and under-sunbeams threshold crossings for admitted non-luminary
+major bodies.
+
+This admission does not expose a catch-all `/v1/events` route, arbitrary
+phenomenon predicates, aspect searches, station/lunar-phase/rise-set/
+heliacal/eclipse/occultation replacements, dense event tables, small-body
+proximity sweeps, interpretation text, recommendations, or kernel path
+mutation.
+
 ### Uranian REST Admission Boundary
 
 The admitted Uranian / Hamburg School REST surface is the bounded synchronous
@@ -879,6 +1079,33 @@ interpretive judgments.
 This admission does not expose unbounded harmonic sweeps, automatic chart
 construction, transit/progression harmonic search, harmogram/spectral-analysis
 products, chart rendering, or interpretive narrative text.
+
+### Harmograms REST Admission Boundary
+
+The admitted P-GAP-06 Harmograms REST surface is the bounded
+`/v1/harmograms/*` family:
+
+- `POST /v1/harmograms/vector`
+- `POST /v1/harmograms/zero-aries-vector`
+- `POST /v1/harmograms/intensity-spectrum`
+- `POST /v1/harmograms/projection`
+- `POST /v1/harmograms/trace`
+
+These routes accept caller-supplied named ecliptic longitudes and
+caller-supplied explicit trace samples. They expose `moira.harmograms`
+point-set vectors, Zero-Aries-parts vectors, intensity spectra, projections,
+and trace series without constructing charts or generating ephemeris samples.
+
+The transport boundary is deliberately bounded: position counts, harmonic
+domain width, intensity sample count, trace sample count, and trace cell count
+are all capped by `moira_server.models.harmograms`. Trace responses preserve
+series intensity spectra, source vectors, projection terms, and strengths, but
+do not add judgement language.
+
+This admission does not expose chart-backed harmogram generation, dynamic
+ephemeris sampling, arbitrary intensity functions, unbounded sweeps, dense
+rendering meshes, async jobs, harmonic interpretation, recommendation text, or
+replacement of `/v1/harmonics/*`.
 
 ### Phase And Photometry REST Admission Boundary
 

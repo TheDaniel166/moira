@@ -7,9 +7,12 @@ underlying computations remain owned by their domain modules.
 
 from __future__ import annotations
 
+import importlib
 import sys
 from datetime import datetime
 from typing import Any
+
+_nine_parts = importlib.import_module("moira.nine_parts")
 
 
 def _facade_module() -> Any:
@@ -53,7 +56,7 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
     "scope": "class",
     "id": "moira._facade_classical.ClassicalFacadeMixin",
     "risk": "medium",
-    "api": {"frozen": ["lots", "dignities", "midpoints", "harmonics", "profections", "firdaria", "decennials", "current_decennials", "zodiacal_releasing", "vimshottari_dasha"], "internal": []},
+    "api": {"frozen": ["lots", "dignities", "mutual_receptions", "midpoints", "midpoints_to_point", "harmonic", "profection", "firdaria", "decennials", "current_decennials", "zodiacal_releasing", "vimshottari_dasha", "almuten_of_degree", "almuten_figuris", "huber_house_zones", "huber_age_point", "huber_age_point_contacts", "huber_dynamic_intensity", "huber_intensity_at", "huber_chart_intensity_profile", "nine_parts"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -284,4 +287,64 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             prenatal_syzygy_lon=prenatal_syzygy_lon,
             day_ruler=day_ruler,
             hour_ruler=hour_ruler,
+        )
+
+    def huber_house_zones(self, house_cusps):
+        """Compute Huber golden-section zone boundaries for a house frame."""
+        return _facade_module().house_zones(house_cusps)
+
+    def huber_age_point(self, age_years: float, house_cusps):
+        """Compute the Huber Age Point for a caller-supplied house frame."""
+        return _facade_module().age_point(age_years, house_cusps)
+
+    def huber_age_point_contacts(
+        self,
+        house_cusps,
+        planet_longitudes: dict[str, float],
+        orb: float = 2.0,
+        start_age: float = 0.0,
+        end_age: float = 72.0,
+        step_years: float = 1.0 / 12.0,
+    ):
+        """Scan bounded Huber Age Point contacts against named chart points."""
+        return _facade_module().age_point_contacts(
+            house_cusps,
+            planet_longitudes,
+            orb=orb,
+            start_age=start_age,
+            end_age=end_age,
+            step_years=step_years,
+        )
+
+    def huber_dynamic_intensity(self, house: int, fraction: float):
+        """Evaluate the Huber Dynamic Intensity Curve by house fraction."""
+        return _facade_module().dynamic_intensity(house, fraction)
+
+    def huber_intensity_at(self, longitude: float, house_cusps):
+        """Evaluate Huber dynamic intensity at an ecliptic longitude."""
+        return _facade_module().intensity_at(longitude, house_cusps)
+
+    def huber_chart_intensity_profile(
+        self,
+        points: dict[str, float],
+        house_cusps,
+    ):
+        """Score named chart points against the Huber Dynamic Intensity Curve."""
+        return _facade_module().chart_intensity_profile(points, house_cusps)
+
+    def nine_parts(
+        self,
+        asc: float,
+        planets: dict[str, float],
+        is_night_chart: bool,
+        policy=None,
+    ):
+        """Compute Abu Ma'shar's Nine Parts from caller-supplied chart truth."""
+        if policy is None:
+            policy = _nine_parts.DEFAULT_NINE_PARTS_POLICY
+        return _nine_parts.nine_parts_abu_mashar(
+            asc,
+            planets,
+            is_night_chart,
+            policy=policy,
         )

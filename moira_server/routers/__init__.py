@@ -12,10 +12,13 @@ from .decans import decanates_router, hermetic_decans_router
 from .dignities import router as dignities_router
 from .egyptian_bounds import router as egyptian_bounds_router
 from .electional import router as electional_router
+from .frame_positions import router as frame_positions_router
+from .generic_phenomena import router as generic_phenomena_router
 from .geodetic import router as geodetic_router
 from .galactic import router as galactic_router
 from .galactic_houses import router as galactic_houses_router
 from .gauquelin import router as gauquelin_router
+from .harmograms import router as harmograms_router
 from .harmonics import router as harmonics_router
 from .health import router as health_router
 from .huber import router as huber_router
@@ -26,9 +29,11 @@ from .lord_of_the_orb import router as lord_of_the_orb_router
 from .lord_of_the_turn import router as lord_of_the_turn_router
 from .lots import router as lots_router
 from .manazil import router as manazil_router
+from .muhurta import router as muhurta_router
 from .nodes import router as nodes_router
 from .nine_parts import router as nine_parts_router
 from .panchanga import router as panchanga_router
+from .orbits import router as orbits_router
 from .phase import router as phase_router
 from .phenomena import router as phenomena_router
 from .planetary_hours import router as planetary_hours_router
@@ -38,6 +43,7 @@ from .progressions import router as progressions_router
 from .relationship import router as relationship_router
 from .returns import router as returns_router
 from .shadbala import router as shadbala_router
+from .sidereal import router as sidereal_router
 from .timelords import router as timelords_router
 from .triplicity import router as triplicity_router
 from .transits import router as transits_router
@@ -67,10 +73,13 @@ __all__ = [
     "dignities_router",
     "egyptian_bounds_router",
     "electional_router",
+    "frame_positions_router",
+    "generic_phenomena_router",
     "geodetic_router",
     "galactic_router",
     "galactic_houses_router",
     "gauquelin_router",
+    "harmograms_router",
     "harmonics_router",
     "hermetic_decans_router",
     "health_router",
@@ -82,8 +91,10 @@ __all__ = [
     "lord_of_the_turn_router",
     "lots_router",
     "manazil_router",
+    "muhurta_router",
     "nodes_router",
     "nine_parts_router",
+    "orbits_router",
     "panchanga_router",
     "phase_router",
     "phenomena_router",
@@ -95,6 +106,7 @@ __all__ = [
     "relationship_router",
     "returns_router",
     "shadbala_router",
+    "sidereal_router",
     "timelords_router",
     "triplicity_router",
     "transits_router",

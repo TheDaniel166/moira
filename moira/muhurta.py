@@ -214,6 +214,15 @@ def _classify_nakshatra(
     return "neutral"
 
 
+def _nakshatra_name_from_panchanga(panchanga: PanchangaResult) -> str | None:
+    """Return the live Nakshatra vessel name without assuming one field spelling."""
+
+    nakshatra = getattr(panchanga, "nakshatra", None)
+    if nakshatra is None:
+        return None
+    return getattr(nakshatra, "nakshatra", None) or getattr(nakshatra, "name", None)
+
+
 def _classify_karana(index: int) -> Literal["auspicious", "neutral", "inauspicious"]:
     if _is_vishti_karana(index):
         return "inauspicious"
@@ -237,7 +246,7 @@ def classify_muhurta(
 
     tithi_class = _classify_tithi(panchanga.tithi.index)
     vara_class = _classify_vara(panchanga.vara.index, panchanga.tithi.index)
-    nak_class = _classify_nakshatra(getattr(panchanga, 'nakshatra', None) and getattr(panchanga.nakshatra, 'name', None))
+    nak_class = _classify_nakshatra(_nakshatra_name_from_panchanga(panchanga))
     yoga_class = "inauspicious" if is_ashubha_yoga else "auspicious"
     karana_class = _classify_karana(panchanga.karana.index)
 

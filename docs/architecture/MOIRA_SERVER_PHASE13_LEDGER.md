@@ -1,8 +1,8 @@
 # Moira Server Phase 13 Evaluation Ledger
 
-Version: 0.1
-Date: 2026-06-13
-Status: Phase 13 electional/search workflow families under evaluation
+Version: 0.2
+Date: 2026-06-14
+Status: Phase 13 bounded electional transport complete; Western electional doctrine deferred
 Scope: electional and search-workflow REST candidate evaluation
 
 Phase 13 covers electional search workflow surfaces. This phase is not a

@@ -50,6 +50,7 @@ from pathlib import Path
 from types import MappingProxyType
 
 from .constants import Body, HouseSystem, AspectDefinition, ASPECT_TIERS
+from ._facade_annual_lords import AnnualLordFacadeMixin
 from ._facade_astronomy import AstronomyFacadeMixin
 from ._facade_classical import ClassicalFacadeMixin
 from ._facade_core import CoreFacadeMixin
@@ -59,6 +60,7 @@ from ._facade_predictive import PredictiveFacadeMixin
 from ._facade_relationships import RelationshipFacadeMixin
 from ._facade_special import SpecialTopicsFacadeMixin
 from ._facade_spatial import SpatialFacadeMixin
+from ._facade_vedic import VedicFacadeMixin
 from .julian import (
     CalendarDateTime, DeltaTPolicy, julian_day, calendar_from_jd, calendar_datetime_from_jd,
     jd_from_datetime, datetime_from_jd, format_jd_utc, safe_datetime_from_jd,
@@ -1789,8 +1791,10 @@ class Moira(
     RelationshipFacadeMixin,
     PredictiveFacadeMixin,
     ClassicalFacadeMixin,
+    AnnualLordFacadeMixin,
     AstronomyFacadeMixin,
     SpatialFacadeMixin,
+    VedicFacadeMixin,
     SpecialTopicsFacadeMixin,
 ):
     """Primary engine facade with deferred planetary kernel readiness."""

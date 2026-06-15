@@ -26,9 +26,12 @@ from .routers import (
     dignities_router,
     egyptian_bounds_router,
     electional_router,
+    frame_positions_router,
+    generic_phenomena_router,
     galactic_router,
     galactic_houses_router,
     gauquelin_router,
+    harmograms_router,
     geodetic_router,
     harmonics_router,
     hermetic_decans_router,
@@ -41,8 +44,10 @@ from .routers import (
     lord_of_the_turn_router,
     lots_router,
     manazil_router,
+    muhurta_router,
     nodes_router,
     nine_parts_router,
+    orbits_router,
     panchanga_router,
     phase_router,
     phenomena_router,
@@ -54,6 +59,7 @@ from .routers import (
     relationship_router,
     returns_router,
     shadbala_router,
+    sidereal_router,
     stars_router,
     timelords_router,
     triplicity_router,
@@ -104,11 +110,13 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(chart_router)
     app.include_router(chart_wheel_router)  # Website-only chart-wheel drawing primitives
     app.include_router(positions_router)
+    app.include_router(frame_positions_router)  # Frame-specific position products
     app.include_router(transits_router)
     app.include_router(returns_router)
     app.include_router(batch_router)
     app.include_router(visibility_router)
     app.include_router(phenomena_router)
+    app.include_router(generic_phenomena_router)  # P-GAP-04 generic phenomena and solar-condition surfaces
     app.include_router(dasha_router)
     app.include_router(progressions_router)
     app.include_router(relationship_router)
@@ -139,10 +147,14 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(comets_router)      # Symmetric fast comet surfaces
     app.include_router(stars_router)       # Fixed stars for the website / Manus AI
     app.include_router(manazil_router)      # Phase-11 Arabic lunar mansion catalog/doctrine surface
+    app.include_router(muhurta_router)      # P-GAP-02 Vedic Muhurta instant classification/score surface
     app.include_router(nodes_router)        # Phase-11 planetary and small-body orbital node surface
+    app.include_router(orbits_router)       # P-GAP-03 heliocentric osculating elements and distance extrema
     app.include_router(uranian_router)      # Phase-12 Uranian/Hamburg School hypothetical-body surface
     app.include_router(harmonics_router)    # Phase-12 direct harmonic projection surface
     app.include_router(phase_router)        # Phase-12 phase, elongation, and photometry surface
+    app.include_router(sidereal_router)     # P-GAP-05 sidereal and Nakshatra utility primitives
+    app.include_router(harmograms_router)    # P-GAP-06 bounded harmogram vector/intensity/trace surface
     app.include_router(antiscia_router)      # Phase-12 ordinary antiscia reflection/contact surface
     app.include_router(nine_parts_router)    # Phase-12 Abu Ma'shar Nine Parts aggregate surface
     app.include_router(planetary_hours_router)  # Phase-12 sunrise-based planetary-hours surface
