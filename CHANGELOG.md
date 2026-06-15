@@ -5,6 +5,21 @@ All notable changes to the Moira project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.0] - 2026-06-15
+
+### Added
+- **Expanded FastAPI Surface**: Admitted a large set of typed REST route families for Vedic, classical, spatial, catalog, specialist, electional, orbital, phenomena, sidereal utility, and harmonic products.
+- **Server Transport Standards**: Added backend standards and transport design records for the newly admitted route families, including explicit deferrals for doctrine-heavy or specialist surfaces.
+- **Facade Convenience Parity**: Added `Moira` convenience wrappers for admitted Vedic, Huber, Nine Parts, Lord of the Orb, and sidereal utility surfaces while preserving owner-module doctrine.
+- **Astrocartography Rendering Support**: Added a rendering-adapter workflow and server support for map-oriented astrocartography consumers.
+
+### Changed
+- **REST Reference Truth**: Updated the REST reference and architecture ledgers to reflect the live server route registry and facade/init gap audit.
+- **Route Admission Discipline**: Formalized post-Phase-9 and post-Phase-10 workflow boundaries for sidereal chart derivation, small-body/star astrocartography admission, and rendering support.
+
+### Validation
+- This release expands public transport, facade, standards, and documentation surfaces. The changes are additive and route-supporting; no intentional breaking public API changes were made.
+
 ## [3.2.4] - 2026-06-08
 
 ### Fixed
