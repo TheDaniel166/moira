@@ -5,6 +5,14 @@ All notable changes to the Moira project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.1] - 2026-06-15
+
+### Fixed
+- **PyPI Wheel Build Isolation**: Declared `packaging>=24.2` in the build-system requirements so isolated wheel builds satisfy modern setuptools license-expression normalization on GitHub Actions.
+
+### Validation
+- This is a packaging-only patch release. No runtime computation, REST route, or facade semantics changed from `3.3.0`.
+
 ## [3.3.0] - 2026-06-15
 
 ### Added
