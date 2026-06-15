@@ -5,6 +5,14 @@ All notable changes to the Moira project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.2] - 2026-06-15
+
+### Fixed
+- **PyPI Wheel Matrix Build Constraints**: Updated the PyPI release workflow to use current cibuildwheel dependency constraints so isolated wheel builds can satisfy the `packaging>=24.2` build requirement on macOS and other runners.
+
+### Validation
+- This is a packaging and release-workflow patch release. No runtime computation, REST route, or facade semantics changed from `3.3.0`.
+
 ## [3.3.1] - 2026-06-15
 
 ### Fixed

@@ -29,6 +29,7 @@ jobs:
           CIBW_SKIP: "*-musllinux_*"
           CIBW_BEFORE_BUILD: pip install cmake pybind11
           CIBW_BUILD_VERBOSITY: 1
+          CIBW_DEPENDENCY_VERSIONS: latest
 
       - uses: actions/upload-artifact@v4
         with:
