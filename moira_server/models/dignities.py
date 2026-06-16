@@ -6,7 +6,7 @@ import math
 from datetime import datetime
 from typing import Any
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 
 from moira.constants import HouseSystem
 from moira.dignities_types import (
@@ -20,6 +20,7 @@ from .common import _StrictModel
 _SEVEN_PLANETS = frozenset(
     {"Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"}
 )
+_MODERN_DIGNITY_PLANETS = _SEVEN_PLANETS | frozenset({"Uranus", "Neptune", "Pluto"})
 
 
 class EssentialDignityPolicyRequest(_StrictModel):
@@ -97,10 +98,21 @@ class DignitiesConditionChartRequest(DignitiesChartRequest):
     @field_validator("planet")
     @classmethod
     def _valid_condition_planet(cls, value: str) -> str:
-        if value not in _SEVEN_PLANETS:
-            supported = ", ".join(sorted(_SEVEN_PLANETS))
+        if value not in _MODERN_DIGNITY_PLANETS:
+            supported = ", ".join(sorted(_MODERN_DIGNITY_PLANETS))
             raise ValueError(f"planet must be one of: {supported}")
         return value
+
+    @model_validator(mode="after")
+    def _planet_supported_by_policy(self) -> "DignitiesConditionChartRequest":
+        doctrine = (
+            EssentialDignityDoctrine.TRADITIONAL_CLASSIC_7
+            if self.policy is None
+            else self.policy.essential.doctrine
+        )
+        if self.planet not in _SEVEN_PLANETS and doctrine is not EssentialDignityDoctrine.MODERN_CO_RULERS:
+            raise ValueError("outer-planet dignity conditions require policy.essential.doctrine='modern_co_rulers'")
+        return self
 
 
 class PlanetaryReceptionResponse(_StrictModel):

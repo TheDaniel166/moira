@@ -242,10 +242,65 @@ def test_dignities_condition_route_rejects_invalid_planet(
 ) -> None:
     response = client_with_engine.post(
         "/v1/dignities/chart/condition",
-        json={**_PAYLOAD, "planet": "Uranus"},
+        json={**_PAYLOAD, "planet": "Ceres"},
     )
 
     _assert_validation_envelope(response, message_fragment="planet must be one of")
+
+
+def test_dignities_condition_route_rejects_outer_planet_without_modern_policy(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/dignities/chart/condition",
+        json={**_PAYLOAD, "planet": "Uranus"},
+    )
+
+    _assert_validation_envelope(response, message_fragment="outer-planet dignity conditions require")
+
+
+@pytest.mark.requires_ephemeris
+def test_dignities_chart_route_accepts_modern_co_ruler_policy(
+    client_with_engine: TestClient,
+    moira_engine,
+) -> None:
+    payload = {
+        **_PAYLOAD,
+        "policy": {"essential": {"doctrine": "modern_co_rulers"}},
+    }
+    direct = compute_dignities_chart(moira_engine, DignitiesChartRequest(**payload))
+
+    response = client_with_engine.post("/v1/dignities/chart", json=payload)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert [item["planet"] for item in body["dignities"]] == [
+        dignity.planet for dignity in direct
+    ]
+    assert {"Uranus", "Neptune", "Pluto"} <= {
+        item["planet"] for item in body["dignities"]
+    }
+
+
+@pytest.mark.requires_ephemeris
+def test_dignities_condition_route_accepts_outer_planet_with_modern_policy(
+    client_with_engine: TestClient,
+    moira_engine,
+) -> None:
+    payload = {
+        **_PAYLOAD,
+        "planet": "Uranus",
+        "policy": {"essential": {"doctrine": "modern_co_rulers"}},
+    }
+    request = DignitiesConditionChartRequest(**payload)
+    direct = compute_dignities_chart_condition(moira_engine, request)
+
+    response = client_with_engine.post("/v1/dignities/chart/condition", json=payload)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["planet"] == "Uranus"
+    assert body["state"] == direct.state.value
 
 
 def test_dignities_chart_route_rejects_invalid_policy_value(

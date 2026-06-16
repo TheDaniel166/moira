@@ -22,8 +22,8 @@ not describe aspirational future capabilities.
 A **planetary dignity result** in Moira is:
 
 > The authoritative per-planet output of `DignitiesService.calculate_dignities`,
-> computed for one of the Classic 7 planets from normalised sign state, house
-> placement, sect context, solar proximity, and doctrine admitted under
+> computed for a planet admitted by the active essential doctrine from normalised
+> sign state, house placement, sect context, solar proximity, and doctrine admitted under
 > `DignityComputationPolicy`.
 
 The computational core remains the authority for:
@@ -44,15 +44,15 @@ An **essential dignity** in Moira is:
 
 > The first matching essential condition under the current essential doctrine
 > tables, evaluated in this fixed priority order: domicile, exaltation,
-> detriment, fall, peregrine.
+> triplicity, detriment, fall, peregrine.
 
 | Element | Definition |
 |---|---|
-| doctrine tables | `DOMICILE`, `EXALTATION`, `DETRIMENT`, `FALL` |
-| subject set | `CLASSIC_7` only |
+| doctrine tables | `DOMICILE`, `MODERN_DOMICILE`, `EXALTATION`, `DETRIMENT`, `MODERN_DETRIMENT`, `FALL` |
+| subject set | Classic 7 by default; Classic 7 plus Uranus, Neptune, Pluto under `MODERN_CO_RULERS` |
 | sign source | sign derived from planet longitude |
-| priority | domicile > exaltation > detriment > fall > peregrine |
-| score source | `SCORE_DOMICILE`, `SCORE_EXALTATION`, `SCORE_DETRIMENT`, `SCORE_FALL`, `SCORE_PEREGRINE` |
+| priority | domicile > exaltation > triplicity > detriment > fall > peregrine |
+| score source | `SCORE_DOMICILE`, `SCORE_EXALTATION`, `SCORE_TRIPLICITY`, `SCORE_DETRIMENT`, `SCORE_FALL`, `SCORE_PEREGRINE` |
 
 The returned `essential_dignity` string and `essential_score` integer remain the
 legacy public surface. `essential_truth` and `essential_classification` are
@@ -206,6 +206,22 @@ The default essential doctrine is the classic fixed-table model encoded in:
 
 `EssentialDignityPolicy` makes this doctrine explicit without changing the
 default result.
+
+The admitted opt-in modern doctrine is:
+
+- `EssentialDignityDoctrine.MODERN_CO_RULERS`
+
+This doctrine extends domicile and detriment only:
+
+| Modern planet | Domicile | Detriment |
+|---|---|---|
+| Uranus | Aquarius | Leo |
+| Neptune | Pisces | Virgo |
+| Pluto | Scorpio | Taurus |
+
+The modern doctrine is co-rulership, not replacement. Saturn still holds
+Aquarius, Jupiter still holds Pisces, and Mars still holds Scorpio under this
+policy. No modern exaltation or fall table is admitted by the current engine.
 
 #### 4.2 Accidental doctrine
 

@@ -3764,7 +3764,7 @@ result = some_function(inputs, policy=policy)
 |---|---|---|
 | `AspectPolicy` | aspects | `orb_table`, `min_tier`, `include_minor`, `motion_threshold` |
 | `HousePolicy` | houses | `polar_fallback`, `unknown_system` |
-| `DignityComputationPolicy` | dignities | `doctrine`, `mercury_sect_model`, `solar_condition`, `accidental_dignity` |
+| `DignityComputationPolicy` | dignities | essential doctrine (`traditional_classic_7` default, `modern_co_rulers` opt-in), `mercury_sect_model`, `solar_condition`, `accidental_dignity` |
 | `VedicDignityPolicy` | vedic dignities | planetary friendship and compound-relationship policy |
 | `LotsComputationPolicy` | lots | `reversal_kind`, `derived_reference`, `external_reference` |
 | `ProgressionComputationPolicy` | progressions | `time_key`, `direction`, `house_frame` |

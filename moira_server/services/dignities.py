@@ -11,6 +11,7 @@ from moira.dignities_types import (
     ChartConditionProfile,
     ConditionNetworkProfile,
     DignityComputationPolicy,
+    EssentialDignityDoctrine,
     EssentialDignityPolicy,
     MutualReceptionPolicy,
     PlanetaryConditionProfile,
@@ -37,6 +38,12 @@ _SEVEN_PLANETS: tuple[str, ...] = (
     "Jupiter",
     "Saturn",
 )
+_MODERN_DIGNITY_PLANETS: tuple[str, ...] = (
+    *_SEVEN_PLANETS,
+    "Uranus",
+    "Neptune",
+    "Pluto",
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -47,6 +54,12 @@ class _DignitySupportTruth:
 
 
 _SERVICE = DignitiesService()
+
+
+def _bodies_for_policy(policy: DignityComputationPolicy | None) -> tuple[str, ...]:
+    if policy is not None and policy.essential.doctrine is EssentialDignityDoctrine.MODERN_CO_RULERS:
+        return _MODERN_DIGNITY_PLANETS
+    return _SEVEN_PLANETS
 
 
 def _policy_from_request(
@@ -84,10 +97,12 @@ def _derive_dignity_support_truth(
     request: DignitiesChartRequest,
 ) -> _DignitySupportTruth:
     require_aware_datetime(request.dt)
+    policy = _policy_from_request(request.policy)
+    bodies = _bodies_for_policy(policy)
 
     chart = engine.chart(
         request.dt,
-        bodies=list(_SEVEN_PLANETS),
+        bodies=list(bodies),
         include_nodes=False,
         observer_lat=request.observer_lat,
         observer_lon=request.observer_lon,
@@ -106,7 +121,7 @@ def _derive_dignity_support_truth(
             "degree": chart.planets[planet].longitude,
             "is_retrograde": chart.planets[planet].speed < 0.0,
         }
-        for planet in _SEVEN_PLANETS
+        for planet in bodies
     ]
     house_positions = [
         {
@@ -118,7 +133,7 @@ def _derive_dignity_support_truth(
     return _DignitySupportTruth(
         planet_positions=planet_positions,
         house_positions=house_positions,
-        policy=_policy_from_request(request.policy),
+        policy=policy,
     )
 
 

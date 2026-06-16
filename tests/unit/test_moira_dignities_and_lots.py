@@ -17,7 +17,11 @@ from moira.dignities import (
     UnsupportedSubjectHandling,
     DispositorshipUnsupportedSubjectPolicy,
     EssentialDignityKind,
+    EssentialDignityDoctrine,
+    EssentialDignityPolicy,
     MercurySectModel,
+    MODERN_DETRIMENT,
+    MODERN_DOMICILE,
     PlanetaryConditionState,
     calculate_condition_network_profile,
     PlanetaryReception,
@@ -489,6 +493,92 @@ def test_dignity_policy_surface_is_deterministic_and_inspectable() -> None:
     assert custom.is_default is False
     assert custom.includes_any_solar_condition is True
     assert custom.accidental.include_motion is False
+
+
+def test_modern_co_ruler_policy_adds_outer_planet_essential_dignities() -> None:
+    house_positions = _equal_houses(300.0)
+    planet_positions = [
+        {"name": "Sun", "degree": 130.0, "is_retrograde": False},
+        {"name": "Moon", "degree": 100.0, "is_retrograde": False},
+        {"name": "Mercury", "degree": 70.0, "is_retrograde": False},
+        {"name": "Venus", "degree": 40.0, "is_retrograde": False},
+        {"name": "Mars", "degree": 220.0, "is_retrograde": False},
+        {"name": "Jupiter", "degree": 340.0, "is_retrograde": False},
+        {"name": "Saturn", "degree": 310.0, "is_retrograde": False},
+        {"name": "Uranus", "degree": 315.0, "is_retrograde": False},
+        {"name": "Neptune", "degree": 345.0, "is_retrograde": False},
+        {"name": "Pluto", "degree": 225.0, "is_retrograde": False},
+    ]
+    policy = DignityComputationPolicy(
+        essential=EssentialDignityPolicy(
+            doctrine=EssentialDignityDoctrine.MODERN_CO_RULERS,
+        )
+    )
+
+    traditional = calculate_dignities(planet_positions, house_positions)
+    modern = calculate_dignities(planet_positions, house_positions, policy=policy)
+    by_name = {d.planet: d for d in modern}
+
+    assert [d.planet for d in traditional] == ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"]
+    assert [d.planet for d in modern] == [
+        "Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"
+    ]
+    assert MODERN_DOMICILE["Uranus"] == ["Aquarius"]
+    assert MODERN_DETRIMENT["Pluto"] == ["Taurus"]
+    assert by_name["Uranus"].essential_dignity == "Domicile"
+    assert by_name["Neptune"].essential_dignity == "Domicile"
+    assert by_name["Pluto"].essential_dignity == "Domicile"
+    assert by_name["Uranus"].essential_score == 5
+    assert by_name["Uranus"].essential_truth.matching_signs == ("Aquarius",)
+    assert by_name["Saturn"].essential_dignity == "Domicile"
+
+
+def test_modern_co_ruler_policy_adds_outer_planet_detriments() -> None:
+    house_positions = _equal_houses(300.0)
+    planet_positions = [
+        {"name": "Sun", "degree": 130.0, "is_retrograde": False},
+        {"name": "Uranus", "degree": 125.0, "is_retrograde": False},
+        {"name": "Neptune", "degree": 155.0, "is_retrograde": False},
+        {"name": "Pluto", "degree": 35.0, "is_retrograde": False},
+    ]
+    policy = DignityComputationPolicy(
+        essential=EssentialDignityPolicy(
+            doctrine=EssentialDignityDoctrine.MODERN_CO_RULERS,
+        )
+    )
+
+    by_name = {
+        d.planet: d
+        for d in calculate_dignities(planet_positions, house_positions, policy=policy)
+    }
+
+    assert by_name["Uranus"].essential_dignity == "Detriment"
+    assert by_name["Neptune"].essential_dignity == "Detriment"
+    assert by_name["Pluto"].essential_dignity == "Detriment"
+    assert by_name["Pluto"].essential_score == -5
+    assert by_name["Pluto"].essential_truth.matching_signs == ("Taurus",)
+
+
+def test_modern_co_ruler_policy_extends_domicile_receptions() -> None:
+    planet_positions = [
+        {"name": "Mars", "degree": 310.0, "is_retrograde": False},
+        {"name": "Uranus", "degree": 5.0, "is_retrograde": False},
+    ]
+    policy = DignityComputationPolicy(
+        essential=EssentialDignityPolicy(
+            doctrine=EssentialDignityDoctrine.MODERN_CO_RULERS,
+        )
+    )
+
+    receptions = calculate_receptions(planet_positions, policy=policy)
+
+    assert [
+        (r.receiving_planet, r.host_planet, r.basis, r.mode)
+        for r in receptions
+    ] == [
+        ("Mars", "Uranus", ReceptionBasis.DOMICILE, ReceptionMode.MUTUAL),
+        ("Uranus", "Mars", ReceptionBasis.DOMICILE, ReceptionMode.MUTUAL),
+    ]
 
 
 def test_reception_layer_is_deterministic_and_distinguishes_mutual_and_unilateral() -> None:

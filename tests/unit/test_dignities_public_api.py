@@ -101,8 +101,10 @@ _CURATED_PUBLIC_NAMES = [
     "is_besieged",
     # Tables
     "DOMICILE",
+    "MODERN_DOMICILE",
     "EXALTATION",
     "DETRIMENT",
+    "MODERN_DETRIMENT",
     "FALL",
     "SECT",
     "PREFERRED_HEMISPHERE",
@@ -158,5 +160,5 @@ class TestModuleAgreement:
             )
 
     def test_curated_count_is_76(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 91
+        assert len(_CURATED_PUBLIC_NAMES) == 93
 

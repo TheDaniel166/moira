@@ -50,6 +50,8 @@ import math
 from .constants import SIGNS
 from .dignities_types import (
     CLASSIC_7,
+    MODERN_OUTER_3,
+    _MODERN_PLANET_ORDER,
     _PLANET_ORDER,
     _normalize_dispositorship_subject_name,
 )
@@ -58,7 +60,7 @@ from .triplicity import triplicity_assignment_for, ParticipatingRulerPolicy as _
 
 __all__ = [
     # Tables
-    "DOMICILE", "EXALTATION", "DETRIMENT", "FALL",
+    "DOMICILE", "MODERN_DOMICILE", "EXALTATION", "DETRIMENT", "MODERN_DETRIMENT", "FALL",
     "SECT", "PREFERRED_HEMISPHERE", "PREFERRED_GENDER",
     "PLANETARY_JOYS",
     # Enums
@@ -166,6 +168,13 @@ DOMICILE: dict[str, list[str]] = {
     "Saturn":  ["Capricorn", "Aquarius"],
 }
 
+MODERN_DOMICILE: dict[str, list[str]] = {
+    **DOMICILE,
+    "Uranus":  ["Aquarius"],
+    "Neptune": ["Pisces"],
+    "Pluto":   ["Scorpio"],
+}
+
 EXALTATION: dict[str, list[str]] = {
     "Sun":     ["Aries"],
     "Moon":    ["Taurus"],
@@ -184,6 +193,13 @@ DETRIMENT: dict[str, list[str]] = {
     "Mars":    ["Libra", "Taurus"],
     "Jupiter": ["Gemini", "Virgo"],
     "Saturn":  ["Cancer", "Leo"],
+}
+
+MODERN_DETRIMENT: dict[str, list[str]] = {
+    **DETRIMENT,
+    "Uranus":  ["Leo"],
+    "Neptune": ["Virgo"],
+    "Pluto":   ["Taurus"],
 }
 
 FALL: dict[str, list[str]] = {
@@ -655,7 +671,7 @@ class DignitiesService:
         valens_distribution_scores: dict[str, int] | None = None,
     ) -> list[PlanetaryDignity]:
         """
-        Calculate dignities for all Classic 7 planets found in the chart.
+        Calculate dignities for all planets admitted by the active doctrine.
 
         Parameters
         ----------
@@ -699,10 +715,12 @@ class DignitiesService:
         all_receptions_by_planet = self._find_receptions(
             planet_signs,
             bases=(ReceptionBasis.DOMICILE, ReceptionBasis.EXALTATION),
+            policy=policy,
         )
         receptions_by_planet = self._find_receptions(
             planet_signs,
             bases=self._policy_reception_bases(policy),
+            policy=policy,
         )
 
         # Determine if this is a day chart: Sun above horizon = houses 7–12
@@ -721,7 +739,7 @@ class DignitiesService:
 
         results: list[PlanetaryDignity] = []
 
-        for planet in CLASSIC_7:
+        for planet in self._dignity_planet_order(policy):
             if planet not in planet_lons:
                 continue
 
@@ -785,8 +803,9 @@ class DignitiesService:
                 ),
             ))
 
-        results.sort(key=lambda d: _PLANET_ORDER.index(d.planet)
-                     if d.planet in _PLANET_ORDER else 99)
+        dignity_order = self._dignity_planet_order(policy)
+        results.sort(key=lambda d: dignity_order.index(d.planet)
+                     if d.planet in dignity_order else 99)
         return results
 
     def calculate_receptions(
@@ -808,12 +827,16 @@ class DignitiesService:
         for pos in self._normalize_planet_positions(planet_positions):
             name = pos["name"]
             degree = pos["degree"]
-            if name in CLASSIC_7:
+            if name in self._dignity_planet_order(policy):
                 planet_signs[name] = SIGNS[int(degree // 30) % 12]
 
-        receptions = self._find_receptions(planet_signs, bases=self._policy_reception_bases(policy))
+        receptions = self._find_receptions(
+            planet_signs,
+            bases=self._policy_reception_bases(policy),
+            policy=policy,
+        )
         ordered: list[PlanetaryReception] = []
-        for planet in _PLANET_ORDER:
+        for planet in self._dignity_planet_order(policy):
             ordered.extend(receptions.get(planet, []))
         return ordered
 
@@ -1049,23 +1072,42 @@ class DignitiesService:
     # ------------------------------------------------------------------
 
     @staticmethod
+    def _dignity_planet_order(policy: DignityComputationPolicy) -> list[str]:
+        if policy.essential.doctrine is EssentialDignityDoctrine.MODERN_CO_RULERS:
+            return list(_MODERN_PLANET_ORDER)
+        return list(_PLANET_ORDER)
+
+    @staticmethod
+    def _domicile_table(policy: DignityComputationPolicy) -> dict[str, list[str]]:
+        if policy.essential.doctrine is EssentialDignityDoctrine.MODERN_CO_RULERS:
+            return MODERN_DOMICILE
+        return DOMICILE
+
+    @staticmethod
+    def _detriment_table(policy: DignityComputationPolicy) -> dict[str, list[str]]:
+        if policy.essential.doctrine is EssentialDignityDoctrine.MODERN_CO_RULERS:
+            return MODERN_DETRIMENT
+        return DETRIMENT
+
+    @staticmethod
     def _get_essential_dignity_truth(
         planet: str,
         sign: str,
         policy: DignityComputationPolicy,
         is_day_chart: bool = True,
     ) -> EssentialDignityTruth:
-        if policy.essential.doctrine is not EssentialDignityDoctrine.TRADITIONAL_CLASSIC_7:
-            raise ValueError(f"Unsupported essential dignity doctrine: {policy.essential.doctrine}")
-        if sign in DOMICILE.get(planet, []):
-            return EssentialDignityTruth("essential", "Domicile", SCORE_DOMICILE, sign, tuple(DOMICILE.get(planet, ())))
+        DignitiesService._validate_policy(policy)
+        domicile = DignitiesService._domicile_table(policy)
+        detriment = DignitiesService._detriment_table(policy)
+        if sign in domicile.get(planet, []):
+            return EssentialDignityTruth("essential", "Domicile", SCORE_DOMICILE, sign, tuple(domicile.get(planet, ())))
         if sign in EXALTATION.get(planet, []):
             return EssentialDignityTruth("essential", "Exaltation", SCORE_EXALTATION, sign, tuple(EXALTATION.get(planet, ())))
         assignment = triplicity_assignment_for(sign, is_day_chart=is_day_chart)
         if planet == assignment.active_ruler:
             return EssentialDignityTruth("essential", "Triplicity", SCORE_TRIPLICITY, sign, assignment.signs)
-        if sign in DETRIMENT.get(planet, []):
-            return EssentialDignityTruth("essential", "Detriment", SCORE_DETRIMENT, sign, tuple(DETRIMENT.get(planet, ())))
+        if sign in detriment.get(planet, []):
+            return EssentialDignityTruth("essential", "Detriment", SCORE_DETRIMENT, sign, tuple(detriment.get(planet, ())))
         if sign in FALL.get(planet, []):
             return EssentialDignityTruth("essential", "Fall", SCORE_FALL, sign, tuple(FALL.get(planet, ())))
         return EssentialDignityTruth("essential", "Peregrine", SCORE_PEREGRINE, sign, ())
@@ -1304,7 +1346,10 @@ class DignitiesService:
 
     @staticmethod
     def _validate_policy(policy: DignityComputationPolicy) -> None:
-        if policy.essential.doctrine is not EssentialDignityDoctrine.TRADITIONAL_CLASSIC_7:
+        if policy.essential.doctrine not in (
+            EssentialDignityDoctrine.TRADITIONAL_CLASSIC_7,
+            EssentialDignityDoctrine.MODERN_CO_RULERS,
+        ):
             raise ValueError(f"Unsupported essential dignity doctrine: {policy.essential.doctrine}")
         if policy.accidental.sect.mercury_sect_model is not MercurySectModel.LONGITUDE_HEURISTIC:
             raise ValueError(f"Unsupported Mercury sect model: {policy.accidental.sect.mercury_sect_model}")
@@ -1657,12 +1702,15 @@ class DignitiesService:
     def _find_receptions(
         planet_signs: dict[str, str],
         bases: tuple[ReceptionBasis, ...],
+        policy: DignityComputationPolicy | None = None,
     ) -> dict[str, list[PlanetaryReception]]:
+        policy = DignityComputationPolicy() if policy is None else policy
         receptions: dict[str, list[PlanetaryReception]] = {}
-        planets = [planet for planet in _PLANET_ORDER if planet in planet_signs]
+        planet_order = DignitiesService._dignity_planet_order(policy)
+        planets = [planet for planet in planet_order if planet in planet_signs]
 
         basis_maps = {
-            ReceptionBasis.DOMICILE: DOMICILE,
+            ReceptionBasis.DOMICILE: DignitiesService._domicile_table(policy),
             ReceptionBasis.EXALTATION: EXALTATION,
         }
 
@@ -1701,8 +1749,8 @@ class DignitiesService:
                 key=lambda reception: (
                     mode_order[reception.mode],
                     basis_order[reception.basis],
-                    _PLANET_ORDER.index(reception.host_planet)
-                    if reception.host_planet in _PLANET_ORDER else 99,
+                    planet_order.index(reception.host_planet)
+                    if reception.host_planet in planet_order else 99,
                 )
             )
         return receptions
@@ -1722,7 +1770,8 @@ class DignitiesService:
             raise ValueError("planet_positions must be a list of dictionaries")
 
         normalized: list[dict[str, object]] = []
-        seen_classic: set[str] = set()
+        seen_supported: set[str] = set()
+        duplicate_guard = CLASSIC_7 | MODERN_OUTER_3
         for index, pos in enumerate(planet_positions):
             if not isinstance(pos, dict):
                 raise ValueError(f"planet_positions[{index}] must be a dictionary")
@@ -1744,10 +1793,12 @@ class DignitiesService:
             if not isinstance(retro_value, bool):
                 raise ValueError(f"planet_positions[{index}].is_retrograde must be a bool when provided")
 
-            if normalized_name in CLASSIC_7:
-                if normalized_name in seen_classic:
-                    raise ValueError(f"planet_positions contains duplicate entry for classic planet {normalized_name!r}")
-                seen_classic.add(normalized_name)
+            if normalized_name in duplicate_guard:
+                if normalized_name in seen_supported:
+                    if normalized_name in CLASSIC_7:
+                        raise ValueError(f"planet_positions contains duplicate entry for classic planet {normalized_name!r}")
+                    raise ValueError(f"planet_positions contains duplicate entry for modern dignity planet {normalized_name!r}")
+                seen_supported.add(normalized_name)
 
             normalized.append(
                 {
@@ -1765,6 +1816,7 @@ class DignitiesService:
         receptions = DignitiesService._find_receptions(
             planet_signs,
             bases=DignitiesService._policy_reception_bases(DignityComputationPolicy()),
+            policy=DignityComputationPolicy(),
         )
         result: dict[str, list[tuple[str, str]]] = {}
         for planet, relations in receptions.items():
@@ -2142,7 +2194,7 @@ def calculate_receptions(
     planet_positions: list[dict],
     policy: DignityComputationPolicy | None = None,
 ) -> list[PlanetaryReception]:
-    """Calculate formal reception relations for the Classic 7 planets present."""
+    """Calculate formal reception relations for planets admitted by policy."""
 
     return _service.calculate_receptions(planet_positions, policy=policy)
 

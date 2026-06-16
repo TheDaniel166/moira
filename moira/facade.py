@@ -1009,8 +1009,10 @@ from .hermetic_decans import (
 )
 from .dignities import (
     DOMICILE,
+    MODERN_DOMICILE,
     EXALTATION,
     DETRIMENT,
+    MODERN_DETRIMENT,
     FALL,
     SECT,
     PREFERRED_HEMISPHERE,
@@ -1642,7 +1644,7 @@ __all__ += [
     "DecanHour", "DecanHoursNight", "DECAN_NAMES", "DECAN_RULING_STARS",
     "list_decans", "available_decans", "decan_for_longitude",
     "decan_at", "decan_hours",
-    "DOMICILE", "EXALTATION", "DETRIMENT", "FALL", "SECT",
+    "DOMICILE", "MODERN_DOMICILE", "EXALTATION", "DETRIMENT", "MODERN_DETRIMENT", "FALL", "SECT",
     "PREFERRED_HEMISPHERE", "PREFERRED_GENDER", "PLANETARY_JOYS",
     "DispositorshipSubjectSet", "DispositorshipRulership",
     "DispositorshipTerminationKind", "UnsupportedSubjectHandling",

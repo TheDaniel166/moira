@@ -91,8 +91,10 @@ __all__ = [
 # ---------------------------------------------------------------------------
 
 CLASSIC_7: set[str] = {"Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"}
+MODERN_OUTER_3: set[str] = {"Uranus", "Neptune", "Pluto"}
 
 _PLANET_ORDER = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"]
+_MODERN_PLANET_ORDER = [*_PLANET_ORDER, "Uranus", "Neptune", "Pluto"]
 
 
 def _normalize_dispositorship_subject_name(subject: str) -> str:
@@ -245,6 +247,7 @@ class EssentialDignityDoctrine(StrEnum):
     """Named essential-dignity table doctrines supported by this engine."""
 
     TRADITIONAL_CLASSIC_7 = "traditional_classic_7"
+    MODERN_CO_RULERS = "modern_co_rulers"
 
 
 class MercurySectModel(StrEnum):

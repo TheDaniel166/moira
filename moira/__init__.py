@@ -280,8 +280,10 @@ from .void_of_course import (
 from .dignities import (
     # Tables
     DOMICILE,
+    MODERN_DOMICILE,
     EXALTATION,
     DETRIMENT,
+    MODERN_DETRIMENT,
     FALL,
     SECT,
     PREFERRED_HEMISPHERE,
@@ -648,8 +650,10 @@ __all__ = [
     "validate_shadbala_output",
     # Classic Western / Hellenistic dignities
     "DOMICILE",
+    "MODERN_DOMICILE",
     "EXALTATION",
     "DETRIMENT",
+    "MODERN_DETRIMENT",
     "FALL",
     "SECT",
     "PREFERRED_HEMISPHERE",
