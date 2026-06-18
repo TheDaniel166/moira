@@ -34,6 +34,24 @@ from .spk_reader import get_reader, SpkReader
 from ._solar import _solar_declination_ra, _sunrise_sunset, _refine_sunrise
 
 
+def _refine_solar_event_near(
+    jd_guess: float,
+    latitude: float,
+    longitude: float,
+    reader: SpkReader,
+    *,
+    is_rise: bool,
+) -> float:
+    """Refine a sunrise/sunset approximation while preserving day locality."""
+    jd_event = _refine_sunrise(jd_guess, latitude, longitude, reader, is_rise=is_rise)
+    if not math.isfinite(jd_event):
+        raise ValueError("solar event refinement returned a non-finite JD")
+    day_shift = round(jd_guess - jd_event)
+    if abs(jd_guess - jd_event) > 0.75:
+        jd_event += day_shift
+    return jd_event
+
+
 # ---------------------------------------------------------------------------
 # Chaldean order (standard planetary hour sequence)
 # ---------------------------------------------------------------------------
@@ -277,14 +295,14 @@ def planetary_hours(
     jd_noon = math.floor(jd - 0.5) + 1.0
 
     jd_sr_approx, jd_ss_approx = _sunrise_sunset(jd_noon, latitude, longitude, reader)
-    jd_sunrise_today = _refine_sunrise(
+    jd_sunrise_today = _refine_solar_event_near(
         jd_sr_approx,
         latitude,
         longitude,
         reader,
         is_rise=True,
     )
-    jd_sunset_today = _refine_sunrise(
+    jd_sunset_today = _refine_solar_event_near(
         jd_ss_approx,
         latitude,
         longitude,
@@ -300,14 +318,14 @@ def planetary_hours(
             longitude,
             reader,
         )
-        jd_sunrise = _refine_sunrise(
+        jd_sunrise = _refine_solar_event_near(
             jd_prev_sr_approx,
             latitude,
             longitude,
             reader,
             is_rise=True,
         )
-        jd_sunset = _refine_sunrise(
+        jd_sunset = _refine_solar_event_near(
             jd_prev_ss_approx,
             latitude,
             longitude,
@@ -320,7 +338,7 @@ def planetary_hours(
         jd_sunset = jd_sunset_today
         jd_next_noon = jd_noon + 1.0
         jd_nr_approx, _ = _sunrise_sunset(jd_next_noon, latitude, longitude, reader)
-        jd_next_sunrise = _refine_sunrise(
+        jd_next_sunrise = _refine_solar_event_near(
             jd_nr_approx,
             latitude,
             longitude,
