@@ -12,6 +12,19 @@ def test_native_spk_handle_has_explicit_closed_state_and_serialized_close() -> N
     assert "closed_ = true;" in source
 
 
+def test_native_spk_handle_segment_cache_is_bounded_and_observable() -> None:
+    header = Path("src/native/include/daf.hpp").read_text(encoding="utf-8")
+    bindings = Path("src/native/bindings/moira_native.cpp").read_text(encoding="utf-8")
+
+    assert "MOIRA_NATIVE_SEGMENT_CACHE_MAX" in header
+    assert "kDefaultSegmentCacheLimit = 16" in header
+    assert "segment_cache_limit_ == 0" in header
+    assert "segment_cache_lru.splice" in header
+    assert "trim_segment_cache();" in header
+    assert "segment_cache_size()" in bindings
+    assert "segment_cache_limit()" in bindings
+
+
 def test_second_wave_bindings_release_the_gil() -> None:
     source = Path("src/native/bindings/moira_native.cpp").read_text(encoding="utf-8")
 

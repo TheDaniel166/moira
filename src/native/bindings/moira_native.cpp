@@ -1192,6 +1192,13 @@ PYBIND11_MODULE(_moira_native, m) {
         .def("close", [](NativeSpkKernelHandle& self) {
             py::gil_scoped_release release;
             self.close();
+        })
+        .def("segment_cache_size", [](NativeSpkKernelHandle& self) {
+            py::gil_scoped_release release;
+            return self.segment_cache_size();
+        })
+        .def("segment_cache_limit", [](NativeSpkKernelHandle& self) {
+            return self.segment_cache_limit();
         });
 
     py::class_<NativePlanetaryEvaluator, std::shared_ptr<NativePlanetaryEvaluator>>(m, "NativePlanetaryEvaluator")

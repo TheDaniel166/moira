@@ -120,6 +120,40 @@ def test_native_direct_segment_evaluator_matches_live_segment_oracle_for_split_j
         assert got == pytest.approx(want, abs=1e-9)
 
 
+@pytest.mark.requires_ephemeris
+def test_native_spk_handle_segment_cache_obeys_env_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("MOIRA_NATIVE_SEGMENT_CACHE_MAX", "1")
+    kernel_path = find_planetary_kernel()
+    catalog = moira_native.read_daf_catalog(str(kernel_path))
+    summaries = sorted(
+        (
+            item
+            for item in catalog["summaries"]
+            if int(item["descriptor"][5]) in (2, 3)
+        ),
+        key=lambda item: int(item["descriptor"][7]) - int(item["descriptor"][6]),
+    )
+    assert len(summaries) >= 2
+
+    handle = moira_native.open_spk_kernel(str(kernel_path))
+    try:
+        assert handle.segment_cache_limit() == 1
+        for item in summaries[:2]:
+            descriptor = tuple(item["descriptor"])
+            midpoint_seconds = (float(descriptor[0]) + float(descriptor[1])) / 2.0
+            jd = 2451545.0 + midpoint_seconds / 86400.0
+            handle.segment_position(
+                int(descriptor[6]),
+                int(descriptor[7]),
+                int(descriptor[5]),
+                jd,
+                0.0,
+            )
+            assert handle.segment_cache_size() <= 1
+    finally:
+        handle.close()
+
+
 def test_native_type13_segment_evaluator_matches_python_small_body_oracle(tmp_path) -> None:
     path = tmp_path / "native_type13_eval.bsp"
     _synthetic_type13_kernel(path)
