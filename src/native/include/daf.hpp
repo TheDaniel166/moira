@@ -4,8 +4,11 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <fstream>
+#include <limits>
+#include <list>
 #include <memory>
 #include <mutex>
 #include <stdexcept>
@@ -488,7 +491,10 @@ public:
     };
 
     explicit NativeSpkKernelHandle(std::string kernel_path)
-        : path(std::move(kernel_path)), file(path, std::ios::binary), catalog() {
+        : path(std::move(kernel_path)),
+          file(path, std::ios::binary),
+          catalog(),
+          segment_cache_limit_(resolve_segment_cache_limit()) {
         if (!file.is_open()) {
             throw std::runtime_error("unable to open DAF file");
         }
@@ -525,7 +531,8 @@ public:
         }
         auto it = segment_cache.find(key);
         if (it != segment_cache.end()) {
-            return it->second;
+            segment_cache_lru.splice(segment_cache_lru.begin(), segment_cache_lru, it->second.lru_it);
+            return it->second.evaluator;
         }
         std::shared_ptr<SpkSegmentEvaluator> evaluator;
         if (data_type == 13) {
@@ -553,8 +560,14 @@ public:
                 std::move(payload.coefficients)
             );
         }
-        auto [ins_it, inserted] = segment_cache.emplace(key, evaluator);
-        return ins_it->second;
+        if (segment_cache_limit_ == 0) {
+            return evaluator;
+        }
+
+        segment_cache_lru.push_front(key);
+        segment_cache.emplace(key, SegmentCacheEntry{evaluator, segment_cache_lru.begin()});
+        trim_segment_cache();
+        return evaluator;
     }
 
     void segment_position(
@@ -611,10 +624,20 @@ public:
             return;
         }
         segment_cache.clear();
+        segment_cache_lru.clear();
         if (file.is_open()) {
             file.close();
         }
         closed_ = true;
+    }
+
+    size_t segment_cache_size() {
+        std::lock_guard<std::mutex> guard(cache_mutex);
+        return segment_cache.size();
+    }
+
+    size_t segment_cache_limit() const {
+        return segment_cache_limit_;
     }
 
     std::string path;
@@ -622,9 +645,43 @@ public:
     DafCatalog catalog;
 
 private:
+    struct SegmentCacheEntry {
+        std::shared_ptr<SpkSegmentEvaluator> evaluator;
+        std::list<SegmentCacheKey>::iterator lru_it;
+    };
+
+    static constexpr size_t kDefaultSegmentCacheLimit = 16;
+
+    static size_t resolve_segment_cache_limit() {
+        const char* raw = std::getenv("MOIRA_NATIVE_SEGMENT_CACHE_MAX");
+        if (raw == nullptr || raw[0] == '\0') {
+            return kDefaultSegmentCacheLimit;
+        }
+
+        char* end = nullptr;
+        unsigned long long parsed = std::strtoull(raw, &end, 10);
+        if (end == raw || *end != '\0') {
+            return kDefaultSegmentCacheLimit;
+        }
+        if (parsed > static_cast<unsigned long long>(std::numeric_limits<size_t>::max())) {
+            return std::numeric_limits<size_t>::max();
+        }
+        return static_cast<size_t>(parsed);
+    }
+
+    void trim_segment_cache() {
+        while (segment_cache.size() > segment_cache_limit_ && !segment_cache_lru.empty()) {
+            const SegmentCacheKey& evict_key = segment_cache_lru.back();
+            segment_cache.erase(evict_key);
+            segment_cache_lru.pop_back();
+        }
+    }
+
     std::mutex cache_mutex;
     bool closed_ = false;
-    std::unordered_map<SegmentCacheKey, std::shared_ptr<SpkSegmentEvaluator>, SegmentCacheKeyHash> segment_cache;
+    size_t segment_cache_limit_;
+    std::list<SegmentCacheKey> segment_cache_lru;
+    std::unordered_map<SegmentCacheKey, SegmentCacheEntry, SegmentCacheKeyHash> segment_cache;
 };
 
 } // namespace native
