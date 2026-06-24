@@ -8,19 +8,42 @@ from typing import Literal
 
 from pydantic import Field, field_validator, model_validator
 
+from moira.houses import HouseSystem
+
 from .common import _StrictModel
+from .lots import LotsComputationPolicyRequest
 
 
 ASTROCARTOGRAPHY_MAX_BODIES = 12
+ASTROCARTOGRAPHY_MAX_SUBJECTS = 48
 
 
 CoordinateSource = Literal[
     "direct_ra_dec",
     "chart_apparent_topocentric_ra_dec",
     "chart_geocentric_ecliptic_to_equatorial",
+    "chart_mixed_subject_ra_dec",
 ]
 ObserverSource = Literal["direct_none", "chart_request", "acg_override", "default_zero"]
-SubjectClass = Literal["caller_supplied", "planet", "asteroid", "comet"]
+SubjectClass = Literal[
+    "caller_supplied",
+    "planet",
+    "asteroid",
+    "comet",
+    "fixed_star",
+    "lot",
+    "ecliptic_point",
+    "ra_dec_point",
+]
+AstrocartographySubjectKind = Literal[
+    "planet",
+    "asteroid",
+    "comet",
+    "fixed_star",
+    "lot",
+    "ecliptic_point",
+    "ra_dec_point",
+]
 
 
 class AstrocartographyCoordinateRequest(_StrictModel):
@@ -170,6 +193,146 @@ class AstrocartographyChartSubplanetaryRequest(_AstrocartographyChartRequest):
     pass
 
 
+class AstrocartographySubjectRequest(_StrictModel):
+    kind: AstrocartographySubjectKind
+    name: str | None = None
+    label: str | None = None
+    longitude: float | None = None
+    latitude: float = 0.0
+    right_ascension: float | None = None
+    declination: float | None = None
+
+    @field_validator("name", "label")
+    @classmethod
+    def _strip_optional_label(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("subject name and label must be non-empty when supplied")
+        return stripped
+
+    @field_validator("longitude", "latitude", "right_ascension", "declination")
+    @classmethod
+    def _finite_optional_coordinate(cls, value: float | None) -> float | None:
+        if value is not None and not math.isfinite(value):
+            raise ValueError("subject coordinates must be finite")
+        return value
+
+    @field_validator("declination")
+    @classmethod
+    def _declination_range(cls, value: float | None) -> float | None:
+        if value is not None and not -90.0 <= value <= 90.0:
+            raise ValueError("declination must be in [-90, 90]")
+        return value
+
+    @model_validator(mode="after")
+    def _complete_subject(self) -> "AstrocartographySubjectRequest":
+        if self.kind in {"planet", "asteroid", "comet", "fixed_star", "lot"}:
+            if self.name is None:
+                raise ValueError(f"{self.kind} subjects require name")
+        elif self.kind == "ecliptic_point":
+            if self.longitude is None:
+                raise ValueError("ecliptic_point subjects require longitude")
+            if self.name is None and self.label is None:
+                raise ValueError("ecliptic_point subjects require label")
+        elif self.kind == "ra_dec_point":
+            if self.right_ascension is None or self.declination is None:
+                raise ValueError("ra_dec_point subjects require right_ascension and declination")
+            if self.name is None and self.label is None:
+                raise ValueError("ra_dec_point subjects require label")
+        return self
+
+
+class _AstrocartographySubjectChartRequest(_AstrocartographyBoundedRequest):
+    dt: datetime
+    subjects: list[AstrocartographySubjectRequest] = Field(
+        min_length=1,
+        max_length=ASTROCARTOGRAPHY_MAX_SUBJECTS,
+    )
+    observer_lat: float | None = Field(default=None, gt=-90.0, lt=90.0)
+    observer_lon: float | None = Field(default=None, ge=-180.0, le=180.0)
+    observer_elev_m: float = 0.0
+    house_system: str = HouseSystem.PLACIDUS
+    syzygy: float | None = None
+    prenatal_new_moon: float | None = None
+    prenatal_full_moon: float | None = None
+    lord_of_hour: float | None = None
+    policy: LotsComputationPolicyRequest | None = None
+
+    @field_validator("dt")
+    @classmethod
+    def _aware_datetime(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("dt must be timezone-aware")
+        return value
+
+    @field_validator("observer_lat", "observer_lon", "observer_elev_m")
+    @classmethod
+    def _finite_observer(cls, value: float | None) -> float | None:
+        if value is not None and not math.isfinite(value):
+            raise ValueError("observer values must be finite")
+        return value
+
+    @field_validator("syzygy", "prenatal_new_moon", "prenatal_full_moon", "lord_of_hour")
+    @classmethod
+    def _finite_optional_longitude(cls, value: float | None) -> float | None:
+        if value is not None and not math.isfinite(value):
+            raise ValueError("optional lot support longitudes must be finite")
+        return value
+
+    @field_validator("house_system")
+    @classmethod
+    def _non_empty_house_system(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("house_system must be non-empty")
+        return stripped
+
+    @model_validator(mode="after")
+    def _complete_subject_chart_request(self) -> "_AstrocartographySubjectChartRequest":
+        supplied = [
+            self.observer_lat is not None,
+            self.observer_lon is not None,
+        ]
+        if any(supplied) and not all(supplied):
+            raise ValueError("observer_lat and observer_lon must be supplied together")
+        if any(subject.kind == "lot" for subject in self.subjects) and not all(supplied):
+            raise ValueError("lot subjects require observer_lat and observer_lon")
+        labels = [_subject_label(subject) for subject in self.subjects]
+        if len(set(labels)) != len(labels):
+            raise ValueError("astrocartography subject labels must be unique")
+        return self
+
+
+class AstrocartographySubjectChartLinesRequest(_AstrocartographySubjectChartRequest):
+    acg_observer_lat: float | None = Field(default=None, gt=-90.0, lt=90.0)
+    acg_observer_lon: float | None = Field(default=None, ge=-180.0, le=180.0)
+    acg_observer_elev_m: float | None = 0.0
+    refraction: bool = False
+
+    @field_validator("acg_observer_lat", "acg_observer_lon", "acg_observer_elev_m")
+    @classmethod
+    def _finite_acg_observer(cls, value: float | None) -> float | None:
+        if value is not None and not math.isfinite(value):
+            raise ValueError("ACG observer values must be finite")
+        return value
+
+    @model_validator(mode="after")
+    def _complete_acg_observer_override(self) -> "AstrocartographySubjectChartLinesRequest":
+        supplied = [
+            self.acg_observer_lat is not None,
+            self.acg_observer_lon is not None,
+        ]
+        if any(supplied) and not all(supplied):
+            raise ValueError("acg observer override requires latitude and longitude")
+        return self
+
+
+class AstrocartographySubjectChartSubplanetaryRequest(_AstrocartographySubjectChartRequest):
+    pass
+
+
 class AstrocartographyGeoPointResponse(_StrictModel):
     latitude: float
     longitude: float
@@ -242,8 +405,13 @@ def _validate_body_map(value: dict[str, object]) -> None:
         raise ValueError("positions keys must be non-empty")
 
 
+def _subject_label(subject: AstrocartographySubjectRequest) -> str:
+    return subject.label or subject.name or ""
+
+
 __all__ = [
     "ASTROCARTOGRAPHY_MAX_BODIES",
+    "ASTROCARTOGRAPHY_MAX_SUBJECTS",
     "AstrocartographyChartLinesRequest",
     "AstrocartographyChartSubplanetaryRequest",
     "AstrocartographyCoordinateRequest",
@@ -254,7 +422,11 @@ __all__ = [
     "AstrocartographyLinesResponse",
     "AstrocartographyObserverResponse",
     "AstrocartographyProvenanceResponse",
+    "AstrocartographySubjectChartLinesRequest",
+    "AstrocartographySubjectChartSubplanetaryRequest",
+    "AstrocartographySubjectKind",
     "AstrocartographySubjectProvenanceResponse",
+    "AstrocartographySubjectRequest",
     "AstrocartographySubplanetaryPointResponse",
     "AstrocartographySubplanetaryResponse",
     "CoordinateSource",

@@ -16,6 +16,7 @@ from moira.julian import apparent_sidereal_time, ut_to_tt
 from moira.obliquity import nutation, true_obliquity
 from moira.planets import planet_at, sky_position_at
 from moira.planets import _resolve_small_body_name
+from moira.stars import star_at
 
 from ..models.astrocartography import (
     ASTROCARTOGRAPHY_MAX_BODIES,
@@ -23,12 +24,17 @@ from ..models.astrocartography import (
     AstrocartographyChartSubplanetaryRequest,
     AstrocartographyDirectLinesRequest,
     AstrocartographyDirectSubplanetaryRequest,
+    AstrocartographySubjectChartLinesRequest,
+    AstrocartographySubjectChartSubplanetaryRequest,
+    AstrocartographySubjectRequest,
     CoordinateSource,
     ObserverSource,
     SubjectClass,
 )
 from ..models.chart import ChartRequest
+from ..models.lots import LotsChartRequest
 from ._shared import build_chart_context, require_supported_chart_bodies
+from .lots import compute_lots_chart
 
 
 DIRECT_LINES_STAGE_SEQUENCE = (
@@ -60,6 +66,26 @@ CHART_SUBPLANETARY_STAGE_SEQUENCE = (
     "apparent_sidereal_time_derivation",
     "geocentric_ecliptic_position_derivation",
     "ecliptic_to_equatorial_conversion",
+    "subplanetary_point_computation",
+    "response_materialization",
+)
+SUBJECT_LINES_STAGE_SEQUENCE = (
+    "datetime_validation",
+    "chart_context_derivation",
+    "observer_policy_resolution",
+    "apparent_sidereal_time_derivation",
+    "mixed_subject_resolution",
+    "subject_ra_dec_materialization",
+    "sampling_policy_validation",
+    "acg_line_computation",
+    "response_materialization",
+)
+SUBJECT_SUBPLANETARY_STAGE_SEQUENCE = (
+    "datetime_validation",
+    "chart_context_derivation",
+    "apparent_sidereal_time_derivation",
+    "mixed_subject_resolution",
+    "subject_ra_dec_materialization",
     "subplanetary_point_computation",
     "response_materialization",
 )
@@ -112,6 +138,14 @@ class AstrocartographyLinesResult:
 class AstrocartographySubplanetaryResult:
     points: list[SubPlanetaryPoint]
     provenance: AstrocartographyProvenance
+
+
+@dataclass(frozen=True, slots=True)
+class ResolvedAstrocartographySubject:
+    label: str
+    right_ascension: float
+    declination: float
+    provenance: AstrocartographySubjectProvenance
 
 
 def compute_astrocartography_direct_lines(
@@ -270,6 +304,94 @@ def compute_astrocartography_chart_subplanetary(
     )
 
 
+def compute_astrocartography_subject_chart_lines(
+    engine: Moira,
+    request: AstrocartographySubjectChartLinesRequest,
+) -> AstrocartographyLinesResult:
+    chart = _build_subject_chart(engine, request)
+    observer = _resolve_line_observer(request, chart)
+    dpsi, obliquity, gmst_deg, jd_tt = _sidereal_context(chart.jd_ut)
+    resolved = _resolve_subjects(
+        engine=engine,
+        request=request,
+        chart=chart,
+        observer=observer,
+        obliquity=obliquity,
+        jd_tt=jd_tt,
+        refraction=request.refraction,
+        line_mode=True,
+    )
+    subject_ra_dec = _resolved_ra_dec_map(resolved)
+    lines = acg_lines(
+        subject_ra_dec,
+        gmst_deg,
+        lat_step=request.lat_step,
+        jd_ut=chart.jd_ut,
+        refraction=request.refraction,
+    )
+    return AstrocartographyLinesResult(
+        lines=lines,
+        provenance=_subject_chart_provenance(
+            request=request,
+            chart=chart,
+            resolved=resolved,
+            observer=observer,
+            lat_step=request.lat_step,
+            refraction=request.refraction,
+            gmst_deg=gmst_deg,
+            jd_tt=jd_tt,
+            dpsi=dpsi,
+            obliquity=obliquity,
+            stage_sequence=SUBJECT_LINES_STAGE_SEQUENCE,
+        ),
+    )
+
+
+def compute_astrocartography_subject_chart_subplanetary(
+    engine: Moira,
+    request: AstrocartographySubjectChartSubplanetaryRequest,
+) -> AstrocartographySubplanetaryResult:
+    chart = _build_subject_chart(engine, request)
+    dpsi, obliquity, gmst_deg, jd_tt = _sidereal_context(chart.jd_ut)
+    resolved = _resolve_subjects(
+        engine=engine,
+        request=request,
+        chart=chart,
+        observer=AstrocartographyObserverContext(
+            latitude=None,
+            longitude=None,
+            elevation_m=None,
+            source="direct_none",
+        ),
+        obliquity=obliquity,
+        jd_tt=jd_tt,
+        refraction=False,
+        line_mode=False,
+    )
+    points = subplanetary_points(_resolved_ra_dec_map(resolved), gmst_deg)
+    return AstrocartographySubplanetaryResult(
+        points=points,
+        provenance=_subject_chart_provenance(
+            request=request,
+            chart=chart,
+            resolved=resolved,
+            observer=AstrocartographyObserverContext(
+                latitude=None,
+                longitude=None,
+                elevation_m=None,
+                source="direct_none",
+            ),
+            lat_step=None,
+            refraction=None,
+            gmst_deg=gmst_deg,
+            jd_tt=jd_tt,
+            dpsi=dpsi,
+            obliquity=obliquity,
+            stage_sequence=SUBJECT_SUBPLANETARY_STAGE_SEQUENCE,
+        ),
+    )
+
+
 def _build_chart(engine: Moira, request):
     require_supported_chart_bodies(request.bodies)
     return build_chart_context(
@@ -283,6 +405,31 @@ def _build_chart(engine: Moira, request):
             observer_elev_m=request.observer_elev_m,
         ),
     )
+
+
+def _build_subject_chart(engine: Moira, request):
+    bodies = _subject_chart_bodies(request.subjects)
+    require_supported_chart_bodies(bodies)
+    return build_chart_context(
+        engine,
+        ChartRequest(
+            dt=request.dt,
+            bodies=bodies,
+            include_nodes=False,
+            observer_lat=request.observer_lat,
+            observer_lon=request.observer_lon,
+            observer_elev_m=request.observer_elev_m,
+        ),
+    )
+
+
+def _subject_chart_bodies(subjects: list[AstrocartographySubjectRequest]) -> list[str]:
+    bodies = [
+        subject.name
+        for subject in subjects
+        if subject.kind in {"planet", "asteroid"} and subject.name is not None
+    ]
+    return bodies or [Body.SUN]
 
 
 def _selected_bodies(
@@ -358,6 +505,268 @@ def _sky_ra_dec(
     return sky.right_ascension, sky.declination
 
 
+def _resolve_subjects(
+    *,
+    engine: Moira,
+    request,
+    chart,
+    observer: AstrocartographyObserverContext,
+    obliquity: float,
+    jd_tt: float,
+    refraction: bool,
+    line_mode: bool,
+) -> tuple[ResolvedAstrocartographySubject, ...]:
+    reader = getattr(engine, "_reader", None)
+    lots_by_name = _lot_map(engine, request) if _has_lot_subjects(request.subjects) else {}
+    resolved = tuple(
+        _resolve_subject(
+            subject,
+            chart=chart,
+            observer=observer,
+            reader=reader,
+            obliquity=obliquity,
+            jd_tt=jd_tt,
+            refraction=refraction,
+            line_mode=line_mode,
+            lots_by_name=lots_by_name,
+        )
+        for subject in request.subjects
+    )
+    labels = [subject.label for subject in resolved]
+    if len(set(labels)) != len(labels):
+        raise ValueError("resolved astrocartography subject labels must be unique")
+    return resolved
+
+
+def _resolve_subject(
+    subject: AstrocartographySubjectRequest,
+    *,
+    chart,
+    observer: AstrocartographyObserverContext,
+    reader,
+    obliquity: float,
+    jd_tt: float,
+    refraction: bool,
+    line_mode: bool,
+    lots_by_name: dict[str, object],
+) -> ResolvedAstrocartographySubject:
+    if subject.kind in {"planet", "asteroid", "comet"}:
+        return _resolve_physical_subject(
+            subject,
+            chart=chart,
+            observer=observer,
+            reader=reader,
+            obliquity=obliquity,
+            refraction=refraction,
+            line_mode=line_mode,
+        )
+    if subject.kind == "fixed_star":
+        return _resolve_fixed_star_subject(subject, obliquity=obliquity, jd_tt=jd_tt)
+    if subject.kind == "lot":
+        return _resolve_lot_subject(subject, lots_by_name=lots_by_name, obliquity=obliquity)
+    if subject.kind == "ecliptic_point":
+        return _resolve_ecliptic_point_subject(subject, obliquity=obliquity)
+    if subject.kind == "ra_dec_point":
+        return _resolve_ra_dec_point_subject(subject)
+    raise ValueError(f"unsupported astrocartography subject kind {subject.kind!r}")
+
+
+def _resolve_physical_subject(
+    subject: AstrocartographySubjectRequest,
+    *,
+    chart,
+    observer: AstrocartographyObserverContext,
+    reader,
+    obliquity: float,
+    refraction: bool,
+    line_mode: bool,
+) -> ResolvedAstrocartographySubject:
+    name = subject.name or ""
+    family, canonical_name, naif_id = _physical_subject_identity(subject)
+    label = _subject_label(subject, fallback=canonical_name)
+    if line_mode and family in {"planet", "asteroid"}:
+        right_ascension, declination = _sky_ra_dec(
+            body=name,
+            jd_ut=chart.jd_ut,
+            observer=observer,
+            reader=reader,
+            refraction=refraction,
+        )
+        position_source = f"moira.planets.sky_position_at:{family}"
+    else:
+        position = planet_at(name, chart.jd_ut, reader=reader)
+        right_ascension, declination = ecliptic_to_equatorial(
+            position.longitude,
+            position.latitude,
+            obliquity,
+        )
+        position_source = f"moira.planets.planet_at:{family}:ecliptic_to_equatorial"
+    return ResolvedAstrocartographySubject(
+        label=label,
+        right_ascension=right_ascension,
+        declination=declination,
+        provenance=AstrocartographySubjectProvenance(
+            requested_label=_subject_label(subject, fallback=name),
+            returned_label=label,
+            subject_class=family,
+            canonical_name=canonical_name,
+            naif_id=naif_id,
+            position_source=position_source,
+        ),
+    )
+
+
+def _physical_subject_identity(subject: AstrocartographySubjectRequest) -> tuple[SubjectClass, str, int | None]:
+    name = subject.name or ""
+    small_body = _resolve_small_body_name(name)
+    if subject.kind == "planet":
+        if name not in Body.ALL_PLANETS:
+            raise ValueError(f"planet subject {name!r} is not an admitted planet")
+        return "planet", name, None
+    if small_body is None:
+        raise ValueError(f"{subject.kind} subject {name!r} is not an admitted small body")
+    family, canonical_name = small_body
+    if family != subject.kind:
+        raise ValueError(f"{name!r} resolved as {family}, not {subject.kind}")
+    return family, canonical_name, _small_body_naif_id(family, canonical_name)
+
+
+def _resolve_fixed_star_subject(
+    subject: AstrocartographySubjectRequest,
+    *,
+    obliquity: float,
+    jd_tt: float,
+) -> ResolvedAstrocartographySubject:
+    star = star_at(subject.name or "", jd_tt)
+    label = _subject_label(subject, fallback=star.name)
+    right_ascension, declination = ecliptic_to_equatorial(
+        star.longitude,
+        star.latitude,
+        obliquity,
+    )
+    return ResolvedAstrocartographySubject(
+        label=label,
+        right_ascension=right_ascension,
+        declination=declination,
+        provenance=AstrocartographySubjectProvenance(
+            requested_label=_subject_label(subject, fallback=subject.name or ""),
+            returned_label=label,
+            subject_class="fixed_star",
+            canonical_name=star.name,
+            naif_id=None,
+            position_source="moira.stars.star_at:ecliptic_to_equatorial",
+        ),
+    )
+
+
+def _resolve_lot_subject(
+    subject: AstrocartographySubjectRequest,
+    *,
+    lots_by_name: dict[str, object],
+    obliquity: float,
+) -> ResolvedAstrocartographySubject:
+    lookup = (subject.name or "").casefold()
+    lot = lots_by_name.get(lookup)
+    if lot is None:
+        raise ValueError(f"lot subject {subject.name!r} was not computed by the lots engine")
+    label = _subject_label(subject, fallback=lot.name)
+    right_ascension, declination = ecliptic_to_equatorial(
+        lot.longitude,
+        0.0,
+        obliquity,
+    )
+    return ResolvedAstrocartographySubject(
+        label=label,
+        right_ascension=right_ascension,
+        declination=declination,
+        provenance=AstrocartographySubjectProvenance(
+            requested_label=_subject_label(subject, fallback=subject.name or ""),
+            returned_label=label,
+            subject_class="lot",
+            canonical_name=lot.name,
+            naif_id=None,
+            position_source="moira.lots.calculate_parts:ecliptic_point_to_equatorial",
+        ),
+    )
+
+
+def _resolve_ecliptic_point_subject(
+    subject: AstrocartographySubjectRequest,
+    *,
+    obliquity: float,
+) -> ResolvedAstrocartographySubject:
+    label = _subject_label(subject, fallback="Ecliptic Point")
+    right_ascension, declination = ecliptic_to_equatorial(
+        subject.longitude or 0.0,
+        subject.latitude,
+        obliquity,
+    )
+    return ResolvedAstrocartographySubject(
+        label=label,
+        right_ascension=right_ascension,
+        declination=declination,
+        provenance=AstrocartographySubjectProvenance(
+            requested_label=label,
+            returned_label=label,
+            subject_class="ecliptic_point",
+            canonical_name=None,
+            naif_id=None,
+            position_source="caller_supplied_ecliptic_point:ecliptic_to_equatorial",
+        ),
+    )
+
+
+def _resolve_ra_dec_point_subject(
+    subject: AstrocartographySubjectRequest,
+) -> ResolvedAstrocartographySubject:
+    label = _subject_label(subject, fallback="RA/Dec Point")
+    return ResolvedAstrocartographySubject(
+        label=label,
+        right_ascension=subject.right_ascension or 0.0,
+        declination=subject.declination or 0.0,
+        provenance=AstrocartographySubjectProvenance(
+            requested_label=label,
+            returned_label=label,
+            subject_class="ra_dec_point",
+            canonical_name=None,
+            naif_id=None,
+            position_source="caller_supplied_direct_ra_dec",
+        ),
+    )
+
+
+def _has_lot_subjects(subjects: list[AstrocartographySubjectRequest]) -> bool:
+    return any(subject.kind == "lot" for subject in subjects)
+
+
+def _lot_map(engine: Moira, request) -> dict[str, object]:
+    parts = compute_lots_chart(
+        engine,
+        LotsChartRequest(
+            dt=request.dt,
+            observer_lat=request.observer_lat,
+            observer_lon=request.observer_lon,
+            observer_elev_m=request.observer_elev_m,
+            house_system=request.house_system,
+            syzygy=request.syzygy,
+            prenatal_new_moon=request.prenatal_new_moon,
+            prenatal_full_moon=request.prenatal_full_moon,
+            lord_of_hour=request.lord_of_hour,
+            policy=request.policy,
+        ),
+    )
+    return {part.name.casefold(): part for part in parts}
+
+
+def _resolved_ra_dec_map(
+    resolved: tuple[ResolvedAstrocartographySubject, ...],
+) -> dict[str, tuple[float, float]]:
+    return {
+        subject.label: (subject.right_ascension, subject.declination)
+        for subject in resolved
+    }
+
+
 def _chart_provenance(
     *,
     request,
@@ -386,6 +795,40 @@ def _chart_provenance(
         observer=observer,
         coordinate_source=coordinate_source,
         subjects=_chart_subject_provenance(bodies, coordinate_source),
+        lat_step=lat_step,
+        refraction=refraction,
+        stage_sequence=stage_sequence,
+    )
+
+
+def _subject_chart_provenance(
+    *,
+    request,
+    chart,
+    resolved: tuple[ResolvedAstrocartographySubject, ...],
+    observer: AstrocartographyObserverContext,
+    lat_step: float | None,
+    refraction: bool | None,
+    gmst_deg: float,
+    jd_tt: float,
+    dpsi: float,
+    obliquity: float,
+    stage_sequence: tuple[str, ...],
+) -> AstrocartographyProvenance:
+    labels = tuple(subject.label for subject in resolved)
+    return AstrocartographyProvenance(
+        requested_datetime=request.dt.isoformat(),
+        normalized_datetime_utc=chart.datetime_utc.isoformat(),
+        jd_ut=chart.jd_ut,
+        jd_tt=jd_tt,
+        gmst_deg=gmst_deg,
+        obliquity_deg=obliquity,
+        nutation_longitude_deg=dpsi,
+        requested_bodies=tuple(_subject_label(subject, fallback=subject.name or "") for subject in request.subjects),
+        returned_bodies=labels,
+        observer=observer,
+        coordinate_source="chart_mixed_subject_ra_dec",
+        subjects=tuple(subject.provenance for subject in resolved),
         lat_step=lat_step,
         refraction=refraction,
         stage_sequence=stage_sequence,
@@ -480,14 +923,25 @@ def _chart_position_source(family: str, coordinate_source: CoordinateSource) -> 
     return str(coordinate_source)
 
 
+def _subject_label(
+    subject: AstrocartographySubjectRequest,
+    *,
+    fallback: str,
+) -> str:
+    return subject.label or subject.name or fallback
+
+
 __all__ = [
     "AstrocartographyLinesResult",
     "AstrocartographyObserverContext",
     "AstrocartographyProvenance",
+    "ResolvedAstrocartographySubject",
     "AstrocartographySubjectProvenance",
     "AstrocartographySubplanetaryResult",
     "compute_astrocartography_chart_lines",
     "compute_astrocartography_chart_subplanetary",
     "compute_astrocartography_direct_lines",
     "compute_astrocartography_direct_subplanetary",
+    "compute_astrocartography_subject_chart_lines",
+    "compute_astrocartography_subject_chart_subplanetary",
 ]

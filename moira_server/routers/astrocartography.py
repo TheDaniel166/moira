@@ -13,6 +13,8 @@ from ..models.astrocartography import (
     AstrocartographyDirectLinesRequest,
     AstrocartographyDirectSubplanetaryRequest,
     AstrocartographyLinesResponse,
+    AstrocartographySubjectChartLinesRequest,
+    AstrocartographySubjectChartSubplanetaryRequest,
     AstrocartographySubplanetaryResponse,
 )
 from ..serializers.astrocartography import (
@@ -24,6 +26,8 @@ from ..services.astrocartography import (
     compute_astrocartography_chart_subplanetary,
     compute_astrocartography_direct_lines,
     compute_astrocartography_direct_subplanetary,
+    compute_astrocartography_subject_chart_lines,
+    compute_astrocartography_subject_chart_subplanetary,
 )
 
 
@@ -68,4 +72,30 @@ def astrocartography_chart_subplanetary_route(
 ) -> AstrocartographySubplanetaryResponse:
     return serialize_astrocartography_subplanetary(
         compute_astrocartography_chart_subplanetary(engine, request)
+    )
+
+
+@router.post(
+    "/chart/subjects/lines",
+    response_model=AstrocartographyLinesResponse,
+)
+def astrocartography_subject_chart_lines_route(
+    request: AstrocartographySubjectChartLinesRequest,
+    engine: Moira = Depends(get_engine),
+) -> AstrocartographyLinesResponse:
+    return serialize_astrocartography_lines(
+        compute_astrocartography_subject_chart_lines(engine, request)
+    )
+
+
+@router.post(
+    "/chart/subjects/subplanetary",
+    response_model=AstrocartographySubplanetaryResponse,
+)
+def astrocartography_subject_chart_subplanetary_route(
+    request: AstrocartographySubjectChartSubplanetaryRequest,
+    engine: Moira = Depends(get_engine),
+) -> AstrocartographySubplanetaryResponse:
+    return serialize_astrocartography_subplanetary(
+        compute_astrocartography_subject_chart_subplanetary(engine, request)
     )

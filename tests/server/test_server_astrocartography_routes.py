@@ -11,6 +11,8 @@ from moira_server.config import ServerConfig
 from moira_server.models.astrocartography import (
     AstrocartographyChartLinesRequest,
     AstrocartographyChartSubplanetaryRequest,
+    AstrocartographySubjectChartLinesRequest,
+    AstrocartographySubjectChartSubplanetaryRequest,
 )
 from moira_server.serializers.astrocartography import (
     serialize_astrocartography_lines,
@@ -19,6 +21,8 @@ from moira_server.serializers.astrocartography import (
 from moira_server.services.astrocartography import (
     compute_astrocartography_chart_lines,
     compute_astrocartography_chart_subplanetary,
+    compute_astrocartography_subject_chart_lines,
+    compute_astrocartography_subject_chart_subplanetary,
 )
 
 
@@ -354,6 +358,120 @@ def test_astrocartography_chart_subplanetary_preserves_selected_minor_body_prove
     assert subject["position_source"] == f"moira.planets.planet_at:{subject_class}"
 
 
+@pytest.mark.requires_ephemeris
+def test_astrocartography_subject_chart_lines_accepts_mixed_subjects(
+    client_with_engine: TestClient,
+    moira_engine,
+) -> None:
+    payload = {
+        "dt": _DT_ISO,
+        "observer_lat": 40.7128,
+        "observer_lon": -74.0060,
+        "lat_step": 10.0,
+        "subjects": [
+            {"kind": "planet", "name": "Sun"},
+            {"kind": "asteroid", "name": "Ceres"},
+            {"kind": "comet", "name": "Halley"},
+            {"kind": "fixed_star", "name": "Sirius"},
+            {"kind": "lot", "name": "Fortune"},
+            {
+                "kind": "ecliptic_point",
+                "label": "Custom Ecliptic",
+                "longitude": 123.45,
+                "latitude": 0.0,
+            },
+            {
+                "kind": "ra_dec_point",
+                "label": "Manual RA/Dec",
+                "right_ascension": 210.0,
+                "declination": -12.0,
+            },
+        ],
+    }
+    expected = serialize_astrocartography_lines(
+        compute_astrocartography_subject_chart_lines(
+            moira_engine,
+            AstrocartographySubjectChartLinesRequest.model_validate(payload),
+        )
+    ).model_dump(mode="json")
+
+    response = client_with_engine.post(
+        "/v1/astrocartography/chart/subjects/lines",
+        json=payload,
+    )
+
+    assert response.status_code == 200
+    assert response.json() == expected
+    body_json = response.json()
+    assert len(body_json["lines"]) == 28
+    provenance = body_json["provenance"]
+    assert provenance["coordinate_source"] == "chart_mixed_subject_ra_dec"
+    assert provenance["observer"]["source"] == "chart_request"
+    assert provenance["returned_bodies"] == [
+        "Sun",
+        "Ceres",
+        "Halley",
+        "Sirius",
+        "Fortune",
+        "Custom Ecliptic",
+        "Manual RA/Dec",
+    ]
+    subjects = _subject_map(provenance)
+    assert subjects["Sun"]["subject_class"] == "planet"
+    assert subjects["Sun"]["position_source"] == "moira.planets.sky_position_at:planet"
+    assert subjects["Ceres"]["subject_class"] == "asteroid"
+    assert subjects["Ceres"]["naif_id"] == 2000001
+    assert subjects["Halley"]["subject_class"] == "comet"
+    assert subjects["Halley"]["naif_id"] == 1000001
+    assert subjects["Halley"]["position_source"] == "moira.planets.planet_at:comet:ecliptic_to_equatorial"
+    assert subjects["Sirius"]["subject_class"] == "fixed_star"
+    assert subjects["Sirius"]["position_source"] == "moira.stars.star_at:ecliptic_to_equatorial"
+    assert subjects["Fortune"]["subject_class"] == "lot"
+    assert subjects["Fortune"]["position_source"] == "moira.lots.calculate_parts:ecliptic_point_to_equatorial"
+    assert subjects["Custom Ecliptic"]["subject_class"] == "ecliptic_point"
+    assert subjects["Manual RA/Dec"]["subject_class"] == "ra_dec_point"
+
+
+@pytest.mark.requires_ephemeris
+def test_astrocartography_subject_chart_subplanetary_accepts_mixed_subjects(
+    client_with_engine: TestClient,
+    moira_engine,
+) -> None:
+    payload = {
+        "dt": _DT_ISO,
+        "observer_lat": 40.7128,
+        "observer_lon": -74.0060,
+        "subjects": [
+            {"kind": "planet", "name": "Sun"},
+            {"kind": "fixed_star", "name": "Sirius"},
+            {"kind": "lot", "name": "Spirit"},
+        ],
+    }
+    expected = serialize_astrocartography_subplanetary(
+        compute_astrocartography_subject_chart_subplanetary(
+            moira_engine,
+            AstrocartographySubjectChartSubplanetaryRequest.model_validate(payload),
+        )
+    ).model_dump(mode="json")
+
+    response = client_with_engine.post(
+        "/v1/astrocartography/chart/subjects/subplanetary",
+        json=payload,
+    )
+
+    assert response.status_code == 200
+    assert response.json() == expected
+    body_json = response.json()
+    assert len(body_json["points"]) == 6
+    provenance = body_json["provenance"]
+    assert provenance["coordinate_source"] == "chart_mixed_subject_ra_dec"
+    assert provenance["observer"]["source"] == "direct_none"
+    subjects = _subject_map(provenance)
+    assert subjects["Sun"]["position_source"] == "moira.planets.planet_at:planet:ecliptic_to_equatorial"
+    assert subjects["Sirius"]["subject_class"] == "fixed_star"
+    assert subjects["Spirit"]["subject_class"] == "lot"
+
+
 def test_astrocartography_routes_are_registered(client_with_engine: TestClient) -> None:
     paths = {
         route.path
@@ -366,6 +484,8 @@ def test_astrocartography_routes_are_registered(client_with_engine: TestClient) 
         "/v1/astrocartography/chart/lines",
         "/v1/astrocartography/subplanetary",
         "/v1/astrocartography/chart/subplanetary",
+        "/v1/astrocartography/chart/subjects/lines",
+        "/v1/astrocartography/chart/subjects/subplanetary",
     }
 
 
@@ -537,3 +657,59 @@ def test_astrocartography_chart_route_rejects_too_many_bodies(
     )
 
     _assert_validation_envelope(response, message_fragment="at most 12")
+
+
+def test_astrocartography_subject_chart_route_rejects_lot_without_observer(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/astrocartography/chart/subjects/lines",
+        json={
+            "dt": _DT_ISO,
+            "subjects": [{"kind": "lot", "name": "Fortune"}],
+        },
+    )
+
+    _assert_validation_envelope(
+        response,
+        message_fragment="lot subjects require observer_lat and observer_lon",
+    )
+
+
+def test_astrocartography_subject_chart_route_rejects_duplicate_labels(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/astrocartography/chart/subjects/lines",
+        json={
+            "dt": _DT_ISO,
+            "subjects": [
+                {"kind": "planet", "name": "Sun", "label": "Duplicate"},
+                {"kind": "ra_dec_point", "label": "Duplicate", "right_ascension": 1.0, "declination": 2.0},
+            ],
+        },
+    )
+
+    _assert_validation_envelope(
+        response,
+        message_fragment="astrocartography subject labels must be unique",
+    )
+
+
+def test_astrocartography_subject_chart_route_rejects_incomplete_ra_dec_subject(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/astrocartography/chart/subjects/lines",
+        json={
+            "dt": _DT_ISO,
+            "subjects": [
+                {"kind": "ra_dec_point", "label": "Manual", "right_ascension": 1.0},
+            ],
+        },
+    )
+
+    _assert_validation_envelope(
+        response,
+        message_fragment="ra_dec_point subjects require right_ascension and declination",
+    )

@@ -128,7 +128,7 @@ Not yet broadly exposed as REST families:
 | ashtakavarga | 8 |
 | alternate-dashas | 9 |
 | antiscia | 3 |
-| astrocartography | 4 |
+| astrocartography | 6 |
 | asteroids | 9 |
 | batch | 7 |
 | chart | 2 |
@@ -553,6 +553,8 @@ or async search jobs.
 | POST | `/v1/astrocartography/chart/lines` | `astrocartography_chart_lines_route` |
 | POST | `/v1/astrocartography/subplanetary` | `astrocartography_subplanetary_route` |
 | POST | `/v1/astrocartography/chart/subplanetary` | `astrocartography_chart_subplanetary_route` |
+| POST | `/v1/astrocartography/chart/subjects/lines` | `astrocartography_subject_chart_lines_route` |
+| POST | `/v1/astrocartography/chart/subjects/subplanetary` | `astrocartography_subject_chart_subplanetary_route` |
 
 Body-class truth:
 
@@ -566,10 +568,15 @@ Body-class truth:
 - Chart-backed Astrocartography subplanetary routes admit selected chart
   planets plus selected asteroids and comets through the geocentric
   ecliptic-to-equatorial path.
-- Chart-backed fixed-star Astrocartography is not admitted. Fixed stars are
-  supported only through direct caller-owned RA/Dec in the current ACG surface.
+- Mixed-subject chart routes accept typed `subjects` entries for admitted
+  planets, admitted asteroids/comets, fixed stars from the sovereign star
+  registry, lots computed through the Lots engine, caller-supplied ecliptic
+  points, and caller-supplied RA/Dec points. Every subject is resolved into
+  RA/Dec before ACG geometry is computed.
+- Lot subjects require explicit observer latitude/longitude because the Lots
+  engine derives ASC, houses, and day/night truth from the chart site.
 - Catalog-wide fixed-star, asteroid, comet, and small-body sweeps remain
-  deferred.
+  deferred; mixed-subject routes are explicit-selection surfaces.
 - Astrocartography provenance includes a `subjects` list carrying subject
   class, canonical name, NAIF ID when applicable, and position source.
 
@@ -793,8 +800,9 @@ Julian Day, lookup/source/merge state, observer mode, relation basis, condition
 state, and transport stage sequence.
 
 This admission does not expose heliacal event search, star condition networks,
-catalog-wide heavy sweeps, rendered star maps, or fixed-star astrocartography.
-Those remain separate expansion candidates.
+catalog-wide heavy sweeps, or rendered star maps. Explicit selected fixed-star
+Astrocartography is admitted under `/v1/astrocartography/chart/subjects/*`;
+catalog-wide fixed-star Astrocartography sweeps remain deferred.
 
 ### Variable-Star REST Admission Boundary
 
@@ -861,8 +869,10 @@ reader presence alone is not treated as asteroid coverage.
 
 This admission does not expose asteroid families, centaur/TNO/main-belt subset
 routes, catalog-wide asteroid sweeps, topocentric positions, equatorial
-positions, asteroid photometry, rendered maps, asteroid astrocartography, kernel
-manifest management, or full small-body migration proof.
+positions, asteroid photometry, rendered maps, kernel manifest management, or
+full small-body migration proof. Explicit selected-asteroid Astrocartography is
+admitted under `/v1/astrocartography/chart/subjects/*`; catalog-wide asteroid
+Astrocartography sweeps remain deferred.
 
 ### Asteroid Subset And Family REST Admission Boundary
 
@@ -921,8 +931,10 @@ reader presence alone is not treated as comet coverage.
 
 This admission does not expose non-periodic comet expansion, comet family or
 dynamical-class routes, catalog-wide comet sweeps, topocentric positions,
-equatorial positions, comet photometry, rendered maps, comet astrocartography,
-kernel manifest management, or full small-body migration proof.
+equatorial positions, comet photometry, rendered maps, kernel manifest
+management, or full small-body migration proof. Explicit selected-comet
+Astrocartography is admitted under `/v1/astrocartography/chart/subjects/*`;
+catalog-wide comet Astrocartography sweeps remain deferred.
 
 ### Manazil REST Admission Boundary
 
