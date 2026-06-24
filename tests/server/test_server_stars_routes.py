@@ -324,6 +324,19 @@ def test_variable_star_catalog_profile_route_matches_engine_aggregate(
     assert provenance["stage_sequence"][0] == "datetime_validation"
 
 
+def test_variable_star_list_route_exposes_catalog_names(
+    client_with_engine: TestClient,
+) -> None:
+    direct = list_variable_stars()[:5]
+
+    response = client_with_engine.get("/v1/stars/variable/list?limit=5")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["stars"] == direct
+    assert body["total"] == len(direct)
+
+
 def test_variable_star_pair_route_matches_engine_pair(
     client_with_engine: TestClient,
 ) -> None:

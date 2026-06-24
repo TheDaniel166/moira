@@ -189,13 +189,12 @@ def test_primary_directions_profile_route_matches_engine(client_with_engine: Tes
 
     assert resp.status_code == 200
     body = resp.json()
-    # Very relaxed for first-pass (significant construction differences expected)
-    assert body["aggregate"]["total_arcs"] >= 0
-    assert len(body["aggregate"]["profiles"]) >= 0
-    # At minimum, the structure is correct and non-crashing
+    aggregate = body["aggregate"]
+    assert aggregate["total_arcs"] > 0
+    assert aggregate["direct_count"] + aggregate["converse_count"] == aggregate["total_arcs"]
+    assert isinstance(aggregate["profiles"], list)
     if body["aggregate"]["profiles"]:
         assert "significator" in body["aggregate"]["profiles"][0]
-    # No exact count required in first-pass due to construction differences
 
 
 @pytest.mark.requires_ephemeris
@@ -641,9 +640,7 @@ def test_primary_directions_profile_handles_very_small_max_arc_gracefully(client
     payload = {**_PD_SEARCH_PAYLOAD, "max_arc": 0.001}
     resp = client_with_engine.post("/v1/primary-directions/profile", json=payload)
 
-    # Current first-pass behavior: may return 422 for empty heavy evaluation.
-    # We accept either during this hardening phase.
-    assert resp.status_code in (200, 422)
+    assert resp.status_code == 200
     body = resp.json()["aggregate"]
     assert body["total_arcs"] == 0
     assert body["profiles"] == []
@@ -654,11 +651,10 @@ def test_primary_directions_network_handles_empty_gracefully(client_with_engine:
     payload = {**_PD_SEARCH_PAYLOAD, "max_arc": 0.001}
     resp = client_with_engine.post("/v1/primary-directions/network", json=payload)
 
-    assert resp.status_code in (200, 422)
-    if resp.status_code == 200:
-        net = resp.json()["network"]
-        assert net["nodes"] == []
-        assert net["edges"] == []
+    assert resp.status_code == 200
+    net = resp.json()["network"]
+    assert net["nodes"] == []
+    assert net["edges"] == []
 
 
 @pytest.mark.requires_ephemeris
@@ -755,7 +751,46 @@ def test_primary_directions_profile_with_condition_and_relations_together(client
 
     assert "profiles" in body
     for prof in body["profiles"]:
-        assert "relation_profiles" in prof or True
+        assert "relation_profiles" in prof
+        assert isinstance(prof["relation_profiles"], list)
+
+
+def test_primary_directions_profile_does_not_mask_evaluation_failure(
+    client_with_engine: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import moira_server.routers.primary_directions as primary_directions_router
+
+    monkeypatch.setattr(primary_directions_router, "compute_arcs_service", lambda engine, request: [object()])
+
+    def _raise_profile_failure(engine, request):
+        raise ValueError("profile evaluation failure witness")
+
+    monkeypatch.setattr(primary_directions_router, "compute_profile_service", _raise_profile_failure)
+
+    resp = client_with_engine.post("/v1/primary-directions/profile", json=_PD_SEARCH_PAYLOAD)
+
+    assert resp.status_code == 422
+    assert "profile evaluation failure witness" in resp.json()["message"]
+
+
+def test_primary_directions_network_does_not_mask_evaluation_failure(
+    client_with_engine: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import moira_server.routers.primary_directions as primary_directions_router
+
+    monkeypatch.setattr(primary_directions_router, "compute_arcs_service", lambda engine, request: [object()])
+
+    def _raise_network_failure(engine, request):
+        raise ValueError("network evaluation failure witness")
+
+    monkeypatch.setattr(primary_directions_router, "compute_network_service", _raise_network_failure)
+
+    resp = client_with_engine.post("/v1/primary-directions/network", json=_PD_SEARCH_PAYLOAD)
+
+    assert resp.status_code == 422
+    assert "network evaluation failure witness" in resp.json()["message"]
 
 
 @pytest.mark.requires_ephemeris

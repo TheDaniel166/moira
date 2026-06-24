@@ -6,7 +6,8 @@ from fastapi.testclient import TestClient
 import pytest
 
 from moira.planets import planet_at
-from moira.julian import jd_from_datetime
+from moira.julian import jd_from_datetime, local_sidereal_time, utc_to_tt, utc_to_ut1
+from moira.obliquity import nutation, true_obliquity
 
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
@@ -24,6 +25,14 @@ def client_with_engine(
     app = create_app(ServerConfig(docs_enabled=False))
     with TestClient(app) as client:
         yield client
+
+
+def _local_sidereal_time_for(jd_utc: float, longitude: float) -> float:
+    jd_tt = utc_to_tt(jd_utc)
+    jd_ut1 = utc_to_ut1(jd_utc)
+    dpsi_deg, _ = nutation(jd_tt)
+    obliquity_deg = true_obliquity(jd_tt)
+    return local_sidereal_time(jd_ut1, longitude, dpsi_deg, obliquity_deg)
 
 
 @pytest.mark.requires_ephemeris
@@ -156,9 +165,11 @@ def test_planet_position_route_preserves_topocentric_truth(
     moira_engine,
 ) -> None:
     dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    jd_ut = jd_from_datetime(dt)
+    lst_deg = _local_sidereal_time_for(jd_ut, -74.0060)
     direct = planet_at(
         "Moon",
-        jd_from_datetime(dt),
+        jd_ut,
         reader=None,
         apparent=True,
         aberration=True,
@@ -167,6 +178,7 @@ def test_planet_position_route_preserves_topocentric_truth(
         observer_lat=40.7128,
         observer_lon=-74.0060,
         observer_elev_m=10.0,
+        lst_deg=lst_deg,
     )
 
     response = client_with_engine.post(
@@ -195,9 +207,11 @@ def test_planet_position_reduction_route_exposes_pipeline_truth(
     moira_engine,
 ) -> None:
     dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    jd_ut = jd_from_datetime(dt)
+    lst_deg = _local_sidereal_time_for(jd_ut, -74.0060)
     direct = planet_at(
         "Moon",
-        jd_from_datetime(dt),
+        jd_ut,
         reader=None,
         apparent=True,
         aberration=True,
@@ -206,6 +220,7 @@ def test_planet_position_reduction_route_exposes_pipeline_truth(
         observer_lat=40.7128,
         observer_lon=-74.0060,
         observer_elev_m=10.0,
+        lst_deg=lst_deg,
     )
 
     response = client_with_engine.post(
@@ -563,7 +578,8 @@ def test_houses_polar_fallback_policies(client_with_engine: TestClient, moira_en
         print("DEFAULT POLAR ERROR BODY:", resp.json())
     assert resp.status_code == 200
     body = resp.json()
-    assert body["system"] == system
+    assert body["system"] == "K"
+    assert body["effective_system"] == "O"
     assert body["fallback"] is True
     assert body["policy"] is not None
     assert body["policy"]["polar_fallback"] == "fallback_to_porphyry"

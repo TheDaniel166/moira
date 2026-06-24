@@ -16,9 +16,9 @@ transport contract documented for that family.
 
 ## Current Surface Summary
 
-- Total non-documentation routes: 346
-- Operational/meta routes: 4
-- Versioned `/v1` routes: 342
+- Total non-documentation routes: 349
+- Operational/meta routes: 5
+- Versioned `/v1` routes: 345
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 
@@ -96,10 +96,16 @@ Implemented:
 - post-phase gap closure P-GAP-06 admits bounded harmogram vector,
   Zero-Aries vector, intensity-spectrum, projection, and explicit-sample
   trace routes under `/v1/harmograms/*`
+- profile-bundle admission admits composition-only Western and Vedic
+  convenience endpoints under `/v1/western/chart-profile` and
+  `/v1/vedic/chart-profile`; these bundle existing route-equivalent strata
+  for frontend/workspace callers without adding interpretive synthesis
 
 Not yet broadly exposed as REST families:
 
-- phase 9 umbrella aggregation modules: `/v1/vedic/*` and `/v1/classical/*`
+- broad phase 9 umbrella aggregation modules: wider `/v1/vedic/*` and
+  `/v1/classical/*` families remain deferred beyond admitted
+  `/v1/vedic/chart-profile`
 - expanded phase 10 spatial and Earth-facing products: Astrocartography, Local Space, Geodetic, Galactic, Galactic Houses, and Gauquelin map/rendering/projection/statistical products remain deferred
 - remaining phase 12 specialist analytical families: `/v1/sothic/*` is
   deliberately deferred for specialist review and public heliacal-search
@@ -118,7 +124,7 @@ Not yet broadly exposed as REST families:
 
 | Family | Routes |
 |---|---:|
-| meta | 4 |
+| meta | 5 |
 | ashtakavarga | 8 |
 | alternate-dashas | 9 |
 | antiscia | 3 |
@@ -188,9 +194,11 @@ Not yet broadly exposed as REST families:
 | varshaphal | 9 |
 | varga | 8 |
 | vedic-dignities | 7 |
+| vedic-profile | 1 |
 | visibility | 2 |
 | void-of-course | 4 |
 | website | 3 |
+| western-profile | 1 |
 
 ## Operational Routes
 
@@ -200,6 +208,7 @@ Not yet broadly exposed as REST families:
 | GET | `/ready` | `ready` |
 | GET | `/meta/version` | `version` |
 | GET | `/meta/kernel` | `kernel_meta` |
+| GET | `/v1/meta/routes` | `route_catalog` |
 
 ## Chart And Position Routes
 
@@ -218,6 +227,17 @@ Not yet broadly exposed as REST families:
 | POST | `/v1/positions/frame/ssb` | `frame_ssb_route` |
 | POST | `/v1/positions/frame/received-light` | `frame_received_light_route` |
 | POST | `/v1/pipeline/chart` | `pipeline_chart_route` |
+
+## Profile Bundle Routes
+
+These routes are convenience composition surfaces. They preserve the underlying
+route-equivalent sections as named response fields instead of returning a
+single interpretive synthesis.
+
+| Method | Path | Handler |
+|---|---|---|
+| POST | `/v1/western/chart-profile` | `western_chart_profile_route` |
+| POST | `/v1/vedic/chart-profile` | `vedic_chart_profile_route` |
 | POST | `/v1/pipeline/positions/planet` | `pipeline_planet_position_route` |
 | POST | `/v1/pipeline/positions/sky` | `pipeline_sky_position_route` |
 

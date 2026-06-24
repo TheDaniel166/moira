@@ -29,6 +29,7 @@ from .lord_of_the_orb import router as lord_of_the_orb_router
 from .lord_of_the_turn import router as lord_of_the_turn_router
 from .lots import router as lots_router
 from .manazil import router as manazil_router
+from .meta import router as meta_router
 from .muhurta import router as muhurta_router
 from .nodes import router as nodes_router
 from .nine_parts import router as nine_parts_router
@@ -49,6 +50,7 @@ from .triplicity import router as triplicity_router
 from .transits import router as transits_router
 from .uranian import router as uranian_router
 from .vedic_dignities import router as vedic_dignities_router
+from .vedic_profile import router as vedic_profile_router
 from .varga import router as varga_router
 from .asteroids import router as asteroids_router
 from .comets import router as comets_router
@@ -56,6 +58,7 @@ from .stars import router as stars_router
 from .primary_directions import router as primary_directions_router
 from .varshaphal import router as varshaphal_router
 from .visibility import router as visibility_router
+from .western_profile import router as western_profile_router
 
 __all__ = [
     "ashtakavarga_router",
@@ -91,6 +94,7 @@ __all__ = [
     "lord_of_the_turn_router",
     "lots_router",
     "manazil_router",
+    "meta_router",
     "muhurta_router",
     "nodes_router",
     "nine_parts_router",
@@ -112,7 +116,9 @@ __all__ = [
     "transits_router",
     "uranian_router",
     "vedic_dignities_router",
+    "vedic_profile_router",
     "varga_router",
     "varshaphal_router",
     "visibility_router",
+    "western_profile_router",
 ]

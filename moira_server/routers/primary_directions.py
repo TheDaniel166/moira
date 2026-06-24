@@ -140,26 +140,10 @@ def primary_directions_profile_route(
         )
         return PrimaryDirectionsProfileResponse(aggregate=empty_agg)
 
-    try:
-        profile = compute_profile_service(engine, request)
-        chosen_key = _get_chosen_key(request)
-        include_cond = getattr(request, "include_condition", False)
-        return serialize_profile(profile, chosen_key=chosen_key, include_condition=include_cond)
-    except Exception:
-        # Last-resort defensive empty response so the surface doesn't 422 on complex Phase 2 combinations
-        from ..models.primary_directions import (
-            PrimaryDirectionsAggregateProfileResponse,
-            PrimaryDirectionsProfileResponse,
-        )
-        empty_agg = PrimaryDirectionsAggregateProfileResponse(
-            profiles=[],
-            total_arcs=0,
-            direct_count=0,
-            converse_count=0,
-            nearest_arc=0.0,
-            farthest_arc=0.0,
-        )
-        return PrimaryDirectionsProfileResponse(aggregate=empty_agg)
+    profile = compute_profile_service(engine, request)
+    chosen_key = _get_chosen_key(request)
+    include_cond = getattr(request, "include_condition", False)
+    return serialize_profile(profile, chosen_key=chosen_key, include_condition=include_cond)
 
 
 @router.post("/primary-directions/profile/reduction", response_model=PrimaryDirectionsProfileReductionResponse)
@@ -197,22 +181,9 @@ def primary_directions_network_route(
         )
         return PrimaryDirectionsNetworkResponse(network=empty_net)
 
-    try:
-        network = compute_network_service(engine, request)
-        chosen_key = _get_chosen_key(request)
-        return serialize_network(network, chosen_key=chosen_key)
-    except Exception:
-        from ..models.primary_directions import (
-            PrimaryDirectionsNetworkProfileResponse,
-            PrimaryDirectionsNetworkResponse,
-        )
-        empty_net = PrimaryDirectionsNetworkProfileResponse(
-            nodes=[],
-            edges=[],
-            most_connected=None,
-            isolated=[],
-        )
-        return PrimaryDirectionsNetworkResponse(network=empty_net)
+    network = compute_network_service(engine, request)
+    chosen_key = _get_chosen_key(request)
+    return serialize_network(network, chosen_key=chosen_key)
 
 
 @router.post("/primary-directions/network/reduction", response_model=PrimaryDirectionsNetworkReductionResponse)

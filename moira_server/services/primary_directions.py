@@ -306,11 +306,8 @@ def _resolve_policy(req: PrimaryDirectionsSearchRequest | None) -> PrimaryDirect
             kwargs.update(_PRESETS[preset_name])
         else:
             # Unknown preset — fail early with clear validation error
-            from fastapi import HTTPException
-            raise HTTPException(
-                status_code=422,
-                detail=f"Unknown preset '{p.preset}'. Supported presets: {list(_PRESETS.keys())}"
-            )
+            supported = ", ".join(sorted(_PRESETS))
+            raise ValueError(f"Unknown preset {p.preset!r}. Supported presets: {supported}")
 
     if p.method is not None:
         kwargs["method"] = p.method

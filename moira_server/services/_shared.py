@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from moira import Body, Moira
+from moira.constants import HOUSE_SYSTEM_NAMES
 from moira.houses import HouseSystem, calculate_houses, HousePolicy, PolarFallbackPolicy, UnknownSystemPolicy
 from moira.julian import jd_from_datetime
 from moira.planets import _resolve_small_body_name
@@ -11,6 +12,25 @@ from ..models.chart import ChartRequest, HousesRequest
 
 
 _VALID_CHART_BODIES = frozenset(Body.ALL_PLANETS)
+
+
+def _house_system_lookup_key(value: str) -> str:
+    return " ".join(value.replace("_", " ").replace("-", " ").casefold().split())
+
+
+_HOUSE_SYSTEM_ALIASES: dict[str, str] = {}
+for _code, _name in HOUSE_SYSTEM_NAMES.items():
+    _HOUSE_SYSTEM_ALIASES[_house_system_lookup_key(_code)] = _code
+    _HOUSE_SYSTEM_ALIASES[_house_system_lookup_key(_name)] = _code
+
+
+def _resolve_house_system(value: str | None) -> str:
+    if value is None:
+        return HouseSystem.PLACIDUS
+    stripped = value.strip()
+    if not stripped:
+        raise ValueError("house system must be non-empty")
+    return _HOUSE_SYSTEM_ALIASES.get(_house_system_lookup_key(stripped), stripped)
 
 
 def require_aware_datetime(value) -> None:
@@ -73,7 +93,7 @@ def build_houses_context(engine: Moira, request: HousesRequest):
             polar_fallback=PolarFallbackPolicy(request.policy.polar_fallback),
         )
 
-    system = request.system or HouseSystem.PLACIDUS
+    system = _resolve_house_system(request.system)
 
     # For the common case (no custom policy or advanced anchors), use the high-level
     # engine.houses(dt, ...) exactly as other callers (including tests) do. This

@@ -127,6 +127,9 @@ def compute_planet_position(engine: Moira, request: PlanetPositionRequest) -> Pl
     _require_aware_datetime(request.dt)
     _require_supported_planet_body(request.body)
     jd_ut = jd_from_datetime(request.dt)
+    lst_deg: float | None = None
+    if request.observer_lat is not None and request.observer_lon is not None:
+        lst_deg, _ = _sidereal_context(jd_ut, request.observer_lon)
     return planet_at(
         request.body,
         jd_ut,
@@ -138,6 +141,7 @@ def compute_planet_position(engine: Moira, request: PlanetPositionRequest) -> Pl
         observer_lat=request.observer_lat,
         observer_lon=request.observer_lon,
         observer_elev_m=request.observer_elev_m,
+        lst_deg=lst_deg,
     )
 
 
@@ -152,6 +156,9 @@ def compute_planet_position_with_reduction(
     _require_aware_datetime(request.dt)
     _require_supported_planet_body(request.body)
     jd_ut = jd_from_datetime(request.dt)
+    lst_deg: float | None = None
+    if request.observer_lat is not None and request.observer_lon is not None:
+        lst_deg, _ = _sidereal_context(jd_ut, request.observer_lon)
     planet = planet_at(
         request.body,
         jd_ut,
@@ -163,12 +170,10 @@ def compute_planet_position_with_reduction(
         observer_lat=request.observer_lat,
         observer_lon=request.observer_lon,
         observer_elev_m=request.observer_elev_m,
+        lst_deg=lst_deg,
     )
 
     jd_tt = utc_to_tt(jd_ut)
-    lst_deg: float | None = None
-    if request.observer_lat is not None and request.observer_lon is not None:
-        lst_deg, _ = _sidereal_context(jd_ut, request.observer_lon)
     obliquity_deg = true_obliquity(jd_tt)
     delta_t_seconds = delta_t_from_jd(jd_ut)
     normalized_datetime_utc = datetime_from_jd(jd_ut).astimezone(timezone.utc).isoformat()

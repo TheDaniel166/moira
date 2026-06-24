@@ -14,9 +14,11 @@ pytestmark = pytest.mark.network
 def test_vedic_umbrella_route_is_not_registered() -> None:
     app = create_app(ServerConfig(docs_enabled=False))
     paths = {route.path for route in app.routes}
+    admitted_vedic_paths = {"/v1/vedic/chart-profile"}
 
     assert "/v1/vedic" not in paths
-    assert not any(path.startswith("/v1/vedic/") for path in paths)
+    assert not any(path.startswith("/v1/vedic/") and path not in admitted_vedic_paths for path in paths)
+    assert "/v1/vedic/chart-profile" in paths
     assert "/v1/vedic-dignities/dignity" in paths
 
 

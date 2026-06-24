@@ -76,6 +76,26 @@ def test_website_pipeline_planet_route_matches_existing_reduction_surface(
 
 
 @pytest.mark.requires_ephemeris
+def test_website_pipeline_sky_route_matches_existing_reduction_surface(
+    client_with_engine: TestClient,
+) -> None:
+    dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    payload = {
+        "dt": dt.isoformat(),
+        "body": "Venus",
+        "latitude": 51.5,
+        "longitude": -0.1,
+    }
+
+    website = client_with_engine.post("/v1/pipeline/positions/sky", json=payload)
+    canonical = client_with_engine.post("/v1/positions/sky/reduction", json=payload)
+
+    assert website.status_code == 200
+    assert canonical.status_code == 200
+    assert website.json() == canonical.json()
+
+
+@pytest.mark.requires_ephemeris
 def test_website_pipeline_chart_route_exposes_existing_reduction_truth(
     client_with_engine: TestClient,
 ) -> None:

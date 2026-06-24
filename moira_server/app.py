@@ -11,6 +11,7 @@ from .cache import ChartLRUCache
 from .config import ServerConfig
 from .errors import register_exception_handlers
 from .lifecycle import create_engine
+from .openapi import OPENAPI_TAGS, install_openapi_discovery
 from .routers import (
     ashtakavarga_router,
     alternate_dashas_router,
@@ -44,6 +45,7 @@ from .routers import (
     lord_of_the_turn_router,
     lots_router,
     manazil_router,
+    meta_router,
     muhurta_router,
     nodes_router,
     nine_parts_router,
@@ -68,7 +70,9 @@ from .routers import (
     varshaphal_router,
     varga_router,
     vedic_dignities_router,
+    vedic_profile_router,
     visibility_router,
+    western_profile_router,
 )
 
 
@@ -94,6 +98,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
         docs_url=docs_url,
         redoc_url=redoc_url,
         openapi_url=openapi_url,
+        openapi_tags=OPENAPI_TAGS,
         lifespan=_lifespan,
     )
     app.state.server_config = resolved
@@ -107,7 +112,10 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
 
     register_exception_handlers(app)
     app.include_router(health_router)
+    app.include_router(meta_router)
     app.include_router(chart_router)
+    app.include_router(western_profile_router)  # Western profile bundle composition surface
+    app.include_router(vedic_profile_router)  # Vedic profile bundle composition surface
     app.include_router(chart_wheel_router)  # Website-only chart-wheel drawing primitives
     app.include_router(positions_router)
     app.include_router(frame_positions_router)  # Frame-specific position products
@@ -163,4 +171,5 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(lord_of_the_turn_router)  # Phase-12 caller-supplied Lord of the Turn surface
     app.include_router(electional_router)  # Phase-13 bounded electional scan-witness surface
     app.include_router(pipeline_router)    # Reduction pipeline breakdown for planet positions
+    install_openapi_discovery(app)
     return app
