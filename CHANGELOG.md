@@ -5,6 +5,14 @@ All notable changes to the Moira project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.4.1] - 2026-06-27
+
+### Added
+- **Website Planet Pipeline Visibility**: Added first-class per-stage planetary reduction breakdowns to the REST pipeline surface, including ordered physical stages, arcsecond longitude deltas, compatibility intermediate longitudes, and pre-topocentric geocentric longitude.
+
+### Validation
+- This is a REST transport and visibility patch release. It exposes already-owned apparent-reduction truth for HTTP clients and does not intentionally change final planetary position semantics.
+
 ## [3.3.4] - 2026-06-15
 
 ### Fixed
