@@ -8,7 +8,13 @@ from datetime import timezone
 from moira import Body, Moira, PlanetData, SkyPosition
 from moira.julian import delta_t_from_jd, datetime_from_jd, jd_from_datetime, local_sidereal_time, utc_to_tt, utc_to_ut1
 from moira.obliquity import nutation, true_obliquity
-from moira.planets import _resolve_small_body_name, planet_at, sky_position_at
+from moira.planets import (
+    PlanetReductionBreakdown,
+    _resolve_small_body_name,
+    planet_at,
+    planet_reduction_breakdown_at,
+    sky_position_at,
+)
 
 from ..models.positions import PlanetPositionRequest, SkyPositionRequest
 
@@ -72,6 +78,7 @@ class PlanetPositionReductionContext:
     aberration: bool
     grav_deflection: bool
     nutation: bool
+    breakdown: PlanetReductionBreakdown | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -172,6 +179,23 @@ def compute_planet_position_with_reduction(
         observer_elev_m=request.observer_elev_m,
         lst_deg=lst_deg,
     )
+    try:
+        breakdown = planet_reduction_breakdown_at(
+            request.body,
+            jd_ut,
+            apparent=request.apparent,
+            aberration=request.aberration,
+            grav_deflection=request.grav_deflection,
+            nutation=request.nutation,
+            observer_lat=request.observer_lat,
+            observer_lon=request.observer_lon,
+            observer_elev_m=request.observer_elev_m,
+            lst_deg=lst_deg,
+        )
+    except ValueError as exc:
+        if "comet bodies require" not in str(exc):
+            raise
+        breakdown = None
 
     jd_tt = utc_to_tt(jd_ut)
     obliquity_deg = true_obliquity(jd_tt)
@@ -198,6 +222,7 @@ def compute_planet_position_with_reduction(
         aberration=request.aberration,
         grav_deflection=request.grav_deflection,
         nutation=request.nutation,
+        breakdown=breakdown,
     )
     return planet, reduction
 

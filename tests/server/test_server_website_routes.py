@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from fastapi.testclient import TestClient
 import pytest
 
+from moira.obliquity import nutation
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
 
@@ -73,6 +74,42 @@ def test_website_pipeline_planet_route_matches_existing_reduction_surface(
     assert website.status_code == 200
     assert canonical.status_code == 200
     assert website.json() == canonical.json()
+
+    reduction = website.json()["reduction"]
+    stages = reduction["stages"]
+    assert [stage["num"] for stage in stages] == list(range(8))
+    assert [stage["name"] for stage in stages] == [
+        "Geometric geocentric",
+        "Light-time iteration",
+        "Gravitational deflection",
+        "Annual aberration",
+        "IAU 2006 frame bias",
+        "IAU 2006 precession",
+        "IAU 2000A nutation",
+        "Topocentric parallax",
+    ]
+    assert stages[0]["delta"] is None
+    assert stages[0]["ref_pos"] is not None
+    assert stages[1]["enabled"] is True
+    assert abs(stages[1]["delta"]) > 0.0
+    assert stages[2]["enabled"] is False  # Sun/Moon self-deflection is not applied.
+    dpsi_deg, _deps_deg = nutation(reduction["jd_tt"])
+    assert stages[6]["delta"] == pytest.approx(round(dpsi_deg * 3600.0, 6))
+    assert stages[7]["enabled"] is True
+
+    enabled_total = round(
+        sum(
+            stage["delta"]
+            for stage in stages
+            if stage["delta"] is not None and stage["enabled"]
+        ),
+        6,
+    )
+    assert reduction["total_delta_arcsec"] == pytest.approx(enabled_total)
+    assert reduction["stage_longitudes"]["light_time"] != 0.0
+    assert reduction["stage_longitudes"]["geocentric"] == pytest.approx(
+        reduction["geocentric_longitude"]
+    )
 
 
 @pytest.mark.requires_ephemeris

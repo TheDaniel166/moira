@@ -65,7 +65,14 @@ from .phenomena import (
     solar_condition_at,
 )
 from .orbits import DistanceExtremes, KeplerianElements, distance_extremes_at, orbital_elements_at
-from .planets import CartesianPosition, PlanetData, SkyPosition
+from .planets import (
+    CartesianPosition,
+    PlanetData,
+    PlanetReductionBreakdown,
+    PlanetReductionStage,
+    SkyPosition,
+    planet_reduction_breakdown_at,
+)
 from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal, nakshatra_of, all_nakshatras_at
 from .aspects import AspectData, AspectDirection
 from .harmograms import (

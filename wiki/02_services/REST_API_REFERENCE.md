@@ -227,6 +227,8 @@ Not yet broadly exposed as REST families:
 | POST | `/v1/positions/frame/ssb` | `frame_ssb_route` |
 | POST | `/v1/positions/frame/received-light` | `frame_received_light_route` |
 | POST | `/v1/pipeline/chart` | `pipeline_chart_route` |
+| POST | `/v1/pipeline/positions/planet` | `pipeline_planet_position_route` |
+| POST | `/v1/pipeline/positions/sky` | `pipeline_sky_position_route` |
 
 ## Profile Bundle Routes
 
@@ -238,8 +240,43 @@ single interpretive synthesis.
 |---|---|---|
 | POST | `/v1/western/chart-profile` | `western_chart_profile_route` |
 | POST | `/v1/vedic/chart-profile` | `vedic_chart_profile_route` |
-| POST | `/v1/pipeline/positions/planet` | `pipeline_planet_position_route` |
-| POST | `/v1/pipeline/positions/sky` | `pipeline_sky_position_route` |
+
+### Website Planet Pipeline Reduction Contract
+
+`POST /v1/pipeline/positions/planet` is an alias over the planetary reduction
+surface with an added physical reduction breakdown for website inspection. The
+request is the ordinary `PlanetPositionRequest`: `dt`, `body`, optional
+`observer_lat`, `observer_lon`, `observer_elev_m`, and the correction flags
+`apparent`, `aberration`, `grav_deflection`, and `nutation`.
+
+The response preserves `result` and the existing `reduction.stage_sequence`.
+For ordinary planets and admitted asteroids, `reduction` also includes:
+
+- `stages`: ordered stage records `{num, name, note, delta, enabled, ref_pos?}`
+- `total_delta_arcsec`: enabled stage deltas summed in arcseconds
+- `stage_longitudes`: compatibility map for HTTP clients that compute deltas
+  from intermediate longitudes
+- `geocentric_longitude`: pre-topocentric ecliptic longitude
+
+The canonical physical stage order is:
+
+- `0` Geometric geocentric
+- `1` Light-time iteration
+- `2` Gravitational deflection
+- `3` Annual aberration
+- `4` IAU 2006 frame bias
+- `5` IAU 2006 precession
+- `6` IAU 2000A nutation
+- `7` Topocentric parallax
+
+Stages 0-4 are projected in the fixed J2000 ecliptic. Stage 5 is projected in
+the mean equator/ecliptic of date. Stages 6-7 are projected in the true
+equator/ecliptic of date, and the nutation stage reports `delta` as nutation
+in longitude (`dpsi`) rather than as a re-projected longitude residual.
+
+Comets remain outside this planetary breakdown contract because their admitted
+small-body path is heliocentric-kernel routed and needs a separate reduction
+contract before Moira can expose comparable stage truth.
 
 ### Frame-Specific Positions REST Admission Boundary
 

@@ -76,9 +76,12 @@ from .precession import general_precession_in_longitude
 
 __all__ = [
     "PlanetData",
+    "PlanetReductionBreakdown",
+    "PlanetReductionStage",
     "SkyPosition",
     "HeliocentricData",
     "CartesianPosition",
+    "planet_reduction_breakdown_at",
     "planet_at",
     "sky_position_at",
     "all_planets_at",
@@ -510,6 +513,29 @@ _HAS_NATIVE_ROTATION = (
 # Keep enough one-JD contexts to cover ordinary chart/batch slices without
 # evicting them before adjacent same-reader lookups can reuse the work.
 _APPARENT_CONTEXT_CACHE_LIMIT = 32
+_J2000_ECLIPTIC_OBLIQUITY_DEG = 23.439279444444
+
+
+@dataclass(slots=True, frozen=True)
+class PlanetReductionStage:
+    """One visible longitude stage in the geocentric apparent reduction path."""
+
+    num: int
+    name: str
+    note: str
+    delta: float | None
+    enabled: bool
+    ref_pos: float | None = None
+
+
+@dataclass(slots=True, frozen=True)
+class PlanetReductionBreakdown:
+    """Ordered per-stage longitude truth for a single planetary reduction."""
+
+    stages: tuple[PlanetReductionStage, ...]
+    total_delta_arcsec: float
+    stage_longitudes: dict[str, float]
+    geocentric_longitude: float
 
 
 def _reader_apparent_context_cache(reader: KernelReader):
@@ -1658,6 +1684,281 @@ def _planet_at_core(
         speed=speed,
         retrograde=(speed < 0.0),
         is_topocentric=_topocentric,
+    )
+
+
+def _stage_longitude(xyz: Vec3, obliquity_deg: float) -> float:
+    lon, _lat, _dist = icrf_to_ecliptic(xyz, obliquity_deg)
+    return lon
+
+
+def _stage_delta_arcsec(next_lon: float, prev_lon: float) -> float:
+    delta = (next_lon - prev_lon + 540.0) % 360.0 - 180.0
+    return round(delta * 3600.0, 6)
+
+
+def _rounded_longitude(lon: float) -> float:
+    return round(normalize_degrees(lon), 6)
+
+
+def planet_reduction_breakdown_at(
+    body: str,
+    jd_ut: float,
+    reader: KernelReader | None = None,
+    *,
+    apparent: bool = True,
+    aberration: bool = True,
+    grav_deflection: bool = True,
+    nutation: bool = True,
+    observer_lat: float | None = None,
+    observer_lon: float | None = None,
+    observer_elev_m: float = 0.0,
+    lst_deg: float | None = None,
+    delta_t_policy: 'DeltaTPolicy | None' = None,
+) -> PlanetReductionBreakdown:
+    """
+    Return the visible geocentric longitude correction stages for one body.
+
+    Governing object: an ordered apparent-place reduction from geometric
+    geocentric ICRF/J2000 direction to the final true-of-date ecliptic
+    direction. Stages 0-4 are projected in the fixed J2000 ecliptic, stage 5
+    in the mean equator/ecliptic of date, and stages 6-7 in the true
+    equator/ecliptic of date. The nutation contribution is reported as dpsi,
+    because that is the physical longitude term, not a re-projected residual.
+
+    The comet front-door path is intentionally not folded into this planetary
+    contract: comet kernels are heliocentric small-body surfaces with their own
+    routing law.
+    """
+    if (observer_lat is not None or observer_lon is not None) and lst_deg is None:
+        raise ValueError(
+            "planet_reduction_breakdown_at: lst_deg is required when "
+            "observer_lat/observer_lon are provided."
+        )
+
+    if reader is None:
+        reader = get_active_reader()
+        if reader is None:
+            raise MissingKernelError(
+                "No planetary kernel is provided and no active reader context was found. "
+                "Pass a reader explicitly or use the Moira facade."
+            )
+
+    target_id = body
+    canonical_body = body
+    vector_cache: _VectorCache = {}
+    small_body = _resolve_small_body_name(body)
+    if small_body is not None:
+        family, canonical_name = small_body
+        canonical_body = canonical_name
+        if family == "comet":
+            raise ValueError(
+                "planet_reduction_breakdown_at: comet bodies require a separate "
+                "heliocentric small-body reduction contract."
+            )
+        from .asteroids import ASTEROID_NAIF
+
+        target_id = ASTEROID_NAIF[canonical_name]
+
+        def barycentric_fn(body_id, jd_tt_value, active_reader):
+            return active_reader.position(0, body_id, jd_tt_value)
+
+    else:
+
+        def barycentric_fn(body_id, jd_tt_value, active_reader):
+            return _barycentric(body_id, jd_tt_value, active_reader, vector_cache)
+
+    year, month, *_ = _approx_year(jd_ut)
+    jd_tt = ut_to_tt(jd_ut, decimal_year(year, month), delta_t_policy=delta_t_policy)
+    mean_eps = mean_obliquity(jd_tt)
+    dpsi_deg, deps_deg = _nutation(jd_tt)
+    true_eps = mean_eps + deps_deg
+    dpsi_arcsec = round(dpsi_deg * 3600.0, 6)
+    deps_arcsec = round(deps_deg * 3600.0, 6)
+
+    earth_ssb, earth_vel = _earth_barycentric_state(jd_tt, reader, vector_cache)
+    body_barycentric = barycentric_fn(target_id, jd_tt, reader)
+    xyz0 = vec_sub(body_barycentric, earth_ssb)
+    lon0 = _stage_longitude(xyz0, _J2000_ECLIPTIC_OBLIQUITY_DEG)
+
+    stages: list[PlanetReductionStage] = [
+        PlanetReductionStage(
+            num=0,
+            name="Geometric geocentric",
+            note="SSB to body minus SSB to Earth",
+            delta=None,
+            enabled=True,
+            ref_pos=_rounded_longitude(lon0),
+        )
+    ]
+    stage_longitudes: dict[str, float] = {
+        "base": _rounded_longitude(lon0),
+        "geometric_geocentric": _rounded_longitude(lon0),
+    }
+
+    if apparent:
+        xyz1, light_time_days = apply_light_time(
+            target_id,
+            jd_tt,
+            reader,
+            earth_ssb,
+            barycentric_fn,
+        )
+    else:
+        xyz1 = xyz0
+        light_time_days = 0.0
+    lon1 = _stage_longitude(xyz1, _J2000_ECLIPTIC_OBLIQUITY_DEG)
+    stages.append(
+        PlanetReductionStage(
+            num=1,
+            name="Light-time iteration",
+            note=f"tau = {light_time_days:.6f} d; {light_time_days * 1440.0:.3f} min",
+            delta=_stage_delta_arcsec(lon1, lon0) if apparent else 0.0,
+            enabled=apparent,
+        )
+    )
+    stage_longitudes["light_time"] = _rounded_longitude(lon1)
+    # Legacy website adapters use "geometric" for the post-light-time
+    # astrometric direction; keep that compatibility key separate from stage 0.
+    stage_longitudes["geometric"] = _rounded_longitude(lon1)
+
+    deflection_enabled = (
+        apparent and grav_deflection and canonical_body not in (Body.SUN, Body.MOON)
+    )
+    if deflection_enabled:
+        if small_body is not None:
+            from .asteroids import _asteroid_deflectors
+
+            deflectors = _asteroid_deflectors(jd_tt, reader, earth_ssb)
+        else:
+            context = _ApparentContext(
+                jd_tt=jd_tt,
+                dpsi_deg=dpsi_deg,
+                deps_deg=deps_deg,
+                obliquity=true_eps if nutation else mean_eps,
+                rot_mat=None,
+                vector_cache=vector_cache,
+                earth_ssb=earth_ssb,
+                earth_vel=earth_vel,
+            )
+            deflectors = _deflectors_for_body(canonical_body, jd_tt, reader, context)
+        xyz2 = apply_deflection(xyz1, deflectors)
+    else:
+        xyz2 = xyz1
+    lon2 = _stage_longitude(xyz2, _J2000_ECLIPTIC_OBLIQUITY_DEG)
+    stages.append(
+        PlanetReductionStage(
+            num=2,
+            name="Gravitational deflection",
+            note="Sun, Jupiter, Saturn",
+            delta=_stage_delta_arcsec(lon2, lon1) if deflection_enabled else 0.0,
+            enabled=deflection_enabled,
+        )
+    )
+    stage_longitudes["gravitational_deflection"] = _rounded_longitude(lon2)
+
+    aberration_enabled = apparent and aberration
+    xyz3 = apply_aberration(xyz2, earth_vel) if aberration_enabled else xyz2
+    lon3 = _stage_longitude(xyz3, _J2000_ECLIPTIC_OBLIQUITY_DEG)
+    stages.append(
+        PlanetReductionStage(
+            num=3,
+            name="Annual aberration",
+            note="Earth barycentric velocity; relativistic",
+            delta=_stage_delta_arcsec(lon3, lon2) if aberration_enabled else 0.0,
+            enabled=aberration_enabled,
+        )
+    )
+    stage_longitudes["annual_aberration"] = _rounded_longitude(lon3)
+
+    frame_bias_enabled = apparent
+    xyz4 = apply_frame_bias(xyz3) if frame_bias_enabled else xyz3
+    lon4 = _stage_longitude(xyz4, _J2000_ECLIPTIC_OBLIQUITY_DEG)
+    stages.append(
+        PlanetReductionStage(
+            num=4,
+            name="IAU 2006 frame bias",
+            note="ICRF to dynamical mean J2000",
+            delta=_stage_delta_arcsec(lon4, lon3) if frame_bias_enabled else 0.0,
+            enabled=frame_bias_enabled,
+        )
+    )
+    stage_longitudes["frame_bias"] = _rounded_longitude(lon4)
+
+    precession_enabled = apparent
+    xyz5 = (
+        mat_vec_mul(precession_matrix_equatorial(jd_tt), xyz4)
+        if precession_enabled
+        else xyz4
+    )
+    lon5 = _stage_longitude(
+        xyz5,
+        mean_eps if precession_enabled else _J2000_ECLIPTIC_OBLIQUITY_DEG,
+    )
+    stages.append(
+        PlanetReductionStage(
+            num=5,
+            name="IAU 2006 precession",
+            note="P03 polynomial; mean equator of date",
+            delta=_stage_delta_arcsec(lon5, lon4) if precession_enabled else 0.0,
+            enabled=precession_enabled,
+        )
+    )
+    stage_longitudes["precession"] = _rounded_longitude(lon5)
+
+    nutation_enabled = apparent and nutation
+    xyz6 = mat_vec_mul(nutation_matrix_equatorial(jd_tt), xyz5) if nutation_enabled else xyz5
+    lon6 = _stage_longitude(xyz6, true_eps if nutation_enabled else mean_eps)
+    stages.append(
+        PlanetReductionStage(
+            num=6,
+            name="IAU 2000A nutation",
+            note=f"dpsi {dpsi_arcsec:+.6f} arcsec; deps {deps_arcsec:+.6f} arcsec",
+            delta=dpsi_arcsec if nutation_enabled else 0.0,
+            enabled=nutation_enabled,
+        )
+    )
+    stage_longitudes["nutation"] = _rounded_longitude(lon6)
+    stage_longitudes["geocentric"] = _rounded_longitude(lon6)
+
+    topocentric_enabled = (
+        apparent
+        and observer_lat is not None
+        and observer_lon is not None
+        and lst_deg is not None
+    )
+    if topocentric_enabled:
+        xyz7 = topocentric_correction(
+            xyz6,
+            observer_lat,
+            observer_lon,
+            lst_deg,
+            observer_elev_m,
+            jd_ut=jd_ut,
+        )
+    else:
+        xyz7 = xyz6
+    lon7 = _stage_longitude(xyz7, true_eps if nutation_enabled else mean_eps)
+    stages.append(
+        PlanetReductionStage(
+            num=7,
+            name="Topocentric parallax",
+            note="WGS-84; applied" if topocentric_enabled else "WGS-84; disabled",
+            delta=_stage_delta_arcsec(lon7, lon6) if topocentric_enabled else 0.0,
+            enabled=topocentric_enabled,
+        )
+    )
+    stage_longitudes["topocentric"] = _rounded_longitude(lon7)
+
+    total = round(
+        sum(stage.delta for stage in stages if stage.delta is not None and stage.enabled),
+        6,
+    )
+    return PlanetReductionBreakdown(
+        stages=tuple(stages),
+        total_delta_arcsec=total,
+        stage_longitudes=stage_longitudes,
+        geocentric_longitude=_rounded_longitude(lon6),
     )
 
 

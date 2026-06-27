@@ -59,6 +59,15 @@ class PositionPipelineTruthResponse(_StrictModel):
     stage_sequence: list[str]
 
 
+class PlanetReductionStageResponse(_StrictModel):
+    num: int
+    name: str
+    note: str
+    delta: float | None
+    enabled: bool
+    ref_pos: float | None = None
+
+
 class PlanetPositionReductionTruthResponse(PositionPipelineTruthResponse):
     selection_surface: str
     include_nodes: bool
@@ -71,6 +80,10 @@ class PlanetPositionReductionTruthResponse(PositionPipelineTruthResponse):
     obliquity_deg: float
     topocentric_requested: bool
     topocentric_applied: bool
+    stages: list[PlanetReductionStageResponse] | None = None
+    total_delta_arcsec: float | None = None
+    stage_longitudes: dict[str, float] | None = None
+    geocentric_longitude: float | None = None
 
 
 class PlanetPositionReductionResponse(_StrictModel):
@@ -125,6 +138,7 @@ __all__ = [
     "PlanetPositionRequest",
     "PlanetPositionResponse",
     "PlanetPositionReductionResponse",
+    "PlanetReductionStageResponse",
     "PlanetPositionReductionTruthResponse",
     "PositionObserverContextResponse",
     "PositionPipelineTruthResponse",
