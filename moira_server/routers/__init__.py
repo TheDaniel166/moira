@@ -10,6 +10,7 @@ from .chart_wheel import router as chart_wheel_router
 from .dasha import router as dasha_router
 from .decans import decanates_router, hermetic_decans_router
 from .dignities import router as dignities_router
+from .draconic import router as draconic_router
 from .egyptian_bounds import router as egyptian_bounds_router
 from .electional import router as electional_router
 from .frame_positions import router as frame_positions_router
@@ -74,6 +75,7 @@ __all__ = [
     "dasha_router",
     "decanates_router",
     "dignities_router",
+    "draconic_router",
     "egyptian_bounds_router",
     "electional_router",
     "frame_positions_router",

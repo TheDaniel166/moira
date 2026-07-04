@@ -356,6 +356,17 @@ from .harmonics import (
     harmonic_conjunctions, harmonic_pattern_score, harmonic_sweep,
     harmonic_aspects, composite_harmonic, vibrational_fingerprint,
 )
+from .draconic import (
+    DRACONIC_NODE_MODES,
+    DraconicAnchor,
+    DraconicChart,
+    DraconicNodeMode,
+    DraconicPosition,
+    draconic_chart,
+    draconic_chart_from_positions,
+    draconic_longitude,
+    draconic_positions,
+)
 from .progressions import (
     ProgressionDoctrineTruth,
     ProgressionComputationTruth,
@@ -1223,6 +1234,10 @@ __all__ = [
     "activated_midpoints", "midpoint_clusters",
     # Harmonics
     "HarmonicPosition", "HarmonicsService", "calculate_harmonic", "HARMONIC_PRESETS",
+    # Draconic
+    "DRACONIC_NODE_MODES", "DraconicAnchor", "DraconicChart", "DraconicNodeMode",
+    "DraconicPosition", "draconic_chart", "draconic_chart_from_positions",
+    "draconic_longitude", "draconic_positions",
     # Progressions
     "ProgressionDoctrineTruth", "ProgressionComputationTruth",
     "ProgressionDoctrineClassification", "ProgressionComputationClassification",

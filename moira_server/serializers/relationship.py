@@ -412,6 +412,7 @@ def serialize_chart_shape(shape: ChartShape) -> ChartShapeResponse:
         largest_gap=shape.largest_gap,
         leading_planet=shape.leading_planet,
         handle_planet=shape.handle_planet,
+        handle_bodies=sorted(shape.handle_bodies),
         clusters=[sorted(cluster) for cluster in shape.clusters],
     )
 

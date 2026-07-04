@@ -926,6 +926,8 @@ def _find_stellia(
 
 @dataclass(frozen=True, slots=True)
 class _PatternTemplate:
+    """Edge-constraint template describing one detectable aspect pattern shape."""
+
     kind: AspectPatternKind
     num_bodies: int
     edges: list[tuple[int, int, frozenset[str]]]

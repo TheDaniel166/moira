@@ -135,6 +135,12 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "relationship",
     },
     {
+        "name": "draconic",
+        "x-displayName": "Draconic",
+        "description": "Node-anchored draconic longitude rotations and chart materialization.",
+        "x-family": "relationship",
+    },
+    {
         "name": "harmonics",
         "x-displayName": "Harmonics",
         "description": "Direct harmonic projections, age charts, conjunctions, aspects, sweeps, and fingerprints.",

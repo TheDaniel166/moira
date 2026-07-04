@@ -13,11 +13,14 @@ from datetime import timezone
 from typing import Any
 
 from moira import Moira
+from moira.aspects import find_aspects
 from moira.asteroids import ASTEROID_NAIF, AsteroidData, asteroid_at
 from moira.asteroid_families import (
     asteroid_family,
     families_in_chart,
     family_members,
+    find_resonant_aspects,
+    resonance_network,
 )
 from moira.centaurs import CENTAUR_NAMES
 from moira.classical_asteroids import CLASSICAL_NAMES
@@ -33,6 +36,11 @@ from ..models.asteroids import (
     AsteroidFamilyLookupResponse,
     AsteroidFamilyMembersProvenanceResponse,
     AsteroidFamilyMembersResponse,
+    AsteroidFamilyResonanceEdgeResponse,
+    AsteroidFamilyResonanceNetworkProvenanceResponse,
+    AsteroidFamilyResonanceNetworkRequest,
+    AsteroidFamilyResonanceNetworkResponse,
+    AsteroidFamilyResonanceNodeResponse,
     AsteroidListItem,
     AsteroidListProvenanceResponse,
     AsteroidListResponse,
@@ -49,12 +57,14 @@ from ..models.asteroids import (
     AsteroidSubsetsResponse,
     AsteroidsBulkRequest,
     AsteroidsBulkResponse,
+    SMALL_BODY_NAIF_OFFSET,
 )
 from ..serializers.asteroids import (
     serialize_asteroid,
     serialize_asteroid_bulk_provenance,
     serialize_asteroid_position_provenance,
 )
+from ..serializers.relationship import serialize_aspect
 
 
 def _get_small_body_reader(engine: Moira) -> Any | None:
@@ -497,6 +507,140 @@ def group_asteroid_families_in_chart(
                 "mpc_number_list_validation",
                 "nesvorny_family_grouping",
                 "family_group_response_serialization",
+            ],
+        ),
+    )
+
+
+def _mpc_number_from_naif_id(naif_id: int) -> int:
+    return naif_id - SMALL_BODY_NAIF_OFFSET
+
+
+def _resonance_request_items(
+    request: AsteroidFamilyResonanceNetworkRequest,
+) -> tuple[str, list[tuple[str, str | int, int | None]]]:
+    if request.numbers is not None:
+        return (
+            "mpc_catalog_number",
+            [
+                (str(number), number + SMALL_BODY_NAIF_OFFSET, number)
+                for number in request.numbers
+            ],
+        )
+    if request.bodies is None:
+        raise ValueError("provide exactly one of bodies or numbers")
+    return (
+        "asteroid_name_or_small_body_naif_id",
+        [(str(body), body, None) for body in request.bodies],
+    )
+
+
+def _serialize_resonance_edge(resonant_aspect) -> AsteroidFamilyResonanceEdgeResponse:
+    return AsteroidFamilyResonanceEdgeResponse(
+        source=resonant_aspect.aspect.body1,
+        target=resonant_aspect.aspect.body2,
+        family_name=resonant_aspect.resonance.family_name,
+        body1_number=resonant_aspect.resonance.body1_number,
+        body2_number=resonant_aspect.resonance.body2_number,
+        aspect=serialize_aspect(resonant_aspect.aspect),
+    )
+
+
+def compute_asteroid_family_resonance_network(
+    engine: Moira,
+    request: AsteroidFamilyResonanceNetworkRequest,
+) -> AsteroidFamilyResonanceNetworkResponse:
+    """Compute a bounded chart-level asteroid family resonance network."""
+    reader = _get_small_body_reader(engine)
+    covered = _covered_bodies(reader)
+    jd_ut = jd_from_datetime(request.dt)
+    identity_source, request_items = _resonance_request_items(request)
+
+    nodes: list[AsteroidFamilyResonanceNodeResponse] = []
+    positions: dict[str, float] = {}
+    speeds: dict[str, float] = {}
+    body_catalog_numbers: dict[str, int] = {}
+    missing: list[str] = []
+
+    for requested_body, engine_body, explicit_number in request_items:
+        try:
+            data = asteroid_at(engine_body, jd_ut, reader=reader)
+        except Exception:
+            if not request.skip_missing:
+                raise
+            missing.append(requested_body)
+            continue
+
+        if data.name in positions:
+            raise ValueError(f"duplicate resolved asteroid body {data.name!r}")
+
+        mpc_number = explicit_number if explicit_number is not None else _mpc_number_from_naif_id(data.naif_id)
+        family_name = asteroid_family(mpc_number) if mpc_number > 0 else None
+        loaded_kernel_available = data.naif_id in covered
+
+        nodes.append(
+            AsteroidFamilyResonanceNodeResponse(
+                body=data.name,
+                requested_body=requested_body,
+                naif_id=data.naif_id,
+                mpc_number=mpc_number,
+                family_name=family_name,
+                longitude=data.longitude,
+                latitude=data.latitude,
+                speed=data.speed,
+                retrograde=data.retrograde,
+                is_sovereign=loaded_kernel_available,
+            )
+        )
+        positions[data.name] = data.longitude
+        speeds[data.name] = data.speed
+        body_catalog_numbers[data.name] = mpc_number
+
+    aspects = find_aspects(
+        positions,
+        speeds=speeds,
+        tier=request.aspect_tier,
+        include_minor=request.include_minor,
+        orb_factor=request.orb_factor,
+    )
+    resonant_aspects = find_resonant_aspects(aspects, body_catalog_numbers)
+    network = resonance_network(resonant_aspects)
+    network_response = {
+        family_name: [_serialize_resonance_edge(item) for item in family_aspects]
+        for family_name, family_aspects in network.items()
+    }
+    edges = [_serialize_resonance_edge(item) for item in resonant_aspects]
+
+    return AsteroidFamilyResonanceNetworkResponse(
+        dt=request.dt,
+        nodes=nodes,
+        edges=edges,
+        network=network_response,
+        families=list(network_response),
+        missing=missing,
+        total_aspects=len(aspects),
+        resonant_aspect_count=len(edges),
+        sovereign_used=any(node.is_sovereign for node in nodes),
+        provenance=AsteroidFamilyResonanceNetworkProvenanceResponse(
+            requested_datetime=request.dt.isoformat(),
+            normalized_datetime_utc=request.dt.astimezone(timezone.utc).isoformat(),
+            jd_ut=jd_ut,
+            identity_source=identity_source,
+            requested_bodies=[item[0] for item in request_items],
+            resolved_bodies=[node.body for node in nodes],
+            missing_bodies=missing,
+            loaded_kernel_available=bool(covered),
+            aspect_tier=request.aspect_tier,
+            include_minor=request.include_minor,
+            orb_factor=request.orb_factor,
+            stage_sequence=[
+                "datetime_validation",
+                "julian_day_conversion",
+                "asteroid_position_transport",
+                "mpc_number_derivation",
+                "aspect_detection",
+                "family_resonance_filter",
+                "resonance_network_serialization",
             ],
         ),
     )

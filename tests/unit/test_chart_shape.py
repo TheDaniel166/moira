@@ -47,6 +47,14 @@ _BUCKET = {
     "Jupiter": 75, "Saturn": 90, "Uranus": 105, "Neptune": 120, "Pluto": 240,
 }
 
+# Bucket with a tight conjunction-pair handle: 8 bowl planets within 105
+# degrees + a Neptune/Pluto pair (6 degrees apart) isolated >= 60 from each rim
+_BUCKET_PAIR = {
+    "Sun": 0, "Moon": 15, "Mercury": 30, "Venus": 45, "Mars": 60,
+    "Jupiter": 75, "Saturn": 90, "Uranus": 105,
+    "Neptune": 250, "Pluto": 256,
+}
+
 # Locomotive: 10 planets in 220 degrees (one clear gap of 140 degrees)
 _LOCOMOTIVE = {
     "Sun": 0, "Moon": 25, "Mercury": 50, "Venus": 75, "Mars": 100,
@@ -188,6 +196,29 @@ class TestBucketDetection:
         assert "Pluto" not in result.clusters[0]
         assert "Pluto" in result.clusters[1]
 
+    def test_bucket_handle_bodies_singleton(self):
+        # RULE-10: handle_bodies is the authoritative handle identity and is a
+        # non-empty subset of clusters[1], disjoint from clusters[0].
+        result = classify_chart_shape(_BUCKET)
+        assert result.handle_bodies == frozenset({"Pluto"})
+        assert result.handle_bodies <= result.clusters[1]
+        assert not (result.handle_bodies & result.clusters[0])
+
+    def test_bucket_pair_handle_detected(self):
+        result = classify_chart_shape(_BUCKET_PAIR)
+        assert result.shape is ChartShapeType.BUCKET
+
+    def test_bucket_pair_handle_label_and_bodies(self):
+        # RULE-10: the display label is the slash-joined pair, while the body
+        # identity is the two-member frozenset -- and that set, not the label,
+        # is what satisfies the clusters[1] membership invariant.
+        result = classify_chart_shape(_BUCKET_PAIR)
+        assert result.handle_planet == "Neptune/Pluto"
+        assert result.handle_bodies == frozenset({"Neptune", "Pluto"})
+        assert result.handle_planet not in result.clusters[1]  # label is not a body
+        assert result.handle_bodies <= result.clusters[1]
+        assert not (result.handle_bodies & result.clusters[0])
+
     def test_bucket_handle_exactly_60_from_rim_not_bucket(self):
         pos = {
             "Sun": 0, "Moon": 15, "Mercury": 30, "Venus": 45, "Mars": 60,
@@ -258,6 +289,23 @@ class TestSeesawDetection:
         for c in result.clusters:
             all_in_clusters |= c
         assert all_in_clusters == frozenset(_SEESAW.keys())
+
+    def test_seesaw_cluster_crossing_zero_is_seesaw(self):
+        # RULE-20: two clean opposing clusters, one of which crosses the 0/360
+        # seam (350 -> 0 -> 10).  Intra-cluster contiguity must be judged on the
+        # circular walk order, not on raw sorted longitude, or this Seesaw is
+        # wrongly demoted to Splash.
+        positions = {
+            "A1": 350.0, "A2": 0.0, "A3": 10.0,
+            "B1": 160.0, "B2": 170.0, "B3": 180.0,
+        }
+        result = classify_chart_shape(positions)
+        assert result.shape is ChartShapeType.SEESAW
+        assert len(result.clusters) == 2
+        covered = set()
+        for c in result.clusters:
+            covered |= c
+        assert covered == frozenset(positions.keys())
 
 
 class TestSplayDetection:
@@ -464,6 +512,54 @@ class TestChartShapeInvariants:
                 leading_planet=None,
                 handle_planet=None,
                 clusters=(frozenset({"Sun", "Moon"}), frozenset({"Pluto"})),
+            )
+
+    def test_bucket_without_handle_bodies_raises(self):
+        with pytest.raises(ValueError, match="handle_bodies"):
+            ChartShape(
+                shape=ChartShapeType.BUCKET,
+                occupied_arc=120.0,
+                largest_gap=240.0,
+                leading_planet="Pluto",
+                handle_planet="Pluto",
+                clusters=(frozenset({"Sun", "Moon"}), frozenset({"Pluto"})),
+                handle_bodies=frozenset(),
+            )
+
+    def test_bucket_handle_bodies_not_in_second_cluster_raises(self):
+        with pytest.raises(ValueError, match="handle_bodies"):
+            ChartShape(
+                shape=ChartShapeType.BUCKET,
+                occupied_arc=120.0,
+                largest_gap=240.0,
+                leading_planet="Pluto",
+                handle_planet="Pluto",
+                clusters=(frozenset({"Sun", "Moon"}), frozenset({"Mars"})),
+                handle_bodies=frozenset({"Pluto"}),
+            )
+
+    def test_bucket_handle_bodies_in_first_cluster_raises(self):
+        with pytest.raises(ValueError, match="handle_bodies"):
+            ChartShape(
+                shape=ChartShapeType.BUCKET,
+                occupied_arc=120.0,
+                largest_gap=240.0,
+                leading_planet="Sun",
+                handle_planet="Sun",
+                clusters=(frozenset({"Sun", "Moon"}), frozenset({"Sun"})),
+                handle_bodies=frozenset({"Sun"}),
+            )
+
+    def test_non_bucket_with_handle_bodies_raises(self):
+        with pytest.raises(ValueError, match="handle_bodies"):
+            ChartShape(
+                shape=ChartShapeType.SPLASH,
+                occupied_arc=324.0,
+                largest_gap=36.0,
+                leading_planet=None,
+                handle_planet=None,
+                clusters=(frozenset({"Sun", "Moon", "Mercury"}),),
+                handle_bodies=frozenset({"Sun"}),
             )
 
     def test_valid_splash_does_not_raise(self):

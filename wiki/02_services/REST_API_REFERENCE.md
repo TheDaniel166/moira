@@ -139,6 +139,7 @@ Not yet broadly exposed as REST families:
 | davison | 1 |
 | decanates | 6 |
 | dignities | 6 |
+| draconic | 3 |
 | egyptian-bounds | 7 |
 | electional | 5 |
 | eclipses | 5 |
@@ -757,6 +758,7 @@ Body-class truth:
 | GET | `/v1/asteroids/families/by-number/{number}` | `asteroid_family_by_number` |
 | GET | `/v1/asteroids/families/{family_name}/members` | `asteroid_family_members` |
 | POST | `/v1/asteroids/families/chart` | `asteroid_families_in_chart` |
+| POST | `/v1/asteroids/families/chart/resonance-network` | `asteroid_family_resonance_network` |
 | POST | `/v1/comets/position` | `comet_position` |
 | POST | `/v1/comets/bulk` | `comets_bulk` |
 | GET | `/v1/comets/list` | `list_comets` |
@@ -801,6 +803,9 @@ Body-class truth:
 | POST | `/v1/antiscia/reflect` | `antiscia_reflect_route` |
 | POST | `/v1/antiscia/contacts` | `antiscia_contacts_route` |
 | POST | `/v1/antiscia/to-point` | `antiscia_to_point_route` |
+| POST | `/v1/draconic/longitude` | `draconic_longitude_route` |
+| POST | `/v1/draconic/positions` | `draconic_positions_route` |
+| POST | `/v1/draconic/chart` | `draconic_chart_route` |
 | POST | `/v1/nine-parts/abu-mashar` | `abu_mashar_nine_parts_route` |
 | POST | `/v1/planetary-hours/schedule` | `planetary_hours_schedule_route` |
 | POST | `/v1/planetary-hours/hour-at` | `planetary_hours_hour_at_route` |
@@ -922,6 +927,7 @@ P11-06 extension under `/v1/asteroids/*`:
 - `GET /v1/asteroids/families/by-number/{number}`
 - `GET /v1/asteroids/families/{family_name}/members`
 - `POST /v1/asteroids/families/chart`
+- `POST /v1/asteroids/families/chart/resonance-network`
 
 Subset routes expose curated Moira identity sets: `classical`, `main_belt`,
 `centaurs`, and `tnos`. Subset list responses include body names, NAIF IDs,
@@ -929,18 +935,26 @@ loaded-kernel availability by returned NAIF ID, subset source module, catalog
 source, query/limit truth, and stage sequence. Subset position responses
 delegate to the admitted asteroid position transport and add subset provenance.
 
-Family routes expose Nesvorny/PDS dynamical-family catalog membership. They use
-MPC catalog numbers and Nesvorny family names, not NAIF IDs. Responses record
+Family routes expose Nesvorny/PDS dynamical-family catalog membership. Lookup,
+member, and chart-grouping views use MPC catalog numbers and Nesvorny family
+names, not NAIF IDs. Responses record
 `NASA_PDS_ast_nesvorny_families_v2_2015`, `MPC_catalog_number`,
 `moira.asteroid_families`, and transport stage sequence.
+
+The chart resonance-network route accepts either `numbers` as MPC catalog
+numbers or `bodies` as asteroid names / small-body NAIF IDs. It computes only
+the explicitly requested chart bodies, detects admitted ecliptic aspects,
+filters them through `find_resonant_aspects()`, groups them with
+`resonance_network()`, and returns resolved nodes, resonant edges, per-family
+network buckets, missing requested identities, and aspect policy provenance.
 
 This admission preserves catalog labels exactly. Similar family labels such as
 `Koronis`, `Koronis(2)`, and `Karin` remain distinct.
 
-This admission does not expose family-wide position sweeps, resonance/aspect
-networks, rendered family maps, asteroid-family astrocartography, arbitrary
-family catalog search, photometry, topocentric/equatorial subset products,
-kernel manifest management, or edits to the bundled family catalog.
+This admission does not expose family-wide position sweeps, rendered family
+maps, asteroid-family astrocartography, arbitrary family catalog search,
+photometry, topocentric/equatorial subset products, kernel manifest management,
+or edits to the bundled family catalog.
 
 ### Comet REST Admission Boundary
 
@@ -1231,6 +1245,46 @@ the `body1` body whose reflected point forms a contact, the reflected
 This admission does not expose primary-direction antiscia, directed arcs,
 transits, progressions, chart construction, house derivation, antiscia
 networks, scoring profiles, or interpretive narrative text.
+
+### Draconic REST Admission Boundary
+
+The admitted draconic REST surface is the bounded `/v1/draconic/*` family:
+
+- `POST /v1/draconic/longitude`
+- `POST /v1/draconic/positions`
+- `POST /v1/draconic/chart`
+
+`/v1/draconic/longitude` rotates one caller-supplied finite longitude by a
+caller-supplied anchor longitude under the fixed doctrine formula
+`normalize_degrees(source_longitude - anchor_longitude)`. It claims no node
+policy and uses no ephemeris.
+
+`/v1/draconic/positions` materializes a full draconic chart vessel from a
+caller-supplied named longitude map, an explicit `node_mode` (`mean` or
+`true`), and a caller-supplied anchor longitude. The caller owns the anchor
+truth; the route does not construct charts or derive node positions.
+
+`/v1/draconic/chart` builds an engine tropical chart for a timezone-aware
+datetime (with optional bodies and topocentric observer), extracts the
+North Node selected by `node_mode` as the anchor, and rotates all chart
+longitudes into the draconic frame. The source chart is always built
+node-bearing so the anchor exists; the request `include_nodes` flag governs
+only whether node points appear among the transformed output positions.
+
+Responses preserve the engine vessel truth: the anchor block (`node_mode`,
+`node_name`, `longitude`, `rotation_degrees`, `source`, `source_zodiac`,
+`formula`), per-body source and draconic longitudes with sign decomposition,
+`frame` (`draconic`), `source_zodiac` (`tropical`), `interpretation_scope`
+(`longitude_frame_transform_only`), and `anchor_residual` (distance of the
+included anchor node from 0 Aries, `null` when the node is not among the
+output positions). Provenance records `moira.draconic`, the engine
+entrypoint, the rotation doctrine and formula, anchor ownership, chart
+construction ownership, and ephemeris use.
+
+This admission does not expose draconic houses, draconic-to-tropical
+synastry or contact searches, sidereal source zodiacs, South Node or
+arbitrary-point anchors, node event searches, or interpretive narrative
+text.
 
 ### Nine Parts REST Admission Boundary
 

@@ -1,7 +1,7 @@
 # Asteroid Families And Subsets Backend Standard
 
-Version: 0.1
-Date: 2026-06-13
+Version: 0.2
+Date: 2026-07-01
 Status: admitted backend standard for Phase 11 REST transport
 
 ## Scope
@@ -48,6 +48,7 @@ Dynamical-family surfaces govern catalog membership:
 - one asteroid number to one family name, or no family
 - one family name to bounded MPC-number membership
 - one supplied chart list to grouped family membership
+- one supplied chart asteroid set to a family-qualified aspect network
 
 Family membership is physical-origin catalog truth. It is not a zodiacal,
 aspectual, house, or interpretive grouping.
@@ -64,6 +65,7 @@ REST transport must preserve:
 - MPC catalog number semantics for family routes
 - Nesvorny/PDS provenance for family routes
 - bounded list/member output
+- chart resonance nodes, edges, and per-family network buckets when requested
 - explicit stage sequence
 
 REST transport must not:
@@ -83,8 +85,17 @@ The backend supports three low-risk family catalog views:
 - list members of a named family with offset/limit bounds
 - group a supplied list of MPC numbers by family
 
-The resonance layer in `find_resonant_aspects(...)` is not admitted to REST by
-this standard. It requires an aspect-graph transport design if exposed later.
+The backend also supports one bounded chart resonance-network view:
+
+- compute positions for explicitly requested asteroid bodies or MPC numbers
+- detect admitted ecliptic aspects with `moira.aspects.find_aspects`
+- filter those aspects through `find_resonant_aspects(...)`
+- group them through `resonance_network(...)`
+
+This route must expose the resolved asteroid node identities, the full aspect
+admission vessel for each resonant edge, the shared Nesvorny family qualifier,
+and the per-family network buckets. It must not turn resonance into an
+interpretive score or family-wide catalog sweep.
 
 ## Admitted Subset Surfaces
 
@@ -109,6 +120,13 @@ Transport admission must verify:
 - out-of-subset bodies are reported as missing when `skip_missing=true`
 - family-number inputs are positive MPC catalog numbers
 - chart-grouping inputs are non-empty, positive, and bounded
+- resonance-network inputs provide exactly one identity source: `bodies` or
+  `numbers`
+- resonance-network `numbers` are positive MPC catalog numbers
+- resonance-network `bodies` are asteroid names or small-body NAIF IDs, not
+  MPC catalog numbers
+- resonance-network aspect policy inputs are bounded to the admitted
+  `find_aspects` tier/orb-factor surface
 - live catalog distinctions are preserved, including distinct Nesvorny family
   names such as `Koronis`, `Koronis(2)`, and `Karin`
 
@@ -117,7 +135,6 @@ Transport admission must verify:
 This standard does not admit:
 
 - asteroid-family position sweeps
-- resonance/aspect-network REST transport
 - rendered family maps
 - family astrocartography
 - photometry

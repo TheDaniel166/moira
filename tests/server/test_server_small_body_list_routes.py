@@ -535,6 +535,117 @@ def test_asteroid_families_in_chart_route_rejects_invalid_numbers(
     assert oversized.status_code == 422
 
 
+def test_asteroid_family_resonance_network_route_returns_ui_ready_edges(
+    client_with_small_body_reader: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    expected_jd = jd_from_datetime(datetime(2026, 6, 13, 12, tzinfo=timezone.utc))
+    calls: list[tuple[str | int, float, object]] = []
+
+    def fake_asteroid_at(body: str | int, jd_ut: float, *, reader: object | None = None) -> AsteroidData:
+        calls.append((body, jd_ut, reader))
+        if body == ASTEROID_NAIF["Vesta"]:
+            return AsteroidData(
+                name="Vesta",
+                naif_id=ASTEROID_NAIF["Vesta"],
+                longitude=10.0,
+                latitude=0.1,
+                distance=250_000_000.0,
+                speed=0.11,
+                retrograde=False,
+            )
+        if body == ASTEROID_NAIF["Ausonia"]:
+            return AsteroidData(
+                name="Ausonia",
+                naif_id=ASTEROID_NAIF["Ausonia"],
+                longitude=10.5,
+                latitude=-0.2,
+                distance=275_000_000.0,
+                speed=0.08,
+                retrograde=False,
+            )
+        raise KeyError(body)
+
+    monkeypatch.setattr("moira_server.services.asteroids.asteroid_at", fake_asteroid_at)
+
+    response = client_with_small_body_reader.post(
+        "/v1/asteroids/families/chart/resonance-network",
+        json={
+            "dt": "2026-06-13T12:00:00+00:00",
+            "numbers": [4, 63],
+            "aspect_tier": 0,
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["families"] == ["Vesta"]
+    assert body["total_aspects"] == 1
+    assert body["resonant_aspect_count"] == 1
+    assert body["sovereign_used"] is True
+    nodes_by_name = {node["body"]: node for node in body["nodes"]}
+    assert nodes_by_name["Vesta"]["mpc_number"] == 4
+    assert nodes_by_name["Vesta"]["family_name"] == "Vesta"
+    assert nodes_by_name["Vesta"]["is_sovereign"] is True
+    assert nodes_by_name["Ausonia"]["mpc_number"] == 63
+    assert nodes_by_name["Ausonia"]["family_name"] == "Vesta"
+    assert nodes_by_name["Ausonia"]["is_sovereign"] is False
+
+    edge = body["edges"][0]
+    assert edge["source"] == "Vesta"
+    assert edge["target"] == "Ausonia"
+    assert edge["family_name"] == "Vesta"
+    assert edge["body1_number"] == 4
+    assert edge["body2_number"] == 63
+    assert edge["aspect"]["aspect"] == "Conjunction"
+    assert edge["aspect"]["orb"] == pytest.approx(0.5)
+    assert edge["aspect"]["classification"]["family"] == "conjunction"
+    assert body["network"]["Vesta"] == [edge]
+    assert body["provenance"]["identity_source"] == "mpc_catalog_number"
+    assert body["provenance"]["requested_bodies"] == ["4", "63"]
+    assert body["provenance"]["resolved_bodies"] == ["Vesta", "Ausonia"]
+    assert body["provenance"]["jd_ut"] == expected_jd
+    assert body["provenance"]["stage_sequence"] == [
+        "datetime_validation",
+        "julian_day_conversion",
+        "asteroid_position_transport",
+        "mpc_number_derivation",
+        "aspect_detection",
+        "family_resonance_filter",
+        "resonance_network_serialization",
+    ]
+    assert [call[0] for call in calls] == [ASTEROID_NAIF["Vesta"], ASTEROID_NAIF["Ausonia"]]
+    assert all(call[1] == expected_jd for call in calls)
+    assert all(call[2] is not None for call in calls)
+
+
+def test_asteroid_family_resonance_network_route_rejects_invalid_requests(
+    client_with_small_body_reader: TestClient,
+) -> None:
+    dt = "2026-06-13T12:00:00+00:00"
+    too_few_numbers = client_with_small_body_reader.post(
+        "/v1/asteroids/families/chart/resonance-network",
+        json={"dt": dt, "numbers": [4]},
+    )
+    ambiguous_identity = client_with_small_body_reader.post(
+        "/v1/asteroids/families/chart/resonance-network",
+        json={"dt": dt, "bodies": ["Vesta", "Ausonia"], "numbers": [4, 63]},
+    )
+    mpc_number_in_body_field = client_with_small_body_reader.post(
+        "/v1/asteroids/families/chart/resonance-network",
+        json={"dt": dt, "bodies": [4, ASTEROID_NAIF["Ausonia"]]},
+    )
+    invalid_tier = client_with_small_body_reader.post(
+        "/v1/asteroids/families/chart/resonance-network",
+        json={"dt": dt, "numbers": [4, 63], "aspect_tier": 3},
+    )
+
+    assert too_few_numbers.status_code == 422
+    assert ambiguous_identity.status_code == 422
+    assert mpc_number_in_body_field.status_code == 422
+    assert invalid_tier.status_code == 422
+
+
 def test_comet_list_route_returns_structured_records_and_filters(
     client_with_small_body_reader: TestClient,
 ) -> None:

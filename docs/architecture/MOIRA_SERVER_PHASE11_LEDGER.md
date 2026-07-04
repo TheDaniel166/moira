@@ -110,7 +110,7 @@ Website readiness is tracked separately from phase admission:
 | P11-03 | Multiple stars | `admitted` | `website_good` | List, catalog record, and selected-system state/resolvability routes are live, route-tested, provenance-bearing, and bounded for datetime, system-name, aperture, and list-limit inputs. Catalog-wide sweeps, rendered orbit diagrams, observing plans, and exhaustive WDS/INT4 exposure remain deferred expansion. |
 | P11-04 | Asteroids | `admitted` | `website_good` | Position, bulk, and loaded-kernel list/search routes are live, route-tested, provenance-bearing, and bounded for timezone-aware datetime, non-empty body identity, bulk size, and list-limit inputs. Known catalog identity is explicitly distinguished from loaded-kernel availability. Asteroid families, subset routes, photometry, rendered maps, topocentric positions, ACG, and full small-body migration proof remain deferred. |
 | P11-05 | Comets | `admitted` | `website_good` | Position, bulk, and loaded-kernel list/search routes are live, route-tested, provenance-bearing, and bounded for timezone-aware datetime, non-empty body identity, bulk size, and list-limit inputs. Known comet identity is explicitly distinguished from loaded-kernel availability, and REST NAIF IDs resolve to engine comet names before computation. Non-periodic comet expansion, photometry, rendered maps, topocentric positions, ACG, and full small-body migration proof remain deferred. |
-| P11-06 | Asteroid families and asteroid subsets | `admitted` | `website_good` | Subset registry/list/position routes and Nesvorny family lookup/member/chart-group routes are live, route-tested, provenance-bearing, and bounded. Subset routes preserve name/NAIF identity and loaded-kernel truth; family routes preserve MPC-number and Nesvorny/PDS catalog semantics. Resonance/aspect-network transport, family-wide position sweeps, rendered maps, photometry, topocentric products, and family ACG remain deferred. |
+| P11-06 | Asteroid families and asteroid subsets | `admitted` | `website_good` | Subset registry/list/position routes, Nesvorny family lookup/member/chart-group routes, and a bounded chart family-resonance network route are live, route-tested, provenance-bearing, and bounded. Subset routes preserve name/NAIF identity and loaded-kernel truth; family routes preserve MPC-number and Nesvorny/PDS catalog semantics. Family-wide position sweeps, rendered maps, photometry, topocentric products, and family ACG remain deferred. |
 | P11-07 | Manazil / lunar mansions | `admitted` | `website_good` | Direct catalog, position, bulk, and tradition lookup routes are live, route-tested, provenance-bearing, and bounded. Tropical vs sidereal mode is explicit, sidereal mode requires `jd_ut`, and textual traditions change attribution only, not the 28 equal mansion boundaries. Chart-backed Moon mansion routes, natal mansion profiles, electional scoring, condition networks, Vedic nakshatra transport, and alternate boundary systems remain deferred. |
 | P11-08 | Planetary and small-body nodes | `admitted` | `website_good` | Mean planetary node catalog/single/bulk routes and a single-body geometric osculating node route are live, route-tested, provenance-bearing, and bounded. Mean-element and reader-backed geometric methods remain visibly distinct. Lunar nodes, chart-backed node profiles, nodal aspect networks, catalog-wide small-body node sweeps, rendered maps, and kernel manifest management remain deferred. |
 | P11-U1 | Catalog umbrella / `/v1/catalogs/*` | `defer_for_doctrine` | `not_website_ready` | Doctrine decision complete: a future umbrella may only be discovery-only registry metadata. Cross-family search, member lookup, computation, position requests, kernel coverage lists, and catalog sweeps remain excluded because they flatten distinct provenance and availability rules. |
@@ -545,6 +545,7 @@ Readiness:
   - `GET /v1/asteroids/families/by-number/{number}`
   - `GET /v1/asteroids/families/{family_name}/members`
   - `POST /v1/asteroids/families/chart`
+  - `POST /v1/asteroids/families/chart/resonance-network`
 - Subset routes preserve subset source module, catalog source, asteroid name,
   NAIF ID, and loaded-kernel availability truth.
 - Subset position routes delegate to the admitted P11-04 asteroid position
@@ -553,11 +554,15 @@ Readiness:
   provenance.
 - Family chart grouping preserves live catalog distinctions such as `Koronis`,
   `Koronis(2)`, and `Karin`.
+- Family resonance-network transport computes only explicitly requested chart
+  bodies, preserves both small-body position identity and MPC-number family
+  identity, and serializes full aspect-admission vessels on each resonant edge.
 
 Recommended first stance:
 
 - keep the admitted subset and family catalog routes
-- treat resonance/aspect-network transport as a separate design
+- keep resonance/aspect-network transport bounded to explicitly requested chart
+  bodies
 - do not add family-wide position sweeps without async/job or stricter bounds
 - keep family routes MPC-number based; do not silently conflate MPC numbers
   with NAIF IDs
@@ -567,7 +572,7 @@ Admission verification:
 - `.\.venv\Scripts\python.exe -m py_compile moira_server\models\asteroids.py moira_server\services\asteroids.py moira_server\routers\asteroids.py tests\server\test_server_small_body_list_routes.py`
 - `.\.venv\Scripts\python.exe -m pytest tests\server\test_server_small_body_list_routes.py -q`
 - `.\.venv\Scripts\python.exe -m pytest tests\unit\test_asteroid_api.py -q`
-- Route registry audit after admission: exactly 9 admitted asteroid routes.
+- Route registry audit after admission: exactly 10 admitted asteroid routes.
 
 ---
 

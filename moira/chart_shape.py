@@ -172,12 +172,25 @@ RULE-09  Leading planet — Locomotive
            TestLeadingPlanetSemantics::test_locomotive_leading_planet_in_clusters.
 
 RULE-10  Handle planet — Bucket
-    For Bucket, handle_planet is set; clusters has >= 2 entries; the handle
-    is in clusters[1], not clusters[0].
-    Enforced by __post_init__ (handle_planet non-None + cluster count).
+    For Bucket, handle_planet is a display *label* and clusters has >= 2
+    entries.  handle_bodies carries the authoritative handle identity: it is
+    a non-empty subset of clusters[1] and is disjoint from clusters[0].  A
+    singleton handle yields a one-member handle_bodies; a tight conjunction
+    pair handle yields a two-member handle_bodies while handle_planet remains
+    the "name1/name2" label.  Non-Bucket shapes carry an empty handle_bodies.
+    Enforced by __post_init__ (handle_planet non-None + cluster count +
+    handle_bodies non-empty/subset-of-clusters[1]/disjoint-from-clusters[0];
+    empty handle_bodies required off-Bucket).
     Tests: TestBucketDetection::test_bucket_handle_is_pluto,
            TestBucketDetection::test_bucket_handle_in_second_cluster,
-           TestChartShapeInvariants::test_bucket_without_handle_raises.
+           TestBucketDetection::test_bucket_handle_bodies_singleton,
+           TestBucketDetection::test_bucket_pair_handle_detected,
+           TestBucketDetection::test_bucket_pair_handle_label_and_bodies,
+           TestChartShapeInvariants::test_bucket_without_handle_raises,
+           TestChartShapeInvariants::test_bucket_without_handle_bodies_raises,
+           TestChartShapeInvariants::test_bucket_handle_bodies_not_in_second_cluster_raises,
+           TestChartShapeInvariants::test_bucket_handle_bodies_in_first_cluster_raises,
+           TestChartShapeInvariants::test_non_bucket_with_handle_bodies_raises.
 
 RULE-11  Handle-in-gap directional check
     A planet at exactly _BUCKET_MIN_HANDLE (60 degrees) from a rim is not
@@ -239,6 +252,13 @@ RULE-19  moira.__all__ exclusion is enforced
     kept thin; this module is accessible as a submodule import.
     Test: TestPublicAPIResolution::test_all_names_on_moira_package.
 
+RULE-20  Seesaw cluster contiguity is seam-safe
+    A chart whose planets form two clean opposing clusters, one of which
+    crosses the 0/360 longitude seam, is classified as Seesaw and is not
+    demoted to Splash.  Intra-cluster contiguity is judged on the circular
+    walk order used to build each cluster, not on raw sorted longitude.
+    Test: TestSeesawDetection::test_seesaw_cluster_crossing_zero_is_seesaw.
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Public surface
@@ -271,7 +291,7 @@ __all__ = [
 _BUNDLE_MAX_ARC      = 120.0   # all planets within this arc
 _LOCOMOTIVE_MIN_GAP  = 120.0   # single largest gap must be at least this
 _BOWL_MAX_ARC        = 180.0   # all planets within this arc
-_BUCKET_MIN_HANDLE   =  60.0   # handle must be >= this from each rim planet
+_BUCKET_MIN_HANDLE   =  60.0   # handle must be strictly greater than this from each rim
 _SEESAW_MIN_GAP      =  60.0   # each of the two opposing gaps must be >= this
 _SPLAY_MIN_GAP       =  30.0   # gap between each adjacent cluster >= this
 
@@ -343,12 +363,17 @@ class ChartShape:
         The detected ChartShapeType.
 
     occupied_arc
-        The arc in degrees spanned by all planets (360 minus the largest
-        gap).  Always in [0, 360].
+        The arc in degrees spanned by the classified planet set (360 minus
+        the largest gap).  Always in [0, 360].
+        Bucket exception: for Bucket these metrics describe the bowl *core* --
+        the arc and gap of the remaining planets after the handle is removed --
+        not the full chart including the handle.  This is intentional and is
+        asserted by the frozen Bucket tests.
 
     largest_gap
         The largest continuous empty arc in degrees between any two
         consecutive planets (travelling clockwise).  Always in [0, 360].
+        For Bucket this is the bowl-core gap (handle removed); see occupied_arc.
 
     leading_planet
         For Bowl and Locomotive: the planet at the clockwise-leading edge
@@ -359,13 +384,26 @@ class ChartShape:
         None for all other shapes.
 
     handle_planet
-        For Bucket: the name of the singleton handle planet.
+        For Bucket: a human-readable display *label* for the handle -- the
+        singleton planet's name, or "name1/name2" for a tight conjunction
+        pair handle.  This is a display string, not a body-identity set;
+        use handle_bodies for membership tests.
         None for all other shapes.
+
+    handle_bodies
+        For Bucket: the frozenset of the actual body names forming the handle
+        (one name, or two for a conjunction-pair handle).  This is the
+        authoritative handle identity: it is always a non-empty subset of
+        clusters[1] and never intersects clusters[0].
+        Empty frozenset for all other shapes.
 
     clusters
         Tuple of frozensets, each containing the body names in one
         detected cluster.  The clusters are ordered clockwise starting
-        from the cluster immediately after the largest gap.
+        from the cluster immediately after the first partitioning gap
+        encountered clockwise from 0 degrees (for Splay, the first gap
+        >= _SPLAY_MIN_GAP; for Seesaw, the first of the two qualifying
+        opposing gaps).  This is not necessarily the single largest gap.
         For Bundle, Bowl, Bucket, Locomotive: one cluster (plus the
         handle as a separate singleton for Bucket).
         For Seesaw: two clusters.
@@ -375,7 +413,9 @@ class ChartShape:
     Structural invariants
     ---------------------
     - ``occupied_arc + largest_gap == 360.0`` (within floating-point precision).
-    - For Bucket: ``handle_planet`` is set and is not in ``clusters[0]``.
+    - For Bucket: ``handle_planet`` is set (display label); ``handle_bodies``
+      is a non-empty subset of ``clusters[1]`` and disjoint from ``clusters[0]``.
+    - For non-Bucket shapes: ``handle_bodies`` is empty.
     - For Bowl / Locomotive: ``leading_planet`` is set and is in ``clusters[0]``.
     - ``clusters`` is never empty.
     - The vessel is immutable.
@@ -386,6 +426,7 @@ class ChartShape:
     leading_planet:  str | None
     handle_planet:   str | None
     clusters:        tuple[frozenset[str], ...]
+    handle_bodies:   frozenset[str] = frozenset()
 
     def __post_init__(self) -> None:
         if abs(self.occupied_arc + self.largest_gap - 360.0) > 1e-9:
@@ -416,6 +457,25 @@ class ChartShape:
                 raise ValueError(
                     "ChartShape invariant violated: Bucket requires at least two clusters"
                 )
+            if not self.handle_bodies:
+                raise ValueError(
+                    "ChartShape invariant violated: Bucket requires handle_bodies to be non-empty"
+                )
+            if not self.handle_bodies <= self.clusters[1]:
+                raise ValueError(
+                    f"ChartShape invariant violated: handle_bodies {set(self.handle_bodies)!r} "
+                    f"must be a subset of clusters[1]"
+                )
+            if self.handle_bodies & self.clusters[0]:
+                raise ValueError(
+                    f"ChartShape invariant violated: handle_bodies {set(self.handle_bodies)!r} "
+                    f"must not intersect clusters[0]"
+                )
+        elif self.handle_bodies:
+            raise ValueError(
+                f"ChartShape invariant violated: {self.shape.value} must carry empty "
+                f"handle_bodies (got {set(self.handle_bodies)!r})"
+            )
 
     def __repr__(self) -> str:
         lp = f", leading={self.leading_planet!r}" if self.leading_planet else ""
@@ -594,13 +654,15 @@ def _detect_bucket(
 
         if in_gap and dist_from_trailing > _BUCKET_MIN_HANDLE and dist_to_leading > _BUCKET_MIN_HANDLE:
             bowl_bodies = frozenset(name for _, name in remaining)
+            handle_set = frozenset({handle_name})
             return ChartShape(
                 shape=ChartShapeType.BUCKET,
                 occupied_arc=rem_arc,
                 largest_gap=rem_largest_gap,
                 leading_planet=handle_name,
                 handle_planet=handle_name,
-                clusters=(bowl_bodies, frozenset({handle_name})),
+                clusters=(bowl_bodies, handle_set),
+                handle_bodies=handle_set,
             )
 
     for h1 in range(n):
@@ -649,6 +711,7 @@ def _detect_bucket(
                     leading_planet=handle_label,
                     handle_planet=handle_label,
                     clusters=(bowl_bodies, handle_set),
+                    handle_bodies=handle_set,
                 )
 
     return None
@@ -688,19 +751,26 @@ def _detect_locomotive(
 
 
 def _has_cluster_internal_split(
-    cluster_names: list[str],
-    sorted_lons: list[tuple[float, str]],
+    ordered_cluster: list[tuple[float, str]],
 ) -> bool:
     """
-    Return True if any consecutive pair within cluster_names (in sorted
-    longitude order) is separated by a forward arc >= _SPLAY_MIN_GAP.
+    Return True if any consecutive pair within a cluster is separated by a
+    forward arc >= _SPLAY_MIN_GAP.
+
+    ``ordered_cluster`` is the list of (longitude, name) pairs in the exact
+    clockwise order that _detect_seesaw walked between the two bounding gaps.
+    Because the cluster is already in circular order, consecutive forward arcs
+    are the true intra-cluster gaps -- including for a cluster that crosses the
+    0/360 seam (e.g. 350 -> 0 -> 10).  Re-deriving the order from raw sorted
+    longitude, as an earlier form of this helper did, mis-read a seam-crossing
+    cluster as a 340-degree internal split and wrongly demoted a clean Seesaw
+    to Splash.
+
     Used by _detect_seesaw to reject charts whose apparent two-gap split
     conceals a third intra-cluster gap (those are Splay, not Seesaw).
     """
-    name_set = set(cluster_names)
-    idxs = [i for i, (_, nm) in enumerate(sorted_lons) if nm in name_set]
-    for k in range(len(idxs) - 1):
-        fwd = (sorted_lons[idxs[k + 1]][0] - sorted_lons[idxs[k]][0]) % 360.0
+    for k in range(len(ordered_cluster) - 1):
+        fwd = (ordered_cluster[k + 1][0] - ordered_cluster[k][0]) % 360.0
         if fwd >= _SPLAY_MIN_GAP:
             return True
     return False
@@ -730,24 +800,27 @@ def _detect_seesaw(
 
             # Build the two clusters by walking clockwise between gap endpoints.
             # ja != jb is guaranteed: _compute_gaps assigns each j uniquely.
-            c1: list[str] = []
-            c2: list[str] = []
+            c1: list[tuple[float, str]] = []
+            c2: list[tuple[float, str]] = []
 
             step = ja
             while step != jb:
-                c1.append(sorted_lons[step][1])
+                c1.append(sorted_lons[step])
                 step = (step + 1) % n
 
             while step != ja:
-                c2.append(sorted_lons[step][1])
+                c2.append(sorted_lons[step])
                 step = (step + 1) % n
 
             if len(c1) < 2 or len(c2) < 2:
                 continue
 
-            if _has_cluster_internal_split(c1, sorted_lons):
+            # Judge internal contiguity on the circular walk order built above,
+            # not on raw sorted longitude, so a cluster crossing the 0/360 seam
+            # is not mistaken for a Splay.
+            if _has_cluster_internal_split(c1):
                 continue
-            if _has_cluster_internal_split(c2, sorted_lons):
+            if _has_cluster_internal_split(c2):
                 continue
 
             # Use the pre-computed authoritative largest_gap / occupied_arc
@@ -759,7 +832,10 @@ def _detect_seesaw(
                 largest_gap=largest_gap,
                 leading_planet=None,
                 handle_planet=None,
-                clusters=(frozenset(c1), frozenset(c2)),
+                clusters=(
+                    frozenset(nm for _, nm in c1),
+                    frozenset(nm for _, nm in c2),
+                ),
             )
 
     return None

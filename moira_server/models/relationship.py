@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from .chart import ChartResponse, HousesResponse
 
@@ -293,6 +293,7 @@ class ChartShapeResponse(_StrictModel):
     largest_gap: float
     leading_planet: str | None = None
     handle_planet: str | None = None
+    handle_bodies: list[str] = Field(default_factory=list)
     clusters: list[list[str]]
 
 

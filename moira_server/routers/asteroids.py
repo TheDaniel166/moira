@@ -16,6 +16,8 @@ from ..models.asteroids import (
     AsteroidFamiliesInChartResponse,
     AsteroidFamilyLookupResponse,
     AsteroidFamilyMembersResponse,
+    AsteroidFamilyResonanceNetworkRequest,
+    AsteroidFamilyResonanceNetworkResponse,
     AsteroidPositionRequest,
     AsteroidPositionResponse,
     AsteroidSubsetListResponse,
@@ -27,6 +29,7 @@ from ..models.asteroids import (
     AsteroidsBulkResponse,
 )
 from ..services.asteroids import (
+    compute_asteroid_family_resonance_network,
     compute_asteroid_position,
     compute_asteroid_subset_positions,
     compute_asteroids_bulk,
@@ -130,3 +133,15 @@ def asteroid_families_in_chart(
 ) -> AsteroidFamiliesInChartResponse:
     """Group supplied MPC asteroid numbers by shared Nesvorny family."""
     return group_asteroid_families_in_chart(request)
+
+
+@router.post(
+    "/families/chart/resonance-network",
+    response_model=AsteroidFamilyResonanceNetworkResponse,
+)
+def asteroid_family_resonance_network(
+    request: AsteroidFamilyResonanceNetworkRequest,
+    engine=Depends(get_engine),
+) -> AsteroidFamilyResonanceNetworkResponse:
+    """Build a chart-level family-resonance aspect network for supplied asteroids."""
+    return compute_asteroid_family_resonance_network(engine, request)

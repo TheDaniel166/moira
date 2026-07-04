@@ -25,6 +25,7 @@ from .routers import (
     dasha_router,
     decanates_router,
     dignities_router,
+    draconic_router,
     egyptian_bounds_router,
     electional_router,
     frame_positions_router,
@@ -164,6 +165,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(sidereal_router)     # P-GAP-05 sidereal and Nakshatra utility primitives
     app.include_router(harmograms_router)    # P-GAP-06 bounded harmogram vector/intensity/trace surface
     app.include_router(antiscia_router)      # Phase-12 ordinary antiscia reflection/contact surface
+    app.include_router(draconic_router)      # Node-anchored draconic longitude-frame surface
     app.include_router(nine_parts_router)    # Phase-12 Abu Ma'shar Nine Parts aggregate surface
     app.include_router(planetary_hours_router)  # Phase-12 sunrise-based planetary-hours surface
     app.include_router(huber_router)  # Phase-12 direct Huber house-frame surface

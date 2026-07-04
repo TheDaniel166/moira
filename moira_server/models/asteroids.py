@@ -10,12 +10,16 @@ from __future__ import annotations
 from datetime import datetime
 from enum import StrEnum
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+from .relationship import AspectDataResponse
 
 
 ASTEROIDS_BULK_MAX_ITEMS = 500
 ASTEROID_FAMILY_MEMBER_MAX_ITEMS = 500
 ASTEROID_FAMILIES_CHART_MAX_ITEMS = 500
+ASTEROID_FAMILY_RESONANCE_NETWORK_MAX_ITEMS = 500
+SMALL_BODY_NAIF_OFFSET = 2_000_000
 
 
 class AsteroidSubsetSlug(StrEnum):
@@ -319,3 +323,140 @@ class AsteroidFamiliesInChartResponse(_StrictModel):
     groups: dict[str, list[int]]
     ungrouped_numbers: list[int]
     provenance: AsteroidFamiliesInChartProvenanceResponse
+
+
+class AsteroidFamilyResonanceNetworkRequest(_StrictModel):
+    dt: datetime
+    bodies: list[str | int] | None = Field(
+        default=None,
+        min_length=2,
+        max_length=ASTEROID_FAMILY_RESONANCE_NETWORK_MAX_ITEMS,
+    )
+    numbers: list[int] | None = Field(
+        default=None,
+        min_length=2,
+        max_length=ASTEROID_FAMILY_RESONANCE_NETWORK_MAX_ITEMS,
+    )
+    skip_missing: bool = True
+    aspect_tier: int | None = 0
+    include_minor: bool = True
+    orb_factor: float = Field(default=1.0, gt=0.0)
+
+    @field_validator("dt")
+    @classmethod
+    def _aware_datetime(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("dt must be timezone-aware")
+        return value
+
+    @field_validator("bodies")
+    @classmethod
+    def _valid_bodies(cls, value: list[str | int] | None) -> list[str | int] | None:
+        if value is None:
+            return value
+        cleaned: list[str | int] = []
+        seen: set[str] = set()
+        for body in value:
+            if isinstance(body, str):
+                stripped = body.strip()
+                if not stripped:
+                    raise ValueError("bodies entries must be non-empty")
+                if stripped.isdecimal() and int(stripped) <= SMALL_BODY_NAIF_OFFSET:
+                    raise ValueError(
+                        "numeric bodies must use small-body NAIF IDs; use numbers for MPC catalog numbers"
+                    )
+                key = stripped.casefold()
+                cleaned.append(stripped)
+            else:
+                if body <= SMALL_BODY_NAIF_OFFSET:
+                    raise ValueError(
+                        "integer bodies must use small-body NAIF IDs; use numbers for MPC catalog numbers"
+                    )
+                key = str(body)
+                cleaned.append(body)
+            if key in seen:
+                raise ValueError("bodies entries must be unique")
+            seen.add(key)
+        return cleaned
+
+    @field_validator("numbers")
+    @classmethod
+    def _valid_numbers(cls, value: list[int] | None) -> list[int] | None:
+        if value is None:
+            return value
+        seen: set[int] = set()
+        for number in value:
+            if number <= 0:
+                raise ValueError("numbers entries must be positive MPC catalog numbers")
+            if number in seen:
+                raise ValueError("numbers entries must be unique")
+            seen.add(number)
+        return value
+
+    @field_validator("aspect_tier")
+    @classmethod
+    def _valid_aspect_tier(cls, value: int | None) -> int | None:
+        if value is not None and value not in (0, 1, 2):
+            raise ValueError("aspect_tier must be 0, 1, 2, or null")
+        return value
+
+    @model_validator(mode="after")
+    def _exactly_one_identity_source(self) -> "AsteroidFamilyResonanceNetworkRequest":
+        if (self.bodies is None) == (self.numbers is None):
+            raise ValueError("provide exactly one of bodies or numbers")
+        return self
+
+
+class AsteroidFamilyResonanceNodeResponse(_StrictModel):
+    body: str
+    requested_body: str
+    naif_id: int
+    mpc_number: int
+    family_name: str | None
+    longitude: float
+    latitude: float
+    speed: float
+    retrograde: bool
+    is_sovereign: bool = False
+
+
+class AsteroidFamilyResonanceEdgeResponse(_StrictModel):
+    source: str
+    target: str
+    family_name: str
+    body1_number: int
+    body2_number: int
+    aspect: AspectDataResponse
+
+
+class AsteroidFamilyResonanceNetworkProvenanceResponse(_StrictModel):
+    catalog_source: str = "NASA_PDS_ast_nesvorny_families_v2_2015"
+    number_system: str = "MPC_catalog_number"
+    lookup_source_module: str = "moira.asteroid_families"
+    aspect_source_module: str = "moira.aspects"
+    coordinate_source: str = "asteroid_at_geocentric_tropical_ecliptic"
+    requested_datetime: str
+    normalized_datetime_utc: str
+    jd_ut: float
+    identity_source: str
+    requested_bodies: list[str]
+    resolved_bodies: list[str]
+    missing_bodies: list[str]
+    loaded_kernel_available: bool
+    aspect_tier: int | None
+    include_minor: bool
+    orb_factor: float
+    stage_sequence: list[str]
+
+
+class AsteroidFamilyResonanceNetworkResponse(_StrictModel):
+    dt: datetime
+    nodes: list[AsteroidFamilyResonanceNodeResponse]
+    edges: list[AsteroidFamilyResonanceEdgeResponse]
+    network: dict[str, list[AsteroidFamilyResonanceEdgeResponse]]
+    families: list[str]
+    missing: list[str] = []
+    total_aspects: int
+    resonant_aspect_count: int
+    sovereign_used: bool = False
+    provenance: AsteroidFamilyResonanceNetworkProvenanceResponse
