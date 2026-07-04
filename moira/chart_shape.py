@@ -59,7 +59,8 @@ Detection order (Jones / Sabian school priority — frozen)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     1. Bundle     occupied_arc <= 120
     2. Bowl       occupied_arc <= 180, no handle in gap arc
-    3. Bucket     9 planets arc <= 180, 1 planet in gap arc >= 60 from rims
+    3. Bucket     non-handle bodies arc <= 180; 1 body or tight conjunction
+                  pair in gap arc, each > 60 from rims
     4. Locomotive largest_gap >= 120, occupied_arc > 180, exactly one such gap
     5. Seesaw     two qualifying gaps, each cluster >= 2 internally-tight planets
     6. Splay      >= 3 clusters by _SPLAY_MIN_GAP, each cluster >= 2 planets
@@ -69,11 +70,13 @@ Rationale for ordering
 ~~~~~~~~~~~~~~~~~~~~~~
 - Bundle before Bowl: a 120-degree arc satisfies both; Bundle is more
   specific and takes priority.
-- Bowl before Bucket: Bucket's occupied arc always exceeds 180 degrees
-  (removing the handle from a <= 180-degree bowl leaves a remainder that
-  must span > 180 to put the handle in the opposite hemisphere).  Therefore
-  Bowl and Bucket are mutually exclusive by arc arithmetic, but the Bowl
-  detector's explicit handle-in-gap check is the authoritative guard.
+- Bowl before Bucket: _detect_bowl claims every chart whose full-chart
+  occupied arc is <= 180 via its arc guard, so only charts whose full-chart
+  occupied arc exceeds 180 reach _detect_bucket.  A Bucket's handle lies in
+  the wide empty arc outside the bowl core; removing it leaves a Bowl-like
+  core whose arc is <= 180.  _detect_bucket therefore reports the bowl-core
+  arc and gap (handle removed) -- a distinct measurement from the full-chart
+  occupied arc that separated the chart from Bowl.
 - Bowl/Bucket before Locomotive: a chart with occupied_arc <= 180 also has
   largest_gap >= 180 >= 120, so Locomotive would fire without the
   ``occupied_arc <= _BOWL_MAX_ARC`` guard inside _detect_locomotive.
@@ -314,9 +317,10 @@ class ChartShapeType(str, Enum):
         of unfulfilled potential.
 
     BUCKET
-        Bowl with one planet (the handle) isolated in the opposing
-        hemisphere by at least 60 degrees from each rim planet.  The
-        handle is the dominant focal channel for the entire chart.
+        Bowl with one planet -- or a tight conjunction pair -- (the handle)
+        isolated in the opposing hemisphere by strictly more than 60 degrees
+        from each rim planet.  The handle is the dominant focal channel for
+        the entire chart.
 
     LOCOMOTIVE
         All planets within a 240-degree arc, leaving one continuous
@@ -586,8 +590,8 @@ def _detect_bowl(
     occupied_arc: float,
 ) -> ChartShape | None:
     """
-    Bowl: all planets within <= 180 degrees, no planet isolated >= 60 from
-    both rim planets (that would be a Bucket).
+    Bowl: all planets within <= 180 degrees, no planet isolated more than 60
+    degrees from both rim planets (that would be a Bucket).
     """
     if occupied_arc > _BOWL_MAX_ARC:
         return None
@@ -622,8 +626,8 @@ def _detect_bucket(
 ) -> ChartShape | None:
     """
     Bucket: exactly one planet (or a tight conjunction pair <= 8 degrees)
-    isolated by >= 60 degrees from each rim planet, where the remaining
-    planets form a contiguous arc of <= 180 degrees.
+    isolated by strictly more than 60 degrees from each rim planet, where the
+    remaining planets form a contiguous arc of <= 180 degrees.
     """
     n = len(sorted_lons)
 
@@ -870,9 +874,9 @@ def _detect_splash(
     gaps: list[tuple[float, int, int]],
     largest_gap: float,
 ) -> ChartShape:
-    # Fallback: at least 7 distinct bodies, no gap > 60 degrees.
-    # If neither condition is met, still return Splash (caller's choice of
-    # planet set may be smaller than Jones' canonical 10).
+    # Unconditional fallback: no threshold is enforced here (see RULE-15).
+    # Splash is returned whenever every preceding detector has declined,
+    # regardless of body count or gap magnitude.
     occupied_arc = 360.0 - largest_gap
     all_bodies = frozenset(name for _, name in sorted_lons)
     return ChartShape(
@@ -907,7 +911,8 @@ def classify_chart_shape(positions: Mapping[str, float]) -> ChartShape:
     ---------------
     1. Bundle     (occupied arc <= 120)
     2. Bowl       (occupied arc <= 180, no isolated handle)
-    3. Bucket     (9 planets in contiguous arc <= 180 + 1 isolated handle)
+    3. Bucket     (non-handle bodies in contiguous arc <= 180 + 1 isolated
+                  handle body or tight conjunction pair, each > 60 from rims)
     4. Locomotive (largest gap >= 120, occupied arc > 180, not a Bucket)
     5. Seesaw     (two opposing gaps each >= 60)
     6. Splay      (three or more clusters, each gap >= 30)
