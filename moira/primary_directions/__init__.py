@@ -946,10 +946,6 @@ class PrimaryArc:
     def is_converse(self) -> bool:
         return self.motion is PrimaryDirectionMotion.CONVERSE
 
-    @property
-    def key_family(self) -> PrimaryDirectionKeyFamily:
-        return PrimaryDirectionKeyPolicy().family
-
     def __repr__(self) -> str:
         return (
             f"PrimaryArc({self.significator} <- {self.promissor}  "

@@ -75,3 +75,17 @@ def test_moira_root_surface_remains_thin_for_primary_directions() -> None:
     assert "primary_directions" not in moira.__all__
     assert "PrimaryDirectionRelation" not in moira.__all__
     assert not hasattr(moira, "PrimaryDirectionRelation")
+
+
+def test_primary_arc_does_not_expose_fictional_key_family() -> None:
+    from moira.primary_directions import PrimaryArc, PrimaryDirectionMotion
+
+    arc = PrimaryArc(
+        significator="Sun",
+        promissor="MC",
+        arc=12.5,
+        direction="D",
+        motion=PrimaryDirectionMotion.DIRECT,
+    )
+    # An arc holds no key, so it must not claim a key family.
+    assert not hasattr(arc, "key_family")
