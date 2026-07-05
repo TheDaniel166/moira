@@ -54,7 +54,6 @@ class PrimaryDirectionGeometryLaw(StrEnum):
     PLACIDIAN_CLASSIC_SEMI_ARC = "placidian_classic_semi_arc"
     PTOLEMAIC_PROPORTIONAL_SEMI_ARC = "ptolemaic_proportional_semi_arc"
     MERIDIAN_EQUATORIAL = "meridian_equatorial"
-    MORINUS_SHARED_EQUATORIAL = "morinus_shared_equatorial"
     REGIOMONTANUS_UNDER_POLE = "regiomontanus_under_pole"
     CAMPANUS_SPECULUM = "campanus_speculum"
     TOPOCENTRIC_UNDER_POLE = "topocentric_under_pole"
@@ -111,9 +110,9 @@ def primary_direction_geometry_truth(
         ),
         PrimaryDirectionMethod.MORINUS: PrimaryDirectionGeometryTruth(
             method=PrimaryDirectionMethod.MORINUS,
-            law=PrimaryDirectionGeometryLaw.MORINUS_SHARED_EQUATORIAL,
+            law=PrimaryDirectionGeometryLaw.REGIOMONTANUS_UNDER_POLE,
             sovereignty=PrimaryDirectionGeometrySovereignty.SHARED_NARROW,
-            shared_with=(PrimaryDirectionMethod.MERIDIAN,),
+            shared_with=(PrimaryDirectionMethod.REGIOMONTANUS,),
         ),
         PrimaryDirectionMethod.REGIOMONTANUS: PrimaryDirectionGeometryTruth(
             method=PrimaryDirectionMethod.REGIOMONTANUS,
@@ -378,16 +377,16 @@ def compute_primary_direction_arcs(
             return angular
 
     if space is PrimaryDirectionSpace.IN_ZODIACO:
-        if method is PrimaryDirectionMethod.REGIOMONTANUS:
+        if method in (
+            PrimaryDirectionMethod.REGIOMONTANUS,
+            PrimaryDirectionMethod.MORINUS,
+        ):
             return _regiomontanus_under_pole_arcs(sig, prom, geo_lat=geo_lat)
         if method is PrimaryDirectionMethod.CAMPANUS:
             return _campanus_under_pole_arcs(sig, prom, geo_lat=geo_lat)
         if method is PrimaryDirectionMethod.TOPOCENTRIC:
             return _topocentric_under_pole_arcs(sig, prom, geo_lat=geo_lat)
-        if method in (
-            PrimaryDirectionMethod.MERIDIAN,
-            PrimaryDirectionMethod.MORINUS,
-        ):
+        if method is PrimaryDirectionMethod.MERIDIAN:
             return _equatorial_arcs(sig, prom)
         if method is PrimaryDirectionMethod.PTOLEMY_SEMI_ARC:
             return _ptolemaic_proportional_semi_arc_arcs(sig, prom)
@@ -395,16 +394,16 @@ def compute_primary_direction_arcs(
             return _zodiacal_longitude_arcs(sig, prom)
         return _zodiacal_projected_arcs(sig, prom)
 
-    if method is PrimaryDirectionMethod.REGIOMONTANUS:
+    if method in (
+        PrimaryDirectionMethod.REGIOMONTANUS,
+        PrimaryDirectionMethod.MORINUS,
+    ):
         return _regiomontanus_under_pole_arcs(sig, prom, geo_lat=geo_lat)
     if method is PrimaryDirectionMethod.CAMPANUS:
         return _campanus_under_pole_arcs(sig, prom, geo_lat=geo_lat)
     if method is PrimaryDirectionMethod.TOPOCENTRIC:
         return _topocentric_under_pole_arcs(sig, prom, geo_lat=geo_lat)
-    if method in (
-        PrimaryDirectionMethod.MERIDIAN,
-        PrimaryDirectionMethod.MORINUS,
-    ):
+    if method is PrimaryDirectionMethod.MERIDIAN:
         return _equatorial_arcs(sig, prom)
     if method is PrimaryDirectionMethod.PTOLEMY_SEMI_ARC:
         return _ptolemaic_proportional_semi_arc_arcs(sig, prom)

@@ -116,12 +116,12 @@ def test_primary_direction_method_truth_admits_morinus_branch() -> None:
 
     assert truth.kind is PrimaryDirectionMethodKind.MORINUS
     assert truth.uses_semi_arcs is False
-    assert truth.under_pole_based is False
+    assert truth.under_pole_based is True
     assert classification.mundane is True
     assert classification.zodiacal is True
-    assert classification.under_pole_based is False
-    assert relation.relation_kind is PrimaryDirectionMethodRelationKind.MORINIAN_EQUATORIAL_PERFECTION
-    assert condition.state is PrimaryDirectionMethodConditionState.MORINIAN_GROUNDED
+    assert classification.under_pole_based is True
+    assert relation.relation_kind is PrimaryDirectionMethodRelationKind.MORINIAN_UNDER_POLE_PERFECTION
+    assert condition.state is PrimaryDirectionMethodConditionState.MORINIAN_UNDER_POLE_GROUNDED
 
 
 def test_primary_direction_method_truth_admits_campanus_branch() -> None:
@@ -173,7 +173,7 @@ def test_primary_direction_methods_aggregate_and_network_are_deterministic() -> 
     assert aggregate.total_profiles == 8
     assert aggregate.mundane_count == 8
     assert aggregate.semi_arc_count == 3
-    assert aggregate.under_pole_count == 3
+    assert aggregate.under_pole_count == 4
     assert len(network.nodes) == 8
     assert {node.method for node in network.nodes} == {
         PrimaryDirectionMethod.PLACIDUS_MUNDANE,

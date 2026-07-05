@@ -112,16 +112,16 @@ Current narrow branch notes:
 - `Meridian` is admitted as an explicit narrow equatorial branch
   - on the currently admitted runtime surface it perfects by equatorial
     right-ascension difference
-- `Morinus` is admitted as an explicit narrow equatorial branch
-  - on the currently admitted runtime surface it perfects by equatorial
-    right-ascension difference
+- `Morinus` is admitted as an explicit narrow under-the-pole branch
+  - on the currently admitted runtime surface it perfects by the Regiomontanus
+    circle-of-position law (Morin's own directional method, Book 22)
   - an explicit Morinian aspect-plane branch is now admitted when the service
     layer supplies the required path context (`delta_max`, motion sense, handed
     aspect)
   - the current doctrinal resolution is explicit:
-    - aspectual Morinus distinctness is real
-    - conjunction-style Morinus remains shared with the equatorial branch
-      unless a source-safe distinct formula is recovered
+    - aspectual Morinus distinctness is real (the circle-of-aspects plane)
+    - conjunction-style Morinus shares the Regiomontanus circle-of-position law
+      per Book 22; it has no independent conjunction geometry to recover
   - **Book 22 finding (2026-07-05):** the source-safe formula is now recovered.
     Morin's own *Astrologia Gallica* Book 22 (*De Directionibus*, Holden trans.)
     Section I Chapter 9 gives the arc of direction as *right* ascension only
@@ -137,11 +137,15 @@ Current narrow branch notes:
       `_equatorial_arcs` (identical to `Meridian`) is faithful only on the
       MC/IC and **contradicts Book 22 for every off-angle significator** — a
       correctness defect, not merely a labeling gap.
-    - status: the runtime still behaves the old (equatorial) way; the geometry
-      truth record in `geometry.py` still accurately describes that current
-      behavior. Correcting the routing to the under-pole law is a behavioral
-      change to P12-frozen substrate and requires explicit ratification plus
-      invariant-register + validation-codex updates and an oracle fixture.
+    - status (corrected 2026-07-05): the runtime now routes Morinus conjunction
+      arcs to the Regiomontanus circle-of-position law, and `methods.py` marks
+      Morinus `under_pole_based` with a `MORINIAN_UNDER_POLE` perfection/state.
+      Verified against Morin's own worked arc in Appendix 5 (Mars to Jupiter in
+      the Hemminga chart, 25 deg 46') by
+      `test_morinus_arc_matches_morin_book22_hemminga_oracle`. This was an
+      explicit constitutional revision of P12-frozen substrate: `geometry.py`
+      and `methods.py` were moved together so the invariant "directional
+      quantities agree with the active geometry law" is preserved.
     - collateral: Book 22 Section I Chapter 7 also shows Morin's *traditional*
       converse is role reversal computed in the preceding terminus's circle of
       position, not arc-negation; Moira's `converse = -direct` is exact only for
@@ -167,8 +171,9 @@ Mathematical sovereignty status:
   - `Regiomontanus`
   - `Campanus`
   - `Topocentric`
-- shared narrow laws, not yet fully sovereign:
-  - `Morinus`
+- shared narrow laws, not independently sovereign:
+  - `Morinus` — shares the Regiomontanus circle-of-position law (Book 22);
+    distinct only in the aspect plane, not in conjunction geometry
 
 
 Constitutional rule:

@@ -45,6 +45,7 @@ from moira.primary_directions import (
 )
 from moira.antiscia import antiscion, contra_antiscion
 from moira.primary_directions.fixed_stars import resolve_primary_direction_fixed_star_point
+from moira.primary_directions.geometry import compute_primary_direction_arcs
 from moira.primary_directions.morinus import project_morinus_aspect_point
 from moira.primary_directions.placidus import compute_placidian_rapt_parallel_arc
 from moira.primary_directions.placidus import compute_placidian_converse_rapt_parallel_arc
@@ -1108,8 +1109,18 @@ def test_morinus_with_explicit_aspect_context_uses_circle_of_aspects() -> None:
         chart.obliquity,
         51.5,
     )
-    expected_direct = (sun_entry.ra - morinus_prom.ra) % 360.0
-    expected_converse = (-expected_direct) % 360.0
+    # Morin's aspect promissor is projected by the circle-of-aspects plane, then
+    # directed by his conjunction law -- the Regiomontanus circle of position.
+    expected_direct, expected_converse = compute_primary_direction_arcs(
+        PrimaryDirectionMethod.REGIOMONTANUS,
+        sun_entry,
+        morinus_prom,
+        space=PrimaryDirectionSpace.IN_ZODIACO,
+        latitude_doctrine=PrimaryDirectionLatitudeDoctrine.ZODIACAL_PROMISSOR_RETAINED,
+        geo_lat=51.5,
+        armc=houses.armc,
+        oa_asc=0.0,
+    )
     by_direction = {arc.direction: arc for arc in morinus_arcs}
     assert by_direction[DIRECT].arc == pytest.approx(expected_direct)
     assert by_direction[CONVERSE].arc == pytest.approx(expected_converse)
@@ -1261,9 +1272,19 @@ def test_morinus_is_admitted_on_mundane_surface() -> None:
     entry_map = {entry.name: entry for entry in entries}
     sig = entry_map[Body.SUN]
     prom = entry_map[Body.MOON]
+    expected_direct, expected_converse = compute_primary_direction_arcs(
+        PrimaryDirectionMethod.REGIOMONTANUS,
+        sig,
+        prom,
+        space=PrimaryDirectionSpace.IN_MUNDO,
+        latitude_doctrine=PrimaryDirectionLatitudeDoctrine.MUNDANE_PRESERVED,
+        geo_lat=51.5,
+        armc=houses.armc,
+        oa_asc=0.0,
+    )
     by_direction = {arc.direction: arc for arc in morinus_arcs}
-    assert by_direction[DIRECT].arc == pytest.approx((sig.ra - prom.ra) % 360.0)
-    assert by_direction[CONVERSE].arc == pytest.approx((prom.ra - sig.ra) % 360.0)
+    assert by_direction[DIRECT].arc == pytest.approx(expected_direct)
+    assert by_direction[CONVERSE].arc == pytest.approx(expected_converse)
 
 
 def test_porphyry_is_no_longer_admitted_as_runtime_method() -> None:
@@ -1546,9 +1567,19 @@ def test_morinus_is_admitted_on_zodiacal_projected_surface() -> None:
     assert all(arc.method is PrimaryDirectionMethod.MORINUS for arc in morinus_zodiacal)
     sig = SpeculumEntry.build(Body.SUN, 15.0, 0.0, houses.armc, chart.obliquity, 51.5)
     prom = SpeculumEntry.build(Body.MOON, 82.0, 5.0, houses.armc, chart.obliquity, 51.5)
+    expected_direct, expected_converse = compute_primary_direction_arcs(
+        PrimaryDirectionMethod.REGIOMONTANUS,
+        sig,
+        prom,
+        space=PrimaryDirectionSpace.IN_ZODIACO,
+        latitude_doctrine=PrimaryDirectionLatitudeDoctrine.ZODIACAL_PROMISSOR_RETAINED,
+        geo_lat=51.5,
+        armc=houses.armc,
+        oa_asc=0.0,
+    )
     by_direction = {arc.direction: arc for arc in morinus_zodiacal}
-    assert by_direction[DIRECT].arc == pytest.approx((sig.ra - prom.ra) % 360.0)
-    assert by_direction[CONVERSE].arc == pytest.approx((prom.ra - sig.ra) % 360.0)
+    assert by_direction[DIRECT].arc == pytest.approx(expected_direct)
+    assert by_direction[CONVERSE].arc == pytest.approx(expected_converse)
 
 
 def test_porphyry_is_no_longer_admitted_on_zodiacal_runtime_surface() -> None:

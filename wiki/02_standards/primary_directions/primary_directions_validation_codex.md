@@ -58,6 +58,9 @@ The subsystem must preserve:
 - Placidian rapt parallels
 - fixed stars
 - antiscia / contra-antiscia
+- Morinus conjunction geometry against Morin's own worked arc
+  (Astrologia Gallica Book 22, Appendix 5; Hemminga Mars-to-Jupiter, 25 deg 46')
+  via `test_morinus_arc_matches_morin_book22_hemminga_oracle`
 
 ### Public API
 

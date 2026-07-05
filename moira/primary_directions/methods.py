@@ -69,7 +69,7 @@ class PrimaryDirectionMethodRelationKind(StrEnum):
     PTOLEMAIC_SEMI_ARC_PERFECTION = "ptolemaic_semi_arc_perfection"
     PLACIDIAN_CLASSIC_SEMI_ARC_PERFECTION = "placidian_classic_semi_arc_perfection"
     MERIDIAN_EQUATORIAL_PERFECTION = "meridian_equatorial_perfection"
-    MORINIAN_EQUATORIAL_PERFECTION = "morinian_equatorial_perfection"
+    MORINIAN_UNDER_POLE_PERFECTION = "morinian_under_pole_perfection"
     REGIOMONTANIAN_UNDER_POLE_PERFECTION = "regiomontanian_under_pole_perfection"
     CAMPANIAN_UNDER_POLE_PERFECTION = "campanian_under_pole_perfection"
     TOPOCENTRIC_UNDER_POLE_PERFECTION = "topocentric_under_pole_perfection"
@@ -81,7 +81,7 @@ class PrimaryDirectionMethodConditionState(StrEnum):
     PTOLEMAIC_SEMI_ARC_GROUNDED = "ptolemaic_semi_arc_grounded"
     CLASSIC_SEMI_ARC_GROUNDED = "classic_semi_arc_grounded"
     EQUATORIAL_GROUNDED = "equatorial_grounded"
-    MORINIAN_GROUNDED = "morinian_grounded"
+    MORINIAN_UNDER_POLE_GROUNDED = "morinian_under_pole_grounded"
     UNDER_POLE_GROUNDED = "under_pole_grounded"
     PRIME_VERTICAL_UNDER_POLE_GROUNDED = "prime_vertical_under_pole_grounded"
     TOPOCENTRIC_UNDER_POLE_GROUNDED = "topocentric_under_pole_grounded"
@@ -153,7 +153,7 @@ class PrimaryDirectionMethodTruth:
                 False,
                 True,
                 True,
-                False,
+                True,
             ),
             PrimaryDirectionMethod.REGIOMONTANUS: (
                 PrimaryDirectionMethodKind.REGIOMONTANUS,
@@ -206,7 +206,7 @@ class PrimaryDirectionMethodClassification:
             PrimaryDirectionMethod.PTOLEMY_SEMI_ARC: (True, False, True, False),
             PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC: (True, False, True, False),
             PrimaryDirectionMethod.MERIDIAN: (True, True, False, False),
-            PrimaryDirectionMethod.MORINUS: (True, True, False, False),
+            PrimaryDirectionMethod.MORINUS: (True, True, False, True),
             PrimaryDirectionMethod.REGIOMONTANUS: (True, True, False, True),
             PrimaryDirectionMethod.CAMPANUS: (True, True, False, True),
             PrimaryDirectionMethod.TOPOCENTRIC: (True, True, False, True),
@@ -230,7 +230,7 @@ class PrimaryDirectionMethodRelation:
             PrimaryDirectionMethod.PTOLEMY_SEMI_ARC: PrimaryDirectionMethodRelationKind.PTOLEMAIC_SEMI_ARC_PERFECTION,
             PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC: PrimaryDirectionMethodRelationKind.PLACIDIAN_CLASSIC_SEMI_ARC_PERFECTION,
             PrimaryDirectionMethod.MERIDIAN: PrimaryDirectionMethodRelationKind.MERIDIAN_EQUATORIAL_PERFECTION,
-            PrimaryDirectionMethod.MORINUS: PrimaryDirectionMethodRelationKind.MORINIAN_EQUATORIAL_PERFECTION,
+            PrimaryDirectionMethod.MORINUS: PrimaryDirectionMethodRelationKind.MORINIAN_UNDER_POLE_PERFECTION,
             PrimaryDirectionMethod.REGIOMONTANUS: PrimaryDirectionMethodRelationKind.REGIOMONTANIAN_UNDER_POLE_PERFECTION,
             PrimaryDirectionMethod.CAMPANUS: PrimaryDirectionMethodRelationKind.CAMPANIAN_UNDER_POLE_PERFECTION,
             PrimaryDirectionMethod.TOPOCENTRIC: PrimaryDirectionMethodRelationKind.TOPOCENTRIC_UNDER_POLE_PERFECTION,
@@ -285,7 +285,7 @@ class PrimaryDirectionMethodConditionProfile:
             PrimaryDirectionMethod.PTOLEMY_SEMI_ARC: PrimaryDirectionMethodConditionState.PTOLEMAIC_SEMI_ARC_GROUNDED,
             PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC: PrimaryDirectionMethodConditionState.CLASSIC_SEMI_ARC_GROUNDED,
             PrimaryDirectionMethod.MERIDIAN: PrimaryDirectionMethodConditionState.EQUATORIAL_GROUNDED,
-            PrimaryDirectionMethod.MORINUS: PrimaryDirectionMethodConditionState.MORINIAN_GROUNDED,
+            PrimaryDirectionMethod.MORINUS: PrimaryDirectionMethodConditionState.MORINIAN_UNDER_POLE_GROUNDED,
             PrimaryDirectionMethod.REGIOMONTANUS: PrimaryDirectionMethodConditionState.UNDER_POLE_GROUNDED,
             PrimaryDirectionMethod.CAMPANUS: PrimaryDirectionMethodConditionState.PRIME_VERTICAL_UNDER_POLE_GROUNDED,
             PrimaryDirectionMethod.TOPOCENTRIC: PrimaryDirectionMethodConditionState.TOPOCENTRIC_UNDER_POLE_GROUNDED,
@@ -395,6 +395,7 @@ def primary_direction_method_truth(
         uses_world_frame_geometry=True,
         latitude_sensitive=True,
         under_pole_based=resolved_policy.method in (
+            PrimaryDirectionMethod.MORINUS,
             PrimaryDirectionMethod.REGIOMONTANUS,
             PrimaryDirectionMethod.CAMPANUS,
             PrimaryDirectionMethod.TOPOCENTRIC,
@@ -430,7 +431,7 @@ def relate_primary_direction_method(
             PrimaryDirectionMethod.PTOLEMY_SEMI_ARC: PrimaryDirectionMethodRelationKind.PTOLEMAIC_SEMI_ARC_PERFECTION,
             PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC: PrimaryDirectionMethodRelationKind.PLACIDIAN_CLASSIC_SEMI_ARC_PERFECTION,
             PrimaryDirectionMethod.MERIDIAN: PrimaryDirectionMethodRelationKind.MERIDIAN_EQUATORIAL_PERFECTION,
-            PrimaryDirectionMethod.MORINUS: PrimaryDirectionMethodRelationKind.MORINIAN_EQUATORIAL_PERFECTION,
+            PrimaryDirectionMethod.MORINUS: PrimaryDirectionMethodRelationKind.MORINIAN_UNDER_POLE_PERFECTION,
             PrimaryDirectionMethod.REGIOMONTANUS: PrimaryDirectionMethodRelationKind.REGIOMONTANIAN_UNDER_POLE_PERFECTION,
             PrimaryDirectionMethod.CAMPANUS: PrimaryDirectionMethodRelationKind.CAMPANIAN_UNDER_POLE_PERFECTION,
             PrimaryDirectionMethod.TOPOCENTRIC: PrimaryDirectionMethodRelationKind.TOPOCENTRIC_UNDER_POLE_PERFECTION,
@@ -463,7 +464,7 @@ def evaluate_primary_direction_method_condition(
             PrimaryDirectionMethod.PTOLEMY_SEMI_ARC: PrimaryDirectionMethodConditionState.PTOLEMAIC_SEMI_ARC_GROUNDED,
             PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC: PrimaryDirectionMethodConditionState.CLASSIC_SEMI_ARC_GROUNDED,
             PrimaryDirectionMethod.MERIDIAN: PrimaryDirectionMethodConditionState.EQUATORIAL_GROUNDED,
-            PrimaryDirectionMethod.MORINUS: PrimaryDirectionMethodConditionState.MORINIAN_GROUNDED,
+            PrimaryDirectionMethod.MORINUS: PrimaryDirectionMethodConditionState.MORINIAN_UNDER_POLE_GROUNDED,
             PrimaryDirectionMethod.REGIOMONTANUS: PrimaryDirectionMethodConditionState.UNDER_POLE_GROUNDED,
             PrimaryDirectionMethod.CAMPANUS: PrimaryDirectionMethodConditionState.PRIME_VERTICAL_UNDER_POLE_GROUNDED,
             PrimaryDirectionMethod.TOPOCENTRIC: PrimaryDirectionMethodConditionState.TOPOCENTRIC_UNDER_POLE_GROUNDED,
