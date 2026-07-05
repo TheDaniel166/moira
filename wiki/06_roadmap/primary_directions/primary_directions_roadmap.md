@@ -122,6 +122,32 @@ Current narrow branch notes:
     - aspectual Morinus distinctness is real
     - conjunction-style Morinus remains shared with the equatorial branch
       unless a source-safe distinct formula is recovered
+  - **Book 22 finding (2026-07-05):** the source-safe formula is now recovered.
+    Morin's own *Astrologia Gallica* Book 22 (*De Directionibus*, Holden trans.)
+    Section I Chapter 9 gives the arc of direction as *right* ascension only
+    when the significator is on the meridian, and **oblique ascension under the
+    pole of the significator's circle of position** otherwise; Appendix 5 gives
+    the explicit Regiomontanus-style algorithm. The translator's preface states
+    Morin's mathematical basis *is* the Rational System of Regiomontanus.
+    - consequence: positional Morinus geometry **is** the Regiomontanus
+      circle-of-position law already in `geometry.py`
+      (`_regiomontanus_under_pole_arcs`), directed in mundo. It is not an
+      independent geometry awaiting its own math.
+    - consequence: the current runtime routing of `Morinus` to
+      `_equatorial_arcs` (identical to `Meridian`) is faithful only on the
+      MC/IC and **contradicts Book 22 for every off-angle significator** — a
+      correctness defect, not merely a labeling gap.
+    - status: the runtime still behaves the old (equatorial) way; the geometry
+      truth record in `geometry.py` still accurately describes that current
+      behavior. Correcting the routing to the under-pole law is a behavioral
+      change to P12-frozen substrate and requires explicit ratification plus
+      invariant-register + validation-codex updates and an oracle fixture.
+    - collateral: Book 22 Section I Chapter 7 also shows Morin's *traditional*
+      converse is role reversal computed in the preceding terminus's circle of
+      position, not arc-negation; Moira's `converse = -direct` is exact only for
+      the symmetric method families. This is a separate substrate question.
+    - Book 22 does **not** supply neo-converse; see
+      [primary_directions_truth_card_neo_converse.md](../../01_doctrines/primary_directions/primary_directions_truth_card_neo_converse.md).
 - `Campanus` is admitted as an explicit narrow under-the-pole branch
   - on the currently admitted runtime surface it uses the verified shared
     Campanus-Regiomontanus speculum law
