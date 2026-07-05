@@ -65,6 +65,8 @@ class PrimaryDirectionKeyTruth:
     key: PrimaryDirectionKey
     family: PrimaryDirectionKeyFamily
     rate_degrees_per_year: float
+    requested_key: str = ""
+    fallback_applied: bool = False
 
     def __post_init__(self) -> None:
         expected_family = PrimaryDirectionKeyPolicy(self.key).family
@@ -76,13 +78,19 @@ class PrimaryDirectionKeyTruth:
             raise ValueError(
                 "PrimaryDirectionKeyTruth invariant failed: rate_degrees_per_year must be positive"
             )
+        if self.fallback_applied and self.key is not PrimaryDirectionKey.NAIBOD:
+            raise ValueError(
+                "PrimaryDirectionKeyTruth invariant failed: fallback must resolve to Naibod"
+            )
 
 
-def _normalize_key(key: str | PrimaryDirectionKey) -> PrimaryDirectionKey:
+def _resolve_key(key: str | PrimaryDirectionKey) -> tuple[PrimaryDirectionKey, bool]:
+    if isinstance(key, PrimaryDirectionKey):
+        return key, False
     try:
-        return key if isinstance(key, PrimaryDirectionKey) else PrimaryDirectionKey(str(key).lower())
+        return PrimaryDirectionKey(str(key).lower()), False
     except ValueError:
-        return PrimaryDirectionKey.NAIBOD
+        return PrimaryDirectionKey.NAIBOD, True
 
 
 def primary_direction_key_truth(
@@ -90,7 +98,7 @@ def primary_direction_key_truth(
     *,
     solar_rate: float | None = None,
 ) -> PrimaryDirectionKeyTruth:
-    resolved_key = _normalize_key(key)
+    resolved_key, fallback_applied = _resolve_key(key)
     if resolved_key is PrimaryDirectionKey.SOLAR:
         resolved_rate = abs(solar_rate) if solar_rate is not None else _NAIBOD_RATE
         if resolved_rate <= 0.0:
@@ -102,10 +110,13 @@ def primary_direction_key_truth(
     else:
         resolved_rate = _NAIBOD_RATE
     policy = PrimaryDirectionKeyPolicy(resolved_key)
+    requested = key.value if isinstance(key, PrimaryDirectionKey) else str(key).lower()
     return PrimaryDirectionKeyTruth(
         key=resolved_key,
         family=policy.family,
         rate_degrees_per_year=resolved_rate,
+        requested_key=requested,
+        fallback_applied=fallback_applied,
     )
 
 

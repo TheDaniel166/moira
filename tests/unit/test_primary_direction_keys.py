@@ -68,3 +68,17 @@ def test_primary_direction_key_module_exports_curated_surface() -> None:
 def test_primary_direction_key_policy_rejects_unsupported_type() -> None:
     with pytest.raises(ValueError):
         PrimaryDirectionKeyPolicy("ptolemy")  # type: ignore[arg-type]
+
+
+def test_primary_direction_key_truth_exposes_fallback_visibility() -> None:
+    honored = primary_direction_key_truth(PrimaryDirectionKey.PTOLEMY)
+    assert honored.fallback_applied is False
+    assert honored.requested_key == "ptolemy"
+
+    coerced = primary_direction_key_truth("unknown")
+    assert coerced.key is PrimaryDirectionKey.NAIBOD  # leniency preserved
+    assert coerced.fallback_applied is True            # but now visible
+    assert coerced.requested_key == "unknown"
+
+    genuine_naibod = primary_direction_key_truth("naibod")
+    assert genuine_naibod.fallback_applied is False     # real Naibod is not a fallback

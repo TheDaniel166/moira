@@ -62,6 +62,10 @@ It does not apply to deferred frontiers such as:
 - time keys do not silently redefine geometry, space, or relation doctrine
 - key choice remains orthogonal to method and space
 
+### Key Doctrine
+
+- an unrecognized key token is coerced to Naibod (admitted leniency) and the coercion is inspectable via `PrimaryDirectionKeyTruth.fallback_applied` / `.requested_key`
+
 ### Relation Gating
 
 - derived promissor families may require explicit admitted relation kinds
