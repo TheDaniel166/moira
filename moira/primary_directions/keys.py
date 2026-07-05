@@ -110,7 +110,10 @@ def primary_direction_key_truth(
     else:
         resolved_rate = _NAIBOD_RATE
     policy = PrimaryDirectionKeyPolicy(resolved_key)
-    requested = key.value if isinstance(key, PrimaryDirectionKey) else str(key).lower()
+    # Key resolution is case-insensitive (see _resolve_key), but the recorded
+    # requested_key preserves the caller's original token verbatim so that a
+    # fallback remains diagnosable exactly as it was requested.
+    requested = key.value if isinstance(key, PrimaryDirectionKey) else str(key)
     return PrimaryDirectionKeyTruth(
         key=resolved_key,
         family=policy.family,

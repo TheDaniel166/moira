@@ -82,3 +82,8 @@ def test_primary_direction_key_truth_exposes_fallback_visibility() -> None:
 
     genuine_naibod = primary_direction_key_truth("naibod")
     assert genuine_naibod.fallback_applied is False     # real Naibod is not a fallback
+
+    mixed_case = primary_direction_key_truth("Ptolemy")
+    assert mixed_case.key is PrimaryDirectionKey.PTOLEMY  # resolution stays case-insensitive
+    assert mixed_case.fallback_applied is False
+    assert mixed_case.requested_key == "Ptolemy"         # raw token preserved verbatim
