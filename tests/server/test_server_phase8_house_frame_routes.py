@@ -23,6 +23,7 @@ from moira.progressions import (
 )
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
+from moira_server.models.progressions import HOUSE_FRAME_ARC_METHODS as _HOUSE_FRAME_ARC_METHODS
 
 
 pytestmark = pytest.mark.network
@@ -167,6 +168,28 @@ def test_vertex_arc_route_matches_engine(client_with_engine: TestClient) -> None
     assert body["chart_type"] == direct.chart_type
     assert body["solar_arc_deg"] == pytest.approx(direct.solar_arc_deg, rel=1e-6)
     assert body["relation"]["reference_name"] == "Vertex"
+
+
+def test_house_frame_arc_schema_menu_is_fully_dispatched() -> None:
+    from moira_server.models.progressions import HOUSE_FRAME_ARC_METHODS
+    from moira_server.services.progressions import _HOUSE_FRAME_ARC_DISPATCH
+
+    assert set(_HOUSE_FRAME_ARC_DISPATCH) == set(HOUSE_FRAME_ARC_METHODS)
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize("converse", [False, True])
+@pytest.mark.parametrize("method", sorted(_HOUSE_FRAME_ARC_METHODS))
+def test_house_frame_arc_route_dispatches_every_advertised_method(
+    client_with_engine: TestClient, method: str, converse: bool
+) -> None:
+    resp = client_with_engine.post(
+        "/v1/progressions/house-frame/arc",
+        json={**_HF_PAYLOAD, "method": method, "converse": converse},
+    )
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert isinstance(body["chart_type"], str) and body["chart_type"]
 
 
 @pytest.mark.requires_ephemeris

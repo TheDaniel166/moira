@@ -663,6 +663,47 @@ Body-class truth:
 
 ## Progressions, Timelords, Dasha, Varshaphal, And Primary Directions
 
+### Progression method menus
+
+Three progression endpoints are method-dispatched: the `method` field selects
+the technique. The accepted keys are enumerated in the OpenAPI schema (they are
+`Literal` types on the request models) and are the single source of truth for
+the runtime dispatch registries in `moira_server/models/progressions.py`. Every
+technique also accepts `converse: bool` (default `false`) for the converse
+direction.
+
+`POST /v1/progressions/arc` — `method`, one of:
+
+| Key | Doctrinal name |
+|---|---|
+| `solar_arc` | Solar Arc (Sun's arc applied to all bodies) |
+| `solar_arc_right_ascension` | Solar Arc in Right Ascension |
+| `naibod_longitude` | Naibod in Longitude |
+| `naibod_right_ascension` | Naibod in Right Ascension |
+| `mean_solar_arc_longitude` | Mean Solar Arc in Longitude (Naibod rate) |
+| `mean_solar_arc_right_ascension` | Mean Solar Arc in Right Ascension |
+| `one_degree_longitude` | One Degree in Longitude |
+| `one_degree_right_ascension` | One Degree in Right Ascension |
+| `planetary_arc` | Planetary Arc (requires `arc_body`, the reference planet) |
+
+`POST /v1/progressions/time-key` — `method`, one of:
+
+| Key | Doctrinal name |
+|---|---|
+| `tertiary` | Tertiary (synodic month = one year) |
+| `tertiary_ii` | Tertiary II (tropical-month variant) |
+| `minor` | Minor (solar year / synodic month) |
+| `duodenary` | Duodenary (Carter, 2h05m per year) |
+| `quotidian_solar` | Quotidian Solar (secondary day-for-day) |
+| `quotidian_lunar` | Quotidian Lunar (lunar-month day-for-day) |
+
+`POST /v1/progressions/house-frame/arc` — `method`, one of:
+
+| Key | Doctrinal name |
+|---|---|
+| `ascendant_arc` | Ascendant Arc (the natal ascendant's daily arc) |
+| `vertex_arc` | Vertex Arc (the natal vertex's daily arc) |
+
 | Method | Path | Handler |
 |---|---|---|
 | POST | `/v1/progressions/secondary` | `secondary_progression_route` |

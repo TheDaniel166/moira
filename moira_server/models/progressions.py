@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal, get_args
 
 from pydantic import Field, model_validator
 
@@ -36,7 +37,13 @@ class SecondaryProgressionDeclinationRequest(_StrictModel):
 # P8-04 House-frame progression request models
 # ---------------------------------------------------------------------------
 
-HOUSE_FRAME_ARC_METHODS = frozenset({"ascendant_arc", "vertex_arc"})
+# Angle-arc direction method keys and their doctrinal names:
+#   "ascendant_arc" — Ascendant Arc (the natal ascendant's daily arc applied to all bodies)
+#   "vertex_arc"    — Vertex Arc (the natal vertex's daily arc applied to all bodies)
+HouseFrameArcMethod = Literal["ascendant_arc", "vertex_arc"]
+
+# Runtime registry, derived from the schema literal so the two cannot drift.
+HOUSE_FRAME_ARC_METHODS = frozenset(get_args(HouseFrameArcMethod))
 
 
 class HouseFrameNatalRequest(_StrictModel):
@@ -70,8 +77,17 @@ class HouseFrameArcRequest(_StrictModel):
 
     natal: HouseFrameNatalRequest
     target_dt: datetime
-    method: str
-    converse: bool = False
+    method: HouseFrameArcMethod = Field(
+        description=(
+            "Angle-arc direction technique. "
+            "ascendant_arc: the natal ascendant's daily arc; "
+            "vertex_arc: the natal vertex's daily arc."
+        ),
+    )
+    converse: bool = Field(
+        default=False,
+        description="When True the arc is applied in reverse (converse direction).",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -407,8 +423,7 @@ class ProgressionConditionNetworkProfileReductionResponse(_StrictModel):
 #   "one_degree_longitude"         — One Degree in Longitude
 #   "one_degree_right_ascension"   — One Degree in Right Ascension
 #   "planetary_arc"                — Planetary Arc (requires arc_body)
-
-ARC_METHODS = frozenset({
+ArcProgressionMethod = Literal[
     "solar_arc",
     "solar_arc_right_ascension",
     "naibod_longitude",
@@ -418,13 +433,16 @@ ARC_METHODS = frozenset({
     "one_degree_longitude",
     "one_degree_right_ascension",
     "planetary_arc",
-})
+]
+
+# Runtime registry, derived from the schema literal so the two cannot drift.
+ARC_METHODS = frozenset(get_args(ArcProgressionMethod))
 
 
 class ArcProgressionRequest(_StrictModel):
     """Request for an arc direction chart (P8-02).
 
-    method: one of the ARC_METHODS keys.
+    method: one of the ArcProgressionMethod keys.
     converse: when True the arc is applied in reverse.
     arc_body: required when method is "planetary_arc"; the reference planet
               whose arc is applied to all natal positions.
@@ -432,44 +450,71 @@ class ArcProgressionRequest(_StrictModel):
 
     natal: ProgressionNatalRequest
     target_dt: datetime
-    method: str
-    converse: bool = False
-    arc_body: str | None = None
+    method: ArcProgressionMethod = Field(
+        description=(
+            "Arc-direction technique. "
+            "solar_arc / solar_arc_right_ascension: the Sun's arc in longitude / RA; "
+            "naibod_longitude / naibod_right_ascension: Naibod mean-rate arc in longitude / RA; "
+            "mean_solar_arc_longitude / mean_solar_arc_right_ascension: mean solar arc in longitude / RA; "
+            "one_degree_longitude / one_degree_right_ascension: symbolic 1-degree-per-year in longitude / RA; "
+            "planetary_arc: the arc of a chosen body (requires arc_body)."
+        ),
+    )
+    converse: bool = Field(
+        default=False,
+        description="When True the arc is applied in reverse (converse direction).",
+    )
+    arc_body: str | None = Field(
+        default=None,
+        description="Reference body whose arc is applied to all natal positions. Required when method is 'planetary_arc'; ignored otherwise.",
+    )
 
 
 # ---------------------------------------------------------------------------
 # P8-03 Time-key progression request
 # ---------------------------------------------------------------------------
 
-# Recognised time-key method keys:
+# Recognised time-key method keys and their doctrinal names:
 #   "tertiary"        — Tertiary (synodic month = one year)
 #   "tertiary_ii"     — Tertiary II (tropical month variant)
 #   "minor"           — Minor (solar year / synodic month)
 #   "duodenary"       — Duodenary (Carter, 2h05m per year)
 #   "quotidian_solar" — Quotidian Solar (secondary → day-for-day)
 #   "quotidian_lunar" — Quotidian Lunar (lunar month → day-for-day)
-
-TIME_KEY_METHODS = frozenset({
+TimeKeyProgressionMethod = Literal[
     "tertiary",
     "tertiary_ii",
     "minor",
     "duodenary",
     "quotidian_solar",
     "quotidian_lunar",
-})
+]
+
+# Runtime registry, derived from the schema literal so the two cannot drift.
+TIME_KEY_METHODS = frozenset(get_args(TimeKeyProgressionMethod))
 
 
 class TimeKeyProgressionRequest(_StrictModel):
     """Request for a time-key progression chart (P8-03).
 
-    method: one of the TIME_KEY_METHODS keys.
+    method: one of the TimeKeyProgressionMethod keys.
     converse: when True the progressed date advances backward from birth.
     """
 
     natal: ProgressionNatalRequest
     target_dt: datetime
-    method: str
-    converse: bool = False
+    method: TimeKeyProgressionMethod = Field(
+        description=(
+            "Time-key progression technique. "
+            "tertiary: synodic month for a year; tertiary_ii: tropical-month variant; "
+            "minor: solar year per synodic month; duodenary: Carter's 2h05m per year; "
+            "quotidian_solar: secondary day-for-day; quotidian_lunar: lunar-month day-for-day."
+        ),
+    )
+    converse: bool = Field(
+        default=False,
+        description="When True the progressed date advances backward from birth (converse direction).",
+    )
 
 
 __all__ = [

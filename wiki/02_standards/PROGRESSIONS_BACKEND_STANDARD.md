@@ -277,15 +277,23 @@ It applies to:
 
 #### 4.5 Technique-family doctrine
 
-The following classification is constitutionally required:
+The following classification is constitutionally required. Every technique
+listed as a base technique also has a converse form (indicated by "+ converse").
+This mapping is the full menu implemented by the engine and exposed by the REST
+transport; the REST `method` keys are given in parentheses where they differ
+from the doctrinal name.
 
 | Technique family | Current techniques |
 |---|---|
-| `time_key` | secondary, converse secondary, tertiary, converse tertiary, tertiary II, converse tertiary II, minor, converse minor |
-| `uniform_arc` | solar arc, converse solar arc, solar arc in RA, converse solar arc in RA, Naibod longitude, converse Naibod longitude, Naibod RA, converse Naibod RA, ascendant arc |
+| `time_key` | secondary (+ converse); secondary declination (+ converse); tertiary (+ converse); tertiary II (`tertiary_ii`, + converse); minor (+ converse); duodenary (+ converse); quotidian solar (`quotidian_solar`, + converse); quotidian lunar (`quotidian_lunar`, + converse) |
+| `uniform_arc` | solar arc (`solar_arc`, + converse); solar arc in RA (`solar_arc_right_ascension`, + converse); Naibod longitude (`naibod_longitude`, + converse); Naibod RA (`naibod_right_ascension`, + converse); mean solar arc longitude (`mean_solar_arc_longitude`, + converse); mean solar arc RA (`mean_solar_arc_right_ascension`, + converse); one degree longitude (`one_degree_longitude`, + converse); one degree RA (`one_degree_right_ascension`, + converse); planetary arc (`planetary_arc`, requires `arc_body`, + converse); ascendant arc (`ascendant_arc`, + converse); vertex arc (`vertex_arc`, + converse) |
 | `house_frame` | daily house frame, daily houses |
 
-This family mapping is frozen unless explicitly revised.
+This family mapping is frozen unless explicitly revised. It was last revised to
+record the full implemented-and-exposed technique menu (duodenary, quotidian
+solar/lunar, mean solar arc long/RA, one-degree long/RA, planetary arc, vertex
+arc, and the converse forms), which the engine already computed and the REST
+layer already dispatched.
 
 ---
 

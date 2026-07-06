@@ -28,6 +28,10 @@ from moira.progressions import (
 from moira.julian import jd_from_datetime
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
+from moira_server.models.progressions import (
+    ARC_METHODS as _ARC_METHODS,
+    TIME_KEY_METHODS as _TIME_KEY_METHODS,
+)
 
 
 pytestmark = pytest.mark.network
@@ -340,3 +344,74 @@ def test_time_key_route_rejects_naive_natal_dt(client_with_engine: TestClient) -
         json={"natal": {"dt": "2000-01-01T12:00:00"}, "target_dt": _TARGET_ISO, "method": "tertiary"},
     )
     assert resp.status_code == 422
+
+
+# ---------------------------------------------------------------------------
+# Depth witnesses: the OpenAPI method menu is complete and every advertised
+# key is actually dispatched (schema menu == runtime capability).
+# ---------------------------------------------------------------------------
+
+def test_arc_schema_menu_is_fully_dispatched() -> None:
+    from moira_server.models.progressions import ARC_METHODS
+    from moira_server.services.progressions import _ARC_DISPATCH
+
+    # planetary_arc is dispatched on a separate branch (it takes arc_body);
+    # every other advertised key must have a dispatch entry.
+    dispatched = set(_ARC_DISPATCH) | {"planetary_arc"}
+    assert dispatched == set(ARC_METHODS)
+
+
+def test_time_key_schema_menu_is_fully_dispatched() -> None:
+    from moira_server.models.progressions import TIME_KEY_METHODS
+    from moira_server.services.progressions import _TIME_KEY_DISPATCH
+
+    assert set(_TIME_KEY_DISPATCH) == set(TIME_KEY_METHODS)
+
+
+def _arc_payload(method: str, *, converse: bool) -> dict:
+    payload = {
+        "natal": _NATAL_PAYLOAD,
+        "target_dt": _TARGET_ISO,
+        "method": method,
+        "converse": converse,
+    }
+    if method == "planetary_arc":
+        payload["arc_body"] = "Mars"
+    return payload
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize("converse", [False, True])
+@pytest.mark.parametrize("method", sorted(_ARC_METHODS))
+def test_arc_route_dispatches_every_advertised_method(
+    client_with_engine: TestClient, method: str, converse: bool
+) -> None:
+    resp = client_with_engine.post(
+        "/v1/progressions/arc", json=_arc_payload(method, converse=converse)
+    )
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert isinstance(body["chart_type"], str) and body["chart_type"]
+    assert body["is_converse"] is converse
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize("converse", [False, True])
+@pytest.mark.parametrize("method", sorted(_TIME_KEY_METHODS))
+def test_time_key_route_dispatches_every_advertised_method(
+    client_with_engine: TestClient, method: str, converse: bool
+) -> None:
+    resp = client_with_engine.post(
+        "/v1/progressions/time-key",
+        json={
+            "natal": _NATAL_PAYLOAD,
+            "target_dt": _TARGET_ISO,
+            "method": method,
+            "converse": converse,
+        },
+    )
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert isinstance(body["chart_type"], str) and body["chart_type"]
+    assert body["is_converse"] is converse
+    assert body["doctrine_family"] == "time_key"
