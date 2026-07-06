@@ -31,11 +31,15 @@ Conceptual definition (from the in-repo research packet
   a direction defined **against** the diurnal rotation, added specifically to
   match Morinus-software values
 
-In Moira's current engine, traditional converse is realized as a pure sign
-negation of the direct arc (`converse = -direct`, see
-[geometry.py](../../../moira/primary_directions/geometry.py)). The open question
-is whether "against the diurnal rotation" is the *same* operation under a
-different name, or a genuinely different construction.
+In Moira's current engine, traditional converse is realized as **role
+exchange**: the converse arc of significator-to-promissor is the direct arc of
+promissor-to-significator, computed in the preceding terminus's circle of
+position (see
+[geometry.py](../../../moira/primary_directions/geometry.py),
+`compute_primary_direction_arcs`). For the symmetric method families this
+reduces to `converse = -direct`; for the asymmetric families it does not. The
+open question for *this* card is whether "against the diurnal rotation" is the
+*same* operation under a different name, or a genuinely different construction.
 
 ## Book 22 Assessment (2026-07-05)
 
@@ -56,13 +60,16 @@ recorded so the source is not re-chased.**
   **not** the modern "against the diurnal rotation" construction this card is
   about. Neo-converse remains unsourced and gated.
 
-Collateral finding (belongs to the *traditional* converse doctrine, not this
-card): Morin computes the arc in the **preceding terminus's** circle of
-position, so converse-of-A-to-B equals direct-of-B-to-A — role reversal under
-the other body's pole, not arc-negation. Moira's `converse = -direct` is exact
-only for the symmetric method families and is an approximation for the
-under-pole and semi-arc families. Correcting that is a separate, method-family
-substrate question.
+Collateral finding — now **corrected** (belongs to the *traditional* converse
+doctrine, not this card): Morin computes the arc in the **preceding terminus's**
+circle of position, so converse-of-A-to-B equals direct-of-B-to-A — role
+reversal under the other body's pole, not arc-negation. Moira formerly realized
+`converse = -direct`, which is exact only for the symmetric method families. As
+of the traditional-converse refinement, `compute_primary_direction_arcs`
+computes converse by exchanging the significator/promissor roles through the
+same geometry law, so the under-pole and semi-arc families now carry Morin's
+true converse arc while the symmetric families are unchanged. This correction is
+independent of the (still gated) neo-converse question.
 
 ## Ambiguity Ledger (unresolved — must be closed before admission)
 

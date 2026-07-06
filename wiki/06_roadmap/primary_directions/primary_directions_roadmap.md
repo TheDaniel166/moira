@@ -146,10 +146,16 @@ Current narrow branch notes:
       explicit constitutional revision of P12-frozen substrate: `geometry.py`
       and `methods.py` were moved together so the invariant "directional
       quantities agree with the active geometry law" is preserved.
-    - collateral: Book 22 Section I Chapter 7 also shows Morin's *traditional*
-      converse is role reversal computed in the preceding terminus's circle of
-      position, not arc-negation; Moira's `converse = -direct` is exact only for
-      the symmetric method families. This is a separate substrate question.
+    - collateral, now **corrected**: Book 22 Section I Chapter 7 shows Morin's
+      *traditional* converse is role reversal computed in the preceding
+      terminus's circle of position, not arc-negation. The former
+      `converse = -direct` was exact only for the symmetric method families.
+      `compute_primary_direction_arcs` now derives converse by exchanging the
+      significator/promissor roles through the same geometry law, so the
+      under-pole and semi-arc families carry Morin's true converse arc while the
+      symmetric families are unchanged. Validated by
+      `test_converse_is_the_direct_arc_with_roles_exchanged` and
+      `test_converse_reduces_to_arc_negation_for_symmetric_meridian_law`.
     - Book 22 does **not** supply neo-converse; see
       [primary_directions_truth_card_neo_converse.md](../../01_doctrines/primary_directions/primary_directions_truth_card_neo_converse.md).
 - `Campanus` is admitted as an explicit narrow under-the-pole branch

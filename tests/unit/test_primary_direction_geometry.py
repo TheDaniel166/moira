@@ -163,7 +163,14 @@ def test_ptolemy_geometry_uses_proportional_semi_arc_law() -> None:
     expected_direct = (
         projected_position - md_prom if moving_away_from_meridian else md_prom - projected_position
     ) % 360.0
-    expected_converse = (-expected_direct) % 360.0
+    # Converse exchanges the roles (Morin Bk 22 Ch 7): the promissor becomes the
+    # significator, so the proportion is taken in the promissor's semi-arc.
+    proportional_distance_conv = md_prom / sa_prom
+    projected_position_conv = sa_sig * proportional_distance_conv
+    moving_away_conv = (sig.upper and sig.is_western) or ((not sig.upper) and sig.is_eastern)
+    expected_converse = (
+        projected_position_conv - md_sig if moving_away_conv else md_sig - projected_position_conv
+    ) % 360.0
 
     assert direct == pytest.approx(expected_direct)
     assert converse == pytest.approx(expected_converse)
@@ -207,10 +214,29 @@ def test_ptolemy_geometry_uses_ra_and_oa_sub_laws_for_angles() -> None:
     expected_mc_direct = (prom.ra - armc) % 360.0
     expected_asc_direct = (prom_oa - ((armc + 90.0) % 360.0)) % 360.0
 
+    # Converse of an angle-direction (Morin Bk 22 Ch 7): the roles exchange, the
+    # angle is no longer the significator, so the arc is the promissor directed
+    # to the angle by the general proportional semi-arc law.
+    md_prom = abs(prom.ha) if prom.upper else 180.0 - abs(prom.ha)
+    sa_prom = prom.dsa if prom.upper else prom.nsa
+    pd_conv = md_prom / sa_prom
+
+    md_mc = abs(mc.ha) if mc.upper else 180.0 - abs(mc.ha)
+    sa_mc = mc.dsa if mc.upper else mc.nsa
+    pp_mc = sa_mc * pd_conv
+    moving_away_mc = (mc.upper and mc.is_western) or ((not mc.upper) and mc.is_eastern)
+    expected_mc_converse = ((pp_mc - md_mc) if moving_away_mc else (md_mc - pp_mc)) % 360.0
+
+    md_asc = abs(asc.ha) if asc.upper else 180.0 - abs(asc.ha)
+    sa_asc = asc.dsa if asc.upper else asc.nsa
+    pp_asc = sa_asc * pd_conv
+    moving_away_asc = (asc.upper and asc.is_western) or ((not asc.upper) and asc.is_eastern)
+    expected_asc_converse = ((pp_asc - md_asc) if moving_away_asc else (md_asc - pp_asc)) % 360.0
+
     assert mc_direct == pytest.approx(expected_mc_direct)
-    assert mc_converse == pytest.approx((-expected_mc_direct) % 360.0)
+    assert mc_converse == pytest.approx(expected_mc_converse)
     assert asc_direct == pytest.approx(expected_asc_direct)
-    assert asc_converse == pytest.approx((-expected_asc_direct) % 360.0)
+    assert asc_converse == pytest.approx(expected_asc_converse)
 
 
 def test_morinus_arc_matches_morin_book22_hemminga_oracle() -> None:
@@ -279,3 +305,77 @@ def test_morinus_arc_matches_morin_book22_hemminga_oracle() -> None:
     assert morinus_direct == pytest.approx(regio_direct)
     # And it reproduces Morin's own worked arc of 25 deg 46'.
     assert morinus_direct == pytest.approx(25.0 + 46.0 / 60.0, abs=0.5)
+
+
+# Methods whose arc is asymmetric under significator/promissor exchange: the
+# converse arc is genuinely a different quantity than the negated direct arc.
+_ASYMMETRIC_METHODS = (
+    PrimaryDirectionMethod.PLACIDUS_MUNDANE,
+    PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
+    PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC,
+    PrimaryDirectionMethod.REGIOMONTANUS,
+    PrimaryDirectionMethod.CAMPANUS,
+    PrimaryDirectionMethod.TOPOCENTRIC,
+    PrimaryDirectionMethod.MORINUS,
+)
+
+
+def test_converse_is_the_direct_arc_with_roles_exchanged() -> None:
+    # Source doctrine: J. B. Morin, Astrologia Gallica Book 22 (De Directionibus,
+    # Holden trans.), Section I, Chapter 7. Direct and converse are "a single
+    # operation" -- the arc is always taken in the circle of position of the
+    # *preceding* terminus, so converse(significator -> promissor) equals
+    # direct(promissor -> significator). This is role exchange under the other
+    # body's circle of position, NOT negation of the direct arc.
+    sig, prom = _entries()
+    geo_lat = 51.5
+    armc = 41.0
+    oa_asc = SpeculumEntry.build("ASC", 118.0, 0.0, armc, 23.4392911, geo_lat).ra
+
+    for method in _ASYMMETRIC_METHODS:
+        direct, converse = compute_primary_direction_arcs(
+            method,
+            sig,
+            prom,
+            space=PrimaryDirectionSpace.IN_MUNDO,
+            latitude_doctrine=PrimaryDirectionLatitudeDoctrine.MUNDANE_PRESERVED,
+            geo_lat=geo_lat,
+            armc=armc,
+            oa_asc=oa_asc,
+        )
+        swapped_direct, _ = compute_primary_direction_arcs(
+            method,
+            prom,
+            sig,
+            space=PrimaryDirectionSpace.IN_MUNDO,
+            latitude_doctrine=PrimaryDirectionLatitudeDoctrine.MUNDANE_PRESERVED,
+            geo_lat=geo_lat,
+            armc=armc,
+            oa_asc=oa_asc,
+        )
+        assert converse == pytest.approx(swapped_direct), method
+        # And for these families it is distinct from mere arc negation.
+        negation = (-direct) % 360.0
+        assert abs((converse - negation + 180.0) % 360.0 - 180.0) > 1e-6, method
+
+
+def test_converse_reduces_to_arc_negation_for_symmetric_meridian_law() -> None:
+    # The equatorial (Meridian) law is symmetric under role exchange: swapping
+    # the termini negates the right-ascension difference, so converse = -direct
+    # is preserved for this family and this refinement leaves it untouched.
+    sig, prom = _entries()
+    geo_lat = 51.5
+    armc = 41.0
+    oa_asc = SpeculumEntry.build("ASC", 118.0, 0.0, armc, 23.4392911, geo_lat).ra
+
+    direct, converse = compute_primary_direction_arcs(
+        PrimaryDirectionMethod.MERIDIAN,
+        sig,
+        prom,
+        space=PrimaryDirectionSpace.IN_MUNDO,
+        latitude_doctrine=PrimaryDirectionLatitudeDoctrine.MUNDANE_PRESERVED,
+        geo_lat=geo_lat,
+        armc=armc,
+        oa_asc=oa_asc,
+    )
+    assert converse == pytest.approx((-direct) % 360.0)

@@ -61,6 +61,12 @@ The subsystem must preserve:
 - Morinus conjunction geometry against Morin's own worked arc
   (Astrologia Gallica Book 22, Appendix 5; Hemminga Mars-to-Jupiter, 25 deg 46')
   via `test_morinus_arc_matches_morin_book22_hemminga_oracle`
+- Traditional converse as role exchange, not arc negation
+  (Astrologia Gallica Book 22, Section I, Chapter 7): converse of
+  significator-to-promissor equals the direct arc of promissor-to-significator.
+  Proven by `test_converse_is_the_direct_arc_with_roles_exchanged` for the
+  asymmetric families and `test_converse_reduces_to_arc_negation_for_symmetric_meridian_law`
+  for the symmetric (equatorial) family
 
 ### Public API
 

@@ -141,11 +141,9 @@ def _required_ha(f: float, dsa: float, nsa: float) -> float:
     return -dsa - (-f - 1.0) * nsa
 
 
-def _mundane_arcs(sig: _SpeculumLike, prom: _SpeculumLike) -> tuple[float, float]:
+def _mundane_arc(sig: _SpeculumLike, prom: _SpeculumLike) -> float:
     req_ha = _required_ha(sig.f, prom.dsa, prom.nsa)
-    direct = req_ha - prom.ha
-    converse = -direct
-    return direct, converse
+    return req_ha - prom.ha
 
 
 def _placidian_mundane_position(significator: _SpeculumLike, armc: float) -> float:
@@ -163,14 +161,14 @@ def _placidian_mundane_position(significator: _SpeculumLike, armc: float) -> flo
     return (ic_ra + 90.0 * ratio) % 360.0
 
 
-def _placidian_classic_semi_arc_arcs(
+def _placidian_classic_semi_arc_arc(
     sig: _SpeculumLike,
     prom: _SpeculumLike,
     *,
     oa_asc: float,
     armc: float,
     geo_lat: float,
-) -> tuple[float, float]:
+) -> float:
     mp_sig = _placidian_mundane_position(sig, armc)
     phi = geo_lat * DEG2RAD
     dec = prom.dec * DEG2RAD
@@ -178,9 +176,7 @@ def _placidian_classic_semi_arc_arcs(
     term = math.tan(dec) * math.tan(phi) * math.cos(offset)
     term = max(-1.0, min(1.0, term))
     ra_end = (math.degrees(math.asin(term)) + mp_sig) % 360.0
-    direct = (prom.ra - ra_end) % 360.0
-    converse = (-direct) % 360.0
-    return direct, converse
+    return (prom.ra - ra_end) % 360.0
 
 
 def _meridian_distance(entry: _SpeculumLike) -> float:
@@ -193,10 +189,10 @@ def _semi_arc(entry: _SpeculumLike) -> float:
     return entry.dsa if entry.upper else entry.nsa
 
 
-def _ptolemaic_proportional_semi_arc_arcs(
+def _ptolemaic_proportional_semi_arc_arc(
     sig: _SpeculumLike,
     prom: _SpeculumLike,
-) -> tuple[float, float]:
+) -> float:
     """
     Ptolemy / semi-arc on the current admitted branch.
 
@@ -209,7 +205,7 @@ def _ptolemaic_proportional_semi_arc_arcs(
     sig_sa = _semi_arc(sig)
     prom_sa = _semi_arc(prom)
     if sig_sa <= 1e-9 or prom_sa <= 1e-9:
-        return 0.0, 0.0
+        return 0.0
     proportional_distance = _meridian_distance(sig) / sig_sa
     projected_position = prom_sa * proportional_distance
     prom_md = _meridian_distance(prom)
@@ -220,9 +216,7 @@ def _ptolemaic_proportional_semi_arc_arcs(
         direct = projected_position - prom_md
     else:
         direct = prom_md - projected_position
-    direct %= 360.0
-    converse = (-direct) % 360.0
-    return direct, converse
+    return direct % 360.0
 
 
 def _ptolemaic_ascensional_difference(entry: _SpeculumLike, *, geo_lat: float) -> float:
@@ -246,27 +240,23 @@ def _ptolemaic_oblique_descension(entry: _SpeculumLike, *, geo_lat: float) -> fl
     return (entry.ra - ad) % 360.0
 
 
-def _ptolemaic_angular_arcs(
+def _ptolemaic_angular_arc(
     sig: _SpeculumLike,
     prom: _SpeculumLike,
     *,
     armc: float,
     geo_lat: float,
-) -> tuple[float, float] | None:
+) -> float | None:
     if sig.name == "MC":
-        direct = (prom.ra - armc) % 360.0
-        return direct, (-direct) % 360.0
+        return (prom.ra - armc) % 360.0
     if sig.name == "IC":
-        direct = (prom.ra - ((armc + 180.0) % 360.0)) % 360.0
-        return direct, (-direct) % 360.0
+        return (prom.ra - ((armc + 180.0) % 360.0)) % 360.0
     if sig.name == "ASC":
         oa_asc = (armc + 90.0) % 360.0
-        direct = (_ptolemaic_oblique_ascension(prom, geo_lat=geo_lat) - oa_asc) % 360.0
-        return direct, (-direct) % 360.0
+        return (_ptolemaic_oblique_ascension(prom, geo_lat=geo_lat) - oa_asc) % 360.0
     if sig.name == "DSC":
         oa_asc = (armc + 90.0) % 360.0
-        direct = (_ptolemaic_oblique_descension(prom, geo_lat=geo_lat) - oa_asc) % 360.0
-        return direct, (-direct) % 360.0
+        return (_ptolemaic_oblique_descension(prom, geo_lat=geo_lat) - oa_asc) % 360.0
     return None
 
 
@@ -297,31 +287,29 @@ def _under_pole_w(entry: _SpeculumLike, pole_deg: float, *, eastern: bool) -> fl
     return (entry.ra + math.degrees(offset)) % 360.0
 
 
-def _under_pole_arcs(sig: _SpeculumLike, prom: _SpeculumLike, *, pole_deg: float) -> tuple[float, float]:
+def _under_pole_arc(sig: _SpeculumLike, prom: _SpeculumLike, *, pole_deg: float) -> float:
     eastern = sig.is_eastern
     w_sig = _under_pole_w(sig, pole_deg, eastern=eastern)
     w_prom = _under_pole_w(prom, pole_deg, eastern=eastern)
-    direct = (w_prom - w_sig) % 360.0
-    converse = (-direct) % 360.0
-    return direct, converse
+    return (w_prom - w_sig) % 360.0
 
 
-def _regiomontanus_under_pole_arcs(
+def _regiomontanus_under_pole_arc(
     sig: _SpeculumLike,
     prom: _SpeculumLike,
     *,
     geo_lat: float,
-) -> tuple[float, float]:
-    return _under_pole_arcs(sig, prom, pole_deg=_shared_campanus_regio_pole(sig, geo_lat=geo_lat))
+) -> float:
+    return _under_pole_arc(sig, prom, pole_deg=_shared_campanus_regio_pole(sig, geo_lat=geo_lat))
 
 
-def _campanus_under_pole_arcs(
+def _campanus_under_pole_arc(
     sig: _SpeculumLike,
     prom: _SpeculumLike,
     *,
     geo_lat: float,
-) -> tuple[float, float]:
-    return _under_pole_arcs(sig, prom, pole_deg=_shared_campanus_regio_pole(sig, geo_lat=geo_lat))
+) -> float:
+    return _under_pole_arc(sig, prom, pole_deg=_shared_campanus_regio_pole(sig, geo_lat=geo_lat))
 
 
 def _topocentric_pole(entry: _SpeculumLike, *, geo_lat: float) -> float:
@@ -333,31 +321,92 @@ def _topocentric_pole(entry: _SpeculumLike, *, geo_lat: float) -> float:
     return math.degrees(math.atan(md_ratio * math.tan(phi)))
 
 
-def _topocentric_under_pole_arcs(
+def _topocentric_under_pole_arc(
     sig: _SpeculumLike,
     prom: _SpeculumLike,
     *,
     geo_lat: float,
-) -> tuple[float, float]:
-    return _under_pole_arcs(sig, prom, pole_deg=_topocentric_pole(sig, geo_lat=geo_lat))
+) -> float:
+    return _under_pole_arc(sig, prom, pole_deg=_topocentric_pole(sig, geo_lat=geo_lat))
 
 
-def _zodiacal_longitude_arcs(sig: _SpeculumLike, prom: _SpeculumLike) -> tuple[float, float]:
-    direct = (sig.lon - prom.lon) % 360.0
-    converse = (-direct) % 360.0
-    return direct, converse
+def _zodiacal_longitude_arc(sig: _SpeculumLike, prom: _SpeculumLike) -> float:
+    return (sig.lon - prom.lon) % 360.0
 
 
-def _zodiacal_projected_arcs(sig: _SpeculumLike, prom: _SpeculumLike) -> tuple[float, float]:
-    direct = (sig.ra - prom.ra) % 360.0
-    converse = (-direct) % 360.0
-    return direct, converse
+def _zodiacal_projected_arc(sig: _SpeculumLike, prom: _SpeculumLike) -> float:
+    return (sig.ra - prom.ra) % 360.0
 
 
-def _equatorial_arcs(sig: _SpeculumLike, prom: _SpeculumLike) -> tuple[float, float]:
-    direct = (sig.ra - prom.ra) % 360.0
-    converse = (-direct) % 360.0
-    return direct, converse
+def _equatorial_arc(sig: _SpeculumLike, prom: _SpeculumLike) -> float:
+    return (sig.ra - prom.ra) % 360.0
+
+
+def _primary_direction_arc(
+    method: PrimaryDirectionMethod,
+    sig: _SpeculumLike,
+    prom: _SpeculumLike,
+    *,
+    space: PrimaryDirectionSpace,
+    latitude_doctrine: PrimaryDirectionLatitudeDoctrine,
+    geo_lat: float,
+    armc: float,
+    oa_asc: float,
+) -> float:
+    """The single arc of direction the primum mobile turns to carry ``prom`` to
+    the circle of position of ``sig`` under the active geometry law.
+
+    This is the one arc-finding operation; direct and converse are this same
+    operation with the significator and promissor roles exchanged (see
+    ``compute_primary_direction_arcs``).
+    """
+    if method is PrimaryDirectionMethod.PTOLEMY_SEMI_ARC:
+        angular = _ptolemaic_angular_arc(sig, prom, armc=armc, geo_lat=geo_lat)
+        if angular is not None:
+            return angular
+
+    if space is PrimaryDirectionSpace.IN_ZODIACO:
+        if method in (
+            PrimaryDirectionMethod.REGIOMONTANUS,
+            PrimaryDirectionMethod.MORINUS,
+        ):
+            return _regiomontanus_under_pole_arc(sig, prom, geo_lat=geo_lat)
+        if method is PrimaryDirectionMethod.CAMPANUS:
+            return _campanus_under_pole_arc(sig, prom, geo_lat=geo_lat)
+        if method is PrimaryDirectionMethod.TOPOCENTRIC:
+            return _topocentric_under_pole_arc(sig, prom, geo_lat=geo_lat)
+        if method is PrimaryDirectionMethod.MERIDIAN:
+            return _equatorial_arc(sig, prom)
+        if method is PrimaryDirectionMethod.PTOLEMY_SEMI_ARC:
+            return _ptolemaic_proportional_semi_arc_arc(sig, prom)
+        if latitude_doctrine is PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED:
+            return _zodiacal_longitude_arc(sig, prom)
+        return _zodiacal_projected_arc(sig, prom)
+
+    if method in (
+        PrimaryDirectionMethod.REGIOMONTANUS,
+        PrimaryDirectionMethod.MORINUS,
+    ):
+        return _regiomontanus_under_pole_arc(sig, prom, geo_lat=geo_lat)
+    if method is PrimaryDirectionMethod.CAMPANUS:
+        return _campanus_under_pole_arc(sig, prom, geo_lat=geo_lat)
+    if method is PrimaryDirectionMethod.TOPOCENTRIC:
+        return _topocentric_under_pole_arc(sig, prom, geo_lat=geo_lat)
+    if method is PrimaryDirectionMethod.MERIDIAN:
+        return _equatorial_arc(sig, prom)
+    if method is PrimaryDirectionMethod.PTOLEMY_SEMI_ARC:
+        return _ptolemaic_proportional_semi_arc_arc(sig, prom)
+    if method in (
+        PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC,
+    ):
+        return _placidian_classic_semi_arc_arc(
+            sig,
+            prom,
+            oa_asc=oa_asc,
+            armc=armc,
+            geo_lat=geo_lat,
+        )
+    return _mundane_arc(sig, prom)
 
 
 def compute_primary_direction_arcs(
@@ -371,50 +420,39 @@ def compute_primary_direction_arcs(
     armc: float,
     oa_asc: float,
 ) -> tuple[float, float]:
-    if method is PrimaryDirectionMethod.PTOLEMY_SEMI_ARC:
-        angular = _ptolemaic_angular_arcs(sig, prom, armc=armc, geo_lat=geo_lat)
-        if angular is not None:
-            return angular
+    """Return the ``(direct, converse)`` arcs of direction.
 
-    if space is PrimaryDirectionSpace.IN_ZODIACO:
-        if method in (
-            PrimaryDirectionMethod.REGIOMONTANUS,
-            PrimaryDirectionMethod.MORINUS,
-        ):
-            return _regiomontanus_under_pole_arcs(sig, prom, geo_lat=geo_lat)
-        if method is PrimaryDirectionMethod.CAMPANUS:
-            return _campanus_under_pole_arcs(sig, prom, geo_lat=geo_lat)
-        if method is PrimaryDirectionMethod.TOPOCENTRIC:
-            return _topocentric_under_pole_arcs(sig, prom, geo_lat=geo_lat)
-        if method is PrimaryDirectionMethod.MERIDIAN:
-            return _equatorial_arcs(sig, prom)
-        if method is PrimaryDirectionMethod.PTOLEMY_SEMI_ARC:
-            return _ptolemaic_proportional_semi_arc_arcs(sig, prom)
-        if latitude_doctrine is PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED:
-            return _zodiacal_longitude_arcs(sig, prom)
-        return _zodiacal_projected_arcs(sig, prom)
+    Governing doctrine (J. B. Morin, *Astrologia Gallica* Book 22,
+    *De Directionibus*, Section I, Chapter 7): direct and converse are "a single
+    operation." The arc is always taken in the circle of position of the
+    *preceding* terminus, so the converse arc of significator-to-promissor is the
+    direct arc of promissor-to-significator -- the same law with the two roles
+    exchanged, not the negation of the direct arc.
 
-    if method in (
-        PrimaryDirectionMethod.REGIOMONTANUS,
-        PrimaryDirectionMethod.MORINUS,
-    ):
-        return _regiomontanus_under_pole_arcs(sig, prom, geo_lat=geo_lat)
-    if method is PrimaryDirectionMethod.CAMPANUS:
-        return _campanus_under_pole_arcs(sig, prom, geo_lat=geo_lat)
-    if method is PrimaryDirectionMethod.TOPOCENTRIC:
-        return _topocentric_under_pole_arcs(sig, prom, geo_lat=geo_lat)
-    if method is PrimaryDirectionMethod.MERIDIAN:
-        return _equatorial_arcs(sig, prom)
-    if method is PrimaryDirectionMethod.PTOLEMY_SEMI_ARC:
-        return _ptolemaic_proportional_semi_arc_arcs(sig, prom)
-    if method in (
-        PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC,
-    ):
-        return _placidian_classic_semi_arc_arcs(
-            sig,
-            prom,
-            oa_asc=oa_asc,
-            armc=armc,
-            geo_lat=geo_lat,
-        )
-    return _mundane_arcs(sig, prom)
+    For the symmetric method families (the equatorial Meridian law and the
+    zodiacal laws) role exchange coincides with sign reversal, so converse still
+    equals ``-direct`` there. For the asymmetric families (the semi-arc and
+    under-the-pole laws, whose arc is taken in a terminus-specific circle of
+    position) the two constructions differ, and role exchange is the correct one.
+    """
+    direct = _primary_direction_arc(
+        method,
+        sig,
+        prom,
+        space=space,
+        latitude_doctrine=latitude_doctrine,
+        geo_lat=geo_lat,
+        armc=armc,
+        oa_asc=oa_asc,
+    )
+    converse = _primary_direction_arc(
+        method,
+        prom,
+        sig,
+        space=space,
+        latitude_doctrine=latitude_doctrine,
+        geo_lat=geo_lat,
+        armc=armc,
+        oa_asc=oa_asc,
+    )
+    return direct, converse

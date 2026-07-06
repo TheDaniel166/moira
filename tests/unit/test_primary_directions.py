@@ -966,7 +966,14 @@ def test_ptolemy_semi_arc_uses_proportional_semi_arc_law_and_is_distinct() -> No
     expected_direct = (
         projected_position - md_prom if moving_away_from_meridian else md_prom - projected_position
     ) % 360.0
-    expected_converse = (-expected_direct) % 360.0
+    # Converse exchanges the roles (Morin Bk 22 Ch 7): the promissor becomes the
+    # significator, so the proportion is taken in the promissor's semi-arc.
+    proportional_distance_conv = md_prom / sa_prom
+    projected_position_conv = sa_sig * proportional_distance_conv
+    moving_away_conv = (sig.upper and sig.is_western) or ((not sig.upper) and sig.is_eastern)
+    expected_converse = (
+        projected_position_conv - md_sig if moving_away_conv else md_sig - projected_position_conv
+    ) % 360.0
 
     by_direction = {arc.direction: arc for arc in ptolemy_arcs}
     assert by_direction[DIRECT].arc == pytest.approx(expected_direct)
@@ -1006,13 +1013,34 @@ def test_ptolemy_semi_arc_uses_ra_and_oa_for_angular_significators() -> None:
     )
     expected_asc_direct = ((prom.ra - ad) - ((houses.armc + 90.0) % 360.0)) % 360.0
 
+    # Converse of an angle-direction (Morin Bk 22 Ch 7): the roles exchange, the
+    # angle is no longer the significator, so the arc is the promissor directed
+    # to the angle by the general proportional semi-arc law.
+    mc = entry_map["MC"]
+    asc = entry_map["ASC"]
+    md_prom = abs(prom.ha) if prom.upper else 180.0 - abs(prom.ha)
+    sa_prom = prom.dsa if prom.upper else prom.nsa
+    pd_conv = md_prom / sa_prom
+
+    md_mc = abs(mc.ha) if mc.upper else 180.0 - abs(mc.ha)
+    sa_mc = mc.dsa if mc.upper else mc.nsa
+    pp_mc = sa_mc * pd_conv
+    moving_away_mc = (mc.upper and mc.is_western) or ((not mc.upper) and mc.is_eastern)
+    expected_mc_converse = ((pp_mc - md_mc) if moving_away_mc else (md_mc - pp_mc)) % 360.0
+
+    md_asc = abs(asc.ha) if asc.upper else 180.0 - abs(asc.ha)
+    sa_asc = asc.dsa if asc.upper else asc.nsa
+    pp_asc = sa_asc * pd_conv
+    moving_away_asc = (asc.upper and asc.is_western) or ((not asc.upper) and asc.is_eastern)
+    expected_asc_converse = ((pp_asc - md_asc) if moving_away_asc else (md_asc - pp_asc)) % 360.0
+
     mc_by_direction = {arc.direction: arc for arc in mc_arcs}
     asc_by_direction = {arc.direction: arc for arc in asc_arcs}
 
     assert mc_by_direction[DIRECT].arc == pytest.approx(expected_mc_direct)
-    assert mc_by_direction[CONVERSE].arc == pytest.approx((-expected_mc_direct) % 360.0)
+    assert mc_by_direction[CONVERSE].arc == pytest.approx(expected_mc_converse)
     assert asc_by_direction[DIRECT].arc == pytest.approx(expected_asc_direct)
-    assert asc_by_direction[CONVERSE].arc == pytest.approx((-expected_asc_direct) % 360.0)
+    assert asc_by_direction[CONVERSE].arc == pytest.approx(expected_asc_converse)
 
 
 def test_morinus_with_explicit_aspect_context_uses_circle_of_aspects() -> None:
@@ -1158,7 +1186,12 @@ def test_regiomontanus_is_admitted_on_mundane_surface_and_distinct() -> None:
     w_sig = _test_regio_w(sig, pole, eastern=sig.is_eastern)
     w_prom = _test_regio_w(prom, pole, eastern=sig.is_eastern)
     expected_direct = (w_prom - w_sig) % 360.0
-    expected_converse = (w_sig - w_prom) % 360.0
+    # Converse exchanges the roles (Morin Bk 22 Ch 7): the arc is taken in the
+    # promissor's circle of position, i.e. under the promissor's pole.
+    conv_pole = _test_regio_pole(prom, geo_lat=51.5)
+    w_sig_conv = _test_regio_w(sig, conv_pole, eastern=prom.is_eastern)
+    w_prom_conv = _test_regio_w(prom, conv_pole, eastern=prom.is_eastern)
+    expected_converse = (w_sig_conv - w_prom_conv) % 360.0
     by_direction = {arc.direction: arc for arc in regio_arcs}
     assert by_direction[DIRECT].arc == pytest.approx(expected_direct)
     assert by_direction[CONVERSE].arc == pytest.approx(expected_converse)
@@ -1224,7 +1257,12 @@ def test_topocentric_is_admitted_on_mundane_surface_and_distinct() -> None:
     w_sig = _test_regio_w(sig, pole, eastern=sig.is_eastern)
     w_prom = _test_regio_w(prom, pole, eastern=sig.is_eastern)
     expected_direct = (w_prom - w_sig) % 360.0
-    expected_converse = (w_sig - w_prom) % 360.0
+    # Converse exchanges the roles (Morin Bk 22 Ch 7): the arc is taken in the
+    # promissor's circle of position, i.e. under the promissor's pole.
+    conv_pole = _test_topocentric_pole(prom, geo_lat=51.5)
+    w_sig_conv = _test_regio_w(sig, conv_pole, eastern=prom.is_eastern)
+    w_prom_conv = _test_regio_w(prom, conv_pole, eastern=prom.is_eastern)
+    expected_converse = (w_sig_conv - w_prom_conv) % 360.0
     by_direction = {arc.direction: arc for arc in topo_arcs}
     assert by_direction[DIRECT].arc == pytest.approx(expected_direct)
     assert by_direction[CONVERSE].arc == pytest.approx(expected_converse)
@@ -1460,9 +1498,13 @@ def test_regiomontanus_is_admitted_on_zodiacal_surface() -> None:
     pole = _test_regio_pole(sig, geo_lat=51.5)
     w_sig = _test_regio_w(sig, pole, eastern=sig.is_eastern)
     w_prom = _test_regio_w(moon_zero, pole, eastern=sig.is_eastern)
+    # Converse exchanges the roles (Morin Bk 22 Ch 7): arc under the promissor's pole.
+    conv_pole = _test_regio_pole(moon_zero, geo_lat=51.5)
+    w_sig_conv = _test_regio_w(sig, conv_pole, eastern=moon_zero.is_eastern)
+    w_prom_conv = _test_regio_w(moon_zero, conv_pole, eastern=moon_zero.is_eastern)
     by_direction = {arc.direction: arc for arc in regio_zodiacal}
     assert by_direction[DIRECT].arc == pytest.approx((w_prom - w_sig) % 360.0)
-    assert by_direction[CONVERSE].arc == pytest.approx((w_sig - w_prom) % 360.0)
+    assert by_direction[CONVERSE].arc == pytest.approx((w_sig_conv - w_prom_conv) % 360.0)
     assert any(
         abs(left.arc - right.arc) > 1e-6
         for left, right in zip(regio_zodiacal, placidus_zodiacal)
@@ -1501,9 +1543,13 @@ def test_topocentric_is_admitted_on_zodiacal_projected_surface() -> None:
     pole = _test_topocentric_pole(sig, geo_lat=51.5)
     w_sig = _test_regio_w(sig, pole, eastern=sig.is_eastern)
     w_prom = _test_regio_w(prom, pole, eastern=sig.is_eastern)
+    # Converse exchanges the roles (Morin Bk 22 Ch 7): arc under the promissor's pole.
+    conv_pole = _test_topocentric_pole(prom, geo_lat=51.5)
+    w_sig_conv = _test_regio_w(sig, conv_pole, eastern=prom.is_eastern)
+    w_prom_conv = _test_regio_w(prom, conv_pole, eastern=prom.is_eastern)
     topo_by_direction = {arc.direction: arc for arc in topo_zodiacal}
     assert topo_by_direction[DIRECT].arc == pytest.approx((w_prom - w_sig) % 360.0)
-    assert topo_by_direction[CONVERSE].arc == pytest.approx((w_sig - w_prom) % 360.0)
+    assert topo_by_direction[CONVERSE].arc == pytest.approx((w_sig_conv - w_prom_conv) % 360.0)
 
 
 def test_meridian_is_admitted_on_zodiacal_projected_surface() -> None:
@@ -1666,8 +1712,12 @@ def test_regiomontanus_supports_house_cusp_targets_with_aspect_inherited_variant
     pole = _test_regio_pole(cusp_entry, geo_lat=51.5)
     w_sig = _test_regio_w(cusp_entry, pole, eastern=cusp_entry.is_eastern)
     w_prom = _test_regio_w(inherited_point, pole, eastern=cusp_entry.is_eastern)
+    # Converse exchanges the roles (Morin Bk 22 Ch 7): arc under the promissor's pole.
+    conv_pole = _test_regio_pole(inherited_point, geo_lat=51.5)
+    w_sig_conv = _test_regio_w(cusp_entry, conv_pole, eastern=inherited_point.is_eastern)
+    w_prom_conv = _test_regio_w(inherited_point, conv_pole, eastern=inherited_point.is_eastern)
     assert by_direction[DIRECT].arc == pytest.approx((w_prom - w_sig) % 360.0)
-    assert by_direction[CONVERSE].arc == pytest.approx((w_sig - w_prom) % 360.0)
+    assert by_direction[CONVERSE].arc == pytest.approx((w_sig_conv - w_prom_conv) % 360.0)
 
 
 def test_significator_conditioned_zodiacal_branch_is_pair_specific_and_distinct() -> None:
@@ -1767,8 +1817,12 @@ def test_significator_conditioned_zodiacal_branch_is_pair_specific_and_distinct(
     pole = _test_regio_pole(cusp_entry, geo_lat=51.5)
     w_sig = _test_regio_w(cusp_entry, pole, eastern=cusp_entry.is_eastern)
     w_prom = _test_regio_w(conditioned_point, pole, eastern=cusp_entry.is_eastern)
+    # Converse exchanges the roles (Morin Bk 22 Ch 7): arc under the promissor's pole.
+    conv_pole = _test_regio_pole(conditioned_point, geo_lat=51.5)
+    w_sig_conv = _test_regio_w(cusp_entry, conv_pole, eastern=conditioned_point.is_eastern)
+    w_prom_conv = _test_regio_w(conditioned_point, conv_pole, eastern=conditioned_point.is_eastern)
     assert by_direction[DIRECT].arc == pytest.approx((w_prom - w_sig) % 360.0)
-    assert by_direction[CONVERSE].arc == pytest.approx((w_sig - w_prom) % 360.0)
+    assert by_direction[CONVERSE].arc == pytest.approx((w_sig_conv - w_prom_conv) % 360.0)
     assert any(
         abs(left.arc - right.arc) > 1e-6
         for left, right in zip(conditioned_arcs, inherited_arcs)
