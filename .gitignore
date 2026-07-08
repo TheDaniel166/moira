@@ -102,3 +102,6 @@ scratch/notebooklm_sources/
 # Marketing and collateral
 marketing/
 scratch/calculate_swiss_directly.py
+
+# Per-shard build metadata (regenerable; unified_master.json holds the records)
+moira/kernels/asteroids/*_shard_*.metadata.json
