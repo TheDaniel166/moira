@@ -127,10 +127,9 @@ Canon: Moira Sovereign Facade Architecture; moira.facade kernel policy.
                         small_body_readers_from_manifest(manifest_path)
                     )
                 supplemental = [
-                    "sb441-n373s.bsp",   # Legacy secondary asteroid kernel
-                    "asteroids.bsp",     # Legacy primary asteroid kernel
-                    "centaurs.bsp",      # Horizons centaurs
-                    "minor_bodies.bsp",  # Horizons minor bodies
+                    # Every asteroid (incl. centaurs and TNOs) now loads from the
+                    # unified sovereign manifest above; only comets remain a
+                    # separate, non-asteroid-numbered source.
                     "comets.bsp",        # Comets
                 ]
                 for s_name in supplemental:
@@ -241,10 +240,7 @@ Canon: Moira Sovereign Facade Architecture; moira.facade kernel policy.
         supplemental = [
             name
             for name in [
-                "asteroids.bsp",
-                "sb441-n373s.bsp",
-                "centaurs.bsp",
-                "minor_bodies.bsp",
+                "comets.bsp",
             ]
             if facade.find_kernel(name).exists()
         ]

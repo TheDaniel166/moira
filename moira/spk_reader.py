@@ -1291,10 +1291,9 @@ def set_kernel_path(path: str | Path) -> None:
                     found_supplemental.extend(small_body_readers_from_manifest(manifest_path))
 
                 supplemental = [
-                    "sb441-n373s.bsp",   # Legacy secondary asteroid kernel
-                    "asteroids.bsp",     # Legacy primary asteroid kernel
-                    "centaurs.bsp",      # Horizons centaurs
-                    "minor_bodies.bsp",  # Horizons minor bodies
+                    # Every asteroid (incl. centaurs and TNOs) now loads from the
+                    # unified sovereign manifest above; only comets remain a
+                    # separate, non-asteroid-numbered source.
                     "comets.bsp",        # Comets
                 ]
                 for s_name in supplemental:
