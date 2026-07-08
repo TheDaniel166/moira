@@ -653,11 +653,11 @@ def test_comet_list_route_returns_structured_records_and_filters(
 
     assert response.status_code == 200
     body = response.json()
-    assert body["bodies"] == [{"name": "Halley", "naif_id": COMET_NAIF["Halley"]}]
+    assert body["bodies"] == [{"name": "1P/Halley", "naif_id": COMET_NAIF["Halley"]}]
     assert body["total"] == 1
     assert body["provenance"] == {
         "catalog_source": "COMET_NAIF",
-        "catalog_scope": "curated_periodic_comet_identity_mapping",
+        "catalog_scope": "numbered_periodic_comet_identity_mapping",
         "availability_source": "loaded_reader_covered_bodies",
         "loaded_kernel_available": True,
         "requested_query": "halley",
@@ -775,9 +775,9 @@ def test_comet_position_route_resolves_numeric_string_naif_id(
 
     assert response.status_code == 200
     body = response.json()
-    assert calls == ["Halley"]
+    assert calls == ["1P/Halley"]
     assert body["provenance"]["requested_body"] == str(COMET_NAIF["Halley"])
-    assert body["provenance"]["resolved_body"] == "Halley"
+    assert body["provenance"]["resolved_body"] == "1P/Halley"
     assert body["provenance"]["known_catalog_entry"] is True
 
 

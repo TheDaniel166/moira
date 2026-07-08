@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from .spk_reader import MissingKernelError, KernelPool, SpkReader
-from ._spk_body_kernel import SmallBodyKernel, small_body_readers_from_manifest
+from ._spk_body_kernel import small_body_readers_from_manifest
 
 
 def _facade_module() -> Any:
@@ -120,22 +120,15 @@ Canon: Moira Sovereign Facade Architecture; moira.facade kernel policy.
                 # Supplemental asteroid/comet kernels are optional. A stale
                 # manifest, unsupported shard, or missing native extension
                 # must not block the core planetary reader.
-                from ._kernel_paths import find_kernel, find_all_small_body_manifests
+                from ._kernel_paths import find_all_small_body_manifests
 
+                # Every small body — asteroids (incl. centaurs and TNOs) and the
+                # numbered periodic comets — loads from its sovereign shard
+                # manifest, discovered under each kernel search root.
                 for manifest_path in find_all_small_body_manifests():
                     found_supplemental.extend(
                         small_body_readers_from_manifest(manifest_path)
                     )
-                supplemental = [
-                    # Every asteroid (incl. centaurs and TNOs) now loads from the
-                    # unified sovereign manifest above; only comets remain a
-                    # separate, non-asteroid-numbered source.
-                    "comets.bsp",        # Comets
-                ]
-                for s_name in supplemental:
-                    s_path = find_kernel(s_name)
-                    if s_path.exists():
-                        found_supplemental.append(SmallBodyKernel(s_path))
             except Exception as exc:
                 self._supplemental_kernel_init_error = exc
 
@@ -234,17 +227,12 @@ Canon: Moira Sovereign Facade Architecture; moira.facade kernel policy.
         facade = _facade_module()
         from ._kernel_paths import PLANETARY_KERNELS
 
-        planetary = [
+        # Small bodies (asteroids and numbered periodic comets) are no longer
+        # single-file kernels; they load from sovereign shard manifests and are
+        # reported through the reader pool, not this planetary-file listing.
+        return [
             name for name in PLANETARY_KERNELS if facade.find_kernel(name).exists()
         ]
-        supplemental = [
-            name
-            for name in [
-                "comets.bsp",
-            ]
-            if facade.find_kernel(name).exists()
-        ]
-        return planetary + supplemental
 
     def configure_kernel_path(self, path: str) -> None:
         self._kernel_path = path

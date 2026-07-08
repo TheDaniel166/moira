@@ -1284,22 +1284,14 @@ def set_kernel_path(path: str | Path) -> None:
         found_supplemental = []
         if type(primary_reader) is _OriginalSpkReader:
             try:
-                from ._kernel_paths import find_kernel, find_all_small_body_manifests
-                from ._spk_body_kernel import SmallBodyKernel, small_body_readers_from_manifest
+                from ._kernel_paths import find_all_small_body_manifests
+                from ._spk_body_kernel import small_body_readers_from_manifest
 
+                # Every small body — asteroids (incl. centaurs and TNOs) and the
+                # numbered periodic comets — loads from its sovereign shard
+                # manifest, discovered under each kernel search root.
                 for manifest_path in find_all_small_body_manifests():
                     found_supplemental.extend(small_body_readers_from_manifest(manifest_path))
-
-                supplemental = [
-                    # Every asteroid (incl. centaurs and TNOs) now loads from the
-                    # unified sovereign manifest above; only comets remain a
-                    # separate, non-asteroid-numbered source.
-                    "comets.bsp",        # Comets
-                ]
-                for s_name in supplemental:
-                    s_path = find_kernel(s_name)
-                    if s_path.exists():
-                        found_supplemental.append(SmallBodyKernel(s_path))
             except Exception:
                 # Supplemental kernel discovery is best-effort: missing shards,
                 # unsupported segment types, or import failures must not prevent

@@ -43,7 +43,25 @@ def _covered_bodies(reader: Any | None) -> frozenset[int]:
 
 _KNOWN_COMET_NAMES = frozenset(name.casefold() for name in COMET_NAIF)
 _KNOWN_COMET_IDS = frozenset(COMET_NAIF.values())
-_COMET_NAME_BY_ID = {naif_id: name for name, naif_id in COMET_NAIF.items()}
+
+
+def _canonical_comet_name_by_id() -> dict[int, str]:
+    """Map each NAIF id to its canonical display name.
+
+    ``COMET_NAIF`` carries both curated short aliases ("Halley") and full
+    standard designations ("1P/Halley") for the same body. The designation is
+    canonical because it is unique — bare discoverer names (PANSTARRS, LINEAR)
+    are shared across dozens of comets — so it is preferred for display and for
+    resolving a numeric NAIF id back to a name.
+    """
+    by_id: dict[int, str] = {}
+    for name, naif_id in COMET_NAIF.items():
+        if naif_id not in by_id or ("/" in name and "/" not in by_id[naif_id]):
+            by_id[naif_id] = name
+    return by_id
+
+
+_COMET_NAME_BY_ID = _canonical_comet_name_by_id()
 _COMET_NAME_BY_CASEFOLD = {name.casefold(): name for name in COMET_NAIF}
 
 
@@ -161,9 +179,12 @@ def list_sovereign_comets(
         )
 
     covered_ids = _covered_bodies(reader)
+    # One entry per body, keyed by NAIF id, using the canonical designation —
+    # COMET_NAIF holds both aliases and designations for the curated comets, so
+    # iterating it directly would list those bodies twice.
     result = [
-        CometListItem(name=name, naif_id=naif_id)
-        for name, naif_id in COMET_NAIF.items()
+        CometListItem(name=_COMET_NAME_BY_ID[naif_id], naif_id=naif_id)
+        for naif_id in _KNOWN_COMET_IDS
         if naif_id in covered_ids
     ]
     if name_filter:

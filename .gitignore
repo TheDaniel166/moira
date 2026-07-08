@@ -103,5 +103,6 @@ scratch/notebooklm_sources/
 marketing/
 scratch/calculate_swiss_directly.py
 
-# Per-shard build metadata (regenerable; unified_master.json holds the records)
+# Per-shard build metadata (regenerable; the *_master.json holds the records)
 moira/kernels/asteroids/*_shard_*.metadata.json
+moira/kernels/comets/*_shard_*.metadata.json

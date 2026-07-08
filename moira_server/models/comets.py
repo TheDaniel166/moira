@@ -135,7 +135,7 @@ class CometListResponse(_StrictModel):
 
 class CometListProvenanceResponse(_StrictModel):
     catalog_source: str = "COMET_NAIF"
-    catalog_scope: str = "curated_periodic_comet_identity_mapping"
+    catalog_scope: str = "numbered_periodic_comet_identity_mapping"
     availability_source: str
     loaded_kernel_available: bool
     requested_query: str | None = None
