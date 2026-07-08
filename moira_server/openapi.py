@@ -261,6 +261,18 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "classical-vedic",
     },
     {
+        "name": "upagrahas",
+        "x-displayName": "Upagrahas",
+        "description": "Gulika/Mandi and the kalavelas (BPHS 3.66-70, lineage variants as policy) plus the Sun-derived upagrahas (BPHS 3.61-64 with the verse-stated self-check).",
+        "x-family": "classical-vedic",
+    },
+    {
+        "name": "avasthas",
+        "x-displayName": "Avasthas",
+        "description": "Planetary states (BPHS Ch. 45): Baladi, Jagradadi, source-parameterized Deeptadi, and the six Lajjitadi flags with evidence.",
+        "x-family": "classical-vedic",
+    },
+    {
         "name": "yogas",
         "x-displayName": "Yogas",
         "description": "Classical yoga engine: Pancha Mahapurusha, Chandra, Surya, 32 Nabhasa, Raja, and Dhana families — every yoga a proof object with conditions, bhanga, citations, and precedence.",

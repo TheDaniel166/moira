@@ -34,6 +34,11 @@ from .meta import router as meta_router
 from .muhurta import router as muhurta_router
 from .sade_sati import router as sade_sati_router
 from .yogas import router as yogas_router
+from .vedic_extended import (
+    upagrahas_router,
+    avasthas_router,
+    jaimini_extended_router,
+)
 from .nodes import router as nodes_router
 from .nine_parts import router as nine_parts_router
 from .panchanga import router as panchanga_router
@@ -102,6 +107,9 @@ __all__ = [
     "muhurta_router",
     "sade_sati_router",
     "yogas_router",
+    "upagrahas_router",
+    "avasthas_router",
+    "jaimini_extended_router",
     "nodes_router",
     "nine_parts_router",
     "orbits_router",

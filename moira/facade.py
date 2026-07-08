@@ -606,6 +606,22 @@ from .yogas import (
     pancha_mahapurusha_yogas, chandra_yogas, surya_yogas,
     nabhasa_yogas, raja_yogas, dhana_yogas, evaluate_yogas,
 )
+from .upagrahas import (
+    UpagrahaPolicy, SunBasedUpagrahas, KalavelaUpagraha, KalavelaResult,
+    sun_based_upagrahas, kalavela_upagrahas,
+)
+from .avasthas import (
+    AvasthaPolicy, BaladiAvastha, JagradadiAvastha, DeeptadiAvastha,
+    LajjitadiState, LajjitadiAvasthas, PlanetAvasthas, AvasthaChartResult,
+    baladi_avastha, jagradadi_avastha, deeptadi_avastha,
+    lajjitadi_avasthas, evaluate_avasthas,
+)
+from .jaimini_extended import (
+    JaiminiExtendedPolicy, ArudhaPada, ArudhaResult, ArgalaHouse,
+    ArgalaResult, Karakamsa, CharaDashaPeriod, CharaDashaResult,
+    rasi_aspects, rasi_drishti_of, arudha_padas, argala, karakamsa,
+    chara_dasha,
+)
 from .sade_sati import (
     SADE_SATI_PHASES,
     SadeSatiStatus, SadeSatiWindow, SadeSatiResult,
@@ -1436,6 +1452,19 @@ __all__ = [
     # Sade Sati
     "SADE_SATI_PHASES", "SadeSatiStatus", "SadeSatiWindow", "SadeSatiResult",
     "sade_sati_status", "sade_sati_windows",
+    # Upagrahas
+    "UpagrahaPolicy", "SunBasedUpagrahas", "KalavelaUpagraha",
+    "KalavelaResult", "sun_based_upagrahas", "kalavela_upagrahas",
+    # Avasthas
+    "AvasthaPolicy", "BaladiAvastha", "JagradadiAvastha", "DeeptadiAvastha",
+    "LajjitadiState", "LajjitadiAvasthas", "PlanetAvasthas",
+    "AvasthaChartResult", "baladi_avastha", "jagradadi_avastha",
+    "deeptadi_avastha", "lajjitadi_avasthas", "evaluate_avasthas",
+    # Jaimini extended
+    "JaiminiExtendedPolicy", "ArudhaPada", "ArudhaResult", "ArgalaHouse",
+    "ArgalaResult", "Karakamsa", "CharaDashaPeriod", "CharaDashaResult",
+    "rasi_aspects", "rasi_drishti_of", "arudha_padas", "argala",
+    "karakamsa", "chara_dasha",
     # Yoga engine
     "YogaPolicy", "YogaCondition", "YogaResult", "YogaChartResult",
     "benefic_malefic_classification",

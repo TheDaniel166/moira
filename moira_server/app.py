@@ -50,6 +50,9 @@ from .routers import (
     muhurta_router,
     sade_sati_router,
     yogas_router,
+    upagrahas_router,
+    avasthas_router,
+    jaimini_extended_router,
     nodes_router,
     nine_parts_router,
     orbits_router,
@@ -161,6 +164,9 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(muhurta_router)      # P-GAP-02 Vedic Muhurta instant classification/score surface
     app.include_router(sade_sati_router)   # Vedic Phase-2: Sade Sati status + kernel-timed windows
     app.include_router(yogas_router)        # Vedic Phase-2 flagship: yoga engine (proof-object evaluation)
+    app.include_router(upagrahas_router)    # Vedic Phase-2: Gulika/Mandi kalavelas + Sun-derived upagrahas
+    app.include_router(avasthas_router)     # Vedic Phase-2: planetary states (BPHS Ch. 45)
+    app.include_router(jaimini_extended_router)  # Vedic Phase-2: arudhas, argala, karakamsa, Chara Dasha
     app.include_router(nodes_router)        # Phase-11 planetary and small-body orbital node surface
     app.include_router(orbits_router)       # P-GAP-03 heliocentric osculating elements and distance extrema
     app.include_router(uranian_router)      # Phase-12 Uranian/Hamburg School hypothetical-body surface

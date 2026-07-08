@@ -79,6 +79,20 @@ foundations (kendra-trikona lordship links, Viparita Raja).
 **Gap type:** A (four sub-techniques absent)
 **Effort:** L (as a family; each piece is M or smaller)
 **Priority: 2.**
+> **CORE CLOSED 2026-07-08.** New `moira.jaimini_extended`: rasi drishti
+> (JUS 1.1.2-4, all lineages agree, full-symmetry tested), arudha padas
+> A1-A12 (Rath/JHora 10th-therefrom exception default with the Raman
+> no-exception reading as policy; classical-seven vs Jaimini-co-lords
+> lordship with the PVR 15.5.1 stronger-co-lord chain), argala (Rath/PVR
+> reading with virodha pairs, the malefic-third rule, and the Ketu
+> reversal), karakamsa (BOTH lineage products named — Rath D9 svamsa vs
+> K.N. Rao D1 projection, never collapsed), and first-cycle Chara Dasha
+> per K.N. Rao (Neelakantha karika; 9th-from-lagna direction rule; no
+> exaltation adjustment — Rao explicit; antardashas dasha-sign-last).
+> Served at `POST /v1/jaimini/extended/{arudhas,argala,karakamsa,chara-dasha}`.
+> **Remaining:** Rao's second Chara cycle (unverified against his book —
+> deferred, not guessed), Rath/RB-NS Chara variants, argala strength
+> grading via Shadbala.
 
 Present: karakas only.  Missing, in dependency order:
 
@@ -104,6 +118,15 @@ Present: karakas only.  Missing, in dependency order:
 **Gap type:** A
 **Effort:** M
 **Priority: 3.**
+> **CLOSED 2026-07-08.** New `moira.upagrahas`: the five kalavelas
+> (BPHS 3.66-70 eight-fold day/night division, weekday lord tables
+> verified against the classical Saturday Gulika-kalam anchor and JP's
+> Friday-night example) with the ascendant materialization, plus the five
+> Sun-derived upagrahas (BPHS 3.61-64) with the verse's own self-check
+> (Upaketu + 30 deg = Sun) enforced as an invariant.  Lineage variants as
+> policy: portion point (BPHS beginning default / JHora middle / UK-JP
+> end), Mandi alias-vs-Kalidasa-table, contiguous-vs-JHora lord
+> sequencing.  Served at `POST /v1/upagrahas/{sun-based,kalavelas}`.
 
 No upagraha computation exists.  Needed: Gulika/Mandi (Saturn's portion of
 the day-eighths), plus the remaining kalavelas (Kala, Mrityu, Yamaghantaka,
@@ -124,6 +147,16 @@ Parivesha, Indrachapa, Upaketu — pure longitude arithmetic).
 **Gap type:** A
 **Effort:** M
 **Priority: 4 — pairs naturally with the Shadbala drill-down.**
+> **CORE CLOSED 2026-07-08.** New `moira.avasthas`: Baladi (BPHS 45.3-4,
+> with Vriddha honestly unnumbered — "negligible" has no classical
+> fraction), Jagradadi (45.5-6, sign-level dignity), Deeptadi as four
+> per-source rule tables (BPHS-9 default / Saravali-9 / JP-10 / PD-11 —
+> the texts collide even on state names and are never merged), and the
+> six non-exclusive Lajjitadi flags (45.11-18) with evidence strings.
+> Served at `POST /v1/avasthas/evaluate`.
+> **Remaining:** Sayanadi (45.30-155) — deferred: needs birth ghatis +
+> the native's name syllable, and Santhanam's printed sub-state example
+> carries an arithmetic inconsistency needing a second-edition recheck.
 
 None of the classical state systems exist: Baladi (5 age states by degree in
 odd/even sign), Jagradadi (3 awareness states from dignity), Deeptadi (7–9
