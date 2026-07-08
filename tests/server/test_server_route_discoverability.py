@@ -88,6 +88,7 @@ def test_route_catalog_filters_by_tag_family_method_and_path(client: TestClient)
     assert paths == {
         "/v1/muhurta/chart/score",
         "/v1/muhurta/direct/score",
+        "/v1/muhurta/personal/score",
     }
     assert all(route["family"] == "classical-vedic" for route in body["routes"])
     assert all(route["methods"] == ["POST"] for route in body["routes"])

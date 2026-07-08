@@ -36,6 +36,26 @@ This register exists so no further gap survives by silence.
 **Gap type:** A (entire technique family absent)
 **Effort:** L
 **Priority: 1 — the largest user-visible gap in the Vedic layer.**
+> **CORE CLOSED 2026-07-08.** New `moira.yogas` — 60 yogas per chart
+> across six families, every yoga a proof object (formation conditions
+> with observed evidence, bhanga evaluated first-class, per-yoga source
+> citations, Nabhasa precedence suppression visible):
+> Pancha Mahapurusha (5, BPHS 75.1-2 verbatim-sourced), Chandra (7, incl.
+> Kemadruma with its full bhanga catalog), Surya (4), Nabhasa (all 32,
+> BPHS Ch. 35 + Brihat Jataka Ch. 12 with Bhattotpala's precedence),
+> Raja core (Kendra-Trikona + 34.15 dilution, Yogakaraka,
+> Dharma-Karmadhipati with the UK IV.3 proviso, Viparita with all three
+> conflicting formulations as policy, Neecha Bhanga per PD 7.26-30),
+> Dhana core (2-11, the UK IV.28 network with contamination, Lakshmi,
+> Maha/Khala/Dainya Parivartana).  Doctrine extracted from primary
+> sources by four dedicated research passes (BPHS Santhanam, Brihat
+> Jataka Sastri/Bhattotpala, Saravali, Phaladeepika, Uttara Kalamrita,
+> Jataka Parijata, Raman Part I) — no rules from memory.  Served at
+> `POST /v1/yogas/evaluate`.
+> **Remaining for a later wave:** BPHS Ch. 41 per-lagna wealth
+> instantiations (41.2-15), extended raja associations (BPHS Ch. 39
+> royal-birth combinations), JP 7.14 navamsa-based Neecha Bhanga (needs
+> varga join), and Raman Part II citations (no accessible scan exists).
 
 No yoga detection exists anywhere: no Pancha Mahapurusha (Ruchaka/Bhadra/
 Hamsa/Malavya/Sasa), no Chandra yogas (Gajakesari, Sunapha/Anapha/Durudhara,

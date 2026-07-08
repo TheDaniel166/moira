@@ -600,6 +600,12 @@ from .varga import (
     varga_sign_index, vimshopaka_bala, vimshopaka_all,
     is_vargottama, vargottama_planets,
 )
+from .yogas import (
+    YogaPolicy, YogaCondition, YogaResult, YogaChartResult,
+    benefic_malefic_classification,
+    pancha_mahapurusha_yogas, chandra_yogas, surya_yogas,
+    nabhasa_yogas, raja_yogas, dhana_yogas, evaluate_yogas,
+)
 from .sade_sati import (
     SADE_SATI_PHASES,
     SadeSatiStatus, SadeSatiWindow, SadeSatiResult,
@@ -1430,6 +1436,11 @@ __all__ = [
     # Sade Sati
     "SADE_SATI_PHASES", "SadeSatiStatus", "SadeSatiWindow", "SadeSatiResult",
     "sade_sati_status", "sade_sati_windows",
+    # Yoga engine
+    "YogaPolicy", "YogaCondition", "YogaResult", "YogaChartResult",
+    "benefic_malefic_classification",
+    "pancha_mahapurusha_yogas", "chandra_yogas", "surya_yogas",
+    "nabhasa_yogas", "raja_yogas", "dhana_yogas", "evaluate_yogas",
     # Decanates
     "DecanatePosition", "chaldean_face", "triplicity_decan", "vedic_drekkana",
     # Astrocartography

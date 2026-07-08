@@ -33,6 +33,7 @@ from .manazil import router as manazil_router
 from .meta import router as meta_router
 from .muhurta import router as muhurta_router
 from .sade_sati import router as sade_sati_router
+from .yogas import router as yogas_router
 from .nodes import router as nodes_router
 from .nine_parts import router as nine_parts_router
 from .panchanga import router as panchanga_router
@@ -100,6 +101,7 @@ __all__ = [
     "meta_router",
     "muhurta_router",
     "sade_sati_router",
+    "yogas_router",
     "nodes_router",
     "nine_parts_router",
     "orbits_router",

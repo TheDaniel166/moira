@@ -261,6 +261,12 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "classical-vedic",
     },
     {
+        "name": "yogas",
+        "x-displayName": "Yogas",
+        "description": "Classical yoga engine: Pancha Mahapurusha, Chandra, Surya, 32 Nabhasa, Raja, and Dhana families — every yoga a proof object with conditions, bhanga, citations, and precedence.",
+        "x-family": "classical-vedic",
+    },
+    {
         "name": "sade-sati",
         "x-displayName": "Sade Sati",
         "description": "Sade Sati status and kernel-timed phase windows (Saturn vs. natal Moon), with Ashtama and Kantaka Shani flags.",

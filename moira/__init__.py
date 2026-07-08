@@ -147,6 +147,20 @@ from .muhurta import (
     PersonalMuhurtaScore,
     personal_muhurta_score,
 )
+from .yogas import (
+    YogaPolicy,
+    YogaCondition,
+    YogaResult,
+    YogaChartResult,
+    benefic_malefic_classification,
+    pancha_mahapurusha_yogas,
+    chandra_yogas,
+    surya_yogas,
+    nabhasa_yogas,
+    raja_yogas,
+    dhana_yogas,
+    evaluate_yogas,
+)
 from .sade_sati import (
     SADE_SATI_PHASES,
     SadeSatiStatus,
@@ -634,6 +648,19 @@ __all__ = [
     "SadeSatiResult",
     "sade_sati_status",
     "sade_sati_windows",
+    # Yoga engine
+    "YogaPolicy",
+    "YogaCondition",
+    "YogaResult",
+    "YogaChartResult",
+    "benefic_malefic_classification",
+    "pancha_mahapurusha_yogas",
+    "chandra_yogas",
+    "surya_yogas",
+    "nabhasa_yogas",
+    "raja_yogas",
+    "dhana_yogas",
+    "evaluate_yogas",
     # Dasha systems
     "ASHTOTTARI_YEARS",
     "ASHTOTTARI_SEQUENCE",
