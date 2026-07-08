@@ -94,13 +94,54 @@ def find_sovereign_small_body_manifest() -> Path | None:
             return candidate
 
     for root in kernel_search_dirs():
-        direct = root / "sb441_type13_manifest.json"
-        if direct.exists():
-            return direct
-        nested = root / "sb441_type13" / "manifest.json"
-        if nested.exists():
-            return nested
+        for candidate in (
+            root / "asteroids" / "manifest.json",       # unified catalog (current)
+            root / "sb441_type13_manifest.json",         # legacy flat
+            root / "sb441_type13" / "manifest.json",     # legacy nested
+        ):
+            if candidate.exists():
+                return candidate
     return None
+
+
+def find_all_small_body_manifests() -> list[Path]:
+    """
+    Return every installed small-body shard manifest, in a stable order.
+
+    Generalises :func:`find_sovereign_small_body_manifest` so that multiple
+    independent shard sources (sb441_type13, family_expansion, and any future
+    catalog-expansion source) all load, rather than only the first found.
+
+    Discovery, deduplicated by resolved path:
+      1. ``$MOIRA_SOVEREIGN_SMALL_BODY_MANIFEST`` if it exists
+      2. legacy flat ``<root>/sb441_type13_manifest.json`` per search root
+      3. every ``<root>/<subdir>/manifest.json`` per search root
+
+    Each manifest is consumed by ``small_body_readers_from_manifest``, which
+    reads only its ``shards`` list, so a non-shard ``manifest.json`` yields no
+    readers rather than an error.
+    """
+    manifests: list[Path] = []
+    seen: set[Path] = set()
+
+    def _add(candidate: Path) -> None:
+        if not candidate.exists():
+            return
+        resolved = candidate.resolve()
+        if resolved not in seen:
+            seen.add(resolved)
+            manifests.append(candidate)
+
+    env_path = os.environ.get(SOVEREIGN_SMALL_BODY_MANIFEST_ENV)
+    if env_path:
+        _add(Path(env_path))
+
+    for root in kernel_search_dirs():
+        _add(root / "sb441_type13_manifest.json")
+        for nested in sorted(root.glob("*/manifest.json")):
+            _add(nested)
+
+    return manifests
 
 
 # Known JPL planetary ephemeris kernels, checked in this order when no

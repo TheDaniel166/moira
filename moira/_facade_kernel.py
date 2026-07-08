@@ -120,10 +120,9 @@ Canon: Moira Sovereign Facade Architecture; moira.facade kernel policy.
                 # Supplemental asteroid/comet kernels are optional. A stale
                 # manifest, unsupported shard, or missing native extension
                 # must not block the core planetary reader.
-                from ._kernel_paths import find_kernel, find_sovereign_small_body_manifest
+                from ._kernel_paths import find_kernel, find_all_small_body_manifests
 
-                manifest_path = find_sovereign_small_body_manifest()
-                if manifest_path is not None:
+                for manifest_path in find_all_small_body_manifests():
                     found_supplemental.extend(
                         small_body_readers_from_manifest(manifest_path)
                     )

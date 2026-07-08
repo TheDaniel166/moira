@@ -18,9 +18,11 @@ Import-time side effects: None (kernel is opened lazily on first
 External dependency assumptions:
     - A compatible JPL SPK planetary kernel must be provided to the
       SpkReader at construction. No default kernel is assumed.
-    - jplephem is optional. Moira prefers the native planetary reader path
-      when available and only falls back to jplephem for unsupported segment
-      layouts.
+    - The planetary reader is native-only at runtime. jplephem is NOT a runtime
+      dependency; it appears solely as an optional dev-time parity oracle in the
+      tests. Kernels with segment types the native reader does not support
+      (anything other than Type 2/3 Chebyshev) raise plainly rather than falling
+      back to any third-party reader.
 """
 
 from __future__ import annotations
@@ -345,14 +347,15 @@ def _open_kernel(path: Path):
         catalog = _moira_native.read_daf_catalog(str(path))
         if _planetary_kernel_native_supported(catalog):
             return _NativeSpkKernel(path, catalog)
-    if not _HAS_JPLEPHEM:
-        raise RuntimeError(
-            f"Kernel '{path}' contains segment types not supported by Moira's native "
-            "reader and cannot be opened. This kernel is not part of Moira's standard "
-            "supported set. If you are using a custom or third-party SPK kernel, ensure "
-            "it uses Type 2 or Type 3 Chebyshev segments."
-        )
-    return _SPK.open(str(path))
+    # Sovereign runtime: the planetary reader is native-only. Unsupported segment
+    # types raise plainly; there is no jplephem fallback (jplephem is not a runtime
+    # dependency, only an optional dev-time parity oracle in the tests).
+    raise RuntimeError(
+        f"Kernel '{path}' contains segment types not supported by Moira's native "
+        "reader and cannot be opened. This kernel is not part of Moira's standard "
+        "supported set. If you are using a custom or third-party SPK kernel, ensure "
+        "it uses Type 2 or Type 3 Chebyshev segments."
+    )
 
 
 class _NativeChebyshevSegment:
@@ -1281,11 +1284,10 @@ def set_kernel_path(path: str | Path) -> None:
         found_supplemental = []
         if type(primary_reader) is _OriginalSpkReader:
             try:
-                from ._kernel_paths import find_kernel, find_sovereign_small_body_manifest
+                from ._kernel_paths import find_kernel, find_all_small_body_manifests
                 from ._spk_body_kernel import SmallBodyKernel, small_body_readers_from_manifest
 
-                manifest_path = find_sovereign_small_body_manifest()
-                if manifest_path is not None:
+                for manifest_path in find_all_small_body_manifests():
                     found_supplemental.extend(small_body_readers_from_manifest(manifest_path))
 
                 supplemental = [

@@ -220,42 +220,27 @@ def test_open_kernel_uses_fully_native_path_without_jplephem_open(monkeypatch, t
     assert len(kernel.segments) == 1
 
 
-def test_open_kernel_falls_back_when_catalog_contains_unsupported_type(monkeypatch, tmp_path: Path) -> None:
-    kernel_path = tmp_path / "fallback.bsp"
-    kernel_path.write_bytes(b"placeholder")
-
-    monkeypatch.setattr(spk_reader, "_HAS_NATIVE_DAF", True)
-    monkeypatch.setattr(spk_reader, "_HAS_NATIVE_SEGMENTS", True)
-    monkeypatch.setattr(spk_reader, "_HAS_JPLEPHEM", True)
-
-    class _NativeStub:
-        @staticmethod
-        def read_daf_catalog(_path):
-            return {
-                "little_endian": True,
-                "summaries": [
-                    {
-                        "name": b"SEGMENT",
-                        "descriptor": (0.0, 86400.0, 10, 0, 1, 9, 100, 200),
-                    }
-                ],
-            }
-
-    monkeypatch.setattr(spk_reader, "_moira_native", _NativeStub())
-
-    sentinel = object()
-    monkeypatch.setattr(spk_reader._SPK, "open", lambda _path: sentinel)
-    assert spk_reader._open_kernel(kernel_path) is sentinel
-
-
-def test_open_kernel_raises_plainly_when_unsupported_and_jplephem_missing(monkeypatch, tmp_path: Path) -> None:
+def test_open_kernel_raises_on_unsupported_segment_type_native_only(monkeypatch, tmp_path: Path) -> None:
+    """Sovereign runtime: an unsupported segment type raises plainly, with no
+    jplephem fallback -- even when jplephem is present. This test does not depend
+    on jplephem being installed (it stubs ``_SPK`` unconditionally), so it passes
+    with or without the optional oracle package."""
     kernel_path = tmp_path / "unsupported.bsp"
     kernel_path.write_bytes(b"placeholder")
 
     monkeypatch.setattr(spk_reader, "_HAS_NATIVE_DAF", True)
     monkeypatch.setattr(spk_reader, "_HAS_NATIVE_SEGMENTS", True)
-    monkeypatch.setattr(spk_reader, "_HAS_JPLEPHEM", False)
-    monkeypatch.setattr(spk_reader, "_SPK", None)
+
+    # jplephem "present" with a reader whose use would be a regression: the
+    # native-only path must never route to it.
+    monkeypatch.setattr(spk_reader, "_HAS_JPLEPHEM", True)
+
+    class _NeverCalled:
+        @staticmethod
+        def open(_path):
+            raise AssertionError("jplephem fallback must not be used at runtime")
+
+    monkeypatch.setattr(spk_reader, "_SPK", _NeverCalled)
 
     class _NativeStub:
         @staticmethod
@@ -272,7 +257,7 @@ def test_open_kernel_raises_plainly_when_unsupported_and_jplephem_missing(monkey
 
     monkeypatch.setattr(spk_reader, "_moira_native", _NativeStub())
 
-    with pytest.raises(RuntimeError, match="requires jplephem"):
+    with pytest.raises(RuntimeError, match="not supported by Moira's native reader"):
         spk_reader._open_kernel(kernel_path)
 
 

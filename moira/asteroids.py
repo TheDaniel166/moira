@@ -501,6 +501,24 @@ ASTEROID_NAIF: dict[str, int] = {
     "Gonggong":     2225088,
 }
 
+# Data-driven unified catalog: merge the full Moira asteroid catalog built by
+# scripts/build_unified_asteroid_catalog.py (name -> NAIF id, ~1382 bodies).
+# Kept in a data file rather than inline so the entries do not bloat this module;
+# loaded here (before the reverse map) so name and NAIF lookups both see them.
+# `setdefault` keeps the curated names above for the core bodies while the data
+# file supplies the rest. Best-effort: a missing/malformed data file leaves the
+# curated core catalog intact.
+try:  # pragma: no cover - data-file merge
+    import json as _json
+    from pathlib import Path as _Path
+
+    _catalog_naif_path = _Path(__file__).resolve().parent / "data" / "asteroid_catalog_naif.json"
+    if _catalog_naif_path.exists():
+        for _name, _naif in _json.loads(_catalog_naif_path.read_text(encoding="utf-8")).items():
+            ASTEROID_NAIF.setdefault(str(_name), int(_naif))
+except Exception:  # noqa: BLE001 - never let catalog expansion break the module
+    pass
+
 # Reverse lookup: NAIF ID → name
 _NAIF_TO_NAME: dict[int, str] = {v: k for k, v in ASTEROID_NAIF.items()}
 
