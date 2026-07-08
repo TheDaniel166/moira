@@ -5,6 +5,36 @@ All notable changes to the Moira project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2026-07-08
+
+### Breaking Changes
+- **Native-Only Kernel Reader**: The jplephem runtime fallback has been removed from `moira.spk_reader`. SPK segment types not supported by Moira's native reader now raise a sovereign error instead of silently falling back; jplephem is no longer a runtime dependency (it remains an optional dev-only parity oracle whose tests skip when absent).
+- **Small-Body Kernel Loading**: The single-file supplemental kernels (`comets.bsp`, `centaurs.bsp`, `minor_bodies.bsp`) no longer auto-load; existing installs carrying those files stop using them. All small bodies now load from sharded Type-13 manifests (`moira/kernels/asteroids/manifest.json`, `moira/kernels/comets/manifest.json`) discovered under every kernel search root. The shard sets are distributed via website download rather than shipped in the wheel; `available_kernels` now reports planetary kernels only.
+- **Canonical Comet Identity**: The canonical comet name in REST responses is now the standard numbered designation (`"1P/Halley"`, not `"Halley"`); curated short aliases remain accepted as inputs. The comet list route's `catalog_scope` is now `numbered_periodic_comet_identity_mapping`.
+
+### Added
+- **Yoga Engine** (`moira.yogas`, `POST /v1/yogas/evaluate`): 60 classical yogas per chart across six families — Pancha Mahapurusha (BPHS 75.1-2), Chandra (7, incl. the Parashara-strict Gajakesari gates and the full Kemadruma bhanga catalog), Surya (4), all 32 Nabhasa (BPHS Ch. 35 / Brihat Jataka Ch. 12 with Bhattotpala's precedence doctrine), Raja core (Kendra-Trikona with the 34.15 dilution, Yogakaraka, Dharma-Karmadhipati, Viparita with all three conflicting primary formulations as policy, Neecha Bhanga per Phaladeepika 7.26-30), and Dhana core (2-11, the Uttara Kalamrita IV.28 network with dusthana contamination, Lakshmi, Maha/Khala/Dainya Parivartana). Every yoga returns as a proof object: formation conditions with observed evidence, cancellation (bhanga) clauses evaluated first-class, per-yoga primary-source citations, and Nabhasa precedence suppression made visible.
+- **Shadbala Completion**: Bhava Bala (house strength, Raman Part II — Bhavadhipati/Bhava Dig/Bhava Drishti per house with rank, no invented pass/fail threshold), inline Ishta/Kashta Phala on every planet (BPHS Ch. 27, derived from the displayed Uchcha and Chesta), Graha Yuddha transfer disclosure (`shashtiamsas_transferred`), the exact `ayanamsa_degrees` used, and the single-call `POST /v1/shadbala/chart/full` envelope (chart + profile + network + bhava from one support-truth derivation).
+- **Upagrahas** (`moira.upagrahas`, `POST /v1/upagrahas/*`): the five kalavelas (Gulika, Kala, Mrityu, Ardhaprahara, Yamaghantaka — BPHS 3.66-70 eight-fold day/night division with ascendant materialization) with portion-point, Mandi-mode, and lord-sequence lineage policies, plus the five Sun-derived upagrahas (BPHS 3.61-64) with the verse-stated self-check (Upaketu + 30° ≡ Sun) enforced as an invariant.
+- **Avasthas** (`moira.avasthas`, `POST /v1/avasthas/evaluate`): Baladi (with Vriddha honestly unnumbered), Jagradadi, Deeptadi as four per-source rule tables (BPHS-9 / Saravali-9 / Jataka-Parijata-10 / Phaladeepika-11 — never merged), and the six non-exclusive Lajjitadi flags with evidence strings.
+- **Jaimini Extended** (`moira.jaimini_extended`, `POST /v1/jaimini/extended/*`): rasi drishti, arudha padas A1-A12 (Rath/JHora exception default, Raman variant as policy; classical-seven vs Jaimini co-lords lordship), argala with virodha pairs and the Ketu reversal, karakamsa with both lineage readings named (Rath D9 vs K.N. Rao D1 — never collapsed), and first-cycle Chara Dasha in K.N. Rao's named lineage.
+- **Ashtakavarga Refinements**: kakshya-level transit evaluation (`kakshya_transit`, JP II.71 Saturn-first lord order; favorability tests the specific kakshya lord's contribution) and Shodhya Pinda (`shodhya_pinda`, BPHS Ch. 69 Rasi+Graha Pinda with verified multiplier tables), validated exactly against BPHS's own worked example (Sun 148, Moon 158) and Patel's Standard Horoscope; served at `POST /v1/ashtakavarga/{kakshya-transit,shodhya-pinda}`.
+- **Vimshopaka Bala + Vargottama** (`POST /v1/varga/vimshopaka`): the BPHS 20-point varga-dignity strength over all four classical groups with per-division vargavishwa breakdown, plus vargottama detection.
+- **Tara Bala + Chandra Bala** (`POST /v1/muhurta/personal/score`): the nine-tara cycle and Chandra Shuddhi (with Chandrashtama flagged and double-weighted) as a natal-personalized muhurta overlay; the long-dormant Tara placeholder in `_classify_nakshatra` now computes.
+- **Sade Sati** (`moira.sade_sati`, `POST /v1/sade-sati/{status,windows}`): phase classification (rising/peak/setting) with Ashtama and Kantaka Shani flags, and kernel-timed phase windows via Saturn sidereal sign-ingress bisection with retrograde re-entries as separate honest windows.
+- **Numbered Periodic Comet Catalog**: 497 comets (1P-516P) from JPL Horizons as sharded Type-13 kernels (1600-2500, sub-mas interpolation fidelity, apparition-dependent accuracy honestly recorded in the manifest), with a data-driven `COMET_NAIF` registry.
+- **Unified Asteroid Catalog**: 1,382 asteroids (up from 369) covering all 119 asteroid families, rebuilt from JPL Horizons at 1600-2500 as 56 Type-13 shards with generic multi-manifest discovery.
+
+### Fixed
+- **Primary Directions**: Morinus directions corrected to Morin's Book 22 law; converse directions computed by role exchange rather than arc negation; raw requested-key tokens preserved verbatim.
+
+### Changed
+- **Progressions OpenAPI Depth**: the full dispatched progression method menu is advertised as enums in the OpenAPI schema.
+- **Port Compliance**: `comets.py`, `shadbala.py`, and `ashtakavarga.py` no longer carry `from __future__ import annotations` (Python 3.14 port standard).
+
+### Validation
+- Every new Vedic engine was implemented from primary-source research passes (BPHS Santhanam, Brihat Jataka, Saravali, Phaladeepika, Uttara Kalamrita, Jataka Parijata, Jaimini Upadesa Sutras across editions, Patel & Aiyar 1957, Raman) with per-rule citations; source disagreements are policy switches or recorded notes, never silent choices. Shodhya Pinda reproduces BPHS Ch. 69's own worked example to the digit. The comet and asteroid catalogs verify at sub-mas interpolation fidelity against fresh Horizons queries. ~400 new unit and route tests pass in the project virtual environment.
+
 ## [3.4.3] - 2026-07-04
 
 ### Added
