@@ -9,6 +9,10 @@ from moira import Moira
 from ..dependencies import get_engine
 
 from ..models.ashtakavarga import (
+    KakshyaTransitRequest,
+    KakshyaTransitResponse,
+    ShodhyaPindaRequest,
+    ShodhyaPindaResponse,
     AshtakavargaChartBaseRequest,
     AshtakavargaChartProfileBackedResponse,
     AshtakavargaChartProfileResponse,
@@ -128,4 +132,54 @@ def ashtakavarga_chart_transit_strength_route(
 ) -> AshtakavargaChartTransitStrengthResponse:
     return serialize_ashtakavarga_chart_transit_strength(
         compute_ashtakavarga_chart_transit_strength(engine, request)
+    )
+
+
+@router.post("/kakshya-transit", response_model=KakshyaTransitResponse)
+def kakshya_transit_route(
+    request: KakshyaTransitRequest,
+) -> KakshyaTransitResponse:
+    """Kakshya-resolution transit: which of the eight 3d45' sub-divisions
+    the transit occupies, its lord, and whether that lord contributed a
+    rekha in the transited sign of the planet's own Bhinnashtakavarga
+    (Jataka Parijata II.71; Patel & Aiyar 1957 — kakshya is absent from
+    Santhanam's BPHS, recorded on the result)."""
+    from moira.ashtakavarga import kakshya_transit
+
+    kt = kakshya_transit(
+        request.planet, request.transit_sidereal_lon, request.sign_indices,
+    )
+    return KakshyaTransitResponse(
+        planet=kt.planet,
+        transit_sign_index=kt.transit_sign_index,
+        degrees_in_sign=kt.degrees_in_sign,
+        kakshya_index=kt.kakshya_index,
+        kakshya_lord=kt.kakshya_lord,
+        lord_contributed=kt.lord_contributed,
+        sign_rekhas=kt.sign_rekhas,
+        favorable=kt.favorable,
+        source=kt.source,
+    )
+
+
+@router.post("/shodhya-pinda", response_model=ShodhyaPindaResponse)
+def shodhya_pinda_route(
+    request: ShodhyaPindaRequest,
+) -> ShodhyaPindaResponse:
+    """Shodhya (Yoga) Pinda from fully reduced Bhinnashtakavarga figures:
+    Rasi Pinda + Graha Pinda with the BPHS Ch. 69 multiplier tables
+    (verified against BPHS's own worked example and Patel's Standard
+    Horoscope)."""
+    from moira.ashtakavarga import shodhya_pinda
+
+    sp = shodhya_pinda(
+        request.planet, request.reduced_rekhas, request.sign_indices,
+    )
+    return ShodhyaPindaResponse(
+        planet=sp.planet,
+        reduced_rekhas=sp.reduced_rekhas,
+        rasi_pinda=sp.rasi_pinda,
+        graha_pinda=sp.graha_pinda,
+        shodhya_pinda=sp.shodhya_pinda,
+        source=sp.source,
     )

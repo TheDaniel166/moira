@@ -87,8 +87,6 @@ Public surface
 ``validate_ashtakavarga_output`` — validate structural invariants of an AshtakavargaResult.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 
 __all__ = [
@@ -111,6 +109,14 @@ __all__ = [
     "ekadhipatya_shodhana",
     "ashtakavarga",
     "transit_strength",
+    # Kakshya + Shodhya Pinda
+    "KAKSHYA_LORDS",
+    "RASIMANA",
+    "GRAHAMANA",
+    "KakshyaTransit",
+    "ShodhyaPinda",
+    "kakshya_transit",
+    "shodhya_pinda",
     "sign_strength_profile",
     "ashtakavarga_chart_profile",
     "validate_ashtakavarga_output",
@@ -1016,3 +1022,275 @@ def validate_ashtakavarga_output(result: AshtakavargaResult) -> None:
                         f"{result.shodhana_sarvashtakavarga[i]}, "
                         f"expected {expected} (sum of shodhana planet rekhas)"
                     )
+
+
+# ---------------------------------------------------------------------------
+# Kakshya (transit sub-division) — Jataka Parijata II.71; Patel & Aiyar,
+# "Ashtakavarga" (1957) Ch. V, XVI; Raman lineage.
+#
+# NEGATIVE FINDING (recorded honestly): kakshya doctrine is ABSENT from
+# Santhanam's BPHS (both volumes grepped under every plausible spelling) —
+# it is anchored to Jataka Parijata and the compendium tradition, not to
+# Parasara.  Some Parasara recensions (per Patel p. 62: Parasarahora,
+# Shambhu Hora Prakasha, Manasagari) carry a DIFFERENT lord order
+# (Sun-first); the universal modern practice (JP II.71, Raman, all
+# software) is the Saturn-first order implemented here.
+#
+# Rule: each sign divides into eight kakshyas of 3 deg 45 min; kakshya 1
+# (0 to 3d45') belongs to Saturn, then Jupiter, Mars, Sun, Venus,
+# Mercury, Moon, Lagna — descending sign-dwell time, Lagna eighth,
+# identical in every sign (Patel Ch. I s4, Ch. V s1-4).  A transiting
+# planet gives good results in a sign only while traversing a kakshya
+# whose lord CONTRIBUTED a rekha in that sign of the transiting planet's
+# own (UNREDUCED) Bhinnashtakavarga (Patel Ch. XVI: "good or bad
+# according to the presence or absence of a bindu in that Kakshya in the
+# Ashtakavarga of the transiting planet").  The Lagna kakshya counts via
+# the Lagna's contribution.  No consulted source scores kakshya against
+# the reduced (shodhita) figures.
+#
+# Terminology note: this module says "rekha" for the benefic point
+# throughout; Santhanam's BPHS inverts the words (his "bindu" is the
+# INAUSPICIOUS dot), while Patel/Raman/modern usage says "bindu" for the
+# benefic point.  One quantity, colliding names — recorded, not hidden.
+# ---------------------------------------------------------------------------
+
+KAKSHYA_LORDS: tuple[str, ...] = (
+    'Saturn', 'Jupiter', 'Mars', 'Sun', 'Venus', 'Mercury', 'Moon', 'Lagna',
+)
+
+_KAKSHYA_SPAN_DEG = 30.0 / 8.0   # 3 deg 45 min
+
+
+@dataclass(frozen=True, slots=True)
+class KakshyaTransit:
+    """
+    Kakshya-level transit evaluation for one planet at one longitude.
+
+    Attributes
+    ----------
+    planet : str
+        The transiting planet.
+    transit_sign_index : int
+        Sidereal sign (0 = Aries) being transited.
+    degrees_in_sign : float
+        Position within the sign [0, 30).
+    kakshya_index : int
+        0-7 (0 = Saturn's kakshya, 7 = the Lagna's).
+    kakshya_lord : str
+        Lord of the occupied kakshya.
+    lord_contributed : bool
+        Whether that lord contributed a rekha in this sign of the
+        transiting planet's own unreduced Bhinnashtakavarga — the
+        favorability criterion (Patel Ch. XVI).
+    sign_rekhas : int
+        The sign's total unreduced rekha count (magnitude context).
+    favorable : bool
+        ``lord_contributed`` (the classical read).
+    source : str
+    """
+
+    planet: str
+    transit_sign_index: int
+    degrees_in_sign: float
+    kakshya_index: int
+    kakshya_lord: str
+    lord_contributed: bool
+    sign_rekhas: int
+    favorable: bool
+    source: str
+
+    def __post_init__(self) -> None:
+        if not (0 <= self.kakshya_index <= 7):
+            raise ValueError(
+                f"kakshya_index must be in [0, 7], got {self.kakshya_index}"
+            )
+        if self.kakshya_lord != KAKSHYA_LORDS[self.kakshya_index]:
+            raise ValueError(
+                f"kakshya_lord {self.kakshya_lord!r} does not match index "
+                f"{self.kakshya_index}"
+            )
+
+
+def kakshya_transit(
+    planet: str,
+    transit_sidereal_lon: float,
+    sign_indices: dict[str, int],
+) -> KakshyaTransit:
+    """
+    Evaluate a transit at kakshya resolution.
+
+    Parameters
+    ----------
+    planet : str
+        The transiting planet (one of the seven classical planets).
+    transit_sidereal_lon : float
+        The transit's sidereal longitude.
+    sign_indices : dict[str, int]
+        NATAL sign indices for all eight references (the 7 planets and
+        ``'Lagna'``) — the same input as ``bhinnashtakavarga``.
+
+    Returns
+    -------
+    KakshyaTransit
+        The occupied kakshya, its lord, and whether that lord contributed
+        a rekha in the transited sign of *planet*'s own unreduced
+        Bhinnashtakavarga (JP II.71; Patel Ch. V, XVI; Raman lineage).
+    """
+    if planet not in _SEVEN_PLANETS:
+        raise ValueError(
+            f"planet must be one of {_SEVEN_PLANETS}, got {planet!r}"
+        )
+    lon = transit_sidereal_lon % 360.0
+    sign = int(lon // 30)
+    deg = lon % 30.0
+    kakshya_index = min(int(deg // _KAKSHYA_SPAN_DEG), 7)
+    lord = KAKSHYA_LORDS[kakshya_index]
+
+    if lord not in sign_indices:
+        raise KeyError(
+            f"sign_indices is missing the {lord!r} reference required for "
+            "the occupied kakshya"
+        )
+    distance = (sign - sign_indices[lord]) % 12 + 1
+    contributed = distance in REKHA_TABLES[planet][lord]
+    sign_rekhas = bhinnashtakavarga(planet, sign_indices).rekhas[sign]
+
+    return KakshyaTransit(
+        planet=planet,
+        transit_sign_index=sign,
+        degrees_in_sign=deg,
+        kakshya_index=kakshya_index,
+        kakshya_lord=lord,
+        lord_contributed=contributed,
+        sign_rekhas=sign_rekhas,
+        favorable=contributed,
+        source=(
+            "Jataka Parijata II.71 (lord order); Patel & Aiyar 1957 "
+            "Ch. V, XVI (transit rule); Raman lineage. Kakshya is absent "
+            "from Santhanam's BPHS."
+        ),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Shodhya Pinda (Rasi Pinda + Graha Pinda) — BPHS Ch. 69 (Santhanam)
+# "Pinda Sadhana"; Patel & Aiyar 1957 Ch. III sloka 9.
+#
+# Operates on the POST-both-reductions (shodhita) figures.  Rasi Pinda =
+# sum over signs of (reduced rekhas x rasimana); Graha Pinda = sum over
+# the SEVEN planets (nodes excluded — BPHS explicit) of (reduced rekhas
+# in the sign each planet occupies natally x that planet's grahamana);
+# co-occupants each multiply the same sign figure.  Shodhya Pinda (=
+# Shuddha Pinda = Yoga Pinda) = Rasi Pinda + Graha Pinda.
+#
+# Multipliers verified across BPHS's printed tables + worked example,
+# Patel's Sanskrit sloka, and the Raman lineage (a "6" for Virgo/
+# Capricorn in Santhanam's PROSE is an OCR/typographic artifact refuted
+# by his own tables and example — 5 is correct).  Note: Phaladeepika
+# XXIV.3 uses "Shodhyapinda" for a DIFFERENT quantity (the plain sum of
+# reduced rekhas, Patel's "Shodhyavashishta") — a naming collision,
+# recorded here so it is never silently conflated.
+# ---------------------------------------------------------------------------
+
+# Rasimana (sign multipliers), Aries..Pisces.
+RASIMANA: tuple[int, ...] = (7, 10, 8, 4, 10, 5, 7, 8, 9, 5, 11, 12)
+
+# Grahamana (planet multipliers).
+GRAHAMANA: dict[str, int] = {
+    'Sun': 5, 'Moon': 5, 'Mars': 8, 'Mercury': 5,
+    'Jupiter': 10, 'Venus': 7, 'Saturn': 5,
+}
+
+
+@dataclass(frozen=True, slots=True)
+class ShodhyaPinda:
+    """
+    The Shodhya (Yoga) Pinda for one planet's reduced Ashtakavarga.
+
+    Attributes
+    ----------
+    planet : str
+    reduced_rekhas : tuple[int, ...]
+        The post-both-reductions figures the pinda was computed from.
+    rasi_pinda : int
+        Sum of (reduced rekhas x rasimana) over the 12 signs.
+    graha_pinda : int
+        Sum over the seven planets of (reduced rekhas in each planet's
+        natal sign x its grahamana); nodes excluded per BPHS.
+    shodhya_pinda : int
+        Rasi Pinda + Graha Pinda (BPHS: "Yoga Pinda"; Patel: also
+        "Shuddha Pinda").
+    source : str
+    """
+
+    planet: str
+    reduced_rekhas: tuple[int, ...]
+    rasi_pinda: int
+    graha_pinda: int
+    shodhya_pinda: int
+    source: str
+
+    def __post_init__(self) -> None:
+        if len(self.reduced_rekhas) != 12:
+            raise ValueError(
+                f"reduced_rekhas must have 12 entries, "
+                f"got {len(self.reduced_rekhas)}"
+            )
+        if self.shodhya_pinda != self.rasi_pinda + self.graha_pinda:
+            raise ValueError(
+                "shodhya_pinda must equal rasi_pinda + graha_pinda"
+            )
+
+
+def shodhya_pinda(
+    planet: str,
+    reduced_rekhas: tuple[int, ...],
+    sign_indices: dict[str, int],
+) -> ShodhyaPinda:
+    """
+    Compute the Shodhya Pinda from a planet's fully reduced (Trikona +
+    Ekadhipatya Shodhana) Bhinnashtakavarga figures.
+
+    Parameters
+    ----------
+    planet : str
+        The planet whose Ashtakavarga was reduced.
+    reduced_rekhas : tuple[int, ...]
+        12 post-both-reductions figures (Aries..Pisces) — e.g. the
+        ``rekhas`` of an ``AshtakavargaResult.shodhana_bhinnashtakavarga``
+        entry computed with both reductions enabled.
+    sign_indices : dict[str, int]
+        NATAL sign indices for the seven classical planets (the Lagna is
+        not a Graha Pinda participant — it has no grahamana).
+
+    Returns
+    -------
+    ShodhyaPinda
+
+    Source: BPHS Ch. 69 (Santhanam) 1-4 with its worked example; Patel &
+    Aiyar 1957 Ch. III sloka 9 (Sanskrit multiplier verification).
+    """
+    if len(reduced_rekhas) != 12:
+        raise ValueError(
+            f"reduced_rekhas must have 12 entries, got {len(reduced_rekhas)}"
+        )
+    rasi = sum(
+        reduced_rekhas[s] * RASIMANA[s] for s in range(12)
+    )
+    graha = 0
+    for p in _SEVEN_PLANETS:
+        if p not in sign_indices:
+            raise KeyError(f"sign_indices is missing {p!r}")
+        graha += reduced_rekhas[sign_indices[p]] * GRAHAMANA[p]
+    return ShodhyaPinda(
+        planet=planet,
+        reduced_rekhas=tuple(reduced_rekhas),
+        rasi_pinda=rasi,
+        graha_pinda=graha,
+        shodhya_pinda=rasi + graha,
+        source=(
+            "BPHS Ch. 69 (Santhanam) 1-4; Patel & Aiyar 1957 Ch. III "
+            "sloka 9. Computed from post-both-reductions figures; nodes "
+            "excluded from Graha Pinda per BPHS."
+        ),
+    )

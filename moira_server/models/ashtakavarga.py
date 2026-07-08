@@ -211,8 +211,49 @@ def _validate_required_keys(value: dict[str, object], field_name: str) -> None:
         raise ValueError(f"{field_name} missing required references: {missing}")
 
 
+class KakshyaTransitRequest(_StrictModel):
+    """Kakshya-level transit evaluation from natal sign indices."""
+
+    planet: str
+    transit_sidereal_lon: float
+    sign_indices: dict[str, int]
+
+
+class KakshyaTransitResponse(_StrictModel):
+    planet: str
+    transit_sign_index: int
+    degrees_in_sign: float
+    kakshya_index: int
+    kakshya_lord: str
+    lord_contributed: bool
+    sign_rekhas: int
+    favorable: bool
+    source: str
+
+
+class ShodhyaPindaRequest(_StrictModel):
+    """Shodhya Pinda from fully reduced Bhinnashtakavarga figures."""
+
+    planet: str
+    reduced_rekhas: tuple[int, ...]
+    sign_indices: dict[str, int]
+
+
+class ShodhyaPindaResponse(_StrictModel):
+    planet: str
+    reduced_rekhas: tuple[int, ...]
+    rasi_pinda: int
+    graha_pinda: int
+    shodhya_pinda: int
+    source: str
+
+
 __all__ = [
-    "AshtakavargaChartBaseRequest",
+    "KakshyaTransitRequest",
+    "KakshyaTransitResponse",
+    "ShodhyaPindaRequest",
+    "ShodhyaPindaResponse",
+    "AshtakavargaChartProfileResponse",
     "AshtakavargaChartProfileBackedResponse",
     "AshtakavargaChartProfileResponse",
     "AshtakavargaChartResultResponse",
