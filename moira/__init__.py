@@ -139,6 +139,21 @@ from .muhurta import (
     MuhurtaScore,
     classify_muhurta,
     score_muhurta,
+    TARA_NAMES,
+    TaraBala,
+    tara_bala,
+    ChandraBala,
+    chandra_bala,
+    PersonalMuhurtaScore,
+    personal_muhurta_score,
+)
+from .sade_sati import (
+    SADE_SATI_PHASES,
+    SadeSatiStatus,
+    SadeSatiWindow,
+    SadeSatiResult,
+    sade_sati_status,
+    sade_sati_windows,
 )
 from .panchanga import (
     TithiPaksha,
@@ -605,6 +620,20 @@ __all__ = [
     "MuhurtaScore",
     "classify_muhurta",
     "score_muhurta",
+    "TARA_NAMES",
+    "TaraBala",
+    "tara_bala",
+    "ChandraBala",
+    "chandra_bala",
+    "PersonalMuhurtaScore",
+    "personal_muhurta_score",
+    # Sade Sati
+    "SADE_SATI_PHASES",
+    "SadeSatiStatus",
+    "SadeSatiWindow",
+    "SadeSatiResult",
+    "sade_sati_status",
+    "sade_sati_windows",
     # Dasha systems
     "ASHTOTTARI_YEARS",
     "ASHTOTTARI_SEQUENCE",

@@ -1,5 +1,15 @@
 # Vedic Jyotish Systems — Pre-Phase 1 Implementation Roadmap
 
+> **STATUS (2026-07-08): PHASE 1 COMPLETE.** All seven systems below are
+> implemented, constitutionalized, and served: varga (17 divisions),
+> vedic_dignities, jaimini (karakas), panchanga, dasha_systems
+> (Ashtottari + Yogini), ashtakavarga (incl. both Shodhanas), and shadbala —
+> including Bhava Bala and Ishta/Kashta Phala, which §System 7 below had
+> explicitly scoped out and which were closed on 2026-07-08.
+> The "Codebase State" section below is the historical pre-Phase-1 snapshot,
+> preserved for provenance.  For remaining gaps, see
+> [vedic_jyotish_phase2_gaps.md](vedic_jyotish_phase2_gaps.md).
+
 ## Codebase State (Verified)
 
 Present and usable:

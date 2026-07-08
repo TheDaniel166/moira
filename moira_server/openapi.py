@@ -257,7 +257,13 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
     {
         "name": "muhurta",
         "x-displayName": "Muhurta",
-        "description": "Vedic Muhurta direct and chart-backed classification and score surfaces.",
+        "description": "Vedic Muhurta direct, chart-backed, and natal-personalized (Tara/Chandra Bala) classification and score surfaces.",
+        "x-family": "classical-vedic",
+    },
+    {
+        "name": "sade-sati",
+        "x-displayName": "Sade Sati",
+        "description": "Sade Sati status and kernel-timed phase windows (Saturn vs. natal Moon), with Ashtama and Kantaka Shani flags.",
         "x-family": "classical-vedic",
     },
     {

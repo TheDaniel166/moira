@@ -180,7 +180,60 @@ class MuhurtaScoreEnvelopeResponse(_StrictModel):
     provenance: MuhurtaProvenanceResponse
 
 
+class MuhurtaPersonalRequest(MuhurtaDirectRequest):
+    """Direct Muhurta request personalized by the native's Moon.
+
+    The transit Moon comes from ``moon_tropical_lon`` (converted sidereal);
+    ``janma_moon_sidereal_lon`` supplies the natal Moon (janma nakshatra
+    and rashi source).
+    """
+
+    janma_moon_sidereal_lon: float
+
+    @field_validator("janma_moon_sidereal_lon")
+    @classmethod
+    def _finite_janma_moon(cls, value: float) -> float:
+        if not math.isfinite(value):
+            raise ValueError("janma_moon_sidereal_lon must be finite")
+        return value
+
+
+class TaraBalaResponse(_StrictModel):
+    janma_nakshatra_index: int
+    target_nakshatra_index: int
+    count: int
+    tara_number: int
+    tara_name: str
+    polarity: str
+    favorable: bool
+
+
+class ChandraBalaResponse(_StrictModel):
+    janma_rashi_index: int
+    transit_rashi_index: int
+    house_from_moon: int
+    polarity: str
+    favorable: bool
+    is_chandrashtama: bool
+
+
+class MuhurtaPersonalScoreResponse(_StrictModel):
+    """Natal-personalized score: generic score + tara/chandra overlays."""
+
+    total: float
+    breakdown: dict[str, float]
+    classification: MuhurtaClassificationResponse
+    tara: TaraBalaResponse
+    chandra: ChandraBalaResponse
+    score_scale: MuhurtaScoreScale
+    score_direction: MuhurtaScoreDirection
+
+
 __all__ = [
+    "ChandraBalaResponse",
+    "MuhurtaPersonalRequest",
+    "MuhurtaPersonalScoreResponse",
+    "TaraBalaResponse",
     "MuhurtaChartRequest",
     "MuhurtaClassificationEnvelopeResponse",
     "MuhurtaClassificationResponse",

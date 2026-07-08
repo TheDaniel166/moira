@@ -94,6 +94,16 @@ __all__ = [
     "khavedamsha",
     "akshavedamsha",
     "shashtiamsha",
+    # Vimshopaka Bala + vargottama
+    "VIMSHOPAKA_GROUPS",
+    "VARGA_VISHVA",
+    "VimshopakaVargaEntry",
+    "VimshopakaBala",
+    "varga_sign_index",
+    "vimshopaka_bala",
+    "vimshopaka_all",
+    "is_vargottama",
+    "vargottama_planets",
 ]
 
 @dataclass(frozen=True, slots=True)
@@ -527,3 +537,257 @@ def shashtiamsha(sidereal_longitude: float) -> VargaPoint:
         ``varga_number`` is 60.
     """
     return calculate_varga(sidereal_longitude, 60, "Shashtiamsha")
+
+
+# ---------------------------------------------------------------------------
+# Vimshopaka Bala — 20-point weighted varga-dignity strength (BPHS)
+#
+# Governing object: BPHS Shodashavarga Adhyaya, Vimshopaka section.  For a
+# chosen varga group, each division carries a fixed weight (weights sum to
+# 20 per group); within each division the planet earns a vargavishwa share
+# of that weight from its dignity toward the division sign's lord:
+#
+#   own sign 20/20, adhi mitra 18/20, mitra 15/20, sama 10/20,
+#   shatru 7/20, adhi shatru 5/20.
+#
+# Exaltation does not participate in this metric (it is Uchcha Bala's
+# domain); the dignity is purely lordship-relational (Panchadha Maitri,
+# with temporary friendships taken from the D1 chart per standard
+# practice).  Varga signs are resolved by the same doctrine as the rest of
+# this module: Parashari offsets for D2/D3/D4/D27/D40/D45, geometric
+# formula elsewhere (D30 geometric per the module-declared alternative).
+# ---------------------------------------------------------------------------
+
+VIMSHOPAKA_GROUPS: dict[str, dict[int, float]] = {
+    # division -> weight; each group's weights sum to 20.
+    'shadvarga':     {1: 6.0, 2: 2.0, 3: 4.0, 9: 5.0, 12: 2.0, 30: 1.0},
+    'saptavarga':    {1: 5.0, 2: 2.0, 3: 3.0, 7: 2.5, 9: 4.5, 12: 2.0, 30: 1.0},
+    'dashavarga':    {1: 3.0, 2: 1.5, 3: 1.5, 7: 1.5, 9: 1.5, 10: 1.5,
+                      12: 1.5, 16: 1.5, 30: 1.5, 60: 5.0},
+    'shodashavarga': {1: 3.5, 2: 1.0, 3: 1.0, 4: 0.5, 7: 0.5, 9: 3.0,
+                      10: 0.5, 12: 0.5, 16: 2.0, 20: 0.5, 24: 0.5, 27: 0.5,
+                      30: 1.0, 40: 0.5, 45: 0.5, 60: 4.0},
+}
+
+# Vargavishwa: dignity -> share of the division weight, on the 20 scale.
+VARGA_VISHVA: dict[str, float] = {
+    'own_sign':    20.0,
+    'adhi_mitra':  18.0,
+    'mitra':       15.0,
+    'sama':        10.0,
+    'shatru':       7.0,
+    'adhi_shatru':  5.0,
+}
+
+
+def varga_sign_index(sidereal_longitude: float, n: int) -> int:
+    """
+    Return the varga sign index (0-11) for any supported division.
+
+    Dispatches to the Parashari sign-offset rules for D2/D3/D4/D27/D40/D45
+    and the generic formula elsewhere; D1 is the plain sidereal sign.
+    D3 uses the Parashari trine drekkana (decan 1 -> same sign, decan 2 ->
+    5th, decan 3 -> 9th), matching the Saptavargaja doctrine in
+    ``moira.shadbala``.
+    """
+    lon = sidereal_longitude % 360.0
+    sign_idx = int(lon // 30)
+    deg = lon % 30.0
+    if n == 1:
+        return sign_idx
+    if n == 2:
+        return _hora_sign(sign_idx, deg)
+    if n == 3:
+        return (sign_idx + int(deg / 10.0) * 4) % 12
+    if n == 4:
+        return _d4_sign(sign_idx, deg)
+    if n == 27:
+        return _d27_sign(sign_idx, deg)
+    if n == 40:
+        return _d40_sign(sign_idx, deg)
+    if n == 45:
+        return _d45_sign(sign_idx, deg)
+    return int(lon // (30.0 / n)) % 12
+
+
+@dataclass(frozen=True, slots=True)
+class VimshopakaVargaEntry:
+    """
+    One division's contribution to a planet's Vimshopaka Bala.
+
+    Attributes
+    ----------
+    division : int
+        Varga divisor (1 for D1 ... 60 for D60).
+    varga_sign_index : int
+        The planet's sign index (0-11) in this division.
+    lord : str
+        Classical lord of that varga sign.
+    dignity : str
+        ``'own_sign'`` or the Panchadha Maitri compound relationship of the
+        planet toward the lord (``adhi_mitra`` ... ``adhi_shatru``).
+    vishva : float
+        Vargavishwa share on the 20 scale (see ``VARGA_VISHVA``).
+    weight : float
+        This division's weight within the chosen group.
+    points : float
+        ``weight * vishva / 20`` — the actual contribution.
+    """
+
+    division:         int
+    varga_sign_index: int
+    lord:             str
+    dignity:          str
+    vishva:           float
+    weight:           float
+    points:           float
+
+
+@dataclass(frozen=True, slots=True)
+class VimshopakaBala:
+    """
+    A planet's Vimshopaka Bala for one varga group.
+
+    Attributes
+    ----------
+    planet : str
+    group : str
+        ``'shadvarga'`` | ``'saptavarga'`` | ``'dashavarga'`` |
+        ``'shodashavarga'``.
+    entries : tuple[VimshopakaVargaEntry, ...]
+        Per-division breakdown, in ascending division order.
+    total : float
+        Sum of entry points; in [5, 20] by construction (a planet is at
+        worst adhi shatru everywhere -> 5/20).
+    """
+
+    planet:  str
+    group:   str
+    entries: tuple[VimshopakaVargaEntry, ...]
+    total:   float
+
+    def __post_init__(self) -> None:
+        if self.group not in VIMSHOPAKA_GROUPS:
+            raise ValueError(
+                f"VimshopakaBala.group must be one of "
+                f"{sorted(VIMSHOPAKA_GROUPS)}, got {self.group!r}"
+            )
+        if not (0.0 <= self.total <= 20.0 + 1e-9):
+            raise ValueError(
+                f"VimshopakaBala.total must be in [0, 20], got {self.total}"
+            )
+
+
+def vimshopaka_bala(
+    planet: str,
+    sidereal_longitudes: dict[str, float],
+    group: str = 'shodashavarga',
+) -> VimshopakaBala:
+    """
+    Compute Vimshopaka Bala for one planet over the chosen varga group.
+
+    Parameters
+    ----------
+    planet : str
+        One of the seven classical planets.
+    sidereal_longitudes : dict[str, float]
+        Sidereal longitudes for all seven classical planets (all are needed
+        because temporary friendships are computed from the D1 chart).
+    group : str
+        Varga group: ``'shadvarga'`` (6), ``'saptavarga'`` (7),
+        ``'dashavarga'`` (10), or ``'shodashavarga'`` (16, default).
+
+    Returns
+    -------
+    VimshopakaBala
+
+    Source: BPHS Shodashavarga Adhyaya (Vimshopaka weights and vargavishwa).
+    """
+    from .vedic_dignities import OWN_SIGNS, planetary_relationships
+
+    weights = VIMSHOPAKA_GROUPS.get(group)
+    if weights is None:
+        raise ValueError(
+            f"group must be one of {sorted(VIMSHOPAKA_GROUPS)}, got {group!r}"
+        )
+    if planet not in sidereal_longitudes:
+        raise KeyError(f"{planet!r} missing from sidereal_longitudes")
+
+    # Sign lords (classical, no nodes).
+    lord_of_sign: dict[int, str] = {}
+    for _p, _signs in OWN_SIGNS.items():
+        for _s in _signs:
+            lord_of_sign[_s] = _p
+
+    # Compound (Panchadha Maitri) relationships from the D1 chart.
+    compound: dict[str, str] = {
+        rel.to_planet: rel.compound
+        for rel in planetary_relationships(sidereal_longitudes)
+        if rel.from_planet == planet
+    }
+
+    lon = sidereal_longitudes[planet]
+    entries: list[VimshopakaVargaEntry] = []
+    total = 0.0
+    for division in sorted(weights):
+        v_sign = varga_sign_index(lon, division)
+        lord = lord_of_sign[v_sign]
+        if lord == planet:
+            dignity = 'own_sign'
+        else:
+            dignity = compound[lord]
+        vishva = VARGA_VISHVA[dignity]
+        weight = weights[division]
+        points = weight * vishva / 20.0
+        total += points
+        entries.append(VimshopakaVargaEntry(
+            division=division,
+            varga_sign_index=v_sign,
+            lord=lord,
+            dignity=dignity,
+            vishva=vishva,
+            weight=weight,
+            points=points,
+        ))
+
+    return VimshopakaBala(
+        planet=planet,
+        group=group,
+        entries=tuple(entries),
+        total=total,
+    )
+
+
+def vimshopaka_all(
+    sidereal_longitudes: dict[str, float],
+    group: str = 'shodashavarga',
+) -> dict[str, VimshopakaBala]:
+    """Vimshopaka Bala for every planet present in *sidereal_longitudes*."""
+    return {
+        planet: vimshopaka_bala(planet, sidereal_longitudes, group)
+        for planet in sidereal_longitudes
+    }
+
+
+# ---------------------------------------------------------------------------
+# Vargottama — same sign in D1 and D9
+# ---------------------------------------------------------------------------
+
+def is_vargottama(sidereal_longitude: float) -> bool:
+    """
+    True when the longitude occupies the same sign in D1 and D9 (Navamsa).
+
+    A vargottama placement strengthens the planet (classical doctrine:
+    "like being in own sign").  Pure sign comparison; no orb concept.
+    """
+    return varga_sign_index(sidereal_longitude, 1) == varga_sign_index(
+        sidereal_longitude, 9
+    )
+
+
+def vargottama_planets(sidereal_longitudes: dict[str, float]) -> frozenset[str]:
+    """Return the set of planets in vargottama (same D1 and D9 sign)."""
+    return frozenset(
+        planet for planet, lon in sidereal_longitudes.items()
+        if is_vargottama(lon)
+    )

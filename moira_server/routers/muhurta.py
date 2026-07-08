@@ -9,11 +9,14 @@ from moira import Moira
 from ..dependencies import get_engine
 from ..models.muhurta import (
     MuhurtaChartRequest,
+    MuhurtaPersonalRequest,
+    MuhurtaPersonalScoreResponse,
     MuhurtaClassificationEnvelopeResponse,
     MuhurtaDirectRequest,
     MuhurtaScoreEnvelopeResponse,
 )
 from ..services.muhurta import (
+    compute_muhurta_personal_score,
     compute_muhurta_chart_classification,
     compute_muhurta_chart_score,
     compute_muhurta_direct_classification,
@@ -40,6 +43,16 @@ def muhurta_direct_score_route(
     """Score a caller-supplied Panchanga-derived instant for Muhurta."""
 
     return compute_muhurta_direct_score(request)
+
+
+@router.post("/personal/score", response_model=MuhurtaPersonalScoreResponse)
+def muhurta_personal_score_route(
+    request: MuhurtaPersonalRequest,
+) -> MuhurtaPersonalScoreResponse:
+    """Score an instant for a specific native: the generic Muhurta score
+    overlaid with Tara Bala and Chandra Bala relative to the natal Moon."""
+
+    return compute_muhurta_personal_score(request)
 
 
 @router.post("/chart/classification", response_model=MuhurtaClassificationEnvelopeResponse)

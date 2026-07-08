@@ -244,7 +244,56 @@ def compute_muhurta_chart_score(engine: Moira, request: MuhurtaChartRequest) -> 
     )
 
 
+def compute_muhurta_personal_score(request) -> "MuhurtaPersonalScoreResponse":
+    """Natal-personalized Muhurta score: generic score + Tara/Chandra Bala."""
+    from moira.muhurta import personal_muhurta_score
+    from moira.sidereal import tropical_to_sidereal
+
+    from ..models.muhurta import (
+        ChandraBalaResponse,
+        MuhurtaPersonalScoreResponse,
+        TaraBalaResponse,
+    )
+
+    panchanga = compute_panchanga_direct(_direct_panchanga_request(request))
+    policy = _muhurta_policy_from_request(request.muhurta_policy)
+    transit_moon_sidereal = tropical_to_sidereal(
+        request.moon_tropical_lon, request.jd, system=request.ayanamsa_system,
+    )
+    result = personal_muhurta_score(
+        panchanga,
+        request.janma_moon_sidereal_lon,
+        transit_moon_sidereal,
+        policy,
+    )
+    return MuhurtaPersonalScoreResponse(
+        total=result.total,
+        breakdown=dict(result.breakdown),
+        classification=_classification_response(result.classification),
+        tara=TaraBalaResponse(
+            janma_nakshatra_index=result.tara.janma_nakshatra_index,
+            target_nakshatra_index=result.tara.target_nakshatra_index,
+            count=result.tara.count,
+            tara_number=result.tara.tara_number,
+            tara_name=result.tara.tara_name,
+            polarity=result.tara.polarity,
+            favorable=result.tara.favorable,
+        ),
+        chandra=ChandraBalaResponse(
+            janma_rashi_index=result.chandra.janma_rashi_index,
+            transit_rashi_index=result.chandra.transit_rashi_index,
+            house_from_moon=result.chandra.house_from_moon,
+            polarity=result.chandra.polarity,
+            favorable=result.chandra.favorable,
+            is_chandrashtama=result.chandra.is_chandrashtama,
+        ),
+        score_scale="engine_raw_unbounded",
+        score_direction="higher_is_more_favorable_under_policy",
+    )
+
+
 __all__ = [
+    "compute_muhurta_personal_score",
     "compute_muhurta_chart_classification",
     "compute_muhurta_chart_score",
     "compute_muhurta_direct_classification",

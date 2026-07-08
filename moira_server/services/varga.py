@@ -186,6 +186,43 @@ def _derive_varga_context(
     )
 
 
+def compute_vimshopaka(request):
+    """Vimshopaka Bala for all seven planets + vargottama flags."""
+    from moira.varga import vimshopaka_all, vargottama_planets
+
+    from ..models.varga import (
+        VimshopakaBalaResponse,
+        VimshopakaChartResponse,
+        VimshopakaVargaEntryResponse,
+    )
+
+    results = vimshopaka_all(request.sidereal_longitudes, request.group)
+    return VimshopakaChartResponse(
+        group=request.group,
+        planets={
+            planet: VimshopakaBalaResponse(
+                planet=vb.planet,
+                group=vb.group,
+                entries=tuple(
+                    VimshopakaVargaEntryResponse(
+                        division=e.division,
+                        varga_sign_index=e.varga_sign_index,
+                        lord=e.lord,
+                        dignity=e.dignity,
+                        vishva=e.vishva,
+                        weight=e.weight,
+                        points=e.points,
+                    )
+                    for e in vb.entries
+                ),
+                total=vb.total,
+            )
+            for planet, vb in results.items()
+        },
+        vargottama=tuple(sorted(vargottama_planets(request.sidereal_longitudes))),
+    )
+
+
 __all__ = [
     "VARGA_FUNCTIONS",
     "VargaChartNamedResult",
@@ -199,4 +236,5 @@ __all__ = [
     "compute_varga_named_batch",
     "compute_varga_shodashvarga",
     "compute_varga_shodashvarga_batch",
+    "compute_vimshopaka",
 ]

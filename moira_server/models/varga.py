@@ -174,6 +174,59 @@ def _validate_longitude_map(value: dict[str, float]) -> None:
             raise ValueError("longitudes values must be finite")
 
 
+VimshopakaGroup = Literal[
+    "shadvarga", "saptavarga", "dashavarga", "shodashavarga"
+]
+
+_SEVEN_PLANETS = frozenset(
+    {"Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"}
+)
+
+
+class VimshopakaRequest(_StrictModel):
+    """Vimshopaka Bala over a varga group from sidereal longitudes."""
+
+    sidereal_longitudes: dict[str, float]
+    group: VimshopakaGroup = "shodashavarga"
+
+    @field_validator("sidereal_longitudes")
+    @classmethod
+    def _seven_classical_planets(cls, value: dict[str, float]) -> dict[str, float]:
+        _validate_longitude_map(value)
+        missing = _SEVEN_PLANETS - set(value)
+        if missing:
+            raise ValueError(
+                f"sidereal_longitudes must include all seven classical "
+                f"planets; missing: {sorted(missing)}"
+            )
+        return value
+
+
+class VimshopakaVargaEntryResponse(_StrictModel):
+    division: int
+    varga_sign_index: int
+    lord: str
+    dignity: str
+    vishva: float
+    weight: float
+    points: float
+
+
+class VimshopakaBalaResponse(_StrictModel):
+    planet: str
+    group: str
+    entries: tuple[VimshopakaVargaEntryResponse, ...]
+    total: float
+
+
+class VimshopakaChartResponse(_StrictModel):
+    """All planets' Vimshopaka Bala plus vargottama flags."""
+
+    group: str
+    planets: dict[str, VimshopakaBalaResponse]
+    vargottama: tuple[str, ...]
+
+
 __all__ = [
     "VargaGenericRequest",
     "VargaChartNamedRequest",
@@ -191,4 +244,9 @@ __all__ = [
     "VargaShodashvargaBatchResponse",
     "VargaShodashvargaRequest",
     "VargaShodashvargaResponse",
+    "VimshopakaGroup",
+    "VimshopakaRequest",
+    "VimshopakaVargaEntryResponse",
+    "VimshopakaBalaResponse",
+    "VimshopakaChartResponse",
 ]

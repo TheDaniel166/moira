@@ -56,6 +56,14 @@ __all__ = [
     "MuhurtaScore",
     "classify_muhurta",
     "score_muhurta",
+    # Natal-personalized layer
+    "TARA_NAMES",
+    "TaraBala",
+    "tara_bala",
+    "ChandraBala",
+    "chandra_bala",
+    "PersonalMuhurtaScore",
+    "personal_muhurta_score",
 ]
 
 
@@ -72,6 +80,10 @@ class MuhurtaPolicy:
     weight_nakshatra: float = 1.0
     weight_yoga: float = 1.5     # Traditionally very important for Muhurta
     weight_karana: float = 0.8
+    # Natal-personalized overlays (personal_muhurta_score); Tara and Chandra
+    # Bala are the classical benchmark pair for individual muhurta.
+    weight_tara: float = 1.0
+    weight_chandra: float = 1.0
 
     # Future: allow disabling certain classical rules
     use_classical_ashubha_yoga: bool = True
@@ -172,6 +184,277 @@ def _classify_vara(index: int, tithi_index: int) -> Literal["auspicious", "neutr
     return "neutral"
 
 
+# ------------------------------------------------------------------
+# Tara Bala — the nine-tara cycle from the janma nakshatra
+#
+# Governing object: Navatara Chakra (Muhurta Chintamani; standard
+# Panchanga Shuddhi doctrine).  Count from the janma nakshatra to the
+# target nakshatra inclusive; reduce modulo 9:
+#
+#   1 Janma (caution)      2 Sampat (fav)    3 Vipat (unfav)
+#   4 Kshema (fav)         5 Pratyari (unfav) 6 Sadhaka (fav)
+#   7 Vadha (unfav)        8 Mitra (fav)     9 Parama Mitra (fav)
+#
+# Janma is classified 'caution' — classically avoided for major
+# undertakings but not malefic like Vipat/Pratyari/Vadha; the polarity
+# is exposed so callers can apply activity-specific doctrine.
+# ------------------------------------------------------------------
+
+TARA_NAMES: tuple[str, ...] = (
+    "Janma", "Sampat", "Vipat", "Kshema", "Pratyari",
+    "Sadhaka", "Vadha", "Mitra", "Parama Mitra",
+)
+
+_TARA_POLARITY: tuple[str, ...] = (
+    "caution",      # 1 Janma
+    "favorable",    # 2 Sampat
+    "unfavorable",  # 3 Vipat
+    "favorable",    # 4 Kshema
+    "unfavorable",  # 5 Pratyari
+    "favorable",    # 6 Sadhaka
+    "unfavorable",  # 7 Vadha
+    "favorable",    # 8 Mitra
+    "favorable",    # 9 Parama Mitra
+)
+
+
+@dataclass(frozen=True, slots=True)
+class TaraBala:
+    """
+    Tara Bala of a target nakshatra relative to the janma nakshatra.
+
+    Attributes
+    ----------
+    janma_nakshatra_index : int
+        0-based janma (birth Moon) nakshatra index (0 = Ashwini).
+    target_nakshatra_index : int
+        0-based nakshatra index of the moment being judged.
+    count : int
+        Inclusive count from janma to target (1-27).
+    tara_number : int
+        Position in the nine-tara cycle (1-9).
+    tara_name : str
+        Name from ``TARA_NAMES``.
+    polarity : str
+        ``'favorable'`` | ``'unfavorable'`` | ``'caution'`` (Janma tara).
+    favorable : bool
+        Convenience: ``polarity == 'favorable'``.
+    """
+
+    janma_nakshatra_index:  int
+    target_nakshatra_index: int
+    count:       int
+    tara_number: int
+    tara_name:   str
+    polarity:    str
+    favorable:   bool
+
+    def __post_init__(self) -> None:
+        if not (0 <= self.janma_nakshatra_index <= 26):
+            raise ValueError(
+                f"TaraBala.janma_nakshatra_index must be in [0, 26], "
+                f"got {self.janma_nakshatra_index}"
+            )
+        if not (0 <= self.target_nakshatra_index <= 26):
+            raise ValueError(
+                f"TaraBala.target_nakshatra_index must be in [0, 26], "
+                f"got {self.target_nakshatra_index}"
+            )
+        if not (1 <= self.tara_number <= 9):
+            raise ValueError(
+                f"TaraBala.tara_number must be in [1, 9], got {self.tara_number}"
+            )
+
+
+def tara_bala(
+    janma_nakshatra_index: int,
+    target_nakshatra_index: int,
+) -> TaraBala:
+    """
+    Compute Tara Bala for a target nakshatra relative to the janma nakshatra.
+
+    The count runs from janma to target inclusive (janma itself = 1),
+    reduced through the nine-tara cycle.
+
+    Source: Navatara Chakra doctrine (Muhurta Chintamani; standard
+    Panchanga Shuddhi practice).
+    """
+    count = (target_nakshatra_index - janma_nakshatra_index) % 27 + 1
+    tara_number = (count - 1) % 9 + 1
+    polarity = _TARA_POLARITY[tara_number - 1]
+    return TaraBala(
+        janma_nakshatra_index=janma_nakshatra_index,
+        target_nakshatra_index=target_nakshatra_index,
+        count=count,
+        tara_number=tara_number,
+        tara_name=TARA_NAMES[tara_number - 1],
+        polarity=polarity,
+        favorable=(polarity == "favorable"),
+    )
+
+
+# ------------------------------------------------------------------
+# Chandra Bala — transit Moon's house from the natal Moon (janma rashi)
+#
+# Governing object: standard Muhurta doctrine (Chandra Shuddhi).
+# Favorable: 1, 3, 6, 7, 10, 11.  Neutral: 2, 5.
+# Unfavorable: 4, 8, 9, 12 — the 8th (Chandrashtama) is the strongest
+# affliction and is flagged separately.
+# ------------------------------------------------------------------
+
+_CHANDRA_FAVORABLE:   frozenset[int] = frozenset({1, 3, 6, 7, 10, 11})
+_CHANDRA_NEUTRAL:     frozenset[int] = frozenset({2, 5})
+_CHANDRA_UNFAVORABLE: frozenset[int] = frozenset({4, 8, 9, 12})
+
+
+@dataclass(frozen=True, slots=True)
+class ChandraBala:
+    """
+    Chandra Bala of the transit Moon relative to the natal Moon sign.
+
+    Attributes
+    ----------
+    janma_rashi_index : int
+        Natal Moon's sidereal sign index (0 = Aries).
+    transit_rashi_index : int
+        Transit Moon's sidereal sign index.
+    house_from_moon : int
+        Whole-sign house of the transit Moon counted from the janma
+        rashi (1-12).
+    polarity : str
+        ``'favorable'`` | ``'neutral'`` | ``'unfavorable'``.
+    favorable : bool
+        Convenience: ``polarity == 'favorable'``.
+    is_chandrashtama : bool
+        True when the transit Moon is in the 8th from the natal Moon —
+        the strongest Chandra affliction.
+    """
+
+    janma_rashi_index:   int
+    transit_rashi_index: int
+    house_from_moon:     int
+    polarity:            str
+    favorable:           bool
+    is_chandrashtama:    bool
+
+    def __post_init__(self) -> None:
+        if not (1 <= self.house_from_moon <= 12):
+            raise ValueError(
+                f"ChandraBala.house_from_moon must be in [1, 12], "
+                f"got {self.house_from_moon}"
+            )
+
+
+def chandra_bala(
+    janma_moon_sidereal_lon: float,
+    transit_moon_sidereal_lon: float,
+) -> ChandraBala:
+    """
+    Compute Chandra Bala from natal and transit Moon sidereal longitudes.
+
+    Whole-sign count from the janma rashi.  Source: standard Muhurta
+    Chandra Shuddhi doctrine (favorable 1/3/6/7/10/11, neutral 2/5,
+    unfavorable 4/8/9/12 with the 8th as Chandrashtama).
+    """
+    janma_rashi = int(janma_moon_sidereal_lon % 360.0 // 30)
+    transit_rashi = int(transit_moon_sidereal_lon % 360.0 // 30)
+    house = (transit_rashi - janma_rashi) % 12 + 1
+    if house in _CHANDRA_FAVORABLE:
+        polarity = "favorable"
+    elif house in _CHANDRA_NEUTRAL:
+        polarity = "neutral"
+    else:
+        polarity = "unfavorable"
+    return ChandraBala(
+        janma_rashi_index=janma_rashi,
+        transit_rashi_index=transit_rashi,
+        house_from_moon=house,
+        polarity=polarity,
+        favorable=(polarity == "favorable"),
+        is_chandrashtama=(house == 8),
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class PersonalMuhurtaScore:
+    """
+    Natal-personalized Muhurta score: the generic Panchanga score plus
+    Tara Bala and Chandra Bala relative to the native's Moon.
+
+    ``total`` = generic total + weighted tara + weighted chandra;
+    ``breakdown`` carries every component (transparency doctrine).
+    """
+
+    total:          float
+    breakdown:      dict[str, float]
+    classification: MuhurtaClassification
+    tara:           TaraBala
+    chandra:        ChandraBala
+
+
+def personal_muhurta_score(
+    panchanga: PanchangaResult,
+    janma_moon_sidereal_lon: float,
+    transit_moon_sidereal_lon: float,
+    policy: "MuhurtaPolicy | None" = None,
+) -> PersonalMuhurtaScore:
+    """
+    Score a moment for a specific native: generic Muhurta score overlaid
+    with Tara Bala (nakshatra cycle from the janma nakshatra) and Chandra
+    Bala (transit Moon's house from the natal Moon).
+
+    Parameters
+    ----------
+    panchanga : PanchangaResult
+        The moment's Panchanga (for the generic score).
+    janma_moon_sidereal_lon : float
+        Natal Moon sidereal longitude (defines janma nakshatra and rashi).
+    transit_moon_sidereal_lon : float
+        Transit Moon sidereal longitude at the judged moment.
+    policy : MuhurtaPolicy, optional
+        Weights; ``weight_tara`` / ``weight_chandra`` govern the overlay.
+
+    Scoring: favorable tara/chandra add the full weight; unfavorable
+    subtract it; Janma tara (caution) and neutral chandra add nothing.
+    Chandrashtama doubles the chandra penalty (strongest affliction).
+    """
+    policy = policy or MuhurtaPolicy()
+    base = score_muhurta(panchanga, policy)
+
+    from .sidereal import NAKSHATRA_SPAN
+
+    janma_nak = int(janma_moon_sidereal_lon % 360.0 // NAKSHATRA_SPAN)
+    target_nak = int(transit_moon_sidereal_lon % 360.0 // NAKSHATRA_SPAN)
+    tara = tara_bala(janma_nak, target_nak)
+    chandra = chandra_bala(janma_moon_sidereal_lon, transit_moon_sidereal_lon)
+
+    tara_score = policy.weight_tara * (
+        1.0 if tara.polarity == "favorable"
+        else -1.0 if tara.polarity == "unfavorable"
+        else 0.0
+    )
+    if chandra.is_chandrashtama:
+        chandra_score = policy.weight_chandra * -2.0
+    else:
+        chandra_score = policy.weight_chandra * (
+            1.0 if chandra.polarity == "favorable"
+            else -1.0 if chandra.polarity == "unfavorable"
+            else 0.0
+        )
+
+    breakdown = dict(base.breakdown)
+    breakdown["tara"] = tara_score
+    breakdown["chandra"] = chandra_score
+
+    return PersonalMuhurtaScore(
+        total=base.total + tara_score + chandra_score,
+        breakdown=breakdown,
+        classification=base.classification,
+        tara=tara,
+        chandra=chandra,
+    )
+
+
 def _classify_nakshatra(
     nakshatra_name: str | None,
     janma_nakshatra: str | None = None,
@@ -200,16 +483,21 @@ def _classify_nakshatra(
     if nakshatra_name in uttama:
         return "auspicious"
 
-    # Tara Bala (if Janma Nakshatra provided)
-    if janma_nakshatra:
-        # Simple 1-27 numbering assumption (user must provide consistent names)
-        # For production this would need proper Nakshatra index mapping
-        tara_good = {2, 4, 6, 8, 9}   # Sampat, Kshema, Sadhaka, Mitra, Parama Mitra
-        tara_bad = {1, 3, 5, 7}       # Janma, Vipat, Pratyari, Vadha
-
-        # This is a placeholder until we have a proper nakshatra index helper
-        # For now, if we can't compute exact Tara, fall back to Uttama check above
-        pass
+    # Tara Bala (if Janma Nakshatra provided): count from janma to target,
+    # 9-tara cycle.  Favorable: Sampat/Kshema/Sadhaka/Mitra/Parama Mitra.
+    # Unfavorable: Vipat/Pratyari/Vadha.  Janma itself is cautionary and
+    # classified neutral here (activity-dependent per Muhurta Chintamani).
+    if janma_nakshatra and (
+        janma_nakshatra in NAKSHATRA_NAMES and nakshatra_name in NAKSHATRA_NAMES
+    ):
+        bala = tara_bala(
+            NAKSHATRA_NAMES.index(janma_nakshatra),
+            NAKSHATRA_NAMES.index(nakshatra_name),
+        )
+        if bala.polarity == "favorable":
+            return "auspicious"
+        if bala.polarity == "unfavorable":
+            return "inauspicious"
 
     return "neutral"
 

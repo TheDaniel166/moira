@@ -9,6 +9,8 @@ from moira import Moira
 from ..dependencies import get_engine
 
 from ..models.varga import (
+    VimshopakaChartResponse,
+    VimshopakaRequest,
     VargaChartNamedRequest,
     VargaChartNamedResponse,
     VargaChartShodashvargaBatchRequest,
@@ -35,6 +37,7 @@ from ..serializers.varga import (
     serialize_varga_shodashvarga_batch,
 )
 from ..services.varga import (
+    compute_vimshopaka,
     compute_varga_chart_named,
     compute_varga_chart_shodashvarga,
     compute_varga_chart_shodashvarga_batch,
@@ -57,6 +60,14 @@ def varga_generic_route(request: VargaGenericRequest) -> VargaPointResponse:
 @router.post("/named", response_model=VargaPointResponse)
 def varga_named_route(request: VargaNamedRequest) -> VargaPointResponse:
     return serialize_varga_point(compute_varga_named(request))
+
+
+@router.post("/vimshopaka", response_model=VimshopakaChartResponse)
+def vimshopaka_route(request: VimshopakaRequest) -> VimshopakaChartResponse:
+    """Vimshopaka Bala (BPHS 20-point varga-dignity strength) for all seven
+    planets over the chosen varga group, with per-division breakdown and
+    vargottama flags."""
+    return compute_vimshopaka(request)
 
 
 @router.post("/shodashvarga", response_model=VargaShodashvargaResponse)

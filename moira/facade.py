@@ -595,6 +595,15 @@ from .dasha import (
 from .varga import (
     VargaPoint, calculate_varga,
     navamsa, saptamsa, dashamansa, dwadashamsa, trimshamsa,
+    VIMSHOPAKA_GROUPS, VARGA_VISHVA,
+    VimshopakaVargaEntry, VimshopakaBala,
+    varga_sign_index, vimshopaka_bala, vimshopaka_all,
+    is_vargottama, vargottama_planets,
+)
+from .sade_sati import (
+    SADE_SATI_PHASES,
+    SadeSatiStatus, SadeSatiWindow, SadeSatiResult,
+    sade_sati_status, sade_sati_windows,
 )
 from .decanates import DecanatePosition, chaldean_face, triplicity_decan, vedic_drekkana
 from .astrocartography import (
@@ -820,6 +829,13 @@ from .muhurta import (
     MuhurtaScore,
     classify_muhurta,
     score_muhurta,
+    TARA_NAMES,
+    TaraBala,
+    tara_bala,
+    ChandraBala,
+    chandra_bala,
+    PersonalMuhurtaScore,
+    personal_muhurta_score,
 )
 from .harmograms import (
     HarmogramChartDomain,
@@ -1407,6 +1423,13 @@ __all__ = [
     # Varga (Vedic divisional charts)
     "VargaPoint", "calculate_varga",
     "navamsa", "saptamsa", "dashamansa", "dwadashamsa", "trimshamsa",
+    "VIMSHOPAKA_GROUPS", "VARGA_VISHVA",
+    "VimshopakaVargaEntry", "VimshopakaBala",
+    "varga_sign_index", "vimshopaka_bala", "vimshopaka_all",
+    "is_vargottama", "vargottama_planets",
+    # Sade Sati
+    "SADE_SATI_PHASES", "SadeSatiStatus", "SadeSatiWindow", "SadeSatiResult",
+    "sade_sati_status", "sade_sati_windows",
     # Decanates
     "DecanatePosition", "chaldean_face", "triplicity_decan", "vedic_drekkana",
     # Astrocartography
@@ -1593,6 +1616,9 @@ __all__ = [
     # Muhurta (Tier 2 Vedic competitive edge work)
     "MuhurtaPolicy", "MuhurtaClassification", "MuhurtaScore",
     "classify_muhurta", "score_muhurta",
+    "TARA_NAMES", "TaraBala", "tara_bala",
+    "ChandraBala", "chandra_bala",
+    "PersonalMuhurtaScore", "personal_muhurta_score",
     # Comets
     "CometData", "COMET_NAIF",
     "comet_at", "all_comets_at", "list_comets",
