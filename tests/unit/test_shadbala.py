@@ -19,6 +19,10 @@ Coverage
 10. Vessel invariants — SthanaBala, KalaBala, PlanetShadbala, ShadbalaResult
     are all frozen; have no __dict__ (slots=True).
 11. Public surface — all __all__ names importable.
+12. Bhava Bala (Raman Part II) — rasi locomotion classification (incl.
+    Sagittarius/Capricorn half-splits), Bhava Digbala worked-example
+    sequence, Bhava Drishti Bala aspect doctrine, bhava_bala() assembly
+    invariants, and BhavaBala/BhavaBalaResult vessel hardening.
 
 Source authority: Parashara BPHS Shadbala Adhyaya;
                   B.V. Raman, "Graha and Bhava Balas" (1959).
@@ -33,6 +37,8 @@ from moira.shadbala import (
     MEAN_DAILY_MOTION,
     NAISARGIKA_BALA,
     REQUIRED_RUPAS,
+    BhavaBala,
+    BhavaBalaResult,
     KalaBala,
     PlanetShadbala,
     ShadbalaChartProfile,
@@ -41,6 +47,9 @@ from moira.shadbala import (
     ShadbalaResult,
     ShadbalaTier,
     SthanaBala,
+    bhava_bala,
+    bhava_dig_bala,
+    bhava_drishti_bala,
     chesta_bala,
     dig_bala,
     drig_bala,
@@ -50,7 +59,9 @@ from moira.shadbala import (
     shadbala_condition_profile,
     sthana_bala,
     validate_shadbala_output,
+    _bhava_rasi_class,
     _sankranti_jd,
+    _sign_aspect_drig_sha,
 )
 
 _J2000 = 2451545.0
@@ -839,3 +850,357 @@ class TestValidateShadbalaOutput:
         object.__setattr__(bad_result, 'planets', bad_planets)
         with pytest.raises(ValueError):
             validate_shadbala_output(bad_result)
+
+
+# ===========================================================================
+# 19b. Ishta / Kashta Phala (BPHS Ch. 27)
+# ===========================================================================
+
+class TestIshtaKashtaPhala:
+
+    def _planet(self, uchcha: float, chesta: float) -> PlanetShadbala:
+        sb = SthanaBala(uchcha=uchcha, saptavargaja=10.0, ojayugma=15.0,
+                        kendradi=30.0, drekkana=0.0,
+                        total=uchcha + 55.0)
+        kb = KalaBala(nathonnatha=30.0, paksha=20.0, tribhaga=0.0,
+                      abda_masa_vara_hora=45.0, ayana=30.0, yuddha=0.0,
+                      total=125.0)
+        total = sb.total + 20.0 + kb.total + chesta + 17.14 + 10.0
+        return PlanetShadbala(
+            planet='Mars', sthana_bala=sb, dig_bala=20.0, kala_bala=kb,
+            chesta_bala=chesta, naisargika_bala=17.14, drig_bala=10.0,
+            total_shashtiamsas=total, total_rupas=total / 60.0,
+            required_rupas=5.0, is_sufficient=total / 60.0 >= 5.0,
+        )
+
+    def test_ishta_is_geometric_mean_of_uchcha_and_chesta(self):
+        ps = self._planet(uchcha=40.0, chesta=15.0)
+        assert ps.ishta_phala == pytest.approx(math.sqrt(40.0 * 15.0))
+
+    def test_kashta_is_geometric_mean_of_complements(self):
+        ps = self._planet(uchcha=40.0, chesta=15.0)
+        assert ps.kashta_phala == pytest.approx(math.sqrt(20.0 * 45.0))
+
+    def test_maximum_ishta_zero_kashta(self):
+        ps = self._planet(uchcha=60.0, chesta=60.0)
+        assert ps.ishta_phala == pytest.approx(60.0)
+        assert ps.kashta_phala == pytest.approx(0.0)
+
+    def test_zero_ishta_maximum_kashta(self):
+        ps = self._planet(uchcha=0.0, chesta=0.0)
+        assert ps.ishta_phala == pytest.approx(0.0)
+        assert ps.kashta_phala == pytest.approx(60.0)
+
+    def test_war_loser_zeroed_chesta_gives_zero_ishta(self):
+        ps = self._planet(uchcha=45.0, chesta=0.0)
+        assert ps.ishta_phala == pytest.approx(0.0)
+
+    def test_both_in_zero_sixty_for_all_planets_in_full_chart(self):
+        result = shadbala(
+            sidereal_longitudes=_LONS,
+            planet_speeds=_SPEEDS,
+            houses=_MockHouses(),
+            jd=_J2000,
+            tithi_number=10,
+            vara_lord='Sun',
+            is_day=True,
+        )
+        for p, ps in result.planets.items():
+            assert 0.0 <= ps.ishta_phala <= 60.0, p
+            assert 0.0 <= ps.kashta_phala <= 60.0, p
+            # Dual-path: formula recomputed from the displayed components.
+            u = ps.sthana_bala.uchcha
+            c = ps.chesta_bala
+            assert ps.ishta_phala == pytest.approx(math.sqrt(u * c))
+            assert ps.kashta_phala == pytest.approx(
+                math.sqrt((60.0 - u) * (60.0 - c))
+            )
+
+
+# ===========================================================================
+# 19c. Graha Yuddha — chesta_transferred disclosure
+# ===========================================================================
+
+class TestGrahaYuddhaTransfer:
+
+    _WAR_LONS = {'Venus': 100.0, 'Mars': 100.5, 'Jupiter': 200.0}
+    _WAR_LATS = {'Venus': 1.0, 'Mars': 0.2}
+    _WAR_SPEEDS = {'Venus': 1.1, 'Mars': 0.5, 'Jupiter': 0.08}
+
+    def test_transfer_equals_losers_raw_chesta(self):
+        from moira.shadbala import graha_yuddha_pairs
+        wars = graha_yuddha_pairs(self._WAR_LONS, self._WAR_LATS, self._WAR_SPEEDS)
+        assert len(wars) == 1
+        assert wars[0].victor == 'Venus'
+        assert wars[0].chesta_transferred == pytest.approx(
+            chesta_bala('Mars', self._WAR_SPEEDS['Mars'])
+        )
+
+    def test_transfer_is_none_without_speeds(self):
+        from moira.shadbala import graha_yuddha_pairs
+        wars = graha_yuddha_pairs(self._WAR_LONS, self._WAR_LATS)
+        assert wars[0].chesta_transferred is None
+
+    def test_retrograde_loser_transfers_maximum(self):
+        from moira.shadbala import graha_yuddha_pairs
+        wars = graha_yuddha_pairs(
+            self._WAR_LONS, self._WAR_LATS,
+            {**self._WAR_SPEEDS, 'Mars': -0.3},
+        )
+        assert wars[0].chesta_transferred == pytest.approx(60.0)
+
+    def test_out_of_range_transfer_raises(self):
+        from moira.shadbala import GrahaYuddha
+        with pytest.raises(ValueError, match="chesta_transferred"):
+            GrahaYuddha(victor='Venus', loser='Mars',
+                        separation_deg=0.5, chesta_transferred=61.0)
+
+
+# ===========================================================================
+# 20. Bhava Bala — rasi locomotion classification (Raman Part II)
+# ===========================================================================
+
+class TestBhavaRasiClassification:
+    """Whole-sign classes plus the Sagittarius/Capricorn half-splits."""
+
+    @pytest.mark.parametrize("lon,expected", [
+        (5.0,   'chatushpada'),   # Aries
+        (35.0,  'chatushpada'),   # Taurus
+        (75.0,  'nara'),          # Gemini
+        (100.0, 'jalachara'),     # Cancer
+        (125.0, 'chatushpada'),   # Leo
+        (155.0, 'nara'),          # Virgo
+        (185.0, 'nara'),          # Libra
+        (220.0, 'keeta'),         # Scorpio
+        (305.0, 'nara'),          # Aquarius
+        (335.0, 'jalachara'),     # Pisces
+    ])
+    def test_whole_sign_classes(self, lon, expected):
+        assert _bhava_rasi_class(lon) == expected
+
+    def test_sagittarius_first_half_is_nara(self):
+        assert _bhava_rasi_class(240.0) == 'nara'
+        assert _bhava_rasi_class(254.99) == 'nara'
+
+    def test_sagittarius_second_half_is_chatushpada(self):
+        assert _bhava_rasi_class(255.0) == 'chatushpada'
+        assert _bhava_rasi_class(269.99) == 'chatushpada'
+
+    def test_capricorn_first_half_is_chatushpada(self):
+        assert _bhava_rasi_class(270.0) == 'chatushpada'
+        assert _bhava_rasi_class(284.99) == 'chatushpada'
+
+    def test_capricorn_second_half_is_jalachara(self):
+        assert _bhava_rasi_class(285.0) == 'jalachara'
+        assert _bhava_rasi_class(299.99) == 'jalachara'
+
+    def test_longitude_wraps_beyond_360(self):
+        assert _bhava_rasi_class(365.0) == _bhava_rasi_class(5.0)
+
+
+# ===========================================================================
+# 21. Bhava Digbala (Raman Part II worked example)
+# ===========================================================================
+
+class TestBhavaDigBala:
+
+    # Raman worked sequence for a chatushpada madhya (strong house = 10):
+    # 60 in 10th, 50 in 11th, 40 in 12th, 30 in 1st, 20 in 2nd, 10 in 3rd,
+    # 0 in 4th (opposite).
+    @pytest.mark.parametrize("house,expected", [
+        (10, 60.0), (11, 50.0), (12, 40.0), (1, 30.0),
+        (2, 20.0), (3, 10.0), (4, 0.0),
+    ])
+    def test_raman_chatushpada_sequence(self, house, expected):
+        madhya = 5.0  # Aries — chatushpada
+        assert bhava_dig_bala(house, madhya) == pytest.approx(expected)
+
+    def test_nara_strong_in_first_house(self):
+        assert bhava_dig_bala(1, 75.0) == pytest.approx(60.0)    # Gemini
+        assert bhava_dig_bala(7, 75.0) == pytest.approx(0.0)     # opposite
+
+    def test_jalachara_strong_in_fourth_house(self):
+        assert bhava_dig_bala(4, 100.0) == pytest.approx(60.0)   # Cancer
+        assert bhava_dig_bala(10, 100.0) == pytest.approx(0.0)   # opposite
+
+    def test_keeta_strong_in_seventh_house(self):
+        assert bhava_dig_bala(7, 220.0) == pytest.approx(60.0)   # Scorpio
+        assert bhava_dig_bala(1, 220.0) == pytest.approx(0.0)    # opposite
+
+    def test_distance_is_circular_and_symmetric(self):
+        # Nara strong H1: H2 and H12 are both distance 1 → both 50 Sha.
+        assert bhava_dig_bala(2, 75.0) == pytest.approx(50.0)
+        assert bhava_dig_bala(12, 75.0) == pytest.approx(50.0)
+
+    def test_all_values_in_range_for_all_houses_and_classes(self):
+        for madhya in (5.0, 75.0, 100.0, 220.0, 250.0, 260.0, 275.0, 288.0):
+            for house in range(1, 13):
+                v = bhava_dig_bala(house, madhya)
+                assert 0.0 <= v <= 60.0
+                assert v % 10.0 == pytest.approx(0.0)
+
+
+# ===========================================================================
+# 22. Bhava Drishti Bala
+# ===========================================================================
+
+class TestBhavaDrishtiBala:
+
+    def test_matches_shared_sign_aspect_core(self):
+        madhya = 15.0  # Aries madhya
+        assert bhava_drishti_bala(madhya, _LONS) == pytest.approx(
+            _sign_aspect_drig_sha(0, _LONS)
+        )
+
+    def test_full_benefic_opposition_is_plus_60(self):
+        # Jupiter alone, 7 signs from an Aries madhya → full benefic aspect.
+        lons = {'Jupiter': 185.0}   # Libra
+        assert bhava_drishti_bala(10.0, lons) == pytest.approx(60.0)
+
+    def test_full_malefic_opposition_is_minus_60(self):
+        lons = {'Sun': 185.0}       # Libra
+        assert bhava_drishti_bala(10.0, lons) == pytest.approx(-60.0)
+
+    def test_saturn_special_tenth_aspect_is_three_quarter(self):
+        # Saturn in Aries; 10th sign from Aries is Capricorn madhya.
+        lons = {'Saturn': 5.0}
+        assert bhava_drishti_bala(275.0, lons) == pytest.approx(-45.0)
+
+    def test_no_aspect_yields_zero(self):
+        # Venus 2 signs away casts no sign aspect.
+        lons = {'Venus': 35.0}      # Taurus; madhya in Aries
+        assert bhava_drishti_bala(10.0, lons) == pytest.approx(0.0)
+
+    def test_planet_in_madhya_sign_still_aspects_nothing_extra(self):
+        # A planet conjunct the madhya (dist=1) has no sign aspect on it.
+        lons = {'Jupiter': 12.0}
+        assert bhava_drishti_bala(10.0, lons) == pytest.approx(0.0)
+
+
+# ===========================================================================
+# 23. bhava_bala() integration
+# ===========================================================================
+
+class TestBhavaBalaIntegration:
+
+    @pytest.fixture(scope='class')
+    def graha_result(self) -> ShadbalaResult:
+        return shadbala(
+            sidereal_longitudes=_LONS,
+            planet_speeds=_SPEEDS,
+            houses=_MockHouses(),
+            jd=_J2000,
+            tithi_number=10,
+            vara_lord='Sun',
+            is_day=True,
+        )
+
+    @pytest.fixture(scope='class')
+    def result(self, graha_result) -> BhavaBalaResult:
+        return bhava_bala(graha_result, _LONS, _MockHouses())
+
+    def test_returns_bhava_bala_result(self, result):
+        assert isinstance(result, BhavaBalaResult)
+
+    def test_all_twelve_houses_present(self, result):
+        assert set(result.houses.keys()) == set(range(1, 13))
+
+    def test_ranks_are_a_permutation_of_1_to_12(self, result):
+        assert sorted(b.rank for b in result.houses.values()) == list(range(1, 13))
+
+    def test_total_is_sum_of_three_components(self, result):
+        for b in result.houses.values():
+            assert b.total_shashtiamsas == pytest.approx(
+                b.bhavadhipati_bala + b.bhava_dig_bala + b.bhava_drishti_bala
+            )
+
+    def test_total_rupas_equals_sha_over_60(self, result):
+        for b in result.houses.values():
+            assert b.total_rupas == pytest.approx(b.total_shashtiamsas / 60.0)
+
+    def test_bhavadhipati_equals_lords_pinda(self, result, graha_result):
+        for b in result.houses.values():
+            assert b.bhavadhipati_bala == pytest.approx(
+                graha_result.planets[b.lord].total_shashtiamsas
+            )
+
+    def test_jd_and_ayanamsa_taken_from_graha_result(self, result, graha_result):
+        assert result.jd == graha_result.jd
+        assert result.ayanamsa_system == graha_result.ayanamsa_system
+
+    def test_strongest_and_weakest_match_ranks(self, result):
+        assert result.houses[result.strongest_house].rank == 1
+        assert result.houses[result.weakest_house].rank == 12
+
+    def test_strongest_has_maximal_total(self, result):
+        top = result.houses[result.strongest_house].total_shashtiamsas
+        for b in result.houses.values():
+            assert top >= b.total_shashtiamsas
+
+    def test_lord_is_classical_lord_of_madhya_rasi(self, result):
+        classical = ('Mars', 'Venus', 'Mercury', 'Moon', 'Sun', 'Mercury',
+                     'Venus', 'Mars', 'Jupiter', 'Saturn', 'Saturn', 'Jupiter')
+        for b in result.houses.values():
+            assert b.lord == classical[b.rasi_index]
+
+    def test_equal_house_fallback_without_cusps(self, graha_result):
+        class _AscOnly:
+            asc = 0.0
+        res = bhava_bala(graha_result, _LONS, _AscOnly())
+        assert set(res.houses.keys()) == set(range(1, 13))
+        # Equal houses: consecutive madhyas 30° apart.
+        madhyas = [res.houses[h].madhya_sidereal_lon for h in range(1, 13)]
+        for i in range(12):
+            step = (madhyas[(i + 1) % 12] - madhyas[i]) % 360.0
+            assert step == pytest.approx(30.0)
+
+
+# ===========================================================================
+# 24. Bhava Bala vessel invariants
+# ===========================================================================
+
+class TestBhavaBalaVessels:
+
+    def _valid_bhava(self, **overrides):
+        base = dict(
+            house=1, madhya_sidereal_lon=10.0, rasi_index=0,
+            rasi_class='chatushpada', lord='Mars',
+            bhavadhipati_bala=300.0, bhava_dig_bala=30.0,
+            bhava_drishti_bala=15.0, total_shashtiamsas=345.0,
+            total_rupas=5.75, rank=1,
+        )
+        base.update(overrides)
+        return BhavaBala(**base)
+
+    def test_vessel_is_frozen(self):
+        b = self._valid_bhava()
+        with pytest.raises((AttributeError, TypeError)):
+            b.house = 2  # type: ignore[misc]
+
+    def test_vessel_has_slots(self):
+        b = self._valid_bhava()
+        assert not hasattr(b, '__dict__')
+
+    def test_invalid_house_raises(self):
+        with pytest.raises(ValueError, match="house"):
+            self._valid_bhava(house=13)
+
+    def test_invalid_rasi_class_raises(self):
+        with pytest.raises(ValueError, match="rasi_class"):
+            self._valid_bhava(rasi_class='avian')
+
+    def test_invalid_lord_raises(self):
+        with pytest.raises(ValueError, match="lord"):
+            self._valid_bhava(lord='Rahu')
+
+    def test_dig_bala_out_of_range_raises(self):
+        with pytest.raises(ValueError, match="bhava_dig_bala"):
+            self._valid_bhava(bhava_dig_bala=61.0)
+
+    def test_result_requires_all_twelve_houses(self):
+        b = self._valid_bhava()
+        with pytest.raises(ValueError, match="houses 1-12"):
+            BhavaBalaResult(
+                jd=_J2000, ayanamsa_system='Lahiri',
+                houses={1: b}, strongest_house=1, weakest_house=1,
+            )

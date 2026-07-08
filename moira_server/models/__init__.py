@@ -513,6 +513,8 @@ from .western_profile import (
     WesternProfileIncludeRequest,
 )
 from .shadbala import (
+    BhavaBalaResponse,
+    BhavaBalaResultResponse,
     GrahaYuddhaResponse,
     KalaBalaResponse,
     PlanetShadbalaResponse,
@@ -520,6 +522,7 @@ from .shadbala import (
     ShadbalaChartRequest,
     ShadbalaConditionChartRequest,
     ShadbalaConditionProfileResponse,
+    ShadbalaFullResponse,
     ShadbalaNetworkProfileResponse,
     ShadbalaPolicyRequest,
     ShadbalaResultResponse,
@@ -994,6 +997,9 @@ __all__ = [
     "ShadbalaNetworkProfileResponse",
     "ShadbalaPolicyRequest",
     "ShadbalaResultResponse",
+    "ShadbalaFullResponse",
+    "BhavaBalaResponse",
+    "BhavaBalaResultResponse",
     "SiderealChartBaseRequest",
     "SiderealChartContextResponse",
     "SiderealChartProvenanceResponse",

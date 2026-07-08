@@ -11,10 +11,12 @@ from moira_server.app import create_app
 from moira_server.config import ServerConfig
 from moira_server.models.shadbala import ShadbalaChartRequest, ShadbalaConditionChartRequest
 from moira_server.services.shadbala import (
+    compute_bhava_bala_chart,
     compute_shadbala_chart,
     compute_shadbala_chart_condition,
     compute_shadbala_chart_network,
     compute_shadbala_chart_profile,
+    compute_shadbala_full,
 )
 
 
@@ -87,6 +89,18 @@ def test_shadbala_chart_route_matches_service(
     assert body["planets"]["Sun"]["strength_ratio"] == pytest.approx(
         direct.planets["Sun"].strength_ratio
     )
+    # Transparency additions: inline Ishta/Kashta Phala + exact ayanamsa used.
+    for planet, planet_body in body["planets"].items():
+        assert planet_body["ishta_phala"] == pytest.approx(
+            direct.planets[planet].ishta_phala
+        )
+        assert planet_body["kashta_phala"] == pytest.approx(
+            direct.planets[planet].kashta_phala
+        )
+    from moira.sidereal import ayanamsa
+    assert body["ayanamsa_degrees"] == pytest.approx(
+        ayanamsa(direct.jd, direct.ayanamsa_system, "true")
+    )
 
 
 @pytest.mark.requires_ephemeris
@@ -153,6 +167,91 @@ def test_shadbala_chart_condition_route_matches_service(
     assert body["required_rupas"] == pytest.approx(direct.required_rupas)
     assert body["strength_ratio"] == pytest.approx(direct.strength_ratio)
     assert body["is_sufficient"] is direct.is_sufficient
+
+
+@pytest.mark.requires_ephemeris
+def test_bhava_bala_chart_route_matches_service(
+    client_with_engine: TestClient,
+    moira_engine,
+) -> None:
+    direct = compute_bhava_bala_chart(moira_engine, _request())
+
+    response = client_with_engine.post("/v1/shadbala/chart/bhava", json=_PAYLOAD)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["jd"] == pytest.approx(direct.jd)
+    assert body["ayanamsa_system"] == direct.ayanamsa_system
+    assert body["strongest_house"] == direct.strongest_house
+    assert body["weakest_house"] == direct.weakest_house
+    assert set(int(h) for h in body["houses"]) == set(range(1, 13))
+    for house_key, house_body in body["houses"].items():
+        direct_house = direct.houses[int(house_key)]
+        assert house_body["rasi_class"] == direct_house.rasi_class
+        assert house_body["lord"] == direct_house.lord
+        assert house_body["bhavadhipati_bala"] == pytest.approx(direct_house.bhavadhipati_bala)
+        assert house_body["bhava_dig_bala"] == pytest.approx(direct_house.bhava_dig_bala)
+        assert house_body["bhava_drishti_bala"] == pytest.approx(direct_house.bhava_drishti_bala)
+        assert house_body["total_rupas"] == pytest.approx(direct_house.total_rupas)
+        assert house_body["rank"] == direct_house.rank
+    assert sorted(h["rank"] for h in body["houses"].values()) == list(range(1, 13))
+
+
+def test_bhava_bala_chart_route_rejects_naive_datetime(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/shadbala/chart/bhava",
+        json={**_PAYLOAD, "dt": "2000-01-01T12:00:00"},
+    )
+
+    _assert_validation_envelope(response, message_fragment="timezone-aware")
+
+
+@pytest.mark.requires_ephemeris
+def test_shadbala_full_route_matches_individual_services(
+    client_with_engine: TestClient,
+    moira_engine,
+) -> None:
+    direct = compute_shadbala_full(moira_engine, _request())
+
+    response = client_with_engine.post("/v1/shadbala/chart/full", json=_PAYLOAD)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert set(body) == {"chart", "profile", "network", "bhava"}
+    # Every surface agrees with its dedicated computation.
+    assert body["chart"]["jd"] == pytest.approx(direct.result.jd)
+    assert set(body["chart"]["planets"]) == set(direct.result.planets)
+    assert body["profile"]["strongest_planet"] == direct.profile.strongest_planet
+    assert tuple(body["network"]["strength_ranking"]) == direct.network.strength_ranking
+    assert body["bhava"]["strongest_house"] == direct.bhava.strongest_house
+    # Inline Ishta/Kashta present on every planet.
+    for planet, planet_body in body["chart"]["planets"].items():
+        assert planet_body["ishta_phala"] == pytest.approx(
+            direct.result.planets[planet].ishta_phala
+        )
+        assert planet_body["kashta_phala"] == pytest.approx(
+            direct.result.planets[planet].kashta_phala
+        )
+    # Exact ayanamsa disclosed on chart and bhava, and they agree.
+    assert body["chart"]["ayanamsa_degrees"] == pytest.approx(
+        body["bhava"]["ayanamsa_degrees"]
+    )
+    # War records disclose the transferred amount when wars are active.
+    for war in body["network"]["active_wars"]:
+        assert "shashtiamsas_transferred" in war
+
+
+def test_shadbala_full_route_rejects_naive_datetime(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/shadbala/chart/full",
+        json={**_PAYLOAD, "dt": "2000-01-01T12:00:00"},
+    )
+
+    _assert_validation_envelope(response, message_fragment="timezone-aware")
 
 
 def test_shadbala_chart_route_rejects_naive_datetime(client_with_engine: TestClient) -> None:

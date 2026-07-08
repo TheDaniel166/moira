@@ -33,6 +33,11 @@ The six Balas (strengths) and their sub-components:
 Required minimum Rupas (Parashara):
   Sun:6.5, Moon:6.0, Mars:5.0, Mercury:7.0, Jupiter:6.5, Venus:5.5, Saturn:5.0
 
+Bhava Bala (house strength, Raman Part II) is also computed here, three-fold:
+  1. Bhavadhipati Bala  — house lord's total Shadbala piṇḍa
+  2. Bhava Digbala      — madhya rasi locomotion class vs. house position
+  3. Bhava Drishti Bala — sign-based aspect strength on the bhava madhya
+
 Tradition and sources
 ---------------------
 Parashara, "Brihat Parashara Hora Shastra" (BPHS), Shadbala Adhyaya.
@@ -98,6 +103,11 @@ Public surface
 ``chesta_bala``           -- compute Chesta Bala for one planet.
 ``drig_bala``             -- compute Drig Bala for one planet.
 ``shadbala``              -- compute full Shadbala for all 7 planets.
+``BhavaBala``             -- immutable vessel for one house's Bhava Bala.
+``BhavaBalaResult``       -- immutable vessel for the 12-house computation.
+``bhava_bala``            -- compute Bhava Bala for all 12 houses (Raman Part II).
+``bhava_dig_bala``        -- compute Bhava Digbala for one house.
+``bhava_drishti_bala``    -- compute Bhava Drishti Bala for one bhava madhya.
 ``hora_lord_at``          -- compute the planetary hora lord at a birth moment.
 ``shadbala_condition_profile`` -- P7 local condition profile builder.
 ``shadbala_chart_profile``     -- P8 aggregate chart profile builder.
@@ -111,7 +121,8 @@ Constitutional phases applied
 -----------------------------
 P1  -- Truth preservation: SthanaBala, KalaBala, PlanetShadbala, ShadbalaResult.
 P2  -- Classification: ShadbalaTier.
-P3  -- Inspectability: PlanetShadbala.strength_ratio.
+P3  -- Inspectability: PlanetShadbala.strength_ratio,
+      PlanetShadbala.ishta_phala / .kashta_phala (BPHS Ch. 27).
 P4  -- Policy vessel: ShadbalaPolicy.
 P5  -- Relational formalization: GrahaYuddha, graha_yuddha_pairs().
 P6  -- Relational hardening: GrahaYuddha.__post_init__ invariants.
@@ -125,8 +136,6 @@ P10 -- Hardening: PlanetShadbala.__post_init__, ShadbalaResult.__post_init__,
 P11 -- Architecture freeze: wiki/02_standards/SHADBALA_BACKEND_STANDARD.md.
 P12 -- Public API curation: __all__, docstring.
 """
-
-from __future__ import annotations
 
 import math
 from dataclasses import dataclass
@@ -143,12 +152,17 @@ __all__ = [
     "ShadbalaPolicy",
     "ShadbalaConditionProfile",
     "ShadbalaChartProfile",
+    "BhavaBala",
+    "BhavaBalaResult",
     "sthana_bala",
     "dig_bala",
     "kala_bala",
     "chesta_bala",
     "drig_bala",
     "shadbala",
+    "bhava_bala",
+    "bhava_dig_bala",
+    "bhava_drishti_bala",
     "hora_lord_at",
     "shadbala_condition_profile",
     "shadbala_chart_profile",
@@ -193,11 +207,17 @@ class GrahaYuddha:
         Name of the defeated planet.
     separation_deg : float
         Angular separation in degrees at the moment of war (0 < value ≤ 1.0).
+    chesta_transferred : float or None
+        Shashtiamsas transferred by the war: the loser's raw Chesta Bala,
+        which the victor gains (``KalaBala.yuddha``) and the loser forfeits
+        (Chesta zeroed).  ``None`` when planet speeds were not supplied to
+        the detector, so the amount is unknown rather than silently 0.
     """
 
     victor:         str
     loser:          str
     separation_deg: float
+    chesta_transferred: float | None = None
 
     def __post_init__(self) -> None:
         if self.victor not in _WAR_PLANETS:
@@ -219,6 +239,13 @@ class GrahaYuddha:
             raise ValueError(
                 f"GrahaYuddha.separation_deg must be in (0, 1], "
                 f"got {self.separation_deg}"
+            )
+        if self.chesta_transferred is not None and not (
+            0.0 <= self.chesta_transferred <= 60.0
+        ):
+            raise ValueError(
+                f"GrahaYuddha.chesta_transferred must be in [0, 60] when "
+                f"present, got {self.chesta_transferred}"
             )
 
 
@@ -298,6 +325,53 @@ _DIG_STRONG_HOUSE: dict[str, int] = {
     'Venus':   3,
     'Saturn':  6,    # 7th house
 }
+
+# ---------------------------------------------------------------------------
+# Bhava Bala — rasi locomotion classes and strong houses
+#
+# Governing object: Raman "Graha and Bhava Balas" (1959), Part II.  Every
+# rasi (with half-sign splits in Sagittarius and Capricorn) belongs to one
+# of four locomotion classes; each class attains full Bhava Digbala (60 Sha)
+# when its bhava occupies one specific kendra, decreasing by 10 Sha per
+# house of shortest circular distance (0 Sha at the opposite house).
+#
+#   Nara (human)          — Gemini, Virgo, Libra, Aquarius, Sagittarius 1st half → strong in H1
+#   Jalachara (aquatic)   — Cancer, Pisces, Capricorn 2nd half                   → strong in H4
+#   Keeta (insect)        — Scorpio                                              → strong in H7
+#   Chatushpada (quadruped) — Aries, Taurus, Leo, Sagittarius 2nd half,
+#                             Capricorn 1st half                                 → strong in H10
+# ---------------------------------------------------------------------------
+
+_BHAVA_CLASS_STRONG_HOUSE: dict[str, int] = {
+    'nara':        1,
+    'jalachara':   4,
+    'keeta':       7,
+    'chatushpada': 10,
+}
+
+# Whole-sign class by 0-based rasi index; None marks the two half-split rasis
+# (Sagittarius = 8, Capricorn = 9) resolved degree-wise in _bhava_rasi_class.
+_BHAVA_WHOLE_SIGN_CLASS: tuple[str | None, ...] = (
+    'chatushpada',  # 0  Aries
+    'chatushpada',  # 1  Taurus
+    'nara',         # 2  Gemini
+    'jalachara',    # 3  Cancer
+    'chatushpada',  # 4  Leo
+    'nara',         # 5  Virgo
+    'nara',         # 6  Libra
+    'keeta',        # 7  Scorpio
+    None,           # 8  Sagittarius: 1st half nara, 2nd half chatushpada
+    None,           # 9  Capricorn:   1st half chatushpada, 2nd half jalachara
+    'nara',         # 10 Aquarius
+    'jalachara',    # 11 Pisces
+)
+
+# Classical rasi lords by 0-based sign index (no nodal lordships in Shadbala).
+# Source: BPHS; Raman "Graha and Bhava Balas" Part II (Bhavadhipathi Bala).
+_RASI_LORDS: tuple[str, ...] = (
+    'Mars', 'Venus', 'Mercury', 'Moon', 'Sun', 'Mercury',
+    'Venus', 'Mars', 'Jupiter', 'Saturn', 'Saturn', 'Jupiter',
+)
 
 # ---------------------------------------------------------------------------
 # Saptavargaja Bala — dignity Shashtiamsa values
@@ -485,6 +559,33 @@ class PlanetShadbala:
         """P3 -- total_rupas / required_rupas.  >= 1.0 means sufficient."""
         return self.total_rupas / self.required_rupas
 
+    @property
+    def ishta_phala(self) -> float:
+        """P3 -- Iṣṭa Phala (benefic potential) in Shashtiamsas [0, 60].
+
+        ``√(Uchcha Bala × Chesta Bala)`` per BPHS Ch. 27 (Ishta-Kashta
+        Adhyaya); Raman, "Graha and Bhava Balas", Part on predicting
+        results.  Uses this vessel's displayed Chesta Bala, so the Sun and
+        Moon consume the Raman apogee-distance Chesta — the same number
+        shown in the breakdown — and a war loser's zeroed Chesta flows
+        through honestly.
+        """
+        u = min(max(self.sthana_bala.uchcha, 0.0), 60.0)
+        c = min(max(self.chesta_bala, 0.0), 60.0)
+        return math.sqrt(u * c)
+
+    @property
+    def kashta_phala(self) -> float:
+        """P3 -- Kaṣṭa Phala (malefic potential) in Shashtiamsas [0, 60].
+
+        ``√((60 − Uchcha Bala) × (60 − Chesta Bala))`` — the complement of
+        Iṣṭa Phala.  Same BPHS Ch. 27 source and same displayed-Chesta
+        policy as ``ishta_phala``.
+        """
+        u = min(max(self.sthana_bala.uchcha, 0.0), 60.0)
+        c = min(max(self.chesta_bala, 0.0), 60.0)
+        return math.sqrt((60.0 - u) * (60.0 - c))
+
 
 @dataclass(frozen=True, slots=True)
 class ShadbalaResult:
@@ -513,6 +614,129 @@ class ShadbalaResult:
         if not math.isfinite(self.jd):
             raise ValueError(
                 f"ShadbalaResult.jd must be a finite number, got {self.jd}"
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class BhavaBala:
+    """
+    Bhava Bala (house strength) result for one house.
+
+    Source: Raman, "Graha and Bhava Balas" (1959), Part II.
+
+    Attributes
+    ----------
+    house : int
+        House number (1–12).
+    madhya_sidereal_lon : float
+        Sidereal longitude of the bhava madhya in degrees [0, 360).
+    rasi_index : int
+        0-based rasi index (0 = Aries) of the bhava madhya.
+    rasi_class : str
+        Locomotion class of the madhya rasi: ``'nara'``, ``'jalachara'``,
+        ``'keeta'``, or ``'chatushpada'``.
+    lord : str
+        Classical lord of the madhya rasi.
+    bhavadhipati_bala : float
+        House lord's total Shadbala piṇḍa in Shashtiamsas.
+    bhava_dig_bala : float
+        Directional strength of the house in Shashtiamsas [0, 60].
+    bhava_drishti_bala : float
+        Aspectual strength on the bhava madhya in Shashtiamsas (signed:
+        net malefic aspect yields a negative value).
+    total_shashtiamsas : float
+        Sum of the three components in Shashtiamsas.
+    total_rupas : float
+        Total in Rupas (= total_shashtiamsas / 60).
+    rank : int
+        Strength rank within the chart (1 = strongest of the 12 houses).
+    """
+
+    house:               int
+    madhya_sidereal_lon: float
+    rasi_index:          int
+    rasi_class:          str
+    lord:                str
+    bhavadhipati_bala:   float
+    bhava_dig_bala:      float
+    bhava_drishti_bala:  float
+    total_shashtiamsas:  float
+    total_rupas:         float
+    rank:                int
+
+    def __post_init__(self) -> None:
+        if not (1 <= self.house <= 12):
+            raise ValueError(
+                f"BhavaBala.house must be in [1, 12], got {self.house}"
+            )
+        if not (0 <= self.rasi_index <= 11):
+            raise ValueError(
+                f"BhavaBala.rasi_index must be in [0, 11], got {self.rasi_index}"
+            )
+        if self.rasi_class not in _BHAVA_CLASS_STRONG_HOUSE:
+            raise ValueError(
+                f"BhavaBala.rasi_class must be one of "
+                f"{sorted(_BHAVA_CLASS_STRONG_HOUSE)}, got {self.rasi_class!r}"
+            )
+        if self.lord not in _SEVEN_PLANETS:
+            raise ValueError(
+                f"BhavaBala.lord must be one of {_SEVEN_PLANETS}, "
+                f"got {self.lord!r}"
+            )
+        if not (0.0 <= self.bhava_dig_bala <= 60.0):
+            raise ValueError(
+                f"BhavaBala.bhava_dig_bala must be in [0, 60], "
+                f"got {self.bhava_dig_bala}"
+            )
+        if not (1 <= self.rank <= 12):
+            raise ValueError(
+                f"BhavaBala.rank must be in [1, 12], got {self.rank}"
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class BhavaBalaResult:
+    """
+    Full Bhava Bala computation for all twelve houses.
+
+    Attributes
+    ----------
+    jd : float
+        Julian date (UT) of the natal chart.
+    ayanamsa_system : str
+        Ayanamsa system used for sidereal conversion.
+    houses : dict[int, BhavaBala]
+        Mapping of house number (1–12) → BhavaBala.
+    strongest_house : int
+        House number holding rank 1.
+    weakest_house : int
+        House number holding rank 12.
+    """
+
+    jd: float
+    ayanamsa_system: str
+    houses: dict[int, BhavaBala]
+    strongest_house: int
+    weakest_house: int
+
+    def __post_init__(self) -> None:
+        if not self.ayanamsa_system:
+            raise ValueError(
+                "BhavaBalaResult.ayanamsa_system must be non-empty"
+            )
+        if not math.isfinite(self.jd):
+            raise ValueError(
+                f"BhavaBalaResult.jd must be a finite number, got {self.jd}"
+            )
+        if set(self.houses.keys()) != set(range(1, 13)):
+            raise ValueError(
+                "BhavaBalaResult.houses must contain exactly houses 1-12, "
+                f"got {sorted(self.houses.keys())}"
+            )
+        ranks = sorted(b.rank for b in self.houses.values())
+        if ranks != list(range(1, 13)):
+            raise ValueError(
+                f"BhavaBalaResult ranks must be a permutation of 1-12, got {ranks}"
             )
 
 
@@ -630,6 +854,7 @@ def _moon_mandoccha_lon(jd: float, ayanamsa_system: str) -> float:
 def _detect_wars(
     sidereal_longitudes: dict[str, float],
     planet_latitudes: dict[str, float] | None,
+    planet_speeds: dict[str, float] | None = None,
 ) -> tuple['GrahaYuddha', ...]:
     """
     Detect Graha Yuddha (planetary wars) and return one GrahaYuddha per pair.
@@ -642,6 +867,10 @@ def _detect_wars(
         The planet with greater geocentric latitude wins.  When
         ``planet_latitudes`` is ``None``, the planet with greater sidereal
         longitude wins (fallback approximation).
+
+    When ``planet_speeds`` is supplied, each war record carries
+    ``chesta_transferred`` — the loser's raw (speed-ratio) Chesta Bala, the
+    amount the victor gains and the loser forfeits.
 
     Returns
     -------
@@ -666,7 +895,17 @@ def _detect_wars(
             else:
                 victor = p1 if lon1 >= lon2 else p2
             loser = p2 if victor == p1 else p1
-            wars.append(GrahaYuddha(victor=victor, loser=loser, separation_deg=diff))
+            transferred = None
+            if planet_speeds is not None and loser in planet_speeds:
+                # War losers are always non-luminaries, so the raw Chesta is
+                # the speed-ratio value — the same amount shadbala() moves.
+                transferred = chesta_bala(loser, planet_speeds[loser])
+            wars.append(GrahaYuddha(
+                victor=victor,
+                loser=loser,
+                separation_deg=diff,
+                chesta_transferred=transferred,
+            ))
     return tuple(wars)
 
 
@@ -1238,6 +1477,23 @@ def drig_bala(
         return 0.0
 
     planet_sign = int(sidereal_longitudes[planet] % 360.0 // 30)
+    return _sign_aspect_drig_sha(planet_sign, sidereal_longitudes, exclude=planet)
+
+
+def _sign_aspect_drig_sha(
+    target_sign: int,
+    sidereal_longitudes: dict[str, float],
+    exclude: str | None = None,
+) -> float:
+    """
+    Net benefic-minus-malefic sign-based aspect strength on *target_sign*.
+
+    Shared aspect core for Graha Drig Bala (target = the aspected planet's
+    sign, with the planet itself excluded) and Bhava Drishti Bala (target =
+    the bhava madhya's sign, with all seven planets aspecting).  Weights per
+    Raman: full (7th) 1.0; special three-quarter (Mars 4/8, Jupiter 5/9,
+    Saturn 3/10) 0.75; half (5/9) 0.5; quarter (3/10) 0.25.
+    """
     benefics  = {'Jupiter', 'Venus', 'Moon', 'Mercury'}
     malefics  = {'Sun', 'Mars', 'Saturn'}
 
@@ -1250,11 +1506,11 @@ def drig_bala(
 
     drig_sha = 0.0
     for asp_planet, asp_lon in sidereal_longitudes.items():
-        if asp_planet == planet:
+        if asp_planet == exclude:
             continue
         asp_sign = int(asp_lon % 360.0 // 30)
-        # 1-based sign-distance from asp_planet to planet being assessed
-        dist = (planet_sign - asp_sign) % 12 + 1   # 1–12
+        # 1-based sign-distance from asp_planet to the aspected sign
+        dist = (target_sign - asp_sign) % 12 + 1   # 1–12
 
         weight = 0.0
         if dist == 7:
@@ -1273,6 +1529,195 @@ def drig_bala(
                 drig_sha -= weight * 60.0
 
     return drig_sha
+
+
+# ---------------------------------------------------------------------------
+# Bhava Bala — house strength (Raman Part II)
+# ---------------------------------------------------------------------------
+
+def _bhava_rasi_class(sidereal_lon: float) -> str:
+    """
+    Return the locomotion class of the rasi holding *sidereal_lon*.
+
+    Whole-sign for ten rasis; degree-resolved for the two half-split rasis
+    (Sagittarius: 1st half nara, 2nd half chatushpada; Capricorn: 1st half
+    chatushpada, 2nd half jalachara).  Source: Raman Part II, Bhava Digbala.
+    """
+    lon = sidereal_lon % 360.0
+    sign = int(lon // 30)
+    cls = _BHAVA_WHOLE_SIGN_CLASS[sign]
+    if cls is not None:
+        return cls
+    first_half = (lon % 30.0) < 15.0
+    if sign == 8:    # Sagittarius
+        return 'nara' if first_half else 'chatushpada'
+    # sign == 9 — Capricorn
+    return 'chatushpada' if first_half else 'jalachara'
+
+
+def _bhava_madhya_sidereal(
+    houses: object,
+    jd: float,
+    ayanamsa_system: str,
+) -> list[float]:
+    """
+    Return the twelve bhava madhya sidereal longitudes, houses 1–12 in order.
+
+    Policy (explicit): the chart's house cusps are taken as the bhava
+    madhya reference points, mirroring the module-wide house doctrine used
+    by ``dig_bala`` (``houses.cusps`` are 12 tropical longitudes, 0-based,
+    ``cusps[0]`` = Ascendant).  When ``cusps`` is unavailable, equal houses
+    from the Ascendant are used, with the Ascendant as madhya of house 1.
+    """
+    from .sidereal import tropical_to_sidereal
+
+    cusps_trop = getattr(houses, 'cusps', None)
+    if cusps_trop is None:
+        asc_trop = float(getattr(houses, 'asc', 0.0))
+        asc_sid  = tropical_to_sidereal(asc_trop, jd, system=ayanamsa_system)
+        return [(asc_sid + i * 30.0) % 360.0 for i in range(12)]
+    return [
+        tropical_to_sidereal(float(cusps_trop[i]), jd, system=ayanamsa_system) % 360.0
+        for i in range(12)
+    ]
+
+
+def bhava_dig_bala(house: int, madhya_sidereal_lon: float) -> float:
+    """
+    Compute Bhava Digbala (house directional strength) for one house.
+
+    The madhya's rasi class fixes the strong house (nara → 1, jalachara → 4,
+    keeta → 7, chatushpada → 10); strength is 60 Sha there, decreasing by
+    10 Sha per house of shortest circular distance, 0 Sha opposite.
+
+    Source: Raman, "Graha and Bhava Balas" (1959), Part II.
+
+    Parameters
+    ----------
+    house : int
+        House number (1–12).
+    madhya_sidereal_lon : float
+        Sidereal longitude of the bhava madhya.
+
+    Returns
+    -------
+    float
+        Bhava Digbala in Shashtiamsas, in [0.0, 60.0].
+    """
+    strong = _BHAVA_CLASS_STRONG_HOUSE[_bhava_rasi_class(madhya_sidereal_lon)]
+    dist = min((house - strong) % 12, (strong - house) % 12)   # 0–6
+    return 60.0 - 10.0 * dist
+
+
+def bhava_drishti_bala(
+    madhya_sidereal_lon: float,
+    sidereal_longitudes: dict[str, float],
+) -> float:
+    """
+    Compute Bhava Drishti Bala (aspect strength on the bhava madhya).
+
+    The bhava madhya is treated as the aspected point ("taking the mid cusp
+    of the Bhava as the aspected planet" — Raman Part II), with all seven
+    classical planets aspecting.  Uses the module's declared sign-based
+    Vedic aspect doctrine, identical to ``drig_bala``.
+
+    Returns
+    -------
+    float
+        Bhava Drishti Bala in Shashtiamsas (signed; net malefic aspect
+        yields a negative value).
+    """
+    target_sign = int(madhya_sidereal_lon % 360.0 // 30)
+    return _sign_aspect_drig_sha(target_sign, sidereal_longitudes)
+
+
+def bhava_bala(
+    shadbala_result: ShadbalaResult,
+    sidereal_longitudes: dict[str, float],
+    houses: object,
+) -> BhavaBalaResult:
+    """
+    Compute Bhava Bala (house strength) for all twelve houses.
+
+    Bhava Bala is three-fold (Raman, "Graha and Bhava Balas", Part II):
+
+      1. Bhavadhipati Bala — the total Shadbala piṇḍa of the house lord
+         (classical lord of the rasi holding the bhava madhya).
+      2. Bhava Digbala     — directional strength from the madhya rasi's
+         locomotion class (see ``bhava_dig_bala``).
+      3. Bhava Drishti Bala — sign-based aspect strength on the madhya
+         (see ``bhava_drishti_bala``).
+
+    Houses are ranked by total strength (rank 1 = strongest; ties broken
+    by lower house number).  The birth moment and ayanamsa are taken from
+    *shadbala_result* so the two computations cannot disagree.
+
+    Parameters
+    ----------
+    shadbala_result : ShadbalaResult
+        Output of ``shadbala()`` for the same chart; supplies each house
+        lord's total piṇḍa plus the chart's jd and ayanamsa system.
+    sidereal_longitudes : dict[str, float]
+        Sidereal longitudes for all 7 classical planets (same input that
+        produced *shadbala_result*).
+    houses : HouseCusps
+        Chart house cusps (same object passed to ``shadbala()``).
+
+    Returns
+    -------
+    BhavaBalaResult
+    """
+    madhyas = _bhava_madhya_sidereal(
+        houses, shadbala_result.jd, shadbala_result.ayanamsa_system,
+    )
+
+    records: list[dict] = []
+    for house in range(1, 13):
+        madhya = madhyas[house - 1]
+        rasi_index = int(madhya // 30)
+        lord = _RASI_LORDS[rasi_index]
+        adhipati = shadbala_result.planets[lord].total_shashtiamsas
+        dig = bhava_dig_bala(house, madhya)
+        drishti = bhava_drishti_bala(madhya, sidereal_longitudes)
+        records.append({
+            'house': house,
+            'madhya': madhya,
+            'rasi_index': rasi_index,
+            'rasi_class': _bhava_rasi_class(madhya),
+            'lord': lord,
+            'adhipati': adhipati,
+            'dig': dig,
+            'drishti': drishti,
+            'total': adhipati + dig + drishti,
+        })
+
+    # Rank 1 = strongest; ties broken by lower house number.
+    by_strength = sorted(records, key=lambda r: (-r['total'], r['house']))
+    ranks = {r['house']: i + 1 for i, r in enumerate(by_strength)}
+
+    result: dict[int, BhavaBala] = {}
+    for r in records:
+        result[r['house']] = BhavaBala(
+            house=r['house'],
+            madhya_sidereal_lon=r['madhya'],
+            rasi_index=r['rasi_index'],
+            rasi_class=r['rasi_class'],
+            lord=r['lord'],
+            bhavadhipati_bala=r['adhipati'],
+            bhava_dig_bala=r['dig'],
+            bhava_drishti_bala=r['drishti'],
+            total_shashtiamsas=r['total'],
+            total_rupas=r['total'] / 60.0,
+            rank=ranks[r['house']],
+        )
+
+    return BhavaBalaResult(
+        jd=shadbala_result.jd,
+        ayanamsa_system=shadbala_result.ayanamsa_system,
+        houses=result,
+        strongest_house=by_strength[0]['house'],
+        weakest_house=by_strength[-1]['house'],
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -1649,6 +2094,7 @@ def validate_shadbala_output(result: ShadbalaResult) -> None:
 def graha_yuddha_pairs(
     sidereal_longitudes: dict[str, float],
     planet_latitudes: dict[str, float] | None = None,
+    planet_speeds: dict[str, float] | None = None,
 ) -> tuple[GrahaYuddha, ...]:
     """
     Detect Graha Yuddha (planetary wars) from sidereal longitudes.
@@ -1666,13 +2112,17 @@ def graha_yuddha_pairs(
         planet with greater latitude (north wins) is the victor per Raman
         Ch. 9.  When ``None``, the planet with greater sidereal longitude
         is used as victor (fallback approximation).
+    planet_speeds : dict[str, float] or None, optional
+        Daily motions (°/day, signed).  When supplied, each war record
+        carries ``chesta_transferred`` — the loser's raw Chesta Bala, the
+        Shashtiamsa amount the victor gains and the loser forfeits.
 
     Returns
     -------
     tuple[GrahaYuddha, ...]
         One record per war pair.  Empty when no wars are detected.
     """
-    return _detect_wars(sidereal_longitudes, planet_latitudes)
+    return _detect_wars(sidereal_longitudes, planet_latitudes, planet_speeds)
 
 
 # ---------------------------------------------------------------------------

@@ -185,7 +185,7 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
     {
         "name": "shadbala",
         "x-displayName": "Shadbala",
-        "description": "Shadbala result, profile, network, and condition surfaces.",
+        "description": "Shadbala result, profile, network, condition, and Bhava Bala (house strength) surfaces.",
         "x-family": "classical-vedic",
     },
     {

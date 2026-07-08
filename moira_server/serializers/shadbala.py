@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from moira.shadbala import (
+    BhavaBala,
+    BhavaBalaResult,
     GrahaYuddha,
     KalaBala,
     PlanetShadbala,
@@ -14,11 +16,14 @@ from moira.shadbala import (
 )
 
 from ..models.shadbala import (
+    BhavaBalaResponse,
+    BhavaBalaResultResponse,
     GrahaYuddhaResponse,
     KalaBalaResponse,
     PlanetShadbalaResponse,
     ShadbalaChartProfileResponse,
     ShadbalaConditionProfileResponse,
+    ShadbalaFullResponse,
     ShadbalaNetworkProfileResponse,
     ShadbalaResultResponse,
     SthanaBalaResponse,
@@ -53,6 +58,7 @@ def serialize_graha_yuddha(war: GrahaYuddha) -> GrahaYuddhaResponse:
         victor=war.victor,
         loser=war.loser,
         separation_deg=war.separation_deg,
+        shashtiamsas_transferred=war.chesta_transferred,
     )
 
 
@@ -65,6 +71,8 @@ def serialize_planet_shadbala(planet: PlanetShadbala) -> PlanetShadbalaResponse:
         chesta_bala=planet.chesta_bala,
         naisargika_bala=planet.naisargika_bala,
         drig_bala=planet.drig_bala,
+        ishta_phala=planet.ishta_phala,
+        kashta_phala=planet.kashta_phala,
         total_shashtiamsas=planet.total_shashtiamsas,
         total_rupas=planet.total_rupas,
         required_rupas=planet.required_rupas,
@@ -73,10 +81,22 @@ def serialize_planet_shadbala(planet: PlanetShadbala) -> PlanetShadbalaResponse:
     )
 
 
+def _ayanamsa_degrees(jd: float, ayanamsa_system: str) -> float:
+    """The exact ayanamsa offset used for this chart's sidereal conversion.
+
+    Mode ``"true"`` matches the default used by
+    ``moira.sidereal.tropical_to_sidereal`` throughout the Shadbala path.
+    """
+    from moira.sidereal import ayanamsa
+
+    return ayanamsa(jd, ayanamsa_system, "true")
+
+
 def serialize_shadbala_result(result: ShadbalaResult) -> ShadbalaResultResponse:
     return ShadbalaResultResponse(
         jd=result.jd,
         ayanamsa_system=result.ayanamsa_system,
+        ayanamsa_degrees=_ayanamsa_degrees(result.jd, result.ayanamsa_system),
         planets={
             planet: serialize_planet_shadbala(planet_result)
             for planet, planet_result in result.planets.items()
@@ -125,7 +145,54 @@ def serialize_shadbala_network_profile(
     )
 
 
+def serialize_bhava_bala(bhava: BhavaBala) -> BhavaBalaResponse:
+    return BhavaBalaResponse(
+        house=bhava.house,
+        madhya_sidereal_lon=bhava.madhya_sidereal_lon,
+        rasi_index=bhava.rasi_index,
+        rasi_class=bhava.rasi_class,
+        lord=bhava.lord,
+        bhavadhipati_bala=bhava.bhavadhipati_bala,
+        bhava_dig_bala=bhava.bhava_dig_bala,
+        bhava_drishti_bala=bhava.bhava_drishti_bala,
+        total_shashtiamsas=bhava.total_shashtiamsas,
+        total_rupas=bhava.total_rupas,
+        rank=bhava.rank,
+    )
+
+
+def serialize_bhava_bala_result(result: BhavaBalaResult) -> BhavaBalaResultResponse:
+    return BhavaBalaResultResponse(
+        jd=result.jd,
+        ayanamsa_system=result.ayanamsa_system,
+        ayanamsa_degrees=_ayanamsa_degrees(result.jd, result.ayanamsa_system),
+        houses={
+            house: serialize_bhava_bala(bhava)
+            for house, bhava in result.houses.items()
+        },
+        strongest_house=result.strongest_house,
+        weakest_house=result.weakest_house,
+    )
+
+
+def serialize_shadbala_full(
+    result: ShadbalaResult,
+    profile: ShadbalaChartProfile,
+    network: ShadbalaNetworkProfile,
+    bhava: BhavaBalaResult,
+) -> ShadbalaFullResponse:
+    return ShadbalaFullResponse(
+        chart=serialize_shadbala_result(result),
+        profile=serialize_shadbala_chart_profile(profile),
+        network=serialize_shadbala_network_profile(network),
+        bhava=serialize_bhava_bala_result(bhava),
+    )
+
+
 __all__ = [
+    "serialize_bhava_bala",
+    "serialize_bhava_bala_result",
+    "serialize_shadbala_full",
     "serialize_graha_yuddha",
     "serialize_kala_bala",
     "serialize_planet_shadbala",

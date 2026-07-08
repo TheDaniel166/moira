@@ -62,7 +62,8 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga, moira.shadbala,
         "frozen": [
             "panchanga", "panchanga_profile", "shadbala",
             "shadbala_for_chart", "shadbala_profile", "shadbala_condition",
-            "shadbala_network", "jaimini_karakas",
+            "shadbala_network", "bhava_bala", "bhava_bala_for_chart",
+            "jaimini_karakas",
             "jaimini_karakas_for_chart", "jaimini_profile",
             "jaimini_pair", "ashtakavarga", "ashtakavarga_for_chart",
             "ashtakavarga_profile", "ashtakavarga_sign_profile",
@@ -271,6 +272,50 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga, moira.shadbala,
     def shadbala_network(self, result, wars=()):
         """Build the Shadbala network profile."""
         return _shadbala.shadbala_network_profile(result, wars)
+
+    def bhava_bala(
+        self,
+        shadbala_result,
+        sidereal_longitudes: dict[str, float],
+        houses,
+    ):
+        """Compute Bhava Bala (house strength, Raman Part II) from an
+        existing Shadbala result and the chart truth that produced it."""
+        return _facade_module().bhava_bala(
+            shadbala_result,
+            sidereal_longitudes,
+            houses,
+        )
+
+    def bhava_bala_for_chart(
+        self,
+        chart,
+        houses,
+        *,
+        ayanamsa_system: str | None = None,
+        is_day: bool | None = None,
+        hora_lord: str | None = None,
+        planet_latitudes: dict[str, float] | None = None,
+    ):
+        """Compute Bhava Bala using an existing chart and houses, deriving
+        the prerequisite Shadbala internally via ``shadbala_for_chart``."""
+        facade = _facade_module()
+        system = facade.Ayanamsa.LAHIRI if ayanamsa_system is None else ayanamsa_system
+        seven = ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn")
+        graha_result = self.shadbala_for_chart(
+            chart,
+            houses,
+            ayanamsa_system=system,
+            is_day=is_day,
+            hora_lord=hora_lord,
+            planet_latitudes=planet_latitudes,
+        )
+        sidereal_longitudes = self._sidereal_longitudes_from_chart(
+            chart,
+            seven,
+            ayanamsa_system=system,
+        )
+        return facade.bhava_bala(graha_result, sidereal_longitudes, houses)
 
     def jaimini_karakas(
         self,

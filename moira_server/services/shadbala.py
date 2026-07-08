@@ -8,11 +8,13 @@ from moira import Moira
 from moira.dignities import is_day_chart
 from moira.panchanga import panchanga_at
 from moira.shadbala import (
+    BhavaBalaResult,
     GrahaYuddha,
     ShadbalaChartProfile,
     ShadbalaConditionProfile,
     ShadbalaNetworkProfile,
     ShadbalaResult,
+    bhava_bala,
     graha_yuddha_pairs,
     shadbala,
     shadbala_chart_profile,
@@ -41,6 +43,8 @@ _SEVEN_PLANETS: tuple[str, ...] = (
 class _ShadbalaSupportTruth:
     result: ShadbalaResult
     wars: tuple[GrahaYuddha, ...]
+    sidereal_longitudes: dict[str, float]
+    houses: object
 
 
 def _ayanamsa_from_request(request: ShadbalaChartRequest) -> str:
@@ -115,8 +119,13 @@ def _derive_shadbala_support_truth(
     )
     validate_shadbala_output(result)
 
-    wars = graha_yuddha_pairs(sidereal_longitudes, planet_latitudes)
-    return _ShadbalaSupportTruth(result=result, wars=wars)
+    wars = graha_yuddha_pairs(sidereal_longitudes, planet_latitudes, planet_speeds)
+    return _ShadbalaSupportTruth(
+        result=result,
+        wars=wars,
+        sidereal_longitudes=sidereal_longitudes,
+        houses=houses,
+    )
 
 
 def compute_shadbala_chart(
@@ -149,9 +158,45 @@ def compute_shadbala_chart_condition(
     return shadbala_condition_profile(result.planets[request.planet])
 
 
+def compute_bhava_bala_chart(
+    engine: Moira,
+    request: ShadbalaChartRequest,
+) -> BhavaBalaResult:
+    support = _derive_shadbala_support_truth(engine, request)
+    return bhava_bala(support.result, support.sidereal_longitudes, support.houses)
+
+
+@dataclass(frozen=True, slots=True)
+class ShadbalaFullTruth:
+    """All four Shadbala surfaces from one support-truth derivation."""
+
+    result: ShadbalaResult
+    profile: ShadbalaChartProfile
+    network: ShadbalaNetworkProfile
+    bhava: BhavaBalaResult
+
+
+def compute_shadbala_full(
+    engine: Moira,
+    request: ShadbalaChartRequest,
+) -> ShadbalaFullTruth:
+    """Derive support truth once; build chart, profile, network, and bhava
+    from that single derivation so all four surfaces agree exactly."""
+    support = _derive_shadbala_support_truth(engine, request)
+    return ShadbalaFullTruth(
+        result=support.result,
+        profile=shadbala_chart_profile(support.result),
+        network=shadbala_network_profile(support.result, support.wars),
+        bhava=bhava_bala(support.result, support.sidereal_longitudes, support.houses),
+    )
+
+
 __all__ = [
+    "ShadbalaFullTruth",
+    "compute_bhava_bala_chart",
     "compute_shadbala_chart",
     "compute_shadbala_chart_condition",
     "compute_shadbala_chart_network",
     "compute_shadbala_chart_profile",
+    "compute_shadbala_full",
 ]

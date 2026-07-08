@@ -109,6 +109,7 @@ class GrahaYuddhaResponse(_StrictModel):
     victor: str
     loser: str
     separation_deg: float
+    shashtiamsas_transferred: float | None = None
 
 
 class PlanetShadbalaResponse(_StrictModel):
@@ -119,6 +120,8 @@ class PlanetShadbalaResponse(_StrictModel):
     chesta_bala: float
     naisargika_bala: float
     drig_bala: float
+    ishta_phala: float
+    kashta_phala: float
     total_shashtiamsas: float
     total_rupas: float
     required_rupas: float
@@ -129,6 +132,7 @@ class PlanetShadbalaResponse(_StrictModel):
 class ShadbalaResultResponse(_StrictModel):
     jd: float
     ayanamsa_system: str
+    ayanamsa_degrees: float
     planets: dict[str, PlanetShadbalaResponse]
 
 
@@ -161,7 +165,50 @@ class ShadbalaNetworkProfileResponse(_StrictModel):
     war_losers: frozenset[str]
 
 
+class BhavaBalaResponse(_StrictModel):
+    """One house's Bhava Bala (Raman Part II)."""
+
+    house: int
+    madhya_sidereal_lon: float
+    rasi_index: int
+    rasi_class: str
+    lord: str
+    bhavadhipati_bala: float
+    bhava_dig_bala: float
+    bhava_drishti_bala: float
+    total_shashtiamsas: float
+    total_rupas: float
+    rank: int
+
+
+class BhavaBalaResultResponse(_StrictModel):
+    """Twelve-house Bhava Bala result."""
+
+    jd: float
+    ayanamsa_system: str
+    ayanamsa_degrees: float
+    houses: dict[int, BhavaBalaResponse]
+    strongest_house: int
+    weakest_house: int
+
+
+class ShadbalaFullResponse(_StrictModel):
+    """Single-call envelope: chart + profile + network + bhava.
+
+    One support-truth derivation feeds all four surfaces, so every number
+    is mutually consistent (same jd, ayanamsa, houses, panchanga).
+    """
+
+    chart: ShadbalaResultResponse
+    profile: ShadbalaChartProfileResponse
+    network: ShadbalaNetworkProfileResponse
+    bhava: BhavaBalaResultResponse
+
+
 __all__ = [
+    "BhavaBalaResponse",
+    "BhavaBalaResultResponse",
+    "ShadbalaFullResponse",
     "GrahaYuddhaResponse",
     "KalaBalaResponse",
     "PlanetShadbalaResponse",

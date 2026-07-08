@@ -219,6 +219,23 @@ def test_vedic_facade_shadbala_chart_wrapper_delegates_to_engine() -> None:
     )
 
 
+def test_vedic_facade_bhava_bala_chart_wrapper_delegates_to_engine() -> None:
+    engine = facade.Moira()
+    chart = _Chart()
+    houses = _houses()
+    bodies = ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn")
+    sidereal = _sidereal_chart_longitudes(chart, bodies)
+
+    graha_result = engine.shadbala_for_chart(chart, houses)
+    via_facade = engine.bhava_bala_for_chart(chart, houses)
+    direct = facade.bhava_bala(graha_result, sidereal, houses)
+
+    assert via_facade == direct
+    assert engine.bhava_bala(graha_result, sidereal, houses) == direct
+    assert set(via_facade.houses.keys()) == set(range(1, 13))
+    assert via_facade.houses[via_facade.strongest_house].rank == 1
+
+
 def test_vedic_facade_rejects_unknown_varga_selector() -> None:
     engine = facade.Moira()
 

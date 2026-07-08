@@ -66,6 +66,9 @@ The following core computations are admitted and constitutionally frozen:
 | Naisargika Bala | Natural/Fixed Strength (constant) | Ch. 5 |
 | `drig_bala` | Aspectual Strength | Ch. 6 |
 | `shadbala` | Grand total (all 7 planets) | Ch. 1 |
+| `bhava_dig_bala` | Bhava Digbala (house directional strength) | Part II |
+| `bhava_drishti_bala` | Bhava Drishti Bala (aspect on bhava madhya) | Part II |
+| `bhava_bala` | Bhava Bala grand total (all 12 houses) | Part II |
 
 ### 4. Computational Policies
 
@@ -98,6 +101,52 @@ Located by bisection on the Sun's actual apparent sidereal longitude from the
 kernel (`moira.planets.planet_at`), pinning the Sankranti JD to 1-second
 precision.  Not from mean-motion approximation.
 
+#### Bhava Bala (Raman Part II)
+
+Three components per house, summed to `total_shashtiamsas`:
+
+- **Bhavadhipati Bala** — the total Shadbala piṇḍa of the house lord.  The
+  lord is the classical lord of the rasi holding the bhava madhya (no nodal
+  lordships).  The chart's jd and ayanamsa are taken from the supplied
+  `ShadbalaResult` so the two computations cannot disagree.
+- **Bhava Digbala** — the madhya rasi's locomotion class fixes the strong
+  house (nara → H1, jalachara → H4, keeta → H7, chatushpada → H10);
+  60 Sha there, −10 Sha per house of shortest circular distance, 0 opposite.
+  Half-sign splits: Sagittarius 1st half nara / 2nd half chatushpada;
+  Capricorn 1st half chatushpada / 2nd half jalachara.
+- **Bhava Drishti Bala** — the bhava madhya is the aspected point, all seven
+  classical planets aspecting, using the same sign-based aspect doctrine as
+  Drig Bala (shared core: `_sign_aspect_drig_sha`).
+
+Bhava madhya policy (explicit): the chart's house cusps are taken as the
+madhya reference points, mirroring the module-wide house doctrine used by
+`dig_bala`; equal houses from the Ascendant are the fallback when cusps are
+unavailable.  Houses are ranked 1–12 by total strength (ties broken by lower
+house number).
+
+No required/threshold marker exists for houses: the tradition defines
+required Rupas for planets only, so Bhava Bala is reported as raw strength
+plus rank — no pass/fail is invented.
+
+#### Ishta / Kashta Phala (BPHS Ch. 27)
+
+Exposed as P3 inspectability properties on `PlanetShadbala`, derived — never
+stored — from the vessel's own displayed components:
+
+- `ishta_phala`  = √(Uchcha Bala × Chesta Bala)
+- `kashta_phala` = √((60 − Uchcha) × (60 − Chesta))
+
+Both on the 0–60 Shashtiamsa scale.  Policy: the *displayed* Chesta Bala is
+used, so the Sun and Moon consume the Raman apogee-distance Chesta and a war
+loser's zeroed Chesta flows through honestly.
+
+#### Graha Yuddha transfer disclosure
+
+`GrahaYuddha.chesta_transferred` records the Shashtiamsas moved by a war
+(loser's raw Chesta Bala; victor gains it in `KalaBala.yuddha`, loser
+forfeits it).  It is `None` — unknown, not silently 0 — when planet speeds
+were not supplied to `graha_yuddha_pairs`.
+
 ---
 
 ## Part II — Vessel Inventory
@@ -110,6 +159,8 @@ precision.  Not from mean-motion approximation.
 | `KalaBala` | ✅ | ✅ | Six sub-components + total |
 | `PlanetShadbala` | ✅ | ✅ | All 6 bala + totals + is_sufficient |
 | `ShadbalaResult` | ✅ | ✅ | Full chart: jd, ayanamsa_system, planets |
+| `BhavaBala` | ✅ | ✅ | One house: 3 components + totals + rank |
+| `BhavaBalaResult` | ✅ | ✅ | All 12 houses + strongest/weakest |
 
 ### Constitutional-layer vessels
 
