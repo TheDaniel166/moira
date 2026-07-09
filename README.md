@@ -4,7 +4,7 @@
 
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![PyPI](https://img.shields.io/badge/PyPI-moira--astro-orange.svg)](https://pypi.org/project/moira-astro/)
+[![PyPI](https://img.shields.io/pypi/v/moira-astro.svg?label=PyPI&color=orange)](https://pypi.org/project/moira-astro/)
 [![Precision: ERFA-Audited](https://img.shields.io/badge/Precision-ERFA--Audited-success.svg)](#validation-evidence)
 [![Ephemeris: JPL DE4xx](https://img.shields.io/badge/Ephemeris-JPL%20DE4xx-blueviolet.svg)](https://naif.jpl.nasa.gov/naif/index.html)
 [![AI Visibility: Optimized](https://img.shields.io/badge/AI--Visibility-Optimized-success.svg)](llms.txt)
@@ -40,7 +40,7 @@ Moira is not primarily a UI app, not a thin wrapper over opaque compiled stacks,
 
 ## Quick Capabilities
 
-Moira computes planetary and stellar positions, houses, aspects, lots, dignities, predictive techniques, eclipse and occultation events, and related analytical products on top of a modern astronomical substrate (JPL kernels, IAU models, and validated star frameworks), with a native C++ computational core, Python orchestration layer, and inspectable intermediate stages.
+Moira computes planetary and stellar positions, houses, aspects, lots, dignities, predictive techniques, a full Vedic/Jyotish suite (yogas, Shadbala, Ashtakavarga, upagrahas, avasthas, Jaimini), eclipse and occultation events, and related analytical products on top of a modern astronomical substrate (JPL kernels, IAU models, and validated star frameworks), with a native C++ computational core, Python orchestration layer, inspectable intermediate stages, and an optional FastAPI REST server (`moira_server`) exposing the engine as typed, versioned routes.
 
 ---
 
@@ -50,7 +50,8 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
 
 - **Planets and luminaries** — geocentric and topocentric reduction with iterative light-time, annual aberration, multi-body relativistic deflection (Sun, Jupiter, Saturn, Earth), IAU 2006 frame bias, and WGS-84 topocentric parallax.
 - **Fixed stars** — sovereign registry of 1,809 named stars with proper motion, parallax, epoch propagation, and Stellar Quality classification. Audited anchor residual against SOFA/ERFA: 0.00048 arcseconds (J1000–J3000).
-- **Asteroid fleet** — dedicated engines for classical asteroids (Ceres, Pallas, Juno, Vesta), Centaurs (Chiron, Pholus, Chariklo, Asbolus, Hylonome), and Trans-Neptunians (Ixion, Quaoar, Varuna, Orcus) via bundled SPK kernels. User-supplied `.bsp` kernels supported via the integrated `daf_writer` for any of the 887,000+ numbered minor planets in the JPL catalog.
+- **Asteroid catalog** — unified catalog of 1,382 asteroids covering all 119 recognized asteroid families, including the classical four (Ceres, Pallas, Juno, Vesta), Centaurs (Chiron, Pholus, Chariklo, Asbolus, Hylonome), and Trans-Neptunians (Ixion, Quaoar, Varuna, Orcus). Built from JPL Horizons as 56 Type-13 SPK shards covering 1600–2500 CE at sub-milliarcsecond interpolation fidelity, discovered via manifest under any kernel search root. User-supplied `.bsp` kernels remain supported via the integrated `daf_writer` for any of the 887,000+ numbered minor planets in the JPL catalog.
+- **Numbered periodic comets** — 497 comets (1P/Halley through 516P) from JPL Horizons as sharded Type-13 kernels (1600–2500 CE), with canonical numbered designations (`"1P/Halley"`) and curated short aliases accepted as inputs.
 - **Uranian / Hamburg School bodies** — 8 hypothetical transneptunian planets (Cupido through Poseidon) plus Transpluto.
 - **Lunar nodes and apsides** — True Node, Mean Node, Mean Lilith, True Lilith, and orbital nodes/apsides for all planetary bodies.
 - **Variable stars** — phase and magnitude engine for eclipsing binaries and intrinsic variables; dedicated Algol API.
@@ -65,14 +66,30 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
 - **Traditional dignities** — domicile, exaltation, triplicity (diurnal/nocturnal), Egyptian and Ptolemaic terms, face, sect, hayz, and Almuten Figuris.
 - **Arabic Parts** — 499 lots with dependency graphs and condition profiling.
 - **Hermetic decans** — 36-decan system with computed positions for all ruling stars.
+- **Draconic charts** — node-anchored draconic frame (mean or true node) with longitude rotation, engine-backed chart derivation, and caller-supplied position support.
 
 ### Predictive Techniques
 
 - **Progressions** — secondary, tertiary, minor, solar arc (longitude and right ascension), Naibod, ascendant arc; direct and converse variants for all methods.
-- **Primary directions** — Placidus semi-arc and mundane; speculum computation; fixed-star targets.
+- **Primary directions** — Placidus semi-arc/mundane, Regiomontanus, and Morinus method families with mundane and zodiacal variants; direct and converse directions (converse computed by true role exchange, not arc negation); speculum computation; fixed-star targets; seven conventional time-key presets.
 - **Returns** — solar and lunar returns; planet returns.
 - **Time lords** — annual and monthly profections; Firdaria (diurnal and nocturnal sequences, including Bonatti variant); Zodiacal Releasing (Vettius Valens method); Hyleg and Alcocoden.
-- **Vedic techniques** — Vimshottari Dasha with nakshatra balance; sidereal positions; 27 nakshatra system; Varga/divisional charts (navamsa, dashamansa, dwadashamsa, saptamsa, trimshamsa).
+
+### Vedic / Jyotish Suite
+
+Every Vedic engine is implemented from primary-source research (BPHS, Brihat Jataka, Saravali, Phaladeepika, Uttara Kalamrita, Jataka Parijata, Jaimini Upadesa Sutras) with per-rule citations; where classical sources disagree, the disagreement is an explicit policy switch or a recorded note — never a silent choice.
+
+- **Sidereal foundation** — 40+ ayanamsa systems including star-anchored "True" ayanamsas; 27-nakshatra system; Panchanga.
+- **Dashas** — Vimshottari with nakshatra balance; Chara Dasha (K.N. Rao's named lineage); Varshaphal (annual charts).
+- **Vargas** — divisional charts (navamsa, dashamansa, dwadashamsa, saptamsa, trimshamsa, and more); Vimshopaka Bala (BPHS 20-point varga-dignity strength over all four classical groups) with vargottama detection.
+- **Yogas** — 60 classical yogas across six families (Pancha Mahapurusha, Chandra, Surya, all 32 Nabhasa, Raja core, Dhana core), each returned as a proof object: formation conditions with observed evidence, cancellation (bhanga) clauses evaluated first-class, and per-yoga primary-source citations.
+- **Shadbala** — the complete six-fold strength system plus Bhava Bala (house strength), inline Ishta/Kashta Phala on every planet, and Graha Yuddha transfer disclosure.
+- **Ashtakavarga** — bindu tables plus kakshya-level transit evaluation (Saturn-first lord order) and Shodhya Pinda, validated to the digit against BPHS Ch. 69's own worked example.
+- **Upagrahas** — the five kalavelas (Gulika, Kala, Mrityu, Ardhaprahara, Yamaghantaka) with portion-point, Mandi-mode, and lord-sequence lineage policies, plus the five Sun-derived upagrahas.
+- **Avasthas** — Baladi, Jagradadi, and Deeptadi as per-source rule tables (BPHS / Saravali / Jataka Parijata / Phaladeepika, never merged), plus the six non-exclusive Lajjitadi flags with evidence strings.
+- **Jaimini** — rasi drishti, arudha padas A1–A12 (Rath/JHora exception default, Raman variant as policy), argala with virodha pairs, and karakamsa with both lineage readings named (Rath D9 vs. K.N. Rao D1).
+- **Muhurta** — Tara Bala (nine-tara cycle) and Chandra Bala (Chandra Shuddhi with Chandrashtama flagged) as a natal-personalized electional overlay.
+- **Sade Sati** — phase classification (rising/peak/setting) with Ashtama and Kantaka Shani flags, and kernel-timed phase windows via Saturn sidereal sign-ingress bisection, with retrograde re-entries reported as separate windows.
 
 ### Advanced Astronomy
 
@@ -130,16 +147,34 @@ print(f"Sun is in house: {sun_house}")
 
 ---
 
+## REST API Server
+
+The engine ships with an optional FastAPI transport layer (`moira_server`) that exposes the admitted engine surface as typed, versioned REST routes.
+
+```bash
+pip install moira-astro[server]
+uvicorn --factory moira_server:create_app
+```
+
+- **60+ route families under `/v1`** — charts, positions, houses, per-stage pipeline visibility, progressions (the full dispatched method menu advertised as OpenAPI enums), primary directions, returns, transits, dashas and time lords, the complete Vedic suite (yogas, shadbala, ashtakavarga, upagrahas, avasthas, Jaimini, muhurta, sade sati), draconic charts, astrocartography, asteroids and comets, fixed stars, harmonics, harmograms, electional scoring, synastry and relationship products, and more.
+- **Typed transport** — every route family has dedicated Pydantic request/response models, serializers, and services; doctrine stays in the engine, the server is transport and orchestration only.
+- **OpenAPI discovery** — tagged schema with installed discovery metadata for machine consumers.
+
+---
+
 ## Requirements and Installation
 
-- Python 3.10 or later
-- `scipy >= 1.14` (required runtime dependency)
+- Python 3.10 – 3.14
+- **Zero required runtime dependencies** — the published engine runs on the Python standard library plus its own native extension
 - A C++ compiler, `cmake >= 3.24`, and `pybind11 >= 2.12` (required at build time for the native extension)
 - A JPL DE-series planetary kernel (de430, de440, or de441 — not bundled; see below)
 
 ```bash
 # Standard install (builds the native C++ extension)
 pip install moira-astro
+
+# With the FastAPI REST server (fastapi, uvicorn, pydantic)
+pip install moira-astro[server]
 
 # With Lunar Graze support (spiceypy, laspy, requests)
 pip install moira-astro[lunar-graze]
@@ -150,6 +185,8 @@ pip install moira-astro[lunar-graze]
 ## Kernel Setup
 
 Moira requires a JPL DE-series SPK planetary kernel for all planetary computation. No kernel is bundled — the files are large and the choice of release belongs to the user.
+
+All kernel reading is performed by Moira's own native C++ SPK/DAF reader. As of 4.0.0 there is no `jplephem` runtime fallback: segment types outside the native reader's support raise an explicit error rather than silently routing through a third-party library.
 
 **Supported kernels:**
 
@@ -208,7 +245,7 @@ What the custom kernel writer provides:
 - `Moira()` succeeds even if no kernel is installed. It auto-discovers any compatible kernel in the standard locations.
 - `m.is_kernel_available()` reports kernel readiness.
 - `m.get_kernel_status()` explains expected paths and remediation.
-- `m.available_kernels` lists all installed compatible kernels.
+- `m.available_kernels` lists installed planetary kernels (small-body shard catalogs are discovered separately via their manifests).
 - Kernel-dependent calls raise `MissingEphemerisKernelError` with instructions.
 
 **Standard location:** `kernels/<filename>.bsp` relative to the repository root, or `~/.moira/kernels/`. The engine resolves either automatically.
@@ -233,6 +270,12 @@ print(m.available_kernels)
 - DE440: [https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440.bsp](https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440.bsp)
 - DE430: [https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de430.bsp](https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de430.bsp)
 
+### Small-Body Catalogs (Asteroids and Comets)
+
+The unified asteroid catalog (1,382 bodies as 56 Type-13 shards) and the numbered periodic comet catalog (497 comets as 20 shards) are too large to ship inside the wheel and are distributed as separate downloads. Install a catalog by placing its shard directory — `asteroids/` or `comets/`, each containing its shards and `manifest.json` — under any kernel search root (`kernels/` at the repository root or `~/.moira/kernels/`). The engine discovers every manifest under every search root automatically; no configuration call is required.
+
+Note for pre-4.0.0 installs: the single-file supplemental kernels (`comets.bsp`, `centaurs.bsp`, `minor_bodies.bsp`) no longer auto-load. All small bodies now resolve through the sharded manifests.
+
 ---
 
 ## Data Inventory
@@ -240,11 +283,10 @@ print(m.available_kernels)
 | Layer | Source | Bundled | Note |
 | :--- | :--- | :--- | :--- |
 | IAU 2000A/2006 nutation and precession tables | IAU | Yes | 2,414 terms; native C++ (`_moira_native`) |
-| DE-series planetary kernel | JPL | No | de430 (~115 MB), de440 (~114 MB), or de441 (~3.3 GB); download separately |
+| DE-series planetary kernel | JPL | No | de430 (~128 MB), de440 (~114 MB), or de441 (~3.1 GB); download separately |
 | Named star registry | Sovereign (`star_registry.csv` + JSON provenance) | Yes | 1,809 stars; license-independent |
-| Centaur kernel | Moira native | Yes | `centaurs.bsp` — Chiron, Pholus, Chariklo, Asbolus, Hylonome |
-| Minor-body kernel | Moira native | Yes | `minor_bodies.bsp` — classical asteroids and select TNOs |
-| Type 13 Asteroid Shards | JPL / Horizons | Yes | Git LFS-tracked `sb441_type13` shards for apparent-place minor bodies |
+| Unified asteroid catalog | JPL Horizons | No | 1,382 asteroids across all 119 families; 56 Type-13 shards, 1600–2500 CE; separate download, manifest-discovered |
+| Numbered periodic comet catalog | JPL Horizons | No | 497 comets (1P–516P); 20 Type-13 shards, 1600–2500 CE; separate download, manifest-discovered |
 
 ---
 

@@ -1,27 +1,31 @@
 # Moira
 
-> Pure-Python Ephemeris and Astrology Computation Engine grounded in astronomical precision.
+> Ephemeris and Astrology Computation Engine with a native C++17 core, grounded in astronomical precision.
 
-Moira is a sovereign computational engine designed for transparency, audibility, and absolute precision. It implements the full reduction pipeline (IAU 2000A/2006, JPL DE441) in inspectable Python, serving as a high-integrity alternative to legacy black-box ephemerides.
+Moira is a sovereign computational engine designed for transparency, auditability, and precision. It implements the full apparent-place reduction pipeline (IAU 2000A/2006, JPL DE-series kernels) with a Python API surface over a native C++17 extension (`_moira_native`), serving as a high-integrity alternative to legacy black-box ephemerides. The published engine has zero required runtime dependencies. An optional FastAPI server (`moira_server`) exposes the engine as typed, versioned REST routes.
 
 ## Core Documentation
 - [README](README.md): Overview, installation, and quick start.
+- [CHANGELOG](CHANGELOG.md): Versioned release history (current: 4.0.0).
 - [AGENTS.md](AGENTS.md): Core persona (Urania) and operational doctrine for AI collaborators.
 - [Wiki Index](wiki/Home.md): Comprehensive guide to doctrines, foundations, and validation.
 - [Validation Astronomy](wiki/03_validation/VALIDATION_ASTRONOMY.md): Accuracy benchmarks against IAU ERFA/SOFA and JPL Horizons.
 
 ## Key Modules
-- [moira.py](moira/__init__.py): Main entry point and `Moira` class.
+- [moira/__init__.py](moira/__init__.py): Main entry point and `Moira` facade class.
 - [planets.py](moira/planets.py): Planetary position logic and reduction pipeline.
 - [houses.py](moira/houses.py): House cusp calculation for 22 systems.
-- [harmograms.py](moira/harmograms.py): Research engine for planetary intensity spectra.
-- [vedic_dignities.py](moira/vedic_dignities.py): Jyotish dignity and relationship engine.
+- [spk_reader.py](moira/spk_reader.py): Native-only JPL SPK kernel access (no third-party fallback).
+- [asteroids.py](moira/asteroids.py) / [comets.py](moira/comets.py): Sharded Type-13 small-body catalogs (1,382 asteroids; 497 numbered periodic comets).
+- [primary_directions/](moira/primary_directions/): Placidus, Regiomontanus, and Morinus direction families with direct/converse doctrine.
+- [yogas.py](moira/yogas.py): 60 classical yogas across six families as primary-source proof objects.
+- [shadbala.py](moira/shadbala.py) / [ashtakavarga.py](moira/ashtakavarga.py): Complete Vedic strength systems including Bhava Bala, kakshya transit, and Shodhya Pinda.
+- [harmograms/](moira/harmograms/): Research engine for planetary intensity spectra.
 - [heliacal.py](moira/heliacal.py): Generalized celestial visibility and events.
-- [cartography.py](moira/solar_cartography.py): Solar and Lunar eclipse cartography.
-- [spk_reader.py](moira/spk_reader.py): JPL kernel access and interpolation logic.
+- [moira_server/](moira_server/): Optional FastAPI REST transport layer (60+ route families under `/v1`).
 
 ## Principles
 - **Truth-First**: Astronomical substrate takes precedence over astrological convenience.
 - **Transparency**: Every reduction stage is visible and auditable.
 - **Visibility as Doctrine**: AI agents and developers have first-class access to intermediate computational states.
-- **Validation**: Benchmarked against IAU standards, JPL SSD, and NASA canon.
+- **Validation**: Benchmarked against IAU standards, JPL SSD, and NASA canon; Vedic engines cite primary sources per rule.
