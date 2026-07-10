@@ -133,7 +133,7 @@ print(f"Sun is in house: {sun_house}")
 ## Requirements and Installation
 
 - Python 3.10 or later
-- `scipy >= 1.14` (required runtime dependency)
+- **No required runtime Python dependencies** — optional features install their own extras (e.g. `pip install moira-astro[lunar-graze]` for spiceypy/laspy/requests)
 - A C++ compiler, `cmake >= 3.24`, and `pybind11 >= 2.12` (required at build time for the native extension)
 - A JPL DE-series planetary kernel (de430, de440, or de441 — not bundled; see below)
 
