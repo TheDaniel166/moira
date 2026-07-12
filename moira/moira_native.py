@@ -47,5 +47,43 @@ for _name in dir(_backend):
         continue
     globals()[_name] = getattr(_backend, _name)
 
+
+def _ensure_native_nutation_ready() -> None:
+    """Register the packaged IERS tables before a native R06 evaluation."""
+
+    if _backend.nutation_2000r06_series_ready():
+        return
+    from .nutation_2000a import _ensure_tables_loaded
+
+    _ensure_tables_loaded()
+
+
+def _nutation_ready_wrapper(name: str):
+    raw = getattr(_backend, name)
+
+    def call(*args, **kwargs):
+        _ensure_native_nutation_ready()
+        return raw(*args, **kwargs)
+
+    call.__name__ = name
+    call.__qualname__ = name
+    call.__doc__ = getattr(raw, "__doc__", None)
+    return call
+
+
+# These entry points release the GIL or call the shared native series directly.
+# Table readiness therefore belongs in this Python-governed boundary, before
+# native execution begins, rather than in hidden import-time I/O.
+for _name in (
+    "nutation_2000a",
+    "target_topocentric_altitude",
+    "find_sun_at_alt",
+    "search_heliacal_rising",
+    "search_heliacal_setting",
+    "heliacal_signed_elongation",
+):
+    if hasattr(_backend, _name):
+        globals()[_name] = _nutation_ready_wrapper(_name)
+
 __doc__ = getattr(_backend, "__doc__", __doc__)
 __all__ = [name for name in dir(_backend) if not name.startswith("_")]

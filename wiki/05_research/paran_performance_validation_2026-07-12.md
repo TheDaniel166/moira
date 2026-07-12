@@ -2,8 +2,8 @@
 
 Date: 2026-07-12
 
-Status: Python fast path admitted; native heliacal acceleration remains gated
-by separate parity repair
+Status: Python fast path admitted; the subsequent native heliacal parity repair
+is documented separately and is now admitted
 
 ## 1. Governing Object
 
@@ -88,15 +88,9 @@ absolute gates are opt-in because timing varies by host.
 
 ## 6. Native Heliacal Boundary
 
-Native heliacal functions are not enabled by default by this performance work.
-The pre-existing catalog-batch path remains available only through explicit
-`use_native_heliacal=True`, and only for its fixed default heliacal policy.
-Custom policy necessarily stays on Python truth. The C++ path still requires
-independent Python/native parity for visibility policy, setting semantics,
-Delta-T handling, frame/correction choices, observable roots, event ordering,
-and metadata. Performance cannot authorize a divergent second doctrine.
-
-A controlled Sirius probe with `setting_elongation_threshold=179` demonstrated
-the gate's necessity: native returned a setting while the Python doctrine
-correctly returned none. The former circular dispatch test has therefore been
-renamed and now proves explicit native dispatch only; it is not parity evidence.
+This document originally gated native heliacal dispatch after a controlled
+Sirius custom-policy probe demonstrated divergent setting results. That gate
+was correct at this stage. The later repair replaced the defective nutation
+model, aligned the observables and complete policy, added independent
+Python/native differential tests, and admitted native search by default. See
+`native_heliacal_parity_validation_2026-07-12.md` for the separate evidence.

@@ -31,13 +31,6 @@ using namespace moira::native;
 
 namespace {
 
-struct NativeNutationTerm {
-    double c1 = 0.0;
-    double c2 = 0.0;
-    std::array<int, 14> args{};
-    size_t arg_count = 0;
-};
-
 struct NativeLeapSecondEntry {
     double jd_utc = 0.0;
     double tai_minus_utc = 0.0;
@@ -54,17 +47,9 @@ struct NativeNaifLsk {
     std::string source_path;
 };
 
-std::vector<NativeNutationTerm> g_native_nutation_ls_terms;
-std::vector<NativeNutationTerm> g_native_nutation_pl_terms;
-size_t g_native_nutation_ls_j0_count = 0;
-size_t g_native_nutation_pl_j0_count = 0;
-bool g_native_nutation_tables_ready = false;
-std::mutex g_native_nutation_mutex;
 NativeNaifLsk g_native_naif_lsk;
 std::mutex g_native_naif_lsk_mutex;
 
-constexpr double NUTATION_ARCSEC = 3.141592653589793238462643383279502884 / 648000.0;
-constexpr double NUTATION_UAS2DEG = 1e-6 / 3600.0;
 constexpr double NATIVE_J2000 = 2451545.0;
 
 std::string trim_copy(const std::string& value) {
@@ -367,22 +352,22 @@ py::list matrix_to_py_list(const double* values, size_t rows, size_t cols) {
     return out;
 }
 
-NativeNutationTerm load_native_nutation_term(const py::handle& row_obj) {
+NutationSeriesTerm load_native_nutation_term(const py::handle& row_obj) {
     py::sequence row = py::reinterpret_borrow<py::sequence>(row_obj);
     const size_t size = static_cast<size_t>(py::len(row));
     if (size < 3) {
         throw std::runtime_error("Nutation term rows must contain at least 3 entries");
     }
 
-    NativeNutationTerm term;
+    NutationSeriesTerm term;
     term.c1 = py::cast<double>(row[0]);
     term.c2 = py::cast<double>(row[1]);
-    term.arg_count = size - 2;
-    if (term.arg_count > term.args.size()) {
+    term.argument_count = size - 2;
+    if (term.argument_count > term.arguments.size()) {
         throw std::runtime_error("Nutation term rows exceed the supported 14 arguments");
     }
-    for (size_t i = 0; i < term.arg_count; ++i) {
-        term.args[i] = py::cast<int>(row[i + 2]);
+    for (size_t i = 0; i < term.argument_count; ++i) {
+        term.arguments[i] = py::cast<int>(row[i + 2]);
     }
     return term;
 }
@@ -393,10 +378,8 @@ void set_nutation_2000a_tables_py(
     size_t ls_j0_count,
     size_t pl_j0_count
 ) {
-    std::lock_guard<std::mutex> lock(g_native_nutation_mutex);
-
-    std::vector<NativeNutationTerm> ls_terms;
-    std::vector<NativeNutationTerm> pl_terms;
+    std::vector<NutationSeriesTerm> ls_terms;
+    std::vector<NutationSeriesTerm> pl_terms;
     ls_terms.reserve(static_cast<size_t>(py::len(ls_terms_src)));
     pl_terms.reserve(static_cast<size_t>(py::len(pl_terms_src)));
 
@@ -407,109 +390,17 @@ void set_nutation_2000a_tables_py(
         pl_terms.push_back(load_native_nutation_term(row));
     }
 
-    g_native_nutation_ls_terms = std::move(ls_terms);
-    g_native_nutation_pl_terms = std::move(pl_terms);
-    g_native_nutation_ls_j0_count = ls_j0_count;
-    g_native_nutation_pl_j0_count = pl_j0_count;
-    g_native_nutation_tables_ready = true;
-}
-
-std::array<double, 14> native_fundamental_args(double T) {
-    const double tau = 2.0 * 3.141592653589793238462643383279502884;
-
-    const double l = (485868.249036
-        + T * (1717915923.2178
-        + T * (31.8792
-        + T * (0.051635
-        + T * (-0.00024470))))) * NUTATION_ARCSEC;
-
-    const double lp = (1287104.793048
-        + T * (129596581.0481
-        + T * (-0.5532
-        + T * (0.000136
-        + T * (-0.00001149))))) * NUTATION_ARCSEC;
-
-    const double F = (335779.526232
-        + T * (1739527262.8478
-        + T * (-12.7512
-        + T * (-0.001037
-        + T * (0.00000417))))) * NUTATION_ARCSEC;
-
-    const double D = (1072260.703692
-        + T * (1602961601.2090
-        + T * (-6.3706
-        + T * (0.006593
-        + T * (-0.00003169))))) * NUTATION_ARCSEC;
-
-    const double Om = (450160.398036
-        + T * (-6962890.5431
-        + T * (7.4722
-        + T * (0.007702
-        + T * (-0.00005939))))) * NUTATION_ARCSEC;
-
-    auto wrap_tau = [tau](double value) {
-        const double wrapped = std::fmod(value, tau);
-        return wrapped < 0.0 ? wrapped + tau : wrapped;
-    };
-
-    return {
-        l,
-        lp,
-        F,
-        D,
-        Om,
-        wrap_tau(4.402608842 + 2608.7903141574 * T),
-        wrap_tau(3.176146697 + 1021.3285546211 * T),
-        wrap_tau(1.753470314 + 628.3075849991 * T),
-        wrap_tau(6.203480913 + 334.0612426700 * T),
-        wrap_tau(0.599546497 + 52.9690962641 * T),
-        wrap_tau(0.874016757 + 21.3299104960 * T),
-        wrap_tau(5.481293872 + 7.4781598567 * T),
-        wrap_tau(5.311886287 + 3.8133035638 * T),
-        wrap_tau(0.02438175 + 0.00000538691 * T),
-    };
-}
-
-double native_nutation_argument(const NativeNutationTerm& term, const std::array<double, 14>& fa) {
-    double arg = 0.0;
-    for (size_t i = 0; i < term.arg_count; ++i) {
-        arg += static_cast<double>(term.args[i]) * fa[i];
-    }
-    return arg;
+    register_nutation_2000r06_series(
+        std::move(ls_terms),
+        std::move(pl_terms),
+        ls_j0_count,
+        pl_j0_count
+    );
 }
 
 py::tuple nutation_2000a_py(double jd_tt) {
-    std::lock_guard<std::mutex> lock(g_native_nutation_mutex);
-    if (!g_native_nutation_tables_ready) {
-        throw std::runtime_error("Native nutation tables are not registered");
-    }
-
-    const double T = (jd_tt - 2451545.0) / 36525.0;
-    const std::array<double, 14> fa = native_fundamental_args(T);
-
-    double dpsi = 0.0;
-    for (size_t i = 0; i < g_native_nutation_ls_terms.size(); ++i) {
-        const NativeNutationTerm& term = g_native_nutation_ls_terms[i];
-        const double arg = native_nutation_argument(term, fa);
-        if (i < g_native_nutation_ls_j0_count) {
-            dpsi += term.c1 * std::sin(arg) + term.c2 * std::cos(arg);
-        } else {
-            dpsi += T * (term.c1 * std::sin(arg) + term.c2 * std::cos(arg));
-        }
-    }
-
-    double deps = 0.0;
-    for (size_t i = 0; i < g_native_nutation_pl_terms.size(); ++i) {
-        const NativeNutationTerm& term = g_native_nutation_pl_terms[i];
-        const double arg = native_nutation_argument(term, fa);
-        if (i < g_native_nutation_pl_j0_count) {
-            deps += term.c2 * std::cos(arg) + term.c1 * std::sin(arg);
-        } else {
-            deps += T * (term.c2 * std::cos(arg) + term.c1 * std::sin(arg));
-        }
-    }
-
-    return py::make_tuple(dpsi * NUTATION_UAS2DEG, deps * NUTATION_UAS2DEG);
+    const NutationResult result = nutation_2000r06(jd_tt);
+    return py::make_tuple(result.longitude * RAD2DEG, result.obliquity * RAD2DEG);
 }
 
 py::list vector_to_py_list(const std::vector<double>& values) {
@@ -1440,6 +1331,10 @@ PYBIND11_MODULE(_moira_native, m) {
     m.def("set_nutation_2000a_tables", &set_nutation_2000a_tables_py,
         py::arg("ls_terms"), py::arg("pl_terms"), py::arg("ls_j0_count"), py::arg("pl_j0_count"));
     m.def("nutation_2000a", &nutation_2000a_py, py::arg("jd_tt"));
+    m.def("nutation_2000r06_series_ready", &nutation_2000r06_series_ready);
+    py::class_<NutationEpochCache>(m, "NutationEpochCache")
+        .def(py::init<>())
+        .def_property_readonly("size", &NutationEpochCache::size);
     m.def("rotation_matrix_multiply", &rotation_matrix_multiply_py, py::arg("a"), py::arg("b"));
     m.def("rotation_matrix_apply", &rotation_matrix_apply_py, py::arg("matrix"), py::arg("vector"));
     m.def("apply_aberration_velocity", &apply_aberration_velocity_py, py::arg("xyz"), py::arg("velocity"));
@@ -1732,32 +1627,45 @@ PYBIND11_MODULE(_moira_native, m) {
     m.def("search_heliacal_rising",
         [](const IEvaluator& star_eval, const IEvaluator& sun_eval, double jd_start,
            double lat, double lon, double arcus_visionis_val, int search_days,
-           double delta_t, const IEvaluator* earth_eval) {
+           double delta_t, const IEvaluator* earth_eval,
+           double delta_t_rate_seconds_per_day, NutationEpochCache* nutation_cache) {
             py::gil_scoped_release release;
             return search_heliacal_rising(star_eval, sun_eval, jd_start, lat, lon,
-                arcus_visionis_val, search_days, delta_t, earth_eval);
+                arcus_visionis_val, search_days, delta_t, earth_eval,
+                delta_t_rate_seconds_per_day, nutation_cache);
         },
         py::arg("star_eval"), py::arg("sun_eval"), py::arg("jd_start"),
         py::arg("lat"), py::arg("lon"), py::arg("arcus_visionis_val"),
         py::arg("search_days"), py::arg("delta_t") = 64.184, py::arg("earth_eval") = nullptr,
+        py::arg("delta_t_rate_seconds_per_day") = 0.0,
+        py::arg("nutation_cache") = nullptr,
         "Native fast-path search for star heliacal rising (morning appearance).");
 
     m.def("search_heliacal_setting",
         [](const IEvaluator& star_eval, const IEvaluator& sun_eval, double jd_start,
            double lat, double lon, double arcus_visionis_val, int search_days,
-           double delta_t, const IEvaluator* earth_eval) {
+           double delta_t, const IEvaluator* earth_eval,
+           double setting_elongation_threshold, double setting_visibility_factor,
+           double delta_t_rate_seconds_per_day, NutationEpochCache* nutation_cache) {
             py::gil_scoped_release release;
             return search_heliacal_setting(star_eval, sun_eval, jd_start, lat, lon,
-                arcus_visionis_val, search_days, delta_t, earth_eval);
+                arcus_visionis_val, search_days, delta_t, earth_eval,
+                setting_elongation_threshold, setting_visibility_factor,
+                delta_t_rate_seconds_per_day, nutation_cache);
         },
         py::arg("star_eval"), py::arg("sun_eval"), py::arg("jd_start"),
         py::arg("lat"), py::arg("lon"), py::arg("arcus_visionis_val"),
         py::arg("search_days"), py::arg("delta_t") = 64.184, py::arg("earth_eval") = nullptr,
+        py::arg("setting_elongation_threshold") = 12.0,
+        py::arg("setting_visibility_factor") = 0.5,
+        py::arg("delta_t_rate_seconds_per_day") = 0.0,
+        py::arg("nutation_cache") = nullptr,
         "Native fast-path search for star heliacal setting (morning disappearance).");
 
-
     m.def("heliacal_signed_elongation", &heliacal_signed_elongation,
-        py::arg("star_eval"), py::arg("sun_eval"), py::arg("jd_ut"), py::arg("delta_t") = 64.184,
+        py::arg("star_eval"), py::arg("sun_eval"), py::arg("jd_ut"),
+        py::arg("delta_t") = 64.184, py::arg("earth_eval") = nullptr,
+        py::arg("nutation_cache") = nullptr,
         "Compute signed ecliptic elongation between star and Sun.");
 
     m.def("mean_obliquity_p03", &mean_obliquity_p03, py::arg("jd_tt"),

@@ -26,6 +26,7 @@ endif()
 pybind11_add_module(_moira_native
     src/native/bindings/moira_native.cpp
     src/native/src/lola.cpp
+    src/native/src/nutation.cpp
 )
 
 target_include_directories(_moira_native PRIVATE src/native/include)

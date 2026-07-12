@@ -72,6 +72,45 @@ struct VisibilityPolicy {
 // Core Algorithms
 // ---------------------------------------------------------------------------
 
+inline Vec3 apply_annual_aberration(
+    const Vec3& target_icrf,
+    const IEvaluator& earth_eval,
+    double jd_tt
+) {
+    double earth_state[6];
+    earth_eval.evaluate(jd_tt, earth_state);
+    const Vec3 earth_velocity = {earth_state[3], earth_state[4], earth_state[5]};
+    constexpr double c_km_per_day = 173.14463267424034 * KM_PER_AU;
+
+    const double distance = target_icrf.norm();
+    if (distance <= 1.0e-10) return target_icrf;
+
+    const Vec3 unit = target_icrf * (1.0 / distance);
+    const Vec3 beta = earth_velocity * (1.0 / c_km_per_day);
+    const double beta2 = beta[0] * beta[0] + beta[1] * beta[1] + beta[2] * beta[2];
+    const double gamma = 1.0 / std::sqrt(1.0 - beta2);
+    const double dot = unit[0] * beta[0] + unit[1] * beta[1] + unit[2] * beta[2];
+    const double factor1 = 1.0 + dot / (1.0 + gamma);
+    const double factor2 = gamma * (1.0 + dot);
+    Vec3 apparent = {
+        (unit[0] + factor1 * beta[0]) / factor2,
+        (unit[1] + factor1 * beta[1]) / factor2,
+        (unit[2] + factor1 * beta[2]) / factor2,
+    };
+    return apparent * (distance / apparent.norm());
+}
+
+inline Vec3 apply_iau2006_frame_bias(const Vec3& icrf) noexcept {
+    constexpr double d_alpha = (-14.6 / 1000.0) * ARCSEC2RAD;
+    constexpr double xi0 = (-16.6170 / 1000.0) * ARCSEC2RAD;
+    constexpr double eta0 = (-6.8192 / 1000.0) * ARCSEC2RAD;
+    return {
+        icrf[0] - eta0 * icrf[1] + xi0 * icrf[2],
+        eta0 * icrf[0] + icrf[1] - d_alpha * icrf[2],
+        -xi0 * icrf[0] + d_alpha * icrf[1] + icrf[2],
+    };
+}
+
 /**
  * @brief Arcus Visionis calculation based on Ptolemy/Schoch table.
  * 
@@ -120,50 +159,18 @@ inline double target_topocentric_altitude(
     target_eval.evaluate(jd_tt, r_geo);
     Vec3 target_icrf = {r_geo[0], r_geo[1], r_geo[2]};
 
-    // 1b. Annual aberration (if Earth evaluator provided)
+    // 1b. Apparent observer correction for solar/planetary targets.
     if (earth_eval) {
-        double r_earth[6];
-        earth_eval->evaluate(jd_tt, r_earth);
-        // Earth velocity in km/day (indices 3,4,5)
-        Vec3 v_earth = {r_earth[3], r_earth[4], r_earth[5]};
-
-        // Speed of light in km/day
-        constexpr double C_KM_PER_DAY = 173.14463267424034 * KM_PER_AU;  // AU/day * km/AU
-
-        double dist = target_icrf.norm();
-        if (dist > 1e-10) {
-            // Unit direction to target
-            double ux = target_icrf[0] / dist;
-            double uy = target_icrf[1] / dist;
-            double uz = target_icrf[2] / dist;
-
-            // Velocity as fraction of c (beta)
-            double bx = v_earth[0] / C_KM_PER_DAY;
-            double by = v_earth[1] / C_KM_PER_DAY;
-            double bz = v_earth[2] / C_KM_PER_DAY;
-
-            double beta2 = bx*bx + by*by + bz*bz;
-            double gamma = 1.0 / std::sqrt(1.0 - beta2);
-            double dot = ux*bx + uy*by + uz*bz;
-
-            // Relativistic aberration: u' = [u + (1 + u.b/(1+g)) * b] / [g(1 + u.b)]
-            double f1 = 1.0 + dot / (1.0 + gamma);
-            double f2 = gamma * (1.0 + dot);
-
-            double ax = (ux + f1 * bx) / f2;
-            double ay = (uy + f1 * by) / f2;
-            double az = (uz + f1 * bz) / f2;
-
-            double scale = dist / std::sqrt(ax*ax + ay*ay + az*az);
-            target_icrf = {ax * scale, ay * scale, az * scale};
-        }
+        target_icrf = apply_iau2006_frame_bias(
+            apply_annual_aberration(target_icrf, *earth_eval, jd_tt)
+        );
     }
 
     // 2. Precess and Nutate target from ICRS to True Equatorial Frame of Date
     Mat3 prec = precession_matrix(jd_tt);
     double eps = mean_obliquity_p03(jd_tt) * DEG2RAD;
-    auto nut = nutation_iau2000b(jd_tt);
-    Mat3 nut_mat = nutation_matrix(eps, nut.first, nut.second);
+    const NutationResult nut = nutation_2000r06(jd_tt);
+    Mat3 nut_mat = nutation_matrix(eps, nut.longitude, nut.obliquity);
     
     // Combined rotation: True = Nut * Prec * ICRS
     Mat3 rot = Mat3::mul(nut_mat, prec);
@@ -171,8 +178,11 @@ inline double target_topocentric_altitude(
 
     // 3. Compute observer position in True Equatorial Frame
     // Use GAST (Apparent Sidereal Time)
-    double gmst_deg = greenwich_mean_sidereal_time(jd_ut);
-    double gast_deg = gmst_deg + (nut.first * std::cos(eps)) * RAD2DEG;
+    const double gast_deg = apparent_sidereal_time(
+        jd_ut,
+        nut.longitude * RAD2DEG,
+        (eps + nut.obliquity) * RAD2DEG
+    );
     double lst_rad = deg_to_rad(gast_deg + lon_deg);
     
     constexpr double f  = 1.0 / 298.257223563;
@@ -281,17 +291,20 @@ struct HeliacalEvent {
  * @brief Internal: Ecliptic longitude from ICRF vector.
  * Uses mean obliquity (P03) and Vondrak precession.
  */
-inline double _true_ecliptic_longitude(const Vec3& icrf_xyz, double jd_tt) {
+inline double _true_ecliptic_longitude(
+    const Vec3& icrf_xyz,
+    double jd_tt,
+    const NutationResult& nut
+) {
     Mat3 prec = precession_matrix(jd_tt);
     double eps0 = mean_obliquity_p03(jd_tt) * DEG2RAD;
-    auto nut = nutation_iau2000b(jd_tt);
-    Mat3 nut_mat = nutation_matrix(eps0, nut.first, nut.second);
+    Mat3 nut_mat = nutation_matrix(eps0, nut.longitude, nut.obliquity);
     
     Mat3 rot = Mat3::mul(nut_mat, prec);
     Vec3 true_equ = Mat3::mul(rot, icrf_xyz);
     
     // Convert true equatorial to true ecliptic of date
-    double eps_true = eps0 + nut.second;
+    double eps_true = eps0 + nut.obliquity;
     double ce = std::cos(eps_true);
     double se = std::sin(eps_true);
     
@@ -308,7 +321,9 @@ inline double heliacal_signed_elongation(
     const IEvaluator& star_eval,
     const IEvaluator& sun_eval,
     double jd_ut,
-    double delta_t = 64.184
+    double delta_t = 64.184,
+    const IEvaluator* earth_eval = nullptr,
+    NutationEpochCache* nutation_cache = nullptr
 ) {
     double jd_tt = jd_ut + (delta_t / 86400.0);
     double res_star[6], res_sun[6];
@@ -317,9 +332,17 @@ inline double heliacal_signed_elongation(
     
     Vec3 star_xyz = {res_star[0], res_star[1], res_star[2]};
     Vec3 sun_xyz = {res_sun[0], res_sun[1], res_sun[2]};
+    if (earth_eval) {
+        sun_xyz = apply_iau2006_frame_bias(
+            apply_annual_aberration(sun_xyz, *earth_eval, jd_tt)
+        );
+    }
     
-    double star_lon = _true_ecliptic_longitude(star_xyz, jd_tt);
-    double sun_lon = _true_ecliptic_longitude(sun_xyz, jd_tt);
+    const NutationResult nut = nutation_cache
+        ? nutation_cache->evaluate(jd_tt)
+        : nutation_2000r06(jd_tt);
+    double star_lon = _true_ecliptic_longitude(star_xyz, jd_tt, nut);
+    double sun_lon = _true_ecliptic_longitude(sun_xyz, jd_tt, nut);
     
     return normalize_deg_180(star_lon - sun_lon);
 }
@@ -335,24 +358,43 @@ inline HeliacalEvent search_heliacal_rising(
     double arcus_visionis_val,
     int search_days,
     double delta_t = 64.184,
-    const IEvaluator* earth_eval = nullptr
+    const IEvaluator* earth_eval = nullptr,
+    double delta_t_rate_seconds_per_day = 0.0,
+    NutationEpochCache* nutation_cache = nullptr
 ) {
+    if (!std::isfinite(jd_start)) throw std::invalid_argument("jd_start must be finite");
+    if (!std::isfinite(lat) || lat < -90.0 || lat > 90.0) {
+        throw std::invalid_argument("latitude must be finite and in [-90, 90]");
+    }
+    if (!std::isfinite(lon) || lon < -180.0 || lon > 180.0) {
+        throw std::invalid_argument("longitude must be finite and in [-180, 180]");
+    }
+    if (!std::isfinite(arcus_visionis_val) || arcus_visionis_val <= 0.0) {
+        throw std::invalid_argument("arcus_visionis must be positive and finite");
+    }
+    if (search_days <= 0) throw std::invalid_argument("search_days must be positive");
+
     double jd_mid0 = std::floor(jd_start + 0.5) - 0.5;
     
     for (int day = 0; day < search_days; ++day) {
         double jd_midnight = jd_mid0 + day;
         
         // 1. Check signed elongation at Noon (approx middle of day)
-        double se = heliacal_signed_elongation(star_eval, sun_eval, jd_midnight + 0.5, delta_t);
+        const double day_delta_t = delta_t
+            + delta_t_rate_seconds_per_day * (jd_midnight + 0.5 - jd_start);
+        double se = heliacal_signed_elongation(
+            star_eval, sun_eval, jd_midnight + 0.5, day_delta_t, earth_eval,
+            nutation_cache
+        );
         if (se >= 0.0) continue;
         
         // 2. Find twilight JD when Sun is at -arcus_visionis (with aberration)
-        auto twilight_jd = find_sun_at_alt(sun_eval, jd_midnight, lat, lon, -arcus_visionis_val, true, delta_t, earth_eval);
+        auto twilight_jd = find_sun_at_alt(sun_eval, jd_midnight, lat, lon, -arcus_visionis_val, true, day_delta_t, earth_eval);
         if (!twilight_jd) continue;
         
         // 3. Check star altitude at twilight
         // star_alt must be geometric > -0.5667 (apparent horizon)
-        double star_alt = target_topocentric_altitude(star_eval, *twilight_jd, lat, lon, 1013.25, 10.0, false, delta_t);
+        double star_alt = target_topocentric_altitude(star_eval, *twilight_jd, lat, lon, 1013.25, 10.0, false, day_delta_t);
         
         if (star_alt > -0.5667) {
             HeliacalEvent ev;
@@ -384,19 +426,51 @@ inline HeliacalEvent search_heliacal_setting(
     double arcus_visionis_val,
     int search_days,
     double delta_t = 64.184,
-    const IEvaluator* earth_eval = nullptr
+    const IEvaluator* earth_eval = nullptr,
+    double setting_elongation_threshold = 12.0,
+    double setting_visibility_factor = 0.5,
+    double delta_t_rate_seconds_per_day = 0.0,
+    NutationEpochCache* nutation_cache = nullptr
 ) {
+    if (!std::isfinite(jd_start)) throw std::invalid_argument("jd_start must be finite");
+    if (!std::isfinite(lat) || lat < -90.0 || lat > 90.0) {
+        throw std::invalid_argument("latitude must be finite and in [-90, 90]");
+    }
+    if (!std::isfinite(lon) || lon < -180.0 || lon > 180.0) {
+        throw std::invalid_argument("longitude must be finite and in [-180, 180]");
+    }
+    if (!std::isfinite(arcus_visionis_val) || arcus_visionis_val <= 0.0) {
+        throw std::invalid_argument("arcus_visionis must be positive and finite");
+    }
+    if (search_days <= 0) throw std::invalid_argument("search_days must be positive");
+    if (!std::isfinite(setting_elongation_threshold) || setting_elongation_threshold <= 0.0) {
+        throw std::invalid_argument("setting_elongation_threshold must be positive and finite");
+    }
+    if (
+        !std::isfinite(setting_visibility_factor)
+        || setting_visibility_factor <= 0.0
+        || setting_visibility_factor > 1.0
+    ) {
+        throw std::invalid_argument("setting_visibility_factor must be in (0, 1]");
+    }
+
     double jd_mid0 = std::floor(jd_start + 0.5) - 0.5;
     std::optional<HeliacalEvent> last_visible;
     
     for (int day = 0; day < search_days; ++day) {
         double jd_midnight = jd_mid0 + day;
-        double se = heliacal_signed_elongation(star_eval, sun_eval, jd_midnight + 0.5, delta_t);
+        const double day_delta_t = delta_t
+            + delta_t_rate_seconds_per_day * (jd_midnight + 0.5 - jd_start);
+        double se = heliacal_signed_elongation(
+            star_eval, sun_eval, jd_midnight + 0.5, day_delta_t, earth_eval,
+            nutation_cache
+        );
+        const double abs_se = std::abs(se);
         
-        if (se < 0.0) {
-            auto twilight_jd = find_sun_at_alt(sun_eval, jd_midnight, lat, lon, -arcus_visionis_val, true, delta_t, earth_eval);
+        if (se < 0.0 && abs_se >= setting_elongation_threshold) {
+            auto twilight_jd = find_sun_at_alt(sun_eval, jd_midnight, lat, lon, -arcus_visionis_val, true, day_delta_t, earth_eval);
             if (twilight_jd) {
-                double star_alt = target_topocentric_altitude(star_eval, *twilight_jd, lat, lon, 1013.25, 10.0, false, delta_t);
+                double star_alt = target_topocentric_altitude(star_eval, *twilight_jd, lat, lon, 1013.25, 10.0, false, day_delta_t);
                 if (star_alt > -0.5667) {
                     HeliacalEvent ev;
                     ev.event_kind = "heliacal_setting";
@@ -410,11 +484,10 @@ inline HeliacalEvent search_heliacal_setting(
                     continue;
                 }
             }
-        }
-        
-        // If we were visible but now we are not (or elongation turned positive),
-        // return the last visible day.
-        if (last_visible) {
+        } else if (
+            last_visible
+            && abs_se < setting_elongation_threshold * setting_visibility_factor
+        ) {
             return *last_visible;
         }
     }

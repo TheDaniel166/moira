@@ -34,10 +34,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Paran Crossing Work Duplication**: Removed repeated nutation evaluation and
   duplicate MC/IC solves, and added request-scoped immutable crossing reuse with
   active-reader identity retained for planetary truth.
-- **Native Heliacal Policy Honesty**: Native fixed-star heliacal batch search is
-  now explicit opt-in and restricted to its fixed default policy. The canonical
-  Python path remains the default until independent observable/event parity is
-  established.
+- **Native Heliacal Parity**: Replaced the mislabeled five-term native nutation
+  approximation with the packaged IERS 2000_R06 series, aligned fixed-star
+  elongation, twilight, altitude, rising, setting, custom disappearance policy,
+  Delta-T drift, and metadata with the Python doctrine, and made the validated
+  native search the default fixed-star accelerator.
 
 ### Changed
 - **Paran Performance**: Meridian searches now use verified Newton estimates
@@ -45,6 +46,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   estimates followed by exact altitude refinement; latitude-independent fixed-
   star meridian truth is reused within bounded packet/field scopes. Public
   paran and rise/set contracts are unchanged.
+- **Heliacal Performance**: Native catalogue searches use an explicit
+  request-scoped nutation cache and a policy-owned eight-worker default. The
+  Python manuscript remains selectable with `use_native_heliacal=False` for
+  audit and differential validation.
 
 ### Validation
 - The focused natal/progressed/facade/parity/adapter/search/REST acceptance set
@@ -54,6 +59,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   tests. Full two-degree planet and star latitude sweeps agree with the original
   scan event sets and remain below 0.5 seconds timing tolerance; the opt-in
   local performance smoke passes all recorded budgets.
+- Native R06/scalar/ERFA, initialization, concurrency, observable, single-star,
+  catalogue, custom-policy, adversarial, and packet slices pass. A five-star
+  setting search improved from 5.31 s to 0.97 s locally; a 175-star native
+  search completes in 20.69 s while the Python comparator exceeded 120 s.
 
 ## [4.0.1] - 2026-07-12
 

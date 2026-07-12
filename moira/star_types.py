@@ -27,9 +27,18 @@ class FixedStarComputationPolicy:
     lookup: FixedStarLookupPolicy = field(default_factory=FixedStarLookupPolicy)
     heliacal: HeliacalSearchPolicy = field(default_factory=HeliacalSearchPolicy)
     allow_native: bool = True
-    # Native heliacal search remains explicit opt-in until Python/native
-    # observable, event, policy, and metadata parity is independently proven.
-    use_native_heliacal: bool = False
+    # Python retains policy ownership; the admitted native implementation
+    # accelerates the parity-tested observable and search kernels.
+    use_native_heliacal: bool = True
+    native_heliacal_workers: int = 8
+
+    def __post_init__(self) -> None:
+        if (
+            not isinstance(self.native_heliacal_workers, int)
+            or isinstance(self.native_heliacal_workers, bool)
+            or not 1 <= self.native_heliacal_workers <= 64
+        ):
+            raise ValueError("native_heliacal_workers must be an integer in [1, 64]")
 
 DEFAULT_FIXED_STAR_POLICY = FixedStarComputationPolicy()
 

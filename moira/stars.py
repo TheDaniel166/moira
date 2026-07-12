@@ -12,6 +12,7 @@ import csv
 import importlib
 import json
 import math
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -1048,6 +1049,94 @@ def _build_heliacal_event(
     )
 
 
+def _native_heliacal_event(
+    event_kind: str,
+    record: _SovereignStarRecord,
+    name: str,
+    jd_start: float,
+    latitude: float,
+    longitude: float,
+    arcus_visionis: float,
+    search_days: int,
+    policy: FixedStarComputationPolicy,
+    nutation_cache=None,
+) -> HeliacalEvent | None:
+    """Return one native event, or ``None`` when native substrate is unavailable."""
+
+    if (
+        mn is None
+        or not hasattr(mn, "search_heliacal_rising")
+        or not policy.allow_native
+        or not policy.use_native_heliacal
+    ):
+        return None
+
+    from .julian import ut_to_tt
+    from .spk_reader import get_reader
+
+    reader = get_reader()
+    jd_tt = ut_to_tt(jd_start)
+    earth_barycentric = reader.evaluator(399, 3, jd_tt)
+    emb_barycentric = reader.evaluator(3, 0, jd_tt)
+    sun_barycentric = reader.evaluator(10, 0, jd_tt)
+    if earth_barycentric is None or emb_barycentric is None or sun_barycentric is None:
+        return None
+
+    earth_ssb = mn.SumEvaluator(earth_barycentric, emb_barycentric)
+    sun_geocentric = mn.RelativeEvaluator(sun_barycentric, earth_ssb)
+    star_icrs = mn.FixedStarEvaluator(
+        record.ra_deg,
+        record.dec_deg,
+        record.pmra_mas_yr,
+        record.pmdec_mas_yr,
+        record.parallax_mas,
+        record.radial_velocity_km_s,
+    )
+    jd_end = jd_start + search_days
+    delta_t_start = (jd_tt - jd_start) * 86400.0
+    delta_t_end = (ut_to_tt(jd_end) - jd_end) * 86400.0
+    search_kwargs: dict[str, object] = {
+        "delta_t": delta_t_start,
+        "earth_eval": earth_ssb,
+        "delta_t_rate_seconds_per_day": (
+            delta_t_end - delta_t_start
+        ) / search_days,
+        "nutation_cache": nutation_cache,
+    }
+    threshold = 0.0
+    native_search = mn.search_heliacal_rising
+    if event_kind == "heliacal_setting":
+        native_search = mn.search_heliacal_setting
+        threshold = policy.heliacal.setting_elongation_threshold
+        search_kwargs.update(
+            setting_elongation_threshold=threshold,
+            setting_visibility_factor=policy.heliacal.setting_visibility_factor,
+        )
+
+    result = native_search(
+        star_icrs,
+        sun_geocentric,
+        jd_start,
+        latitude,
+        longitude,
+        arcus_visionis,
+        search_days,
+        **search_kwargs,
+    )
+    return _build_heliacal_event(
+        event_kind,
+        name,
+        jd_start,
+        search_days,
+        arcus_visionis,
+        threshold,
+        result.day_offset if result.is_found else None,
+        result.elongation if result.is_found else None,
+        -arcus_visionis if result.is_found else None,
+        result.jd_ut if result.is_found else None,
+    )
+
+
 def heliacal_rising(
     name: str,
     jd_ut: float,
@@ -1133,10 +1222,24 @@ def heliacal_rising_event(
     if not isinstance(search_days, int) or search_days <= 0:
         raise ValueError("search_days must be a positive integer")
 
-    star_name_resolves(name) or _resolve_star_record(name, DEFAULT_FIXED_STAR_POLICY.lookup)
+    record, _ = _resolve_star_record(name, resolved_policy.lookup)
     resolved_arcus = _default_arcus_for_star(name) if arcus_visionis is None else arcus_visionis
     if not math.isfinite(resolved_arcus) or resolved_arcus <= 0.0:
         raise ValueError("arcus_visionis must be a positive finite value")
+
+    native_event = _native_heliacal_event(
+        "heliacal_rising",
+        record,
+        name,
+        jd_ut,
+        latitude,
+        longitude,
+        resolved_arcus,
+        search_days,
+        resolved_policy,
+    )
+    if native_event is not None:
+        return native_event
 
     jd_mid0 = math.floor(jd_ut + 0.5) - 0.5
 
@@ -1220,10 +1323,24 @@ def heliacal_setting_event(
     if not isinstance(search_days, int) or search_days <= 0:
         raise ValueError("search_days must be a positive integer")
 
-    star_name_resolves(name) or _resolve_star_record(name, DEFAULT_FIXED_STAR_POLICY.lookup)
+    record, _ = _resolve_star_record(name, resolved_policy.lookup)
     resolved_arcus = _default_arcus_for_star(name) if arcus_visionis is None else arcus_visionis
     if not math.isfinite(resolved_arcus) or resolved_arcus <= 0.0:
         raise ValueError("arcus_visionis must be a positive finite value")
+
+    native_event = _native_heliacal_event(
+        "heliacal_setting",
+        record,
+        name,
+        jd_ut,
+        latitude,
+        longitude,
+        resolved_arcus,
+        search_days,
+        resolved_policy,
+    )
+    if native_event is not None:
+        return native_event
 
     jd_mid0 = math.floor(jd_ut + 0.5) - 0.5
     setting_elongation_threshold = resolved_policy.heliacal.setting_elongation_threshold
@@ -1366,7 +1483,6 @@ def heliacal_catalog_batch(
         and hasattr(mn, "search_heliacal_rising") 
         and getattr(resolved_policy, "allow_native", True)
         and getattr(resolved_policy, "use_native_heliacal", True)
-        and resolved_policy.heliacal == HeliacalSearchPolicy()
     ):
         from .julian import ut_to_tt
         from .spk_reader import get_reader
@@ -1393,53 +1509,89 @@ def heliacal_catalog_batch(
                 if event_kind == "heliacal_rising" 
                 else mn.search_heliacal_setting
             )
-            
+            nutation_cache = mn.NutationEpochCache()
+            candidates: list[_SovereignStarRecord] = []
             for record in records:
-                # Pre-filters
                 if record.magnitude_v > max_magnitude:
                     skipped_magnitude.append(record.name)
                     continue
                 if math.isfinite(record.lat_limit_deg) and abs_lat > record.lat_limit_deg:
                     skipped_latitude.append(record.name)
                     continue
-                
-                # Setup Star Evaluator
+                candidates.append(record)
+
+            dt_val = (jd_tt - jd_start) * 86400.0
+            jd_end = jd_start + search_days
+            dt_end = (ut_to_tt(jd_end) - jd_end) * 86400.0
+            dt_rate = (dt_end - dt_val) / search_days
+
+            def _search_record(record: _SovereignStarRecord):
                 star_ssb = mn.FixedStarEvaluator(
                     record.ra_deg, record.dec_deg,
                     record.pmra_mas_yr, record.pmdec_mas_yr,
                     record.parallax_mas, record.radial_velocity_km_s
                 )
-                star_geo = mn.RelativeEvaluator(star_ssb, earth_ssb)
-                
-                # Use catalog arcus if available, otherwise derive
                 if math.isfinite(record.arc_vis_deg) and record.arc_vis_deg > 0.0:
                     arcus = record.arc_vis_deg
                 else:
                     arcus = _default_arcus_for_star(record.name)
-                
-                # Native Search with authority Delta-T and annual aberration
-                dt_val = (jd_tt - jd_start) * 86400.0
+                search_kwargs = {
+                    "delta_t": dt_val,
+                    "earth_eval": earth_ssb,
+                    "delta_t_rate_seconds_per_day": dt_rate,
+                    "nutation_cache": nutation_cache,
+                }
+                if event_kind == "heliacal_setting":
+                    search_kwargs.update(
+                        setting_elongation_threshold=(
+                            resolved_policy.heliacal.setting_elongation_threshold
+                        ),
+                        setting_visibility_factor=(
+                            resolved_policy.heliacal.setting_visibility_factor
+                        ),
+                    )
                 res = native_search(
-                    star_geo, sun_geo, jd_start, latitude, longitude, arcus, search_days,
-                    delta_t=dt_val, earth_eval=earth_ssb
+                    star_ssb,
+                    sun_geo,
+                    jd_start,
+                    latitude,
+                    longitude,
+                    arcus,
+                    search_days,
+                    **search_kwargs,
                 )
-                
-                if res.is_found:
-                    # Convert native HeliacalEvent to Python HeliacalEvent
-                    found.append(_build_heliacal_event(
-                        event_kind=event_kind,
-                        name=record.name,
-                        jd_start=jd_start,
-                        search_days=search_days,
-                        arcus_visionis=arcus,
-                        elongation_threshold=getattr(resolved_policy.heliacal, "setting_elongation_threshold", 12.0),
-                        qualifying_day_offset=res.day_offset,
-                        qualifying_elongation=res.elongation,
-                        qualifying_sun_altitude=-arcus,
-                        event_jd_ut=res.jd_ut
-                    ))
-                else:
-                    not_found.append(record.name)
+                return record, arcus, res
+
+            worker_count = min(resolved_policy.native_heliacal_workers, len(candidates))
+            if worker_count <= 1:
+                native_results = map(_search_record, candidates)
+            else:
+                executor = ThreadPoolExecutor(max_workers=worker_count)
+                native_results = executor.map(_search_record, candidates)
+            try:
+                for record, arcus, res in native_results:
+                    if res.is_found:
+                        found.append(_build_heliacal_event(
+                            event_kind=event_kind,
+                            name=record.name,
+                            jd_start=jd_start,
+                            search_days=search_days,
+                            arcus_visionis=arcus,
+                            elongation_threshold=(
+                                0.0
+                                if event_kind == "heliacal_rising"
+                                else resolved_policy.heliacal.setting_elongation_threshold
+                            ),
+                            qualifying_day_offset=res.day_offset,
+                            qualifying_elongation=res.elongation,
+                            qualifying_sun_altitude=-arcus,
+                            event_jd_ut=res.jd_ut
+                        ))
+                    else:
+                        not_found.append(record.name)
+            finally:
+                if worker_count > 1:
+                    executor.shutdown(wait=True)
 
             found.sort(key=lambda e: e.jd_ut if e.jd_ut is not None else math.inf)
             return HeliacalBatchResult(

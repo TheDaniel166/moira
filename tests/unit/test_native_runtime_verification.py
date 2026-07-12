@@ -267,6 +267,26 @@ def test_native_find_sun_at_alt_solves_target_altitude_consistently() -> None:
     assert altitude == pytest.approx(target_alt, abs=0.2)
 
 
+def test_native_heliacal_search_rejects_invalid_policy_inputs() -> None:
+    evaluator = moira_native.FixedStarEvaluator(100.0, 20.0, 0.0, 0.0, 1.0, 0.0)
+
+    with pytest.raises(ValueError, match="latitude"):
+        moira_native.search_heliacal_rising(
+            evaluator, evaluator, 2451545.0, 91.0, 0.0, 10.0, 10
+        )
+    with pytest.raises(ValueError, match="setting_visibility_factor"):
+        moira_native.search_heliacal_setting(
+            evaluator,
+            evaluator,
+            2451545.0,
+            0.0,
+            0.0,
+            10.0,
+            10,
+            setting_visibility_factor=0.0,
+        )
+
+
 @pytest.mark.requires_ephemeris
 @pytest.mark.parametrize(
     ("event_kind", "native_name"),
@@ -342,6 +362,210 @@ def test_explicit_native_heliacal_policy_dispatches_to_compiled_search(
         assert result.found[0].jd_ut == pytest.approx(native_result.jd_ut, abs=1e-9)
     else:
         assert result.not_found == ("Sirius",)
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.slow
+@pytest.mark.parametrize("event_kind", ["heliacal_rising", "heliacal_setting"])
+@pytest.mark.parametrize("latitude", [-30.0, 0.0, 31.2, 60.0])
+def test_native_heliacal_batch_matches_python_event_oracle(
+    event_kind: str,
+    latitude: float,
+) -> None:
+    kernel_path = find_planetary_kernel()
+    jd_start = julian_day(2024, 1, 1, 0.0)
+    names = ["Sirius", "Regulus", "Capella", "Acrux", "Arcturus"]
+
+    with SpkReader(kernel_path) as reader, use_reader_override(reader):
+        python_result = stars.heliacal_catalog_batch(
+            event_kind,
+            jd_start,
+            latitude,
+            29.9,
+            names=names,
+            max_magnitude=3.0,
+            search_days=400,
+            policy=stars.FixedStarComputationPolicy(use_native_heliacal=False),
+        )
+        native_result = stars.heliacal_catalog_batch(
+            event_kind,
+            jd_start,
+            latitude,
+            29.9,
+            names=names,
+            max_magnitude=3.0,
+            search_days=400,
+            policy=stars.FixedStarComputationPolicy(use_native_heliacal=True),
+        )
+
+    assert native_result.not_found == python_result.not_found
+    assert native_result.skipped_latitude == python_result.skipped_latitude
+    assert native_result.skipped_magnitude == python_result.skipped_magnitude
+    python_events = {event.star_name: event for event in python_result.found}
+    native_events = {event.star_name: event for event in native_result.found}
+    assert native_events.keys() == python_events.keys()
+    for name, expected in python_events.items():
+        actual = native_events[name]
+        assert actual.jd_ut == pytest.approx(expected.jd_ut, abs=0.05 / 86400.0)
+        assert actual.computation_truth.qualifying_day_offset == (
+            expected.computation_truth.qualifying_day_offset
+        )
+        assert actual.computation_truth.qualifying_elongation == pytest.approx(
+            expected.computation_truth.qualifying_elongation,
+            abs=1.0e-5,
+        )
+        assert actual.computation_truth.elongation_threshold == (
+            0.0 if event_kind == "heliacal_rising" else 12.0
+        )
+
+
+@pytest.mark.requires_ephemeris
+def test_native_heliacal_setting_honors_custom_disappearance_policy() -> None:
+    kernel_path = find_planetary_kernel()
+    jd_start = julian_day(2024, 1, 1, 0.0)
+    doctrine = stars.HeliacalSearchPolicy(
+        setting_elongation_threshold=20.0,
+        setting_visibility_factor=0.8,
+    )
+
+    with SpkReader(kernel_path) as reader, use_reader_override(reader):
+        python_result = stars.heliacal_catalog_batch(
+            "heliacal_setting",
+            jd_start,
+            31.2,
+            29.9,
+            names=["Sirius"],
+            search_days=400,
+            policy=stars.FixedStarComputationPolicy(
+                heliacal=doctrine,
+                use_native_heliacal=False,
+            ),
+        )
+        native_result = stars.heliacal_catalog_batch(
+            "heliacal_setting",
+            jd_start,
+            31.2,
+            29.9,
+            names=["Sirius"],
+            search_days=400,
+            policy=stars.FixedStarComputationPolicy(
+                heliacal=doctrine,
+                use_native_heliacal=True,
+            ),
+        )
+
+    assert len(python_result.found) == len(native_result.found) == 1
+    expected = python_result.found[0]
+    actual = native_result.found[0]
+    assert actual.jd_ut == pytest.approx(expected.jd_ut, abs=0.05 / 86400.0)
+    assert actual.computation_truth.elongation_threshold == 20.0
+    assert actual.computation_truth.qualifying_day_offset == (
+        expected.computation_truth.qualifying_day_offset
+    )
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize(
+    ("python_search", "event_kind"),
+    [
+        (stars.heliacal_rising_event, "heliacal_rising"),
+        (stars.heliacal_setting_event, "heliacal_setting"),
+    ],
+)
+def test_single_star_native_search_matches_python_oracle(
+    python_search,
+    event_kind: str,
+) -> None:
+    kernel_path = find_planetary_kernel()
+    jd_start = julian_day(2024, 1, 1, 0.0)
+
+    with SpkReader(kernel_path) as reader, use_reader_override(reader):
+        expected = python_search(
+            "Sirius",
+            jd_start,
+            31.2,
+            29.9,
+            search_days=400,
+            policy=stars.FixedStarComputationPolicy(use_native_heliacal=False),
+        )
+        actual = python_search(
+            "Sirius",
+            jd_start,
+            31.2,
+            29.9,
+            search_days=400,
+            policy=stars.FixedStarComputationPolicy(use_native_heliacal=True),
+        )
+
+    assert actual.event_kind == expected.event_kind == event_kind
+    assert actual.is_found == expected.is_found
+    assert actual.jd_ut == pytest.approx(expected.jd_ut, abs=0.05 / 86400.0)
+    assert actual.computation_truth.qualifying_day_offset == (
+        expected.computation_truth.qualifying_day_offset
+    )
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize("year", [1900, 2100])
+@pytest.mark.parametrize(
+    "search_function",
+    [stars.heliacal_rising_event, stars.heliacal_setting_event],
+)
+def test_single_star_native_event_parity_across_modern_epochs(
+    year: int,
+    search_function,
+) -> None:
+    kernel_path = find_planetary_kernel()
+    jd_start = julian_day(year, 1, 1, 0.0)
+    with SpkReader(kernel_path) as reader, use_reader_override(reader):
+        expected = search_function(
+            "Regulus",
+            jd_start,
+            0.0,
+            0.0,
+            search_days=400,
+            policy=stars.FixedStarComputationPolicy(use_native_heliacal=False),
+        )
+        actual = search_function(
+            "Regulus",
+            jd_start,
+            0.0,
+            0.0,
+            search_days=400,
+            policy=stars.FixedStarComputationPolicy(use_native_heliacal=True),
+        )
+
+    assert actual.is_found == expected.is_found
+    assert actual.jd_ut == pytest.approx(expected.jd_ut, abs=0.05 / 86400.0)
+    assert actual.computation_truth.qualifying_day_offset == (
+        expected.computation_truth.qualifying_day_offset
+    )
+
+
+@pytest.mark.requires_ephemeris
+def test_single_star_native_not_found_matches_one_day_python_window() -> None:
+    kernel_path = find_planetary_kernel()
+    jd_start = julian_day(2024, 1, 1, 0.0)
+    with SpkReader(kernel_path) as reader, use_reader_override(reader):
+        expected = stars.heliacal_rising_event(
+            "Sirius",
+            jd_start,
+            31.2,
+            29.9,
+            search_days=1,
+            policy=stars.FixedStarComputationPolicy(use_native_heliacal=False),
+        )
+        actual = stars.heliacal_rising_event(
+            "Sirius",
+            jd_start,
+            31.2,
+            29.9,
+            search_days=1,
+            policy=stars.FixedStarComputationPolicy(use_native_heliacal=True),
+        )
+
+    assert expected.is_found is actual.is_found is False
+    assert expected.jd_ut is actual.jd_ut is None
 
 
 @pytest.mark.requires_ephemeris

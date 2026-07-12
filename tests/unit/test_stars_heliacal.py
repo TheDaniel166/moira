@@ -21,6 +21,17 @@ class _FakeBody:
     magnitude: float = 1.0
 
 
+@pytest.fixture(autouse=True)
+def _python_oracle_policy(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep mocked unit tests on the visible Python manuscript."""
+
+    monkeypatch.setattr(
+        stars,
+        "DEFAULT_FIXED_STAR_POLICY",
+        FixedStarComputationPolicy(use_native_heliacal=False),
+    )
+
+
 def test_heliacal_rising_event_returns_found_event(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd)
     monkeypatch.setattr(stars, "star_at", lambda name, jd_tt, **_: _FakeBody(100.0, magnitude=1.2))
@@ -98,10 +109,10 @@ def test_batch_returns_heliacal_batch_result_type(monkeypatch: pytest.MonkeyPatc
     assert isinstance(result, HeliacalBatchResult)
 
 
-def test_native_heliacal_is_explicit_opt_in_and_custom_policy_stays_python(
+def test_native_heliacal_default_and_python_oracle_opt_out(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    assert DEFAULT_FIXED_STAR_POLICY.use_native_heliacal is False
+    assert DEFAULT_FIXED_STAR_POLICY.use_native_heliacal is True
     assert FixedStarComputationPolicy(use_native_heliacal=True).use_native_heliacal is True
     assert (
         FixedStarComputationPolicy(
@@ -113,7 +124,7 @@ def test_native_heliacal_is_explicit_opt_in_and_custom_policy_stays_python(
     monkeypatch.setattr(
         stars.mn,
         "search_heliacal_rising",
-        lambda *args, **kwargs: pytest.fail("custom policy must not enter native search"),
+        lambda *args, **kwargs: pytest.fail("explicit Python oracle must not enter native search"),
     )
     monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd)
     monkeypatch.setattr(
@@ -141,10 +152,17 @@ def test_native_heliacal_is_explicit_opt_in_and_custom_policy_stays_python(
         search_days=5,
         policy=FixedStarComputationPolicy(
             heliacal=HeliacalSearchPolicy(setting_elongation_threshold=20.0),
-            use_native_heliacal=True,
+            use_native_heliacal=False,
         ),
     )
     assert result.total_catalog == 1
+
+
+def test_native_heliacal_worker_policy_is_bounded() -> None:
+    with pytest.raises(ValueError, match="native_heliacal_workers"):
+        FixedStarComputationPolicy(native_heliacal_workers=0)
+    with pytest.raises(ValueError, match="native_heliacal_workers"):
+        FixedStarComputationPolicy(native_heliacal_workers=65)
 
 
 def test_batch_found_contains_heliacal_events(monkeypatch: pytest.MonkeyPatch) -> None:
