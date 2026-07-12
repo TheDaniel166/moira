@@ -57,7 +57,7 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
     "scope": "class",
     "id": "moira._facade_classical.ClassicalFacadeMixin",
     "risk": "medium",
-    "api": {"frozen": ["lots", "dignities", "mutual_receptions", "astrodynes", "midpoints", "midpoints_to_point", "harmonic", "profection", "firdaria", "decennials", "current_decennials", "zodiacal_releasing", "vimshottari_dasha", "almuten_of_degree", "almuten_figuris", "huber_house_zones", "huber_age_point", "huber_age_point_contacts", "huber_dynamic_intensity", "huber_intensity_at", "huber_chart_intensity_profile", "nine_parts"], "internal": []},
+    "api": {"frozen": ["lots", "dignities", "mutual_receptions", "astrodynes", "astrodynes_from_geometry", "normal_progressed_astrodynes", "practical_progressed_astrodynes", "progressed_astrodynes_geometry", "progressed_astrodynes_chart", "progressed_astrodyne_dated_aspect", "progressed_astrodyne_major_relation", "progressed_astrodyne_accessory_relation", "progressed_astrodyne_reenforcement", "progressed_astrodyne_total_influence", "progressed_astrodyne_compound_total_influence", "midpoints", "midpoints_to_point", "harmonic", "profection", "firdaria", "decennials", "current_decennials", "zodiacal_releasing", "vimshottari_dasha", "almuten_of_degree", "almuten_figuris", "huber_house_zones", "huber_age_point", "huber_age_point_contacts", "huber_dynamic_intensity", "huber_intensity_at", "huber_chart_intensity_profile", "nine_parts"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -136,6 +136,165 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             mc_longitude,
             asc_longitude,
             policy=policy,
+        )
+
+    def normal_progressed_astrodynes(
+        self,
+        birth_body_values,
+        birth_sign_values,
+        birth_house_values,
+        placements,
+        *,
+        policy=None,
+    ):
+        """Build the Church of Light normal progressed horoscope."""
+
+        return _facade_module().normal_progressed_horoscope(
+            birth_body_values,
+            birth_sign_values,
+            birth_house_values,
+            placements,
+            policy=policy,
+        )
+
+    def practical_progressed_astrodynes(
+        self,
+        normal,
+        aspects,
+        terminal_locations,
+        house_cusp_signs,
+        intercepted_signs=None,
+        mutual_receptions=(),
+    ):
+        """Distribute dated progressed influence through signs and houses."""
+
+        return _facade_module().practical_progressed_horoscope(
+            normal,
+            aspects,
+            terminal_locations,
+            house_cusp_signs,
+            intercepted_signs,
+            mutual_receptions,
+        )
+
+    def progressed_astrodynes_geometry(
+        self,
+        natal_dt,
+        target_dt,
+        observer_lat,
+        observer_lon,
+        **kwargs,
+    ):
+        """Build chart-backed Church of Light progression terminal geometry."""
+
+        return _facade_module().church_of_light_progression_geometry(
+            natal_dt,
+            target_dt,
+            observer_lat,
+            observer_lon,
+            reader=self._reader,
+            **kwargs,
+        )
+
+    def progressed_astrodynes_chart(
+        self,
+        natal_dt,
+        target_dt,
+        observer_lat,
+        observer_lon,
+        **kwargs,
+    ):
+        """Compute the full chart-backed Church of Light Astrodyne product."""
+
+        return _facade_module().church_of_light_progressed_astrodynes_chart(
+            natal_dt,
+            target_dt,
+            observer_lat,
+            observer_lon,
+            reader=self._reader,
+            **kwargs,
+        )
+
+    def search_progressed_astrodyne_contacts(
+        self,
+        natal_dt,
+        start_dt,
+        end_dt,
+        observer_lat,
+        observer_lon,
+        query,
+        **kwargs,
+    ):
+        """Search a bounded Church of Light one-degree contact chronology."""
+
+        return _facade_module().search_progressed_contacts(
+            natal_dt,
+            start_dt,
+            end_dt,
+            observer_lat,
+            observer_lon,
+            query,
+            reader=self._reader,
+            **kwargs,
+        )
+
+    def integrate_progressed_astrodyne_influence(
+        self,
+        natal_dt,
+        start_dt,
+        end_dt,
+        observer_lat,
+        observer_lon,
+        query,
+        **kwargs,
+    ):
+        """Integrate the source curve over actual ephemeris-varying motion."""
+
+        return _facade_module().integrate_progressed_influence(
+            natal_dt,
+            start_dt,
+            end_dt,
+            observer_lat,
+            observer_lon,
+            query,
+            reader=self._reader,
+            **kwargs,
+        )
+
+    def progressed_astrodyne_dated_aspect(self, *args, **kwargs):
+        """Evaluate one progressed aspect from peak power and dated distance."""
+
+        return _facade_module().progressed_dated_aspect(*args, **kwargs)
+
+    def progressed_astrodyne_major_relation(self, *args, **kwargs):
+        """Evaluate one explicit major-progressed terminal relation."""
+
+        return _facade_module().evaluate_major_progressed_relation(*args, **kwargs)
+
+    def progressed_astrodyne_accessory_relation(self, *args, **kwargs):
+        """Evaluate one independent minor or transit relation."""
+
+        return _facade_module().evaluate_accessory_progressed_relation(
+            *args, **kwargs
+        )
+
+    def progressed_astrodyne_reenforcement(self, *args, **kwargs):
+        """Apply a minor progressed power-only reenforcement."""
+
+        return _facade_module().reenforce_major_progressed_relation(
+            *args, **kwargs
+        )
+
+    def progressed_astrodyne_total_influence(self, *args, **kwargs):
+        """Compute constant-rate total progressed influence."""
+
+        return _facade_module().progressed_total_influence(*args, **kwargs)
+
+    def progressed_astrodyne_compound_total_influence(self, *args, **kwargs):
+        """Compute the manual's compound year/month/day influence product."""
+
+        return _facade_module().progressed_compound_total_influence(
+            *args, **kwargs
         )
 
     def midpoints(self, chart, planet_set: str = "classic"):

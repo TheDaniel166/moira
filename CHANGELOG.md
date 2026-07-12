@@ -5,6 +5,38 @@ All notable changes to the Moira project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Church of Light Natal Astrodynes**: Added source-owned dignity, house-power,
+  aspect, parallel, harmony/discord, mutual-reception, aggregation, summary,
+  network, facade, and strict REST/OpenAPI products, validated against three
+  captured Church of Light reports under explicit-geometry semantics.
+- **Church of Light Progressed Astrodynes**: Added fixed carry, aspect-power,
+  terminal, practical-distribution, minor/transit, reenforcement, and total-
+  influence doctrine with exact and manual-staged arithmetic kept distinct.
+- **Chart-Backed Progression Geometry**: Added Limiting Date, major and Minor
+  Ephemeris Date, progressed M.C./Ascendant, radical/major/minor/transit
+  terminal derivation, and complete chart assembly through the facade and
+  `POST /v1/astrodynes/progressed/chart`.
+- **Progressed Contact Search and Integration**: Added bounded one-degree
+  entry/perfection/closest-approach/exit search, named minor reenforcement
+  peaks, and explicitly Moira-owned variable-rate quadrature at
+  `POST /v1/astrodynes/progressed/{search,integrate}`. Numerical policy,
+  clipping, sample limits, convergence evidence, and the source constant-rate
+  comparator remain visible.
+
+### Fixed
+- **Primary-Publication Discrepancy Honesty**: Recorded six inconsistent dated
+  rows and three arithmetically inconsistent aggregate statements in the
+  worked manual example. Executable results follow the declared formulas
+  rather than reproducing publication errors.
+
+### Validation
+- The focused natal/progressed/facade/parity/adapter/search/REST acceptance set
+  passes 177 tests under strict known-issue expiry. Documentation consistency,
+  compilation, native import, OpenAPI registration, and diff checks also pass.
+
 ## [4.0.1] - 2026-07-12
 
 ### Added

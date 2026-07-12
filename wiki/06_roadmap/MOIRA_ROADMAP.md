@@ -53,7 +53,8 @@ are exposed in the `moira` package namespace:
 
 ### Astrodynes / Cosmodynes constitutionalization
 
-Status: bounded natal subsystem constitutional through SCP Phase 12
+Status: bounded natal subsystem and Church of Light progressed subsystem
+constitutional through their admitted public phases
 
 Reason:
 - Moira can support this structurally as a derived doctrine/scoring subsystem.
@@ -69,9 +70,10 @@ Reason:
 Constraint:
 - Do not implement an approximate or blended "power score" and label it
   astrodynes/cosmodynes.
-- Do not claim full source completeness or parity until the remaining tables
-  referenced by the manual are transcribed and validated against worked
-  examples.
+- Keep parity claims bounded to their named evidence. The admitted natal claim
+  is full displayed-output parity for the three captured Church of Light
+  reports under explicit-geometry semantics and the documented tolerances; it
+  is not progressed parity or autonomous reconstruction from printed labels.
 
 Completed constitutional surface:
 - typed classification and inspectability
@@ -85,12 +87,23 @@ Completed constitutional surface:
   codex, and curated public engine/facade surface
 - typed `/v1/astrodynes/doctrine`, `/geometry`, and `/chart` REST routes with
   explicit geometry/frame provenance and house-fallback truth
+- source-derived progressed doctrine, full explicit-geometry practical
+  distribution, publication-discrepancy ledger, package/facade exposure, and
+  ten strict `/v1/astrodynes/progressed/*` routes
+- separate kernel-backed progressed chart adapter deriving Limiting Date,
+  major/minor/transit geometry, progressed angles, terminals, relations,
+  reenforcements, and practical totals from natal and target datetimes
+- bounded progressed-contact search and explicit variable-rate influence
+  quadrature with visible solver and integration policy
 
-Remaining product work is outside the bounded natal constitution: progressed
-Astrodynes, autonomous place/time reconstruction for incomplete or contradictory
-source labels, and any doctrine alternative not established by the sources.
-- See `wiki/05_research/astrodynes/astrodynes_source_assessment_2026-04-09.md`
-  for the current source audit and the exact remaining gaps.
+Remaining product work is outside the admitted natal and progressed
+constitutions: autonomous place/time reconstruction for incomplete or
+contradictory source labels, unbounded prediction/advice products, and any
+doctrine alternative not established by the sources.
+- Current doctrine and remaining scope are governed by
+  `wiki/02_standards/ASTRODYNES_BACKEND_STANDARD.md`; the admitted parity claim
+  is recorded in
+  `wiki/05_research/astrodynes/astrodynes_three_chart_parity_validation_2026-07-12.md`.
 
 ---
 

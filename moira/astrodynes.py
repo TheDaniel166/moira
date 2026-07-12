@@ -4,8 +4,8 @@ Church of Light natal Astrodynes - constitutional engine.
 This module owns the source tables, computation truth, classification, fixed
 doctrine, relations, integrated body profiles, sign/house and Class 5 summary
 aggregates, network projection, and hardening contract for natal Astrodynes.
-Package-root and facade exposure are curated at SCP Phase 12; REST transport
-remains separate.
+Package-root and facade exposure, plus the typed optional REST transport, are
+curated at SCP Phase 12.
 
 Governing sources
 -----------------
@@ -27,9 +27,6 @@ from dataclasses import dataclass
 from enum import StrEnum
 from math import isfinite
 
-
-# This is an internal Phase 1 module.  Package-root and facade curation are
-# intentionally deferred to SCP Phase 12.
 
 ASTRODYNE_PLANETS: tuple[str, ...] = (
     "Sun",

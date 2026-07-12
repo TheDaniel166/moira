@@ -1,0 +1,75 @@
+{
+  "authority": {
+    "title": "The Astrodyne Manual",
+    "authors": ["Elbert Benjamine", "W. M. A. Drake"],
+    "date": "1949-08-29",
+    "printed_pages": [42, 43, 45, 46],
+    "pdf_pages": [45, 46, 48, 49],
+    "semantics": "published dated major-aspect table and practical seventh/ninth house arithmetic"
+  },
+  "relations": [
+    {"id":"sun_moon","a":"Sun","b":"Moon","aspect":"semi-square","direct":["Sun:p","Moon:r"],"indirect":["Sun:r","Moon:p"],"peak":16.51,"distance":4,"published":[15.96,0.00,15.96]},
+    {"id":"jupiter_sun_opposition","a":"Jupiter","b":"Sun","aspect":"opposition","direct":["Jupiter:p","Sun:r"],"indirect":["Jupiter:r","Sun:p"],"peak":62.88,"distance":57,"published":[33.01,0.00,16.51]},
+    {"id":"jupiter_sun_parallel","a":"Jupiter","b":"Sun","aspect":"parallel","direct":["Jupiter:p","Sun:r"],"indirect":["Jupiter:r","Sun:p"],"peak":62.88,"distance":7,"published":[59.21,29.61,0.00]},
+    {"id":"saturn_sun","a":"Saturn","b":"Sun","aspect":"inconjunct","direct":["Saturn:p","Sun:r"],"indirect":["Saturn:r","Sun:p"],"peak":14.37,"distance":27,"published":[11.13,0.00,5.57]},
+    {"id":"sun_pluto_r","a":"Sun","b":"Pluto","aspect":"square","direct":["Sun:p","Pluto:r"],"indirect":["Sun:r","Pluto:p"],"peak":25.83,"distance":33,"published":[18.72,0.00,15.72]},
+    {"id":"sun_pluto_p","a":"Sun","b":"Pluto","aspect":"square","direct":["Sun:p","Pluto:p"],"indirect":["Sun:r","Pluto:r"],"peak":25.83,"distance":0,"published":[25.83,0.00,25.83]},
+    {"id":"moon_return","a":"Moon","b":"Moon","aspect":"parallel","direct":["Moon:p","Moon:r"],"indirect":[],"peak":3.04,"distance":56,"published":[1.62,0.00,0.00]},
+    {"id":"moon_venus","a":"Moon","b":"Venus","aspect":"parallel","direct":["Moon:p","Venus:p"],"indirect":["Moon:r","Venus:r"],"peak":4.07,"distance":12,"published":[3.66,0.92,0.00]},
+    {"id":"moon_asc_r","a":"Moon","b":"Asc.","aspect":"inconjunct","direct":["Moon:p","Asc.:r"],"indirect":["Moon:r","Asc.:p"],"peak":0.94,"distance":24,"published":[0.75,0.00,0.00]},
+    {"id":"moon_asc_p","a":"Moon","b":"Asc.","aspect":"parallel","direct":["Moon:p","Asc.:p"],"indirect":["Moon:r","Asc.:r"],"peak":3.53,"distance":22,"published":[2.88,0.00,0.00]},
+    {"id":"moon_mc_p","a":"Moon","b":"M.C.","aspect":"parallel","direct":["Moon:p","M.C.:p"],"indirect":["Moon:r","M.C.:r"],"peak":5.72,"distance":5,"published":[5.48,0.00,0.00]},
+    {"id":"mc_moon","a":"M.C.","b":"Moon","aspect":"parallel","direct":["M.C.:p","Moon:r"],"indirect":["M.C.:r","Moon:p"],"peak":34.62,"distance":51,"published":[19.94,0.00,0.00]},
+    {"id":"asc_moon","a":"Asc.","b":"Moon","aspect":"parallel","direct":["Asc.:p","Moon:r"],"indirect":["Asc.:r","Moon:p"],"peak":21.42,"distance":34,"published":[15.35,0.00,0.00]},
+    {"id":"pluto_moon","a":"Pluto","b":"Moon","aspect":"sesqui-square","direct":["Pluto:p","Moon:r"],"indirect":["Pluto:r","Moon:p"],"peak":6.74,"distance":4,"published":[6.52,0.00,6.52]},
+    {"id":"mars_moon","a":"Mars","b":"Moon","aspect":"parallel","direct":["Mars:p","Moon:r"],"indirect":["Mars:r","Moon:p"],"peak":38.91,"distance":9,"published":[35.99,0.00,9.00]},
+    {"id":"jupiter_mercury","a":"Jupiter","b":"Mercury","aspect":"parallel","direct":["Jupiter:p","Mercury:r"],"indirect":["Jupiter:r","Mercury:p"],"peak":59.27,"distance":51,"published":[34.08,17.04,0.00]},
+    {"id":"mercury_saturn_r","a":"Mercury","b":"Saturn","aspect":"parallel","direct":["Mercury:p","Saturn:r"],"indirect":["Mercury:r","Saturn:p"],"peak":43.56,"distance":13,"published":[38.84,0.00,19.42]},
+    {"id":"mercury_saturn_p","a":"Mercury","b":"Saturn","aspect":"parallel","direct":["Mercury:p","Saturn:p"],"indirect":["Mercury:r","Saturn:r"],"peak":43.56,"distance":6,"published":[41.38,0.00,20.69]},
+    {"id":"mercury_uranus_r","a":"Mercury","b":"Uranus","aspect":"sesqui-square","direct":["Mercury:p","Uranus:r"],"indirect":["Mercury:r","Uranus:p"],"peak":20.13,"distance":18,"published":[17.11,0.00,17.11]},
+    {"id":"mercury_uranus_p","a":"Mercury","b":"Uranus","aspect":"sesqui-square","direct":["Mercury:p","Uranus:p"],"indirect":["Mercury:r","Uranus:r"],"peak":20.13,"distance":39,"published":[13.58,0.00,13.58]},
+    {"id":"mercury_neptune_r","a":"Mercury","b":"Neptune","aspect":"parallel","direct":["Mercury:p","Neptune:r"],"indirect":["Mercury:r","Neptune:p"],"peak":41.94,"distance":49,"published":[24.81,0.00,0.00]},
+    {"id":"mercury_neptune_p","a":"Mercury","b":"Neptune","aspect":"parallel","direct":["Mercury:p","Neptune:p"],"indirect":["Mercury:r","Neptune:r"],"peak":41.94,"distance":52,"published":[23.77,0.00,0.00]},
+    {"id":"jupiter_mars","a":"Jupiter","b":"Mars","aspect":"parallel","direct":["Jupiter:p","Mars:r"],"indirect":["Jupiter:r","Mars:p"],"peak":46.61,"distance":40,"published":[31.07,7.77,0.00]},
+    {"id":"jupiter_return","a":"Jupiter","b":"Jupiter","aspect":"parallel","direct":["Jupiter:p","Jupiter:r"],"indirect":[],"peak":38.42,"distance":4,"published":[37.14,37.14,0.00]},
+    {"id":"jupiter_saturn","a":"Jupiter","b":"Saturn","aspect":"semi-sextile","direct":["Jupiter:p","Saturn:r"],"indirect":["Jupiter:r","Saturn:p"],"peak":7.81,"distance":45,"published":[4.88,4.58,0.00]},
+    {"id":"jupiter_uranus","a":"Jupiter","b":"Uranus","aspect":"square","direct":["Jupiter:p","Uranus:p"],"indirect":["Jupiter:r","Uranus:r"],"peak":32.76,"distance":55,"published":[17.74,8.87,0.00]},
+    {"id":"mc_jupiter","a":"M.C.","b":"Jupiter","aspect":"inconjunct","direct":["M.C.:p","Jupiter:r"],"indirect":["M.C.:r","Jupiter:p"],"peak":10.68,"distance":14,"published":[9.43,4.72,0.00]}
+  ],
+  "mutual_receptions": [
+    {"id":"mr_jupiter_mercury_jupiter","body":"Jupiter","direct":["Jupiter:p"],"indirect":["Jupiter:r"],"harmony":2.50},
+    {"id":"mr_jupiter_mercury_mercury","body":"Mercury","direct":["Mercury:r"],"indirect":["Mercury:p"],"harmony":2.50},
+    {"id":"mr_mercury_uranus_r_mercury","body":"Mercury","direct":["Mercury:p"],"indirect":["Mercury:r"],"harmony":2.50},
+    {"id":"mr_mercury_uranus_p_mercury","body":"Mercury","direct":["Mercury:p"],"indirect":["Mercury:r"],"harmony":2.50}
+  ],
+  "house_cusp_signs": {"1":"Sagittarius","2":"Capricorn","3":"Aquarius","4":"Pisces","5":"Aries","6":"Taurus","7":"Gemini","8":"Cancer","9":"Leo","10":"Virgo","11":"Libra","12":"Scorpio"},
+  "terminal_locations": {
+    "Sun:r":["Sagittarius",1],"Sun:p":["Aquarius",3],
+    "Moon:r":["Capricorn",2],"Moon:p":["Cancer",7],
+    "Mercury:r":["Sagittarius",1],"Mercury:p":["Aquarius",2],
+    "Venus:r":["Scorpio",12],"Venus:p":["Capricorn",2],
+    "Mars:r":["Aquarius",3],"Mars:p":["Aquarius",2],
+    "Jupiter:r":["Gemini",7],"Jupiter:p":["Gemini",7],
+    "Saturn:r":["Taurus",6],"Saturn:p":["Taurus",6],
+    "Uranus:r":["Virgo",10],"Uranus:p":["Virgo",10],
+    "Neptune:r":["Taurus",6],"Neptune:p":["Taurus",6],
+    "Pluto:r":["Taurus",6],"Pluto:p":["Taurus",6],
+    "M.C.:r":["Scorpio",12],"M.C.:p":["Scorpio",12],
+    "Asc.:r":["Sagittarius",1],"Asc.:p":["Aquarius",2]
+  },
+  "published_practical": {
+    "7": {"normal":[145.09,0.00,10.21],"mercury":[96.79,0.00,23.13],"jupiter":[339.76,118.25,0.00],"moon":[61.87,0.00,15.82],"total":[643.51,118.25,49.16]},
+    "9": {"normal":[51.82,0.00,10.83],"sun":[81.94,0.00,26.49],"total":[133.76,0.00,37.32]}
+  },
+  "published_anomalies": [
+    "Saturn-Sun dated subtraction prints 11.13 although staged half-up arithmetic gives 11.14.",
+    "Sun-Pluto row prints 15.72 discord, while its stated rule and ninth-house arithmetic use 18.72.",
+    "M.C.-Moon row prints 19.94, while peak 34.62 at 51 minutes gives 19.91.",
+    "Mercury-Uranus p row prints 13.58, while staged half-up arithmetic gives 13.59.",
+    "Jupiter-Saturn row prints 4.58 harmony, while the stated Jupiter/Saturn nature terms cancel and the practical arithmetic uses 4.88.",
+    "Jupiter-Uranus square is printed with a plus sign, while the stated rule and practical arithmetic treat 8.87 as discord.",
+    "The listed seventh-house Jupiter products sum to 339.86, not the printed 339.76.",
+    "The listed Moon terminal rows do not arithmetically reproduce the printed 61.87 without undocumented substitutions.",
+    "The ninth-house prose once prints 51.32, but its baseline and total require 51.82."
+  ]
+}

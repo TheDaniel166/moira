@@ -137,6 +137,11 @@ input positions. They remain a valuable final target once the input chart is
 captured (birth data above is sufficient to reconstruct it, subject to matching
 the Church of Light 1882 ephemeris and house system).
 
+Later status (2026-07-12): this paragraph describes the Benjamine-chart evidence
+boundary only. A separate three-chart corpus with captured official wheels and
+all populated relation-grid cells is now executable; see
+`astrodynes_three_chart_parity_validation_2026-07-12.md`.
+
 Planets (astrodynes / net harmony):
 Sun 103.64 / 21.65 d; Moon 28.39 / 11.09 h; Mercury 94.00 / 20.32 d;
 Venus 47.63 / 11.27 h; Mars 91.33 / 35.65 d; Jupiter 64.04 / 00.01 h;

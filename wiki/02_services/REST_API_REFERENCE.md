@@ -130,7 +130,7 @@ Not yet broadly exposed as REST families:
 | alternate-dashas | 9 |
 | antiscia | 3 |
 | astrocartography | 6 |
-| astrodynes | 3 |
+| astrodynes | 15 |
 | asteroids | 9 |
 | batch | 7 |
 | chart | 2 |
@@ -507,6 +507,48 @@ or async search jobs.
 | GET | `/v1/astrodynes/doctrine` | `astrodynes_doctrine_route` | No |
 | POST | `/v1/astrodynes/geometry` | `astrodynes_geometry_route` | No |
 | POST | `/v1/astrodynes/chart` | `astrodynes_chart_route` | Yes |
+
+Progressed Astrodynes accepts explicit, kernel-free doctrinal inputs and one
+kernel-backed chart product. Doctrine and practical responses disclose the
+source publication discrepancies; executable values follow the manual's stated
+formulas.
+
+| Method | Path | Handler | Kernel |
+|---|---|---|---|
+| GET | `/v1/astrodynes/progressed/doctrine` | `progressed_astrodynes_doctrine_route` | No |
+| POST | `/v1/astrodynes/progressed/normal` | `progressed_astrodynes_normal_route` | No |
+| POST | `/v1/astrodynes/progressed/dated-aspect` | `progressed_astrodynes_dated_aspect_route` | No |
+| POST | `/v1/astrodynes/progressed/major-relation` | `progressed_astrodynes_major_relation_route` | No |
+| POST | `/v1/astrodynes/progressed/accessory-relation` | `progressed_astrodynes_accessory_relation_route` | No |
+| POST | `/v1/astrodynes/progressed/reenforcement` | `progressed_astrodynes_reenforcement_route` | No |
+| POST | `/v1/astrodynes/progressed/practical` | `progressed_astrodynes_practical_route` | No |
+| POST | `/v1/astrodynes/progressed/total-influence` | `progressed_astrodynes_total_influence_route` | No |
+| POST | `/v1/astrodynes/progressed/compound-total-influence` | `progressed_astrodynes_compound_total_influence_route` | No |
+| POST | `/v1/astrodynes/progressed/chart` | `progressed_astrodynes_chart_backed_route` | Yes |
+| POST | `/v1/astrodynes/progressed/search` | `progressed_astrodynes_search_route` | Yes |
+| POST | `/v1/astrodynes/progressed/integrate` | `progressed_astrodynes_integrate_route` | Yes |
+
+`/progressed/chart` accepts timezone-aware natal and target datetimes,
+latitude, longitude, house system, and an explicit fallback opt-in. It derives
+the Church of Light Limiting Date, major ephemeris date, Minor Ephemeris Date,
+transit date, progressed M.C./Ascendant, four terminal tiers, the natal and
+normal calculations, accessory relations, reenforcements, and practical
+distribution. The response preserves the selected time keys, geocentric
+apparent frame, angle method, natal house frame, requested/effective house
+systems, and fallback truth.
+
+`/progressed/search` returns bounded one-degree entry and exit contacts, exact
+perfections or named closest approaches, optional minor reenforcement power,
+clipped-boundary truth, and the sampling/refinement policy. Requests are
+bounded by `max_samples`.
+
+`/progressed/integrate` applies composite trapezoidal quadrature to the actual
+ephemeris-varying instantaneous power/harmony/discord curve. Results are in
+astrodyne-, harmodyne-, and discordyne-days. The manual's constant-rate
+`0.75 * peak * duration` result remains visible only as a comparator; method,
+step, sample count, coarse comparison, and error estimate are explicit. The
+comparator is `null` for a partial interval whose endpoints are not both the
+one-degree limits.
 
 `/geometry` requires exactly the ten Astrodyne planets, declinations for those
 planets plus `M.C.` and `Asc.`, twelve cusps forming one ordered zodiacal

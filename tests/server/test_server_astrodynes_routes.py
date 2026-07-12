@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from copy import deepcopy
 from datetime import datetime, timezone
+import json
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -25,6 +27,29 @@ _CHART_PAYLOAD = {
     "observer_lon": -74.006,
     "house_system": "P",
 }
+_PROGRESSED_CHART_PAYLOAD = {
+    "natal_dt": "1882-12-12T12:11:26Z",
+    "target_dt": "1949-08-29T12:00:00Z",
+    "observer_lat": 41 + 37 / 60,
+    "observer_lon": -94.0,
+    "house_system": "P",
+    "allow_house_fallback": False,
+}
+_PROGRESSED_CONTACT_QUERY = {
+    "body_a": "Moon",
+    "kind_a": "transit",
+    "body_b": "M.C.",
+    "kind_b": "radical",
+    "aspect": "sextile",
+}
+_PROGRESSED_SEARCH_PAYLOAD = {
+    "natal_dt": "1882-12-12T12:11:26Z",
+    "start_dt": "1949-08-29T08:00:00Z",
+    "end_dt": "1949-08-29T16:00:00Z",
+    "observer_lat": 41 + 37 / 60,
+    "observer_lon": -94.0,
+    "query": _PROGRESSED_CONTACT_QUERY,
+}
 _GEOMETRY_PAYLOAD = {
     "planet_longitudes": dict(
         zip(ASTRODYNE_PLANETS, (5, 45, 95, 125, 155, 185, 215, 245, 275, 335))
@@ -38,6 +63,120 @@ _GEOMETRY_PAYLOAD = {
     "mc_longitude": 270,
     "asc_longitude": 0,
 }
+_FIXTURE_DIR = Path(__file__).parents[1] / "fixtures"
+
+
+def _progressed_payloads() -> tuple[dict, dict]:
+    normal_fixture = json.loads(
+        (_FIXTURE_DIR / "progressed_astrodynes_benjamine_normal_1949.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    dated_fixture = json.loads(
+        (_FIXTURE_DIR / "progressed_astrodynes_benjamine_dated_1949.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    normal = {
+        "birth_bodies": [
+            {"body": body, "power": values[0], "harmony": values[1], "discord": values[2]}
+            for body, values in normal_fixture["birth_bodies"].items()
+        ],
+        "birth_signs": {
+            sign: {"power": values[0], "harmony": values[1], "discord": values[2]}
+            for sign, values in normal_fixture["birth_signs"].items()
+        },
+        "birth_houses": {
+            house: {"power": values[0], "harmony": values[1], "discord": values[2]}
+            for house, values in normal_fixture["birth_houses"].items()
+        },
+        "placements": [
+            {
+                "body": body,
+                "longitude_deg": values[0],
+                "house": 7 if body == "Moon" else values[1],
+            }
+            for body, values in normal_fixture["placements"].items()
+        ],
+    }
+    practical = {
+        "normal": normal,
+        "aspects": [
+            {
+                "relation_id": row["id"],
+                "body_a": row["a"],
+                "body_b": row["b"],
+                "aspect": row["aspect"],
+                "direct_terminal_ids": row["direct"],
+                "indirect_terminal_ids": row["indirect"],
+                "peak_power": row["peak"],
+                "distance_arcmin": row["distance"],
+            }
+            for row in dated_fixture["relations"]
+        ],
+        "terminal_locations": [
+            {"terminal_id": terminal_id, "sign": values[0], "house": values[1]}
+            for terminal_id, values in dated_fixture["terminal_locations"].items()
+        ],
+        "house_cusp_signs": dated_fixture["house_cusp_signs"],
+        "mutual_receptions": [
+            {
+                "allocation_id": row["id"],
+                "body": row["body"],
+                "direct_terminal_ids": row["direct"],
+                "indirect_terminal_ids": row["indirect"],
+                "harmony": row["harmony"],
+            }
+            for row in dated_fixture["mutual_receptions"]
+        ],
+    }
+    return normal, practical
+
+
+def _progressed_relation_payloads() -> tuple[dict, dict]:
+    major = {
+        "direct_a": {
+            "body": "Sun",
+            "kind": "major_progressed",
+            "longitude_deg": 0,
+            "house_class": "cadent",
+        },
+        "direct_b": {
+            "body": "Moon",
+            "kind": "radical",
+            "longitude_deg": 45 + 4 / 60,
+            "house_class": "succedent",
+        },
+        "counterpart_a": {
+            "body": "Sun",
+            "kind": "radical",
+            "longitude_deg": 300,
+            "house_class": "cadent",
+        },
+        "counterpart_b": {
+            "body": "Moon",
+            "kind": "major_progressed",
+            "longitude_deg": 90,
+            "house_class": "succedent",
+        },
+        "natal_a": {"body": "Sun", "power": 103.64, "harmony": 0, "discord": 21.65},
+        "natal_b": {"body": "Moon", "power": 28.39, "harmony": 11.09, "discord": 0},
+        "aspect": "semi-square",
+    }
+    minor = {
+        "moving_terminal": {
+            "body": "Neptune",
+            "kind": "minor_progressed",
+            "longitude_deg": (45 + 4 / 60 + 135 + 9 / 60) % 360,
+            "house_class": "cadent",
+        },
+        "target_terminal": major["direct_b"],
+        "target_counterpart": major["counterpart_b"],
+        "natal_moving": {"body": "Neptune", "power": 35.04, "harmony": 18.71, "discord": 0},
+        "natal_target": major["natal_b"],
+        "aspect": "sesqui-square",
+    }
+    return major, minor
 
 
 class _ForbiddenEngine:
@@ -358,6 +497,284 @@ def test_astrodynes_routes_are_method_strict(kernel_free_client: TestClient) -> 
     assert kernel_free_client.get("/v1/astrodynes/geometry").status_code == 405
     assert kernel_free_client.get("/v1/astrodynes/chart").status_code == 405
     assert kernel_free_client.post("/v1/astrodynes/doctrine").status_code == 405
+    assert (
+        kernel_free_client.get("/v1/astrodynes/progressed/normal").status_code
+        == 405
+    )
+    assert (
+        kernel_free_client.get("/v1/astrodynes/progressed/chart").status_code
+        == 405
+    )
+    assert kernel_free_client.get("/v1/astrodynes/progressed/search").status_code == 405
+    assert kernel_free_client.get("/v1/astrodynes/progressed/integrate").status_code == 405
+
+
+def test_progressed_doctrine_exposes_source_discrepancies_without_engine(
+    kernel_free_client: TestClient,
+) -> None:
+    response = kernel_free_client.get("/v1/astrodynes/progressed/doctrine")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["doctrine"] == "church_of_light_progressed_astrodynes"
+    assert body["parity_status"] == "doctrinal_parity_with_published_anomalies"
+    assert body["kernel_required"] is False
+    assert body["policy"]["major_carry_factor"] == 0.5
+    assert body["policy"]["total_influence_average_factor"] == 0.75
+    assert len(body["source_anomalies"]) == 9
+
+
+def test_progressed_normal_and_practical_routes_reproduce_doctrinal_result(
+    kernel_free_client: TestClient,
+) -> None:
+    normal_payload, practical_payload = _progressed_payloads()
+
+    normal_response = kernel_free_client.post(
+        "/v1/astrodynes/progressed/normal", json=normal_payload
+    )
+    assert normal_response.status_code == 200
+    normal = normal_response.json()
+    assert normal["checksums_pass"] is True
+    assert normal["houses"][6]["total_power"] == 145.09
+
+    practical_response = kernel_free_client.post(
+        "/v1/astrodynes/progressed/practical", json=practical_payload
+    )
+    assert practical_response.status_code == 200
+    practical = practical_response.json()
+    assert len(practical["signs"]) == 12
+    assert len(practical["houses"]) == 12
+    assert practical["houses"][6]["total_power"] == 643.8
+    assert practical["houses"][8]["total_power"] == 133.76
+    assert len(practical["source_anomalies"]) == 9
+
+
+def test_progressed_dated_aspect_and_total_influence_routes(
+    kernel_free_client: TestClient,
+) -> None:
+    dated = kernel_free_client.post(
+        "/v1/astrodynes/progressed/dated-aspect",
+        json={
+            "relation_id": "sun_moon",
+            "body_a": "Sun",
+            "body_b": "Moon",
+            "aspect": "semi-square",
+            "direct_terminal_ids": ["Sun:p", "Moon:r"],
+            "indirect_terminal_ids": ["Sun:r", "Moon:p"],
+            "peak_power": 16.51,
+            "distance_arcmin": 4,
+        },
+    )
+    assert dated.status_code == 200
+    assert dated.json()["power"] == 15.96
+    assert dated.json()["discord"] == 15.96
+
+    influence = kernel_free_client.post(
+        "/v1/astrodynes/progressed/total-influence",
+        json={
+            "peak_power": 14.37,
+            "peak_harmony": 0,
+            "peak_discord": 7.185,
+            "duration": 36,
+            "unit": "year",
+        },
+    )
+    assert influence.status_code == 200
+    assert influence.json()["manual_average_power"] == 10.78
+    assert influence.json()["manual_total_power"] == 388.08
+
+
+def test_progressed_relation_and_reenforcement_routes(
+    kernel_free_client: TestClient,
+) -> None:
+    major_payload, minor_payload = _progressed_relation_payloads()
+
+    major = kernel_free_client.post(
+        "/v1/astrodynes/progressed/major-relation", json=major_payload
+    )
+    assert major.status_code == 200
+    assert major.json()["manual_peak_power"] == 16.51
+    assert major.json()["manual_power"] == 15.96
+    assert major.json()["discord"] == 15.96
+
+    minor = kernel_free_client.post(
+        "/v1/astrodynes/progressed/accessory-relation", json=minor_payload
+    )
+    assert minor.status_code == 200
+    assert minor.json()["tier"] == "minor"
+
+    reenforcement = kernel_free_client.post(
+        "/v1/astrodynes/progressed/reenforcement",
+        json={"major": major_payload, "minor": minor_payload},
+    )
+    assert reenforcement.status_code == 200
+    assert reenforcement.json()["target_is_direct"] is True
+    assert reenforcement.json()["manual_reenforced_power"] == 19.65
+    assert reenforcement.json()["discord_unchanged"] == 15.96
+
+
+def test_progressed_compound_total_influence_route(
+    kernel_free_client: TestClient,
+) -> None:
+    response = kernel_free_client.post(
+        "/v1/astrodynes/progressed/compound-total-influence",
+        json={
+            "peak_power": 14.37,
+            "peak_harmony": 0,
+            "peak_discord": 7.185,
+            "duration": {"years": 36, "months": 2, "days": 12},
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["power"] == {"years": 390, "months": 2, "days": 25.38}
+    assert body["discord"] == {"years": 195, "months": 1, "days": 12.69}
+
+
+@pytest.mark.requires_ephemeris
+def test_progressed_chart_route_derives_source_geometry_and_full_result(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/astrodynes/progressed/chart",
+        json=_PROGRESSED_CHART_PAYLOAD,
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    time = body["geometry"]["time_truth"]
+    assert time["limiting_date"] == pytest.approx(
+        {"year": 1882, "month": 12, "day": 9.1416666667}
+    )
+    assert time["major_ephemeris_datetime"].startswith("1883-02-17T")
+    assert time["minor_ephemeris_datetime"].startswith("1887-12-09T")
+
+    major = {row["body"]: row for row in body["geometry"]["major_terminals"]}
+    minor = {row["body"]: row for row in body["geometry"]["minor_terminals"]}
+    transit = {row["body"]: row for row in body["geometry"]["transit_terminals"]}
+    assert major["Sun"]["longitude_deg"] == pytest.approx(328.25, abs=0.02)
+    assert minor["Moon"]["longitude_deg"] == pytest.approx(178.70, abs=0.02)
+    assert minor["Mercury"]["longitude_deg"] == pytest.approx(236.583333, abs=0.02)
+    assert minor["Neptune"]["longitude_deg"] == pytest.approx(58.166667, abs=0.02)
+    assert transit["Neptune"]["longitude_deg"] == pytest.approx(193.516667, abs=0.02)
+
+    assert len(body["normal"]["signs"]) == 12
+    assert len(body["normal"]["houses"]) == 12
+    assert body["major_relations"]
+    assert body["minor_relations"]
+    assert body["transit_relations"]
+    assert body["reenforcements"]
+    assert len(body["practical"]["signs"]) == 12
+    assert len(body["practical"]["houses"]) == 12
+    assert body["natal"]["validation_failures"] == []
+    assert body["provenance"] == {
+        "doctrine": "church_of_light_progressed_astrodynes",
+        "engine_entrypoint": "Moira.progressed_astrodynes_chart",
+        "kernel_required": True,
+        "planetary_frame": "geocentric_apparent",
+        "major_time_key": "limiting_date_day_for_year",
+        "minor_time_key": "solar_constant_27.3_day_lunar_return",
+        "angle_method": "sun_mc_constant_and_natal_latitude_horizon",
+        "natal_house_frame": "progressed_terminals_assigned_to_natal_houses",
+    }
+
+
+@pytest.mark.requires_ephemeris
+def test_progressed_search_and_variable_integration_routes(
+    client_with_engine: TestClient,
+) -> None:
+    searched = client_with_engine.post(
+        "/v1/astrodynes/progressed/search",
+        json=_PROGRESSED_SEARCH_PAYLOAD,
+    )
+    assert searched.status_code == 200
+    search = searched.json()
+    assert search["provenance"] == (
+        "church_of_light_one_degree_band_moira_bounded_search"
+    )
+    assert len(search["windows"]) == 1
+    window = search["windows"][0]
+    assert window["entry_clipped"] is False
+    assert window["exit_clipped"] is False
+    assert window["closest_approaches"][0]["event"] == "perfection"
+    assert window["closest_approaches"][0]["distance_arcmin"] <= 0.01
+
+    integrated = client_with_engine.post(
+        "/v1/astrodynes/progressed/integrate",
+        json={
+            **_PROGRESSED_SEARCH_PAYLOAD,
+            "start_dt": window["entry"]["dt"],
+            "end_dt": window["exit"]["dt"],
+            "max_step_hours": 0.25,
+        },
+    )
+    assert integrated.status_code == 200
+    influence = integrated.json()
+    assert influence["method"] == "composite_trapezoid_actual_ephemeris"
+    assert influence["total_power_days"] > 0.0
+    assert influence["total_harmony_days"] == pytest.approx(
+        influence["total_power_days"]
+    )
+    assert influence["total_discord_days"] == 0.0
+    assert influence["constant_rate_comparator_power_days"] > 0.0
+
+
+@pytest.mark.parametrize(
+    "payload",
+    (
+        {**_PROGRESSED_CHART_PAYLOAD, "natal_dt": "1882-12-12T12:11:26"},
+        {**_PROGRESSED_CHART_PAYLOAD, "target_dt": "1949-08-29T12:00:00"},
+        {**_PROGRESSED_CHART_PAYLOAD, "target_dt": "1800-01-01T00:00:00Z"},
+        {**_PROGRESSED_CHART_PAYLOAD, "observer_lat": 91},
+        {**_PROGRESSED_CHART_PAYLOAD, "unexpected": True},
+    ),
+)
+def test_progressed_chart_route_rejects_invalid_boundaries(
+    kernel_free_client: TestClient,
+    payload: dict,
+) -> None:
+    _assert_validation(
+        kernel_free_client.post("/v1/astrodynes/progressed/chart", json=payload)
+    )
+
+
+@pytest.mark.parametrize(
+    "path,payload,fragment",
+    [
+        (
+            "/v1/astrodynes/progressed/dated-aspect",
+            {
+                "relation_id": "bad",
+                "body_a": "Sun",
+                "body_b": "Moon",
+                "aspect": "semi-square",
+                "direct_terminal_ids": ["Sun:p", "Moon:r"],
+                "peak_power": 16.51,
+                "distance_arcmin": 60.01,
+            },
+            "less than or equal to 60",
+        ),
+        (
+            "/v1/astrodynes/progressed/total-influence",
+            {
+                "peak_power": "NaN",
+                "peak_harmony": 0,
+                "peak_discord": 0,
+                "duration": 1,
+                "unit": "year",
+            },
+            "greater than or equal to 0",
+        ),
+    ],
+)
+def test_progressed_routes_reject_invalid_values(
+    kernel_free_client: TestClient,
+    path: str,
+    payload: dict,
+    fragment: str,
+) -> None:
+    _assert_validation(kernel_free_client.post(path, json=payload), fragment)
 
 
 def test_openapi_registers_strict_astrodynes_contracts(
@@ -368,6 +785,18 @@ def test_openapi_registers_strict_astrodynes_contracts(
         "/v1/astrodynes/doctrine",
         "/v1/astrodynes/geometry",
         "/v1/astrodynes/chart",
+        "/v1/astrodynes/progressed/doctrine",
+        "/v1/astrodynes/progressed/normal",
+        "/v1/astrodynes/progressed/dated-aspect",
+        "/v1/astrodynes/progressed/practical",
+        "/v1/astrodynes/progressed/total-influence",
+        "/v1/astrodynes/progressed/major-relation",
+        "/v1/astrodynes/progressed/accessory-relation",
+        "/v1/astrodynes/progressed/reenforcement",
+        "/v1/astrodynes/progressed/compound-total-influence",
+        "/v1/astrodynes/progressed/chart",
+        "/v1/astrodynes/progressed/search",
+        "/v1/astrodynes/progressed/integrate",
     }
     tag = next(item for item in schema["tags"] if item["name"] == "astrodynes")
     assert tag["x-family"] == "classical-vedic"
@@ -376,6 +805,18 @@ def test_openapi_registers_strict_astrodynes_contracts(
         "additionalProperties"
     ] is False
     assert schema["components"]["schemas"]["AstrodynesChartRequest"][
+        "additionalProperties"
+    ] is False
+    assert schema["components"]["schemas"]["ProgressedPracticalRequest"][
+        "additionalProperties"
+    ] is False
+    assert schema["components"]["schemas"]["ProgressedAstrodynesChartRequest"][
+        "additionalProperties"
+    ] is False
+    assert schema["components"]["schemas"]["ProgressedContactSearchRequest"][
+        "additionalProperties"
+    ] is False
+    assert schema["components"]["schemas"]["ProgressedInfluenceIntegrationRequest"][
         "additionalProperties"
     ] is False
     assert schema["components"]["schemas"][
