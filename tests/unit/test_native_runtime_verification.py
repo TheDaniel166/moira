@@ -275,7 +275,7 @@ def test_native_find_sun_at_alt_solves_target_altitude_consistently() -> None:
         ("heliacal_setting", "search_heliacal_setting"),
     ],
 )
-def test_native_heliacal_search_matches_high_level_single_star_dispatch(
+def test_explicit_native_heliacal_policy_dispatches_to_compiled_search(
     monkeypatch: pytest.MonkeyPatch,
     event_kind: str,
     native_name: str,
@@ -329,6 +329,7 @@ def test_native_heliacal_search_matches_high_level_single_star_dispatch(
                 longitude,
                 names=["Sirius"],
                 search_days=45,
+                policy=stars.FixedStarComputationPolicy(use_native_heliacal=True),
             )
 
     assert called["value"] is True

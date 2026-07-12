@@ -40,7 +40,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from .julian import local_sidereal_time, ut_to_tt
-from .obliquity import nutation, true_obliquity
+from .obliquity import mean_obliquity, nutation, true_obliquity
 from .coordinates import ecliptic_to_equatorial
 from .planets import planet_at
 from .constants import Body
@@ -67,13 +67,14 @@ class HorizonCrossingState(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class HorizonCrossingAvailability:
-    """Sampled daily altitude envelope relative to one horizon threshold."""
+    """Daily altitude envelope relative to one horizon threshold."""
 
     state: HorizonCrossingState
     target_altitude: float
     minimum_altitude: float
     maximum_altitude: float
     sample_count: int
+    method: str = "sampled_exact_altitude"
 
 
 _PLANET_NAME_LOOKUP = {
@@ -206,8 +207,8 @@ class RiseSetPolicy:
 def _lst(jd_ut: float, longitude: float) -> float:
     """Local apparent sidereal time in degrees."""
     jd_tt = ut_to_tt(jd_ut)
-    dpsi, _ = nutation(jd_tt)
-    eps = true_obliquity(jd_tt)
+    dpsi, deps = nutation(jd_tt)
+    eps = mean_obliquity(jd_tt) + deps
     return local_sidereal_time(jd_ut, longitude, dpsi, eps)
 
 
@@ -311,6 +312,292 @@ def _altitude(
         return math.degrees(math.asin(max(-1.0, min(1.0, sin_alt))))
 
 
+def _stellar_horizon_geometry(
+    body_name: str,
+    jd_center: float,
+    lat: float,
+    target_altitude: float,
+) -> tuple[float, float, float, float, float | None]:
+    """Return fixed-star RA, Dec, exact daily altitude extrema, and cos(H0)."""
+
+    ra, dec = _body_ra_dec(jd_center, body_name)
+    lat_r = math.radians(lat)
+    dec_r = math.radians(dec)
+    altitude_r = math.radians(target_altitude)
+    maximum = 90.0 - abs(lat - dec)
+    minimum = -90.0 + abs(lat + dec)
+    denominator = math.cos(lat_r) * math.cos(dec_r)
+    if abs(denominator) < 1e-15:
+        cos_h0 = None
+    else:
+        cos_h0 = (
+            math.sin(altitude_r) - math.sin(lat_r) * math.sin(dec_r)
+        ) / denominator
+    return ra, dec, minimum, maximum, cos_h0
+
+
+def _refine_horizon_estimate(
+    altitude_error,
+    estimate: float,
+    jd_start: float,
+) -> tuple[float, float, float] | None:
+    """Bracket one analytic horizon estimate, widening before scan fallback."""
+
+    for half_width_minutes in (15.0, 30.0, 60.0, 120.0):
+        half_width = half_width_minutes / 1440.0
+        left = max(jd_start, estimate - half_width)
+        right = min(jd_start + 1.0, estimate + half_width)
+        if right <= left:
+            continue
+        f_left = altitude_error(left)
+        f_right = altitude_error(right)
+        if f_left == 0.0:
+            return left, f_left, f_right
+        if f_right == 0.0:
+            return right, f_left, f_right
+        if f_left * f_right < 0.0:
+            return _refine_bisection(altitude_error, left, right), f_left, f_right
+    return None
+
+
+def _stellar_horizon_events(
+    body_name: str,
+    jd_start: float,
+    lat: float,
+    lon: float,
+    effective_altitude: float,
+    pressure_mbar: float,
+    temperature_c: float,
+) -> dict[str, float] | None:
+    """Bracket fixed-star rise/set analytically and refine the exact signal.
+
+    An empty mapping is an analytic circumpolar/non-rising result. ``None``
+    means an expected crossing could not be bracketed and requests the legacy
+    bounded scan fallback.
+    """
+
+    ra, _dec, minimum, maximum, cos_h0 = _stellar_horizon_geometry(
+        body_name,
+        jd_start + 0.5,
+        lat,
+        effective_altitude,
+    )
+    if minimum > effective_altitude or maximum < effective_altitude:
+        return {}
+    if cos_h0 is None or not -1.0 <= cos_h0 <= 1.0:
+        return {}
+
+    hour_angle = math.degrees(math.acos(max(-1.0, min(1.0, cos_h0))))
+    lst_start = _lst(jd_start, lon)
+    sidereal_rate = 360.98564736629
+    sidereal_day = 360.0 / sidereal_rate
+    altitude_error = lambda jd: (
+        _altitude(
+            jd,
+            lat,
+            lon,
+            body_name,
+            pressure_mbar,
+            temperature_c,
+        )
+        - effective_altitude
+    )
+    results: dict[str, float] = {}
+    for event, target_lst in (
+        ("Rise", (ra - hour_angle) % 360.0),
+        ("Set", (ra + hour_angle) % 360.0),
+    ):
+        estimate = jd_start + ((target_lst - lst_start) % 360.0) / sidereal_rate
+        bracket = _refine_horizon_estimate(
+            altitude_error,
+            estimate,
+            jd_start,
+        )
+        if bracket is None:
+            return None
+        event_jd, f_left, f_right = bracket
+        if estimate + sidereal_day < jd_start + 1.0:
+            later = _refine_horizon_estimate(
+                altitude_error,
+                estimate + sidereal_day,
+                jd_start,
+            )
+            if later is not None:
+                event_jd, f_left, f_right = later
+        rising = f_left <= 0.0 <= f_right
+        if (event == "Rise" and rising) or (event == "Set" and not rising):
+            results[event] = event_jd
+        else:
+            return None
+    return results
+
+
+def _planet_horizon_events(
+    body_name: str,
+    jd_start: float,
+    lat: float,
+    lon: float,
+    effective_altitude: float,
+    pressure_mbar: float,
+    temperature_c: float,
+) -> dict[str, float] | None:
+    """Bracket moving-body horizon events cheaply and refine topocentrically.
+
+    Geocentric center-window RA/Dec supplies estimates only. Every admitted
+    event is refined on the exact topocentric altitude signal; any failed
+    estimate falls back to the bounded scan.
+    """
+
+    ra, dec = _body_ra_dec(jd_start + 0.5, body_name)
+    lat_r = math.radians(lat)
+    dec_r = math.radians(dec)
+    altitude_r = math.radians(effective_altitude)
+    denominator = math.cos(lat_r) * math.cos(dec_r)
+    if abs(denominator) < 1e-15:
+        return None
+    cos_h0 = (
+        math.sin(altitude_r) - math.sin(lat_r) * math.sin(dec_r)
+    ) / denominator
+    if not -1.0 <= cos_h0 <= 1.0:
+        return None
+    hour_angle = math.degrees(math.acos(max(-1.0, min(1.0, cos_h0))))
+    lst_start = _lst(jd_start, lon)
+    sidereal_rate = 360.98564736629
+    sidereal_day = 360.0 / sidereal_rate
+    altitude_error = lambda jd: (
+        _altitude(
+            jd,
+            lat,
+            lon,
+            body_name,
+            pressure_mbar,
+            temperature_c,
+        )
+        - effective_altitude
+    )
+    results: dict[str, float] = {}
+    for event, target_lst in (
+        ("Rise", (ra - hour_angle) % 360.0),
+        ("Set", (ra + hour_angle) % 360.0),
+    ):
+        estimate = jd_start + ((target_lst - lst_start) % 360.0) / sidereal_rate
+        bracket = _refine_horizon_estimate(altitude_error, estimate, jd_start)
+        if bracket is None:
+            return None
+        event_jd, f_left, f_right = bracket
+        if estimate + sidereal_day < jd_start + 1.0:
+            later = _refine_horizon_estimate(
+                altitude_error,
+                estimate + sidereal_day,
+                jd_start,
+            )
+            if later is not None:
+                event_jd, f_left, f_right = later
+        rising = f_left <= 0.0 <= f_right
+        if (event == "Rise" and rising) or (event == "Set" and not rising):
+            results[event] = event_jd
+        else:
+            return None
+    return results
+
+
+def _scan_horizon_events(
+    body_name: str,
+    jd_start: float,
+    lat: float,
+    lon: float,
+    effective_altitude: float,
+    pressure_mbar: float,
+    temperature_c: float,
+) -> dict[str, float]:
+    """Return rise/set events through the legacy bounded exact-signal scan."""
+
+    results: dict[str, float] = {}
+    steps = 144
+    altitude_error = lambda jd: _altitude(
+        jd, lat, lon, body_name, pressure_mbar, temperature_c
+    ) - effective_altitude
+    prev_alt = altitude_error(jd_start)
+    for i in range(1, steps + 1):
+        jd = jd_start + (i / steps)
+        curr_alt = altitude_error(jd)
+        if prev_alt == 0.0:
+            final_jd = jd - (1.0 / steps)
+            results["Rise" if curr_alt >= 0.0 else "Set"] = final_jd
+        elif prev_alt * curr_alt < 0.0:
+            final_jd = _refine_bisection(
+                altitude_error,
+                jd - (1.0 / steps),
+                jd,
+            )
+            if prev_alt < 0.0 and curr_alt >= 0.0:
+                results["Rise"] = final_jd
+            elif prev_alt > 0.0 and curr_alt <= 0.0:
+                results["Set"] = final_jd
+        prev_alt = curr_alt
+    return results
+
+
+def _effective_horizon_altitude(
+    body_name: str,
+    altitude: float | None,
+    policy: "RiseSetPolicy | None",
+) -> float:
+    """Resolve the explicit/policy/default horizon event definition."""
+
+    if altitude is not None:
+        return altitude
+    if policy is not None:
+        return policy.horizon_altitude_for(body_name)
+    return -0.8333 if body_name.lower() in ("sun", "moon") else -0.5667
+
+
+def _find_horizon_events(
+    body_name: str,
+    jd_start: float,
+    lat: float,
+    lon: float,
+    effective_altitude: float,
+    pressure_mbar: float,
+    temperature_c: float,
+) -> dict[str, float]:
+    """Find rise/set only, preserving analytic-star and scan fallback law."""
+
+    if _resolve_planet_name(body_name) is None:
+        stellar = _stellar_horizon_events(
+            body_name,
+            jd_start,
+            lat,
+            lon,
+            effective_altitude,
+            pressure_mbar,
+            temperature_c,
+        )
+        if stellar is not None:
+            return stellar
+    else:
+        planetary = _planet_horizon_events(
+            body_name,
+            jd_start,
+            lat,
+            lon,
+            effective_altitude,
+            pressure_mbar,
+            temperature_c,
+        )
+        if planetary is not None:
+            return planetary
+    return _scan_horizon_events(
+        body_name,
+        jd_start,
+        lat,
+        lon,
+        effective_altitude,
+        pressure_mbar,
+        temperature_c,
+    )
+
+
 def horizon_crossing_availability(
     body_name: str,
     jd_start: float,
@@ -338,12 +625,24 @@ def horizon_crossing_availability(
     if steps <= 0:
         raise ValueError("steps must be positive")
 
-    altitudes = tuple(
-        _altitude(jd_start + index / steps, lat, lon, body_name)
-        for index in range(steps + 1)
-    )
-    minimum = min(altitudes)
-    maximum = max(altitudes)
+    if _resolve_planet_name(body_name) is None:
+        _ra, _dec, minimum, maximum, _cos_h0 = _stellar_horizon_geometry(
+            body_name,
+            jd_start + 0.5,
+            lat,
+            altitude,
+        )
+        sample_count = 1
+        method = "analytic_fixed_star_diurnal_extrema"
+    else:
+        altitudes = tuple(
+            _altitude(jd_start + index / steps, lat, lon, body_name)
+            for index in range(steps + 1)
+        )
+        minimum = min(altitudes)
+        maximum = max(altitudes)
+        sample_count = len(altitudes)
+        method = "sampled_exact_altitude"
     if minimum > altitude:
         state = HorizonCrossingState.ALWAYS_ABOVE_HORIZON
     elif maximum < altitude:
@@ -355,7 +654,8 @@ def horizon_crossing_availability(
         target_altitude=altitude,
         minimum_altitude=minimum,
         maximum_altitude=maximum,
-        sample_count=len(altitudes),
+        sample_count=sample_count,
+        method=method,
     )
 
 
@@ -399,45 +699,16 @@ def find_phenomena(
         ``'AntiTransit'`` mapping to Julian Day values (UT) for events that
         occur within the 24-hour window.  Keys for absent events are omitted.
     """
-    # Resolve the effective altitude
-    if altitude is not None:
-        effective_altitude = altitude
-    elif policy is not None:
-        effective_altitude = policy.horizon_altitude_for(body_name)
-    else:
-        # Legacy default: Sun/Moon use refraction + semi-diameter; others use refraction only.
-        name_lower = body_name.lower()
-        if name_lower in ('sun', 'moon'):
-            effective_altitude = -0.8333
-        else:
-            effective_altitude = -0.5667
-
-    results: dict[str, float] = {}
-
-    # 10-minute brackets are cheap and provide reliable sign changes for the
-    # final bisection refinement.
-    steps = 144
-    altitude_error = lambda jd: _altitude(jd, lat, lon, body_name, pressure_mbar, temperature_c) - effective_altitude
-    prev_alt = altitude_error(jd_start)
-
-    for i in range(1, steps + 1):
-        jd = jd_start + (i / steps)
-        curr_alt = altitude_error(jd)
-
-        if prev_alt == 0.0:
-            final_jd = jd - (1.0 / steps)
-            if curr_alt >= 0.0:
-                results["Rise"] = final_jd
-            else:
-                results["Set"] = final_jd
-        elif prev_alt * curr_alt < 0.0:
-            final_jd = _refine_bisection(altitude_error, jd - (1.0 / steps), jd)
-            if prev_alt < 0.0 and curr_alt >= 0.0:
-                results["Rise"] = final_jd
-            elif prev_alt > 0.0 and curr_alt <= 0.0:
-                results["Set"] = final_jd
-
-        prev_alt = curr_alt
+    effective_altitude = _effective_horizon_altitude(body_name, altitude, policy)
+    results = _find_horizon_events(
+        body_name,
+        jd_start,
+        lat,
+        lon,
+        effective_altitude,
+        pressure_mbar,
+        temperature_c,
+    )
 
     transit = get_transit(body_name, jd_start, lat, lon, upper=True)
     if jd_start <= transit < jd_start + 1.0:
@@ -450,14 +721,18 @@ def find_phenomena(
     return results
 
 
-def get_transit(body_name: str, jd_day: float, lat: float, lon: float, *, upper: bool = True) -> float:
-    """Find the precise JD of the upper or lower meridian transit in the next 24h."""
+def _scan_transit(
+    body_name: str,
+    jd_day: float,
+    lat: float,
+    lon: float,
+    *,
+    upper: bool,
+) -> float:
+    """Find a meridian transit by bounded scan and exact bisection."""
+
     target_ha = 0.0 if upper else 180.0
     error = lambda value: _hour_angle_error(value, body_name, lat, lon, target_ha)
-
-    # Sample the next 24h and refine the first real sign change near the
-    # requested meridian. This avoids false brackets at the +/-180 wrap
-    # discontinuity and is materially more reliable for the Moon.
     steps = 288  # 5-minute cadence
     prev_jd = jd_day
     prev_err = error(prev_jd)
@@ -473,17 +748,34 @@ def get_transit(body_name: str, jd_day: float, lat: float, lon: float, *, upper:
         prev_jd = jd
         prev_err = curr_err
 
-    jd = jd_day if upper else jd_day + 0.5
-    sidereal_day = 0.9972695663
+    raise RuntimeError("no meridian transit bracket found in the 24-hour window")
+
+
+def get_transit(body_name: str, jd_day: float, lat: float, lon: float, *, upper: bool = True) -> float:
+    """Find the precise JD of the upper or lower meridian transit in the next 24h.
+
+    A Newton solve is attempted first from the forward hour-angle estimate for
+    the requested meridian. The result is admitted only when it lies in the
+    requested window and its exact topocentric/geocentric hour-angle residual verifies.
+    The bounded scan remains the deterministic fallback for difficult motion
+    or wrap geometry.
+    """
+
+    target_ha = 0.0 if upper else 180.0
+    error = lambda value: _hour_angle_error(value, body_name, lat, lon, target_ha)
+
+    sidereal_rate = 360.98564736629
+    initial_error = error(jd_day)
+    jd = jd_day + ((-initial_error) % 360.0) / sidereal_rate
     for _ in range(8):
         err = error(jd)
-        jd -= err / 360.98564736629
+        jd -= err / sidereal_rate
+        if abs(err) < 1e-5:
+            break
 
-    while jd < jd_day:
-        jd += sidereal_day
-    while jd >= jd_day + 1.0:
-        jd -= sidereal_day
-    return jd
+    if jd_day <= jd < jd_day + 1.0 and abs(error(jd)) < 1e-5:
+        return jd
+    return _scan_transit(body_name, jd_day, lat, lon, upper=upper)
 
 
 def _find_sun_altitude_crossing(

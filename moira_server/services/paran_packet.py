@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from moira.heliacal import HeliacalEventKind, VisibilitySearchPolicy, visibility_event
 from moira.parans import (
+    _paran_crossing_cache_scope,
     natal_angular_contacts,
     natal_parans,
     natal_parans_with_inventory,
@@ -42,7 +43,7 @@ def compute_paran_packet(engine, request: ParanPacketRequest) -> ParanPacketResp
         available_only=True,
     )
     reader = getattr(engine, "_reader", None)
-    with use_reader_override(reader):
+    with use_reader_override(reader), _paran_crossing_cache_scope():
         if request.include_crossing_inventory:
             detailed = natal_parans_with_inventory(
                 request.bodies,

@@ -1366,6 +1366,7 @@ def heliacal_catalog_batch(
         and hasattr(mn, "search_heliacal_rising") 
         and getattr(resolved_policy, "allow_native", True)
         and getattr(resolved_policy, "use_native_heliacal", True)
+        and resolved_policy.heliacal == HeliacalSearchPolicy()
     ):
         from .julian import ut_to_tt
         from .spk_reader import get_reader

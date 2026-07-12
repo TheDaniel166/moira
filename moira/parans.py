@@ -30,6 +30,8 @@ from __future__ import annotations
 
 import math
 import itertools
+from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
@@ -50,6 +52,26 @@ _SUPPORTED_METRICS = frozenset({"match_presence", "exactness_score", "survival_r
 
 # Minutes → fractional JD conversion factor
 _MINUTES_TO_JD = 1.0 / (24.0 * 60.0)
+_PLANET_NAMES_LOWER = frozenset(name.lower() for name in Body.ALL_PLANETS)
+
+_CROSSING_CACHE: ContextVar[dict[tuple[object, ...], tuple[object, ...]] | None] = (
+    ContextVar("moira_paran_crossing_cache", default=None)
+)
+
+
+@contextmanager
+def _paran_crossing_cache_scope():
+    """Reuse immutable crossing truth inside one explicit request/field scope."""
+
+    active = _CROSSING_CACHE.get()
+    if active is not None:
+        yield
+        return
+    token = _CROSSING_CACHE.set({})
+    try:
+        yield
+    finally:
+        _CROSSING_CACHE.reset(token)
 
 
 # ---------------------------------------------------------------------------
@@ -1348,24 +1370,25 @@ def sample_paran_field(
     rendering, interpolation, or contour extraction.
     """
     samples: list[ParanFieldSample] = []
-    for lat in latitudes:
-        for lon in longitudes:
-            site_result = evaluate_paran_site(
-                target,
-                jd_day=jd_day,
-                lat=lat,
-                lon=lon,
-                orb_minutes=orb_minutes,
-                policy=policy,
-                stability_time_offsets_minutes=stability_time_offsets_minutes,
-            )
-            samples.append(
-                ParanFieldSample(
+    with _paran_crossing_cache_scope():
+        for lat in latitudes:
+            for lon in longitudes:
+                site_result = evaluate_paran_site(
+                    target,
+                    jd_day=jd_day,
                     lat=lat,
                     lon=lon,
-                    site_result=site_result,
+                    orb_minutes=orb_minutes,
+                    policy=policy,
+                    stability_time_offsets_minutes=stability_time_offsets_minutes,
                 )
-            )
+                samples.append(
+                    ParanFieldSample(
+                        lat=lat,
+                        lon=lon,
+                        site_result=site_result,
+                    )
+                )
     return samples
 
 
@@ -2190,14 +2213,62 @@ class Paran:
 # Internal: find all four crossings for a single body on a given day
 # ---------------------------------------------------------------------------
 
-def _crossing_times(
+def _crossing_cache_reader_token(body: str):
+    """Return the active reader identity for kernel-bound crossing truth."""
+
+    if body.strip().lower() not in _PLANET_NAMES_LOWER:
+        return None
+    from .spk_reader import get_reader
+
+    return get_reader()
+
+
+def _meridian_crossings(
+    body: str,
+    jd_day: float,
+    lat: float,
+    lon: float,
+) -> tuple[ParanCrossing, ...]:
+    """Return MC/IC crossings, reusing latitude-independent stellar solves."""
+
+    from .rise_set import get_transit
+
+    is_planet = body.strip().lower() in _PLANET_NAMES_LOWER
+    reader_token = _crossing_cache_reader_token(body)
+    effective_lat = lat if is_planet else None
+    cache = _CROSSING_CACHE.get()
+    key = ("meridian", body, jd_day, effective_lat, lon, reader_token)
+    if cache is not None and key in cache:
+        return cache[key]  # type: ignore[return-value]
+
+    crossings: list[ParanCrossing] = []
+    solve_lat = lat if is_planet else 0.0
+    for circle, upper in (("Culminating", True), ("AntiCulminating", False)):
+        try:
+            crossings.append(
+                ParanCrossing(
+                    body=body,
+                    circle=circle,
+                    jd=get_transit(body, jd_day, solve_lat, lon, upper=upper),
+                    source_method="get_transit",
+                )
+            )
+        except Exception:
+            pass
+    result = tuple(crossings)
+    if cache is not None:
+        cache[key] = result
+    return result
+
+
+def _compute_crossing_times(
     body: str,
     jd_day: float,
     lat: float,
     lon: float,
     pressure_mbar: float = 1013.25,
     temperature_c: float = 10.0,
-) -> list[ParanCrossing]:
+) -> tuple[ParanCrossing, ...]:
     """
     Find all four mundane circle crossings for *body* on the day starting
     at *jd_day*, as seen from the observer at (``lat``, ``lon``).
@@ -2229,18 +2300,21 @@ def _crossing_times(
     lacks a rise, set, MC, or IC event in the delegated machinery for that
     day/location.
     """
-    from .rise_set import find_phenomena, get_transit
+    from .rise_set import _find_horizon_events
 
     crossings: list[ParanCrossing] = []
 
     # Rise and Set are delegated unchanged from rise_set.find_phenomena().
     # The paran model therefore inherits the standard apparent-horizon
     # convention used there: altitude = -0.5667 degrees.
-    phenomena = find_phenomena(
-        body, jd_day, lat, lon,
-        altitude=-0.5667,
-        pressure_mbar=pressure_mbar,
-        temperature_c=temperature_c,
+    phenomena = _find_horizon_events(
+        body,
+        jd_day,
+        lat,
+        lon,
+        -0.5667,
+        pressure_mbar,
+        temperature_c,
     )
 
     if "Rise" in phenomena:
@@ -2264,40 +2338,46 @@ def _crossing_times(
             )
         )
 
-    # Upper transit (Culminating) via get_transit().
-    try:
-        jd_transit = get_transit(body, jd_day, lat, lon)
-        crossings.append(
-            ParanCrossing(
-                body=body,
-                circle="Culminating",
-                jd=jd_transit,
-                source_method="get_transit",
-            )
-        )
-        # IC is solved explicitly as the lower transit on the same search day.
-        # This keeps the event model tied to one daily window rather than
-        # letting a reseeded upper-transit search drift into the next sidereal
-        # day.
-        try:
-            jd_anti = get_transit(body, jd_day, lat, lon, upper=False)
-            crossings.append(
-                ParanCrossing(
-                    body=body,
-                    circle="AntiCulminating",
-                    jd=jd_anti,
-                    source_method="get_transit",
-                )
-            )
-        except Exception:
-            pass
-    except Exception:
-        # Near polar edge cases can fail in delegated transit solving. The
-        # paran engine treats that as "no usable MC/IC event" rather than a
-        # fatal error.
-        pass
+    crossings.extend(_meridian_crossings(body, jd_day, lat, lon))
 
-    return crossings
+    return tuple(crossings)
+
+
+def _crossing_times(
+    body: str,
+    jd_day: float,
+    lat: float,
+    lon: float,
+    pressure_mbar: float = 1013.25,
+    temperature_c: float = 10.0,
+) -> list[ParanCrossing]:
+    """Return four crossings with immutable request-scoped reuse when active."""
+
+    cache = _CROSSING_CACHE.get()
+    reader_token = _crossing_cache_reader_token(body)
+    key = (
+        "all",
+        body,
+        jd_day,
+        lat,
+        lon,
+        pressure_mbar,
+        temperature_c,
+        reader_token,
+    )
+    if cache is not None and key in cache:
+        return list(cache[key])  # type: ignore[arg-type]
+    result = _compute_crossing_times(
+        body,
+        jd_day,
+        lat,
+        lon,
+        pressure_mbar,
+        temperature_c,
+    )
+    if cache is not None:
+        cache[key] = result
+    return list(result)
 
 
 def _body_crossing_inventory(

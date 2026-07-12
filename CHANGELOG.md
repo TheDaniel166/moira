@@ -31,11 +31,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   rows and three arithmetically inconsistent aggregate statements in the
   worked manual example. Executable results follow the declared formulas
   rather than reproducing publication errors.
+- **Paran Crossing Work Duplication**: Removed repeated nutation evaluation and
+  duplicate MC/IC solves, and added request-scoped immutable crossing reuse with
+  active-reader identity retained for planetary truth.
+- **Native Heliacal Policy Honesty**: Native fixed-star heliacal batch search is
+  now explicit opt-in and restricted to its fixed default policy. The canonical
+  Python path remains the default until independent observable/event parity is
+  established.
+
+### Changed
+- **Paran Performance**: Meridian searches now use verified Newton estimates
+  with scan fallback; stellar and planetary horizon searches use analytic
+  estimates followed by exact altitude refinement; latitude-independent fixed-
+  star meridian truth is reused within bounded packet/field scopes. Public
+  paran and rise/set contracts are unchanged.
 
 ### Validation
 - The focused natal/progressed/facade/parity/adapter/search/REST acceptance set
   passes 177 tests under strict known-issue expiry. Documentation consistency,
   compilation, native import, OpenAPI registration, and diff checks also pass.
+- The protected paran/rise-set/heliacal/native/server acceptance set passes 455
+  tests. Full two-degree planet and star latitude sweeps agree with the original
+  scan event sets and remain below 0.5 seconds timing tolerance; the opt-in
+  local performance smoke passes all recorded budgets.
 
 ## [4.0.1] - 2026-07-12
 

@@ -10,6 +10,7 @@ from moira.rise_set import (
     horizon_crossing_availability,
     twilight_times,
 )
+from moira.constants import Body
 
 
 def _unwrap_monotonic(values: list[float]) -> list[float]:
@@ -133,6 +134,81 @@ def test_rise_set_planetary_ra_dec_passes_tt_explicitly_without_double_conversio
     assert captured["jd_tt"] == pytest.approx(2451545.123)
 
 
+def test_lst_reuses_one_nutation_evaluation(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[float] = []
+    monkeypatch.setattr(rise_set, "ut_to_tt", lambda jd: jd + 0.25)
+
+    def _nutation(jd_tt: float) -> tuple[float, float]:
+        calls.append(jd_tt)
+        return 0.01, 0.02
+
+    monkeypatch.setattr(rise_set, "nutation", _nutation)
+    monkeypatch.setattr(rise_set, "mean_obliquity", lambda jd_tt: 23.4)
+    monkeypatch.setattr(
+        rise_set,
+        "local_sidereal_time",
+        lambda jd_ut, longitude, dpsi, eps: jd_ut + longitude + dpsi + eps,
+    )
+
+    value = rise_set._lst(100.0, 5.0)
+
+    assert calls == [100.25]
+    assert value == pytest.approx(128.43)
+
+
+def test_get_transit_uses_verified_newton_before_scan(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[float] = []
+
+    def _error(jd, body, lat, lon, target):
+        calls.append(jd)
+        expected = 100.25 if target == 0.0 else 100.75
+        return (jd - expected) * 360.98564736629
+
+    monkeypatch.setattr(rise_set, "_hour_angle_error", _error)
+    monkeypatch.setattr(
+        rise_set,
+        "_scan_transit",
+        lambda *args, **kwargs: pytest.fail("verified Newton solve must avoid scan"),
+    )
+
+    assert rise_set.get_transit("Regulus", 100.0, 0.0, 0.0) == pytest.approx(100.25)
+    assert rise_set.get_transit(
+        "Regulus", 100.0, 0.0, 0.0, upper=False
+    ) == pytest.approx(100.75)
+    assert len(calls) <= 6
+
+
+def test_get_transit_falls_back_when_newton_does_not_verify(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        rise_set,
+        "_hour_angle_error",
+        lambda *args, **kwargs: 100.0,
+    )
+    monkeypatch.setattr(rise_set, "_scan_transit", lambda *args, **kwargs: 123.25)
+
+    assert rise_set.get_transit("Regulus", 123.0, 0.0, 0.0) == 123.25
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize("body", [*Body.ALL_PLANETS, "Regulus", "Acrux"])
+@pytest.mark.parametrize("lat", [-66.0, -30.0, 0.0, 30.0, 66.0])
+@pytest.mark.parametrize("upper", [True, False])
+def test_newton_first_transit_matches_scan_truth(
+    body: str,
+    lat: float,
+    upper: bool,
+) -> None:
+    jd_day = 2451544.5
+    expected = rise_set._scan_transit(body, jd_day, lat, -0.1, upper=upper)
+    actual = rise_set.get_transit(body, jd_day, lat, -0.1, upper=upper)
+
+    assert abs(actual - expected) * 86400.0 < 0.5
+
+
 @pytest.mark.slow
 def test_horizon_crossing_availability_distinguishes_stellar_geometry() -> None:
     states = {
@@ -145,3 +221,121 @@ def test_horizon_crossing_availability_distinguishes_stellar_geometry() -> None:
         "Capella": HorizonCrossingState.ALWAYS_ABOVE_HORIZON,
         "Acrux": HorizonCrossingState.ALWAYS_BELOW_HORIZON,
     }
+
+
+@pytest.mark.slow
+def test_fixed_star_fast_horizon_matches_scan_truth_across_latitudes() -> None:
+    jd_day = 2451544.5
+    altitude = -0.5667
+    for star in ("Regulus", "Capella", "Acrux", "Sirius", "Polaris"):
+        for lat in range(-66, 67, 2):
+            fast = rise_set._stellar_horizon_events(
+                star,
+                jd_day,
+                float(lat),
+                0.0,
+                altitude,
+                1013.25,
+                10.0,
+            )
+            scan = rise_set._scan_horizon_events(
+                star,
+                jd_day,
+                float(lat),
+                0.0,
+                altitude,
+                1013.25,
+                10.0,
+            )
+            resolved = scan if fast is None else fast
+            assert set(resolved) == set(scan), (star, lat, resolved, scan)
+            for event in scan:
+                assert abs(resolved[event] - scan[event]) * 86400.0 < 0.5
+
+
+def test_fixed_star_availability_uses_analytic_extrema_with_same_states() -> None:
+    jd_day = 2451544.5
+    altitude = -0.5667
+    for star in ("Regulus", "Capella", "Acrux", "Sirius", "Polaris"):
+        for lat in (-66.0, -30.0, 0.0, 30.0, 66.0):
+            result = horizon_crossing_availability(
+                star,
+                jd_day,
+                lat,
+                0.0,
+                altitude=altitude,
+            )
+            sampled = tuple(
+                rise_set._altitude(jd_day + index / 144, lat, 0.0, star)
+                for index in range(145)
+            )
+            expected = (
+                HorizonCrossingState.ALWAYS_ABOVE_HORIZON
+                if min(sampled) > altitude
+                else HorizonCrossingState.ALWAYS_BELOW_HORIZON
+                if max(sampled) < altitude
+                else HorizonCrossingState.CROSSES
+            )
+            assert result.state is expected
+            assert result.method == "analytic_fixed_star_diurnal_extrema"
+            assert result.sample_count == 1
+
+
+def test_fixed_star_grazing_geometry_preserves_scan_event_semantics() -> None:
+    jd_day = 2451544.5
+    altitude = -0.5667
+    _ra, dec, _minimum, _maximum, _cos_h0 = rise_set._stellar_horizon_geometry(
+        "Capella", jd_day + 0.5, 0.0, altitude
+    )
+    grazing_latitude = 90.0 + altitude - dec
+    fast = rise_set._stellar_horizon_events(
+        "Capella",
+        jd_day,
+        grazing_latitude,
+        0.0,
+        altitude,
+        1013.25,
+        10.0,
+    )
+    scan = rise_set._scan_horizon_events(
+        "Capella",
+        jd_day,
+        grazing_latitude,
+        0.0,
+        altitude,
+        1013.25,
+        10.0,
+    )
+
+    assert (scan if fast is None else fast) == scan
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize("body", Body.ALL_PLANETS)
+@pytest.mark.parametrize("lat", [-66.0, 0.0, 66.0])
+def test_planet_horizon_estimates_refine_to_scan_truth(body: str, lat: float) -> None:
+    jd_day = 2451544.5
+    altitude = -0.5667
+    fast = rise_set._planet_horizon_events(
+        body,
+        jd_day,
+        lat,
+        -0.1,
+        altitude,
+        1013.25,
+        10.0,
+    )
+    scan = rise_set._scan_horizon_events(
+        body,
+        jd_day,
+        lat,
+        -0.1,
+        altitude,
+        1013.25,
+        10.0,
+    )
+    resolved = scan if fast is None else fast
+
+    assert set(resolved) == set(scan)
+    for event in scan:
+        assert abs(resolved[event] - scan[event]) * 86400.0 < 0.5

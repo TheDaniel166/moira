@@ -27,7 +27,9 @@ class FixedStarComputationPolicy:
     lookup: FixedStarLookupPolicy = field(default_factory=FixedStarLookupPolicy)
     heliacal: HeliacalSearchPolicy = field(default_factory=HeliacalSearchPolicy)
     allow_native: bool = True
-    use_native_heliacal: bool = True
+    # Native heliacal search remains explicit opt-in until Python/native
+    # observable, event, policy, and metadata parity is independently proven.
+    use_native_heliacal: bool = False
 
 DEFAULT_FIXED_STAR_POLICY = FixedStarComputationPolicy()
 

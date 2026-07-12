@@ -184,6 +184,78 @@ def test_crossing_times_match_rise_set_engine() -> None:
         assert jd_day <= crossings["AntiCulminating"] < jd_day + 1.0
 
 
+def test_crossing_cache_is_request_scoped_and_returns_fresh_lists(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import moira.parans as parans_module
+
+    calls: list[tuple] = []
+    crossing = _crossing("Regulus", "Culminating", 2451544.75)
+
+    def _compute(*args):
+        calls.append(args)
+        return (crossing,)
+
+    monkeypatch.setattr(parans_module, "_compute_crossing_times", _compute)
+    monkeypatch.setattr(parans_module, "_crossing_cache_reader_token", lambda body: None)
+
+    with parans_module._paran_crossing_cache_scope():
+        first = parans_module._crossing_times("Regulus", 2451544.5, 10.0, 20.0)
+        second = parans_module._crossing_times("Regulus", 2451544.5, 10.0, 20.0)
+        first.clear()
+
+    assert len(calls) == 1
+    assert second == [crossing]
+    parans_module._crossing_times("Regulus", 2451544.5, 10.0, 20.0)
+    assert len(calls) == 2
+
+
+def test_crossing_cache_key_tracks_active_reader_identity(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import moira.parans as parans_module
+
+    readers = iter((object(), object()))
+    calls: list[tuple] = []
+    monkeypatch.setattr(
+        parans_module,
+        "_crossing_cache_reader_token",
+        lambda body: next(readers),
+    )
+    monkeypatch.setattr(
+        parans_module,
+        "_compute_crossing_times",
+        lambda *args: calls.append(args) or (),
+    )
+
+    with parans_module._paran_crossing_cache_scope():
+        parans_module._crossing_times("Mars", 2451544.5, 10.0, 20.0)
+        parans_module._crossing_times("Mars", 2451544.5, 10.0, 20.0)
+
+    assert len(calls) == 2
+
+
+def test_stellar_meridian_cache_reuses_latitude_independent_truth(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import moira.parans as parans_module
+    import moira.rise_set as rise_set_module
+
+    calls: list[tuple[float, bool]] = []
+
+    def _transit(body, jd_day, lat, lon, *, upper=True):
+        calls.append((lat, upper))
+        return jd_day + (0.25 if upper else 0.75)
+
+    monkeypatch.setattr(rise_set_module, "get_transit", _transit)
+    with parans_module._paran_crossing_cache_scope():
+        first = parans_module._meridian_crossings("Regulus", 2451544.5, -40.0, 20.0)
+        second = parans_module._meridian_crossings("Regulus", 2451544.5, 40.0, 20.0)
+
+    assert first == second
+    assert calls == [(0.0, True), (0.0, False)]
+
+
 @pytest.mark.slow
 def test_find_parans_resolves_live_fixed_star_pair() -> None:
     """Exercise catalog resolution through crossing generation and matching."""

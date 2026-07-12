@@ -5,7 +5,13 @@ from dataclasses import dataclass
 import pytest
 
 import moira.stars as stars
-from moira.star_types import HeliacalEvent, HeliacalBatchResult
+from moira.star_types import (
+    DEFAULT_FIXED_STAR_POLICY,
+    FixedStarComputationPolicy,
+    HeliacalBatchResult,
+    HeliacalEvent,
+    HeliacalSearchPolicy,
+)
 
 
 @dataclass
@@ -90,6 +96,55 @@ def test_batch_returns_heliacal_batch_result_type(monkeypatch: pytest.MonkeyPatc
         names=["Sirius", "Vega"], max_magnitude=7.0, search_days=30,
     )
     assert isinstance(result, HeliacalBatchResult)
+
+
+def test_native_heliacal_is_explicit_opt_in_and_custom_policy_stays_python(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    assert DEFAULT_FIXED_STAR_POLICY.use_native_heliacal is False
+    assert FixedStarComputationPolicy(use_native_heliacal=True).use_native_heliacal is True
+    assert (
+        FixedStarComputationPolicy(
+            heliacal=HeliacalSearchPolicy(setting_elongation_threshold=20.0),
+            use_native_heliacal=True,
+        ).heliacal
+        != HeliacalSearchPolicy()
+    )
+    monkeypatch.setattr(
+        stars.mn,
+        "search_heliacal_rising",
+        lambda *args, **kwargs: pytest.fail("custom policy must not enter native search"),
+    )
+    monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd)
+    monkeypatch.setattr(
+        stars,
+        "star_at",
+        lambda name, jd_tt, **_: _FakeBody(100.0, magnitude=1.2),
+    )
+    monkeypatch.setattr(
+        "moira.planets.planet_at",
+        lambda body, jd_ut, **kwargs: _FakeBody(114.5),
+    )
+    monkeypatch.setattr(
+        "moira.heliacal._find_sun_at_alt",
+        lambda *args, **kwargs: 2451545.25,
+    )
+    monkeypatch.setattr("moira.rise_set._altitude", lambda *args, **kwargs: 7.5)
+
+    result = stars.heliacal_catalog_batch(
+        "heliacal_rising",
+        2451545.0,
+        31.2,
+        29.9,
+        names=["Sirius"],
+        max_magnitude=2.0,
+        search_days=5,
+        policy=FixedStarComputationPolicy(
+            heliacal=HeliacalSearchPolicy(setting_elongation_threshold=20.0),
+            use_native_heliacal=True,
+        ),
+    )
+    assert result.total_catalog == 1
 
 
 def test_batch_found_contains_heliacal_events(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -76,12 +76,13 @@ It may not:
 ### 3. Delegated Assumptions
 
 The paran engine delegates event-time computation to `moira.rise_set` without
-redefining it:
+redefining it. Its private crossing collector uses the same horizon helper and
+public transit solver as `find_phenomena`:
 
 | Event | Source | Convention |
 |---|---|---|
-| Rise | `find_phenomena(..., altitude=-0.5667)` | Stellar apparent horizon |
-| Set | `find_phenomena(..., altitude=-0.5667)` | Stellar apparent horizon |
+| Rise | shared `rise_set` horizon solver at `altitude=-0.5667` | Stellar apparent horizon |
+| Set | shared `rise_set` horizon solver at `altitude=-0.5667` | Stellar apparent horizon |
 | MC | `get_transit(..., upper=True)` | Upper transit |
 | IC | `get_transit(..., upper=False)` | Lower transit |
 
@@ -142,9 +143,30 @@ body. Every circle is reported as one of:
 - `solver_failure`
 
 Horizon absence is derived from the same geometric altitude signal and
-`-0.5667` degree threshold used by paran rise/set search. A missing dictionary
-key alone is not sufficient to claim circumpolarity. MC and IC events remain
-meaningful meridian crossings even when the body is below the horizon.
+`-0.5667` degree threshold used by paran rise/set search. Fixed-star daily
+extrema are solved analytically from declination and observer latitude;
+planetary extrema retain exact sampled altitude diagnostics. A missing
+dictionary key alone is not sufficient to claim circumpolarity. MC and IC
+events remain meaningful meridian crossings even when the body is below the
+horizon.
+
+#### 3.4 Performance ownership
+
+Performance changes do not define a second event model:
+
+- fixed-star hour-angle geometry supplies rise/set brackets only; admitted
+  event times are refined on the exact altitude signal
+- moving-body RA/Dec supplies estimates only; topocentric altitude remains the
+  refinement authority and bounded scanning remains the fallback
+- Newton supplies a meridian estimate only; exact hour-angle residual
+  verification is required before admission and scanning remains the fallback
+- stellar MC/IC truth is reused across latitude because the admitted stellar
+  meridian calculation is geocentric and latitude-independent
+- crossing reuse is limited to an explicit request/field context and returns
+  fresh lists from immutable cached tuples; planetary keys retain active-reader
+  identity
+
+No process-global astronomical-result cache is admitted by this layer.
 
 ---
 
@@ -432,7 +454,7 @@ Expected result: **all tests pass, zero failures**.
 | 12 — Hardening | 22 | Validator helpers; `find_parans` orb guard; `_classify_paran` circle guard; field-function metric and grid guards; `segment_count` invariant; lone orphan; empty-offsets stability |
 | 15 — Natal angular contacts | 2 | Live fixed-star moment contact; boundary inclusion, exclusion, and ordering |
 
-Total in `tests/unit/test_parans.py`: **77 tests**, plus dedicated canon,
+Total in `tests/unit/test_parans.py`: **80 tests**, plus dedicated canon,
 server-route, and website-packet coverage. Server tests prove that live
 star-star parans and targets survive request validation, diagnostics,
 field/contour/path serialization, and packet composition.
