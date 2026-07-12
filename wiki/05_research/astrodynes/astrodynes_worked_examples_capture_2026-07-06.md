@@ -10,8 +10,8 @@ Purpose:
   calculations (input to output) that a Phase 1 implementation must reproduce
 - record the manual's full-chart output totals as a secondary end-to-end oracle
 - report the cross-validation of the transcribed essential-dignity map (natal
-  capture Section 5) against the manual's own worked chart, including one
-  discrepancy that must be resolved before implementation
+  capture Section 5) against the manual's own worked chart and preserve the
+  2026-07-12 resolution of the earlier Mercury transcription discrepancy
 
 This note does not change any admission status. It is source capture and
 validation-target definition only.
@@ -176,38 +176,26 @@ Confirmed by the worked chart:
 - Jupiter detriment = Gemini (progressed Jupiter in Gemini scored "in its detriment").
 - Moon home = Cancer (progressed Moon in Cancer scored "in its home sign").
 
-**Discrepancy that must be resolved before implementation:**
+**Resolved source-table discrepancy (2026-07-12):**
 - The worked chart scores progressed **Mercury in Aquarius** as **exaltation**
   ("due to its exaltation Mercury has 1/2 of 3.00, or 1.50 harmodynes"; manual
-  page 29). The natal capture Section 5 map instead lists Mercury exaltation =
-  **Virgo** and assigns **Aquarius** to Mercury's *harmony* (+1, not +3).
-- These cannot both be right. The evidence now leans toward the **Section 5 map
-  being correct (Mercury exaltation = Virgo), and the worked-example line being
-  an error**:
-  - Mercury's exaltation is Virgo 15 across the Western tradition, and Section 5
-    records exactly that canonical degree (`Virgo | 15`), which a legible source
-    table would carry and a wrong assignment would not.
-  - Section 5 was transcribed from a legible dignity-table image; the conflicting
-    line is a 1946 hand calculation, the likelier place for a slip.
-  - Aquarius already has a defined role for Mercury in Section 5 (its harmony
-    sign, +1), so scoring it as exaltation (+3) is the outlier.
-- Caveat: this is not a bare label typo. The manual carried the +3 through its
-  arithmetic (1.50, then the 21.30 sum), so the error - if it is one - propagated.
-  The manual's worked **2nd-house harmony** sub-total (and anything downstream)
-  therefore likely embeds it and must not be used as a harmony fixture without
-  correction. The discrete power examples (Section 2) and the parity charts are
-  unaffected.
-- Disposition: treat Mercury exaltation = Virgo as the leading interpretation,
-  but still confirm against the `Table of Essential Dignities` /
-  `Table of Harmodynes and Discordynes Due to Essential Dignity` image before any
-  code encodes Mercury's dignities. This is a low-risk confirmation, not an open
-  unknown.
+  page 29).
+- Direct inspection of the Church of Light `Table of Essential Dignities`
+  confirms that this is intentional Astrodyne doctrine: Mercury exaltation is
+  **Aquarius 15**, fall is **Leo 15**, harmony is **Scorpio**, and inharmony is
+  **Taurus**.
+- The earlier natal capture had imported the conventional Western
+  Virgo/Pisces axis. The worked calculation is therefore valid source evidence,
+  not a hand-calculation error.
+- The same table inspection corrected the Venus and Jupiter harmony axes and
+  Neptune's exaltation, fall, harmony, and inharmony entries. The canonical
+  corrected table is in the natal source capture, Section 5.
 
 Not exercised by the worked chart (still unvalidated from examples):
 - the degree-of-exaltation / degree-of-fall tier (+/-4), which fires only within
   1 degree of the exact exaltation/fall degree
 - the non-classical outer-planet dignities for Uranus, Neptune, Pluto home and
-  exaltation, which have no classical cross-source and no worked-example hit here
+  exaltation, which have no independent worked-example hit here
 
 ---
 
@@ -221,10 +209,9 @@ names concrete mutual-reception pairs in the worked chart:
 - "Jupiter and Mercury are in mutual reception"
 
 The natal capture Section 6 derived mutual-reception rule can therefore be
-validated against these named pairs (subject to first resolving the Mercury
-dignity discrepancy in Section 4, since Mercury's qualifying signs depend on it).
-The visual table is still desirable but is no longer the only path to validating
-the rule.
+validated against these named pairs using the corrected source table. The
+standalone mutual-reception table is still desirable but is no longer the only
+path to validating the rule.
 
 ---
 
@@ -258,22 +245,22 @@ Closed or downgraded by this capture:
 - "standalone mutual-reception table": still not visually captured, but the rule
   is now **validatable against named source examples** (Section 5).
 
-Newly raised, must resolve before implementation:
-- the **Mercury exaltation discrepancy** between the worked chart and the natal
-  capture Section 5 dignity map (Section 4).
+Resolved after this capture:
+- the **Mercury exaltation discrepancy** was a transcription error in the natal
+  capture; the table and worked chart both specify Aquarius 15 (Section 4)
 
 Update (2026-07-06): three full worked charts with captured birth data (Trump,
 Gandhi, Walters) were supplied and recorded in
 `astrodynes_parity_oracle_charts_2026-07-06.md`. These give input-captured
 end-to-end parity oracles (a secondary/software source), so the full-chart
 oracle no longer depends solely on reconstructing the Benjamine inputs. Their
-six-way power checksums all pass, but none places Mercury in Aquarius or Virgo,
-so they do not settle the Section 4 Mercury question.
+six-way power checksums all pass. None places Mercury in Aquarius or Virgo, but
+the directly inspected table now settles the Section 4 Mercury question.
 
 Still open (unchanged):
-- direct image confirmation of the `Table of Essential Dignities` and the
-  `Table of Harmodynes and Discordynes Due to Essential Dignity`, needed to
-  settle Section 4 and to confirm the degree-of-exaltation tier
+- a worked-example hit for the degree-of-exaltation tier remains desirable;
+  the table and scoring rule are explicit, but this tier lacks an independent
+  numeric example
 - input positions of the Benjamine chart remain uncaptured, but are now optional
   given the three parity charts above
 
@@ -285,9 +272,11 @@ Reviewed directly:
 - the supplied manual text (pages 1-51)
 - the natal source capture Section 5 dignity map and Section 6 mutual-reception
   derivation, checked term by term against the manual's worked calculations
+- on 2026-07-12, the embedded and separately supplied images of the Church of
+  Light `Table of Essential Dignities`
 
 Not performed:
-- no implementation attempt
-- no engine parity run (there is no engine yet)
+- no full-chart end-to-end parity run; SCP Phase 1 validates the discrete
+  source-worked computational core only
 - no edit to the `moira.wiki` submodule copies of these notes (a separate mirror
   repo); only the canonical `wiki/05_research/astrodynes/` tree is updated

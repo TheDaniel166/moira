@@ -1,7 +1,7 @@
 """
 Internal classical-method mixin for the public Moira facade.
 
-These are compatibility wrappers for classical astrology surfaces. The
+These are compatibility wrappers for classical and Hermetic astrology surfaces. The
 underlying computations remain owned by their domain modules.
 """
 
@@ -23,8 +23,9 @@ def _facade_module() -> Any:
 
 class ClassicalFacadeMixin:
     """RITE: The Tradition-Keeper — the layer that routes the public Moira
-    surface to classical astrological techniques: Hermetic Lots, essential
-    dignities, midpoints, harmonics, profections, and time-lord systems.
+    surface to classical and Hermetic astrological techniques: Hermetic Lots,
+    essential dignities, Church of Light Astrodynes, midpoints, harmonics,
+    profections, and time-lord systems.
 
 THEOREM: Mixin that provides classical astrological technique wrappers
          for the public ``moira.facade.Moira`` class, delegating each
@@ -38,7 +39,7 @@ RITE OF PURPOSE:
 
 LAW OF OPERATION:
     Responsibilities:
-        - Delegate lots, dignities, midpoints, harmonics, profections,
+        - Delegate lots, dignities, Astrodynes, midpoints, harmonics, profections,
           and time-lord computations to their owning modules.
     Non-responsibilities:
         - Does not implement any astrological calculation itself.
@@ -56,7 +57,7 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
     "scope": "class",
     "id": "moira._facade_classical.ClassicalFacadeMixin",
     "risk": "medium",
-    "api": {"frozen": ["lots", "dignities", "mutual_receptions", "midpoints", "midpoints_to_point", "harmonic", "profection", "firdaria", "decennials", "current_decennials", "zodiacal_releasing", "vimshottari_dasha", "almuten_of_degree", "almuten_figuris", "huber_house_zones", "huber_age_point", "huber_age_point_contacts", "huber_dynamic_intensity", "huber_intensity_at", "huber_chart_intensity_profile", "nine_parts"], "internal": []},
+    "api": {"frozen": ["lots", "dignities", "mutual_receptions", "astrodynes", "midpoints", "midpoints_to_point", "harmonic", "profection", "firdaria", "decennials", "current_decennials", "zodiacal_releasing", "vimshottari_dasha", "almuten_of_degree", "almuten_figuris", "huber_house_zones", "huber_age_point", "huber_age_point_contacts", "huber_dynamic_intensity", "huber_intensity_at", "huber_chart_intensity_profile", "nine_parts"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -97,6 +98,23 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
         return _facade_module().mutual_receptions(
             chart.longitudes(include_nodes=False),
             by_exaltation=by_exaltation,
+        )
+
+    def astrodynes(
+        self,
+        body_inputs,
+        cusp_signs,
+        *,
+        intercepted_signs_by_house=None,
+        policy=None,
+    ):
+        """Compute the kernel-free Church of Light natal Astrodyne result."""
+
+        return _facade_module().natal_astrodynes(
+            body_inputs,
+            cusp_signs,
+            intercepted_signs_by_house=intercepted_signs_by_house,
+            policy=policy,
         )
 
     def midpoints(self, chart, planet_set: str = "classic"):

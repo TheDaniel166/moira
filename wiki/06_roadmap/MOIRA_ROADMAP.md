@@ -51,17 +51,20 @@ are exposed in the `moira` package namespace:
 | Harmograms research engine | `harmograms/` — spectral vectors, zero-Aries parts, intensity spectra, projections, traces, comparison helpers |
 | Harmogram bridge layer | `bridges/harmograms.py` — native chart/progression adapters, body filters, and datetime-range sample builders |
 
-### Deferred doctrine candidate — Astrodynes / Cosmodynes
+### Astrodynes / Cosmodynes constitutionalization
 
-Status: primary-source unblocked; implementation still pending
+Status: bounded natal subsystem constitutional through SCP Phase 12
 
 Reason:
 - Moira can support this structurally as a derived doctrine/scoring subsystem.
 - `Astrodyne-Manual.pdf` is now in hand and materially unblocks the doctrine.
 - The manual provides the governing scoring rules, worked examples, house-power
   table, zodiacal and parallel aspect procedures, and harmony/discord rollups.
-- Remaining work is now transcription and validation of the referenced tables,
-  not uncertainty about the family's primary lineage.
+- The Church of Light dignity table has been directly confirmed and the earlier
+  Mercury/Virgo transcription error corrected.
+- `moira.astrodynes` now preserves the raw source tables and derivation truth
+  for house-position power, zodiacal aspects, magnitude parallels, essential
+  dignity, and aspect harmony/discord.
 
 Constraint:
 - Do not implement an approximate or blended "power score" and label it
@@ -70,9 +73,18 @@ Constraint:
   referenced by the manual are transcribed and validated against worked
   examples.
 
-Unblocker:
-- Transcribe the remaining referenced tables from the manual/companion Church
-  of Light material and validate an implementation against manual examples.
+Completed constitutional surface:
+- typed classification and inspectability
+- fixed source doctrine and policy
+- aspect, parallel, and mutual-reception relations
+- integrated planet/angle condition profiles
+- source-supported sign and house aggregates
+- relation network, full-subsystem hardening, backend standard, validation
+  codex, and curated public engine/facade surface
+
+Remaining product work is outside the bounded natal constitution: progressed
+Astrodynes, uncaptured society/trinity/element/quality rollups, full-chart
+Church of Light parity, and any separately evaluated REST transport.
 - See `wiki/05_research/astrodynes/astrodynes_source_assessment_2026-04-09.md`
   for the current source audit and the exact remaining gaps.
 

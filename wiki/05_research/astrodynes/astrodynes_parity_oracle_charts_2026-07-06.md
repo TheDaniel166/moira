@@ -176,21 +176,17 @@ Aggregations (power / % / net harmony):
 
 ---
 
-## 5. Effect On The Open Mercury Dignity Question
+## 5. Mercury Dignity Resolution
 
 The `Table of Essential Dignities` image is physically present in this handout
-(page 3) and is most likely the origin of the natal-capture Section 5 map. But
-it is an embedded image, not readable text in this capture, so it does not
-re-settle the disputed Mercury exaltation glyph here. None of the three worked
-charts places Mercury in Aquarius or Virgo, so they cannot settle it by
-inspection either.
+(page 3). On 2026-07-12 it was rendered directly and cross-checked against a
+clearer supplied image. The Mercury row reads Aquarius 15 for exaltation, Leo
+15 for fall, Scorpio for harmony, and Taurus for inharmony. This agrees with
+the manual's worked Mercury-in-Aquarius calculation and closes the discrepancy.
 
-The Mercury exaltation discrepancy (worked chart says Aquarius, Section 5 map
-says Virgo) therefore **remains open**. To close it, still needed:
-- a clean, zoomable image of the page-3 `Table of Essential Dignities`, or of the
-  `Table of Harmodynes and Discordynes Due to Essential Dignity`, or
-- a worked chart that places Mercury in Aquarius or Virgo so the dignity
-  contribution can be read from the numbers.
+None of the three parity charts places Mercury in Aquarius or Virgo, so they
+remain neutral on this point; the direct table plus primary worked calculation
+carry the evidence.
 
 ---
 

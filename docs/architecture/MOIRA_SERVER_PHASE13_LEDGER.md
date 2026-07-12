@@ -413,6 +413,18 @@ Required before admission:
 - validation strategy for any built-in score
 - separation between search infrastructure and electional doctrine
 
+Research foundation (2026-07-09):
+
+- `docs/architecture/P13-U1_WESTERN_ELECTIONAL_DOCTRINE_RESEARCH_DOSSIER.md`
+  (v0.6) supplies the primary-source rule inventory, named-lineage citation
+  base, and the register of doctrinal variants that must be preserved. Primary
+  texts in hand include Dorotheus Book V (*Carmen*, Dykes) and Sahl
+  *On Elections* (Dykes *Choices & Inceptions*). Complete companion inventories:
+  `P13-U1_DOROTHEUS_BOOK_V_RULE_INVENTORY.md` and
+  `P13-U1_SAHL_ON_ELECTIONS_RULE_INVENTORY.md`. Research scaffolding, not a
+  doctrine packet — no rule is validated for implementation until confirmed
+  against its named primary text at the cited page.
+
 Recommended stance:
 
 - keep doctrine-owned electional off the REST route plan until the doctrine

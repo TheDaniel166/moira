@@ -18,6 +18,7 @@ The engine is composed of sovereign, constitutionalized subsystems:
 - **[Aspects & Orbs](02_standards/ASPECT_BACKEND_STANDARD.md)**
 - **[Houses & Cusps](02_standards/HOUSES_BACKEND_STANDARD.md)**
 - **[Dignities & Sect](02_standards/DIGNITIES_BACKEND_STANDARD.md)**
+- **[Church of Light Astrodynes](02_standards/ASTRODYNES_BACKEND_STANDARD.md)**
 - **[Timing & Timelords](02_standards/TIMELORDS_BACKEND_STANDARD.md)**
 - **[Vimshottari Dasha](02_standards/DASHA_BACKEND_STANDARD.md)**
 - **[Fixed Star Logic](02_standards/STARS_BACKEND_STANDARD.md)**

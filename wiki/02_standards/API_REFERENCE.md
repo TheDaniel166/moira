@@ -219,6 +219,7 @@ The complete facade surface adds every remaining subsystem not exposed by the pr
 
 - Heliacal visibility (5-criterion model)
 - Parans and paran field analysis
+- Church of Light natal Astrodynes
 - Astro*Carto*Graphy, local space, geodetic charts
 - Galactic coordinates
 - Uranian / Hamburg School bodies
@@ -462,6 +463,7 @@ message.
 | `dignities(chart, houses)` | `list[PlanetaryDignity]` | Essential and accidental dignities |
 | `lots(chart, houses)` | `list[ArabicPart]` | Arabic Parts / Hermetic Lots |
 | `mutual_receptions(chart, by_exaltation=False)` | `list[tuple]` | `(planet_a, planet_b, type)` mutual reception triples |
+| `astrodynes(body_inputs, cusp_signs, intercepted_signs_by_house=None, policy=None)` | `AstrodyneChartResult` | Kernel-free Church of Light natal Astrodynes from explicit chart geometry |
 
 ### Classical techniques
 
@@ -1298,6 +1300,58 @@ chart_profile = calculate_chart_condition_profile(chart_lons, house_cusps, is_da
 network = calculate_condition_network_profile(chart_lons, house_cusps, is_day)
 # ConditionNetworkProfile — graph of planetary condition relationships
 ```
+
+### Church of Light Natal Astrodynes
+
+Astrodynes use a distinct Hermetic dignity table and must not be mixed with the
+conventional dignities above. The full stable low-level surface lives in
+`moira.astrodynes`; the root and facade expose the high-level constitutional
+vessels and chart builder.
+
+```python
+from moira import (
+    AstrodyneBodyInput,
+    AstrodynePolicy,
+    AstrodyneChartResult,
+    natal_astrodynes,
+)
+
+result = natal_astrodynes(
+    body_inputs,                 # ten planets plus M.C. and Asc.
+    cusp_signs,                  # twelve cusp signs in house order
+    intercepted_signs_by_house={2: ("Gemini",)},
+)
+```
+
+| Surface | Returns | Description |
+|---|---|---|
+| `natal_astrodynes(body_inputs, cusp_signs, *, intercepted_signs_by_house=None, policy=None)` | `AstrodyneChartResult` | Full natal profiles, relations, aggregates, network, and checksum truth |
+| `validate_astrodynes_output(result)` | `tuple[str, ...]` | Deterministic cross-layer invariant failures |
+| `Moira.astrodynes(...)` | `AstrodyneChartResult` | Kernel-free facade delegate |
+
+`AstrodyneBodyInput` preserves longitude, optional declination, house number,
+house class, and the house-interpolation geometry required by the manual.
+Full-chart assembly requires the ten planets plus `M.C.` and `Asc.`.
+
+Principal result layers:
+
+| Type | Meaning |
+|---|---|
+| `AstrodyneRelationSet` | Detected, admitted, and scored zodiacal, parallel, and mutual-reception relations |
+| `AstrodyneBodyConditionProfile` | Integrated power, harmony, discord, dignity, and named contributions for one body |
+| `AstrodyneSignAggregate` | Average-ruler share plus occupants for one sign |
+| `AstrodyneHouseAggregate` | Cusp/interception ruler shares plus house occupants |
+| `AstrodyneChartAggregate` | Twelve signs, twelve houses, and sign/house checksums |
+| `AstrodyneNetwork` | Nodes aligned with body profiles and edges aligned with admitted relations |
+| `AstrodyneChartResult` | Policy, inputs, relations, profiles, aggregate, and network |
+
+The only admitted `AstrodynePolicy` is the confirmed Church of Light doctrine:
+one-degree exaltation/fall emphasis, 60-arcminute magnitude parallels,
+Mercury's ordinary presence orb plus luminary scoring orb, and a +5 mutual
+reception bonus. Unsupported alternatives raise `ValueError`.
+
+See [ASTRODYNES_BACKEND_STANDARD](ASTRODYNES_BACKEND_STANDARD.md) for the full
+doctrine, constitutional layers, invariants, and validation boundary.
 
 ### Arabic Parts / Lots
 
@@ -3791,6 +3845,7 @@ result = some_function(inputs, policy=policy)
 | `HousePolicy` | houses | `polar_fallback`, `unknown_system` |
 | `DignityComputationPolicy` | dignities | essential doctrine (`traditional_classic_7` default, `modern_co_rulers` opt-in), `mercury_sect_model`, `solar_condition`, `accidental_dignity` |
 | `VedicDignityPolicy` | vedic dignities | planetary friendship and compound-relationship policy |
+| `AstrodynePolicy` | Church of Light Astrodynes | fixed one-degree dignity band, magnitude parallels, Mercury two-stage orb, mutual-reception bonus |
 | `LotsComputationPolicy` | lots | `reversal_kind`, `derived_reference`, `external_reference` |
 | `ProgressionComputationPolicy` | progressions | `time_key`, `direction`, `house_frame` |
 | `TransitComputationPolicy` | transits | `search`, `return_search`, `syzygy_search` |
