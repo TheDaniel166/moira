@@ -164,8 +164,8 @@ uvicorn --factory moira_server:create_app
 
 ## Requirements and Installation
 
-- Python 3.10 – 3.14
-- **Zero required runtime dependencies** — the published engine runs on the Python standard library plus its own native extension
+- Python 3.10 or later
+- `scipy >= 1.14` (required runtime dependency)
 - A C++ compiler, `cmake >= 3.24`, and `pybind11 >= 2.12` (required at build time for the native extension)
 - A JPL DE-series planetary kernel (de430, de440, or de441 — not bundled; see below)
 
