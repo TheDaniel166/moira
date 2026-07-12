@@ -45,6 +45,7 @@ from .panchanga import router as panchanga_router
 from .orbits import router as orbits_router
 from .phase import router as phase_router
 from .phenomena import router as phenomena_router
+from .paran_packet import router as paran_packet_router
 from .planetary_hours import router as planetary_hours_router
 from .pipeline import router as pipeline_router
 from .positions import router as positions_router
@@ -116,6 +117,7 @@ __all__ = [
     "panchanga_router",
     "phase_router",
     "phenomena_router",
+    "paran_packet_router",
     "planetary_hours_router",
     "pipeline_router",
     "positions_router",

@@ -15,6 +15,7 @@ from moira.eclipse import (
 from moira.heliacal import GeneralVisibilityEvent, PlanetHeliacalEvent, VisibilityAssessment
 from moira.occultations import CloseApproach, LunarOccultation, OccultationPathGeometry
 from moira.parans import (
+    NatalAngularContact,
     Paran,
     ParanContourAssociation,
     ParanContourExtraction,
@@ -23,6 +24,8 @@ from moira.parans import (
     ParanContourPathSet,
     ParanContourPoint,
     ParanContourSegment,
+    ParanBodyCrossingInventory,
+    ParanCircleInventoryEntry,
     ParanCrossing,
     ParanFieldAnalysis,
     ParanFieldPeak,
@@ -49,8 +52,11 @@ from ..models.phenomena import (
     LocalContactCircumstancesResponse,
     LunarEclipseLocalCircumstancesResponse,
     LunarOccultationResponse,
+    NatalAngularContactResponse,
     OccultationPathGeometryResponse,
     ParanCrossingResponse,
+    ParanBodyCrossingInventoryResponse,
+    ParanCircleInventoryEntryResponse,
     ParanContourAssociationResponse,
     ParanContourExtractionResponse,
     ParanContourHierarchyEntryResponse,
@@ -68,6 +74,7 @@ from ..models.phenomena import (
     ParanStabilityResponse,
     ParanStabilitySampleResponse,
     ParanStrengthResponse,
+    ParanThresholdCrossingResponse,
     PlanetHeliacalEventResponse,
     RetrogradePeriodResponse,
     RiseSetPhenomenaResponse,
@@ -359,6 +366,48 @@ def serialize_paran_crossing(crossing: ParanCrossing) -> ParanCrossingResponse:
     )
 
 
+def serialize_natal_angular_contact(
+    contact: NatalAngularContact,
+) -> NatalAngularContactResponse:
+    return NatalAngularContactResponse(
+        body=contact.body,
+        body_family=contact.body_family,
+        circle=contact.circle,
+        crossing_jd=contact.crossing_jd,
+        natal_jd=contact.natal_jd,
+        delta_minutes=contact.delta_minutes,
+        absolute_delta_minutes=contact.absolute_delta_minutes,
+        crossing=serialize_paran_crossing(contact.crossing),
+    )
+
+
+def serialize_paran_circle_inventory_entry(
+    entry: ParanCircleInventoryEntry,
+) -> ParanCircleInventoryEntryResponse:
+    return ParanCircleInventoryEntryResponse(
+        circle=entry.circle,
+        status=entry.status.value,
+        crossing=(
+            serialize_paran_crossing(entry.crossing)
+            if entry.crossing is not None
+            else None
+        ),
+        absence_reason=entry.absence_reason,
+    )
+
+
+def serialize_paran_body_crossing_inventory(
+    inventory: ParanBodyCrossingInventory,
+) -> ParanBodyCrossingInventoryResponse:
+    return ParanBodyCrossingInventoryResponse(
+        body=inventory.body,
+        entries=[
+            serialize_paran_circle_inventory_entry(entry)
+            for entry in inventory.entries
+        ],
+    )
+
+
 def serialize_paran_strength(strength: ParanStrength) -> ParanStrengthResponse:
     return ParanStrengthResponse(
         orb_minutes=strength.orb_minutes,
@@ -577,8 +626,11 @@ __all__ = [
     "serialize_local_contact",
     "serialize_lunar_eclipse_local",
     "serialize_lunar_occultation",
+    "serialize_natal_angular_contact",
     "serialize_occultation_path_geometry",
     "serialize_paran",
+    "serialize_paran_body_crossing_inventory",
+    "serialize_paran_circle_inventory_entry",
     "serialize_paran_contour_extraction",
     "serialize_paran_contour_path",
     "serialize_paran_contour_path_set",

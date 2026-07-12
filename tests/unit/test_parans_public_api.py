@@ -21,12 +21,20 @@ _EXPECTED_PUBLIC = {
     # Constants / configuration
     "CIRCLE_TYPES",
     "DEFAULT_PARAN_POLICY",
+    "PARAN_POLICY_PRESETS",
     # Core vessels
     "Paran",
     "ParanCrossing",
     "ParanSignature",
     "ParanPolicy",
     "ParanStrength",
+    "ParanPolicyPreset",
+    "paran_policy_preset",
+    "ParanCrossingStatus",
+    "ParanCircleInventoryEntry",
+    "ParanBodyCrossingInventory",
+    "ParanSearchResult",
+    "NatalAngularContact",
     # Stability
     "ParanStability",
     "ParanStabilitySample",
@@ -58,7 +66,10 @@ _EXPECTED_PUBLIC = {
     "analyze_paran_field_structure",
     # Engine entry points
     "find_parans",
+    "find_parans_with_inventory",
     "natal_parans",
+    "natal_parans_with_inventory",
+    "natal_angular_contacts",
 }
 
 _INTERNAL_HELPERS = {
@@ -81,6 +92,8 @@ _INTERNAL_HELPERS = {
     "_path_centroid",
     "_point_in_closed_path",
     "_crossing_times",
+    "_body_crossing_inventory",
+    "_match_parans_from_crossings",
     "_derive_paran_strength",
     "_SUPPORTED_METRICS",
     "_MINUTES_TO_JD",
@@ -139,7 +152,11 @@ def test_internal_helpers_not_on_moira_package() -> None:
 def test_entry_points_are_callable() -> None:
     callables = [
         "find_parans",
+        "find_parans_with_inventory",
         "natal_parans",
+        "natal_parans_with_inventory",
+        "natal_angular_contacts",
+        "paran_policy_preset",
         "evaluate_paran_stability",
         "evaluate_paran_site",
         "sample_paran_field",
@@ -167,6 +184,9 @@ def test_dataclass_vessels_are_classes() -> None:
         "ParanContourPathSet", "ParanContourPath",
         "ParanFieldStructure", "ParanContourHierarchyEntry",
         "ParanContourAssociation",
+        "ParanCircleInventoryEntry", "ParanBodyCrossingInventory",
+        "ParanSearchResult", "NatalAngularContact",
+        "ParanPolicyPreset", "ParanCrossingStatus",
     ]
     for name in classes:
         obj = getattr(_parans_module, name)

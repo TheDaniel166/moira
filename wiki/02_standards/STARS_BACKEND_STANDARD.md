@@ -348,6 +348,14 @@ Silent drift is prohibited.
 
 Changes to the unified-star subsystem must be validated in the project `.venv`.
 
+#### Paran canon delegation
+
+`moira.paran_stars` may select and tag fixed-star identities for paran product
+use, but it does not become a second catalog. All name resolution, catalog
+availability, position propagation, magnitude, proper motion, and provenance
+remain owned by `moira.stars` and `moira.star_types`. Paran canon membership is
+selection doctrine only.
+
 Minimum commands:
 
 ```powershell

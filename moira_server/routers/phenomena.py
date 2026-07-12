@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from moira import Moira
 
@@ -27,6 +27,8 @@ from ..models.phenomena import (
     LunarStarOccultationPathAtRequest,
     LunarStarOccultationPathRequest,
     NextStationRequest,
+    NatalAngularContactsRequest,
+    NatalAngularContactsResponse,
     NatalParanSearchRequest,
     OccultationPathGeometryResponse,
     OccultationPathSearchResponse,
@@ -39,6 +41,7 @@ from ..models.phenomena import (
     ParanFieldStructureResponse,
     ParanSearchRequest,
     ParanSearchResponse,
+    ParanStarCanonResponse,
     ParanSiteRequest,
     ParanSiteResultResponse,
     PlanetHeliacalEventResponse,
@@ -71,8 +74,10 @@ from ..serializers.phenomena import (
     serialize_general_visibility_event,
     serialize_lunar_eclipse_local,
     serialize_lunar_occultation,
+    serialize_natal_angular_contact,
     serialize_occultation_path_geometry,
     serialize_paran,
+    serialize_paran_body_crossing_inventory,
     serialize_paran_field_analysis,
     serialize_paran_field_sample,
     serialize_paran_field_structure,
@@ -100,12 +105,15 @@ from ..services.phenomena import (
     compute_lunar_star_occultation_path_at,
     compute_lunar_star_occultation_paths,
     compute_natal_parans,
+    compute_natal_parans_with_inventory,
+    compute_natal_angular_contacts,
     compute_next_station,
     compute_next_lunar_eclipse,
     compute_next_solar_eclipse,
     compute_next_visible_solar_eclipse,
     compute_next_void_of_course,
     compute_parans,
+    compute_parans_with_inventory,
     compute_paran_field_analysis,
     compute_paran_field_contours,
     compute_paran_field_path_set,
@@ -123,6 +131,7 @@ from ..services.phenomena import (
     compute_void_of_course_state,
     compute_void_of_course_window,
     compute_void_periods,
+    get_paran_star_canon,
 )
 
 
@@ -385,8 +394,32 @@ def paran_search_route(
     request: ParanSearchRequest,
     engine: Moira = Depends(get_engine),
 ) -> ParanSearchResponse:
+    if request.include_crossing_inventory:
+        result = compute_parans_with_inventory(engine, request)
+        return ParanSearchResponse(
+            events=[serialize_paran(event) for event in result.events],
+            crossing_inventory=[
+                serialize_paran_body_crossing_inventory(inventory)
+                for inventory in result.crossing_inventory
+            ],
+            effective_policy_preset=request.policy_preset,
+        )
     return ParanSearchResponse(
-        events=[serialize_paran(event) for event in compute_parans(engine, request)]
+        events=[serialize_paran(event) for event in compute_parans(engine, request)],
+        effective_policy_preset=request.policy_preset,
+    )
+
+
+@router.get("/parans/star-canon", response_model=ParanStarCanonResponse)
+def paran_star_canon_route(
+    tiers: list[str] | None = Query(default=None),
+    available_only: bool = True,
+) -> ParanStarCanonResponse:
+    """Return the engine-owned fixed-star selection profile for paran clients."""
+
+    return get_paran_star_canon(
+        tiers=tiers,
+        available_only=available_only,
     )
 
 
@@ -395,8 +428,37 @@ def natal_paran_search_route(
     request: NatalParanSearchRequest,
     engine: Moira = Depends(get_engine),
 ) -> ParanSearchResponse:
+    if request.include_crossing_inventory:
+        result = compute_natal_parans_with_inventory(engine, request)
+        return ParanSearchResponse(
+            events=[serialize_paran(event) for event in result.events],
+            crossing_inventory=[
+                serialize_paran_body_crossing_inventory(inventory)
+                for inventory in result.crossing_inventory
+            ],
+            effective_policy_preset=request.policy_preset,
+        )
     return ParanSearchResponse(
-        events=[serialize_paran(event) for event in compute_natal_parans(engine, request)]
+        events=[serialize_paran(event) for event in compute_natal_parans(engine, request)],
+        effective_policy_preset=request.policy_preset,
+    )
+
+
+@router.post(
+    "/parans/natal-angular-contacts",
+    response_model=NatalAngularContactsResponse,
+)
+def natal_angular_contacts_route(
+    request: NatalAngularContactsRequest,
+    engine: Moira = Depends(get_engine),
+) -> NatalAngularContactsResponse:
+    """Return individual mundane-circle contacts near the natal moment."""
+
+    return NatalAngularContactsResponse(
+        contacts=[
+            serialize_natal_angular_contact(contact)
+            for contact in compute_natal_angular_contacts(engine, request)
+        ]
     )
 
 
@@ -405,7 +467,9 @@ def paran_site_route(
     request: ParanSiteRequest,
     engine: Moira = Depends(get_engine),
 ) -> ParanSiteResultResponse:
-    return serialize_paran_site_result(compute_paran_site(engine, request))
+    return serialize_paran_site_result(compute_paran_site(engine, request)).model_copy(
+        update={"effective_policy_preset": request.policy_preset}
+    )
 
 
 @router.post("/parans/field/samples", response_model=ParanFieldSampleSearchResponse)
@@ -414,7 +478,8 @@ def paran_field_samples_route(
     engine: Moira = Depends(get_engine),
 ) -> ParanFieldSampleSearchResponse:
     return ParanFieldSampleSearchResponse(
-        samples=[serialize_paran_field_sample(sample) for sample in compute_paran_field_samples(engine, request)]
+        samples=[serialize_paran_field_sample(sample) for sample in compute_paran_field_samples(engine, request)],
+        effective_policy_preset=request.policy_preset,
     )
 
 
@@ -423,7 +488,9 @@ def paran_field_analysis_route(
     request: ParanFieldMetricRequest,
     engine: Moira = Depends(get_engine),
 ) -> ParanFieldAnalysisResponse:
-    return serialize_paran_field_analysis(compute_paran_field_analysis(engine, request))
+    return serialize_paran_field_analysis(compute_paran_field_analysis(engine, request)).model_copy(
+        update={"effective_policy_preset": request.policy_preset}
+    )
 
 
 @router.post("/parans/field/contours", response_model=ParanContourExtractionResponse)
@@ -431,7 +498,9 @@ def paran_field_contours_route(
     request: ParanFieldMetricRequest,
     engine: Moira = Depends(get_engine),
 ) -> ParanContourExtractionResponse:
-    return serialize_paran_contour_extraction(compute_paran_field_contours(engine, request))
+    return serialize_paran_contour_extraction(compute_paran_field_contours(engine, request)).model_copy(
+        update={"effective_policy_preset": request.policy_preset}
+    )
 
 
 @router.post("/parans/field/paths", response_model=ParanContourPathSetResponse)
@@ -439,7 +508,9 @@ def paran_field_paths_route(
     request: ParanFieldMetricRequest,
     engine: Moira = Depends(get_engine),
 ) -> ParanContourPathSetResponse:
-    return serialize_paran_contour_path_set(compute_paran_field_path_set(engine, request))
+    return serialize_paran_contour_path_set(compute_paran_field_path_set(engine, request)).model_copy(
+        update={"effective_policy_preset": request.policy_preset}
+    )
 
 
 @router.post("/parans/field/structure", response_model=ParanFieldStructureResponse)
@@ -447,4 +518,6 @@ def paran_field_structure_route(
     request: ParanFieldMetricRequest,
     engine: Moira = Depends(get_engine),
 ) -> ParanFieldStructureResponse:
-    return serialize_paran_field_structure(compute_paran_field_structure(engine, request))
+    return serialize_paran_field_structure(compute_paran_field_structure(engine, request)).model_copy(
+        update={"effective_policy_preset": request.policy_preset}
+    )

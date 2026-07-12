@@ -342,6 +342,30 @@ def test_occultation_routes_match_engine_truth(
     assert len(star_body["events"]) == len(direct_star)
 
 
+def test_paran_star_canon_route_exposes_engine_owned_tiers(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.get("/v1/parans/star-canon", params={"tiers": "royal"})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert [entry["name"] for entry in body["entries"]] == [
+        "Aldebaran",
+        "Regulus",
+        "Antares",
+        "Fomalhaut",
+    ]
+    assert body["returned_count"] == 4
+    assert body["canon_count"] >= body["returned_count"]
+    assert body["available_tiers"] == [
+        "working_canon",
+        "royal",
+        "behenian",
+        "ptolemaic",
+    ]
+    assert all(entry["available"] for entry in body["entries"])
+
+
 @pytest.mark.requires_ephemeris
 def test_heliacal_and_paran_routes_match_engine_truth(
     client_with_engine: TestClient,
@@ -358,6 +382,13 @@ def test_heliacal_and_paran_routes_match_engine_truth(
         )
         direct_parans = find_parans(["Sun", "Moon", "Mars"], 2451544.5, 51.5, 0.0, orb_minutes=10.0)
         direct_natal_parans = natal_parans(["Sun", "Moon", "Mars"], 2451545.0, 51.5, 0.0, orb_minutes=10.0)
+        direct_fixed_star_parans = find_parans(
+            ["Regulus", "Capella"],
+            2451544.5,
+            51.5,
+            0.0,
+            orb_minutes=4.0,
+        )
 
     planet_response = client_with_engine.post(
         "/v1/heliacal/planet",
@@ -399,6 +430,17 @@ def test_heliacal_and_paran_routes_match_engine_truth(
             "orb_minutes": 10.0,
         },
     )
+    fixed_star_paran_response = client_with_engine.post(
+        "/v1/parans/search",
+        json={
+            "bodies": ["Regulus", "Capella"],
+            "jd_day": 2451544.5,
+            "lat": 51.5,
+            "lon": 0.0,
+            "orb_minutes": 4.0,
+            "include_crossing_inventory": True,
+        },
+    )
 
     assert planet_response.status_code == 200
     if direct_visibility is not None:
@@ -423,6 +465,32 @@ def test_heliacal_and_paran_routes_match_engine_truth(
     assert natal_paran_response.status_code == 200
     natal_paran_body = natal_paran_response.json()
     assert len(natal_paran_body["events"]) == len(direct_natal_parans)
+
+    assert fixed_star_paran_response.status_code == 200
+    fixed_star_events = fixed_star_paran_response.json()["events"]
+    assert len(fixed_star_events) == len(direct_fixed_star_parans) == 1
+    assert fixed_star_events[0]["body1"] == "Regulus"
+    assert fixed_star_events[0]["body2"] == "Capella"
+    assert fixed_star_events[0]["circle1"] == "Setting"
+    assert fixed_star_events[0]["circle2"] == "AntiCulminating"
+    assert fixed_star_events[0]["body_family"] == "star-star"
+    assert fixed_star_events[0]["orb_min"] == pytest.approx(
+        direct_fixed_star_parans[0].orb_min
+    )
+    fixed_star_inventory = fixed_star_paran_response.json()["crossing_inventory"]
+    assert [item["body"] for item in fixed_star_inventory] == ["Regulus", "Capella"]
+    assert all(len(item["entries"]) == 4 for item in fixed_star_inventory)
+    status_by_body = {
+        item["body"]: {entry["circle"]: entry["status"] for entry in item["entries"]}
+        for item in fixed_star_inventory
+    }
+    assert set(status_by_body["Regulus"].values()) == {"found"}
+    assert status_by_body["Capella"] == {
+        "Rising": "always_above_horizon",
+        "Setting": "always_above_horizon",
+        "Culminating": "found",
+        "AntiCulminating": "found",
+    }
 
 
 @pytest.mark.requires_ephemeris

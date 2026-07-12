@@ -5,6 +5,30 @@ All notable changes to the Moira project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.1] - 2026-07-12
+
+### Added
+- **Engine-Owned Paran Star Canon**: Added a deterministic working fixed-star profile for paran consumers, with Royal, Behenian, Ptolemaic, and working-canon membership tags exposed through the facade and `GET /v1/parans/star-canon`. The profile reuses sovereign catalog identities rather than duplicating coordinates or provenance.
+- **Crossing Availability Diagnostics**: Added opt-in four-circle inventories that distinguish found crossings, always-above-horizon stars, always-below-horizon stars, and solver failures. Existing `find_parans()` and `natal_parans()` list-returning contracts remain unchanged; detailed callers use the new inventory surfaces or `include_crossing_inventory=true` over REST.
+- **Natal Angular Contacts**: Added `natal_angular_contacts()` and `POST /v1/parans/natal-angular-contacts` as a distinct birth-moment product. It does not redefine the existing full-birth-day paran search.
+- **Named Paran Policies**: Added immutable `permissive` and `star_planet_only` presets and propagated explicit policy selection through search, natal, site, field, contour, path, structure, and website packet requests.
+- **Workspace Paran Packet**: Added `POST /v1/website/parans/packet`, composing selected canon, paran, crossing-inventory, natal-angular-contact, and optional heliacal truth without moving doctrine into transport.
+- **Fixed-Star Field Proof**: Added live kernel-free Regulus-Capella coverage through site evaluation, grid sampling, field analysis, contour extraction, path consolidation, higher-order structure, and REST serialization.
+
+### Fixed
+- **Paran Field Threshold Serialization**: Restored threshold-crossing REST serialization by importing the response vessel used when a sampled field actually crosses its declared threshold.
+- **Circumpolar Empty-State Honesty**: Paran consumers can now distinguish no match from a body that remains above or below the adopted stellar horizon throughout the search day.
+
+### Changed
+- **Documentation and Workspace Discoverability**: Expanded the README/LLM-facing Vedic API documentation and updated the paran, star, API-reference, OpenAPI, and implementation-checklist documentation for the admitted fixed-star surfaces.
+
+### Compatibility
+- This is an additive patch release. Default paran matching remains permissive, `find_parans()` still returns `list[Paran]`, and `natal_parans()` still searches the complete birth day.
+- Star-star paran computation remains kernel-free. Optional heliacal packet content requires planetary-kernel access for solar ephemeris truth and reports an explicit warning when that prerequisite is unavailable.
+
+### Validation
+- The project `.venv` on Python 3.14 passed the complete paran/public-surface/rise-set/canon slice, kernel-free packet and fixed-star field routes, OpenAPI route discoverability, focused existing phenomena routes, documentation consistency, compilation checks, and all three offline JPL Horizons paran reference cases at the fixture's 5-second event-time tolerance.
+
 ## [4.0.0] - 2026-07-08
 
 ### Breaking Changes

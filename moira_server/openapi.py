@@ -405,6 +405,12 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "website",
     },
     {
+        "name": "website-parans",
+        "x-displayName": "Website Parans",
+        "description": "Bounded paran, fixed-star canon, angular-contact, and heliacal packet surfaces.",
+        "x-family": "website",
+    },
+    {
         "name": "website-locations",
         "x-displayName": "Website Locations",
         "description": "Website location lookup and timezone validation surfaces.",

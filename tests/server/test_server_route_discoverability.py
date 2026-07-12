@@ -36,12 +36,14 @@ def test_openapi_schema_has_ordered_tag_metadata_and_redoc_groups() -> None:
     assert tag_by_name["muhurta"]["x-family"] == "classical-vedic"
     assert "Vedic Muhurta" in tag_by_name["muhurta"]["description"]
     assert tag_by_name["website-chart-wheel"]["x-familyLabel"] == "Website and Batch Support"
+    assert tag_by_name["website-parans"]["x-familyLabel"] == "Website and Batch Support"
 
     tag_groups = {group["name"]: group["tags"] for group in schema["x-tagGroups"]}
     assert tag_groups["Profile Bundles"] == ["western-profile", "vedic-profile"]
     assert "muhurta" in tag_groups["Classical and Vedic Doctrine"]
     assert "planetary-hours" in tag_groups["Phenomena and Visibility"]
     assert "website-chart-wheel" in tag_groups["Website and Batch Support"]
+    assert "website-parans" in tag_groups["Website and Batch Support"]
 
 
 def test_route_catalog_lists_live_schema_routes(client: TestClient) -> None:

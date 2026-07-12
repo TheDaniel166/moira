@@ -88,6 +88,64 @@ redefining it:
 Bodies that fail to produce any of these events (circumpolar, never-rising,
 polar transit failure) simply contribute fewer crossings. This is not an error.
 
+#### 3.1 Supported target identities
+
+`find_parans` and `natal_parans` accept a single ordered `bodies` list whose
+members may be mixed freely:
+
+- planets named by the `Body.*` constants; and
+- fixed-star names or nomenclatures resolved by `moira.stars.star_at`.
+
+Fixed stars are not converted to planetary placeholders. Their catalog
+position is propagated to the requested epoch by the unified-star subsystem,
+then the ordinary rise/set and upper/lower-transit machinery produces their
+four mundane-circle events. The same matcher, time-orb rule, strength model,
+stability analysis, site/grid analysis, and REST routes then apply without a
+separate star-specific paran definition.
+
+For example, the following is a valid star-star search:
+
+```python
+find_parans(
+    ["Regulus", "Capella"],
+    2451544.5,
+    51.5,
+    -0.1,
+    orb_minutes=4.0,
+)
+```
+
+Unknown star identities retain the unified-star subsystem's explicit lookup
+failure; the paran layer does not silently substitute or approximate them.
+
+#### 3.2 Engine-owned paran star canon
+
+`moira.paran_stars` owns selection membership for paran consumers. Its working
+canon reuses the existing astrologically significant fixed-star group and adds
+stable membership tags for Royal, Behenian, and Ptolemaic subsets. It does not
+copy catalog coordinates, proper motion, magnitude, or provenance.
+
+`PARAN_STAR_CANON` is the complete identity profile. `list_paran_stars()` may
+filter by tier and by availability in the sovereign catalog. Unknown tier ids
+fail explicitly. The working canon must never be described as a Brady canon or
+navigational canon without separate source authority.
+
+#### 3.3 Crossing inventory
+
+`find_parans_with_inventory` and `natal_parans_with_inventory` preserve the
+ordinary paran events while adding a four-circle inventory for each requested
+body. Every circle is reported as one of:
+
+- `found`
+- `always_above_horizon`
+- `always_below_horizon`
+- `solver_failure`
+
+Horizon absence is derived from the same geometric altitude signal and
+`-0.5667` degree threshold used by paran rise/set search. A missing dictionary
+key alone is not sufficient to claim circumpolarity. MC and IC events remain
+meaningful meridian crossings even when the body is below the horizon.
+
 ---
 
 ### 4. Identity Rules
@@ -157,6 +215,26 @@ Policy fields:
 | `allowed_body_families` | `frozenset[str] \| None` | `None` | Allow-list; `None` = no restriction |
 | `include_stars` | `bool` | `True` | When `False`, reject any candidate involving a named fixed star |
 | `allowed_named_stars` | `frozenset[str] \| None` | `None` | Per-name allow-list for star bodies |
+
+Named policy presets are shared engine/transport identifiers:
+
+| Preset | Effective doctrine |
+|---|---|
+| `permissive` | `DEFAULT_PARAN_POLICY`; preserves existing behavior |
+| `star_planet_only` | admits only `planet-star` body-family matches |
+
+Unknown presets fail explicitly. No `classic_circles` preset is admitted until
+its allowed event combinations and source authority are documented.
+
+### 6.1 Natal moment angular contacts
+
+`natal_angular_contacts` is a distinct product. It compares each individual
+body crossing with one explicit natal moment and admits contacts within a
+declared time orb. It does not compare two bodies and does not alter the
+full-birth-day semantics of `natal_parans`.
+
+The result preserves body identity/family, circle, crossing JD, natal JD,
+signed and absolute time deltas, and the underlying `ParanCrossing` truth.
 
 ---
 
@@ -340,20 +418,24 @@ Expected result: **all tests pass, zero failures**.
 
 | Phase | Test count | Scope |
 |---|---|---|
-| 1 — Event truth | 2 (slow) | Live `find_parans`; `_crossing_times` against `rise_set` |
+| 1 — Event truth | 6 (slow) | Live mixed-body and star-star matching; `_crossing_times` parity; detailed inventory states; ordinary/detailed event identity; solver failure |
 | 2 — Classification | 3 | Signature families, body-family classification |
 | 3 — Inspectability | 1 | `crossing1`/`crossing2` preserved on `Paran` |
-| 4 — Policy | 5 | Permissive default; same-event, same-axis, body-family, star exclusion, named-star filter |
+| 4 — Policy | 6 | Permissive default; same-event, same-axis, body-family, star exclusion, named-star filter, named preset |
 | 5 — Strength | 3 | Inverse-minute formula; tighter orb → stronger; equal orb → equal |
 | 6 — Stability | 5 | Perturbation recomputation; survival rate; degradation metrics |
-| 7 — Site / grid | 4 | Deterministic site eval; stability on site; unmatched site; grid consistency |
+| 7 — Site / grid | 5 | Deterministic site eval; stability on site; unmatched site; grid consistency; live star target through structure |
 | 8 — Field analysis | 6 | Threshold regions; peak detection; threshold crossings; survival-rate metric |
 | 9 — Contour extraction | 5 | Linear interpolation; cell extraction; fragment collection; ambiguous cases; ambiguous cell reporting |
 | 10 — Consolidation | 5 | Chain stitching; closed loop; open path; orphan reporting; ambiguity propagation |
 | 11 — Field structure | 9 | Dominant path; empty set; containment; open path depth; sibling paths; peak in/out; region association; determinism |
 | 12 — Hardening | 22 | Validator helpers; `find_parans` orb guard; `_classify_paran` circle guard; field-function metric and grid guards; `segment_count` invariant; lone orphan; empty-offsets stability |
+| 15 — Natal angular contacts | 2 | Live fixed-star moment contact; boundary inclusion, exclusion, and ordering |
 
-Total as of Phase 13: **69 tests**.
+Total in `tests/unit/test_parans.py`: **77 tests**, plus dedicated canon,
+server-route, and website-packet coverage. Server tests prove that live
+star-star parans and targets survive request validation, diagnostics,
+field/contour/path serialization, and packet composition.
 
 ---
 

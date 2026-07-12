@@ -32,7 +32,10 @@ import math
 import itertools
 from dataclasses import dataclass
 from datetime import datetime
+from enum import Enum
 from functools import lru_cache
+from types import MappingProxyType
+from typing import Mapping
 
 from .constants import Body
 
@@ -60,12 +63,20 @@ __all__ = [
     # Constants / configuration
     "CIRCLE_TYPES",
     "DEFAULT_PARAN_POLICY",
+    "PARAN_POLICY_PRESETS",
     # Core vessels
     "Paran",
     "ParanCrossing",
     "ParanSignature",
     "ParanPolicy",
+    "ParanPolicyPreset",
+    "paran_policy_preset",
     "ParanStrength",
+    "ParanCrossingStatus",
+    "ParanCircleInventoryEntry",
+    "ParanBodyCrossingInventory",
+    "ParanSearchResult",
+    "NatalAngularContact",
     # Stability (Phase 6)
     "ParanStability",
     "ParanStabilitySample",
@@ -97,7 +108,10 @@ __all__ = [
     "analyze_paran_field_structure",
     # Engine entry points
     "find_parans",
+    "find_parans_with_inventory",
     "natal_parans",
+    "natal_parans_with_inventory",
+    "natal_angular_contacts",
 ]
 
 
@@ -310,6 +324,88 @@ class ParanCrossing:
         )
 
 
+class ParanCrossingStatus(str, Enum):
+    """Availability state for one expected mundane-circle crossing."""
+
+    FOUND = "found"
+    ALWAYS_ABOVE_HORIZON = "always_above_horizon"
+    ALWAYS_BELOW_HORIZON = "always_below_horizon"
+    SOLVER_FAILURE = "solver_failure"
+
+
+@dataclass(frozen=True, slots=True)
+class ParanCircleInventoryEntry:
+    """Availability evidence for one body on one mundane circle."""
+
+    circle: str
+    status: ParanCrossingStatus
+    crossing: ParanCrossing | None
+    absence_reason: str | None
+
+    def __post_init__(self) -> None:
+        _validate_circle(self.circle)
+        if self.status is ParanCrossingStatus.FOUND:
+            if self.crossing is None or self.absence_reason is not None:
+                raise ValueError("found inventory entries require crossing truth and no absence reason")
+        elif self.crossing is not None or not self.absence_reason:
+            raise ValueError("absent inventory entries require a reason and no crossing")
+
+
+@dataclass(frozen=True, slots=True)
+class ParanBodyCrossingInventory:
+    """Four-circle crossing inventory for one requested body."""
+
+    body: str
+    entries: tuple[ParanCircleInventoryEntry, ...]
+
+    def __post_init__(self) -> None:
+        if not self.body.strip():
+            raise ValueError("inventory body must be non-empty")
+        if tuple(entry.circle for entry in self.entries) != CIRCLE_TYPES:
+            raise ValueError("inventory entries must cover CIRCLE_TYPES in canonical order")
+
+
+@dataclass(frozen=True, slots=True)
+class ParanSearchResult:
+    """Detailed paran search result with per-body crossing evidence."""
+
+    events: tuple["Paran", ...]
+    crossing_inventory: tuple[ParanBodyCrossingInventory, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class NatalAngularContact:
+    """One body's mundane-circle crossing near an explicit natal moment."""
+
+    body: str
+    body_family: str
+    circle: str
+    crossing_jd: float
+    natal_jd: float
+    delta_minutes: float
+    absolute_delta_minutes: float
+    crossing: ParanCrossing
+
+    def __post_init__(self) -> None:
+        _validate_circle(self.circle)
+        if self.body != self.crossing.body or self.circle != self.crossing.circle:
+            raise ValueError("angular contact identity must match crossing truth")
+        if not all(
+            math.isfinite(value)
+            for value in (
+                self.crossing_jd,
+                self.natal_jd,
+                self.delta_minutes,
+                self.absolute_delta_minutes,
+            )
+        ):
+            raise ValueError("angular contact values must be finite")
+        if self.crossing_jd != self.crossing.jd:
+            raise ValueError("crossing_jd must preserve crossing truth")
+        if self.absolute_delta_minutes < 0.0:
+            raise ValueError("absolute_delta_minutes must be non-negative")
+
+
 @dataclass(slots=True)
 class ParanSignature:
     """
@@ -377,6 +473,32 @@ class ParanPolicy:
 
 
 DEFAULT_PARAN_POLICY = ParanPolicy()
+
+
+class ParanPolicyPreset(str, Enum):
+    """Stable named policy selections for shared engine/transport behavior."""
+
+    PERMISSIVE = "permissive"
+    STAR_PLANET_ONLY = "star_planet_only"
+
+
+PARAN_POLICY_PRESETS: Mapping[ParanPolicyPreset, ParanPolicy] = MappingProxyType({
+    ParanPolicyPreset.PERMISSIVE: DEFAULT_PARAN_POLICY,
+    ParanPolicyPreset.STAR_PLANET_ONLY: ParanPolicy(
+        allowed_body_families=frozenset({"planet-star"}),
+    ),
+})
+
+
+def paran_policy_preset(preset: ParanPolicyPreset | str) -> ParanPolicy:
+    """Resolve a named paran policy without silent fallback."""
+
+    try:
+        identifier = preset if isinstance(preset, ParanPolicyPreset) else ParanPolicyPreset(preset)
+    except ValueError as exc:
+        allowed = ", ".join(item.value for item in ParanPolicyPreset)
+        raise ValueError(f"unknown paran policy preset {preset!r}; expected one of: {allowed}") from exc
+    return PARAN_POLICY_PRESETS[identifier]
 
 
 @dataclass(frozen=True, slots=True)
@@ -2094,7 +2216,8 @@ def _crossing_times(
 
     Parameters
     ----------
-    body    : body name (one of the ``Body.*`` constants).
+    body    : planet name (one of the ``Body.*`` constants) or a fixed-star
+              name/nomenclature accepted by :func:`moira.stars.star_at`.
     jd_day  : Julian Day (UT) at the start of the search window (i.e. the
               integer JD at 00:00 UT or the natal JD floored to the day).
     lat     : observer geographic latitude (degrees, signed).
@@ -2177,6 +2300,106 @@ def _crossing_times(
     return crossings
 
 
+def _body_crossing_inventory(
+    body: str,
+    jd_day: float,
+    lat: float,
+    lon: float,
+    pressure_mbar: float = 1013.25,
+    temperature_c: float = 10.0,
+) -> ParanBodyCrossingInventory:
+    """Return four-circle availability evidence for one requested body."""
+
+    from .rise_set import HorizonCrossingState, horizon_crossing_availability
+
+    crossings = _crossing_times(
+        body,
+        jd_day,
+        lat,
+        lon,
+        pressure_mbar,
+        temperature_c,
+    )
+    by_circle = {crossing.circle: crossing for crossing in crossings}
+    horizon_state = None
+    if "Rising" not in by_circle or "Setting" not in by_circle:
+        horizon_state = horizon_crossing_availability(
+            body,
+            jd_day,
+            lat,
+            lon,
+            altitude=-0.5667,
+        ).state
+
+    entries: list[ParanCircleInventoryEntry] = []
+    for circle in CIRCLE_TYPES:
+        crossing = by_circle.get(circle)
+        if crossing is not None:
+            entries.append(
+                ParanCircleInventoryEntry(
+                    circle=circle,
+                    status=ParanCrossingStatus.FOUND,
+                    crossing=crossing,
+                    absence_reason=None,
+                )
+            )
+            continue
+
+        if circle in {"Rising", "Setting"} and horizon_state is not None:
+            status_by_state = {
+                HorizonCrossingState.ALWAYS_ABOVE_HORIZON: ParanCrossingStatus.ALWAYS_ABOVE_HORIZON,
+                HorizonCrossingState.ALWAYS_BELOW_HORIZON: ParanCrossingStatus.ALWAYS_BELOW_HORIZON,
+                HorizonCrossingState.CROSSES: ParanCrossingStatus.SOLVER_FAILURE,
+            }
+            status = status_by_state[horizon_state]
+        else:
+            status = ParanCrossingStatus.SOLVER_FAILURE
+        entries.append(
+            ParanCircleInventoryEntry(
+                circle=circle,
+                status=status,
+                crossing=None,
+                absence_reason=status.value,
+            )
+        )
+
+    return ParanBodyCrossingInventory(body=body, entries=tuple(entries))
+
+
+def _match_parans_from_crossings(
+    bodies: list[str],
+    body_crossings: dict[str, list[ParanCrossing]],
+    orb_minutes: float,
+    policy: ParanPolicy,
+) -> list[Paran]:
+    """Match already-computed crossings without redefining event generation."""
+
+    orb_jd = orb_minutes * _MINUTES_TO_JD
+    parans: list[Paran] = []
+    for body_a, body_b in itertools.combinations(bodies, 2):
+        for ca in body_crossings.get(body_a, []):
+            for cb in body_crossings.get(body_b, []):
+                dt_jd = abs(ca.jd - cb.jd)
+                if dt_jd <= orb_jd:
+                    parans.append(
+                        Paran(
+                            body1=body_a,
+                            body2=body_b,
+                            circle1=ca.circle,
+                            circle2=cb.circle,
+                            jd1=ca.jd,
+                            jd2=cb.jd,
+                            orb_min=dt_jd / _MINUTES_TO_JD,
+                            crossing1=ca,
+                            crossing2=cb,
+                            signature=_classify_paran(ca, cb),
+                        )
+                    )
+    admitted = [paran for paran in parans if _policy_allows_paran(paran, policy)]
+    admitted.sort(key=lambda paran: paran.orb_min)
+    return admitted
+
+
 # ---------------------------------------------------------------------------
 # Main paran-finding function
 # ---------------------------------------------------------------------------
@@ -2222,7 +2445,9 @@ def find_parans(
 
     Parameters
     ----------
-    bodies      : list of body names to check (e.g. ``Body.ALL_PLANETS``).
+    bodies      : planet names and/or fixed-star names or nomenclatures
+                  accepted by :func:`moira.stars.star_at` (for example,
+                  ``[*Body.ALL_PLANETS, "Regulus"]``).
     jd_day      : Julian Day (UT) of the day to search.  The function looks
                   over the full 24-hour window starting at this JD.
     lat         : observer geographic latitude (degrees, signed).
@@ -2261,50 +2486,55 @@ def find_parans(
         When *orb_minutes* is negative.
     """
     _validate_orb_non_negative(orb_minutes)
-    orb_jd = orb_minutes * _MINUTES_TO_JD
     active_policy = DEFAULT_PARAN_POLICY if policy is None else policy
 
-    # Gather all crossings for every body.
-    all_crossings: list[ParanCrossing] = []
-    for body in bodies:
-        all_crossings.extend(_crossing_times(body, jd_day, lat, lon, pressure_mbar, temperature_c))
+    body_crossings = {
+        body: _crossing_times(body, jd_day, lat, lon, pressure_mbar, temperature_c)
+        for body in bodies
+    }
+    return _match_parans_from_crossings(bodies, body_crossings, orb_minutes, active_policy)
 
-    parans: list[Paran] = []
 
-    # Compare every crossing of body A against every crossing of body B.
-    # The current model intentionally permits both same-type and mixed-type
-    # pairings; the only hard restriction is that A and B are distinct bodies.
-    body_crossings: dict[str, list[ParanCrossing]] = {}
-    for c in all_crossings:
-        body_crossings.setdefault(c.body, []).append(c)
+def find_parans_with_inventory(
+    bodies: list[str],
+    jd_day: float,
+    lat: float,
+    lon: float,
+    orb_minutes: float = 4.0,
+    policy: ParanPolicy | None = None,
+    pressure_mbar: float = 1013.25,
+    temperature_c: float = 10.0,
+) -> ParanSearchResult:
+    """Find parans and return explicit crossing availability for every body."""
 
-    for body_a, body_b in itertools.combinations(bodies, 2):
-        crossings_a = body_crossings.get(body_a, [])
-        crossings_b = body_crossings.get(body_b, [])
-
-        for ca in crossings_a:
-            for cb in crossings_b:
-                dt_jd = abs(ca.jd - cb.jd)
-                if dt_jd <= orb_jd:
-                    orb_min = dt_jd / _MINUTES_TO_JD
-                    parans.append(
-                        Paran(
-                            body1=body_a,
-                            body2=body_b,
-                            circle1=ca.circle,
-                            circle2=cb.circle,
-                            jd1=ca.jd,
-                            jd2=cb.jd,
-                            orb_min=orb_min,
-                            crossing1=ca,
-                            crossing2=cb,
-                            signature=_classify_paran(ca, cb),
-                        )
-                    )
-
-    parans = [paran for paran in parans if _policy_allows_paran(paran, active_policy)]
-    parans.sort(key=lambda p: p.orb_min)
-    return parans
+    _validate_orb_non_negative(orb_minutes)
+    active_policy = DEFAULT_PARAN_POLICY if policy is None else policy
+    inventories = tuple(
+        _body_crossing_inventory(
+            body,
+            jd_day,
+            lat,
+            lon,
+            pressure_mbar,
+            temperature_c,
+        )
+        for body in bodies
+    )
+    body_crossings = {
+        inventory.body: [
+            entry.crossing
+            for entry in inventory.entries
+            if entry.crossing is not None
+        ]
+        for inventory in inventories
+    }
+    events = _match_parans_from_crossings(
+        bodies,
+        body_crossings,
+        orb_minutes,
+        active_policy,
+    )
+    return ParanSearchResult(events=tuple(events), crossing_inventory=inventories)
 
 
 # ---------------------------------------------------------------------------
@@ -2317,6 +2547,7 @@ def natal_parans(
     lat: float,
     lon: float,
     orb_minutes: float = 4.0,
+    policy: ParanPolicy | None = None,
 ) -> list[Paran]:
     """
     Find natal parans — the parans active on the birth day.
@@ -2332,11 +2563,13 @@ def natal_parans(
 
     Parameters
     ----------
-    bodies      : list of body names to check.
+    bodies      : planet names and/or fixed-star names or nomenclatures
+                  accepted by :func:`moira.stars.star_at`.
     natal_jd    : Julian Day (UT) of the birth moment.
     lat         : birth location geographic latitude (degrees, signed).
     lon         : birth location geographic longitude (degrees, east positive).
     orb_minutes : time orb in minutes.  Default 4 minutes.
+    policy      : optional backend inclusion policy.
 
     Returns
     -------
@@ -2345,5 +2578,86 @@ def natal_parans(
     # Floor to the start of the UT day (JD noon convention: subtract 0.5,
     # floor, add 0.5 back so the window begins at 00:00 UT).
     jd_day = math.floor(natal_jd - 0.5) + 0.5
-    return find_parans(bodies, jd_day, lat, lon, orb_minutes=orb_minutes)
+    if policy is None:
+        return find_parans(bodies, jd_day, lat, lon, orb_minutes=orb_minutes)
+    return find_parans(
+        bodies,
+        jd_day,
+        lat,
+        lon,
+        orb_minutes=orb_minutes,
+        policy=policy,
+    )
+
+
+def natal_parans_with_inventory(
+    bodies: list[str],
+    natal_jd: float,
+    lat: float,
+    lon: float,
+    orb_minutes: float = 4.0,
+    policy: ParanPolicy | None = None,
+) -> ParanSearchResult:
+    """Return birth-day parans with four-circle evidence for every body."""
+
+    jd_day = math.floor(natal_jd - 0.5) + 0.5
+    return find_parans_with_inventory(
+        bodies,
+        jd_day,
+        lat,
+        lon,
+        orb_minutes=orb_minutes,
+        policy=policy,
+    )
+
+
+def natal_angular_contacts(
+    bodies: list[str],
+    natal_jd: float,
+    lat: float,
+    lon: float,
+    orb_minutes: float = 2.0,
+) -> list[NatalAngularContact]:
+    """Find individual body crossings within time orb of the natal moment.
+
+    This is deliberately distinct from :func:`natal_parans`: it compares each
+    crossing with one explicit moment rather than matching two bodies across a
+    full birth-day search window.
+    """
+
+    if not math.isfinite(natal_jd):
+        raise ValueError("natal_jd must be finite")
+    _validate_orb_non_negative(orb_minutes)
+    if not math.isfinite(orb_minutes):
+        raise ValueError("orb_minutes must be finite")
+
+    jd_day = math.floor(natal_jd - 0.5) + 0.5
+    body_order = {body: index for index, body in enumerate(bodies)}
+    circle_order = {circle: index for index, circle in enumerate(CIRCLE_TYPES)}
+    contacts: list[NatalAngularContact] = []
+    for body in bodies:
+        for crossing in _crossing_times(body, jd_day, lat, lon):
+            delta_minutes = (crossing.jd - natal_jd) / _MINUTES_TO_JD
+            absolute_delta = abs(delta_minutes)
+            if absolute_delta <= orb_minutes:
+                contacts.append(
+                    NatalAngularContact(
+                        body=body,
+                        body_family=_body_family_role(body),
+                        circle=crossing.circle,
+                        crossing_jd=crossing.jd,
+                        natal_jd=natal_jd,
+                        delta_minutes=delta_minutes,
+                        absolute_delta_minutes=absolute_delta,
+                        crossing=crossing,
+                    )
+                )
+    contacts.sort(
+        key=lambda contact: (
+            contact.absolute_delta_minutes,
+            body_order[contact.body],
+            circle_order[contact.circle],
+        )
+    )
+    return contacts
 

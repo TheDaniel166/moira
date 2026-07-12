@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from enum import Enum
 
 from .julian import local_sidereal_time, ut_to_tt
 from .obliquity import nutation, true_obliquity
@@ -45,12 +46,34 @@ from .planets import planet_at
 from .constants import Body
 
 __all__ = [
+    "HorizonCrossingAvailability",
+    "HorizonCrossingState",
     "RiseSetPolicy",
     "TwilightTimes",
     "find_phenomena",
     "get_transit",
+    "horizon_crossing_availability",
     "twilight_times",
 ]
+
+
+class HorizonCrossingState(str, Enum):
+    """Geometric relation of a body's daily altitude to a target horizon."""
+
+    CROSSES = "crosses"
+    ALWAYS_ABOVE_HORIZON = "always_above_horizon"
+    ALWAYS_BELOW_HORIZON = "always_below_horizon"
+
+
+@dataclass(frozen=True, slots=True)
+class HorizonCrossingAvailability:
+    """Sampled daily altitude envelope relative to one horizon threshold."""
+
+    state: HorizonCrossingState
+    target_altitude: float
+    minimum_altitude: float
+    maximum_altitude: float
+    sample_count: int
 
 
 _PLANET_NAME_LOOKUP = {
@@ -286,6 +309,54 @@ def _altitude(
             + math.cos(lat_r) * math.cos(dec_r) * math.cos(ha_r)
         )
         return math.degrees(math.asin(max(-1.0, min(1.0, sin_alt))))
+
+
+def horizon_crossing_availability(
+    body_name: str,
+    jd_start: float,
+    lat: float,
+    lon: float,
+    *,
+    altitude: float = -0.5667,
+    steps: int = 144,
+) -> HorizonCrossingAvailability:
+    """Classify whether a body crosses a target horizon during 24 hours.
+
+    The classification samples the same geometric altitude signal used by
+    :func:`find_phenomena`. It is diagnostic evidence for an absent rise/set
+    event; it does not replace bisection event timing.
+    """
+
+    if not body_name.strip():
+        raise ValueError("body_name must be non-empty")
+    if not all(math.isfinite(value) for value in (jd_start, lat, lon, altitude)):
+        raise ValueError("horizon availability inputs must be finite")
+    if not -90.0 <= lat <= 90.0:
+        raise ValueError("lat must be within [-90, 90]")
+    if not -180.0 <= lon <= 180.0:
+        raise ValueError("lon must be within [-180, 180]")
+    if steps <= 0:
+        raise ValueError("steps must be positive")
+
+    altitudes = tuple(
+        _altitude(jd_start + index / steps, lat, lon, body_name)
+        for index in range(steps + 1)
+    )
+    minimum = min(altitudes)
+    maximum = max(altitudes)
+    if minimum > altitude:
+        state = HorizonCrossingState.ALWAYS_ABOVE_HORIZON
+    elif maximum < altitude:
+        state = HorizonCrossingState.ALWAYS_BELOW_HORIZON
+    else:
+        state = HorizonCrossingState.CROSSES
+    return HorizonCrossingAvailability(
+        state=state,
+        target_altitude=altitude,
+        minimum_altitude=minimum,
+        maximum_altitude=maximum,
+        sample_count=len(altitudes),
+    )
 
 
 def find_phenomena(

@@ -34,9 +34,14 @@ from moira.parans import (
     evaluate_paran_site,
     extract_paran_field_contours,
     find_parans,
+    find_parans_with_inventory,
     natal_parans,
+    natal_parans_with_inventory,
+    natal_angular_contacts,
+    paran_policy_preset,
     sample_paran_field,
 )
+from moira.paran_stars import PARAN_STAR_CANON, list_paran_stars, paran_star_tiers
 from moira.rise_set import RiseSetPolicy, find_phenomena, get_transit, twilight_times
 from moira.spk_reader import use_reader_override
 from moira.stations import find_stations, is_retrograde, next_station, retrograde_periods
@@ -62,9 +67,12 @@ from ..models.phenomena import (
     LunarStarOccultationPathRequest,
     NextStationRequest,
     NatalParanSearchRequest,
+    NatalAngularContactsRequest,
     ParanFieldGridRequest,
     ParanFieldMetricRequest,
     ParanSearchRequest,
+    ParanStarCanonEntryResponse,
+    ParanStarCanonResponse,
     ParanSiteRequest,
     ParanTargetRequest,
     RetrogradePeriodSearchRequest,
@@ -79,6 +87,33 @@ from ..models.phenomena import (
     VoidOfCourseRangeRequest,
     VoidOfCourseRequest,
 )
+
+
+def get_paran_star_canon(
+    *,
+    tiers: list[str] | None = None,
+    available_only: bool = True,
+) -> ParanStarCanonResponse:
+    """Return the engine-owned paran star canon for transport consumers."""
+
+    from moira.stars import list_stars
+
+    available_names = set(list_stars())
+    entries = list_paran_stars(tiers=tiers, available_only=available_only)
+    return ParanStarCanonResponse(
+        entries=[
+            ParanStarCanonEntryResponse(
+                name=entry.name,
+                tiers=[tier.value for tier in entry.tiers],
+                default_enabled=entry.default_enabled,
+                available=entry.name in available_names,
+            )
+            for entry in entries
+        ],
+        available_tiers=[tier.value for tier in paran_star_tiers()],
+        returned_count=len(entries),
+        canon_count=len(PARAN_STAR_CANON),
+    )
 
 
 # Station detection works for any body that planet_at() can return a speed for.
@@ -614,7 +649,30 @@ def compute_parans(engine: Moira, request: ParanSearchRequest):
     _require_non_negative(request.orb_minutes, "orb_minutes")
     reader = getattr(engine, "_reader", None)
     with use_reader_override(reader):
-        return find_parans(request.bodies, request.jd_day, request.lat, request.lon, orb_minutes=request.orb_minutes)
+        return find_parans(
+            request.bodies,
+            request.jd_day,
+            request.lat,
+            request.lon,
+            orb_minutes=request.orb_minutes,
+            policy=paran_policy_preset(request.policy_preset),
+        )
+
+
+def compute_parans_with_inventory(engine: Moira, request: ParanSearchRequest):
+    _require_finite(request.jd_day, "jd_day")
+    _validate_lat_lon(request.lat, request.lon)
+    _require_non_negative(request.orb_minutes, "orb_minutes")
+    reader = getattr(engine, "_reader", None)
+    with use_reader_override(reader):
+        return find_parans_with_inventory(
+            request.bodies,
+            request.jd_day,
+            request.lat,
+            request.lon,
+            orb_minutes=request.orb_minutes,
+            policy=paran_policy_preset(request.policy_preset),
+        )
 
 
 def compute_natal_parans(engine: Moira, request: NatalParanSearchRequest):
@@ -623,7 +681,45 @@ def compute_natal_parans(engine: Moira, request: NatalParanSearchRequest):
     _require_non_negative(request.orb_minutes, "orb_minutes")
     reader = getattr(engine, "_reader", None)
     with use_reader_override(reader):
-        return natal_parans(request.bodies, request.natal_jd, request.lat, request.lon, orb_minutes=request.orb_minutes)
+        return natal_parans(
+            request.bodies,
+            request.natal_jd,
+            request.lat,
+            request.lon,
+            orb_minutes=request.orb_minutes,
+            policy=paran_policy_preset(request.policy_preset),
+        )
+
+
+def compute_natal_parans_with_inventory(engine: Moira, request: NatalParanSearchRequest):
+    _require_finite(request.natal_jd, "natal_jd")
+    _validate_lat_lon(request.lat, request.lon)
+    _require_non_negative(request.orb_minutes, "orb_minutes")
+    reader = getattr(engine, "_reader", None)
+    with use_reader_override(reader):
+        return natal_parans_with_inventory(
+            request.bodies,
+            request.natal_jd,
+            request.lat,
+            request.lon,
+            orb_minutes=request.orb_minutes,
+            policy=paran_policy_preset(request.policy_preset),
+        )
+
+
+def compute_natal_angular_contacts(engine: Moira, request: NatalAngularContactsRequest):
+    _require_finite(request.natal_jd, "natal_jd")
+    _validate_lat_lon(request.lat, request.lon)
+    _require_non_negative(request.orb_minutes, "orb_minutes")
+    reader = getattr(engine, "_reader", None)
+    with use_reader_override(reader):
+        return natal_angular_contacts(
+            request.bodies,
+            request.natal_jd,
+            request.lat,
+            request.lon,
+            orb_minutes=request.orb_minutes,
+        )
 
 
 def compute_paran_site(engine: Moira, request: ParanSiteRequest):
@@ -644,6 +740,7 @@ def compute_paran_site(engine: Moira, request: ParanSiteRequest):
             lat=request.lat,
             lon=request.lon,
             orb_minutes=request.orb_minutes,
+            policy=paran_policy_preset(request.policy_preset),
             stability_time_offsets_minutes=offsets,
         )
 
@@ -667,6 +764,7 @@ def compute_paran_field_samples(engine: Moira, request: ParanFieldGridRequest):
             latitudes=request.latitudes,
             longitudes=request.longitudes,
             orb_minutes=request.orb_minutes,
+            policy=paran_policy_preset(request.policy_preset),
             stability_time_offsets_minutes=offsets,
         )
 
@@ -682,6 +780,7 @@ def _compute_field_components(engine: Moira, request: ParanFieldMetricRequest):
             longitudes=request.longitudes,
             orb_minutes=request.orb_minutes,
             stability_time_offsets_minutes=request.stability_time_offsets_minutes,
+            policy_preset=request.policy_preset,
         ),
     )
     analysis = analyze_paran_field(samples, metric=metric, threshold=request.threshold)
@@ -714,6 +813,8 @@ __all__ = [
     "compute_next_solar_eclipse",
     "compute_next_visible_solar_eclipse",
     "compute_natal_parans",
+    "compute_natal_parans_with_inventory",
+    "compute_natal_angular_contacts",
     "compute_general_visibility_event",
     "compute_all_lunar_occultations",
     "compute_close_approaches",
@@ -725,6 +826,7 @@ __all__ = [
     "compute_lunar_star_occultation_path_at",
     "compute_lunar_star_occultation_paths",
     "compute_parans",
+    "compute_parans_with_inventory",
     "compute_paran_field_analysis",
     "compute_paran_field_contours",
     "compute_paran_field_path_set",
@@ -739,6 +841,7 @@ __all__ = [
     "compute_station_state",
     "compute_stations",
     "compute_twilight_times",
+    "get_paran_star_canon",
     "compute_void_of_course_state",
     "compute_void_of_course_window",
     "compute_void_periods",

@@ -59,6 +59,7 @@ from .routers import (
     panchanga_router,
     phase_router,
     phenomena_router,
+    paran_packet_router,
     planetary_hours_router,
     pipeline_router,
     positions_router,
@@ -130,6 +131,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(batch_router)
     app.include_router(visibility_router)
     app.include_router(phenomena_router)
+    app.include_router(paran_packet_router)  # Website-only paran/star composition packet
     app.include_router(generic_phenomena_router)  # P-GAP-04 generic phenomena and solar-condition surfaces
     app.include_router(dasha_router)
     app.include_router(progressions_router)

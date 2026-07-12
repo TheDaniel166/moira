@@ -4,7 +4,12 @@ import math
 import pytest
 
 import moira.rise_set as rise_set
-from moira.rise_set import find_phenomena, twilight_times
+from moira.rise_set import (
+    HorizonCrossingState,
+    find_phenomena,
+    horizon_crossing_availability,
+    twilight_times,
+)
 
 
 def _unwrap_monotonic(values: list[float]) -> list[float]:
@@ -126,3 +131,17 @@ def test_rise_set_planetary_ra_dec_passes_tt_explicitly_without_double_conversio
     assert (ra, dec) == (10.0, 5.0)
     assert captured["jd_ut"] == pytest.approx(2451545.0)
     assert captured["jd_tt"] == pytest.approx(2451545.123)
+
+
+@pytest.mark.slow
+def test_horizon_crossing_availability_distinguishes_stellar_geometry() -> None:
+    states = {
+        star: horizon_crossing_availability(star, 2451544.5, 60.0, 0.0).state
+        for star in ("Regulus", "Capella", "Acrux")
+    }
+
+    assert states == {
+        "Regulus": HorizonCrossingState.CROSSES,
+        "Capella": HorizonCrossingState.ALWAYS_ABOVE_HORIZON,
+        "Acrux": HorizonCrossingState.ALWAYS_BELOW_HORIZON,
+    }

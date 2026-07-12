@@ -549,7 +549,14 @@ from .light_cone import (
     received_light_at,
     all_received_light_at,
 )
-from .rise_set import RiseSetPolicy, TwilightTimes, twilight_times
+from .rise_set import (
+    HorizonCrossingAvailability,
+    HorizonCrossingState,
+    RiseSetPolicy,
+    TwilightTimes,
+    horizon_crossing_availability,
+    twilight_times,
+)
 from .phase import angular_diameter
 from .dignities import (
     sect_light, is_day_chart, almuten_figuris, almuten_of_degree, find_phasis,
@@ -649,10 +656,18 @@ from .local_space import LocalSpacePosition, local_space_positions, local_space_
 from .parans import (
     CIRCLE_TYPES,
     DEFAULT_PARAN_POLICY,
+    PARAN_POLICY_PRESETS,
     Paran,
     ParanCrossing,
+    ParanCrossingStatus,
+    ParanCircleInventoryEntry,
+    ParanBodyCrossingInventory,
+    ParanSearchResult,
+    NatalAngularContact,
     ParanSignature,
     ParanPolicy,
+    ParanPolicyPreset,
+    paran_policy_preset,
     ParanStrength,
     ParanStability,
     ParanStabilitySample,
@@ -678,7 +693,17 @@ from .parans import (
     ParanContourAssociation,
     analyze_paran_field_structure,
     find_parans,
+    find_parans_with_inventory,
     natal_parans,
+    natal_parans_with_inventory,
+    natal_angular_contacts,
+)
+from .paran_stars import (
+    PARAN_STAR_CANON,
+    ParanStarCanonEntry,
+    ParanStarTier,
+    list_paran_stars,
+    paran_star_tiers,
 )
 from .longevity import HylegResult, find_hyleg, calculate_longevity
 from .planetary_nodes import OrbitalNode, planetary_node, all_planetary_nodes, geometric_node
@@ -1406,7 +1431,8 @@ __all__ = [
     "KeplerianElements", "DistanceExtremes", "orbital_elements_at", "distance_extremes_at",
     "CuspSpeed", "HouseDynamics", "cusp_speeds_at",
     # Twilight
-    "RiseSetPolicy", "TwilightTimes", "twilight_times",
+    "HorizonCrossingAvailability", "HorizonCrossingState",
+    "RiseSetPolicy", "TwilightTimes", "horizon_crossing_availability", "twilight_times",
     # Angular diameter
     "angular_diameter",
     # Dignities extensions
@@ -1489,8 +1515,12 @@ __all__ = [
     # Local Space
     "LocalSpacePosition", "local_space_positions", "local_space_from_chart",
     # Parans
-    "CIRCLE_TYPES", "DEFAULT_PARAN_POLICY",
+    "CIRCLE_TYPES", "DEFAULT_PARAN_POLICY", "PARAN_POLICY_PRESETS",
     "Paran", "ParanCrossing", "ParanSignature", "ParanPolicy", "ParanStrength",
+    "ParanPolicyPreset", "paran_policy_preset",
+    "ParanCrossingStatus", "ParanCircleInventoryEntry",
+    "ParanBodyCrossingInventory", "ParanSearchResult",
+    "NatalAngularContact",
     "ParanStability", "ParanStabilitySample", "evaluate_paran_stability",
     "ParanSiteResult", "ParanFieldSample", "evaluate_paran_site", "sample_paran_field",
     "ParanFieldAnalysis", "ParanFieldRegion", "ParanFieldPeak", "ParanThresholdCrossing",
@@ -1500,7 +1530,11 @@ __all__ = [
     "ParanContourPathSet", "ParanContourPath", "consolidate_paran_contours",
     "ParanFieldStructure", "ParanContourHierarchyEntry", "ParanContourAssociation",
     "analyze_paran_field_structure",
-    "find_parans", "natal_parans",
+    "find_parans", "find_parans_with_inventory",
+    "natal_parans", "natal_parans_with_inventory",
+    "natal_angular_contacts",
+    "PARAN_STAR_CANON", "ParanStarCanonEntry", "ParanStarTier",
+    "list_paran_stars", "paran_star_tiers",
     # Longevity (Hyleg/Alcocoden)
     "HylegResult", "find_hyleg", "calculate_longevity",
     # Planetary nodes/apsides
@@ -1767,7 +1801,7 @@ __all__ += [
 ]
 
 
-__version__ = "4.0.0"
+__version__ = "4.0.1"
 __author__  = "Moira contributors"
 
 

@@ -441,6 +441,22 @@ class ParanSearchRequest(_StrictModel):
     lat: float
     lon: float
     orb_minutes: float = 4.0
+    include_crossing_inventory: bool = False
+    policy_preset: str = "permissive"
+
+
+class ParanStarCanonEntryResponse(_StrictModel):
+    name: str
+    tiers: list[str]
+    default_enabled: bool
+    available: bool
+
+
+class ParanStarCanonResponse(_StrictModel):
+    entries: list[ParanStarCanonEntryResponse]
+    available_tiers: list[str]
+    returned_count: int
+    canon_count: int
 
 
 class NatalParanSearchRequest(_StrictModel):
@@ -449,6 +465,16 @@ class NatalParanSearchRequest(_StrictModel):
     lat: float
     lon: float
     orb_minutes: float = 4.0
+    include_crossing_inventory: bool = False
+    policy_preset: str = "permissive"
+
+
+class NatalAngularContactsRequest(_StrictModel):
+    bodies: list[str]
+    natal_jd: float
+    lat: float
+    lon: float
+    orb_minutes: float = 2.0
 
 
 class ParanTargetRequest(_StrictModel):
@@ -468,6 +494,7 @@ class ParanSiteRequest(_StrictModel):
     lon: float
     orb_minutes: float = 4.0
     stability_time_offsets_minutes: list[float] | None = None
+    policy_preset: str = "permissive"
 
 
 class ParanFieldGridRequest(_StrictModel):
@@ -477,6 +504,7 @@ class ParanFieldGridRequest(_StrictModel):
     longitudes: list[float]
     orb_minutes: float = 4.0
     stability_time_offsets_minutes: list[float] | None = None
+    policy_preset: str = "permissive"
 
 
 class ParanFieldMetricRequest(_StrictModel):
@@ -488,6 +516,7 @@ class ParanFieldMetricRequest(_StrictModel):
     threshold: float
     orb_minutes: float = 4.0
     stability_time_offsets_minutes: list[float] | None = None
+    policy_preset: str = "permissive"
 
 
 class ParanCrossingResponse(_StrictModel):
@@ -497,6 +526,33 @@ class ParanCrossingResponse(_StrictModel):
     datetime_utc: str
     source_method: str
     altitude_policy: float | None = None
+
+
+class NatalAngularContactResponse(_StrictModel):
+    body: str
+    body_family: str
+    circle: str
+    crossing_jd: float
+    natal_jd: float
+    delta_minutes: float
+    absolute_delta_minutes: float
+    crossing: ParanCrossingResponse
+
+
+class NatalAngularContactsResponse(_StrictModel):
+    contacts: list[NatalAngularContactResponse]
+
+
+class ParanCircleInventoryEntryResponse(_StrictModel):
+    circle: str
+    status: str
+    crossing: ParanCrossingResponse | None = None
+    absence_reason: str | None = None
+
+
+class ParanBodyCrossingInventoryResponse(_StrictModel):
+    body: str
+    entries: list[ParanCircleInventoryEntryResponse]
 
 
 class ParanStrengthResponse(_StrictModel):
@@ -548,6 +604,8 @@ class ParanResponse(_StrictModel):
 
 class ParanSearchResponse(_StrictModel):
     events: list[ParanResponse]
+    crossing_inventory: list[ParanBodyCrossingInventoryResponse] | None = None
+    effective_policy_preset: str = "permissive"
 
 
 class ParanSiteResultResponse(_StrictModel):
@@ -557,6 +615,7 @@ class ParanSiteResultResponse(_StrictModel):
     paran: ParanResponse | None = None
     strength: ParanStrengthResponse | None = None
     stability: ParanStabilityResponse | None = None
+    effective_policy_preset: str | None = None
 
 
 class ParanFieldSampleResponse(_StrictModel):
@@ -567,6 +626,7 @@ class ParanFieldSampleResponse(_StrictModel):
 
 class ParanFieldSampleSearchResponse(_StrictModel):
     samples: list[ParanFieldSampleResponse]
+    effective_policy_preset: str = "permissive"
 
 
 class ParanThresholdCrossingResponse(_StrictModel):
@@ -600,6 +660,7 @@ class ParanFieldAnalysisResponse(_StrictModel):
     regions: list[ParanFieldRegionResponse]
     peaks: list[ParanFieldPeakResponse]
     threshold_crossings: list[ParanThresholdCrossingResponse]
+    effective_policy_preset: str = "permissive"
 
 
 class ParanContourPointResponse(_StrictModel):
@@ -622,6 +683,7 @@ class ParanContourExtractionResponse(_StrictModel):
     interpolation: str
     segments: list[ParanContourSegmentResponse]
     ambiguous_cells: list[list[float]]
+    effective_policy_preset: str = "permissive"
 
 
 class ParanContourPathResponse(_StrictModel):
@@ -636,6 +698,7 @@ class ParanContourPathSetResponse(_StrictModel):
     paths: list[ParanContourPathResponse]
     orphan_segments: list[ParanContourSegmentResponse]
     matching_rule: str
+    effective_policy_preset: str = "permissive"
 
 
 class ParanContourAssociationResponse(_StrictModel):
@@ -655,6 +718,7 @@ class ParanFieldStructureResponse(_StrictModel):
     hierarchy: list[ParanContourHierarchyEntryResponse]
     associations: list[ParanContourAssociationResponse]
     matching_rule: str
+    effective_policy_preset: str = "permissive"
 
 
 __all__ = [
@@ -683,9 +747,14 @@ __all__ = [
     "LunarStarOccultationPathRequest",
     "NextStationRequest",
     "NatalParanSearchRequest",
+    "NatalAngularContactsRequest",
+    "NatalAngularContactResponse",
+    "NatalAngularContactsResponse",
     "OccultationPathGeometryResponse",
     "OccultationPathSearchResponse",
     "ParanCrossingResponse",
+    "ParanCircleInventoryEntryResponse",
+    "ParanBodyCrossingInventoryResponse",
     "ParanContourAssociationResponse",
     "ParanContourExtractionResponse",
     "ParanContourHierarchyEntryResponse",
@@ -704,6 +773,8 @@ __all__ = [
     "ParanResponse",
     "ParanSearchRequest",
     "ParanSearchResponse",
+    "ParanStarCanonEntryResponse",
+    "ParanStarCanonResponse",
     "ParanSiteRequest",
     "ParanSiteResultResponse",
     "ParanStabilityResponse",

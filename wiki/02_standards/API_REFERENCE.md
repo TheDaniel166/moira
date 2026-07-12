@@ -2788,28 +2788,53 @@ or planets — a complementary layer to ACG.
 
 ```python
 from moira.facade import (
-    find_parans, natal_parans,
+    find_parans, find_parans_with_inventory,
+    natal_parans, natal_parans_with_inventory, natal_angular_contacts,
     evaluate_paran_site, sample_paran_field, analyze_paran_field,
     evaluate_paran_stability, extract_paran_field_contours,
     consolidate_paran_contours, analyze_paran_field_structure,
     Paran, ParanCrossing, ParanSignature, ParanStrength,
     ParanSiteResult, ParanFieldSample, ParanFieldAnalysis,
     ParanContourPathSet, ParanFieldStructure,
-    DEFAULT_PARAN_POLICY, CIRCLE_TYPES,
+    DEFAULT_PARAN_POLICY, PARAN_POLICY_PRESETS, ParanPolicyPreset,
+    PARAN_STAR_CANON, ParanStarTier, list_paran_stars,
+    CIRCLE_TYPES,
 )
 ```
 
 | Function | Returns | Description |
 |---|---|---|
 | `find_parans(bodies, jd_day, lat, lon, orb_minutes=4.0, policy=None)` | `list[Paran]` | Paran crossings for a supplied body-name list at a location |
-| `natal_parans(bodies, natal_jd, lat, lon, orb_minutes=4.0)` | `list[Paran]` | Natal paran crossings for a supplied body-name list |
-| `evaluate_paran_site(lat, lon, parans)` | `ParanSiteResult` | Score a relocation site by paran activity |
-| `sample_paran_field(jd_ut, lat_range, lon_range, ...)` | `list[ParanFieldSample]` | Grid of paran scores over a geographic region |
-| `analyze_paran_field(samples)` | `ParanFieldAnalysis` | Identify peaks, regions, crossings in field |
-| `evaluate_paran_stability(lat, lon, jd_start, jd_end, ...)` | `ParanStability` | Paran activity stability over time |
-| `extract_paran_field_contours(samples, threshold)` | `ParanContourExtraction` | Contour lines at a paran score threshold |
-| `consolidate_paran_contours(contours)` | `ParanContourPathSet` | Merge and sort contour paths |
-| `analyze_paran_field_structure(samples, ...)` | `ParanFieldStructure` | Full structural analysis: hierarchy + associations |
+| `find_parans_with_inventory(...)` | `ParanSearchResult` | Paran events plus four-circle availability for every requested body |
+| `natal_parans(bodies, natal_jd, lat, lon, orb_minutes=4.0, policy=None)` | `list[Paran]` | Full birth-day paran search |
+| `natal_parans_with_inventory(...)` | `ParanSearchResult` | Birth-day parans plus crossing availability |
+| `natal_angular_contacts(bodies, natal_jd, lat, lon, orb_minutes=2.0)` | `list[NatalAngularContact]` | Individual crossings near the explicit birth moment; not a two-body paran search |
+| `evaluate_paran_site(target, jd_day, lat, lon, ...)` | `ParanSiteResult` | Recompute one paran identity at a location |
+| `sample_paran_field(target, jd_day, latitudes, longitudes, ...)` | `list[ParanFieldSample]` | Grid of site results for one paran identity |
+| `analyze_paran_field(samples, metric, threshold)` | `ParanFieldAnalysis` | Identify active regions, peaks, and threshold crossings |
+| `evaluate_paran_stability(paran, jd_day, lat, lon, ...)` | `ParanStability` | Recompute one paran under time-anchor perturbations |
+| `extract_paran_field_contours(samples, metric, threshold)` | `ParanContourExtraction` | Extract contour segments from a rectangular sampled field |
+| `consolidate_paran_contours(extraction)` | `ParanContourPathSet` | Stitch contour segments into paths and report orphans |
+| `analyze_paran_field_structure(analysis, path_set)` | `ParanFieldStructure` | Derive path hierarchy and region/peak associations |
+| `list_paran_stars(tiers=None, available_only=True)` | `tuple[ParanStarCanonEntry, ...]` | Engine-owned working canon with Royal, Behenian, and Ptolemaic memberships |
+
+REST consumers use:
+
+- `GET /v1/parans/star-canon`
+- `POST /v1/parans/search`
+- `POST /v1/parans/natal`
+- `POST /v1/parans/natal-angular-contacts`
+- `POST /v1/parans/site`
+- `POST /v1/parans/field/{samples,analysis,contours,paths,structure}`
+- `POST /v1/website/parans/packet`
+
+Search and natal requests may set `include_crossing_inventory=true`. All paran
+request families accept `policy_preset`, currently `permissive` or
+`star_planet_only`. The website packet composes existing engine truth; it does
+not own a second paran or heliacal implementation. Star-star paran computation
+is kernel-free. Optional heliacal inclusion requires planetary-kernel access
+for solar ephemeris truth; an unavailable kernel is returned as an explicit
+packet warning rather than an approximation.
 
 #### `Paran` fields
 
@@ -2821,7 +2846,7 @@ from moira.facade import (
 | `circle2` | `str` | Circle type for the second body |
 | `jd1` | `float` | Event JD for the first body crossing |
 | `jd2` | `float` | Event JD for the second body crossing |
-| `orb_min` | `float` | Difference between the crossings in arcminutes of time |
+| `orb_min` | `float` | Difference between the crossings in minutes of time |
 | `crossing1` | `ParanCrossing` | Crossing details for the first body |
 | `crossing2` | `ParanCrossing` | Crossing details for the second body |
 | `signature` | `ParanSignature` | Combined paran signature metadata |

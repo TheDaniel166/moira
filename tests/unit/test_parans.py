@@ -7,14 +7,18 @@ import pytest
 
 from moira.constants import Body
 from moira.parans import (
+    DEFAULT_PARAN_POLICY,
+    PARAN_POLICY_PRESETS,
     Paran,
     ParanContourExtraction,
     ParanContourPoint,
     ParanContourSegment,
+    ParanCrossingStatus,
     ParanCrossing,
     ParanFieldSample,
     ParanSiteResult,
     ParanPolicy,
+    ParanPolicyPreset,
     ParanSignature,
     CIRCLE_TYPES,
     _SUPPORTED_METRICS,
@@ -31,7 +35,10 @@ from moira.parans import (
     evaluate_paran_site,
     evaluate_paran_stability,
     find_parans,
+    find_parans_with_inventory,
     natal_parans,
+    natal_angular_contacts,
+    paran_policy_preset,
     sample_paran_field,
 )
 from moira.rise_set import find_phenomena, get_transit
@@ -175,6 +182,128 @@ def test_crossing_times_match_rise_set_engine() -> None:
             abs=1e-6,
         )
         assert jd_day <= crossings["AntiCulminating"] < jd_day + 1.0
+
+
+@pytest.mark.slow
+def test_find_parans_resolves_live_fixed_star_pair() -> None:
+    """Exercise catalog resolution through crossing generation and matching."""
+    parans = find_parans(
+        ["Regulus", "Capella"],
+        2451544.5,
+        51.5,
+        -0.1,
+        orb_minutes=4.0,
+    )
+
+    assert len(parans) == 1
+    paran = parans[0]
+    assert (paran.body1, paran.circle1) == ("Regulus", "Setting")
+    assert (paran.body2, paran.circle2) == ("Capella", "AntiCulminating")
+    assert paran.body_family == "star-star"
+    assert 0.0 <= paran.orb_min <= 4.0
+    assert paran.crossing1 is not None
+    assert paran.crossing2 is not None
+    assert paran.crossing1.source_method == "find_phenomena"
+    assert paran.crossing2.source_method == "get_transit"
+
+
+@pytest.mark.slow
+def test_live_fixed_star_target_traverses_complete_field_pipeline() -> None:
+    target = find_parans(
+        ["Regulus", "Capella"], 2451544.5, 51.5, -0.1, orb_minutes=4.0
+    )[0]
+    samples = sample_paran_field(
+        target,
+        2451544.5,
+        [48.0, 51.0, 54.0],
+        [-10.0, 0.0, 10.0],
+        orb_minutes=4.0,
+    )
+    analysis = analyze_paran_field(
+        samples,
+        metric="match_presence",
+        threshold=0.5,
+    )
+    extraction = extract_paran_field_contours(
+        samples,
+        metric="match_presence",
+        threshold=0.5,
+    )
+    path_set = consolidate_paran_contours(extraction)
+    structure = analyze_paran_field_structure(analysis, path_set)
+
+    assert target.body_family == "star-star"
+    assert analysis.active_sample_count == 6
+    assert all(
+        sample.site_result.paran is None
+        or sample.site_result.paran.body_family == "star-star"
+        for sample in samples
+    )
+    assert len(extraction.segments) == 2
+    assert len(path_set.paths) == 1
+    assert path_set.orphan_segments == ()
+    assert sum(path.segment_count for path in path_set.paths) == len(extraction.segments)
+    assert structure.dominant_path_index == 0
+
+
+@pytest.mark.slow
+def test_detailed_paran_search_reports_live_horizon_states() -> None:
+    result = find_parans_with_inventory(
+        ["Regulus", "Capella", "Acrux"],
+        2451544.5,
+        60.0,
+        0.0,
+        orb_minutes=4.0,
+    )
+    inventories = {
+        inventory.body: {entry.circle: entry for entry in inventory.entries}
+        for inventory in result.crossing_inventory
+    }
+
+    assert inventories["Regulus"]["Rising"].status is ParanCrossingStatus.FOUND
+    assert inventories["Regulus"]["Setting"].status is ParanCrossingStatus.FOUND
+    for circle in ("Rising", "Setting"):
+        assert (
+            inventories["Capella"][circle].status
+            is ParanCrossingStatus.ALWAYS_ABOVE_HORIZON
+        )
+        assert (
+            inventories["Acrux"][circle].status
+            is ParanCrossingStatus.ALWAYS_BELOW_HORIZON
+        )
+    for inventory in inventories.values():
+        assert inventory["Culminating"].status is ParanCrossingStatus.FOUND
+        assert inventory["AntiCulminating"].status is ParanCrossingStatus.FOUND
+
+
+def test_detailed_paran_search_diagnostics_preserve_default_events() -> None:
+    ordinary = find_parans(
+        ["Regulus", "Capella"], 2451544.5, 51.5, -0.1, orb_minutes=4.0
+    )
+    detailed = find_parans_with_inventory(
+        ["Regulus", "Capella"], 2451544.5, 51.5, -0.1, orb_minutes=4.0
+    )
+
+    assert list(detailed.events) == ordinary
+
+
+def test_crossing_inventory_reports_solver_failure_for_missing_crossable_event(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    crossings = [
+        _crossing(body="Regulus", circle="Culminating", jd=2451544.7),
+        _crossing(body="Regulus", circle="AntiCulminating", jd=2451545.2),
+    ]
+    monkeypatch.setattr("moira.parans._crossing_times", lambda *args, **kwargs: crossings)
+
+    result = find_parans_with_inventory(
+        ["Regulus"], 2451544.5, 51.5, -0.1, orb_minutes=4.0
+    )
+    entries = {entry.circle: entry for entry in result.crossing_inventory[0].entries}
+
+    assert entries["Rising"].status is ParanCrossingStatus.SOLVER_FAILURE
+    assert entries["Setting"].status is ParanCrossingStatus.SOLVER_FAILURE
+    assert entries["Rising"].absence_reason == "solver_failure"
 
 
 @pytest.mark.slow
@@ -330,6 +459,79 @@ def test_natal_parans_uses_ut_day_floor(monkeypatch: pytest.MonkeyPatch) -> None
     natal_parans([Body.SUN, Body.MOON], 2451545.2, 40.0, -74.0)
 
     assert captured["jd_day"] == math.floor(2451545.2 - 0.5) + 0.5
+
+
+@pytest.mark.slow
+def test_natal_angular_contacts_resolves_live_fixed_star_crossing() -> None:
+    setting = next(
+        crossing
+        for crossing in _crossing_times("Regulus", 2451544.5, 51.5, -0.1)
+        if crossing.circle == "Setting"
+    )
+    contacts = natal_angular_contacts(
+        ["Regulus"],
+        setting.jd,
+        51.5,
+        -0.1,
+        orb_minutes=0.0,
+    )
+
+    assert len(contacts) == 1
+    contact = contacts[0]
+    assert contact.body == "Regulus"
+    assert contact.body_family == "star"
+    assert contact.circle == "Setting"
+    assert contact.crossing_jd == setting.jd
+    assert contact.delta_minutes == pytest.approx(0.0)
+    assert contact.absolute_delta_minutes == pytest.approx(0.0)
+
+
+def test_natal_angular_contacts_include_boundary_and_sort_by_exactness(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    natal_jd = 2451545.0
+    crossings = {
+        "Regulus": [
+            _crossing(
+                body="Regulus",
+                circle="Rising",
+                jd=natal_jd + 2.0 / 1440.0,
+            )
+        ],
+        Body.SUN: [
+            _crossing(
+                body=Body.SUN,
+                circle="Culminating",
+                jd=natal_jd - 1.0 / 1440.0,
+            )
+        ],
+        "Capella": [
+            _crossing(
+                body="Capella",
+                circle="Setting",
+                jd=natal_jd + 3.0 / 1440.0,
+            )
+        ],
+    }
+    monkeypatch.setattr(
+        "moira.parans._crossing_times",
+        lambda body, *args, **kwargs: crossings[body],
+    )
+
+    contacts = natal_angular_contacts(
+        ["Regulus", Body.SUN, "Capella"],
+        natal_jd,
+        0.0,
+        0.0,
+        orb_minutes=2.0,
+    )
+
+    assert [(contact.body, contact.circle) for contact in contacts] == [
+        (Body.SUN, "Culminating"),
+        ("Regulus", "Rising"),
+    ]
+    assert contacts[0].delta_minutes == pytest.approx(-1.0)
+    assert contacts[1].absolute_delta_minutes == pytest.approx(2.0)
 
 
 def test_default_policy_preserves_permissive_matching(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -498,6 +700,39 @@ def test_policy_can_filter_named_stars_explicitly(monkeypatch: pytest.MonkeyPatc
     assert allowed[0].crossing2 is not None
     assert allowed[0].crossing2.body == "Regulus"
     assert blocked == []
+
+
+def test_named_star_planet_policy_preset_has_explicit_family_scope(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    crossings_by_body = {
+        Body.SUN: [_crossing(body=Body.SUN, circle="Rising", jd=975.0)],
+        Body.MOON: [_crossing(body=Body.MOON, circle="Setting", jd=975.001)],
+        "Regulus": [_crossing(body="Regulus", circle="Culminating", jd=975.001)],
+        "Capella": [_crossing(body="Capella", circle="AntiCulminating", jd=975.002)],
+    }
+
+    monkeypatch.setattr(
+        "moira.parans._crossing_times",
+        lambda body, *args, **kwargs: crossings_by_body.get(body, []),
+    )
+    policy = paran_policy_preset(ParanPolicyPreset.STAR_PLANET_ONLY)
+    parans = find_parans(
+        list(crossings_by_body),
+        974.5,
+        51.5,
+        -0.1,
+        orb_minutes=4.0,
+        policy=policy,
+    )
+
+    assert parans
+    assert {paran.body_family for paran in parans} == {"planet-star"}
+    assert paran_policy_preset("permissive") is DEFAULT_PARAN_POLICY
+    with pytest.raises(ValueError, match="unknown paran policy preset"):
+        paran_policy_preset("classic_circles")
+    with pytest.raises(TypeError):
+        PARAN_POLICY_PRESETS[ParanPolicyPreset.PERMISSIVE] = ParanPolicy()  # type: ignore[index]
 
 
 def test_paran_strength_is_derived_only_from_existing_orb_data(
@@ -1770,5 +2005,3 @@ def test_stability_with_empty_offsets_is_vacuously_stable() -> None:
     assert stability.worst_exactness_score is None
     assert stability.max_orb_degradation is None
     assert stability.max_exactness_drop is None
-
-
