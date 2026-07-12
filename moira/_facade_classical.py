@@ -117,6 +117,27 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             policy=policy,
         )
 
+    def astrodynes_from_geometry(
+        self,
+        planet_longitudes,
+        declinations,
+        cusp_longitudes,
+        mc_longitude,
+        asc_longitude,
+        *,
+        policy=None,
+    ):
+        """Compute Church of Light natal Astrodynes from explicit geometry."""
+
+        return _facade_module().natal_astrodynes_from_geometry(
+            planet_longitudes,
+            declinations,
+            cusp_longitudes,
+            mc_longitude,
+            asc_longitude,
+            policy=policy,
+        )
+
     def midpoints(self, chart, planet_set: str = "classic"):
         """Calculate all planetary midpoints."""
         return _facade_module().calculate_midpoints(chart.longitudes(), planet_set)

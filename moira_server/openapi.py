@@ -201,6 +201,12 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "classical-vedic",
     },
     {
+        "name": "astrodynes",
+        "x-displayName": "Astrodynes",
+        "description": "Church of Light natal Astrodyne doctrine, explicit-geometry, and chart-backed surfaces.",
+        "x-family": "classical-vedic",
+    },
+    {
         "name": "lots",
         "x-displayName": "Lots",
         "description": "Classical lot catalog, chart, dependency, condition, profile, and network surfaces.",

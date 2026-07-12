@@ -4,6 +4,7 @@ from .ashtakavarga import router as ashtakavarga_router
 from .alternate_dashas import router as alternate_dashas_router
 from .antiscia import router as antiscia_router
 from .astrocartography import router as astrocartography_router
+from .astrodynes import router as astrodynes_router
 from .batch import router as batch_router
 from .chart import router as chart_router
 from .chart_wheel import router as chart_wheel_router
@@ -74,6 +75,7 @@ __all__ = [
     "alternate_dashas_router",
     "antiscia_router",
     "astrocartography_router",
+    "astrodynes_router",
     "asteroids_router",
     "comets_router",
     "stars_router",

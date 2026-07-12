@@ -1,0 +1,95 @@
+{
+  "authority": {
+    "title": "Astrological Delineation with Astrodynes: Class 1 - The Planets",
+    "publisher": "Church of Light",
+    "url": "https://www.churchoflight.tv/pdf/01-Astrodynes-Planets.pdf",
+    "pages": [9, 10, 11],
+    "captured": "2026-07-12",
+    "semantics": "Upper grid triangle is zodiacal; lower grid triangle is parallel. Power and algebraic harmony are printed to hundredths."
+  },
+  "charts": [
+    {
+      "id": "donald_trump",
+      "page": 9,
+      "displayed_birth": "6/14/1949 9:51 a.m., Queens, New York",
+      "ephemeris_epoch_utc": "1946-06-14T13:51:00+00:00",
+      "epoch_note": "The page year is a source typo: its printed planetary wheel agrees with 1946-06-14 09:51 EDT, not 1949.",
+      "planet_longitudes_deg": {"Sun": 82.8833333333, "Moon": 260.6833333333, "Mercury": 98.7666666667, "Venus": 115.6833333333, "Mars": 146.75, "Jupiter": 197.45, "Saturn": 113.8, "Uranus": 77.8833333333, "Neptune": 185.8333333333, "Pluto": 130.0333333333},
+      "cusp_longitudes_deg": [137.5666666667, 159.2333333333, 185.9333333333, 218.5166666667, 254.4333333333, 288.3166666667, 317.5666666667, 339.2333333333, 5.9333333333, 38.5166666667, 74.4333333333, 108.3166666667],
+      "mc_longitude_deg": 38.5166666667,
+      "asc_longitude_deg": 137.5666666667,
+      "expected_total": [537.08, 62.74],
+      "expected_planets": {"Sun": [82.08, -4.96], "Moon": [80.47, -5.97], "Mercury": [28.75, -1.12], "Venus": [43.24, 12.12], "Mars": [33.30, 3.70], "Jupiter": [30.60, 44.16], "Saturn": [17.43, 2.52], "Uranus": [73.85, 13.04], "Neptune": [18.92, -6.99], "Pluto": [38.08, -5.43], "M.C.": [43.27, -10.53], "Asc.": [47.10, 22.19]},
+      "expected_houses": {"1": [121.44, 23.41], "2": [33.29, -7.55], "3": [52.22, 50.22], "4": [17.85, -0.43], "5": [95.77, 16.11], "6": [8.71, 1.26], "7": [22.82, 3.89], "8": [12.38, 9.29], "9": [16.65, 1.85], "10": [64.89, -4.47], "11": [199.05, 6.40], "12": [138.98, 6.23]},
+      "expected_signs": {"Aries": [16.65, 1.85], "Taurus": [64.89, -4.47], "Gemini": [170.30, 7.52], "Cancer": [129.65, 10.54], "Leo": [159.52, 17.98], "Virgo": [14.38, -0.56], "Libra": [71.14, 43.23], "Scorpio": [17.85, -0.43], "Sagittarius": [95.77, 16.11], "Capricorn": [8.71, 1.26], "Aquarius": [22.82, 3.89], "Pisces": [12.38, 9.29]},
+      "expected_summaries": {"societies": {"Personal": [345.93, 72.31], "Companionship": [145.15, 20.83], "Public": [292.97, 13.08]}, "trinities": {"Life": [233.86, 41.38], "Wealth": [106.89, -10.76], "Association": [274.09, 60.52], "Psychism": [169.21, 15.09]}, "elements": {"Fire": [271.94, 35.95], "Earth": [87.97, -3.77], "Air": [264.26, 54.64], "Water": [159.88, 19.40]}, "qualities": {"Movable": [226.15, 56.88], "Fixed": [265.07, 16.97], "Mutable": [292.83, 32.37]}},
+      "expected_relations": [
+        ["Sun", "Moon", "zodiacal", 10.80, -10.80], ["Sun", "Venus", "zodiacal", 0.20, 0.25], ["Sun", "Mars", "zodiacal", 3.14, 2.35], ["Sun", "Jupiter", "zodiacal", 4.57, 6.85], ["Sun", "Saturn", "zodiacal", 2.08, 1.04], ["Sun", "Uranus", "zodiacal", 8.00, 0.00], ["Sun", "Pluto", "zodiacal", 2.85, -2.85], ["Sun", "M.C.", "zodiacal", 4.37, -4.37], ["Sun", "Asc.", "zodiacal", 1.68, 1.68],
+        ["Moon", "Sun", "parallel", 11.09, 0.00], ["Moon", "Mars", "zodiacal", 3.93, 2.95], ["Moon", "Jupiter", "zodiacal", 3.77, 5.65], ["Moon", "Uranus", "zodiacal", 10.21, -10.21], ["Moon", "Pluto", "zodiacal", 0.64, -0.64], ["Moon", "M.C.", "zodiacal", 2.17, -2.17], ["Moon", "Asc.", "zodiacal", 6.89, 6.89],
+        ["Mercury", "Mars", "zodiacal", 2.03, -2.53], ["Mercury", "Neptune", "zodiacal", 7.06, -7.06], ["Mercury", "Pluto", "zodiacal", 1.74, 1.74], ["Mercury", "M.C.", "zodiacal", 6.74, 6.74],
+        ["Venus", "Sun", "parallel", 7.52, 1.88], ["Venus", "Moon", "parallel", 9.43, 2.36], ["Venus", "Mars", "zodiacal", 1.93, 1.93], ["Venus", "Saturn", "zodiacal", 6.12, -1.53],
+        ["Mars", "Saturn", "zodiacal", 0.06, 0.01], ["Mars", "Asc.", "zodiacal", 2.82, -0.70],
+        ["Jupiter", "Uranus", "zodiacal", 7.56, 11.34], ["Jupiter", "Asc.", "zodiacal", 6.88, 10.32],
+        ["Uranus", "Sun", "parallel", 8.96, 0.00], ["Uranus", "Moon", "parallel", 10.87, 0.00], ["Uranus", "Venus", "parallel", 8.90, 2.22], ["Uranus", "Asc.", "zodiacal", 6.68, 6.68],
+        ["Neptune", "Pluto", "zodiacal", 1.80, 1.80], ["Neptune", "M.C.", "zodiacal", 0.32, 0.00], ["Neptune", "Asc.", "zodiacal", 1.73, -1.73],
+        ["Pluto", "Sun", "parallel", 5.18, 0.00], ["Pluto", "Moon", "parallel", 3.27, 0.00], ["Pluto", "Uranus", "parallel", 0.88, 0.00], ["Pluto", "M.C.", "zodiacal", 8.48, -8.48], ["Pluto", "Asc.", "zodiacal", 4.47, 0.00],
+        ["M.C.", "Mars", "parallel", 5.24, -1.31], ["M.C.", "Asc.", "zodiacal", 0.95, -0.95]
+      ]
+    },
+    {
+      "id": "mohandas_gandhi",
+      "page": 10,
+      "displayed_birth": "10/2/1869 7:12 a.m., Porbandar, India",
+      "ephemeris_epoch_utc": "1869-10-02T02:34:00+00:00",
+      "planet_longitudes_deg": {"Sun": 188.9166666667, "Moon": 139.9666666667, "Mercury": 213.7666666667, "Venus": 226.4333333333, "Mars": 228.3833333333, "Jupiter": 50.1666666667, "Saturn": 252.35, "Uranus": 111.6833333333, "Neptune": 18.4166666667, "Pluto": 47.8666666667},
+      "cusp_longitudes_deg": [206.6, 235.8166666667, 265.8666666667, 296.75, 328.25, 358.8166666667, 26.6, 55.8166666667, 85.8666666667, 116.75, 148.25, 178.8166666667],
+      "mc_longitude_deg": 116.75,
+      "asc_longitude_deg": 206.6,
+      "expected_total": [657.64, -103.12],
+      "expected_planets": {"Sun": [16.41, -5.89], "Moon": [95.04, -12.35], "Mercury": [45.94, -1.30], "Venus": [66.80, -7.14], "Mars": [77.09, -27.54], "Jupiter": [73.84, 6.59], "Saturn": [36.46, -13.87], "Uranus": [46.55, 16.85], "Neptune": [36.44, 5.56], "Pluto": [60.34, -13.67], "M.C.": [55.54, -26.60], "Asc.": [47.18, -23.74]},
+      "expected_houses": {"1": [270.40, -63.30], "2": [70.82, -24.17], "3": [36.92, 3.29], "4": [18.23, -6.93], "5": [20.75, 0.75], "6": [64.01, 8.60], "7": [172.73, -20.85], "8": [33.40, -3.57], "9": [69.52, 16.20], "10": [198.10, -45.14], "11": [8.21, -2.95], "12": [39.38, -6.55]},
+      "expected_signs": {"Aries": [74.98, -8.21], "Taurus": [167.58, -10.65], "Gemini": [22.97, -0.65], "Cancer": [149.62, -15.93], "Leo": [103.24, -15.30], "Virgo": [22.97, -0.65], "Libra": [96.99, -33.21], "Scorpio": [224.18, -46.29], "Sagittarius": [73.38, -10.57], "Capricorn": [18.23, -6.93], "Aquarius": [20.75, 0.75], "Pisces": [27.57, 3.04]},
+      "expected_summaries": {"societies": {"Personal": [417.52, -90.72], "Companionship": [275.72, -18.44], "Public": [309.23, -35.45]}, "trinities": {"Life": [360.68, -46.35], "Wealth": [332.93, -60.71], "Association": [217.85, -20.51], "Psychism": [91.01, -17.05]}, "elements": {"Fire": [251.61, -34.09], "Earth": [208.78, -18.24], "Air": [140.71, -33.11], "Water": [401.37, -59.18]}, "qualities": {"Movable": [339.82, -64.28], "Fixed": [515.76, -71.50], "Mutable": [146.89, -8.84]}},
+      "expected_relations": [
+        ["Sun", "Moon", "zodiacal", 2.04, -2.04], ["Sun", "Jupiter", "zodiacal", 1.25, -0.62], ["Sun", "Saturn", "zodiacal", 2.57, 1.28], ["Sun", "Neptune", "zodiacal", 1.51, -1.51],
+        ["Moon", "Venus", "zodiacal", 8.46, -6.35], ["Moon", "Mars", "zodiacal", 10.43, -13.04], ["Moon", "Jupiter", "zodiacal", 11.80, -5.90], ["Moon", "Saturn", "zodiacal", 4.39, 2.20], ["Moon", "Uranus", "zodiacal", 2.28, 2.28], ["Moon", "Neptune", "zodiacal", 10.45, 10.45], ["Moon", "Pluto", "zodiacal", 9.91, -9.91], ["Moon", "Asc.", "zodiacal", 1.36, 1.36],
+        ["Mercury", "Moon", "parallel", 13.20, 0.00], ["Mercury", "M.C.", "zodiacal", 5.00, -5.00], ["Mercury", "Asc.", "zodiacal", 7.84, 0.00],
+        ["Venus", "Mars", "zodiacal", 10.03, 0.00], ["Venus", "Jupiter", "zodiacal", 8.26, -2.07], ["Venus", "Uranus", "zodiacal", 4.74, 5.93], ["Venus", "Neptune", "zodiacal", 1.02, 0.25], ["Venus", "Pluto", "zodiacal", 10.55, -7.92],
+        ["Mars", "Venus", "parallel", 10.08, 0.00], ["Mars", "Jupiter", "zodiacal", 10.23, -7.67], ["Mars", "Uranus", "zodiacal", 6.71, 5.03], ["Mars", "Neptune", "zodiacal", 2.98, -0.75], ["Mars", "Pluto", "zodiacal", 11.48, -14.35], ["Mars", "M.C.", "zodiacal", 1.63, 1.23],
+        ["Jupiter", "Moon", "parallel", 7.19, 3.59], ["Jupiter", "Mercury", "parallel", 5.39, 2.70], ["Jupiter", "Uranus", "zodiacal", 5.48, 8.22], ["Jupiter", "Neptune", "zodiacal", 1.24, 1.87], ["Jupiter", "Pluto", "zodiacal", 9.71, 4.85], ["Jupiter", "M.C.", "zodiacal", 0.41, 0.61],
+        ["Saturn", "Neptune", "zodiacal", 1.95, 0.97], ["Saturn", "M.C.", "zodiacal", 4.40, -6.61], ["Saturn", "Asc.", "zodiacal", 4.25, -6.37],
+        ["Uranus", "Neptune", "zodiacal", 2.73, -2.73], ["Uranus", "Pluto", "zodiacal", 3.19, 3.19], ["Uranus", "M.C.", "zodiacal", 6.92, 0.00], ["Uranus", "Asc.", "zodiacal", 5.08, -5.08],
+        ["Neptune", "Pluto", "zodiacal", 2.46, 2.46], ["Neptune", "M.C.", "zodiacal", 1.65, -1.65], ["Neptune", "Asc.", "zodiacal", 3.81, -3.81],
+        ["M.C.", "Saturn", "parallel", 10.68, -5.34], ["M.C.", "Asc.", "zodiacal", 9.84, -9.84]
+      ]
+    },
+    {
+      "id": "barbara_walters",
+      "page": 11,
+      "displayed_birth": "9/25/1929 6:50 a.m., Boston, Massachusetts",
+      "ephemeris_epoch_utc": "1929-09-25T10:50:00+00:00",
+      "planet_longitudes_deg": {"Sun": 181.8666666667, "Moon": 83.5, "Mercury": 203.35, "Venus": 149.7166666667, "Mars": 202.55, "Jupiter": 76.2333333333, "Saturn": 264.4833333333, "Uranus": 9.6833333333, "Neptune": 152.2333333333, "Pluto": 109.4833333333},
+      "cusp_longitudes_deg": [184.0666666667, 210.15, 240.7666666667, 274.7666666667, 308.5666666667, 338.6833333333, 4.0666666667, 30.15, 60.7666666667, 94.7666666667, 128.5666666667, 158.6833333333],
+      "mc_longitude_deg": 94.7666666667,
+      "asc_longitude_deg": 184.0666666667,
+      "expected_total": [512.04, -32.56],
+      "expected_planets": {"Sun": [33.53, -8.58], "Moon": [44.88, 5.45], "Mercury": [72.19, 15.72], "Venus": [36.38, 15.02], "Mars": [52.50, -1.58], "Jupiter": [35.77, 16.88], "Saturn": [43.66, -14.16], "Uranus": [30.36, -16.14], "Neptune": [28.87, 4.52], "Pluto": [44.80, -17.35], "M.C.": [45.47, -17.21], "Asc.": [43.61, -15.12]},
+      "expected_houses": {"1": [186.50, 6.53], "2": [24.33, -4.73], "3": [61.55, -5.72], "4": [21.83, -7.08], "5": [18.51, -7.58], "6": [16.16, 5.35], "7": [56.61, -16.93], "8": [18.19, 7.51], "9": [116.75, 30.19], "10": [112.71, -31.84], "11": [82.01, 15.25], "12": [69.63, -0.72]},
+      "expected_signs": {"Aries": [56.61, -16.93], "Taurus": [18.19, 7.51], "Gemini": [116.75, 30.19], "Cancer": [112.71, -31.84], "Leo": [53.14, 10.73], "Virgo": [64.97, 12.38], "Libra": [220.03, -2.05], "Scorpio": [24.33, -4.73], "Sagittarius": [61.55, -5.72], "Capricorn": [21.83, -7.08], "Aquarius": [18.51, -7.58], "Pisces": [16.16, 5.35]},
+      "expected_summaries": {"societies": {"Personal": [342.00, -4.65], "Companionship": [113.11, -26.24], "Public": [329.67, 21.12]}, "trinities": {"Life": [321.75, 29.14], "Wealth": [153.20, -31.22], "Association": [200.17, -7.40], "Psychism": [109.65, -0.29]}, "elements": {"Fire": [171.30, -11.92], "Earth": [104.99, 12.81], "Air": [355.28, 20.56], "Water": [153.20, -31.22]}, "qualities": {"Movable": [411.18, -57.90], "Fixed": [114.16, 5.94], "Mutable": [259.43, 42.20]}},
+      "expected_relations": [
+        ["Sun", "Saturn", "zodiacal", 0.62, -0.93], ["Sun", "Uranus", "zodiacal", 4.18, -4.18], ["Sun", "Neptune", "zodiacal", 1.63, 1.63], ["Sun", "M.C.", "zodiacal", 7.09, -7.09], ["Sun", "Asc.", "zodiacal", 9.81, 0.00],
+        ["Moon", "Mercury", "zodiacal", 11.84, 11.84], ["Moon", "Mars", "zodiacal", 9.04, 6.78], ["Moon", "Jupiter", "zodiacal", 3.72, 1.86], ["Moon", "Saturn", "zodiacal", 10.02, -15.03], ["Moon", "M.C.", "zodiacal", 0.73, 0.00],
+        ["Mercury", "Venus", "zodiacal", 1.63, 2.03], ["Mercury", "Mars", "zodiacal", 14.20, -3.55], ["Mercury", "Jupiter", "zodiacal", 4.88, 7.33], ["Mercury", "Saturn", "zodiacal", 6.86, 3.43], ["Mercury", "Pluto", "zodiacal", 8.14, -8.14],
+        ["Venus", "Mercury", "parallel", 11.12, 2.78], ["Venus", "Saturn", "zodiacal", 2.77, 2.08], ["Venus", "Neptune", "zodiacal", 7.48, 1.87], ["Venus", "Pluto", "zodiacal", 0.23, -0.17], ["Venus", "M.C.", "zodiacal", 1.95, 2.43],
+        ["Mars", "Jupiter", "zodiacal", 3.69, 4.61], ["Mars", "Saturn", "zodiacal", 5.05, 1.26], ["Mars", "Pluto", "zodiacal", 6.94, -8.68],
+        ["Jupiter", "Uranus", "zodiacal", 0.46, 0.69],
+        ["Saturn", "Jupiter", "parallel", 4.54, 0.00], ["Saturn", "Neptune", "zodiacal", 0.25, 0.13], ["Saturn", "M.C.", "zodiacal", 1.72, -2.58], ["Saturn", "Asc.", "zodiacal", 0.43, -0.65],
+        ["Uranus", "Pluto", "zodiacal", 0.20, -0.20], ["Uranus", "M.C.", "zodiacal", 5.08, -5.08], ["Uranus", "Asc.", "zodiacal", 6.37, -6.37],
+        ["Neptune", "Pluto", "zodiacal", 2.75, -2.75], ["Neptune", "M.C.", "zodiacal", 4.47, 4.47], ["Neptune", "Asc.", "zodiacal", 1.18, 1.18],
+        ["Pluto", "Jupiter", "parallel", 8.79, 4.40], ["Pluto", "Saturn", "parallel", 3.61, -1.80],
+        ["M.C.", "Saturn", "parallel", 0.14, -0.07], ["M.C.", "Asc.", "zodiacal", 9.29, -9.29], ["Asc.", "Sun", "parallel", 1.54, 0.00]
+      ]
+    }
+  ]
+}

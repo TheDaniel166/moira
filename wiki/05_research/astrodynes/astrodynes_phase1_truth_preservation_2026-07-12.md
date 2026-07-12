@@ -114,3 +114,9 @@ Phase 1 does not claim full-chart parity. The three captured Church of Light
 charts remain later end-to-end targets because their exact house cusps and
 aspect grids are not fully captured. The manual's discrete worked examples are
 the authority exercised by this increment.
+
+Later status (2026-07-12): this was the Phase 1 boundary, not current runtime
+truth. Official PDF pages 9-11 were subsequently rendered, their wheels and all
+125 populated grid cells were captured, and the three-chart integration corpus
+now passes. See
+`astrodynes_three_chart_parity_validation_2026-07-12.md`.

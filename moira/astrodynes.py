@@ -2,15 +2,18 @@
 Church of Light natal Astrodynes - constitutional engine.
 
 This module owns the source tables, computation truth, classification, fixed
-doctrine, relations, integrated body profiles, sign/house aggregates, network
-projection, and hardening contract for natal Astrodynes.  Package-root and
-facade exposure are curated at SCP Phase 12; REST transport remains separate.
+doctrine, relations, integrated body profiles, sign/house and Class 5 summary
+aggregates, network projection, and hardening contract for natal Astrodynes.
+Package-root and facade exposure are curated at SCP Phase 12; REST transport
+remains separate.
 
 Governing sources
 -----------------
 * Elbert Benjamine and W. M. A. Drake, *The Astrodyne Manual* (1946).
 * Church of Light, *Astrological Delineation with Astrodynes: Class 1 -
   The Planets*, page 3, ``Table of Essential Dignities``.
+* Church of Light, *Astrological Delineation with Astrodynes: Class 5 -
+  Summary - Societies, Trinities, Elements, & Qualities*.
 
 The Astrodyne dignity table is its own Hermetic doctrine.  In particular,
 Mercury is exalted at Aquarius 15 and falls at Leo 15.  Nothing in this module
@@ -122,6 +125,15 @@ class AstrodyneContributionSource(StrEnum):
     MUTUAL_RECEPTION = "mutual_reception"
 
 
+class AstrodyneSummaryFamily(StrEnum):
+    """Official Church of Light natal summary families."""
+
+    SOCIETY = "society"
+    TRINITY = "trinity"
+    ELEMENT = "element"
+    QUALITY = "quality"
+
+
 class AstrodyneParallelGeometry(StrEnum):
     """Admitted declination geometry, fixed by the manual's worked examples."""
 
@@ -173,6 +185,33 @@ class AstrodynePolicy:
 
 
 DEFAULT_ASTRODYNE_POLICY = AstrodynePolicy()
+
+
+ASTRODYNE_SOCIETY_GROUPS: tuple[tuple[str, tuple[int, ...]], ...] = (
+    ("Personal", (12, 1, 2, 3)),
+    ("Companionship", (4, 5, 6, 7)),
+    ("Public", (8, 9, 10, 11)),
+)
+
+ASTRODYNE_TRINITY_GROUPS: tuple[tuple[str, tuple[int, ...]], ...] = (
+    ("Life", (1, 5, 9)),
+    ("Wealth", (2, 6, 10)),
+    ("Association", (3, 7, 11)),
+    ("Psychism", (4, 8, 12)),
+)
+
+ASTRODYNE_ELEMENT_GROUPS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("Fire", ("Aries", "Leo", "Sagittarius")),
+    ("Earth", ("Taurus", "Virgo", "Capricorn")),
+    ("Air", ("Gemini", "Libra", "Aquarius")),
+    ("Water", ("Cancer", "Scorpio", "Pisces")),
+)
+
+ASTRODYNE_QUALITY_GROUPS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("Movable", ("Aries", "Cancer", "Libra", "Capricorn")),
+    ("Fixed", ("Taurus", "Leo", "Scorpio", "Aquarius")),
+    ("Mutable", ("Gemini", "Virgo", "Sagittarius", "Pisces")),
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -1641,6 +1680,214 @@ class AstrodyneChartAggregate:
         )
 
 
+@dataclass(frozen=True, slots=True)
+class AstrodyneSummaryEntry:
+    """One official society, trinity, element, or quality summary row."""
+
+    family: AstrodyneSummaryFamily
+    name: str
+    houses: tuple[int, ...]
+    signs: tuple[str, ...]
+    power: float
+    percentage: float
+    total_harmony: float
+    total_discord: float
+    net_harmony: float
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.family, AstrodyneSummaryFamily):
+            raise TypeError("summary family must be AstrodyneSummaryFamily")
+        if not self.name:
+            raise ValueError("summary entry name cannot be empty")
+        if bool(self.houses) == bool(self.signs):
+            raise ValueError("summary entry must own either houses or signs")
+        if self.family in {
+            AstrodyneSummaryFamily.SOCIETY,
+            AstrodyneSummaryFamily.TRINITY,
+        } and not self.houses:
+            raise ValueError("society and trinity entries require houses")
+        if self.family in {
+            AstrodyneSummaryFamily.ELEMENT,
+            AstrodyneSummaryFamily.QUALITY,
+        } and not self.signs:
+            raise ValueError("element and quality entries require signs")
+        numeric = (
+            self.power,
+            self.percentage,
+            self.total_harmony,
+            self.total_discord,
+            self.net_harmony,
+        )
+        if not all(isfinite(value) for value in numeric):
+            raise ValueError("summary values must be finite")
+        if self.power < 0.0 or not 0.0 <= self.percentage <= 100.0:
+            raise ValueError("summary power/percentage is invalid")
+        if min(self.total_harmony, self.total_discord) < 0.0:
+            raise ValueError("summary harmony/discord magnitudes cannot be negative")
+        if abs(self.net_harmony - (self.total_harmony - self.total_discord)) > 1e-12:
+            raise ValueError("summary net harmony is inconsistent")
+
+    @property
+    def rounded_power(self) -> float:
+        return round(self.power, 2)
+
+    @property
+    def rounded_percentage(self) -> float:
+        return round(self.percentage, 1)
+
+    @property
+    def rounded_net_harmony(self) -> float:
+        return round(self.net_harmony, 2)
+
+
+@dataclass(frozen=True, slots=True)
+class AstrodyneSummaryProfile:
+    """All four official summary families over one chart aggregate."""
+
+    societies: tuple[AstrodyneSummaryEntry, ...]
+    trinities: tuple[AstrodyneSummaryEntry, ...]
+    elements: tuple[AstrodyneSummaryEntry, ...]
+    qualities: tuple[AstrodyneSummaryEntry, ...]
+    total_power: float
+
+    def __post_init__(self) -> None:
+        if not isfinite(self.total_power) or self.total_power <= 0.0:
+            raise ValueError("summary total power must be finite and positive")
+        expected = (
+            (self.societies, AstrodyneSummaryFamily.SOCIETY, ASTRODYNE_SOCIETY_GROUPS),
+            (self.trinities, AstrodyneSummaryFamily.TRINITY, ASTRODYNE_TRINITY_GROUPS),
+            (self.elements, AstrodyneSummaryFamily.ELEMENT, ASTRODYNE_ELEMENT_GROUPS),
+            (self.qualities, AstrodyneSummaryFamily.QUALITY, ASTRODYNE_QUALITY_GROUPS),
+        )
+        for entries, family, groups in expected:
+            if tuple(item.family for item in entries) != (family,) * len(groups):
+                raise ValueError(f"{family.value} entries have the wrong family")
+            if tuple(item.name for item in entries) != tuple(name for name, _ in groups):
+                raise ValueError(f"{family.value} entries are not in source order")
+            members = tuple(
+                item.houses if item.houses else item.signs for item in entries
+            )
+            if members != tuple(group_members for _, group_members in groups):
+                raise ValueError(f"{family.value} entries have the wrong members")
+            if abs(sum(item.power for item in entries) - self.total_power) > 1e-9:
+                raise ValueError(f"{family.value} power does not partition the chart")
+            if self.total_power > 0.0 and abs(sum(item.percentage for item in entries) - 100.0) > 1e-9:
+                raise ValueError(f"{family.value} percentages do not sum to 100")
+
+    def family(
+        self, family: AstrodyneSummaryFamily
+    ) -> tuple[AstrodyneSummaryEntry, ...]:
+        if family is AstrodyneSummaryFamily.SOCIETY:
+            return self.societies
+        if family is AstrodyneSummaryFamily.TRINITY:
+            return self.trinities
+        if family is AstrodyneSummaryFamily.ELEMENT:
+            return self.elements
+        if family is AstrodyneSummaryFamily.QUALITY:
+            return self.qualities
+        raise ValueError(f"unsupported summary family: {family!r}")
+
+    def dominant(self, family: AstrodyneSummaryFamily) -> AstrodyneSummaryEntry:
+        """Return the first source-ordered maximum for one family."""
+
+        return max(self.family(family), key=lambda item: item.power)
+
+
+def _summary_entry_from_houses(
+    family: AstrodyneSummaryFamily,
+    name: str,
+    houses: tuple[int, ...],
+    aggregate: AstrodyneChartAggregate,
+) -> AstrodyneSummaryEntry:
+    members = tuple(aggregate.houses[house - 1] for house in houses)
+    power = sum(item.total_power for item in members)
+    harmony = sum(item.total_harmony for item in members)
+    discord = sum(item.total_discord for item in members)
+    percentage = power / aggregate.total_house_power * 100.0
+    return AstrodyneSummaryEntry(
+        family=family,
+        name=name,
+        houses=houses,
+        signs=(),
+        power=power,
+        percentage=percentage,
+        total_harmony=harmony,
+        total_discord=discord,
+        net_harmony=harmony - discord,
+    )
+
+
+def _summary_entry_from_signs(
+    family: AstrodyneSummaryFamily,
+    name: str,
+    signs: tuple[str, ...],
+    aggregate: AstrodyneChartAggregate,
+) -> AstrodyneSummaryEntry:
+    members = tuple(aggregate.signs[ASTRODYNE_SIGNS.index(sign)] for sign in signs)
+    power = sum(item.total_power for item in members)
+    harmony = sum(item.total_harmony for item in members)
+    discord = sum(item.total_discord for item in members)
+    percentage = power / aggregate.total_sign_power * 100.0
+    return AstrodyneSummaryEntry(
+        family=family,
+        name=name,
+        houses=(),
+        signs=signs,
+        power=power,
+        percentage=percentage,
+        total_harmony=harmony,
+        total_discord=discord,
+        net_harmony=harmony - discord,
+    )
+
+
+def astrodynes_summary(
+    aggregate: AstrodyneChartAggregate,
+) -> AstrodyneSummaryProfile:
+    """Derive the four official Class 5 summary families."""
+
+    if not isinstance(aggregate, AstrodyneChartAggregate):
+        raise TypeError("aggregate must be an AstrodyneChartAggregate")
+    if (
+        not isfinite(aggregate.total_house_power)
+        or not isfinite(aggregate.total_sign_power)
+        or aggregate.total_house_power <= 0.0
+        or aggregate.total_sign_power <= 0.0
+    ):
+        raise ValueError("summary aggregation requires positive chart power")
+    societies = tuple(
+        _summary_entry_from_houses(
+            AstrodyneSummaryFamily.SOCIETY, name, houses, aggregate
+        )
+        for name, houses in ASTRODYNE_SOCIETY_GROUPS
+    )
+    trinities = tuple(
+        _summary_entry_from_houses(
+            AstrodyneSummaryFamily.TRINITY, name, houses, aggregate
+        )
+        for name, houses in ASTRODYNE_TRINITY_GROUPS
+    )
+    elements = tuple(
+        _summary_entry_from_signs(
+            AstrodyneSummaryFamily.ELEMENT, name, signs, aggregate
+        )
+        for name, signs in ASTRODYNE_ELEMENT_GROUPS
+    )
+    qualities = tuple(
+        _summary_entry_from_signs(
+            AstrodyneSummaryFamily.QUALITY, name, signs, aggregate
+        )
+        for name, signs in ASTRODYNE_QUALITY_GROUPS
+    )
+    return AstrodyneSummaryProfile(
+        societies=societies,
+        trinities=trinities,
+        elements=elements,
+        qualities=qualities,
+        total_power=aggregate.total_house_power,
+    )
+
+
 def _average_ruler_values(
     sign: str,
     profiles: Mapping[str, AstrodyneBodyConditionProfile],
@@ -1842,13 +2089,14 @@ def _build_network(
 
 @dataclass(frozen=True, slots=True)
 class AstrodyneChartResult:
-    """Complete bounded natal result through aggregate and network layers."""
+    """Complete bounded natal result through summary and network layers."""
 
     policy: AstrodynePolicy
     inputs: tuple[AstrodyneBodyInput, ...]
     relations: AstrodyneRelationSet
     profiles: tuple[AstrodyneBodyConditionProfile, ...]
     aggregate: AstrodyneChartAggregate
+    summary: AstrodyneSummaryProfile
     network: AstrodyneNetwork
 
     def __post_init__(self) -> None:
@@ -1955,6 +2203,175 @@ def _canonical_interceptions(
     return result
 
 
+def _geometry_house(
+    longitude_deg: float,
+    cusp_longitudes: tuple[float, ...],
+) -> tuple[int, float, float]:
+    """Return house, zodiacal size, and distance from its weaker cusp."""
+
+    longitude = longitude_deg % 360.0
+    for index, opening in enumerate(cusp_longitudes):
+        closing = cusp_longitudes[(index + 1) % 12]
+        house_size = (closing - opening) % 360.0
+        distance_from_opening = (longitude - opening) % 360.0
+        if distance_from_opening < house_size or distance_from_opening <= 1e-12:
+            # The manual's worked house-position calculations identify the
+            # closing boundary as the weaker cusp. The opening boundary is
+            # therefore the stronger cusp for this within-house interpolation.
+            return (
+                index + 1,
+                house_size,
+                house_size - distance_from_opening,
+            )
+    raise ValueError("longitude does not fall within the ordered cusp figure")
+
+
+def _geometry_interceptions(
+    cusp_longitudes: tuple[float, ...],
+    cusp_signs: tuple[str, ...],
+) -> dict[int, tuple[str, ...]]:
+    """Derive signs wholly enclosed by a house and absent from all cusps."""
+
+    result: dict[int, list[str]] = {}
+    cusp_sign_set = set(cusp_signs)
+    for sign_index, sign in enumerate(ASTRODYNE_SIGNS):
+        if sign in cusp_sign_set:
+            continue
+        sign_midpoint = sign_index * 30.0 + 15.0
+        house, _, _ = _geometry_house(sign_midpoint, cusp_longitudes)
+        result.setdefault(house, []).append(sign)
+    return {house: tuple(signs) for house, signs in result.items()}
+
+
+def natal_astrodynes_from_geometry(
+    planet_longitudes: Mapping[str, float],
+    declinations: Mapping[str, float],
+    cusp_longitudes: Sequence[float],
+    mc_longitude: float,
+    asc_longitude: float,
+    *,
+    policy: AstrodynePolicy | None = None,
+) -> AstrodyneChartResult:
+    """Build natal Astrodynes from a complete explicit tropical chart figure.
+
+    This adapter owns only the conversion from already-computed chart geometry
+    into :class:`AstrodyneBodyInput`. It does not acquire an ephemeris, choose a
+    house system, infer a time zone, or alter the fixed Astrodyne doctrine.
+    Declinations must include the ten planets plus ``M.C.`` and ``Asc.`` because
+    the Church of Light relation grid admits parallels involving the angles.
+    """
+
+    if not isinstance(planet_longitudes, Mapping):
+        raise TypeError("planet_longitudes must be a mapping")
+    if not isinstance(declinations, Mapping):
+        raise TypeError("declinations must be a mapping")
+
+    longitudes_by_planet: dict[str, float] = {}
+    for body, value in planet_longitudes.items():
+        canonical = _canonical_planet(body)
+        if canonical in longitudes_by_planet:
+            raise ValueError(f"duplicate planet longitude: {canonical}")
+        longitudes_by_planet[canonical] = _finite(
+            f"planet_longitudes[{canonical!r}]", value
+        ) % 360.0
+    if set(longitudes_by_planet) != set(ASTRODYNE_PLANETS):
+        missing = sorted(set(ASTRODYNE_PLANETS) - set(longitudes_by_planet))
+        extra = sorted(set(longitudes_by_planet) - set(ASTRODYNE_PLANETS))
+        raise ValueError(
+            "planet_longitudes requires all ten Astrodyne planets; "
+            f"missing={missing}, extra={extra}"
+        )
+
+    declinations_by_body: dict[str, float] = {}
+    for body, value in declinations.items():
+        canonical = _canonical_body(body)
+        if canonical in declinations_by_body:
+            raise ValueError(f"duplicate declination: {canonical}")
+        declination = _finite(f"declinations[{canonical!r}]", value)
+        if not -90.0 <= declination <= 90.0:
+            raise ValueError(f"declination for {canonical} must be in [-90, 90]")
+        declinations_by_body[canonical] = declination
+    expected_bodies = (*ASTRODYNE_PLANETS, *ASTRODYNE_POINTS)
+    if set(declinations_by_body) != set(expected_bodies):
+        missing = sorted(set(expected_bodies) - set(declinations_by_body))
+        extra = sorted(set(declinations_by_body) - set(expected_bodies))
+        raise ValueError(
+            "declinations requires ten planets plus M.C. and Asc.; "
+            f"missing={missing}, extra={extra}"
+        )
+
+    cusps = tuple(
+        _finite(f"cusp_longitudes[{index}]", value) % 360.0
+        for index, value in enumerate(cusp_longitudes)
+    )
+    if len(cusps) != 12:
+        raise ValueError("cusp_longitudes must contain exactly twelve cusps")
+    spans = tuple(
+        (cusps[(index + 1) % 12] - cusp) % 360.0
+        for index, cusp in enumerate(cusps)
+    )
+    if any(span <= 1e-12 for span in spans) or abs(sum(spans) - 360.0) > 1e-9:
+        raise ValueError("cusp_longitudes must form one ordered zodiacal circuit")
+
+    mc = _finite("mc_longitude", mc_longitude) % 360.0
+    asc = _finite("asc_longitude", asc_longitude) % 360.0
+    def angular_delta(first: float, second: float) -> float:
+        return abs((first - second + 180.0) % 360.0 - 180.0)
+    if angular_delta(asc, cusps[0]) > 1e-9:
+        raise ValueError("asc_longitude must equal the first-house cusp")
+    if angular_delta(mc, cusps[9]) > 1e-9:
+        raise ValueError("mc_longitude must equal the tenth-house cusp")
+
+    body_inputs: list[AstrodyneBodyInput] = []
+    for body in ASTRODYNE_PLANETS:
+        longitude = longitudes_by_planet[body]
+        house, house_size, distance_from_weaker = _geometry_house(longitude, cusps)
+        house_class = (
+            "angular"
+            if house in {1, 4, 7, 10}
+            else "succedent"
+            if house in {2, 5, 8, 11}
+            else "cadent"
+        )
+        body_inputs.append(
+            AstrodyneBodyInput(
+                body=body,
+                longitude_deg=longitude,
+                house=house,
+                house_class=house_class,
+                distance_from_weaker_cusp_deg=distance_from_weaker,
+                house_size_deg=house_size,
+                declination_deg=declinations_by_body[body],
+            )
+        )
+    body_inputs.extend(
+        (
+            AstrodyneBodyInput(
+                "M.C.",
+                mc,
+                10,
+                "angular",
+                declination_deg=declinations_by_body["M.C."],
+            ),
+            AstrodyneBodyInput(
+                "Asc.",
+                asc,
+                1,
+                "angular",
+                declination_deg=declinations_by_body["Asc."],
+            ),
+        )
+    )
+    cusp_signs = tuple(ASTRODYNE_SIGNS[int(cusp // 30.0)] for cusp in cusps)
+    interceptions = _geometry_interceptions(cusps, cusp_signs)
+    return natal_astrodynes(
+        body_inputs,
+        cusp_signs,
+        intercepted_signs_by_house=interceptions,
+        policy=policy,
+    )
+
+
 def natal_astrodynes(
     body_inputs: Sequence[AstrodyneBodyInput],
     cusp_signs: Sequence[str],
@@ -1991,6 +2408,7 @@ def natal_astrodynes(
         _build_body_profile(item, relations, policy=active_policy) for item in inputs
     )
     aggregate = _build_chart_aggregate(profiles, canonical_cusps, interceptions)
+    summary = astrodynes_summary(aggregate)
     network = _build_network(profiles, relations)
     return AstrodyneChartResult(
         policy=active_policy,
@@ -1998,6 +2416,7 @@ def natal_astrodynes(
         relations=relations,
         profiles=profiles,
         aggregate=aggregate,
+        summary=summary,
         network=network,
     )
 
@@ -2017,6 +2436,16 @@ def validate_astrodynes_output(result: AstrodyneChartResult) -> tuple[str, ...]:
         failures.append("input bodies are not unique")
     if not result.aggregate.checksums_pass:
         failures.append("sign/house checksum does not pass")
+    if abs(result.summary.total_power - result.aggregate.total_house_power) > 1e-9:
+        failures.append("summary power disagrees with chart aggregate")
+    for entries, expected_harmony, label in (
+        (result.summary.societies, result.aggregate.total_house_harmony, "society"),
+        (result.summary.trinities, result.aggregate.total_house_harmony, "trinity"),
+        (result.summary.elements, result.aggregate.total_sign_harmony, "element"),
+        (result.summary.qualities, result.aggregate.total_sign_harmony, "quality"),
+    ):
+        if abs(sum(item.net_harmony for item in entries) - expected_harmony) > 1e-9:
+            failures.append(f"{label} harmony does not partition the chart")
     if tuple(node.body for node in result.network.nodes) != profile_bodies:
         failures.append("network nodes do not align with profiles")
     profile_by_body = {profile.body: profile for profile in result.profiles}
@@ -2062,6 +2491,10 @@ __all__ = [
     "ASTRODYNE_DIGNITY_ROWS",
     "ASTRODYNE_HOUSE_POWER_ROWS",
     "ASTRODYNE_ASPECT_ORB_ROWS",
+    "ASTRODYNE_SOCIETY_GROUPS",
+    "ASTRODYNE_TRINITY_GROUPS",
+    "ASTRODYNE_ELEMENT_GROUPS",
+    "ASTRODYNE_QUALITY_GROUPS",
     # Classification and policy
     "AstrodyneBodyKind",
     "AstrodyneDignityCondition",
@@ -2070,6 +2503,7 @@ __all__ = [
     "AstrodyneContributionSource",
     "AstrodyneParallelGeometry",
     "AstrodyneMercuryOrbRule",
+    "AstrodyneSummaryFamily",
     "AstrodynePolicy",
     "DEFAULT_ASTRODYNE_POLICY",
     # Source and truth vessels
@@ -2094,6 +2528,8 @@ __all__ = [
     "AstrodyneSignAggregate",
     "AstrodyneHouseAggregate",
     "AstrodyneChartAggregate",
+    "AstrodyneSummaryEntry",
+    "AstrodyneSummaryProfile",
     "AstrodyneNetworkNode",
     "AstrodyneNetworkEdge",
     "AstrodyneNetwork",
@@ -2108,6 +2544,8 @@ __all__ = [
     "evaluate_parallel_relation",
     "mutual_reception",
     "ruler_power_share",
+    "astrodynes_summary",
+    "natal_astrodynes_from_geometry",
     "natal_astrodynes",
     "validate_astrodynes_output",
 ]

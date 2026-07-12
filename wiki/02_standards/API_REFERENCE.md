@@ -1312,7 +1312,11 @@ vessels and chart builder.
 from moira import (
     AstrodyneBodyInput,
     AstrodynePolicy,
+    AstrodyneSummaryFamily,
+    AstrodyneSummaryProfile,
     AstrodyneChartResult,
+    astrodynes_summary,
+    natal_astrodynes_from_geometry,
     natal_astrodynes,
 )
 
@@ -1325,9 +1329,12 @@ result = natal_astrodynes(
 
 | Surface | Returns | Description |
 |---|---|---|
-| `natal_astrodynes(body_inputs, cusp_signs, *, intercepted_signs_by_house=None, policy=None)` | `AstrodyneChartResult` | Full natal profiles, relations, aggregates, network, and checksum truth |
+| `natal_astrodynes(body_inputs, cusp_signs, *, intercepted_signs_by_house=None, policy=None)` | `AstrodyneChartResult` | Full natal profiles, relations, aggregates, Class 5 summaries, network, and checksum truth |
+| `natal_astrodynes_from_geometry(planet_longitudes, declinations, cusp_longitudes, mc_longitude, asc_longitude, *, policy=None)` | `AstrodyneChartResult` | Derive body inputs, houses, interpolation geometry, cusp signs, and interceptions from a complete explicit tropical figure |
+| `astrodynes_summary(aggregate)` | `AstrodyneSummaryProfile` | Society, trinity, element, and quality partitions of an existing chart aggregate |
 | `validate_astrodynes_output(result)` | `tuple[str, ...]` | Deterministic cross-layer invariant failures |
 | `Moira.astrodynes(...)` | `AstrodyneChartResult` | Kernel-free facade delegate |
+| `Moira.astrodynes_from_geometry(...)` | `AstrodyneChartResult` | Kernel-free explicit-geometry facade delegate |
 
 `AstrodyneBodyInput` preserves longitude, optional declination, house number,
 house class, and the house-interpolation geometry required by the manual.
@@ -1342,8 +1349,10 @@ Principal result layers:
 | `AstrodyneSignAggregate` | Average-ruler share plus occupants for one sign |
 | `AstrodyneHouseAggregate` | Cusp/interception ruler shares plus house occupants |
 | `AstrodyneChartAggregate` | Twelve signs, twelve houses, and sign/house checksums |
+| `AstrodyneSummaryEntry` | One named Class 5 group with members, power, percentage, and harmony/discord truth |
+| `AstrodyneSummaryProfile` | Society, trinity, element, and quality families over one chart total |
 | `AstrodyneNetwork` | Nodes aligned with body profiles and edges aligned with admitted relations |
-| `AstrodyneChartResult` | Policy, inputs, relations, profiles, aggregate, and network |
+| `AstrodyneChartResult` | Policy, inputs, relations, profiles, aggregate, summary, and network |
 
 The only admitted `AstrodynePolicy` is the confirmed Church of Light doctrine:
 one-degree exaltation/fall emphasis, 60-arcminute magnitude parallels,

@@ -10,28 +10,38 @@ from moira.astrodynes import (
     ASTRODYNE_DIGNITY_ROWS,
     ASTRODYNE_HOUSE_POWER_ROWS,
     ASTRODYNE_PARALLEL_ORB_ARCMIN,
+    ASTRODYNE_ELEMENT_GROUPS,
+    ASTRODYNE_QUALITY_GROUPS,
+    ASTRODYNE_SOCIETY_GROUPS,
     ASTRODYNE_SIGNS,
+    ASTRODYNE_TRINITY_GROUPS,
     DEFAULT_ASTRODYNE_POLICY,
     AstrodyneAspectFamily,
     AstrodyneAspectHarmonyTruth,
     AstrodyneBodyInput,
     AstrodyneBodyKind,
+    AstrodyneChartAggregate,
     AstrodyneContributionSource,
     AstrodyneDignityCondition,
     AstrodyneEssentialDignityTruth,
     AstrodyneHousePositionTruth,
+    AstrodyneHouseAggregate,
     AstrodyneParallelAspectTruth,
     AstrodynePolicy,
     AstrodyneRelationKind,
     AstrodyneRulerShareTruth,
+    AstrodyneSignAggregate,
+    AstrodyneSummaryFamily,
     AstrodyneZodiacalAspectTruth,
     aspect_harmony,
+    astrodynes_summary,
     essential_dignity,
     evaluate_parallel_relation,
     evaluate_zodiacal_relation,
     house_position_power,
     mutual_reception,
     natal_astrodynes,
+    natal_astrodynes_from_geometry,
     parallel_aspect_power,
     ruler_power_share,
     validate_astrodynes_output,
@@ -495,6 +505,154 @@ class TestRelations:
         assert relation.bonus_each == 0.0
 
 
+def _published_trump_aggregate() -> AstrodyneChartAggregate:
+    """Reconstruct the official Class 5 summary inputs, not chart geometry."""
+
+    sign_rows = (
+        ("Aries", 16.65, 1.85),
+        # The displayed sign rows sum to 784.06 while every published summary
+        # family sums to 784.05. Reconcile Taurus by the one-cent display
+        # uncertainty so this synthetic aggregate preserves the engine checksum.
+        ("Taurus", 64.88, -4.47),
+        ("Gemini", 170.30, 7.52),
+        ("Cancer", 129.65, 10.54),
+        ("Leo", 159.52, 17.98),
+        ("Virgo", 14.38, -0.56),
+        ("Libra", 71.14, 43.23),
+        ("Scorpio", 17.85, -0.43),
+        ("Sagittarius", 95.77, 16.11),
+        ("Capricorn", 8.71, 1.26),
+        ("Aquarius", 22.82, 3.89),
+        ("Pisces", 12.38, 9.29),
+    )
+    house_rows = (
+        (1, 121.44, 23.41),
+        (2, 33.29, -7.55),
+        (3, 52.22, 50.22),
+        (4, 17.85, -0.43),
+        (5, 95.77, 16.11),
+        (6, 8.71, 1.26),
+        (7, 22.82, 3.89),
+        (8, 12.38, 9.29),
+        (9, 16.65, 1.85),
+        (10, 64.89, -4.47),
+        (11, 199.05, 6.40),
+        (12, 138.98, 6.23),
+    )
+
+    signs = tuple(
+        AstrodyneSignAggregate(
+            sign=sign,
+            rulers=("Sun",),
+            cusp_count=0,
+            intercepted_houses=(),
+            ruler_fraction=0.0,
+            occupants=(),
+            ruler_power=0.0,
+            occupant_power=power,
+            total_power=power,
+            total_harmony=max(net_harmony, 0.0),
+            total_discord=max(-net_harmony, 0.0),
+            net_harmony=net_harmony,
+        )
+        for sign, power, net_harmony in sign_rows
+    )
+    houses = tuple(
+        AstrodyneHouseAggregate(
+            house=house,
+            cusp_sign=ASTRODYNE_SIGNS[house - 1],
+            intercepted_signs=(),
+            occupants=(),
+            ruler_power=0.0,
+            occupant_power=power,
+            total_power=power,
+            total_harmony=max(net_harmony, 0.0),
+            total_discord=max(-net_harmony, 0.0),
+            net_harmony=net_harmony,
+        )
+        for house, power, net_harmony in house_rows
+    )
+    return AstrodyneChartAggregate(
+        signs=signs,
+        houses=houses,
+        total_body_power=537.08,
+        total_sign_power=sum(item.total_power for item in signs),
+        total_house_power=sum(item.total_power for item in houses),
+        total_sign_harmony=sum(item.net_harmony for item in signs),
+        total_house_harmony=sum(item.net_harmony for item in houses),
+    )
+
+
+class TestClassFiveSummaries:
+    def test_source_owned_group_memberships(self) -> None:
+        assert ASTRODYNE_SOCIETY_GROUPS == (
+            ("Personal", (12, 1, 2, 3)),
+            ("Companionship", (4, 5, 6, 7)),
+            ("Public", (8, 9, 10, 11)),
+        )
+        assert ASTRODYNE_TRINITY_GROUPS == (
+            ("Life", (1, 5, 9)),
+            ("Wealth", (2, 6, 10)),
+            ("Association", (3, 7, 11)),
+            ("Psychism", (4, 8, 12)),
+        )
+        assert ASTRODYNE_ELEMENT_GROUPS == (
+            ("Fire", ("Aries", "Leo", "Sagittarius")),
+            ("Earth", ("Taurus", "Virgo", "Capricorn")),
+            ("Air", ("Gemini", "Libra", "Aquarius")),
+            ("Water", ("Cancer", "Scorpio", "Pisces")),
+        )
+        assert ASTRODYNE_QUALITY_GROUPS == (
+            ("Movable", ("Aries", "Cancer", "Libra", "Capricorn")),
+            ("Fixed", ("Taurus", "Leo", "Scorpio", "Aquarius")),
+            ("Mutable", ("Gemini", "Virgo", "Sagittarius", "Pisces")),
+        )
+
+    def test_official_trump_summary_oracle(self) -> None:
+        summary = astrodynes_summary(_published_trump_aggregate())
+
+        published = {
+            AstrodyneSummaryFamily.SOCIETY: (
+                ("Personal", 345.93, 44.1, 72.31),
+                ("Companionship", 145.15, 18.5, 20.83),
+                ("Public", 292.97, 37.4, 13.08),
+            ),
+            AstrodyneSummaryFamily.TRINITY: (
+                ("Life", 233.86, 29.8, 41.38),
+                ("Wealth", 106.89, 13.6, -10.76),
+                ("Association", 274.09, 35.0, 60.52),
+                ("Psychism", 169.21, 21.6, 15.09),
+            ),
+            AstrodyneSummaryFamily.ELEMENT: (
+                ("Fire", 271.94, 34.7, 35.95),
+                ("Earth", 87.97, 11.2, -3.77),
+                ("Air", 264.26, 33.7, 54.64),
+                ("Water", 159.88, 20.4, 19.40),
+            ),
+            AstrodyneSummaryFamily.QUALITY: (
+                ("Movable", 226.15, 28.8, 56.88),
+                ("Fixed", 265.07, 33.8, 16.97),
+                ("Mutable", 292.83, 37.3, 32.37),
+            ),
+        }
+        for family, expected_rows in published.items():
+            actual_rows = summary.family(family)
+            assert tuple(item.name for item in actual_rows) == tuple(
+                row[0] for row in expected_rows
+            )
+            for actual, (_, power, percentage, harmony) in zip(
+                actual_rows, expected_rows, strict=True
+            ):
+                # Published source inputs and outputs are both rounded to 0.01.
+                assert actual.power == pytest.approx(power, abs=0.011)
+                assert actual.rounded_percentage == percentage
+                assert actual.net_harmony == pytest.approx(harmony, abs=0.011)
+        assert summary.dominant(AstrodyneSummaryFamily.SOCIETY).name == "Personal"
+        assert summary.dominant(AstrodyneSummaryFamily.TRINITY).name == "Association"
+        assert summary.dominant(AstrodyneSummaryFamily.ELEMENT).name == "Fire"
+        assert summary.dominant(AstrodyneSummaryFamily.QUALITY).name == "Mutable"
+
+
 class TestIntegratedChart:
     def setup_method(self) -> None:
         self.inputs = _full_chart_inputs()
@@ -538,6 +696,15 @@ class TestIntegratedChart:
         assert aggregate.checksums_pass
         assert aggregate.power_checksum_delta == pytest.approx(0.0, abs=1e-9)
         assert aggregate.harmony_checksum_delta == pytest.approx(0.0, abs=1e-9)
+
+    def test_summary_is_integrated_and_partitions_chart_totals(self) -> None:
+        assert self.result.summary == astrodynes_summary(self.result.aggregate)
+        for family in AstrodyneSummaryFamily:
+            entries = self.result.summary.family(family)
+            assert sum(item.power for item in entries) == pytest.approx(
+                self.result.summary.total_power
+            )
+            assert sum(item.percentage for item in entries) == pytest.approx(100.0)
 
     def test_manual_ruler_share_examples(self) -> None:
         taurus = ruler_power_share(("Venus",), (34.16,), cusp_count=1)
@@ -609,6 +776,78 @@ class TestIntegratedChart:
                 "angular",
                 distance_from_weaker_cusp_deg=1.0,
                 house_size_deg=30.0,
+            )
+
+
+class TestExplicitGeometryAdapter:
+    def test_derives_house_interpolation_and_interceptions(self) -> None:
+        cusp_longitudes = (
+            0.0,
+            30.0,
+            90.0,
+            120.0,
+            150.0,
+            180.0,
+            210.0,
+            240.0,
+            270.0,
+            300.0,
+            330.0,
+            345.0,
+        )
+        planet_longitudes = {
+            body: longitude
+            for body, longitude in zip(
+                (
+                    "Sun",
+                    "Moon",
+                    "Mercury",
+                    "Venus",
+                    "Mars",
+                    "Jupiter",
+                    "Saturn",
+                    "Uranus",
+                    "Neptune",
+                    "Pluto",
+                ),
+                (5.0, 45.0, 95.0, 125.0, 155.0, 185.0, 215.0, 245.0, 275.0, 305.0),
+                strict=True,
+            )
+        }
+        declinations = {body: 2.0 * index for index, body in enumerate(planet_longitudes)}
+        declinations.update({"M.C.": 20.0, "Asc.": 0.0})
+
+        result = natal_astrodynes_from_geometry(
+            planet_longitudes,
+            declinations,
+            cusp_longitudes,
+            mc_longitude=300.0,
+            asc_longitude=0.0,
+        )
+
+        sun = result.profile("Sun")
+        assert sun.house_position is not None
+        assert sun.house_position.house == 1
+        assert sun.house_position.house_size_deg == 30.0
+        assert sun.house_position.distance_from_weaker_cusp_deg == 25.0
+        assert result.sign("Gemini").intercepted_houses == (2,)
+
+    def test_requires_angles_to_match_their_cusps(self) -> None:
+        longitudes = {
+            body: index * 30.0 + 1.0
+            for index, body in enumerate(
+                ("Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto")
+            )
+        }
+        declinations = {body: 0.0 for body in longitudes}
+        declinations.update({"M.C.": 0.0, "Asc.": 0.0})
+        with pytest.raises(ValueError, match="asc_longitude"):
+            natal_astrodynes_from_geometry(
+                longitudes,
+                declinations,
+                tuple(float(index * 30) for index in range(12)),
+                mc_longitude=270.0,
+                asc_longitude=1.0,
             )
 
 

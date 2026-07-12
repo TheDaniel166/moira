@@ -17,6 +17,7 @@ from .routers import (
     alternate_dashas_router,
     antiscia_router,
     astrocartography_router,
+    astrodynes_router,
     asteroids_router,
     comets_router,
     batch_router,
@@ -143,6 +144,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(shadbala_router)     # Phase-9 Shadbala doctrine surface
     app.include_router(jaimini_router)      # Phase-9 Jaimini doctrine surface
     app.include_router(dignities_router)    # Phase-9 Classical Dignities doctrine surface
+    app.include_router(astrodynes_router)   # Church of Light natal Astrodynes doctrine surface
     app.include_router(lots_router)         # Phase-9 Classical Lots doctrine surface
     app.include_router(triplicity_router)   # Phase-9 Triplicity doctrine surface
     app.include_router(egyptian_bounds_router)  # Phase-9 Egyptian Bounds doctrine surface

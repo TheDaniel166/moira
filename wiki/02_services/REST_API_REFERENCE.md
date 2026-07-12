@@ -1,7 +1,7 @@
 # Moira REST API Reference
 
 Version: 0.1.0 transport surface
-Date audited: 2026-06-14
+Date audited: 2026-07-12
 Source of truth: `moira_server.app.create_app()` route registry
 
 This document describes the HTTP transport surface currently registered by
@@ -16,9 +16,9 @@ transport contract documented for that family.
 
 ## Current Surface Summary
 
-- Total non-documentation routes: 349
-- Operational/meta routes: 5
-- Versioned `/v1` routes: 345
+- Total non-documentation routes: 377
+- Operational/meta routes: 4
+- Versioned `/v1` routes: 373
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 
@@ -36,7 +36,8 @@ Implemented:
   followed by chart-backed Shadbala result/profile/network/condition routes
   direct/chart-backed Jaimini karaka/profile/condition/pair routes, and
   chart-backed Classical Dignities result/reception/condition/profile/network
-  routes, followed by Classical Lots catalogue and chart-backed
+  routes, Church of Light natal Astrodynes doctrine/geometry/chart routes,
+  followed by Classical Lots catalogue and chart-backed
   result/dependency/condition/profile/network routes, and Triplicity
   table/assignment/score routes, followed by Egyptian Bounds table, bound,
   classification, relation, condition, aggregate, and network routes, followed
@@ -129,6 +130,7 @@ Not yet broadly exposed as REST families:
 | alternate-dashas | 9 |
 | antiscia | 3 |
 | astrocartography | 6 |
+| astrodynes | 3 |
 | asteroids | 9 |
 | batch | 7 |
 | chart | 2 |
@@ -497,6 +499,35 @@ or async search jobs.
 | POST | `/v1/dignities/chart/condition` | `dignities_chart_condition_route` |
 | POST | `/v1/dignities/chart/profile` | `dignities_chart_profile_route` |
 | POST | `/v1/dignities/chart/network` | `dignities_chart_network_route` |
+
+## Church of Light Astrodynes Routes
+
+| Method | Path | Handler | Kernel |
+|---|---|---|---|
+| GET | `/v1/astrodynes/doctrine` | `astrodynes_doctrine_route` | No |
+| POST | `/v1/astrodynes/geometry` | `astrodynes_geometry_route` | No |
+| POST | `/v1/astrodynes/chart` | `astrodynes_chart_route` | Yes |
+
+`/geometry` requires exactly the ten Astrodyne planets, declinations for those
+planets plus `M.C.` and `Asc.`, twelve cusps forming one ordered zodiacal
+circuit, and explicit M.C./Asc. values matching cusps 10/1. It normalizes
+longitudes and returns the complete calculation without engine or kernel access.
+
+`/chart` requires a timezone-aware datetime, latitude, longitude, and house
+system. Planetary positions and declinations are geocentric apparent; latitude
+and longitude govern the houses only. House fallback is rejected by default.
+When `allow_house_fallback` is true, the response records requested/effective
+systems and the fallback reason. A fallback figure that places more than two
+cusps in one sign is rejected explicitly because that allocation lies outside
+the bounded aggregate doctrine currently validated by the engine.
+
+Both calculation responses expose normalized geometry, fixed policy, all
+detected relations with distinct admitted and scored flags, derivation truth,
+body profiles, sign/house checksum truth, Class 5 summary families, relation
+network, invariant failures, and provenance. Chart-backed geometry also retains
+the requested datetime/location, Julian date, and true obliquity used for the
+declination conversion. The fixed Church of Light doctrine
+is not caller-selectable or blended with conventional dignity tables.
 
 ## Classical Lots Routes
 

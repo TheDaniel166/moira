@@ -79,12 +79,16 @@ Completed constitutional surface:
 - aspect, parallel, and mutual-reception relations
 - integrated planet/angle condition profiles
 - source-supported sign and house aggregates
+- source-supported society, trinity, element, and quality summaries
+- three-chart Church of Light displayed-output parity corpus
 - relation network, full-subsystem hardening, backend standard, validation
   codex, and curated public engine/facade surface
+- typed `/v1/astrodynes/doctrine`, `/geometry`, and `/chart` REST routes with
+  explicit geometry/frame provenance and house-fallback truth
 
 Remaining product work is outside the bounded natal constitution: progressed
-Astrodynes, uncaptured society/trinity/element/quality rollups, full-chart
-Church of Light parity, and any separately evaluated REST transport.
+Astrodynes, autonomous place/time reconstruction for incomplete or contradictory
+source labels, and any doctrine alternative not established by the sources.
 - See `wiki/05_research/astrodynes/astrodynes_source_assessment_2026-04-09.md`
   for the current source audit and the exact remaining gaps.
 

@@ -1,10 +1,11 @@
 # Astrodynes Parity-Oracle Charts (2026-07-06)
 
-Status: end-to-end oracle capture (secondary / software source)
+Status: executable end-to-end oracle (secondary / software source; validated
+2026-07-12)
 
 Purpose:
-- capture three complete worked astrodyne charts supplied on 2026-07-06, to serve
-  as end-to-end validation oracles for a future engine
+- capture three complete worked astrodyne charts supplied on 2026-07-06 as
+  executable end-to-end validation oracles
 - these close the practical need for full-chart fixtures with *captured inputs*,
   which the manual's own worked chart (Benjamine) lacked (its input positions are
   only a wheel image)
@@ -33,24 +34,24 @@ of the three captured charts satisfies this:
 - Mohandas Gandhi: all six aggregations sum to 1002.47
 - Barbara Walters: all six aggregations sum to 784.78
 
-Because six independently transcribed columns agree to rounding in each chart,
-the totals below are transcribed with high confidence. They should still be
-digit-verified against the source images before being frozen as hard test
-fixtures, and the planet positions (decoded from the wheel glyphs) especially so.
-
-Not captured here (need clean images before use):
-- the per-pair aspect grids at the top of each chart page (glyph soup in OCR)
-- exact house-cusp longitudes and MC/Asc degrees from each wheel
-
-House-system / orb dependency: reproducing these totals requires matching the
-Church of Light software's house system and its astrodyne orb table. Confirm
-both before claiming parity to these charts.
+On 2026-07-12 the official PDF pages were rendered directly. The wheels and
+grids were digit-verified and frozen in
+`tests/fixtures/astrodynes_church_of_light.json`. The upper grid triangles
+provide zodiacal relations and the lower triangles provide parallels. The
+wheel cusps identify Placidus figures. The executable results and tolerances are
+recorded in
+`astrodynes_three_chart_parity_validation_2026-07-12.md`.
 
 ---
 
 ## 2. Chart A - Donald Trump
 
 Birth data: 1949-06-14, 9:51 a.m., Queens, New York.
+
+Source-defect note (2026-07-12): the page prints 1949, but all ten planetary
+positions demonstrate the wheel is for 1946-06-14 9:51 a.m. EDT. The fixture
+preserves the literal label and uses the wheel-demonstrated 1946 epoch only for
+the otherwise unprinted declinations.
 
 Planet positions (decoded from the wheel; verify against image):
 - Sun 22 Gemini 53; Moon 20 Sagittarius 41; Mercury 8 Cancer 46;
@@ -196,8 +197,11 @@ Reviewed directly:
 - the three chart reports and their six-way power checksums (all pass to rounding)
 - planet positions decoded from the wheels for sign placement
 
+Completed on 2026-07-12:
+- direct digit-level confirmation against official PDF pages 9-11
+- all 125 populated aspect-grid cells captured
+- all planet, house, sign, summary, and chart-total rows captured
+- executable three-chart engine parity within explicit named tolerances
+
 Not performed:
-- no digit-level confirmation against source images (flagged above)
-- no aspect-grid capture
-- no engine parity run (there is no engine yet)
-- no edit to the `moira.wiki` submodule copies
+- no edit to the `moira.wiki` generated copies

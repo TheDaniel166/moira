@@ -14,6 +14,7 @@ ROOT_EXPORTS = (
     "AstrodyneDignityCondition",
     "AstrodyneAspectFamily",
     "AstrodyneRelationKind",
+    "AstrodyneSummaryFamily",
     "AstrodynePolicy",
     "DEFAULT_ASTRODYNE_POLICY",
     "AstrodyneRelationSet",
@@ -22,8 +23,12 @@ ROOT_EXPORTS = (
     "AstrodyneSignAggregate",
     "AstrodyneHouseAggregate",
     "AstrodyneChartAggregate",
+    "AstrodyneSummaryEntry",
+    "AstrodyneSummaryProfile",
     "AstrodyneNetwork",
     "AstrodyneChartResult",
+    "astrodynes_summary",
+    "natal_astrodynes_from_geometry",
     "natal_astrodynes",
     "validate_astrodynes_output",
 )
@@ -51,6 +56,8 @@ def test_private_assembly_helpers_are_not_root_exports() -> None:
         "_build_chart_aggregate",
         "_build_network",
         "_canonical_interceptions",
+        "_geometry_house",
+        "_geometry_interceptions",
     ):
         assert name not in astrodynes.__all__
         assert name not in moira.__dict__
@@ -87,4 +94,46 @@ def test_moira_facade_method_delegates_without_kernel(monkeypatch) -> None:
         "cusp_signs": ("cusps",),
         "intercepted_signs_by_house": {1: ("Gemini",)},
         "policy": policy,
+    }
+
+
+def test_moira_geometry_facade_method_delegates_without_kernel(monkeypatch) -> None:
+    facade_module = importlib.import_module("moira.facade")
+    sentinel = object()
+    captured: dict[str, object] = {}
+
+    def fake_geometry(longitudes, declinations, cusps, mc, asc, *, policy):
+        captured.update(
+            longitudes=longitudes,
+            declinations=declinations,
+            cusps=cusps,
+            mc=mc,
+            asc=asc,
+            policy=policy,
+        )
+        return sentinel
+
+    monkeypatch.setattr(
+        facade_module,
+        "natal_astrodynes_from_geometry",
+        fake_geometry,
+    )
+    engine = moira.Moira()
+    result = engine.astrodynes_from_geometry(
+        {"Sun": 1.0},
+        {"Sun": 2.0},
+        (3.0,),
+        4.0,
+        5.0,
+        policy=astrodynes.DEFAULT_ASTRODYNE_POLICY,
+    )
+
+    assert result is sentinel
+    assert captured == {
+        "longitudes": {"Sun": 1.0},
+        "declinations": {"Sun": 2.0},
+        "cusps": (3.0,),
+        "mc": 4.0,
+        "asc": 5.0,
+        "policy": astrodynes.DEFAULT_ASTRODYNE_POLICY,
     }

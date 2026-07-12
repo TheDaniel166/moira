@@ -241,7 +241,8 @@ out of scope for Phase 1 natal work.
 Closed or downgraded by this capture:
 - "enough worked examples to validate term by term": **closed for the discrete
   natal calculations** (Section 2); a full-chart end-to-end oracle also exists
-  (Section 3) pending input capture.
+  (Section 3). The separate three-chart corpus became executable on 2026-07-12
+  after direct official-PDF wheel and grid capture.
 - "standalone mutual-reception table": still not visually captured, but the rule
   is now **validatable against named source examples** (Section 5).
 
@@ -276,7 +277,8 @@ Reviewed directly:
   Light `Table of Essential Dignities`
 
 Not performed:
-- no full-chart end-to-end parity run; SCP Phase 1 validates the discrete
-  source-worked computational core only
+- this historical SCP Phase 1 capture itself validates only the discrete
+  source-worked computational core; the later three-chart end-to-end parity run
+  is documented in `astrodynes_three_chart_parity_validation_2026-07-12.md`
 - no edit to the `moira.wiki` submodule copies of these notes (a separate mirror
   repo); only the canonical `wiki/05_research/astrodynes/` tree is updated

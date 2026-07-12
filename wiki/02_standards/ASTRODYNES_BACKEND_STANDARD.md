@@ -24,6 +24,9 @@ Primary computational authority:
 Direct table authority:
 - Church of Light, *Astrological Delineation with Astrodynes: Class 1 -
   The Planets*, page 3, `Table of Essential Dignities`
+- Church of Light, *Astrological Delineation with Astrodynes: Class 5 -
+  Summary - Societies, Trinities, Elements, & Qualities*,
+  `https://www.churchoflight.tv/pdf/05-Astrodynes-Summary.pdf`
 
 The dignity table was inspected directly on 2026-07-12. It establishes the
 Astrodyne-specific Mercury axis (Aquarius 15 exaltation, Leo 15 fall, Scorpio
@@ -42,6 +45,8 @@ The bounded natal engine computes:
 - home-or-exaltation mutual reception
 - integrated planet/angle condition profiles
 - sign and house power/harmony rollups
+- society, trinity, element, and quality summaries
+- explicit-chart-geometry normalization into the natal core
 - an admitted-relation network
 
 Inputs are explicit precomputed chart geometry. The subsystem does not acquire
@@ -72,11 +77,11 @@ variants.
 | 5 | Zodiacal, parallel, and mutual-reception relation vessels |
 | 6 | Detected, admitted, and scored relation subsets |
 | 7 | `AstrodyneBodyConditionProfile` |
-| 8 | Sign, house, and checksum aggregates |
+| 8 | Sign, house, checksum, and Class 5 summary aggregates |
 | 9 | Relation network nodes and edges |
 | 10 | Deterministic ordering, validation, failure behavior, cross-layer invariants |
 | 11 | This standard and validation codex |
-| 12 | Curated module, package-root, and `Moira` facade surface |
+| 12 | Curated module, package-root, `Moira` facade, and typed REST surface |
 
 ## 6. Result Semantics
 
@@ -133,9 +138,18 @@ sum(sign totals) == sum(house totals)
 sum(sign net harmony) == sum(house net harmony)
 ```
 
-Society, trinity, element, and quality summary columns are not admitted because
-their exact source assembly rules have not yet been captured. They must not be
-reconstructed from labels or output totals.
+Class 5 summaries are deterministic partitions of the existing aggregates:
+
+- societies: Personal (12, 1, 2, 3), Companionship (4, 5, 6, 7), Public
+  (8, 9, 10, 11)
+- trinities: Life (1, 5, 9), Wealth (2, 6, 10), Association (3, 7, 11),
+  Psychism (4, 8, 12)
+- elements: Fire, Earth, Air, and Water use their three zodiac signs
+- qualities: Movable, Fixed, and Mutable use their four zodiac signs
+
+Each family independently partitions the chart's total power and net harmony.
+`Movable` is preserved as the source label. The detailed source capture is
+`wiki/05_research/astrodynes/astrodynes_class5_summary_source_capture_2026-07-12.md`.
 
 ## 9. Failure and Determinism Doctrine
 
@@ -148,6 +162,10 @@ The engine rejects:
 - unsourced policy values
 - duplicate or inconsistently ordered relations
 - cross-layer aggregate or network disagreement
+- incomplete or disordered explicit cusp figures
+- explicit MC/Asc values that disagree with the tenth/first cusps
+- sign allocations requiring more than two house cusps in one sign, which lie
+  outside the bounded aggregate doctrine currently validated
 
 Full chart input requires ten planets plus M.C. and Asc. Canonical body order is
 the ten-planet source-table order followed by M.C. and Asc. Relations, profiles,
@@ -169,16 +187,26 @@ The focused corpus reproduces:
 - sign power rollups: `77.74`, `41.24`, `94.82`
 - house power rollups: `41.26`, `82.50`
 - sign harmony/discord rollups: `4.18`, `13.26`
+- all fourteen published Donald Trump Class 5 summary rows
+- all 125 populated relation cells and every displayed planet, house, sign,
+  summary, and chart-total row across the Trump, Gandhi, and Walters reports
 
 Exact internal arithmetic is compared with `pytest.approx`; the published
-manual values are additionally checked after rounding to hundredths. Source
-tables are pinned row-for-row. Structural evidence covers policy rejection,
+manual values are additionally checked after rounding to hundredths. The Class
+5 oracle uses `0.011` absolute tolerance because its displayed inputs and
+outputs are independently rounded to hundredths. Source tables and summary
+memberships are pinned row-for-row. Structural evidence covers policy rejection,
 relation subsets, deterministic ordering, sign/house checksums, profile/network
-agreement, and public-export identity.
+agreement, summary-family partitions, and public-export identity.
 
-No external numerical engine is used. No full-chart Church of Light parity is
-claimed. The degree-emphasis tier is implemented from an explicit source rule
-but has no independent worked-example hit.
+The three-chart integration corpus uses DE441 only to supply the declinations
+omitted from the reports. It demonstrates full displayed-output parity for the
+three official Church of Light natal reports under explicit-geometry semantics
+and the named tolerances in
+`wiki/05_research/astrodynes/astrodynes_three_chart_parity_validation_2026-07-12.md`.
+This is external-software corroboration, not a replacement for the manual's
+primary formula authority. The degree-emphasis tier is implemented from an
+explicit source rule but has no independent worked-example hit.
 
 ## 11. Public Surface
 
@@ -187,16 +215,37 @@ The complete stable module surface is the `__all__` contract of
 and `moira.facade`. The `Moira` facade provides `astrodynes(...)`, a kernel-free
 delegate to `natal_astrodynes(...)`.
 
+`natal_astrodynes_from_geometry(...)` and the corresponding facade method
+derive body inputs, cusp signs, and interceptions from a complete explicit
+tropical chart figure. They do not acquire ephemerides or choose houses.
+
 Private normalization, relation assembly, ruler lookup, aggregate assembly, and
 network construction helpers are not public.
 
-REST is not admitted by this standard. Transport requires a separate evaluation
-of request geometry, payload size, serialization, and website product needs.
+The optional FastAPI transport admits three routes under `/v1/astrodynes`:
+
+- `GET /doctrine` exposes the fixed policy and source tables without requiring
+  an ephemeris kernel.
+- `POST /geometry` accepts a complete tropical figure and remains kernel-free.
+- `POST /chart` derives geocentric apparent planetary longitudes and
+  declinations from a kernel-backed chart, while using the supplied location
+  only for the house figure.
+
+The chart route defaults to strict house semantics. A caller may explicitly set
+`allow_house_fallback=true`; the response then preserves requested and effective
+systems, the fallback flag, and its reason. It never silently makes the Moon
+topocentric. Both calculation routes return normalized geometry, fixed policy,
+all detected relations with admitted/scored flags and derivation truth, body
+profiles, aggregates, Class 5 summaries, network, invariant failures, and
+computational provenance. Chart-backed responses also preserve the requested
+datetime/location, Julian date, and true obliquity used for declination
+conversion. Transport models, orchestration, and serialization
+remain under `moira_server`; doctrine remains in `moira.astrodynes`.
 
 ## 12. Remaining Scope
 
 Deferred without approximation:
 - progressed Astrodynes
-- complete full-chart parity against Church of Light output
-- society, trinity, element, and quality rollups
+- autonomous place/time-label reconstruction where the report omits exact
+  atlas coordinates or contains contradictory source data
 - any doctrine alternative not present in the confirmed sources
