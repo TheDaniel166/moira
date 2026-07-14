@@ -7,6 +7,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.2.0] - 2026-07-14
+
+### Added
+- **Western Electional Moon Condition**: Added the source-owned
+  `ramesey_moon_condition_v1` profile through the engine, facade, and
+  `POST /v1/electional/western/ramesey-moon-condition`. The result evaluates
+  William Ramesey's ten impediments of the Moon as visible rule evidence; it
+  is not a generic auspiciousness score or recommendation engine.
+- **First-Class Derived-Position Analysis**: Added
+  `aspects_from_longitudes(...)`, `Moira.aspects_from_longitudes(...)`, and
+  `POST /v1/aspects/from-longitudes` for composite, Davison, harmonic,
+  draconic, and other position-only products. The route does not fabricate a
+  birth moment, speeds, applying/separating state, or ephemeris provenance.
+- **Planet Reduction Visibility**: Promoted `PlanetReductionBreakdown`,
+  `PlanetReductionStage`, and `planet_reduction_breakdown_at` through the
+  curated public package surfaces.
+
+### Fixed
+- **Davison Planetary Time Scale**: Corrected every Davison variant to pass
+  UT1 to the planetary evaluator. The previous path passed TT into a UT1
+  parameter that performs its own TT conversion, shifting planetary positions
+  by approximately 58 seconds of motion while leaving the declared chart
+  instant unchanged.
+- **Native SPK Coverage Enforcement**: Added explicit descriptor coverage
+  metadata and bounded evaluation checks so out-of-coverage epochs do not
+  silently enter native Type 13 evaluation.
+- **Asteroid Observation Arcs**: Bound limited-arc bodies such as Icarus and
+  Apollo to their actual observation intervals during unified-catalog builds,
+  with retry handling for transient JPL responses and recorded provenance.
+
+### Changed
+- **Gauquelin Geometric Default**: The default horizon is now the explicit
+  geometric center crossing at 0 degrees. Non-rising, circumpolar, and
+  horizon-coincident geometries no longer emit invented numbered sectors;
+  their sector-derived fields are `None` and their horizon status remains
+  visible.
+- **Progressed Integration Mesh**: `max_samples` now requires at least three
+  samples so numerical integration cannot admit a degenerate mesh.
+- **Composite Truth Completion**: Midpoint composites now populate the
+  existing common house-system and midpoint-MC truth fields when those values
+  are lawfully available.
+
+### Compatibility
+- Existing callers that intentionally require the former Gauquelin
+  refraction-only threshold must now pass `horizon_altitude=-0.5667`
+  explicitly. REST clients must allow nullable sector fields for bodies
+  without ordinary rise/set geometry.
+- Progressed-integration requests with `max_samples` below three are rejected.
+- Davison longitudes change to the correctly cast midpoint or corrected
+  instant; request and response shapes are unchanged.
+- All other additions are additive. Existing composite and Davison REST
+  envelopes remain distinct and retain their established routes.
+
+### Validation
+- Added DE441-backed Western electional regression cases plus kernel-free rule,
+  facade, REST, and adversarial policy coverage.
+- Added direct and REST position-only aspect tests for normalization, wrap
+  geometry, exact orb boundaries, deterministic ordering, node filtering, and
+  absent motion semantics.
+- Added all-variant Davison invariants against canonical chart casts at each
+  declared used instant, plus relationship REST parity.
+- Added Gauquelin pole, boundary, immutability, undefined-sector, and explicit
+  horizon-policy coverage; native DAF/SPK coverage tests; asteroid build and
+  provenance tests; and strict release-surface checks.
+
 ## [4.1.0] - 2026-07-12
 
 ### Added
