@@ -1,5 +1,9 @@
 # Moira Computational API: Competitive Analysis & Gap Assessment
 
+> **Point-in-time audit.** This analysis reflects the repository state recorded
+> on 2026-05-25. Current code, public exports, and registered REST routes govern
+> present capability claims.
+
 **Date:** May 25, 2026 (updated from April 28, 2026)
 **Purpose:** Identify gaps, overlaps, and strategic opportunities for Moira as a computational core offering
 

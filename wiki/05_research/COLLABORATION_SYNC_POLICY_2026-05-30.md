@@ -1,5 +1,10 @@
 # Collaboration Sync Policy
 
+> **Historical workflow record — superseded.** This file no longer governs AI
+> work in the repository. [AGENTS.md](../../AGENTS.md) is the sole canonical
+> instruction source. The paths and automatic-sync promises below are retained
+> only to explain the earlier workflow.
+
 **Effective:** 2026-05-30  
 **Purpose:** Keep us perfectly in sync so you never have to hunt for changes.
 

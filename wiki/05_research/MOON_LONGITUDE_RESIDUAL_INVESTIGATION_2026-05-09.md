@@ -1,5 +1,9 @@
 # Moon 0.255″ Longitude Error Investigation
 
+> **Historical research note (2026-05-09).** This investigation records a
+> bounded comparison case and its then-current interpretation. It is not a
+> current subsystem-wide parity claim.
+
 **Date**: 2026-05-09  
 **Status**: ✅ RESOLVED - Not a bug, expected precision
 

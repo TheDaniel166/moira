@@ -267,7 +267,7 @@ Make the gap ledger factually correct after the work is done.
 
 ### Files
 
-- `MOIRA_COMPETITIVE_ANALYSIS.md`
+- `wiki/07_audit/MOIRA_COMPETITIVE_ANALYSIS_2026-05-25.md`
 
 ### Required Edits
 
@@ -314,7 +314,7 @@ This gap was considered closed only when all of the following became true:
 - required GIL releases are present
 - audit tests enforce the policy
 - deployment guidance exists
-- `MOIRA_COMPETITIVE_ANALYSIS.md` is updated accordingly
+- `wiki/07_audit/MOIRA_COMPETITIVE_ANALYSIS_2026-05-25.md` is updated accordingly
 
 These conditions are now satisfied. The thread-safety and GIL-audit item is no
 longer an open engine gap; it is a closed infrastructure concern with ongoing

@@ -1,5 +1,10 @@
 # Moira Asteroid Kernel Cleanup - Complete
 
+> **Historical validation record (2026-05-09).** This report describes the
+> legacy Type 13 shard catalog at that date. It is not the active catalog
+> inventory. Current small-body truth comes from the manifest resolved by
+> `moira._kernel_paths.find_sovereign_small_body_manifest()`.
+
 ## Date
 2026-05-09
 

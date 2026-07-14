@@ -7,7 +7,7 @@ We performed a major cleanup pass on the scripts/ directory.
 - The two star substrate builders (build_tier2_substrate.py and build_sovereign_substrate.py) have been moved into scripts/data_ingestion/ (they are the legitimate tools for refreshing Tier 2 / Vedic star data).
 
 ## Why You Still See All the Old Files
-Per our collaboration rules (see SYNC_POLICY.md), we only add new folders/files to your main working copy. We never automatically delete code files from your main folder. The originals remain exactly where they were so nothing is lost on your side.
+At the time of this cleanup, the collaboration workflow preserved the original files in place while adding the archive copies. That historical workflow is recorded in `wiki/05_research/COLLABORATION_SYNC_POLICY_2026-05-30.md`; current agent rules are governed solely by `AGENTS.md`.
 
 You now have two new top-level folders next to the old files:
 - archive/ — contains the moved one-shot/historical material (organized into subfolders)

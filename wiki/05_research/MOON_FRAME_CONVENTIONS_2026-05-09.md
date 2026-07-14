@@ -1,5 +1,9 @@
 # Frame Conventions: Moira vs JPL Horizons
 
+> **Historical research note (2026-05-09).** This is a point-in-time analysis
+> of one comparison case. Current implementation, standards, and validation
+> evidence govern any present-tense precision or parity claim.
+
 ## Overview
 
 The 0.255″ Moon longitude discrepancy arises from subtle differences in how Moira and JPL Horizons define the "apparent geocentric ecliptic" reference frame. Both implementations are correct within their own frame definitions, but they use slightly different conventions for:

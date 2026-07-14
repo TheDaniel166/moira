@@ -1,6 +1,6 @@
 # Hellenistic Astrology Completion Roadmap
 
-**Note (2026-05-29 code verification):** A documentation + code verification pass against this roadmap (cross-referenced with WESTERN_HELLENISTIC_GAP_TRACKER.md and FEATURE_AUDIT_2026.md) found that many items listed as "Partial" or "Absent" below are now implemented in the live codebase (e.g., first-class triplicity/bound/face in EssentialDignityKind, PLANETARY_JOYS + is_in_joy, PTOLEMAIC/CHALDEAN bounds tables + doctrine support, is_in_halb + SCORE_HALB, oriental_occidental(), is_besieged(), AspectDomain.WHOLE_SIGN + find_whole_sign_aspects()). The roadmap text below is retained for historical reference but is partially outdated. See the GAP_TRACKER for current verified status and remaining gaps.
+**Note (2026-05-29 code verification):** A documentation + code verification pass against this roadmap (cross-referenced with [WESTERN_HELLENISTIC_GAP_TRACKER.md](WESTERN_HELLENISTIC_GAP_TRACKER.md) and [FEATURE_AUDIT_2026.md](../../07_audit/FEATURE_AUDIT_2026.md)) found that many items listed as "Partial" or "Absent" below are now implemented in the live codebase (e.g., first-class triplicity/bound/face in EssentialDignityKind, PLANETARY_JOYS + is_in_joy, PTOLEMAIC/CHALDEAN bounds tables + doctrine support, is_in_halb + SCORE_HALB, oriental_occidental(), is_besieged(), AspectDomain.WHOLE_SIGN + find_whole_sign_aspects()). The roadmap text below is retained for historical reference but is partially outdated. See the gap tracker for the then-current verified status and remaining gaps.
 
 ## Purpose
 
@@ -50,7 +50,7 @@ Companion documents:
 
 ### Partial / Verified Updates (as of 2026-05 code verification)
 
-**Note:** Several items below have been implemented since this roadmap was drafted. See code verification in WESTERN_HELLENISTIC_GAP_TRACKER.md.
+**Note:** Several items below have been implemented since this roadmap was drafted. See code verification in [WESTERN_HELLENISTIC_GAP_TRACKER.md](WESTERN_HELLENISTIC_GAP_TRACKER.md).
 
 | Feature | What exists | What is missing (per original) | Verification Status |
 |---------|-------------|--------------------------------|---------------------|
@@ -123,7 +123,7 @@ accidental dignity scoring.
 
 ## Implementation Phases
 
-**Verification note (2026-05-29):** Per code review, the bulk of the tasks in Phases 1-4 below have been completed in the live code (see updated "Current Moira State" above and WESTERN_HELLENISTIC_GAP_TRACKER.md). The detailed task lists are retained for reference. Remaining work is now concentrated on confirmed gaps from FEATURE_AUDIT_2026.md (aphesis/distributions, Triacontaeteris, synastry depth, full ACG, etc.).
+**Verification note (2026-05-29):** Per code review, the bulk of the tasks in Phases 1-4 below have been completed in the live code (see updated "Current Moira State" above and [WESTERN_HELLENISTIC_GAP_TRACKER.md](WESTERN_HELLENISTIC_GAP_TRACKER.md)). The detailed task lists are retained for reference. Remaining work is now concentrated on confirmed gaps from [FEATURE_AUDIT_2026.md](../../07_audit/FEATURE_AUDIT_2026.md) (aphesis/distributions, Triacontaeteris, synastry depth, full ACG, etc.).
 
 ### Phase 1 -- Essential Dignity Completion and Planetary Joys
 

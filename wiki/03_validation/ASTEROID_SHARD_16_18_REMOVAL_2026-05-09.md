@@ -1,5 +1,10 @@
 # Shards 16 & 18 Removal - Summary
 
+> **Historical validation record (2026-05-09).** This report preserves the
+> rationale for removing two legacy shards. Its body counts and paths do not
+> describe the active unified catalog; use the manifest resolved by
+> `moira._kernel_paths.find_sovereign_small_body_manifest()` for current truth.
+
 ## Date
 2026-05-09
 

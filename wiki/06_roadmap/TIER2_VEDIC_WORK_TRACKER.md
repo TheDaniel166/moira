@@ -4,7 +4,7 @@
 **Status:** **Paused by user request** (new focus declared). Rich state captured for clean future resumption.
 
 **Context:**  
-Per `MOIRA_COMPETITIVE_ANALYSIS.md`, after Phase 8 the highest-leverage remaining work for competitive Vedic capability is in Tier 2 (practitioner workflow gaps). The user chose to prioritize closing these **before** moving into Phase 9 (Vedic transport surfaces).
+Per [MOIRA_COMPETITIVE_ANALYSIS_2026-05-25.md](../07_audit/MOIRA_COMPETITIVE_ANALYSIS_2026-05-25.md), after Phase 8 the highest-leverage remaining work for competitive Vedic capability is in Tier 2 (practitioner workflow gaps). The user chose to prioritize closing these **before** moving into Phase 9 (Vedic transport surfaces).
 
 ---
 

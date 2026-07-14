@@ -1,7 +1,7 @@
 ﻿# Western V2 Update (2026-06)
 
 **Document:** `wiki/07_audit/WESTERN_V2_UPDATE_2026-06.md`  
-**Companion to:** [WESTERN_SYSTEMS_AUDIT.md](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/WESTERN_SYSTEMS_AUDIT.md)  
+**Companion to:** [WESTERN_SYSTEMS_AUDIT.md](WESTERN_SYSTEMS_AUDIT.md)
 **Purpose:** Narrow corrective update to the broad Western master audit. This document identifies the highest-signal remaining Western gaps after recent houses, spatial, REST-reduction, and small-body work, then proposes a staged roadmap.
 
 ---
@@ -49,7 +49,7 @@ No new mathematical or external-source claims are introduced here. This is a cod
 
 **What exists now**
 
-- Horary-tagged lots exist in [moira/lots.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/lots.py).
+- Horary-tagged lots exist in [moira/lots.py](../../moira/lots.py).
 - General tools useful to horary exist elsewhere: houses, dignity, receptions, void-of-course, perfection-like directional logic, etc.
 
 **What is missing**
@@ -63,7 +63,7 @@ No new mathematical or external-source claims are introduced here. This is a cod
 **Why this is still a true gap**
 
 - The repository has horary ingredients, but not horary as a first-class Western feature family.
-- Research notes still explicitly record missing interrogational source acquisition in [wiki/05_research/lots/LOTS_SOURCE_VERIFICATION.md](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/wiki/05_research/lots/LOTS_SOURCE_VERIFICATION.md).
+- Research notes still explicitly record missing interrogational source acquisition in [LOTS_SOURCE_VERIFICATION.md](../05_research/lots/LOTS_SOURCE_VERIFICATION.md).
 
 ---
 
@@ -74,8 +74,8 @@ No new mathematical or external-source claims are introduced here. This is a cod
 
 **What exists now**
 
-- A strong generic electional search engine exists in [moira/electional.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/electional.py).
-- The public facade exposes electional window search through [moira/_facade_special.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/_facade_special.py).
+- A strong generic electional search engine exists in [moira/electional.py](../../moira/electional.py).
+- The public facade exposes electional window search through [moira/_facade_special.py](../../moira/_facade_special.py).
 
 **What is missing**
 
@@ -87,7 +87,7 @@ No new mathematical or external-source claims are introduced here. This is a cod
 **Why this is still a true gap**
 
 - Current electional is a predicate engine, not a Western doctrine subsystem.
-- The contrast with [moira/muhurta.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/muhurta.py) is clear: Vedic has explicit classification/scoring, Western does not.
+- The contrast with [moira/muhurta.py](../../moira/muhurta.py) is clear: Vedic has explicit classification/scoring, Western does not.
 
 ---
 
@@ -99,11 +99,11 @@ No new mathematical or external-source claims are introduced here. This is a cod
 **What exists now**
 
 - Strong spatial engine work exists in:
-  - [moira/astrocartography.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/astrocartography.py)
-  - [moira/parans.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/parans.py)
-  - [moira/geodetic.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/geodetic.py)
-  - [moira/local_space.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/local_space.py)
-  - [moira/_facade_spatial.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/_facade_spatial.py)
+  - [moira/astrocartography.py](../../moira/astrocartography.py)
+  - [moira/parans.py](../../moira/parans.py)
+  - [moira/geodetic.py](../../moira/geodetic.py)
+  - [moira/local_space.py](../../moira/local_space.py)
+  - [moira/_facade_spatial.py](../../moira/_facade_spatial.py)
 
 **What is missing**
 
@@ -114,7 +114,7 @@ No new mathematical or external-source claims are introduced here. This is a cod
 
 **What is already exposed**
 
-- Paran search is present under phenomena routes in [moira_server/routers/phenomena.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/routers/phenomena.py).
+- Paran search is present under phenomena routes in [moira_server/routers/phenomena.py](../../moira_server/routers/phenomena.py).
 
 **Why this is still a true gap**
 
@@ -130,10 +130,10 @@ No new mathematical or external-source claims are introduced here. This is a cod
 
 **What exists now**
 
-- Synastry core is strong in [moira/synastry.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/synastry.py).
+- Synastry core is strong in [moira/synastry.py](../../moira/synastry.py).
 - Composite and Davison chart construction exist.
 - Synastry condition profiles and network profiles exist.
-- Relationship server routes exist in [moira_server/routers/relationship.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/routers/relationship.py).
+- Relationship server routes exist in [moira_server/routers/relationship.py](../../moira_server/routers/relationship.py).
 
 **What is missing**
 
@@ -161,7 +161,7 @@ No new mathematical or external-source claims are introduced here. This is a cod
 
 **What is missing**
 
-- The `Moira` instance facade still centers a narrow `primary_directions(...)` convenience wrapper in [moira/_facade_special.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/_facade_special.py).
+- The `Moira` instance facade still centers a narrow `primary_directions(...)` convenience wrapper in [moira/_facade_special.py](../../moira/_facade_special.py).
 - It does not present the full breadth of method/policy families as clean first-class facade entry points.
 
 **Why this is still a true gap**
@@ -179,7 +179,7 @@ No new mathematical or external-source claims are introduced here. This is a cod
 **What exists now**
 
 - Fixed-star work is strong in its own domain.
-- Paran work already treats named stars seriously in [moira/parans.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/parans.py).
+- Paran work already treats named stars seriously in [moira/parans.py](../../moira/parans.py).
 - Astrocartography now includes subplanetary points and strengthened small-body handling.
 
 **What is missing**

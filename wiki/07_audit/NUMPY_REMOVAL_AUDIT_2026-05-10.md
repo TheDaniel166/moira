@@ -1,5 +1,9 @@
 # Moira NumPy Removal Audit Report
 
+> **Point-in-time audit (2026-05-10).** Current dependency authority is
+> `pyproject.toml`, and current source must be re-audited before treating these
+> findings as present-tense runtime truth.
+
 Date: 2026-05-10
 Status: production Python runtime verified NumPy-free
 

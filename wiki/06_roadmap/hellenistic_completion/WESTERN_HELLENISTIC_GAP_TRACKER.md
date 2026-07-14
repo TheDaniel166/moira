@@ -19,7 +19,7 @@ The research pass recorded in the "Source Research..." section above (and the de
 See the new section at the end of `wiki/01_doctrines/timelords/decennials_admission_doctrine.md` for the formal pre-Phase-1 style documentation.
 
 **Context:**  
-After tabling Tier 2 Vedic work (see TIER2_VEDIC_WORK_TRACKER.md), the user requested a combo review of Western implementation gaps: (1) dedicated tracker document, (2) deeper verification (starting at doc level), (3) focus on key areas (starting with Hellenistic + broader Western domains from audits). This document captures the initial documentation-level synthesis.
+After tabling Tier 2 Vedic work (see [TIER2_VEDIC_WORK_TRACKER.md](../TIER2_VEDIC_WORK_TRACKER.md)), the user requested a combo review of Western implementation gaps: (1) dedicated tracker document, (2) deeper verification (starting at doc level), (3) focus on key areas (starting with Hellenistic + broader Western domains from audits). This document captures the initial documentation-level synthesis.
 
 All gap information below is drawn strictly from existing project documentation (no new invention).
 
@@ -322,7 +322,7 @@ Syncs and memory updates done. Files synced. Ready for direction.
 
 **How to Resume:** Read this file + the admission doc + moira/timelords.py (Valens block at end of ZR area). The layer is complete per the 12-phase constitutional process for this admitted doctrine.
 
-**Note:** For the broad Western systems audit (Hellenistic + Medieval + Modern), see the new master **WESTERN_SYSTEMS_AUDIT.md** at repository root (supersedes this narrower Hellenistic tracker per user directive; includes deep "fully vs incomplete" charting + Mermaid graph). This file remains for specific Hellenistic gap history.
+**Note:** For the broad Western systems audit (Hellenistic + Medieval + Modern), see [WESTERN_SYSTEMS_AUDIT.md](../../07_audit/WESTERN_SYSTEMS_AUDIT.md), which supersedes this narrower tracker as the master audit. This file remains for specific Hellenistic gap history.
 
 **House systems sub-audit (started per user "start in order"):** See WESTERN_SYSTEMS_AUDIT.md section "1. Natal Chart Construction & Frames" for the full truthful inventory of the 19 core (18+Z) + 5 dedicated, plus the "forgotten" ones (Pullen SD/SR, Equal-from-MC, Vertical variants, Octant etc. — Zariel addressed first).
 

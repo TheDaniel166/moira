@@ -1,5 +1,11 @@
 # Oracle Validation Complete
 
+> **Historical validation record (2026-05-09).** These results apply to the
+> sampled legacy shard configuration named below. They are preserved as scoped
+> oracle evidence, not as a current whole-catalog validation claim. Current
+> catalog inventory comes from the manifest resolved by
+> `moira._kernel_paths.find_sovereign_small_body_manifest()`.
+
 **Date**: 2026-05-09  
 **Status**: ✅ PASSED
 

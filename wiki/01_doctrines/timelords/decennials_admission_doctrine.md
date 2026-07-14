@@ -444,7 +444,7 @@ The following statement is not yet admitted:
 
 ## Additional Research Pass on Aphesis / "Distributions" (Valens-Specific) + Triacontaeteris Re-Confirmation (2026-05-29)
 
-This pass was executed under the Western/Hellenistic gap analysis (WESTERN_HELLENISTIC_GAP_TRACKER.md) and the governing CONSTITUTIONAL_PROCESS.md as pre- (or post-core-implementation) Phase-1 research work. The goal: recover additional doctrinal truth around the terms "aphesis" and "distributions" (and re-audit Triacontaeteris) strictly from primary source extraction (Valens Anthologies PDF) without speculative reconstruction or training-data recall. Only if sufficient stable, non-ambiguous doctrine is recovered can further layering or admission proceed.
+This pass was executed under the [Western/Hellenistic gap analysis](../../06_roadmap/hellenistic_completion/WESTERN_HELLENISTIC_GAP_TRACKER.md) and the governing CONSTITUTIONAL_PROCESS.md as pre- (or post-core-implementation) Phase-1 research work. The goal: recover additional doctrinal truth around the terms "aphesis" and "distributions" (and re-audit Triacontaeteris) strictly from primary source extraction (Valens Anthologies PDF) without speculative reconstruction or training-data recall. Only if sufficient stable, non-ambiguous doctrine is recovered can further layering or admission proceed.
 
 **Reference to prior work in this file:** The original admission research for this pair (Decennials + Triacontaeteris) already established the pre-Phase-1 framework, source hierarchy (Hephaistio primary for method, Valens for examples), and the deferral of Triacontaeteris on grounds of insufficient canonical engine definition. The present pass supplies targeted extractions from the exact sections titled with the user's query terms.
 
@@ -508,7 +508,7 @@ This pass ensures "enough doctrinal truth to admit said techniques" before any f
 
 **Sources added in this pass:**
 - Direct tool-based extraction (open_page_with_find / browse) from Valens PDF for Bk VI.6.6/6.7 and Bk IV.25 (Griscti edition).
-- Cross-reference to the WESTERN_HELLENISTIC_GAP_TRACKER.md research log for the gap-analysis context.
+- Cross-reference to the [WESTERN_HELLENISTIC_GAP_TRACKER.md](../../06_roadmap/hellenistic_completion/WESTERN_HELLENISTIC_GAP_TRACKER.md) research log for the gap-analysis context.
 
 ---
 
