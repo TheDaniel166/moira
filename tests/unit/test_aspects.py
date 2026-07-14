@@ -14,6 +14,7 @@ from moira.aspects import (
     AspectGraph,
     AspectGraphNode,
     AspectHarmonicProfile,
+    LongitudeAspectAnalysis,
     AspectPattern,
     AspectPatternKind,
     AspectPolicy,
@@ -26,6 +27,7 @@ from moira.aspects import (
     aspect_motion_state,
     aspect_strength,
     aspects_between,
+    aspects_from_longitudes,
     aspects_to_point,
     build_aspect_graph,
     find_aspects,
@@ -50,6 +52,89 @@ def test_find_aspects_detects_wraparound_conjunction() -> None:
     assert aspect.body1 == "Sun"
     assert aspect.body2 == "Moon"
     assert aspect.orb == 2.0
+
+
+def test_aspects_from_longitudes_wrap_boundary_is_inclusive() -> None:
+    analysis = aspects_from_longitudes(
+        {"Sun": 355.0, "Moon": 5.0},
+        tier=0,
+        orb_factor=1.25,
+    )
+
+    assert isinstance(analysis, LongitudeAspectAnalysis)
+    assert analysis.longitudes == {"Moon": 5.0, "Sun": 355.0}
+    assert analysis.motion_semantics == "not_computed_without_speeds"
+    assert analysis.point_count == 2
+    assert analysis.aspect_count == 1
+    aspect = analysis.aspects[0]
+    assert aspect.aspect == "Conjunction"
+    assert aspect.separation == pytest.approx(10.0, abs=1e-12)
+    assert aspect.orb == pytest.approx(10.0, abs=1e-12)
+    assert aspect.allowed_orb == pytest.approx(10.0, abs=1e-12)
+    assert aspect.applying is None
+    assert aspect.stationary is False
+
+
+def test_aspects_from_longitudes_rejects_just_outside_orb_boundary() -> None:
+    analysis = aspects_from_longitudes(
+        {"Sun": 355.0, "Moon": 5.000001},
+        tier=0,
+        orb_factor=1.25,
+    )
+
+    assert analysis.aspects == ()
+
+
+def test_aspects_from_longitudes_filters_known_nodes_explicitly() -> None:
+    analysis = aspects_from_longitudes(
+        {"Sun": 0.0, "Moon": 120.0, "True Node": 180.0},
+        tier=0,
+        include_nodes=False,
+    )
+
+    assert analysis.longitudes == {"Moon": 120.0, "Sun": 0.0}
+    assert analysis.excluded_node_names == ("True Node",)
+    assert [(item.body1, item.body2, item.aspect) for item in analysis.aspects] == [
+        ("Moon", "Sun", "Trine")
+    ]
+
+
+def test_moira_facade_accepts_positions_and_position_only_chart_objects() -> None:
+    engine = _facade_module.Moira(kernel_path="missing-test-kernel.bsp")
+    direct = engine.aspects_from_longitudes(
+        {"Sun": 0.0, "Moon": 120.0},
+        tier=0,
+    )
+
+    class _DerivedChart:
+        @staticmethod
+        def longitudes():
+            return {"Sun": 0.0, "Moon": 120.0}
+
+    chart_aspects = engine.aspects(_DerivedChart(), include_minor=False)
+
+    assert direct.aspects[0].aspect == "Trine"
+    assert chart_aspects[0].aspect == "Trine"
+    assert chart_aspects[0].applying is None
+
+
+@pytest.mark.parametrize(
+    ("longitudes", "kwargs", "message"),
+    [
+        ({"Sun": 0.0}, {}, "at least two"),
+        ({"Sun": 0.0, "Moon": float("nan")}, {}, "must be finite"),
+        ({"Sun": 0.0, "Moon": 120.0}, {"tier": 3}, "tier must be"),
+        ({"Sun": 0.0, "Moon": 120.0}, {"orb_factor": 0.0}, "orb_factor"),
+        ({"Sun": 0.0, "Moon": 120.0}, {"include_nodes": 1}, "include_nodes"),
+    ],
+)
+def test_aspects_from_longitudes_rejects_ambiguous_inputs(
+    longitudes,
+    kwargs,
+    message,
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        aspects_from_longitudes(longitudes, **kwargs)
 
 
 def test_aspect_data_repr_includes_applying_and_stationary_flags() -> None:
@@ -3399,6 +3484,7 @@ _EXPECTED_PUBLIC = {
     "AspectGraph",
     "AspectGraphNode",
     "AspectHarmonicProfile",
+    "LongitudeAspectAnalysis",
     "AspectPattern",
     "AspectPolicy",
     "AspectStrength",
@@ -3407,6 +3493,7 @@ _EXPECTED_PUBLIC = {
     "aspect_motion_state",
     "aspect_strength",
     "aspects_between",
+    "aspects_from_longitudes",
     "aspects_to_point",
     "build_aspect_graph",
     "find_aspects",
@@ -3464,14 +3551,16 @@ def test_all_curated_names_importable_from_moira_aspects() -> None:
         assert hasattr(_aspects_module, name), f"moira.aspects missing: {name}"
 
 
-def test_aspects_surface_is_module_owned_not_root_re_exported() -> None:
+def test_positions_in_aspect_surface_is_admitted_at_root() -> None:
     assert "CANONICAL_ASPECTS" not in _moira_package.__all__
-    assert "AspectPolicy" not in _moira_package.__all__
-    assert "find_aspects" not in _moira_package.__all__
+    assert _moira_package.AspectPolicy is _aspects_module.AspectPolicy
+    assert _moira_package.LongitudeAspectAnalysis is _aspects_module.LongitudeAspectAnalysis
+    assert _moira_package.aspects_from_longitudes is _aspects_module.aspects_from_longitudes
+    assert _moira_package.find_aspects is _aspects_module.find_aspects
 
 
 def test_aspects_dunder_all_length() -> None:
-    assert len(_aspects_module.__all__) == 32
+    assert len(_aspects_module.__all__) == 34
 
 
 def test_aspects_dunder_all_no_duplicates() -> None:

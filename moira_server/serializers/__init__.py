@@ -239,6 +239,7 @@ from .progressions import (
 )
 from .relationship import (
     serialize_aspect,
+    serialize_aspects_from_longitudes,
     serialize_aspect_pattern,
     serialize_chart_shape,
     serialize_composite_chart,
@@ -333,6 +334,7 @@ __all__ = [
     "serialize_planet",
     "serialize_planet_with_reduction",
     "serialize_aspect",
+    "serialize_aspects_from_longitudes",
     "serialize_aspect_pattern",
     "serialize_chart_shape",
     "serialize_composite_chart",

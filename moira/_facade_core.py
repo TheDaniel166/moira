@@ -58,7 +58,7 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
     "scope": "class",
     "id": "moira._facade_core.CoreFacadeMixin",
     "risk": "high",
-    "api": {"frozen": ["chart", "houses", "sky_position", "aspects", "jd_from_datetime", "sidereal_time"], "internal": []},
+    "api": {"frozen": ["chart", "houses", "sky_position", "aspects", "aspects_from_longitudes", "jd_from_datetime", "sidereal_time"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -178,11 +178,30 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
     ):
         """Find all aspects in a chart."""
         facade = _facade_module()
+        speed_getter = getattr(chart, "speeds", None)
+        speeds = speed_getter() if callable(speed_getter) else None
         return facade.find_aspects(
             chart.longitudes(),
             orbs=orbs,
             include_minor=include_minor,
-            speeds=chart.speeds(),
+            speeds=speeds,
+        )
+
+    def aspects_from_longitudes(
+        self,
+        longitudes,
+        *,
+        tier: int = 1,
+        orb_factor: float = 1.0,
+        include_nodes: bool = True,
+    ):
+        """Analyze a derived chart's supplied ecliptic longitudes."""
+
+        return _facade_module().aspects_from_longitudes(
+            longitudes,
+            tier=tier,
+            orb_factor=orb_factor,
+            include_nodes=include_nodes,
         )
 
     def jd(self, year: int, month: int, day: int, hour: float = 0.0) -> float:

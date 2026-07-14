@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from moira.aspects import AspectClassification, AspectData
+from moira.aspects import AspectClassification, AspectData, LongitudeAspectAnalysis
 from moira.chart_shape import ChartShape
 from moira.houses import HousePlacement
 from moira.midpoints import Midpoint, MidpointCluster, MidpointWeight, PlanetaryPicture
@@ -45,6 +45,7 @@ from moira.synastry import (
 from ..models.relationship import (
     AspectClassificationResponse,
     AspectDataResponse,
+    AspectsFromLongitudesResponse,
     AspectPatternResponse,
     ChartShapeResponse,
     CompositeChartResponse,
@@ -60,6 +61,7 @@ from ..models.relationship import (
     MidpointResponse,
     MidpointWeightResponse,
     MutualHouseOverlayResponse,
+    LongitudeAspectComputationTruthResponse,
     PatternAspectContributionResponse,
     PatternBodyRoleClassificationResponse,
     PatternBodyRoleTruthResponse,
@@ -115,6 +117,24 @@ def serialize_aspect(aspect: AspectData) -> AspectDataResponse:
         direction=aspect.direction,
         sign_degree1=aspect.sign_degree1,
         sign_degree2=aspect.sign_degree2,
+    )
+
+
+def serialize_aspects_from_longitudes(
+    analysis: LongitudeAspectAnalysis,
+) -> AspectsFromLongitudesResponse:
+    return AspectsFromLongitudesResponse(
+        events=[serialize_aspect(aspect) for aspect in analysis.aspects],
+        computation_truth=LongitudeAspectComputationTruthResponse(
+            motion_semantics=analysis.motion_semantics,
+            normalized_longitudes=analysis.longitudes,
+            tier=analysis.tier,
+            orb_factor=analysis.orb_factor,
+            include_nodes=analysis.include_nodes,
+            excluded_node_names=list(analysis.excluded_node_names),
+            point_count=analysis.point_count,
+            aspect_count=analysis.aspect_count,
+        ),
     )
 
 
@@ -617,6 +637,7 @@ def serialize_midpoint_cluster(cluster: MidpointCluster) -> MidpointClusterRespo
 
 __all__ = [
     "serialize_aspect",
+    "serialize_aspects_from_longitudes",
     "serialize_aspect_pattern",
     "serialize_chart_shape",
     "serialize_composite_chart",

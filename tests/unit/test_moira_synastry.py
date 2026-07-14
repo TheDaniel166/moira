@@ -7,7 +7,7 @@ import pytest
 from moira import Body, HouseSystem, Moira
 from moira.julian import delta_t_from_jd, ut_to_tt, utc_to_tt
 from moira.obliquity import true_obliquity
-from moira.houses import HousePolicy, assign_house
+from moira.houses import HouseCusps, HousePolicy, assign_house
 from moira.aspects import aspects_between
 from moira.midpoints import _midpoint
 from moira.synastry import (
@@ -51,6 +51,18 @@ def _aspect_signature(aspect) -> tuple[str, str, str, float, bool]:
         round(aspect.orb, 8),
         bool(getattr(aspect, "applying", False)),
     )
+
+
+class _MinimalSynastryChart:
+    """Kernel-free chart protocol stub for isolated input-validation tests."""
+
+    @staticmethod
+    def longitudes(*, include_nodes: bool = True) -> dict[str, float]:
+        return {}
+
+    @staticmethod
+    def speeds() -> dict[str, float]:
+        return {}
 
 
 @pytest.mark.requires_ephemeris
@@ -163,6 +175,10 @@ def test_composite_chart_uses_shorter_arc_midpoints_for_planets_nodes_and_houses
     assert composite.computation_truth.method == "midpoint"
     assert composite.computation_truth.includes_house_frame is True
     assert composite.computation_truth.jd_mean == pytest.approx(composite.jd_mean, abs=1e-12)
+    assert composite.computation_truth.house_system == houses_a.system
+    assert composite.computation_truth.composite_mc == pytest.approx(composite.mc, abs=1e-12)
+    assert composite.computation_truth.composite_armc is None
+    assert composite.computation_truth.reference_latitude is None
     assert composite.classification is not None
     assert composite.classification.chart_mode == "composite"
     assert composite.classification.method == "midpoint"
@@ -446,6 +462,14 @@ def test_davison_variants_expose_distinct_mainstream_location_doctrines(moira_en
     assert reference_place.info.longitude_midpoint == pytest.approx(-118.2437, abs=1e-12)
     assert spherical.info.longitude_midpoint != pytest.approx(uncorrected.info.longitude_midpoint, abs=1e-6)
 
+    for variant in (uncorrected, reference_place, spherical):
+        expected_chart = engine.chart(variant.info.datetime_utc)
+        for body in Body.ALL_PLANETS:
+            assert variant.chart.planets[body].longitude == pytest.approx(
+                expected_chart.planets[body].longitude,
+                abs=1e-12,
+            )
+
 
 @pytest.mark.requires_ephemeris
 def test_corrected_davison_preserves_midpoint_mc_doctrine(moira_engine) -> None:
@@ -472,6 +496,13 @@ def test_corrected_davison_preserves_midpoint_mc_doctrine(moira_engine) -> None:
     assert corrected.info.relation is not None
     assert corrected.info.relation.basis == "corrected_davison"
     assert corrected.houses.mc == pytest.approx(target_mc, abs=1e-6)
+
+    expected_chart = engine.chart(corrected.info.datetime_utc)
+    for body in Body.ALL_PLANETS:
+        assert corrected.chart.planets[body].longitude == pytest.approx(
+            expected_chart.planets[body].longitude,
+            abs=1e-8,
+        )
 
 
 @pytest.mark.requires_ephemeris
@@ -879,14 +910,23 @@ def test_invalid_synastry_policy_values_fail_clearly() -> None:
 
 
 def test_synastry_malformed_inputs_fail_deterministically() -> None:
+    chart = _MinimalSynastryChart()
+    houses = HouseCusps(
+        system=HouseSystem.EQUAL,
+        cusps=tuple(float(index * 30) for index in range(12)),
+        asc=0.0,
+        mc=270.0,
+        armc=270.0,
+    )
+
     with pytest.raises(ValueError, match="synastry labels must be non-empty"):
-        synastry_contacts(None, None, source_label="", target_label="B")  # type: ignore[arg-type]
+        synastry_contacts(chart, chart, source_label="", target_label="B")  # type: ignore[arg-type]
 
     with pytest.raises(ValueError, match="synastry tier must be 1 or 2"):
-        synastry_aspects(None, None, tier=3)  # type: ignore[arg-type]
+        synastry_aspects(chart, chart, tier=3)  # type: ignore[arg-type]
 
     with pytest.raises(ValueError, match="synastry overlay include_nodes must be boolean"):
-        house_overlay(None, None, include_nodes="yes")  # type: ignore[arg-type]
+        house_overlay(chart, houses, include_nodes="yes")  # type: ignore[arg-type]
 
 
 @pytest.mark.requires_ephemeris

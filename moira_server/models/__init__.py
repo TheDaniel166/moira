@@ -228,6 +228,8 @@ from .primary_directions import (
     SpeculumEntryResponse,
 )
 from .relationship import (
+    AspectsFromLongitudesRequest,
+    AspectsFromLongitudesResponse,
     ChartShapeResponse,
     CompositeChartRequest,
     CompositeChartResponse,
@@ -245,6 +247,7 @@ from .relationship import (
     MidpointWeightRequest,
     MidpointWeightResponse,
     MidpointWeightSearchResponse,
+    LongitudeAspectComputationTruthResponse,
     MutualHouseOverlayResponse,
     PatternChartConditionProfileResponse,
     PatternConditionNetworkProfileResponse,
@@ -1050,7 +1053,10 @@ __all__ = [
     "ChartsBatchRequest",
     "ChartsBatchReductionResponse",
     "ChartsBatchResponse",
+    "AspectsFromLongitudesRequest",
+    "AspectsFromLongitudesResponse",
     "ChartShapeResponse",
+    "LongitudeAspectComputationTruthResponse",
     "AnnualProfectionRequest",
     "AllLunarOccultationsRequest",
     "CloseApproachRequest",

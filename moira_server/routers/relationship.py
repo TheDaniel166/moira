@@ -8,6 +8,8 @@ from moira import Moira
 
 from ..dependencies import get_engine
 from ..models.relationship import (
+    AspectsFromLongitudesRequest,
+    AspectsFromLongitudesResponse,
     CompositeChartRequest,
     CompositeChartResponse,
     DavisonChartRequest,
@@ -41,6 +43,7 @@ from ..models.relationship import (
 )
 from ..serializers.relationship import (
     serialize_aspect,
+    serialize_aspects_from_longitudes,
     serialize_aspect_pattern,
     serialize_chart_shape,
     serialize_composite_chart,
@@ -59,6 +62,7 @@ from ..serializers.relationship import (
     serialize_synastry_relation,
 )
 from ..services.relationship import (
+    compute_aspects_from_longitudes,
     compute_chart_shape,
     compute_composite_chart,
     compute_davison_chart,
@@ -83,6 +87,21 @@ from ..services.relationship import (
 
 
 router = APIRouter(prefix="/v1", tags=["relationship"])
+
+
+@router.post(
+    "/aspects/from-longitudes",
+    response_model=AspectsFromLongitudesResponse,
+)
+def aspects_from_longitudes_route(
+    request: AspectsFromLongitudesRequest,
+    engine: Moira = Depends(get_engine),
+) -> AspectsFromLongitudesResponse:
+    """Analyze caller-supplied derived-chart longitudes under engine doctrine."""
+
+    return serialize_aspects_from_longitudes(
+        compute_aspects_from_longitudes(engine, request)
+    )
 
 
 @router.post("/synastry/aspects", response_model=SynastryAspectSearchResponse)

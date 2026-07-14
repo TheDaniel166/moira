@@ -194,7 +194,8 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import Enum
 from itertools import combinations, permutations
-from typing import Collection, Callable
+import math
+from typing import Collection, Callable, Mapping
 
 from .constants import Aspect, AspectDefinition, ASPECT_TIERS, DEFAULT_ORBS, TRADITIONAL_MOIETY_ORBS, Body
 from .coordinates import angular_distance
@@ -218,6 +219,7 @@ __all__ = [
     "AspectGraph",
     "AspectGraphNode",
     "AspectHarmonicProfile",
+    "LongitudeAspectAnalysis",
     "AspectPattern",
     "AspectPolicy",
     "AspectStrength",
@@ -230,6 +232,7 @@ __all__ = [
     "aspects_to_point",
     "build_aspect_graph",
     "find_aspects",
+    "aspects_from_longitudes",
     "find_declination_aspects",
     "find_out_of_bounds",
     "find_patterns",
@@ -2115,6 +2118,39 @@ class OutOfBoundsBody:
         )
 
 
+@dataclass(frozen=True, slots=True)
+class LongitudeAspectAnalysis:
+    """First-class aspect analysis of caller-supplied ecliptic longitudes.
+
+    The positions are synthetic or already-derived inputs, not an astronomical
+    chart reduction.  Without speeds, applying/separating and stationary truth
+    cannot be inferred; each returned ``AspectData`` therefore preserves the
+    existing position-only motion semantics.
+    """
+
+    positions: tuple[tuple[str, float], ...]
+    aspects: tuple[AspectData, ...]
+    tier: int
+    orb_factor: float
+    include_nodes: bool
+    excluded_node_names: tuple[str, ...]
+    motion_semantics: str = "not_computed_without_speeds"
+
+    @property
+    def longitudes(self) -> dict[str, float]:
+        """Return the normalized, deterministically ordered input positions."""
+
+        return dict(self.positions)
+
+    @property
+    def point_count(self) -> int:
+        return len(self.positions)
+
+    @property
+    def aspect_count(self) -> int:
+        return len(self.aspects)
+
+
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
@@ -2375,6 +2411,79 @@ def find_aspects(
 
     results.sort(key=lambda a: a.orb)
     return results
+
+
+_DERIVED_CHART_NODE_NAMES = frozenset(
+    {Body.TRUE_NODE, Body.MEAN_NODE, Body.LILITH, Body.TRUE_LILITH}
+)
+
+
+def aspects_from_longitudes(
+    longitudes: Mapping[str, float],
+    *,
+    tier: int = 1,
+    orb_factor: float = 1.0,
+    include_nodes: bool = True,
+) -> LongitudeAspectAnalysis:
+    """Analyze supplied ecliptic longitudes under canonical aspect doctrine.
+
+    This is the position-only entry point for composite, harmonic, progressed,
+    and other derived charts that do not represent an ephemeris moment.  It
+    normalizes longitudes, establishes deterministic point ordering, applies
+    the caller-declared tier and orb multiplier, and delegates detection to
+    :func:`find_aspects`.  It never fabricates speeds or temporal motion state.
+    """
+
+    if isinstance(tier, bool) or tier not in {0, 1, 2}:
+        raise ValueError("aspect tier must be 0, 1, or 2")
+    if isinstance(orb_factor, bool):
+        raise ValueError("aspect orb_factor must be positive and finite")
+    try:
+        resolved_orb_factor = float(orb_factor)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("aspect orb_factor must be positive and finite") from exc
+    if not math.isfinite(resolved_orb_factor) or resolved_orb_factor <= 0.0:
+        raise ValueError("aspect orb_factor must be positive and finite")
+    if not isinstance(include_nodes, bool):
+        raise ValueError("aspect include_nodes must be boolean")
+    if not isinstance(longitudes, Mapping):
+        raise ValueError("longitudes must be a mapping of point names to degrees")
+
+    normalized: dict[str, float] = {}
+    excluded: list[str] = []
+    for name, value in longitudes.items():
+        if not isinstance(name, str) or not name or name != name.strip():
+            raise ValueError("longitude point names must be non-empty trimmed strings")
+        if isinstance(value, bool):
+            raise ValueError(f"longitude for {name!r} must be finite")
+        try:
+            longitude = float(value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"longitude for {name!r} must be finite") from exc
+        if not math.isfinite(longitude):
+            raise ValueError(f"longitude for {name!r} must be finite")
+        if not include_nodes and name in _DERIVED_CHART_NODE_NAMES:
+            excluded.append(name)
+            continue
+        normalized[name] = longitude % 360.0
+
+    if len(normalized) < 2:
+        raise ValueError("at least two included longitude points are required")
+
+    ordered = dict(sorted(normalized.items()))
+    aspects = find_aspects(
+        ordered,
+        tier=tier,
+        orb_factor=resolved_orb_factor,
+    )
+    return LongitudeAspectAnalysis(
+        positions=tuple(ordered.items()),
+        aspects=tuple(aspects),
+        tier=tier,
+        orb_factor=resolved_orb_factor,
+        include_nodes=include_nodes,
+        excluded_node_names=tuple(sorted(excluded)),
+    )
 
 
 def aspects_between(

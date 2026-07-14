@@ -74,6 +74,14 @@ def test_phase_seven_relationship_routes_match_engine_truth(client_with_engine: 
         pair["second"]["longitude"],  # type: ignore[index]
         reader=getattr(moira_engine, "_reader", None),
     )
+    direct_composite_aspects = moira_engine.aspects_from_longitudes(
+        direct_composite.longitudes(),
+        tier=1,
+    )
+    direct_davison_aspects = moira_engine.aspects_from_longitudes(
+        direct_davison.chart.longitudes(),
+        tier=1,
+    )
     direct_syn_profile = synastry_chart_condition_profile(
         contacts=direct_contacts,
         overlays=direct_overlays,
@@ -108,6 +116,14 @@ def test_phase_seven_relationship_routes_match_engine_truth(client_with_engine: 
     davison_response = client_with_engine.post(
         "/v1/davison/chart",
         json={**pair, "method": "midpoint_location"},
+    )
+    composite_aspects_response = client_with_engine.post(
+        "/v1/aspects/from-longitudes",
+        json={"longitudes": direct_composite.longitudes(), "tier": 1},
+    )
+    davison_aspects_response = client_with_engine.post(
+        "/v1/aspects/from-longitudes",
+        json={"longitudes": direct_davison.chart.longitudes(), "tier": 1},
     )
     syn_profile_response = client_with_engine.post("/v1/synastry/chart-condition", json=pair)
     syn_network_response = client_with_engine.post("/v1/synastry/network", json=pair)
@@ -158,10 +174,32 @@ def test_phase_seven_relationship_routes_match_engine_truth(client_with_engine: 
     assert len(overlays_body["first_in_second"]["placements"]) == len(direct_overlays.first_in_second.placements)
 
     assert composite_response.status_code == 200
-    assert composite_response.json()["jd_mean"] == pytest.approx(direct_composite.jd_mean)
+    composite_body = composite_response.json()
+    assert composite_body["jd_mean"] == pytest.approx(direct_composite.jd_mean)
+    assert composite_body["computation_truth"]["house_system"] == houses_a.system
+    assert composite_body["computation_truth"]["composite_mc"] == pytest.approx(
+        direct_composite.mc
+    )
 
     assert davison_response.status_code == 200
     assert davison_response.json()["info"]["jd_midpoint"] == pytest.approx(direct_davison.info.jd_midpoint)
+
+    assert composite_aspects_response.status_code == 200
+    assert davison_aspects_response.status_code == 200
+    assert [
+        (item["body1"], item["body2"], item["aspect"], item["orb"])
+        for item in composite_aspects_response.json()["events"]
+    ] == [
+        (item.body1, item.body2, item.aspect, item.orb)
+        for item in direct_composite_aspects.aspects
+    ]
+    assert [
+        (item["body1"], item["body2"], item["aspect"], item["orb"])
+        for item in davison_aspects_response.json()["events"]
+    ] == [
+        (item.body1, item.body2, item.aspect, item.orb)
+        for item in direct_davison_aspects.aspects
+    ]
 
     assert syn_profile_response.status_code == 200
     assert syn_profile_response.json()["contact_count"] == direct_syn_profile.contact_count

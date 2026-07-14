@@ -275,6 +275,7 @@ from .progressions import (
     compute_time_key_progression_chart_with_reduction,
 )
 from .relationship import (
+    compute_aspects_from_longitudes,
     compute_chart_shape,
     compute_composite_chart,
     compute_davison_chart,
@@ -507,6 +508,7 @@ __all__ = [
     "compute_close_approaches",
     "compute_general_visibility_event",
     "compute_houses",
+    "compute_aspects_from_longitudes",
     "compute_chart_shape",
     "compute_composite_chart",
     "compute_davison_chart",

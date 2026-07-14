@@ -45,6 +45,7 @@ Documented route-group count:
 | chart | 2 |
 | chart-shape | 1 |
 | comets | 3 |
+| aspects | 1 |
 | composite | 1 |
 | dasha | 14 |
 | davison | 1 |
@@ -147,6 +148,7 @@ facade/root computation into REST.
 | Sidereal utilities / Nakshatra primitives | `Moira.ayanamsa`, `Moira.tropical_to_sidereal`, `Moira.sidereal_to_tropical`, `Moira.list_ayanamsa_systems`, `Moira.nakshatras`, root Nakshatra helpers | `/v1/sidereal/*` and `/v1/nakshatra/*` now expose ayanamsa registry/value, longitude conversion, and Nakshatra lookup primitives | `admitted` | Implemented as a mechanical primitive layer for ayanamsa, zodiac conversion, and Nakshatra lookup without duplicating Panchanga or Varga doctrine; facade utility parity is now admitted for direct ayanamsa and conversion helpers. |
 | Harmograms | `point_set_harmonic_vector`, `zero_aries_parts_harmonic_vector`, `intensity_function_spectrum`, `project_harmogram_strength`, `harmogram_trace` | `/v1/harmograms/*` now exposes bounded vector, Zero-Aries vector, intensity-spectrum, projection, and explicit-sample trace routes | `admitted` | Implemented as a bounded transport adapter over `moira.harmograms`; chart-backed sample generation, arbitrary intensity functions, unbounded sweeps, and interpretation remain out of scope. |
 | Ramesey Western electional moment | `ramesey_moon_condition_at`, `Moira.ramesey_moon_condition_at` | `/v1/electional/western/ramesey-moon-condition` exposes one typed ten-rule evaluation | `admitted_bounded_moment` | Preserves full rule, clause, measurement, remedy, house, and reader provenance; generic search/scoring, advice, recommendation, and remedy-fulfillment assessment remain out of scope. |
+| Derived-chart aspects | `find_aspects`, `aspects_from_longitudes`, `Moira.aspects_from_longitudes` | `/v1/aspects/from-longitudes` exposes canonical aspect analysis over supplied ecliptic positions | `admitted_positions_in` | Reuses the engine's aspect definitions and `AspectData`; does not invent a moment, speeds, applying/separating state, or a second orb table. |
 
 ---
 

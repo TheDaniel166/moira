@@ -540,6 +540,7 @@ message.
 | `house_overlay(chart_source, target_houses, include_nodes=True, source_label="A", target_label="B")` | `SynastryHouseOverlay` | Place chart_source planets in target_houses |
 | `mutual_house_overlays(chart_a, houses_a, chart_b, houses_b, include_nodes=True)` | `MutualHouseOverlay` | Both overlay directions in one call |
 | `composite_chart(chart_a, chart_b, houses_a=None, houses_b=None)` | `CompositeChart` | Midpoint composite |
+| `aspects_from_longitudes(longitudes, *, tier=1, orb_factor=1.0, include_nodes=True)` | `LongitudeAspectAnalysis` | Canonical position-only aspect analysis for a derived chart; no speeds or moment inferred |
 | `composite_chart_reference_place(chart_a, chart_b, houses_a, houses_b, reference_latitude, house_system=..., policy=None)` | `CompositeChart` | Reference-place composite house method with explicit synastry policy when supplied |
 | `davison_chart(dt_a, lat_a, lon_a, dt_b, lat_b, lon_b, house_system=..., policy=None)` | `DavisonChart` | Davison Relationship Chart (spherical midpoint time + location) |
 | `davison_chart_uncorrected(...)` | `DavisonChart` | Davison with arithmetic midpoints |
@@ -1104,9 +1105,11 @@ from moira.facade import (
 ```python
 from moira.facade import (
     find_aspects, aspects_between, aspects_to_point,
+    aspects_from_longitudes,
     find_declination_aspects, find_patterns, build_aspect_graph,
     aspect_strength, aspect_motion_state, aspect_harmonic_profile,
     AspectData, AspectPolicy, AspectStrength, DeclinationAspect,
+    LongitudeAspectAnalysis,
     AspectFamily, AspectDomain, AspectTier, MotionState,
     AspectGraph, AspectGraphNode, AspectFamilyProfile, AspectHarmonicProfile,
     CANONICAL_ASPECTS, DEFAULT_POLICY,
@@ -1123,9 +1126,9 @@ from moira.facade import (
 | `symbol` | `str` | Glyph or short symbol for the aspect |
 | `angle` | `float` | Exact aspect angle in degrees, e.g. 0, 60, 90, 120, 180 |
 | `separation` | `float` | Actual angular separation between the bodies |
-| `orb` | `float` | Actual orb (signed; negative = separating) |
+| `orb` | `float` | Non-negative deviation from the exact aspect angle |
 | `allowed_orb` | `float` | Maximum allowed orb for this aspect |
-| `applying` | `bool` | True if the aspect is applying |
+| `applying` | `bool \| None` | Applying/separating truth; `None` when speeds are unavailable |
 | `stationary` | `bool` | True if a stationary motion state affects the aspect |
 | `classification` | `AspectClassification` | Domain, family, tier, motion state, and strength metadata |
 | `direction` | `AspectDirection \| None` | Sinister/dexter casting direction from `body1`'s perspective when defined |
@@ -1149,7 +1152,8 @@ from moira.facade import (
 
 | Function | Returns | Description |
 |---|---|---|
-| `find_aspects(longitudes, orbs=None, include_minor=True, speeds=None)` | `list[AspectData]` | All aspects in a longitude dict |
+| `find_aspects(longitudes, orbs=None, include_minor=True, speeds=None, tier=None, orb_factor=1.0, policy=None)` | `list[AspectData]` | Low-level detector over a longitude dict with optional speed and policy inputs |
+| `aspects_from_longitudes(longitudes, *, tier=1, orb_factor=1.0, include_nodes=True)` | `LongitudeAspectAnalysis` | Validated first-class derived-position analysis; normalized deterministic inputs plus canonical `AspectData` results |
 | `aspects_between(lons_a, lons_b, orbs=None, include_minor=True)` | `list[AspectData]` | Cross-set aspects (synastry / transits) |
 | `aspects_to_point(longitudes, point, orbs=None)` | `list[AspectData]` | Aspects to a single longitude |
 | `find_declination_aspects(bodies_dec, orb=1.0)` | `list[DeclinationAspect]` | Parallel and contra-parallel aspects |
@@ -1157,6 +1161,13 @@ from moira.facade import (
 | `aspect_strength(aspect)` | `AspectStrength` | Strength score based on orb and tier |
 | `aspect_motion_state(aspect, speeds)` | `MotionState` | APPLYING / SEPARATING / EXACT |
 | `aspect_harmonic_profile(longitudes, harmonic)` | `AspectHarmonicProfile` | Aspects visible at a given harmonic |
+
+`aspects_from_longitudes` and `LongitudeAspectAnalysis` are exported from both
+the curated package root and `moira.facade`. `Moira.aspects_from_longitudes`
+is the equivalent facade method. The analysis records normalized longitudes,
+the effective tier/orb multiplier, excluded engine node names, and
+`motion_semantics="not_computed_without_speeds"`. Its 355°/5° wrap separation
+is 10°, and aspect admission remains inclusive at the applied orb boundary.
 
 ### Aspect Patterns
 
@@ -2781,8 +2792,14 @@ from moira.facade import (
 )
 
 comp = composite_chart(chart_a, chart_b, houses_a, houses_b)
-# CompositeChart(planets: dict[str, PlanetData], houses: HouseCusps | None)
+# CompositeChart(planets/nodes: dict[str, float], cusps: list[float], asc, mc)
 ```
+
+The pure midpoint method midpoint-combines both source house frames when both
+are supplied. Its computation truth reports the common requested/effective
+source house system when one exists and echoes the resulting composite MC;
+`reference_latitude` and `composite_armc` remain `None` because that method does
+not construct a reference-place ARMC frame.
 
 ### Davison Relationship Charts
 

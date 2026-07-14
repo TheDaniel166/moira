@@ -42,6 +42,7 @@ from ._shared import (
 from .chart import compute_chart, compute_houses
 from ..models.chart import ChartRequest, HousesRequest
 from ..models.relationship import (
+    AspectsFromLongitudesRequest,
     CompositeChartRequest,
     DavisonChartRequest,
     MidpointClusterRequest,
@@ -94,6 +95,18 @@ def compute_synastry_aspects(engine: Moira, request: SynastryPairRequest):
     return synastry_aspects(
         chart_a,
         chart_b,
+        tier=request.tier,
+        orb_factor=request.orb_factor,
+        include_nodes=request.include_nodes,
+    )
+
+
+def compute_aspects_from_longitudes(
+    engine: Moira,
+    request: AspectsFromLongitudesRequest,
+):
+    return engine.aspects_from_longitudes(
+        request.longitudes,
         tier=request.tier,
         orb_factor=request.orb_factor,
         include_nodes=request.include_nodes,
@@ -320,6 +333,7 @@ def compute_midpoint_clusters(engine: Moira, request: MidpointClusterRequest):
 
 
 __all__ = [
+    "compute_aspects_from_longitudes",
     "compute_chart_shape",
     "compute_composite_chart",
     "compute_davison_chart",

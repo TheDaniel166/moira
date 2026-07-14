@@ -2418,12 +2418,22 @@ def composite_chart(
 
     jd_mean = (chart_a.jd_ut + chart_b.jd_ut) / 2.0
 
+    common_source_system = None
+    common_effective_system = None
+    if houses_a is not None and houses_b is not None:
+        if houses_a.system == houses_b.system:
+            common_source_system = houses_a.system
+        if houses_a.effective_system == houses_b.effective_system:
+            common_effective_system = houses_a.effective_system
+
     computation_truth = CompositeComputationTruth(
         method="midpoint",
         jd_mean=jd_mean,
         includes_house_frame=houses_a is not None and houses_b is not None,
-        source_house_system=None if houses_a is None or houses_b is None else houses_a.system,
-        source_effective_house_system=None if houses_a is None or houses_b is None else houses_a.effective_system,
+        house_system=common_source_system,
+        composite_mc=mc_mid,
+        source_house_system=common_source_system,
+        source_effective_house_system=common_effective_system,
     )
     classification = _classify_composite_truth(computation_truth)
     relation = SynastryRelation(
@@ -2885,8 +2895,9 @@ def _build_relationship_chart(
     """Build a real chart and house frame for one relationship-chart moment/place."""
 
     dt_mid = datetime_from_jd(jd_ut)
+    jd_ut1 = utc_to_ut1(jd_ut)
     jd_tt = utc_to_tt(jd_ut)
-    planets = all_planets_at(jd_tt, reader=reader)
+    planets = all_planets_at(jd_ut1, reader=reader)
     nodes = {
         Body.TRUE_NODE: true_node(jd_ut, reader=reader),
         Body.MEAN_NODE: mean_node(jd_ut),
@@ -2904,7 +2915,7 @@ def _build_relationship_chart(
         obliquity=obl,
         delta_t=dt_s,
     )
-    houses = calculate_houses(utc_to_ut1(jd_ut), latitude, longitude, house_system, policy=house_policy)
+    houses = calculate_houses(jd_ut1, latitude, longitude, house_system, policy=house_policy)
     classification = None if computation_truth is None else _classify_davison_truth(computation_truth)
     relation = None
     if computation_truth is not None:
@@ -3014,8 +3025,9 @@ def davison_chart(
     # Build chart at the midpoint using the same public chart-state logic
     # as the main engine: geocentric UT chart positions with Moira's standard
     # obliquity and Delta T fields.
+    jd_ut1 = utc_to_ut1(jd_mid)
     jd_tt = utc_to_tt(jd_mid)
-    planets = all_planets_at(jd_tt, reader=reader)
+    planets = all_planets_at(jd_ut1, reader=reader)
 
     nodes = {
         Body.TRUE_NODE: true_node(jd_mid, reader=reader),
@@ -3037,7 +3049,7 @@ def davison_chart(
         delta_t=dt_s,
     )
 
-    houses = calculate_houses(utc_to_ut1(jd_mid), lat_mid, lon_mid, house_system, policy=davison_policy.house_policy)
+    houses = calculate_houses(jd_ut1, lat_mid, lon_mid, house_system, policy=davison_policy.house_policy)
 
     computation_truth = DavisonComputationTruth(
         method="midpoint_location",

@@ -137,6 +137,7 @@ Not yet broadly exposed as REST families:
 | chart | 2 |
 | chart-shape | 1 |
 | comets | 3 |
+| aspects | 1 |
 | composite | 1 |
 | dasha | 5 |
 | davison | 1 |
@@ -374,6 +375,7 @@ Admitted products:
 
 | Method | Path | Handler |
 |---|---|---|
+| POST | `/v1/aspects/from-longitudes` | `aspects_from_longitudes_route` |
 | POST | `/v1/synastry/aspects` | `synastry_aspects_route` |
 | POST | `/v1/synastry/contacts` | `synastry_contacts_route` |
 | POST | `/v1/synastry/contact-relations` | `synastry_contact_relations_route` |
@@ -394,6 +396,30 @@ Admitted products:
 | POST | `/v1/midpoints/pictures` | `midpoint_pictures_route` |
 | POST | `/v1/midpoints/weighting` | `midpoint_weighting_route` |
 | POST | `/v1/midpoints/clusters` | `midpoint_clusters_route` |
+
+### Positions-In Aspect REST Admission Boundary
+
+`POST /v1/aspects/from-longitudes` is the additive, kernel-free analysis route
+for composite, Davison, harmonic, progressed, draconic, and other derived chart
+positions. It accepts between 2 and 64 named finite ecliptic longitudes, an
+explicit aspect `tier` (`0`, `1`, or `2`), a positive bounded `orb_factor`, and
+an `include_nodes` flag. Known engine node names are filtered only when that
+flag is false.
+
+The route delegates through `Moira.aspects_from_longitudes(...)` to
+`moira.aspects.aspects_from_longitudes(...)`, which normalizes the supplied
+longitudes, orders points by name for deterministic pair identity, and applies
+the canonical `moira.constants.Aspect` definitions through `find_aspects`.
+Responses use the existing `AspectData` transport shape and expose actual
+separation, target angle, orb, applied orb ceiling, classification, direction,
+and sign degrees.
+
+These are caller-supplied positions, not a reconstructed birth moment.
+No ephemeris reduction, speed, retrograde state, applying/separating state,
+stationary state, house frame, score, or interpretation is fabricated. The
+response computation truth records normalized inputs, effective tier and orb
+factor, node exclusions, counts, engine/facade entry points, and
+`motion_semantics: not_computed_without_speeds`.
 
 ## Panchanga Routes
 

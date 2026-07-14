@@ -74,7 +74,14 @@ from .planets import (
     planet_reduction_breakdown_at,
 )
 from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal, nakshatra_of, all_nakshatras_at
-from .aspects import AspectData, AspectDirection
+from .aspects import (
+    AspectData,
+    AspectDirection,
+    AspectPolicy,
+    LongitudeAspectAnalysis,
+    aspects_from_longitudes,
+    find_aspects,
+)
 from .harmograms import (
     HarmogramChartDomain,
     HarmogramIntensityFamily,
@@ -633,6 +640,10 @@ __all__ = [
     "describe_galactic_boundary",
     "AspectData",
     "AspectDirection",
+    "AspectPolicy",
+    "LongitudeAspectAnalysis",
+    "aspects_from_longitudes",
+    "find_aspects",
     "HarmonicDomain",
     "PointSetHarmonicVectorPolicy",
     "HarmogramIntensityFamily",

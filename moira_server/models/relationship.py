@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from datetime import datetime
+import math
+from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .chart import ChartResponse, HousesResponse
 
@@ -60,6 +62,80 @@ class AspectDataResponse(_StrictModel):
     direction: str | None = None
     sign_degree1: float | None = None
     sign_degree2: float | None = None
+
+
+class AspectsFromLongitudesRequest(_StrictModel):
+    longitudes: dict[str, float] = Field(min_length=2, max_length=64)
+    tier: Literal[0, 1, 2] = 1
+    orb_factor: float = Field(default=1.0, gt=0.0, le=10.0)
+    include_nodes: bool = True
+
+    @field_validator("longitudes", mode="before")
+    @classmethod
+    def _valid_longitudes(cls, value: Any) -> dict[str, float]:
+        if not isinstance(value, dict):
+            raise ValueError("longitudes must be an object mapping point names to degrees")
+        normalized: dict[str, float] = {}
+        for name, longitude in value.items():
+            if not isinstance(name, str) or not name or name != name.strip():
+                raise ValueError("longitude point names must be non-empty trimmed strings")
+            if isinstance(longitude, bool):
+                raise ValueError(f"longitude for {name!r} must be finite")
+            try:
+                parsed = float(longitude)
+            except (TypeError, ValueError) as exc:
+                raise ValueError(f"longitude for {name!r} must be finite") from exc
+            if not math.isfinite(parsed):
+                raise ValueError(f"longitude for {name!r} must be finite")
+            normalized[name] = parsed
+        return normalized
+
+    @field_validator("tier", mode="before")
+    @classmethod
+    def _strict_tier(cls, value: Any) -> Any:
+        if isinstance(value, bool):
+            raise ValueError("tier must be 0, 1, or 2")
+        return value
+
+    @field_validator("orb_factor", mode="before")
+    @classmethod
+    def _strict_orb_factor(cls, value: Any) -> Any:
+        if isinstance(value, bool):
+            raise ValueError("orb_factor must be a finite number")
+        return value
+
+    @field_validator("include_nodes", mode="before")
+    @classmethod
+    def _strict_include_nodes(cls, value: Any) -> bool:
+        if not isinstance(value, bool):
+            raise ValueError("include_nodes must be a boolean")
+        return value
+
+
+class LongitudeAspectComputationTruthResponse(_StrictModel):
+    source_module: Literal["moira.aspects"] = "moira.aspects"
+    engine_entrypoint: Literal["aspects_from_longitudes"] = "aspects_from_longitudes"
+    facade_entrypoint: Literal["Moira.aspects_from_longitudes"] = "Moira.aspects_from_longitudes"
+    position_semantics: Literal["caller_supplied_ecliptic_longitudes"] = (
+        "caller_supplied_ecliptic_longitudes"
+    )
+    motion_semantics: Literal["not_computed_without_speeds"]
+    ordering: Literal["orb_ascending_stable_over_point_name_order"] = (
+        "orb_ascending_stable_over_point_name_order"
+    )
+    aspect_policy_authority: Literal["moira.constants.Aspect"] = "moira.constants.Aspect"
+    normalized_longitudes: dict[str, float]
+    tier: Literal[0, 1, 2]
+    orb_factor: float
+    include_nodes: bool
+    excluded_node_names: list[str]
+    point_count: int
+    aspect_count: int
+
+
+class AspectsFromLongitudesResponse(_StrictModel):
+    events: list[AspectDataResponse]
+    computation_truth: LongitudeAspectComputationTruthResponse
 
 
 class SynastryAspectTruthResponse(_StrictModel):
@@ -494,6 +570,8 @@ class MidpointClusterRequest(MidpointRequest):
 
 __all__ = [
     "AspectDataResponse",
+    "AspectsFromLongitudesRequest",
+    "AspectsFromLongitudesResponse",
     "AspectPatternResponse",
     "ChartShapeResponse",
     "CompositeChartRequest",
@@ -512,6 +590,7 @@ __all__ = [
     "MidpointWeightRequest",
     "MidpointWeightResponse",
     "MidpointWeightSearchResponse",
+    "LongitudeAspectComputationTruthResponse",
     "MutualHouseOverlayResponse",
     "PatternChartConditionProfileResponse",
     "PatternConditionNetworkProfileResponse",
