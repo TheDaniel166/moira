@@ -311,7 +311,8 @@ P13-03 may proceed to REST transport design under this packet if the design:
 - preserves chronological and optional score-rank semantics explicitly
 - preserves peak-JD scan-point truth
 - avoids recommendation and auspiciousness language
-- keeps Western electional doctrine deferred
+- keeps its numeric-fit scorer separate from any admitted Western profile;
+  Ramesey v1 single-moment evaluation supplies no score
 
 ## 13. Non-Goals
 

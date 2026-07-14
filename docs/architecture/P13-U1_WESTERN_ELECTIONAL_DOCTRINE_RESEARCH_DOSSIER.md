@@ -1,12 +1,29 @@
 # P13-U1 — Western Electional Doctrine Research Dossier
 
-Version: 0.7 (research foundation with doctrine-packet handoff)
+Version: 0.10 (research foundation with first-profile public moment admission)
 Date: 2026-07-14
-Status: research inventory feeding the deferred P13-U1 Western electional
-doctrine layer. Companion doctrine packet exists, but no profile, standard, or
-runtime surface is admitted.
+Status: research inventory for the Western electional doctrine layer. The
+companion packet admits `ramesey_moon_condition_v1` through the engine module,
+package root, facade, `Moira` convenience method, and one bounded single-moment
+REST route. Generic search, scoring, website, advice, and recommendation
+surfaces remain deferred.
 
 Changelog:
+- 0.10 - admitted the bounded first-profile public moment surface through the
+  curated root, facade, `Moira.ramesey_moon_condition_at(...)`, and
+  `POST /v1/electional/western/ramesey-moon-condition`. The transport preserves
+  every rule/remedy witness and explicitly provides no score, search
+  integration, advice, recommendation, or remedy-fulfillment assessment.
+- 0.9 - page-confirmed the p. 127-128 urgent-time contingency, added a
+  separate non-erasing remedy instruction witness, full-zodiac generative and
+  sign-boundary invariants, and an independent DE441 forward-VOC geometry
+  covenant. The five-axis audit passes for module admission. Wider transport
+  and publication remain separately deferred.
+- 0.8 — resolved the nine Ramesey profile policies from the original 1654
+  facsimile (Book II planetary orbs, terms, nodes, aspects/houses/VOC; Book III
+  p. 127 checklist), admitted the non-scored module-level engine profile, and
+  added source-bound boundary and compound-rule tests. The generic electional
+  search transport remains unchanged.
 - 0.7 — created `P13-U1_WESTERN_ELECTIONAL_DOCTRINE_PACKET.md` and visually
   page-confirmed the first profile against Ramesey's original facsimile,
   Book III, Chapter II, printed pp. 126–127. Corrected the former blended
@@ -56,16 +73,16 @@ Changelog:
 
 ## 0. Purpose And Standing
 
-This dossier is the primary-source research foundation the Phase 13 ledger
-requires before P13-U1 (`defer_for_doctrine`) can become a real doctrine
-packet. The ledger names the missing pieces explicitly: "doctrine note for
+This dossier is the primary-source research foundation used by the Phase 13
+doctrine packet and its first bounded engine profile. The original ledger
+named the missing pieces explicitly: "doctrine note for
 Western electional scope, rule/profile vocabulary, judgement boundaries and
 public-language policy, validation strategy for any built-in score, separation
 between search infrastructure and electional doctrine."
 
 This document supplies the **rule/profile vocabulary** and the **named-lineage
-citation base** for that packet. It does not itself admit any rule, define any
-public score, or change any code.
+citation base** for that packet. Admission authority and current boundaries
+live in the packet; this dossier defines no public score.
 
 It is organized as an *implementable rule inventory*: each rule carries its
 authority, citation, exact parameters, its variants across lineages, its
@@ -160,15 +177,15 @@ p. 127 gives this order and wording [V+]:
 | # | Impediment | Source-faithful parameter | Shape |
 |---|---|---|---|
 | 1 | Combust the Sun | Within **12°** of the Sun before or after conjunction; applying is worse than separating | Gate + directional modifier |
-| 2 | Degree of fall | The **third degree of Scorpio** | Gate; ordinal-degree policy required |
-| 3 | Opposition of the Sun | Opposition; Ramesey gives **no 12° opposition orb here** | Gate; aspect/orb policy required |
-| 4 | Joined with infortunes or in quartile/opposition to them | Conjunction, square, or opposition with Saturn or Mars | Compound gate; aspect/orb policy required |
-| 5 | Near the lunar nodes | Within **12°** of the Head or Tail of the Dragon | Gate; node model required |
-| 6 | Latter degrees with an infortune | In the latter degrees of a sign wherein there is an infortune | Gate; latter-degree boundary unresolved |
+| 2 | Degree of fall | The **third degree of Scorpio** | Gate; admitted ordinal interval `[2°, 3°)` |
+| 3 | Opposition of the Sun | Opposition; Ramesey gives **no 12° opposition orb here** | Gate; admitted Ramesey combined moieties |
+| 4 | Joined with infortunes or in quartile/opposition to them | Conjunction, square, or opposition with Saturn or Mars | Compound gate; admitted Ramesey combined moieties |
+| 5 | Near the lunar nodes | Within **12°** of the Head or Tail of the Dragon | Gate; admitted true ecliptic-crossing node + opposition |
+| 6 | Latter degrees with an infortune | In the terminal malefic term printed in Book II pp. 71–72; Leo excepted | Gate; admitted profile-local terminal-term table |
 | 7 | Cadent **or** via combusta | Cadent from angles **OR** last 15° Libra / first 15° Scorpio; the latter is called the worst, especially for marriage, women's matters, buying/selling, and travel | Compound gate + matter metadata |
-| 8 | Detriment **or** not beholding her house suitably | Capricorn, **OR** quartile to her own house, **OR** not beholding it by sextile/trine | Compound gate; aspect scope required |
+| 8 | Detriment **or** not beholding her house suitably | Capricorn, **OR** quartile to her own house, **OR** not beholding it by sextile/trine | Compound gate; admitted whole-sign relationship to Cancer |
 | 9 | Slow in motion | Less than **13°10′36″ per 24 hours** | Strict numeric gate |
-| 10 | Void of course | In a sign and “beholds not any Planet till she enter another sign” | Sign-bounded gate; meaning of “beholds” requires policy |
+| 10 | Void of course | In a sign and “beholds not any Planet till she enter another sign” | Admitted traditional-planet, exact-perfection, sign-bounded gate |
 
 Robson (1937) supplies a close later checklist [Q], but it is a named
 corroborating variant rather than permission to rewrite Ramesey's list. The
@@ -177,9 +194,10 @@ Ramesey's compound clauses, omitted his latter-degrees rule, and attached a
 12° opposition orb not stated on the governing page. The doctrine packet now
 uses the page-confirmed Ramesey list.
 
-Several rules are numerically direct, but the profile is not yet executable as
-a whole. Orb, node, degree-label, house/cadency, latter-degree, and VOC
-policies remain explicit admission blockers.
+The companion packet v0.2 records the Book II derivation that closes the orb,
+node, degree-label, house/cadency, latter-degree, speed-product, endpoint, and
+VOC policies for `ramesey_moon_condition_v1`. Those decisions belong to that
+named profile and do not silently change the variants below.
 
 ### A.2 Void of Course — the central doctrinal divergence
 
@@ -192,7 +210,7 @@ several×/month), so they are not interchangeable.
 |---|---|---|---|---|---|
 | **Hellenistic** | Moon completes no exact Ptolemaic aspect within the **next 30°** of motion | Ignored | No | Antiochus, Porphyry, Rhetorius, Firmicus [S] |
 | **Medieval / sign-bounded perfection** | Moon completes no aspect **before leaving its current sign** | Yes | No (perfection-based) | Named interpretive family across medieval and later authorities; source-specific mechanics still require confirmation [Q/S] |
-| **Ramesey sign-bounded beholding** | Moon “beholds not any Planet till she enter another sign” | Yes | Unresolved | Ramesey, printed p. 127 [V+] |
+| **Ramesey sign-bounded beholding** | No exact Ptolemaic aspect perfection to a traditional planet before the Moon leaves its sign | Yes | No (perfection-based) | Ramesey, Book II p. 111 and Book III p. 127; admitted profile policy [V+] |
 | **Lilly (moiety-applying)** | Moon is separated and **applies to no planet within joint moieties while in the sign** (application, not perfection) | Yes | Yes (summed moieties) | Lilly CA; Sue Ward's reading traces it to Sahl [Q/S] |
 | **Sue Ward modern** | Moon not **within orb (~≤10°)** of its next applying major aspect, sign boundary ignored | No | Yes | Ward 1995 reinterpretation [S] |
 
@@ -653,31 +671,34 @@ should govern here too.
 
 ## 10. Implementation Mapping To The Existing Engine
 
-How each family lands against `moira.electional` + the REST predicate/scorer
-catalogues, and what each needs. (Descriptive — not an admission.)
+How each family lands against the generic `moira.electional` transport and REST
+predicate/scorer catalogues. This table is about transport exposure, not the
+separate module-level `ramesey_moon_condition_v1` evaluator admitted on
+2026-07-14.
 
 | Rule family | Shape | Fits existing engine? | New capability required |
 |---|---|---|---|
 | Via combusta (A.3) | Boolean gate | Yes — `body_longitude_range` on the Moon over 195°–225° | None (expressible today) |
 | Moon in fall / detriment (A.1 #5,6) | Gate | Yes — longitude-range | None |
-| Moon near nodes (A.1 #4) | Gate | Partly — needs nodes as subjects | Nodes already in chart; add to subject list |
-| Combustion / cazimi / under-beams (B.1) | Signed gate, variant orbs | Partly | Needs Sun-relative signed elongation + variant orb table; near-Sun polarity flip |
-| Void of course (A.2) | Variant classifier | **No** | Needs forward aspect search (next-aspect-before-ingress); a real new computation |
-| Moon speed / slow (A.1 #9) | Numeric gate | **No** | Needs body speed in payload |
+| Moon near nodes (A.1 #4) | Gate | Partly — needs nodes as subjects | Nodes exist in `ChartContext` and the Ramesey evaluator; generic predicate catalogue still needs admission |
+| Combustion / cazimi / under-beams (B.1) | Signed gate, variant orbs | Partly | Ramesey evaluator now owns its 12° Moon gate and source orbs; other variants and generic transport remain separate |
+| Void of course (A.2) | Variant classifier | Not in generic transport | Existing `void_of_course` supplies the admitted Ramesey exact-perfection/sign-bound product; other variants remain unimplemented |
+| Moon speed / slow (A.1 #9) | Numeric gate | Not in generic transport | `PlanetData.speed` supplies the admitted Ramesey profile; generic scan payload still lacks exposure |
 | Retrograde (B.3) | Gate | **No** | Needs speed sign in payload |
-| Applying vs separating (C.2) | Directional modifier | **No** | Needs signed elongation + relative speed |
+| Applying vs separating (C.2) | Directional modifier | Not in generic transport | Implemented visibly for Ramesey Rule 1; generic transport and other lineages remain separate |
 | Dignity points (B.2) | Weighted scorer | Partly | Needs dignity tables (domicile/exalt/triplicity/term/face) + term-scheme variant |
-| Composite ten-impediment Moon gate (A.1) | Conjunction of gates | Partly | Needs composite `all_of` predicate (already flagged as the top usability gap) |
+| Composite ten-impediment Moon gate (A.1) | Source-ordered profile | Public single-moment evaluation admitted | `moira.western_electional`, package root, facade, `Moira`, and bounded REST return ten witnesses; no generic `all_of`, scan, or score admission |
 | Planetary hours (D) | Low-weight factor | Yes (computable) | Chaldean-order hour ruler from sunrise/sunset |
 | Radicality (E) | Class-gated gate | **No** | Needs natal chart input (radical class only) |
 | Matter-specific overlays (F) | Profile family | Design layer | Needs house-of-matter + significator vocabulary |
 
-Three cross-cutting engine capabilities unlock most of the corpus:
-1. **Body speed in the scan payload** → slow-Moon, retrograde, applying/separating.
+Three cross-cutting transport capabilities still unlock most wider exposure:
+1. **Body speed in the scan payload** → generic slow-Moon, retrograde, applying/separating predicates.
 2. **Signed solar elongation + variant orb tables** → the entire combustion/
    cazimi/under-beams family with lineage variants.
-3. **A forward next-aspect search** → void-of-course (all four variants) and the
-   aspect-perfection doctrines (translation/collection/prohibition).
+3. **Variant-aware forward next-aspect search** → VOC definitions beyond the
+   admitted Ramesey sign-bound product and the aspect-perfection doctrines
+   (translation/collection/prohibition).
 
 These are the same substrate gaps I flagged in the initial survey (Tier-2/3),
 now grounded in exactly which doctrine each one buys.
@@ -753,41 +774,45 @@ before admission.**
 ### Still thin (not acquisition blockers — conditional only)
 
 - **Ptolemaic vs Egyptian term tables (actual degree boundaries)**: both schemes
-  named and their divergence documented (§B.2), but the per-sign degree ranges
-  were not reproduced — needed only if a term-level dignity scorer is admitted.
-  Standard tables in CA / Tetrabiblos; the CA copy on disk carries them.
+  named and their divergence documented (§B.2), but Moira's existing
+  `PTOLEMAIC_BOUNDS` constant currently duplicates the Egyptian table despite
+  its label. The Ramesey profile therefore carries only its source-required
+  terminal malefic segments locally. A general Ptolemaic term product requires
+  a separate correction and validation task.
 - **Page re-confirmation** of ⚠-marked readings in both inventories (standing
   Moira law before doctrine admission) — not a missing-source problem.
-- **Ramesey first-profile policies** listed in the doctrine packet §8: ordinal
-  degree convention, aspect orbs, node model, latter-degree boundary,
-  cadency/house policy, Cancer-beholding scope, speed product, VOC perfection
-  doctrine, and via-combusta endpoints.
+- **Ramesey remedy fulfillment**: the p. 127-128 instruction and its
+  urgent/unavoidable applicability are now preserved as a separate non-erasing
+  witness. Actual fulfillment remains deliberately uncomputed until
+  source-specific angle-aspect, benefic-placement, Ascendant-ruler, hour-lord,
+  and fortification policies are admitted.
 
 **No remaining true acquisition gaps.** Both Dorotheus and Sahl electional
 rule inventories exist as companions. The general Moon/planet/angle/aspect
 architecture is inventoried, and the first doctrine packet now records the
-remaining policy blockers without filling them from ambient defaults.
+source derivations and explicit Moira choices used by the admitted bounded
+Ramesey public-moment profile.
 
 ---
 
 ## 13. Recommended Next Steps
 
-1. **Resolve the first-profile policy ledger** in
-   `P13-U1_WESTERN_ELECTIONAL_DOCTRINE_PACKET.md` §8 from the held Ramesey
-   source and its declared historical context. Do not implement rules that
-   remain `not_evaluable`.
+1. **Treat the first-profile engine closure as complete** for the bounded
+   `ramesey_moon_condition_v1` object. Do not expand its ten gates, score them,
+   or claim remedy fulfillment without a new source-backed doctrine decision.
 2. **Continue page-confirming ⚠ items** in the two companion inventories before any
    doctrine admission; reproduce term tables only if a term-level scorer is
    admitted. No further source acquisition is required for the Dorotheus/Sahl
    research foundation.
-3. **Engine substrate work** (the three unlocks in §10): body speed in payload,
-   signed solar elongation + orb-variant tables, forward next-aspect search.
-   These are Moira-core and must pass the Testing Liturgy; they are the real
-   astronomy investment.
-4. **Profile-first rollout**: ship named lineage profiles ("Ramesey Moon
-   condition," "Lilly dignity score," "Bonatti combustion") as bounded
-   predicate/scorer profiles under the existing P13 transport, each binding the
-   §11 variants explicitly and citing its authority + page.
+3. **Generic search transport remains deferred by explicit decision**: the
+   single-moment facade and REST vessel are admitted, but variant-aware
+   forward-aspect provenance, remedy applicability versus fulfillment, and a
+   forward-VOC caching/performance contract must be defined before proposing
+   any scan-payload, predicate, or scoring admission.
+4. **Profile-first rollout**: research the next named lineage profile (Sahl or
+   Dorotheus) without merging its rules into Ramesey. Each additional profile,
+   generic search adapter, scoring product, and website surface requires its
+   own admission decision.
 5. **Validation strategy**: per Moira law, each numeric rule (orbs, thresholds,
    points) is verified against its **named primary text at the cited page**
    before admission; each variant carries its citation in the profile metadata.

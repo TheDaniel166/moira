@@ -4,7 +4,7 @@ Internal special-topic mixin for the public Moira facade.
 This is the final compatibility wrapper layer for the legacy ``Moira`` facade:
 eclipses, primary directions, longevity, phenomena, occultations, Sothic and
 Egyptian calendar helpers, variable and multiple stars, void-of-course Moon,
-electional windows, and representation.
+electional windows, bounded Western electional doctrine, and representation.
 """
 
 from __future__ import annotations
@@ -25,7 +25,7 @@ class SpecialTopicsFacadeMixin:
     to all remaining specialised domains: eclipse geometry, primary
     directions, longevity, phenomena, occultations, Sothic and Egyptian
     calendar helpers, variable and multiple stars, void-of-course Moon,
-    electional windows, and representation.
+    electional windows, Western electional profiles, and representation.
 
 THEOREM: Mixin that aggregates the remaining public ``moira.facade.Moira``
          compatibility wrappers not covered by the other facade mixins,
@@ -42,7 +42,7 @@ LAW OF OPERATION:
     Responsibilities:
         - Delegate eclipse, primary-direction, longevity, phenomena,
           occultation, Sothic, variable-star, multiple-star,
-          void-of-course, electional, and repr calls to their
+          void-of-course, electional search, Western electional, and repr calls to their
           owning modules.
     Non-responsibilities:
         - Does not implement any astronomical or astrological math.
@@ -60,7 +60,7 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
     "scope": "class",
     "id": "moira._facade_special.SpecialTopicsFacadeMixin",
     "risk": "medium",
-    "api": {"frozen": ["eclipse", "primary_directions", "longevity", "phenomena", "occultations", "void_of_course", "electional"], "internal": []},
+    "api": {"frozen": ["eclipse", "primary_directions", "longevity", "phenomena", "occultations", "void_of_course", "electional", "ramesey_moon_condition_at"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -416,6 +416,33 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
             predicate=predicate,
             policy=policy,
             reader=self._reader,
+        )
+
+    def ramesey_moon_condition_at(
+        self,
+        jd_ut: float,
+        latitude: float,
+        longitude: float,
+        *,
+        house_system: str,
+        unavoidable_time_urgency: bool | None = None,
+        house_policy=None,
+        policy=None,
+    ):
+        """Evaluate Ramesey's bounded Moon-condition profile at one instant."""
+        facade = _facade_module()
+        resolved_policy = (
+            facade.RAMESEY_MOON_CONDITION_V1 if policy is None else policy
+        )
+        return facade.ramesey_moon_condition_at(
+            jd_ut,
+            latitude,
+            longitude,
+            house_system=house_system,
+            unavoidable_time_urgency=unavoidable_time_urgency,
+            reader=self._reader,
+            house_policy=house_policy,
+            policy=resolved_policy,
         )
 
     def __repr__(self) -> str:

@@ -52,7 +52,7 @@ Documented route-group count:
 | dignities | 6 |
 | eclipses | 5 |
 | egyptian-bounds | 7 |
-| electional | 5 |
+| electional | 6 |
 | galactic | 6 |
 | galactic-houses | 3 |
 | gauquelin | 3 |
@@ -146,6 +146,7 @@ facade/root computation into REST.
 | Solar condition direct/events | `Moira.solar_condition_at`, `Moira.solar_condition_events`, root solar-condition helpers | `/v1/solar-condition/*` now exposes instant solar-condition truth and bounded solar-condition threshold events | `admitted` | Implemented as a bounded transport adapter that keeps classical solar-condition threshold truth separate from dignity interpretation and recommendation language. |
 | Sidereal utilities / Nakshatra primitives | `Moira.ayanamsa`, `Moira.tropical_to_sidereal`, `Moira.sidereal_to_tropical`, `Moira.list_ayanamsa_systems`, `Moira.nakshatras`, root Nakshatra helpers | `/v1/sidereal/*` and `/v1/nakshatra/*` now expose ayanamsa registry/value, longitude conversion, and Nakshatra lookup primitives | `admitted` | Implemented as a mechanical primitive layer for ayanamsa, zodiac conversion, and Nakshatra lookup without duplicating Panchanga or Varga doctrine; facade utility parity is now admitted for direct ayanamsa and conversion helpers. |
 | Harmograms | `point_set_harmonic_vector`, `zero_aries_parts_harmonic_vector`, `intensity_function_spectrum`, `project_harmogram_strength`, `harmogram_trace` | `/v1/harmograms/*` now exposes bounded vector, Zero-Aries vector, intensity-spectrum, projection, and explicit-sample trace routes | `admitted` | Implemented as a bounded transport adapter over `moira.harmograms`; chart-backed sample generation, arbitrary intensity functions, unbounded sweeps, and interpretation remain out of scope. |
+| Ramesey Western electional moment | `ramesey_moon_condition_at`, `Moira.ramesey_moon_condition_at` | `/v1/electional/western/ramesey-moon-condition` exposes one typed ten-rule evaluation | `admitted_bounded_moment` | Preserves full rule, clause, measurement, remedy, house, and reader provenance; generic search/scoring, advice, recommendation, and remedy-fulfillment assessment remain out of scope. |
 
 ---
 
@@ -158,7 +159,7 @@ code exists.
 |---|---|---|---|
 | Longevity / Hyleg-Alcocoden | `Moira.longevity`, longevity root surfaces | `defer_for_doctrine` | High-stakes interpretive family; public route must not imply life-expectancy prediction or advice. |
 | Sothic and Egyptian civil date | `Moira.sothic_cycle`, `Moira.sothic_epoch_finder`, `Moira.egyptian_date` | `defer_for_specialist_review` | Specialist surface; previous Phase 12 decision deliberately withheld REST admission. |
-| Western electional doctrine | P13-U1 | `defer_for_doctrine` | `/v1/electional/*` now exposes bounded search infrastructure only, not doctrine-owned electional judgement. |
+| Western electional generic search/scoring | P13-U1 | `defer_for_transport_and_doctrine` | The Ramesey v1 single-moment route is admitted; generic profile scanning, scoring, ranking, advice, recommendation, and later profiles require separate admission. |
 | Arbitrary executable electional predicates/scorers | facade `electional_windows` accepts Python predicate | `engine_only` | REST must use server-defined profile catalogues only. |
 | Kernel mutation and downloads | `configure_kernel_path`, `download_missing_kernels`, `load_small_body_manifest` | `engine_only` | Operational mutation should not become ordinary public compute transport. |
 
@@ -290,14 +291,14 @@ Recommended order if we continue closing code-truth gaps:
 
 This ledger does not:
 
-- admit any additional route beyond P-GAP-01, P-GAP-02, P-GAP-03, P-GAP-04,
-  P-GAP-05, and P-GAP-06
-- change `moira.__all__`
+- admit any additional route beyond the named admitted gap bundles and the
+  P13-U1 Ramesey v1 single-moment route
+- widen `moira.__all__` beyond the explicitly admitted Ramesey v1 surface
 - reopen remaining facade bundles without explicit API-change approval
 - admit Lord of the Turn into the facade without separate annual-chart API
   design
 - imply that root exports are route obligations
-- reopen Sothic, Longevity, or Western electional doctrine
+- reopen Sothic, Longevity, or generic Western electional search/scoring
 - turn operational kernel mutation into HTTP compute
 - replace family-specific route designs with a generic catch-all route
 
@@ -310,7 +311,8 @@ Orbital Elements, `P-GAP-04` Generic Phenomena And Solar Conditions,
 `P-GAP-05` Sidereal/Nakshatra Utility Primitives, `P-GAP-06` Harmograms,
 `P-GAP-F1A` Vedic facade convenience, `P-GAP-F1B` Classical/modern facade
 convenience, `P-GAP-F1C` Annual-lord specialist facade convenience, and
-`P-GAP-F1D` Utility parity cleanup are admitted.
+`P-GAP-F1D` Utility parity cleanup are admitted. P13-U1 separately admits the
+Ramesey v1 bounded single-moment root/facade/REST surface.
 
 There is no remaining automatic implementation candidate from P-GAP-F1.
 The review is complete in

@@ -580,4 +580,6 @@ After this design is accepted, P13-03 may proceed to implementation with:
 - `POST /v1/electional/scored`
 
 Implementation must remain transport-only around `moira.electional` and must
-not admit arbitrary scorers, Western electional doctrine, or advice language.
+not admit arbitrary scorers, score any Western profile, or provide advice
+language. The separately admitted Ramesey v1 single-moment route remains
+outside this scorer transport.

@@ -80,6 +80,7 @@ from .routers import (
     vedic_dignities_router,
     vedic_profile_router,
     visibility_router,
+    western_electional_router,
     western_profile_router,
 )
 
@@ -186,6 +187,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(lord_of_the_orb_router)  # Phase-12 caller-seeded Lord of the Orb surface
     app.include_router(lord_of_the_turn_router)  # Phase-12 caller-supplied Lord of the Turn surface
     app.include_router(electional_router)  # Phase-13 bounded electional scan-witness surface
+    app.include_router(western_electional_router)  # Ramesey bounded moment-evaluation profile
     app.include_router(pipeline_router)    # Reduction pipeline breakdown for planet positions
     install_openapi_discovery(app)
     return app

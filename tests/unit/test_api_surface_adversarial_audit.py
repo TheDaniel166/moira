@@ -543,6 +543,18 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     'surya_yogas',
     'tara_bala',
     'validate_astrodynes_output',
+    'RAMESEY_MOON_CONDITION_V1',
+    'RameseyClauseWitness',
+    'RameseyMeasurement',
+    'RameseyMoonConditionEvaluation',
+    'RameseyMoonConditionPolicy',
+    'RameseyMoonConditionStatus',
+    'RameseyRemedyApplicability',
+    'RameseyRemedyWitness',
+    'RameseyRuleState',
+    'RameseyRuleWitness',
+    'evaluate_ramesey_moon_condition',
+    'ramesey_moon_condition_at',
 })
 
 _EXPECTED_ROOT_ONLY_NAMES = {
@@ -918,6 +930,7 @@ _EXPECTED_MOIRA_METHODS.update({
     'progressed_astrodyne_total_influence',
     'progressed_astrodynes_chart',
     'progressed_astrodynes_geometry',
+    'ramesey_moon_condition_at',
     'search_progressed_astrodyne_contacts',
     'shadbala',
     'shadbala_condition',

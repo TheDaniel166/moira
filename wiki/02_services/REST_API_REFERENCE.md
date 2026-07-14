@@ -114,8 +114,9 @@ Not yet broadly exposed as REST families:
   validation, and public-language safeguards; `/v1/special/*` also remains
   unexposed
 - remaining phase 13 electional/search workflow surfaces: arbitrary predicate
-  routes, arbitrary scorer routes, Western electional doctrine, and
-  advice/recommendation language
+  routes, arbitrary scorer routes, generic Western profile search/scoring,
+  additional lineage profiles, and advice/recommendation language. The bounded
+  Ramesey v1 single-moment evaluation is admitted separately.
 - generic Phase 11 catalog umbrella routes: `/v1/catalogs/*` remain
   intentionally absent; P11-U1 permits only a future discovery-only registry
   design, not cross-family search, member lookup, computation, or catalog
@@ -143,7 +144,7 @@ Not yet broadly exposed as REST families:
 | dignities | 6 |
 | draconic | 3 |
 | egyptian-bounds | 7 |
-| electional | 5 |
+| electional | 6 |
 | eclipses | 5 |
 | galactic | 6 |
 | galactic-houses | 3 |
@@ -464,8 +465,9 @@ scale, and score direction.
 
 This admission does not expose Muhurta search windows, activity-specific
 guidance, Abhijit/Brahma Muhurta routes, Tara Bala inputs, recommendation
-language, Western electional doctrine, arbitrary predicates, arbitrary scorers,
-or async search jobs.
+language, Western electional search/scoring, arbitrary predicates, arbitrary
+scorers, or async search jobs. The separate Ramesey v1 single-moment route is
+not a Muhurta product or a search route.
 
 ## Shadbala Routes
 
@@ -940,6 +942,7 @@ direction.
 | POST | `/v1/electional/windows` | `electional_windows_route` |
 | POST | `/v1/electional/moments` | `electional_moments_route` |
 | POST | `/v1/electional/scored` | `electional_scored_route` |
+| POST | `/v1/electional/western/ramesey-moon-condition` | `ramesey_moon_condition_route` |
 | GET | `/v1/locations/search` | `location_search_route` |
 | POST | `/v1/locations/timezone/validate` | `timezone_validate_route` |
 | GET | `/v1/website/chart-wheel/presets` | `chart_wheel_presets_route` |
@@ -1563,10 +1566,13 @@ Lot of Fortune calculation, annual hierarchy orchestration, combined annual
 timing dashboards, interpretive narrative text, or generic `/v1/special/*`
 computation.
 
-### Electional Search REST Admission Boundary
+### Electional REST Admission Boundary
 
-The admitted Phase 13 electional REST surface is the bounded Stage 1
-`/v1/electional/*` subset:
+The admitted Phase 13 electional REST surface has two deliberately separate
+products: the bounded generic search subset and one source-owned Western
+single-moment profile.
+
+The bounded generic search subset is:
 
 - `GET /v1/electional/predicate-profiles`
 - `GET /v1/electional/scorer-profiles`
@@ -1605,7 +1611,7 @@ the returned window. Provenance states that these are discrete sampled chart
 states; these routes do not claim continuous truth, exact event-boundary
 solving, or exact score-peak solving.
 
-The REST bounds are intentionally narrow: maximum 31-day search span,
+The generic-search REST bounds are intentionally narrow: maximum 31-day search span,
 15-minute minimum cadence, maximum 1000 computed scan points, maximum 64
 returned windows, maximum 1000 returned raw moments, maximum 12 requested
 bodies, and at most 8 optional boundary refinement steps for the window route.
@@ -1616,8 +1622,29 @@ the window grouping helper.
 For scored windows, `max_windows` remains chronological early exit; score
 ranks are over the returned windows only and are not a global optimum claim.
 
-This admission does not expose arbitrary executable predicates, arbitrary
-executable scorers, server-defined Western electional judgement,
+The separately admitted Western moment route is:
+
+- `POST /v1/electional/western/ramesey-moon-condition`
+
+It accepts exactly one finite `jd_ut`, latitude, longitude, an explicit known
+house-system code, the fixed `ramesey_moon_condition_v1` profile id, and an
+optional strict boolean `unavoidable_time_urgency` context. It delegates through
+`Moira.ramesey_moon_condition_at(...)` and returns the complete source-ordered
+ten-rule evaluation: clause and measurement witnesses, triggered and
+not-evaluable rule identities, the separate non-erasing remedy witness,
+requested/effective house-system truth, fallback status, reader provenance, and
+the profile's non-complete-judgement language.
+
+Its transport provenance fixes the semantics as
+`single_moment_bounded_profile_evaluation`, names the engine and facade entry
+points, and reports `scoring: not_provided`,
+`generic_search_integration: not_admitted`,
+`recommendation_language: not_provided`, and
+`remedy_fulfillment_assessment: not_computed`. The route is not a generic
+predicate adapter and does not rank or recommend a time.
+
+These admissions do not expose arbitrary executable predicates or scorers,
+generic Western profile scanning or scoring, additional lineage profiles,
 auspicious/inauspicious labels, recommendation text, unbounded scans, async
 search jobs, or electional advice language.
 

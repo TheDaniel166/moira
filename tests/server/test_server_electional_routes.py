@@ -690,4 +690,5 @@ def test_electional_routes_are_registered(client: TestClient) -> None:
         "/v1/electional/moments",
         "/v1/electional/scored",
         "/v1/electional/windows",
+        "/v1/electional/western/ramesey-moon-condition",
     }

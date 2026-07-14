@@ -59,6 +59,12 @@ _PUBLIC_DOCTRINE_SURFACES = {
     "moira.rise_set": ["RiseSetPolicy"],
     "moira.egyptian_bounds": ["EgyptianBoundsDoctrine", "EgyptianBoundsPolicy"],
     "moira.electional": ["ElectionalPolicy"],
+    "moira.western_electional": [
+        "RameseyRuleState",
+        "RameseyMoonConditionStatus",
+        "RameseyRemedyApplicability",
+        "RameseyMoonConditionPolicy",
+    ],
     "moira.patterns": [
         "PatternSelectionPolicy",
         "StelliumPolicy",
@@ -92,9 +98,9 @@ _PUBLIC_DOCTRINE_SURFACES = {
 }
 
 _MODULES_WITHOUT_ALL = {"moira.julian"}
-_PUBLIC_DOCTRINE_SURFACE_COUNT = 55
-_PUBLIC_DOCTRINE_DATACLASS_COUNT = 50
-_PUBLIC_DOCTRINE_ENUM_COUNT = 5
+_PUBLIC_DOCTRINE_SURFACE_COUNT = 59
+_PUBLIC_DOCTRINE_DATACLASS_COUNT = 51
+_PUBLIC_DOCTRINE_ENUM_COUNT = 8
 
 
 def _iter_surface_records() -> list[tuple[str, str]]:

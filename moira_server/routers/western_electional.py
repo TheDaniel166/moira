@@ -1,0 +1,38 @@
+"""REST route for the admitted bounded Western electional profile."""
+
+from __future__ import annotations
+
+from typing import Annotated
+
+from fastapi import APIRouter, Depends
+
+from moira import Moira
+
+from ..dependencies import get_engine
+from ..models.western_electional import (
+    RameseyMoonConditionRequest,
+    RameseyMoonConditionResponse,
+)
+from ..serializers.western_electional import serialize_ramesey_moon_condition
+from ..services.western_electional import compute_ramesey_moon_condition
+
+
+router = APIRouter(prefix="/v1/electional/western", tags=["electional"])
+
+
+@router.post(
+    "/ramesey-moon-condition",
+    response_model=RameseyMoonConditionResponse,
+)
+def ramesey_moon_condition_route(
+    request: RameseyMoonConditionRequest,
+    engine: Annotated[Moira, Depends(get_engine)],
+) -> RameseyMoonConditionResponse:
+    """Evaluate Ramesey v1 at one instant without scoring or recommendation."""
+
+    return serialize_ramesey_moon_condition(
+        compute_ramesey_moon_condition(engine, request)
+    )
+
+
+__all__ = ["router"]

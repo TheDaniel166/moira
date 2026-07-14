@@ -1,9 +1,9 @@
 # P13-U1 Western Electional Doctrine Packet
 
-Version: 0.1
+Version: 0.4
 Date: 2026-07-14
-Status: doctrine_packet_draft; first profile defined; runtime admission blocked
-Scope: Western electional doctrine above the admitted bounded search transport
+Status: first-profile public moment evaluation admitted; generic search/scoring deferred
+Scope: bounded Western electional doctrine beside the generic search transport
 
 ## 1. Doctrine Decision
 
@@ -25,9 +25,13 @@ Moon in *Astrologia Restaurata*, Book III, Chapter II, printed p. 127. It is
 not a complete election, a recommendation, an auspiciousness score, or a
 substitute for matter-specific judgement.
 
-No runtime or REST admission is authorized by this packet. The unresolved
-policies in section 8 must be closed and the validation gates in section 13
-must pass first.
+The profile is admitted through `moira.western_electional`, the curated package
+root, `moira.facade`, `Moira.ramesey_moon_condition_at(...)`, and the bounded
+single-moment route
+`POST /v1/electional/western/ramesey-moon-condition`. It has no generic
+search-predicate, scoring, website, advice, or recommendation surface. Section
+8 records the policies bound from Ramesey's text. Section 13 records the engine
+evidence and public-moment admission decision.
 
 ## 2. Authority and Page Confirmation
 
@@ -36,13 +40,14 @@ must pass first.
 Primary authority for `ramesey_moon_condition_v1`:
 
 - William Ramesey, *Astrologia Restaurata; or, Astrologie Restored* (London,
-  1654), Book III, Chapter II, printed pp. 126-127.
+  1654), Book III, Chapter II, printed pp. 126-128.
 - Original facsimile witness: [Internet Archive item
   `b30323149_0001`](https://archive.org/download/b30323149_0001/b30323149_0001.pdf),
-  PDF pages 184-185 in the downloaded scan.
+  PDF pages 184-186 in the downloaded scan.
 - Printed p. 126 supplies the chapter title and context.
-- Printed p. 127 supplies the complete ten-item Moon-impediment list and the
-  immediate remedy language.
+- Printed p. 127 supplies the complete ten-item Moon-impediment list and begins
+  the contingency instruction; printed p. 128 completes the urgent-time
+  arrangement.
 - [Christopher Warnock's
   transcription](https://www.renaissanceastrology.com/electionalrameseymoon.html)
   is a readable secondary witness, not the governing facsimile.
@@ -183,16 +188,16 @@ logical summary described in section 3.2.
 
 | # | Stable rule id | Ramesey rule | Required computation | Admission state |
 |---|---|---|---|---|
-| 1 | `moon_combust_sun_12deg` | Moon within 12° of the Sun, applying or separating; applying is more afflicted | shortest geocentric ecliptic Sun-Moon separation; applying/separating state; inclusive 12° boundary | Defined |
-| 2 | `moon_in_third_degree_scorpio` | Moon in the degree of her fall, the third degree of Scorpio | zodiac sign and an explicit ordinal-degree interval policy | Policy unresolved |
-| 3 | `moon_opposition_sun` | Moon in opposition to the Sun | opposition detection under a named aspect/orb policy | Orb policy unresolved |
-| 4 | `moon_joined_or_hard_aspect_malefic` | Moon joined with an infortune, or in quartile or opposition to one | Moon conjunction, square, or opposition with Saturn or Mars under a named orb policy | Orb policy unresolved |
-| 5 | `moon_near_lunar_node_12deg` | Moon within 12° of the Head or Tail of the Dragon | lunar-node longitude model and shortest longitudinal separation; inclusive 12° boundary | Node model unresolved |
-| 6 | `moon_latter_degrees_with_infortune` | Moon in the latter degrees of a sign wherein there is an infortune | latter-degree boundary; same-sign malefic presence; malefic identity | Boundary unresolved |
-| 7 | `moon_cadent_or_via_combusta` | Moon cadent from angles **or** in the last 15° of Libra / first 15° of Scorpio | house/angle policy plus tropical longitude interval; preserve the source OR | House policy unresolved; zodiac interval defined |
-| 8 | `moon_detriment_or_not_beholding_cancer` | Moon in Capricorn, or quartile to her own house, or not beholding it by sextile or trine | tropical sign; explicit sign/degree aspect scope for Cancer; preserve the source OR | Aspect scope unresolved |
-| 9 | `moon_slow_below_ramesey_mean` | Moon moves less than 13°10′36″ in 24 hours | declared geocentric ecliptic speed product; strict less-than threshold | Numeric threshold defined; speed product must be bound |
-| 10 | `moon_void_ramesey_sign_bound` | Moon in a sign and beholds no planet until entering another sign | forward aspect search, planet/aspect set, sign boundary, and explicit meaning of “beholds” | Perfection doctrine unresolved |
+| 1 | `moon_combust_sun_12deg` | Moon within 12° of the Sun, applying or separating; applying is more afflicted | shortest geocentric ecliptic Sun-Moon separation; applying/separating state; inclusive 12° boundary | Admitted |
+| 2 | `moon_in_third_degree_scorpio` | Moon in the degree of her fall, the third degree of Scorpio | ordinal half-open interval `[2°, 3°)` in Scorpio | Admitted |
+| 3 | `moon_opposition_sun` | Moon in opposition to the Sun | Ramesey combined moieties: Moon 6° + Sun 7.5° = 13.5° | Admitted |
+| 4 | `moon_joined_or_hard_aspect_malefic` | Moon joined with an infortune, or in quartile or opposition to one | conjunction, square, or opposition to Saturn/Mars under Ramesey combined moieties | Admitted |
+| 5 | `moon_near_lunar_node_12deg` | Moon within 12° of the Head or Tail of the Dragon | true ascending ecliptic-crossing node and its opposition; inclusive 12° | Admitted |
+| 6 | `moon_latter_degrees_with_infortune` | Moon in the latter degrees of a sign wherein there is an infortune | Ramesey's terminal malefic term from Book II pp. 71-72; Leo excepted | Admitted |
+| 7 | `moon_cadent_or_via_combusta` | Moon cadent from angles **or** in the last 15° of Libra / first 15° of Scorpio | caller-declared effective quadrant houses; houses 3/6/9/12; tropical `[195°, 225°)`; preserve OR | Admitted |
+| 8 | `moon_detriment_or_not_beholding_cancer` | Moon in Capricorn, or quartile to her own house, or not beholding it by sextile or trine | whole-sign Cancer relationship; bodily, sextile, and trine are favorable beholding | Admitted |
+| 9 | `moon_slow_below_ramesey_mean` | Moon moves less than 13°10′36″ in 24 hours | `PlanetData.speed`: astrometric geocentric instantaneous longitude rate; strict less-than | Admitted |
+| 10 | `moon_void_ramesey_sign_bound` | Moon in a sign and beholds no planet until entering another sign | exact Ptolemaic perfection to a traditional planet before sign ingress | Admitted through existing VOC substrate |
 
 ### 7.3 Numeric boundary doctrine already established
 
@@ -203,8 +208,7 @@ The first profile binds only what the primary page states plainly:
 - Rule 5 likewise uses an inclusive 12° boundary once the node model is
   selected.
 - Rule 7's via-combusta interval is the final 15° of Libra through the first
-  15° of Scorpio. A future implementation must declare endpoint convention;
-  the recommended half-open encoding is `[Libra 15°, Scorpio 15°)`.
+  15° of Scorpio, encoded as `[Libra 15°, Scorpio 15°)`.
 - Rule 9 triggers only below 13°10′36″ per 24 hours, numerically
   `13.1766666667°/day`; equality is clear because the source says “less then.”
 
@@ -221,38 +225,74 @@ dossier through a Ramesey/Robson synthesis, not Ramesey's printed item.
 
 ### 7.5 Immediate remedy witness
 
-Ramesey follows the list with mitigation/remedy instructions. These are not
-part of the ten-rule clear/triggered total and must remain separate witnesses.
-At minimum, future research must model his instruction for an unavoidable
-impeded Moon separately from the profile's gate results. The profile must not
-silently flip a triggered rule to clear because a remedy is present.
+Ramesey follows the list with a contingency arrangement and continues it onto
+printed p. 128 for a business so urgent that its time cannot be deferred. The
+profile now preserves one separate `RameseyRemedyWitness`. Its applicability
+derives only from confirmed impediments and the caller's explicit
+`unavoidable_time_urgency` context.
 
-## 8. Unresolved Policies Blocking Runtime Admission
+The witness preserves three instructions: keep the impeded Moon cadent and
+without bodily or aspectual relation to the Ascendant; place a fortune in the
+Ascendant or in good aspect with it; and fortify the Ascendant cusp, its lord,
+and the lord of the hour. It is an instruction witness, not a fulfillment
+assessment. The current profile does not invent the missing angle-aspect,
+benefic-placement, ruler, hour-lord, or fortification policies. Those
+uncomputed requirements remain visible in the result.
 
-The following decisions require direct source derivation or an explicitly
-named Moira policy before `ramesey_moon_condition_v1` can be implemented:
+The remedy has no numeric weight, never changes a rule state, and never flips a
+triggered profile to clear. If the urgent-time context is absent, applicability
+is `indeterminate`; if explicitly false, the instruction is `not_applicable`.
 
-1. **Third-degree convention**: whether “third degree of Scorpio” is encoded
-   as the ordinal interval `[2°, 3°)` or as another historical convention.
-2. **Ramesey aspect orbs**: the admissible orb and application doctrine for
-   opposition, conjunction, square, and the house-beholding clauses.
-3. **Node model**: mean node, true node, or another historically justified
-   dragon-head/tail product; the public result must name it.
-4. **Latter degrees**: the exact boundary and the meaning of “wherein there is
-   an infortune” in Rule 6.
-5. **Cadency policy**: house system, angle ownership, and whether cadency is
-   whole-house, quadrant, or another source-owned concept.
-6. **Beholding Cancer**: whole-sign versus degree/orb aspect scope for Rule 8.
-7. **Speed product**: the exact frame, correction regime, sampling/derivative
-   method, and sign convention used for lunar daily motion.
-8. **Ramesey void**: whether “beholds not any Planet” means no exact perfection,
-   no in-orb application, or another sign-bounded condition; also define the
-   planet and aspect sets.
-9. **Endpoint policy**: confirm the via-combusta boundary behavior at exactly
-   15° Libra and 15° Scorpio.
+## 8. Bound Policies for Runtime Admission
 
-Until these are bound, affected rules return `not_evaluable`; no ambient
-library default may fill the gap.
+The nine former blockers are closed as follows. These are profile doctrine,
+not universal Western defaults:
+
+1. **Third-degree convention**: ordinal degrees use zero-based half-open
+   computational intervals; the third degree of Scorpio is `[2°, 3°)`.
+2. **Ramesey aspect orbs**: Book II's planetary chapters give full orbs of
+   Saturn 9°, Jupiter 9°, Mars 7°, Sun 15°, Venus 7°, Mercury 7°, and Moon
+   12°. Book II's aspect chapter combines their half-orbs. Thus Sun opposition
+   uses 13.5°, Moon-Saturn hard aspects 10.5°, and Moon-Mars 9.5°.
+3. **Node model**: Book II p. 76 defines the Head and Tail as the places where
+   the Moon cuts the ecliptic. That ontology does not uniquely identify a
+   historical numerical node algorithm; the profile makes the explicit Moira
+   geometric choice of the true ascending node and the point 180° opposite it,
+   not the mean node.
+4. **Latter degrees**: Book II pp. 71-72 defines terms/bounds, prints the term
+   widths, and assigns the last term to an infortune in every sign except Leo,
+   where Jupiter is last. The implementation carries a profile-local terminal
+   segment table rather than reusing Moira's currently mislabeled
+   `PTOLEMAIC_BOUNDS` constant.
+5. **Cadency policy**: Book II's house doctrine divides the local figure by
+   horizon and meridian and then into houses. The profile requires a
+   caller-declared quadrant house system and evaluates cadency as houses
+   3/6/9/12. Requested, effective, and fallback system truth remain visible.
+   A non-quadrant or missing figure makes the cadency clause `not_evaluable`;
+   it does not silently choose a different system.
+6. **Beholding Cancer**: “her own house” is Cancer and the source names sign
+   relationships. The profile uses whole-sign bodily, sextile, and trine
+   beholding; Capricorn, whole-sign squares, and signs lacking those favorable
+   relationships preserve separate clauses.
+7. **Speed product**: the chart longitude is Moira's apparent geocentric
+   ecliptic product, while `PlanetData.speed` is explicitly the astrometric
+   geocentric instantaneous longitude rate in degrees/day. The profile names
+   both rather than collapsing their correction regimes. A prebuilt chart must
+   explicitly attest this combined product; topocentric inputs are rejected.
+8. **Ramesey void**: Book II p. 111 defines void as separation followed by no
+   application during the planet's continuation in the sign, while the same
+   chapter also discusses application and separation through planetary rays
+   and combined moieties. The text therefore does not force one modern search
+   algorithm. This profile explicitly selects the existing traditional-planet,
+   Ptolemaic-aspect, exact-perfection, sign-bounded forward search. It does not
+   silently claim that choice for Lilly or other lineages. A snapshot without
+   that product is `not_evaluable`, never clear.
+9. **Endpoint policy**: Rule 7 is `[195°, 225°)` in tropical longitude: exact
+   15° Libra is included and exact 15° Scorpio is excluded.
+
+The governing pages were rendered and visually checked against the original
+facsimile on 2026-07-14. OCR and modern transcriptions were navigation aids,
+not the final authority.
 
 ## 9. Named Lineage Variants
 
@@ -275,14 +315,14 @@ These variants are separate profile parameters, not choices to average:
 
 ## 10. Separation from Search Transport
 
-A future doctrine implementation may supply a server-owned predicate adapter
-to the admitted bounded search engine only after the profile itself is
-admitted. The layers remain:
+The admitted doctrine implementation supplies a single-moment facade and REST
+adapter. It may supply a separate predicate adapter to the bounded search
+engine only after a later search-admission decision. The layers remain:
 
 1. astronomical and chart substrate
 2. doctrine profile evaluation
 3. bounded scan and window assembly
-4. optional REST serialization
+4. bounded single-moment facade and REST serialization
 
 Search transport must not own:
 
@@ -299,27 +339,31 @@ truth limitations.
 
 ## 11. Required Provenance
 
-Every future profile evaluation must expose:
+Every admitted profile evaluation exposes:
 
 - profile id, version, status, and lineage
 - authority citation down to book/chapter/page or section/page
 - chart time, location, zodiac frame, and house policy where used
-- ephemeris reader and correction regime
+- ephemeris reader provenance and correction regime
 - node model
 - aspect, orb, application, and VOC policies
 - speed semantics
 - one visible witness per source rule
-- any mitigation/remedy witnesses
+- the separate remedy applicability, triggering rule identities, source
+  instructions, and uncomputed fulfillment requirements
 - `complete_electional_judgement: false` for this profile
 - `advice_language: not_provided`
 - `recommendation_language: not_provided`
+- transport provenance naming the engine entry point, facade entry point,
+  single-moment semantics, lack of scoring, lack of generic-search integration,
+  and deliberately uncomputed remedy fulfillment
 
 ## 12. Failure and Indeterminacy Policy
 
 - Non-finite or missing astronomical inputs fail evaluation; they do not clear
   a rule.
-- A required but unbound doctrine policy yields `not_evaluable` for that rule
-  and `indeterminate` overall.
+- A missing required input yields `not_evaluable` for that rule and
+  `indeterminate` overall.
 - Unsupported election class or matter scope is rejected before evaluation.
 - Unknown profile ids or versions are rejected.
 - A profile version is immutable after public admission; changed doctrine
@@ -329,35 +373,87 @@ Every future profile evaluation must expose:
 
 ## 13. Validation and Admission Gates
 
-Runtime admission requires all of the following:
+Engine-module admission completed:
 
-1. Close every policy in section 8 with a cited derivation.
-2. Add source-backed boundary fixtures for all numeric rules, including exact
-   threshold, just-inside, and just-outside cases.
-3. Add compound-rule truth tables for Rules 7 and 8.
-4. Validate the speed and forward-aspect substrate independently of the
-   doctrine evaluator.
-5. Add real-ephemeris integration cases with fixed kernel provenance.
-6. Add property tests for finite outputs, deterministic policy binding, sign
-   boundaries, and rule-order independence.
-7. Add facade tests only if the profile is admitted to the public engine.
-8. Add REST tests only after a separate transport admission decision.
-9. Audit the implementation against Moira's five sovereignty axes; numerical
-   parity with another astrology engine is corroboration only.
-10. Update public standards and validation documentation with the exact
-    authority, corpus, interval, semantics, and limitations actually tested.
+1. All nine policies in section 8 are bound from named Ramesey passages or an
+   explicit Moira computational product.
+2. Focused unit fixtures cover exact, inside, and outside boundaries for the
+   12° distances, ordinal degree, aspect moieties, terminal terms, via
+   combusta, and speed threshold.
+3. Compound Rule 7 and Rule 8 clauses remain individually visible and their
+   three-valued OR behavior is tested.
+4. Missing VOC or incompatible house inputs become `not_evaluable`; geometric
+   product substitution and topocentric input are rejected rather than hidden.
+5. Module-level public names are sealed and their package-root and facade
+   identities are governed by exact public-surface snapshots.
+6. A J2000 London integration regression opens the discovered `de441.bsp`
+   explicitly, records its file provenance, uses Regiomontanus without
+   fallback, and asserts the complete triggered-rule identity tuple.
+7. The same DE441 case compares Rule 9's `PlanetData.speed` against an
+   independently sampled central finite difference of geometric lunar
+   longitude (`dt=1e-4` day, absolute tolerance `1e-4°/day`). This is a
+   numerical invariant check, not an external-authority comparison.
+8. Four DE441 probes straddling the final Mars-square perfection and the next
+   lunar sign ingress compare Rule 10 with an independent 15-minute forward
+   geometry scan and 50-iteration bisection path. Both void and non-void states
+   agree; the root and ingress tolerance is `2e-5` day (about 1.7 seconds).
+9. Generative tests sweep finite lunar longitudes and speeds across the full
+   zodiac, assert deterministic results, finite measurements, unique ordered
+   rule identity, remedy/gate identity agreement, and normalized-longitude
+   invariance. Explicit fixtures exercise both sides of all twelve sign
+   boundaries.
+10. The p. 127-128 contingency is a separate typed witness. Tests prove that
+    true, false, missing, and indeterminate context never erases a gate or
+    changes the ten-rule status.
+11. Facade delegation preserves the `Moira` reader and explicit house policy;
+    REST contract tests prove strict request validation and full serialization
+    of all ten rules, clauses, measurements, remedy context, reader/house
+    provenance, and the non-score/non-recommendation boundary.
+
+### 13.1 Wider-surface admission decision
+
+Decision on 2026-07-14: admit the profile's named public types and evaluator at
+the package root and facade, add `Moira.ramesey_moon_condition_at(...)`, and
+admit the bounded single-moment REST route
+`POST /v1/electional/western/ramesey-moon-condition`.
+
+Generic search, scoring, website, advice, and recommendation-language admission
+remain deferred. The generic scanner does not yet carry variant-aware
+forward-aspect provenance, urgent-time context, or the distinction between
+remedy applicability and fulfillment. Repeated forward VOC searches also need
+an explicit caching/performance contract before a broad scan is admitted. The
+REST route therefore accepts one `jd_ut`, requires an explicit house-system
+code, preserves the optional urgency context, returns the complete typed
+evaluation, and reports `generic_search_integration: not_admitted`, scoring and
+recommendation language as not provided, and remedy fulfillment as not
+computed. This admission does not authorize generic scored-window language.
+
+### 13.2 Five-axis sovereignty audit
+
+Audit performed against the implementation and tests on 2026-07-14:
+
+| Axis | Result | Evidence |
+|---|---|---|
+| Ontology ownership | Pass | The object is explicitly a bounded ten-gate Moon-condition profile, not a score, complete election, or recommendation. |
+| Derivation ownership | Pass | Rule identity and thresholds derive from Ramesey's facsimile; Moira choices for true node, house system input, correction products, endpoints, and exact-perfection VOC are labeled as choices rather than attributed falsely to the source. |
+| Structural ownership | Pass | Assembly uses named immutable rule/clause/measurement witnesses and a separate remedy vessel; source order is citation metadata, not a legacy positional result array. |
+| Policy ownership | Pass | `RameseyMoonConditionPolicy` is frozen and rejects caller substitution; missing inputs remain `not_evaluable`; remedy applicability derives from visible gate and urgency context while unowned fulfillment policies remain uncomputed. |
+| Validation ownership | Pass for public moment admission | Primary-page boundary fixtures, full-zodiac properties, Moira-owned invariants, an independent DE441 forward-geometry covenant, exact public-surface snapshots, facade delegation tests, and strict REST contract tests carry the proof. Kernel regression is not presented as historical or empirical validation of astrology. |
+
+Provenance honesty also passes: no Swiss or other external astrology engine is
+used as implementation authority or numerical proof. The known VOC
+interpretive choice and the remedy's deliberately uncomputed fulfillment
+requirements remain visible rather than being concealed.
 
 No weighted score can be admitted from these ten rules without a separate
 source-backed scoring doctrine. Boolean counting is not a neutral default.
 
 ## 14. Non-Goals
 
-This packet does not:
+This packet and admitted public-moment batch do not:
 
-- implement `ramesey_moon_condition_v1`
-- admit a facade method or REST route
+- admit generic Western profile scanning, scoring, ranking, or advice
 - define a complete election for any matter
-- bind unresolved orbs, node models, house systems, or VOC semantics
 - merge Ramesey with Robson, Sahl, Dorotheus, Lilly, or Bonatti
 - create a historical-outcome dataset
 - claim empirical validation of electional astrology
@@ -365,9 +461,12 @@ This packet does not:
 
 ## 15. Ledger Decision
 
-P13-U1 remains `defer_for_doctrine` for runtime and website admission.
+P13-U1 is `ramesey_v1_public_moment_admitted; generic_search_scoring_and_recommendation_deferred`.
 
-The missing doctrine artifact now exists, but its first profile is explicitly
-pre-admission. The next lawful step is to resolve the nine policy questions in
-section 8 from the held sources, then implement and validate the profile in the
-engine before considering facade or REST exposure.
+`ramesey_moon_condition_v1` now exists as an engine-owned, non-scored condition
+profile with a separate non-erasing contingency witness. Its named types and
+evaluator are public at the package root and facade, `Moira` owns the reader-
+backed convenience method, and the REST route exposes exactly one moment with
+explicit transport provenance. Any generic search, scoring, website, advice,
+recommendation, or additional lineage-profile surface requires a new doctrine,
+transport, and public-semantics admission task; none is implied here.

@@ -69,6 +69,7 @@ from .primary_directions import router as primary_directions_router
 from .varshaphal import router as varshaphal_router
 from .visibility import router as visibility_router
 from .western_profile import router as western_profile_router
+from .western_electional import router as western_electional_router
 
 __all__ = [
     "ashtakavarga_router",
@@ -139,4 +140,5 @@ __all__ = [
     "varshaphal_router",
     "visibility_router",
     "western_profile_router",
+    "western_electional_router",
 ]

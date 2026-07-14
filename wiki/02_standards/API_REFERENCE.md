@@ -489,6 +489,7 @@ message.
 | `retrograde_periods(body, jd_start, jd_end)` | `list[tuple[float, float]]` | List of `(jd_start, jd_end)` retrograde intervals |
 | `moon_void_of_course(dt, ...)` / `is_moon_void_of_course(dt, ...)` | — | See [Void of Course Moon](#void-of-course-moon) subsection below |
 | `electional_windows(dt_start, dt_end, ...)` | — | See [Electional search](#electional-search) subsection below |
+| `ramesey_moon_condition_at(jd_ut, latitude, longitude, *, house_system, ...)` | `RameseyMoonConditionEvaluation` | One bounded Ramesey v1 Moon-condition evaluation; no search, score, or recommendation |
 
 ### Progressions & directions
 
@@ -641,6 +642,40 @@ from moira.facade import find_electional_windows, find_electional_moments
 |---|---|---|
 | `find_electional_windows(jd_start, jd_end, latitude, longitude, predicate, policy=None, reader=None)` | `list[ElectionalWindow]` | Window search directly on Julian dates |
 | `find_electional_moments(jd_start, jd_end, latitude, longitude, predicate, policy=None, reader=None)` | `list[float]` | Exact candidate JDs for matching electional moments |
+
+### Western electional moment evaluation
+
+The first admitted source-owned Western profile is separate from generic
+electional search:
+
+```python
+from moira import (
+    RAMESEY_MOON_CONDITION_V1,
+    RameseyMoonConditionEvaluation,
+    ramesey_moon_condition_at,
+)
+
+evaluation = engine.ramesey_moon_condition_at(
+    jd_ut,
+    latitude,
+    longitude,
+    house_system="R",
+    unavoidable_time_urgency=None,
+)
+```
+
+| Surface | Returns | Description |
+|---|---|---|
+| `Moira.ramesey_moon_condition_at(jd_ut, latitude, longitude, *, house_system, unavoidable_time_urgency=None, house_policy=None, policy=None)` | `RameseyMoonConditionEvaluation` | Reader-backed single-moment facade entry point; defaults to the immutable Ramesey v1 policy |
+| `ramesey_moon_condition_at(jd_ut, latitude, longitude, *, house_system, unavoidable_time_urgency=None, reader=None, house_policy=None, policy=RAMESEY_MOON_CONDITION_V1)` | `RameseyMoonConditionEvaluation` | Low-level JD evaluator with explicit reader support |
+| `evaluate_ramesey_moon_condition(chart, *, ...)` | `RameseyMoonConditionEvaluation` | Evaluate the named profile from an explicitly compatible chart product |
+
+The package root and `moira.facade` export the profile constant, evaluator
+functions, policy/evaluation vessels, rule/clause/measurement/remedy witnesses,
+and three status enums. Results retain all ten source-ordered rules and the
+separate remedy-applicability witness. They deliberately report
+`complete_electional_judgement=False`, with no score, advice, recommendation,
+generic search integration, or remedy-fulfillment assessment.
 
 ### Julian Day utilities
 

@@ -577,6 +577,20 @@ from .batch import (
     BodyVoidWindows,
     void_periods_all_planets,
 )
+from .western_electional import (
+    RameseyRuleState,
+    RameseyMoonConditionStatus,
+    RameseyRemedyApplicability,
+    RameseyMeasurement,
+    RameseyClauseWitness,
+    RameseyRuleWitness,
+    RameseyRemedyWitness,
+    RameseyMoonConditionPolicy,
+    RameseyMoonConditionEvaluation,
+    RAMESEY_MOON_CONDITION_V1,
+    evaluate_ramesey_moon_condition,
+    ramesey_moon_condition_at,
+)
 
 __all__ = [
     "__version__",
@@ -1088,4 +1102,17 @@ __all__ = [
     "find_all_ingresses",
     "BodyVoidWindows",
     "void_periods_all_planets",
+    # Western electional doctrine
+    "RameseyRuleState",
+    "RameseyMoonConditionStatus",
+    "RameseyRemedyApplicability",
+    "RameseyMeasurement",
+    "RameseyClauseWitness",
+    "RameseyRuleWitness",
+    "RameseyRemedyWitness",
+    "RameseyMoonConditionPolicy",
+    "RameseyMoonConditionEvaluation",
+    "RAMESEY_MOON_CONDITION_V1",
+    "evaluate_ramesey_moon_condition",
+    "ramesey_moon_condition_at",
 ]

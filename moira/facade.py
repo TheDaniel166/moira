@@ -872,6 +872,20 @@ from .electional import (
     ElectionalPolicy, ElectionalWindow,
     find_electional_windows, find_electional_moments,
 )
+from .western_electional import (
+    RameseyRuleState,
+    RameseyMoonConditionStatus,
+    RameseyRemedyApplicability,
+    RameseyMeasurement,
+    RameseyClauseWitness,
+    RameseyRuleWitness,
+    RameseyRemedyWitness,
+    RameseyMoonConditionPolicy,
+    RameseyMoonConditionEvaluation,
+    RAMESEY_MOON_CONDITION_V1,
+    evaluate_ramesey_moon_condition,
+    ramesey_moon_condition_at,
+)
 from .muhurta import (
     MuhurtaPolicy,
     MuhurtaClassification,
@@ -1775,6 +1789,13 @@ __all__ = [
     # Electional search
     "ElectionalPolicy", "ElectionalWindow",
     "find_electional_windows", "find_electional_moments",
+    # Western electional doctrine
+    "RameseyRuleState", "RameseyMoonConditionStatus",
+    "RameseyRemedyApplicability", "RameseyMeasurement",
+    "RameseyClauseWitness", "RameseyRuleWitness", "RameseyRemedyWitness",
+    "RameseyMoonConditionPolicy", "RameseyMoonConditionEvaluation",
+    "RAMESEY_MOON_CONDITION_V1", "evaluate_ramesey_moon_condition",
+    "ramesey_moon_condition_at",
     # Muhurta (Tier 2 Vedic competitive edge work)
     "MuhurtaPolicy", "MuhurtaClassification", "MuhurtaScore",
     "classify_muhurta", "score_muhurta",
