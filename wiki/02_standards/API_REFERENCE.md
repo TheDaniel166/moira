@@ -789,12 +789,15 @@ from moira.facade import (
 
 | Function | Returns | Description |
 |---|---|---|
-| `gauquelin_sector(body_ra, body_dec, lat, lst, body="", horizon_altitude=-0.5667, sectors=36)` | `GauquelinPosition` | Gauquelin sector for a single apparent RA/Dec position at geographic latitude and local sidereal time |
-| `all_gauquelin_sectors(planet_ra_dec, lat, lst, horizon_altitude=-0.5667, sectors=36)` | `list[GauquelinPosition]` | Gauquelin sectors for a dict of body -> `(ra, dec)` |
+| `gauquelin_sector(body_ra, body_dec, lat, lst, body="", horizon_altitude=0.0, sectors=36)` | `GauquelinPosition` | Gauquelin sector for a single apparent RA/Dec position at geographic latitude and local sidereal time; non-rising geometry returns an explicit status with nullable sector-derived fields |
+| `all_gauquelin_sectors(planet_ra_dec, lat, lst, horizon_altitude=0.0, sectors=36)` | `list[GauquelinPosition]` | Gauquelin sectors for a dict of body -> `(ra, dec)` |
 
 `GauquelinPosition`: `body`, `sector`, `zone`, `diurnal_position`, `sectors`, `degree_in_sector`, `is_plus_zone`, `horizon_status`.
+`sector`, `diurnal_position`, and `degree_in_sector` are `None` when the body
+does not have an ordinary rise/set pair at the selected horizon.
 
-`GauquelinHorizonStatus`: `NORMAL`, `CIRCUMPOLAR`, `NEVER_RISES`.
+`GauquelinHorizonStatus`: `NORMAL`, `CIRCUMPOLAR`, `NEVER_RISES`,
+`HORIZON_COINCIDENT`.
 
 ### Coordinate utilities
 

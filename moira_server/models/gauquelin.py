@@ -19,7 +19,12 @@ CoordinateSource = Literal[
     "direct_apparent_ra_dec_map_lst",
     "chart_apparent_topocentric_ra_dec_lst",
 ]
-HorizonStatus = Literal["normal", "circumpolar", "never_rises"]
+HorizonStatus = Literal[
+    "normal",
+    "circumpolar",
+    "never_rises",
+    "horizon_coincident",
+]
 
 
 class GauquelinDirectBodyInput(_StrictModel):
@@ -56,7 +61,7 @@ class GauquelinDirectSectorRequest(_StrictModel):
     declination: float
     latitude: float = Field(ge=-90.0, le=90.0)
     local_sidereal_time: float
-    horizon_altitude: float = -0.5667
+    horizon_altitude: float = Field(default=0.0, ge=-90.0, le=90.0)
     sectors: Literal[36] = 36
 
     @field_validator("body")
@@ -93,7 +98,7 @@ class GauquelinDirectSectorsRequest(_StrictModel):
     bodies: list[GauquelinDirectBodyInput]
     latitude: float = Field(ge=-90.0, le=90.0)
     local_sidereal_time: float
-    horizon_altitude: float = -0.5667
+    horizon_altitude: float = Field(default=0.0, ge=-90.0, le=90.0)
     sectors: Literal[36] = 36
 
     @field_validator("bodies")
@@ -125,7 +130,7 @@ class GauquelinChartSectorsRequest(_StrictModel):
     latitude: float = Field(ge=-90.0, le=90.0)
     longitude: float = Field(ge=-180.0, le=180.0)
     bodies: list[str] | None = None
-    horizon_altitude: float = -0.5667
+    horizon_altitude: float = Field(default=0.0, ge=-90.0, le=90.0)
     sectors: Literal[36] = 36
 
     @field_validator("dt")
@@ -161,11 +166,11 @@ class GauquelinChartSectorsRequest(_StrictModel):
 
 class GauquelinPositionResponse(_StrictModel):
     body: str
-    sector: int
+    sector: int | None
     zone: str | None
-    diurnal_position: float
+    diurnal_position: float | None
     sectors: int
-    degree_in_sector: float
+    degree_in_sector: float | None
     is_plus_zone: bool
     horizon_status: HorizonStatus
     right_ascension: float | None = None

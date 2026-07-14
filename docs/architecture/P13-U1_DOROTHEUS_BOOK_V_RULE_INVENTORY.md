@@ -111,6 +111,13 @@ ancestor of the later "ten impediments of the Moon" and of void-of-course.
 
 ### 2.1 The impediment checklist (V.6, 3–14) — gates
 
+**Page-confirmation record (2026-07-14):** V.6,4–15 was rendered and visually
+checked against the held Dykes ʿUmar al-Ṭabarī PDF, printed pp. 234–235 (PDF
+pp. 252–253). The check confirms that under-rays (V.6,4), least motion below
+12°/day (V.6,11), and the burned path (V.6,12) are three separate rules. It
+does not resolve the latitude/node wording in V.6,7 or narrow Dorotheus's
+“Libra and Scorpio” to the later 15°–15° interval.
+
 Do not begin an inception when any of these hold (each is a distinct condition —
 **preserve them as named variants; do not merge**):
 

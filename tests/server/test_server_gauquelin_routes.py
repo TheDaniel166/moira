@@ -59,7 +59,7 @@ def test_gauquelin_direct_sector_route_matches_service_truth(
         "right_ascension": 0.0,
         "declination": 0.0,
         "latitude": 0.0,
-        "local_sidereal_time": 300.0,
+        "local_sidereal_time": 299.0,
         "horizon_altitude": 0.0,
     }
     expected = serialize_gauquelin_sector(
@@ -178,7 +178,11 @@ def test_gauquelin_direct_sector_preserves_circumpolar_status(
     )
 
     assert response.status_code == 200
-    assert response.json()["position"]["horizon_status"] == "circumpolar"
+    position = response.json()["position"]
+    assert position["horizon_status"] == "circumpolar"
+    assert position["sector"] is None
+    assert position["diurnal_position"] is None
+    assert position["degree_in_sector"] is None
 
 
 def test_gauquelin_direct_sector_preserves_never_rises_status(
@@ -196,7 +200,55 @@ def test_gauquelin_direct_sector_preserves_never_rises_status(
     )
 
     assert response.status_code == 200
-    assert response.json()["position"]["horizon_status"] == "never_rises"
+    position = response.json()["position"]
+    assert position["horizon_status"] == "never_rises"
+    assert position["sector"] is None
+    assert position["diurnal_position"] is None
+    assert position["degree_in_sector"] is None
+
+
+def test_gauquelin_direct_sector_preserves_horizon_coincident_status(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/gauquelin/sector",
+        json={
+            "body": "HorizonCoincident",
+            "right_ascension": 0.0,
+            "declination": 0.0,
+            "latitude": 90.0,
+            "local_sidereal_time": 0.0,
+            "horizon_altitude": 0.0,
+        },
+    )
+
+    assert response.status_code == 200
+    position = response.json()["position"]
+    assert position["horizon_status"] == "horizon_coincident"
+    assert position["sector"] is None
+
+
+@pytest.mark.parametrize(
+    ("horizon_altitude", "message_fragment"),
+    [(-90.0001, "greater than or equal"), (90.0001, "less than or equal")],
+)
+def test_gauquelin_rest_rejects_out_of_range_horizon_altitude(
+    client_with_engine: TestClient,
+    horizon_altitude: float,
+    message_fragment: str,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/gauquelin/sector",
+        json={
+            "right_ascension": 0.0,
+            "declination": 0.0,
+            "latitude": 0.0,
+            "local_sidereal_time": 0.0,
+            "horizon_altitude": horizon_altitude,
+        },
+    )
+
+    _assert_validation_envelope(response, message_fragment=message_fragment)
 
 
 def test_gauquelin_chart_sectors_rejects_naive_datetime(

@@ -173,13 +173,14 @@ class TestGalactic:
 
 class TestGauquelin:
     """
-    Authority: Gauquelin (1980) — sectors defined by diurnal arc, 36 per
-    revolution, plus zones immediately following each angle.
+    Authority: Gauquelin (1973, 1983) — sectors defined by diurnal arc, 36 per
+    revolution, with primary plus zones following rise and upper culmination.
 
     Key invariants:
       - sector is always an integer in [1, 36]
       - zone is either "Plus Zone" or "Neutral Zone"
-      - plus zones are exactly sectors 1-3, 10-12, 19-21, 28-30 (12 of 36)
+      - primary plus zones are exactly sectors 1-3 and 10-12 (6 of 36)
+      - a sector is undefined when ordinary rise/set geometry does not exist
     """
 
     def test_sector_range_always_valid(self):
@@ -193,13 +194,10 @@ class TestGauquelin:
         assert gp.zone in ("Plus Zone", "Neutral Zone")
 
     def test_plus_zone_sectors_count(self):
-        assert len(_PLUS_ZONE_SECTORS) == 12
+        assert len(_PLUS_ZONE_SECTORS) == 6
 
     def test_plus_zone_sectors_correct_values(self):
-        expected = (
-            set(range(1, 4)) | set(range(10, 13))
-            | set(range(19, 22)) | set(range(28, 31))
-        )
+        expected = set(range(1, 4)) | set(range(10, 13))
         assert _PLUS_ZONE_SECTORS == frozenset(expected)
 
     def test_zone_label_consistent_with_sector(self):
@@ -219,11 +217,11 @@ class TestGauquelin:
 
     def test_circumpolarity_dsa_180(self):
         gp = gauquelin_sector(0.0, 89.0, 89.0, 0.0, "Circumpolar")
-        assert 1 <= gp.sector <= 36
+        assert gp.sector is None
 
     def test_at_exact_horizon_dsa_zero(self):
         gp = gauquelin_sector(0.0, -89.0, 89.0, 0.0, "Horizon")
-        assert 1 <= gp.sector <= 36
+        assert gp.sector is None
 
 
 # ===========================================================================

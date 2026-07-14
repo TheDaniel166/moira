@@ -101,7 +101,7 @@ Website readiness is tracked separately:
 | P13-01 | Electional Windows | `admitted` | `website_good_needs_minor_hardening` | Stage 1 is implemented, registered, tested, and documented. The admitted surface is a profile catalogue plus bounded window route over a small server-defined predicate catalogue; arbitrary predicates, arbitrary scorers, Western doctrine, and advice language remain deferred. |
 | P13-02 | Electional Moments | `admitted` | `website_good_needs_minor_hardening` | Implemented, registered, tested, and documented. The route reuses the P13-01 predicate catalogue and scan bounds, returns raw qualifying scan points only, and explicitly rejects exact-boundary, scoring, doctrine, and advice semantics. |
 | P13-03 | Scored Electional Windows | `admitted` | `website_good_needs_minor_hardening` | Implemented, registered, tested, and documented. The admitted surface is a scorer-profile catalogue plus bounded scored-window route using server-defined numeric scorer profiles only; arbitrary scorers, Western judgement, advice language, auspiciousness labels, and recommendation semantics remain deferred. |
-| P13-U1 | Western Electional Doctrine | `defer_for_doctrine` | `not_website_ready` | The audit identifies electional as a generic predicate engine, not a Western doctrine subsystem. Built-in rulesets, electional profiles, judgement language, and recommendation surfaces remain outside REST admission. |
+| P13-U1 | Western Electional Doctrine | `defer_for_doctrine` | `not_website_ready` | A draft doctrine packet now defines the source-owned profile model and the pre-admission `ramesey_moon_condition_v1` rule map. Its unresolved orb, node, house, degree, speed, and VOC policies still block engine and REST admission; recommendation language remains excluded. |
 
 ---
 
@@ -405,31 +405,42 @@ Reason:
 - There is no first-class Western electional scoring or judgement surface
   comparable to Vedic `muhurta`.
 
-Required before admission:
+Defined by the draft doctrine packet:
 
 - doctrine note for Western electional scope
 - rule/profile vocabulary
 - judgement boundaries and public-language policy
-- validation strategy for any built-in score
+- validation strategy and prohibition on an unsourced built-in score
 - separation between search infrastructure and electional doctrine
 
-Research foundation (2026-07-09):
+Still required before admission:
+
+- close the first profile's explicit ambiguity-policy ledger from source
+- implement the profile as visible rule witnesses in the engine
+- pass source-boundary, compound-rule, substrate, integration, and sovereignty
+  validation
+- make a separate facade and REST admission decision, if requested
+
+Research and doctrine foundation (2026-07-14):
 
 - `docs/architecture/P13-U1_WESTERN_ELECTIONAL_DOCTRINE_RESEARCH_DOSSIER.md`
-  (v0.6) supplies the primary-source rule inventory, named-lineage citation
+  (v0.7) supplies the primary-source rule inventory, named-lineage citation
   base, and the register of doctrinal variants that must be preserved. Primary
   texts in hand include Dorotheus Book V (*Carmen*, Dykes) and Sahl
   *On Elections* (Dykes *Choices & Inceptions*). Complete companion inventories:
   `P13-U1_DOROTHEUS_BOOK_V_RULE_INVENTORY.md` and
-  `P13-U1_SAHL_ON_ELECTIONS_RULE_INVENTORY.md`. Research scaffolding, not a
-  doctrine packet — no rule is validated for implementation until confirmed
-  against its named primary text at the cited page.
+  `P13-U1_SAHL_ON_ELECTIONS_RULE_INVENTORY.md`.
+- `docs/architecture/P13-U1_WESTERN_ELECTIONAL_DOCTRINE_PACKET.md` (v0.1)
+  defines governing objects, rule vocabulary, election classes, public
+  language, the page-confirmed Ramesey ten-rule map, named variants, and
+  admission gates. It remains a draft: the profile-specific policy questions
+  in §8 deliberately block runtime admission.
 
 Recommended stance:
 
-- keep doctrine-owned electional off the REST route plan until the doctrine
-  layer exists
-- let Phase 13 first decide whether bounded predicate-search transport is safe
+- keep doctrine-owned electional off the REST route plan until the first
+  profile is implemented and validated
+- resolve the doctrine packet's ambiguity-policy ledger before engine work
 
 ---
 
@@ -445,7 +456,8 @@ Recommended Phase 13 sequence:
 6. P13-03 Scored Electional Windows doctrine packet. `complete`
 7. P13-03 transport design under server-defined scorer profiles. `complete`
 8. P13-03 implementation. `complete`
-9. P13-U1 Western Electional Doctrine remains separate from search transport.
+9. P13-U1 draft doctrine packet and page-confirmed first profile map.
+   `complete`; runtime profile admission remains blocked.
 
 Reason:
 
@@ -481,8 +493,11 @@ Phase 13 planning does not implicitly:
 ## 11. Immediate Next Step
 
 Phase 13 transport admission is complete for the bounded electional search
-subset. The remaining Phase 13 item is P13-U1, which stays deferred until a
-separate Western electional doctrine packet exists.
+subset. P13-U1 now has a separate draft doctrine packet, but remains deferred
+for runtime admission. The next step is to resolve the nine explicit policy
+questions in that packet's §8 from the held sources, then implement and
+validate `ramesey_moon_condition_v1` in the engine before considering facade or
+REST exposure.
 
 No next implementation step should treat the admitted scored route as advice,
 recommendation, auspiciousness, or Western electional judgement.

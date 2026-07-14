@@ -114,7 +114,7 @@ class TestACGGeodeticLatitude:
 
 class TestGauquelinApparentHorizon:
     """
-    The DSA formula must use the general apparent-horizon form:
+    The DSA formula must use the general explicit-horizon form:
         t = (sin h₀ − sin φ · sin δ) / (cos φ · cos δ)
     rather than the pure-geometric −tan φ · tan δ.
 
@@ -160,29 +160,31 @@ class TestGauquelinApparentHorizon:
 
     def test_circumpolar_body_exposes_policy_status(self) -> None:
         """
-        A body with dec > 90°−lat is circumpolar; DSA should be 180° (full arc
-        above horizon).  The sector must still be in [1, 36].
+        A body with dec > 90°−lat is circumpolar. A rise-anchored sector is
+        undefined because the body has no ordinary rise/set pair.
         """
         from moira.gauquelin import GauquelinHorizonStatus, gauquelin_sector
         # lat=80°, dec=85° → 80+85=165 > 90, circumpolar
         pos = gauquelin_sector(
             body_ra=0.0, body_dec=85.0, lat=80.0, lst=0.0,
         )
-        assert 1 <= pos.sector <= 36
         assert pos.horizon_status is GauquelinHorizonStatus.CIRCUMPOLAR
+        assert pos.sector is None
+        assert pos.diurnal_position is None
 
     def test_never_rises_body_exposes_policy_status(self) -> None:
         """
-        A body with dec < -(90°-lat) never rises; DSA→0.  Engine must not
-        divide-by-zero and must return a valid sector.
+        A body with dec < -(90°-lat) never rises. Engine must not fabricate a
+        sector from a collapsed diurnal quadrant.
         """
         from moira.gauquelin import GauquelinHorizonStatus, gauquelin_sector
         # lat=80°, dec=-85° → body always below horizon
         pos = gauquelin_sector(
             body_ra=0.0, body_dec=-85.0, lat=80.0, lst=0.0,
         )
-        assert 1 <= pos.sector <= 36
         assert pos.horizon_status is GauquelinHorizonStatus.NEVER_RISES
+        assert pos.sector is None
+        assert pos.diurnal_position is None
 
     def test_all_sectors_use_same_horizon_altitude(self) -> None:
         from moira.gauquelin import all_gauquelin_sectors
@@ -260,38 +262,37 @@ class TestGauquelinVariableResolution:
             assert gp.zone is None
             assert 1 <= gp.sector <= 72
 
-    def test_plus_zone_sectors_are_canonical_12_out_of_36(self) -> None:
+    def test_plus_zone_sectors_are_primary_six_out_of_36(self) -> None:
         """
-        The canonical Gauquelin system defines exactly 12 plus-zone sectors:
-        1-3, 10-12, 19-21, 28-30.  Sweep all sectors and count zone labels.
+        Gauquelin's primary plus zones are sectors 1-3 after rise and 10-12
+        after upper culmination. The opposite effects are explicitly weaker.
         """
         from moira.gauquelin import _PLUS_ZONE_SECTORS
-        assert len(_PLUS_ZONE_SECTORS) == 12
+        assert len(_PLUS_ZONE_SECTORS) == 6
         assert _PLUS_ZONE_SECTORS == frozenset(
-            list(range(1, 4)) + list(range(10, 13)) +
-            list(range(19, 22)) + list(range(28, 31))
+            list(range(1, 4)) + list(range(10, 13))
         )
 
     def test_cardinal_boundaries_have_ascendant_anchored_numbering(self) -> None:
         """
         At the equator with a geometric horizon, HA equals the mundane angle.
-        Moira's Gauquelin numbering starts at the Ascendant, with plus sectors
-        immediately after each angle.
+        Moira's Gauquelin numbering starts at the Ascendant. The source-backed
+        primary plus sectors follow only rise and upper culmination.
         """
         from moira.gauquelin import gauquelin_sector
 
         kw = dict(body_ra=0.0, body_dec=0.0, lat=0.0, horizon_altitude=0.0)
         samples = {
-            "ASC": (270.0001, 1),
-            "MC": (0.0001, 10),
-            "DSC": (90.0001, 19),
-            "IC": (180.0001, 28),
+            "ASC": (270.0001, 1, True),
+            "MC": (0.0001, 10, True),
+            "DSC": (90.0001, 19, False),
+            "IC": (180.0001, 28, False),
         }
 
-        for angle, (lst, expected_sector) in samples.items():
+        for angle, (lst, expected_sector, expected_plus) in samples.items():
             pos = gauquelin_sector(**kw, lst=lst)
             assert pos.sector == expected_sector, angle
-            assert pos.is_plus_zone
+            assert pos.is_plus_zone is expected_plus
 
     def test_result_exposes_sector_metadata(self) -> None:
         from moira.gauquelin import GauquelinHorizonStatus, gauquelin_sector
@@ -300,14 +301,14 @@ class TestGauquelinVariableResolution:
             body_ra=0.0,
             body_dec=0.0,
             lat=0.0,
-            lst=300.0,
+            lst=299.0,
             horizon_altitude=0.0,
             body="Mars",
         )
 
         assert pos.body == "Mars"
         assert pos.sector == 3
-        assert pos.degree_in_sector == pytest.approx(10.0)
+        assert pos.degree_in_sector == pytest.approx(9.0)
         assert pos.is_plus_zone
         assert pos.horizon_status is GauquelinHorizonStatus.NORMAL
 
@@ -541,18 +542,28 @@ class TestGauquelinPolarGuard:
 
     @pytest.mark.parametrize("lat", [-89.9, -89.0, 89.0, 89.9])
     def test_near_polar_latitudes_do_not_crash(self, lat: float) -> None:
-        from moira.gauquelin import gauquelin_sector
+        from moira.gauquelin import GauquelinHorizonStatus, gauquelin_sector
         pos = gauquelin_sector(
             body_ra=0.0, body_dec=10.0, lat=lat, lst=0.0,
         )
-        assert 1 <= pos.sector <= 36
-        assert math.isfinite(pos.diurnal_position)
+        if pos.horizon_status is GauquelinHorizonStatus.NORMAL:
+            assert pos.sector is not None and 1 <= pos.sector <= 36
+            assert pos.diurnal_position is not None
+            assert math.isfinite(pos.diurnal_position)
+        else:
+            assert pos.sector is None
+            assert pos.diurnal_position is None
 
     @pytest.mark.parametrize("dec", [-89.9, 0.0, 89.9])
     def test_extreme_declinations_do_not_crash(self, dec: float) -> None:
-        from moira.gauquelin import gauquelin_sector
+        from moira.gauquelin import GauquelinHorizonStatus, gauquelin_sector
         pos = gauquelin_sector(
             body_ra=0.0, body_dec=dec, lat=51.5, lst=0.0,
         )
-        assert 1 <= pos.sector <= 36
-        assert math.isfinite(pos.diurnal_position)
+        if pos.horizon_status is GauquelinHorizonStatus.NORMAL:
+            assert pos.sector is not None and 1 <= pos.sector <= 36
+            assert pos.diurnal_position is not None
+            assert math.isfinite(pos.diurnal_position)
+        else:
+            assert pos.sector is None
+            assert pos.diurnal_position is None

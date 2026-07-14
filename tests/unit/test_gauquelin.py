@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import math
+from dataclasses import FrozenInstanceError
 
 import pytest
 
@@ -16,7 +16,7 @@ def test_canonical_result_preserves_plus_zone_metadata() -> None:
         body_ra=0.0,
         body_dec=0.0,
         lat=0.0,
-        lst=300.0,
+        lst=299.0,
         horizon_altitude=0.0,
         body="Mars",
     )
@@ -25,7 +25,7 @@ def test_canonical_result_preserves_plus_zone_metadata() -> None:
     assert position.sector == 3
     assert position.zone == "Plus Zone"
     assert position.is_plus_zone
-    assert position.degree_in_sector == pytest.approx(10.0)
+    assert position.degree_in_sector == pytest.approx(9.0)
     assert position.horizon_status is GauquelinHorizonStatus.NORMAL
 
 
@@ -44,10 +44,76 @@ def test_circumpolar_and_never_rises_statuses_are_explicit() -> None:
 
     assert circumpolar.horizon_status is GauquelinHorizonStatus.CIRCUMPOLAR
     assert never_rises.horizon_status is GauquelinHorizonStatus.NEVER_RISES
-    assert 1 <= circumpolar.sector <= 36
-    assert 1 <= never_rises.sector <= 36
-    assert math.isfinite(circumpolar.diurnal_position)
-    assert math.isfinite(never_rises.diurnal_position)
+    for position in (circumpolar, never_rises):
+        assert position.sector is None
+        assert position.zone is None
+        assert position.diurnal_position is None
+        assert position.degree_in_sector is None
+        assert not position.is_plus_zone
+
+
+def test_exact_pole_classification_respects_horizon_altitude() -> None:
+    above_custom_horizon = gauquelin_sector(
+        0.0, -0.2, 90.0, 0.0, horizon_altitude=-0.5667
+    )
+    below_custom_horizon = gauquelin_sector(
+        0.0, 0.0, 90.0, 0.0, horizon_altitude=1.0
+    )
+    coincident = gauquelin_sector(
+        0.0, 0.0, 90.0, 0.0, horizon_altitude=0.0
+    )
+
+    assert above_custom_horizon.horizon_status is GauquelinHorizonStatus.CIRCUMPOLAR
+    assert below_custom_horizon.horizon_status is GauquelinHorizonStatus.NEVER_RISES
+    assert coincident.horizon_status is GauquelinHorizonStatus.HORIZON_COINCIDENT
+    assert coincident.sector is None
+
+
+def test_near_pole_with_real_crossings_is_not_collapsed_to_exact_pole() -> None:
+    position = gauquelin_sector(
+        0.0,
+        0.0,
+        89.9999999999,
+        0.0,
+        horizon_altitude=0.0,
+    )
+
+    assert position.horizon_status is GauquelinHorizonStatus.NORMAL
+    assert position.sector is not None
+
+
+def test_default_horizon_is_geometric() -> None:
+    kwargs = dict(body_ra=100.0, body_dec=20.0, lat=50.0, lst=80.0)
+    assert gauquelin_sector(**kwargs) == gauquelin_sector(
+        **kwargs, horizon_altitude=0.0
+    )
+
+
+@pytest.mark.parametrize(
+    ("lst", "expected_sector"),
+    [(270.0, 1), (280.0, 2), (0.0, 10), (10.0, 11)],
+)
+def test_exact_sector_boundaries_belong_to_following_sector(
+    lst: float,
+    expected_sector: int,
+) -> None:
+    position = gauquelin_sector(
+        body_ra=0.0,
+        body_dec=0.0,
+        lat=0.0,
+        lst=lst,
+        horizon_altitude=0.0,
+    )
+
+    assert position.sector == expected_sector
+    assert position.degree_in_sector == pytest.approx(0.0, abs=1.0e-12)
+
+
+def test_result_vessel_is_immutable() -> None:
+    position = gauquelin_sector(0.0, 0.0, 0.0, 0.0)
+
+    with pytest.raises(FrozenInstanceError):
+        position.sector = 7  # type: ignore[misc]
 
 
 def test_batch_preserves_input_order_and_body_names() -> None:
@@ -71,6 +137,8 @@ def test_batch_preserves_input_order_and_body_names() -> None:
         ({"lat": -91.0}, r"lat must be in \[-90, 90\]"),
         ({"lst": float("inf")}, "lst must be finite"),
         ({"horizon_altitude": float("nan")}, "horizon_altitude must be finite"),
+        ({"horizon_altitude": -90.0001}, r"horizon_altitude must be in \[-90, 90\]"),
+        ({"horizon_altitude": 90.0001}, r"horizon_altitude must be in \[-90, 90\]"),
         ({"sectors": 0}, "sectors must be a positive integer"),
         ({"sectors": 36.0}, "sectors must be a positive integer"),
         ({"sectors": True}, "sectors must be a positive integer"),
@@ -82,7 +150,7 @@ def test_invalid_inputs_are_rejected(kwargs: dict[str, float], message: str) -> 
         "body_dec": 0.0,
         "lat": 0.0,
         "lst": 0.0,
-        "horizon_altitude": -0.5667,
+        "horizon_altitude": 0.0,
         "sectors": 36,
     }
     params.update(kwargs)

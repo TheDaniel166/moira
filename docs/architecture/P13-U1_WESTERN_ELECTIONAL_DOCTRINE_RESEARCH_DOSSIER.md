@@ -1,11 +1,20 @@
 # P13-U1 — Western Electional Doctrine Research Dossier
 
-Version: 0.6 (research foundation, pre-doctrine-packet)
-Date: 2026-07-09
+Version: 0.7 (research foundation with doctrine-packet handoff)
+Date: 2026-07-14
 Status: research inventory feeding the deferred P13-U1 Western electional
-doctrine layer. Not yet a doctrine packet, not a standard, not an admission.
+doctrine layer. Companion doctrine packet exists, but no profile, standard, or
+runtime surface is admitted.
 
 Changelog:
+- 0.7 — created `P13-U1_WESTERN_ELECTIONAL_DOCTRINE_PACKET.md` and visually
+  page-confirmed the first profile against Ramesey's original facsimile,
+  Book III, Chapter II, printed pp. 126–127. Corrected the former blended
+  Ramesey/Robson checklist to Ramesey's actual order and compound rules.
+  Visually confirmed the comparison lists in Sahl §22, printed pp. 99–101,
+  and Dorotheus V.6, printed pp. 234–235. Corrected the false claim that the
+  three lineages share one via-combusta boundary and separated Dorotheus's
+  under-rays condition from his distinct slow-Moon rule.
 - 0.6 — both primary-lineage rule inventories now complete companions:
   `P13-U1_DOROTHEUS_BOOK_V_RULE_INVENTORY.md` (Book V, all chapters) and
   `P13-U1_SAHL_ON_ELECTIONS_RULE_INVENTORY.md` (Dykes §§1–143, houses 2–12 +
@@ -141,28 +150,36 @@ and Robson both present a **canonical ten-item impediment checklist**, which is
 the single best skeleton for a Moira "Moon condition" profile family. The two
 lists agree closely, giving strong cross-lineage corroboration.
 
-### A.1 The Ramesey / Robson ten-impediment checklist
+### A.1 Ramesey's ten impediments, page-confirmed
 
-Ramesey (Astrologia Restaurata 1653, Bk 3 ch. II, pp. 126–128): "there are ten
-ways whereby the Moon may be impedited." [V+] Robson (1937) restates a matching
-ten-item list. [Q] Each item is a boolean gate with an exact parameter:
+Ramesey (*Astrologia Restaurata*, Book III, Chapter II, printed pp. 126–127)
+says there are ten ways the Moon may be impedited. The original 1654 facsimile
+was rendered and visually checked on 2026-07-14 (PDF pp. 184–185). Printed
+p. 127 gives this order and wording [V+]:
 
-| # | Impediment | Exact parameter | Shape | Lineage | Tier |
-|---|---|---|---|---|---|
-| 1 | Combust the Sun | Within **12°** of Sun's body; applying worse than separating; "escaped" ~5° after separation (Robson) | Gate + directional weight | Ramesey [V+], Robson [Q], Dorotheus/Bonatti variants below |
-| 2 | Opposition the Sun | Within **12°** of the Sun's opposition | Gate | Robson [Q] |
-| 3 | Conjunct a malefic / afflicted by Saturn or Mars | By body or hostile aspect | Gate/weight | Ramesey, Robson [Q] |
-| 4 | Near the lunar nodes | Within **12°** of Caput (☊) or Cauda (☋) | Gate | Ramesey [V+], Robson [Q] |
-| 5 | In fall | In Scorpio, **especially exactly 3° Scorpio** (degree of fall) | Gate + intensifier | Ramesey [V+], Robson [Q] |
-| 6 | In detriment | In Capricorn | Gate | Robson [Q] |
-| 7 | Cadent | In a cadent house (3, 6, 9, 12) | Gate (house-system dependent) | Ramesey, Robson [Q] |
-| 8 | Via Combusta | **15° Libra → 15° Scorpio**; ranked the *worst* impediment | Gate + matter weight | All lineages (see A.3) [V+] |
-| 9 | Slow in motion | Daily motion **< mean 13°10′36″/24h** (Ramesey) / **< 13°11′/day** (Robson) | Gate with numeric threshold | Ramesey [V+], Robson [Q], Dorotheus variant 12°/day |
-| 10 | Void of course | No aspect completed before leaving current sign (Ramesey/Robson) — **but definition is contested, see A.2** | Gate (variant-selected) | All lineages, divergent [V+/Q] |
+| # | Impediment | Source-faithful parameter | Shape |
+|---|---|---|---|
+| 1 | Combust the Sun | Within **12°** of the Sun before or after conjunction; applying is worse than separating | Gate + directional modifier |
+| 2 | Degree of fall | The **third degree of Scorpio** | Gate; ordinal-degree policy required |
+| 3 | Opposition of the Sun | Opposition; Ramesey gives **no 12° opposition orb here** | Gate; aspect/orb policy required |
+| 4 | Joined with infortunes or in quartile/opposition to them | Conjunction, square, or opposition with Saturn or Mars | Compound gate; aspect/orb policy required |
+| 5 | Near the lunar nodes | Within **12°** of the Head or Tail of the Dragon | Gate; node model required |
+| 6 | Latter degrees with an infortune | In the latter degrees of a sign wherein there is an infortune | Gate; latter-degree boundary unresolved |
+| 7 | Cadent **or** via combusta | Cadent from angles **OR** last 15° Libra / first 15° Scorpio; the latter is called the worst, especially for marriage, women's matters, buying/selling, and travel | Compound gate + matter metadata |
+| 8 | Detriment **or** not beholding her house suitably | Capricorn, **OR** quartile to her own house, **OR** not beholding it by sextile/trine | Compound gate; aspect scope required |
+| 9 | Slow in motion | Less than **13°10′36″ per 24 hours** | Strict numeric gate |
+| 10 | Void of course | In a sign and “beholds not any Planet till she enter another sign” | Sign-bounded gate; meaning of “beholds” requires policy |
 
-This table is the most implementation-ready artifact in the dossier. Nine of
-ten items are unambiguous numeric or positional gates. Item 10 is the one that
-requires variant selection.
+Robson (1937) supplies a close later checklist [Q], but it is a named
+corroborating variant rather than permission to rewrite Ramesey's list. The
+previous dossier table did exactly that: it reordered the rules, separated
+Ramesey's compound clauses, omitted his latter-degrees rule, and attached a
+12° opposition orb not stated on the governing page. The doctrine packet now
+uses the page-confirmed Ramesey list.
+
+Several rules are numerically direct, but the profile is not yet executable as
+a whole. Orb, node, degree-label, house/cadency, latter-degree, and VOC
+policies remain explicit admission blockers.
 
 ### A.2 Void of Course — the central doctrinal divergence
 
@@ -174,7 +191,8 @@ several×/month), so they are not interchangeable.
 | Variant name | Definition | Sign boundary? | Orb? | Lineage / citation | Tier |
 |---|---|---|---|---|---|
 | **Hellenistic** | Moon completes no exact Ptolemaic aspect within the **next 30°** of motion | Ignored | No | Antiochus, Porphyry, Rhetorius, Firmicus [S] |
-| **Medieval / sign-bounded** | Moon completes no aspect **before leaving its current sign** | Yes | No (perfection-based) | Sahl, Abu Maʿshar, Masha'allah → Bonatti → Ramesey, Robson [V+/Q] |
+| **Medieval / sign-bounded perfection** | Moon completes no aspect **before leaving its current sign** | Yes | No (perfection-based) | Named interpretive family across medieval and later authorities; source-specific mechanics still require confirmation [Q/S] |
+| **Ramesey sign-bounded beholding** | Moon “beholds not any Planet till she enter another sign” | Yes | Unresolved | Ramesey, printed p. 127 [V+] |
 | **Lilly (moiety-applying)** | Moon is separated and **applies to no planet within joint moieties while in the sign** (application, not perfection) | Yes | Yes (summed moieties) | Lilly CA; Sue Ward's reading traces it to Sahl [Q/S] |
 | **Sue Ward modern** | Moon not **within orb (~≤10°)** of its next applying major aspect, sign boundary ignored | No | Yes | Ward 1995 reinterpretation [S] |
 
@@ -191,24 +209,30 @@ Companion distinctions that must remain separate flags, not folded into VOC:
   desired direction depends on the election's intent. [S]
 
 **Doctrine implication:** VOC must be a named-variant parameter
-(`void_of_course_variant ∈ {hellenistic, medieval_sign_bound, lilly_moiety, ward_orb}`),
+(`void_of_course_variant ∈ {hellenistic, medieval_sign_bound,
+ramesey_sign_bound_beholding, lilly_moiety, ward_orb}`),
 never a single boolean. This is the flagship example of Part-V variant
 preservation for the whole suite.
 
 ### A.3 Via Combusta
 
-Rare cross-lineage unanimity on the parameter, which makes it a safe early gate:
+The primary texts do **not** establish one cross-lineage boundary:
 
-- **Boundary: 15° Libra → 15° Scorpio.** Stated identically by Dorotheus [S],
-  Bonatti (Consideration 5, 9th impediment) [Q], Ramesey [V+], and Robson [Q].
-- **Severity: the worst zodiacal position for the Moon** (Ramesey, Robson). [V+/Q]
-- **Matter-specific weighting:** especially bad for **marriage, women's
-  matters, buying/selling, and travel/journeys.** Same four matters named by
-  Ramesey and Robson independently. [V+/Q]
-- Ramesey couples it with two neighbours: Moon within 12° of a node, and Moon
-  at exactly 3° Scorpio (degree of fall). [V+]
+- **Ramesey:** last 15° Libra through first 15° Scorpio (printed p. 127) [V+].
+- **Sahl:** “the end of Libra and the beginning of Scorpio,” without numeric
+  endpoints in §22d (printed p. 100) [V+].
+- **Dorotheus:** “Libra and Scorpio” in V.6.12 (printed p. 234), which the
+  inventory preserves as a whole-sign Dorothean reading [V+].
+- **Bonatti/Robson:** retain their own cited variants until their governing
+  pages are confirmed.
 
-Note a minor variant: some sources give via combusta as a flat 15–15 band;
+Ramesey calls the via-combusta clause the worst impediment, especially for
+**marriage, women's matters, buying/selling, and travel/journeys**. This is
+matter-specific severity metadata, not a numeric weight. Ramesey's node and
+third-degree-of-Scorpio rules are separate numbered impediments; they are not
+part of the via-combusta boundary.
+
+Some later sources give via combusta as a flat 15–15 band;
 Lilly separately warns against the Moon "in the later degrees of any sign,
 especially Gemini, Scorpio, Capricorn" as a distinct rule. [Q]
 
@@ -665,16 +689,24 @@ now grounded in exactly which doctrine each one buys.
 The non-negotiable variant list — each is a named parameter, never a collapsed
 default:
 
-1. **Void-of-course**: `{hellenistic_30deg, medieval_sign_bound, lilly_moiety, ward_orb}` + feral flag + four-sign mitigation + purpose-inversion sign.
-2. **Combustion orb**: `{moiety_8d30, ramesey_moon_12, bonatti_asym_15_12, dorotheus_speed}`.
+1. **Void-of-course**: `{hellenistic_30deg, medieval_sign_bound,
+   ramesey_sign_bound_beholding, lilly_moiety, ward_orb}` + feral flag +
+   four-sign mitigation + purpose-inversion sign.
+2. **Moon/Sun condition**: `{ramesey_moon_12, sahl_moon_12,
+   dorotheus_under_rays_unquantified}` plus separately sourced general
+   combustion systems. Dorotheus's `<12°/day` rule is slow motion, not a
+   combustion orb.
 3. **Under-the-beams orb**: `{arabic_15, lilly_17, lilly_ap26_12, morin_18}`.
 4. **Cazimi orb**: `{lilly_16min, lilly_17min}` (+ Bonatti exemption, no numeric).
 5. **Planetary orb list**: `{smaller_arabic (Sun 15), larger_12thc (Sun 17)}` — smaller is the historically correct medieval default.
 6. **Terms/bounds scheme**: `{egyptian, ptolemaic}`.
-7. **Slow-motion threshold**: `{ramesey_13d10m36s, robson_13d11m, dorotheus_12d}`.
+7. **Slow-motion threshold**: `{ramesey_13d10m36s, robson_13d11m,
+   sahl_12d, dorotheus_12d}`.
 8. **Aspect scope**: `{whole_sign (Sahl/Dykes), in_orb (Houlding/Lilly)}`.
 9. **Combustion sign-boundary**: `{same_sign_only (Lilly), crosses_boundary (Sahl)}`.
-10. **Election class / rootedness**: `{ephemeral (no natal), radical (natal required), mundane}`.
+10. **Via combusta**: `{ramesey_15lib_15sco, sahl_end_lib_begin_sco,
+    dorotheus_libra_and_scorpio}` until each later lineage is page-confirmed.
+11. **Election class / rootedness**: `{ephemeral (no natal), radical (natal required), mundane}`.
 
 Averaging or silently defaulting any of these would be a Semantic-Honesty and
 Part-V violation. The doctrine packet's central job is to name them and pick
@@ -685,10 +717,11 @@ Part-V violation. The doctrine packet's central job is to name them and pick
 
 ## 12. Research Gaps — Status After Follow-Up Pass
 
-The v0.2 follow-up pass closed the parameter-level gaps. Remaining items are
-per-matter *rule detail* that needs the physical primary texts, not the open
-web, and every closed item still carries the standing rule: **confirm against
-the named primary text at the cited page before admission.**
+The research pass inventoried the main parameter families. The first-profile
+page audit showed why inventory is not admission: several historical phrases
+still require explicit computational policy. Every closed item carries the
+standing rule: **confirm against the named primary text at the cited page
+before admission.**
 
 ### Closed in v0.2
 
@@ -725,20 +758,25 @@ the named primary text at the cited page before admission.**
   Standard tables in CA / Tetrabiblos; the CA copy on disk carries them.
 - **Page re-confirmation** of ⚠-marked readings in both inventories (standing
   Moira law before doctrine admission) — not a missing-source problem.
+- **Ramesey first-profile policies** listed in the doctrine packet §8: ordinal
+  degree convention, aspect orbs, node model, latter-degree boundary,
+  cadency/house policy, Cancer-beholding scope, speed product, VOC perfection
+  doctrine, and via-combusta endpoints.
 
 **No remaining true acquisition gaps.** Both Dorotheus and Sahl electional
 rule inventories exist as companions. The general Moon/planet/angle/aspect
-architecture is fully parameterized. The doctrine packet skeleton can proceed.
+architecture is inventoried, and the first doctrine packet now records the
+remaining policy blockers without filling them from ambient defaults.
 
 ---
 
 ## 13. Recommended Next Steps
 
-1. **Doctrine packet skeleton** (`P13-U1_WESTERN_ELECTIONAL_DOCTRINE_PACKET.md`):
-   election-class taxonomy (§2), the named-variant registers (§11), the
-   gate/scorer/matter-specific split (§10), and the public-language policy
-   (inherit P13-03: numeric fit, no "auspicious"/"best"/advice).
-2. **Page-confirm ⚠ items** in the two companion inventories before any
+1. **Resolve the first-profile policy ledger** in
+   `P13-U1_WESTERN_ELECTIONAL_DOCTRINE_PACKET.md` §8 from the held Ramesey
+   source and its declared historical context. Do not implement rules that
+   remain `not_evaluable`.
+2. **Continue page-confirming ⚠ items** in the two companion inventories before any
    doctrine admission; reproduce term tables only if a term-level scorer is
    admitted. No further source acquisition is required for the Dorotheus/Sahl
    research foundation.
@@ -774,8 +812,9 @@ Full 101-claim web extraction with verbatim quotes is preserved at
 
 | Source | Authority tier | Used for |
 |---|---|---|
+| [Internet Archive `b30323149_0001`](https://archive.org/download/b30323149_0001/b30323149_0001.pdf) — Ramesey, *Astrologia Restaurata* (1654) original facsimile | primary | A.1, A.3; visually confirmed printed pp. 126–127 on 2026-07-14 |
 | iapsop.com — Robson, *Electional Astrology* (1937), full PDF | primary | §2, A.1, A.3, A.4, D, E |
-| renaissanceastrology.com — Ramesey electional intro & Moon (Warnock transcription) | primary/secondary | A.1, A.3, §8 |
+| renaissanceastrology.com — Ramesey electional intro & Moon (Warnock transcription) | secondary transcription of primary text | readable witness for A.1, A.3, §8 |
 | astrologiahumana.com — Lilly, *Christian Astrology* Book II facsimile | primary | A.2, B.1, B.2, E, F |
 | skyscript.co.uk — considerations.pdf; rev_ram; forums (orbs, Solar Fire config) | primary/secondary/forum | B.1, radicality, software |
 | bendykes.com — Sahl vol. I; Dorotheus *Carmen* | primary/secondary | §1 lineage, C.2 citation homes |

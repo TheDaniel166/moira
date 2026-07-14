@@ -571,13 +571,14 @@ plus the existing internal coverage for matching, policy, and field behavior.
 `tests/integration/test_gauquelin_external_reference.py`
 
 Validated against the canonical diurnal-arc sector model:
-- sector always falls in 1-36
-- plus zones are exactly sectors 1-3, 10-12, 19-21, 28-30
-- Ascendant-anchored boundary numbering is explicit: sectors 1, 10, 19,
-  and 28 begin immediately after ASC, MC, DSC, and IC respectively
+- sector falls in 1-36 when ordinary rise/set geometry exists and is `None`
+  otherwise
+- primary plus zones are exactly sectors 1-3 and 10-12
+- Ascendant-anchored half-open boundary numbering is explicit: sectors 1, 10,
+  19, and 28 begin at ASC, MC, DSC, and IC respectively
 - zone labels match plus-zone membership
-- circumpolar, never-rising, and horizon-edge inputs stay structurally valid
-  while exposing `horizon_status` policy on the result vessel
+- circumpolar, never-rising, and horizon-coincident inputs expose
+  `horizon_status` while leaving sector-derived quantities undefined
 - cached Swiss `swe_gauquelin_sector()` method-0 Sun rows match within the
   fixture precision of `1e-3` sector units
 

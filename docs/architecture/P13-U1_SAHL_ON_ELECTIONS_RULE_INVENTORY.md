@@ -214,6 +214,13 @@ If the Moon is impeded and the matter **cannot be put off**:
 
 ### 4.1 The ten impediments (§22b–g) — gates
 
+**Page-confirmation record (2026-07-14):** §22a–g was rendered and visually
+checked against the held Dykes PDF, printed pp. 99–101 (PDF pp. 115–117). The
+check confirms the 12° burned condition, the ten-rule order, the compound
+cadent-or-burnt-path seventh rule, the Latin/Arabic note on the eighth rule,
+the strict below-12° slow-Moon rule, and “empty in course” as the tenth rule.
+The check preserves rather than resolves Dykes's stated uncertainties.
+
 Do not begin works when any of these hold. **Preserve as named Sahl variants;
 do not merge with Dorotheus/Ramesey/Lilly without labeling.**
 

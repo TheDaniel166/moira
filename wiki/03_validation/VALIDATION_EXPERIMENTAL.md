@@ -409,9 +409,10 @@ Status: Validated
 Validated in `tests/unit/test_experimental_validation.py`.
 
 Covered:
-- sector range
-- plus-zone classification
-- field integrity and edge cases
+- normal-geometry sector range and half-open boundaries
+- primary plus-zone classification after rise and upper culmination
+- explicit undefined-sector semantics for non-rising geometry
+- field integrity, polar singularities, and horizon-altitude bounds
 
 Status: Validated
 
