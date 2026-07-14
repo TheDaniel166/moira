@@ -549,6 +549,9 @@ astrodyne-, harmodyne-, and discordyne-days. The manual's constant-rate
 step, sample count, coarse comparison, and error estimate are explicit. The
 comparator is `null` for a partial interval whose endpoints are not both the
 one-degree limits.
+The integration request requires `max_samples >= 3`. The engine uses an even
+fine-interval count with a nested 2:1 coarse mesh; `sample_count` is the actual
+number of unique chronology evaluations and never exceeds `max_samples`.
 
 `/geometry` requires exactly the ten Astrodyne planets, declinations for those
 planets plus `M.C.` and `Asc.`, twelve cusps forming one ordered zodiacal

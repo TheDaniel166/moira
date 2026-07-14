@@ -16,10 +16,40 @@ class FixedStarLookupPolicy:
 
 @dataclass(frozen=True, slots=True)
 class HeliacalSearchPolicy:
-    """Vessel: Policy for heliacal event search and visibility thresholds."""
+    """Vessel: Policy for heliacal event search and visibility thresholds.
+
+    ``visibility_tolerance`` is retained only as a compatibility field.  No
+    governing heliacal computation has ever consumed it, so values other than
+    the historical default are rejected rather than silently pretending to
+    alter visibility doctrine.
+    """
     setting_elongation_threshold: float = 12.0
     visibility_tolerance: float = 1.0
     setting_visibility_factor: float = 0.5
+
+    def __post_init__(self) -> None:
+        if (
+            isinstance(self.setting_elongation_threshold, bool)
+            or not math.isfinite(self.setting_elongation_threshold)
+            or self.setting_elongation_threshold <= 0.0
+        ):
+            raise ValueError(
+                "setting_elongation_threshold must be positive and finite"
+            )
+        if (
+            isinstance(self.setting_visibility_factor, bool)
+            or not math.isfinite(self.setting_visibility_factor)
+            or not 0.0 < self.setting_visibility_factor <= 1.0
+        ):
+            raise ValueError("setting_visibility_factor must be in (0, 1]")
+        if (
+            isinstance(self.visibility_tolerance, bool)
+            or not math.isfinite(self.visibility_tolerance)
+            or self.visibility_tolerance != 1.0
+        ):
+            raise ValueError(
+                "visibility_tolerance is a reserved compatibility field and must be 1.0"
+            )
 
 @dataclass(frozen=True, slots=True)
 class FixedStarComputationPolicy:

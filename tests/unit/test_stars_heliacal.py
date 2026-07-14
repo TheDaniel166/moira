@@ -59,7 +59,7 @@ def test_heliacal_setting_event_returns_last_visible_morning(monkeypatch: pytest
         return _FakeBody(100.0, magnitude=1.2)
 
     def _fake_planet_at(body: str, jd_ut: float, **kwargs: object) -> _FakeBody:
-        if jd_ut < 2451546.0:
+        if jd_ut <= 2451546.0:
             return _FakeBody(114.5)
         return _FakeBody(104.0)
 
@@ -71,10 +71,10 @@ def test_heliacal_setting_event_returns_last_visible_morning(monkeypatch: pytest
     event = stars.heliacal_setting_event("Sirius", 2451545.0, 31.2, 29.9, arcus_visionis=10.0, search_days=30)
 
     assert event.is_found is True
-    assert event.jd_ut == pytest.approx(2451545.25)
+    assert event.jd_ut == pytest.approx(2451545.75)
     assert event.event_kind == "heliacal_setting"
     assert event.computation_truth is not None
-    assert event.computation_truth.qualifying_day_offset == 0
+    assert event.computation_truth.qualifying_day_offset == 1
 
 
 def test_heliacal_rising_returns_none_when_not_found(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -89,6 +89,78 @@ def test_heliacal_rising_returns_none_when_not_found(monkeypatch: pytest.MonkeyP
 def test_heliacal_event_rejects_invalid_arcus() -> None:
     with pytest.raises(ValueError, match="arcus_visionis must be a positive finite value"):
         stars.heliacal_rising_event("Sirius", 2451545.0, 31.2, 29.9, arcus_visionis=0.0)
+
+
+def test_python_heliacal_rising_skips_twilight_before_forward_start(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    jd_start = 2451545.3
+    monkeypatch.setattr(stars, "_heliacal_signed_elongation", lambda *args: -15.0)
+    monkeypatch.setattr(
+        "moira.heliacal._find_sun_at_alt",
+        lambda jd_midnight, *args, **kwargs: jd_midnight + 0.25,
+    )
+    monkeypatch.setattr(stars, "_star_altitude", lambda *args, **kwargs: 6.0)
+
+    event = stars.heliacal_rising_event(
+        "Sirius",
+        jd_start,
+        31.2,
+        29.9,
+        arcus_visionis=10.0,
+        search_days=3,
+    )
+
+    assert event.is_found is True
+    assert event.jd_ut == pytest.approx(2451545.75)
+    assert event.jd_ut >= jd_start
+    assert event.computation_truth.qualifying_day_offset == 1
+
+
+def test_python_heliacal_setting_never_remembers_visibility_before_forward_start(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    jd_start = 2451545.3
+
+    def _signed_elongation(_name: str, jd_ut: float) -> float:
+        return -15.0 if jd_ut < 2451546.0 else -4.0
+
+    monkeypatch.setattr(stars, "_heliacal_signed_elongation", _signed_elongation)
+    monkeypatch.setattr(
+        "moira.heliacal._find_sun_at_alt",
+        lambda jd_midnight, *args, **kwargs: jd_midnight + 0.25,
+    )
+    monkeypatch.setattr(stars, "_star_altitude", lambda *args, **kwargs: 6.0)
+
+    event = stars.heliacal_setting_event(
+        "Sirius",
+        jd_start,
+        31.2,
+        29.9,
+        arcus_visionis=10.0,
+        search_days=4,
+    )
+
+    assert event.is_found is False
+    assert event.jd_ut is None
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    [
+        ({"setting_elongation_threshold": 0.0}, "setting_elongation_threshold"),
+        ({"setting_elongation_threshold": float("nan")}, "setting_elongation_threshold"),
+        ({"setting_visibility_factor": 0.0}, "setting_visibility_factor"),
+        ({"setting_visibility_factor": 1.01}, "setting_visibility_factor"),
+        ({"visibility_tolerance": 0.5}, "visibility_tolerance"),
+    ],
+)
+def test_heliacal_policy_rejects_invalid_or_unsupported_states(
+    kwargs: dict[str, float],
+    message: str,
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        HeliacalSearchPolicy(**kwargs)
 
 
 # ---------------------------------------------------------------------------

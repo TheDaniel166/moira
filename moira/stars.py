@@ -1049,6 +1049,35 @@ def _build_heliacal_event(
     )
 
 
+def _native_heliacal_time_policy(
+    jd_start: float,
+    search_days: int,
+) -> tuple[float, float, float, float]:
+    """Return native evaluator bounds and the linear Delta-T search policy.
+
+    Native morning searches evaluate each admitted civil day from midnight
+    through noon while applying the Delta-T value anchored at that day's noon.
+    The returned TT bounds therefore describe the complete evaluator interval,
+    not merely the caller's starting instant.
+    """
+
+    from .julian import ut_to_tt
+
+    jd_tt = ut_to_tt(jd_start)
+    jd_end = jd_start + search_days
+    delta_t_start = (jd_tt - jd_start) * 86400.0
+    delta_t_end = (ut_to_tt(jd_end) - jd_end) * 86400.0
+    delta_t_rate = (delta_t_end - delta_t_start) / search_days
+    jd_mid0 = math.floor(jd_start + 0.5) - 0.5
+    first_noon = jd_mid0 + 0.5
+    last_noon = jd_mid0 + search_days - 0.5
+    first_day_delta_t = delta_t_start + delta_t_rate * (first_noon - jd_start)
+    last_day_delta_t = delta_t_start + delta_t_rate * (last_noon - jd_start)
+    interval_start_tt = jd_mid0 + first_day_delta_t / 86400.0
+    interval_end_tt = last_noon + last_day_delta_t / 86400.0
+    return interval_start_tt, interval_end_tt, delta_t_start, delta_t_rate
+
+
 def _native_heliacal_event(
     event_kind: str,
     record: _SovereignStarRecord,
@@ -1071,14 +1100,21 @@ def _native_heliacal_event(
     ):
         return None
 
-    from .julian import ut_to_tt
     from .spk_reader import get_reader
 
     reader = get_reader()
-    jd_tt = ut_to_tt(jd_start)
-    earth_barycentric = reader.evaluator(399, 3, jd_tt)
-    emb_barycentric = reader.evaluator(3, 0, jd_tt)
-    sun_barycentric = reader.evaluator(10, 0, jd_tt)
+    interval_start_tt, interval_end_tt, delta_t_start, delta_t_rate = (
+        _native_heliacal_time_policy(jd_start, search_days)
+    )
+    earth_barycentric = reader.evaluator(
+        399, 3, interval_start_tt, jd_end_tt=interval_end_tt
+    )
+    emb_barycentric = reader.evaluator(
+        3, 0, interval_start_tt, jd_end_tt=interval_end_tt
+    )
+    sun_barycentric = reader.evaluator(
+        10, 0, interval_start_tt, jd_end_tt=interval_end_tt
+    )
     if earth_barycentric is None or emb_barycentric is None or sun_barycentric is None:
         return None
 
@@ -1092,15 +1128,10 @@ def _native_heliacal_event(
         record.parallax_mas,
         record.radial_velocity_km_s,
     )
-    jd_end = jd_start + search_days
-    delta_t_start = (jd_tt - jd_start) * 86400.0
-    delta_t_end = (ut_to_tt(jd_end) - jd_end) * 86400.0
     search_kwargs: dict[str, object] = {
         "delta_t": delta_t_start,
         "earth_eval": earth_ssb,
-        "delta_t_rate_seconds_per_day": (
-            delta_t_end - delta_t_start
-        ) / search_days,
+        "delta_t_rate_seconds_per_day": delta_t_rate,
         "nutation_cache": nutation_cache,
     }
     threshold = 0.0
@@ -1251,6 +1282,8 @@ def heliacal_rising_event(
         twilight_jd = _find_sun_at_alt(jd_midnight, latitude, longitude, -resolved_arcus, True)
         if twilight_jd is None:
             continue
+        if twilight_jd < jd_ut:
+            continue
         star_alt = _star_altitude(name, twilight_jd, latitude, longitude)
         # The apparent horizon lies at geometric altitude −0.5667° (standard
         # atmospheric refraction at the horizon lifts objects by ~34 arcmin).
@@ -1355,6 +1388,8 @@ def heliacal_setting_event(
         if se < 0.0 and abs_se >= setting_elongation_threshold:
             twilight_jd = _find_sun_at_alt(jd_midnight, latitude, longitude, -resolved_arcus, True)
             if twilight_jd is None:
+                continue
+            if twilight_jd < jd_ut:
                 continue
             star_alt = _star_altitude(name, twilight_jd, latitude, longitude)
             # Same apparent-horizon correction as heliacal rising.
@@ -1484,16 +1519,23 @@ def heliacal_catalog_batch(
         and getattr(resolved_policy, "allow_native", True)
         and getattr(resolved_policy, "use_native_heliacal", True)
     ):
-        from .julian import ut_to_tt
         from .spk_reader import get_reader
         
         reader = get_reader()
-        jd_tt = ut_to_tt(jd_start)
+        interval_start_tt, interval_end_tt, dt_val, dt_rate = (
+            _native_heliacal_time_policy(jd_start, search_days)
+        )
         
         # 1. Get Earth and Sun evaluators
-        e_bary = reader.evaluator(399, 3, jd_tt)
-        emb_bary = reader.evaluator(3, 0, jd_tt)
-        sun_ssb = reader.evaluator(10, 0, jd_tt)
+        e_bary = reader.evaluator(
+            399, 3, interval_start_tt, jd_end_tt=interval_end_tt
+        )
+        emb_bary = reader.evaluator(
+            3, 0, interval_start_tt, jd_end_tt=interval_end_tt
+        )
+        sun_ssb = reader.evaluator(
+            10, 0, interval_start_tt, jd_end_tt=interval_end_tt
+        )
         
         if e_bary and emb_bary and sun_ssb:
             earth_ssb = mn.SumEvaluator(e_bary, emb_bary)
@@ -1519,11 +1561,6 @@ def heliacal_catalog_batch(
                     skipped_latitude.append(record.name)
                     continue
                 candidates.append(record)
-
-            dt_val = (jd_tt - jd_start) * 86400.0
-            jd_end = jd_start + search_days
-            dt_end = (ut_to_tt(jd_end) - jd_end) * 86400.0
-            dt_rate = (dt_end - dt_val) / search_days
 
             def _search_record(record: _SovereignStarRecord):
                 star_ssb = mn.FixedStarEvaluator(

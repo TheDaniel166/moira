@@ -569,6 +569,74 @@ def test_single_star_native_not_found_matches_one_day_python_window() -> None:
 
 
 @pytest.mark.requires_ephemeris
+@pytest.mark.parametrize(
+    "search_function",
+    [stars.heliacal_rising_event, stars.heliacal_setting_event],
+)
+def test_native_single_and_batch_searches_never_return_before_forward_start(
+    search_function,
+) -> None:
+    kernel_path = find_planetary_kernel()
+    initial_start = julian_day(2024, 1, 1, 0.0)
+    native_policy = stars.FixedStarComputationPolicy(use_native_heliacal=True)
+
+    with SpkReader(kernel_path) as reader, use_reader_override(reader):
+        baseline = search_function(
+            "Sirius",
+            initial_start,
+            31.2,
+            29.9,
+            search_days=400,
+            policy=native_policy,
+        )
+        assert baseline.is_found is True
+        forward_start = baseline.jd_ut + 0.1
+        single = search_function(
+            "Sirius",
+            forward_start,
+            31.2,
+            29.9,
+            search_days=400,
+            policy=native_policy,
+        )
+        batch = stars.heliacal_catalog_batch(
+            baseline.event_kind,
+            forward_start,
+            31.2,
+            29.9,
+            names=["Sirius"],
+            search_days=400,
+            policy=native_policy,
+        )
+
+    assert single.is_found is True
+    assert single.jd_ut >= forward_start
+    assert len(batch.found) == 1
+    assert batch.found[0].jd_ut >= forward_start
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize("use_native", [False, True])
+def test_heliacal_setting_cannot_manufacture_event_beyond_de441_coverage(
+    use_native: bool,
+) -> None:
+    kernel_path = find_planetary_kernel()
+
+    with SpkReader(kernel_path) as reader, use_reader_override(reader):
+        with pytest.raises(ValueError, match="none covers JD"):
+            stars.heliacal_setting_event(
+                "Sirius",
+                8_000_000.0,
+                0.0,
+                0.0,
+                search_days=20,
+                policy=stars.FixedStarComputationPolicy(
+                    use_native_heliacal=use_native
+                ),
+            )
+
+
+@pytest.mark.requires_ephemeris
 def test_native_find_occultations_detects_solar_eclipse_window_and_respects_empty_window() -> None:
     kernel_path = find_planetary_kernel()
     eclipse_start = julian_day(2024, 4, 8, 0.0)

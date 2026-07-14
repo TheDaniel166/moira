@@ -14,6 +14,9 @@ from moira.astrodynes import ASTRODYNE_PLANETS, ASTRODYNE_POINTS
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
 from moira_server.models.astrodynes import AstrodynesChartRequest
+from moira_server.models.progressed_astrodynes import (
+    ProgressedInfluenceIntegrationRequest,
+)
 from moira_server.services.astrodynes import compute_astrodynes_chart
 
 
@@ -64,6 +67,14 @@ _GEOMETRY_PAYLOAD = {
     "asc_longitude": 0,
 }
 _FIXTURE_DIR = Path(__file__).parents[1] / "fixtures"
+
+
+def test_progressed_integration_request_requires_three_sample_minimum() -> None:
+    with pytest.raises(ValueError, match="greater than or equal to 3"):
+        ProgressedInfluenceIntegrationRequest(
+            **_PROGRESSED_SEARCH_PAYLOAD,
+            max_samples=2,
+        )
 
 
 def _progressed_payloads() -> tuple[dict, dict]:

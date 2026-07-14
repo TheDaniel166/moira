@@ -818,6 +818,13 @@ py::dict read_spk_chebyshev_segment_payload_py(
 std::shared_ptr<SpkSegmentEvaluator> load_spk_segment_evaluator_py(
     const std::string& path, int32_t start_i, int32_t end_i, bool little_endian, int32_t data_type
 ) {
+    DafCatalog catalog;
+    {
+        py::gil_scoped_release release;
+        catalog = read_daf_catalog(path);
+    }
+    const auto [coverage_start_jd, coverage_end_jd] =
+        spk_descriptor_coverage_jd(catalog, start_i, end_i, data_type);
     if (data_type == 13) {
         SpkType13SegmentPayload payload;
         {
@@ -825,6 +832,8 @@ std::shared_ptr<SpkSegmentEvaluator> load_spk_segment_evaluator_py(
             payload = read_spk_type13_segment_payload(path, start_i, end_i, little_endian);
         }
         return std::make_shared<SpkSegmentEvaluator>(
+            coverage_start_jd,
+            coverage_end_jd,
             std::move(payload.epochs_jd),
             std::move(payload.states),
             static_cast<size_t>(payload.window_size)
@@ -839,6 +848,8 @@ std::shared_ptr<SpkSegmentEvaluator> load_spk_segment_evaluator_py(
         );
     }
     return std::make_shared<SpkSegmentEvaluator>(
+        coverage_start_jd,
+        coverage_end_jd,
         data_type,
         false,
         payload.init,

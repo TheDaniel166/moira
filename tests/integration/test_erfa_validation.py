@@ -5,7 +5,14 @@ import math
 import pytest
 
 from moira.coordinates import mat_mul, nutation_matrix_equatorial, precession_matrix_equatorial
-from moira.julian import apparent_sidereal_time_at, earth_rotation_angle, greenwich_mean_sidereal_time, ut_to_tt
+from moira.julian import (
+    apparent_sidereal_time_at,
+    calendar_from_jd,
+    earth_rotation_angle,
+    greenwich_mean_sidereal_time,
+    julian_day,
+    ut_to_tt,
+)
 from moira.obliquity import nutation, true_obliquity
 from moira.precession import mean_obliquity_p03, precession_matrix
 
@@ -13,9 +20,12 @@ erfa = pytest.importorskip("erfa")
 
 ARCSEC = 3600.0
 PASS_THRESHOLD_ARCSEC = 0.001
+_BCE_EPOCHS = [
+    ("500 BCE (astronomical -499)", -499, 1538803.5),
+    ("200 BCE (astronomical -199)", -199, 1648376.5),
+]
 TEST_EPOCHS = [
-    ("-500 (500 BCE)", 1903682.5, 1903682.5),
-    ("-200 (200 BCE)", 1794303.5, 1794303.5),
+    *((label, jd, jd) for label, _astronomical_year, jd in _BCE_EPOCHS),
     ("J0000 (1 CE)", 1721045.5, 1721045.5),
     ("J1000.0", 2086308.0, 2086308.0),
     ("J1500.0", 2268923.5, 2268923.5),
@@ -46,6 +56,25 @@ def _matrix_max_diff_arcsec(erfa_matrix, moira_matrix) -> float:
         for j in range(3):
             max_diff = max(max_diff, abs(float(erfa_matrix[i][j]) - moira_matrix[i][j]))
     return max_diff * (180.0 / math.pi) * ARCSEC
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize(
+    ("label", "astronomical_year", "expected_jd"),
+    _BCE_EPOCHS,
+    ids=[label.split(" (")[0] for label, _, _ in _BCE_EPOCHS],
+)
+def test_bce_epoch_calendar_identity(
+    label: str,
+    astronomical_year: int,
+    expected_jd: float,
+) -> None:
+    erfa_d1, erfa_d2 = erfa.cal2jd(astronomical_year, 1, 1)
+
+    assert julian_day(astronomical_year, 1, 1) == expected_jd
+    assert float(erfa_d1 + erfa_d2) == expected_jd
+    assert calendar_from_jd(expected_jd) == (astronomical_year, 1, 1, 0.0)
+    assert (label, expected_jd, expected_jd) in TEST_EPOCHS
 
 
 @pytest.mark.integration

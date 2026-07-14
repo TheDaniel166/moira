@@ -139,6 +139,12 @@ one-degree curve over actual ephemeris motion. It is explicitly identified as
 Moira composite-trapezoid quadrature, reports its maximum step, sample count,
 coarse/fine error estimate, and retains the manual's constant-rate value as a
 comparator. It is not represented as a primary-source formula.
+The fine mesh has at least two intervals and is rounded upward to an even
+interval count. The coarse mesh is exactly every second fine node, so its step
+is twice the fine step and the reported Richardson error divisor of three is
+mathematically admitted. `max_samples` is checked against the resulting fine
+mesh before ephemeris evaluation, has a minimum of three, and `sample_count`
+reports the actual number of unique cached chronology evaluations.
 The comparator is absent for partial intervals because the manual's `0.75`
 average governs the complete one-degree passage, not an arbitrary slice.
 

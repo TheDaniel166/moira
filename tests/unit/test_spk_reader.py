@@ -57,6 +57,15 @@ class _FakeType2Segment(_FakeSegment):
         self._data = (0.0, 1000.0, coeff_record)
 
 
+class _FakeEvaluatorSegment(_FakeSegment):
+    def __init__(self, center: int, target: int, start_jd: float, end_jd: float, token: object) -> None:
+        super().__init__(center=center, target=target, start_jd=start_jd, end_jd=end_jd)
+        self.token = token
+
+    def _load_native_evaluator(self):
+        return self.token
+
+
 class _FakeKernel:
     def __init__(self, segments) -> None:
         self.segments = segments
@@ -116,6 +125,43 @@ def test_has_segment_at_is_epoch_aware_across_split_segments() -> None:
     assert reader.has_segment_at(0, 10, 3500.0) is True
     assert reader.has_segment_at(0, 10, 2500.0) is False
     assert reader.has_segment_at(0, 11, 1500.0) is False
+
+
+def test_evaluator_interval_requires_one_segment_to_cover_both_endpoints() -> None:
+    first = object()
+    second = object()
+    reader = _reader_with_segments(
+        _FakeEvaluatorSegment(0, 10, 1000.0, 2000.0, first),
+        _FakeEvaluatorSegment(0, 10, 2000.0, 3000.0, second),
+    )
+
+    assert reader.evaluator(10, 0, 1500.0, jd_end_tt=1900.0) is first
+    assert reader.evaluator(10, 0, 2100.0, jd_end_tt=2900.0) is second
+    assert reader.evaluator(10, 0, 1500.0, jd_end_tt=2500.0) is None
+
+
+def test_evaluator_interval_rejects_reversed_bounds() -> None:
+    reader = _reader_with_segments(
+        _FakeEvaluatorSegment(0, 10, 1000.0, 2000.0, object()),
+    )
+
+    with pytest.raises(ValueError, match="jd_end_tt"):
+        reader.evaluator(10, 0, 1600.0, jd_end_tt=1500.0)
+
+
+def test_planetary_segment_wrapper_rejects_outside_descriptor_before_native_io(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "not_opened.bsp"
+    segment = spk_reader._NativeChebyshevSegment(
+        path,
+        b"COVERAGE",
+        (0.0, 86400.0, 10, 0, 1, 2, 100, 200),
+        True,
+    )
+
+    with pytest.raises(spk_reader.OutOfRangeError, match="segment only covers"):
+        segment.compute(spk_reader.T0 - 1.0 / spk_reader.S_PER_DAY)
 
 
 def test_position_raises_when_no_segment_covers_requested_jd() -> None:

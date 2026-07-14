@@ -63,6 +63,34 @@ struct SpkType13SegmentPayload {
     std::vector<double> epochs_jd;
 };
 
+inline std::pair<double, double> spk_descriptor_coverage_jd(
+    const DafCatalog& catalog,
+    int32_t start_i,
+    int32_t end_i,
+    int32_t data_type
+) {
+    const auto summary = std::find_if(
+        catalog.summaries.begin(),
+        catalog.summaries.end(),
+        [=](const DafSummaryEntry& entry) {
+            return entry.start_i == start_i
+                && entry.end_i == end_i
+                && entry.data_type == data_type;
+        }
+    );
+    if (summary == catalog.summaries.end()) {
+        throw std::invalid_argument(
+            "SPK segment payload has no matching descriptor coverage"
+        );
+    }
+    const double start_jd = summary->start_second / 86400.0 + 2451545.0;
+    const double end_jd = summary->end_second / 86400.0 + 2451545.0;
+    if (!std::isfinite(start_jd) || !std::isfinite(end_jd) || start_jd > end_jd) {
+        throw std::invalid_argument("SPK descriptor coverage is invalid");
+    }
+    return {start_jd, end_jd};
+}
+
 namespace detail {
 
 inline bool host_is_little_endian() {
@@ -535,6 +563,8 @@ public:
             return it->second.evaluator;
         }
         std::shared_ptr<SpkSegmentEvaluator> evaluator;
+        const auto [coverage_start_jd, coverage_end_jd] =
+            spk_descriptor_coverage_jd(catalog, start_i, end_i, data_type);
         if (data_type == 13) {
             SpkType13SegmentPayload payload = read_spk_type13_segment_payload(
                 path,
@@ -543,6 +573,8 @@ public:
                 catalog.little_endian
             );
             evaluator = std::make_shared<SpkSegmentEvaluator>(
+                coverage_start_jd,
+                coverage_end_jd,
                 std::move(payload.epochs_jd),
                 std::move(payload.states),
                 static_cast<size_t>(payload.window_size)
@@ -550,6 +582,8 @@ public:
         } else {
             SpkChebyshevSegmentPayload payload = read_segment_payload(start_i, end_i, data_type);
             evaluator = std::make_shared<SpkSegmentEvaluator>(
+                coverage_start_jd,
+                coverage_end_jd,
                 data_type,
                 true,
                 payload.init,

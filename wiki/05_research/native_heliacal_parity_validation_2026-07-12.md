@@ -2,6 +2,8 @@
 
 Date: 2026-07-12
 
+Boundary hardening: 2026-07-14
+
 Status: admitted native accelerator; Python remains the governing manuscript
 
 ## Governing Product
@@ -36,6 +38,32 @@ The replacement:
 
 No second coefficient table or new runtime dependency was introduced.
 
+## Boundary Hardening
+
+The admitted accelerator now enforces two additional invariants shared with
+the Python manuscript:
+
+1. A forward search never returns or remembers a twilight event earlier than
+   `jd_start`. This applies to rising, setting, single-star, and catalog-batch
+   searches while preserving the existing civil-day `day_offset` meaning.
+2. A native SPK evaluator is bounded by the inclusive coverage in its own DAF
+   descriptor. Exact descriptor endpoints remain valid; out-of-range requests
+   raise instead of clamping to the first or last Chebyshev record or allowing
+   Hermite extrapolation.
+
+Native heliacal dispatch additionally requires one descriptor to cover the
+complete TT interval evaluated by the daily search. If that admission test
+fails, Python resumes epoch-by-epoch segment selection and raises on a real
+coverage gap. The reproduced DE441-end setting search now fails explicitly in
+both Python and native-enabled policy modes rather than returning a synthetic
+post-coverage event.
+
+`HeliacalSearchPolicy` now rejects non-finite or non-positive setting
+thresholds and setting visibility factors outside `(0, 1]`. The historical
+`visibility_tolerance` field has no source-owned computational meaning; it is
+therefore retained only as a compatibility field fixed at `1.0`, rather than
+silently accepting values that do not change the product.
+
 ## Differential Evidence
 
 The independent event corpus uses Python with `use_native_heliacal=False` and
@@ -64,6 +92,22 @@ The core series is compared with the scalar Python table evaluator to
 integration tolerance. Cold initialization, invalid replacement, concurrent
 readers, native argument rejection, single-star dispatch, adversarial native
 runtime, and server packet paths are also exercised.
+
+On 2026-07-14 the ERFA corpus's historical anchors were corrected to
+proleptic-Gregorian 500 BCE (astronomical year `-499`, JD `1538803.5`) and
+200 BCE (astronomical year `-199`, JD `1648376.5`). ERFA `cal2jd`, Moira
+`julian_day`, and Moira's inverse calendar conversion now jointly guard those
+identities. The corrected 12-epoch integration slice passed all 106 tests at
+the unchanged 0.001-arcsecond threshold; the worst corrected precession-
+nutation matrix residual was 0.000938 arcsecond.
+
+The 2026-07-14 boundary corpus also exercises raw type-2 and type-13 evaluators
+at both exact descriptor endpoints and one second outside them, the guarded
+Python/native type-13 differential path, forward-start probes immediately
+after known rising and setting events, and the DE441 terminal-coverage
+reproduction. Its consolidated focused gate passed 153 tests; two optional
+`jplephem` comparator tests skipped because that development-only comparator
+was not installed.
 
 ## Performance Evidence
 

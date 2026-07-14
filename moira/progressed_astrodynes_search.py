@@ -663,13 +663,16 @@ def integrate_progressed_influence(
     step = _positive(max_step_hours, "max_step_hours")
     if isinstance(max_samples, bool) or not isinstance(max_samples, int):
         raise TypeError("max_samples must be an integer")
-    if max_samples < 2:
-        raise ValueError("max_samples must be at least 2")
+    if max_samples < 3:
+        raise ValueError("max_samples must be at least 3")
     duration_hours = (end - start).total_seconds() / 3600.0
-    intervals = max(1, int(ceil(duration_hours / step)))
-    if intervals + 1 > max_samples:
+    fine_intervals = max(2, int(ceil(duration_hours / step)))
+    if fine_intervals % 2:
+        fine_intervals += 1
+    required_samples = fine_intervals + 1
+    if required_samples > max_samples:
         raise ValueError(
-            f"integration requires {intervals + 1} samples, exceeding max_samples={max_samples}"
+            f"integration requires {required_samples} samples, exceeding max_samples={max_samples}"
         )
     evaluator = _Evaluator(
         natal,
@@ -682,12 +685,21 @@ def integrate_progressed_influence(
         reenforces_major=None,
     )
 
-    def integrate(subintervals: int) -> tuple[float, float, float]:
-        dt_days = (end - start).total_seconds() / 86400.0 / subintervals
+    duration = end - start
+    duration_days = duration_hours / 24.0
+    fine_times = tuple(
+        start + duration * (index / fine_intervals)
+        for index in range(fine_intervals + 1)
+    )
+    coarse_times = fine_times[::2]
+
+    def integrate(sample_times: tuple[datetime, ...]) -> tuple[float, float, float]:
+        subintervals = len(sample_times) - 1
+        dt_days = duration_days / subintervals
         totals = [0.0, 0.0, 0.0]
-        previous = evaluator(start).moment
-        for index in range(1, subintervals + 1):
-            current = evaluator(start + (end - start) * (index / subintervals)).moment
+        previous = evaluator(sample_times[0]).moment
+        for sample_time in sample_times[1:]:
+            current = evaluator(sample_time).moment
             for slot, name in enumerate(("power", "harmony", "discord")):
                 totals[slot] += (
                     getattr(previous, name) + getattr(current, name)
@@ -695,9 +707,8 @@ def integrate_progressed_influence(
             previous = current
         return tuple(totals)  # type: ignore[return-value]
 
-    fine = integrate(intervals)
-    coarse = integrate(max(1, intervals // 2))
-    duration_days = duration_hours / 24.0
+    fine = integrate(fine_times)
+    coarse = integrate(coarse_times)
     evaluated = tuple(evaluator.cache.values())
     closest = min(evaluated, key=lambda item: item.moment.distance_arcmin)
     endpoints_are_orb_limits = all(
@@ -716,7 +727,7 @@ def integrate_progressed_influence(
         duration_days=duration_days,
         method="composite_trapezoid_actual_ephemeris",
         max_step_hours=step,
-        sample_count=intervals + 1,
+        sample_count=len(evaluator.cache),
         total_power_days=fine[0],
         total_harmony_days=fine[1],
         total_discord_days=fine[2],
@@ -724,6 +735,8 @@ def integrate_progressed_influence(
         average_harmony=fine[1] / duration_days,
         average_discord=fine[2] / duration_days,
         coarse_total_power_days=coarse[0],
+        # Composite trapezoid error is O(h^2).  The exact 2:1 nested mesh
+        # therefore admits the Richardson divisor 2^2 - 1 = 3.
         power_error_estimate_days=abs(fine[0] - coarse[0]) / 3.0,
         constant_rate_comparator_power_days=comparator,
         constant_rate_difference_days=(

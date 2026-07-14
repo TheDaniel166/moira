@@ -90,14 +90,21 @@ Current modern/future occultation path envelope:
 **Oracle:** ERFA / SOFA (IAU standard routines)  
 **Threshold:** 0.001 arcsecond (1 milliarcsecond)  
 **Epoch corpus:** 12 canonical epochs, 500 BCE to 2100 CE  
-**Test file:** `tests/integration/test_erfa_validation.py` - **104 passed**
+**Test file:** `tests/integration/test_erfa_validation.py` - **106 passed**
+
+The BCE anchors are proleptic-Gregorian 1 January in astronomical year
+numbering: 500 BCE is year `-499`, JD `1538803.5`; 200 BCE is year `-199`, JD
+`1648376.5`. The test independently derives both JDs through ERFA `cal2jd` and
+Moira `julian_day`, then enforces the Moira calendar round trip. This identity
+guard was added on 2026-07-14 after the previous numeric literals were found to
+identify positive-CE dates rather than their labels.
 
 ### 3.1 Greenwich Mean Sidereal Time
 
 **Model:** IAU 2006 ERA-based (Capitaine et al. 2003)  
 **ERFA ref:** `erfa.gmst06`
 
-Max error: **0.000075 arcsec** | Mean: 0.000017 arcsec | ALL PASS
+Max error: **0.000089 arcsec** | Mean: 0.000019 arcsec | ALL PASS
 
 ### 3.2 Earth Rotation Angle
 
@@ -105,7 +112,7 @@ Max error: **0.000075 arcsec** | Mean: 0.000017 arcsec | ALL PASS
 **ERFA ref:** `erfa.era00`
 **Moira surface:** `julian.earth_rotation_angle()`
 
-Max error: **0.000075 arcsec** | Mean: 0.000017 arcsec | ALL PASS
+Max error: **0.000089 arcsec** | Mean: 0.000019 arcsec | ALL PASS
 
 ### 3.3 Mean Obliquity
 
@@ -119,21 +126,21 @@ Max error: **1.28 × 10⁻¹¹ arcsec** (floating-point floor) | ALL PASS
 **Model:** IAU 2000A, 1358 luni-solar + 1056 planetary terms (2414 total), IAU 2006 corrections
 **ERFA ref:** `erfa.nut06a`
 
-Max error: **0.000369 arcsec** | Mean: 0.000084 arcsec | ALL PASS
+Max error: **0.000526 arcsec** | Mean: 0.000108 arcsec | ALL PASS
 
 ### 3.5 Nutation in Obliquity (Delta epsilon)
 
 **Model:** IAU 2000A (same series as 3.4)
 **ERFA ref:** `erfa.nut06a`
 
-Max error: **0.000168 arcsec** | Mean: 0.000029 arcsec | ALL PASS
+Max error: **0.000149 arcsec** | Mean: 0.000029 arcsec | ALL PASS
 
 ### 3.6 True Obliquity
 
 **Model:** mean obliquity (3.3) + Δε (3.5)
 **ERFA ref:** `erfa.obl06` + `erfa.nut06a`
 
-Max error: **0.000168 arcsec** | ALL PASS
+Max error: **0.000149 arcsec** | ALL PASS
 
 ### 3.7 Greenwich Apparent Sidereal Time — Approximation Cross-Check
 
@@ -143,7 +150,7 @@ internal consistency of GMST, nutation, and obliquity — not the full GAST mode
 **ERFA ref:** `erfa.gmst06` + `erfa.nut06a` + `erfa.obl06` (not `erfa.gst06a`)
 **Test:** `test_gast_approximation_matches_erfa`
 
-Max error: **0.000349 arcsec** | Mean: 0.000074 arcsec | ALL PASS (12 epochs)
+Max error: **0.000392 arcsec** | Mean: 0.000090 arcsec | ALL PASS (12 epochs)
 
 ### 3.7.1 Full GAST — Oracle Comparison Against `erfa.gst06a`
 
@@ -198,7 +205,7 @@ Moira produces for historical charts.
 **ERFA ref:** `erfa.pmat06`
 **Moira surface:** `precession_matrix()`
 
-Max error: **0.000452 arcsec** | Mean: 0.000142 arcsec | ALL PASS
+Max error: **0.000532 arcsec** | Mean: 0.000163 arcsec | ALL PASS
 
 ### 3.9 Combined Precession-Nutation Matrix
 
@@ -206,7 +213,7 @@ Max error: **0.000452 arcsec** | Mean: 0.000142 arcsec | ALL PASS
 **ERFA ref:** `erfa.pnm06a`
 **Moira surface:** `mat_mul(nutation_matrix_equatorial(), precession_matrix_equatorial())`
 
-Max error: **0.000667 arcsec** | Mean: 0.000161 arcsec | ALL PASS
+Max error: **0.000938 arcsec** | Mean: 0.000195 arcsec | ALL PASS
 
 ---
 

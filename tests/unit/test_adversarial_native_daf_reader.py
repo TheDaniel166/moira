@@ -20,6 +20,7 @@ import moira._spk_body_kernel as body_kernel
 import moira.spk_reader as spk_reader
 from moira._spk_body_kernel import OutOfRangeError, SmallBodyKernel, _NativeChebyshevSegment
 from moira.daf_writer import write_spk_type13
+from moira._kernel_paths import find_planetary_kernel
 
 
 _ONE_SECOND_JD = 1.0 / 86400.0
@@ -105,6 +106,54 @@ def test_adversarial_small_body_kernel_accepts_exact_coverage_boundaries(
         assert all(math.isfinite(value) for value in end_vec)
     finally:
         kernel.close()
+
+
+def test_raw_native_type13_evaluator_enforces_descriptor_coverage(
+    tmp_path: Path,
+) -> None:
+    if not body_kernel._HAS_NATIVE_DAF:
+        pytest.skip("native small-body DAF reader is unavailable")
+
+    path = tmp_path / "raw_type13_coverage.bsp"
+    _synthetic_type13_kernel(path)
+    catalog = spk_reader._moira_native.read_daf_catalog(str(path))
+    descriptor = tuple(catalog["summaries"][0]["descriptor"])
+    start_second, end_second, *_identity, data_type, start_i, end_i = descriptor
+    start_jd = body_kernel._jd(float(start_second))
+    end_jd = body_kernel._jd(float(end_second))
+    evaluator = spk_reader._moira_native.load_spk_segment_evaluator(
+        str(path), int(start_i), int(end_i), True, int(data_type)
+    )
+
+    assert all(math.isfinite(value) for value in evaluator.position(start_jd))
+    assert all(math.isfinite(value) for value in evaluator.position(end_jd))
+    with pytest.raises(ValueError, match="descriptor coverage"):
+        evaluator.position(start_jd - _ONE_SECOND_JD)
+    with pytest.raises(ValueError, match="descriptor coverage"):
+        evaluator.position(end_jd + _ONE_SECOND_JD)
+
+
+@pytest.mark.requires_ephemeris
+def test_raw_native_type2_evaluator_enforces_de441_descriptor_coverage() -> None:
+    path = find_planetary_kernel()
+    catalog = spk_reader._moira_native.read_daf_catalog(str(path))
+    summary = next(
+        item for item in catalog["summaries"] if int(item["descriptor"][5]) == 2
+    )
+    descriptor = tuple(summary["descriptor"])
+    start_second, end_second, *_identity, data_type, start_i, end_i = descriptor
+    start_jd = body_kernel._jd(float(start_second))
+    end_jd = body_kernel._jd(float(end_second))
+    evaluator = spk_reader._moira_native.load_spk_segment_evaluator(
+        str(path), int(start_i), int(end_i), bool(catalog["little_endian"]), int(data_type)
+    )
+
+    assert all(math.isfinite(value) for value in evaluator.position(start_jd))
+    assert all(math.isfinite(value) for value in evaluator.position(end_jd))
+    with pytest.raises(ValueError, match="descriptor coverage"):
+        evaluator.position(start_jd - _ONE_SECOND_JD)
+    with pytest.raises(ValueError, match="descriptor coverage"):
+        evaluator.position(end_jd + _ONE_SECOND_JD)
 
 
 def test_adversarial_small_body_kernel_rejects_one_second_outside_coverage(

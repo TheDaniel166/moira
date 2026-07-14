@@ -2,7 +2,9 @@
 #define MOIRA_NATIVE_EVALUATORS_HPP
 
 #include <cstdint>
+#include <cmath>
 #include <mutex>
+#include <stdexcept>
 #include <vector>
 #include <memory>
 #include "interpolation.hpp"
@@ -99,6 +101,8 @@ class SpkSegmentEvaluator : public IEvaluator {
 public:
     int32_t data_type;
     bool coefficients_in_file_order;
+    double coverage_start_jd;
+    double coverage_end_jd;
     double init;
     double intlen;
     size_t record_count;
@@ -110,6 +114,8 @@ public:
     size_t type13_window_size;
 
     SpkSegmentEvaluator(
+        double coverage_start_jd,
+        double coverage_end_jd,
         int32_t data_type,
         bool coefficients_in_file_order,
         double init,
@@ -121,6 +127,8 @@ public:
     )
         : data_type(data_type),
           coefficients_in_file_order(coefficients_in_file_order),
+          coverage_start_jd(coverage_start_jd),
+          coverage_end_jd(coverage_end_jd),
           init(init),
           intlen(intlen),
           record_count(rec_count),
@@ -130,12 +138,16 @@ public:
           type13_window_size(0) {}
 
     SpkSegmentEvaluator(
+        double coverage_start_jd,
+        double coverage_end_jd,
         std::vector<double> epochs_jd,
         std::vector<double> states,
         size_t window_size
     )
         : data_type(13),
           coefficients_in_file_order(false),
+          coverage_start_jd(coverage_start_jd),
+          coverage_end_jd(coverage_end_jd),
           init(0.0),
           intlen(0.0),
           record_count(0),
@@ -157,6 +169,7 @@ public:
     }
 
     void position(double jd, double jd2, double* result) const {
+        validate_descriptor_epoch(jd, jd2);
         if (data_type == 13) {
             double full_state[6];
             spk_type13_record_inplace(
@@ -196,6 +209,7 @@ public:
     }
 
     void position_and_velocity(double jd, double jd2, double* position_out, double* velocity_out) const {
+        validate_descriptor_epoch(jd, jd2);
         if (data_type == 13) {
             double full_state[6];
             spk_type13_record_inplace(
@@ -259,6 +273,19 @@ public:
     }
 
 private:
+    void validate_descriptor_epoch(double jd, double jd2) const {
+        const double epoch = jd + jd2;
+        if (
+            !std::isfinite(epoch)
+            || epoch < coverage_start_jd
+            || epoch > coverage_end_jd
+        ) {
+            throw std::invalid_argument(
+                "SPK evaluator epoch is outside descriptor coverage"
+            );
+        }
+    }
+
     std::pair<size_t, double> epoch_record_and_offset(double jd, double jd2) const {
         const double offset_seconds = (jd - 2451545.0) * 86400.0 - init;
         double index1;
@@ -282,12 +309,10 @@ private:
         const double index3 = std::floor(combined_offset / intlen);
         double offset = combined_offset - index3 * intlen;
         int64_t index = static_cast<int64_t>(index1 + index2 + index3);
-        if (index < 0) {
-            index = 0;
-            offset = 0.0;
-        } else if (static_cast<size_t>(index) > record_count) {
-            index = static_cast<int64_t>(record_count - 1);
-            offset = intlen;
+        if (index < 0 || static_cast<size_t>(index) > record_count) {
+            throw std::invalid_argument(
+                "SPK evaluator record index is outside descriptor payload"
+            );
         } else if (static_cast<size_t>(index) == record_count) {
             index -= 1;
             offset += intlen;

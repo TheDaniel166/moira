@@ -391,6 +391,7 @@ inline HeliacalEvent search_heliacal_rising(
         // 2. Find twilight JD when Sun is at -arcus_visionis (with aberration)
         auto twilight_jd = find_sun_at_alt(sun_eval, jd_midnight, lat, lon, -arcus_visionis_val, true, day_delta_t, earth_eval);
         if (!twilight_jd) continue;
+        if (*twilight_jd < jd_start) continue;
         
         // 3. Check star altitude at twilight
         // star_alt must be geometric > -0.5667 (apparent horizon)
@@ -470,6 +471,7 @@ inline HeliacalEvent search_heliacal_setting(
         if (se < 0.0 && abs_se >= setting_elongation_threshold) {
             auto twilight_jd = find_sun_at_alt(sun_eval, jd_midnight, lat, lon, -arcus_visionis_val, true, day_delta_t, earth_eval);
             if (twilight_jd) {
+                if (*twilight_jd < jd_start) continue;
                 double star_alt = target_topocentric_altitude(star_eval, *twilight_jd, lat, lon, 1013.25, 10.0, false, day_delta_t);
                 if (star_alt > -0.5667) {
                     HeliacalEvent ev;

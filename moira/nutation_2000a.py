@@ -264,8 +264,9 @@ def nutation_2000a(jd_tt: float) -> tuple[float, float]:
     tests.
 
     Validated agreement: the current ERFA oracle suite verifies the enclosing
-    nutation / precession stack to within 0.001 arcsecond over the tested grid
-    from 500 BCE through 2100 CE.
+    nutation / precession stack to within 0.001 arcsecond over a 12-epoch grid
+    from 500 BCE (astronomical year -499) through 2100 CE. The BCE anchors are
+    guarded by ERFA and Moira proleptic-Gregorian calendar-identity checks.
 
     The scalar series evaluator is the governing implementation. It is kept
     fully visible and dependency-light per Moira's doctrine of inspectable

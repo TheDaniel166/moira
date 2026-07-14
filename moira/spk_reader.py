@@ -489,6 +489,16 @@ class _NativeChebyshevSegment:
         return self._data
 
     def _evaluate(self, tdb: float, tdb2: float, need_rates: bool):
+        epoch = float(tdb) + float(tdb2)
+        if not self.start_jd <= epoch <= self.end_jd:
+            raise OutOfRangeError(
+                "segment only covers dates %d-%02d-%02d through %d-%02d-%02d"
+                % (
+                    compute_calendar_date(self.start_jd + 0.5)
+                    + compute_calendar_date(self.end_jd + 0.5)
+                ),
+                out_of_range_times=True,
+            )
         if self._handle is not None:
             if need_rates and hasattr(self._handle, "segment_position_and_velocity"):
                 return self._handle.segment_position_and_velocity(
@@ -958,21 +968,46 @@ class SpkReader:
         """Return a concise string representation showing the kernel filename."""
         return f"SpkReader('{self._path.name}')"
 
-    def evaluator(self, target: int, center: int = 0, jd_tt: float = 2451545.0) -> object:
+    def evaluator(
+        self,
+        target: int,
+        center: int = 0,
+        jd_tt: float = 2451545.0,
+        *,
+        jd_end_tt: float | None = None,
+    ) -> object:
         """
         Return a native IEvaluator for *target* relative to *center* at *jd_tt*.
 
         This method allows other modules to obtain a high-performance C++ evaluator
-        for a specific body pair. If the kernel contains a segment covering the
-        requested triple, a native evaluator is returned; otherwise returns None.
+        for a specific body pair. If ``jd_end_tt`` is supplied, one segment must
+        cover the complete inclusive interval; evaluators cannot silently cross
+        from one SPK descriptor into another. Otherwise only ``jd_tt`` is tested.
+
+        Returns ``None`` when no single native segment covers the request.
         """
         self._ensure_open()
+        if jd_end_tt is not None and jd_end_tt < jd_tt:
+            raise ValueError("jd_end_tt must be greater than or equal to jd_tt")
         try:
-            segment = self._segment_for(center, target, jd_tt)
-            if hasattr(segment, '_load_native_evaluator'):
-                return segment._load_native_evaluator()
+            if jd_end_tt is None:
+                segment = self._segment_for(center, target, jd_tt)
+            else:
+                segment = next(
+                    (
+                        candidate
+                        for candidate in self._segments_for_pair(center, target)
+                        if candidate.start_jd <= jd_tt
+                        and jd_end_tt <= candidate.end_jd
+                    ),
+                    None,
+                )
+                if segment is None:
+                    return None
         except (KeyError, ValueError):
-            pass
+            return None
+        if hasattr(segment, '_load_native_evaluator'):
+            return segment._load_native_evaluator()
         return None
 
 
@@ -1083,17 +1118,39 @@ class KernelPool:
             out_of_range_times=True,
         )
 
-    def evaluator(self, target: int, center: int = 0, jd_tt: float = 2451545.0) -> object:
+    def evaluator(
+        self,
+        target: int,
+        center: int = 0,
+        jd_tt: float = 2451545.0,
+        *,
+        jd_end_tt: float | None = None,
+    ) -> object:
         """
         Return a native IEvaluator for *target* relative to *center* at *jd_tt*.
 
-        Searches readers in fallback order and returns the first available evaluator.
+        Searches readers in fallback order and returns the first evaluator whose
+        one descriptor covers the requested point or inclusive interval.
         """
+        if jd_end_tt is not None and jd_end_tt < jd_tt:
+            raise ValueError("jd_end_tt must be greater than or equal to jd_tt")
         for reader in self._readers:
             try:
-                if hasattr(reader, "has_segment_at") and reader.has_segment_at(center, target, jd_tt):
+                if (
+                    hasattr(reader, "has_segment_at")
+                    and reader.has_segment_at(center, target, jd_tt)
+                    and (
+                        jd_end_tt is None
+                        or reader.has_segment_at(center, target, jd_end_tt)
+                    )
+                ):
                     if hasattr(reader, "evaluator"):
-                        ev = reader.evaluator(target, center, jd_tt)
+                        ev = reader.evaluator(
+                            target,
+                            center,
+                            jd_tt,
+                            jd_end_tt=jd_end_tt,
+                        )
                         if ev is not None:
                             return ev
             except (KeyError, AttributeError):

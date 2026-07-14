@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from bisect import bisect_left
 import json
+import math
 from pathlib import Path
 
 from .coordinates import Vec3
@@ -61,6 +62,27 @@ class OutOfRangeError(ValueError):
     def __init__(self, message, out_of_range_times):
         self.args = (message,)
         self.out_of_range_times = out_of_range_times
+
+
+def _validate_segment_epoch(
+    tdb: float,
+    tdb2: float,
+    start_jd: float,
+    end_jd: float,
+) -> float:
+    """Return the combined epoch after enforcing inclusive descriptor truth."""
+
+    epoch = float(tdb) + float(tdb2)
+    if not math.isfinite(epoch) or not start_jd <= epoch <= end_jd:
+        raise OutOfRangeError(
+            "segment only covers dates %d-%02d-%02d through %d-%02d-%02d"
+            % (
+                compute_calendar_date(start_jd + 0.5)
+                + compute_calendar_date(end_jd + 0.5)
+            ),
+            out_of_range_times=True,
+        )
+    return epoch
 
 
 _HAS_NATIVE_DAF = _moira_native is not None and hasattr(_moira_native, "read_daf_catalog")
@@ -437,6 +459,7 @@ class _NativeChebyshevSegment:
         return self._native_evaluator
 
     def _evaluate(self, tdb: float, tdb2: float, need_rates: bool):
+        _validate_segment_epoch(tdb, tdb2, self.start_jd, self.end_jd)
         evaluator = self._load_native_evaluator()
         if evaluator is not None:
             if need_rates:
@@ -619,6 +642,7 @@ class _Type13Segment:
         return self._native_evaluator
 
     def _evaluate(self, tdb: float, tdb2: float, need_rates: bool):
+        t = _validate_segment_epoch(tdb, tdb2, self.start_jd, self.end_jd)
         evaluator = self._load_native_evaluator()
         if evaluator is not None:
             if need_rates:
@@ -629,8 +653,6 @@ class _Type13Segment:
         # Only reached when native SpkSegmentEvaluator (data_type=13) is unavailable.
         # This path is intentionally kept as the permanent, no-native-dependency fallback.
         states, epochs_jd, ws = self._data
-        t = float(tdb) + float(tdb2)
-
         idx = bisect_left(epochs_jd, t)
         half = ws // 2
         start = max(0, min(idx - half, len(epochs_jd) - ws))

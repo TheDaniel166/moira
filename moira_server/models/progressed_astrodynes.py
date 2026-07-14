@@ -152,7 +152,7 @@ class ProgressedInfluenceIntegrationRequest(_StrictModel):
     house_system: str = "P"
     allow_house_fallback: bool = False
     max_step_hours: float = Field(default=6.0, gt=0.0)
-    max_samples: int = Field(default=50_000, ge=2, le=200_000)
+    max_samples: int = Field(default=50_000, ge=3, le=200_000)
 
     @field_validator("natal_dt", "start_dt", "end_dt")
     @classmethod
