@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.2.1] - 2026-07-14
+
+### Fixed
+- **Relationship REST Completion**: `POST /v1/composite/chart` and
+  `POST /v1/davison/chart` now embed position-owned aspect analysis under a
+  required `aspects` member. Website consumers no longer need to extract the
+  returned longitudes and make a second `/v1/aspects/from-longitudes` request.
+- **Derived-Chart Policy Wiring**: The existing `tier`, `orb_factor`, and
+  `include_nodes` relationship request fields now govern composite and Davison
+  aspect analysis instead of being ignored by those two routes. Omitted or
+  null values resolve to tier `1`, orb factor `1.0`, and node inclusion.
+
+### Compatibility
+- Existing composite and Davison chart, house, computation-truth,
+  classification, relation, and condition-profile fields are unchanged.
+- The response addition is intentional and additive. Strict REST consumers
+  that reject unknown response members must admit the new `aspects` member.
+- The standalone `POST /v1/aspects/from-longitudes` route remains available
+  for arbitrary supplied-position products.
+- Embedded analysis remains position-only: `applying` is null and no speed,
+  stationary, retrograde, or applying/separating state is fabricated.
+
+### Validation
+- Added OpenAPI assertions that both relationship responses require the shared
+  `AspectsFromLongitudesResponse` schema.
+- Added REST policy-propagation and engine-parity checks for both composite
+  methods and all five Davison methods, plus invalid-policy rejection.
+
 ## [4.2.0] - 2026-07-14
 
 ### Added

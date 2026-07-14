@@ -265,6 +265,7 @@ class CompositeClassificationResponse(_StrictModel):
 class CompositeChartResponse(_StrictModel):
     planets: dict[str, float]
     nodes: dict[str, float]
+    aspects: AspectsFromLongitudesResponse
     cusps: list[float]
     asc: float | None = None
     mc: float | None = None
@@ -275,7 +276,34 @@ class CompositeChartResponse(_StrictModel):
     condition_profile: SynastryConditionProfileResponse | None = None
 
 
-class CompositeChartRequest(SynastryPairRequest):
+class _DerivedChartRequest(SynastryPairRequest):
+    tier: Literal[0, 1, 2] | None = None
+    orb_factor: float | None = Field(default=None, gt=0.0, le=10.0)
+    include_nodes: bool | None = None
+
+    @field_validator("tier", mode="before")
+    @classmethod
+    def _strict_derived_tier(cls, value: Any) -> Any:
+        if isinstance(value, bool):
+            raise ValueError("tier must be 0, 1, or 2")
+        return value
+
+    @field_validator("orb_factor", mode="before")
+    @classmethod
+    def _strict_derived_orb_factor(cls, value: Any) -> Any:
+        if isinstance(value, bool):
+            raise ValueError("orb_factor must be a finite number")
+        return value
+
+    @field_validator("include_nodes", mode="before")
+    @classmethod
+    def _strict_derived_include_nodes(cls, value: Any) -> Any:
+        if value is not None and not isinstance(value, bool):
+            raise ValueError("include_nodes must be a boolean")
+        return value
+
+
+class CompositeChartRequest(_DerivedChartRequest):
     method: str = "midpoint"
     reference_latitude: float | None = None
     house_system: str | None = None
@@ -315,11 +343,12 @@ class DavisonInfoResponse(_StrictModel):
 
 class DavisonChartResponse(_StrictModel):
     chart: ChartResponse
+    aspects: AspectsFromLongitudesResponse
     houses: HousesResponse | None = None
     info: DavisonInfoResponse
 
 
-class DavisonChartRequest(SynastryPairRequest):
+class DavisonChartRequest(_DerivedChartRequest):
     method: str = "midpoint_location"
     reference_latitude: float | None = None
     reference_longitude: float | None = None

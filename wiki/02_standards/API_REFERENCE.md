@@ -548,6 +548,12 @@ message.
 | `davison_chart_spherical_midpoint(...)` | `DavisonChart` | Davison with midpoint time and spherical geographic midpoint |
 | `davison_chart_corrected(...)` | `DavisonChart` | Davison with midpoint location and corrected time |
 
+The REST forms `POST /v1/composite/chart` and `POST /v1/davison/chart` include
+a required `aspects` analysis of the returned chart's own longitudes. The
+request's `tier`, `orb_factor`, and `include_nodes` fields govern that nested
+analysis, whose computation truth preserves the absence of speed-derived
+motion semantics.
+
 ### Geography
 
 | Method | Returns | Description |

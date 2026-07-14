@@ -51,6 +51,99 @@ def _pair_payload() -> dict[str, object]:
     }
 
 
+def test_derived_chart_openapi_embeds_position_owned_aspect_analysis() -> None:
+    schema = create_app(ServerConfig(docs_enabled=False)).openapi()
+    schemas = schema["components"]["schemas"]
+
+    for response_name in ("CompositeChartResponse", "DavisonChartResponse"):
+        response_schema = schemas[response_name]
+        assert "aspects" in response_schema["required"]
+        assert response_schema["properties"]["aspects"] == {
+            "$ref": "#/components/schemas/AspectsFromLongitudesResponse"
+        }
+
+
+@pytest.mark.parametrize(
+    ("path", "policy"),
+    [
+        ("/v1/composite/chart", {"tier": True}),
+        ("/v1/composite/chart", {"tier": 3}),
+        ("/v1/composite/chart", {"orb_factor": 0.0}),
+        ("/v1/composite/chart", {"include_nodes": 1}),
+        ("/v1/davison/chart", {"tier": True}),
+        ("/v1/davison/chart", {"tier": 3}),
+        ("/v1/davison/chart", {"orb_factor": 0.0}),
+        ("/v1/davison/chart", {"include_nodes": 1}),
+    ],
+)
+def test_derived_chart_routes_reject_invalid_aspect_policy(
+    client_with_engine: TestClient,
+    path: str,
+    policy: dict[str, object],
+) -> None:
+    response = client_with_engine.post(path, json={**_pair_payload(), **policy})
+
+    assert response.status_code == 422
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize(
+    ("method", "extra"),
+    [
+        ("midpoint", {}),
+        ("reference_place", {"reference_latitude": 40.0}),
+    ],
+)
+def test_composite_variants_embed_aspects(
+    client_with_engine: TestClient,
+    method: str,
+    extra: dict[str, object],
+) -> None:
+    response = client_with_engine.post(
+        "/v1/composite/chart",
+        json={**_pair_payload(), "method": method, **extra},
+    )
+
+    assert response.status_code == 200
+    aspects = response.json()["aspects"]
+    assert aspects["computation_truth"]["tier"] == 1
+    assert aspects["computation_truth"]["orb_factor"] == 1.0
+    assert aspects["computation_truth"]["include_nodes"] is True
+    assert aspects["computation_truth"]["aspect_count"] == len(aspects["events"])
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize(
+    ("method", "extra"),
+    [
+        ("midpoint_location", {}),
+        ("uncorrected", {}),
+        (
+            "reference_place",
+            {"reference_latitude": 40.0, "reference_longitude": -75.0},
+        ),
+        ("spherical_midpoint", {}),
+        ("corrected", {}),
+    ],
+)
+def test_davison_variants_embed_aspects(
+    client_with_engine: TestClient,
+    method: str,
+    extra: dict[str, object],
+) -> None:
+    response = client_with_engine.post(
+        "/v1/davison/chart",
+        json={**_pair_payload(), "method": method, **extra},
+    )
+
+    assert response.status_code == 200
+    aspects = response.json()["aspects"]
+    assert aspects["computation_truth"]["tier"] == 1
+    assert aspects["computation_truth"]["orb_factor"] == 1.0
+    assert aspects["computation_truth"]["include_nodes"] is True
+    assert aspects["computation_truth"]["aspect_count"] == len(aspects["events"])
+
+
 @pytest.mark.requires_ephemeris
 def test_phase_seven_relationship_routes_match_engine_truth(client_with_engine: TestClient, moira_engine) -> None:
     pair = _pair_payload()
@@ -76,11 +169,15 @@ def test_phase_seven_relationship_routes_match_engine_truth(client_with_engine: 
     )
     direct_composite_aspects = moira_engine.aspects_from_longitudes(
         direct_composite.longitudes(),
-        tier=1,
+        tier=0,
+        orb_factor=1.25,
+        include_nodes=False,
     )
     direct_davison_aspects = moira_engine.aspects_from_longitudes(
         direct_davison.chart.longitudes(),
-        tier=1,
+        tier=0,
+        orb_factor=1.25,
+        include_nodes=False,
     )
     direct_syn_profile = synastry_chart_condition_profile(
         contacts=direct_contacts,
@@ -111,19 +208,23 @@ def test_phase_seven_relationship_routes_match_engine_truth(client_with_engine: 
     overlays_response = client_with_engine.post("/v1/synastry/overlays", json=pair)
     composite_response = client_with_engine.post(
         "/v1/composite/chart",
-        json={**pair, "method": "midpoint"},
+        json={
+            **pair,
+            "method": "midpoint",
+            "tier": 0,
+            "orb_factor": 1.25,
+            "include_nodes": False,
+        },
     )
     davison_response = client_with_engine.post(
         "/v1/davison/chart",
-        json={**pair, "method": "midpoint_location"},
-    )
-    composite_aspects_response = client_with_engine.post(
-        "/v1/aspects/from-longitudes",
-        json={"longitudes": direct_composite.longitudes(), "tier": 1},
-    )
-    davison_aspects_response = client_with_engine.post(
-        "/v1/aspects/from-longitudes",
-        json={"longitudes": direct_davison.chart.longitudes(), "tier": 1},
+        json={
+            **pair,
+            "method": "midpoint_location",
+            "tier": 0,
+            "orb_factor": 1.25,
+            "include_nodes": False,
+        },
     )
     syn_profile_response = client_with_engine.post("/v1/synastry/chart-condition", json=pair)
     syn_network_response = client_with_engine.post("/v1/synastry/network", json=pair)
@@ -180,22 +281,29 @@ def test_phase_seven_relationship_routes_match_engine_truth(client_with_engine: 
     assert composite_body["computation_truth"]["composite_mc"] == pytest.approx(
         direct_composite.mc
     )
+    composite_aspects_body = composite_body["aspects"]
+    assert composite_aspects_body["computation_truth"]["tier"] == 0
+    assert composite_aspects_body["computation_truth"]["orb_factor"] == 1.25
+    assert composite_aspects_body["computation_truth"]["include_nodes"] is False
 
     assert davison_response.status_code == 200
-    assert davison_response.json()["info"]["jd_midpoint"] == pytest.approx(direct_davison.info.jd_midpoint)
+    davison_body = davison_response.json()
+    assert davison_body["info"]["jd_midpoint"] == pytest.approx(direct_davison.info.jd_midpoint)
+    davison_aspects_body = davison_body["aspects"]
+    assert davison_aspects_body["computation_truth"]["tier"] == 0
+    assert davison_aspects_body["computation_truth"]["orb_factor"] == 1.25
+    assert davison_aspects_body["computation_truth"]["include_nodes"] is False
 
-    assert composite_aspects_response.status_code == 200
-    assert davison_aspects_response.status_code == 200
     assert [
         (item["body1"], item["body2"], item["aspect"], item["orb"])
-        for item in composite_aspects_response.json()["events"]
+        for item in composite_aspects_body["events"]
     ] == [
         (item.body1, item.body2, item.aspect, item.orb)
         for item in direct_composite_aspects.aspects
     ]
     assert [
         (item["body1"], item["body2"], item["aspect"], item["orb"])
-        for item in davison_aspects_response.json()["events"]
+        for item in davison_aspects_body["events"]
     ] == [
         (item.body1, item.body2, item.aspect, item.orb)
         for item in direct_davison_aspects.aspects

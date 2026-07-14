@@ -113,6 +113,24 @@ def compute_aspects_from_longitudes(
     )
 
 
+def _compute_derived_chart_aspects(
+    engine: Moira,
+    longitudes: dict[str, float],
+    request: SynastryPairRequest,
+):
+    """Apply the relationship request's explicit aspect policy to a derived chart."""
+
+    return compute_aspects_from_longitudes(
+        engine,
+        AspectsFromLongitudesRequest(
+            longitudes=longitudes,
+            tier=1 if request.tier is None else request.tier,
+            orb_factor=1.0 if request.orb_factor is None else request.orb_factor,
+            include_nodes=True if request.include_nodes is None else request.include_nodes,
+        ),
+    )
+
+
 def compute_synastry_contacts(engine: Moira, request: SynastryPairRequest):
     chart_a, _, chart_b, _ = _pair_artifacts(engine, request)
     return synastry_contacts(
@@ -190,6 +208,13 @@ def compute_composite_chart(engine: Moira, request: CompositeChartRequest):
     raise ValueError("unsupported composite method")
 
 
+def compute_composite_chart_analysis(engine: Moira, request: CompositeChartRequest):
+    """Return a composite chart together with analysis of its own positions."""
+
+    chart = compute_composite_chart(engine, request)
+    return chart, _compute_derived_chart_aspects(engine, chart.longitudes(), request)
+
+
 def compute_davison_chart(engine: Moira, request: DavisonChartRequest):
     first = request.first
     second = request.second
@@ -234,6 +259,17 @@ def compute_davison_chart(engine: Moira, request: DavisonChartRequest):
             reader=reader,
         )
     raise ValueError("unsupported davison method")
+
+
+def compute_davison_chart_analysis(engine: Moira, request: DavisonChartRequest):
+    """Return a Davison chart together with analysis of its own positions."""
+
+    chart = compute_davison_chart(engine, request)
+    return chart, _compute_derived_chart_aspects(
+        engine,
+        chart.chart.longitudes(),
+        request,
+    )
 
 
 def compute_synastry_chart_profile(engine: Moira, request: SynastryPairRequest):
@@ -336,7 +372,9 @@ __all__ = [
     "compute_aspects_from_longitudes",
     "compute_chart_shape",
     "compute_composite_chart",
+    "compute_composite_chart_analysis",
     "compute_davison_chart",
+    "compute_davison_chart_analysis",
     "compute_midpoint_clusters",
     "compute_midpoint_weighting",
     "compute_midpoints",

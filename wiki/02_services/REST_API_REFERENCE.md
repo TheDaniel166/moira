@@ -421,6 +421,14 @@ response computation truth records normalized inputs, effective tier and orb
 factor, node exclusions, counts, engine/facade entry points, and
 `motion_semantics: not_computed_without_speeds`.
 
+`POST /v1/composite/chart` and `POST /v1/davison/chart` also return this same
+analysis under their required `aspects` member. Their existing `tier`,
+`orb_factor`, and `include_nodes` request fields govern the nested analysis;
+omitted or null values resolve to tier `1`, orb factor `1.0`, and node
+inclusion. The composite and Davison chart vessels remain distinct, but REST
+consumers no longer need a second request to analyze the positions returned by
+those relationship-chart routes.
+
 ## Panchanga Routes
 
 | Method | Path | Handler |

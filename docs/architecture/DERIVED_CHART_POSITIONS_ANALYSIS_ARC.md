@@ -1,8 +1,8 @@
 # Derived Charts As First-Class Analysis Inputs
 
-Version: 0.1
+Version: 0.2
 Date: 2026-07-14
-Status: Priority 1 admitted; family-specific Priority 2 design remains open
+Status: Priority 1 REST composition complete; family-specific Priority 2 design remains open
 
 ## 1. Governing Object
 
@@ -27,6 +27,8 @@ Admitted surfaces:
   `aspects_from_longitudes`
 - `Moira.aspects_from_longitudes(...)`
 - `POST /v1/aspects/from-longitudes`
+- embedded `aspects` analysis in `POST /v1/composite/chart`
+- embedded `aspects` analysis in `POST /v1/davison/chart`
 
 The wrapper validates finite named inputs, normalizes all longitudes into
 `[0, 360)`, sorts point names before pair construction, applies an explicit
@@ -39,11 +41,16 @@ The REST route returns the existing `AspectData` shape. Its computation truth
 states that the inputs are caller-supplied ecliptic longitudes and that motion
 is not computed without speeds.
 
-## 3. Compatibility Boundary
+## 3. REST Composition And Compatibility Boundary
 
-- No existing request or response field was added, removed, or renamed on
-  `/v1/composite/chart` or `/v1/davison/chart`.
-- The new route is additive.
+- The standalone route remains available for arbitrary position-owned
+  products.
+- `/v1/composite/chart` and `/v1/davison/chart` now return an additive,
+  required `aspects` member using the same `AspectsFromLongitudesResponse`
+  contract as the standalone route.
+- The existing relationship request fields `tier`, `orb_factor`, and
+  `include_nodes` govern the embedded analysis. Their omitted or null values
+  resolve explicitly to tier `1`, orb factor `1.0`, and node inclusion.
 - `Moira.aspects(chart, ...)` now accepts position-only chart-like objects such
   as `CompositeChart`; it uses speeds only when the object actually supplies a
   callable `speeds()` method.
@@ -51,7 +58,9 @@ is not computed without speeds.
   `composite_mc` fields when a common source house system and midpoint MC
   exist. `reference_latitude` and `composite_armc` remain null because the pure
   midpoint method does not use a reference-place ARMC construction.
-- Composite and Davison REST envelopes remain intentionally different.
+- Composite and Davison retain their distinct chart vessels while sharing the
+  same nested aspect-analysis contract. Website consumers no longer need to
+  extract longitudes and orchestrate a second REST request.
 
 ## 4. Priority 2 Capability Matrix
 
@@ -101,8 +110,9 @@ Priority 1 is proven by:
 - explicit known-node filtering
 - `applying=None` and `motion_semantics=not_computed_without_speeds`
 - facade delegation and REST response parity with the engine object
-- unchanged registration and behavior of the existing composite and Davison
-  routes
+- OpenAPI-required embedded `aspects` fields on composite and Davison
+- policy propagation and embedded analysis for both composite methods and all
+  five Davison methods
 
 These are engine-doctrine regression and geometric-invariant checks. They do
 not constitute empirical validation of astrological interpretation.

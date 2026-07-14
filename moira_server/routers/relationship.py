@@ -64,8 +64,8 @@ from ..serializers.relationship import (
 from ..services.relationship import (
     compute_aspects_from_longitudes,
     compute_chart_shape,
-    compute_composite_chart,
-    compute_davison_chart,
+    compute_composite_chart_analysis,
+    compute_davison_chart_analysis,
     compute_midpoint_clusters,
     compute_midpoint_weighting,
     compute_midpoints,
@@ -159,12 +159,14 @@ def synastry_network_route(request: SynastryPairRequest, engine: Moira = Depends
 
 @router.post("/composite/chart", response_model=CompositeChartResponse)
 def composite_chart_route(request: CompositeChartRequest, engine: Moira = Depends(get_engine)) -> CompositeChartResponse:
-    return serialize_composite_chart(compute_composite_chart(engine, request))
+    chart, aspects = compute_composite_chart_analysis(engine, request)
+    return serialize_composite_chart(chart, aspects)
 
 
 @router.post("/davison/chart", response_model=DavisonChartResponse)
 def davison_chart_route(request: DavisonChartRequest, engine: Moira = Depends(get_engine)) -> DavisonChartResponse:
-    return serialize_davison_chart(compute_davison_chart(engine, request))
+    chart, aspects = compute_davison_chart_analysis(engine, request)
+    return serialize_davison_chart(chart, aspects)
 
 
 @router.post("/chart-shape/classify", response_model=ChartShapeResponse)

@@ -298,10 +298,14 @@ def serialize_composite_classification(
     )
 
 
-def serialize_composite_chart(chart: CompositeChart) -> CompositeChartResponse:
+def serialize_composite_chart(
+    chart: CompositeChart,
+    aspects: LongitudeAspectAnalysis,
+) -> CompositeChartResponse:
     return CompositeChartResponse(
         planets=dict(chart.planets),
         nodes=dict(chart.nodes),
+        aspects=serialize_aspects_from_longitudes(aspects),
         cusps=list(chart.cusps),
         asc=chart.asc,
         mc=chart.mc,
@@ -369,9 +373,13 @@ def serialize_davison_info(info: DavisonInfo) -> DavisonInfoResponse:
     )
 
 
-def serialize_davison_chart(chart: DavisonChart) -> DavisonChartResponse:
+def serialize_davison_chart(
+    chart: DavisonChart,
+    aspects: LongitudeAspectAnalysis,
+) -> DavisonChartResponse:
     return DavisonChartResponse(
         chart=serialize_chart(chart.chart),
+        aspects=serialize_aspects_from_longitudes(aspects),
         houses=serialize_houses(chart.houses) if chart.houses is not None else None,
         info=serialize_davison_info(chart.info),
     )
