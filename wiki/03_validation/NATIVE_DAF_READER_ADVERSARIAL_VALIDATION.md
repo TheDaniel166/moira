@@ -36,6 +36,12 @@ Related supporting surfaces already present in the repo:
 - [tests/unit/test_spk_reader.py](../../tests/unit/test_spk_reader.py)
 - [tests/integration/test_small_body_native_reader_killer.py](../../tests/integration/test_small_body_native_reader_killer.py)
 
+The small-body integration suite resolves installed shard manifests through
+`find_all_small_body_manifests()` and consumes each manifest's ordered `shards`
+list. It does not infer current catalog truth from historical monolithic kernel
+filenames. An absent manifest is a resource skip; a shard named by an installed
+manifest but missing on disk is a hard resource-integrity failure.
+
 Those older suites already established parity and integration truth. The new
 adversarial suite exists to force the native reader itself through hostile edge
 conditions under a named validation doctrine.

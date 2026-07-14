@@ -8,10 +8,11 @@ heliocentric states from Horizons over a uniform window, writes Type-13 shards
 (<= 25 bodies each, matching write_spk_type13's single summary/name record cap),
 verifies node round-trip, and emits per-shard + master registration metadata.
 
-Uniform window: the JPL small-body (DE441-derived) integration span is uniform
-across these bodies (~1599 to ~2501 TDB), so a single 1600-2500 window is used
-for all. A body whose own Horizons coverage is narrower is clamped to its stated
-valid range (parsed from the Horizons response).
+Default window: the JPL small-body (DE441-derived) integration span is uniform
+across most of these bodies (~1599 to ~2501 TDB), so a 1600-2500 window is used
+unless Horizons reports narrower coverage. Chaotic Icarus and Apollo solutions
+are explicitly limited to the observational arcs reported by JPL SBDB because
+their long extrapolations depend materially on the requested Horizons interval.
 
 RESUMABLE: a shard whose kernel + metadata already cover their bodies is skipped.
 
@@ -29,6 +30,7 @@ import json
 import re
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -41,6 +43,7 @@ from moira._spk_body_kernel import SmallBodyKernel
 from moira.daf_writer import write_spk_type13
 
 HORIZONS_URL = "https://ssd.jpl.nasa.gov/api/horizons.api"
+SBDB_URL = "https://ssd-api.jpl.nasa.gov/sbdb.api"
 WINDOW = ("1600-01-01", "2500-01-01")  # uniform DE441 small-body span (inside 1599..2501)
 STEP_DAYS = 30
 WINDOW_SIZE = 5
@@ -50,11 +53,35 @@ FRAME = 1
 THROTTLE_S = 1.0
 SHARD_PREFIX = "asteroid_shard"
 
+# These near-Earth asteroids have chaotic solutions whose long extrapolations
+# depend materially on the requested Horizons interval.  Their Type-13 records
+# therefore cover only the observational arc reported by JPL SBDB.  This is a
+# source-owned coverage policy, not an interpolation exception.
+OBSERVATION_ARC_LIMITED_BODIES = frozenset({1566, 1862})  # Icarus, Apollo
+
 _NAME_RE = re.compile(r"Target body name:\s*(\d+)\s+([^\(]+?)\s*[\(\{]")
 _FLOOR_RE = re.compile(r"prior to A\.D\.\s*([0-9]{3,4})-([A-Za-z]{3})-([0-9]{2})")
 _CEIL_RE = re.compile(r"after A\.D\.\s*([0-9]{3,4})-([A-Za-z]{3})-([0-9]{2})")
 _MONTHS = {m: i for i, m in enumerate(
     ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"], start=1)}
+_TRANSIENT_HTTP_CODES = frozenset({429, 502, 503, 504})
+_MAX_REQUEST_ATTEMPTS = 4
+
+
+def _read_url(url: str, *, timeout: int) -> str:
+    for attempt in range(_MAX_REQUEST_ATTEMPTS):
+        try:
+            with urllib.request.urlopen(url, timeout=timeout) as resp:
+                return resp.read().decode("utf-8")
+        except urllib.error.HTTPError as exc:
+            retryable = exc.code in _TRANSIENT_HTTP_CODES
+            if not retryable or attempt + 1 == _MAX_REQUEST_ATTEMPTS:
+                raise
+        except urllib.error.URLError:
+            if attempt + 1 == _MAX_REQUEST_ATTEMPTS:
+                raise
+        time.sleep(2 ** attempt)
+    raise AssertionError("request retry loop exhausted")
 
 
 def _fetch_raw(command: str, start: str, stop: str) -> str:
@@ -66,8 +93,26 @@ def _fetch_raw(command: str, start: str, stop: str) -> str:
         "CSV_FORMAT": "YES", "TIME_DIGITS": "FRACSEC",
     }
     url = f"{HORIZONS_URL}?{urllib.parse.urlencode(params)}"
-    with urllib.request.urlopen(url, timeout=300) as resp:
-        return resp.read().decode("utf-8")
+    return _read_url(url, timeout=300)
+
+
+def _fetch_observation_arc(number: int) -> dict[str, str]:
+    params = {"sstr": str(number), "full-prec": "true"}
+    url = f"{SBDB_URL}?{urllib.parse.urlencode(params)}"
+    payload = json.loads(_read_url(url, timeout=60))
+
+    orbit = payload.get("orbit", {})
+    first_obs = orbit.get("first_obs")
+    last_obs = orbit.get("last_obs")
+    if not first_obs or not last_obs:
+        raise RuntimeError(f"body {number}: JPL SBDB response lacks an observational arc")
+    return {
+        "start": str(first_obs),
+        "stop": str(last_obs),
+        "authority": "JPL SBDB",
+        "orbit_id": str(orbit.get("orbit_id", "")),
+        "solution_date": str(orbit.get("soln_date", "")),
+    }
 
 
 def _parse_name(raw: str, number: int) -> str:
@@ -125,8 +170,16 @@ def _clamped_window(raw: str) -> tuple[str, str] | None:
 
 def _fetch_body(number: int) -> dict:
     command = f"{number};"
-    raw = _fetch_raw(command, WINDOW[0], WINDOW[1])
-    start, stop, clamped = WINDOW[0], WINDOW[1], False
+    coverage_provenance: dict[str, str] | None = None
+    if number in OBSERVATION_ARC_LIMITED_BODIES:
+        coverage_provenance = _fetch_observation_arc(number)
+        start = coverage_provenance["start"]
+        stop = coverage_provenance["stop"]
+        clamped = True
+    else:
+        start, stop, clamped = WINDOW[0], WINDOW[1], False
+
+    raw = _fetch_raw(command, start, stop)
     try:
         epochs, states = _parse_vectors(raw)
     except RuntimeError:
@@ -137,11 +190,15 @@ def _fetch_body(number: int) -> dict:
         start, stop, clamped = win[0], win[1], True
         raw = _fetch_raw(command, start, stop)
         epochs, states = _parse_vectors(raw)
-    return {
+    result = {
         "number": number, "naif_id": 2000000 + number, "name": _parse_name(raw, number),
         "center": CENTER, "frame": FRAME, "states": states, "epochs_jd": epochs,
         "window_size": WINDOW_SIZE, "clamped": clamped, "start": start, "stop": stop,
     }
+    if coverage_provenance is not None:
+        result["coverage_policy"] = "jpl_sbdb_observation_arc"
+        result["coverage_provenance"] = coverage_provenance
+    return result
 
 
 def _verify(kernel: SmallBodyKernel, naif_id: int, epochs: list[float], states: list[list[float]]) -> float:
@@ -152,11 +209,26 @@ def _verify(kernel: SmallBodyKernel, naif_id: int, epochs: list[float], states: 
     return max_err
 
 
+def _limited_record_is_current(record: dict) -> bool:
+    number = int(record["number"])
+    if number not in OBSERVATION_ARC_LIMITED_BODIES:
+        return True
+    current = _fetch_observation_arc(number)
+    return (
+        record.get("coverage_policy") == "jpl_sbdb_observation_arc"
+        and record.get("start") == current["start"]
+        and record.get("stop") == current["stop"]
+        and record.get("coverage_provenance") == current
+    )
+
+
 def _shard_cached(kpath: Path, mpath: Path) -> dict | None:
     if not (kpath.exists() and mpath.exists()):
         return None
     try:
         meta = json.loads(mpath.read_text())
+        if not all(_limited_record_is_current(record) for record in meta["records"]):
+            return None
         want = {r["naif_id"] for r in meta["records"]}
         if not want:
             return None
@@ -216,6 +288,9 @@ def main() -> None:
                 "number": num, "naif_id": b["naif_id"], "name": b["name"], "family": t.get("family"),
                 "nodes": len(b["epochs_jd"]), "clamped": b["clamped"],
                 "start": b["start"], "stop": b["stop"], "fetch_s": round(dt, 1),
+                **({"coverage_policy": b["coverage_policy"],
+                    "coverage_provenance": b["coverage_provenance"]}
+                   if "coverage_policy" in b else {}),
             })
             tag = f"CLAMP {b['start'][:4]}-{b['stop'][:4]}" if b["clamped"] else "full"
             print(f"  [OK] {num:>7} {b['name']:<18} nodes={len(b['epochs_jd']):>6} {tag:>13} {dt:4.1f}s", flush=True)

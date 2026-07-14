@@ -18,6 +18,23 @@ A per-system account of the derivation basis, and of where Moira's discretionary
 
 Note on resemblance: house geometry is mathematically forced — there is one correct way to trisect a semi-arc — so Moira's cusp values converge with any correct engine, including Swiss Ephemeris, at admissible latitudes. That convergence follows from shared mathematics and is **not** evidence of derivation.
 
+## Astronomical data sources
+
+The unified numbered-asteroid catalog is generated from JPL Horizons
+heliocentric `VECTORS` states and materialized as Moira Type-13 shards. Its
+ordered shard registration and per-body coverage exceptions are recorded in
+`moira/kernels/asteroids/manifest.json`; the generated BSP files are separately
+acquired runtime resources.
+
+Icarus (1566) and Apollo (1862) are limited to their observational arcs because
+their chaotic long-range solutions depend materially on the requested Horizons
+interval. JPL SBDB is the authority only for those arc bounds and orbit-solution
+identifiers; Horizons remains the authority for the vector samples. The exact
+SBDB solution metadata used by a build is preserved in the manifest and unified
+catalog metadata. Offline apparent-position fixtures use JPL Horizons
+`OBSERVER`, center `500@399`, quantity 31, and are external authority evidence,
+not self-generated Moira parity.
+
 ## Provenance history
 
 Earlier in Moira's release history, during a licensing discussion with the Swiss Ephemeris authors, the house module carried — as a conservative precaution — an attribution notice referencing `swehouse.c`, and written permission was obtained from the authors. Moira's house implementation is independently derived from the mathematical definitions; the precautionary attribution was therefore determined to be unnecessary and was removed.

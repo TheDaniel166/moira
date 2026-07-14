@@ -684,6 +684,7 @@ chart_dict = all_planets_at(jd, reader=reader)
 | `planet_at(body, jd_ut, reader=None, observer_lat=None, observer_lon=None, observer_elev_m=0.0)` | `PlanetData` | Single planet geocentric ecliptic position |
 | `all_planets_at(jd_ut, bodies=None, reader=None, ...)` | `dict[str, PlanetData]` | All (or specified) planets at one JD |
 | `sky_position_at(body, jd_ut, observer_lat, observer_lon, observer_elev_m=0.0, reader=None)` | `SkyPosition` | Apparent topocentric equatorial + horizontal coords |
+| `planet_reduction_breakdown_at(body, jd_ut, reader=None, ...)` | `PlanetReductionBreakdown` | Ordered visible longitude-reduction stages as `PlanetReductionStage` records |
 | `sun_longitude(jd_ut, reader=None)` | `float` | Sun ecliptic longitude only (faster than planet_at) |
 
 ### Lunar nodes

@@ -85,7 +85,9 @@ from .coordinates import (
 )
 from .spk_reader import use_reader_override, KernelReader, SpkReader, MissingKernelError
 from .planets import (
-    PlanetData, SkyPosition, CartesianPosition,
+    PlanetData, PlanetReductionBreakdown, PlanetReductionStage,
+    SkyPosition, CartesianPosition,
+    planet_reduction_breakdown_at,
     planet_at, sky_position_at, all_planets_at, sun_longitude,
     planet_relative_to, next_heliocentric_transit,
 )
@@ -1229,7 +1231,9 @@ from collections.abc import Callable
 __all__ = [
     "Moira", "Chart", "MissingEphemerisKernelError",
     "Body", "HouseSystem", "Ayanamsa",
-    "PlanetData", "SkyPosition", "CartesianPosition", "NodeData", "AspectData",
+    "PlanetData", "PlanetReductionBreakdown", "PlanetReductionStage",
+    "planet_reduction_breakdown_at",
+    "SkyPosition", "CartesianPosition", "NodeData", "AspectData",
     "NodesAndApsides", "nodes_and_apsides_at",
     # Houses backend public surface
     "HouseSystemFamily", "HouseSystemCuspBasis",

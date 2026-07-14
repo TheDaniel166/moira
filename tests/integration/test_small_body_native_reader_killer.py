@@ -1,31 +1,20 @@
 import json
 import math
-from contextlib import contextmanager
 from pathlib import Path
 
 import pytest
 
-from moira._kernel_paths import find_kernel, find_planetary_kernel
-from moira._spk_body_kernel import SmallBodyKernel
+from moira._kernel_paths import find_all_small_body_manifests, find_planetary_kernel
+from moira._spk_body_kernel import small_body_readers_from_manifest
 from moira.asteroids import asteroid_at
 from moira.comets import COMET_NAIF, comet_at
-from moira.spk_reader import KernelPool, SpkReader, use_reader_override
+from moira.spk_reader import KernelPool, OutOfRangeError, SpkReader, use_reader_override
 
 _ONE_SECOND_JD = 1.0 / 86400.0
 _FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "horizons_asteroid_reference.json"
 _THRESHOLD_OBSERVER_ARCSEC = 5.0
-_THRESHOLD_MOIRA_REF_ARCSEC = 0.01
 _SMOOTH_STEP_LIMIT_DEG = 1e-3
 _SMOOTH_STEP_MISMATCH_DEG = 1e-4
-_SUPPLEMENTAL_KERNELS = (
-    "sb441-n373s.bsp",
-    "asteroids.bsp",
-    "centaurs.bsp",
-    "minor_bodies.bsp",
-    "comets.bsp",
-)
-
-
 def _load_cases() -> list[dict]:
     if not _FIXTURE.exists():
         return []
@@ -34,8 +23,6 @@ def _load_cases() -> list[dict]:
 
 
 def _threshold_for(case: dict) -> float:
-    if case.get("ref_source") == "moira":
-        return _THRESHOLD_MOIRA_REF_ARCSEC
     return _THRESHOLD_OBSERVER_ARCSEC
 
 
@@ -48,22 +35,25 @@ def _signed_angle_delta(start_deg: float, end_deg: float) -> float:
     return ((end_deg - start_deg + 180.0) % 360.0) - 180.0
 
 
-@contextmanager
-def _native_small_body_reader_context():
+@pytest.fixture(scope="module")
+def native_small_body_reader_pool() -> KernelPool:
     planetary_path = find_planetary_kernel()
     if planetary_path is None:
         pytest.skip("No planetary kernel is installed")
 
     readers = [SpkReader(planetary_path)]
     try:
-        for kernel_name in _SUPPLEMENTAL_KERNELS:
-            path = find_kernel(kernel_name)
-            if path.exists():
-                readers.append(SmallBodyKernel(path))
+        manifests = find_all_small_body_manifests()
+        if not manifests:
+            pytest.skip("No small-body shard manifest is installed")
+
+        for manifest_path in manifests:
+            readers.extend(small_body_readers_from_manifest(manifest_path))
+        if len(readers) == 1:
+            pytest.skip("Installed small-body manifests contain no shards")
 
         pool = KernelPool(readers)
-        with use_reader_override(pool):
-            yield pool
+        yield pool
     finally:
         for reader in reversed(readers):
             try:
@@ -81,11 +71,15 @@ _CASE_IDS = [f"{case['body']}-{case['label']}" for case in _CASES]
 @pytest.mark.slow
 @pytest.mark.skipif(
     not _FIXTURE.exists(),
-    reason="horizons_asteroid_reference.json not found — run scripts/build_asteroid_horizons_fixture.py first",
+    reason="tracked horizons_asteroid_reference.json fixture is missing",
 )
 @pytest.mark.parametrize("case", _CASES, ids=_CASE_IDS)
-def test_asteroid_fixture_cases_match_under_native_reader_pool(case: dict) -> None:
-    with _native_small_body_reader_context() as reader:
+def test_asteroid_fixture_cases_match_under_native_reader_pool(
+    case: dict,
+    native_small_body_reader_pool: KernelPool,
+) -> None:
+    with use_reader_override(native_small_body_reader_pool):
+        reader = native_small_body_reader_pool
         result = asteroid_at(case["body"], case["jd_ut"], reader=reader)
         lon_err_arcsec = _angle_diff_arcsec(result.longitude, case["ecl_lon_deg"])
         lat_err_arcsec = (result.latitude - case["ecl_lat_deg"]) * 3600.0
@@ -115,8 +109,13 @@ def test_asteroid_fixture_cases_match_under_native_reader_pool(case: dict) -> No
         ("Halley", 2451545.0),
     ),
 )
-def test_small_body_public_positions_remain_smooth_over_one_second(body_name: str, jd_ut: float) -> None:
-    with _native_small_body_reader_context() as reader:
+def test_small_body_public_positions_remain_smooth_over_one_second(
+    body_name: str,
+    jd_ut: float,
+    native_small_body_reader_pool: KernelPool,
+) -> None:
+    with use_reader_override(native_small_body_reader_pool):
+        reader = native_small_body_reader_pool
         if body_name in COMET_NAIF:
             before = comet_at(body_name, jd_ut - _ONE_SECOND_JD, reader=reader)
             current = comet_at(body_name, jd_ut, reader=reader)
@@ -141,31 +140,24 @@ def test_small_body_public_positions_remain_smooth_over_one_second(body_name: st
 @pytest.mark.integration
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
-def test_small_body_kernels_fail_cleanly_outside_body_coverage() -> None:
+def test_small_body_kernels_fail_cleanly_outside_body_coverage(
+    native_small_body_reader_pool: KernelPool,
+) -> None:
     representative_targets = (
-        ("asteroids.bsp", 2000433),
-        ("sb441-n373s.bsp", 2000001),
-        ("centaurs.bsp", 2002060),
-        ("minor_bodies.bsp", 2000055),
-        ("comets.bsp", 1000001),
+        2000433,
+        2000001,
+        2002060,
+        2000055,
+        1000001,
     )
+    coverage = native_small_body_reader_pool.coverage()
 
-    for kernel_name, naif_id in representative_targets:
-        path = find_kernel(kernel_name)
-        if not path.exists():
-            continue
-
-        kernel = SmallBodyKernel(path)
-        try:
-            coverage = kernel.coverage()
-            key = next((pair for pair in coverage if pair[1] == naif_id), None)
-            if key is None:
-                pytest.skip(f"{kernel_name} does not contain representative NAIF {naif_id}")
-            center = key[0]
-            start_jd, end_jd = coverage[key]
-            with pytest.raises(KeyError, match="No segment covers NAIF"):
-                kernel.position(center, naif_id, start_jd - 1.0)
-            with pytest.raises(KeyError, match="No segment covers NAIF"):
-                kernel.position(center, naif_id, end_jd + 1.0)
-        finally:
-            kernel.close()
+    for naif_id in representative_targets:
+        key = next((pair for pair in coverage if pair[1] == naif_id), None)
+        assert key is not None, f"Manifest-backed pool does not contain NAIF {naif_id}"
+        center = key[0]
+        start_jd, end_jd = coverage[key]
+        with pytest.raises(OutOfRangeError, match="No kernel covers"):
+            native_small_body_reader_pool.position(center, naif_id, start_jd - 1.0)
+        with pytest.raises(OutOfRangeError, match="No kernel covers"):
+            native_small_body_reader_pool.position(center, naif_id, end_jd + 1.0)

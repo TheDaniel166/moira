@@ -7638,12 +7638,20 @@
       "naif_id": 2001566,
       "name": "Icarus",
       "family": null,
-      "nodes": 10958,
-      "clamped": false,
-      "start": "1600-01-01",
-      "stop": "2500-01-01",
-      "fetch_s": 6.2,
-      "max_node_error_km": 1.4901161193847656e-07
+      "nodes": 927,
+      "clamped": true,
+      "start": "1949-07-01",
+      "stop": "2025-08-18",
+      "fetch_s": 1.4,
+      "coverage_policy": "jpl_sbdb_observation_arc",
+      "coverage_provenance": {
+        "start": "1949-07-01",
+        "stop": "2025-08-18",
+        "authority": "JPL SBDB",
+        "orbit_id": "195",
+        "solution_date": "2026-06-16 11:32:04"
+      },
+      "max_node_error_km": 1.000240445137024e-06
     },
     {
       "number": 1587,
@@ -7962,12 +7970,20 @@
       "naif_id": 2001862,
       "name": "Apollo",
       "family": null,
-      "nodes": 10958,
-      "clamped": false,
-      "start": "1600-01-01",
-      "stop": "2500-01-01",
-      "fetch_s": 5.8,
-      "max_node_error_km": 6.705522537231445e-08
+      "nodes": 1161,
+      "clamped": true,
+      "start": "1930-12-13",
+      "stop": "2026-04-15",
+      "fetch_s": 1.5,
+      "coverage_policy": "jpl_sbdb_observation_arc",
+      "coverage_provenance": {
+        "start": "1930-12-13",
+        "stop": "2026-04-15",
+        "authority": "JPL SBDB",
+        "orbit_id": "578",
+        "solution_date": "2026-04-16 05:49:08"
+      },
+      "max_node_error_km": 4.470348358154297e-08
     },
     {
       "number": 1867,
