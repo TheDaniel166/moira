@@ -12,9 +12,17 @@ from ..dependencies import get_engine
 from ..models.western_electional import (
     RameseyMoonConditionRequest,
     RameseyMoonConditionResponse,
+    SahlMoonConditionRequest,
+    SahlMoonConditionResponse,
 )
-from ..serializers.western_electional import serialize_ramesey_moon_condition
-from ..services.western_electional import compute_ramesey_moon_condition
+from ..serializers.western_electional import (
+    serialize_ramesey_moon_condition,
+    serialize_sahl_moon_condition,
+)
+from ..services.western_electional import (
+    compute_ramesey_moon_condition,
+    compute_sahl_moon_condition,
+)
 
 
 router = APIRouter(prefix="/v1/electional/western", tags=["electional"])
@@ -32,6 +40,21 @@ def ramesey_moon_condition_route(
 
     return serialize_ramesey_moon_condition(
         compute_ramesey_moon_condition(engine, request)
+    )
+
+
+@router.post(
+    "/sahl-moon-condition",
+    response_model=SahlMoonConditionResponse,
+)
+def sahl_moon_condition_route(
+    request: SahlMoonConditionRequest,
+    engine: Annotated[Moira, Depends(get_engine)],
+) -> SahlMoonConditionResponse:
+    """Evaluate Sahl v1 at one instant without scoring or recommendation."""
+
+    return serialize_sahl_moon_condition(
+        compute_sahl_moon_condition(engine, request)
     )
 
 

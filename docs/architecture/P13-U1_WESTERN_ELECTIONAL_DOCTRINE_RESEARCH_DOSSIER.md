@@ -1,14 +1,19 @@
 # P13-U1 — Western Electional Doctrine Research Dossier
 
-Version: 0.10 (research foundation with first-profile public moment admission)
-Date: 2026-07-14
+Version: 0.11 (research foundation with two public moment profiles)
+Date: 2026-07-15
 Status: research inventory for the Western electional doctrine layer. The
-companion packet admits `ramesey_moon_condition_v1` through the engine module,
-package root, facade, `Moira` convenience method, and one bounded single-moment
-REST route. Generic search, scoring, website, advice, and recommendation
-surfaces remain deferred.
+companion materials admit distinct `ramesey_moon_condition_v1` and
+`sahl_moon_condition_v1` objects through the engine module, package root,
+facade, `Moira` convenience methods, and bounded single-moment REST routes.
+Generic search, scoring, website, advice, and recommendation surfaces remain
+deferred.
 
 Changelog:
+- 0.11 - page-confirmed Sahl section 22 and the supporting glossary mechanics,
+  admitted a distinct non-scored `sahl_moon_condition_v1` engine/facade/REST
+  profile, and preserved the burnt-path and Latin/Arabic eighth-rule
+  divergences as visible named policies rather than merging them into Ramesey.
 - 0.10 - admitted the bounded first-profile public moment surface through the
   curated root, facade, `Moira.ramesey_moon_condition_at(...)`, and
   `POST /v1/electional/western/ramesey-moon-condition`. The transport preserves
@@ -789,30 +794,30 @@ before admission.**
 
 **No remaining true acquisition gaps.** Both Dorotheus and Sahl electional
 rule inventories exist as companions. The general Moon/planet/angle/aspect
-architecture is inventoried, and the first doctrine packet now records the
-source derivations and explicit Moira choices used by the admitted bounded
-Ramesey public-moment profile.
+architecture is inventoried, and the admitted Ramesey and Sahl bounded
+public-moment profiles preserve distinct source derivations and policy choices.
 
 ---
 
 ## 13. Recommended Next Steps
 
-1. **Treat the first-profile engine closure as complete** for the bounded
+1. **Treat the Ramesey profile closure as complete** for the bounded
    `ramesey_moon_condition_v1` object. Do not expand its ten gates, score them,
    or claim remedy fulfillment without a new source-backed doctrine decision.
-2. **Continue page-confirming ⚠ items** in the two companion inventories before any
-   doctrine admission; reproduce term tables only if a term-level scorer is
-   admitted. No further source acquisition is required for the Dorotheus/Sahl
-   research foundation.
+2. **Treat the Sahl Moon-profile closure as bounded and explicit**: section 22
+   is admitted through REST, but the default burnt-path clause remains
+   indeterminate because Sahl gives no endpoints. Do not silently promote a
+   selectable glossary span into source text.
 3. **Generic search transport remains deferred by explicit decision**: the
    single-moment facade and REST vessel are admitted, but variant-aware
    forward-aspect provenance, remedy applicability versus fulfillment, and a
    forward-VOC caching/performance contract must be defined before proposing
    any scan-payload, predicate, or scoring admission.
-4. **Profile-first rollout**: research the next named lineage profile (Sahl or
-   Dorotheus) without merging its rules into Ramesey. Each additional profile,
-   generic search adapter, scoring product, and website surface requires its
-   own admission decision.
+4. **Profile-first rollout**: the next profile may be a bounded Sahl matter
+   profile or a first Dorotheus profile, but it must remain distinct from both
+   admitted Moon-condition objects. Each additional profile, generic search
+   adapter, scoring product, and website surface requires its own admission
+   decision.
 5. **Validation strategy**: per Moira law, each numeric rule (orbs, thresholds,
    points) is verified against its **named primary text at the cited page**
    before admission; each variant carries its citation in the profile metadata.

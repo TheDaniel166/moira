@@ -559,6 +559,18 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     'RameseyRuleWitness',
     'evaluate_ramesey_moon_condition',
     'ramesey_moon_condition_at',
+    'SAHL_MOON_CONDITION_V1',
+    'SahlBurntPathVariant',
+    'SahlClauseWitness',
+    'SahlEighthRuleVariant',
+    'SahlMeasurement',
+    'SahlMoonConditionEvaluation',
+    'SahlMoonConditionPolicy',
+    'SahlMoonConditionStatus',
+    'SahlRuleState',
+    'SahlRuleWitness',
+    'evaluate_sahl_moon_condition',
+    'sahl_moon_condition_at',
 })
 
 _EXPECTED_ROOT_ONLY_NAMES = {
@@ -936,6 +948,7 @@ _EXPECTED_MOIRA_METHODS.update({
     'progressed_astrodynes_chart',
     'progressed_astrodynes_geometry',
     'ramesey_moon_condition_at',
+    'sahl_moon_condition_at',
     'search_progressed_astrodyne_contacts',
     'shadbala',
     'shadbala_condition',

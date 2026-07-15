@@ -3,9 +3,17 @@
 from __future__ import annotations
 
 from moira import Moira
-from moira.western_electional import RameseyMoonConditionEvaluation
+from moira.western_electional import (
+    RameseyMoonConditionEvaluation,
+    SahlBurntPathVariant,
+    SahlEighthRuleVariant,
+    SahlMoonConditionEvaluation,
+)
 
-from ..models.western_electional import RameseyMoonConditionRequest
+from ..models.western_electional import (
+    RameseyMoonConditionRequest,
+    SahlMoonConditionRequest,
+)
 
 
 def compute_ramesey_moon_condition(
@@ -28,4 +36,25 @@ def compute_ramesey_moon_condition(
     return result
 
 
-__all__ = ["compute_ramesey_moon_condition"]
+def compute_sahl_moon_condition(
+    engine: Moira,
+    request: SahlMoonConditionRequest,
+) -> SahlMoonConditionEvaluation:
+    """Evaluate the admitted Sahl profile through the public facade."""
+
+    result = engine.sahl_moon_condition_at(
+        request.jd_ut,
+        request.latitude,
+        request.longitude,
+        house_system=request.house_system,
+        burnt_path_variant=SahlBurntPathVariant(request.burnt_path_variant),
+        eighth_rule_variant=SahlEighthRuleVariant(request.eighth_rule_variant),
+    )
+    if result.profile_id != request.profile_id:
+        raise RuntimeError(
+            "facade returned a Western electional profile different from the request"
+        )
+    return result
+
+
+__all__ = ["compute_ramesey_moon_condition", "compute_sahl_moon_condition"]

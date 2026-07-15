@@ -8,6 +8,10 @@ from moira.western_electional import (
     RameseyMoonConditionEvaluation,
     RameseyRemedyWitness,
     RameseyRuleWitness,
+    SahlClauseWitness,
+    SahlMeasurement,
+    SahlMoonConditionEvaluation,
+    SahlRuleWitness,
 )
 
 from ..models.western_electional import (
@@ -18,6 +22,12 @@ from ..models.western_electional import (
     RameseyRemedyWitnessResponse,
     RameseyRuleWitnessResponse,
     WesternElectionalTransportProvenanceResponse,
+    SahlClauseWitnessResponse,
+    SahlMeasurementResponse,
+    SahlMoonConditionEvaluationResponse,
+    SahlMoonConditionResponse,
+    SahlRuleWitnessResponse,
+    SahlWesternElectionalTransportProvenanceResponse,
 )
 
 
@@ -32,6 +42,18 @@ _STAGE_SEQUENCE = [
     "sign_bounded_forward_voc_search",
     "ten_gate_doctrine_evaluation",
     "separate_remedy_applicability",
+    "typed_response_serialization",
+]
+_SAHL_AUTHORITY = (
+    "Sahl bin Bishr, On Elections, section 22b-g, Benjamin Dykes trans., "
+    "printed pp. 99-101; Dykes glossary pp. 409-415 and 426"
+)
+_SAHL_STAGE_SEQUENCE = [
+    "request_and_variant_validation",
+    "facade_reader_resolution",
+    "chart_and_house_construction",
+    "medieval_sign_bounded_forward_voc_search",
+    "ten_gate_doctrine_evaluation",
     "typed_response_serialization",
 ]
 
@@ -127,4 +149,80 @@ def serialize_ramesey_moon_condition(
     )
 
 
-__all__ = ["serialize_ramesey_moon_condition"]
+def _serialize_sahl_measurement(
+    measurement: SahlMeasurement,
+) -> SahlMeasurementResponse:
+    return SahlMeasurementResponse(
+        name=measurement.name,
+        value=measurement.value,
+        units=measurement.units,
+        comparison=measurement.comparison,
+        threshold=measurement.threshold,
+    )
+
+
+def _serialize_sahl_clause(
+    clause: SahlClauseWitness,
+) -> SahlClauseWitnessResponse:
+    return SahlClauseWitnessResponse(
+        clause_id=clause.clause_id,
+        state=clause.state.value,
+        policy_id=clause.policy_id,
+        policy_reference=clause.policy_reference,
+        measurements=[
+            _serialize_sahl_measurement(measurement)
+            for measurement in clause.measurements
+        ],
+        explanation=clause.explanation,
+    )
+
+
+def _serialize_sahl_rule(rule: SahlRuleWitness) -> SahlRuleWitnessResponse:
+    return SahlRuleWitnessResponse(
+        rule_id=rule.rule_id,
+        source_order=rule.source_order,
+        state=rule.state.value,
+        clauses=[_serialize_sahl_clause(clause) for clause in rule.clauses],
+        source_reference=rule.source_reference,
+        modifiers=list(rule.modifiers),
+    )
+
+
+def serialize_sahl_moon_condition(
+    result: SahlMoonConditionEvaluation,
+) -> SahlMoonConditionResponse:
+    """Preserve all Sahl rules and selected variants in a typed response."""
+
+    evaluation = SahlMoonConditionEvaluationResponse(
+        jd_ut=result.jd_ut,
+        profile_id=result.profile_id,
+        profile_version=result.profile_version,
+        status=result.status.value,
+        triggered_rule_ids=list(result.triggered_rule_ids),
+        not_evaluable_rule_ids=list(result.not_evaluable_rule_ids),
+        rules=[_serialize_sahl_rule(rule) for rule in result.rules],
+        position_product=result.position_product,
+        reader_provenance=result.reader_provenance,
+        latitude=result.latitude,
+        longitude=result.longitude,
+        requested_house_system=result.requested_house_system,
+        effective_house_system=result.effective_house_system,
+        house_fallback=result.house_fallback,
+        burnt_path_variant=result.burnt_path_variant.value,
+        eighth_rule_variant=result.eighth_rule_variant.value,
+        election_class=result.election_class,
+        matter_scope=result.matter_scope,
+        complete_electional_judgement=result.complete_electional_judgement,
+        advice_language=result.advice_language,
+        recommendation_language=result.recommendation_language,
+    )
+    return SahlMoonConditionResponse(
+        evaluation=evaluation,
+        transport_provenance=SahlWesternElectionalTransportProvenanceResponse(
+            authority=_SAHL_AUTHORITY,
+            stage_sequence=list(_SAHL_STAGE_SEQUENCE),
+        ),
+    )
+
+
+__all__ = ["serialize_ramesey_moon_condition", "serialize_sahl_moon_condition"]

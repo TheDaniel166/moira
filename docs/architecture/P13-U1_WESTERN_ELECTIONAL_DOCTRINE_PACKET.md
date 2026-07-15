@@ -1,8 +1,8 @@
 # P13-U1 Western Electional Doctrine Packet
 
-Version: 0.4
-Date: 2026-07-14
-Status: first-profile public moment evaluation admitted; generic search/scoring deferred
+Version: 0.5
+Date: 2026-07-15
+Status: Ramesey and Sahl public moment evaluations admitted; generic search/scoring deferred
 Scope: bounded Western electional doctrine beside the generic search transport
 
 ## 1. Doctrine Decision
@@ -16,22 +16,32 @@ scan chart states, merge qualifying scan points into windows, and attach a
 declared numeric transport score. It does not become Western electional
 doctrine merely because a future profile uses it.
 
-This packet defines the first bounded doctrine candidate:
+This packet defines two bounded doctrine profiles:
 
 `ramesey_moon_condition_v1`
+
+`sahl_moon_condition_v1`
 
 It is a transparent evaluation of William Ramesey's ten impediments of the
 Moon in *Astrologia Restaurata*, Book III, Chapter II, printed p. 127. It is
 not a complete election, a recommendation, an auspiciousness score, or a
-substitute for matter-specific judgement.
+substitute for matter-specific judgement. The Sahl profile independently
+evaluates Sahl bin Bishr's ten Moon impediments in *On Elections* section 22.
+It does not inherit Ramesey's thresholds, rule groupings, or remedy witness.
 
 The profile is admitted through `moira.western_electional`, the curated package
 root, `moira.facade`, `Moira.ramesey_moon_condition_at(...)`, and the bounded
 single-moment route
 `POST /v1/electional/western/ramesey-moon-condition`. It has no generic
 search-predicate, scoring, website, advice, or recommendation surface. Section
-8 records the policies bound from Ramesey's text. Section 13 records the engine
-evidence and public-moment admission decision.
+8 records the profile-specific policies. Section 13 records the engine evidence
+and public-moment admission decisions.
+
+The Sahl profile is admitted through the same public engine layers,
+`Moira.sahl_moon_condition_at(...)`, and
+`POST /v1/electional/western/sahl-moon-condition`. Its burnt-path and eighth-
+rule textual variants remain explicit request and result policy rather than
+being merged into Ramesey or hidden behind a universal default.
 
 ## 2. Authority and Page Confirmation
 
@@ -69,7 +79,22 @@ Ramesey profile:
   Visually confirmed 2026-07-14.
 
 Sahl and Dorotheus preserve different thresholds, rule groupings, and
-language. They require their own future profiles.
+language. Sahl now owns a distinct admitted profile; Dorotheus still requires
+its own future profile.
+
+### 2.3 Sahl governing witness
+
+Primary authority for `sahl_moon_condition_v1`:
+
+- Sahl bin Bishr, *On Elections*, section 22b-g, in Benjamin Dykes,
+  *Choices & Inceptions: Traditional Electional Astrology*, printed pp. 99-101
+  (PDF pp. 115-117 in the held 449-page witness).
+- Dykes's glossary, printed pp. 409-415 and 426, supplies the anthology's
+  explicit definitions of whole-sign aspects, twelfth-parts, medieval
+  emptiness of course, cadency, and the two named burnt-path spans.
+- Section 22 and the supporting glossary pages were rendered and visually
+  checked on 2026-07-14/15. The check preserves note 69's uncertainty and note
+  70's Latin/Arabic eighth-rule conflict.
 
 ## 3. Governing Objects
 
@@ -243,10 +268,41 @@ The remedy has no numeric weight, never changes a rule state, and never flips a
 triggered profile to clear. If the urgent-time context is absent, applicability
 is `indeterminate`; if explicitly false, the instruction is `not_applicable`.
 
+### 7.6 Second profile: `sahl_moon_condition_v1`
+
+The Sahl profile evaluates section 22's ten impediments in source order and
+preserves compound clauses. It has no remedy vessel, numeric total, ranking,
+or matter-specific judgement.
+
+| # | Stable rule id | Admitted computation |
+|---|---|---|
+| 1 | `moon_burned_by_sun_12deg` | shortest Sun-Moon separation `<= 12 degrees`; applying/separating phase visible |
+| 2 | `moon_in_degree_of_fall` | ordinal third degree Scorpio, `[2, 3)` |
+| 3 | `moon_opposition_sun` | whole-sign opposition |
+| 4 | `moon_joined_or_hard_ray_malefic` | bodily Mars/Saturn joining by Perso-Arabic combined moieties; square/opposition by whole-sign ray |
+| 5 | `moon_near_lunar_node_12deg` | true node and opposition, inclusive 12-degree separation |
+| 6 | `moon_in_terminal_malefic_bound` | terminal segment of the explicitly selected Egyptian bounds table |
+| 7 | `moon_cadent_or_burnt_path` | quadrant houses 3/6/9/12 OR the selected named burnt-path interpretation |
+| 8 | `moon_twelfth_part_or_opposed_or_averse_house` | Arabic/al-Rijal twelfth-part reading by default, or separately labeled Latin reading; opposition/aversion to Cancer preserved |
+| 9 | `moon_slow_below_12deg_per_day` | instantaneous geocentric longitude rate strictly below 12 degrees/day |
+| 10 | `moon_empty_in_course` | no exact traditional-planet connection completes before sign exit |
+
+Sahl gives only “the end of Libra and the beginning of Scorpio” for the burnt
+path. The public default `unresolved_source_wording` therefore makes that
+clause `not_evaluable`. Callers may explicitly select either glossary-supported
+span—19 Libra to 3 Scorpio, or 15 Libra to 15 Scorpio—but neither is relabeled
+as Sahl's missing numeric wording.
+
+For rule 8, Dykes recommends the Arabic/al-Rijal twelfth-part reading; the
+conflicting Latin twelfth-sign reading remains a selectable named variant. A
+confirmed Sahl impediment determines a triggered summary even when another
+compound clause is unresolved. If no rule is confirmed and any rule remains
+`not_evaluable`, the overall status is indeterminate.
+
 ## 8. Bound Policies for Runtime Admission
 
-The nine former blockers are closed as follows. These are profile doctrine,
-not universal Western defaults:
+The nine former Ramesey blockers are closed as follows. These are profile
+doctrine, not universal Western defaults:
 
 1. **Third-degree convention**: ordinal degrees use zero-based half-open
    computational intervals; the third degree of Scorpio is `[2°, 3°)`.
@@ -294,6 +350,29 @@ The governing pages were rendered and visually checked against the original
 facsimile on 2026-07-14. OCR and modern transcriptions were navigation aids,
 not the final authority.
 
+### 8.1 Sahl-specific bound policies
+
+1. **Aspect scope**: square, opposition, and other rays are whole-sign;
+   bodily joining uses the early Perso-Arabic combined moieties and may cross
+   a sign boundary.
+2. **Node model**: the profile explicitly binds Sahl's Head/Tail language to
+   the true ecliptic ascending node and its opposition.
+3. **Bounds**: Sahl does not name a table. The profile visibly selects Moira's
+   Egyptian bounds and tests only the terminal segment ending at 30 degrees.
+4. **Cadency**: caller-declared quadrant houses 3, 6, 9, and 12; missing or
+   non-quadrant figures remain `not_evaluable`.
+5. **Burnt path**: unresolved source wording is the default. The two
+   glossary-supported intervals are explicit optional variants using tropical
+   half-open endpoints.
+6. **Twelfth-part**: each sign is divided into twelve 2.5-degree parts. The
+   Arabic/al-Rijal reading tests whether Mars or Saturn occupies the sign named
+   by the Moon's twelfth-part; the Latin reading is separate.
+7. **Void**: the anthology's medieval definition is sign-bounded—no exact
+   connection completes before the Moon leaves its sign.
+8. **Speed product**: the strict 12-degree/day comparison uses the same
+   explicitly attested apparent-longitude/astrometric-rate chart product as the
+   Ramesey evaluator, without transferring Ramesey's threshold.
+
 ## 9. Named Lineage Variants
 
 These variants are separate profile parameters, not choices to average:
@@ -315,8 +394,8 @@ These variants are separate profile parameters, not choices to average:
 
 ## 10. Separation from Search Transport
 
-The admitted doctrine implementation supplies a single-moment facade and REST
-adapter. It may supply a separate predicate adapter to the bounded search
+The admitted doctrine implementations supply single-moment facade and REST
+adapters. They may supply separate predicate adapters to the bounded search
 engine only after a later search-admission decision. The layers remain:
 
 1. astronomical and chart substrate
@@ -349,9 +428,10 @@ Every admitted profile evaluation exposes:
 - aspect, orb, application, and VOC policies
 - speed semantics
 - one visible witness per source rule
-- the separate remedy applicability, triggering rule identities, source
-  instructions, and uncomputed fulfillment requirements
-- `complete_electional_judgement: false` for this profile
+- for Ramesey only, the separate remedy applicability, triggering rule
+  identities, source instructions, and uncomputed fulfillment requirements
+- for Sahl, the selected burnt-path and eighth-rule variants
+- `complete_electional_judgement: false` for each profile
 - `advice_language: not_provided`
 - `recommendation_language: not_provided`
 - transport provenance naming the engine entry point, facade entry point,
@@ -362,18 +442,19 @@ Every admitted profile evaluation exposes:
 
 - Non-finite or missing astronomical inputs fail evaluation; they do not clear
   a rule.
-- A missing required input yields `not_evaluable` for that rule and
-  `indeterminate` overall.
+- A missing required input yields `not_evaluable` for that rule. Ramesey v1 is
+  indeterminate if any rule is not evaluable; Sahl v1 remains triggered when a
+  different impediment is confirmed and is otherwise indeterminate.
 - Unsupported election class or matter scope is rejected before evaluation.
 - Unknown profile ids or versions are rejected.
 - A profile version is immutable after public admission; changed doctrine
   requires a new version.
-- No fallback may substitute a Robson, Sahl, Dorotheus, Lilly, or generic
-  library rule for a missing Ramesey rule.
+- No fallback may substitute one lineage, translation, or generic library rule
+  for a missing Ramesey or Sahl rule.
 
 ## 13. Validation and Admission Gates
 
-Engine-module admission completed:
+Ramesey engine-module admission completed:
 
 1. All nine policies in section 8 are bound from named Ramesey passages or an
    explicit Moira computational product.
@@ -410,25 +491,47 @@ Engine-module admission completed:
     of all ten rules, clauses, measurements, remedy context, reader/house
     provenance, and the non-score/non-recommendation boundary.
 
+Sahl engine-module admission completed:
+
+1. Unit fixtures cover all ten rules, strict 12-degree/day motion, inclusive
+   12-degree solar/node boundaries, whole-sign rays, body-specific combined
+   moieties, terminal Egyptian bounds, both eighth-rule readings, and both
+   selectable burnt-path intervals.
+2. The unresolved burnt-path default is tested as `not_evaluable`; a confirmed
+   cadency or other impediment remains decisive without converting unknown
+   evidence into clear evidence.
+3. Facade tests prove reader and variant delegation; strict REST tests preserve
+   ten rule witnesses, selected variants, non-score semantics, and explicit
+   transport provenance.
+4. OpenAPI contains the Sahl request, response, and both variant fields.
+5. J2000 London DE441 regressions exercise the real reader and compare the
+   Rule 9 rate with an independently sampled central finite difference at
+   absolute tolerance `1e-4 degrees/day`.
+6. Curated root/facade snapshots and the doctrine-surface audit admit the new
+   public types and `Moira.sahl_moon_condition_at(...)` method exactly.
+
 ### 13.1 Wider-surface admission decision
 
-Decision on 2026-07-14: admit the profile's named public types and evaluator at
-the package root and facade, add `Moira.ramesey_moon_condition_at(...)`, and
-admit the bounded single-moment REST route
-`POST /v1/electional/western/ramesey-moon-condition`.
+Decisions on 2026-07-14/15: admit both profiles' named public types and
+evaluators at the package root and facade, add
+`Moira.ramesey_moon_condition_at(...)` and
+`Moira.sahl_moon_condition_at(...)`, and admit the bounded single-moment REST
+routes `/v1/electional/western/ramesey-moon-condition` and
+`/v1/electional/western/sahl-moon-condition`.
 
 Generic search, scoring, website, advice, and recommendation-language admission
 remain deferred. The generic scanner does not yet carry variant-aware
 forward-aspect provenance, urgent-time context, or the distinction between
 remedy applicability and fulfillment. Repeated forward VOC searches also need
 an explicit caching/performance contract before a broad scan is admitted. The
-REST route therefore accepts one `jd_ut`, requires an explicit house-system
-code, preserves the optional urgency context, returns the complete typed
-evaluation, and reports `generic_search_integration: not_admitted`, scoring and
-recommendation language as not provided, and remedy fulfillment as not
-computed. This admission does not authorize generic scored-window language.
+Each REST route therefore accepts one `jd_ut`, requires an explicit
+house-system code, returns the complete typed evaluation, and reports
+`generic_search_integration: not_admitted` with no score or recommendation.
+Ramesey preserves optional urgency context and uncomputed remedy fulfillment;
+Sahl preserves its explicit textual variants. This admission does not
+authorize generic scored-window language.
 
-### 13.2 Five-axis sovereignty audit
+### 13.2 Ramesey five-axis sovereignty audit
 
 Audit performed against the implementation and tests on 2026-07-14:
 
@@ -445,6 +548,22 @@ used as implementation authority or numerical proof. The known VOC
 interpretive choice and the remedy's deliberately uncomputed fulfillment
 requirements remain visible rather than being concealed.
 
+### 13.3 Sahl five-axis sovereignty audit
+
+Audit performed against the implementation and tests on 2026-07-15:
+
+| Axis | Result | Evidence |
+|---|---|---|
+| Ontology ownership | Pass | The object is Sahl section 22's bounded ten-impediment condition, not a blended medieval checklist or complete election. |
+| Derivation ownership | Pass | Rule order and numeric thresholds come from the held Dykes witness; glossary definitions and Moira bindings are labeled separately. |
+| Structural ownership | Pass | Immutable Sahl-owned rule, clause, measurement, policy, and evaluation vessels preserve compound logic without positional arrays. |
+| Policy ownership | Pass | Burnt-path ambiguity and the Latin/Arabic eighth-rule conflict are selectable, visible policies; unknown source wording remains `not_evaluable`. |
+| Validation ownership | Pass for public moment admission | Primary-page checks, boundary invariants, DE441 integration, real facade/REST execution, OpenAPI assertions, and public-surface governance carry the proof. |
+
+Provenance honesty passes with an explicit limitation: Egyptian bounds are a
+Moira profile binding because Sahl does not name the bound table. Neither
+selectable burnt-path span is falsely presented as Sahl's own numeric wording.
+
 No weighted score can be admitted from these ten rules without a separate
 source-backed scoring doctrine. Boolean counting is not a neutral default.
 
@@ -454,14 +573,15 @@ This packet and admitted public-moment batch do not:
 
 - admit generic Western profile scanning, scoring, ranking, or advice
 - define a complete election for any matter
-- merge Ramesey with Robson, Sahl, Dorotheus, Lilly, or Bonatti
+- merge the distinct Ramesey and Sahl objects with each other or with Robson,
+  Dorotheus, Lilly, or Bonatti
 - create a historical-outcome dataset
 - claim empirical validation of electional astrology
 - alter the existing generic electional search or scored-window semantics
 
 ## 15. Ledger Decision
 
-P13-U1 is `ramesey_v1_public_moment_admitted; generic_search_scoring_and_recommendation_deferred`.
+P13-U1 is `ramesey_v1_and_sahl_v1_public_moments_admitted; generic_search_scoring_and_recommendation_deferred`.
 
 `ramesey_moon_condition_v1` now exists as an engine-owned, non-scored condition
 profile with a separate non-erasing contingency witness. Its named types and
@@ -470,3 +590,9 @@ backed convenience method, and the REST route exposes exactly one moment with
 explicit transport provenance. Any generic search, scoring, website, advice,
 recommendation, or additional lineage-profile surface requires a new doctrine,
 transport, and public-semantics admission task; none is implied here.
+
+`sahl_moon_condition_v1` separately exists as an engine-owned, non-scored
+condition profile with visible burnt-path and eighth-rule variants. Its named
+types, facade method, and REST route expose one moment with explicit transport
+provenance. It does not inherit Ramesey's remedy, aspect, bounds, speed, or
+summary-status policy.

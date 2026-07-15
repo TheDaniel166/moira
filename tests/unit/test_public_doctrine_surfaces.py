@@ -64,6 +64,11 @@ _PUBLIC_DOCTRINE_SURFACES = {
         "RameseyMoonConditionStatus",
         "RameseyRemedyApplicability",
         "RameseyMoonConditionPolicy",
+        "SahlRuleState",
+        "SahlMoonConditionStatus",
+        "SahlBurntPathVariant",
+        "SahlEighthRuleVariant",
+        "SahlMoonConditionPolicy",
     ],
     "moira.patterns": [
         "PatternSelectionPolicy",
@@ -98,9 +103,9 @@ _PUBLIC_DOCTRINE_SURFACES = {
 }
 
 _MODULES_WITHOUT_ALL = {"moira.julian"}
-_PUBLIC_DOCTRINE_SURFACE_COUNT = 59
-_PUBLIC_DOCTRINE_DATACLASS_COUNT = 51
-_PUBLIC_DOCTRINE_ENUM_COUNT = 8
+_PUBLIC_DOCTRINE_SURFACE_COUNT = 64
+_PUBLIC_DOCTRINE_DATACLASS_COUNT = 52
+_PUBLIC_DOCTRINE_ENUM_COUNT = 12
 
 
 def _iter_surface_records() -> list[tuple[str, str]]:

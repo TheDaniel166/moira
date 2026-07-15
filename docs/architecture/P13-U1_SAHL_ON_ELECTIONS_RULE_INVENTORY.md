@@ -1,11 +1,13 @@
 # P13-U1 — Sahl bin Bishr *On Elections*: Complete Electional Rule Inventory
 
-Version: 1.0
-Date: 2026-07-09
-Status: primary-source rule inventory. Companion to
+Version: 1.1
+Date: 2026-07-15
+Status: primary-source rule inventory with one bounded admitted profile.
+Companion to
 `P13-U1_WESTERN_ELECTIONAL_DOCTRINE_RESEARCH_DOSSIER.md` and parallel to
-`P13-U1_DOROTHEUS_BOOK_V_RULE_INVENTORY.md`. Not yet a doctrine packet, not a
-standard, not an admission.
+`P13-U1_DOROTHEUS_BOOK_V_RULE_INVENTORY.md`. Only the ten Moon impediments in
+section 22 are admitted; the remaining inventory is not a doctrine packet,
+standard, or public admission.
 
 ## 0. Provenance and Scope
 
@@ -20,7 +22,9 @@ with continuous apparatus against Crofts’s Arabic and al-Rijāl parallels.
 printed in Dykes. Footnote clarifications are Dykes’ apparatus and are noted
 where they resolve a Latin/Arabic conflict.
 
-**Confidence:** this is a first-transcription reading of the primary text.
+**Confidence:** this is a first-transcription reading of the primary text,
+except that section 22 and its supporting glossary definitions were visually
+page-confirmed on 2026-07-14/15 for the bounded v1 admission.
 Every parameter here is **[Sahl+, primary text]** in the sense that it is
 *stated in the named authority at the cited section* — but per Moira’s
 Verification and Honesty Law, each value must still be re-confirmed against
@@ -236,6 +240,40 @@ do not merge with Dorotheus/Ramesey/Lilly without labeling.**
 | 8 | Twelfth from her house / aversion ⚠ | **Latin:** Moon in the **twelfth sign from her own house** (i.e. Gemini), with a malefic; or opposite her house; or absent from it (aversion to Cancer) (§22e). **Arabic:** “in a **twelfth-part** with a malefic.” Dykes prefers twelfth-part / Paul / al-Rijāl over Latin “twelfth sign” | **Latin vs Arabic conflict — do not code one without the other labeled** |
 | 9 | Slow in course | Daily motion **less than 12°/day** (even one minute less); similarity to Saturn’s course; if less than average daily course in the Canon / Book of Courses (§22f). Arabic adds kardaja framing ⚠ | **Sahl slow-Moon threshold = 12°/day** (same as Dorotheus V.6,11) |
 | 10 | Empty in course (VOC) | Moon **empty in her course** — attributed to **Māshāʾallāh** and the sages of our time (§22g) | Named VOC lineage: Māshāʾallāh via Sahl |
+
+### 4.1.1 Bounded computational admission (2026-07-15)
+
+`sahl_moon_condition_v1` admits only the ten section-22 impediments as a
+single-moment, non-scored proof object. Public access is complete through:
+
+- `moira.western_electional.evaluate_sahl_moon_condition(...)`;
+- `Moira.sahl_moon_condition_at(...)`;
+- `POST /v1/electional/western/sahl-moon-condition`.
+
+The admitted policies remain visible in every rule witness:
+
+| Rule family | Admitted computational policy |
+|---|---|
+| Burned Moon | shortest Sun-Moon longitude separation `<= 12 degrees`; applying/separating phase preserved |
+| Degree of fall | ordinal third degree of Scorpio, encoded `[2, 3)` |
+| Opposition / malefic rays | whole-sign opposition, square, and opposition rays; bodily joining uses the source-family Perso-Arabic combined moieties |
+| Head / Tail | true ecliptic ascending node and its opposition, distance `<= 12 degrees` |
+| Last degrees | only the terminal malefic segment of the explicitly selected Egyptian bounds table; this is a Moira binding because Sahl does not name the table |
+| Cadency | houses 3, 6, 9, and 12 in the caller-declared effective quadrant system |
+| Burnt path | default `unresolved_source_wording` returns `not_evaluable`; the Dykes-glossary `19 Libra-3 Scorpio` and `15 Libra-15 Scorpio` interpretations are named, caller-visible alternatives |
+| Eighth rule | Dykes-preferred Arabic/al-Rijal twelfth-part reading by default; the conflicting Latin twelfth-sign reading remains separately selectable and labeled |
+| Slow Moon | instantaneous geocentric longitude rate strictly `< 12 degrees/day` |
+| Empty course | medieval sign-bounded product: no exact traditional-planet connection completes before sign exit |
+
+The glossary was visually checked at printed pp. 409-415 and 426 for
+whole-sign aspects, twelfth-parts (2.5-degree divisions), medieval emptiness
+of course, cadency, and the two burnt-path spans. The selectable spans are not
+relabelled as Sahl's missing numeric endpoints. A confirmed impediment governs
+the profile summary even when another compound clause is `not_evaluable`;
+otherwise unresolved evidence yields an indeterminate summary.
+
+This profile does not score, recommend, scan for windows, evaluate Sahl's
+general advice, or claim a complete electional judgement.
 
 ### 4.2 General advice (§§23–27)
 
@@ -830,14 +868,15 @@ citing Dykes §N):**
 
 ## 8. Open Items Before Doctrine-Packet Admission
 
-1. **Re-confirm every parameter at the cited Dykes section** (standing Moira
-   law) — this is a first reading; all ⚠-marked readings need a second pass
-   against printed pp. 91–133.
-2. **Resolve Latin vs Arabic on impediment #8** (§22e): twelfth-sign-from-Cancer
-   vs twelfth-part-with-malefic. Dykes recommends twelfth-part / Paul / al-Rijāl.
-   Do not silently pick one.
-3. **Resolve burnt-path extent** (§22d): “end Libra + beginning Scorpio” vs
-   Dorotheus whole Libra+Scorpio vs later 15°–15°. Three named variants.
+1. **Continue page-confirming parameters outside section 22** (standing Moira
+   law). Section 22 and the supporting glossary definitions are confirmed for
+   the bounded v1 admission; other ⚠-marked readings still need a second pass.
+2. **Eighth-rule conflict is preserved, not erased**: the public profile
+   defaults to Dykes's recommended Arabic/al-Rijāl twelfth-part reading and
+   exposes the Latin twelfth-sign reading as a separate named variant.
+3. **Burnt-path wording remains unresolved in Sahl**: the public default is
+   indeterminate. Two glossary-supported spans are selectable by name, and
+   neither is claimed as Sahl's unstated numeric boundary.
 4. **Resolve straight/crooked effect polarity** (§26 vs Carmen V.2) — named
    conflict; do not merge.
 5. **Stakes = whole-sign angles vs axial regions** (Dykes n. at §1 / §5b) —
@@ -849,13 +888,14 @@ citing Dykes §N):**
 8. **Historical-content chapters** (§§71–77 slavery): if reused, reframe the
    *mechanic* (Moon-sign → nature/stability of acquisition; separation→connection
    → status trajectory), not the literal matter.
-9. **Cross-lineage tables to bind with provenance:** bounds/terms, melothesia,
-   dodecatemoria algorithm, Lot of Fortune day/night formula, kardaja/slow-Moon
-   Canon reference (§22f Arabic).
+9. **Cross-lineage tables to bind with provenance:** the v1 Moon profile now
+   binds Egyptian bounds and the glossary's twelfth-part algorithm explicitly;
+   melothesia, Lot of Fortune day/night formula, and the kardaja/slow-Moon
+   Canon reference remain open for later profiles.
 10. **Parallel Dorotheus inventory** already holds shared unlocks; Sahl adds
     Lot-from-Moon houses, hayyiz, explicit VOC-as-#10, and the 12° node orb as
     first-class named parameters.
 
 ---
 
-*End of P13-U1 Sahl *On Elections* rule inventory (v1.0, 2026-07-09).*
+*End of P13-U1 Sahl *On Elections* rule inventory (v1.1, 2026-07-15).*

@@ -128,6 +128,18 @@ def test_public_surface_is_promoted_through_root_and_facade() -> None:
         "RAMESEY_MOON_CONDITION_V1",
         "evaluate_ramesey_moon_condition",
         "ramesey_moon_condition_at",
+        "SahlRuleState",
+        "SahlMoonConditionStatus",
+        "SahlBurntPathVariant",
+        "SahlEighthRuleVariant",
+        "SahlMeasurement",
+        "SahlClauseWitness",
+        "SahlRuleWitness",
+        "SahlMoonConditionPolicy",
+        "SahlMoonConditionEvaluation",
+        "SAHL_MOON_CONDITION_V1",
+        "evaluate_sahl_moon_condition",
+        "sahl_moon_condition_at",
     }
     assert set(western.__all__) == expected
     assert len(western.__all__) == len(set(western.__all__))
