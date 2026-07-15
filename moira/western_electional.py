@@ -1,9 +1,9 @@
 """Source-owned Western electional doctrine.
 
-This module admits bounded Moon-condition profiles for William Ramesey and
-Sahl bin Bishr.  Each profile preserves its own source order, variant policy,
-and proof witnesses.  Neither is a complete election, a score, or a
-recommendation.
+This module admits bounded Moon-condition profiles for William Ramesey,
+Sahl bin Bishr, and Dorotheus of Sidon.  Each profile preserves its own source
+order, variant policy, and proof witnesses.  None is a complete election, a
+score, or a recommendation.
 
 The profile's ambiguity policies are derived from Ramesey's own Book II
 definitions and tables.  They remain visible in
@@ -32,6 +32,20 @@ from .egyptian_bounds import EgyptianBoundsDoctrine, EgyptianBoundsPolicy, egypt
 from .houses import HouseAngularity, HousePolicy, assign_house, describe_angularity
 from .spk_reader import SpkReader, get_reader
 from .void_of_course import is_void_of_course
+from ._western_electional_dorotheus import (
+    DOROTHEUS_MOON_CONDITION_V1,
+    DorotheusClauseWitness,
+    DorotheusMeasurement,
+    DorotheusMoonConditionEvaluation,
+    DorotheusMoonConditionPolicy,
+    DorotheusMoonConditionStatus,
+    DorotheusRemedyApplicability,
+    DorotheusRemedyWitness,
+    DorotheusRuleState,
+    DorotheusRuleWitness,
+    dorotheus_moon_condition_at,
+    evaluate_dorotheus_moon_condition,
+)
 
 __all__ = [
     "RameseyRuleState",
@@ -58,6 +72,18 @@ __all__ = [
     "SAHL_MOON_CONDITION_V1",
     "evaluate_sahl_moon_condition",
     "sahl_moon_condition_at",
+    "DorotheusRuleState",
+    "DorotheusMoonConditionStatus",
+    "DorotheusRemedyApplicability",
+    "DorotheusMeasurement",
+    "DorotheusClauseWitness",
+    "DorotheusRuleWitness",
+    "DorotheusRemedyWitness",
+    "DorotheusMoonConditionPolicy",
+    "DorotheusMoonConditionEvaluation",
+    "DOROTHEUS_MOON_CONDITION_V1",
+    "evaluate_dorotheus_moon_condition",
+    "dorotheus_moon_condition_at",
 ]
 
 

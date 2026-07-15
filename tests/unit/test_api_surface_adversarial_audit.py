@@ -571,6 +571,18 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     'SahlRuleWitness',
     'evaluate_sahl_moon_condition',
     'sahl_moon_condition_at',
+    'DOROTHEUS_MOON_CONDITION_V1',
+    'DorotheusClauseWitness',
+    'DorotheusMeasurement',
+    'DorotheusMoonConditionEvaluation',
+    'DorotheusMoonConditionPolicy',
+    'DorotheusMoonConditionStatus',
+    'DorotheusRemedyApplicability',
+    'DorotheusRemedyWitness',
+    'DorotheusRuleState',
+    'DorotheusRuleWitness',
+    'evaluate_dorotheus_moon_condition',
+    'dorotheus_moon_condition_at',
 })
 
 _EXPECTED_ROOT_ONLY_NAMES = {
@@ -949,6 +961,7 @@ _EXPECTED_MOIRA_METHODS.update({
     'progressed_astrodynes_geometry',
     'ramesey_moon_condition_at',
     'sahl_moon_condition_at',
+    'dorotheus_moon_condition_at',
     'search_progressed_astrodyne_contacts',
     'shadbala',
     'shadbala_condition',

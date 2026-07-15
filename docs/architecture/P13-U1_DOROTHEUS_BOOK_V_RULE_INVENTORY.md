@@ -1,11 +1,13 @@
 # P13-U1 — Dorotheus *Carmen Astrologicum* Book V: Complete Electional Rule Inventory
 
-Version: 1.0
-Date: 2026-07-09
-Status: primary-source rule inventory. Companion to
+Version: 1.1
+Date: 2026-07-15
+Status: primary-source rule inventory; the bounded V.6 Moon-corruption layer is
+admitted as `dorotheus_moon_condition_v1`. Companion to
 `P13-U1_WESTERN_ELECTIONAL_DOCTRINE_RESEARCH_DOSSIER.md` §8.1. Parallel
-lineage inventory: `P13-U1_SAHL_ON_ELECTIONS_RULE_INVENTORY.md`. Not yet a
-doctrine packet, not a standard, not an admission.
+lineage inventory: `P13-U1_SAHL_ON_ELECTIONS_RULE_INVENTORY.md`. The remaining
+sign-nature, root/outcome, matter-significator, and matter-specific layers are
+inventory, not yet public doctrine.
 
 ## 0. Provenance and Scope
 
@@ -21,11 +23,10 @@ rule.
 numbering). Where a rule rests on Hephaistion's parallel rather than the Arabic,
 it is marked *(Heph.)*.
 
-**Confidence:** this is a first-transcription reading of the primary text. Every
-parameter here is **[V+, primary text]** in the sense that it is *stated in the
-named authority at the cited page* — but per Moira's Verification and Honesty
-Law, each value must still be re-confirmed against the page before it is coded
-into a doctrine packet, and disputed readings (marked ⚠) resolved.
+**Confidence:** every parameter here is **[V+, primary text]** in the sense that
+it is stated in the named authority at the cited page. V.6,3-15 was separately
+rendered and visually re-confirmed before the bounded profile was admitted.
+Disputed readings remain marked and are not converted into executable truth.
 
 **What Dorotheus is.** Book V is the oldest surviving electional treatise. Its
 architecture is explicit and three-layered, and *every* matter-specific chapter
@@ -111,9 +112,9 @@ ancestor of the later "ten impediments of the Moon" and of void-of-course.
 
 ### 2.1 The impediment checklist (V.6, 3–14) — gates
 
-**Page-confirmation record (2026-07-14):** V.6,4–15 was rendered and visually
-checked against the held Dykes ʿUmar al-Ṭabarī PDF, printed pp. 234–235 (PDF
-pp. 252–253). The check confirms that under-rays (V.6,4), least motion below
+**Page-confirmation record (2026-07-14/15):** V.6,3–15 was rendered and visually
+checked against the held Dykes ʿUmar al-Ṭabarī PDF, printed pp. 233–235 (PDF
+pp. 251–253). The check confirms that under-rays (V.6,4), least motion below
 12°/day (V.6,11), and the burned path (V.6,12) are three separate rules. It
 does not resolve the latitude/node wording in V.6,7 or narrow Dorotheus's
 “Libra and Scorpio” to the later 15°–15° interval.
@@ -125,15 +126,15 @@ Do not begin an inception when any of these hold (each is a distinct condition �
 |---|---|---|---|
 | 1 | Moon eclipsed | at/near an eclipse | harsher if in the natal Moon's sign or its trine (V.6,3) |
 | 2 | Moon under the rays / combust | "annihilated by his glow, not seen" | **but GOOD for concealed works** — theft, betrayal, secrets (V.6,4); best begun as she disengages and reappears (V.6,5) |
-| 3 | Moon in the twelfth-part of Mars or Saturn | dodecatemoria of a malefic (V.6,6) | requires twelfth-part engine |
-| 4 | Moon on the descending (southern) node region | "middle of the line of equality, descending toward the south" (V.6,7) | latitude/node condition ⚠ (al-Tabarī conflates ecliptic/equator) |
-| 5 | Moon in opposition to the Sun (Full) | exact opposition | bad; indicates lawsuits, "the younger will be defeated" (V.6,8) |
+| 3 | Moon in the twelfth-part of Mars or Saturn | Moon's 2.5° dodecatemorion falls in a traditional domicile of Mars or Saturn (V.6,6) | admitted explicit twelfth-part computation |
+| 4 | Moon on the ecliptic, descending south | "middle of the line of equality, descending toward the south" (V.6,7) | ⚠ edition note 15 identifies the ecliptic but supplies no crossing region or tolerance; v1 is `not_evaluable` |
+| 5 | Moon in opposition to the Sun (Full) | whole-sign opposition under the edition glossary | bad; indicates lawsuits, "the younger will be defeated" (V.6,8) |
 | 6 | Moon conjunct or aspecting an infortune | with, or looking at, Mars/Saturn (V.6,9) | |
-| 7 | Moon disengaging from the Sun in longitude or latitude | just-separated New Moon (V.6,10) | |
-| 8 | **Moon slow / least motion** | **daily motion < 12°/day** while decreasing in speed → "resembles Saturn"; brings difficulty & slowness (V.6,11) | **the Dorothean slow-Moon threshold: 12°/day** (cf. Ramesey 13°10′36″, Robson 13°11′ — three named variants) |
+| 7 | Moon disengaging from the Sun in longitude or latitude | measured separation and latitude are preserved, but the text gives no connection interval or latitude criterion (V.6,10) | v1 is `not_evaluable`; no just-separated-New-Moon proxy is asserted |
+| 8 | **Moon slow / least motion** | **daily motion < 12°/day** → "resembles Saturn"; brings difficulty & slowness (V.6,11) | clause 11 itself defines the least-motion comparison; no acceleration derivative is added |
 | 9 | Moon in the burned path (via combusta) | "the middle of the line of equality — **Libra and Scorpio**" (V.6,12) | Dorothean via combusta = whole Libra+Scorpio ⚠ (later authorities narrow to 15°Lib–15°Sco) |
-| 10 | Moon in the last degrees of a sign | end-of-sign = bounds of Saturn/Mars, "the harshest bounds" (V.6,13) | requires bound (term) engine |
-| 11 | Moon cadent from the 10th toward the 9th, in a "double place" | falling from the angle → work nullified, unstable (V.6,14) | |
+| 10 | Moon in the last degrees of a sign | terminal Egyptian bound ending at 30°, ruled by Saturn or Mars (V.6,13) | Dykes introduction p. 36 identifies Dorotheus's bound use as Egyptian |
+| 11 | Moon cadent from the 10th toward the 9th, in a "double place" | explicit quadrant ninth-place fall from the Midheaven → work nullified, unstable (V.6,14) | not generic 3/6/9/12 cadency |
 
 **Remedy when the election cannot be postponed (V.6,15):** place **Jupiter or
 Venus in the Ascendant or the Midheaven.**
@@ -586,13 +587,13 @@ dossier §10 and to new needs this transcription surfaces:
 
 | Doctrine in Book V | Engine requirement | Status vs. dossier §10 |
 |---|---|---|
-| Moon slow < **12°/day** (V.6,11); "increasing/decreasing in calculation" everywhere | **body speed (deg/day) + Δspeed sign in scan payload** | Unlock 1 (already named) |
+| Moon slow < **12°/day** (V.6,11); other chapters' "increasing/decreasing in calculation" | **body speed (deg/day); source-specific interpretation before any derivative is added** | V.6 admitted; broader usage remains profile-owned |
 | Under-the-rays / combust Moon (V.6,4), "13° from the Sun's rays" (V.40,2), oriental/occidental Mercury (V.16,1) | **signed solar elongation + orb tables** | Unlock 2 (already named) |
 | "The planet the Moon connects with next" (V.6,29, V.42,1); applying vs. separating (V.6,28) | **forward next-aspect search + applying/separating classifier** | Unlock 3 (already named) |
 | Moon increasing/decreasing in **light** (waxing/waning) — distinct from speed | **signed Sun–Moon elongation (phase), already implied by Unlock 2** | folds into Unlock 2 |
 | Straight vs. crooked (oblique-ascension) signs (V.2) | **ascensional times at the election latitude** | **NEW** — not in §10; needed for V.2 |
-| Moon in twelfth-part of a malefic (V.6,6); twelfth-part of the Moon (V.36, V.42) | **twelfth-part (dodecatemoria) engine** | **NEW** — needed for V.6/36/42 |
-| Moon in end-of-sign bounds of Saturn/Mars (V.6,13); "bound of the fortunes" (V.25,1) | **bound/term tables** | **NEW** — also needed for essential dignity scorer |
+| Moon in twelfth-part of a malefic (V.6,6); twelfth-part of the Moon (V.36, V.42) | **twelfth-part (dodecatemoria) engine** | V.6 admitted; reusable public subsystem still future |
+| Moon in end-of-sign bounds of Saturn/Mars (V.6,13); "bound of the fortunes" (V.25,1) | **bound/term tables** | V.6 binds the existing Egyptian table; other profiles remain explicit |
 | Node regions & latitude "descending toward the south" (V.6,7, V.44) | **lunar node longitudes + ecliptic latitude in payload** | **NEW** — needed for V.44 node doctrine |
 | Melothesia: sign → body-part taboo (V.40,8, V.39, V.32,5) | **sign→limb correspondence table (owned lookup)** | **NEW** — needed for all medical profiles |
 | Besieging by body/aspect (V.6,32, V.26, V.32,5) | **besiegement classifier (between two malefics by sign or ray)** | **NEW** — derivable once aspects+order are in payload |
@@ -600,8 +601,8 @@ dossier §10 and to new needs this transcription surfaces:
 
 **Profile families this inventory supports (each a bounded predicate/scorer
 profile citing V.ch,sent):**
-1. **General Moon-condition gate** (V.6) — the impediment checklist, each
-   impediment a named toggle.
+1. **General Moon-condition gate** (V.6) — admitted as the eleven-rule,
+   non-scored `dorotheus_moon_condition_v1` public moment profile.
 2. **Sign-tempo annotator** (V.2–V.5) — straight/crooked, convertible, twin,
    sect-fit.
 3. **Significator-of-the-matter fortifier** (V.31) — parameterized by matter →
@@ -618,16 +619,16 @@ interrogations/decumbitures and must not be admitted as electional gates.
 
 ---
 
-## 7. Open Items Before Doctrine-Packet Admission
+## 7. Remaining Items Beyond the Admitted V.6 Profile
 
-1. **Re-confirm every parameter at the cited page** (standing Moira law) — this
-   is a first reading; the ⚠-marked readings (V.6,4/7/9 node-vs-latitude
-   conflations; V.42,33 angle assignment; V.43,1 corrected sense) need a second
-   pass.
+1. **Do not force the two unresolved V.6 clauses:** the southern-descending
+   wording and longitude-or-latitude disengagement remain `not_evaluable`
+   until a primary parallel supplies lawful regions, intervals, or tolerances.
 2. **Source the referenced tables Book V does not print:** the sign→limb
    melothesia table, the "dark/void/bright degrees," and the bound/term tables.
    (Standard forms exist in the same volume's dignity material and in
-   Tetrabiblos; bind them with provenance.)
+   *Tetrabiblos*; bind them with provenance.) Egyptian bounds are already
+   source-bound for the admitted V.6 terminal-bound clause.
 3. **Historical-content chapters** (V.12, V.14 — slavery) are transcribed for
    doctrinal completeness; if reused, reframe the *mechanic* (Moon-sign → nature
    of the acquired thing / trajectory of a change of status) rather than the
@@ -636,3 +637,6 @@ interrogations/decumbitures and must not be admitted as electional gates.
    variant** beside Ramesey/Lilly/Robson (e.g. slow-Moon 12°/day vs. 13°11′;
    via combusta = whole Libra+Scorpio vs. 15°–15°). Never merge (Part V + Law of
    Semantic Honesty).
+5. **Build the rooted and matter-specific layers separately:** V.6 admission
+   does not yet implement V.2–V.5 sign-tempo, V.6.19–35 root/outcome, V.31
+   matter significators, natal overlays, or any complete matter profile.

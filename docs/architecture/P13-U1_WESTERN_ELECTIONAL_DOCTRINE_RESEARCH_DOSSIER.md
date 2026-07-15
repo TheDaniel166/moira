@@ -1,15 +1,21 @@
 # P13-U1 — Western Electional Doctrine Research Dossier
 
-Version: 0.11 (research foundation with two public moment profiles)
+Version: 0.12 (research foundation with three public moment profiles)
 Date: 2026-07-15
 Status: research inventory for the Western electional doctrine layer. The
 companion materials admit distinct `ramesey_moon_condition_v1` and
-`sahl_moon_condition_v1` objects through the engine module, package root,
-facade, `Moira` convenience methods, and bounded single-moment REST routes.
+`sahl_moon_condition_v1` and `dorotheus_moon_condition_v1` objects through the
+engine module, package root, facade, `Moira` convenience methods, and bounded
+single-moment REST routes.
 Generic search, scoring, website, advice, and recommendation surfaces remain
 deferred.
 
 Changelog:
+- 0.12 - re-rendered Dorotheus V.6.3-15 and the edition glossary, admitted the
+  distinct eleven-rule `dorotheus_moon_condition_v1` engine/facade/REST
+  profile, and preserved the southern-descending and longitude-or-latitude
+  disengagement clauses as measured but `not_evaluable` rather than importing
+  later node or connection orbs.
 - 0.11 - page-confirmed Sahl section 22 and the supporting glossary mechanics,
   admitted a distinct non-scored `sahl_moon_condition_v1` engine/facade/REST
   profile, and preserved the burnt-path and Latin/Arabic eighth-rule
@@ -794,8 +800,9 @@ before admission.**
 
 **No remaining true acquisition gaps.** Both Dorotheus and Sahl electional
 rule inventories exist as companions. The general Moon/planet/angle/aspect
-architecture is inventoried, and the admitted Ramesey and Sahl bounded
-public-moment profiles preserve distinct source derivations and policy choices.
+architecture is inventoried, and the admitted Ramesey, Sahl, and Dorotheus
+bounded public-moment profiles preserve distinct source derivations and policy
+choices.
 
 ---
 
@@ -808,17 +815,25 @@ public-moment profiles preserve distinct source derivations and policy choices.
    is admitted through REST, but the default burnt-path clause remains
    indeterminate because Sahl gives no endpoints. Do not silently promote a
    selectable glossary span into source text.
-3. **Generic search transport remains deferred by explicit decision**: the
+3. **Treat the Dorotheus V.6 closure as bounded and explicit**: all eleven
+   clauses and the V.6.15 remedy are public through REST, but V.6.7 and V.6.10
+   remain indeterminate until primary evidence supplies lawful computational
+   regions or intervals. Do not expand this into root/outcome or a complete
+   matter judgement implicitly.
+4. **Build the shared rooted/matter-significator vessel next**: preserve the
+   Moon as root, the lord of the Moon's sign as outcome, the next connection,
+   matter significators, and optional natal overlays as typed evidence before
+   admitting the first complete matter profile.
+5. **Generic search transport remains deferred by explicit decision**: the
    single-moment facade and REST vessel are admitted, but variant-aware
    forward-aspect provenance, remedy applicability versus fulfillment, and a
    forward-VOC caching/performance contract must be defined before proposing
    any scan-payload, predicate, or scoring admission.
-4. **Profile-first rollout**: the next profile may be a bounded Sahl matter
-   profile or a first Dorotheus profile, but it must remain distinct from both
-   admitted Moon-condition objects. Each additional profile, generic search
-   adapter, scoring product, and website surface requires its own admission
-   decision.
-5. **Validation strategy**: per Moira law, each numeric rule (orbs, thresholds,
+6. **Profile-first rollout**: the next admission is the first complete
+   matter-specific profile built on the rooted vessel, not a blended universal
+   election. Each additional profile, generic search adapter, scoring product,
+   and website surface requires its own admission decision.
+7. **Validation strategy**: per Moira law, each numeric rule (orbs, thresholds,
    points) is verified against its **named primary text at the cited page**
    before admission; each variant carries its citation in the profile metadata.
 

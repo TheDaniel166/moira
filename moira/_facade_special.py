@@ -60,7 +60,7 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
     "scope": "class",
     "id": "moira._facade_special.SpecialTopicsFacadeMixin",
     "risk": "medium",
-    "api": {"frozen": ["eclipse", "primary_directions", "longevity", "phenomena", "occultations", "void_of_course", "electional", "ramesey_moon_condition_at", "sahl_moon_condition_at"], "internal": []},
+    "api": {"frozen": ["eclipse", "primary_directions", "longevity", "phenomena", "occultations", "void_of_course", "electional", "ramesey_moon_condition_at", "sahl_moon_condition_at", "dorotheus_moon_condition_at"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -467,6 +467,33 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
             house_system=house_system,
             burnt_path_variant=burnt_path_variant,
             eighth_rule_variant=eighth_rule_variant,
+            reader=self._reader,
+            house_policy=house_policy,
+            policy=resolved_policy,
+        )
+
+    def dorotheus_moon_condition_at(
+        self,
+        jd_ut: float,
+        latitude: float,
+        longitude: float,
+        *,
+        house_system: str,
+        unavoidable_time_urgency: bool | None = None,
+        house_policy=None,
+        policy=None,
+    ):
+        """Evaluate Dorotheus's bounded Book V.6 profile at one instant."""
+        facade = _facade_module()
+        resolved_policy = (
+            facade.DOROTHEUS_MOON_CONDITION_V1 if policy is None else policy
+        )
+        return facade.dorotheus_moon_condition_at(
+            jd_ut,
+            latitude,
+            longitude,
+            house_system=house_system,
+            unavoidable_time_urgency=unavoidable_time_urgency,
             reader=self._reader,
             house_policy=house_policy,
             policy=resolved_policy,

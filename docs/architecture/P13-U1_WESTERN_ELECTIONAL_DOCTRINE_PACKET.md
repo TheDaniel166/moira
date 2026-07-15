@@ -1,8 +1,8 @@
 # P13-U1 Western Electional Doctrine Packet
 
-Version: 0.5
+Version: 0.6
 Date: 2026-07-15
-Status: Ramesey and Sahl public moment evaluations admitted; generic search/scoring deferred
+Status: Ramesey, Sahl, and Dorotheus public moment evaluations admitted; generic search/scoring deferred
 Scope: bounded Western electional doctrine beside the generic search transport
 
 ## 1. Doctrine Decision
@@ -16,11 +16,13 @@ scan chart states, merge qualifying scan points into windows, and attach a
 declared numeric transport score. It does not become Western electional
 doctrine merely because a future profile uses it.
 
-This packet defines two bounded doctrine profiles:
+This packet defines three bounded doctrine profiles:
 
 `ramesey_moon_condition_v1`
 
 `sahl_moon_condition_v1`
+
+`dorotheus_moon_condition_v1`
 
 It is a transparent evaluation of William Ramesey's ten impediments of the
 Moon in *Astrologia Restaurata*, Book III, Chapter II, printed p. 127. It is
@@ -28,6 +30,9 @@ not a complete election, a recommendation, an auspiciousness score, or a
 substitute for matter-specific judgement. The Sahl profile independently
 evaluates Sahl bin Bishr's ten Moon impediments in *On Elections* section 22.
 It does not inherit Ramesey's thresholds, rule groupings, or remedy witness.
+The Dorotheus profile independently evaluates the eleven corruption clauses
+in *Carmen Astrologicum* V.6.3-14 and preserves V.6.15 as a separate remedy
+instruction. It does not claim the later root/outcome or matter-specific layers.
 
 The profile is admitted through `moira.western_electional`, the curated package
 root, `moira.facade`, `Moira.ramesey_moon_condition_at(...)`, and the bounded
@@ -42,6 +47,12 @@ The Sahl profile is admitted through the same public engine layers,
 `POST /v1/electional/western/sahl-moon-condition`. Its burnt-path and eighth-
 rule textual variants remain explicit request and result policy rather than
 being merged into Ramesey or hidden behind a universal default.
+
+The Dorotheus profile is likewise admitted through the engine, facade, and
+`Moira.dorotheus_moon_condition_at(...)`, with
+`POST /v1/electional/western/dorotheus-moon-condition` as its typed REST
+surface. Its eleven source-ordered rules, measured unknowns, and separate
+remedy instruction remain visible in the response.
 
 ## 2. Authority and Page Confirmation
 
@@ -79,8 +90,7 @@ Ramesey profile:
   Visually confirmed 2026-07-14.
 
 Sahl and Dorotheus preserve different thresholds, rule groupings, and
-language. Sahl now owns a distinct admitted profile; Dorotheus still requires
-its own future profile.
+language. Sahl and Dorotheus now own distinct admitted profiles.
 
 ### 2.3 Sahl governing witness
 
@@ -95,6 +105,21 @@ Primary authority for `sahl_moon_condition_v1`:
 - Section 22 and the supporting glossary pages were rendered and visually
   checked on 2026-07-14/15. The check preserves note 69's uncertainty and note
   70's Latin/Arabic eighth-rule conflict.
+
+### 2.4 Dorotheus governing witness
+
+Primary authority for `dorotheus_moon_condition_v1`:
+
+- Dorotheus of Sidon, *Carmen Astrologicum*, the ʿUmar al-Ṭabarī translation,
+  2nd edition, Benjamin Dykes trans. and ed., Book V.6, printed pp. 233-235
+  (PDF pp. 251-253 in the held 412-page witness).
+- Dykes's glossary, printed pp. 353-376, supplies the edition-owned meanings
+  of whole-sign configuration, twelfth-parts, and the 15-degree under-rays
+  interpretation. Dykes's introduction, printed p. 36, identifies the bounds
+  used by Dorotheus as Egyptian.
+- V.6.3-15 and the relevant glossary entries were rendered and visually
+  checked on 2026-07-15. The check does not invent a region for V.6.7 or a
+  connection interval/latitude criterion for V.6.10.
 
 ## 3. Governing Objects
 
@@ -299,6 +324,31 @@ confirmed Sahl impediment determines a triggered summary even when another
 compound clause is unresolved. If no rule is confirmed and any rule remains
 `not_evaluable`, the overall status is indeterminate.
 
+### 7.7 Third profile: `dorotheus_moon_condition_v1`
+
+The Dorotheus profile evaluates the eleven distinct corruption clauses in
+V.6.3-14. It preserves V.6.15 as one separate, non-erasing remedy instruction.
+
+| # | Stable rule id | Admitted computation |
+|---|---|---|
+| 1 | `moon_eclipsed` | Moira geometric lunar-eclipse contact state; natal-Moon sign/trine intensifier remains uncomputed |
+| 2 | `moon_under_solar_rays` | shortest Sun-Moon separation `<= 15 degrees`, bound to this edition's under-rays glossary |
+| 3 | `moon_in_malefic_twelfth_part` | Moon's 2.5-degree twelfth-part falls in a traditional Mars or Saturn domicile |
+| 4 | `moon_on_ecliptic_descending_south` | measured lunar latitude retained; source supplies no region/tolerance, so v1 is `not_evaluable` |
+| 5 | `moon_opposition_sun` | whole-sign opposition under the edition glossary |
+| 6 | `moon_with_or_looking_at_infortune` | same-sign presence or whole-sign sextile, square, trine, or opposition to Mars/Saturn |
+| 7 | `moon_disengaging_from_sun` | longitude separation/rate and lunar latitude retained; missing interval/latitude semantics remain `not_evaluable` |
+| 8 | `moon_slow_below_12deg_per_day` | instantaneous geocentric longitude rate strictly below 12 degrees/day |
+| 9 | `moon_in_burned_path` | whole tropical Libra and Scorpio, `[180, 240)` |
+| 10 | `moon_in_terminal_malefic_bound` | terminal Egyptian bound ending at 30 degrees and ruled by Mars/Saturn |
+| 11 | `moon_ninth_cadent_from_midheaven` | explicit quadrant ninth place; not generic cadency |
+
+The unresolved fourth and seventh clauses prevent a false all-clear when no
+other gate triggers. A confirmed gate still determines the summary as
+triggered. The V.6.15 remedy becomes applicable only when a gate is confirmed
+and the caller explicitly declares that the time cannot be postponed; the
+profile does not claim that Jupiter/Venus placement has been fulfilled.
+
 ## 8. Bound Policies for Runtime Admission
 
 The nine former Ramesey blockers are closed as follows. These are profile
@@ -373,6 +423,26 @@ not the final authority.
    explicitly attested apparent-longitude/astrometric-rate chart product as the
    Ramesey evaluator, without transferring Ramesey's threshold.
 
+### 8.2 Dorotheus-specific bound policies
+
+1. **Under rays**: V.6.4's visibility wording is bound to this edition's
+   glossary definition of 15 degrees from the Sun; equality is included.
+2. **Aspect scope**: opposition and “looking at” are whole-sign
+   configurations. “With” is same-sign presence. No later moiety table is
+   imported into V.6.8-9.
+3. **Twelfth-parts**: 2.5-degree dodecatemoria map to signs; a Mars or Saturn
+   twelfth-part means one of their traditional domiciles, not their bodily
+   occupancy.
+4. **Burned path**: V.6.12 names Libra and Scorpio, so the interval is the two
+   whole tropical signs `[180, 240)`, not a later narrowed span.
+5. **Bounds**: V.6.13 uses the terminal Egyptian bound when its ruler is Mars
+   or Saturn. The binding follows Dykes's identification of Dorotheus's bounds.
+6. **Cadency**: V.6.14 is specifically the quadrant ninth place falling from
+   the Midheaven. It is not generalized to all cadent houses.
+7. **Unknowns**: V.6.7 and V.6.10 remain `not_evaluable`; measured latitude
+   and separation evidence is visible, but no node orb, crossing tolerance,
+   or connection interval is fabricated.
+
 ## 9. Named Lineage Variants
 
 These variants are separate profile parameters, not choices to average:
@@ -380,7 +450,8 @@ These variants are separate profile parameters, not choices to average:
 1. Void of course: Hellenistic 30°; medieval sign-bounded; Lilly moiety;
    modern Ward-orb; Ramesey wording requires its own confirmed binding.
 2. Moon/Sun condition: Ramesey 12° Moon-specific combustion; Sahl 12° burned
-   before/after; Dorotheus under-rays language without a numeric orb in V.6.4;
+   before/after; Dorotheus V.6.4 uses visibility wording bound by the edition's
+   15° under-rays glossary entry;
    general planetary combustion/under-beams/cazimi systems remain separate.
 3. Via combusta: Ramesey 15° Libra to 15° Scorpio; Sahl “end of Libra and
    beginning of Scorpio”; Dorotheus V.6.12 names Libra and Scorpio.
@@ -510,25 +581,49 @@ Sahl engine-module admission completed:
 6. Curated root/facade snapshots and the doctrine-surface audit admit the new
    public types and `Moira.sahl_moon_condition_at(...)` method exactly.
 
+Dorotheus engine-module admission completed:
+
+1. Unit fixtures cover all eleven clauses, the 15-degree under-rays boundary,
+   dodecatemoria, whole-sign configurations, strict 12-degree/day motion, the
+   two-sign burned path, terminal Egyptian bounds, and the specific quadrant
+   ninth-place clause.
+2. V.6.7 and V.6.10 preserve measured latitude/separation evidence as
+   `not_evaluable`; tests prove that confirmed gates still dominate without
+   converting unknown evidence into clear evidence.
+3. The present eclipse clause consumes Moira's geometric lunar-eclipse
+   classification. The natal-Moon sign/trine intensifier remains a visible
+   uncomputed modifier rather than an invented ephemeral result.
+4. Facade and REST tests preserve all eleven rules, the separate remedy
+   instruction, strict request validation, transport provenance, and the
+   non-score/non-recommendation boundary. OpenAPI contains the dedicated route
+   and Dorotheus request/response schemas.
+5. DE441 integration covers J2000 London, compares the measured Moon rate with
+   a central finite difference at `1e-4 degrees/day`, and confirms that an
+   engine-found lunar-eclipse maximum triggers the present-eclipse gate.
+6. Curated root/facade snapshots and the doctrine-surface audit admit the new
+   public types and `Moira.dorotheus_moon_condition_at(...)` method exactly.
+
 ### 13.1 Wider-surface admission decision
 
-Decisions on 2026-07-14/15: admit both profiles' named public types and
+Decisions on 2026-07-14/15: admit all three profiles' named public types and
 evaluators at the package root and facade, add
 `Moira.ramesey_moon_condition_at(...)` and
-`Moira.sahl_moon_condition_at(...)`, and admit the bounded single-moment REST
+`Moira.sahl_moon_condition_at(...)` and
+`Moira.dorotheus_moon_condition_at(...)`, and admit the bounded single-moment REST
 routes `/v1/electional/western/ramesey-moon-condition` and
-`/v1/electional/western/sahl-moon-condition`.
+`/v1/electional/western/sahl-moon-condition` and
+`/v1/electional/western/dorotheus-moon-condition`.
 
 Generic search, scoring, website, advice, and recommendation-language admission
 remain deferred. The generic scanner does not yet carry variant-aware
 forward-aspect provenance, urgent-time context, or the distinction between
 remedy applicability and fulfillment. Repeated forward VOC searches also need
-an explicit caching/performance contract before a broad scan is admitted. The
+an explicit caching/performance contract before a broad scan is admitted.
 Each REST route therefore accepts one `jd_ut`, requires an explicit
 house-system code, returns the complete typed evaluation, and reports
 `generic_search_integration: not_admitted` with no score or recommendation.
-Ramesey preserves optional urgency context and uncomputed remedy fulfillment;
-Sahl preserves its explicit textual variants. This admission does not
+Ramesey and Dorotheus preserve optional urgency context and uncomputed remedy
+fulfillment; Sahl preserves its explicit textual variants. This admission does not
 authorize generic scored-window language.
 
 ### 13.2 Ramesey five-axis sovereignty audit
@@ -564,8 +659,25 @@ Provenance honesty passes with an explicit limitation: Egyptian bounds are a
 Moira profile binding because Sahl does not name the bound table. Neither
 selectable burnt-path span is falsely presented as Sahl's own numeric wording.
 
-No weighted score can be admitted from these ten rules without a separate
-source-backed scoring doctrine. Boolean counting is not a neutral default.
+No weighted score can be admitted from any of these source lists without a
+separate source-backed scoring doctrine. Boolean counting is not a neutral
+default.
+
+### 13.4 Dorotheus five-axis sovereignty audit
+
+Audit performed against the implementation and tests on 2026-07-15:
+
+| Axis | Result | Evidence |
+|---|---|---|
+| Ontology ownership | Pass | The object is Dorotheus V.6's bounded eleven-clause corruption-of-the-Moon profile plus a separate remedy instruction, not a later ten-impediment blend or complete election. |
+| Derivation ownership | Pass | Rule order and wording derive from the rendered primary pages; glossary meanings and Moira astronomical bindings are identified separately. |
+| Structural ownership | Pass | Immutable Dorotheus-owned rule, clause, measurement, remedy, policy, and evaluation vessels preserve source order without positional result arrays. |
+| Policy ownership | Pass | The two underdetermined clauses remain visibly `not_evaluable`; later node or connection orbs are not imported, and the whole-sign/bounds/rays choices are explicit. |
+| Validation ownership | Pass for public moment admission | Primary-page checks, boundary invariants, DE441 integration, eclipse-path exercise, exact facade/REST execution, OpenAPI assertions, and public-surface governance carry the proof. |
+
+Provenance honesty passes with explicit limitations: the natal intensifier and
+remedy fulfillment are not computed, and kernel regression is not presented as
+historical or empirical proof of astrology.
 
 ## 14. Non-Goals
 
@@ -573,15 +685,15 @@ This packet and admitted public-moment batch do not:
 
 - admit generic Western profile scanning, scoring, ranking, or advice
 - define a complete election for any matter
-- merge the distinct Ramesey and Sahl objects with each other or with Robson,
-  Dorotheus, Lilly, or Bonatti
+- merge the distinct Ramesey, Sahl, and Dorotheus objects with each other or
+  with Robson, Lilly, or Bonatti
 - create a historical-outcome dataset
 - claim empirical validation of electional astrology
 - alter the existing generic electional search or scored-window semantics
 
 ## 15. Ledger Decision
 
-P13-U1 is `ramesey_v1_and_sahl_v1_public_moments_admitted; generic_search_scoring_and_recommendation_deferred`.
+P13-U1 is `ramesey_v1_sahl_v1_and_dorotheus_v1_public_moments_admitted; generic_search_scoring_and_recommendation_deferred`.
 
 `ramesey_moon_condition_v1` now exists as an engine-owned, non-scored condition
 profile with a separate non-erasing contingency witness. Its named types and
@@ -596,3 +708,10 @@ condition profile with visible burnt-path and eighth-rule variants. Its named
 types, facade method, and REST route expose one moment with explicit transport
 provenance. It does not inherit Ramesey's remedy, aspect, bounds, speed, or
 summary-status policy.
+
+`dorotheus_moon_condition_v1` separately exists as an engine-owned,
+non-scored eleven-clause condition profile with a separate non-erasing remedy
+instruction. Its named types, facade method, and REST route expose one moment
+with explicit transport provenance. The two unresolved source clauses remain
+indeterminate, and V.6 admission does not imply the root/outcome,
+matter-significator, natal-overlay, or complete matter layers.
