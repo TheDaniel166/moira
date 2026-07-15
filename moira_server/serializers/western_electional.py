@@ -457,7 +457,7 @@ def serialize_sahl_matter_profile(
             stage_sequence=[
                 "input_validation",
                 "general_sahl_moon_condition",
-                "named_sections_43_55_profile",
+                "named_source_bounded_sahl_matter_profile",
                 "source_ordered_clause_evaluation",
                 "response_serialization",
             ],

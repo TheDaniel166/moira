@@ -68,6 +68,14 @@ as "in number," eastern/ascending, circle motion, cleansing, and adaptation is
 preserved as typed `not_evaluable` evidence rather than silently borrowed from
 a later author.
 
+Sahl's second-house commerce sequence is additionally admitted as four
+independent profiles: lending (§§29-31), investment (§§36-38), purchase (§39),
+and sale (§40). Business partnership (§§32-35) remains assigned to the later
+partnership family, and alchemy/repeated works (§41) is not treated as a
+commerce profile. Every admitted commerce result uses the same public Sahl
+matter route and preserves unresolved source vocabulary rather than inventing
+a complete judgement.
+
 The Dorotheus profile is likewise admitted through the engine, facade, and
 `Moira.dorotheus_moon_condition_at(...)`, with
 `POST /v1/electional/western/dorotheus-moon-condition` as its typed REST

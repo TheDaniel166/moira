@@ -140,10 +140,14 @@ class _FakeEngine:
             state=SahlMatterClauseState.NOT_EVALUABLE,
             measurements=(SahlMatterMeasurement("fixture", None),),
             explanation="Synthetic REST fixture preserving source-gate shape.",
-            source_reference="Sahl, On Elections, sections 43-55",
+            source_reference="Sahl, On Elections, named matter sections",
             policy_id="synthetic_route_fixture",
         )
         matters = {
+            SahlMatterProfileId.LENDING: "borrowing_and_lending",
+            SahlMatterProfileId.INVESTMENT: "investing_money_for_profit",
+            SahlMatterProfileId.PURCHASE: "purchasing_goods",
+            SahlMatterProfileId.SALE: "selling_goods",
             SahlMatterProfileId.BUILDING: "building_a_house",
             SahlMatterProfileId.DEMOLITION: "destroying_a_house",
             SahlMatterProfileId.LAND: "buying_and_occupying_land",
@@ -162,7 +166,7 @@ class _FakeEngine:
             triggered_clause_ids=(),
             not_evaluable_clause_ids=(clause.clause_id,),
             reader_provenance="synthetic-de441.bsp",
-            authorities=("Sahl, On Elections, sections 43-55",),
+            authorities=("Sahl, On Elections, named matter sections",),
             numerically_complete=False,
         )
 
@@ -302,7 +306,7 @@ def test_sahl_matter_route_round_trips_every_profile(client_and_engine, profile_
     assert engine.calls[0]["profile_id"] is SahlMatterProfileId(profile_id)
 
 
-def test_sahl_matter_openapi_names_all_six_profiles(client_and_engine) -> None:
+def test_sahl_matter_openapi_names_every_admitted_profile(client_and_engine) -> None:
     _, _, app = client_and_engine
     schema = app.openapi()
     operation = schema["paths"]["/v1/electional/western/sahl-matter-profile"]["post"]

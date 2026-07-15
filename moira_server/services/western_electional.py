@@ -242,7 +242,7 @@ def compute_sahl_matter_profile(
     engine: Moira,
     request: SahlMatterProfileRequest,
 ) -> SahlMatterProfileEvaluation:
-    """Evaluate one admitted Sahl §§43-55 profile through the public facade."""
+    """Evaluate one admitted source-bounded Sahl profile through the public facade."""
 
     result = engine.sahl_matter_profile_at(
         request.jd_ut,

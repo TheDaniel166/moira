@@ -559,6 +559,14 @@ one. All inherit §1–§3 unless a chapter overrides.
   but later completed and not overturned (V.43,5).
 
 ### V.44 — Lunar phases & the Nodes for buying/selling & prices [ELECTION/timing] — Moon-phase
+
+**Admission status (2026-07-15):** admitted as the separate
+`dorotheus_lunar_price_timing_v1` profile. The al-Tabari sign-region and
+calculation reading and all four directed phase arcs compute directly. The
+edition's Hephaistion/Dorotheus-poem latitude-and-speed parallel remains a
+visible `not_evaluable` clause because this source range provides no speed
+threshold or complete combination law.
+
 - **Node regions:** Head (ascending) region = **Aquarius→Cancer** (rising);
   Tail (descending) region = **Leo→Capricorn** (falling) (V.44,1).
 - **Price doctrine:** Moon in the **rising region + increasing in calculation**

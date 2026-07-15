@@ -1,6 +1,6 @@
 # P13-U1 — Western Electional Doctrine Research Dossier
 
-Version: 0.21 (Phase 5 Sahl fourth-house matter-profile admission)
+Version: 0.22 (Phase 7 commerce matter-profile admission)
 Date: 2026-07-15
 Status: research inventory for the Western electional doctrine layer. The
 companion materials admit distinct `ramesey_moon_condition_v1` and
@@ -22,18 +22,26 @@ an IERS 2010 mean lunar longitude, and V.31 bad places use Dorotheus's explicit
 whole-sign set from Book I. The three Moon-condition profiles now have a
 dedicated bounded status-window scan through engine, facade, and REST.
 Generic scoring, website, advice, and recommendation surfaces remain deferred.
-The page-confirmed V.8 demolition, V.9 leasing, and V.11 land-purchase matter
-layers are now admitted through the named `dorotheus_matter_profile_at(...)`
+The page-confirmed V.8 demolition, V.9 leasing, V.10 buying/selling, V.11 land
+purchase, and V.44 lunar-price-timing matter layers are now admitted through
+the named `dorotheus_matter_profile_at(...)`
 engine/facade surface and
 `POST /v1/electional/western/dorotheus-matter-profile`. Sahl's adjacent
 fourth-house instructions are now six separate source-complete profiles through
 `sahl_matter_profile_at(...)`, the `Moira` facade, and
-`POST /v1/electional/western/sahl-matter-profile`. Their unresolved
+`POST /v1/electional/western/sahl-matter-profile`. Sahl's lending, investment,
+purchase, and sale sections are also admitted there as four separate commerce
+profiles. Their unresolved
 eastern/ascending, "increased in number," circle-motion, separation, cleansing,
 and adaptation language remains typed `not_evaluable` with visible evidence;
 public admission does not claim those terms are numerically settled.
 
 Changelog:
+- 0.22 - admitted separate Dorotheus V.10 and V.44 commerce profiles and Sahl
+  lending, investment, purchase, and sale profiles; preserved recension and
+  parallel-source distinctions, replaced the Sahl matter module's duplicated
+  orb table with canonical Moira moieties, and promoted every profile through
+  REST/OpenAPI without scoring.
 - 0.21 - admitted Sahl §§43-55 as six distinct, non-scored matter profiles;
   computed source-closed sign, dignity, bound, house, light, join, and
   configuration clauses; preserved every open source term as a typed gate;
@@ -614,7 +622,7 @@ and targeted significators enter.
 | Marriage | 7th house; Venus, Moon | Via combusta especially forbidden; Lilly's marriage rules; women's-matters weighting | Ramesey, Lilly, Robson [Q] |
 | Journeys / travel | 3rd/9th; Moon | Via combusta forbidden; **moveable signs for short journeys** (Lilly) | Lilly, Ramesey [Q] |
 | Building / foundations | 4th; Saturn (endurance) | **Fixed signs** for foundations of houses & towns (Lilly); **use fixed stars for founding cities, planets for houses** (Bonatti — durability match) | Lilly, Bonatti [Q] |
-| Commerce / buying-selling | 2nd; Mercury | Via combusta forbidden; Ramesey's 2nd-house elections | Ramesey [Q] |
+| Commerce / buying-selling | Dorotheus V.10: Moon/previous separation/next connection plus 1st/7th/10th/4th stakes; V.44: Moon sign region, calculation direction, and phase arc; Sahl §§29-31/36-40: lending, investment, purchase, and sale | Dorotheus V.10 and V.44 are admitted separately; Sahl commerce is admitted as four independent profiles with unresolved source terms preserved | Dorotheus and Sahl [V+, primary text]; Ramesey [Q] |
 | Sickness / surgery | 6th; Moon, malefics | Dorotheus Book V.30/32/39/40/41/42 — full rule detail now in hand (see §8.1) | Dorotheus [V+, primary text] |
 | Children | 5th | Ramesey's children elections | Ramesey [Q] |
 | Career | 10th | Ramesey's career rules | Ramesey [Q] |

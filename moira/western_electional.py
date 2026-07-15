@@ -102,6 +102,8 @@ from ._western_electional_construction import (
 )
 from ._western_electional_matter import (
     DOROTHEUS_DEMOLITION_V1,
+    DOROTHEUS_BUYING_AND_SELLING_V1,
+    DOROTHEUS_LUNAR_PRICE_TIMING_V1,
     DOROTHEUS_LAND_PURCHASE_V1,
     DOROTHEUS_LEASING_V1,
     DorotheusAngularPlaceWitness,
@@ -116,6 +118,10 @@ from ._western_electional_matter import (
     evaluate_dorotheus_matter_profile,
 )
 from ._western_electional_sahl_matter import (
+    SAHL_LENDING_V1,
+    SAHL_INVESTMENT_V1,
+    SAHL_PURCHASE_V1,
+    SAHL_SALE_V1,
     SAHL_BUILDING_V1,
     SAHL_DEMOLITION_V1,
     SAHL_LAND_V1,
@@ -209,6 +215,10 @@ __all__ = [
     "SahlMatterClauseWitness",
     "SahlMatterProfilePolicy",
     "SahlMatterProfileEvaluation",
+    "SAHL_LENDING_V1",
+    "SAHL_INVESTMENT_V1",
+    "SAHL_PURCHASE_V1",
+    "SAHL_SALE_V1",
     "SAHL_BUILDING_V1",
     "SAHL_DEMOLITION_V1",
     "SAHL_LAND_V1",
@@ -278,6 +288,8 @@ __all__ = [
     "DorotheusMatterProfilePolicy",
     "DorotheusMatterProfileEvaluation",
     "DOROTHEUS_DEMOLITION_V1",
+    "DOROTHEUS_BUYING_AND_SELLING_V1",
+    "DOROTHEUS_LUNAR_PRICE_TIMING_V1",
     "DOROTHEUS_LEASING_V1",
     "DOROTHEUS_LAND_PURCHASE_V1",
     "evaluate_dorotheus_matter_profile",

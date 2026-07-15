@@ -329,6 +329,15 @@ unless a chapter overrides. Historical slavery content is flagged.
 
 ### 5.1 Second house (§§29–41)
 
+**Public computational binding (2026-07-15):** lending (§§29-31), investment
+(§§36-38), purchase (§39), and sale (§40) are admitted as separate
+`sahl_lending_v1`, `sahl_investment_v1`, `sahl_purchase_v1`, and
+`sahl_sale_v1` profiles through the engine, facade, and REST. Closed evidence
+computes under canonical Moira moieties. Open number, cleansing, adaptation,
+cadence, point-orb, and separation-window language remains visibly
+`not_evaluable`. Business partnerships (§§32-35) remain assigned to the later
+partnership family; alchemy/repeated works (§41) is excluded from commerce.
+
 #### §29–31 — Lending money [ELECTION]
 - **Prefer Moon in:** Leo, Pisces, Scorpio, Sagittarius, or Aquarius; **defective
   in light**; both fortunes deficient and aspecting Moon or Ascendant (§29a).

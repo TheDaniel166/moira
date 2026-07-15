@@ -1,8 +1,8 @@
-"""Source-ordered Sahl fourth-house matter profiles, §§43-55.
+"""Source-ordered Sahl matter profiles, §§29-31, 36-40, and 43-55.
 
-This module owns the six distinct matter layers in Sahl bin Bishr's *On
+This module owns distinct matter layers in Sahl bin Bishr's *On
 Elections*.  It deliberately does not turn them into a score or a generic
-"fourth-house election".  Closed clauses compute from a supplied chart;
+house-topic election.  Closed clauses compute from a supplied chart;
 transmitted terms that remain genuinely open are retained as typed
 ``not_evaluable`` clauses with their observable alternatives.
 """
@@ -15,7 +15,7 @@ from enum import Enum
 from typing import TYPE_CHECKING
 
 from .chart import ChartContext, create_chart
-from .constants import Body, SIGNS, sign_of
+from .constants import Body, SIGNS, TRADITIONAL_MOIETY_ORBS, sign_of
 from .dignities import EXALTATION
 from .egyptian_bounds import EgyptianBoundsDoctrine, EgyptianBoundsPolicy, egyptian_bound_of
 from .houses import HouseAngularity, HousePolicy, assign_house, describe_angularity
@@ -44,6 +44,10 @@ __all__ = [
     "SahlMatterProfilePolicy",
     "SahlMatterProfileEvaluation",
     "SAHL_BUILDING_V1",
+    "SAHL_LENDING_V1",
+    "SAHL_INVESTMENT_V1",
+    "SAHL_PURCHASE_V1",
+    "SAHL_SALE_V1",
     "SAHL_DEMOLITION_V1",
     "SAHL_LAND_V1",
     "SAHL_WELLS_AND_RIVERS_V1",
@@ -69,15 +73,6 @@ _TRADITIONAL_BODIES = (
 )
 _FORTUNES = (Body.JUPITER, Body.VENUS)
 _MALEFICS = (Body.MARS, Body.SATURN)
-_FULL_ORBS = {
-    Body.SATURN: 9.0,
-    Body.JUPITER: 9.0,
-    Body.MARS: 8.0,
-    Body.SUN: 15.0,
-    Body.VENUS: 7.0,
-    Body.MERCURY: 7.0,
-    Body.MOON: 12.0,
-}
 _FIXED_SIGNS = frozenset(("Taurus", "Leo", "Scorpio", "Aquarius"))
 _COMMON_SIGNS = frozenset(("Gemini", "Virgo", "Sagittarius", "Pisces"))
 _MOVABLE_SIGNS = frozenset(("Aries", "Cancer", "Libra", "Capricorn"))
@@ -89,6 +84,10 @@ _HARD_OFFSETS = frozenset((0, 3, 6, 9))
 
 
 class SahlMatterProfileId(str, Enum):
+    LENDING = "sahl_lending_v1"
+    INVESTMENT = "sahl_investment_v1"
+    PURCHASE = "sahl_purchase_v1"
+    SALE = "sahl_sale_v1"
     BUILDING = "sahl_building_v1"
     DEMOLITION = "sahl_demolition_v1"
     LAND = "sahl_land_v1"
@@ -188,6 +187,10 @@ class SahlMatterProfilePolicy:
                 raise ValueError(f"{name} is fixed for admitted v1 profiles")
 
 
+SAHL_LENDING_V1 = SahlMatterProfilePolicy(SahlMatterProfileId.LENDING)
+SAHL_INVESTMENT_V1 = SahlMatterProfilePolicy(SahlMatterProfileId.INVESTMENT)
+SAHL_PURCHASE_V1 = SahlMatterProfilePolicy(SahlMatterProfileId.PURCHASE)
+SAHL_SALE_V1 = SahlMatterProfilePolicy(SahlMatterProfileId.SALE)
 SAHL_BUILDING_V1 = SahlMatterProfilePolicy(SahlMatterProfileId.BUILDING)
 SAHL_DEMOLITION_V1 = SahlMatterProfilePolicy(SahlMatterProfileId.DEMOLITION)
 SAHL_LAND_V1 = SahlMatterProfilePolicy(SahlMatterProfileId.LAND)
@@ -197,6 +200,10 @@ SAHL_SOWING_V1 = SahlMatterProfilePolicy(SahlMatterProfileId.SOWING)
 _POLICIES = {
     item.profile_id: item
     for item in (
+        SAHL_LENDING_V1,
+        SAHL_INVESTMENT_V1,
+        SAHL_PURCHASE_V1,
+        SAHL_SALE_V1,
         SAHL_BUILDING_V1,
         SAHL_DEMOLITION_V1,
         SAHL_LAND_V1,
@@ -206,6 +213,10 @@ _POLICIES = {
     )
 }
 _SECTIONS = {
+    SahlMatterProfileId.LENDING: "§§29-31, printed p. 103",
+    SahlMatterProfileId.INVESTMENT: "§§36-38, printed pp. 104-105",
+    SahlMatterProfileId.PURCHASE: "§39, printed p. 105",
+    SahlMatterProfileId.SALE: "§40, printed p. 105",
     SahlMatterProfileId.BUILDING: "§§43-46, printed pp. 106-107",
     SahlMatterProfileId.DEMOLITION: "§47, printed p. 107",
     SahlMatterProfileId.LAND: "§§48-49, printed pp. 107-108",
@@ -214,6 +225,10 @@ _SECTIONS = {
     SahlMatterProfileId.SOWING: "§§54-55, printed pp. 109-110",
 }
 _MATTERS = {
+    SahlMatterProfileId.LENDING: "borrowing_and_lending",
+    SahlMatterProfileId.INVESTMENT: "investing_money_for_profit",
+    SahlMatterProfileId.PURCHASE: "purchasing_goods",
+    SahlMatterProfileId.SALE: "selling_goods",
     SahlMatterProfileId.BUILDING: "building_a_house",
     SahlMatterProfileId.DEMOLITION: "destroying_a_house",
     SahlMatterProfileId.LAND: "buying_and_occupying_land",
@@ -321,7 +336,10 @@ def _configured(a_sign: str, b_sign: str) -> bool:
 
 def _joined(a, b) -> tuple[bool, float, float]:
     distance = abs((a.longitude - b.longitude + 180.0) % 360.0 - 180.0)
-    threshold = (_FULL_ORBS[a.name] + _FULL_ORBS[b.name]) / 2.0
+    threshold = (
+        TRADITIONAL_MOIETY_ORBS[a.name]
+        + TRADITIONAL_MOIETY_ORBS[b.name]
+    ) / 2.0
     return distance <= threshold, distance, threshold
 
 
@@ -381,7 +399,468 @@ def _solar_observations(chart: ChartContext, body_name: str) -> tuple[SahlMatter
     )
 
 
-def _building(chart: ChartContext, profile_id: SahlMatterProfileId, policy: SahlMatterProfilePolicy):
+def _conjunction_motion(chart: ChartContext, body_name: str) -> tuple[str, float, float]:
+    moon = chart.planets[Body.MOON]
+    body = chart.planets[body_name]
+    signed = (moon.longitude - body.longitude + 180.0) % 360.0 - 180.0
+    relative_rate = moon.speed - body.speed
+    distance_rate = (
+        math.copysign(1.0, signed) * relative_rate if signed != 0.0 else 0.0
+    )
+    motion = (
+        "exact"
+        if abs(signed) <= 1e-12
+        else "applying"
+        if distance_rate < 0.0
+        else "separating"
+        if distance_rate > 0.0
+        else "stationary_relative"
+    )
+    return motion, abs(signed), distance_rate
+
+
+def _joined_names(chart: ChartContext, target: str, bodies: tuple[str, ...]) -> tuple[str, ...]:
+    target_body = chart.planets[target]
+    return tuple(
+        body
+        for body in bodies
+        if _joined(target_body, chart.planets[body])[0]
+    )
+
+
+def _sahl_rule_state(moon_condition, rule_id: str) -> str | None:
+    if moon_condition is None:
+        return None
+    rule = next((item for item in moon_condition.rules if item.rule_id == rule_id), None)
+    return None if rule is None else rule.state.value
+
+
+def _lending(chart, profile_id, policy, moon_condition):
+    moon = chart.planets[Body.MOON]
+    mercury = chart.planets[Body.MERCURY]
+    asc_sign, _, _ = sign_of(chart.houses.asc)
+    waxing, elongation = _light_waxing(chart)
+    preferred_signs = frozenset(("Leo", "Pisces", "Scorpio", "Sagittarius", "Aquarius"))
+    joined_fortunes = _joined_names(chart, Body.MOON, _FORTUNES)
+    joined_mercury = _joined(moon, mercury)[0]
+    joined_mars = _joined(moon, chart.planets[Body.MARS])[0]
+    sun_motion, sun_distance, sun_distance_rate = _conjunction_motion(chart, Body.SUN)
+    fortune_motion = tuple(
+        f"{body}:{_conjunction_motion(chart, body)[0]}" for body in _FORTUNES
+    )
+    applying_fortunes = tuple(
+        body for body in _FORTUNES if _conjunction_motion(chart, body)[0] == "applying"
+    )
+    mars_motion, mars_distance, mars_distance_rate = _conjunction_motion(chart, Body.MARS)
+    under_rays = sun_distance <= 12.0
+    burnt_path_state = _sahl_rule_state(moon_condition, "moon_cadent_or_burnt_path")
+    first_degree_signs = frozenset(("Leo", "Gemini", "Sagittarius"))
+    moon_degree = moon.longitude % 30.0
+    first_degree_gate = moon.sign in first_degree_signs and moon_degree < 1.0
+    ascending_sign_gate = asc_sign in first_degree_signs
+    benefic_relations = tuple(
+        f"{body}:moon={_relation(chart.planets[body].sign, moon.sign)};"
+        f"ascendant={_relation(chart.planets[body].sign, asc_sign)}"
+        for body in _FORTUNES
+    )
+    both_fortunes_configured = all(
+        _configured(chart.planets[body].sign, moon.sign)
+        or _configured(chart.planets[body].sign, asc_sign)
+        for body in _FORTUNES
+    )
+    mercury_joined_malefics = _joined_names(chart, Body.MERCURY, _MALEFICS)
+    mercury_square_malefics = tuple(
+        body
+        for body in _MALEFICS
+        if _relation(mercury.sign, chart.planets[body].sign) == "square"
+    )
+    return (
+        _clause(
+            profile_id,
+            "preferred_moon_and_deficient_fortunes",
+            1,
+            SahlMatterClauseRole.FORTIFIER,
+            SahlMatterClauseState.NOT_EVALUABLE,
+            (
+                _m("moon_sign", moon.sign),
+                _m("preferred_sign", moon.sign in preferred_signs),
+                _m("moon_defective_in_light", not waxing),
+                _m("sun_moon_elongation", elongation, units="degrees"),
+                _m("fortune_relations", ",".join(benefic_relations)),
+                _m("both_fortunes_configured_to_moon_or_ascendant", both_fortunes_configured),
+                _m("fortune_deficiency_predicate", None),
+            ),
+            "The Moon sign and waning light are closed. Sahl does not close what it means for both fortunes to be deficient, so the full §29a compound remains indeterminate.",
+            policy.number_policy,
+            "§29a and note 89",
+        ),
+        _clause(
+            profile_id,
+            "mercury_moon_and_fortune_protections",
+            2,
+            SahlMatterClauseRole.FORTIFIER,
+            SahlMatterClauseState.NOT_EVALUABLE,
+            (
+                _m("moon_joined_fortunes", ",".join(joined_fortunes) or "none"),
+                _m("moon_joined_mercury", joined_mercury),
+                _m("moon_hard_malefic_relations", ",".join(_malefic_relations(chart, Body.MOON)) or "none"),
+                _m("mercury_bodily_joined_malefics", ",".join(mercury_joined_malefics) or "none"),
+                _m("mercury_square_malefics", ",".join(mercury_square_malefics) or "none"),
+                _m("jupiter_cadent", _cadent(chart, Body.JUPITER)),
+                _m("venus_cadent", _cadent(chart, Body.VENUS)),
+                _m("mercury_cleansed_of_mars", None),
+            ),
+            "Bodily joins, hard whole-sign relations, and quadrant cadence remain visible. 'Cleansed' and the exhaustive impediment predicate are not replaced with a generic dignity score.",
+            policy.cleansing_policy,
+            "§29b",
+        ),
+        _clause(
+            profile_id,
+            "moon_mars_or_saturn_consequence",
+            3,
+            SahlMatterClauseRole.GATE,
+            (
+                SahlMatterClauseState.TRIGGERED
+                if joined_mars
+                else SahlMatterClauseState.NOT_EVALUABLE
+            ),
+            (
+                _m("moon_joined_mars", joined_mars),
+                _m("moon_saturn_relation", _relation(moon.sign, chart.planets[Body.SATURN].sign)),
+                _m("saturn_impediment_predicate", None),
+            ),
+            "A bodily Moon-Mars join triggers Sahl's labor, worry, harshness, and contention warning. The separate phrase 'impeded by Saturn' remains open, so absence of the Mars join cannot clear the compound.",
+            policy.cleansing_policy,
+            "§29c",
+        ),
+        _clause(
+            profile_id,
+            "concealed_lending_sequence",
+            4,
+            SahlMatterClauseRole.FORTIFIER,
+            (
+                SahlMatterClauseState.SATISFIED
+                if under_rays and sun_motion == "separating" and applying_fortunes
+                else SahlMatterClauseState.CLEAR
+            ),
+            (
+                _m("moon_under_12_degree_rays", under_rays),
+                _m("moon_sun_conjunction_motion", sun_motion),
+                _m("moon_sun_distance_rate", sun_distance_rate, units="degrees/day"),
+                _m("fortune_conjunction_motion", ",".join(fortune_motion)),
+                _m("applying_fortunes", ",".join(applying_fortunes) or "none"),
+            ),
+            "§30a's sequence is evaluated as the Moon under its admitted 12-degree solar rays, separating from the Sun, and applying toward conjunction with Jupiter or Venus.",
+            "instantaneous_conjunction_motion_with_sahl_solar_ray_orb",
+            "§30a",
+        ),
+        _clause(
+            profile_id,
+            "emerging_toward_mars_publicity",
+            5,
+            SahlMatterClauseRole.WITNESS,
+            SahlMatterClauseState.NOT_EVALUABLE,
+            (
+                _m("moon_solar_distance", sun_distance, units="degrees"),
+                _m("moon_sun_conjunction_motion", sun_motion),
+                _m("moon_mars_conjunction_motion", mars_motion),
+                _m("moon_mars_distance", mars_distance, units="degrees"),
+                _m("moon_mars_distance_rate", mars_distance_rate, units="degrees/day"),
+                _m("burned_up_exit_threshold", None),
+            ),
+            "The motion toward Mars is visible, but §30b supplies no boundary for 'exit out of being burned up'; the publicity testimony remains indeterminate.",
+            "source_text_open_burned_up_exit",
+            "§30b",
+        ),
+        _clause(
+            profile_id,
+            "node_or_burnt_path_warning",
+            6,
+            SahlMatterClauseRole.GATE,
+            (
+                SahlMatterClauseState.TRIGGERED
+                if burnt_path_state == "triggered"
+                else SahlMatterClauseState.NOT_EVALUABLE
+            ),
+            (
+                _m("moon_ecliptic_latitude", moon.latitude, units="degrees"),
+                _m("true_node_longitude", chart.nodes[Body.TRUE_NODE].longitude, units="degrees"),
+                _m("node_or_tail_tolerance", None, units="degrees"),
+                _m("inherited_burnt_path_rule_state", burnt_path_state),
+            ),
+            "The inherited explicit burnt-path variant can trigger this warning. The Latin parenthesis equating zero latitude with Head or Tail supplies no numerical node tolerance, so that branch remains unresolved.",
+            "inherited_burnt_path_variant_and_open_node_tolerance",
+            "§30c and note 92",
+        ),
+        _clause(
+            profile_id,
+            "first_degree_or_ascending_sign_loan_warning",
+            7,
+            SahlMatterClauseRole.GATE,
+            (
+                SahlMatterClauseState.TRIGGERED
+                if first_degree_gate or ascending_sign_gate
+                else SahlMatterClauseState.CLEAR
+            ),
+            (
+                _m("moon_sign", moon.sign),
+                _m("moon_degree_in_sign", moon_degree, units="degrees"),
+                _m("moon_in_named_first_degree", first_degree_gate),
+                _m("ascendant_sign", asc_sign),
+                _m("named_sign_ascending", ascending_sign_gate),
+            ),
+            "§31's first-degree Moon condition and its separate whole-sign Ascendant condition remain distinct. Note 94's Dorothean comparison does not overwrite Sahl's transmitted Ascendant wording.",
+            "first_tropical_degree_and_whole_sign_ascendant",
+            "§31 and note 94",
+        ),
+    )
+
+
+def _investment(chart, profile_id, policy, _moon_condition):
+    moon = chart.planets[Body.MOON]
+    mercury = chart.planets[Body.MERCURY]
+    asc_sign, _, _ = sign_of(chart.houses.asc)
+    assets_sign = SIGNS[(SIGNS.index(asc_sign) + 1) % 12]
+    trust_sign = SIGNS[(SIGNS.index(asc_sign) + 10) % 12]
+    assets_lord = DOMICILE_RULERS[assets_sign]
+    trust_lord = DOMICILE_RULERS[trust_sign]
+    trust_cusp = chart.houses.cusps[10]
+    joined_mercury, distance, threshold = _joined(moon, mercury)
+    return (
+        _clause(
+            profile_id,
+            "adapt_moon_mercury_assets_and_trust",
+            1,
+            SahlMatterClauseRole.FORTIFIER,
+            SahlMatterClauseState.NOT_EVALUABLE,
+            (
+                _m("moon_sign", moon.sign),
+                _m("mercury_sign", mercury.sign),
+                _m("assets_sign", assets_sign),
+                _m("assets_lord", assets_lord),
+                _m("trust_sign", trust_sign),
+                _m("trust_sign_lord", trust_lord),
+                _m("trust_house_cusp", trust_cusp, units="degrees"),
+                _m("degree_lord_scheme", None),
+            ),
+            "The named Moon, Mercury, assets house, and trust house are visible. 'Adapt' and the lordship scheme for the degree of the eleventh are not closed by §§36-38.",
+            "source_text_open_adaptation_and_degree_lord",
+            "§36 and note 101",
+        ),
+        _clause(
+            profile_id,
+            "moon_mercury_join_and_mars_cadence",
+            2,
+            SahlMatterClauseRole.FORTIFIER,
+            SahlMatterClauseState.NOT_EVALUABLE,
+            (
+                _m("moon_joined_mercury", joined_mercury),
+                _m("moon_mercury_distance", distance, units="degrees", threshold=threshold),
+                _m("mars_relation_to_moon", _relation(chart.planets[Body.MARS].sign, moon.sign)),
+                _m("mars_relation_to_mercury", _relation(chart.planets[Body.MARS].sign, mercury.sign)),
+                _m("mars_cadent_from_each_predicate", None),
+                _m("mercury_fit_and_purged_predicate", None),
+            ),
+            "The bodily Moon-Mercury join computes with canonical Moira moieties. 'Cadent from' each significator and Mercury's fit/purged state remain open predicates.",
+            "canonical_moiety_join_with_open_cadence_and_purging",
+            "§37a",
+        ),
+        _clause(
+            profile_id,
+            "retrograde_mercury_branch",
+            3,
+            SahlMatterClauseRole.WITNESS,
+            (
+                SahlMatterClauseState.NOT_EVALUABLE
+                if mercury.retrograde
+                else SahlMatterClauseState.OBSERVED
+            ),
+            (
+                _m("mercury_retrograde", mercury.retrograde),
+                _m("mercury_mars_relation", _relation(mercury.sign, chart.planets[Body.MARS].sign)),
+                _m("mercury_venus_relation", _relation(mercury.sign, chart.planets[Body.VENUS].sign)),
+                _m("mercury_trust_lord_relation", _relation(mercury.sign, chart.planets[trust_lord].sign)),
+                _m("cadent_from_light_or_aspect_predicates", None if mercury.retrograde else "branch_not_applicable"),
+            ),
+            "When Mercury is direct, §37b's conditional branch is recorded as not applicable. When retrograde, its light/aspect cadence language remains unresolved.",
+            policy.stake_policy,
+            "§37b",
+        ),
+        _clause(
+            profile_id,
+            "trust_significators_and_mars_light",
+            4,
+            SahlMatterClauseRole.WITNESS,
+            SahlMatterClauseState.NOT_EVALUABLE,
+            (
+                _m("named_significators", f"Moon,Mercury,{trust_sign},{trust_lord}"),
+                _m("mars_relation_to_moon", _relation(chart.planets[Body.MARS].sign, moon.sign)),
+                _m("mars_relation_to_mercury", _relation(chart.planets[Body.MARS].sign, mercury.sign)),
+                _m("mars_light_cadence_predicate", None),
+            ),
+            "§38 preserves the trust significators and repeats Mars/light cadence without defining a unique computational operation.",
+            "source_text_open_cadent_from_light",
+            "§38",
+        ),
+    )
+
+
+def _purchase(chart, profile_id, policy, _moon_condition):
+    moon = chart.planets[Body.MOON]
+    fortune = _fortune(chart)
+    waxing, elongation = _light_waxing(chart)
+    joined_fortunes = _joined_names(chart, Body.MOON, _FORTUNES)
+    fortune_distances = tuple(
+        f"{body}:{abs((fortune.longitude - chart.planets[body].longitude + 180.0) % 360.0 - 180.0):.12g}"
+        for body in _FORTUNES
+    )
+    tail = (chart.nodes[Body.TRUE_NODE].longitude + 180.0) % 360.0
+    tail_distance = abs((moon.longitude - tail + 180.0) % 360.0 - 180.0)
+    explicit_false = not waxing or not joined_fortunes
+    return (
+        _clause(
+            profile_id,
+            "fortune_fit_in_jupiter_house_and_joined_fortunes",
+            1,
+            SahlMatterClauseRole.FORTIFIER,
+            SahlMatterClauseState.NOT_EVALUABLE,
+            (
+                _m("fortune_longitude", fortune.longitude, units="degrees"),
+                _m("fortune_sign", fortune.sign),
+                _m("jupiter_domicile_sign", fortune.sign in ("Sagittarius", "Pisces")),
+                _m("fortune_to_benefic_distances", ",".join(fortune_distances)),
+                _m("fortune_fit_predicate", None),
+                _m("lot_joining_orb_policy", None),
+            ),
+            "Fortune and Jupiter's domicile signs compute. A mathematical point has no planetary moiety in the source, and 'fit' remains open, so the full §39a compound is indeterminate.",
+            "source_text_open_fortune_fitness_and_point_join_orb",
+            "§39a",
+        ),
+        _clause(
+            profile_id,
+            "straight_ascension_light_number_and_fortunes",
+            2,
+            SahlMatterClauseRole.OUTCOME,
+            (
+                SahlMatterClauseState.CLEAR
+                if explicit_false
+                else SahlMatterClauseState.NOT_EVALUABLE
+            ),
+            (
+                _m("moon_sign", moon.sign),
+                _m("straight_ascension_predicate", None),
+                _m("moon_increasing_in_light", waxing),
+                _m("sun_moon_elongation", elongation, units="degrees"),
+                _m("number_predicate", None),
+                _m("moon_joined_fortunes", ",".join(joined_fortunes) or "none"),
+                _m("source_outcome", "better_for_seller_new_owner_loses"),
+            ),
+            "The light and bodily-join conjuncts compute. Straight ascension and 'in number' remain source-open; an explicitly false closed conjunct can clear, but never fabricate, the compound outcome.",
+            policy.number_policy,
+            "§39b and note 105",
+        ),
+        _clause(
+            profile_id,
+            "mars_cadent_from_moon_and_mercury",
+            3,
+            SahlMatterClauseRole.GATE,
+            SahlMatterClauseState.NOT_EVALUABLE,
+            (
+                _m("mars_quadrant_house", _house(chart, Body.MARS)),
+                _m("mars_relation_to_moon", _relation(chart.planets[Body.MARS].sign, moon.sign)),
+                _m("mars_relation_to_mercury", _relation(chart.planets[Body.MARS].sign, chart.planets[Body.MERCURY].sign)),
+                _m("cadent_from_each_predicate", None),
+            ),
+            "§39c names labor and contention, but 'cadent from' Moon and Mercury does not select a unique house or aspect operation.",
+            "source_text_open_cadent_from_significators",
+            "§39c",
+        ),
+        _clause(
+            profile_id,
+            "tail_cadent_from_moon",
+            4,
+            SahlMatterClauseRole.GATE,
+            SahlMatterClauseState.NOT_EVALUABLE,
+            (
+                _m("tail_longitude", tail, units="degrees"),
+                _m("moon_tail_distance", tail_distance, units="degrees"),
+                _m("moon_tail_sign_relation", _relation(moon.sign, sign_of(tail)[0])),
+                _m("tail_cadent_from_moon_predicate", None),
+            ),
+            "The Tail's true-node-derived longitude is visible; §39d does not define the cadence operation or an orb.",
+            "source_text_open_cadent_from_node",
+            "§39d and note 106",
+        ),
+    )
+
+
+def _sale(chart, profile_id, policy, _moon_condition):
+    moon = chart.planets[Body.MOON]
+    triplicity = triplicity_assignment_for(moon.sign, is_day_chart=chart.is_day)
+    dignity = moon.sign in EXALTATION[Body.MOON] or triplicity.active_ruler == Body.MOON
+    joined_fortunes = _joined_names(chart, Body.MOON, _FORTUNES)
+    configured_malefics = tuple(
+        body for body in _MALEFICS if _configured(moon.sign, chart.planets[body].sign)
+    )
+    joined_malefics = _joined_names(chart, Body.MOON, _MALEFICS)
+    relation_satisfied = bool(configured_malefics) and not joined_malefics
+    return (
+        _clause(
+            profile_id,
+            "moon_in_exaltation_or_triplicity",
+            1,
+            SahlMatterClauseRole.FORTIFIER,
+            SahlMatterClauseState.SATISFIED if dignity else SahlMatterClauseState.CLEAR,
+            (
+                _m("moon_sign", moon.sign),
+                _m("moon_in_exaltation", moon.sign in EXALTATION[Body.MOON]),
+                _m("active_triplicity_ruler", triplicity.active_ruler),
+                _m("moon_has_active_triplicity", triplicity.active_ruler == Body.MOON),
+            ),
+            "The transmitted exaltation-or-triplicity alternative is evaluated with Moira's explicit Dorothean triplicity doctrine.",
+            "dorothean_triplicity_and_exaltation",
+            "§40",
+        ),
+        _clause(
+            profile_id,
+            "moon_separated_from_fortunes",
+            2,
+            SahlMatterClauseRole.FORTIFIER,
+            SahlMatterClauseState.NOT_EVALUABLE,
+            (
+                _m("moon_joined_fortunes_now", ",".join(joined_fortunes) or "none"),
+                _m("moon_jupiter_relation", _relation(moon.sign, chart.planets[Body.JUPITER].sign)),
+                _m("moon_venus_relation", _relation(moon.sign, chart.planets[Body.VENUS].sign)),
+                _m("separation_event_window", None),
+            ),
+            "Current joins and sign relations are visible, but §40 supplies no previous-event interval for identifying which fortune the Moon separated from.",
+            "source_text_open_previous_separation_window",
+            "§40",
+        ),
+        _clause(
+            profile_id,
+            "moon_configured_to_malefics_but_not_joined",
+            3,
+            SahlMatterClauseRole.FORTIFIER,
+            SahlMatterClauseState.SATISFIED if relation_satisfied else SahlMatterClauseState.CLEAR,
+            (
+                _m("configured_malefics", ",".join(configured_malefics) or "none"),
+                _m("bodily_joined_malefics", ",".join(joined_malefics) or "none"),
+                _m("compound_satisfied", relation_satisfied),
+            ),
+            "Dykes note 107 resolves the first relation as sign-based configuration, while the separate prohibition remains a degree-based bodily join under canonical Moira moieties.",
+            policy.aspect_policy,
+            "§40 and note 107",
+        ),
+    )
+
+
+def _building(
+    chart: ChartContext,
+    profile_id: SahlMatterProfileId,
+    policy: SahlMatterProfilePolicy,
+    _moon_condition=None,
+):
     moon = chart.planets[Body.MOON]
     moon_lord = DOMICILE_RULERS[moon.sign]
     asc_sign, _, _ = sign_of(chart.houses.asc)
@@ -458,7 +937,7 @@ def _building(chart: ChartContext, profile_id: SahlMatterProfileId, policy: Sahl
     return tuple(clauses)
 
 
-def _demolition(chart, profile_id, policy):
+def _demolition(chart, profile_id, policy, _moon_condition=None):
     moon = chart.planets[Body.MOON]
     moon_lord = DOMICILE_RULERS[moon.sign]
     fortune_relations = tuple((body, _relation(moon.sign, chart.planets[body].sign)) for body in _FORTUNES)
@@ -484,7 +963,7 @@ def _demolition(chart, profile_id, policy):
     )
 
 
-def _land(chart, profile_id, policy):
+def _land(chart, profile_id, policy, _moon_condition=None):
     moon = chart.planets[Body.MOON]
     saturn = chart.planets[Body.SATURN]
     jupiter = chart.planets[Body.JUPITER]
@@ -554,7 +1033,7 @@ def _land(chart, profile_id, policy):
     )
 
 
-def _wells(chart, profile_id, policy):
+def _wells(chart, profile_id, policy, _moon_condition=None):
     moon = chart.planets[Body.MOON]
     saturn = chart.planets[Body.SATURN]
     moon_house = _house(chart, Body.MOON)
@@ -605,7 +1084,7 @@ def _wells(chart, profile_id, policy):
     )
 
 
-def _planting(chart, profile_id, policy):
+def _planting(chart, profile_id, policy, _moon_condition=None):
     moon = chart.planets[Body.MOON]
     moon_lord = DOMICILE_RULERS[moon.sign]
     asc_sign, _, _ = sign_of(chart.houses.asc)
@@ -641,7 +1120,7 @@ def _planting(chart, profile_id, policy):
     )
 
 
-def _sowing(chart, profile_id, policy):
+def _sowing(chart, profile_id, policy, _moon_condition=None):
     moon = chart.planets[Body.MOON]
     asc_sign, _, _ = sign_of(chart.houses.asc)
     asc_lord = DOMICILE_RULERS[asc_sign]
@@ -683,6 +1162,10 @@ def _sowing(chart, profile_id, policy):
 
 
 _BUILDERS = {
+    SahlMatterProfileId.LENDING: _lending,
+    SahlMatterProfileId.INVESTMENT: _investment,
+    SahlMatterProfileId.PURCHASE: _purchase,
+    SahlMatterProfileId.SALE: _sale,
     SahlMatterProfileId.BUILDING: _building,
     SahlMatterProfileId.DEMOLITION: _demolition,
     SahlMatterProfileId.LAND: _land,
@@ -700,7 +1183,7 @@ def evaluate_sahl_matter_profile(
     reader_provenance: str,
     policy: SahlMatterProfilePolicy | None = None,
 ) -> SahlMatterProfileEvaluation:
-    """Evaluate one complete §§43-55 source layer without scoring."""
+    """Evaluate one complete named Sahl source layer without scoring."""
 
     profile_id = SahlMatterProfileId(profile_id)
     resolved_policy = _POLICIES[profile_id] if policy is None else policy
@@ -718,7 +1201,12 @@ def evaluate_sahl_matter_profile(
     if not reader_provenance:
         raise ValueError("reader_provenance must remain visible")
 
-    clauses = _BUILDERS[profile_id](chart, profile_id, resolved_policy)
+    clauses = _BUILDERS[profile_id](
+        chart,
+        profile_id,
+        resolved_policy,
+        moon_condition,
+    )
     triggered = tuple(item.clause_id for item in clauses if item.state is SahlMatterClauseState.TRIGGERED)
     unresolved = tuple(item.clause_id for item in clauses if item.state is SahlMatterClauseState.NOT_EVALUABLE)
     status = (

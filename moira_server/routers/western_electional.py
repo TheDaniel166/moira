@@ -189,7 +189,7 @@ def sahl_matter_profile_route(
     request: SahlMatterProfileRequest,
     engine: Annotated[Moira, Depends(get_engine)],
 ) -> SahlMatterProfileResponse:
-    """Evaluate one source-ordered Sahl §§43-55 matter profile."""
+    """Evaluate one source-ordered named Sahl matter profile."""
 
     return serialize_sahl_matter_profile(
         compute_sahl_matter_profile(engine, request)

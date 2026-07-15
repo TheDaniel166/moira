@@ -499,7 +499,7 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
         policy=None,
         moon_policy=None,
     ):
-        """Evaluate one named Sahl §§43-55 matter profile at one instant."""
+        """Evaluate one named source-bounded Sahl matter profile at one instant."""
 
         facade = _facade_module()
         return facade.sahl_matter_profile_at(
@@ -671,7 +671,7 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
         policy=None,
         moon_flow_policy=None,
     ):
-        """Evaluate one named Dorothean V.8, V.9, or V.11 matter profile."""
+        """Evaluate one named Dorothean V.8-V.11 matter profile."""
 
         facade = _facade_module()
         resolved_class = (

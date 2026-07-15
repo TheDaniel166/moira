@@ -1,4 +1,4 @@
-"""REST and OpenAPI evidence for Dorotheus V.8, V.9, and V.11 profiles."""
+"""REST and OpenAPI evidence for Dorotheus V.8-V.11 profiles."""
 
 from __future__ import annotations
 
@@ -31,7 +31,10 @@ def _payload(profile_id: str) -> dict[str, Any]:
         "house_system": HouseSystem.REGIOMONTANUS,
         "election_class": "ephemeral",
     }
-    if profile_id == "dorotheus_leasing_v1":
+    if profile_id in {
+        "dorotheus_leasing_v1",
+        "dorotheus_buying_and_selling_v1",
+    }:
         payload["moon_flow_policy"] = {
             "previous_window": "current_sign",
             "modern": False,
@@ -44,6 +47,8 @@ def _payload(profile_id: str) -> dict[str, Any]:
     (
         ("dorotheus_demolition_v1", "building_demolition", 2),
         ("dorotheus_leasing_v1", "leasing", 5),
+        ("dorotheus_buying_and_selling_v1", "buying_and_selling", 2),
+        ("dorotheus_lunar_price_timing_v1", "lunar_price_timing", 3),
         ("dorotheus_land_purchase_v1", "land_purchase", 2),
     ),
 )
@@ -69,7 +74,10 @@ def test_matter_route_exposes_each_named_profile(
     assert evaluation["complete_matter_profile"] is True
     assert evaluation["complete_electional_judgement"] is False
     assert evaluation["scoring"] == "not_provided"
-    if profile_id == "dorotheus_leasing_v1":
+    if profile_id in {
+        "dorotheus_leasing_v1",
+        "dorotheus_buying_and_selling_v1",
+    }:
         flow = evaluation["moon_connection_flow"]
         assert flow["policy"]["previous_window"] == "current_sign"
         assert flow["previous_separation"]["hours_from_query"] < 0.0
@@ -82,6 +90,15 @@ def test_matter_route_exposes_each_named_profile(
     assert body["transport_provenance"]["facade_entrypoint"] == (
         "Moira.dorotheus_matter_profile_at"
     )
+    if profile_id == "dorotheus_lunar_price_timing_v1":
+        assert evaluation["clauses"][0]["clause_id"] == (
+            "tabari_sign_region_and_calculation_price_relation"
+        )
+        assert evaluation["clauses"][1]["state"] == "not_evaluable"
+        assert evaluation["clauses"][2]["clause_id"] == (
+            "lunar_phase_commerce_interval"
+        )
+        assert evaluation["numerically_complete"] is False
 
 
 def test_matter_route_rejects_unknown_profile(client_and_app) -> None:
@@ -93,9 +110,16 @@ def test_matter_route_rejects_unknown_profile(client_and_app) -> None:
     assert response.status_code == 422
 
 
-def test_leasing_rejects_an_implicit_previous_event_window(client_and_app) -> None:
+@pytest.mark.parametrize(
+    "profile_id",
+    ("dorotheus_leasing_v1", "dorotheus_buying_and_selling_v1"),
+)
+def test_flow_profile_rejects_an_implicit_previous_event_window(
+    client_and_app,
+    profile_id: str,
+) -> None:
     client, _ = client_and_app
-    payload = _payload("dorotheus_leasing_v1")
+    payload = _payload(profile_id)
     payload.pop("moon_flow_policy")
     response = client.post(
         "/v1/electional/western/dorotheus-matter-profile",
@@ -115,3 +139,5 @@ def test_matter_route_openapi_is_typed(client_and_app) -> None:
     }
     assert "DorotheusMatterProfileRequest" in schema["components"]["schemas"]
     assert "DorotheusMatterProfileEvaluationResponse" in schema["components"]["schemas"]
+    profile_schema = schema["components"]["schemas"]["DorotheusMatterProfileRequest"]
+    assert "dorotheus_buying_and_selling_v1" in str(profile_schema)

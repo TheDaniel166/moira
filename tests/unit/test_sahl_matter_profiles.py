@@ -1,4 +1,4 @@
-"""Source-order and policy tests for Sahl §§43-55 matter profiles."""
+"""Source-order and policy tests for admitted Sahl matter profiles."""
 
 from __future__ import annotations
 
@@ -102,6 +102,10 @@ def test_sahl_matter_surface_is_public_at_every_library_layer() -> None:
         "SahlMatterClauseWitness",
         "SahlMatterProfilePolicy",
         "SahlMatterProfileEvaluation",
+        "SAHL_LENDING_V1",
+        "SAHL_INVESTMENT_V1",
+        "SAHL_PURCHASE_V1",
+        "SAHL_SALE_V1",
         "SAHL_BUILDING_V1",
         "SAHL_DEMOLITION_V1",
         "SAHL_LAND_V1",
@@ -140,6 +144,78 @@ def test_profile_families_are_not_collapsed_into_one_clause_set() -> None:
     assert len(set(clause_sets.values())) == len(western.SahlMatterProfileId)
     assert clause_sets[western.SahlMatterProfileId.BUILDING][0] == "adapt_moon_and_lord"
     assert clause_sets[western.SahlMatterProfileId.SOWING][0] == "ascendant_common"
+
+
+def test_lending_preserves_sections_29_to_31_and_first_degree_gate() -> None:
+    result = _evaluate(
+        western.SahlMatterProfileId.LENDING,
+        _chart(**{Body.MOON: 120.25}),
+    )
+    assert [item.clause_id for item in result.clauses] == [
+        "preferred_moon_and_deficient_fortunes",
+        "mercury_moon_and_fortune_protections",
+        "moon_mars_or_saturn_consequence",
+        "concealed_lending_sequence",
+        "emerging_toward_mars_publicity",
+        "node_or_burnt_path_warning",
+        "first_degree_or_ascending_sign_loan_warning",
+    ]
+    gate = _clause(result, "first_degree_or_ascending_sign_loan_warning")
+    assert gate.state is western.SahlMatterClauseState.TRIGGERED
+    assert {item.name: item.value for item in gate.measurements}[
+        "moon_in_named_first_degree"
+    ] is True
+    protections = _clause(result, "mercury_moon_and_fortune_protections")
+    protection_measurements = {
+        item.name: item.value for item in protections.measurements
+    }
+    assert protection_measurements["mercury_bodily_joined_malefics"] == "none"
+    assert protection_measurements["mercury_square_malefics"] == Body.MARS
+
+
+def test_investment_keeps_adaptation_cadence_and_degree_lord_open() -> None:
+    result = _evaluate(western.SahlMatterProfileId.INVESTMENT)
+    assert [item.clause_id for item in result.clauses] == [
+        "adapt_moon_mercury_assets_and_trust",
+        "moon_mercury_join_and_mars_cadence",
+        "retrograde_mercury_branch",
+        "trust_significators_and_mars_light",
+    ]
+    first = {item.name: item.value for item in result.clauses[0].measurements}
+    assert first["assets_sign"] == "Taurus"
+    assert first["trust_sign"] == "Aquarius"
+    assert first["degree_lord_scheme"] is None
+
+
+def test_purchase_uses_canonical_moieties_and_does_not_invent_lot_orb() -> None:
+    result = _evaluate(
+        western.SahlMatterProfileId.PURCHASE,
+        _chart(**{Body.SUN: 0.0, Body.MOON: 40.0, Body.JUPITER: 51.5}),
+    )
+    fortune_clause = _clause(
+        result, "fortune_fit_in_jupiter_house_and_joined_fortunes"
+    )
+    moon_clause = _clause(
+        result, "straight_ascension_light_number_and_fortunes"
+    )
+    assert {item.name: item.value for item in fortune_clause.measurements}[
+        "lot_joining_orb_policy"
+    ] is None
+    moon_measurements = {item.name: item.value for item in moon_clause.measurements}
+    assert moon_measurements["moon_joined_fortunes"] == Body.JUPITER
+    assert moon_clause.state is western.SahlMatterClauseState.NOT_EVALUABLE
+
+
+def test_sale_separates_sign_configuration_from_bodily_join() -> None:
+    result = _evaluate(
+        western.SahlMatterProfileId.SALE,
+        _chart(**{Body.MOON: 40.0, Body.MARS: 100.0, Body.SATURN: 280.0}),
+    )
+    relation = _clause(result, "moon_configured_to_malefics_but_not_joined")
+    measurements = {item.name: item.value for item in relation.measurements}
+    assert Body.MARS in measurements["configured_malefics"].split(",")
+    assert measurements["bodily_joined_malefics"] == "none"
+    assert relation.state is western.SahlMatterClauseState.SATISFIED
 
 
 def test_building_explicit_saturn_danger_triggers_without_closing_apogee_ambiguity() -> None:

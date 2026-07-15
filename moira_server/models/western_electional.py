@@ -83,6 +83,8 @@ WesternQualificationStatusValue = Literal[
 DorotheusMatterProfileIdValue = Literal[
     "dorotheus_demolition_v1",
     "dorotheus_leasing_v1",
+    "dorotheus_buying_and_selling_v1",
+    "dorotheus_lunar_price_timing_v1",
     "dorotheus_land_purchase_v1",
 ]
 DorotheusMatterProfileStatusValue = Literal[
@@ -92,6 +94,10 @@ DorotheusMatterProfileStatusValue = Literal[
     "indeterminate",
 ]
 SahlMatterProfileIdValue = Literal[
+    "sahl_lending_v1",
+    "sahl_investment_v1",
+    "sahl_purchase_v1",
+    "sahl_sale_v1",
     "sahl_building_v1",
     "sahl_demolition_v1",
     "sahl_land_v1",
@@ -493,6 +499,10 @@ class SahlMatterProfileEvaluationResponse(_StrictModel):
     profile_id: SahlMatterProfileIdValue
     profile_version: Literal["1.0.0"]
     matter: Literal[
+        "borrowing_and_lending",
+        "investing_money_for_profit",
+        "purchasing_goods",
+        "selling_goods",
         "building_a_house",
         "destroying_a_house",
         "buying_and_occupying_land",
@@ -521,7 +531,9 @@ class SahlMatterProfileTransportProvenanceResponse(_StrictModel):
     engine_entrypoint: Literal["sahl_matter_profile_at"] = "sahl_matter_profile_at"
     facade_entrypoint: Literal["Moira.sahl_matter_profile_at"] = "Moira.sahl_matter_profile_at"
     route_semantics: Literal["single_moment_named_matter_profile"] = "single_moment_named_matter_profile"
-    western_electional_doctrine: Literal["sahl_sections_43_55_admitted"] = "sahl_sections_43_55_admitted"
+    western_electional_doctrine: Literal["sahl_named_matter_profiles_admitted"] = (
+        "sahl_named_matter_profiles_admitted"
+    )
     authority: str
     scoring: Literal["not_provided"] = "not_provided"
     recommendation_language: Literal["not_provided"] = "not_provided"
@@ -1008,15 +1020,18 @@ class DorotheusMatterProfileRequest(DorotheusConstructionRequest):
     moon_flow_policy: DorotheusMoonFlowPolicyRequest | None = None
 
     @model_validator(mode="after")
-    def _leasing_flow_policy(self) -> "DorotheusMatterProfileRequest":
-        if self.profile_id == "dorotheus_leasing_v1":
+    def _flow_policy(self) -> "DorotheusMatterProfileRequest":
+        if self.profile_id in {
+            "dorotheus_leasing_v1",
+            "dorotheus_buying_and_selling_v1",
+        }:
             if self.moon_flow_policy is None:
                 raise ValueError(
-                    "leasing requires moon_flow_policy because the previous-event "
-                    "window is not source-settled"
+                    "flow-based profile requires moon_flow_policy because the "
+                    "previous-event window is not source-settled"
                 )
         elif self.moon_flow_policy is not None:
-            raise ValueError("moon_flow_policy is accepted only for leasing")
+            raise ValueError("moon_flow_policy is accepted only for flow-based profiles")
         return self
 
 
@@ -1045,7 +1060,13 @@ class DorotheusMatterProfileEvaluationResponse(_StrictModel):
     jd_ut: float
     profile_id: DorotheusMatterProfileIdValue
     profile_version: Literal["1.0.0"]
-    matter: Literal["building_demolition", "leasing", "land_purchase"]
+    matter: Literal[
+        "building_demolition",
+        "leasing",
+        "buying_and_selling",
+        "lunar_price_timing",
+        "land_purchase",
+    ]
     status: DorotheusMatterProfileStatusValue
     moon_condition: DorotheusMoonConditionEvaluationResponse
     rooted_context: DorotheusRootedContextEvaluationResponse

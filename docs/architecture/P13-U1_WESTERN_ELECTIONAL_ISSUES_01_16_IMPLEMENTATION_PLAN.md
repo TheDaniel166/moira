@@ -576,6 +576,48 @@ only, not the governing proof.
 
 ### Phase 7 — Remaining matter profiles (#13)
 
+**Status (2026-07-15): in progress.** The Dorothean commerce slices,
+`dorotheus_buying_and_selling_v1` and
+`dorotheus_lunar_price_timing_v1`, are admitted through the engine, package
+root, `Moira.dorotheus_matter_profile_at(...)`, and
+`POST /v1/electional/western/dorotheus-matter-profile`. Dorotheus V.10.1-7
+governs it. The response preserves the lunar-flow assignments (Moon =
+commodity, previous separation = seller, next connection = buyer and price)
+and the independent four-stake assignments (1st/7th/10th/4th) without merging
+them into a score. Because V.10 does not define the previous-event search
+interval, the public request requires an explicit `moon_flow_policy`.
+
+V.44.1-8 separately governs lunar-price timing. The al-Tabari recension's
+fixed rising/falling sign regions combine with the edition glossary's
+calculation direction to expose above-value, below-value, or no compound
+price testimony. The four directed Moon-Sun phase arcs remain distinct, and
+exact conjunction, squares, and opposition are returned as unresolved
+boundaries rather than silently assigned to an adjacent interval. Edition
+notes 397, 399, and 400 preserve a Hephaistion/Dorotheus-poem parallel based
+on latitude motion, faster/slower motion, and waning; because the cited
+material supplies no speed threshold or complete combination law, that clause
+is explicitly `not_evaluable` and the profile remains numerically incomplete.
+
+Sahl's second-house commerce material is now independently admitted as four
+source-ordered profiles through `sahl_matter_profile_at(...)`, the package
+root, `Moira.sahl_matter_profile_at(...)`, and
+`POST /v1/electional/western/sahl-matter-profile`:
+
+- `sahl_lending_v1` (§§29-31);
+- `sahl_investment_v1` (§§36-38);
+- `sahl_purchase_v1` (§39);
+- `sahl_sale_v1` (§40).
+
+The profiles use canonical Moira traditional moieties and compute closed
+sign, light, house, dignity, bodily-join, configuration, and instantaneous
+conjunction-motion evidence. Deficiency/increase "in number," cleansing,
+adaptation, cadence from a significator or ray, the Lot's joining orb, and
+unspecified separation windows remain typed `not_evaluable`; a generic
+dignity score does not fill those gaps. §§32-35 business partnership remains
+for the later partnership family. §41 alchemy/repeated works is excluded from
+the commerce family. Commerce is therefore admitted at its current source
+boundary; journeys, sea travel, and ships are next.
+
 Admit profiles in dependency and source-completeness order:
 
 1. commerce, buying, and selling;

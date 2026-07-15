@@ -81,7 +81,7 @@ def test_explicit_source_faithful_sahl_burnt_path_keeps_only_that_rule_indetermi
 
 
 @pytest.mark.requires_ephemeris
-def test_j2000_all_six_sahl_matter_profiles_share_de441_and_preserve_source_gates() -> None:
+def test_j2000_all_sahl_matter_profiles_share_de441_and_preserve_source_gates() -> None:
     kernel = find_planetary_kernel()
     assert kernel is not None
     with SpkReader(kernel) as reader:
@@ -106,4 +106,17 @@ def test_j2000_all_six_sahl_matter_profiles_share_de441_and_preserve_source_gate
     assert all(
         item.status in (SahlMatterProfileStatus.TRIGGERED, SahlMatterProfileStatus.INDETERMINATE)
         for item in results
+    )
+    by_profile = {item.profile_id: item for item in results}
+    assert by_profile[SahlMatterProfileId.LENDING].clauses[0].source_reference.endswith(
+        "§29a and note 89"
+    )
+    assert by_profile[SahlMatterProfileId.INVESTMENT].matter == (
+        "investing_money_for_profit"
+    )
+    assert by_profile[SahlMatterProfileId.PURCHASE].clauses[-1].clause_id == (
+        "tail_cadent_from_moon"
+    )
+    assert by_profile[SahlMatterProfileId.SALE].clauses[-1].clause_id == (
+        "moon_configured_to_malefics_but_not_joined"
     )
