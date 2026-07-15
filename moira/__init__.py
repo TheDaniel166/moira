@@ -637,6 +637,17 @@ from .western_electional import (
     DOROTHEUS_ROOTED_CONTEXT_V1,
     evaluate_dorotheus_rooted_context,
     dorotheus_rooted_context_at,
+    DorotheusAscensionalClass,
+    DorotheusConstructionClauseRole,
+    DorotheusConstructionClauseState,
+    DorotheusConstructionStatus,
+    DorotheusSignNatureWitness,
+    DorotheusConstructionClauseWitness,
+    DorotheusConstructionPolicy,
+    DorotheusConstructionEvaluation,
+    DOROTHEUS_CONSTRUCTION_V1,
+    evaluate_dorotheus_construction,
+    dorotheus_construction_at,
 )
 
 __all__ = [
@@ -1206,4 +1217,15 @@ __all__ = [
     "DOROTHEUS_ROOTED_CONTEXT_V1",
     "evaluate_dorotheus_rooted_context",
     "dorotheus_rooted_context_at",
+    "DorotheusAscensionalClass",
+    "DorotheusConstructionClauseRole",
+    "DorotheusConstructionClauseState",
+    "DorotheusConstructionStatus",
+    "DorotheusSignNatureWitness",
+    "DorotheusConstructionClauseWitness",
+    "DorotheusConstructionPolicy",
+    "DorotheusConstructionEvaluation",
+    "DOROTHEUS_CONSTRUCTION_V1",
+    "evaluate_dorotheus_construction",
+    "dorotheus_construction_at",
 ]

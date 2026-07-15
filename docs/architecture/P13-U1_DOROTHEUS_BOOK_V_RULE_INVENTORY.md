@@ -1,14 +1,17 @@
 # P13-U1 — Dorotheus *Carmen Astrologicum* Book V: Complete Electional Rule Inventory
 
-Version: 1.2
+Version: 1.3
 Date: 2026-07-15
 Status: primary-source rule inventory; the bounded V.6 Moon-corruption layer is
 admitted as `dorotheus_moon_condition_v1`, and the V.6.21-31/V.31 shared rooted
-context is admitted as `dorotheus_rooted_context_v1`. Companion to
+context is admitted as `dorotheus_rooted_context_v1`. The inherited V.2-V.6
+and V.31 layers plus V.7 are admitted as the first complete matter profile,
+`dorotheus_construction_v1`. It is source-complete but explicitly not
+numerically complete because two V.7 quantities remain undefined by the
+primary text. Companion to
 `P13-U1_WESTERN_ELECTIONAL_DOCTRINE_RESEARCH_DOSSIER.md` §8.1. Parallel
 lineage inventory: `P13-U1_SAHL_ON_ELECTIONS_RULE_INVENTORY.md`. The remaining
-sign-nature and complete matter-specific layers are inventory, not yet public
-doctrine.
+matter-specific layers are inventory, not yet public doctrine.
 
 ## 0. Provenance and Scope
 
@@ -601,7 +604,8 @@ dossier §10 and to new needs this transcription surfaces:
 | Natal overlay (V.17, V.26,21, V.32, V.42) | **optional natal-chart input to the election** | Rooted context admits explicit ephemeral rejection and radical requirement; chapter-specific overlay judgement remains future |
 
 **Profile families this inventory supports (each a bounded predicate/scorer
-profile citing V.ch,sent):**
+profile citing V.ch,sent):** V.2-V.7 construction is now admitted together as
+`dorotheus_construction_v1`; later chapters remain inventory unless stated.
 1. **General Moon-condition gate** (V.6) — admitted as the eleven-rule,
    non-scored `dorotheus_moon_condition_v1` public moment profile.
 2. **Sign-tempo annotator** (V.2–V.5) — straight/crooked, convertible, twin,
@@ -609,8 +613,10 @@ profile citing V.ch,sent):**
 3. **Significator-of-the-matter context** (V.31) — six matter-to-planet
    families are public; chapter-owned house fortification and undefined
    bad-place semantics remain outside the shared vessel.
-4. **Matter profiles:** construction (V.7–8), leasing (V.9), commerce (V.10,
-   V.44), land (V.11), travel & ships (V.13, V.22–26), marriage (V.17), debt
+4. **Matter profiles:** construction V.7 is admitted as
+   `dorotheus_construction_v1`; demolition/inverse construction (V.8), leasing
+   (V.9), commerce (V.10, V.44), land (V.11), travel & ships (V.13, V.22–26),
+   marriage (V.17), debt
    (V.21), partnership (V.20), lawsuit (V.34), will (V.43), and the **medical/
    surgical family** (V.19, V.30, V.38–42) with its melothesia and waxing-vs-
    waning-Moon distinction.

@@ -5,6 +5,7 @@ from __future__ import annotations
 from moira import Moira
 from moira.western_electional import (
     DorotheusMatter,
+    DorotheusConstructionEvaluation,
     DorotheusMoonConditionEvaluation,
     DorotheusRootedContextEvaluation,
     RameseyMoonConditionEvaluation,
@@ -16,10 +17,36 @@ from moira.western_electional import (
 
 from ..models.western_electional import (
     DorotheusMoonConditionRequest,
+    DorotheusConstructionRequest,
     DorotheusRootedContextRequest,
     RameseyMoonConditionRequest,
     SahlMoonConditionRequest,
 )
+
+
+def compute_dorotheus_construction(
+    engine: Moira,
+    request: DorotheusConstructionRequest,
+) -> DorotheusConstructionEvaluation:
+    """Evaluate the complete V.7 profile through the public facade."""
+
+    result = engine.dorotheus_construction_at(
+        request.jd_ut,
+        request.latitude,
+        request.longitude,
+        house_system=request.house_system,
+        election_class=WesternElectionClass(request.election_class),
+        natal_jd_ut=request.natal_jd_ut,
+        natal_latitude=request.natal_latitude,
+        natal_longitude=request.natal_longitude,
+        natal_house_system=request.natal_house_system,
+        unavoidable_time_urgency=request.unavoidable_time_urgency,
+    )
+    if result.profile_id != request.profile_id:
+        raise RuntimeError(
+            "facade returned a Western electional profile different from the request"
+        )
+    return result
 
 
 def compute_dorotheus_rooted_context(
@@ -109,6 +136,7 @@ def compute_sahl_moon_condition(
 
 
 __all__ = [
+    "compute_dorotheus_construction",
     "compute_dorotheus_rooted_context",
     "compute_dorotheus_moon_condition",
     "compute_ramesey_moon_condition",

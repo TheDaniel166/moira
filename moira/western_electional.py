@@ -62,6 +62,19 @@ from ._western_electional_context import (
     dorotheus_rooted_context_at,
     evaluate_dorotheus_rooted_context,
 )
+from ._western_electional_construction import (
+    DOROTHEUS_CONSTRUCTION_V1,
+    DorotheusAscensionalClass,
+    DorotheusConstructionClauseRole,
+    DorotheusConstructionClauseState,
+    DorotheusConstructionClauseWitness,
+    DorotheusConstructionEvaluation,
+    DorotheusConstructionPolicy,
+    DorotheusConstructionStatus,
+    DorotheusSignNatureWitness,
+    dorotheus_construction_at,
+    evaluate_dorotheus_construction,
+)
 
 __all__ = [
     "RameseyRuleState",
@@ -114,6 +127,17 @@ __all__ = [
     "DOROTHEUS_ROOTED_CONTEXT_V1",
     "evaluate_dorotheus_rooted_context",
     "dorotheus_rooted_context_at",
+    "DorotheusAscensionalClass",
+    "DorotheusConstructionClauseRole",
+    "DorotheusConstructionClauseState",
+    "DorotheusConstructionStatus",
+    "DorotheusSignNatureWitness",
+    "DorotheusConstructionClauseWitness",
+    "DorotheusConstructionPolicy",
+    "DorotheusConstructionEvaluation",
+    "DOROTHEUS_CONSTRUCTION_V1",
+    "evaluate_dorotheus_construction",
+    "dorotheus_construction_at",
 ]
 
 

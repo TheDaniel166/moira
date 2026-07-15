@@ -16,12 +16,39 @@ from moira.eclipse import EclipseCalculator
 from moira.planets import planet_at
 from moira.spk_reader import SpkReader
 from moira.western_electional import (
+    DorotheusConstructionClauseState,
     DorotheusMatter,
     DorotheusMoonConditionStatus,
     DorotheusRuleState,
     dorotheus_rooted_context_at,
+    dorotheus_construction_at,
     dorotheus_moon_condition_at,
 )
+
+
+@pytest.mark.requires_ephemeris
+def test_j2000_construction_profile_composes_every_de441_backed_layer() -> None:
+    kernel = find_planetary_kernel()
+    assert kernel is not None
+    with SpkReader(kernel) as reader:
+        result = dorotheus_construction_at(
+            2451545.0,
+            51.5074,
+            -0.1278,
+            house_system=HouseSystem.REGIOMONTANUS,
+            reader=reader,
+        )
+
+    assert Path(result.reader_provenance).name == "de441.bsp"
+    assert result.profile_id == "dorotheus_construction_v1"
+    assert result.moon_condition.profile_id == "dorotheus_moon_condition_v1"
+    assert result.rooted_context.profile_id == "dorotheus_rooted_context_v1"
+    assert result.rooted_context.next_connection is not None
+    assert result.sign_nature.ascensional_arc_degrees is not None
+    assert result.construction_clauses[0].state is DorotheusConstructionClauseState.NOT_EVALUABLE
+    assert result.construction_clauses[2].measurements[1].value != 0.0
+    assert result.source_complete is True
+    assert result.numerically_complete is False
 
 
 @pytest.mark.requires_ephemeris

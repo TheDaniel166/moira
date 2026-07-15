@@ -12,6 +12,8 @@ from ..dependencies import get_engine
 from ..models.western_electional import (
     DorotheusMoonConditionRequest,
     DorotheusMoonConditionResponse,
+    DorotheusConstructionRequest,
+    DorotheusConstructionResponse,
     DorotheusRootedContextRequest,
     DorotheusRootedContextResponse,
     RameseyMoonConditionRequest,
@@ -21,12 +23,14 @@ from ..models.western_electional import (
 )
 from ..serializers.western_electional import (
     serialize_dorotheus_moon_condition,
+    serialize_dorotheus_construction,
     serialize_dorotheus_rooted_context,
     serialize_ramesey_moon_condition,
     serialize_sahl_moon_condition,
 )
 from ..services.western_electional import (
     compute_dorotheus_moon_condition,
+    compute_dorotheus_construction,
     compute_dorotheus_rooted_context,
     compute_ramesey_moon_condition,
     compute_sahl_moon_condition,
@@ -34,6 +38,21 @@ from ..services.western_electional import (
 
 
 router = APIRouter(prefix="/v1/electional/western", tags=["electional"])
+
+
+@router.post(
+    "/dorotheus-construction",
+    response_model=DorotheusConstructionResponse,
+)
+def dorotheus_construction_route(
+    request: DorotheusConstructionRequest,
+    engine: Annotated[Moira, Depends(get_engine)],
+) -> DorotheusConstructionResponse:
+    """Evaluate the complete inherited and V.7 construction profile."""
+
+    return serialize_dorotheus_construction(
+        compute_dorotheus_construction(engine, request)
+    )
 
 
 @router.post(

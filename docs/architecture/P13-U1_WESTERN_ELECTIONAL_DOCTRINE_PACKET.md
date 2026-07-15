@@ -1,8 +1,8 @@
 # P13-U1 Western Electional Doctrine Packet
 
-Version: 0.7
+Version: 0.8
 Date: 2026-07-15
-Status: three Moon profiles and the Dorotheus rooted context are public; generic search/scoring deferred
+Status: three Moon profiles, the Dorotheus rooted context, and the first complete matter profile are public; generic search/scoring deferred
 Scope: bounded Western electional doctrine beside the generic search transport
 
 ## 1. Doctrine Decision
@@ -23,6 +23,8 @@ This packet defines three bounded doctrine profiles:
 `sahl_moon_condition_v1`
 
 `dorotheus_moon_condition_v1`
+
+`dorotheus_construction_v1`
 
 It is a transparent evaluation of William Ramesey's ten impediments of the
 Moon in *Astrologia Restaurata*, Book III, Chapter II, printed p. 127. It is
@@ -64,6 +66,17 @@ The rooted context is admitted through `Moira.dorotheus_rooted_context_at(...)`
 and `POST /v1/electional/western/dorotheus-rooted-context`. Radical requests
 must supply a complete natal moment, location, and house-system bundle;
 ephemeral requests reject natal fields.
+
+The first complete matter profile is admitted as
+`dorotheus_construction_v1` through
+`Moira.dorotheus_construction_at(...)` and
+`POST /v1/electional/western/dorotheus-construction`. It composes Dorotheus
+V.2-V.6, V.31, and every V.7 construction clause. Complete means that every
+source layer and clause is represented; it does not mean every clause is
+numerically resolved. Increasing in calculation and being on the ecliptic
+while rising north remain measured, visible `not_evaluable` witnesses because
+the source does not state the missing lunar equation and crossing-region
+semantics. The profile supplies no score, advice, or recommendation.
 
 ## 2. Authority and Page Confirmation
 
@@ -695,7 +708,7 @@ historical or empirical proof of astrology.
 This packet and admitted public-moment batch do not:
 
 - admit generic Western profile scanning, scoring, ranking, or advice
-- define a complete election for any matter
+- define a scored or recommended election for any matter
 - merge the distinct Ramesey, Sahl, and Dorotheus objects with each other or
   with Robson, Lilly, or Bonatti
 - create a historical-outcome dataset
@@ -704,7 +717,7 @@ This packet and admitted public-moment batch do not:
 
 ## 15. Ledger Decision
 
-P13-U1 is `ramesey_v1_sahl_v1_and_dorotheus_v1_public_moments_admitted; generic_search_scoring_and_recommendation_deferred`.
+P13-U1 is `three_moon_profiles_rooted_context_and_dorotheus_construction_public; generic_search_scoring_and_recommendation_deferred`.
 
 `ramesey_moon_condition_v1` now exists as an engine-owned, non-scored condition
 profile with a separate non-erasing contingency witness. Its named types and
@@ -730,5 +743,12 @@ matter-significator, natal-overlay, or complete matter layers.
 `dorotheus_rooted_context_v1` separately admits the shared root/outcome,
 sign-bounded next-connection, matter-significator, and natal-evidence vessel.
 It deliberately leaves the undefined V.31 bad-place set, broader accidental
-misfortune semantics, chapter-owned houses, and every complete matter profile
+misfortune semantics, and chapter-owned houses outside admitted matter profiles
 uncomputed. Generic scan integration remains a later bounded admission.
+
+`dorotheus_construction_v1` is the first source-complete matter profile. Its
+engine object, facade method, and typed REST route preserve V.2-V.6, V.31, and
+all six V.7 computational clauses. Two clauses remain explicitly
+`not_evaluable`; therefore the result reports `source_complete=true` and
+`numerically_complete=false`. No weighted score, advice, ranking, or
+recommendation is inferred from the historical text.

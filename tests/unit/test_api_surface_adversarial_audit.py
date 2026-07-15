@@ -599,6 +599,17 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     'dorotheus_rooted_context_at',
     'evaluate_dorotheus_rooted_context',
     'next_moon_connection',
+    'DOROTHEUS_CONSTRUCTION_V1',
+    'DorotheusAscensionalClass',
+    'DorotheusConstructionClauseRole',
+    'DorotheusConstructionClauseState',
+    'DorotheusConstructionClauseWitness',
+    'DorotheusConstructionEvaluation',
+    'DorotheusConstructionPolicy',
+    'DorotheusConstructionStatus',
+    'DorotheusSignNatureWitness',
+    'dorotheus_construction_at',
+    'evaluate_dorotheus_construction',
 })
 
 _EXPECTED_ROOT_ONLY_NAMES = {
@@ -940,6 +951,7 @@ _EXPECTED_MOIRA_METHODS = {
 _EXPECTED_MOIRA_METHODS.update({
 'ashtakavarga',
     'dorotheus_rooted_context_at',
+    'dorotheus_construction_at',
     'ashtakavarga_for_chart',
     'ashtakavarga_profile',
     'ashtakavarga_sign_profile',

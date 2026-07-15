@@ -691,4 +691,8 @@ def test_electional_routes_are_registered(client: TestClient) -> None:
         "/v1/electional/scored",
         "/v1/electional/windows",
         "/v1/electional/western/ramesey-moon-condition",
+        "/v1/electional/western/sahl-moon-condition",
+        "/v1/electional/western/dorotheus-moon-condition",
+        "/v1/electional/western/dorotheus-rooted-context",
+        "/v1/electional/western/dorotheus-construction",
     }

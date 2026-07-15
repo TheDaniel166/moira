@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from moira.western_electional import (
     DorotheusClauseWitness,
+    DorotheusConstructionEvaluation,
     DorotheusMeasurement,
     DorotheusMoonConditionEvaluation,
     DorotheusPlacementWitness,
@@ -23,6 +24,10 @@ from moira.western_electional import (
 
 from ..models.western_electional import (
     DorotheusClauseWitnessResponse,
+    DorotheusConstructionClauseWitnessResponse,
+    DorotheusConstructionEvaluationResponse,
+    DorotheusConstructionResponse,
+    DorotheusConstructionTransportProvenanceResponse,
     DorotheusMeasurementResponse,
     DorotheusMoonConditionEvaluationResponse,
     DorotheusMoonConditionResponse,
@@ -35,6 +40,7 @@ from ..models.western_electional import (
     DorotheusRootedContextResponse,
     DorotheusRootedContextTransportProvenanceResponse,
     DorotheusRootOutcomeWitnessResponse,
+    DorotheusSignNatureWitnessResponse,
     DorotheusWesternElectionalTransportProvenanceResponse,
     RameseyClauseWitnessResponse,
     RameseyMeasurementResponse,
@@ -103,6 +109,19 @@ _DOROTHEUS_ROOTED_STAGE_SEQUENCE = [
     "sign_bounded_next_moon_connection_search",
     "root_and_outcome_strength_classification",
     "matter_significator_evidence_assembly",
+    "typed_response_serialization",
+]
+_DOROTHEUS_CONSTRUCTION_AUTHORITY = (
+    "Dorotheus of Sidon, Carmen Astrologicum, Umar al-Tabari translation, "
+    "Book V.2-7 and V.31, printed pp. 231-238 and 276-277; "
+    "Dykes glossary printed p. 363"
+)
+_DOROTHEUS_CONSTRUCTION_STAGE_SEQUENCE = [
+    "request_and_radicality_validation",
+    "facade_reader_resolution",
+    "election_and_optional_natal_chart_construction",
+    "inherited_v2_v6_and_v31_evaluation",
+    "v7_construction_clause_evaluation",
     "typed_response_serialization",
 ]
 
@@ -471,7 +490,87 @@ def serialize_dorotheus_rooted_context(
     )
 
 
+def serialize_dorotheus_construction(
+    result: DorotheusConstructionEvaluation,
+) -> DorotheusConstructionResponse:
+    """Serialize the complete inherited and V.7 construction layers."""
+
+    sign = result.sign_nature
+    sign_response = DorotheusSignNatureWitnessResponse(
+        ascendant_longitude=sign.ascendant_longitude,
+        ascendant_sign=sign.ascendant_sign,
+        geographic_latitude=sign.geographic_latitude,
+        true_obliquity_degrees=sign.true_obliquity_degrees,
+        ascensional_arc_degrees=sign.ascensional_arc_degrees,
+        ascensional_class=sign.ascensional_class.value,
+        base_tempo=sign.base_tempo,
+        configured_fortunes=list(sign.configured_fortunes),
+        configured_infortunes=list(sign.configured_infortunes),
+        modifier=sign.modifier,
+        convertible=sign.convertible,
+        convertible_effect=sign.convertible_effect,
+        twin=sign.twin,
+        twin_effect=sign.twin_effect,
+        chart_sect=sign.chart_sect,
+        ascendant_sect=sign.ascendant_sect,
+        moon_sect=sign.moon_sect,
+        sect_fit=sign.sect_fit,
+        source_reference=sign.source_reference,
+    )
+    clauses = [
+        DorotheusConstructionClauseWitnessResponse(
+            clause_id=clause.clause_id,
+            source_order=clause.source_order,
+            role=clause.role.value,
+            state=clause.state.value,
+            measurements=[
+                _serialize_dorotheus_measurement(measurement)
+                for measurement in clause.measurements
+            ],
+            explanation=clause.explanation,
+            source_reference=clause.source_reference,
+        )
+        for clause in result.construction_clauses
+    ]
+    moon_response = serialize_dorotheus_moon_condition(
+        result.moon_condition
+    ).evaluation
+    rooted_response = serialize_dorotheus_rooted_context(
+        result.rooted_context
+    ).evaluation
+    evaluation = DorotheusConstructionEvaluationResponse(
+        jd_ut=result.jd_ut,
+        profile_id=result.profile_id,
+        profile_version=result.profile_version,
+        status=result.status.value,
+        sign_nature=sign_response,
+        moon_condition=moon_response,
+        rooted_context=rooted_response,
+        construction_clauses=clauses,
+        triggered_clause_ids=list(result.triggered_clause_ids),
+        not_evaluable_clause_ids=list(result.not_evaluable_clause_ids),
+        reader_provenance=result.reader_provenance,
+        authorities=list(result.authorities),
+        matter=result.matter,
+        election_class=result.election_class,
+        source_complete=result.source_complete,
+        numerically_complete=result.numerically_complete,
+        complete_electional_judgement=result.complete_electional_judgement,
+        advice_language=result.advice_language,
+        recommendation_language=result.recommendation_language,
+        scoring=result.scoring,
+    )
+    return DorotheusConstructionResponse(
+        evaluation=evaluation,
+        transport_provenance=DorotheusConstructionTransportProvenanceResponse(
+            authority=_DOROTHEUS_CONSTRUCTION_AUTHORITY,
+            stage_sequence=list(_DOROTHEUS_CONSTRUCTION_STAGE_SEQUENCE),
+        ),
+    )
+
+
 __all__ = [
+    "serialize_dorotheus_construction",
     "serialize_dorotheus_rooted_context",
     "serialize_dorotheus_moon_condition",
     "serialize_ramesey_moon_condition",

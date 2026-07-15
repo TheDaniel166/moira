@@ -166,6 +166,17 @@ def test_public_surface_is_promoted_through_root_and_facade() -> None:
         "DOROTHEUS_ROOTED_CONTEXT_V1",
         "evaluate_dorotheus_rooted_context",
         "dorotheus_rooted_context_at",
+        "DorotheusAscensionalClass",
+        "DorotheusConstructionClauseRole",
+        "DorotheusConstructionClauseState",
+        "DorotheusConstructionStatus",
+        "DorotheusSignNatureWitness",
+        "DorotheusConstructionClauseWitness",
+        "DorotheusConstructionPolicy",
+        "DorotheusConstructionEvaluation",
+        "DOROTHEUS_CONSTRUCTION_V1",
+        "evaluate_dorotheus_construction",
+        "dorotheus_construction_at",
     }
     assert set(western.__all__) == expected
     assert len(western.__all__) == len(set(western.__all__))

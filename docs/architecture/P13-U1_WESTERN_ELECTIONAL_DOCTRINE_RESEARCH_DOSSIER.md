@@ -1,6 +1,6 @@
 # P13-U1 — Western Electional Doctrine Research Dossier
 
-Version: 0.13 (research foundation with three Moon profiles and a rooted context)
+Version: 0.14 (first complete matter profile admitted)
 Date: 2026-07-15
 Status: research inventory for the Western electional doctrine layer. The
 companion materials admit distinct `ramesey_moon_condition_v1` and
@@ -8,10 +8,22 @@ companion materials admit distinct `ramesey_moon_condition_v1` and
 engine module, package root, facade, `Moira` convenience methods, and bounded
 single-moment REST routes.
 The shared `dorotheus_rooted_context_v1` object is also public through engine,
-facade, and `POST /v1/electional/western/dorotheus-rooted-context`. Generic
-search, scoring, website, advice, and recommendation surfaces remain deferred.
+facade, and `POST /v1/electional/western/dorotheus-rooted-context`.
+`dorotheus_construction_v1` composes the V.2-V.6, V.31, and V.7 construction
+layers through the same public ladder and
+`POST /v1/electional/western/dorotheus-construction`. It is complete as a
+source-layer matter profile, but not numerically complete: the primary text
+does not supply enough semantics to compute increasing-in-calculation or an
+ecliptic-crossing region/tolerance. Generic search, scoring, website, advice,
+and recommendation surfaces remain deferred.
 
 Changelog:
+- 0.14 - page-confirmed Dorotheus V.2-5, V.7, and the edition glossary entry
+  for increasing/decreasing in calculation; admitted the non-scored
+  `dorotheus_construction_v1` matter profile through engine, facade, and REST.
+  The lunar equation and ecliptic-crossing clauses remain visible and
+  `not_evaluable`, so source completeness is not mislabeled as numerical
+  completeness.
 - 0.13 - page-confirmed Dorotheus V.6.21-31 and V.31.1-11, admitted the
   non-scored rooted context preserving Moon-as-root, Moon-sign-lord-as-outcome,
   sign-bounded next connection, six matter-significator families, and explicit
