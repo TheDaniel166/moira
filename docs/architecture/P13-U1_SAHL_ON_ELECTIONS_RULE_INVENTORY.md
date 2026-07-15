@@ -434,6 +434,15 @@ No independent third-house matter list in Sahl.
   house, free from malefics (§54). Moon increased in light and number (§55a).
   Gate: Moon under rays and defective in number → seed vanishes (§55a).
 
+**Public computational binding (2026-07-15):** §§43–55 are admitted as six
+separate `SahlMatterProfileId` values through
+`POST /v1/electional/western/sahl-matter-profile`. Source-closed sign, house,
+dignity, bound, light, bodily-join, and whole-sign configuration clauses
+compute. "In number," eastern/ascending, circle motion, cleansing, open
+adaptation/fortification, and unstated separation windows remain individually
+typed `not_evaluable` with measured alternatives and the relevant Dykes note.
+They are not converted into later doctrine or a generic strength score.
+
 ### 5.4 Fifth house (§§56–59)
 
 #### §56–57 — Conceiving a child (sex for generation) [ELECTION]

@@ -2,8 +2,9 @@
 
 Moira 4.3.0 expands Western electional astrology from one bounded Moon
 condition into three independent historical lineages, a shared Dorothean
-root-and-matter context, the first source-complete matter profile, and a
-bounded profile-status scanner. Every admitted object is public through the
+root-and-matter context, source-complete Dorothean and Sahl matter profiles, and a
+bounded profile-status scanner. It also adds the first source-owned classical
+perfection event profile. Every admitted object is public through the
 engine, `Moira` facade, and typed REST API.
 
 ## Sahl and Dorotheus Moon conditions
@@ -29,6 +30,29 @@ select source-faithful indeterminacy, the Dykes glossary/fall-degree interval
 underdetermined southern-descending and longitude-or-latitude disengagement
 clauses remain measured but `not_evaluable`; later orbs and modern proxies are
 not imported silently.
+
+## Six Sahl fourth-house matter profiles
+
+Sahl's fourth-house sequence in *On Elections* §§43-55 is now public as six
+distinct profiles rather than one generic fourth-house election:
+
+- `sahl_building_v1`
+- `sahl_demolition_v1`
+- `sahl_land_v1`
+- `sahl_wells_and_rivers_v1`
+- `sahl_planting_v1`
+- `sahl_sowing_v1`
+
+They are available through `sahl_matter_profile_at(...)`,
+`Moira.sahl_matter_profile_at(...)`, and
+`POST /v1/electional/western/sahl-matter-profile`. Every response embeds the
+general Sahl Moon-condition layer and preserves the selected matter's clauses
+in source order. Sign class, explicit houses, dignity, bounds, lunar light,
+bodily joining, and whole-sign configuration compute where the source closes
+them. "In number," eastern/ascending, circle motion, cleansing, open
+adaptation, and unstated separation windows remain visible `not_evaluable`
+clauses with their measurements and source notes. No later convention is
+silently treated as Sahl's own rule.
 
 ## Neutral lunar ecliptic direction
 
@@ -183,8 +207,9 @@ Leasing requests require that explicit window policy and embed the same flow
 in their REST response. The V.9 clause nevertheless remains `not_evaluable`:
 the surviving V.9 text requires flow-away and connection but does not assign
 them to its four leasing stakes. These profiles do not score, rank, advise, or
-recommend. Sahl's fourth-house building and land instructions remain deferred
-until their unresolved computational language has explicit policy.
+recommend. Sahl's fourth-house profiles now preserve their unresolved
+computational language as explicit typed policy rather than deferring the
+entire source layer or fabricating a closed predicate.
 
 ## First-class signed aspect motion
 
@@ -204,6 +229,42 @@ reasons; and caller-declared reference frame and timescale. Its state is
 This is instantaneous geometry only. Missing speeds, relative standstill, and
 equidistant branches remain explicit, and the surface does not claim to locate
 a future perfection, station, prohibition, or Dorothean root/outcome event.
+
+## Lilly 1647 classical perfection
+
+The full 1647 *Christian Astrology* facsimile closes a named, bounded
+perfection profile at printed pp. 110-113 and 125-126:
+
+- `lilly_perfection_at(...)`
+- `Moira.lilly_perfection_at(...)`
+- `POST /v1/electional/western/classical-perfection`
+
+`lilly_1647_perfection_v1` traces exact Ptolemaic aspects, stations, and sign
+ingresses for the seven traditional planets over an interval of at most 31
+days. It returns separate source-referenced witnesses for direct perfection,
+translation of light, collection of light, bodily/aspectual prohibition,
+refranation, and frustration.
+
+The exposed fixed policy names UT1 input with internal TT conversion, apparent
+geocentric true-ecliptic-of-date longitudes, and astrometric geocentric
+longitude rates; those distinct products are not collapsed into one vague
+position claim.
+
+The profile uses Moira's canonical Lilly planetary moieties. Translation
+requires reception by house, active triplicity, or Egyptian term and no prior
+intervening planetary contact. Collection requires two significators that do
+not behold one another by sign, application to one slower collector, and the
+collector's reception by each significator in an essential dignity.
+Prohibition requires the same swifter third planet to perfect successively
+with both significators before their intended union; a single unrelated
+contact is not enough.
+
+Every result exposes its initial states, deterministic event chronology,
+supporting event ids, reception bases, reader provenance, and typed
+`present`/`absent`/`indeterminate` states. Exact ties and prior sign ingresses
+remain indeterminate under the fixed v1 policy. This is not a score,
+recommendation, or complete electional judgement. Sahl and Bonatti perfection
+profiles, abscission, and reflection remain explicitly unadmitted.
 
 ## Bounds-table correctness
 
@@ -282,6 +343,9 @@ includes:
 - exact public-export and facade-method governance;
 - signed aspect-motion wrap, exactness, station, missing-speed,
   branch-ambiguity, facade, REST, and OpenAPI invariants;
+- Lilly direct/translation/collection/prohibition/refranation/frustration
+  isolation, canonical-moiety and reception-policy boundaries, DE441 event
+  chronology, facade binding, REST round trip, and OpenAPI invariants;
 - exact previous/next lunar-event ordering, caller-selected previous windows,
   signed residual and motion preservation, no-event reasons, DE441 fixed-epoch
   traces, leasing embedding, REST, and OpenAPI invariants;

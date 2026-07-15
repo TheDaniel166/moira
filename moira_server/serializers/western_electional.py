@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from moira.western_electional import (
+    ClassicalPerfectionAnalysis,
     LunarEclipticDirectionWitness,
     DorotheusClauseWitness,
     DorotheusConstructionEvaluation,
@@ -22,11 +23,19 @@ from moira.western_electional import (
     SahlClauseWitness,
     SahlMeasurement,
     SahlMoonConditionEvaluation,
+    SahlMatterProfileEvaluation,
     SahlRuleWitness,
     WesternElectionalProfileScan,
 )
 
 from ..models.western_electional import (
+    ClassicalBodyStateResponse,
+    ClassicalPerfectionEventResponse,
+    ClassicalPerfectionEvaluationResponse,
+    LillyPerfectionResponse,
+    LillyPerfectionPolicyResponse,
+    LillyPerfectionTransportProvenanceResponse,
+    LillyPerfectionWitnessResponse,
     LunarEclipticDirectionPolicyResponse,
     LunarEclipticDirectionResponse,
     LunarNodeCrossingResponse,
@@ -76,6 +85,10 @@ from ..models.western_electional import (
     SahlMeasurementResponse,
     SahlMoonConditionEvaluationResponse,
     SahlMoonConditionResponse,
+    SahlMatterClauseWitnessResponse,
+    SahlMatterProfileEvaluationResponse,
+    SahlMatterProfileResponse,
+    SahlMatterProfileTransportProvenanceResponse,
     SahlRuleWitnessResponse,
     SahlWesternElectionalTransportProvenanceResponse,
     MoonConnectionResponse,
@@ -353,7 +366,20 @@ def serialize_sahl_moon_condition(
 ) -> SahlMoonConditionResponse:
     """Preserve all Sahl rules and selected variants in a typed response."""
 
-    evaluation = SahlMoonConditionEvaluationResponse(
+    evaluation = _serialize_sahl_moon_evaluation(result)
+    return SahlMoonConditionResponse(
+        evaluation=evaluation,
+        transport_provenance=SahlWesternElectionalTransportProvenanceResponse(
+            authority=_SAHL_AUTHORITY,
+            stage_sequence=list(_SAHL_STAGE_SEQUENCE),
+        ),
+    )
+
+
+def _serialize_sahl_moon_evaluation(
+    result: SahlMoonConditionEvaluation,
+) -> SahlMoonConditionEvaluationResponse:
+    return SahlMoonConditionEvaluationResponse(
         jd_ut=result.jd_ut,
         profile_id=result.profile_id,
         profile_version=result.profile_version,
@@ -376,11 +402,65 @@ def serialize_sahl_moon_condition(
         advice_language=result.advice_language,
         recommendation_language=result.recommendation_language,
     )
-    return SahlMoonConditionResponse(
+
+
+def serialize_sahl_matter_profile(
+    result: SahlMatterProfileEvaluation,
+) -> SahlMatterProfileResponse:
+    """Preserve every source clause and inherited Sahl Moon rule in REST."""
+
+    evaluation = SahlMatterProfileEvaluationResponse(
+        jd_ut=result.jd_ut,
+        profile_id=result.profile_id.value,
+        profile_version=result.profile_version,
+        matter=result.matter,
+        status=result.status.value,
+        moon_condition=_serialize_sahl_moon_evaluation(result.moon_condition),
+        clauses=[
+            SahlMatterClauseWitnessResponse(
+                clause_id=clause.clause_id,
+                source_order=clause.source_order,
+                role=clause.role.value,
+                state=clause.state.value,
+                measurements=[
+                    SahlMeasurementResponse(
+                        name=item.name,
+                        value=item.value,
+                        units=item.units,
+                        comparison=item.comparison,
+                        threshold=item.threshold,
+                    )
+                    for item in clause.measurements
+                ],
+                explanation=clause.explanation,
+                source_reference=clause.source_reference,
+                policy_id=clause.policy_id,
+            )
+            for clause in result.clauses
+        ],
+        triggered_clause_ids=list(result.triggered_clause_ids),
+        not_evaluable_clause_ids=list(result.not_evaluable_clause_ids),
+        reader_provenance=result.reader_provenance,
+        authorities=list(result.authorities),
+        source_complete=result.source_complete,
+        complete_matter_profile=result.complete_matter_profile,
+        numerically_complete=result.numerically_complete,
+        complete_electional_judgement=result.complete_electional_judgement,
+        advice_language=result.advice_language,
+        recommendation_language=result.recommendation_language,
+        scoring=result.scoring,
+    )
+    return SahlMatterProfileResponse(
         evaluation=evaluation,
-        transport_provenance=SahlWesternElectionalTransportProvenanceResponse(
-            authority=_SAHL_AUTHORITY,
-            stage_sequence=list(_SAHL_STAGE_SEQUENCE),
+        transport_provenance=SahlMatterProfileTransportProvenanceResponse(
+            authority="; ".join(result.authorities),
+            stage_sequence=[
+                "input_validation",
+                "general_sahl_moon_condition",
+                "named_sections_43_55_profile",
+                "source_ordered_clause_evaluation",
+                "response_serialization",
+            ],
         ),
     )
 
@@ -849,6 +929,88 @@ def serialize_western_profile_windows(
     )
 
 
+def serialize_lilly_perfection(result: ClassicalPerfectionAnalysis) -> LillyPerfectionResponse:
+    """Serialize the event trace without adding judgement or advice."""
+
+    return LillyPerfectionResponse(
+        evaluation=ClassicalPerfectionEvaluationResponse(
+            jd_start=result.jd_start,
+            jd_end=result.jd_end,
+            significator_a=result.significator_a,
+            significator_b=result.significator_b,
+            is_day_chart=result.is_day_chart,
+            profile_id=result.profile_id,
+            profile_version=result.profile_version,
+            policy=LillyPerfectionPolicyResponse(
+                profile_id=result.policy.profile_id,
+                profile_version=result.policy.profile_version,
+                aspect_scope=result.policy.aspect_scope,
+                contact_scope=result.policy.contact_scope,
+                ingress_policy=result.policy.ingress_policy,
+                tie_policy=result.policy.tie_policy,
+                translation_reception=result.policy.translation_reception,
+                collection_reception=result.policy.collection_reception,
+                bounds_doctrine=result.policy.bounds_doctrine,
+                triplicity_doctrine=result.policy.triplicity_doctrine,
+                planetary_moiety_table=result.policy.planetary_moiety_table,
+                longitude_product=result.policy.longitude_product,
+                motion_product=result.policy.motion_product,
+                input_timescale=result.policy.input_timescale,
+                max_span_days=result.policy.max_span_days,
+            ),
+            initial_states=[
+                ClassicalBodyStateResponse(
+                    body=item.body,
+                    longitude=item.longitude,
+                    speed=item.speed,
+                    sign=item.sign,
+                ) for item in result.initial_states
+            ],
+            events=[
+                ClassicalPerfectionEventResponse(
+                    event_id=item.event_id,
+                    jd_ut=item.jd_ut,
+                    kind=item.kind.value,
+                    actor=item.actor,
+                    target=item.target,
+                    aspect=item.aspect,
+                    directional_angle_deg=item.directional_angle_deg,
+                    longitude_deg=item.longitude_deg,
+                    sign_before=item.sign_before,
+                    sign_after=item.sign_after,
+                ) for item in result.events
+            ],
+            witnesses=[
+                LillyPerfectionWitnessResponse(
+                    kind=item.kind.value,
+                    state=item.state.value,
+                    actors=list(item.actors),
+                    event_ids=list(item.event_ids),
+                    explanation=item.explanation,
+                    source_reference=item.source_reference,
+                    reception_bases=list(item.reception_bases),
+                ) for item in result.witnesses
+            ],
+            present_kinds=[item.value for item in result.present_kinds],
+            indeterminate_kinds=[item.value for item in result.indeterminate_kinds],
+            reader_provenance=result.reader_provenance,
+            authorities=list(result.authorities),
+            complete_electional_judgement=result.complete_electional_judgement,
+            scoring=result.scoring,
+            advice_language=result.advice_language,
+        ),
+        transport_provenance=LillyPerfectionTransportProvenanceResponse(
+            stage_sequence=[
+                "input_validation",
+                "reader_bound_traditional_planet_state",
+                "exact_aspect_station_and_ingress_trace",
+                "lilly_1647_classification",
+                "response_serialization",
+            ]
+        ),
+    )
+
+
 __all__ = [
     "serialize_lunar_ecliptic_direction",
     "serialize_dorotheus_construction",
@@ -857,5 +1019,7 @@ __all__ = [
     "serialize_dorotheus_moon_condition",
     "serialize_ramesey_moon_condition",
     "serialize_sahl_moon_condition",
+    "serialize_sahl_matter_profile",
     "serialize_western_profile_windows",
+    "serialize_lilly_perfection",
 ]

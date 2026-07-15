@@ -1,7 +1,7 @@
 # Moira REST API Reference
 
 Version: 0.1.0 transport surface
-Date audited: 2026-07-12
+Date audited: 2026-07-15
 Source of truth: `moira_server.app.create_app()` route registry
 
 This document describes the HTTP transport surface currently registered by
@@ -16,9 +16,9 @@ transport contract documented for that family.
 
 ## Current Surface Summary
 
-- Total non-documentation routes: 377
+- Total non-documentation routes: 402
 - Operational/meta routes: 4
-- Versioned `/v1` routes: 373
+- Versioned `/v1` routes: 398
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 
@@ -1026,6 +1026,8 @@ direction.
 | POST | `/v1/electional/western/lunar-ecliptic-direction` | `lunar_ecliptic_direction_route` |
 | POST | `/v1/electional/western/ramesey-moon-condition` | `ramesey_moon_condition_route` |
 | POST | `/v1/electional/western/sahl-moon-condition` | `sahl_moon_condition_route` |
+| POST | `/v1/electional/western/sahl-matter-profile` | `sahl_matter_profile_route` |
+| POST | `/v1/electional/western/classical-perfection` | `lilly_perfection_route` |
 | POST | `/v1/electional/western/dorotheus-moon-condition` | `dorotheus_moon_condition_route` |
 | POST | `/v1/electional/western/dorotheus-rooted-context` | `dorotheus_rooted_context_route` |
 | POST | `/v1/electional/western/dorotheus-construction` | `dorotheus_construction_route` |
@@ -1715,11 +1717,33 @@ The separately admitted Western doctrine routes are:
 - `POST /v1/electional/western/lunar-ecliptic-direction`
 - `POST /v1/electional/western/ramesey-moon-condition`
 - `POST /v1/electional/western/sahl-moon-condition`
+- `POST /v1/electional/western/sahl-matter-profile`
+- `POST /v1/electional/western/classical-perfection`
 - `POST /v1/electional/western/dorotheus-moon-condition`
 - `POST /v1/electional/western/dorotheus-rooted-context`
 - `POST /v1/electional/western/dorotheus-construction`
 - `POST /v1/electional/western/dorotheus-matter-profile`
 - `POST /v1/electional/western/profile-windows`
+
+The classical-perfection route is a bounded, kernel-backed event analysis
+under the fixed `lilly_1647_perfection_v1` profile. Requests select two
+distinct traditional planets, a strict day/night boolean, and an increasing
+UT1 Julian-day interval no longer than 31 days. The profile id is an exact
+literal; arbitrary bodies, generic lineage names, scoring fields, and advice
+fields are rejected.
+
+The response preserves initial longitudes and speeds for all seven traditional
+planets, a deterministic chronological trace of exact Ptolemaic aspects,
+stations, and sign ingresses, and separate witnesses for direct perfection,
+translation, collection, prohibition, refranation, and frustration. Each
+witness exposes its actors, supporting event ids, reception bases, source page,
+and `present`, `absent`, or `indeterminate` state. Transport provenance names
+`lilly_perfection_at`, `Moira.lilly_perfection_at`, and the exclusions of Sahl,
+Bonatti, and reflection. The response always declares that it supplies no
+score, advice, or complete electional judgement. Its policy vessel also names
+UT1 input/internal TT conversion, apparent geocentric true-ecliptic-of-date
+longitude, astrometric geocentric longitude rate, canonical Lilly moieties,
+Egyptian bounds, and sect-active Dorothean triplicity.
 
 The lunar-ecliptic-direction route is a neutral astronomical product rather
 than a historical doctrine verdict. It accepts one finite `jd_ut` and returns
@@ -1737,6 +1761,15 @@ measurement witnesses, triggered and
 not-evaluable rule identities, the separate non-erasing remedy witness,
 requested/effective house-system truth, fallback status, reader provenance, and
 the profile's non-complete-judgement language.
+
+The Sahl matter route requires one of six exact profile ids:
+`sahl_building_v1`, `sahl_demolition_v1`, `sahl_land_v1`,
+`sahl_wells_and_rivers_v1`, `sahl_planting_v1`, or `sahl_sowing_v1`. It also
+requires the explicit Sahl burnt-path variant used by its nested general Moon
+layer. The response contains that complete Moon layer plus every matter clause,
+role, state, measurement, policy id, citation, triggered gate, unresolved
+clause, and numerical-completeness flag. It provides no score, ranking, advice,
+recommendation, or generic fourth-house judgement.
 
 The Ramesey remedy witness exposes urgent applicability and tri-state
 fulfillment separately. Its typed clauses preserve Moon cadence/Ascendant

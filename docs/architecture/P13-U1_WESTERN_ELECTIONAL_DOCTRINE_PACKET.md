@@ -2,7 +2,7 @@
 
 Version: 1.0
 Date: 2026-07-15
-Status: three Moon profiles, bounded profile-status scanning, the Dorotheus rooted context, and the first complete matter profile are public; scoring deferred
+Status: three Moon profiles, bounded profile-status scanning, Dorothean and Sahl matter layers, and a standalone Lilly perfection profile are public; scoring deferred
 Scope: bounded Western electional doctrine beside the generic search transport
 
 ## 1. Doctrine Decision
@@ -25,6 +25,8 @@ This packet defines three bounded doctrine profiles:
 `dorotheus_moon_condition_v1`
 
 `dorotheus_construction_v1`
+
+`lilly_1647_perfection_v1`
 
 It is a transparent evaluation of William Ramesey's ten impediments of the
 Moon in *Astrologia Restaurata*, Book III, Chapter II, printed p. 127. It is
@@ -56,6 +58,15 @@ The Sahl profile is admitted through the same public engine layers,
 `POST /v1/electional/western/sahl-moon-condition`. Its burnt-path and eighth-
 rule textual variants remain explicit request and result policy rather than
 being merged into Ramesey or hidden behind a universal default.
+
+Sahl §§43-55 are independently admitted as six matter profiles through
+`Moira.sahl_matter_profile_at(...)` and
+`POST /v1/electional/western/sahl-matter-profile`: building, demolition, land,
+wells/rivers, planting, and sowing. They embed the general Sahl Moon layer but
+do not collapse their matter-specific combination laws. Open vocabulary such
+as "in number," eastern/ascending, circle motion, cleansing, and adaptation is
+preserved as typed `not_evaluable` evidence rather than silently borrowed from
+a later author.
 
 The Dorotheus profile is likewise admitted through the engine, facade, and
 `Moira.dorotheus_moon_condition_at(...)`, with
@@ -533,7 +544,9 @@ Every admitted profile evaluation exposes:
 - for Ramesey only, separate remedy applicability and tri-state fulfillment,
   triggering rule identities, source instructions, typed clause evidence, and
   named unresolved fortification gates
-- for Sahl, the selected burnt-path and eighth-rule variants
+- for Sahl, the selected burnt-path and eighth-rule variants; matter results
+  additionally expose the exact profile id, every source-ordered clause,
+  triggered gates, unresolved terms, and numerical completeness
 - `complete_electional_judgement: false` for each profile
 - for `dorotheus_construction_v1`, `source_complete: true`,
   `complete_matter_profile: true`, and `numerically_complete: false`
@@ -616,6 +629,19 @@ Sahl engine-module admission completed:
    absolute tolerance `1e-4 degrees/day`.
 6. Curated root/facade snapshots and the doctrine-surface audit admit the new
    public types and `Moira.sahl_moon_condition_at(...)` method exactly.
+
+Sahl §§43-55 matter-profile admission completed:
+
+1. Six distinct enum values preserve building, demolition, land, wells/rivers,
+   planting, and sowing rather than a generic fourth-house profile.
+2. Per-clause fixtures cover closed sign, house, dignity, bound, light, join,
+   and configuration predicates plus explicit malefic gates.
+3. Every open source term is a typed `not_evaluable` clause; compound tests
+   prove that unknown evidence cannot fabricate a trigger.
+4. REST round trips all six values, embeds the complete Sahl Moon layer, and
+   OpenAPI publishes the exact six-value request enum.
+5. A DE441 J2000 integration case executes every profile through the shared
+   reader and preserves source and reader provenance.
 
 Dorotheus engine-module admission completed:
 
@@ -719,6 +745,38 @@ Provenance honesty passes with explicit limitations: the natal intensifier and
 source-undefined Ramesey fortification predicates are not computed, and kernel
 regression is not presented as historical or empirical proof of astrology.
 
+### 13.5 Lilly perfection profile and five-axis sovereignty audit
+
+`lilly_1647_perfection_v1` is a standalone, bounded event analysis rather than
+a complete election. It admits the six forms explicitly closed by the 1647
+facsimile at printed pp. 110-113 and 125-126: direct perfection, translation
+of light, collection of light, bodily/aspectual prohibition, refranation, and
+frustration. The neutral trace preserves every exact traditional-planet
+aspect, station, and sign ingress in the selected interval.
+
+The fixed policy uses tropical zodiacal Ptolemaic aspects, the canonical Lilly
+planetary moieties, seven traditional planets, one-second tie semantics, and a
+31-day maximum trace. It names UT1 input with internal TT conversion, apparent
+geocentric true-ecliptic-of-date longitude, and Moira's canonical astrometric
+geocentric longitude rate explicitly. Translation requires reception by house, active
+triplicity, or term and no intervening planetary contact. Collection requires
+significators that do not behold one another by sign, application to one
+slower collector, and reception of that collector by each significator in an
+essential dignity. Sign ingress and exact ties remain indeterminate instead
+of acquiring an invented break law.
+
+| Axis | Result | Evidence |
+|---|---|---|
+| Ontology ownership | Pass | The result is a named Lilly event trace and six doctrine witnesses, not a generic traditional success flag. |
+| Derivation ownership | Pass | Each predicate maps to the supplied 1647 facsimile pages; the canonical Moira moiety, bounds, triplicity, and dignity objects supply named computational inputs. |
+| Structural ownership | Pass | Immutable body-state, event, policy, witness, and analysis vessels expose chronology and reception rather than legacy slot arrays. |
+| Policy ownership | Pass | Planet set, aspect scope, moieties, reception, ingress, tie, interval, scoring, and advice semantics are explicit. |
+| Validation ownership | Pass for Lilly v1 admission | Synthetic doctrine isolation, canonical-moiety regression, DE441 chronology, root/facade governance, REST serialization, and OpenAPI schema checks carry the proof. |
+
+Sahl and Bonatti perfection profiles, abscission, and reflection remain
+unadmitted. They cannot be inferred from the Lilly implementation or exposed
+under a generic lineage label.
+
 ## 14. Non-Goals
 
 This packet and admitted public-moment batch do not:
@@ -726,14 +784,15 @@ This packet and admitted public-moment batch do not:
 - admit Western profile scoring, ranking, advice, or continuous-boundary claims
 - define a scored or recommended election for any matter
 - merge the distinct Ramesey, Sahl, and Dorotheus objects with each other or
-  with Robson, Lilly, or Bonatti
+  with Robson, Lilly, or Bonatti; the standalone Lilly perfection profile does
+  not alter those Moon-condition or matter profiles
 - create a historical-outcome dataset
 - claim empirical validation of electional astrology
 - alter the existing generic electional search or scored-window semantics
 
 ## 15. Ledger Decision
 
-P13-U1 is `three_moon_profiles_status_scan_rooted_context_and_dorotheus_construction_public; scoring_and_recommendation_deferred`.
+P13-U1 is `three_moon_profiles_status_scan_matter_layers_and_lilly_perfection_public; scoring_and_recommendation_deferred`.
 
 `ramesey_moon_condition_v1` now exists as an engine-owned, non-scored condition
 profile with a separate non-erasing contingency witness. Its named types and
@@ -769,6 +828,11 @@ all six V.7 computational clauses. Two clauses remain explicitly
 `complete_matter_profile=true`, `numerically_complete=false`, and
 `complete_electional_judgement=false`. No weighted score, advice, ranking, or
 recommendation is inferred from the historical text.
+
+`lilly_1647_perfection_v1` separately admits a bounded event trace and six
+source-owned perfection witnesses. Its engine object, curated exports, facade
+method, and typed REST route expose the complete fixed policy and explicitly
+exclude Sahl, Bonatti, abscission, reflection, scoring, and complete judgement.
 
 The three Moon-condition profiles are scan-admitted through a separate bounded
 status predicate. Callers must provide the exact qualifying-status set; there

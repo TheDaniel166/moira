@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from moira import Moira
+from moira.classical_perfection import ClassicalPerfectionAnalysis
 from moira.western_electional import (
     LunarEclipticDirectionWitness,
     MoonConnectionFlowPolicy,
@@ -17,6 +18,8 @@ from moira.western_electional import (
     SahlBurntPathVariant,
     SahlEighthRuleVariant,
     SahlMoonConditionEvaluation,
+    SahlMatterProfileEvaluation,
+    SahlMatterProfileId,
     WesternElectionClass,
     WesternElectionalProfileId,
     WesternElectionalProfileScan,
@@ -32,7 +35,9 @@ from ..models.western_electional import (
     DorotheusRootedContextRequest,
     RameseyMoonConditionRequest,
     SahlMoonConditionRequest,
+    SahlMatterProfileRequest,
     WesternProfileWindowsRequest,
+    LillyPerfectionRequest,
 )
 
 
@@ -233,6 +238,44 @@ def compute_sahl_moon_condition(
     return result
 
 
+def compute_sahl_matter_profile(
+    engine: Moira,
+    request: SahlMatterProfileRequest,
+) -> SahlMatterProfileEvaluation:
+    """Evaluate one admitted Sahl §§43-55 profile through the public facade."""
+
+    result = engine.sahl_matter_profile_at(
+        request.jd_ut,
+        request.latitude,
+        request.longitude,
+        house_system=request.house_system,
+        profile_id=SahlMatterProfileId(request.profile_id),
+        burnt_path_variant=SahlBurntPathVariant(request.burnt_path_variant),
+        eighth_rule_variant=SahlEighthRuleVariant(request.eighth_rule_variant),
+    )
+    if result.profile_id.value != request.profile_id:
+        raise RuntimeError("facade returned a Sahl matter profile different from the request")
+    return result
+
+
+def compute_lilly_perfection(
+    engine: Moira,
+    request: LillyPerfectionRequest,
+) -> ClassicalPerfectionAnalysis:
+    """Compute one bounded Lilly 1647 event trace through the public facade."""
+
+    result = engine.lilly_perfection_at(
+        request.jd_start,
+        request.jd_end,
+        request.significator_a,
+        request.significator_b,
+        is_day_chart=request.is_day_chart,
+    )
+    if result.profile_id != request.profile_id:
+        raise RuntimeError("facade returned a perfection profile different from the request")
+    return result
+
+
 __all__ = [
     "compute_lunar_ecliptic_direction",
     "compute_dorotheus_construction",
@@ -241,5 +284,7 @@ __all__ = [
     "compute_dorotheus_moon_condition",
     "compute_ramesey_moon_condition",
     "compute_sahl_moon_condition",
+    "compute_sahl_matter_profile",
+    "compute_lilly_perfection",
     "compute_western_profile_windows",
 ]

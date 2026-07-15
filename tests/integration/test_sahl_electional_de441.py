@@ -17,7 +17,10 @@ from moira.spk_reader import SpkReader
 from moira.western_electional import (
     SahlBurntPathVariant,
     SahlMoonConditionStatus,
+    SahlMatterProfileId,
+    SahlMatterProfileStatus,
     SahlRuleState,
+    sahl_matter_profile_at,
     sahl_moon_condition_at,
 )
 
@@ -75,3 +78,32 @@ def test_explicit_source_faithful_sahl_burnt_path_keeps_only_that_rule_indetermi
     assert result.burnt_path_variant is SahlBurntPathVariant.SAHL_TEXT_INDETERMINATE
     assert result.not_evaluable_rule_ids == ("moon_cadent_or_burnt_path",)
     assert result.status is SahlMoonConditionStatus.TRIGGERED
+
+
+@pytest.mark.requires_ephemeris
+def test_j2000_all_six_sahl_matter_profiles_share_de441_and_preserve_source_gates() -> None:
+    kernel = find_planetary_kernel()
+    assert kernel is not None
+    with SpkReader(kernel) as reader:
+        results = tuple(
+            sahl_matter_profile_at(
+                2451545.0,
+                51.5074,
+                -0.1278,
+                house_system=HouseSystem.REGIOMONTANUS,
+                profile_id=profile_id,
+                burnt_path_variant=SahlBurntPathVariant.DYKES_GLOSSARY_FALL_DEGREES,
+                reader=reader,
+            )
+            for profile_id in SahlMatterProfileId
+        )
+
+    assert tuple(item.profile_id for item in results) == tuple(SahlMatterProfileId)
+    assert all(Path(item.reader_provenance).name == "de441.bsp" for item in results)
+    assert all(item.moon_condition.jd_ut == item.jd_ut for item in results)
+    assert all(item.source_complete and item.complete_matter_profile for item in results)
+    assert all(item.not_evaluable_clause_ids for item in results)
+    assert all(
+        item.status in (SahlMatterProfileStatus.TRIGGERED, SahlMatterProfileStatus.INDETERMINATE)
+        for item in results
+    )

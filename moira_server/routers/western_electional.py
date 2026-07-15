@@ -24,8 +24,12 @@ from ..models.western_electional import (
     RameseyMoonConditionResponse,
     SahlMoonConditionRequest,
     SahlMoonConditionResponse,
+    SahlMatterProfileRequest,
+    SahlMatterProfileResponse,
     WesternProfileWindowsRequest,
     WesternProfileWindowsResponse,
+    LillyPerfectionRequest,
+    LillyPerfectionResponse,
 )
 from ..serializers.western_electional import (
     serialize_lunar_ecliptic_direction,
@@ -35,7 +39,9 @@ from ..serializers.western_electional import (
     serialize_dorotheus_rooted_context,
     serialize_ramesey_moon_condition,
     serialize_sahl_moon_condition,
+    serialize_sahl_matter_profile,
     serialize_western_profile_windows,
+    serialize_lilly_perfection,
 )
 from ..services.western_electional import (
     compute_lunar_ecliptic_direction,
@@ -45,7 +51,9 @@ from ..services.western_electional import (
     compute_dorotheus_rooted_context,
     compute_ramesey_moon_condition,
     compute_sahl_moon_condition,
+    compute_sahl_matter_profile,
     compute_western_profile_windows,
+    compute_lilly_perfection,
 )
 
 
@@ -170,6 +178,36 @@ def sahl_moon_condition_route(
 
     return serialize_sahl_moon_condition(
         compute_sahl_moon_condition(engine, request)
+    )
+
+
+@router.post(
+    "/sahl-matter-profile",
+    response_model=SahlMatterProfileResponse,
+)
+def sahl_matter_profile_route(
+    request: SahlMatterProfileRequest,
+    engine: Annotated[Moira, Depends(get_engine)],
+) -> SahlMatterProfileResponse:
+    """Evaluate one source-ordered Sahl §§43-55 matter profile."""
+
+    return serialize_sahl_matter_profile(
+        compute_sahl_matter_profile(engine, request)
+    )
+
+
+@router.post(
+    "/classical-perfection",
+    response_model=LillyPerfectionResponse,
+)
+def lilly_perfection_route(
+    request: LillyPerfectionRequest,
+    engine: Annotated[Moira, Depends(get_engine)],
+) -> LillyPerfectionResponse:
+    """Return a bounded Lilly 1647 exact-event perfection trace."""
+
+    return serialize_lilly_perfection(
+        compute_lilly_perfection(engine, request)
     )
 
 

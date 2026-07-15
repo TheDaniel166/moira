@@ -17,6 +17,13 @@ from moira.western_electional import (
     SahlMoonConditionStatus,
     SahlRuleState,
     SahlRuleWitness,
+    SahlMatterClauseRole,
+    SahlMatterClauseState,
+    SahlMatterClauseWitness,
+    SahlMatterMeasurement,
+    SahlMatterProfileEvaluation,
+    SahlMatterProfileId,
+    SahlMatterProfileStatus,
 )
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
@@ -104,6 +111,61 @@ class _FakeEngine:
         self.calls.append(call)
         return _evaluation(call)
 
+    def sahl_matter_profile_at(
+        self,
+        jd_ut: float,
+        latitude: float,
+        longitude: float,
+        *,
+        house_system: str,
+        profile_id: SahlMatterProfileId,
+        burnt_path_variant: SahlBurntPathVariant,
+        eighth_rule_variant: SahlEighthRuleVariant,
+    ) -> SahlMatterProfileEvaluation:
+        call = {
+            "jd_ut": jd_ut,
+            "latitude": latitude,
+            "longitude": longitude,
+            "house_system": house_system,
+            "profile_id": profile_id,
+            "burnt_path_variant": burnt_path_variant,
+            "eighth_rule_variant": eighth_rule_variant,
+        }
+        self.calls.append(call)
+        moon = _evaluation(call)
+        clause = SahlMatterClauseWitness(
+            clause_id="fixture_source_gate",
+            source_order=1,
+            role=SahlMatterClauseRole.WITNESS,
+            state=SahlMatterClauseState.NOT_EVALUABLE,
+            measurements=(SahlMatterMeasurement("fixture", None),),
+            explanation="Synthetic REST fixture preserving source-gate shape.",
+            source_reference="Sahl, On Elections, sections 43-55",
+            policy_id="synthetic_route_fixture",
+        )
+        matters = {
+            SahlMatterProfileId.BUILDING: "building_a_house",
+            SahlMatterProfileId.DEMOLITION: "destroying_a_house",
+            SahlMatterProfileId.LAND: "buying_and_occupying_land",
+            SahlMatterProfileId.WELLS_AND_RIVERS: "digging_wells_and_diverting_rivers",
+            SahlMatterProfileId.PLANTING: "planting_trees",
+            SahlMatterProfileId.SOWING: "sowing_seed",
+        }
+        return SahlMatterProfileEvaluation(
+            jd_ut=jd_ut,
+            profile_id=profile_id,
+            profile_version="1.0.0",
+            matter=matters[profile_id],
+            status=SahlMatterProfileStatus.INDETERMINATE,
+            moon_condition=moon,
+            clauses=(clause,),
+            triggered_clause_ids=(),
+            not_evaluable_clause_ids=(clause.clause_id,),
+            reader_provenance="synthetic-de441.bsp",
+            authorities=("Sahl, On Elections, sections 43-55",),
+            numerically_complete=False,
+        )
+
 
 @pytest.fixture
 def client_and_engine(monkeypatch: pytest.MonkeyPatch):
@@ -124,6 +186,12 @@ def _payload() -> dict[str, Any]:
         "burnt_path_variant": "dykes_glossary_fall_degrees_19_libra_to_3_scorpio",
         "eighth_rule_variant": "arabic_al_rijal_twelfth_part",
     }
+
+
+def _matter_payload(profile_id: str = "sahl_building_v1") -> dict[str, Any]:
+    payload = _payload()
+    payload["profile_id"] = profile_id
+    return payload
 
 
 def test_sahl_route_preserves_rules_variants_and_transport_provenance(
@@ -215,3 +283,41 @@ def test_openapi_contains_sahl_route_and_variant_schemas(client_and_engine) -> N
     assert "burnt_path_variant" in request["required"]
     assert "eighth_rule_variant" in request["properties"]
     assert "SahlMoonConditionResponse" in schemas
+
+
+@pytest.mark.parametrize("profile_id", tuple(item.value for item in SahlMatterProfileId))
+def test_sahl_matter_route_round_trips_every_profile(client_and_engine, profile_id: str) -> None:
+    client, engine, _ = client_and_engine
+    response = client.post(
+        "/v1/electional/western/sahl-matter-profile",
+        json=_matter_payload(profile_id),
+    )
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["evaluation"]["profile_id"] == profile_id
+    assert body["evaluation"]["moon_condition"]["profile_id"] == "sahl_moon_condition_v1"
+    assert body["evaluation"]["clauses"][0]["state"] == "not_evaluable"
+    assert body["evaluation"]["complete_matter_profile"] is True
+    assert body["transport_provenance"]["facade_entrypoint"] == "Moira.sahl_matter_profile_at"
+    assert engine.calls[0]["profile_id"] is SahlMatterProfileId(profile_id)
+
+
+def test_sahl_matter_openapi_names_all_six_profiles(client_and_engine) -> None:
+    _, _, app = client_and_engine
+    schema = app.openapi()
+    operation = schema["paths"]["/v1/electional/western/sahl-matter-profile"]["post"]
+    assert operation["requestBody"]
+    request = schema["components"]["schemas"]["SahlMatterProfileRequest"]
+    assert request["properties"]["profile_id"]["enum"] == [
+        item.value for item in SahlMatterProfileId
+    ]
+    assert "SahlMatterProfileResponse" in schema["components"]["schemas"]
+
+
+def test_sahl_matter_route_rejects_scoring_and_unknown_profile(client_and_engine) -> None:
+    client, engine, _ = client_and_engine
+    payload = _matter_payload("invented_profile")
+    payload["score"] = True
+    response = client.post("/v1/electional/western/sahl-matter-profile", json=payload)
+    assert response.status_code == 422
+    assert engine.calls == []

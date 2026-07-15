@@ -1,6 +1,6 @@
 # P13-U1 — Western Electional Doctrine Research Dossier
 
-Version: 0.20 (Phase 4 fortification and supplementary-indicator closure)
+Version: 0.21 (Phase 5 Sahl fourth-house matter-profile admission)
 Date: 2026-07-15
 Status: research inventory for the Western electional doctrine layer. The
 companion materials admit distinct `ramesey_moon_condition_v1` and
@@ -26,11 +26,18 @@ The page-confirmed V.8 demolition, V.9 leasing, and V.11 land-purchase matter
 layers are now admitted through the named `dorotheus_matter_profile_at(...)`
 engine/facade surface and
 `POST /v1/electional/western/dorotheus-matter-profile`. Sahl's adjacent
-fourth-house instructions remain deferred because their eastern/ascending,
-"increased in number," separation, and cleansing language still requires
-explicit computational policy.
+fourth-house instructions are now six separate source-complete profiles through
+`sahl_matter_profile_at(...)`, the `Moira` facade, and
+`POST /v1/electional/western/sahl-matter-profile`. Their unresolved
+eastern/ascending, "increased in number," circle-motion, separation, cleansing,
+and adaptation language remains typed `not_evaluable` with visible evidence;
+public admission does not claim those terms are numerically settled.
 
 Changelog:
+- 0.21 - admitted Sahl §§43-55 as six distinct, non-scored matter profiles;
+  computed source-closed sign, dignity, bound, house, light, join, and
+  configuration clauses; preserved every open source term as a typed gate;
+  and promoted the profile enum and full evidence through REST/OpenAPI.
 - 0.20 - typed Dorotheus V.31's four fortification testimonies, preserved
   “made unfortunate” as a source gate, corrected V.6.29 from interchangeable
   outcome rulers to distinct ninth-part/Fortune/next-connection roles, reused
@@ -504,41 +511,42 @@ is Moira-owned numeric fit, not inherited electional judgement.
 
 - **Applying vs. separating** is load-bearing throughout (applying combustion
   worse than separating; applying aspects perfect, separating ones are spent).
-  Requires signed elongation / speed — the engine's `_short_arc_distance`
-  currently folds to [0,180] and cannot express it. **Known engine limitation.**
-- **The aspect-perfection doctrines (now sourced).** These govern *whether a
+  The admitted `AspectMotionWitness` now preserves the selected signed branch,
+  relative speed, and applying/separating state without folding the evidence
+  into an unsigned distance.
+- **The Lilly aspect-perfection doctrines (primary-page verified
+  2026-07-15).** These govern *whether a
   connection actually completes* — the mechanism by which an election "comes to
   perfection." Each is a computable relation over three bodies, applying/
-  separating status, and speed order. Sourced from Lilly, Sahl, Bonatti,
-  Masha'allah [S; confirm definitions in Sahl's *Introduction* + CA pp.111–113]:
+  separating status, and speed order. The supplied Wellcome 1647 facsimile
+  `b30338724` was visually checked at printed pp. 110–113 and 125–126 [V+].
+  Those pages govern `lilly_1647_perfection_v1` only; Sahl, Bonatti,
+  abscission, and reflection remain unadmitted rather than being inferred:
+  - **Direct perfection** — two in-moiety applying significators reach their
+    intended exact conjunction or aspect before an admitted interruption.
   - **Translation of light** — a *faster* third planet separates from one
     significator and applies to the other, carrying light between two that do
-    not directly connect. Outcome: matter completes **via an intermediary**
-    (go-between, letter, messenger). Requires: translator faster than both;
-    separating-from-A + applying-to-B.
+    not directly connect. Lilly requires the translator to be received by the
+    first significator by house, triplicity, or term and to reach the second
+    before another planetary contact.
   - **Collection of light** — two significators that do not aspect each other
-    both apply to a *heavier (slower)* third planet that **receives** them (by
-    rulership/triplicity). Outcome: completed **through an authority/arbiter**.
-    Requires: both significators applying to the collector; collector receives.
+    both apply to a *heavier (slower)* third planet. Lilly says both
+    significators receive the collector in some of their essential dignities;
+    computationally, the collector occupies an essential dignity of each.
   - **Prohibition** — two significators are applying to perfect an aspect, but a
-    third planet interposes (by body or aspect) and **perfects with one first**,
-    cutting off the union. Two sub-types: bodily (conjunction) and by aspect.
-    Outcome: matter **hindered/denied**.
-  - **Frustration** — a near-synonym/companion of prohibition: a third planet
-    conjoins one significator before the two significators complete, so the
-    expected union **fails**. (Some lineages treat frustration and prohibition
-    as one family; preserve the distinction where the source does.)
-  - **Refranation** — while two significators apply, one **stations and turns
-    retrograde before perfection**, withdrawing the connection. Outcome: matter
-    **definitely does not finish**. Requires: applying aspect + station of one
-    body before exactitude.
-  - **Reflection of light** (Masha'allah) — the Moon (or a mediator), not
-    separated from either, **applies to both** and reflects light between two
-    that cannot meet. Outcome: indirect communication.
-  All five/six reduce to: a signed-elongation + relative-speed + station test
-  over a forward window — the same substrate unlock (§10) that void-of-course
-  and applying/separating need. They are the aspect engine's "perfection
-  classifier."
+    swifter third planet interposes (by body or aspect) and perfects
+    successively with **both** before their intended union. Lilly gives bodily
+    and aspectual forms at printed pp. 110–111.
+  - **Frustration** — a swift significator would conjoin a more ponderous one,
+    but the more ponderous significator conjoins another planet first, so the
+    expected union fails (printed pp. 112–113).
+  - **Refranation** — while two significators apply, the swift applying planet
+    **stations and turns retrograde before perfection**, withdrawing the
+    connection (printed p. 111).
+  Reflection of light is not defined by these Lilly pages and is not part of
+  the admitted profile. The public result returns the complete event trace,
+  reception bases, source references, and typed absent/present/indeterminate
+  witnesses; it does not score, advise, or claim complete judgement.
 - **Whole-sign vs. in-orb aspects**: Sahl-via-Dykes holds aspects are whole-sign
   while only conjunctions use moieties and cross sign boundaries; Houlding
   disputes this reading. A named-variant divergence for the aspect engine. [Q]
@@ -757,7 +765,8 @@ separate module-level `ramesey_moon_condition_v1` evaluator admitted on
 | Void of course (A.2) | Variant classifier | Not in generic transport | Existing `void_of_course` supplies the admitted Ramesey exact-perfection/sign-bound product; other variants remain unimplemented |
 | Moon speed / slow (A.1 #9) | Numeric gate | Not in generic transport | `PlanetData.speed` supplies the admitted Ramesey profile; generic scan payload still lacks exposure |
 | Retrograde (B.3) | Gate | **No** | Needs speed sign in payload |
-| Applying vs separating (C.2) | Directional modifier | Not in generic transport | Implemented visibly for Ramesey Rule 1; generic transport and other lineages remain separate |
+| Applying vs separating (C.2) | Directional modifier | Dedicated public witness | `AspectMotionWitness` is public through root/facade/REST; generic predicate transport and lineage interpretation remain separate |
+| Lilly perfection (C.2) | Bounded event trace + six source witnesses | Dedicated public analysis | `lilly_1647_perfection_v1` is public through root/facade and `POST /v1/electional/western/classical-perfection`; no generic traditional mode or complete judgement |
 | Dignity points (B.2) | Weighted scorer | Partly | Needs dignity tables (domicile/exalt/triplicity/term/face) + term-scheme variant |
 | Composite Moon-condition gates (A.1) | Source-ordered profiles | Public single-moment evaluation and bounded status scan admitted | `moira.western_electional`, package root, facade, `Moira`, and bounded REST preserve rule witnesses; the dedicated scan requires an exact caller-selected status set and is not the generic `all_of` or numeric scorer |
 | Planetary hours (D) | Low-weight factor | Yes (computable) | Chaldean-order hour ruler from sunrise/sunset |
@@ -769,8 +778,8 @@ Three cross-cutting transport capabilities still unlock most wider exposure:
 2. **Signed solar elongation + variant orb tables** → the entire combustion/
    cazimi/under-beams family with lineage variants.
 3. **Variant-aware forward next-aspect search** → VOC definitions beyond the
-   admitted Ramesey sign-bound product and the aspect-perfection doctrines
-   (translation/collection/prohibition).
+   admitted Ramesey sign-bound product and non-Lilly perfection profiles. The
+   Lilly v1 product now owns its bounded trace explicitly.
 
 These are the same substrate gaps I flagged in the initial survey (Tier-2/3),
 now grounded in exactly which doctrine each one buys.
@@ -820,7 +829,7 @@ before admission.**
 
 | Gap | Resolution | Location |
 |---|---|---|
-| Aspect-perfection doctrines | Translation, collection, prohibition, frustration, refranation, reflection — full mechanics | §C.2 |
+| Lilly aspect-perfection doctrines | Direct, translation, collection, prohibition, frustration, and refranation verified at printed pp. 110–113 and 125–126; reflection explicitly unadmitted | §C.2 |
 | Debility point values | detriment −5, fall −4, peregrine −5 | §B.2 |
 | Full accidental dignity/debility table | Complete +6…−5 table (houses, motion, star conjunctions, besieging) | §B.4 |
 | Oriental/occidental parameters | ±2 by planet class; Moon by light | §B.3 |
@@ -829,6 +838,12 @@ before admission.**
 | Combustion / under-beams / cazimi reconciliation | Three nested zones: cazimi 17′ ⊂ combustion 8°30′ ⊂ under-beams 17° | §B.1 |
 
 ### Now in hand (primary texts + rule inventories)
+
+- **William Lilly, *Christian Astrology* (1647), Books I-II** — RESOLVED for
+  the admitted perfection profile. The supplied Wellcome Collection scan
+  `b30338724` was visually mapped from PDF to printed pagination; printed
+  pp. 110-113 and 125-126 close the six `lilly_1647_perfection_v1` forms. The
+  PDF remains an external research holding and is not repository data.
 
 - **Dorotheus Book V** — RESOLVED (acquisition + rule inventory). Dykes ʿUmar
   al-Tabarī *Carmen Astrologicum* (2nd ed.) on disk; Book V pp. 231–330.

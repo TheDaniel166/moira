@@ -60,7 +60,7 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
     "scope": "class",
     "id": "moira._facade_special.SpecialTopicsFacadeMixin",
     "risk": "medium",
-    "api": {"frozen": ["eclipse", "primary_directions", "longevity", "phenomena", "occultations", "void_of_course", "electional", "moon_connection_flow_at", "ramesey_moon_condition_at", "sahl_moon_condition_at", "dorotheus_moon_condition_at", "dorotheus_rooted_context_at", "dorotheus_construction_at", "dorotheus_matter_profile_at", "western_electional_profile_windows"], "internal": []},
+        "api": {"frozen": ["eclipse", "primary_directions", "longevity", "phenomena", "occultations", "void_of_course", "electional", "moon_connection_flow_at", "ramesey_moon_condition_at", "sahl_moon_condition_at", "sahl_matter_profile_at", "lilly_perfection_at", "dorotheus_moon_condition_at", "dorotheus_rooted_context_at", "dorotheus_construction_at", "dorotheus_matter_profile_at", "western_electional_profile_windows"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -482,6 +482,61 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
             eighth_rule_variant=eighth_rule_variant,
             reader=self._reader,
             house_policy=house_policy,
+            policy=resolved_policy,
+        )
+
+    def sahl_matter_profile_at(
+        self,
+        jd_ut: float,
+        latitude: float,
+        longitude: float,
+        *,
+        house_system: str,
+        profile_id,
+        burnt_path_variant,
+        eighth_rule_variant=None,
+        house_policy=None,
+        policy=None,
+        moon_policy=None,
+    ):
+        """Evaluate one named Sahl §§43-55 matter profile at one instant."""
+
+        facade = _facade_module()
+        return facade.sahl_matter_profile_at(
+            jd_ut,
+            latitude,
+            longitude,
+            house_system=house_system,
+            profile_id=profile_id,
+            burnt_path_variant=burnt_path_variant,
+            eighth_rule_variant=eighth_rule_variant,
+            reader=self._reader,
+            house_policy=house_policy,
+            policy=policy,
+            moon_policy=moon_policy,
+        )
+
+    def lilly_perfection_at(
+        self,
+        jd_start: float,
+        jd_end: float,
+        significator_a: str,
+        significator_b: str,
+        *,
+        is_day_chart: bool,
+        policy=None,
+    ):
+        """Return a bounded Lilly 1647 perfection trace for two significators."""
+
+        facade = _facade_module()
+        resolved_policy = facade.LILLY_1647_PERFECTION_V1 if policy is None else policy
+        return facade.lilly_perfection_at(
+            jd_start,
+            jd_end,
+            significator_a,
+            significator_b,
+            is_day_chart=is_day_chart,
+            reader=self._reader,
             policy=resolved_policy,
         )
 

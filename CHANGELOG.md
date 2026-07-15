@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [4.3.0] - 2026-07-15
 
 ### Added
+- **Lilly Classical Perfection**: Added the source-owned
+  `lilly_1647_perfection_v1` event analysis through
+  `lilly_perfection_at(...)`, `Moira.lilly_perfection_at(...)`, and
+  `POST /v1/electional/western/classical-perfection`. The bounded response
+  preserves exact-aspect, station, and sign-ingress chronology plus separate
+  direct, translation, collection, prohibition, refranation, and frustration
+  witnesses without scoring or complete-judgement claims.
 - **Neutral Lunar Ecliptic Direction**: Added
   `LunarEclipticDirectionWitness` through
   `lunar_ecliptic_direction_at(...)`, the `Moira` facade, and
@@ -33,6 +40,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `sahl_moon_condition_v1` profile through the engine, facade, and
   `POST /v1/electional/western/sahl-moon-condition`, preserving the burnt-path
   and Arabic/Latin eighth-rule variants explicitly.
+- **Sahl Fourth-House Matter Profiles**: Added separate building, demolition,
+  land, wells/rivers, planting, and sowing profiles for *On Elections*
+  §§43-55 through `sahl_matter_profile_at(...)`, the `Moira` facade, and
+  `POST /v1/electional/western/sahl-matter-profile`. Responses preserve every
+  source clause and typed indeterminacy without scoring or recommendation.
 - **Dorotheus Moon Condition**: Added the eleven-clause
   `dorotheus_moon_condition_v1` profile and separate V.6.15 remedy witness
   through engine, facade, and REST.

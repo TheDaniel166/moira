@@ -15,6 +15,14 @@ from .relationship import MoonConnectionFlowResponse
 
 RAMESEY_PROFILE_ID = "ramesey_moon_condition_v1"
 SAHL_PROFILE_ID = "sahl_moon_condition_v1"
+SAHL_MATTER_PROFILE_IDS = (
+    "sahl_building_v1",
+    "sahl_demolition_v1",
+    "sahl_land_v1",
+    "sahl_wells_and_rivers_v1",
+    "sahl_planting_v1",
+    "sahl_sowing_v1",
+)
 DOROTHEUS_PROFILE_ID = "dorotheus_moon_condition_v1"
 DOROTHEUS_ROOTED_CONTEXT_PROFILE_ID = "dorotheus_rooted_context_v1"
 DOROTHEUS_CONSTRUCTION_PROFILE_ID = "dorotheus_construction_v1"
@@ -30,6 +38,20 @@ WESTERN_PROFILE_SCAN_MIN_STEP_DAYS = 1.0 / 24.0
 RAMESEY_HOUSE_SYSTEMS = tuple(HOUSE_SYSTEM_NAMES)
 SAHL_HOUSE_SYSTEMS = tuple(HOUSE_SYSTEM_NAMES)
 DOROTHEUS_HOUSE_SYSTEMS = tuple(HOUSE_SYSTEM_NAMES)
+LILLY_PERFECTION_PROFILE_ID = "lilly_1647_perfection_v1"
+LILLY_PERFECTION_MAX_SPAN_DAYS = 31.0
+
+TraditionalPlanetValue = Literal[
+    "Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"
+]
+ZodiacSignValue = Literal[
+    "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
+    "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces",
+]
+LillyPerfectionKindValue = Literal[
+    "direct_perfection", "translation_of_light", "collection_of_light",
+    "prohibition", "refranation", "frustration",
+]
 
 RameseyRuleStateValue = Literal["clear", "triggered", "not_evaluable"]
 RameseyStatusValue = Literal[
@@ -67,6 +89,19 @@ DorotheusMatterProfileStatusValue = Literal[
     "clear_of_explicit_profile_impediments",
     "one_or_more_explicit_profile_impediments",
     "descriptive_witnesses_only",
+    "indeterminate",
+]
+SahlMatterProfileIdValue = Literal[
+    "sahl_building_v1",
+    "sahl_demolition_v1",
+    "sahl_land_v1",
+    "sahl_wells_and_rivers_v1",
+    "sahl_planting_v1",
+    "sahl_sowing_v1",
+]
+SahlMatterProfileStatusValue = Literal[
+    "clear_of_explicit_profile_gates",
+    "one_or_more_explicit_profile_gates",
     "indeterminate",
 ]
 LunarEclipticHemisphereValue = Literal[
@@ -186,6 +221,33 @@ SahlEighthRuleVariantValue = Literal[
 
 class SahlMoonConditionRequest(_StrictModel):
     profile_id: Literal["sahl_moon_condition_v1"] = SAHL_PROFILE_ID
+    jd_ut: float
+    latitude: float = Field(ge=-90.0, le=90.0)
+    longitude: float = Field(ge=-180.0, le=180.0)
+    house_system: str
+    burnt_path_variant: SahlBurntPathVariantValue
+    eighth_rule_variant: SahlEighthRuleVariantValue = "arabic_al_rijal_twelfth_part"
+
+    @field_validator("jd_ut", "latitude", "longitude", mode="before")
+    @classmethod
+    def _finite_coordinates(cls, value: Any, info) -> float:
+        return _finite_number(value, info.field_name)
+
+    @field_validator("house_system", mode="before")
+    @classmethod
+    def _known_house_system(cls, value: Any) -> str:
+        if not isinstance(value, str):
+            raise ValueError("house_system must be a string")
+        code = value.strip()
+        if code not in SAHL_HOUSE_SYSTEMS:
+            raise ValueError(
+                f"house_system must be one of {list(SAHL_HOUSE_SYSTEMS)!r}"
+            )
+        return code
+
+
+class SahlMatterProfileRequest(_StrictModel):
+    profile_id: SahlMatterProfileIdValue
     jd_ut: float
     latitude: float = Field(ge=-90.0, le=90.0)
     longitude: float = Field(ge=-180.0, le=180.0)
@@ -413,6 +475,62 @@ class SahlWesternElectionalTransportProvenanceResponse(_StrictModel):
 class SahlMoonConditionResponse(_StrictModel):
     evaluation: SahlMoonConditionEvaluationResponse
     transport_provenance: SahlWesternElectionalTransportProvenanceResponse
+
+
+class SahlMatterClauseWitnessResponse(_StrictModel):
+    clause_id: str
+    source_order: int = Field(ge=1)
+    role: Literal["fortifier", "gate", "outcome", "witness"]
+    state: Literal["satisfied", "clear", "triggered", "observed", "not_evaluable"]
+    measurements: list[SahlMeasurementResponse]
+    explanation: str
+    source_reference: str
+    policy_id: str
+
+
+class SahlMatterProfileEvaluationResponse(_StrictModel):
+    jd_ut: float
+    profile_id: SahlMatterProfileIdValue
+    profile_version: Literal["1.0.0"]
+    matter: Literal[
+        "building_a_house",
+        "destroying_a_house",
+        "buying_and_occupying_land",
+        "digging_wells_and_diverting_rivers",
+        "planting_trees",
+        "sowing_seed",
+    ]
+    status: SahlMatterProfileStatusValue
+    moon_condition: SahlMoonConditionEvaluationResponse
+    clauses: list[SahlMatterClauseWitnessResponse]
+    triggered_clause_ids: list[str]
+    not_evaluable_clause_ids: list[str]
+    reader_provenance: str
+    authorities: list[str]
+    source_complete: Literal[True]
+    complete_matter_profile: Literal[True]
+    numerically_complete: bool
+    complete_electional_judgement: Literal[False]
+    advice_language: Literal["not_provided"]
+    recommendation_language: Literal["not_provided"]
+    scoring: Literal["not_provided"]
+
+
+class SahlMatterProfileTransportProvenanceResponse(_StrictModel):
+    source_module: Literal["moira.western_electional"] = "moira.western_electional"
+    engine_entrypoint: Literal["sahl_matter_profile_at"] = "sahl_matter_profile_at"
+    facade_entrypoint: Literal["Moira.sahl_matter_profile_at"] = "Moira.sahl_matter_profile_at"
+    route_semantics: Literal["single_moment_named_matter_profile"] = "single_moment_named_matter_profile"
+    western_electional_doctrine: Literal["sahl_sections_43_55_admitted"] = "sahl_sections_43_55_admitted"
+    authority: str
+    scoring: Literal["not_provided"] = "not_provided"
+    recommendation_language: Literal["not_provided"] = "not_provided"
+    stage_sequence: list[str]
+
+
+class SahlMatterProfileResponse(_StrictModel):
+    evaluation: SahlMatterProfileEvaluationResponse
+    transport_provenance: SahlMatterProfileTransportProvenanceResponse
 
 
 class DorotheusMeasurementResponse(_StrictModel):
@@ -1144,6 +1262,115 @@ class WesternProfileWindowsResponse(_StrictModel):
     provenance: WesternProfileScanProvenanceResponse
 
 
+class LillyPerfectionRequest(_StrictModel):
+    profile_id: Literal["lilly_1647_perfection_v1"] = LILLY_PERFECTION_PROFILE_ID
+    jd_start: float
+    jd_end: float
+    significator_a: TraditionalPlanetValue
+    significator_b: TraditionalPlanetValue
+    is_day_chart: bool
+
+    @field_validator("jd_start", "jd_end")
+    @classmethod
+    def finite_jd(cls, value: float) -> float:
+        if not math.isfinite(value):
+            raise ValueError("Julian days must be finite")
+        return value
+
+    @model_validator(mode="after")
+    def valid_interval(self):
+        if self.significator_a == self.significator_b:
+            raise ValueError("significators must be distinct")
+        span = self.jd_end - self.jd_start
+        if span <= 0.0 or span > LILLY_PERFECTION_MAX_SPAN_DAYS:
+            raise ValueError("analysis interval must be positive and at most 31 days")
+        return self
+
+
+class ClassicalBodyStateResponse(_StrictModel):
+    body: TraditionalPlanetValue
+    longitude: float
+    speed: float
+    sign: ZodiacSignValue
+
+
+class ClassicalPerfectionEventResponse(_StrictModel):
+    event_id: str
+    jd_ut: float
+    kind: Literal["aspect_exact", "station_retrograde", "station_direct", "sign_ingress"]
+    actor: TraditionalPlanetValue
+    target: TraditionalPlanetValue | None = None
+    aspect: Literal["conjunction", "sextile", "square", "trine", "opposition"] | None = None
+    directional_angle_deg: float | None = None
+    longitude_deg: float | None = None
+    sign_before: ZodiacSignValue | None = None
+    sign_after: ZodiacSignValue | None = None
+
+
+class LillyPerfectionWitnessResponse(_StrictModel):
+    kind: LillyPerfectionKindValue
+    state: Literal["present", "absent", "indeterminate"]
+    actors: list[TraditionalPlanetValue]
+    event_ids: list[str]
+    explanation: str
+    source_reference: str
+    reception_bases: list[str]
+
+
+class LillyPerfectionPolicyResponse(_StrictModel):
+    profile_id: Literal["lilly_1647_perfection_v1"]
+    profile_version: Literal["1.0.0"]
+    aspect_scope: Literal["tropical_zodiacal_ptolemaic_exact"]
+    contact_scope: Literal["summed_planetary_moieties"]
+    ingress_policy: Literal["prior_ingress_makes_application_indeterminate"]
+    tie_policy: Literal["events_within_one_second_are_indeterminate"]
+    translation_reception: Literal["house_triplicity_or_term"]
+    collection_reception: Literal["any_lilly_essential_dignity"]
+    bounds_doctrine: Literal["egyptian"]
+    triplicity_doctrine: Literal["dorothean_sect_active"]
+    planetary_moiety_table: Literal["lilly_1647_traditional_moieties"]
+    longitude_product: Literal["apparent_geocentric_true_ecliptic_of_date"]
+    motion_product: Literal["astrometric_geocentric_longitude_rate"]
+    input_timescale: Literal["ut1_with_internal_tt_ephemeris_conversion"]
+    max_span_days: Literal[31.0]
+
+
+class ClassicalPerfectionEvaluationResponse(_StrictModel):
+    jd_start: float
+    jd_end: float
+    significator_a: TraditionalPlanetValue
+    significator_b: TraditionalPlanetValue
+    is_day_chart: bool
+    profile_id: Literal["lilly_1647_perfection_v1"]
+    profile_version: Literal["1.0.0"]
+    policy: LillyPerfectionPolicyResponse
+    initial_states: list[ClassicalBodyStateResponse]
+    events: list[ClassicalPerfectionEventResponse]
+    witnesses: list[LillyPerfectionWitnessResponse]
+    present_kinds: list[LillyPerfectionKindValue]
+    indeterminate_kinds: list[LillyPerfectionKindValue]
+    reader_provenance: str
+    authorities: list[str]
+    complete_electional_judgement: Literal[False]
+    scoring: Literal["not_provided"]
+    advice_language: Literal["not_provided"]
+
+
+class LillyPerfectionTransportProvenanceResponse(_StrictModel):
+    source_module: Literal["moira.classical_perfection"] = "moira.classical_perfection"
+    engine_entrypoint: Literal["lilly_perfection_at"] = "lilly_perfection_at"
+    facade_entrypoint: Literal["Moira.lilly_perfection_at"] = "Moira.lilly_perfection_at"
+    route_semantics: Literal["bounded_named_perfection_event_trace"] = "bounded_named_perfection_event_trace"
+    doctrine: Literal["lilly_1647_only"] = "lilly_1647_only"
+    excluded_profiles: list[str] = Field(default_factory=lambda: ["sahl", "bonatti", "reflection_of_light"])
+    stage_sequence: list[str]
+
+
+class LillyPerfectionResponse(_StrictModel):
+    evaluation: ClassicalPerfectionEvaluationResponse
+    transport_provenance: LillyPerfectionTransportProvenanceResponse
+
+
 __all__ = [
     "LunarEclipticDirectionRequest",
     "LunarNodeCrossingResponse",
@@ -1157,6 +1384,7 @@ __all__ = [
     "RAMESEY_HOUSE_SYSTEMS",
     "RAMESEY_PROFILE_ID",
     "SAHL_HOUSE_SYSTEMS",
+    "SAHL_MATTER_PROFILE_IDS",
     "SAHL_PROFILE_ID",
     "RameseyClauseWitnessResponse",
     "RameseyMeasurementResponse",
@@ -1179,6 +1407,13 @@ __all__ = [
     "SahlMoonConditionEvaluationResponse",
     "SahlMoonConditionRequest",
     "SahlMoonConditionResponse",
+    "SahlMatterProfileIdValue",
+    "SahlMatterProfileStatusValue",
+    "SahlMatterProfileRequest",
+    "SahlMatterClauseWitnessResponse",
+    "SahlMatterProfileEvaluationResponse",
+    "SahlMatterProfileTransportProvenanceResponse",
+    "SahlMatterProfileResponse",
     "SahlRuleWitnessResponse",
     "SahlWesternElectionalTransportProvenanceResponse",
     "DorotheusClauseWitnessResponse",
@@ -1225,4 +1460,17 @@ __all__ = [
     "WesternProfileScanBoundsResponse",
     "WesternProfileScanProvenanceResponse",
     "WesternProfileWindowsResponse",
+    "LILLY_PERFECTION_PROFILE_ID",
+    "LILLY_PERFECTION_MAX_SPAN_DAYS",
+    "TraditionalPlanetValue",
+    "ZodiacSignValue",
+    "LillyPerfectionKindValue",
+    "LillyPerfectionRequest",
+    "ClassicalBodyStateResponse",
+    "ClassicalPerfectionEventResponse",
+    "LillyPerfectionWitnessResponse",
+    "LillyPerfectionPolicyResponse",
+    "ClassicalPerfectionEvaluationResponse",
+    "LillyPerfectionTransportProvenanceResponse",
+    "LillyPerfectionResponse",
 ]

@@ -1,6 +1,8 @@
 # P13-U1 Western Electional Issues 01-16 — Definitive Implementation Plan
 
-**Status:** active implementation; Phases 1, 2, and 3 complete at their named source boundaries
+**Status:** active implementation; Phases 1 and 3-6 are complete at their
+named source boundaries, Phase 2A is complete, and Phase 2B geometry remains
+explicitly doctrine-source-gated
 **Scope:** the first sixteen unresolved Western electional issues identified
 after the P1-P3 work  
 **Public-surface rule:** an issue is not closed until its admitted product is
@@ -447,7 +449,7 @@ expose the same evidence, and no point score stands in for a source rule.
 
 ---
 
-### Phase 5 — Sahl fourth-house matter profiles (#8)
+### Phase 5 — Sahl fourth-house matter profiles (#8) — COMPLETE AT SOURCE BOUNDARY 2026-07-15
 
 Do not create one broad "fourth-house election." Admit separate profiles in
 source order:
@@ -478,9 +480,39 @@ source order:
 cross-profile discrimination tests, REST round trips, and OpenAPI enums that
 name every admitted profile.
 
+**Implementation result:** all six profiles are admitted as distinct,
+source-ordered objects through `evaluate_sahl_matter_profile(...)`,
+`sahl_matter_profile_at(...)`, `Moira.sahl_matter_profile_at(...)`, and
+`POST /v1/electional/western/sahl-matter-profile`. Each result embeds the
+general section 22 Moon-condition layer and preserves its own full clause set,
+triggered gates, unresolved clauses, authority, policy, and measurements.
+
+Closed source objects compute directly: sign quadruplicities/elements,
+whole-sign configurations, Sahl moiety joins, explicit houses, Lot of Fortune,
+Egyptian bounds, Dorothean triplicity, lunar light increase, and named
+malefic/benefic placements. The held edition does not close "in number,"
+eastern/ascending, circle motion, cleansing, several separation windows, or
+the generic command to adapt a significator. Those phrases are not guessed:
+they are typed `not_evaluable` clauses carrying the relevant observed
+alternatives and Dykes's notes. A false explicit conjunct can still clear a
+compound gate; an unresolved conjunct can never fabricate a trigger.
+
+The public profile enum names exactly `sahl_building_v1`,
+`sahl_demolition_v1`, `sahl_land_v1`, `sahl_wells_and_rivers_v1`,
+`sahl_planting_v1`, and `sahl_sowing_v1`. No aggregate score, advice,
+recommendation, generic fourth-house profile, or complete-election claim is
+provided.
+
 ---
 
-### Phase 6 — Classical perfection doctrines (#12)
+### Phase 6 — Classical perfection doctrines (#12) — LILLY V1 COMPLETE 2026-07-15
+
+**Status:** complete for the named `lilly_1647_perfection_v1` profile. The
+full 1647 Lilly facsimile supplied as Wellcome scan `b30338724` closes direct
+perfection, translation, collection, prohibition, refranation, and
+frustration at printed pp. 110-113 and 125-126. Sahl, Bonatti, abscission, and
+reflection remain separate unadmitted profiles or forms; none is blended into
+the Lilly result.
 
 **Governing object:** a time-ordered sequence of aspectual attempts and exact
 events among named significators, with reception and station/sign changes
@@ -515,6 +547,19 @@ evaluated under a named authorial policy.
    admitted).
 6. Expose a standalone public analysis route before using perfection inside a
    complete electional judgement.
+
+**Implemented public product**
+
+- neutral, time-ordered exact-aspect, station, and sign-ingress trace in
+  `moira/classical_perfection.py`;
+- source-owned six-witness Lilly classifier using the canonical Lilly 1647
+  moiety table and explicit reception policy;
+- package-root and `moira.western_electional` exports;
+- `Moira.lilly_perfection_at(...)` with bound kernel reader;
+- `POST /v1/electional/western/classical-perfection` with a typed 31-day
+  maximum interval and seven traditional-planet enum;
+- no score, advice, recommendation, generic traditional mode, or complete
+  electional judgement.
 
 **Tests**
 
@@ -687,11 +732,11 @@ any unresolved clause remains.
 | 5 | V.31 made unfortunate | source-owned fortification policy | clause-level testimony; no generic-score substitution |
 | 6 | V.6.29 supplementary indicators | distinct ninth-part/Fortune/connection roles | primary Moon-sign lord preserved; no selector or fallback |
 | 7 | Sahl burnt path | source endpoints or explicit variant requirement | cited endpoints and edge tests, or canonical indeterminacy preserved |
-| 8 | Sahl fourth-house profiles | 2/4/5/11 and terminology | six separate public profiles with source-order witnesses |
+| 8 | Sahl fourth-house profiles | **COMPLETE AT SOURCE BOUNDARY 2026-07-15** | six separate public profiles with source-order witnesses and typed unresolved terms |
 | 9 | Ramesey remedy | fortification + hour lord + aspects | tri-state fulfillment; remedy remains non-erasing |
 | 10 | Ptolemaic bounds | **COMPLETE 2026-07-15** | source-traced 12×5 table; Chaldaean day/night split; public source metadata |
 | 11 | signed application/separation | **COMPLETE 2026-07-15** | first-class instantaneous witness, invariants, facade/REST/OpenAPI |
-| 12 | perfection doctrines | 11 + event sequence + reception | event-trace proof for each named doctrine; standalone public route |
+| 12 | perfection doctrines | **LILLY V1 COMPLETE 2026-07-15** | six source-owned classifications, complete event trace, facade, REST, and OpenAPI; Sahl/Bonatti/reflection remain unadmitted |
 | 13 | remaining matters | shared substrate + per-matter sources | each inventory row admitted/deferred/excluded explicitly |
 | 14 | complete judgement | 1-13 as applicable | reconstructible component assembly; typed indeterminacy |
 | 15 | ranking/advice | 14 | transparent Moira-owned ranker; explicit advice admission decision |
@@ -703,7 +748,7 @@ The existing full Dorotheus Book V and Sahl *On Elections* holdings do not need
 to be reacquired. The Bonatti `146 Considerations` PDF and translator's
 introduction are **not** substitutes for the full *Book of Astronomy*.
 
-### Acquire now — blocks remaining Phases 2-6
+### Acquire next — closes remaining source gates and future named variants
 
 1. **ACQUIRED AND APPLIED 2026-07-15:** Ptolemy, *Tetrabiblos*, Book I,
    chapter 20/21, F. E. Robbins Loeb edition. The complete term discussion,
@@ -720,24 +765,27 @@ introduction are **not** substitutes for the full *Book of Astronomy*.
    Needed for issue 9.
 5. **Benjamin Dykes, *The Works of Sahl & Masha'allah*** (complete volume), for
    application/separation, reception, translation, collection, prohibition,
-   and the wider Sahl terminology. Needed for issues 7, 8, 11, and 12.
-6. **William Lilly, *Christian Astrology*, Books I-II**, preferably the 1647
-   facsimile with stable printed page references, including the sections on
-   application, separation, translation, collection, prohibition, frustration,
-   and refranation. Needed for issue 12 and useful as a named comparison
-   profile—not as authority over Dorotheus or Sahl.
+   and the wider Sahl terminology. Needed only before a distinct Sahl
+   perfection profile is admitted; it does not block the completed Lilly v1
+   profile.
+6. **ACQUIRED AND APPLIED 2026-07-15:** William Lilly, *Christian Astrology*,
+   Books I-II, Wellcome Collection 1647 facsimile `b30338724`. Printed
+   pp. 110-113 and 125-126 govern the admitted Lilly v1 perfection profile.
+   The scan is a private research input and is not embedded in the repository.
 7. **Guido Bonatti, *Book of Astronomy* / *Liber Astronomiae*, complete
    Benjamin Dykes translation**, not the *146 Considerations* extract and not
    the translator's introduction. Needed for issue 12 and for any later
    Bonatti-owned judgement or weighting profile.
 
-### Acquire when Phase 5/7 begins
+### Acquire to close remaining Phase 5 gates or when Phase 7 begins
 
 8. The alternate Sahl translation and source parallels cited in the existing
    Sahl inventory notes for §§43-55. We should extract the exact bibliography
    from those notes before purchase; the purpose is to resolve "in number,"
    eastern/ascending, apogee-circle, cleansing, and stakes—not to accumulate
-   redundant editions.
+   redundant editions. Phase 5 is source-complete without this acquisition,
+   but the affected clauses remain numerically `not_evaluable` until stronger
+   source evidence closes them.
 9. The primary source for each medical melothesia scheme before medical or
    surgical profiles are admitted. The existing inventory records multiple
    incompatible schemes; no generic body-sign table should be selected first
