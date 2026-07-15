@@ -43,6 +43,7 @@ def test_construction_route_returns_every_source_layer(client_and_app) -> None:
     body = response.json()
     evaluation = body["evaluation"]
     assert evaluation["profile_id"] == "dorotheus_construction_v1"
+    assert evaluation["profile_version"] == "1.1.0"
     assert evaluation["matter"] == "building_construction"
     assert evaluation["source_complete"] is True
     assert evaluation["complete_matter_profile"] is True
@@ -51,6 +52,15 @@ def test_construction_route_returns_every_source_layer(client_and_app) -> None:
     assert evaluation["moon_condition"]["profile_id"] == "dorotheus_moon_condition_v1"
     assert evaluation["rooted_context"]["profile_id"] == "dorotheus_rooted_context_v1"
     assert len(evaluation["construction_clauses"]) == 6
+    calculation = evaluation["construction_clauses"][0]
+    assert calculation["state"] == "satisfied"
+    assert [item["name"] for item in calculation["measurements"]] == [
+        "moon_true_longitude_mean_ecliptic",
+        "moon_mean_longitude_iers_2010",
+        "lunar_equation",
+        "equation_direction",
+    ]
+    assert calculation["measurements"][3]["value"] == "added"
     assert body["transport_provenance"]["facade_entrypoint"] == "Moira.dorotheus_construction_at"
 
 

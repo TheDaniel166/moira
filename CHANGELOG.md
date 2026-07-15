@@ -23,6 +23,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Dorotheus Construction Profile**: Added the first source-complete matter
   profile, `dorotheus_construction_v1`, covering V.2-V.7 through
   `POST /v1/electional/western/dorotheus-construction`.
+- **Dorothean Matter Profiles**: Added named V.8 demolition, V.9 leasing, and
+  V.11 land-purchase profiles through `dorotheus_matter_profile_at(...)`, the
+  `Moira` facade, and
+  `POST /v1/electional/western/dorotheus-matter-profile`. Results preserve
+  source-ordered clauses and angular topics without scoring or recommendation.
 - **Named Western Profile Windows**: Added
   `scan_western_electional_profile(...)`,
   `Moira.western_electional_profile_windows(...)`, and
@@ -41,6 +46,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   from `complete_electional_judgement=false`. It remains
   `source_complete=true` and `numerically_complete=false` while unresolved
   source clauses remain visible.
+- Dorotheus V.7 increasing-in-calculation now uses a visible signed lunar
+  equation derived from the IERS 2010 mean lunar longitude; the existing REST
+  construction clause exposes both longitudes and the equation direction.
+- Dorotheus V.31 bad places now use the source-defined whole-sign places 3, 6,
+  8, and 12 and are serialized as evaluated booleans through the rooted-context
+  and construction REST responses. Broader "made unfortunate" semantics remain
+  uncomputed.
 
 ### Compatibility
 - All new electional routes and engine objects are additive relative to 4.2.1.

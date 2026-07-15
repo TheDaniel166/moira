@@ -155,16 +155,33 @@ def test_nonquadrant_house_system_is_explicitly_not_evaluable() -> None:
     assert result.root_outcome.moon.house is None
 
 
-def test_matter_witness_keeps_bad_place_uncomputed() -> None:
+def test_matter_witness_evaluates_source_defined_bad_place_set() -> None:
     result = _evaluate(_chart(), matter=western.DorotheusMatter.MERCURIAL_AFFAIRS)
     witness = result.matter_significators[0]
-    assert witness.bad_place_evaluated is False
-    assert witness.bad_place is None
+    assert witness.bad_place_evaluated is True
+    assert witness.bad_place is False
     assert witness.condition in {
         western.DorotheusSignificatorCondition.ONE_OR_MORE_COMPUTED_IMPEDIMENTS,
         western.DorotheusSignificatorCondition.INDETERMINATE,
     }
-    assert any("bad place" in item for item in witness.uncomputed_requirements)
+    assert not any("bad place" in item for item in witness.uncomputed_requirements)
+    assert any("made unfortunate" in item for item in witness.uncomputed_requirements)
+
+
+@pytest.mark.parametrize("mercury", (65.0, 155.0, 215.0, 335.0))
+def test_whole_sign_places_three_six_eight_and_twelve_are_bad(
+    mercury: float,
+) -> None:
+    result = _evaluate(
+        _chart(mercury=mercury),
+        matter=western.DorotheusMatter.MERCURIAL_AFFAIRS,
+    )
+    witness = result.matter_significators[0]
+    assert witness.bad_place is True
+    assert (
+        witness.condition
+        is western.DorotheusSignificatorCondition.ONE_OR_MORE_COMPUTED_IMPEDIMENTS
+    )
 
 
 def test_ephemeral_rejects_natal_and_radical_requires_it() -> None:
@@ -189,5 +206,6 @@ def test_radical_context_preserves_natal_evidence_without_success_gate() -> None
 
 
 def test_policy_is_closed() -> None:
+    assert western.DOROTHEUS_ROOTED_CONTEXT_V1.profile_version == "1.1.0"
     with pytest.raises(ValueError, match="under_rays_degrees"):
         replace(western.DOROTHEUS_ROOTED_CONTEXT_V1, under_rays_degrees=12.0)

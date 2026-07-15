@@ -14,6 +14,8 @@ from ..models.western_electional import (
     DorotheusMoonConditionResponse,
     DorotheusConstructionRequest,
     DorotheusConstructionResponse,
+    DorotheusMatterProfileRequest,
+    DorotheusMatterProfileResponse,
     DorotheusRootedContextRequest,
     DorotheusRootedContextResponse,
     RameseyMoonConditionRequest,
@@ -26,6 +28,7 @@ from ..models.western_electional import (
 from ..serializers.western_electional import (
     serialize_dorotheus_moon_condition,
     serialize_dorotheus_construction,
+    serialize_dorotheus_matter_profile,
     serialize_dorotheus_rooted_context,
     serialize_ramesey_moon_condition,
     serialize_sahl_moon_condition,
@@ -34,6 +37,7 @@ from ..serializers.western_electional import (
 from ..services.western_electional import (
     compute_dorotheus_moon_condition,
     compute_dorotheus_construction,
+    compute_dorotheus_matter_profile,
     compute_dorotheus_rooted_context,
     compute_ramesey_moon_condition,
     compute_sahl_moon_condition,
@@ -72,6 +76,21 @@ def dorotheus_construction_route(
 
     return serialize_dorotheus_construction(
         compute_dorotheus_construction(engine, request)
+    )
+
+
+@router.post(
+    "/dorotheus-matter-profile",
+    response_model=DorotheusMatterProfileResponse,
+)
+def dorotheus_matter_profile_route(
+    request: DorotheusMatterProfileRequest,
+    engine: Annotated[Moira, Depends(get_engine)],
+) -> DorotheusMatterProfileResponse:
+    """Evaluate one named Dorothean V.8, V.9, or V.11 matter profile."""
+
+    return serialize_dorotheus_matter_profile(
+        compute_dorotheus_matter_profile(engine, request)
     )
 
 

@@ -109,11 +109,15 @@ def test_rooted_context_route_preserves_source_owned_witnesses(client_and_engine
     body = response.json()
     evaluation = body["evaluation"]
     assert evaluation["profile_id"] == "dorotheus_rooted_context_v1"
+    assert evaluation["profile_version"] == "1.1.0"
     assert evaluation["matter"] == "land_and_management"
     assert [item["body"] for item in evaluation["matter_significators"]] == [
         Body.SATURN,
         Body.JUPITER,
     ]
+    assert evaluation["matter_significators"][0]["bad_place_evaluated"] is True
+    assert evaluation["matter_significators"][0]["bad_place"] is True
+    assert evaluation["matter_significators"][1]["bad_place"] is False
     assert evaluation["root_outcome"]["pattern"] == "good_root_bad_outcome"
     assert evaluation["complete_electional_judgement"] is False
     assert body["transport_provenance"]["facade_entrypoint"] == "Moira.dorotheus_rooted_context_at"

@@ -46,6 +46,11 @@ _AUTHORITY_V31 = (
     "Dorotheus of Sidon, Carmen Astrologicum, Umar al-Tabari translation, "
     "Book V.31.1-11, printed pp. 276-277"
 )
+_AUTHORITY_BAD_PLACES = (
+    "Dorotheus of Sidon, Carmen Astrologicum, Umar al-Tabari translation, "
+    "Book I.6.28, printed p. 75: places 6, 12, 8, and 3, with the Moon "
+    "rejoicing in the third"
+)
 _TRADITIONAL_BODIES = (
     Body.SUN,
     Body.MOON,
@@ -56,6 +61,7 @@ _TRADITIONAL_BODIES = (
     Body.SATURN,
 )
 _CONFIGURED_OFFSETS = frozenset((0, 2, 3, 4, 6, 8, 9, 10))
+_BAD_WHOLE_SIGN_PLACES = frozenset((3, 6, 8, 12))
 
 
 class WesternElectionClass(str, Enum):
@@ -160,7 +166,6 @@ class DorotheusMatterSignificatorWitness:
     source_reference: str = _AUTHORITY_V31
     uncomputed_requirements: tuple[str, ...] = (
         "V.31 'made unfortunate'; whole-sign malefic configuration is evidence only",
-        "V.31 'bad place' because this passage does not define its place set",
     )
 
     def __post_init__(self) -> None:
@@ -168,8 +173,8 @@ class DorotheusMatterSignificatorWitness:
             self.solar_distance_degrees
         ):
             raise ValueError("solar distance must be finite when supplied")
-        if self.bad_place_evaluated or self.bad_place is not None:
-            raise ValueError("bad-place truth is not admitted in v1")
+        if not self.bad_place_evaluated or not isinstance(self.bad_place, bool):
+            raise ValueError("bad-place truth must be evaluated in v1")
 
 
 @dataclass(frozen=True, slots=True)
@@ -197,11 +202,11 @@ class DorotheusRootedContextPolicy:
     """Closed policy for the first shared Dorothean context vessel."""
 
     profile_id: str = "dorotheus_rooted_context_v1"
-    profile_version: str = "1.0.0"
+    profile_version: str = "1.1.0"
     strength_policy: str = "quadrant_house_angular_succedent_cadent"
     aspect_policy: str = "whole_sign_configuration"
     under_rays_degrees: float = 15.0
-    bad_place_policy: str = "not_admitted_without_passage_owned_place_set"
+    bad_place_policy: str = "whole_sign_places_3_6_8_12_moon_rejoices_in_3"
     next_connection_policy: str = "first_exact_traditional_aspect_before_sign_exit"
 
     def __post_init__(self) -> None:
@@ -233,7 +238,11 @@ class DorotheusRootedContextEvaluation:
     requested_house_system: str
     effective_house_system: str
     house_fallback: bool
-    authorities: tuple[str, ...] = (_AUTHORITY_V6, _AUTHORITY_V31)
+    authorities: tuple[str, ...] = (
+        _AUTHORITY_V6,
+        _AUTHORITY_V31,
+        _AUTHORITY_BAD_PLACES,
+    )
     uncomputed_requirements: tuple[str, ...] = (
         "V.6.29 ninth-part or Lot-of-Fortune ruler variants",
         "a source-owned universal success or auspiciousness score",
@@ -349,7 +358,11 @@ def _matter_witness(
             configured.append(malefic_name)
     asc_sign, _, _ = sign_of(chart.houses.asc)
     looks_at_asc = _whole_sign_offset(planet.sign, asc_sign) in _CONFIGURED_OFFSETS
-    computed_impediment = under_rays or not looks_at_asc
+    whole_sign_place = _whole_sign_offset(asc_sign, planet.sign) + 1
+    bad_place = whole_sign_place in _BAD_WHOLE_SIGN_PLACES and not (
+        body == Body.MOON and whole_sign_place == 3
+    )
+    computed_impediment = under_rays or not looks_at_asc or bad_place
     condition = (
         DorotheusSignificatorCondition.ONE_OR_MORE_COMPUTED_IMPEDIMENTS
         if computed_impediment
@@ -362,8 +375,8 @@ def _matter_witness(
         solar_distance_degrees=distance,
         configured_malefics=tuple(configured),
         looks_at_ascendant=looks_at_asc,
-        bad_place_evaluated=False,
-        bad_place=None,
+        bad_place_evaluated=True,
+        bad_place=bad_place,
         condition=condition,
     )
 

@@ -5,6 +5,8 @@ from __future__ import annotations
 from moira import Moira
 from moira.western_electional import (
     DorotheusMatter,
+    DorotheusMatterProfileEvaluation,
+    DorotheusMatterProfileId,
     DorotheusConstructionEvaluation,
     DorotheusMoonConditionEvaluation,
     DorotheusRootedContextEvaluation,
@@ -22,6 +24,7 @@ from moira.western_electional import (
 from ..models.western_electional import (
     DorotheusMoonConditionRequest,
     DorotheusConstructionRequest,
+    DorotheusMatterProfileRequest,
     DorotheusRootedContextRequest,
     RameseyMoonConditionRequest,
     SahlMoonConditionRequest,
@@ -91,6 +94,30 @@ def compute_dorotheus_construction(
         raise RuntimeError(
             "facade returned a Western electional profile different from the request"
         )
+    return result
+
+
+def compute_dorotheus_matter_profile(
+    engine: Moira,
+    request: DorotheusMatterProfileRequest,
+) -> DorotheusMatterProfileEvaluation:
+    """Evaluate one V.8, V.9, or V.11 profile through the public facade."""
+
+    result = engine.dorotheus_matter_profile_at(
+        request.jd_ut,
+        request.latitude,
+        request.longitude,
+        house_system=request.house_system,
+        profile_id=DorotheusMatterProfileId(request.profile_id),
+        election_class=WesternElectionClass(request.election_class),
+        natal_jd_ut=request.natal_jd_ut,
+        natal_latitude=request.natal_latitude,
+        natal_longitude=request.natal_longitude,
+        natal_house_system=request.natal_house_system,
+        unavoidable_time_urgency=request.unavoidable_time_urgency,
+    )
+    if result.profile_id.value != request.profile_id:
+        raise RuntimeError("facade returned a matter profile different from the request")
     return result
 
 
@@ -182,6 +209,7 @@ def compute_sahl_moon_condition(
 
 __all__ = [
     "compute_dorotheus_construction",
+    "compute_dorotheus_matter_profile",
     "compute_dorotheus_rooted_context",
     "compute_dorotheus_moon_condition",
     "compute_ramesey_moon_condition",

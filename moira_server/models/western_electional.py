@@ -17,6 +17,11 @@ SAHL_PROFILE_ID = "sahl_moon_condition_v1"
 DOROTHEUS_PROFILE_ID = "dorotheus_moon_condition_v1"
 DOROTHEUS_ROOTED_CONTEXT_PROFILE_ID = "dorotheus_rooted_context_v1"
 DOROTHEUS_CONSTRUCTION_PROFILE_ID = "dorotheus_construction_v1"
+DOROTHEUS_MATTER_PROFILE_IDS = (
+    "dorotheus_demolition_v1",
+    "dorotheus_leasing_v1",
+    "dorotheus_land_purchase_v1",
+)
 WESTERN_PROFILE_SCAN_MAX_SPAN_DAYS = 31.0
 WESTERN_PROFILE_SCAN_MAX_POINTS = 256
 WESTERN_PROFILE_SCAN_MAX_WINDOWS = 64
@@ -44,6 +49,17 @@ WesternProfileIdValue = Literal[
 WesternQualificationStatusValue = Literal[
     "clear_of_profile_impediments",
     "one_or_more_profile_impediments",
+    "indeterminate",
+]
+DorotheusMatterProfileIdValue = Literal[
+    "dorotheus_demolition_v1",
+    "dorotheus_leasing_v1",
+    "dorotheus_land_purchase_v1",
+]
+DorotheusMatterProfileStatusValue = Literal[
+    "clear_of_explicit_profile_impediments",
+    "one_or_more_explicit_profile_impediments",
+    "descriptive_witnesses_only",
     "indeterminate",
 ]
 
@@ -525,8 +541,8 @@ class DorotheusMatterSignificatorWitnessResponse(_StrictModel):
     solar_distance_degrees: float | None
     configured_malefics: list[str]
     looks_at_ascendant: bool
-    bad_place_evaluated: Literal[False]
-    bad_place: None
+    bad_place_evaluated: Literal[True]
+    bad_place: bool
     condition: DorotheusSignificatorConditionValue
     source_reference: str
     uncomputed_requirements: list[str]
@@ -729,6 +745,72 @@ class DorotheusConstructionResponse(_StrictModel):
     transport_provenance: DorotheusConstructionTransportProvenanceResponse
 
 
+class DorotheusMatterProfileRequest(DorotheusConstructionRequest):
+    profile_id: DorotheusMatterProfileIdValue
+
+
+class DorotheusAngularPlaceWitnessResponse(_StrictModel):
+    whole_sign_place: Literal[1, 4, 7, 10]
+    topic: str
+    sign: str
+    occupying_fortunes: list[str]
+    configured_fortunes: list[str]
+    occupying_infortunes: list[str]
+    configured_infortunes: list[str]
+    source_meaning: str
+
+
+class DorotheusMatterClauseWitnessResponse(_StrictModel):
+    clause_id: str
+    source_order: int = Field(ge=1)
+    role: Literal["fortifier", "gate", "witness"]
+    state: Literal["satisfied", "clear", "triggered", "observed", "not_evaluable"]
+    measurements: list[DorotheusMeasurementResponse]
+    explanation: str
+    source_reference: str
+
+
+class DorotheusMatterProfileEvaluationResponse(_StrictModel):
+    jd_ut: float
+    profile_id: DorotheusMatterProfileIdValue
+    profile_version: Literal["1.0.0"]
+    matter: Literal["building_demolition", "leasing", "land_purchase"]
+    status: DorotheusMatterProfileStatusValue
+    moon_condition: DorotheusMoonConditionEvaluationResponse
+    rooted_context: DorotheusRootedContextEvaluationResponse
+    clauses: list[DorotheusMatterClauseWitnessResponse]
+    angular_places: list[DorotheusAngularPlaceWitnessResponse]
+    planetary_strengths: list[DorotheusPlacementWitnessResponse]
+    triggered_clause_ids: list[str]
+    not_evaluable_clause_ids: list[str]
+    reader_provenance: str
+    authorities: list[str]
+    source_complete: Literal[True]
+    complete_matter_profile: Literal[True]
+    numerically_complete: bool
+    complete_electional_judgement: Literal[False]
+    advice_language: Literal["not_provided"]
+    recommendation_language: Literal["not_provided"]
+    scoring: Literal["not_provided"]
+
+
+class DorotheusMatterProfileTransportProvenanceResponse(_StrictModel):
+    source_module: Literal["moira.western_electional"] = "moira.western_electional"
+    engine_entrypoint: Literal["dorotheus_matter_profile_at"] = "dorotheus_matter_profile_at"
+    facade_entrypoint: Literal["Moira.dorotheus_matter_profile_at"] = "Moira.dorotheus_matter_profile_at"
+    route_semantics: Literal["single_moment_named_matter_profile"] = "single_moment_named_matter_profile"
+    western_electional_doctrine: Literal["dorotheus_V8_V9_V11_admitted"] = "dorotheus_V8_V9_V11_admitted"
+    authority: str
+    scoring: Literal["not_provided"] = "not_provided"
+    recommendation_language: Literal["not_provided"] = "not_provided"
+    stage_sequence: list[str]
+
+
+class DorotheusMatterProfileResponse(_StrictModel):
+    evaluation: DorotheusMatterProfileEvaluationResponse
+    transport_provenance: DorotheusMatterProfileTransportProvenanceResponse
+
+
 class WesternProfileScanPolicyRequest(_StrictModel):
     step_days: float = 1.0 / 24.0
     merge_gap_days: float | None = None
@@ -909,6 +991,7 @@ __all__ = [
     "DOROTHEUS_PROFILE_ID",
     "DOROTHEUS_ROOTED_CONTEXT_PROFILE_ID",
     "DOROTHEUS_CONSTRUCTION_PROFILE_ID",
+    "DOROTHEUS_MATTER_PROFILE_IDS",
     "RAMESEY_HOUSE_SYSTEMS",
     "RAMESEY_PROFILE_ID",
     "SAHL_HOUSE_SYSTEMS",
@@ -956,6 +1039,14 @@ __all__ = [
     "DorotheusConstructionTransportProvenanceResponse",
     "DorotheusConstructionClauseWitnessResponse",
     "DorotheusSignNatureWitnessResponse",
+    "DorotheusMatterProfileIdValue",
+    "DorotheusMatterProfileStatusValue",
+    "DorotheusMatterProfileRequest",
+    "DorotheusAngularPlaceWitnessResponse",
+    "DorotheusMatterClauseWitnessResponse",
+    "DorotheusMatterProfileEvaluationResponse",
+    "DorotheusMatterProfileTransportProvenanceResponse",
+    "DorotheusMatterProfileResponse",
     "WesternProfileScanPolicyRequest",
     "WesternProfileWindowsRequest",
     "WesternProfileParameterResponse",

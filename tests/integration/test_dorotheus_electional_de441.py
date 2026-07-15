@@ -41,11 +41,16 @@ def test_j2000_construction_profile_composes_every_de441_backed_layer() -> None:
 
     assert Path(result.reader_provenance).name == "de441.bsp"
     assert result.profile_id == "dorotheus_construction_v1"
+    assert result.profile_version == "1.1.0"
     assert result.moon_condition.profile_id == "dorotheus_moon_condition_v1"
     assert result.rooted_context.profile_id == "dorotheus_rooted_context_v1"
     assert result.rooted_context.next_connection is not None
     assert result.sign_nature.ascensional_arc_degrees is not None
-    assert result.construction_clauses[0].state is DorotheusConstructionClauseState.NOT_EVALUABLE
+    calculation = result.construction_clauses[0]
+    assert calculation.state is DorotheusConstructionClauseState.SATISFIED
+    assert calculation.measurements[2].name == "lunar_equation"
+    assert calculation.measurements[2].value == pytest.approx(5.00124, abs=2e-5)
+    assert calculation.measurements[3].value == "added"
     assert result.construction_clauses[2].measurements[1].value != 0.0
     assert result.source_complete is True
     assert result.complete_matter_profile is True

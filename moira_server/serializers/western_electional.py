@@ -5,6 +5,7 @@ from __future__ import annotations
 from moira.western_electional import (
     DorotheusClauseWitness,
     DorotheusConstructionEvaluation,
+    DorotheusMatterProfileEvaluation,
     DorotheusMeasurement,
     DorotheusMoonConditionEvaluation,
     DorotheusPlacementWitness,
@@ -29,6 +30,11 @@ from ..models.western_electional import (
     DorotheusConstructionEvaluationResponse,
     DorotheusConstructionResponse,
     DorotheusConstructionTransportProvenanceResponse,
+    DorotheusAngularPlaceWitnessResponse,
+    DorotheusMatterClauseWitnessResponse,
+    DorotheusMatterProfileEvaluationResponse,
+    DorotheusMatterProfileResponse,
+    DorotheusMatterProfileTransportProvenanceResponse,
     DorotheusMeasurementResponse,
     DorotheusMoonConditionEvaluationResponse,
     DorotheusMoonConditionResponse,
@@ -125,6 +131,18 @@ _DOROTHEUS_CONSTRUCTION_AUTHORITY = (
     "Book V.2-7 and V.31, printed pp. 231-238 and 276-277; "
     "Dykes glossary printed p. 363"
 )
+_DOROTHEUS_MATTER_AUTHORITY = (
+    "Dorotheus of Sidon, Carmen Astrologicum, Umar al-Tabari translation, "
+    "Book V.8, V.9, and V.11, printed pp. 238-243"
+)
+_DOROTHEUS_MATTER_STAGE_SEQUENCE = [
+    "request_and_profile_validation",
+    "facade_reader_resolution",
+    "chart_and_house_construction",
+    "inherited_moon_and_rooted_context",
+    "source_ordered_matter_evaluation",
+    "typed_response_serialization",
+]
 _DOROTHEUS_CONSTRUCTION_STAGE_SEQUENCE = [
     "request_and_radicality_validation",
     "facade_reader_resolution",
@@ -579,6 +597,71 @@ def serialize_dorotheus_construction(
     )
 
 
+def serialize_dorotheus_matter_profile(
+    result: DorotheusMatterProfileEvaluation,
+) -> DorotheusMatterProfileResponse:
+    """Serialize one named V.8, V.9, or V.11 matter profile."""
+
+    evaluation = DorotheusMatterProfileEvaluationResponse(
+        jd_ut=result.jd_ut,
+        profile_id=result.profile_id.value,
+        profile_version=result.profile_version,
+        matter=result.matter,
+        status=result.status.value,
+        moon_condition=serialize_dorotheus_moon_condition(result.moon_condition).evaluation,
+        rooted_context=serialize_dorotheus_rooted_context(result.rooted_context).evaluation,
+        clauses=[
+            DorotheusMatterClauseWitnessResponse(
+                clause_id=item.clause_id,
+                source_order=item.source_order,
+                role=item.role.value,
+                state=item.state.value,
+                measurements=[
+                    _serialize_dorotheus_measurement(measurement)
+                    for measurement in item.measurements
+                ],
+                explanation=item.explanation,
+                source_reference=item.source_reference,
+            )
+            for item in result.clauses
+        ],
+        angular_places=[
+            DorotheusAngularPlaceWitnessResponse(
+                whole_sign_place=item.whole_sign_place,
+                topic=item.topic,
+                sign=item.sign,
+                occupying_fortunes=list(item.occupying_fortunes),
+                configured_fortunes=list(item.configured_fortunes),
+                occupying_infortunes=list(item.occupying_infortunes),
+                configured_infortunes=list(item.configured_infortunes),
+                source_meaning=item.source_meaning,
+            )
+            for item in result.angular_places
+        ],
+        planetary_strengths=[
+            _serialize_context_placement(item) for item in result.planetary_strengths
+        ],
+        triggered_clause_ids=list(result.triggered_clause_ids),
+        not_evaluable_clause_ids=list(result.not_evaluable_clause_ids),
+        reader_provenance=result.reader_provenance,
+        authorities=list(result.authorities),
+        source_complete=result.source_complete,
+        complete_matter_profile=result.complete_matter_profile,
+        numerically_complete=result.numerically_complete,
+        complete_electional_judgement=result.complete_electional_judgement,
+        advice_language=result.advice_language,
+        recommendation_language=result.recommendation_language,
+        scoring=result.scoring,
+    )
+    return DorotheusMatterProfileResponse(
+        evaluation=evaluation,
+        transport_provenance=DorotheusMatterProfileTransportProvenanceResponse(
+            authority=_DOROTHEUS_MATTER_AUTHORITY,
+            stage_sequence=list(_DOROTHEUS_MATTER_STAGE_SEQUENCE),
+        ),
+    )
+
+
 def serialize_western_profile_windows(
     result: WesternElectionalProfileScan,
     *,
@@ -661,6 +744,7 @@ def serialize_western_profile_windows(
 
 __all__ = [
     "serialize_dorotheus_construction",
+    "serialize_dorotheus_matter_profile",
     "serialize_dorotheus_rooted_context",
     "serialize_dorotheus_moon_condition",
     "serialize_ramesey_moon_condition",

@@ -652,8 +652,7 @@ from moira.facade import find_electional_windows, find_electional_moments
 
 ### Western electional moment evaluation
 
-The first admitted source-owned Western profile is separate from generic
-electional search:
+Source-owned Western profiles are separate from generic electional search:
 
 ```python
 from moira import (
@@ -677,10 +676,32 @@ evaluation = engine.ramesey_moon_condition_at(
 | `ramesey_moon_condition_at(jd_ut, latitude, longitude, *, house_system, unavoidable_time_urgency=None, reader=None, house_policy=None, policy=RAMESEY_MOON_CONDITION_V1)` | `RameseyMoonConditionEvaluation` | Low-level JD evaluator with explicit reader support |
 | `evaluate_ramesey_moon_condition(chart, *, ...)` | `RameseyMoonConditionEvaluation` | Evaluate the named profile from an explicitly compatible chart product |
 
-The package root and `moira.facade` export the profile constant, evaluator
-functions, policy/evaluation vessels, rule/clause/measurement/remedy witnesses,
-and three status enums. Results retain all ten source-ordered rules and the
-separate remedy-applicability witness. They deliberately report
+The same public ladder now includes:
+
+| Surface | Returns | Description |
+|---|---|---|
+| `Moira.sahl_moon_condition_at(...)` | `SahlMoonConditionEvaluation` | Single-moment Sahl section 22 Moon-condition evaluation |
+| `Moira.dorotheus_moon_condition_at(...)` | `DorotheusMoonConditionEvaluation` | Single-moment Dorotheus V.6 Moon-condition and remedy witness |
+| `Moira.dorotheus_rooted_context_at(...)` | `DorotheusRootedContextEvaluation` | V.6/V.31 root, outcome, matter-significator, and natal-context evidence |
+| `Moira.dorotheus_construction_at(...)` | `DorotheusConstructionEvaluation` | Complete V.2-V.7 construction matter profile without scoring or recommendation |
+| `Moira.dorotheus_matter_profile_at(..., profile_id=...)` | `DorotheusMatterProfileEvaluation` | Named V.8 demolition, V.9 leasing, or V.11 land-purchase matter profile |
+| `Moira.western_electional_profile_windows(...)` | `WesternElectionalProfileScan` | Bounded discrete status-window scan for one admitted Moon profile |
+
+`dorotheus_construction_v1` exposes the IERS-backed signed lunar equation in
+its first construction clause while retaining the source-unspecified
+ecliptic-crossing clause as `not_evaluable`. Its nested rooted context evaluates
+V.31 bad-place membership as whole-sign places 3, 6, 8, and 12. The corresponding
+REST transports are documented in `wiki/02_services/REST_API_REFERENCE.md`.
+The matter-profile facade accepts an explicit `DorotheusMatterProfileId` and
+uses one stable result vessel for all three topics. The profile id, matter,
+source-ordered clauses, whole-sign angular witnesses, and completeness flags
+remain explicit; V.9 lunar flow is not inferred from the forward connection
+alone.
+
+The package root and `moira.facade` export the admitted profile constants,
+evaluator functions, policy/evaluation vessels, and their named witnesses and
+enums. Results retain their source-ordered rules and explicit unresolved
+semantics. They deliberately report
 `complete_electional_judgement=False`, with no score, advice, recommendation,
 generic search integration, or remedy-fulfillment assessment.
 

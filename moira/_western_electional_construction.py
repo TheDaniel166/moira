@@ -1,9 +1,10 @@
 """Dorotheus Book V.7 construction election profile.
 
 The profile composes the inherited V.2-V.6 and V.31 layers with every clause
-in V.7.  It is source-complete but deliberately non-scored: unresolved lunar
-equation and ecliptic-crossing semantics remain visible rather than being
-replaced with modern approximations.
+in V.7.  It is source-complete but deliberately non-scored.  The lunar
+equation sign is evaluated from an explicitly named IERS mean-longitude
+product; the still-unresolved ecliptic-crossing region remains visible rather
+than being replaced with a modern approximation.
 """
 
 from __future__ import annotations
@@ -63,6 +64,10 @@ _AUTHORITY_CONSTRUCTION = (
 )
 _AUTHORITY_CALCULATION = (
     "Dykes edition glossary, Increasing/decreasing in calculation, printed p. 363"
+)
+_AUTHORITY_MEAN_LUNAR_LONGITUDE = (
+    "IERS Conventions (2010), Chapter 5, section 5.7.2, equation 5.43: "
+    "Delaunay F = L - Omega and mean lunar node Omega, evaluated in TT"
 )
 _TRADITIONAL_BODIES = (
     Body.SUN,
@@ -161,12 +166,15 @@ class DorotheusConstructionClauseWitness:
 @dataclass(frozen=True, slots=True)
 class DorotheusConstructionPolicy:
     profile_id: str = "dorotheus_construction_v1"
-    profile_version: str = "1.0.0"
+    profile_version: str = "1.1.0"
     ascensional_policy: str = "oblique_ascensional_arc_at_election_latitude"
     straight_threshold_degrees: float = 30.0
     configuration_policy: str = "whole_sign_configuration"
     strong_place_policy: str = "quadrant_angular_house"
-    calculation_policy: str = "unresolved_true_minus_mean_lunar_equation"
+    calculation_policy: str = "iers_2010_true_minus_mean_lunar_equation_sign"
+    calculation_position_product: str = (
+        "apparent_geocentric_longitude_mean_ecliptic_and_equinox_of_date"
+    )
     north_crossing_policy: str = "unresolved_ecliptic_region_and_crossing_tolerance"
     latitude_rate_sample_days: float = 0.01
 
@@ -200,6 +208,7 @@ class DorotheusConstructionEvaluation:
         _AUTHORITY_SIGN,
         _AUTHORITY_CONSTRUCTION,
         _AUTHORITY_CALCULATION,
+        _AUTHORITY_MEAN_LUNAR_LONGITUDE,
     )
     matter: str = "building_construction"
     election_class: str = "ephemeral"
@@ -251,6 +260,37 @@ def _measurement(
     threshold: float | str | bool | None = None,
 ) -> DorotheusMeasurement:
     return DorotheusMeasurement(name, value, units, comparison, threshold)
+
+
+def _iers_mean_lunar_longitude_degrees(jd_tt: float) -> float:
+    """Return IERS 2010 mean lunar longitude ``L = F + Omega`` in TT.
+
+    The two polynomials are the Delaunay argument of latitude ``F`` and mean
+    ascending-node longitude ``Omega`` from IERS Conventions (2010), Chapter
+    5, equation 5.43.  Keeping the formula here makes the electional witness
+    independent of an optional validation library while retaining a direct
+    ERFA/SOFA oracle in the tests.
+    """
+
+    if not math.isfinite(jd_tt):
+        raise ValueError("jd_tt must be finite")
+    t = (jd_tt - 2451545.0) / 36525.0
+    arcseconds_to_degrees = 1.0 / 3600.0
+    argument_of_latitude = (
+        335779.526232
+        + t * (
+            1739527262.8478
+            + t * (-12.7512 + t * (-0.001037 + t * 0.00000417))
+        )
+    ) * arcseconds_to_degrees
+    ascending_node = (
+        450160.398036
+        + t * (
+            -6962890.5431
+            + t * (7.4722 + t * (0.007702 + t * -0.00005939))
+        )
+    ) * arcseconds_to_degrees
+    return (argument_of_latitude + ascending_node) % 360.0
 
 
 def _whole_sign_offset(a_sign: str, b_sign: str) -> int:
@@ -402,6 +442,7 @@ def evaluate_dorotheus_construction(
     *,
     moon_condition: DorotheusMoonConditionEvaluation,
     rooted_context: DorotheusRootedContextEvaluation,
+    moon_true_longitude_mean_ecliptic_degrees: float,
     moon_latitude_rate_degrees_per_day: float,
     reader_provenance: str,
     policy: DorotheusConstructionPolicy = DOROTHEUS_CONSTRUCTION_V1,
@@ -412,6 +453,13 @@ def evaluate_dorotheus_construction(
         raise TypeError("policy must be a DorotheusConstructionPolicy")
     if chart.houses is None:
         raise ValueError("construction profile requires a house figure")
+    if (
+        not math.isfinite(moon_true_longitude_mean_ecliptic_degrees)
+        or not 0.0 <= moon_true_longitude_mean_ecliptic_degrees < 360.0
+    ):
+        raise ValueError(
+            "Moon true longitude in the mean ecliptic must be finite in [0, 360)"
+        )
     if not math.isfinite(moon_latitude_rate_degrees_per_day):
         raise ValueError("Moon latitude rate must be finite")
     if moon_condition.jd_ut != chart.jd_ut or rooted_context.jd_ut != chart.jd_ut:
@@ -421,6 +469,13 @@ def evaluate_dorotheus_construction(
 
     moon = chart.planets[Body.MOON]
     sun = chart.planets[Body.SUN]
+    mean_lunar_longitude = _iers_mean_lunar_longitude_degrees(chart.jd_tt)
+    lunar_equation = (
+        moon_true_longitude_mean_ecliptic_degrees
+        - mean_lunar_longitude
+        + 180.0
+    ) % 360.0 - 180.0
+    increasing_in_calculation = lunar_equation > 0.0
     elongation = (moon.longitude - sun.longitude) % 360.0
     increasing_glow = 0.0 < elongation < 180.0
     benefics, strong_places_evaluable = _strong_configured_bodies(
@@ -434,12 +489,41 @@ def evaluate_dorotheus_construction(
             "moon_increasing_in_calculation",
             1,
             DorotheusConstructionClauseRole.FORTIFIER,
-            DorotheusConstructionClauseState.NOT_EVALUABLE,
             (
-                _measurement("moon_true_longitude", moon.longitude, units="degrees"),
-                _measurement("required_missing_quantity", "mean lunar longitude and equation sign"),
+                DorotheusConstructionClauseState.SATISFIED
+                if increasing_in_calculation
+                else DorotheusConstructionClauseState.CLEAR
             ),
-            "The glossary defines calculation by whether the equation is added to the mean position; daily speed or acceleration is not substituted.",
+            (
+                _measurement(
+                    "moon_true_longitude_mean_ecliptic",
+                    moon_true_longitude_mean_ecliptic_degrees,
+                    units="degrees",
+                ),
+                _measurement(
+                    "moon_mean_longitude_iers_2010",
+                    mean_lunar_longitude,
+                    units="degrees",
+                ),
+                _measurement(
+                    "lunar_equation",
+                    lunar_equation,
+                    units="degrees",
+                    comparison=">",
+                    threshold=0.0,
+                ),
+                _measurement(
+                    "equation_direction",
+                    (
+                        "added"
+                        if lunar_equation > 0.0
+                        else "subtracted"
+                        if lunar_equation < 0.0
+                        else "zero"
+                    ),
+                ),
+            ),
+            "The glossary defines increase by adding the equation to mean position. The true Moon is compared with the IERS mean lunar longitude in a shared mean ecliptic-of-date frame; daily speed is not substituted.",
         ),
         _clause(
             "moon_increasing_in_glow",
@@ -633,11 +717,19 @@ def dorotheus_construction_at(
     dt = policy.latitude_rate_sample_days
     moon_before = planet_at(Body.MOON, jd_ut - dt, reader=resolved_reader)
     moon_after = planet_at(Body.MOON, jd_ut + dt, reader=resolved_reader)
+    moon_mean_ecliptic = planet_at(
+        Body.MOON,
+        jd_ut,
+        reader=resolved_reader,
+        nutation=False,
+        jd_tt=chart.jd_tt,
+    )
     latitude_rate = (moon_after.latitude - moon_before.latitude) / (2.0 * dt)
     return evaluate_dorotheus_construction(
         chart,
         moon_condition=moon_condition,
         rooted_context=rooted_context,
+        moon_true_longitude_mean_ecliptic_degrees=moon_mean_ecliptic.longitude,
         moon_latitude_rate_degrees_per_day=latitude_rate,
         reader_provenance=provenance,
         policy=policy,

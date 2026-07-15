@@ -40,9 +40,12 @@ and longitude-or-latitude disengagement clauses remain measured but
   complete natal moment, location, and house-system bundle.
 
 It is available through `Moira.dorotheus_rooted_context_at(...)` and
-`POST /v1/electional/western/dorotheus-rooted-context`. Undefined V.31
-"bad-place" and broader accidental-misfortune semantics remain visible
-uncomputed requirements.
+`POST /v1/electional/western/dorotheus-rooted-context`. V.31 bad-place truth is
+now computed from Dorotheus's explicit whole-sign set: places 3, 6, 8, and 12,
+with the Moon's rejoicing in the third preserved as the named exception.
+Broader "made unfortunate" semantics remain a visible uncomputed requirement;
+the edition glossary says they are *usually* conjunction, square, or opposition
+with an infortune, which is not an exclusive closed rule.
 
 ## First source-complete matter profile
 
@@ -64,9 +67,13 @@ The result distinguishes completeness precisely:
 - `numerically_complete: false`
 - `complete_electional_judgement: false`
 
-Increasing in calculation requires a lawful mean-lunar-position/equation
-product, and "on the ecliptic, rising north" lacks a source-defined crossing
-region or tolerance. Moira preserves both clauses without inventing answers.
+Increasing in calculation now uses the source-defined equation sign: Moira
+compares the Moon's true orbital longitude in the mean ecliptic and equinox of
+date with the IERS 2010 TT mean lunar longitude. The REST clause witness exposes
+both longitudes, the signed equation, and whether it was added or subtracted.
+The independent "on the ecliptic, rising north" clause still lacks a
+source-defined crossing region or tolerance, so it remains `not_evaluable`
+rather than importing a modern orb.
 
 ## Bounded profile-status windows
 
@@ -94,6 +101,30 @@ the 256-point cap completed in approximately 1.2 seconds for each of those two
 profiles on the release workstation; this is operational performance evidence,
 not scientific validation or a cross-platform guarantee.
 
+## Dorothean demolition, leasing, and land profiles
+
+Three additional source-closed matter layers are available through one named
+public contract:
+
+- `dorotheus_demolition_v1` preserves the Moon's southward latitude motion
+  and the separate strengths of Jupiter, Venus, Mars, and Saturn;
+- `dorotheus_leasing_v1` preserves the hiring party, owner/provider,
+  amount/price, and outcome as distinct whole-sign angular topics;
+- `dorotheus_land_purchase_v1` preserves land, trees, vegetation, cultivation,
+  and the watery/twin terrain testimonies of the fourth place.
+
+Public access is available through:
+
+- `dorotheus_matter_profile_at(...)`
+- `Moira.dorotheus_matter_profile_at(...)`
+- `POST /v1/electional/western/dorotheus-matter-profile`
+
+The V.9 lunar-flow clause remains visible as `not_evaluable`: a forward Moon
+connection does not by itself provide the prior separation or a source-owned
+mapping to the four leasing stakes. These profiles do not score, rank, advise,
+or recommend. Sahl's fourth-house building and land instructions remain
+deferred until their unresolved computational language has explicit policy.
+
 ## Compatibility
 
 All electional engine, facade, and REST entry points are additive relative to
@@ -116,7 +147,12 @@ includes:
   Ramesey, Sahl, and Dorotheus Moon profiles;
 - rooted-context, natal-contract, next-connection, and matter-significator
   tests;
-- V.2-V.7 construction invariants and explicit unresolved-clause tests;
+- V.2-V.7 construction invariants, ERFA/SOFA mean-lunar-longitude authority
+  comparison, DE441 equation-sign evidence, and explicit unresolved-crossing
+  tests;
+- V.31 whole-sign bad-place membership and REST serialization tests;
+- V.8/V.9/V.11 source order, angular-topic, latitude-direction, Pisces dual-
+  testimony, DE441, facade, REST, and OpenAPI tests;
 - exact public-export and facade-method governance;
 - typed REST serialization and OpenAPI schema checks for every route;
 - DE441 parity between optimized profile scans and independent single-moment

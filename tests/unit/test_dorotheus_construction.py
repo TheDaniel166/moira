@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import replace
+import math
 
+import erfa
 import pytest
 
 import moira
@@ -87,6 +89,9 @@ def _evaluate(chart: ChartContext) -> western.DorotheusConstructionEvaluation:
         chart,
         moon_condition=moon_condition,
         rooted_context=context,
+        moon_true_longitude_mean_ecliptic_degrees=(
+            chart.planets[Body.MOON].longitude
+        ),
         moon_latitude_rate_degrees_per_day=0.2,
         reader_provenance="synthetic_unit_fixture",
     )
@@ -136,6 +141,7 @@ def test_v3_v4_and_v5_sign_nature_remain_named_evidence() -> None:
 
 def test_v7_preserves_all_six_clauses_and_source_order() -> None:
     result = _evaluate(_chart())
+    assert result.profile_version == "1.1.0"
     assert [clause.source_order for clause in result.construction_clauses] == list(range(1, 7))
     assert [clause.clause_id for clause in result.construction_clauses] == [
         "moon_increasing_in_calculation",
@@ -151,14 +157,43 @@ def test_v7_preserves_all_six_clauses_and_source_order() -> None:
     assert result.scoring == "not_provided"
 
 
-def test_calculation_and_ecliptic_crossing_are_not_replaced_by_proxies() -> None:
+def test_iers_mean_lunar_longitude_matches_erfa_sofa_arguments() -> None:
+    from moira._western_electional_construction import (
+        _iers_mean_lunar_longitude_degrees,
+    )
+
+    for jd_tt in (2415020.0, 2451545.0, 2488070.0):
+        t = (jd_tt - 2451545.0) / 36525.0
+        expected = math.degrees((erfa.faf03(t) + erfa.faom03(t)) % math.tau)
+        assert _iers_mean_lunar_longitude_degrees(jd_tt) == pytest.approx(
+            expected, abs=5e-11
+        )
+
+
+def test_calculation_uses_equation_sign_while_crossing_remains_unresolved() -> None:
     result = _evaluate(_chart())
     calculation, _, crossing = result.construction_clauses[:3]
-    assert calculation.state is western.DorotheusConstructionClauseState.NOT_EVALUABLE
+    assert calculation.state is western.DorotheusConstructionClauseState.SATISFIED
     assert crossing.state is western.DorotheusConstructionClauseState.NOT_EVALUABLE
-    assert "mean lunar longitude" in str(calculation.measurements[1].value)
+    assert [item.name for item in calculation.measurements] == [
+        "moon_true_longitude_mean_ecliptic",
+        "moon_mean_longitude_iers_2010",
+        "lunar_equation",
+        "equation_direction",
+    ]
+    assert calculation.measurements[2].value > 0.0
+    assert calculation.measurements[3].value == "added"
     assert crossing.measurements[1].name == "moon_latitude_rate"
     assert result.numerically_complete is False
+
+
+def test_calculation_distinguishes_added_and_subtracted_equation() -> None:
+    increasing = _evaluate(_chart(moon=220.0)).construction_clauses[0]
+    decreasing = _evaluate(_chart(moon=215.0)).construction_clauses[0]
+    assert increasing.state is western.DorotheusConstructionClauseState.SATISFIED
+    assert increasing.measurements[3].value == "added"
+    assert decreasing.state is western.DorotheusConstructionClauseState.CLEAR
+    assert decreasing.measurements[3].value == "subtracted"
 
 
 def test_angular_whole_sign_benefic_and_malefic_conditions_are_visible() -> None:
@@ -184,5 +219,6 @@ def test_nonquadrant_strong_place_clauses_are_not_evaluable() -> None:
 
 
 def test_policy_is_closed() -> None:
+    assert western.DOROTHEUS_CONSTRUCTION_V1.profile_version == "1.1.0"
     with pytest.raises(ValueError, match="straight_threshold_degrees"):
         replace(western.DOROTHEUS_CONSTRUCTION_V1, straight_threshold_degrees=29.0)

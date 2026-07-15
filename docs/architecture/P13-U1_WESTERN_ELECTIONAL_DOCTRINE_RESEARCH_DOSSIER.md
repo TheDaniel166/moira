@@ -1,6 +1,6 @@
 # P13-U1 — Western Electional Doctrine Research Dossier
 
-Version: 0.16 (P1 public-contract hardening)
+Version: 0.18 (P3 Dorothean matter profiles)
 Date: 2026-07-15
 Status: research inventory for the Western electional doctrine layer. The
 companion materials admit distinct `ramesey_moon_condition_v1` and
@@ -13,12 +13,32 @@ facade, and `POST /v1/electional/western/dorotheus-rooted-context`.
 layers through the same public ladder and
 `POST /v1/electional/western/dorotheus-construction`. It is complete as a
 source-layer matter profile, but not numerically complete: the primary text
-does not supply enough semantics to compute increasing-in-calculation or an
-ecliptic-crossing region/tolerance. The three Moon-condition profiles now have
-a dedicated bounded status-window scan through engine, facade, and REST.
+does not supply an ecliptic-crossing region/tolerance. Increasing in
+calculation is now evaluated from the source-defined lunar equation sign using
+an IERS 2010 mean lunar longitude, and V.31 bad places use Dorotheus's explicit
+whole-sign set from Book I. The three Moon-condition profiles now have a
+dedicated bounded status-window scan through engine, facade, and REST.
 Generic scoring, website, advice, and recommendation surfaces remain deferred.
+The page-confirmed V.8 demolition, V.9 leasing, and V.11 land-purchase matter
+layers are now admitted through the named `dorotheus_matter_profile_at(...)`
+engine/facade surface and
+`POST /v1/electional/western/dorotheus-matter-profile`. Sahl's adjacent
+fourth-house instructions remain deferred because their eastern/ascending,
+"increased in number," separation, and cleansing language still requires
+explicit computational policy.
 
 Changelog:
+- 0.18 - visually page-confirmed Dorotheus V.8, V.9, and V.11 and admitted
+  three non-scored named matter profiles through engine, facade, and typed
+  REST. V.9's unresolved lunar separation/connection-to-stake mapping remains
+  visible as `not_evaluable`; V.11 preserves Pisces's watery and twin terrain
+  testimonies simultaneously. Deferred Sahl's fourth-house profiles rather
+  than inventing policy for unresolved source terms.
+- 0.17 - resolved V.7 increasing-in-calculation through the equation sign
+  between a mean-ecliptic true lunar longitude and the IERS 2010 mean lunar
+  longitude; resolved V.31 bad places as whole-sign places 3, 6, 8, and 12;
+  retained the ecliptic-crossing tolerance and non-exclusive "made
+  unfortunate" semantics as explicit unresolved doctrine.
 - 0.16 - made scan qualification an explicit caller policy, added compact
   per-sample status/rule evidence, reused range-level void-of-course work for
   Ramesey and Sahl scans, and separated construction source completeness,
@@ -729,7 +749,7 @@ separate module-level `ramesey_moon_condition_v1` evaluator admitted on
 | Composite Moon-condition gates (A.1) | Source-ordered profiles | Public single-moment evaluation and bounded status scan admitted | `moira.western_electional`, package root, facade, `Moira`, and bounded REST preserve rule witnesses; the dedicated scan requires an exact caller-selected status set and is not the generic `all_of` or numeric scorer |
 | Planetary hours (D) | Low-weight factor | Yes (computable) | Chaldean-order hour ruler from sunrise/sunset |
 | Radicality (E) | Class-gated evidence | Shared context admitted | `ephemeral` rejects natal input; `radical` requires a complete natal moment/location/house-system bundle; no success gate is invented |
-| Matter-specific overlays (F) | Profile family | Shared context and first complete matter profile admitted | `dorotheus_construction_v1` composes V.2-V.6, V.31, and every V.7 construction clause; later chapter-owned houses and complete electional judgements remain future profile work |
+| Matter-specific overlays (F) | Profile family | Shared context and four matter profiles admitted | `dorotheus_construction_v1` covers V.7; the named matter surface covers V.8 demolition, V.9 leasing, and V.11 land purchase. V.9 lunar flow remains explicitly unresolved; complete electional judgements remain future work |
 
 Three cross-cutting transport capabilities still unlock most wider exposure:
 1. **Body speed in the scan payload** → generic slow-Moon, retrograde, applying/separating predicates.
@@ -851,8 +871,11 @@ choices.
 4. **Treat the shared rooted/matter-significator vessel as bounded and
    complete** for `dorotheus_rooted_context_v1`: it preserves the Moon as root,
    the Moon-sign lord as outcome, the first sign-bounded exact connection, six
-   V.31 matter families, and explicit natal evidence. It is not a complete
-   matter judgement and does not resolve V.31's undefined bad-place set.
+   V.31 matter families, explicit natal evidence, and Dorotheus's whole-sign
+   bad-place set (3, 6, 8, and 12, with the Moon's third-place rejoicing kept as
+   the named exception). It is not a complete matter judgement; V.31's broader
+   "made unfortunate" condition remains evidence-only because the glossary's
+   "usually" does not define an exclusive closed set.
 5. **Named-profile status scanning is bounded and admitted**: the three Moon
    profiles expose sampled windows through
    `scan_western_electional_profile(...)`,
@@ -865,12 +888,21 @@ choices.
    claim continuous truth or exact transitions. Ramesey and Sahl reuse one
    range-level void-of-course computation without changing their single-moment
    rule meaning.
-6. **Generic scoring remains deferred**: the dedicated status scanner does not
+6. **Dorothean matter profiles are bounded and admitted**: V.8 demolition,
+   V.9 leasing, and V.11 land purchase are selected by explicit profile id
+   through `dorotheus_matter_profile_at(...)`,
+   `Moira.dorotheus_matter_profile_at(...)`, and
+   `POST /v1/electional/western/dorotheus-matter-profile`. Whole-sign angular
+   topics, fortune/infortune testimony, lunar latitude direction, and terrain
+   classifications remain visible and non-scored. V.9 lunar flow is
+   `not_evaluable` until a source-owned prior-separation and stake-mapping
+   policy is admitted.
+7. **Generic scoring remains deferred**: the dedicated status scanner does not
    enter the generic numeric-fit scorer, rank results, assess remedy
    fulfillment, scan the rooted context or construction profile, or produce a
    blended universal election. Each additional adapter, scoring product, and
    website surface requires its own admission decision.
-7. **Validation strategy**: per Moira law, each numeric rule (orbs, thresholds,
+8. **Validation strategy**: per Moira law, each numeric rule (orbs, thresholds,
    points) is verified against its **named primary text at the cited page**
    before admission; each variant carries its citation in the profile metadata.
 
@@ -894,6 +926,8 @@ Full 101-claim web extraction with verbatim quotes is preserved at
 
 | Source | Authority tier | Used for |
 |---|---|---|
+| [Hephaistion, *Apotelesmatics* Book III sample (Dykes/Gramaglia)](https://www.astrologicon.org/books/Hephaistio_of_Thebes_Apotelesmatica_Book_III_samples_eng_Dykes.pdf) | primary parallel in translation | III.7.10 confirms distinct longitude-number and northward-latitude construction clauses |
+| [IERS Conventions (2010), Chapter 5](https://iers-conventions.obspm.fr/content/chapter5/icc5.pdf) | primary scientific standard | Section 5.7.2, equation 5.43 supplies TT Delaunay `F = L - Omega` and mean lunar node `Omega` for the mean lunar longitude witness |
 | [Internet Archive `b30323149_0001`](https://archive.org/download/b30323149_0001/b30323149_0001.pdf) — Ramesey, *Astrologia Restaurata* (1654) original facsimile | primary | A.1, A.3; visually confirmed printed pp. 126–127 on 2026-07-14 |
 | iapsop.com — Robson, *Electional Astrology* (1937), full PDF | primary | §2, A.1, A.3, A.4, D, E |
 | renaissanceastrology.com — Ramesey electional intro & Moon (Warnock transcription) | secondary transcription of primary text | readable witness for A.1, A.3, §8 |

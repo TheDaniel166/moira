@@ -145,7 +145,7 @@ Not yet broadly exposed as REST families:
 | dignities | 6 |
 | draconic | 3 |
 | egyptian-bounds | 7 |
-| electional | 6 |
+| electional | 12 |
 | eclipses | 5 |
 | galactic | 6 |
 | galactic-houses | 3 |
@@ -977,6 +977,12 @@ direction.
 | POST | `/v1/electional/moments` | `electional_moments_route` |
 | POST | `/v1/electional/scored` | `electional_scored_route` |
 | POST | `/v1/electional/western/ramesey-moon-condition` | `ramesey_moon_condition_route` |
+| POST | `/v1/electional/western/sahl-moon-condition` | `sahl_moon_condition_route` |
+| POST | `/v1/electional/western/dorotheus-moon-condition` | `dorotheus_moon_condition_route` |
+| POST | `/v1/electional/western/dorotheus-rooted-context` | `dorotheus_rooted_context_route` |
+| POST | `/v1/electional/western/dorotheus-construction` | `dorotheus_construction_route` |
+| POST | `/v1/electional/western/dorotheus-matter-profile` | `dorotheus_matter_profile_route` |
+| POST | `/v1/electional/western/profile-windows` | `western_profile_windows_route` |
 | GET | `/v1/locations/search` | `location_search_route` |
 | POST | `/v1/locations/timezone/validate` | `timezone_validate_route` |
 | GET | `/v1/website/chart-wheel/presets` | `chart_wheel_presets_route` |
@@ -1656,29 +1662,52 @@ the window grouping helper.
 For scored windows, `max_windows` remains chronological early exit; score
 ranks are over the returned windows only and are not a global optimum claim.
 
-The separately admitted Western moment route is:
+The separately admitted Western doctrine routes are:
 
 - `POST /v1/electional/western/ramesey-moon-condition`
+- `POST /v1/electional/western/sahl-moon-condition`
+- `POST /v1/electional/western/dorotheus-moon-condition`
+- `POST /v1/electional/western/dorotheus-rooted-context`
+- `POST /v1/electional/western/dorotheus-construction`
+- `POST /v1/electional/western/dorotheus-matter-profile`
+- `POST /v1/electional/western/profile-windows`
 
-It accepts exactly one finite `jd_ut`, latitude, longitude, an explicit known
-house-system code, the fixed `ramesey_moon_condition_v1` profile id, and an
-optional strict boolean `unavoidable_time_urgency` context. It delegates through
-`Moira.ramesey_moon_condition_at(...)` and returns the complete source-ordered
-ten-rule evaluation: clause and measurement witnesses, triggered and
+The single-moment routes accept one finite `jd_ut`, latitude, longitude, an
+explicit known house-system code, the fixed profile id for the selected route,
+and an optional strict boolean `unavoidable_time_urgency` context where the
+selected profile admits it. They delegate through the corresponding `Moira`
+facade method and return typed source-ordered evaluations: clause and
+measurement witnesses, triggered and
 not-evaluable rule identities, the separate non-erasing remedy witness,
 requested/effective house-system truth, fallback status, reader provenance, and
 the profile's non-complete-judgement language.
 
-Its transport provenance fixes the semantics as
-`single_moment_bounded_profile_evaluation`, names the engine and facade entry
+The construction response carries all inherited V.2-V.6 and V.31 layers plus
+the six V.7 clauses. Its increasing-in-calculation witness exposes the true and
+IERS 2010 mean lunar longitudes, signed equation, and added/subtracted direction.
+Its nested rooted context exposes evaluated V.31 bad-place booleans for
+whole-sign places 3, 6, 8, and 12. The ecliptic-crossing clause remains
+`not_evaluable` because the primary text supplies no crossing region or
+tolerance. The profile-window route is a bounded discrete scan of explicitly
+selected statuses, not an exact-transition solver.
+
+The matter-profile route requires one of `dorotheus_demolition_v1`,
+`dorotheus_leasing_v1`, or `dorotheus_land_purchase_v1`. It exposes the
+source-ordered V.8, V.9, or V.11 clauses, named whole-sign angular topics,
+planetary strength witnesses where applicable, and the inherited Moon/rooted
+context. Leasing remains `numerically_complete: false` because V.9's lunar
+flow requires a prior-separation and stake-mapping policy not supplied by the
+admitted source text. No profile produces a score or recommendation.
+
+Each single-moment transport names its route semantics, engine and facade entry
 points, and reports `scoring: not_provided`,
 `generic_search_integration: not_admitted`,
 `recommendation_language: not_provided`, and
-`remedy_fulfillment_assessment: not_computed`. The route is not a generic
-predicate adapter and does not rank or recommend a time.
+`remedy_fulfillment_assessment: not_computed` where applicable. None of these
+routes is a generic predicate adapter, and none ranks or recommends a time.
 
 These admissions do not expose arbitrary executable predicates or scorers,
-generic Western profile scanning or scoring, additional lineage profiles,
+generic numeric Western scoring, additional lineage profiles,
 auspicious/inauspicious labels, recommendation text, unbounded scans, async
 search jobs, or electional advice language.
 
