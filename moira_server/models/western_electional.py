@@ -17,6 +17,10 @@ SAHL_PROFILE_ID = "sahl_moon_condition_v1"
 DOROTHEUS_PROFILE_ID = "dorotheus_moon_condition_v1"
 DOROTHEUS_ROOTED_CONTEXT_PROFILE_ID = "dorotheus_rooted_context_v1"
 DOROTHEUS_CONSTRUCTION_PROFILE_ID = "dorotheus_construction_v1"
+WESTERN_PROFILE_SCAN_MAX_SPAN_DAYS = 31.0
+WESTERN_PROFILE_SCAN_MAX_POINTS = 256
+WESTERN_PROFILE_SCAN_MAX_WINDOWS = 64
+WESTERN_PROFILE_SCAN_MIN_STEP_DAYS = 1.0 / 24.0
 RAMESEY_HOUSE_SYSTEMS = tuple(HOUSE_SYSTEM_NAMES)
 SAHL_HOUSE_SYSTEMS = tuple(HOUSE_SYSTEM_NAMES)
 DOROTHEUS_HOUSE_SYSTEMS = tuple(HOUSE_SYSTEM_NAMES)
@@ -30,6 +34,16 @@ RameseyStatusValue = Literal[
 RameseyRemedyApplicabilityValue = Literal[
     "not_applicable",
     "applicable",
+    "indeterminate",
+]
+WesternProfileIdValue = Literal[
+    "ramesey_moon_condition_v1",
+    "sahl_moon_condition_v1",
+    "dorotheus_moon_condition_v1",
+]
+WesternQualificationStatusValue = Literal[
+    "clear_of_profile_impediments",
+    "one_or_more_profile_impediments",
     "indeterminate",
 ]
 
@@ -714,6 +728,172 @@ class DorotheusConstructionResponse(_StrictModel):
     transport_provenance: DorotheusConstructionTransportProvenanceResponse
 
 
+class WesternProfileScanPolicyRequest(_StrictModel):
+    step_days: float = 1.0 / 24.0
+    merge_gap_days: float | None = None
+    max_scan_points: int = Field(default=WESTERN_PROFILE_SCAN_MAX_POINTS, ge=2, le=WESTERN_PROFILE_SCAN_MAX_POINTS)
+    max_windows: int = Field(default=WESTERN_PROFILE_SCAN_MAX_WINDOWS, ge=1, le=WESTERN_PROFILE_SCAN_MAX_WINDOWS)
+
+    @field_validator("step_days", "merge_gap_days", mode="before")
+    @classmethod
+    def _finite_policy_values(cls, value: Any, info) -> float | None:
+        if value is None and info.field_name == "merge_gap_days":
+            return None
+        parsed = _finite_number(value, info.field_name)
+        if info.field_name == "step_days" and not WESTERN_PROFILE_SCAN_MIN_STEP_DAYS <= parsed <= 1.0:
+            raise ValueError(
+                f"step_days must be in [{WESTERN_PROFILE_SCAN_MIN_STEP_DAYS:g}, 1]"
+            )
+        if info.field_name == "merge_gap_days" and parsed < 0.0:
+            raise ValueError("merge_gap_days must be non-negative")
+        return parsed
+
+
+class WesternProfileWindowsRequest(_StrictModel):
+    profile_id: WesternProfileIdValue
+    jd_start: float
+    jd_end: float
+    latitude: float = Field(ge=-90.0, le=90.0)
+    longitude: float = Field(ge=-180.0, le=180.0)
+    house_system: str
+    qualification_statuses: list[WesternQualificationStatusValue] = Field(
+        default_factory=lambda: ["clear_of_profile_impediments"], min_length=1, max_length=3
+    )
+    policy: WesternProfileScanPolicyRequest = Field(default_factory=WesternProfileScanPolicyRequest)
+    unavoidable_time_urgency: bool | None = None
+    sahl_burnt_path_variant: SahlBurntPathVariantValue | None = None
+    sahl_eighth_rule_variant: SahlEighthRuleVariantValue | None = None
+    include_qualifying_jds: bool = True
+
+    @field_validator("jd_start", "jd_end", "latitude", "longitude", mode="before")
+    @classmethod
+    def _finite_scan_values(cls, value: Any, info) -> float:
+        return _finite_number(value, info.field_name)
+
+    @field_validator("house_system", mode="before")
+    @classmethod
+    def _known_scan_house_system(cls, value: Any) -> str:
+        if not isinstance(value, str):
+            raise ValueError("house_system must be a string")
+        code = value.strip()
+        if code not in RAMESEY_HOUSE_SYSTEMS:
+            raise ValueError(
+                f"house_system must be one of {list(RAMESEY_HOUSE_SYSTEMS)!r}"
+            )
+        return code
+
+    @field_validator("qualification_statuses")
+    @classmethod
+    def _unique_statuses(cls, value: list[str]) -> list[str]:
+        if len(set(value)) != len(value):
+            raise ValueError("qualification_statuses must not contain duplicates")
+        return value
+
+    @field_validator("unavoidable_time_urgency", "include_qualifying_jds", mode="before")
+    @classmethod
+    def _strict_scan_bools(cls, value: Any, info):
+        if info.field_name == "unavoidable_time_urgency" and value is None:
+            return None
+        if not isinstance(value, bool):
+            raise ValueError(f"{info.field_name} must be a boolean")
+        return value
+
+    @model_validator(mode="after")
+    def _bounded_profile_scan(self) -> "WesternProfileWindowsRequest":
+        if self.jd_end <= self.jd_start:
+            raise ValueError("jd_end must be greater than jd_start")
+        span = self.jd_end - self.jd_start
+        if span > WESTERN_PROFILE_SCAN_MAX_SPAN_DAYS:
+            raise ValueError(
+                f"search span may not exceed {WESTERN_PROFILE_SCAN_MAX_SPAN_DAYS:g} days"
+            )
+        quotient = span / self.policy.step_days
+        nearest = round(quotient)
+        ratio_tolerance = max(
+            1e-12,
+            4.0 * math.ulp(max(abs(self.jd_start), abs(self.jd_end))) / self.policy.step_days,
+        )
+        if abs(quotient - nearest) <= ratio_tolerance:
+            quotient = float(nearest)
+        count = int(math.floor(quotient)) + 1
+        if count > self.policy.max_scan_points:
+            raise ValueError(
+                f"scan point count {count} exceeds maximum {self.policy.max_scan_points}"
+            )
+        if self.profile_id == SAHL_PROFILE_ID:
+            if self.unavoidable_time_urgency is not None:
+                raise ValueError("Sahl profile does not accept unavoidable_time_urgency")
+        elif self.sahl_burnt_path_variant is not None or self.sahl_eighth_rule_variant is not None:
+            raise ValueError("Sahl variants are valid only for the Sahl profile")
+        return self
+
+
+class WesternProfileParameterResponse(_StrictModel):
+    name: str
+    value: str | bool | None
+
+
+class WesternProfileStatusCountResponse(_StrictModel):
+    status: WesternQualificationStatusValue
+    count: int = Field(ge=0)
+
+
+class WesternProfileWindowResponse(_StrictModel):
+    jd_start: float
+    jd_end: float
+    duration_hours: float
+    qualifying_count: int = Field(ge=1)
+    qualifying_jds: list[float] | None
+
+
+class WesternProfileScanPolicyResponse(_StrictModel):
+    step_days: float
+    requested_merge_gap_days: float | None
+    effective_merge_gap_days: float
+    max_scan_points: int
+    max_windows: int
+    qualification_statuses: list[WesternQualificationStatusValue]
+
+
+class WesternProfileScanBoundsResponse(_StrictModel):
+    max_span_days: float = WESTERN_PROFILE_SCAN_MAX_SPAN_DAYS
+    min_step_days: float = WESTERN_PROFILE_SCAN_MIN_STEP_DAYS
+    max_scan_points: int = WESTERN_PROFILE_SCAN_MAX_POINTS
+    max_windows: int = WESTERN_PROFILE_SCAN_MAX_WINDOWS
+
+
+class WesternProfileScanProvenanceResponse(_StrictModel):
+    source_module: Literal["moira._western_electional_scan"] = "moira._western_electional_scan"
+    engine_entrypoint: Literal["scan_western_electional_profile"] = "scan_western_electional_profile"
+    facade_entrypoint: Literal["Moira.western_electional_profile_windows"] = "Moira.western_electional_profile_windows"
+    route_semantics: Literal["bounded_discrete_profile_status_windows"] = "bounded_discrete_profile_status_windows"
+    stage_sequence: list[str]
+
+
+class WesternProfileWindowsResponse(_StrictModel):
+    profile_id: WesternProfileIdValue
+    profile_version: str
+    jd_start: float
+    jd_end: float
+    latitude: float
+    longitude: float
+    house_system: str
+    policy: WesternProfileScanPolicyResponse
+    scan_point_count: int
+    status_counts: list[WesternProfileStatusCountResponse]
+    windows: list[WesternProfileWindowResponse]
+    windows_truncated: bool
+    profile_parameters: list[WesternProfileParameterResponse]
+    predicate_semantics: Literal["profile_status_exact_match_at_discrete_sample"]
+    continuous_boundary_claim: Literal["not_provided"]
+    scoring: Literal["not_provided"]
+    ranking: Literal["not_provided"]
+    advice: Literal["not_provided"]
+    recommendation: Literal["not_provided"]
+    bounds: WesternProfileScanBoundsResponse
+    provenance: WesternProfileScanProvenanceResponse
+
+
 __all__ = [
     "DOROTHEUS_HOUSE_SYSTEMS",
     "DOROTHEUS_PROFILE_ID",
@@ -766,4 +946,13 @@ __all__ = [
     "DorotheusConstructionTransportProvenanceResponse",
     "DorotheusConstructionClauseWitnessResponse",
     "DorotheusSignNatureWitnessResponse",
+    "WesternProfileScanPolicyRequest",
+    "WesternProfileWindowsRequest",
+    "WesternProfileParameterResponse",
+    "WesternProfileStatusCountResponse",
+    "WesternProfileWindowResponse",
+    "WesternProfileScanPolicyResponse",
+    "WesternProfileScanBoundsResponse",
+    "WesternProfileScanProvenanceResponse",
+    "WesternProfileWindowsResponse",
 ]

@@ -695,4 +695,5 @@ def test_electional_routes_are_registered(client: TestClient) -> None:
         "/v1/electional/western/dorotheus-moon-condition",
         "/v1/electional/western/dorotheus-rooted-context",
         "/v1/electional/western/dorotheus-construction",
+        "/v1/electional/western/profile-windows",
     }

@@ -20,6 +20,7 @@ from moira.western_electional import (
     SahlMeasurement,
     SahlMoonConditionEvaluation,
     SahlRuleWitness,
+    WesternElectionalProfileScan,
 )
 
 from ..models.western_electional import (
@@ -48,6 +49,13 @@ from ..models.western_electional import (
     RameseyMoonConditionResponse,
     RameseyRemedyWitnessResponse,
     RameseyRuleWitnessResponse,
+    WesternProfileParameterResponse,
+    WesternProfileScanBoundsResponse,
+    WesternProfileScanPolicyResponse,
+    WesternProfileScanProvenanceResponse,
+    WesternProfileStatusCountResponse,
+    WesternProfileWindowResponse,
+    WesternProfileWindowsResponse,
     WesternElectionalTransportProvenanceResponse,
     SahlClauseWitnessResponse,
     SahlMeasurementResponse,
@@ -569,10 +577,81 @@ def serialize_dorotheus_construction(
     )
 
 
+def serialize_western_profile_windows(
+    result: WesternElectionalProfileScan,
+    *,
+    include_qualifying_jds: bool,
+) -> WesternProfileWindowsResponse:
+    """Serialize sampled profile-status windows without adding judgement."""
+
+    return WesternProfileWindowsResponse(
+        profile_id=result.profile_id.value,
+        profile_version=result.profile_version,
+        jd_start=result.jd_start,
+        jd_end=result.jd_end,
+        latitude=result.latitude,
+        longitude=result.longitude,
+        house_system=result.house_system,
+        policy=WesternProfileScanPolicyResponse(
+            step_days=result.policy.step_days,
+            requested_merge_gap_days=result.policy.merge_gap_days,
+            effective_merge_gap_days=result.policy.effective_merge_gap_days,
+            max_scan_points=result.policy.max_scan_points,
+            max_windows=result.policy.max_windows,
+            qualification_statuses=[
+                status.value for status in result.policy.qualifying_statuses
+            ],
+        ),
+        scan_point_count=result.scan_point_count,
+        status_counts=[
+            WesternProfileStatusCountResponse(
+                status=item.status.value,
+                count=item.count,
+            )
+            for item in result.status_counts
+        ],
+        windows=[
+            WesternProfileWindowResponse(
+                jd_start=window.jd_start,
+                jd_end=window.jd_end,
+                duration_hours=window.duration_hours,
+                qualifying_count=len(window.qualifying_jds),
+                qualifying_jds=(
+                    list(window.qualifying_jds) if include_qualifying_jds else None
+                ),
+            )
+            for window in result.windows
+        ],
+        windows_truncated=result.windows_truncated,
+        profile_parameters=[
+            WesternProfileParameterResponse(name=item.name, value=item.value)
+            for item in result.profile_parameters
+        ],
+        predicate_semantics=result.predicate_semantics,
+        continuous_boundary_claim=result.continuous_boundary_claim,
+        scoring=result.scoring,
+        ranking=result.ranking,
+        advice=result.advice,
+        recommendation=result.recommendation,
+        bounds=WesternProfileScanBoundsResponse(),
+        provenance=WesternProfileScanProvenanceResponse(
+            stage_sequence=[
+                "input_validation",
+                "named_profile_binding",
+                "bounded_discrete_scan",
+                "exact_status_qualification",
+                "sample_merge",
+                "response_serialization",
+            ]
+        ),
+    )
+
+
 __all__ = [
     "serialize_dorotheus_construction",
     "serialize_dorotheus_rooted_context",
     "serialize_dorotheus_moon_condition",
     "serialize_ramesey_moon_condition",
     "serialize_sahl_moon_condition",
+    "serialize_western_profile_windows",
 ]

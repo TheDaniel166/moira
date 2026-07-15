@@ -60,7 +60,7 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
     "scope": "class",
     "id": "moira._facade_special.SpecialTopicsFacadeMixin",
     "risk": "medium",
-    "api": {"frozen": ["eclipse", "primary_directions", "longevity", "phenomena", "occultations", "void_of_course", "electional", "ramesey_moon_condition_at", "sahl_moon_condition_at", "dorotheus_moon_condition_at", "dorotheus_rooted_context_at", "dorotheus_construction_at"], "internal": []},
+    "api": {"frozen": ["eclipse", "primary_directions", "longevity", "phenomena", "occultations", "void_of_course", "electional", "ramesey_moon_condition_at", "sahl_moon_condition_at", "dorotheus_moon_condition_at", "dorotheus_rooted_context_at", "dorotheus_construction_at", "western_electional_profile_windows"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -583,6 +583,39 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
             reader=self._reader,
             house_policy=house_policy,
             policy=resolved_policy,
+        )
+
+    def western_electional_profile_windows(
+        self,
+        jd_start: float,
+        jd_end: float,
+        latitude: float,
+        longitude: float,
+        *,
+        house_system: str,
+        profile_id,
+        scan_policy=None,
+        unavoidable_time_urgency: bool | None = None,
+        sahl_burnt_path_variant=None,
+        sahl_eighth_rule_variant=None,
+        house_policy=None,
+    ):
+        """Scan one admitted Western Moon profile by exact summary status."""
+
+        facade = _facade_module()
+        return facade.scan_western_electional_profile(
+            jd_start,
+            jd_end,
+            latitude,
+            longitude,
+            house_system=house_system,
+            profile_id=profile_id,
+            scan_policy=scan_policy,
+            unavoidable_time_urgency=unavoidable_time_urgency,
+            sahl_burnt_path_variant=sahl_burnt_path_variant,
+            sahl_eighth_rule_variant=sahl_eighth_rule_variant,
+            reader=self._reader,
+            house_policy=house_policy,
         )
 
     def __repr__(self) -> str:

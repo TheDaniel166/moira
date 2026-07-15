@@ -20,6 +20,8 @@ from ..models.western_electional import (
     RameseyMoonConditionResponse,
     SahlMoonConditionRequest,
     SahlMoonConditionResponse,
+    WesternProfileWindowsRequest,
+    WesternProfileWindowsResponse,
 )
 from ..serializers.western_electional import (
     serialize_dorotheus_moon_condition,
@@ -27,6 +29,7 @@ from ..serializers.western_electional import (
     serialize_dorotheus_rooted_context,
     serialize_ramesey_moon_condition,
     serialize_sahl_moon_condition,
+    serialize_western_profile_windows,
 )
 from ..services.western_electional import (
     compute_dorotheus_moon_condition,
@@ -34,10 +37,27 @@ from ..services.western_electional import (
     compute_dorotheus_rooted_context,
     compute_ramesey_moon_condition,
     compute_sahl_moon_condition,
+    compute_western_profile_windows,
 )
 
 
 router = APIRouter(prefix="/v1/electional/western", tags=["electional"])
+
+
+@router.post(
+    "/profile-windows",
+    response_model=WesternProfileWindowsResponse,
+)
+def western_profile_windows_route(
+    request: WesternProfileWindowsRequest,
+    engine: Annotated[Moira, Depends(get_engine)],
+) -> WesternProfileWindowsResponse:
+    """Return bounded discrete windows for one named Moon profile status."""
+
+    return serialize_western_profile_windows(
+        compute_western_profile_windows(engine, request),
+        include_qualifying_jds=request.include_qualifying_jds,
+    )
 
 
 @router.post(

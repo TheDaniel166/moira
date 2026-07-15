@@ -13,6 +13,10 @@ from moira.western_electional import (
     SahlEighthRuleVariant,
     SahlMoonConditionEvaluation,
     WesternElectionClass,
+    WesternElectionalProfileId,
+    WesternElectionalProfileScan,
+    WesternElectionalProfileScanPolicy,
+    WesternElectionalQualificationStatus,
 )
 
 from ..models.western_electional import (
@@ -21,7 +25,48 @@ from ..models.western_electional import (
     DorotheusRootedContextRequest,
     RameseyMoonConditionRequest,
     SahlMoonConditionRequest,
+    WesternProfileWindowsRequest,
 )
+
+
+def compute_western_profile_windows(
+    engine: Moira,
+    request: WesternProfileWindowsRequest,
+) -> WesternElectionalProfileScan:
+    """Scan one named Moon profile through the reader-bound public facade."""
+
+    scan_policy = WesternElectionalProfileScanPolicy(
+        step_days=request.policy.step_days,
+        merge_gap_days=request.policy.merge_gap_days,
+        max_scan_points=request.policy.max_scan_points,
+        max_windows=request.policy.max_windows,
+        qualifying_statuses=tuple(
+            WesternElectionalQualificationStatus(status)
+            for status in request.qualification_statuses
+        ),
+    )
+    burnt = (
+        SahlBurntPathVariant(request.sahl_burnt_path_variant)
+        if request.sahl_burnt_path_variant is not None
+        else None
+    )
+    eighth = (
+        SahlEighthRuleVariant(request.sahl_eighth_rule_variant)
+        if request.sahl_eighth_rule_variant is not None
+        else None
+    )
+    return engine.western_electional_profile_windows(
+        request.jd_start,
+        request.jd_end,
+        request.latitude,
+        request.longitude,
+        house_system=request.house_system,
+        profile_id=WesternElectionalProfileId(request.profile_id),
+        scan_policy=scan_policy,
+        unavoidable_time_urgency=request.unavoidable_time_urgency,
+        sahl_burnt_path_variant=burnt,
+        sahl_eighth_rule_variant=eighth,
+    )
 
 
 def compute_dorotheus_construction(
@@ -141,4 +186,5 @@ __all__ = [
     "compute_dorotheus_moon_condition",
     "compute_ramesey_moon_condition",
     "compute_sahl_moon_condition",
+    "compute_western_profile_windows",
 ]

@@ -1,8 +1,8 @@
 # P13-U1 Western Electional Doctrine Packet
 
-Version: 0.8
+Version: 0.9
 Date: 2026-07-15
-Status: three Moon profiles, the Dorotheus rooted context, and the first complete matter profile are public; generic search/scoring deferred
+Status: three Moon profiles, bounded profile-status scanning, the Dorotheus rooted context, and the first complete matter profile are public; scoring deferred
 Scope: bounded Western electional doctrine beside the generic search transport
 
 ## 1. Doctrine Decision
@@ -638,17 +638,21 @@ routes `/v1/electional/western/ramesey-moon-condition` and
 `/v1/electional/western/sahl-moon-condition` and
 `/v1/electional/western/dorotheus-moon-condition`.
 
-Generic search, scoring, website, advice, and recommendation-language admission
-remain deferred. The generic scanner does not yet carry variant-aware
-forward-aspect provenance, urgent-time context, or the distinction between
-remedy applicability and fulfillment. Repeated forward VOC searches also need
-an explicit caching/performance contract before a broad scan is admitted.
-Each REST route therefore accepts one `jd_ut`, requires an explicit
-house-system code, returns the complete typed evaluation, and reports
-`generic_search_integration: not_admitted` with no score or recommendation.
+Generic scoring, website, advice, and recommendation-language admission remain
+deferred. The three Moon profiles additionally admit a dedicated status
+scanner through `scan_western_electional_profile(...)`,
+`Moira.western_electional_profile_windows(...)`, and
+`POST /v1/electional/western/profile-windows`. Qualification is exact
+membership in a caller-visible status set, defaulting to
+`clear_of_profile_impediments`; every scan returns all three status counts.
+REST limits cadence to at least one hour and at most 256 points. Merged windows
+describe qualifying samples only and make no continuous-boundary claim.
+The single-moment routes continue to accept one `jd_ut`, require an explicit
+house-system code, and return the complete typed evaluation.
 Ramesey and Dorotheus preserve optional urgency context and uncomputed remedy
-fulfillment; Sahl preserves its explicit textual variants. This admission does not
-authorize generic scored-window language.
+fulfillment; Sahl preserves its explicit textual variants. This admission does
+not authorize generic scored-window language, construction-profile scanning,
+or rooted-context qualification.
 
 ### 13.2 Ramesey five-axis sovereignty audit
 
@@ -707,7 +711,7 @@ historical or empirical proof of astrology.
 
 This packet and admitted public-moment batch do not:
 
-- admit generic Western profile scanning, scoring, ranking, or advice
+- admit Western profile scoring, ranking, advice, or continuous-boundary claims
 - define a scored or recommended election for any matter
 - merge the distinct Ramesey, Sahl, and Dorotheus objects with each other or
   with Robson, Lilly, or Bonatti
@@ -717,7 +721,7 @@ This packet and admitted public-moment batch do not:
 
 ## 15. Ledger Decision
 
-P13-U1 is `three_moon_profiles_rooted_context_and_dorotheus_construction_public; generic_search_scoring_and_recommendation_deferred`.
+P13-U1 is `three_moon_profiles_status_scan_rooted_context_and_dorotheus_construction_public; scoring_and_recommendation_deferred`.
 
 `ramesey_moon_condition_v1` now exists as an engine-owned, non-scored condition
 profile with a separate non-erasing contingency witness. Its named types and
@@ -744,7 +748,7 @@ matter-significator, natal-overlay, or complete matter layers.
 sign-bounded next-connection, matter-significator, and natal-evidence vessel.
 It deliberately leaves the undefined V.31 bad-place set, broader accidental
 misfortune semantics, and chapter-owned houses outside admitted matter profiles
-uncomputed. Generic scan integration remains a later bounded admission.
+uncomputed. It is evidence, not an admitted scan predicate.
 
 `dorotheus_construction_v1` is the first source-complete matter profile. Its
 engine object, facade method, and typed REST route preserve V.2-V.6, V.31, and
@@ -752,3 +756,11 @@ all six V.7 computational clauses. Two clauses remain explicitly
 `not_evaluable`; therefore the result reports `source_complete=true` and
 `numerically_complete=false`. No weighted score, advice, ranking, or
 recommendation is inferred from the historical text.
+
+The three Moon-condition profiles are scan-admitted through a separate bounded
+status predicate. It records each sampled status, qualifies by exact requested
+status membership, merges samples under an explicit gap, and returns complete
+status counts. The construction profile is excluded because its two unresolved
+clauses make default clear-window semantics structurally unavailable. The scan
+surface provides no score, rank, advice, recommendation, or exact-transition
+claim and does not alter the generic electional numeric-fit transport.

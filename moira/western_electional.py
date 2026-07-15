@@ -75,6 +75,16 @@ from ._western_electional_construction import (
     dorotheus_construction_at,
     evaluate_dorotheus_construction,
 )
+from ._western_electional_scan import (
+    WesternElectionalProfileId,
+    WesternElectionalProfileParameter,
+    WesternElectionalProfileScan,
+    WesternElectionalProfileScanPolicy,
+    WesternElectionalProfileWindow,
+    WesternElectionalQualificationStatus,
+    WesternElectionalStatusCount,
+    scan_western_electional_profile,
+)
 
 __all__ = [
     "RameseyRuleState",
@@ -138,6 +148,14 @@ __all__ = [
     "DOROTHEUS_CONSTRUCTION_V1",
     "evaluate_dorotheus_construction",
     "dorotheus_construction_at",
+    "WesternElectionalProfileId",
+    "WesternElectionalQualificationStatus",
+    "WesternElectionalProfileParameter",
+    "WesternElectionalProfileScanPolicy",
+    "WesternElectionalStatusCount",
+    "WesternElectionalProfileWindow",
+    "WesternElectionalProfileScan",
+    "scan_western_electional_profile",
 ]
 
 

@@ -1,6 +1,6 @@
 # P13-U1 — Western Electional Doctrine Research Dossier
 
-Version: 0.14 (first complete matter profile admitted)
+Version: 0.15 (bounded named-profile scanning admitted)
 Date: 2026-07-15
 Status: research inventory for the Western electional doctrine layer. The
 companion materials admit distinct `ramesey_moon_condition_v1` and
@@ -14,10 +14,15 @@ layers through the same public ladder and
 `POST /v1/electional/western/dorotheus-construction`. It is complete as a
 source-layer matter profile, but not numerically complete: the primary text
 does not supply enough semantics to compute increasing-in-calculation or an
-ecliptic-crossing region/tolerance. Generic search, scoring, website, advice,
-and recommendation surfaces remain deferred.
+ecliptic-crossing region/tolerance. The three Moon-condition profiles now have
+a dedicated bounded status-window scan through engine, facade, and REST.
+Generic scoring, website, advice, and recommendation surfaces remain deferred.
 
 Changelog:
+- 0.15 - admitted discrete, bounded status-window scanning for the Ramesey,
+  Sahl, and Dorotheus Moon-condition profiles. Qualification is an exact,
+  caller-visible status set; results preserve per-status counts and make no
+  score, rank, continuous-boundary, advice, or recommendation claim.
 - 0.14 - page-confirmed Dorotheus V.2-5, V.7, and the edition glossary entry
   for increasing/decreasing in calculation; admitted the non-scored
   `dorotheus_construction_v1` matter profile through engine, facade, and REST.
@@ -843,15 +848,18 @@ choices.
    the Moon-sign lord as outcome, the first sign-bounded exact connection, six
    V.31 matter families, and explicit natal evidence. It is not a complete
    matter judgement and does not resolve V.31's undefined bad-place set.
-5. **Generic search transport remains deferred by explicit decision**: the
-   single-moment facade and REST vessel are admitted, but variant-aware
-   forward-aspect provenance, remedy applicability versus fulfillment, and a
-   forward-VOC caching/performance contract must be defined before proposing
-   any scan-payload, predicate, or scoring admission.
-6. **Profile-first rollout**: the next admission is the first complete
-   matter-specific profile built on the rooted vessel, not a blended universal
-   election. Each additional profile, generic search adapter, scoring product,
-   and website surface requires its own admission decision.
+5. **Named-profile status scanning is bounded and admitted**: the three Moon
+   profiles expose sampled windows through
+   `scan_western_electional_profile(...)`,
+   `Moira.western_electional_profile_windows(...)`, and
+   `POST /v1/electional/western/profile-windows`. The maximum is 256 points;
+   REST cadence is at least one hour. Windows merge qualifying samples only
+   and do not claim continuous truth or exact transitions.
+6. **Generic scoring remains deferred**: the dedicated status scanner does not
+   enter the generic numeric-fit scorer, rank results, assess remedy
+   fulfillment, scan the rooted context or construction profile, or produce a
+   blended universal election. Each additional adapter, scoring product, and
+   website surface requires its own admission decision.
 7. **Validation strategy**: per Moira law, each numeric rule (orbs, thresholds,
    points) is verified against its **named primary text at the cited page**
    before admission; each variant carries its citation in the profile metadata.

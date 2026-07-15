@@ -936,6 +936,14 @@ from .western_electional import (
     DOROTHEUS_CONSTRUCTION_V1,
     evaluate_dorotheus_construction,
     dorotheus_construction_at,
+    WesternElectionalProfileId,
+    WesternElectionalQualificationStatus,
+    WesternElectionalProfileParameter,
+    WesternElectionalProfileScanPolicy,
+    WesternElectionalStatusCount,
+    WesternElectionalProfileWindow,
+    WesternElectionalProfileScan,
+    scan_western_electional_profile,
 )
 from .muhurta import (
     MuhurtaPolicy,
@@ -1871,6 +1879,10 @@ __all__ = [
     "DorotheusConstructionPolicy", "DorotheusConstructionEvaluation",
     "DOROTHEUS_CONSTRUCTION_V1", "evaluate_dorotheus_construction",
     "dorotheus_construction_at",
+    "WesternElectionalProfileId", "WesternElectionalQualificationStatus",
+    "WesternElectionalProfileParameter", "WesternElectionalProfileScanPolicy",
+    "WesternElectionalStatusCount", "WesternElectionalProfileWindow",
+    "WesternElectionalProfileScan", "scan_western_electional_profile",
     # Muhurta (Tier 2 Vedic competitive edge work)
     "MuhurtaPolicy", "MuhurtaClassification", "MuhurtaScore",
     "classify_muhurta", "score_muhurta",

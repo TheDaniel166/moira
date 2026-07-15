@@ -610,6 +610,14 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     'DorotheusSignNatureWitness',
     'dorotheus_construction_at',
     'evaluate_dorotheus_construction',
+    'WesternElectionalProfileId',
+    'WesternElectionalQualificationStatus',
+    'WesternElectionalProfileParameter',
+    'WesternElectionalProfileScanPolicy',
+    'WesternElectionalStatusCount',
+    'WesternElectionalProfileWindow',
+    'WesternElectionalProfileScan',
+    'scan_western_electional_profile',
 })
 
 _EXPECTED_ROOT_ONLY_NAMES = {
@@ -952,6 +960,7 @@ _EXPECTED_MOIRA_METHODS.update({
 'ashtakavarga',
     'dorotheus_rooted_context_at',
     'dorotheus_construction_at',
+    'western_electional_profile_windows',
     'ashtakavarga_for_chart',
     'ashtakavarga_profile',
     'ashtakavarga_sign_profile',
