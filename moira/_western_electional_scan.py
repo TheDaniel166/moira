@@ -8,11 +8,14 @@ or claim of continuous truth between sampled instants.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import Enum
 
+from .chart import create_chart
+from .constants import Body
 from .houses import HousePolicy
 from .spk_reader import SpkReader, get_reader
+from .void_of_course import VoidOfCourseWindow, void_periods_in_range
 
 
 __all__ = [
@@ -21,6 +24,7 @@ __all__ = [
     "WesternElectionalProfileParameter",
     "WesternElectionalProfileScanPolicy",
     "WesternElectionalStatusCount",
+    "WesternElectionalSampleWitness",
     "WesternElectionalProfileWindow",
     "WesternElectionalProfileScan",
     "scan_western_electional_profile",
@@ -51,14 +55,11 @@ class WesternElectionalProfileParameter:
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalProfileScanPolicy:
+    qualifying_statuses: tuple[WesternElectionalQualificationStatus, ...]
     step_days: float = 1.0 / 24.0
     merge_gap_days: float | None = None
     max_scan_points: int = 256
     max_windows: int = 64
-    qualifying_statuses: tuple[WesternElectionalQualificationStatus, ...] = (
-        WesternElectionalQualificationStatus.CLEAR,
-    )
-
     def __post_init__(self) -> None:
         if (
             isinstance(self.step_days, bool)
@@ -112,6 +113,25 @@ class WesternElectionalStatusCount:
 
 
 @dataclass(frozen=True, slots=True)
+class WesternElectionalSampleWitness:
+    jd_ut: float
+    status: WesternElectionalQualificationStatus
+    qualifies: bool
+    triggered_rule_ids: tuple[str, ...]
+    not_evaluable_rule_ids: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if not math.isfinite(self.jd_ut):
+            raise ValueError("sample JD must be finite")
+        if len(set(self.triggered_rule_ids)) != len(self.triggered_rule_ids):
+            raise ValueError("triggered rule IDs must be unique")
+        if len(set(self.not_evaluable_rule_ids)) != len(self.not_evaluable_rule_ids):
+            raise ValueError("not-evaluable rule IDs must be unique")
+        if set(self.triggered_rule_ids) & set(self.not_evaluable_rule_ids):
+            raise ValueError("one rule cannot be both triggered and not evaluable")
+
+
+@dataclass(frozen=True, slots=True)
 class WesternElectionalProfileWindow:
     jd_start: float
     jd_end: float
@@ -144,6 +164,7 @@ class WesternElectionalProfileScan:
     policy: WesternElectionalProfileScanPolicy
     scan_point_count: int
     status_counts: tuple[WesternElectionalStatusCount, ...]
+    samples: tuple[WesternElectionalSampleWitness, ...]
     windows: tuple[WesternElectionalProfileWindow, ...]
     windows_truncated: bool
     profile_parameters: tuple[WesternElectionalProfileParameter, ...]
@@ -161,6 +182,33 @@ class WesternElectionalProfileScan:
         statuses = tuple(item.status for item in self.status_counts)
         if statuses != tuple(WesternElectionalQualificationStatus):
             raise ValueError("status counts must preserve the canonical status order")
+        if len(self.samples) != self.scan_point_count:
+            raise ValueError("one sample witness is required for every scanned point")
+        if tuple(sample.jd_ut for sample in self.samples) != tuple(
+            sorted(sample.jd_ut for sample in self.samples)
+        ):
+            raise ValueError("sample witnesses must be chronological")
+        derived_counts = {
+            status: sum(sample.status is status for sample in self.samples)
+            for status in WesternElectionalQualificationStatus
+        }
+        if any(item.count != derived_counts[item.status] for item in self.status_counts):
+            raise ValueError("status counts must derive from sample witnesses")
+        qualifying_statuses = set(self.policy.qualifying_statuses)
+        if any(
+            sample.qualifies != (sample.status in qualifying_statuses)
+            for sample in self.samples
+        ):
+            raise ValueError("sample qualification must derive from the scan policy")
+        qualifying_jds = {
+            sample.jd_ut for sample in self.samples if sample.qualifies
+        }
+        if any(
+            jd not in qualifying_jds
+            for window in self.windows
+            for jd in window.qualifying_jds
+        ):
+            raise ValueError("window samples must satisfy the qualification policy")
 
 
 def _scan_point_count(jd_start: float, jd_end: float, step_days: float) -> int:
@@ -198,6 +246,31 @@ def _merge_samples(
     ]
 
 
+def _void_at(jd_ut: float, windows: tuple[VoidOfCourseWindow, ...]) -> bool:
+    return any(
+        window.jd_voc_start <= jd_ut <= window.jd_voc_end
+        for window in windows
+    )
+
+
+def _sample_witness(evaluation, qualifies: bool) -> WesternElectionalSampleWitness:
+    triggered = tuple(
+        rule.rule_id for rule in evaluation.rules if rule.state.value == "triggered"
+    )
+    not_evaluable = tuple(
+        rule.rule_id
+        for rule in evaluation.rules
+        if rule.state.value == "not_evaluable"
+    )
+    return WesternElectionalSampleWitness(
+        jd_ut=evaluation.jd_ut,
+        status=WesternElectionalQualificationStatus(evaluation.status.value),
+        qualifies=qualifies,
+        triggered_rule_ids=triggered,
+        not_evaluable_rule_ids=not_evaluable,
+    )
+
+
 def scan_western_electional_profile(
     jd_start: float,
     jd_end: float,
@@ -206,7 +279,7 @@ def scan_western_electional_profile(
     *,
     house_system: str,
     profile_id: WesternElectionalProfileId,
-    scan_policy: WesternElectionalProfileScanPolicy | None = None,
+    scan_policy: WesternElectionalProfileScanPolicy,
     unavoidable_time_urgency: bool | None = None,
     sahl_burnt_path_variant=None,
     sahl_eighth_rule_variant=None,
@@ -234,7 +307,7 @@ def scan_western_electional_profile(
         unavoidable_time_urgency, bool
     ):
         raise ValueError("unavoidable_time_urgency must be a boolean or None")
-    policy = scan_policy or WesternElectionalProfileScanPolicy()
+    policy = scan_policy
     if not isinstance(policy, WesternElectionalProfileScanPolicy):
         raise TypeError("scan_policy must be a WesternElectionalProfileScanPolicy")
     point_count = _scan_point_count(jd_start, jd_end, policy.step_days)
@@ -260,21 +333,59 @@ def scan_western_electional_profile(
     )
     counts = {status: 0 for status in WesternElectionalQualificationStatus}
     qualifying: list[float] = []
+    samples: list[WesternElectionalSampleWitness] = []
     profile_version: str | None = None
     parameters: tuple[WesternElectionalProfileParameter, ...] | None = None
     qualifying_set = {status.value for status in policy.qualifying_statuses}
+    voc_windows: tuple[VoidOfCourseWindow, ...] = ()
+    if profile_id in (
+        WesternElectionalProfileId.RAMESEY_MOON_CONDITION_V1,
+        WesternElectionalProfileId.SAHL_MOON_CONDITION_V1,
+    ):
+        voc_windows = tuple(
+            void_periods_in_range(
+                jd_start,
+                jd_end,
+                reader=resolved_reader,
+                modern=False,
+            )
+        )
+
+    resolved_sahl_policy = None
+    if profile_id is WesternElectionalProfileId.SAHL_MOON_CONDITION_V1:
+        overrides = {}
+        if sahl_burnt_path_variant is not None:
+            if not isinstance(sahl_burnt_path_variant, western.SahlBurntPathVariant):
+                raise TypeError("sahl_burnt_path_variant must be a SahlBurntPathVariant")
+            overrides["burnt_path_variant"] = sahl_burnt_path_variant
+        if sahl_eighth_rule_variant is not None:
+            if not isinstance(sahl_eighth_rule_variant, western.SahlEighthRuleVariant):
+                raise TypeError("sahl_eighth_rule_variant must be a SahlEighthRuleVariant")
+            overrides["eighth_rule_variant"] = sahl_eighth_rule_variant
+        resolved_sahl_policy = (
+            replace(western.SAHL_MOON_CONDITION_V1, **overrides)
+            if overrides
+            else western.SAHL_MOON_CONDITION_V1
+        )
 
     for index in range(point_count):
         jd_ut = jd_start + index * policy.step_days
         if profile_id is WesternElectionalProfileId.RAMESEY_MOON_CONDITION_V1:
-            evaluation = western.ramesey_moon_condition_at(
+            chart = create_chart(
                 jd_ut,
                 latitude,
                 longitude,
                 house_system=house_system,
-                unavoidable_time_urgency=unavoidable_time_urgency,
+                bodies=[Body.SUN, Body.MOON, Body.MARS, Body.SATURN],
                 reader=resolved_reader,
-                house_policy=house_policy,
+                policy=house_policy,
+            )
+            evaluation = western.evaluate_ramesey_moon_condition(
+                chart,
+                void_of_course=_void_at(jd_ut, voc_windows),
+                unavoidable_time_urgency=unavoidable_time_urgency,
+                position_product=western.RAMESEY_MOON_CONDITION_V1.position_product,
+                reader_provenance=provenance,
             )
             current_parameters = (
                 WesternElectionalProfileParameter(
@@ -282,15 +393,21 @@ def scan_western_electional_profile(
                 ),
             )
         elif profile_id is WesternElectionalProfileId.SAHL_MOON_CONDITION_V1:
-            evaluation = western.sahl_moon_condition_at(
+            chart = create_chart(
                 jd_ut,
                 latitude,
                 longitude,
                 house_system=house_system,
-                burnt_path_variant=sahl_burnt_path_variant,
-                eighth_rule_variant=sahl_eighth_rule_variant,
+                bodies=[Body.SUN, Body.MOON, Body.MARS, Body.SATURN],
                 reader=resolved_reader,
-                house_policy=house_policy,
+                policy=house_policy,
+            )
+            evaluation = western.evaluate_sahl_moon_condition(
+                chart,
+                void_of_course=_void_at(jd_ut, voc_windows),
+                position_product=resolved_sahl_policy.position_product,
+                reader_provenance=provenance,
+                policy=resolved_sahl_policy,
             )
             current_parameters = (
                 WesternElectionalProfileParameter(
@@ -317,7 +434,9 @@ def scan_western_electional_profile(
             )
         status = WesternElectionalQualificationStatus(evaluation.status.value)
         counts[status] += 1
-        if status.value in qualifying_set:
+        qualifies = status.value in qualifying_set
+        samples.append(_sample_witness(evaluation, qualifies))
+        if qualifies:
             qualifying.append(jd_ut)
         if profile_version is None:
             profile_version = evaluation.profile_version
@@ -339,6 +458,7 @@ def scan_western_electional_profile(
             WesternElectionalStatusCount(status, counts[status])
             for status in WesternElectionalQualificationStatus
         ),
+        samples=tuple(samples),
         windows=tuple(all_windows[: policy.max_windows]),
         windows_truncated=windows_truncated,
         profile_parameters=parameters or (),

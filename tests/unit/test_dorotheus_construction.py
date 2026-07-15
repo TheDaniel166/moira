@@ -146,7 +146,8 @@ def test_v7_preserves_all_six_clauses_and_source_order() -> None:
         "mars_configured_from_strong_place",
     ]
     assert result.source_complete is True
-    assert result.complete_electional_judgement is True
+    assert result.complete_matter_profile is True
+    assert result.complete_electional_judgement is False
     assert result.scoring == "not_provided"
 
 

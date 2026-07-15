@@ -615,6 +615,7 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     'WesternElectionalProfileParameter',
     'WesternElectionalProfileScanPolicy',
     'WesternElectionalStatusCount',
+    'WesternElectionalSampleWitness',
     'WesternElectionalProfileWindow',
     'WesternElectionalProfileScan',
     'scan_western_electional_profile',

@@ -703,8 +703,9 @@ class DorotheusConstructionEvaluationResponse(_StrictModel):
     matter: Literal["building_construction"]
     election_class: DorotheusElectionClassValue
     source_complete: Literal[True]
+    complete_matter_profile: Literal[True]
     numerically_complete: Literal[False]
-    complete_electional_judgement: Literal[True]
+    complete_electional_judgement: Literal[False]
     advice_language: Literal["not_provided"]
     recommendation_language: Literal["not_provided"]
     scoring: Literal["not_provided"]
@@ -757,7 +758,7 @@ class WesternProfileWindowsRequest(_StrictModel):
     longitude: float = Field(ge=-180.0, le=180.0)
     house_system: str
     qualification_statuses: list[WesternQualificationStatusValue] = Field(
-        default_factory=lambda: ["clear_of_profile_impediments"], min_length=1, max_length=3
+        min_length=1, max_length=3
     )
     policy: WesternProfileScanPolicyRequest = Field(default_factory=WesternProfileScanPolicyRequest)
     unavoidable_time_urgency: bool | None = None
@@ -838,6 +839,14 @@ class WesternProfileStatusCountResponse(_StrictModel):
     count: int = Field(ge=0)
 
 
+class WesternProfileSampleWitnessResponse(_StrictModel):
+    jd_ut: float
+    status: WesternQualificationStatusValue
+    qualifies: bool
+    triggered_rule_ids: list[str]
+    not_evaluable_rule_ids: list[str]
+
+
 class WesternProfileWindowResponse(_StrictModel):
     jd_start: float
     jd_end: float
@@ -881,6 +890,7 @@ class WesternProfileWindowsResponse(_StrictModel):
     policy: WesternProfileScanPolicyResponse
     scan_point_count: int
     status_counts: list[WesternProfileStatusCountResponse]
+    samples: list[WesternProfileSampleWitnessResponse]
     windows: list[WesternProfileWindowResponse]
     windows_truncated: bool
     profile_parameters: list[WesternProfileParameterResponse]
@@ -950,6 +960,7 @@ __all__ = [
     "WesternProfileWindowsRequest",
     "WesternProfileParameterResponse",
     "WesternProfileStatusCountResponse",
+    "WesternProfileSampleWitnessResponse",
     "WesternProfileWindowResponse",
     "WesternProfileScanPolicyResponse",
     "WesternProfileScanBoundsResponse",

@@ -941,6 +941,7 @@ from .western_electional import (
     WesternElectionalProfileParameter,
     WesternElectionalProfileScanPolicy,
     WesternElectionalStatusCount,
+    WesternElectionalSampleWitness,
     WesternElectionalProfileWindow,
     WesternElectionalProfileScan,
     scan_western_electional_profile,
@@ -1882,6 +1883,7 @@ __all__ = [
     "WesternElectionalProfileId", "WesternElectionalQualificationStatus",
     "WesternElectionalProfileParameter", "WesternElectionalProfileScanPolicy",
     "WesternElectionalStatusCount", "WesternElectionalProfileWindow",
+    "WesternElectionalSampleWitness",
     "WesternElectionalProfileScan", "scan_western_electional_profile",
     # Muhurta (Tier 2 Vedic competitive edge work)
     "MuhurtaPolicy", "MuhurtaClassification", "MuhurtaScore",
@@ -2026,7 +2028,7 @@ __all__ += [
 ]
 
 
-__version__ = "4.2.1"
+__version__ = "4.3.0"
 __author__  = "Moira contributors"
 
 

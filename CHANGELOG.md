@@ -7,6 +7,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.3.0] - 2026-07-15
+
+### Added
+- **Sahl Moon Condition**: Added the source-owned, non-scored
+  `sahl_moon_condition_v1` profile through the engine, facade, and
+  `POST /v1/electional/western/sahl-moon-condition`, preserving the burnt-path
+  and Arabic/Latin eighth-rule variants explicitly.
+- **Dorotheus Moon Condition**: Added the eleven-clause
+  `dorotheus_moon_condition_v1` profile and separate V.6.15 remedy witness
+  through engine, facade, and REST.
+- **Dorotheus Rooted Context**: Added `dorotheus_rooted_context_v1`, including
+  Moon-as-root, Moon-sign-lord-as-outcome, the sign-bounded next connection,
+  six V.31 matter families, and explicit ephemeral/radical natal contracts.
+- **Dorotheus Construction Profile**: Added the first source-complete matter
+  profile, `dorotheus_construction_v1`, covering V.2-V.7 through
+  `POST /v1/electional/western/dorotheus-construction`.
+- **Named Western Profile Windows**: Added
+  `scan_western_electional_profile(...)`,
+  `Moira.western_electional_profile_windows(...)`, and
+  `POST /v1/electional/western/profile-windows` for bounded, discrete status
+  scanning of the Ramesey, Sahl, and Dorotheus Moon profiles.
+- **Scan Evidence**: Every scan point now reports its status, qualification
+  truth, triggered rule IDs, and not-evaluable rule IDs.
+
+### Changed
+- Scan callers must explicitly provide `qualification_statuses`; Moira no
+  longer assumes an all-clear predicate that some source-incomplete profiles
+  cannot satisfy.
+- Ramesey and Sahl scans reuse range-level void-of-course windows instead of
+  rebuilding the same sign-level search at every sampled instant.
+- The construction result now distinguishes `complete_matter_profile=true`
+  from `complete_electional_judgement=false`. It remains
+  `source_complete=true` and `numerically_complete=false` while unresolved
+  source clauses remain visible.
+
+### Compatibility
+- All new electional routes and engine objects are additive relative to 4.2.1.
+- `qualification_statuses` is required on the new, previously unreleased
+  `/v1/electional/western/profile-windows` request.
+- The previously unreleased construction response replaces the misleading
+  `complete_electional_judgement=true` value with
+  `complete_matter_profile=true` and `complete_electional_judgement=false`.
+- No score, rank, advice, recommendation, or continuous-boundary claim is
+  introduced.
+
+### Validation
+- Added primary-source rule, ambiguity-policy, public-export, facade, REST,
+  OpenAPI, and DE441 integration coverage for all admitted electional objects.
+- Added DE441 parity between optimized range-level VOC scanning and the
+  independent single-moment Ramesey and Sahl evaluators.
+- Added compact sample-witness and explicit-qualification contract tests.
+
 ## [4.2.1] - 2026-07-14
 
 ### Fixed

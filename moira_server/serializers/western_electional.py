@@ -54,6 +54,7 @@ from ..models.western_electional import (
     WesternProfileScanPolicyResponse,
     WesternProfileScanProvenanceResponse,
     WesternProfileStatusCountResponse,
+    WesternProfileSampleWitnessResponse,
     WesternProfileWindowResponse,
     WesternProfileWindowsResponse,
     WesternElectionalTransportProvenanceResponse,
@@ -562,6 +563,7 @@ def serialize_dorotheus_construction(
         matter=result.matter,
         election_class=result.election_class,
         source_complete=result.source_complete,
+        complete_matter_profile=result.complete_matter_profile,
         numerically_complete=result.numerically_complete,
         complete_electional_judgement=result.complete_electional_judgement,
         advice_language=result.advice_language,
@@ -609,6 +611,16 @@ def serialize_western_profile_windows(
                 count=item.count,
             )
             for item in result.status_counts
+        ],
+        samples=[
+            WesternProfileSampleWitnessResponse(
+                jd_ut=sample.jd_ut,
+                status=sample.status.value,
+                qualifies=sample.qualifies,
+                triggered_rule_ids=list(sample.triggered_rule_ids),
+                not_evaluable_rule_ids=list(sample.not_evaluable_rule_ids),
+            )
+            for sample in result.samples
         ],
         windows=[
             WesternProfileWindowResponse(

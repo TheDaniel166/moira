@@ -204,8 +204,9 @@ class DorotheusConstructionEvaluation:
     matter: str = "building_construction"
     election_class: str = "ephemeral"
     source_complete: bool = True
+    complete_matter_profile: bool = True
     numerically_complete: bool = False
-    complete_electional_judgement: bool = True
+    complete_electional_judgement: bool = False
     advice_language: str = "not_provided"
     recommendation_language: str = "not_provided"
     scoring: str = "not_provided"
@@ -233,8 +234,12 @@ class DorotheusConstructionEvaluation:
             raise ValueError("unknown clause summary must derive from clauses")
         if not self.source_complete:
             raise ValueError("the admitted profile must preserve every source layer")
+        if not self.complete_matter_profile:
+            raise ValueError("the admitted profile must preserve the complete V.7 matter layer")
         if self.numerically_complete:
             raise ValueError("unresolved source semantics prevent numerical completeness")
+        if self.complete_electional_judgement:
+            raise ValueError("an unresolved non-recommendatory profile is not a complete judgement")
 
 
 def _measurement(

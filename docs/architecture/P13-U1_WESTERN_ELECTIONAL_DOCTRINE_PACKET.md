@@ -1,6 +1,6 @@
 # P13-U1 Western Electional Doctrine Packet
 
-Version: 0.9
+Version: 1.0
 Date: 2026-07-15
 Status: three Moon profiles, bounded profile-status scanning, the Dorotheus rooted context, and the first complete matter profile are public; scoring deferred
 Scope: bounded Western electional doctrine beside the generic search transport
@@ -45,10 +45,11 @@ complete matter judgement, advice, recommendation, or auspiciousness score.
 The profile is admitted through `moira.western_electional`, the curated package
 root, `moira.facade`, `Moira.ramesey_moon_condition_at(...)`, and the bounded
 single-moment route
-`POST /v1/electional/western/ramesey-moon-condition`. It has no generic
-search-predicate, scoring, website, advice, or recommendation surface. Section
-8 records the profile-specific policies. Section 13 records the engine evidence
-and public-moment admission decisions.
+`POST /v1/electional/western/ramesey-moon-condition`. It also participates in
+the dedicated bounded profile-status scanner described in section 10. It has no
+generic numeric-fit predicate, scoring, website, advice, or recommendation
+surface. Section 8 records the profile-specific policies. Section 13 records
+the engine evidence and public-moment admission decisions.
 
 The Sahl profile is admitted through the same public engine layers,
 `Moira.sahl_moon_condition_at(...)`, and
@@ -490,8 +491,10 @@ These variants are separate profile parameters, not choices to average:
 ## 10. Separation from Search Transport
 
 The admitted doctrine implementations supply single-moment facade and REST
-adapters. They may supply separate predicate adapters to the bounded search
-engine only after a later search-admission decision. The layers remain:
+adapters. The three Moon-condition profiles also supply a separate,
+doctrine-owned status adapter to the bounded profile scanner. This admission
+does not place them in the generic numeric-fit search or scoring engine. The
+layers remain:
 
 1. astronomical and chart substrate
 2. doctrine profile evaluation
@@ -507,9 +510,9 @@ Search transport must not own:
 - rule weights
 - remedies or matter-specific interpretation
 
-A returned window would mean only that its sampled chart states met the named
-profile predicate. It would retain the existing discrete-scan and boundary
-truth limitations.
+A returned window means only that its sampled chart states met the caller's
+explicitly named qualifying statuses. It retains the existing discrete-scan
+and boundary-truth limitations.
 
 ## 11. Required Provenance
 
@@ -527,11 +530,15 @@ Every admitted profile evaluation exposes:
   identities, source instructions, and uncomputed fulfillment requirements
 - for Sahl, the selected burnt-path and eighth-rule variants
 - `complete_electional_judgement: false` for each profile
+- for `dorotheus_construction_v1`, `source_complete: true`,
+  `complete_matter_profile: true`, and `numerically_complete: false`
 - `advice_language: not_provided`
 - `recommendation_language: not_provided`
-- transport provenance naming the engine entry point, facade entry point,
-  single-moment semantics, lack of scoring, lack of generic-search integration,
-  and deliberately uncomputed remedy fulfillment
+- single-moment transport provenance naming the engine entry point, facade
+  entry point, lack of scoring, and deliberately uncomputed remedy fulfillment
+- scan transport provenance naming its engine, facade, and REST entry points,
+  exact qualification statuses, compact per-sample witnesses, and lack of
+  generic numeric-fit search integration
 
 ## 12. Failure and Indeterminacy Policy
 
@@ -753,14 +760,19 @@ uncomputed. It is evidence, not an admitted scan predicate.
 `dorotheus_construction_v1` is the first source-complete matter profile. Its
 engine object, facade method, and typed REST route preserve V.2-V.6, V.31, and
 all six V.7 computational clauses. Two clauses remain explicitly
-`not_evaluable`; therefore the result reports `source_complete=true` and
-`numerically_complete=false`. No weighted score, advice, ranking, or
+`not_evaluable`; therefore the result reports `source_complete=true`,
+`complete_matter_profile=true`, `numerically_complete=false`, and
+`complete_electional_judgement=false`. No weighted score, advice, ranking, or
 recommendation is inferred from the historical text.
 
 The three Moon-condition profiles are scan-admitted through a separate bounded
-status predicate. It records each sampled status, qualifies by exact requested
-status membership, merges samples under an explicit gap, and returns complete
+status predicate. Callers must provide the exact qualifying-status set; there
+is no implicit clear-status policy. The result records one compact witness per
+sample with status, qualification, triggered rule ids, and not-evaluable rule
+ids, merges qualifying samples under an explicit gap, and returns complete
 status counts. The construction profile is excluded because its two unresolved
 clauses make default clear-window semantics structurally unavailable. The scan
 surface provides no score, rank, advice, recommendation, or exact-transition
-claim and does not alter the generic electional numeric-fit transport.
+claim and does not alter the generic electional numeric-fit transport. Ramesey
+and Sahl scans reuse one range-level void-of-course computation while retaining
+single-moment rule semantics at each sampled instant.

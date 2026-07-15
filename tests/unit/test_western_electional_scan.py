@@ -7,17 +7,27 @@ from types import SimpleNamespace
 import pytest
 
 import moira.western_electional as western
+import moira._western_electional_scan as scan_module
 
 
 class _Reader:
     path = "synthetic-scan-reader.bsp"
 
 
-def _evaluation(status: str, profile_id: str):
+def _evaluation(status: str, profile_id: str, *, jd_ut: float = 0.0):
+    rule_state = (
+        "triggered"
+        if status == "one_or_more_profile_impediments"
+        else "not_evaluable"
+        if status == "indeterminate"
+        else "clear"
+    )
     return SimpleNamespace(
+        jd_ut=jd_ut,
         status=SimpleNamespace(value=status),
         profile_id=profile_id,
         profile_version="1.0.0",
+        rules=(SimpleNamespace(rule_id=f"rule_{rule_state}", state=SimpleNamespace(value=rule_state)),),
     )
 
 
@@ -29,12 +39,21 @@ def test_scan_qualifies_exact_statuses_and_merges_only_sampled_truth(monkeypatch
         3: "clear_of_profile_impediments",
     }
 
-    def fake_ramesey(jd_ut, *_args, **_kwargs):
-        index = round((jd_ut - 100.0) / 0.25)
-        return _evaluation(statuses[index], "ramesey_moon_condition_v1")
+    def fake_ramesey(chart, **_kwargs):
+        index = round((chart.jd_ut - 100.0) / 0.25)
+        return _evaluation(
+            statuses[index], "ramesey_moon_condition_v1", jd_ut=chart.jd_ut
+        )
 
-    monkeypatch.setattr(western, "ramesey_moon_condition_at", fake_ramesey)
+    monkeypatch.setattr(western, "evaluate_ramesey_moon_condition", fake_ramesey)
+    monkeypatch.setattr(
+        scan_module,
+        "create_chart",
+        lambda jd_ut, *_args, **_kwargs: SimpleNamespace(jd_ut=jd_ut),
+    )
+    monkeypatch.setattr(scan_module, "void_periods_in_range", lambda *_args, **_kwargs: [])
     policy = western.WesternElectionalProfileScanPolicy(
+        qualifying_statuses=(western.WesternElectionalQualificationStatus.CLEAR,),
         step_days=0.25,
         merge_gap_days=0.3,
         max_scan_points=4,
@@ -57,6 +76,9 @@ def test_scan_qualifies_exact_statuses_and_merges_only_sampled_truth(monkeypatch
     ]
     assert result.scoring == "not_provided"
     assert result.continuous_boundary_claim == "not_provided"
+    assert [sample.status.value for sample in result.samples] == list(statuses.values())
+    assert result.samples[2].triggered_rule_ids == ("rule_triggered",)
+    assert [sample.qualifies for sample in result.samples] == [True, True, False, True]
 
 
 def test_scan_can_select_triggered_and_indeterminate_without_scoring(monkeypatch) -> None:
@@ -65,7 +87,9 @@ def test_scan_can_select_triggered_and_indeterminate_without_scoring(monkeypatch
     )
 
     def fake_dorotheus(*_args, **_kwargs):
-        return _evaluation(next(sequence), "dorotheus_moon_condition_v1")
+        status = next(sequence)
+        jd_ut = _args[0]
+        return _evaluation(status, "dorotheus_moon_condition_v1", jd_ut=jd_ut)
 
     monkeypatch.setattr(western, "dorotheus_moon_condition_at", fake_dorotheus)
     policy = western.WesternElectionalProfileScanPolicy(
@@ -95,6 +119,7 @@ def test_scan_can_select_triggered_and_indeterminate_without_scoring(monkeypatch
 
 def test_scan_enforces_point_bound_and_profile_owned_parameters(monkeypatch) -> None:
     policy = western.WesternElectionalProfileScanPolicy(
+        qualifying_statuses=(western.WesternElectionalQualificationStatus.CLEAR,),
         step_days=0.25,
         max_scan_points=3,
     )
@@ -110,13 +135,6 @@ def test_scan_enforces_point_bound_and_profile_owned_parameters(monkeypatch) -> 
             reader=_Reader(),
         )
 
-    monkeypatch.setattr(
-        western,
-        "ramesey_moon_condition_at",
-        lambda *_args, **_kwargs: _evaluation(
-            "clear_of_profile_impediments", "ramesey_moon_condition_v1"
-        ),
-    )
     with pytest.raises(ValueError, match="Sahl variants"):
         western.scan_western_electional_profile(
             10.0,
@@ -126,13 +144,16 @@ def test_scan_enforces_point_bound_and_profile_owned_parameters(monkeypatch) -> 
             house_system="P",
             profile_id="ramesey_moon_condition_v1",
             sahl_burnt_path_variant="fall_degrees_19_libra_to_3_scorpio",
+            scan_policy=policy,
             reader=_Reader(),
         )
 
 
 def test_sahl_scan_preserves_resolved_variant_parameters(monkeypatch) -> None:
-    def fake_sahl(*_args, **_kwargs):
-        result = _evaluation("indeterminate", "sahl_moon_condition_v1")
+    def fake_sahl(chart, **_kwargs):
+        result = _evaluation(
+            "indeterminate", "sahl_moon_condition_v1", jd_ut=chart.jd_ut
+        )
         result.burnt_path_variant = SimpleNamespace(
             value="fall_degrees_19_libra_to_3_scorpio"
         )
@@ -141,7 +162,13 @@ def test_sahl_scan_preserves_resolved_variant_parameters(monkeypatch) -> None:
         )
         return result
 
-    monkeypatch.setattr(western, "sahl_moon_condition_at", fake_sahl)
+    monkeypatch.setattr(western, "evaluate_sahl_moon_condition", fake_sahl)
+    monkeypatch.setattr(
+        scan_module,
+        "create_chart",
+        lambda jd_ut, *_args, **_kwargs: SimpleNamespace(jd_ut=jd_ut),
+    )
+    monkeypatch.setattr(scan_module, "void_periods_in_range", lambda *_args, **_kwargs: [])
     result = western.scan_western_electional_profile(
         10.0,
         10.25,

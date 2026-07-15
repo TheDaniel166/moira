@@ -1,8 +1,9 @@
 # P13-U1 — Sahl bin Bishr *On Elections*: Complete Electional Rule Inventory
 
-Version: 1.1
+Version: 1.2
 Date: 2026-07-15
-Status: primary-source rule inventory with one bounded admitted profile.
+Status: primary-source rule inventory with one bounded admitted profile and a
+dedicated bounded status-scan admission.
 Companion to
 `P13-U1_WESTERN_ELECTIONAL_DOCTRINE_RESEARCH_DOSSIER.md` and parallel to
 `P13-U1_DOROTHEUS_BOOK_V_RULE_INVENTORY.md`. Only the ten Moon impediments in
@@ -272,8 +273,10 @@ relabelled as Sahl's missing numeric endpoints. A confirmed impediment governs
 the profile summary even when another compound clause is `not_evaluable`;
 otherwise unresolved evidence yields an indeterminate summary.
 
-This profile does not score, recommend, scan for windows, evaluate Sahl's
-general advice, or claim a complete electional judgement.
+This profile does not score, recommend, evaluate Sahl's general advice, or
+claim a complete electional judgement. Its dedicated status scanner requires
+an explicit qualifying-status set and returns compact evidence for every
+sample; this is not admission to the generic numeric-fit search or scorer.
 
 ### 4.2 General advice (§§23–27)
 
@@ -898,4 +901,4 @@ citing Dykes §N):**
 
 ---
 
-*End of P13-U1 Sahl *On Elections* rule inventory (v1.1, 2026-07-15).*
+*End of P13-U1 Sahl *On Elections* rule inventory (v1.2, 2026-07-15).*

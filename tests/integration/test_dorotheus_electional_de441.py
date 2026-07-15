@@ -48,6 +48,7 @@ def test_j2000_construction_profile_composes_every_de441_backed_layer() -> None:
     assert result.construction_clauses[0].state is DorotheusConstructionClauseState.NOT_EVALUABLE
     assert result.construction_clauses[2].measurements[1].value != 0.0
     assert result.source_complete is True
+    assert result.complete_matter_profile is True
     assert result.numerically_complete is False
 
 

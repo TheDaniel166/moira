@@ -1,6 +1,6 @@
 # P13-U1 — Dorotheus *Carmen Astrologicum* Book V: Complete Electional Rule Inventory
 
-Version: 1.3
+Version: 1.4
 Date: 2026-07-15
 Status: primary-source rule inventory; the bounded V.6 Moon-corruption layer is
 admitted as `dorotheus_moon_condition_v1`, and the V.6.21-31/V.31 shared rooted
@@ -627,7 +627,7 @@ interrogations/decumbitures and must not be admitted as electional gates.
 
 ---
 
-## 7. Remaining Items Beyond the Admitted V.6 Profile
+## 7. Remaining Items Beyond the Admitted V.6 and V.7 Profiles
 
 1. **Do not force the two unresolved V.6 clauses:** the southern-descending
    wording and longitude-or-latitude disengagement remain `not_evaluable`
@@ -645,8 +645,9 @@ interrogations/decumbitures and must not be admitted as electional gates.
    variant** beside Ramesey/Lilly/Robson (e.g. slow-Moon 12°/day vs. 13°11′;
    via combusta = whole Libra+Scorpio vs. 15°–15°). Never merge (Part V + Law of
    Semantic Honesty).
-5. **Build complete matter profiles on the rooted vessel:** the shared context
-   now implements V.6.21-31 root/outcome evidence, V.31 matter significators,
-   and explicit natal-input contracts. It does not implement V.2-V.5 sign
-   tempo, chapter-owned matter houses, natal success gates, or any complete
-   matter profile.
+5. **Extend complete matter profiles from the construction precedent:**
+   `dorotheus_construction_v1` now composes V.2-V.6, V.31, and every V.7
+   construction clause on the rooted vessel. Later matter profiles still need
+   their own chapter-owned houses, natal success gates, ambiguity policies, and
+   public admission; construction completeness must not be generalized to the
+   rest of Book V.

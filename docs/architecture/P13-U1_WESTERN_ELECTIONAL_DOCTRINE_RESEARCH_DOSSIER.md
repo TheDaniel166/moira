@@ -1,6 +1,6 @@
 # P13-U1 — Western Electional Doctrine Research Dossier
 
-Version: 0.15 (bounded named-profile scanning admitted)
+Version: 0.16 (P1 public-contract hardening)
 Date: 2026-07-15
 Status: research inventory for the Western electional doctrine layer. The
 companion materials admit distinct `ramesey_moon_condition_v1` and
@@ -19,6 +19,11 @@ a dedicated bounded status-window scan through engine, facade, and REST.
 Generic scoring, website, advice, and recommendation surfaces remain deferred.
 
 Changelog:
+- 0.16 - made scan qualification an explicit caller policy, added compact
+  per-sample status/rule evidence, reused range-level void-of-course work for
+  Ramesey and Sahl scans, and separated construction source completeness,
+  complete-matter-profile coverage, numerical completeness, and complete
+  electional judgement into four truthful public fields.
 - 0.15 - admitted discrete, bounded status-window scanning for the Ramesey,
   Sahl, and Dorotheus Moon-condition profiles. Qualification is an exact,
   caller-visible status set; results preserve per-status counts and make no
@@ -721,10 +726,10 @@ separate module-level `ramesey_moon_condition_v1` evaluator admitted on
 | Retrograde (B.3) | Gate | **No** | Needs speed sign in payload |
 | Applying vs separating (C.2) | Directional modifier | Not in generic transport | Implemented visibly for Ramesey Rule 1; generic transport and other lineages remain separate |
 | Dignity points (B.2) | Weighted scorer | Partly | Needs dignity tables (domicile/exalt/triplicity/term/face) + term-scheme variant |
-| Composite ten-impediment Moon gate (A.1) | Source-ordered profile | Public single-moment evaluation admitted | `moira.western_electional`, package root, facade, `Moira`, and bounded REST return ten witnesses; no generic `all_of`, scan, or score admission |
+| Composite Moon-condition gates (A.1) | Source-ordered profiles | Public single-moment evaluation and bounded status scan admitted | `moira.western_electional`, package root, facade, `Moira`, and bounded REST preserve rule witnesses; the dedicated scan requires an exact caller-selected status set and is not the generic `all_of` or numeric scorer |
 | Planetary hours (D) | Low-weight factor | Yes (computable) | Chaldean-order hour ruler from sunrise/sunset |
 | Radicality (E) | Class-gated evidence | Shared context admitted | `ephemeral` rejects natal input; `radical` requires a complete natal moment/location/house-system bundle; no success gate is invented |
-| Matter-specific overlays (F) | Profile family | Shared context admitted, complete profiles pending | Six V.31 matter families and their planets are typed; chapter-owned houses and complete matter judgement remain future profile work |
+| Matter-specific overlays (F) | Profile family | Shared context and first complete matter profile admitted | `dorotheus_construction_v1` composes V.2-V.6, V.31, and every V.7 construction clause; later chapter-owned houses and complete electional judgements remain future profile work |
 
 Three cross-cutting transport capabilities still unlock most wider exposure:
 1. **Body speed in the scan payload** → generic slow-Moon, retrograde, applying/separating predicates.
@@ -853,8 +858,13 @@ choices.
    `scan_western_electional_profile(...)`,
    `Moira.western_electional_profile_windows(...)`, and
    `POST /v1/electional/western/profile-windows`. The maximum is 256 points;
-   REST cadence is at least one hour. Windows merge qualifying samples only
-   and do not claim continuous truth or exact transitions.
+   REST cadence is at least one hour. Callers must provide the exact qualifying
+   statuses; no implicit clear-status policy exists. Results retain one compact
+   witness per sample with status, qualification, triggered rule ids, and
+   not-evaluable rule ids. Windows merge qualifying samples only and do not
+   claim continuous truth or exact transitions. Ramesey and Sahl reuse one
+   range-level void-of-course computation without changing their single-moment
+   rule meaning.
 6. **Generic scoring remains deferred**: the dedicated status scanner does not
    enter the generic numeric-fit scorer, rank results, assess remedy
    fulfillment, scan the rooted context or construction profile, or produce a

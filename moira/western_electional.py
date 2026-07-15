@@ -82,6 +82,7 @@ from ._western_electional_scan import (
     WesternElectionalProfileScanPolicy,
     WesternElectionalProfileWindow,
     WesternElectionalQualificationStatus,
+    WesternElectionalSampleWitness,
     WesternElectionalStatusCount,
     scan_western_electional_profile,
 )
@@ -153,6 +154,7 @@ __all__ = [
     "WesternElectionalProfileParameter",
     "WesternElectionalProfileScanPolicy",
     "WesternElectionalStatusCount",
+    "WesternElectionalSampleWitness",
     "WesternElectionalProfileWindow",
     "WesternElectionalProfileScan",
     "scan_western_electional_profile",

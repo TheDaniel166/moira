@@ -182,6 +182,7 @@ def test_public_surface_is_promoted_through_root_and_facade() -> None:
         "WesternElectionalProfileParameter",
         "WesternElectionalProfileScanPolicy",
         "WesternElectionalStatusCount",
+        "WesternElectionalSampleWitness",
         "WesternElectionalProfileWindow",
         "WesternElectionalProfileScan",
         "scan_western_electional_profile",

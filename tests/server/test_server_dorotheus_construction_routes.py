@@ -45,8 +45,9 @@ def test_construction_route_returns_every_source_layer(client_and_app) -> None:
     assert evaluation["profile_id"] == "dorotheus_construction_v1"
     assert evaluation["matter"] == "building_construction"
     assert evaluation["source_complete"] is True
+    assert evaluation["complete_matter_profile"] is True
     assert evaluation["numerically_complete"] is False
-    assert evaluation["complete_electional_judgement"] is True
+    assert evaluation["complete_electional_judgement"] is False
     assert evaluation["moon_condition"]["profile_id"] == "dorotheus_moon_condition_v1"
     assert evaluation["rooted_context"]["profile_id"] == "dorotheus_rooted_context_v1"
     assert len(evaluation["construction_clauses"]) == 6
