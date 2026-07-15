@@ -60,7 +60,7 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
     "scope": "class",
     "id": "moira._facade_special.SpecialTopicsFacadeMixin",
     "risk": "medium",
-    "api": {"frozen": ["eclipse", "primary_directions", "longevity", "phenomena", "occultations", "void_of_course", "electional", "ramesey_moon_condition_at", "sahl_moon_condition_at", "dorotheus_moon_condition_at", "dorotheus_rooted_context_at", "dorotheus_construction_at", "dorotheus_matter_profile_at", "western_electional_profile_windows"], "internal": []},
+    "api": {"frozen": ["eclipse", "primary_directions", "longevity", "phenomena", "occultations", "void_of_course", "electional", "moon_connection_flow_at", "ramesey_moon_condition_at", "sahl_moon_condition_at", "dorotheus_moon_condition_at", "dorotheus_rooted_context_at", "dorotheus_construction_at", "dorotheus_matter_profile_at", "western_electional_profile_windows"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -601,6 +601,7 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
         unavoidable_time_urgency: bool | None = None,
         house_policy=None,
         policy=None,
+        moon_flow_policy=None,
     ):
         """Evaluate one named Dorothean V.8, V.9, or V.11 matter profile."""
 
@@ -625,6 +626,17 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
             reader=self._reader,
             house_policy=house_policy,
             policy=policy,
+            moon_flow_policy=moon_flow_policy,
+        )
+
+    def moon_connection_flow_at(self, jd_ut: float, *, policy):
+        """Return a neutral exact lunar separation/connection flow."""
+
+        facade = _facade_module()
+        return facade.moon_connection_flow_at(
+            jd_ut,
+            policy=policy,
+            reader=self._reader,
         )
 
     def western_electional_profile_windows(

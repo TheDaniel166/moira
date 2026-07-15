@@ -3475,6 +3475,11 @@ _EXPECTED_PUBLIC = {
     "AspectDirection",
     "AspectDomain",
     "AspectFamily",
+    "AspectMotionBranch",
+    "AspectMotionOrbPolicy",
+    "AspectMotionState",
+    "AspectMotionStationaryReason",
+    "AspectMotionWitness",
     "AspectPatternKind",
     "AspectTier",
     "MotionState",
@@ -3490,6 +3495,7 @@ _EXPECTED_PUBLIC = {
     "AspectStrength",
     "DeclinationAspect",
     "aspect_harmonic_profile",
+    "aspect_motion_witness",
     "aspect_motion_state",
     "aspect_strength",
     "aspects_between",
@@ -3553,6 +3559,9 @@ def test_all_curated_names_importable_from_moira_aspects() -> None:
 
 def test_positions_in_aspect_surface_is_admitted_at_root() -> None:
     assert "CANONICAL_ASPECTS" not in _moira_package.__all__
+    assert _moira_package.AspectMotionState is _aspects_module.AspectMotionState
+    assert _moira_package.AspectMotionWitness is _aspects_module.AspectMotionWitness
+    assert _moira_package.aspect_motion_witness is _aspects_module.aspect_motion_witness
     assert _moira_package.AspectPolicy is _aspects_module.AspectPolicy
     assert _moira_package.LongitudeAspectAnalysis is _aspects_module.LongitudeAspectAnalysis
     assert _moira_package.aspects_from_longitudes is _aspects_module.aspects_from_longitudes
@@ -3560,7 +3569,7 @@ def test_positions_in_aspect_surface_is_admitted_at_root() -> None:
 
 
 def test_aspects_dunder_all_length() -> None:
-    assert len(_aspects_module.__all__) == 34
+    assert len(_aspects_module.__all__) == 40
 
 
 def test_aspects_dunder_all_no_duplicates() -> None:

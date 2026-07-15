@@ -894,9 +894,14 @@ choices.
    `Moira.dorotheus_matter_profile_at(...)`, and
    `POST /v1/electional/western/dorotheus-matter-profile`. Whole-sign angular
    topics, fortune/infortune testimony, lunar latitude direction, and terrain
-   classifications remain visible and non-scored. V.9 lunar flow is
-   `not_evaluable` until a source-owned prior-separation and stake-mapping
-   policy is admitted.
+   classifications remain visible and non-scored. The neutral lunar-flow
+   geometry is admitted through `MoonConnectionFlow`; leasing callers must
+   select either a current-sign or bounded fixed-lookback previous-event
+   window, and REST preserves the resulting prior event, motion state, next
+   event, signed residuals, and bounds. V.9 itself remains `not_evaluable`
+   because its surviving text does not assign separation and connection to
+   the four leasing stakes; that final mapping still requires the fuller
+   Theophilus/Hephaistion parallel.
 7. **Generic scoring remains deferred**: the dedicated status scanner does not
    enter the generic numeric-fit scorer, rank results, assess remedy
    fulfillment, scan the rooted context or construction profile, or produce a

@@ -119,11 +119,41 @@ Public access is available through:
 - `Moira.dorotheus_matter_profile_at(...)`
 - `POST /v1/electional/western/dorotheus-matter-profile`
 
-The V.9 lunar-flow clause remains visible as `not_evaluable`: a forward Moon
-connection does not by itself provide the prior separation or a source-owned
-mapping to the four leasing stakes. These profiles do not score, rank, advise,
-or recommend. Sahl's fourth-house building and land instructions remain
-deferred until their unresolved computational language has explicit policy.
+The V.9 lunar-flow geometry is now complete and first-class. Callers explicitly
+select a current-sign or bounded fixed-lookback previous-event window, and the
+result preserves the exact previous separation, current signed motion, next
+sign-bounded connection, event times, signed residuals, sign bounds, and
+no-event reasons. It is public through:
+
+- `moon_connection_flow_at(...)`
+- `Moira.moon_connection_flow_at(...)`
+- `POST /v1/aspects/moon-connection-flow`
+
+Leasing requests require that explicit window policy and embed the same flow
+in their REST response. The V.9 clause nevertheless remains `not_evaluable`:
+the surviving V.9 text requires flow-away and connection but does not assign
+them to its four leasing stakes. These profiles do not score, rank, advise, or
+recommend. Sahl's fourth-house building and land instructions remain deferred
+until their unresolved computational language has explicit policy.
+
+## First-class signed aspect motion
+
+Phase 2A of the Western electional implementation program adds an immutable,
+kernel-free motion witness for one selected longitude aspect:
+
+- `aspect_motion_witness(...)`
+- `Moira.aspect_motion_witness(...)`
+- `POST /v1/aspects/motion-witness`
+
+The witness exposes the selected positive, negative, conjunction, or ambiguous
+branch; signed error; relative longitude speed; orb rate; exact and rate
+tolerances; canonical scaled-orb admission; body station thresholds and
+reasons; and caller-declared reference frame and timescale. Its state is
+`applying`, `exact`, `separating`, `stationary`, or `indeterminate`.
+
+This is instantaneous geometry only. Missing speeds, relative standstill, and
+equidistant branches remain explicit, and the surface does not claim to locate
+a future perfection, station, prohibition, or Dorothean root/outcome event.
 
 ## Bounds-table correctness
 
@@ -156,6 +186,10 @@ All electional engine, facade, and REST entry points are additive relative to
 explicit `qualification_statuses` requirement does not break a published
 contract.
 
+The matter-profile surface was likewise unreleased. Its V.9 leasing request
+now requires `moon_flow_policy`; this prevents an undocumented prior-event
+window from becoming an accidental public default.
+
 Bounds callers using `chaldean` must migrate to `chaldean_day` or
 `chaldean_night`. Ptolemaic and Chaldaean lookup results change because the
 former tables were not valid implementations of their labels. Direct module
@@ -184,6 +218,11 @@ includes:
 - V.8/V.9/V.11 source order, angular-topic, latitude-direction, Pisces dual-
   testimony, DE441, facade, REST, and OpenAPI tests;
 - exact public-export and facade-method governance;
+- signed aspect-motion wrap, exactness, station, missing-speed,
+  branch-ambiguity, facade, REST, and OpenAPI invariants;
+- exact previous/next lunar-event ordering, caller-selected previous windows,
+  signed residual and motion preservation, no-event reasons, DE441 fixed-epoch
+  traces, leasing embedding, REST, and OpenAPI invariants;
 - typed REST serialization and OpenAPI schema checks for every route;
 - DE441 parity between optimized profile scans and independent single-moment
   evaluations;

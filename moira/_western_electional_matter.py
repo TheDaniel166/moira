@@ -27,6 +27,11 @@ from ._western_electional_dorotheus import (
     evaluate_dorotheus_moon_condition,
 )
 from .chart import ChartContext, create_chart
+from .aspect_events import (
+    MoonConnectionFlow,
+    MoonConnectionFlowPolicy,
+    moon_connection_flow_at,
+)
 from .constants import Body, SIGNS, sign_of
 from .eclipse import EclipseCalculator
 from .houses import HousePolicy, assign_house, describe_angularity
@@ -216,6 +221,7 @@ class DorotheusMatterProfileEvaluation:
     status: DorotheusMatterProfileStatus
     moon_condition: DorotheusMoonConditionEvaluation
     rooted_context: DorotheusRootedContextEvaluation
+    moon_connection_flow: MoonConnectionFlow | None
     clauses: tuple[DorotheusMatterClauseWitness, ...]
     angular_places: tuple[DorotheusAngularPlaceWitness, ...]
     planetary_strengths: tuple[DorotheusPlacementWitness, ...]
@@ -236,6 +242,11 @@ class DorotheusMatterProfileEvaluation:
             raise ValueError("jd_ut must be finite")
         if self.matter != _MATTERS[self.profile_id]:
             raise ValueError("matter must derive from profile identity")
+        if (
+            self.profile_id is not DorotheusMatterProfileId.LEASING
+            and self.moon_connection_flow is not None
+        ):
+            raise ValueError("Moon connection flow belongs only to the leasing profile")
         if len(self.clauses) != _EXPECTED_CLAUSE_COUNTS[self.profile_id]:
             raise ValueError("profile must preserve every admitted source clause")
         if tuple(item.source_order for item in self.clauses) != tuple(
@@ -363,6 +374,7 @@ def evaluate_dorotheus_matter_profile(
     profile_id: DorotheusMatterProfileId,
     moon_condition: DorotheusMoonConditionEvaluation,
     rooted_context: DorotheusRootedContextEvaluation,
+    moon_connection_flow: MoonConnectionFlow | None = None,
     moon_latitude_rate_degrees_per_day: float,
     reader_provenance: str,
     policy: DorotheusMatterProfilePolicy | None = None,
@@ -379,6 +391,16 @@ def evaluate_dorotheus_matter_profile(
         raise ValueError("matter profiles require a house figure")
     if moon_condition.jd_ut != chart.jd_ut or rooted_context.jd_ut != chart.jd_ut:
         raise ValueError("all inherited layers must describe the same instant")
+    if (
+        moon_connection_flow is not None
+        and moon_connection_flow.jd_query != chart.jd_ut
+    ):
+        raise ValueError("Moon connection flow must describe the same instant")
+    if (
+        profile_id is not DorotheusMatterProfileId.LEASING
+        and moon_connection_flow is not None
+    ):
+        raise ValueError("Moon connection flow belongs only to the leasing profile")
 
     authority = _AUTHORITIES[profile_id]
     angular_places: tuple[DorotheusAngularPlaceWitness, ...] = ()
@@ -476,7 +498,10 @@ def evaluate_dorotheus_matter_profile(
                     authority,
                 )
             )
-        connection = rooted_context.next_connection
+        flow = moon_connection_flow
+        previous = None if flow is None else flow.previous_separation
+        previous_motion = None if flow is None else flow.previous_motion
+        connection = None if flow is None else flow.next_connection
         leasing_clauses.append(
             _clause(
                 "moon_separation_and_connection_flow",
@@ -486,10 +511,17 @@ def evaluate_dorotheus_matter_profile(
                 (
                     _measurement("next_connection_body", None if connection is None else connection.body),
                     _measurement("next_connection_aspect", None if connection is None else connection.aspect_name),
-                    _measurement("previous_separation", None),
-                    _measurement("missing_semantics", "source-owned mapping from lunar flow to the four leasing stakes"),
+                    _measurement("next_connection_jd_exact", None if connection is None else connection.jd_exact, units="JD UT1"),
+                    _measurement("next_connection_signed_error_at_query", None if connection is None else connection.signed_error_at_query_deg, units="degrees"),
+                    _measurement("previous_separation_body", None if previous is None else previous.body),
+                    _measurement("previous_separation_aspect", None if previous is None else previous.aspect_name),
+                    _measurement("previous_separation_jd_exact", None if previous is None else previous.jd_exact, units="JD UT1"),
+                    _measurement("previous_separation_signed_error_at_query", None if previous is None else previous.signed_error_at_query_deg, units="degrees"),
+                    _measurement("previous_motion_state", None if previous_motion is None else previous_motion.state.value),
+                    _measurement("previous_window_policy", None if flow is None else flow.policy.previous_window.value),
+                    _measurement("missing_semantics", "V.9-specific assignment of lunar flow-away and connection to the four leasing stakes"),
                 ),
-                "V.9.8 requires both what the Moon flows away from and connects to; the existing forward witness alone cannot lawfully complete that judgement.",
+                "V.9.8 requires both what the Moon flows away from and connects to. The neutral geometry is preserved when an explicit previous-event window is supplied, but the surviving V.9 text does not assign those events to its four leasing stakes; the doctrinal clause therefore remains indeterminate.",
                 authority,
             )
         )
@@ -576,6 +608,7 @@ def evaluate_dorotheus_matter_profile(
         status=status,
         moon_condition=moon_condition,
         rooted_context=rooted_context,
+        moon_connection_flow=moon_connection_flow,
         clauses=clauses,
         angular_places=angular_places,
         planetary_strengths=strengths,
@@ -603,10 +636,18 @@ def dorotheus_matter_profile_at(
     reader: SpkReader | None = None,
     house_policy: HousePolicy | None = None,
     policy: DorotheusMatterProfilePolicy | None = None,
+    moon_flow_policy: MoonConnectionFlowPolicy | None = None,
 ) -> DorotheusMatterProfileEvaluation:
     """Construct the shared astronomy and evaluate one named matter profile."""
 
     profile_id = DorotheusMatterProfileId(profile_id)
+    if profile_id is DorotheusMatterProfileId.LEASING and moon_flow_policy is None:
+        raise ValueError(
+            "leasing profile requires an explicit moon_flow_policy because the "
+            "previous-separation window is not source-settled"
+        )
+    if profile_id is not DorotheusMatterProfileId.LEASING and moon_flow_policy is not None:
+        raise ValueError("moon_flow_policy is accepted only for the leasing profile")
     election_class = WesternElectionClass(election_class)
     natal_values = (natal_jd_ut, natal_latitude, natal_longitude, natal_house_system)
     if election_class is WesternElectionClass.EPHEMERAL and any(
@@ -670,11 +711,21 @@ def dorotheus_matter_profile_at(
     before = planet_at(Body.MOON, jd_ut - dt, reader=resolved_reader)
     after = planet_at(Body.MOON, jd_ut + dt, reader=resolved_reader)
     latitude_rate = (after.latitude - before.latitude) / (2.0 * dt)
+    moon_flow = (
+        moon_connection_flow_at(
+            jd_ut,
+            policy=moon_flow_policy,
+            reader=resolved_reader,
+        )
+        if moon_flow_policy is not None
+        else None
+    )
     return evaluate_dorotheus_matter_profile(
         chart,
         profile_id=profile_id,
         moon_condition=moon_condition,
         rooted_context=rooted_context,
+        moon_connection_flow=moon_flow,
         moon_latitude_rate_degrees_per_day=latitude_rate,
         reader_provenance=provenance,
         policy=resolved_policy,

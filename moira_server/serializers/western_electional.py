@@ -72,6 +72,7 @@ from ..models.western_electional import (
     SahlWesternElectionalTransportProvenanceResponse,
     MoonConnectionResponse,
 )
+from .relationship import serialize_moon_connection_flow_vessel
 
 
 _AUTHORITY = (
@@ -610,6 +611,11 @@ def serialize_dorotheus_matter_profile(
         status=result.status.value,
         moon_condition=serialize_dorotheus_moon_condition(result.moon_condition).evaluation,
         rooted_context=serialize_dorotheus_rooted_context(result.rooted_context).evaluation,
+        moon_connection_flow=(
+            None
+            if result.moon_connection_flow is None
+            else serialize_moon_connection_flow_vessel(result.moon_connection_flow)
+        ),
         clauses=[
             DorotheusMatterClauseWitnessResponse(
                 clause_id=item.clause_id,
@@ -653,11 +659,14 @@ def serialize_dorotheus_matter_profile(
         recommendation_language=result.recommendation_language,
         scoring=result.scoring,
     )
+    stages = list(_DOROTHEUS_MATTER_STAGE_SEQUENCE)
+    if result.moon_connection_flow is not None:
+        stages.insert(-2, "explicit_lunar_flow_window_and_event_search")
     return DorotheusMatterProfileResponse(
         evaluation=evaluation,
         transport_provenance=DorotheusMatterProfileTransportProvenanceResponse(
             authority=_DOROTHEUS_MATTER_AUTHORITY,
-            stage_sequence=list(_DOROTHEUS_MATTER_STAGE_SEQUENCE),
+            stage_sequence=stages,
         ),
     )
 

@@ -10,6 +10,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [4.3.0] - 2026-07-15
 
 ### Added
+- **Neutral Lunar Connection Flow**: Added `MoonConnectionFlow` through
+  `moon_connection_flow_at(...)`, the `Moira` facade, and
+  `POST /v1/aspects/moon-connection-flow`. Callers explicitly select the
+  previous-event window; results expose exact prior separation, current signed
+  motion, next sign-bounded connection, event times, signed residuals, sign
+  bounds, and no-event reasons without astrological interpretation.
+- **Signed Aspect Motion Witness**: Added immutable, kernel-free
+  `AspectMotionWitness` analysis through `aspect_motion_witness(...)`, the
+  `Moira` facade, and `POST /v1/aspects/motion-witness`. Results expose the
+  signed branch error, relative speed, orb rate, exactness, stationary reasons,
+  orb policy, and caller-declared frame/timescale without claiming a future
+  perfection search.
 - **Sahl Moon Condition**: Added the source-owned, non-scored
   `sahl_moon_condition_v1` profile through the engine, facade, and
   `POST /v1/electional/western/sahl-moon-condition`, preserving the burnt-path
@@ -37,6 +49,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   truth, triggered rule IDs, and not-evaluable rule IDs.
 
 ### Changed
+- V.9 leasing requests now require an explicit lunar-flow previous-window
+  policy and REST responses embed the complete neutral flow. The V.9 clause
+  remains indeterminate because the surviving source does not assign the two
+  events to its four leasing stakes.
 - **Bounds Doctrine Correction**: Replaced the duplicated Ptolemaic table with
   the source-transmitted Ptolemaic terms and replaced the unsupported
   `chaldean` table with explicit `chaldean_day` and `chaldean_night` variants.
@@ -68,6 +84,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All new electional routes and engine objects are additive relative to 4.2.1.
 - `qualification_statuses` is required on the new, previously unreleased
   `/v1/electional/western/profile-windows` request.
+- `moon_flow_policy` is required on the new, previously unreleased V.9 leasing
+  matter-profile request so the prior-event window cannot be implicit.
 - The previously unreleased construction response replaces the misleading
   `complete_electional_judgement=true` value with
   `complete_matter_profile=true` and `complete_electional_judgement=false`.
@@ -75,6 +93,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   introduced.
 
 ### Validation
+- Added lunar-flow policy, event-order, signed-motion, no-event, DE441,
+  leasing-embedding, facade, REST, and OpenAPI coverage.
+- Added signed-aspect wrap, exactness, station, relative-standstill,
+  missing-speed, branch-ambiguity, facade, REST, and OpenAPI coverage.
 - Added primary-source rule, ambiguity-policy, public-export, facade, REST,
   OpenAPI, and DE441 integration coverage for all admitted electional objects.
 - Added DE441 parity between optimized range-level VOC scanning and the

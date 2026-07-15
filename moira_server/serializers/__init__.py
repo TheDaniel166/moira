@@ -239,6 +239,7 @@ from .progressions import (
 )
 from .relationship import (
     serialize_aspect,
+    serialize_aspect_motion_witness,
     serialize_aspects_from_longitudes,
     serialize_aspect_pattern,
     serialize_chart_shape,
@@ -248,6 +249,8 @@ from .relationship import (
     serialize_midpoint_cluster,
     serialize_midpoint_hit,
     serialize_midpoint_weight,
+    serialize_moon_connection_flow,
+    serialize_moon_connection_flow_vessel,
     serialize_mutual_overlay,
     serialize_pattern_chart_condition_profile,
     serialize_pattern_network,
@@ -334,6 +337,9 @@ __all__ = [
     "serialize_planet",
     "serialize_planet_with_reduction",
     "serialize_aspect",
+    "serialize_aspect_motion_witness",
+    "serialize_moon_connection_flow",
+    "serialize_moon_connection_flow_vessel",
     "serialize_aspects_from_longitudes",
     "serialize_aspect_pattern",
     "serialize_chart_shape",

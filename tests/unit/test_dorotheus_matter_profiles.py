@@ -148,6 +148,18 @@ def test_v9_uses_occupancy_only_for_ascendant_and_configuration_for_other_stakes
     assert result.numerically_complete is False
 
 
+def test_v9_public_constructor_rejects_an_implicit_previous_event_window() -> None:
+    with pytest.raises(ValueError, match="explicit moon_flow_policy"):
+        western.dorotheus_matter_profile_at(
+            2451545.0,
+            40.0,
+            0.0,
+            house_system=HouseSystem.PORPHYRY,
+            profile_id=western.DorotheusMatterProfileId.LEASING,
+            reader=object(),
+        )
+
+
 def test_v11_pisces_fourth_place_preserves_both_terrain_testimonies() -> None:
     result = _evaluate(
         western.DorotheusMatterProfileId.LAND_PURCHASE,

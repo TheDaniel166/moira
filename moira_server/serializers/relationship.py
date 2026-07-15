@@ -2,7 +2,13 @@
 
 from __future__ import annotations
 
-from moira.aspects import AspectClassification, AspectData, LongitudeAspectAnalysis
+from moira.aspects import (
+    AspectClassification,
+    AspectData,
+    AspectMotionWitness,
+    LongitudeAspectAnalysis,
+)
+from moira.aspect_events import MoonAspectEvent, MoonConnectionFlow
 from moira.chart_shape import ChartShape
 from moira.houses import HousePlacement
 from moira.midpoints import Midpoint, MidpointCluster, MidpointWeight, PlanetaryPicture
@@ -45,6 +51,9 @@ from moira.synastry import (
 from ..models.relationship import (
     AspectClassificationResponse,
     AspectDataResponse,
+    AspectMotionAnalysisResponse,
+    AspectMotionComputationTruthResponse,
+    AspectMotionWitnessResponse,
     AspectsFromLongitudesResponse,
     AspectPatternResponse,
     ChartShapeResponse,
@@ -60,6 +69,11 @@ from ..models.relationship import (
     MidpointHitResponse,
     MidpointResponse,
     MidpointWeightResponse,
+    MoonAspectEventResponse,
+    MoonConnectionFlowAnalysisResponse,
+    MoonConnectionFlowComputationTruthResponse,
+    MoonConnectionFlowPolicyResponse,
+    MoonConnectionFlowResponse,
     MutualHouseOverlayResponse,
     LongitudeAspectComputationTruthResponse,
     PatternAspectContributionResponse,
@@ -135,6 +149,123 @@ def serialize_aspects_from_longitudes(
             point_count=analysis.point_count,
             aspect_count=analysis.aspect_count,
         ),
+    )
+
+
+def serialize_aspect_motion_witness(
+    witness: AspectMotionWitness,
+) -> AspectMotionAnalysisResponse:
+    return AspectMotionAnalysisResponse(
+        witness=AspectMotionWitnessResponse(
+            body1=witness.body1,
+            body2=witness.body2,
+            longitude1_deg=witness.longitude1_deg,
+            longitude2_deg=witness.longitude2_deg,
+            speed1_deg_per_day=witness.speed1_deg_per_day,
+            speed2_deg_per_day=witness.speed2_deg_per_day,
+            aspect=witness.aspect,
+            symbol=witness.symbol,
+            angle_deg=witness.angle_deg,
+            branch_selection=witness.branch_selection.value,
+            target_directed_separation_deg=witness.target_directed_separation_deg,
+            directed_separation_deg=witness.directed_separation_deg,
+            directed_error_deg=witness.directed_error_deg,
+            separation_deg=witness.separation_deg,
+            orb_deg=witness.orb_deg,
+            allowed_orb_deg=witness.allowed_orb_deg,
+            within_orb=witness.within_orb,
+            orb_policy=witness.orb_policy.value,
+            orb_factor=witness.orb_factor,
+            relative_speed_deg_per_day=witness.relative_speed_deg_per_day,
+            orb_rate_deg_per_day=witness.orb_rate_deg_per_day,
+            state=witness.state.value,
+            exact_tolerance_deg=witness.exact_tolerance_deg,
+            rate_tolerance_deg_per_day=witness.rate_tolerance_deg_per_day,
+            body1_stationary_threshold_deg_per_day=(
+                witness.body1_stationary_threshold_deg_per_day
+            ),
+            body2_stationary_threshold_deg_per_day=(
+                witness.body2_stationary_threshold_deg_per_day
+            ),
+            body1_stationary=witness.body1_stationary,
+            body2_stationary=witness.body2_stationary,
+            relative_motion_stalled=witness.relative_motion_stalled,
+            stationary_reasons=[reason.value for reason in witness.stationary_reasons],
+            reference_frame=witness.reference_frame,
+            timescale=witness.timescale,
+            provenance=witness.provenance,
+            evaluation_scope=witness.evaluation_scope,
+        ),
+        computation_truth=AspectMotionComputationTruthResponse(),
+    )
+
+
+def _serialize_moon_aspect_event(
+    event: MoonAspectEvent | None,
+) -> MoonAspectEventResponse | None:
+    if event is None:
+        return None
+    return MoonAspectEventResponse(
+        role=event.role.value,
+        body=event.body,
+        aspect_name=event.aspect_name,
+        directional_angle_deg=event.directional_angle_deg,
+        signed_target_deg=event.signed_target_deg,
+        jd_exact=event.jd_exact,
+        hours_from_query=event.hours_from_query,
+        moon_longitude_at_exact_deg=event.moon_longitude_at_exact_deg,
+        body_longitude_at_exact_deg=event.body_longitude_at_exact_deg,
+        signed_error_at_exact_deg=event.signed_error_at_exact_deg,
+        signed_error_at_query_deg=event.signed_error_at_query_deg,
+    )
+
+
+def serialize_moon_connection_flow_vessel(
+    flow: MoonConnectionFlow,
+) -> MoonConnectionFlowResponse:
+    return MoonConnectionFlowResponse(
+        jd_query=flow.jd_query,
+        moon_sign=flow.moon_sign,
+        jd_sign_ingress=flow.jd_sign_ingress,
+        jd_sign_egress=flow.jd_sign_egress,
+        previous_search_start=flow.previous_search_start,
+        previous_search_end=flow.previous_search_end,
+        next_search_start=flow.next_search_start,
+        next_search_end=flow.next_search_end,
+        policy=MoonConnectionFlowPolicyResponse(
+            previous_window=flow.policy.previous_window.value,
+            previous_lookback_days=flow.policy.previous_lookback_days,
+            modern=flow.policy.modern,
+            motion_orb_factor=flow.policy.motion_orb_factor,
+            motion_exact_tolerance_deg=flow.policy.motion_exact_tolerance_deg,
+            motion_rate_tolerance_deg_per_day=(
+                flow.policy.motion_rate_tolerance_deg_per_day
+            ),
+        ),
+        considered_bodies=list(flow.considered_bodies),
+        previous_separation=_serialize_moon_aspect_event(flow.previous_separation),
+        previous_motion=(
+            None
+            if flow.previous_motion is None
+            else serialize_aspect_motion_witness(flow.previous_motion).witness
+        ),
+        next_connection=_serialize_moon_aspect_event(flow.next_connection),
+        previous_no_event_reason=flow.previous_no_event_reason,
+        next_no_event_reason=flow.next_no_event_reason,
+        reference_frame=flow.reference_frame,
+        timescale=flow.timescale,
+        motion_speed_product=flow.motion_speed_product,
+        event_search=flow.event_search,
+        interpretation=flow.interpretation,
+    )
+
+
+def serialize_moon_connection_flow(
+    flow: MoonConnectionFlow,
+) -> MoonConnectionFlowAnalysisResponse:
+    return MoonConnectionFlowAnalysisResponse(
+        flow=serialize_moon_connection_flow_vessel(flow),
+        computation_truth=MoonConnectionFlowComputationTruthResponse(),
     )
 
 
@@ -645,6 +776,7 @@ def serialize_midpoint_cluster(cluster: MidpointCluster) -> MidpointClusterRespo
 
 __all__ = [
     "serialize_aspect",
+    "serialize_aspect_motion_witness",
     "serialize_aspects_from_longitudes",
     "serialize_aspect_pattern",
     "serialize_chart_shape",
@@ -654,6 +786,8 @@ __all__ = [
     "serialize_midpoint_cluster",
     "serialize_midpoint_hit",
     "serialize_midpoint_weight",
+    "serialize_moon_connection_flow",
+    "serialize_moon_connection_flow_vessel",
     "serialize_mutual_overlay",
     "serialize_pattern_chart_condition_profile",
     "serialize_pattern_network",

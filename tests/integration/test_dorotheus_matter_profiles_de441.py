@@ -10,6 +10,8 @@ from moira._kernel_paths import find_planetary_kernel
 from moira.constants import HouseSystem
 from moira.spk_reader import SpkReader
 from moira.western_electional import (
+    MoonConnectionFlowPolicy,
+    MoonPreviousEventWindowPolicy,
     DorotheusMatterProfileId,
     DorotheusMatterProfileStatus,
     dorotheus_matter_profile_at,
@@ -28,6 +30,13 @@ def test_j2000_matter_profiles_share_one_kernel_bound_public_contract() -> None:
                 -0.1278,
                 house_system=HouseSystem.REGIOMONTANUS,
                 profile_id=profile_id,
+                moon_flow_policy=(
+                    MoonConnectionFlowPolicy(
+                        MoonPreviousEventWindowPolicy.CURRENT_SIGN
+                    )
+                    if profile_id is DorotheusMatterProfileId.LEASING
+                    else None
+                ),
                 reader=reader,
             )
             for profile_id in DorotheusMatterProfileId
@@ -41,6 +50,11 @@ def test_j2000_matter_profiles_share_one_kernel_bound_public_contract() -> None:
     assert demolition.status is DorotheusMatterProfileStatus.DESCRIPTIVE
     assert leasing.angular_places[0].whole_sign_place == 1
     assert leasing.clauses[-1].clause_id == "moon_separation_and_connection_flow"
+    assert leasing.moon_connection_flow is not None
+    assert leasing.moon_connection_flow.previous_separation is not None
+    assert leasing.moon_connection_flow.next_connection is not None
+    assert leasing.moon_connection_flow.previous_motion is not None
+    assert leasing.clauses[-1].measurements[-1].value.startswith("V.9-specific")
     assert leasing.numerically_complete is False
     assert [item.topic for item in land.angular_places] == [
         "land",

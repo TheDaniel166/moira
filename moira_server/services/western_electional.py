@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from moira import Moira
 from moira.western_electional import (
+    MoonConnectionFlowPolicy,
+    MoonPreviousEventWindowPolicy,
     DorotheusMatter,
     DorotheusMatterProfileEvaluation,
     DorotheusMatterProfileId,
@@ -103,6 +105,18 @@ def compute_dorotheus_matter_profile(
 ) -> DorotheusMatterProfileEvaluation:
     """Evaluate one V.8, V.9, or V.11 profile through the public facade."""
 
+    flow_request = request.moon_flow_policy
+    flow_policy = (
+        None
+        if flow_request is None
+        else MoonConnectionFlowPolicy(
+            previous_window=MoonPreviousEventWindowPolicy(
+                flow_request.previous_window
+            ),
+            previous_lookback_days=flow_request.previous_lookback_days,
+            modern=flow_request.modern,
+        )
+    )
     result = engine.dorotheus_matter_profile_at(
         request.jd_ut,
         request.latitude,
@@ -115,6 +129,7 @@ def compute_dorotheus_matter_profile(
         natal_longitude=request.natal_longitude,
         natal_house_system=request.natal_house_system,
         unavoidable_time_urgency=request.unavoidable_time_urgency,
+        moon_flow_policy=flow_policy,
     )
     if result.profile_id.value != request.profile_id:
         raise RuntimeError("facade returned a matter profile different from the request")

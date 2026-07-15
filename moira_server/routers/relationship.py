@@ -8,6 +8,8 @@ from moira import Moira
 
 from ..dependencies import get_engine
 from ..models.relationship import (
+    AspectMotionAnalysisResponse,
+    AspectMotionWitnessRequest,
     AspectsFromLongitudesRequest,
     AspectsFromLongitudesResponse,
     CompositeChartRequest,
@@ -22,6 +24,8 @@ from ..models.relationship import (
     MidpointToPointRequest,
     MidpointWeightRequest,
     MidpointWeightSearchResponse,
+    MoonConnectionFlowAnalysisResponse,
+    MoonConnectionFlowRequest,
     MutualHouseOverlayResponse,
     PatternChartConditionProfileResponse,
     PatternConditionNetworkProfileResponse,
@@ -43,6 +47,7 @@ from ..models.relationship import (
 )
 from ..serializers.relationship import (
     serialize_aspect,
+    serialize_aspect_motion_witness,
     serialize_aspects_from_longitudes,
     serialize_aspect_pattern,
     serialize_chart_shape,
@@ -52,6 +57,7 @@ from ..serializers.relationship import (
     serialize_midpoint_cluster,
     serialize_midpoint_hit,
     serialize_midpoint_weight,
+    serialize_moon_connection_flow,
     serialize_mutual_overlay,
     serialize_pattern_chart_condition_profile,
     serialize_pattern_network,
@@ -62,12 +68,14 @@ from ..serializers.relationship import (
     serialize_synastry_relation,
 )
 from ..services.relationship import (
+    compute_aspect_motion_witness,
     compute_aspects_from_longitudes,
     compute_chart_shape,
     compute_composite_chart_analysis,
     compute_davison_chart_analysis,
     compute_midpoint_clusters,
     compute_midpoint_weighting,
+    compute_moon_connection_flow,
     compute_midpoints,
     compute_midpoints_to_point,
     compute_pattern_chart_profile,
@@ -87,6 +95,36 @@ from ..services.relationship import (
 
 
 router = APIRouter(prefix="/v1", tags=["relationship"])
+
+
+@router.post(
+    "/aspects/moon-connection-flow",
+    response_model=MoonConnectionFlowAnalysisResponse,
+)
+def moon_connection_flow_route(
+    request: MoonConnectionFlowRequest,
+    engine: Moira = Depends(get_engine),
+) -> MoonConnectionFlowAnalysisResponse:
+    """Expose exact lunar separation/connection geometry without judgement."""
+
+    return serialize_moon_connection_flow(
+        compute_moon_connection_flow(engine, request)
+    )
+
+
+@router.post(
+    "/aspects/motion-witness",
+    response_model=AspectMotionAnalysisResponse,
+)
+def aspect_motion_witness_route(
+    request: AspectMotionWitnessRequest,
+    engine: Moira = Depends(get_engine),
+) -> AspectMotionAnalysisResponse:
+    """Expose signed instantaneous aspect motion with explicit provenance."""
+
+    return serialize_aspect_motion_witness(
+        compute_aspect_motion_witness(engine, request)
+    )
 
 
 @router.post(

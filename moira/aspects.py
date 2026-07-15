@@ -12,7 +12,7 @@ qualification context and explicit aspect classification.
 
 Architecture layers
 -------------------
-This module has twelve distinct concerns, kept intentionally separate:
+This module has thirteen distinct concerns, kept intentionally separate:
 
 1. **Core aspect detection** — ``find_aspects``, ``aspects_between``,
    ``aspects_to_point``, ``find_declination_aspects``,
@@ -79,14 +79,21 @@ This module has twelve distinct concerns, kept intentionally separate:
    ambiguity: APPLYING, SEPARATING, STATIONARY, INDETERMINATE (speeds
    absent), NONE (``DeclinationAspect`` — no motion data at all).
 
-9. **Canonical configuration** — ``CANONICAL_ASPECTS``.
+9. **First-class signed motion** — ``AspectMotionWitness``,
+   ``AspectMotionState``, and ``aspect_motion_witness``.
+   Preserves one caller-selected instantaneous aspect branch, its signed
+   error and relative rate, explicit exact/station/ambiguity policy, canonical
+   orb admission, and caller-declared frame/timescale provenance.  It does not
+   search for a future perfection or station.
+
+10. **Canonical configuration** — ``CANONICAL_ASPECTS``.
    The complete, explicitly declared set of all 24 aspect types recognised
    and detectable by this engine: 22 zodiacal aspects (5 major, 6
    common-minor, 11 extended-minor) plus 2 declination aspects (Parallel,
    Contra-Parallel).  ``CANONICAL_ASPECTS`` makes the full set inspectable
    at import time without requiring knowledge of ``moira.constants``.
 
-10. **Multi-body pattern layer** — ``AspectPatternKind``, ``AspectPattern``,
+11. **Multi-body pattern layer** — ``AspectPatternKind``, ``AspectPattern``,
     ``find_patterns``.
     Detects structural configurations formed by three or more bodies whose
     pairwise aspects (already admitted by the detection layer) satisfy a
@@ -95,7 +102,7 @@ This module has twelve distinct concerns, kept intentionally separate:
     — it does not re-run position arithmetic, does not introduce new doctrine
     inputs, and does not mutate the supplied pairwise vessels.
 
-11. **Relational graph / network layer** — ``AspectGraphNode``, ``AspectGraph``,
+12. **Relational graph / network layer** — ``AspectGraphNode``, ``AspectGraph``,
     ``build_aspect_graph``.
     Expresses the chart as a deterministic relational network built from
     already-admitted pairwise aspects.  Bodies become nodes; each admitted
@@ -106,7 +113,7 @@ This module has twelve distinct concerns, kept intentionally separate:
     introduce new doctrine inputs.  An optional ``bodies`` parameter allows
     degree-0 (isolated) nodes to be declared explicitly.
 
-12. **Harmonic / family intelligence layer** — ``AspectFamilyProfile``,
+13. **Harmonic / family intelligence layer** — ``AspectFamilyProfile``,
     ``AspectHarmonicProfile``, ``aspect_harmonic_profile``.
     Derives the harmonic-family distribution of admitted aspects at both the
     chart level and per body.  Reports counts, proportions, and dominant
@@ -127,7 +134,8 @@ Boundary declaration
 --------------------
 Owns: aspect detection logic, orb arithmetic, applying/separating
       determination, stationary detection, the ``AspectData`` and
-      ``DeclinationAspect`` result vessels, and the classification layer.
+      ``DeclinationAspect`` result vessels, the signed motion witness, and the
+      classification layer.
 Delegates: aspect definition tables and tier lists to ``moira.constants``,
            angular distance arithmetic to ``moira.coordinates``.
 
@@ -152,6 +160,12 @@ Public surface
 ``aspect_strength``          — derive AspectStrength from any admitted vessel.
 ``MotionState``              — enum: APPLYING, SEPARATING, STATIONARY, INDETERMINATE, NONE.
 ``aspect_motion_state``      — derive MotionState from any admitted vessel.
+``AspectMotionBranch``       — selected positive, negative, conjunction, or ambiguous branch.
+``AspectMotionOrbPolicy``    — explicit orb policy used by the signed witness.
+``AspectMotionState``        — enum: APPLYING, EXACT, SEPARATING, STATIONARY, INDETERMINATE.
+``AspectMotionStationaryReason`` — typed body-station or relative-standstill reason.
+``AspectMotionWitness``      — immutable instantaneous signed-error/rate witness.
+``aspect_motion_witness``    — build the witness from caller-supplied longitudes and speeds.
 ``CANONICAL_ASPECTS``        — tuple of all 24 canonical aspect names (22 zodiacal + 2 declination).
 ``AspectPatternKind``        — enum: STELLIUM, T_SQUARE, GRAND_TRINE, GRAND_CROSS, YOD.
 ``AspectPattern``            — frozen dataclass: kind, bodies (frozenset), aspects (tuple).
@@ -209,8 +223,12 @@ __all__ = [
     "AspectDirection",
     "AspectDomain",
     "AspectFamily",
+    "AspectMotionBranch",
+    "AspectMotionOrbPolicy",
     "AspectPatternKind",
+    "AspectMotionStationaryReason",
     "AspectTier",
+    "AspectMotionState",
     "MotionState",
     # Dataclasses
     "AspectClassification",
@@ -219,6 +237,7 @@ __all__ = [
     "AspectGraph",
     "AspectGraphNode",
     "AspectHarmonicProfile",
+    "AspectMotionWitness",
     "LongitudeAspectAnalysis",
     "AspectPattern",
     "AspectPolicy",
@@ -226,6 +245,7 @@ __all__ = [
     "DeclinationAspect",
     # Entry points
     "aspect_harmonic_profile",
+    "aspect_motion_witness",
     "aspect_motion_state",
     "aspect_strength",
     "aspects_between",
@@ -654,6 +674,39 @@ class MotionState(str, Enum):
     STATIONARY    = "stationary"
     INDETERMINATE = "indeterminate"
     NONE          = "none"
+
+
+class AspectMotionState(str, Enum):
+    """Instantaneous phase of one selected longitude-aspect branch."""
+
+    APPLYING = "applying"
+    EXACT = "exact"
+    SEPARATING = "separating"
+    STATIONARY = "stationary"
+    INDETERMINATE = "indeterminate"
+
+
+class AspectMotionBranch(str, Enum):
+    """Selected signed exact-aspect branch."""
+
+    UNDIRECTED_CONJUNCTION = "undirected_conjunction"
+    POSITIVE = "positive"
+    NEGATIVE = "negative"
+    AMBIGUOUS_AT_ZERO_SEPARATION = "ambiguous_at_zero_separation"
+
+
+class AspectMotionOrbPolicy(str, Enum):
+    """Orb policy used by the instantaneous motion witness."""
+
+    CANONICAL_DEFAULT_SCALED = "canonical_default_scaled"
+
+
+class AspectMotionStationaryReason(str, Enum):
+    """Explicit reason that instantaneous aspect motion is stationary."""
+
+    BODY1_BELOW_THRESHOLD = "body1_below_stationary_threshold"
+    BODY2_BELOW_THRESHOLD = "body2_below_stationary_threshold"
+    RELATIVE_RATE_WITHIN_TOLERANCE = "relative_rate_within_tolerance"
 
 
 def aspect_motion_state(aspect: AspectData | DeclinationAspect) -> MotionState:
@@ -2151,6 +2204,57 @@ class LongitudeAspectAnalysis:
         return len(self.aspects)
 
 
+@dataclass(frozen=True, slots=True)
+class AspectMotionWitness:
+    """Inspectable instantaneous motion witness for one longitude aspect.
+
+    ``directed_error_deg`` is measured on the selected signed aspect branch:
+    the shortest directed longitude from ``body1`` to ``body2`` minus the
+    same-sign exact aspect target.  Its time derivative is the caller-supplied
+    relative longitude speed ``speed2 - speed1``.  Applying and separating
+    therefore follow directly from whether that signed error is closing or
+    opening; no future perfection or station search is implied.  When a
+    non-conjunction target has equally near positive and negative branches at
+    zero separation, the target and error remain undefined and the motion
+    state is indeterminate.
+    """
+
+    body1: str
+    body2: str
+    longitude1_deg: float
+    longitude2_deg: float
+    speed1_deg_per_day: float | None
+    speed2_deg_per_day: float | None
+    aspect: str
+    symbol: str
+    angle_deg: float
+    branch_selection: AspectMotionBranch
+    target_directed_separation_deg: float | None
+    directed_separation_deg: float
+    directed_error_deg: float | None
+    separation_deg: float
+    orb_deg: float
+    allowed_orb_deg: float
+    within_orb: bool
+    orb_policy: AspectMotionOrbPolicy
+    orb_factor: float
+    relative_speed_deg_per_day: float | None
+    orb_rate_deg_per_day: float | None
+    state: AspectMotionState
+    exact_tolerance_deg: float
+    rate_tolerance_deg_per_day: float
+    body1_stationary_threshold_deg_per_day: float
+    body2_stationary_threshold_deg_per_day: float
+    body1_stationary: bool | None
+    body2_stationary: bool | None
+    relative_motion_stalled: bool | None
+    stationary_reasons: tuple[AspectMotionStationaryReason, ...]
+    reference_frame: str
+    timescale: str
+    provenance: str = "caller_supplied_longitudes_and_speeds"
+    evaluation_scope: str = "instantaneous_no_event_search"
+
+
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
@@ -2263,6 +2367,185 @@ def _applying(
     sep = abs(diff)
     dsep_dt = (speeds[b2] - speeds[b1]) if diff >= 0 else (speeds[b1] - speeds[b2])
     return dsep_dt < 0 if sep >= angle else dsep_dt > 0
+
+
+def aspect_motion_witness(
+    body1: str,
+    longitude1_deg: float,
+    body2: str,
+    longitude2_deg: float,
+    aspect: str,
+    *,
+    speed1_deg_per_day: float | None = None,
+    speed2_deg_per_day: float | None = None,
+    orb_factor: float = 1.0,
+    exact_tolerance_deg: float = 1e-9,
+    rate_tolerance_deg_per_day: float = 1e-12,
+    reference_frame: str,
+    timescale: str,
+) -> AspectMotionWitness:
+    """Return an immutable signed motion witness for one selected aspect.
+
+    The computation is kernel-free and instantaneous.  Longitudes and daily
+    speeds are caller-owned inputs; ``reference_frame`` and ``timescale`` are
+    therefore required provenance rather than inferred defaults.  The aspect
+    target and default orb come from :class:`moira.constants.Aspect`.
+
+    Exactness takes precedence over motion classification.  Away from exact,
+    missing speeds produce ``indeterminate``; a body below Moira's existing
+    body-specific stationary threshold or a relative rate within the supplied
+    rate tolerance produces ``stationary``.  Otherwise the signed branch error
+    and relative speed determine applying versus separating.
+    """
+
+    for field_name, value in (("body1", body1), ("body2", body2)):
+        if not isinstance(value, str) or not value or value != value.strip():
+            raise ValueError(f"{field_name} must be a non-empty trimmed string")
+    if body1 == body2:
+        raise ValueError("body1 and body2 must identify distinct points")
+    if not isinstance(aspect, str):
+        raise ValueError("aspect must name one canonical longitude aspect")
+    definition = next((item for item in Aspect.ALL if item.name == aspect), None)
+    if definition is None:
+        raise ValueError(f"unknown canonical longitude aspect {aspect!r}")
+
+    def finite_number(name: str, value: float) -> float:
+        if isinstance(value, bool):
+            raise ValueError(f"{name} must be finite")
+        try:
+            parsed = float(value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"{name} must be finite") from exc
+        if not math.isfinite(parsed):
+            raise ValueError(f"{name} must be finite")
+        return parsed
+
+    longitude1 = finite_number("longitude1_deg", longitude1_deg) % 360.0
+    longitude2 = finite_number("longitude2_deg", longitude2_deg) % 360.0
+    speed1 = (
+        None
+        if speed1_deg_per_day is None
+        else finite_number("speed1_deg_per_day", speed1_deg_per_day)
+    )
+    speed2 = (
+        None
+        if speed2_deg_per_day is None
+        else finite_number("speed2_deg_per_day", speed2_deg_per_day)
+    )
+    resolved_orb_factor = finite_number("orb_factor", orb_factor)
+    exact_tolerance = finite_number("exact_tolerance_deg", exact_tolerance_deg)
+    rate_tolerance = finite_number(
+        "rate_tolerance_deg_per_day", rate_tolerance_deg_per_day
+    )
+    if resolved_orb_factor <= 0.0:
+        raise ValueError("orb_factor must be positive")
+    if exact_tolerance < 0.0:
+        raise ValueError("exact_tolerance_deg must be non-negative")
+    if rate_tolerance < 0.0:
+        raise ValueError("rate_tolerance_deg_per_day must be non-negative")
+    for field_name, value in (
+        ("reference_frame", reference_frame),
+        ("timescale", timescale),
+    ):
+        if not isinstance(value, str) or not value or value != value.strip():
+            raise ValueError(f"{field_name} must be a non-empty trimmed string")
+
+    directed_separation = (
+        (longitude2 - longitude1 + 180.0) % 360.0
+    ) - 180.0
+    if definition.angle == 0.0:
+        branch_selection = AspectMotionBranch.UNDIRECTED_CONJUNCTION
+        target_directed_separation = 0.0
+    elif directed_separation == 0.0:
+        branch_selection = AspectMotionBranch.AMBIGUOUS_AT_ZERO_SEPARATION
+        target_directed_separation = None
+    elif directed_separation > 0.0:
+        branch_selection = AspectMotionBranch.POSITIVE
+        target_directed_separation = definition.angle
+    else:
+        branch_selection = AspectMotionBranch.NEGATIVE
+        target_directed_separation = -definition.angle
+    directed_error = (
+        None
+        if target_directed_separation is None
+        else directed_separation - target_directed_separation
+    )
+    separation = abs(directed_separation)
+    orb = abs(separation - definition.angle)
+    allowed_orb = definition.default_orb * resolved_orb_factor
+
+    threshold1 = _STATIONARY_THRESHOLDS.get(body1, 0.005)
+    threshold2 = _STATIONARY_THRESHOLDS.get(body2, 0.005)
+    body1_stationary = None if speed1 is None else abs(speed1) < threshold1
+    body2_stationary = None if speed2 is None else abs(speed2) < threshold2
+    relative_speed = None if speed1 is None or speed2 is None else speed2 - speed1
+    relative_motion_stalled = (
+        None
+        if relative_speed is None
+        else abs(relative_speed) <= rate_tolerance
+    )
+
+    stationary_reasons: list[AspectMotionStationaryReason] = []
+    if body1_stationary:
+        stationary_reasons.append(AspectMotionStationaryReason.BODY1_BELOW_THRESHOLD)
+    if body2_stationary:
+        stationary_reasons.append(AspectMotionStationaryReason.BODY2_BELOW_THRESHOLD)
+    if relative_motion_stalled:
+        stationary_reasons.append(
+            AspectMotionStationaryReason.RELATIVE_RATE_WITHIN_TOLERANCE
+        )
+
+    is_exact = orb <= exact_tolerance
+    orb_rate = (
+        None
+        if relative_speed is None or is_exact or directed_error is None
+        else math.copysign(1.0, directed_error) * relative_speed
+    )
+    if is_exact:
+        state = AspectMotionState.EXACT
+    elif relative_speed is None or directed_error is None:
+        state = AspectMotionState.INDETERMINATE
+    elif stationary_reasons:
+        state = AspectMotionState.STATIONARY
+    elif orb_rate is not None and orb_rate < 0.0:
+        state = AspectMotionState.APPLYING
+    else:
+        state = AspectMotionState.SEPARATING
+
+    return AspectMotionWitness(
+        body1=body1,
+        body2=body2,
+        longitude1_deg=longitude1,
+        longitude2_deg=longitude2,
+        speed1_deg_per_day=speed1,
+        speed2_deg_per_day=speed2,
+        aspect=definition.name,
+        symbol=definition.symbol,
+        angle_deg=definition.angle,
+        branch_selection=branch_selection,
+        target_directed_separation_deg=target_directed_separation,
+        directed_separation_deg=directed_separation,
+        directed_error_deg=directed_error,
+        separation_deg=separation,
+        orb_deg=orb,
+        allowed_orb_deg=allowed_orb,
+        within_orb=orb <= allowed_orb,
+        orb_policy=AspectMotionOrbPolicy.CANONICAL_DEFAULT_SCALED,
+        orb_factor=resolved_orb_factor,
+        relative_speed_deg_per_day=relative_speed,
+        orb_rate_deg_per_day=orb_rate,
+        state=state,
+        exact_tolerance_deg=exact_tolerance,
+        rate_tolerance_deg_per_day=rate_tolerance,
+        body1_stationary_threshold_deg_per_day=threshold1,
+        body2_stationary_threshold_deg_per_day=threshold2,
+        body1_stationary=body1_stationary,
+        body2_stationary=body2_stationary,
+        relative_motion_stalled=relative_motion_stalled,
+        stationary_reasons=tuple(stationary_reasons),
+        reference_frame=reference_frame,
+        timescale=timescale,
+    )
 
 
 def _aspect_direction(lon1: float, lon2: float, angle: float) -> AspectDirection | None:

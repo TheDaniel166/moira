@@ -1,6 +1,6 @@
 # P13-U1 Western Electional Issues 01-16 — Definitive Implementation Plan
 
-**Status:** implementation-ready dependency plan; source-gated where noted  
+**Status:** active implementation; Phases 1 and 2A complete; source-gated where noted
 **Scope:** the first sixteen unresolved Western electional issues identified
 after the P1-P3 work  
 **Public-surface rule:** an issue is not closed until its admitted product is
@@ -218,7 +218,7 @@ the actual variant and source citation. Egyptian consumers remain unchanged.
 
 ### Phase 2 — Directed aspects and Dorotheus lunar flow (#11, #1)
 
-#### 2A. General signed applying/separating witness (#11)
+#### 2A. General signed applying/separating witness (#11) — COMPLETE 2026-07-15
 
 1. Preserve the existing signed shortest-arc algorithm in `moira/aspects.py`.
 2. Define a first-class immutable witness containing bodies, aspect, current
@@ -236,7 +236,17 @@ the actual variant and source citation. Egyptian consumers remain unchanged.
    as a typed component of the existing aspect route. The OpenAPI schema must
    expose motion semantics rather than flattening them to a boolean.
 
-#### 2B. Dorotheus V.9 lunar flow (#1)
+**Closure:** `AspectMotionWitness` preserves the selected signed aspect branch,
+directed separation and error, relative speed, orb rate, exact/rate tolerances,
+canonical scaled-orb policy, body-specific station thresholds, visible station
+reasons, caller-declared frame/timescale, and an explicit instantaneous-only
+scope. `aspect_motion_witness(...)`, `Moira.aspect_motion_witness(...)`, and
+`POST /v1/aspects/motion-witness` expose the same object. Exactness, missing or
+partial speeds, body stations, relative standstill, 0/360 wrap, positive and
+negative branches, and the equidistant non-conjunction branch singularity are
+covered by engine, facade, REST, OpenAPI, and public-surface tests.
+
+#### 2B. Dorotheus V.9 lunar flow (#1) — GEOMETRY COMPLETE, DOCTRINE SOURCE-GATED 2026-07-15
 
 1. Add a neutral `MoonConnectionFlow` vessel rather than embedding the search
    inside a leasing rule. It should contain:
@@ -274,6 +284,24 @@ the actual variant and source citation. Egyptian consumers remain unchanged.
 **Exit gate:** a fixed epoch can be traced from longitudes/speeds to previous
 and next exact events, then to the Dorothean clause; tests prove the selected
 window policy and REST preserves every witness field.
+
+**Closure and remaining source gate:** `MoonConnectionFlow` now preserves the
+caller-selected prior-event window (`current_sign` or bounded
+`fixed_lookback`), exact previous and next directional perfections, signed
+query and exact residuals, current motion state, sign bounds, considered body
+set, and explicit no-event reasons. It is public through
+`moon_connection_flow_at(...)`, `Moira.moon_connection_flow_at(...)`, and
+`POST /v1/aspects/moon-connection-flow`. A V.9 leasing request must supply the
+previous-window policy, and its REST response embeds the complete flow.
+
+The source audit confirmed that *Carmen* V.9.8 requires both what the Moon
+flows away from and what it connects to. V.6.27-31 supplies the general
+root/outcome sequence, while V.10 and V.29 demonstrate that matter-specific
+chapters can assign separation and connection differently. The surviving V.9
+text does not assign the two events to its four leasing stakes. Therefore the
+geometry is complete but `moon_separation_and_connection_flow` lawfully
+remains `NOT_EVALUABLE`; replacing that state still requires the fuller
+Theophilus/Hephaistion parallel identified in the source-acquisition list.
 
 ---
 
@@ -626,7 +654,7 @@ any unresolved clause remains.
 | 8 | Sahl fourth-house profiles | 2/4/5/11 and terminology | six separate public profiles with source-order witnesses |
 | 9 | Ramesey remedy | fortification + hour lord + aspects | tri-state fulfillment; remedy remains non-erasing |
 | 10 | Ptolemaic bounds | **COMPLETE 2026-07-15** | source-traced 12×5 table; Chaldaean day/night split; public source metadata |
-| 11 | signed application/separation | existing aspect engine | first-class witness, invariants, facade/REST/OpenAPI |
+| 11 | signed application/separation | **COMPLETE 2026-07-15** | first-class instantaneous witness, invariants, facade/REST/OpenAPI |
 | 12 | perfection doctrines | 11 + event sequence + reception | event-trace proof for each named doctrine; standalone public route |
 | 13 | remaining matters | shared substrate + per-matter sources | each inventory row admitted/deferred/excluded explicitly |
 | 14 | complete judgement | 1-13 as applicable | reconstructible component assembly; typed indeterminacy |
@@ -737,6 +765,7 @@ $env:MOIRA_STRICT_KNOWN_ISSUES = "1"
   tests\unit\test_dorotheus_rooted_context.py `
   tests\unit\test_dorotheus_construction.py `
   tests\unit\test_dorotheus_matter_profiles.py `
+  tests\unit\test_aspect_motion_witness.py `
   tests\unit\test_aspects.py `
   tests\unit\test_void_of_course.py -q
 
@@ -748,6 +777,7 @@ $env:MOIRA_STRICT_KNOWN_ISSUES = "1"
   tests\server\test_server_dorotheus_rooted_context_routes.py `
   tests\server\test_server_dorotheus_construction_routes.py `
   tests\server\test_server_dorotheus_matter_profile_routes.py `
+  tests\server\test_server_aspect_motion_witness.py `
   tests\server\test_server_western_electional_profile_scan_routes.py -q
 
 # Curated public-export governance and documentation consistency.

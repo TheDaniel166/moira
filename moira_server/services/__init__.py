@@ -275,6 +275,7 @@ from .progressions import (
     compute_time_key_progression_chart_with_reduction,
 )
 from .relationship import (
+    compute_aspect_motion_witness,
     compute_aspects_from_longitudes,
     compute_chart_shape,
     compute_composite_chart,
@@ -285,6 +286,7 @@ from .relationship import (
     compute_midpoint_weighting,
     compute_midpoints,
     compute_midpoints_to_point,
+    compute_moon_connection_flow,
     compute_pattern_chart_profile,
     compute_pattern_network,
     compute_patterns,
@@ -510,6 +512,8 @@ __all__ = [
     "compute_close_approaches",
     "compute_general_visibility_event",
     "compute_houses",
+    "compute_aspect_motion_witness",
+    "compute_moon_connection_flow",
     "compute_aspects_from_longitudes",
     "compute_chart_shape",
     "compute_composite_chart",

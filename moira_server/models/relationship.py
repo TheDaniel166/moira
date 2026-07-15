@@ -6,7 +6,7 @@ from datetime import datetime
 import math
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from .chart import ChartResponse, HousesResponse
 
@@ -136,6 +136,282 @@ class LongitudeAspectComputationTruthResponse(_StrictModel):
 class AspectsFromLongitudesResponse(_StrictModel):
     events: list[AspectDataResponse]
     computation_truth: LongitudeAspectComputationTruthResponse
+
+
+AspectMotionNameValue = Literal[
+    "Conjunction",
+    "Semisextile",
+    "Semisquare",
+    "Sextile",
+    "Square",
+    "Trine",
+    "Sesquiquadrate",
+    "Quincunx",
+    "Opposition",
+    "Quintile",
+    "Biquintile",
+    "Tredecile",
+    "Septile",
+    "Biseptile",
+    "Triseptile",
+    "Novile",
+    "Binovile",
+    "Quadnovile",
+    "Decile",
+    "Undecile",
+    "Quindecile",
+    "Vigintile",
+]
+
+AspectMotionStationaryReasonValue = Literal[
+    "body1_below_stationary_threshold",
+    "body2_below_stationary_threshold",
+    "relative_rate_within_tolerance",
+]
+
+
+class AspectMotionWitnessRequest(_StrictModel):
+    body1: str = Field(min_length=1, max_length=128)
+    longitude1_deg: float
+    body2: str = Field(min_length=1, max_length=128)
+    longitude2_deg: float
+    aspect: AspectMotionNameValue
+    speed1_deg_per_day: float | None = None
+    speed2_deg_per_day: float | None = None
+    orb_factor: float = Field(default=1.0, gt=0.0, le=10.0)
+    exact_tolerance_deg: float = Field(default=1e-9, ge=0.0, le=1.0)
+    rate_tolerance_deg_per_day: float = Field(default=1e-12, ge=0.0, le=1.0)
+    reference_frame: str = Field(min_length=1, max_length=128)
+    timescale: str = Field(min_length=1, max_length=32)
+
+    @field_validator("body1", "body2", "reference_frame", "timescale")
+    @classmethod
+    def _trimmed_text(cls, value: str) -> str:
+        if value != value.strip():
+            raise ValueError("text provenance and body fields must be trimmed")
+        return value
+
+    @field_validator(
+        "longitude1_deg",
+        "longitude2_deg",
+        "speed1_deg_per_day",
+        "speed2_deg_per_day",
+        "orb_factor",
+        "exact_tolerance_deg",
+        "rate_tolerance_deg_per_day",
+        mode="before",
+    )
+    @classmethod
+    def _finite_values(cls, value: Any) -> Any:
+        if value is None:
+            return None
+        if isinstance(value, bool):
+            raise ValueError("aspect motion values must be finite numbers")
+        try:
+            parsed = float(value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("aspect motion values must be finite numbers") from exc
+        if not math.isfinite(parsed):
+            raise ValueError("aspect motion values must be finite numbers")
+        return parsed
+
+    @model_validator(mode="after")
+    def _distinct_points(self) -> "AspectMotionWitnessRequest":
+        if self.body1 == self.body2:
+            raise ValueError("body1 and body2 must identify distinct points")
+        return self
+
+
+class AspectMotionWitnessResponse(_StrictModel):
+    body1: str
+    body2: str
+    longitude1_deg: float
+    longitude2_deg: float
+    speed1_deg_per_day: float | None
+    speed2_deg_per_day: float | None
+    aspect: AspectMotionNameValue
+    symbol: str
+    angle_deg: float
+    branch_selection: Literal[
+        "undirected_conjunction",
+        "positive",
+        "negative",
+        "ambiguous_at_zero_separation",
+    ]
+    target_directed_separation_deg: float | None
+    directed_separation_deg: float
+    directed_error_deg: float | None
+    separation_deg: float
+    orb_deg: float
+    allowed_orb_deg: float
+    within_orb: bool
+    orb_policy: Literal["canonical_default_scaled"]
+    orb_factor: float
+    relative_speed_deg_per_day: float | None
+    orb_rate_deg_per_day: float | None
+    state: Literal["applying", "exact", "separating", "stationary", "indeterminate"]
+    exact_tolerance_deg: float
+    rate_tolerance_deg_per_day: float
+    body1_stationary_threshold_deg_per_day: float
+    body2_stationary_threshold_deg_per_day: float
+    body1_stationary: bool | None
+    body2_stationary: bool | None
+    relative_motion_stalled: bool | None
+    stationary_reasons: list[AspectMotionStationaryReasonValue]
+    reference_frame: str
+    timescale: str
+    provenance: Literal["caller_supplied_longitudes_and_speeds"]
+    evaluation_scope: Literal["instantaneous_no_event_search"]
+
+
+class AspectMotionComputationTruthResponse(_StrictModel):
+    source_module: Literal["moira.aspects"] = "moira.aspects"
+    engine_entrypoint: Literal["aspect_motion_witness"] = "aspect_motion_witness"
+    facade_entrypoint: Literal["Moira.aspect_motion_witness"] = (
+        "Moira.aspect_motion_witness"
+    )
+    branch_error_formula: Literal[
+        "shortest_directed_separation_minus_same_sign_exact_target"
+    ] = "shortest_directed_separation_minus_same_sign_exact_target"
+    relative_speed_formula: Literal["speed2_minus_speed1"] = "speed2_minus_speed1"
+    motion_classification: Literal["instantaneous_signed_error_rate"] = (
+        "instantaneous_signed_error_rate"
+    )
+    stationary_policy: Literal[
+        "body_specific_threshold_or_relative_rate_tolerance"
+    ] = "body_specific_threshold_or_relative_rate_tolerance"
+    orb_policy_authority: Literal["moira.constants.Aspect"] = "moira.constants.Aspect"
+    provenance_semantics: Literal["caller_declared_frame_and_timescale"] = (
+        "caller_declared_frame_and_timescale"
+    )
+
+
+class AspectMotionAnalysisResponse(_StrictModel):
+    witness: AspectMotionWitnessResponse
+    computation_truth: AspectMotionComputationTruthResponse
+
+
+class MoonConnectionFlowRequest(_StrictModel):
+    jd_ut: float
+    previous_window_policy: Literal["current_sign", "fixed_lookback"]
+    previous_lookback_days: float | None = Field(default=None, gt=0.0, le=30.0)
+    modern: bool = False
+    motion_orb_factor: float = Field(default=1.0, gt=0.0, le=10.0)
+    motion_exact_tolerance_deg: float = Field(default=1e-9, ge=0.0, le=1.0)
+    motion_rate_tolerance_deg_per_day: float = Field(
+        default=1e-12, ge=0.0, le=1.0
+    )
+
+    @field_validator(
+        "jd_ut",
+        "previous_lookback_days",
+        "motion_orb_factor",
+        "motion_exact_tolerance_deg",
+        "motion_rate_tolerance_deg_per_day",
+        mode="before",
+    )
+    @classmethod
+    def _finite_flow_values(cls, value: Any) -> Any:
+        if value is None:
+            return None
+        if isinstance(value, bool):
+            raise ValueError("Moon flow numeric values must be finite")
+        try:
+            parsed = float(value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("Moon flow numeric values must be finite") from exc
+        if not math.isfinite(parsed):
+            raise ValueError("Moon flow numeric values must be finite")
+        return parsed
+
+    @field_validator("modern", mode="before")
+    @classmethod
+    def _strict_modern(cls, value: Any) -> bool:
+        if not isinstance(value, bool):
+            raise ValueError("modern must be a boolean")
+        return value
+
+    @model_validator(mode="after")
+    def _coherent_previous_window(self) -> "MoonConnectionFlowRequest":
+        if self.previous_window_policy == "current_sign":
+            if self.previous_lookback_days is not None:
+                raise ValueError(
+                    "current_sign previous window rejects previous_lookback_days"
+                )
+        elif self.previous_lookback_days is None:
+            raise ValueError(
+                "fixed_lookback previous window requires previous_lookback_days"
+            )
+        return self
+
+
+class MoonConnectionFlowPolicyResponse(_StrictModel):
+    previous_window: Literal["current_sign", "fixed_lookback"]
+    previous_lookback_days: float | None
+    modern: bool
+    motion_orb_factor: float
+    motion_exact_tolerance_deg: float
+    motion_rate_tolerance_deg_per_day: float
+
+
+class MoonAspectEventResponse(_StrictModel):
+    role: Literal["previous_separation", "next_connection"]
+    body: str
+    aspect_name: Literal["Conjunction", "Sextile", "Square", "Trine", "Opposition"]
+    directional_angle_deg: float
+    signed_target_deg: float
+    jd_exact: float
+    hours_from_query: float
+    moon_longitude_at_exact_deg: float
+    body_longitude_at_exact_deg: float
+    signed_error_at_exact_deg: float
+    signed_error_at_query_deg: float
+
+
+class MoonConnectionFlowResponse(_StrictModel):
+    jd_query: float
+    moon_sign: str
+    jd_sign_ingress: float
+    jd_sign_egress: float
+    previous_search_start: float
+    previous_search_end: float
+    next_search_start: float
+    next_search_end: float
+    policy: MoonConnectionFlowPolicyResponse
+    considered_bodies: list[str]
+    previous_separation: MoonAspectEventResponse | None
+    previous_motion: AspectMotionWitnessResponse | None
+    next_connection: MoonAspectEventResponse | None
+    previous_no_event_reason: str | None
+    next_no_event_reason: str | None
+    reference_frame: Literal["apparent_geocentric_true_ecliptic_of_date"]
+    timescale: Literal["UT1_input_with_internal_TT_ephemeris"]
+    motion_speed_product: Literal[
+        "planet_at_geocentric_astrometric_longitude_rate"
+    ]
+    event_search: Literal["exact_directional_major_aspect_perfection"]
+    interpretation: Literal["none_geometry_only"]
+
+
+class MoonConnectionFlowComputationTruthResponse(_StrictModel):
+    source_module: Literal["moira.aspect_events"] = "moira.aspect_events"
+    engine_entrypoint: Literal["moon_connection_flow_at"] = "moon_connection_flow_at"
+    facade_entrypoint: Literal["Moira.moon_connection_flow_at"] = (
+        "Moira.moon_connection_flow_at"
+    )
+    previous_window_semantics: Literal["caller_declared"] = "caller_declared"
+    next_window_semantics: Literal["current_tropical_sign"] = (
+        "current_tropical_sign"
+    )
+    doctrine_semantics: Literal["none_geometry_only"] = "none_geometry_only"
+    motion_speed_semantics: Literal[
+        "planet_at_geocentric_astrometric_longitude_rate"
+    ] = "planet_at_geocentric_astrometric_longitude_rate"
+
+
+class MoonConnectionFlowAnalysisResponse(_StrictModel):
+    flow: MoonConnectionFlowResponse
+    computation_truth: MoonConnectionFlowComputationTruthResponse
 
 
 class SynastryAspectTruthResponse(_StrictModel):
@@ -599,6 +875,12 @@ class MidpointClusterRequest(MidpointRequest):
 
 __all__ = [
     "AspectDataResponse",
+    "AspectMotionAnalysisResponse",
+    "AspectMotionComputationTruthResponse",
+    "AspectMotionNameValue",
+    "AspectMotionStationaryReasonValue",
+    "AspectMotionWitnessRequest",
+    "AspectMotionWitnessResponse",
     "AspectsFromLongitudesRequest",
     "AspectsFromLongitudesResponse",
     "AspectPatternResponse",
@@ -620,6 +902,12 @@ __all__ = [
     "MidpointWeightResponse",
     "MidpointWeightSearchResponse",
     "LongitudeAspectComputationTruthResponse",
+    "MoonAspectEventResponse",
+    "MoonConnectionFlowAnalysisResponse",
+    "MoonConnectionFlowComputationTruthResponse",
+    "MoonConnectionFlowPolicyResponse",
+    "MoonConnectionFlowRequest",
+    "MoonConnectionFlowResponse",
     "MutualHouseOverlayResponse",
     "PatternChartConditionProfileResponse",
     "PatternConditionNetworkProfileResponse",

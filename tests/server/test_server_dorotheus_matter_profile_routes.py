@@ -23,7 +23,7 @@ def client_and_app():
 
 
 def _payload(profile_id: str) -> dict[str, Any]:
-    return {
+    payload = {
         "profile_id": profile_id,
         "jd_ut": 2451545.0,
         "latitude": 51.5074,
@@ -31,6 +31,12 @@ def _payload(profile_id: str) -> dict[str, Any]:
         "house_system": HouseSystem.REGIOMONTANUS,
         "election_class": "ephemeral",
     }
+    if profile_id == "dorotheus_leasing_v1":
+        payload["moon_flow_policy"] = {
+            "previous_window": "current_sign",
+            "modern": False,
+        }
+    return payload
 
 
 @pytest.mark.parametrize(
@@ -63,6 +69,16 @@ def test_matter_route_exposes_each_named_profile(
     assert evaluation["complete_matter_profile"] is True
     assert evaluation["complete_electional_judgement"] is False
     assert evaluation["scoring"] == "not_provided"
+    if profile_id == "dorotheus_leasing_v1":
+        flow = evaluation["moon_connection_flow"]
+        assert flow["policy"]["previous_window"] == "current_sign"
+        assert flow["previous_separation"]["hours_from_query"] < 0.0
+        assert flow["next_connection"]["hours_from_query"] > 0.0
+        assert flow["previous_motion"]["state"] in {
+            "applying", "exact", "separating", "stationary", "indeterminate"
+        }
+    else:
+        assert evaluation["moon_connection_flow"] is None
     assert body["transport_provenance"]["facade_entrypoint"] == (
         "Moira.dorotheus_matter_profile_at"
     )
@@ -73,6 +89,17 @@ def test_matter_route_rejects_unknown_profile(client_and_app) -> None:
     response = client.post(
         "/v1/electional/western/dorotheus-matter-profile",
         json=_payload("dorotheus_unknown_v1"),
+    )
+    assert response.status_code == 422
+
+
+def test_leasing_rejects_an_implicit_previous_event_window(client_and_app) -> None:
+    client, _ = client_and_app
+    payload = _payload("dorotheus_leasing_v1")
+    payload.pop("moon_flow_policy")
+    response = client.post(
+        "/v1/electional/western/dorotheus-matter-profile",
+        json=payload,
     )
     assert response.status_code == 422
 

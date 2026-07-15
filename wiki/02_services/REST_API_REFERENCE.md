@@ -137,7 +137,7 @@ Not yet broadly exposed as REST families:
 | chart | 2 |
 | chart-shape | 1 |
 | comets | 3 |
-| aspects | 1 |
+| aspects | 2 |
 | composite | 1 |
 | dasha | 5 |
 | davison | 1 |
@@ -375,6 +375,8 @@ Admitted products:
 
 | Method | Path | Handler |
 |---|---|---|
+| POST | `/v1/aspects/motion-witness` | `aspect_motion_witness_route` |
+| POST | `/v1/aspects/moon-connection-flow` | `moon_connection_flow_route` |
 | POST | `/v1/aspects/from-longitudes` | `aspects_from_longitudes_route` |
 | POST | `/v1/synastry/aspects` | `synastry_aspects_route` |
 | POST | `/v1/synastry/contacts` | `synastry_contacts_route` |
@@ -420,6 +422,46 @@ stationary state, house frame, score, or interpretation is fabricated. The
 response computation truth records normalized inputs, effective tier and orb
 factor, node exclusions, counts, engine/facade entry points, and
 `motion_semantics: not_computed_without_speeds`.
+
+### Signed Aspect-Motion Witness
+
+`POST /v1/aspects/motion-witness` is the kernel-free, instantaneous motion
+surface for one caller-selected canonical longitude aspect. It accepts two
+named longitudes, optional daily speeds, the canonical aspect name, an orb
+factor, exact and relative-rate tolerances, and required caller-declared frame
+and timescale provenance.
+
+The response preserves the shortest directed separation, selected signed
+aspect branch, directed error, relative speed (`speed2 - speed1`), orb rate,
+canonical scaled orb, admission truth, body-specific stationary thresholds,
+station flags and reasons, and one of `applying`, `exact`, `separating`,
+`stationary`, or `indeterminate`. Missing or partial speeds never fabricate
+motion. A non-conjunction aspect requested at zero separation has equally near
+positive and negative branches, so the branch and motion state remain
+explicitly indeterminate.
+
+This endpoint does not cast a chart, search for a future perfection or station,
+or supply Dorothean interpretation. It is the first-class geometry witness
+required by later lunar-flow and classical-perfection doctrine.
+
+### Lunar Connection-Flow Witness
+
+`POST /v1/aspects/moon-connection-flow` is the kernel-bound, interpretation-
+free exact-event surface for lunar flow. It requires a finite `jd_ut` and an
+explicit `previous_window_policy`: `current_sign`, which rejects a lookback,
+or `fixed_lookback`, which requires a positive `previous_lookback_days` value
+bounded to 30 days at REST. The optional `modern` flag changes the considered
+body set explicitly.
+
+The response preserves current tropical sign ingress and egress, both search
+intervals, the last exact directional major aspect in the selected previous
+window, its signed error and instantaneous motion state at the query, and the
+first exact connection before current-sign egress. Event absence carries a
+typed reason rather than a fabricated body or aspect. Computation truth names
+the apparent geocentric true-ecliptic-of-date position product, UT1 input with
+internal TT ephemeris conversion, the canonical `planet_at` geocentric
+astrometric longitude-rate product used for motion, engine/facade entry points, and
+`none_geometry_only` interpretation semantics.
 
 `POST /v1/composite/chart` and `POST /v1/davison/chart` also return this same
 analysis under their required `aspects` member. Their existing `tier`,
@@ -1700,9 +1742,12 @@ The matter-profile route requires one of `dorotheus_demolition_v1`,
 `dorotheus_leasing_v1`, or `dorotheus_land_purchase_v1`. It exposes the
 source-ordered V.8, V.9, or V.11 clauses, named whole-sign angular topics,
 planetary strength witnesses where applicable, and the inherited Moon/rooted
-context. Leasing remains `numerically_complete: false` because V.9's lunar
-flow requires a prior-separation and stake-mapping policy not supplied by the
-admitted source text. No profile produces a score or recommendation.
+context. Leasing additionally requires `moon_flow_policy`, selecting either
+the current-sign or a bounded fixed-lookback previous-event interval, and the
+response embeds the resulting `moon_connection_flow`. Leasing remains
+`numerically_complete: false`: the event geometry is now complete, but V.9's
+surviving text does not assign separation and connection to its four leasing
+stakes. No profile produces a score or recommendation.
 
 Each single-moment transport names its route semantics, engine and facade entry
 points, and reports `scoring: not_provided`,

@@ -77,8 +77,14 @@ from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tro
 from .aspects import (
     AspectData,
     AspectDirection,
+    AspectMotionBranch,
+    AspectMotionOrbPolicy,
+    AspectMotionState,
+    AspectMotionStationaryReason,
+    AspectMotionWitness,
     AspectPolicy,
     LongitudeAspectAnalysis,
+    aspect_motion_witness,
     aspects_from_longitudes,
     find_aspects,
 )
@@ -586,6 +592,14 @@ from .batch import (
     BodyVoidWindows,
     void_periods_all_planets,
 )
+from .aspect_events import (
+    MoonPreviousEventWindowPolicy,
+    MoonFlowEventRole,
+    MoonAspectEvent,
+    MoonConnectionFlowPolicy,
+    MoonConnectionFlow,
+    moon_connection_flow_at,
+)
 from .western_electional import (
     RameseyRuleState,
     RameseyMoonConditionStatus,
@@ -713,8 +727,14 @@ __all__ = [
     "describe_galactic_boundary",
     "AspectData",
     "AspectDirection",
+    "AspectMotionBranch",
+    "AspectMotionOrbPolicy",
+    "AspectMotionState",
+    "AspectMotionStationaryReason",
+    "AspectMotionWitness",
     "AspectPolicy",
     "LongitudeAspectAnalysis",
+    "aspect_motion_witness",
     "aspects_from_longitudes",
     "find_aspects",
     "HarmonicDomain",
@@ -1162,6 +1182,12 @@ __all__ = [
     "MoonConnection",
     "VoidOfCourseWindow",
     "LastAspect",
+    "MoonPreviousEventWindowPolicy",
+    "MoonFlowEventRole",
+    "MoonAspectEvent",
+    "MoonConnectionFlowPolicy",
+    "MoonConnectionFlow",
+    "moon_connection_flow_at",
     # Batch assembly
     "PlanetTimeSeries",
     "BatchFailure",

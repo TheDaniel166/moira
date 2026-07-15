@@ -10,6 +10,7 @@ from pydantic import Field, field_validator, model_validator
 from moira.constants import HOUSE_SYSTEM_NAMES
 
 from .common import _StrictModel
+from .relationship import MoonConnectionFlowResponse
 
 
 RAMESEY_PROFILE_ID = "ramesey_moon_condition_v1"
@@ -745,8 +746,54 @@ class DorotheusConstructionResponse(_StrictModel):
     transport_provenance: DorotheusConstructionTransportProvenanceResponse
 
 
+class DorotheusMoonFlowPolicyRequest(_StrictModel):
+    previous_window: Literal["current_sign", "fixed_lookback"]
+    previous_lookback_days: float | None = Field(default=None, gt=0.0, le=30.0)
+    modern: bool = False
+
+    @field_validator("previous_lookback_days", mode="before")
+    @classmethod
+    def _finite_lookback(cls, value: Any) -> float | None:
+        if value is None:
+            return None
+        return _finite_number(value, "previous_lookback_days")
+
+    @field_validator("modern", mode="before")
+    @classmethod
+    def _strict_modern(cls, value: Any) -> bool:
+        if not isinstance(value, bool):
+            raise ValueError("modern must be a boolean")
+        return value
+
+    @model_validator(mode="after")
+    def _coherent_window(self) -> "DorotheusMoonFlowPolicyRequest":
+        if self.previous_window == "current_sign":
+            if self.previous_lookback_days is not None:
+                raise ValueError(
+                    "current_sign previous window rejects previous_lookback_days"
+                )
+        elif self.previous_lookback_days is None:
+            raise ValueError(
+                "fixed_lookback previous window requires previous_lookback_days"
+            )
+        return self
+
+
 class DorotheusMatterProfileRequest(DorotheusConstructionRequest):
     profile_id: DorotheusMatterProfileIdValue
+    moon_flow_policy: DorotheusMoonFlowPolicyRequest | None = None
+
+    @model_validator(mode="after")
+    def _leasing_flow_policy(self) -> "DorotheusMatterProfileRequest":
+        if self.profile_id == "dorotheus_leasing_v1":
+            if self.moon_flow_policy is None:
+                raise ValueError(
+                    "leasing requires moon_flow_policy because the previous-event "
+                    "window is not source-settled"
+                )
+        elif self.moon_flow_policy is not None:
+            raise ValueError("moon_flow_policy is accepted only for leasing")
+        return self
 
 
 class DorotheusAngularPlaceWitnessResponse(_StrictModel):
@@ -778,6 +825,7 @@ class DorotheusMatterProfileEvaluationResponse(_StrictModel):
     status: DorotheusMatterProfileStatusValue
     moon_condition: DorotheusMoonConditionEvaluationResponse
     rooted_context: DorotheusRootedContextEvaluationResponse
+    moon_connection_flow: MoonConnectionFlowResponse | None
     clauses: list[DorotheusMatterClauseWitnessResponse]
     angular_places: list[DorotheusAngularPlaceWitnessResponse]
     planetary_strengths: list[DorotheusPlacementWitnessResponse]
@@ -1042,6 +1090,7 @@ __all__ = [
     "DorotheusMatterProfileIdValue",
     "DorotheusMatterProfileStatusValue",
     "DorotheusMatterProfileRequest",
+    "DorotheusMoonFlowPolicyRequest",
     "DorotheusAngularPlaceWitnessResponse",
     "DorotheusMatterClauseWitnessResponse",
     "DorotheusMatterProfileEvaluationResponse",

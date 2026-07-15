@@ -32,6 +32,14 @@ from .egyptian_bounds import EgyptianBoundsDoctrine, EgyptianBoundsPolicy, egypt
 from .houses import HouseAngularity, HousePolicy, assign_house, describe_angularity
 from .spk_reader import SpkReader, get_reader
 from .void_of_course import is_void_of_course
+from .aspect_events import (
+    MoonPreviousEventWindowPolicy,
+    MoonFlowEventRole,
+    MoonAspectEvent,
+    MoonConnectionFlowPolicy,
+    MoonConnectionFlow,
+    moon_connection_flow_at,
+)
 from ._western_electional_dorotheus import (
     DOROTHEUS_MOON_CONDITION_V1,
     DorotheusClauseWitness,
@@ -103,6 +111,12 @@ from ._western_electional_scan import (
 )
 
 __all__ = [
+    "MoonPreviousEventWindowPolicy",
+    "MoonFlowEventRole",
+    "MoonAspectEvent",
+    "MoonConnectionFlowPolicy",
+    "MoonConnectionFlow",
+    "moon_connection_flow_at",
     "RameseyRuleState",
     "RameseyMoonConditionStatus",
     "RameseyRemedyApplicability",

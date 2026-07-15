@@ -190,6 +190,11 @@ from .aspects import (
     AspectDomain,
     AspectDirection,
     AspectFamily,
+    AspectMotionBranch,
+    AspectMotionOrbPolicy,
+    AspectMotionState,
+    AspectMotionStationaryReason,
+    AspectMotionWitness,
     AspectPatternKind,
     AspectTier,
     MotionState,
@@ -204,6 +209,7 @@ from .aspects import (
     AspectStrength,
     DeclinationAspect,
     aspect_harmonic_profile,
+    aspect_motion_witness,
     aspect_motion_state,
     aspect_strength,
     aspects_between,
@@ -874,6 +880,14 @@ from .electional import (
     ElectionalPolicy, ElectionalWindow,
     find_electional_windows, find_electional_moments,
 )
+from .aspect_events import (
+    MoonPreviousEventWindowPolicy,
+    MoonFlowEventRole,
+    MoonAspectEvent,
+    MoonConnectionFlowPolicy,
+    MoonConnectionFlow,
+    moon_connection_flow_at,
+)
 from .western_electional import (
     RameseyRuleState,
     RameseyMoonConditionStatus,
@@ -1381,11 +1395,11 @@ __all__ = [
     "AspectDefinition", "ASPECT_TIERS",
     # Aspect backend public surface
     "CANONICAL_ASPECTS", "DEFAULT_POLICY", "TRADITIONAL_MOIETY_ORBS",
-    "AspectDomain", "AspectDirection", "AspectFamily", "AspectPatternKind", "AspectTier", "MotionState",
+    "AspectDomain", "AspectDirection", "AspectFamily", "AspectMotionBranch", "AspectMotionOrbPolicy", "AspectMotionState", "AspectMotionStationaryReason", "AspectMotionWitness", "AspectPatternKind", "AspectTier", "MotionState",
     "AspectClassification", "AspectFamilyProfile", "AspectGraph",
     "AspectGraphNode", "AspectHarmonicProfile", "LongitudeAspectAnalysis", "AspectPolicy",
     "AspectStrength", "DeclinationAspect",
-    "aspect_harmonic_profile", "aspect_motion_state", "aspect_strength",
+    "aspect_harmonic_profile", "aspect_motion_witness", "aspect_motion_state", "aspect_strength",
     "aspects_between", "aspects_from_longitudes", "aspects_to_point", "build_aspect_graph",
     "find_aspects", "find_declination_aspects", "find_patterns",
     # Lots
@@ -1847,6 +1861,9 @@ __all__ = [
     "LastAspect", "MoonConnection", "VoidOfCourseWindow",
     "void_of_course_window", "is_void_of_course",
     "next_moon_connection", "next_void_of_course", "void_periods_in_range",
+    "MoonPreviousEventWindowPolicy", "MoonFlowEventRole", "MoonAspectEvent",
+    "MoonConnectionFlowPolicy", "MoonConnectionFlow",
+    "moon_connection_flow_at",
     # Batch assembly
     "PlanetTimeSeries", "BatchFailure", "ChartBatchRequest", "ChartBatchResult",
     "EventBatchRequest", "EventBatchResult",

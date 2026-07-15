@@ -42,6 +42,7 @@ from ._shared import (
 from .chart import compute_chart, compute_houses
 from ..models.chart import ChartRequest, HousesRequest
 from ..models.relationship import (
+    AspectMotionWitnessRequest,
     AspectsFromLongitudesRequest,
     CompositeChartRequest,
     DavisonChartRequest,
@@ -49,6 +50,7 @@ from ..models.relationship import (
     MidpointRequest,
     MidpointToPointRequest,
     MidpointWeightRequest,
+    MoonConnectionFlowRequest,
     PatternRequest,
     PlanetaryPictureRequest,
     RelationshipPartyRequest,
@@ -110,6 +112,52 @@ def compute_aspects_from_longitudes(
         tier=request.tier,
         orb_factor=request.orb_factor,
         include_nodes=request.include_nodes,
+    )
+
+
+def compute_aspect_motion_witness(
+    engine: Moira,
+    request: AspectMotionWitnessRequest,
+):
+    return engine.aspect_motion_witness(
+        request.body1,
+        request.longitude1_deg,
+        request.body2,
+        request.longitude2_deg,
+        request.aspect,
+        speed1_deg_per_day=request.speed1_deg_per_day,
+        speed2_deg_per_day=request.speed2_deg_per_day,
+        orb_factor=request.orb_factor,
+        exact_tolerance_deg=request.exact_tolerance_deg,
+        rate_tolerance_deg_per_day=request.rate_tolerance_deg_per_day,
+        reference_frame=request.reference_frame,
+        timescale=request.timescale,
+    )
+
+
+def compute_moon_connection_flow(
+    engine: Moira,
+    request: MoonConnectionFlowRequest,
+):
+    from moira.aspect_events import (
+        MoonConnectionFlowPolicy,
+        MoonPreviousEventWindowPolicy,
+    )
+
+    return engine.moon_connection_flow_at(
+        request.jd_ut,
+        policy=MoonConnectionFlowPolicy(
+            previous_window=MoonPreviousEventWindowPolicy(
+                request.previous_window_policy
+            ),
+            previous_lookback_days=request.previous_lookback_days,
+            modern=request.modern,
+            motion_orb_factor=request.motion_orb_factor,
+            motion_exact_tolerance_deg=request.motion_exact_tolerance_deg,
+            motion_rate_tolerance_deg_per_day=(
+                request.motion_rate_tolerance_deg_per_day
+            ),
+        ),
     )
 
 
@@ -369,6 +417,7 @@ def compute_midpoint_clusters(engine: Moira, request: MidpointClusterRequest):
 
 
 __all__ = [
+    "compute_aspect_motion_witness",
     "compute_aspects_from_longitudes",
     "compute_chart_shape",
     "compute_composite_chart",
@@ -379,6 +428,7 @@ __all__ = [
     "compute_midpoint_weighting",
     "compute_midpoints",
     "compute_midpoints_to_point",
+    "compute_moon_connection_flow",
     "compute_pattern_chart_profile",
     "compute_pattern_network",
     "compute_patterns",
