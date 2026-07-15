@@ -152,6 +152,11 @@ def test_j2000_london_de441_rule_witness_regression() -> None:
     assert result.complete_electional_judgement is False
     assert result.advice_language == "not_provided"
     assert result.recommendation_language == "not_provided"
+    remedy = result.remedies[0]
+    assert remedy.fulfillment.value == "not_fulfilled"
+    assert remedy.clauses[0].state.value == "not_fulfilled"
+    assert remedy.clauses[1].state.value == "fulfilled"
+    assert remedy.clauses[-1].measurements[0].value == Body.MERCURY
     speed_measurement = result.rules[8].clauses[0].measurements[0]
     longitude_delta = (moon_after.longitude - moon_before.longitude + 180.0) % 360.0 - 180.0
     finite_difference_rate = longitude_delta / (2.0 * dt)

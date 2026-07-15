@@ -33,6 +33,10 @@ from .chart import ChartContext, create_chart
 from .constants import Body, SIGNS, sign_of
 from .eclipse import EclipseCalculator
 from .houses import HousePolicy, assign_house, describe_angularity
+from .lunar_direction import (
+    LunarEclipticDirectionWitness,
+    lunar_ecliptic_direction_at,
+)
 from .obliquity import true_obliquity
 from .planets import planet_at
 from .spk_reader import SpkReader, get_reader
@@ -175,8 +179,7 @@ class DorotheusConstructionPolicy:
     calculation_position_product: str = (
         "apparent_geocentric_longitude_mean_ecliptic_and_equinox_of_date"
     )
-    north_crossing_policy: str = "unresolved_ecliptic_region_and_crossing_tolerance"
-    latitude_rate_sample_days: float = 0.01
+    north_crossing_policy: str = "source_indeterminate_with_exact_lunar_crossing_witness"
 
     def __post_init__(self) -> None:
         defaults = {
@@ -443,7 +446,7 @@ def evaluate_dorotheus_construction(
     moon_condition: DorotheusMoonConditionEvaluation,
     rooted_context: DorotheusRootedContextEvaluation,
     moon_true_longitude_mean_ecliptic_degrees: float,
-    moon_latitude_rate_degrees_per_day: float,
+    lunar_direction: LunarEclipticDirectionWitness,
     reader_provenance: str,
     policy: DorotheusConstructionPolicy = DOROTHEUS_CONSTRUCTION_V1,
 ) -> DorotheusConstructionEvaluation:
@@ -460,8 +463,10 @@ def evaluate_dorotheus_construction(
         raise ValueError(
             "Moon true longitude in the mean ecliptic must be finite in [0, 360)"
         )
-    if not math.isfinite(moon_latitude_rate_degrees_per_day):
-        raise ValueError("Moon latitude rate must be finite")
+    if not isinstance(lunar_direction, LunarEclipticDirectionWitness):
+        raise TypeError("lunar_direction must be a LunarEclipticDirectionWitness")
+    if lunar_direction.jd_ut != chart.jd_ut:
+        raise ValueError("lunar_direction must describe the chart instant")
     if moon_condition.jd_ut != chart.jd_ut or rooted_context.jd_ut != chart.jd_ut:
         raise ValueError("all inherited layers must describe the same election instant")
     if rooted_context.matter is not DorotheusMatter.LAND_AND_MANAGEMENT:
@@ -546,11 +551,19 @@ def evaluate_dorotheus_construction(
             DorotheusConstructionClauseRole.FORTIFIER,
             DorotheusConstructionClauseState.NOT_EVALUABLE,
             (
-                _measurement("moon_ecliptic_latitude", moon.latitude, units="degrees"),
-                _measurement("moon_latitude_rate", moon_latitude_rate_degrees_per_day, units="degrees/day"),
-                _measurement("required_missing_semantics", "ecliptic crossing region and tolerance"),
+                _measurement("moon_ecliptic_latitude", lunar_direction.latitude_deg, units="degrees"),
+                _measurement("moon_latitude_rate", lunar_direction.latitude_rate_deg_per_day, units="degrees/day"),
+                _measurement("hemisphere", lunar_direction.hemisphere.value),
+                _measurement("latitude_motion", lunar_direction.motion.value),
+                _measurement("previous_crossing_jd_ut", lunar_direction.previous_crossing.jd_ut, units="JD UT1"),
+                _measurement("previous_crossing_direction", lunar_direction.previous_crossing.direction.value),
+                _measurement("next_crossing_jd_ut", lunar_direction.next_crossing.jd_ut, units="JD UT1"),
+                _measurement("next_crossing_direction", lunar_direction.next_crossing.direction.value),
+                _measurement("nearest_crossing_relation", lunar_direction.nearest_crossing_relation.value),
+                _measurement("nearest_crossing_hours_from_query", lunar_direction.nearest_crossing.hours_from_query, units="hours"),
+                _measurement("required_missing_semantics", "source-owned interval before or after the exact ascending crossing"),
             ),
-            "Northward latitude motion is measured, but V.7 supplies no numerical region for being on the ecliptic.",
+            "Northward latitude motion and adjacent exact roots are measured, but V.7 supplies no before/after interval for treating the Moon as on the ecliptic.",
         ),
         _clause(
             "benefic_configured_from_strong_place",
@@ -698,9 +711,11 @@ def dorotheus_construction_at(
         if reader_path is not None
         else f"{type(resolved_reader).__module__}.{type(resolved_reader).__qualname__}"
     )
+    lunar_direction = lunar_ecliptic_direction_at(jd_ut, reader=resolved_reader)
     moon_condition = evaluate_dorotheus_moon_condition(
         chart,
         moon_eclipsed=moon_eclipsed,
+        lunar_direction=lunar_direction,
         unavoidable_time_urgency=unavoidable_time_urgency,
         position_product=DOROTHEUS_MOON_CONDITION_V1.position_product,
         reader_provenance=provenance,
@@ -714,9 +729,6 @@ def dorotheus_construction_at(
         reader_provenance=provenance,
         policy=DOROTHEUS_ROOTED_CONTEXT_V1,
     )
-    dt = policy.latitude_rate_sample_days
-    moon_before = planet_at(Body.MOON, jd_ut - dt, reader=resolved_reader)
-    moon_after = planet_at(Body.MOON, jd_ut + dt, reader=resolved_reader)
     moon_mean_ecliptic = planet_at(
         Body.MOON,
         jd_ut,
@@ -724,13 +736,12 @@ def dorotheus_construction_at(
         nutation=False,
         jd_tt=chart.jd_tt,
     )
-    latitude_rate = (moon_after.latitude - moon_before.latitude) / (2.0 * dt)
     return evaluate_dorotheus_construction(
         chart,
         moon_condition=moon_condition,
         rooted_context=rooted_context,
         moon_true_longitude_mean_ecliptic_degrees=moon_mean_ecliptic.longitude,
-        moon_latitude_rate_degrees_per_day=latitude_rate,
+        lunar_direction=lunar_direction,
         reader_provenance=provenance,
         policy=policy,
     )

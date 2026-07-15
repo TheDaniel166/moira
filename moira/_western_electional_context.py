@@ -15,6 +15,7 @@ from enum import Enum
 from .chart import ChartContext, create_chart
 from .constants import Body, SIGNS, sign_of
 from .houses import HousePolicy, assign_house, describe_angularity
+from .lots import calculate_lots
 from .profections import DOMICILE_RULERS
 from .spk_reader import SpkReader, get_reader
 from .void_of_course import MoonConnection, next_moon_connection
@@ -26,6 +27,10 @@ __all__ = [
     "DorotheusStrengthState",
     "DorotheusRootOutcomePattern",
     "DorotheusSignificatorCondition",
+    "DorotheusFortificationTestimonyState",
+    "DorotheusFortificationTestimony",
+    "DorotheusSupplementaryIndicatorState",
+    "DorotheusSupplementaryIndicator",
     "DorotheusPlacementWitness",
     "DorotheusRootOutcomeWitness",
     "DorotheusMatterSignificatorWitness",
@@ -120,6 +125,75 @@ class DorotheusSignificatorCondition(str, Enum):
     INDETERMINATE = "indeterminate"
 
 
+class DorotheusFortificationTestimonyState(str, Enum):
+    """Truth state for one V.31 fortification testimony."""
+
+    CLEAR = "clear"
+    TRIGGERED = "triggered"
+    NOT_EVALUABLE = "not_evaluable"
+
+
+@dataclass(frozen=True, slots=True)
+class DorotheusFortificationTestimony:
+    """One source-named V.31 testimony, without a point score."""
+
+    testimony_id: str
+    state: DorotheusFortificationTestimonyState
+    policy_id: str
+    observed_value: bool | float | str | tuple[str, ...] | None
+    explanation: str
+    source_reference: str = _AUTHORITY_V31
+
+    def __post_init__(self) -> None:
+        if not self.testimony_id or not self.policy_id or not self.explanation:
+            raise ValueError("fortification testimony identity and policy must be visible")
+        if isinstance(self.observed_value, float) and not math.isfinite(
+            self.observed_value
+        ):
+            raise ValueError("fortification testimony values must be finite")
+
+
+class DorotheusSupplementaryIndicatorState(str, Enum):
+    """Evaluation state for one V.6.29 supplementary indicator."""
+
+    EVALUATED = "evaluated"
+    NOT_EVALUABLE = "not_evaluable"
+
+
+@dataclass(frozen=True, slots=True)
+class DorotheusSupplementaryIndicator:
+    """A V.6.29 indicator kept distinct from the primary Moon-sign lord."""
+
+    indicator_id: str
+    role: str
+    state: DorotheusSupplementaryIndicatorState
+    body: str | None
+    longitude: float | None
+    sign: str | None
+    ruler: str | None
+    placement: DorotheusPlacementWitness | None
+    source_reference: str
+    explanation: str
+
+    def __post_init__(self) -> None:
+        if not self.indicator_id or not self.role or not self.source_reference:
+            raise ValueError("supplementary indicator identity and authority must be visible")
+        if not self.explanation:
+            raise ValueError("supplementary indicator explanation must be visible")
+        if self.longitude is not None and (
+            not math.isfinite(self.longitude) or not 0.0 <= self.longitude < 360.0
+        ):
+            raise ValueError("supplementary longitude must be finite in [0, 360)")
+        if self.sign is not None and self.sign not in SIGNS:
+            raise ValueError("supplementary sign must be canonical")
+        if self.state is DorotheusSupplementaryIndicatorState.NOT_EVALUABLE:
+            if any(
+                value is not None
+                for value in (self.body, self.longitude, self.sign, self.ruler, self.placement)
+            ):
+                raise ValueError("a not-evaluable supplementary indicator cannot invent truth")
+
+
 @dataclass(frozen=True, slots=True)
 class DorotheusPlacementWitness:
     body: str
@@ -163,10 +237,9 @@ class DorotheusMatterSignificatorWitness:
     bad_place_evaluated: bool
     bad_place: bool | None
     condition: DorotheusSignificatorCondition
+    fortification_testimonies: tuple[DorotheusFortificationTestimony, ...]
     source_reference: str = _AUTHORITY_V31
-    uncomputed_requirements: tuple[str, ...] = (
-        "V.31 'made unfortunate'; whole-sign malefic configuration is evidence only",
-    )
+    combination_law: str = "triggered_if_any_testimony_triggered_else_indeterminate_if_any_not_evaluable"
 
     def __post_init__(self) -> None:
         if self.solar_distance_degrees is not None and not math.isfinite(
@@ -175,6 +248,28 @@ class DorotheusMatterSignificatorWitness:
             raise ValueError("solar distance must be finite when supplied")
         if not self.bad_place_evaluated or not isinstance(self.bad_place, bool):
             raise ValueError("bad-place truth must be evaluated in v1")
+        if tuple(item.testimony_id for item in self.fortification_testimonies) != (
+            "under_rays",
+            "made_unfortunate",
+            "not_looking_at_ascendant",
+            "bad_place",
+        ):
+            raise ValueError("V.31 testimonies must remain source ordered")
+        expected = (
+            DorotheusSignificatorCondition.ONE_OR_MORE_COMPUTED_IMPEDIMENTS
+            if any(
+                item.state is DorotheusFortificationTestimonyState.TRIGGERED
+                for item in self.fortification_testimonies
+            )
+            else DorotheusSignificatorCondition.INDETERMINATE
+            if any(
+                item.state is DorotheusFortificationTestimonyState.NOT_EVALUABLE
+                for item in self.fortification_testimonies
+            )
+            else DorotheusSignificatorCondition.CLEAR_OF_COMPUTED_IMPEDIMENTS
+        )
+        if self.condition is not expected:
+            raise ValueError("significator condition must derive from visible testimonies")
 
 
 @dataclass(frozen=True, slots=True)
@@ -202,12 +297,13 @@ class DorotheusRootedContextPolicy:
     """Closed policy for the first shared Dorothean context vessel."""
 
     profile_id: str = "dorotheus_rooted_context_v1"
-    profile_version: str = "1.1.0"
+    profile_version: str = "1.2.0"
     strength_policy: str = "quadrant_house_angular_succedent_cadent"
     aspect_policy: str = "whole_sign_configuration"
     under_rays_degrees: float = 15.0
     bad_place_policy: str = "whole_sign_places_3_6_8_12_moon_rejoices_in_3"
     next_connection_policy: str = "first_exact_traditional_aspect_before_sign_exit"
+    supplementary_indicator_policy: str = "v6_29_distinct_roles_no_fallback"
 
     def __post_init__(self) -> None:
         expected = DorotheusRootedContextPolicy.__dataclass_fields__
@@ -231,6 +327,7 @@ class DorotheusRootedContextEvaluation:
     matter_significators: tuple[DorotheusMatterSignificatorWitness, ...]
     next_connection: MoonConnection | None
     next_connection_placement: DorotheusPlacementWitness | None
+    supplementary_indicators: tuple[DorotheusSupplementaryIndicator, ...]
     radicality: DorotheusRadicalityWitness
     reader_provenance: str
     latitude: float
@@ -244,7 +341,7 @@ class DorotheusRootedContextEvaluation:
         _AUTHORITY_BAD_PLACES,
     )
     uncomputed_requirements: tuple[str, ...] = (
-        "V.6.29 ninth-part or Lot-of-Fortune ruler variants",
+        "V.6.29 editorial ninth-part division and boundary scheme",
         "a source-owned universal success or auspiciousness score",
     )
     complete_electional_judgement: bool = False
@@ -260,6 +357,12 @@ class DorotheusRootedContextEvaluation:
         actual = tuple(item.body for item in self.matter_significators)
         if actual != expected:
             raise ValueError("matter significators must derive from the V.31 registry")
+        if tuple(item.indicator_id for item in self.supplementary_indicators) != (
+            "editorial_ninth_part_lord",
+            "lot_of_fortune_lord",
+            "next_moon_connection",
+        ):
+            raise ValueError("V.6.29 supplementary indicators must remain source ordered")
         if self.complete_electional_judgement:
             raise ValueError("the rooted context is not a complete electional judgement")
 
@@ -362,7 +465,55 @@ def _matter_witness(
     bad_place = whole_sign_place in _BAD_WHOLE_SIGN_PLACES and not (
         body == Body.MOON and whole_sign_place == 3
     )
-    computed_impediment = under_rays or not looks_at_asc or bad_place
+    testimonies = (
+        DorotheusFortificationTestimony(
+            testimony_id="under_rays",
+            state=(
+                DorotheusFortificationTestimonyState.TRIGGERED
+                if under_rays
+                else DorotheusFortificationTestimonyState.CLEAR
+            ),
+            policy_id="dorotheus_v31_under_rays_15_degrees",
+            observed_value=distance,
+            explanation="Solar distance is tested against the explicit 15-degree V.31 policy.",
+        ),
+        DorotheusFortificationTestimony(
+            testimony_id="made_unfortunate",
+            state=DorotheusFortificationTestimonyState.NOT_EVALUABLE,
+            policy_id="dorotheus_v31_open_made_unfortunate_source_gate",
+            observed_value=tuple(configured),
+            explanation=(
+                "Whole-sign Mars/Saturn configurations are preserved as evidence, but "
+                "Dorotheus does not close 'made unfortunate' to an exclusive predicate here."
+            ),
+        ),
+        DorotheusFortificationTestimony(
+            testimony_id="not_looking_at_ascendant",
+            state=(
+                DorotheusFortificationTestimonyState.CLEAR
+                if looks_at_asc
+                else DorotheusFortificationTestimonyState.TRIGGERED
+            ),
+            policy_id="dorotheus_v31_whole_sign_configuration",
+            observed_value=looks_at_asc,
+            explanation="The significator must bodily occupy or aspect the Ascendant sign.",
+        ),
+        DorotheusFortificationTestimony(
+            testimony_id="bad_place",
+            state=(
+                DorotheusFortificationTestimonyState.TRIGGERED
+                if bad_place
+                else DorotheusFortificationTestimonyState.CLEAR
+            ),
+            policy_id=policy.bad_place_policy,
+            observed_value=bad_place,
+            explanation="Bad-place truth uses Dorotheus's whole-sign places 3, 6, 8, and 12.",
+        ),
+    )
+    computed_impediment = any(
+        item.state is DorotheusFortificationTestimonyState.TRIGGERED
+        for item in testimonies
+    )
     condition = (
         DorotheusSignificatorCondition.ONE_OR_MORE_COMPUTED_IMPEDIMENTS
         if computed_impediment
@@ -378,6 +529,88 @@ def _matter_witness(
         bad_place_evaluated=True,
         bad_place=bad_place,
         condition=condition,
+        fortification_testimonies=testimonies,
+    )
+
+
+def _supplementary_indicators(
+    chart: ChartContext,
+    next_connection: MoonConnection | None,
+) -> tuple[DorotheusSupplementaryIndicator, ...]:
+    """Materialize V.6.29 without treating distinct indicators as fallbacks."""
+
+    houses = chart.houses
+    if houses is None:
+        raise ValueError("election chart must contain houses")
+    positions = {name: planet.longitude for name, planet in chart.planets.items()}
+    cusps = {index + 1: longitude for index, longitude in enumerate(houses.cusps)}
+    fortune = next(
+        part
+        for part in calculate_lots(positions, cusps, chart.is_day)
+        if part.name == "Fortune"
+    )
+    fortune_ruler = DOMICILE_RULERS[fortune.sign]
+    connection_placement = (
+        _placement(chart, next_connection.body, "next_moon_connection")
+        if next_connection is not None
+        else None
+    )
+    return (
+        DorotheusSupplementaryIndicator(
+            indicator_id="editorial_ninth_part_lord",
+            role="editorial_inception_supplement",
+            state=DorotheusSupplementaryIndicatorState.NOT_EVALUABLE,
+            body=None,
+            longitude=None,
+            sign=None,
+            ruler=None,
+            placement=None,
+            source_reference=(
+                f"{_AUTHORITY_V6}; edition note 31 identifies a Persian editorial insertion"
+            ),
+            explanation=(
+                "The primary page supplies no ninth-part division, boundary, or ruler scheme; "
+                "no modern navamsa convention is assumed."
+            ),
+        ),
+        DorotheusSupplementaryIndicator(
+            indicator_id="lot_of_fortune_lord",
+            role="inception_supplement",
+            state=DorotheusSupplementaryIndicatorState.EVALUATED,
+            body=None,
+            longitude=fortune.longitude,
+            sign=fortune.sign,
+            ruler=fortune_ruler,
+            placement=_placement(chart, fortune_ruler, "lot_of_fortune_lord_inception"),
+            source_reference=_AUTHORITY_V6,
+            explanation=(
+                "Fortune is computed by Moira's current sect-aware Lot engine; its domicile "
+                "ruler supplements inception testimony and does not replace the Moon-sign lord."
+            ),
+        ),
+        DorotheusSupplementaryIndicator(
+            indicator_id="next_moon_connection",
+            role="outcome_supplement",
+            state=DorotheusSupplementaryIndicatorState.EVALUATED,
+            body=next_connection.body if next_connection is not None else None,
+            longitude=(
+                chart.planets[next_connection.body].longitude
+                if next_connection is not None
+                else None
+            ),
+            sign=(
+                chart.planets[next_connection.body].sign
+                if next_connection is not None
+                else None
+            ),
+            ruler=None,
+            placement=connection_placement,
+            source_reference=_AUTHORITY_V6,
+            explanation=(
+                "The first exact traditional aspect before the Moon leaves its sign is the "
+                "supplementary outcome indicator; an absent connection is an evaluated absence."
+            ),
+        ),
     )
 
 
@@ -415,11 +648,8 @@ def evaluate_dorotheus_rooted_context(
         _matter_witness(chart, body, policy)
         for body in _MATTER_SIGNIFICATORS[matter]
     )
-    connection_placement = None
-    if next_connection is not None:
-        connection_placement = _placement(
-            chart, next_connection.body, "next_moon_connection"
-        )
+    supplementary_indicators = _supplementary_indicators(chart, next_connection)
+    connection_placement = supplementary_indicators[2].placement
 
     election_asc_sign, _, _ = sign_of(chart.houses.asc)
     natal_asc_sign = None
@@ -449,6 +679,7 @@ def evaluate_dorotheus_rooted_context(
         matter_significators=matter_witnesses,
         next_connection=next_connection,
         next_connection_placement=connection_placement,
+        supplementary_indicators=supplementary_indicators,
         radicality=radicality,
         reader_provenance=reader_provenance,
         latitude=chart.latitude,

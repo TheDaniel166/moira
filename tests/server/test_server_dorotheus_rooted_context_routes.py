@@ -109,7 +109,7 @@ def test_rooted_context_route_preserves_source_owned_witnesses(client_and_engine
     body = response.json()
     evaluation = body["evaluation"]
     assert evaluation["profile_id"] == "dorotheus_rooted_context_v1"
-    assert evaluation["profile_version"] == "1.1.0"
+    assert evaluation["profile_version"] == "1.2.0"
     assert evaluation["matter"] == "land_and_management"
     assert [item["body"] for item in evaluation["matter_significators"]] == [
         Body.SATURN,
@@ -118,6 +118,16 @@ def test_rooted_context_route_preserves_source_owned_witnesses(client_and_engine
     assert evaluation["matter_significators"][0]["bad_place_evaluated"] is True
     assert evaluation["matter_significators"][0]["bad_place"] is True
     assert evaluation["matter_significators"][1]["bad_place"] is False
+    assert [
+        item["testimony_id"]
+        for item in evaluation["matter_significators"][0]["fortification_testimonies"]
+    ] == ["under_rays", "made_unfortunate", "not_looking_at_ascendant", "bad_place"]
+    assert evaluation["matter_significators"][0]["fortification_testimonies"][1]["state"] == "not_evaluable"
+    assert [item["indicator_id"] for item in evaluation["supplementary_indicators"]] == [
+        "editorial_ninth_part_lord",
+        "lot_of_fortune_lord",
+        "next_moon_connection",
+    ]
     assert evaluation["root_outcome"]["pattern"] == "good_root_bad_outcome"
     assert evaluation["complete_electional_judgement"] is False
     assert body["transport_provenance"]["facade_entrypoint"] == "Moira.dorotheus_rooted_context_at"
@@ -168,3 +178,5 @@ def test_openapi_exposes_rooted_context_contract(client_and_engine) -> None:
     }
     assert "DorotheusRootedContextRequest" in schema["components"]["schemas"]
     assert "DorotheusRootedContextEvaluationResponse" in schema["components"]["schemas"]
+    assert "DorotheusFortificationTestimonyResponse" in schema["components"]["schemas"]
+    assert "DorotheusSupplementaryIndicatorResponse" in schema["components"]["schemas"]

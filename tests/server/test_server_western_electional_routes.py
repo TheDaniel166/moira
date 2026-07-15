@@ -14,6 +14,9 @@ from moira.western_electional import (
     RameseyMoonConditionEvaluation,
     RameseyMoonConditionStatus,
     RameseyRemedyApplicability,
+    RameseyRemedyClauseState,
+    RameseyRemedyClauseWitness,
+    RameseyRemedyFulfillment,
     RameseyRemedyWitness,
     RameseyRuleState,
     RameseyRuleWitness,
@@ -94,12 +97,23 @@ def _evaluation(
         instructions=(
             "Keep the impeded Moon cadent and unrelated to the Ascendant.",
         ),
+        fulfillment=RameseyRemedyFulfillment.INDETERMINATE,
+        clauses=(
+            RameseyRemedyClauseWitness(
+                clause_id="fortify_ascendant_cusp",
+                state=RameseyRemedyClauseState.INDETERMINATE,
+                policy_id="source_gate_no_closed_predicate",
+                policy_reference="Ramesey 1654, Book III, ch. II, pp. 127-128",
+                measurements=(RameseyMeasurement("ascendant_sign", "Libra"),),
+                explanation="Synthetic typed source gate.",
+            ),
+        ),
         uncomputed_requirements=("source-specific fortification doctrine",),
     )
     return RameseyMoonConditionEvaluation(
         jd_ut=jd_ut,
         profile_id="ramesey_moon_condition_v1",
-        profile_version="1.0.0",
+        profile_version="1.1.0",
         status=RameseyMoonConditionStatus.TRIGGERED,
         rules=tuple(rules),
         remedies=(remedy,),
@@ -173,7 +187,7 @@ def test_ramesey_route_preserves_facade_result_and_non_erasing_remedy(
     body = response.json()
     evaluation = body["evaluation"]
     assert evaluation["profile_id"] == "ramesey_moon_condition_v1"
-    assert evaluation["profile_version"] == "1.0.0"
+    assert evaluation["profile_version"] == "1.1.0"
     assert evaluation["status"] == "one_or_more_profile_impediments"
     assert evaluation["triggered_rule_ids"] == ["moon_combust_sun_12deg"]
     assert evaluation["not_evaluable_rule_ids"] == []
@@ -184,6 +198,8 @@ def test_ramesey_route_preserves_facade_result_and_non_erasing_remedy(
         "moon_combust_sun_12deg"
     ]
     assert evaluation["remedies"][0]["erases_triggered_rules"] is False
+    assert evaluation["remedies"][0]["fulfillment"] == "indeterminate"
+    assert evaluation["remedies"][0]["clauses"][0]["state"] == "indeterminate"
     assert evaluation["complete_electional_judgement"] is False
     assert evaluation["advice_language"] == "not_provided"
     assert evaluation["recommendation_language"] == "not_provided"
@@ -191,7 +207,7 @@ def test_ramesey_route_preserves_facade_result_and_non_erasing_remedy(
     assert transport["facade_entrypoint"] == "Moira.ramesey_moon_condition_at"
     assert transport["western_electional_doctrine"] == "ramesey_v1_admitted"
     assert transport["generic_search_integration"] == "not_admitted"
-    assert transport["remedy_fulfillment_assessment"] == "not_computed"
+    assert transport["remedy_fulfillment_assessment"] == "tri_state_non_erasing"
     expected_call = _request_payload()
     expected_call.pop("profile_id")
     assert engine.calls == [expected_call]

@@ -121,7 +121,7 @@ def _payload() -> dict[str, Any]:
         "latitude": 51.5074,
         "longitude": -0.1278,
         "house_system": HouseSystem.REGIOMONTANUS,
-        "burnt_path_variant": "fall_degrees_19_libra_to_3_scorpio",
+        "burnt_path_variant": "dykes_glossary_fall_degrees_19_libra_to_3_scorpio",
         "eighth_rule_variant": "arabic_al_rijal_twelfth_part",
     }
 
@@ -143,14 +143,14 @@ def test_sahl_route_preserves_rules_variants_and_transport_provenance(
         "moon_twelfth_part_or_opposed_or_averse_house"
     ]
     assert len(evaluation["rules"]) == 10
-    assert evaluation["burnt_path_variant"] == "fall_degrees_19_libra_to_3_scorpio"
+    assert evaluation["burnt_path_variant"] == "dykes_glossary_fall_degrees_19_libra_to_3_scorpio"
     assert evaluation["eighth_rule_variant"] == "arabic_al_rijal_twelfth_part"
     assert evaluation["complete_electional_judgement"] is False
     transport = body["transport_provenance"]
     assert transport["facade_entrypoint"] == "Moira.sahl_moon_condition_at"
     assert transport["western_electional_doctrine"] == "sahl_v1_admitted"
     assert transport["generic_search_integration"] == "not_admitted"
-    assert engine.calls[0]["burnt_path_variant"] is SahlBurntPathVariant.FALL_DEGREES
+    assert engine.calls[0]["burnt_path_variant"] is SahlBurntPathVariant.DYKES_GLOSSARY_FALL_DEGREES
     assert engine.calls[0]["eighth_rule_variant"] is SahlEighthRuleVariant.ARABIC_AL_RIJAL_TWELFTH_PART
 
 
@@ -192,6 +192,18 @@ def test_sahl_route_rejects_undeclared_scoring_fields(client_and_engine) -> None
     assert engine.calls == []
 
 
+def test_sahl_route_requires_explicit_burnt_path_variant(client_and_engine) -> None:
+    client, engine, _ = client_and_engine
+    payload = _payload()
+    payload.pop("burnt_path_variant")
+    response = client.post(
+        "/v1/electional/western/sahl-moon-condition",
+        json=payload,
+    )
+    assert response.status_code == 422
+    assert engine.calls == []
+
+
 def test_openapi_contains_sahl_route_and_variant_schemas(client_and_engine) -> None:
     _, _, app = client_and_engine
     schema = app.openapi()
@@ -200,5 +212,6 @@ def test_openapi_contains_sahl_route_and_variant_schemas(client_and_engine) -> N
     schemas = schema["components"]["schemas"]
     request = schemas["SahlMoonConditionRequest"]
     assert "burnt_path_variant" in request["properties"]
+    assert "burnt_path_variant" in request["required"]
     assert "eighth_rule_variant" in request["properties"]
     assert "SahlMoonConditionResponse" in schemas

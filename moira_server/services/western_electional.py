@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from moira import Moira
 from moira.western_electional import (
+    LunarEclipticDirectionWitness,
     MoonConnectionFlowPolicy,
     MoonPreviousEventWindowPolicy,
     DorotheusMatter,
@@ -24,6 +25,7 @@ from moira.western_electional import (
 )
 
 from ..models.western_electional import (
+    LunarEclipticDirectionRequest,
     DorotheusMoonConditionRequest,
     DorotheusConstructionRequest,
     DorotheusMatterProfileRequest,
@@ -32,6 +34,15 @@ from ..models.western_electional import (
     SahlMoonConditionRequest,
     WesternProfileWindowsRequest,
 )
+
+
+def compute_lunar_ecliptic_direction(
+    engine: Moira,
+    request: LunarEclipticDirectionRequest,
+) -> LunarEclipticDirectionWitness:
+    """Compute the neutral lunar direction witness through the public facade."""
+
+    return engine.lunar_ecliptic_direction_at(request.jd_ut)
 
 
 def compute_western_profile_windows(
@@ -223,6 +234,7 @@ def compute_sahl_moon_condition(
 
 
 __all__ = [
+    "compute_lunar_ecliptic_direction",
     "compute_dorotheus_construction",
     "compute_dorotheus_matter_profile",
     "compute_dorotheus_rooted_context",

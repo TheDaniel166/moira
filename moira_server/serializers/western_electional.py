@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from moira.western_electional import (
+    LunarEclipticDirectionWitness,
     DorotheusClauseWitness,
     DorotheusConstructionEvaluation,
     DorotheusMatterProfileEvaluation,
@@ -15,6 +16,7 @@ from moira.western_electional import (
     RameseyClauseWitness,
     RameseyMeasurement,
     RameseyMoonConditionEvaluation,
+    RameseyRemedyClauseWitness,
     RameseyRemedyWitness,
     RameseyRuleWitness,
     SahlClauseWitness,
@@ -25,6 +27,9 @@ from moira.western_electional import (
 )
 
 from ..models.western_electional import (
+    LunarEclipticDirectionPolicyResponse,
+    LunarEclipticDirectionResponse,
+    LunarNodeCrossingResponse,
     DorotheusClauseWitnessResponse,
     DorotheusConstructionClauseWitnessResponse,
     DorotheusConstructionEvaluationResponse,
@@ -39,6 +44,8 @@ from ..models.western_electional import (
     DorotheusMoonConditionEvaluationResponse,
     DorotheusMoonConditionResponse,
     DorotheusMatterSignificatorWitnessResponse,
+    DorotheusFortificationTestimonyResponse,
+    DorotheusSupplementaryIndicatorResponse,
     DorotheusPlacementWitnessResponse,
     DorotheusRadicalityWitnessResponse,
     DorotheusRemedyWitnessResponse,
@@ -54,6 +61,7 @@ from ..models.western_electional import (
     RameseyMoonConditionEvaluationResponse,
     RameseyMoonConditionResponse,
     RameseyRemedyWitnessResponse,
+    RameseyRemedyClauseWitnessResponse,
     RameseyRuleWitnessResponse,
     WesternProfileParameterResponse,
     WesternProfileScanBoundsResponse,
@@ -79,13 +87,57 @@ _AUTHORITY = (
     "William Ramesey, Astrologia Restaurata (1654), "
     "Book III, chapter II, printed pp. 126-128"
 )
+
+
+def serialize_lunar_ecliptic_direction(
+    result: LunarEclipticDirectionWitness,
+) -> LunarEclipticDirectionResponse:
+    """Serialize the neutral astronomical witness without adding doctrine."""
+
+    def crossing(item) -> LunarNodeCrossingResponse:
+        return LunarNodeCrossingResponse(
+            jd_ut=item.jd_ut,
+            direction=item.direction.value,
+            longitude_deg=item.longitude_deg,
+            latitude_residual_deg=item.latitude_residual_deg,
+            latitude_rate_deg_per_day=item.latitude_rate_deg_per_day,
+            hours_from_query=item.hours_from_query,
+        )
+
+    policy = result.policy
+    return LunarEclipticDirectionResponse(
+        jd_ut=result.jd_ut,
+        latitude_deg=result.latitude_deg,
+        latitude_rate_deg_per_day=result.latitude_rate_deg_per_day,
+        hemisphere=result.hemisphere.value,
+        motion=result.motion.value,
+        previous_crossing=crossing(result.previous_crossing),
+        next_crossing=crossing(result.next_crossing),
+        nearest_crossing=crossing(result.nearest_crossing),
+        nearest_crossing_relation=result.nearest_crossing_relation.value,
+        policy=LunarEclipticDirectionPolicyResponse(
+            policy_id=policy.policy_id,
+            search_span_days=policy.search_span_days,
+            scan_step_days=policy.scan_step_days,
+            latitude_rate_sample_days=policy.latitude_rate_sample_days,
+            latitude_zero_tolerance_deg=policy.latitude_zero_tolerance_deg,
+            latitude_rate_zero_tolerance_deg_per_day=(
+                policy.latitude_rate_zero_tolerance_deg_per_day
+            ),
+            bisection_iterations=policy.bisection_iterations,
+        ),
+        reference_frame=result.reference_frame,
+        timescale=result.timescale,
+        provenance=result.provenance,
+        interpretation_scope=result.interpretation_scope,
+    )
 _STAGE_SEQUENCE = [
     "request_validation",
     "facade_reader_resolution",
     "chart_and_house_construction",
     "sign_bounded_forward_voc_search",
     "ten_gate_doctrine_evaluation",
-    "separate_remedy_applicability",
+    "separate_remedy_applicability_and_fulfillment",
     "typed_response_serialization",
 ]
 _SAHL_AUTHORITY = (
@@ -196,6 +248,16 @@ def _serialize_rule(rule: RameseyRuleWitness) -> RameseyRuleWitnessResponse:
 def _serialize_remedy(
     remedy: RameseyRemedyWitness,
 ) -> RameseyRemedyWitnessResponse:
+    def clause(item: RameseyRemedyClauseWitness) -> RameseyRemedyClauseWitnessResponse:
+        return RameseyRemedyClauseWitnessResponse(
+            clause_id=item.clause_id,
+            state=item.state.value,
+            policy_id=item.policy_id,
+            policy_reference=item.policy_reference,
+            measurements=[_serialize_measurement(value) for value in item.measurements],
+            explanation=item.explanation,
+        )
+
     return RameseyRemedyWitnessResponse(
         remedy_id=remedy.remedy_id,
         applicability=remedy.applicability.value,
@@ -203,6 +265,8 @@ def _serialize_remedy(
         unavoidable_time_urgency=remedy.unavoidable_time_urgency,
         source_reference=remedy.source_reference,
         instructions=list(remedy.instructions),
+        fulfillment=remedy.fulfillment.value,
+        clauses=[clause(item) for item in remedy.clauses],
         uncomputed_requirements=list(remedy.uncomputed_requirements),
         assessment_semantics=remedy.assessment_semantics,
         erases_triggered_rules=remedy.erases_triggered_rules,
@@ -454,8 +518,23 @@ def serialize_dorotheus_rooted_context(
             bad_place_evaluated=item.bad_place_evaluated,
             bad_place=item.bad_place,
             condition=item.condition.value,
+            fortification_testimonies=[
+                DorotheusFortificationTestimonyResponse(
+                    testimony_id=testimony.testimony_id,
+                    state=testimony.state.value,
+                    policy_id=testimony.policy_id,
+                    observed_value=(
+                        list(testimony.observed_value)
+                        if isinstance(testimony.observed_value, tuple)
+                        else testimony.observed_value
+                    ),
+                    explanation=testimony.explanation,
+                    source_reference=testimony.source_reference,
+                )
+                for testimony in item.fortification_testimonies
+            ],
             source_reference=item.source_reference,
-            uncomputed_requirements=list(item.uncomputed_requirements),
+            combination_law=item.combination_law,
         )
         for item in result.matter_significators
     ]
@@ -487,6 +566,25 @@ def serialize_dorotheus_rooted_context(
             if result.next_connection_placement is not None
             else None
         ),
+        supplementary_indicators=[
+            DorotheusSupplementaryIndicatorResponse(
+                indicator_id=item.indicator_id,
+                role=item.role,
+                state=item.state.value,
+                body=item.body,
+                longitude=item.longitude,
+                sign=item.sign,
+                ruler=item.ruler,
+                placement=(
+                    _serialize_context_placement(item.placement)
+                    if item.placement is not None
+                    else None
+                ),
+                source_reference=item.source_reference,
+                explanation=item.explanation,
+            )
+            for item in result.supplementary_indicators
+        ],
         radicality=DorotheusRadicalityWitnessResponse(
             election_class=radicality.election_class.value,
             natal_required=radicality.natal_required,
@@ -752,6 +850,7 @@ def serialize_western_profile_windows(
 
 
 __all__ = [
+    "serialize_lunar_ecliptic_direction",
     "serialize_dorotheus_construction",
     "serialize_dorotheus_matter_profile",
     "serialize_dorotheus_rooted_context",

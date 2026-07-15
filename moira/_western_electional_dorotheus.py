@@ -18,6 +18,7 @@ import math
 from dataclasses import dataclass
 from enum import Enum
 
+from .aspects import aspect_motion_witness
 from .chart import ChartContext, create_chart
 from .constants import Body
 from .egyptian_bounds import (
@@ -27,6 +28,10 @@ from .egyptian_bounds import (
 )
 from .eclipse import EclipseCalculator
 from .houses import HousePolicy, assign_house
+from .lunar_direction import (
+    LunarEclipticDirectionWitness,
+    lunar_ecliptic_direction_at,
+)
 from .spk_reader import SpkReader, get_reader
 
 
@@ -174,9 +179,9 @@ class DorotheusMoonConditionPolicy:
     eclipse_policy: str = "moira_geometric_lunar_eclipse_contact"
     under_rays_policy: str = "dykes_glossary_15_degree_solar_distance"
     twelfth_part_policy: str = "dodecatemorion_traditional_malefic_domiciles"
-    southern_descent_policy: str = "unresolved_no_region_or_crossing_tolerance"
+    southern_descent_policy: str = "source_indeterminate_with_exact_lunar_crossing_witness"
     aspect_policy: str = "dorotheus_whole_sign_configuration"
-    solar_disengagement_policy: str = "unresolved_longitude_or_latitude_scope"
+    solar_disengagement_policy: str = "source_indeterminate_longitude_or_latitude_compound_witness"
     slow_moon_policy: str = "strict_daily_motion_below_12"
     burned_path_policy: str = "whole_tropical_libra_and_scorpio"
     bound_policy: str = "dorotheus_egyptian_terminal_malefic_bound"
@@ -190,9 +195,9 @@ class DorotheusMoonConditionPolicy:
             "eclipse_policy": "moira_geometric_lunar_eclipse_contact",
             "under_rays_policy": "dykes_glossary_15_degree_solar_distance",
             "twelfth_part_policy": "dodecatemorion_traditional_malefic_domiciles",
-            "southern_descent_policy": "unresolved_no_region_or_crossing_tolerance",
+            "southern_descent_policy": "source_indeterminate_with_exact_lunar_crossing_witness",
             "aspect_policy": "dorotheus_whole_sign_configuration",
-            "solar_disengagement_policy": "unresolved_longitude_or_latitude_scope",
+            "solar_disengagement_policy": "source_indeterminate_longitude_or_latitude_compound_witness",
             "slow_moon_policy": "strict_daily_motion_below_12",
             "burned_path_policy": "whole_tropical_libra_and_scorpio",
             "bound_policy": "dorotheus_egyptian_terminal_malefic_bound",
@@ -292,9 +297,15 @@ _POLICY_REFERENCES = {
     ),
     "dykes_glossary_15_degree_solar_distance": f"{_RULE_SOURCES[2]}; {_GLOSSARY}, Sun's rays",
     "dodecatemorion_traditional_malefic_domiciles": f"{_RULE_SOURCES[3]}; {_GLOSSARY}, Twelfth-part",
-    "unresolved_no_region_or_crossing_tolerance": f"{_RULE_SOURCES[4]}; note 15 identifies the line as the ecliptic but supplies no region or tolerance",
+    "source_indeterminate_with_exact_lunar_crossing_witness": (
+        f"{_RULE_SOURCES[4]}; note 15 identifies the line as the ecliptic but "
+        "supplies no before/after interval or latitude band"
+    ),
     "dorotheus_whole_sign_configuration": f"{_RULE_SOURCES[5]}; {_RULE_SOURCES[6]}; {_GLOSSARY}, Configured, Look at, Whole signs",
-    "unresolved_longitude_or_latitude_scope": f"{_RULE_SOURCES[7]}; the text supplies neither a connection interval nor a latitude criterion",
+    "source_indeterminate_longitude_or_latitude_compound_witness": (
+        f"{_RULE_SOURCES[7]}; the text supplies neither a longitudinal "
+        "disengagement interval nor a latitude criterion"
+    ),
     "strict_daily_motion_below_12": _RULE_SOURCES[8],
     "whole_tropical_libra_and_scorpio": _RULE_SOURCES[9],
     "dorotheus_egyptian_terminal_malefic_bound": (
@@ -437,6 +448,7 @@ def evaluate_dorotheus_moon_condition(
     chart: ChartContext,
     *,
     moon_eclipsed: bool | None,
+    lunar_direction: LunarEclipticDirectionWitness | None = None,
     unavoidable_time_urgency: bool | None,
     position_product: str,
     reader_provenance: str,
@@ -454,6 +466,11 @@ def evaluate_dorotheus_moon_condition(
         raise TypeError("moon_eclipsed must be bool or None")
     if unavoidable_time_urgency is not None and not isinstance(unavoidable_time_urgency, bool):
         raise TypeError("unavoidable_time_urgency must be bool or None")
+    if lunar_direction is not None:
+        if not isinstance(lunar_direction, LunarEclipticDirectionWitness):
+            raise TypeError("lunar_direction must be a LunarEclipticDirectionWitness or None")
+        if lunar_direction.jd_ut != chart.jd_ut:
+            raise ValueError("lunar_direction must describe the chart instant")
 
     moon = chart.planets.get(Body.MOON)
     sun = chart.planets.get(Body.SUN)
@@ -542,16 +559,30 @@ def evaluate_dorotheus_moon_condition(
 
     if moon is None:
         south_clause = _missing("moon_on_ecliptic_descending_south", Body.MOON)
+    elif lunar_direction is None:
+        south_clause = _missing(
+            "moon_on_ecliptic_descending_south",
+            "neutral lunar ecliptic direction witness",
+        )
     else:
         south_clause = _clause(
             "moon_on_ecliptic_descending_south",
             DorotheusRuleState.NOT_EVALUABLE,
             policy.southern_descent_policy,
             (
-                _measurement("moon_ecliptic_latitude", moon.latitude, units="degrees"),
-                _measurement("required_unresolved_semantics", "crossing region and tolerance"),
+                _measurement("moon_ecliptic_latitude", lunar_direction.latitude_deg, units="degrees"),
+                _measurement("moon_latitude_rate", lunar_direction.latitude_rate_deg_per_day, units="degrees/day"),
+                _measurement("hemisphere", lunar_direction.hemisphere.value),
+                _measurement("latitude_motion", lunar_direction.motion.value),
+                _measurement("previous_crossing_jd_ut", lunar_direction.previous_crossing.jd_ut, units="JD UT1"),
+                _measurement("previous_crossing_direction", lunar_direction.previous_crossing.direction.value),
+                _measurement("next_crossing_jd_ut", lunar_direction.next_crossing.jd_ut, units="JD UT1"),
+                _measurement("next_crossing_direction", lunar_direction.next_crossing.direction.value),
+                _measurement("nearest_crossing_relation", lunar_direction.nearest_crossing_relation.value),
+                _measurement("nearest_crossing_hours_from_query", lunar_direction.nearest_crossing.hours_from_query, units="hours"),
+                _measurement("required_unresolved_semantics", "source-owned interval before or after the exact descending crossing"),
             ),
-            "The edition identifies the line as the ecliptic, but the clause gives no region or numerical crossing tolerance; v1 does not substitute a node orb.",
+            "The astronomical hemisphere, motion, and adjacent exact node crossings are known. The source does not say how long before or after the descending crossing the clause applies, so no node orb is substituted.",
         )
     rules.append(_rule("moon_on_ecliptic_descending_south", 4, (south_clause,)))
 
@@ -604,6 +635,29 @@ def evaluate_dorotheus_moon_condition(
         disengagement = _missing("moon_disengaging_from_sun", missing)
     else:
         separation, rate, phase = _relative_phase(moon, sun)
+        conjunction_motion = aspect_motion_witness(
+            Body.SUN,
+            sun.longitude,
+            Body.MOON,
+            moon.longitude,
+            "Conjunction",
+            speed1_deg_per_day=sun.speed,
+            speed2_deg_per_day=moon.speed,
+            reference_frame="apparent_geocentric_ecliptic_longitude_of_date",
+            timescale="UT1_input_with_internal_TT_ephemeris_evaluation",
+        )
+        latitude_measurements = (
+            (
+                _measurement("moon_ecliptic_latitude", lunar_direction.latitude_deg, units="degrees"),
+                _measurement("moon_latitude_rate", lunar_direction.latitude_rate_deg_per_day, units="degrees/day"),
+                _measurement("moon_latitude_hemisphere", lunar_direction.hemisphere.value),
+                _measurement("moon_latitude_motion", lunar_direction.motion.value),
+                _measurement("nearest_lunar_node_crossing_jd_ut", lunar_direction.nearest_crossing.jd_ut, units="JD UT1"),
+                _measurement("nearest_lunar_node_crossing_relation", lunar_direction.nearest_crossing_relation.value),
+            )
+            if lunar_direction is not None
+            else (_measurement("missing_input", "neutral lunar ecliptic direction witness"),)
+        )
         disengagement = _clause(
             "moon_disengaging_from_sun_in_longitude_or_latitude",
             DorotheusRuleState.NOT_EVALUABLE,
@@ -612,10 +666,13 @@ def evaluate_dorotheus_moon_condition(
                 _measurement("longitude_separation", separation, units="degrees"),
                 _measurement("longitude_phase", phase),
                 _measurement("longitude_separation_rate", rate, units="degrees/day"),
-                _measurement("moon_ecliptic_latitude", moon.latitude, units="degrees"),
-                _measurement("required_unresolved_semantics", "connection interval or latitude criterion"),
+                _measurement("conjunction_motion_state", conjunction_motion.state.value),
+                _measurement("conjunction_directed_error", conjunction_motion.directed_error_deg, units="degrees"),
+                _measurement("conjunction_relative_speed", conjunction_motion.relative_speed_deg_per_day, units="degrees/day"),
+            ) + latitude_measurements + (
+                _measurement("required_unresolved_semantics", "whether longitude or latitude is sufficient and the source-owned interval or latitude criterion"),
             ),
-            "The text names disengagement in longitude or latitude but supplies no lawful interval or latitude criterion; v1 preserves the measured evidence without inventing a gate.",
+            "Longitudinal separation from conjunction and independent latitude direction are both materialized. The text does not define whether either branch alone suffices or supply either branch's interval, so the compound clause remains indeterminate.",
         )
     rules.append(_rule("moon_disengaging_from_sun", 7, (disengagement,)))
 
@@ -768,6 +825,7 @@ def dorotheus_moon_condition_at(
     return evaluate_dorotheus_moon_condition(
         chart,
         moon_eclipsed=moon_eclipsed,
+        lunar_direction=lunar_ecliptic_direction_at(jd_ut, reader=resolved_reader),
         unavoidable_time_urgency=unavoidable_time_urgency,
         position_product=policy.position_product,
         reader_provenance=reader_provenance,

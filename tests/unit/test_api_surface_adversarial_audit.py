@@ -409,7 +409,16 @@ _EXPECTED_ROOT_PUBLIC_NAMES = {
 # Explicit admissions added since the original frozen root-surface baseline.
 # Keeping these names literal preserves drift detection for future changes.
 _EXPECTED_ROOT_PUBLIC_NAMES.update({
-'ArgalaHouse',
+    'LUNAR_ECLIPTIC_DIRECTION_V1',
+    'LunarEclipticDirectionPolicy',
+    'LunarEclipticDirectionWitness',
+    'LunarEclipticHemisphere',
+    'LunarLatitudeMotion',
+    'LunarNodeCrossingDirection',
+    'LunarNodeCrossingRelation',
+    'LunarNodeCrossingWitness',
+    'lunar_ecliptic_direction_at',
+    'ArgalaHouse',
     'ArgalaResult',
     'ArudhaPada',
     'ArudhaResult',
@@ -560,6 +569,9 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     'RameseyMoonConditionPolicy',
     'RameseyMoonConditionStatus',
     'RameseyRemedyApplicability',
+    'RameseyRemedyClauseState',
+    'RameseyRemedyFulfillment',
+    'RameseyRemedyClauseWitness',
     'RameseyRemedyWitness',
     'RameseyRuleState',
     'RameseyRuleWitness',
@@ -591,6 +603,8 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     'dorotheus_moon_condition_at',
     'DOROTHEUS_ROOTED_CONTEXT_V1',
     'DorotheusMatter',
+    'DorotheusFortificationTestimony',
+    'DorotheusFortificationTestimonyState',
     'DorotheusMatterSignificatorWitness',
     'DorotheusPlacementWitness',
     'DorotheusRadicalityWitness',
@@ -599,6 +613,8 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     'DorotheusRootedContextEvaluation',
     'DorotheusRootedContextPolicy',
     'DorotheusSignificatorCondition',
+    'DorotheusSupplementaryIndicator',
+    'DorotheusSupplementaryIndicatorState',
     'DorotheusStrengthState',
     'MoonConnection',
     'MoonPreviousEventWindowPolicy',
@@ -984,7 +1000,8 @@ _EXPECTED_MOIRA_METHODS = {
 
 # Explicit facade-method admissions added since the original frozen baseline.
 _EXPECTED_MOIRA_METHODS.update({
-'ashtakavarga',
+    'lunar_ecliptic_direction_at',
+    'ashtakavarga',
     'moon_connection_flow_at',
     'dorotheus_rooted_context_at',
     'dorotheus_construction_at',

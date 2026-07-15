@@ -35,6 +35,7 @@ from .aspect_events import (
 from .constants import Body, SIGNS, sign_of
 from .eclipse import EclipseCalculator
 from .houses import HousePolicy, assign_house, describe_angularity
+from .lunar_direction import lunar_ecliptic_direction_at
 from .planets import planet_at
 from .spk_reader import SpkReader, get_reader
 from .void_of_course import next_moon_connection
@@ -693,6 +694,7 @@ def dorotheus_matter_profile_at(
     moon_condition = evaluate_dorotheus_moon_condition(
         chart,
         moon_eclipsed=moon_eclipsed,
+        lunar_direction=lunar_ecliptic_direction_at(jd_ut, reader=resolved_reader),
         unavoidable_time_urgency=unavoidable_time_urgency,
         position_product=DOROTHEUS_MOON_CONDITION_V1.position_product,
         reader_provenance=provenance,

@@ -17,6 +17,7 @@ pytestdebug.log
 # Build and packaging outputs
 build/
 dist/
+*.whl
 *.egg-info/
 .eggs/
 pip-wheel-metadata/

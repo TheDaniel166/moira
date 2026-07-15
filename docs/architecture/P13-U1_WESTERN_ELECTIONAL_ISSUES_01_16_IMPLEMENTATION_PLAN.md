@@ -1,6 +1,6 @@
 # P13-U1 Western Electional Issues 01-16 — Definitive Implementation Plan
 
-**Status:** active implementation; Phases 1 and 2A complete; source-gated where noted
+**Status:** active implementation; Phases 1, 2, and 3 complete at their named source boundaries
 **Scope:** the first sixteen unresolved Western electional issues identified
 after the P1-P3 work  
 **Public-surface rule:** an issue is not closed until its admitted product is
@@ -22,7 +22,7 @@ computational policy, or collapsing distinct sources into one generic
 3. Dorotheus V.6 solar disengagement.
 4. Dorotheus V.7 northward ecliptic crossing.
 5. Dorotheus V.31 "made unfortunate" testimony.
-6. Dorotheus V.6.29 alternative outcome rulers.
+6. Dorotheus V.6.29 supplementary inception/outcome indicators.
 7. Sahl burnt-path endpoints.
 8. Sahl fourth-house matter profiles.
 9. Ramesey remedy fulfillment.
@@ -122,7 +122,7 @@ Phase 0  Governance and source freeze
    |
    +--> Phase 3  Lunar crossing/disengagement/burnt-path policy (#2, #3, #4, #7)
    |
-   +--> Phase 4  Fortification, outcome rulers, remedies (#5, #6, #9)
+   +--> Phase 4  Fortification, supplementary indicators, remedies (#5, #6, #9)
    |
    +--> Phase 5  Sahl fourth-house profiles (#8)
    |
@@ -305,7 +305,7 @@ Theophilus/Hephaistion parallel identified in the source-acquisition list.
 
 ---
 
-### Phase 3 — Lunar direction, solar disengagement, and burnt path (#2, #3, #4, #7)
+### Phase 3 — Lunar direction, solar disengagement, and burnt path (#2, #3, #4, #7) — COMPLETE AT SOURCE BOUNDARY 2026-07-15
 
 These issues share lunar geometry but do not necessarily share doctrine.
 
@@ -359,44 +359,80 @@ These issues share lunar geometry but do not necessarily share doctrine.
 all thresholds/intervals are cited or caller-selected; unresolved textual
 meaning remains visibly unresolved.
 
+**Implementation result:** `LunarEclipticDirectionWitness` now exposes the
+Moon's apparent geocentric ecliptic latitude and latitude rate, independent
+north/south position and motion classifications, adjacent exact sign-changing
+node crossings, crossing direction, exact UT1 event times, and the nearest
+crossing relation. It is public through the package root,
+`Moira.lunar_ecliptic_direction_at(...)`, and
+`POST /v1/electional/western/lunar-ecliptic-direction`. The numerical root
+tolerances are algorithm policy, explicitly not a doctrinal node orb.
+
+Dorotheus V.6 and V.7 consume that neutral witness under distinct clause
+policies. The V.6 solar-disengagement clause additionally exposes canonical
+instantaneous Sun-Moon conjunction motion and the independent lunar-latitude
+witness. Dorotheus and the Hephaistion III.7 parallel establish latitude
+direction but supply no before/after crossing interval; V.6 likewise supplies
+no rule for combining longitudinal and latitudinal disengagement. These clauses
+therefore remain `NOT_EVALUABLE` with materially complete geometry.
+
+Sahl section 22d still supplies only “the end of Libra and the beginning of
+Scorpio.” The public moment and scan requests now require an explicit
+`SahlBurntPathVariant`: source-faithful indeterminacy, Dykes's glossary/fall
+degrees `[199, 213)`, or the later fifteen-degree convention `[195, 225)`.
+Every computational variant records its citation and half-open boundary law;
+there is no ambient computational default at the public call boundary.
+
 ---
 
-### Phase 4 — Fortification, outcome rulers, and Ramesey remedy (#5, #6, #9)
+### Phase 4 — Fortification, supplementary indicators, and Ramesey remedy (#5, #6, #9)
+
+**Status (2026-07-15): complete at the primary-source boundary.** The primary
+pages required one correction to the original plan: V.6.29 does not define a
+set of interchangeable outcome rulers. V.6.22 keeps the Moon-sign lord as the
+primary outcome indicator; V.6.29 adds the editorial ninth-part lord and Lot
+of Fortune's lord for inception, and the Moon's next connection for outcome.
+Moira therefore exposes distinct supplementary witnesses rather than a ruler
+selector.
 
 #### 4A. Dorotheus V.31 "made unfortunate" (#5)
 
-1. Inventory the exact misfortune predicates attached to V.31 and its cited
-   parallels: whole-sign bad place, combustion/beams, retrogradation,
-   debility, malefic application/besiegement, or other source-named conditions.
-2. Implement each as a separate typed testimony with its own evidence.
-3. Build a versioned `DorotheusFortificationPolicy`; never substitute a generic
-   dignity score for the source phrase.
-4. Define combination law explicitly (`any`, required subset, precedence, and
-   indeterminate propagation).
+Implemented as four source-ordered testimonies on each matter significator:
+under the rays, “made unfortunate,” not looking at the Ascendant, and bad
+place. The first, third, and fourth are evaluated under the existing explicit
+V.31 policy. “Made unfortunate” remains a named `not_evaluable` source gate:
+the primary passage and edition glossary do not close it to an exclusive list.
+Observed whole-sign Mars/Saturn configurations remain evidence only. The
+combination law is visible: any triggered testimony establishes an impediment;
+otherwise an unresolved testimony makes the result indeterminate. No generic
+dignity score is used.
 
-#### 4B. Alternative outcome rulers (#6)
+#### 4B. Supplementary inception and outcome indicators (#6)
 
-1. Add a `DorotheusOutcomeRulerPolicy` with source-named choices:
-   Moon-sign lord, ninth-part ruler, Lot-of-Fortune ruler, and only those
-   additional variants actually supported by V.6.29.
-2. Reuse the current Lots computation for Fortune.
-3. Implement ninth-part identity only from a confirmed source-owned division
-   and boundary policy; do not assume a modern navamsa mapping.
-4. Return all requested variants side-by-side when comparison is requested;
-   do not silently fall back to Moon-sign lord.
+Implemented as three side-by-side `DorotheusSupplementaryIndicator`
+witnesses with fixed roles and no fallback:
+
+1. `editorial_ninth_part_lord` — `not_evaluable`; edition note 31 identifies
+   a Persian editorial insertion but gives no division, boundary, or ruler
+   scheme, so Moira does not assume modern navamsa doctrine;
+2. `lot_of_fortune_lord` — evaluated through Moira's current sect-aware Lots
+   engine and labelled `inception_supplement`;
+3. `next_moon_connection` — the existing first exact traditional aspect
+   before sign exit, labelled `outcome_supplement`.
+
+The Moon-sign lord remains the primary V.6.22 outcome indicator.
 
 #### 4C. Ramesey remedy fulfillment (#9)
 
-1. Keep the remedy as a non-erasing witness: it never changes whether one of
-   the ten impediments triggered.
-2. Turn its three uncomputed groups into typed evaluations:
-   - Moon/Ascendant relation under the Ramesey aspect policy;
-   - Jupiter/Venus placement and good-aspect relation to the Ascendant;
-   - fortification of Ascendant cusp/lord and planetary hour lord.
-3. Reuse `lord_of_hour()`, dignity, house, and aspect witnesses. Define
-   Ramesey-specific fortification instead of importing a generic point total.
-4. Return `fulfilled`, `not_fulfilled`, or `indeterminate`, plus clause-level
-   evidence. Preserve urgent/unavoidable applicability separately.
+Implemented as five typed clauses: the combined Moon cadence/no-Ascendant-
+relation condition; Jupiter/Venus in the first or whole-sign sextile/trine to
+the Ascendant; Ascendant-cusp fortification; Ascendant-lord fortification; and
+hour-lord fortification. The high-level path resolves the planetary-hour lord.
+The last three clauses remain individually `indeterminate` because pp. 127-128
+command fortification but do not provide a closed predicate. They are not
+replaced with a generic dignity total. Aggregate fulfillment is
+`fulfilled`, `not_fulfilled`, or `indeterminate`; urgent applicability remains
+separate, and neither can erase a triggered Moon impediment.
 
 **Likely code/tests**
 
@@ -405,9 +441,9 @@ meaning remains visibly unresolved.
 - possibly a new shared `moira/classical_fortification.py`
 - root/facade/server model, service, router, serialization, and OpenAPI tests
 
-**Exit gate:** every formerly free-text uncomputed requirement is either a
-typed evaluated clause or a named unresolved source gate; no point score stands
-in for a source rule.
+**Exit gate: passed.** Every formerly free-text requirement is now a typed
+evaluated clause or named unresolved source gate, engine/root/facade and REST
+expose the same evidence, and no point score stands in for a source rule.
 
 ---
 
@@ -649,7 +685,7 @@ any unresolved clause remains.
 | 3 | V.6 solar disengagement | primary interpretation | explicit longitude/latitude/visibility policy and tests |
 | 4 | V.7 northward crossing | lunar-direction witness + parallel | exact crossing policy; construction result and REST |
 | 5 | V.31 made unfortunate | source-owned fortification policy | clause-level testimony; no generic-score substitution |
-| 6 | V.6.29 outcome rulers | ninth-part/Fortune policy | named ruler variants; no silent fallback |
+| 6 | V.6.29 supplementary indicators | distinct ninth-part/Fortune/connection roles | primary Moon-sign lord preserved; no selector or fallback |
 | 7 | Sahl burnt path | source endpoints or explicit variant requirement | cited endpoints and edge tests, or canonical indeterminacy preserved |
 | 8 | Sahl fourth-house profiles | 2/4/5/11 and terminology | six separate public profiles with source-order witnesses |
 | 9 | Ramesey remedy | fortification + hour lord + aspects | tri-state fulfillment; remedy remains non-erasing |

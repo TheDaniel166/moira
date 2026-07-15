@@ -34,7 +34,7 @@ def test_j2000_london_sahl_profile_preserves_kernel_and_variant_truth() -> None:
             51.5074,
             -0.1278,
             house_system=HouseSystem.REGIOMONTANUS,
-            burnt_path_variant=SahlBurntPathVariant.FALL_DEGREES,
+            burnt_path_variant=SahlBurntPathVariant.DYKES_GLOSSARY_FALL_DEGREES,
             reader=reader,
         )
         dt = 1e-4
@@ -50,7 +50,7 @@ def test_j2000_london_sahl_profile_preserves_kernel_and_variant_truth() -> None:
     assert result.not_evaluable_rule_ids == ()
     assert result.rules[6].state is SahlRuleState.CLEAR
     assert result.rules[9].state is SahlRuleState.CLEAR
-    assert result.burnt_path_variant is SahlBurntPathVariant.FALL_DEGREES
+    assert result.burnt_path_variant is SahlBurntPathVariant.DYKES_GLOSSARY_FALL_DEGREES
 
     measured_speed = result.rules[8].clauses[0].measurements[0].value
     longitude_delta = (moon_after.longitude - moon_before.longitude + 180.0) % 360.0 - 180.0
@@ -59,7 +59,7 @@ def test_j2000_london_sahl_profile_preserves_kernel_and_variant_truth() -> None:
 
 
 @pytest.mark.requires_ephemeris
-def test_default_sahl_burnt_path_keeps_only_that_rule_indeterminate() -> None:
+def test_explicit_source_faithful_sahl_burnt_path_keeps_only_that_rule_indeterminate() -> None:
     kernel = find_planetary_kernel()
     assert kernel is not None
     with SpkReader(kernel) as reader:
@@ -68,9 +68,10 @@ def test_default_sahl_burnt_path_keeps_only_that_rule_indeterminate() -> None:
             51.5074,
             -0.1278,
             house_system=HouseSystem.REGIOMONTANUS,
+            burnt_path_variant=SahlBurntPathVariant.SAHL_TEXT_INDETERMINATE,
             reader=reader,
         )
 
-    assert result.burnt_path_variant is SahlBurntPathVariant.UNRESOLVED_SOURCE_WORDING
+    assert result.burnt_path_variant is SahlBurntPathVariant.SAHL_TEXT_INDETERMINATE
     assert result.not_evaluable_rule_ids == ("moon_cadent_or_burnt_path",)
     assert result.status is SahlMoonConditionStatus.TRIGGERED

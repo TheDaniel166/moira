@@ -309,14 +309,17 @@ derives only from confirmed impediments and the caller's explicit
 The witness preserves three instructions: keep the impeded Moon cadent and
 without bodily or aspectual relation to the Ascendant; place a fortune in the
 Ascendant or in good aspect with it; and fortify the Ascendant cusp, its lord,
-and the lord of the hour. It is an instruction witness, not a fulfillment
-assessment. The current profile does not invent the missing angle-aspect,
-benefic-placement, ruler, hour-lord, or fortification policies. Those
-uncomputed requirements remain visible in the result.
+and the lord of the hour. It now returns clause-level fulfillment evidence.
+Moon cadence/whole-sign relation and Jupiter/Venus first-house or whole-sign
+sextile/trine truth are evaluated; the planetary-hour lord is resolved. The
+three fortification commands remain typed `indeterminate` source gates because
+the passage supplies no closed predicate. No generic dignity score fills that
+gap.
 
 The remedy has no numeric weight, never changes a rule state, and never flips a
-triggered profile to clear. If the urgent-time context is absent, applicability
-is `indeterminate`; if explicitly false, the instruction is `not_applicable`.
+triggered profile to clear. Applicability and fulfillment are separate:
+applicability follows urgent-time context, while fulfillment is
+`fulfilled`, `not_fulfilled`, or `indeterminate` from the visible clauses.
 
 ### 7.6 Second profile: `sahl_moon_condition_v1`
 
@@ -338,10 +341,11 @@ or matter-specific judgement.
 | 10 | `moon_empty_in_course` | no exact traditional-planet connection completes before sign exit |
 
 Sahl gives only “the end of Libra and the beginning of Scorpio” for the burnt
-path. The public default `unresolved_source_wording` therefore makes that
-clause `not_evaluable`. Callers may explicitly select either glossary-supported
-span—19 Libra to 3 Scorpio, or 15 Libra to 15 Scorpio—but neither is relabeled
-as Sahl's missing numeric wording.
+path. Public callers must therefore select a named policy explicitly. The
+source-faithful `sahl_text_indeterminate_no_numeric_endpoints` selection makes
+the clause `not_evaluable`; the Dykes-glossary fall-degree interval is encoded
+as `[199, 213)`, and the later fifteen-degree convention as `[195, 225)`.
+Neither computational interval is relabeled as Sahl's missing numeric wording.
 
 For rule 8, Dykes recommends the Arabic/al-Rijal twelfth-part reading; the
 conflicting Latin twelfth-sign reading remains a selectable named variant. A
@@ -526,8 +530,9 @@ Every admitted profile evaluation exposes:
 - aspect, orb, application, and VOC policies
 - speed semantics
 - one visible witness per source rule
-- for Ramesey only, the separate remedy applicability, triggering rule
-  identities, source instructions, and uncomputed fulfillment requirements
+- for Ramesey only, separate remedy applicability and tri-state fulfillment,
+  triggering rule identities, source instructions, typed clause evidence, and
+  named unresolved fortification gates
 - for Sahl, the selected burnt-path and eighth-rule variants
 - `complete_electional_judgement: false` for each profile
 - for `dorotheus_construction_v1`, `source_complete: true`,
@@ -535,7 +540,7 @@ Every admitted profile evaluation exposes:
 - `advice_language: not_provided`
 - `recommendation_language: not_provided`
 - single-moment transport provenance naming the engine entry point, facade
-  entry point, lack of scoring, and deliberately uncomputed remedy fulfillment
+  entry point, lack of scoring, and non-erasing tri-state remedy fulfillment
 - scan transport provenance naming its engine, facade, and REST entry points,
   exact qualification statuses, compact per-sample witnesses, and lack of
   generic numeric-fit search integration
@@ -670,13 +675,13 @@ Audit performed against the implementation and tests on 2026-07-14:
 | Ontology ownership | Pass | The object is explicitly a bounded ten-gate Moon-condition profile, not a score, complete election, or recommendation. |
 | Derivation ownership | Pass | Rule identity and thresholds derive from Ramesey's facsimile; Moira choices for true node, house system input, correction products, endpoints, and exact-perfection VOC are labeled as choices rather than attributed falsely to the source. |
 | Structural ownership | Pass | Assembly uses named immutable rule/clause/measurement witnesses and a separate remedy vessel; source order is citation metadata, not a legacy positional result array. |
-| Policy ownership | Pass | `RameseyMoonConditionPolicy` is frozen and rejects caller substitution; missing inputs remain `not_evaluable`; remedy applicability derives from visible gate and urgency context while unowned fulfillment policies remain uncomputed. |
+| Policy ownership | Pass | `RameseyMoonConditionPolicy` is frozen and rejects caller substitution; missing inputs remain `not_evaluable`; remedy applicability derives from visible gate and urgency context, fulfillment derives from typed clauses, and the unowned fortification predicates remain source gates. |
 | Validation ownership | Pass for public moment admission | Primary-page boundary fixtures, full-zodiac properties, Moira-owned invariants, an independent DE441 forward-geometry covenant, exact public-surface snapshots, facade delegation tests, and strict REST contract tests carry the proof. Kernel regression is not presented as historical or empirical validation of astrology. |
 
 Provenance honesty also passes: no Swiss or other external astrology engine is
 used as implementation authority or numerical proof. The known VOC
-interpretive choice and the remedy's deliberately uncomputed fulfillment
-requirements remain visible rather than being concealed.
+interpretive choice and the remedy's indeterminate fortification clauses remain
+visible rather than being concealed.
 
 ### 13.3 Sahl five-axis sovereignty audit
 
@@ -711,8 +716,8 @@ Audit performed against the implementation and tests on 2026-07-15:
 | Validation ownership | Pass for public moment admission | Primary-page checks, boundary invariants, DE441 integration, eclipse-path exercise, exact facade/REST execution, OpenAPI assertions, and public-surface governance carry the proof. |
 
 Provenance honesty passes with explicit limitations: the natal intensifier and
-remedy fulfillment are not computed, and kernel regression is not presented as
-historical or empirical proof of astrology.
+source-undefined Ramesey fortification predicates are not computed, and kernel
+regression is not presented as historical or empirical proof of astrology.
 
 ## 14. Non-Goals
 

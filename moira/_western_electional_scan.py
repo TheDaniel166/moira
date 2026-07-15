@@ -321,6 +321,10 @@ def scan_western_electional_profile(
     if profile_id is WesternElectionalProfileId.SAHL_MOON_CONDITION_V1:
         if unavoidable_time_urgency is not None:
             raise ValueError("Sahl scan does not accept unavoidable_time_urgency")
+        if sahl_burnt_path_variant is None:
+            raise ValueError(
+                "Sahl scan requires an explicit sahl_burnt_path_variant"
+            )
     elif sahl_burnt_path_variant is not None or sahl_eighth_rule_variant is not None:
         raise ValueError("Sahl variants are valid only for the Sahl profile")
 
@@ -353,11 +357,9 @@ def scan_western_electional_profile(
 
     resolved_sahl_policy = None
     if profile_id is WesternElectionalProfileId.SAHL_MOON_CONDITION_V1:
-        overrides = {}
-        if sahl_burnt_path_variant is not None:
-            if not isinstance(sahl_burnt_path_variant, western.SahlBurntPathVariant):
-                raise TypeError("sahl_burnt_path_variant must be a SahlBurntPathVariant")
-            overrides["burnt_path_variant"] = sahl_burnt_path_variant
+        if not isinstance(sahl_burnt_path_variant, western.SahlBurntPathVariant):
+            raise TypeError("sahl_burnt_path_variant must be a SahlBurntPathVariant")
+        overrides = {"burnt_path_variant": sahl_burnt_path_variant}
         if sahl_eighth_rule_variant is not None:
             if not isinstance(sahl_eighth_rule_variant, western.SahlEighthRuleVariant):
                 raise TypeError("sahl_eighth_rule_variant must be a SahlEighthRuleVariant")

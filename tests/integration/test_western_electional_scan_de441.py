@@ -6,6 +6,8 @@ import pytest
 
 from moira.constants import HouseSystem
 from moira.western_electional import (
+    SahlBurntPathVariant,
+    SahlEighthRuleVariant,
     WesternElectionalProfileId,
     WesternElectionalProfileScanPolicy,
     WesternElectionalQualificationStatus,
@@ -42,6 +44,14 @@ def test_range_voc_scan_matches_independent_single_moment_evaluations(
         step_days=1.0 / 24.0,
         max_scan_points=4,
     )
+    sahl_kwargs = (
+        {
+            "sahl_burnt_path_variant": SahlBurntPathVariant.SAHL_TEXT_INDETERMINATE,
+            "sahl_eighth_rule_variant": SahlEighthRuleVariant.ARABIC_AL_RIJAL_TWELFTH_PART,
+        }
+        if profile_id is WesternElectionalProfileId.SAHL_MOON_CONDITION_V1
+        else {}
+    )
     result = moira_engine.western_electional_profile_windows(
         start,
         start + 3.0 / 24.0,
@@ -50,6 +60,7 @@ def test_range_voc_scan_matches_independent_single_moment_evaluations(
         house_system=HouseSystem.REGIOMONTANUS,
         profile_id=profile_id,
         scan_policy=policy,
+        **sahl_kwargs,
     )
 
     method = getattr(moira_engine, single_method)
@@ -60,6 +71,14 @@ def test_range_voc_scan_matches_independent_single_moment_evaluations(
             51.5074,
             -0.1278,
             house_system=HouseSystem.REGIOMONTANUS,
+            **(
+                {
+                    "burnt_path_variant": SahlBurntPathVariant.SAHL_TEXT_INDETERMINATE,
+                    "eighth_rule_variant": SahlEighthRuleVariant.ARABIC_AL_RIJAL_TWELFTH_PART,
+                }
+                if profile_id is WesternElectionalProfileId.SAHL_MOON_CONDITION_V1
+                else {}
+            ),
         )
         assert sample.status.value == expected.status.value
         assert sample.triggered_rule_ids == _rule_ids(expected, "triggered")

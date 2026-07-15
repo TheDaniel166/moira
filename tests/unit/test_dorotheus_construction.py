@@ -70,10 +70,43 @@ def _chart(
     )
 
 
+def _lunar_direction(chart: ChartContext) -> western.LunarEclipticDirectionWitness:
+    moon = chart.planets[Body.MOON]
+    previous = western.LunarNodeCrossingWitness(
+        jd_ut=chart.jd_ut - 1.0,
+        direction=western.LunarNodeCrossingDirection.DESCENDING,
+        longitude_deg=(moon.longitude - 13.0) % 360.0,
+        latitude_residual_deg=0.0,
+        latitude_rate_deg_per_day=-0.4,
+        hours_from_query=-24.0,
+    )
+    following = western.LunarNodeCrossingWitness(
+        jd_ut=chart.jd_ut + 1.0,
+        direction=western.LunarNodeCrossingDirection.ASCENDING,
+        longitude_deg=(moon.longitude + 13.0) % 360.0,
+        latitude_residual_deg=0.0,
+        latitude_rate_deg_per_day=0.4,
+        hours_from_query=24.0,
+    )
+    return western.LunarEclipticDirectionWitness(
+        jd_ut=chart.jd_ut,
+        latitude_deg=moon.latitude,
+        latitude_rate_deg_per_day=0.2,
+        hemisphere=western.LunarEclipticHemisphere.NORTH,
+        motion=western.LunarLatitudeMotion.NORTHWARD,
+        previous_crossing=previous,
+        next_crossing=following,
+        nearest_crossing=previous,
+        nearest_crossing_relation=western.LunarNodeCrossingRelation.PREVIOUS,
+        policy=western.LUNAR_ECLIPTIC_DIRECTION_V1,
+    )
+
+
 def _evaluate(chart: ChartContext) -> western.DorotheusConstructionEvaluation:
     moon_condition = western.evaluate_dorotheus_moon_condition(
         chart,
         moon_eclipsed=False,
+        lunar_direction=_lunar_direction(chart),
         unavoidable_time_urgency=None,
         position_product=western.DOROTHEUS_MOON_CONDITION_V1.position_product,
         reader_provenance="synthetic_unit_fixture",
@@ -92,7 +125,7 @@ def _evaluate(chart: ChartContext) -> western.DorotheusConstructionEvaluation:
         moon_true_longitude_mean_ecliptic_degrees=(
             chart.planets[Body.MOON].longitude
         ),
-        moon_latitude_rate_degrees_per_day=0.2,
+        lunar_direction=_lunar_direction(chart),
         reader_provenance="synthetic_unit_fixture",
     )
 

@@ -1023,6 +1023,7 @@ direction.
 | POST | `/v1/electional/windows` | `electional_windows_route` |
 | POST | `/v1/electional/moments` | `electional_moments_route` |
 | POST | `/v1/electional/scored` | `electional_scored_route` |
+| POST | `/v1/electional/western/lunar-ecliptic-direction` | `lunar_ecliptic_direction_route` |
 | POST | `/v1/electional/western/ramesey-moon-condition` | `ramesey_moon_condition_route` |
 | POST | `/v1/electional/western/sahl-moon-condition` | `sahl_moon_condition_route` |
 | POST | `/v1/electional/western/dorotheus-moon-condition` | `dorotheus_moon_condition_route` |
@@ -1711,6 +1712,7 @@ ranks are over the returned windows only and are not a global optimum claim.
 
 The separately admitted Western doctrine routes are:
 
+- `POST /v1/electional/western/lunar-ecliptic-direction`
 - `POST /v1/electional/western/ramesey-moon-condition`
 - `POST /v1/electional/western/sahl-moon-condition`
 - `POST /v1/electional/western/dorotheus-moon-condition`
@@ -1718,6 +1720,13 @@ The separately admitted Western doctrine routes are:
 - `POST /v1/electional/western/dorotheus-construction`
 - `POST /v1/electional/western/dorotheus-matter-profile`
 - `POST /v1/electional/western/profile-windows`
+
+The lunar-ecliptic-direction route is a neutral astronomical product rather
+than a historical doctrine verdict. It accepts one finite `jd_ut` and returns
+the Moon's apparent geocentric ecliptic latitude and latitude rate, independent
+hemisphere and motion classifications, previous/next/nearest exact
+sign-changing node crossings, their UT1 times and directions, numerical policy,
+frame, timescale, and an explicit no-doctrinal-region scope.
 
 The single-moment routes accept one finite `jd_ut`, latitude, longitude, an
 explicit known house-system code, the fixed profile id for the selected route,
@@ -1729,11 +1738,22 @@ not-evaluable rule identities, the separate non-erasing remedy witness,
 requested/effective house-system truth, fallback status, reader provenance, and
 the profile's non-complete-judgement language.
 
+The Ramesey remedy witness exposes urgent applicability and tri-state
+fulfillment separately. Its typed clauses preserve Moon cadence/Ascendant
+relation, Jupiter/Venus placement or good aspect, Ascendant-cusp
+fortification, Ascendant-lord fortification, and planetary-hour-lord
+fortification. Unresolved fortification predicates remain `indeterminate` and
+never clear a triggered impediment.
+
 The construction response carries all inherited V.2-V.6 and V.31 layers plus
 the six V.7 clauses. Its increasing-in-calculation witness exposes the true and
 IERS 2010 mean lunar longitudes, signed equation, and added/subtracted direction.
 Its nested rooted context exposes evaluated V.31 bad-place booleans for
-whole-sign places 3, 6, 8, and 12. The ecliptic-crossing clause remains
+whole-sign places 3, 6, 8, and 12, plus source-ordered under-rays,
+made-unfortunate, Ascendant-relation, and bad-place testimonies. The rooted
+context also exposes distinct V.6.29 ninth-part, Lot-of-Fortune-lord, and next
+connection indicators; they are not interchangeable outcome-ruler choices.
+The ecliptic-crossing clause remains
 `not_evaluable` because the primary text supplies no crossing region or
 tolerance. The profile-window route is a bounded discrete scan of explicitly
 selected statuses, not an exact-transition solver.
@@ -1753,7 +1773,7 @@ Each single-moment transport names its route semantics, engine and facade entry
 points, and reports `scoring: not_provided`,
 `generic_search_integration: not_admitted`,
 `recommendation_language: not_provided`, and
-`remedy_fulfillment_assessment: not_computed` where applicable. None of these
+`remedy_fulfillment_assessment: tri_state_non_erasing` for Ramesey. None of these
 routes is a generic predicate adapter, and none ranks or recommends a time.
 
 These admissions do not expose arbitrary executable predicates or scorers,

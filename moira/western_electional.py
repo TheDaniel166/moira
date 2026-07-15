@@ -27,9 +27,11 @@ from dataclasses import dataclass, replace
 from enum import Enum
 
 from .chart import ChartContext, create_chart
-from .constants import Body
+from .constants import Body, sign_of
 from .egyptian_bounds import EgyptianBoundsDoctrine, EgyptianBoundsPolicy, egyptian_bound_of
 from .houses import HouseAngularity, HousePolicy, assign_house, describe_angularity
+from .planetary_hours import planetary_hours
+from .profections import DOMICILE_RULERS
 from .spk_reader import SpkReader, get_reader
 from .void_of_course import is_void_of_course
 from .aspect_events import (
@@ -39,6 +41,17 @@ from .aspect_events import (
     MoonConnectionFlowPolicy,
     MoonConnectionFlow,
     moon_connection_flow_at,
+)
+from .lunar_direction import (
+    LUNAR_ECLIPTIC_DIRECTION_V1,
+    LunarEclipticDirectionPolicy,
+    LunarEclipticDirectionWitness,
+    LunarEclipticHemisphere,
+    LunarLatitudeMotion,
+    LunarNodeCrossingDirection,
+    LunarNodeCrossingRelation,
+    LunarNodeCrossingWitness,
+    lunar_ecliptic_direction_at,
 )
 from ._western_electional_dorotheus import (
     DOROTHEUS_MOON_CONDITION_V1,
@@ -57,6 +70,8 @@ from ._western_electional_dorotheus import (
 from ._western_electional_context import (
     DOROTHEUS_ROOTED_CONTEXT_V1,
     DorotheusMatter,
+    DorotheusFortificationTestimony,
+    DorotheusFortificationTestimonyState,
     DorotheusMatterSignificatorWitness,
     DorotheusPlacementWitness,
     DorotheusRadicalityWitness,
@@ -65,6 +80,8 @@ from ._western_electional_context import (
     DorotheusRootOutcomePattern,
     DorotheusRootOutcomeWitness,
     DorotheusSignificatorCondition,
+    DorotheusSupplementaryIndicator,
+    DorotheusSupplementaryIndicatorState,
     DorotheusStrengthState,
     WesternElectionClass,
     dorotheus_rooted_context_at,
@@ -117,9 +134,21 @@ __all__ = [
     "MoonConnectionFlowPolicy",
     "MoonConnectionFlow",
     "moon_connection_flow_at",
+    "LunarEclipticHemisphere",
+    "LunarLatitudeMotion",
+    "LunarNodeCrossingDirection",
+    "LunarNodeCrossingRelation",
+    "LunarEclipticDirectionPolicy",
+    "LunarNodeCrossingWitness",
+    "LunarEclipticDirectionWitness",
+    "LUNAR_ECLIPTIC_DIRECTION_V1",
+    "lunar_ecliptic_direction_at",
     "RameseyRuleState",
     "RameseyMoonConditionStatus",
     "RameseyRemedyApplicability",
+    "RameseyRemedyClauseState",
+    "RameseyRemedyFulfillment",
+    "RameseyRemedyClauseWitness",
     "RameseyMeasurement",
     "RameseyClauseWitness",
     "RameseyRuleWitness",
@@ -155,9 +184,13 @@ __all__ = [
     "dorotheus_moon_condition_at",
     "WesternElectionClass",
     "DorotheusMatter",
+    "DorotheusFortificationTestimony",
+    "DorotheusFortificationTestimonyState",
     "DorotheusStrengthState",
     "DorotheusRootOutcomePattern",
     "DorotheusSignificatorCondition",
+    "DorotheusSupplementaryIndicator",
+    "DorotheusSupplementaryIndicatorState",
     "DorotheusPlacementWitness",
     "DorotheusRootOutcomeWitness",
     "DorotheusMatterSignificatorWitness",
@@ -224,6 +257,22 @@ class RameseyRemedyApplicability(str, Enum):
 
     NOT_APPLICABLE = "not_applicable"
     APPLICABLE = "applicable"
+    INDETERMINATE = "indeterminate"
+
+
+class RameseyRemedyClauseState(str, Enum):
+    """Truth state for one non-erasing remedy instruction clause."""
+
+    FULFILLED = "fulfilled"
+    NOT_FULFILLED = "not_fulfilled"
+    INDETERMINATE = "indeterminate"
+
+
+class RameseyRemedyFulfillment(str, Enum):
+    """Aggregate fulfillment, kept separate from urgent applicability."""
+
+    FULFILLED = "fulfilled"
+    NOT_FULFILLED = "not_fulfilled"
     INDETERMINATE = "indeterminate"
 
 
@@ -295,12 +344,30 @@ class RameseyRuleWitness:
 
 
 @dataclass(frozen=True, slots=True)
+class RameseyRemedyClauseWitness:
+    """One typed clause in Ramesey's unavoidable-time arrangement."""
+
+    clause_id: str
+    state: RameseyRemedyClauseState
+    policy_id: str
+    policy_reference: str
+    measurements: tuple[RameseyMeasurement, ...]
+    explanation: str
+
+    def __post_init__(self) -> None:
+        if not self.clause_id or not self.policy_id or not self.policy_reference:
+            raise ValueError("remedy clause identity, policy, and authority must be visible")
+        if not self.measurements or not self.explanation:
+            raise ValueError("remedy clause evidence and explanation must be visible")
+
+
+@dataclass(frozen=True, slots=True)
 class RameseyRemedyWitness:
     """Separate instruction witness for an unavoidable impeded Moon.
 
-    This vessel records when Ramesey's contingency instruction is relevant.
-    It does not claim that the prescribed arrangement has been fulfilled and
-    cannot change a gate or the profile's overall Moon-condition status.
+    This vessel keeps urgent applicability separate from a clause-derived
+    tri-state fulfillment assessment. Neither can change a gate or the
+    profile's overall Moon-condition status.
     """
 
     remedy_id: str
@@ -309,8 +376,10 @@ class RameseyRemedyWitness:
     unavoidable_time_urgency: bool | None
     source_reference: str
     instructions: tuple[str, ...]
+    fulfillment: RameseyRemedyFulfillment
+    clauses: tuple[RameseyRemedyClauseWitness, ...]
     uncomputed_requirements: tuple[str, ...]
-    assessment_semantics: str = "instruction_only_not_fulfillment_assessment"
+    assessment_semantics: str = "tri_state_non_erasing_fulfillment_assessment"
     erases_triggered_rules: bool = False
 
     def __post_init__(self) -> None:
@@ -318,10 +387,10 @@ class RameseyRemedyWitness:
             raise ValueError("remedy identity and source reference must be visible")
         if not self.instructions:
             raise ValueError("a remedy witness must preserve its source instructions")
-        if not self.uncomputed_requirements:
-            raise ValueError("uncomputed remedy requirements must remain visible")
-        if self.assessment_semantics != "instruction_only_not_fulfillment_assessment":
-            raise ValueError("Ramesey v1 remedy assessment semantics are fixed")
+        if not self.clauses:
+            raise ValueError("remedy fulfillment must preserve typed clauses")
+        if self.assessment_semantics != "tri_state_non_erasing_fulfillment_assessment":
+            raise ValueError("Ramesey remedy assessment semantics are fixed")
         if self.erases_triggered_rules:
             raise ValueError("a Ramesey remedy cannot erase triggered gate witnesses")
         if self.applicability is RameseyRemedyApplicability.APPLICABLE:
@@ -329,6 +398,21 @@ class RameseyRemedyWitness:
                 raise ValueError(
                     "an applicable remedy requires a confirmed impediment and urgent unavoidable time"
                 )
+        expected_fulfillment = (
+            RameseyRemedyFulfillment.NOT_FULFILLED
+            if any(
+                clause.state is RameseyRemedyClauseState.NOT_FULFILLED
+                for clause in self.clauses
+            )
+            else RameseyRemedyFulfillment.INDETERMINATE
+            if any(
+                clause.state is RameseyRemedyClauseState.INDETERMINATE
+                for clause in self.clauses
+            )
+            else RameseyRemedyFulfillment.FULFILLED
+        )
+        if self.fulfillment is not expected_fulfillment:
+            raise ValueError("remedy fulfillment must derive from visible clauses")
 
 
 # Ramesey, Book II, planetary chapters, printed pp. 53-67.  These are each
@@ -348,6 +432,15 @@ _POSITION_PRODUCT = (
     "chart_apparent_geocentric_ecliptic_longitude_with_"
     "planetdata_astrometric_geocentric_longitude_rate"
 )
+_TRADITIONAL_PLANETS = (
+    Body.SUN,
+    Body.MOON,
+    Body.MERCURY,
+    Body.VENUS,
+    Body.MARS,
+    Body.JUPITER,
+    Body.SATURN,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -355,7 +448,7 @@ class RameseyMoonConditionPolicy:
     """Frozen computational doctrine for ``ramesey_moon_condition_v1``."""
 
     profile_id: str = "ramesey_moon_condition_v1"
-    profile_version: str = "1.0.0"
+    profile_version: str = "1.1.0"
     degree_policy: str = "ordinal_degree_half_open"
     aspect_policy: str = "ramesey_combined_moieties"
     planetary_full_orbs: tuple[tuple[str, float], ...] = _RAMESEY_FULL_ORBS
@@ -366,11 +459,14 @@ class RameseyMoonConditionPolicy:
     position_product: str = _POSITION_PRODUCT
     void_policy: str = "traditional_planets_exact_perfection_sign_bound"
     via_combusta_policy: str = "tropical_half_open_195_to_225"
+    remedy_angle_relation_policy: str = "whole_sign_ptolemaic_relation"
+    remedy_fortune_policy: str = "jupiter_or_venus_first_house_or_whole_sign_sextile_trine"
+    remedy_fortification_policy: str = "source_gate_no_closed_predicate"
 
     def __post_init__(self) -> None:
         if self.profile_id != "ramesey_moon_condition_v1":
             raise ValueError("profile_id is fixed for this admitted profile")
-        if self.profile_version != "1.0.0":
+        if self.profile_version != "1.1.0":
             raise ValueError("profile_version is fixed for this admitted profile")
         if self.planetary_full_orbs != _RAMESEY_FULL_ORBS:
             raise ValueError("Ramesey v1 planetary orbs are source-fixed")
@@ -387,6 +483,9 @@ class RameseyMoonConditionPolicy:
             "cancer_beholding_policy": "whole_sign_bodily_sextile_or_trine",
             "void_policy": "traditional_planets_exact_perfection_sign_bound",
             "via_combusta_policy": "tropical_half_open_195_to_225",
+            "remedy_angle_relation_policy": "whole_sign_ptolemaic_relation",
+            "remedy_fortune_policy": "jupiter_or_venus_first_house_or_whole_sign_sextile_trine",
+            "remedy_fortification_policy": "source_gate_no_closed_predicate",
         }
         for name, value in fixed.items():
             if getattr(self, name) != value:
@@ -492,9 +591,7 @@ _REMEDY_INSTRUCTIONS = (
     "Fortify the Ascendant cusp, its lord, and the lord of the hour.",
 )
 _REMEDY_UNCOMPUTED_REQUIREMENTS = (
-    "Ramesey-specific body/aspect relation policy for the Moon and Ascendant",
-    "Jupiter and Venus placement plus Ramesey-specific good-aspect policy to the Ascendant",
-    "source-specific fortification judgements for the Ascendant cusp, its lord, and hour lord",
+    "source-specific fortification predicate for the Ascendant cusp, its lord, and hour lord",
 )
 _POLICY_REFERENCES = {
     "required_chart_input": "Moira ramesey_moon_condition_v1 input contract",
@@ -617,9 +714,50 @@ def _rule(
     )
 
 
+def _remedy_ruler_measurements(
+    chart: ChartContext,
+    prefix: str,
+    body_name: str | None,
+) -> tuple[RameseyMeasurement, ...]:
+    """Expose ruler condition evidence without turning it into a score."""
+
+    planet = chart.planets.get(body_name) if body_name is not None else None
+    houses = chart.houses
+    if planet is None:
+        return (
+            _measurement(f"{prefix}_name", body_name),
+            _measurement(f"{prefix}_available", False),
+        )
+    house = None
+    angularity = None
+    if houses is not None and houses.is_quadrant_system:
+        placement = assign_house(planet.longitude, houses)
+        house = placement.house
+        angularity = describe_angularity(placement).category.value
+    sun = chart.planets.get(Body.SUN)
+    solar_distance = (
+        _shortest_distance(planet.longitude, sun.longitude)
+        if sun is not None and body_name != Body.SUN
+        else None
+    )
+    return (
+        _measurement(f"{prefix}_name", body_name),
+        _measurement(f"{prefix}_available", True),
+        _measurement(f"{prefix}_longitude", planet.longitude, units="degrees"),
+        _measurement(f"{prefix}_sign", planet.sign),
+        _measurement(f"{prefix}_house", house),
+        _measurement(f"{prefix}_angularity", angularity),
+        _measurement(f"{prefix}_retrograde", planet.retrograde),
+        _measurement(f"{prefix}_solar_distance", solar_distance, units="degrees"),
+    )
+
+
 def _remedy_witness(
+    chart: ChartContext,
     rules: tuple[RameseyRuleWitness, ...],
     unavoidable_time_urgency: bool | None,
+    hour_lord: str | None,
+    policy: RameseyMoonConditionPolicy,
 ) -> RameseyRemedyWitness:
     triggering_rule_ids = tuple(
         rule.rule_id for rule in rules if rule.state is RameseyRuleState.TRIGGERED
@@ -641,6 +779,141 @@ def _remedy_witness(
             if has_indeterminate_gate
             else RameseyRemedyApplicability.NOT_APPLICABLE
         )
+    moon = chart.planets.get(Body.MOON)
+    houses = chart.houses
+    if moon is None or houses is None or not houses.is_quadrant_system:
+        moon_clause = RameseyRemedyClauseWitness(
+            clause_id="moon_cadent_without_ascendant_relation",
+            state=RameseyRemedyClauseState.INDETERMINATE,
+            policy_id=policy.remedy_angle_relation_policy,
+            policy_reference=_REMEDY_SOURCE,
+            measurements=(
+                _measurement("moon_available", moon is not None),
+                _measurement("quadrant_houses_available", bool(houses and houses.is_quadrant_system)),
+            ),
+            explanation="Moon cadence and its relation to the Ascendant require a Moon and quadrant figure.",
+        )
+    else:
+        moon_placement = assign_house(moon.longitude, houses)
+        moon_cadent = describe_angularity(moon_placement).category is HouseAngularity.CADENT
+        asc_sign = sign_of(houses.asc)[0]
+        relation = (_SIGNS.index(moon.sign) - _SIGNS.index(asc_sign)) % 12 in {
+            0, 2, 3, 4, 6, 8, 9, 10
+        }
+        moon_clause = RameseyRemedyClauseWitness(
+            clause_id="moon_cadent_without_ascendant_relation",
+            state=(
+                RameseyRemedyClauseState.FULFILLED
+                if moon_cadent and not relation
+                else RameseyRemedyClauseState.NOT_FULFILLED
+            ),
+            policy_id=policy.remedy_angle_relation_policy,
+            policy_reference=_REMEDY_SOURCE,
+            measurements=(
+                _measurement("moon_house", moon_placement.house),
+                _measurement("moon_cadent", moon_cadent),
+                _measurement("ascendant_sign", asc_sign),
+                _measurement("moon_sign", moon.sign),
+                _measurement("bodily_or_ptolemaic_relation", relation),
+            ),
+            explanation=(
+                "Fulfilled only when the Moon is cadent and its sign has no bodily, sextile, "
+                "square, trine, or opposition relation to the Ascendant sign."
+            ),
+        )
+
+    fortunes = tuple(
+        body for body in (Body.JUPITER, Body.VENUS) if body in chart.planets
+    )
+    if houses is None or not fortunes:
+        fortune_clause = RameseyRemedyClauseWitness(
+            clause_id="fortune_in_or_good_aspect_to_ascendant",
+            state=RameseyRemedyClauseState.INDETERMINATE,
+            policy_id=policy.remedy_fortune_policy,
+            policy_reference=_REMEDY_SOURCE,
+            measurements=(
+                _measurement("available_fortunes", ",".join(fortunes)),
+                _measurement("houses_available", houses is not None),
+            ),
+            explanation="Jupiter or Venus and an Ascendant are required for this clause.",
+        )
+    else:
+        asc_sign = sign_of(houses.asc)[0]
+        qualified: list[str] = []
+        details: list[str] = []
+        quadrant = houses.is_quadrant_system
+        for body in fortunes:
+            planet = chart.planets[body]
+            offset = (_SIGNS.index(planet.sign) - _SIGNS.index(asc_sign)) % 12
+            good_aspect = offset in {2, 4, 8, 10}
+            in_ascendant = quadrant and assign_house(planet.longitude, houses).house == 1
+            if in_ascendant or good_aspect:
+                qualified.append(body)
+            details.append(
+                f"{body}:in_ascendant={in_ascendant},good_whole_sign_aspect={good_aspect}"
+            )
+        fortune_clause = RameseyRemedyClauseWitness(
+            clause_id="fortune_in_or_good_aspect_to_ascendant",
+            state=(
+                RameseyRemedyClauseState.FULFILLED
+                if qualified
+                else RameseyRemedyClauseState.NOT_FULFILLED
+                if quadrant
+                else RameseyRemedyClauseState.INDETERMINATE
+            ),
+            policy_id=policy.remedy_fortune_policy,
+            policy_reference=_REMEDY_SOURCE,
+            measurements=(
+                _measurement("ascendant_sign", asc_sign),
+                _measurement("available_fortunes", ",".join(fortunes)),
+                _measurement("qualified_fortunes", ",".join(qualified)),
+                _measurement("fortune_evidence", ";".join(details)),
+            ),
+            explanation=(
+                "A fortune qualifies by first-house placement or whole-sign sextile/trine "
+                "to the Ascendant; a non-quadrant figure cannot disprove first-house placement."
+            ),
+        )
+
+    asc_sign = sign_of(houses.asc)[0] if houses is not None else None
+    asc_lord = DOMICILE_RULERS[asc_sign] if asc_sign is not None else None
+    fortification_clauses = (
+        RameseyRemedyClauseWitness(
+            clause_id="fortify_ascendant_cusp",
+            state=RameseyRemedyClauseState.INDETERMINATE,
+            policy_id=policy.remedy_fortification_policy,
+            policy_reference=_REMEDY_SOURCE,
+            measurements=(
+                _measurement("ascendant_longitude", houses.asc if houses is not None else None, units="degrees"),
+                _measurement("ascendant_sign", asc_sign),
+            ),
+            explanation="Ramesey commands fortification but this passage supplies no closed cusp predicate.",
+        ),
+        RameseyRemedyClauseWitness(
+            clause_id="fortify_ascendant_lord",
+            state=RameseyRemedyClauseState.INDETERMINATE,
+            policy_id=policy.remedy_fortification_policy,
+            policy_reference=_REMEDY_SOURCE,
+            measurements=_remedy_ruler_measurements(chart, "ascendant_lord", asc_lord),
+            explanation="The ruler is identified, but no generic dignity total is substituted for Ramesey's fortify command.",
+        ),
+        RameseyRemedyClauseWitness(
+            clause_id="fortify_hour_lord",
+            state=RameseyRemedyClauseState.INDETERMINATE,
+            policy_id=policy.remedy_fortification_policy,
+            policy_reference=_REMEDY_SOURCE,
+            measurements=_remedy_ruler_measurements(chart, "hour_lord", hour_lord),
+            explanation="The planetary-hour ruler is identified when available; its fortification predicate remains source-gated.",
+        ),
+    )
+    clauses = (moon_clause, fortune_clause, *fortification_clauses)
+    fulfillment = (
+        RameseyRemedyFulfillment.NOT_FULFILLED
+        if any(clause.state is RameseyRemedyClauseState.NOT_FULFILLED for clause in clauses)
+        else RameseyRemedyFulfillment.INDETERMINATE
+        if any(clause.state is RameseyRemedyClauseState.INDETERMINATE for clause in clauses)
+        else RameseyRemedyFulfillment.FULFILLED
+    )
     return RameseyRemedyWitness(
         remedy_id="unavoidable_impeded_moon_arrangement",
         applicability=applicability,
@@ -648,6 +921,8 @@ def _remedy_witness(
         unavoidable_time_urgency=unavoidable_time_urgency,
         source_reference=_REMEDY_SOURCE,
         instructions=_REMEDY_INSTRUCTIONS,
+        fulfillment=fulfillment,
+        clauses=clauses,
         uncomputed_requirements=_REMEDY_UNCOMPUTED_REQUIREMENTS,
     )
 
@@ -704,6 +979,7 @@ def evaluate_ramesey_moon_condition(
     *,
     void_of_course: bool | None,
     unavoidable_time_urgency: bool | None = None,
+    hour_lord: str | None = None,
     position_product: str,
     reader_provenance: str,
     policy: RameseyMoonConditionPolicy = RAMESEY_MOON_CONDITION_V1,
@@ -735,6 +1011,8 @@ def evaluate_ramesey_moon_condition(
         unavoidable_time_urgency, bool
     ):
         raise TypeError("unavoidable_time_urgency must be bool or None")
+    if hour_lord is not None and hour_lord not in _TRADITIONAL_PLANETS:
+        raise ValueError("hour_lord must be a traditional planet or None")
 
     moon = chart.planets.get(Body.MOON)
     sun = chart.planets.get(Body.SUN)
@@ -743,8 +1021,8 @@ def evaluate_ramesey_moon_condition(
     true_node = chart.nodes.get(Body.TRUE_NODE)
     topocentric = tuple(
         body.name
-        for body in (moon, sun, mars, saturn)
-        if body is not None and body.is_topocentric
+        for body_name in _TRADITIONAL_PLANETS
+        if (body := chart.planets.get(body_name)) is not None and body.is_topocentric
     )
     if topocentric:
         raise ValueError(
@@ -1006,7 +1284,15 @@ def evaluate_ramesey_moon_condition(
         profile_version=policy.profile_version,
         status=status,
         rules=rule_tuple,
-        remedies=(_remedy_witness(rule_tuple, unavoidable_time_urgency),),
+        remedies=(
+            _remedy_witness(
+                chart,
+                rule_tuple,
+                unavoidable_time_urgency,
+                hour_lord,
+                policy,
+            ),
+        ),
         position_product=policy.position_product,
         reader_provenance=reader_provenance,
         latitude=chart.latitude,
@@ -1042,11 +1328,17 @@ def ramesey_moon_condition_at(
         latitude,
         longitude,
         house_system=house_system,
-        bodies=[Body.SUN, Body.MOON, Body.MARS, Body.SATURN],
+        bodies=list(_TRADITIONAL_PLANETS),
         reader=resolved_reader,
         policy=house_policy,
     )
     voc = is_void_of_course(jd_ut, reader=resolved_reader, modern=False)
+    hour_lord = planetary_hours(
+        jd_ut,
+        latitude,
+        longitude,
+        reader=resolved_reader,
+    ).lord_of_hour(jd_ut)
     reader_path = getattr(resolved_reader, "path", None)
     reader_provenance = (
         str(reader_path)
@@ -1057,6 +1349,7 @@ def ramesey_moon_condition_at(
         chart,
         void_of_course=voc,
         unavoidable_time_urgency=unavoidable_time_urgency,
+        hour_lord=hour_lord,
         position_product=policy.position_product,
         reader_provenance=reader_provenance,
         policy=policy,
@@ -1082,9 +1375,13 @@ class SahlMoonConditionStatus(str, Enum):
 class SahlBurntPathVariant(str, Enum):
     """Named interpretations of Sahl's non-numeric burnt-path wording."""
 
-    UNRESOLVED_SOURCE_WORDING = "unresolved_source_wording"
-    FALL_DEGREES = "fall_degrees_19_libra_to_3_scorpio"
-    FIFTEEN_DEGREES = "fifteen_libra_to_fifteen_scorpio"
+    SAHL_TEXT_INDETERMINATE = "sahl_text_indeterminate_no_numeric_endpoints"
+    DYKES_GLOSSARY_FALL_DEGREES = (
+        "dykes_glossary_fall_degrees_19_libra_to_3_scorpio"
+    )
+    LATER_FIFTEEN_DEGREES = (
+        "later_fifteen_degrees_15_libra_to_15_scorpio"
+    )
 
 
 class SahlEighthRuleVariant(str, Enum):
@@ -1185,7 +1482,7 @@ class SahlMoonConditionPolicy:
     bound_policy: str = "explicit_egyptian_bounds_binding"
     cadency_policy: str = "caller_declared_quadrant_houses_3_6_9_12"
     burnt_path_variant: SahlBurntPathVariant = (
-        SahlBurntPathVariant.UNRESOLVED_SOURCE_WORDING
+        SahlBurntPathVariant.SAHL_TEXT_INDETERMINATE
     )
     eighth_rule_variant: SahlEighthRuleVariant = (
         SahlEighthRuleVariant.ARABIC_AL_RIJAL_TWELFTH_PART
@@ -1318,14 +1615,17 @@ _SAHL_POLICY_REFERENCES = {
     "caller_declared_quadrant_houses_3_6_9_12": (
         f"{_SAHL_RULE_SOURCES[7]}; {_SAHL_GLOSSARY}; explicit Moira house-system input"
     ),
-    SahlBurntPathVariant.UNRESOLVED_SOURCE_WORDING.value: (
-        f"{_SAHL_RULE_SOURCES[7]}; source says only end of Libra and beginning of Scorpio"
+    SahlBurntPathVariant.SAHL_TEXT_INDETERMINATE.value: (
+        f"{_SAHL_RULE_SOURCES[7]}; Sahl says only the end of Libra and the "
+        "beginning of Scorpio and supplies no numeric endpoints"
     ),
-    SahlBurntPathVariant.FALL_DEGREES.value: (
-        f"{_SAHL_RULE_SOURCES[7]}; {_SAHL_GLOSSARY} fall-degree interpretation"
+    SahlBurntPathVariant.DYKES_GLOSSARY_FALL_DEGREES.value: (
+        f"{_SAHL_RULE_SOURCES[7]}; {_SAHL_GLOSSARY}, Burned Path and Fall, "
+        "19 Libra through 2 Scorpio"
     ),
-    SahlBurntPathVariant.FIFTEEN_DEGREES.value: (
-        f"{_SAHL_RULE_SOURCES[7]}; {_SAHL_GLOSSARY} 15 Libra to 15 Scorpio interpretation"
+    SahlBurntPathVariant.LATER_FIFTEEN_DEGREES.value: (
+        f"{_SAHL_RULE_SOURCES[7]}; {_SAHL_GLOSSARY}, Via Combusta, later "
+        "15 Libra through 14 Scorpio convention"
     ),
     SahlEighthRuleVariant.ARABIC_AL_RIJAL_TWELFTH_PART.value: (
         f"{_SAHL_RULE_SOURCES[8]}; Dykes-preferred Arabic/al-Rijal reading"
@@ -1470,7 +1770,7 @@ def _sahl_burnt_path_clause(
     moon_longitude: float,
     variant: SahlBurntPathVariant,
 ) -> SahlClauseWitness:
-    if variant is SahlBurntPathVariant.UNRESOLVED_SOURCE_WORDING:
+    if variant is SahlBurntPathVariant.SAHL_TEXT_INDETERMINATE:
         return _sahl_clause(
             "moon_in_burnt_path",
             SahlRuleState.NOT_EVALUABLE,
@@ -1478,12 +1778,14 @@ def _sahl_burnt_path_clause(
             (
                 _sahl_measurement("moon_longitude", moon_longitude, units="degrees"),
                 _sahl_measurement("burnt_path_variant", variant.value),
+                _sahl_measurement("numeric_endpoints", None),
+                _sahl_measurement("boundary_semantics", "not_defined_by_sahl"),
             ),
-            "Sahl gives no numeric endpoints; no later span is silently substituted.",
+            "Sahl gives no numeric endpoints. This source-faithful selection reports the clause as indeterminate and performs no interval membership test.",
         )
     start, end = (
         (199.0, 213.0)
-        if variant is SahlBurntPathVariant.FALL_DEGREES
+        if variant is SahlBurntPathVariant.DYKES_GLOSSARY_FALL_DEGREES
         else (195.0, 225.0)
     )
     triggered = start <= moon_longitude < end
@@ -1500,8 +1802,10 @@ def _sahl_burnt_path_clause(
                 comparison="in",
                 threshold=f"[{start}, {end})",
             ),
+            _sahl_measurement("interval_start_inclusive", True),
+            _sahl_measurement("interval_end_exclusive", True),
         ),
-        "The selected named interpretation is encoded as a tropical half-open interval.",
+        "The caller-selected historical or glossary interpretation is encoded as the cited tropical half-open interval; no ambient burnt-path default is applied.",
     )
 
 
@@ -1885,7 +2189,7 @@ def sahl_moon_condition_at(
     longitude: float,
     *,
     house_system: str,
-    burnt_path_variant: SahlBurntPathVariant | None = None,
+    burnt_path_variant: SahlBurntPathVariant,
     eighth_rule_variant: SahlEighthRuleVariant | None = None,
     reader: SpkReader | None = None,
     house_policy: HousePolicy | None = None,
@@ -1895,11 +2199,9 @@ def sahl_moon_condition_at(
 
     if not isinstance(policy, SahlMoonConditionPolicy):
         raise TypeError("policy must be a SahlMoonConditionPolicy")
-    overrides = {}
-    if burnt_path_variant is not None:
-        if not isinstance(burnt_path_variant, SahlBurntPathVariant):
-            raise TypeError("burnt_path_variant must be a SahlBurntPathVariant or None")
-        overrides["burnt_path_variant"] = burnt_path_variant
+    if not isinstance(burnt_path_variant, SahlBurntPathVariant):
+        raise TypeError("burnt_path_variant must be an explicit SahlBurntPathVariant")
+    overrides = {"burnt_path_variant": burnt_path_variant}
     if eighth_rule_variant is not None:
         if not isinstance(eighth_rule_variant, SahlEighthRuleVariant):
             raise TypeError("eighth_rule_variant must be a SahlEighthRuleVariant or None")

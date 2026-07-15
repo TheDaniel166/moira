@@ -261,7 +261,7 @@ The admitted policies remain visible in every rule witness:
 | Head / Tail | true ecliptic ascending node and its opposition, distance `<= 12 degrees` |
 | Last degrees | only the terminal malefic segment of the explicitly selected Egyptian bounds table; this is a Moira binding because Sahl does not name the table |
 | Cadency | houses 3, 6, 9, and 12 in the caller-declared effective quadrant system |
-| Burnt path | default `unresolved_source_wording` returns `not_evaluable`; the Dykes-glossary `19 Libra-3 Scorpio` and `15 Libra-15 Scorpio` interpretations are named, caller-visible alternatives |
+| Burnt path | explicit `sahl_text_indeterminate_no_numeric_endpoints` returns `not_evaluable`; public callers must knowingly select that source-faithful state, the Dykes-glossary `[19 Libra, 3 Scorpio)`, or the later `[15 Libra, 15 Scorpio)` convention |
 | Eighth rule | Dykes-preferred Arabic/al-Rijal twelfth-part reading by default; the conflicting Latin twelfth-sign reading remains separately selectable and labeled |
 | Slow Moon | instantaneous geocentric longitude rate strictly `< 12 degrees/day` |
 | Empty course | medieval sign-bounded product: no exact traditional-planet connection completes before sign exit |

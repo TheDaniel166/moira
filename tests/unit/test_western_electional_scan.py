@@ -143,7 +143,7 @@ def test_scan_enforces_point_bound_and_profile_owned_parameters(monkeypatch) -> 
             0.0,
             house_system="P",
             profile_id="ramesey_moon_condition_v1",
-            sahl_burnt_path_variant="fall_degrees_19_libra_to_3_scorpio",
+            sahl_burnt_path_variant="dykes_glossary_fall_degrees_19_libra_to_3_scorpio",
             scan_policy=policy,
             reader=_Reader(),
         )
@@ -155,7 +155,7 @@ def test_sahl_scan_preserves_resolved_variant_parameters(monkeypatch) -> None:
             "indeterminate", "sahl_moon_condition_v1", jd_ut=chart.jd_ut
         )
         result.burnt_path_variant = SimpleNamespace(
-            value="fall_degrees_19_libra_to_3_scorpio"
+            value="dykes_glossary_fall_degrees_19_libra_to_3_scorpio"
         )
         result.eighth_rule_variant = SimpleNamespace(
             value="arabic_al_rijal_twelfth_part"
@@ -176,6 +176,7 @@ def test_sahl_scan_preserves_resolved_variant_parameters(monkeypatch) -> None:
         0.0,
         house_system="P",
         profile_id="sahl_moon_condition_v1",
+        sahl_burnt_path_variant=western.SahlBurntPathVariant.DYKES_GLOSSARY_FALL_DEGREES,
         scan_policy=western.WesternElectionalProfileScanPolicy(
             step_days=0.25,
             max_scan_points=2,
@@ -186,7 +187,7 @@ def test_sahl_scan_preserves_resolved_variant_parameters(monkeypatch) -> None:
         reader=_Reader(),
     )
     assert [(item.name, item.value) for item in result.profile_parameters] == [
-        ("burnt_path_variant", "fall_degrees_19_libra_to_3_scorpio"),
+        ("burnt_path_variant", "dykes_glossary_fall_degrees_19_libra_to_3_scorpio"),
         ("eighth_rule_variant", "arabic_al_rijal_twelfth_part"),
     ]
 

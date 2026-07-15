@@ -76,7 +76,7 @@ def _evaluation(
     chart: ChartContext,
     *,
     voc: bool | None = False,
-    burnt_path: western.SahlBurntPathVariant = western.SahlBurntPathVariant.FALL_DEGREES,
+    burnt_path: western.SahlBurntPathVariant = western.SahlBurntPathVariant.DYKES_GLOSSARY_FALL_DEGREES,
     eighth: western.SahlEighthRuleVariant = western.SahlEighthRuleVariant.ARABIC_AL_RIJAL_TWELFTH_PART,
 ) -> western.SahlMoonConditionEvaluation:
     policy = replace(
@@ -149,7 +149,7 @@ def test_moira_facade_method_delegates_with_bound_reader(
         51.5,
         -0.1,
         house_system=HouseSystem.REGIOMONTANUS,
-        burnt_path_variant=western.SahlBurntPathVariant.FALL_DEGREES,
+        burnt_path_variant=western.SahlBurntPathVariant.DYKES_GLOSSARY_FALL_DEGREES,
     )
     assert result is sentinel_result
     assert captured["kwargs"]["reader"] is sentinel_reader  # type: ignore[index]
@@ -162,13 +162,13 @@ def test_clear_profile_has_ten_ordered_witnesses_with_explicit_variant() -> None
     assert result.triggered_rule_ids == ()
     assert result.not_evaluable_rule_ids == ()
     assert tuple(rule.source_order for rule in result.rules) == tuple(range(1, 11))
-    assert result.burnt_path_variant is western.SahlBurntPathVariant.FALL_DEGREES
+    assert result.burnt_path_variant is western.SahlBurntPathVariant.DYKES_GLOSSARY_FALL_DEGREES
 
 
 def test_unresolved_sahl_burnt_path_is_visible_not_silently_defaulted() -> None:
     result = _evaluation(
         _chart(),
-        burnt_path=western.SahlBurntPathVariant.UNRESOLVED_SOURCE_WORDING,
+        burnt_path=western.SahlBurntPathVariant.SAHL_TEXT_INDETERMINATE,
     )
     rule = _rule(result, 7)
     burnt = next(clause for clause in rule.clauses if clause.clause_id == "moon_in_burnt_path")
@@ -180,7 +180,7 @@ def test_unresolved_sahl_burnt_path_is_visible_not_silently_defaulted() -> None:
 def test_confirmed_impediment_dominates_an_unresolved_other_clause() -> None:
     result = _evaluation(
         _chart(moon_longitude=70.0),
-        burnt_path=western.SahlBurntPathVariant.UNRESOLVED_SOURCE_WORDING,
+        burnt_path=western.SahlBurntPathVariant.SAHL_TEXT_INDETERMINATE,
     )
     assert _rule(result, 7).state is western.SahlRuleState.TRIGGERED
     assert result.status is western.SahlMoonConditionStatus.TRIGGERED
@@ -237,8 +237,8 @@ def test_node_boundary_and_egyptian_malefic_bound_are_explicit() -> None:
 @pytest.mark.parametrize(
     ("variant", "inside", "outside"),
     [
-        (western.SahlBurntPathVariant.FALL_DEGREES, 199.0, 213.0),
-        (western.SahlBurntPathVariant.FIFTEEN_DEGREES, 195.0, 225.0),
+        (western.SahlBurntPathVariant.DYKES_GLOSSARY_FALL_DEGREES, 199.0, 213.0),
+        (western.SahlBurntPathVariant.LATER_FIFTEEN_DEGREES, 195.0, 225.0),
     ],
 )
 def test_named_burnt_path_intervals_are_half_open(
@@ -249,6 +249,24 @@ def test_named_burnt_path_intervals_are_half_open(
     assert _rule(_evaluation(_chart(moon_longitude=inside), burnt_path=variant), 7).state is western.SahlRuleState.TRIGGERED
     burnt = next(
         clause for clause in _rule(_evaluation(_chart(moon_longitude=outside), burnt_path=variant), 7).clauses
+        if clause.clause_id == "moon_in_burnt_path"
+    )
+    assert burnt.state is western.SahlRuleState.CLEAR
+    assert any(
+        item.name == "interval_start_inclusive" and item.value is True
+        for item in burnt.measurements
+    )
+
+
+@pytest.mark.parametrize("longitude", [0.0, 360.0, -360.0])
+def test_named_burnt_path_intervals_do_not_wrap_across_aries(longitude: float) -> None:
+    result = _evaluation(
+        _chart(moon_longitude=longitude),
+        burnt_path=western.SahlBurntPathVariant.DYKES_GLOSSARY_FALL_DEGREES,
+    )
+    burnt = next(
+        clause
+        for clause in _rule(result, 7).clauses
         if clause.clause_id == "moon_in_burnt_path"
     )
     assert burnt.state is western.SahlRuleState.CLEAR
@@ -319,12 +337,12 @@ def test_high_level_entrypoint_preserves_variants_reader_and_voc_policy(
         51.5,
         -0.1,
         house_system=HouseSystem.PORPHYRY,
-        burnt_path_variant=western.SahlBurntPathVariant.FIFTEEN_DEGREES,
+        burnt_path_variant=western.SahlBurntPathVariant.LATER_FIFTEEN_DEGREES,
         eighth_rule_variant=western.SahlEighthRuleVariant.LATIN_TWELFTH_SIGN,
         reader=FakeReader(),  # type: ignore[arg-type]
     )
     assert result.reader_provenance == "synthetic-de441.bsp"
-    assert result.burnt_path_variant is western.SahlBurntPathVariant.FIFTEEN_DEGREES
+    assert result.burnt_path_variant is western.SahlBurntPathVariant.LATER_FIFTEEN_DEGREES
     assert result.eighth_rule_variant is western.SahlEighthRuleVariant.LATIN_TWELFTH_SIGN
     assert calls["chart_kwargs"]["house_system"] == HouseSystem.PORPHYRY  # type: ignore[index]
     assert calls["voc_kwargs"]["modern"] is False  # type: ignore[index]

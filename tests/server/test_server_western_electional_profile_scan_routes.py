@@ -64,7 +64,7 @@ def test_profile_windows_route_scans_real_de441_profile(client_and_app) -> None:
 def test_profile_windows_route_rejects_cross_profile_parameters(client_and_app) -> None:
     client, _ = client_and_app
     payload = _payload()
-    payload["sahl_burnt_path_variant"] = "fall_degrees_19_libra_to_3_scorpio"
+    payload["sahl_burnt_path_variant"] = "dykes_glossary_fall_degrees_19_libra_to_3_scorpio"
     response = client.post("/v1/electional/western/profile-windows", json=payload)
     assert response.status_code == 422
 

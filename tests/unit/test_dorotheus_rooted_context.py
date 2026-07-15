@@ -90,9 +90,13 @@ def test_rooted_context_is_public_through_engine_facade_and_rest_owner() -> None
     names = {
         "WesternElectionClass",
         "DorotheusMatter",
+        "DorotheusFortificationTestimony",
+        "DorotheusFortificationTestimonyState",
         "DorotheusStrengthState",
         "DorotheusRootOutcomePattern",
         "DorotheusSignificatorCondition",
+        "DorotheusSupplementaryIndicator",
+        "DorotheusSupplementaryIndicatorState",
         "DorotheusPlacementWitness",
         "DorotheusRootOutcomeWitness",
         "DorotheusMatterSignificatorWitness",
@@ -164,8 +168,32 @@ def test_matter_witness_evaluates_source_defined_bad_place_set() -> None:
         western.DorotheusSignificatorCondition.ONE_OR_MORE_COMPUTED_IMPEDIMENTS,
         western.DorotheusSignificatorCondition.INDETERMINATE,
     }
-    assert not any("bad place" in item for item in witness.uncomputed_requirements)
-    assert any("made unfortunate" in item for item in witness.uncomputed_requirements)
+    assert tuple(item.testimony_id for item in witness.fortification_testimonies) == (
+        "under_rays",
+        "made_unfortunate",
+        "not_looking_at_ascendant",
+        "bad_place",
+    )
+    assert witness.fortification_testimonies[1].state is (
+        western.DorotheusFortificationTestimonyState.NOT_EVALUABLE
+    )
+
+
+def test_v6_29_indicators_remain_distinct_and_do_not_replace_primary_outcome_lord() -> None:
+    result = _evaluate(_chart())
+    ninth, fortune, connection = result.supplementary_indicators
+
+    assert result.root_outcome.moon_sign_lord.body == Body.MARS
+    assert ninth.role == "editorial_inception_supplement"
+    assert ninth.state is western.DorotheusSupplementaryIndicatorState.NOT_EVALUABLE
+    assert fortune.role == "inception_supplement"
+    assert fortune.state is western.DorotheusSupplementaryIndicatorState.EVALUATED
+    assert fortune.longitude is not None
+    assert fortune.ruler in {Body.SUN, Body.MOON, Body.MERCURY, Body.VENUS, Body.MARS, Body.JUPITER, Body.SATURN}
+    assert fortune.placement is not None
+    assert connection.role == "outcome_supplement"
+    assert connection.state is western.DorotheusSupplementaryIndicatorState.EVALUATED
+    assert connection.body is None
 
 
 @pytest.mark.parametrize("mercury", (65.0, 155.0, 215.0, 335.0))
@@ -206,6 +234,6 @@ def test_radical_context_preserves_natal_evidence_without_success_gate() -> None
 
 
 def test_policy_is_closed() -> None:
-    assert western.DOROTHEUS_ROOTED_CONTEXT_V1.profile_version == "1.1.0"
+    assert western.DOROTHEUS_ROOTED_CONTEXT_V1.profile_version == "1.2.0"
     with pytest.raises(ValueError, match="under_rays_degrees"):
         replace(western.DOROTHEUS_ROOTED_CONTEXT_V1, under_rays_degrees=12.0)

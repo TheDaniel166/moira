@@ -81,6 +81,9 @@ def _chart(
         planets[Body.MARS] = _planet(Body.MARS, mars_longitude, 0.5)
     if include_saturn:
         planets[Body.SATURN] = _planet(Body.SATURN, saturn_longitude, 0.1)
+    planets[Body.MERCURY] = _planet(Body.MERCURY, 160.0, 1.2)
+    planets[Body.VENUS] = _planet(Body.VENUS, 300.0, 1.0)
+    planets[Body.JUPITER] = _planet(Body.JUPITER, 60.0, 0.2)
     nodes = {}
     if include_node:
         nodes[Body.TRUE_NODE] = NodeData(Body.TRUE_NODE, node_longitude, -0.05)
@@ -119,6 +122,9 @@ def test_public_surface_is_promoted_through_root_and_facade() -> None:
         "RameseyRuleState",
         "RameseyMoonConditionStatus",
         "RameseyRemedyApplicability",
+        "RameseyRemedyClauseState",
+        "RameseyRemedyFulfillment",
+        "RameseyRemedyClauseWitness",
         "RameseyMeasurement",
         "RameseyClauseWitness",
         "RameseyRuleWitness",
@@ -154,9 +160,13 @@ def test_public_surface_is_promoted_through_root_and_facade() -> None:
         "dorotheus_moon_condition_at",
         "WesternElectionClass",
         "DorotheusMatter",
+        "DorotheusFortificationTestimony",
+        "DorotheusFortificationTestimonyState",
         "DorotheusStrengthState",
         "DorotheusRootOutcomePattern",
         "DorotheusSignificatorCondition",
+        "DorotheusSupplementaryIndicator",
+        "DorotheusSupplementaryIndicatorState",
         "DorotheusPlacementWitness",
         "DorotheusRootOutcomeWitness",
         "DorotheusMatterSignificatorWitness",
@@ -196,6 +206,15 @@ def test_public_surface_is_promoted_through_root_and_facade() -> None:
         "MoonConnectionFlowPolicy",
         "MoonConnectionFlow",
         "moon_connection_flow_at",
+        "LunarEclipticHemisphere",
+        "LunarLatitudeMotion",
+        "LunarNodeCrossingDirection",
+        "LunarNodeCrossingRelation",
+        "LunarEclipticDirectionPolicy",
+        "LunarNodeCrossingWitness",
+        "LunarEclipticDirectionWitness",
+        "LUNAR_ECLIPTIC_DIRECTION_V1",
+        "lunar_ecliptic_direction_at",
         "WesternElectionalProfileId",
         "WesternElectionalQualificationStatus",
         "WesternElectionalProfileParameter",
@@ -307,9 +326,20 @@ def test_triggered_gate_and_missing_urgency_preserve_indeterminate_remedy() -> N
     assert remedy.triggering_rule_ids == result.triggered_rule_ids
     assert remedy.unavoidable_time_urgency is None
     assert remedy.erases_triggered_rules is False
-    assert remedy.assessment_semantics == "instruction_only_not_fulfillment_assessment"
+    assert remedy.assessment_semantics == "tri_state_non_erasing_fulfillment_assessment"
     assert len(remedy.instructions) == 3
-    assert len(remedy.uncomputed_requirements) == 3
+    assert len(remedy.uncomputed_requirements) == 1
+    assert remedy.fulfillment in {
+        western.RameseyRemedyFulfillment.NOT_FULFILLED,
+        western.RameseyRemedyFulfillment.INDETERMINATE,
+    }
+    assert tuple(clause.clause_id for clause in remedy.clauses) == (
+        "moon_cadent_without_ascendant_relation",
+        "fortune_in_or_good_aspect_to_ascendant",
+        "fortify_ascendant_cusp",
+        "fortify_ascendant_lord",
+        "fortify_hour_lord",
+    )
 
 
 @pytest.mark.parametrize(
@@ -675,6 +705,13 @@ def test_high_level_entry_point_requires_and_preserves_house_system(monkeypatch:
     monkeypatch.setattr(western, "create_chart", fake_create_chart)
     monkeypatch.setattr(western, "is_void_of_course", fake_voc)
 
+    class FakeHours:
+        def lord_of_hour(self, jd: float) -> str:
+            assert jd == 2451545.0
+            return Body.SATURN
+
+    monkeypatch.setattr(western, "planetary_hours", lambda *args, **kwargs: FakeHours())
+
     class FakeReader:
         path = "synthetic-de441.bsp"
 
@@ -691,9 +728,18 @@ def test_high_level_entry_point_requires_and_preserves_house_system(monkeypatch:
     create_kwargs = calls["create_kwargs"]
     assert isinstance(create_kwargs, dict)
     assert create_kwargs["house_system"] == HouseSystem.PORPHYRY
-    assert create_kwargs["bodies"] == [Body.SUN, Body.MOON, Body.MARS, Body.SATURN]
+    assert create_kwargs["bodies"] == [
+        Body.SUN,
+        Body.MOON,
+        Body.MERCURY,
+        Body.VENUS,
+        Body.MARS,
+        Body.JUPITER,
+        Body.SATURN,
+    ]
     voc_kwargs = calls["voc_kwargs"]
     assert isinstance(voc_kwargs, dict)
     assert voc_kwargs["modern"] is False
     assert result.reader_provenance == "synthetic-de441.bsp"
     assert result.remedies[0].unavoidable_time_urgency is True
+    assert result.remedies[0].clauses[-1].measurements[0].value == Body.SATURN

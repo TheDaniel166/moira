@@ -445,6 +445,19 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
             policy=resolved_policy,
         )
 
+    def lunar_ecliptic_direction_at(self, jd_ut: float, *, policy=None):
+        """Return the neutral lunar latitude-direction and node-crossing witness."""
+
+        facade = _facade_module()
+        resolved_policy = (
+            facade.LUNAR_ECLIPTIC_DIRECTION_V1 if policy is None else policy
+        )
+        return facade.lunar_ecliptic_direction_at(
+            jd_ut,
+            reader=self._reader,
+            policy=resolved_policy,
+        )
+
     def sahl_moon_condition_at(
         self,
         jd_ut: float,
@@ -452,7 +465,7 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
         longitude: float,
         *,
         house_system: str,
-        burnt_path_variant=None,
+        burnt_path_variant,
         eighth_rule_variant=None,
         house_policy=None,
         policy=None,

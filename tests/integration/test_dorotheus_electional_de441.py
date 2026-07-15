@@ -88,6 +88,13 @@ def test_j2000_rooted_context_next_connection_satisfies_de441_geometry() -> None
     assert angular_error < 2e-4
     assert before_exit.sign == connection.moon_sign
     assert after_exit.sign != connection.moon_sign
+    ninth, fortune, outcome = result.supplementary_indicators
+    assert ninth.state.value == "not_evaluable"
+    assert fortune.longitude == pytest.approx(326.9694195743265, abs=1e-10)
+    assert fortune.sign == "Aquarius"
+    assert fortune.ruler == Body.SATURN
+    assert outcome.body == connection.body
+    assert outcome.placement == result.next_connection_placement
     assert result.complete_electional_judgement is False
 
 

@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [4.3.0] - 2026-07-15
 
 ### Added
+- **Neutral Lunar Ecliptic Direction**: Added
+  `LunarEclipticDirectionWitness` through
+  `lunar_ecliptic_direction_at(...)`, the `Moira` facade, and
+  `POST /v1/electional/western/lunar-ecliptic-direction`. The witness exposes
+  latitude, latitude rate, independent hemisphere/motion states, adjacent
+  exact sign-changing node crossings, event direction and UT1 time, and the
+  nearest crossing relation without supplying a doctrinal node orb.
 - **Neutral Lunar Connection Flow**: Added `MoonConnectionFlow` through
   `moon_connection_flow_at(...)`, the `Moira` facade, and
   `POST /v1/aspects/moon-connection-flow`. Callers explicitly select the
@@ -49,6 +56,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   truth, triggered rule IDs, and not-evaluable rule IDs.
 
 ### Changed
+- Dorotheus V.6 southern descent and V.7 northward crossing now consume the
+  same neutral lunar geometry under separate source policies. Solar
+  disengagement exposes both signed Sun-Moon conjunction motion and independent
+  latitude evidence. All three clauses remain indeterminate where the primary
+  wording supplies no interval or combination law.
+- Sahl moment and profile-scan callers must explicitly select a burnt-path
+  policy. The source-faithful selection performs no interval test; the two
+  computational alternatives expose cited half-open `[199, 213)` and
+  `[195, 225)` intervals.
 - V.9 leasing requests now require an explicit lunar-flow previous-window
   policy and REST responses embed the complete neutral flow. The V.9 clause
   remains indeterminate because the surviving source does not assign the two
@@ -72,10 +88,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   construction clause exposes both longitudes and the equation direction.
 - Dorotheus V.31 bad places now use the source-defined whole-sign places 3, 6,
   8, and 12 and are serialized as evaluated booleans through the rooted-context
-  and construction REST responses. Broader "made unfortunate" semantics remain
-  uncomputed.
+  and construction REST responses. V.31 now exposes under-rays,
+  made-unfortunate, Ascendant-relation, and bad-place testimonies separately;
+  the non-exclusive "made unfortunate" phrase remains a typed source gate.
+- Dorotheus V.6.29 now exposes the editorial ninth-part lord, sect-aware
+  Lot-of-Fortune lord for inception, and next lunar connection for outcome as
+  distinct REST witnesses. The Moon-sign lord remains the primary V.6.22
+  outcome indicator; there is no selector or fallback between them.
+- Ramesey's urgent-time remedy now reports non-erasing tri-state fulfillment
+  with clause evidence. Moon/Ascendant and fortune/Ascendant conditions are
+  evaluated, the planetary-hour lord is identified, and the source-undefined
+  fortification predicates remain explicitly indeterminate.
 
 ### Compatibility
+- The Ramesey profile version is now `1.1.0`. Its remedy response replaces the
+  instruction-only assessment literal with typed tri-state fulfillment fields.
+  This intentionally corrects a currently unconsumed provisional electional
+  contract.
+- The previously unreleased Dorotheus rooted-context profile version is now
+  `1.2.0` and its REST response adds fortification and supplementary-indicator
+  witnesses.
 - Bounds callers using the incorrect `chaldean` doctrine value must select
   `chaldean_day` or `chaldean_night`. This intentional correction prevents a
   sect-dependent table from being exposed under an ambiguous identifier. The
@@ -86,6 +118,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `/v1/electional/western/profile-windows` request.
 - `moon_flow_policy` is required on the new, previously unreleased V.9 leasing
   matter-profile request so the prior-event window cannot be implicit.
+- `burnt_path_variant` is required on the previously unreleased Sahl moment
+  and Sahl scan requests. Provisional enum values were replaced by names that
+  distinguish Sahl's indeterminate wording, the Dykes glossary/fall-degree
+  interpretation, and the later fifteen-degree convention.
 - The previously unreleased construction response replaces the misleading
   `complete_electional_judgement=true` value with
   `complete_matter_profile=true` and `complete_electional_judgement=false`.
@@ -93,6 +129,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   introduced.
 
 ### Validation
+- Added synthetic-root and DE441 sign-change evidence, Dorotheus clause
+  integration, public-export/facade governance, REST serialization, and OpenAPI
+  coverage for lunar ecliptic direction.
 - Added lunar-flow policy, event-order, signed-motion, no-event, DE441,
   leasing-embedding, facade, REST, and OpenAPI coverage.
 - Added signed-aspect wrap, exactness, station, relative-standstill,

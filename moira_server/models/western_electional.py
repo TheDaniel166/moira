@@ -42,6 +42,12 @@ RameseyRemedyApplicabilityValue = Literal[
     "applicable",
     "indeterminate",
 ]
+RameseyRemedyClauseStateValue = Literal[
+    "fulfilled", "not_fulfilled", "indeterminate"
+]
+RameseyRemedyFulfillmentValue = Literal[
+    "fulfilled", "not_fulfilled", "indeterminate"
+]
 WesternProfileIdValue = Literal[
     "ramesey_moon_condition_v1",
     "sahl_moon_condition_v1",
@@ -63,6 +69,18 @@ DorotheusMatterProfileStatusValue = Literal[
     "descriptive_witnesses_only",
     "indeterminate",
 ]
+LunarEclipticHemisphereValue = Literal[
+    "north", "south", "on_ecliptic_numerical_root"
+]
+LunarLatitudeMotionValue = Literal[
+    "northward", "southward", "stationary_within_numerical_tolerance"
+]
+LunarNodeCrossingDirectionValue = Literal[
+    "ascending_south_to_north", "descending_north_to_south"
+]
+LunarNodeCrossingRelationValue = Literal[
+    "previous", "current_within_numerical_tolerance", "next"
+]
 
 
 def _finite_number(value: Any, field_name: str) -> float:
@@ -75,6 +93,51 @@ def _finite_number(value: Any, field_name: str) -> float:
     if not math.isfinite(parsed):
         raise ValueError(f"{field_name} must be finite")
     return parsed
+
+
+class LunarEclipticDirectionRequest(_StrictModel):
+    jd_ut: float
+
+    @field_validator("jd_ut", mode="before")
+    @classmethod
+    def _finite_jd(cls, value: Any) -> float:
+        return _finite_number(value, "jd_ut")
+
+
+class LunarNodeCrossingResponse(_StrictModel):
+    jd_ut: float
+    direction: LunarNodeCrossingDirectionValue
+    longitude_deg: float
+    latitude_residual_deg: float
+    latitude_rate_deg_per_day: float
+    hours_from_query: float
+
+
+class LunarEclipticDirectionPolicyResponse(_StrictModel):
+    policy_id: Literal["lunar_ecliptic_direction_v1"]
+    search_span_days: float
+    scan_step_days: float
+    latitude_rate_sample_days: float
+    latitude_zero_tolerance_deg: float
+    latitude_rate_zero_tolerance_deg_per_day: float
+    bisection_iterations: int
+
+
+class LunarEclipticDirectionResponse(_StrictModel):
+    jd_ut: float
+    latitude_deg: float
+    latitude_rate_deg_per_day: float
+    hemisphere: LunarEclipticHemisphereValue
+    motion: LunarLatitudeMotionValue
+    previous_crossing: LunarNodeCrossingResponse
+    next_crossing: LunarNodeCrossingResponse
+    nearest_crossing: LunarNodeCrossingResponse
+    nearest_crossing_relation: LunarNodeCrossingRelationValue
+    policy: LunarEclipticDirectionPolicyResponse
+    reference_frame: str
+    timescale: str
+    provenance: str
+    interpretation_scope: Literal["astronomical_witness_only_no_doctrinal_region"]
 
 
 class RameseyMoonConditionRequest(_StrictModel):
@@ -111,9 +174,9 @@ class RameseyMoonConditionRequest(_StrictModel):
 
 
 SahlBurntPathVariantValue = Literal[
-    "unresolved_source_wording",
-    "fall_degrees_19_libra_to_3_scorpio",
-    "fifteen_libra_to_fifteen_scorpio",
+    "sahl_text_indeterminate_no_numeric_endpoints",
+    "dykes_glossary_fall_degrees_19_libra_to_3_scorpio",
+    "later_fifteen_degrees_15_libra_to_15_scorpio",
 ]
 SahlEighthRuleVariantValue = Literal[
     "arabic_al_rijal_twelfth_part",
@@ -127,7 +190,7 @@ class SahlMoonConditionRequest(_StrictModel):
     latitude: float = Field(ge=-90.0, le=90.0)
     longitude: float = Field(ge=-180.0, le=180.0)
     house_system: str
-    burnt_path_variant: SahlBurntPathVariantValue = "unresolved_source_wording"
+    burnt_path_variant: SahlBurntPathVariantValue
     eighth_rule_variant: SahlEighthRuleVariantValue = "arabic_al_rijal_twelfth_part"
 
     @field_validator("jd_ut", "latitude", "longitude", mode="before")
@@ -207,6 +270,15 @@ class RameseyRuleWitnessResponse(_StrictModel):
     modifiers: list[str]
 
 
+class RameseyRemedyClauseWitnessResponse(_StrictModel):
+    clause_id: str
+    state: RameseyRemedyClauseStateValue
+    policy_id: str
+    policy_reference: str
+    measurements: list[RameseyMeasurementResponse]
+    explanation: str
+
+
 class RameseyRemedyWitnessResponse(_StrictModel):
     remedy_id: str
     applicability: RameseyRemedyApplicabilityValue
@@ -214,8 +286,10 @@ class RameseyRemedyWitnessResponse(_StrictModel):
     unavoidable_time_urgency: bool | None
     source_reference: str
     instructions: list[str]
+    fulfillment: RameseyRemedyFulfillmentValue
+    clauses: list[RameseyRemedyClauseWitnessResponse]
     uncomputed_requirements: list[str]
-    assessment_semantics: Literal["instruction_only_not_fulfillment_assessment"]
+    assessment_semantics: Literal["tri_state_non_erasing_fulfillment_assessment"]
     erases_triggered_rules: Literal[False]
 
 
@@ -260,7 +334,7 @@ class WesternElectionalTransportProvenanceResponse(_StrictModel):
     scoring: Literal["not_provided"] = "not_provided"
     recommendation_language: Literal["not_provided"] = "not_provided"
     generic_search_integration: Literal["not_admitted"] = "not_admitted"
-    remedy_fulfillment_assessment: Literal["not_computed"] = "not_computed"
+    remedy_fulfillment_assessment: Literal["tri_state_non_erasing"] = "tri_state_non_erasing"
     stage_sequence: list[str]
 
 
@@ -452,6 +526,12 @@ DorotheusSignificatorConditionValue = Literal[
     "one_or_more_computed_impediments",
     "indeterminate",
 ]
+DorotheusFortificationTestimonyStateValue = Literal[
+    "clear", "triggered", "not_evaluable"
+]
+DorotheusSupplementaryIndicatorStateValue = Literal[
+    "evaluated", "not_evaluable"
+]
 
 
 class DorotheusRootedContextRequest(_StrictModel):
@@ -535,6 +615,15 @@ class DorotheusRootOutcomeWitnessResponse(_StrictModel):
     interpretation_scope: Literal["source_named_pattern_not_complete_judgement"]
 
 
+class DorotheusFortificationTestimonyResponse(_StrictModel):
+    testimony_id: str
+    state: DorotheusFortificationTestimonyStateValue
+    policy_id: str
+    observed_value: bool | float | str | list[str] | None
+    explanation: str
+    source_reference: str
+
+
 class DorotheusMatterSignificatorWitnessResponse(_StrictModel):
     body: str
     placement: DorotheusPlacementWitnessResponse
@@ -545,8 +634,24 @@ class DorotheusMatterSignificatorWitnessResponse(_StrictModel):
     bad_place_evaluated: Literal[True]
     bad_place: bool
     condition: DorotheusSignificatorConditionValue
+    fortification_testimonies: list[DorotheusFortificationTestimonyResponse]
     source_reference: str
-    uncomputed_requirements: list[str]
+    combination_law: Literal[
+        "triggered_if_any_testimony_triggered_else_indeterminate_if_any_not_evaluable"
+    ]
+
+
+class DorotheusSupplementaryIndicatorResponse(_StrictModel):
+    indicator_id: str
+    role: str
+    state: DorotheusSupplementaryIndicatorStateValue
+    body: str | None
+    longitude: float | None
+    sign: str | None
+    ruler: str | None
+    placement: DorotheusPlacementWitnessResponse | None
+    source_reference: str
+    explanation: str
 
 
 class MoonConnectionResponse(_StrictModel):
@@ -581,6 +686,7 @@ class DorotheusRootedContextEvaluationResponse(_StrictModel):
     matter_significators: list[DorotheusMatterSignificatorWitnessResponse]
     next_connection: MoonConnectionResponse | None
     next_connection_placement: DorotheusPlacementWitnessResponse | None
+    supplementary_indicators: list[DorotheusSupplementaryIndicatorResponse]
     radicality: DorotheusRadicalityWitnessResponse
     reader_provenance: str
     latitude: float
@@ -954,6 +1060,10 @@ class WesternProfileWindowsRequest(_StrictModel):
         if self.profile_id == SAHL_PROFILE_ID:
             if self.unavoidable_time_urgency is not None:
                 raise ValueError("Sahl profile does not accept unavoidable_time_urgency")
+            if self.sahl_burnt_path_variant is None:
+                raise ValueError(
+                    "Sahl profile requires an explicit sahl_burnt_path_variant"
+                )
         elif self.sahl_burnt_path_variant is not None or self.sahl_eighth_rule_variant is not None:
             raise ValueError("Sahl variants are valid only for the Sahl profile")
         return self
@@ -1035,6 +1145,10 @@ class WesternProfileWindowsResponse(_StrictModel):
 
 
 __all__ = [
+    "LunarEclipticDirectionRequest",
+    "LunarNodeCrossingResponse",
+    "LunarEclipticDirectionPolicyResponse",
+    "LunarEclipticDirectionResponse",
     "DOROTHEUS_HOUSE_SYSTEMS",
     "DOROTHEUS_PROFILE_ID",
     "DOROTHEUS_ROOTED_CONTEXT_PROFILE_ID",
@@ -1050,6 +1164,9 @@ __all__ = [
     "RameseyMoonConditionRequest",
     "RameseyMoonConditionResponse",
     "RameseyRemedyApplicabilityValue",
+    "RameseyRemedyClauseStateValue",
+    "RameseyRemedyFulfillmentValue",
+    "RameseyRemedyClauseWitnessResponse",
     "RameseyRemedyWitnessResponse",
     "RameseyRuleStateValue",
     "RameseyRuleWitnessResponse",
@@ -1079,6 +1196,8 @@ __all__ = [
     "DorotheusPlacementWitnessResponse",
     "DorotheusRootOutcomeWitnessResponse",
     "DorotheusMatterSignificatorWitnessResponse",
+    "DorotheusFortificationTestimonyResponse",
+    "DorotheusSupplementaryIndicatorResponse",
     "DorotheusRadicalityWitnessResponse",
     "MoonConnectionResponse",
     "DorotheusConstructionRequest",

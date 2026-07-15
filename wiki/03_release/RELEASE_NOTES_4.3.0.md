@@ -23,9 +23,34 @@ Public REST routes are:
 - `POST /v1/electional/western/dorotheus-moon-condition`
 
 Sahl's unstated burnt-path endpoints and conflicting Arabic/Latin eighth-rule
-readings remain named policies. Dorotheus's underdetermined southern-descending
-and longitude-or-latitude disengagement clauses remain measured but
-`not_evaluable`; later orbs and modern proxies are not imported silently.
+readings remain named policies. Burnt-path policy is required: callers may
+select source-faithful indeterminacy, the Dykes glossary/fall-degree interval
+`[199, 213)`, or the later fifteen-degree interval `[195, 225)`. Dorotheus's
+underdetermined southern-descending and longitude-or-latitude disengagement
+clauses remain measured but `not_evaluable`; later orbs and modern proxies are
+not imported silently.
+
+## Neutral lunar ecliptic direction
+
+Phase 3 adds a first-class astronomical witness for the Moon's ecliptic
+latitude direction:
+
+- `lunar_ecliptic_direction_at(...)`
+- `Moira.lunar_ecliptic_direction_at(...)`
+- `POST /v1/electional/western/lunar-ecliptic-direction`
+
+The immutable result separates north/south position from northward/southward
+motion and reports the previous, next, and nearest exact sign-changing node
+crossings with direction, longitude, UT1 time, latitude residual, and hours
+from the query. Its tolerances are numerical root policy, not an astrological
+node orb.
+
+Dorotheus V.6 southern descent and V.7 northward crossing now consume this same
+neutral witness under distinct source policies. The solar-disengagement clause
+also exposes canonical instantaneous conjunction motion plus independent
+latitude evidence. The historical texts do not define a crossing interval or
+a longitude/latitude combination law, so those doctrine states remain
+indeterminate despite the now-complete measurable geometry.
 
 ## Dorothean root, outcome, and matter context
 
@@ -43,9 +68,34 @@ It is available through `Moira.dorotheus_rooted_context_at(...)` and
 `POST /v1/electional/western/dorotheus-rooted-context`. V.31 bad-place truth is
 now computed from Dorotheus's explicit whole-sign set: places 3, 6, 8, and 12,
 with the Moon's rejoicing in the third preserved as the named exception.
-Broader "made unfortunate" semantics remain a visible uncomputed requirement;
+Broader "made unfortunate" semantics remain a visible unresolved source gate;
 the edition glossary says they are *usually* conjunction, square, or opposition
 with an infortune, which is not an exclusive closed rule.
+
+Phase 4 makes that boundary machine-readable. Each V.31 significator now
+returns separate under-rays, made-unfortunate, Ascendant-relation, and
+bad-place testimonies with an explicit combination law. “Made unfortunate” is
+`not_evaluable`; observed malefic configurations remain evidence rather than
+an invented closed definition.
+
+V.6.29 also returns three distinct supplementary indicators. The
+Lot-of-Fortune lord is computed through Moira's sect-aware Lots engine for the
+inception, and the next Moon connection remains an outcome supplement. The
+editorial ninth-part lord is a visible source gate because the edition supplies
+no division scheme. None replaces the Moon-sign lord as the primary outcome
+indicator.
+
+## Ramesey urgent-time remedy fulfillment
+
+The existing non-erasing remedy witness now reports clause-level fulfillment
+through the engine, facade, and REST response. Moon cadence and whole-sign
+relation to the Ascendant are evaluated; Jupiter or Venus is tested for
+first-house placement or whole-sign sextile/trine; and the planetary-hour lord
+is identified. The three commands to fortify the Ascendant cusp, Ascendant
+lord, and hour lord remain typed `indeterminate` clauses because the source
+does not define a closed fortification predicate. Aggregate fulfillment is
+`fulfilled`, `not_fulfilled`, or `indeterminate` and remains separate from
+urgent applicability and the ten Moon impediments.
 
 ## First source-complete matter profile
 
@@ -182,9 +232,18 @@ the selected table's primary-source citation. The ambiguous former value
 ## Compatibility
 
 All electional engine, facade, and REST entry points are additive relative to
-4.2.1. The profile-window surface was not present in a released version, so its
+4.2.1. The provisional Sahl 4.3.0 request now requires explicit burnt-path
+policy and uses source-distinguishing enum names; no downstream consumer is
+known. The profile-window surface was not present in a released version, so its
 explicit `qualification_statuses` requirement does not break a published
 contract.
+
+The Ramesey profile now reports version `1.1.0`; its remedy vessel changes from
+instruction-only metadata to typed tri-state fulfillment. The electional
+surface currently has no downstream consumers, so this provisional contract is
+corrected directly without a compatibility shim. The previously unreleased
+Dorotheus rooted context now reports version `1.2.0` and adds its fortification
+and supplementary-indicator witnesses.
 
 The matter-profile surface was likewise unreleased. Its V.9 leasing request
 now requires `moon_flow_policy`; this prevents an undocumented prior-event
@@ -198,8 +257,8 @@ callers must replace `CHALDEAN_BOUNDS` with `CHALDEAN_DAY_BOUNDS` or
 
 No existing generic electional predicate, numeric-fit scorer, relationship
 route, or response envelope is removed or renamed. Version 4.3.0 does not
-introduce electional scores, rankings, recommendations, remedy-fulfillment
-claims, or empirical claims for astrological doctrine.
+introduce electional scores, rankings, recommendations, source-unsupported
+definite fortification claims, or empirical claims for astrological doctrine.
 
 ## Validation
 
@@ -209,6 +268,9 @@ includes:
 
 - source-order, threshold, boundary, variant, and indeterminacy tests for the
   Ramesey, Sahl, and Dorotheus Moon profiles;
+- synthetic periodic-root and DE441 sign-change tests for the neutral lunar
+  latitude-direction witness, plus facade, REST, OpenAPI, and Dorotheus-clause
+  integration coverage;
 - rooted-context, natal-contract, next-connection, and matter-significator
   tests;
 - V.2-V.7 construction invariants, ERFA/SOFA mean-lunar-longitude authority

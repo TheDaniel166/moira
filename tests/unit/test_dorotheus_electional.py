@@ -84,6 +84,51 @@ def _chart(
     )
 
 
+def _lunar_direction(
+    chart: ChartContext,
+    *,
+    rate: float = -0.2,
+) -> western.LunarEclipticDirectionWitness:
+    moon = chart.planets[Body.MOON]
+    policy = western.LUNAR_ECLIPTIC_DIRECTION_V1
+    previous = western.LunarNodeCrossingWitness(
+        jd_ut=chart.jd_ut - 1.0,
+        direction=western.LunarNodeCrossingDirection.ASCENDING,
+        longitude_deg=(moon.longitude - 13.0) % 360.0,
+        latitude_residual_deg=0.0,
+        latitude_rate_deg_per_day=0.4,
+        hours_from_query=-24.0,
+    )
+    following = western.LunarNodeCrossingWitness(
+        jd_ut=chart.jd_ut + 1.0,
+        direction=western.LunarNodeCrossingDirection.DESCENDING,
+        longitude_deg=(moon.longitude + 13.0) % 360.0,
+        latitude_residual_deg=0.0,
+        latitude_rate_deg_per_day=-0.4,
+        hours_from_query=24.0,
+    )
+    return western.LunarEclipticDirectionWitness(
+        jd_ut=chart.jd_ut,
+        latitude_deg=moon.latitude,
+        latitude_rate_deg_per_day=rate,
+        hemisphere=(
+            western.LunarEclipticHemisphere.NORTH
+            if moon.latitude > 0.0
+            else western.LunarEclipticHemisphere.SOUTH
+        ),
+        motion=(
+            western.LunarLatitudeMotion.NORTHWARD
+            if rate > 0.0
+            else western.LunarLatitudeMotion.SOUTHWARD
+        ),
+        previous_crossing=previous,
+        next_crossing=following,
+        nearest_crossing=previous,
+        nearest_crossing_relation=western.LunarNodeCrossingRelation.PREVIOUS,
+        policy=policy,
+    )
+
+
 def _evaluation(
     chart: ChartContext,
     *,
@@ -93,6 +138,7 @@ def _evaluation(
     return western.evaluate_dorotheus_moon_condition(
         chart,
         moon_eclipsed=eclipsed,
+        lunar_direction=_lunar_direction(chart),
         unavoidable_time_urgency=urgency,
         position_product=western.DOROTHEUS_MOON_CONDITION_V1.position_product,
         reader_provenance="synthetic_unit_fixture",
@@ -277,6 +323,11 @@ def test_high_level_entrypoint_uses_existing_eclipse_geometry_and_reader(
     reader = FakeReader()
     monkeypatch.setattr(dorotheus, "create_chart", fake_create_chart)
     monkeypatch.setattr(dorotheus, "EclipseCalculator", FakeCalculator)
+    monkeypatch.setattr(
+        dorotheus,
+        "lunar_ecliptic_direction_at",
+        lambda *_args, **_kwargs: _lunar_direction(_chart()),
+    )
     result = western.dorotheus_moon_condition_at(
         2451545.0,
         51.5,

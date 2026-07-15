@@ -10,6 +10,8 @@ from moira import Moira
 
 from ..dependencies import get_engine
 from ..models.western_electional import (
+    LunarEclipticDirectionRequest,
+    LunarEclipticDirectionResponse,
     DorotheusMoonConditionRequest,
     DorotheusMoonConditionResponse,
     DorotheusConstructionRequest,
@@ -26,6 +28,7 @@ from ..models.western_electional import (
     WesternProfileWindowsResponse,
 )
 from ..serializers.western_electional import (
+    serialize_lunar_ecliptic_direction,
     serialize_dorotheus_moon_condition,
     serialize_dorotheus_construction,
     serialize_dorotheus_matter_profile,
@@ -35,6 +38,7 @@ from ..serializers.western_electional import (
     serialize_western_profile_windows,
 )
 from ..services.western_electional import (
+    compute_lunar_ecliptic_direction,
     compute_dorotheus_moon_condition,
     compute_dorotheus_construction,
     compute_dorotheus_matter_profile,
@@ -46,6 +50,21 @@ from ..services.western_electional import (
 
 
 router = APIRouter(prefix="/v1/electional/western", tags=["electional"])
+
+
+@router.post(
+    "/lunar-ecliptic-direction",
+    response_model=LunarEclipticDirectionResponse,
+)
+def lunar_ecliptic_direction_route(
+    request: LunarEclipticDirectionRequest,
+    engine: Annotated[Moira, Depends(get_engine)],
+) -> LunarEclipticDirectionResponse:
+    """Return exact lunar latitude direction and adjacent node crossings."""
+
+    return serialize_lunar_ecliptic_direction(
+        compute_lunar_ecliptic_direction(engine, request)
+    )
 
 
 @router.post(

@@ -1,6 +1,6 @@
 # P13-U1 — Western Electional Doctrine Research Dossier
 
-Version: 0.18 (P3 Dorothean matter profiles)
+Version: 0.20 (Phase 4 fortification and supplementary-indicator closure)
 Date: 2026-07-15
 Status: research inventory for the Western electional doctrine layer. The
 companion materials admit distinct `ramesey_moon_condition_v1` and
@@ -13,7 +13,10 @@ facade, and `POST /v1/electional/western/dorotheus-rooted-context`.
 layers through the same public ladder and
 `POST /v1/electional/western/dorotheus-construction`. It is complete as a
 source-layer matter profile, but not numerically complete: the primary text
-does not supply an ecliptic-crossing region/tolerance. Increasing in
+does not supply an interval around the exact ecliptic crossing. The neutral
+crossing geometry is now complete and public through
+`Moira.lunar_ecliptic_direction_at(...)` and
+`POST /v1/electional/western/lunar-ecliptic-direction`. Increasing in
 calculation is now evaluated from the source-defined lunar equation sign using
 an IERS 2010 mean lunar longitude, and V.31 bad places use Dorotheus's explicit
 whole-sign set from Book I. The three Moon-condition profiles now have a
@@ -28,6 +31,16 @@ fourth-house instructions remain deferred because their eastern/ascending,
 explicit computational policy.
 
 Changelog:
+- 0.20 - typed Dorotheus V.31's four fortification testimonies, preserved
+  “made unfortunate” as a source gate, corrected V.6.29 from interchangeable
+  outcome rulers to distinct ninth-part/Fortune/next-connection roles, reused
+  the Lots engine for Fortune, and admitted Ramesey tri-state non-erasing
+  remedy fulfillment through REST.
+- 0.19 - admitted the neutral lunar latitude-direction and adjacent exact-node
+  witness through engine, facade, REST, and OpenAPI; made V.6/V.7 consume that
+  common geometry without inventing a node orb; preserved solar disengagement
+  as a compound source-indeterminate clause; and required explicit Sahl
+  burnt-path policy selection at public moment and scan boundaries.
 - 0.18 - visually page-confirmed Dorotheus V.8, V.9, and V.11 and admitted
   three non-scored named matter profiles through engine, facade, and typed
   REST. V.9's unresolved lunar separation/connection-to-stake mapping remains
@@ -840,11 +853,11 @@ before admission.**
   through the doctrine-selectable REST family.
 - **Page re-confirmation** of ⚠-marked readings in both inventories (standing
   Moira law before doctrine admission) — not a missing-source problem.
-- **Ramesey remedy fulfillment**: the p. 127-128 instruction and its
-  urgent/unavoidable applicability are now preserved as a separate non-erasing
-  witness. Actual fulfillment remains deliberately uncomputed until
-  source-specific angle-aspect, benefic-placement, Ascendant-ruler, hour-lord,
-  and fortification policies are admitted.
+- **Ramesey remedy fulfillment**: the p. 127-128 instruction now preserves
+  urgent applicability separately from tri-state fulfillment. Moon/Ascendant
+  and fortune/Ascendant clauses are evaluated, the hour lord is resolved, and
+  the three fortification commands remain typed source gates because the
+  passage supplies no closed fortification predicate.
 
 **No remaining true acquisition gaps.** Both Dorotheus and Sahl electional
 rule inventories exist as companions. The general Moon/planet/angle/aspect
@@ -858,7 +871,8 @@ choices.
 
 1. **Treat the Ramesey profile closure as complete** for the bounded
    `ramesey_moon_condition_v1` object. Do not expand its ten gates, score them,
-   or claim remedy fulfillment without a new source-backed doctrine decision.
+   or turn its source-gated fortification clauses into definite fulfillment
+   without a new source-backed doctrine decision.
 2. **Treat the Sahl Moon-profile closure as bounded and explicit**: section 22
    is admitted through REST, but the default burnt-path clause remains
    indeterminate because Sahl gives no endpoints. Do not silently promote a
@@ -870,12 +884,14 @@ choices.
    matter judgement implicitly.
 4. **Treat the shared rooted/matter-significator vessel as bounded and
    complete** for `dorotheus_rooted_context_v1`: it preserves the Moon as root,
-   the Moon-sign lord as outcome, the first sign-bounded exact connection, six
+   the Moon-sign lord as primary outcome, the first sign-bounded exact
+   connection, the sect-aware Lot-of-Fortune lord for inception, the editorial
+   ninth-part source gate, six
    V.31 matter families, explicit natal evidence, and Dorotheus's whole-sign
    bad-place set (3, 6, 8, and 12, with the Moon's third-place rejoicing kept as
    the named exception). It is not a complete matter judgement; V.31's broader
-   "made unfortunate" condition remains evidence-only because the glossary's
-   "usually" does not define an exclusive closed set.
+   "made unfortunate" condition is a typed `not_evaluable` testimony because
+   the glossary's "usually" does not define an exclusive closed set.
 5. **Named-profile status scanning is bounded and admitted**: the three Moon
    profiles expose sampled windows through
    `scan_western_electional_profile(...)`,

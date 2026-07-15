@@ -1,6 +1,6 @@
 # P13-U1 — Dorotheus *Carmen Astrologicum* Book V: Complete Electional Rule Inventory
 
-Version: 1.4
+Version: 1.5
 Date: 2026-07-15
 Status: primary-source rule inventory; the bounded V.6 Moon-corruption layer is
 admitted as `dorotheus_moon_condition_v1`, and the V.6.21-31/V.31 shared rooted
@@ -175,10 +175,14 @@ Ascendant and Midheaven** (V.6,20). Then:
 - **Moon separating from a fortune** → good for most works (V.6,28) — **EXCEPT**
   fleeing authority/land, escaping a master, theft: those want the Moon
   **separating from an infortune** (V.6,28).
-- Examine the **lord of the Lot of Fortune** for the *inception*, and **whom the
-  Moon connects with next** for the *outcome* (V.6,29). *(Connection = the
-  applying aspect; this is the applying-aspect axis Moira needs the forward
-  next-aspect search for.)*
+- Examine the editorial **lord of the ninth-part**, the **lord of the Lot of
+  Fortune** for the *inception*, and **whom the Moon connects with next** for
+  the *outcome* (V.6,29). Edition note 31 identifies the ninth-parts phrase as
+  a Persian editorial insertion and supplies no division/boundary scheme;
+  Moira therefore exposes it as `not_evaluable`. Fortune is evaluated through
+  the existing sect-aware Lots engine, and the next connection through the
+  sign-bounded exact search. These supplement rather than replace the V.6.22
+  Moon-sign lord.
 - Summary (V.6,31): read the Moon, the lord of her sign, and the planet she
   next connects with, and the strength of each relative to the angles.
 
@@ -194,8 +198,10 @@ Ascendant and Midheaven** (V.6,20). Then:
 ## 3. General Layer C — The Significator of the Matter (V.31)
 
 Every inception also has a **"lord of the work."** Fortify it (not under the
-rays, not afflicted, aspecting the Ascendant, in a good place) in addition to
-the Moon and Ascendant (V.31,2).
+rays, not made unfortunate, aspecting the Ascendant, in a good place) in
+addition to the Moon and Ascendant (V.31,2). Moira preserves those four items
+as separate testimonies. “Made unfortunate” remains a typed unresolved source
+gate because the passage does not define an exclusive predicate set.
 
 | Matter | Lord of the work (planet) | (Houses, from the matter chapters) |
 |---|---|---|
