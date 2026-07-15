@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from moira.egyptian_bounds import (
+    BOUNDS_SOURCE_CITATIONS,
     EgyptianBoundClassification,
     EgyptianBoundConditionProfile,
     EgyptianBoundRelation,
@@ -13,6 +14,7 @@ from moira.egyptian_bounds import (
     EgyptianBoundsNetworkEdge,
     EgyptianBoundsNetworkNode,
     EgyptianBoundsNetworkProfile,
+    EgyptianBoundsDoctrine,
 )
 
 from ..models.egyptian_bounds import (
@@ -50,6 +52,7 @@ def serialize_egyptian_bounds_table(
 ) -> EgyptianBoundsTableResponse:
     return EgyptianBoundsTableResponse(
         doctrine=doctrine,
+        source_citation=BOUNDS_SOURCE_CITATIONS[EgyptianBoundsDoctrine(doctrine)],
         signs=tuple(
             EgyptianBoundTableSignResponse(
                 sign=sign,
@@ -69,6 +72,7 @@ def serialize_egyptian_bound_truth(
     return EgyptianBoundTruthResponse(
         longitude=truth.longitude,
         doctrine=truth.doctrine.value,
+        source_citation=truth.source_citation,
         sign=truth.sign,
         sign_index=truth.sign_index,
         degree_in_sign=truth.degree_in_sign,

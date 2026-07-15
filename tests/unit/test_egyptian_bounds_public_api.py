@@ -11,6 +11,7 @@ from moira import egyptian_bounds
 
 EXPECTED_SYMBOLS = [
     "BOUND_RULERS",
+    "BOUNDS_SOURCE_CITATIONS",
     "BoundHostNature",
     "EgyptianBoundsDoctrine",
     "EgyptianBoundsPolicy",
@@ -28,6 +29,9 @@ EXPECTED_SYMBOLS = [
     "EgyptianBoundsNetworkEdge",
     "EgyptianBoundsNetworkProfile",
     "EGYPTIAN_BOUNDS",
+    "PTOLEMAIC_BOUNDS",
+    "CHALDEAN_DAY_BOUNDS",
+    "CHALDEAN_NIGHT_BOUNDS",
     "egyptian_bound_of",
     "bound_ruler",
     "classify_egyptian_bound",
@@ -43,6 +47,7 @@ EXPECTED_SYMBOLS = [
 def test_egyptian_bounds_module_exports_curated_surface() -> None:
     missing = [symbol for symbol in EXPECTED_SYMBOLS if not hasattr(egyptian_bounds, symbol)]
     assert not missing, f"Missing symbols in moira.egyptian_bounds: {missing}"
+    assert not hasattr(egyptian_bounds, "CHALDEAN_BOUNDS")
     assert "_profile_rank" not in egyptian_bounds.__all__
     assert "_validate_bounds_table" not in egyptian_bounds.__all__
 

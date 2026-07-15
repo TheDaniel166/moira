@@ -81,12 +81,14 @@ class EgyptianBoundTableSignResponse(_StrictModel):
 
 class EgyptianBoundsTableResponse(_StrictModel):
     doctrine: str
+    source_citation: str
     signs: tuple[EgyptianBoundTableSignResponse, ...]
 
 
 class EgyptianBoundTruthResponse(_StrictModel):
     longitude: float
     doctrine: str
+    source_citation: str
     sign: str
     sign_index: int
     degree_in_sign: float

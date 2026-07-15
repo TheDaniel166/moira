@@ -128,11 +128,14 @@ Current doctrine surface:
 |---|---|
 | `EgyptianBoundsDoctrine` | `EGYPTIAN` |
 | `EgyptianBoundsDoctrine` | `PTOLEMAIC` |
-| `EgyptianBoundsDoctrine` | `CHALDEAN` |
+| `EgyptianBoundsDoctrine` | `CHALDEAN_DAY` |
+| `EgyptianBoundsDoctrine` | `CHALDEAN_NIGHT` |
 
-The Egyptian table remains the default doctrine. Ptolemaic and Chaldean term
-tables are also live in the implementation and selected through the same
-policy vessel.
+The Egyptian table remains the default doctrine. Ptolemaic and Chaldaean term
+tables are selected through the same policy vessel. The Chaldaean doctrine is
+necessarily split by sect because Ptolemy explicitly reverses Saturn and
+Mercury precedence between day and night. No ambiguous `CHALDEAN` member is
+admitted.
 
 #### 3.2 Policy
 
@@ -155,7 +158,7 @@ All public names are declared in `moira/egyptian_bounds.py`.
 | Name | Members |
 |---|---|
 | `BoundHostNature` | `BENEFIC`, `MALEFIC`, `NEUTRAL` |
-| `EgyptianBoundsDoctrine` | `EGYPTIAN`, `PTOLEMAIC`, `CHALDEAN` |
+| `EgyptianBoundsDoctrine` | `EGYPTIAN`, `PTOLEMAIC`, `CHALDEAN_DAY`, `CHALDEAN_NIGHT` |
 | `EgyptianBoundRelationKind` | `SELF_HOSTED`, `HOSTED_BY_BENEFIC`, `HOSTED_BY_MALEFIC`, `HOSTED_BY_NEUTRAL` |
 | `EgyptianBoundConditionState` | `SELF_GOVERNED`, `SUPPORTED`, `MEDIATED`, `CONSTRAINED` |
 | `EgyptianBoundNetworkMode` | `UNILATERAL`, `MUTUAL` |
@@ -281,15 +284,17 @@ Current frontier:
 
 ### 11. External Doctrine Basis
 
-The subsystem is grounded in the traditional Egyptian terms/bounds doctrine as
-researched from:
+The table authority is Ptolemy, *Tetrabiblos* I.20/I.21, F. E. Robbins trans.,
+Loeb Classical Library 435 (1940):
 
-- Skyscript / Deborah Houlding on Dorotheus and the Egyptian terms:
-  `https://www.skyscript.co.uk/dorotheus3notes.pdf`
-- The Astrology Podcast transcript on bounds/terms and their standard Egyptian
-  five-planet structure:
-  `https://theastrologypodcast.com/transcripts/ep-156-transcript-essential-dignities-and-debilities-with-charles-obert/`
+- Egyptian table: printed pp. 96-97;
+- Chaldaean construction and sect ordering: printed pp. 100-103;
+- Ptolemaic table: printed pp. 108-109.
 
-These sources justify the admitted doctrine. The implementation details above
-state what Moira currently computes from that doctrine.
+The public-domain Robbins text is available through the
+[LacusCurtius transcription](https://penelope.uchicago.edu/Thayer/E/Roman/Texts/Ptolemy/Tetrabiblos/1B*.html)
+and the
+[Wikisource scan](https://en.wikisource.org/wiki/File:Loeb_435_-_Ptolemy_-_Tetrabiblos_by_Robbins_(1940).pdf).
+The implementation carries a source citation for every admitted doctrine and
+REST returns it with table and lookup truth.
 

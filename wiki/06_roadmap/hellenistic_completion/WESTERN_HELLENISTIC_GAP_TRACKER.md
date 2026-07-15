@@ -144,8 +144,10 @@ Many standards emphasize "this reflects current implementation truth... does not
   - **Conclusion:** Core Phase 1 items (first-class kinds + joys) are present. Roadmap doc appears outdated.
 
 - **Phase 2 (Bounds Expansion + Halb):** **Mostly implemented**.
-  - PTOLEMAIC_BOUNDS and CHALDEAN_BOUNDS tables exist in egyptian_bounds.py.
-  - EgyptianBoundsDoctrine supports EGYPTIAN, PTOLEMAIC, CHALDEAN.
+  - `PTOLEMAIC_BOUNDS`, `CHALDEAN_DAY_BOUNDS`, and
+    `CHALDEAN_NIGHT_BOUNDS` are source-corrected in `egyptian_bounds.py`.
+  - `EgyptianBoundsDoctrine` supports `EGYPTIAN`, `PTOLEMAIC`,
+    `CHALDEAN_DAY`, and `CHALDEAN_NIGHT`.
   - egyptian_bound_of / bound logic routes on doctrine.
   - is_in_halb implemented, SCORE_HALB=1, wired in calculate_dignities as "halb" condition (when not full hayz but partial sect conditions met).
   - **Conclusion:** Bounds tables + Halb present (doc outdated).

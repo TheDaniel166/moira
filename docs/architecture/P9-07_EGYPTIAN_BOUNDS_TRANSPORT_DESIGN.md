@@ -72,12 +72,13 @@ Purpose:
 
 Query inputs:
 
-- `doctrine`, default `egyptian`
+- `doctrine`, default `egyptian`; admitted values are `egyptian`,
+  `ptolemaic`, `chaldean_day`, and `chaldean_night`
 
 Response:
 
-- One table vessel preserving doctrine, sign order, and five segment vessels
-  per sign.
+- One table vessel preserving doctrine, primary-source citation, sign order,
+  and five segment vessels per sign.
 
 ### 2.2 Bound Truth
 

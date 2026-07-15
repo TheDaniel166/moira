@@ -832,12 +832,12 @@ before admission.**
 
 ### Still thin (not acquisition blockers — conditional only)
 
-- **Ptolemaic vs Egyptian term tables (actual degree boundaries)**: both schemes
-  named and their divergence documented (§B.2), but Moira's existing
-  `PTOLEMAIC_BOUNDS` constant currently duplicates the Egyptian table despite
-  its label. The Ramesey profile therefore carries only its source-required
-  terminal malefic segments locally. A general Ptolemaic term product requires
-  a separate correction and validation task.
+- **Ptolemaic, Egyptian, and Chaldaean term tables**: RESOLVED on 2026-07-15
+  from Ptolemy, *Tetrabiblos* I.20/I.21 (Robbins, printed pp. 96-109).
+  `PTOLEMAIC_BOUNDS` no longer duplicates the Egyptian table. Chaldaean terms
+  are exposed as distinct day/night doctrines because Saturn and Mercury
+  reverse precedence by sect. All tables are invariant-checked and public
+  through the doctrine-selectable REST family.
 - **Page re-confirmation** of ⚠-marked readings in both inventories (standing
   Moira law before doctrine admission) — not a missing-source problem.
 - **Ramesey remedy fulfillment**: the p. 127-128 instruction and its

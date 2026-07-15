@@ -1,17 +1,18 @@
 """
 Moira -- egyptian_bounds.py
-Standalone Egyptian-bounds doctrine subsystem.
+Standalone bounds/terms doctrine subsystem.
 
 Boundary
 --------
-Owns the Egyptian bound table, bound lookup, and small typed classifications
-derived directly from that table. This module is intentionally table-first:
+Owns the admitted bound tables, bound lookup, and small typed classifications
+derived directly from those tables. This module is intentionally table-first:
 it preserves the doctrinal truth of the bounds before any higher interpretive
 layer consumes it.
 
 Doctrinal notes
 ---------------
-- Uses the traditional Egyptian bounds/terms in the tropical zodiac.
+- Uses source-identified Egyptian, Ptolemaic, and Chaldaean bounds/terms in the
+  tropical zodiac.
 - Bound rulers are the five non-luminaries only: Mercury, Venus, Mars,
   Jupiter, and Saturn.
 - A planet in its own bound receives minor essential dignity under the
@@ -43,9 +44,11 @@ __all__ = [
     "EgyptianBoundsNetworkNode",
     "EgyptianBoundsNetworkEdge",
     "EgyptianBoundsNetworkProfile",
+    "BOUNDS_SOURCE_CITATIONS",
     "EGYPTIAN_BOUNDS",
     "PTOLEMAIC_BOUNDS",
-    "CHALDEAN_BOUNDS",
+    "CHALDEAN_DAY_BOUNDS",
+    "CHALDEAN_NIGHT_BOUNDS",
     "egyptian_bound_of",
     "bound_ruler",
     "classify_egyptian_bound",
@@ -99,7 +102,8 @@ class EgyptianBoundsDoctrine(StrEnum):
     """Vessel: Registry of architectural doctrines for bound tables."""
     EGYPTIAN = "egyptian"
     PTOLEMAIC = "ptolemaic"
-    CHALDEAN = "chaldean"
+    CHALDEAN_DAY = "chaldean_day"
+    CHALDEAN_NIGHT = "chaldean_night"
 
 
 @dataclass(frozen=True)
@@ -131,40 +135,77 @@ EGYPTIAN_BOUNDS: dict[str, list[tuple[str, float, float]]] = {
 }
 
 
-# Ptolemaic bounds/terms — Ptolemy, Tetrabiblos I.21 (Robbins translation).
-# Note: Ptolemy's own term tables differ from the Egyptian bounds above.
-# Canon: Ptolemy, Tetrabiblos I.21; Hephaistion reconstruction.
-PTOLEMAIC_BOUNDS: dict[str, list[tuple[str, float, float]]] = {
-    "Aries":       [("Jupiter", 0,  6), ("Venus",   6, 12), ("Mercury", 12, 20), ("Mars",    20, 25), ("Saturn", 25, 30)],
-    "Taurus":      [("Venus",   0,  8), ("Mercury", 8, 14), ("Jupiter", 14, 22), ("Saturn",  22, 27), ("Mars",   27, 30)],
-    "Gemini":      [("Mercury", 0,  6), ("Jupiter", 6, 12), ("Venus",   12, 17), ("Mars",    17, 24), ("Saturn", 24, 30)],
-    "Cancer":      [("Mars",    0,  7), ("Venus",   7, 13), ("Mercury", 13, 19), ("Jupiter", 19, 26), ("Saturn", 26, 30)],
-    "Leo":         [("Jupiter", 0,  6), ("Venus",   6, 11), ("Saturn",  11, 18), ("Mercury", 18, 24), ("Mars",   24, 30)],
-    "Virgo":       [("Mercury", 0,  7), ("Venus",   7, 17), ("Jupiter", 17, 21), ("Mars",    21, 28), ("Saturn", 28, 30)],
-    "Libra":       [("Saturn",  0,  6), ("Mercury", 6, 14), ("Jupiter", 14, 21), ("Venus",   21, 28), ("Mars",   28, 30)],
-    "Scorpio":     [("Mars",    0,  7), ("Venus",   7, 11), ("Mercury", 11, 19), ("Jupiter", 19, 24), ("Saturn", 24, 30)],
-    "Sagittarius": [("Jupiter", 0, 12), ("Venus",  12, 17), ("Mercury", 17, 21), ("Saturn",  21, 26), ("Mars",   26, 30)],
-    "Capricorn":   [("Mercury", 0,  7), ("Jupiter", 7, 14), ("Venus",   14, 22), ("Saturn",  22, 26), ("Mars",   26, 30)],
-    "Aquarius":    [("Mercury", 0,  7), ("Venus",   7, 13), ("Jupiter", 13, 20), ("Mars",    20, 25), ("Saturn", 25, 30)],
-    "Pisces":      [("Venus",   0, 12), ("Jupiter", 12, 16), ("Mercury", 16, 19), ("Mars",   19, 28), ("Saturn", 28, 30)],
+# Source register for the admitted table variants. Robbins numbers the chapter
+# Book I.20; it is commonly cited as I.21 in editions that count the proem.
+BOUNDS_SOURCE_CITATIONS: dict[EgyptianBoundsDoctrine, str] = {
+    EgyptianBoundsDoctrine.EGYPTIAN: (
+        "Ptolemy, Tetrabiblos I.20/I.21, 'Terms according to the Egyptians', "
+        "F. E. Robbins trans. (Loeb 435, 1940), pp. 96-97"
+    ),
+    EgyptianBoundsDoctrine.PTOLEMAIC: (
+        "Ptolemy, Tetrabiblos I.20/I.21, 'Terms according to Ptolemy', "
+        "F. E. Robbins trans. (Loeb 435, 1940), pp. 108-109"
+    ),
+    EgyptianBoundsDoctrine.CHALDEAN_DAY: (
+        "Ptolemy, Tetrabiblos I.20/I.21, Chaldaean terms, diurnal ordering, "
+        "F. E. Robbins trans. (Loeb 435, 1940), pp. 100-103"
+    ),
+    EgyptianBoundsDoctrine.CHALDEAN_NIGHT: (
+        "Ptolemy, Tetrabiblos I.20/I.21, Chaldaean terms, nocturnal ordering, "
+        "F. E. Robbins trans. (Loeb 435, 1940), pp. 100-103"
+    ),
 }
 
 
-# Chaldean bounds/terms — pre-Ptolemaic tradition via the Yavanajataka.
-# Canon: D. Pingree, The Yavanajataka of Sphujidhvaja (Harvard, 1978).
-CHALDEAN_BOUNDS: dict[str, list[tuple[str, float, float]]] = {
-    "Aries":       [("Mars",    0,  6), ("Jupiter", 6, 12), ("Venus",   12, 20), ("Saturn",  20, 25), ("Mercury", 25, 30)],
-    "Taurus":      [("Venus",   0,  8), ("Mercury", 8, 14), ("Jupiter", 14, 22), ("Saturn",  22, 27), ("Mars",    27, 30)],
-    "Gemini":      [("Mercury", 0,  6), ("Jupiter", 6, 12), ("Venus",   12, 17), ("Saturn",  17, 24), ("Mars",    24, 30)],
-    "Cancer":      [("Mars",    0,  7), ("Jupiter", 7, 13), ("Mercury", 13, 19), ("Venus",   19, 26), ("Saturn",  26, 30)],
-    "Leo":         [("Saturn",  0,  6), ("Mercury", 6, 11), ("Venus",   11, 18), ("Jupiter", 18, 24), ("Mars",    24, 30)],
-    "Virgo":       [("Mercury", 0,  7), ("Venus",   7, 17), ("Jupiter", 17, 21), ("Saturn",  21, 28), ("Mars",    28, 30)],
-    "Libra":       [("Saturn",  0,  6), ("Venus",   6, 14), ("Jupiter", 14, 21), ("Mercury", 21, 28), ("Mars",    28, 30)],
-    "Scorpio":     [("Mars",    0,  7), ("Jupiter", 7, 11), ("Venus",   11, 19), ("Mercury", 19, 24), ("Saturn",  24, 30)],
-    "Sagittarius": [("Jupiter", 0, 12), ("Venus",  12, 17), ("Mercury", 17, 21), ("Mars",    21, 26), ("Saturn",  26, 30)],
-    "Capricorn":   [("Mercury", 0,  7), ("Jupiter", 7, 14), ("Venus",   14, 22), ("Mars",    22, 26), ("Saturn",  26, 30)],
-    "Aquarius":    [("Saturn",  0,  7), ("Mercury", 7, 13), ("Venus",   13, 20), ("Jupiter", 20, 25), ("Mars",    25, 30)],
-    "Pisces":      [("Venus",   0, 12), ("Jupiter", 12, 16), ("Mercury", 16, 19), ("Saturn",  19, 28), ("Mars",   28, 30)],
+# Ptolemaic bounds/terms as transmitted in Robbins' table. The final Libra
+# segment is Mars, not a second Saturn segment: this is required by the table's
+# own planetary totals (Saturn 57, Mars 66) printed immediately afterward.
+PTOLEMAIC_BOUNDS: dict[str, list[tuple[str, float, float]]] = {
+    "Aries":       [("Jupiter", 0, 6), ("Venus", 6, 14), ("Mercury", 14, 21), ("Mars", 21, 26), ("Saturn", 26, 30)],
+    "Taurus":      [("Venus", 0, 8), ("Mercury", 8, 15), ("Jupiter", 15, 22), ("Saturn", 22, 24), ("Mars", 24, 30)],
+    "Gemini":      [("Mercury", 0, 7), ("Jupiter", 7, 13), ("Venus", 13, 20), ("Mars", 20, 26), ("Saturn", 26, 30)],
+    "Cancer":      [("Mars", 0, 6), ("Jupiter", 6, 13), ("Mercury", 13, 20), ("Venus", 20, 27), ("Saturn", 27, 30)],
+    "Leo":         [("Jupiter", 0, 6), ("Mercury", 6, 13), ("Saturn", 13, 19), ("Venus", 19, 25), ("Mars", 25, 30)],
+    "Virgo":       [("Mercury", 0, 7), ("Venus", 7, 13), ("Jupiter", 13, 18), ("Saturn", 18, 24), ("Mars", 24, 30)],
+    "Libra":       [("Saturn", 0, 6), ("Venus", 6, 11), ("Mercury", 11, 16), ("Jupiter", 16, 24), ("Mars", 24, 30)],
+    "Scorpio":     [("Mars", 0, 6), ("Venus", 6, 13), ("Jupiter", 13, 21), ("Mercury", 21, 27), ("Saturn", 27, 30)],
+    "Sagittarius": [("Jupiter", 0, 8), ("Venus", 8, 14), ("Mercury", 14, 19), ("Saturn", 19, 25), ("Mars", 25, 30)],
+    "Capricorn":   [("Venus", 0, 6), ("Mercury", 6, 12), ("Jupiter", 12, 19), ("Saturn", 19, 25), ("Mars", 25, 30)],
+    "Aquarius":    [("Saturn", 0, 6), ("Mercury", 6, 12), ("Venus", 12, 20), ("Jupiter", 20, 25), ("Mars", 25, 30)],
+    "Pisces":      [("Venus", 0, 8), ("Jupiter", 8, 14), ("Mercury", 14, 20), ("Mars", 20, 25), ("Saturn", 25, 30)],
+}
+
+
+# Chaldaean bounds/terms. Ptolemy gives 8, 7, 6, 5, and 4 degrees in
+# descending order and explicitly reverses Saturn/Mercury precedence by sect.
+CHALDEAN_DAY_BOUNDS: dict[str, list[tuple[str, float, float]]] = {
+    "Aries":       [("Jupiter", 0, 8), ("Venus", 8, 15), ("Saturn", 15, 21), ("Mercury", 21, 26), ("Mars", 26, 30)],
+    "Taurus":      [("Venus", 0, 8), ("Saturn", 8, 15), ("Mercury", 15, 21), ("Mars", 21, 26), ("Jupiter", 26, 30)],
+    "Gemini":      [("Saturn", 0, 8), ("Mercury", 8, 15), ("Mars", 15, 21), ("Jupiter", 21, 26), ("Venus", 26, 30)],
+    "Cancer":      [("Mars", 0, 8), ("Jupiter", 8, 15), ("Venus", 15, 21), ("Saturn", 21, 26), ("Mercury", 26, 30)],
+    "Leo":         [("Jupiter", 0, 8), ("Venus", 8, 15), ("Saturn", 15, 21), ("Mercury", 21, 26), ("Mars", 26, 30)],
+    "Virgo":       [("Venus", 0, 8), ("Saturn", 8, 15), ("Mercury", 15, 21), ("Mars", 21, 26), ("Jupiter", 26, 30)],
+    "Libra":       [("Saturn", 0, 8), ("Mercury", 8, 15), ("Mars", 15, 21), ("Jupiter", 21, 26), ("Venus", 26, 30)],
+    "Scorpio":     [("Mars", 0, 8), ("Jupiter", 8, 15), ("Venus", 15, 21), ("Saturn", 21, 26), ("Mercury", 26, 30)],
+    "Sagittarius": [("Jupiter", 0, 8), ("Venus", 8, 15), ("Saturn", 15, 21), ("Mercury", 21, 26), ("Mars", 26, 30)],
+    "Capricorn":   [("Venus", 0, 8), ("Saturn", 8, 15), ("Mercury", 15, 21), ("Mars", 21, 26), ("Jupiter", 26, 30)],
+    "Aquarius":    [("Saturn", 0, 8), ("Mercury", 8, 15), ("Mars", 15, 21), ("Jupiter", 21, 26), ("Venus", 26, 30)],
+    "Pisces":      [("Mars", 0, 8), ("Jupiter", 8, 15), ("Venus", 15, 21), ("Saturn", 21, 26), ("Mercury", 26, 30)],
+}
+
+CHALDEAN_NIGHT_BOUNDS: dict[str, list[tuple[str, float, float]]] = {
+    "Aries":       [("Jupiter", 0, 8), ("Venus", 8, 15), ("Mercury", 15, 21), ("Saturn", 21, 26), ("Mars", 26, 30)],
+    "Taurus":      [("Venus", 0, 8), ("Mercury", 8, 15), ("Saturn", 15, 21), ("Mars", 21, 26), ("Jupiter", 26, 30)],
+    "Gemini":      [("Mercury", 0, 8), ("Saturn", 8, 15), ("Mars", 15, 21), ("Jupiter", 21, 26), ("Venus", 26, 30)],
+    "Cancer":      [("Mars", 0, 8), ("Jupiter", 8, 15), ("Venus", 15, 21), ("Mercury", 21, 26), ("Saturn", 26, 30)],
+    "Leo":         [("Jupiter", 0, 8), ("Venus", 8, 15), ("Mercury", 15, 21), ("Saturn", 21, 26), ("Mars", 26, 30)],
+    "Virgo":       [("Venus", 0, 8), ("Mercury", 8, 15), ("Saturn", 15, 21), ("Mars", 21, 26), ("Jupiter", 26, 30)],
+    "Libra":       [("Mercury", 0, 8), ("Saturn", 8, 15), ("Mars", 15, 21), ("Jupiter", 21, 26), ("Venus", 26, 30)],
+    "Scorpio":     [("Mars", 0, 8), ("Jupiter", 8, 15), ("Venus", 15, 21), ("Mercury", 21, 26), ("Saturn", 26, 30)],
+    "Sagittarius": [("Jupiter", 0, 8), ("Venus", 8, 15), ("Mercury", 15, 21), ("Saturn", 21, 26), ("Mars", 26, 30)],
+    "Capricorn":   [("Venus", 0, 8), ("Mercury", 8, 15), ("Saturn", 15, 21), ("Mars", 21, 26), ("Jupiter", 26, 30)],
+    "Aquarius":    [("Mercury", 0, 8), ("Saturn", 8, 15), ("Mars", 15, 21), ("Jupiter", 21, 26), ("Venus", 26, 30)],
+    "Pisces":      [("Mars", 0, 8), ("Jupiter", 8, 15), ("Venus", 15, 21), ("Mercury", 21, 26), ("Saturn", 26, 30)],
 }
 
 
@@ -208,11 +249,7 @@ class EgyptianBoundTruth:
     def __post_init__(self) -> None:
         if not (0.0 <= self.longitude < 360.0):
             raise ValueError(f"Egyptian bound longitude must be normalized: {self.longitude}")
-        if self.doctrine not in (
-            EgyptianBoundsDoctrine.EGYPTIAN,
-            EgyptianBoundsDoctrine.PTOLEMAIC,
-            EgyptianBoundsDoctrine.CHALDEAN,
-        ):
+        if not isinstance(self.doctrine, EgyptianBoundsDoctrine):
             raise ValueError(f"Unsupported bounds doctrine on truth: {self.doctrine}")
         if self.sign not in SIGNS:
             raise ValueError(f"Unknown Egyptian bound sign: {self.sign}")
@@ -254,6 +291,10 @@ class EgyptianBoundTruth:
     @property
     def segment_range(self) -> tuple[float, float]:
         return (self.segment.start_degree, self.segment.end_degree)
+
+    @property
+    def source_citation(self) -> str:
+        return BOUNDS_SOURCE_CITATIONS[self.doctrine]
 
 
 @dataclass(frozen=True)
@@ -755,8 +796,10 @@ def _resolve_policy(policy: EgyptianBoundsPolicy | None) -> EgyptianBoundsPolicy
 def _table_for_policy(policy: EgyptianBoundsPolicy) -> dict[str, list[tuple[str, float, float]]]:
     if policy.doctrine is EgyptianBoundsDoctrine.PTOLEMAIC:
         return PTOLEMAIC_BOUNDS
-    if policy.doctrine is EgyptianBoundsDoctrine.CHALDEAN:
-        return CHALDEAN_BOUNDS
+    if policy.doctrine is EgyptianBoundsDoctrine.CHALDEAN_DAY:
+        return CHALDEAN_DAY_BOUNDS
+    if policy.doctrine is EgyptianBoundsDoctrine.CHALDEAN_NIGHT:
+        return CHALDEAN_NIGHT_BOUNDS
     return EGYPTIAN_BOUNDS
 
 
@@ -1111,4 +1154,10 @@ def evaluate_egyptian_bounds_network(
     )
 
 
-_validate_bounds_table(EGYPTIAN_BOUNDS)
+for _admitted_bounds_table in (
+    EGYPTIAN_BOUNDS,
+    PTOLEMAIC_BOUNDS,
+    CHALDEAN_DAY_BOUNDS,
+    CHALDEAN_NIGHT_BOUNDS,
+):
+    _validate_bounds_table(_admitted_bounds_table)

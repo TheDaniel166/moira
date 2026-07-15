@@ -37,6 +37,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   truth, triggered rule IDs, and not-evaluable rule IDs.
 
 ### Changed
+- **Bounds Doctrine Correction**: Replaced the duplicated Ptolemaic table with
+  the source-transmitted Ptolemaic terms and replaced the unsupported
+  `chaldean` table with explicit `chaldean_day` and `chaldean_night` variants.
+  Bounds table and lookup REST responses now carry their primary-source
+  citation.
 - Scan callers must explicitly provide `qualification_statuses`; Moira no
   longer assumes an all-clear predicate that some source-incomplete profiles
   cannot satisfy.
@@ -55,6 +60,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   uncomputed.
 
 ### Compatibility
+- Bounds callers using the incorrect `chaldean` doctrine value must select
+  `chaldean_day` or `chaldean_night`. This intentional correction prevents a
+  sect-dependent table from being exposed under an ambiguous identifier. The
+  ambiguous `CHALDEAN_BOUNDS` constant is replaced by
+  `CHALDEAN_DAY_BOUNDS` and `CHALDEAN_NIGHT_BOUNDS`.
 - All new electional routes and engine objects are additive relative to 4.2.1.
 - `qualification_statuses` is required on the new, previously unreleased
   `/v1/electional/western/profile-windows` request.

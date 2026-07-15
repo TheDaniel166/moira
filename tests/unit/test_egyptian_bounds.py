@@ -1,9 +1,13 @@
 import pytest
 
 from moira.egyptian_bounds import (
+    BOUNDS_SOURCE_CITATIONS,
     BOUND_RULERS,
     BoundHostNature,
+    CHALDEAN_DAY_BOUNDS,
+    CHALDEAN_NIGHT_BOUNDS,
     EGYPTIAN_BOUNDS,
+    PTOLEMAIC_BOUNDS,
     EgyptianBoundClassification,
     EgyptianBoundConditionProfile,
     EgyptianBoundConditionState,
@@ -47,6 +51,124 @@ def test_each_sign_has_five_contiguous_segments_covering_thirty_degrees():
             else:
                 assert bounds[index - 1][2] == start, sign
         assert bounds[-1][2] == 30, sign
+
+
+def test_all_admitted_bounds_tables_cover_each_sign_without_gaps():
+    for doctrine, table in (
+        (EgyptianBoundsDoctrine.EGYPTIAN, EGYPTIAN_BOUNDS),
+        (EgyptianBoundsDoctrine.PTOLEMAIC, PTOLEMAIC_BOUNDS),
+        (EgyptianBoundsDoctrine.CHALDEAN_DAY, CHALDEAN_DAY_BOUNDS),
+        (EgyptianBoundsDoctrine.CHALDEAN_NIGHT, CHALDEAN_NIGHT_BOUNDS),
+    ):
+        assert set(table) == set(EGYPTIAN_BOUNDS), doctrine
+        for sign, bounds in table.items():
+            assert len(bounds) == 5, (doctrine, sign)
+            assert bounds[0][1] == 0, (doctrine, sign)
+            assert bounds[-1][2] == 30, (doctrine, sign)
+            assert all(
+                previous[2] == current[1]
+                for previous, current in zip(bounds, bounds[1:])
+            ), (doctrine, sign)
+
+
+def test_ptolemaic_table_matches_robbins_transmitted_table():
+    assert PTOLEMAIC_BOUNDS == {
+        "Aries": [("Jupiter", 0, 6), ("Venus", 6, 14), ("Mercury", 14, 21), ("Mars", 21, 26), ("Saturn", 26, 30)],
+        "Taurus": [("Venus", 0, 8), ("Mercury", 8, 15), ("Jupiter", 15, 22), ("Saturn", 22, 24), ("Mars", 24, 30)],
+        "Gemini": [("Mercury", 0, 7), ("Jupiter", 7, 13), ("Venus", 13, 20), ("Mars", 20, 26), ("Saturn", 26, 30)],
+        "Cancer": [("Mars", 0, 6), ("Jupiter", 6, 13), ("Mercury", 13, 20), ("Venus", 20, 27), ("Saturn", 27, 30)],
+        "Leo": [("Jupiter", 0, 6), ("Mercury", 6, 13), ("Saturn", 13, 19), ("Venus", 19, 25), ("Mars", 25, 30)],
+        "Virgo": [("Mercury", 0, 7), ("Venus", 7, 13), ("Jupiter", 13, 18), ("Saturn", 18, 24), ("Mars", 24, 30)],
+        "Libra": [("Saturn", 0, 6), ("Venus", 6, 11), ("Mercury", 11, 16), ("Jupiter", 16, 24), ("Mars", 24, 30)],
+        "Scorpio": [("Mars", 0, 6), ("Venus", 6, 13), ("Jupiter", 13, 21), ("Mercury", 21, 27), ("Saturn", 27, 30)],
+        "Sagittarius": [("Jupiter", 0, 8), ("Venus", 8, 14), ("Mercury", 14, 19), ("Saturn", 19, 25), ("Mars", 25, 30)],
+        "Capricorn": [("Venus", 0, 6), ("Mercury", 6, 12), ("Jupiter", 12, 19), ("Saturn", 19, 25), ("Mars", 25, 30)],
+        "Aquarius": [("Saturn", 0, 6), ("Mercury", 6, 12), ("Venus", 12, 20), ("Jupiter", 20, 25), ("Mars", 25, 30)],
+        "Pisces": [("Venus", 0, 8), ("Jupiter", 8, 14), ("Mercury", 14, 20), ("Mars", 20, 25), ("Saturn", 25, 30)],
+    }
+    assert PTOLEMAIC_BOUNDS != EGYPTIAN_BOUNDS
+
+
+def test_ptolemaic_global_totals_match_robbins_table_totals():
+    totals = {ruler: 0 for ruler in BOUND_RULERS}
+    for bounds in PTOLEMAIC_BOUNDS.values():
+        for ruler, start, end in bounds:
+            totals[ruler] += end - start
+    assert totals == {
+        "Saturn": 57,
+        "Jupiter": 79,
+        "Mars": 66,
+        "Venus": 82,
+        "Mercury": 76,
+    }
+
+
+def test_chaldaean_tables_preserve_sect_order_and_source_totals():
+    expected_totals = {
+        EgyptianBoundsDoctrine.CHALDEAN_DAY: {
+            "Saturn": 78, "Jupiter": 72, "Mars": 69, "Venus": 75, "Mercury": 66,
+        },
+        EgyptianBoundsDoctrine.CHALDEAN_NIGHT: {
+            "Saturn": 66, "Jupiter": 72, "Mars": 69, "Venus": 75, "Mercury": 78,
+        },
+    }
+    for doctrine, table in (
+        (EgyptianBoundsDoctrine.CHALDEAN_DAY, CHALDEAN_DAY_BOUNDS),
+        (EgyptianBoundsDoctrine.CHALDEAN_NIGHT, CHALDEAN_NIGHT_BOUNDS),
+    ):
+        totals = {ruler: 0 for ruler in BOUND_RULERS}
+        for bounds in table.values():
+            assert [end - start for _, start, end in bounds] == [8, 7, 6, 5, 4]
+            for ruler, start, end in bounds:
+                totals[ruler] += end - start
+        assert totals == expected_totals[doctrine]
+
+    assert CHALDEAN_DAY_BOUNDS["Aries"][2][0] == "Saturn"
+    assert CHALDEAN_NIGHT_BOUNDS["Aries"][2][0] == "Mercury"
+
+
+def test_chaldaean_triplicity_orders_match_ptolemys_rotation_rule():
+    expected_orders = {
+        EgyptianBoundsDoctrine.CHALDEAN_DAY: (
+            ("Jupiter", "Venus", "Saturn", "Mercury", "Mars"),
+            ("Venus", "Saturn", "Mercury", "Mars", "Jupiter"),
+            ("Saturn", "Mercury", "Mars", "Jupiter", "Venus"),
+            ("Mars", "Jupiter", "Venus", "Saturn", "Mercury"),
+        ),
+        EgyptianBoundsDoctrine.CHALDEAN_NIGHT: (
+            ("Jupiter", "Venus", "Mercury", "Saturn", "Mars"),
+            ("Venus", "Mercury", "Saturn", "Mars", "Jupiter"),
+            ("Mercury", "Saturn", "Mars", "Jupiter", "Venus"),
+            ("Mars", "Jupiter", "Venus", "Mercury", "Saturn"),
+        ),
+    }
+    triplicities = (
+        ("Aries", "Leo", "Sagittarius"),
+        ("Taurus", "Virgo", "Capricorn"),
+        ("Gemini", "Libra", "Aquarius"),
+        ("Cancer", "Scorpio", "Pisces"),
+    )
+    for doctrine, table in (
+        (EgyptianBoundsDoctrine.CHALDEAN_DAY, CHALDEAN_DAY_BOUNDS),
+        (EgyptianBoundsDoctrine.CHALDEAN_NIGHT, CHALDEAN_NIGHT_BOUNDS),
+    ):
+        for signs, expected_order in zip(triplicities, expected_orders[doctrine]):
+            for sign in signs:
+                assert tuple(ruler for ruler, _, _ in table[sign]) == expected_order
+
+
+def test_non_egyptian_lookup_boundaries_and_source_citations_are_explicit():
+    ptolemaic = EgyptianBoundsPolicy(EgyptianBoundsDoctrine.PTOLEMAIC)
+    chaldaean_day = EgyptianBoundsPolicy(EgyptianBoundsDoctrine.CHALDEAN_DAY)
+    chaldaean_night = EgyptianBoundsPolicy(EgyptianBoundsDoctrine.CHALDEAN_NIGHT)
+
+    assert bound_ruler(13.999999, policy=ptolemaic) == "Venus"
+    assert bound_ruler(14.0, policy=ptolemaic) == "Mercury"
+    assert bound_ruler(15.0, policy=chaldaean_day) == "Saturn"
+    assert bound_ruler(15.0, policy=chaldaean_night) == "Mercury"
+    assert egyptian_bound_of(15.0, policy=ptolemaic).source_citation == (
+        BOUNDS_SOURCE_CITATIONS[EgyptianBoundsDoctrine.PTOLEMAIC]
+    )
 
 
 def test_lookup_respects_left_closed_right_open_boundaries():

@@ -54,7 +54,7 @@ Companion documents:
 
 | Feature | What exists | What is missing (per original) | Verification Status |
 |---------|-------------|--------------------------------|---------------------|
-| Bounds/terms | Egyptian bounds only | Ptolemaic terms, Chaldean terms | **Implemented**: PTOLEMAIC_BOUNDS + CHALDEAN_BOUNDS tables + full doctrine support in egyptian_bounds.py |
+| Bounds/terms | Egyptian bounds only | Ptolemaic terms, Chaldaean terms | **Corrected**: source-transmitted `PTOLEMAIC_BOUNDS` plus explicit `CHALDEAN_DAY_BOUNDS` and `CHALDEAN_NIGHT_BOUNDS` in `egyptian_bounds.py` |
 | Essential dignity enum | Domicile, exaltation, detriment, fall, peregrine | Triplicity, bound, face as first-class `EssentialDignityKind` members | **Implemented**: TRIPLICITY, BOUND, FACE in EssentialDignityKind + scoring in dignities.py/longevity.py |
 | Hayz | `is_in_hayz()` | Halb (the nocturnal partial-hayz) | **Implemented**: is_in_halb() + SCORE_HALB + wiring in calculate_dignities |
 | Planetary condition | Cazimi, combust, under the beams | Oriental/occidental (morning/evening star), besieging | **Implemented**: oriental_occidental(), is_besieged() + conditions |
@@ -187,8 +187,9 @@ Egyptian bounds, and implement the halb condition.
 
 **Tasks:**
 
-1. Add `PTOLEMAIC = "ptolemaic"` and `CHALDEAN = "chaldean"` to
-   `EgyptianBoundsDoctrine` (consider renaming to `BoundsDoctrine`).
+1. `PTOLEMAIC`, `CHALDEAN_DAY`, and `CHALDEAN_NIGHT` are admitted alongside
+   the Egyptian default. The day/night split preserves the source-required
+   Saturn/Mercury sect ordering.
 
 2. Add `PTOLEMAIC_BOUNDS` table (Tetrabiblos I.21):
    ```
@@ -197,10 +198,11 @@ Egyptian bounds, and implement the halb condition.
    ...
    ```
 
-3. Add `CHALDEAN_BOUNDS` table (Yavanajataka / Rhetorius tradition).
+3. Add the source-derived `CHALDEAN_DAY_BOUNDS` and
+   `CHALDEAN_NIGHT_BOUNDS` tables from Ptolemy's 8-7-6-5-4 construction.
 
-4. Relax `EgyptianBoundsPolicy.__post_init__` to accept all three
-   doctrines.
+4. `EgyptianBoundsPolicy.__post_init__` accepts the four explicit doctrines
+   and rejects the former ambiguous `chaldean` value.
 
 5. Route `egyptian_bound_of()` and `bound_ruler()` through the policy
    doctrine to select the correct table.

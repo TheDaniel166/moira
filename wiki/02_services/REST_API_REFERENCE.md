@@ -642,6 +642,11 @@ is not caller-selectable or blended with conventional dignity tables.
 | POST | `/v1/egyptian-bounds/aggregate` | `egyptian_bounds_aggregate_route` |
 | POST | `/v1/egyptian-bounds/network` | `egyptian_bounds_network_route` |
 
+The bounds doctrine selector admits `egyptian`, `ptolemaic`,
+`chaldean_day`, and `chaldean_night`. Chaldaean bounds are sect-dependent;
+the ambiguous value `chaldean` is rejected. Table and bound-truth responses
+include the primary-source citation for the selected variant.
+
 ## Vedic Dignities Routes
 
 | Method | Path | Handler |

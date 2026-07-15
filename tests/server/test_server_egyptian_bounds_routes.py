@@ -56,6 +56,7 @@ def test_egyptian_bounds_table_route_returns_deterministic_sign_order() -> None:
     assert response.status_code == 200
     body = response.json()
     assert body["doctrine"] == EgyptianBoundsDoctrine.EGYPTIAN.value
+    assert "Terms according to the Egyptians" in body["source_citation"]
     assert [item["sign"] for item in body["signs"]] == list(SIGNS)
     assert all(len(item["segments"]) == 5 for item in body["signs"])
     assert body["signs"][0]["segments"][0]["ruler"] == "Jupiter"
@@ -77,6 +78,7 @@ def test_egyptian_bound_route_matches_engine_truth() -> None:
     assert body["degree_in_sign"] == direct.degree_in_sign == 9.5
     assert body["ruler"] == direct.ruler == "Venus"
     assert body["segment_range"] == [7.0, 11.0]
+    assert "Terms according to the Egyptians" in body["source_citation"]
 
 
 def test_egyptian_bound_classification_route_matches_engine() -> None:
@@ -210,17 +212,65 @@ def test_egyptian_bounds_network_route_matches_engine_projection() -> None:
     assert body["most_connected_planets"] == list(direct.most_connected_planets)
 
 
-def test_egyptian_bounds_routes_support_live_doctrine_enum_values() -> None:
+@pytest.mark.parametrize(
+    ("doctrine", "expected_ruler", "source_fragment"),
+    [
+        ("ptolemaic", "Jupiter", "Terms according to Ptolemy"),
+        ("chaldean_day", "Jupiter", "diurnal ordering"),
+        ("chaldean_night", "Jupiter", "nocturnal ordering"),
+    ],
+)
+def test_egyptian_bounds_routes_support_live_doctrine_enum_values(
+    doctrine: str,
+    expected_ruler: str,
+    source_fragment: str,
+) -> None:
+    with _client() as client:
+        response = client.get(
+            "/v1/egyptian-bounds/table",
+            params={"doctrine": doctrine},
+        )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["doctrine"] == doctrine
+    assert source_fragment in body["source_citation"]
+    assert body["signs"][0]["segments"][0]["ruler"] == expected_ruler
+
+
+def test_egyptian_bounds_routes_reject_ambiguous_legacy_chaldean_value() -> None:
     with _client() as client:
         response = client.get(
             "/v1/egyptian-bounds/table",
             params={"doctrine": "chaldean"},
         )
 
+    _assert_validation_envelope(response)
+
+
+@pytest.mark.parametrize(
+    ("doctrine", "expected_ruler"),
+    [
+        ("ptolemaic", "Mercury"),
+        ("chaldean_day", "Saturn"),
+        ("chaldean_night", "Mercury"),
+    ],
+)
+def test_bound_route_applies_selected_corrected_table(
+    doctrine: str,
+    expected_ruler: str,
+) -> None:
+    with _client() as client:
+        response = client.post(
+            "/v1/egyptian-bounds/bound",
+            json={"longitude": 15.0, "policy": {"doctrine": doctrine}},
+        )
+
     assert response.status_code == 200
     body = response.json()
-    assert body["doctrine"] == "chaldean"
-    assert body["signs"][0]["segments"][0]["ruler"] == "Mars"
+    assert body["doctrine"] == doctrine
+    assert body["ruler"] == expected_ruler
+    assert body["source_citation"]
 
 
 def test_egyptian_bounds_route_rejects_invalid_doctrine() -> None:
@@ -283,3 +333,20 @@ def test_egyptian_bounds_routes_are_registered() -> None:
     assert "/v1/egyptian-bounds/condition" in paths
     assert "/v1/egyptian-bounds/aggregate" in paths
     assert "/v1/egyptian-bounds/network" in paths
+
+
+def test_egyptian_bounds_openapi_exposes_corrected_doctrines_and_provenance() -> None:
+    schema = create_app(ServerConfig(docs_enabled=False)).openapi()
+
+    assert schema["components"]["schemas"]["EgyptianBoundsDoctrine"]["enum"] == [
+        "egyptian",
+        "ptolemaic",
+        "chaldean_day",
+        "chaldean_night",
+    ]
+    assert "source_citation" in schema["components"]["schemas"][
+        "EgyptianBoundsTableResponse"
+    ]["required"]
+    assert "source_citation" in schema["components"]["schemas"][
+        "EgyptianBoundTruthResponse"
+    ]["required"]

@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from moira.constants import SIGNS
 from moira.egyptian_bounds import (
-    CHALDEAN_BOUNDS,
+    CHALDEAN_DAY_BOUNDS,
+    CHALDEAN_NIGHT_BOUNDS,
     EGYPTIAN_BOUNDS,
     PTOLEMAIC_BOUNDS,
     EgyptianBoundClassification,
@@ -45,8 +46,10 @@ def _table_for_doctrine(
 ) -> dict[str, list[tuple[str, float, float]]]:
     if doctrine is EgyptianBoundsDoctrine.PTOLEMAIC:
         return PTOLEMAIC_BOUNDS
-    if doctrine is EgyptianBoundsDoctrine.CHALDEAN:
-        return CHALDEAN_BOUNDS
+    if doctrine is EgyptianBoundsDoctrine.CHALDEAN_DAY:
+        return CHALDEAN_DAY_BOUNDS
+    if doctrine is EgyptianBoundsDoctrine.CHALDEAN_NIGHT:
+        return CHALDEAN_NIGHT_BOUNDS
     return EGYPTIAN_BOUNDS
 
 

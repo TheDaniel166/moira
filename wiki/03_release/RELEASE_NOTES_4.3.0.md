@@ -125,12 +125,42 @@ mapping to the four leasing stakes. These profiles do not score, rank, advise,
 or recommend. Sahl's fourth-house building and land instructions remain
 deferred until their unresolved computational language has explicit policy.
 
+## Bounds-table correctness
+
+The previously advertised Ptolemaic bounds constant duplicated the Egyptian
+table, while the advertised Chaldaean table implemented neither Ptolemy's
+stated triplicity sequence nor its sect-dependent Saturn/Mercury ordering.
+Version 4.3.0 corrects both defects from *Tetrabiblos* I.20/I.21 in the F. E.
+Robbins translation.
+
+The admitted doctrine values are now:
+
+- `egyptian`
+- `ptolemaic`
+- `chaldean_day`
+- `chaldean_night`
+
+The Ptolemaic table preserves the transmitted planetary totals of Saturn 57°,
+Jupiter 79°, Mars 66°, Venus 82°, and Mercury 76°. The Chaldaean variants use
+the source-stated 8°-7°-6°-5°-4° widths and explicitly reverse Saturn and
+Mercury precedence between day and night.
+
+`GET /v1/egyptian-bounds/table` and every bound-truth REST envelope now expose
+the selected table's primary-source citation. The ambiguous former value
+`chaldean` is rejected; callers must choose the day or night doctrine.
+
 ## Compatibility
 
 All electional engine, facade, and REST entry points are additive relative to
 4.2.1. The profile-window surface was not present in a released version, so its
 explicit `qualification_statuses` requirement does not break a published
 contract.
+
+Bounds callers using `chaldean` must migrate to `chaldean_day` or
+`chaldean_night`. Ptolemaic and Chaldaean lookup results change because the
+former tables were not valid implementations of their labels. Direct module
+callers must replace `CHALDEAN_BOUNDS` with `CHALDEAN_DAY_BOUNDS` or
+`CHALDEAN_NIGHT_BOUNDS`.
 
 No existing generic electional predicate, numeric-fit scorer, relationship
 route, or response envelope is removed or renamed. Version 4.3.0 does not
@@ -158,6 +188,9 @@ includes:
 - DE441 parity between optimized profile scans and independent single-moment
   evaluations;
 - documentation consistency and release-version alignment.
+- all 60 Ptolemaic segments, global planetary totals, Chaldaean day/night
+  totals, boundary ownership, REST serialization, and rejection of the former
+  ambiguous Chaldaean identifier.
 
 These checks establish source fidelity, computational invariants, regression
 protection, and transport visibility for the stated products. They do not
