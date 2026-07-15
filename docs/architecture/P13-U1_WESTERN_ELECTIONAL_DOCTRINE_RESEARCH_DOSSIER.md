@@ -1,16 +1,22 @@
 # P13-U1 — Western Electional Doctrine Research Dossier
 
-Version: 0.12 (research foundation with three public moment profiles)
+Version: 0.13 (research foundation with three Moon profiles and a rooted context)
 Date: 2026-07-15
 Status: research inventory for the Western electional doctrine layer. The
 companion materials admit distinct `ramesey_moon_condition_v1` and
 `sahl_moon_condition_v1` and `dorotheus_moon_condition_v1` objects through the
 engine module, package root, facade, `Moira` convenience methods, and bounded
 single-moment REST routes.
-Generic search, scoring, website, advice, and recommendation surfaces remain
-deferred.
+The shared `dorotheus_rooted_context_v1` object is also public through engine,
+facade, and `POST /v1/electional/western/dorotheus-rooted-context`. Generic
+search, scoring, website, advice, and recommendation surfaces remain deferred.
 
 Changelog:
+- 0.13 - page-confirmed Dorotheus V.6.21-31 and V.31.1-11, admitted the
+  non-scored rooted context preserving Moon-as-root, Moon-sign-lord-as-outcome,
+  sign-bounded next connection, six matter-significator families, and explicit
+  ephemeral/radical natal contracts. V.31's undefined "bad place" and broader
+  "made unfortunate" semantics remain visible uncomputed requirements.
 - 0.12 - re-rendered Dorotheus V.6.3-15 and the edition glossary, admitted the
   distinct eleven-rule `dorotheus_moon_condition_v1` engine/facade/REST
   profile, and preserved the southern-descending and longitude-or-latitude
@@ -700,8 +706,8 @@ separate module-level `ramesey_moon_condition_v1` evaluator admitted on
 | Dignity points (B.2) | Weighted scorer | Partly | Needs dignity tables (domicile/exalt/triplicity/term/face) + term-scheme variant |
 | Composite ten-impediment Moon gate (A.1) | Source-ordered profile | Public single-moment evaluation admitted | `moira.western_electional`, package root, facade, `Moira`, and bounded REST return ten witnesses; no generic `all_of`, scan, or score admission |
 | Planetary hours (D) | Low-weight factor | Yes (computable) | Chaldean-order hour ruler from sunrise/sunset |
-| Radicality (E) | Class-gated gate | **No** | Needs natal chart input (radical class only) |
-| Matter-specific overlays (F) | Profile family | Design layer | Needs house-of-matter + significator vocabulary |
+| Radicality (E) | Class-gated evidence | Shared context admitted | `ephemeral` rejects natal input; `radical` requires a complete natal moment/location/house-system bundle; no success gate is invented |
+| Matter-specific overlays (F) | Profile family | Shared context admitted, complete profiles pending | Six V.31 matter families and their planets are typed; chapter-owned houses and complete matter judgement remain future profile work |
 
 Three cross-cutting transport capabilities still unlock most wider exposure:
 1. **Body speed in the scan payload** → generic slow-Moon, retrograde, applying/separating predicates.
@@ -820,10 +826,11 @@ choices.
    remain indeterminate until primary evidence supplies lawful computational
    regions or intervals. Do not expand this into root/outcome or a complete
    matter judgement implicitly.
-4. **Build the shared rooted/matter-significator vessel next**: preserve the
-   Moon as root, the lord of the Moon's sign as outcome, the next connection,
-   matter significators, and optional natal overlays as typed evidence before
-   admitting the first complete matter profile.
+4. **Treat the shared rooted/matter-significator vessel as bounded and
+   complete** for `dorotheus_rooted_context_v1`: it preserves the Moon as root,
+   the Moon-sign lord as outcome, the first sign-bounded exact connection, six
+   V.31 matter families, and explicit natal evidence. It is not a complete
+   matter judgement and does not resolve V.31's undefined bad-place set.
 5. **Generic search transport remains deferred by explicit decision**: the
    single-moment facade and REST vessel are admitted, but variant-aware
    forward-aspect provenance, remedy applicability versus fulfillment, and a

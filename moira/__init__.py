@@ -443,8 +443,10 @@ from .asteroid_families import (
 from .void_of_course import (
     void_of_course_window,
     is_void_of_course,
+    next_moon_connection,
     next_void_of_course,
     void_periods_in_range,
+    MoonConnection,
     VoidOfCourseWindow,
     LastAspect,
 )
@@ -621,6 +623,20 @@ from .western_electional import (
     DOROTHEUS_MOON_CONDITION_V1,
     evaluate_dorotheus_moon_condition,
     dorotheus_moon_condition_at,
+    WesternElectionClass,
+    DorotheusMatter,
+    DorotheusStrengthState,
+    DorotheusRootOutcomePattern,
+    DorotheusSignificatorCondition,
+    DorotheusPlacementWitness,
+    DorotheusRootOutcomeWitness,
+    DorotheusMatterSignificatorWitness,
+    DorotheusRadicalityWitness,
+    DorotheusRootedContextPolicy,
+    DorotheusRootedContextEvaluation,
+    DOROTHEUS_ROOTED_CONTEXT_V1,
+    evaluate_dorotheus_rooted_context,
+    dorotheus_rooted_context_at,
 )
 
 __all__ = [
@@ -1107,8 +1123,10 @@ __all__ = [
     # Void of course
     "void_of_course_window",
     "is_void_of_course",
+    "next_moon_connection",
     "next_void_of_course",
     "void_periods_in_range",
+    "MoonConnection",
     "VoidOfCourseWindow",
     "LastAspect",
     # Batch assembly
@@ -1174,4 +1192,18 @@ __all__ = [
     "DOROTHEUS_MOON_CONDITION_V1",
     "evaluate_dorotheus_moon_condition",
     "dorotheus_moon_condition_at",
+    "WesternElectionClass",
+    "DorotheusMatter",
+    "DorotheusStrengthState",
+    "DorotheusRootOutcomePattern",
+    "DorotheusSignificatorCondition",
+    "DorotheusPlacementWitness",
+    "DorotheusRootOutcomeWitness",
+    "DorotheusMatterSignificatorWitness",
+    "DorotheusRadicalityWitness",
+    "DorotheusRootedContextPolicy",
+    "DorotheusRootedContextEvaluation",
+    "DOROTHEUS_ROOTED_CONTEXT_V1",
+    "evaluate_dorotheus_rooted_context",
+    "dorotheus_rooted_context_at",
 ]

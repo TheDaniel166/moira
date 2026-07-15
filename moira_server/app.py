@@ -187,7 +187,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(lord_of_the_orb_router)  # Phase-12 caller-seeded Lord of the Orb surface
     app.include_router(lord_of_the_turn_router)  # Phase-12 caller-supplied Lord of the Turn surface
     app.include_router(electional_router)  # Phase-13 bounded electional scan-witness surface
-    app.include_router(western_electional_router)  # Bounded Ramesey, Sahl, and Dorotheus moment profiles
+    app.include_router(western_electional_router)  # Bounded Western Moon profiles and rooted context
     app.include_router(pipeline_router)    # Reduction pipeline breakdown for planet positions
     install_openapi_discovery(app)
     return app

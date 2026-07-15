@@ -1,8 +1,8 @@
 # P13-U1 Western Electional Doctrine Packet
 
-Version: 0.6
+Version: 0.7
 Date: 2026-07-15
-Status: Ramesey, Sahl, and Dorotheus public moment evaluations admitted; generic search/scoring deferred
+Status: three Moon profiles and the Dorotheus rooted context are public; generic search/scoring deferred
 Scope: bounded Western electional doctrine beside the generic search transport
 
 ## 1. Doctrine Decision
@@ -34,6 +34,12 @@ The Dorotheus profile independently evaluates the eleven corruption clauses
 in *Carmen Astrologicum* V.6.3-14 and preserves V.6.15 as a separate remedy
 instruction. It does not claim the later root/outcome or matter-specific layers.
 
+`dorotheus_rooted_context_v1` is a separate, non-scored shared context. It
+preserves the Moon as work root, the Moon-sign lord as outcome, the next exact
+traditional connection before sign exit, the six V.31 matter-significator
+families, and explicit ephemeral/radical natal evidence. It does not claim a
+complete matter judgement, advice, recommendation, or auspiciousness score.
+
 The profile is admitted through `moira.western_electional`, the curated package
 root, `moira.facade`, `Moira.ramesey_moon_condition_at(...)`, and the bounded
 single-moment route
@@ -53,6 +59,11 @@ The Dorotheus profile is likewise admitted through the engine, facade, and
 `POST /v1/electional/western/dorotheus-moon-condition` as its typed REST
 surface. Its eleven source-ordered rules, measured unknowns, and separate
 remedy instruction remain visible in the response.
+
+The rooted context is admitted through `Moira.dorotheus_rooted_context_at(...)`
+and `POST /v1/electional/western/dorotheus-rooted-context`. Radical requests
+must supply a complete natal moment, location, and house-system bundle;
+ephemeral requests reject natal fields.
 
 ## 2. Authority and Page Confirmation
 
@@ -715,3 +726,9 @@ instruction. Its named types, facade method, and REST route expose one moment
 with explicit transport provenance. The two unresolved source clauses remain
 indeterminate, and V.6 admission does not imply the root/outcome,
 matter-significator, natal-overlay, or complete matter layers.
+
+`dorotheus_rooted_context_v1` separately admits the shared root/outcome,
+sign-bounded next-connection, matter-significator, and natal-evidence vessel.
+It deliberately leaves the undefined V.31 bad-place set, broader accidental
+misfortune semantics, chapter-owned houses, and every complete matter profile
+uncomputed. Generic scan integration remains a later bounded admission.

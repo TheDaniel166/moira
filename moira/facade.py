@@ -839,9 +839,9 @@ from .multiple_stars import (
     castor_separation_at, alpha_cen_separation_at,
 )
 from .void_of_course import (
-    LastAspect, VoidOfCourseWindow,
+    LastAspect, MoonConnection, VoidOfCourseWindow,
     void_of_course_window, is_void_of_course,
-    next_void_of_course, void_periods_in_range,
+    next_moon_connection, next_void_of_course, void_periods_in_range,
 )
 from .batch import (
     PlanetTimeSeries,
@@ -911,6 +911,20 @@ from .western_electional import (
     DOROTHEUS_MOON_CONDITION_V1,
     evaluate_dorotheus_moon_condition,
     dorotheus_moon_condition_at,
+    WesternElectionClass,
+    DorotheusMatter,
+    DorotheusStrengthState,
+    DorotheusRootOutcomePattern,
+    DorotheusSignificatorCondition,
+    DorotheusPlacementWitness,
+    DorotheusRootOutcomeWitness,
+    DorotheusMatterSignificatorWitness,
+    DorotheusRadicalityWitness,
+    DorotheusRootedContextPolicy,
+    DorotheusRootedContextEvaluation,
+    DOROTHEUS_ROOTED_CONTEXT_V1,
+    evaluate_dorotheus_rooted_context,
+    dorotheus_rooted_context_at,
 )
 from .muhurta import (
     MuhurtaPolicy,
@@ -1797,9 +1811,9 @@ __all__ = [
     "sirius_ab_separation_at", "sirius_b_resolvable",
     "castor_separation_at", "alpha_cen_separation_at",
     # Void of Course Moon
-    "LastAspect", "VoidOfCourseWindow",
+    "LastAspect", "MoonConnection", "VoidOfCourseWindow",
     "void_of_course_window", "is_void_of_course",
-    "next_void_of_course", "void_periods_in_range",
+    "next_moon_connection", "next_void_of_course", "void_periods_in_range",
     # Batch assembly
     "PlanetTimeSeries", "BatchFailure", "ChartBatchRequest", "ChartBatchResult",
     "EventBatchRequest", "EventBatchResult",
@@ -1833,6 +1847,13 @@ __all__ = [
     "DorotheusMoonConditionPolicy", "DorotheusMoonConditionEvaluation",
     "DOROTHEUS_MOON_CONDITION_V1", "evaluate_dorotheus_moon_condition",
     "dorotheus_moon_condition_at",
+    "WesternElectionClass", "DorotheusMatter", "DorotheusStrengthState",
+    "DorotheusRootOutcomePattern", "DorotheusSignificatorCondition",
+    "DorotheusPlacementWitness", "DorotheusRootOutcomeWitness",
+    "DorotheusMatterSignificatorWitness", "DorotheusRadicalityWitness",
+    "DorotheusRootedContextPolicy", "DorotheusRootedContextEvaluation",
+    "DOROTHEUS_ROOTED_CONTEXT_V1", "evaluate_dorotheus_rooted_context",
+    "dorotheus_rooted_context_at",
     # Muhurta (Tier 2 Vedic competitive edge work)
     "MuhurtaPolicy", "MuhurtaClassification", "MuhurtaScore",
     "classify_muhurta", "score_muhurta",

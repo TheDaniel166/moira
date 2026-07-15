@@ -166,10 +166,16 @@ RULE-11  void_periods_in_range returns chronological list
 
 RULE-12  Public surface sealed
     moira.__all__ and moira.void_of_course.__all__ expose exactly
-    {LastAspect, VoidOfCourseWindow, void_of_course_window,
-     is_void_of_course, next_void_of_course, void_periods_in_range}.
+    {LastAspect, MoonConnection, VoidOfCourseWindow, void_of_course_window,
+     is_void_of_course, next_moon_connection, next_void_of_course,
+     void_periods_in_range}.
     No internal name (_TRADITIONAL_BODIES, _SCAN_STEP, _bisect_aspect,
     etc.) appears in either __all__.
+
+RULE-13  next_moon_connection is sign-bounded
+    The returned connection, when present, is the first exact traditional
+    major aspect strictly after the query instant and before the Moon leaves
+    its current sign.  It is None when no such perfection exists.
 """
 
 from __future__ import annotations
@@ -185,9 +191,11 @@ from .spk_reader import get_reader, SpkReader
 
 __all__ = [
     "LastAspect",
+    "MoonConnection",
     "VoidOfCourseWindow",
     "void_of_course_window",
     "is_void_of_course",
+    "next_moon_connection",
     "next_void_of_course",
     "void_periods_in_range",
 ]
@@ -263,6 +271,45 @@ class LastAspect:
     aspect_name: str
     angle:       float
     jd_exact:    float
+
+
+@dataclass(frozen=True, slots=True)
+class MoonConnection:
+    """First exact traditional Moon aspect remaining in the current sign.
+
+    This is a future-perfection witness, distinct from ``LastAspect``: it
+    preserves both the query instant and the sign-exit boundary that lawfully
+    bounds the search.
+    """
+
+    body: str
+    aspect_name: str
+    angle: float
+    jd_query: float
+    jd_exact: float
+    jd_sign_exit: float
+    moon_sign: str
+
+    def __post_init__(self) -> None:
+        if not all(math.isfinite(value) for value in (
+            self.angle,
+            self.jd_query,
+            self.jd_exact,
+            self.jd_sign_exit,
+        )):
+            raise ValueError("Moon connection numeric fields must be finite")
+        if not self.jd_query < self.jd_exact <= self.jd_sign_exit:
+            raise ValueError(
+                "Moon connection must perfect after the query and no later than sign exit"
+            )
+        if self.moon_sign not in SIGNS:
+            raise ValueError("moon_sign must be a canonical tropical sign")
+
+    @property
+    def hours_until_exact(self) -> float:
+        """Elapsed hours from the query instant to exact perfection."""
+
+        return (self.jd_exact - self.jd_query) * 24.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -825,6 +872,44 @@ def _build_body_void_window_data(
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
+def next_moon_connection(
+    jd: float,
+    reader: SpkReader | None = None,
+    modern: bool = False,
+) -> MoonConnection | None:
+    """Return the Moon's first exact major aspect before its next sign ingress.
+
+    The search is strictly future-facing and bounded by the Moon's current
+    tropical sign.  Traditional mode considers the Sun through Saturn;
+    ``modern=True`` adds Uranus, Neptune, and Pluto.  No interpretation is
+    attached to the returned geometric timing witness.
+    """
+
+    if not math.isfinite(jd):
+        raise ValueError("jd must be finite")
+    resolved_reader = reader if reader is not None else get_reader()
+    jd_sign_exit = _moon_next_sign_ingress(jd, resolved_reader)
+    bodies = _MODERN_BODIES if modern else _TRADITIONAL_BODIES
+    perfections = _find_aspect_perfections(
+        jd,
+        jd_sign_exit,
+        bodies,
+        resolved_reader,
+    )
+    future = next((item for item in perfections if item.jd_exact > jd), None)
+    if future is None:
+        return None
+    moon_sign, _, _ = sign_of(_moon_longitude(jd, resolved_reader))
+    return MoonConnection(
+        body=future.body,
+        aspect_name=future.aspect_name,
+        angle=future.angle,
+        jd_query=jd,
+        jd_exact=future.jd_exact,
+        jd_sign_exit=jd_sign_exit,
+        moon_sign=moon_sign,
+    )
 
 def void_of_course_window(
     jd: float,

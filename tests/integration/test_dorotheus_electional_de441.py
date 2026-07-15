@@ -16,10 +16,46 @@ from moira.eclipse import EclipseCalculator
 from moira.planets import planet_at
 from moira.spk_reader import SpkReader
 from moira.western_electional import (
+    DorotheusMatter,
     DorotheusMoonConditionStatus,
     DorotheusRuleState,
+    dorotheus_rooted_context_at,
     dorotheus_moon_condition_at,
 )
+
+
+@pytest.mark.requires_ephemeris
+def test_j2000_rooted_context_next_connection_satisfies_de441_geometry() -> None:
+    """Invariant evidence for the sign-bounded connection timing witness."""
+
+    kernel = find_planetary_kernel()
+    assert kernel is not None
+    with SpkReader(kernel) as reader:
+        result = dorotheus_rooted_context_at(
+            2451545.0,
+            51.5074,
+            -0.1278,
+            house_system=HouseSystem.REGIOMONTANUS,
+            matter=DorotheusMatter.LAND_AND_MANAGEMENT,
+            reader=reader,
+        )
+        connection = result.next_connection
+        assert connection is not None
+        moon = planet_at(Body.MOON, connection.jd_exact, reader=reader)
+        other = planet_at(connection.body, connection.jd_exact, reader=reader)
+        separation = (moon.longitude - other.longitude) % 360.0
+        angular_error = abs((separation - connection.angle + 180.0) % 360.0 - 180.0)
+        before_exit = planet_at(Body.MOON, connection.jd_sign_exit - 2e-5, reader=reader)
+        after_exit = planet_at(Body.MOON, connection.jd_sign_exit + 2e-5, reader=reader)
+
+    assert Path(result.reader_provenance).name == "de441.bsp"
+    assert connection.jd_query < connection.jd_exact < connection.jd_sign_exit
+    assert connection.body == Body.MARS
+    assert connection.aspect_name == "Square"
+    assert angular_error < 2e-4
+    assert before_exit.sign == connection.moon_sign
+    assert after_exit.sign != connection.moon_sign
+    assert result.complete_electional_judgement is False
 
 
 @pytest.mark.requires_ephemeris

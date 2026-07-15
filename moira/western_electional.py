@@ -46,6 +46,22 @@ from ._western_electional_dorotheus import (
     dorotheus_moon_condition_at,
     evaluate_dorotheus_moon_condition,
 )
+from ._western_electional_context import (
+    DOROTHEUS_ROOTED_CONTEXT_V1,
+    DorotheusMatter,
+    DorotheusMatterSignificatorWitness,
+    DorotheusPlacementWitness,
+    DorotheusRadicalityWitness,
+    DorotheusRootedContextEvaluation,
+    DorotheusRootedContextPolicy,
+    DorotheusRootOutcomePattern,
+    DorotheusRootOutcomeWitness,
+    DorotheusSignificatorCondition,
+    DorotheusStrengthState,
+    WesternElectionClass,
+    dorotheus_rooted_context_at,
+    evaluate_dorotheus_rooted_context,
+)
 
 __all__ = [
     "RameseyRuleState",
@@ -84,6 +100,20 @@ __all__ = [
     "DOROTHEUS_MOON_CONDITION_V1",
     "evaluate_dorotheus_moon_condition",
     "dorotheus_moon_condition_at",
+    "WesternElectionClass",
+    "DorotheusMatter",
+    "DorotheusStrengthState",
+    "DorotheusRootOutcomePattern",
+    "DorotheusSignificatorCondition",
+    "DorotheusPlacementWitness",
+    "DorotheusRootOutcomeWitness",
+    "DorotheusMatterSignificatorWitness",
+    "DorotheusRadicalityWitness",
+    "DorotheusRootedContextPolicy",
+    "DorotheusRootedContextEvaluation",
+    "DOROTHEUS_ROOTED_CONTEXT_V1",
+    "evaluate_dorotheus_rooted_context",
+    "dorotheus_rooted_context_at",
 ]
 
 

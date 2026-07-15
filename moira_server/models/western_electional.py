@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 from typing import Any, Literal
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 
 from moira.constants import HOUSE_SYSTEM_NAMES
 
@@ -15,6 +15,7 @@ from .common import _StrictModel
 RAMESEY_PROFILE_ID = "ramesey_moon_condition_v1"
 SAHL_PROFILE_ID = "sahl_moon_condition_v1"
 DOROTHEUS_PROFILE_ID = "dorotheus_moon_condition_v1"
+DOROTHEUS_ROOTED_CONTEXT_PROFILE_ID = "dorotheus_rooted_context_v1"
 RAMESEY_HOUSE_SYSTEMS = tuple(HOUSE_SYSTEM_NAMES)
 SAHL_HOUSE_SYSTEMS = tuple(HOUSE_SYSTEM_NAMES)
 DOROTHEUS_HOUSE_SYSTEMS = tuple(HOUSE_SYSTEM_NAMES)
@@ -396,9 +397,194 @@ class DorotheusMoonConditionResponse(_StrictModel):
     transport_provenance: DorotheusWesternElectionalTransportProvenanceResponse
 
 
+DorotheusMatterValue = Literal[
+    "land_and_management",
+    "mercurial_affairs",
+    "marriage_sex_and_pleasure",
+    "war_and_arms",
+    "rulers_and_petitions",
+    "manifest_and_prominent",
+]
+DorotheusElectionClassValue = Literal["ephemeral", "radical"]
+DorotheusStrengthValue = Literal["angular", "succedent", "cadent", "not_evaluable"]
+DorotheusRootOutcomePatternValue = Literal[
+    "good_root_bad_outcome",
+    "difficult_root_suitable_outcome",
+    "good_root_and_outcome",
+    "bad_root_worse_outcome",
+    "unclassified",
+    "not_evaluable",
+]
+DorotheusSignificatorConditionValue = Literal[
+    "clear_of_computed_impediments",
+    "one_or_more_computed_impediments",
+    "indeterminate",
+]
+
+
+class DorotheusRootedContextRequest(_StrictModel):
+    profile_id: Literal["dorotheus_rooted_context_v1"] = DOROTHEUS_ROOTED_CONTEXT_PROFILE_ID
+    jd_ut: float
+    latitude: float = Field(ge=-90.0, le=90.0)
+    longitude: float = Field(ge=-180.0, le=180.0)
+    house_system: str
+    matter: DorotheusMatterValue
+    election_class: DorotheusElectionClassValue = "ephemeral"
+    natal_jd_ut: float | None = None
+    natal_latitude: float | None = Field(default=None, ge=-90.0, le=90.0)
+    natal_longitude: float | None = Field(default=None, ge=-180.0, le=180.0)
+    natal_house_system: str | None = None
+
+    @field_validator(
+        "jd_ut",
+        "latitude",
+        "longitude",
+        "natal_jd_ut",
+        "natal_latitude",
+        "natal_longitude",
+        mode="before",
+    )
+    @classmethod
+    def _finite_values(cls, value: Any, info) -> float | None:
+        if value is None and info.field_name.startswith("natal_"):
+            return None
+        return _finite_number(value, info.field_name)
+
+    @field_validator("house_system", "natal_house_system", mode="before")
+    @classmethod
+    def _known_house_system(cls, value: Any, info) -> str | None:
+        if value is None and info.field_name == "natal_house_system":
+            return None
+        if not isinstance(value, str):
+            raise ValueError(f"{info.field_name} must be a string")
+        code = value.strip()
+        if code not in DOROTHEUS_HOUSE_SYSTEMS:
+            raise ValueError(
+                f"{info.field_name} must be one of {list(DOROTHEUS_HOUSE_SYSTEMS)!r}"
+            )
+        return code
+
+    @model_validator(mode="after")
+    def _natal_contract(self) -> "DorotheusRootedContextRequest":
+        natal_values = (
+            self.natal_jd_ut,
+            self.natal_latitude,
+            self.natal_longitude,
+            self.natal_house_system,
+        )
+        if self.election_class == "ephemeral" and any(
+            value is not None for value in natal_values
+        ):
+            raise ValueError("ephemeral election_class rejects natal fields")
+        if self.election_class == "radical" and any(
+            value is None for value in natal_values
+        ):
+            raise ValueError("radical election_class requires all natal fields")
+        return self
+
+
+class DorotheusPlacementWitnessResponse(_StrictModel):
+    body: str
+    role: str
+    longitude: float
+    sign: str
+    house: int | None
+    strength: DorotheusStrengthValue
+    house_system_is_quadrant: bool
+    explanation: str
+
+
+class DorotheusRootOutcomeWitnessResponse(_StrictModel):
+    moon: DorotheusPlacementWitnessResponse
+    moon_sign_lord: DorotheusPlacementWitnessResponse
+    pattern: DorotheusRootOutcomePatternValue
+    outcome_delayed: bool | None
+    source_reference: str
+    interpretation_scope: Literal["source_named_pattern_not_complete_judgement"]
+
+
+class DorotheusMatterSignificatorWitnessResponse(_StrictModel):
+    body: str
+    placement: DorotheusPlacementWitnessResponse
+    under_rays: bool
+    solar_distance_degrees: float | None
+    configured_malefics: list[str]
+    looks_at_ascendant: bool
+    bad_place_evaluated: Literal[False]
+    bad_place: None
+    condition: DorotheusSignificatorConditionValue
+    source_reference: str
+    uncomputed_requirements: list[str]
+
+
+class MoonConnectionResponse(_StrictModel):
+    body: str
+    aspect_name: str
+    angle: float
+    jd_query: float
+    jd_exact: float
+    jd_sign_exit: float
+    moon_sign: str
+    hours_until_exact: float
+
+
+class DorotheusRadicalityWitnessResponse(_StrictModel):
+    election_class: DorotheusElectionClassValue
+    natal_required: bool
+    natal_provided: bool
+    election_ascendant_sign: str
+    election_ascendant_lord: str
+    natal_ascendant_sign: str | None
+    natal_ascendant_lord: str | None
+    assessment_semantics: Literal["evidence_only_not_success_gate"]
+
+
+class DorotheusRootedContextEvaluationResponse(_StrictModel):
+    jd_ut: float
+    profile_id: Literal["dorotheus_rooted_context_v1"]
+    profile_version: str
+    matter: DorotheusMatterValue
+    election_class: DorotheusElectionClassValue
+    root_outcome: DorotheusRootOutcomeWitnessResponse
+    matter_significators: list[DorotheusMatterSignificatorWitnessResponse]
+    next_connection: MoonConnectionResponse | None
+    next_connection_placement: DorotheusPlacementWitnessResponse | None
+    radicality: DorotheusRadicalityWitnessResponse
+    reader_provenance: str
+    latitude: float
+    longitude: float
+    requested_house_system: str
+    effective_house_system: str
+    house_fallback: bool
+    authorities: list[str]
+    uncomputed_requirements: list[str]
+    complete_electional_judgement: Literal[False]
+    advice_language: Literal["not_provided"]
+    recommendation_language: Literal["not_provided"]
+
+
+class DorotheusRootedContextTransportProvenanceResponse(_StrictModel):
+    source_module: Literal["moira.western_electional"] = "moira.western_electional"
+    engine_entrypoint: Literal["dorotheus_rooted_context_at"] = "dorotheus_rooted_context_at"
+    facade_entrypoint: Literal["Moira.dorotheus_rooted_context_at"] = "Moira.dorotheus_rooted_context_at"
+    route_semantics: Literal["single_moment_rooted_context_evaluation"] = "single_moment_rooted_context_evaluation"
+    western_electional_doctrine: Literal["dorotheus_rooted_context_v1_admitted"] = "dorotheus_rooted_context_v1_admitted"
+    authority: str
+    scoring: Literal["not_provided"] = "not_provided"
+    recommendation_language: Literal["not_provided"] = "not_provided"
+    generic_search_integration: Literal["not_yet_admitted"] = "not_yet_admitted"
+    stage_sequence: list[str]
+
+
+class DorotheusRootedContextResponse(_StrictModel):
+    evaluation: DorotheusRootedContextEvaluationResponse
+    transport_provenance: DorotheusRootedContextTransportProvenanceResponse
+
+
 __all__ = [
     "DOROTHEUS_HOUSE_SYSTEMS",
     "DOROTHEUS_PROFILE_ID",
+    "DOROTHEUS_ROOTED_CONTEXT_PROFILE_ID",
     "RAMESEY_HOUSE_SYSTEMS",
     "RAMESEY_PROFILE_ID",
     "SAHL_HOUSE_SYSTEMS",
@@ -431,4 +617,13 @@ __all__ = [
     "DorotheusRemedyWitnessResponse",
     "DorotheusRuleWitnessResponse",
     "DorotheusWesternElectionalTransportProvenanceResponse",
+    "DorotheusRootedContextRequest",
+    "DorotheusRootedContextResponse",
+    "DorotheusRootedContextEvaluationResponse",
+    "DorotheusRootedContextTransportProvenanceResponse",
+    "DorotheusPlacementWitnessResponse",
+    "DorotheusRootOutcomeWitnessResponse",
+    "DorotheusMatterSignificatorWitnessResponse",
+    "DorotheusRadicalityWitnessResponse",
+    "MoonConnectionResponse",
 ]

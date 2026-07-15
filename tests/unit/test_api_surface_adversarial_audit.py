@@ -583,6 +583,22 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     'DorotheusRuleWitness',
     'evaluate_dorotheus_moon_condition',
     'dorotheus_moon_condition_at',
+    'DOROTHEUS_ROOTED_CONTEXT_V1',
+    'DorotheusMatter',
+    'DorotheusMatterSignificatorWitness',
+    'DorotheusPlacementWitness',
+    'DorotheusRadicalityWitness',
+    'DorotheusRootOutcomePattern',
+    'DorotheusRootOutcomeWitness',
+    'DorotheusRootedContextEvaluation',
+    'DorotheusRootedContextPolicy',
+    'DorotheusSignificatorCondition',
+    'DorotheusStrengthState',
+    'MoonConnection',
+    'WesternElectionClass',
+    'dorotheus_rooted_context_at',
+    'evaluate_dorotheus_rooted_context',
+    'next_moon_connection',
 })
 
 _EXPECTED_ROOT_ONLY_NAMES = {
@@ -923,6 +939,7 @@ _EXPECTED_MOIRA_METHODS = {
 # Explicit facade-method admissions added since the original frozen baseline.
 _EXPECTED_MOIRA_METHODS.update({
 'ashtakavarga',
+    'dorotheus_rooted_context_at',
     'ashtakavarga_for_chart',
     'ashtakavarga_profile',
     'ashtakavarga_sign_profile',

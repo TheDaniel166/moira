@@ -12,6 +12,8 @@ from ..dependencies import get_engine
 from ..models.western_electional import (
     DorotheusMoonConditionRequest,
     DorotheusMoonConditionResponse,
+    DorotheusRootedContextRequest,
+    DorotheusRootedContextResponse,
     RameseyMoonConditionRequest,
     RameseyMoonConditionResponse,
     SahlMoonConditionRequest,
@@ -19,17 +21,34 @@ from ..models.western_electional import (
 )
 from ..serializers.western_electional import (
     serialize_dorotheus_moon_condition,
+    serialize_dorotheus_rooted_context,
     serialize_ramesey_moon_condition,
     serialize_sahl_moon_condition,
 )
 from ..services.western_electional import (
     compute_dorotheus_moon_condition,
+    compute_dorotheus_rooted_context,
     compute_ramesey_moon_condition,
     compute_sahl_moon_condition,
 )
 
 
 router = APIRouter(prefix="/v1/electional/western", tags=["electional"])
+
+
+@router.post(
+    "/dorotheus-rooted-context",
+    response_model=DorotheusRootedContextResponse,
+)
+def dorotheus_rooted_context_route(
+    request: DorotheusRootedContextRequest,
+    engine: Annotated[Moira, Depends(get_engine)],
+) -> DorotheusRootedContextResponse:
+    """Return the shared V.6/V.31 root, outcome, and matter witnesses."""
+
+    return serialize_dorotheus_rooted_context(
+        compute_dorotheus_rooted_context(engine, request)
+    )
 
 
 @router.post(

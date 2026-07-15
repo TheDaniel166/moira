@@ -6,7 +6,9 @@ from moira.western_electional import (
     DorotheusClauseWitness,
     DorotheusMeasurement,
     DorotheusMoonConditionEvaluation,
+    DorotheusPlacementWitness,
     DorotheusRemedyWitness,
+    DorotheusRootedContextEvaluation,
     DorotheusRuleWitness,
     RameseyClauseWitness,
     RameseyMeasurement,
@@ -24,8 +26,15 @@ from ..models.western_electional import (
     DorotheusMeasurementResponse,
     DorotheusMoonConditionEvaluationResponse,
     DorotheusMoonConditionResponse,
+    DorotheusMatterSignificatorWitnessResponse,
+    DorotheusPlacementWitnessResponse,
+    DorotheusRadicalityWitnessResponse,
     DorotheusRemedyWitnessResponse,
     DorotheusRuleWitnessResponse,
+    DorotheusRootedContextEvaluationResponse,
+    DorotheusRootedContextResponse,
+    DorotheusRootedContextTransportProvenanceResponse,
+    DorotheusRootOutcomeWitnessResponse,
     DorotheusWesternElectionalTransportProvenanceResponse,
     RameseyClauseWitnessResponse,
     RameseyMeasurementResponse,
@@ -40,6 +49,7 @@ from ..models.western_electional import (
     SahlMoonConditionResponse,
     SahlRuleWitnessResponse,
     SahlWesternElectionalTransportProvenanceResponse,
+    MoonConnectionResponse,
 )
 
 
@@ -80,6 +90,19 @@ _DOROTHEUS_STAGE_SEQUENCE = [
     "geometric_lunar_eclipse_classification",
     "eleven_clause_doctrine_evaluation",
     "separate_remedy_applicability",
+    "typed_response_serialization",
+]
+_DOROTHEUS_ROOTED_AUTHORITY = (
+    "Dorotheus of Sidon, Carmen Astrologicum, Umar al-Tabari translation, "
+    "Book V.6.21-31 and V.31.1-11, printed pp. 236-237 and 276-277"
+)
+_DOROTHEUS_ROOTED_STAGE_SEQUENCE = [
+    "request_and_radicality_validation",
+    "facade_reader_resolution",
+    "election_and_optional_natal_chart_construction",
+    "sign_bounded_next_moon_connection_search",
+    "root_and_outcome_strength_classification",
+    "matter_significator_evidence_assembly",
     "typed_response_serialization",
 ]
 
@@ -344,7 +367,112 @@ def serialize_dorotheus_moon_condition(
     )
 
 
+def _serialize_context_placement(
+    placement: DorotheusPlacementWitness,
+) -> DorotheusPlacementWitnessResponse:
+    return DorotheusPlacementWitnessResponse(
+        body=placement.body,
+        role=placement.role,
+        longitude=placement.longitude,
+        sign=placement.sign,
+        house=placement.house,
+        strength=placement.strength.value,
+        house_system_is_quadrant=placement.house_system_is_quadrant,
+        explanation=placement.explanation,
+    )
+
+
+def serialize_dorotheus_rooted_context(
+    result: DorotheusRootedContextEvaluation,
+) -> DorotheusRootedContextResponse:
+    """Serialize every rooted, matter, connection, and natal witness."""
+
+    root = result.root_outcome
+    root_response = DorotheusRootOutcomeWitnessResponse(
+        moon=_serialize_context_placement(root.moon),
+        moon_sign_lord=_serialize_context_placement(root.moon_sign_lord),
+        pattern=root.pattern.value,
+        outcome_delayed=root.outcome_delayed,
+        source_reference=root.source_reference,
+        interpretation_scope=root.interpretation_scope,
+    )
+    significators = [
+        DorotheusMatterSignificatorWitnessResponse(
+            body=item.body,
+            placement=_serialize_context_placement(item.placement),
+            under_rays=item.under_rays,
+            solar_distance_degrees=item.solar_distance_degrees,
+            configured_malefics=list(item.configured_malefics),
+            looks_at_ascendant=item.looks_at_ascendant,
+            bad_place_evaluated=item.bad_place_evaluated,
+            bad_place=item.bad_place,
+            condition=item.condition.value,
+            source_reference=item.source_reference,
+            uncomputed_requirements=list(item.uncomputed_requirements),
+        )
+        for item in result.matter_significators
+    ]
+    connection = None
+    if result.next_connection is not None:
+        item = result.next_connection
+        connection = MoonConnectionResponse(
+            body=item.body,
+            aspect_name=item.aspect_name,
+            angle=item.angle,
+            jd_query=item.jd_query,
+            jd_exact=item.jd_exact,
+            jd_sign_exit=item.jd_sign_exit,
+            moon_sign=item.moon_sign,
+            hours_until_exact=item.hours_until_exact,
+        )
+    radicality = result.radicality
+    evaluation = DorotheusRootedContextEvaluationResponse(
+        jd_ut=result.jd_ut,
+        profile_id=result.profile_id,
+        profile_version=result.profile_version,
+        matter=result.matter.value,
+        election_class=result.election_class.value,
+        root_outcome=root_response,
+        matter_significators=significators,
+        next_connection=connection,
+        next_connection_placement=(
+            _serialize_context_placement(result.next_connection_placement)
+            if result.next_connection_placement is not None
+            else None
+        ),
+        radicality=DorotheusRadicalityWitnessResponse(
+            election_class=radicality.election_class.value,
+            natal_required=radicality.natal_required,
+            natal_provided=radicality.natal_provided,
+            election_ascendant_sign=radicality.election_ascendant_sign,
+            election_ascendant_lord=radicality.election_ascendant_lord,
+            natal_ascendant_sign=radicality.natal_ascendant_sign,
+            natal_ascendant_lord=radicality.natal_ascendant_lord,
+            assessment_semantics=radicality.assessment_semantics,
+        ),
+        reader_provenance=result.reader_provenance,
+        latitude=result.latitude,
+        longitude=result.longitude,
+        requested_house_system=result.requested_house_system,
+        effective_house_system=result.effective_house_system,
+        house_fallback=result.house_fallback,
+        authorities=list(result.authorities),
+        uncomputed_requirements=list(result.uncomputed_requirements),
+        complete_electional_judgement=result.complete_electional_judgement,
+        advice_language=result.advice_language,
+        recommendation_language=result.recommendation_language,
+    )
+    return DorotheusRootedContextResponse(
+        evaluation=evaluation,
+        transport_provenance=DorotheusRootedContextTransportProvenanceResponse(
+            authority=_DOROTHEUS_ROOTED_AUTHORITY,
+            stage_sequence=list(_DOROTHEUS_ROOTED_STAGE_SEQUENCE),
+        ),
+    )
+
+
 __all__ = [
+    "serialize_dorotheus_rooted_context",
     "serialize_dorotheus_moon_condition",
     "serialize_ramesey_moon_condition",
     "serialize_sahl_moon_condition",

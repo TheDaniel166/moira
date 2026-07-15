@@ -20,8 +20,10 @@ import moira.void_of_course as _voc_mod
 from moira.constants import SIGNS
 from moira.void_of_course import (
     LastAspect,
+    MoonConnection,
     VoidOfCourseWindow,
     is_void_of_course,
+    next_moon_connection,
     next_void_of_course,
     void_of_course_window,
     void_periods_in_range,
@@ -52,9 +54,11 @@ def voc_scan_windows(moira_engine):
 
 _EXPECTED_PUBLIC = frozenset({
     "LastAspect",
+    "MoonConnection",
     "VoidOfCourseWindow",
     "void_of_course_window",
     "is_void_of_course",
+    "next_moon_connection",
     "next_void_of_course",
     "void_periods_in_range",
 })
@@ -68,6 +72,38 @@ _EXPECTED_INTERNAL = frozenset({
     "_aspect_signal", "_bisect_aspect", "_find_aspect_perfections",
     "_build_voc_window",
 })
+
+
+def test_next_moon_connection_returns_first_future_sign_bounded_perfection(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    reader = object()
+    monkeypatch.setattr(_voc_mod, "_moon_next_sign_ingress", lambda jd, reader: jd + 2.0)
+    monkeypatch.setattr(_voc_mod, "_moon_longitude", lambda jd, reader: 35.0)
+    monkeypatch.setattr(
+        _voc_mod,
+        "_find_aspect_perfections",
+        lambda start, end, bodies, reader: [
+            LastAspect("Mars", "Square", 90.0, start + 0.5),
+            LastAspect("Jupiter", "Trine", 120.0, start + 1.0),
+        ],
+    )
+
+    result = next_moon_connection(2451545.0, reader=reader)
+
+    assert isinstance(result, MoonConnection)
+    assert result.body == "Mars"
+    assert result.jd_exact == pytest.approx(2451545.5)
+    assert result.jd_sign_exit == pytest.approx(2451547.0)
+    assert result.hours_until_exact == pytest.approx(12.0)
+
+
+def test_next_moon_connection_returns_none_without_remaining_perfection(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(_voc_mod, "_moon_next_sign_ingress", lambda jd, reader: jd + 2.0)
+    monkeypatch.setattr(_voc_mod, "_find_aspect_perfections", lambda *args: [])
+    assert next_moon_connection(2451545.0, reader=object()) is None
 
 
 def test_module_all_is_exact():

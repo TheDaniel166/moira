@@ -1,13 +1,14 @@
 # P13-U1 — Dorotheus *Carmen Astrologicum* Book V: Complete Electional Rule Inventory
 
-Version: 1.1
+Version: 1.2
 Date: 2026-07-15
 Status: primary-source rule inventory; the bounded V.6 Moon-corruption layer is
-admitted as `dorotheus_moon_condition_v1`. Companion to
+admitted as `dorotheus_moon_condition_v1`, and the V.6.21-31/V.31 shared rooted
+context is admitted as `dorotheus_rooted_context_v1`. Companion to
 `P13-U1_WESTERN_ELECTIONAL_DOCTRINE_RESEARCH_DOSSIER.md` §8.1. Parallel
 lineage inventory: `P13-U1_SAHL_ON_ELECTIONS_RULE_INVENTORY.md`. The remaining
-sign-nature, root/outcome, matter-significator, and matter-specific layers are
-inventory, not yet public doctrine.
+sign-nature and complete matter-specific layers are inventory, not yet public
+doctrine.
 
 ## 0. Provenance and Scope
 
@@ -589,7 +590,7 @@ dossier §10 and to new needs this transcription surfaces:
 |---|---|---|
 | Moon slow < **12°/day** (V.6,11); other chapters' "increasing/decreasing in calculation" | **body speed (deg/day); source-specific interpretation before any derivative is added** | V.6 admitted; broader usage remains profile-owned |
 | Under-the-rays / combust Moon (V.6,4), "13° from the Sun's rays" (V.40,2), oriental/occidental Mercury (V.16,1) | **signed solar elongation + orb tables** | Unlock 2 (already named) |
-| "The planet the Moon connects with next" (V.6,29, V.42,1); applying vs. separating (V.6,28) | **forward next-aspect search + applying/separating classifier** | Unlock 3 (already named) |
+| "The planet the Moon connects with next" (V.6,29, V.42,1); applying vs. separating (V.6,28) | **forward next-aspect search + applying/separating classifier** | First exact sign-bounded connection admitted in the rooted context; broader collection/translation/prohibition mechanics remain future |
 | Moon increasing/decreasing in **light** (waxing/waning) — distinct from speed | **signed Sun–Moon elongation (phase), already implied by Unlock 2** | folds into Unlock 2 |
 | Straight vs. crooked (oblique-ascension) signs (V.2) | **ascensional times at the election latitude** | **NEW** — not in §10; needed for V.2 |
 | Moon in twelfth-part of a malefic (V.6,6); twelfth-part of the Moon (V.36, V.42) | **twelfth-part (dodecatemoria) engine** | V.6 admitted; reusable public subsystem still future |
@@ -597,7 +598,7 @@ dossier §10 and to new needs this transcription surfaces:
 | Node regions & latitude "descending toward the south" (V.6,7, V.44) | **lunar node longitudes + ecliptic latitude in payload** | **NEW** — needed for V.44 node doctrine |
 | Melothesia: sign → body-part taboo (V.40,8, V.39, V.32,5) | **sign→limb correspondence table (owned lookup)** | **NEW** — needed for all medical profiles |
 | Besieging by body/aspect (V.6,32, V.26, V.32,5) | **besiegement classifier (between two malefics by sign or ray)** | **NEW** — derivable once aspects+order are in payload |
-| Natal overlay (V.17, V.26,21, V.32, V.42) | **optional natal-chart input to the election** | **NEW** — the engine's ephemeral→rooted upgrade |
+| Natal overlay (V.17, V.26,21, V.32, V.42) | **optional natal-chart input to the election** | Rooted context admits explicit ephemeral rejection and radical requirement; chapter-specific overlay judgement remains future |
 
 **Profile families this inventory supports (each a bounded predicate/scorer
 profile citing V.ch,sent):**
@@ -605,8 +606,9 @@ profile citing V.ch,sent):**
    non-scored `dorotheus_moon_condition_v1` public moment profile.
 2. **Sign-tempo annotator** (V.2–V.5) — straight/crooked, convertible, twin,
    sect-fit.
-3. **Significator-of-the-matter fortifier** (V.31) — parameterized by matter →
-   planet+house.
+3. **Significator-of-the-matter context** (V.31) — six matter-to-planet
+   families are public; chapter-owned house fortification and undefined
+   bad-place semantics remain outside the shared vessel.
 4. **Matter profiles:** construction (V.7–8), leasing (V.9), commerce (V.10,
    V.44), land (V.11), travel & ships (V.13, V.22–26), marriage (V.17), debt
    (V.21), partnership (V.20), lawsuit (V.34), will (V.43), and the **medical/
@@ -637,6 +639,8 @@ interrogations/decumbitures and must not be admitted as electional gates.
    variant** beside Ramesey/Lilly/Robson (e.g. slow-Moon 12°/day vs. 13°11′;
    via combusta = whole Libra+Scorpio vs. 15°–15°). Never merge (Part V + Law of
    Semantic Honesty).
-5. **Build the rooted and matter-specific layers separately:** V.6 admission
-   does not yet implement V.2–V.5 sign-tempo, V.6.19–35 root/outcome, V.31
-   matter significators, natal overlays, or any complete matter profile.
+5. **Build complete matter profiles on the rooted vessel:** the shared context
+   now implements V.6.21-31 root/outcome evidence, V.31 matter significators,
+   and explicit natal-input contracts. It does not implement V.2-V.5 sign
+   tempo, chapter-owned matter houses, natal success gates, or any complete
+   matter profile.

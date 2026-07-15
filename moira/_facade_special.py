@@ -60,7 +60,7 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
     "scope": "class",
     "id": "moira._facade_special.SpecialTopicsFacadeMixin",
     "risk": "medium",
-    "api": {"frozen": ["eclipse", "primary_directions", "longevity", "phenomena", "occultations", "void_of_course", "electional", "ramesey_moon_condition_at", "sahl_moon_condition_at", "dorotheus_moon_condition_at"], "internal": []},
+    "api": {"frozen": ["eclipse", "primary_directions", "longevity", "phenomena", "occultations", "void_of_course", "electional", "ramesey_moon_condition_at", "sahl_moon_condition_at", "dorotheus_moon_condition_at", "dorotheus_rooted_context_at"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -494,6 +494,49 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
             longitude,
             house_system=house_system,
             unavoidable_time_urgency=unavoidable_time_urgency,
+            reader=self._reader,
+            house_policy=house_policy,
+            policy=resolved_policy,
+        )
+
+    def dorotheus_rooted_context_at(
+        self,
+        jd_ut: float,
+        latitude: float,
+        longitude: float,
+        *,
+        house_system: str,
+        matter,
+        election_class=None,
+        natal_jd_ut: float | None = None,
+        natal_latitude: float | None = None,
+        natal_longitude: float | None = None,
+        natal_house_system: str | None = None,
+        house_policy=None,
+        policy=None,
+    ):
+        """Evaluate Dorotheus's rooted V.6/V.31 context at one instant."""
+
+        facade = _facade_module()
+        resolved_class = (
+            facade.WesternElectionClass.EPHEMERAL
+            if election_class is None
+            else election_class
+        )
+        resolved_policy = (
+            facade.DOROTHEUS_ROOTED_CONTEXT_V1 if policy is None else policy
+        )
+        return facade.dorotheus_rooted_context_at(
+            jd_ut,
+            latitude,
+            longitude,
+            house_system=house_system,
+            matter=matter,
+            election_class=resolved_class,
+            natal_jd_ut=natal_jd_ut,
+            natal_latitude=natal_latitude,
+            natal_longitude=natal_longitude,
+            natal_house_system=natal_house_system,
             reader=self._reader,
             house_policy=house_policy,
             policy=resolved_policy,
