@@ -25,13 +25,12 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime
 
 from .constants import Body
-from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd, format_jd_utc, jd_from_datetime
-from .planets import planet_at
+from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd, format_jd_utc
 from .spk_reader import get_reader, SpkReader
-from ._solar import _solar_declination_ra, _sunrise_sunset, _refine_sunrise
+from ._solar import _sunrise_sunset, _refine_sunrise
 
 
 def _refine_solar_event_near(
@@ -46,10 +45,30 @@ def _refine_solar_event_near(
     jd_event = _refine_sunrise(jd_guess, latitude, longitude, reader, is_rise=is_rise)
     if not math.isfinite(jd_event):
         raise ValueError("solar event refinement returned a non-finite JD")
-    day_shift = round(jd_guess - jd_event)
     if abs(jd_guess - jd_event) > 0.75:
-        jd_event += day_shift
+        raise ValueError(
+            f"solar event refinement escaped its local day: guess={jd_guess}, "
+            f"refined={jd_event}"
+        )
     return jd_event
+
+
+def _validate_inputs(jd: float, latitude: float, longitude: float) -> None:
+    for name, value in (("jd", jd), ("latitude", latitude), ("longitude", longitude)):
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise TypeError(f"{name} must be a real number")
+        if not math.isfinite(value):
+            raise ValueError(f"{name} must be finite")
+    if not -90.0 <= latitude <= 90.0:
+        raise ValueError("latitude must be within [-90, 90] degrees")
+    if not -180.0 <= longitude <= 180.0:
+        raise ValueError("longitude must be within [-180, 180] degrees")
+
+
+def _local_weekday_at_sunrise(jd_sunrise: float, longitude: float) -> int:
+    """Return local-mean-solar weekday with Sunday=0 through Saturday=6."""
+    local_mean_jd = jd_sunrise + longitude / 360.0
+    return math.floor(local_mean_jd + 1.5) % 7
 
 
 # ---------------------------------------------------------------------------
@@ -287,6 +306,7 @@ def planetary_hours(
     PlanetaryHoursDay with the sunrise, sunset, and 24 planetary hours for the
     sunrise-to-sunrise local window containing *jd*.
     """
+    _validate_inputs(jd, latitude, longitude)
     if reader is None:
         reader = get_reader()
 
@@ -346,29 +366,21 @@ def planetary_hours(
             is_rise=True,
         )
 
-    # Day-of-week from sunrise JD (to determine day ruler)
-    # Julian Day 0 = Monday (weekday 1 in ISO, 0 in our scheme = Sunday)
-    # JD mod 7: 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun
-    dow_jd = int(jd_sunrise + 1.5) % 7   # 0=Sun, 1=Mon, ... 6=Sat
-    # Adjust: JD+1.5 makes 0=Mon; we want 0=Sun
-    # Actually: JD=2451545.0 = Jan 1.5 2000 = Saturday
-    # (2451545 + 1) % 7 = 2451546 % 7 = let's compute
-    # 2451545 % 7 = 2451545 / 7 = 350220.71... → 350220*7=2451540 → rem=5
-    # So JD 2451545 % 7 = 5 → Saturday → we need +2 to shift: (jd+2)%7 = 0=Mon
-    # Let's use a known reference: Jan 1, 2000 was Saturday (dow=6 in 0=Sun)
-    # JD 2451545.5 % 7 = ? 2451545 % 7 = 5 (so .5 day doesn't change int)
-    # We want: 2451545 → Saturday=6; so offset = 6 - 5 = 1
-    # dow_0indexed_sunday = (floor(jd_sunrise) + 1) % 7  gives us...
-    # Actually let's just use a direct formula
-    # Use: weekday = (floor(jd + 1.5)) % 7, where 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
-    jd_int   = int(jd_sunrise + 1.5)
-    weekday  = jd_int % 7   # 0=Sun (since JD 0.5 = Jan 1, 4713 BC = Monday → shift)
-    # Correction: JD=2451545 → Saturday; (2451545+1)%7=2451546%7
-    # 2451546/7=350220.857..., 350220*7=2451540, rem=6 → that gives 6=Saturday ✓ if 0=Sun
-    # But above formula: jd_int=2451546, 2451546%7=6 → 6=Sat with 0=Sun ✓
-    # Wait: if 0=Sun then: Sun=0,Mon=1,...,Sat=6
-    # JD 2451545 = Saturday. int(2451545 + 1.5) = 2451546. 2451546 % 7 = 6 → Sat=6 ✓
+    if not jd_sunrise < jd_sunset < jd_next_sunrise:
+        raise ValueError(
+            "planetary-hours solar bounds must satisfy sunrise < sunset < next sunrise; "
+            f"got {jd_sunrise}, {jd_sunset}, {jd_next_sunrise}"
+        )
+    if not jd_sunrise <= jd < jd_next_sunrise:
+        raise ValueError(
+            f"resolved solar window [{jd_sunrise}, {jd_next_sunrise}) "
+            f"does not contain requested JD {jd}"
+        )
 
+    # The surface has coordinates but no timezone. Local mean solar time is
+    # therefore the explicit policy for the weekday whose sunrise begins the
+    # planetary day.
+    weekday = _local_weekday_at_sunrise(jd_sunrise, longitude)
     day_ruler_idx = _DAY_RULER_IDX[weekday]
 
     # Day hours: 12 equal hours from sunrise to sunset
@@ -385,7 +397,7 @@ def planetary_hours(
     for i in range(12):
         ruler_idx = (day_ruler_idx + i) % 7
         jd_h_start = jd_sunrise + i * day_hour_len
-        jd_h_end   = jd_h_start + day_hour_len
+        jd_h_end = jd_sunrise + (i + 1) * day_hour_len
         hours.append(PlanetaryHour(
             hour_number=i + 1,
             ruler=_CHALDEAN[ruler_idx],
@@ -399,7 +411,7 @@ def planetary_hours(
     for i in range(12):
         ruler_idx  = (night_start_idx + i) % 7
         jd_h_start = jd_sunset + i * night_hour_len
-        jd_h_end   = jd_h_start + night_hour_len
+        jd_h_end = jd_sunset + (i + 1) * night_hour_len
         hours.append(PlanetaryHour(
             hour_number=i + 13,
             ruler=_CHALDEAN[ruler_idx],

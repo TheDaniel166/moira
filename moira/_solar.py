@@ -29,7 +29,7 @@ import math
 from .constants import Body
 from .julian import ut_to_tt
 from .obliquity import true_obliquity
-from .planets import planet_at
+from .planets import planet_at, sky_position_at
 from .spk_reader import SpkReader
 
 
@@ -108,29 +108,70 @@ def _refine_sunrise(
     longitude: float,
     reader: SpkReader,
     is_rise: bool,
-    tol_days: float = 1.0 / 86400,   # 1 second
+    tol_days: float = 0.1 / 86400,   # 0.1 second
 ) -> float:
-    """Iteratively refine sunrise or sunset time."""
-    jd = jd_approx
-    for _ in range(5):
-        dec, _ = _solar_declination_ra(jd, reader)
-        lat_r = math.radians(latitude)
-        dec_r = math.radians(dec)
-        alt_r = math.radians(-0.833)
+    """Refine a solar horizon event from the topocentric altitude crossing.
 
-        cos_H = ((math.sin(alt_r) - math.sin(lat_r) * math.sin(dec_r))
-                 / (math.cos(lat_r) * math.cos(dec_r)))
-        cos_H = max(-1.0, min(1.0, cos_H))
-        H_deg = math.degrees(math.acos(cos_H))
+    ``_sunrise_sunset`` supplies only a coarse declination-based estimate.  The
+    governing event is the rising or setting crossing of geometric solar
+    altitude through -0.833 degrees; that threshold already incorporates the
+    conventional solar semidiameter and standard horizon refraction.
 
-        jd_day_start = math.floor(jd - 0.5) + 0.5
-        noon_frac = 0.5 - longitude / 360.0
-        jd_solar_noon = jd_day_start + noon_frac
+    A twelve-hour window around the coarse estimate is scanned so polar/no-event
+    conditions are explicit failures rather than clamped synthetic events.
+    """
+    if not all(math.isfinite(value) for value in (jd_approx, latitude, longitude)):
+        raise ValueError("solar event inputs must be finite")
 
-        sunrise_frac = H_deg / 360.0
-        jd_new = jd_solar_noon - sunrise_frac if is_rise else jd_solar_noon + sunrise_frac
+    target_altitude = -0.833
 
-        if abs(jd_new - jd) < tol_days:
-            break
-        jd = jd_new
-    return jd
+    def altitude_error(jd_ut: float) -> float:
+        altitude = sky_position_at(
+            Body.SUN,
+            jd_ut,
+            latitude,
+            longitude,
+            reader=reader,
+            refraction=False,
+        ).altitude
+        return altitude - target_altitude
+
+    def refine_bracket(jd_lo: float, jd_hi: float, error_lo: float) -> float:
+        for _ in range(48):
+            if jd_hi - jd_lo <= tol_days:
+                break
+            jd_mid = (jd_lo + jd_hi) / 2.0
+            error_mid = altitude_error(jd_mid)
+            if error_lo * error_mid <= 0.0:
+                jd_hi = jd_mid
+            else:
+                jd_lo = jd_mid
+                error_lo = error_mid
+        return (jd_lo + jd_hi) / 2.0
+
+    search_start = jd_approx - 0.25
+    search_end = jd_approx + 0.25
+    step = 1.0 / 96.0  # fifteen-minute brackets
+    candidates: list[float] = []
+    jd_prev = search_start
+    error_prev = altitude_error(jd_prev)
+
+    while jd_prev < search_end:
+        jd_next = min(jd_prev + step, search_end)
+        error_next = altitude_error(jd_next)
+        if is_rise:
+            crossed = error_prev <= 0.0 < error_next
+        else:
+            crossed = error_prev >= 0.0 > error_next
+        if crossed:
+            candidates.append(refine_bracket(jd_prev, jd_next, error_prev))
+        jd_prev = jd_next
+        error_prev = error_next
+
+    if not candidates:
+        event_name = "sunrise" if is_rise else "sunset"
+        raise ValueError(
+            f"no {event_name} altitude crossing for latitude={latitude}, "
+            f"longitude={longitude} near JD {jd_approx}"
+        )
+    return min(candidates, key=lambda candidate: abs(candidate - jd_approx))

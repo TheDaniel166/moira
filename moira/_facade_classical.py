@@ -460,20 +460,11 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
                 try:
                     from .planetary_hours import planetary_hours
                     ph_day = planetary_hours(chart.jd_ut, lat, lon, reader=reader)
-                    found_hour = None
-                    for h in ph_day.day_hours:
-                        if h.start_jd <= chart.jd_ut <= h.end_jd:
-                            found_hour = h
-                            break
-                    if found_hour is None:
-                        for h in ph_day.night_hours:
-                            if h.start_jd <= chart.jd_ut <= h.end_jd:
-                                found_hour = h
-                                break
+                    found_hour = ph_day.hour_at(chart.jd_ut)
                     if found_hour is not None:
                         hour_ruler = found_hour.ruler
-                    if ph_day.day_hours:
-                        day_ruler = ph_day.day_hours[0].ruler
+                    if ph_day.hours:
+                        day_ruler = ph_day.hours[0].ruler
                 except Exception as e:
                     if strict:
                         raise e

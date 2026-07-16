@@ -159,6 +159,54 @@ def test_facade_almuten_figuris_auto_resolve(moira_engine) -> None:
     assert result in CLASSIC_7
 
 
+def test_facade_almuten_figuris_uses_planetary_hours_vessel_contract(
+    moira_engine,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from types import SimpleNamespace
+
+    captured = {}
+    hour = SimpleNamespace(ruler="Mercury")
+    day = SimpleNamespace(
+        hours=(SimpleNamespace(ruler="Moon"),),
+        hour_at=lambda jd_ut: hour,
+    )
+
+    monkeypatch.setattr(
+        "moira.planetary_hours.planetary_hours",
+        lambda jd_ut, latitude, longitude, reader=None: day,
+    )
+
+    def fake_almuten_figuris(positions, cusps, is_day, **kwargs):
+        captured.update(kwargs)
+        return "Sun"
+
+    monkeypatch.setattr("moira.facade.almuten_figuris", fake_almuten_figuris)
+
+    chart = SimpleNamespace(
+        jd_ut=2451545.5,
+        _reader=object(),
+        longitudes=lambda include_nodes=False: {"Sun": 10.0, "Moon": 20.0},
+    )
+    houses = SimpleNamespace(
+        asc=0.0,
+        cusps=[float(index * 30) for index in range(12)],
+        geo_lat=51.5,
+        geo_lon=-0.1,
+    )
+
+    result = moira_engine.almuten_figuris(
+        chart,
+        houses,
+        prenatal_syzygy_lon=15.0,
+        strict=True,
+    )
+
+    assert result == "Sun"
+    assert captured["day_ruler"] == "Moon"
+    assert captured["hour_ruler"] == "Mercury"
+
+
 # ============================================================================
 # 4. Hardening and Validation Tests
 # ============================================================================
@@ -216,5 +264,4 @@ def test_facade_almuten_figuris_strict_mode(moira_engine) -> None:
     # Calling with strict=True should bubble up the AttributeError or other resolution error
     with pytest.raises(Exception):
         moira_engine.almuten_figuris(chart, houses, strict=True)
-
 

@@ -149,6 +149,32 @@ def test_schedule_route_can_omit_iso_timestamps(
     assert body["provenance"]["iso_timestamp_policy"] == "not_requested"
 
 
+def test_schedule_route_serializes_bce_calendar_timestamps(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "moira_server.services.planetary_hours.planetary_hours",
+        lambda jd, lat, lon, reader=None: _make_day(
+            requested_jd=jd,
+            sunrise_jd=-1000.25,
+            sunset_jd=-999.75,
+            latitude=lat,
+            longitude=lon,
+        ),
+    )
+
+    response = client.post(
+        "/v1/planetary-hours/schedule",
+        json={"jd": -1000.0, "latitude": 0.0, "longitude": 0.0},
+    )
+
+    assert response.status_code == 200
+    first_hour = response.json()["hours"][0]
+    assert first_hour["start_utc"].startswith("-")
+    assert first_hour["start_utc"].endswith("Z")
+
+
 def test_hour_at_route_returns_containing_hour_and_window(
     client: TestClient,
     monkeypatch: pytest.MonkeyPatch,

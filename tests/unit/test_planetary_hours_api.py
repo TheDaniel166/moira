@@ -4,6 +4,7 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
+from moira.constants import Body
 import moira.planetary_hours as planetary_hours_module
 
 
@@ -13,7 +14,7 @@ def test_planetary_hours_explicit_reader_bypasses_singleton(monkeypatch: pytest.
     monkeypatch.setattr(
         planetary_hours_module,
         "_sunrise_sunset",
-        lambda jd_noon, latitude, longitude, reader: (2451545.25, 2451545.75),
+        lambda jd_noon, latitude, longitude, reader: (jd_noon - 0.75, jd_noon - 0.25),
     )
     monkeypatch.setattr(
         planetary_hours_module,
@@ -35,7 +36,7 @@ def test_planetary_hours_day_and_hours_are_immutable(monkeypatch: pytest.MonkeyP
     monkeypatch.setattr(
         planetary_hours_module,
         "_sunrise_sunset",
-        lambda jd_noon, latitude, longitude, reader: (2451545.25, 2451545.75),
+        lambda jd_noon, latitude, longitude, reader: (jd_noon - 0.75, jd_noon - 0.25),
     )
     monkeypatch.setattr(
         planetary_hours_module,
@@ -102,16 +103,16 @@ def test_planetary_hours_uses_current_window_after_today_sunrise(
     )
     monkeypatch.setattr(planetary_hours_module, "get_reader", lambda: object())
 
-    result = planetary_hours_module.planetary_hours(2451546.30, 0.0, 0.0)
+    result = planetary_hours_module.planetary_hours(2451546.10, 0.0, 0.0)
 
     assert result.sunrise_jd == pytest.approx(2451545.20)
     assert result.sunset_jd == pytest.approx(2451545.70)
     assert result.hours[0].jd_start == pytest.approx(2451545.20)
     assert result.hours[-1].jd_end == pytest.approx(2451546.20)
-    assert result.hour_at(2451545.30) is not None
+    assert result.hour_at(2451546.10) is not None
 
 
-def test_planetary_hours_preserves_refined_solar_event_locality(
+def test_planetary_hours_rejects_refinement_outside_local_day(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     sunrise_sunset_by_noon = {
@@ -133,17 +134,13 @@ def test_planetary_hours_preserves_refined_solar_event_locality(
     )
     monkeypatch.setattr(planetary_hours_module, "get_reader", lambda: object())
 
-    result = planetary_hours_module.planetary_hours(2460476.50, 40.7128, -74.0060)
-
-    assert result.sunrise_jd == pytest.approx(2460476.20)
-    assert result.sunset_jd == pytest.approx(2460476.80)
-    assert result.hours[-1].jd_end == pytest.approx(2460477.20)
-    assert result.sunrise_jd < result.sunset_jd < result.hours[-1].jd_end
-    assert result.hour_at(2460476.50) is not None
+    with pytest.raises(ValueError, match="escaped its local day"):
+        planetary_hours_module.planetary_hours(2460476.50, 40.7128, -74.0060)
 
 
 def test_planetary_hours_real_solar_window_invariants_common_locations() -> None:
     from moira._kernel_paths import find_planetary_kernel
+    from moira.planets import sky_position_at
     from moira.spk_reader import SpkReader
 
     kernel_path = find_planetary_kernel()
@@ -176,6 +173,82 @@ def test_planetary_hours_real_solar_window_invariants_common_locations() -> None
             assert result.hours[11].jd_end == pytest.approx(result.sunset_jd)
             assert result.hours[12].jd_start == pytest.approx(result.sunset_jd)
             assert result.hours[-1].jd_end == pytest.approx(next_sunrise)
+            sunrise_altitude = sky_position_at(
+                Body.SUN,
+                result.sunrise_jd,
+                latitude,
+                longitude,
+                reader=reader,
+                refraction=False,
+            ).altitude
+            sunset_altitude = sky_position_at(
+                Body.SUN,
+                result.sunset_jd,
+                latitude,
+                longitude,
+                reader=reader,
+                refraction=False,
+            ).altitude
+            assert sunrise_altitude == pytest.approx(-0.833, abs=5e-4)
+            assert sunset_altitude == pytest.approx(-0.833, abs=5e-4)
             for current, next_hour in zip(result.hours, result.hours[1:], strict=False):
                 assert current.jd_end == pytest.approx(next_hour.jd_start)
                 assert current.jd_end > current.jd_start
+
+
+@pytest.mark.parametrize(
+    ("jd", "latitude", "longitude", "message"),
+    [
+        (float("nan"), 0.0, 0.0, "jd must be finite"),
+        (2451545.5, 90.1, 0.0, "latitude must be within"),
+        (2451545.5, -90.1, 0.0, "latitude must be within"),
+        (2451545.5, 0.0, 180.1, "longitude must be within"),
+        (2451545.5, 0.0, -180.1, "longitude must be within"),
+    ],
+)
+def test_planetary_hours_engine_rejects_invalid_inputs(
+    jd: float,
+    latitude: float,
+    longitude: float,
+    message: str,
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        planetary_hours_module.planetary_hours(
+            jd, latitude, longitude, reader=object(),
+        )
+
+
+def test_local_weekday_uses_longitude_and_floor_for_bce() -> None:
+    # 2023-12-31 UTC is already local Monday at a Sydney sunrise.
+    assert planetary_hours_module._local_weekday_at_sunrise(
+        2460310.28, 151.2093,
+    ) == 1
+    # Negative JDs must floor rather than truncate toward zero.
+    sunrise_bce = -1000.2523388558844
+    assert planetary_hours_module._local_weekday_at_sunrise(sunrise_bce, 0.0) == 2
+
+
+def test_real_sydney_monday_begins_with_moon_and_polar_day_fails() -> None:
+    from moira._kernel_paths import find_planetary_kernel
+    from moira.spk_reader import SpkReader
+
+    kernel_path = find_planetary_kernel()
+    if kernel_path is None:
+        pytest.skip("no planetary kernel found")
+
+    with SpkReader(kernel_path) as reader:
+        sydney = planetary_hours_module.planetary_hours(
+            2460310.5416666665,
+            -33.8688,
+            151.2093,
+            reader=reader,
+        )
+        assert sydney.hours[0].ruler == Body.MOON
+
+        with pytest.raises(ValueError, match="no (sunrise|sunset) altitude crossing"):
+            planetary_hours_module.planetary_hours(
+                2460482.5,
+                89.0,
+                0.0,
+                reader=reader,
+            )

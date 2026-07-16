@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from datetime import timezone
 from typing import Any
 
 from moira.planetary_hours import PlanetaryHour, PlanetaryHoursDay, planetary_hours
@@ -28,10 +27,9 @@ def _reader_from_engine(engine: Any) -> tuple[Any | None, str]:
     return None, "backend_default_reader"
 
 
-def _iso_utc_from_jd_datetime(dt) -> str:
-    if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
-    return dt.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+def _iso_utc_from_calendar(calendar) -> str:
+    """Serialize Moira's BCE-safe UTC calendar vessel."""
+    return calendar.isoformat().replace("+00:00", "Z")
 
 
 def _serialize_hour(hour: PlanetaryHour, *, include_iso_utc: bool) -> PlanetaryHourResponse:
@@ -41,8 +39,8 @@ def _serialize_hour(hour: PlanetaryHour, *, include_iso_utc: bool) -> PlanetaryH
         jd_start=hour.jd_start,
         jd_end=hour.jd_end,
         is_daytime=hour.is_daytime,
-        start_utc=_iso_utc_from_jd_datetime(hour.start_utc) if include_iso_utc else None,
-        end_utc=_iso_utc_from_jd_datetime(hour.end_utc) if include_iso_utc else None,
+        start_utc=_iso_utc_from_calendar(hour.start_calendar_utc) if include_iso_utc else None,
+        end_utc=_iso_utc_from_calendar(hour.end_calendar_utc) if include_iso_utc else None,
     )
 
 

@@ -50,7 +50,10 @@ The astronomical boundaries are delegated:
 - sunrise/sunset refinement: `moira._solar._refine_sunrise`
 - SPK resource access: `moira.spk_reader`
 
-This standard does not redefine those lower layers.
+Refinement is governed by the topocentric geometric Sun-altitude crossing at
+`-0.833` degrees. The threshold incorporates conventional solar semidiameter
+and standard horizon refraction; the altitude signal itself is unrefracted.
+This standard does not otherwise redefine those lower layers.
 
 ## 3. Governing Objects
 
@@ -110,8 +113,12 @@ Current behavior:
 - explicit readers bypass the singleton reader
 - when `jd` is before today's sunrise, the previous sunrise window is used
 - when `jd` is after today's sunrise, the current sunrise window is used
+- the weekday is resolved from local mean solar time because this surface has
+  coordinates but no civil-timezone input
 - day and night arcs are each divided into 12 equal temporal hours
 - hour rulers advance through the Chaldean sequence
+- invalid coordinates, non-finite inputs, missing solar crossings, unordered
+  solar bounds, and windows that do not contain the requested JD fail explicitly
 
 ### 4.2 Hour lookup
 
@@ -148,8 +155,9 @@ state. Silent substitution is forbidden.
 ## 6. Polar And High-Latitude Policy
 
 The current engine delegates sunrise and sunset resolution to `_solar`.
-Transport admission must decide how to expose failures at high latitudes before
-public release.
+The engine fails explicitly when the requested local solar day has no sunrise
+or no sunset altitude crossing. Transport preserves that failure without
+inventing a schedule.
 
 Minimum acceptable public policy:
 
