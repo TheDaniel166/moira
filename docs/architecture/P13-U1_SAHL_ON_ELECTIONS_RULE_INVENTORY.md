@@ -1,14 +1,17 @@
 # P13-U1 — Sahl bin Bishr *On Elections*: Complete Electional Rule Inventory
 
-Version: 1.2
+Version: 1.3
 Date: 2026-07-15
-Status: primary-source rule inventory with one bounded admitted profile and a
-dedicated bounded status-scan admission.
+Status: primary-source rule inventory with the section 22 Moon profile, ten
+named matter profiles, and bounded Moon-profile status scanning admitted
+through the complete public ladder.
 Companion to
 `P13-U1_WESTERN_ELECTIONAL_DOCTRINE_RESEARCH_DOSSIER.md` and parallel to
-`P13-U1_DOROTHEUS_BOOK_V_RULE_INVENTORY.md`. Only the ten Moon impediments in
-section 22 are admitted; the remaining inventory is not a doctrine packet,
-standard, or public admission.
+`P13-U1_DOROTHEUS_BOOK_V_RULE_INVENTORY.md`. The admitted matter set is lending,
+investment, purchase, sale, building, demolition, land, wells/rivers,
+planting, and sowing. Other inventoried chapters remain unadmitted until a
+separate named profile crosses the engine, facade, REST, OpenAPI, and test
+boundary.
 
 ## 0. Provenance and Scope
 

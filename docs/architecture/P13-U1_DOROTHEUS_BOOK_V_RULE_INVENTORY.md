@@ -1,6 +1,6 @@
 # P13-U1 — Dorotheus *Carmen Astrologicum* Book V: Complete Electional Rule Inventory
 
-Version: 1.5
+Version: 1.6
 Date: 2026-07-15
 Status: primary-source rule inventory; the bounded V.6 Moon-corruption layer is
 admitted as `dorotheus_moon_condition_v1`, and the V.6.21-31/V.31 shared rooted
@@ -10,8 +10,10 @@ and V.31 layers plus V.7 are admitted as the first complete matter profile,
 numerically complete because two V.7 quantities remain undefined by the
 primary text. Companion to
 `P13-U1_WESTERN_ELECTIONAL_DOCTRINE_RESEARCH_DOSSIER.md` §8.1. Parallel
-lineage inventory: `P13-U1_SAHL_ON_ELECTIONS_RULE_INVENTORY.md`. The remaining
-matter-specific layers are inventory, not yet public doctrine.
+lineage inventory: `P13-U1_SAHL_ON_ELECTIONS_RULE_INVENTORY.md`. V.8 demolition,
+V.9 leasing, V.10 buying/selling, V.11 land purchase, and V.44 lunar-price
+timing are also admitted as five independent matter profiles. Other
+matter-specific layers remain inventory rather than public doctrine.
 
 ## 0. Provenance and Scope
 

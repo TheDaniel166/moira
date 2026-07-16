@@ -26,6 +26,7 @@ from moira.western_electional import (
     SahlMatterProfileEvaluation,
     SahlRuleWitness,
     WesternElectionalProfileScan,
+    WesternElectionalJudgementEvaluation,
 )
 
 from ..models.western_electional import (
@@ -92,6 +93,13 @@ from ..models.western_electional import (
     SahlRuleWitnessResponse,
     SahlWesternElectionalTransportProvenanceResponse,
     MoonConnectionResponse,
+    WesternElectionalJudgementPolicyResponse,
+    WesternElectionalJudgementSelectionResponse,
+    WesternElectionalComponentSummaryResponse,
+    WesternElectionalRequirementWitnessResponse,
+    WesternElectionalJudgementEvaluationResponse,
+    WesternElectionalJudgementTransportProvenanceResponse,
+    WesternElectionalJudgementResponse,
 )
 from .relationship import serialize_moon_connection_flow_vessel
 
@@ -1011,6 +1019,122 @@ def serialize_lilly_perfection(result: ClassicalPerfectionAnalysis) -> LillyPerf
     )
 
 
+def serialize_western_electional_judgement(
+    result: WesternElectionalJudgementEvaluation,
+) -> WesternElectionalJudgementResponse:
+    """Serialize the complete composition without flattening its components."""
+
+    if isinstance(result.matter_profile, SahlMatterProfileEvaluation):
+        matter = serialize_sahl_matter_profile(result.matter_profile).evaluation
+        moon = matter.moon_condition
+        rooted = None
+    else:
+        matter = serialize_dorotheus_matter_profile(result.matter_profile).evaluation
+        moon = matter.moon_condition
+        rooted = matter.rooted_context
+    perfection = serialize_lilly_perfection(result.perfection_path).evaluation
+    return WesternElectionalJudgementResponse(
+        evaluation=WesternElectionalJudgementEvaluationResponse(
+            jd_ut=result.jd_ut,
+            latitude=result.latitude,
+            longitude=result.longitude,
+            requested_house_system=result.requested_house_system,
+            profile_id=result.profile_id,
+            profile_version=result.profile_version,
+            state=result.state.value,
+            policy=WesternElectionalJudgementPolicyResponse(
+                profile_id=result.policy.profile_id,
+                profile_version=result.policy.profile_version,
+                composition_authority=result.policy.composition_authority,
+                matter_policy=result.policy.matter_policy,
+                perfection_policy=result.policy.perfection_policy,
+                rooted_context_policy=result.policy.rooted_context_policy,
+                natal_policy=result.policy.natal_policy,
+                precedence_policy=result.policy.precedence_policy,
+                completion_policy=result.policy.completion_policy,
+                unresolved_policy=result.policy.unresolved_policy,
+                scoring=result.policy.scoring,
+                advice_language=result.policy.advice_language,
+                recommendation_language=result.policy.recommendation_language,
+            ),
+            selection=WesternElectionalJudgementSelectionResponse(
+                doctrine=result.selection.doctrine.value,
+                matter_profile_id=result.selection.matter_profile_id,
+                perfection_profile_id=result.selection.perfection_profile_id,
+                perfection_significator_a=result.selection.perfection_significator_a,
+                perfection_significator_b=result.selection.perfection_significator_b,
+                perfection_interval_days=result.selection.perfection_interval_days,
+                election_class=result.selection.election_class,
+                natal_input_provided=result.selection.natal_input_provided,
+                natal_jd_ut=result.selection.natal_jd_ut,
+                natal_latitude=result.selection.natal_latitude,
+                natal_longitude=result.selection.natal_longitude,
+                natal_house_system=result.selection.natal_house_system,
+                unavoidable_time_urgency=result.selection.unavoidable_time_urgency,
+                moon_flow_previous_window=result.selection.moon_flow_previous_window,
+                moon_flow_previous_lookback_days=(
+                    result.selection.moon_flow_previous_lookback_days
+                ),
+                moon_flow_modern=result.selection.moon_flow_modern,
+                sahl_burnt_path_variant=result.selection.sahl_burnt_path_variant,
+                sahl_eighth_rule_variant=result.selection.sahl_eighth_rule_variant,
+            ),
+            general_moon_condition=moon,
+            rooted_context=rooted,
+            matter_profile=matter,
+            perfection_path=perfection,
+            components=[
+                WesternElectionalComponentSummaryResponse(
+                    component_id=item.component_id,
+                    profile_id=item.profile_id,
+                    state=item.state.value,
+                    explanation=item.explanation,
+                )
+                for item in result.components
+            ],
+            unresolved_requirements=[
+                WesternElectionalRequirementWitnessResponse(
+                    requirement_id=item.requirement_id,
+                    component_id=item.component_id,
+                    state=item.state.value,
+                    blocking=item.blocking,
+                    explanation=item.explanation,
+                    source_reference=item.source_reference,
+                )
+                for item in result.unresolved_requirements
+            ],
+            excluded_requirements=[
+                WesternElectionalRequirementWitnessResponse(
+                    requirement_id=item.requirement_id,
+                    component_id=item.component_id,
+                    state=item.state.value,
+                    blocking=item.blocking,
+                    explanation=item.explanation,
+                    source_reference=item.source_reference,
+                )
+                for item in result.excluded_requirements
+            ],
+            reader_provenance=result.reader_provenance,
+            authorities=list(result.authorities),
+            complete_electional_judgement=result.complete_electional_judgement,
+            scoring=result.scoring,
+            advice_language=result.advice_language,
+            recommendation_language=result.recommendation_language,
+        ),
+        transport_provenance=WesternElectionalJudgementTransportProvenanceResponse(
+            stage_sequence=[
+                "input_validation",
+                "named_matter_profile_evaluation",
+                "same_moment_day_night_derivation",
+                "bounded_lilly_perfection_trace",
+                "visible_component_and_requirement_assembly",
+                "non_scored_precedence_summary",
+                "response_serialization",
+            ]
+        ),
+    )
+
+
 __all__ = [
     "serialize_lunar_ecliptic_direction",
     "serialize_dorotheus_construction",
@@ -1022,4 +1146,5 @@ __all__ = [
     "serialize_sahl_matter_profile",
     "serialize_western_profile_windows",
     "serialize_lilly_perfection",
+    "serialize_western_electional_judgement",
 ]

@@ -1,6 +1,6 @@
 # P13-U1 — Western Electional Doctrine Research Dossier
 
-Version: 0.22 (Phase 7 commerce matter-profile admission)
+Version: 0.23 (Phase 8 complete-judgement composition admission)
 Date: 2026-07-15
 Status: research inventory for the Western electional doctrine layer. The
 companion materials admit distinct `ramesey_moon_condition_v1` and
@@ -36,7 +36,24 @@ eastern/ascending, "increased in number," circle-motion, separation, cleansing,
 and adaptation language remains typed `not_evaluable` with visible evidence;
 public admission does not claim those terms are numerically settled.
 
+`western_electional_judgement_v1` now composes one currently admitted Sahl or
+Dorotheus matter profile with a caller-declared, bounded
+`lilly_1647_perfection_v1` significator trace. The composition is explicitly
+Moira-owned rather than presented as a historical synthesis. It returns the
+complete Moon, rooted-context when applicable, matter, perfection,
+radicality, fortification/remedy, unresolved-requirement, exclusion, policy,
+and provenance vessels through
+`Moira.western_electional_judgement_at(...)` and
+`POST /v1/electional/western/judgement`. Explicit impediments take precedence;
+otherwise missing constructive perfection or any blocking unresolved source
+requirement propagates `indeterminate`. No score, ranking, advice, or
+recommendation is emitted.
+
 Changelog:
+- 0.23 - admitted the Phase 8 `western_electional_judgement_v1` composition
+  for the current Sahl and Dorotheus matter registries plus Lilly v1
+  perfection; serialized every component and requirement; kept the
+  cross-source policy explicitly Moira-owned and non-scored.
 - 0.22 - admitted separate Dorotheus V.10 and V.44 commerce profiles and Sahl
   lending, investment, purchase, and sale profiles; preserved recension and
   parallel-source distinctions, replaced the Sahl matter module's duplicated

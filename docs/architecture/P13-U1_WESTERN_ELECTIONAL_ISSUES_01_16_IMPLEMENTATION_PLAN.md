@@ -1,8 +1,9 @@
 # P13-U1 Western Electional Issues 01-16 — Definitive Implementation Plan
 
-**Status:** active implementation; Phases 1 and 3-6 are complete at their
-named source boundaries, Phase 2A is complete, and Phase 2B geometry remains
-explicitly doctrine-source-gated
+**Status:** active implementation; Phases 1, 3-6, and Phase 8 for the current
+matter registry are complete at their named boundaries; Phase 2A is complete,
+Phase 2B geometry remains explicitly doctrine-source-gated, and Phase 7
+continues with unimplemented matter families
 **Scope:** the first sixteen unresolved Western electional issues identified
 after the P1-P3 work  
 **Public-surface rule:** an issue is not closed until its admitted product is
@@ -649,7 +650,12 @@ historical chapter was forced into software.
 
 ---
 
-### Phase 8 — Complete electional judgement (#14)
+### Phase 8 — Complete electional judgement (#14) — COMPLETE FOR THE CURRENT MATTER REGISTRY 2026-07-15
+
+**Status:** `western_electional_judgement_v1` is admitted for every currently
+public Sahl and Dorotheus matter profile. Future Phase 7 profiles join the
+registry only through their own complete vertical slices; Phase 8 does not
+pretend that an unimplemented matter exists.
 
 **Governing object:** an inspectable composition of previously admitted
 doctrine results for one proposed moment and one declared matter—not a new
@@ -666,8 +672,9 @@ black-box algorithm.
 - natal/radical context when supplied and required;
 - fortification and remedy witnesses;
 - explicit unresolved/excluded requirements;
-- overall assembly state such as `complete_under_profile`, `impeded`,
-  `indeterminate`, or `insufficient_input`.
+- overall assembly state: `complete_under_profile`, `impeded`, or
+  `indeterminate`. Missing required request input is rejected before
+  computation.
 
 **Implementation**
 
@@ -684,6 +691,25 @@ black-box algorithm.
 **Exit gate:** a caller can reconstruct the overall state solely from returned
 components and the serialized combination policy; no hidden weights or
 transport-only rules exist.
+
+**Implementation result:** the immutable policy and selection vessels name the
+matter profile, caller-declared distinct Lilly significators, bounded
+perfection interval, election class, the complete natal construction bundle,
+urgency policy, Moon-flow window/lookback/modern-body policy, and Sahl
+variants. The result preserves the source-owned general Moon condition,
+Dorothean rooted context when applicable, full matter result, exact Lilly
+event trace, six ordered component summaries, blocking unresolved
+requirements, non-blocking exclusions, authorities, and reader provenance.
+
+The precedence law is serialized and enforced: any explicit component
+impediment yields `impeded`; otherwise an indeterminate component or blocking
+unresolved requirement yields `indeterminate`; only wholly complete required
+components with a present direct perfection, translation, or collection yield
+`complete_under_profile`. Sahl profiles mark Dorothean rooted/radical context
+as `not_applicable` rather than fabricating it. The package root, facade,
+`Moira.western_electional_judgement_at(...)`, service, typed models,
+serializer, OpenAPI, and `POST /v1/electional/western/judgement` expose the
+same object. Scoring, ranking, advice, and recommendation remain Phase 9.
 
 ---
 

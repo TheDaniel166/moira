@@ -540,6 +540,65 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
             policy=resolved_policy,
         )
 
+    def western_electional_judgement_at(
+        self,
+        jd_ut: float,
+        latitude: float,
+        longitude: float,
+        *,
+        house_system: str,
+        matter_profile_id,
+        perfection_significator_a: str,
+        perfection_significator_b: str,
+        perfection_interval_days: float,
+        election_class=None,
+        natal_jd_ut: float | None = None,
+        natal_latitude: float | None = None,
+        natal_longitude: float | None = None,
+        natal_house_system: str | None = None,
+        unavoidable_time_urgency: bool | None = None,
+        moon_flow_policy=None,
+        sahl_burnt_path_variant=None,
+        sahl_eighth_rule_variant=None,
+        house_policy=None,
+        policy=None,
+    ):
+        """Compose one admitted matter profile and Lilly perfection trace."""
+
+        facade = _facade_module()
+        resolved_class = (
+            facade.WesternElectionClass.EPHEMERAL
+            if election_class is None
+            else election_class
+        )
+        resolved_policy = (
+            facade.WESTERN_ELECTIONAL_JUDGEMENT_V1
+            if policy is None
+            else policy
+        )
+        return facade.western_electional_judgement_at(
+            jd_ut,
+            latitude,
+            longitude,
+            house_system=house_system,
+            matter_profile_id=matter_profile_id,
+            perfection_significator_a=perfection_significator_a,
+            perfection_significator_b=perfection_significator_b,
+            perfection_interval_days=perfection_interval_days,
+            election_class=resolved_class,
+            natal_jd_ut=natal_jd_ut,
+            natal_latitude=natal_latitude,
+            natal_longitude=natal_longitude,
+            natal_house_system=natal_house_system,
+            unavoidable_time_urgency=unavoidable_time_urgency,
+            moon_flow_policy=moon_flow_policy,
+            sahl_burnt_path_variant=sahl_burnt_path_variant,
+            sahl_eighth_rule_variant=sahl_eighth_rule_variant,
+            reader=self._reader,
+            house_policy=house_policy,
+            policy=resolved_policy,
+        )
+
     def dorotheus_moon_condition_at(
         self,
         jd_ut: float,

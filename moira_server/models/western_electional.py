@@ -16,6 +16,10 @@ from .relationship import MoonConnectionFlowResponse
 RAMESEY_PROFILE_ID = "ramesey_moon_condition_v1"
 SAHL_PROFILE_ID = "sahl_moon_condition_v1"
 SAHL_MATTER_PROFILE_IDS = (
+    "sahl_lending_v1",
+    "sahl_investment_v1",
+    "sahl_purchase_v1",
+    "sahl_sale_v1",
     "sahl_building_v1",
     "sahl_demolition_v1",
     "sahl_land_v1",
@@ -29,6 +33,8 @@ DOROTHEUS_CONSTRUCTION_PROFILE_ID = "dorotheus_construction_v1"
 DOROTHEUS_MATTER_PROFILE_IDS = (
     "dorotheus_demolition_v1",
     "dorotheus_leasing_v1",
+    "dorotheus_buying_and_selling_v1",
+    "dorotheus_lunar_price_timing_v1",
     "dorotheus_land_purchase_v1",
 )
 WESTERN_PROFILE_SCAN_MAX_SPAN_DAYS = 31.0
@@ -40,6 +46,7 @@ SAHL_HOUSE_SYSTEMS = tuple(HOUSE_SYSTEM_NAMES)
 DOROTHEUS_HOUSE_SYSTEMS = tuple(HOUSE_SYSTEM_NAMES)
 LILLY_PERFECTION_PROFILE_ID = "lilly_1647_perfection_v1"
 LILLY_PERFECTION_MAX_SPAN_DAYS = 31.0
+WESTERN_ELECTIONAL_JUDGEMENT_PROFILE_ID = "western_electional_judgement_v1"
 
 TraditionalPlanetValue = Literal[
     "Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"
@@ -1392,6 +1399,172 @@ class LillyPerfectionResponse(_StrictModel):
     transport_provenance: LillyPerfectionTransportProvenanceResponse
 
 
+class WesternElectionalJudgementRequest(DorotheusConstructionRequest):
+    profile_id: Literal["western_electional_judgement_v1"] = (
+        WESTERN_ELECTIONAL_JUDGEMENT_PROFILE_ID
+    )
+    matter_profile_id: DorotheusMatterProfileIdValue | SahlMatterProfileIdValue
+    perfection_significator_a: TraditionalPlanetValue
+    perfection_significator_b: TraditionalPlanetValue
+    perfection_interval_days: float = Field(gt=0.0, le=LILLY_PERFECTION_MAX_SPAN_DAYS)
+    moon_flow_policy: DorotheusMoonFlowPolicyRequest | None = None
+    sahl_burnt_path_variant: SahlBurntPathVariantValue | None = None
+    sahl_eighth_rule_variant: SahlEighthRuleVariantValue | None = None
+
+    @field_validator("perfection_interval_days", mode="before")
+    @classmethod
+    def _finite_perfection_interval(cls, value: Any) -> float:
+        return _finite_number(value, "perfection_interval_days")
+
+    @model_validator(mode="after")
+    def _judgement_selection_contract(self) -> "WesternElectionalJudgementRequest":
+        if self.perfection_significator_a == self.perfection_significator_b:
+            raise ValueError("perfection significators must be distinct")
+        is_sahl = self.matter_profile_id.startswith("sahl_")
+        is_flow = self.matter_profile_id in {
+            "dorotheus_leasing_v1",
+            "dorotheus_buying_and_selling_v1",
+        }
+        if is_sahl:
+            if self.election_class != "ephemeral":
+                raise ValueError("Sahl judgement admits only ephemeral elections")
+            if any(value is not None for value in (
+                self.natal_jd_ut,
+                self.natal_latitude,
+                self.natal_longitude,
+                self.natal_house_system,
+                self.unavoidable_time_urgency,
+                self.moon_flow_policy,
+            )):
+                raise ValueError(
+                    "Sahl judgement rejects Dorothean natal, urgency, and flow inputs"
+                )
+            if self.sahl_burnt_path_variant is None:
+                raise ValueError("Sahl judgement requires sahl_burnt_path_variant")
+            if self.sahl_eighth_rule_variant is None:
+                raise ValueError("Sahl judgement requires sahl_eighth_rule_variant")
+        else:
+            if self.sahl_burnt_path_variant is not None or self.sahl_eighth_rule_variant is not None:
+                raise ValueError("Dorotheus judgement rejects Sahl variant inputs")
+            if is_flow and self.moon_flow_policy is None:
+                raise ValueError(
+                    "flow-based Dorotheus judgement requires moon_flow_policy"
+                )
+            if not is_flow and self.moon_flow_policy is not None:
+                raise ValueError(
+                    "moon_flow_policy is accepted only for flow-based Dorotheus profiles"
+                )
+        return self
+
+
+class WesternElectionalJudgementPolicyResponse(_StrictModel):
+    profile_id: Literal["western_electional_judgement_v1"]
+    profile_version: Literal["1.0.0"]
+    composition_authority: Literal["moira_owned_explicit_cross_source_composition"]
+    matter_policy: Literal["one_admitted_named_matter_profile_required"]
+    perfection_policy: Literal["lilly_1647_caller_declared_significators_required"]
+    rooted_context_policy: Literal["dorotheus_embedded_sahl_not_applicable"]
+    natal_policy: Literal["selected_matter_profile_owns_radicality_requirement"]
+    precedence_policy: Literal["impediment_then_indeterminacy"]
+    completion_policy: Literal["all_required_components_complete_with_constructive_perfection"]
+    unresolved_policy: Literal["blocking_unresolved_requirements_propagate_indeterminacy"]
+    scoring: Literal["not_provided"]
+    advice_language: Literal["not_provided"]
+    recommendation_language: Literal["not_provided"]
+
+
+class WesternElectionalJudgementSelectionResponse(_StrictModel):
+    doctrine: Literal[
+        "dorotheus_matter_with_lilly_perfection",
+        "sahl_matter_with_lilly_perfection",
+    ]
+    matter_profile_id: DorotheusMatterProfileIdValue | SahlMatterProfileIdValue
+    perfection_profile_id: Literal["lilly_1647_perfection_v1"]
+    perfection_significator_a: TraditionalPlanetValue
+    perfection_significator_b: TraditionalPlanetValue
+    perfection_interval_days: float
+    election_class: DorotheusElectionClassValue
+    natal_input_provided: bool
+    natal_jd_ut: float | None
+    natal_latitude: float | None
+    natal_longitude: float | None
+    natal_house_system: str | None
+    unavoidable_time_urgency: bool | None
+    moon_flow_previous_window: Literal["current_sign", "fixed_lookback"] | None
+    moon_flow_previous_lookback_days: float | None
+    moon_flow_modern: bool | None
+    sahl_burnt_path_variant: SahlBurntPathVariantValue | None
+    sahl_eighth_rule_variant: SahlEighthRuleVariantValue | None
+
+
+class WesternElectionalComponentSummaryResponse(_StrictModel):
+    component_id: Literal[
+        "general_moon_condition",
+        "rooted_context",
+        "matter_profile",
+        "perfection_path",
+        "natal_or_radical_context",
+        "fortification_and_remedy",
+    ]
+    profile_id: str | None
+    state: Literal[
+        "complete", "impeded", "indeterminate", "not_applicable"
+    ]
+    explanation: str
+
+
+class WesternElectionalRequirementWitnessResponse(_StrictModel):
+    requirement_id: str
+    component_id: str
+    state: Literal["unresolved", "excluded"]
+    blocking: bool
+    explanation: str
+    source_reference: str
+
+
+class WesternElectionalJudgementEvaluationResponse(_StrictModel):
+    jd_ut: float
+    latitude: float
+    longitude: float
+    requested_house_system: str
+    profile_id: Literal["western_electional_judgement_v1"]
+    profile_version: Literal["1.0.0"]
+    state: Literal[
+        "complete_under_profile", "impeded", "indeterminate"
+    ]
+    policy: WesternElectionalJudgementPolicyResponse
+    selection: WesternElectionalJudgementSelectionResponse
+    general_moon_condition: DorotheusMoonConditionEvaluationResponse | SahlMoonConditionEvaluationResponse
+    rooted_context: DorotheusRootedContextEvaluationResponse | None
+    matter_profile: DorotheusMatterProfileEvaluationResponse | SahlMatterProfileEvaluationResponse
+    perfection_path: ClassicalPerfectionEvaluationResponse
+    components: list[WesternElectionalComponentSummaryResponse]
+    unresolved_requirements: list[WesternElectionalRequirementWitnessResponse]
+    excluded_requirements: list[WesternElectionalRequirementWitnessResponse]
+    reader_provenance: str
+    authorities: list[str]
+    complete_electional_judgement: Literal[True]
+    scoring: Literal["not_provided"]
+    advice_language: Literal["not_provided"]
+    recommendation_language: Literal["not_provided"]
+
+
+class WesternElectionalJudgementTransportProvenanceResponse(_StrictModel):
+    source_module: Literal["moira.western_electional"] = "moira.western_electional"
+    engine_entrypoint: Literal["western_electional_judgement_at"] = "western_electional_judgement_at"
+    facade_entrypoint: Literal["Moira.western_electional_judgement_at"] = "Moira.western_electional_judgement_at"
+    route_semantics: Literal["single_moment_complete_profile_composition"] = "single_moment_complete_profile_composition"
+    composition_authority: Literal["moira_owned_not_historical_synthesis"] = "moira_owned_not_historical_synthesis"
+    scoring: Literal["not_provided"] = "not_provided"
+    advice_language: Literal["not_provided"] = "not_provided"
+    stage_sequence: list[str]
+
+
+class WesternElectionalJudgementResponse(_StrictModel):
+    evaluation: WesternElectionalJudgementEvaluationResponse
+    transport_provenance: WesternElectionalJudgementTransportProvenanceResponse
+
+
 __all__ = [
     "LunarEclipticDirectionRequest",
     "LunarNodeCrossingResponse",
@@ -1494,4 +1667,13 @@ __all__ = [
     "ClassicalPerfectionEvaluationResponse",
     "LillyPerfectionTransportProvenanceResponse",
     "LillyPerfectionResponse",
+    "WESTERN_ELECTIONAL_JUDGEMENT_PROFILE_ID",
+    "WesternElectionalJudgementRequest",
+    "WesternElectionalJudgementPolicyResponse",
+    "WesternElectionalJudgementSelectionResponse",
+    "WesternElectionalComponentSummaryResponse",
+    "WesternElectionalRequirementWitnessResponse",
+    "WesternElectionalJudgementEvaluationResponse",
+    "WesternElectionalJudgementTransportProvenanceResponse",
+    "WesternElectionalJudgementResponse",
 ]

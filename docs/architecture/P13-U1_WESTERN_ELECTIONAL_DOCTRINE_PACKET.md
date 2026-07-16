@@ -1,8 +1,8 @@
 # P13-U1 Western Electional Doctrine Packet
 
-Version: 1.0
+Version: 1.1
 Date: 2026-07-15
-Status: three Moon profiles, bounded profile-status scanning, Dorothean and Sahl matter layers, and a standalone Lilly perfection profile are public; scoring deferred
+Status: three Moon profiles, bounded profile-status scanning, Dorothean and Sahl matter layers, standalone Lilly perfection, and the Phase 8 complete-judgement composition are public; scoring deferred
 Scope: bounded Western electional doctrine beside the generic search transport
 
 ## 1. Doctrine Decision
@@ -16,7 +16,7 @@ scan chart states, merge qualifying scan points into windows, and attach a
 declared numeric transport score. It does not become Western electional
 doctrine merely because a future profile uses it.
 
-This packet defines three bounded doctrine profiles:
+This packet defines the following bounded doctrine and composition profiles:
 
 `ramesey_moon_condition_v1`
 
@@ -27,6 +27,8 @@ This packet defines three bounded doctrine profiles:
 `dorotheus_construction_v1`
 
 `lilly_1647_perfection_v1`
+
+`western_electional_judgement_v1`
 
 It is a transparent evaluation of William Ramesey's ten impediments of the
 Moon in *Astrologia Restaurata*, Book III, Chapter II, printed p. 127. It is
@@ -75,6 +77,18 @@ partnership family, and alchemy/repeated works (§41) is not treated as a
 commerce profile. Every admitted commerce result uses the same public Sahl
 matter route and preserves unresolved source vocabulary rather than inventing
 a complete judgement.
+
+The Phase 8 judgement is a separate Moira-owned composition over one admitted
+Sahl or Dorotheus matter profile and one bounded Lilly v1 perfection trace. It
+does not claim a universal historical synthesis. The complete nested source
+components, explicit caller selection, blocking unresolved requirements,
+non-applicable components, exclusions, and fixed precedence law are public
+through `Moira.western_electional_judgement_at(...)` and
+`POST /v1/electional/western/judgement`. A summary may be
+`complete_under_profile`, `impeded`, or `indeterminate`; incomplete required
+request input is rejected before computation rather than represented as a
+favorable or partial judgement. The summary never substitutes a score or
+recommendation for the returned proof objects.
 
 The Dorotheus profile is likewise admitted through the engine, facade, and
 `Moira.dorotheus_moon_condition_at(...)`, with

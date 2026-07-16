@@ -25,6 +25,7 @@ from moira.western_electional import (
     WesternElectionalProfileScan,
     WesternElectionalProfileScanPolicy,
     WesternElectionalQualificationStatus,
+    WesternElectionalJudgementEvaluation,
 )
 
 from ..models.western_electional import (
@@ -38,6 +39,7 @@ from ..models.western_electional import (
     SahlMatterProfileRequest,
     WesternProfileWindowsRequest,
     LillyPerfectionRequest,
+    WesternElectionalJudgementRequest,
 )
 
 
@@ -276,6 +278,58 @@ def compute_lilly_perfection(
     return result
 
 
+def compute_western_electional_judgement(
+    engine: Moira,
+    request: WesternElectionalJudgementRequest,
+) -> WesternElectionalJudgementEvaluation:
+    """Compose one admitted matter profile and Lilly trace through the facade."""
+
+    flow_request = request.moon_flow_policy
+    flow_policy = (
+        None
+        if flow_request is None
+        else MoonConnectionFlowPolicy(
+            previous_window=MoonPreviousEventWindowPolicy(
+                flow_request.previous_window
+            ),
+            previous_lookback_days=flow_request.previous_lookback_days,
+            modern=flow_request.modern,
+        )
+    )
+    burnt = (
+        None
+        if request.sahl_burnt_path_variant is None
+        else SahlBurntPathVariant(request.sahl_burnt_path_variant)
+    )
+    eighth = (
+        None
+        if request.sahl_eighth_rule_variant is None
+        else SahlEighthRuleVariant(request.sahl_eighth_rule_variant)
+    )
+    result = engine.western_electional_judgement_at(
+        request.jd_ut,
+        request.latitude,
+        request.longitude,
+        house_system=request.house_system,
+        matter_profile_id=request.matter_profile_id,
+        perfection_significator_a=request.perfection_significator_a,
+        perfection_significator_b=request.perfection_significator_b,
+        perfection_interval_days=request.perfection_interval_days,
+        election_class=WesternElectionClass(request.election_class),
+        natal_jd_ut=request.natal_jd_ut,
+        natal_latitude=request.natal_latitude,
+        natal_longitude=request.natal_longitude,
+        natal_house_system=request.natal_house_system,
+        unavoidable_time_urgency=request.unavoidable_time_urgency,
+        moon_flow_policy=flow_policy,
+        sahl_burnt_path_variant=burnt,
+        sahl_eighth_rule_variant=eighth,
+    )
+    if result.profile_id != request.profile_id:
+        raise RuntimeError("facade returned a judgement profile different from the request")
+    return result
+
+
 __all__ = [
     "compute_lunar_ecliptic_direction",
     "compute_dorotheus_construction",
@@ -286,5 +340,6 @@ __all__ = [
     "compute_sahl_moon_condition",
     "compute_sahl_matter_profile",
     "compute_lilly_perfection",
+    "compute_western_electional_judgement",
     "compute_western_profile_windows",
 ]

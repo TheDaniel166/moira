@@ -693,6 +693,18 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     'LILLY_1647_PERFECTION_V1',
     'classify_lilly_perfection_events',
     'lilly_perfection_at',
+    'WesternElectionalJudgementDoctrine',
+    'WesternElectionalJudgementState',
+    'WesternElectionalComponentState',
+    'WesternElectionalRequirementState',
+    'WesternElectionalJudgementPolicy',
+    'WesternElectionalJudgementSelection',
+    'WesternElectionalComponentSummary',
+    'WesternElectionalRequirementWitness',
+    'WesternElectionalJudgementEvaluation',
+    'WESTERN_ELECTIONAL_JUDGEMENT_V1',
+    'assemble_western_electional_judgement',
+    'western_electional_judgement_at',
 })
 
 _EXPECTED_ROOT_ONLY_NAMES = {
@@ -1080,6 +1092,7 @@ _EXPECTED_MOIRA_METHODS.update({
     'sahl_moon_condition_at',
     'sahl_matter_profile_at',
     'lilly_perfection_at',
+    'western_electional_judgement_at',
     'dorotheus_moon_condition_at',
     'search_progressed_astrodyne_contacts',
     'shadbala',

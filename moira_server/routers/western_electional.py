@@ -30,6 +30,8 @@ from ..models.western_electional import (
     WesternProfileWindowsResponse,
     LillyPerfectionRequest,
     LillyPerfectionResponse,
+    WesternElectionalJudgementRequest,
+    WesternElectionalJudgementResponse,
 )
 from ..serializers.western_electional import (
     serialize_lunar_ecliptic_direction,
@@ -42,6 +44,7 @@ from ..serializers.western_electional import (
     serialize_sahl_matter_profile,
     serialize_western_profile_windows,
     serialize_lilly_perfection,
+    serialize_western_electional_judgement,
 )
 from ..services.western_electional import (
     compute_lunar_ecliptic_direction,
@@ -54,6 +57,7 @@ from ..services.western_electional import (
     compute_sahl_matter_profile,
     compute_western_profile_windows,
     compute_lilly_perfection,
+    compute_western_electional_judgement,
 )
 
 
@@ -208,6 +212,21 @@ def lilly_perfection_route(
 
     return serialize_lilly_perfection(
         compute_lilly_perfection(engine, request)
+    )
+
+
+@router.post(
+    "/judgement",
+    response_model=WesternElectionalJudgementResponse,
+)
+def western_electional_judgement_route(
+    request: WesternElectionalJudgementRequest,
+    engine: Annotated[Moira, Depends(get_engine)],
+) -> WesternElectionalJudgementResponse:
+    """Compose one admitted matter profile and exact Lilly perfection trace."""
+
+    return serialize_western_electional_judgement(
+        compute_western_electional_judgement(engine, request)
     )
 
 
