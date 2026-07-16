@@ -41,6 +41,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 from datetime import datetime
+from fractions import Fraction
 
 from .constants import Body, KM_PER_AU, SIDEREAL_YEAR
 from .dignities_types import SolarConditionTruth
@@ -75,7 +76,7 @@ __all__ = [
 # Result vessels
 # ---------------------------------------------------------------------------
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class PhenomenonEvent:
     """
     RITE: The Celestial Milestone — a discrete, named moment when a planet
@@ -196,12 +197,48 @@ class OrbitalResonance:
 
 def _elongation(body: str, jd: float, reader: SpkReader) -> float:
     """Signed elongation: positive=east (evening star), negative=west (morning star)."""
-    from .phase import elongation as _elong
-    # Use the signed difference between planet and Sun longitude
     p = planet_at(body, jd, reader=reader)
     s = planet_at(Body.SUN, jd, reader=reader)
     diff = (p.longitude - s.longitude + 180.0) % 360.0 - 180.0
     return diff  # positive = east of Sun
+
+
+def _angular_elongation(body: str, jd: float, reader: SpkReader) -> float:
+    """Great-circle planet--Sun separation on the apparent ecliptic sphere."""
+    p = planet_at(body, jd, reader=reader)
+    s = planet_at(Body.SUN, jd, reader=reader)
+    p_lat = math.radians(p.latitude)
+    s_lat = math.radians(s.latitude)
+    lon_delta = math.radians(p.longitude - s.longitude)
+    cos_sep = (
+        math.sin(p_lat) * math.sin(s_lat)
+        + math.cos(p_lat) * math.cos(s_lat) * math.cos(lon_delta)
+    )
+    return math.degrees(math.acos(max(-1.0, min(1.0, cos_sep))))
+
+
+def _require_finite(name: str, value: float) -> None:
+    if not math.isfinite(value):
+        raise ValueError(f"{name} must be finite")
+
+
+def _require_positive_finite(name: str, value: float) -> None:
+    _require_finite(name, value)
+    if value <= 0.0:
+        raise ValueError(f"{name} must be positive")
+
+
+def _require_nonnegative_finite(name: str, value: float) -> None:
+    _require_finite(name, value)
+    if value < 0.0:
+        raise ValueError(f"{name} must be non-negative")
+
+
+def _require_ordered_range(jd_start: float, jd_end: float) -> None:
+    _require_finite("jd_start", jd_start)
+    _require_finite("jd_end", jd_end)
+    if jd_end < jd_start:
+        raise ValueError("jd_end must be greater than or equal to jd_start")
 
 
 def _helio_distance(body: str, jd: float, reader: SpkReader) -> float:
@@ -287,6 +324,7 @@ def _bisection_root(
 _ORBITAL_PERIOD: dict[str, float] = {
     Body.MERCURY: 87.97,
     Body.VENUS:   224.70,
+    Body.EARTH:   SIDEREAL_YEAR,
     Body.MARS:    686.97,
     Body.JUPITER: 4332.59,
     Body.SATURN:  10759.22,
@@ -363,46 +401,70 @@ def greatest_elongation(
     PhenomenonEvent with value = elongation in degrees (always positive),
     or None if not found.
 
-    Algorithm: walk forward in 1-day steps; find where the signed elongation
-    reaches a local maximum (east) or minimum (west), then refine by golden
-    section search.
+    Algorithm: walk forward in 1-day steps, use signed longitude separation
+    to select the east or west branch, and refine a local maximum of the
+    great-circle angular separation by golden-section search.
     """
+    if body not in _SYNODIC_PERIOD:
+        raise ValueError("Greatest elongation is defined only for Mercury and Venus")
+    if direction not in {"east", "west"}:
+        raise ValueError("direction must be 'east' or 'west'")
+    _require_finite("jd_start", jd_start)
+    _require_nonnegative_finite("max_days", max_days)
+    if max_days == 0.0:
+        return None
     if reader is None:
         reader = get_reader()
 
     sign = 1.0 if direction == "east" else -1.0
     step = 1.0  # 1-day steps for coarse scan
+    search_end = jd_start + max_days
 
     jd = jd_start
-    elong_prev2 = sign * _elongation(body, jd - step, reader)
-    elong_prev1 = sign * _elongation(body, jd,        reader)
+    angular_prev2 = _angular_elongation(body, jd - step, reader)
+    angular_prev1 = _angular_elongation(body, jd, reader)
 
-    while jd < jd_start + max_days:
-        jd_next = jd + step
-        elong_cur = sign * _elongation(body, jd_next, reader)
+    while jd < search_end:
+        jd_next = min(jd + step, search_end)
+        angular_cur = _angular_elongation(body, jd_next, reader)
 
-        # Local maximum in the signed-elongation: prev1 > prev2 and prev1 > cur
-        if elong_prev1 >= elong_prev2 and elong_prev1 >= elong_cur and elong_prev1 > 0:
-            # Refine with golden-section maximisation over [jd-step, jd+step]
+        # Direction is a branch policy; the maximised signal is the true
+        # great-circle angular separation, not longitude difference alone.
+        if (
+            angular_prev1 >= angular_prev2
+            and angular_prev1 >= angular_cur
+            and sign * _elongation(body, jd, reader) > 0.0
+        ):
+            left = max(jd_start, jd - step)
             x_opt, _ = _golden_section(
-                lambda t: sign * _elongation(body, t, reader),
-                jd - step,
+                lambda t: _angular_elongation(body, t, reader),
+                left,
                 jd_next,
                 tol=1e-6,
                 maximise=True,
             )
-            elong_val = _elongation(body, x_opt, reader)
+            if left == jd_start and x_opt <= left + 2e-6:
+                angular_prev2 = angular_prev1
+                angular_prev1 = angular_cur
+                jd = jd_next
+                continue
+            if sign * _elongation(body, x_opt, reader) <= 0.0:
+                angular_prev2 = angular_prev1
+                angular_prev1 = angular_cur
+                jd = jd_next
+                continue
+            elong_val = _angular_elongation(body, x_opt, reader)
             label = ("Greatest Eastern Elongation" if direction == "east"
                      else "Greatest Western Elongation")
             return PhenomenonEvent(
                 body=body,
                 phenomenon=label,
                 jd_ut=x_opt,
-                value=abs(elong_val),
+                value=elong_val,
             )
 
-        elong_prev2 = elong_prev1
-        elong_prev1 = elong_cur
+        angular_prev2 = angular_prev1
+        angular_prev1 = angular_cur
         jd = jd_next
 
     return None
@@ -424,12 +486,19 @@ def perihelion(
     Uses a golden-section minimisation of the heliocentric distance.
     Step size is auto-selected based on orbital period.
     """
+    if body not in _ORBITAL_PERIOD:
+        raise ValueError(f"Perihelion requires a major planet, got {body!r}")
+    _require_finite("jd_start", jd_start)
     if reader is None:
         reader = get_reader()
 
-    period = _ORBITAL_PERIOD.get(body, SIDEREAL_YEAR)
+    period = _ORBITAL_PERIOD[body]
     if max_days is None:
         max_days = period * 1.5
+    _require_nonnegative_finite("max_days", max_days)
+    if max_days == 0.0:
+        return None
+    search_end = jd_start + max_days
 
     # Auto step: ~1/200 of the orbital period, minimum quarter-day.
     step = max(0.25, period / 200.0)
@@ -438,8 +507,8 @@ def perihelion(
     dist_prev2 = _helio_distance(body, jd - step, reader)
     dist_prev1 = _helio_distance(body, jd, reader)
 
-    while jd < jd_start + max_days:
-        jd_next = jd + step
+    while jd < search_end:
+        jd_next = min(jd + step, search_end)
         dist_cur = _helio_distance(body, jd_next, reader)
 
         # Use the sampled distance curve to bracket the large-scale minimum,
@@ -459,7 +528,7 @@ def perihelion(
             x_opt, d_opt = _golden_section(
                 lambda t: _helio_distance(body, t, reader),
                 max(jd_start, x_root - step),
-                x_root + step,
+                min(search_end, x_root + step),
                 tol=1e-6,
                 maximise=False,
             )
@@ -484,12 +553,19 @@ def aphelion(
     max_days: float | None = None,
 ) -> PhenomenonEvent | None:
     """Find the next aphelion (furthest from Sun) for a planet."""
+    if body not in _ORBITAL_PERIOD:
+        raise ValueError(f"Aphelion requires a major planet, got {body!r}")
+    _require_finite("jd_start", jd_start)
     if reader is None:
         reader = get_reader()
 
-    period = _ORBITAL_PERIOD.get(body, SIDEREAL_YEAR)
+    period = _ORBITAL_PERIOD[body]
     if max_days is None:
         max_days = period * 1.5
+    _require_nonnegative_finite("max_days", max_days)
+    if max_days == 0.0:
+        return None
+    search_end = jd_start + max_days
 
     step = max(0.25, period / 200.0)
 
@@ -497,8 +573,8 @@ def aphelion(
     dist_prev2 = _helio_distance(body, jd - step, reader)
     dist_prev1 = _helio_distance(body, jd, reader)
 
-    while jd < jd_start + max_days:
-        jd_next = jd + step
+    while jd < search_end:
+        jd_next = min(jd + step, search_end)
         dist_cur = _helio_distance(body, jd_next, reader)
 
         # Use the sampled distance curve to bracket the large-scale maximum,
@@ -518,7 +594,7 @@ def aphelion(
             x_opt, d_opt = _golden_section(
                 lambda t: _helio_distance(body, t, reader),
                 max(jd_start, x_root - step),
-                x_root + step,
+                min(search_end, x_root + step),
                 tol=1e-6,
                 maximise=True,
             )
@@ -734,28 +810,13 @@ def find_closest_resonance(ratio: float, max_denominator: int = 50) -> tuple[int
     
     Example: ratio=1.6255 -> (13, 8) for Earth/Venus
     """
-    x = ratio
-    a = int(x)
-    h_m2, h_m1 = 0, 1
-    k_m2, k_m1 = 1, 0
-    
-    while True:
-        h = a * h_m1 + h_m2
-        k = a * k_m1 + k_m2
-        
-        if k > max_denominator:
-            return h_m1, k_m1
-            
-        if x == a:
-            return h, k
-            
-        if x - a < 1e-12: # Avoid tiny divisions
-            return h, k
-            
-        x = 1.0 / (x - a)
-        a = int(x)
-        h_m2, h_m1 = h_m1, h
-        k_m2, k_m1 = k_m1, k
+    _require_positive_finite("ratio", ratio)
+    if not isinstance(max_denominator, int) or isinstance(max_denominator, bool):
+        raise ValueError("max_denominator must be an integer")
+    if max_denominator < 1:
+        raise ValueError("max_denominator must be at least 1")
+    bounded = Fraction(ratio).limit_denominator(max_denominator)
+    return bounded.numerator, bounded.denominator
 
 
 def resonance(body1: str, body2: str) -> OrbitalResonance:
@@ -767,6 +828,8 @@ def resonance(body1: str, body2: str) -> OrbitalResonance:
     
     if p1 is None or p2 is None:
         raise ValueError(f"Resonance requires mean orbital periods for {body1} and {body2}")
+    if body1 == body2 or p1 == p2:
+        raise ValueError("Resonance requires bodies with distinct orbital periods")
         
     ratio = p1 / p2
     synodic = 1.0 / abs((1.0 / p1) - (1.0 / p2))
@@ -898,15 +961,20 @@ def next_conjunction(
     """Find the next conjunction between two bodies."""
     if reader is None:
         reader = get_reader()
+    _require_finite("jd_start", jd_start)
+    _require_nonnegative_finite("max_days", max_days)
+    if max_days == 0.0:
+        return None
 
     # Step size: 1/10th of Earth's year or 3 days, whichever is smaller
     step = min(3.0, 36.0) 
+    search_end = jd_start + max_days
 
     jd = jd_start
     prev_sep = _conjunction_separation(body1, body2, jd, reader, apparent=False)
 
-    while jd < jd_start + max_days:
-        jd_next = jd + step
+    while jd < search_end:
+        jd_next = min(jd + step, search_end)
         next_sep = _conjunction_separation(body1, body2, jd_next, reader, apparent=False)
 
         # Detect 0° crossing
@@ -918,6 +986,12 @@ def next_conjunction(
             # Bracket by 0.1 days around geometric hit
             jd_exact = _bisect_conjunction(body1, body2, jd_geo - 0.1, jd_geo + 0.1, reader, apparent=True)
             jd_exact = _polish_conjunction_root(body1, body2, jd_exact, reader, apparent=True)
+            if jd_exact < jd_start:
+                jd = jd_next
+                prev_sep = next_sep
+                continue
+            if jd_exact > search_end:
+                return None
             
             p1 = planet_at(body1, jd_exact, reader=reader, apparent=True)
             return PhenomenonEvent(
@@ -941,11 +1015,12 @@ def conjunctions_in_range(
     reader: SpkReader | None = None,
 ) -> list[PhenomenonEvent]:
     """Find all conjunctions between two bodies in a range."""
+    _require_ordered_range(jd_start, jd_end)
     conjs = []
     jd = jd_start
     while jd < jd_end:
-        ev = next_conjunction(body1, body2, jd, reader=reader, max_days=(jd_end - jd + 1))
-        if ev:
+        ev = next_conjunction(body1, body2, jd, reader=reader, max_days=(jd_end - jd))
+        if ev and jd_start <= ev.jd_ut <= jd_end:
             conjs.append(ev)
             jd = ev.jd_ut + 2.0 # skip past
         else:
@@ -1072,18 +1147,25 @@ def next_heliocentric_conjunction(
     """
     if reader is None:
         reader = get_reader()
+    _require_finite("jd_start", jd_start)
+    _require_nonnegative_finite("max_days", max_days)
+    if max_days == 0.0:
+        return None
 
     step = 3.0
+    search_end = jd_start + max_days
     jd = jd_start
     prev_sep = _helio_conjunction_separation(body1, body2, jd, reader)
 
-    while jd < jd_start + max_days:
-        jd_next = jd + step
+    while jd < search_end:
+        jd_next = min(jd + step, search_end)
         next_sep = _helio_conjunction_separation(body1, body2, jd_next, reader)
 
         if prev_sep * next_sep < 0 and abs(prev_sep) < 90.0:
             jd_exact = _bisect_helio_conjunction(body1, body2, jd, jd_next, reader)
             jd_exact = _polish_helio_conjunction_root(body1, body2, jd_exact, reader)
+            if not jd_start <= jd_exact <= search_end:
+                return None
             p1 = planet_relative_to(body1, Body.SUN, jd_exact, reader=reader)
             return PhenomenonEvent(
                 body=f"{body1}-{body2}",
@@ -1112,6 +1194,7 @@ def heliocentric_conjunctions_in_range(
     heliocentric longitude of ``body1`` at exact conjunction, and
     ``phenomenon`` set to ``"Heliocentric Conjunction"``.
     """
+    _require_ordered_range(jd_start, jd_end)
     if reader is None:
         reader = get_reader()
 
@@ -1119,9 +1202,9 @@ def heliocentric_conjunctions_in_range(
     jd = jd_start
     while jd < jd_end:
         ev = next_heliocentric_conjunction(
-            body1, body2, jd, reader=reader, max_days=(jd_end - jd + 1),
+            body1, body2, jd, reader=reader, max_days=(jd_end - jd),
         )
-        if ev is None:
+        if ev is None or not jd_start <= ev.jd_ut <= jd_end:
             break
         conjs.append(ev)
         jd = ev.jd_ut + 2.0
@@ -1218,6 +1301,15 @@ def planet_phenomena_at(body: str, jd_ut: float) -> PlanetPhenomena:
 # Proximity and Solar Condition Search
 # ---------------------------------------------------------------------------
 
+# One threshold doctrine is shared by event searches and point-in-time truth.
+_CAZIMI_DEG = 17.0 / 60.0
+_COMBUST_DEG = 8.0
+_SUNBEAMS_DEG = 17.0
+_MAX_PROXIMITY_THRESHOLD_DEG = 30.0
+_SCORE_CAZIMI = 5
+_SCORE_COMBUST = -5
+_SCORE_SUNBEAMS = -4
+
 def _bisect_proximity(
     body1: str,
     body2: str,
@@ -1228,13 +1320,24 @@ def _bisect_proximity(
     apparent: bool = True,
     tol_days: float = 1e-8,
 ) -> float:
-    """Bisect to find when separation between two bodies equals target_deg."""
+    """Bisect one continuous signed-separation threshold bracket."""
     def diff(t: float) -> float:
-        # Use signed separation to handle crossings correctly
         sep = _conjunction_separation(body1, body2, t, reader, apparent=apparent)
         return sep - target_deg
 
     d_lo = diff(jd_lo)
+    d_hi = diff(jd_hi)
+    sep_lo = d_lo + target_deg
+    sep_hi = d_hi + target_deg
+    if abs(sep_hi - sep_lo) > 180.0:
+        raise ValueError("Proximity bracket crosses the signed-separation wrap")
+    if d_lo == 0.0:
+        return jd_lo
+    if d_hi == 0.0:
+        return jd_hi
+    if d_lo * d_hi > 0.0:
+        raise ValueError("Proximity threshold is not bracketed")
+
     for _ in range(64):
         if jd_hi - jd_lo < tol_days:
             break
@@ -1245,7 +1348,11 @@ def _bisect_proximity(
         else:
             jd_lo = jd_mid
             d_lo = d_mid
-    return (jd_lo + jd_hi) / 2.0
+    jd_event = (jd_lo + jd_hi) / 2.0
+    residual = abs(diff(jd_event))
+    if residual > 1e-5:
+        raise RuntimeError(f"Proximity refinement residual is {residual:.6g} degrees")
+    return jd_event
 
 
 def proximity_events_in_range(
@@ -1253,76 +1360,95 @@ def proximity_events_in_range(
     body2: str,
     jd_start: float,
     jd_end: float,
-    threshold_deg: float = 0.283333, # 17'
+    threshold_deg: float = _CAZIMI_DEG,
     reader: SpkReader | None = None,
 ) -> list[ProximityEvent]:
     """
     Find all threshold-crossing events for a proximity between two bodies.
     
-    This function finds each conjunction and then solves for the ingress and 
-    egress moments when the separation equals +/- threshold_deg.
+    The signed longitude separation is scanned directly across the requested
+    interval. Each continuous crossing of ``-threshold_deg`` or
+    ``+threshold_deg`` is refined independently; the +/-180-degree wrap is
+    explicitly excluded from threshold bracketing.
     """
+    _require_ordered_range(jd_start, jd_end)
+    _require_positive_finite("threshold_deg", threshold_deg)
+    if threshold_deg > _MAX_PROXIMITY_THRESHOLD_DEG:
+        raise ValueError("threshold_deg may not exceed 30 degrees")
+    if body1 == body2:
+        raise ValueError("Proximity requires two distinct bodies")
     if reader is None:
         reader = get_reader()
 
-    # 1. Find all conjunctions in the range
-    conjs = conjunctions_in_range(body1, body2, jd_start, jd_end, reader=reader)
     events: list[ProximityEvent] = []
+    if jd_start == jd_end:
+        return events
 
-    for conj in conjs:
-        jd_conj = conj.jd_ut
-        
-        # Search around the conjunction for the -threshold and +threshold crossings.
-        # We bracket by +/- 2 days which is plenty for 17' or even 8° proximity.
-        # Venus moves ~1°/day relative to Sun; 8.5° takes ~8.5 days.
-        # Let's use a wider bracket for safety based on the threshold.
-        bracket = max(2.0, threshold_deg * 2.0)
-        
-        # We need to find both -threshold and +threshold.
-        # Usually one is before and one is after.
-        for target in (-threshold_deg, threshold_deg):
-            jd_lo = jd_conj - bracket
-            jd_hi = jd_conj + bracket
-            
-            # Check if there is a crossing in this bracket
-            # We use a small scan to find the actual crossing if the bracket is large
-            step = 0.5
-            curr_jd = jd_lo
-            found = False
-            
-            while curr_jd < jd_hi:
-                next_jd = min(curr_jd + step, jd_hi)
-                d1 = _conjunction_separation(body1, body2, curr_jd, reader) - target
-                d2 = _conjunction_separation(body1, body2, next_jd, reader) - target
-                
-                if d1 * d2 < 0:
-                    jd_event = _bisect_proximity(body1, body2, target, curr_jd, next_jd, reader)
-                    
-                    # Compute context at the event
-                    p1 = planet_at(body1, jd_event, reader=reader)
-                    p2 = planet_at(body2, jd_event, reader=reader)
-                    
-                    # Determine ingress vs egress
-                    # Ingress: distance is decreasing
-                    dt = 0.001
-                    dist_prev = abs(_conjunction_separation(body1, body2, jd_event - dt, reader))
-                    dist_curr = abs(_conjunction_separation(body1, body2, jd_event, reader))
-                    is_ingress = dist_curr < dist_prev
-                    
-                    events.append(ProximityEvent(
-                        body1=body1,
-                        body2=body2,
-                        jd_ut=jd_event,
-                        threshold_deg=target,
-                        body1_longitude=p1.longitude,
-                        body2_longitude=p2.longitude,
-                        body2_latitude=p2.latitude,
-                        body2_retrograde=p2.retrograde,
-                        is_ingress=is_ingress
-                    ))
-                    found = True
-                    break
-                curr_jd = next_jd
+    step = 0.25
+    curr_jd = jd_start
+    sep_curr = _conjunction_separation(
+        body1, body2, curr_jd, reader, apparent=True,
+    )
+
+    while curr_jd < jd_end:
+        next_jd = min(curr_jd + step, jd_end)
+        sep_next = _conjunction_separation(
+            body1, body2, next_jd, reader, apparent=True,
+        )
+
+        # A large raw jump is the +/-180-degree representation boundary, not
+        # a physical passage through either proximity threshold.
+        if abs(sep_next - sep_curr) <= 180.0:
+            for target in (-threshold_deg, threshold_deg):
+                d_curr = sep_curr - target
+                d_next = sep_next - target
+                if d_curr == 0.0:
+                    jd_event = curr_jd
+                elif d_next == 0.0:
+                    jd_event = next_jd
+                elif d_curr * d_next < 0.0:
+                    jd_event = _bisect_proximity(
+                        body1, body2, target, curr_jd, next_jd, reader,
+                    )
+                else:
+                    continue
+
+                if not jd_start <= jd_event <= jd_end:
+                    continue
+                if any(
+                    event.threshold_deg == target
+                    and abs(event.jd_ut - jd_event) <= 1e-7
+                    for event in events
+                ):
+                    continue
+
+                p1 = planet_at(body1, jd_event, reader=reader)
+                p2 = planet_at(body2, jd_event, reader=reader)
+                dt = 0.001
+                dist_before = abs(
+                    _conjunction_separation(
+                        body1, body2, jd_event - dt, reader, apparent=True,
+                    )
+                )
+                dist_after = abs(
+                    _conjunction_separation(
+                        body1, body2, jd_event + dt, reader, apparent=True,
+                    )
+                )
+                events.append(ProximityEvent(
+                    body1=body1,
+                    body2=body2,
+                    jd_ut=jd_event,
+                    threshold_deg=target,
+                    body1_longitude=p1.longitude,
+                    body2_longitude=p2.longitude,
+                    body2_latitude=p2.latitude,
+                    body2_retrograde=p2.retrograde,
+                    is_ingress=dist_after < dist_before,
+                ))
+
+        curr_jd = next_jd
+        sep_curr = sep_next
     
     events.sort(key=lambda e: e.jd_ut)
     return events
@@ -1341,9 +1467,9 @@ def solar_condition_events_in_range(
     Supported conditions: "cazimi" (17'), "combust" (8°), "under_sunbeams" (17°)
     """
     thresholds = {
-        "cazimi": 0.283333,
-        "combust": 8.0,
-        "under_sunbeams": 17.0
+        "cazimi": _CAZIMI_DEG,
+        "combust": _COMBUST_DEG,
+        "under_sunbeams": _SUNBEAMS_DEG,
     }
     
     if condition not in thresholds:
@@ -1357,16 +1483,6 @@ def solar_condition_events_in_range(
         ev.label = f"{condition.title()} {'Ingress' if ev.is_ingress else 'Egress'}"
 
     return events
-
-
-# Thresholds and scores for point-in-time solar condition query.
-# 17 arcminutes = 17/60° for cazimi; matches the traditional boundary.
-_CAZIMI_DEG    = 17.0 / 60.0   # ≈ 0.2833°
-_COMBUST_DEG   = 8.0
-_SUNBEAMS_DEG  = 17.0
-_SCORE_CAZIMI   =  5
-_SCORE_COMBUST  = -5
-_SCORE_SUNBEAMS = -4
 
 
 def solar_condition_at(
