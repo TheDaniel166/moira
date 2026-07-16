@@ -156,6 +156,18 @@ pip install moira-astro[server]
 uvicorn --factory moira_server:create_app
 ```
 
+For latency-sensitive deployments, opt in to one bounded per-worker startup
+warmup before accepting computational traffic:
+
+```powershell
+$env:MOIRA_SERVER_PREWARM = "1"
+uvicorn --factory moira_server:create_app
+```
+
+With prewarm enabled, `/ready` returns HTTP 503 until the kernel-backed warmup
+succeeds; `/health` remains available for liveness diagnostics. Prewarm is
+disabled by default because each worker pays its own native memory cost.
+
 - **60+ route families under `/v1`** — charts, positions, houses, per-stage pipeline visibility, progressions (the full dispatched method menu advertised as OpenAPI enums), primary directions, returns, transits, dashas and time lords, the complete Vedic suite (yogas, shadbala, ashtakavarga, upagrahas, avasthas, Jaimini, muhurta, sade sati), draconic charts, astrocartography, asteroids and comets, fixed stars, harmonics, harmograms, electional scoring, synastry and relationship products, and more.
 - **Typed transport** — every route family has dedicated Pydantic request/response models, serializers, and services; doctrine stays in the engine, the server is transport and orchestration only.
 - **OpenAPI discovery** — tagged schema with installed discovery metadata for machine consumers.
@@ -165,7 +177,6 @@ uvicorn --factory moira_server:create_app
 ## Requirements and Installation
 
 - Python 3.10 or later
-- `scipy >= 1.14` (required runtime dependency)
 - A C++ compiler, `cmake >= 3.24`, and `pybind11 >= 2.12` (required at build time for the native extension)
 - A JPL DE-series planetary kernel (de430, de440, or de441 — not bundled; see below)
 

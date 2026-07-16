@@ -157,6 +157,28 @@ Positive examples:
 - a worker pool starts multiple processes, each with its own stable initialized
   reader, and serves requests without cross-process kernel mutation
 
+### Optional startup prewarm
+
+Production deployments may set `MOIRA_SERVER_PREWARM=1` to materialize the
+default planetary computation path before a worker becomes ready. The warmup is
+bounded to one all-planet chart without lunar nodes at J2000 and does not seed
+the HTTP chart-result cache or touch supplemental small-body kernels.
+
+Prewarm is disabled by default because its native working set is paid once per
+worker process. When enabled:
+
+- process startup waits for the warmup decision to complete
+- `/health` remains a liveness signal and returns HTTP 200 even if warmup fails
+- `/ready` returns HTTP 200 only after both the planetary kernel and warmup are
+  ready; otherwise it returns HTTP 503 with the existing readiness body
+- a warmup failure is logged and leaves the process alive but unready for
+  diagnosis or replacement by the deployment platform
+
+Worker count must therefore be selected from measured per-process memory after
+prewarm, not only from CPU count. TCP, TLS termination, reverse-proxy policy,
+public rate limiting, and real network latency remain deployment concerns
+outside the engine and this in-process startup policy.
+
 ---
 
 ## 6. Schema Doctrine

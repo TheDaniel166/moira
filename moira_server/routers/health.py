@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request, Response, status
 
 from moira import Moira, __version__ as engine_version
 
@@ -24,12 +24,21 @@ def health() -> HealthResponse:
 
 
 @router.get("/ready", response_model=ReadyResponse)
-def ready(engine: Moira = Depends(get_engine)) -> ReadyResponse:
+def ready(
+    request: Request,
+    response: Response,
+    engine: Moira = Depends(get_engine),
+) -> ReadyResponse:
     """Readiness endpoint with kernel truth."""
 
     kernel_available = engine.is_kernel_available()
+    startup_readiness = getattr(request.app.state, "startup_readiness", None)
+    startup_ready = True if startup_readiness is None else startup_readiness.ready
+    is_ready = kernel_available and startup_ready
+    if not is_ready:
+        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
     return ReadyResponse(
-        ready=kernel_available,
+        ready=is_ready,
         kernel_available=kernel_available,
         kernel_status=engine.get_kernel_status(),
     )

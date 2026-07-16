@@ -17,6 +17,7 @@ class ServerConfig:
     small_body_manifest: str | None = None   # Path to sovereign small-body manifest.json for fast Type 13 native asteroids/comets
     docs_enabled: bool = True
     require_kernel_ready: bool = False
+    prewarm_enabled: bool = False
 
     @classmethod
     def from_env(cls) -> "ServerConfig":
@@ -24,6 +25,7 @@ class ServerConfig:
 
         docs_raw = os.getenv("MOIRA_SERVER_DOCS_ENABLED", "1").strip().lower()
         require_raw = os.getenv("MOIRA_SERVER_REQUIRE_KERNEL", "0").strip().lower()
+        prewarm_raw = os.getenv("MOIRA_SERVER_PREWARM", "0").strip().lower()
         return cls(
             host=os.getenv("MOIRA_SERVER_HOST", "127.0.0.1"),
             port=int(os.getenv("MOIRA_SERVER_PORT", "8000")),
@@ -32,4 +34,5 @@ class ServerConfig:
             small_body_manifest=os.getenv("MOIRA_SERVER_SMALL_BODY_MANIFEST") or None,
             docs_enabled=docs_raw not in {"0", "false", "no", "off"},
             require_kernel_ready=require_raw in {"1", "true", "yes", "on"},
+            prewarm_enabled=prewarm_raw in {"1", "true", "yes", "on"},
         )

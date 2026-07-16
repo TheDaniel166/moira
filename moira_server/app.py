@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+import logging
+from time import perf_counter
 from uuid import uuid4
 
 from fastapi import FastAPI, Request
@@ -10,7 +12,7 @@ from fastapi import FastAPI, Request
 from .cache import ChartLRUCache
 from .config import ServerConfig
 from .errors import register_exception_handlers
-from .lifecycle import create_engine
+from .lifecycle import StartupReadiness, create_engine, prewarm_engine
 from .openapi import OPENAPI_TAGS, install_openapi_discovery
 from .routers import (
     ashtakavarga_router,
@@ -85,11 +87,36 @@ from .routers import (
 )
 
 
+logger = logging.getLogger(__name__)
+
+
 @asynccontextmanager
 async def _lifespan(app: FastAPI):
     config = app.state.server_config
+    startup_readiness = StartupReadiness(prewarm_enabled=config.prewarm_enabled)
+    app.state.startup_readiness = startup_readiness
     app.state.engine = create_engine(config)
     app.state.chart_cache = ChartLRUCache(maxsize=512)
+
+    if not config.prewarm_enabled or not app.state.engine.is_kernel_available():
+        startup_readiness.complete_without_prewarm()
+    else:
+        started = perf_counter()
+        try:
+            duration_seconds = prewarm_engine(app.state.engine)
+        except Exception as exc:
+            duration_seconds = perf_counter() - started
+            startup_readiness.fail_prewarm(exc, duration_seconds)
+            logger.exception(
+                "Moira server prewarm failed after %.3f seconds; readiness remains closed",
+                duration_seconds,
+            )
+        else:
+            startup_readiness.complete_prewarm(duration_seconds)
+            logger.info(
+                "Moira server prewarm completed in %.3f seconds",
+                duration_seconds,
+            )
     yield
 
 
