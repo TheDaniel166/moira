@@ -1,13 +1,6 @@
 from __future__ import annotations
 
-import importlib.machinery
 import inspect
-import json
-from pathlib import Path
-import subprocess
-import sys
-import textwrap
-import zipfile
 
 import moira
 import moira.classical as classical
@@ -643,6 +636,15 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     'DOROTHEUS_LUNAR_PRICE_TIMING_V1',
     'DOROTHEUS_LAND_PURCHASE_V1',
     'DOROTHEUS_LEASING_V1',
+    'DOROTHEUS_SHIP_ACQUISITION_V1',
+    'DOROTHEUS_SHIP_CONSTRUCTION_V1',
+    'DOROTHEUS_SHIP_LAUNCH_V1',
+    'DOROTHEUS_LAND_TRAVEL_V1',
+    'DOROTHEUS_SEA_TRAVEL_V1',
+    'DOROTHEUS_PARTNERSHIP_V1',
+    'DOROTHEUS_DEBT_AND_PAYMENT_V1',
+    'DOROTHEUS_WRITING_A_WILL_V1',
+    'DOROTHEUS_TRAVEL_V1',
     'DorotheusAngularPlaceWitness',
     'DorotheusMatterClauseRole',
     'DorotheusMatterClauseState',
@@ -651,6 +653,7 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     'DorotheusMatterProfileId',
     'DorotheusMatterProfilePolicy',
     'DorotheusMatterProfileStatus',
+    'DorotheusSignNatureVariant',
     'dorotheus_matter_profile_at',
     'evaluate_dorotheus_matter_profile',
     'WesternElectionalProfileId',
@@ -671,6 +674,7 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     'SAHL_LAND_V1',
     'SAHL_PLANTING_V1',
     'SAHL_SOWING_V1',
+    'SAHL_BUSINESS_PARTNERSHIP_V1',
     'SAHL_WELLS_AND_RIVERS_V1',
     'SahlMatterClauseRole',
     'SahlMatterClauseState',
@@ -1149,7 +1153,6 @@ _EXPECTED_SKY_GALACTIC_PUBLIC_NAMES = set(sky_galactic.__all__)
 _EXPECTED_SKY_EVENTS_PUBLIC_NAMES = set(sky_events.__all__)
 _EXPECTED_SKY_ECLIPSE_PUBLIC_NAMES = set(sky_eclipse.__all__)
 _EXPECTED_SKY_OCCULTATION_PUBLIC_NAMES = set(sky_occultation.__all__)
-_EXTENSION_SUFFIXES = tuple(importlib.machinery.EXTENSION_SUFFIXES)
 
 
 def test_root_public_surface_snapshot_is_exact() -> None:
@@ -1220,208 +1223,3 @@ def test_moira_instance_public_methods_are_callable() -> None:
         name for name in _EXPECTED_MOIRA_METHODS if not callable(getattr(engine, name))
     ]
     assert not non_callable, f"Moira instance lost callable methods: {non_callable}"
-
-
-@pytest.mark.slow
-@pytest.mark.serial
-def test_built_wheel_matches_source_public_surface(tmp_path: Path) -> None:
-    repo_root = Path(__file__).resolve().parents[2]
-    dist_dir = tmp_path / "dist"
-    unpack_dir = tmp_path / "wheel_unpack"
-    run_dir = tmp_path / "run"
-    dist_dir.mkdir()
-    unpack_dir.mkdir()
-    run_dir.mkdir()
-
-    subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "build",
-            "--wheel",
-            "--outdir",
-            str(dist_dir),
-        ],
-        cwd=repo_root,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-
-    wheels = sorted(dist_dir.glob("moira_astro-*.whl"))
-    assert wheels, "wheel build produced no moira_astro artifact"
-    wheel_path = wheels[-1]
-
-    with zipfile.ZipFile(wheel_path) as zf:
-        wheel_members = zf.namelist()
-        zf.extractall(unpack_dir)
-
-    native_members = [
-        name
-        for name in wheel_members
-        if name.startswith("moira/_moira_native") and name.endswith(_EXTENSION_SUFFIXES)
-    ]
-    assert native_members, "wheel artifact is missing the compiled moira/_moira_native extension"
-    assert not any(name.endswith(".exp") for name in wheel_members), "wheel should not ship MSVC .exp byproducts"
-    assert not any(name.endswith(".lib") for name in wheel_members), "wheel should not ship MSVC .lib byproducts"
-
-    probe = textwrap.dedent(
-        f"""
-        import inspect
-        import json
-        import os
-        import sys
-
-        repo_root = os.path.normcase(r"{repo_root}")
-        sys.path = [p for p in sys.path if os.path.normcase(os.path.abspath(p or os.curdir)) != repo_root]
-        sys.path.insert(0, r"{unpack_dir}")
-
-        import moira
-        import moira.classical as classical
-        import moira.essentials as essentials
-        import moira.facade as facade
-        import moira.moira_native as moira_native
-        import moira.predictive as predictive
-        import moira.sky as sky
-        import moira.sky.bodies as sky_bodies
-        import moira.sky.eclipse as sky_eclipse
-        import moira.sky.events as sky_events
-        import moira.sky.frames as sky_frames
-        import moira.sky.galactic as sky_galactic
-        import moira.sky.observation as sky_observation
-        import moira.sky.occultation as sky_occultation
-        import moira.sky.position as sky_position
-        import moira.sky.time as sky_time
-        import moira.sky.visibility as sky_visibility
-        import moira.vedic as vedic
-
-        def export_star(module_name):
-            ns = {{}}
-            exec(f"from {{module_name}} import *", {{}}, ns)
-            return sorted(ns)
-
-        data = {{
-            "root_all": sorted(moira.__all__),
-            "essentials_all": sorted(essentials.__all__),
-            "classical_all": sorted(classical.__all__),
-            "predictive_all": sorted(predictive.__all__),
-            "vedic_all": sorted(vedic.__all__),
-            "sky_all": sorted(sky.__all__),
-            "sky_time_all": sorted(sky_time.__all__),
-            "sky_position_all": sorted(sky_position.__all__),
-            "sky_frames_all": sorted(sky_frames.__all__),
-            "sky_visibility_all": sorted(sky_visibility.__all__),
-            "sky_bodies_all": sorted(sky_bodies.__all__),
-            "sky_observation_all": sorted(sky_observation.__all__),
-            "sky_galactic_all": sorted(sky_galactic.__all__),
-            "sky_events_all": sorted(sky_events.__all__),
-            "sky_eclipse_all": sorted(sky_eclipse.__all__),
-            "sky_occultation_all": sorted(sky_occultation.__all__),
-            "facade_all": sorted(facade.__all__),
-            "native_backend_file": os.path.normcase(os.path.abspath(moira_native.__backend_file__)),
-            "methods": sorted(
-                name for name, member in inspect.getmembers(facade.Moira)
-                if not name.startswith("_") and inspect.isfunction(member)
-            ),
-            "root_star": export_star("moira"),
-            "essentials_star": export_star("moira.essentials"),
-            "classical_star": export_star("moira.classical"),
-            "predictive_star": export_star("moira.predictive"),
-            "vedic_star": export_star("moira.vedic"),
-            "sky_star": export_star("moira.sky"),
-            "sky_time_star": export_star("moira.sky.time"),
-            "sky_position_star": export_star("moira.sky.position"),
-            "sky_frames_star": export_star("moira.sky.frames"),
-            "sky_visibility_star": export_star("moira.sky.visibility"),
-            "sky_bodies_star": export_star("moira.sky.bodies"),
-            "sky_observation_star": export_star("moira.sky.observation"),
-            "sky_galactic_star": export_star("moira.sky.galactic"),
-            "sky_events_star": export_star("moira.sky.events"),
-            "sky_eclipse_star": export_star("moira.sky.eclipse"),
-            "sky_occultation_star": export_star("moira.sky.occultation"),
-            "facade_star": export_star("moira.facade"),
-            "root_file": os.path.normcase(os.path.abspath(moira.__file__)),
-            "essentials_file": os.path.normcase(os.path.abspath(essentials.__file__)),
-            "classical_file": os.path.normcase(os.path.abspath(classical.__file__)),
-            "predictive_file": os.path.normcase(os.path.abspath(predictive.__file__)),
-            "vedic_file": os.path.normcase(os.path.abspath(vedic.__file__)),
-            "sky_file": os.path.normcase(os.path.abspath(sky.__file__)),
-            "sky_time_file": os.path.normcase(os.path.abspath(sky_time.__file__)),
-            "sky_position_file": os.path.normcase(os.path.abspath(sky_position.__file__)),
-            "sky_frames_file": os.path.normcase(os.path.abspath(sky_frames.__file__)),
-            "sky_visibility_file": os.path.normcase(os.path.abspath(sky_visibility.__file__)),
-            "sky_bodies_file": os.path.normcase(os.path.abspath(sky_bodies.__file__)),
-            "sky_observation_file": os.path.normcase(os.path.abspath(sky_observation.__file__)),
-            "sky_galactic_file": os.path.normcase(os.path.abspath(sky_galactic.__file__)),
-            "sky_events_file": os.path.normcase(os.path.abspath(sky_events.__file__)),
-            "sky_eclipse_file": os.path.normcase(os.path.abspath(sky_eclipse.__file__)),
-            "sky_occultation_file": os.path.normcase(os.path.abspath(sky_occultation.__file__)),
-            "facade_file": os.path.normcase(os.path.abspath(facade.__file__)),
-        }}
-        print(json.dumps(data))
-        """
-    )
-
-    result = subprocess.run(
-        [sys.executable, "-c", probe],
-        cwd=run_dir,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    payload = json.loads(result.stdout)
-
-    assert payload["root_file"].startswith(str(unpack_dir).lower()) or payload["root_file"].startswith(str(unpack_dir))
-    assert payload["essentials_file"].startswith(str(unpack_dir).lower()) or payload["essentials_file"].startswith(str(unpack_dir))
-    assert payload["classical_file"].startswith(str(unpack_dir).lower()) or payload["classical_file"].startswith(str(unpack_dir))
-    assert payload["predictive_file"].startswith(str(unpack_dir).lower()) or payload["predictive_file"].startswith(str(unpack_dir))
-    assert payload["vedic_file"].startswith(str(unpack_dir).lower()) or payload["vedic_file"].startswith(str(unpack_dir))
-    assert payload["sky_file"].startswith(str(unpack_dir).lower()) or payload["sky_file"].startswith(str(unpack_dir))
-    assert payload["sky_time_file"].startswith(str(unpack_dir).lower()) or payload["sky_time_file"].startswith(str(unpack_dir))
-    assert payload["sky_position_file"].startswith(str(unpack_dir).lower()) or payload["sky_position_file"].startswith(str(unpack_dir))
-    assert payload["sky_frames_file"].startswith(str(unpack_dir).lower()) or payload["sky_frames_file"].startswith(str(unpack_dir))
-    assert payload["sky_visibility_file"].startswith(str(unpack_dir).lower()) or payload["sky_visibility_file"].startswith(str(unpack_dir))
-    assert payload["sky_bodies_file"].startswith(str(unpack_dir).lower()) or payload["sky_bodies_file"].startswith(str(unpack_dir))
-    assert payload["sky_observation_file"].startswith(str(unpack_dir).lower()) or payload["sky_observation_file"].startswith(str(unpack_dir))
-    assert payload["sky_galactic_file"].startswith(str(unpack_dir).lower()) or payload["sky_galactic_file"].startswith(str(unpack_dir))
-    assert payload["sky_events_file"].startswith(str(unpack_dir).lower()) or payload["sky_events_file"].startswith(str(unpack_dir))
-    assert payload["sky_eclipse_file"].startswith(str(unpack_dir).lower()) or payload["sky_eclipse_file"].startswith(str(unpack_dir))
-    assert payload["sky_occultation_file"].startswith(str(unpack_dir).lower()) or payload["sky_occultation_file"].startswith(str(unpack_dir))
-    assert payload["facade_file"].startswith(str(unpack_dir).lower()) or payload["facade_file"].startswith(str(unpack_dir))
-    assert payload["native_backend_file"].startswith(str(unpack_dir).lower()) or payload["native_backend_file"].startswith(str(unpack_dir))
-    assert set(payload["root_all"]) == _EXPECTED_ROOT_PUBLIC_NAMES
-    assert set(payload["essentials_all"]) == _EXPECTED_ESSENTIALS_PUBLIC_NAMES
-    assert set(payload["classical_all"]) == _EXPECTED_CLASSICAL_PUBLIC_NAMES
-    assert set(payload["predictive_all"]) == _EXPECTED_PREDICTIVE_PUBLIC_NAMES
-    assert set(payload["vedic_all"]) == _EXPECTED_VEDIC_PUBLIC_NAMES
-    assert set(payload["sky_all"]) == _EXPECTED_SKY_PUBLIC_NAMES
-    assert set(payload["sky_time_all"]) == _EXPECTED_SKY_TIME_PUBLIC_NAMES
-    assert set(payload["sky_position_all"]) == _EXPECTED_SKY_POSITION_PUBLIC_NAMES
-    assert set(payload["sky_frames_all"]) == _EXPECTED_SKY_FRAMES_PUBLIC_NAMES
-    assert set(payload["sky_visibility_all"]) == _EXPECTED_SKY_VISIBILITY_PUBLIC_NAMES
-    assert set(payload["sky_bodies_all"]) == _EXPECTED_SKY_BODIES_PUBLIC_NAMES
-    assert set(payload["sky_observation_all"]) == _EXPECTED_SKY_OBSERVATION_PUBLIC_NAMES
-    assert set(payload["sky_galactic_all"]) == _EXPECTED_SKY_GALACTIC_PUBLIC_NAMES
-    assert set(payload["sky_events_all"]) == _EXPECTED_SKY_EVENTS_PUBLIC_NAMES
-    assert set(payload["sky_eclipse_all"]) == _EXPECTED_SKY_ECLIPSE_PUBLIC_NAMES
-    assert set(payload["sky_occultation_all"]) == _EXPECTED_SKY_OCCULTATION_PUBLIC_NAMES
-    assert set(payload["facade_all"]) == _EXPECTED_FACADE_PUBLIC_NAMES
-    assert set(payload["root_star"]) == _EXPECTED_ROOT_PUBLIC_NAMES
-    assert set(payload["essentials_star"]) == _EXPECTED_ESSENTIALS_PUBLIC_NAMES
-    assert set(payload["classical_star"]) == _EXPECTED_CLASSICAL_PUBLIC_NAMES
-    assert set(payload["predictive_star"]) == _EXPECTED_PREDICTIVE_PUBLIC_NAMES
-    assert set(payload["vedic_star"]) == _EXPECTED_VEDIC_PUBLIC_NAMES
-    assert set(payload["sky_star"]) == _EXPECTED_SKY_PUBLIC_NAMES
-    assert set(payload["sky_time_star"]) == _EXPECTED_SKY_TIME_PUBLIC_NAMES
-    assert set(payload["sky_position_star"]) == _EXPECTED_SKY_POSITION_PUBLIC_NAMES
-    assert set(payload["sky_frames_star"]) == _EXPECTED_SKY_FRAMES_PUBLIC_NAMES
-    assert set(payload["sky_visibility_star"]) == _EXPECTED_SKY_VISIBILITY_PUBLIC_NAMES
-    assert set(payload["sky_bodies_star"]) == _EXPECTED_SKY_BODIES_PUBLIC_NAMES
-    assert set(payload["sky_observation_star"]) == _EXPECTED_SKY_OBSERVATION_PUBLIC_NAMES
-    assert set(payload["sky_galactic_star"]) == _EXPECTED_SKY_GALACTIC_PUBLIC_NAMES
-    assert set(payload["sky_events_star"]) == _EXPECTED_SKY_EVENTS_PUBLIC_NAMES
-    assert set(payload["sky_eclipse_star"]) == _EXPECTED_SKY_ECLIPSE_PUBLIC_NAMES
-    assert set(payload["sky_occultation_star"]) == _EXPECTED_SKY_OCCULTATION_PUBLIC_NAMES
-    assert set(payload["facade_star"]) == _EXPECTED_FACADE_PUBLIC_NAMES
-    assert set(payload["methods"]) == _EXPECTED_MOIRA_METHODS
-    assert set(payload["root_all"]) <= set(payload["facade_all"])

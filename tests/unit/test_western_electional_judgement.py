@@ -85,6 +85,7 @@ def _selection():
         moon_flow_previous_window=None,
         moon_flow_previous_lookback_days=None,
         moon_flow_modern=None,
+        dorotheus_sign_nature_variant=None,
         sahl_burnt_path_variant="sahl_text_indeterminate_no_numeric_endpoints",
         sahl_eighth_rule_variant="arabic_al_rijal_twelfth_part",
     )
@@ -191,6 +192,7 @@ def test_policy_and_selection_reject_hidden_substitution() -> None:
             moon_flow_previous_window=None,
             moon_flow_previous_lookback_days=None,
             moon_flow_modern=None,
+            dorotheus_sign_nature_variant=None,
             sahl_burnt_path_variant="variant",
             sahl_eighth_rule_variant="variant",
         )

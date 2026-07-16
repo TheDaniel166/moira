@@ -22,6 +22,7 @@ from ._western_electional_context import (
 from ._western_electional_matter import (
     DorotheusMatterProfileEvaluation,
     DorotheusMatterProfileId,
+    DorotheusSignNatureVariant,
     dorotheus_matter_profile_at,
 )
 from ._western_electional_sahl_matter import (
@@ -83,6 +84,12 @@ _IMPEDING_PERFECTIONS = frozenset(
         LillyPerfectionKind.FRUSTRATION,
     )
 )
+_DOROTHEUS_SIGN_NATURE_PROFILE_IDS = frozenset(
+    (
+        DorotheusMatterProfileId.LAND_TRAVEL.value,
+        DorotheusMatterProfileId.SEA_TRAVEL.value,
+    )
+)
 
 
 class WesternElectionalJudgementDoctrine(str, Enum):
@@ -115,7 +122,7 @@ class WesternElectionalJudgementPolicy:
     composition_authority: str = "moira_owned_explicit_cross_source_composition"
     matter_policy: str = "one_admitted_named_matter_profile_required"
     perfection_policy: str = "lilly_1647_caller_declared_significators_required"
-    rooted_context_policy: str = "dorotheus_embedded_sahl_not_applicable"
+    rooted_context_policy: str = "source_applicable_rooted_context_else_not_applicable"
     natal_policy: str = "selected_matter_profile_owns_radicality_requirement"
     precedence_policy: str = "impediment_then_indeterminacy"
     completion_policy: str = "all_required_components_complete_with_constructive_perfection"
@@ -151,6 +158,7 @@ class WesternElectionalJudgementSelection:
     moon_flow_previous_window: str | None
     moon_flow_previous_lookback_days: float | None
     moon_flow_modern: bool | None
+    dorotheus_sign_nature_variant: str | None
     sahl_burnt_path_variant: str | None
     sahl_eighth_rule_variant: str | None
 
@@ -229,12 +237,22 @@ class WesternElectionalJudgementSelection:
                 self.natal_input_provided
                 or self.unavoidable_time_urgency is not None
                 or self.moon_flow_previous_window is not None
+                or self.dorotheus_sign_nature_variant is not None
             ):
-                raise ValueError("Sahl selection rejects Dorothean natal and flow inputs")
+                raise ValueError("Sahl selection rejects Dorothean natal, flow, and sign-nature inputs")
             if self.sahl_burnt_path_variant is None or self.sahl_eighth_rule_variant is None:
                 raise ValueError("Sahl selection must preserve both explicit variant choices")
-        elif self.sahl_burnt_path_variant is not None or self.sahl_eighth_rule_variant is not None:
-            raise ValueError("Dorotheus selection rejects Sahl variant choices")
+        else:
+            if self.sahl_burnt_path_variant is not None or self.sahl_eighth_rule_variant is not None:
+                raise ValueError("Dorotheus selection rejects Sahl variant choices")
+            if self.matter_profile_id in _DOROTHEUS_SIGN_NATURE_PROFILE_IDS:
+                if self.dorotheus_sign_nature_variant not in {
+                    DorotheusSignNatureVariant.SOURCE_TEXT_UNRESOLVED.value,
+                    DorotheusSignNatureVariant.LILLY_1647_ELEMENTAL_QUALITIES.value,
+                }:
+                    raise ValueError("land and sea travel selections must preserve sign-nature variant")
+            elif self.dorotheus_sign_nature_variant is not None:
+                raise ValueError("only land and sea travel selections carry sign-nature variant")
 
 
 @dataclass(frozen=True, slots=True)
@@ -406,7 +424,7 @@ def _rooted_component(rooted: DorotheusRootedContextEvaluation | None):
             "rooted_context",
             None,
             WesternElectionalComponentState.NOT_APPLICABLE,
-            "The selected Sahl profile does not own a Dorothean root/outcome context.",
+            "The selected source profile does not own an admitted Dorothean root/outcome context.",
         )
     conditions = tuple(item.condition for item in rooted.matter_significators)
     supplementary = tuple(item.state for item in rooted.supplementary_indicators)
@@ -448,7 +466,10 @@ def _perfection_component(perfection: ClassicalPerfectionAnalysis):
 def _fortification_component(matter, rooted):
     if rooted is None:
         state = _matter_component(matter).state
-        explanation = "Sahl fortification and gate testimony remains inside the selected matter clauses; no separate remedy object is invented."
+        explanation = (
+            "The selected matter profile keeps its source-specific fortification "
+            "and gate testimony inside its own clauses; no separate remedy object is invented."
+        )
     else:
         root_state = _rooted_component(rooted).state
         remedy_states = tuple(_value(item.applicability) for item in matter.moon_condition.remedies)
@@ -521,10 +542,16 @@ def _requirements(matter, perfection, rooted):
         _excluded("advice_or_recommendation", "judgement", "No advice product has been admitted."),
     ]
     if rooted is None:
-        excluded.extend((
-            _excluded("dorothean_rooted_context", "rooted_context", "A Dorothean context is not applied to a Sahl matter profile."),
-            _excluded("standalone_remedy_profile", "fortification_and_remedy", "The admitted Sahl matter layer has no separate remedy profile."),
-        ))
+        if matter.profile_id.value.startswith("dorotheus_"):
+            excluded.extend((
+                _excluded("dorotheus_v31_rooted_context", "rooted_context", "The selected Dorothean source layer is not assigned to a V.31 matter family."),
+                _excluded("standalone_remedy_profile", "fortification_and_remedy", "The selected Dorothean source layer has no separate remedy profile."),
+            ))
+        else:
+            excluded.extend((
+                _excluded("dorothean_rooted_context", "rooted_context", "A Dorothean context is not applied to a Sahl matter profile."),
+                _excluded("standalone_remedy_profile", "fortification_and_remedy", "The admitted Sahl matter layer has no separate remedy profile."),
+            ))
     return tuple(unresolved), tuple(excluded)
 
 
@@ -572,7 +599,7 @@ def assemble_western_electional_judgement(
             (
                 "Dorothean radicality requirements are preserved by the embedded rooted context."
                 if rooted is not None
-                else "The selected Sahl v1 profile is explicitly ephemeral and does not admit natal evidence."
+                else "The selected matter profile does not admit a rooted natal or radicality layer."
             ),
         ),
         _fortification_component(matter_profile, rooted),
@@ -622,6 +649,7 @@ def western_electional_judgement_at(
     natal_house_system: str | None = None,
     unavoidable_time_urgency: bool | None = None,
     moon_flow_policy=None,
+    dorotheus_sign_nature_variant=None,
     sahl_burnt_path_variant=None,
     sahl_eighth_rule_variant=None,
     reader: SpkReader | None = None,
@@ -664,6 +692,12 @@ def western_electional_judgement_at(
             reader=resolved_reader,
             house_policy=house_policy,
             moon_flow_policy=moon_flow_policy,
+            sign_nature_variant=dorotheus_sign_nature_variant,
+        )
+        sign_nature_name = (
+            matter.policy.sign_nature_variant.value
+            if raw_profile_id in _DOROTHEUS_SIGN_NATURE_PROFILE_IDS
+            else None
         )
         burnt_name = None
         eighth_name = None
@@ -672,8 +706,13 @@ def western_electional_judgement_at(
         profile_id = SahlMatterProfileId(raw_profile_id)
         if WesternElectionClass(election_class) is not WesternElectionClass.EPHEMERAL:
             raise ValueError("Sahl judgement admits only ephemeral elections")
-        if natal_input_provided or moon_flow_policy is not None or unavoidable_time_urgency is not None:
-            raise ValueError("Sahl judgement rejects Dorothean natal, flow, and urgency inputs")
+        if (
+            natal_input_provided
+            or moon_flow_policy is not None
+            or unavoidable_time_urgency is not None
+            or dorotheus_sign_nature_variant is not None
+        ):
+            raise ValueError("Sahl judgement rejects Dorothean natal, flow, urgency, and sign-nature inputs")
         if sahl_burnt_path_variant is None:
             raise ValueError("Sahl judgement requires an explicit burnt-path variant")
         matter = sahl_matter_profile_at(
@@ -687,6 +726,7 @@ def western_electional_judgement_at(
             reader=resolved_reader,
             house_policy=house_policy,
         )
+        sign_nature_name = None
         burnt_name = _value(sahl_burnt_path_variant)
         eighth_name = _value(matter.moon_condition.eighth_rule_variant)
     else:
@@ -709,6 +749,7 @@ def western_electional_judgement_at(
         moon_flow_previous_window=flow_name,
         moon_flow_previous_lookback_days=flow_lookback,
         moon_flow_modern=flow_modern,
+        dorotheus_sign_nature_variant=sign_nature_name,
         sahl_burnt_path_variant=burnt_name,
         sahl_eighth_rule_variant=eighth_name,
     )

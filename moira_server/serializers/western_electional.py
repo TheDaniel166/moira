@@ -52,6 +52,7 @@ from ..models.western_electional import (
     DorotheusConstructionTransportProvenanceResponse,
     DorotheusAngularPlaceWitnessResponse,
     DorotheusMatterClauseWitnessResponse,
+    DorotheusMatterProfilePolicyResponse,
     DorotheusMatterProfileEvaluationResponse,
     DorotheusMatterProfileResponse,
     DorotheusMatterProfileTransportProvenanceResponse,
@@ -230,13 +231,14 @@ _DOROTHEUS_CONSTRUCTION_AUTHORITY = (
 )
 _DOROTHEUS_MATTER_AUTHORITY = (
     "Dorotheus of Sidon, Carmen Astrologicum, Umar al-Tabari translation, "
-    "Book V.8, V.9, and V.11, printed pp. 238-243"
+    "Book V.8-V.11, V.20-V.22, V.24-V.26, and V.43-V.44, printed pp. "
+    "238-243, 255-260, 263-270, and 323-325"
 )
 _DOROTHEUS_MATTER_STAGE_SEQUENCE = [
     "request_and_profile_validation",
     "facade_reader_resolution",
     "chart_and_house_construction",
-    "inherited_moon_and_rooted_context",
+    "inherited_moon_and_source_applicable_rooted_context",
     "source_ordered_matter_evaluation",
     "typed_response_serialization",
 ]
@@ -810,16 +812,34 @@ def serialize_dorotheus_construction(
 def serialize_dorotheus_matter_profile(
     result: DorotheusMatterProfileEvaluation,
 ) -> DorotheusMatterProfileResponse:
-    """Serialize one named V.8, V.9, or V.11 matter profile."""
+    """Serialize one admitted named Dorothean Book V matter profile."""
 
     evaluation = DorotheusMatterProfileEvaluationResponse(
         jd_ut=result.jd_ut,
         profile_id=result.profile_id.value,
         profile_version=result.profile_version,
+        policy=DorotheusMatterProfilePolicyResponse(
+            profile_id=result.policy.profile_id.value,
+            profile_version=result.policy.profile_version,
+            angular_place_policy=result.policy.angular_place_policy,
+            configuration_policy=result.policy.configuration_policy,
+            strength_policy=result.policy.strength_policy,
+            copresence_policy=result.policy.copresence_policy,
+            under_rays_policy=result.policy.under_rays_policy,
+            calculation_policy=result.policy.calculation_policy,
+            station_policy=result.policy.station_policy,
+            connection_policy=result.policy.connection_policy,
+            sign_nature_variant=result.policy.sign_nature_variant.value,
+            latitude_rate_sample_days=result.policy.latitude_rate_sample_days,
+        ),
         matter=result.matter,
         status=result.status.value,
         moon_condition=serialize_dorotheus_moon_condition(result.moon_condition).evaluation,
-        rooted_context=serialize_dorotheus_rooted_context(result.rooted_context).evaluation,
+        rooted_context=(
+            None
+            if result.rooted_context is None
+            else serialize_dorotheus_rooted_context(result.rooted_context).evaluation
+        ),
         moon_connection_flow=(
             None
             if result.moon_connection_flow is None
@@ -1099,6 +1119,9 @@ def serialize_western_electional_judgement(
                     result.selection.moon_flow_previous_lookback_days
                 ),
                 moon_flow_modern=result.selection.moon_flow_modern,
+                dorotheus_sign_nature_variant=(
+                    result.selection.dorotheus_sign_nature_variant
+                ),
                 sahl_burnt_path_variant=result.selection.sahl_burnt_path_variant,
                 sahl_eighth_rule_variant=result.selection.sahl_eighth_rule_variant,
             ),

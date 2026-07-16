@@ -338,8 +338,11 @@ unless a chapter overrides. Historical slavery content is flagged.
 `sahl_sale_v1` profiles through the engine, facade, and REST. Closed evidence
 computes under canonical Moira moieties. Open number, cleansing, adaptation,
 cadence, point-orb, and separation-window language remains visibly
-`not_evaluable`. Business partnerships (§§32-35) remain assigned to the later
-partnership family; alchemy/repeated works (§41) is excluded from commerce.
+`not_evaluable`. Business partnership (§§32-35) is now separately admitted as
+`sahl_business_partnership_v1` through engine, root, facade, REST, and the
+Phase 8–10 registry. It keeps cleansing, lower-sign, reception, and outcome
+precedence terms visible as typed gaps; it is not merged into the Dorothean
+partnership profile. Alchemy/repeated works (§41) is excluded from commerce.
 
 #### §29–31 — Lending money [ELECTION]
 - **Prefer Moon in:** Leo, Pisces, Scorpio, Sagittarius, or Aquarius; **defective

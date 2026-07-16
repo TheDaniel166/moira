@@ -112,6 +112,7 @@ def test_sahl_matter_surface_is_public_at_every_library_layer() -> None:
         "SAHL_WELLS_AND_RIVERS_V1",
         "SAHL_PLANTING_V1",
         "SAHL_SOWING_V1",
+        "SAHL_BUSINESS_PARTNERSHIP_V1",
         "evaluate_sahl_matter_profile",
         "sahl_matter_profile_at",
     }
@@ -144,6 +145,17 @@ def test_profile_families_are_not_collapsed_into_one_clause_set() -> None:
     assert len(set(clause_sets.values())) == len(western.SahlMatterProfileId)
     assert clause_sets[western.SahlMatterProfileId.BUILDING][0] == "adapt_moon_and_lord"
     assert clause_sets[western.SahlMatterProfileId.SOWING][0] == "ascendant_common"
+
+
+def test_business_partnership_preserves_distinct_sahl_stakes_and_open_reception() -> None:
+    result = _evaluate(
+        western.SahlMatterProfileId.BUSINESS_PARTNERSHIP,
+        _chart(**{Body.MOON: 180.0}),
+    )
+    assert result.matter == "business_partnership"
+    assert [item.source_order for item in result.clauses] == [1, 2, 3, 4, 5]
+    assert _clause(result, "reception_and_aspect_relationship").state is western.SahlMatterClauseState.NOT_EVALUABLE
+    assert _clause(result, "partnership_stake_roles").state is western.SahlMatterClauseState.OBSERVED
 
 
 def test_lending_preserves_sections_29_to_31_and_first_degree_gate() -> None:

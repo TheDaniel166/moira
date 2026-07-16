@@ -684,7 +684,7 @@ The same public ladder now includes:
 | `Moira.dorotheus_moon_condition_at(...)` | `DorotheusMoonConditionEvaluation` | Single-moment Dorotheus V.6 Moon-condition and remedy witness |
 | `Moira.dorotheus_rooted_context_at(...)` | `DorotheusRootedContextEvaluation` | V.6/V.31 root, outcome, matter-significator, and natal-context evidence |
 | `Moira.dorotheus_construction_at(...)` | `DorotheusConstructionEvaluation` | Complete V.2-V.7 construction matter profile without scoring or recommendation |
-| `Moira.dorotheus_matter_profile_at(..., profile_id=...)` | `DorotheusMatterProfileEvaluation` | Named V.8 demolition, V.9 leasing, or V.11 land-purchase matter profile |
+| `Moira.dorotheus_matter_profile_at(..., profile_id=...)` | `DorotheusMatterProfileEvaluation` | Named Dorotheus Book V matter profile, including V.20 partnership, V.21 debt/payment, V.22 travel, V.24–V.26 ship work, and V.43 wills; V.26.39–43 land/sea profiles require an explicit sign-nature variant |
 | `Moira.western_electional_profile_windows(...)` | `WesternElectionalProfileScan` | Bounded discrete status-window scan for one admitted Moon profile |
 
 `dorotheus_construction_v1` exposes the IERS-backed signed lunar equation in
@@ -693,10 +693,15 @@ ecliptic-crossing clause as `not_evaluable`. Its nested rooted context evaluates
 V.31 bad-place membership as whole-sign places 3, 6, 8, and 12. The corresponding
 REST transports are documented in `wiki/02_services/REST_API_REFERENCE.md`.
 The matter-profile facade accepts an explicit `DorotheusMatterProfileId` and
-uses one stable result vessel for all three topics. The profile id, matter,
-source-ordered clauses, whole-sign angular witnesses, and completeness flags
-remain explicit; V.9 lunar flow is not inferred from the forward connection
-alone.
+uses one stable result vessel for every admitted topic. The profile id, matter,
+source-ordered clauses, whole-sign angular witnesses, policy, and completeness
+flags remain explicit; V.9 lunar flow is not inferred from the forward
+connection alone. V.20 partnership and V.21 debt/payment retain their
+Mercurial V.31 context. V.22 travel, V.24 acquisition, V.25 construction,
+V.26 launch, and V.43 will writing deliberately have none; V.26 alone may
+receive a complete radical chart for the chapter-owned Saturn overlay. Each
+source-open term remains `not_evaluable` rather than receiving an invented
+sign list, degree interval, or historical score.
 
 The package root and `moira.facade` export the admitted profile constants,
 evaluator functions, policy/evaluation vessels, and their named witnesses and

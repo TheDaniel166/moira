@@ -39,6 +39,11 @@ def _payload(profile_id: str) -> dict[str, Any]:
             "previous_window": "current_sign",
             "modern": False,
         }
+    if profile_id in {
+        "dorotheus_land_travel_v1",
+        "dorotheus_sea_travel_v1",
+    }:
+        payload["sign_nature_variant"] = "lilly_1647_elemental_qualities"
     return payload
 
 
@@ -50,6 +55,15 @@ def _payload(profile_id: str) -> dict[str, Any]:
         ("dorotheus_buying_and_selling_v1", "buying_and_selling", 2),
         ("dorotheus_lunar_price_timing_v1", "lunar_price_timing", 3),
         ("dorotheus_land_purchase_v1", "land_purchase", 2),
+        ("dorotheus_travel_v1", "travel_and_departure", 10),
+        ("dorotheus_ship_acquisition_v1", "ship_acquisition_or_commission", 5),
+        ("dorotheus_ship_construction_v1", "ship_construction", 6),
+        ("dorotheus_ship_launch_v1", "ship_launch", 38),
+        ("dorotheus_land_travel_v1", "land_travel", 5),
+        ("dorotheus_sea_travel_v1", "sea_travel", 3),
+        ("dorotheus_partnership_v1", "entering_a_partnership", 19),
+        ("dorotheus_debt_and_payment_v1", "debt_and_payment", 8),
+        ("dorotheus_writing_a_will_v1", "writing_a_will", 6),
     ),
 )
 def test_matter_route_exposes_each_named_profile(
@@ -87,6 +101,42 @@ def test_matter_route_exposes_each_named_profile(
         }
     else:
         assert evaluation["moon_connection_flow"] is None
+    if profile_id in {
+        "dorotheus_travel_v1",
+        "dorotheus_ship_acquisition_v1",
+        "dorotheus_ship_construction_v1",
+        "dorotheus_ship_launch_v1",
+        "dorotheus_land_travel_v1",
+        "dorotheus_sea_travel_v1",
+        "dorotheus_writing_a_will_v1",
+    }:
+        assert evaluation["rooted_context"] is None
+    if profile_id == "dorotheus_travel_v1":
+        assert evaluation["policy"]["connection_policy"] == (
+            "applying_to_exact_with_source_degree_interval_unresolved"
+        )
+        assert evaluation["clauses"][0]["clause_id"] == "travel_stake_assignments"
+        assert evaluation["clauses"][-1]["clause_id"] == (
+            "infortune_square_or_opposition_moon"
+        )
+    if profile_id == "dorotheus_ship_acquisition_v1":
+        assert evaluation["clauses"][0]["clause_id"] == (
+            "fortune_in_fourth_looking_at_ascendant_and_moon"
+        )
+        assert evaluation["clauses"][-1]["clause_id"] == (
+            "source_ranked_sign_preferences"
+        )
+    if profile_id == "dorotheus_land_travel_v1":
+        assert evaluation["policy"]["sign_nature_variant"] == (
+            "lilly_1647_elemental_qualities"
+        )
+        assert evaluation["clauses"][0]["clause_id"] == (
+            "land_travel_moon_seventh_non_dry_with_infortunes_dry"
+        )
+    if profile_id == "dorotheus_sea_travel_v1":
+        assert evaluation["clauses"][0]["clause_id"] == (
+            "sea_travel_moon_nonwatery_with_infortunes_water"
+        )
     assert body["transport_provenance"]["facade_entrypoint"] == (
         "Moira.dorotheus_matter_profile_at"
     )
@@ -141,3 +191,12 @@ def test_matter_route_openapi_is_typed(client_and_app) -> None:
     assert "DorotheusMatterProfileEvaluationResponse" in schema["components"]["schemas"]
     profile_schema = schema["components"]["schemas"]["DorotheusMatterProfileRequest"]
     assert "dorotheus_buying_and_selling_v1" in str(profile_schema)
+    assert "dorotheus_travel_v1" in str(profile_schema)
+    assert "dorotheus_ship_acquisition_v1" in str(profile_schema)
+    assert "dorotheus_ship_construction_v1" in str(profile_schema)
+    assert "dorotheus_ship_launch_v1" in str(profile_schema)
+    assert "dorotheus_land_travel_v1" in str(profile_schema)
+    assert "dorotheus_sea_travel_v1" in str(profile_schema)
+    assert "dorotheus_partnership_v1" in str(profile_schema)
+    assert "dorotheus_debt_and_payment_v1" in str(profile_schema)
+    assert "dorotheus_writing_a_will_v1" in str(profile_schema)

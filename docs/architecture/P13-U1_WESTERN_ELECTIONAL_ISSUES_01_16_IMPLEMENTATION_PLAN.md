@@ -577,7 +577,7 @@ only, not the governing proof.
 
 ### Phase 7 — Remaining matter profiles (#13)
 
-**Status (2026-07-15): in progress.** The Dorothean commerce slices,
+**Status (2026-07-16): in progress at the remaining-source boundary.** The Dorothean commerce slices,
 `dorotheus_buying_and_selling_v1` and
 `dorotheus_lunar_price_timing_v1`, are admitted through the engine, package
 root, `Moira.dorotheus_matter_profile_at(...)`, and
@@ -614,10 +614,39 @@ sign, light, house, dignity, bodily-join, configuration, and instantaneous
 conjunction-motion evidence. Deficiency/increase "in number," cleansing,
 adaptation, cadence from a significator or ray, the Lot's joining orb, and
 unspecified separation windows remain typed `not_evaluable`; a generic
-dignity score does not fill those gaps. §§32-35 business partnership remains
-for the later partnership family. §41 alchemy/repeated works is excluded from
+dignity score does not fill those gaps. Sahl §§32-35 business partnership is
+admitted as `sahl_business_partnership_v1` through the engine, root, facade, REST, and
+the Phase 8–10 registry; cleansing, lower-sign, reception, and precedence
+remain explicit `not_evaluable` gaps. §41 alchemy/repeated works is excluded from
 the commerce family. Commerce is therefore admitted at its current source
-boundary; journeys, sea travel, and ships are next.
+boundary. Dorotheus V.22 travel/departure is now also admitted as
+`dorotheus_travel_v1` through the engine, package root, facade, generic
+matter-profile REST route, OpenAPI, and the Phase 8 judgement/ranking/window
+registry. It preserves all ten clauses, uses chapter-owned 1st/7th/10th/4th
+stakes, and does not invent a V.31 matter family for travel. Its
+fortune-connection clause remains explicitly `not_evaluable` for merely
+applying geometry because the edition glossary supplies no connection-degree
+interval. V.24 ship acquisition/commission is now separately admitted as
+`dorotheus_ship_acquisition_v1` through the same full public ladder. It keeps
+the fifth-place preference order non-scored, returns no V.31 rooted context,
+and leaves the unenumerated sea-animal-sign category and end-of-Capricorn
+condition as typed `not_evaluable` states. V.25 ship construction,
+`dorotheus_ship_construction_v1`, now preserves all six paragraphs without a
+V.31 root; its source-open sign classes and compound lunar predicates remain
+visible. V.26.1–38 launch is separately admitted as
+`dorotheus_ship_launch_v1`: its 38 clauses preserve source order, a real
+quadrant-horizon witness is required for above/under-earth language, and its
+profile-owned radical Saturn overlay accepts a complete natal chart. V.26.39–43
+is now admitted as `dorotheus_land_travel_v1` and `dorotheus_sea_travel_v1`.
+Both require an explicit sign-nature policy: source-faithful indeterminacy for
+Dorotheus's unenumerated dry signs, or the separately attributed Lilly 1647
+elemental-quality table. The sea water-sign gate is Dorotheus-owned; V.26.40–43
+conditions without a closed table or lawful chart input remain typed
+`not_evaluable`. V.20 partnership (`dorotheus_partnership_v1`) and V.21 debt/payment
+(`dorotheus_debt_and_payment_v1`) now carry an explicit Mercurial V.31 root;
+V.43 will writing (`dorotheus_writing_a_will_v1`) remains source-unrooted.
+All eight additions are public through engine, root, facade, generic REST/OpenAPI,
+and the Phase 8/9/10 registry; none emits a historical score or recommendation.
 
 Admit profiles in dependency and source-completeness order:
 

@@ -73,6 +73,33 @@ def test_ranking_route_round_trips_every_de441_candidate() -> None:
     )
 
 
+@pytest.mark.requires_ephemeris
+def test_ranking_route_preserves_the_named_land_travel_sign_nature_policy() -> None:
+    kernel = find_planetary_kernel()
+    assert kernel is not None
+    payload = {
+        **_payload(),
+        "matter_profile_id": "dorotheus_land_travel_v1",
+        "perfection_significator_b": "Jupiter",
+        "dorotheus_sign_nature_variant": "lilly_1647_elemental_qualities",
+    }
+    payload.pop("sahl_burnt_path_variant")
+    payload.pop("sahl_eighth_rule_variant")
+    app = create_app(ServerConfig(kernel_path=str(kernel), docs_enabled=False))
+    with TestClient(app) as client:
+        response = client.post("/v1/electional/western/ranking", json=payload)
+    assert response.status_code == 200, response.text
+    candidates = (
+        response.json()["evaluation"]["ranked_candidates"]
+        + response.json()["evaluation"]["excluded_candidates"]
+    )
+    assert all(
+        item["judgement"]["selection"]["dorotheus_sign_nature_variant"]
+        == "lilly_1647_elemental_qualities"
+        for item in candidates
+    )
+
+
 def test_ranking_openapi_is_bounded_and_names_full_response() -> None:
     schema = create_app(ServerConfig(docs_enabled=False)).openapi()
     operation = schema["paths"]["/v1/electional/western/ranking"]["post"]
@@ -86,6 +113,7 @@ def test_ranking_openapi_is_bounded_and_names_full_response() -> None:
     assert request["properties"]["candidate_jds"]["maxItems"] == 64
     assert request["properties"]["weights"]["minItems"] == 1
     assert request["properties"]["weights"]["maxItems"] == 3
+    assert "dorotheus_sign_nature_variant" in request["properties"]
     assert "WesternElectionalRankingResponse" in schemas
     assert "WesternElectionalJudgementEvaluationResponse" in schemas
 
@@ -124,8 +152,21 @@ def test_ranking_request_rejects_ambiguous_and_advice_inputs(monkeypatch) -> Non
                 "matter_profile_id": "dorotheus_land_purchase_v1",
             },
         )
+        land_without_sign_nature = client.post(
+            "/v1/electional/western/ranking",
+            json={
+                **{
+                    key: value
+                    for key, value in _payload().items()
+                    if not key.startswith("sahl_")
+                },
+                "matter_profile_id": "dorotheus_land_travel_v1",
+                "perfection_significator_b": "Jupiter",
+            },
+        )
     assert duplicate_jds.status_code == 422
     assert duplicate_weights.status_code == 422
     assert hidden_advice.status_code == 422
     assert cross_doctrine.status_code == 422
+    assert land_without_sign_nature.status_code == 422
     assert engine.calls == 0

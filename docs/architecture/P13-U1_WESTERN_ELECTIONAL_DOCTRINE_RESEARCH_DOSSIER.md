@@ -1,6 +1,6 @@
 # P13-U1 — Western Electional Doctrine Research Dossier
 
-Version: 0.25 (Phase 10 bounded complete-judgement windows)
+Version: 0.26 (Phase 7 remaining-source admission update)
 Date: 2026-07-16
 Status: research inventory for the Western electional doctrine layer. The
 companion materials admit distinct `ramesey_moon_condition_v1` and
@@ -30,7 +30,9 @@ facade, and REST. It exposes bracketed observed-output changes and non-causal
 candidate event seeds, but does not claim a complete boundary inventory, exact
 continuous truth, or implicit Phase 9 ranking.
 The page-confirmed V.8 demolition, V.9 leasing, V.10 buying/selling, V.11 land
-purchase, and V.44 lunar-price-timing matter layers are now admitted through
+purchase, V.20 partnership, V.21 debt/payment, V.22 travel/departure, V.24
+ship acquisition/commission, V.25 ship construction, V.26.1–38 ship launch,
+V.43 will writing, and V.44 lunar-price-timing matter layers are now admitted through
 the named `dorotheus_matter_profile_at(...)`
 engine/facade surface and
 `POST /v1/electional/western/dorotheus-matter-profile`. Sahl's adjacent
@@ -42,6 +44,32 @@ profiles. Their unresolved
 eastern/ascending, "increased in number," circle-motion, separation, cleansing,
 and adaptation language remains typed `not_evaluable` with visible evidence;
 public admission does not claim those terms are numerically settled.
+
+Dorotheus V.22 travel/departure is admitted as `dorotheus_travel_v1` on
+the same full public ladder. It preserves the ten source clauses, chapter-owned
+1st/7th/10th/4th stakes, calculation, rays, co-presence, cadence, station, and
+hard-aspect evidence. V.22 is not forced into V.31's six matter families, so
+its rooted context is explicitly not applicable. The edition glossary confirms
+application toward exactness but supplies no connection-degree interval; an
+exact benefic hard-aspect connection computes, while a merely applying one
+remains visible as `not_evaluable`.
+
+Dorotheus V.24 ship acquisition/commission is also admitted as
+`dorotheus_ship_acquisition_v1`. Its fifth-place Jupiter/Venus witness and
+non-scored sign-preference order remain visible. It likewise has no V.31
+rooted context; the unenumerated sea-animal-sign class and end-of-Capricorn
+condition are exposed as `not_evaluable`, not guessed as a sign list or degree
+interval.
+
+The six current Phase 7 additions are also admitted through that complete
+public ladder: `dorotheus_ship_construction_v1`,
+`dorotheus_ship_launch_v1`, `dorotheus_partnership_v1`,
+`dorotheus_debt_and_payment_v1`, `dorotheus_writing_a_will_v1`, and the
+independent `sahl_business_partnership_v1`. V.20 and V.21 retain their
+Mercurial rooted context; ship construction, launch, and will writing do not
+invent one. V.26 alone may accept a complete radical chart for its named
+Saturn overlay. Every open historical term remains a source-visible
+`not_evaluable` clause; no profile emits a score or recommendation.
 
 `western_electional_judgement_v1` now composes one currently admitted Sahl or
 Dorotheus matter profile with a caller-declared, bounded
@@ -67,6 +95,16 @@ access is through `Moira.western_electional_ranking_at(...)` and
 `not_admitted`.
 
 Changelog:
+- 0.27 - admitted the bounded V.26.39–43 land and sea travel profiles through
+  the engine-to-REST and Phase 8–10 ladder. The caller must name either the
+  source-faithful unresolved dry-sign policy or the separately attributed Lilly
+  1647 elemental-quality table; Dorotheus's water-sign gate is kept distinct.
+  The V.26.40–43 predicates that lack an admitted table or chart input remain
+  typed indeterminacies, not inferred verdicts.
+- 0.26 - admitted the bounded V.20, V.21, V.25, V.26.1–38, and V.43
+  Dorothean profiles plus Sahl §§32–35 business partnership through the
+  complete engine-to-REST and Phase 8–10 ladder; retained every source-open
+  predicate as typed evidence and deferred V.26.39–43 land/sea travel.
 - 0.25 - admitted Phase 10 bounded complete-judgement windows in sampled and
   partially event-refined modes; exposed complete signatures, bracketed
   observed-output causes, non-causal event seeds, representative Phase 8
@@ -822,7 +860,7 @@ separate module-level `ramesey_moon_condition_v1` evaluator admitted on
 | Composite Moon-condition gates (A.1) | Source-ordered profiles | Public single-moment evaluation and bounded status scan admitted | `moira.western_electional`, package root, facade, `Moira`, and bounded REST preserve rule witnesses; the dedicated scan requires an exact caller-selected status set and is not the generic `all_of` or numeric scorer |
 | Planetary hours (D) | Low-weight factor | Yes (computable) | Chaldean-order hour ruler from sunrise/sunset |
 | Radicality (E) | Class-gated evidence | Shared context admitted | `ephemeral` rejects natal input; `radical` requires a complete natal moment/location/house-system bundle; no success gate is invented |
-| Matter-specific overlays (F) | Profile family | Shared context and four matter profiles admitted | `dorotheus_construction_v1` covers V.7; the named matter surface covers V.8 demolition, V.9 leasing, and V.11 land purchase. V.9 lunar flow remains explicitly unresolved; complete electional judgements remain future work |
+| Matter-specific overlays (F) | Profile family | Shared context and named matter profiles admitted | `dorotheus_construction_v1` covers V.7; named profiles separately cover V.8–V.11, V.20–V.22, V.24–V.26.1–38, V.43, and V.44, plus independent Sahl matter profiles. Each retains source-owned unresolved terms rather than a generic score. |
 
 Three cross-cutting transport capabilities still unlock most wider exposure:
 1. **Body speed in the scan payload** → generic slow-Moon, retrograde, applying/separating predicates.
@@ -971,12 +1009,21 @@ choices.
    range-level void-of-course computation without changing their single-moment
    rule meaning.
 6. **Dorothean matter profiles are bounded and admitted**: V.8 demolition,
-   V.9 leasing, and V.11 land purchase are selected by explicit profile id
+   V.9 leasing, V.10 commerce, V.11 land purchase, V.20 partnership, V.21
+   debt/payment, V.22 travel/departure, V.24 ship acquisition/commission, V.25
+   construction, V.26.1–38 launch, V.43 will writing, and V.44 lunar-price timing are selected
+   by explicit profile id
    through `dorotheus_matter_profile_at(...)`,
    `Moira.dorotheus_matter_profile_at(...)`, and
    `POST /v1/electional/western/dorotheus-matter-profile`. Whole-sign angular
-   topics, fortune/infortune testimony, lunar latitude direction, and terrain
-   classifications remain visible and non-scored. The neutral lunar-flow
+   topics, fortune/infortune testimony, lunar latitude direction, terrain
+   classifications, V.22 travel witnesses, V.24 ship-acquisition witnesses,
+   and each newly admitted source clause remain visible and non-scored. V.22,
+   V.24, V.25, V.26, and V.43 do not manufacture a V.31 rooted-matter context;
+   V.22's applying benefic-connection degree interval, V.24's sea-animal-sign
+   class, V.25's sign tables, V.26's open passages, and V.43's star-connection
+   interval remain
+   explicitly unresolved. The neutral lunar-flow
    geometry is admitted through `MoonConnectionFlow`; leasing callers must
    select either a current-sign or bounded fixed-lookback previous-event
    window, and REST preserves the resulting prior event, motion state, next

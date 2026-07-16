@@ -154,6 +154,7 @@ class _FakeEngine:
             SahlMatterProfileId.WELLS_AND_RIVERS: "digging_wells_and_diverting_rivers",
             SahlMatterProfileId.PLANTING: "planting_trees",
             SahlMatterProfileId.SOWING: "sowing_seed",
+            SahlMatterProfileId.BUSINESS_PARTNERSHIP: "business_partnership",
         }
         return SahlMatterProfileEvaluation(
             jd_ut=jd_ut,

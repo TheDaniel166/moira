@@ -26,6 +26,7 @@ SAHL_MATTER_PROFILE_IDS = (
     "sahl_wells_and_rivers_v1",
     "sahl_planting_v1",
     "sahl_sowing_v1",
+    "sahl_business_partnership_v1",
 )
 DOROTHEUS_PROFILE_ID = "dorotheus_moon_condition_v1"
 DOROTHEUS_ROOTED_CONTEXT_PROFILE_ID = "dorotheus_rooted_context_v1"
@@ -36,6 +37,42 @@ DOROTHEUS_MATTER_PROFILE_IDS = (
     "dorotheus_buying_and_selling_v1",
     "dorotheus_lunar_price_timing_v1",
     "dorotheus_land_purchase_v1",
+    "dorotheus_travel_v1",
+    "dorotheus_ship_acquisition_v1",
+    "dorotheus_ship_construction_v1",
+    "dorotheus_ship_launch_v1",
+    "dorotheus_land_travel_v1",
+    "dorotheus_sea_travel_v1",
+    "dorotheus_partnership_v1",
+    "dorotheus_debt_and_payment_v1",
+    "dorotheus_writing_a_will_v1",
+)
+DOROTHEUS_SOURCE_UNROOTED_PROFILE_IDS = frozenset(
+    (
+        "dorotheus_travel_v1",
+        "dorotheus_ship_acquisition_v1",
+        "dorotheus_ship_construction_v1",
+        "dorotheus_ship_launch_v1",
+        "dorotheus_land_travel_v1",
+        "dorotheus_sea_travel_v1",
+        "dorotheus_writing_a_will_v1",
+    )
+)
+DOROTHEUS_EPHEMERAL_ONLY_PROFILE_IDS = frozenset(
+    (
+        "dorotheus_travel_v1",
+        "dorotheus_ship_acquisition_v1",
+        "dorotheus_ship_construction_v1",
+        "dorotheus_land_travel_v1",
+        "dorotheus_sea_travel_v1",
+        "dorotheus_writing_a_will_v1",
+    )
+)
+DOROTHEUS_SIGN_NATURE_PROFILE_IDS = frozenset(
+    (
+        "dorotheus_land_travel_v1",
+        "dorotheus_sea_travel_v1",
+    )
 )
 WESTERN_PROFILE_SCAN_MAX_SPAN_DAYS = 31.0
 WESTERN_PROFILE_SCAN_MAX_POINTS = 256
@@ -102,12 +139,25 @@ DorotheusMatterProfileIdValue = Literal[
     "dorotheus_buying_and_selling_v1",
     "dorotheus_lunar_price_timing_v1",
     "dorotheus_land_purchase_v1",
+    "dorotheus_travel_v1",
+    "dorotheus_ship_acquisition_v1",
+    "dorotheus_ship_construction_v1",
+    "dorotheus_ship_launch_v1",
+    "dorotheus_land_travel_v1",
+    "dorotheus_sea_travel_v1",
+    "dorotheus_partnership_v1",
+    "dorotheus_debt_and_payment_v1",
+    "dorotheus_writing_a_will_v1",
 ]
 DorotheusMatterProfileStatusValue = Literal[
     "clear_of_explicit_profile_impediments",
     "one_or_more_explicit_profile_impediments",
     "descriptive_witnesses_only",
     "indeterminate",
+]
+DorotheusSignNatureVariantValue = Literal[
+    "source_text_unresolved_no_dry_sign_table",
+    "lilly_1647_elemental_qualities",
 ]
 SahlMatterProfileIdValue = Literal[
     "sahl_lending_v1",
@@ -120,6 +170,7 @@ SahlMatterProfileIdValue = Literal[
     "sahl_wells_and_rivers_v1",
     "sahl_planting_v1",
     "sahl_sowing_v1",
+    "sahl_business_partnership_v1",
 ]
 SahlMatterProfileStatusValue = Literal[
     "clear_of_explicit_profile_gates",
@@ -525,6 +576,7 @@ class SahlMatterProfileEvaluationResponse(_StrictModel):
         "digging_wells_and_diverting_rivers",
         "planting_trees",
         "sowing_seed",
+        "business_partnership",
     ]
     status: SahlMatterProfileStatusValue
     moon_condition: SahlMoonConditionEvaluationResponse
@@ -1034,6 +1086,7 @@ class DorotheusMoonFlowPolicyRequest(_StrictModel):
 class DorotheusMatterProfileRequest(DorotheusConstructionRequest):
     profile_id: DorotheusMatterProfileIdValue
     moon_flow_policy: DorotheusMoonFlowPolicyRequest | None = None
+    sign_nature_variant: DorotheusSignNatureVariantValue | None = None
 
     @model_validator(mode="after")
     def _flow_policy(self) -> "DorotheusMatterProfileRequest":
@@ -1048,6 +1101,23 @@ class DorotheusMatterProfileRequest(DorotheusConstructionRequest):
                 )
         elif self.moon_flow_policy is not None:
             raise ValueError("moon_flow_policy is accepted only for flow-based profiles")
+        if self.profile_id in {
+            "dorotheus_land_travel_v1",
+            "dorotheus_sea_travel_v1",
+        }:
+            if self.sign_nature_variant is None:
+                raise ValueError(
+                    "V.26.39-43 travel profiles require an explicit sign_nature_variant"
+                )
+        elif self.sign_nature_variant is not None:
+            raise ValueError("sign_nature_variant is accepted only for V.26.39-43 travel profiles")
+        if (
+            self.profile_id in DOROTHEUS_EPHEMERAL_ONLY_PROFILE_IDS
+            and self.election_class != "ephemeral"
+        ):
+            raise ValueError(
+                "source-unrooted Dorotheus matter profiles admit only ephemeral elections"
+            )
         return self
 
 
@@ -1072,20 +1142,45 @@ class DorotheusMatterClauseWitnessResponse(_StrictModel):
     source_reference: str
 
 
+class DorotheusMatterProfilePolicyResponse(_StrictModel):
+    profile_id: DorotheusMatterProfileIdValue
+    profile_version: Literal["1.0.0"]
+    angular_place_policy: Literal["whole_sign_places_from_tropical_ascendant"]
+    configuration_policy: Literal["whole_sign_ptolemaic_configuration"]
+    strength_policy: Literal["quadrant_house_angular_succedent_cadent"]
+    copresence_policy: Literal["same_sign_copresence"]
+    under_rays_policy: Literal["dykes_glossary_15_degree_solar_distance"]
+    calculation_policy: Literal["iers_true_minus_mean_lunar_equation"]
+    station_policy: Literal["moira_body_specific_instantaneous_speed_thresholds"]
+    connection_policy: Literal["applying_to_exact_with_source_degree_interval_unresolved"]
+    sign_nature_variant: DorotheusSignNatureVariantValue
+    latitude_rate_sample_days: Literal[0.01]
+
+
 class DorotheusMatterProfileEvaluationResponse(_StrictModel):
     jd_ut: float
     profile_id: DorotheusMatterProfileIdValue
     profile_version: Literal["1.0.0"]
+    policy: DorotheusMatterProfilePolicyResponse
     matter: Literal[
         "building_demolition",
         "leasing",
         "buying_and_selling",
         "lunar_price_timing",
         "land_purchase",
+        "travel_and_departure",
+        "ship_acquisition_or_commission",
+        "ship_construction",
+        "ship_launch",
+        "land_travel",
+        "sea_travel",
+        "entering_a_partnership",
+        "debt_and_payment",
+        "writing_a_will",
     ]
     status: DorotheusMatterProfileStatusValue
     moon_condition: DorotheusMoonConditionEvaluationResponse
-    rooted_context: DorotheusRootedContextEvaluationResponse
+    rooted_context: DorotheusRootedContextEvaluationResponse | None
     moon_connection_flow: MoonConnectionFlowResponse | None
     clauses: list[DorotheusMatterClauseWitnessResponse]
     angular_places: list[DorotheusAngularPlaceWitnessResponse]
@@ -1108,7 +1203,7 @@ class DorotheusMatterProfileTransportProvenanceResponse(_StrictModel):
     engine_entrypoint: Literal["dorotheus_matter_profile_at"] = "dorotheus_matter_profile_at"
     facade_entrypoint: Literal["Moira.dorotheus_matter_profile_at"] = "Moira.dorotheus_matter_profile_at"
     route_semantics: Literal["single_moment_named_matter_profile"] = "single_moment_named_matter_profile"
-    western_electional_doctrine: Literal["dorotheus_V8_V9_V11_admitted"] = "dorotheus_V8_V9_V11_admitted"
+    western_electional_doctrine: Literal["dorotheus_book_v_matter_profiles_admitted"] = "dorotheus_book_v_matter_profiles_admitted"
     authority: str
     scoring: Literal["not_provided"] = "not_provided"
     recommendation_language: Literal["not_provided"] = "not_provided"
@@ -1417,6 +1512,7 @@ class WesternElectionalJudgementRequest(DorotheusConstructionRequest):
     perfection_significator_b: TraditionalPlanetValue
     perfection_interval_days: float = Field(gt=0.0, le=LILLY_PERFECTION_MAX_SPAN_DAYS)
     moon_flow_policy: DorotheusMoonFlowPolicyRequest | None = None
+    dorotheus_sign_nature_variant: DorotheusSignNatureVariantValue | None = None
     sahl_burnt_path_variant: SahlBurntPathVariantValue | None = None
     sahl_eighth_rule_variant: SahlEighthRuleVariantValue | None = None
 
@@ -1434,6 +1530,10 @@ class WesternElectionalJudgementRequest(DorotheusConstructionRequest):
             "dorotheus_leasing_v1",
             "dorotheus_buying_and_selling_v1",
         }
+        is_source_unrooted = (
+            self.matter_profile_id in DOROTHEUS_EPHEMERAL_ONLY_PROFILE_IDS
+        )
+        is_sign_nature = self.matter_profile_id in DOROTHEUS_SIGN_NATURE_PROFILE_IDS
         if is_sahl:
             if self.election_class != "ephemeral":
                 raise ValueError("Sahl judgement admits only ephemeral elections")
@@ -1444,9 +1544,10 @@ class WesternElectionalJudgementRequest(DorotheusConstructionRequest):
                 self.natal_house_system,
                 self.unavoidable_time_urgency,
                 self.moon_flow_policy,
+                self.dorotheus_sign_nature_variant,
             )):
                 raise ValueError(
-                    "Sahl judgement rejects Dorothean natal, urgency, and flow inputs"
+                    "Sahl judgement rejects Dorothean natal, urgency, flow, and sign-nature inputs"
                 )
             if self.sahl_burnt_path_variant is None:
                 raise ValueError("Sahl judgement requires sahl_burnt_path_variant")
@@ -1455,6 +1556,18 @@ class WesternElectionalJudgementRequest(DorotheusConstructionRequest):
         else:
             if self.sahl_burnt_path_variant is not None or self.sahl_eighth_rule_variant is not None:
                 raise ValueError("Dorotheus judgement rejects Sahl variant inputs")
+            if is_sign_nature and self.dorotheus_sign_nature_variant is None:
+                raise ValueError(
+                    "land and sea travel judgements require dorotheus_sign_nature_variant"
+                )
+            if not is_sign_nature and self.dorotheus_sign_nature_variant is not None:
+                raise ValueError(
+                    "dorotheus_sign_nature_variant is accepted only for land and sea travel"
+                )
+            if is_source_unrooted and self.election_class != "ephemeral":
+                raise ValueError(
+                    "source-unrooted Dorotheus matter profiles admit only ephemeral elections"
+                )
             if is_flow and self.moon_flow_policy is None:
                 raise ValueError(
                     "flow-based Dorotheus judgement requires moon_flow_policy"
@@ -1472,7 +1585,7 @@ class WesternElectionalJudgementPolicyResponse(_StrictModel):
     composition_authority: Literal["moira_owned_explicit_cross_source_composition"]
     matter_policy: Literal["one_admitted_named_matter_profile_required"]
     perfection_policy: Literal["lilly_1647_caller_declared_significators_required"]
-    rooted_context_policy: Literal["dorotheus_embedded_sahl_not_applicable"]
+    rooted_context_policy: Literal["source_applicable_rooted_context_else_not_applicable"]
     natal_policy: Literal["selected_matter_profile_owns_radicality_requirement"]
     precedence_policy: Literal["impediment_then_indeterminacy"]
     completion_policy: Literal["all_required_components_complete_with_constructive_perfection"]
@@ -1502,6 +1615,7 @@ class WesternElectionalJudgementSelectionResponse(_StrictModel):
     moon_flow_previous_window: Literal["current_sign", "fixed_lookback"] | None
     moon_flow_previous_lookback_days: float | None
     moon_flow_modern: bool | None
+    dorotheus_sign_nature_variant: DorotheusSignNatureVariantValue | None
     sahl_burnt_path_variant: SahlBurntPathVariantValue | None
     sahl_eighth_rule_variant: SahlEighthRuleVariantValue | None
 
@@ -1610,6 +1724,7 @@ class WesternElectionalRankingRequest(_StrictModel):
     natal_house_system: str | None = None
     unavoidable_time_urgency: bool | None = None
     moon_flow_policy: DorotheusMoonFlowPolicyRequest | None = None
+    dorotheus_sign_nature_variant: DorotheusSignNatureVariantValue | None = None
     sahl_burnt_path_variant: SahlBurntPathVariantValue | None = None
     sahl_eighth_rule_variant: SahlEighthRuleVariantValue | None = None
 
@@ -1684,6 +1799,10 @@ class WesternElectionalRankingRequest(_StrictModel):
             "dorotheus_leasing_v1",
             "dorotheus_buying_and_selling_v1",
         }
+        is_source_unrooted = (
+            self.matter_profile_id in DOROTHEUS_EPHEMERAL_ONLY_PROFILE_IDS
+        )
+        is_sign_nature = self.matter_profile_id in DOROTHEUS_SIGN_NATURE_PROFILE_IDS
         if is_sahl:
             if self.election_class != "ephemeral":
                 raise ValueError("Sahl ranking admits only ephemeral elections")
@@ -1694,9 +1813,10 @@ class WesternElectionalRankingRequest(_StrictModel):
                 self.natal_house_system,
                 self.unavoidable_time_urgency,
                 self.moon_flow_policy,
+                self.dorotheus_sign_nature_variant,
             )):
                 raise ValueError(
-                    "Sahl ranking rejects Dorothean natal, urgency, and flow inputs"
+                    "Sahl ranking rejects Dorothean natal, urgency, flow, and sign-nature inputs"
                 )
             if self.sahl_burnt_path_variant is None:
                 raise ValueError("Sahl ranking requires sahl_burnt_path_variant")
@@ -1705,6 +1825,18 @@ class WesternElectionalRankingRequest(_StrictModel):
         else:
             if self.sahl_burnt_path_variant is not None or self.sahl_eighth_rule_variant is not None:
                 raise ValueError("Dorotheus ranking rejects Sahl variant inputs")
+            if is_sign_nature and self.dorotheus_sign_nature_variant is None:
+                raise ValueError(
+                    "land and sea travel rankings require dorotheus_sign_nature_variant"
+                )
+            if not is_sign_nature and self.dorotheus_sign_nature_variant is not None:
+                raise ValueError(
+                    "dorotheus_sign_nature_variant is accepted only for land and sea travel"
+                )
+            if is_source_unrooted and self.election_class != "ephemeral":
+                raise ValueError(
+                    "source-unrooted Dorotheus matter profiles admit only ephemeral elections"
+                )
             if is_flow and self.moon_flow_policy is None:
                 raise ValueError("flow-based Dorotheus ranking requires moon_flow_policy")
             if not is_flow and self.moon_flow_policy is not None:
@@ -1853,6 +1985,7 @@ class WesternElectionalJudgementWindowsRequest(_StrictModel):
     natal_house_system: str | None = None
     unavoidable_time_urgency: bool | None = None
     moon_flow_policy: DorotheusMoonFlowPolicyRequest | None = None
+    dorotheus_sign_nature_variant: DorotheusSignNatureVariantValue | None = None
     sahl_burnt_path_variant: SahlBurntPathVariantValue | None = None
     sahl_eighth_rule_variant: SahlEighthRuleVariantValue | None = None
     policy: WesternElectionalJudgementWindowPolicyRequest = Field(
@@ -1931,6 +2064,10 @@ class WesternElectionalJudgementWindowsRequest(_StrictModel):
             "dorotheus_leasing_v1",
             "dorotheus_buying_and_selling_v1",
         }
+        is_source_unrooted = (
+            self.matter_profile_id in DOROTHEUS_EPHEMERAL_ONLY_PROFILE_IDS
+        )
+        is_sign_nature = self.matter_profile_id in DOROTHEUS_SIGN_NATURE_PROFILE_IDS
         if is_sahl:
             if self.election_class != "ephemeral":
                 raise ValueError("Sahl judgement windows admit only ephemeral elections")
@@ -1941,9 +2078,10 @@ class WesternElectionalJudgementWindowsRequest(_StrictModel):
                 self.natal_house_system,
                 self.unavoidable_time_urgency,
                 self.moon_flow_policy,
+                self.dorotheus_sign_nature_variant,
             )):
                 raise ValueError(
-                    "Sahl judgement windows reject Dorothean natal, urgency, and flow inputs"
+                    "Sahl judgement windows reject Dorothean natal, urgency, flow, and sign-nature inputs"
                 )
             if self.sahl_burnt_path_variant is None:
                 raise ValueError("Sahl judgement windows require sahl_burnt_path_variant")
@@ -1952,6 +2090,18 @@ class WesternElectionalJudgementWindowsRequest(_StrictModel):
         else:
             if self.sahl_burnt_path_variant is not None or self.sahl_eighth_rule_variant is not None:
                 raise ValueError("Dorotheus judgement windows reject Sahl variant inputs")
+            if is_sign_nature and self.dorotheus_sign_nature_variant is None:
+                raise ValueError(
+                    "land and sea travel judgement windows require dorotheus_sign_nature_variant"
+                )
+            if not is_sign_nature and self.dorotheus_sign_nature_variant is not None:
+                raise ValueError(
+                    "dorotheus_sign_nature_variant is accepted only for land and sea travel"
+                )
+            if is_source_unrooted and self.election_class != "ephemeral":
+                raise ValueError(
+                    "source-unrooted Dorotheus matter profiles admit only ephemeral elections"
+                )
             if is_flow and self.moon_flow_policy is None:
                 raise ValueError(
                     "flow-based Dorotheus judgement windows require moon_flow_policy"
@@ -2161,8 +2311,10 @@ __all__ = [
     "DorotheusSignNatureWitnessResponse",
     "DorotheusMatterProfileIdValue",
     "DorotheusMatterProfileStatusValue",
+    "DorotheusSignNatureVariantValue",
     "DorotheusMatterProfileRequest",
     "DorotheusMoonFlowPolicyRequest",
+    "DorotheusMatterProfilePolicyResponse",
     "DorotheusAngularPlaceWitnessResponse",
     "DorotheusMatterClauseWitnessResponse",
     "DorotheusMatterProfileEvaluationResponse",

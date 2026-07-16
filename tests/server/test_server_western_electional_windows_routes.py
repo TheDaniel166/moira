@@ -81,6 +81,35 @@ def test_judgement_windows_route_round_trips_de441_sampled_truth() -> None:
     )
 
 
+@pytest.mark.requires_ephemeris
+def test_judgement_windows_route_preserves_the_named_sea_travel_sign_nature_policy() -> None:
+    kernel = find_planetary_kernel()
+    assert kernel is not None
+    payload = {
+        **_payload(),
+        "matter_profile_id": "dorotheus_sea_travel_v1",
+        "perfection_significator_b": "Jupiter",
+        "dorotheus_sign_nature_variant": "source_text_unresolved_no_dry_sign_table",
+    }
+    payload.pop("sahl_burnt_path_variant")
+    payload.pop("sahl_eighth_rule_variant")
+    app = create_app(ServerConfig(kernel_path=str(kernel), docs_enabled=False))
+    with TestClient(app) as client:
+        response = client.post(
+            "/v1/electional/western/judgement-windows",
+            json=payload,
+        )
+    assert response.status_code == 200, response.text
+    windows = response.json()["evaluation"]["windows"]
+    assert all(
+        item["representative_judgement"]["selection"][
+            "dorotheus_sign_nature_variant"
+        ]
+        == "source_text_unresolved_no_dry_sign_table"
+        for item in windows
+    )
+
+
 def test_judgement_windows_openapi_exposes_modes_limits_and_nested_truth() -> None:
     schema = create_app(ServerConfig(docs_enabled=False)).openapi()
     operation = schema["paths"][
@@ -100,6 +129,7 @@ def test_judgement_windows_openapi_exposes_modes_limits_and_nested_truth() -> No
     assert policy["properties"]["max_evaluations"]["maximum"] == 256
     assert policy["properties"]["max_refinement_iterations"]["maximum"] == 24
     assert policy["properties"]["max_event_seeds"]["maximum"] == 128
+    assert "dorotheus_sign_nature_variant" in request["properties"]
     assert "WesternElectionalCandidateEventResponse" in schemas
     assert "WesternElectionalJudgementWindowsResponse" in schemas
     assert "WesternElectionalJudgementEvaluationResponse" in schemas
@@ -150,8 +180,21 @@ def test_judgement_windows_reject_resource_and_exactness_escape_hatches(
                 "matter_profile_id": "dorotheus_land_purchase_v1",
             },
         )
+        land_without_sign_nature = client.post(
+            "/v1/electional/western/judgement-windows",
+            json={
+                **{
+                    key: value
+                    for key, value in _payload().items()
+                    if not key.startswith("sahl_")
+                },
+                "matter_profile_id": "dorotheus_land_travel_v1",
+                "perfection_significator_b": "Jupiter",
+            },
+        )
     assert sampled_refinement.status_code == 422
     assert too_many_samples.status_code == 422
     assert exact_claim.status_code == 422
     assert cross_doctrine.status_code == 422
+    assert land_without_sign_nature.status_code == 422
     assert engine.calls == 0

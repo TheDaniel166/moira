@@ -1762,14 +1762,15 @@ not-evaluable rule identities, the separate non-erasing remedy witness,
 requested/effective house-system truth, fallback status, reader provenance, and
 the profile's non-complete-judgement language.
 
-The Sahl matter route requires one of six exact profile ids:
-`sahl_building_v1`, `sahl_demolition_v1`, `sahl_land_v1`,
-`sahl_wells_and_rivers_v1`, `sahl_planting_v1`, or `sahl_sowing_v1`. It also
-requires the explicit Sahl burnt-path variant used by its nested general Moon
-layer. The response contains that complete Moon layer plus every matter clause,
-role, state, measurement, policy id, citation, triggered gate, unresolved
-clause, and numerical-completeness flag. It provides no score, ranking, advice,
-recommendation, or generic fourth-house judgement.
+The Sahl matter route requires one exact admitted profile id from the
+source-specific building, land, planting, sowing, lending, investment,
+purchase, sale, or business-partnership families. This includes the independent
+`sahl_business_partnership_v1` profile for §§32–35; it is not a Dorothean
+partnership alias. The route also requires the explicit Sahl burnt-path variant
+used by its nested general Moon layer. The response contains that complete Moon
+layer plus every matter clause, role, state, measurement, policy id, citation,
+triggered gate, unresolved clause, and numerical-completeness flag. It provides
+no score, ranking, advice, recommendation, or generic house-topic judgement.
 
 The Ramesey remedy witness exposes urgent applicability and tri-state
 fulfillment separately. Its typed clauses preserve Moon cadence/Ascendant
@@ -1791,12 +1792,34 @@ The ecliptic-crossing clause remains
 tolerance. The profile-window route is a bounded discrete scan of explicitly
 selected statuses, not an exact-transition solver.
 
-The matter-profile route requires one of `dorotheus_demolition_v1`,
-`dorotheus_leasing_v1`, or `dorotheus_land_purchase_v1`. It exposes the
-source-ordered V.8, V.9, or V.11 clauses, named whole-sign angular topics,
-planetary strength witnesses where applicable, and the inherited Moon/rooted
-context. Leasing additionally requires `moon_flow_policy`, selecting either
-the current-sign or a bounded fixed-lookback previous-event interval, and the
+The matter-profile route admits the named Dorothean Book V ids from V.8–V.11,
+V.20–V.22, V.24–V.26, V.43, and V.44: this includes
+`dorotheus_ship_construction_v1`, `dorotheus_ship_launch_v1`,
+`dorotheus_land_travel_v1`, `dorotheus_sea_travel_v1`,
+`dorotheus_partnership_v1`, `dorotheus_debt_and_payment_v1`, and
+`dorotheus_writing_a_will_v1` in addition to the earlier profiles. It exposes
+source-ordered clauses, named whole-sign angular topics, applicable
+planetary-strength witnesses, inherited Moon conditions, and an explicit
+policy vessel. Rooted context is present only where the cited source lawfully
+supplies it: V.20 partnership and V.21 debt/payment retain their Mercurial
+root, while V.22, V.24, V.25, V.26, and V.43 return `rooted_context: null`.
+V.26 alone accepts a complete radical chart for its named Saturn overlay.
+Land and sea travel requests require `sign_nature_variant`. The
+`source_text_unresolved_no_dry_sign_table` choice keeps Dorotheus's
+unenumerated dry-sign class explicit and indeterminate; the separately
+attributed `lilly_1647_elemental_qualities` choice applies Lilly 1647's named
+table. The sea water-sign gate remains Dorotheus-owned. Every remaining
+source-open sign class, connection interval, compound predicate, and ambiguous
+passage remains `not_evaluable`; no route returns a score or recommendation.
+
+The Phase 8 judgement, Phase 9 ranking, and Phase 10 judgement-window routes
+accept the same policy as `dorotheus_sign_nature_variant` for these two matter
+profiles and return it in each judgement selection. It is required for land or
+sea travel and rejected for every other matter profile, so no authority choice
+is hidden or silently discarded.
+
+Leasing additionally requires `moon_flow_policy`, selecting either the
+current-sign or a bounded fixed-lookback previous-event interval, and the
 response embeds the resulting `moon_connection_flow`. Leasing remains
 `numerically_complete: false`: the event geometry is now complete, but V.9's
 surviving text does not assign separation and connection to its four leasing

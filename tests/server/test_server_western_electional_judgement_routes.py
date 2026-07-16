@@ -96,6 +96,29 @@ def test_judgement_route_preserves_dorotheus_flow_construction() -> None:
     assert evaluation["matter_profile"]["moon_connection_flow"] is not None
 
 
+@pytest.mark.requires_ephemeris
+def test_judgement_route_preserves_the_named_land_travel_sign_nature_policy() -> None:
+    kernel = find_planetary_kernel()
+    assert kernel is not None
+    payload = {
+        **_sahl_payload(),
+        "matter_profile_id": "dorotheus_land_travel_v1",
+        "perfection_significator_b": "Jupiter",
+        "dorotheus_sign_nature_variant": "lilly_1647_elemental_qualities",
+    }
+    payload.pop("sahl_burnt_path_variant")
+    payload.pop("sahl_eighth_rule_variant")
+    app = create_app(ServerConfig(kernel_path=str(kernel), docs_enabled=False))
+    with TestClient(app) as client:
+        response = client.post("/v1/electional/western/judgement", json=payload)
+    assert response.status_code == 200, response.text
+    selection = response.json()["evaluation"]["selection"]
+    assert selection["matter_profile_id"] == "dorotheus_land_travel_v1"
+    assert selection["dorotheus_sign_nature_variant"] == (
+        "lilly_1647_elemental_qualities"
+    )
+
+
 def test_judgement_openapi_names_full_request_and_response() -> None:
     schema = create_app(ServerConfig(docs_enabled=False)).openapi()
     operation = schema["paths"]["/v1/electional/western/judgement"]["post"]
@@ -110,6 +133,16 @@ def test_judgement_openapi_names_full_request_and_response() -> None:
         admitted.update(branch["enum"])
     assert "sahl_sale_v1" in admitted
     assert "dorotheus_lunar_price_timing_v1" in admitted
+    assert "dorotheus_travel_v1" in admitted
+    assert "dorotheus_ship_acquisition_v1" in admitted
+    assert "dorotheus_ship_construction_v1" in admitted
+    assert "dorotheus_ship_launch_v1" in admitted
+    assert "dorotheus_land_travel_v1" in admitted
+    assert "dorotheus_sea_travel_v1" in admitted
+    assert "dorotheus_partnership_v1" in admitted
+    assert "dorotheus_debt_and_payment_v1" in admitted
+    assert "dorotheus_writing_a_will_v1" in admitted
+    assert "sahl_business_partnership_v1" in admitted
     schemas = schema["components"]["schemas"]
     assert "WesternElectionalJudgementResponse" in schemas
     selection = schemas["WesternElectionalJudgementSelectionResponse"]["properties"]
@@ -122,6 +155,7 @@ def test_judgement_openapi_names_full_request_and_response() -> None:
         "moon_flow_previous_window",
         "moon_flow_previous_lookback_days",
         "moon_flow_modern",
+        "dorotheus_sign_nature_variant",
     } <= selection.keys()
 
 
@@ -148,11 +182,24 @@ def test_judgement_request_rejects_cross_doctrine_and_hidden_score(monkeypatch) 
                 "matter_profile_id": "dorotheus_land_purchase_v1",
             },
         )
+        land_without_sign_nature = client.post(
+            "/v1/electional/western/judgement",
+            json={
+                **{
+                    key: value
+                    for key, value in _sahl_payload().items()
+                    if not key.startswith("sahl_")
+                },
+                "matter_profile_id": "dorotheus_land_travel_v1",
+                "perfection_significator_b": "Jupiter",
+            },
+        )
         scoring = client.post(
             "/v1/electional/western/judgement",
             json={**_sahl_payload(), "score": True},
         )
     assert missing_variant.status_code == 422
     assert dorotheus_with_sahl.status_code == 422
+    assert land_without_sign_nature.status_code == 422
     assert scoring.status_code == 422
     assert engine.calls == 0

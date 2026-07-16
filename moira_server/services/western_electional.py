@@ -11,6 +11,7 @@ from moira.western_electional import (
     DorotheusMatter,
     DorotheusMatterProfileEvaluation,
     DorotheusMatterProfileId,
+    DorotheusSignNatureVariant,
     DorotheusConstructionEvaluation,
     DorotheusMoonConditionEvaluation,
     DorotheusRootedContextEvaluation,
@@ -129,7 +130,7 @@ def compute_dorotheus_matter_profile(
     engine: Moira,
     request: DorotheusMatterProfileRequest,
 ) -> DorotheusMatterProfileEvaluation:
-    """Evaluate one V.8, V.9, or V.11 profile through the public facade."""
+    """Evaluate one admitted named Dorothean Book V profile through the facade."""
 
     flow_request = request.moon_flow_policy
     flow_policy = (
@@ -156,6 +157,11 @@ def compute_dorotheus_matter_profile(
         natal_house_system=request.natal_house_system,
         unavoidable_time_urgency=request.unavoidable_time_urgency,
         moon_flow_policy=flow_policy,
+        sign_nature_variant=(
+            None
+            if request.sign_nature_variant is None
+            else DorotheusSignNatureVariant(request.sign_nature_variant)
+        ),
     )
     if result.profile_id.value != request.profile_id:
         raise RuntimeError("facade returned a matter profile different from the request")
@@ -314,6 +320,11 @@ def compute_western_electional_judgement(
         if request.sahl_eighth_rule_variant is None
         else SahlEighthRuleVariant(request.sahl_eighth_rule_variant)
     )
+    sign_nature = (
+        None
+        if request.dorotheus_sign_nature_variant is None
+        else DorotheusSignNatureVariant(request.dorotheus_sign_nature_variant)
+    )
     result = engine.western_electional_judgement_at(
         request.jd_ut,
         request.latitude,
@@ -330,6 +341,7 @@ def compute_western_electional_judgement(
         natal_house_system=request.natal_house_system,
         unavoidable_time_urgency=request.unavoidable_time_urgency,
         moon_flow_policy=flow_policy,
+        dorotheus_sign_nature_variant=sign_nature,
         sahl_burnt_path_variant=burnt,
         sahl_eighth_rule_variant=eighth,
     )
@@ -366,6 +378,11 @@ def compute_western_electional_ranking(
         if request.sahl_eighth_rule_variant is None
         else SahlEighthRuleVariant(request.sahl_eighth_rule_variant)
     )
+    sign_nature = (
+        None
+        if request.dorotheus_sign_nature_variant is None
+        else DorotheusSignNatureVariant(request.dorotheus_sign_nature_variant)
+    )
     weights = tuple(
         WesternElectionalRankingWeight(
             WesternElectionalRankingContributionId(item.contribution_id),
@@ -390,6 +407,7 @@ def compute_western_electional_ranking(
         natal_house_system=request.natal_house_system,
         unavoidable_time_urgency=request.unavoidable_time_urgency,
         moon_flow_policy=flow_policy,
+        dorotheus_sign_nature_variant=sign_nature,
         sahl_burnt_path_variant=burnt,
         sahl_eighth_rule_variant=eighth,
     )
@@ -426,6 +444,11 @@ def compute_western_electional_judgement_windows(
         if request.sahl_eighth_rule_variant is None
         else SahlEighthRuleVariant(request.sahl_eighth_rule_variant)
     )
+    sign_nature = (
+        None
+        if request.dorotheus_sign_nature_variant is None
+        else DorotheusSignNatureVariant(request.dorotheus_sign_nature_variant)
+    )
     policy_request = request.policy
     scan_policy = WesternElectionalJudgementWindowPolicy(
         mode=WesternElectionalWindowScanMode(policy_request.mode),
@@ -456,6 +479,7 @@ def compute_western_electional_judgement_windows(
         natal_house_system=request.natal_house_system,
         unavoidable_time_urgency=request.unavoidable_time_urgency,
         moon_flow_policy=flow_policy,
+        dorotheus_sign_nature_variant=sign_nature,
         sahl_burnt_path_variant=burnt,
         sahl_eighth_rule_variant=eighth,
         scan_policy=scan_policy,

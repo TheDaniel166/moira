@@ -11,8 +11,9 @@ numerically complete because two V.7 quantities remain undefined by the
 primary text. Companion to
 `P13-U1_WESTERN_ELECTIONAL_DOCTRINE_RESEARCH_DOSSIER.md` §8.1. Parallel
 lineage inventory: `P13-U1_SAHL_ON_ELECTIONS_RULE_INVENTORY.md`. V.8 demolition,
-V.9 leasing, V.10 buying/selling, V.11 land purchase, and V.44 lunar-price
-timing are also admitted as five independent matter profiles. Other
+V.9 leasing, V.10 buying/selling, V.11 land purchase, V.20 partnership, V.21
+debt/payment, V.22 travel, V.24–V.26.1–38 ship work, V.43 wills, and V.44
+lunar-price timing are admitted as independent matter profiles. Other
 matter-specific layers remain inventory rather than public doctrine.
 
 ## 0. Provenance and Scope
@@ -351,6 +352,12 @@ one. All inherit §1–§3 unless a chapter overrides.
   chapter V.40; note Mars is here a positive cutting-significator.)*
 
 ### V.20 — Entering a partnership [ELECTION, Moon-in-sign] — Mercury/2nd
+
+**Admission status (2026-07-16):** admitted as `dorotheus_partnership_v1`
+through engine, package root, facade, generic matter REST, and the Phase 8–10
+registry. Its V.31 Mercurial root is explicit. The V.17 marriage-sign and
+cleansing dependencies, Taurus's party-status outcome, and Mars's
+powerful-place alternative remain typed `not_evaluable` rather than inferred.
 - Moon in a **marriage-suitable sign** (per V.17) and **cleansed** of the V.6
   impediments (V.20,1).
 - **Moon-in-sign partnership table (V.20,2–13):** Aries no (won't last); Taurus
@@ -363,6 +370,11 @@ one. All inherit §1–§3 unless a chapter overrides.
   weaker (V.20,18–19).
 
 ### V.21 — Debt and its payment [ELECTION, angular + lunar] — Moon/Mercury
+
+**Admission status (2026-07-16):** admitted as
+`dorotheus_debt_and_payment_v1` through the same public ladder with an explicit
+V.31 Mercurial root. The made-unfortunate, burned-place, first-degree, and
+solar-freedom terms remain visible `not_evaluable` source gaps.
 - **Significators:** 1st = the creditor (who owns the debt); 7th = the debtor;
   Moon & Mercury also = the debtor (V.21,1).
 - **Gates:** Moon with fortunes but also afflicted → he pays but re-incurs
@@ -377,6 +389,16 @@ one. All inherit §1–§3 unless a chapter overrides.
   simultaneously) (V.21,7–8).
 
 ### V.22 — Travel / departure [ELECTION] — Moon/1st/7th
+
+**Admission status (2026-07-16):** admitted as `dorotheus_travel_v1` through
+the engine, package root, `Moira.dorotheus_matter_profile_at(...)`, and
+`POST /v1/electional/western/dorotheus-matter-profile`. The profile preserves
+all ten source clauses in order. It deliberately has no V.31 rooted-matter
+context: V.22 does not assign every journey to one of V.31's six
+matter-significator families. The benefit clause in V.22.9 is `not_evaluable`
+for a merely applying square/opposition because the edition glossary confirms
+that connection requires a particular degree interval but does not state that
+interval; exact connection remains computable.
 - **Significators:** 1st = traveler; 7th = destination land; 10th = the business
   sought; 4th = outcome (V.22,1).
 - **Fortify:** **Moon increasing in calculation**; **Mercury not under the rays
@@ -386,8 +408,9 @@ one. All inherit §1–§3 unless a chapter overrides.
 - Fortunes in 1st → journey turns good; in 7th → benefit at destination
   (V.22,5–6). **Moon + Saturn/Mars in the 1st or 7th** → pain, illness, loss,
   strife on the road (V.22,7). Lord of Asc/Moon **stationary** → journey
-  prolonged (V.22,8). Infortune squaring/opposing the Moon (and she connects to
-  it) → bad journey (V.22,9–10).
+  prolonged (V.22,8). A fortune in square/opposition to the Moon *with her
+  connection* indicates a suitable inception; an infortune in her square or
+  opposition indicates a bad journey (V.22,9–10).
 
 ### V.23 — Turning back from the journey / the return [MIXED: election + event-reading]
 - Reads the **opposition and square of the Sun**, the infortunes' positions, and
@@ -399,12 +422,31 @@ one. All inherit §1–§3 unless a chapter overrides.
   malefics at departure."
 
 ### V.24 — Buying / commissioning a ship [ELECTION] — 4th/Jupiter/Venus
-- **Fortify:** **Jupiter or Venus in the 4th**, aspecting Ascendant and Moon
-  (V.24,1), preferably in a **watery / marine sign** or a Jupiter/Venus house
-  (V.24,2). **Best Ascendants (with the Moon there), ranked:** **Taurus > Pisces
-  > Gemini > end of Capricorn**, also Cancer, Virgo, Sagittarius (V.24,3–5).
+**Admission status (2026-07-16):** admitted as `dorotheus_ship_acquisition_v1`
+through the engine, package root, `Moira.dorotheus_matter_profile_at(...)`, and
+`POST /v1/electional/western/dorotheus-matter-profile`. It is an ephemeral,
+non-scored V.24.1–5 profile with `rooted_context: null`: V.31 does not assign
+ships a matter family. It is distinct from V.25 construction and V.26 launch/
+travel.
+- **Fortify:** **Jupiter or Venus in the 4th**, looking at Ascendant and Moon
+  (V.24,1), preferably in a named water sign or a Jupiter/Venus house
+  (V.24,2). A qualifying candidate outside those computable categories remains
+  `not_evaluable`, because the source also names but does not enumerate a
+  sea-animal-sign class.
+- **Sign witnesses:** Ascendant and Moon together in Taurus, Gemini, Cancer,
+  Virgo, or Sagittarius (V.24,3); together in Pisces (V.24,4). The stated
+  preference order is **Taurus > Pisces > Gemini > end of Capricorn** (V.24,5),
+  retained as a non-numeric witness. Capricorn remains `not_evaluable`: the
+  source does not define its end-degree interval and note 136 preserves a
+  missing predicate.
 
 ### V.25 — Building (constructing) a ship [ELECTION]
+
+**Admission status (2026-07-16):** admitted as
+`dorotheus_ship_construction_v1`, an ephemeral source-unrooted profile. All
+six paragraphs are retained. The Sun-trine quantifier, latitude/longitude
+increase criteria, Mars-made-unfortunate predicate, same-sign grammar, and
+marine/dry sign classes remain explicit `not_evaluable` evidence.
 - **Fortify:** **Sun in trine of the fortunes**; **Moon increasing in light,
   calculation, latitude, and longitude**, in a **bound of the fortunes**
   (V.25,1).
@@ -414,6 +456,18 @@ one. All inherit §1–§3 unless a chapter overrides.
   rocks; etc.) (V.25,3–6).
 
 ### V.26 — Launching a ship ("pushing into the water") [ELECTION, Moon-in-sign + Saturn doctrine]
+
+**Admission status (2026-07-16):** V.26.1–38 is admitted as
+`dorotheus_ship_launch_v1` through the full public ladder and Phase 8–10
+registry. It is source-unrooted but may carry its chapter-owned radical Saturn
+overlay when a complete natal chart is supplied. The separate V.26.39–43
+land/sea-travel material is now bounded as source-unrooted, ephemeral
+`dorotheus_land_travel_v1` and `dorotheus_sea_travel_v1` profiles. Their
+required `sign_nature_variant` is explicit: the source-faithful variant leaves
+Dorotheus's unenumerated dry-sign class indeterminate, while the named
+`lilly_1647_elemental_qualities` variant adopts Lilly's Book I, Chapter XVI
+(1647, pp. 94–99) six-sign dry table. Passenger boarding and arrival are not
+fabricated as extra profiles.
 - **Moon-in-sign launch table (V.26,1–13)**, read when fortunes/infortunes do
   not aspect the Moon (e.g. **first 10° Aries above earth** → good departure;
   Taurus → a survivable surge; Cancer → safe; Libra 0–10° → bad by land & sea;
@@ -429,7 +483,11 @@ one. All inherit §1–§3 unless a chapter overrides.
   in the 7th in a non-dry sign with infortunes in dry signs; for **sea** travel
   avoid the Moon not in a watery sign with infortunes there. **Mars is the worst
   for land travel, Saturn for sea travel** (V.26,42); worst of all when Jupiter
-  & Venus do not aspect them.
+  & Venus do not aspect them. Sea travel's water-sign gate uses Dorotheus
+  I.21.3's Cancer/Scorpio/Pisces set. V.26.40's made-unfortunate predicate,
+  V.26.41's owner/death-year condition, and V.26.43's face condition remain
+  typed `not_evaluable`; no foreign face table or natal-death calculation is
+  silently introduced.
 
 ### V.27 — Arrival of a book, report, or letter [HORARY — out of electional scope]
 - Reads natal Mercury and transiting Jupiter/Venus at the moment a letter
@@ -548,6 +606,12 @@ one. All inherit §1–§3 unless a chapter overrides.
   treatment" election.
 
 ### V.43 — Writing a will [ELECTION] — Moon/Asc
+
+**Admission status (2026-07-16):** admitted as
+`dorotheus_writing_a_will_v1`, an ephemeral source-unrooted V.43.1–6 profile.
+The corrected convertible-sign gate, planetary configurations, and visible
+lunar witnesses are public; the stationary-star connection and its degree
+interval remain typed `not_evaluable`.
 - **Gate (⚠ corrected reading):** the Arabic says begin with the Ascendant &
   Moon in a **convertible** sign, but Dykes, Hephaistion, **and Sahl (Choices
   8,2)** confirm the correct sense is to **avoid** a convertible sign, precisely
@@ -631,9 +695,11 @@ profile citing V.ch,sent):** V.2-V.7 construction is now admitted together as
    bad-place semantics remain outside the shared vessel.
 4. **Matter profiles:** construction V.7 is admitted as
    `dorotheus_construction_v1`; demolition/inverse construction (V.8), leasing
-   (V.9), commerce (V.10, V.44), land (V.11), travel & ships (V.13, V.22–26),
-   marriage (V.17), debt
-   (V.21), partnership (V.20), lawsuit (V.34), will (V.43), and the **medical/
+   (V.9), commerce (V.10, V.44), land (V.11), travel/departure (V.22), and ship
+   acquisition/commission (V.24), ship construction (V.25), ship launch
+   (V.26.1–38), land/sea travel (V.26.39–43), partnership (V.20), debt/payment
+   (V.21), and will writing (V.43) are admitted as distinct profiles. Marriage
+   (V.17), lawsuit (V.34), and the **medical/
    surgical family** (V.19, V.30, V.38–42) with its melothesia and waxing-vs-
    waning-Moon distinction.
 

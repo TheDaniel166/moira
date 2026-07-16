@@ -126,7 +126,7 @@ def dorotheus_matter_profile_route(
     request: DorotheusMatterProfileRequest,
     engine: Annotated[Moira, Depends(get_engine)],
 ) -> DorotheusMatterProfileResponse:
-    """Evaluate one named Dorothean V.8, V.9, or V.11 matter profile."""
+    """Evaluate one admitted named Dorothean Book V matter profile."""
 
     return serialize_dorotheus_matter_profile(
         compute_dorotheus_matter_profile(engine, request)

@@ -53,6 +53,7 @@ __all__ = [
     "SAHL_WELLS_AND_RIVERS_V1",
     "SAHL_PLANTING_V1",
     "SAHL_SOWING_V1",
+    "SAHL_BUSINESS_PARTNERSHIP_V1",
     "evaluate_sahl_matter_profile",
     "sahl_matter_profile_at",
 ]
@@ -94,6 +95,7 @@ class SahlMatterProfileId(str, Enum):
     WELLS_AND_RIVERS = "sahl_wells_and_rivers_v1"
     PLANTING = "sahl_planting_v1"
     SOWING = "sahl_sowing_v1"
+    BUSINESS_PARTNERSHIP = "sahl_business_partnership_v1"
 
 
 class SahlMatterClauseRole(str, Enum):
@@ -197,6 +199,9 @@ SAHL_LAND_V1 = SahlMatterProfilePolicy(SahlMatterProfileId.LAND)
 SAHL_WELLS_AND_RIVERS_V1 = SahlMatterProfilePolicy(SahlMatterProfileId.WELLS_AND_RIVERS)
 SAHL_PLANTING_V1 = SahlMatterProfilePolicy(SahlMatterProfileId.PLANTING)
 SAHL_SOWING_V1 = SahlMatterProfilePolicy(SahlMatterProfileId.SOWING)
+SAHL_BUSINESS_PARTNERSHIP_V1 = SahlMatterProfilePolicy(
+    SahlMatterProfileId.BUSINESS_PARTNERSHIP
+)
 _POLICIES = {
     item.profile_id: item
     for item in (
@@ -210,6 +215,7 @@ _POLICIES = {
         SAHL_WELLS_AND_RIVERS_V1,
         SAHL_PLANTING_V1,
         SAHL_SOWING_V1,
+        SAHL_BUSINESS_PARTNERSHIP_V1,
     )
 }
 _SECTIONS = {
@@ -223,6 +229,7 @@ _SECTIONS = {
     SahlMatterProfileId.WELLS_AND_RIVERS: "§50, printed pp. 108-109",
     SahlMatterProfileId.PLANTING: "§§51-53, printed p. 109",
     SahlMatterProfileId.SOWING: "§§54-55, printed pp. 109-110",
+    SahlMatterProfileId.BUSINESS_PARTNERSHIP: "sections_32_to_35_printed_p_104",
 }
 _MATTERS = {
     SahlMatterProfileId.LENDING: "borrowing_and_lending",
@@ -235,6 +242,7 @@ _MATTERS = {
     SahlMatterProfileId.WELLS_AND_RIVERS: "digging_wells_and_diverting_rivers",
     SahlMatterProfileId.PLANTING: "planting_trees",
     SahlMatterProfileId.SOWING: "sowing_seed",
+    SahlMatterProfileId.BUSINESS_PARTNERSHIP: "business_partnership",
 }
 
 
@@ -1161,6 +1169,116 @@ def _sowing(chart, profile_id, policy, _moon_condition=None):
     )
 
 
+def _business_partnership(chart, profile_id, policy, _moon_condition=None):
+    """Keep Sahl §§32-35 distinct from the Dorothean partnership profile."""
+
+    moon = chart.planets[Body.MOON]
+    asc_sign, _, _ = sign_of(chart.houses.asc)
+    seventh_sign = SIGNS[(SIGNS.index(asc_sign) + 6) % 12]
+    asc_lord = DOMICILE_RULERS[asc_sign]
+    partner_lord = DOMICILE_RULERS[seventh_sign]
+    joined_fortunes = _joined_names(chart, Body.MOON, _FORTUNES)
+    preferred_signs = _COMMON_SIGNS | frozenset(("Leo", "Taurus"))
+    known_separation_signs = frozenset(("Libra", "Aquarius"))
+    lords_behold = _configured(
+        chart.planets[asc_lord].sign,
+        chart.planets[partner_lord].sign,
+    )
+    return (
+        _clause(
+            profile_id,
+            "moon_cleansed_joined_to_fortunes_and_in_preferred_sign",
+            1,
+            SahlMatterClauseRole.FORTIFIER,
+            SahlMatterClauseState.NOT_EVALUABLE,
+            (
+                _m("moon_sign", moon.sign),
+                _m("preferred_sign", moon.sign in preferred_signs),
+                _m("moon_joined_fortunes", ",".join(joined_fortunes) or "none"),
+                _m("cleansed_predicate", None),
+            ),
+            "Sections 32-33 join Moon cleansing, bodily fortune contact, and the common, Leo, or Taurus sign condition. The source supplies no closed cleansing predicate, so its compound is not fabricated from the computable conjuncts.",
+            policy.cleansing_policy,
+            "sections_32_to_33",
+        ),
+        _clause(
+            profile_id,
+            "libra_or_aquarius_separation_warning",
+            2,
+            SahlMatterClauseRole.GATE,
+            (
+                SahlMatterClauseState.TRIGGERED
+                if moon.sign in known_separation_signs or asc_sign in known_separation_signs
+                else SahlMatterClauseState.NOT_EVALUABLE
+            ),
+            (
+                _m("moon_sign", moon.sign),
+                _m("ascendant_sign", asc_sign),
+                _m("named_separation_signs", "Libra,Aquarius"),
+                _m("lower_sign_class", "source_not_enumerated"),
+            ),
+            "Section 33 expressly calls out Libra and Aquarius in its lower-sign and separation language. Other lower-sign classifications are not inferred from a modern taxonomy.",
+            "named_signs_with_unenumerated_lower_sign_class",
+            "section_33",
+        ),
+        _clause(
+            profile_id,
+            "reception_and_aspect_relationship",
+            3,
+            SahlMatterClauseRole.WITNESS,
+            SahlMatterClauseState.NOT_EVALUABLE,
+            (
+                _m("ascendant_lord", asc_lord),
+                _m("partner_lord", partner_lord),
+                _m("lord_relation", _relation(chart.planets[asc_lord].sign, chart.planets[partner_lord].sign)),
+                _m("reception_predicate", None),
+                _m("source_divides_trine_sextile_from_square_opposition", True),
+            ),
+            "Section 34 distinguishes reception and the softer versus harder aspect families, but it does not close a reception ownership rule or an outcome precedence rule for this product.",
+            "source_text_open_reception_and_precedence",
+            "section_34",
+        ),
+        _clause(
+            profile_id,
+            "partnership_stake_roles",
+            4,
+            SahlMatterClauseRole.WITNESS,
+            SahlMatterClauseState.OBSERVED,
+            (
+                _m("first_place", "initiating_partner"),
+                _m("seventh_place", "other_partner"),
+                _m("tenth_place", "partnership_wealth_or_work"),
+                _m("fourth_place", "partnership_conclusion"),
+                _m("ascendant_sign", asc_sign),
+                _m("seventh_sign", seventh_sign),
+            ),
+            "Section 35's four stake roles remain named witnesses; they do not create a generic house-topic election score.",
+            policy.stake_policy,
+            "section_35",
+        ),
+        _clause(
+            profile_id,
+            "principal_lords_behold_one_another",
+            5,
+            SahlMatterClauseRole.FORTIFIER,
+            (
+                SahlMatterClauseState.SATISFIED
+                if lords_behold
+                else SahlMatterClauseState.CLEAR
+            ),
+            (
+                _m("ascendant_lord", asc_lord),
+                _m("partner_lord", partner_lord),
+                _m("lord_relation", _relation(chart.planets[asc_lord].sign, chart.planets[partner_lord].sign)),
+                _m("lords_behold", lords_behold),
+            ),
+            "Section 35 requires the two principal lords to behold one another under the profile's fixed whole-sign configuration policy.",
+            policy.aspect_policy,
+            "section_35",
+        ),
+    )
+
+
 _BUILDERS = {
     SahlMatterProfileId.LENDING: _lending,
     SahlMatterProfileId.INVESTMENT: _investment,
@@ -1172,6 +1290,7 @@ _BUILDERS = {
     SahlMatterProfileId.WELLS_AND_RIVERS: _wells,
     SahlMatterProfileId.PLANTING: _planting,
     SahlMatterProfileId.SOWING: _sowing,
+    SahlMatterProfileId.BUSINESS_PARTNERSHIP: _business_partnership,
 }
 
 
