@@ -343,7 +343,7 @@ def apply_frame_bias(xyz: Vec3) -> Vec3:
     It is distinct from nutation/precession and from the ecliptic frame —
     no obliquity rotation is applied here.
 
-    The correction is ~17–18 arcseconds in total angular displacement.
+    The correction is of order 10–20 milliarcseconds.
 
     Parameters
     ----------
@@ -377,6 +377,8 @@ def _observer_position_icrf(
     lst_deg: float,
     elevation_m: float = 0.0,
     jd_ut: float | None = None,
+    *,
+    observer_frame: str = "icrf",
 ) -> Vec3:
     """
     Compute the observer's position in the ICRF frame using WGS-84 geodetic-to-rectangular conversion.
@@ -405,6 +407,9 @@ def _observer_position_icrf(
         Positive values are above sea level; negative values are below (e.g., in a mine or submarine).
     jd_ut : float, optional
         UT Julian Day used to apply IERS polar motion to the observer position.
+    observer_frame : {"icrf", "equatorial_of_date"}
+        Frame in which the caller's body vector is expressed.  The observer is
+        returned in that same frame before subtraction.
 
     Returns
     -------
@@ -451,6 +456,12 @@ def _observer_position_icrf(
     >>> # Expected: approximately (6378.137, 0, 0) km
     >>> # Actual: approximately (6378.137, 0, 0) km
     """
+    if observer_frame not in ("icrf", "equatorial_of_date"):
+        raise ValueError(
+            "observer_frame must be 'icrf' or 'equatorial_of_date', "
+            f"got {observer_frame!r}"
+        )
+
     # Input validation
     if latitude_deg < -90.0 or latitude_deg > 90.0:
         raise ValueError(
@@ -501,6 +512,9 @@ def _observer_position_icrf(
     tete_z = tirs[2]
     tete = (tete_x, tete_y, tete_z)
 
+    if observer_frame == "equatorial_of_date":
+        return tete
+
     # 4. Rotate from TETE to ICRF using transpose of precession-nutation: R^T = P_bias^T * N^T
     from .julian import ut_to_tt
     jd_tt = ut_to_tt(jd_ut)
@@ -521,6 +535,8 @@ def _observer_position_icrf(
 def _observer_velocity_icrf(
     observer_position_icrf: Vec3,
     jd_ut: float | None = None,
+    *,
+    observer_frame: str = "icrf",
 ) -> Vec3:
     """
     Compute the observer's velocity in the ICRF frame due to Earth's rotation.
@@ -561,6 +577,10 @@ def _observer_velocity_icrf(
     observer_position_icrf : Vec3
         Observer's position in the ICRF frame as a (x, y, z) tuple in kilometres.
         This is typically computed by `_observer_position_icrf()`.
+    jd_ut : float, optional
+        UT1 epoch used when the requested frame is ICRF.
+    observer_frame : {"icrf", "equatorial_of_date"}
+        Frame of both the supplied position and returned velocity.
 
     Returns
     -------
@@ -617,7 +637,13 @@ def _observer_velocity_icrf(
     omega_mag = EARTH_ROTATION_RATE_RAD_PER_SEC
     r_x, r_y, r_z = observer_position_icrf
 
-    if jd_ut is None:
+    if observer_frame not in ("icrf", "equatorial_of_date"):
+        raise ValueError(
+            "observer_frame must be 'icrf' or 'equatorial_of_date', "
+            f"got {observer_frame!r}"
+        )
+
+    if jd_ut is None or observer_frame == "equatorial_of_date":
         # Fallback to the unrotated legacy cross product
         v_x_rad_s = -omega_mag * r_y
         v_y_rad_s = omega_mag * r_x
@@ -660,6 +686,8 @@ def topocentric_correction(
     lst_deg: float,
     elevation_m: float = 0.0,
     jd_ut: float | None = None,
+    *,
+    observer_frame: str = "icrf",
 ) -> Vec3:
     """
     Shift a geocentric position vector to a topocentric (surface) observer.
@@ -675,6 +703,8 @@ def topocentric_correction(
     lst_deg        : Local Sidereal Time, degrees
     elevation_m    : observer elevation above sea level, metres
     jd_ut          : optional UT Julian Day used to apply IERS polar motion
+    observer_frame : frame of ``xyz_geocentric``; either ``"icrf"`` or
+                     ``"equatorial_of_date"``
 
     Returns
     -------
@@ -686,6 +716,7 @@ def topocentric_correction(
         lst_deg,
         elevation_m,
         jd_ut=jd_ut,
+        observer_frame=observer_frame,
     )
     return vec_sub(xyz_geocentric, observer_position)
 
@@ -759,6 +790,8 @@ def apply_diurnal_aberration(
     lst_deg: float,
     elevation_m: float = 0.0,
     jd_ut: float | None = None,
+    *,
+    observer_frame: str = "icrf",
 ) -> Vec3:
     """
     RITE: The Aberrant Observer — one who moves with the turning Earth.
@@ -844,6 +877,9 @@ def apply_diurnal_aberration(
     jd_ut : float, optional
         UT Julian Day used to apply IERS polar motion before deriving the observer's
         rotational velocity. Omitting it preserves the legacy zero-polar-motion path.
+    observer_frame : {"icrf", "equatorial_of_date"}
+        Frame of ``xyz_geocentric``.  Observer position and velocity are formed
+        in the same frame before applying aberration.
 
     Returns
     -------
@@ -1017,11 +1053,20 @@ def apply_diurnal_aberration(
 
     # Compute observer position in ICRF frame using WGS-84 conversion
     observer_position = _observer_position_icrf(
-        latitude_deg, longitude_deg, lst_deg, elevation_m, jd_ut=jd_ut
+        latitude_deg,
+        longitude_deg,
+        lst_deg,
+        elevation_m,
+        jd_ut=jd_ut,
+        observer_frame=observer_frame,
     )
 
     # Compute observer velocity due to Earth's rotation
-    observer_velocity = _observer_velocity_icrf(observer_position, jd_ut=jd_ut)
+    observer_velocity = _observer_velocity_icrf(
+        observer_position,
+        jd_ut=jd_ut,
+        observer_frame=observer_frame,
+    )
 
     # Apply relativistic aberration formula to correct for diurnal aberration
     # This is identical to the annual aberration formula, but with observer velocity

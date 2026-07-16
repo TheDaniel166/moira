@@ -24,8 +24,9 @@ External dependency assumptions:
     - A KernelReader must be supplied explicitly or be active through the
       facade/contextual reader layer for the surfaces that call
       get_active_reader().
-    - Native and jplephem-backed reader paths are both valid; planets.py does
-      not require one specific reader backend at import time.
+    - The published runtime uses Moira's native SPK reader.  Kernel resources
+      remain caller- or facade-bound; planets.py performs no download at
+      import time.
 
 Substrate numerical boundary:
     The Python fallback path and the native C++ path (_moira_native) are not
@@ -1012,18 +1013,17 @@ def _build_apparent_context(
     """Build one shared apparent-path context for a single JD."""
     mean_eps = mean_obliquity(jd_tt)
     dpsi_deg = deps_deg = 0.0
-    if apparent and nutation:
+    if nutation:
         dpsi_deg, deps_deg = _nutation(jd_tt)
 
-    obliquity = mean_eps + (deps_deg if (apparent and nutation) else 0.0)
+    obliquity = mean_eps + (deps_deg if nutation else 0.0)
     rot_mat = _compose_rotation_matrix(
         jd_tt,
-        with_nutation=(apparent and nutation),
+        with_nutation=nutation,
         mean_obliquity_deg=mean_eps,
         dpsi_deg=dpsi_deg,
         deps_deg=deps_deg,
-    ) \
-        if apparent else None
+    )
 
     cache = vector_cache if vector_cache is not None else {}
     earth_ssb = earth_vel = None
@@ -1290,6 +1290,69 @@ def _longitude_rate(xyz: Vec3, vel_xyz: Vec3, obliquity_deg: float) -> float:
     if denom <= 1e-18:
         return 0.0
     return ((xe * vye - ye * vxe) / denom) * RAD2DEG
+
+
+_FRAME_STATE_DERIVATIVE_STEP_DAYS = 1.0e-3
+
+
+def _equatorial_to_ecliptic_vector(xyz: Vec3, obliquity_deg: float) -> Vec3:
+    """Rotate one equatorial Cartesian vector into the named ecliptic frame."""
+    eps = obliquity_deg * DEG2RAD
+    cos_eps = math.cos(eps)
+    sin_eps = math.sin(eps)
+    return (
+        xyz[0],
+        xyz[1] * cos_eps + xyz[2] * sin_eps,
+        -xyz[1] * sin_eps + xyz[2] * cos_eps,
+    )
+
+
+def _true_of_date_ecliptic_state(
+    xyz_icrf: Vec3,
+    velocity_icrf: Vec3,
+    jd_tt: float,
+) -> tuple[Vec3, Vec3]:
+    """Return a full ICRF-to-true-ecliptic-of-date state transformation.
+
+    Position uses frame bias, IAU 2006 precession, IAU 2000A nutation, and
+    true obliquity.  Velocity additionally includes the derivative of that
+    time-dependent rotation, the state-transform term represented by the
+    lower-left block of a NAIF ``SXFORM`` matrix.
+    """
+    biased_position = apply_frame_bias(xyz_icrf)
+    biased_velocity = apply_frame_bias(velocity_icrf)
+
+    def transform(vector: Vec3, epoch_tt: float) -> Vec3:
+        equatorial_of_date = _apply_rotation_matrix(
+            _compose_rotation_matrix(epoch_tt, with_nutation=True),
+            vector,
+        )
+        return _equatorial_to_ecliptic_vector(
+            equatorial_of_date,
+            true_obliquity(epoch_tt),
+        )
+
+    position_ecliptic = transform(biased_position, jd_tt)
+    rotated_velocity = transform(biased_velocity, jd_tt)
+    step = _FRAME_STATE_DERIVATIVE_STEP_DAYS
+    position_plus = transform(biased_position, jd_tt + step)
+    position_minus = transform(biased_position, jd_tt - step)
+    frame_velocity = (
+        (position_plus[0] - position_minus[0]) / (2.0 * step),
+        (position_plus[1] - position_minus[1]) / (2.0 * step),
+        (position_plus[2] - position_minus[2]) / (2.0 * step),
+    )
+    return position_ecliptic, vec_add(rotated_velocity, frame_velocity)
+
+
+def _true_of_date_ecliptic_position(xyz_icrf: Vec3, jd_tt: float) -> Vec3:
+    """Rotate an ICRF position into the true ecliptic frame of date."""
+    position, _ = _true_of_date_ecliptic_state(
+        xyz_icrf,
+        (0.0, 0.0, 0.0),
+        jd_tt,
+    )
+    return position
 
 
 # ---------------------------------------------------------------------------
@@ -1593,7 +1656,7 @@ def _planet_at_core(
         _vector_cache = context.vector_cache
 
     dpsi_deg = deps_deg = 0.0
-    if apparent and nutation:
+    if nutation:
         if context is not None:
             dpsi_deg, deps_deg = context.dpsi_deg, context.deps_deg
         elif _dpsi_deg is not None and _deps_deg is not None:
@@ -1603,7 +1666,7 @@ def _planet_at_core(
 
     if obliquity is None:
         obliquity = context.obliquity if context is not None else (
-            mean_obliquity(jd_tt) + (deps_deg if (apparent and nutation) else 0.0)
+            mean_obliquity(jd_tt) + (deps_deg if nutation else 0.0)
         )
 
     if apparent:
@@ -1654,6 +1717,19 @@ def _planet_at_core(
             xyz0 = _barycentric(body, jd_tt, reader, _vector_cache)
         else:
             xyz0 = _geocentric(body, jd_tt, reader, _vector_cache)
+        # Geometric versus apparent controls physical light-path corrections,
+        # not the orientation of the returned coordinate frame.  PlanetData
+        # remains a tropical ecliptic-of-date product in both modes.
+        xyz0 = apply_frame_bias(xyz0)
+        geometric_rot_mat = (
+            context.rot_mat
+            if context is not None and context.rot_mat is not None
+            else _compose_rotation_matrix(jd_tt, with_nutation=nutation)
+        )
+        xyz0 = _apply_rotation_matrix(
+            geometric_rot_mat,
+            xyz0,
+        )
 
     if (
         center == 'geocentric'
@@ -1662,10 +1738,22 @@ def _planet_at_core(
         and lst_deg is not None
     ):
         xyz0 = topocentric_correction(
-            xyz0, observer_lat, observer_lon, lst_deg, observer_elev_m, jd_ut=jd_ut
+            xyz0,
+            observer_lat,
+            observer_lon,
+            lst_deg,
+            observer_elev_m,
+            jd_ut=jd_ut,
+            observer_frame="equatorial_of_date",
         )
         xyz0 = apply_diurnal_aberration(
-            xyz0, observer_lat, observer_lon, lst_deg, observer_elev_m, jd_ut=jd_ut
+            xyz0,
+            observer_lat,
+            observer_lon,
+            lst_deg,
+            observer_elev_m,
+            jd_ut=jd_ut,
+            observer_frame="equatorial_of_date",
         )
 
     if frame == 'cartesian':
@@ -1701,6 +1789,29 @@ def _rounded_longitude(lon: float) -> float:
     return round(normalize_degrees(lon), 6)
 
 
+def _validate_observer_arguments(
+    surface: str,
+    observer_lat: float | None,
+    observer_lon: float | None,
+    lst_deg: float | None,
+) -> None:
+    """Require an unambiguous all-or-none topocentric observer vessel."""
+    supplied = (observer_lat is not None, observer_lon is not None, lst_deg is not None)
+    if any(supplied) and not all(supplied):
+        raise ValueError(
+            f"{surface}: observer_lat, observer_lon, and lst_deg must be "
+            "provided together."
+        )
+    if observer_lat is not None and not -90.0 <= observer_lat <= 90.0:
+        raise ValueError(
+            f"{surface}: observer_lat must be in [-90, +90] degrees; "
+            f"got {observer_lat}"
+        )
+    for label, value in (("observer_lon", observer_lon), ("lst_deg", lst_deg)):
+        if value is not None and not math.isfinite(value):
+            raise ValueError(f"{surface}: {label} must be finite; got {value}")
+
+
 def planet_reduction_breakdown_at(
     body: str,
     jd_ut: float,
@@ -1730,11 +1841,12 @@ def planet_reduction_breakdown_at(
     contract: comet kernels are heliocentric small-body surfaces with their own
     routing law.
     """
-    if (observer_lat is not None or observer_lon is not None) and lst_deg is None:
-        raise ValueError(
-            "planet_reduction_breakdown_at: lst_deg is required when "
-            "observer_lat/observer_lon are provided."
-        )
+    _validate_observer_arguments(
+        "planet_reduction_breakdown_at",
+        observer_lat,
+        observer_lon,
+        lst_deg,
+    )
 
     if reader is None:
         reader = get_active_reader()
@@ -1871,8 +1983,8 @@ def planet_reduction_breakdown_at(
     )
     stage_longitudes["annual_aberration"] = _rounded_longitude(lon3)
 
-    frame_bias_enabled = apparent
-    xyz4 = apply_frame_bias(xyz3) if frame_bias_enabled else xyz3
+    frame_bias_enabled = True
+    xyz4 = apply_frame_bias(xyz3)
     lon4 = _stage_longitude(xyz4, _J2000_ECLIPTIC_OBLIQUITY_DEG)
     stages.append(
         PlanetReductionStage(
@@ -1885,15 +1997,11 @@ def planet_reduction_breakdown_at(
     )
     stage_longitudes["frame_bias"] = _rounded_longitude(lon4)
 
-    precession_enabled = apparent
-    xyz5 = (
-        mat_vec_mul(precession_matrix_equatorial(jd_tt), xyz4)
-        if precession_enabled
-        else xyz4
-    )
+    precession_enabled = True
+    xyz5 = mat_vec_mul(precession_matrix_equatorial(jd_tt), xyz4)
     lon5 = _stage_longitude(
         xyz5,
-        mean_eps if precession_enabled else _J2000_ECLIPTIC_OBLIQUITY_DEG,
+        mean_eps,
     )
     stages.append(
         PlanetReductionStage(
@@ -1906,7 +2014,7 @@ def planet_reduction_breakdown_at(
     )
     stage_longitudes["precession"] = _rounded_longitude(lon5)
 
-    nutation_enabled = apparent and nutation
+    nutation_enabled = nutation
     xyz6 = mat_vec_mul(nutation_matrix_equatorial(jd_tt), xyz5) if nutation_enabled else xyz5
     lon6 = _stage_longitude(xyz6, true_eps if nutation_enabled else mean_eps)
     stages.append(
@@ -1922,8 +2030,7 @@ def planet_reduction_breakdown_at(
     stage_longitudes["geocentric"] = _rounded_longitude(lon6)
 
     topocentric_enabled = (
-        apparent
-        and observer_lat is not None
+        observer_lat is not None
         and observer_lon is not None
         and lst_deg is not None
     )
@@ -1935,6 +2042,7 @@ def planet_reduction_breakdown_at(
             lst_deg,
             observer_elev_m,
             jd_ut=jd_ut,
+            observer_frame="equatorial_of_date",
         )
     else:
         xyz7 = xyz6
@@ -1948,7 +2056,30 @@ def planet_reduction_breakdown_at(
             enabled=topocentric_enabled,
         )
     )
-    stage_longitudes["topocentric"] = _rounded_longitude(lon7)
+    if topocentric_enabled:
+        xyz8 = apply_diurnal_aberration(
+            xyz7,
+            observer_lat,
+            observer_lon,
+            lst_deg,
+            observer_elev_m,
+            jd_ut=jd_ut,
+            observer_frame="equatorial_of_date",
+        )
+    else:
+        xyz8 = xyz7
+    lon8 = _stage_longitude(xyz8, true_eps if nutation_enabled else mean_eps)
+    stages.append(
+        PlanetReductionStage(
+            num=8,
+            name="Topocentric diurnal aberration",
+            note="IERS Earth rotation; applied" if topocentric_enabled else "disabled",
+            delta=_stage_delta_arcsec(lon8, lon7) if topocentric_enabled else 0.0,
+            enabled=topocentric_enabled,
+        )
+    )
+    stage_longitudes["diurnal_aberration"] = _rounded_longitude(lon8)
+    stage_longitudes["topocentric"] = _rounded_longitude(lon8)
 
     total = round(
         sum(stage.delta for stage in stages if stage.delta is not None and stage.enabled),
@@ -1996,13 +2127,15 @@ def planet_at(
     Executes the full apparent-position pipeline when ``apparent=True``:
     light-time correction → gravitational deflection → annual aberration →
     frame bias → precession → nutation → optional topocentric correction →
-    ecliptic projection. When ``apparent=False``, returns the astrometric
-    (geometric) position without any of those corrections.
+    ecliptic projection. When ``apparent=False``, omits the physical
+    light-time, deflection, and aberration corrections while retaining the
+    declared ecliptic-of-date frame transformation.
 
     Individual correction stages can be disabled independently via the
     ``aberration``, ``grav_deflection``, and ``nutation`` switches. These
-    switches only affect the pipeline when ``apparent=True``; they are ignored
-    when ``apparent=False``.
+    The aberration and deflection switches only affect the pipeline when
+    ``apparent=True``. Nutation remains an explicit output-frame choice in
+    both physical modes.
 
     Args:
         body: One of the ``Body.*`` string constants identifying the target
@@ -2015,8 +2148,8 @@ def planet_at(
             computed automatically: true obliquity (mean + nutation) when
             ``nutation=True``, mean obliquity when ``nutation=False``.
         apparent: If ``True`` (default), apply light-time, aberration, and
-            frame bias to produce apparent positions. If ``False``, return
-            astrometric (geometric) positions.
+            deflection to produce apparent positions. If ``False``, return
+            geometric positions in the same ecliptic-of-date orientation.
         aberration: If ``True`` (default), apply annual aberration correction.
             Ignored when ``apparent=False``. Has no effect when
             ``center='barycentric'`` (aberration is an observer-centric term).
@@ -2024,8 +2157,7 @@ def planet_at(
             Ignored when ``apparent=False`` or ``center='barycentric'``.
         nutation: If ``True`` (default), apply the nutation matrix and use true
             obliquity for the ecliptic projection. When ``False``, the nutation
-            step is skipped and mean obliquity is used. Ignored when
-            ``apparent=False``.
+            step is skipped and mean obliquity is used in either physical mode.
         center: Reference centre for the position vector. ``'geocentric'``
             (default) returns the position relative to Earth's centre.
             ``'barycentric'`` returns the position relative to the Solar System
@@ -2036,8 +2168,7 @@ def planet_at(
         frame: Output coordinate frame. ``'ecliptic'`` (default) returns a
             ``PlanetData`` with ecliptic longitude/latitude/distance.
             ``'cartesian'`` returns a ``CartesianPosition`` with rectangular
-            coordinates (km): raw ICRF when ``apparent=False`` and
-            equatorial-of-date when ``apparent=True``.
+            equatorial-of-date coordinates (km) in both physical modes.
         observer_lat: Geographic latitude of the observer in degrees. Required
             together with ``observer_lon`` and ``lst_deg`` to apply
             topocentric parallax correction. Has no effect when
@@ -2071,10 +2202,7 @@ def planet_at(
         raise ValueError(f"center must be 'geocentric' or 'barycentric', got {center!r}")
     if frame not in ('ecliptic', 'cartesian'):
         raise ValueError(f"frame must be 'ecliptic' or 'cartesian', got {frame!r}")
-    if (observer_lat is not None or observer_lon is not None) and lst_deg is None:
-        raise ValueError(
-            "planet_at: lst_deg is required when observer_lat/observer_lon are provided."
-        )
+    _validate_observer_arguments("planet_at", observer_lat, observer_lon, lst_deg)
 
     if reader is None:
         reader = get_active_reader()
@@ -2091,7 +2219,16 @@ def planet_at(
         # already handles the full topocentric correction chain for asteroids,
         # then convert RA/Dec back to ecliptic longitude/latitude.
         if family == "asteroid" and observer_lat is not None and observer_lon is not None:
-            sky = sky_position_at(
+            if (
+                not apparent
+                or center != "geocentric"
+                or frame != "ecliptic"
+                or obliquity is not None
+                or jd_tt is not None
+                or delta_t_policy is not None
+            ):
+                raise _small_body_mode_error("planet_at", "asteroid")
+            sky = _sky_position_at_impl(
                 body,
                 jd_ut,
                 observer_lat=observer_lat,
@@ -2101,6 +2238,7 @@ def planet_at(
                 aberration=aberration,
                 grav_deflection=grav_deflection,
                 nutation=nutation,
+                _lst_deg_override=lst_deg,
             )
             # Determine obliquity for the RA/Dec → ecliptic conversion.
             year, month, *_ = _approx_year(jd_ut)
@@ -2260,7 +2398,7 @@ def planet_at(
     )
 
 
-def sky_position_at(
+def _sky_position_at_impl(
     body: str,
     jd_ut: float,
     observer_lat: float,
@@ -2277,6 +2415,7 @@ def sky_position_at(
     delta_t_policy: 'DeltaTPolicy | None' = None,
     _vector_cache: _VectorCache | None = None,
     _context: _ApparentContext | None = None,
+    _lst_deg_override: float | None = None,
 ) -> SkyPosition:
     """
     Compute the apparent topocentric equatorial and horizontal position of a body.
@@ -2407,12 +2546,28 @@ def sky_position_at(
                 aberration=aberration,
             )
 
-        lst_deg = local_sidereal_time(jd_ut, observer_lon, dpsi_deg, obliquity)
+        lst_deg = (
+            _lst_deg_override
+            if _lst_deg_override is not None
+            else local_sidereal_time(jd_ut, observer_lon, dpsi_deg, obliquity)
+        )
         xyz = topocentric_correction(
-            xyz, observer_lat, observer_lon, lst_deg, observer_elev_m, jd_ut=jd_ut
+            xyz,
+            observer_lat,
+            observer_lon,
+            lst_deg,
+            observer_elev_m,
+            jd_ut=jd_ut,
+            observer_frame="equatorial_of_date",
         )
         xyz = apply_diurnal_aberration(
-            xyz, observer_lat, observer_lon, lst_deg, observer_elev_m, jd_ut=jd_ut
+            xyz,
+            observer_lat,
+            observer_lon,
+            lst_deg,
+            observer_elev_m,
+            jd_ut=jd_ut,
+            observer_frame="equatorial_of_date",
         )
         ra_deg, dec_deg, dist = icrf_to_equatorial(xyz)
         az_deg, alt_deg = equatorial_to_horizontal(ra_deg, dec_deg, lst_deg, observer_lat)
@@ -2463,14 +2618,30 @@ def sky_position_at(
             xyz = mat_vec_mul(nutation_matrix_equatorial(jd_tt), xyz)
 
     # Step 7: Topocentric correction
-    lst_deg = local_sidereal_time(jd_ut, observer_lon, dpsi_deg, obliquity)
+    lst_deg = (
+        _lst_deg_override
+        if _lst_deg_override is not None
+        else local_sidereal_time(jd_ut, observer_lon, dpsi_deg, obliquity)
+    )
     xyz = topocentric_correction(
-        xyz, observer_lat, observer_lon, lst_deg, observer_elev_m, jd_ut=jd_ut
+        xyz,
+        observer_lat,
+        observer_lon,
+        lst_deg,
+        observer_elev_m,
+        jd_ut=jd_ut,
+        observer_frame="equatorial_of_date",
     )
     
     # Step 7b: Topocentric diurnal aberration (after parallax)
     xyz = apply_diurnal_aberration(
-        xyz, observer_lat, observer_lon, lst_deg, observer_elev_m, jd_ut=jd_ut
+        xyz,
+        observer_lat,
+        observer_lon,
+        lst_deg,
+        observer_elev_m,
+        jd_ut=jd_ut,
+        observer_frame="equatorial_of_date",
     )
 
     ra_deg, dec_deg, dist = icrf_to_equatorial(xyz)
@@ -2493,6 +2664,48 @@ def sky_position_at(
         altitude=alt_deg,
         distance=dist,
     )
+
+
+def sky_position_at(
+    body: str,
+    jd_ut: float,
+    observer_lat: float,
+    observer_lon: float,
+    observer_elev_m: float = 0.0,
+    reader: KernelReader | None = None,
+    aberration: bool = True,
+    grav_deflection: bool = True,
+    nutation: bool = True,
+    refraction: bool = True,
+    pressure_mbar: float = 1013.25,
+    temperature_c: float = 10.0,
+    relative_humidity: float = 0.0,
+    delta_t_policy: 'DeltaTPolicy | None' = None,
+    _vector_cache: _VectorCache | None = None,
+    _context: _ApparentContext | None = None,
+) -> SkyPosition:
+    """Compute the apparent topocentric position through the canonical pipeline."""
+    return _sky_position_at_impl(
+        body,
+        jd_ut,
+        observer_lat,
+        observer_lon,
+        observer_elev_m=observer_elev_m,
+        reader=reader,
+        aberration=aberration,
+        grav_deflection=grav_deflection,
+        nutation=nutation,
+        refraction=refraction,
+        pressure_mbar=pressure_mbar,
+        temperature_c=temperature_c,
+        relative_humidity=relative_humidity,
+        delta_t_policy=delta_t_policy,
+        _vector_cache=_vector_cache,
+        _context=_context,
+    )
+
+
+sky_position_at.__doc__ = _sky_position_at_impl.__doc__
 
 
 # ---------------------------------------------------------------------------
@@ -2539,8 +2752,8 @@ def all_planets_at(
             ``apparent=False``.
         grav_deflection: If ``True`` (default), apply gravitational deflection.
             Ignored when ``apparent=False``.
-        nutation: If ``True`` (default), apply nutation matrix. Ignored when
-            ``apparent=False``.
+        nutation: If ``True`` (default), use the true ecliptic frame of date;
+            otherwise use the mean ecliptic frame of date.
         center: ``'geocentric'`` (default) or ``'barycentric'``.
         observer_lat: Geographic latitude for topocentric correction.
         observer_lon: Geographic longitude for topocentric correction.
@@ -2559,6 +2772,9 @@ def all_planets_at(
     Side effects:
         None beyond reading from the active kernel context.
     """
+    if center not in ('geocentric', 'barycentric'):
+        raise ValueError(f"center must be 'geocentric' or 'barycentric', got {center!r}")
+    _validate_observer_arguments("all_planets_at", observer_lat, observer_lon, lst_deg)
     if bodies is None:
         bodies = Body.ALL_PLANETS
     if reader is None:
@@ -2693,17 +2909,10 @@ def heliocentric_planet_at(
     xyz_h = vec_sub(body_bary_pos, sun_bary_pos)
     vel_h = vec_sub(body_bary_vel, sun_bary_vel)
 
-    # Rotate both vectors to true equatorial of date (precession + nutation).
-    # Applying the same R to vel_h neglects dR/dt·xyz_h — the precession-rate
-    # contribution is ~50″/century, negligible against orbital velocity.
-    prec_mat = precession_matrix_equatorial(jd_tt)
-    nut_mat  = nutation_matrix_equatorial(jd_tt)
-    xyz_tod  = mat_vec_mul(nut_mat, mat_vec_mul(prec_mat, xyz_h))
-    vel_tod  = mat_vec_mul(nut_mat, mat_vec_mul(prec_mat, vel_h))
-
-    obliquity = true_obliquity(jd_tt)
-    lon, lat, dist = icrf_to_ecliptic(xyz_tod, obliquity)
-    speed = _longitude_rate(xyz_tod, vel_tod, obliquity)
+    # Full true-ecliptic-of-date state transformation, including dR/dt.
+    xyz_ecl, vel_ecl = _true_of_date_ecliptic_state(xyz_h, vel_h, jd_tt)
+    lon, lat, dist = icrf_to_ecliptic(xyz_ecl, 0.0)
+    speed = _longitude_rate(xyz_ecl, vel_ecl, 0.0)
 
     return HeliocentricData(
         name=body,

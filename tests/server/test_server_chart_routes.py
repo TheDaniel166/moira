@@ -165,8 +165,9 @@ def test_planet_position_route_preserves_topocentric_truth(
     moira_engine,
 ) -> None:
     dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
-    jd_ut = jd_from_datetime(dt)
-    lst_deg = _local_sidereal_time_for(jd_ut, -74.0060)
+    jd_utc = jd_from_datetime(dt)
+    jd_ut = utc_to_ut1(jd_utc)
+    lst_deg = _local_sidereal_time_for(jd_utc, -74.0060)
     direct = planet_at(
         "Moon",
         jd_ut,
@@ -207,8 +208,9 @@ def test_planet_position_reduction_route_exposes_pipeline_truth(
     moira_engine,
 ) -> None:
     dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
-    jd_ut = jd_from_datetime(dt)
-    lst_deg = _local_sidereal_time_for(jd_ut, -74.0060)
+    jd_utc = jd_from_datetime(dt)
+    jd_ut = utc_to_ut1(jd_utc)
+    lst_deg = _local_sidereal_time_for(jd_utc, -74.0060)
     direct = planet_at(
         "Moon",
         jd_ut,
@@ -250,6 +252,8 @@ def test_planet_position_reduction_route_exposes_pipeline_truth(
     assert body["reduction"]["observer"]["latitude"] == pytest.approx(40.7128)
     assert body["reduction"]["observer"]["longitude"] == pytest.approx(-74.0060)
     assert body["reduction"]["observer"]["local_sidereal_time_deg"] is not None
+    assert body["reduction"]["jd_ut"] == pytest.approx(jd_ut, abs=1.0e-12)
+    assert body["reduction"]["stages"][-1]["name"] == "Topocentric diurnal aberration"
     assert "all_planets_at" in body["reduction"]["stage_sequence"]
     assert "planet_selection" in body["reduction"]["stage_sequence"]
     # New correction controls reflected in reduction (requested == applied for default full)

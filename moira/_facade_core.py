@@ -160,7 +160,7 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
     ):
         """Calculate apparent topocentric RA/Dec and horizontal coordinates."""
         facade = _facade_module()
-        jd = facade.jd_from_datetime(dt)
+        jd = facade.utc_to_ut1(facade.jd_from_datetime(dt))
         return facade.sky_position_at(
             body,
             jd,

@@ -57,13 +57,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from .constants import Body, NAIF_ROUTES, KM_PER_AU, sign_of
-from .coordinates import (
-    icrf_to_ecliptic, mat_vec_mul, vec_sub,
-    precession_matrix_equatorial,
-    nutation_matrix_equatorial,
-)
+from .coordinates import icrf_to_ecliptic, vec_sub
 from .julian import ut_to_tt, decimal_year
-from .obliquity import true_obliquity
 
 __all__ = [
     "PlanetocentricData",
@@ -87,7 +82,7 @@ VALID_OBSERVER_BODIES: frozenset[str] = frozenset(NAIF_ROUTES.keys()) | {Body.EA
 # Data vessel
 # ---------------------------------------------------------------------------
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class PlanetocentricData:
     """
     RITE: The Observer-Planet Position Vessel.
@@ -170,7 +165,10 @@ class PlanetocentricData:
     sign_degree: float = field(init=False)
 
     def __post_init__(self) -> None:
-        self.sign, self.sign_symbol, self.sign_degree = sign_of(self.longitude)
+        sign, symbol, degree = sign_of(self.longitude)
+        object.__setattr__(self, "sign", sign)
+        object.__setattr__(self, "sign_symbol", symbol)
+        object.__setattr__(self, "sign_degree", degree)
 
     @property
     def distance_au(self) -> float:
@@ -269,10 +267,9 @@ def planetocentric_at(
         xyz = barycentric_pos(target) − barycentric_pos(observer)
         vel = barycentric_vel(target) − barycentric_vel(observer)
 
-    Both vectors are then rotated to the true-of-date equatorial frame
-    (precession + nutation) and projected onto the ecliptic.  The
-    precession-rate contribution to velocity (~50″/century) is neglected,
-    consistent with the heliocentric implementation in ``moira.planets``.
+    Both vectors receive the full time-dependent transformation into the true
+    ecliptic frame of date, including the rotation derivative required for the
+    returned longitudinal speed.
 
     Light-travel time is not corrected.  For precise work (eclipses, occultations
     from another planet's perspective) the caller should apply a light-time
@@ -293,7 +290,11 @@ def planetocentric_at(
             f"planetocentric_at: observer and target must differ, got {observer!r} for both."
         )
 
-    from .planets import get_reader, approx_year as _approx_year
+    from .planets import (
+        get_reader,
+        approx_year as _approx_year,
+        _true_of_date_ecliptic_state,
+    )
 
     if reader is None:
         reader = get_reader()
@@ -314,17 +315,9 @@ def planetocentric_at(
     # -----------------------------------------------------------------------
     # Rotate to true-of-date equatorial frame (precession + nutation)
     # -----------------------------------------------------------------------
-    prec_mat = precession_matrix_equatorial(jd_tt)
-    nut_mat  = nutation_matrix_equatorial(jd_tt)
-    xyz_tod  = mat_vec_mul(nut_mat, mat_vec_mul(prec_mat, xyz))
-    vel_tod  = mat_vec_mul(nut_mat, mat_vec_mul(prec_mat, vel))
-
-    # -----------------------------------------------------------------------
-    # Project to ecliptic, derive speed
-    # -----------------------------------------------------------------------
-    obliquity = true_obliquity(jd_tt)
-    lon, lat, dist = icrf_to_ecliptic(xyz_tod, obliquity)
-    speed = _longitude_rate_ecl(xyz_tod, vel_tod, obliquity)
+    xyz_ecl, vel_ecl = _true_of_date_ecliptic_state(xyz, vel, jd_tt)
+    lon, lat, dist = icrf_to_ecliptic(xyz_ecl, 0.0)
+    speed = _longitude_rate_ecl(xyz_ecl, vel_ecl, 0.0)
 
     return PlanetocentricData(
         observer   = observer,

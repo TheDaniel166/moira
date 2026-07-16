@@ -85,6 +85,7 @@ from .planets import (
     _compose_rotation_matrix,
     _earth_barycentric_state,
     _barycentric as _planet_barycentric,
+    _true_of_date_ecliptic_position,
 )
 from ._kernel_paths import find_kernel
 from .corrections import SCHWARZSCHILD_RADII
@@ -685,8 +686,9 @@ def _asteroid_at_with_flags(
     modes are requested.  Full-correction (all flags True) is numerically
     equivalent to asteroid_at().
 
-    apparent=False returns the raw geometric geocentric position (no light-time,
-    no frame transforms).  When apparent=True the pipeline is:
+    apparent=False returns the geometric geocentric position without light-path
+    corrections, expressed in the same true ecliptic-of-date orientation as
+    the apparent product.  When apparent=True the pipeline is:
       light-time → optional deflection → optional aberration → frame bias →
       precession (+ optional nutation) → ecliptic projection.
 
@@ -727,12 +729,12 @@ def _asteroid_at_with_flags(
         return r.position(0, b, t)
 
     if not apparent:
-        # Geometric: raw geocentric ICRF, no light-time, no frame transforms.
+        # Geometric: no light-path corrections, but preserve the public
+        # tropical ecliptic-of-date frame.
         earth_ssb, _ = _earth_barycentric_state(jd_tt, reader)
         body_ssb = reader.position(0, naif_id, jd_tt)
-        xyz = vec_sub(body_ssb, earth_ssb)
-        obliquity_val = mean_obliquity(jd_tt)
-        lon0, lat0, dist0 = icrf_to_ecliptic(xyz, obliquity_val)
+        xyz = _true_of_date_ecliptic_position(vec_sub(body_ssb, earth_ssb), jd_tt)
+        lon0, lat0, dist0 = icrf_to_ecliptic(xyz, 0.0)
     else:
         earth_ssb, earth_vel = _earth_barycentric_state(jd_tt, reader)
         rot_mat = _compose_rotation_matrix(jd_tt, with_nutation=nutation)
@@ -749,12 +751,13 @@ def _asteroid_at_with_flags(
             rot_mat=rot_mat,
         )
 
-    # Speed via central finite difference; obliquity fixed at jd_tt.
+    # Speed via central finite difference of the returned longitude product.
     def _lon_at(jd: float) -> float:
         if not apparent:
             ssb, _ = _earth_barycentric_state(jd, reader)
             b_ssb = reader.position(0, naif_id, jd)
-            lon, _, _ = icrf_to_ecliptic(vec_sub(b_ssb, ssb), obliquity_val)
+            xyz_ecl = _true_of_date_ecliptic_position(vec_sub(b_ssb, ssb), jd)
+            lon, _, _ = icrf_to_ecliptic(xyz_ecl, 0.0)
             return lon
         ssb, vel = _earth_barycentric_state(jd, reader)
         rm = _compose_rotation_matrix(jd, with_nutation=nutation)

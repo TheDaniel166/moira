@@ -95,7 +95,7 @@ RECEIVED_LIGHT_BODIES: frozenset[str] = frozenset(Body.ALL_PLANETS)
 # Data vessel
 # ---------------------------------------------------------------------------
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class ReceivedLightPosition:
     """
     RITE: The Received-Light Position Vessel.
@@ -137,7 +137,10 @@ class ReceivedLightPosition:
     sign_degree: float = field(init=False)
 
     def __post_init__(self) -> None:
-        self.sign, self.sign_symbol, self.sign_degree = sign_of(self.apparent_longitude)
+        sign, symbol, degree = sign_of(self.apparent_longitude)
+        object.__setattr__(self, "sign", sign)
+        object.__setattr__(self, "sign_symbol", symbol)
+        object.__setattr__(self, "sign_degree", degree)
 
     # ------------------------------------------------------------------
     # Derived properties

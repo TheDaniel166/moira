@@ -77,10 +77,27 @@ def test_planet_at_chiron_supports_partial_correction_modes() -> None:
 
 
 def test_planet_at_chiron_still_rejects_unsupported_modes() -> None:
-    # Observer coordinates are not supported for small bodies
+    # The admitted topocentric path is apparent, geocentric, and ecliptic only.
     with pytest.raises(ValueError):
-        planet_at(Body.CHIRON, 2451545.0, observer_lat=51.5, observer_lon=-0.1, lst_deg=0.0)
+        planet_at(
+            Body.CHIRON,
+            2451545.0,
+            apparent=False,
+            observer_lat=51.5,
+            observer_lon=-0.1,
+            lst_deg=0.0,
+        )
 
     # Barycentric center is not supported for small bodies
     with pytest.raises(ValueError):
         planet_at(Body.CHIRON, 2451545.0, center="barycentric")
+
+    with pytest.raises(ValueError):
+        planet_at(
+            Body.CHIRON,
+            2451545.0,
+            frame="cartesian",
+            observer_lat=51.5,
+            observer_lon=-0.1,
+            lst_deg=0.0,
+        )

@@ -705,10 +705,11 @@ def test_nutation_false_changes_position():
 
 
 @pytest.mark.requires_ephemeris
-def test_nutation_false_ignored_when_apparent_false():
+def test_nutation_selects_geometric_output_frame_when_apparent_false():
     a = planet_at(Body.MARS, _JD_J2000, apparent=False, nutation=True)
     b = planet_at(Body.MARS, _JD_J2000, apparent=False, nutation=False)
-    assert a.longitude == b.longitude
+    difference = abs((a.longitude - b.longitude + 180.0) % 360.0 - 180.0)
+    assert difference > 1.0e-6
 
 
 # ---------------------------------------------------------------------------

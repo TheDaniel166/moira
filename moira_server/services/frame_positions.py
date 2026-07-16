@@ -6,7 +6,12 @@ from datetime import timezone
 from typing import Iterable
 
 from moira import Body, Moira
-from moira.julian import delta_t_from_jd, datetime_from_jd, jd_from_datetime, utc_to_tt
+from moira.julian import (
+    datetime_from_jd,
+    jd_from_datetime,
+    utc_to_tt,
+    utc_to_ut1,
+)
 from moira.light_cone import RECEIVED_LIGHT_BODIES, ReceivedLightPosition
 from moira.planetocentric import VALID_OBSERVER_BODIES, PlanetocentricData
 from moira.planets import HeliocentricData
@@ -48,13 +53,15 @@ _FRAME = "true_of_date_ecliptic"
 
 
 def _time_response(requested_dt) -> FramePositionTimeResponse:
-    jd_ut = jd_from_datetime(requested_dt)
+    jd_utc = jd_from_datetime(requested_dt)
+    jd_ut = utc_to_ut1(jd_utc)
+    jd_tt = utc_to_tt(jd_utc)
     return FramePositionTimeResponse(
         requested_datetime=requested_dt.isoformat(),
-        normalized_datetime_utc=datetime_from_jd(jd_ut).astimezone(timezone.utc).isoformat(),
+        normalized_datetime_utc=datetime_from_jd(jd_utc).astimezone(timezone.utc).isoformat(),
         jd_ut=jd_ut,
-        jd_tt=utc_to_tt(jd_ut),
-        delta_t_seconds=delta_t_from_jd(jd_ut),
+        jd_tt=jd_tt,
+        delta_t_seconds=(jd_tt - jd_ut) * 86400.0,
     )
 
 

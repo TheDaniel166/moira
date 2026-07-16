@@ -67,8 +67,9 @@ Canon: Moira Sovereign Facade Architecture; moira.facade astronomy policy.
     def heliocentric(self, dt: datetime, bodies: list[str] | None = None):
         """Return heliocentric ecliptic positions for all or specified planets."""
         facade = _facade_module()
+        jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
         return facade.all_heliocentric_at(
-            facade.jd_from_datetime(dt), bodies=bodies, reader=self._reader
+            jd_ut1, bodies=bodies, reader=self._reader
         )
 
     def planetocentric(
@@ -79,9 +80,10 @@ Canon: Moira Sovereign Facade Architecture; moira.facade astronomy policy.
     ):
         """Return positions as seen from the center of ``observer``."""
         facade = _facade_module()
+        jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
         return facade.all_planetocentric_at(
             observer,
-            facade.jd_from_datetime(dt),
+            jd_ut1,
             bodies=bodies,
             reader=self._reader,
         )
@@ -89,15 +91,17 @@ Canon: Moira Sovereign Facade Architecture; moira.facade astronomy policy.
     def ssb_chart(self, dt: datetime, bodies: list[str] | None = None):
         """Return ecliptic positions relative to the Solar System Barycenter."""
         facade = _facade_module()
+        jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
         return facade.all_ssb_positions_at(
-            facade.jd_from_datetime(dt), bodies=bodies, reader=self._reader
+            jd_ut1, bodies=bodies, reader=self._reader
         )
 
     def received_light(self, dt: datetime, bodies: list[str] | None = None):
         """Return received-light positions for the given bodies."""
         facade = _facade_module()
+        jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
         return facade.all_received_light_at(
-            facade.jd_from_datetime(dt), bodies=bodies, reader=self._reader
+            jd_ut1, bodies=bodies, reader=self._reader
         )
 
     def twilight(self, dt: datetime, latitude: float, longitude: float):

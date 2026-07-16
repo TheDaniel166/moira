@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from fastapi.testclient import TestClient
 import pytest
 
+from moira.julian import jd_from_datetime, utc_to_tt, utc_to_ut1
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
 
@@ -139,6 +140,24 @@ def test_frame_received_light_route_matches_facade_for_outer_planet(
     assert body["frame"]["light_time_corrected"] is True
     assert body["frame"]["geometric_comparison_included"] is True
     assert body["provenance"]["source_module"] == "moira.light_cone"
+
+
+@pytest.mark.requires_ephemeris
+def test_frame_position_time_metadata_reports_ut1(
+    client_with_engine: TestClient,
+) -> None:
+    dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    jd_utc = jd_from_datetime(dt)
+
+    response = client_with_engine.post(
+        "/v1/positions/frame/ssb",
+        json={"dt": dt.isoformat(), "bodies": ["Sun"]},
+    )
+
+    assert response.status_code == 200
+    time = response.json()["time"]
+    assert time["jd_ut"] == pytest.approx(utc_to_ut1(jd_utc), abs=1.0e-12)
+    assert time["jd_tt"] == pytest.approx(utc_to_tt(jd_utc), abs=1.0e-12)
 
 
 def test_frame_position_compute_routes_do_not_admit_get(client_with_engine: TestClient) -> None:

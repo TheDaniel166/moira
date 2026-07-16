@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import timezone
 
 from moira import Body, Moira, PlanetData, SkyPosition
-from moira.julian import delta_t_from_jd, datetime_from_jd, jd_from_datetime, local_sidereal_time, utc_to_tt, utc_to_ut1
+from moira.julian import datetime_from_jd, jd_from_datetime, local_sidereal_time, utc_to_tt, utc_to_ut1
 from moira.obliquity import nutation, true_obliquity
 from moira.planets import (
     PlanetReductionBreakdown,
@@ -33,6 +33,7 @@ _PLANET_STAGE_SEQUENCE = [
     "precession",
     "nutation",
     "optional_topocentric_parallax",
+    "optional_diurnal_aberration",
     "ecliptic_projection",
     "planet_selection",
 ]
@@ -133,10 +134,11 @@ def compute_planet_position(engine: Moira, request: PlanetPositionRequest) -> Pl
 
     _require_aware_datetime(request.dt)
     _require_supported_planet_body(request.body)
-    jd_ut = jd_from_datetime(request.dt)
+    jd_utc = jd_from_datetime(request.dt)
+    jd_ut = utc_to_ut1(jd_utc)
     lst_deg: float | None = None
     if request.observer_lat is not None and request.observer_lon is not None:
-        lst_deg, _ = _sidereal_context(jd_ut, request.observer_lon)
+        lst_deg, _ = _sidereal_context(jd_utc, request.observer_lon)
     return planet_at(
         request.body,
         jd_ut,
@@ -162,10 +164,11 @@ def compute_planet_position_with_reduction(
 
     _require_aware_datetime(request.dt)
     _require_supported_planet_body(request.body)
-    jd_ut = jd_from_datetime(request.dt)
+    jd_utc = jd_from_datetime(request.dt)
+    jd_ut = utc_to_ut1(jd_utc)
     lst_deg: float | None = None
     if request.observer_lat is not None and request.observer_lon is not None:
-        lst_deg, _ = _sidereal_context(jd_ut, request.observer_lon)
+        lst_deg, _ = _sidereal_context(jd_utc, request.observer_lon)
     planet = planet_at(
         request.body,
         jd_ut,
@@ -197,10 +200,10 @@ def compute_planet_position_with_reduction(
             raise
         breakdown = None
 
-    jd_tt = utc_to_tt(jd_ut)
+    jd_tt = utc_to_tt(jd_utc)
     obliquity_deg = true_obliquity(jd_tt)
-    delta_t_seconds = delta_t_from_jd(jd_ut)
-    normalized_datetime_utc = datetime_from_jd(jd_ut).astimezone(timezone.utc).isoformat()
+    delta_t_seconds = (jd_tt - jd_ut) * 86400.0
+    normalized_datetime_utc = datetime_from_jd(jd_utc).astimezone(timezone.utc).isoformat()
 
     reduction = PlanetPositionReductionContext(
         requested_datetime=request.dt.isoformat(),
@@ -233,7 +236,8 @@ def compute_sky_position(engine: Moira, request: SkyPositionRequest) -> SkyPosit
     """
 
     _require_aware_datetime(request.dt)
-    jd_ut = jd_from_datetime(request.dt)
+    jd_utc = jd_from_datetime(request.dt)
+    jd_ut = utc_to_ut1(jd_utc)
     return sky_position_at(
         request.body,
         jd_ut,
@@ -260,7 +264,8 @@ def compute_sky_position_with_reduction(
     """
 
     _require_aware_datetime(request.dt)
-    jd_ut = jd_from_datetime(request.dt)
+    jd_utc = jd_from_datetime(request.dt)
+    jd_ut = utc_to_ut1(jd_utc)
     position = sky_position_at(
         request.body,
         jd_ut,
@@ -276,11 +281,11 @@ def compute_sky_position_with_reduction(
         temperature_c=request.temperature_c,
         relative_humidity=request.relative_humidity,
     )
-    jd_tt = utc_to_tt(jd_ut)
-    lst_deg, obliquity_deg = _sidereal_context(jd_ut, request.longitude)
-    delta_t_seconds = delta_t_from_jd(jd_ut)
+    jd_tt = utc_to_tt(jd_utc)
+    lst_deg, obliquity_deg = _sidereal_context(jd_utc, request.longitude)
+    delta_t_seconds = (jd_tt - jd_ut) * 86400.0
     # Derive normalized from the jd used in computation (addressing the input-projection gap)
-    normalized_datetime_utc = datetime_from_jd(jd_ut).astimezone(timezone.utc).isoformat()
+    normalized_datetime_utc = datetime_from_jd(jd_utc).astimezone(timezone.utc).isoformat()
     reduction = SkyPositionReductionContext(
         requested_datetime=request.dt.isoformat(),
         normalized_datetime_utc=normalized_datetime_utc,

@@ -60,13 +60,9 @@ from dataclasses import dataclass, field
 from .constants import Body, NAIF_ROUTES, KM_PER_AU, sign_of
 from .coordinates import (
     icrf_to_ecliptic,
-    mat_vec_mul,
     vec_norm,
-    precession_matrix_equatorial,
-    nutation_matrix_equatorial,
 )
 from .julian import ut_to_tt, decimal_year
-from .obliquity import true_obliquity
 
 __all__ = [
     "SSBPosition",
@@ -89,7 +85,7 @@ SSB_BODIES: frozenset[str] = frozenset(NAIF_ROUTES.keys()) | {Body.EARTH}
 # Data vessel
 # ---------------------------------------------------------------------------
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class SSBPosition:
     """
     RITE: The Solar System Barycenter Position Vessel.
@@ -124,7 +120,10 @@ class SSBPosition:
     sign_degree: float = field(init=False)
 
     def __post_init__(self) -> None:
-        self.sign, self.sign_symbol, self.sign_degree = sign_of(self.longitude)
+        sign, symbol, degree = sign_of(self.longitude)
+        object.__setattr__(self, "sign", sign)
+        object.__setattr__(self, "sign_symbol", symbol)
+        object.__setattr__(self, "sign_degree", degree)
 
     @property
     def distance_au(self) -> float:
@@ -206,7 +205,12 @@ def ssb_position_at(
             f"Choose from: {sorted(SSB_BODIES)}"
         )
 
-    from .planets import get_reader, approx_year as _approx_year, _longitude_rate
+    from .planets import (
+        get_reader,
+        approx_year as _approx_year,
+        _longitude_rate,
+        _true_of_date_ecliptic_state,
+    )
 
     if reader is None:
         reader = get_reader()
@@ -222,17 +226,9 @@ def ssb_position_at(
     # -----------------------------------------------------------------------
     # Rotate to true-of-date equatorial frame (precession + nutation)
     # -----------------------------------------------------------------------
-    prec_mat = precession_matrix_equatorial(jd_tt)
-    nut_mat  = nutation_matrix_equatorial(jd_tt)
-    pos_tod  = mat_vec_mul(nut_mat, mat_vec_mul(prec_mat, pos))
-    vel_tod  = mat_vec_mul(nut_mat, mat_vec_mul(prec_mat, vel))
-
-    # -----------------------------------------------------------------------
-    # Project to ecliptic, derive speed and distance
-    # -----------------------------------------------------------------------
-    obliquity = true_obliquity(jd_tt)
-    lon, lat, dist = icrf_to_ecliptic(pos_tod, obliquity)
-    speed = _longitude_rate(pos_tod, vel_tod, obliquity)
+    pos_ecl, vel_ecl = _true_of_date_ecliptic_state(pos, vel, jd_tt)
+    lon, lat, dist = icrf_to_ecliptic(pos_ecl, 0.0)
+    speed = _longitude_rate(pos_ecl, vel_ecl, 0.0)
 
     return SSBPosition(
         name       = body,
