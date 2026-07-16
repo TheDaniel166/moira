@@ -26,8 +26,10 @@ or a complete leasing judgement.
 - Previous and next events are strictly before and after the query instant.
 - Current motion delegates to the signed `AspectMotionWitness`; no event
   absence or stationary state is flattened into applying/separating truth.
-- Motion speeds are the canonical `PlanetData.speed` product: geocentric
-  astrometric longitude rates, explicitly identified in every REST response.
+- Motion speeds are the canonical `PlanetData.speed` product: derivatives of
+  corrected geocentric ecliptic longitude. Existing REST compatibility
+  identifiers still contain the historical word `astrometric`; this
+  substrate correction does not change those response literals or models.
 
 ## Source boundary
 

@@ -67,13 +67,23 @@ from .coordinates import (
 )
 from .obliquity import mean_obliquity, true_obliquity, nutation as _nutation
 from .julian import ut_to_tt, centuries_from_j2000, local_sidereal_time, decimal_year, DeltaTPolicy
-from .spk_reader import get_active_reader, get_reader, KernelReader, SpkReader, MissingKernelError
+from .spk_reader import (
+    get_active_reader, get_reader, KernelReader, SpkReader,
+    MissingKernelError, OutOfRangeError,
+)
 from .corrections import (
     apply_light_time, apply_aberration, apply_deflection, apply_frame_bias,
     apply_refraction, SCHWARZSCHILD_RADII,
     topocentric_correction, apply_diurnal_aberration, C_KM_PER_DAY,
 )
 from .precession import general_precession_in_longitude
+
+
+# PlanetData.speed is the time derivative of the canonical geocentric
+# ecliptic longitude product.  A 0.002-day symmetric step is large enough to
+# avoid floating-point cancellation in the apparent-place correction stack
+# while remaining stable through planetary station searches.
+_LONGITUDE_RATE_STEP_DAYS = 2.0e-3
 
 __all__ = [
     "PlanetData",
@@ -905,15 +915,48 @@ def _native_all_planets_admitted(
             obliquity,
             rot_mat,
         )
+        rate_payloads: list[list[tuple]] = []
+        for rate_jd in (
+            jd_tt - _LONGITUDE_RATE_STEP_DAYS,
+            jd_tt + _LONGITUDE_RATE_STEP_DAYS,
+        ):
+            rate_specs = _npe_public_route_segment_specs(reader, rate_jd)
+            rate_body_specs = _npe_body_route_segment_specs(reader, rate_jd)
+            if rate_specs is None or rate_body_specs is None:
+                return None
+            rate_mean_eps = mean_obliquity(rate_jd)
+            rate_dpsi, rate_deps = _nutation(rate_jd)
+            rate_rot_mat = _compose_rotation_matrix(
+                rate_jd,
+                with_nutation=True,
+                mean_obliquity_deg=rate_mean_eps,
+                dpsi_deg=rate_dpsi,
+                deps_deg=rate_deps,
+            )
+            rate_payloads.append(
+                evaluator.evaluate_all_planets_apparent_geocentric_ecliptic(
+                    list(bodies),
+                    rate_specs,
+                    rate_body_specs,
+                    rate_jd,
+                    rate_mean_eps + rate_deps,
+                    rate_rot_mat,
+                )
+            )
+        minus_longitudes = {str(row[0]): float(row[1]) for row in rate_payloads[0]}
+        plus_longitudes = {str(row[0]): float(row[1]) for row in rate_payloads[1]}
         results: dict[str, PlanetData] = {}
-        for body, longitude, latitude, distance, speed, retrograde in payloads:
+        for body, longitude, latitude, distance, _raw_speed, _raw_retrograde in payloads:
+            speed = _signed_longitude_delta(
+                plus_longitudes[body], minus_longitudes[body]
+            ) / (2.0 * _LONGITUDE_RATE_STEP_DAYS)
             results[body] = PlanetData(
                 name=body,
                 longitude=float(longitude),
                 latitude=float(latitude),
                 distance=float(distance),
                 speed=float(speed),
-                retrograde=bool(retrograde),
+                retrograde=(speed < 0.0),
                 is_topocentric=False,
             )
         return results
@@ -939,6 +982,12 @@ def _native_all_planets_admitted(
         earth_vel=None,
     )
     context.earth_ssb, context.earth_vel = _earth_barycentric_state(jd_tt, reader, vector_cache)
+    rate_contexts = _longitude_rate_contexts(
+        jd_tt,
+        reader,
+        apparent=apparent,
+        nutation=nutation,
+    )
 
     earth_ssb = context.earth_ssb
     earth_vel = context.earth_vel
@@ -988,8 +1037,18 @@ def _native_all_planets_admitted(
             xyz0 = mat_vec_mul(nutation_matrix_equatorial(jd_tt), xyz0)
 
         lon, lat, dist = icrf_to_ecliptic(xyz0, context.obliquity)
-        xyz_rate, vel_rate = vector_cache[("geo_state", body, jd_tt)]  # type: ignore[index]
-        speed = _longitude_rate(xyz_rate, vel_rate, context.obliquity)
+        speed = _geocentric_longitude_rate(
+            body,
+            jd_tt,
+            reader,
+            apparent=apparent,
+            aberration=aberration,
+            grav_deflection=grav_deflection,
+            nutation=nutation,
+            central_longitude=lon,
+            central_context=context,
+            rate_contexts=rate_contexts,
+        )
         results[body] = PlanetData(
             name=body,
             longitude=lon,
@@ -1578,12 +1637,225 @@ def _apparent_geocentric_equatorial_vector(
     return _apply_rotation_matrix(rot_mat, xyz)
 
 
+def _longitude_rate_contexts(
+    jd_tt: float,
+    reader: KernelReader,
+    *,
+    apparent: bool,
+    nutation: bool,
+) -> tuple[_ApparentContext | None, _ApparentContext | None]:
+    """Build or reuse the two contexts that define the longitude derivative."""
+    contexts: list[_ApparentContext | None] = []
+    for sample_jd in (
+        jd_tt - _LONGITUDE_RATE_STEP_DAYS,
+        jd_tt + _LONGITUDE_RATE_STEP_DAYS,
+    ):
+        context = _cached_apparent_context(
+            reader,
+            jd_tt=sample_jd,
+            apparent=apparent,
+            nutation=nutation,
+        )
+        if context is None:
+            try:
+                context = _build_apparent_context(
+                    sample_jd,
+                    reader,
+                    apparent=apparent,
+                    nutation=nutation,
+                )
+            except OutOfRangeError:
+                context = None
+            if context is not None:
+                _store_apparent_context(
+                    reader,
+                    jd_tt=sample_jd,
+                    apparent=apparent,
+                    nutation=nutation,
+                    context=context,
+                )
+        contexts.append(context)
+    return contexts[0], contexts[1]
+
+
+def _geocentric_ecliptic_longitude_for_rate(
+    body: str,
+    jd_tt: float,
+    reader: KernelReader,
+    *,
+    apparent: bool,
+    aberration: bool,
+    grav_deflection: bool,
+    nutation: bool,
+    context: _ApparentContext | None = None,
+    projection_obliquity: float | None = None,
+) -> float:
+    """Return the canonical geocentric longitude whose derivative is speed."""
+    if context is None:
+        context = _build_apparent_context(
+            jd_tt,
+            reader,
+            apparent=apparent,
+            nutation=nutation,
+        )
+
+    if apparent:
+        earth_ssb = context.earth_ssb
+        earth_vel = context.earth_vel
+        if earth_ssb is None or earth_vel is None or context.rot_mat is None:
+            raise RuntimeError("apparent longitude-rate context is incomplete")
+        deflectors = (
+            _deflectors_for_body(body, jd_tt, reader, context)
+            if grav_deflection and body not in (Body.SUN, Body.MOON)
+            else []
+        )
+        xyz = _apparent_geocentric_equatorial_vector(
+            body,
+            jd_tt,
+            reader,
+            barycentric_fn=lambda b, t, r: _barycentric(
+                b, t, r, context.vector_cache
+            ),
+            deflectors=deflectors,
+            earth_ssb=earth_ssb,
+            earth_vel=earth_vel,
+            rot_mat=context.rot_mat,
+            aberration=aberration,
+        )
+    else:
+        xyz = _geocentric(body, jd_tt, reader, context.vector_cache)
+        xyz = apply_frame_bias(xyz)
+        if context.rot_mat is None:
+            raise RuntimeError("geometric longitude-rate context is incomplete")
+        xyz = _apply_rotation_matrix(context.rot_mat, xyz)
+
+    longitude, _latitude, _distance = icrf_to_ecliptic(
+        xyz,
+        context.obliquity if projection_obliquity is None else projection_obliquity,
+    )
+    return longitude
+
+
+def _signed_longitude_delta(longitude: float, reference: float) -> float:
+    """Return longitude-reference on the continuous branch around reference."""
+    return (longitude - reference + 540.0) % 360.0 - 180.0
+
+
+def _geocentric_longitude_rate(
+    body: str,
+    jd_tt: float,
+    reader: KernelReader,
+    *,
+    apparent: bool,
+    aberration: bool,
+    grav_deflection: bool,
+    nutation: bool,
+    central_longitude: float | None = None,
+    central_context: _ApparentContext | None = None,
+    rate_contexts: tuple[_ApparentContext | None, _ApparentContext | None] | None = None,
+    projection_obliquity: float | None = None,
+) -> float:
+    """Differentiate the declared geocentric longitude product in TT days."""
+    if central_longitude is None:
+        central_longitude = _geocentric_ecliptic_longitude_for_rate(
+            body,
+            jd_tt,
+            reader,
+            apparent=apparent,
+            aberration=aberration,
+            grav_deflection=grav_deflection,
+            nutation=nutation,
+            context=central_context,
+            projection_obliquity=projection_obliquity,
+        )
+    if rate_contexts is None:
+        rate_contexts = _longitude_rate_contexts(
+            jd_tt,
+            reader,
+            apparent=apparent,
+            nutation=nutation,
+        )
+
+    step = _LONGITUDE_RATE_STEP_DAYS
+    minus_context, plus_context = rate_contexts
+    minus_longitude: float | None = None
+    plus_longitude: float | None = None
+    try:
+        if minus_context is None:
+            raise OutOfRangeError("lower longitude-rate sample is outside coverage")
+        minus_longitude = _geocentric_ecliptic_longitude_for_rate(
+            body,
+            jd_tt - step,
+            reader,
+            apparent=apparent,
+            aberration=aberration,
+            grav_deflection=grav_deflection,
+            nutation=nutation,
+            context=minus_context,
+            projection_obliquity=projection_obliquity,
+        )
+    except OutOfRangeError:
+        pass
+    try:
+        if plus_context is None:
+            raise OutOfRangeError("upper longitude-rate sample is outside coverage")
+        plus_longitude = _geocentric_ecliptic_longitude_for_rate(
+            body,
+            jd_tt + step,
+            reader,
+            apparent=apparent,
+            aberration=aberration,
+            grav_deflection=grav_deflection,
+            nutation=nutation,
+            context=plus_context,
+            projection_obliquity=projection_obliquity,
+        )
+    except OutOfRangeError:
+        pass
+
+    if minus_longitude is not None and plus_longitude is not None:
+        return _signed_longitude_delta(plus_longitude, minus_longitude) / (2.0 * step)
+
+    # Preserve endpoint support with a second-order one-sided derivative when
+    # the declared kernel coverage does not admit one central sample.
+    if plus_longitude is not None:
+        plus_two = _geocentric_ecliptic_longitude_for_rate(
+            body,
+            jd_tt + 2.0 * step,
+            reader,
+            apparent=apparent,
+            aberration=aberration,
+            grav_deflection=grav_deflection,
+            nutation=nutation,
+            projection_obliquity=projection_obliquity,
+        )
+        delta_one = _signed_longitude_delta(plus_longitude, central_longitude)
+        delta_two = _signed_longitude_delta(plus_two, central_longitude)
+        return (4.0 * delta_one - delta_two) / (2.0 * step)
+    if minus_longitude is not None:
+        minus_two = _geocentric_ecliptic_longitude_for_rate(
+            body,
+            jd_tt - 2.0 * step,
+            reader,
+            apparent=apparent,
+            aberration=aberration,
+            grav_deflection=grav_deflection,
+            nutation=nutation,
+            projection_obliquity=projection_obliquity,
+        )
+        delta_one = _signed_longitude_delta(minus_longitude, central_longitude)
+        delta_two = _signed_longitude_delta(minus_two, central_longitude)
+        return (-4.0 * delta_one + delta_two) / (2.0 * step)
+    raise OutOfRangeError("longitude rate cannot be evaluated within kernel coverage")
+
+
 def _planet_at_default_apparent_geocentric_ecliptic(
     body: str,
     *,
     jd_tt: float,
     reader: KernelReader,
     context: _ApparentContext,
+    rate_contexts: tuple[_ApparentContext | None, _ApparentContext | None] | None = None,
 ) -> PlanetData:
     """
     Fast route for the canonical public single-body chart surface.
@@ -1613,8 +1885,18 @@ def _planet_at_default_apparent_geocentric_ecliptic(
         rot_mat=rot_mat,
     )
 
-    xyz_rate, vel_rate = _geocentric_state(body, jd_tt, reader, context.vector_cache)
-    speed = _longitude_rate(xyz_rate, vel_rate, context.obliquity)
+    speed = _geocentric_longitude_rate(
+        body,
+        jd_tt,
+        reader,
+        apparent=True,
+        aberration=True,
+        grav_deflection=True,
+        nutation=True,
+        central_longitude=lon,
+        central_context=context,
+        rate_contexts=rate_contexts,
+    )
 
     return PlanetData(
         name=body,
@@ -1649,9 +1931,11 @@ def _planet_at_core(
     _rot_mat=None,
     _vector_cache: _VectorCache | None = None,
     _context: _ApparentContext | None = None,
+    _rate_contexts: tuple[_ApparentContext | None, _ApparentContext | None] | None = None,
 ) -> 'PlanetData | CartesianPosition':
     """Canonical internal planetary pipeline shared by single- and multi-body routes."""
     context = _context
+    projection_obliquity = obliquity
     if context is not None:
         _vector_cache = context.vector_cache
 
@@ -1760,8 +2044,27 @@ def _planet_at_core(
         return CartesianPosition(name=body, x=xyz0[0], y=xyz0[1], z=xyz0[2], center=center)
 
     lon, lat, dist = icrf_to_ecliptic(xyz0, obliquity)
-    xyz_rate, vel_rate = _geocentric_state(body, jd_tt, reader, _vector_cache)
-    speed = _longitude_rate(xyz_rate, vel_rate, obliquity)
+    central_longitude = (
+        lon
+        if center == 'geocentric'
+        and observer_lat is None
+        and observer_lon is None
+        and lst_deg is None
+        else None
+    )
+    speed = _geocentric_longitude_rate(
+        body,
+        jd_tt,
+        reader,
+        apparent=apparent,
+        aberration=aberration,
+        grav_deflection=grav_deflection,
+        nutation=nutation,
+        central_longitude=central_longitude,
+        central_context=context,
+        rate_contexts=_rate_contexts,
+        projection_obliquity=projection_obliquity,
+    )
 
     _topocentric = (center == 'geocentric' and observer_lat is not None and observer_lon is not None)
     return PlanetData(
@@ -2815,6 +3118,12 @@ def all_planets_at(
         nutation=nutation,
         vector_cache=vector_cache,
     )
+    rate_contexts = _longitude_rate_contexts(
+        jd_tt,
+        reader,
+        apparent=apparent,
+        nutation=nutation,
+    )
     results: dict[str, PlanetData] = {}
     for body in bodies:
         if _resolve_small_body_name(body) is not None:
@@ -2838,7 +3147,7 @@ def all_planets_at(
             results[small_body_result.name] = small_body_result
             continue
         results[body] = _planet_at_core(  # type: ignore[assignment]
-            body, jd_ut, reader=reader, obliquity=context.obliquity,
+            body, jd_ut, reader=reader, obliquity=None,
             apparent=apparent, aberration=aberration,
             grav_deflection=grav_deflection, nutation=nutation,
             center=center, frame='ecliptic',
@@ -2847,6 +3156,7 @@ def all_planets_at(
             jd_tt=jd_tt,
             _dpsi_deg=context.dpsi_deg, _deps_deg=context.deps_deg, _rot_mat=context.rot_mat,
             _vector_cache=context.vector_cache, _context=context,
+            _rate_contexts=rate_contexts,
         )
     return results
 

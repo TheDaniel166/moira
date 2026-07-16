@@ -11,6 +11,58 @@ from moira.julian import julian_day, ut_to_tt
 from moira.spk_reader import SpkReader
 
 
+@pytest.mark.parametrize(
+    "factory",
+    [
+        lambda: moira_native.ChebyshevEvaluator(0.0, 1.0, 0, 3, 2, []),
+        lambda: moira_native.ChebyshevEvaluator(0.0, 1.0, 1, 3, 2, [0.0] * 5),
+        lambda: moira_native.Type13Evaluator([], [], 0),
+        lambda: moira_native.Type13Evaluator([1.0], [0.0] * 6, 2),
+        lambda: moira_native.CubicSmoothingSpline([0.0, 1.0], [0.0], 1.0),
+        lambda: moira_native.CubicSmoothingSpline([0.0, 0.0], [0.0, 1.0], 1.0),
+    ],
+)
+def test_adversarial_native_constructors_reject_unsafe_payload_shapes(factory) -> None:
+    with pytest.raises(ValueError):
+        factory()
+
+
+def test_adversarial_native_type13_function_rejects_non_six_by_n_state_matrix() -> None:
+    with pytest.raises(ValueError, match="shape"):
+        moira_native.spk_type13_record(
+            [2451545.0, 2451546.0],
+            [[0.0, 0.0] for _ in range(5)],
+            2,
+            2451545.5,
+        )
+
+
+def test_adversarial_native_spline_rejects_nonfinite_evaluation_target() -> None:
+    spline = moira_native.CubicSmoothingSpline([0.0, 1.0], [0.0, 1.0], 1.0)
+    with pytest.raises(ValueError, match="target must be finite"):
+        spline.evaluate(math.nan)
+
+
+def test_native_runtime_avx2_dispatch_preserves_scalar_chebyshev_result() -> None:
+    coefficients = [
+        [1.0, 2.0, 3.0],
+        [0.5, -0.25, 0.125],
+        [0.0625, 0.03125, -0.015625],
+    ]
+    expected = moira_native.spk_chebyshev_record(coefficients, 0.375)
+    evaluator = moira_native.ChebyshevEvaluator(
+        0.0,
+        86400.0,
+        1,
+        3,
+        3,
+        [coefficient for component in coefficients for coefficient in component],
+    )
+    actual = evaluator.evaluate(2451545.0 + 0.6875)[:3]
+    assert isinstance(moira_native._runtime_avx2_available(), bool)
+    assert actual == pytest.approx(expected, abs=1e-14)
+
+
 def _earth_sun_geometry(reader: SpkReader, jd_tt: float):
     e_bary = reader.evaluator(399, 3, jd_tt)
     emb_bary = reader.evaluator(3, 0, jd_tt)

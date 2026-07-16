@@ -68,7 +68,7 @@ except ImportError as exc:
 
 from .constants import MOON_RADIUS_KM
 try:
-    from . import _moira_native as moira_native
+    from . import moira_native
 except ImportError:
     moira_native = None
 

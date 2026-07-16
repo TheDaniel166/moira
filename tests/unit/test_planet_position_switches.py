@@ -308,9 +308,10 @@ def test_native_all_planets_admitted_uses_native_planetary_evaluator_when_availa
             rotation_matrix,
         ):
             self.calls.append((tuple(bodies), jd_tt, obliquity_deg, rotation_matrix))
+            offset = jd_tt - (_JD_J2000 + 0.1)
             return [
-                (Body.SUN, 1.0, 2.0, 3.0, 4.0, False),
-                (Body.MARS, 5.0, 6.0, 7.0, -8.0, True),
+                (Body.SUN, 1.0 + 4.0 * offset, 2.0, 3.0, 99.0, False),
+                (Body.MARS, 5.0 - 8.0 * offset, 6.0, 7.0, 99.0, False),
             ]
 
     dummy_native = type("DummyNative", (), {"NativePlanetaryEvaluator": _DummyEvaluator})()
@@ -364,9 +365,10 @@ def test_native_all_planets_admitted_uses_native_planetary_evaluator_when_availa
 
     assert result is not None
     assert result[Body.SUN].longitude == 1.0
-    assert result[Body.MARS].speed == -8.0
+    assert result[Body.MARS].speed == pytest.approx(-8.0, abs=1e-6)
     assert result[Body.MARS].retrograde is True
     assert hasattr(reader._kernel, "_planetary_evaluator")
+    assert len(reader._kernel._planetary_evaluator.calls) == 3
 
 
 def test_all_planets_at_falls_back_to_python_route_when_native_helper_declines(monkeypatch: pytest.MonkeyPatch):
@@ -630,6 +632,20 @@ def test_all_planets_at_default_matches_planet_at_loop():
         single = planet_at(body, _JD_J2000)
         assert abs(bulk[body].longitude - single.longitude) < 1e-10
         assert abs(bulk[body].latitude - single.latitude) < 1e-10
+
+
+@pytest.mark.requires_ephemeris
+def test_planet_speed_is_derivative_of_published_apparent_longitude():
+    """PlanetData.speed must describe the corrected longitude, not a raw state vector."""
+    jd_ut = 2460402.5  # 2024-04-02, close to a Mercury station
+    step = 4.0e-3
+    result = planet_at(Body.MERCURY, jd_ut)
+    before = planet_at(Body.MERCURY, jd_ut - step)
+    after = planet_at(Body.MERCURY, jd_ut + step)
+    derivative = (
+        (after.longitude - before.longitude + 540.0) % 360.0 - 180.0
+    ) / (2.0 * step)
+    assert result.speed == pytest.approx(derivative, abs=2.0e-7)
 
 
 # ---------------------------------------------------------------------------

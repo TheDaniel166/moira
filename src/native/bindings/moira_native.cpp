@@ -399,7 +399,11 @@ void set_nutation_2000a_tables_py(
 }
 
 py::tuple nutation_2000a_py(double jd_tt) {
-    const NutationResult result = nutation_2000r06(jd_tt);
+    NutationResult result;
+    {
+        py::gil_scoped_release release;
+        result = nutation_2000r06(jd_tt);
+    }
     return py::make_tuple(result.longitude * RAD2DEG, result.obliquity * RAD2DEG);
 }
 
@@ -1342,6 +1346,7 @@ PYBIND11_MODULE(_moira_native, m) {
     m.def("set_nutation_2000a_tables", &set_nutation_2000a_tables_py,
         py::arg("ls_terms"), py::arg("pl_terms"), py::arg("ls_j0_count"), py::arg("pl_j0_count"));
     m.def("nutation_2000a", &nutation_2000a_py, py::arg("jd_tt"));
+    m.def("_runtime_avx2_available", &runtime_avx2_available);
     m.def("nutation_2000r06_series_ready", &nutation_2000r06_series_ready);
     py::class_<NutationEpochCache>(m, "NutationEpochCache")
         .def(py::init<>())
@@ -1379,9 +1384,14 @@ PYBIND11_MODULE(_moira_native, m) {
     m.def("spk_type13_record", [](const py::sequence& epochs, const py::sequence& states, size_t window_size, double jd) {
         std::vector<double> epochs_vec = load_double_vector(epochs, "Type13 epochs");
         DenseMatrixView states_view = load_double_matrix(states, "Type13 states");
-        if (states_view.rows * states_view.cols == 0) {
-            throw std::runtime_error("Type13 states cannot be empty");
+        if (states_view.rows != 6 || states_view.cols != epochs_vec.size()) {
+            throw std::invalid_argument(
+                "Type13 states must have shape (6, epoch_count)"
+            );
         }
+        validate_type13_payload(
+            epochs_vec, states_view.values, window_size, "spk_type13_record"
+        );
         std::vector<double> result(6);
         spk_type13_record_inplace(
             epochs_vec.data(),

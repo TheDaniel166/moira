@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cmath>
 #include <mutex>
+#include <limits>
 #include <stdexcept>
 #include <vector>
 #include <memory>
@@ -14,6 +15,74 @@
 
 namespace moira {
 namespace native {
+
+inline size_t checked_payload_size(
+    size_t first,
+    size_t second,
+    size_t third,
+    const char* surface
+) {
+    if (
+        first == 0 || second == 0 || third == 0
+        || first > std::numeric_limits<size_t>::max() / second
+        || first * second > std::numeric_limits<size_t>::max() / third
+    ) {
+        throw std::invalid_argument(std::string(surface) + ": invalid payload dimensions");
+    }
+    return first * second * third;
+}
+
+inline void validate_chebyshev_payload(
+    double init,
+    double intlen,
+    size_t record_count,
+    size_t component_count,
+    size_t coefficient_count,
+    const std::vector<double>& coefficients,
+    const char* surface
+) {
+    if (!std::isfinite(init) || !std::isfinite(intlen) || intlen <= 0.0) {
+        throw std::invalid_argument(std::string(surface) + ": init and interval must be finite with interval > 0");
+    }
+    if (component_count > 6) {
+        throw std::invalid_argument(std::string(surface) + ": component count exceeds the six-value result vessel");
+    }
+    const size_t expected = checked_payload_size(
+        record_count, component_count, coefficient_count, surface
+    );
+    if (coefficients.size() != expected) {
+        throw std::invalid_argument(std::string(surface) + ": coefficient payload size does not match dimensions");
+    }
+    for (double value : coefficients) {
+        if (!std::isfinite(value)) {
+            throw std::invalid_argument(std::string(surface) + ": coefficients must be finite");
+        }
+    }
+}
+
+inline void validate_type13_payload(
+    const std::vector<double>& epochs,
+    const std::vector<double>& states,
+    size_t window_size,
+    const char* surface
+) {
+    if (epochs.empty() || window_size == 0 || window_size > epochs.size()) {
+        throw std::invalid_argument(std::string(surface) + ": window must be in [1, epoch_count]");
+    }
+    if (epochs.size() > std::numeric_limits<size_t>::max() / 6 || states.size() != epochs.size() * 6) {
+        throw std::invalid_argument(std::string(surface) + ": states must contain six rows per epoch");
+    }
+    for (size_t i = 0; i < epochs.size(); ++i) {
+        if (!std::isfinite(epochs[i]) || (i > 0 && epochs[i] <= epochs[i - 1])) {
+            throw std::invalid_argument(std::string(surface) + ": epochs must be finite and strictly increasing");
+        }
+    }
+    for (double value : states) {
+        if (!std::isfinite(value)) {
+            throw std::invalid_argument(std::string(surface) + ": states must be finite");
+        }
+    }
+}
 
 /**
  * @brief ABSTRACT BASE: A native ephemeris evaluator with caching.
@@ -31,6 +100,9 @@ public:
      * @brief THEOREM: Single JD evaluation with 1-element cache.
      */
     void evaluate(double jd, double* result) const {
+        if (!std::isfinite(jd)) {
+            throw std::invalid_argument("native evaluator epoch must be finite");
+        }
         {
             std::lock_guard<std::mutex> lock(cache_mutex);
             if (jd == last_jd) {
@@ -73,15 +145,24 @@ public:
     std::vector<double> coefficients;
 
     ChebyshevEvaluator(double init, double intlen, size_t rec_count, size_t comp_count, size_t coeff_count, std::vector<double> coeffs)
-        : init(init), intlen(intlen), record_count(rec_count), component_count(comp_count), coefficient_count(coeff_count), coefficients(std::move(coeffs)) {}
+        : init(init), intlen(intlen), record_count(rec_count), component_count(comp_count), coefficient_count(coeff_count), coefficients(std::move(coeffs)) {
+        validate_chebyshev_payload(
+            init, intlen, record_count, component_count, coefficient_count,
+            coefficients, "ChebyshevEvaluator"
+        );
+    }
 
     void compute(double jd, double* result) const override {
         // JPL SPK Type 2/3 uses seconds since J2000.0.
         // We convert JD to seconds to match the domain of the polynomial.
         double t_sec = (jd - 2451545.0) * 86400.0;
         double d_t = t_sec - init;
+        const double duration = static_cast<double>(record_count) * intlen;
+        if (d_t < 0.0 || d_t > duration) {
+            throw std::invalid_argument("ChebyshevEvaluator epoch is outside payload coverage");
+        }
         size_t record_index = static_cast<size_t>(std::floor(d_t / intlen));
-        if (record_index >= record_count) record_index = record_count - 1;
+        if (record_index == record_count) record_index -= 1;
 
         double s = (d_t - (static_cast<double>(record_index) * intlen)) / intlen;
         s = 2.0 * s - 1.0;
@@ -135,7 +216,19 @@ public:
           component_count(comp_count),
           coefficient_count(coeff_count),
           coefficients(std::move(coeffs)),
-          type13_window_size(0) {}
+          type13_window_size(0) {
+        if (
+            !std::isfinite(coverage_start_jd) || !std::isfinite(coverage_end_jd)
+            || coverage_start_jd > coverage_end_jd
+            || (data_type != 2 && data_type != 3)
+        ) {
+            throw std::invalid_argument("SpkSegmentEvaluator: invalid descriptor metadata");
+        }
+        validate_chebyshev_payload(
+            init, intlen, record_count, component_count, coefficient_count,
+            coefficients, "SpkSegmentEvaluator"
+        );
+    }
 
     SpkSegmentEvaluator(
         double coverage_start_jd,
@@ -155,7 +248,18 @@ public:
           coefficient_count(0),
           type13_epochs_jd(std::move(epochs_jd)),
           type13_states(std::move(states)),
-          type13_window_size(window_size) {}
+          type13_window_size(window_size) {
+        if (
+            !std::isfinite(coverage_start_jd) || !std::isfinite(coverage_end_jd)
+            || coverage_start_jd > coverage_end_jd
+        ) {
+            throw std::invalid_argument("SpkSegmentEvaluator: invalid type-13 descriptor coverage");
+        }
+        validate_type13_payload(
+            type13_epochs_jd, type13_states, type13_window_size,
+            "SpkSegmentEvaluator"
+        );
+    }
 
     void compute(double jd, double* result) const override {
         double p[3], v[3];
@@ -355,7 +459,9 @@ public:
     size_t window_size;
 
     Type13Evaluator(std::vector<double> epochs, std::vector<double> states, size_t window_size)
-        : epochs(std::move(epochs)), states(std::move(states)), window_size(window_size) {}
+        : epochs(std::move(epochs)), states(std::move(states)), window_size(window_size) {
+        validate_type13_payload(epochs, states, window_size, "Type13Evaluator");
+    }
 
     void compute(double jd, double* result) const override {
         spk_type13_record_inplace(epochs.data(), states.data(), epochs.size(), window_size, jd, result);

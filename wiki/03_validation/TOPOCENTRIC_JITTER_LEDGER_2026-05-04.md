@@ -8,7 +8,7 @@
 ## 2. Findings & Diagnostics
 * **The Physical Reality:** Using an adversarial numerical derivative model placed at the Earth's equator (maximal rotational speed), topocentric apparent velocity was sampled during the shallow Mars station of February 2025. 
 * **The Jitter Margin:** As the true geocentric speed of Mars approached ~0.01 degrees per day, the diurnal topocentric parallax rate (~0.03 degrees per day) dominated the vector. This caused the apparent topocentric velocity to physically flip signs **four times** over a 24-hour period.
-* **Architectural Safety:** Moira's design intrinsically protects against this. The underlying property `PlanetData.speed` strictly exposes the *astrometric geocentric velocity*. Even if an observer is defined for the target projection, the speed scalar used by event solvers remains absolute.
+* **Architectural Safety:** Moira's design intrinsically protects against this. The underlying property `PlanetData.speed` exposes the time derivative of the canonical corrected geocentric ecliptic longitude, independent of any topocentric observer projection. Even if an observer is defined for the target projection, the speed scalar used by event solvers remains geocentric.
 
 ## 3. Validation Results
 * **Test Regimen:** `tests/unit/test_topocentric_jitter.py`

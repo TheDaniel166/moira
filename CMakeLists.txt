@@ -25,9 +25,31 @@ endif()
 
 pybind11_add_module(_moira_native
     src/native/bindings/moira_native.cpp
+    src/native/src/cpu_features.cpp
     src/native/src/lola.cpp
     src/native/src/nutation.cpp
 )
+
+# Keep the extension baseline portable and compile the AVX2 kernel as one
+# separately dispatched translation unit.  This avoids making AVX2 a wheel-wide
+# CPU requirement while still admitting it on capable x86 hosts.
+include(CheckCXXCompilerFlag)
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(AMD64|amd64|x86_64|X86_64|i[3-6]86)$")
+    if(MSVC)
+        set(MOIRA_AVX2_FLAG "/arch:AVX2")
+    else()
+        set(MOIRA_AVX2_FLAG "-mavx2")
+    endif()
+    check_cxx_compiler_flag("${MOIRA_AVX2_FLAG}" MOIRA_HAS_AVX2_COMPILE_FLAG)
+    if(MOIRA_HAS_AVX2_COMPILE_FLAG)
+        target_sources(_moira_native PRIVATE src/native/src/interpolation_avx2.cpp)
+        set_source_files_properties(
+            src/native/src/interpolation_avx2.cpp
+            PROPERTIES COMPILE_OPTIONS "${MOIRA_AVX2_FLAG}"
+        )
+        target_compile_definitions(_moira_native PRIVATE MOIRA_NATIVE_AVX2_COMPILED=1)
+    endif()
+endif()
 
 target_include_directories(_moira_native PRIVATE src/native/include)
 

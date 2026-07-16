@@ -33,6 +33,20 @@ public:
     using SegmentSpec = std::tuple<int32_t, int32_t, int32_t>;
     using SegmentSpecMap = std::unordered_map<std::string, std::vector<SegmentSpec>>;
 
+    struct SegmentSpecHash {
+        size_t operator()(const SegmentSpec& spec) const noexcept {
+            const size_t h1 = std::hash<int32_t>{}(std::get<0>(spec));
+            const size_t h2 = std::hash<int32_t>{}(std::get<1>(spec));
+            const size_t h3 = std::hash<int32_t>{}(std::get<2>(spec));
+            return h1 ^ (h2 << 1) ^ (h3 << 2);
+        }
+    };
+    using ResolvedSegments = std::unordered_map<
+        SegmentSpec,
+        std::shared_ptr<SpkSegmentEvaluator>,
+        SegmentSpecHash
+    >;
+
     explicit NativePlanetaryEvaluator(std::shared_ptr<NativeSpkKernelHandle> handle)
         : handle_(std::move(handle)) {
         if (!handle_) {
@@ -52,10 +66,34 @@ public:
             throw std::runtime_error("admitted planetary evaluator requires 14 public route specs");
         }
 
+        // Resolve the immutable evaluators once per public calculation.  This
+        // preserves the kernel handle's bounded LRU ownership while avoiding
+        // repeated mutex/LRU traffic in each light-time iteration.
+        ResolvedSegments resolved_segments;
+        resolved_segments.reserve(public_specs.size() + body_specs.size() * 2);
+        const auto resolve_spec = [&](const SegmentSpec& spec) {
+            if (resolved_segments.find(spec) == resolved_segments.end()) {
+                resolved_segments.emplace(
+                    spec,
+                    handle_->get_segment_evaluator(
+                        std::get<0>(spec), std::get<1>(spec), std::get<2>(spec)
+                    )
+                );
+            }
+        };
+        for (const SegmentSpec& spec : public_specs) {
+            resolve_spec(spec);
+        }
+        for (const auto& body_route : body_specs) {
+            for (const SegmentSpec& spec : body_route.second) {
+                resolve_spec(spec);
+            }
+        }
+
         std::vector<std::pair<Vec3, Vec3>> pair_states;
         pair_states.reserve(public_specs.size());
         for (const SegmentSpec& spec : public_specs) {
-            pair_states.push_back(route_state({spec}, jd_tt));
+            pair_states.push_back(route_state({spec}, jd_tt, resolved_segments));
         }
 
         const std::pair<Vec3, Vec3>& ssb_sun = pair_states[0];
@@ -121,7 +159,11 @@ public:
                 if (specs_it == body_specs.end()) {
                     throw std::runtime_error("missing admitted route specs for body: " + body);
                 }
-                const Vec3 bary_lt = route_position(specs_it->second, jd_tt - light_times.at(body));
+                const Vec3 bary_lt = route_position(
+                    specs_it->second,
+                    jd_tt - light_times.at(body),
+                    resolved_segments
+                );
                 const Vec3 xyz_lt = Vec3::sub(bary_lt, earth_pos);
                 const double next_lt = xyz_lt.norm() / C_KM_PER_DAY;
                 if (std::abs(next_lt - light_times.at(body)) >= 1e-14) {
@@ -176,37 +218,32 @@ public:
     }
 
 private:
-    std::pair<Vec3, Vec3> route_state(const std::vector<SegmentSpec>& specs, double jd) const {
+    std::pair<Vec3, Vec3> route_state(
+        const std::vector<SegmentSpec>& specs,
+        double jd,
+        const ResolvedSegments& resolved_segments
+    ) const {
         Vec3 position;
         Vec3 velocity;
         for (const SegmentSpec& spec : specs) {
             double pos[3];
             double vel[3];
-            handle_->segment_position_and_velocity(
-                std::get<0>(spec),
-                std::get<1>(spec),
-                std::get<2>(spec),
-                jd,
-                pos,
-                vel
-            );
+            resolved_segments.at(spec)->position_and_velocity(jd, pos, vel);
             position = Vec3::add(position, Vec3(pos[0], pos[1], pos[2]));
             velocity = Vec3::add(velocity, Vec3(vel[0], vel[1], vel[2]));
         }
         return {position, velocity};
     }
 
-    Vec3 route_position(const std::vector<SegmentSpec>& specs, double jd) const {
+    Vec3 route_position(
+        const std::vector<SegmentSpec>& specs,
+        double jd,
+        const ResolvedSegments& resolved_segments
+    ) const {
         Vec3 out;
         for (const SegmentSpec& spec : specs) {
             double position[3];
-            handle_->segment_position(
-                std::get<0>(spec),
-                std::get<1>(spec),
-                std::get<2>(spec),
-                jd,
-                position
-            );
+            resolved_segments.at(spec)->position(jd, position);
             out = Vec3::add(out, Vec3(position[0], position[1], position[2]));
         }
         return out;

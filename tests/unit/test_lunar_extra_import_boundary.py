@@ -21,7 +21,7 @@ def test_lunar_module_imports_without_optional_deps(monkeypatch: pytest.MonkeyPa
     import moira.lunar_limb as lunar_limb
 
     try:
-        with pytest.raises(ImportError, match=r"moira-astro\[lunar\]"):
+        with pytest.raises(ImportError, match=r"moira-astro\[lunar-graze\]"):
             lunar_limb.official_lunar_limb_profile_adjustment(
                 2451545.0,
                 0.0,

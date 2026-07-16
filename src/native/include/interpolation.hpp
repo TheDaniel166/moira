@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
+#include "interpolation_simd.hpp"
 
 namespace moira {
 namespace native {
@@ -133,6 +134,16 @@ inline void spk_chebyshev_record_avx2(
     size_t coeff_stride = 1,
     size_t component_stride = 1
 ) {
+    if (coefficient_count == 0) return;
+    if (
+        component_count == 3
+        && runtime_avx2_available()
+    ) {
+        spk_chebyshev_record_avx2_impl(
+            coeffs, coefficient_count, s, result, coeff_stride, component_stride
+        );
+        return;
+    }
 #if defined(__AVX2__)
     if (component_count == 3 && component_stride == 1) {
         __m256d s2 = _mm256_set1_pd(2.0 * s);
@@ -174,6 +185,16 @@ inline void spk_chebyshev_record_avx2_reverse(
     size_t coeff_stride = 1,
     size_t component_stride = 1
 ) {
+    if (coefficient_count == 0) return;
+    if (
+        component_count == 3
+        && runtime_avx2_available()
+    ) {
+        spk_chebyshev_record_avx2_reverse_impl(
+            coeffs, coefficient_count, s, result, coeff_stride, component_stride
+        );
+        return;
+    }
 #if defined(__AVX2__)
     if (component_count == 3 && component_stride == 1) {
         __m256d s2 = _mm256_set1_pd(2.0 * s);
@@ -216,6 +237,17 @@ inline void spk_chebyshev_record_with_derivative_inplace(
     size_t component_stride = 1
 ) {
     if (coefficient_count == 0) return;
+
+    if (
+        component_count == 3
+        && runtime_avx2_available()
+    ) {
+        spk_chebyshev_record_with_derivative_avx2_impl(
+            coeffs, coefficient_count, s, result, derivative,
+            coeff_stride, component_stride
+        );
+        return;
+    }
 
 #if defined(__AVX2__)
     if (component_count == 3 && component_stride == 1) {
@@ -283,6 +315,17 @@ inline void spk_chebyshev_record_with_derivative_inplace_reverse(
     size_t component_stride = 1
 ) {
     if (coefficient_count == 0) return;
+
+    if (
+        component_count == 3
+        && runtime_avx2_available()
+    ) {
+        spk_chebyshev_record_with_derivative_avx2_reverse_impl(
+            coeffs, coefficient_count, s, result, derivative,
+            coeff_stride, component_stride
+        );
+        return;
+    }
 
 #if defined(__AVX2__)
     if (component_count == 3 && component_stride == 1) {
@@ -355,7 +398,14 @@ inline void spk_type13_record_inplace(
     double jd,
     double* result
 ) {
-    if (state_count == 0) return;
+    if (
+        state_count == 0 || window_size == 0 || window_size > state_count
+        || !std::isfinite(jd)
+    ) {
+        throw std::invalid_argument(
+            "SPK type-13 interpolation requires a finite epoch and a window in [1, state_count]"
+        );
+    }
 
     constexpr double T0 = 2451545.0;
     constexpr double S_PER_DAY = 86400.0;
@@ -437,11 +487,37 @@ public:
                          const std::vector<double>& y,
                          double p)
         : x_(x), y_(y), p_(p) {
+        if (x_.empty() || x_.size() != y_.size()) {
+            throw std::invalid_argument(
+                "CubicSmoothingSpline: x and y must have the same non-zero length"
+            );
+        }
+        if (!std::isfinite(p_) || p_ < 0.0) {
+            throw std::invalid_argument(
+                "CubicSmoothingSpline: p must be finite and non-negative"
+            );
+        }
+        for (size_t i = 0; i < x_.size(); ++i) {
+            if (!std::isfinite(x_[i]) || !std::isfinite(y_[i])) {
+                throw std::invalid_argument(
+                    "CubicSmoothingSpline: x and y values must be finite"
+                );
+            }
+            if (i > 0 && x_[i] <= x_[i - 1]) {
+                throw std::invalid_argument(
+                    "CubicSmoothingSpline: x values must be strictly increasing"
+                );
+            }
+        }
         fit();
     }
 
     double evaluate(double target) const {
-        if (x_.empty()) return 0.0;
+        if (!std::isfinite(target)) {
+            throw std::invalid_argument(
+                "CubicSmoothingSpline: target must be finite"
+            );
+        }
         if (target <= x_.front()) return y_hat_.front();
         if (target >= x_.back()) return y_hat_.back();
 
