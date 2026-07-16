@@ -170,8 +170,11 @@ ordered semi-arc cycles when they exist for the position); it is no longer
 blanket pre-empted and is marked polar_capable=True. When no unique ordered
 solution exists for a given high-lat ARMC, policy still governs fallback/raise.
 Alcabitius (B) likewise has integrated direct zero-pole ordered-figure doctrine
-and is marked polar_capable=True. The remaining listed systems fall back (or raise) under default policy above
-critical latitude (`90° − obliquity` ≈ 66.56° at J2000).
+and is marked polar_capable=True. APC remains directly computable at high
+latitude only when its projected cusps form one strictly ordered ecliptic cycle;
+otherwise its declared polar policy governs fallback or raise. The remaining
+listed systems fall back (or raise) under default policy above critical latitude
+(`90° − obliquity` ≈ 66.56° at J2000).
 
 #### QUADRANT H1 exception
 
@@ -259,11 +262,13 @@ All public names are declared in the module `moira/houses.py`.
 
 #### 6.1 Fallback triggers
 
-Two conditions can redirect the computation away from the default polar fallback path. Both are evaluated before any cusp arithmetic.
+Two conditions can redirect the computation away from the requested system.
+Unknown-system policy is resolved before polar admissibility; projected-cycle
+quality is evaluated after the affected cusp arithmetic.
 
 | Trigger | Condition | Default behaviour | Strict behaviour |
 |---|---|---|---|
-| Critical latitude | `abs(latitude) >= 90° − obliquity` and either the requested system is in `_POLAR_SYSTEMS` or integrated high-latitude search for Placidus/Alcabitius finds no unique ordered figure | Substitute according to `PolarFallbackPolicy` | Raise `ValueError` |
+| Critical latitude or unordered projected cycle | `abs(latitude) >= 90° − obliquity` and either the effective system is in `_POLAR_SYSTEMS`, integrated high-latitude search for Placidus/Alcabitius finds no unique ordered figure, or APC produces an unordered ecliptic cycle | Substitute according to `PolarFallbackPolicy` | Raise `ValueError` |
 | Unknown system | `system not in _KNOWN_SYSTEMS` | Substitute Placidus | Raise `ValueError` |
 
 The critical latitude is computed from the chart's actual obliquity at call time.

@@ -550,6 +550,58 @@ def test_houses_policy_input_is_respected(client_with_engine: TestClient, moira_
 
 
 @pytest.mark.requires_ephemeris
+def test_houses_explicit_default_policy_preserves_ut1_numeric_path(
+    client_with_engine: TestClient,
+) -> None:
+    payload = {
+        "dt": "2000-01-01T12:00:00+00:00",
+        "latitude": 51.5,
+        "longitude": -0.1,
+        "system": "P",
+    }
+    default_response = client_with_engine.post("/v1/houses", json=payload)
+    explicit_response = client_with_engine.post(
+        "/v1/houses",
+        json={
+            **payload,
+            "policy": {
+                "unknown_system": "fallback_to_placidus",
+                "polar_fallback": "fallback_to_porphyry",
+            },
+        },
+    )
+
+    assert default_response.status_code == 200
+    assert explicit_response.status_code == 200
+    default_body = default_response.json()
+    explicit_body = explicit_response.json()
+    assert explicit_body["armc"] == pytest.approx(default_body["armc"], abs=1e-12)
+    assert explicit_body["cusps"] == pytest.approx(default_body["cusps"], abs=1e-12)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [("latitude", -90.0001), ("latitude", 90.0001), ("longitude", -180.0001), ("longitude", 180.0001)],
+)
+def test_houses_route_rejects_out_of_range_location(
+    client_with_engine: TestClient,
+    field: str,
+    value: float,
+) -> None:
+    payload = {
+        "dt": "2000-01-01T12:00:00+00:00",
+        "latitude": 0.0,
+        "longitude": 0.0,
+        field: value,
+    }
+
+    response = client_with_engine.post("/v1/houses", json=payload)
+
+    assert response.status_code == 422
+    assert response.json()["error_code"] == "validation_error"
+
+
+@pytest.mark.requires_ephemeris
 def test_houses_polar_fallback_policies(client_with_engine: TestClient, moira_engine) -> None:
     """Exercise the FastAPI houses endpoints (compact and reduction) for polar fallback doctrine.
 

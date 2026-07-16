@@ -216,7 +216,7 @@ def compute_houses_with_reduction(engine: Moira, request: HousesRequest):
     classification = getattr(houses, "classification", None)
     pol = getattr(houses, "policy", None)
 
-    jd_ut = jd_from_datetime(request.dt)
+    jd_ut = utc_to_ut1(jd_from_datetime(request.dt))
 
     # Capture requested policy for richer reduction truth (full object shape)
     req_pol = getattr(request, "policy", None)

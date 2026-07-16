@@ -442,3 +442,26 @@ def test_houses_from_armc_ayanamsa_offset_shifts_all_cusps():
     for t, s in zip(tropical.cusps, sidereal.cusps):
         expected = (t - _LAHIRI) % 360.0
         assert abs(s - expected) < 1e-9, f"cusp tropical={t:.6f} sidereal={s:.6f}"
+
+
+@pytest.mark.parametrize("latitude", [-90.0001, 90.0001])
+def test_calculate_houses_rejects_out_of_range_latitude(latitude):
+    with pytest.raises(ValueError, match="latitude must be in"):
+        calculate_houses(_JD_J2000, latitude, 0.0, HouseSystem.EQUAL)
+
+
+@pytest.mark.parametrize("longitude", [-180.0001, 180.0001])
+def test_calculate_houses_rejects_out_of_range_longitude(longitude):
+    with pytest.raises(ValueError, match="longitude must be in"):
+        calculate_houses(_JD_J2000, 0.0, longitude, HouseSystem.EQUAL)
+
+
+def test_houses_from_armc_rejects_nonfinite_ayanamsa_offset():
+    with pytest.raises(ValueError, match="ayanamsa_offset must be finite"):
+        houses_from_armc(
+            _ARMC_J2000,
+            _OBL_J2000,
+            _LAT_LONDON,
+            HouseSystem.EQUAL,
+            ayanamsa_offset=float("nan"),
+        )

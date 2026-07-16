@@ -17,7 +17,9 @@ from moira.houses import (
     _project_ra_equatorial,
     _project_ra_morinus,
     calculate_houses,
+    houses_from_armc,
 )
+from moira._house_quality import strictly_ordered_cusp_cycle
 from moira.julian import ut_to_tt
 from moira.obliquity import true_obliquity
 
@@ -83,20 +85,19 @@ def test_carter_extracts_doctrinal_slots_from_shared_equatorial_cycle(
     houses = calculate_houses(jd_ut, latitude_deg, longitude_deg, HouseSystem.CARTER)
     obliquity = true_obliquity(ut_to_tt(jd_ut))
 
-    asc_anchor = houses.asc
-    if ((asc_anchor - houses.mc + 180.0) % 360.0) - 180.0 < 0.0:
-        asc_anchor = (asc_anchor + 180.0) % 360.0
-
     ra_asc = math.degrees(
         math.atan2(
-            math.sin(math.radians(asc_anchor)) * math.cos(math.radians(obliquity)),
-            math.cos(math.radians(asc_anchor)),
+            math.sin(math.radians(houses.asc)) * math.cos(math.radians(obliquity)),
+            math.cos(math.radians(houses.asc)),
         )
     ) % 360.0
     cycle = _equatorial_division_cycle(ra_asc, obliquity, _project_ra_equatorial)
 
-    assert houses.cusps[1] == moira_approx(cycle[1], kind="longitude")
-    assert houses.cusps[2] == moira_approx(cycle[2], kind="longitude")
-    assert houses.cusps[9] == moira_approx(cycle[9], kind="longitude")
-    assert houses.cusps[10] == moira_approx(cycle[10], kind="longitude")
-    assert houses.cusps[11] == moira_approx(cycle[11], kind="longitude")
+    for actual, expected in zip(houses.cusps, cycle, strict=True):
+        assert actual == moira_approx(expected, kind="longitude")
+
+
+def test_carter_southern_high_latitude_cycle_remains_ordered() -> None:
+    houses = houses_from_armc(123.456, 23.4393, -65.0, HouseSystem.CARTER)
+
+    assert strictly_ordered_cusp_cycle(houses.cusps)

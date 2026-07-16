@@ -115,15 +115,15 @@ For each system: **Basis** = Moira's derivation; **Divergence** = where Moira de
 
 **Krusinski–Pisa** — *Basis:* the great circle through the **Ascendant and the Zenith** is divided into equal sectors and projected back through a rotated frame (composed x-axis rotations). *Divergence:* derived from the Asc–Zenith great-circle definition in an explicit rotated frame; classified `polar_capable = True`.
 
-**APC** — *Basis:* the APC formula construction with branch candidates and explicit sheet selection (`_apc_project_candidates`, `_apc_select_branch`). *Divergence:* explicit candidate/branch resolution; classified `polar_capable = True`.
+**APC** — *Basis:* the APC formula construction with branch candidates and explicit sheet selection (`_apc_project_candidates`, `_apc_select_branch`). *Divergence:* explicit candidate/branch resolution plus a strict ordered-cycle admission check; at supra-critical latitudes an unordered projection is governed by the caller's declared polar policy rather than published as a valid figure. Classified `polar_capable = True` conditionally on that admitted cycle.
 
 ### Equatorial-stepped quadrant
 
-**Carter (Poli-Equatorial)** — *Basis:* right ascension stepped uniformly from RA(ASC), projected back to the ecliptic. *Divergence:* includes an explicit **polar correction** — if the Ascendant falls on the wrong side of the MC, it is swapped to the Descendant — making the wrong-quadrant case a documented, handled condition rather than a silent error.
+**Carter (Poli-Equatorial)** — *Basis:* the complete equatorial cycle is divided uniformly from RA(ASC) and projected back to the ecliptic. *Divergence:* the Ascendant is the Carter cycle anchor; MC and IC remain chart angles rather than being inserted into the cusp cycle. This avoids mixing two incompatible assembly doctrines.
 
 ### Horizon
 
-**Azimuthal (Horizontal)** — *Basis:* the prime vertical is divided by azimuth; each cusp's plane normal is `zenith × horizon_direction`, intersected with the ecliptic and resolved by an azimuth-branch selector, with **hemisphere-dependent azimuth sequences** (north vs. south) and an equator special-case. *Divergence:* explicit hemisphere handling and azimuth-branch resolution; classified `polar_capable = True`.
+**Azimuthal (Horizontal)** — *Basis:* the prime vertical is divided by azimuth; each cusp's plane normal is `zenith × horizon_direction`, intersected with the ecliptic and resolved by an azimuth-branch selector. *Divergence:* both lawful north- and south-oriented horizon sequences are assembled, and exactly one must form a strictly ordered ecliptic cycle. An exact projection collapse raises a named geometry error instead of publishing overlapping houses; classified `polar_capable = True`.
 
 ### Solar
 

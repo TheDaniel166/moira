@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from moira.houses import PolarFallbackPolicy, UnknownSystemPolicy
 
@@ -113,8 +113,8 @@ class HousePolicyRequest(_StrictModel):
 
 class HousesRequest(_StrictModel):
     dt: datetime
-    latitude: float
-    longitude: float
+    latitude: float = Field(ge=-90.0, le=90.0)
+    longitude: float = Field(ge=-180.0, le=180.0)
     system: str | None = None
     policy: HousePolicyRequest | None = None
 

@@ -16,6 +16,7 @@ from __future__ import annotations
 import pytest
 from moira.houses import (
     calculate_houses,
+    houses_from_armc,
     HouseCusps,
     HousePolicy,
     UnknownSystemPolicy,
@@ -232,6 +233,63 @@ class TestCustomPolicyCombinations:
         )
         r = _polar(HouseSystem.PLACIDUS, policy=p)
         assert r.policy == p
+
+    @pytest.mark.parametrize(
+        ("polar_policy", "expected_system"),
+        [
+            (PolarFallbackPolicy.FALLBACK_TO_PORPHYRY, HouseSystem.PORPHYRY),
+            (PolarFallbackPolicy.FALLBACK_TO_EQUAL, HouseSystem.EQUAL),
+            (PolarFallbackPolicy.FALLBACK_TO_WHOLE_SIGN, HouseSystem.WHOLE_SIGN),
+        ],
+    )
+    def test_unknown_system_polar_fallback_resolves_the_effective_placidus_path(
+        self,
+        polar_policy,
+        expected_system,
+    ):
+        policy = HousePolicy(
+            unknown_system=UnknownSystemPolicy.FALLBACK_TO_PLACIDUS,
+            polar_fallback=polar_policy,
+        )
+
+        result = _polar("ZZUNKNOWN", policy=policy)
+
+        assert result.system == "ZZUNKNOWN"
+        assert result.effective_system == expected_system
+        assert result.fallback is True
+        assert "unknown system code" in (result.fallback_reason or "")
+
+    def test_unknown_system_polar_strict_policy_raises_named_polar_error(self):
+        policy = HousePolicy(
+            unknown_system=UnknownSystemPolicy.FALLBACK_TO_PLACIDUS,
+            polar_fallback=PolarFallbackPolicy.RAISE,
+        )
+
+        with pytest.raises(ValueError, match="critical latitude"):
+            _polar("ZZUNKNOWN", policy=policy)
+
+    def test_unordered_polar_apc_uses_declared_fallback(self):
+        result = houses_from_armc(
+            123.456,
+            23.4392911,
+            -89.9,
+            HouseSystem.APC,
+            policy=HousePolicy.default(),
+        )
+
+        assert result.effective_system == HouseSystem.PORPHYRY
+        assert result.fallback is True
+        assert "unordered" in (result.fallback_reason or "")
+
+    def test_unordered_polar_apc_reports_a_degenerate_configured_fallback(self):
+        with pytest.raises(ValueError, match="configured 'O' fallback also failed"):
+            houses_from_armc(
+                25.0,
+                23.4392911,
+                -80.0,
+                HouseSystem.APC,
+                policy=HousePolicy.default(),
+            )
 
 
 # ---------------------------------------------------------------------------

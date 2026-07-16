@@ -26,7 +26,9 @@ from moira.houses import (
     _project_ra_with_pole,
     _rotate_x_axis,
     calculate_houses,
+    houses_from_armc,
 )
+from moira._house_quality import strictly_ordered_cusp_cycle
 from moira.julian import ut_to_tt
 from moira.obliquity import true_obliquity
 
@@ -191,6 +193,17 @@ def test_azimuthal_selects_candidates_by_local_azimuth_match(
         secondary_diff = abs((pair["secondary_azimuth"] - azimuths[house] + 180.0) % 360.0 - 180.0)
         expected = pair["primary_lon"] if primary_diff <= secondary_diff else pair["secondary_lon"]
         assert actual == moira_approx(expected, kind="longitude")
+
+
+def test_azimuthal_equator_selects_the_unique_ordered_orientation() -> None:
+    houses = houses_from_armc(195.0, 23.4393, 0.0, HouseSystem.AZIMUTHAL)
+
+    assert strictly_ordered_cusp_cycle(houses.cusps)
+
+
+def test_azimuthal_equator_reports_the_exact_projection_collapse() -> None:
+    with pytest.raises(ValueError, match="Azimuthal.*ordered ecliptic cusp cycle"):
+        houses_from_armc(0.0, 23.4393, 0.0, HouseSystem.AZIMUTHAL)
 
 
 @pytest.mark.parametrize(

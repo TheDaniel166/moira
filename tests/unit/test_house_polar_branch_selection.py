@@ -16,7 +16,8 @@ from moira.houses import (
     _mc_above_horizon,
     _mc_from_armc,
     _project_ra_with_pole,
-    calculate_houses,
+    _regiomontanus,
+    _topocentric,
 )
 from moira.julian import local_sidereal_time, ut_to_tt
 from moira.obliquity import true_obliquity
@@ -50,6 +51,16 @@ def _projected_raw_intermediates(system: str, jd_ut: float, latitude_deg: float,
     raise ValueError(f"unsupported system {system!r}")
 
 
+def _direct_cusps(system: str, jd_ut: float, latitude_deg: float, longitude_deg: float) -> list[float]:
+    armc = local_sidereal_time(jd_ut, longitude_deg)
+    obliquity = true_obliquity(ut_to_tt(jd_ut))
+    if system == HouseSystem.REGIOMONTANUS:
+        return _regiomontanus(armc, obliquity, latitude_deg)
+    if system == HouseSystem.TOPOCENTRIC:
+        return _topocentric(armc, obliquity, latitude_deg)
+    raise ValueError(f"unsupported system {system!r}")
+
+
 @pytest.mark.parametrize("system", [HouseSystem.REGIOMONTANUS, HouseSystem.TOPOCENTRIC])
 @pytest.mark.parametrize(
     ("jd_ut", "latitude_deg", "longitude_deg"),
@@ -73,12 +84,12 @@ def test_swapped_visible_mc_selects_antipodal_intermediate_branch(
 
     assert mc_swapped is True
 
-    houses = calculate_houses(jd_ut, latitude_deg, longitude_deg, system)
+    cusps = _direct_cusps(system, jd_ut, latitude_deg, longitude_deg)
     projected = _projected_raw_intermediates(system, jd_ut, latitude_deg, longitude_deg)
 
     for index, raw in projected.items():
         expected = (raw + 180.0) % 360.0
-        assert houses.cusps[index] == pytest.approx(expected, abs=1e-4), (
+        assert cusps[index] == pytest.approx(expected, abs=1e-4), (
             system,
             jd_ut,
             latitude_deg,
@@ -101,14 +112,10 @@ def test_polar_branch_selection_preserves_antipodal_opposites(
     latitude_deg: float,
     longitude_deg: float,
 ) -> None:
-    houses = calculate_houses(jd_ut, latitude_deg, longitude_deg, system)
-
-    assert houses.system == system
-    assert houses.effective_system == system
-    assert houses.fallback is False
+    cusps = _direct_cusps(system, jd_ut, latitude_deg, longitude_deg)
 
     for left, right in ((1, 7), (2, 8), (3, 9), (5, 11), (6, 12)):
-        assert houses.cusps[right - 1] == pytest.approx(
-            (houses.cusps[left - 1] + 180.0) % 360.0,
+        assert cusps[right - 1] == pytest.approx(
+            (cusps[left - 1] + 180.0) % 360.0,
             abs=1e-9,
         ), (system, jd_ut, latitude_deg, left, right)

@@ -24,6 +24,7 @@ import pytest
 
 from moira.constants import HouseSystem
 from moira.houses import (
+    _apc,
     _apc_project,
     _equatorial_ecliptic_direction,
     _local_horizon_basis,
@@ -614,10 +615,21 @@ def test_apc_structural_invariants_and_branch_selections(moira_approx) -> None:
 
     # Case 3: Endpoint sheet selection in a high-latitude antipodal candidate case.
     houses_shifted = calculate_houses(jd_ut, -68.0, 180.0, HouseSystem.APC)
+    assert houses_shifted.effective_system == HouseSystem.PORPHYRY
+    assert houses_shifted.fallback is True
+
+    # The raw APC projection is retained as an inspectable doctrine path for
+    # this sheet-selection covenant, while the public path correctly refuses
+    # to publish its globally unordered cycle at this position.
+    shifted_cusps = _apc(
+        houses_shifted.armc,
+        true_obliquity(ut_to_tt(jd_ut)),
+        -68.0,
+    )
     asc_sh = houses_shifted.asc
-    h12_sh = houses_shifted.cusps[11]
-    h11_sh = houses_shifted.cusps[10]
-    mc_sh = houses_shifted.cusps[9]
+    h12_sh = shifted_cusps[11]
+    h11_sh = shifted_cusps[10]
+    mc_sh = shifted_cusps[9]
 
     # Verify Ascendant and MC values
     assert asc_sh == moira_approx(114.36929515925051, kind="longitude")

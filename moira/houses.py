@@ -197,6 +197,7 @@ from .coordinates import normalize_degrees
 from .julian import local_sidereal_time, ut_to_tt, greenwich_mean_sidereal_time
 from .obliquity import true_obliquity, nutation
 from ._solar import _solar_longitude
+from ._house_quality import strictly_ordered_cusp_cycle
 
 __all__ = [
     # Enums / doctrine
@@ -255,6 +256,21 @@ def _require(condition: bool, message: str, exc_type: type[Exception] = ValueErr
 
     if not condition:
         raise exc_type(message)
+
+
+def _require_finite(name: str, value: float) -> None:
+    """Require one public numerical input to be a finite real number."""
+
+    try:
+        finite = math.isfinite(value)
+    except TypeError as exc:
+        raise TypeError(f"{name} must be a real number") from exc
+    _require(finite, f"{name} must be finite")
+
+
+def _validate_latitude(latitude: float) -> None:
+    _require_finite("latitude", latitude)
+    _require(-90.0 <= latitude <= 90.0, "latitude must be in [-90, 90] degrees")
 
 
 def _finalize_cusps(cusps: list[float], *, context: str) -> list[float]:
@@ -2760,28 +2776,36 @@ def _azimuthal(armc: float, obliquity: float, lat: float) -> list[float]:
         2: 120.0,
         3: 150.0,
     }
-    azimuths = north_sequence if lat > 0.0 else south_sequence
-    if abs(lat) < 1e-12 and armc >= 180.0:
-        azimuths = {house: (azimuth + 180.0) % 360.0 for house, azimuth in azimuths.items()}
 
-    asc = _vertical_cusp(azimuths[1])
-    dsc = (asc + 180.0) % 360.0
+    def _assemble(azimuths: dict[int, float]) -> list[float]:
+        asc = _vertical_cusp(azimuths[1])
+        dsc = (asc + 180.0) % 360.0
+        cusps = [0.0] * 12
+        cusps[0] = asc
+        cusps[9] = mc
+        cusps[3] = ic
+        cusps[6] = dsc
+        cusps[10] = _vertical_cusp(azimuths[11])  # H11
+        cusps[11] = _vertical_cusp(azimuths[12])  # H12
+        cusps[1] = _vertical_cusp(azimuths[2])    # H2
+        cusps[2] = _vertical_cusp(azimuths[3])    # H3
+        cusps[4] = (cusps[10] + 180.0) % 360.0
+        cusps[5] = (cusps[11] + 180.0) % 360.0
+        cusps[7] = (cusps[1] + 180.0) % 360.0
+        cusps[8] = (cusps[2] + 180.0) % 360.0
+        return _finalize_cusps(cusps, context="_azimuthal")
 
-    cusps = [0.0] * 12
-    cusps[0] = asc
-    cusps[9] = mc
-    cusps[3] = ic
-    cusps[6] = dsc
-    cusps[10] = _vertical_cusp(azimuths[11])  # H11
-    cusps[11] = _vertical_cusp(azimuths[12])  # H12
-    cusps[1] = _vertical_cusp(azimuths[2])    # H2
-    cusps[2] = _vertical_cusp(azimuths[3])    # H3
-    cusps[4] = (cusps[10] + 180.0) % 360.0
-    cusps[5] = (cusps[11] + 180.0) % 360.0
-    cusps[7] = (cusps[1] + 180.0) % 360.0
-    cusps[8] = (cusps[2] + 180.0) % 360.0
-
-    return _finalize_cusps(cusps, context="_azimuthal")
+    # The horizon division has two possible azimuth orientations. Away from a
+    # projection singularity exactly one produces the forward house cycle. At
+    # the equator the valid orientation depends on the meridian/ecliptic
+    # geometry, not on an arbitrary ARMC half-circle switch.
+    candidates = [_assemble(north_sequence), _assemble(south_sequence)]
+    ordered = [cusps for cusps in candidates if strictly_ordered_cusp_cycle(cusps)]
+    if len(ordered) != 1:
+        raise ValueError(
+            "Azimuthal geometry did not produce exactly one ordered ecliptic cusp cycle"
+        )
+    return ordered[0]
 
 
 # ---------------------------------------------------------------------------
@@ -2801,35 +2825,18 @@ def _carter(armc: float, obliquity: float, lat: float) -> list[float]:
     Side effects:
         None
     """
-    mc    = _mc_from_armc(armc, obliquity, lat)
-    asc   = _asc_from_armc(armc, obliquity, lat)
-
-    # Polar correction: if ASC is on wrong side of MC, swap to DSC
-    asc_mc_offset = ((asc - mc + 180.0) % 360.0) - 180.0
-    if asc_mc_offset < 0.0:
-        asc = (asc + 180.0) % 360.0
+    asc = _asc_from_armc(armc, obliquity, lat)
 
     # RA of Ascendant: ecliptic (lat=0) → equatorial
     asc_r  = asc * DEG2RAD
     eps_r  = obliquity * DEG2RAD
     ra_asc = math.atan2(math.sin(asc_r) * math.cos(eps_r), math.cos(asc_r)) * RAD2DEG % 360.0
 
-    cycle = _equatorial_division_cycle(ra_asc, obliquity, _project_ra_equatorial)
-
-    cusps = [0.0] * 12
-    cusps[0] = asc
-    cusps[1] = cycle[1]
-    cusps[2] = cycle[2]
-    cusps[3] = (mc  + 180.0) % 360.0
-    cusps[6] = (asc + 180.0) % 360.0
-    cusps[9] = cycle[9]
-    cusps[10] = cycle[10]
-    cusps[11] = cycle[11]
-
-    cusps[4] = (cusps[10] + 180.0) % 360.0
-    cusps[5] = (cusps[11] + 180.0) % 360.0
-    cusps[7] = (cusps[1]  + 180.0) % 360.0
-    cusps[8] = (cusps[2]  + 180.0) % 360.0
+    # Carter divides the celestial equator into twelve equal right-ascension
+    # sectors beginning at RA(ASC), then projects that complete cycle to the
+    # ecliptic. MC/IC are chart angles, not Carter cusp anchors.
+    cusps = _equatorial_division_cycle(ra_asc, obliquity, _project_ra_equatorial)
+    cusps[0] = asc  # preserve the defining endpoint exactly
     return _finalize_cusps(cusps, context="_carter")
 
 
@@ -3297,6 +3304,14 @@ def calculate_houses(
           if ``sun_longitude`` is not supplied explicitly.
     """
     active_policy = _normalize_house_policy(policy)
+    _require_finite("jd_ut", jd_ut)
+    _validate_latitude(latitude)
+    _require_finite("longitude", longitude)
+    _require(-180.0 <= longitude <= 180.0, "longitude must be in [-180, 180] degrees")
+    if sun_longitude is not None:
+        _require_finite("sun_longitude", sun_longitude)
+    if ayanamsa_offset is not None:
+        _require_finite("ayanamsa_offset", ayanamsa_offset)
     jd_tt    = ut_to_tt(jd_ut)
     obliquity = true_obliquity(jd_tt)
     dpsi, _ = nutation(jd_tt)
@@ -4337,17 +4352,58 @@ def houses_from_armc(
         None
     """
     active_policy = _normalize_house_policy(policy)
+    _require_finite("armc", armc)
+    _require_finite("obliquity", obliquity)
+    _require(0.0 < obliquity < 90.0, "obliquity must be in (0, 90) degrees")
+    _validate_latitude(lat)
+    if sun_longitude is not None:
+        _require_finite("sun_longitude", sun_longitude)
+    if ayanamsa_offset is not None:
+        _require_finite("ayanamsa_offset", ayanamsa_offset)
+
+    armc = normalize_degrees(armc)
     mc          = _mc_from_armc(armc, obliquity, lat)
     asc         = _asc_from_armc(armc, obliquity, lat)
     east_point  = _project_ra_morinus((armc + 90.0) % 360.0, obliquity)
     vertex      = _vertex_from_armc(armc, obliquity, lat)
     anti_vertex = (vertex + 180.0) % 360.0
-    critical_lat = 90.0 - obliquity
-    polar = abs(lat) >= critical_lat and system in _POLAR_SYSTEMS
     effective_system = system
     fallback = False
     fallback_reason: str | None = None
     experimental_cusps: list[float] | None = None
+
+    if system not in _KNOWN_SYSTEMS:
+        if active_policy.unknown_system == UnknownSystemPolicy.RAISE:
+            raise ValueError(
+                f"unknown house system code {system!r} and policy is RAISE"
+            )
+        effective_system = HouseSystem.PLACIDUS
+        fallback = True
+        fallback_reason = f"unknown system code {system!r}; fell back to Placidus"
+
+    critical_lat = 90.0 - obliquity
+    polar = abs(lat) >= critical_lat and effective_system in _POLAR_SYSTEMS
+
+    def _append_fallback_reason(message: str) -> None:
+        nonlocal fallback_reason
+        fallback_reason = f"{fallback_reason}; {message}" if fallback_reason else message
+
+    def _apply_configured_polar_fallback(detail: str) -> None:
+        nonlocal effective_system, fallback
+        if active_policy.polar_fallback == PolarFallbackPolicy.FALLBACK_TO_EQUAL:
+            effective_system = HouseSystem.EQUAL
+            target_name = "Equal"
+        elif active_policy.polar_fallback == PolarFallbackPolicy.FALLBACK_TO_WHOLE_SIGN:
+            effective_system = HouseSystem.WHOLE_SIGN
+            target_name = "Whole Sign"
+        else:
+            effective_system = HouseSystem.PORPHYRY
+            target_name = "Porphyry"
+        fallback = system != effective_system
+        _append_fallback_reason(
+            f"|lat| {abs(lat):.4f} degrees >= critical latitude {critical_lat:.4f} degrees "
+            f"(90 degrees - obliquity); {detail}; fell back to {target_name}"
+        )
 
     # Integrated branch doctrine for Placidus (de-repair complete):
     # At high latitude, always attempt the explicit root search for unique
@@ -4356,9 +4412,10 @@ def houses_from_armc(
     # On no unique solution, apply the caller's PolarFallbackPolicy (the
     # "no solution here" case is now explicit in Placidus doctrine rather than
     # blanket pre-emptive repair).
-    if abs(lat) >= critical_lat and system in (HouseSystem.PLACIDUS, HouseSystem.ALCABITIUS):
+    if abs(lat) >= critical_lat and effective_system in (HouseSystem.PLACIDUS, HouseSystem.ALCABITIUS):
+        geometry_system = effective_system
         try:
-            if system == HouseSystem.PLACIDUS:
+            if geometry_system == HouseSystem.PLACIDUS:
                 experimental_cusps = _experimental_polar_placidus_cusps(
                     armc,
                     obliquity,
@@ -4368,7 +4425,7 @@ def houses_from_armc(
                 )
             else:
                 experimental_cusps = _experimental_high_lat_cusps(
-                    system,
+                    geometry_system,
                     armc,
                     obliquity,
                     lat,
@@ -4383,40 +4440,20 @@ def houses_from_armc(
                 raise ValueError(
                     f"latitude |{lat:.4f}°| >= critical latitude {critical_lat:.4f}° "
                     f"(= 90° − obliquity {obliquity:.4f}°); "
-                    f"system {system!r} has no unique ordered solution above this "
+                    f"system {geometry_system!r} has no unique ordered solution above this "
                     f"threshold and policy is RAISE"
                 ) from search_err
             if active_policy.polar_fallback == PolarFallbackPolicy.EXPERIMENTAL_SEARCH:
-                if system == HouseSystem.PLACIDUS:
+                if geometry_system == HouseSystem.PLACIDUS:
                     raise ValueError(
                         f"experimental Placidus search failed: {search_err}"
                     ) from search_err
                 raise ValueError(
-                    f"experimental search for {system!r} did not return usable cusps or raised"
+                    f"experimental search for {geometry_system!r} did not return usable cusps or raised"
                 ) from search_err
-            # default/other: fallback per policy (now only for the no-solution case)
-            fallback = True
-            if active_policy.polar_fallback == PolarFallbackPolicy.FALLBACK_TO_EQUAL:
-                effective_system = HouseSystem.EQUAL
-                fallback_reason = (
-                    f"|lat| {abs(lat):.4f}° >= critical latitude {critical_lat:.4f}° "
-                    f"(90° − obliquity); {system!r} has no unique ordered solution; "
-                    f"fell back to Equal"
-                )
-            elif active_policy.polar_fallback == PolarFallbackPolicy.FALLBACK_TO_WHOLE_SIGN:
-                effective_system = HouseSystem.WHOLE_SIGN
-                fallback_reason = (
-                    f"|lat| {abs(lat):.4f}° >= critical latitude {critical_lat:.4f}° "
-                    f"(90° − obliquity); {system!r} has no unique ordered solution; "
-                    f"fell back to Whole Sign"
-                )
-            else:
-                effective_system = HouseSystem.PORPHYRY
-                fallback_reason = (
-                    f"|lat| {abs(lat):.4f}° >= critical latitude {critical_lat:.4f}° "
-                    f"(90° − obliquity); {system!r} has no unique ordered solution; "
-                    f"fell back to Porphyry"
-                )
+            _apply_configured_polar_fallback(
+                f"{geometry_system!r} has no unique ordered solution"
+            )
 
     elif polar:
         # Remaining polar-incapable systems (Koch + polar-projection/prime-vertical
@@ -4425,7 +4462,7 @@ def houses_from_armc(
             raise ValueError(
                 f"latitude |{lat:.4f}°| >= critical latitude {critical_lat:.4f}° "
                 f"(= 90° − obliquity {obliquity:.4f}°); "
-                f"system {system!r} produces geometrically invalid cusps above this "
+                f"system {effective_system!r} produces geometrically invalid cusps above this "
                 f"threshold and policy is RAISE"
             )
         if active_policy.polar_fallback == PolarFallbackPolicy.EXPERIMENTAL_SEARCH:
@@ -4433,7 +4470,7 @@ def houses_from_armc(
             # can be selected via EXPERIMENTAL_SEARCH. The per-system module
             # decides what "valid high-lat solution" means for its geometry.
             experimental_cusps = _experimental_high_lat_cusps(
-                system,
+                effective_system,
                 armc,
                 obliquity,
                 lat,
@@ -4441,36 +4478,9 @@ def houses_from_armc(
                 mc,
             )
         else:
-            fallback = True
-            if active_policy.polar_fallback == PolarFallbackPolicy.FALLBACK_TO_EQUAL:
-                effective_system = HouseSystem.EQUAL
-                fallback_reason = (
-                    f"|lat| {abs(lat):.4f}° >= critical latitude {critical_lat:.4f}° "
-                    f"(90° − obliquity); {system!r} produces invalid cusps above this "
-                    f"threshold; fell back to Equal"
-                )
-            elif active_policy.polar_fallback == PolarFallbackPolicy.FALLBACK_TO_WHOLE_SIGN:
-                effective_system = HouseSystem.WHOLE_SIGN
-                fallback_reason = (
-                    f"|lat| {abs(lat):.4f}° >= critical latitude {critical_lat:.4f}° "
-                    f"(90° − obliquity); {system!r} produces invalid cusps above this "
-                    f"threshold; fell back to Whole Sign"
-                )
-            else:
-                effective_system = HouseSystem.PORPHYRY
-                fallback_reason = (
-                    f"|lat| {abs(lat):.4f}° >= critical latitude {critical_lat:.4f}° "
-                    f"(90° − obliquity); {system!r} produces invalid cusps above this "
-                    f"threshold; fell back to Porphyry"
-                )
-    elif system not in _KNOWN_SYSTEMS:
-        if active_policy.unknown_system == UnknownSystemPolicy.RAISE:
-            raise ValueError(
-                f"unknown house system code {system!r} and policy is RAISE"
+            _apply_configured_polar_fallback(
+                f"{effective_system!r} produces invalid cusps above this threshold"
             )
-        effective_system = HouseSystem.PLACIDUS
-        fallback = True
-        fallback_reason = f"unknown system code {system!r}; fell back to Placidus"
 
     if experimental_cusps is not None:
         cusps = experimental_cusps
@@ -4528,6 +4538,43 @@ def houses_from_armc(
         cusps = _pullen_sr(asc, mc)
     else:
         cusps = _placidus(armc, obliquity, lat)
+
+    # Projection-defined systems must never publish a self-overlapping house
+    # cycle. At supra-critical latitudes APC can lose that ordering even when
+    # its individual intersections remain finite, so the declared polar policy
+    # governs the result just as it does for an absent geometric solution.
+    if (
+        effective_system in {
+            HouseSystem.AZIMUTHAL,
+            HouseSystem.CARTER,
+            HouseSystem.APC,
+        }
+        and not strictly_ordered_cusp_cycle(cusps)
+    ):
+        failed_system = effective_system
+        detail = f"{failed_system!r} produced an unordered ecliptic cusp cycle"
+        if abs(lat) < critical_lat:
+            raise ValueError(detail)
+        if active_policy.polar_fallback == PolarFallbackPolicy.RAISE:
+            raise ValueError(
+                f"{detail} at latitude {lat:.4f} degrees and policy is RAISE"
+            )
+        if active_policy.polar_fallback == PolarFallbackPolicy.EXPERIMENTAL_SEARCH:
+            raise ValueError(
+                f"experimental search for {failed_system!r} did not return usable cusps"
+            )
+        _apply_configured_polar_fallback(detail)
+        if effective_system == HouseSystem.EQUAL:
+            cusps = _equal_house(asc)
+        elif effective_system == HouseSystem.WHOLE_SIGN:
+            cusps = _whole_sign(asc)
+        else:
+            cusps = _porphyry(asc, mc)
+        if not strictly_ordered_cusp_cycle(cusps):
+            raise ValueError(
+                f"{detail}; configured {effective_system!r} fallback also failed "
+                "to produce an ordered ecliptic cusp cycle"
+            )
 
     _shift = ayanamsa_offset if ayanamsa_offset is not None else 0.0
     return HouseCusps(

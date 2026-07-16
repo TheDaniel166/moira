@@ -5,7 +5,7 @@ from __future__ import annotations
 from moira import Body, Moira
 from moira.constants import HOUSE_SYSTEM_NAMES
 from moira.houses import HouseSystem, calculate_houses, HousePolicy, PolarFallbackPolicy, UnknownSystemPolicy
-from moira.julian import jd_from_datetime
+from moira.julian import jd_from_datetime, utc_to_ut1
 from moira.planets import _resolve_small_body_name
 
 from ..models.chart import ChartRequest, HousesRequest
@@ -83,7 +83,7 @@ def build_chart_context(engine: Moira, request: ChartRequest):
 def build_houses_context(engine: Moira, request: HousesRequest):
     require_aware_datetime(request.dt)
 
-    jd_ut = jd_from_datetime(request.dt)
+    jd_ut = utc_to_ut1(jd_from_datetime(request.dt))
 
     # Convert transport policy (if any) to engine HousePolicy
     engine_policy = None
