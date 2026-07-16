@@ -27,6 +27,11 @@ from moira.western_electional import (
     SahlRuleWitness,
     WesternElectionalProfileScan,
     WesternElectionalJudgementEvaluation,
+    WesternElectionalRankingEvaluation,
+    WesternElectionalJudgementSignature,
+    WesternElectionalCandidateEvent,
+    WesternElectionalWindowBoundary,
+    WesternElectionalJudgementWindowScan,
 )
 
 from ..models.western_electional import (
@@ -100,6 +105,24 @@ from ..models.western_electional import (
     WesternElectionalJudgementEvaluationResponse,
     WesternElectionalJudgementTransportProvenanceResponse,
     WesternElectionalJudgementResponse,
+    WesternElectionalRankingPolicyResponse,
+    WesternElectionalRankingWeightResponse,
+    WesternElectionalRankingContributionResponse,
+    WesternElectionalRankedCandidateResponse,
+    WesternElectionalExcludedCandidateResponse,
+    WesternElectionalRankingEvaluationResponse,
+    WesternElectionalRankingTransportProvenanceResponse,
+    WesternElectionalRankingResponse,
+    WesternElectionalJudgementWindowPolicyResponse,
+    WesternElectionalStatePairResponse,
+    WesternElectionalJudgementSignatureResponse,
+    WesternElectionalTransitionCauseResponse,
+    WesternElectionalCandidateEventResponse,
+    WesternElectionalWindowBoundaryResponse,
+    WesternElectionalJudgementWindowResponse,
+    WesternElectionalJudgementWindowScanResponse,
+    WesternElectionalJudgementWindowsTransportProvenanceResponse,
+    WesternElectionalJudgementWindowsResponse,
 )
 from .relationship import serialize_moon_connection_flow_vessel
 
@@ -1135,6 +1158,257 @@ def serialize_western_electional_judgement(
     )
 
 
+def serialize_western_electional_ranking(
+    result: WesternElectionalRankingEvaluation,
+) -> WesternElectionalRankingResponse:
+    """Serialize ranking evidence without flattening any Phase 8 judgement."""
+
+    policy = result.policy
+    return WesternElectionalRankingResponse(
+        evaluation=WesternElectionalRankingEvaluationResponse(
+            profile_id=result.profile_id,
+            profile_version=result.profile_version,
+            policy=WesternElectionalRankingPolicyResponse(
+                profile_id=policy.profile_id,
+                profile_version=policy.profile_version,
+                ranking_authority=policy.ranking_authority,
+                candidate_scope=policy.candidate_scope,
+                contribution_scope=policy.contribution_scope,
+                weight_policy=policy.weight_policy,
+                normalization_policy=policy.normalization_policy,
+                eligibility_policy=policy.eligibility_policy,
+                incomplete_candidate_policy=policy.incomplete_candidate_policy,
+                tie_break_policy=policy.tie_break_policy,
+                min_candidates=policy.min_candidates,
+                max_candidates=policy.max_candidates,
+                score_minimum=policy.score_minimum,
+                score_maximum=policy.score_maximum,
+                advice_language=policy.advice_language,
+                recommendation_language=policy.recommendation_language,
+                empirical_claim=policy.empirical_claim,
+            ),
+            weights=[
+                WesternElectionalRankingWeightResponse(
+                    contribution_id=item.contribution_id.value,
+                    weight=item.weight,
+                )
+                for item in result.weights
+            ],
+            candidate_jds=list(result.candidate_jds),
+            ranked_candidates=[
+                WesternElectionalRankedCandidateResponse(
+                    input_index=item.input_index,
+                    jd_ut=item.jd_ut,
+                    state=item.state.value,
+                    rank=item.rank,
+                    score=item.score,
+                    normalization_divisor=item.normalization_divisor,
+                    contributions=[
+                        WesternElectionalRankingContributionResponse(
+                            contribution_id=contribution.contribution_id.value,
+                            raw_value=contribution.raw_value,
+                            normalization=contribution.normalization,
+                            normalized_value=contribution.normalized_value,
+                            weight=contribution.weight,
+                            weighted_value=contribution.weighted_value,
+                        )
+                        for contribution in item.contributions
+                    ],
+                    judgement=serialize_western_electional_judgement(
+                        item.judgement
+                    ).evaluation,
+                )
+                for item in result.ranked_candidates
+            ],
+            excluded_candidates=[
+                WesternElectionalExcludedCandidateResponse(
+                    input_index=item.input_index,
+                    jd_ut=item.jd_ut,
+                    state=item.state.value,
+                    reason=item.reason,
+                    judgement=serialize_western_electional_judgement(
+                        item.judgement
+                    ).evaluation,
+                )
+                for item in result.excluded_candidates
+            ],
+            reader_provenance=result.reader_provenance,
+            authorities=list(result.authorities),
+            ranking_is_decision_support=result.ranking_is_decision_support,
+            advice_language=result.advice_language,
+            recommendation_language=result.recommendation_language,
+            empirical_claim=result.empirical_claim,
+        ),
+        transport_provenance=WesternElectionalRankingTransportProvenanceResponse(
+            stage_sequence=[
+                "input_validation",
+                "shared_phase8_selection_binding",
+                "explicit_candidate_judgement_evaluation",
+                "incomplete_candidate_partition",
+                "caller_weight_contribution_materialization",
+                "absolute_weight_normalization",
+                "deterministic_rank_and_tie_break",
+                "response_serialization",
+            ]
+        ),
+    )
+
+
+def _serialize_judgement_signature(
+    signature: WesternElectionalJudgementSignature,
+) -> WesternElectionalJudgementSignatureResponse:
+    def pairs(values):
+        return [
+            WesternElectionalStatePairResponse(item_id=item_id, state=state)
+            for item_id, state in values
+        ]
+
+    return WesternElectionalJudgementSignatureResponse(
+        judgement_state=signature.judgement_state,
+        moon_status=signature.moon_status,
+        matter_status=signature.matter_status,
+        component_states=pairs(signature.component_states),
+        moon_rule_states=pairs(signature.moon_rule_states),
+        matter_clause_states=pairs(signature.matter_clause_states),
+        rooted_significator_conditions=pairs(
+            signature.rooted_significator_conditions
+        ),
+        rooted_supplementary_states=pairs(signature.rooted_supplementary_states),
+        perfection_present_kinds=list(signature.perfection_present_kinds),
+        perfection_indeterminate_kinds=list(
+            signature.perfection_indeterminate_kinds
+        ),
+        unresolved_requirement_ids=list(signature.unresolved_requirement_ids),
+        contains_unresolved=signature.contains_unresolved,
+    )
+
+
+def _serialize_window_boundary(
+    boundary: WesternElectionalWindowBoundary,
+) -> WesternElectionalWindowBoundaryResponse:
+    return WesternElectionalWindowBoundaryResponse(
+        resolution=boundary.resolution.value,
+        estimate_jd_ut=boundary.estimate_jd_ut,
+        bracket_start_jd_ut=boundary.bracket_start_jd_ut,
+        bracket_end_jd_ut=boundary.bracket_end_jd_ut,
+        bracket_width_seconds=boundary.bracket_width_seconds,
+        causes=[
+            WesternElectionalTransitionCauseResponse(
+                cause_id=item.cause_id,
+                before_value=item.before_value,
+                after_value=item.after_value,
+                semantics=item.semantics,
+            )
+            for item in boundary.causes
+        ],
+        candidate_events=[
+            _serialize_candidate_event(item) for item in boundary.candidate_events
+        ],
+        doctrine_boundary_exact=boundary.doctrine_boundary_exact,
+    )
+
+
+def _serialize_candidate_event(
+    event: WesternElectionalCandidateEvent,
+) -> WesternElectionalCandidateEventResponse:
+    return WesternElectionalCandidateEventResponse(
+        event_id=event.event_id,
+        jd_ut=event.jd_ut,
+        source_component=event.source_component,
+        event_kind=event.event_kind,
+        causal_status=event.causal_status,
+    )
+
+
+def serialize_western_electional_judgement_windows(
+    result: WesternElectionalJudgementWindowScan,
+) -> WesternElectionalJudgementWindowsResponse:
+    """Serialize observed judgement windows with every uncertainty witness."""
+
+    policy = result.policy
+    return WesternElectionalJudgementWindowsResponse(
+        evaluation=WesternElectionalJudgementWindowScanResponse(
+            jd_start=result.jd_start,
+            jd_end=result.jd_end,
+            latitude=result.latitude,
+            longitude=result.longitude,
+            requested_house_system=result.requested_house_system,
+            profile_id=result.profile_id,
+            profile_version=result.profile_version,
+            policy=WesternElectionalJudgementWindowPolicyResponse(
+                profile_id=policy.profile_id,
+                profile_version=policy.profile_version,
+                mode=policy.mode.value,
+                step_days=policy.step_days,
+                transition_tolerance_seconds=policy.transition_tolerance_seconds,
+                max_refinement_iterations=policy.max_refinement_iterations,
+                max_initial_samples=policy.max_initial_samples,
+                max_evaluations=policy.max_evaluations,
+                max_windows=policy.max_windows,
+                max_transitions=policy.max_transitions,
+                max_event_seeds=policy.max_event_seeds,
+                max_span_days=policy.max_span_days,
+                boundary_inventory=policy.boundary_inventory,
+                transition_detector=policy.transition_detector,
+                exact_boundary_claimed=policy.exact_boundary_claimed,
+                continuous_truth_claimed=policy.continuous_truth_claimed,
+                ranking_integration=policy.ranking_integration,
+                advice_language=policy.advice_language,
+                recommendation_language=policy.recommendation_language,
+            ),
+            windows=[
+                WesternElectionalJudgementWindowResponse(
+                    window_index=item.window_index,
+                    exactness=item.exactness.value,
+                    jd_start_estimate=item.jd_start_estimate,
+                    jd_end_estimate=item.jd_end_estimate,
+                    start_boundary=_serialize_window_boundary(item.start_boundary),
+                    end_boundary=_serialize_window_boundary(item.end_boundary),
+                    observed_jds=list(item.observed_jds),
+                    signature=_serialize_judgement_signature(item.signature),
+                    representative_judgement=(
+                        serialize_western_electional_judgement(
+                            item.representative_judgement
+                        ).evaluation
+                    ),
+                    contains_unresolved=item.contains_unresolved,
+                )
+                for item in result.windows
+            ],
+            initial_sample_count=result.initial_sample_count,
+            total_evaluation_count=result.total_evaluation_count,
+            transition_count=result.transition_count,
+            candidate_events=[
+                _serialize_candidate_event(item) for item in result.candidate_events
+            ],
+            event_seed_count=result.event_seed_count,
+            reader_provenance=result.reader_provenance,
+            authorities=list(result.authorities),
+            boundary_inventory_complete=result.boundary_inventory_complete,
+            exact_boundary_claimed=result.exact_boundary_claimed,
+            continuous_truth_claimed=result.continuous_truth_claimed,
+            ranking_integration=result.ranking_integration,
+            advice_language=result.advice_language,
+            recommendation_language=result.recommendation_language,
+        ),
+        transport_provenance=(
+            WesternElectionalJudgementWindowsTransportProvenanceResponse(
+                stage_sequence=[
+                    "input_and_resource_validation",
+                    "shared_phase8_selection_binding",
+                    "bounded_initial_sampling",
+                    "complete_judgement_signature_adaptation",
+                    "non_causal_candidate_event_seed_collection",
+                    "optional_observed_transition_bisection",
+                    "uncertain_boundary_and_cause_materialization",
+                    "window_merge_by_equal_observed_signature",
+                    "response_serialization",
+                ]
+            )
+        ),
+    )
+
+
 __all__ = [
     "serialize_lunar_ecliptic_direction",
     "serialize_dorotheus_construction",
@@ -1147,4 +1421,6 @@ __all__ = [
     "serialize_western_profile_windows",
     "serialize_lilly_perfection",
     "serialize_western_electional_judgement",
+    "serialize_western_electional_ranking",
+    "serialize_western_electional_judgement_windows",
 ]

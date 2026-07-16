@@ -47,6 +47,10 @@ DOROTHEUS_HOUSE_SYSTEMS = tuple(HOUSE_SYSTEM_NAMES)
 LILLY_PERFECTION_PROFILE_ID = "lilly_1647_perfection_v1"
 LILLY_PERFECTION_MAX_SPAN_DAYS = 31.0
 WESTERN_ELECTIONAL_JUDGEMENT_PROFILE_ID = "western_electional_judgement_v1"
+WESTERN_ELECTIONAL_RANKING_PROFILE_ID = "western_electional_ranking_v1"
+WESTERN_ELECTIONAL_JUDGEMENT_WINDOWS_PROFILE_ID = (
+    "western_electional_judgement_windows_v1"
+)
 
 TraditionalPlanetValue = Literal[
     "Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"
@@ -58,6 +62,11 @@ ZodiacSignValue = Literal[
 LillyPerfectionKindValue = Literal[
     "direct_perfection", "translation_of_light", "collection_of_light",
     "prohibition", "refranation", "frustration",
+]
+WesternElectionalRankingContributionIdValue = Literal[
+    "direct_perfection_present",
+    "translation_of_light_present",
+    "collection_of_light_present",
 ]
 
 RameseyRuleStateValue = Literal["clear", "triggered", "not_evaluable"]
@@ -1565,6 +1574,521 @@ class WesternElectionalJudgementResponse(_StrictModel):
     transport_provenance: WesternElectionalJudgementTransportProvenanceResponse
 
 
+class WesternElectionalRankingWeightRequest(_StrictModel):
+    contribution_id: WesternElectionalRankingContributionIdValue
+    weight: float
+
+    @field_validator("weight", mode="before")
+    @classmethod
+    def _finite_nonzero_weight(cls, value: Any) -> float:
+        parsed = _finite_number(value, "weight")
+        if parsed == 0.0:
+            raise ValueError("weight must be nonzero")
+        return parsed
+
+
+class WesternElectionalRankingRequest(_StrictModel):
+    profile_id: Literal["western_electional_ranking_v1"] = (
+        WESTERN_ELECTIONAL_RANKING_PROFILE_ID
+    )
+    candidate_jds: list[float] = Field(min_length=2, max_length=64)
+    latitude: float = Field(ge=-90.0, le=90.0)
+    longitude: float = Field(ge=-180.0, le=180.0)
+    house_system: str
+    matter_profile_id: DorotheusMatterProfileIdValue | SahlMatterProfileIdValue
+    perfection_significator_a: TraditionalPlanetValue
+    perfection_significator_b: TraditionalPlanetValue
+    perfection_interval_days: float = Field(gt=0.0, le=LILLY_PERFECTION_MAX_SPAN_DAYS)
+    weights: list[WesternElectionalRankingWeightRequest] = Field(
+        min_length=1,
+        max_length=3,
+    )
+    election_class: DorotheusElectionClassValue = "ephemeral"
+    natal_jd_ut: float | None = None
+    natal_latitude: float | None = Field(default=None, ge=-90.0, le=90.0)
+    natal_longitude: float | None = Field(default=None, ge=-180.0, le=180.0)
+    natal_house_system: str | None = None
+    unavoidable_time_urgency: bool | None = None
+    moon_flow_policy: DorotheusMoonFlowPolicyRequest | None = None
+    sahl_burnt_path_variant: SahlBurntPathVariantValue | None = None
+    sahl_eighth_rule_variant: SahlEighthRuleVariantValue | None = None
+
+    @field_validator("candidate_jds", mode="before")
+    @classmethod
+    def _finite_distinct_candidates(cls, value: Any) -> list[float]:
+        if not isinstance(value, (list, tuple)):
+            raise ValueError("candidate_jds must be a list")
+        parsed = [_finite_number(item, "candidate_jds") for item in value]
+        if len(set(parsed)) != len(parsed):
+            raise ValueError("candidate_jds must contain distinct instants")
+        return parsed
+
+    @field_validator(
+        "latitude",
+        "longitude",
+        "perfection_interval_days",
+        "natal_jd_ut",
+        "natal_latitude",
+        "natal_longitude",
+        mode="before",
+    )
+    @classmethod
+    def _finite_values(cls, value: Any, info) -> float | None:
+        if value is None and info.field_name.startswith("natal_"):
+            return None
+        return _finite_number(value, info.field_name)
+
+    @field_validator("house_system", "natal_house_system", mode="before")
+    @classmethod
+    def _known_house_system(cls, value: Any, info) -> str | None:
+        if value is None and info.field_name == "natal_house_system":
+            return None
+        if not isinstance(value, str):
+            raise ValueError(f"{info.field_name} must be a string")
+        code = value.strip()
+        if code not in DOROTHEUS_HOUSE_SYSTEMS:
+            raise ValueError(
+                f"{info.field_name} must be one of {list(DOROTHEUS_HOUSE_SYSTEMS)!r}"
+            )
+        return code
+
+    @field_validator("unavoidable_time_urgency", mode="before")
+    @classmethod
+    def _strict_urgency(cls, value: Any) -> bool | None:
+        if value is None or isinstance(value, bool):
+            return value
+        raise ValueError("unavoidable_time_urgency must be a boolean or null")
+
+    @model_validator(mode="after")
+    def _ranking_contract(self) -> "WesternElectionalRankingRequest":
+        if len({item.contribution_id for item in self.weights}) != len(self.weights):
+            raise ValueError("ranking contribution weights must be unique")
+        if self.perfection_significator_a == self.perfection_significator_b:
+            raise ValueError("perfection significators must be distinct")
+        natal_values = (
+            self.natal_jd_ut,
+            self.natal_latitude,
+            self.natal_longitude,
+            self.natal_house_system,
+        )
+        if self.election_class == "ephemeral" and any(
+            value is not None for value in natal_values
+        ):
+            raise ValueError("ephemeral election_class rejects natal fields")
+        if self.election_class == "radical" and any(
+            value is None for value in natal_values
+        ):
+            raise ValueError("radical election_class requires all natal fields")
+        is_sahl = self.matter_profile_id.startswith("sahl_")
+        is_flow = self.matter_profile_id in {
+            "dorotheus_leasing_v1",
+            "dorotheus_buying_and_selling_v1",
+        }
+        if is_sahl:
+            if self.election_class != "ephemeral":
+                raise ValueError("Sahl ranking admits only ephemeral elections")
+            if any(value is not None for value in (
+                self.natal_jd_ut,
+                self.natal_latitude,
+                self.natal_longitude,
+                self.natal_house_system,
+                self.unavoidable_time_urgency,
+                self.moon_flow_policy,
+            )):
+                raise ValueError(
+                    "Sahl ranking rejects Dorothean natal, urgency, and flow inputs"
+                )
+            if self.sahl_burnt_path_variant is None:
+                raise ValueError("Sahl ranking requires sahl_burnt_path_variant")
+            if self.sahl_eighth_rule_variant is None:
+                raise ValueError("Sahl ranking requires sahl_eighth_rule_variant")
+        else:
+            if self.sahl_burnt_path_variant is not None or self.sahl_eighth_rule_variant is not None:
+                raise ValueError("Dorotheus ranking rejects Sahl variant inputs")
+            if is_flow and self.moon_flow_policy is None:
+                raise ValueError("flow-based Dorotheus ranking requires moon_flow_policy")
+            if not is_flow and self.moon_flow_policy is not None:
+                raise ValueError(
+                    "moon_flow_policy is accepted only for flow-based Dorotheus profiles"
+                )
+        return self
+
+
+class WesternElectionalRankingPolicyResponse(_StrictModel):
+    profile_id: Literal["western_electional_ranking_v1"]
+    profile_version: Literal["1.0.0"]
+    ranking_authority: Literal["moira_owned_caller_weighted_numeric_decision_support"]
+    candidate_scope: Literal["explicit_distinct_instants_same_phase8_selection"]
+    contribution_scope: Literal["constructive_lilly_perfection_presence_only"]
+    weight_policy: Literal["caller_supplied_unique_finite_nonzero_no_default"]
+    normalization_policy: Literal["weighted_sum_divided_by_sum_absolute_weights"]
+    eligibility_policy: Literal["complete_under_profile_only"]
+    incomplete_candidate_policy: Literal["partition_with_complete_judgement_evidence"]
+    tie_break_policy: Literal["score_descending_jd_ascending_input_index_ascending"]
+    min_candidates: Literal[2]
+    max_candidates: Literal[64]
+    score_minimum: Literal[-1.0]
+    score_maximum: Literal[1.0]
+    advice_language: Literal["not_admitted"]
+    recommendation_language: Literal["not_admitted"]
+    empirical_claim: Literal["not_provided"]
+
+
+class WesternElectionalRankingWeightResponse(_StrictModel):
+    contribution_id: WesternElectionalRankingContributionIdValue
+    weight: float
+
+
+class WesternElectionalRankingContributionResponse(_StrictModel):
+    contribution_id: WesternElectionalRankingContributionIdValue
+    raw_value: Literal[0.0, 1.0]
+    normalization: Literal["binary_presence_identity"]
+    normalized_value: Literal[0.0, 1.0]
+    weight: float
+    weighted_value: float
+
+
+class WesternElectionalRankedCandidateResponse(_StrictModel):
+    input_index: int = Field(ge=0)
+    jd_ut: float
+    state: Literal["ranked_complete_under_profile"]
+    rank: int = Field(ge=1)
+    score: float = Field(ge=-1.0, le=1.0)
+    normalization_divisor: float = Field(gt=0.0)
+    contributions: list[WesternElectionalRankingContributionResponse]
+    judgement: WesternElectionalJudgementEvaluationResponse
+
+
+class WesternElectionalExcludedCandidateResponse(_StrictModel):
+    input_index: int = Field(ge=0)
+    jd_ut: float
+    state: Literal["excluded_impeded", "excluded_indeterminate"]
+    reason: str
+    judgement: WesternElectionalJudgementEvaluationResponse
+
+
+class WesternElectionalRankingEvaluationResponse(_StrictModel):
+    profile_id: Literal["western_electional_ranking_v1"]
+    profile_version: Literal["1.0.0"]
+    policy: WesternElectionalRankingPolicyResponse
+    weights: list[WesternElectionalRankingWeightResponse]
+    candidate_jds: list[float]
+    ranked_candidates: list[WesternElectionalRankedCandidateResponse]
+    excluded_candidates: list[WesternElectionalExcludedCandidateResponse]
+    reader_provenance: str
+    authorities: list[str]
+    ranking_is_decision_support: Literal[True]
+    advice_language: Literal["not_admitted"]
+    recommendation_language: Literal["not_admitted"]
+    empirical_claim: Literal["not_provided"]
+
+
+class WesternElectionalRankingTransportProvenanceResponse(_StrictModel):
+    source_module: Literal["moira.western_electional"] = "moira.western_electional"
+    engine_entrypoint: Literal["western_electional_ranking_at"] = "western_electional_ranking_at"
+    facade_entrypoint: Literal["Moira.western_electional_ranking_at"] = "Moira.western_electional_ranking_at"
+    route_semantics: Literal["explicit_candidate_caller_weighted_decision_support"] = "explicit_candidate_caller_weighted_decision_support"
+    historical_score_claim: Literal["not_claimed"] = "not_claimed"
+    advice_product: Literal["not_admitted"] = "not_admitted"
+    stage_sequence: list[str]
+
+
+class WesternElectionalRankingResponse(_StrictModel):
+    evaluation: WesternElectionalRankingEvaluationResponse
+    transport_provenance: WesternElectionalRankingTransportProvenanceResponse
+
+
+class WesternElectionalJudgementWindowPolicyRequest(_StrictModel):
+    mode: Literal["sampled", "partially_event_refined"] = "sampled"
+    step_days: float = Field(default=0.25, ge=1.0 / 24.0, le=31.0)
+    transition_tolerance_seconds: float = Field(default=60.0, ge=0.1, le=3600.0)
+    max_refinement_iterations: int = Field(default=0, ge=0, le=24)
+    max_initial_samples: int = Field(default=64, ge=2, le=64)
+    max_evaluations: int = Field(default=256, ge=2, le=256)
+    max_windows: int = Field(default=64, ge=1, le=64)
+    max_transitions: int = Field(default=63, ge=0, le=63)
+    max_event_seeds: int = Field(default=128, ge=0, le=128)
+    max_span_days: float = Field(default=31.0, gt=0.0, le=31.0)
+
+    @field_validator(
+        "step_days",
+        "transition_tolerance_seconds",
+        "max_span_days",
+        mode="before",
+    )
+    @classmethod
+    def _finite_policy_values(cls, value: Any, info) -> float:
+        return _finite_number(value, info.field_name)
+
+    @model_validator(mode="after")
+    def _coherent_resources(self) -> "WesternElectionalJudgementWindowPolicyRequest":
+        if self.max_evaluations < self.max_initial_samples:
+            raise ValueError("max_evaluations cannot be less than max_initial_samples")
+        if self.mode == "sampled" and self.max_refinement_iterations != 0:
+            raise ValueError("sampled mode requires max_refinement_iterations=0")
+        if self.mode == "partially_event_refined" and self.max_refinement_iterations < 1:
+            raise ValueError(
+                "partially_event_refined mode requires max_refinement_iterations >= 1"
+            )
+        return self
+
+
+class WesternElectionalJudgementWindowsRequest(_StrictModel):
+    profile_id: Literal["western_electional_judgement_windows_v1"] = (
+        WESTERN_ELECTIONAL_JUDGEMENT_WINDOWS_PROFILE_ID
+    )
+    jd_start: float
+    jd_end: float
+    latitude: float = Field(ge=-90.0, le=90.0)
+    longitude: float = Field(ge=-180.0, le=180.0)
+    house_system: str
+    matter_profile_id: DorotheusMatterProfileIdValue | SahlMatterProfileIdValue
+    perfection_significator_a: TraditionalPlanetValue
+    perfection_significator_b: TraditionalPlanetValue
+    perfection_interval_days: float = Field(gt=0.0, le=LILLY_PERFECTION_MAX_SPAN_DAYS)
+    election_class: DorotheusElectionClassValue = "ephemeral"
+    natal_jd_ut: float | None = None
+    natal_latitude: float | None = Field(default=None, ge=-90.0, le=90.0)
+    natal_longitude: float | None = Field(default=None, ge=-180.0, le=180.0)
+    natal_house_system: str | None = None
+    unavoidable_time_urgency: bool | None = None
+    moon_flow_policy: DorotheusMoonFlowPolicyRequest | None = None
+    sahl_burnt_path_variant: SahlBurntPathVariantValue | None = None
+    sahl_eighth_rule_variant: SahlEighthRuleVariantValue | None = None
+    policy: WesternElectionalJudgementWindowPolicyRequest = Field(
+        default_factory=WesternElectionalJudgementWindowPolicyRequest
+    )
+
+    @field_validator(
+        "jd_start",
+        "jd_end",
+        "latitude",
+        "longitude",
+        "perfection_interval_days",
+        "natal_jd_ut",
+        "natal_latitude",
+        "natal_longitude",
+        mode="before",
+    )
+    @classmethod
+    def _finite_values(cls, value: Any, info) -> float | None:
+        if value is None and info.field_name.startswith("natal_"):
+            return None
+        return _finite_number(value, info.field_name)
+
+    @field_validator("house_system", "natal_house_system", mode="before")
+    @classmethod
+    def _known_house_system(cls, value: Any, info) -> str | None:
+        if value is None and info.field_name == "natal_house_system":
+            return None
+        if not isinstance(value, str):
+            raise ValueError(f"{info.field_name} must be a string")
+        code = value.strip()
+        if code not in DOROTHEUS_HOUSE_SYSTEMS:
+            raise ValueError(
+                f"{info.field_name} must be one of {list(DOROTHEUS_HOUSE_SYSTEMS)!r}"
+            )
+        return code
+
+    @field_validator("unavoidable_time_urgency", mode="before")
+    @classmethod
+    def _strict_urgency(cls, value: Any) -> bool | None:
+        if value is None or isinstance(value, bool):
+            return value
+        raise ValueError("unavoidable_time_urgency must be a boolean or null")
+
+    @model_validator(mode="after")
+    def _window_contract(self) -> "WesternElectionalJudgementWindowsRequest":
+        if self.jd_end <= self.jd_start:
+            raise ValueError("jd_start must be less than jd_end")
+        if self.jd_end - self.jd_start > self.policy.max_span_days:
+            raise ValueError("scan span exceeds policy.max_span_days")
+        sample_count = 2
+        current = self.jd_start + self.policy.step_days
+        while current < self.jd_end:
+            sample_count += 1
+            current += self.policy.step_days
+        if sample_count > self.policy.max_initial_samples:
+            raise ValueError("initial sample count exceeds policy.max_initial_samples")
+        if self.perfection_significator_a == self.perfection_significator_b:
+            raise ValueError("perfection significators must be distinct")
+        natal_values = (
+            self.natal_jd_ut,
+            self.natal_latitude,
+            self.natal_longitude,
+            self.natal_house_system,
+        )
+        if self.election_class == "ephemeral" and any(
+            value is not None for value in natal_values
+        ):
+            raise ValueError("ephemeral election_class rejects natal fields")
+        if self.election_class == "radical" and any(
+            value is None for value in natal_values
+        ):
+            raise ValueError("radical election_class requires all natal fields")
+        is_sahl = self.matter_profile_id.startswith("sahl_")
+        is_flow = self.matter_profile_id in {
+            "dorotheus_leasing_v1",
+            "dorotheus_buying_and_selling_v1",
+        }
+        if is_sahl:
+            if self.election_class != "ephemeral":
+                raise ValueError("Sahl judgement windows admit only ephemeral elections")
+            if any(value is not None for value in (
+                self.natal_jd_ut,
+                self.natal_latitude,
+                self.natal_longitude,
+                self.natal_house_system,
+                self.unavoidable_time_urgency,
+                self.moon_flow_policy,
+            )):
+                raise ValueError(
+                    "Sahl judgement windows reject Dorothean natal, urgency, and flow inputs"
+                )
+            if self.sahl_burnt_path_variant is None:
+                raise ValueError("Sahl judgement windows require sahl_burnt_path_variant")
+            if self.sahl_eighth_rule_variant is None:
+                raise ValueError("Sahl judgement windows require sahl_eighth_rule_variant")
+        else:
+            if self.sahl_burnt_path_variant is not None or self.sahl_eighth_rule_variant is not None:
+                raise ValueError("Dorotheus judgement windows reject Sahl variant inputs")
+            if is_flow and self.moon_flow_policy is None:
+                raise ValueError(
+                    "flow-based Dorotheus judgement windows require moon_flow_policy"
+                )
+            if not is_flow and self.moon_flow_policy is not None:
+                raise ValueError(
+                    "moon_flow_policy is accepted only for flow-based Dorotheus profiles"
+                )
+        return self
+
+
+class WesternElectionalJudgementWindowPolicyResponse(_StrictModel):
+    profile_id: Literal["western_electional_judgement_windows_v1"]
+    profile_version: Literal["1.0.0"]
+    mode: Literal["sampled", "partially_event_refined"]
+    step_days: float
+    transition_tolerance_seconds: float
+    max_refinement_iterations: int
+    max_initial_samples: int
+    max_evaluations: int
+    max_windows: int
+    max_transitions: int
+    max_event_seeds: int
+    max_span_days: float
+    boundary_inventory: Literal["incomplete_profile_transition_inventory"]
+    transition_detector: Literal["complete_phase8_signature_change"]
+    exact_boundary_claimed: Literal[False]
+    continuous_truth_claimed: Literal[False]
+    ranking_integration: Literal["separate_phase9_endpoint_not_applied"]
+    advice_language: Literal["not_admitted"]
+    recommendation_language: Literal["not_admitted"]
+
+
+class WesternElectionalStatePairResponse(_StrictModel):
+    item_id: str
+    state: str
+
+
+class WesternElectionalJudgementSignatureResponse(_StrictModel):
+    judgement_state: Literal["complete_under_profile", "impeded", "indeterminate"]
+    moon_status: str
+    matter_status: str
+    component_states: list[WesternElectionalStatePairResponse]
+    moon_rule_states: list[WesternElectionalStatePairResponse]
+    matter_clause_states: list[WesternElectionalStatePairResponse]
+    rooted_significator_conditions: list[WesternElectionalStatePairResponse]
+    rooted_supplementary_states: list[WesternElectionalStatePairResponse]
+    perfection_present_kinds: list[LillyPerfectionKindValue]
+    perfection_indeterminate_kinds: list[LillyPerfectionKindValue]
+    unresolved_requirement_ids: list[str]
+    contains_unresolved: bool
+
+
+class WesternElectionalTransitionCauseResponse(_StrictModel):
+    cause_id: str
+    before_value: str
+    after_value: str
+    semantics: Literal[
+        "observed_phase8_output_change_not_complete_astronomical_cause"
+    ]
+
+
+class WesternElectionalCandidateEventResponse(_StrictModel):
+    event_id: str
+    jd_ut: float
+    source_component: str
+    event_kind: str
+    causal_status: Literal["candidate_boundary_seed_not_asserted_cause"]
+
+
+class WesternElectionalWindowBoundaryResponse(_StrictModel):
+    resolution: Literal[
+        "request_bound", "sampled_bracket", "adaptively_refined_bracket"
+    ]
+    estimate_jd_ut: float
+    bracket_start_jd_ut: float
+    bracket_end_jd_ut: float
+    bracket_width_seconds: float
+    causes: list[WesternElectionalTransitionCauseResponse]
+    candidate_events: list[WesternElectionalCandidateEventResponse]
+    doctrine_boundary_exact: Literal[False]
+
+
+class WesternElectionalJudgementWindowResponse(_StrictModel):
+    window_index: int = Field(ge=0)
+    exactness: Literal["sampled", "partially_event_refined"]
+    jd_start_estimate: float
+    jd_end_estimate: float
+    start_boundary: WesternElectionalWindowBoundaryResponse
+    end_boundary: WesternElectionalWindowBoundaryResponse
+    observed_jds: list[float]
+    signature: WesternElectionalJudgementSignatureResponse
+    representative_judgement: WesternElectionalJudgementEvaluationResponse
+    contains_unresolved: bool
+
+
+class WesternElectionalJudgementWindowScanResponse(_StrictModel):
+    jd_start: float
+    jd_end: float
+    latitude: float
+    longitude: float
+    requested_house_system: str
+    profile_id: Literal["western_electional_judgement_windows_v1"]
+    profile_version: Literal["1.0.0"]
+    policy: WesternElectionalJudgementWindowPolicyResponse
+    windows: list[WesternElectionalJudgementWindowResponse]
+    initial_sample_count: int
+    total_evaluation_count: int
+    transition_count: int
+    candidate_events: list[WesternElectionalCandidateEventResponse]
+    event_seed_count: int
+    reader_provenance: str
+    authorities: list[str]
+    boundary_inventory_complete: Literal[False]
+    exact_boundary_claimed: Literal[False]
+    continuous_truth_claimed: Literal[False]
+    ranking_integration: Literal["separate_phase9_endpoint_not_applied"]
+    advice_language: Literal["not_admitted"]
+    recommendation_language: Literal["not_admitted"]
+
+
+class WesternElectionalJudgementWindowsTransportProvenanceResponse(_StrictModel):
+    source_module: Literal["moira.western_electional"] = "moira.western_electional"
+    engine_entrypoint: Literal["scan_western_electional_judgement_windows"] = "scan_western_electional_judgement_windows"
+    facade_entrypoint: Literal["Moira.western_electional_judgement_windows"] = "Moira.western_electional_judgement_windows"
+    route_semantics: Literal["bounded_observed_complete_judgement_windows"] = "bounded_observed_complete_judgement_windows"
+    boundary_truth: Literal["sampled_or_partially_refined_never_exact"] = "sampled_or_partially_refined_never_exact"
+    ranking_endpoint: Literal["separate"] = "separate"
+    advice_product: Literal["not_admitted"] = "not_admitted"
+    stage_sequence: list[str]
+
+
+class WesternElectionalJudgementWindowsResponse(_StrictModel):
+    evaluation: WesternElectionalJudgementWindowScanResponse
+    transport_provenance: WesternElectionalJudgementWindowsTransportProvenanceResponse
+
+
 __all__ = [
     "LunarEclipticDirectionRequest",
     "LunarNodeCrossingResponse",
@@ -1676,4 +2200,29 @@ __all__ = [
     "WesternElectionalJudgementEvaluationResponse",
     "WesternElectionalJudgementTransportProvenanceResponse",
     "WesternElectionalJudgementResponse",
+    "WESTERN_ELECTIONAL_RANKING_PROFILE_ID",
+    "WesternElectionalRankingContributionIdValue",
+    "WesternElectionalRankingWeightRequest",
+    "WesternElectionalRankingRequest",
+    "WesternElectionalRankingPolicyResponse",
+    "WesternElectionalRankingWeightResponse",
+    "WesternElectionalRankingContributionResponse",
+    "WesternElectionalRankedCandidateResponse",
+    "WesternElectionalExcludedCandidateResponse",
+    "WesternElectionalRankingEvaluationResponse",
+    "WesternElectionalRankingTransportProvenanceResponse",
+    "WesternElectionalRankingResponse",
+    "WESTERN_ELECTIONAL_JUDGEMENT_WINDOWS_PROFILE_ID",
+    "WesternElectionalJudgementWindowPolicyRequest",
+    "WesternElectionalJudgementWindowsRequest",
+    "WesternElectionalJudgementWindowPolicyResponse",
+    "WesternElectionalStatePairResponse",
+    "WesternElectionalJudgementSignatureResponse",
+    "WesternElectionalTransitionCauseResponse",
+    "WesternElectionalCandidateEventResponse",
+    "WesternElectionalWindowBoundaryResponse",
+    "WesternElectionalJudgementWindowResponse",
+    "WesternElectionalJudgementWindowScanResponse",
+    "WesternElectionalJudgementWindowsTransportProvenanceResponse",
+    "WesternElectionalJudgementWindowsResponse",
 ]

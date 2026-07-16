@@ -26,6 +26,12 @@ from moira.western_electional import (
     WesternElectionalProfileScanPolicy,
     WesternElectionalQualificationStatus,
     WesternElectionalJudgementEvaluation,
+    WesternElectionalRankingContributionId,
+    WesternElectionalRankingEvaluation,
+    WesternElectionalRankingWeight,
+    WesternElectionalJudgementWindowPolicy,
+    WesternElectionalJudgementWindowScan,
+    WesternElectionalWindowScanMode,
 )
 
 from ..models.western_electional import (
@@ -40,6 +46,8 @@ from ..models.western_electional import (
     WesternProfileWindowsRequest,
     LillyPerfectionRequest,
     WesternElectionalJudgementRequest,
+    WesternElectionalRankingRequest,
+    WesternElectionalJudgementWindowsRequest,
 )
 
 
@@ -330,6 +338,133 @@ def compute_western_electional_judgement(
     return result
 
 
+def compute_western_electional_ranking(
+    engine: Moira,
+    request: WesternElectionalRankingRequest,
+) -> WesternElectionalRankingEvaluation:
+    """Evaluate and rank explicit candidates through the public facade."""
+
+    flow_request = request.moon_flow_policy
+    flow_policy = (
+        None
+        if flow_request is None
+        else MoonConnectionFlowPolicy(
+            previous_window=MoonPreviousEventWindowPolicy(
+                flow_request.previous_window
+            ),
+            previous_lookback_days=flow_request.previous_lookback_days,
+            modern=flow_request.modern,
+        )
+    )
+    burnt = (
+        None
+        if request.sahl_burnt_path_variant is None
+        else SahlBurntPathVariant(request.sahl_burnt_path_variant)
+    )
+    eighth = (
+        None
+        if request.sahl_eighth_rule_variant is None
+        else SahlEighthRuleVariant(request.sahl_eighth_rule_variant)
+    )
+    weights = tuple(
+        WesternElectionalRankingWeight(
+            WesternElectionalRankingContributionId(item.contribution_id),
+            item.weight,
+        )
+        for item in request.weights
+    )
+    result = engine.western_electional_ranking_at(
+        request.candidate_jds,
+        request.latitude,
+        request.longitude,
+        house_system=request.house_system,
+        matter_profile_id=request.matter_profile_id,
+        perfection_significator_a=request.perfection_significator_a,
+        perfection_significator_b=request.perfection_significator_b,
+        perfection_interval_days=request.perfection_interval_days,
+        weights=weights,
+        election_class=WesternElectionClass(request.election_class),
+        natal_jd_ut=request.natal_jd_ut,
+        natal_latitude=request.natal_latitude,
+        natal_longitude=request.natal_longitude,
+        natal_house_system=request.natal_house_system,
+        unavoidable_time_urgency=request.unavoidable_time_urgency,
+        moon_flow_policy=flow_policy,
+        sahl_burnt_path_variant=burnt,
+        sahl_eighth_rule_variant=eighth,
+    )
+    if result.profile_id != request.profile_id:
+        raise RuntimeError("facade returned a ranking profile different from the request")
+    return result
+
+
+def compute_western_electional_judgement_windows(
+    engine: Moira,
+    request: WesternElectionalJudgementWindowsRequest,
+) -> WesternElectionalJudgementWindowScan:
+    """Scan bounded observed judgement windows through the public facade."""
+
+    flow_request = request.moon_flow_policy
+    flow_policy = (
+        None
+        if flow_request is None
+        else MoonConnectionFlowPolicy(
+            previous_window=MoonPreviousEventWindowPolicy(
+                flow_request.previous_window
+            ),
+            previous_lookback_days=flow_request.previous_lookback_days,
+            modern=flow_request.modern,
+        )
+    )
+    burnt = (
+        None
+        if request.sahl_burnt_path_variant is None
+        else SahlBurntPathVariant(request.sahl_burnt_path_variant)
+    )
+    eighth = (
+        None
+        if request.sahl_eighth_rule_variant is None
+        else SahlEighthRuleVariant(request.sahl_eighth_rule_variant)
+    )
+    policy_request = request.policy
+    scan_policy = WesternElectionalJudgementWindowPolicy(
+        mode=WesternElectionalWindowScanMode(policy_request.mode),
+        step_days=policy_request.step_days,
+        transition_tolerance_seconds=policy_request.transition_tolerance_seconds,
+        max_refinement_iterations=policy_request.max_refinement_iterations,
+        max_initial_samples=policy_request.max_initial_samples,
+        max_evaluations=policy_request.max_evaluations,
+        max_windows=policy_request.max_windows,
+        max_transitions=policy_request.max_transitions,
+        max_event_seeds=policy_request.max_event_seeds,
+        max_span_days=policy_request.max_span_days,
+    )
+    result = engine.western_electional_judgement_windows(
+        request.jd_start,
+        request.jd_end,
+        request.latitude,
+        request.longitude,
+        house_system=request.house_system,
+        matter_profile_id=request.matter_profile_id,
+        perfection_significator_a=request.perfection_significator_a,
+        perfection_significator_b=request.perfection_significator_b,
+        perfection_interval_days=request.perfection_interval_days,
+        election_class=WesternElectionClass(request.election_class),
+        natal_jd_ut=request.natal_jd_ut,
+        natal_latitude=request.natal_latitude,
+        natal_longitude=request.natal_longitude,
+        natal_house_system=request.natal_house_system,
+        unavoidable_time_urgency=request.unavoidable_time_urgency,
+        moon_flow_policy=flow_policy,
+        sahl_burnt_path_variant=burnt,
+        sahl_eighth_rule_variant=eighth,
+        scan_policy=scan_policy,
+    )
+    if result.profile_id != request.profile_id:
+        raise RuntimeError("facade returned a window profile different from the request")
+    return result
+
+
 __all__ = [
     "compute_lunar_ecliptic_direction",
     "compute_dorotheus_construction",
@@ -341,5 +476,7 @@ __all__ = [
     "compute_sahl_matter_profile",
     "compute_lilly_perfection",
     "compute_western_electional_judgement",
+    "compute_western_electional_ranking",
+    "compute_western_electional_judgement_windows",
     "compute_western_profile_windows",
 ]

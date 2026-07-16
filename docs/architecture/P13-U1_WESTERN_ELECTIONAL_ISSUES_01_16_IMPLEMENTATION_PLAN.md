@@ -1,6 +1,6 @@
 # P13-U1 Western Electional Issues 01-16 — Definitive Implementation Plan
 
-**Status:** active implementation; Phases 1, 3-6, and Phase 8 for the current
+**Status:** active implementation; Phases 1, 3-6, and Phases 8-10 for the current
 matter registry are complete at their named boundaries; Phase 2A is complete,
 Phase 2B geometry remains explicitly doctrine-source-gated, and Phase 7
 continues with unimplemented matter families
@@ -709,11 +709,12 @@ components with a present direct perfection, translation, or collection yield
 as `not_applicable` rather than fabricating it. The package root, facade,
 `Moira.western_electional_judgement_at(...)`, service, typed models,
 serializer, OpenAPI, and `POST /v1/electional/western/judgement` expose the
-same object. Scoring, ranking, advice, and recommendation remain Phase 9.
+same object. Scoring and ranking remain outside Phase 8 and are owned by the
+separate Phase 9 product; advice and recommendation are not admitted.
 
 ---
 
-### Phase 9 — Ranking, scoring, and advice decision (#15)
+### Phase 9 — Ranking, scoring, and advice decision (#15) — COMPLETE 2026-07-16
 
 This issue is resolved by admitting only semantics Moira can honestly own.
 
@@ -744,9 +745,35 @@ This issue is resolved by admitting only semantics Moira can honestly own.
 results remain non-scored; the project records an explicit admit/defer decision
 for advice.
 
+**Implementation result:** `western_electional_ranking_v1` accepts 2-64
+distinct caller-supplied candidate instants under one identical Phase 8
+selection. Its fixed v1 contribution vocabulary is limited to the visible
+presence of direct perfection, translation of light, and collection of light.
+The caller supplies unique finite nonzero weights; no historical or Moira
+default weighting exists. Each score is the visible weighted sum divided by
+the sum of absolute weights and is therefore bounded to `[-1, 1]`.
+
+Only `complete_under_profile` judgements enter the ranking. `impeded` and
+`indeterminate` candidates are returned in a separate partition with their
+complete Phase 8 evidence and cannot become numeric zero. Ranked candidates
+use the serialized tie-break `score descending, JD ascending, input index
+ascending`. Engine, curated root, facade, `Moira`, strict REST models,
+serializer, OpenAPI, and `POST /v1/electional/western/ranking` expose the same
+object. The result identifies itself as Moira-owned numeric decision support,
+not historical doctrine or empirical proof.
+
+Phase 9B closes with `advice_language=not_admitted` and
+`recommendation_language=not_admitted`. No advice renderer, recommendation
+endpoint, generated prose, or hidden "best election" verdict is admitted.
+
 ---
 
 ### Phase 10 — Event-aware broader scanning (#16)
+
+**Status:** complete for the bounded complete-judgement v1 product on
+2026-07-16. Exact continuous scanning, a complete astronomical boundary
+inventory, and standalone construction/rooted-context scanners remain
+explicitly unadmitted.
 
 **Purpose:** scan complete profiles and judgements without misrepresenting a
 uniform sample grid as exact continuous truth.
@@ -785,9 +812,36 @@ uniform sample grid as exact continuous truth.
 - resource-limit rejection;
 - facade, REST, and OpenAPI parity.
 
-**Exit gate:** every returned window states whether it is sampled or exact,
-which events define its boundaries, which doctrine was evaluated, and whether
-any unresolved clause remains.
+**Implementation result:** `western_electional_judgement_windows_v1` observes
+the complete Phase 8 signature, including judgement, Moon, matter, rooted
+context, perfection, component, and unresolved-requirement states. It exposes
+`sampled` and `partially_event_refined` modes through
+`scan_western_electional_judgement_windows(...)`,
+`Moira.western_electional_judgement_windows(...)`, and
+`POST /v1/electional/western/judgement-windows`. Lilly perfection events,
+Dorothean rooted next-connections, and Dorothean matter Moon-flow events seed
+partial refinement when those events are visible in the initial Phase 8
+evaluations. They are returned as
+`candidate_boundary_seed_not_asserted_cause`; only observed Phase 8 output
+changes are returned as transition causes.
+
+The v1 resource law caps spans at 31 days, initial samples at 64, total
+evaluations at 256, refinement iterations at 24, candidate event seeds at 128,
+windows at 64, and transitions at 63. REST enforces the same limits. The
+initial cadence cannot be shorter than one hour. Ranking remains a separate
+Phase 9 request, and advice/recommendation remain unadmitted.
+
+Because v1 does not inventory sign/house ingress, orb entry/exit, node
+crossing, station, sunrise, planetary-hour, dignity, and every source threshold
+as an exhaustive event set, it never reports `exact` or continuous truth.
+Equal observed endpoint signatures can conceal an interior transition; the
+synthetic suite preserves this limitation as executable evidence.
+
+**Exit gate:** every returned window states whether it is sampled or partially
+event-refined, exposes its observed doctrine signature and unresolved state,
+and carries bracketed transition causes plus any nearby non-causal candidate
+events. Exactness remains false until a future profile owns a complete boundary
+inventory.
 
 ## 6. Issue Closure Matrix
 
@@ -806,9 +860,9 @@ any unresolved clause remains.
 | 11 | signed application/separation | **COMPLETE 2026-07-15** | first-class instantaneous witness, invariants, facade/REST/OpenAPI |
 | 12 | perfection doctrines | **LILLY V1 COMPLETE 2026-07-15** | six source-owned classifications, complete event trace, facade, REST, and OpenAPI; Sahl/Bonatti/reflection remain unadmitted |
 | 13 | remaining matters | shared substrate + per-matter sources | each inventory row admitted/deferred/excluded explicitly |
-| 14 | complete judgement | 1-13 as applicable | reconstructible component assembly; typed indeterminacy |
-| 15 | ranking/advice | 14 | transparent Moira-owned ranker; explicit advice admission decision |
-| 16 | broader scanning | 14, optional 15 | bounded event-aware windows with honest exactness labels |
+| 14 | complete judgement | **COMPLETE FOR CURRENT REGISTRY 2026-07-16** | reconstructible component assembly; typed indeterminacy; facade/REST/OpenAPI |
+| 15 | ranking/advice | **RANKING COMPLETE; ADVICE NOT ADMITTED 2026-07-16** | transparent caller-weighted Moira-owned ranker; explicit advice exclusion |
+| 16 | broader scanning | **BOUNDED V1 COMPLETE; EXACT MODE UNADMITTED 2026-07-16** | sampled/partially refined complete-judgement windows; visible event seeds, causes, limits, facade/REST/OpenAPI |
 
 ## 7. Source Material to Acquire
 

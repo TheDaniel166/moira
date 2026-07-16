@@ -1,8 +1,8 @@
 # P13-U1 Western Electional Doctrine Packet
 
-Version: 1.1
-Date: 2026-07-15
-Status: three Moon profiles, bounded profile-status scanning, Dorothean and Sahl matter layers, standalone Lilly perfection, and the Phase 8 complete-judgement composition are public; scoring deferred
+Version: 1.3
+Date: 2026-07-16
+Status: bounded source profiles, Phase 8 complete judgement, Phase 9 caller-weighted explicit-candidate ranking, and Phase 10 bounded judgement windows are public; exact continuous windows, advice, and recommendation are not admitted
 Scope: bounded Western electional doctrine beside the generic search transport
 
 ## 1. Doctrine Decision
@@ -29,6 +29,10 @@ This packet defines the following bounded doctrine and composition profiles:
 `lilly_1647_perfection_v1`
 
 `western_electional_judgement_v1`
+
+`western_electional_ranking_v1`
+
+`western_electional_judgement_windows_v1`
 
 It is a transparent evaluation of William Ramesey's ten impediments of the
 Moon in *Astrologia Restaurata*, Book III, Chapter II, printed p. 127. It is
@@ -89,6 +93,29 @@ through `Moira.western_electional_judgement_at(...)` and
 request input is rejected before computation rather than represented as a
 favorable or partial judgement. The summary never substitutes a score or
 recommendation for the returned proof objects.
+
+The Phase 9 ranking is a separate Moira-owned numeric decision-support object.
+It accepts only explicit candidate instants under one identical Phase 8
+selection and ranks only `complete_under_profile` judgements. Its v1
+contributions are the visible binary presence of direct perfection,
+translation, and collection. Callers provide all unique nonzero weights; no
+historical composite weighting or Moira default is implied. Every contribution,
+normalization divisor, excluded candidate, and deterministic tie-break remains
+public through `Moira.western_electional_ranking_at(...)` and
+`POST /v1/electional/western/ranking`. Advice and recommendation are explicitly
+not admitted.
+
+The Phase 10 window product scans complete Phase 8 judgements without turning
+a sample grid into continuous truth. `sampled` mode preserves coarse observed
+brackets. `partially_event_refined` mode additionally seeds evaluation with
+visible Lilly perfection, Dorothean rooted-connection, and Dorothean Moon-flow
+events, then bisects brackets whose observed complete-judgement signatures
+differ. Candidate events are not asserted as causes; transition causes are
+structured differences between observed Phase 8 outputs. Public access is
+through `Moira.western_electional_judgement_windows(...)` and
+`POST /v1/electional/western/judgement-windows`. Its boundary inventory is
+explicitly incomplete, every exactness and continuous-truth flag is false, and
+Phase 9 ranking is not applied implicitly.
 
 The Dorotheus profile is likewise admitted through the engine, facade, and
 `Moira.dorotheus_moon_condition_at(...)`, with
@@ -698,8 +725,10 @@ routes `/v1/electional/western/ramesey-moon-condition` and
 `/v1/electional/western/sahl-moon-condition` and
 `/v1/electional/western/dorotheus-moon-condition`.
 
-Generic scoring, website, advice, and recommendation-language admission remain
-deferred. The three Moon profiles additionally admit a dedicated status
+The older generic numeric-fit scorer remains unchanged and distinct from the
+Western Phase 9 ranking. Website admission remains separate; advice and
+recommendation language are explicitly not admitted. The three Moon profiles
+additionally admit a dedicated status
 scanner through `scan_western_electional_profile(...)`,
 `Moira.western_electional_profile_windows(...)`, and
 `POST /v1/electional/western/profile-windows`. Qualification is exact
@@ -713,6 +742,17 @@ Ramesey and Dorotheus preserve optional urgency context and uncomputed remedy
 fulfillment; Sahl preserves its explicit textual variants. This admission does
 not authorize generic scored-window language, construction-profile scanning,
 or rooted-context qualification.
+
+Complete Phase 8 judgements additionally admit bounded interval scanning
+through `scan_western_electional_judgement_windows(...)`,
+`Moira.western_electional_judgement_windows(...)`, and
+`POST /v1/electional/western/judgement-windows`. The profile caps spans at 31
+days, initial samples at 64, evaluations at 256, candidate event seeds at 128,
+windows at 64, transitions at 63, and refinement iterations at 24. It returns
+the full representative judgement for each observed signature window. A
+candidate event can tighten sampling but never proves the doctrine transition
+occurred at that event. Equal endpoint signatures may conceal an interior
+transition, so exact and continuous claims remain unadmitted.
 
 ### 13.2 Ramesey five-axis sovereignty audit
 
@@ -803,18 +843,21 @@ under a generic lineage label.
 
 This packet and admitted public-moment batch do not:
 
-- admit Western profile scoring, ranking, advice, or continuous-boundary claims
-- define a scored or recommended election for any matter
+- admit a historical or default composite electional score, advice, or
+  continuous-boundary claim
+- define a recommended election for any matter
 - merge the distinct Ramesey, Sahl, and Dorotheus objects with each other or
   with Robson, Lilly, or Bonatti; the standalone Lilly perfection profile does
   not alter those Moon-condition or matter profiles
 - create a historical-outcome dataset
 - claim empirical validation of electional astrology
 - alter the existing generic electional search or scored-window semantics
+- claim an exhaustive astronomical boundary inventory or exact continuous
+  judgement windows
 
 ## 15. Ledger Decision
 
-P13-U1 is `three_moon_profiles_status_scan_matter_layers_and_lilly_perfection_public; scoring_and_recommendation_deferred`.
+P13-U1 is `source_profiles_complete_judgement_ranking_and_bounded_judgement_windows_public; exact_windows_advice_and_recommendation_not_admitted`.
 
 `ramesey_moon_condition_v1` now exists as an engine-owned, non-scored condition
 profile with a separate non-erasing contingency witness. Its named types and
@@ -855,6 +898,24 @@ recommendation is inferred from the historical text.
 source-owned perfection witnesses. Its engine object, curated exports, facade
 method, and typed REST route expose the complete fixed policy and explicitly
 exclude Sahl, Bonatti, abscission, reflection, scoring, and complete judgement.
+
+`western_electional_judgement_v1` separately composes one admitted matter
+profile with Lilly v1 perfection while preserving every unresolved and
+excluded requirement. `western_electional_ranking_v1` consumes identically
+configured instances of that complete object without adding scores to any
+historical result. Its caller-owned weights, binary contributions,
+absolute-weight normalization, incomplete-candidate partition, and tie-break
+law are public at every engine and REST layer. It emits numeric decision
+support only; advice, recommendation, and empirical efficacy claims remain
+unadmitted.
+
+`western_electional_judgement_windows_v1` adapts the complete Phase 8 proof
+object into deterministic observed signatures. It exposes sampled or partially
+event-refined brackets, structured output-change causes, non-causal event
+seeds, representative judgements, unresolved-state truth, authority, reader
+provenance, and bounded resource counts. It does not separately scan the
+construction or rooted-context products and does not claim exact continuous
+truth.
 
 The three Moon-condition profiles are scan-admitted through a separate bounded
 status predicate. Callers must provide the exact qualifying-status set; there

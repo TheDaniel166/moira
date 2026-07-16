@@ -32,6 +32,10 @@ from ..models.western_electional import (
     LillyPerfectionResponse,
     WesternElectionalJudgementRequest,
     WesternElectionalJudgementResponse,
+    WesternElectionalRankingRequest,
+    WesternElectionalRankingResponse,
+    WesternElectionalJudgementWindowsRequest,
+    WesternElectionalJudgementWindowsResponse,
 )
 from ..serializers.western_electional import (
     serialize_lunar_ecliptic_direction,
@@ -45,6 +49,8 @@ from ..serializers.western_electional import (
     serialize_western_profile_windows,
     serialize_lilly_perfection,
     serialize_western_electional_judgement,
+    serialize_western_electional_ranking,
+    serialize_western_electional_judgement_windows,
 )
 from ..services.western_electional import (
     compute_lunar_ecliptic_direction,
@@ -58,6 +64,8 @@ from ..services.western_electional import (
     compute_western_profile_windows,
     compute_lilly_perfection,
     compute_western_electional_judgement,
+    compute_western_electional_ranking,
+    compute_western_electional_judgement_windows,
 )
 
 
@@ -227,6 +235,36 @@ def western_electional_judgement_route(
 
     return serialize_western_electional_judgement(
         compute_western_electional_judgement(engine, request)
+    )
+
+
+@router.post(
+    "/ranking",
+    response_model=WesternElectionalRankingResponse,
+)
+def western_electional_ranking_route(
+    request: WesternElectionalRankingRequest,
+    engine: Annotated[Moira, Depends(get_engine)],
+) -> WesternElectionalRankingResponse:
+    """Rank explicit candidate instants under one complete judgement selection."""
+
+    return serialize_western_electional_ranking(
+        compute_western_electional_ranking(engine, request)
+    )
+
+
+@router.post(
+    "/judgement-windows",
+    response_model=WesternElectionalJudgementWindowsResponse,
+)
+def western_electional_judgement_windows_route(
+    request: WesternElectionalJudgementWindowsRequest,
+    engine: Annotated[Moira, Depends(get_engine)],
+) -> WesternElectionalJudgementWindowsResponse:
+    """Return bounded sampled or partially refined complete-judgement windows."""
+
+    return serialize_western_electional_judgement_windows(
+        compute_western_electional_judgement_windows(engine, request)
     )
 
 

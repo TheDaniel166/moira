@@ -1,7 +1,7 @@
 # P13-U1 — Western Electional Doctrine Research Dossier
 
-Version: 0.23 (Phase 8 complete-judgement composition admission)
-Date: 2026-07-15
+Version: 0.25 (Phase 10 bounded complete-judgement windows)
+Date: 2026-07-16
 Status: research inventory for the Western electional doctrine layer. The
 companion materials admit distinct `ramesey_moon_condition_v1` and
 `sahl_moon_condition_v1` and `dorotheus_moon_condition_v1` objects through the
@@ -21,7 +21,14 @@ calculation is now evaluated from the source-defined lunar equation sign using
 an IERS 2010 mean lunar longitude, and V.31 bad places use Dorotheus's explicit
 whole-sign set from Book I. The three Moon-condition profiles now have a
 dedicated bounded status-window scan through engine, facade, and REST.
-Generic scoring, website, advice, and recommendation surfaces remain deferred.
+The generic numeric-fit scorer remains distinct. The separate
+`western_electional_ranking_v1` decision-support product is public; website,
+advice, and recommendation surfaces remain unadmitted.
+The separate `western_electional_judgement_windows_v1` product now scans full
+Phase 8 outputs in sampled or partially event-refined mode through engine,
+facade, and REST. It exposes bracketed observed-output changes and non-causal
+candidate event seeds, but does not claim a complete boundary inventory, exact
+continuous truth, or implicit Phase 9 ranking.
 The page-confirmed V.8 demolition, V.9 leasing, V.10 buying/selling, V.11 land
 purchase, and V.44 lunar-price-timing matter layers are now admitted through
 the named `dorotheus_matter_profile_at(...)`
@@ -49,7 +56,26 @@ otherwise missing constructive perfection or any blocking unresolved source
 requirement propagates `indeterminate`. No score, ranking, advice, or
 recommendation is emitted.
 
+`western_electional_ranking_v1` ranks only explicit candidate instants whose
+Phase 8 selections are identical. The caller owns every weight over the three
+admitted constructive-perfection presence signals; no historical composite
+score or Moira default is claimed. Complete candidates expose every binary
+contribution and absolute-weight normalization. Impeded and indeterminate
+judgements remain fully serialized in a separate excluded partition. Public
+access is through `Moira.western_electional_ranking_at(...)` and
+`POST /v1/electional/western/ranking`; advice and recommendation are explicitly
+`not_admitted`.
+
 Changelog:
+- 0.25 - admitted Phase 10 bounded complete-judgement windows in sampled and
+  partially event-refined modes; exposed complete signatures, bracketed
+  observed-output causes, non-causal event seeds, representative Phase 8
+  judgements, resource limits, facade, REST, and OpenAPI while explicitly
+  withholding exact continuous-window claims.
+- 0.24 - admitted Phase 9 explicit-candidate ranking as caller-weighted,
+  fully decomposed numeric decision support; partitioned incomplete Phase 8
+  judgements without scoring them; explicitly closed advice and recommendation
+  as not admitted.
 - 0.23 - admitted the Phase 8 `western_electional_judgement_v1` composition
   for the current Sahl and Dorotheus matter registries plus Lilly v1
   perfection; serialized every component and requirement; kept the
@@ -958,12 +984,24 @@ choices.
    because its surviving text does not assign separation and connection to
    the four leasing stakes; that final mapping still requires the fuller
    Theophilus/Hephaistion parallel.
-7. **Generic scoring remains deferred**: the dedicated status scanner does not
-   enter the generic numeric-fit scorer, rank results, assess remedy
-   fulfillment, scan the rooted context or construction profile, or produce a
-   blended universal election. Each additional adapter, scoring product, and
-   website surface requires its own admission decision.
-8. **Validation strategy**: per Moira law, each numeric rule (orbs, thresholds,
+7. **Western ranking is separately admitted**: the dedicated status scanner
+   still does not enter the generic numeric-fit scorer. Phase 9 ranks only
+   explicit, identically configured Phase 8 candidate judgements using
+   caller-owned weights over constructive-perfection presence. It does not
+   assess remedy fulfillment, scan intervals, produce a blended universal
+   election, or admit advice. Each additional contribution vocabulary, named
+   weighting profile, scanning adapter, and website surface requires its own
+   admission decision.
+8. **Complete-judgement window scanning is bounded and admitted**:
+   `western_electional_judgement_windows_v1` evaluates complete Phase 8
+   signatures through `scan_western_electional_judgement_windows(...)`,
+   `Moira.western_electional_judgement_windows(...)`, and
+   `POST /v1/electional/western/judgement-windows`. Its sampled and partially
+   event-refined modes return bracket witnesses, structured output changes,
+   candidate event seeds with no causal claim, representative judgements, and
+   resource counts. The boundary inventory remains incomplete; exact and
+   continuous truth are false, and ranking remains a separate request.
+9. **Validation strategy**: per Moira law, each numeric rule (orbs, thresholds,
    points) is verified against its **named primary text at the cited page**
    before admission; each variant carries its citation in the profile metadata.
 

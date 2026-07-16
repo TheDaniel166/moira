@@ -599,6 +599,142 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
             policy=resolved_policy,
         )
 
+    def western_electional_ranking_at(
+        self,
+        candidate_jds,
+        latitude: float,
+        longitude: float,
+        *,
+        house_system: str,
+        matter_profile_id,
+        perfection_significator_a: str,
+        perfection_significator_b: str,
+        perfection_interval_days: float,
+        weights,
+        election_class=None,
+        natal_jd_ut: float | None = None,
+        natal_latitude: float | None = None,
+        natal_longitude: float | None = None,
+        natal_house_system: str | None = None,
+        unavoidable_time_urgency: bool | None = None,
+        moon_flow_policy=None,
+        sahl_burnt_path_variant=None,
+        sahl_eighth_rule_variant=None,
+        house_policy=None,
+        judgement_policy=None,
+        ranking_policy=None,
+    ):
+        """Rank explicit candidate instants under one complete judgement selection."""
+
+        facade = _facade_module()
+        resolved_class = (
+            facade.WesternElectionClass.EPHEMERAL
+            if election_class is None
+            else election_class
+        )
+        resolved_judgement_policy = (
+            facade.WESTERN_ELECTIONAL_JUDGEMENT_V1
+            if judgement_policy is None
+            else judgement_policy
+        )
+        resolved_ranking_policy = (
+            facade.WESTERN_ELECTIONAL_RANKING_V1
+            if ranking_policy is None
+            else ranking_policy
+        )
+        return facade.western_electional_ranking_at(
+            candidate_jds,
+            latitude,
+            longitude,
+            house_system=house_system,
+            matter_profile_id=matter_profile_id,
+            perfection_significator_a=perfection_significator_a,
+            perfection_significator_b=perfection_significator_b,
+            perfection_interval_days=perfection_interval_days,
+            weights=weights,
+            election_class=resolved_class,
+            natal_jd_ut=natal_jd_ut,
+            natal_latitude=natal_latitude,
+            natal_longitude=natal_longitude,
+            natal_house_system=natal_house_system,
+            unavoidable_time_urgency=unavoidable_time_urgency,
+            moon_flow_policy=moon_flow_policy,
+            sahl_burnt_path_variant=sahl_burnt_path_variant,
+            sahl_eighth_rule_variant=sahl_eighth_rule_variant,
+            reader=self._reader,
+            house_policy=house_policy,
+            judgement_policy=resolved_judgement_policy,
+            ranking_policy=resolved_ranking_policy,
+        )
+
+    def western_electional_judgement_windows(
+        self,
+        jd_start: float,
+        jd_end: float,
+        latitude: float,
+        longitude: float,
+        *,
+        house_system: str,
+        matter_profile_id,
+        perfection_significator_a: str,
+        perfection_significator_b: str,
+        perfection_interval_days: float,
+        election_class=None,
+        natal_jd_ut: float | None = None,
+        natal_latitude: float | None = None,
+        natal_longitude: float | None = None,
+        natal_house_system: str | None = None,
+        unavoidable_time_urgency: bool | None = None,
+        moon_flow_policy=None,
+        sahl_burnt_path_variant=None,
+        sahl_eighth_rule_variant=None,
+        house_policy=None,
+        judgement_policy=None,
+        scan_policy=None,
+    ):
+        """Return bounded observed complete-judgement windows."""
+
+        facade = _facade_module()
+        resolved_class = (
+            facade.WesternElectionClass.EPHEMERAL
+            if election_class is None
+            else election_class
+        )
+        resolved_judgement_policy = (
+            facade.WESTERN_ELECTIONAL_JUDGEMENT_V1
+            if judgement_policy is None
+            else judgement_policy
+        )
+        resolved_scan_policy = (
+            facade.WESTERN_ELECTIONAL_JUDGEMENT_WINDOWS_V1
+            if scan_policy is None
+            else scan_policy
+        )
+        return facade.scan_western_electional_judgement_windows(
+            jd_start,
+            jd_end,
+            latitude,
+            longitude,
+            house_system=house_system,
+            matter_profile_id=matter_profile_id,
+            perfection_significator_a=perfection_significator_a,
+            perfection_significator_b=perfection_significator_b,
+            perfection_interval_days=perfection_interval_days,
+            election_class=resolved_class,
+            natal_jd_ut=natal_jd_ut,
+            natal_latitude=natal_latitude,
+            natal_longitude=natal_longitude,
+            natal_house_system=natal_house_system,
+            unavoidable_time_urgency=unavoidable_time_urgency,
+            moon_flow_policy=moon_flow_policy,
+            sahl_burnt_path_variant=sahl_burnt_path_variant,
+            sahl_eighth_rule_variant=sahl_eighth_rule_variant,
+            reader=self._reader,
+            house_policy=house_policy,
+            judgement_policy=resolved_judgement_policy,
+            scan_policy=resolved_scan_policy,
+        )
+
     def dorotheus_moon_condition_at(
         self,
         jd_ut: float,
