@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import FrozenInstanceError
 from datetime import datetime, timezone
 
 import pytest
@@ -12,6 +13,7 @@ from moira.aspects import aspects_between
 from moira.midpoints import _midpoint
 from moira.synastry import (
     _lon_midpoint,
+    _spherical_geo_midpoint,
     CompositeClassification,
     CompositeChart,
     CompositeComputationTruth,
@@ -506,6 +508,33 @@ def test_corrected_davison_preserves_midpoint_mc_doctrine(moira_engine) -> None:
 
 
 @pytest.mark.requires_ephemeris
+def test_corrected_davison_rejects_angular_wrap_as_a_root(moira_engine) -> None:
+    engine = moira_engine
+    dt_a = datetime(1980, 1, 1, 3, 0, tzinfo=timezone.utc)
+    dt_b = datetime(1990, 12, 14, 17, 0, tzinfo=timezone.utc)
+    lat_a, lon_a = 51.5, -0.1
+    lat_b, lon_b = 40.7128, -74.0060
+
+    corrected = engine.davison_chart_corrected(
+        dt_a, lat_a, lon_a, dt_b, lat_b, lon_b, house_system=HouseSystem.PLACIDUS
+    )
+    natal_houses_a = engine.houses(dt_a, lat_a, lon_a, HouseSystem.PLACIDUS)
+    natal_houses_b = engine.houses(dt_b, lat_b, lon_b, HouseSystem.PLACIDUS)
+    target_mc = _midpoint(natal_houses_a.mc, natal_houses_b.mc)
+    signed_residual = ((corrected.houses.mc - target_mc + 540.0) % 360.0) - 180.0
+
+    assert signed_residual == pytest.approx(0.0, abs=1e-6)
+
+
+def test_spherical_midpoint_rejects_antipodal_ambiguity() -> None:
+    with pytest.raises(ValueError, match="undefined for antipodal or near-antipodal"):
+        _spherical_geo_midpoint(0.0, 0.0, 0.0, 180.0)
+
+    with pytest.raises(ValueError, match="undefined for antipodal or near-antipodal"):
+        _spherical_geo_midpoint(0.0, 0.0, 1e-9, 180.0)
+
+
+@pytest.mark.requires_ephemeris
 def test_composite_reference_place_method_preserves_planet_midpoints_and_reference_place_houses(moira_engine) -> None:
     engine = moira_engine
     dt_a = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
@@ -671,6 +700,69 @@ def test_synastry_condition_network_profile_is_deterministic_and_aligned(moira_e
     assert all(node.total_degree >= 0 for node in network.nodes)
 
 
+def test_synastry_condition_network_preserves_chart_qualified_body_identity() -> None:
+    class FakeChart:
+        def __init__(self, longitudes: dict[str, float]) -> None:
+            self._longitudes = longitudes
+
+        def longitudes(self, include_nodes: bool = True) -> dict[str, float]:
+            return dict(self._longitudes)
+
+        def speeds(self) -> dict[str, float]:
+            return {name: 1.0 for name in self._longitudes}
+
+    chart_a = FakeChart({"Sun": 0.0, "Moon": 90.0})
+    chart_b = FakeChart({"Sun": 0.0, "Moon": 90.0})
+    contacts = synastry_contacts(
+        chart_a,
+        chart_b,
+        tier=1,
+        orbs={0.0: 1.0, 90.0: 1.0},
+        include_nodes=False,
+        source_label="Alice",
+        target_label="Bob",
+    )
+
+    network = synastry_condition_network_profile(contacts=contacts)
+    node_ids = {node.node_id for node in network.nodes}
+
+    assert {"pair:Alice", "pair:Bob"} <= node_ids
+    assert {
+        "body:Alice:Sun",
+        "body:Alice:Moon",
+        "body:Bob:Sun",
+        "body:Bob:Moon",
+    } <= node_ids
+    assert "pair:A" not in node_ids
+    assert "pair:B" not in node_ids
+    assert all(edge.source_id != edge.target_id for edge in network.edges)
+    assert contacts[0].truth.custom_orb_table == ((0.0, 1.0), (90.0, 1.0))
+
+
+def test_synastry_truth_and_policy_are_immutable_after_validation() -> None:
+    truth = SynastryAspectTruth(
+        source_label="A",
+        target_label="B",
+        source_body="Sun",
+        target_body="Moon",
+        tier=2,
+        include_nodes=True,
+        orb_factor=1.0,
+        custom_orbs=False,
+        source_speed=1.0,
+        target_speed=13.0,
+    )
+    with pytest.raises(FrozenInstanceError):
+        truth.source_body = "Mars"
+
+    source_orbs = {0.0: 8.0}
+    policy = SynastryAspectPolicy(orbs=source_orbs)
+    source_orbs[0.0] = -1.0
+    assert policy.orbs == {0.0: 8.0}
+    with pytest.raises(TypeError):
+        policy.orbs[0.0] = 4.0
+
+
 def test_synastry_condition_network_invariants_fail_loudly() -> None:
     node = SynastryConditionNetworkNode(
         node_id="pair:A",
@@ -694,26 +786,13 @@ def test_synastry_condition_network_invariants_fail_loudly() -> None:
             most_connected_nodes=(node,),
         )
 
-    node_b = SynastryConditionNetworkNode(
-        node_id="pair:B",
-        kind="pair",
-        incoming_count=1,
-        outgoing_count=0,
-    )
-    with pytest.raises(ValueError, match="cross-chart contact edges must use contact condition_state"):
-        SynastryConditionNetworkProfile(
-            nodes=(node, node_b),
-            edges=(
-                SynastryConditionNetworkEdge(
-                    source_id="pair:A",
-                    target_id="pair:B",
-                    relation_kind="cross_chart_contact",
-                    relation_basis="aspect",
-                    condition_state="overlay",
-                ),
-            ),
-            isolated_nodes=(),
-            most_connected_nodes=(node, node_b),
+    with pytest.raises(ValueError, match="condition_state must match relation_kind"):
+        SynastryConditionNetworkEdge(
+            source_id="pair:A",
+            target_id="pair:B",
+            relation_kind="cross_chart_contact",
+            relation_basis="aspect",
+            condition_state="overlay",
         )
 
 
@@ -769,6 +848,24 @@ def test_synastry_classification_and_inspectability_invariants_fail_loudly() -> 
             method="midpoint",
         )
 
+    with pytest.raises(ValueError, match="basis must name a composite or Davison method"):
+        SynastryRelation(
+            kind="relationship_chart",
+            basis="aspect",
+            source_label="A",
+            target_label="B",
+            method="midpoint",
+        )
+
+    with pytest.raises(ValueError, match="condition_state must match result_kind"):
+        SynastryConditionProfile(
+            result_kind="davison",
+            condition_state=SynastryConditionState("contact"),
+            pair_mode="pair",
+            relation_kind="cross_chart_contact",
+            relation_basis="aspect",
+        )
+
     with pytest.raises(ValueError, match="result_kind must match classification"):
         CompositeChart(
             planets={"Sun": 10.0},
@@ -801,8 +898,8 @@ def test_synastry_classification_and_inspectability_invariants_fail_loudly() -> 
                 condition_state=SynastryConditionState("relationship_chart"),
                 pair_mode="pair",
                 relation_kind="relationship_chart",
-                relation_basis="midpoint_composite",
-                method="midpoint",
+                relation_basis="midpoint_location_davison",
+                method="midpoint_location",
                 includes_house_frame=False,
             ),
         )

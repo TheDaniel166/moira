@@ -348,6 +348,8 @@ Current explicit failures include:
 - one-sided composite house input
 - empty house-system codes
 - non-finite coordinates for composite reference-place or Davison methods
+- antipodal or near-antipodal locations for spherical-midpoint Davison charts,
+  where no unique great-circle midpoint exists
 
 #### 7.2 Internal inconsistency behavior
 
@@ -372,6 +374,9 @@ For identical validated inputs and policy, the subsystem guarantees:
 - deterministic chart aggregate ordering
 - deterministic network node ordering
 - deterministic network edge ordering
+- chart-qualified body-node identity in condition networks
+- corrected-Davison convergence to the midpoint MC without admitting the
+  circular ±180-degree discontinuity as a root
 
 No public result vessel may depend on hash order or incidental iteration order.
 
@@ -517,8 +522,8 @@ Any substantive change to `moira/synastry.py` must, at minimum, preserve:
 Minimum validation commands:
 
 ```powershell
-.\.venv\Scripts\python.exe -m py_compile moira\synastry.py tests\unit\test_synastry.py
-.\.venv\Scripts\python.exe -m pytest tests\unit\test_synastry.py -q
+.\.venv\Scripts\python.exe -m py_compile moira\synastry.py tests\unit\test_moira_synastry.py
+.\.venv\Scripts\python.exe -m pytest tests\unit\test_moira_synastry.py -q
 ```
 
 If package exposure changes later, the matching public-API test must also be

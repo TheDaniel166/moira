@@ -46,7 +46,8 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 from datetime import datetime, timezone, timedelta
-from typing import TYPE_CHECKING
+from types import MappingProxyType
+from typing import TYPE_CHECKING, Mapping
 
 from .constants import Body, DEG2RAD, RAD2DEG
 from .coordinates import ecliptic_to_equatorial
@@ -164,7 +165,7 @@ def _relation_basis_for_davison_method(method: str) -> str:
     return mapping[method]
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class SynastryAspectTruth:
     """RITE: The Aspect Witness — the immutable record of every doctrinal
     and computational parameter that produced one cross-chart aspect
@@ -172,7 +173,8 @@ class SynastryAspectTruth:
 
 THEOREM: Frozen provenance record for one synastry inter-aspect,
          carrying both chart labels, body names, tier, orb policy,
-         and source/target speed at time of computation.
+         the normalized custom-orb table when present, and source/target
+         speed at time of computation.
 
 RITE OF PURPOSE:
     SynastryAspectTruth makes every cross-chart aspect fully auditable.
@@ -197,7 +199,7 @@ Canon: Moira Synastry Architecture; moira.aspects doctrine.
     "scope": "class",
     "id": "moira.synastry.SynastryAspectTruth",
     "risk": "low",
-    "api": {"frozen": ["source_label", "target_label", "source_body", "target_body", "tier", "include_nodes", "orb_factor", "custom_orbs", "source_speed", "target_speed"], "internal": []},
+    "api": {"frozen": ["source_label", "target_label", "source_body", "target_body", "tier", "include_nodes", "orb_factor", "custom_orbs", "source_speed", "target_speed", "custom_orb_table"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -218,9 +220,31 @@ Canon: Moira Synastry Architecture; moira.aspects doctrine.
     custom_orbs: bool
     source_speed: float | None
     target_speed: float | None
+    custom_orb_table: tuple[tuple[float, float], ...] | None = None
+
+    def __post_init__(self) -> None:
+        if not self.source_label.strip() or not self.target_label.strip():
+            raise ValueError("synastry aspect truth labels must be non-empty")
+        if not self.source_body.strip() or not self.target_body.strip():
+            raise ValueError("synastry aspect truth bodies must be non-empty")
+        if self.tier not in {1, 2}:
+            raise ValueError("synastry aspect truth tier must be 1 or 2")
+        if not math.isfinite(self.orb_factor) or self.orb_factor <= 0.0:
+            raise ValueError("synastry aspect truth orb_factor must be positive and finite")
+        if not isinstance(self.include_nodes, bool) or not isinstance(self.custom_orbs, bool):
+            raise ValueError("synastry aspect truth policy flags must be boolean")
+        if (self.custom_orb_table is not None) != self.custom_orbs:
+            raise ValueError("synastry aspect truth custom_orb_table must match custom_orbs")
+        if self.custom_orb_table is not None:
+            expected_table = tuple(sorted(self.custom_orb_table))
+            if self.custom_orb_table != expected_table:
+                raise ValueError("synastry aspect truth custom_orb_table must be deterministically ordered")
+            for angle, orb in self.custom_orb_table:
+                if not math.isfinite(angle) or not math.isfinite(orb) or orb <= 0.0:
+                    raise ValueError("synastry aspect truth custom_orb_table must contain finite positive values")
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class SynastryAspectContact:
     """RITE: The Aspect Contact — the composite result vessel for one
     cross-chart synastry aspect, binding the raw aspect data to its
@@ -356,7 +380,7 @@ Canon: Moira Synastry Architecture; inter-chart aspect doctrine.
         return None if self.condition_profile is None else self.condition_profile.condition_state.name
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class SynastryOverlayTruth:
     """RITE: The Overlay Witness — the provenance record of every doctrinal
     and computational parameter that produced one directional synastry
@@ -409,7 +433,7 @@ Canon: Moira Synastry Architecture; house overlay doctrine.
     target_has_fallback: bool
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class CompositeComputationTruth:
     """RITE: The Composite Witness — the provenance record of every
     doctrinal and computational parameter that produced one composite
@@ -462,7 +486,7 @@ Canon: Moira Synastry Architecture; composite chart doctrine.
     source_effective_house_system: str | None = None
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class DavisonComputationTruth:
     """RITE: The Davison Witness — the provenance record of every
     doctrinal and computational parameter that produced one Davison
@@ -518,7 +542,7 @@ Canon: Moira Synastry Architecture; Davison relationship chart doctrine.
     correction_applied: bool = False
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class SynastryAspectClassification:
     """RITE: The Aspect Classifier — the typed label that identifies how
     a cross-chart aspect was computed: contact mode, pair mode, node
@@ -572,9 +596,11 @@ Canon: Moira Synastry Architecture; aspect classification doctrine.
             raise ValueError("synastry aspect classification contact_mode must be cross_chart_aspect")
         if self.pair_mode != "pair":
             raise ValueError("synastry aspect classification pair_mode must be pair")
+        if not isinstance(self.includes_nodes, bool) or not isinstance(self.uses_custom_orbs, bool):
+            raise ValueError("synastry aspect classification policy flags must be boolean")
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class SynastryOverlayClassification:
     """RITE: The Overlay Classifier — the typed label identifying how a
     synastry house overlay was computed: overlay mode, pair mode, node
@@ -627,9 +653,11 @@ Canon: Moira Synastry Architecture; house overlay classification doctrine.
             raise ValueError("synastry overlay classification overlay_mode must be directional_house_overlay")
         if self.pair_mode != "pair":
             raise ValueError("synastry overlay classification pair_mode must be pair")
+        if not isinstance(self.includes_nodes, bool) or not isinstance(self.has_house_fallback, bool):
+            raise ValueError("synastry overlay classification policy flags must be boolean")
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class CompositeClassification:
     """RITE: The Composite Classifier — the typed label identifying how a
     composite chart was built: chart mode, method variant, and whether
@@ -681,9 +709,11 @@ Canon: Moira Synastry Architecture; composite chart doctrine.
             raise ValueError("composite classification chart_mode must be composite")
         if self.method not in {"midpoint", "reference_place"}:
             raise ValueError("composite classification method must be a supported composite doctrine")
+        if not isinstance(self.includes_house_frame, bool):
+            raise ValueError("composite classification includes_house_frame must be boolean")
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class DavisonClassification:
     """RITE: The Davison Classifier — the typed label identifying how a
     Davison chart was computed: method variant, latitude and longitude
@@ -747,9 +777,12 @@ Canon: Moira Synastry Architecture; Davison relationship chart doctrine.
             raise ValueError("Davison classification method must be a supported Davison doctrine")
         if self.correction_mode not in {"corrected", "uncorrected"}:
             raise ValueError("Davison classification correction_mode must be corrected or uncorrected")
+        expected_correction_mode = "corrected" if self.method == "corrected" else "uncorrected"
+        if self.correction_mode != expected_correction_mode:
+            raise ValueError("Davison classification correction_mode must match method")
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class SynastryRelation:
     """RITE: The Relational Bond — the explicit typed description of how
     two chart entities are related: by aspect contact, house-overlay
@@ -849,6 +882,8 @@ Canon: Moira Synastry Architecture; inter-chart relation doctrine.
                 "spherical_midpoint_davison": "spherical_midpoint",
                 "corrected_davison": "corrected",
             }
+            if self.basis not in expected_methods:
+                raise ValueError("relationship chart relation basis must name a composite or Davison method")
             expected_method = expected_methods[self.basis]
             if self.method != expected_method:
                 raise ValueError("relationship chart relation method must match basis")
@@ -880,7 +915,7 @@ Canon: Moira Synastry Architecture; inter-chart relation doctrine.
         }
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class SynastryConditionState:
     """RITE: The Condition Name — the minimal typed token that records which
     of the three synastry result kinds (contact, overlay, relationship
@@ -930,7 +965,7 @@ Canon: Moira Synastry Architecture; condition state vocabulary.
             raise ValueError("synastry condition state must be contact, overlay, or relationship_chart")
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class SynastryConditionProfile:
     """RITE: The Condition Profile — the integrated per-result record that
     binds result kind, condition state, pair mode, relation kind, and
@@ -989,19 +1024,51 @@ Canon: Moira Synastry Architecture; condition profile doctrine.
     has_house_fallback: bool | None = None
 
     def __post_init__(self) -> None:
-        if self.result_kind not in {
-            "cross_chart_aspect",
-            "directional_house_overlay",
-            "composite",
-            "davison",
-        }:
+        result_states = {
+            "cross_chart_aspect": "contact",
+            "directional_house_overlay": "overlay",
+            "composite": "relationship_chart",
+            "davison": "relationship_chart",
+        }
+        if self.result_kind not in result_states:
             raise ValueError("synastry condition profile result_kind must be a supported synastry result kind")
+        if self.condition_state.name != result_states[self.result_kind]:
+            raise ValueError("synastry condition profile condition_state must match result_kind")
+        if self.pair_mode != "pair":
+            raise ValueError("synastry condition profile pair_mode must be pair")
         if self.condition_state.name == "contact" and self.relation_kind != "cross_chart_contact":
             raise ValueError("contact condition profile must use cross_chart_contact relation kind")
         if self.condition_state.name == "overlay" and self.relation_kind != "house_overlay":
             raise ValueError("overlay condition profile must use house_overlay relation kind")
         if self.condition_state.name == "relationship_chart" and self.relation_kind != "relationship_chart":
             raise ValueError("relationship chart condition profile must use relationship_chart relation kind")
+        valid_bases = {
+            "cross_chart_aspect": {"aspect": None},
+            "directional_house_overlay": {"house_membership": None},
+            "composite": {
+                "midpoint_composite": "midpoint",
+                "reference_place_composite": "reference_place",
+            },
+            "davison": {
+                "midpoint_location_davison": "midpoint_location",
+                "uncorrected_davison": "uncorrected",
+                "reference_place_davison": "reference_place",
+                "spherical_midpoint_davison": "spherical_midpoint",
+                "corrected_davison": "corrected",
+            },
+        }
+        expected_methods = valid_bases[self.result_kind]
+        if self.relation_basis not in expected_methods:
+            raise ValueError("synastry condition profile relation_basis must match result_kind")
+        if self.method != expected_methods[self.relation_basis]:
+            raise ValueError("synastry condition profile method must match relation_basis")
+        for value, name in (
+            (self.includes_nodes, "includes_nodes"),
+            (self.includes_house_frame, "includes_house_frame"),
+            (self.has_house_fallback, "has_house_fallback"),
+        ):
+            if value is not None and not isinstance(value, bool):
+                raise ValueError(f"synastry condition profile {name} must be boolean or None")
 
 
 def _synastry_condition_strength(profile: SynastryConditionProfile) -> int:
@@ -1027,7 +1094,7 @@ def _synastry_condition_sort_key(profile: SynastryConditionProfile) -> tuple[obj
     )
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class SynastryChartConditionProfile:
     """RITE: The Chart Condition Aggregate — the chart-wide synastry
     condition summary that collects all per-result profiles, counts
@@ -1124,7 +1191,7 @@ Canon: Moira Synastry Architecture; chart condition aggregate doctrine.
         return len(self.weakest_profiles)
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class SynastryConditionNetworkNode:
     """RITE: The Network Node — one vertex in the synastry condition/
     relation network, representing a pair, body, or chart entity with
@@ -1186,7 +1253,7 @@ Canon: Moira Synastry Architecture; condition network doctrine.
         return self.incoming_count + self.outgoing_count
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class SynastryConditionNetworkEdge:
     """RITE: The Network Edge — one directed link in the synastry condition/
     relation network, connecting a source node to a target node and
@@ -1245,9 +1312,30 @@ Canon: Moira Synastry Architecture; condition network doctrine.
             raise ValueError("synastry network edge relation_kind must be supported")
         if self.condition_state not in {"contact", "overlay", "relationship_chart"}:
             raise ValueError("synastry network edge condition_state must be supported")
+        expected = {
+            "cross_chart_contact": ("contact", {"aspect"}),
+            "house_overlay": ("overlay", {"house_membership"}),
+            "relationship_chart": (
+                "relationship_chart",
+                {
+                    "midpoint_composite",
+                    "reference_place_composite",
+                    "midpoint_location_davison",
+                    "uncorrected_davison",
+                    "reference_place_davison",
+                    "spherical_midpoint_davison",
+                    "corrected_davison",
+                },
+            ),
+        }
+        expected_state, expected_bases = expected[self.relation_kind]
+        if self.condition_state != expected_state:
+            raise ValueError("synastry network edge condition_state must match relation_kind")
+        if self.relation_basis not in expected_bases:
+            raise ValueError("synastry network edge relation_basis must match relation_kind")
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class SynastryConditionNetworkProfile:
     """RITE: The Network Profile — the complete validated graph of synastry
     relation/condition nodes and edges with derived views for isolated
@@ -1444,7 +1532,7 @@ Canon: Moira Synastry Architecture; aspect policy doctrine.
     """
 
     tier: int = 2
-    orbs: dict[float, float] | None = None
+    orbs: Mapping[float, float] | None = None
     orb_factor: float = 1.0
     include_nodes: bool = True
 
@@ -1457,6 +1545,7 @@ Canon: Moira Synastry Architecture; aspect policy doctrine.
             for angle, orb in self.orbs.items():
                 if not math.isfinite(angle) or not math.isfinite(orb) or orb <= 0.0:
                     raise ValueError("synastry aspect policy orbs must contain finite positive values")
+            object.__setattr__(self, "orbs", MappingProxyType(dict(self.orbs)))
 
 
 @dataclass(frozen=True, slots=True)
@@ -1501,6 +1590,10 @@ Canon: Moira Synastry Architecture; house overlay policy doctrine.
     """
 
     include_nodes: bool = True
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.include_nodes, bool):
+            raise ValueError("synastry overlay policy include_nodes must be boolean")
 
 
 @dataclass(frozen=True, slots=True)
@@ -1665,6 +1758,17 @@ Canon: Moira Synastry Architecture; root synastry policy doctrine.
     composite: SynastryCompositePolicy = field(default_factory=SynastryCompositePolicy)
     davison: SynastryDavisonPolicy = field(default_factory=SynastryDavisonPolicy)
 
+    def __post_init__(self) -> None:
+        expected_types = (
+            (self.aspects, SynastryAspectPolicy, "aspects"),
+            (self.overlays, SynastryOverlayPolicy, "overlays"),
+            (self.composite, SynastryCompositePolicy, "composite"),
+            (self.davison, SynastryDavisonPolicy, "davison"),
+        )
+        for value, expected_type, name in expected_types:
+            if not isinstance(value, expected_type):
+                raise ValueError(f"synastry computation policy {name} must use {expected_type.__name__}")
+
 
 DEFAULT_SYNASTRY_POLICY = SynastryComputationPolicy()
 
@@ -1707,7 +1811,7 @@ def _validate_synastry_aspect_inputs(
                 raise ValueError("synastry orbs must contain finite positive values")
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class SynastryHouseOverlay:
     """RITE: The Overlay Map — the composite result vessel for one
     directional synastry house overlay, binding body placements to their
@@ -1762,7 +1866,7 @@ Canon: Moira Synastry Architecture; house overlay result doctrine.
 
     source_label: str
     target_label: str
-    placements: dict[str, HousePlacement]
+    placements: Mapping[str, HousePlacement]
     include_nodes: bool = True
     computation_truth: SynastryOverlayTruth | None = None
     classification: SynastryOverlayClassification | None = None
@@ -1770,6 +1874,7 @@ Canon: Moira Synastry Architecture; house overlay result doctrine.
     condition_profile: SynastryConditionProfile | None = None
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "placements", MappingProxyType(dict(self.placements)))
         if not self.source_label.strip():
             raise ValueError("source_label must be non-empty")
         if not self.target_label.strip():
@@ -1865,7 +1970,7 @@ Canon: Moira Synastry Architecture; house overlay result doctrine.
         return None if self.condition_profile is None else self.condition_profile.condition_state.name
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class MutualHouseOverlay:
     """RITE: The Mutual Map — the container that binds both directional
     synastry house overlays in a pair into one structure: Chart A's
@@ -2041,6 +2146,11 @@ def synastry_contacts(
                     custom_orbs=orbs is not None,
                     source_speed=speeds_a.get(name_a),
                     target_speed=speeds_b.get(name_b),
+                    custom_orb_table=(
+                        tuple(sorted((float(angle), float(orb)) for angle, orb in orbs.items()))
+                        if orbs is not None
+                        else None
+                    ),
                 )
                 classification = _classify_synastry_aspect_truth(truth)
                 relation = SynastryRelation(
@@ -2184,7 +2294,7 @@ def mutual_house_overlays(
 # Composite chart
 # ---------------------------------------------------------------------------
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class CompositeChart:
     """
     RITE: The Midpoint Vessel — synthetic chart born of two lives merged.
@@ -2213,7 +2323,7 @@ class CompositeChart:
             - Populated exclusively by ``composite_chart()``.
         Structural invariants:
             - ``planets`` and ``nodes`` are always present (may be empty dicts).
-            - ``cusps`` is an empty list when house data was not requested.
+            - ``cusps`` is an empty tuple when house data was not requested.
             - ``asc`` and ``mc`` are ``None`` when house data was not requested.
         Succession stance: terminal — not designed for subclassing.
 
@@ -2257,14 +2367,14 @@ class CompositeChart:
     ----------
     planets   : body name → midpoint ecliptic longitude (°)
     nodes     : node name → midpoint ecliptic longitude (°)
-    cusps     : 12 house cusp midpoints (°), or empty list if not computed
+    cusps     : immutable tuple of 12 house cusp midpoints (°), or empty if not computed
     asc       : midpoint ASC longitude (°), or None
     mc        : midpoint MC longitude (°), or None
     jd_mean   : arithmetic mean of the two natal Julian Days (for reference)
     """
-    planets:  dict[str, float]
-    nodes:    dict[str, float]
-    cusps:    list[float]
+    planets:  Mapping[str, float]
+    nodes:    Mapping[str, float]
+    cusps:    tuple[float, ...] | list[float]
     asc:      float | None
     mc:       float | None
     jd_mean:  float
@@ -2274,6 +2384,9 @@ class CompositeChart:
     condition_profile: SynastryConditionProfile | None = None
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "planets", MappingProxyType(dict(self.planets)))
+        object.__setattr__(self, "nodes", MappingProxyType(dict(self.nodes)))
+        object.__setattr__(self, "cusps", tuple(self.cusps))
         if self.computation_truth is not None:
             if self.computation_truth.jd_mean != self.jd_mean:
                 raise ValueError("computation_truth jd_mean must match composite chart")
@@ -2558,7 +2671,7 @@ def composite_chart_reference_place(
 # Davison chart
 # ---------------------------------------------------------------------------
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class DavisonInfo:
     """
     RITE: The Midpoint Witness — records the exact time and place of union.
@@ -2715,7 +2828,7 @@ class DavisonInfo:
         return None if self.condition_profile is None else self.condition_profile.condition_state.name
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class DavisonChart:
     """
     RITE: The Vessel of the Real Moment — a true chart born at the midpoint.
@@ -2873,6 +2986,11 @@ def _spherical_geo_midpoint(
     x = x_a + x_b
     y = y_a + y_b
     z = z_a + z_b
+    vector_norm = math.sqrt(x * x + y * y + z * z)
+    if vector_norm <= 1e-10:
+        raise ValueError(
+            "spherical geographic midpoint is undefined for antipodal or near-antipodal locations"
+        )
     hyp = math.hypot(x, y)
     lat_mid = math.atan2(z, hyp) * RAD2DEG
     lon_mid = math.atan2(y, x) * RAD2DEG
@@ -3261,40 +3379,51 @@ def davison_chart_corrected(
     bracket_left = jd_mid - 0.5
     left_diff = _signed_diff(bracket_left)
     right_jd = bracket_left
-    right_diff = left_diff
     found_bracket = False
     for step in range(1, 145):
         probe = jd_mid - 0.5 + (step / 144.0)
         probe_diff = _signed_diff(probe)
         if left_diff == 0.0:
             right_jd = bracket_left
-            right_diff = left_diff
             found_bracket = True
             break
-        if left_diff * probe_diff <= 0.0:
+        # The circular residual jumps from +180 to -180 at the antipode of
+        # the target MC.  That discontinuity is not a root and must not be
+        # admitted as a bisection bracket.
+        crosses_zero_continuously = (
+            left_diff * probe_diff <= 0.0
+            and abs(probe_diff - left_diff) < 180.0
+        )
+        if crosses_zero_continuously:
             right_jd = probe
-            right_diff = probe_diff
             found_bracket = True
             break
         bracket_left = probe
         left_diff = probe_diff
 
-    corrected_jd = jd_mid
-    if found_bracket:
-        left_jd = bracket_left
-        for _ in range(80):
-            mid_probe = (left_jd + right_jd) / 2.0
-            mid_diff = _signed_diff(mid_probe)
-            if abs(mid_diff) < 1e-10:
-                corrected_jd = mid_probe
-                break
-            if left_diff * mid_diff <= 0.0:
-                right_jd = mid_probe
-                right_diff = mid_diff
-            else:
-                left_jd = mid_probe
-                left_diff = mid_diff
-            corrected_jd = mid_probe
+    if not found_bracket:
+        raise RuntimeError("corrected Davison search could not bracket the midpoint MC")
+
+    corrected_jd = bracket_left
+    left_jd = bracket_left
+    for _ in range(80):
+        mid_probe = (left_jd + right_jd) / 2.0
+        mid_diff = _signed_diff(mid_probe)
+        corrected_jd = mid_probe
+        if abs(mid_diff) < 1e-10:
+            break
+        if left_diff * mid_diff <= 0.0:
+            right_jd = mid_probe
+        else:
+            left_jd = mid_probe
+            left_diff = mid_diff
+
+    final_mc_residual = abs(_signed_diff(corrected_jd))
+    if final_mc_residual > 1e-6:
+        raise RuntimeError(
+            "corrected Davison search did not converge to the midpoint MC "
+            f"(residual={final_mc_residual:.12g} deg)"
+        )
 
     return _build_relationship_chart(
         corrected_jd,
@@ -3408,7 +3537,7 @@ def synastry_condition_network_profile(
 ) -> SynastryConditionNetworkProfile:
     """Project current synastry relations into a small directed condition network."""
 
-    pair_ids = {"pair:A", "pair:B"}
+    pair_ids: set[str] = set()
     body_ids: set[str] = set()
     chart_ids: set[str] = set()
     edges: list[SynastryConditionNetworkEdge] = []
@@ -3417,8 +3546,11 @@ def synastry_condition_network_profile(
         for contact in contacts:
             if contact.relation is None or contact.condition_profile is None:
                 continue
-            source_id = f"body:{contact.relation.source_ref}"
-            target_id = f"body:{contact.relation.target_ref}"
+            source_pair_id = f"pair:{contact.relation.source_label}"
+            target_pair_id = f"pair:{contact.relation.target_label}"
+            pair_ids.update((source_pair_id, target_pair_id))
+            source_id = f"body:{contact.relation.source_label}:{contact.relation.source_ref}"
+            target_id = f"body:{contact.relation.target_label}:{contact.relation.target_ref}"
             body_ids.update((source_id, target_id))
             edges.append(SynastryConditionNetworkEdge(
                 source_id=source_id,
@@ -3446,15 +3578,18 @@ def synastry_condition_network_profile(
     if composite is not None and composite.relation is not None and composite.condition_profile is not None:
         chart_id = f"chart:composite:{composite.relation.method or 'midpoint'}"
         chart_ids.add(chart_id)
+        source_pair_id = f"pair:{composite.relation.source_label}"
+        target_pair_id = f"pair:{composite.relation.target_label}"
+        pair_ids.update((source_pair_id, target_pair_id))
         edges.append(SynastryConditionNetworkEdge(
-            source_id="pair:A",
+            source_id=source_pair_id,
             target_id=chart_id,
             relation_kind=composite.relation.kind,
             relation_basis=composite.relation.basis,
             condition_state=composite.condition_profile.condition_state.name,
         ))
         edges.append(SynastryConditionNetworkEdge(
-            source_id="pair:B",
+            source_id=target_pair_id,
             target_id=chart_id,
             relation_kind=composite.relation.kind,
             relation_basis=composite.relation.basis,
@@ -3464,15 +3599,18 @@ def synastry_condition_network_profile(
     if davison is not None and davison.info.relation is not None and davison.info.condition_profile is not None:
         chart_id = f"chart:davison:{davison.info.relation.method or 'midpoint_location'}"
         chart_ids.add(chart_id)
+        source_pair_id = f"pair:{davison.info.relation.source_label}"
+        target_pair_id = f"pair:{davison.info.relation.target_label}"
+        pair_ids.update((source_pair_id, target_pair_id))
         edges.append(SynastryConditionNetworkEdge(
-            source_id="pair:A",
+            source_id=source_pair_id,
             target_id=chart_id,
             relation_kind=davison.info.relation.kind,
             relation_basis=davison.info.relation.basis,
             condition_state=davison.info.condition_profile.condition_state.name,
         ))
         edges.append(SynastryConditionNetworkEdge(
-            source_id="pair:B",
+            source_id=target_pair_id,
             target_id=chart_id,
             relation_kind=davison.info.relation.kind,
             relation_basis=davison.info.relation.basis,

@@ -1,6 +1,6 @@
 # P13-U1 — Western Electional Doctrine Research Dossier
 
-Version: 0.26 (Phase 7 remaining-source admission update)
+Version: 0.27 (Phase 7 land/sea travel admission update)
 Date: 2026-07-16
 Status: research inventory for the Western electional doctrine layer. The
 companion materials admit distinct `ramesey_moon_condition_v1` and
@@ -31,8 +31,9 @@ candidate event seeds, but does not claim a complete boundary inventory, exact
 continuous truth, or implicit Phase 9 ranking.
 The page-confirmed V.8 demolition, V.9 leasing, V.10 buying/selling, V.11 land
 purchase, V.20 partnership, V.21 debt/payment, V.22 travel/departure, V.24
-ship acquisition/commission, V.25 ship construction, V.26.1–38 ship launch,
-V.43 will writing, and V.44 lunar-price-timing matter layers are now admitted through
+ship acquisition/commission, V.25 ship construction, V.26 ship launch and
+land/sea travel, V.43 will writing, and V.44 lunar-price-timing matter layers
+are now admitted through
 the named `dorotheus_matter_profile_at(...)`
 engine/facade surface and
 `POST /v1/electional/western/dorotheus-matter-profile`. Sahl's adjacent
@@ -61,11 +62,13 @@ rooted context; the unenumerated sea-animal-sign class and end-of-Capricorn
 condition are exposed as `not_evaluable`, not guessed as a sign list or degree
 interval.
 
-The six current Phase 7 additions are also admitted through that complete
+The eight current Phase 7 additions are also admitted through that complete
 public ladder: `dorotheus_ship_construction_v1`,
-`dorotheus_ship_launch_v1`, `dorotheus_partnership_v1`,
+`dorotheus_ship_launch_v1`, `dorotheus_land_travel_v1`,
+`dorotheus_sea_travel_v1`, `dorotheus_partnership_v1`,
 `dorotheus_debt_and_payment_v1`, `dorotheus_writing_a_will_v1`, and the
-independent `sahl_business_partnership_v1`. V.20 and V.21 retain their
+independent `sahl_business_partnership_v1`. The travel profiles require an
+explicit source-faithful or Lilly-1647 sign-nature policy. V.20 and V.21 retain their
 Mercurial rooted context; ship construction, launch, and will writing do not
 invent one. V.26 alone may accept a complete radical chart for its named
 Saturn overlay. Every open historical term remains a source-visible
