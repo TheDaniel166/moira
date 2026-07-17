@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "source": {
+    "authority": "NASA Goddard Space Flight Center Eclipse Web Site",
+    "path_url": "https://eclipse.gsfc.nasa.gov/SEpath/SEpath2001/SE2015Mar20Tpath.html",
+    "besselian_url": "https://eclipse.gsfc.nasa.gov/SEbeselm/SEbeselm2001/SE2015Mar20Tbeselm.html",
+    "reference_ephemeris": "JPL DE405",
+    "delta_t_s": 67.6,
+    "coordinate_system": "WGS 84 geodetic latitude and east-positive longitude at zero ellipsoid elevation",
+    "time_semantics": "NASA path-table Universal Time derived from TDT/TT using the declared Delta T",
+    "sampling_interval_s": 120,
+    "mean_limb_policy": "Center-of-mass mean-limb prediction; lunar mountains and valleys are excluded",
+    "lunar_radius_constants": {
+      "k1_penumbral": 0.272508,
+      "k2_umbral": 0.272281
+    },
+    "acknowledgment": "Eclipse Predictions by Fred Espenak, NASA's GSFC",
+    "comparison_note": "NASA's DE405, Delta-T, and lunar-radius policies form an external primary-authority product comparator for Moira's independently derived DE441/LE441 reception-time geometry. The tolerances are cross-model validation ceilings, not NASA uncertainty estimates.",
+    "retrieved_on": "2026-07-17"
+  },
+  "tolerances": {
+    "searched_timing_s": 1.0,
+    "surface_position_km": 3.0,
+    "path_width_km": 3.0,
+    "central_duration_s": 3.0,
+    "magnitude": 0.005,
+    "published_limit_clearance_km": 3.0,
+    "besselian": {
+      "x": 0.0001,
+      "y": 0.0001,
+      "d": 0.003,
+      "mu": 0.007,
+      "l1": 0.0001,
+      "l2": 0.0001,
+      "tan_f1": 0.000003,
+      "tan_f2": 0.000003
+    }
+  },
+  "event": {
+    "id": "2015-03-20-total-polar-central",
+    "kind": "total",
+    "seed_jd": 2457060.5,
+    "greatest": {
+      "tt_jd": 2457101.907486,
+      "ut1_jd": 2457101.9067037036,
+      "ut_label": "2015-03-20T09:45:39.2",
+      "gamma": 0.9454,
+      "magnitude": 1.0446,
+      "latitude_deg": 64.4316666667,
+      "longitude_deg": -6.6466666667,
+      "sun_altitude_deg": 18.5,
+      "sun_azimuth_deg": 135.0,
+      "path_width_km": 462.6,
+      "central_duration_s": 166.9
+    },
+    "besselian": {
+      "t0_tt_jd": 2457101.9166666665,
+      "valid_hours_from_t0": [-3.0, 3.0],
+      "fit_sample_count": 5,
+      "sample_offsets_hours": [-3.0, -1.5, 0.0, 1.5, 3.0],
+      "coefficients": {
+        "x": [-0.168295, 0.5537398, 0.0000058, -0.0000094],
+        "y": [0.939052, 0.1786475, -0.0000541, -0.0000029],
+        "d": [-0.21267, 0.016036, 0.0, 0.0],
+        "mu": [328.10678, 15.004414, 0.0, 0.0],
+        "l1": [0.53595, 0.0000265, -0.000013, 0.0],
+        "l2": [-0.010156, 0.0000264, -0.0000129, 0.0]
+      },
+      "tan_f1": 0.004695,
+      "tan_f2": 0.0046717
+    },
+    "initial_product": {
+      "time_label": "Limits",
+      "north_limit": [55.5733333333, -46.79],
+      "south_limit": [51.8733333333, -45.25],
+      "central_line": [53.635, -45.9766666667],
+      "diameter_ratio": 1.039,
+      "sun_altitude_deg": 0,
+      "path_width_km": 406,
+      "central_duration_s": 126.3
+    },
+    "path_samples": [
+      {
+        "ut": "10:10:00",
+        "jd_ut1": 2457101.923611111,
+        "north_limit": [80.155, 5.6083333333],
+        "south_limit": [74.59, 16.0116666667],
+        "central_line": [77.1183333333, 12.335],
+        "diameter_ratio": 1.043,
+        "sun_altitude_deg": 12,
+        "sun_azimuth_deg": 163,
+        "path_width_km": 418,
+        "central_duration_s": 151.6
+      },
+      {
+        "ut": "10:12:00",
+        "jd_ut1": 2457101.925,
+        "north_limit": [82.395, 6.4833333333],
+        "south_limit": [75.9616666667, 18.6433333333],
+        "central_line": [78.7733333333, 14.9266666667],
+        "diameter_ratio": 1.042,
+        "sun_altitude_deg": 11,
+        "sun_azimuth_deg": 166,
+        "path_width_km": 416,
+        "central_duration_s": 148.4
+      },
+      {
+        "ut": "10:14:00",
+        "jd_ut1": 2457101.926388889,
+        "north_limit": [85.655, 3.5033333333],
+        "south_limit": [77.4883333333, 21.8083333333],
+        "central_line": [80.72, 18.18],
+        "diameter_ratio": 1.041,
+        "sun_altitude_deg": 9,
+        "sun_azimuth_deg": 170,
+        "path_width_km": 414,
+        "central_duration_s": 144.4
+      },
+      {
+        "ut": "10:16:00",
+        "jd_ut1": 2457101.927777778,
+        "north_limit": null,
+        "south_limit": [79.235, 25.8883333333],
+        "central_line": [83.215, 22.9416666667],
+        "diameter_ratio": 1.041,
+        "sun_altitude_deg": 7,
+        "sun_azimuth_deg": 175,
+        "path_width_km": 412,
+        "central_duration_s": 139.2
+      },
+      {
+        "ut": "10:18:00",
+        "jd_ut1": 2457101.9291666667,
+        "north_limit": null,
+        "south_limit": [81.345, 31.8683333333],
+        "central_line": [87.7333333333, 39.3616666667],
+        "diameter_ratio": 1.039,
+        "sun_altitude_deg": 2,
+        "sun_azimuth_deg": 192,
+        "path_width_km": 410,
+        "central_duration_s": 129.8
+      }
+    ],
+    "terminal_product": {
+      "time_label": "Limits",
+      "north_limit": [88.6316666667, -53.0483333333],
+      "south_limit": [87.6633333333, 111.5016666667],
+      "central_line": [89.3883333333, 97.4966666667],
+      "diameter_ratio": 1.039,
+      "sun_altitude_deg": 0,
+      "path_width_km": 410,
+      "central_duration_s": 125.8
+    }
+  }
+}

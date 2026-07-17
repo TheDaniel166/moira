@@ -1,7 +1,11 @@
-import pytest
+from dataclasses import FrozenInstanceError, replace
 import math
+from types import SimpleNamespace
 
-from moira.constants import EARTH_RADIUS_KM, SUN_RADIUS_KM, MOON_RADIUS_KM
+import pytest
+
+from moira._ephemeris_time import _ephemeris_tt_to_ut1
+from moira.constants import EARTH_RADIUS_KM, MOON_RADIUS_KM, SUN_RADIUS_KM
 from moira.eclipse_geometry import (
     umbra_radius,
     penumbra_radius,
@@ -9,6 +13,15 @@ from moira.eclipse_geometry import (
     lunar_penumbral_magnitude,
     shadow_axis_offset_deg,
 )
+
+
+def test_solar_besselian_specialist_exports_preserve_type_identity() -> None:
+    from moira.eclipse import SolarBesselianElements as EclipseElements
+    from moira.eclipse_besselian import SolarBesselianElements as GoverningElements
+    from moira.sky.eclipse import SolarBesselianElements as SkyElements
+
+    assert EclipseElements is GoverningElements is SkyElements
+
 
 def test_shadow_cone_geometry_invariants() -> None:
     """Prove that shadow cone geometry does not collapse or invert."""
@@ -75,44 +88,130 @@ def test_anti_solar_geometry() -> None:
     assert math.isclose(shadow_axis_offset_deg(179.5), 0.5, abs_tol=1e-9)
     assert math.isclose(shadow_axis_offset_deg(180.5), 0.5, abs_tol=1e-9)
 
-def test_besselian_fundamental_plane_logic() -> None:
-    """
-    Test the pure math behind Besselian elements as implemented in
-    _compute_besselian_sample.
-    """
-    # Simulate the mathematical expressions for tan_f1, tan_f2, l1, l2
-    # at a representative sun/moon distance
-    sun_dist_km = 149597870.0
-    moon_dist_km = 384400.0
-    
-    # Under typical conditions, sun_moon_distance is roughly sun_dist_km
-    # since Earth is at origin, but let's assume exact collinearity for the test
-    sun_moon_dist = sun_dist_km - moon_dist_km
-    
-    tan_f1 = (SUN_RADIUS_KM + MOON_RADIUS_KM) / sun_moon_dist
-    tan_f2 = (SUN_RADIUS_KM - MOON_RADIUS_KM) / sun_moon_dist
-    
-    # distance_to_plane is roughly moon_dist_km when the plane passes through Earth center
-    # and Moon is at zenith (exact collinearity)
-    distance_to_plane = moon_dist_km
-    
-    penumbra_radius_er = (MOON_RADIUS_KM + (distance_to_plane * tan_f1)) / EARTH_RADIUS_KM
-    umbra_radius_er = (MOON_RADIUS_KM - (distance_to_plane * tan_f2)) / EARTH_RADIUS_KM
-    
-    # 1. Penumbra l1 must be larger than Umbra l2
-    assert penumbra_radius_er > umbra_radius_er
-    
-    # 2. l1 (penumbra) is always positive. l2 (umbra) is positive for total 
-    # eclipses (Moon close) and negative for annular eclipses (Moon far).
-    # At 384,400 km, the eclipse is annular (l2 < 0).
-    assert penumbra_radius_er > 0.0
-    assert umbra_radius_er < 0.0
-    
-    # Check a total eclipse case (Moon at perigee)
-    distance_to_plane_total = 360000.0
-    umbra_radius_er_total = (MOON_RADIUS_KM - (distance_to_plane_total * tan_f2)) / EARTH_RADIUS_KM
-    assert umbra_radius_er_total > 0.0
-    
-    # 3. f1 is the penumbral cone half-angle, f2 is the umbral cone half-angle
-    # Since Sun > Earth > Moon, f1 > f2
-    assert tan_f1 > tan_f2
+def _solar_besselian_at_tt(eclipse_calculator, jd_tt: float):
+    jd_ut1 = _ephemeris_tt_to_ut1(jd_tt, eclipse_calculator._reader)
+    return eclipse_calculator.solar_besselian_elements(jd_ut1)
+
+
+def test_runtime_besselian_projection_matches_native_shadow_axis(
+    eclipse_calculator,
+) -> None:
+    elements = _solar_besselian_at_tt(eclipse_calculator, 2460409.25)
+
+    projected_axis_distance_km = math.hypot(elements.x, elements.y) * EARTH_RADIUS_KM
+    native_axis_distance_km = eclipse_calculator._native_solar_shadow_axis_distance_km(
+        elements.jd_ut1
+    )
+    assert projected_axis_distance_km == pytest.approx(
+        native_axis_distance_km,
+        rel=2.0e-12,
+        abs=1.0e-6,
+    )
+
+
+def test_runtime_besselian_orientation_ranges_and_cones_are_ordered(
+    eclipse_calculator,
+) -> None:
+    elements = _solar_besselian_at_tt(eclipse_calculator, 2460409.25)
+
+    # At the 2024-04-08 reference epoch the axis is west (negative x) and
+    # north (positive y).  These robust signs guard the +east/+north basis.
+    assert elements.x < 0.0
+    assert elements.y > 0.0
+    assert -90.0 <= elements.d <= 90.0
+    assert 0.0 <= elements.mu < 360.0
+    assert all(
+        math.isfinite(value)
+        for value in (
+            elements.x,
+            elements.y,
+            elements.d,
+            elements.mu,
+            elements.l1,
+            elements.l2,
+            elements.tan_f1,
+            elements.tan_f2,
+        )
+    )
+    assert elements.l1 > 0.0
+    assert elements.l1 > abs(elements.l2)
+    assert elements.tan_f1 > elements.tan_f2 > 0.0
+
+
+def test_runtime_besselian_cones_use_exact_common_tangent_geometry(
+    eclipse_calculator,
+) -> None:
+    jd_tt = 2460409.25
+    elements = _solar_besselian_at_tt(eclipse_calculator, jd_tt)
+    state = eclipse_calculator._native_solar_shadow_axis_state_tt(jd_tt)
+
+    sin_f1 = elements.tan_f1 / math.sqrt(1.0 + elements.tan_f1**2)
+    sin_f2 = elements.tan_f2 / math.sqrt(1.0 + elements.tan_f2**2)
+    assert sin_f1 == pytest.approx(
+        (SUN_RADIUS_KM + MOON_RADIUS_KM) / state.sun_moon_distance_km,
+        rel=2.0e-15,
+    )
+    assert sin_f2 == pytest.approx(
+        (SUN_RADIUS_KM - MOON_RADIUS_KM) / state.sun_moon_distance_km,
+        rel=2.0e-15,
+    )
+
+    cos_f1 = 1.0 / math.sqrt(1.0 + elements.tan_f1**2)
+    cos_f2 = 1.0 / math.sqrt(1.0 + elements.tan_f2**2)
+    distance_to_plane_km = -state.axis_projection_km
+    assert elements.l1 * EARTH_RADIUS_KM == pytest.approx(
+        MOON_RADIUS_KM / cos_f1 + distance_to_plane_km * elements.tan_f1,
+        rel=2.0e-15,
+    )
+    assert elements.l2 * EARTH_RADIUS_KM == pytest.approx(
+        distance_to_plane_km * elements.tan_f2 - MOON_RADIUS_KM / cos_f2,
+        rel=2.0e-15,
+    )
+
+
+def test_runtime_besselian_l2_preserves_total_and_annular_sign(
+    eclipse_calculator,
+) -> None:
+    total = _solar_besselian_at_tt(eclipse_calculator, 2460409.25)
+    annular = _solar_besselian_at_tt(eclipse_calculator, 2463362.0416666665)
+
+    assert total.l2 < 0.0
+    assert annular.l2 > 0.0
+
+
+def test_runtime_besselian_result_is_frozen(eclipse_calculator) -> None:
+    elements = _solar_besselian_at_tt(eclipse_calculator, 2460409.25)
+
+    with pytest.raises(FrozenInstanceError):
+        elements.x = 0.0
+
+    with pytest.raises(ValueError, match="magnitude of signed l2"):
+        replace(elements, l2=-(elements.l1 + 1.0))
+
+
+def test_runtime_besselian_fails_closed_for_non_de441_reader_identity(
+    eclipse_calculator,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "moira.eclipse._reader_identity_at",
+        lambda _reader, _jd_tt: SimpleNamespace(
+            planetary_ephemeris="DE440",
+            lunar_ephemeris="LE440",
+            summary_label="DE-0440LE-0440",
+        ),
+    )
+
+    with pytest.raises(RuntimeError, match="DE441/LE441"):
+        eclipse_calculator.solar_besselian_elements(2460409.25)
+
+
+def test_runtime_besselian_rejects_opposite_full_moon_geometry(
+    eclipse_calculator,
+) -> None:
+    # The 2024-03-25 lunar-eclipse epoch places the Moon on the anti-solar
+    # side of Earth, so it cannot define a solar shadow ray aimed at Earth.
+    jd_ut1 = _ephemeris_tt_to_ut1(2460394.8, eclipse_calculator._reader)
+
+    with pytest.raises(ValueError):
+        eclipse_calculator.solar_besselian_elements(jd_ut1)

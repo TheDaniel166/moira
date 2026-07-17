@@ -22,6 +22,10 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
+from ._eclipse_contact_solver import (
+    _CONTACT_COALESCENCE_TOLERANCE_KM,
+    _find_contact_pair,
+)
 from .eclipse_search import refine_minimum
 
 __all__ = ["LunarEclipseContacts", "find_lunar_contacts"]
@@ -239,16 +243,37 @@ def find_lunar_contacts(
     if not math.isfinite(start) or not math.isfinite(end) or end <= start:
         raise ValueError("refined contact search window must have finite ordered bounds")
 
-    p_roots = _find_roots(p_contact, start, end, step_days)
-    u_roots = _find_roots(u_contact, start, end, step_days)
-    t_roots = _find_roots(total_contact, start, end, step_days)
+    p1, p4 = _find_contact_pair(
+        p_contact,
+        start,
+        end,
+        step_days,
+        greatest_jd=greatest,
+        clearance_tolerance=_CONTACT_COALESCENCE_TOLERANCE_KM,
+    )
+    u1, u4 = _find_contact_pair(
+        u_contact,
+        start,
+        end,
+        step_days,
+        greatest_jd=greatest,
+        clearance_tolerance=_CONTACT_COALESCENCE_TOLERANCE_KM,
+    )
+    u2, u3 = _find_contact_pair(
+        total_contact,
+        start,
+        end,
+        step_days,
+        greatest_jd=greatest,
+        clearance_tolerance=_CONTACT_COALESCENCE_TOLERANCE_KM,
+    )
 
     return LunarEclipseContacts(
-        p1=p_roots[0] if len(p_roots) >= 1 else None,
-        u1=u_roots[0] if len(u_roots) >= 1 else None,
-        u2=t_roots[0] if len(t_roots) >= 1 else None,
+        p1=p1,
+        u1=u1,
+        u2=u2,
         greatest=greatest,
-        u3=t_roots[1] if len(t_roots) >= 2 else None,
-        u4=u_roots[1] if len(u_roots) >= 2 else None,
-        p4=p_roots[1] if len(p_roots) >= 2 else None,
+        u3=u3,
+        u4=u4,
+        p4=p4,
     )

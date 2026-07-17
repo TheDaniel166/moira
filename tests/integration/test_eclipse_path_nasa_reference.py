@@ -16,7 +16,7 @@ MAGNITUDE_TOLERANCE = 0.005
 CENTRAL_SEPARATION_TOLERANCE_DEG = 0.001
 
 
-def _path_cases() -> tuple[dict[str, float | str], ...]:
+def _path_cases() -> tuple[dict[str, object], ...]:
     payload = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
     return tuple(payload["solar_path_products"])
 
@@ -29,7 +29,7 @@ def _path_cases() -> tuple[dict[str, float | str], ...]:
 )
 def test_native_solar_path_fields_match_named_nasa_product(
     eclipse_calculator,
-    row: dict[str, float | str],
+    row: dict[str, object],
 ) -> None:
     """Validate selected scalar path products, not only event identity.
 
@@ -54,21 +54,45 @@ def test_native_solar_path_fields_match_named_nasa_product(
     )
     assert path.max_eclipse_lon == pytest.approx(
         float(row["longitude_deg"]),
-        abs=GREATEST_LONGITUDE_TOLERANCE_DEG,
+        abs=float(
+            row.get(
+                "longitude_tolerance_deg",
+                GREATEST_LONGITUDE_TOLERANCE_DEG,
+            )
+        ),
     )
-    assert path.umbral_width_km == pytest.approx(
-        float(row["path_width_km"]),
-        abs=PATH_WIDTH_TOLERANCE_KM,
-    )
-    assert path.duration_at_max_s == pytest.approx(
-        float(row["central_duration_s"]),
-        abs=CENTRAL_DURATION_TOLERANCE_S,
-    )
+    if str(row["kind"]) == "partial":
+        assert row["path_width_km"] is None
+        assert row["central_duration_s"] is None
+        assert row["nasa_noncentral_width_display"] == "0.0 km"
+        assert row["nasa_noncentral_duration_display"] == "00m00s"
+        assert row["moira_noncentral_zero_sentinel"] is True
+        assert path.umbral_width_km == 0.0
+        assert path.duration_at_max_s == 0.0
+    else:
+        assert path.umbral_width_km == pytest.approx(
+            float(row["path_width_km"]),
+            abs=PATH_WIDTH_TOLERANCE_KM,
+        )
+        assert path.duration_at_max_s == pytest.approx(
+            float(row["central_duration_s"]),
+            abs=CENTRAL_DURATION_TOLERANCE_S,
+        )
     assert path.eclipse_data.eclipse_magnitude == pytest.approx(
         float(row["magnitude"]),
         abs=MAGNITUDE_TOLERANCE,
     )
-    assert (
-        path.eclipse_data.solar_topocentric_separation
-        < CENTRAL_SEPARATION_TOLERANCE_DEG
-    )
+    if str(row["kind"]) == "partial":
+        assert path.eclipse_data.solar_topocentric_separation < (
+            path.eclipse_data.sun_apparent_radius
+            + path.eclipse_data.moon_apparent_radius
+        )
+        assert path.eclipse_data.solar_topocentric_separation >= abs(
+            path.eclipse_data.moon_apparent_radius
+            - path.eclipse_data.sun_apparent_radius
+        )
+    else:
+        assert (
+            path.eclipse_data.solar_topocentric_separation
+            < CENTRAL_SEPARATION_TOLERANCE_DEG
+        )

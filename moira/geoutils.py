@@ -49,16 +49,76 @@ def offset_geographic_km(
     north_km: float,
     east_km: float,
 ) -> tuple[float, float]:
-    """Offset a geographic point by north/east distances in kilometres."""
+    """Apply a local north/east tangent vector on Moira's Earth sphere.
 
-    lat = latitude + (north_km / EARTH_KM_PER_DEG_LAT)
-    lat = max(-89.5, min(89.5, lat))
-    cos_lat = math.cos(math.radians(lat))
-    if abs(cos_lat) < 1e-9:
-        lon = longitude
-    else:
-        lon = longitude + (east_km / (EARTH_KM_PER_DEG_LAT * cos_lat))
-    return lat, wrap_longitude_deg(lon)
+    The vector magnitude is the great-circle arc length and its direction is
+    the initial bearing measured clockwise from geographic north.  This is the
+    spherical exponential map: it remains defined when a step crosses a pole,
+    unlike independent latitude/longitude increments.
+
+    Longitude has no geometric meaning at an exact pole, so pole results use
+    the deterministic canonical longitude ``0.0``.
+    """
+
+    values = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "north_km": north_km,
+        "east_km": east_km,
+    }
+    for name, value in values.items():
+        if not math.isfinite(value):
+            raise ValueError(f"{name} must be finite")
+    if not -90.0 <= latitude <= 90.0:
+        raise ValueError("latitude must be in [-90, 90]")
+
+    distance_km = math.hypot(north_km, east_km)
+    if distance_km == 0.0:
+        if abs(latitude) == 90.0:
+            return latitude, 0.0
+        return latitude, wrap_longitude_deg(longitude)
+
+    angular_distance = distance_km / EARTH_RADIUS_KM
+    latitude_rad = math.radians(latitude)
+    canonical_longitude = 0.0 if abs(latitude) == 90.0 else wrap_longitude_deg(longitude)
+    longitude_rad = math.radians(canonical_longitude)
+
+    sin_latitude = math.sin(latitude_rad)
+    cos_latitude = math.cos(latitude_rad)
+    sin_longitude = math.sin(longitude_rad)
+    cos_longitude = math.cos(longitude_rad)
+    sin_distance = math.sin(angular_distance)
+    cos_distance = math.cos(angular_distance)
+
+    north_fraction = north_km / distance_km
+    east_fraction = east_km / distance_km
+    position_x = cos_latitude * cos_longitude
+    position_y = cos_latitude * sin_longitude
+    position_z = sin_latitude
+    tangent_x = (
+        -north_fraction * sin_latitude * cos_longitude
+        - east_fraction * sin_longitude
+    )
+    tangent_y = (
+        -north_fraction * sin_latitude * sin_longitude
+        + east_fraction * cos_longitude
+    )
+    tangent_z = north_fraction * cos_latitude
+
+    destination_x = cos_distance * position_x + sin_distance * tangent_x
+    destination_y = cos_distance * position_y + sin_distance * tangent_y
+    destination_z = cos_distance * position_z + sin_distance * tangent_z
+    horizontal = math.hypot(destination_x, destination_y)
+
+    pole_tolerance = 8.0 * math.ulp(1.0)
+    if horizontal <= pole_tolerance * max(1.0, abs(destination_z)):
+        return math.copysign(90.0, destination_z), 0.0
+
+    destination_latitude = math.degrees(math.atan2(destination_z, horizontal))
+    destination_longitude = wrap_longitude_deg(
+        math.degrees(math.atan2(destination_y, destination_x))
+    )
+    return destination_latitude, destination_longitude
 
 
 def sample_interval(jd_start: float, jd_end: float, sample_count: int) -> tuple[float, ...]:

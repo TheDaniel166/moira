@@ -35,6 +35,45 @@ catalog metadata. Offline apparent-position fixtures use JPL Horizons
 `OBSERVER`, center `500@399`, quantity 31, and are external authority evidence,
 not self-generated Moira parity.
 
+### NASA/GSFC solar Besselian validation corpus
+
+`tests/fixtures/nasa_solar_besselian_reference.json` contains a bounded,
+validation-only transcription of published NASA/GSFC solar Besselian elements.
+It records the official field definitions, polynomial semantics, stated
+VSOP87/ELP2000-82 ephemerides, `k1`/`k2` lunar-radius convention, and four named
+event rows (2000 partial, 2024 total, 2031 hybrid, and 2032 annular), retrieved
+on 2026-07-17. The exact source URLs are embedded beside the fixture metadata
+and each event row.
+
+This corpus is primary external validation evidence for the meanings and
+bounded per-field comparison of `x`, `y`, `d`, `mu`, `l1`, `l2`, `tan_f1`, and
+`tan_f2`. It is not a runtime ephemeris, coefficient source, uncertainty model,
+or substitute for Moira's content-identified DE441/LE441 geometry. NASA's
+requested acknowledgment is retained verbatim in the fixture:
+`Eclipse Predictions by Fred Espenak, NASA's GSFC`.
+
+### NASA/GSFC polar central-path validation corpus
+
+`tests/fixtures/nasa_solar_polar_path_reference.json` is a bounded,
+validation-only transcription of the official NASA/GSFC 2015-03-20 total
+[eclipse path](https://eclipse.gsfc.nasa.gov/SEpath/SEpath2001/SE2015Mar20Tpath.html)
+and its paired [Besselian-elements page](https://eclipse.gsfc.nasa.gov/SEbeselm/SEbeselm2001/SE2015Mar20Tbeselm.html).
+The fixture keeps that product lineage coherent: JPL DE405,
+`Delta T = 67.6 s`, WGS 84 geodetic
+coordinates sampled at the published 120-second cadence, the published
+`k1 = 0.272508` and `k2 = 0.272281` lunar-radius constants, and
+center-of-mass mean-limb predictions without lunar topography. It records the
+initial and terminal central-line products, five late-track rows approaching
+the North Pole, and the greatest-eclipse product. Exact official source URLs
+and the requested NASA acknowledgment are embedded in the fixture.
+
+The corpus is primary external evidence for a specifically named geographic
+product. It does not supply runtime coefficients or replace Moira's
+content-identified DE441/LE441 geometry. Its tolerances measure the residual
+between NASA's declared DE405 product and Moira's independently evaluated
+DE441 path; they are not NASA uncertainty estimates and do not establish
+full-atlas, lunar-topography, or one-limit/terminator-closure validation.
+
 ### Earth rotation and Delta T
 
 Moira keeps the computational products below distinct. A source that measures

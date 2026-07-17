@@ -214,6 +214,195 @@ def test_occultation_greatest_location_honors_objective_eval_limit(
     assert call_count == 5
 
 
+def test_star_graze_solver_near_south_pole_never_leaves_legal_latitudes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sampled_latitudes: list[float] = []
+
+    def fake_geometry(
+        _star_lon: float,
+        _star_lat: float,
+        _jd: float,
+        latitude: float,
+        _longitude: float,
+        _reader: object,
+        _observer_elev_m: float,
+        _provider: object,
+        _refraction_adjusted: bool,
+    ) -> tuple[float, float, float, float]:
+        sampled_latitudes.append(latitude)
+        return 0.0, latitude + 89.75, 0.0, 0.0
+
+    monkeypatch.setattr(
+        occultations,
+        "_star_topocentric_target_geometry",
+        fake_geometry,
+    )
+
+    root = occultations._solve_star_graze_latitude(
+        0.0,
+        0.0,
+        2451545.0,
+        0.0,
+        -89.0,
+        reader=object(),
+    )
+
+    assert root == pytest.approx(-89.75, abs=1e-12)
+    assert sampled_latitudes
+    assert all(-90.0 <= latitude <= 90.0 for latitude in sampled_latitudes)
+
+
+def test_star_graze_solver_no_bracket_stops_at_legal_domain(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sampled_latitudes: list[float] = []
+
+    def fake_geometry(
+        _star_lon: float,
+        _star_lat: float,
+        _jd: float,
+        latitude: float,
+        _longitude: float,
+        _reader: object,
+        _observer_elev_m: float,
+        _provider: object,
+        _refraction_adjusted: bool,
+    ) -> tuple[float, float, float, float]:
+        sampled_latitudes.append(latitude)
+        return 0.0, 1.0, 0.0, 0.0
+
+    monkeypatch.setattr(
+        occultations,
+        "_star_topocentric_target_geometry",
+        fake_geometry,
+    )
+
+    with pytest.raises(ValueError, match="Could not bracket"):
+        occultations._solve_star_graze_latitude(
+            0.0,
+            0.0,
+            2451545.0,
+            0.0,
+            -89.0,
+            reader=object(),
+        )
+
+    assert -90.0 in sampled_latitudes
+    assert all(-90.0 <= latitude <= 90.0 for latitude in sampled_latitudes)
+
+
+def test_profile_refinement_cannot_newton_step_beyond_a_pole(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sampled_latitudes: list[float] = []
+    profile = object()
+
+    def fake_geometry(
+        _star_lon: float,
+        _star_lat: float,
+        _jd: float,
+        latitude: float,
+        _longitude: float,
+        _reader: object,
+        _observer_elev_m: float,
+        provider: object,
+        _refraction_adjusted: bool,
+    ) -> tuple[float, float, float, float]:
+        sampled_latitudes.append(latitude)
+        root = 91.0 if provider is profile else 89.75
+        return 0.0, latitude - root, 0.0, 0.0
+
+    monkeypatch.setattr(
+        occultations,
+        "_star_topocentric_target_geometry",
+        fake_geometry,
+    )
+
+    with pytest.raises(ValueError, match="Could not bracket"):
+        occultations._solve_star_graze_latitude(
+            0.0,
+            0.0,
+            2451545.0,
+            0.0,
+            89.0,
+            reader=object(),
+            limb_profile_provider=profile,  # type: ignore[arg-type]
+        )
+
+    assert sampled_latitudes
+    assert all(-90.0 <= latitude <= 90.0 for latitude in sampled_latitudes)
+
+
+def test_directed_graze_boundaries_select_opposite_band_limbs() -> None:
+    sampled_latitudes: list[float] = []
+
+    def band_margin(latitude: float) -> float:
+        sampled_latitudes.append(latitude)
+        return 1.0 - (latitude / 10.0) ** 2
+
+    north = occultations._solve_directed_latitude_root(band_margin, 0.0, 1)
+    south = occultations._solve_directed_latitude_root(band_margin, 0.0, -1)
+
+    assert north == pytest.approx(10.0, abs=1e-12)
+    assert south == pytest.approx(-10.0, abs=1e-12)
+    assert all(-90.0 <= latitude <= 90.0 for latitude in sampled_latitudes)
+
+
+@pytest.mark.parametrize(
+    ("nominal_limit", "expected_profile_seeds"),
+    (
+        (89.75, (90.0, 88.75)),
+        (-89.75, (-88.75, -90.0)),
+    ),
+)
+def test_profile_conditioned_product_bounds_directional_seeds_at_poles(
+    monkeypatch: pytest.MonkeyPatch,
+    nominal_limit: float,
+    expected_profile_seeds: tuple[float, float],
+) -> None:
+    profile = object()
+    sampled_guesses: list[tuple[float, object | None]] = []
+
+    def fake_solve(
+        _star_lon: float,
+        _star_lat: float,
+        _jd: float,
+        _longitude: float,
+        guess_latitude: float,
+        *,
+        observer_elev_m: float,
+        reader: object,
+        limb_profile_provider: object | None,
+        refraction_adjusted: bool,
+    ) -> float:
+        del observer_elev_m, reader, refraction_adjusted
+        if not -90.0 <= guess_latitude <= 90.0:
+            raise ValueError("illegal latitude seed")
+        sampled_guesses.append((guess_latitude, limb_profile_provider))
+        if limb_profile_provider is None:
+            return nominal_limit
+        return guess_latitude
+
+    monkeypatch.setattr(occultations, "_solve_star_graze_latitude", fake_solve)
+
+    product = lunar_star_graze_product_at(
+        0.0,
+        0.0,
+        2451545.0,
+        0.0,
+        nominal_limit,
+        reader=object(),
+        limb_profile_provider=profile,  # type: ignore[arg-type]
+    )
+
+    assert sampled_guesses[0] == (nominal_limit, None)
+    assert tuple(guess for guess, _provider in sampled_guesses[1:]) == expected_profile_seeds
+    assert all(-90.0 <= guess <= 90.0 for guess, _provider in sampled_guesses)
+    assert product.profile_band_south_latitude_deg == min(expected_profile_seeds)
+    assert product.profile_band_north_latitude_deg == max(expected_profile_seeds)
+
+
 def test_moon_axis_position_angle_uses_explicit_tt_without_double_conversion(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

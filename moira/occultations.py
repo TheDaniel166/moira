@@ -868,6 +868,141 @@ def _limb_profile_adjustment_deg(
     return float(provider(jd, lat, lon, observer_elev_m, position_angle_deg, moon_distance_km))
 
 
+_GRAZE_LATITUDE_SCAN_STEP_DEG = 0.5
+_GRAZE_DIRECTED_SCAN_STEP_DEG = 1.0
+
+
+def _solve_nearest_latitude_root(
+    margin: Callable[[float], float],
+    guess_latitude_deg: float,
+    *,
+    max_span_deg: float,
+    scan_step_deg: float,
+    iterations: int,
+) -> float:
+    """Return the nearest sign-changing latitude root on the legal Earth domain."""
+
+    if not math.isfinite(guess_latitude_deg) or not -90.0 <= guess_latitude_deg <= 90.0:
+        raise ValueError("guess_latitude_deg must be finite and between -90 and 90 degrees")
+    if not math.isfinite(max_span_deg) or max_span_deg <= 0.0:
+        raise ValueError("max_span_deg must be finite and positive")
+    if not math.isfinite(scan_step_deg) or scan_step_deg <= 0.0:
+        raise ValueError("scan_step_deg must be finite and positive")
+    if iterations <= 0:
+        raise ValueError("iterations must be positive")
+
+    cache: dict[float, float] = {}
+
+    def evaluate(latitude: float) -> float:
+        if not -90.0 <= latitude <= 90.0:
+            raise ValueError("graze latitude search left the legal Earth domain")
+        if latitude not in cache:
+            value = margin(latitude)
+            if not math.isfinite(value):
+                raise ValueError("graze latitude margin returned a non-finite value")
+            cache[latitude] = value
+        return cache[latitude]
+
+    center_value = evaluate(guess_latitude_deg)
+    if center_value == 0.0:
+        return guess_latitude_deg
+
+    brackets: list[tuple[float, float]] = []
+    previous = {
+        -1.0: (guess_latitude_deg, center_value),
+        1.0: (guess_latitude_deg, center_value),
+    }
+    active_directions = {-1.0, 1.0}
+    travelled = 0.0
+    while travelled < max_span_deg and active_directions and not brackets:
+        travelled = min(max_span_deg, travelled + scan_step_deg)
+        for direction in (-1.0, 1.0):
+            if direction not in active_directions:
+                continue
+            previous_latitude, previous_value = previous[direction]
+            candidate = max(
+                -90.0,
+                min(90.0, guess_latitude_deg + direction * travelled),
+            )
+            if candidate == previous_latitude:
+                active_directions.remove(direction)
+                continue
+            candidate_value = evaluate(candidate)
+            if candidate_value == 0.0:
+                brackets.append((candidate, candidate))
+            elif previous_value * candidate_value < 0.0:
+                brackets.append(
+                    (previous_latitude, candidate)
+                    if previous_latitude < candidate
+                    else (candidate, previous_latitude)
+                )
+            previous[direction] = (candidate, candidate_value)
+            if abs(candidate) == 90.0:
+                active_directions.remove(direction)
+
+    if not brackets:
+        raise ValueError("Could not bracket lunar star graze latitude")
+
+    roots: list[float] = []
+    for left, right in brackets:
+        if left == right:
+            roots.append(left)
+            continue
+        roots.append(_bisection_root(evaluate, left, right, iterations=iterations))
+    return min(roots, key=lambda root: (abs(root - guess_latitude_deg), root))
+
+
+def _solve_directed_latitude_root(
+    margin: Callable[[float], float],
+    interior_latitude_deg: float,
+    direction: int,
+    *,
+    scan_step_deg: float = _GRAZE_DIRECTED_SCAN_STEP_DEG,
+    iterations: int = 50,
+) -> float:
+    """Solve one north/south occultation-band boundary from a known interior."""
+
+    if not math.isfinite(interior_latitude_deg) or not -90.0 <= interior_latitude_deg <= 90.0:
+        raise ValueError("interior_latitude_deg must be finite and between -90 and 90 degrees")
+    if direction not in {-1, 1}:
+        raise ValueError("direction must be -1 (south) or 1 (north)")
+    if not math.isfinite(scan_step_deg) or scan_step_deg <= 0.0:
+        raise ValueError("scan_step_deg must be finite and positive")
+
+    def evaluate(latitude: float) -> float:
+        if not -90.0 <= latitude <= 90.0:
+            raise ValueError("graze latitude search left the legal Earth domain")
+        value = margin(latitude)
+        if not math.isfinite(value):
+            raise ValueError("graze latitude margin returned a non-finite value")
+        return value
+
+    current = interior_latitude_deg
+    current_value = evaluate(current)
+    if current_value == 0.0:
+        return current
+    if current_value < 0.0:
+        raise ValueError("directed graze boundary requires a positive-margin interior latitude")
+
+    pole = 90.0 if direction > 0 else -90.0
+    while current != pole:
+        candidate = (
+            min(pole, current + scan_step_deg)
+            if direction > 0
+            else max(pole, current - scan_step_deg)
+        )
+        candidate_value = evaluate(candidate)
+        if candidate_value == 0.0:
+            return candidate
+        if candidate_value < 0.0:
+            left, right = sorted((current, candidate))
+            return _bisection_root(evaluate, left, right, iterations=iterations)
+        current = candidate
+        current_value = candidate_value
+
+    raise ValueError("Could not bracket lunar star graze latitude before the pole")
+
+
 def _solve_star_graze_latitude(
     star_lon: float,
     star_lat: float,
@@ -904,29 +1039,17 @@ def _solve_star_graze_latitude(
         max_expand: int,
         iterations: int,
     ) -> float:
-        left = center_guess - half_width
-        right = center_guess + half_width
-        f_left = margin(left, provider)
-        f_right = margin(right, provider)
-        for _ in range(max_expand):
-            if f_left * f_right <= 0.0:
-                break
-            left -= expand_step
-            right += expand_step
-            f_left = margin(left, provider)
-            f_right = margin(right, provider)
-        if f_left * f_right > 0.0:
-            raise ValueError("Could not bracket lunar star graze latitude")
-
-        for _ in range(iterations):
-            mid = (left + right) / 2.0
-            f_mid = margin(mid, provider)
-            if f_left * f_mid <= 0.0:
-                right = mid
-            else:
-                left = mid
-                f_left = f_mid
-        return (left + right) / 2.0
+        return _solve_nearest_latitude_root(
+            lambda latitude: margin(latitude, provider),
+            center_guess,
+            max_span_deg=half_width + max_expand * expand_step,
+            scan_step_deg=min(
+                _GRAZE_LATITUDE_SCAN_STEP_DEG,
+                half_width,
+                expand_step,
+            ),
+            iterations=iterations,
+        )
 
     smooth_root = solve_with_provider(
         None,
@@ -940,9 +1063,13 @@ def _solve_star_graze_latitude(
         return smooth_root
 
     deriv_step = 1.0 / 120.0
+    deriv_left = max(-90.0, smooth_root - deriv_step)
+    deriv_right = min(90.0, smooth_root + deriv_step)
+    if deriv_right == deriv_left:
+        raise ValueError("Could not refine lunar star graze latitude at a degenerate pole")
     deriv = (
-        margin(smooth_root + deriv_step, None) - margin(smooth_root - deriv_step, None)
-    ) / (2.0 * deriv_step)
+        margin(deriv_right, None) - margin(deriv_left, None)
+    ) / (deriv_right - deriv_left)
     if abs(deriv) < 1e-9:
         return solve_with_provider(
             limb_profile_provider,
@@ -954,9 +1081,37 @@ def _solve_star_graze_latitude(
         )
 
     refined_root = smooth_root - margin(smooth_root, limb_profile_provider) / deriv
+    if not -90.0 <= refined_root <= 90.0:
+        return solve_with_provider(
+            limb_profile_provider,
+            smooth_root,
+            half_width=0.25,
+            expand_step=0.25,
+            max_expand=8,
+            iterations=20,
+        )
     refined_margin = margin(refined_root, limb_profile_provider)
     if abs(refined_margin) > 1e-4:
-        refined_root -= refined_margin / deriv
+        corrected_root = refined_root - refined_margin / deriv
+        if not -90.0 <= corrected_root <= 90.0:
+            return solve_with_provider(
+                limb_profile_provider,
+                smooth_root,
+                half_width=0.25,
+                expand_step=0.25,
+                max_expand=8,
+                iterations=20,
+            )
+        refined_root = corrected_root
+        if abs(margin(refined_root, limb_profile_provider)) > 1e-4:
+            return solve_with_provider(
+                limb_profile_provider,
+                smooth_root,
+                half_width=0.25,
+                expand_step=0.25,
+                max_expand=8,
+                iterations=20,
+            )
     return refined_root
 
 
@@ -1490,12 +1645,17 @@ def lunar_star_graze_product_at(
             has_profile_conditioned_band=False,
         )
 
+    # Keep the two directional profile searches on the closed geographic
+    # latitude domain.  Near a pole, the pole itself is the lawful endpoint
+    # seed; the strict solver then scans back toward the interior as needed.
+    north_seed = min(90.0, nominal_limit + 1.0)
+    south_seed = max(-90.0, nominal_limit - 1.0)
     north = _solve_star_graze_latitude(
         star_lon,
         star_lat,
         jd_ut,
         longitude_deg,
-        nominal_limit + 1.0,
+        north_seed,
         observer_elev_m=observer_elev_m,
         reader=reader,
         limb_profile_provider=limb_profile_provider,
@@ -1506,7 +1666,7 @@ def lunar_star_graze_product_at(
         star_lat,
         jd_ut,
         longitude_deg,
-        nominal_limit - 1.0,
+        south_seed,
         observer_elev_m=observer_elev_m,
         reader=reader,
         limb_profile_provider=limb_profile_provider,
@@ -1776,25 +1936,18 @@ def _build_star_occultation_path_geometry(
         lats.append(lat)
         lons.append(lon)
 
-    north_boundary = lunar_star_graze_latitude(
-        star_lon,
-        star_lat,
-        jd_mid,
-        max_lon,
-        max_lat + 5.0,
-        observer_elev_m=observer_elev_m,
-        reader=reader,
-        limb_profile_provider=limb_profile_provider,
+    def boundary_margin(latitude: float) -> float:
+        return position_func(jd_mid, latitude, max_lon)[1]
+
+    north_boundary = _solve_directed_latitude_root(
+        boundary_margin,
+        max_lat,
+        1,
     )
-    south_boundary = lunar_star_graze_latitude(
-        star_lon,
-        star_lat,
-        jd_mid,
-        max_lon,
-        max_lat - 5.0,
-        observer_elev_m=observer_elev_m,
-        reader=reader,
-        limb_profile_provider=limb_profile_provider,
+    south_boundary = _solve_directed_latitude_root(
+        boundary_margin,
+        max_lat,
+        -1,
     )
     path_width_km = abs(north_boundary - south_boundary) * _EARTH_KM_PER_DEG_LAT
 

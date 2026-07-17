@@ -48,7 +48,7 @@ several respects:
 | Heliocentric orbital elements | JPL Horizons `ELEMENTS` | `pytest` | Validated |
 | Heliocentric distance extrema | JPL Horizons `VECTORS` | `pytest` | Validated |
 | Eclipse classification and search | Swiss `t.exp` + NASA Five Millennium | `pytest` | Validated |
-| Solar eclipse greatest geography (`where`) | Swiss `t.exp` | `pytest` | Validated (implemented slice) |
+| Solar eclipse greatest and polar central-path geography | NASA/GSFC 2015 WGS 84 path | `pytest` | Validated (named implemented slice) |
 | Local lunar occultations | Swiss `setest/t.exp` | `pytest` | Validated |
 | Occultation path geometry (`where`) | Swiss `t.exp` + live IOTA graze/limit text paths (El Nath, Spica N/S, epsilon Ari, Alcyone, Merope, Asellus Borealis, Regulus) | `pytest` | Validated (implemented slice) |
 | Sothic heliacal rising | Censorinus 139 AD historical record + latitude trend | `pytest` | Validated |
@@ -419,13 +419,22 @@ Earth-rotation errors have measured Gaussian tails.
 ## 7. Eclipse Validation
 
 **Primary authority:** NASA Five Millennium solar and lunar catalogs and named
-NASA/GSFC Besselian path products
+NASA/GSFC Besselian and path products
 
 **Secondary cross-engine corroboration:** cached Swiss `setest/t.exp` rows
+
 **Test files:**
 - `tests/integration/test_eclipse_external_reference.py`
 - `tests/integration/test_eclipse_nasa_reference.py`
 - `tests/integration/test_eclipse_path_nasa_reference.py`
+- `tests/integration/test_eclipse_besselian_nasa_reference.py`
+- `tests/integration/test_eclipse_polar_path_nasa_reference.py`
+
+**Primary Besselian fixture:**
+`tests/fixtures/nasa_solar_besselian_reference.json`
+
+**Primary polar central-path fixture:**
+`tests/fixtures/nasa_solar_polar_path_reference.json`
 
 **Executable representative TT comparison policy (DE441, current Delta-T
 policy):**
@@ -469,6 +478,37 @@ because that ranking would compare unlike time policies.
 The separate catalog-maximum tests continue to enforce solar and lunar eclipse
 classification across the ancient, modern, and future fixture rows. Search
 timing evidence and classification evidence remain distinct.
+
+The instantaneous DE441-native Besselian surface has a separate per-field
+authority gate. Four named NASA/GSFC solar products—partial, total, hybrid, and
+annular—are sampled at five TT/TDT epochs each over their published six-hour
+polynomial intervals. The executable comparison covers `x`, `y`, `d`, circular
+`mu`, `l1`, `l2`, `tan_f1`, and `tan_f2` under these exact absolute envelopes:
+
+| Fields | Absolute envelope | Unit |
+|---|---:|---|
+| `x`, `y`, `l1`, `l2` | `1.0e-4` | Earth equatorial radii |
+| `d` | `0.003` | degrees |
+| circular `mu` | `0.007` | degrees |
+| `tan_f1`, `tan_f2` | `3.0e-6` | dimensionless |
+
+NASA's published rows use VSOP87/ELP2000-82 and their stated `k1`/`k2`
+lunar-radius convention. Moira retains its independently derived DE441/LE441
+Earth-reception shadow geometry and physical mean-limb radii. These are bounded
+cross-model validation envelopes, not field uncertainties or a claim of exact
+NASA-model parity.
+
+The 2015-03-20 total eclipse supplies the bounded primary-authority polar path
+slice. Its official NASA/GSFC path and Besselian pages use one declared DE405,
+`Delta T = 67.6 s`, WGS 84, 120-second-cadence, mean-limb product lineage.
+Moira retains DE441. The executable comparison enforces `1 s` for searched
+greatest time, `3 km` for the greatest point, five late-track central-line
+rows, and both axis/ellipsoid tangencies, `3 km` for width at greatest, `3 s`
+for local central duration, `0.005` for magnitude, and `3 km` of cone
+clearance at each available published north/south limit. It does not claim
+per-row width parity, full-atlas coverage, or one-limit/terminator-closure
+width support; those one-limit epochs fail explicitly in the ordinary
+closed-footprint solver.
 
 ---
 

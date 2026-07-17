@@ -25,6 +25,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   evaluation. Capable x86 hosts select it at runtime, while unsupported CPUs
   and builds retain the portable scalar implementation rather than acquiring a
   wheel-wide AVX2 requirement.
+- **First-Class Instantaneous Solar Besselian Elements**: Added the frozen
+  `SolarBesselianElements` engine vessel and
+  `EclipseCalculator.solar_besselian_elements(jd_ut1)`. The method evaluates
+  exactly the supplied instant rather than hiding an eclipse search or
+  polynomial fit. It projects the DE441 Earth-reception light-time Sun/Moon
+  center-of-mass shadow line, without stellar aberration, into the true equator
+  and equinox of date: `x` is east-positive, `y` north-positive, `x`, `y`,
+  `l1`, and `l2` use Earth equatorial radii, `d` and `mu` use degrees, and the
+  cone tangents are dimensionless and come from the exact common-tangent cone
+  geometry rather than a small-angle radius ratio. `mu` is the TT/TDT ephemeris
+  hour angle, not physical UT1 GAST. Moira's physical mean-limb radii remain governing, while
+  `l2` uses the NASA fundamental-plane sign convention (negative umbral,
+  positive antumbral); global hybrid classification still belongs to the
+  separate Earth-surface geometry. The method fails closed unless its reader
+  is content-identified as DE441/LE441.
 
 ### Fixed
 - **Eclipse Geometry, Visibility, And Clock Integrity**: Defined native solar
@@ -53,6 +68,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   convert UT1 back to UTC. Existing facade method signatures, the
   `EclipseEvent` field shape, FastAPI endpoint paths, and request/response
   schemas remain unchanged.
+- **Eclipse Contact And Geographic Boundary Robustness**: Replaced positional
+  lunar-contact assembly with a private signed-clearance pair solver that
+  recovers phases shorter than the coarse scan, preserves truncated ingress or
+  egress honestly, and represents a mean-limb limiting tangent in both phase
+  fields under an explicit one-millimetre numerical coalescence policy. Native
+  and NASA-compatibility contact models use the same physical threshold in
+  their respective units. Geographic offsets now move on the Earth sphere,
+  cross poles without clamping at `89.5` degrees, and canonicalize longitude
+  only at an exact pole; solar greatest-location refinement uses that same
+  tangent-plane topology. Stellar-graze searches never evaluate outside legal
+  latitude, choose the nearest lawful public root, and derive occultation path
+  north/south boundaries directionally from the known interior. Added named
+  NASA evidence for the 2000 partial solar maximum and four lunar
+  contact-duration products, including a separately bounded limiting
+  penumbral case. The facade, public result vessels, FastAPI routes, and
+  request/response schemas are unchanged.
+- **Polar Central-Path Geometry And Width**: Replaced the observer-local proxy
+  for central-path geography with the forward DE441 reception-time shadow-axis
+  intersection on WGS 84, rotated through true-of-date, physical UT1 GAST, and
+  admitted polar motion. Central-line endpoints now solve the axis/ellipsoid
+  tangencies, and greatest width is the full cross-track support span of the
+  closed umbral or antumbral cone footprint rather than a centered spherical
+  chord. Spherical-classification/WGS 84 divergence and incomplete one-limit
+  footprints fail explicitly instead of emitting contradictory path data or
+  publishing an open cone-arc span as physical width. Existing facade methods,
+  `SolarEclipsePath` fields, FastAPI routes, and request/response schemas are
+  unchanged.
 - **Delta-T Source, Domain, And Time-Scale Truth**: Restored source-priority
   total Delta T through the 2026 handoff while preserving the raw HPIERS
   DE430/LE430 source basis; generic clock policy no longer guesses a downstream
@@ -225,6 +267,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Existing facade method names, `/v1` computation-route paths, chart request
   models, and chart response payloads are retained. The server-prewarm change
   is operational and opt-in.
+- The instantaneous solar Besselian admission is engine-only. It does not add
+  a `Moira` facade method or FastAPI route and does not change existing eclipse
+  event/path vessels, request/response schemas, or the native C++ substrate.
+- Polar central-path repair preserves the existing `SolarEclipsePath` vessel,
+  facade method, and REST schema. A central geometry with no closed two-limit
+  footprint now fails explicitly instead of publishing an incomplete width.
 - Code that mutates the relationship result vessels or their nested maps must
   switch to constructing a new value. Invalid phenomena, planetary observer,
   planetary-hour, and house inputs that were previously tolerated may now
@@ -233,6 +281,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   as "not ready". This corrects the previous HTTP 200/`ready=false` mismatch.
 
 ### Validation
+- Added a coherent NASA/GSFC 2015-03-20 polar central-path fixture pairing the
+  official DE405 WGS 84 path table with its Besselian page. The executable
+  DE441 comparison covers searched greatest time (`1 s`), greatest, five named
+  central-line rows, and both tangency endpoints (`3 km`), greatest width
+  (`3 km`), local central durations (`3 s`), magnitude (`0.005`), and physical
+  cone clearance at available published limits (`3 km`). These are cross-model
+  regression envelopes, not uncertainty estimates or full-atlas parity.
+- Added primary-authority per-field cross-model validation for instantaneous
+  solar Besselian elements using named NASA/GSFC partial, total, hybrid, and
+  annular rows at five TT epochs per event. The admitted residual envelopes
+  are `1.0e-4` Earth equatorial radii for `x`, `y`, `l1`, and `l2`; `0.003`
+  degrees for `d`; `0.007` degrees circular for `mu`; and `3.0e-6` for each
+  dimensionless cone tangent. These compare NASA's VSOP87/ELP2000-82 and
+  published `k1`/`k2` convention with DE441 and Moira's mean-limb physical
+  radii; they are cross-model regression bounds, not exact parity or
+  uncertainties.
 - Added direct engine/facade/REST/OpenAPI coverage for Parallel and
   Contra-Parallel applying, exact, separating, stationary, and indeterminate
   motion, including signed-error formulas, equator/hemisphere rejection,

@@ -12,6 +12,7 @@
     "maxima_date_note": "Every date field in solar_maxima and lunar_maxima is the catalog dynamical-time (TD/TDT) timestamp. Each ut_jd is the corresponding UT1 value obtained with that row's delta_t_s.",
     "solar_se_search_note": "Rows carrying se_search_ut_date, se_search_ut_jd, and se_search_delta_t_s preserve the separately published UT and decimal Delta-T values from the linked NASA Solar Eclipse Search page; these fields are distinct from the rounded Five Millennium Catalog fields.",
     "lunar_modern_validation_note": "NASA/TP-2009-214173 publishes greatest eclipse in TD and signed gamma (north positive, south negative). Each ut_jd below is derived as td_jd - delta_t_s / 86400 from that catalog row.",
+    "lunar_contact_validation_note": "NASA's century catalog publishes mean-limb phase durations rounded to 0.1 minute under VSOP87/ELP2000-82, Danjon shadow enlargement, and its catalog Delta-T. These rows compare Moira's DE441/TT native mean-limb contacts under named cross-model envelopes; the 2027 limiting penumbral case has a deliberately wider duration envelope because a 0.0014 catalog magnitude is highly sensitive to small gamma differences.",
     "retrieved_on": "2026-07-17"
   },
   "solar_maxima": [
@@ -405,6 +406,57 @@
       "source_url": "https://eclipse.gsfc.nasa.gov/LEsaros/LEsaros118.html"
     }
   ],
+  "lunar_contact_products": [
+    {
+      "label": "2023-05-05 penumbral",
+      "kind": "penumbral",
+      "greatest_td_jd": 2460070.22505787,
+      "greatest_ut_jd": 2460070.2242129627,
+      "delta_t_s": 73,
+      "penumbral_duration_min": 257.5,
+      "duration_tolerance_min": 1.0,
+      "greatest_tolerance_s": 120.0,
+      "source_url": "https://eclipse.gsfc.nasa.gov/LEcat5/LE2001-2100.html"
+    },
+    {
+      "label": "2024-09-18 partial",
+      "kind": "partial",
+      "greatest_td_jd": 2460571.614872685,
+      "greatest_ut_jd": 2460571.6140162037,
+      "delta_t_s": 74,
+      "penumbral_duration_min": 246.3,
+      "partial_duration_min": 62.8,
+      "duration_tolerance_min": 1.0,
+      "greatest_tolerance_s": 120.0,
+      "source_url": "https://eclipse.gsfc.nasa.gov/LEcat5/LE2001-2100.html"
+    },
+    {
+      "label": "2025-03-14 total",
+      "kind": "total",
+      "greatest_td_jd": 2460748.7916203705,
+      "greatest_ut_jd": 2460748.790752315,
+      "delta_t_s": 75,
+      "penumbral_duration_min": 362.6,
+      "partial_duration_min": 218.3,
+      "total_duration_min": 65.4,
+      "duration_tolerance_min": 1.0,
+      "greatest_tolerance_s": 120.0,
+      "source_url": "https://eclipse.gsfc.nasa.gov/LEcat5/LE2001-2100.html"
+    },
+    {
+      "label": "2027-07-18 limiting penumbral",
+      "kind": "penumbral",
+      "greatest_td_jd": 2461605.169548611,
+      "greatest_ut_jd": 2461605.1686689816,
+      "delta_t_s": 76,
+      "penumbral_duration_min": 11.8,
+      "duration_tolerance_min": 5.0,
+      "greatest_tolerance_s": 120.0,
+      "catalog_penumbral_magnitude": 0.0014,
+      "tolerance_note": "A limiting cross-model event: Moira's DE441 geometry retains the short P1-P4 phase, while its duration is sensitive to small catalog/native gamma differences.",
+      "source_url": "https://eclipse.gsfc.nasa.gov/LEcat5/LE2001-2100.html"
+    }
+  ],
   "solar_path_products": [
     {
       "label": "1999-08-11 total",
@@ -418,6 +470,24 @@
       "magnitude": 1.0286,
       "timing_tolerance_s": 1.0,
       "source_url": "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl=19990811"
+    },
+    {
+      "label": "2000-02-05 partial",
+      "kind": "partial",
+      "seed_jd": 2451540.5,
+      "greatest_ut_jd": 2451580.0342939813,
+      "latitude_deg": -70.2,
+      "longitude_deg": 134.1,
+      "path_width_km": null,
+      "central_duration_s": null,
+      "nasa_noncentral_width_display": "0.0 km",
+      "nasa_noncentral_duration_display": "00m00s",
+      "moira_noncentral_zero_sentinel": true,
+      "magnitude": 0.5795,
+      "timing_tolerance_s": 1.0,
+      "longitude_tolerance_deg": 0.6,
+      "tolerance_note": "NASA publishes zero-form display sentinels because a partial eclipse has no central path. The physical central-width and central-duration fields remain null; Moira's public shape-stable vessel is checked separately for its documented zero sentinels. The horizon maximum uses a bounded 0.6 degree cross-model longitude envelope.",
+      "source_url": "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl=20000205"
     },
     {
       "label": "2031-11-14 hybrid",

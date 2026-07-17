@@ -51,7 +51,13 @@ def test_nasa_solar_fixture_keeps_catalog_td_and_se_search_ut_explicit() -> None
         )
 
     path_rows = fixture["solar_path_products"]
-    assert len(path_rows) == 3
+    assert len(path_rows) == 4
+    assert {str(row["kind"]) for row in path_rows} == {
+        "partial",
+        "total",
+        "hybrid",
+        "annular",
+    }
     for row in path_rows:
         source_url = str(row["source_url"])
         assert source_url.startswith(

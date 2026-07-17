@@ -1,9 +1,16 @@
 from __future__ import annotations
 
+import math
+from types import SimpleNamespace
+
 import pytest
 
 import moira.eclipse as eclipse
-from moira.geoutils import wrap_longitude_deg
+from moira.geoutils import (
+    EARTH_KM_PER_DEG_LAT,
+    offset_geographic_km,
+    wrap_longitude_deg,
+)
 from moira.eclipse_canon import find_lunar_contacts_canon, lunar_canon_geometry
 from moira.eclipse_geometry import (
     angular_separation,
@@ -40,6 +47,241 @@ def test_angular_separation_handles_wraparound() -> None:
 def test_longitude_wrapping_preserves_positive_180_boundary() -> None:
     assert wrap_longitude_deg(180.0) == 180.0
     assert wrap_longitude_deg(540.0) == 180.0
+
+
+def test_geographic_offset_crosses_pole_instead_of_clamping() -> None:
+    latitude, longitude = offset_geographic_km(
+        89.0,
+        0.0,
+        2.0 * EARTH_KM_PER_DEG_LAT,
+        0.0,
+    )
+
+    assert latitude == pytest.approx(89.0, abs=1.0e-12)
+    assert longitude == pytest.approx(180.0, abs=1.0e-12)
+
+
+def test_geographic_offset_canonicalizes_exact_pole_longitude() -> None:
+    latitude, longitude = offset_geographic_km(
+        0.0,
+        123.0,
+        90.0 * EARTH_KM_PER_DEG_LAT,
+        0.0,
+    )
+
+    assert latitude == 90.0
+    assert longitude == 0.0
+    assert offset_geographic_km(90.0, 47.0, 0.0, 0.0) == (90.0, 0.0)
+
+
+def test_geographic_offset_uses_canonical_pole_tangent_basis() -> None:
+    latitude, longitude = offset_geographic_km(
+        90.0,
+        81.0,
+        EARTH_KM_PER_DEG_LAT,
+        EARTH_KM_PER_DEG_LAT,
+    )
+
+    assert latitude == pytest.approx(90.0 - math.sqrt(2.0), abs=1.0e-12)
+    assert longitude == pytest.approx(135.0, abs=1.0e-12)
+
+
+@pytest.mark.parametrize(
+    ("args", "message"),
+    [
+        ((math.nan, 0.0, 0.0, 0.0), "latitude must be finite"),
+        ((0.0, math.inf, 0.0, 0.0), "longitude must be finite"),
+        ((0.0, 0.0, math.nan, 0.0), "north_km must be finite"),
+        ((0.0, 0.0, 0.0, math.inf), "east_km must be finite"),
+        ((90.0001, 0.0, 0.0, 0.0), r"latitude must be in \[-90, 90\]"),
+    ],
+)
+def test_geographic_offset_rejects_non_geographic_inputs(
+    args: tuple[float, float, float, float],
+    message: str,
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        offset_geographic_km(*args)
+
+
+def test_solar_greatest_location_searches_canonical_pole_seeds(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    evaluated: list[tuple[float, float]] = []
+
+    def fake_geometry(calc, jd_ut, latitude, longitude):
+        evaluated.append((latitude, longitude))
+        separation = 0.0 if latitude == 90.0 else 10.0
+        return separation, 0.0, 0.0
+
+    monkeypatch.setattr(eclipse, "_topocentric_solar_geometry", fake_geometry)
+
+    latitude, longitude, separation = eclipse._solve_solar_greatest_location(
+        object(),
+        2451401.96,
+    )
+
+    assert (latitude, longitude, separation) == (90.0, 0.0, 0.0)
+    assert evaluated == [(-90.0, 0.0), (90.0, 0.0)]
+
+
+def test_solar_greatest_location_refines_in_pole_tangent_plane(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    target_latitude = 89.9
+    target_longitude = 90.0
+    evaluated: list[tuple[float, float]] = []
+
+    def fake_geometry(calc, jd_ut, latitude, longitude):
+        assert math.isfinite(latitude)
+        assert math.isfinite(longitude)
+        assert -90.0 <= latitude <= 90.0
+        assert -180.0 < longitude <= 180.0
+        evaluated.append((latitude, longitude))
+        separation = eclipse._angular_separation(
+            longitude,
+            latitude,
+            target_longitude,
+            target_latitude,
+        )
+        return separation, 0.0, 0.0
+
+    monkeypatch.setattr(eclipse, "_topocentric_solar_geometry", fake_geometry)
+
+    latitude, longitude, separation = eclipse._solve_solar_greatest_location(
+        object(),
+        2451401.96,
+    )
+
+    assert latitude > 89.5
+    assert separation <= eclipse._GEO_SEARCH_EARLY_EXIT_SEPARATION_DEG
+    assert any(candidate_latitude > 89.5 for candidate_latitude, _ in evaluated)
+
+
+@pytest.mark.parametrize(
+    ("axis_unit", "expected_latitude"),
+    [
+        ((0.0, 0.0, -1.0), 90.0),
+        ((0.0, 0.0, 1.0), -90.0),
+    ],
+)
+def test_wgs84_axis_surface_point_canonicalizes_only_an_exact_pole(
+    axis_unit: tuple[float, float, float],
+    expected_latitude: float,
+) -> None:
+    shadow = eclipse._EarthFixedSolarShadow(
+        fundamental_plane_point_xyz_km=(0.0, 0.0, 0.0),
+        axis_unit_away_from_sun=axis_unit,
+        axis_projection_km=-100_000.0,
+        central_radius_km=100.0,
+        central_cone_slope=0.0,
+    )
+
+    point = eclipse._axis_surface_point_from_shadow(shadow)
+
+    assert point is not None
+    assert point.latitude_deg == pytest.approx(expected_latitude, abs=1.0e-12)
+    assert point.longitude_deg == 0.0
+
+
+def test_wgs84_line_intersection_distinguishes_tangent_from_miss() -> None:
+    tangent_margin, tangent_roots = eclipse._wgs84_line_intersection_parameters(
+        (eclipse.EARTH_RADIUS_KM, 0.0, 0.0),
+        (0.0, 1.0, 0.0),
+    )
+    miss_margin, miss_roots = eclipse._wgs84_line_intersection_parameters(
+        (eclipse.EARTH_RADIUS_KM + 1.0, 0.0, 0.0),
+        (0.0, 1.0, 0.0),
+    )
+
+    assert tangent_margin == pytest.approx(0.0, abs=1.0e-12)
+    assert tangent_roots == pytest.approx((0.0, 0.0), abs=1.0e-12)
+    assert miss_margin < 0.0
+    assert miss_roots is None
+
+
+def test_high_latitude_spherical_hit_can_miss_the_wgs84_ellipsoid() -> None:
+    polar_offset_km = eclipse._WGS84_POLAR_RADIUS_KM + 1.0
+    assert polar_offset_km < eclipse.EARTH_RADIUS_KM
+
+    margin, roots = eclipse._wgs84_line_intersection_parameters(
+        (0.0, 0.0, polar_offset_km),
+        (1.0, 0.0, 0.0),
+    )
+
+    assert margin < 0.0
+    assert roots is None
+
+
+def test_axis_tangency_materialization_uses_the_coalesced_chord_root() -> None:
+    half_chord_km = 1.0
+    x_km = math.sqrt(eclipse.EARTH_RADIUS_KM**2 - half_chord_km**2)
+    shadow = eclipse._EarthFixedSolarShadow(
+        fundamental_plane_point_xyz_km=(x_km, 0.0, 0.0),
+        axis_unit_away_from_sun=(0.0, 1.0, 0.0),
+        axis_projection_km=-100_000.0,
+        central_radius_km=100.0,
+        central_cone_slope=0.0,
+    )
+
+    near_point = eclipse._axis_surface_point_from_shadow(shadow)
+    tangent_point = eclipse._axis_surface_tangent_point_from_shadow(shadow)
+
+    assert near_point is not None
+    assert tangent_point is not None
+    assert near_point.xyz_itrf_km[1] == pytest.approx(-half_chord_km, abs=1.0e-9)
+    assert tangent_point.xyz_itrf_km[1] == pytest.approx(0.0, abs=1.0e-12)
+
+
+def test_central_shadow_width_is_full_footprint_support_span() -> None:
+    half_width_km = 100.0
+    shadow = eclipse._EarthFixedSolarShadow(
+        fundamental_plane_point_xyz_km=(0.0, 0.0, 0.0),
+        axis_unit_away_from_sun=(1.0, 0.0, 0.0),
+        axis_projection_km=-100_000.0,
+        central_radius_km=half_width_km,
+        central_cone_slope=0.0,
+    )
+    center = eclipse._axis_surface_point_from_shadow(shadow)
+    assert center is not None
+
+    width_km = eclipse._central_shadow_support_width_km(
+        shadow,
+        center.xyz_itrf_km,
+        (0.0, 0.0, 1.0),
+    )
+
+    assert width_km == pytest.approx(2.0 * half_width_km, abs=1.0e-9)
+
+
+def test_central_path_fails_on_spherical_wgs84_centrality_divergence(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    event = SimpleNamespace(
+        jd_ut=2451545.0,
+        data=SimpleNamespace(
+            eclipse_type=eclipse.EclipseType(
+                is_partial=False,
+                is_annular=False,
+                is_total=True,
+                is_hybrid=False,
+                magnitude_umbral=1.0,
+                magnitude_penumbra=1.0,
+            )
+        ),
+    )
+
+    class FakeCalculator:
+        def _search_solar_eclipse(self, *args, **kwargs):
+            return event
+
+    monkeypatch.setattr(eclipse, "_solar_axis_surface_point", lambda *args: None)
+
+    with pytest.raises(
+        ArithmeticError,
+        match="classification is central.*does not intersect",
+    ):
+        eclipse.EclipseCalculator.solar_eclipse_path(FakeCalculator(), 2451545.0)
 
 
 def test_solar_greatest_location_exits_early_on_exact_conjunction(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -93,12 +335,16 @@ def test_solar_central_interval_raises_when_evaluation_limit_is_exhausted(
 ) -> None:
     call_count = 0
 
-    def fake_best_margin(calc, jd_ut):
+    def fake_axis_margin(calc, jd_ut):
         nonlocal call_count
         call_count += 1
-        return 0.0, 0.0, 0.5
+        return 0.5
     
-    monkeypatch.setattr(eclipse, "_best_solar_central_margin", fake_best_margin)
+    monkeypatch.setattr(
+        eclipse,
+        "_solar_axis_surface_discriminant_km2",
+        fake_axis_margin,
+    )
     monkeypatch.setattr(eclipse, "_SOLAR_CENTRAL_INTERVAL_MAX_MARGIN_EVALS", 0)
 
     with pytest.raises(eclipse._SearchLimitReached, match="evaluation limit"):

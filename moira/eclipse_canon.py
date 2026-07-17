@@ -28,6 +28,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 
+from ._eclipse_contact_solver import (
+    _CONTACT_COALESCENCE_TOLERANCE_KM,
+    _find_contact_pair,
+)
 from .constants import Body
 from .corrections import apply_light_time
 from .eclipse_geometry import (
@@ -855,18 +859,42 @@ def find_lunar_contacts_canon(
     if not math.isfinite(start) or not math.isfinite(end) or end <= start:
         raise ValueError("refined contact search window must have finite ordered bounds")
 
-    p_roots = _find_roots(p_contact, start, end, step_days)
-    u_roots = _find_roots(u_contact, start, end, step_days)
-    t_roots = _find_roots(total_contact, start, end, step_days)
+    canon_clearance_tolerance = (
+        _CONTACT_COALESCENCE_TOLERANCE_KM / EARTH_RADIUS_KM
+    )
+    p1_tt, p4_tt = _find_contact_pair(
+        p_contact,
+        start,
+        end,
+        step_days,
+        greatest_jd=greatest_tt,
+        clearance_tolerance=canon_clearance_tolerance,
+    )
+    u1_tt, u4_tt = _find_contact_pair(
+        u_contact,
+        start,
+        end,
+        step_days,
+        greatest_jd=greatest_tt,
+        clearance_tolerance=canon_clearance_tolerance,
+    )
+    u2_tt, u3_tt = _find_contact_pair(
+        total_contact,
+        start,
+        end,
+        step_days,
+        greatest_jd=greatest_tt,
+        clearance_tolerance=canon_clearance_tolerance,
+    )
 
     return LunarCanonContacts(
-        p1_tt=p_roots[0] if len(p_roots) >= 1 else None,
-        u1_tt=u_roots[0] if len(u_roots) >= 1 else None,
-        u2_tt=t_roots[0] if len(t_roots) >= 1 else None,
+        p1_tt=p1_tt,
+        u1_tt=u1_tt,
+        u2_tt=u2_tt,
         greatest_tt=greatest_tt,
-        u3_tt=t_roots[1] if len(t_roots) >= 2 else None,
-        u4_tt=u_roots[1] if len(u_roots) >= 2 else None,
-        p4_tt=p_roots[1] if len(p_roots) >= 2 else None,
+        u3_tt=u3_tt,
+        u4_tt=u4_tt,
+        p4_tt=p4_tt,
     )
 
 

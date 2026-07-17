@@ -362,13 +362,23 @@ The algorithm halts when the denominator exceeds `max_denominator=50`, producing
 ---
 
 ### 5.2 The Eclipse Pylon: Shadow Geometry Engine
-*Governance: `moira/eclipse.py`*
+*Governance: `moira/eclipse.py`, `moira/eclipse_besselian.py`*
 
-The Eclipse service is the most computationally intensive single-event calculator in Moira. It combines lunisolar geometry, Besselian elements, and shadow cone projection to fully characterize solar and lunar eclipses.
+The eclipse engine combines lunisolar geometry, event search, contact solving,
+local circumstances, and shadow projection. Its Besselian surface is a
+separate instantaneous engine product; it is not embedded in the general
+`EclipseData` snapshot and does not perform an event search.
 
 #### The EclipseCalculator Class
 
-- `calculate(dt)` → `EclipseData` — full eclipse analysis for the nearest eclipse to the given datetime.
+- `calculate(dt)` → `EclipseData` — general geometry snapshot at the supplied
+  aware datetime.
+- `calculate_jd(jd_ut1)` → `EclipseData` — the same snapshot at the supplied
+  UT1 Julian Day.
+- `solar_besselian_elements(jd_ut1)` → `SolarBesselianElements` — native
+  fundamental-plane geometry at that instant. It converts UT1 to the
+  reader-bound TT epoch, requires a content-identified DE441/LE441 reader, and
+  does not find a nearest eclipse or fit a Besselian polynomial.
 
 #### Eclipse Classification
 
@@ -382,35 +392,62 @@ The Eclipse service is the most computationally intensive single-event calculato
 #### Data Vessels
 
 ```python
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class EclipseData:
-    # Type classification
-    eclipse_type: str          # "solar_total", "lunar_penumbral", etc.
-    # Timing
-    events: list[EclipseEvent] # C1, C2, max, C3, C4 contact times
-    # Saros/Metonic identification
-    saros_series: int          # Saros series number
-    saros_position: int        # Position within series
-    # Geometry (solar eclipses)
-    besselian_elements: dict   # Shadow cone parameters
-    # Geometry (lunar eclipses)
-    penumbral_magnitude: float
-    umbral_magnitude: float
+    eclipse_type: EclipseType
+    eclipse_magnitude: float
+    saros_index: float
+    metonic_year: float
+    # Positions, apparent radii, separation, and cycle state omitted here.
+    ...
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
+class EclipseEvent:
+    jd_ut: float
+    data: EclipseData
+
+@dataclass(frozen=True, slots=True)
+class SolarBesselianElements:
+    jd_ut1: float
+    jd_tt: float
+    x: float
+    y: float
+    d: float
+    mu: float
+    l1: float
+    l2: float
+    tan_f1: float
+    tan_f2: float
+    ephemeris: str
+
+@dataclass(frozen=True, slots=True)
 class SolarEclipseLocalCircumstances:
     # Observer-specific eclipse visibility
     ...
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class LunarEclipseAnalysis:
     # Penumbral/umbral geometry
     ...
 ```
 
+`SolarBesselianElements` uses the DE441 Earth-reception light-time Sun/Moon
+center-of-mass shadow line with no stellar aberration, expressed in the true
+equator and equinox of date. `x` and `y` are east-positive and north-positive;
+`x`, `y`, `l1`, and `l2` are in Earth equatorial radii; `d` and `mu` are in
+degrees; and `tan_f1` and `tan_f2` are dimensionless. `mu` is the TT/TDT
+ephemeris hour angle, not physical UT1 GAST. Moira's mean-limb physical radii
+govern the cones, while `l2` follows the NASA fundamental-plane sign convention:
+negative for an umbral cone and positive for an antumbral cone. Global hybrid
+classification remains a separate Earth-surface result.
+
+This admission is engine-only. The `Moira` facade, FastAPI routes and schemas,
+existing eclipse event/path vessels, and native C++ substrate are unchanged.
+
 #### Saros & Metonic Cycles
 
-Every eclipse is identified within its **Saros series** — a family of eclipses recurring every 6,585.3 days (≈18 years 11 days) with nearly identical geometry. The engine computes the series number and position from the eclipse's lunation number and nodal parameters.
+`EclipseData.saros_index` and `.metonic_year` are continuous cycle-position
+indicators. They are not catalog Saros-series identity and position fields.
 
 ---
 
@@ -915,7 +952,7 @@ The Moira service layer utilizes **Memory-Mapped DAF/BSP file handling** via the
 | `conjunctions_in_range()` (1 year) | ~120 coarse steps + ~12 refinements | ~50 ms |
 | `moon_phases_in_range()` (1 year) | ~365 coarse steps + ~48 refinements | ~100 ms |
 | `vimshottari_dasha()` (5 levels) | Pure arithmetic (no SPK) | ~1 ms |
-| `eclipse()` | Besselian elements + contacts | ~20 ms |
+| `eclipse()` | General lunisolar snapshot and classification | ~20 ms |
 
 ### 9.3 No External Dependencies (Pure Python)
 

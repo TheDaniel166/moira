@@ -1,0 +1,134 @@
+{
+  "source": {
+    "authority": "NASA Goddard Space Flight Center Eclipse Web Site",
+    "definitions_url": "https://eclipse.gsfc.nasa.gov/SEcat5/beselm.html",
+    "computation_url": "https://eclipse.gsfc.nasa.gov/SEpubs/20080801/section1.html",
+    "radius_convention_url": "https://eclipse.gsfc.nasa.gov/SEpubs/20021204/text/lunar-radius.html",
+    "reference_ephemerides": "VSOP87/ELP2000-82",
+    "reference_lunar_radius_constants": {
+      "k1_penumbral": 0.272488,
+      "k2_umbral": 0.272281
+    },
+    "acknowledgment": "Eclipse Predictions by Fred Espenak, NASA's GSFC",
+    "polynomial_semantics": "Each tabulated element is evaluated as a0 + a1*t + a2*t^2 + a3*t^3, where t is TDT/TT hours from the event's t0_tt_jd. NASA states that each polynomial is fitted at five equally spaced epochs over the six-hour interval t0 +/- 3 hours.",
+    "coordinate_semantics": "x and y are the lunar-shadow-axis coordinates on the geocentric fundamental plane, with +x east and +y north. x, y, l1, and l2 are in Earth equatorial radii; d and mu are in degrees; tan_f1 and tan_f2 are dimensionless. mu comparisons are circular modulo 360 degrees. NASA's sign convention makes l2 negative for an umbral/total cone and positive for an antumbral/annular cone.",
+    "reference_model_note": "These published NASA/GSFC rows use the declared VSOP87/ELP2000-82 eclipse-catalog ephemerides and k1/k2 lunar-radius conventions. They are an external cross-model reference for Moira's DE441-native Earth-reception geometry and physical mean-limb radii, not DE441 coefficients and not uncertainty bounds.",
+    "tolerance_note": "The named absolute envelopes cover the observed modern cross-model residuals between the DE441-native runtime surface and the NASA/GSFC polynomial rows. They are validation tolerances, not physical uncertainties or broad accuracy claims.",
+    "retrieved_on": "2026-07-17"
+  },
+  "sample_offsets_hours": [
+    -3.0,
+    -1.5,
+    0.0,
+    1.5,
+    3.0
+  ],
+  "tolerances": {
+    "x": {
+      "absolute": 0.0001,
+      "unit": "Earth equatorial radii"
+    },
+    "y": {
+      "absolute": 0.0001,
+      "unit": "Earth equatorial radii"
+    },
+    "d": {
+      "absolute": 0.003,
+      "unit": "degrees"
+    },
+    "mu": {
+      "absolute": 0.007,
+      "unit": "degrees circular"
+    },
+    "l1": {
+      "absolute": 0.0001,
+      "unit": "Earth equatorial radii"
+    },
+    "l2": {
+      "absolute": 0.0001,
+      "unit": "Earth equatorial radii"
+    },
+    "tan_f1": {
+      "absolute": 0.000003,
+      "unit": "dimensionless"
+    },
+    "tan_f2": {
+      "absolute": 0.000003,
+      "unit": "dimensionless"
+    }
+  },
+  "events": [
+    {
+      "id": "2000-02-05-partial",
+      "kind": "partial",
+      "source_url": "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl=20000205",
+      "t0_tt_jd": 2451580.0416666665,
+      "t0_tt": "2000-02-05T13:00:00 TDT/TT",
+      "delta_t_s": 63.9,
+      "coefficients": {
+        "x": [0.329554, 0.5056857, -0.0000207, -0.000006],
+        "y": [-1.180892, 0.1052078, 0.000153, -0.0000012],
+        "d": [-16.0286503, 0.012324, 0.000004, 0.0],
+        "mu": [11.51093, 15.0004, 0.0, 0.0],
+        "l1": [0.568183, -0.0000963, -0.0000103, 0.0],
+        "l2": [0.021936, -0.0000958, -0.0000103, 0.0]
+      },
+      "tan_f1": 0.0047433,
+      "tan_f2": 0.0047197
+    },
+    {
+      "id": "2024-04-08-total",
+      "kind": "total",
+      "source_url": "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl=20240408",
+      "t0_tt_jd": 2460409.25,
+      "t0_tt": "2024-04-08T18:00:00 TDT/TT",
+      "delta_t_s": 74.0,
+      "coefficients": {
+        "x": [-0.318244, 0.5117116, 0.0000326, -0.0000084],
+        "y": [0.219764, 0.2709589, -0.0000595, -0.0000047],
+        "d": [7.5862002, 0.014844, -0.000002, 0.0],
+        "mu": [89.591217, 15.00408, 0.0, 0.0],
+        "l1": [0.535814, 0.0000618, -0.0000128, 0.0],
+        "l2": [-0.010272, 0.0000615, -0.0000127, 0.0]
+      },
+      "tan_f1": 0.0046683,
+      "tan_f2": 0.004645
+    },
+    {
+      "id": "2031-11-14-hybrid",
+      "kind": "hybrid",
+      "source_url": "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl=20311114",
+      "t0_tt_jd": 2463185.375,
+      "t0_tt": "2031-11-14T21:00:00 TDT/TT",
+      "delta_t_s": 78.8,
+      "coefficients": {
+        "x": [-0.019869, 0.550944, 0.0000366, -0.0000082],
+        "y": [0.314971, -0.0890652, 0.0001046, 0.0000012],
+        "d": [-18.3368092, -0.010534, 0.000004, 0.0],
+        "mu": [138.893982, 14.99976, 0.0, 0.0],
+        "l1": [0.547774, -0.0001068, -0.000012, 0.0],
+        "l2": [0.001628, -0.0001063, -0.0000119, 0.0]
+      },
+      "tan_f1": 0.004726,
+      "tan_f2": 0.0047025
+    },
+    {
+      "id": "2032-05-09-annular",
+      "kind": "annular",
+      "source_url": "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl=20320509",
+      "t0_tt_jd": 2463362.0416666665,
+      "t0_tt": "2032-05-09T13:00:00 TDT/TT",
+      "delta_t_s": 79.1,
+      "coefficients": {
+        "x": [-0.07436, 0.5359546, 0.0000052, -0.0000074],
+        "y": [-0.965451, 0.0954058, -0.0000702, -0.0000013],
+        "d": [17.5929108, 0.010694, -0.000004, 0.0],
+        "mu": [15.8891, 15.00174, 0.0, 0.0],
+        "l1": [0.548853, 0.0001272, -0.0000112, 0.0],
+        "l2": [0.002702, 0.0001266, -0.0000112, 0.0]
+      },
+      "tan_f1": 0.004631,
+      "tan_f2": 0.0046079
+    }
+  ]
+}

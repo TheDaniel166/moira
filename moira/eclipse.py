@@ -12,10 +12,10 @@ Purpose:
     Moira's DE441-backed ephemeris under the native TT-based event model.
 
 Boundary:
-    Owns: eclipse geometry computation, eclipse classification, event search
-    (lunar and solar), contact solving dispatch, observer local circumstances
-    assembly, Saros/Metonic cycle indexing, Galactic Center and Aubrey stone
-    positioning.
+    Owns: eclipse geometry computation, instantaneous solar Besselian-element
+    assembly, eclipse classification, event search (lunar and solar), contact
+    solving dispatch, observer local circumstances assembly, Saros/Metonic
+    cycle indexing, Galactic Center and Aubrey stone positioning.
     Delegates: raw planet/node vector computation (moira.planets, moira.nodes),
     time-scale conversion (moira.julian), eclipse geometry primitives
     (moira.eclipse_geometry), search refinement (moira.eclipse_search), canon
@@ -27,14 +27,15 @@ Import-time side effects: None
 External dependency assumptions:
     - DE441 SPK kernel must be accessible via moira.spk_reader.get_reader()
       (loaded lazily on first EclipseCalculator method call).
-    - SpkReader may serve the supported planetary path through Moira's native
-      reader; jplephem remains only an optional fallback for unsupported layouts.
+    - SpkReader serves the supported planetary path through Moira's required
+      native reader.
 
 Public surface / exports:
     EclipseType, EclipseData, EclipseEvent, LunarEclipseAnalysis,
     LocalContactCircumstances, LunarEclipseLocalCircumstances,
     SolarBodyCircumstances, SolarEclipseLocalCircumstances,
-    SolarEclipsePath, LunarEclipseAnalysisMode, EclipseCalculator
+    SolarBesselianElements, SolarEclipsePath, LunarEclipseAnalysisMode,
+    EclipseCalculator
 """
 
 from __future__ import annotations
@@ -43,6 +44,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
+from numbers import Real
 
 from .constants import Body, J2000
 from .eclipse_geometry import (
@@ -66,13 +68,19 @@ from .eclipse_search import (
 )
 from .julian import (
     _ut1_to_utc,
+    apparent_sidereal_time,
     datetime_from_jd,
     decimal_year_from_jd,
     jd_from_datetime,
     utc_to_ut1,
     ut_to_tt_nasa_canon,
 )
-from ._ephemeris_time import _ut1_to_ephemeris_tt
+from ._ephemeris_time import _reader_identity_at, _ut1_to_ephemeris_tt
+from .eclipse_besselian import (
+    SolarBesselianElements,
+    _SolarShadowAxisState,
+    _besselian_elements_from_native_shadow_state,
+)
 from .planets import (
     _barycentric,
     _earth_barycentric,
@@ -84,7 +92,13 @@ from .nodes import true_node
 from .spk_reader import get_reader, KernelReader, SpkReader
 from .phenomena import next_moon_phase
 from .transits import last_full_moon, last_new_moon
-from .coordinates import icrf_to_true_ecliptic
+from .coordinates import (
+    icrf_to_true_ecliptic,
+    mat_mul,
+    mat_vec_mul,
+    nutation_matrix_equatorial,
+    precession_matrix_equatorial,
+)
 from .eclipse_canon import (
     DEFAULT_LUNAR_CANON_METHOD,
     LunarCanonContacts,
@@ -97,6 +111,8 @@ from .eclipse_canon import (
 )
 from .eclipse_contacts import LunarEclipseContacts, find_lunar_contacts
 from .corrections import apply_light_time
+from .obliquity import nutation, true_obliquity
+from .polar_motion import PolarMotionRegistry, polar_motion_matrix
 from .geoutils import (
     EARTH_KM_PER_DEG_LAT as _KM_PER_DEG_LAT,
     offset_geographic_km as _offset_geographic_km,
@@ -122,6 +138,7 @@ __all__ = [
     "DEFAULT_LUNAR_CANON_METHOD",
     "LunarCanonMethodId",
     "LUNAR_CANON_METHOD_IDS",
+    "SolarBesselianElements",
     # Phase 3 — path/where geometry vessel (Defer.Design + Defer.Validation)
     "SolarEclipsePath",
     # Observer-specific solar eclipse search
@@ -198,28 +215,35 @@ class SolarEclipsePath:
     Current implementation state
     ----------------------------
     Moira now provides a first numerical path slice:
-        - point of greatest eclipse solved from topocentric Sun/Moon
-          separation over the Earth's surface
-        - sampled central-track geometry for central eclipses
+        - central-eclipse geography from the DE441 lunar-shadow axis
+          intersecting the WGS-84 reference ellipsoid
+        - sampled central-track geometry between the first and last lawful
+          shadow-axis intersections with that ellipsoid
+        - central-shadow width as the full cross-track support span of the
+          instantaneous cone/ellipsoid footprint
         - partial eclipses represented honestly as a one-point maximum surface
 
     Validation state
     ----------------
-    The current implemented slice is externally checked against a local
-    reference fixture for greatest-geography agreement.
-    Full atlas-grade path validation against NASA or USNO path corpora is
-    still future work.
+    The current implemented slice is externally checked against named
+    NASA/GSFC path products, including the 2015 polar central line, WGS-84
+    tangency endpoints, and width at greatest eclipse. This is bounded
+    cross-model evidence; full atlas-grade and one-limit/terminator-closure
+    validation remain future work.
 
     Fields
     ------
     central_line_lats : tuple of float
         Geographic latitudes (degrees, north positive) along the central line,
-        sampled at equal time intervals from first to last contact.
+        sampled at equal time intervals from the first to last shadow-axis
+        intersection with the WGS-84 ellipsoid. These endpoints are not the
+        separate U1/U4 cone tangencies.
     central_line_lons : tuple of float
         Geographic longitudes (degrees, east positive) at the same sample
         points.  Same length as ``central_line_lats``.
     umbral_width_km : float
-        Width of the umbral (or antumbral) shadow path in kilometres at
+        Cross-track support width of the umbral (or antumbral) shadow path in
+        kilometres at
         maximum eclipse.
     duration_at_max_s : float
         Duration of totality (or annularity) in seconds at the point of
@@ -824,6 +848,7 @@ class EclipseCalculator:
     LAW OF OPERATION:
         Responsibilities:
             - Compute complete eclipse geometry snapshots (calculate, calculate_jd)
+            - Express the native solar shadow as instantaneous Besselian elements
             - Search for next/previous lunar and solar eclipses
             - Produce specialist-facing LunarEclipseAnalysis bundles
             - Solve observer-specific local circumstances for lunar and solar
@@ -833,6 +858,8 @@ class EclipseCalculator:
             - Raw planet/node vector computation (delegates to moira.planets,
               moira.nodes)
             - Eclipse geometry primitives (delegates to moira.eclipse_geometry)
+            - Besselian coordinate semantics (delegates to
+              moira.eclipse_besselian)
             - Search refinement numerics (delegates to moira.eclipse_search)
             - Canon contact solving (delegates to moira.eclipse_canon)
             - Native contact solving (delegates to moira.eclipse_contacts)
@@ -856,7 +883,8 @@ class EclipseCalculator:
       "id": "moira.eclipse.EclipseCalculator",
       "risk": "critical",
       "api": {
-        "frozen": ["calculate", "calculate_jd", "next_lunar_eclipse",
+        "frozen": ["calculate", "calculate_jd", "solar_besselian_elements",
+                   "next_lunar_eclipse",
                    "previous_lunar_eclipse", "next_lunar_eclipse_canon",
                    "previous_lunar_eclipse_canon", "analyze_lunar_eclipse",
                    "lunar_local_circumstances", "solar_local_circumstances",
@@ -864,6 +892,7 @@ class EclipseCalculator:
         "internal": ["_calculate_jd_internal", "_lunar_shadow_axis_distance_km",
                      "_refine_lunar_maximum_for_kind", "_lunar_shadow_geometry_tt",
                      "_native_solar_conjunction_distance_deg",
+                     "_native_solar_shadow_axis_state_tt",
                      "_native_lunar_event_geometry_tt", "_lunar_event_geometry_ut",
                      "_search_lunar_eclipse", "_search_solar_eclipse"]
       },
@@ -1175,21 +1204,20 @@ class EclipseCalculator:
         moon_lon, moon_lat, _moon_dist = icrf_to_true_ecliptic(jd_tt, moon_xyz)
         return _angular_separation(sun_lon, sun_lat, moon_lon, moon_lat)
 
-    def _native_solar_shadow_geometry_tt(
+    def _native_solar_shadow_axis_state_tt(
         self,
         jd_tt: float,
-    ) -> tuple[float, float, float, float | None, float | None]:
-        """Return Earth-reception solar shadow-axis geometry at one TT epoch.
+    ) -> _SolarShadowAxisState:
+        """Return the shared Earth-reception solar shadow state at one TT epoch.
 
         Sun and Moon are both evaluated on the same Earth-reception light
         cone: each target state is taken at the emission epoch whose photons
         arrive at the geocentre at ``jd_tt``.  Stellar aberration is excluded;
         this is a shadow-axis construction, not a rendered sky direction.
 
-        The tuple contains the axis distance from Earth's centre, geocentric
-        apparent Sun/Moon radii, and (when the axis intersects a spherical
-        Earth) the Sun/Moon radii seen from the first surface intersection of
-        the ray travelling away from the Sun.
+        The private immutable state preserves the existing physical ray
+        geometry while allowing the Besselian coordinate product to consume
+        the identical Sun/Moon states and shadow line.
         """
 
         earth_ssb = _earth_barycentric(jd_tt, self._reader)
@@ -1221,12 +1249,18 @@ class EclipseCalculator:
         # The closest point on the ray has parameter ``-axis_projection``.
         # It must lie in the away-from-Sun direction from the Moon.
         if axis_projection >= 0.0:
-            return (
-                float("inf"),
-                center_sun_radius,
-                center_moon_radius,
-                None,
-                None,
+            return _SolarShadowAxisState(
+                sun_xyz_km=sun_xyz,
+                moon_xyz_km=moon_xyz,
+                axis_unit_away_from_sun=axis_unit,
+                axis_projection_km=axis_projection,
+                fundamental_plane_point_xyz_km=None,
+                axis_distance_km=float("inf"),
+                sun_moon_distance_km=axis_norm,
+                center_sun_radius_deg=center_sun_radius,
+                center_moon_radius_deg=center_moon_radius,
+                surface_sun_radius_deg=None,
+                surface_moon_radius_deg=None,
             )
         perpendicular = tuple(
             moon_xyz[i] - axis_projection * axis_unit[i]
@@ -1234,12 +1268,18 @@ class EclipseCalculator:
         )
         axis_distance = math.sqrt(sum(value * value for value in perpendicular))
         if axis_distance > EARTH_RADIUS_KM:
-            return (
-                axis_distance,
-                center_sun_radius,
-                center_moon_radius,
-                None,
-                None,
+            return _SolarShadowAxisState(
+                sun_xyz_km=sun_xyz,
+                moon_xyz_km=moon_xyz,
+                axis_unit_away_from_sun=axis_unit,
+                axis_projection_km=axis_projection,
+                fundamental_plane_point_xyz_km=perpendicular,
+                axis_distance_km=axis_distance,
+                sun_moon_distance_km=axis_norm,
+                center_sun_radius_deg=center_sun_radius,
+                center_moon_radius_deg=center_moon_radius,
+                surface_sun_radius_deg=None,
+                surface_moon_radius_deg=None,
             )
 
         closest_parameter = -axis_projection
@@ -1250,12 +1290,86 @@ class EclipseCalculator:
         if surface_moon_distance <= MOON_RADIUS_KM:
             raise ArithmeticError("solar shadow ray has no physical near-side Earth intersection")
         surface_sun_distance = axis_norm + surface_moon_distance
+        return _SolarShadowAxisState(
+            sun_xyz_km=sun_xyz,
+            moon_xyz_km=moon_xyz,
+            axis_unit_away_from_sun=axis_unit,
+            axis_projection_km=axis_projection,
+            fundamental_plane_point_xyz_km=perpendicular,
+            axis_distance_km=axis_distance,
+            sun_moon_distance_km=axis_norm,
+            center_sun_radius_deg=center_sun_radius,
+            center_moon_radius_deg=center_moon_radius,
+            surface_sun_radius_deg=_apparent_radius(
+                SUN_RADIUS_KM,
+                surface_sun_distance,
+            ),
+            surface_moon_radius_deg=_apparent_radius(
+                MOON_RADIUS_KM,
+                surface_moon_distance,
+            ),
+        )
+
+    def _native_solar_shadow_geometry_tt(
+        self,
+        jd_tt: float,
+    ) -> tuple[float, float, float, float | None, float | None]:
+        """Return the established native solar geometry tuple at one TT epoch."""
+
+        state = self._native_solar_shadow_axis_state_tt(jd_tt)
         return (
-            axis_distance,
-            center_sun_radius,
-            center_moon_radius,
-            _apparent_radius(SUN_RADIUS_KM, surface_sun_distance),
-            _apparent_radius(MOON_RADIUS_KM, surface_moon_distance),
+            state.axis_distance_km,
+            state.center_sun_radius_deg,
+            state.center_moon_radius_deg,
+            state.surface_sun_radius_deg,
+            state.surface_moon_radius_deg,
+        )
+
+    def solar_besselian_elements(self, jd_ut1: float) -> SolarBesselianElements:
+        """Return instantaneous native solar Besselian elements at ``jd_ut1``.
+
+        This method does not search for an eclipse.  It converts the supplied
+        UT1 Julian Day to the TT coordinate bound to this calculator's
+        content-identified ephemeris, requires that identity to be DE441/LE441,
+        constructs the same reception-time shadow axis used by native
+        solar-eclipse search, and expresses that line on the conventional
+        geocentric fundamental plane.
+
+        The forward lunar shadow ray must point toward Earth's fundamental
+        plane.  Epochs around the opposite lunar phase therefore fail
+        explicitly rather than returning a coordinate product for a
+        non-physical backwards extension of the ray.
+
+        NASA/GSFC governs the Besselian field meanings, orientation, units,
+        dynamical-time hour angle, and signed ``l2`` convention.  Moira retains
+        its DE441/LE441 positions and spherical mean-limb radii; this is not a
+        request for NASA's VSOP87/ELP2000 or ``k1``/``k2`` model.  Readers with
+        any other or indeterminate DE/LE identity fail closed.
+        """
+
+        if isinstance(jd_ut1, bool) or not isinstance(jd_ut1, Real):
+            raise TypeError("jd_ut1 must be a real Julian Day")
+        jd_ut1 = float(jd_ut1)
+        if not math.isfinite(jd_ut1):
+            raise ValueError("jd_ut1 must be finite")
+
+        jd_tt = _ut1_to_ephemeris_tt(jd_ut1, self._reader)
+        identity = _reader_identity_at(self._reader, jd_tt)
+        if (
+            identity is None
+            or identity.planetary_ephemeris != "DE441"
+            or identity.lunar_ephemeris != "LE441"
+        ):
+            raise RuntimeError(
+                "solar Besselian elements are admitted only for a "
+                "content-identified DE441/LE441 reader"
+            )
+        state = self._native_solar_shadow_axis_state_tt(jd_tt)
+        return _besselian_elements_from_native_shadow_state(
+            jd_ut1=jd_ut1,
+            jd_tt=jd_tt,
+            ephemeris=identity.summary_label,
+            state=state,
         )
 
     def _native_solar_shadow_axis_distance_km(self, jd_ut: float) -> float:
@@ -1803,21 +1917,34 @@ class EclipseCalculator:
         """
         Return a typed geographic path surface for a searched solar eclipse.
 
-        The initial geometry implementation solves the point of greatest
-        eclipse numerically from topocentric Sun/Moon separation, then
-        samples the central track only when the eclipse is central at the
-        Earth's surface. Partial eclipses return a one-point maximum surface
-        with zero umbral width and duration.
+        Central eclipses use the physical DE441 shadow axis and central-shadow
+        cone on the WGS-84 reference ellipsoid. Partial eclipses retain the
+        topocentric minimum-separation maximum and return a one-point surface
+        with zero central width and duration.
         """
         if sample_count < 1:
             raise ValueError("sample_count must be >= 1")
 
         event = self._search_solar_eclipse(jd_start, kind=kind, backward=backward)
-        max_lat, max_lon, _ = _solve_solar_greatest_location(self, event.jd_ut)
-        is_central = (
-            self._native_solar_shadow_axis_distance_km(event.jd_ut)
-            <= EARTH_RADIUS_KM
+        axis_maximum = _solar_axis_surface_point(self, event.jd_ut)
+        classified_central = any(
+            (
+                event.data.eclipse_type.is_annular,
+                event.data.eclipse_type.is_total,
+                event.data.eclipse_type.is_hybrid,
+            )
         )
+        if axis_maximum is None and classified_central:
+            raise ArithmeticError(
+                "spherical eclipse classification is central but the physical "
+                "shadow axis does not intersect the WGS-84 ellipsoid"
+            )
+        is_central = axis_maximum is not None
+        if axis_maximum is None:
+            max_lat, max_lon, _ = _solve_solar_greatest_location(self, event.jd_ut)
+        else:
+            max_lat = axis_maximum.latitude_deg
+            max_lon = axis_maximum.longitude_deg
         path_data = _solar_eclipse_data_at_location(
             self,
             event.data,
@@ -1838,18 +1965,36 @@ class EclipseCalculator:
                 eclipse_data=path_data,
             )
 
-        jd_start_path, jd_end_path = _solve_solar_central_interval(self, event.jd_ut)
+        start_boundary, end_boundary = _solve_solar_central_interval(
+            self,
+            event.jd_ut,
+        )
         lats: list[float] = []
         lons: list[float] = []
-        for jd_ut in _sample_interval(jd_start_path, jd_end_path, sample_count):
-            lat, lon, _ = _solve_solar_greatest_location(self, jd_ut)
-            lats.append(lat)
-            lons.append(lon)
+        sample_times = _sample_interval(
+            start_boundary.jd_ut,
+            end_boundary.jd_ut,
+            sample_count,
+        )
+        for index, jd_ut in enumerate(sample_times):
+            if len(sample_times) > 1 and index == 0:
+                point = start_boundary.point
+            elif len(sample_times) > 1 and index == len(sample_times) - 1:
+                point = end_boundary.point
+            else:
+                point = _solar_axis_surface_point(self, jd_ut)
+            if point is None:
+                raise ArithmeticError(
+                    "sampled central-line epoch has no shadow-axis intersection "
+                    "with the WGS-84 ellipsoid"
+                )
+            lats.append(point.latitude_deg)
+            lons.append(point.longitude_deg)
 
         return SolarEclipsePath(
             central_line_lats=tuple(lats),
             central_line_lons=tuple(lons),
-            umbral_width_km=_solve_solar_umbral_width_km(self, event.jd_ut, max_lat, max_lon),
+            umbral_width_km=_solve_solar_umbral_width_km(self, event.jd_ut),
             duration_at_max_s=_solve_local_solar_central_duration_s(
                 self,
                 event.jd_ut,
@@ -2428,6 +2573,47 @@ _SOLAR_CENTRAL_INTERVAL_SCAN_STEPS = 48
 _SOLAR_CENTRAL_INTERVAL_MAX_MARGIN_EVALS = 192
 _SOLAR_LOCAL_CONTACT_STEP_DAYS = 30.0 / 86400.0
 _SOLAR_LOCAL_CONTACT_SCAN_STEPS = 120
+_SOLAR_TRACK_TANGENT_STEP_DAYS = 30.0 / 86400.0
+_SOLAR_FOOTPRINT_AZIMUTH_SAMPLES = 720
+_WGS84_FLATTENING = 1.0 / 298.257223563
+_WGS84_POLAR_RADIUS_KM = EARTH_RADIUS_KM * (1.0 - _WGS84_FLATTENING)
+_WGS84_AXIS_TANGENCY_TOLERANCE_KM2 = 1.0e-6
+
+
+@dataclass(frozen=True, slots=True)
+class _EarthFixedSolarShadow:
+    """One native central-shadow cone expressed in the terrestrial frame.
+
+    The fundamental-plane point is the closest point on the shadow axis to
+    Earth's centre. ``axis_projection_km`` is the Moon's signed coordinate on
+    that axis and is therefore negative for a forward shadow ray reaching
+    Earth. ``central_radius_km`` is signed at the fundamental plane: positive
+    for an umbra and negative for an antumbra.
+    """
+
+    fundamental_plane_point_xyz_km: tuple[float, float, float]
+    axis_unit_away_from_sun: tuple[float, float, float]
+    axis_projection_km: float
+    central_radius_km: float
+    central_cone_slope: float
+
+
+@dataclass(frozen=True, slots=True)
+class _SolarAxisSurfacePoint:
+    """The near-side intersection of the central shadow axis and WGS-84."""
+
+    xyz_itrf_km: tuple[float, float, float]
+    latitude_deg: float
+    longitude_deg: float
+    signed_half_chord_sq_km2: float
+
+
+@dataclass(frozen=True, slots=True)
+class _SolarCentralAxisBoundary:
+    """One numerical axis/ellipsoid tangency endpoint and its UT1 epoch."""
+
+    jd_ut: float
+    point: _SolarAxisSurfacePoint
 
 
 class _SearchLimitReached(RuntimeError):
@@ -2625,14 +2811,25 @@ def _solve_solar_greatest_location(
 
     def objective(latitude: float, longitude: float) -> float:
         nonlocal objective_evals
-        key = (round(latitude, 6), round(_wrap_longitude_deg(longitude), 6))
+        canonical_latitude, canonical_longitude = _offset_geographic_km(
+            latitude,
+            longitude,
+            0.0,
+            0.0,
+        )
+        key = (round(canonical_latitude, 6), round(canonical_longitude, 6))
         if key not in cache:
             if objective_evals >= _GEO_SEARCH_MAX_OBJECTIVE_EVALS:
                 raise _SearchLimitReached(
                     "solar greatest-location evaluation limit exhausted"
                 )
             objective_evals += 1
-            separation, _, _ = _topocentric_solar_geometry(calc, jd_ut, latitude, longitude)
+            separation, _, _ = _topocentric_solar_geometry(
+                calc,
+                jd_ut,
+                canonical_latitude,
+                canonical_longitude,
+            )
             cache[key] = separation
         return cache[key]
 
@@ -2643,6 +2840,17 @@ def _solve_solar_greatest_location(
     best_lon = 0.0
     best_score = float("inf")
     search_complete = False
+
+    # Longitude is undefined at an exact pole.  Search each pole once at the
+    # canonical longitude before the regular latitude/longitude grid.
+    for latitude, longitude in ((-90.0, 0.0), (90.0, 0.0)):
+        score = objective(latitude, longitude)
+        if score < best_score:
+            best_lat = latitude
+            best_lon = longitude
+            best_score = score
+            if best_score <= _GEO_SEARCH_EARLY_EXIT_SEPARATION_DEG:
+                return best_lat, best_lon, best_score
 
     lat = -80.0
     while lat <= 80.0 + 1e-9 and not search_complete:
@@ -2668,6 +2876,7 @@ def _solve_solar_greatest_location(
     for step in _GEO_SEARCH_STEPS_DEG:
         if limit_reached():
             break
+        step_km = step * _KM_PER_DEG_LAT
         improved = True
         passes = 0
         while improved and passes < _GEO_SEARCH_MAX_PASSES_PER_STEP:
@@ -2675,76 +2884,433 @@ def _solve_solar_greatest_location(
                 return best_lat, best_lon, best_score
             passes += 1
             improved = False
-            for dlat in (-step, 0.0, step):
-                for dlon in (-step, 0.0, step):
-                    if dlat == 0.0 and dlon == 0.0:
+            origin_lat = best_lat
+            origin_lon = best_lon
+            pass_best_lat = best_lat
+            pass_best_lon = best_lon
+            pass_best_score = best_score
+            for north_direction in (-1.0, 0.0, 1.0):
+                for east_direction in (-1.0, 0.0, 1.0):
+                    if north_direction == 0.0 and east_direction == 0.0:
                         continue
                     if limit_reached():
                         return best_lat, best_lon, best_score
-                    cand_lat = max(-89.5, min(89.5, best_lat + dlat))
-                    cand_lon = _wrap_longitude_deg(best_lon + dlon)
+                    cand_lat, cand_lon = _offset_geographic_km(
+                        origin_lat,
+                        origin_lon,
+                        north_direction * step_km,
+                        east_direction * step_km,
+                    )
                     score = objective(cand_lat, cand_lon)
-                    if score < best_score:
-                        best_lat = cand_lat
-                        best_lon = cand_lon
-                        best_score = score
-                        improved = True
-                        if best_score <= _GEO_SEARCH_EARLY_EXIT_SEPARATION_DEG:
-                            return best_lat, best_lon, best_score
+                    if score <= _GEO_SEARCH_EARLY_EXIT_SEPARATION_DEG:
+                        return cand_lat, cand_lon, score
+                    if score < pass_best_score:
+                        pass_best_lat = cand_lat
+                        pass_best_lon = cand_lon
+                        pass_best_score = score
+            if pass_best_score < best_score:
+                best_lat = pass_best_lat
+                best_lon = pass_best_lon
+                best_score = pass_best_score
+                improved = True
     return best_lat, best_lon, best_score
 
 
-def _best_solar_central_margin(
+def _shadow_dot(
+    left: tuple[float, float, float],
+    right: tuple[float, float, float],
+) -> float:
+    return left[0] * right[0] + left[1] * right[1] + left[2] * right[2]
+
+
+def _shadow_add(
+    left: tuple[float, float, float],
+    right: tuple[float, float, float],
+) -> tuple[float, float, float]:
+    return (left[0] + right[0], left[1] + right[1], left[2] + right[2])
+
+
+def _shadow_subtract(
+    left: tuple[float, float, float],
+    right: tuple[float, float, float],
+) -> tuple[float, float, float]:
+    return (left[0] - right[0], left[1] - right[1], left[2] - right[2])
+
+
+def _shadow_scale(
+    vector: tuple[float, float, float],
+    scalar: float,
+) -> tuple[float, float, float]:
+    return (vector[0] * scalar, vector[1] * scalar, vector[2] * scalar)
+
+
+def _shadow_cross(
+    left: tuple[float, float, float],
+    right: tuple[float, float, float],
+) -> tuple[float, float, float]:
+    return (
+        left[1] * right[2] - left[2] * right[1],
+        left[2] * right[0] - left[0] * right[2],
+        left[0] * right[1] - left[1] * right[0],
+    )
+
+
+def _shadow_unit(
+    vector: tuple[float, float, float],
+    *,
+    label: str,
+) -> tuple[float, float, float]:
+    magnitude = math.sqrt(_shadow_dot(vector, vector))
+    if magnitude == 0.0 or not math.isfinite(magnitude):
+        raise ArithmeticError(f"{label} has no finite direction")
+    return _shadow_scale(vector, 1.0 / magnitude)
+
+
+def _transpose_matrix_3x3(matrix):
+    return (
+        (matrix[0][0], matrix[1][0], matrix[2][0]),
+        (matrix[0][1], matrix[1][1], matrix[2][1]),
+        (matrix[0][2], matrix[1][2], matrix[2][2]),
+    )
+
+
+def _earth_fixed_solar_shadow(
     calc: EclipseCalculator,
     jd_ut: float,
+) -> _EarthFixedSolarShadow | None:
+    """Express the native reception-time shadow cone in ITRF coordinates.
+
+    ICRF is rotated through true equator/equinox of date, physical GAST at the
+    supplied UT1 epoch, and the inverse admitted polar-motion matrix. This is
+    the exact inverse staging of Moira's WGS-84 observer construction.
+    """
+
+    jd_tt = _ut1_to_ephemeris_tt(jd_ut, calc._reader)
+    state = calc._native_solar_shadow_axis_state_tt(jd_tt)
+    plane_point = state.fundamental_plane_point_xyz_km
+    if plane_point is None:
+        return None
+
+    precession_nutation = mat_mul(
+        nutation_matrix_equatorial(jd_tt),
+        precession_matrix_equatorial(jd_tt),
+    )
+    dpsi_deg, _deps_deg = nutation(jd_tt)
+    gast_rad = math.radians(
+        apparent_sidereal_time(
+            jd_ut,
+            dpsi_deg,
+            true_obliquity(jd_tt),
+        )
+    )
+    cos_gast = math.cos(gast_rad)
+    sin_gast = math.sin(gast_rad)
+    x_p_arcsec, y_p_arcsec = PolarMotionRegistry.polar_motion_at(jd_ut)
+    tirs_to_itrf = _transpose_matrix_3x3(
+        polar_motion_matrix(x_p_arcsec, y_p_arcsec)
+    )
+
+    def icrf_to_itrf(
+        vector: tuple[float, float, float],
+    ) -> tuple[float, float, float]:
+        tete_x, tete_y, tete_z = mat_vec_mul(precession_nutation, vector)
+        tirs = (
+            cos_gast * tete_x + sin_gast * tete_y,
+            -sin_gast * tete_x + cos_gast * tete_y,
+            tete_z,
+        )
+        return mat_vec_mul(tirs_to_itrf, tirs)
+
+    axis_unit = _shadow_unit(
+        icrf_to_itrf(state.axis_unit_away_from_sun),
+        label="terrestrial solar shadow axis",
+    )
+    sin_f2 = (SUN_RADIUS_KM - MOON_RADIUS_KM) / state.sun_moon_distance_km
+    if not 0.0 < sin_f2 < 1.0:
+        raise ArithmeticError("solar and lunar radii cannot define a central shadow cone")
+    cos_f2 = math.sqrt((1.0 - sin_f2) * (1.0 + sin_f2))
+    tan_f2 = sin_f2 / cos_f2
+    central_radius = (
+        MOON_RADIUS_KM / cos_f2
+        + state.axis_projection_km * tan_f2
+    )
+    return _EarthFixedSolarShadow(
+        fundamental_plane_point_xyz_km=icrf_to_itrf(plane_point),
+        axis_unit_away_from_sun=axis_unit,
+        axis_projection_km=state.axis_projection_km,
+        central_radius_km=central_radius,
+        central_cone_slope=tan_f2,
+    )
+
+
+def _wgs84_line_quadratic_coefficients(
+    point_xyz_km: tuple[float, float, float],
+    direction: tuple[float, float, float],
 ) -> tuple[float, float, float]:
-    latitude, longitude, _ = _solve_solar_greatest_location(calc, jd_ut)
-    _, _, central_margin = _topocentric_solar_geometry(calc, jd_ut, latitude, longitude)
-    return latitude, longitude, central_margin
+    a2 = EARTH_RADIUS_KM * EARTH_RADIUS_KM
+    b2 = _WGS84_POLAR_RADIUS_KM * _WGS84_POLAR_RADIUS_KM
+    coefficient_a = (
+        (direction[0] * direction[0] + direction[1] * direction[1]) / a2
+        + direction[2] * direction[2] / b2
+    )
+    if coefficient_a <= 0.0 or not math.isfinite(coefficient_a):
+        raise ArithmeticError("ellipsoid-intersection line has no finite direction")
+    coefficient_b = (
+        (point_xyz_km[0] * direction[0] + point_xyz_km[1] * direction[1]) / a2
+        + point_xyz_km[2] * direction[2] / b2
+    )
+    coefficient_c = (
+        (point_xyz_km[0] * point_xyz_km[0] + point_xyz_km[1] * point_xyz_km[1])
+        / a2
+        + point_xyz_km[2] * point_xyz_km[2] / b2
+        - 1.0
+    )
+    return coefficient_a, coefficient_b, coefficient_c
 
 
-def _solve_solar_central_interval(calc: EclipseCalculator, jd_ut: float) -> tuple[float, float]:
-    def build_margin_solver():
-        margin_evals = 0
+def _wgs84_line_intersection_parameters(
+    point_xyz_km: tuple[float, float, float],
+    direction: tuple[float, float, float],
+) -> tuple[float, tuple[float, float] | None]:
+    """Return signed half-chord squared and line/WGS-84 parameters.
 
-        def central_margin_at_time(t: float) -> float:
-            nonlocal margin_evals
-            if margin_evals >= _SOLAR_CENTRAL_INTERVAL_MAX_MARGIN_EVALS:
-                raise _SearchLimitReached(
-                    "solar central-interval evaluation limit exhausted"
-                )
-            margin_evals += 1
-            _, _, margin = _best_solar_central_margin(calc, t)
-            return margin
+    The line is ``point + parameter * direction``. The signed scalar is in
+    square kilometres: positive intersects, zero is tangent, and negative
+    misses. Working from the fundamental plane avoids the catastrophic
+    cancellation incurred by anchoring the line at the distant Moon.
+    """
 
-        return central_margin_at_time
+    coefficient_a, coefficient_b, coefficient_c = (
+        _wgs84_line_quadratic_coefficients(point_xyz_km, direction)
+    )
+    if hasattr(math, "fma"):
+        discriminant = math.fma(-coefficient_a, coefficient_c, coefficient_b * coefficient_b)
+    else:  # Python 3.10-3.12 compatibility.
+        discriminant = math.fsum(
+            (coefficient_b * coefficient_b, -coefficient_a * coefficient_c)
+        )
+    signed_half_chord_sq_km2 = discriminant / (coefficient_a * coefficient_a)
+    if signed_half_chord_sq_km2 < -_WGS84_AXIS_TANGENCY_TOLERANCE_KM2:
+        return signed_half_chord_sq_km2, None
 
-    center_margin_at_time = build_margin_solver()
-    center_margin = center_margin_at_time(jd_ut)
-    if center_margin <= 0.0:
-        return jd_ut, jd_ut
+    half_chord_km = math.sqrt(max(0.0, signed_half_chord_sq_km2))
+    chord_center_km = -coefficient_b / coefficient_a
+    return signed_half_chord_sq_km2, (
+        chord_center_km - half_chord_km,
+        chord_center_km + half_chord_km,
+    )
+
+
+def _wgs84_geodetic_from_xyz_km(
+    xyz_km: tuple[float, float, float],
+) -> tuple[float, float]:
+    """Convert one point on the WGS-84 ellipsoid to geodetic coordinates."""
+
+    x_km, y_km, z_km = xyz_km
+    radial_xy_km = math.hypot(x_km, y_km)
+    longitude_deg = (
+        0.0
+        if radial_xy_km == 0.0
+        else _wrap_longitude_deg(math.degrees(math.atan2(y_km, x_km)))
+    )
+    latitude_deg = math.degrees(
+        math.atan2(
+            z_km / (_WGS84_POLAR_RADIUS_KM * _WGS84_POLAR_RADIUS_KM),
+            radial_xy_km / (EARTH_RADIUS_KM * EARTH_RADIUS_KM),
+        )
+    )
+    return latitude_deg, longitude_deg
+
+
+def _wgs84_surface_xyz_km(
+    latitude_deg: float,
+    longitude_deg: float,
+) -> tuple[float, float, float]:
+    """Return the zero-elevation ITRF point for WGS-84 geodetic coordinates."""
+
+    latitude_rad = math.radians(latitude_deg)
+    longitude_rad = math.radians(longitude_deg)
+    sin_latitude = math.sin(latitude_rad)
+    cos_latitude = math.cos(latitude_rad)
+    eccentricity_sq = _WGS84_FLATTENING * (2.0 - _WGS84_FLATTENING)
+    prime_vertical_radius_km = EARTH_RADIUS_KM / math.sqrt(
+        1.0 - eccentricity_sq * sin_latitude * sin_latitude
+    )
+    return (
+        prime_vertical_radius_km * cos_latitude * math.cos(longitude_rad),
+        prime_vertical_radius_km * cos_latitude * math.sin(longitude_rad),
+        prime_vertical_radius_km
+        * (1.0 - eccentricity_sq)
+        * sin_latitude,
+    )
+
+
+def _axis_surface_point_from_shadow(
+    shadow: _EarthFixedSolarShadow,
+) -> _SolarAxisSurfacePoint | None:
+    signed_half_chord_sq_km2, roots = _wgs84_line_intersection_parameters(
+        shadow.fundamental_plane_point_xyz_km,
+        shadow.axis_unit_away_from_sun,
+    )
+    if roots is None:
+        return None
+    lawful_roots = tuple(
+        root
+        for root in roots
+        if root >= shadow.axis_projection_km
+    )
+    if not lawful_roots:
+        return None
+    near_parameter_km = min(lawful_roots)
+    distance_from_moon_km = near_parameter_km - shadow.axis_projection_km
+    if distance_from_moon_km <= MOON_RADIUS_KM:
+        raise ArithmeticError(
+            "central shadow axis has no physical near-side intersection"
+        )
+    xyz_itrf_km = _shadow_add(
+        shadow.fundamental_plane_point_xyz_km,
+        _shadow_scale(shadow.axis_unit_away_from_sun, near_parameter_km),
+    )
+    latitude_deg, longitude_deg = _wgs84_geodetic_from_xyz_km(xyz_itrf_km)
+    return _SolarAxisSurfacePoint(
+        xyz_itrf_km=xyz_itrf_km,
+        latitude_deg=latitude_deg,
+        longitude_deg=longitude_deg,
+        signed_half_chord_sq_km2=signed_half_chord_sq_km2,
+    )
+
+
+def _axis_surface_tangent_point_from_shadow(
+    shadow: _EarthFixedSolarShadow,
+) -> _SolarAxisSurfacePoint | None:
+    """Materialize the limiting axis point with the coalesced chord root.
+
+    The central-interval solver retains the last representable inside epoch so
+    the line has a real (usually microscopic) chord. Its midpoint is ``-B/A``
+    and converges to the unique ellipsoid tangent without choosing either
+    numerically ill-conditioned near/far root.
+    """
+
+    signed_half_chord_sq_km2, roots = _wgs84_line_intersection_parameters(
+        shadow.fundamental_plane_point_xyz_km,
+        shadow.axis_unit_away_from_sun,
+    )
+    if roots is None:
+        return None
+    coefficient_a, coefficient_b, _coefficient_c = (
+        _wgs84_line_quadratic_coefficients(
+            shadow.fundamental_plane_point_xyz_km,
+            shadow.axis_unit_away_from_sun,
+        )
+    )
+    tangent_parameter_km = -coefficient_b / coefficient_a
+    if tangent_parameter_km < shadow.axis_projection_km:
+        return None
+    distance_from_moon_km = tangent_parameter_km - shadow.axis_projection_km
+    if distance_from_moon_km <= MOON_RADIUS_KM:
+        raise ArithmeticError(
+            "central shadow axis has no physical tangent intersection"
+        )
+    xyz_itrf_km = _shadow_add(
+        shadow.fundamental_plane_point_xyz_km,
+        _shadow_scale(shadow.axis_unit_away_from_sun, tangent_parameter_km),
+    )
+    latitude_deg, longitude_deg = _wgs84_geodetic_from_xyz_km(xyz_itrf_km)
+    return _SolarAxisSurfacePoint(
+        xyz_itrf_km=xyz_itrf_km,
+        latitude_deg=latitude_deg,
+        longitude_deg=longitude_deg,
+        signed_half_chord_sq_km2=signed_half_chord_sq_km2,
+    )
+
+
+def _solar_axis_surface_point(
+    calc: EclipseCalculator,
+    jd_ut: float,
+) -> _SolarAxisSurfacePoint | None:
+    shadow = _earth_fixed_solar_shadow(calc, jd_ut)
+    if shadow is None:
+        return None
+    return _axis_surface_point_from_shadow(shadow)
+
+
+def _solar_axis_surface_tangent_point(
+    calc: EclipseCalculator,
+    jd_ut: float,
+) -> _SolarAxisSurfacePoint | None:
+    shadow = _earth_fixed_solar_shadow(calc, jd_ut)
+    if shadow is None:
+        return None
+    return _axis_surface_tangent_point_from_shadow(shadow)
+
+
+def _solar_axis_surface_discriminant_km2(
+    calc: EclipseCalculator,
+    jd_ut: float,
+) -> float:
+    shadow = _earth_fixed_solar_shadow(calc, jd_ut)
+    if shadow is None:
+        return float("-inf")
+    signed_half_chord_sq_km2, _roots = _wgs84_line_intersection_parameters(
+        shadow.fundamental_plane_point_xyz_km,
+        shadow.axis_unit_away_from_sun,
+    )
+    return signed_half_chord_sq_km2
+
+
+def _solve_solar_central_interval(
+    calc: EclipseCalculator,
+    jd_ut: float,
+) -> tuple[_SolarCentralAxisBoundary, _SolarCentralAxisBoundary]:
+    """Solve the first/last central-axis intersections with WGS-84.
+
+    This interval governs the public central-line samples. It deliberately
+    does not represent the separate U1/U4 cone tangencies or observer-local
+    visibility/contact intervals.
+    """
+
+    margin_evals = 0
+
+    def axis_margin_at_time(t: float) -> float:
+        nonlocal margin_evals
+        if margin_evals >= _SOLAR_CENTRAL_INTERVAL_MAX_MARGIN_EVALS:
+            raise _SearchLimitReached(
+                "solar central-interval evaluation limit exhausted"
+            )
+        margin_evals += 1
+        return _solar_axis_surface_discriminant_km2(calc, t)
+
+    center_margin = axis_margin_at_time(jd_ut)
+    if center_margin < -_WGS84_AXIS_TANGENCY_TOLERANCE_KM2:
+        raise ArithmeticError(
+            "central-interval seed has no shadow-axis intersection with WGS-84"
+        )
 
     step = _SOLAR_CENTRAL_INTERVAL_STEP_DAYS
 
-    def solve_boundary(direction: float) -> float:
-        central_margin_at_time = build_margin_solver()
-        current = jd_ut
+    def solve_boundary(direction: float) -> _SolarCentralAxisBoundary:
+        inside_time = jd_ut
         for _ in range(_SOLAR_CENTRAL_INTERVAL_SCAN_STEPS):
-            next_time = current + (direction * step)
-            next_margin = central_margin_at_time(next_time)
-            if next_margin <= 0.0:
-                if direction < 0.0:
-                    return _bisection_root(central_margin_at_time, next_time, current)
-                return _bisection_root(central_margin_at_time, current, next_time)
-            current = next_time
+            outside_time = inside_time + direction * step
+            if axis_margin_at_time(outside_time) <= 0.0:
+                for _ in range(48):
+                    midpoint = (inside_time + outside_time) / 2.0
+                    if axis_margin_at_time(midpoint) >= 0.0:
+                        inside_time = midpoint
+                    else:
+                        outside_time = midpoint
+                point = _solar_axis_surface_tangent_point(calc, inside_time)
+                if point is None:
+                    raise ArithmeticError(
+                        "central-axis tangency could not be materialized on WGS-84"
+                    )
+                return _SolarCentralAxisBoundary(jd_ut=inside_time, point=point)
+            inside_time = outside_time
         raise _SearchLimitReached(
-            "solar central path boundary was not bracketed within 24 hours"
+            "solar central-axis surface boundary was not bracketed within 24 hours"
         )
 
-    left = solve_boundary(-1.0)
-    right = solve_boundary(1.0)
-
-    return left, right
+    return solve_boundary(-1.0), solve_boundary(1.0)
 
 
 def _solve_local_solar_central_duration_s(
@@ -2786,65 +3352,162 @@ def _solve_local_solar_central_duration_s(
     return max(0.0, (end - start) * 86400.0)
 
 
+def _wgs84_surface_normal_unit(
+    xyz_itrf_km: tuple[float, float, float],
+) -> tuple[float, float, float]:
+    return _shadow_unit(
+        (
+            xyz_itrf_km[0] / (EARTH_RADIUS_KM * EARTH_RADIUS_KM),
+            xyz_itrf_km[1] / (EARTH_RADIUS_KM * EARTH_RADIUS_KM),
+            xyz_itrf_km[2] / (_WGS84_POLAR_RADIUS_KM * _WGS84_POLAR_RADIUS_KM),
+        ),
+        label="WGS-84 surface normal",
+    )
+
+
+def _central_shadow_clearance_km(
+    shadow: _EarthFixedSolarShadow,
+    surface_xyz_itrf_km: tuple[float, float, float],
+) -> float:
+    """Return positive-inside central-shadow clearance at one surface point."""
+
+    offset = _shadow_subtract(
+        surface_xyz_itrf_km,
+        shadow.fundamental_plane_point_xyz_km,
+    )
+    axial_km = _shadow_dot(offset, shadow.axis_unit_away_from_sun)
+    perpendicular = _shadow_subtract(
+        offset,
+        _shadow_scale(shadow.axis_unit_away_from_sun, axial_km),
+    )
+    cone_radius_km = abs(
+        shadow.central_radius_km - shadow.central_cone_slope * axial_km
+    )
+    return cone_radius_km - math.sqrt(_shadow_dot(perpendicular, perpendicular))
+
+
+def _solar_axis_track_direction_itrf(
+    calc: EclipseCalculator,
+    jd_ut: float,
+    center: _SolarAxisSurfacePoint,
+) -> tuple[float, float, float]:
+    before = _solar_axis_surface_point(calc, jd_ut - _SOLAR_TRACK_TANGENT_STEP_DAYS)
+    after = _solar_axis_surface_point(calc, jd_ut + _SOLAR_TRACK_TANGENT_STEP_DAYS)
+    if before is not None and after is not None:
+        displacement = _shadow_subtract(after.xyz_itrf_km, before.xyz_itrf_km)
+    elif before is not None:
+        displacement = _shadow_subtract(center.xyz_itrf_km, before.xyz_itrf_km)
+    elif after is not None:
+        displacement = _shadow_subtract(after.xyz_itrf_km, center.xyz_itrf_km)
+    else:
+        raise ArithmeticError("central shadow track has no neighboring surface point")
+
+    normal = _wgs84_surface_normal_unit(center.xyz_itrf_km)
+    tangent = _shadow_subtract(
+        displacement,
+        _shadow_scale(normal, _shadow_dot(displacement, normal)),
+    )
+    return _shadow_unit(tangent, label="central shadow track tangent")
+
+
+def _central_shadow_support_width_km(
+    shadow: _EarthFixedSolarShadow,
+    center_xyz_itrf_km: tuple[float, float, float],
+    track_direction_itrf: tuple[float, float, float],
+) -> float:
+    """Return the full cross-track support span of a closed shadow footprint.
+
+    Each azimuth selects one generator of the physical umbral/antumbral cone.
+    Its first lawful intersection with WGS-84 is a point on the instantaneous
+    mean-limb path boundary. Projecting the complete boundary onto the local
+    cross-track direction captures the tilted footprint; intersecting only a
+    centered chord does not.
+    """
+
+    surface_normal = _wgs84_surface_normal_unit(center_xyz_itrf_km)
+    tangent = _shadow_subtract(
+        track_direction_itrf,
+        _shadow_scale(
+            surface_normal,
+            _shadow_dot(track_direction_itrf, surface_normal),
+        ),
+    )
+    tangent = _shadow_unit(tangent, label="central shadow track tangent")
+    cross_track = _shadow_unit(
+        _shadow_cross(surface_normal, tangent),
+        label="central shadow cross-track direction",
+    )
+
+    axis_unit = shadow.axis_unit_away_from_sun
+    reference = (0.0, 0.0, 1.0) if abs(axis_unit[2]) < 0.9 else (1.0, 0.0, 0.0)
+    cone_east = _shadow_unit(
+        _shadow_cross(axis_unit, reference),
+        label="central shadow cone basis",
+    )
+    cone_north = _shadow_cross(axis_unit, cone_east)
+    projections: list[float] = []
+
+    for index in range(_SOLAR_FOOTPRINT_AZIMUTH_SAMPLES):
+        azimuth = math.tau * index / _SOLAR_FOOTPRINT_AZIMUTH_SAMPLES
+        radial = _shadow_add(
+            _shadow_scale(cone_east, math.cos(azimuth)),
+            _shadow_scale(cone_north, math.sin(azimuth)),
+        )
+        generator_origin = _shadow_add(
+            shadow.fundamental_plane_point_xyz_km,
+            _shadow_scale(radial, shadow.central_radius_km),
+        )
+        generator_direction = _shadow_add(
+            axis_unit,
+            _shadow_scale(radial, -shadow.central_cone_slope),
+        )
+        _margin_km2, roots = _wgs84_line_intersection_parameters(
+            generator_origin,
+            generator_direction,
+        )
+        if roots is None:
+            continue
+        lawful_roots = tuple(
+            root
+            for root in roots
+            if root >= shadow.axis_projection_km
+        )
+        if not lawful_roots:
+            continue
+        boundary_xyz = _shadow_add(
+            generator_origin,
+            _shadow_scale(generator_direction, min(lawful_roots)),
+        )
+        projections.append(
+            _shadow_dot(
+                _shadow_subtract(boundary_xyz, center_xyz_itrf_km),
+                cross_track,
+            )
+        )
+
+    if len(projections) != _SOLAR_FOOTPRINT_AZIMUTH_SAMPLES:
+        raise _SearchLimitReached(
+            "central-shadow footprint is not a closed two-limit product at this epoch"
+        )
+    return max(projections) - min(projections)
+
+
 def _solve_solar_umbral_width_km(
     calc: EclipseCalculator,
     jd_ut: float,
-    latitude: float,
-    longitude: float,
 ) -> float:
-    def central_margin_at_point(lat: float, lon: float) -> float:
-        _, _, margin = _topocentric_solar_geometry(calc, jd_ut, lat, lon)
-        return margin
-
-    center_margin = central_margin_at_point(latitude, longitude)
-    if center_margin <= 0.0:
+    shadow = _earth_fixed_solar_shadow(calc, jd_ut)
+    if shadow is None:
         return 0.0
-
-    dt = 1.0 / 1440.0
-    lat1, lon1, _ = _solve_solar_greatest_location(calc, jd_ut - dt)
-    lat2, lon2, _ = _solve_solar_greatest_location(calc, jd_ut + dt)
-    north = (lat2 - lat1) * _KM_PER_DEG_LAT
-    east = ((lon2 - lon1 + 540.0) % 360.0 - 180.0) * _KM_PER_DEG_LAT * math.cos(math.radians(latitude))
-    if abs(north) < 1e-6 and abs(east) < 1e-6:
-        east = 1.0
-        north = 0.0
-    cross_north = -east
-    cross_east = north
-    norm = math.hypot(cross_north, cross_east)
-    cross_north /= norm
-    cross_east /= norm
-
-    def boundary(sign: float) -> float:
-        lo = 0.0
-        hi = 2000.0
-        for _ in range(12):
-            test_lat, test_lon = _offset_geographic_km(
-                latitude,
-                longitude,
-                sign * cross_north * hi,
-                sign * cross_east * hi,
-            )
-            if central_margin_at_point(test_lat, test_lon) <= 0.0:
-                break
-            hi *= 1.5
-        else:
-            return hi
-
-        for _ in range(40):
-            mid = (lo + hi) / 2.0
-            test_lat, test_lon = _offset_geographic_km(
-                latitude,
-                longitude,
-                sign * cross_north * mid,
-                sign * cross_east * mid,
-            )
-            if central_margin_at_point(test_lat, test_lon) > 0.0:
-                lo = mid
-            else:
-                hi = mid
-        return (lo + hi) / 2.0
-
-    return boundary(-1.0) + boundary(1.0)
+    center = _axis_surface_point_from_shadow(shadow)
+    if center is None:
+        return 0.0
+    track_direction = _solar_axis_track_direction_itrf(calc, jd_ut, center)
+    return _central_shadow_support_width_km(
+        shadow,
+        center.xyz_itrf_km,
+        track_direction,
+    )
 
 
 # ---------------------------------------------------------------------------

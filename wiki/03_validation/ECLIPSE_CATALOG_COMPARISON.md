@@ -1,13 +1,20 @@
 # Eclipse Catalog Comparison
 
 This report summarizes the repository's selected eclipse catalog comparisons.
-The NASA fixture identifies the Five Millennium solar and lunar catalog source
-URLs in `tests/fixtures/eclipse_nasa_reference.json`. Cached Swiss rows in
+The NASA fixtures identify the Five Millennium solar and lunar catalog source
+URLs in `tests/fixtures/eclipse_nasa_reference.json` and the published
+Besselian-element rows in
+`tests/fixtures/nasa_solar_besselian_reference.json`, plus the paired 2015
+polar path/Besselian product in
+`tests/fixtures/nasa_solar_polar_path_reference.json`. Cached Swiss rows in
 `tests/fixtures/swe_t.exp` are a separate, secondary cross-engine corpus.
 
 This is a readable evidence summary, not a replacement for the executable
-tests and not a claim of full-catalog, Besselian-element, or atlas-grade path
-validation.
+tests and not a claim of full-catalog, exact-model, or atlas-grade path
+validation. The bounded Besselian per-field evidence admitted below applies
+only to its named events, fields, epochs, models, and tolerances. The polar
+path evidence is likewise limited to the named 2015 product and its explicit
+geographic gates.
 
 ## Classification at catalog maxima
 
@@ -65,6 +72,50 @@ uncertainty estimate for ancient Earth rotation. The post-2150 60-second TT
 gate checks search geometry on a common dynamical scale; it does not validate
 Moira's future UT1 scenario as a forecast.
 
+## Runtime Besselian per-field comparison
+
+`tests/integration/test_eclipse_besselian_nasa_reference.py` compares the
+instantaneous `EclipseCalculator.solar_besselian_elements(jd_ut1)` result with
+four published NASA/GSFC Besselian products: the 2000 partial, 2024 total, 2031
+hybrid, and 2032 annular solar eclipses. Each polynomial is evaluated at five
+TT/TDT epochs spanning `t0 - 3 h` through `t0 + 3 h`, for 20 element sets in
+total.
+
+Every admitted numerical field is checked. The exact absolute envelopes are
+`1.0e-4` Earth equatorial radii for `x`, `y`, `l1`, and `l2`; `0.003` degrees
+for `d`; `0.007` degrees circular for `mu`; and `3.0e-6` for each dimensionless
+cone tangent. The test pins this tolerance map independently of the fixture so
+a data-only edit cannot silently weaken the gate.
+
+This is primary-authority cross-model evidence, not exact-model parity. NASA's
+published elements use VSOP87/ELP2000-82 and the stated `k1`/`k2` lunar-radius
+convention. Moira independently evaluates a content-identified DE441/LE441
+Earth-reception shadow axis with physical mean-limb radii; NASA coefficients
+are never used by the runtime method.
+
+## Polar central-path comparison
+
+`tests/integration/test_eclipse_polar_path_nasa_reference.py` compares the
+DE441-native path with the official NASA/GSFC 2015-03-20 total-eclipse product.
+The NASA fixture keeps its paired path and Besselian pages under the same
+declared model: JPL DE405, `Delta T = 67.6 s`, WGS 84 coordinates at the
+published 120-second cadence, published `k1`/`k2` lunar-radius constants, and
+mean-limb center-of-mass geometry.
+
+The independent gates are `1 s` for searched greatest time, `3 km` for the
+greatest point, five named central-line rows, and both axis/ellipsoid tangency
+endpoints, `3 km` for greatest path width, `3 s` for local central duration,
+`0.005` for greatest magnitude, and `3 km` of physical cone clearance at each
+available published north/south limit. Five TT epochs also exercise the paired
+Besselian polynomial under the existing per-field envelopes.
+
+This is one authoritative polar central-path fixture, not an atlas-wide claim.
+It does not assert per-row path-width parity away from greatest and does not
+reinterpret NASA's missing north limits at 10:16 and 10:18. At those epochs
+the ordinary closed-footprint solver is required to fail explicitly. A path
+whose other boundary closes on the terminator remains a distinct, unsolved
+public width product.
+
 ## Native and NASA-compatible products
 
 The native model is Moira's DE441-backed physical geometry in TT. The
@@ -104,13 +155,21 @@ sampled track against NASA Besselian data.
   Delta-T basis.
 - Native and compatibility modes are distinct products and must remain
   explicitly labeled at public boundaries.
-- NASA catalog timing evidence does not imply runtime Besselian-element parity.
+- The separate runtime Besselian test establishes bounded per-field cross-model
+  evidence for four modern event classes; it does not establish exact NASA
+  model parity or atlas-wide coverage.
+- The paired 2015 fixture establishes bounded DE441-versus-DE405 evidence for
+  one polar central line, its ellipsoid tangencies, greatest width, local
+  durations, and available published limit coordinates as cone-boundary
+  points; it does not establish one-limit or full-atlas path-width parity.
 - Cached Swiss comparisons corroborate a bounded slice but do not govern
   Moira's native model.
 
 ## 2026-07 record note
 
-This documentation correction removes stale raw-UT rankings, unfrozen timing
-snapshots, and unsupported Besselian and small-angle claims. It records no new
-passing test result; the active eclipse-remediation change must provide its own
-exact command outcomes before stronger claims are added here.
+This record retains the earlier removal of stale raw-UT rankings and unsupported
+small-angle claims. It now also records the independently derived runtime
+Besselian surface, its executable pinned per-field NASA/GSFC comparison, and
+the bounded 2015 polar central-path authority fixture.
+Exact test-command outcomes belong in the change's completion receipt; this
+document states only the durable evidence scope and acceptance envelopes.

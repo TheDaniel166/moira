@@ -7,9 +7,11 @@ Metonic cycle identification.
 
 Engine
 ------
-All computation is backed by Moira's DE441 ephemeris.  The pipeline runs
-light-time, aberration, deflection, and topocentric parallax internally —
-no simplified shadow geometry is substituted.
+All computation is backed by Moira's DE441 ephemeris.  Correction stages are
+product-specific: the native global solar shadow uses Earth-reception
+light-time centre states without stellar aberration, while observer-local
+products apply their separately declared topocentric geometry.  No rendered
+sky direction is silently substituted for the physical shadow axis.
 
 Primary entry point
 -------------------
@@ -18,6 +20,7 @@ EclipseCalculator
 
     calculate(dt)                 geometry snapshot at a datetime
     calculate_jd(jd_ut)           geometry snapshot at a JD
+    solar_besselian_elements(jd_ut) instantaneous fundamental-plane elements
     next_lunar_eclipse()          search forward from current epoch
     previous_lunar_eclipse()      search backward
     analyze_lunar_eclipse(event)  full LunarEclipseAnalysis bundle
@@ -35,6 +38,11 @@ next_solar_eclipse_at_location(lat, lon, jd_ut)
 
 Solar eclipses
 --------------
+SolarBesselianElements
+    Instantaneous native shadow-axis coordinates and cone dimensions on the
+    geocentric Besselian fundamental plane.  This is an engine-only specialist
+    surface; it does not search for an eclipse or alter facade / REST results.
+
 EclipseType
     Total / Annular / Hybrid / Partial / None.
     Field on EclipseData.eclipse_type.
@@ -103,6 +111,7 @@ from moira.eclipse import (
     LunarEclipseAnalysis,
     LunarEclipseLocalCircumstances,
     SolarBodyCircumstances,
+    SolarBesselianElements,
     SolarEclipseLocalCircumstances,
     SolarEclipsePath,
     next_solar_eclipse_at_location,
@@ -121,6 +130,7 @@ __all__ = [
     "EclipseData",
     "EclipseEvent",
     # Solar eclipse
+    "SolarBesselianElements",
     "SolarEclipsePath",
     "SolarEclipseLocalCircumstances",
     "SolarBodyCircumstances",
